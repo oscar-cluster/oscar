@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.10 2002/10/30 12:18:50 jsquyres Exp $
+# $Id: Configurator.pm,v 1.11 2002/11/05 22:00:57 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -45,8 +45,8 @@ use OSCAR::Selector;
 use XML::Simple;      # Read/write the .selection config files
 use Tk::Pane; 
 
-my($top);            # The Toplevel widget for the package configuration window
-my $step_number;     # Step number in the OSCAR wizard
+my($top);             # The Toplevel widget for the package configuration window
+my $stepnum;          # Step number in the OSCAR wizard
 ##############################################################
 #  MOVE THE STUFF ABOVE TO THE TOP OF THE PERL SOURCE FILE!  #
 ##############################################################
@@ -157,7 +157,7 @@ sub doneButtonPressed
   }
 
   # Write out a message to the OSCAR log
-  oscar_log_subsection("Step $step_number: Completed successfully");
+  oscar_log_subsection("Step $stepnum: Completed successfully");
 }
 
 #########################################################################
@@ -281,17 +281,17 @@ sub populateConfiguratorList
 sub displayPackageConfigurator # ($parent)
 {
   my $parent = shift;
-  $step_number = shift;
+  $stepnum = shift;
 
-  oscar_log_section("Running step $step_number of the OSCAR wizard: Configure selected OSCAR packages");
+  oscar_log_section("Running step $stepnum of the OSCAR wizard: Configure selected OSCAR packages");
 
   # Call the pre-configure API script in each selected package
   my @packages = list_install_pkg();
-  foreach my $pkg (@packages) {
-      if (!run_pkg_script($pkg, "pre_configure", 1, "")) {
-	  carp("Pre-configure script for package \"$pkg\" failed");
-      }
-  }
+  foreach my $pkg (@packages) 
+    {
+      carp('Pre-configure script for package "' . $pkg . '" failed') if 
+        (!run_pkg_script($pkg, "pre_configure", 1, ""));
+    }
 
   # Check to see if our toplevel configurator window has been created yet.
   if (!$top)
