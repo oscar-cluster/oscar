@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<oscar>
+
+<!--
+      Copyright (c) 2004 Revolution Linux
+                         All rights reserved.
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+      -->
+
+  <name>oscar-httpd</name>
+
+  <version>
+    <major>1</major>
+    <minor>0</minor>
+    <subversion>0</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>included</class>
+
+  <summary>Configure the apache web server so that update-rpm can be used remotely via HTTP</summary>
+  <license>GPL</license>
+  <copyright>2004</copyright>
+  <group>Applications/System</group>
+  <packager>
+    <name>Benoit des Ligneris </name>
+    <email>bdesligneris@revolutionlinux.com</email>
+  </packager>
+  <vendor>Revolution Linux</vendor>
+
+  <description>Configure an apache web server to export /tftpboot/rpm.</description>
+
+  <rpmlist>
+    <filter group="oscar_server" distribution="rhas"/> 
+    <filter group="oscar_server" distribution="redhat"/> 
+    <filter group="oscar_server" distribution="fedora"/> 
+      <rpm>httpd</rpm>
+  </rpmlist>
+  <rpmlist>
+    <filter group="oscar_server" distribution="mandrake"/> 
+      <rpm>apache</rpm>
+  </rpmlist>
+
+</oscar>

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Name of the configuration file
+FILE="$OSCAR_PACKAGE_HOME/99-oscar-httpd.conf"
+# Target directory
+DIR="/etc/httpd/conf.d/"
+
+# Copy the file
+cp -f $FILE $DIR
+# Restart apache
+/etc/init.d/httpd restart
+
