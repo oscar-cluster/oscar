@@ -81,6 +81,7 @@ visualized either at runtime or post-mortem.</description>
   </requires>
 
   <rpmlist>
+    <rpm>libaio</rpm>
     <rpm>lam-oscar</rpm>
     <rpm>lam-oscar-modulefile</rpm>
     <!-- <rpm>lam-gm-oscar</rpm>

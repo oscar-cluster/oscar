@@ -44,9 +44,11 @@ my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
 my ($name, $ver) = OSCAR::Distro::which_distro_server();
 if ($name eq "mandrake") {
   $source_dir .= "mdk90";
+}  elsif ($name eq "fedora") {
+  $source_dir .= $name;
 } else {
   $source_dir .= "rh80";
-}
+} 
 
 print "Using LAM/MPI RPMs from: $source_dir\n";
 
