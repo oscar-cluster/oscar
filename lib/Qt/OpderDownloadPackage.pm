@@ -75,7 +75,7 @@ sub NEW
     downloadLabel_font->setPointSize(14);
     downloadLabel_font->setBold(1);
     downloadLabel->setFont(downloadLabel_font);
-    downloadLabel->setText(trUtf8("Dowloading Package File"));
+    downloadLabel->setText(trUtf8("Downloading Package File"));
     downloadLabel->setAlignment(int(&Qt::Label::AlignCenter));
     $Layout33->addWidget(downloadLabel);
 
@@ -264,6 +264,7 @@ sub downloadNext
       packageLabel->setText($dlPackages[$dlPhase-1]->{package});
 
       my @args = ($opdcmd,
+                  '--nomaster',
                   '--parsable',
                   '-r',$dlPackages[$dlPhase-1]->{repositoryURL},
                   '--package',$dlPackages[$dlPhase-1]->{downloadURI}[0]); 

@@ -1,0 +1,100 @@
+--- /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm.orig	2002-12-17 09:25:49.000000000 -0800
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm	2004-10-11 19:02:37.000000000 -0700
+@@ -28,6 +28,7 @@
+              resethash
+              imageexists
+              init_si_config
++             center_window
+              done_window
+              error_window
+             );
+@@ -73,38 +74,61 @@
+     $window->destroy;
+ }
+ 
++# Just the standard Tk window centering code...
++#
++sub center_window {
++    my $w = shift;
++    my $p = $w->parent();
++
++    $w->withdraw() if $w->viewable();
++
++    $w->idletasks;
++    my $x = int( ($w->screenwidth - $w->reqwidth)/2 );
++    my $y = int( ($w->screenheight - $w->reqheight)/2 );
++    if( $p ) {
++        $x -= int( $p->vrootx/2 ) if $p->vrootx;
++        $y -= int( $p->vrooty/2 ) if $p->vrooty;
++    }
++    $w->geometry( "+$x+$y" );
++
++    $w->deiconify();
++
++}
++
+ sub done_window {
+-    my ($window, $message, $onclose, @args) = @_;
+-    my $done = $window->Toplevel();
+-    $done->title("Done!");
+-    my $label = $done->Message(-text => $message, 
+-                               -foreground => "blue",
+-                              );
+-    $label->grid();
+-    my $button = $done->Button(
+-                               -text=>"Close",
+-                               -command=> [\&close_after, $done, $onclose, @args],
+-                               -pady => 8,
+-                               -padx => 8,
+-                              );
+-    $button->grid();
++    my ($w, $message, $onclose, @args) = @_;
++
++    my $dialog = $w->Dialog(
++        -title => 'Done!',
++        -bitmap => 'info',
++        -text => $message,
++        -default_button => 'OK',
++        -buttons => [ 'OK' ],
++        );
++    $dialog->Show();
++
++    &$onclose( @args ) if ref( $onclose ) eq 'CODE';
++
++    1;
+ }
+ 
+ sub error_window {
+-    my ($window, $message, $onclose, @args) = @_;
+-    my $done = $window->Toplevel();
+-    $done->title("ERROR!");
+-    my $label = $done->Message(-text => $message, 
+-                               -foreground => "red",
+-                              );
+-    $label->grid();
+-    my $button = $done->Button(
+-                               -text=>"Close",
+-                               -command=> [\&close_after, $done, $onclose, @args],
+-                               -pady => 8,
+-                               -padx => 8,
+-                              );
+-    $button->grid();
++    my ($w, $message, $onclose, @args) = @_;
++
++    my $dialog = $w->Dialog(
++        -title => 'ERROR!',
++        -bitmap => 'error',
++        -text => $message,
++        -default_button => 'OK',
++        -buttons => [ 'OK' ],
++        );
++    $dialog->Subwidget( 'bitmap' )->configure( -foreground => 'red' );
++    $dialog->Subwidget( 'message' )->configure( -foreground => 'red' );
++    $dialog->Show();
++
++    &$onclose( @args ) if ref( $onclose ) eq 'CODE';
++
++    1;
+ }
+ 
+ sub init_si_config {

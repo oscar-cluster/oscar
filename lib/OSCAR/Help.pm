@@ -22,6 +22,8 @@ package OSCAR::Help;
 use strict;
 use vars qw(%Help $VERSION @EXPORT);
 use base qw(Exporter);
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Tk;
 
 @EXPORT = qw(open_help);
 
@@ -32,6 +34,7 @@ $VERSION = sprintf("%d.%02d", q$Revision: 1.10 $ =~ /(\d+)\.(\d+)/);
 sub open_help {
     my ($window, $section) = @_;
     my $helpwin = $window->Toplevel();
+    $helpwin->withdraw;
     $helpwin->title("Help");
     my $helpp = $helpwin->Scrolled("ROText",-scrollbars=>"e",-wrap=>"word",
                                  -width=>40,-height=>15);
@@ -42,21 +45,23 @@ sub open_help {
     $cl_b->grid(-sticky=>"nsew",-ipady=>"4");
     $helpp->delete("1.0","end");
     $helpp->insert("end",$Help{$section});
+
+    center_window( $helpwin );
 }
 
 %Help = (
-         install_server => "This button will install several OSCAR packages on your server, and configure them for use as the server OSCAR node.",
-         build_image => "This button will launch a panel which will let you define and build your OSCAR client image.  The defaults specified should work for most situations.",
-         addclients => "This button will launch a panel which lets you define what clients are going to be installed with OSCAR.",
-         netboot => "This button will launch the MAC Address Collection Tool which will enable you to assign specific MAC addresses to clients for installation.  Please follow the instructions on the MAC Address Collection Panel",
-         post_install => "Pressing this button will run a series of post installation scripts which will complete your OSCAR installation.",
-         test_install => "Pressing this button will set up the test scripts so that you can test to see if your OSCAR installation is working.",
-         add_nodes => "Use this button to perform the steps required to add new clients to your running OSCAR cluster.",
-         delete_nodes => "Use this button to perform the steps required to delete clients from your running OSCAR cluster.",
-         select_packages => "This button will launch a panel which lets you select the packages you want included in your OSCAR client image.",
-         configure_packages => "This button will launch a panel that will allow you to configure any packages that you have selected for installation in your OSCAR client image.  If a package selected for installation does not have any configuration options, then it will not appear in the list.",
-	download_packages => "This button will open up a GUI interface to OPD, the OSCAR Package Downloader.  It will allow you to download packages not included in the main tarball or updated packages.  This step is optional.",
-         install_uninstall_packages => "This button will launch a panel which lets you update your cluster by selecting the OSCAR packages you want to install/uninstall from your current system.",
+         install_server => "This button installs several OSCAR packages on your server and configures them for use as the server OSCAR node.",
+         build_image => "This button allows you define and build your OSCAR client image.  The defaults should work for most situations.",
+         addclients => "This button lets you define the client nodes to be installed with OSCAR.",
+         netboot => "This button enables you to assign specific client nodes (identified via their MAC addresses) to hostnames for installation.",
+         post_install => "This button runs a series of post installation scripts that complete your OSCAR installation.",
+         test_install => "This button runs test scripts that test your OSCAR installation for basic functionality.",
+         add_nodes => "This button enables you to add new client nodes to your RUNNING OSCAR cluster.",
+         delete_nodes => "This button deletes client nodes from your RUNNING OSCAR cluster.",
+         select_packages => "This button lets you select the packages you want installed on your OSCAR client nodes.",
+         configure_packages => "This button allows you to configure packages that you have selected for installation on your OSCAR client nodes.  If a package does not have any configuration options, it will not appear in the list.",
+	download_packages => "This button allows you to download packages not included in the main tarball or updated packages from well-known or user-specified OSCAR repositories.  This step is optional.",
+         install_uninstall_packages => "This button lets you update your cluster by selecting the OSCAR packages you want to install/uninstall from your current system.",
         );
 1;
 

@@ -76,6 +76,7 @@ my $expanddir = "/var/lib/oscar/packages";
 my $opd_term = new Term::ReadLine 'OPD';
 
 my $argv_master_uri;
+my $argv_nomaster;
 my $argv_repository_uri;
 my $argv_force = 0;
 my $argv_noforce = 0;
@@ -175,6 +176,7 @@ sub analyze_argv {
     Getopt::Long::Configure("bundling", "require_order");
     my $ok = Getopt::Long::GetOptions("master|m=s" => \$argv_master_uri,
                                       "repository|r=s" => \$argv_repository_uri,
+				      "nomaster" => \$argv_nomaster,
 				      "force|f" => \$argv_force,
 				      "noforce|n" => \$argv_noforce,
 				      "wget" => \$argv_wget,
@@ -1572,7 +1574,8 @@ mkdir_p($expanddir);
 # data such as the package listing filename, repository listing
 # filename, etc.
 
-read_repository_listing();
+read_repository_listing() unless $argv_nomaster;
+$package_filename ||= $repository_listing->{files}->{package_listing} ||= "/oscar_packages.xml";
 
 # Now act on whether we're in "parsable output" mode or interactive
 # mode

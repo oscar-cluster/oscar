@@ -1,0 +1,48 @@
+--- /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm.orig	2003-10-31 07:39:12.000000000 -0800
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm	2004-10-09 00:00:44.000000000 -0700
+@@ -63,7 +67,12 @@
+     }
+ 
+     my $image_window = $window->Toplevel();
+-    $image_window->title("Create a System Installation Suite Image");
++    $image_window->withdraw;
++    if( $ENV{OSCAR_HOME} ) {
++        $image_window->title("Build OSCAR Client Image");
++    } else {
++        $image_window->title("Create a System Installation Suite Image");
++    }
+     my $message = $image_window->Message(-text => "Fill out the following fields to build a System Installation Suite image.  If you need help on any field, click the help button next to it", -justify => "left", -aspect => 700);
+     $message->grid("-","-","-");
+ 
+@@ -206,6 +215,7 @@
+     $image_window->bind("<Control-q>",sub {$image_window->destroy});
+     $image_window->bind("<Control-r>",sub {$reset_button->invoke});
+     
++    center_window( $image_window );
+ }
+ 
+ sub reset_window {
+--- /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm.orig	2003-04-09 10:31:40.000000000 -0700
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2004-10-09 23:44:24.000000000 -0700
+@@ -55,7 +59,12 @@
+     my %noshow = %{$vars{noshow}};
+ 
+     my $addclient_window = $window->Toplevel();
+-    $addclient_window->title("Add Clients to a SIS Image");
++    $addclient_window->withdraw;
++    if( $ENV{OSCAR_HOME} ) {
++        $addclient_window->title("Define OSCAR Clients");
++    } else {
++        $addclient_window->title("Add Clients to a SIS Image");
++    }
+ 
+     #
+     #  First line:  What is your image name?
+@@ -137,6 +146,7 @@
+                                                );
+ 
+     $reset_button->grid($activate_button, quit_button($addclient_window) , -sticky => "nesw");
++    center_window( $addclient_window );
+ 
+ }
+ 

@@ -29,6 +29,7 @@ use File::Copy;
 use SIS::Adapter;
 use SIS::DB;
 use OSCAR::Network;
+use OSCAR::Tk;
 
 use strict;
 use Carp;
@@ -73,11 +74,12 @@ sub mac_window {
     $SERVERMACS = set_servermacs();
 
     my $window = $parent->Toplevel;
-    $window->title("MAC Address Collection");
+    $window->withdraw;
+    $window->title("Setup Networking");
     
     oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
 
-    my $instructions = $window->Message(-text => "MAC Address Collection Tool.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click 'Assign MAC to Node'.", -aspect => 800);
+    my $instructions = $window->Message(-text => "MAC Address collection.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click 'Assign MAC to Node'.", -aspect => 800);
 
     our $label = $window->Label(-text => "Not Listening to Network. Click 'Collect MAC Addresses' to start.");
 
@@ -211,12 +213,13 @@ sub mac_window {
     $bootfloppy->grid($networkboot, $refreshdhcp, -sticky => "ew");
 #    $clearallmacsfromnodes->grid( -sticky => 'ew');
     $window->bind('<Destroy>', sub {
-        if ( defined($destroyed) ) {
-          undef $destroyed;
-          $exitbutton->invoke();
-          return;
-        }
+                                    if ( defined($destroyed) ) {
+                                      undef $destroyed;
+                                      $exitbutton->invoke();
+                                      return;
+                                    }
                                    });
+    center_window( $window );
 }
 
 sub setup_dhcpd {

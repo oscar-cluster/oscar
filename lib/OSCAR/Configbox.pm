@@ -31,6 +31,7 @@ use Carp;
 use HTML::TreeBuilder 3;
 use XML::Simple;      
 no warnings qw(closure);
+use OSCAR::Tk;
 
 my($top);            # The Toplevel widget for the config box.
 my($web);            # The Tk::Web widget for displaying HTML file.
@@ -89,50 +90,50 @@ sub Configbox_ui {
 
 	# Geometry management
 
-	$configFrame->grid(
-		-in => $root,
-		-column => '1',
-		-row => '2',
-		-columnspan => '3',
-		-sticky => 'nesw'
-	);
 	$configLabel->grid(
 		-in => $root,
-		-column => '1',
-		-row => '1',
+		-column => 0,
+		-row => 0,
 		-columnspan => '3',
 		-sticky => 'ew'
 	);
+	$configFrame->grid(
+		-in => $root,
+		-column => 0,
+		-row => 1,
+		-columnspan => '3',
+		-sticky => 'nesw'
+	);
 	$defaultConfigurationButton->grid(
 		-in => $root,
-		-column => '1',
-		-row => '3',
+		-column => 0,
+		-row => 2,
 		-sticky => 'ew'
 	);
 	$cancelButton->grid(
 		-in => $root,
-		-column => '2',
-		-row => '3',
+		-column => 1,
+		-row => 2,
 		-sticky => 'ew'
 	);
 	$saveButton->grid(
 		-in => $root,
-		-column => '3',
-		-row => '3',
+		-column => 2,
+		-row => 2,
 		-sticky => 'ew'
 	);
 
 	# Resize behavior management
 
 	# container $root (rows)
-	$root->gridRowconfigure(1, -weight  => 0, -minsize  => 30);
-	$root->gridRowconfigure(2, -weight  => 1, -minsize  => 200);
-	$root->gridRowconfigure(3, -weight  => 0, -minsize  => 30);
+	$root->gridRowconfigure(0, -weight  => 0, -minsize  => 30);
+	$root->gridRowconfigure(1, -weight  => 1, -minsize  => 200);
+	$root->gridRowconfigure(2, -weight  => 0, -minsize  => 30);
 
 	# container $root (columns)
-	$root->gridColumnconfigure(1, -weight => 1, -minsize => 128);
-	$root->gridColumnconfigure(2, -weight => 1, -minsize => 130);
-	$root->gridColumnconfigure(3, -weight => 1, -minsize => 2);
+	$root->gridColumnconfigure(0, -weight => 1, -minsize => 128);
+	$root->gridColumnconfigure(1, -weight => 1, -minsize => 130);
+	$root->gridColumnconfigure(2, -weight => 1, -minsize => 2);
 
 	# additional interface code
 
@@ -522,20 +523,17 @@ sub displayWebPage # ($parent,$file)
     { # Create the toplevel window just once.
       if ($parent)
         {
-          $top = $parent->Toplevel(-title => 'Configuration',
-                                   -width => 400,
-                                   -height => 300,
-                                  );
+          $top = $parent->Toplevel(-title => 'Configuration');
         }
       else
         { # If no parent, then create a MainWindow at the top.
           $top = MainWindow->new();
           $top->title("Configuration");
         }
+      $top->withdraw;
       OSCAR::Configbox::Configbox_ui $top;  # Call the specPerl window creator
     }
 
-  $root->MapWindow;  # Put the window on the screen.
   # The Save button should be disabled upon first display
   $saveButton->configure(-state => 'disabled');
 
@@ -561,6 +559,7 @@ sub displayWebPage # ($parent,$file)
 
   # Load in and render the HTML file.
   loadHTMLFile($file);
+  center_window( $top );  # Put the window on the screen.
 }
 
 #########################################################################

@@ -41,6 +41,7 @@ use Carp;
 use OSCAR::Configbox; # For the configuration HTML form display
 use OSCAR::Package;   # For list_installable_packages() and run_pkg_script()
 use OSCAR::Logger;    # For oscar_log_section()
+use OSCAR::Tk;
 #use OSCAR::Selector;
 use XML::Simple;      # Read/write the .selection config files
 use Tk::Pane; 
@@ -71,53 +72,19 @@ sub Configurator_ui {
 
   # widget creation 
 
-  our($configFrame) = $root->Frame (
-  );
-  my($label_1) = $root->Label (
+  $root->Label (
     -font => '-*-Helvetica-Bold-R-Normal-*-*-140-*-*-*-*-*-*',
     -text => 'OSCAR Package Configuration',
-  );
-  my($doneButton) = $root->Button (
+  )->pack;
+  our($configFrame) = $root->Frame (
+	-relief => 'groove',
+	-borderwidth => 2
+  )->pack( expand => 1, -fill => 'both' );
+  $root->Button (
     -default => 'active',
     -text => 'Done',
-  );
-
-  # widget commands
-
-  $doneButton->configure(
     -command => \&OSCAR::Configurator::doneButtonPressed
-  );
-
-  # Geometry management
-
-  $configFrame->grid(
-    -in => $root,
-    -column => '1',
-    -row => '2',
-    -sticky => 'nesw'
-  );
-  $label_1->grid(
-    -in => $root,
-    -column => '1',
-    -row => '1',
-    -sticky => 'ew'
-  );
-  $doneButton->grid(
-    -in => $root,
-    -column => '1',
-    -row => '3',
-    -sticky => 'ew'
-  );
-
-  # Resize behavior management
-
-  # container $root (rows)
-  $root->gridRowconfigure(1, -weight  => 0, -minsize  => 30);
-  $root->gridRowconfigure(2, -weight  => 1, -minsize  => 200);
-  $root->gridRowconfigure(3, -weight  => 0, -minsize  => 30);
-
-  # container $root (columns)
-  $root->gridColumnconfigure(1, -weight => 1, -minsize => 147);
+  )->pack;
 
   # additional interface code
 
@@ -259,8 +226,8 @@ sub populateConfiguratorList
 
   $pane->destroy if ($pane);
   # First, put a "Pane" widget in the center frame
-  $pane = $configFrame->Scrolled('Pane', -scrollbars => 'osoe');
-  $pane->pack(-expand => '1', -fill => 'both');
+  $pane = $configFrame->Scrolled('Pane', -scrollbars => 'oe');
+  $pane->pack(-expand => 1, -fill => 'both');
 
   # Now, start adding OSCAR package stuff to the pane
   if ( ! %$packages_ref )
@@ -268,7 +235,8 @@ sub populateConfiguratorList
       $pane->Label(-text => "No OSCAR packages to configure.")->pack;
     }
   else
-    { # Create a temp Frame widgit for each package row
+    { # Create a temp Frame widget for each package row
+      my $h;
       foreach my $package (sort keys %$packages_ref )
         {
           # Create a frame and save it in a hash based on pkgdir name
@@ -283,19 +251,28 @@ sub populateConfiguratorList
             }
 
           # Then add the config buttons and package name labels.
-          # First,the Config button...
-          $tempframe->{$package}->Button(
-            -text => 'Config...',
+          # First, the configure prompt...
+          $tempframe->{$package}->Label(
+            -text => 'Configure:',
+            -padx => 4,
+            )->pack(-side => 'left');
+
+          # Then, the actual button with the package name as label...
+          my $f = $tempframe->{$package}->Button(
+		    -text => $$packages_ref{$package},
             -command => [ \&OSCAR::Configbox::configurePackage,
                           $root,
                           $packagedir,
                         ],
-            )->pack(-side => 'left');
+            -padx => 4,
+            );
+          $f->pack(-side => 'left', -expand => 1, -fill => 'x' );
 
-          # Then, the package name label.
-          $tempframe->{$package}->Label(
-            -text => $$packages_ref{$package},
-            )->pack(-side => 'left');
+          # Capture the height of one line...
+          unless( $h ) {
+            my $fn = $f->fontActual( 'default' );
+            $h = $f->fontMetrics( $fn, -linespace );
+          }
         }
 
       # Now that we have created all of the temporary frames (each
@@ -305,7 +282,7 @@ sub populateConfiguratorList
       # fancy names to directory names, sort on the fancy names, and use
       # that as a hash key into the tempframe hash.
       my(%map);
-      foreach my $package (sort keys %$packages_ref )
+      foreach my $package (keys %$packages_ref )
         {
           $map{$$packages_ref{$package}} = $package;
         }
@@ -315,6 +292,11 @@ sub populateConfiguratorList
                                              -fill => 'x',
                                             );
         }
+
+      # Make the pane large enough for up 10 packages.
+      # vertical scrollbar will appear if more packages are configurable.
+      my $nr = scalar keys %map;
+      $pane->configure( -height => 2*$h*($nr > 10 ? 10 : $nr) );
     }
 }
 
@@ -347,37 +329,35 @@ sub displayPackageConfigurator # ($parent)
         {
           # Make the parent window busy
           $parent->Busy(-recurse => 1);
-          $top = $parent->Toplevel(-title => 'Oscar Package Configuration',
-                                   -width => '260',
-                                   -height => '260',
-                                  );
+          $top = $parent->Toplevel(-title => 'Oscar Package Configuration');
           $top->bind('<Destroy>', sub {
-            if ( defined($destroyed)) {
-              undef $destroyed;
-              doneButtonPressed();
-              return;
-            }
+                                        if ( defined($destroyed)) {
+                                          undef $destroyed;
+                                          doneButtonPressed();
+                                          return;
+                                        }
                                       } );
         }
       else
         { # If no parent, then create a MainWindow at the top.
           $top = MainWindow->new();
           $top->title("Oscar Package Configuration");
-          $top->bind('<Destroy>', sub { 
-      if (defined($destroyed)) {
-        undef $destroyed;
-        doneButtonPressed();
-        return;
-      }
-                    } );
+          $top->bind('<Destroy>', sub {
+                                        if (defined($destroyed)) {
+                                          undef $destroyed;
+                                          doneButtonPressed();
+                                          return;
+                                        }
+                                      } );
         }
+      $top->withdraw;
       OSCAR::Configurator::Configurator_ui $top;  # Call specPerl window creator
     }
 
   # Then create the scrollable package listing and place it in the grid.
   populateConfiguratorList();
 
-  $root->MapWindow;   # Put the window on the screen.
+  center_window( $root );
   
   return $root;       # Return pointer to new window to calling function
 }

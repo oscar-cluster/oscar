@@ -439,6 +439,8 @@ sub processRepository
       delete $repositories{$currRepositoryURL};
       # Set up the QProcess with the "read repository" opd command
       my @args = ($opdcmd,'--parsable','-r',$currRepositoryURL);
+      push @args, "--nomaster"
+        if parent()->child('addRepositoryForm')->useRepositoriesExclusively;
       $readProc->setArguments(\@args);
       $readPhase = 2;
       $readString = "";

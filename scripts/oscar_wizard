@@ -76,6 +76,7 @@ $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$interface;
 $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 # Create the main window...
 my $window = MainWindow->new();
+$window->withdraw();
 $window->title("OSCAR Installation Wizard");
 
 # Define the main buttons
@@ -186,6 +187,14 @@ my $cl_b=$window->Button(-text=>"Quit",
 $window->bind("<Escape>",sub {$cl_b->invoke()});
 $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 
+if( $ENV{'DEBUG_OSCAR_WIZARD'} ) {
+    my $cl_b=$window->Button(-text=>"Restart $0 $interface",
+           -borderwidth=>"6", -relief=>"groove",
+           -command=> sub {exec "$0 $interface"},-pady=>"2");
+    $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
+}
+
+center_window( $window );
 #
 # Execution goes into an infinite Tcl/Tk loop here
 #

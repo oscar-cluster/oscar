@@ -112,19 +112,10 @@ my $lockfile = "$ENV{OSCAR_HOME}/.install_cluster_lockfile";
 
 $| = 1;
 
-# Subroutine to make us die and remove the lockfile
-
-sub oscar_die {
-    my ($die_msg) = @_;
-
-    # Kill the lockfile
-
-    unlink($lockfile);
-
-    # Either die or exit gracefully
-
-    die($die_msg) if ($die_msg);
-    exit(0);
+# END processing to remove the lockfile when we die(), exit, or otherwise
+# cease to exist.
+END {
+    unlink $lockfile if $lockfile && -f $lockfile;
 }
 
 # Check for the lockfile (this is certainly not foolproof -- it's just
@@ -134,17 +125,16 @@ if (-f $lockfile) {
     open(LOCKFILE, $lockfile);
     my $pid = <LOCKFILE>;
     close(LOCKFILE);
-    chmod($pid);
+    # chmod($pid);  DNL ASKS: WHO THINKS THIS DOES ANYTHING CORRECT?
+    chomp $pid;  #  DNL: Perhaps this was meant?
     print "There is an OSCAR installer lockfile that says an installer process\n";
     print "is still running with process id $pid. Checking if that is true ...\n";
-    my $pid_cmd = "ps --no-headers p $pid";
-    my $is_running = `$pid_cmd`;
-    chomp $is_running;
-    if ($is_running ne "") {
+    if( kill 0, $pid ) {
 	print "There is a process running with that process id.\n";
 	print "If this is no an OSCAR installer process, remove\n";
 	print "the following file and run $0 again:\n";
 	print "$lockfile\n";
+	undef $lockfile; # Prevent END processing from deleting lockfile.
 	exit(0);
     } else {
 	print "There is no process running with process id $pid.\n";
@@ -163,7 +153,7 @@ close(LOCKFILE);
 
 my $oscar_logfile = $ENV{OSCAR_HOME} . "/oscarinstall.log";
 if (!open (STDOUT,"| tee $oscar_logfile") || !open(STDERR,">&STDOUT")) {
-    oscar_die("ERROR: Cannot tee stdout/stderr into the OSCAR logfile:
+    die("ERROR: Cannot tee stdout/stderr into the OSCAR logfile:
    $oscar_logfile
 Aborting the install.\n");
 }
@@ -223,7 +213,7 @@ if ( $pqtv && $pqtv < 3 ) {
 my $cmd = "cd $ENV{OSCAR_HOME}/scripts && ./wizard_prep";
 oscar_log_subsection("Running: \"$cmd\"");
 !system($cmd)
-    or oscar_die("Oscar Wizard preparation script failed to complete");
+    or die("Oscar Wizard preparation script failed to complete");
 oscar_log_subsection("Successfully ran wizard_prep");
 
 # Seed ODA
@@ -266,13 +256,13 @@ oscar_log_subsection("PATH: " . $ENV{PATH});
 # now that this install won't [eventually] succeed.
 
 if ($shorthostname eq "localhost") {
-    oscar_die("
+    die("
 ERROR: Your hostname is \"localhost\".
 OSCAR requires that you choose another hostname.
 Aborting the install.\n");
 }
 if ($hostname eq "localhost.localdomain") {
-    oscar_die("
+    die("
 ERROR: Your hostname is \"localhost.localdomain\".
 OSCAR requires that you choose another hostname.
 Aborting the install.\n");
@@ -284,7 +274,7 @@ if ($distro_name eq "UnknownLinux") {
 ##########################################################################\n");
 }
 if (!$ENV{DISPLAY}) {
-    oscar_die("
+    die("
 ERROR: Your \"DISPLAY\" environment variable is not set, probably
 indicating that you are not running in an X windows environment.
 OSCAR requires that you run the installer in an X windows environment.
@@ -296,12 +286,12 @@ Aborting the install.\n");
 my @filesystem=glob("/tftpboot/rpm/filesystem*rpm");
 my @rsync=glob("/tftpboot/rpm/rsync*rpm");
 if ((scalar(@filesystem)==0) || (scalar(@rsync)==0)) {
-    oscar_die("RPMs missing in /tftpboot/rpm/ (did you copy all CDs?)");
+    die("RPMs missing in /tftpboot/rpm/ (did you copy all CDs?)");
 }
 
 # Now start the execution
 
-chdir("scripts") or oscar_die("Couldn't chdir to scripts");
+chdir("scripts") or die("Couldn't chdir to scripts");
 
 # Only setup what we have to get to the OSCAR wizard.  All the rest of
 # server prep is going to be driven after the first panel of
@@ -310,11 +300,9 @@ chdir("scripts") or oscar_die("Couldn't chdir to scripts");
 $cmd = "./oscar_wizard";
 oscar_log_subsection("Running: \"$cmd\"");
 !system("$cmd 2>&1") 
-    or oscar_die("Oscar Wizard failed to run successfully");
+    or die("Oscar Wizard failed to run successfully");
 oscar_log_subsection("Successfully ran oscar_wizard");
 
 oscar_log_subsection("Successfully ran OSCAR install_cluster script");
 
-# All done.  Exit gracefully, killing the lockfile.
-
-oscar_die();
+# All done.
