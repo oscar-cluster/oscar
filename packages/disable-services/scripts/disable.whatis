@@ -7,17 +7,21 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: disable.kudzu,v 1.2 2002/10/25 20:33:39 jsquyres Exp $
+# $Id: disable.whatis,v 1.1 2002/10/25 20:33:39 jsquyres Exp $
 #
 
 #
-# Disable kudzu upon bootup (ignore errors)
+# Disable slocate from running
 #
 
-chkconfig --del kudzu 2> /dev/null
-if test "$?" = "0"; then
-    echo "Disabled kudzu in client image"
-fi
+checkdirs="cron.hourly cron.daily cron.weekly cron.monthly"
+for dir in $checkdirs; do
+    file=/etc/$dir/makewhatis.cron
+    if test -f $file; then
+	rm -f $file
+	echo "Removed in client image: $file"
+    fi
+done
 
 #
 # All done
