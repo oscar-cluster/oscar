@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: security.tex,v 1.3 2002/07/18 02:38:44 ngorsuch Exp $
+% $Id: security.tex,v 1.4 2002/07/20 17:20:09 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -11,7 +11,7 @@
 \subsection{Security layers}
 Linux cluster security should, ideally, consist of multiple layers.
 The main security layers are router packet filtering, 
-network stack protections, host based packet filtering, tcpwrappers,
+network stack protections, host based packet filtering, TCP wrappers,
 service paring, service configuration, and secure communications.
 Oscar installs a host based packet filtering package called pfilter
 but does not turn it on by default.
@@ -26,41 +26,42 @@ based on tables of rules.
 
 \subsection{Network stack protections}
 
-Linux kernels have security features built in that can help prevent 
+Linux kernels have security features built in that can help prevent
 outsiders from pretending that they are part of your internal network.
-These features are enabled through /proc filesystem entries.
-A good firewall package will turn these on appropriately
-(pfilter does this when enabled).
+These features are enabled through \file{/proc} filesystem entries.  A
+good firewall package will turn these on appropriately
+(\rpmname{pfilter} does this when enabled).
 
 \subsection{Host based packet filtering}
 
 Like router packet filtering, host based network packet filtering
 involves examining each packet and deciding what do do with it.  But
-with host based filtering, each machine indivudually filters the
+with host based filtering, each machine individually filters the
 network packets going to, from, or through it.  Linux kernels from 2.4
-on include support for connection tracking and ``stateful'' packet 
+on include support for connection tracking and ``statefull'' packet 
 filtering, which keeps track of ongoing network connections, allowing better
 filtering decisions to be made based on whether packets are part of an
-already allowed connection. The problem with packet filtering is that
-it requires generating filtering ``rulesets'' that the iptables or 
-ipchains programs interpret and store in the running kernel.
-Creating these rulesets is similar to writing software in
-assembly language. There are now higher level ``languages'' and 
-compilers that can be used to generate the rulesets and provide firewalls.
-Oscar installs a ruleset compiler/firewall package called pfilter.
-For more information, and to download the latest
-pfilter, see the \url{http://pfilter.sourceforge.net/}.
-By default OSCAR installs and configures pfilter on the server machine
-and on all of the cluster nodes, but does not turn it on. 
+already allowed connection. 
 
-\subsection{Tcpwrappers}
+The problem with packet filtering is that it requires generating
+filtering ``rulesets'' that the \cmd{iptables} or \cmd{ipchains}
+programs interpret and store in the running kernel.  Creating these
+rulesets is similar to writing software in assembly language. There
+are now higher level ``languages'' and compilers that can be used to
+generate the rulesets and provide firewalls.  OSCAR installs a ruleset
+compiler/firewall package called \rpmname{pfilter}.  For more
+information, see the \url{http://pfilter.sourceforge.net/}.  By
+default, OSCAR installs and configures \rpmname{pfilter} on the server
+node and on all of the cluster nodes, but does not turn it on.
 
-Tcpwrappers are an access control system that allows control over which
+\subsection{TCP Wrappers}
+
+TCP wrappers are an access control system that allows control over which
 network addresses or address ranges can access particular network services
 on a computer host.  This is controlled by the \file{/etc/hosts.allow} and
 \file{/etc/hosts.deny} files. This allows certain services to be only 
-accessable from your local domain, for instance.  A common use of this
-would be to limit exported NFS filesystems to only be accessable from
+accessible from your local domain, for instance.  A common use of this
+would be to limit exported NFS filesystems to only be accessible from
 your local domain, while allowing security logins through ssh to come
 in from anywhere.  This would be done with a \file{/etc/hosts.deny} file 
 that looks like this:
@@ -72,7 +73,7 @@ that looks like this:
 \noindent and a \file{/etc/hosts.allow} file that looks like this:
 
 \begin{verbatim}
-  # allow nfs service to domain.net only
+  # allow NFS service to domain.net only
   portmap:      .domain.net
   rpc.mountd:   .domain.net
   # allow ssh logins from anywhere
@@ -81,33 +82,35 @@ that looks like this:
 
 \subsection{Service paring}
 
-This is probably the most used of all the security layers, since turning off
-un-needed network services gets rid of opportunities for network breakins.
-To hunt down and turn off unwanted services, the lsof/chkconfig/service
-system commands can be used. To display which network services are currently
-listening on a system, do this:
+This is probably the most used of all the security layers, since
+turning off unneeded network services gets rid of opportunities for
+network breakins.  To hunt down and turn off unwanted services, the
+\cmd{lsof}, \cmd{chkconfig}, and \cmd{service} system commands can be
+used.  To display which network services are currently listening on a
+system, do this:
 
 \begin{verbatim}
   lsof -i | grep LISTEN | awk '{print $1,$(NF-2),$(NF-1)}' | sort | uniq
 \end{verbatim}
 
-\noindent To list the services that will be started by default at the current runlevel do this:
+\noindent To list the services that will be started by default at the
+current runlevel do this:
 
 \begin{verbatim}
   chkconfig --list | grep `grep :initdefault: /etc/inittab | \
   awk -F: '{print $2}'`:on | awk '{print $1}' | sort | column
 \end{verbatim}
 
-\noindent To find services started by xinetd do this:
+\noindent To find services started by \cmd{xinetd} do this:
 
 \begin{verbatim}
   chkconfig --list | awk 'NF==2&&$2==''off''{print}' | \
   awk -F: '{print $1}' | sort | column
 \end{verbatim}
 
-The nmap port scanning command is also useful to get a hackers-eye view of
-your systems.  The chkconfig and service commands can be used to turn
-on and off system services.
+The \cmd{nmap} port scanning command is also useful to get a
+hackers-eye view of your systems.  The \cmd{chkconfig} and
+\cmd{service} commands can be used to turn on and off system services.
 
 \subsection{Service configuration}
 
@@ -118,5 +121,8 @@ individual file systems, and which have read-write or read-only access.
 
 \subsection{Secure communications}
 
-By all means, use ssh for network logins.  There are also modified versions
-of the venerable ftp programs that allow encrytion and other imrovements.
+By all means, use \cmd{ssh} for network logins.  There are also
+modified versions of the venerable \cmd{ftp} programs that allow
+encryption and other imrovements.
+
+% LocalWords:  ngorsuch Exp
