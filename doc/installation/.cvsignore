@@ -10,3 +10,4 @@
 *.out
 Makefile
 Makefile.in
+version.tex

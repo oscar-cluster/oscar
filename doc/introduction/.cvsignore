@@ -12,3 +12,4 @@
 *.blg
 Makefile
 Makefile.in
+version.tex
