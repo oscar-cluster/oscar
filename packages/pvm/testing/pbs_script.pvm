@@ -22,8 +22,13 @@ pvmd pvm_nodes &
 #sleep 10
 
 # run job
+p=`pwd`
+cp master1.c slave1.c /tmp
+cd /tmp
 gcc -I$PVM_ROOT/include master1.c -L$PVM_ROOT/lib/$PVM_ARCH -lpvm3 -o master1
 gcc -I$PVM_ROOT/include slave1.c -L$PVM_ROOT/lib/$PVM_ARCH -lpvm3 -o slave1
+cp master1 slave1 $p
+cd $p
 ./master1
 
 # wait again to make sure everyone's finished

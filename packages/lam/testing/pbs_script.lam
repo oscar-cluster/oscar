@@ -34,16 +34,17 @@ EOF
     fi
 }
 
+p=`pwd`
 banner="MPI C bindings test:"
-cmds="mpicc cpi.c -o lam-cpi && mpirun C lam-cpi && lamclean"
+cmds="cp cpi.c /tmp && cd /tmp && mpicc cpi.c -o lam-cpi && cp lam-cpi $p && cd $p && mpirun C lam-cpi && lamclean"
 do_cmds
 
 banner="MPI C++ bindings test:"
-cmds="mpiCC cxxhello.cc -o lam-cxxhello && mpirun C lam-cxxhello && lamclean"
+cmds="cp cxxhello.cc /tmp && cd /tmp && mpiCC cxxhello.cc -o lam-cxxhello && cp lam-cxxhello $p && cd $p && mpirun C lam-cxxhello && lamclean"
 do_cmds
 
 banner="MPI Fortran bindings test:"
-cmds="mpif77 f77hello.f -o lam-f77hello && mpirun C lam-f77hello && lamclean"
+cmds="cp f77hello.f /tmp && cd /tmp && mpif77 f77hello.f -o lam-f77hello && cp lam-f77hello $p && cd $p && mpirun C lam-f77hello && lamclean"
 do_cmds
 
 lamhalt 
