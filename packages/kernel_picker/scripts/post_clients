@@ -29,7 +29,7 @@ my($valuesfile) = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
 
 if (-e $valuesfile)
   {
-    my($values) = readInConfigValues($valuesfile);
+    my($values) = OSCAR::Configbox::readInConfigValues($valuesfile);
 
     # First, get any optional values
     my $bootkernel = "";
