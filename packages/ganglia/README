@@ -1,4 +1,4 @@
-$Id: README,v 1.7 2003/01/22 04:58:22 sad Exp $
+$Id: README,v 1.8 2003/01/22 05:06:28 sad Exp $
 
 This is the Ganglia package for OSCAR Linux clusters.
 
@@ -42,12 +42,12 @@ include all or none of the following:
   when they are actually available, or after rebooting/adding a node.
   If this occurs, restarting the Ganglia daemons (gmond's) around the
   cluster seems to resolve the issue, e.g., 'cexec service gmond
-  restart'. This issue has been traced to issues with reseting the system
+  restart'. This issue has been traced to issues with resetting the system
   time on the compute/client nodes into the past. This usually occurs
   under the following conditions: vmware sessions (vmware doesn't handle
-  system time settings correctly), NTP (network time protocal), or
+  system time settings correctly), NTP (network time protocol), or
   sys-admin resets it.  Even though this does not occur under normal
-  circumstances on a working cluster, a patch has submitted been submited
+  circumstances on a working cluster, a patch has submitted been submitted
   to the ganglia developers to fix this minor issue.
 
 - Even though the gmond daemon is running on all of the nodes (server
@@ -56,7 +56,7 @@ include all or none of the following:
   (http://localhost.head.node/ganglia/).  This means the multicast
   protocol may be blocked by the network hardware between the server
   node and the rest of the cluster.  If you see this, please check to
-  make sure mutlicast is turned on in the configuration of your
+  make sure multicast is turned on in the configuration of your
   network hardware.
 
 Feel free to post such problems to the oscar-users mailing list and we
