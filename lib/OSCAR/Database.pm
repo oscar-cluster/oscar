@@ -42,13 +42,13 @@ my $database_available = 0;
 # function at the start of your program and leave the database
 # connected throughout the execution of your program.
 #
-# inputs:   no_error_output_flag   if defined and non-zero,
-#                                  don't output error messages
+# inputs:   print_errors_flag   if defined and non-zero,
+#                               print output error messages
 #
 # outputs:  status                 non-zero if success
 
 sub database_connect {
-    my ( $no_errors_flag ) = @_;
+    my ( $print_errors_flag ) = @_;
 
     # if the database is already available and connected, success
     return 1 if $database_available;
@@ -76,9 +76,9 @@ sub database_connect {
         oda::disconnect( undef, undef )
 	    if ! $database_available;
     }
-    @error_strings = ()
-	if defined $no_errors_flag && $no_errors_flag;
-    warn shift @error_strings while @error_strings;
+    if ( defined $print_errors_flag && $print_errors_flag ) {
+	warn shift @error_strings while @error_strings;
+    }
     return $database_available;
 }
 
@@ -120,8 +120,8 @@ sub database_disconnect {
 #                       that do not return any result strings 
 #                       will place the integer number of records 
 #                       affected or modified in results_ref
-#        no_errors_flag if defined and non-zero, don't output 
-#                       any error messages
+#         print_errors  if defined and non-zero, print out
+#                       error messages
 #
 # outputs: status       non-zero for success, note that success
 #                       just means that there are no database
@@ -136,16 +136,16 @@ sub database_execute_command {
 
     my ( $command_args_ref,
          $results_ref,
-	 $no_errors_flag ) = @_;
+	 $print_errors_flag ) = @_;
 
     my @error_strings = ();
     my $success = oda::execute_command( \%oda_options,
 					$command_args_ref,
 					$results_ref,
 					\@error_strings );
-    @error_strings = ()
-	if defined $no_errors_flag && $no_errors_flag;
-    warn shift @error_strings while @error_strings;
+    if ( defined $print_errors_flag && $print_errors_flag ) {
+	warn shift @error_strings while @error_strings;
+    }
     return $success;
 }
 
@@ -162,12 +162,15 @@ sub database_execute_command {
 #                             (if undef or empty returns all fields)
 #                   wheres    pointer to where expressions
 #                             (if undef all records returned)
+#                   print_err if defined and non-zero, print out
+#                             error messages
 
 sub read_table_fields {
     
     my ( $table,
 	 $requested_fields_ref,
-	 $wheres_ref ) = @_;
+	 $wheres_ref,
+	 $print_errors_flag ) = @_;
 
     # since we are going to do a number of database operations, we'll
     # try to be more effecient by connecting to the database first if
@@ -186,8 +189,10 @@ sub read_table_fields {
 			     $table,
 			     \%fields_in_table,
 			     \@error_strings ) ) {
-	warn shift @error_strings while @error_strings;
-	warn "cannot read the field names for database table <$table> from the ODA database";
+	if ( defined $print_errors_flag && $print_errors_flag ) {
+	    warn shift @error_strings while @error_strings;
+	    warn "cannot read the field names for database table <$table> from the ODA database";
+	}
 	OSCAR::Database::database_disconnect() if $was_connected_flag;
 	return undef;
     }
@@ -196,8 +201,10 @@ sub read_table_fields {
     # have a serious problem
 
     if ( ! exists $fields_in_table{name} ) {
-	warn "there is no <name> field in database table <$table>";
-	warn "Database\:\:read_table_fields cannot supply the data as requested";
+	if ( defined $print_errors_flag && $print_errors_flag ) {
+	    warn "there is no <name> field in database table <$table>";
+	    warn "Database\:\:read_table_fields cannot supply the data as requested";
+	}
 	OSCAR::Database::database_disconnect() if $was_connected_flag;
 	return undef;
     }
@@ -231,7 +238,9 @@ sub read_table_fields {
 			      \@records,
 			      1,
 			      \@error_strings ) ) {
-	warn shift @error_strings while @error_strings;
+	if ( defined $print_errors_flag && $print_errors_flag ) {
+	    warn shift @error_strings while @error_strings;
+	}
 	OSCAR::Database::database_disconnect() if $was_connected_flag;
 	return undef;
     }
@@ -253,15 +262,17 @@ sub read_table_fields {
 	} else {
 	    $missing_name_fields++;
 	}
-	foreach my $name ( sort keys %duplicated_name_values ) {
-	    warn "There are duplicated records in database table <$table> that";
-	    warn "has the same <name> field value of <$name>.";
-	}
-	warn "Database\:\:read_table_fields will only return the first of each."
-	    if %duplicated_name_values;
-	if ( $missing_name_fields ) {
-	    warn "$missing_name_fields records from the database table <$table> are missing the <name>";
-	    warn "field and are not being returned by Database\:\:read_table_fields.";
+	if ( defined $print_errors_flag && $print_errors_flag ) {
+	    foreach my $name ( sort keys %duplicated_name_values ) {
+		warn "There are duplicated records in database table <$table> that";
+		warn "has the same <name> field value of <$name>.";
+	    }
+	    warn "Database\:\:read_table_fields will only return the first of each."
+		if %duplicated_name_values;
+	    if ( $missing_name_fields ) {
+		warn "$missing_name_fields records from the database table <$table> are missing the <name>";
+		warn "field and are not being returned by Database\:\:read_table_fields.";
+	    }
 	}
     }
 
@@ -269,7 +280,7 @@ sub read_table_fields {
 
     OSCAR::Database::database_disconnect() if $was_connected_flag;
 
-oda::print_hash("", "Database\:\:read_table_fields returning", \%result);
+#oda::print_hash("", "Database\:\:read_table_fields returning", \%result);
     return \%result;
 }
 
