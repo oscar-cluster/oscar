@@ -20,6 +20,8 @@ TODO:
       o .oscar_ignore
 
 DONE:
+  - Added TOC doc getting longer... :(
+  - Moved Configurator to it's own section
   - Add text about Configurator
   - Finish XML element table
   - Finish 'Pkg Layout Section'

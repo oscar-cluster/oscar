@@ -1,4 +1,4 @@
-% $Id: oscarpkg-howto.tex,v 1.9 2003/09/26 20:56:16 naughtont Exp $
+% $Id: oscarpkg-howto.tex,v 1.10 2003/10/01 20:36:37 naughtont Exp $
 %
 % * Sun Jul 27 2003  11:11:44AM    Thomas Naughton  <naughtont@ornl.gov>
 % - Initial creation for distribution to OSCAR and SSS community to assist
@@ -22,8 +22,16 @@
 
 % Comment out the Draft line once the paper is finished.
 \begin{center}
-  {\catcode`\$=11\tiny\noindent Draft $Id: oscarpkg-howto.tex,v 1.9 2003/09/26 20:56:16 naughtont Exp $}
+  {\catcode`\$=11\tiny\noindent Draft $Id: oscarpkg-howto.tex,v 1.10 2003/10/01 20:36:37 naughtont Exp $}
 \end{center}
+
+%-------------------------------------------------------------
+% Generate Table Of Contents 
+%-------------------------------------------------------------
+\tableofcontents
+
+\newpage
+
 
 %-------------------------------------------------------------
 % Section: Introduction 
@@ -55,6 +63,11 @@
 %-------------------------------------------------------------
 \input{oda}
 
+
+%-------------------------------------------------------------
+% Section: OSCAR Configurator
+%-------------------------------------------------------------
+\input{configurator}
 
 %\bibliographystyle{unsrt}
 %\bibliography{./OSCAR,./CLUSTER,./OLS03}
