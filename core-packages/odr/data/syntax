@@ -1,6 +1,6 @@
 oscar:adapter:HOST:1:1
 oscar:adapter:INTERFACE:2:1
-oscar:adapter:MAC_ADDR:3
+oscar:adapter:ETHER_MAC:3
 oscar:adapter:IP_ADDR:4
 oscar:adapter:IP_NETMASK:5
 oscar:adapter:IP_CONFIG:6
