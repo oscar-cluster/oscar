@@ -17,7 +17,6 @@ echo "Running LAM/MPI test"
 # The LAM/MPI test itself
 
 lamboot $PBS_NODEFILE
-pwd
 mpicc cpi.c -o lam-cpi
 mpirun C lam-cpi
 lamclean
