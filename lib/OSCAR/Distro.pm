@@ -1,6 +1,6 @@
 package OSCAR::Distro;
 
-#   $Id: Distro.pm,v 1.4 2002/04/11 20:41:02 sdague Exp $
+#   $Id: Distro.pm,v 1.5 2002/04/12 18:34:15 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@ use strict;
 use vars qw($VERSION @EXPORT);
 use Carp;
 use base qw(Exporter);
-@EXPORT = qw(which_distro);
+@EXPORT = qw(which_distro which_distro_server);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
                    'mandrake-release' => 'Mandrake',

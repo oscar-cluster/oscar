@@ -1,0 +1,8 @@
+dhcp
+nfs-utils
+openssh
+openssh-clients
+openssh-server
+openssl
+tcpdump
+xinetd

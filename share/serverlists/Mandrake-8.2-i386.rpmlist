@@ -1,0 +1,10 @@
+dhcp-common
+dhcp-server
+libpcap0
+nfs-utils
+openssh
+openssh-clients
+openssh-server
+openssl
+tcpdump
+xinetd

@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.7 2002/04/12 01:49:54 sdague Exp $
+#   $Id: Package.pm,v 1.8 2002/04/12 18:34:15 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -27,12 +27,12 @@ use File::Basename;
 use File::Copy;
 use Carp;
 
-@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist install_rpms);
+@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist distro_rpmlist install_rpms);
 
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.8 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -153,6 +153,28 @@ sub rpmlist {
     my ($pkg, $type) = @_;
     my $listfile = ($type eq "client") ? "client.rpmlist" : "server.rpmlist";
     my $file = "$ENV{OSCAR_HOME}/packages/$pkg/$listfile";
+    my @rpms = ();
+    open(IN,"<$file") or carp("Couldn't open package list file $file for reading!");
+    while(<IN>) {
+        # get rid of comments
+        s/\#.*//;
+        if(/(\S+)/) {
+            push @rpms, $1;
+        }
+    }
+    close(IN);
+    return @rpms;
+}
+
+#
+#  distro_rpmlist - returns the rpms needed for a specific distro on the server
+#                   could be modified for client as well.
+#
+
+sub distro_rpmlist {
+    my ($distro, $version, $arch) = @_;
+    my $listfile = "$distro-$version-$arch.rpmlist";
+    my $file = "$ENV{OSCAR_HOME}/share/serverlists/$listfile";
     my @rpms = ();
     open(IN,"<$file") or carp("Couldn't open package list file $file for reading!");
     while(<IN>) {

@@ -21,9 +21,11 @@
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
 use File::Basename;
+use OSCAR::Distro;
 use OSCAR::Package;
 use OSCAR::PackageBest;
 use OSCAR::Network;
@@ -33,6 +35,8 @@ use Data::Dumper;
 my $INTERFACE = shift or croak("No interface specified");
 
 my $RPMPOOL = $OSCAR::Package::RPM_POOL;
+my $ARCH = (uname)[4];
+$ARCH =~ s/i.86/i386/;
 
 # Get a list of all non-core packages
 my @packages = list_pkg("noncore");
@@ -41,17 +45,11 @@ foreach my $package (@packages) {
     push @rpms, rpmlist($package,"server");
 }
 
-# These extra packages we really need to get from 
-# a distribution specific list somewhere
+# And now we add the extra rpms that are needed if
+# for each distribution
 
-push @rpms, qw(
-	nfs-utils
-	openssh
-	openssh-clients
-	openssh-server
-	xinetd
-	tcpdump
-	);
+my ($distname, $distver) = which_distro_server();
+push @rpms, distro_rpmlist($distname,$distver,$ARCH);
 
 # Now install the rpms that we found
 install_rpms(@rpms) or croak("Couldn't install the required packages needed for OSCAR");

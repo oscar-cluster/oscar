@@ -1,0 +1,11 @@
+dhcp-common
+dhcp-server
+libpcap0
+nfs-utils
+openssh
+openssh-clients
+openssh-server
+openssl
+tcpdump
+x86-compat-libs
+xinetd
