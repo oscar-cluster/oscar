@@ -47,6 +47,8 @@ ftp-client-krb5
 gawk
 gcc
 gcc-cpp
+gcc-c++
+gcc-g77
 gdk-pixbuf-loaders
 gettext-base
 glibc
@@ -111,6 +113,7 @@ libpython2.2
 libsasl7
 libslang1
 libstdc++2.10
+libstdc++2.10-devel
 libtermcap2
 libtiff3
 libungif4
