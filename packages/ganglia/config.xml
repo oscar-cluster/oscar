@@ -37,7 +37,7 @@ statistics expressed in an open well-defined XML format.</description>
       <rpm>ganglia-php-rrd-client</rpm>
       <rpm>rrdtool-oscar</rpm>
       <rpm>perl-XML-Parser</rpm>
-      @LIBPNG_RPM@
+      <rpm>libpng</rpm>
     </server>
   </rpmlist>
 
