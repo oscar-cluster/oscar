@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.11 2002/06/01 05:11:45 jsquyres Exp $
+# $Id: make-dist.sh,v 1.12 2002/06/12 04:47:33 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -90,6 +90,13 @@ if test "$want_srpms" != "only"; then
     make clean pdf
     make mostlyclean
 
+    echo " - building user docs"
+    cd ../user
+#make clean ps
+#make mostlyclean pdf
+    make clean pdf
+    make mostlyclean
+
     cd ..
 
     echo " - removing source for docs in dist tarball"
@@ -99,6 +106,7 @@ if test "$want_srpms" != "only"; then
     echo " - copying build docs into distdir/doc"
     cp installation/install.pdf $distdir/doc
     cp introduction/intro.pdf $distdir/doc
+    cp user/user.pdf $distdir/doc
 fi
 
 #########################################################
