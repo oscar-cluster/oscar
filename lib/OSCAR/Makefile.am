@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.5 2002/05/17 20:56:43 mchasal Exp $
+# $Id: Makefile.am,v 1.6 2002/05/23 02:01:07 brechin Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -13,4 +13,6 @@ EXTRA_DIST		= \
 			Package.pm \
                         PackageBest.pm \
                         AddNode.pm \
-                        DelNode.pm
+                        DelNode.pm \
+			Distro.pm \
+			FrontPanel.pm
