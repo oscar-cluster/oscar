@@ -40,7 +40,6 @@
       <filter group="oscar_server" distribution="mandrake" distribution_version="10.0"/>
       <rpm>ganglia-monitor-core-gmetad</rpm>
       <rpm>ganglia-webfrontend</rpm>
-      <rpm>rrdtool</rpm>
   </rpmlist>
 
   <servicelist>
