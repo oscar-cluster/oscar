@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2001/08/20 23:08:08 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2001/08/28 00:50:25 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -13,7 +13,7 @@ AUTOMAKE_OPTIONS	= no-dependencies
 
 lam_prefix		= http://oscar.sourceforge.net/pub/packages/lam
 lam_version		= 6.5.4
-BINARY_FILES		= \
+DOWNLOAD_FILES		= \
 	$(lam_prefix)/lam-$(lam_version)-usysv.1oscar.i686.rpm \
 	$(lam_prefix)/lam-$(lam_version)-usysv.1oscar.src.rpm
 

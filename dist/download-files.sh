@@ -2,10 +2,12 @@
 #
 # $COPYRIGHT$
 #
-# $Id: download-files.sh,v 1.1 2001/08/20 23:08:07 jsquyres Exp $
+# $Id: download-files.sh,v 1.2 2001/08/28 00:50:25 jsquyres Exp $
 #
 
 top_srcdir="$1"
+shift
+force="$1"
 shift
 files="$*"
 
@@ -23,8 +25,8 @@ fi
 
 for file in $files; do
     b="`basename $file`"
-    if test ! -f $b; then
-	$WGET $file
+    if test ! -f $b -o "$force" != ""; then
+	$WGET -N $file
     fi
 done
 

@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.download,v 1.1 2001/08/20 23:08:07 jsquyres Exp $
+# $Id: Makefile.download,v 1.2 2001/08/28 00:50:24 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -8,4 +8,19 @@
 all: download
 
 download:
-	$(top_srcdir)/dist/download-files.sh $(top_srcdir) $(BINARY_FILES)
+	@ if test "$(DOWNLOAD_FILES)" != ""; then \
+	  $(top_srcdir)/dist/download-files.sh $(top_srcdir) "" \
+		$(DOWNLOAD_FILES); \
+	fi
+	@ if test "$(DOWNLOAD_DATES_FILES)" != ""; then \
+	  $(top_srcdir)/dist/download-files.sh $(top_srcdir) force \
+		$(DOWNLOAD_DATES_FILES); \
+	fi
+
+#
+# Clean out all the downloaded files
+#
+
+distclean-local:
+	@ $(top_srcdir)/dist/remove-urls.sh \
+		$(DOWNLOAD_FILES) $(DOWNLOAD_DATE_FILES)
