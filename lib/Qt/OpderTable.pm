@@ -130,13 +130,9 @@ sub populateTable
 
   if ($tablePopulated)
     {
-      # First clear out any old items in the table
-      for (my $col = 0; $col < 5; $col++)
+      for (my $row = numRows()-1; $row >= 0; $row--)
         {
-          for (my $row = 0; $row < numRows(); $row++)
-            {
-              clearCell($row,$col);
-            }
+          removeRow($row);
         }
       emit downloadButtonDisable();
     }
@@ -167,7 +163,7 @@ sub populateTable
       # Column 4 contains the long repository name
       setText($rownum,4,$href->{repositoryName});
 
-       $rownum++;
+      $rownum++;
     }
   $tablePopulated = 1;
 
