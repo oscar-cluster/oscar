@@ -21,6 +21,7 @@ my @rpms = qw(
               openpbs-oscar-server
               openpbs-oscar-gui
               openpbs-oscar-commands
+              openpbs-oscar-client
               sync_users-oscar
               ssh-oscar
               maui-oscar
