@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.64 2003/11/16 03:43:56 bernardli Exp $
+% $Id: detailed.tex,v 1.65 2003/11/17 06:37:59 bernardli Exp $
 %
 % $COPYRIGHT$
 %
@@ -1030,6 +1030,21 @@ client nodes that do not support PXE booting. The \button{Setup
   Network Boot} button will configure the server to answer PXE boot
 requests if your client hardware supports it. \detailed{See
   Appendix~\ref{app:net-boot-client-nodes} for more details.}
+
+\begchange
+If your network switch supports multicasting, there is a new feature in
+OSCAR 3.0 which uses multicast to push files to the clients.  To enable
+this feature simply click on the \button{Enable Multicasting} checkbox. 
+
+Once this feature is enabled, rsync will not be used for file distribution
+but instead by a program called Flamethrower which is bundled with
+SystemImager.
+
+Since this new feature is still in its early stage, we recommend only the
+adventurous to try it as it may not work on all networking gear.  Some
+have reported favorable results with the Force10 and HP 4000M network
+switches.
+\endchange
 
 \detailed{
   
