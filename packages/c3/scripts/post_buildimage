@@ -1,9 +1,7 @@
 #!/usr/bin/perl
 
-# gen_c3_conf - script to generate the /etc/c3.conf file from the ORNL
-#               cluster definition file
-# Author: Brian Leuthke
-# Last Updated: 10/10/2000
+# this script is here to remove the /etc/c3.conf file from 
+# any image as the one shipped in the RPM is not correct
 
 use strict;
 use Carp;
