@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.5 2004/02/27 16:59:50 brechin Exp $
+# $Id: setup,v 1.6 2004/04/07 04:14:21 tuelusr Exp $
 #
 # setup script for the update-rpms package
 #
@@ -19,10 +19,12 @@
 # script cleanup
 # Matt Garrett, <magarret@OSL.IU.edu>
 # Added oscar-httpd support
+# Mat Garrett, <magarret@OSL.IU.edu>
+# bug fixes
 
 # What does this do?!
-# Just boilerplate a la all of the Perl scripts in OSCAR
-VERSION=$(echo "$Revision: 1.5 $" | cut --fields 2 --delimiter " ")
+# Just boilerplate a la all of the Perl scripts in OSCAR (essentially, nothing)
+VERSION=$(echo "$Revision: 1.6 $" | cut --fields 2 --delimiter " ")
 
 PACKAGE=update-rpms
 if [[ $0 = /*/ ]] ; then
@@ -34,7 +36,7 @@ fi
 RPM_CACHE=/tftpboot/rpm
 RPM_DB_DIR=/var/cache/$PACKAGE
 
-CURRENT=$(ls -1 --sort=version --reverse "${MEDIA_DIR}/${PACKAGE}-*.noarch.rpm" |
+CURRENT=$(ls -1 --sort=version --reverse ${MEDIA_DIR}/${PACKAGE}-*.noarch.rpm |
 	head -1)
 
 echo "Installing ${CURRENT}"
@@ -46,7 +48,7 @@ mkdir -p "${RPM_DB_DIR}"
 if [[ -d $RPM_CACHE ]]; then
 
 ODA_BIN="/usr/bin/oda"
-${ODA_BIN} list_tables 2>&1 | grep ^oscar_file_server$ > /dev/null 2>&1
+${ODA_BIN} list_tables 2>&1 | grep ^oscar_file_server$ #> /dev/null 2>&1
 if [ $? -eq 0 ]; then
   DOCROOT=`${ODA_BIN} read_records oscar_file_server.oscar_httpd_doc_root`B
   echo "Making symlink from ${DOCROOT}/dep/${PACKAGE} to ${RPM_DB_DIR}"
