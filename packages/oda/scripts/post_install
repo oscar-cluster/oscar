@@ -23,3 +23,17 @@ print "$command\n";
 system( $command ) && croak("oda server location file $file push failed.");
 
 exit 0;
+
+
+
+#####################################################################
+#   OPIUM CONFIGURATION FOR ODA
+#####################################################################
+
+# Execute the confmgr of OPIUM to synchronize the /etc/odapw with
+# client nodes.
+my $opium_cmd = "/opt/sync_files/bin/confmgr --syncnow --add /etc/odapw";
+
+system( $opium_cmd ) && croak("OPIUM failed to synchronize the /etc/odapw.");
+
+exit 0;
