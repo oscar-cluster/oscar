@@ -274,7 +274,7 @@ usage( 1 ) if @ARGV;
 # find the name of the mysql service and start the mysql server
 my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
 my $mysql_service_name;
-if ($oscar_server_distribution eq "redhat") {
+if ($oscar_server_distribution eq "redhat" || $oscar_server_distribution eq "rhas") {
     $mysql_service_name="mysqld";
 } elsif ($oscar_server_distribution eq "mandrake") {
     $mysql_service_name="mysql";

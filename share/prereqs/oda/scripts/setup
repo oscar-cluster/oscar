@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.1 2003/07/04 14:43:00 jsquyres Exp $
+# $Id: setup,v 1.2 2003/07/09 16:18:06 brechin Exp $
 #
 
 #use strict;
@@ -37,7 +37,7 @@ my ($distro_name, $distro_version) = which_distro_server();
 
 my $mysqld;
 
-if ($distro_name eq "redhat") {
+if ($distro_name eq "redhat" || $distro_name eq "rhas" ) {
     @wanted_rpms = qw( mysql
 		perl-DBD-MySQL
 		perl-DBI

@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.4 2003/07/09 15:38:28 brechin Exp $
+      $Id: config.xml,v 1.5 2003/07/09 16:18:06 brechin Exp $
   -->
   <name>perl-Qt</name>
 
@@ -43,6 +43,7 @@
     <filter distribution='redhat'   distribution_version='7.3' />
     <filter distribution='redhat'   distribution_version='7.2' />
     <filter distribution='mandrake' distribution_version='8.2' />
+    <filter distribution='rhas'   distribution_version='2.1AS' />
       <rpm>perl-Qt-5.6</rpm>
   </rpmlist>
   <rpmlist>
