@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.52 2003/06/23 19:13:29 brechin Exp $
+#   $Id: Package.pm,v 1.53 2003/06/23 20:18:35 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.52 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.53 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -298,6 +298,19 @@ sub rpmlist {
 	}
         #  print "RPMS: " . @rpms_to_return . "\n";
 	undef $results;
+
+# Now we need the "all" rpmlist
+        @field = ( "rpm", "group" );
+	@wheres= ( "package_id=$pkgid" );
+	$results = database_read_table_fields('packages_rpmlists', \@field, \@wheres, 'rpm', "Couldn't get $type rpms for package $pkg");
+        while (($key, $value) = each %$results) {
+	  my ($null, $group) = each %$value;
+	  if ( $group =~ /oscar/ ) {
+	    delete $$results{$key};
+	  } else {
+	    push @rpms_to_return, $key;
+	  }
+	}
     }
 
 
