@@ -62,3 +62,16 @@ if ($name eq "redhat") {
 	}
 }
 
+# creates a script to be run in post-install after client creation which
+# generates /etc/modprobe.conf if the image is to run 2.6 kernel
+my $script = '/var/lib/systemimager/scripts/post-install/22all.generate_modprobe_script';
+
+`cat << EOL > $script
+#!/bin/sh
+#
+# Generates /etc/modprobe.conf on 2.6 kernel
+#
+if [ -f /sbin/generate-modprobe.conf ]; then
+  /sbin/generate-modprobe.conf > /etc/modprobe.conf
+fi
+EOL`;
