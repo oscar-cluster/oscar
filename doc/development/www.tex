@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: www.tex,v 1.1 2003/06/18 00:01:20 naughtont Exp $
+% $Id: www.tex,v 1.2 2003/06/18 00:17:59 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -12,7 +12,7 @@ The OSCAR web pages are maintained in CVS.  The following section will
 outline the steps involved in management of the web material.  This will
 include the necessary steps to checkout the ``{\tt www}'' module from the
 OSCAR CVS repository and later make the changes ``live'' on 
-\url{http://oscar.sourceforge.net/}.   Note, the abreviated form of
+\url{http://oscar.sourceforge.net/}.   Note, the abbreviated form of
 \url{sourceforge.net} is often used in the instructions, i.e., \url{sf.net}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,7 +47,7 @@ two basic parts: (1) obtaining the material from CVS to the local
 	\item Connect to web server \url{oscar.sf.net}
 	\item Update (update) the ``online'' copy for all changed files
 	\item Change permissions of new (update'd) files to be group writable
-	(\cmd{chgrp g+w})
+	(\cmd{chmod g+w})
 \end{enumerate}
 
 
@@ -57,11 +57,11 @@ two basic parts: (1) obtaining the material from CVS to the local
 \subsection{Detail of Steps}
 
 The process of checking in/out from CVS is probably redundant for many but
-the following details an example usage for those less familar.  Note, there
+the following details an example usage for those less familiar.  Note, there
 are many useful resources on the web as well as off the Source Forge
-project page for using CVS.  You are incouraged to read over the CVS(1)
-manual page.   In the following examples, the abreviated form of the
-\cmd{cvs} commands are also provided in parenthases, e.g., \cmd{checkout}
+project page for using CVS.  You are encouraged to read over the CVS(1)
+manual page.   In the following examples, the abbreviated form of the
+\cmd{cvs} commands are also provided in parentheses, e.g., \cmd{checkout}
 (co).
 
 \begin{enumerate}
@@ -154,12 +154,12 @@ manual page.   In the following examples, the abreviated form of the
 	\item {\bf *IMPORTANT*} You must now set any updated/new files to have
 	group writable permissions, e.g., \file{index.php}~\footnote{This is a
 	problem related to the CVS permissions not being honored, if you forget
-	this step noone else will be able to change this file.  It shouldn't
-	hurt to \cmd{chown g+w *} since all files should have this bit set.
+	this step no one else will be able to change this file.  It shouldn't
+	hurt to \cmd{chmod g+w *} since all files should have this bit set.
 	Regardless, it is likely that others will not be happy with you if you
 	forget this step. :-)}.
 	\begin{verbatim}
-		sgrundy@sc8-pr-shell1:~/oscar/htdocs$ chown g+w index.php
+		sgrundy@sc8-pr-shell1:~/oscar/htdocs$ chmod g+w index.php
 	\end{verbatim}
 
 \end{enumerate}
