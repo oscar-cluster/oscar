@@ -56,6 +56,7 @@ use Qt::slots
 =item C<NEW($parent, $name)>
 
 The constructor for the InstallerWorkspace class.
+
 This returns a pointer to a new InstallerWorkspace widget.  It sets the
 background to a tiled OSCAR 'penguin in a trashcan' image and enables
 scrollbars so that you get a 'virtual' workspace where the workspace can be

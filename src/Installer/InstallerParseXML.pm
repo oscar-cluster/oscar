@@ -52,8 +52,8 @@ Task/Tool look like this:
 
 Two other global arrays are also set by readInstallerXMLFile():
 @installerTasksSorted and @installerToolsSorted.  These contain the
-directory names of all of the Tasks/Tools.  The tasks are sorted numerically
-by their step number.  The tools are sorted alphabetically by their
+directory names of all of the Tasks/Tools.  The Tasks are sorted numerically
+by their step number.  The Tools are sorted alphabetically by their
 fullname.  These two arrays can be used to build the pulldown menus of Tasks
 and Tools in the main window.
 
@@ -100,9 +100,9 @@ Installer.XML file lists out all of the Tasks and Tools, and the step number
 for each Task.  See the InstallAPI.txt document for more information on the
 format of the configuration file.
 
-For each Task/Tool in the Installer.XML file, we call readGUIXMLFile to read
-in the GUI.xml files.  Again, see the API document for information on the
-format of these files.  
+For each Task/Tool in the Installer.XML file, we call readGUIXMLFile() to
+read in the GUI.xml files.  Again, see the API document for information on
+the format of these files.  
 
 The information in the Installer.xml file is stored in the global hash
 reference $installerTasksAndTools.  This hash reference uses the Task/Tool
@@ -115,7 +115,8 @@ directory name as its key, and contains the following sub-keys:
 
 Also, the global variables @installerTasksSorted and @installerToolsSorted
 are created by this subroutine.  These arrays are sorted alphabetically by
-the directory names of the Tasks/Tools.
+the step number in the case of Tasks, and by the 'pretty print' name in the
+case of Tools.
 
 =cut
 

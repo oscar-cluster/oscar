@@ -148,25 +148,6 @@ sub sortColumn
     }
 }
 
-sub removeRowFromTable
-{
-  my $deadrow = shift;
-  if (($deadrow >= 0) && ($deadrow < numRows()))
-    {
-      for my $col (0..(numCols()-1))
-        {
-          takeItem(item($deadrow,$col));
-          for my $row ($deadrow..(numRows()-1))
-            {
-              my $item = item($row+1,$col);
-              takeItem($item);
-              setItem($row,$col,$item);
-            }
-        }
-      setNumRows(numRows()-1);
-    }
-}
-
 sub populateTable
 {
 #########################################################################
@@ -182,10 +163,7 @@ sub populateTable
     {
       for (my $row = numRows()-1; $row >= 0; $row--)
         {
-          print "Removing row $row\n";
-          #removeRow($row);
-          removeRowFromTable($row);
-          print "Done removing row $row\n";
+          removeRow($row);
         }
       emit downloadButtonDisable();
     }
