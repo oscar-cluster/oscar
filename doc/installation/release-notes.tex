@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.36 2003/08/13 22:11:39 naughtont Exp $
+% $Id: release-notes.tex,v 1.37 2003/08/18 15:25:20 naughtont Exp $
 %
 
 \section{Release Notes}
@@ -96,62 +96,78 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \end{itemize}
 
-%TJN: This section likely goes away...
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-% \subsection{Mandrake 8.2 Notes}
-% \label{subsec:mdk82notes}
-% 
-% \begin{itemize}
-% \item Before running the OSCAR installer, you must install the
-%   \file{libexpat1\_95-devel} RPM (you may need Mandrake 8.2 CD's to run
-%   the \cmd{urpmi} command):
-% 
-% \begin{verbatim}
-%   # urpmi libexpat1_95-devel
-% \end{verbatim}
-% 
-%   This RPM is a prerequisite for the perl-XML-Simple and
-%   perl-XML-Parser Perl modules that are installed in the initial
-%   installation of OSCAR.  Alternatively, you can install the Mandrake
-%   RPMs for perl-XML-Simple and perl-XML-Parser before installing
-%   OSCAR:
-% 
-% \begin{verbatim}
-%   # urpmi perl-XML-Simple perl-XML-Parser
-% \end{verbatim}
-% 
-% 
-% % TJN: Doc fix for BUG#686916 'xterm needed by SIS'
-% %      Remove after 2.2 when add to server_prep/pre-req check areas.
-% %     - on RH7.x systems the xterm binaray is packaged w/ XFree86 (big bundle)
-% %     - on MDK8.x it showed up in it's own xterm rpm.
-% \item The OSCAR wizard makes use of \cmd{xterm} so this package must be
-%   installed.  You can check the RPM database for this package by typing
-%   \cmd{rpm -q xterm}.  If \cmd{xterm} is not available, you must
-%   install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake 8.2
-%   CD's to run the \cmd{urpmi} command as mentioned above):
-% 
-% \begin{verbatim}
-%   # urpmi xterm
-% \end{verbatim}
-% 
-% 
-% \item There will be two warnings displayed while building the client
-%   image -- the \file{lam-oscar} and \file{mpich-oscar} RPMs will
-%   display errors regarding a lack of \file{libtcl.so.0}.  It is safe
-%   to ignore these warnings.
-%   
-% \item If installing the third-party package Ganglia, the
-%   \file{libpng} RPM version 1.0.8-2mdk must be manually installed
-%   before invoking the OSCAR install wizard.  This RPM can be
-%   found in the Ganglia distribution package in the following location:\\
-%   \file{packages/ganglia/extras/libpng-1.0.8-2mdk.i586.rpm}
-%   
-% \end{itemize}
-% 
+
+\subsection{Red Hat 9.0/8.0 Notes}
+\label{subsec:rh90notes}
+
+There are a few issues that may crop up when using OSCAR on Red Hat 9.0
+and/or Red Hat 8.0 clusters.  The following items highlight these
+issues.  
+
+\begin{itemize}
+
+\item The RPM system has been updated with this Red Hat release.  The
+ OSCAR install process will likely display several warnings due to unsigned
+ RPMS.  These warnings can be ignored. 
+
+%TJN: These are the notes Jeff posted for the "Re: mksiimage hang problems"
+%  thread on oscar-devel (2003-07-23)
+\item In some tests, RPM would hang during the building of a client image
+(Section~\ref{det:build-client-image}).  The procedure that was used to
+remedy this situation is outlined below (excerpts taken from
+\url{http://www.rpm.org/hintskinks/repairdb-2003-06/}):
+	\begin{itemize}
+		\item If RPM hangs at any point (e.g., building the client image)
+		-- first ensure that it really has hung, and just isn't taking a
+		long, long time to complete.  Typically indications that it has
+		genuinely hung include: disk is not running; load has gone
+		down to 0.00 and stays there.
+
+		\item Then do a \cmd{ps} and find the PID of the \cmd{rpm} process: 
+			\begin{verbatim}
+				# ps -eadf | grep rpm | grep -v grep
+				 ...output...
+				# kill <PID_of_RPM>
+			\end{verbatim}
+
+		\item This will probably not kill the process (it's likely to be in
+		a state where it is ignoring signals), but it should be tried
+		anyway -- this would allow \cmd{rpm} to exit cleanly.  If \cmd{rpm} 
+		does  exit cleanly, jump down to the last step in this procedure.
+
+		\item If \cmd{rpm} does not exit within a short period of time,
+		\cmd{kill -9 <PID\_of\_RPM>}.  This guarantees that \cmd{rpm} will
+		not exit cleanly, but in this case, it's ok.  Now, do the
+		following:
+			\begin{enumerate}
+				\item Save a copy of the RPM database (just to be safe):
+					\begin{verbatim}
+						# cd /var/lib
+						# tar zcvf /tmp/rpmdb.tar.gz rpm
+					\end{verbatim}
+
+				\item Delete any existing RPM database locks:
+					\begin{verbatim}
+						# cd /var/lib/rpm
+						# rm -f __db*
+					\end{verbatim}
+
+				\item Rebuild the RPM database:
+					\begin{verbatim}
+						# rpm -vv --rebuilddb
+					\end{verbatim}
+			\end{enumerate}
+
+		\item Now re-run the OSCAR step that hung.  If RPM hangs again,
+		repeat these steps to un-hang it.
+	\end{itemize}
+
+\end{itemize}
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
