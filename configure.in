@@ -9,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.40 2004/04/13 19:40:27 brechin Exp $
+# $Id: configure.in,v 1.41 2004/04/13 19:59:19 brechin Exp $
 #
 # $HEADER$
 #
@@ -55,7 +55,7 @@ AC_SUBST(CLEANFILES)
 # Look for tools to build the Perl-Qt wizard
 AC_MSG_CHECKING([for Perl environment])
 OSCAR_CHECK_PROG(PERL, perl, yes)
-if [ "x$found_oscar_progs" = "xno" ]; then
+if test "$found_oscar_progs" = "no" ; then
   AC_MSG_WARN([*** You can not build the Perl-Qt wizard ***])
   AC_MSG_RESULT([not found])
   exit 1
