@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.50 2003/07/17 19:26:15 ngorsuch Exp $
+      $Id: config.xml,v 1.51 2003/07/17 19:50:34 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -1457,7 +1457,6 @@
     have a value.
     -->
     <packages>
-      <parameters> unique(name,version) </parameters>
       <fields>
         <class/>
 	<copyright/>
