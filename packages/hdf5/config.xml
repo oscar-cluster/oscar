@@ -12,7 +12,7 @@
   </version>
 
   <class>included</class>
-  <installable>0</installable>
+  <installable>1</installable>
 
   <summary>Heirarchical Data Format (HDF) software package</summary>
   <license>freely distributable</license>
