@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.43 2003/01/24 23:05:11 brechin Exp $
+# $Id: oscar_wizard,v 1.44 2003/01/30 21:46:20 brechin Exp $
 #
 
 use strict;
@@ -188,7 +188,7 @@ sub run_command {
     } else {
 	&$window_func($parent_window, $result->{message});
     }
-
+    $parent_window->Unbusy();
     $result->{return_status};
 }
 
