@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.7 2003/04/02 17:55:32 brechin Exp $
+      $Id: config.xml,v 1.8 2003/05/26 19:04:22 brechin Exp $
   -->
   <name>sis</name>
 
@@ -45,7 +45,6 @@
     <server>
       <rpm>systeminstaller</rpm>
       <rpm>systeminstaller-x11</rpm>
-      <rpm>perl-Tk</rpm>
       <rpm>perl-MLDBM</rpm>
       <rpm>syslinux</rpm>
       <rpm>systemimager-server</rpm>
