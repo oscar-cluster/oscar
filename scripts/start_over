@@ -98,19 +98,6 @@ sub stop_services {
 
 sub cleanup_files {
     my @dirs = qw(
-                  /var/spool/pbs
-                  /opt/pbs
-                  /opt/maui
-                  /opt/modules
-                  /opt/lam*
-                  /opt/mpich*
-                  /opt/env-switcher*
-                  /var/log/systemimager
-                  /var/lib/clamdr
-                  /var/lib/systeminstaller
-                  /var/lib/systemimager
-                  /usr/local/lib/systemimager
-                  /etc/systeminstaller
             	  /etc/systemimager
                   /etc/cron.daily/synctime.sh
                   /etc/dhcpd.conf
@@ -118,6 +105,21 @@ sub cleanup_files {
                   /etc/profile.d/mpi-00mpich.sh
                   /etc/profile.d/mpi-01lam.csh
                   /etc/profile.d/mpi-01lam.sh
+                  /etc/systeminstaller
+                  /opt/env-switcher*
+		  /opt/kernel_picker
+                  /opt/lam*
+                  /opt/maui
+                  /opt/modules
+                  /opt/mpich*
+		  /opt/opium
+                  /opt/pbs
+                  /usr/local/lib/systemimager
+                  /var/lib/clamdr
+                  /var/lib/systemimager
+                  /var/lib/systeminstaller
+                  /var/log/systemimager
+                  /var/spool/pbs
                  );
     foreach my $file (@dirs) {
     	print "rm -rf $file \n";
