@@ -185,7 +185,8 @@ if ( exists $options{help} ) {
 # any arguments left is an error
 usage( 1 ) if @ARGV;
 
-# find the name of the mysql service and start the mysql server
+# find the name of the mysql service and start the mysql server,
+# and make sure it is run on every system reboot
 my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
 my $mysql_service_name;
 if ($oscar_server_distribution eq "redhat" || $oscar_server_distribution eq "rhas") {
@@ -214,6 +215,11 @@ if ( ! grep( /is\ running/, @command_output ) || ! $status ) {
     }
     sleep 2;
 }
+print "Making sure that the mysql database server starts on subsequent boots ...\n";
+my $command = "LC_ALL=EN;chkconfig $mysql_service_name on";
+print "$command\n";
+warn "$0: WARNING: the mysql database service may not start on subsequent reboots"
+    if system( $command );
     
 # create the database if not already there and leave us connected to it
 my %databases = ();
