@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.26 2002/07/09 20:49:45 loann09 Exp $
+% $Id: detailed.tex,v 1.27 2002/07/14 03:07:25 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -635,7 +635,6 @@ which does the following:
             
 Provided along with OSCAR is a simple test to make sure the key
 cluster components (PBS, MPI, and PVM) are functioning properly. 
-
 Press the Step 6 button of the wizard entitled \button{Test
  Cluster Setup}. This will open a window that will test 
  the server services as both root and a non-root user. A sample dialog is shown in Figure~\ref{fig:detailed-setup-test}.
@@ -648,17 +647,18 @@ Press the Step 6 button of the wizard entitled \button{Test
     \label{fig:detailed-setup-test}
   \end{center}
 \end{figure}
- 
- Once the test setup completes do the following steps:
-\begin{enumerate}
- \item open another terminal 
- \item login as the user you gave in the setup
- \item change to the \file{OSCAR\_test} directory
- \item change to the \file{testing} directory 
- \item run the \file{test\_cluster} script, answering the questions
- that are asked.
-\end{enumerate}
 
+% Don't believe this is needed anymore.  --tjn  7/13/02
+%% Once the test setup completes do the following steps:
+%%\begin{enumerate}
+%% \item open another terminal 
+%% \item login as the user you gave in the setup
+%% \item change to the \file{OSCAR\_test} directory
+%% \item change to the \file{testing} directory 
+%% \item run the \file{test\_cluster} script, answering the questions
+%% that are asked.
+%%\end{enumerate}
+%%
 \subsubsection{Congratulations!!}
 
 Your cluster setup is now complete. Your cluster nodes should
