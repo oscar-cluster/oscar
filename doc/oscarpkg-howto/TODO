@@ -10,7 +10,6 @@ TODO:
   + Add text about ODA and shortcuts
   + Add *better* switcher module example & how to create a switcher RPM
   + Add reference section
-      o OSCAR Config-HOWTO.html
       o OSCAR Architecture Document
       o Maximum RPM
       o XML DTD/Schema/Xmllint(libxml2)???
