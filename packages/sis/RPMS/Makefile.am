@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.2 2001/12/19 18:58:25 mchasal Exp $
+# $Id: Makefile.am,v 1.3 2001/12/21 00:39:48 mchasal Exp $
 #
 # $COPYRIGHT$
 #
@@ -13,5 +13,5 @@ EXTRA_DIST		= \
 			systemimager-common-2.0.1-3.i386.rpm \
 			systemimager-i386boot-2.0.1-3.i386.rpm \
 			systemimager-server-2.0.1-3.i386.rpm \
-			systeminstaller-0.61-1.noarch.rpm \
-			systeminstaller-x11-0.61-1.noarch.rpm
+			systeminstaller-0.62-1.noarch.rpm \
+			systeminstaller-x11-0.62-1.noarch.rpm
