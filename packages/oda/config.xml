@@ -4198,6 +4198,16 @@
       </fields>
     </packages_rpmlists>
 
+    <packages_servicelists>
+      <fields>
+        <group/>
+        <package_id>
+          <type> integer </type>
+        </package_id>
+        <service/>
+      </fields>
+    </packages_servicelists>
+
     <program_variable_values>
       <fields> 
         <program/>
