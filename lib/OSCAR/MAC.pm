@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.38 2003/04/02 18:18:27 brechin Exp $
+#   $Id: MAC.pm,v 1.39 2003/05/27 19:33:21 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.38 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.39 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -448,6 +448,7 @@ sub end_collect_mac {
     our $starttext = "Start Collecting MACs";
     our $start;
     $start->configure(-command => [\&begin_collect_mac, $window, $listbox, $interface, $label ]);
+    system("killall tcpdump");
     oscar_log_subsection("Step $step_number: Stopped listening to network");
     $COLLECT = 0;
 }
