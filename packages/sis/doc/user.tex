@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.4 2002/06/18 19:03:22 mchasal Exp $
+% $Id: user.tex,v 1.5 2002/07/19 02:28:57 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -9,7 +9,7 @@
 \label{app:sis-overview}
 
 The System Installation Suite, or SIS, is a tool for installing 
-linux systems over a network. It is used in OSCAR to install the
+Linux systems over a network. It is used in OSCAR to install the
 client nodes. SIS also provides the database from which OSCAR
 obtains its cluster configuration information.
 
@@ -32,7 +32,7 @@ to join the OSCAR cluster.
 
 Normally, an OSCAR image is built using the \button{Build OSCAR Client Image} 
 button on the OSCAR wizard. This button brings up a panel that is actually 
-directly from the SIS gui \cmd{tksis}. Once the information is filled in 
+directly from the SIS GUI \cmd{tksis}. Once the information is filled in,
 the SIS command \cmd{mksiimage} is invoked to actually build the image. 
 
 In addition to building an image, you can use \cmd{tksis} or \cmd{mksiimage}
@@ -42,12 +42,13 @@ some space.
 
 \subsubsection{Managing SIS clients}
 
-Much like the OSCAR image creation, the \button{Define OSCAR Clients} button actually
-invokes a \cmd{tksis} panel. There are a couple of SIS commands that are used 
-to manage the client definitions. \cmd{mksirange} is used to define a group of
-clients. More importantly \cmd{mksimachine} can be used to update client 
-definitions. If, for example, you needed to change the MAC address after replacing
-one of your clients, you could use \cmd{mksimachine}.
+Much like the OSCAR image creation, the \button{Define OSCAR Clients}
+button actually invokes a \cmd{tksis} panel. There are a couple of SIS
+commands that are used to manage the client definitions.
+\cmd{mksirange} is used to define a group of clients. More
+importantly, \cmd{mksimachine} can be used to update client
+definitions. If, for example, you needed to change the MAC address
+after replacing one of your clients, you could use \cmd{mksimachine}.
 
 \subsubsection{Maintaining your client software}
 
@@ -65,13 +66,13 @@ To obtain more detailed information about SIS, please refer to the many man
 pages that are shipped with SIS. Some of the more popular pages are:
 
 \begin{itemize}
-\item tksis
-\item mksiimage
-\item mksidisk
-\item mksirange
-\item mksimachine
-\item systemconfigurator
-\item updateclient
+\item \cmd{tksis}
+\item \cmd{mksiimage}
+\item \cmd{mksidisk}
+\item \cmd{mksirange}
+\item \cmd{mksimachine}
+\item \cmd{systemconfigurator}
+\item \cmd{updateclient}
 \end{itemize}
 
 You can also access the mailing lists and other docs through the sisuite

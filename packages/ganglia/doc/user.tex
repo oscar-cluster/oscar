@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.2 2002/06/12 04:39:29 jsquyres Exp $
+% $Id: user.tex,v 1.3 2002/07/19 02:28:56 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -16,19 +16,20 @@ Ganglia monitoring toolkit also includes the ability to add user
 defined data to the XML streams.
 
 Ganglia was developed at the University of California, Berkeley
-Computer Science Division as part of the ongoing clustering research:
-The Millennium Project and it's predecessor The NOW Project.  It is
-being developed by Matt Massie $<$\mailto{massie@cs.berkeley.edu}$>$
-and Brent Chun $<$\mailto{bnc@caltech.edu}$>$. For additional
-information about the Ganglia project see:
+Computer Science Division as part of the ongoing clustering research
+project named The Millennium Project (and its predecessor The NOW
+Project).  It is being developed by Matt Massie
+$<$\mailto{massie@cs.berkeley.edu}$>$ and Brent Chun
+$<$\mailto{bnc@caltech.edu}$>$. For additional information about the
+Ganglia project, see:
 
 \vspace{10pt}
 \centerline{\url{http://ganglia.sourceforge.net/}}
 \vspace{10pt}
 
-Packaged for OSCAR is the \rpmname{ganglia-php-rrd-client} that sets
-up the web page display on the head node of the data gathered by the
-\rpmname{ganglia-monitor-core}.  This uses rrdtool and the
+\rpmname{ganglia-php-rrd-client} is a package in OSCAR that sets up
+the web page display on the head node of the data gathered by the
+\rpmname{ganglia-monitor-core}.  This uses \cmd{rrdtool} and the
 \rpmname{perl-XML-Parser} packages included with the OSCAR tool suite
 as well as the \rpmname{apache}, \rpmname{php}, and \rpmname{expat}
 packages installed with the core Linux distribution on the head node
@@ -42,7 +43,7 @@ can be pointed at:
 \centerline{\url{http://localhost/ganglia/}}
 \vspace{10pt}
 
-\noindent to see the ganglia web output. If nothing appears check to
+\noindent to see the ganglia web output. If nothing appears, check to
 see if \cmd{apache} has been started along with the \cmd{gmond} and
 \cmd{ganglia-php-rrd} processes. The startup init scripts can be found
 in \file{/etc/init.d/}.
@@ -55,10 +56,10 @@ scripted. This will depend on having \rpmname{python} and the
 The current version of the Ganglia tools packaged for OSCAR is:
 
 \begin{itemize}
-\item ganglia-monitor-core-2.2.3-2oscar
-\item ganglia-php-rrd-client-1.0.4-oscar
-\item perl-XML-Parser-2.30-31
-\item rrdtool-1.0.35-2
+\item \rpmname{ganglia-monitor-core-2.2.3-2oscar}
+\item \rpmname{ganglia-php-rrd-client-1.0.4-oscar}
+\item \rpmname{perl-XML-Parser-2.30-31}
+\item \rpmname{rrdtool-1.0.35-2}
 \end{itemize}
 
 There is a newer version of Ganglia that includes a distributed
@@ -66,3 +67,4 @@ execution environment but OSCAR already includes the C3 tools that
 provides this functionality.  The newer versions of Ganglia with the
 distributed execution environment are still being studied for possible
 inclusion in future releases of OSCAR.
+

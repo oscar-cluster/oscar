@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.4 2002/06/15 02:48:51 jenos Exp $
+% $Id: user.tex,v 1.5 2002/07/19 02:28:57 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -112,13 +112,14 @@ pbsdsh /path/to/my_executable
 
 Notes about the above examples:
 \begin{itemize} 
-\item``all'' is an optional specification of a node attribute, or
-  ``resource''
+\item``\cmd{all}'' is an optional specification of a node attribute,
+  or ``resource''.
   
-\item ``workq'' is a default queue name that is used in OSCAR clusters
-
-\item 1:00:00 is in HH:MM:SS, and is also the default wallclock limit on 
-  OSCAR clusters
+\item ``\cmd{workq}'' is a default queue name that is used in OSCAR
+  clusters.
+  
+\item 1:00:00 is in HH:MM:SS format (although leading zeros can be
+  eliminated).
 \end{itemize}
 
 % LocalWords:  Exp

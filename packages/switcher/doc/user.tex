@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.3 2002/06/12 07:33:00 jsquyres Exp $
+% $Id: user.tex,v 1.4 2002/07/19 02:28:58 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -71,6 +71,8 @@ be used by itself (usually for advanced users).  The
 \cmd{env-switcher} package provides a persistent \cmd{modules}-based
 environment.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsubsection{The \cmd{modules} package}
 
 The \cmd{modules} package (see \url{http://modules.sourceforge.net/})
@@ -85,18 +87,20 @@ notable effects:
 
 \begin{itemize}
 \item Every user shell will be setup for modules -- notably, the
-  commands ``{\cmd module}'' and ``{\cmd man module}'' will work as
+  commands ``\cmd{module}'' and ``\cmd{man module}'' will work as
   expected.
-
+  
 \item Guarantee the execution of all modulefiles in a specific
   directory for every shell invocation (including corner cases such as
-  non-interactive remote shell invocation by \cmd{rsh}/\cmd{rsh}).
+  non-interactive remote shell invocation by \cmd{rsh}/\cmd{ssh}).
 \end{itemize}
 
 Most users will not use any \cmd{modules} commands directly -- they
 will only use the \cmd{env-switcher} package.  However, the
 \cmd{modules} package can be used directly by advanced users (and
 scripts).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{The \cmd{env-switcher} package}
 
@@ -159,8 +163,8 @@ In this way, a four-tiered set of defaults can be effected: specific
 user-level, general user-level, specific system-level, and general
 system-level.  
 
-Using that terminology, the most command \cmd{env-switcher} commands
-that users will invoke are:
+The most common \cmd{env-switcher} commands that users will invoke
+are:
 
 \begin{enumerate}
 \item \cmd{switcher --list}
@@ -169,7 +173,7 @@ that users will invoke are:
 
 \item \cmd{switcher <name> --list}
   
-  List all attributes that have values for the name \cmd{<name>}.
+  List all defined attributes for the name \cmd{<name>}.
 
 \item \cmd{switcher <name> = <value> [--system]} 
   

@@ -1,11 +1,12 @@
 % -*- latex -*-
 %
-% $Id: package-license.tex.in,v 1.1 2002/06/19 17:33:50 mchasal Exp $
+% $Id: package-license.tex.in,v 1.2 2002/07/19 02:32:16 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
 
 \section{Package Licenses and Copyrights}
+\label{sec:package-licenses}
 
 Since OSCAR includes many packages, the licenses and copyrights
 for each of them is included here for reference.

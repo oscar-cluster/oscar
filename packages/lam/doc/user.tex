@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.2 2002/06/14 06:07:19 jsquyres Exp $
+% $Id: user.tex,v 1.3 2002/07/19 02:28:56 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -94,7 +94,7 @@ The general scheme of using LAM/MPI is as follows:
   hostfile containing a list of nodes to run on.  For example:
 
 \begin{verbatim}
-$ lamboot -v my_hostfile
+$ lamboot my_hostfile
 \end{verbatim}
 
 \item Repeat the following steps as many times as necessary:
@@ -110,9 +110,6 @@ $ lamboot -v my_hostfile
 $ mpicc myprogram.c -o myprogram
 \end{verbatim}
     
-    The \cmd{mpirun} command has many options and arguments -- see the
-    man page and/or ``\cmd{mpirun -h}'' for more information.
-
   \item Use the \cmd{mpirun} command to launch your parallel
     application in the LAM RTE.  For example:
 
@@ -120,15 +117,17 @@ $ mpicc myprogram.c -o myprogram
 $ mpirun C myprogram
 \end{verbatim}
     
+    The \cmd{mpirun} command has many options and arguments -- see the
+    man page and/or ``\cmd{mpirun -h}'' for more information.
+
   \item If your parallel program fails ungracefully, use the
     \cmd{lamclean} command to ``clean'' the LAM RTE and guarantee to
     remove all instances of the running program.
 
   \end{enumerate}
 
-\item Use the \cmd{lamhalt} command to take down the LAM RTE.  The
-  \cmd{lamhalt} command takes no arguments, and will shut down the LAM
-  RTE.
+\item Use the \cmd{lamhalt} command to shut down the LAM RTE.  The
+  \cmd{lamhalt} command takes no arguments.
 \end{enumerate}
 
 Note that the wrapper compilers are all set to use the corresponding
@@ -139,8 +138,8 @@ expect (particularly for C++ and Fortran compilers).
 
 \subsubsection{More Information}
 
-The LAM/MPI web site (\url{http://www.lam-mpi.org/} contains much,
-much more information, including:
+The LAM/MPI web site (\url{http://www.lam-mpi.org/}) contains much,
+much more information about LAM/MPI, including:
 
 \begin{itemize}
 \item A large Frequently Asked Questions (FAQ) list
