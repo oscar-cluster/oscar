@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.23 2002/06/15 04:29:37 jsquyres Exp $
+% $Id: detailed.tex,v 1.24 2002/06/18 16:24:42 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -363,7 +363,7 @@ Once you are satisfied with the input, click the \button{Build Image} button.
 
 Building the image will take a few minutes, the progress bar on the bottom 
 will give you the status and a small dialog will appear when the image
-is complete.
+is complete.  If image fails, see section 2 Release notes 2.1.
   
 A sample dialog is shown in Figure~\ref{fig:detailed-build-image}. 
 
@@ -510,7 +510,7 @@ with which client, you may boot them all at once and randomly assign
 the MAC addresses.
 
 When you have collected all of the MAC addresses, click the \button{Stop Collecting}
-button and then click the \button{Setup DHCP Server} button to configure it.
+button and then click the \button{Configure DHCP Server} button to configure it.
  
 You may also configure your remote boot method from this panel. The
 \button{Build Autoinstall Floppy} button will build a boot floppy for
@@ -554,7 +554,7 @@ You can watch the client consoles to monitor the progress. Depending
 on the Post Installation Action you selected when building the image,
 the clients will either halt, reboot or beep incessantly when the 
 installation is completed. 
-The time required for installation deepends on the capabilities of
+The time required for installation depends on the capabilities of
 your server, your clients, your network, and the number of simultaneous 
 client installations, it should complete within a few minutes.
   
@@ -650,6 +650,7 @@ Press the Step 5 button of the wizard entitled \button{Test
  \item open another terminal 
  \item login as the user you gave in the setup
  \item change to the \file{OSCAR\_test} directory
+ \item change to the \file{testing} directory 
  \item run the \file{test\_cluster} script, answering the questions
  that are asked.
 \end{enumerate}
