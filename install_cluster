@@ -5,7 +5,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: install_cluster,v 1.16 2002/12/11 00:04:17 tfleury Exp $
+# $Id: install_cluster,v 1.17 2003/03/03 23:10:14 ngorsuch Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -67,11 +67,22 @@ if (-f $lockfile) {
     my $pid = <LOCKFILE>;
     close(LOCKFILE);
     chmod($pid);
-    print "The OSCAR installer already appears to be running (pid $pid).
-If this is not the case, remove the following file and 
-run $0 again:
-  $lockfile\n";
-    exit(1);
+    print "There is an OSCAR installer lockfile that says an installer process\n";
+    print "is still running with process id $pid. Checking if that is true ...\n";
+    my $pids_cmd = 'ps -a | awk \'{print $1}\'';
+    my @pids = `$pids_cmd`;
+    chomp @pids;
+    if ( grep( /^$pid$/, @pids ) ) {
+	print "There is a process running with that process id.\n";
+	print "If this is no an OSCAR installer process, remove\n";
+	print "the following file and run $0 again:\n";
+	print "$lockfile\n";
+	exit(0);
+    } else {
+	print "There is no process running with process id $pid.\n";
+	print "Removing lockfile $lockfile and continuing.\n";
+	unlink $lockfile;
+    }
 }
 
 # Write our PID to the lockfile
