@@ -1,4 +1,4 @@
-$Id: README,v 1.17 2002/06/12 04:03:21 jsquyres Exp $
+$Id: README,v 1.18 2002/06/12 06:34:18 jsquyres Exp $
 
 $COPYRIGHT$
 
@@ -11,40 +11,4 @@ Insturctions for installing an OSCAR distribution can be found in
 doc/install.pdf.  User instructions for utilizing the software
 installed on OSCAR clusters can be found in doc/user.pdf.
 
-
-***************************************************************
-Notes on the OSCARVERSION release
-***************************************************************
-
-There are some limitations to the OSCARVERSION release, they are:
-
-- You MUST specify a domain name for your clients when defining them.
-
-- If the image build fails during install on Red Hat 7.2 or 7.3
-  install there are possible fixes:
-
-  1) edit /etc/systeminstaller/systeminstaller.conf to change
-       pkginstfail=    1
-     to
-       pkginstfail=    0
-
-  2) update rpm to rpm-4.0.4-7x which is in the Red Hat updates
-     for 7.2 (this will only work for Red Hat 7.2)
-
-
-***************************************************************
-Notes about Python2 shipped with OSCARVERSION:
-***************************************************************
-
-- The current version of C3 that is shipped with OSCAR requires
-  Python2.  The RPMs that are provided are re-built to work on Red Hat
-  7.1 system as well as Red Hat 7.2 system.  However, Red Hat 7.2
-  shipps with Python2 so measures were taken so it will be chosen in
-  place of the one provided with OSCAR, ie. we decremented the RPM
-  release number.
-
-- Due to some multi-distro issues, we're currently including a
-  "compatibility" (python2-compat-1.0-1) RPM to resolve the Python2
-  PreReq that is slightly different across distros.  (see also:
-  packages/c3/RPMS/NOTE.python2)
-
+See also the Release Notes section in the installation document.
