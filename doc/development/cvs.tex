@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: cvs.tex,v 1.1 2001/08/14 18:17:53 jsquyres Exp $
+% $Id: cvs.tex,v 1.2 2001/08/21 19:31:09 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -8,9 +8,13 @@
 \section{CVS Usage}
 \label{sec:cvs}
 
-The OSCAR package is maintained entirely in CVS; checking out the
+Portions of the OSCAR package are maintained in CVS.  Checking out the
 ``{\tt oscar}'' module from the OSCAR CVS repository will create a
-copy of the OSCAR development tree.
+copy of a portion of the OSCAR development tree.  The remainder of the
+development tree is obtained by invoking a top-level ``{\tt make}''
+command.  This will trigger the automatic downloads of any missing
+binary packages from various web sites, which will complete the
+development tree.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -40,6 +44,11 @@ The following Golden Rules will be followed at all times:
   to just that feature/bug fix and commit them all at once.  This
   provides modular patches, and helps the developer ensure that {\em
     all} related code is committed.
+
+\item {\bf Do not commit binary files.}  While CVS purportedly has the
+  capability to handle binary files, there have been reports of
+  inconsistent behavior.  As such, all of OSCAR's binary files will be
+  stored outside of the CVS tree.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -58,38 +67,104 @@ is redundant with the ``{\tt cvs log}'' command.
 
 \subsection{Binary Files}
 
-Since the OSCAR package includes binary files such as RPMs and gzipped
-tarballs, CVS must be used to maintain these as well.  However, CVS
-has some well-known deficiencies in maintaining binary
-files.\footnote{Indeed, there actually is no good way to maintain
-version control of binary files short of saving a copy of each old
-version of the file in its entirety.}  As such, text files should be
-preferred whenever possible.  For example, none of the core packages
-developed specifically for OSCAR should be stored in CVS in binary
-form.
+There will be no binary files stored in CVS.  Instead, all binary
+files that are part of OSCAR will be stored on various web
+sites.\footnote{As much as possible, the OSCAR binaries will be stored
+  on the SourceForge web site.  However, there is at least a ``soft''
+  file quota of 100MB on SourceForge.  If we exhaust that limit and
+  cannot obtain any more, it is likely that binaries will need to be
+  spread across multiple web sites.}
 
-When adding binary files to CVS, the ``{\tt -kb}'' command line switch
-{\em must} be used to prevent CVS from attempting to treat it as a
-text file.
+The directory structure on these web sites (relative to some arbitrary
+root) will mirror that of the development tree.  For example, the
+LAM/MPI RPM packages are located with a relative root of ``{\tt pub}''
+on the main OSCAR web site:
 
-Binary packages will likely have version numbers as part of their
-filename (see Section~\ref{sec:file-conventions}).  As such, each new
-version that is checked in will likely have a new filename.  When this
-occurs, the old file must be removed from CVS.  
+\vspace{10pt}
 
-This somewhat breaks one of the fundamental ideas of CVS -- that the
-history associated with a file is kept with that file.  Since each
-version of the binary will have a new filename, the log history of
-that binary package will be split across multiple files.  
+\centerline{\href
+  {http://oscar.sf.net/pub/packages/lam/lam-VERSION-usysv.1oscar.i686.rpm}
+  {\tt http://oscar.sf.net/pub/packages/lam/lam-VERSION-usysv.1oscar.i686.rpm}}
 
-\begin{discuss}
-  For this reason, it may be desirable for the small number of third
-  party packages that are maintained by the OSCAR equity holders
-  (namely, LAM/MPI, PVM, MPICH, PBS) to maintain an associated ``{\tt
-    ChangeLog}'' file in the package directory that contains the CVS
-  ``{\tt \$Log\$}'' token.  This will create a comprehensive version
-  history, rather than having to query the log comments from multiple
-  files.
-\end{discuss}
+\centerline{\href
+  {http://oscar.sf.net/pub/packages/lam/lam-VERSION-usysv.1oscar.src. rpm}
+  {\tt http://oscar.sf.net/pub/packages/lam/lam-VERSION-usysv.1oscar.src.rpm}}
+
+\vspace{10pt}
+
+Lists of which binary files are to be used are included in the {\tt
+  Makefile.am} in each directory.  The macro {\tt BINARY\_\-FILES}
+controls the majority of downloading; it is loaded with a list of
+binary files that should be obtained.  Additionally, a top-level file
+is included in the {\tt Makefile.am} that will actually do the
+relevant file tests and downloads.
+Figure~\ref{fig:makefile-bin-download} shows an example.
+
+\begin{figure}[tbp]
+  \begin{center}
+\hrule
+\vspace{5pt}
+\begin{verbatim}
+# Some convenience macros are used to hold the http prefix and LAM
+# version number.
+lam_prefix              = http://oscar.sourceforge.net/pub/packages/lam
+lam_version             = 6.5.4
+
+# The BINARY_FILES macro holds the list of files that will be
+# downloaded for this directory.
+BINARY_FILES            = \
+        $(lam_prefix)/lam-$(lam_version)-usysv.1oscar.i686.rpm \
+        $(lam_prefix)/lam-$(lam_version)-usysv.1oscar.src.rpm
+
+# This file includes the logic for the file tests and downloading. The
+# use of $(top_srcdir) ensures that this will even work for a VPATH build.
+include $(top_srcdir)/dist/Makefile.download
+\end{verbatim}
+\vspace{5pt}
+\hrule
+    \caption{Portion of {\tt packages/lam/Makefile.am} that shows how to setup the auto-downloading feature of the development update process.}
+    \label{fig:makefile-bin-download}
+  \end{center}
+\end{figure}
+
+Note that this mechanism only downloads files if they do not exist --
+it assumes that new versions of files will have new filenames (since
+RPMs and tarballs have version numbers in their filenames).  It is
+{\em not} sufficient for keeping a single binary file that does not
+change filenames up to date (e.g., {\tt xfig} images).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Development Tree Update Procedure}
+
+Updating an OSCAR development tree is comprised of three parts:
+
+\begin{enumerate}
+\item Issue a ``{\tt cvs update}'' in the top-level OSCAR directory.
+  This will update the entire source tree, including current lists of
+  binary files in OSCAR.
+  
+\item Re-generate all the automatically generated files, such as {\tt
+    configure}.  This typically involves commands such as {\tt
+    autoconf}, {\tt automake}, etc.  Following this, run the {\tt
+    configure} script to generate a {\tt Makefile} in each directory.
+
+\item Issue a ``{\tt make}'' that will invoke the build system to
+  automatically download any new or missing binary files.
+\end{enumerate}
+
+After these three steps, the development tree is considered complete.
+
+Since each of these steps involve one or more actual commands, the
+entire procedure has been incorporated into a single script in the
+OSCAR CVS development tree.  This script can be launched from the
+top-level directory is in the OSCAR development tree:
+
+\vspace{10pt}
+\centerline{\tt ./dist/update.sh}
+\vspace{10pt}
+
+This is the recomended method for all developers to update their
+entire CVS trees.
 
 % LocalWords:  Exp oscar DVI autoconf og RPMs gzipped tarballs kb logfile

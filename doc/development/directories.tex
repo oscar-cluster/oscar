@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: directories.tex,v 1.1 2001/08/14 18:17:53 jsquyres Exp $
+% $Id: directories.tex,v 1.2 2001/08/21 19:31:09 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -61,13 +61,20 @@ This top-level directory will include at least the following files:
 \begin{itemize}
 \item {\tt COPYING}: The GNU public license file, version 2.0.
 
-\item {\tt Makefile}: A top-level file used for building an OSCAR
-  distribution.
-  \begin{discuss}
-    Note that this may actually be {\tt Makefile.am} or {\tt
-      Makefile.PL} -- the exact ``make'' technology has not yet been
-    selected.
-  \end{discuss}
+\item {\tt Makefile.am}: A top-level file used for building an OSCAR
+  distribution package.
+
+\item {\tt configure.in}: Another top-level file used for building an
+  OSCAR distribution package.  Note that this file will probably
+  eventually change names to {\tt configure.ac} as newer versions of
+  the GNU {\tt autoconf} package become more commonly installed.
+  
+  Also note that {\tt configure} (and any other
+  automatically-generated files) is {\em not} maintained in CVS.  It
+  is the developer's responsibility to invoke the right commands to
+  generate these files.  {\tt configure} (and other
+  automatically-generated files) {\em will} be included in OSCAR
+  distribution packages.
 
 \item {\tt README}: A text file describing generally what OSCAR is,
   listing the main OSCAR URL, and brief directions on where to find
@@ -109,12 +116,6 @@ This top-level directory will include at least the following files:
   distribution.  This may include a top-level OSCAR RPM spec file,
   configuration or other helper shell scripts, etc.  This directory
   may or may not be included in a distribution OSCAR package.
-
-  \begin{discuss}
-    This is a new directory that has not yet been discussed.  I
-    included it because we have something like it in the LAM/MPI CVS
-    tree and it is extremely useful.
-  \end{discuss}
   
 \item {\tt doc}: This directory contains various forms of
   documentation.  Top-level how-to's, text files, etc., are eligible
