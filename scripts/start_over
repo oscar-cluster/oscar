@@ -1,65 +1,145 @@
 #!/usr/bin/perl -w
 
 use strict;
+
+my @known_rpms = qw(
+		    apache
+		    autoupdate
+		    autoupdate-cfg-redhat
+		    autoupdate-oscar
+		    c3-profiled
+		    c3
+		    hdf5-oscar
+		    hdf5-oscar-module
+		    lam-module
+		    lam
+		    loghost
+		    mpich-oscar-module
+		    mpich-oscar
+		    ntpconfig
+		    pvm-modules-oscar
+		    pvm
+		    openpbs-oscar 
+		    openpbs-oscar-mom
+		    openpbs-oscar-server
+		    openpbs-oscar-gui
+		    openpbs-oscar-commands
+		    openpbs-oscar-client
+		    sync_users-oscar
+		    ssh-oscar
+		    maui-oscar
+		    libdbdcsv-perl
+		    libappconfig-perl
+		    rrdtool
+		    systeminstaller
+		    systeminstaller-x11
+		    systemconfigurator
+		    systemimager-server
+		    systemimager-common
+		    systemimager-client
+		    systemimager-i386boot
+		    systemimager-ia64boot
+		    tftp-hpa
+		    ganglia-monitor-core
+		    ganglia-php-rrd-client
+		    env-switcher
+		    modules
+		    );
+
+my @known_services = qw(
+			dhcpd
+			gmond
+			httpd
+			maui
+			ntpd
+			pbs_server
+			systemimager
+			);
+
+# find oscar home directory
+my $oscar_home = "";
+if ( exists $ENV{OSCAR_HOME} && -d $ENV{OSCAR_HOME} ) {
+    $oscar_home = $ENV{OSCAR_HOME};
+} else {
+    chomp(my $prog = $0);
+    chomp(my $cwd = `pwd`);
+    my $path = ( $prog =~ /^\// ) ? $prog : "$cwd/$prog";
+    $path =~ s/\/[^\/]+\/\.\.\//\//g
+	while $path =~ /\/[^\/]+\/\.\.\//;
+    $path =~ s/\/\.\//\//g
+	while $path =~ /\/\.\//;
+    if ( $path =~ /\/scripts\/[^\/]+$/ ) {
+	$oscar_home = $path;
+	$oscar_home =~ s/\/scripts\/[^\/]+$//g;
+    }
+}
+if ( ! -d $oscar_home ) {
+    print "Cannot find OSCAR base directory from env var OSCAR_HOME or execution path\n";
+    exit 1;
+}
+print "Using $oscar_home as OSCAR base directory\n";
+
 use lib "$ENV{OSCAR_HOME}/lib";
 use lib "../lib"; 
 use Carp;
 
-# all the rpms we KNOW we installed
+# find a list of the full path names of all the non-source oscar rpm files,
+# a list of the file names of all the non-source oscar rpm files,
+# and a list of all the rpm names corresponding to the non-source rpm files.
 
-my @rpms = qw(
-              apache-1.3.22-6
-              autoupdate
-              autoupdate-cfg-redhat
-              autoupdate-oscar
-              c3-profiled
-              c3
-	      hdf5-oscar
-	      hdf5-oscar-module
-              lam-module
-              lam
-              loghost
-      	      mpich-oscar-module
-              mpich-oscar
-              ntpconfig
-              pvm-modules-oscar
-              pvm
-              openpbs-oscar 
-              openpbs-oscar-mom
-              openpbs-oscar-server
-              openpbs-oscar-gui
-              openpbs-oscar-commands
-              openpbs-oscar-client
-              sync_users-oscar
-              ssh-oscar
-              maui-oscar
-              libdbdcsv-perl
-              libappconfig-perl
-              rrdtool
-              systeminstaller
-              systeminstaller-x11
-              systemconfigurator
-              systemimager-server
-              systemimager-common
-              systemimager-client
-              systemimager-i386boot
-              systemimager-ia64boot
-              tftp-hpa
-              ganglia-monitor-core
-              ganglia-php-rrd-client
-              env-switcher
-      	      modules
-             );
+print "Searching for non-source rpm files in $oscar_home ... ";
+my @oscar_rpm_paths = `find $oscar_home -name '*.rpm'`;
+chomp @oscar_rpm_paths;
+@oscar_rpm_paths = grep( !/\.src\.rpm$/, @oscar_rpm_paths );
+@oscar_rpm_paths = sort_uniq( @oscar_rpm_paths );
+#print "oscar_rpm_paths=\n";foreach my $rpm_file (@oscar_rpm_paths){print "$rpm_file\n";}
+my @oscar_rpm_files = @oscar_rpm_paths;
+foreach ( @oscar_rpm_files ) {
+    $_ =~ s,^.*/,,g;
+}
+@oscar_rpm_files = sort_uniq( @oscar_rpm_files );
+#print "oscar_rpm_files=\n";foreach my $rpm_file (@oscar_rpm_files){print "$rpm_file\n";}
+my @oscar_rpms = @oscar_rpm_files;
+foreach ( @oscar_rpms ) {
+#    $_ =~ s,\.[^\.]+\.rpm$,,g;
+    $_ =~ s,\-[0-9]+.*$,,g;
+}
+@oscar_rpms = sort_uniq( @oscar_rpms );
+#print "oscar_rpms=\n";foreach my $rpm (@oscar_rpms){print "$rpm\n";}
+my $paths_count = scalar @oscar_rpm_paths;
+print "found $paths_count rpm files.\n";
 
-stop_services();
+# find a list of all the services installed by the oscar rpms
+
+print "Searching for services in the oscar rpm files ... ";
+my @oscar_services = ();
+foreach my $oscar_rpm_path ( @oscar_rpm_paths ) {
+    my @files = `rpm -qpl $oscar_rpm_path`;
+    chomp @files;
+    my @service_files = grep( /^\/etc\/rc\.d\/init\.d\/[^\/]/, @files );
+    foreach ( @service_files ) {
+	$_ =~ s,^.*/,,g;
+    }
+    push @oscar_services, @service_files;
+}
+@oscar_services = sort_uniq( @oscar_services );
+#print "oscar_services=\n";foreach my $service (@oscar_services){print "$service\n";}
+my $services_count = scalar @oscar_services;
+print "found these $services_count services:\n";
+my $services_string = join ' ', @oscar_services;
+print "$services_string\n";
+
+# stop all oscar services
+
+stop_services( @oscar_services );
 
 # Delete the clients first so /etc/hosts gets cleaned
-print "/usr/bin/mksimachine --Delete --all\n";
-system("/usr/bin/mksimachine --Delete --all");
+do_command( "/usr/bin/mksimachine --Delete --all" )
+    if -x "/usr/bin/mksimachine";
 
-uninstall_rpms(@rpms);
+uninstall_rpms(@oscar_rpms);
 
-delete_from_pool(@rpms);
+delete_from_pool(@oscar_rpm_files);
 
 cleanup_files();
 
@@ -86,29 +166,24 @@ sub delete_oscar_users {
                   );
     foreach my $oscar_user (@oscar_users) {
         print "Removing user $oscar_user\n";
-        system("userdel -r $oscar_user");
+        do_command("userdel -r $oscar_user");
     }
 }
 
-
 sub stop_services {
-    my @services = qw(
-                      systemimager
-                      dhcpd
-                      pbs_server
-                      maui
-                      gmond
-                      httpd
-                      ntpd
-                     );
-    foreach my $service (@services) {
-        print "service $service stop\n";
-        system("service $service stop");
+    my @found_services = @_;
+    my @all_services = ( @found_services, @known_services );
+    @all_services = sort_uniq( @all_services );
+    foreach my $service (@all_services) {
+	do_command( "service $service stop" )
+	    if -r "/etc/rc.d/init.d/$service";
     }
 }
 
 sub cleanup_files {
     my @dirs = qw(
+		  /opt/kernel_picker
+		  /opt/opium
             	  /etc/systemimager
                   /etc/dhcpd.conf
                   /etc/profile.d/mpi-00mpich.csh
@@ -118,12 +193,10 @@ sub cleanup_files {
                   /etc/systeminstaller
                   /opt/autoupdate
                   /opt/env-switcher*
-		  /opt/kernel_picker
                   /opt/lam*
                   /opt/maui
                   /opt/modules
                   /opt/mpich*
-		  /opt/opium
                   /opt/pbs
                   /opt/rrdtool-1.0.35
                   /usr/local/lib/systemimager
@@ -139,45 +212,63 @@ sub cleanup_files {
     }
 }
 
+sub do_command {
+    my ( $command ) = ( @_ );
+    print "$command\n";
+    return system( "$command" );
+}
 
 sub delete_from_pool {
-    my @rpms = @_;
+    my @rpm_files = @_;
     my $dir = "/tftpboot/rpm/";
     
-    foreach my $rpm (@rpms) {
-        print "rm -f $dir$rpm*\n";
-        system("rm -f $dir$rpm*");
+    foreach my $rpm_file (@rpm_files) {
+	do_command( "rm -f $dir$rpm_file" )
+	    if -r "$dir$rpm_file";
     }
 }
 
+sub _is_installed {
+    my $rpm = shift;
+    return !system("rpm -q $rpm >/dev/null");
+}
+
+# return a sorted, unique lines only version of a passed list
+
+sub sort_uniq {
+    my ( @input_list ) = @_;
+    my %seen;
+    foreach my $value ( @input_list ) {
+        $seen{$value}++;
+    }
+    my @result = sort ( keys %seen );
+    return @result;
+}
+
 sub uninstall_rpms {
-    my @rpms = @_;
+    my @found_rpms = @_;
+    my @all_rpms = ( @found_rpms, @known_rpms );
+    @all_rpms = sort_uniq( @all_rpms );
     my @deleteme = ();
-    foreach my $rpm (@rpms) {
+    foreach my $rpm (@all_rpms) {
         if(_is_installed($rpm)) {
             push @deleteme, $rpm;
         }
     }
     if(scalar(@deleteme)) {
         my $rpmcmd = 'rpm -e --allmatches --nodeps ' . (join ' ', @deleteme);
-	print "$rpmcmd\n";
-        if ( system($rpmcmd) ) {
+        if ( do_command($rpmcmd) ) {
 	    print "couldn't uninstall the rpms, trying again with --noscripts\n";
 	    @deleteme = ();
-	    foreach my $rpm (@rpms) {
+	    foreach my $rpm (@all_rpms) {
 		if(_is_installed($rpm)) {
 		    push @deleteme, $rpm;
 		}
 		my $rpmcmd = 'rpm -e --allmatches --nodeps --noscripts ' . (join ' ', @deleteme);
-		print "$rpmcmd\n";
-		!system($rpmcmd) or croak "couldn't uninstall the rpms";
+		!do_command($rpmcmd) or croak "couldn't uninstall the rpms";
 	    }
 	}
     }
    return 1;
 }
 
-sub _is_installed {
-    my $rpm = shift;
-    return !system("rpm -q $rpm");
-}
