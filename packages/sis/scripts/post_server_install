@@ -21,8 +21,10 @@ use strict;
 use Carp;
 
 # XXX Remove when SystemImager v3.0.1 or greater packages are added.
-my $script = $ENV{OSCAR_PACKAGE_HOME} . "/scripts/systemimager-init-script.patch.sh";
-!system("$script") or croak("Couldn't run patch script $script");
+my $cmd = "cp -f $ENV{OSCAR_PACKAGE_HOME}/scripts/systemimager.init /etc/init.d/systemimager";
+!system("$cmd") or croak("Couldn't $cmd");
+my $cmd = "chmod 755 /etc/init.d/systemimager";
+!system("$cmd") or croak("Couldn't $cmd");
 
 !system("service systemimager restart") or croak("Couldn't restart systemimager");
 
