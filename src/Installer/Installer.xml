@@ -39,7 +39,7 @@
   <tools>
 
     <tool>
-      <dirname>NodeGroups</dirname>
+      <dirname>NodeGroupLister</dirname>
     </tool>
 
     <tool>
