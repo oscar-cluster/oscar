@@ -1,5 +1,8 @@
 TODO:
   + Get feedback from others & roll in changes/updates
+      o do a better job on comments about "where" things run,
+	    eg. Jeremy's comments about execution env & assumptions/limitations
+		for pkg scripts.  Added a few quick notes/comments to Table 3
   + XML stuffo
       o Update DTD
       o Add text about 'xmllint' for pkg validation of "config.xml"
