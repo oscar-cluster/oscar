@@ -20,6 +20,10 @@
 use strict;
 use Carp;
 
+# Make sure httpd is on and started
+!system("chkconfig httpd on") or croak("Couldn't chkconfig httpd on");
+!system("service httpd start") or croak("Couldn't start httpd");
+
 !system("service gmond start") or croak("Couldn't start gmond");
 !system("service ganglia-php-rrd start") or croak("Couldn't start ganglia-php-rrd");
 
