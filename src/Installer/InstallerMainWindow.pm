@@ -86,8 +86,13 @@ use Qt::attributes qw(
 
 # This hash contains all of the currently instantiated Tasks and Tools and
 # is used to build the windowList.  The keys of the hash are the directory
-# names of the Tasks/Tools.
+# names of the Tasks/Tools.  The values are the actual Task/Tool widgets.
 my %currTaskToolWidgets;
+
+# This hash contains a list of the Tasks/Tools which have been launched
+# at least once.  We need this because require/import needs to be called
+# just once per class.  Used by launchTaskTool().
+my %alreadyImported;
 
 sub NEW
 {
@@ -399,7 +404,7 @@ sub windowMenuAboutToShow
 
 =item C<windowMenuAboutToShow()>
 
-A SLOT which is called just before the Window menu is shown.
+A SLOT which is called just before the Window pulldown menu is shown.
 
 This SLOT gets called when the user clicks on the "Window" menu just before
 the pulldown gets displayed.  This way, we can populate the Window menu with
@@ -416,6 +421,7 @@ into Qt so we don't have to do any extra work.)
   windowTileAction->addTo(windowMenu);
   windowMenu->insertSeparator();
 
+  # Get the list of all active windows
   my @windowList = sort (values %currTaskToolWidgets);
   my $numWindows = scalar(@windowList);
   windowCascadeAction->setEnabled($numWindows);
@@ -486,17 +492,9 @@ tasks and launches the selected task.
   return if (!$installerTasksAndTools->{$taskname}->{classname});
 
   # Run all of the oda prereqs and show an error dialog if any fail
-
-  my $success = processOdaCommandsAndTests($taskname);
-
-  if ($success)
-    {
-      openTaskToolWindow($taskname,'task');
-    }
-  else
-    {
-      showErrorDialog($taskname);
-    }
+  (processOdaCommandsAndTests($taskname)) ?
+    (openTaskToolWindow($taskname)) :
+    (showErrorDialog($taskname));
 }
 
 sub toolsMenuActivated
@@ -522,14 +520,14 @@ brings it to the front.
 
   return if (!$installerTasksAndTools->{$toolname}->{classname});
 
-  openTaskToolWindow($toolname,'tool');
+  openTaskToolWindow($toolname);
 }
 
 sub openTaskToolWindow
 {
 #########################################################################
 
-=item C<openTaskToolWindow($tasktool,$type)>
+=item C<openTaskToolWindow($tasktool)>
 
 Lauches a specific Task or Tool, or brings it to the front if already
 running.
@@ -544,13 +542,11 @@ currently running.
 =cut
 
 ### @param $tasktool The directory name of the Task/Tool to be shown.  
-### @param $type Either 'task' or 'tool'.  This is needed because only
-###              one task can be active at a time, but any number of
-###              tools can be active at a time.
 
 #########################################################################
 
-  my ($tasktool,$type) = @_;
+  my ($tasktool) = @_;
+  my $isTask = ($installerTasksAndTools->{$tasktool}->{type} eq 'task');
 
   if ($currTaskToolWidgets{$tasktool})
     { # If the Task/Tool is already running, bring it to the front.
@@ -561,7 +557,7 @@ currently running.
     }
   else
     {
-      if ($type eq 'task')
+      if ($isTask)
         { # Find out if we already have one Task running.  If so, kill it.
           foreach my $temptask (keys %currTaskToolWidgets)
             {
@@ -578,7 +574,7 @@ currently running.
       $currTaskToolWidgets{$tasktool} = launchTaskTool($tasktool,
         $installerTasksAndTools->{$tasktool}->{classname});
 
-      if ($type eq 'task')
+      if ($isTask)
         { # If the Task is the first/last, hide the Back/Next button
           if ($tasktool eq $installerTasksSorted[0])
             { # First Task -> hide its Back button
@@ -620,12 +616,15 @@ closes.
   Qt::Object::connect($currTaskToolWidgets{$tasktool},
                       SIGNAL "taskToolClosing(char*)",
                       SLOT   "taskToolClosed(char*)");
-  Qt::Object::connect($currTaskToolWidgets{$tasktool},
-                      SIGNAL "backButtonWasClicked(char*)",
-                      SLOT   "taskBackButton(char*)");
-  Qt::Object::connect($currTaskToolWidgets{$tasktool},
-                      SIGNAL "nextButtonWasClicked(char*)",
-                      SLOT   "taskNextButton(char*)");
+  if ($installerTasksAndTools->{$tasktool}->{type} eq 'task')
+    {
+      Qt::Object::connect($currTaskToolWidgets{$tasktool},
+                          SIGNAL "backButtonWasClicked(char*)",
+                          SLOT   "taskBackButton(char*)");
+      Qt::Object::connect($currTaskToolWidgets{$tasktool},
+                          SIGNAL "nextButtonWasClicked(char*)",
+                          SLOT   "taskNextButton(char*)");
+    }
 }
 
 sub disconnectTaskTool
@@ -650,12 +649,15 @@ connections made when the Task/Tool was launched.
   Qt::Object::disconnect($currTaskToolWidgets{$tasktool},
                          SIGNAL "taskToolClosing(char*)",
                          SLOT   "taskToolClosed(char*)");
-  Qt::Object::disconnect($currTaskToolWidgets{$tasktool},
-                         SIGNAL "backButtonWasClicked(char*)",
-                         SLOT   "taskBackButton(char*)");
-  Qt::Object::disconnect($currTaskToolWidgets{$tasktool},
-                         SIGNAL "nextButtonWasClicked(char*)",
-                         SLOT   "taskNextButton(char*)");
+  if ($installerTasksAndTools->{$tasktool}->{type} eq 'task')
+    {
+      Qt::Object::disconnect($currTaskToolWidgets{$tasktool},
+                             SIGNAL "backButtonWasClicked(char*)",
+                             SLOT   "taskBackButton(char*)");
+      Qt::Object::disconnect($currTaskToolWidgets{$tasktool},
+                             SIGNAL "nextButtonWasClicked(char*)",
+                             SLOT   "taskNextButton(char*)");
+    }
 }
 
 sub launchTaskTool
@@ -693,14 +695,16 @@ dynamically launch a new instance of the $classname QWidget.
   # Prepend the Task/Tool directory to Perl's @INC array.  We can't do
   # 'use' for the following statements since 'use' is done at compile time
   # and the dirname and classname aren't known until run time.
-  unshift(@INC,"$installerDir/$dirname");
-  require $classname. '.pm';
-  import $classname;
+  if (!$alreadyImported{$classname})
+    { # Only need to do require/import once per class
+      unshift(@INC,"$installerDir/$dirname");
+      require $classname. '.pm';
+      import $classname;
+      $alreadyImported{$classname} = 1;
+    }
   no strict 'refs'; # Needed so that the next statement doesn't complain
-
   my $widget = &$classname(installerWorkspace);
   $widget->show;
-  shift(@INC);      # Remove the Task/Tool directory we prepended earlier
   
   return $widget;   # Return the newly created widget
 }
@@ -711,14 +715,34 @@ sub processOdaCommandsAndTests
 
 =item C<processOdaCommandsAndTests($tasktool)>
 
-THIS STILL NEEDS TO BE COMMENTED!
+Run all prerequisite oda commands/tests for a Task.
+
+This subroutine is called by tasksMenuActivated() to run all <oda>...</oda>
+statements in the GUI.xml file.  These act as prerequisites for a Task being
+allowed to run.  The commands/tests are stored in the
+$installerTasksAndTools hash as follows:
+
+  @{$installerTasksAndTools->{$taskdir}->{command}} - array of <command> tags
+  @{$installerTasksAndTools->{$taskdir}->{test}}    - array of <test> tags
+  @{$installerTasksAndTools->{$taskdir}->{error}}   - array of <error> tags
+
+Since there can be multiple <oda> tags in a GUI.xml file, they are stored as
+arrays, where C<...->{command}[1]> corresponds to C<...->{test}[1]> and
+C<...->{error}[1]>.  The results of the oda commands/tests and (if needed)
+error strings are also stored in the $installerTasksAndTools hash as
+follows:
+  
+  @{$installerTasksAndTools->{$taskdir}->{testSuccess}} - array of test results
+  @{$installerTasksAndTools->{$taskdir}->{errorString}} - array of error texts
 
 =cut
+
+### @param $task The directory name of the Task to be tested.  
 
 #########################################################################
 
   my $task = shift;
-  my $success = 1;   # Assume success
+  my $success = 1;   # Assume success for all oda commands/tests
 
   # Clear out the result arrays from any previous executions
   @{$installerTasksAndTools->{$task}->{testSuccess}} = ();
@@ -728,17 +752,21 @@ THIS STILL NEEDS TO BE COMMENTED!
   for (my $i = 0; $i < $cmdcnt; $i++)
     {
       # Set the appropriate global variables in InstallerUtils corresponding
-      # to the <command>, <test>, and <error> tags.
+      # to the <command> and <test> tags.
       $InstallerUtils::activeOdaCommand = 
         $installerTasksAndTools->{$task}->{command}[$i];
       $InstallerUtils::activeTestCode =
         $installerTasksAndTools->{$task}->{test}[$i];
 
+      # Run the oda command and associated test for current <command>/<test>
       $installerTasksAndTools->{$task}->{testSuccess}[$i] =
         InstallerUtils::runActiveOdaTest();
       if (!$installerTasksAndTools->{$task}->{testSuccess}[$i])
-        {
-          $success = 0;
+        { # Upon test failure, set the global variable in InstallerUtils
+          # corresponding to the <error> tag and get the resulting error
+          # string to be displayed in the error details section of the
+          # error dialog box.
+          $success = 0; # This means at least one oda command/test failed
           $InstallerUtils::activeErrorCode =
             $installerTasksAndTools->{$task}->{error}[$i];
           $installerTasksAndTools->{$task}->{errorString}[$i] =
@@ -878,7 +906,15 @@ sub showErrorDialog
 
 =item C<showErrorDialog($task)>
 
-THIS STILL NEEDS TO BE COMMENTED!
+Show an error dialog box when prerequisite oda commands/tests fail for a
+Task.
+
+When we try to launch a Task, we must first run all of the oda
+commands/tests in the GUI.xml file and return success for all of them.
+These act as prerequisites for the Task to be able to run.  If any of these
+commands/tests fails, we pop up an error dialog box showing that we couldn't
+launch the Tasks and a "Details" button allowing the user to see which tests
+failed.
 
 =cut
 
@@ -897,8 +933,8 @@ THIS STILL NEEDS TO BE COMMENTED!
   my $cmdcnt = scalar(@{$installerTasksAndTools->{$task}->{command}});
   for (my $i = 0; $i < $cmdcnt; $i++)
     {
-      $errortext .= $installerTasksAndTools->{$task}->{errorString}[$i] if
-        (!($installerTasksAndTools->{$task}->{testSuccess}[$i]));
+      $errortext .= $installerTasksAndTools->{$task}->{errorString}[$i] . "\n"
+        if (!($installerTasksAndTools->{$task}->{testSuccess}[$i]));
     }
   $dialog->setErrorDetailsText($errortext);
 
@@ -941,7 +977,7 @@ Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
 
 First Created on February 2, 2004
 
-Last Modified on April 19, 2004
+Last Modified on April 28, 2004
 
 =cut
 
