@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.4 2001/12/22 18:35:01 jsquyres Exp $
+# $Id: Makefile.am,v 1.5 2002/01/05 01:40:04 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -158,7 +158,7 @@ $(MAIN_PDF): $(TEX_SRC) $(FIG_FILES) $(SBS_FILES)
 	then (unset TEXINPUTS; $(PDFLATEX) $*) ; else :; fi
 
 .png.eps:
-	$(PNGTOPNM) $< | $(PNMTOPS) > $*.eps
+	$(PNGTOPNM) $< | $(PNMTOPS) -noturn > $*.eps
 
 # Deleting kruft temporary files
 
