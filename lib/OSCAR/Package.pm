@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.15 2002/10/09 05:27:08 jsquyres Exp $
+#   $Id: Package.pm,v 1.16 2002/10/22 15:52:24 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.15 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.16 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -153,15 +153,56 @@ sub run_in_chroot {
 }
 
 #
-#  This returns the type of rpm list for a package file
+# This returns the type of rpm list for a package file.  If neither
+# rpmlist file exists, return all the RPM names that exist in the RPMS
+# directory (unique by package, of course).
 #
 
 sub rpmlist {
     my ($pkg, $type) = @_;
-    my $listfile = ($type eq "client") ? "client.rpmlist" : "server.rpmlist";
-    my $file = "$ENV{OSCAR_HOME}/packages/$pkg/$listfile";
+    my $prefix = "$ENV{OSCAR_HOME}/packages/$pkg";
+    my $cfile = "$prefix/client.rpmlist";
+    my $sfile = "$prefix/server.rpmlist";
+    my $listfile = ($type eq "client") ? $cfile : $sfile;
     my @rpms = ();
-    if (open(IN,"<$file")) {
+    
+    # If both files do not exist, then return all unique RPM names in
+    # the RPMS directory.
+    
+    if (! -f $cfile && ! -f $sfile) {
+	if (-d "$prefix/RPMS") {
+	    my @parts;
+	    my %found;
+	    my $base;
+	    opendir(PKGDIR, "$prefix/RPMS") ||
+		carp("Unable to open $prefix/RPMS");
+	    
+	    # Remember that there may be multiple versions /
+	    # architectures for each base RPM.  We don't try to
+	    # determine which one is "best" here (that's for
+	    # PackageBest) -- instead, we simply make a list of all
+	    # the base RPM names and ignore the duplicates.
+	    
+	    # Crude hueristic: take each *.rpm filename, split it by
+	    # the character "-" and drop the last 2 components.
+	    
+	    foreach my $file (grep { /\.rpm$/ && -f "$prefix/RPMS/$_" }
+			      readdir(PKGDIR)) {
+		@parts = split(/\-/, $file);
+		pop @parts;
+		pop @parts;
+		$base = join("-", @parts);
+		$found{$base} = 1;
+	    }
+	    closedir(PKGDIR);
+	    @rpms = keys(%found);
+	}
+    }
+    
+    # Otherwise, if either file exists, then read in the desired file
+    # and return it.
+    
+    elsif (open(IN,"<$listfile")) {
 	while(<IN>) {
 	    # get rid of comments
 	    s/\#.*//;
@@ -171,6 +212,7 @@ sub rpmlist {
 	}
 	close(IN);
     }
+
     return @rpms;
 }
 
