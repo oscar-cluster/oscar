@@ -208,3 +208,8 @@ compat-gcc-c++
 compat-gcc-g77
 compat-gcc-java
 compat-gcc-objc
+Xft
+XFree86-Mesa-libGLU
+libmng
+libtiff
+perl-DB_File
