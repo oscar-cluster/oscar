@@ -30,6 +30,9 @@ use SIS::Client;
 use SIS::DB;
 use OSCAR::Database;
 use OSCAR::Package;
+use oda;
+
+
 @EXPORT = qw(delnode_window);
 
 $VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
@@ -99,6 +102,7 @@ sub fill_listbox {
         return 1;
 }
 
+
 sub delnodes {
         my $window=shift;
         my $listbox=shift;
@@ -119,6 +123,22 @@ sub delnodes {
 
         # get the list of services for servers
         database_execute_command("list_services oscar_server", \@server_services, $print_error);
+        
+        print ">> Turning off client services\n";
+        foreach my $client (@clients) {
+                foreach my $generic_service (@generic_services) {
+			print "[$client]\n";
+                        if (system("/usr/bin/ssh $client /etc/init.d/$generic_service stop")) {
+                                carp("client_services phase failed.");
+                                $fail++;
+                        }
+                }
+        }
+
+        if (system("mksimachine --Delete --name $clientstring")) {
+          carp("Failed to delete machines $clientstring");
+          $fail++;
+	}
 
         print ">> Executing post_clients phase\n";
         if (system("./post_clients")) {
@@ -129,17 +149,6 @@ sub delnodes {
         if (system("./post_install")) {
           carp("post_install phase failed.");
           $fail++;
-        }
-
-        print ">> Turning off client services\n";
-        foreach my $client (@clients) {
-                foreach my $generic_service (@generic_services) {
-			print "[$client]\n";
-                        if (system("/usr/bin/ssh $client /etc/init.d/$generic_service stop")) {
-                                carp("client_services phase failed.");
-                                $fail++;
-                        }
-                }
         }
 
         print ">> Re-starting server services\n";
@@ -156,20 +165,6 @@ sub delnodes {
 		}
         }
         
-        if (system("mksimachine --Delete --name $clientstring")) {
-          carp("Failed to delete machines $clientstring");
-          $fail++;
-	}
-
-        # Modifier : DongInn Kim (dikim@osl.iu.edu)
-        # It is added to update the oda database corresponding to the 
-        # the sis database.
-        # post_clients in sis package runs the delete_node, an oda shortcut,
-        # to update all related tables.
-        if(!run_pkg_script("sis","post_clients",1)) {
-                    carp("Couldn't run post_clients script for SIS");
-        }
-
         print ">> Updating C3 configuration file\n";
         if (system("$ENV{OSCAR_HOME}/packages/c3/scripts/post_clients")) {
                 carp("C3 configuration file update phase failed.");
@@ -196,6 +191,9 @@ sub delnodes {
   
 
 }
+
+
+
 
 #
 # NEST

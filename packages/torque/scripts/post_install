@@ -70,8 +70,13 @@ sub startPBSserver
   open(CMD,"/etc/init.d/pbs_server status |");
   my $result = <CMD>;
   close(CMD);
+  system('/etc/init.d/pbs_server restart')
+      unless ($result =~ /is running/);
+}
+
+sub restartPBSserver
+{
   system('/etc/init.d/pbs_server restart');
-  #    unless ($result =~ /is running/);
 }
 
 ######################################################################
@@ -111,7 +116,8 @@ if ($loglevel eq "") {
 #print "Compute on head node is set to $compute_on_head\n";
 
 # Call the update PBS mom config script
-print `../packages/pbs/scripts/update_mom_config`;
+print `../packages/torque/scripts/update_mom_config`;
+
 
 startPBSserver();
 
@@ -144,10 +150,11 @@ while ($inp = <CMD>)
       } 
   }
 close (CMD);
-# print Dumper(\%pbsnodes);
+#print Dumper(\%pbsnodes);
 
 # Get listing of nodes from the SIS database
 my %nodes = get_machine_listing($image);
+
 if ($compute_on_head eq "YES") {
   # Get server proc count
   my $server_procs = 0;
@@ -215,6 +222,7 @@ foreach my $node (sortnodes( keys %pbsnodes ))
   {
     system('/opt/pbs/bin/qmgr -a -e -c "delete node ' . $node . '"');
   }
+restartPBSserver();
 
 # Next, use qmgr command to set up the values for workq
 print "Creating pbs workq queue...\n";
