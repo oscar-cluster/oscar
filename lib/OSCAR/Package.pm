@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.53 2003/06/23 20:18:35 brechin Exp $
+#   $Id: Package.pm,v 1.54 2003/06/25 16:48:07 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.53 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.54 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -242,7 +242,7 @@ sub run_pkg_user_test {
             }
             if($rc) {
                 my $realrc = $rc >> 8;
-                carp("Script $script exitted badly with exit code '$realrc'") if $verbose;
+                carp("Script $script exited badly with exit code '$realrc'") if $verbose;
                 return 0;
             }
     }
@@ -254,12 +254,19 @@ sub run_pkg_user_test {
 #
 # 1. If XML RPM lists for client, server, or all exist, use them.
 
-# 3. Otherwise, get a listing of all the RPMs in package/[name]/RPMS,
+# 2. Otherwise, get a listing of all the RPMs in package/[name]/RPMS,
 #    and use those.
 #
 
 sub rpmlist {
-    my ($pkg, $type) = @_;
+  my ($pkg, $type) = @_;
+
+  # Apparently Neil DID write the code to get this info... too bad he
+  # didn't TELL ANYBODY!!!
+  my @rpms_to_return = OSCAR::Database::database_rpmlist_for_package_and_group($pkg, $type, 0);
+  if ( scalar(@rpms_to_return) == 0 ) {
+
+  # Default to all RPMs in the directory
     my $prefix;
     foreach my $pkg_dir (@PKG_SOURCE_LOCATIONS) {
 	if (-d "$pkg_dir/$pkg") {
@@ -270,132 +277,40 @@ sub rpmlist {
     if (! $prefix) {
 	return ();
     }
-# These files are deprecated
-#    my $cfile = "$prefix/client.rpmlist";
-#    my $sfile = "$prefix/server.rpmlist";
-#    my $listfile = ($type eq "client") ? $cfile : $sfile;
-
-
-# First try the database
-    my @field = ("id");
-    my @wheres= ( "name=$pkg" );
-    my $idresult = database_read_table_fields('packages', \@field, \@wheres, 'id');
-    my ($pkgid, $null) = each %$idresult;
-    my @rpms_to_return = ();
-    @field = ( "rpm" );
-    @wheres= ( "package_id=$pkgid", "group=$type" );
-    my $key;
-    my $value;
-    my $results = database_read_table_fields('packages_rpmlists', \@field, \@wheres, 'rpm', "Couldn't get $type rpms for package $pkg");
-
-#print "keys: " . keys(%$results) . " values: " . values(%$results) . "\n";
-#print "defined? " . defined(%$results) . " true? " . %$results . "\n";
-    if ( keys(%$results) > 0 ) {
-
-	while (($key, $value) = each %$results) {
-	#  print "key: $key, value: $value\n";
-          push @rpms_to_return, $key;
-	}
-        #  print "RPMS: " . @rpms_to_return . "\n";
-	undef $results;
-
-# Now we need the "all" rpmlist
-        @field = ( "rpm", "group" );
-	@wheres= ( "package_id=$pkgid" );
-	$results = database_read_table_fields('packages_rpmlists', \@field, \@wheres, 'rpm', "Couldn't get $type rpms for package $pkg");
-        while (($key, $value) = each %$results) {
-	  my ($null, $group) = each %$value;
-	  if ( $group =~ /oscar/ ) {
-	    delete $$results{$key};
-	  } else {
-	    push @rpms_to_return, $key;
-	  }
-	}
+    if (-d "$prefix/RPMS") {
+      my @parts;
+      my %found;
+      my $base;
+      opendir(PKGDIR, "$prefix/RPMS") ||
+  	carp("Unable to open $prefix/RPMS");
+	    
+    # Remember that there may be multiple versions /
+    # architectures for each base RPM.  We don't try to
+    # determine which one is "best" here (that's for
+    # PackageBest) -- instead, we simply make a list of all
+    # the base RPM names and ignore the duplicates.
+	    
+    # Crude hueristic: take each *.rpm filename, split it by
+    # the character "-" and drop the last 2 components.
+	    
+      foreach my $file (grep { /\.rpm$/ && -f "$prefix/RPMS/$_" }
+		      readdir(PKGDIR)) {
+ 	@parts = split(/\-/, $file);
+ 	pop @parts;
+	pop @parts;
+	$base = join("-", @parts);
+	$found{$base} = 1;
+      }
+      closedir(PKGDIR);
+      @rpms_to_return = keys(%found);
     }
-
-
-# THE FOLLOWING SECTION IS DEPRECATED BY NEW ODA FUNCTIONALITY
-    # If we haven't read in all the package config.xml files, do so.
-
-#    read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
-
-    # Double check to ensure that the package's "installable" XML
-    # attribute is 1.  Return an empty RPM list if it's not.
-
-    # Look for XML first
-#
-#    if ($PACKAGE_CACHE->{$pkg}->{rpmlist}->{server} ||
-#	$PACKAGE_CACHE->{$pkg}->{rpmlist}->{client} ||
-#	$PACKAGE_CACHE->{$pkg}->{rpmlist}->{all}) {
-#	
-#	foreach my $i (0 .. 
-#		       $#{$PACKAGE_CACHE->{$pkg}->{rpmlist}->{all}->{rpm}}) {
-#	    my $rpm = $PACKAGE_CACHE->{$pkg}->{rpmlist}->{all}->{rpm}[$i];
-#	    push @rpms_to_return, $rpm;
-#	}
-#
-#	foreach my $i (0 .. 
-#		       $#{$PACKAGE_CACHE->{$pkg}->{rpmlist}->{$type}->{rpm}}) {
-#	    my $rpm = $PACKAGE_CACHE->{$pkg}->{rpmlist}->{$type}->{rpm}[$i];
-#	    push @rpms_to_return, $rpm;
-#	}
-#    }
-
-
-# server and client rpmlist files are deprecated
-    # Next, look for client.rpmlist and/or server.rpmlist
-
-#    elsif (-f $cfile || -f $sfile) {
-#	if (open(IN,"<$listfile")) {
-#	    while(<IN>) {
-#		# get rid of comments
-#		s/\#.*//;
-#		if(/(\S+)/) {
-#		    push @rpms_to_return, $1;
-#		}
-#	    }
-#	    close(IN);
-#	}
-#    } 
-
-    # Otherwise, get a list of files in packages/[name]/RPMS.
-
-    else {
-	if (-d "$prefix/RPMS") {
-	    my @parts;
-	    my %found;
-	    my $base;
-	    opendir(PKGDIR, "$prefix/RPMS") ||
-		carp("Unable to open $prefix/RPMS");
-	    
-	    # Remember that there may be multiple versions /
-	    # architectures for each base RPM.  We don't try to
-	    # determine which one is "best" here (that's for
-	    # PackageBest) -- instead, we simply make a list of all
-	    # the base RPM names and ignore the duplicates.
-	    
-	    # Crude hueristic: take each *.rpm filename, split it by
-	    # the character "-" and drop the last 2 components.
-	    
-	    foreach my $file (grep { /\.rpm$/ && -f "$prefix/RPMS/$_" }
-			      readdir(PKGDIR)) {
-		@parts = split(/\-/, $file);
-		pop @parts;
-		pop @parts;
-		$base = join("-", @parts);
-		$found{$base} = 1;
-	    }
-	    closedir(PKGDIR);
-	    @rpms_to_return = keys(%found);
-	}
-    }
+  }
 
     # That's all she wrote
 
-    oscar_log_subsection("Returning $type RPMs for $pkg: " . 
+  oscar_log_subsection("Returning $type RPMs for $pkg: " . 
 			 join(' ', @rpms_to_return));
-
-    @rpms_to_return;
+  @rpms_to_return;
 }
 
 #

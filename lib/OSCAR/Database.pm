@@ -312,7 +312,7 @@ sub database_rpmlist_for_package_and_group {
 	 $print_errors_flag ) = @_;
 
     my ($calling_package, $calling_filename, $line) = caller;
-    print "$0: database_rpmlist_for_package_and_group\($package\,$group\) called from package=$calling_package $calling_filename\:$line\n";
+#    print "$0: database_rpmlist_for_package_and_group\($package\,$group\) called from package=$calling_package $calling_filename\:$line\n";
 
     # since we are going to do a number of database operations, we'll
     # try to be more effecient by connecting to the database first if
@@ -349,8 +349,8 @@ sub database_rpmlist_for_package_and_group {
         OSCAR::Database::database_disconnect() if $was_connected_flag;
 	 return undef;
     }
-    print "$0: packages_rpmlists_records:\n";
-    print Dumper(\@packages_rpmlists_records);
+#    print "$0: packages_rpmlists_records:\n";
+#    print Dumper(\@packages_rpmlists_records);
 
     # read in the oscar global architecture, distribution, etc
     my @distribution_results = ();
@@ -391,26 +391,22 @@ sub database_rpmlist_for_package_and_group {
     # now build the matches list
     my @rpms = ();
     foreach my $record_ref ( @packages_rpmlists_records ) {
-	push @rpms, $$record_ref{rpm}
 	    if (
-		( ! exists $$record_ref{distribution} ||
-		  ! defined $$record_ref{distribution} ||
+		( ! defined $$record_ref{distribution} ||
 		  $$record_ref{distribution} eq $distribution )
 		&&
-		( ! exists $$record_ref{distribution_version} ||
-		  ! defined $$record_ref{distribution_version} ||
+		( ! defined $$record_ref{distribution_version} ||
 		  $$record_ref{distribution_version} eq $distribution_version )
 		&&
-		( ! exists $$record_ref{group} ||
-		  ! defined $$record_ref{group} ||
+		( ! defined $$record_ref{group} ||
 		  ! defined $group ||
 		  $$record_ref{group} eq $group )
-	       );
+	       ) { push @rpms, $$record_ref{rpm}; }
     }
 	    
     OSCAR::Database::database_disconnect() if $was_connected_flag;
 
-    print "Returning group $group RPMs for $package: " . join(' ', @rpms) . "\n";
+#    print "Returning group $group RPMs for $package: " . join(' ', @rpms) . "\n";
 
     return @rpms;
 }
