@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.13 2002/01/17 03:04:23 jsquyres Exp $
+% $Id: detailed.tex,v 1.14 2002/01/17 23:04:12 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -430,15 +430,31 @@ suit your particular requirements.
 
 \subparagraph{Disk partitioning}
 
-The disk partition file has the following format:
+The disk partition file contains a line for each partition desired, where
+each line is in the following format:
+
+\begin{verbatim}
+<partition>  <size in megabytes>  <type>  <mount point>  <options>
+\end{verbatim}
+
+Here is a sample:
+
+\begin{verbatim}
+/dev/sda1       24          ext2      /boot   rw
+/dev/sda5       128         swap
+/dev/sda6       1000        ext2     /        rw
+\end{verbatim}
+
+The last partition specified will grow to fill the entire disk.
+You can create your own partition files, but make sure that you
+don't exceed the physical capacity of your client hardware. The sample
+listed above, and some others, are in the \file{oscarsamples} directory.
 
 \subparagraph{Package lists}
 The package list is simply a list of rpm file names, 1
 per line. Be sure and include all of the prerequisites that
 any packages you might add have. You do not need to specify
-the architecture portion of the filename, nor do you need 
-to specify the version. The highest version that matches the
-portion that you specify will be used.
+the architecture portion of the filename, or the .rpm extension.
 
 \subsubsection{Define your client machines} 
 \label{det:defclients}
