@@ -32,7 +32,7 @@ use Data::Dumper;
 
 push_hosts() or croak("Couldn't push hosts file to images");
 
-my @pkgs = list_install_pkg();
+my @pkgs = list_selected_packages();
 
 my $return = 0;
 

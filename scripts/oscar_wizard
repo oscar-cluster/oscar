@@ -21,7 +21,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.46 2003/03/11 23:49:27 tfleury Exp $
+# $Id: oscar_wizard,v 1.47 2003/04/18 22:34:58 ngorsuch Exp $
 #
 
 use strict;
@@ -259,7 +259,7 @@ sub build_oscar_image {
     # Get a list of the client RPMs that we want to install.  Make a
     # new file containing the names of all the RPMs to install.
 
-    my @pkgs = list_install_pkg("all");
+    my @pkgs = list_selected_packages("all");
     my $outfile = "/tmp/oscar-install-rpmlist.$$";
     $save_text = $outfile;
     open(OUTFILE, ">$outfile") or croak("Could not open $outfile");

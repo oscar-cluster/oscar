@@ -53,7 +53,7 @@ oscar_log_subsection("post_rpm_install: Running ssh setup");
 
 # Here we run all the post_rpm_install scripts
 
-my @pkgs = list_install_pkg();
+my @pkgs = list_selected_packages();
 
 my $return = 0;
 

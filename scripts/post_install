@@ -37,7 +37,7 @@ get_numproc();
 system(". /etc/profile.d/c3.sh && cpush /etc/hosts") and carp("Couldn't push /etc/hosts to all nodes");
 
 my $return = 0;
-my @pkgs = list_install_pkg();
+my @pkgs = list_selected_packages();
 foreach my $pkg (@pkgs) {
     if(!run_pkg_script($pkg,"post_install",1)) {
         carp("Couldn't run 'post_install' script for $pkg");
