@@ -141,8 +141,8 @@ sub getPackagesInPackageSet
   # values are "1"s for those packages.
   my @packagesInSet;
   my $packagesInSet;
-  my $success = database_execute_command("packages_in_package_set $packageSet",
-                                         \@packagesInSet);
+  my $success = OSCAR::Database::database_execute_command(
+    "packages_in_package_set $packageSet",\@packagesInSet);
   if ($success)
     { # Transform the array into a hash
       foreach my $pack (@packagesInSet)
@@ -176,8 +176,8 @@ sub getPackagesInstalled
       # are the (short) names of the packages and the values are "1"s for 
       # those packages.
       my @packagesInstalled;
-      my $success =
-        database_execute_command("packages_installed",\@packagesInstalled);
+      my $success = OSCAR::Database::database_execute_command(
+        "packages_installed",\@packagesInstalled);
       if ($success)
         { # Transform the array of installed packages into a hash
           foreach my $pack (@packagesInstalled)
@@ -263,9 +263,9 @@ sub populateTable
       my $packagesToBeInstalled;    # Hash ref of transformed array
       my @packagesToBeUninstalled;  # Array
       my $packagesToBeUninstalled;  # Hash ref of transformed array
-      $success = database_execute_command(
+      $success = OSCAR::Database::database_execute_command(
         "packages_that_should_be_installed",\@packagesToBeInstalled);
-      $success = database_execute_command(
+      $success = OSCAR::Database::database_execute_command(
         "packages_that_should_be_uninstalled",\@packagesToBeUninstalled);
       # Transform these lists into hashes
       foreach my $pack (@packagesToBeInstalled)
@@ -296,8 +296,8 @@ sub populateTable
   else
     { # Running as the 'Selector'.  Check boxes according to package set.
       # Set the newly selected package set as the "selected" one in oda
-      $success = 
-        database_execute_command("set_selected_package_set $currSet");
+      $success = OSCAR::Database::database_execute_command(
+        "set_selected_package_set $currSet");
       if (!$success)
         {
           Carp::carp("Could not do oda command " .
@@ -485,7 +485,7 @@ sub checkboxChangedForSelector
                   if ((!(defined $packagesInSet->{$reqkey})) || 
                       ($packagesInSet->{$reqkey} != 1))
                     {
-                      $success = database_execute_command(
+                      $success = OSCAR::Database::database_execute_command(
                         "add_package_to_package_set $reqkey $currSet");
                       Carp::carp("Could not do oda command 
                         'add_package_to_package_set $reqkey $currSet'") if 
@@ -501,7 +501,7 @@ sub checkboxChangedForSelector
                   if ((defined $packagesInSet->{$conkey}) &&
                       ($packagesInSet->{$conkey} == 1))
                     {
-                      $success = database_execute_command(
+                      $success = OSCAR::Database::database_execute_command(
                         "remove_package_from_package_set $conkey $currSet");
                       Carp::carp("Could not do oda command 'remove_".
                         "package_from_package_set $conkey $currSet'") if 
@@ -516,7 +516,7 @@ sub checkboxChangedForSelector
           if ((!(defined $packagesInSet->{$package})) || 
               ($packagesInSet->{$package} != 1))
             {
-              $success = database_execute_command(
+              $success = OSCAR::Database::database_execute_command(
                 "add_package_to_package_set $package $currSet");
               Carp::carp("Could not do oda command 
                 'add_package_to_package_set $package $currSet'") if 
@@ -542,7 +542,7 @@ sub checkboxChangedForSelector
                   if ((defined $packagesInSet->{$reqkey}) || 
                       ($packagesInSet->{$reqkey} == 1))
                     {
-                      $success = database_execute_command(
+                      $success = OSCAR::Database::database_execute_command(
                         "remove_package_from_package_set " .
                           "$reqkey $currSet");
                       Carp::carp("Could not do oda command 
@@ -557,7 +557,7 @@ sub checkboxChangedForSelector
           if ((defined $packagesInSet->{$package}) || 
               ($packagesInSet->{$package} == 1))
             {
-              $success = database_execute_command(
+              $success = OSCAR::Database::database_execute_command(
                 "remove_package_from_package_set $package $currSet");
               Carp::carp("Could not do oda command 
                 'remove_package_from_package_set $package $currSet'") if 

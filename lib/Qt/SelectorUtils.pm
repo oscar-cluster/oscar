@@ -64,8 +64,8 @@ sub addTypeNameFieldToPackage
   my($field,$package) = @_;
   my $href;
   my @list = ();
-  my $success = database_execute_command("read_records ".
-                "packages_$field package=$package type name", \@list);
+  my $success = OSCAR::Database::database_execute_command(
+    "read_records packages_$field package=$package type name", \@list);
   Carp::carp("Could not do oda command 'read_records packages_$field ".
        "package=$package type name'") if (!$success);
   foreach my $item (@list)
@@ -120,7 +120,8 @@ sub getAllPackages # -> $allPackages
                    # "filter_architecture","filter_distribution",
                    # "filter_distribution_version"
                   );
-  $allPackages = database_read_table_fields("packages",\@requested,undef);
+  $allPackages = OSCAR::Database::database_read_table_fields(
+    "packages",\@requested,undef);
 
   my $version;
   my $href;
@@ -337,18 +338,20 @@ sub createDefaultPackageSet # -> ($success)
 #########################################################################
 
   # First create a new package set name 'Default'
-  my $success = database_execute_command("create_package_set Default");
+  my $success = OSCAR::Database::database_execute_command(
+    "create_package_set Default");
   if ($success)
     { 
       # Make Default the "selected" package set
-      $success = database_execute_command("set_selected_package_set Default");
+      $success = OSCAR::Database::database_execute_command(
+        "set_selected_package_set Default");
 
       # Then, add all packages to this Default set
       getAllPackages();
       foreach my $pack (keys %{ $allPackages })
         {
-          $success = database_execute_command("add_package_to_package_set " .
-                       "$pack Default"); 
+          $success = OSCAR::Database::database_execute_command(
+            "add_package_to_package_set $pack Default"); 
           Carp::carp("Could not do oda command 'add_package_to_package_set " .
             "$pack Default'") if (!$success);
         }
@@ -377,7 +380,8 @@ sub populatePackageSetList
   my @packageSets;           # List of package sets in oda
   my $createDefault = 0;     # Should we create a "Default" package set?
 
-  my $success = database_execute_command("package_sets",\@packageSets);
+  my $success = OSCAR::Database::database_execute_command(
+    "package_sets",\@packageSets);
   if ($success)
     {
       if ((scalar @packageSets) > 0) # Make sure there's at least 1 package set
@@ -391,8 +395,8 @@ sub populatePackageSetList
           if ($widget->className() eq "QComboBox")
             {
               my @selpack;
-              my $success = database_execute_command("selected_package_set",
-                \@selpack);
+              my $success = OSCAR::Database::database_execute_command(
+                "selected_package_set",\@selpack);
               $widget->setCurrentText($selpack[0]) if (scalar @selpack > 0);
             }
         }

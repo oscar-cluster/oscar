@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'SelectorManageSets.ui'
 #
-# Created: Tue Jul 1 18:33:13 2003
+# Created: Wed Oct 29 21:10:57 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -174,7 +174,8 @@ sub createNewPackageSet
     } while ($nameclash);
   
   # Add the new name to the database and to the ListBox
-  my $success = database_execute_command("create_package_set $newSetName");
+  my $success = OSCAR::Database::database_execute_command(
+    "create_package_set $newSetName");
   Carp::carp("Could not do oda command 'create_package_set $newSetName'") if 
     (!$success);
 
@@ -203,14 +204,14 @@ sub duplicateButton_clicked
       # Copy all of the packages listed in the old package set
       # over to the newly created package set.
       my @packagesInSet;
-      my $success = database_execute_command("packages_in_package_set " .
-                   $lastSet,\@packagesInSet);
+      my $success = OSCAR::Database::database_execute_command(
+        "packages_in_package_set $lastSet",\@packagesInSet);
       Carp::carp("Could not do oda command 'packages_in_package_set " .
         $lastSet . "'") if (!$success);
       foreach my $pack (@packagesInSet)
         {
-          $success = database_execute_command("add_package_to_package_set " .
-                       "$pack $currSet"); 
+          $success = OSCAR::Database::database_execute_command(
+            "add_package_to_package_set $pack $currSet"); 
           Carp::carp("Could not do oda command 'add_package_to_package_set " .
             "$pack $currSet'") if (!$success);
         }
@@ -276,8 +277,8 @@ sub renameButton_clicked
               else
                 {
                   my $selected = packageSetsListBox->currentText();
-                  $success = database_execute_command("rename_package_set ".
-                               "$selected $response");
+                  $success = OSCAR::Database::database_execute_command(
+                    "rename_package_set $selected $response");
                   if ($success)
                     {
                       refreshPackageSetsListBox();
@@ -318,7 +319,8 @@ sub deleteButton_clicked
       (packageSetsListBox->count() > 1))
     { 
       my $selected = packageSetsListBox->currentText();
-      my $success = database_execute_command("delete_package_set $selected");
+      my $success = OSCAR::Database::database_execute_command(
+        "delete_package_set $selected");
       if ($success)
         {
           refreshPackageSetsListBox();
@@ -350,8 +352,8 @@ sub newCoreButton_clicked
     {
       if ($allPackages->{$pack}{class} eq "core")
         {
-          my $success = database_execute_command("add_package_to_package_set " .
-                       "$pack $currSet"); 
+          my $success = OSCAR::Database::database_execute_command(
+            "add_package_to_package_set $pack $currSet"); 
           Carp::carp("Could not do oda command 'add_package_to_package_set " .
             "$pack $currSet'") if (!$success);
         }
@@ -378,8 +380,8 @@ sub newAllButton_clicked
   my $allPackages = SelectorUtils::getAllPackages();
   foreach my $pack (keys %{ $allPackages })
     {
-      my $success = database_execute_command("add_package_to_package_set " .
-                      "$pack $currSet"); 
+      my $success = OSCAR::Database::database_execute_command(
+        "add_package_to_package_set $pack $currSet"); 
       Carp::carp("Could not do oda command 'add_package_to_package_set " .
         "$pack $currSet'") if (!$success);
     }

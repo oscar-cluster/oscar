@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'Selector.ui'
 #
-# Created: Wed Oct 29 20:19:05 2003
+# Created: Wed Oct 29 21:10:58 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -297,7 +297,7 @@ sub init
   parseCommandLine();
 
   # Make sure the database is up and running
-  my $success = database_connect();
+  my $success = OSCAR::Database::database_connect();
   if ($success)
     {
       # Create the form windows for SelectorAbout and SelectorManageSets
@@ -456,9 +456,9 @@ sub exitButton_clicked
       my $success;  # Return code for database commands
 
       # First, clear all install/uninstall flags
-      $success = database_execute_command(
+      $success = OSCAR::Database::database_execute_command(
         "packages_clear_all_should_be_installed");
-      $success = database_execute_command(
+      $success = OSCAR::Database::database_execute_command(
         "packages_clear_all_should_be_uninstalled");
 
       # Then scan the table for packages to be installed/uninstalled
@@ -471,19 +471,19 @@ sub exitButton_clicked
 
           if (($packagesInstalled->{$package}) && (!$checked))
             { # Need to uninstall package
-              $success = database_execute_command(
+              $success = OSCAR::Database::database_execute_command(
                 "package_mark_should_be_uninstalled $package");
             }
 
           if ((!($packagesInstalled->{$package})) && ($checked))
             { # Need to install package
-              $success = database_execute_command(
+              $success = OSCAR::Database::database_execute_command(
                 "package_mark_should_be_installed $package");
             }
         }
     }
 
-  database_disconnect();
+  OSCAR::Database::database_disconnect();
   Qt::Application::exit();
 
 }
@@ -497,7 +497,7 @@ sub cancelButton_clicked
 #  Returns   : Nothing                                                  #
 #########################################################################
 
-  database_disconnect();
+  OSCAR::Database::database_disconnect();
   Qt::Application::exit();
 
 }
