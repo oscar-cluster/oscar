@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.19 2003/11/14 00:42:01 tfleury Exp $
+#  $Id: PackageInUn.pm,v 1.20 2003/11/25 23:36:39 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@ our @EXPORT = qw(install_uninstall_packages
                  check_dependant_package); 
 
 my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
+my @error_list = ();
 
 #########################################################################
 #  Subroutine: install_uninstall_packages                               #
@@ -159,7 +160,9 @@ sub install_uninstall_packages
 		}
 		else
 		{
-			print "Error: package ($package) failed to uninstall.\n";
+			my $e_string = "Error: package ($package) failed to uninstall.\n";
+			print $e_string;
+			add_error($e_string);
 		}
 	}
 
@@ -180,9 +183,14 @@ sub install_uninstall_packages
 		}
 		else
 		{
-			print "Error: package ($package) failed to install.\n";
+			my $e_string = "Error: package ($package) failed to install.\n";
+			print $e_string;
+			add_error($e_string);
 		}
 	}
+
+	#added this to reprint all errors found
+	print_errors();
 
 	#now run every packages post_install phase if it is installed
 	@all_packages = OSCAR::Package::list_installable_packages("all"); 
@@ -196,10 +204,16 @@ sub install_uninstall_packages
 			}
 			else
 			{
-				print "Warning: nothing ran for ($package) post_install phase on server\n";
+				my $e_string = "Warning: nothing ran for ($package) post_install phase on server\n";
+				print $e_string;
+				add_error($e_string);
 			}
 		}
 	}
+
+	#added this to reprint all errors found...again
+	#included the stuff from the post_installs
+	print_errors();
                                                                                 
                                                                                 
 	# we'll give a shot at avoiding this for now
@@ -273,7 +287,9 @@ sub package_install
 	#add check to see if package exists
 	if ((is_package_a_package($package_name)) =~ 1)
 	{
-		print "Error: package ($package_name) does not exist...\n";
+		my $e_string = "Error: package ($package_name) does not exist...\n";
+		print $e_string;
+		add_error($e_string);
 		return 6;
 	} 
 
@@ -281,20 +297,26 @@ sub package_install
 
 	if ($test_value =~ "1")
 	{
-		print "Error: package ($package_name) is installed already, aborting...\n";
+		my $e_string = "Error: package ($package_name) is installed already, aborting...\n";
+		print $e_string;
+		add_error($e_string);
 		return (5);
 	}
 
 	#check to see if package is dependant on anything
 	if( check_package_dependancy($package_name))
 	{
-		print "Error: package has dependancies\n";
+		my $e_string = "Error: package has dependancies\n";
+		print $e_string;
+		add_error($e_string);
 		return (7);
 	} 
 
 	if (!$headnode && !$allnodes && !$image)
 	{
-		print "Error: no install target selected.\n";
+		my $e_string = "Error: no install target selected.\n";
+		print $e_string;
+		add_error($e_string);
 		return (1);
 	}
 
@@ -302,7 +324,9 @@ sub package_install
 	{
 		if(!run_install_client($package_name, $testmode, $imagename, $range))
 		{
-			print "Error: cannot install to the nodes.\n";
+			my $e_string = "Error: cannot install to the nodes.\n";
+			print $e_string;
+			add_error($e_string);
 			return (3);
 		}
 	}
@@ -311,7 +335,9 @@ sub package_install
 	{
 		if(!run_install_server($package_name, $testmode))
 		{
-			print "Error: cannot install on the server.\n";
+			my $e_string = "Error: cannot install on the server.\n";
+			print $e_string;
+			add_error($e_string);
 			return (2);
 		}
 	}
@@ -320,7 +346,9 @@ sub package_install
 	{
 		if(!run_install_image($package_name, $testmode, $imagename))
 		{
-			print "Error: cannot install to the image:$image\n";
+			my $e_string = "Error: cannot install to the image:$image\n";
+			print $e_string;
+			add_error($e_string);
 			return (4);
 		}
 	}
@@ -384,7 +412,9 @@ sub run_install_client
 
 	if (!(-d $imagepath))
 	{
-		print "Error: image name is invalid\n";
+		my $e_string = "Error: image name is invalid\n";
+		print $e_string;
+		add_error($e_string);
 		return (0);
 	}
 
@@ -392,7 +422,9 @@ sub run_install_client
 
 	if( !defined($package_dir) )
 	{
-		print "Error: can't find the package\n";
+		my $e_string = "Error: can't find the package\n";
+		print $e_string;
+		add_error($e_string);
 		return (0);
 	}
 
@@ -401,7 +433,9 @@ sub run_install_client
 	{
 		if((check_rpm_list("image", \@rpmlist, \@newrpmlist, "/var/lib/systemimager/images/$imagename")) != 0)
 		{
-			print "Error: check_rpm_list() failed\n";
+			my $e_string = "Error: check_rpm_list() failed\n";
+			print $e_string;
+			add_error($e_string);
 			return (0);
 		}
 
@@ -586,7 +620,10 @@ sub run_install_image
 	#hope those images are all in the same place
 	if (!(-d "/var/lib/systemimager/images/$imagename"))
 	{
-		print "Error: image name ($imagename) is invalid\n";
+
+		my $e_string = "Error: image name ($imagename) is invalid\n";
+		print $e_string;
+		add_error($e_string);
 		return (0);
 	}
 
@@ -595,7 +632,9 @@ sub run_install_image
 
 	if( !defined($package_dir) )
 	{
-		print "Error: can't find the package\n";
+		my $e_string = "Error: can't find the package\n";
+		print $e_string;
+		add_error($e_string);
 		return (0);
 	}
 	
@@ -604,7 +643,9 @@ sub run_install_image
 	{
 		if((check_rpm_list("image", \@rpmlist, \@newrpmlist, "/var/lib/systemimager/images/$imagename")) != 0)
 		{
-			print "check_rpm_list failed\n";
+			my $e_string = "Error: check_rpm_list failed\n";
+			print $e_string;
+			add_error($e_string);
 			return (0);
 		}
 
@@ -662,7 +703,9 @@ sub run_install_image
 	}
 	elsif ($retval == 2)
 	{
-		print "Error: finding rpms to install\n";
+		my $e_string = "Error: finding rpms to install failed\n";
+		print $e_string;
+		add_error($e_string);
 		return (0); 
 	}
 
@@ -721,7 +764,9 @@ sub run_install_server
 
 	if( !defined($package_dir) )
 	{
-		print "Error: can't find the package\n";
+		my $e_string = "Error: can't find the package\n";
+		print $e_string;
+		add_error($e_string);
 		return (0);
 	}
 
@@ -735,7 +780,9 @@ sub run_install_server
 	{
 		if((check_rpm_list("server", \@rpmlist, \@newrpmlist)) != 0)
 		{
-			print "check_rpm_list failed\n";
+			my $e_string = "Error: check_rpm_list failed\n";
+			print $e_string;
+			add_error($e_string);
 			return (0);
 		}
 
@@ -1064,7 +1111,9 @@ sub get_rpm_list
 				else
 				{
 					#no match even in /tftpboot/rpm...punt
-					print "Error: No rpm found for:$rpm\n";
+					my $e_string = "Error: No rpm found for:$rpm\n";
+					print $e_string;
+					add_error($e_string);
 				}
 			}
 		}
@@ -1074,7 +1123,9 @@ sub get_rpm_list
 		{
 			#in a sane world this should fail...
 			#and now it does
-			print "Error: number of rpms in database do not match number found on filesystem.\n";
+			my $e_string = "Error: number of rpms in database do not match number found on filesystem.\n";
+			print $e_string;
+			add_error($e_string);
 			return 2;
 		}
 
@@ -1130,7 +1181,9 @@ sub package_uninstall
 
 	if ((is_package_a_package($package_name)) =~ 1)
 	{
-		print "Error: package ($package_name) does not exist...\n";
+		my $e_string = "Error: package ($package_name) does not exist...\n";
+		print $e_string;
+		add_error($e_string);
 		return 6;
 	} 
 
@@ -1138,19 +1191,25 @@ sub package_uninstall
 
 	if ($test_value =~ "0")
 	{
-		print "Error: package ($package_name) is not installed, aborting...\n";
+		my $e_string = "Error: package ($package_name) is not installed, aborting...\n";
+		print $e_string;
+		add_error($e_string);
 		return (6);
 	}
 
 	if (!$headnode && !$allnodes && !$image)
 	{
-		print "Error: no uninstall target selected\n";
+		my $e_string = "Error: no uninstall target selected\n";
+		print $e_string;
+		add_error($e_string);
 		return (1);
 	} 
 	#check to see if other packages need it
 	if( check_dependant_package($package_name))
 	{
-		print "Error: other packages depend on this package\n";
+		my $e_string = "Error: other packages depend on this package\n";
+		print $e_string;
+		add_error($e_string);
 		return (7);
 	} 
 
@@ -1158,7 +1217,9 @@ sub package_uninstall
 	{
 		if (run_uninstall_client($package_name, $testmode, $imagename, $range))
 		{
-			print "Error: cannot uninstall on clients.\n";
+			my $e_string = "Error: cannot uninstall on clients.\n";
+			print $e_string;
+			add_error($e_string);
 			return (3);
 		}
 	}
@@ -1167,7 +1228,9 @@ sub package_uninstall
 	{ 
 		if (run_uninstall_server($package_name, $testmode))
 		{
-			print "Error: cannot uninstall on server.\n";
+			my $e_string = "Error: cannot uninstall on server.\n";
+			print $e_string;
+			add_error($e_string);
 			return (2);
 		}
 	}
@@ -1176,7 +1239,9 @@ sub package_uninstall
 	{
 		if(run_uninstall_image($package_name, $testmode, $imagename))
 		{
-			print "Error: cannot uninstall on the image.\n";
+			my $e_string = "Error: cannot uninstall on the image.\n";
+			print $e_string;
+			add_error($e_string);
 			return (4);
 		}
 	}
@@ -1311,8 +1376,13 @@ sub run_uninstall_server
 	}
 	else
 	{
-		oscar_log_subsection("Error $package_name has no un-install script");
+		my $e_string = "Error $package_name has no un-install script\n";
+		oscar_log_subsection("Error $package_name has no un-install script\n");
+		add_error($e_string);
 	}
+
+	my $e_string = "Error on server un-install for $package_name \n";
+	add_error($e_string);
 
 	oscar_log_subsection("Error on server un-install for $package_name");
 	return (1);
@@ -1354,7 +1424,9 @@ sub run_uninstall_client
 
 		if (!(-d $imgdir))
 		{
-			print "Error: not a valid image ($imagename)\n";
+			my $e_string = "Error: not a valid image ($imagename)\n";
+			print $e_string;
+			add_error($e_string);
 			return (1);
 		}
 
@@ -1393,9 +1465,13 @@ sub run_uninstall_client
 	}
 	else 
 	{
+		my $e_string = "Error $package_name has no un-install script\n";
+		add_error($e_string);
 		oscar_log_subsection("Error $package_name has no un-install script");
 	}
 
+	my $e_string = "Error on client un-install for $package_name \n";
+	add_error($e_string);
 	oscar_log_subsection("Error on client un-install for $package_name");
 	return 1;
 }
@@ -1429,8 +1505,10 @@ sub run_uninstall_image
 	{
 		@temp_list = split(/\//,$script_path);
 		if (!(-d "/var/lib/systemimager/images/$imagename"))
-		{
-			print "Error: not a valid imagename ($imagename)\n";
+		{		
+			my $e_string = "Error: not a valid imagename ($imagename)\n";
+			print $e_string;
+			add_error($e_string);
 			return (1);
 		}
 
@@ -1464,9 +1542,13 @@ sub run_uninstall_image
 	}
 	else
 	{
+		my $e_string = "Error $package_name has no un-install script\n";
+		add_error($e_string);
 		oscar_log_subsection("Error $package_name has no un-install script");
 	}
 
+	my $e_string = "Error on image un-install for $package_name \n";
+	add_error($e_string);
 	oscar_log_subsection("Error on image un-install for $package_name");
 
 	return (1);
@@ -1541,7 +1623,9 @@ sub run_command_general
 	}
 	else
 	{
-		print "Error executing:$cmd_string\n";
+		my $e_string = "Error executing:$cmd_string\n";
+		print $e_string;
+		add_error($e_string);
 		return 1;
 	} 
 
@@ -1552,7 +1636,9 @@ sub run_command_general
 	else
 	{
 		#log results
-		print "Error executing:$cmd_string\n:";
+		my $e_string = "Error executing:$cmd_string:\n";
+		print $e_string;
+		add_error($e_string);
 		foreach $aline (@cmd_out)
 		{	
 			print $aline."\n";
@@ -1720,6 +1806,27 @@ sub trim_cexec_pipe_output
 
 	print "STUB: THIS IS NOT READY YET.\n";
 	return(-1);
+}
+
+#this function adds an error to the global list
+#@error_list...and thats it
+#returns nothing
+sub add_error
+{
+	my $error_string = shift;
+	push(@error_list, $error_string);
+}
+
+#this method prints out the global list
+#@error_list
+#returns nothing
+sub print_errors
+{
+	my $error;
+	foreach $error (@error_list)
+	{
+		print $error;
+	}
 }
 
 1;
