@@ -66,11 +66,12 @@ sub NEW
 
   setName("SelectorTable") if (name() eq "unnamed");
 
-  setNumCols(4);
+  setNumCols(5);
   horizontalHeader()->setLabel(0,"Short Name");
-  horizontalHeader()->setLabel(1,"Package Name");
-  horizontalHeader()->setLabel(2,"Class");
-  horizontalHeader()->setLabel(3,"Location/Version");
+  horizontalHeader()->setLabel(1,"");
+  horizontalHeader()->setLabel(2,"Package Name");
+  horizontalHeader()->setLabel(3,"Class");
+  horizontalHeader()->setLabel(4,"Location/Version");
   hideColumn(0);
   setShowGrid(0);
   verticalHeader()->hide();   # Get rid of the numbers along the left side
@@ -81,12 +82,15 @@ sub NEW
   setRowMovingEnabled(0);
   setSorting(1);              # Sort method overridden below
   setColumnStretchable(1,0);
-  setColumnStretchable(2,1);
+  setColumnStretchable(2,0);
   setColumnStretchable(3,1);
+  setColumnStretchable(4,1);
   setColumnReadOnly(1,0);
   setColumnReadOnly(2,1);
   setColumnReadOnly(3,1);
+  setColumnReadOnly(4,1);
   adjustColumn(1);            # Auto-set width of column 1
+  adjustColumn(2);            # Auto-set width of column 2
 
   # Create colors needed by the table when the GUI is run as the 'Updater'
   SelectorUtils::createColors();
@@ -116,7 +120,42 @@ sub sortColumn
   my $ascending = shift;
   my $wholeRows = shift;
 
+  my $currPack = "";
+
+  # When the checkbox column header is clicked, sort based on long name instead
+  $col = 2 if ($col == 1);
+
+  # If we have a row selected, we need to unselect it and reselect it
+  # later since it's row number will probably have changed after sorting.
+  if (numSelections() == 1)
+    {
+      $currPack = item(selection(0)->bottomRow(),0)->text();
+      clearSelection(1);
+    }
+
+  # Do the actual sorting by calling the parent's sortColumn routine
   SUPER->sortColumn($col,$ascending,1);
+
+  # If we had a row selected, select the new row where the package is now.
+  if ($currPack)
+    { # Search for the new row number of the selected package
+      my $found = 0;
+      my $currRow = 0;
+      while ((!$found) && ($currRow < numRows()))
+        {
+          $found = 1 if (item($currRow,0)->text() eq $currPack);
+          $currRow++ if (!$found);
+        }
+
+      # If we found the package's new row, create a selection for it.
+      if ($found)
+        { 
+          my $sel = Qt::TableSelection();
+          $sel->init($currRow,0);
+          $sel->expandTo($currRow,4);
+          addSelection($sel);
+        }
+    }
 }
 
 sub getPackagesInPackageSet
@@ -141,8 +180,8 @@ sub getPackagesInPackageSet
   # values are "1"s for those packages.
   my @packagesInSet;
   my $packagesInSet;
-  my $success = OSCAR::Database::database_execute_command(
-    "packages_in_package_set $packageSet",\@packagesInSet);
+  my $success = database_execute_command("packages_in_package_set $packageSet",
+                                         \@packagesInSet);
   if ($success)
     { # Transform the array into a hash
       foreach my $pack (@packagesInSet)
@@ -176,8 +215,8 @@ sub getPackagesInstalled
       # are the (short) names of the packages and the values are "1"s for 
       # those packages.
       my @packagesInstalled;
-      my $success = OSCAR::Database::database_execute_command(
-        "packages_installed",\@packagesInstalled);
+      my $success =
+        database_execute_command("packages_installed",\@packagesInstalled);
       if ($success)
         { # Transform the array of installed packages into a hash
           foreach my $pack (@packagesInstalled)
@@ -229,29 +268,35 @@ sub populateTable
           my $item = SelectorTableItem(this,Qt::TableItem::Never(),$pack);
           setItem($rownum,0,$item);
 
-          # Column 1 contains checkboxes and "long" package names
+          # Column 1 contains checkboxes
           my $checkbox =
-            SelectorCheckTableItem(this,$allPackages->{$pack}{package});
+            SelectorCheckTableItem(this,"");
           setItem($rownum,1,$checkbox);
 
-          # Column 2 contains the "class" of packages
+          # Column 2 contains the long names of packages
           $item = SelectorTableItem(this,Qt::TableItem::Never(),
-                                    $allPackages->{$pack}{class});
+                                    $allPackages->{$pack}{package});
           setItem($rownum,2,$item);
 
-          # Column 3 contains the Location + Version
+          # Column 3 contains the "class" of packages
+          $item = SelectorTableItem(this,Qt::TableItem::Never(),
+                                    $allPackages->{$pack}{class});
+          setItem($rownum,3,$item);
+
+          # Column 4 contains the Location + Version
           $item = SelectorTableItem(this,Qt::TableItem::Never(),
                                     $allPackages->{$pack}{location} . " " .
                                     $allPackages->{$pack}{version});
-          setItem($rownum,3,$item);
+          setItem($rownum,4,$item);
 
           $rownum++;
         }
 
       # Finally, sort the table on the second column and 
       # set its size automatically
-      sortColumn(1,1,1);
+      sortColumn(2,1,1);
       adjustColumn(1);
+      adjustColumn(2);
     }
 
   if (parent()->parent()->installuninstall > 0)
@@ -263,9 +308,9 @@ sub populateTable
       my $packagesToBeInstalled;    # Hash ref of transformed array
       my @packagesToBeUninstalled;  # Array
       my $packagesToBeUninstalled;  # Hash ref of transformed array
-      $success = OSCAR::Database::database_execute_command(
+      $success = database_execute_command(
         "packages_that_should_be_installed",\@packagesToBeInstalled);
-      $success = OSCAR::Database::database_execute_command(
+      $success = database_execute_command(
         "packages_that_should_be_uninstalled",\@packagesToBeUninstalled);
       # Transform these lists into hashes
       foreach my $pack (@packagesToBeInstalled)
@@ -296,8 +341,8 @@ sub populateTable
   else
     { # Running as the 'Selector'.  Check boxes according to package set.
       # Set the newly selected package set as the "selected" one in oda
-      $success = OSCAR::Database::database_execute_command(
-        "set_selected_package_set $currSet");
+      $success = 
+        database_execute_command("set_selected_package_set $currSet");
       if (!$success)
         {
           Carp::carp("Could not do oda command " .
@@ -404,7 +449,7 @@ sub cellValueChanged
 
   # We don't want to allow the user to uncheck core packages.  
   # So, when a core checkbox is clicked, make sure it's checked.
-  if ((item($row,2)->text() eq 'core') &&
+  if ((item($row,3)->text() eq 'core') &&
       (!(item($row,1)->isChecked())))
     {
       setCheckBoxForPackage(item($row,0)->text(),1);
@@ -485,7 +530,7 @@ sub checkboxChangedForSelector
                   if ((!(defined $packagesInSet->{$reqkey})) || 
                       ($packagesInSet->{$reqkey} != 1))
                     {
-                      $success = OSCAR::Database::database_execute_command(
+                      $success = database_execute_command(
                         "add_package_to_package_set $reqkey $currSet");
                       Carp::carp("Could not do oda command 
                         'add_package_to_package_set $reqkey $currSet'") if 
@@ -501,7 +546,7 @@ sub checkboxChangedForSelector
                   if ((defined $packagesInSet->{$conkey}) &&
                       ($packagesInSet->{$conkey} == 1))
                     {
-                      $success = OSCAR::Database::database_execute_command(
+                      $success = database_execute_command(
                         "remove_package_from_package_set $conkey $currSet");
                       Carp::carp("Could not do oda command 'remove_".
                         "package_from_package_set $conkey $currSet'") if 
@@ -516,7 +561,7 @@ sub checkboxChangedForSelector
           if ((!(defined $packagesInSet->{$package})) || 
               ($packagesInSet->{$package} != 1))
             {
-              $success = OSCAR::Database::database_execute_command(
+              $success = database_execute_command(
                 "add_package_to_package_set $package $currSet");
               Carp::carp("Could not do oda command 
                 'add_package_to_package_set $package $currSet'") if 
@@ -542,7 +587,7 @@ sub checkboxChangedForSelector
                   if ((defined $packagesInSet->{$reqkey}) || 
                       ($packagesInSet->{$reqkey} == 1))
                     {
-                      $success = OSCAR::Database::database_execute_command(
+                      $success = database_execute_command(
                         "remove_package_from_package_set " .
                           "$reqkey $currSet");
                       Carp::carp("Could not do oda command 
@@ -557,7 +602,7 @@ sub checkboxChangedForSelector
           if ((defined $packagesInSet->{$package}) || 
               ($packagesInSet->{$package} == 1))
             {
-              $success = OSCAR::Database::database_execute_command(
+              $success = database_execute_command(
                 "remove_package_from_package_set $package $currSet");
               Carp::carp("Could not do oda command 
                 'remove_package_from_package_set $package $currSet'") if 
