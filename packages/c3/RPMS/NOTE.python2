@@ -1,3 +1,4 @@
+# $Id: NOTE.python2,v 1.2 2002/05/22 21:11:31 naughtont Exp $
 
 We have to ship Python2 b/c it is not on the RH7.1 CD's.  Doh!
 

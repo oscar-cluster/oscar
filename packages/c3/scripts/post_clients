@@ -3,7 +3,7 @@
 # gen_c3_conf - script to generate the /etc/c3.conf file from the ORNL
 #               cluster definition file
 # Author: Brian Leuthke
-# Last Updated: 10/10/2000
+# Last Updated: 10/10/2000, 5/15/2002
 
 use strict;
 use Carp;
@@ -15,11 +15,17 @@ my $image = shift;
 
 my $c3_conf = "/etc/c3.conf";
 
+my $hostname = `hostname`;
+chomp($hostname);
+
 my %hash = get_machine_listing($image);
 
 open(OUT,">$c3_conf") or croak("Couldn't open $c3_conf");
+print OUT "cluster oscar_cluster {\n";
+print OUT "\t$hostname\n";
 foreach my $key (sort keys %hash) {
-    print OUT $hash{$key}->{HOST}, "\n";
+    print OUT "\t", $hash{$key}->{HOST}, "\n";
 }
+print OUT "}\n";
 close(OUT);
 
