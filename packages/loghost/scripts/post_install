@@ -17,7 +17,7 @@ cexec " \
     echo \"*.* @`grep pbs_oscar /etc/hosts |head -1 \
     |awk '{print $1}'`\" >> $syslog_file; \
     echo \"Setting loghost to $loghost_ip\"; \
-    /sbin/service syslog restart; \
+    /etc/init.d/syslog restart; \
   else
     echo \"oscar_loghost already set\" ;\
   fi"

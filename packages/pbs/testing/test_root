@@ -4,7 +4,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_root,v 1.1 2002/10/30 20:27:58 mchasal Exp $
+# $Id: test_root,v 1.2 2003/03/06 23:08:47 brechin Exp $
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
@@ -15,7 +15,7 @@
 # by the server.  Restarting the server will induce a fresh poll.
 unknown_nodes=`/opt/pbs/bin/pbsnodes -a |grep -c state-unknown`
 if [ $unknown_nodes != 0 ] ; then
-  /sbin/service pbs_server stop
+  /etc/init.d/pbs_server stop
 fi
 unknown_nodes=`/opt/pbs/bin/pbsnodes -a |grep -c state-unknown`
 if [ $unknown_nodes != 0 ] ; then
@@ -26,10 +26,10 @@ else
 fi
 
 for serv in pbs_server maui ; do
-  if [ `/sbin/service $serv status | grep -c "is running"` -eq 0 ]; then
+  if [ `/etc/init.d/$serv status | grep -c "is running"` -eq 0 ]; then
     # Let's try to start the service
-    /sbin/service $serv start
-    if [ `/sbin/service $serv status | grep -c "is running"` -eq 0 ]; then
+    /etc/init.d/$serv start
+    if [ `/etc/init.d/$serv status | grep -c "is running"` -eq 0 ]; then
       echo "Could not start $serv, please check configuration and rerun tests"
         $OSCAR_TESTPRINT --label "PBS service check:$serv" -f
         exit 1

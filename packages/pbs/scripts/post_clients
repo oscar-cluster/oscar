@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_clients,v 1.6 2002/10/30 22:19:56 naughtont Exp $
+# $Id: post_clients,v 1.7 2003/03/06 23:08:46 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -27,10 +27,10 @@ use SystemInstaller::Machine;
 ######################################################################
 sub startPBSserver
 {
-  open(CMD,"/sbin/service pbs_server status |");
+  open(CMD,"/etc/init.d/pbs_server status |");
   my $result = <CMD>;
   close(CMD);
-  system('/sbin/service pbs_server start')
+  system('/etc/init.d/pbs_server start')
     unless ($result =~ /is running/);
 }
 
@@ -40,10 +40,10 @@ sub startPBSserver
 ################################################################
 sub startMaui
 {
-  open(CMD,"/sbin/service maui status |");
+  open(CMD,"/etc/init.d/maui status |");
   my $result = <CMD>;
   close(CMD);
-  system('/sbin/service maui start')
+  system('/etc/init.d/maui start')
     unless ($result =~ /is running/);
 }
 
