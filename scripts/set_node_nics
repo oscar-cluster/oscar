@@ -566,7 +566,7 @@ if ( defined $gateway_address ) {
 	     eq 
 	     ip_and( $$nic_ref{base_ip}, $$nic_ref{netmask} ) ) {
 	    $$nic_ref{gateway} = $gateway_address;
-	    oda::print_hash( "", "$0: nic $nic_name gateway field set\n",
+	    oda::print_hash( "", "$0: nic $nic_name gateway field set",
 			     $nic_ref ) if $options{debug};
 	    print "Gateway $gateway_address is on network interface $nic_name\n"
 		if $options{verbose} && ! $options{debug};
@@ -619,7 +619,9 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
     # set up the command to create this network
     my %network = ( 'name'    => $network_name,
 		    'base_ip' => $$nic_ref{base_ip},
-		    'netmask' => $$nic_ref{netmask} );
+		    'high_ip' => $$nic_ref{high_ip},
+		    'netmask' => $$nic_ref{netmask},
+		    'rfc1918' => $$nic_ref{rfc1918} );
     $network{ broadcast } = $$nic_ref{ broadcast }
         if exists $$nic_ref{ broadcast };
     $network{ gateway } = $$nic_ref{ gateway }
@@ -741,7 +743,7 @@ if ( $options{ networks } ) {
 	    # record, and if so modify the record in the database
 
 	    my %assigns = ();
-	    foreach my $field ( qw( base_ip broadcast gateway rfc1918 ) ) {
+	    foreach my $field ( qw( base_ip broadcast gateway high_ip rfc1918 ) ) {
 
 		# if that field has a surmised value from the nic, ...
 
@@ -843,7 +845,7 @@ if ( $options{ networks } ) {
 # a database network record, clear out any values in the 
 # network interface structure that are already in the
 # database network record, we will link the network interface
-# to the network record  in the database. Start by looping
+# to the network record in the database. Start by looping
 # through the ifconfig found network interfaces, ...
 
 foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
@@ -872,7 +874,12 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 		if $options{debug};
 	    $$nic_ref{network_id} = $$database_network_ref{id};
 	    $$nic_ref{network_name} = $network_name;
-	    foreach my $field ( qw( base_ip broadcast gateway netmask ) ) {
+	    foreach my $field ( qw( base_ip
+				    broadcast
+				    gateway
+				    high_ip
+				    netmask
+				    rfc1918 ) ) {
 		delete $$nic_ref{ $field }
 		if exists $$nic_ref{ $field }
 		&& exists $$database_network_ref{ $field }
@@ -931,7 +938,14 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 
     if  ( ! exists $$database_nics_ref{ name } ) {
 	my $command = "create_nic_on_node $nic_name $node_name";
-	foreach my $field ( qw( base_ip broadcast gateway ip mac netmask ) ) {
+	foreach my $field ( qw( base_ip
+				broadcast
+				gateway
+				high_ip 
+				ip 
+				mac 
+				netmask 
+				rfc1918 ) ) {
 	    $command .= " $field\~$$ifconfig_nic_ref{$field}"
 		if exists $$ifconfig_nic_ref{ $field };
 	}
