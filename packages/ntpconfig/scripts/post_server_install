@@ -9,7 +9,7 @@
 #                 This script is called after the OSCAR server is       #
 #                 installed.                                            #
 #########################################################################
-my $versionstring = '$Id: post_server_install,v 1.4 2002/12/02 20:39:48 tfleury Exp $'; # RCS version string of the script
+my $versionstring = '$Id: post_server_install,v 1.5 2003/03/06 00:06:44 brechin Exp $'; # RCS version string of the script
 
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Package;
@@ -277,7 +277,7 @@ sub writeStepTickers
 #########################################################################
 sub changeNtpdStartup
 {
-  open(NTPD,"+< /etc/init.d/ntpd") or return;
+  open(NTPD,"+< /etc/init.d/$ntpd") or return;
   my $out = '';
   while (<NTPD>)
     {
@@ -303,16 +303,23 @@ parseCommandLine();
 # Make sure the user running the script is 'root'.
 die "ERROR: You must be 'root' to run this script.  Aborting" if ($< != 0);
 
+#Check distro and set ntp name accordingly
+my $ntp = "ntp";
+if (-e "/etc/SuSE-release") {
+  $ntp = "xntp";
+}
+my $ntpd = $ntp . 'd';
+
 # Make sure that the 'ntp' package is installed, at least version 4
-open(CMD,'rpm -q ntp |');
+open(CMD,"rpm -q $ntp |");
 my $cmd_output = <CMD>;
 close CMD;
 
-die "ERROR: ntp package is not installed.  Aborting" if 
+die "ERROR: $ntp package is not installed.  Aborting" if 
   (length($cmd_output) <= 0);
 
-$cmd_output =~ /^ntp-(\d+)/;
-die "ERROR: ntp package is not at least version 4.  Aborting" if ($1 < 4);
+$cmd_output =~ /$ntp-(\d+)/;
+die "ERROR: $ntp package is not at least version 4.  Aborting" if ($1 < 4);
 
 # Set the list of ntp servers
 setNTPServerList();
@@ -325,17 +332,17 @@ writeStepTickers();
 changeNtpdStartup();
 
 # Make sure the symlinks for ntpd in /etc/rc.d/init.d exist
-system("/sbin/chkconfig --add ntpd");  
+system("/sbin/chkconfig --add $ntpd");  
 
 # Depending on the presence/absence of the "--disable" flag, stop/start ntpd
 if (defined($opt_disable))
   { 
-    system("/sbin/service ntpd stop");
-    system("/sbin/chkconfig --level 2345 ntpd off");
+    system("/sbin/service $ntpd stop");
+    system("/sbin/chkconfig --level 2345 $ntpd off");
   }
 else
   { 
-    system("/sbin/service ntpd restart");
-    system("/sbin/chkconfig --level 2345 ntpd on");
+    system("/sbin/service $ntpd restart");
+    system("/sbin/chkconfig --level 2345 $ntpd on");
   }
 
