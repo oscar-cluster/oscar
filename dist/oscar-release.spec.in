@@ -1,0 +1,59 @@
+%define name                 oscar-release
+%define version              @OSCAR_VERSION@
+%define release              1
+%define _prefix              /etc
+%define release_filename     oscar-release
+
+# # Individual version values
+# %define oscar_major_ver      @OSCAR_MAJOR_VERSION@
+# %define oscar_minor_ver      @OSCAR_MINOR_VERSION@
+# %define oscar_release_ver    @OSCAR_RELEASE_VERSION@
+# %define oscar_alpha_ver      @OSCAR_ALPHA_VERSION@
+# %define oscar_beta_ver       @OSCAR_BETA_VERSION@
+# %define oscar_svn_ver        @OSCAR_SVN_VERSION@
+
+
+Summary: The OSCAR release file.
+Name: %{name}
+Version: %{version}
+Release: %{release}
+Distribution: OSCAR
+License: GPL / Freely Distributable
+Group: Clustering
+BuildRoot: %{_tmppath}/%{name}-%{version}-root
+Prefix: %{_prefix}
+# FIXME: Add the appropriate provides/conflicts and turn off auto-prereq 
+#AutoReqProv: no
+#Provides: oscar %{version}-%{release}
+#Conflicts: oscar 
+
+%description
+The OSCAR release file.
+
+
+%prep
+%__rm -rf $RPM_BUILD_ROOT
+
+
+%install
+%__mkdir -p $RPM_BUILD_ROOT%{_prefix}
+%__cat > $RPM_BUILD_ROOT%{_prefix}/%{release_filename} << EOF
+OSCAR Release %{version}
+EOF
+
+
+%clean
+%__rm -rf $RPM_BUILD_ROOT
+
+
+%files
+%{prefix}/%{release_filename}
+
+
+%changelog
+* Tue Feb 08 2005  Thomas Naughton  <naughtont@ornl.gov> (v4.1 series)
+- Adapted for oscar-release RPM from Sean's initial pass for 'oscar' RPM
+- Mimic the 'redhat-release' RPM to create an 'oscar-release' for rpm deps
+
+* Thu Aug  8 2002 Sean Dague <sean@dague.net> 1.4 -1
+- Added first minimal pass at spec file
