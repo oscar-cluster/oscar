@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.6 2003/06/23 15:49:43 brechin Exp $
+      $Id: config.xml,v 1.7 2003/07/18 19:53:33 brechin Exp $
   -->
   <name>ntpconfig</name>
 
@@ -36,7 +36,13 @@ server to receive NTP from well-known NTP servers, and then act as a
 relay server to all the cluster hosts.</description>
 
   <rpmlist>
+      <filter distribution='redhat' />
+      <filter distribution='mandrake' />
       <rpm>ntp</rpm>
+  </rpmlist>
+  <rpmlist>
+      <filter distribution='suse' />
+      <rpm>xntp</rpm>
   </rpmlist>
 
 </oscar>
