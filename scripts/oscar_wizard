@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.55 2003/07/15 21:56:03 brechin Exp $
+# $Id: oscar_wizard,v 1.56 2003/10/23 22:28:01 pramath Exp $
 #
 
 use strict;
@@ -296,6 +296,7 @@ sub build_oscar_image {
                 pkgpath => "/tftpboot/rpm",
                 diskfile => "$ENV{OSCAR_HOME}/oscarsamples/$diskfile",
                 ipmeth => "static",
+		mcast  => "off",
                 piaction => "beep",
                 extraflags => $extraflags,
                 postinstall => \&postimagebuild,

@@ -4,7 +4,7 @@ package OSCAR::MAC;
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
-#   $Id: MAC.pm,v 1.43 2003/07/15 20:29:51 brechin Exp $
+#   $Id: MAC.pm,v 1.44 2003/10/23 22:28:00 pramath Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.43 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.44 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -156,6 +156,12 @@ sub mac_window {
 				-variable => \$dyndhcp,
 				);
 
+    our $multicast = 0;
+    my $selectmulticast = $frame->Checkbutton(
+				-text => "Enable Multicasting",
+				-variable => \$multicast,
+				);
+
     my $fileselector = $frame->FileSelect(-directory => "$ENV{HOME}");
     our $loadbutton = $frame->Button(
                                    -text=>"Import MACs from file...",
@@ -187,7 +193,7 @@ sub mac_window {
 
     $start->grid($assignall, $exitbutton, -sticky => "ew");
     $assignbutton->grid($deletebutton, $dhcpbutton, -sticky => "ew");
-    $loadbutton->grid($savebutton, -sticky => "ew");
+    $loadbutton->grid($savebutton, $selectmulticast, -sticky => "ew");
     my $label2 = $frame->Label(-text => "Below are commands to create a boot environment.\nYou can either boot from floppy or network");
     $label2->grid("-","-",-sticky => "ew");
     $bootfloppy->grid($networkboot, $refreshdhcp, -sticky => "ew");
@@ -214,6 +220,9 @@ sub setup_dhcpd {
     }
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
     my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --bootfile=pxelinux.0 --gateway=$ip";
+    if(our $multicast){
+       $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --bootfile=pxelinux.0 --gateway=$ip --multicast=yes";
+    }
     oscar_log_subsection("Step $step_number: Running command: $cmd");
     !system($cmd) or (carp "Couldn't mkdhcpconf", return undef);
     oscar_log_subsection("Step $step_number: Successfully ran command");
