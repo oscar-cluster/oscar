@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.57 2003/02/25 13:50:19 jsquyres Exp $
+% $Id: detailed.tex,v 1.58 2003/02/27 20:58:50 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -827,7 +827,6 @@ you want to create.
 
   \begin{figure}[htbp]
     \begin{center}
-      % JMS Need this one with right net numbers and domainname
       \includegraphics[scale=\imgscale]{figs/5a_sbs-define-clients1}
       \caption{Define the Clients.}
       \label{fig:detailed-define-clients}
@@ -904,9 +903,15 @@ network:
 \item The \button{Dynamic DHCP Update} checkbox at the bottom right of
   the window controls refreshing the DHCP server.  If it is selected
   (the default), the DHCP server configuration will be refreshed each
-  time a MAC is assigned to a node.  If it is off, you will need to
-  click the \button{Configure DHCP Server} (at least once) to give it
-  the associations between MACs and IP addresses.
+  time a MAC is assigned to a node.  Note that if the DHCP
+  reconfiguration takes place quick enough, you may not need to reboot
+  the nodes a second time (i.e., if the DHCP server answers the
+  request quick enough, the node may start downloading its image
+  immediately).
+  
+  If this option is off, you will need to click the \button{Configure
+    DHCP Server} (at least once) to give it the associations between
+  MACs and IP addresses.
   
 \detailed {  
 \item To remove extraneous MAC addresses from the left hand window
@@ -945,7 +950,6 @@ requests if your client hardware supports it. \detailed{See
 
   \begin{figure}[htbp]
     \begin{center}
-      % JMS Need this one with right net numbers and domainname
       \includegraphics[scale=\imgscale]{figs/6e_sbs-found-mac}
       \caption{Collect client MAC addresses.}
       \label{fig:detailed-collect-mac}
