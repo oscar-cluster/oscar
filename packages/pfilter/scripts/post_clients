@@ -146,9 +146,17 @@ nologging
 
 reject
 
-# the server gets ssh and http opened up
+# let anyone ping the server
 
-open    tcp     ssh http https
+open    ping
+
+# let anyone ssh into the server
+
+open    ssh
+
+# the server gets http opened up
+
+open    tcp     http https
 
 # the server needs to be listed as a dhcp server for the nodes
 # because opening up that service requires opening up some
@@ -237,7 +245,7 @@ nologging
 
 reject
 
-# Open ssh from anywhere
+# open ssh from anywhere
 
 open	tcp	ssh
 
