@@ -18,7 +18,7 @@
   <license>Freely distributable</license>
   <copyright>2002</copyright>
   <group>Development/Libraries</group>
-  <url>http://www.lam-mpi.org/</url>
+  <url>http://www-unix.mcs.anl.gov/mpi/mpich/</url>
   <maintainer>
     <name>MPICH Team</name>
     <email>mpich-bugs@mcs.anl.gov</email>
@@ -29,7 +29,7 @@
   </packager>
 
   <description>MPICH is a freely available, portable implementation of
-PI (http://www.mpi-forum.org), the Standard for message-passing
+MPI (http://www.mpi-forum.org), the Standard for message-passing
 libraries.</description>
 
   <provide>
