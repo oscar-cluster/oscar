@@ -28,6 +28,7 @@ use File::Basename;
 use OSCAR::Package;
 use OSCAR::PackageBest;
 use OSCAR::Network;
+use OSCAR::Logger;
 use Carp;
 use Data::Dumper;
 
@@ -39,31 +40,63 @@ my $RPMPOOL = $OSCAR::Package::RPM_POOL;
 my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
 
 # Get a list of all non-core packages
+
 my @packages = list_pkg("noncore");
+oscar_log_subsection("Identified non-core packages: " . join(' ', @packages));
+
+# Run the setup scripts
+
+oscar_log_subsection("Running setup scripts for core packages");
+foreach my $package (@packages) {
+    run_pkg_script($package, "setup") 
+	or croak("Failed running server for $package");
+}
+oscar_log_subsection("Successfully ran core package server scripts");
+
+# Get list of RPMs from the non-core packages
+
 my @rpms = ();
 foreach my $package (@packages) {
     push @rpms, rpmlist($package,"server");
 }
 
 # Now install the rpms that we found
+
+oscar_log_subsection("Installing non-core RPMs");
 install_rpms(@rpms) 
     or croak("Couldn't install the required packages needed for OSCAR");
+oscar_log_subsection("Successfully installed non-core RPMs");
 
 # And do the post install script
+
+oscar_log_subsection("Running post_server_install scripts for non-core packages");
 foreach my $package (@packages) {
     run_pkg_script($package,"post_server_install") 
 	or croak("Failed running post_server_install for $package");
 }
+oscar_log_subsection("Successfully ran non-core package post_server_install scripts");
 
+# Additional housekeeping
+
+oscar_log_subsection("Getting internal IP address");
 my ($ip,$bcast,$netmask) = interface2ip($INTERFACE) 
     or croak("Couldn't determine internal ip address");
+oscar_log_subsection("Got: [IP $ip], [broadcast $bcast], [netmask $netmask]");
+
+oscar_log_subsection("Adding hosts to /etc/hosts");
 update_hosts($ip) or croak("Couldn't add required host entries to /etc/hosts");
+
+oscar_log_subsection("Updating /etc/profile");
 update_profile() or croak("Couldn't add path entries to /etc/profile");
+
+oscar_log_subsection("Updating /etc/exports");
 update_exports($ip,$netmask) 
     or croak("Couldn't add filesystem entries to /etc/exports");
+
+oscar_log_subsection("Updating rsyncd.conf");
 update_rsyncd_conf($ip,$netmask) or croak("Couldn't update rsyncd.conf file");
 
-verbose("Refreshing services");
+oscar_log_subsection("Refreshing services");
 !system("service nfs start") or croak("Couldn't start nfs");
 !system("exportfs -a") or croak("Couldn't refresh nfs exports");
 !system("service sshd start") or croak("Couldn't start sshd");
@@ -72,10 +105,16 @@ verbose("Refreshing services");
 !system("chkconfig --level 345 portmap on");
 !system("chkconfig --level 345 nfs on");
 
-# MDK fixup, comment out hard-coded PATH line
+# Mandrake fixup: comment out hard-coded PATH line
+
+oscar_log_subsection('Fixing root "dot" files');
 foreach my $f (@rcfiles) {
     unmunge_pathenv($f);
 }
+
+# All done
+
+oscar_log_subsection("Finished server_prep script");
 
 
 sub verbose {
@@ -282,3 +321,5 @@ sub unmunge_pathenv
     close(OUT);
     close(IN);
 }
+
+0;
