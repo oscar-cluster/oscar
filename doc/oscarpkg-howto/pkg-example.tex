@@ -1,4 +1,4 @@
-% $Id: pkg-example.tex,v 1.6 2003/09/26 18:58:08 naughtont Exp $
+% $Id: pkg-example.tex,v 1.7 2003/10/01 00:36:16 tfleury Exp $
 
 \section{Example Package}
 \label{sect:example-pkg}
@@ -88,45 +88,59 @@ configuration file.  Default values are seeded so a user can simply click
 \begin{scriptsize}
 \begin{verbatim}
 <html>
-<head> <title>SSSLib Configuration Settings</title> </head> 
-<body>
+  <head> 
+    <title>SSSLib Configuration Settings</title> 
+  </head> 
 
-<form>
-<h2>Setup SSSLib Configuration File</H2>
-<br>
+  <body>
+    <form>
+    <center>
+    <h2>Setup SSSLib Configuration File</H2>
+    </center>
+    <br>
 
-<p> Hostname where Service Directory runs<br>
-<input  name="sd_host"      value="oscar_server"><br>
+    <p> Hostname where Service Directory runs<br>
+    <input name="sd_host" value="oscar_server"><br>
 
-<p> Port number for Service Directory<br>
-<input  name="sd_port"      value="7000"><br>
+    <p> Port number for Service Directory<br>
+    <input name="sd_port" value="7000"><br>
 
-<p> Default protocol for Service Directory<br>
-(Valid: challenge OR basic)<br>
-<input  name="sd_protocol"  value="challenge">  
+    <p> Default protocol for Service Directory<br>
+    <select name="sd_protocol" size=1>
+    <option selected>challenge
+    <option>basic
+    </select><br>
 
-<p> Preference ordering for protocols<br>
-<input name="prefs"         value="challenge,basic"><br>
+    <p> Preference ordering for protocols<br>
+    <input name="prefs" value="challenge,basic"><br>
 
-<p> Cluster name<br>
-<input name="cluster"       value="oscar_cluster"><br>
+    <p> Cluster name<br>
+    <input name="cluster" value="oscar_cluster"><br>
 
-<p> Challenge protocol password<br>
-(Currently stored in plain text)<br>
-<input name="password"      value="OscarSSSpass"><br>   
+    <p> Challenge protocol password<br>
+    (Currently stored in plain text)<br>
+    <input name="password" value="OscarSSSpass"><br>   
 
-<p> <input type="checkbox"   name="msg_log"   value="/var/log/sss_msg.log">
-Enable message logging (logfile='/var/log/sss_msg.log')<br>
+    <p> <input type="checkbox" name="msg_log" value="/var/log/sss_msg.log">
+    Enable message logging (logfile='/var/log/sss_msg.log')<br>
 
-<p> <input type="checkbox"   name="syslog_sss"   value="/var/log/sss.log">   
-Enable additional logging via syslog (logfile='/var/log/sss.log')<br>
+    <p> <input type="checkbox" name="syslog_sss" value="/var/log/sss.log">   
+    Enable additional logging via syslog (logfile='/var/log/sss.log')<br>
 
-<br> <p> <input type=reset value='Reset Form'>
-
-</form>
-</body> </html>
+    <p> <input type="reset" value='Reset Form'>
+    </form>
+  </body> 
+</html>
 \end{verbatim}
 \end{scriptsize}
+
+Below is an image of this HTML code as rendered by the Configurator:
+
+\begin{quote}
+\includegraphics[%
+  scale=0.3]{ConfiguratorExample.png}
+\end{quote}
+
 
 
 \subsubsection{post\_configure}
@@ -164,6 +178,21 @@ file.  This reads those values to generate a configuration file
   close(CONF);
 \end{verbatim}
 \end{scriptsize}
+
+There is one important issue with multiline $<$select$>$ elements.  If the
+user selects only one $<$option$>$, XMLin() in its basic form above will
+return the value for the $<$select$>$ element as a SCALAR.  But if the user
+selects multiple $<$option$>$s, XMLin() will return the value as an ARRAY.
+To handle this case you have two options:
+
+\begin{enumerate}
+\item Use the Perl function \texttt{ref()} to determine if each hash value is
+an ARRAY or a SCALAR and handle it appropriately.  
+\item Call XMLin as \texttt{XMLin(FILENAME, forcearray => '1')}.  This will
+force every hash value to be an array.  Thus, you can either iterate through
+all hash values, or you can access the 0th element of the hash value for
+those inputs you know will have only one value.
+\end{enumerate}
 
 
 
