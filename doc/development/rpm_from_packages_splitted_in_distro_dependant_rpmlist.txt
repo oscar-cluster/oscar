@@ -1,0 +1,9 @@
+From ntp :
+==========
+in serverlist/RedHat*
+ - shadow-utils
+ - libcap
+
+in oscarsample/RedHat*
+ - libcap
+ - (shadow-utils was already in the list)

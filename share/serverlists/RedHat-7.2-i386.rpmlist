@@ -15,4 +15,6 @@ expat
 python2
 zlib
 zlib-devel
+shadow-utils
+libcap
 

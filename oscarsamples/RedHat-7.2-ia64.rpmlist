@@ -173,3 +173,4 @@ XFree86-xfs
 xinetd
 zlib
 zlib-devel
+libcap
