@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.46 2003/07/10 16:46:35 brechin Exp $
+      $Id: config.xml,v 1.47 2003/07/15 16:53:04 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -25,7 +25,7 @@
 
   <version>
     <major>1</major>
-    <minor>17</minor>
+    <minor>19</minor>
     <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
@@ -42,6 +42,11 @@
     <name>Neil Gorsuch</name>
     <email>ngorsuch@ncsa.uiuc.edu</email>
   </packager>
+
+  <maintainer>
+    <name>Neil Gorsuch</name>
+    <email>ngorsuch@ncsa.uiuc.edu</email>
+  </maintainer>
 
   <description>ODA provides a central database for OSCAR.</description>
 
@@ -1440,13 +1445,11 @@
       <parameters> unique(name,version) </parameters>
       <fields>
         <class/>
+	<copyright/>
 	<description>
 	  <type> text </type>
 	</description>
-	<copyright/>
-        <filter_architecture/>
-        <filter_distribution/>
-        <filter_distribution_version/>
+        <directory/>
 	<group/>
         <id> 
 	  <type> integer </type>
