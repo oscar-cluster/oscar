@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile,v 1.2 2001/12/17 03:32:16 mchasal Exp $
+# $Id: Makefile,v 1.3 2001/12/17 05:27:48 mchasal Exp $
 #
 # $COPYRIGHT$
 #
@@ -30,7 +30,6 @@ OTHER_SRC_FILES	= \
 		outline.tex \
 		detailed.tex \
 		netboot.tex \
-		ramdisk.tex \
 		client-install.tex \
 		troubleshooting.tex \
 		security.tex \
@@ -38,15 +37,10 @@ OTHER_SRC_FILES	= \
 
 # .eps and .pdf figure files are required to be pre-generated
 
-EPS_FIG_FILES	= \
-		oscar-wizard.eps \
-		define-server.eps \
-		collect-mac.eps \
-		define-clients.eps \
-		define-disk.eps \
-		define-ramdisk.eps \
-		allocate-resource.eps \
-		per-client.eps \
+PNG_FIG_FILES	= \
+		oscar-wizard.png \
+		collect-mac.png \
+		define-clients.png \
 
 # SBS (Screen-by-Screen) figures
 
@@ -100,22 +94,21 @@ MAIN_PS		= $(MAIN_TEX:.tex=.ps)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
 
 EPS_SBS_FIG_FILES = $(SBS_FIG_FILES:.png=.eps)
-PDF_FIG_FILES	= $(EPS_FIG_FILES:.eps=.pdf)
 
 # Some common target names
 
 docs: $(MAIN_PS)
 
-ps: $(EPS_FIG_FILES) $(MAIN_PS)
-pdf: $(PDF_FIG_FILES) $(MAIN_PDF)
+ps: $(PNG_FIG_FILES) $(MAIN_PS)
+pdf: $(PNG_FIG_FILES) $(MAIN_PDF)
 
 #
 # Make the dependencies so that things build when they need to
 #
 
 $(MAIN_PS): $(MAIN_DVI)
-$(MAIN_DVI): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIG_FILES) $(EPS_SBS_FIG_FILES)
-$(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PDF_FIG_FILES) $(SBS_FIG_FILES)
+$(MAIN_DVI): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PNG_FIG_FILES) $(EPS_SBS_FIG_FILES)
+$(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PNG_FIG_FILES) $(SBS_FIG_FILES)
 
 #
 # General rules
