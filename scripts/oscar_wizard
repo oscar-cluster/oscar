@@ -48,7 +48,7 @@ $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 oscar_button($window, "Step 1:", "Build OSCAR Client Image", [\&build_oscar_image, $window], 'build_image');
 
 # Step 3, Add Clients to OSCAR Image
-oscar_button($window, "Step 2:", "Define OSCAR Clients", [\&build_oscar_clients, $window], 'addclients');
+oscar_button($window, "Step 2:", "Define OSCAR Clients", [\&build_oscar_clients, $window, $interface], 'addclients');
 
 # Step 4, Setup Network Booting
 oscar_button($window, "Step 3:", "Setup Networking", [\&mac_window, $window, {interface => $interface}], 'netboot');
