@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.6 2002/09/18 04:30:17 sad Exp $
+% $Id: user.tex,v 1.7 2002/11/01 19:28:06 sad Exp $
 %
 % $COPYRIGHT$
 %
@@ -11,26 +11,26 @@
 Ganglia is a real time cluster monitoring tool that uses a protocol
 based on XML and XDR across a multicast network to provide a scalable
 core tool set.  The cluster monitoring data can be accessed via a web
-browser or via the command line (shortly available in OSCAR). The core
-Ganglia monitoring toolkit also includes the ability to add user
-defined data to the XML streams.
+browser or via the command line. The core Ganglia monitoring toolkit
+also includes the ability to add user defined data to the XML streams.
 
 Ganglia was developed at the University of California, Berkeley
 Computer Science Division as part of the ongoing clustering research
 project named The Millennium Project (and its predecessor The NOW
 Project).  It is being developed by Matt Massie
-$<$\mailto{massie@cs.berkeley.edu}$>$ and Brent Chun
-$<$\mailto{bnc@caltech.edu}$>$. For additional information about the
-Ganglia project, see:
+$<$\mailto{massie@cs.berkeley.edu}$>$, Brent Chun
+$<$\mailto{bnc@caltech.edu}$>$, Steven Wagner $<$\mailto{swagner@ilm.com}$>$,
+Federico Sacerdoti $<$\mailto{fds@sdsc.edu}$>$, and other active developers.
+For additional information about the Ganglia project, see:
 
 \vspace{10pt}
 \centerline{\url{http://ganglia.sourceforge.net/}}
 \vspace{10pt}
 
-\rpmname{ganglia-php-rrd-client} is a package in OSCAR that sets up
+\rpmname{ganglia-webfrontend} is a package in OSCAR that sets up
 the web page display on the head node of the data gathered by the
-\rpmname{ganglia-monitor-core}.  This uses \cmd{rrdtool} and the
-\rpmname{perl-XML-Parser} packages included with the OSCAR tool suite
+gmond and gmetad tools in the \rpmname{ganglia-monitor-core}.
+This uses \cmd{rrdtool} package included with the OSCAR tool suite
 as well as the \rpmname{apache}, \rpmname{php}, and \rpmname{expat}
 packages installed with the core Linux distribution on the head node
 to build an interactive useful display of the XML/XDR data being
@@ -45,60 +45,33 @@ can be pointed at:
 
 \noindent to see the ganglia web output. If nothing appears, check to
 see if \cmd{apache} has been started along with the \cmd{gmond} and
-\cmd{ganglia-php-rrd} processes. The startup init scripts can be found
+\cmd{gmetad} processes. The start-up init scripts can be found
 in \file{/etc/init.d/}.
 
-The 1.4 version of OSCAR also includes an optional \cmd{ganglia} python
+The 2.0 version of OSCAR also includes the \cmd{ganglia} python
 command line interface so access to the ganglia XML/XDR data can be
-scripted. This will depend on having \rpmname{python} and the
-\rpmname{PyXML-oscar} RPMs installed on the head node.
-Future versions of the OSCAR tool suite this will be installed by default
-when the rest of the ganglia tools are installed. Currently these additional
-RPMs can either be installed on the head node after the install by doing:
-
-\begin{verbatim}
-  # cd oscar-<version>/packages/ganglia/RPMS
-  # rpm -ivh PyXML-oscar-0.7.1-7.i386.rpm \
-            ganglia-python-oscar-2.0-5.noarch.rpm
-\end{verbatim}
-
-Or for an ia64 system:
-
-\begin{verbatim}
-  # cd oscar-<version>/packages/ganglia/RPMS
-  # rpm -ivh PyXML-oscar-0.7.1-7.ia64.rpm \
-            ganglia-python-oscar-2.0-5.noarch.rpm
-\end{verbatim}
-
-The other optional installation method is to include the following two lines
-in the server.rpmlist file found in the packages/ganglia/ directory:
-
-\begin{verbatim}
-	PyXML-oscar
-	ganglia-python-oscar
-\end{verbatim}
-
-This will automatically include the extra RPM files needed for the command
-line tools in the standard OSCAR installation.
+scripted. This is a tool contributed to the Ganglia project by the
+Rocks team from the San Diego Supercomputer Center. Since it is based
+on a python class file this will depend on having \rpmname{python}
+and the \rpmname{PyXML-oscar} RPMs installed on the head node.
 
 The current version of the Ganglia tools packaged for OSCAR is:
 
 \begin{itemize}
-\item \rpmname{ganglia-monitor-core-2.2.3-3oscar}
-\item \rpmname{ganglia-monitor-core-lib-2.2.3-3oscar}
-\item \rpmname{ganglia-php-rrd-client-1.0.4-7}
+\item \rpmname{ganglia-monitor-core-gmond-2.5.1-1oscar}
+\item \rpmname{ganglia-monitor-core-gmetad-2.5.1-1oscar}
+\item \rpmname{ganglia-monitor-core-lib-2.5.1-1oscar}
 \item \rpmname{ganglia-python-oscar-2.0-5}
-\item \rpmname{perl-XML-Parser-2.30-32oscar}
 \item \rpmname{rrdtool-oscar-1.0.35-2}
 \item \rpmname{rrdtool-oscar-devel-1.0.35-2}
 \item \rpmname{PyXML-oscar-0.7.1-7}
 \end{itemize}
 
-The \cmd{ganglia} package has a command line tool based on a python
-class. The addition of this tool makes it possible to access all of
-the available multicasted ganglia monitoring data that is flowing
-across the cluster from the command line or various perl, shell, or
-other system admin created scripts.  The tool can be found in:
+The addition of the \cmd{ganglia} command line tool makes it possible
+to access all of the available multicasted ganglia monitoring data
+that is flowing across the cluster from the command line or various
+perl, shell, or other system admin created scripts.  The tool can be
+found in:
 
 \vspace{10pt}
 \centerline{\cmd{/usr/sbin/ganglia}}
@@ -127,7 +100,7 @@ where ``metric'' is one of:
 \item \cmdarg{cpu\_system}
 \item \cmdarg{mem\_shared}
 \item \cmdarg{os\_release}
-\item \cmdarg{cpu\_aidle}
+\item \cmdarg{cpu\_idle}
 \item \cmdarg{load\_one}
 \item \cmdarg{swap\_total}
 \item \cmdarg{mem\_buffers}
@@ -159,20 +132,15 @@ where ``metric'' is one of:
   xcvs            1582384         733     2
 \end{verbatim}
 
-A small Ganglia PHP patch has been incorperated into the Ganglia web
-display tool RPMs. This patch was developed by Goneri Le Bouderxi
-$<$\mailto{glebouder@mandrakesoft.com}$>$ of MandrakeSoft. It provides
-the following enhancements:
-
-\begin{itemize}
-\item You can  do selection range on \file{host.php}
-\item Network graph on \file{host.php} and \file{index.php}
-\item moved \cmdarg{\$rrd\_dir} and \cmdarg{\$rrdtool} from
-  \file{graph.php} to \file{ganglia.php}
-\end{itemize}
+Also included in the extras directory is a small example script to add
+some network statistics to the ganglia data stream.
+This script was developed by Goneri Le Bouderxi
+$<$\mailto{glebouder@mandrakesoft.com}$>$ of MandrakeSoft.
         
-Goneri had also incluuded a \cmd{ganglia-network.sh} script to be run
+Goneri's \cmd{ganglia-network.sh} script can be run
 periodically by the \cmd{cron} system to add network statistics to the
-Ganglia data stream but this has not been packaged up yet for the
-OSCAR cluster tool suite.
+Ganglia data stream. This is just an example script that is not officially
+part of the OSCAR cluster tool suite. No guarantees are included that this
+script will work in current or future versions of Ganglia that may be
+packaged as part of the OSCAR cluster tool suite.
 
