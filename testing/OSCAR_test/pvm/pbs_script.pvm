@@ -19,7 +19,7 @@ cat $PBS_NODEFILE >> pvm_nodes
 
 # start pvm daemon & wait for slave daemons to start up
 pvmd pvm_nodes &
-sleep 10
+#sleep 10
 
 # run job
 gcc -I$PVM_ROOT/include master1.c -L$PVM_ROOT/lib/$PVM_ARCH -lpvm3 -o master1
@@ -28,7 +28,7 @@ gcc -I$PVM_ROOT/include slave1.c -L$PVM_ROOT/lib/$PVM_ARCH -lpvm3 -o slave1
 
 # wait again to make sure everyone's finished
 # then kill master pvm daemon
-sleep 5
+#sleep 5
 /usr/bin/killall -TERM pvmd3
 
 # get rid of lock files & nodes file
