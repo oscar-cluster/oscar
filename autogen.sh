@@ -1,5 +1,7 @@
 #! /bin/sh 
 #
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
@@ -7,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: autogen.sh,v 1.16 2004/04/05 21:38:29 brechin Exp $
+# $Id: autogen.sh,v 1.17 2004/04/05 21:39:47 brechin Exp $
 #
 
 #
