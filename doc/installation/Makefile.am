@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.11 2002/07/06 03:45:23 naughtont Exp $
+# $Id: Makefile.am,v 1.12 2002/07/06 03:53:31 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -9,6 +9,7 @@
 # The top-level file.
 
 MAIN_TEX	= install.tex
+QUICK_TEX	= quick_install.tex
 
 # All other .tex files that are necessary to build the paper (for
 # dependencies).
@@ -18,6 +19,7 @@ OTHER_SRC_FILES	= \
 		titlepage.tex \
 		toc.tex \
 		intro.tex \
+		supported.tex \
 		release-notes.tex \
 		brief.tex \
 		sis.tex \
@@ -29,6 +31,11 @@ OTHER_SRC_FILES	= \
 		troubleshooting.tex \
 		security.tex \
 		screen-by-screen.tex
+
+QUICK_SRC_FILES= \
+		quick_titlepage.tex \
+		brief.tex \
+		supported.tex
 
 NON_DIST_SRC_FILES= \
 		version.tex
@@ -101,22 +108,29 @@ MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
 MAIN_PS		= $(MAIN_TEX:.tex=.ps)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
 
+QUICK_DVI	= $(QUICK_TEX:.tex=.dvi)
+QUICK_PS	= $(QUICK_TEX:.tex=.ps)
+QUICK_PDF	= $(QUICK_TEX:.tex=.pdf)
+
 TEX_SRC		= $(MAIN_TEX) $(OTHER_SRC_FILES) $(NON_DIST_SRC_FILES)
+QUICK_SRC	= $(QUICK_TEX) $(QUICK_SRC_FILES) $(NON_DIST_SRC_FILES)
 
 EPS_FIG_FILES	= $(FIG_FILES:.png=.eps) $(SBS_FILES:.png=.eps)
 
 # Tell automake to include all the relevant files
 
-EXTRA_DIST	= $(MAIN_TEX) $(OTHER_SRC_FILES) $(FIG_FILES) $(SBS_FILES)
-CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~ notes.tex
+EXTRA_DIST	= $(MAIN_TEX) $(OTHER_SRC_FILES) $(FIG_FILES) $(SBS_FILES) \
+		  $(QUICK_TEX) $(QUICK_SRC_FILES)
+CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~ notes.tex \
+		  $(QUICK_PS) $(QUICK_DVI) $(QUICK_PDF)
 
 # Some common target names
 
 all: ps
-docs: $(MAIN_PS)
+docs: $(MAIN_PS) $(QUICK_PS)
 
-ps: $(EPS_FIG_FILES) $(MAIN_PS)
-pdf: $(PNG_FIG_FILES) $(MAIN_PDF)
+ps: $(EPS_FIG_FILES) $(MAIN_PS) $(QUICK_PS)
+pdf: $(PNG_FIG_FILES) $(MAIN_PDF) $(QUICK_PDF)
 
 #
 # Make the dependencies so that things build when they need to
@@ -125,6 +139,10 @@ pdf: $(PNG_FIG_FILES) $(MAIN_PDF)
 $(MAIN_PS): $(MAIN_DVI)
 $(MAIN_DVI): $(TEX_SRC) $(EPS_FIG_FILES)
 $(MAIN_PDF): $(TEX_SRC) $(FIG_FILES) $(SBS_FILES)
+
+$(QUICK_PS): $(QUICK_DVI)
+$(QUICK_DVI): $(QUICK_SRC)
+$(QUICK_PDF): $(QUICK_SRC)
 
 #
 # General rules
