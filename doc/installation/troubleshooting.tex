@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: troubleshooting.tex,v 1.6 2002/01/23 03:53:17 jsquyres Exp $
+% $Id: troubleshooting.tex,v 1.7 2002/02/05 05:50:43 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -198,6 +198,69 @@ configure the server and scheduler:
 Replace ``\file{/root}'' with the directory into which you unpacked
 \endchange
 OSCAR in the change directory command above.
+
+\subsubsection{Uni-processor nodes fail to boot}
+\begchange
+This problem has occured on some newer machines after the 'oscar\_wizard' 
+has run and the nodes have rsync'd their files to the local harddrive. 
+The nodes then restart and begin to boot the newly installed kernel
+and hang with a message similar to the following,
+\begin{verbatim}
+       Getting VERSION: 0
+       Getting VERSION: ff00ff
+       enabled ExtINT on CPU#0
+       ESR value before enabling vector: 00000000
+       ESR value after enabling vector: 00000000
+       calibrating APIC timer ...
+       ..... CPU clock speed is 1995.0407 Mhz.
+       ..... host bus clock speed is 0.0000 Mhz.
+       cpu: 0, clocks: 0, slice: 0
+       _
+\end{verbatim}
+The cursur just blinks here forever.
+
+This problem occurs because the SMP kernel is installed and the
+machine needs a standard uni-processor kernel.  Most machines will boot
+normally with the SMP kernel but a small number exhibit this issue.
+Currently, the simplest fix is to rebuild the image with the
+uni-processor kernel (e.g. \emph{kernel-2.4.2-2}) in the rpmlist 
+(e.g. \emph{oscarsamples/sample.rpmlist}) and re-install the failing node.  
+
+\noindent (\emph{We are currently investigating a more efficient workaround and 
+will add that fix once it is available.})
+
+%%%A workable fix for this would be to do the following steps to
+%%%install the uni-processor kernel (\emph{kernel-2.4.2-2.i386.rpm}) into 
+%%%an existing image named \emph{oscarimage}.  After that you can repeat
+%%%the installation of the nodes, using either network boot (PXE) or a
+%%%boot floppy.   This will do a complete re-install of the node.
+%%%\begin{verbatim}
+%%%       [root@oscar /root]# cp /tftpboot/rpm/kernel-2.4.2-2.i386.rpm \
+%%%       /var/lib/systemimager/images/oscarimage/tmp
+%%%       [root@oscar /root]# chroot /var/lib/systemimager/oscarimage
+%%%       [root@oscar /]# rpm -ivh /tmp/kernel-2.4.2-2.i386.rpm 
+%%%       [root@oscar /]# rm /tmp/kernel-2.4.2-2.i386.rpm
+%%%       [root@oscar /]# cd boot
+%%%       [root@oscar boot]# ln -sf kernel.h-2.4.2  kernel.h
+%%%       [root@oscar boot]# ln -sf module-info-2.4.2-2  module-info
+%%%       [root@oscar boot]# ln -sf System.map-2.4.2-2  System.map
+%%%       [root@oscar boot]# ln -sf vmlinuz-2.4.2-2  vmlinuz
+%%%       [root@oscar /]# exit
+%%%       [root@oscar /root]#
+%%%\end{verbatim}
+% extra dir listing i took out of the above.
+%       [root@oscar boot]# ls *2.4.2*
+%       kernel.h-2.4.2          System.map-2.4.2-2     vmlinux-2.4.2-2smp
+%       module-info-2.4.2-2     System.map-2.4.2-2smp  vmlinuz-2.4.2-2
+%       module-info-2.4.2-2smp  vmlinux-2.4.2-2        vmlinuz-2.4.2-2smp
+%Now, you need backup and edit the \emph{oscarimage.master} script so
+%that it skips the partitioning of the disk and just goes onto the
+%rsync'ing of the files.  NOTE: THIS IS THE SECTION THAT I NEED TO 
+%FINISH UP B/C I'VE NOT TESTED IT YET ... THEREFORE I'M NOT GOING TO
+%INCLUDE IT HERE.
+\endchange
+
+
 
 \subsection{What to do about unknown problems?}
 
