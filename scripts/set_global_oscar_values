@@ -60,6 +60,8 @@ my $oscar_server_architecture;
 my $uname_data = (uname)[4];
 if ( $uname_data eq "i386" ) {
     $oscar_server_architecture = "ia32";
+} elsif ( $uname_data eq "i586" ) {
+    $oscar_server_architecture = "ia32";
 } elsif ( $uname_data eq "i686" ) {
     $oscar_server_architecture = "ia32";
 } elsif ( $uname_data eq "ia64" ) {
