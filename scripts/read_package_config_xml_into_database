@@ -464,6 +464,21 @@ if ( ! oda::connect( \%oda_options,
     die "$0: cannot connect to the OSCAR database";
 }
 
+######################################################
+#hack to gen up a simple config.xml file -- jlm, 27 oct 2004
+#so that a package with rpms and no config.xml file
+#gets its rpm's into the oscar database...the gen a config.xml file
+#in the following code does not seem to address this issue
+
+my $retval_mugler;
+
+$retval_mugler = `$ENV{OSCAR_HOME}/scripts/gen_simple_client_config_xml $package_directory $package_name`;
+
+print $retval_mugler; #ouput containing either errors or success from creating
+                      #a simple config.xml file for a simple package
+
+######################################################
+
 # if a config.xml file does not exist for this package directory,
 # we'll fake a simple one, otherwise read it in
 my $config_file = "$package_directory/config.xml";
