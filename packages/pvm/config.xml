@@ -9,15 +9,15 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.7 2002/11/04 23:14:21 jsquyres Exp $
+      $Id: config.xml,v 1.8 2003/07/15 19:28:32 naughtont Exp $
   -->
   <name>pvm</name>
 
   <version>
     <major>3</major>
     <minor>4</minor>
-    <subversion>4+6</subversion>
-    <release>3</release>
+    <subversion>4+11</subversion>
+    <release>1</release>
     <epoch>1</epoch>
   </version>
 
