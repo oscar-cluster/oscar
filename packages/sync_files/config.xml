@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<oscar>
+  <!--
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id: config.xml,v 1.1 2004/02/16 16:46:38 brechin Exp $
+  -->
+  <name>sync_files</name>
+
+  <version>
+    <major>1</major>
+    <minor>6</minor>
+    <release>5</release>
+  </version>
+
+  <class>core</class>
+
+  <summary>OSCARized File Synchronization System</summary>
+  <license>GPL</license>
+  <group>System Environment/Base</group>
+  <packager>
+    <name>Jason Brechin</name>
+    <email>brechin@ncsa.uiuc.edu</email>
+  </packager>
+
+  <description>The OSCAR File Synchronization System keeps any list of files
+    synchronized from the the central OSCAR server out to the
+    OSCAR compute nodes.
+  </description>
+
+  <rpmlist>
+      <filter group="oscar_server" distribution='redhat' />
+      <filter group="oscar_server" distribution='mandrake' />
+      <rpm>sync_files</rpm>
+      <rpm>crontabs</rpm>
+  </rpmlist>
+  <rpmlist>
+      <filter group='oscar_server' distribution='suse' />
+      <rpm>sync_files</rpm>
+      <rpm>cron</rpm>
+  </rpmlist>
+
+</oscar>
