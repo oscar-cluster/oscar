@@ -28,6 +28,9 @@ use Carp;
 # us some good down the road
 $ENV{OSCAR_HOME} = cwd();
 
+# add entries to path that we know we will need
+$ENV{PATH} = $ENV{PATH} . ':/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin';
+
 my $adapter = shift or croak("Program must be invoked as ./install_cluster <network device>");
 
 system("chmod 755 packages/*/scripts/*");
