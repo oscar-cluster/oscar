@@ -20,13 +20,13 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.63 2004/01/22 21:56:52 ngorsuch Exp $
+      $Id: config.xml,v 1.64 2004/01/26 16:36:56 ngorsuch Exp $
   -->
   <name>oda</name>
 
   <version>
     <major>1</major>
-    <minor>26</minor>
+    <minor>27</minor>
     <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
@@ -299,8 +299,8 @@
 		field       name of the field being added (to)
 		value	    value being added to the field
 	 -->
-	<shortcut> add_node_group_configuration_package_version_field_value
-	           add_node_group_configuration_package_field_value
+	<shortcut> add_node_configuration_package_version_field_value
+	           add_node_configuration_package_field_value
 		   %1
 		   %2
 		   %4
@@ -495,26 +495,34 @@
         <!--
 	create_network creates a new network record,
 	required parameters are:
-		name          name of the new network record
+		name          name of the network
+		base_ip	      base ip address of the network
+		netmask	      netmask of the network
 	Optional parameters are:
-		cluster_only  non-zero if private cluster network
+		broadcast     broadcast address of the network
+		cluster_only  non-zero if private cluster network, default 0
+		gateway       gateway address of the network
 	 -->
 	<shortcut> create_network
                    insert_record
                    networks
                    networks.name~%1
+		   networks.base_ip~%2
+		   networks.netmask~%3
                    %+
         </shortcut>
 
         <!--
 	create_nic_on_node creates a new network interface entry
 	in a node record, required parameters are:
-		nic name      name of the new network interface entry
-			node name     name of the node record
+		interface    name of the new network interface entry
+		node         name of the node record
+		
 	Optional parameters are:
 	        assignment    method of assigning IP "static" or "dhcp"
 		broadcast     broadcast address of the network
 		driver_module name of the associated driver module
+		gateway       gateway address of the network
                 interface     name of the interface
                 ip            ip address of the nic
                 mac	      mac address of the nic
@@ -735,6 +743,7 @@
                    node_groups_included_configurations.configuration_id=configurations.id
 		   configurations.name=%1
 		   configurations.associated_node_group_flag=0
+		   %+
                    ;
                    delete_records
 		   package_configurations
@@ -742,11 +751,13 @@
 		   configurations.id
 		   configurations.name=%1
 		   configurations.associated_node_group_flag=0
+		   %+
 		   ;
                    delete_records
                    configurations
 		   configurations.name=%1
 		   configurations.associated_node_group_flag=0
+		   %+
         </shortcut>
 
 	<shortcut> delete_disk_layout
@@ -814,8 +825,6 @@
                    delete_records
                    nodes
                    name=%1
-		   ;
-	           delete_node_group %1
         </shortcut>
 
         <!--
@@ -828,6 +837,18 @@
 	deleted which will delete the associated node group.
 	 -->
 	<shortcut> delete_node_group
+	           modify_records
+		   configurations
+		   configurations.name=%1
+		   configurations.name=node_groups.name
+		   node_groups.associated_node_flag=0
+		   configurations.associated_node_group_flag~0
+		   ;
+		   delete_configuration
+		   %1
+		   configurations.name=node_groups.name
+		   node_groups.associated_node_flag=0
+		   ;
                    delete_records
                    node_groups_included_configurations
                    node_groups_included_configurations.node_group_id=node_groups.id
@@ -1024,6 +1045,13 @@
                    %+
         </shortcut>
 
+	<shortcut> ip_to_node_name
+                   read_records
+                   nics.ip=%1
+                   nics.node_id=nodes.id
+                   nodes.name
+        </shortcut>
+
 	<shortcut> link_node_nic_to_network
                    modify_records
                    nics
@@ -1172,6 +1200,43 @@
                    %+
         </shortcut>
 
+        <!--
+	node_gateway reads the network gateway address for node.
+	First, it will try to use the gateway field for the node.
+	Then, for each nic attached to the node, it will try to
+	use the nic gateway field if that has been set. Otherwise,
+	if a network is linked to one of the node's nics and the 
+	network has a gateway address that has been set, the 
+	network gateway field will be used. Note that more than one
+	gateway value can be returned if more than one nic
+	on the node has a gateway field set or points to a
+	network with a gateway field set.
+	Required and only parameters are:
+		node        name of the node
+	 -->
+	<shortcut> node_gateway
+                   read_records
+                   nodes.name=%1
+                   nodes.gateway!=undef
+                   nodes.gateway
+		   ;
+                   read_records
+                   nodes.name=%1
+                   nodes.gateway=undef
+                   nodes.id=nics.node_id
+		   nics.gateway!=undef
+                   nics.gateway
+		   ;
+                   read_records
+                   nodes.name=%1
+                   nodes.gateway=undef
+                   nodes.id=nics.node_id
+		   nics.gateway=undef
+                   nics.network_id=networks.id
+		   networks.gateway!=undef
+		   networks.gateway
+        </shortcut>
+
 	<shortcut> node_hostname_to_name
                    read_records
                    nodes
@@ -1182,15 +1247,15 @@
 	<shortcut> node_id_to_name
                    read_records
                    nodes
-                   id=%1
-                   name
+                   nodes.id=%1
+                   nodes.name
         </shortcut>
 
 	<shortcut> node_ips
                    read_records
                    nodes.name=%1
                    nics.node_id=nodes.id
-                   nics.network_id=networks.id
+		   nics.ip!=undef
                    nics.ip
         </shortcut>
 
@@ -1207,6 +1272,110 @@
                    nodes
                    name=%1
                    id
+        </shortcut>
+
+        <!--
+	node_nic_broadcast reads the network broadcast value
+	for a specified nic interface on a specified node.
+	It will use the nic record's broadcast field if that
+	has been set, otherwise, if a network is linked to
+	the nic and the network has a broadcast value that
+	has been set the network record's broadcast field
+	will be used. Required and only parameters are:
+		node        name of the node
+		nic         name of nic interface
+	 -->
+	<shortcut> node_nic_broadcast
+                   read_records
+                   nodes.name=%1
+                   nodes.id=nics.node_id
+		   nics.name=%2
+		   nics.broadcast!=undef
+                   nics.broadcast
+		   ;
+                   read_records
+                   nodes.name=%1
+                   nodes.id=nics.node_id
+		   nics.name=%2
+		   nics.broadcast=undef
+                   nics.network_id=networks.id
+		   networks.broadcast!=undef
+		   networks.broadcast
+        </shortcut>
+
+        <!--
+	node_nic_ip reads the network ip address value
+	for a specified nic interface on a specified node.
+	Required and only parameters are:
+		node        name of the node
+		nic         name of nic interface
+	 -->
+	<shortcut> node_nic_ip
+                   read_records
+                   nodes.name=%1
+                   nodes.id=nics.node_id
+		   nics.name=%2
+		   nics.ip!=undef
+                   nics.ip
+        </shortcut>
+
+        <!--
+	node_gateway reads the network gateway address for a
+	particular nic on a node, ignoring the node gateway field.
+	First, for each nic attached to the node, it will try to
+	use the nic gateway field if that has been set. Otherwise,
+	if a network is linked to one of the node's nics and the 
+	network has a gateway address that has been set, the 
+	network gateway field will be used.
+	Required and only parameters are:
+		node        name of the node
+		nic         name of the nic
+	 -->
+	<shortcut> node_nic_gateway
+                   read_records
+                   nodes.name=%1
+                   nodes.id=nics.node_id
+		   nics.name=%2
+		   nics.gateway!=undef
+                   nics.gateway
+		   ;
+                   read_records
+                   nodes.name=%1
+                   nodes.id=nics.node_id
+		   nics.name=%2
+		   nics.gateway=undef
+                   nics.network_id=networks.id
+		   networks.gateway!=undef
+		   networks.gateway
+        </shortcut>
+
+        <!--
+	node_nic_netmask reads the network netmask value
+	for a specified nic interface on a specified node.
+	It will use the nic record's netmask field if that
+	has been set, otherwise, if a network is linked to
+	the nic and the network has a netmask value that
+	has been set the network record's netmask field
+	will be used. Required and only parameters are:
+		node        name of the node
+		nic         name of nic interface
+	 -->
+	<shortcut> node_nic_netmask
+                   read_records
+                   nodes.name=%1
+                   nodes.id=nics.node_id
+		   nics.name=%2
+		   nics.netmask!=undef
+                   nics.netmask
+		   ;
+                   read_records
+                   nodes.name=%1
+                   nodes.id=nics.node_id
+		   nics.name=%2
+		   nics.netmask=undef
+                   nics.network_id=networks.id
+		   networks.netmask!=undef
+		   networks.netmask
         </shortcut>
 
 	<shortcut> node_public_ips
@@ -2362,9 +2531,13 @@
 
     <networks>
       <fields> 
+        <base_ip/>
+        <broadcast/>
         <cluster_only> 
 	  <type> integer </type>
+	  <default> 0 </default>
 	</cluster_only>
+	<gateway/>
         <id> 
 	  <type> integer </type>
 	  <parameters> auto_increment not null unique primary key </parameters>
@@ -2372,19 +2545,22 @@
         <name>
 	  <parameters> not null unique </parameters>
 	</name>
+        <netmask/>
       </fields> 
     </networks>
 
     <nics>
+      <parameters> unique(name,node_id) </parameters>
       <fields> 
         <assignment_method/>
         <broadcast/>
         <driver_module/>
+	<gateway/>
         <id> 
 	  <type> integer </type>
 	  <parameters> auto_increment not null unique primary key </parameters>
 	</id>
-        <interface/>
+        <name/>
         <ip/>
         <mac/>
         <netmask/>
@@ -2454,6 +2630,7 @@
 	<fqdn>
 	  <parameters> unique </parameters>
 	</fqdn>
+	<gateway/>
         <hostname>
 	  <parameters> unique </parameters>
 	</hostname>
@@ -2468,7 +2645,7 @@
         <name>
 	  <parameters> not null unique </parameters>
 	</name>
-        <nis_domain/>
+        <domain/>
         <ram> 
 	  <type> integer </type>
 	</ram>
