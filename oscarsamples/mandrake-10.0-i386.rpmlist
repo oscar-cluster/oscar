@@ -90,8 +90,8 @@ libpng3
 libpython2.3
 libsasl2
 libslang1
-libstdc++2.10
-libstdc++2.10-devel
+libstdc++5
+libstdc++5-devel
 libtermcap2
 libtiff3
 libutempter0
@@ -130,7 +130,6 @@ passwd
 perl
 perl-base
 perl-Crypt-SSLeay
-perl-DateManip
 perl-HTML-Parser
 perl-HTML-Tagset
 perl-libwww-perl
@@ -190,7 +189,6 @@ libstdc++5
 unzip
 libglib2.0_0
 libuser1
-libuser1-devel
 libuser
 file
 libexpat0

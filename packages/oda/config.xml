@@ -110,7 +110,7 @@
     <rpm>perl-DBI</rpm>
     <rpm>perl-Mysql</rpm>
     <rpm>perl-Data-ShowTable</rpm>
-    <rpm>perl-ExtUtils-PerlPP</rpm>
+    <!-- <rpm>perl-ExtUtils-PerlPP</rpm>-->
     <rpm>oda</rpm>
     <rpm>MySQL-common</rpm>
     <rpm>libmysql12</rpm>

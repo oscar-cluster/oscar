@@ -54,7 +54,7 @@
 	 <rpm>openssl</rpm>
 	 <rpm>dhcp-common</rpm>
 	 <rpm>dhcp-server</rpm>
-	 <rpm>expat</rpm>
+	 <!-- <rpm>expat</rpm>-->
 	 <rpm>libpcap0</rpm>
 	 <rpm>librrdtool0</rpm>
 	 <rpm>locales</rpm>
@@ -69,7 +69,7 @@
  	 <rpm>libgmp3</rpm>
          <rpm>python</rpm>
          <rpm>python2-compat</rpm>
-         <rpm>rrdtool</rpm>
+	 <!--<rpm>rrdtool</rpm>-->
          <rpm>tcsh</rpm>
          <rpm>xinetd</rpm>
          <rpm>zlib1</rpm>
