@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.5 2002/07/19 02:28:57 jsquyres Exp $
+% $Id: user.tex,v 1.6 2003/09/15 18:27:32 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -58,7 +58,9 @@ maintenance scheme. Basically, you apply updates and patches to your images
 and then resync the clients to their respective images. Since \cmd{rsync} is
 used, only the actual data that has changed will be sent over the network to 
 the client. The SIS command \cmd{updateclient} can be run on any client to
-initiate this update.
+initiate this update\footnote{In OSCAR, when using \cmd{updateclient} to
+maintain a cluster, the last step of the wizard must be re-run to keep the
+system configurations in sync, i.e., re-run ``Complete Cluster Setup''.}.
 
 \subsubsection{Additional information}
 
