@@ -61,7 +61,7 @@ fi
 
   echo "Creating RPM cache database..."
   cd $RPM_DB_DIR
-  $PACKAGE --cache=u --url $RPM_CACHE --select=none
+  $PACKAGE -v --cache=u --url $RPM_CACHE --select=none
 else
   echo "WARNING: No RPM cache database exists."
   echo "Am I being run from \"install_cluster --> wizard_prep\"?"
