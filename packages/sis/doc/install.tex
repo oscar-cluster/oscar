@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.1 2002/07/17 13:37:19 jsquyres Exp $
+% $Id: install.tex,v 1.2 2002/07/19 15:28:21 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -9,7 +9,7 @@
 \label{app:troubleshooting-machines-images}
 
 During the life of your cluster, you may want to delete unused
-machines or images, create new images, or change the image that a
+images, create new images, or change the image that a
 client uses.  Currently OSCAR doesn't have a direct interface to do
 this, but you can use the SIS commands directly. Here are some useful
 examples:
@@ -27,14 +27,6 @@ examples:
 \begin{verbatim}
         mksiimage --Delete --name <imagename>
 \end{verbatim}
-\item To delete a machine, run:
-\begin{verbatim}
-        mksimachine --Delete --name <machinename>
-\end{verbatim}
-\item To delete all machines, run:
-\begin{verbatim}
-        mksimachine --Delete --all
-\end{verbatim}
 \item To change which image a machine will install, run:
 \begin{verbatim}
         mksimachine --Update --name <machinename> --image <imagename>
@@ -42,8 +34,7 @@ examples:
 \end{itemize}
 
 There is also a SIS gui that is availble. Start it by running
-\file{tksis}. It doesn't yet support the update function, but it can
-make the other operations easier.
+\file{tksis}. 
 
 More details on these commands can be obtained from their respective
 man pages.
