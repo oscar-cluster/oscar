@@ -3,7 +3,8 @@ PERL_CW		= @PERL@ -cw
 
 pms		= \
 		nodesettingsDialog.pm \
-		nodemgmtTable.pm
+		nodemgmtTable.pm \
+		nodemgmtDialog.pm
 
 pls		= nodemgmtDialog.pl
 
@@ -17,7 +18,7 @@ inst_DATA		= GUI.xml
 nodemgmtDialog.pl: nodemgmtdialog.ui.h nodemgmtdialog.ui $(pms)
 	$(PUIC) -x -o nodemgmtDialog.pl nodemgmtdialog.ui
 
-nodemgmtDialog.pm: nodemgmtdialog.ui.h nodemgmtdialog.ui $(pms)
+nodemgmtDialog.pm: nodemgmtdialog.ui.h nodemgmtdialog.ui nodesettingsDialog.pm nodemgmtTable.pm 
 	$(PUIC) -o nodemgmtDialog.pm nodemgmtdialog.ui
 
 nodesettingsDialog.pm: nodesettingsdialog.ui nodesettingsdialog.ui.h
