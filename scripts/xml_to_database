@@ -17,7 +17,6 @@
 # Copyright 2002 NCSA
 #                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 
-# cannot calculate where these are
 use strict;
 use Getopt::Long;
 use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR","../../../lib","../../../lib/OSCAR";
@@ -48,11 +47,8 @@ sub make_fix_table{
     # get a list of the tables and fields
     # that are already in the database
     my %existing_tables_fields = ();
-    if ( ! oda::list_tables_fields( \%options,
-				    \%existing_tables_fields ) ) {
-	oda::disconnect( \%options );
-	exit 1;
-    }
+    oda::list_tables_fields( \%options,
+			     \%existing_tables_fields );
 
     # check if the table in question exists
     print "Checking if database table <$table_name> exists ... ";
