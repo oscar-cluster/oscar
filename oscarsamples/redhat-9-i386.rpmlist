@@ -171,6 +171,7 @@ pidentd
 pinfo
 popt
 portmap
+postfix
 procmail
 procps
 psmisc
@@ -196,7 +197,6 @@ rsh-server
 rsync
 screen
 sed
-sendmail
 setserial
 setup
 setuptool
