@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.3 2003/07/17 17:47:13 jsquyres Exp $
+# $Id: setup,v 1.4 2003/07/17 19:34:29 jsquyres Exp $
 #
 # post_clients script for the switcher package
 #
@@ -43,7 +43,7 @@ if ($name eq "redhat") {
   $source_dir .= "rh80";
 }
 
-print "Copy: $source_dir -> $dest_dir\n";
+print "Using modules RPMs from: $source_dir\n";
 
 # Quick sanity check
 
@@ -52,8 +52,36 @@ if (! -d $dest_dir) {
 } elsif (! -d $source_dir) {
   croak("$source_dir does not exist");
 }
-system("rm $dest_dir/modules-oscar\* 2>&1 >/dev/null");
-system("cp $source_dir/*.rpm $dest_dir\n");
+
+# Remove any "modules-oscar" RPMs in the dest dir
+
+opendir(DIR, $dest_dir);
+my @bad_files = grep {/^modules-oscar/ && -f "$dest_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#bad_files > -1) {
+  printf("Removing old files:\n");
+  foreach my $file (@bad_files) {
+    printf(" - $dest_dir/$file\n");
+    unlink("$dest_dir/$file");
+  }
+}
+
+# Make a list of the new files and copy them over
+
+opendir(DIR, $source_dir);
+my @good_files = grep {/^modules-oscar/ && -f "$source_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#good_files > -1) {
+  my $cmd = "cp ";
+  printf("Copying new files:\n");
+  foreach my $file (@good_files) {
+    $cmd .= "$source_dir/$file ";
+    printf(" - $source_dir/$file\n");
+  }
+  $cmd .= $dest_dir;
+  system($cmd);
+  print "Copied modules-oscar RPMs to $dest_dir\n";
+}
 
 # All done
 
