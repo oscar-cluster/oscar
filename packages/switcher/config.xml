@@ -66,10 +66,10 @@ purpose.</description>
   </rpmlist>
 
   <rpmlist>
-  <filter distribution='mandrake' distribution_version='9.2'/>
+  <filter distribution='mandrake' distribution_version='10.0'/>
     <rpm>tcl</rpm>
     <rpm>env-switcher</rpm>
-    <rpm>modules-oscar-mdk92</rpm>
+    <rpm>modules-oscar</rpm>
     <rpm>ed</rpm>
   </rpmlist>
   

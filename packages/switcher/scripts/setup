@@ -45,7 +45,7 @@ if ($name eq "redhat") {
 } elsif ($name eq "suse") {
   $source_dir .= "suse81";
 } elsif ($name eq "mandrake") {
-  $source_dir .= "mdk90";
+  $source_dir .= "mdk10";
 } elsif ($name eq "fedora") {
   	$source_dir .= $name;
 	$source_dir .= $ver;
