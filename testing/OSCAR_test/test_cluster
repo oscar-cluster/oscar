@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster,v 1.9 2002/05/18 04:30:06 jsquyres Exp $
+# $Id: test_cluster,v 1.10 2002/05/22 17:15:07 brechin Exp $
 #
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
@@ -85,7 +85,9 @@ fi
 
 echo -n "node -> server SSH:"
 server=`hostname`
-if [ `ssh $node1 ssh $server hostname 2> /dev/null` = $server ]; then
+testval=`ssh $node1 ssh $server hostname 2> /dev/null`
+#echo "Testval is $testval"
+if [ "$testval" = "$server" ]; then
   echo_success
   echo
 else
@@ -93,6 +95,7 @@ else
   echo
   exit 1
 fi
+
 
 if [ $clients -gt 1 ]; then # user specified more than one client, so
                             # we can do node -> node tests
