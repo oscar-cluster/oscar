@@ -117,15 +117,19 @@ HELP
 sub uniqueFile # (instr) -> filename
 {
   my($instr) = @_;
-  my($counter,$filename);
 
-  $filename = $instr;
-  while (-e $filename)
-    {
-      $counter++;
-      $filename = $instr . '-' . $counter;
+  $instr =~ /^((.*)\/)?([^\/]*)$/;
+  my $dirname = $2 || ".";
+  my $basename = $3;
+  if( opendir DIR, $dirname ) {
+    my $num = 0;
+    foreach (readdir DIR) {
+      $num = $1 if /^\Q$basename\E-(\d+)$/ && $1 > $num;
     }
-  return $filename;  # Return the 'new' string
+    closedir DIR;
+    $instr .= -$num - 1;
+  }
+  return $instr;  # Return the 'new' string
 } 
 
 #########################################################################
@@ -144,14 +148,19 @@ sub writeConfigFile
   if (!(defined($opt_nobackup)))
     {
       my $newconfigfilename = uniqueFile($configfilename);
-      rename($configfilename,$newconfigfilename) if 
-        ($configfilename ne $newconfigfilename);
+      rename($configfilename,$newconfigfilename) if -e $configfilename;
     }
 
   # Generate the config file and write it to disk.  This file is based
   # on the config file from ntp version 4.1.0 and can be used with all
   # versions of ntp >= 4.0.99 (ie. RedHat 7.1, 7.2, 7.3).
   my $serverstring = "server " . join("\nserver ",@ntpserverlist);
+  my $driftfile;
+  if( -e '/etc/ntp/drift' ) {
+    $driftfile = '/etc/ntp/drift';
+  } elsif( -e '/var/lib/ntp/drift' ) {
+    $driftfile = '/var/lib/ntp/drift';
+  }
   open(CONF,">$configfilename");
   print CONF <<CONFIG;
 # These are some servers for use by the ntp daemon.
@@ -177,7 +186,7 @@ fudge	127.127.1.0 stratum 10
 # by creating a temporary in the same directory and then rename()'ing
 # it to the file.
 #
-driftfile /etc/ntp/drift
+driftfile $driftfile
 #multicastclient			# listen on default 224.0.1.1
 broadcastdelay	0.008
 
@@ -220,8 +229,7 @@ sub writeStepTickers
   if (!(defined($opt_nobackup)))
     {
       my $newstepfilename = uniqueFile($stepfilename);
-      rename($stepfilename,$newstepfilename) if
-        ($stepfilename ne $newstepfilename);
+      rename($stepfilename,$newstepfilename) if -e $stepfilename;
     }
 
   my $serverstring = join(" ",@ntpserverlist);
