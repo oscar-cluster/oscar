@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.8 2001/08/21 18:46:52 geiselha Exp $
+% $Id: design.tex,v 1.9 2001/08/21 19:12:44 geiselha Exp $
 %
 % $COPYRIGHT$
 %
@@ -325,6 +325,9 @@ Notes:
 \item Each item in the \odrcat{client} category is uniquely identified
 by its \odrkey{HOST} value.
 
+\item The \odrkey{CLUSTER} key is a cross reference to the \odrkey{NAME} key
+  in the \odrcat{client} category.
+
 \item The \odrkey{HOST} key refers to the FQDN of the host to prevent
   any ambiguities.
   
@@ -342,6 +345,8 @@ by its \odrkey{HOST} value.
     \begin{tabular}{|l|l|}
       \hline \multicolumn{1}{|c|}{Key} & \multicolumn{1}{c|}{Value} \\
       \hline \odrkey{HOST} & Fully qualified domain name of the machine \\
+      \odrkey{CLUSTER} & Name of the \odrcat{cluster} to which this node 
+	belongs \\
       \odrkey{IP\_DEFAULT\_ROUTE} & IP address of this machine's gateway 
         machine \\ 
       \odrkey{STATE} & Current state of the machine ({\tt enabled}, {\tt
