@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.21 2002/10/25 14:18:13 jsquyres Exp $
+#   $Id: Package.pm,v 1.22 2002/10/25 18:05:03 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ use XML::Simple;
 use Carp;
 
 @EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist distro_rpmlist install_rpms pkg_config_xml);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.21 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.22 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -125,8 +125,7 @@ sub run_pkg_script {
     }
 
     foreach my $scriptname (@$scripts) {
-        my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . 
-	    $scriptname;
+        my $script = "$ENV{OSCAR_HOME}/packages/$pkg/scripts/$scriptname";
         if (-e $script) {
             oscar_log_subsection("About to run $script for $pkg");
             my $rc = system($script);
@@ -148,8 +147,7 @@ sub run_pkg_script_chroot {
         return undef;
     }
     foreach my $scriptname (@$scripts) {
-        my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . 
-	    $scriptname;
+        my $script = "$ENV{OSCAR_HOME}/packages/$pkg/scripts/$scriptname";
         if (-e $script) {
             oscar_log_subsection("About to run $script for $pkg");
             run_in_chroot($dir,$script) or (carp "Script $script failed", 
