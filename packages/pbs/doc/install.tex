@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.5 2002/06/14 13:02:21 jsquyres Exp $
+% $Id: install.tex,v 1.6 2002/06/15 02:48:51 jenos Exp $
 %
 % $COPYRIGHT$
 %
@@ -74,6 +74,16 @@ to allow submission.  i.e., the submitted parameters must fit within
 certain max and min values for nodes, ppn (procs per node), walltime,
 etc.  If specific nodes are desired to run on, then resource
 attributes must be defined.
+
+If you would like to get a full dump of your PBS server and queue
+configuration, you can issue this command:
+\cmd{qmgr -c "print server"}
+The qmgr interface can be used to define additional queues and their
+parameters.  You can also change the parameters on the default OSCAR
+queue, ``workq''.  Be aware that if you call the \cmd{post\_install} 
+command with the \cmd{--default} option, you will lose your customizations.
+Also note that OSCAR's default wallclock limit on workq is 1 hour.  
+Depending on your application, you may wish to adjust this.
 
 Some useful links:
 

@@ -1,31 +1,12 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.3 2002/06/14 05:15:45 jsquyres Exp $
+% $Id: user.tex,v 1.4 2002/06/15 02:48:51 jenos Exp $
 %
 % $COPYRIGHT$
 %
 
 \subsection{Using The Portable Batch System (PBS)}
 \label{app:pbs-overview}
-
-All PBS commands can be found under \file{/usr/local/pbs/bin} on the
-OSCAR head node.  There are man pages available for these commands,
-but here are the most popular and some basic options:
-
-\begin{itemize}
-\item \cmd{qsub}: submits jobs to PBS
-
-\item \cmd{qdel}: deletes PBS jobs
-  
-\item \cmd{qstat [-n]}: displays current job status and node
-  associations
-
-\item \cmd{pbsnodes [-a]}: displays node status
-  
-\item \cmd{pbsdsh}: distributed process launcher
-\end{itemize}
-
-\subsubsection{PBS Architecture}
 
 The PBS architecture consists of three major components:
 
@@ -40,6 +21,25 @@ The PBS architecture consists of three major components:
   for actually starting and stopping jobs on the client nodes.
 \end{itemize}
 
+\subsubsection{PBS Commands}
+
+All PBS commands can be found under \file{/usr/local/pbs/bin} on the
+OSCAR head node.  There are man pages available for these commands,
+but here are the most popular with some basic options:
+
+\begin{itemize}
+\item \cmd{qsub}: submits job to PBS
+
+\item \cmd{qdel}: deletes PBS job
+  
+\item \cmd{qstat [-n]}: displays current job status and node
+  associations
+
+\item \cmd{pbsnodes [-a]}: displays node status
+  
+\item \cmd{pbsdsh}: distributed process launcher
+\end{itemize}
+
 \subsubsection{Submitting a PBS Job}
 
 The \cmd{qsub} command is not necessarily intuitive.  Here are some
@@ -52,14 +52,15 @@ handy tips to know:
   
 \item The target script cannot take any command line arguments.
   
-\item For parallel jobs, the target script is only launched on one
+\item For parallel jobs, the target script is only launched on ONE
   node.  Therefore the script is responsible for launching all
   processes in the parallel job.
   
-\item Alternatively, the \cmd{pbsdsh} command can be used within the
-  script to launch an executable on all allocated processors and nodes
+\item One method of launching processes is to use the \cmd{pbsdsh}
+  command within the script used as \cmd{qsub}'s target.
+  \cmd{pbsdsh}  will launch its target on all allocated processors and nodes
   (specified as arguments to \cmd{qsub}).  Other methods of parallel
-  launch exist, such as commands like \cmd{mpirun}.
+  launch exist, such as \cmd{mpirun}, included with each of the MPI packages.
   
 \item Job parameters can be specifed to \cmd{qsub} on the command
   line, or within the submitted script.  You can get a good start by
@@ -109,20 +110,15 @@ pbsdsh /path/to/my_executable
 # All done
 \end{verbatim}
 
-\subsubsection{Other Points to Cover...}
-
-\begin{discuss}
-  Jeremy will write more stuff here -- major topics to write about are
-  listed below.
-\end{discuss}
-
-\begin{itemize}
-\item ``all'' is an optional specification of a node attribute, or
+Notes about the above examples:
+\begin{itemize} 
+\item``all'' is an optional specification of a node attribute, or
   ``resource''
   
 \item ``workq'' is a default queue name that is used in OSCAR clusters
 
-\item 1:00:00 is in HH:MM:SS
+\item 1:00:00 is in HH:MM:SS, and is also the default wallclock limit on 
+  OSCAR clusters
 \end{itemize}
 
 % LocalWords:  Exp
