@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: brief.tex,v 1.3 2001/12/18 22:48:51 mchasal Exp $
+% $Id: brief.tex,v 1.4 2001/12/18 23:37:49 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -109,8 +109,8 @@ the following command:
 \end{verbatim}
   
 In the above command, substitute the device name 
-(e.g., \file{eth1})
-for your server's private network ethernet adapter. After \file{install\_cluster}
+(e.g., \emph{eth1})
+for your server's private network ethernet adapter. After \cmd{install\_cluster}
 successfully completes some configuration, it will display 
 the OSCAR wizard.
 (Detail:Section \ref{det:installcluster})
@@ -196,9 +196,13 @@ console. You should now reboot them off of thier newly installed hard disks.
         \end{itemize}
 (Detail:Section \ref{det:clientfinish})
 
+\item To verify that the clients are installed properly use \cmd{ping\_clients} script.
+In a terminal as the root user issue \cmd{~/OSCAR-1.2/scripts/ping\_clients}.
+(Detail:Section \ref{det:pingclients})
+
 \item Once all the clients have successfully booted, Press the 
 \button{Complete Cluster Setup} button. Your OSCAR cluster is
-now installed.
+now installed and configured.
 (Detail:Section \ref{det:completeinstall})
 
 \item To verify proper installation, you should test the cluster.
@@ -214,7 +218,7 @@ functions. To perform the test, do the following:
                 \begin{enumerate}
                 \item Open a new terminal and login as the user given above.
                 \item change directory to \file{~/OSCAR\_test}
-                \item run \file{./test\_cluster}
+                \item run \cmd{./test\_cluster}
                 \item enter the number of cluster nodes and the number of 
                 processors per node when prompted. The test will submit
                 simple jobs to the cluster and print the output. If there

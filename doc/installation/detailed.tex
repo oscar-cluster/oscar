@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.10 2001/12/18 22:48:51 mchasal Exp $
+% $Id: detailed.tex,v 1.11 2001/12/18 23:37:49 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -567,6 +567,7 @@ to simply reset or power cycle them.
   from trying to do another network install.}
 
 \subsubsection{Check network connectivity to client nodes}
+\label{det:pingclients}
 
 In order to perform the final cluster configuration, the server must
 be able to communicate with the client nodes over the network. If a
@@ -574,18 +575,18 @@ client's ethernet adapter is not properly configured upon boot,
 however, the server will not be able to communicate with the client. A
 quick and easy way to confirm network connectivity is to do the
 \begchange
-following (assuming OSCAR installed in \file{/root}):
+following (assuming OSCAR installed in \file{~root}):
 
 \begin{verbatim}
-  cd /root/OSCAR-\oscarversion/scripts
+  cd ~/OSCAR-\oscarversion/scripts
   ./ping_clients
 \end{verbatim}
 \endchange
 
 The above commands will run the \cmd{ping\_clients} script, which will
 attempt to ping each defined client and will print a message stating
-success or failure. If a client cannot be pinged, the initial ramdisk
-provided probably did not have built in module support for its
+success or failure. If a client cannot be pinged, there was a problem
+configuring the 
 ethernet adapter, and you will have to log in to the machine and
 manually configure the adapter. Once all the clients have been
 installed, rebooted, and their network connections have been
