@@ -78,10 +78,8 @@ $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 my $window = MainWindow->new();
 $window->withdraw();
 if( $ENV{'DEBUG_OSCAR_WIZARD'} ) {
-	my $rev = '$Rev$';
-	$rev =~ s/^[^:]+://;
-	$rev =~ s/\s+//;
-	$window->title("OSCAR Installation Wizard ($rev)");
+	my $rev = (split /\s+/, '$Rev$')[1];
+	$window->title("OSCAR Installation Wizard (svn r$rev)");
 } else {
 	$window->title("OSCAR Installation Wizard");
 }
