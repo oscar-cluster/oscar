@@ -87,7 +87,7 @@ foreach my $cli (@clientlist){
         }
 }
 if ($homecount) {
-        system("$ENV{OSCAR_TESTPRINT} --label '/home mounts' -s "$homecount nodes failed" -f ");
+        system("$ENV{OSCAR_TESTPRINT} --label '/home mounts' -s '$homecount nodes failed' -f ");
 } else {
         system("$ENV{OSCAR_TESTPRINT} --label '/home mounts' -p ");
 }
