@@ -65,27 +65,18 @@
   </rpmlist>
 
   <rpmlist>
-    <filter distribution='mandrake' distribution_version='9.2' group='oscar_server'/>
+    <filter distribution='mandrake' distribution_version='10.0' group='oscar_server'/>
     <rpm>libqt3</rpm>
-    <rpm>libqt3-devel</rpm>
-    <rpm>libunixODBC2-devel</rpm>
-    <rpm>libunixODBC2</rpm>
-    <rpm>libmysql12-devel</rpm>
-    <rpm>postgresql-devel</rpm>
     <rpm>libcups2</rpm>
-    <rpm>perl-Qt-mdk</rpm>
+    <rpm>perl-Qt-mdk10</rpm>
     <rpm>libpq3</rpm>
     <rpm>libmng1</rpm>
     <rpm>liblcms1</rpm>
-    <!--<rpm>libpgsql2</rpm> -->
-    <!-- <rpm>libpgperl</rpm> -->
     <rpm>libecpg3</rpm>
-    <!-- Mis en commentaire... <rpm>libpgsqlodbc0</rpm> -->
-    <rpm>postgresql</rpm>
-    <rpm>sfio</rpm>
-    <rpm>libpgtcl2</rpm>
+    <rpm>libsmokeqt1</rpm>
+    <rpm>libMesaglut3</rpm>
   </rpmlist>
-  
+
   <rpmlist>
 <!-- For distros with Perl 5.6 -->
     <filter distribution='redhat'   distribution_version='7.3' group='oscar_server'/>
