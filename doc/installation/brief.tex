@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: brief.tex,v 1.12 2002/06/15 04:31:07 jsquyres Exp $
+% $Id: brief.tex,v 1.13 2002/07/06 03:51:07 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -36,11 +36,14 @@ criteria, then you probably don't meet them:
   instructions of anything, ever.
 \end{enumerate}
 
+\docswitch{}{\input{supported}}
+
 If you decide that the quick install isn't for you, see the detailed
-installation instructions in Section~\ref{det:top}
-(page~\pageref{det:top}). Throughout the quick install instructions,
-there are references to the appropriate section in the detailed
-installation instructions in parentheses at the end of each step.
+installation instructions \docswitch{in Section~\ref{det:top}
+  (page~\pageref{det:top}).  Throughout the quick install
+  instructions, there are references to the appropriate section in the
+  detailed installation instructions in parentheses at the end of each
+  step.}{in the full OSCAR installation guide.}
 
 \subsection{Quick installation procedures}
 
@@ -56,7 +59,7 @@ Note: All actions specified herein should be performed by the
     the \file{/} and \file{/var} filesystems. It is simplest if you
     just create 1 large partition on the entire drive.
     
-    (Detail: See Section~\ref{det:serverdiskpar})
+    \sbsdetail{det:serverdiskpar}
   \item Some X environment such as GNOME or KDE must be installed.
   \item Networking must be set up and working on the public interface
     (do yourself a favor and install some type of network security if
@@ -65,7 +68,7 @@ Note: All actions specified herein should be performed by the
     must be installed.
   \end{enumerate}
   
-  (Detail: See Section~\ref{det:serverosinstall})
+  \sbsdetail{det:serverosinstall}
   
 \item After the installation is complete, log on as root to the server
   machine.
@@ -86,7 +89,7 @@ Note: All actions specified herein should be performed by the
     }
   \vspace{11pt}
 
-  (Detail: See Section~\ref{det:unpack})
+  \sbsdetail{det:unpack}
 
 \item Copy the rpms from \emph{all} of the distribution CD's to
   \file{/tftpboot/rpm} using these, or similar, commands:
@@ -95,7 +98,7 @@ Note: All actions specified herein should be performed by the
   (insert cd)
   # cp /mnt/cdrom/Redhat/RPMS/*.rpm /tftpboot/rpm
 \end{verbatim}
-(Detail: See Section~\ref{det:rpmcopy})
+\sbsdetail{det:rpmcopy}
 
 \item Configure the second (private) cluster network adapter using the
   linux \cmd{/usr/sbin/netcfg} command or your favorite editor. Set
@@ -104,7 +107,7 @@ Note: All actions specified herein should be performed by the
   activate at boot time.  Then reboot your machine. and make sure that
   the private cluster interface is properly setup and activated.
 
-(Detail: See Section~\ref{det:serveradapter})
+\sbsdetail{det:serveradapter}
 
 \item After the reboot is complete, log on as root to the server
   machine.
@@ -127,7 +130,7 @@ for your server's private network ethernet adapter. After
 \cmd{install\_cluster} successfully completes some configuration, it
 will display the OSCAR wizard.  
 
-(Detail: See Section~\ref{det:installcluster})
+\sbsdetail{det:installcluster}
 
 \item Press the \button{Build OSCAR Client Image} button.  This pops
   up the ``Create a SystemImager Image'' window. Verify that the last
@@ -143,7 +146,7 @@ will display the OSCAR wizard.
   SystemImager Image'' window. You have just built an installation
   image on the server, with the name \file{oscarimage}.
 
-  (Detail: See Section~\ref{det:buildimage})
+  \sbsdetail{det:buildimage}
   
 \item Press the \button{Define OSCAR Clients} button on the OSCAR
   Wizard.  On the window that is opened, fill in the number of client
@@ -155,7 +158,7 @@ will display the OSCAR wizard.
   \button{Close} button on the pop up window and then the
   \button{Close} button on the ``Define OSCAR Clients'' window.
 
-  (Detail: See Section~\ref{det:defclients})
+  \sbsdetail{det:defclients}
 
 \item Press the \button{Setup Networking} button on the OSCAR Wizard.
   The window that is opened will help you collect MAC addresses and
@@ -164,13 +167,13 @@ will display the OSCAR wizard.
   diskette in the floppy drive and press the \button{Build Autoinstall
     Floppy} button. You may create several diskettes if you like.
 
-  (Detail:Section \ref{det:setupnetwork})
+  \sbsdetail{det:setupnetwork}
 
 \item Press the \button{Collect MAC Addresses} button. The wizard will
   start scanning the network as indicated in the message at the top of
   the window.
 
-  (Detail: See Section~\ref{det:setupnetwork})
+  \sbsdetail{det:setupnetwork}
 
 \item Now, you need to network boot your nodes. This is done in one of
   2 ways:
@@ -182,7 +185,7 @@ will display the OSCAR wizard.
     created in the previous step and boot off the floppy
   \end{itemize}
         
-  (Detail: See Appendix~\ref{app:net-boot-client-nodes})
+  \sbsdetail{app:net-boot-client-nodes}
 
 \item As the nodes broadcast over the network, the MAC addresses
   detected will show up on the left side of the window. Select a MAC
@@ -190,20 +193,20 @@ will display the OSCAR wizard.
   \button{Assign Mac to Node} button to give the node that MAC
   address.
 
-  (Detail: See Section~\ref{det:setupnetwork})
+  \sbsdetail{det:setupnetwork}
 
 \item When you have assigned a MAC address to each node, press the
   \button{Stop Collecting} button to stop scanning the network. Then
   press the \button{Configure DHCP Server} to setup the server to
   answer the client requests.
 
-  (Detail: See Section~\ref{det:setupnetwork})
+  \sbsdetail{det:setupnetwork}
 
 \item If your clients support PXE booting, press the \button{Setup
     Network Boot} button to configure the server to answer PXE
   requests.
 
-  (Detail: See Section~\ref{det:setupnetwork})
+  \sbsdetail{det:setupnetwork}
 
 \item Press \button{Close} to dismiss the network setup window.
   
@@ -213,7 +216,7 @@ will display the OSCAR wizard.
   take about 3-5 minutes depending on your hardware and your network.
   You can install multiple clients simultaneously.
 
-  (Detail: See Section~\ref{det:clientinstall})
+  \sbsdetail{det:clientinstall}
 
 \item As each client finishes, it will start beeping and printing a
   message to the console. You should now reboot them off of thier
@@ -226,19 +229,19 @@ will display the OSCAR wizard.
     diskette and reboot
   \end{itemize}
 
-  (Detail: See Section~\ref{det:clientfinish})
+  \sbsdetail{det:clientfinish}
   
 \item To verify that the clients are installed properly use
   \cmd{ping\_clients} script.  In a terminal as the root user issue
   \cmd{$^\sim$/oscar-\oscarversion/scripts/ping\_clients}.
 
-  (Detail: See Section~\ref{det:pingclients})
+  \sbsdetail{det:pingclients}
   
 \item Once all the clients have successfully booted, Press the
   \button{Complete Cluster Setup} button. Your OSCAR cluster is now
   installed and configured.
 
-  (Detail: See Section~\ref{det:completeinstall})
+  \sbsdetail{det:completeinstall}
 
 \item To verify proper installation, you should test the cluster.
   OSCAR provides a test suite to verify the basic cluster functions.
@@ -261,6 +264,6 @@ will display the OSCAR wizard.
     \end{enumerate}
   \end{enumerate}
 
-  (Detail: See Section~\ref{det:testcluster})
+  \sbsdetail{det:testcluster}
 
 \end{enumerate}
