@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'OpderDownloadPackage.ui'
 #
-# Created: Wed Jul 2 15:38:22 2003
+# Created: Tue Jul 15 19:44:29 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,9 +18,10 @@ use Qt::slots
     downloadDone => [],
     downloadNext => [],
     downloadStart => [],
+    getPackageTable => [],
     hideEvent => [],
     init => [],
-    getPackageTable => [],
+    updateOda => [],
     readFromStdout => [],
     setObjectRefs => [],
     showEvent => [];
@@ -136,7 +137,6 @@ sub downloadDone
 
   return if (!$dlPhase);
 
-  my $cmdlie;
   my @cmdlines = split /\n/, $dlString;
   my $packageTableRef = getPackageTable();
   foreach my $cmdline (@cmdlines)
@@ -162,6 +162,8 @@ sub downloadDone
                   last;
                 }
             }
+          # Update the oda database with the new config.xml file
+          updateOda();
           $dlPhase++;
         }
       else
@@ -252,6 +254,19 @@ sub downloadStart
 
 }
 
+sub getPackageTable
+{
+
+#########################################################################
+#  Subroutine: getPackageTable                                          #
+#  Parameters: None                                                     #
+#  Returns   : A reference to the main window's QTable package table    #
+#########################################################################
+
+  return (parent()->child('packageTable'));
+
+}
+
 sub hideEvent
 {
 
@@ -300,16 +315,60 @@ sub init
 
 }
 
-sub getPackageTable
+sub updateOda
 {
 
 #########################################################################
-#  Subroutine: getPackageTable                                          #
+#  Subroutine: updateOda                                                #
 #  Parameters: None                                                     #
-#  Returns   : A reference to the main window's QTable package table    #
+#  Returns   : Nothing                                                  #
+#  This subroutine takes in the name of a package and updates the       #
+#  oda database with the (newly downloaded) config.xml file found in    #
+#  /var/lib/oscar/packages/PACKAGE_NAME.  It does this by calling the   #
+#  script $OSCAR_HOME/scripts/read_package_config_xml_into_database.    #
 #########################################################################
 
-  return (parent()->child('packageTable'));
+  # Since the package name has nothing to do with the directory name
+  # of where the tarball gets unpacked, we need to untar the downloaded
+  # tarball and figure out the name of the directory.  To do this, strip
+  # off the last bit of the downloadURI.  This file should be in
+  # /var/cache/oscar/downloads/.  Then using tar, list the contents of
+  # the tarball and figure out the root directory of the package.  
+  # Then the config.xml file is located in /var/lib/oscar/packages/DIR.
+  my $tarball;
+  my $tardir;
+  my $package = $dlPackages[$dlPhase-1]->{package};
+  ($dlPackages[$dlPhase-1]->{downloadURI}[0] =~ /\/([^\/]*)$/) &&
+    ($tarball = "/var/cache/oscar/downloads/$1");
+
+  if (-e $tarball)
+    {
+      open(CMD,'tar -tvzf ' . $tarball . ' |');
+      my $cmd_output = <CMD>;
+      chomp $cmd_output;
+      ($cmd_output =~ /\s([^\s]*)\/$/) && 
+        ($tardir = "/var/lib/oscar/packages/$1");
+      while ($cmd_output = <CMD>) { }  # To prevent tar "stdout" error
+      close CMD;
+
+      if (-d $tardir)
+        {
+          my @args = (
+            "$ENV{OSCAR_HOME}/scripts/read_package_config_xml_into_database",
+            $tardir);
+
+          (system(@args) == 0) or
+            Carp::carp("Failure updating oda for package $package: $?");
+        }
+      else
+        {
+          Carp::carp("Couldn't update oda since $tardir doesn't exist");
+        }
+    }
+  else
+    {
+      Carp::carp("Couldn't locate the tarball for $package");
+    }
 
 }
 
