@@ -440,6 +440,21 @@
         </expansion>
       </shortcut>
 
+      <shortcut>
+        <command> list_services </command>
+        <description>
+          Lists all services provided by a group, if the service does
+          not belong to a group, the group is NULL.  Required parameter is:
+		group		Group you want to list services
+        </description>
+        <expansion>
+          read_records
+          packages_servicelists.service
+          packages.id=packages_servicelists.package_id
+          packages.installed=1
+          packages_servicelists.group=%1
+        </expansion>
+      </shortcut>
 
       <!--
       ==================================================
