@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster,v 1.15 2002/07/28 06:04:14 jsquyres Exp $
+# $Id: test_cluster,v 1.16 2002/07/28 06:09:17 jsquyres Exp $
 #
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
@@ -210,7 +210,7 @@ pbs_script=pbs_script.shell
 output_file=shelltest
 grep_string=Hello
 exit_on_fail=yes
-#pbs_test_routine
+pbs_test_routine
 
 
 #
