@@ -7,7 +7,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.32 2003/11/01 01:25:41 naughtont Exp $
+# $Id: wizard_prep,v 1.33 2003/11/04 00:27:38 naughtont Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -213,12 +213,12 @@ OSCAR::Package::install_rpms(@rpms) or
 oscar_log_subsection("Successfully installed server core RPMs");
 
 
-# Have installed Core Server RPMs & did not croak, so mark 
+# Have installed Core Server Pkgs & did not croak, so mark 
 # packages.<pkg>installed true.  (best effort for now)
 
-oscar_log_subsection("Marking installed bit in ODA for server core RPMS");
+oscar_log_subsection("Marking installed bit in ODA for server core Pkgs");
 
-foreach my $pkg (@rpms) {
+foreach my $pkg (@packages) {
         oscar_log_subsection("Set package: $pkg");
         my $ok_rslt = database_execute_command("package_mark_installed $pkg");
         croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
