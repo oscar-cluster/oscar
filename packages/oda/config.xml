@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.12 2003/03/03 23:18:22 ngorsuch Exp $
+      $Id: config.xml,v 1.13 2003/03/10 05:56:52 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -257,9 +257,11 @@
 	<shortcut> packages_class_selected packages_selected class=%1 %+ </shortcut>
 	<shortcut> packages_class_unselected packages_unselected class=%1 %+ </shortcut>
 	<shortcut> packages_copy_installable_to_selected modify_records packages selected~installable %+ </shortcut>
+	<shortcut> packages_installable read_records packages.name installable!=0 %+ </shortcut>
 	<shortcut> packages_selected read_records packages.name selected!=0 %+ </shortcut>
 	<shortcut> packages_set_selected modify_records packages selected~1 %+ </shortcut>
 	<shortcut> packages_that_require read_records packages_requires package name=%1 </shortcut>
+	<shortcut> packages_uninstallable read_records packages.name installable=0 %+ </shortcut>
 	<shortcut> packages_unselected read_records packages.name selected=0 %+ </shortcut>
 	<shortcut> packages_unset_selected modify_records packages selected~0 %+ </shortcut>
 	<shortcut> remove_disk_partition_from_disk_layout delete_records disk_partition_entries disk_partition_entries.partition=%1 disk_layouts.name=%2 disk_layouts.id==disk_partition_entries.disk_layout_id </shortcut>
