@@ -79,7 +79,7 @@ if ( ! -d $oscar_home ) {
 }
 print "Using $oscar_home as OSCAR base directory\n";
 
-use lib "$ENV{OSCAR_HOME}/lib";
+use lib "$oscar_home/lib";
 use lib "../lib"; 
 use Carp;
 
