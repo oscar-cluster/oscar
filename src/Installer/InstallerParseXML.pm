@@ -148,27 +148,62 @@ case of Tools.
   my %tasks;   # Temp storage for sorting by step number
   foreach my $task (@{ $values->{tasks}[0]{task} })
     {
+      # Make sure the task has valid 'dirname' and 'stepnum' tags.
+      if ((!defined($task->{stepnum}[0])) || (!defined($task->{dirname}[0])))
+        {
+          Carp::carp("A Task is missing a 'dirname' or 'stepnum' XML tag") ;
+          undef $installerTasksAndTools;
+          return;  # Return upon error with global variables cleared out
+        }
+
       if (defined($tasks{$task->{stepnum}[0]}))
-        { # ERROR!!!
+        { # ERROR!!!  Two Tasks cannot have the same 'stepnum' tags.
           Carp::carp($tasks{$task->{stepnum}[0]} . " and " .
                      $task->{dirname}[0] . " both have a step number of " .
                      $task->{stepnum}[0]);
           undef $installerTasksAndTools;
           return;  # Return upon error with global variables cleared out
         }
-      else
-        { # Store the task in temp hash with key=stepnum and value=dirname
-          $tasks{$task->{stepnum}[0]} = $task->{dirname}[0];
-          $installerTasksAndTools->{$task->{dirname}[0]}->{type} = "task";
-          $installerTasksAndTools->{$task->{dirname}[0]}->{stepnum} = 
-            $task->{stepnum}[0];
-        }
+
+      # Store the task in temp hash with key=stepnum and value=dirname.
+      # This is so we can verify that every Task has a unique stepnum.
+      $tasks{$task->{stepnum}[0]} = $task->{dirname}[0];
+      # If we made it this far, then save the Task in the global hash.
+      $installerTasksAndTools->{$task->{dirname}[0]}->{type} = "task";
+      $installerTasksAndTools->{$task->{dirname}[0]}->{stepnum} = 
+        $task->{stepnum}[0];
     }
 
-  # Then, parse out the 'tools'.
+  # Next, parse out the 'tools'.
   foreach my $tool (@{ $values->{tools}[0]{tool} })
     {
+      # Make sure the tool has valid 'dirname' tag.
+      if (!defined($tool->{dirname}[0]))
+        {
+          Carp::carp("A Tool is missing a 'dirname' XML tag") ;
+          undef $installerTasksAndTools;
+          return;  # Return upon error with global variables cleared out
+        }
+
       $installerTasksAndTools->{$tool->{dirname}[0]}->{type} = "tool";
+    } 
+
+  # Then, parse out the 'helpers'.
+  foreach my $helper (@{ $values->{helpers}[0]{helper} })
+    {
+      # Make sure the helper has valid 'dirname' tag.
+      if (!defined($helper->{dirname}[0]))
+        {
+          Carp::carp("A Helper is missing a 'dirname' XML tag") ;
+          undef $installerTasksAndTools;
+          return;  # Return upon error with global variables cleared out
+        }
+
+      $installerTasksAndTools->{$helper->{dirname}[0]}->{type} = "helper";
+      # Set the 'maxnum' value to 0 if not set in XML file.
+      my $maxnum = 0;
+      $maxnum = $helper->{maxnum}[0] if (defined $helper->{maxnum}[0]);
+      $installerTasksAndTools->{$helper->{dirname}[0]}->{maxnum} = $maxnum;
     } 
 
   # Read in the GUI.xml files for all Tasks/Tools
@@ -178,7 +213,9 @@ case of Tools.
     }
 
   # Change the %tasks hash into a sorted array of tasks, sorted by stepnum.
-  # Ignore any Task that doesn't have a fullname (i.e. a GUI.xml file).
+  # Ignore any Task that doesn't have a fullname (i.e. a GUI.xml file),
+  # which should NEVER happen since the fullname defaults to the dirname if
+  # not otherwise specified in the GUI.xml file.
   foreach my $taskstep (sort keys %tasks)
     {
       my $taskdir = $tasks{$taskstep};
@@ -186,11 +223,12 @@ case of Tools.
         (compactSpaces($installerTasksAndTools->{$taskdir}->{fullname}));
     }
 
-  # Finally, setup the @installerToolsSorted array, sorted by fullname
+  # Setup the @installerToolsSorted array, sorted by fullname
   my %tools;  # Temp storage for sorting
   foreach my $tasktool (keys %{ $installerTasksAndTools } )
     { # Build up the temp tools hash with keys=fullname, values=dirname
-      # Ignore any Tool that doesn't have a fullname (i.e. a GUI.xml file).
+      # Ignore any Tool that doesn't have a fullname (i.e. a GUI.xml file),
+      # which again should NEVER happen since it defaults to the dirname.
       $tools{$installerTasksAndTools->{$tasktool}->{fullname}} = $tasktool if
         (($installerTasksAndTools->{$tasktool}->{type} eq 'tool') &&
          (compactSpaces($installerTasksAndTools->{$tasktool}->{fullname})));

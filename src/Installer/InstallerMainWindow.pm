@@ -60,7 +60,8 @@ use Qt::slots
     toolsMenuActivated => ['int'],
     taskToolClosed => ['char*'],
     taskBackButton => ['char*'],
-    taskNextButton => ['char*'];
+    taskNextButton => ['char*'],
+    openHelperWindow => ['QWidget*','char*','QStringList*'];
 use Qt::attributes qw(
     installerWorkspace
     centralWidget
@@ -88,6 +89,13 @@ use Qt::attributes qw(
 # is used to build the windowList.  The keys of the hash are the directory
 # names of the Tasks/Tools.  The values are the actual Task/Tool widgets.
 my %currTaskToolWidgets;
+
+# This hash contains the currently instantiated Helpers and is used to 
+# build the windowList.  The keys of the hash formed by joining the name of
+# the helper's directory with all of the parameters for that instance of
+# the helper, separated by the character '\000'.  The values are the actual
+# Helper widgets.
+my %currHelperWidgets;
 
 # This hash contains a list of the Tasks/Tools which have been launched
 # at least once.  We need this because require/import needs to be called
@@ -287,6 +295,9 @@ like C<classname->>C<NEW(args...)>.
                       this,               SLOT "helpAbout()");
   Qt::Object::connect(windowMenu,         SIGNAL "aboutToShow()",
                       this,               SLOT "windowMenuAboutToShow()");
+  Qt::Object::connect(installerWorkspace, 
+                      SIGNAL "launchHelper(QWidget*,char*,QStringList*)",
+                      SLOT   "openHelperWindow(QWidget*,char*,QStringList*)");
 }
 
 sub populateTasksMenu
@@ -413,9 +424,9 @@ A SLOT which is called just before the Window pulldown menu is shown.
 
 This SLOT gets called when the user clicks on the "Window" menu just before
 the pulldown gets displayed.  This way, we can populate the Window menu with
-a list of all open Tasks/Tools windows.  We also give the user the ability
-to Cascade or Tile the windows in the workspace.  (These functions are built
-into Qt so we don't have to do any extra work.)
+a list of all open Tasks/Tools/Helper windows.  We also give the user the
+ability to Cascade or Tile the windows in the workspace.  (These functions
+are built into Qt so we don't have to do any extra work.)
 
 =cut
 
@@ -426,8 +437,12 @@ into Qt so we don't have to do any extra work.)
   windowTileAction->addTo(windowMenu);
   windowMenu->insertSeparator();
 
-  # Get the list of all active tasks/tools windows
-  @windowList = sort (values %currTaskToolWidgets);
+  # Get the list of all active tasks/tools/helpers windows, and sort them
+  # alphabetically based on their window captions.
+  my @tempList = (values %currTaskToolWidgets);
+  push @tempList, (values %currHelperWidgets);
+  @windowList = sort { $a->caption() cmp $b->caption() } @tempList;
+
   my $numWindows = scalar(@windowList);
   windowCascadeAction->setEnabled($numWindows);
   windowTileAction->setEnabled($numWindows);
@@ -575,8 +590,7 @@ currently running.
         }
 
       # Now create the new Task/Tool widget
-      $currTaskToolWidgets{$tasktool} = launchTaskTool($tasktool,
-        $installerTasksAndTools->{$tasktool}->{classname});
+      $currTaskToolWidgets{$tasktool} = launchTaskTool($tasktool);
 
       if ($isTask)
         { # If the Task is the first/last, hide the Back/Next button
@@ -592,6 +606,90 @@ currently running.
 
       # Set up the SIGNAL/SLOT connections for the Task/Tool
       connectTaskTool($tasktool);
+    }
+}
+
+sub openHelperWindow
+{
+#########################################################################
+
+=item C<openHelperWindow($parent,$helper,$params)>
+
+Launches a specific Helper with a set of parameters, or brings a Helper to
+the front if one with the given set of parameters already exists.
+
+This subroutine is a SLOT which is called when another Task, Tool, or Helper
+signals the InstallerWorkspace to launch a new Helper.  When the SIGNAL is
+emitted, the $parent is the Task, Tool, or Helper that wants to launch the
+new helper.  We don't want the InstallerWorkspace to be the parent since the
+new helper should go away when the parent Task/Tool/Helper goes away.  The
+$helper parameter corresponds to the name of the directory for the helper.
+The $params parameter is a reference to a list of strings which are the
+parameters to pass to the new helper upon creation.
+
+This subroutine will check to see if a helper with the same parameters is
+already running.  If so, that window is brought to the front.  If not, this
+subroutine checks to see if there is a limit upon the maximum number of this
+kind of helper that can run at one time.  If so, we count up the number of
+windows of this kind of helper and allow another helper to run only if we
+aren't at the max limit yet.  
+
+One important issue.  The Helper windows are stored separately from the
+Tasks/Tools windows.  This is because Tasks/Tools allow a maximum of 1
+window, so we can index the hash of Task/Tool windows based on the directory
+name for the Task/Tool.  However, multiple Helpers with the same directory
+name could be running at once, and so we need to distinguish these multiple
+instances by the differences in the parameters passed to the Helper.  So,
+the Helper windows are stored in a hash indexed by a string consisting of
+the name of the helper directory AND the parameters, separated by the
+character "\000", e.g. 'join "\000", $helper, @{ $params }'.
+
+=cut
+
+### @param $parent The Task/Tool/Helper Qt object that is requesting the
+###                launch of a new Helper.
+### @param $helper The directory name of the Helper to be shown.  
+### @param $params A reference to a list of strings which are parameters
+###                to be passed to the new Helper upon object creation.
+
+#########################################################################
+  my ($parent,$helper,$params) = @_;
+
+  # Form the 'key' for the %currHelperWidgets by joining the directory name
+  # of the helper with all of the parameters, separated by the character \000.
+  my $key = join "\000", $helper, @{ $params };
+
+  if ($currHelperWidgets{$key})
+    { # A helper with the given parameters is running, bring to the front.
+      $currHelperWidgets{$key}->showNormal if
+        ($currHelperWidgets{$key}->isMinimized);
+      $currHelperWidgets{$key}->raise;
+      $currHelperWidgets{$key}->setFocus;
+    }
+  else
+    { 
+      # If there is a maxnum specified for the current helper name, then
+      # count the number of helpers currently launched with that name and do
+      # nothing if we are already at the maxnum limit.
+      my $dirname;
+      if ($installerTasksAndTools->{$helper}->{maxnum} > 0)
+        {
+          my $count = 0;
+          foreach my $help (keys %currHelperWidgets)
+            {
+              ($dirname) = split /\000/, $help;
+              $count++ if ($dirname eq $helper);
+            }
+
+          return if ($count == $installerTasksAndTools->{$helper}->{maxnum});
+        }
+
+      # If we made it this far, then we should launch a new Helper with
+      # the given parameters.
+      $currHelperWidgets{$key} = launchHelper($parent,$helper,$params);
+
+      # Set up the SIGNAL/SLOT connections for the Helper
+      connectHelper($key);
     }
 }
 
@@ -631,6 +729,35 @@ closes.
     }
 }
 
+sub connectHelper
+{
+#########################################################################
+
+=item C<connectHelper($key)>
+
+Set up SIGNAL/SLOT connections for a Helper.
+
+This subroutine sets up the SLOT/SIGNAL connections for a particular Helper
+with a given set of parameters.  The passed-in parameter is the 'key' of the
+$currHelperWidgets hash, i.e. 'join "\000", $helperDir, @{ $refParamList }'.
+The connection should be broken by calling disconnectHelper with the same
+'key'.
+
+=cut
+
+### @param $key The hash key for the $currHelperWidgets hash, which is
+###             formed by joining the Helper directory name and all of the
+###             Helper's parameters, separated by "\000".
+### @see disconnectHelper()
+
+#########################################################################
+  my $key = shift;
+
+  Qt::Object::connect($currHelperWidgets{$key},
+                      SIGNAL "taskToolClosing(char*)",
+                      SLOT   "taskToolClosed(char*)");
+}
+
 sub disconnectTaskTool
 {
 #########################################################################
@@ -664,31 +791,60 @@ connections made when the Task/Tool was launched.
     }
 }
 
+sub disconnectHelper
+{
+#########################################################################
+
+=item C<disconnectHelper($key)>
+
+Disconnect SIGNAL/SLOT connections for a Helper.
+
+This subroutine takes in the 'key' for the $currHelperWidgets hash (which is
+formed by joining the Helper directory name and all of the string parameters
+used when the Helper was created, all separated by "\000"), and removes any
+connections created when the Helper was launched.
+
+=cut
+
+### @param $key The hash key for the $currHelperWidgets hash, which is
+###             formed by joining the Helper directory name and all of the
+###             Helper's parameters, separated by "\000".
+### @see connectHelper()
+
+#########################################################################
+  my $key = shift;
+
+  Qt::Object::disconnect($currHelperWidgets{$key},
+                        SIGNAL "taskToolClosing(char*)",
+                        SLOT   "taskToolClosed(char*)");
+}
+
 sub launchTaskTool
 {
 #########################################################################
 
-=item C<launchTaskTool($dirname,$classname)>
+=item C<launchTaskTool($dirname)>
 
 Create a new window instance of a given Task/Tool.
 
 This is called by openTaskToolWindow to start a new instance of a given
-Task/Tool.  The Task/Tool is specified by its directory name AND by its
-class name.  This subroutine then does some tricky require/import stuff to
-dynamically launch a new instance of the $classname QWidget.
+Task/Tool.  The Task/Tool is specified by its directory name.  This
+subroutine then does some tricky require/import stuff to dynamically launch
+a new instance of the $classname QWidget.
 
 =cut
 
 ### @param  $dirname The name of the (sub)directory of the Task/Tool to 
 ###         be launched.  
-### @param  $classname The name of the Task/Tool's class, which is the
-###         same as the main Perl module for the Task/Tool, minus the
-###         .pm extension.
 ### @return The newly created Task/Tool widget.
 
 #########################################################################
 
-  my($dirname,$classname) = @_;
+  my $dirname = shift;
+
+  # The name of the Helper's class, which is the same as the main Perl
+  # module for the Helper, minus the .pm extension.
+  my $classname = $installerTasksAndTools->{$dirname}->{classname};
 
   # Get the base directory of the Installer.pl script
   my $installerDir = getScriptDir();
@@ -708,6 +864,58 @@ dynamically launch a new instance of the $classname QWidget.
     }
   no strict 'refs'; # Needed so that the next statement doesn't complain
   my $widget = &$classname(installerWorkspace);
+  $widget->show;
+  
+  return $widget;   # Return the newly created widget
+}
+
+sub launchHelper
+{
+#########################################################################
+
+=item C<launchHelper($parent,$dirname,$params)>
+
+Create a new instance of a particular Helper using the passed-in parameters.
+
+This subroutine is called by openHelperWindow to start a new instance of a
+given Helper using a given set of parameters.  Similar to launchTaskTool(),
+this subroutine imports the Helper's directory and creates a new Helper
+object, passing it the appropriate parameters.
+
+=cut
+
+### @param $parent  The Task/Tool/Helper Qt object that is requesting the
+###                 launch of a new Helper.
+### @param $dirname The directory name of the Helper to be shown.  
+### @param $params  A reference to a list of strings which are parameters
+###                 to be passed to the new Helper upon object creation.
+
+#########################################################################
+
+  my($parent,$dirname,$params) = @_;
+
+  # The name of the Helper's class, which is the same as the main Perl
+  # module for the Helper, minus the .pm extension.
+  my $classname = $installerTasksAndTools->{$dirname}->{classname};
+
+  # Get the base directory of the Installer.pl script
+  my $installerDir = getScriptDir();
+  
+  return if ((!(-d "$installerDir/$dirname")) || 
+             (!(-e "$installerDir/$dirname/$classname.pm")));
+
+  # Prepend the Helper directory to Perl's @INC array.  We can't do 'use'
+  # for the following statements since 'use' is done at compile time and 
+  # the dirname and classname aren't known until run time.
+  if (!$alreadyImported{$classname})
+    { # Only need to do require/import once per class
+      unshift(@INC,"$installerDir/$dirname");
+      require $classname. '.pm';
+      import $classname;
+      $alreadyImported{$classname} = 1;
+    }
+  no strict 'refs'; # Needed so that the next statement doesn't complain
+  my $widget = &$classname($parent,$params);
   $widget->show;
   
   return $widget;   # Return the newly created widget
@@ -789,25 +997,40 @@ sub taskToolClosed
 
 =item C<taskToolClosed($tasktool)>
 
-A SLOT which is called when a Task/Tool closes.
+A SLOT which is called when a Task/Tool/Helper closes.
 
-When a Task/Tool exits (closes), it should send the SIGNAL
+When a Task/Tool/Helper exits (closes), it should send the SIGNAL
 'taskToolClosing($tasktool)' so that the MainWindow can update the list of
-currently running Tasks/Tools.  This subroutine also calls
-disconnectTaskTool($tasktool) to remove the connections set up when the
-Task/Tool was created.
+currently running Tasks/Tools/Helpers.  Note that for Tasks/Tools, the
+$tasktool parameter is simply the directory name of the Task/Tool.  For
+Helpers, the $tasktool parameter is a string formed by 'join'ing the
+Helper's directory name and all of its parameters, using the character
+"\000" as the joiner.
+
+This subroutine also removes the connections set up when the
+Task/Tool/Helper was created.
 
 =cut
 
-### @param $tasktool The directory name of the Task/Tool which has closed.
+### @param $tasktool For Tasks/Tools the directory name of the Task/Tool
+###                  which has closed, or for Helpers, the string formed by
+###                  'join "\000", $helperDir, @{ $refParamList }'.
 
 #########################################################################
 
   my $tasktool = shift;
 
-  disconnectTaskTool($tasktool);
-
-  delete $currTaskToolWidgets{$tasktool};
+  # First, check if it was a Helper (with parameters) that closed
+  if ($currHelperWidgets{$tasktool})
+    {
+      disconnectHelper($tasktool);
+      delete $currHelperWidgets{$tasktool};
+    }
+  else # Now check if it was a Task/Tool that closed
+    {
+      disconnectTaskTool($tasktool);
+      delete $currTaskToolWidgets{$tasktool};
+    }
 }
 
 sub taskBackButton

@@ -49,7 +49,8 @@ use Qt;
 use Qt::isa qw(Qt::Workspace);
 use Qt::signals
     signalButtonShown => ['char*','char*','bool'],
-    odaWasUpdated => ['char*'];
+    odaWasUpdated => ['char*'],
+    launchHelper => ['QWidget*','char*','QStringList*'];
 use Qt::slots
     windowsMenuAboutToShow => [];
 

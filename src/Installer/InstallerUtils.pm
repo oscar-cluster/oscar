@@ -219,7 +219,7 @@ corresponding test succeeded or failed.
 
 #########################################################################
 
-  $odaCommandSuccess = 0;
+  $odaCommandSuccess = 1;  # Assume success in case no $activeOdaCommand
   @odaCommandResult = ();
   @odaCommandError = ();
   $testCodeSuccess = 0;

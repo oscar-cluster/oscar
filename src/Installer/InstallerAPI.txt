@@ -2,51 +2,138 @@
                 ----------------------------------------
 
 First Created : February 25, 2004
-Last Updated  : April 27, 2004
+Last Updated  : June 2, 2004
 Author        : Jason Brechin <brechin@ncsa.uiuc.edu>
 Author        : Terry Fleury  <tfleury@ncsa.uiuc.edu>
 Copyright (c) 2004 The Board of Trustees of the University of Illinois.
                    All rights reserved.
+
+Modification History
+--------------------
+June 2, 2004 - Added Helpers as a third widget type.
+
 
 Directory Structure
 -------------------
 
 Summary: 
 
+There are two different directory structures for the main OSCAR Installer.
+The first is used when the source code is 'installed', and thus is used by the
+end user to do a cluster installation.  The second is used to store the source
+code, and thus is used by developers.  
+
+For Installation / End Use:
+
 The main OSCAR Installer Perl code will reside in a directory named
 "Installer" directly underneath the $OSCAR_HOME directory.  Within this
 directory will be all of the Perl modules necessary to run the OSCAR
 Installer.  The main Perl executable will be named Installer.pl.
 
-Under the Installer directory will be directories for each Task and Tool
-which can appear within the Installer workspace.  These directories must
-be listed in the Installer.xml file (located in the main Installer
-directory) to classify it as a Task (with a step number) or a Tool (without
-a step number).  Only one Task can be displayed at a time, while any number
-of Tools can be displayed at a time.
+Under the Installer directory will be directories for each Task, Tool, and
+Helper which can appear within the Installer workspace.  These directories
+must be listed in the Installer.xml file (located in the main Installer
+directory) to classify it as a Task (with a step number), a Tool (without a
+step number), or a Helper (a Tool which doesn't appear in the 'Tools' pulldown
+menu, and also can be launched with some parameters).  Only one Task can be
+displayed at a time, while any number of Tools can be displayed at a time.
+For Helpers, you can specify how many of a particular Helper can be displayed
+at a time, but only one Helper with a given set of parameters can be shown at
+a time.
 
 Details:
 
 $OSCAR_HOME/Installer/
-    Installer.xml - List of all Tasks and Tools (see below)
+    Installer.xml - List of all Tasks, Tools, and Helpers (see below)
     Installer.pl - Main OSCAR Installer Perl application
     InstallerMainWindow.pm - QMainWindow containing pulldown menus, status
         bar, workspace, etc.
     InstallerWorkspace.pm - QWorkspace which is parent of all Tasks/Tools
     ... - Other files required for main Installer window
 
-$OSCAR_HOME/Installer/<Tasks&Tools>/
+$OSCAR_HOME/Installer/<Tasks,Tools,Helpers>/
 $OSCAR_HOME/Installer/Opder/ - example of a Task directory
-    GUI.xml - Configuration file for this Task/Tool
+    GUI.xml - Configuration file for this Task/Tool/Helper
     OpderMain.pm - Main QObject / child of InstallerWorkspace (see below)
-    ... - Other files required for Task/Tool window
+    ... - Other files required for Task/Tool/Helper window
 
-    Note that with this directory scheme, Task/Tool files would normally have
-    package names of "Directory::Filename" (e.g. "package Opder::OpderMain").
-    However, the Installer does some clever manipulation of the @INC path, so
-    you can simpy name your packages "Filename" (e.g. "package OpderMain").
-    This simpifies development of Tasks/Tools to be run outside of the
-    Installer window.
+    Note that with this directory scheme, Task/Tool/Helper files would
+    normally have package names of "Directory::Filename" (e.g. "package
+    Opder::OpderMain").  However, the Installer does some clever manipulation
+    of the @INC path, so you can simpy name your packages "Filename" (e.g.
+    "package OpderMain").  This simpifies development of Tasks/Tools/Helpers
+    to be run outside of the Installer window.
+
+For Development:
+
+All of the Tasks/Tools/Helpers reside under the "oscar/src" directory.  This
+includes the Installer.  This helps development since all Tasks/Tools/Helpers
+appear at the same level as the main Installer.  When compiling, symbolic
+links are created in the Installer directory to each Task/Tool/Helper so that
+the developer can run the Installer as if it were installed.
+
+Details:
+
+oscar/src/Installer/
+    Same files as listed in the previous section
+    Opder - a symbolic link to ../Opder/, created by 'make'
+    Doxyfile - allows for generation of Doxygen-style code documentation
+
+oscar/src/<Tasks,Tools,Helpers>/
+    Same files as listed in the previous section
+    images - a symbolic link to ../Installer/images/, created by 'make'
+        and required by QtDesigner if you use icons on your buttons
+
+
+Tasks, Tools, and Helpers
+-------------------------
+
+The windows which can appear inside the OSCAR Installer fall into three
+categories: Tasks, Tools, and Helpers.
+
+Tasks:
+
+A 'task' is equivalent to a 'step' in the old oscar_wizard.  Tasks appear in a
+pulldown menu in a given order (specified in the Installer.xml file, see
+below).  Each task has a "Back" button, a "Next" button, and a "Close" button.
+Only one Task window can be active at a time.  When the user clicks on the
+"Back" or "Next" button, the previous or next task is displayed and the
+current task is closed.  Alternatively, the user can select a particular task
+from the pulldown menu at any time. 
+
+Tasks also allow for the specifications of prerequisite conditions to be met
+before the task is allowed to run.  Usually, these conditions relate to the
+presence of particular data in the "oda" database.  But the developer can also
+write custom Perl code that must return 'true' in order for the Task to run.
+If the preconditions are not met, an error message is presented to the user.
+The developer can use the default error message (which lists the oda commands
+that failed and the return values) or write a custom Perl function which
+returns a string to be presented to the user.
+
+Tools:
+
+A 'tool' is a window which does not necessarily need to be executed during the
+course of a normal installation, but which may aid the user during the
+installation process.  Tools appear in their own pulldown menu, and any
+number of Tool windows can be active at a time.  (However, only one tool of a
+particular type can run at a time.)  
+
+Since tools should be able to run at any time, there are no preconditions as
+found with Tasks.  However, tools can write to the oda database and then send
+a signal to the Installer that the information in oda has changed.  The
+Installer then tells all other Tasks, Tools, and Helpers that oda has changed
+and they can then update themselves as necessary.
+
+Helpers:
+
+A 'helper' is similar to a tool, but it is launched by Task, Tool, or another
+Helper.  As such, helpers do not appear in any pulldown menus (other than the
+list of active windows).  Helpers have two additional features.  First, they
+are launched with one or more parameters.  Second, the maximum number of
+Helpers displayed in the Installer can be specified and be greater than one.
+However, only one Helper with a given set of parameters can be displayed at a
+time.  This is so each Helper window is unique within the list of windows.  
+
 
 Format of Installer.xml File
 ----------------------------
@@ -54,9 +141,10 @@ Format of Installer.xml File
 Summary:
 
 The Installer.xml file is located in the $OSCAR_HOME/Installer/ directory.
-It contains a list of all Tasks/Tools available in the Installer.  These
-Tasks/Tools reside in subdirectories under the $OSCAR_HOME/Installer/
-directory.  The Task/Tool is listed in the XML file by its directory name.
+It contains a list of all Tasks/Tools/Helpers available in the Installer.
+These Tasks/Tools/Helpers reside in subdirectories under the
+$OSCAR_HOME/Installer/ directory.  The Task/Tool/Helper is listed in the XML
+file by its directory name.
 
 Details:
 
@@ -66,14 +154,14 @@ Details:
 <!--
   Notes:
 
-  dirname = The name of Task/Tool subdirectory (under $OSCAR_HOME/Installer/).
+  dirname = The name of Task/Tool/Helper subdirectory 
+            (under $OSCAR_HOME/Installer/).
 
   stepnum = The step number for the task - MUST be unique or the Installer
             will exit with an error condition.  Tasks must have a number.
-            Tools must not.
+            Tools/Helpers must not.
 -->
   <tasks>
-
     <task>
       <dirname>Opder</dirname>
       <stepnum>1</stepnum>
@@ -83,11 +171,9 @@ Details:
       <dirname>NodeMgmt</dirname>
       <stepnum>2</stepnum>
     </task>
-
   </tasks>
 
   <tools>
-
     <tool>
       <name>NodeGroups</name>
     </tool>
@@ -95,8 +181,13 @@ Details:
     <tool>
       <name>FileList</name>
     </tool>
-
   </tools>
+
+  <helpers>
+    <helper>
+      <name>NodeGroupAdder</name>
+    </helper>
+  </helpers>
 
 </oscar>
 
@@ -106,15 +197,16 @@ Format of GUI.xml Files
 
 Summary:
 
-Each Task/Tool directory SHOULD contain a GUI.xml file.  (If the file is not
-present, then a bunch of defaults will be assumed, as described below.)
-This XML file describes the Task/Tool in terms of its main object class (which
-is called by the InstallerWorkspace), a 'full name' which will appear in the
-pulldown lists of Tasks/Tools, and oda commands/tests which must run and
-succeed in order for the Task to be allowed to execute (used only for Tasks
-since Tools can run at any time).  If a Task can't find all of the information
-it needs in the oda database, it should deal with it gracefully.  However,
-if any of the oda commands/tests fails, then that Task is not allowed to run.
+Each Task/Tool/Helper directory SHOULD contain a GUI.xml file.  (If the file
+is not present, then a bunch of defaults will be assumed, as described below.)
+This XML file describes the Task/Tool/Helper in terms of its main object class
+(which is called by the InstallerWorkspace), a 'full name' which will appear
+in the pulldown lists of Tasks/Tools (not applicable for Helpers), and oda
+commands/tests which must run and succeed in order for the Task to be allowed
+to execute (used only for Tasks since Tools/Helpers can run at any time).  If
+a Task can't find all of the information it needs in the oda database, it
+should deal with it gracefully.  However, if any of the oda commands/tests
+fails, then that Task is not allowed to run.
 
 Details:
 
@@ -127,11 +219,11 @@ Details:
   classname = The name of the Perl module file containing the PerlQt NEW
               function.  This will be used in creating a new instance of this
               object.  Note that this name can be different from the directory
-              containing the Task/Tool.  For example, the Opder may reside in
-              the directory $OSCAR_HOME/Installer/Opder, but the file
-              containing the PerlQt NEW subroutine may be named OpderMain.pm.
-              To create a new instance of the Opder, the InstallerWorkspace
-              would call something like this:
+              containing the Task/Tool/Helper.  For example, the Opder may
+              reside in the directory $OSCAR_HOME/Installer/Opder, but the
+              file containing the PerlQt NEW subroutine may be named
+              OpderMain.pm.  To create a new instance of the Opder, the
+              InstallerWorkspace would call something like this:
 
               # Opder is directory name, so use it for lib path:
               use lib "$ENV{OSCAR_HOME}/Installer/Opder";
@@ -140,39 +232,42 @@ Details:
               # As with all PerlQt objects, NEW is called implicitly.
 
               If the 'classname' field is absent, the directory name of the
-              Task/Tool is assumed.  So if no 'classname' field for the Opder
-              directory, then the main object file defaults to Opder.pm.
+              Task/Tool/Helper is assumed.  So if no 'classname' field for the
+              Opder directory, then the main object file defaults to Opder.pm.
 
-  fullname =  The "pretty" name for the Task/Tool which will appear in 
-              the pulldown menus.  This shouldn't be TOO long since it will
-              appear in a pulldown menu.  If the 'fullname' field is absent,
-              then it defaults to the 'classname' field.
+  fullname =  The "pretty" name for the Task/Tool (not applicable to Helpers
+              since they are launched by other Tools/Helpers and thus don't
+              appear in any pulldown menus) which will appear in the pulldown
+              menus.  This shouldn't be TOO long since it will appear in a
+              pulldown menu.  If the 'fullname' field is absent, then it
+              defaults to the 'classname' field.
 -->
 
   <classname>OpderMain</classname>
   <fullname>OSCAR Package Downloader</fullname>
 
-  <oda>
-
   <!--
     Notes:
-    
-    command = Valid only for Tasks.  This is an arbitrary 'oda' command
-              which is executed prior to the opening of a particular
-              Task's window.  The results of the oda command can be passed to
-              the 'test' (listed below) for further processing.  Let this
-              field be stored in the perl variable $command.  Then, the actual
-              code executed by the Installer is as follows:
 
-              my $odasuccess = undef;
+    The following tag information appears only within <oda>...</oda> tags and
+    is valid only for Tasks.
+    
+    command = This is an arbitrary 'oda' command which is executed prior to
+              the opening of a particular Task's window.  The results of the
+              oda command can be passed to the 'test' (listed below) for
+              further processing.  Let this field be stored in the perl
+              variable $command.  Then, the code executed by the Installer
+              looks like the following:
+
+              my $odasuccess = 1;  # Assume success in case no $command
               my @odaresult = undef;
               my @odaerror = undef;
               $odasuccess = OSCAR::Database::database_execute_command(
-                            $command,\@odaresult,\@odaerror);
+                            $command,\@odaresult,\@odaerror) if ($command);
 
               In effect, the $odasuccess variable holds 0 or 1 for the return
               value of oda's execute_command.  This value isn't necessarily
-              too useful since it is set to 0 only upon a major database
+              very useful since it is set to 0 only upon a major database
               problem.  The @odaresult array is the actual data returned by
               the given oda command (if anything).  The @odaerror array is an
               array of error strings generated by oda, and may or may not be
@@ -180,15 +275,13 @@ Details:
 
               The $odasuccess, @odaresult, and @odaerror values are used by
               the 'test' and 'error' fields below.  If the 'command' field is
-              blank, then $odasuccess, @odaresult, and @odaerror are all
-              undefined, but the 'test' code is still executed.  It is an
-              error to have both the 'command' field and the 'test' field be
-              empty.
+              blank, then @odaresult and @odaerror are undefined, $odasuccess
+              is set to 1, and the 'test' code executed next.
 
     test    = Arbitrary Perl code which should return 0 or 1.  The values
               $command, $odasuccess, @odaresult, and @odaerror generated by
               the oda 'command' above are available to your Perl test code.
-              Your code is executed by the Installer as follows:
+              Your Perl code is executed by the Installer as follows:
 
               my $testsuccess = (eval ( $test ) );
               
@@ -197,6 +290,10 @@ Details:
               defaults to 'return $odasuccess'.  This may not be what you
               really want since $odasuccess is 0 only upon a major database
               problem.  You may want to use 'return $odaresult[0]' instead.
+              However, notice that if both the command field and the test
+              field are blank, the Task will always be allowed to run (since
+              $odasuccess defaults to 1 if no oda command is given, and $test
+              defaults to 'return $odasuccess' if no test command is given).
 
     error   = Arbitrary Perl code which should return a string describing the
               error condition if the 'test' above returns 0.  The variables
@@ -216,12 +313,13 @@ Details:
               the 'test' and its return value $testsuccess.  
 
               If you want to include the default error string in your custom
-              error string, call the subroutine 'getDefaultErrorString()'
-              which returns a string.  You can concatenate this string with
-              your own error string and return the resulting string.
+              error string, call the predefined subroutine
+              'getDefaultErrorString()' which returns a string.  You can
+              concatenate this string with your own error string and return
+              the resulting string.
 
     In summary, the following variables are generated by and available to
-    the <oda>, <command>, and <test> fields above:
+    the <oda>, <command>, <test>, and <error> fields above:
 
         $command    = The <command> field, which is passed as the first
                       argument to database_execute_command(...).
@@ -232,8 +330,8 @@ Details:
                       the oda command.
         @odaerror   = The error string array which is set as the third
                       argument to database_execute_command(...) upon failure.
-        $test       = The <test> field, which is passed to an 'eval' statement
-                      and should return 0 or 1.
+        $test       = The <test> field, which is arbitrary Perl code passed to
+                      an 'eval' statement and should return 0 or 1.
         $testsuccess= The result of the (eval ( $test )) command.
 
     One important note: Since these fields are stored in an XML file, you MUST
@@ -242,13 +340,13 @@ Details:
     correctly.
   -->
 
+  <oda>
     <command>oscar_version</command>
     <test>($odaresult[0] &gt;= 2.3) and ($odaresult[0] &lt;= 3.1)
     </test>
-    <error>"OSCAR version is $odaresult[0]. " . 
+    <error>"OSCAR version is $odaresult[0] . " . 
            "We need OSCAR version between 2.3 and 3.1 inclusive."
     </error>
-
   </oda>
 
   <oda>
@@ -258,12 +356,35 @@ Details:
          database is working and the read_records command didn't die. -->
     <error>return ("Major problem with oda!!! " . getDefaultErrorString());
   </oda>
+  
+  <!--
+    Notes:
+
+    The following tag is applicable only to Helpers.  
+
+    maxnum   = The maximum number of this Helper's windows which can be
+               displayed at one time within the Installer Workspace.  If
+               'maxnum' is zero, then there is no limit on the number of
+               Helper windows for this Helper.  Note that regardlesss of the
+               maximum number of Helper windows specified, only one window
+               with a given set of parameters can be displayed at a time.  For
+               example, if you have a Helper that takes a single parameter,
+               and you create a new instance of that Helper with the parameter
+               "kernel", you cannot create a second instance of that Helper
+               with the parameter "kernel".  If you want to create multiple
+               instances of the Helper with the parameter "kernel", then pass
+               an additional parameter to create instances of the Helper 
+               with parameters such as "kernel 1", "kernel 2", "kernel 3",
+               etc.
+  -->
+
+  <maxnum>0</maxnum>
 
 </oscar>
 
 
-Program Specifics for Tasks and Tools
--------------------------------------
+Program Specifics for Tasks, Tools, and Helpers
+-----------------------------------------------
 
 (1) To exit your application, do not use Qt::Application::exit().  Instead, do
     this->close(1) in the MainWindow widget.  When you do a close() in the
@@ -281,13 +402,17 @@ Program Specifics for Tasks and Tools
     #  Returns   : Nothing                                                  #
     #########################################################################
       # Send a signal to the parent workspace letting it know we are closing.
-      emit taskToolClosing("Opder");
+      emit taskToolClosing("Opder");  # Change 'Opder' to YOUR dir name
       SUPER->closeEvent(@_);   # Call the parent's closeEvent
     }
 
-    The parameter you pass to 'emit taskToolClosing(...)' is the name of the
-    directory containing your Task/Tool.  You will also need to define
-    a Qt::signal for taskToolClosing which should look like this:
+    For Tasks/Tools, the parameter you pass to 'emit taskToolClosing(...)' is
+    the name of the directory containing your Task/Tool.  For Helpers, the
+    parameter is formed by joining the name of the directory containing the
+    Helper with the parameters used to instantiate the helper, separated by
+    the character "\000", i.e. 'join "\000", $helperDir, @helperParams'.  You
+    will also need to define a Qt::signal for taskToolClosing which should
+    look like this:
 
     use Qt::signals taskToolClosing => ['char*'];
 
@@ -299,7 +424,10 @@ Program Specifics for Tasks and Tools
 
     all-local:	$(COMPILEDTARGET)
     		ln -sf ../Installer/images; \
-		cd ../Installer; ln -sf ../NodeMgmt
+    		cd ../Installer; ln -sf ../NodeMgmt
+
+    (Note that in Makefiles, you must use tabs, not spaces, when you have
+     multiline make targets such as the one shown here.)
 
     The first 'ln -sf' creates a symbolic link from an 'images' directory in
     your Task/Tool subdirectory.  You will probably need this symbolic link if
@@ -321,7 +449,9 @@ Program Specifics for Tasks and Tools
     and Perl-Qt-3.008 (and above) have different methods for loading in
     pixmaps (images).  A utility subroutine named 'getPixmap($imageName)' is
     available in InstallerUtils.pm to handle this issue.  Anytime you need to
-    load a pixmap, use 'InstallerUtils::getPixmap(...)'.
+    load a pixmap, use 'InstallerUtils::getPixmap(...)'.  Also, be sure to run
+    'make' in the Installer directory first to build the InstallerImages.pm
+    file before it is used by any Tasks/Tools/Helpers.
 
 
 Qt SLOTS and SIGNALS Implemented by InstallerWorkspace and Its Children
@@ -377,7 +507,7 @@ signalButtonShown(char* childname, char* buttonname, bool shown)
       my ($childname,$buttonname,$shown) = @_;
       
       # Ignore Hide/Show requests to other Tasks
-      return if ($childname ne "Opder");
+      return if ($childname ne "Opder");  # Change 'Opder' to YOUR dir name
 
       if ($buttonname =~ /Back/i)
         {
@@ -429,15 +559,15 @@ odaWasUpdated(char* childname);
       my ($childname) = @_;
       
       # Ignore the signal if we were the one that updated oda
-      return if ($childname ne "Opder");
+      return if ($childname ne "Opder");  # Change 'Opder' to YOUR dir name
 
       # Reread the oda database and update the GUI as necessary
       # ...
     }
 
 
-SIGNALS emitted by Tasks/Tools
-------------------------------
+SIGNALS emitted by Tasks/Tools/Helpers
+--------------------------------------
 
 parent()->odaWasUpdated(char* childname)
 
@@ -469,12 +599,15 @@ taskToolClosing(char* childname)
     #  Returns   : Nothing                                                  #
     #########################################################################
       # Send a signal to the parent workspace letting it know we are closing.
-      emit taskToolClosing("Opder");
+      emit taskToolClosing("Opder");  # Change 'Opder' to YOUR dir name
       SUPER->closeEvent(@_);   # Call the parent's closeEvent
     }
 
-    The parameter to the taskToolClosing SIGNAL is the name of the Task/Tool
-    directory.
+    For Tasks/Tools, the parameter to the taskToolClosing SIGNAL is the name
+    of the Task/Tool directory.  For Helpers, the parameter is formed by
+    joining the name of the Helper directory and the parameters used to
+    instantiate that helper, separated by the charater "\000", e.g.
+    'join "\000", "OpderHelper" @{ $paramListRef }'.
 
 backButtonWasClicked(char* childname)
 nextButtonWasClicked(char* childname)
@@ -511,7 +644,7 @@ nextButtonWasClicked(char* childname)
     #  Returns   : Nothing                                                  #
     #  When the backButton is clicked, inform the InstallerWorkspace.       #
     #########################################################################
-      emit backButtonWasClicked("Opder");
+      emit backButtonWasClicked("Opder");  # Change 'Opder' to YOUR dir name
     }
 
     sub nextButton_clicked
@@ -522,11 +655,21 @@ nextButtonWasClicked(char* childname)
     #  Returns   : Nothing                                                  #
     #  When the nextButton is clicked, inform the InstallerWorkspace.       #
     #########################################################################
-      emit nextButtonWasClicked("Opder");
+      emit nextButtonWasClicked("Opder");  # Change 'Opder' to YOUR dir name
     }
 
     Note again that the argument to the backButtonWasClicked/
     nextButtonWasClicked SINGALs is the name of the Task's directory.
+
+parent()->launchHelper(QWidget* parent, char* helpername, QStringList* listref)
+
+    When you want to launch a Helper, you need to signal the Installer
+    Workspace so it can create a new window for the Helper with the
+    appropriate parameters.  You need to pass the
+    current object as the 'parent' (so that if the current window closes, the
+    associated helper also goes away), the directory name of the helper that
+    you want to launch, and a reference to an array of string parameters you
+    want to pass to the helper.  
 
 
 CODE CHANGES IN SUMMARY 
