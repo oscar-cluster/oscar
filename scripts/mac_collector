@@ -3,7 +3,7 @@
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
-#   $Id: mac_collector,v 1.4 2004/03/02 17:35:32 brechin Exp $
+#   $Id: mac_collector,v 1.5 2004/03/04 20:37:23 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@ use OSCAR::Logger;
 use OSCAR::Database;
 use sigtrap qw(handler sighandle normal-signals);
 
+$| = 1;
+
 my @results;
 OSCAR::Database::database_execute_command("read_records oscar.interface", \@results, 0);
 my $cluster_interface = $results[0];
@@ -38,8 +40,6 @@ my $tcpdumppid = open(TCPDUMP, "$cmd 2>/dev/null |") || carp("Could not run $cmd
 my @pids = split(' ', `ps -C tcpdump -o pid= -o ppid= | grep "$tcpdumppid"` );
 $tcpdumppid = $pids[0];
 
-my $mac;
-my $collect = 1;
 while( <TCPDUMP> ) {
   #print "collected: $_\n";
   m/^([\w\d:]{6,17})\W/;
@@ -47,7 +47,6 @@ while( <TCPDUMP> ) {
   print verify_mac($1) . "\n";
 }
 close TCPDUMP;
-
 
 sub sighandle {
   open(STDERR, ">/dev/null");
