@@ -92,7 +92,6 @@ FIG_FILES	= \
 			 figs/sbs-configure-install.png \
 			 figs/sbs-make-install-1.png \
 			 figs/sbs-make-install-2.png \
-			 figs/sbs-oda-password.png \
 			 figs/sbs-download-packages.png \
 			 figs/sbs-opder-alt-repository.png \
 			 figs/sbs-pkgInUn-selector.png \
