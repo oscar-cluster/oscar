@@ -1,14 +1,24 @@
 #!/bin/sh
 
 # test_cluster - script to test MPI, PVM, & PBS
-# Author: Michael Brim
-# Last Updated: 01/18/2002
+# Authors: Jason Brechin
+#          Jeremy Enos
+# Last Updated: 4/22/2002
+
+#test to make sure root is not running this script
+if [ `/usr/bin/id -un` = root ] ; then 
+  echo "This test script MUST be run from a user account."
+  echo "Exiting..."
+  exit 1
+fi
 
 # Initialize environment
 qsub=/usr/local/pbs/bin/qsub
 qstat=/usr/local/pbs/bin/qstat
+homedir=~/OSCAR_test
+cd $homedir
 
-# Check usage
+# Check usage (since this can be run seperately)
 if [ $# -eq 0 ]; then 
   # Get cluster info from user
   echo -n "Enter the number of client nodes: "
@@ -23,102 +33,190 @@ else
   ppn=$2
 fi
 
-echo PBS TEST
-echo --------------------------------------------------------------------------------
-# Test PBS
-echo "Running a simple PBS shell job..."
-cd shell
-if [ -f shelltest.out ]; then /bin/rm -f shelltest.out; fi
-if [ -f shelltest.err ]; then /bin/rm -f shelltest.err; fi
-job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.shell`
-time=10
-while [ ! -f shelltest.out ]; do 
-  sleep 5
-  time=`expr $time + 5`
-  if [ $time -gt 120 ]; then # more than 2 minutes
-    echo "- simple test taking way too long - there is"
-    echo "  probably a problem with PBS, exiting"
-    exit 1
-  fi 
-done
-if [ ! -s shelltest.out ]; then
-  echo "PBS shell test failed - output file empty"
-  echo "Contents of shelltest.err:"
-  cat shelltest.err
-  echo
-  echo "Since simple PBS job failed, exiting"
-  exit 1
-else
-  echo "Output from shell test:"
-  cat shelltest.out
-  echo
-  echo "PBS test appears to be successful."
-fi
-cd ..
-echo ________________________________________________________________________________
-echo MPICH TEST
-echo --------------------------------------------------------------------------------
-# Test MPI under PBS
-cd mpi
-echo "Running a simple MPICH job under PBS..."
-if [ -f mpichtest.out ]; then /bin/rm -f mpichtest.out; fi
-if [ -f mpichtest.err ]; then /bin/rm -f mpichtest.err; fi
-job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.mpich`
-sleep 10
-while [ ! -f mpichtest.out ]; do sleep 10; done
-if [ -s mpichtest.err ]; then
-  echo "MPICH test failed - error file not empty"
-  echo "Contents of mpichtest.err:"
-  cat mpichtest.err
-  echo
-else
-  echo "Output from MPICH test:"
-  cat mpichtest.out
-  echo MPICH test appears to be successful.
-fi
-echo ________________________________________________________________________________
-echo LAM TEST
-echo --------------------------------------------------------------------------------
-# Test LAM/MPI under PBS
-echo "Running a simple LAM/MPI job under PBS..."
-if [ -f lamtest.out ]; then /bin/rm -f lamtest.out; fi
-if [ -f lamtest.err ]; then /bin/rm -f lamtest.err; fi
-export MPI=/opt/lam-6.5.5
-job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.lam`
-sleep 10
-while [ ! -f lamtest.out ]; do sleep 10; done
-if [ -s lamtest.err ]; then
-  echo "LAM/MPI test failed - error file not empty"
-  echo "Contents of lamtest.err:"
-  cat lamtest.err
-  echo
-else
-  echo "Output from LAM/MPI test:"
-  cat lamtest.out
-fi
-cd ..
-echo ________________________________________________________________________________
-echo PVM TEST
-echo --------------------------------------------------------------------------------
+numprocs=`/usr/bin/expr $clients \* $ppn`
+timeout=`/usr/bin/expr $numprocs \* 3`
 
-# Test PVM under PBS
-echo "Running a simple PVM job under PBS..."
-cd pvm
-if [ -f pvmtest.out ]; then /bin/rm -f pvmtest.out; fi
-if [ -f pvmtest.err ]; then /bin/rm -f pvmtest.err; fi
-job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.pvm`
-sleep 10
-while [ ! -f pvmtest.out ]; do sleep 10; done
-if [ ! -s pvmtest.out ]; then
-  echo "PVM test failed - output file empty"
-  echo "Contents of pvmtest.err:"
-  cat pvmtest.err
-else
-  echo "Output from PVM test:"
-  cat pvmtest.out
+if [ $timeout -lt 30 ]; then
+  timeout=30
 fi
+
+# Initialize some functions (should work for RedHat and Mandrake)
+source /etc/rc.d/init.d/functions
+
+echo -e "\t\t\tUSER TESTS"
+echo -e "\t\t\t----------"
+
+
+#			DEFAULT PBS QUEUE
+#			-----------------
+
+echo -n "Checking PBS default queue definition:"
+if [ `/usr/local/pbs/bin/qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
+  echo_success
+  echo
+else
+  echo_failure
+  echo
+fi
+
+
+#			SSH TESTS
+#			---------
+# Uses the server and free nodes starting from the end of the list (as PBS
+# uses them).
+
+node1=`/usr/local/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tail -1`
+
+echo -n "server -> node SSH:"
+if [ `ssh $node1 hostname 2> /dev/null` = $node1 ]; then
+  echo_success
+  echo
+else
+  echo_failed
+  echo
+  exit 1
+fi
+
+echo -n "node -> server SSH:"
+server=`hostname`
+if [ `ssh $node1 ssh $server hostname 2> /dev/null` = $server ]; then
+  echo_success
+  echo
+else
+  echo_failure
+  echo
+  exit 1
+fi
+
+if [ $clients -gt 1 ]; then # user specified more than one client, so
+                            # we can do node -> node tests
+  node2=`/usr/local/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tail -2 | /usr/bin/head -1`
+
+  echo -n "node -> node SSH:"
+  if [ `ssh $node1 ssh $node2 hostname 2> /dev/null` = $node2 ]; then
+    echo_success
+    echo
+  else
+    echo_failed
+    echo
+    exit 1
+  fi
+fi 
+
+#			PBSNODES FREE ROUTINE
+#			---------------------
+# Shows only failure to find free nodes
+check_free_nodes () {
+free=`/usr/local/pbs/bin/pbsnodes -a | grep -c 'state = free'`
+if [ $free -eq $clients ] || [ $free -gt $clients ]; then    # at least $clients free nodes
+echo -n ""
+else
+echo -n "Checking for $clients free nodes:"
+  echo_failure
+  echo
+  echo Not enough free nodes.  Tests incomplete.
+  exit 1
+fi
+}
+
+#			PBS TEST ROUTINE
+#			----------------
+# Generic routine to run any test through PBS depending on environment
+pbs_test_routine () {
+check_free_nodes
+echo -n $pbs_test_type
+echo -n ":    "
+cd $homedir/$test_dir
+if [ -f $output_file.out ]; then /bin/rm -f $output_file.out; fi
+if [ -f $output_file.err ]; then /bin/rm -f $output_file.err; fi
+job=`$qsub -l nodes=$clients:ppn=$ppn $pbs_script`
+timeleft=$timeout
+job_state=incomplete
+while [ $job_state = incomplete ]; do 
+# Displays remaining seconds
+  echo -n " $timeleft"
+  if [ $timeleft -gt 99 ]; then
+    echo -n " "
+  elif [ $timeleft -gt 9 ]; then
+    echo -n "  "
+  else
+    echo -n "   "
+  fi
+  echo -n -e "\b\b\b\b\b"
+  sleep 1
+# Tests for success or timeout
+  if [ -f $output_file.out ] ; then
+    grep "$grep_string" $output_file.out > /dev/null
+    string_test=$?
+    if [ $string_test = 0 ] ; then
+      job_state=success
+      echo -n -e "\b\b\b      "
+      echo_success
+    fi
+  fi
+  if [ $timeleft -eq 0 ]; then # more than timeout
+    echo -n -e "\b\b\b      "
+    echo_failure
+    job_state=fail
+    if [ `/usr/local/pbs/bin/qstat |grep -c $job` -eq 1 ]; then
+    /usr/local/pbs/bin/qdel $job
+    sleep 1 # Allows nodes to free up again
+    fi
+    if [ $exit_on_fail = yes ]; then exit 1 ; fi
+  fi 
+  timeleft=`expr $timeleft - 1`
+done
+
 cd ..
-echo ________________________________________________________________________________
+echo
+}
+
+  
+#			PBS SHELL TEST
+#			--------------
+
+pbs_test_type="Simple PBS shell job"
+test_dir=shell
+pbs_script=pbs_script.shell
+output_file=shelltest
+grep_string=Hello
+exit_on_fail=yes
+pbs_test_routine
+
+#			MPICH TEST
+#			----------
+
+pbs_test_type="Simple PBS MPICH job"
+test_dir=mpi
+pbs_script=pbs_script.mpich
+output_file=mpichtest
+grep_string="pi is approx"
+exit_on_fail=no
+pbs_test_routine
+
+
+#			LAM TEST
+#			--------
+
+pbs_test_type="Simple PBS LAM job"
+test_dir=mpi
+pbs_script=pbs_script.lam
+output_file=lamtest
+grep_string="pi is approx"
+exit_on_fail=no
+pbs_test_routine
+
+#			PVM TEST
+#			--------
+
+pbs_test_type="Simple PBS PVM job"
+test_dir=pvm
+pbs_script=pbs_script.pvm
+output_file=pvmtest
+grep_string=SUCCESSFUL
+exit_on_fail=no
+pbs_test_routine
 
 # Done
 exit 0
+
