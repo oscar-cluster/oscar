@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.29 2002/07/16 14:39:46 jsquyres Exp $
+% $Id: detailed.tex,v 1.30 2002/07/16 15:02:56 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -472,26 +472,18 @@ where each line is in the following format:
 Here is a sample (for a SCSI disk):
 
 \begin{verbatim}
-  /dev/sda1       24          ext2      /boot   rw
-  /dev/sda5       128         swap
-  /dev/sda6       1000        ext2      /       rw
+dev/sda1        24    ext2  /boot defaults
+/dev/sda5       128   swap
+/dev/sda6       1000  ext2  /     defaults
+nfs_oscar:/home  -    nfs   /home rw
 \end{verbatim}
-
-\begin{discuss}
-  The \file{sample.dist.scsi} actually has ``{\tt defaults}'' instead
-  of ``{\tt rw}''.  Should that be listed here?
-\end{discuss}
-
-\begin{discuss}
-  Should {\tt nfs\_oscar:/home - nfs /home rw} be listed here as well?
-  It's in all three sample files in \file{oscarsamples}.
-\end{discuss}
 
 The last partition specified will grow to fill the entire disk.  You
 can create your own partition files, but make sure that you do not
-exceed the physical capacity of your client hardware. The sample
-listed above, and some others, are in the \file{oscarsamples}
-directory.
+exceed the physical capacity of your client hardware. Also be careful
+to not specify duplicate filesystems as this will cause problems 
+during the installation. The sample listed above, and some others, 
+are in the \file{oscarsamples} directory.
 
 \subparagraph{Package lists.}
 
