@@ -1,4 +1,4 @@
-$Id: README,v 1.3 2002/01/03 21:48:57 mchasal Exp $
+$Id: README,v 1.4 2002/01/19 16:36:09 jsquyres Exp $
 
 $COPYRIGHT$
 
@@ -7,7 +7,7 @@ This is the general README file for OSCAR.  See our wonderful web site:
 	http://oscar.sourceforge.net/
 
 Insturctions for installing an OSCAR distribution can be found in 
-doc/installation/install.pdf.
+doc/install.pdf.
 
 
 ***************************************************************
@@ -16,17 +16,16 @@ Notes on the 1.2 beta release
 
 There are some limitations to the 1.2 beta release, they are:
 
--Only single processors are exploited on the nodes. Be sure and
-tell the test script that you have 1 processor per node.
+- Only single processors are exploited on the nodes.  Be sure to tell
+the test script that you have 1 processor per node.
 
--sshd may not be properly started on the server. Make sure it is
+- sshd may not be properly started on the server.  Make sure it is
 running before installing the nodes.
 
--If you use rpms from another source other than the RedHat 7.1 
-cds, you may recieve some file conflict messages when installing
-the server. Just remove the conflicting rpms from /tftpboot/rpms
+- If you use rpms from another source other than the RedHat 7.1 CDs,
+you may recieve some file conflict messages when installing the
+server.  Just remove the conflicting RPM filenames from /tftpboot/rpms
 and rerun install_cluster.
 
--You MUST specify a domain name for your clients when defining 
-them.
+- You MUST specify a domain name for your clients when defining them.
 
