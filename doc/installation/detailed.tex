@@ -1,11 +1,12 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.9 2001/12/17 23:16:06 mchasal Exp $
+% $Id: detailed.tex,v 1.10 2001/12/18 22:48:51 mchasal Exp $
 %
 % $COPYRIGHT$
 %
 
 \section{Detailed Cluster Installation Procedure}
+\label{det:top}
 
 Note: All actions specified herein should be performed by the
 \user{root} user.
@@ -13,11 +14,13 @@ Note: All actions specified herein should be performed by the
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Server Installation and Configuration}
+\label{det:serverinstall}
   
 During this phase, you will prepare the machine to be used as the
 server for using OSCAR.
 
 \subsubsection{Install Linux on the server machine} 
+\label{det:serverosinstall}
 
 If you have a machine you want to use that already has Linux
 installed, you may use it and continue with the next section. When installing
@@ -51,6 +54,7 @@ and other security software that can be installed.
 \endchange
 
 \subsubsection{Disk space and directory considerations}
+\label{det:serverdiskpar}
 
 OSCAR has certain requirements for server disk space. Space will be
 needed to store the Linux rpms and to store the images.
@@ -95,6 +99,7 @@ subdirectory.
 
     
 \subsubsection{Get a copy of OSCAR and unpack on the server} 
+\label{det:unpack}
 
 If you are reading this, you probably already have a copy. If not, go
 to \url{http://oscar.sourceforge.net/} and download the latest OSCAR
@@ -170,6 +175,7 @@ laid out as show in Table~\ref{tab:oscar-dir-struct} (again assuming
 \endchange
   
 \subsubsection{Configure the ethernet adapter for the cluster} 
+\label{det:serveradapter}
 
 Assuming you want your server to be connected to both an external
 network and the internal cluster subnet, you will need to have two
@@ -246,6 +252,7 @@ specified for the given device. Try using the network configuration
 utility again to resolve the problem.
   
 \subsubsection{Copy distribution RPMs to \file{/tftpboot/rpm}}
+\label{det:rpmcopy}
 
 In this step, you need to copy the RPMs included with your Linux
 distribution into the \file{/tftpboot/rpm} directory. 
@@ -303,6 +310,7 @@ performed. The steps from here forward should be run within the X
 environment, due to the graphical nature of the OSCAR.
 
 \subsubsection{Change to the OSCAR directory and run \file{install\_cluster}}
+\label{det:installcluster}
 
 \begchange
 If the OSCAR directory was placed in \file{/root} for example, you
@@ -368,6 +376,7 @@ wish to redo any of the SIS actions performed in the wizard steps 1,
 or 2, please refer to the SIS man pages.
 
 \subsubsection{Build the Image} 
+\label{det:buildimage}
 
 Press the Step 1 button of the wizard entitled \button{Build OSCAR
 Client Image}. A dialog will be displayed. In most cases, the defaults 
@@ -417,6 +426,7 @@ to specify the version. The highest version that matches the
 portion that you specify will be used.
 
 \subsubsection{Define your client machines} 
+\label{det:defclients}
 
 Press the Step 2 button of the wizard entitled \button{Define OSCAR
  Clients}. In the dialog box that is displayed, enter the
@@ -466,6 +476,7 @@ you may press the \button{Close} button and continue with the next step.
 \end{figure}
     
 \subsubsection{Collect client MAC addresses and Setup Networking} 
+\label{det:setupnetwork}
 
 The MAC address of a client
 is a twelve hex-digit hardware address embedded in the client's
@@ -517,6 +528,7 @@ In order to collect the MAC addresses,  press the Step 3 button
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Client Installations}
+\label{det:clientinstall}
 
 During this phase, you will network boot your client nodes and they
 will automatically be installed and configured as specified in
@@ -530,6 +542,7 @@ See Appendix~\ref{app:net-boot-client-nodes} for instructions on
 network booting clients.
 
 \subsubsection{Check completion status of nodes}
+\label{det:clientfinish}
 
 After a few minutes, the clients should complete the installation.
 You can watch the client consoles to monitor the progress. Depending
@@ -586,6 +599,7 @@ During this phase, the server and clients will be configured to work
 together as a cluster.
 
 \subsubsection{Complete the cluster configuration}
+\label{det:completeinstall}
 
 Press the Step 4 button of the wizard entitled \button{Complete
  Cluster Setup}.  This will run the \file{post\_install} script,
@@ -604,6 +618,7 @@ which does the following:
 
 \subsubsection{Test your cluster using the OSCAR Cluster Test
   software}
+\label{det:testcluster}
             
 Provided along with OSCAR is a simple test to make sure the key
 cluster components (PBS, MPI, and PVM) are functioning properly. 

@@ -1,12 +1,12 @@
 % -*- latex -*-
 %
-% $Id: brief.tex,v 1.2 2001/12/17 22:41:58 mchasal Exp $
+% $Id: brief.tex,v 1.3 2001/12/18 22:48:51 mchasal Exp $
 %
 % $COPYRIGHT$
 %
 
 \begchange
-\section{Quick Start Installation of Homogenous Clusters on a Private Subnet}
+\section{Quick Start OSCAR Installation on a Private Subnet}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -27,11 +27,8 @@ then you probably don't meet them:
 \item Your cluster client machines are on a private subnet.
 \item Your cluster server machine has two network interfaces, one public,
   and one connected to the cluster client machines.
-\item Your cluster server and client machines contain identical hardware.
-\item Server's root (\file{/}) filesystem is on the same disk type (IDE
-  or SCSI) as the clients will use for their root filesystem.
 \item The default RPM list supplied by OSCAR
-  (\file{OSCAR-\oscarversion/oscarResources/sample.rpmlist}) is
+  (\file{OSCAR-\oscarversion/oscarsamples/sample.rpmlist}) is
   acceptable for your clients.
 \item You are using the RedHat 7.1 distribution.
 \item You know how to install the RedHat 7.1 distribution on a machine.
@@ -39,221 +36,191 @@ then you probably don't meet them:
   of anything, ever. 
 \end{enumerate}
 
+If you decide that the quick install isn't for you, see the detailed installation
+instructions in section \ref{det:top}.Throughout the quick install instructions,
+there is a reference to the appropriate section in the detailed installation 
+instructions in parenthesis at the end of each step.
+
 \subsection{Quick installation procedures}
 
 Note: All actions specified herein should be performed by the
 \user{root} user on the service machine unless noted otherwise.
 
-%%\subsubsection{Install Linux on your server machine}
+\begin {enumerate}
 
-Install (or already have installed) Linux on your server machine.
+\item Install (or already have installed) Linux on your server machine.
 The only requirements for your Linux installation are:
 
-\begin{enumerate}
-\item Some X environment such as GNOME or KDE must be installed.
-\item Networking must be set up and working on the public interface.
-  (Do yourself a favor and install some type of network security if
-  your system is exposed to the general internet.)
-\item The second network interface for the private cluster network
-  must be installed.
-\end{enumerate}
+        \begin{enumerate}
+        \item There should be approximately 2 gigabytes free space in both
+        the \file{/} and \file{/var} filesystems. It is simplest if you
+        just create 1 large partition on the entire drive.(Detail:Section
+        \ref{det:serverdiskpar})
+        \item Some X environment such as GNOME or KDE must be installed.
+        \item Networking must be set up and working on the public interface.
+        (Do yourself a favor and install some type of network security if
+        your system is exposed to the general internet.)
+        \item The second network interface for the private cluster network
+        must be installed.
+        \end{enumerate}
+(Detail:Section \ref{det:serverosinstall})
 
-%%\subsubsection{Get and unpack the OSCAR software}
+\item After the installation is complete, log on as root to the server 
+machine.
 
-Download and unpack OSCAR with these commands:
+\item Download and unpack OSCAR with these commands:
 
 \begin{verbatim}
-  # cd /root
+  # cd ~
   # ncftp ftp.sourceforge.net
   ncftp / > cd pub/sourceforge/oscar
-  ncftp /pub/sourceforge/oscar > get oscar-1.1.1.tgz
+  ncftp /pub/sourceforge/oscar > get oscar-1.2.tgz
   ncftp /pub/sourceforge/oscar > quit
-  # tar -zxf oscar-1.1.1.tgz
+  # tar -zxf oscar-1.2.tgz
 \end{verbatim}
-    
-%%\subsubsection{Configure the second ethernet adapter} 
+(Detail:Section \ref{det:unpack})
 
-Configure the second (private) cluster network adapter using the linux
+\item Copy the RPMs from \emph{all} of the RedHat 7.1 CD's to \file{/tftpboot/rpm}
+using these commands:
+
+\begin{verbatim}
+  (insert cd)
+  # cp /mnt/cdrom/Redhat/RPMS/*.rpm /tftpboot/rpm
+\end{verbatim}
+(Detail:Section \ref{det:rpmcopy})
+
+\item Configure the second (private) cluster network adapter using the linux
 \cmd{/usr/sbin/netcfg} command or your favorite editor. Set the interface 
 IP address to 10.0.0.250, set the interface configuration protocol
 to ``none'', and set the interface to activate at boot time.
 Then reboot your machine. and make sure that the private cluster
 interface is properly setup and activated. 
+(Detail:Section \ref{det:serveradapter})
 
-%%\subsubsection{Edit \file{/etc/hosts}}
+\item After the reboot is complete, log on as root to the server 
+machine.
 
-Edit the \file{/etc/hosts} file to make sure it has an entry for
-the private network IP address of your server machine, and add entries
-for the IP addresses of your client machines.
-
-\noindent{\bf IMPORTANT:} the value returned by the \cmd{hostname}
-command has to be included in the \file{/etc/hosts} file {\bf ONCE and
-  ONLY ONCE} on the line that has the private network IP address of
-the server machine.  If the \cmd{hostname} command returns ``envy''
-and you have two client machines named node1 and node2, and PUBLICIP
-is the public IP address of the server, the sequence of commands might
-look like this:
-
-\begin{verbatim}
-  # hostname
-  envy
-  # vi /etc/hosts
-  # cat /etc/hosts
-  127.0.0.1       localhost.localdomain   localhost
-  PUBLICIP        envy.domain.name
-  10.0.0.250      envy
-  10.0.0.1        node1
-  10.0.0.2        node2
-\end{verbatim}
-
-%%\subsubsection{Start the OSCAR configuration wizard}
-
-To start the OSCAR configuration wizard, in the X environment do
+\item To start the OSCAR cluster installation,  in the X environment do
 the following command:
 
 \begin{verbatim}
-  cd /root/OSCAR-1.1.1
-  ./install_cluster ethernet-device
+  cd ~/OSCAR-1.2
+  ./install_cluster eth1
 \end{verbatim}
   
 In the above command, substitute the device name 
 (e.g., \file{eth1})
-for your server's private network ethernet adapter. After the OSCAR 
-wizard successfully completes some startup commands, it will display 
-a list of steps to be done.
+for your server's private network ethernet adapter. After \file{install\_cluster}
+successfully completes some configuration, it will display 
+the OSCAR wizard.
+(Detail:Section \ref{det:installcluster})
 
-%%\subsubsection{Define the server}
+\item Press the \button{Build Oscar Client Image} button. 
+This pops up the "Create a SystemImager Image" window. Verify that the last
+part of the filename in the \field{Disk Partition File} field matches
+the type of drives that are in your clients. OSCAR ships \file{sample.disk.ide}
+\& \file{sample.disk.scsi} in the \file{oscarsamples} directory.
+Press the \button{BuildImage} button to build a SystemImager image for installation to
+the compute nodes.  You will see a progress bar across the bottom
+of the window as the image is built.  A dialog will pop up when the build is complete. 
+If it is successful, press the \button{Close} button on the pop up window 
+and then the \button{Close} button on the "Build a SystemImager
+Image" window. You have just built an installation image on the
+server, with the name \file{oscarimage}.
+(Detail:Section \ref{det:buildimage})
 
-Press the Step 1 button of the wizard entitled \button{Define the Server}. 
-In the dialog box that is displayed, fill in these fields:
+\item Press the \button{Define OSCAR Clients} button on the OSCAR Wizard. 
+On the window that is opened, fill in the number of client nodes that your cluster
+contains. Verify that the IP information is correct and correct if it is not.
+Press the \button{Addclient} button to define the clients. Once that is 
+complete a dialog will pop up. 
+If it is successful, press the \button{Close} button on the pop up window 
+and then the \button{Close} button on the "Define Oscar Clients"
+window. 
+(Detail:Section \ref{det:defclients})
 
-\begin{enumerate}
-\item Name: envy (the name of the server machine. This should be the
-  same name returned by the \cmd{hostname} command, and the
-  name in the \file{/etc/hosts} file name for the private cluster network
-  IP address of the server machine.
-\item IP Address: 10.0.0.250 
-  (the private cluster network address of the server machine)
-\item Netmask: 255.255.255.0 (in most cases)
+\item Press the \button{Setup Networking} button on the OSCAR Wizard.
+The window that is opened will help you collect MAC addresses and configure
+the remote boot services. If your client nodes do not support PXE booting,
+you will need to create a boot diskette. Put a diskette in the floppy
+drive and press the \button{Build Autoinstall Floppy} button. You may create 
+several diskettes if you like.
+(Detail:Section \ref{det:setupnetwork})
+
+\item Press the \button{Collect MAC Addresses} button. The wizard will start
+scanning the network as indicated in the message at the top of the window. 
+(Detail:Section \ref{det:setupnetwork})
+
+\item Now, you need to network boot your nodes. This is done in one of 2 ways:
+
+        \begin{itemize}
+        \item If your nodes support PXE booting, set the boot order in the BIOS
+        to have the network adapter first.
+        \item If your nodes do not support PXE, insert the boot floppy created
+        in the previous step and boot off the floppy
+        \end{itemize}
+
+(Detail:Appendix \ref{app:net-boot-client-nodes})
+
+\item As the nodes broadcast over the network, the MAC addresses detected will show
+up on the left side of the window. Select a MAC address and select its 
+corresponding client. Press the \button{Assign Mac to Node} button to give the
+node that MAC address. 
+(Detail:Section \ref{det:setupnetwork})
+
+\item When you have assigned a MAC address to each node, press the \button{Stop Collecting}
+button to stop scanning the network. Then press the \button{Configure DHCP Server}
+to setup the server to answer the client requests.
+(Detail:Section \ref{det:setupnetwork})
+
+\item If your clients support PXE booting, press the \button{Setup Network Boot} 
+button to configure the server to answer PXE requests.
+(Detail:Section \ref{det:setupnetwork})
+
+\item Press \button{Close} to dismiss the network setup window.
+
+\item Network boot the clients, as you did when collecting the MAC addresses,
+again. This time the clients will be answered by the server and will perform
+the installation. The install should only take about 3-5 minutes depending on 
+your hardware and your network. You can install multiple clients simultaneously.
+(Detail:Section \ref{det:clientinstall})
+
+\item As each client finishes, it will start beeping and printing a message to the 
+console. You should now reboot them off of thier newly installed hard disks.
+
+        \begin{itemize}
+        \item If you are using PXE boot, reboot the clients and set the BIOS
+        boot order to boot to hard disk before the network.
+        \item If you are using auto install diskettes, just remove the diskette
+        and reboot
+        \end{itemize}
+(Detail:Section \ref{det:clientfinish})
+
+\item Once all the clients have successfully booted, Press the 
+\button{Complete Cluster Setup} button. Your OSCAR cluster is
+now installed.
+(Detail:Section \ref{det:completeinstall})
+
+\item To verify proper installation, you should test the cluster.
+OSCAR provides a test suite to verify the basic cluster
+functions. To perform the test, do the following:
+
+        \begin{enumerate}
+        \item Press the \button{Test Cluster Setup} button. A window will
+        pop up that will ask for a non-root user. 
+        \item Enter the user name of a non-root user. If this user doesn't
+        exist it will create it. The OSCAR test suite will be installed
+        in the user's home directory.
+                \begin{enumerate}
+                \item Open a new terminal and login as the user given above.
+                \item change directory to \file{~/OSCAR\_test}
+                \item run \file{./test\_cluster}
+                \item enter the number of cluster nodes and the number of 
+                processors per node when prompted. The test will submit
+                simple jobs to the cluster and print the output. If there
+                are any errors, there is a problem in your installation.
+                \end{enumerate}
+         \end{enumerate}
+(Detail:Section \ref{det:testcluster})
+
 \end{enumerate}
-
-Then press the \button{Apply} button. Ignore any warning
-messages about the nfsd service and the exporting of the \file{/usr}
-and \file{/tftpboot} directories that are displayed in the output.
-After you see the ``successfully created the machine object named envy''
-line and the output stops, press the \button{Close} button.
-
-%%\subsubsection{Collect client MAC addresses} 
-
-If you already know the MAC addresses of your client machines, edit
-the file \file{/etc/MAC.info} to look something like this:
-
-\begin{verbatim}
-  node1   12:33:41:5c:29:01
-  node2   12:33:41:8a:25:19
-\end{verbatim}
-
-The first field of each line is ignored, all that matters is the MAC address.
-If you don't know the MAC addresses for your client machines, use the
-OSCAR wizard to collect them like this:
-
-\begin{enumerate}
-\item Press the button of the wizard entitled 
-  \button{Collect Client MAC Addresses}. The OSCAR MAC address collection
-  utility dialog box will be displayed.
-\item To start collecting the MAC address for another client node, 
-  press the \button{Collect} button.
-\item Network boot the client.
-\item After the client MAC address is collected, a line with 
-  ``found mac address'' will be displayed.
-\item If another client's MAC address needs to be collected,
-  go back to step 2.
-\item When you have collected the
-  addresses for all your client nodes, press \button{Done}.
-\end{enumerate}
-
-%%\subsubsection{Define your client machines} 
-
-Press the Step 3 button of the wizard entitled \button{Define the
-  Client Machines}. In the dialog box that is displayed, enter the
-  following information:
-
-\begin{enumerate}
-\item Starting IP Address: 10.0.0.1 (or whatever the first client
-  machine private IP address is)
-\item Netmask: 255.255.255.0 (for most private networks)
-\item Default Route(optional): 10.0.0.250 (the server's private network 
-  IP address)
-\end{enumerate}
-  
-When finished entering information, press the \button{Apply} button.
-When the message ``Successfully created the machine object LASTCLIENT''
-is displayed (where LASTCLIENT is the name of the last client machine),
-press the \button{Close} button.
-
-%%\subsubsection{Prepare for Client Installs}
-
-Press the Step 6 button of the wizard entitled 
-\button{Prepare for Client Installs}. This will
-run the pre client installation server configuration script.
-When this is completed, the last line of the output should
-be ``Begin booting client nodes''.
-
-%%\subsubsection{Client Installations}
-
-Network boot the client machines. They will automatically be
-installed and configured. 
-See Appendix~\ref{app:net-boot-client-nodes} for instructions on
-network booting clients.
-
-%%\subsubsection{Check completion status of nodes}
-
-For each client, a log is kept detailing the progress of its
-installation. The log files for all clients are kept on the server in
-\file{/tftpboot/lim/log}. When a client installation completes, the
-last line in the log for that client will read ``\msgout{installation
-  is now complete, time to reboot!}'' Depending on the capabilities of
-your server and the number of simultaneous client installations, a
-client could take anywhere from five minutes to over an hour to
-complete its installation.
-  
-%%\subsubsection{Reboot the client nodes}
-
-After confirming that a client has completed its installation, you
-should reboot the node from its hard drive. 
-
-%%\subsubsection{Check network connectivity to client nodes}
-
-In order to perform the final cluster configuration, the server must
-be able to communicate with the client nodes over the network. If a
-client's ethernet adapter is not properly configured upon boot,
-however, the server will not be able to communicate with the client. A
-quick and easy way to confirm network connectivity is to do the
-following (assuming OSCAR installed in \file{/root}):
-
-\begin{verbatim}
-  cd /root/OSCAR-1.1.1/scripts
-  ./ping_clients
-\end{verbatim}
-
-The above commands will run the \cmd{ping\_clients} script, which will
-attempt to ping each defined client and will print a message stating
-success or failure. Once all the clients have been
-installed, rebooted, and their network connections have been
-confirmed, you may proceed with the next step.
-
-%%\subsubsection{Complete the cluster configuration}
-
-Press the Step 7 button of the wizard entitled \button{Complete
-  Cluster Setup}.  This will run the \file{post\_install} script.
-
-%%\subsubsection{Check for successful completion}
-
-In the output window for the above step, search for a message stating
-``\msgout{Congratulations, your cluster is now ready for use.}''
-Provided along with OSCAR is a simple test to make sure the key
-cluster components (PBS, MPI, and PVM) are functioning properly. For
-information on installing and running the software, see the
-\file{oscar\_testing} document in the \file{docs} subdirectory.
-
-\endchange
