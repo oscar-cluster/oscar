@@ -13,6 +13,7 @@
 #                     (NCSA) All rights reserved.                       #
 #  Modifications:                                                       #
 #  Sep 03, 2003: Added --autoselectimage command line option - TGF      #
+#  Sep 04, 2003: Added --oscarimage selection for multi OSCAR images    #
 #########################################################################
 
 use strict;
@@ -94,8 +95,17 @@ if (-e $valuesfile)
 
     if ($bootkernel)
       { # Build up the command string for kernel_picker.
-        my $cmd = "/opt/kernel_picker/bin/kernel_picker --autoselectimage ".
-                  "--bootkernel $bootkernel --bootramdisk N --networkboot N ";
+        my $cmd = "/opt/kernel_picker/bin/kernel_picker ";
+        if ((defined $values->{oscarimage}) &&
+            (length($values->{oscarimage}[0]) > 0))
+          {
+            $cmd .= "--oscarimage " . $values->{oscarimage}[0] . ' ';
+          }
+        else
+          {
+            $cmd .= "--autoselectimage ";
+          }
+        $cmd .= "--bootkernel $bootkernel --bootramdisk N --networkboot N ";
         if ($values->{usesmodules}[0])
           {
             $cmd .= "--kernelversion $kernelversion ";

@@ -16,6 +16,8 @@
 #                of this alternate kernel file).                        #
 #  Copyright (c) 2003 National Center for Supercomputing Applications   #
 #                     (NCSA) All rights reserved.                       #
+#  Modifications:                                                       #
+#  Sep 04, 2003 : Added selection if multiple OSCAR image directories   #
 #########################################################################
 
 use strict;
@@ -32,6 +34,34 @@ my $runningversion;    # Version number of the currently running kernel
 my $runningdate;       # Version compile date of the currently running kernel
 my @kernelfiles;       # List of files in /boot that match the running kernel
 my $htmlfile = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+$ENV{LC_ALL} = '"C"';
+
+#########################################################################
+#  Subroutine name : getOscarImageList                                  #
+#  Parameters : none                                                    #
+#  Returns : An array of directories in /var/lib/systemimager/images.   #
+#  This function returns a list of directories in                       #
+#  /var/lib/systemimager/images.  These should all be directories       #
+#  containing oscar images, usually named something like 'oscarimage'.  #
+#########################################################################
+sub getOscarImageList  # -> @dirlist
+{
+  my @oscarimagedirs;
+  my $systemimagesdir = "/var/lib/systemimager/images";
+
+  if (opendir(IMAGESDIR,$systemimagesdir))
+    {
+      # Save current directory for restoration later and do a cd to find images
+      my $origdir = Cwd::cwd();
+      chdir($systemimagesdir);
+      # Generate a list of all directories available
+      @oscarimagedirs = grep { -d && !/^\.\.?$/ } readdir IMAGESDIR;
+      closedir IMAGESDIR;
+      chdir($origdir);
+    }
+
+  return @oscarimagedirs;
+}
 
 #########################################################################
 #  Subroutine: getRunningKernelInfo                                     #
@@ -243,7 +273,7 @@ sub generateHTMLFile
   # (a) General package name (eg. "kernel-smp") is in the default RPM list.
   # (b) The corresponding file exists in /tftpboot/rpm (as determined
   #     by PackageBest.pm).
-  my @pkglist = getKernelListFromRPMList;
+  my @pkglist = getKernelListFromRPMList();
   my %files;
   %files = &find_files(PKGDIR=>"/tftpboot/rpm",PKGLIST=>\@pkglist) if @pkglist;
   my @tftplist = ();
@@ -286,6 +316,9 @@ sub generateHTMLFile
       # of the RPM files.
       $errorcond |= 4 if (!$found);
     }
+
+  # Get a list of OSCAR image directories
+  my @oscarimages = getOscarImageList();
 
   # Finally, generate the configurator.html file using the information 
   # we gathered above. 
@@ -346,6 +379,24 @@ sub generateHTMLFile
   print HTML "<input type=text name=altfile size=40>\n";
   print HTML "</ul>\n";
   print HTML "<p> <p> <hr> <p> <p>\n";
+
+  # If there are two or more OSCAR image directories, choose one to use
+  if (scalar(@oscarimages) > 1)
+    {
+      print HTML "You have more than one OSCAR image. Please choose one:<br>\n";
+      print HTML "<select name=oscarimage size=1>\n";
+      my $imagenum = 0;
+      foreach my $imagename (sort {lc($a) cmp lc($b)} @oscarimages)
+        {
+          print HTML "<option";
+          print HTML " selected" if ($imagenum == 0);
+          print HTML ">$imagename\n";
+          $imagenum++;
+        }
+      print HTML "</select>";
+      print HTML "<p> <p> <hr> <p> <p>\n";
+    }
+
   print HTML "If you selected a kernel other than the Default, enter the ";
   print HTML "following information:<br>\n";
   print HTML "<ul>\n";
