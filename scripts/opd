@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.5 2002/11/05 02:51:22 bligneri Exp $
+# $Id: opd,v 1.6 2002/11/05 03:21:12 bligneri Exp $
 #
 
 use strict;
@@ -411,6 +411,11 @@ sub do_packages_range {
     my $end;
 
     foreach my $r (@ranges) {
+
+    my (@list)=split(/,/,$r);
+
+    foreach $r (@list) {
+
 	if ($r =~ /^[0-9]+$/) {
 	    $start = $end = $r;
 	} elsif ($r =~ /^[0-9]+-[0-9]+/) {
@@ -428,6 +433,7 @@ sub do_packages_range {
 	for (my $i = $start; $i <= $end; ++$i) {
 	    &$func($i);
 	}
+    }
     }
 }
 
@@ -970,7 +976,7 @@ sub main_menu {
     $attribs->{completion_entry_function} =
 	$attribs->{list_completion_function};
     $attribs->{completion_word} =
-	[qw(download help info list print quit exit repository select update)];
+	[qw(download help info list print quit exit repository update)];
 
     # Main prompt loop
 
@@ -1061,19 +1067,22 @@ sub main_menu {
 
 	elsif (/^\?/ || /^h/i || /^help/i) {
 	    print "
-download    - Download selected packages
-help        - This message
-info        - Display repository information
-list        - List available packages
-print N     - Display information about package N
-quit        - Quit
-repository  - Change repository
-select [R]  - Select packages to download; show selected if R not specified
-update      - Re-download the packages file from the repository
+[d] download   - Download selected packages
+[h] help       - This message
+[i] info       - Display repository information
+[l] list       - List available packages
+[p] print N    - Display information about package N
+[q] quit       - Quit
+[r] repository - Change repository
+R              - Select the specified package(s)
+[u] update     - Re-download the packages file from the repository
 
-N is a single integer value
-R can be a single integer value or a range
+N has an integer value
+
+R can be a single integer value, a range or an enumeration of all that :
+
   download 1 3    - marks packages 1 and 3 for downloading
+  1,2,5-6         - select packages 1,2,5,6
   download 1 3-5  - marks packages 1, 3, 4, and 5 for downloading\n\n";
 	} 
 
