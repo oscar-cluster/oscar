@@ -1,10 +1,10 @@
 #!/bin/sh
 
 #
-#   $Id: systemimager-init-script.patch.sh,v 1.3 2003/02/11 20:25:06 brianfinley Exp $
+#   $Id: systemimager-init-script.patch.sh,v 1.4 2003/02/11 20:26:38 mchasal Exp $
 #
 
-PATCH="${OSCAR_PACKAGE_HOME}/packages/sis/scripts/${PATCH}"
+PATCH="${OSCAR_PACKAGE_HOME}/scripts/${PATCH}"
 
 cd /etc/init.d 
 patch -p0 < ${PATCH}
@@ -23,8 +23,8 @@ exit 0
  #   Hacked for rsync as used by SystemImager
  #       by Brian Finley <bef@bgsw.net>.
  #
--#   $Id: systemimager-init-script.patch.sh,v 1.3 2003/02/11 20:25:06 brianfinley Exp $
-+#   $Id: systemimager-init-script.patch.sh,v 1.3 2003/02/11 20:25:06 brianfinley Exp $
+-#   $Id: systemimager-init-script.patch.sh,v 1.4 2003/02/11 20:26:38 mchasal Exp $
++#   $Id: systemimager-init-script.patch.sh,v 1.4 2003/02/11 20:26:38 mchasal Exp $
  #
  #
  # Support for IRIX style chkconfig:
