@@ -1,6 +1,6 @@
 #! /bin/sh 
 #
-# $Id: autogen.sh,v 1.2 2002/06/15 00:38:49 jsquyres Exp $
+# $Id: autogen.sh,v 1.3 2002/06/20 05:59:16 jsquyres Exp $
 #
 # This script is run on developer copies of OSCAR -- *not*
 # distribution tarballs.
@@ -85,6 +85,6 @@ run_and_check aclocal
 # OSCAR doesn't (yet) need autoheader
 #run_and_check autoheader
 run_and_check autoconf
-run_and_check automake -a
+run_and_check automake -a --copy
 
 exit 0
