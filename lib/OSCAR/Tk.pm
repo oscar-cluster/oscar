@@ -1,6 +1,6 @@
 package OSCAR::Tk;
 
-#   $Id: Tk.pm,v 1.1 2002/08/17 20:13:07 jsquyres Exp $
+#   $Id: Tk.pm,v 1.2 2002/08/23 14:57:42 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@ use Carp;
 use base qw(Exporter);
 use OSCAR::Logger;
 use OSCAR::Tk;
-@EXPORT = qw(yesno_window done_window);
+@EXPORT = qw(yesno_window done_window error_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 # Module-specific variables
 
@@ -107,7 +107,7 @@ sub done_window {
     $label->grid();
 
     my $button = $done->Button(-text=>"Close",
-                               -command=> [\&done_window_close, $done,
+                               -command=> [\&window_close, $done,
 					   $onclose, @args],
                                -pady => 8,
                                -padx => 8);
@@ -117,7 +117,7 @@ sub done_window {
 }
 
 
-sub done_window_close {
+sub window_close {
     my ($window, $onclose, @args) = @_;
     $window->destroy;
 
@@ -128,5 +128,23 @@ sub done_window_close {
     1;
 }
 
+
+sub error_window {
+    my ($window, $message, $onclose, @args) = @_;
+    my $done = $window->Toplevel();
+    $done->title("ERROR!");
+    my $label = $done->Message(-text => $message, 
+                               -foreground => "red",
+                              );
+    $label->grid();
+    my $button = $done->Button(
+                               -text=>"Close",
+                               -command=> [\&window_close, $done, 
+					   $onclose, @args],
+                               -pady => 8,
+                               -padx => 8,
+                              );
+    $button->grid();
+}
 
 1;
