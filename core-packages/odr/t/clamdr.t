@@ -1,4 +1,4 @@
-#   $Header: /home/user5/oscar-cvsroot/oscar/core-packages/odr/t/Attic/clamdr.t,v 1.1 2001/08/14 20:01:58 geiselha Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/core-packages/odr/t/Attic/clamdr.t,v 1.2 2001/08/15 13:03:49 geiselha Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
