@@ -14,7 +14,7 @@
 cd $PBS_O_WORKDIR
 NP=`(wc -l < $PBS_NODEFILE) | awk '{print $1}'`
 
-mpich_profile=/etc/profile.d/mpi-01mpich.sh
+mpich_profile=/etc/profile.d/mpi-00mpich.sh
 . $mpich_profile
 
 ### Get new host warnings out of the way
