@@ -2,7 +2,7 @@
 
 # test_cluster - script to test MPI, PVM, & PBS
 # Author: Michael Brim
-# Last Updated: 07/10/2001
+# Last Updated: 01/18/2002
 
 # Initialize environment
 qsub=/usr/local/pbs/bin/qsub
@@ -23,17 +23,18 @@ else
   ppn=$2
 fi
 
+echo PBS TEST
+echo --------------------------------------------------------------------------------
 # Test PBS
 echo "Running a simple PBS shell job..."
 cd shell
 if [ -f shelltest.out ]; then /bin/rm -f shelltest.out; fi
 if [ -f shelltest.err ]; then /bin/rm -f shelltest.err; fi
-job=`$qsub -l nodes=$clients pbs_script.shell`
-sleep 10
+job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.shell`
 time=10
 while [ ! -f shelltest.out ]; do 
-  sleep 10
-  time=`expr $time + 10`
+  sleep 5
+  time=`expr $time + 5`
   if [ $time -gt 120 ]; then # more than 2 minutes
     echo "- simple test taking way too long - there is"
     echo "  probably a problem with PBS, exiting"
@@ -50,13 +51,18 @@ if [ ! -s shelltest.out ]; then
 else
   echo "Output from shell test:"
   cat shelltest.out
+  echo
+  echo "PBS test appears to be successful."
 fi
 cd ..
-echo
-
+echo ________________________________________________________________________________
+echo MPICH TEST
+echo --------------------------------------------------------------------------------
 # Test MPI under PBS
-echo "Running a simple MPICH job under PBS..."
 cd mpi
+echo "Running a simple MPICH job under PBS..."
+echo "*******MPICH test bypassed in this beta*******"
+if [ `/bin/false` ]; then                         # Test bypasses mpich
 if [ -f mpichtest.out ]; then /bin/rm -f mpichtest.out; fi
 if [ -f mpichtest.err ]; then /bin/rm -f mpichtest.err; fi
 job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.mpich`
@@ -71,8 +77,10 @@ else
   echo "Output from MPICH test:"
   cat mpichtest.out
 fi
-echo
-
+fi                                                # Test bypasses mpich
+echo ________________________________________________________________________________
+echo LAM TEST
+echo --------------------------------------------------------------------------------
 # Test LAM/MPI under PBS
 echo "Running a simple LAM/MPI job under PBS..."
 if [ -f lamtest.out ]; then /bin/rm -f lamtest.out; fi
@@ -91,14 +99,16 @@ else
   cat lamtest.out
 fi
 cd ..
-echo
+echo ________________________________________________________________________________
+echo PVM TEST
+echo --------------------------------------------------------------------------------
 
 # Test PVM under PBS
 echo "Running a simple PVM job under PBS..."
 cd pvm
 if [ -f pvmtest.out ]; then /bin/rm -f pvmtest.out; fi
 if [ -f pvmtest.err ]; then /bin/rm -f pvmtest.err; fi
-job=`$qsub -l nodes=$clients pbs_script.pvm`
+job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.pvm`
 sleep 10
 while [ ! -f pvmtest.out ]; do sleep 10; done
 if [ ! -s pvmtest.out ]; then
@@ -110,7 +120,7 @@ else
   cat pvmtest.out
 fi
 cd ..
-echo
+echo ________________________________________________________________________________
 
 # Done
 exit 0
