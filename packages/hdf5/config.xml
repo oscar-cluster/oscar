@@ -3,9 +3,7 @@
 <package>
   <name>hdf5</name>
 
-  <filter architecture='ia32' distribution='redhat' distribution_version='7.2' />
-  <filter architecture='ia32' distribution='redhat' distribution_version='7.3' />
-  <filter architecture='ia32' distribution='redhat' distribution_version='8.0' />
+  <filter architecture='ia32' />
 
   <version>
     <major>1</major>
@@ -16,7 +14,6 @@
   </version>
 
   <class>included</class>
-  <installable>1</installable>
 
   <summary>Heirarchical Data Format (HDF) software package</summary>
   <license>freely distributable</license>
