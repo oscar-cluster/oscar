@@ -5,7 +5,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: wizard_prep,v 1.10 2002/10/25 12:49:50 jsquyres Exp $
+# $Id: wizard_prep,v 1.11 2002/10/25 18:04:37 jsquyres Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -62,6 +62,35 @@ require OSCAR::Package;
 require OSCAR::Distro;
 require OSCAR::PackageBest;
 
+# Run the setup script for every package.  Do not use list_pkg() here,
+# because that will read in all the per-package config.xml files.  We
+# must run the setup scripts *before* the XML files are read in.
+
+oscar_log_subsection("Running package setup scripts");
+opendir(PACKAGE_DIR, "$ENV{OSCAR_HOME}/packages");
+my @packages = readdir(PACKAGE_DIR);
+closedir(PACKAGE_DIR);
+my $topdir;
+chomp($topdir = `pwd`);
+foreach my $pkg (@packages) {
+    my $dir = "$ENV{OSCAR_HOME}/packages/$pkg";
+
+    # Skip irrlevant entries
+
+    print "Checking pkg: $pkg\n";
+    next if ($pkg eq "." || $pkg eq ".." || $pkg eq "CVS" ||
+	     ! -d $dir || -f "$dir/.oscar_ignore");
+
+    # If it's a good package, run its setup script (if it has one) in
+    # the scripts directory.
+
+    chdir("$dir/scripts");
+    OSCAR::Package::run_pkg_script($pkg, "setup") 
+	or croak("Failed running server for $pkg");
+    chdir($topdir);
+}
+oscar_log_subsection("Successfully ran package setup scripts");
+
 # Make sure /tftpboot/rpm exists, if not create it.  Then copy all the
 # rpms that we ship that need to be in the client into that directory
 
@@ -77,19 +106,10 @@ copy_rpms($ENV{OSCAR_HOME},$RPMPOOL)
 oscar_log_subsection("Successfully copied RPMs from " . $ENV{OSCAR_HOME} . 
 		     " to $RPMPOOL\n");
 
-# Get the list of core packages
+# Get the list of just core packages
 
-my @packages = OSCAR::Package::list_pkg("core");
+@packages = OSCAR::Package::list_pkg("core");
 oscar_log_subsection("Identified core packages: " . join(' ', @packages));
-
-# Run the setup scripts
-
-oscar_log_subsection("Running setup scripts for core packages");
-foreach my $package (@packages) {
-    OSCAR::Package::run_pkg_script($package, "setup") 
-	or croak("Failed running server for $package");
-}
-oscar_log_subsection("Successfully ran core package server scripts");
 
 # Get list of RPMs from the core packages
 
