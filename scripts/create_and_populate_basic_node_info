@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-# Copyright 2003 NCSA
+# Copyright 2004 NCSA
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 # 
 #   This program is free software; you can redistribute it and/or modify
@@ -36,52 +36,74 @@ sub do_it_or_die {
 }
 
 # open the database
+
 database_connect() ||
 die "$0: cannot connect to oda database";
 
 # see if there is already a node named oscar_server,
 # and make it if it doesn't already exist, this will also
 # make a special associated node group named oscar_server
+# and a special associated configuration named oscar_server
+
 my @nodes = ();
-print "Checking for existance of node record for oscar_server\n";
+print "Checking for database existance of node oscar_server ...\n";
 do_it_or_die( "nodes name=\"oscar_server\"",
 	      \@nodes,
 	      "cannot read nodes database table" );
 if ( ! @nodes ) {
-    print "Creating node and node group record for oscar_server\n";
+    print "Creating node, node group, configurations records for oscar_server ...\n";
     do_it_or_die( "create_node oscar_server",
 		  undef,
 		  "cannot create node record for oscar_server" );
 }
 
 # update some of the fields in the node record for oscar_server
+
 my $hostname = `hostname`;
 chomp $hostname;
-print "Updating the hostname field in the node record for oscar_server to <$hostname>\n";
+print "Updating the hostname field in the oscar_server node to <$hostname> ...\n";
 do_it_or_die( "modify_records nodes name=oscar_server hostname~$hostname",
 	      undef,
 	      "cannot update the hostname field in the node record for oscar_server" );
 my $dns_domain = `dnsdomainname`;
 chomp $dns_domain;
 if ( defined $dns_domain && $dns_domain ne "" ) {
-    print "Updating the dns_domain field in the node record for oscar_server to <$dns_domain>\n";
+    print "Updating the dns_domain field in the oscar_server node to <$dns_domain>\n";
     do_it_or_die( "modify_records nodes name=oscar_server dns_domain~$dns_domain",
 		  undef,
 		  "cannot update the dns_domain field in the node record for oscar_server" );
 }    
 
-# see if there is already a node group named oscar_clients,
-# and make it if it doesn't already exist
-print "Checking for existance of node group record for oscar_clients\n";
-my @node_groups = ();
-do_it_or_die( "node_groups name=\"oscar_clients\"",
-	      \@node_groups,
-	      "cannot read node groups database table" );
-if ( ! @node_groups ) {
-    print "Creating node group record for oscar_clients\n";
-    do_it_or_die( "create_node_group oscar_clients",
-		  undef,
-		  "cannot create node group record for oscar_clients" );
+# make sure that certain node groups exist
+
+foreach my $node_group_name ( "oscar_clients", "all" ) {
+    print "Checking for existance of node group $node_group_name ...\n";
+    my @node_groups = ();
+    do_it_or_die( "node_groups name=\"$node_group_name\"",
+		  \@node_groups,
+		  "cannot read node groups database table" );
+    if ( ! @node_groups ) {
+	print "Creating node group $node_group_name ...\n";
+	do_it_or_die( "create_node_group $node_group_name",
+		      undef,
+		      "cannot create node group record for $node_group_name" );
+    }
+}
+
+# make sure that certain named configurations exist
+
+foreach my $configuration_name ( "default" ) {
+    print "Checking for existance of configuration $configuration_name ...\n";
+    my @configurations = ();
+    do_it_or_die( "configurations name=\"$configuration_name\"",
+		  \@configurations,
+		  "cannot read configurations database table" );
+    if ( ! @configurations ) {
+	print "Creating configuration $configuration_name ...\n";
+	do_it_or_die( "create_configuration $configuration_name",
+		      undef,
+		      "cannot create configuration record for $configuration_name" );
+    }
 }
 
 database_disconnect();
