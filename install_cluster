@@ -7,7 +7,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: install_cluster,v 1.21 2003/06/27 14:49:38 brechin Exp $
+# $Id: install_cluster,v 1.22 2003/07/04 14:17:40 jsquyres Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -38,12 +38,72 @@ use Carp;
 use OSCAR::Database;
 
 # First of all, enforce that the user running this script is 'root'
+
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
-# Setting this varible makes a lot of things much easier.  It might also do
-# us some good down the road
+# If $OSCAR_HOME is not set, then set it with whatever came in from
+# configure's --prefix.
 
-$ENV{OSCAR_HOME} = cwd();
+if (!defined($ENV{OSCAR_HOME})) {
+    my $found = 0;
+
+    # Look for an output file from configure that specifies where
+    # OSCAR_HOME should be.  First look relative to this directory,
+    # then look in /etc/profile.d.
+
+    if (-f "scripts/oscar_home.sh" &&
+        open(OH, "grep OSCAR_HOME scripts/oscar_home.sh|")) {
+        $found = 1;
+    } elsif (-f "/etc/profile.d/oscar_home.sh" &&
+             open(OH, "grep OSCAR_HOME /etc/profile.d/oscar_home.sh|")) {
+        $found = 1;
+    }
+
+    # If we found it, read and use it.  Otherwise, complain and exit.
+
+    if ($found == 1) {
+        my $temp = <OH>;
+        chomp($temp);
+        close(OH);
+
+        my ($bogus, $oscar_home) = split(/=/, $temp);
+        $ENV{OSCAR_HOME} = $oscar_home;
+        printf("Manually setting OSCAR_HOME to: $ENV{OSCAR_HOME}\n");
+    } else {
+        die("ERROR: You must (at a minimum) run configure first.\n");
+    }
+}
+
+# Now check to see if there is an $ENV{OSCAR_HOME} directory, and if
+# so, if we're in it.
+
+if (! -d $ENV{OSCAR_HOME}) {
+    die("ERROR: The environment variable \$OSCAR_HOME was set, but the directory 
+that it points to ($ENV{OSCAR_HOME}) does not exist!");
+}
+if (!chdir($ENV{OSCAR_HOME})) {
+    die("ERROR: The environment variable \$OSCAR_HOME was set, but could not 
+change into the directory that it points to ($ENV{OSCAR_HOME})!");
+}
+
+# Get OSCAR's version
+
+my $oscar_version;
+if (!open (V, "VERSION")) {
+    die("ERROR: Unable to open OSCAR's VERSION file");
+}
+while (<V>) {
+    chomp;
+    $oscar_version = $_;
+}
+close(V);
+
+# Once here, we know that $ENV{OSCAR_HOME} is set, it exists, we can
+# get in it, and we have successfully read the VERSION file from it.
+# So we should be good to go for the rest of the installation.
+
+# Setup the lockfile
+
 my $lockfile = "$ENV{OSCAR_HOME}/.install_cluster_lockfile";
 
 # Set perl to autoflush all output
@@ -126,11 +186,28 @@ $ENV{LC_TIME} = "en_US";
 $ENV{PATH} = $ENV{PATH} .
     ':/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin';
 
-my $cmd = "cd $ENV{OSCAR_HOME}/scripts; ./wizard_prep; cd $ENV{OSCAR_HOME}";
+# Sanity check: ensure that /tftpboot/rpm exists
+
+oscar_log_subsection("Quick sanity check for /tftpboot/rpm");
+if (! -d "/tftpboot/rpm") {
+    print("ERROR: /tftpboot/rpm directory does not exist.  You must create this directory\nand copy all of your distro RPMs there before running install_cluster.\n");
+    die("Cannot continue");
+}
+
+# Ensure that the package scripts are executable (wizard_prep runs
+# some of them)
+
+system("chmod 755 packages/*/scripts/*");
+
+# Run the wizard_prep script
+
+my $cmd = "cd $ENV{OSCAR_HOME}/scripts && ./wizard_prep";
 oscar_log_subsection("Running: \"$cmd\"");
 !system($cmd)
     or oscar_die("Oscar Wizard preparation script failed to complete");
 oscar_log_subsection("Successfully ran wizard_prep");
+
+# Seed ODA
 
 my $adapter = shift;
 my @results;
@@ -154,17 +231,9 @@ $adapter = $results[1] ? $results[1] : $results[0];
 
 $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
 
-# Print some environment information
-
-open (V, "VERSION");
-my $oscar_version = "";
-while (<V>) {
-    chomp;
-    $oscar_version = $_;
-}
-close(V);
-
 oscar_log_section("Prerequisites installed");
+
+# Print some environment information
 
 oscar_log_subsection("OSCAR version: $oscar_version");
 my $hostname = (uname)[1];
@@ -234,7 +303,6 @@ foreach my $rpm ('tftp', 'tftp-server')
 
 # Now start the execution
 
-system("chmod 755 packages/*/scripts/*");
 chdir("scripts") or oscar_die("Couldn't chdir to scripts");
 
 # Only setup what we have to get to the OSCAR wizard.  All the rest of
