@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.33 2003/01/28 19:22:24 brechin Exp $
+#   $Id: MAC.pm,v 1.34 2003/01/28 20:36:01 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.33 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.34 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -61,6 +61,8 @@ sub mac_window {
     my $window = $parent->Toplevel;
     $window->title("MAC Address Collection");
     
+    $window->bind('<Destroy>', sub { $parent->Unbusy(); return; });
+
     oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
 
     my $instructions = $window->Message(-text => "MAC Address Collection Tool.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click 'Assign MAC to Node'.", -aspect => 800);
