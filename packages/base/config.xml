@@ -36,6 +36,48 @@
   <description>Base RPM list for each distribution that we support</description>
 
   <rpmlist>
+	 <filter distribution='mandrake' distribution_version='10.0' group='oscar_server' />
+	 <rpm>libapr0</rpm>
+	 <rpm>apache2-common</rpm>
+	 <rpm>apache-conf</rpm>
+	 <rpm>apache2-modules</rpm>
+	 <rpm>libtool</rpm>
+	 <rpm>apache2</rpm>
+	 <rpm>xterm</rpm>
+	 <rpm>php-ini</rpm>
+	 <rpm>libphp_common432</rpm>
+	 <rpm>apache2-mod_php</rpm>
+	 <rpm>php-xml</rpm>
+	 <rpm>openssh</rpm>
+	 <rpm>openssh-clients</rpm>
+	 <rpm>openssh-server</rpm>
+	 <rpm>openssl</rpm>
+	 <rpm>dhcp-common</rpm>
+	 <rpm>dhcp-server</rpm>
+	 <rpm>expat</rpm>
+	 <rpm>libpcap0</rpm>
+	 <rpm>librrdtool0</rpm>
+	 <rpm>locales</rpm>
+	 <rpm>locales-en</rpm>
+	 <rpm>lynx</rpm>
+         <rpm>nfs-utils</rpm>
+         <rpm>nfs-utils-clients</rpm>
+	 <rpm>tcpdump</rpm>
+	 <rpm>sfio</rpm>
+	 <rpm>postgresql</rpm>
+         <rpm>libecpg3</rpm>
+ 	 <rpm>libgmp3</rpm>
+         <rpm>python</rpm>
+         <rpm>python2-compat</rpm>
+         <rpm>rrdtool</rpm>
+         <rpm>tcsh</rpm>
+         <rpm>xinetd</rpm>
+         <rpm>zlib1</rpm>
+         <rpm>perl-devel</rpm>
+	 <rpm>perl-CGI</rpm>	 
+  </rpmlist>
+  
+  <rpmlist>
     <filter distribution='mandrake' distribution_version='9.2' group='oscar_server' />
 	<rpm>xterm</rpm>
         <rpm>apache</rpm>
@@ -133,6 +175,7 @@
 	<rpm>sfio</rpm>
 	<rpm>libgmp3</rpm>
   </rpmlist>
+
   <rpmlist>
     <filter distribution='fedora' distribution_version='2' group='oscar_server' />
         <rpm>apr</rpm>
@@ -201,7 +244,6 @@
         <rpm>zlib-devel</rpm>
         <rpm>shadow-utils</rpm>
         <rpm>libcap</rpm>
-
   </rpmlist>
 
   <rpmlist>
