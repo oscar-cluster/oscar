@@ -1,4 +1,4 @@
-%  $Id: pkg-xml-table.tex,v 1.6 2003/09/26 06:52:32 naughtont Exp $
+%  $Id: pkg-xml-table.tex,v 1.7 2003/09/26 18:58:08 naughtont Exp $
 %
 % TJN: Need to add a column telling which elements can be repeated
 %      mulitple times!
@@ -113,13 +113,14 @@ brief description.  The syntax used for XML elements and attributes:
 		\\\hline
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  Y & \verb|<class>|   
+  N & \verb|<class>|   
 		&   
-		& Classification of package: {\small 'core', 'selected', or  'third-party'}
+		& Classification of package: {\small 'core', 'selected', or  
+		   'third-party'(default)}
 		\\ \hline
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  Y & \verb|<installable>|   
+  N & \verb|<installable>|   
 		&   
 		& Boolean integer install flag, \emph{Configurator} modifiable 
 		\\ 
@@ -250,7 +251,7 @@ brief description.  The syntax used for XML elements and attributes:
 		\\\cline{3-4}
 %
     & 
-		& \verb|arch=|    
+		& \verb|architecture=|    
 		& Architecture the RPM was compiled to support      
 		\\
     & 
@@ -266,11 +267,7 @@ brief description.  The syntax used for XML elements and attributes:
 %
     & 
 		& \verb|<type>|    
-		& Specifying dependence type: 'package', 'rpm'
-		\\
-    & 
-		&                 
-		&  ``package'' is OSCAR pkg, \emph{``rpm'' (not implemented yet)}      
+		& Specifying dependence type: 'package'  (OSCAR pkg name)
 		\\\cline{3-4}
 	&
 %
@@ -286,11 +283,7 @@ brief description.  The syntax used for XML elements and attributes:
 %
     & 
 		& \verb|<type>|    
-		& Specifying dependence type: 'package', 'rpm'
-		\\
-    & 
-		&                 
-		&  ``package'' is OSCAR pkg, \emph{``rpm'' (not implemented yet)}      
+		& Specifying dependence type: 'package'  (OSCAR pkg name)
 		\\\cline{3-4}
 %
 	&
@@ -306,7 +299,7 @@ brief description.  The syntax used for XML elements and attributes:
 %
     & 
 		& \verb|<type>|    
-		& Specifying dependence type: 'package', 'rpm'
+		& Specifying dependence type: 'package'  (OSCAR pkg name)
 		\\\cline{3-4}
 %
 	&
