@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.68 2004/02/01 04:43:47 ngorsuch Exp $
+      $Id: config.xml,v 1.69 2004/02/02 20:44:15 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -1154,7 +1154,7 @@
 	<shortcut> create_node
 		   create_node_group
 		   %1
-		   node_group.special~1
+		   node_groups.special~1
 		   ;
                    insert_record
                    nodes
