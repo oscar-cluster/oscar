@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.32 2002/10/30 19:51:38 ngorsuch Exp $
+#   $Id: Package.pm,v 1.33 2002/10/30 20:20:46 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,11 +32,11 @@ use File::Copy;
 use XML::Simple;
 use Carp;
 
-@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_user
+@EXPORT = qw(list_pkg run_pkg_script run_pkg_user_test
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.32 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.33 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -178,25 +178,17 @@ sub run_in_chroot {
 # run_pkg_script_user - runs the package script for a specific package as a user
 #
 
-sub run_pkg_script_user {
-    my ($pkg, $phase, $user, $verbose, $args) = @_;
-    my $scripts = $PHASES{$phase};
-    if (!$scripts) {
-        carp("No such phase '$phase' in OSCAR package API");
-        return undef;
-    }
+sub run_pkg_user_test {
+    my ($script, $user, $verbose, $args) = @_;
 
-    foreach my $scriptname (@$scripts) {
-        my $script = "$ENV{OSCAR_HOME}/packages/$pkg/scripts/$scriptname";
-        if (-e $script) {
-            oscar_log_subsection("About to run $script for $pkg") if $verbose;
-            my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_HOME}/testing/testprint OSCAR_HOME=$ENV{OSCAR_HOME} $script $args' - $user");
+    if (-e $script) {
+            oscar_log_subsection("About to run $script") if $verbose;
+            my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} $script $args' - $user");
             if($rc) {
                 my $realrc = $rc >> 8;
                 carp("Script $script exitted badly with exit code '$realrc'") if $verbose;
                 return 0;
             }
-        } 
     }
     return 1;
 }
