@@ -34,7 +34,9 @@ statistics expressed in an open well-defined XML format.</description>
     </all>
 
     <server>
-      <rpm>ganglia-php-rrd-client</rpm>
+      <rpm>ganglia-python-oscar</rpm>
+      <rpm>ganglia-webfrontend</rpm>
+      <rpm>PyXML-oscar</rpm>
       <rpm>rrdtool-oscar</rpm>
       <rpm>perl-XML-Parser</rpm>
       <rpm>libpng</rpm>
