@@ -1,6 +1,11 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.18 2002/10/22 20:47:02 jsquyres Exp $
+# Copyright 2001-2002 International Business Machines
+#                     Sean Dague <japh@us.ibm.com>
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+#   $Id: Package.pm,v 1.19 2002/10/23 15:04:31 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -16,8 +21,6 @@ package OSCAR::Package;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   Copyright 2001-2002 International Business Machines
-#                       Sean Dague <japh@us.ibm.com>
 
 use strict;
 use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL @COREPKGS %PHASES);
@@ -33,7 +36,7 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.18 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.19 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -220,6 +223,7 @@ sub rpmlist {
 	close(IN);
     }
 
+    oscar_log_subsection("Returning RPMs for $pkg: " . join(' ', @rpms));
     return @rpms;
 }
 
