@@ -30,6 +30,10 @@ use AppConfig;
 
 get_numproc();
 
+# This makes sure existing nodes have the latest /etc/hosts. 
+# The profile script is execd so we know the path (from opium's post_install)
+system(". /etc/profile.d/c3.sh && cpush /etc/hosts") and carp("Couldn't push /etc/hosts to all nodes");
+
 my $return = 0;
 my @pkgs = list_pkg();
 foreach my $pkg (@pkgs) {
@@ -94,5 +98,4 @@ EOF
 
     print "\nSynchronization of Time Successfully Completed!\n";
 }
-
 
