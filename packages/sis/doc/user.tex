@@ -1,0 +1,50 @@
+% -*- latex -*-
+%
+% $Id: user.tex,v 1.1 2002/06/17 20:15:47 mchasal Exp $
+%
+% $COPYRIGHT$
+%
+
+\subsection{An overview of SIS}
+\label{app:sis-overview}
+
+The System Installation Suite, or SIS, is a tool for installing 
+linux systems over a network. It is used in OSCAR to install the
+client nodes. SIS also provides the database from which OSCAR
+obtains its cluster configuration information.
+
+The main concept to understand about SIS is that it is an
+\emph{image based} install tool. An image is basically a copy
+of all the files that get installed on a client. This image
+is stored on the server and can be accessed for customizations or
+updates. You can even \cmd{chroot} into the image and perform builds.
+
+Once this image is built, clients are defined and associated with the
+image. When one of these clients boots using a SIS auto-install
+environment, either on floppy, CD, or through a network boot, the
+corresponding image is pulled over the network using \cmd{rsync}. 
+Once the image is installed, it is customized with the hardware and
+networking information for that specific client and it is then rebooted.
+When booting the client will come up off the local disk and be ready
+to join the OSCAR cluster.
+
+\subsection{Building a SIS image}
+
+Normally, an OSCAR image is built using the \button{Build OSCAR Client Image} 
+button on the OSCAR wizard. This button brings up a panel that is actually 
+directly from the SIS gui \cmd{tksis}. Once the information is filled in 
+the SIS command \cmd{mksiimage} is invoked to actually build the image. 
+
+In addition to building an image, you can use \cmd{tksis} or \cmd{mksiimage}
+to delete images as well. Images can take a fair amount of disk space, so if
+you end up with images that you aren't using, you can delete them to recover 
+some space.
+
+\subsection{Managing SIS clients}
+
+Much like the OSCAR image creation, the \button{Define OSCAR Clients} actually
+invokes a \cmd{tksis} panel. There are a couple of SIS commands that are used 
+to manage the client definitions. \cmd{mksirange} is used to define a group of
+clients. More importantly \cmd{mksimachine} can be used to update client 
+definitions. If, for example, you needed to change the MAC address after replacing
+one of your clients, you could use \cmd{mksimachine}.
