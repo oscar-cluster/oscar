@@ -140,6 +140,7 @@ sub checkForKernelFile
           open(IN,"<$File::Find::name") or 
             croak("Failed to open $File::Find::name.");
         }
+      binmode IN, ":raw";
 
       while (my $line = <IN>)
         { # Find the line giving the version and compilation date of the file
