@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.23 2002/10/25 20:44:59 jsquyres Exp $
+#   $Id: Package.pm,v 1.24 2002/10/28 20:38:37 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ use XML::Simple;
 use Carp;
 
 @EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist distro_rpmlist install_rpms pkg_config_xml);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.23 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.24 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -62,8 +62,11 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
            post_rpm_install => ['post_client_rpm_install',
 				'post_rpm_install'],
            post_clients => ['post_clients'],
-           post_install => ['post_install']
-	   );
+           post_install => ['post_install'],
+           test_root    => ['test_root'],
+           test_user    => ['test_user'],
+          );
+
 
 #
 # list_pkg - this returns a list of packages.
@@ -122,7 +125,7 @@ sub list_pkg {
 #
 
 sub run_pkg_script {
-    my ($pkg, $phase, $verbose) = @_;
+    my ($pkg, $phase, $verbose, $args) = @_;
     my $scripts = $PHASES{$phase};
     if (!$scripts) {
         carp("No such phase '$phase' in OSCAR package API");
@@ -132,9 +135,9 @@ sub run_pkg_script {
     foreach my $scriptname (@$scripts) {
         my $script = "$ENV{OSCAR_HOME}/packages/$pkg/scripts/$scriptname";
         if (-e $script) {
-            oscar_log_subsection("About to run $script for $pkg");
-            my $rc = system($script);
-            if ($rc) {
+            oscar_log_subsection("About to run $script for $pkg") if $verbose;
+            my $rc = system("$script $args");
+            if($rc) {
                 my $realrc = $rc >> 8;
                 carp("Script $script exitted badly with exit code '$realrc'");
                 return 0;
