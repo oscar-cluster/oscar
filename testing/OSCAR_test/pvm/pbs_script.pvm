@@ -35,7 +35,7 @@ gcc -I$PVM_ROOT/include slave1.c -L$PVM_ROOT/lib/$PVM_ARCH -lpvm3 -o slave1
 uid=`id -u`
 tail +2 $PBS_NODEFILE > pvm_nodes
 /bin/rm -f /tmp/pvm?.$uid
-crm -f pvm_nodes:/tmp/pvmd.$uid > /dev/null 2>&1
-crm -f pvm_nodes:/tmp/pvml.$uid > /dev/null 2>&1
+crm  pvm_nodes:/tmp/pvmd.$uid > /dev/null 2>&1
+crm  pvm_nodes:/tmp/pvml.$uid > /dev/null 2>&1
 /bin/rm -f pvm_nodes
 exit
