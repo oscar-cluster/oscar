@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.1 2001/11/15 19:33:50 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.2 2001/12/12 20:45:12 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -28,9 +28,13 @@ use Carp;
 use File::Copy;
 use File::Path;
 use AppConfig qw(:argcount);
+use POSIX;
 
 my $RPMPOOL = "/tftpboot/rpm";
-
+my $ARCH=(uname)[4]; # Default architecture
+if (($ARCH eq "i486") || ($ARCH eq "i586") ||($ARCH eq "i686")) {
+        $ARCH="i386";
+}
 
 my $options=AppConfig->new(
 		Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
@@ -74,22 +78,22 @@ copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or
 
 &verbose("Copying default pxelinux.cfg file");
 my $archdir;
-if ($options->arch eq "i386") {
+if ($ARCH eq "i386") {
         $archdir="i386-boot";
-} elsif ($options->arch eq "ia64") {
+} elsif ($ARCH eq "ia64") {
         $archdir="ia64-boot";
 }
-copy("/usr/local/share/systemimager/$archdir/pxelinux.cfg/default", "/tftpboot/pxelinux.cfg/") or 
+copy("/usr/share/systemimager/$archdir/pxelinux.cfg/default", "/tftpboot/pxelinux.cfg/") or 
 	croak("Unable to copy default pxelinux.cfg file to /tftpboot.");
 
 &verbose("Copying SystemImager kernel & ramdisk");
-copy("/usr/local/share/systemimager/$archdir/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
+copy("/usr/share/systemimager/$archdir/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
 	croak("Unable to copy default message.txt file to /tftpboot.");
 
-copy("/usr/local/share/systemimager/$archdir/kernel", "/tftpboot/") or 
+copy("/usr/share/systemimager/$archdir/kernel", "/tftpboot/") or 
 	croak("Unable to copy kernel file to /tftpboot.");
 
-copy("/usr/local/share/systemimager/$archdir/initrd.gz", "/tftpboot/") or 
+copy("/usr/share/systemimager/$archdir/initrd.gz", "/tftpboot/") or 
 	croak("Unable to copy ramdisk file to /tftpboot.");
 
 exit 0; 
@@ -121,13 +125,11 @@ sub check_args {
 	if ($options->verbose ||  $config->verbose){
 		start_verbose;
 	}
-	# Default to list
 	&verbose("Checking arguments.");
-	unless ($options->arch){
-		carp("--arch is required.");
-		return 0;
-	}
-        if (($options->arch ne "i386")&&($options->arch ne "ia64")) {
+	if ($options->arch){
+                $ARCH=$options->arch;
+        }
+        if (($ARCH ne "i386")&&($ARCH ne "ia64")) {
                 carp("i386 and ia64 are the only valid architectures.");
                 return 0;
         }
@@ -178,7 +180,8 @@ Recognized options include:
 
 =item --arch <architecture>
 
-The architecture to setup kernel.
+The architecture to setup kernel. The default is the 
+current machine's architecture.
 
 =item -v, --verbose
 
