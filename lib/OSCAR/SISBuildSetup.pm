@@ -1,5 +1,5 @@
 package OSCAR::SISBuildSetup;
-#   $Id: SISBuildSetup.pm,v 1.1 2004/05/03 20:01:40 muglerj Exp $
+#   $Id: SISBuildSetup.pm,v 1.2 2004/05/03 21:02:08 brechin Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ package OSCAR::SISBuildSetup;
 use strict;
 use English;
 use Carp;
+use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 
 #export main for use
