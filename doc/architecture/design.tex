@@ -1,0 +1,419 @@
+% -*- latex -*-
+%
+% $Id: design.tex,v 1.1 2001/08/14 22:27:59 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
+\section{Design of OSCAR 2.0}
+
+In the first generation of OSCAR, the procedure was developed first
+and the Wizard was then created to add an easy way to step through the
+process. However, by doing so, there was no easy way to modify the
+process without redesigning the Wizard. In order to avoid such
+problems and to make OSCAR more user friendly, the architecture for
+the second generation will be focused around the OSCAR Wizard. As
+such, all operations and functionality available to the user will be
+initiated from within the Wizard. Similarly, all interaction with the
+OS installers, OSCAR Package Management, and OSCAR Data Repository
+will be performed by the Wizard.
+
+\subsection{Directory Structure}
+
+OSCAR 2.0 and later will be installed into the \file{/opt} directory,
+in accordance with the Linux Standards Base Filesystem Hierarchy (LSB
+FSH).
+
+Once installed, the directory structure for OSCAR 2.0 will look
+like the following:
+
+oscar-<version>/                  (OSCAR base directory)
+               /core-packages/    (OSCAR Core Functionality Packages)
+               /doc/              (HowTos and other documentation)
+               /oscar             (Start OSCAR Wizard)
+               /packages/         (Third Party Packages)
+               /COPYING           (GNU General Public License v2.0)       
+               /README            (Quick Overview and Pointers to Docs)
+
+As shown above, there will be a \file{packages} subdirectory within
+the base OSCAR directory that will contain all of the third party
+software packages integrated into OSCAR. Each package will be located
+in its own directory under 'packages', with the directory name being
+of the form \file{pkgname}. All of the scripts and supporting files
+for a package will reside in this directory.  Similary, there will be
+a \file{core-packages} subdirectory which will hold the software
+packages which are responsible for core functionality within OSCAR.
+
+\subsection{OSCAR Data Repository}
+
+The OSCAR Data Repository (ODR) is used by OSCAR to keep the
+information necessary for cluster installation and ongoing
+maintenance. The ODR is actually just one instantiation of the Command
+Line Accessible Modular Data Repository (CLAMDR). CLAMDR was
+originally developed for use as the ODR, but has since added features
+allowing it to be generic enough to be used by other projects, such as
+the System Installation Suite.
+
+The intent behind developing CLAMDR was to come up with a simple data
+repository that could hold generic information and was easily
+accessible from the command line. As development progressed, the
+developers were able to abstract the specification of the data to be
+stored in a separate "syntax module", and as such the project gained
+its 'modular' aspect. The actual format for the data files used by
+CLAMDR is that of flat files containing comma separated values, with
+one file for each of the categories defined in the syntax module,
+which itself is also a flat file.  This format was chosen to allow
+easy processing of data by standard scripting.
+
+Along with the actual data files themselves, CLAMDR provides two
+routines (\cmd{readDR.pl} and \cmd{writeDR.pl}) that may be called
+like normal command-line programs in order to read information from or
+write information to the repository. The \cmd{readDR.pl} routine may
+be called by any user. The \cmd{writeDR.pl} routine is reserved for
+use by the OSCAR Wizard and installers, which will operate as root.
+Both routines have multiple ways that they may be invoked, with each
+method behaving differently.
+
+\subsubsection{\cmd{readDR.pl} Usage}
+
+Write me.
+
+\subsubsection{\cmd{writeDR.pl} Usage}
+
+Write me.
+
+\subsubsection{ODR Categories}
+
+The ODR syntax module has been arranged to keep information about five
+categories of data: \odrcat{adapter}, \odrcat{client},
+\odrcat{cluster}, \odrcat{group}, and \odrcat{service}. Within each
+category, there are a number of keys that hold the information about
+each category item.
+
+
+\paragraph{\odrcat{adapter} Category}
+
+Each item in the \odrcat{adapter} category represents a network
+adapter. A single record is maintained for each network adapter.  The
+keys and their descriptions are listed in
+Table~\ref{tbl:design-odr-cats-adapter}.
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{Key} &
+\multicolumn{1}{c|}{Value} \\
+\hline
+\odrkey{HOST} & Hostname of the machine containing the adapter \\
+\odrkey{INTERFACE} & Interface of the adapter (e.g., {\tt eth0}) \\
+\odrkey{MAC} & Media Access Card (MAC) address \\
+\odrkey{IP\_ADDR} & IP address \\
+\odrkey{IP\_NETMASK} & IP subnet mask to be used with \odrkey{IP\_ADDR} \\
+\odrkey{CONFIG} & Method used to configure adapter ({\tt manual}, {\tt
+dhcp}) \\
+\hline
+\end{tabular}
+\caption{Keys maintained for the \odrcat{adapter} ODR cateogry.}
+\label{tbl:design-odr-cats-adapter}
+\end{center}
+\end{table}
+
+\paragraph{\odrcat{client} Category}
+
+Each item in the \odrcat{client} category represents a cluster client
+node.  A single record is maintained for each node.  The keys and
+their descriptions are listed in
+Table~\ref{tbl:design-odr-cats-client}.
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{Key} &
+\multicolumn{1}{c|}{Value} \\
+\hline
+\odrkey{HOST} & Hostname of the machine \\
+\odrkey{DEFAULT\_ROUTE} & IP address of this machine's gateway machine \\
+\odrkey{STATE} & Current state of the machine ({\tt enabled}, {\tt
+  disabled}) \\
+\odrkey{NUM\_PROCS} & Number of processors in the machine \\
+\hline
+\end{tabular}
+\caption{Keys maintained for the \odrcat{client} ODR cateogry.}
+\label{tbl:design-odr-cats-client}
+\end{center}
+\end{table}
+
+\paragraph{\odrcat{cluster} Category}
+
+Each item in the \odrcat{cluster} category represents an entire
+cluster.  A single record is maintained for each cluster.  The keys
+and their descriptions are listed in
+Table~\ref{tbl:design-odr-cats-cluster}.
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{Key} &
+\multicolumn{1}{c|}{Value} \\
+\hline
+\odrkey{NAME} & Cluster name \\
+\odrkey{OSCAR\_VERSION} & Version of OSCAR used to install the cluster \\
+\odrkey{CLUSTER\_HEAD} & Hostname of the head node of the cluster \\
+\odrkey{INSTALL\_NODE} & Hostname of the node used to install clients \\
+\odrkey{NETWORK\_TYPE} & Type of network cluster nodes reside on
+  ({\tt private}, {\tt public}) \\
+\hline
+\end{tabular}
+\caption{Keys maintained for the \odrcat{cluster} ODR cateogry.}
+\label{tbl:design-odr-cats-cluster}
+\end{center}
+\end{table}
+
+\paragraph{\odrcat{group} Category}
+
+Each item in the \odrcat{group} category represents a group of client
+nodes.  A single record is maintained for each group.  The keys and
+their descriptions are listed in
+Table~\ref{tbl:design-odr-cats-group}.
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{Key} &
+\multicolumn{1}{c|}{Value} \\
+\hline
+\odrkey{NAME} & Group name \\
+\odrkey{PACKAGELIST} & Name of software package list \\
+\odrkey{HOSTLIST} & Name of host list \\
+\hline
+\end{tabular}
+\caption{Keys maintained for the \odrcat{group} ODR cateogry.}
+\label{tbl:design-odr-cats-group}
+\end{center}
+\end{table}
+
+\paragraph{\odrcat{packagelist} Category}
+
+Each item in the \odrcat{packagelist} category represents a list of
+software packages.  The keys and their descriptions are listed in
+Table~\ref{tbl:design-odr-cats-packagelist}.
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{Key} &
+\multicolumn{1}{c|}{Value} \\
+\hline
+\odrkey{NAME} & Package list name \\
+\odrkey{PACKAGE} & Name of software package \\
+\odrkey{SERVER} & Hostname of the server for the package service
+ (if not the cluster headnode) \\
+\hline
+\end{tabular}
+\caption{Keys maintained for the \odrcat{packagelist} ODR cateogry.}
+\label{tbl:design-odr-cats-packagelist}
+\end{center}
+\end{table}
+
+\paragraph{\odrcat{hostlist} Category}
+
+Each item in the \odrcat{hostlist} category represents a list of
+cluster clients.  The keys and their descriptions are listed in
+Table~\ref{tbl:design-odr-cats-hostlist}.
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{Key} &
+\multicolumn{1}{c|}{Value} \\
+\hline
+\odrkey{NAME} & Host list name \\
+\odrkey{HOST} & Client hostname \\
+\hline
+\end{tabular}
+\caption{Keys maintained for the \odrcat{hostlist} ODR cateogry.}
+\label{tbl:design-odr-cats-hostlist}
+\end{center}
+\end{table}
+
+\subsection{OSCAR Wizard}
+
+The OSCAR Wizard will be the focus for all operations performed in
+version 2.0. The Wizard will be responsible for interfacing with users
+to gather information needed by OSCAR and the OS installation tools to
+install the cluster and store it into the OSCAR Data Repository. It
+will then use the information gathered to be the control mechanism for
+running the backend installation tasks.
+
+The Wizard will provide three modes of operation for users: simple,
+standard, and expert. The installation of the operating system on
+clients will be an option to users of all three modes, but the level
+of control over this operation will be set according to the mode
+level.
+
+In the simple mode of operation, users will only be required to answer
+a minimal set of questions needed to install an OSCAR cluster using
+the default set of packages. If a user selects to install the OS on
+clients, a default configuration will be assumed.
+
+In the standard mode of operation, users will need to answer the same
+minimal set of questions, but will be allowed to select which cluster
+software packages to install. Similarly, users will also be given the
+choice of blocking or allowing certain network services, for those
+users familiar with network security issues.  If a user selects to
+install the OS on clients, he or she will be allowed to modify the
+configuration for some basic parameters such as the kernel to install
+and the disk partitioning.
+
+In the expert mode of operation, users will be given as much control
+as possible over the cluster installation process, including
+installation of the OS on clients, network configuration, software
+package selection, and network security levels.
+
+The Wizard will be implemented as a Webmin module. Webmin is a
+web-based interface for system administration under Unix that can be
+used with any browser that provides support for tables and
+forms. Webmin consists of a simple web server, and a number of CGI
+programs that perform the system tasks. In order to run Webmin, one
+needs only a Perl version 5 binary, since the server, all CGI
+programs, and any Webmin modules are written entirely in Perl.
+
+\subsection{Node Installation}
+
+The default OS installer in OSCAR 2.0 will be the System Installation
+Suite (SIS), the collaboration between the LUI and SystemImager
+projects. As such, the Wizard will be designed to work with SIS in
+order to install the OS on client machines when users wish to do
+so. Any other future OS installation solutions will also need to be
+integrated with the Wizard.
+
+\subsection{Software Package Management}
+\label{sec:design-software-package-mgmt}
+
+Just as OSCAR 2.0 will support multiple installation methods, the
+software package management will also be generic enough to support
+multiple backends. As such, the package management API only requires
+that integrators provide scripts that install, uninstall, and
+configure the software on a single machine. Each backend
+implementation to the package management will use these scripts in
+whatever means is appropriate. For the initial release of OSCAR 2.0,
+there will probably be at least two backends, one that incorporates
+using the Cluster Command and Control (C3) tools to do distributed
+updates on all clients and another that uses SystemImager to update
+client images that will be pushed to all clients.
+
+\subsection{Cluster Software Installation/Uninstallation}
+
+One of the greatest advantages of OSCAR for users wishing to quickly
+build clusters is that OSCAR automates the installation of all
+packages included. In addition, the second generation OSCAR will
+support user selection of which packages to install, as opposed to the
+first generation where all included software packages were
+automatically installed. Another feature that will make its way into
+the second generation OSCAR is the ability for users to uninstall
+packages installed by OSCAR.
+
+The new management scheme for installing/uninstalling software
+packages is based on the premise that most current cluster software is
+easily installed on a single machine. As such, the management scheme
+only requires package integrators to automate that single machine
+installation process through use of a script that will be initiated on
+each cluster node by OSCAR. Since the process for installation of a
+package on a server node may differ from that for client nodes, the
+script supplied must support a command-line switch that specifies the
+type of node and proceed accordingly.
+
+In order to support uninstallation, package integrators must also
+supply a single machine uninstallation script that will be used in the
+same manner as the installation script. The script should similarly
+support the distinction between server and client nodes.
+
+In addition to providing scripts for installation and uninstallation,
+package integrators will also be required to provide a list of files
+that are needed by the scripts.  Typically, these files would be that
+actual software package (e.g., RPM or tarball) and any supplementary
+scripts that are called from the installation/uninstallation scripts.
+
+\subsubsection{Cluster Configuration Updates}
+
+Another added functionality that will be supported in the second
+generation OSCAR is the ability to add/remove nodes to/from the
+cluster after the cluster has been initially installed. Such
+operations are common when clusters are being built in stages or when
+performing routine maintenance on cluster nodes. As a result, each
+package will be required to provide a script that updates any of its
+configuration files that keep cluster information whenever such an
+operation is performed. These scripts will have access to the OSCAR
+Data Repository (ODR) and its access routines, which will provide the
+updated configuration information. The configuration script should
+adhere to the same node type requirements specified for the
+(un)installation scripts.
+
+The package management scheme for configuration updates has also been
+designed to allow nodes which are not online at the time of the
+cluster configuration update to be notified of the update. In normal
+operation, the configuration scripts will be initiated on every
+cluster node after the configuration update has been
+performed. However, this means that any nodes not online at that point
+will not be notified of the update. As such, OSCAR will also employ
+the use of a boot time initialization script that will run the
+configuration scripts for each software package installed on a
+client. The OSCAR initialization script will be run as part of the
+init process for whichever Linux distribution is installed on the
+client. In order to support the two different times the configuration
+script will be run, the script will need to support a command-line
+option distinguishing whether the script was initiated by OSCAR or the
+OSCAR initialization script.
+
+\subsubsection{Package API Requirements}
+
+The package management API is an attempt to simplify the interaction
+between individual software package scripts and OSCAR.  Since the
+installation, uninstallation, and configuration scripts for each
+package must support similar options, the API was condensed into a
+single interface. That interface is as follows:
+
+\cmd{pkgconfig \{-c|-s\} <function> [--atboot]}
+
+\begin{itemize}
+\item \cmd{<function>} is one of: {\tt install}, {\tt uninstall}, {\tt
+configure}
+
+\item \cmd{-c}: specifies the script will be run on a package client
+
+\item \cmd{-s}: specifies the script will be run on the package server
+
+\item \cmd{--atboot}: indicates the script is being run from the boot
+time initialization script, and is valid only with the configure
+function
+\end{itemize}
+
+The basic idea is that each integrator will create a pkgconfig script
+that will be invoked by either the OSCAR wizard or the boot time
+initialization script. How that script is implemented is left up to
+the integrator. Typically, the integrator would create three
+underlying scripts, one for each of the available functions, and call
+each script from pkgconfig based upon the command-line options.
+
+For each of the three functions, integrators must also provide a list
+of files that are needed to complete the function. The list for each
+function will be named '<function>.files' and should be placed in the
+package's base directory. The files specified in the list can be
+either absolute or relative pathnames. In addition, the pkgconfig
+script itself should be listed in each of the file lists.
+
+To recap, here is a list of the files that each package must provide
+in its directory:
+
+\begin{itemize}
+\item \cmd{<pkgname>/pkgconfig}
+\item \cmd{<pkgname>/install.files}
+\item \cmd{<pkgname>/uninstall.files}
+\item \cmd{<pkgname>/configure.files}
+\end{itemize}
