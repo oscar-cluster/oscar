@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: defs.tex,v 1.5 2002/06/09 17:15:35 jsquyres Exp $
+% $Id: defs.tex,v 1.6 2002/06/12 06:46:56 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -26,7 +26,7 @@
    \pdftrue
 \fi
  
-\setcounter{tocdepth}{2}
+\setcounter{tocdepth}{3}
  
 \ifpdf
   \usepackage[pdftex,
@@ -36,12 +36,14 @@
   \def\figext{png}
   \def\sbsext{png}
   \newcommand{\xref}[2]{\hyperref[#1]{#2}}
+  \newcommand{\mailto}[1]{\href{mailto:#1}{#1}}
 \else
   \def\figext{eps}
   \def\sbsext{eps}
   \newcommand{\xref}[2]{#2}
   \newcommand{\href}[2]{\underline{#2}}
   \newcommand{\url}[1]{\href{#1}{#1}}
+  \newcommand{\mailto}[1]{\href{#1}{#1}}
 \fi
 
 \newcommand{\email}[1]{\href{#1}{#1}}
@@ -68,6 +70,7 @@
 \newcommand{\odrcat}[1]{\textsf{#1}}
 \newcommand{\odrkey}[1]{\texttt{#1}}
 \newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\rpmname}[1]{\texttt{#1}}
 \newcommand{\user}[1]{\texttt{#1}}
 
 \newcommand{\term}[1]{\textit{#1}}
