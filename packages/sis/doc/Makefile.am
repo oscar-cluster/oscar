@@ -1,9 +1,9 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2002/06/17 20:15:47 mchasal Exp $
+# $Id: Makefile.am,v 1.2 2002/06/19 17:30:42 mchasal Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
-EXTRA_DIST		= user.tex
+EXTRA_DIST		= user.tex license.tex
