@@ -3,15 +3,13 @@
 <package>
   <name>hdf5</name>
 
-  <filter architecture='ia32' distribution='redhat' distribution_version='8.0' />
-  <filter architecture='ia32' distribution='mandrake' />
-  
+  <filter architecture='ia32' />
+
   <version>
     <major>1</major>
-    <minor>0</minor>
+    <minor>6</minor>
     <subversion>0</subversion>
-    <release>4</release>
-    <epoch>1</epoch>
+    <release>1</release>
   </version>
 
   <class>included</class>
@@ -26,8 +24,8 @@
     <email>hdf5@ncsa.uiuc.edu</email>
   </maintainer>
   <packager>
-    <name>Jeremy Enos</name>
-    <email>jenos@ncsa.uiuc.edu</email>
+    <name>Jason Brechin</name>
+    <email>brechin@ncsa.uiuc.edu</email>
   </packager>
   <vendor>NCSA</vendor>
   <description>HDF5 is a Hierarchical Data Format product consisting
@@ -40,9 +38,6 @@ implementation.</description>
   </requires>
 
   <rpmlist>
-    <filter architecture='ia32' distribution='redhat' distribution_version='7.2' />
-    <filter architecture='ia32' distribution='redhat' distribution_version='7.3' />
-    <filter architecture='ia32' distribution='redhat' distribution_version='8.0' />
     <rpm>hdf5-oscar</rpm>
     <rpm>hdf5-oscar-module</rpm>
   </rpmlist>

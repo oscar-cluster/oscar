@@ -8,8 +8,10 @@ HDF5_TMP=/tmp/hdf5_test
 echo "Running HDF5 test on $HOSTNAME"
 mkdir -p $HDF5_TMP
 cd $HDF5_TMP
-cp /opt/hdf5-oscar-1.4.5-post2/examples/h5_read.c .
-cp /opt/hdf5-oscar-1.4.5-post2/examples/h5_write.c .
+HDFVER=1.6.0
+
+cp /opt/hdf5-oscar-$HDFVER/examples/h5_read.c .
+cp /opt/hdf5-oscar-$HDFVER/examples/h5_write.c .
 
 ( h5cc h5_write.c -o h5_write && \
 h5cc h5_read.c -o h5_read && \
