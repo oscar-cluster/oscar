@@ -24,7 +24,7 @@ package OSCAR::Configbox;
 
 use strict;
 use base qw(Exporter);
-our @EXPORT = qw(configurePackage exitWithoutSaving);
+our @EXPORT = qw(configurePackage exitWithoutSaving readInConfigValues);
 require Tk::Web;
 require URI::URL;
 use Carp;
