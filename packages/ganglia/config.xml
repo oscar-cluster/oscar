@@ -8,7 +8,7 @@
     <minor>5</minor>
     <subversion>6</subversion>
     <release>1</release>
-    <epoch>1</epoch>
+    <epoch>2</epoch>
   </version>
 
   <class>included</class>
@@ -35,7 +35,9 @@
   </rpmlist>  
 
   <rpmlist>
-      <filter group="oscar_server"/>
+      <filter group="oscar_server" distribution="fedora" distribution_version="2"/>
+      <filter group="oscar_server" distribution="redhat" distribution_version="9"/>
+      <filter group="oscar_server" distribution="mandrake" distribution_version="10.0"/>
       <rpm>ganglia-monitor-core-gmetad</rpm>
       <rpm>ganglia-webfrontend</rpm>
       <rpm>rrdtool</rpm>
