@@ -170,24 +170,17 @@ my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=
 
 my $creturn=0;
 
-
 foreach my $pkg (@pkgs) {
-    $ENV{OSCAR_PACKAGE_TEST_HOME} = "$test_user_homedir/$pkg";
-    if (-e "$ENV{OSCAR_PACKAGE_TEST_HOME}/test_user") {
+    if (-e "$test_user_homedir/$pkg/test_user") {
 
-    	if(!run_pkg_user_test("$ENV{OSCAR_PACKAGE_TEST_HOME}/test_user",$test_user,0,join(" ",@clientlist))) {
+    	if(!run_pkg_user_test("$test_user_homedir/$pkg/test_user",$test_user,0,join(" ",@clientlist))) {
         	$creturn++;
     	}
-
     }
-    delete $ENV{OSCAR_PACKAGE_TEST_HOME};
 }
 
 if ($creturn) {
     print("\nThere were issues running some user test scripts.  Please check your logs\nlocated in /home/oscartst.\n");
 }
-
-# Sum the (errors) return codes for root/user tests
-$return += $creturn; 
 
 exit $return;
