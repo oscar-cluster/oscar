@@ -2,3 +2,7 @@ Makefile
 Makefile.in
 Makefile.am
 .oscar_made_makefile_am
+*.aux
+*.log
+*.out
+*.pdf
