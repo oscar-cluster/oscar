@@ -7,7 +7,7 @@ intended for developers, testers, and early adopters.
 
 <ul>
         <li> RedHat 7.1 and 7.2 support
-        <li> Mandrake and 8.2 support
+        <li> Mandrake 8.2 support
         <li> IA-64 support (Itanium 1)
         <li> Support for adding/deleting nodes
         <li> modules/env-switcher (3.1.6/1.0.4) dynamic and persistent
