@@ -7,10 +7,10 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Makefile.am,v 1.9 2004/04/07 04:16:09 tuelusr Exp $
+# $Id: Makefile.am,v 1.10 2004/04/09 19:52:49 tuelusr Exp $
 #
 
 include $(top_srcdir)/dist/Makefile.options
 
-SUBDIRS			= 00packman HTML-Tree oda oscar-httpd XML-Parser XML-Simple perl-Tk update-rpms
+SUBDIRS			= 00packman HTML-Tree oda XML-Parser XML-Simple perl-Tk update-rpms
 
