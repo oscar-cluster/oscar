@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.27 2003/04/09 20:31:04 ngorsuch Exp $
+      $Id: config.xml,v 1.28 2003/04/10 16:58:03 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -461,7 +461,7 @@
     </node_groups>
 
     <node_group_group_entries>
-      <parameters> unique(included_node_group_id,node_group_id) </table_parameters>
+      <parameters> unique(included_node_group_id,node_group_id) </parameters>
       <fields> 
         <included_node_group_id>
 	  <type> integer </type>
@@ -473,7 +473,7 @@
     </node_group_group_entries>
 
     <node_group_node_entries>
-      <parameters> unique(included_node_id,node_group_id) </table_parameters>
+      <parameters> unique(included_node_id,node_group_id) </parameters>
       <fields> 
         <included_node_id>
 	  <type> integer </type>
@@ -557,7 +557,7 @@
     </package_sets>
 
     <package_set_package_entries>
-      <parameters> unique(included_package_id,package_set_id) </table_parameters>
+      <parameters> unique(included_package_id,package_set_id) </parameters>
       <fields> 
         <included_package_id>
 	  <type> integer </type>
@@ -569,7 +569,7 @@
     </package_set_package_entries>
 
     <package_set_set_entries>
-      <parameters> unique(included_package_set_id,package_set_id) </table_parameters>
+      <parameters> unique(included_package_set_id,package_set_id) </parameters>
       <fields> 
         <included_package_set_id>
 	  <type> integer </type>
