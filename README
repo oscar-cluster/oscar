@@ -1,4 +1,4 @@
-$Id: README,v 1.6 2002/01/20 20:43:21 mchasal Exp $
+$Id: README,v 1.7 2002/01/26 14:32:26 jsquyres Exp $
 
 $COPYRIGHT$
 
@@ -15,12 +15,6 @@ Notes on the 1.2 beta release
 ***************************************************************
 
 There are some limitations to the 1.2 beta release, they are:
-
--The test_install script skips MPICH for now, a new MPICH RPM
-will be available soon and this test will return.
-
--There will be a new MPICH RPM added that uses "ssh" by default
-instead of "rsh" ("rsh" is disabled by default in the OSCAR install).
 
 - You MUST specify a domain name for your clients when defining them.
 
