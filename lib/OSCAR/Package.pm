@@ -7,7 +7,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.58 2003/07/30 15:51:19 tfleury Exp $
+#   $Id: Package.pm,v 1.59 2003/11/15 00:22:41 tfleury Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ use Carp;
              run_pkg_script_chroot rpmlist install_rpms copy_rpms 
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.58 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.59 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -741,6 +741,7 @@ sub getConfigurationValues # ($package) -> $valueshashref
                                   forcearray => '1'); 
                           };
           undef $values if ($@);
+          return $values;
         }
     }
 
