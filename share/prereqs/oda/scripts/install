@@ -7,19 +7,25 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.3 2002/11/06 07:28:51 ngorsuch Exp $
+# $Id: install,v 1.4 2002/11/16 03:19:52 bligneri Exp $
 #
 
 #use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use Carp;
+use OSCAR::Distro;
+use OSCAR::Package;
+use XML::Simple;
 
 # Version included in media directory
 
 my $ver = "0.90";
 my $package_dir = "oda";
 
+
+# Definition of distro type and version
+my ($distro_name, $distro_version) = which_distro_server();
 # Helper subroutine
 
 sub do_run {
@@ -35,19 +41,30 @@ my @rpms = ( );
 # don't bother with redhat versions since the
 # following rpm set works on all the versions
 # oscar works on
-if ( -r "/etc/redhat-release" ) {
+
+
+if ( $distro_name eq "RedHat") {
     @wanted_rpms = qw( mysql
-		mysql-server
 		perl-DBD-MySQL
 		perl-DBI
+		mysql-server
 		oda );
-} else { 
-# for now assume it's mandrake if not redhat
-    @wanted_rpms = qw( mysql
-		perl-dbi
-		perl-mysql
+
+}
+elsif ($distro_name eq "Mandrake") { 
+    @wanted_rpms = qw( MySQL
+        MySQL-client
+		perl-DBI
+		perl-Mysql
 		perl-ExtUtils-PerlPP
 		oda );
+        # FIXME (bligneri)
+        # Will just copy the XML file.
+        # Should be an argument in the XML file.
+        #my $xs = new XML::Simple(forcearray => 1, keeproot => 1);
+        #my $config = $xs->XMLin($ENV{"OSCAR_HOME"}."/packages/oda/config.xml");
+        my $command="cp -f ".$ENV{"OSCAR_HOME"}."/packages/oda/config.xml.mandrake ".$ENV{"OSCAR_HOME"}."/packages/oda/config.xml";
+        system $command;
 }
 
 # find out where the corresponding rpm files are
@@ -70,46 +87,9 @@ chomp @oscar_rpm_files;
 closedir DIR;
 
 my $error_flag = 0;
-foreach my $wanted_rpm ( @wanted_rpms ) {
-    oscar_log_subsection("Checking if rpm <$wanted_rpm> is already installed");
-    my $command = "rpm -q $wanted_rpm >/dev/null 2>&1";
-    if ( system($command) == 0 ) {
-	oscar_log_subsection("rpm <$wanted_rpm> is already installed");
-	next;
-    }
-    oscar_log_subsection("Looking for the rpm file to install <$wanted_rpm>");
-    my @package_matching_rpm_files = 
-	grep ( /^$wanted_rpm\-[0-9][0-9\.]*\-/, @package_rpm_files );
-    my @oscar_matching_rpm_files =
-	grep ( /^$wanted_rpm\-[0-9][0-9\.]*\-/, @oscar_rpm_files );
-    if ( scalar @oscar_matching_rpm_files > 1 ) {
-	warn "rpm <$wanted_rpm> for ODA matched too many files <@oscar_matching_rpm_files> in <$oscar_rpms_dir>\n";
-	oscar_log_subsection("rpm <$wanted_rpm> for ODA matched too many files <@oscar_matching_rpm_files> in <$oscar_rpms_dir>\n");
-	$error_flag = 1;
-    } elsif ( scalar @oscar_matching_rpm_files == 1 ) {
-        my $rpm_file = "$oscar_rpms_dir/$oscar_matching_rpm_files[0]";
-	print "rpm <$wanted_rpm> will be supplied by file <$rpm_file>";
-	oscar_log_subsection("<$wanted_rpm> will be supplied by the rpm file <$rpm_file>");
-	push @rpm_files, $rpm_file;
-    } elsif ( scalar @package_matching_rpm_files > 1 ) {
-	warn "rpm <$wanted_rpm> for ODA matched too many files <@package_matching_rpm_files> in <$package_rpms_dir>\n";
-	oscar_log_subsection("rpm <$wanted_rpm> for ODA matched too many files <@package_matching_rpm_files> in <$package_rpms_dir>\n");
-	$error_flag = 1;
-    } elsif ( scalar @package_matching_rpm_files == 1 ) {
-        my $rpm_file = "$package_rpms_dir/$package_matching_rpm_files[0]";
-	print "rpm <$wanted_rpm> will be supplied by file <$rpm_file>";
-	oscar_log_subsection("<$wanted_rpm> will be supplied by the rpm file <$rpm_file>");
-	push @rpm_files, $rpm_file;
-    } else {
-	warn "rpm <$wanted_rpm> for ODA does not have a matching file in $oscar_rpms_dir or $package_rpms_dir";
-	oscar_log_subsection("rpm <$wanted_rpm> for ODA does not have a file in $oscar_rpms_dir or $package_rpms_dir");
-	$error_flag = 1;
-    }
-}
-if ( $error_flag ) {
-    oscar_log_subsection("ODA is giving up and will not be installed !!!!!");
-    die "ODA WILL NOT BE INSTALLED BECAUSE OF THE ABOVE ERRORS!!!!!";
-}
+
+install_rpms(@wanted_rpms) or croak("ODA is giving up and will not be installed !!!!!");
+
 if ( @rpm_files ) {
     oscar_log_subsection("ODA is installing these rpm files:");
     foreach my $rpm_file ( @rpm_files ) {

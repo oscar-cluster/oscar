@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>oda</name>
+
+  <version>
+    <major>0</major>
+    <minor>9</minor>
+    <subversion>0</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>core</class>
+  <installable>1</installable>
+
+  <summary>Oscar DAtabase</summary>
+  <license>Freely distributable</license>
+  <group>Application/Environment</group>
+///  <url>http://env-switcher.sourceforge.net/</url>
+
+  <packager>
+    <name>Neil Gorsuch</name>
+    <email>ngorsuch@ncsa.uiuc.edu</email>
+  </packager>
+
+  <description>ODA provides a central database for OSCAR.</description>
+
+  <rpmlist>
+    <all>
+      <rpm>MySQL-client</rpm>
+      <rpm>perl-Mysql</rpm>
+      <rpm>perl-DBI</rpm>
+      <rpm>oda</rpm>
+    </all>
+    <server>
+      <rpm>MySQL</rpm>
+    </server>
+  </rpmlist>
+
+  <oda>
+    /// This definition allows easier reading (or modifying) of package records
+    /// to list all package names:
+    ///     oda packages
+    /// to list the package names and packager names for all packages:
+    ///     oda packages packager_name
+    /// to list the package names and packager email of all installable packages:
+    ///     oda packages installable=1 packager_email
+    /// to list the package names of all included class installable packages:
+    ///     oda packages class=included installable=1
+    /// to change the packager email address for package foo:
+    ///     oda packages name=foo packager_email~new_email@newplace.com
+    ///
+    /// To list all the packages that require a particular thing:
+    ///     oda packages-that-require required_thing_name
+    ///
+    /// To list all the things that a particluar package requires:
+    ///	    oda this-package-requires package_name
+    ///
+    <shortcut> packages read_records|modify_records packages name $* </shortcut>
+    <shortcut> packages_that_require read_records packages_requires package name=$1 </shortcut>
+    <shortcut> this_package_requires read_records packages_requires name package=$1 </shortcut>
+    ///
+    /// This defines the second field name for records in the package_rpmlist
+    /// which can't be surmised from the xml structure. If there were more
+    /// than one field names that needed to be specified for a particular
+    /// table, they would be specified all on the same line.
+    ///
+    <fieldnames> packages_rpmlist scope </fieldnames>
+    ///
+   </oda>
+</package>

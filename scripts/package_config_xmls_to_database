@@ -24,6 +24,7 @@ use OSCAR::Package;
 use OSCAR::Network;
 use OSCAR::oda;
 use Data::Dumper;
+use OSCAR::Distro;
 
 my $folding_character = "_";
 my %list_of_multiple_value_folded_fields = ();
@@ -34,6 +35,17 @@ my %options = ();
 my $packages_table_name = "packages";
 my %single_value_folded_fields = ();
 
+
+my ($distro,$version) = which_distro_server();
+
+my $mysql_service_name;
+
+if ($distro eq "RedHat") {
+    $mysql_service_name="mysqld";
+}
+elsif ($distro eq "Mandrake") {
+    $mysql_service_name="mysql";
+}
 # function to create a database table with the
 # proper field definitions if the table doesn't
 # already exist, or add any missing fields
@@ -461,13 +473,15 @@ if ( $options{debug} ) {
 
 # start the mysql server
 print "Checking if the mysql database server is running ... ";
-my @command_output = `service mysqld status`;
+my $command="LC_ALL=EN;service $mysql_service_name status";
+print $command;
+my @command_output = `$command`;
 chomp @command_output;
 if ( grep( /is\ running/, @command_output ) ) {
     print "running.\n";
 } else {
     print "no it is not running.\nStarting the mysql database server ...\n";
-    my $command = "service mysqld start";
+    my $command = "LC_ALL=EN;service $mysql_service_name start";
     print "$command\n";
     if ( system( $command ) ) {
 	oda::disconnect( \%options );
