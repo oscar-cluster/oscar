@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.16 2002/10/22 15:52:24 jsquyres Exp $
+#   $Id: Package.pm,v 1.17 2002/10/22 19:06:40 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.16 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.17 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -42,6 +42,7 @@ $VERSION = sprintf("%d.%02d", q$Revision: 1.16 $ =~ /(\d+)\.(\d+)/);
 # see the developement doc
 
 %PHASES = (
+	   setup => ['setup'],
            post_server_install => ['post_server_install','post_server_rpm_install'],
            post_rpm_install => ['post_client_rpm_install','post_rpm_install'],
            post_clients => ['post_clients'],
@@ -101,7 +102,6 @@ sub _is_core {
 # run_pkg_script - runs the package script for a specific package
 #
 
-
 sub run_pkg_script {
     my ($pkg, $phase, $verbose) = @_;
     my $scripts = $PHASES{$phase};
@@ -111,9 +111,10 @@ sub run_pkg_script {
     }
 
     foreach my $scriptname (@$scripts) {
-        my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . $scriptname;
+        my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . 
+	    $scriptname;
         if(-e $script) {
-            print "About to run $script for $pkg\n" if($verbose); 
+            oscar_log_subsection("About to run $script for $pkg");
             my $rc = system($script);
             if($rc) {
                 my $realrc = $rc >> 8;
@@ -133,9 +134,12 @@ sub run_pkg_script_chroot {
         return undef;
     }
     foreach my $scriptname (@$scripts) {
-        my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . $scriptname;
+        my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . 
+	    $scriptname;
         if(-e $script) {
-            run_in_chroot($dir,$script) or (carp "Script $script failed", return undef);
+            oscar_log_subsection("About to run $script for $pkg");
+            run_in_chroot($dir,$script) or (carp "Script $script failed", 
+					    return undef);
         }
     }
     return 1;
@@ -145,9 +149,11 @@ sub run_in_chroot {
     my ($dir, $script) = @_;
     my $base = basename($script);
     my $nscript = "$dir/tmp/$base";
-    copy($script, $nscript) or (carp("Couldn't copy $script to $nscript"), return undef);
+    copy($script, $nscript) 
+	or (carp("Couldn't copy $script to $nscript"), return undef);
     chmod 0755, $nscript;
-    !system("chroot $dir /tmp/$base") or (carp("Couldn't run /tmp/$script"), return undef);
+    !system("chroot $dir /tmp/$base") 
+	or (carp("Couldn't run /tmp/$script"), return undef);
     unlink $nscript or (carp("Couldn't remove $nscript"), return undef);
     return 1;
 }
