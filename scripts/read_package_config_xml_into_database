@@ -758,6 +758,12 @@ if ( $options{debug} ) {
 #    print Dumper($xml_ref);
 }
 
+# Stores information about services which packages provide
+# When a node is deleted from the cluster, all the services which the node
+# has running will be turned off prior to being removed from the cluster
+# Useful for packages like Ganglia which will continue to report metrics
+# even though node has been removed from cluster
+
 my $package_servicelists_ref;
 print "$0: looking for servicelist data in xml for package <$package_name>\n"
     if $options{debug};
@@ -2090,7 +2096,7 @@ foreach my $package_rpm_record_ref ( @package_rpm_records_refs ) {
 			     $package_rpm_record_ref );
 }
 
-# process servicelist tag
+# process <servicelist> tag
 
 my @package_service_records_refs = ();
 #$options{debug}=1;
