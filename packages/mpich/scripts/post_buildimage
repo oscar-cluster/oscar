@@ -5,7 +5,7 @@ use Carp;
 
 my $image = shift;
 my $VER = "1.2.1";
-my $RELEASE = ".1oscar";
+my $RELEASE = ".2oscar";
 my $ARCH = "i386";
 my $PREFIX = "/opt/mpich-$VER";
 my $imagedir = "/var/lib/systemimager/images/$image";
