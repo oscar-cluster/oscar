@@ -12,8 +12,8 @@
 include $(top_srcdir)/dist/Makefile.options
 
 oscar_DATA		= \
-			depman-1.41-2.noarch.rpm \
-			depman-updaterpms-1.4-1.noarch.rpm \
+			depman-1.42-3.noarch.rpm \
+			depman-updaterpms-1.42-3.noarch.rpm \
 			packman-1.4-1.noarch.rpm \
 			packman-rpm-1.4-1.noarch.rpm
 
