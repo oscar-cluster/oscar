@@ -36,8 +36,7 @@
 
   <rpmlist>
     <!-- Distributions that do not have the rpms dependent on postfix -->
-    <filter distribution='fedora'   distribution_version='1'  group='oscar_clients'  />
-    <filter distribution='fedora'   distribution_version='2'  group='oscar_clients'  />
+    <filter distribution='fedora'   group='oscar_clients'  />
     <rpm>postfix-pflogsumm</rpm>
     <rpm>perl-Date-Calc</rpm>
     <rpm>perl-Bit-Vector</rpm>

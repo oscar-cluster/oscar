@@ -38,20 +38,20 @@ offers a command line interface for system and user administration
 tasks on a cluster.</description>
 
   <rpmlist>
-      <rpm>rsync</rpm>
-  </rpmlist>
-  <rpmlist>
       <filter group="oscar_server"/>
       <rpm>c3</rpm>
       <rpm>c3-profiled</rpm>
   </rpmlist>
+
   <rpmlist>
-      <filter group="oscar_server" distribution='mandrake' distribution_version='9.0'/>
+      <filter group="oscar_server" distribution='mandrake' />
       <rpm>python2-compat</rpm>
   </rpmlist>
+
   <rpmlist>
       <filter group="oscar_clients"/>
       <rpm>c3-ckillnode</rpm>
       <rpm>c3-c3cmd-filter</rpm>
   </rpmlist>
+
 </oscar>

@@ -51,58 +51,14 @@
   <description>ODA provides a central database for OSCAR.</description>
 
   <rpmlist>
-    <filter group="oscar_server" distribution="fedora" distribution_version="1" />
-    <filter group="oscar_server" distribution="redhat" distribution_version="7.3" />
-    <rpm>mysql-server</rpm>
-  </rpmlist>
-
-  <rpmlist>
-    <filter distribution="fedora" distribution_version="1" />
+    <filter distribution="redhat" />
     <rpm>mysql</rpm>
     <rpm>perl-DBD-MySQL</rpm>
     <rpm>perl-DBI</rpm>
   </rpmlist>
 
   <rpmlist>
-    <filter distribution="redhat" distribution_version="7.3" />
-    <filter distribution="redhat" distribution_version="8.0" />
-    <filter distribution="redhat" distribution_version="9"   />
-    <filter distribution="redhat" distribution_version="3as" />
-    <rpm>perl-CGI</rpm>
-    <rpm>mysql</rpm>
-    <rpm>perl-DBD-MySQL</rpm>
-    <rpm>perl-DBI</rpm>
-  </rpmlist>
-
-  <rpmlist>
-    <filter distribution="mandrake" distribution_version="9.0" />
-    <rpm>MySQL-client</rpm>
-    <rpm>libmysql10</rpm>
-    <rpm>perl-CGI</rpm>
-    <rpm>perl-DBI</rpm>
-    <rpm>perl-Mysql</rpm>
-    <rpm>perl-ExtUtils-PerlPP</rpm>
-    <rpm>oda</rpm>
-    <rpm>MySQL</rpm>
-  </rpmlist>
-
-  <rpmlist>
-    <filter distribution='mandrake' distribution_version='9.1' />
-    <rpm>MySQL</rpm>
-    <rpm>MySQL-client</rpm>
-    <rpm>libmysql10</rpm>
-    <rpm>perl-CGI</rpm>
-    <rpm>perl-DBI</rpm>
-    <rpm>perl-Mysql</rpm>
-    <rpm>perl-ExtUtils-PerlPP</rpm>
-    <rpm>oda</rpm>
-    <rpm>MySQL-common</rpm>
-    <rpm>libmysql12</rpm>
-  </rpmlist>
-    
-  <rpmlist>
-    <filter distribution='mandrake' distribution_version='9.2' />
-    <filter distribution='mandrake' distribution_version='10.0' />
+    <filter distribution='mandrake' />
     <rpm>MySQL</rpm>
     <rpm>MySQL-client</rpm>
     <rpm>libmysql12</rpm>
@@ -111,22 +67,9 @@
     <rpm>perl-Mysql</rpm>
     <rpm>perl-Data-ShowTable</rpm>
     <!-- <rpm>perl-ExtUtils-PerlPP</rpm>-->
-    <rpm>oda</rpm>
     <rpm>MySQL-common</rpm>
-    <rpm>libmysql12</rpm>
   </rpmlist>
   
-  <rpmlist>
-    <filter distribution='suse' />
-    <rpm>mysql</rpm>
-    <rpm>mysql-client</rpm>
-    <rpm>perl-Msql-Mysql-modules</rpm>
-    <rpm>perl-DBI</rpm>
-    <rpm>perl-Data-ShowTable</rpm>
-    <rpm>mysql-shared</rpm>
-    <rpm>oda</rpm>
-  </rpmlist>
-
   <rpmlist>
     <filter group="oscar_clients"/>
     <rpm>oda</rpm>

@@ -82,30 +82,10 @@ visualized either at runtime or post-mortem.</description>
 
     
   <rpmlist>
-    <!-- Distributions that provides libaio -->
-    <filter distribution='fedora'   distribution_version='1'   />
-    <filter distribution='fedora'   distribution_version='2'   />
-    <filter distribution='redhat'   distribution_version='8.0' />
-    <filter distribution='redhat'   distribution_version='9'   />
-    <filter distribution='redhat'   distribution_version='3as' />
-    <filter distribution='whitebox' />
-    <filter distribution='suse' />
-    <rpm>libaio</rpm>
-    <rpm>libaio-devel</rpm>
     <rpm>lam-oscar</rpm>
     <rpm>lam-oscar-modulefile</rpm>
     <rpm>lam-switcher-modulefile</rpm>
   </rpmlist>
-
-  <rpmlist>
-    <!-- Distributions that don't provides libaio -->
-    <!-- FIXME ??? Ben's update : libaio not needed by lam but by lam-gm ???-->
-    <filter distribution='mandrake' />
-    <rpm>lam-oscar</rpm>
-    <rpm>lam-oscar-modulefile</rpm>
-    <rpm>lam-switcher-modulefile</rpm>
-  </rpmlist>
-
 
   <package>
     <switcher>

@@ -30,8 +30,6 @@
   <rpmlist>
     <filter group="oscar_server"/>
       <rpm>caching-nameserver</rpm>
-      <rpm>bind</rpm>
-      <rpm>bind-utils</rpm>
   </rpmlist>
 
 </oscar>

@@ -34,7 +34,7 @@ my $runningversion;    # Version number of the currently running kernel
 my $runningdate;       # Version compile date of the currently running kernel
 my @kernelfiles;       # List of files in /boot that match the running kernel
 my $htmlfile = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
-$ENV{LC_ALL} = '"C"';
+$ENV{LC_ALL} = "C";
 
 #########################################################################
 #  Subroutine name : getOscarImageList                                  #
@@ -199,17 +199,12 @@ sub getKernelListFromRPMList # -> @kernellist
   my($distroname,$distrovers) = which_distro('/tftpboot/rpm');
   if ($distroname ne "UnknownLinux")
     {
-      my $rpmlist =
-        "$ENV{OSCAR_HOME}/oscarsamples/$distroname-$distrovers-$arch.rpmlist";
-
-      # Then, open the file looking for lines starting with "kernel" and
-      # add them to the list to be returned. 
-      open(RPML,$rpmlist);
-      while (my $line = <RPML>)
-        {
-          chomp $line;
-          push(@kernellist,$line) if ($line =~ /^\s*kernel/);
-        }
+      open(RPML,"update-rpms --quiet --list provides:kernel |");
+      while (<RPML>) {
+          chomp;
+		  my @items = split /\t/;
+          push @kernellist, $items[2];
+      }
       close RPML;
     }
 
@@ -274,14 +269,7 @@ sub generateHTMLFile
   # (a) General package name (eg. "kernel-smp") is in the default RPM list.
   # (b) The corresponding file exists in /tftpboot/rpm (as determined
   #     by PackageBest.pm).
-  my @pkglist = getKernelListFromRPMList();
-  my %files;
-  %files = &find_files(PKGDIR=>"/tftpboot/rpm",PKGLIST=>\@pkglist) if @pkglist;
-  my @tftplist = ();
-  foreach (sort keys %files)
-    {
-      push(@tftplist,$_) if ($_ =~ /kernel/);
-    }
+  my @tftplist = getKernelListFromRPMList();
   # Set error if there weren't any good "kernel*" files in /tftpboot/rpm.
   # NOTE: This should never happen!!!
   $errorcond |= 2 if (scalar(@tftplist) <= 0);
@@ -305,7 +293,7 @@ sub generateHTMLFile
           mkdir $tmpdirname;
           my $olddir = getcwd();
           chdir $tmpdirname;
-          system("rpm2cpio /tftpboot/rpm/$rpmfile | cpio -i -d ./boot*");
+          system("rpm2cpio $rpmfile | cpio -i -d ./boot*");
 
           my @tmprunlist = findRunningKernelFiles();
           $found = 1 if (scalar(@tmprunlist) > 0);

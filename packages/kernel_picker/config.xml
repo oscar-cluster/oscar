@@ -44,8 +44,6 @@ information.</description>
 
   <rpmlist>
     <filter group="oscar_server"/>
-      <rpm>systemconfigurator</rpm>
-      <rpm>perl</rpm>
       <rpm>kernel_picker</rpm>
   </rpmlist>
 
