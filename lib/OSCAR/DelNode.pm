@@ -1,6 +1,6 @@
 package OSCAR::DelNode;
 
-#   $Id: DelNode.pm,v 1.5 2002/05/21 20:45:41 mchasal Exp $
+#   $Id: DelNode.pm,v 1.6 2003/01/28 21:50:47 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -26,9 +26,10 @@ use Carp;
 use SystemInstaller::Tk::Common;
 use base qw(Exporter);
 use SIS::Client;
+use SIS::DB;
 @EXPORT = qw(delnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
 
 sub delnode_window {
     my ($parent, $vars) = @_;
@@ -65,9 +66,9 @@ Delete Clients button.",-relief=>"groove");
 sub fill_listbox {
         my $listbox=shift;
         my @elements;
-        my @clients = clientList();
+        my @clients = list_client();
         foreach my $client (@clients) {
-                push (@elements,$client->{NAME});
+                push (@elements,$client->name);
         }
         $listbox->delete(0,'end');
         $listbox->insert(0,@elements);
