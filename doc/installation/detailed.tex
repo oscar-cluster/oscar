@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.52 2002/12/13 21:26:40 jsquyres Exp $
+% $Id: detailed.tex,v 1.53 2003/01/07 21:57:47 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -792,6 +792,12 @@ you want to create.
     ]$ does not conflict with the IP addresses of any other nodes on
     your network.}
   
+  {\bf IMPORTANT NOTE:} Be sure that the resulting range of IP
+  addresses does {\em not} include typical broadcast addresses such as
+  $X.Y.Z.255$!  If you have more hosts than will fit in a single
+  address range, see the note at the end of this section about how to
+  make multiple IP address ranges.
+  
 \item The \field{Subnet Mask} specifies the IP netmask for all
   clients.  \detailed{See Footnote~\ref{foot:netmask} on
     page~\pageref{foot:netmask} for more information on how to select
@@ -822,11 +828,11 @@ Note that this step can be executed multiple times.  The GUI panel
 that is presented has limited flexibility in IP address numbering --
 the starting IP address will only increment the least significant byte
 by one for each successive client.  Hence, if you need to define more
-than 255 clients, you will need to run this step multiple times and
-change the starting IP address.  There is no need to close the panel
-and return to the main OSCAR menu before executing it again; simply
-edit the information and click on the \button{Addclients} button as
-many times as is required.
+than 254 clients (beware of broadcast addresses!), you will need to
+run this step multiple times and change the starting IP address.
+There is no need to close the panel and return to the main OSCAR menu
+before executing it again; simply edit the information and click on
+the \button{Addclients} button as many times as is required.
 
 Additionally, you can run this step multiple times to use more
 structured IP addressing schemes.  With a larger cluster, for example,
