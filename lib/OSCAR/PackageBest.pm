@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.3 2002/02/18 20:17:20 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.4 2002/02/18 23:35:01 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -38,7 +38,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
@@ -63,6 +63,10 @@ sub find_files {
         );
 
         my @compatlist; my $RPM_TABLE; 
+
+        unless (@compatlist=gen_cache(%args->{PKGDIR},%args->{CACHEFILE})) {
+                return;
+        }
 
         unless (@compatlist=gen_compat_list(%args->{ARCH},%args->{RPMRC})) {
                 return;
@@ -237,6 +241,94 @@ sub find_best_arch {
 }
 
 
+sub cache_gen {
+# Generate/update the cache lists
+# Input: dir name, cachefile, force flag
+# Output: boolean success/failure
+
+        my $path=shift;
+        my $cachefile=shift;
+        my $force=shift;
+        my %CSIZES;
+        my %CLINES;
+        my %FSIZES;
+        local *PKGDIR;
+	my $rpmcmd="/bin/rpm"
+
+        &verbose("Reading package directory");
+        unless (opendir(PKGDIR,$path)) {
+                carp("Can't open package directory $path");
+                return 0;
+        }
+        while($_ = readdir(PKGDIR)) {
+                my $file = "$path/$_";
+                if($file !~ /\.rpm$/) {next;}
+                my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat($file);
+                $FSIZES{$_}=$size;
+        }
+        if ((!$force) && (-e "$path/$cachefile")) {
+                &verbose("Reading cache file.");
+                unless (open(CACHE,"<$path/$cachefile")) {
+                        carp("Can't open cachefile in $path");
+                        return 0;
+                }
+                while (<CACHE>){
+                        chomp;
+                        my ($name, $version, $release, $arch, $file, $size) = split;
+                        $CSIZES{$file}=$size;
+                        $CLINES{$file}=$_;
+                }
+                close(CACHE);
+        }
+        &verbose("Comparing cache to directory.");
+        # Check that all files in the dir first.
+        foreach (keys(%FSIZES)) {
+                # Check if the file is in the cache at all
+                if (! defined $CSIZES{$_}) {
+                        # If not, add a blank entry
+                        $CLINES{$_}="";
+                }
+                # Now see if the size is the same
+                if ($FSIZES{$_} != $CSIZES{$_}){
+                        # If not, blank the entry.
+                        $CLINES{$_}="";
+                }
+        }
+        foreach (keys(%CSIZES)) {
+                if (! defined $FSIZES{$_}) {
+                        # If the file isn't around, undef it in
+                        # the hash
+                        undef ($CLINES{$_});
+                }
+                if ($FSIZES{$_} != $CSIZES{$_}){
+                        # If the sizes don't match, blank it
+                        $CLINES{$_}="";
+                }
+        }
+        &verbose("Writing new cache file.");
+        unless (open(CACHE,">$path/$cachefile")) {
+                carp("Can't open cachefile in $path");
+                return 0;
+        }
+        foreach (keys %CLINES) {
+                my $file = "$path/$_";
+                if(!-f $file) {next;}
+                if ($CLINES{$_} eq "") {
+                        my $output = `$rpmcmd -qp --qf '\%{NAME} \%{VERSION} \%{RELEASE} \%{ARCH}' $file 2> /dev/null`;
+                        my ($name, $version, $release, $arch) = split (/\s+/, $output);
+                        # Do some sanity checking to see that name is actually there
+                        if($name) {
+                                my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat($file);
+                                print CACHE "$name $version $release $arch $_ $size\n";
+                        }
+                } else {
+                        print CACHE "$CLINES{$_}\n";
+                }
+        }
+        close(CACHE);
+        return 1;
+
+} #cache_gen
 ### POD from here down
 
 =head1 NAME
