@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.8 2004/05/08 17:42:30 jsquyres Exp $
+# $Id: setup,v 1.9 2004/05/13 21:04:49 dnl Exp $
 #
 # setup script for the update-rpms package
 #
@@ -24,7 +24,7 @@
 
 # What does this do?!
 # Just boilerplate a la all of the Perl scripts in OSCAR (essentially, nothing)
-VERSION=$(echo "$Revision: 1.8 $" | cut --fields 2 --delimiter " ")
+VERSION=$(echo "$Revision: 1.9 $" | cut --fields 2 --delimiter " ")
 
 PACKAGE=update-rpms
 if [[ $0 = /*/ ]] ; then
@@ -40,7 +40,7 @@ CURRENT=$(ls -1 --sort=version --reverse ${MEDIA_DIR}/${PACKAGE}-*.noarch.rpm |
 	head -1)
 
 echo "Installing ${CURRENT}"
-rpm --upgrade "${CURRENT}"
+rpm --upgrade -vh "${CURRENT}"
 
 mkdir -p "${RPM_DB_DIR}"
 
