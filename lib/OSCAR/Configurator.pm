@@ -1,3 +1,21 @@
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# Copyright (c) 2002 National Center for Supercomputing Applications (NCSA)
+#                    All rights reserved.
+#
+# Written by Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
 #
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
@@ -6,7 +24,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.6 2002/10/29 15:32:32 jsquyres Exp $
+# $Id: Configurator.pm,v 1.7 2002/10/29 19:11:37 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #

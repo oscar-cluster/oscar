@@ -1,3 +1,23 @@
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# Copyright (c) 2002 National Center for Supercomputing Applications (NCSA)
+#                    All rights reserved.
+#
+# Written by Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
+#
+
 package Tk::UserAgent;
 require Tk;
 require Tk::LabEntry;
@@ -8,7 +28,7 @@ use LWP();
 
 
 use vars qw($VERSION);
-$VERSION = '3.002'; # $Id: Web.pm,v 1.1 2002/10/28 22:45:16 tfleury Exp $
+$VERSION = '$Id: Web.pm,v 1.2 2002/10/29 19:12:09 tfleury Exp $';
 
 @ISA = qw(LWP::UserAgent);
 use strict;
@@ -59,7 +79,7 @@ sub get_basic_credentials
 package Tk::Web;
 
 use vars qw($VERSION);
-$VERSION = '2.007'; # $Id: Web.pm,v 1.1 2002/10/28 22:45:16 tfleury Exp $
+$VERSION = '$Id: Web.pm,v 1.2 2002/10/29 19:12:09 tfleury Exp $';
 
 require Tk::HTML;
 

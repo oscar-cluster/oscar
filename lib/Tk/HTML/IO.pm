@@ -1,6 +1,27 @@
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# Copyright (c) 2002 National Center for Supercomputing Applications (NCSA)
+#                    All rights reserved.
+#
+# Written by Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
+#
+# Code is based on Tk::HTML written by Nick Ing-Simmons 24 Jan 1998
+
 package LWP::IO;
 
-# $Id: IO.pm,v 1.1 2002/10/28 22:43:56 tfleury Exp $
+# $Id: IO.pm,v 1.2 2002/10/29 19:16:30 tfleury Exp $
 
 require Tk;
 require LWP::Debug;
@@ -15,7 +36,7 @@ LWP::TkIO - Tk I/O routines for the LWP library
 
 
 use vars qw($VERSION);
-$VERSION = '3.002'; # $Id: IO.pm,v 1.1 2002/10/28 22:43:56 tfleury Exp $
+$VERSION = '$Id: IO.pm,v 1.2 2002/10/29 19:16:30 tfleury Exp $';
 
  use Tk;
  require LWP::TkIO;
