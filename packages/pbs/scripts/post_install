@@ -174,7 +174,6 @@ my @default_params = (
   'set server default_queue                   = workq',
   'set server log_events                      = 511',
   'set server mail_from                       = adm',
-  'set server scheduler_iteration             = 60',
 );
 
 # These are variable parameters that are set everytime
@@ -187,6 +186,7 @@ my @variable_params = (
   "set server resources_available.nodes       = $TOT_NODES",
   "set server resources_max.ncpus             = $TOT_NP",
   "set server resources_max.nodes             = $TOT_NODES",
+  "set server scheduler_iteration             = 60",
 );
 
 # First, read in the current values for the localhost
