@@ -38,7 +38,7 @@ use OSCAR::Database;
 #  in any event. Setting the variable to zero will allow only  #
 #  one version of each package to be stored in the database.   #
 #                                                              #
-my $multiple_package_versions = 1;                             #
+my $multiple_package_versions = 0;                             #
 #                                                              #
 ################################################################
 
