@@ -9,15 +9,15 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.4 2002/11/04 23:14:20 jsquyres Exp $
+      $Id: config.xml,v 1.5 2003/04/02 19:12:58 brechin Exp $
   -->
   <name>autoupdate</name>
 
   <version>
-    <major>1</major>
-    <minor>0</minor>
-    <subversion>0</subversion>
-    <release>1</release>
+    <major>4</major>
+    <minor>8</minor>
+    <subversion>2</subversion>
+    <release>4</release>
     <epoch>1</epoch>
   </version>
 
@@ -38,10 +38,17 @@ on an OSCAR cluster to update the server and clients without having to
 worry about autoupdate syntax.</description>
 
   <rpmlist>
+    <all>
+      <rpm>perl-libnet</rpm>
+      <rpm>perl-DB_File</rpm>
+    </all>
     <client>
       <rpm>autoupdate-client</rpm>
-      <rpm>perl-libnet</rpm>
     </client>
+    <server>
+      <rpm>autoupdate-oscar</rpm>
+      <rpm>autoupdate</rpm>
+    </server>	    
   </rpmlist>
 
 </oscar>
