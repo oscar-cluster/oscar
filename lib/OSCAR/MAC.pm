@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.26 2003/01/23 22:12:03 brechin Exp $
+#   $Id: MAC.pm,v 1.27 2003/01/23 22:31:20 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.26 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.27 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -125,16 +125,16 @@ sub mac_window {
 
     my $fileselector = $frame->FileSelect(-directory => "$ENV{HOME}");
     my $loadbutton = $frame->Button(
-                                   -text=>"Import MACs from file",
+                                   -text=>"Import MACs from file...",
                                    -command=> [\&macfile_selector, "load", $fileselector, $listbox],
                                   );
     my $savebutton = $frame->Button(
-                                    -text => "Export MACs to file",
+                                    -text => "Export MACs to file...",
                                     -command => [\&macfile_selector, "save", $fileselector, $listbox],
                                    );
 
     my $bootfloppy = $frame->Button(
-                                    -text => "Build Autoinstall Floppy",
+                                    -text => "Build Autoinstall Floppy...",
                                     -command => sub {
 					my $cmd = "xterm -T 'Build Autoinstall Floppy' -e mkautoinstalldiskette";
 					oscar_log_subsection("Step $step_number: Building autoinstall floppy: $cmd");

@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.17 2002/12/14 00:56:15 tfleury Exp $
+# $Id: Selector.pm,v 1.18 2003/01/23 22:31:20 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -926,7 +926,7 @@ sub populateSelectorList
 
           # Then, the Info button...
           $tempframe->{$package}->Button(
-            -text => 'Info',
+            -text => 'Info...',
             -command => [ \&OSCAR::Infobox::displayInformation , 
                           $root,
                           $packagexml->{$package}{name},

@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.15 2002/12/14 00:56:15 tfleury Exp $
+# $Id: Configurator.pm,v 1.16 2003/01/23 22:31:19 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -244,7 +244,7 @@ sub populateConfiguratorList
           # Then add the config buttons and package name labels.
           # First,the Config button...
           $tempframe->{$package}->Button(
-            -text => 'Config',
+            -text => 'Config...',
             -command => [ \&OSCAR::Configbox::configurePackage,
                           $root,
                           "$oscarbasedir/packages/$package",
