@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Makefile.am,v 1.2 2002/10/30 12:17:19 jsquyres Exp $
+# $Id: Makefile.am,v 1.3 2002/10/31 16:15:05 jsquyres Exp $
 #
 
 # This file is necessary -- we can't use the OSCAR
@@ -15,5 +15,5 @@
 # that will be in this directory (e.g., config.xml) because they will
 # be generated on the fly at installation time.
 
-SUBDIRS = doc RPMS scripts SRPMS
+SUBDIRS = doc RPMS scripts SRPMS testing
 
