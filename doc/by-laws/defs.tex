@@ -1,0 +1,89 @@
+% -*- latex -*-
+%
+% $Id: defs.tex,v 1.1 2002/01/27 18:29:58 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{fullpage}
+
+% Versions
+
+\include{version}
+
+% Image Scaling
+\def\imgscale{0.75}
+
+% PDF stuff
+ 
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+   \pdffalse
+\else
+   \pdfoutput=1
+   \pdftrue
+\fi
+ 
+\setcounter{tocdepth}{2}
+ 
+\ifpdf
+  \usepackage[pdftex,
+              colorlinks=true,
+              linkcolor=blue,filecolor=blue,pagecolor=blue,urlcolor=blue
+              ]{hyperref}
+  \def\figext{png}
+  \def\sbsext{png}
+  \newcommand{\xref}[2]{\hyperref[#1]{#2}}
+\else
+  \def\figext{eps}
+  \def\sbsext{eps}
+  \newcommand{\xref}[2]{#2}
+  \newcommand{\href}[2]{\underline{#2}}
+  \newcommand{\url}[1]{\href{#1}{#1}}
+\fi
+
+\newcommand{\email}[1]{\href{#1}{#1}}
+
+% Stoopid European-based Linux distributions...
+% Gotta force letter size paper, not A4
+
+\ExecuteOptions{letterpaper}
+
+% Discussion item; stolen from the MPI standard
+
+\newenvironment{discuss}{\begin{list}{}{}\item[]{\it Discussion item:}
+}{{\rm ({\it End of discussion item.})} \end{list}}
+
+% Rationale item; stolen from the MPI standard
+
+\newenvironment{rationale}{\begin{list}{}{}\item[]{\it Rationale.}
+}{{\rm ({\it End of rationale.})} \end{list}}
+
+% Stolen from the MPI standard
+
+\newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\odrcat}[1]{\textsf{#1}}
+\newcommand{\odrkey}[1]{\texttt{#1}}
+\newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\user}[1]{\texttt{#1}}
+
+\newcommand{\term}[1]{\textit{#1}}
+
+\newcommand{\msg}[1]{\textbf{#1}}
+\newcommand{\msgout}[1]{\textbf{\texttt{#1}}}
+
+\newcommand{\panel}[1]{\textbf{\texttt{#1}}}
+\newcommand{\button}[1]{\textbf{\texttt{#1}}}
+\newcommand{\field}[1]{\textit{\texttt{#1}}}
+
+% Also stolen from the MPI standard
+% intended for general change marks not associated with a certain version
+\def\begchange{\marginpar[\hspace*{-60pt}\mbox{\hspace*{10pt}
+$\top$ \tiny (General)}]{\mbox{$\top$ \tiny (General)}}}
+\def\endchange{\marginpar[\hspace*{-60pt}\mbox{\hspace*{10pt}
+$\bot$ \tiny (General)}]{\mbox{$\bot$ \tiny (General)}}}
+%get rid of these change marks
+%\def\begchange{}
+%\def\endchange{}
