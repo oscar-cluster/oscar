@@ -1,5 +1,0 @@
-0.1.0-1 (2002-11-26) : Initial deposit
-   * Very crude support of diskless nodes (root-ramdisk)
-   * NIC compiled in the kernel
-   * Kernel has to be recompiled for big ram disk support
-   * Important config files are _overwritten_ on the server
