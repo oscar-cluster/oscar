@@ -1,0 +1,72 @@
+#!/usr/bin/env perl
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: setup,v 1.7 2003/07/25 21:40:28 brechin Exp $
+#
+# setup script for the hdf5 package
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX;
+use Carp;
+use OSCAR::Distro;
+use OSCAR::PackageBest;
+
+my $source_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro/";
+my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
+
+my ($name, $ver) = OSCAR::Distro::which_distro_server();
+if ( $name eq "mandrake" && $ver == 9.0 ) {
+  $source_dir .= "mdk90";
+} else {
+    $source_dir .= "rh80";
+}
+
+print "Using HDF5 RPMs from: $source_dir\n";
+
+# Quick sanity check
+
+if (! -d $dest_dir) {
+  croak("$dest_dir does not exist");
+} elsif (! -d $source_dir) {
+  croak("$source_dir does not exist");
+}
+
+    # Remove any hdf5 RPMs in the dest dir
+
+opendir(DIR, $dest_dir);
+my @bad_files = grep {(/^hdf5-oscar/ && !/^hdf5-oscar-module/ ) && -f "$dest_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#bad_files > -1) {
+  printf("Removing old files:\n");
+    foreach my $file (@bad_files) {
+      printf(" - $dest_dir/$file\n");
+      unlink("$dest_dir/$file");
+    }
+}
+
+# Make a list of the new files and copy them over
+
+opendir(DIR, $source_dir);
+my @good_files = grep { /^hdf5-oscar/ && -f "$source_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#good_files > -1) {
+  my $cmd = "cp ";
+  printf("Copying new files:\n");
+  foreach my $file (@good_files) {
+    $cmd .= "$source_dir/$file ";
+    printf(" - $source_dir/$file\n");
+  }
+  $cmd .= $dest_dir;
+  system($cmd);
+  print "Copied HDF5 RPMs to $dest_dir\n";
+}
+
+# All done
+
+exit 0
+		      

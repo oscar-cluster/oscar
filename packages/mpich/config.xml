@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.12 2003/07/18 21:23:38 ngorsuch Exp $
+      $Id: config.xml,v 1.13 2003/07/25 21:40:28 brechin Exp $
       -->
 
   <name>mpich-p4</name>
@@ -19,8 +19,7 @@
     <major>1</major>
     <minor>2</minor>
     <subversion>5</subversion>
-    <release>3</release>
-    <epoch>2</epoch>
+    <release>4</release>
   </version>
 
   <class>included</class>

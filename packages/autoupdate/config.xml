@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.11 2003/07/18 21:23:37 ngorsuch Exp $
+      $Id: config.xml,v 1.12 2003/07/25 21:40:27 brechin Exp $
   -->
   <name>autoupdate</name>
 
@@ -37,23 +37,24 @@ on an OSCAR cluster to update the server and clients without having to
 worry about autoupdate syntax.</description>
 
   <rpmlist>
-      <filter group="oscar_clients"/>
-      <rpm>autoupdate-client</rpm>
+    <filter group="oscar_clients"/>
+    <rpm>autoupdate-client</rpm>
   </rpmlist>
   <rpmlist>
-      <filter group="oscar_server"/>
-      <rpm>autoupdate-oscar</rpm>
-      <rpm>autoupdate</rpm>
-  </rpmlist>
-
-  <rpmlist>
-      <filter group="oscar_server" distribution="redhat" />
-      <rpm>perl-DB_File</rpm>
+    <filter group="oscar_server"/>
+    <rpm>autoupdate-oscar</rpm>
+    <rpm>autoupdate</rpm>
   </rpmlist>
 
   <rpmlist>
-      <filter distribution='suse' />
-      <rpm>autoupdate-perl-compat</rpm>
+    <filter distribution="redhat" />
+    <filter distribution='mandrake' />
+    <rpm>perl-DB_File</rpm>
+  </rpmlist>
+
+  <rpmlist>
+    <filter distribution='suse' />
+    <rpm>autoupdate-perl-compat</rpm>
   </rpmlist>
 
 </oscar>
