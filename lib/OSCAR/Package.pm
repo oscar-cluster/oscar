@@ -43,7 +43,8 @@ use Carp;
              run_pkg_script run_pkg_user_test copy_rpms remove_rpms
              run_pkg_script_chroot rpmlist install_packages copy_pkgs 
              pkg_config_xml list_selected_packages getSelectionHash
-             isPackageSelectedForInstallation getConfigurationValues);
+             isPackageSelectedForInstallation getConfigurationValues
+             run_pkg_apitest_test);
 $VERSION = sprintf("%d.%02d", q$Revision: 1.64 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
@@ -339,6 +340,59 @@ sub run_pkg_user_test {
     }
     return 1;
 }
+
+
+#
+# APItest Additions
+#  This runs an APItest file (or batch file).  Expected that this 
+#  will be run as 'root', but can use another user if needed.
+#
+# TODO Fix work arounds for current release of APItest v0.2.5-1
+#
+ 
+sub run_pkg_apitest_test
+{
+	use File::Spec;
+
+	my ($script, $user, $verbose) = @_;
+	my $apitest = "/usr/local/apitest/apitest";    # FIXME: hardcoded path
+	my $rc;
+
+
+	if (-e $script) {
+		oscar_log_subsection("About to run APItest: $script") if $verbose;
+
+		#FIXME: TJN: work around path problem of APItest that 
+		#       dies when called from other location than CWD of file.
+		#       So must do: (cd $cpath; apitest test_file)
+
+		my ($vol,$path,$file) = File::Spec->splitpath( $script );
+		my $cpath = File::Spec->canonpath( $path );
+
+		my $uid=getpwnam($user);
+		if ($uid == $>) {
+			#FIXME: work around path problem of APItest
+			#$rc = system("$apitest -T -f $script");
+			my $cmd = "(cd $cpath && $apitest -T -f $file)";
+			$rc = system($cmd);
+		} else {
+			#FIXME: work around path problem of APItest (cd $cpath; ...)
+			#$rc = system("su --command='OSCAR_HOME=$ENV{OSCAR_HOME} $apitest -T -f $script' - $user");
+			my $cmd = "su --command='OSCAR_HOME=$ENV{OSCAR_HOME} (cd $cpath && $apitest -T -f $file)' - $user";
+			$rc = system($cmd);
+		}
+	}
+	else {
+		oscar_log_subsection("ERROR - unable to run APItest: $script") if $verbose;
+	}
+	if($rc) {
+		my $realrc = $rc >> 8;
+		carp("Script APItest $script exited badly with exit code '$realrc'") if $verbose;
+		return 0;
+	}
+}
+
+
 #
 # This returns the type of rpm list for a package file.  Use this
 # order of precedence in looking for the RPM list:

@@ -187,7 +187,62 @@ if ($creturn) {
     print("\nThere were issues running some user test scripts.  Please check your logs\nlocated in /home/oscartst.\n");
 }
 
-# Sum the (errors) return codes for root/user tests
-$return += $creturn; 
+
+#
+# APItest Additions
+#  The prescribed directory structure for APItest usage by OPkgs is
+#  to have the following batch file entry points for the given
+#  testing types:
+#     <pkgdir>/testing/install_tests.apb
+#     <pkgdir>/testing/validation_tests.apb
+#
+# TODO deprecate old test fmt when existing have been converted to APItest
+#
+
+print "\nRun APItests...\n";
+my $areturn=0;
+
+#
+# Run all the APItest - Installation Tests ('test_install.apb')
+#
+
+my $test_type = "Installation";
+foreach my $pkg (@pkgs) {
+	my $file = "$pkg/testing/install_tests.apb";
+
+	for my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
+		my $test = "$dir/$file";
+		if( -e $test ) {
+			print "\nRunning $test_type tests for $pkg\n";
+			$areturn++ if (!run_pkg_apitest_test($test, "root", 0));
+		}
+	}
+}
+
+
+#
+# Run all the APItest - Validation Tests ('test_validate.apb')
+#
+
+my $test_type = "Validation";
+foreach my $pkg (@pkgs) {
+	my $file = "$pkg/testing/validation_tests.apb";
+
+	for my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
+		my $test = "$dir/$file";
+		if( -e $test ) {
+			print "\nRunning $test_type tests for $pkg\n";
+			$areturn++ if (!run_pkg_apitest_test($test, "root", 0));
+		}
+	}
+}
+
+if ($areturn) {
+    print("\nThere were issues running some user test scripts.  Please check your logs\nlocated in /home/oscartst.\n");
+}
+
+
+# Sum the (errors) return codes for root/user/apitest tests
+$return += $creturn + $areturn; 
 
 exit $return;

@@ -1,0 +1,21 @@
+#!/bin/sh
+# Script to generate profile.d/apitest.{csh,sh} startup scripts
+# to add APItest the PATH.
+ 
+
+# Generate the Bash profile script
+cat > /etc/profile.d/apitest.sh <<EOF
+if ! echo \$PATH | /bin/grep -q "/usr/local/apitest" ; then
+  PATH="\$PATH:/usr/local/apitest"
+fi
+
+EOF
+chmod 755 /etc/profile.d/apitest.sh
+
+
+# Generate the Csh profile script
+cat > /etc/profile.d/apitest.csh <<EOF
+setenv PATH "\${PATH}:/usr/local/apitest"
+
+EOF
+chmod 755 /etc/profile.d/apitest.csh

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+
+	<name>APItest</name>
+	<version>
+		<major>0</major>
+		<minor>2</minor>
+		<subversion>5</subversion>
+		<release>1</release>
+		<epoch>1</epoch>
+	</version>
+
+	<class>core</class>
+
+	<summary>A test driver application.</summary>
+	<license>LGPL</license>
+
+	<group>Applications/System</group>
+
+	<packager>
+		<name>William McLendon</name>
+		<email>wcmclen@sandia.gov</email>
+	</packager>
+
+	<maintainer>
+		<name>William McLendon</name>
+		<email>wcmclen@sandia.gov</email>
+	</maintainer>
+
+	<description>A testing framework.</description>
+
+	<rpmlist>
+		<filter distribution="redhat" distribution_version="9"/>
+		<rpm>apitest</rpm>
+		<rpm>Twisted</rpm>
+		<rpm>Twisted-doc</rpm>
+		<rpm>elementtree</rpm>
+	</rpmlist>
+
+</oscar>
