@@ -1,3 +1,27 @@
+--- /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm.orig	2003-04-09 10:31:40.000000000 -0700
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2004-10-09 23:44:24.000000000 -0700
+@@ -55,7 +59,12 @@
+     my %noshow = %{$vars{noshow}};
+ 
+     my $addclient_window = $window->Toplevel();
+-    $addclient_window->title("Add Clients to a SIS Image");
++    $addclient_window->withdraw;
++    if( $ENV{OSCAR_HOME} ) {
++        $addclient_window->title("Define OSCAR Clients");
++    } else {
++        $addclient_window->title("Add Clients to a SIS Image");
++    }
+ 
+     #
+     #  First line:  What is your image name?
+@@ -137,6 +146,7 @@
+                                                );
+ 
+     $reset_button->grid($activate_button, quit_button($addclient_window) , -sticky => "nesw");
++    center_window( $addclient_window );
+ 
+ }
+ 
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm.orig	2002-12-17 09:25:49.000000000 -0800
 +++ /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm	2004-10-11 19:02:37.000000000 -0700
 @@ -28,6 +28,7 @@
@@ -98,3 +122,78 @@
  }
  
  sub init_si_config {
+@@ -154,7 +178,7 @@
+     my $label = $window->Label(-text => "$labeltext: ",
+                                -anchor => "w");
+     my $entry = $window->Entry(-textvariable => $variable, @options);
+-    $label->grid($entry,@morewidgets);
++    $label->grid($entry,@morewidgets, -sticky => "nesw");
+ }
+
+ # This creates a small list box with 1 item ($selection) selected.
+--- /usr/lib/systeminstaller/SystemInstaller/Tk/Help.pm.orig	2003-04-09 10:31:41.000000000 -0700
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/Help.pm	2004-10-20 12:07:07.000000000 -0700
+@@ -69,10 +69,12 @@
+     my $window = shift;
+     my $tag = shift;
+     my $helpwindow = $window->Toplevel();
++    $helpwindow->withdraw;
+     $helpwindow->title("Help About: $tag");
+     my $ro = $helpwindow->Message(-text => $Help{$tag});
+     $ro->pack(-fill => "both", expand => 1);
+     quit_button($helpwindow)->pack(-fill => "x");
++    center_window( $helpwindow );
+ }
+ 
+ 1;
+--- /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm.orig	2003-10-31 07:39:12.000000000 -0800
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm	2004-10-09 00:00:44.000000000 -0700
+@@ -63,7 +67,12 @@
+     }
+ 
+     my $image_window = $window->Toplevel();
+-    $image_window->title("Create a System Installation Suite Image");
++    $image_window->withdraw;
++    if( $ENV{OSCAR_HOME} ) {
++        $image_window->title("Build OSCAR Client Image");
++    } else {
++        $image_window->title("Create a System Installation Suite Image");
++    }
+     my $message = $image_window->Message(-text => "Fill out the following fields to build a System Installation Suite image.  If you need help on any field, click the help button next to it", -justify => "left", -aspect => 700);
+     $message->grid("-","-","-");
+ 
+@@ -185,8 +190,8 @@
+     my $progress = $image_window->ProgressBar(
+                                               -takefocus => 0,-width => 20,-length => 200,
+                                               -anchor => 'w',-from => 0,-to => 100,
+-                                              -blocks => 500,-gap => 0,
+-                                              -colors => [0, 'red'], # [0, 'green', 50, 'yellow' , 80, 'red'],
++                                              -blocks => 20,
++                                              -colors => [0, 'green'], # [0, 'green', 50, 'yellow' , 80, 'red'],
+                                               -variable => \$vars{percent_done}
+                                              );
+     
+@@ -200,12 +205,13 @@
+     
+     $reset_button->grid($activate_button, quit_button($image_window),"-" , -sticky => "nesw");
+     
+-    $progress->grid("-","-", -sticky => "nesw");
++    $progress->grid("-","-","-", -sticky => "nesw");
+ 
+     # key bindings
+     $image_window->bind("<Control-q>",sub {$image_window->destroy});
+     $image_window->bind("<Control-r>",sub {$reset_button->invoke});
+     
++    center_window( $image_window );
+ }
+ 
+ sub reset_window {
+@@ -261,6 +269,8 @@
+             print "$lines_so_far: $_";
+         }
+     }
++    $progress->value(100);
++    $progress->update();
+ 
+     close(OUTPUT) or (carp("Command $cmd failed to run properly"), 
+                       error_window($window, "Failed to create Image!"),
