@@ -4,10 +4,10 @@
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
-# information, see the LICENSE file in the top level directory of the
+# information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: autogen.sh,v 1.3 2002/10/26 12:05:05 jsquyres Exp $
+# $Id: autogen.sh,v 1.4 2002/10/30 12:17:19 jsquyres Exp $
 #
 
 cmd="autoconf -o setup setup.ac"
