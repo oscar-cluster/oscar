@@ -28,6 +28,10 @@ my @rpms = qw(
 
 stop_services();
 
+# Delete the clients first so /etc/hosts gets cleaned
+print "/usr/bin/mksimachine --Delete --all\n";
+system("/usr/bin/mksimachine --Delete --all");
+
 uninstall_rpms(@rpms);
 
 delete_from_pool(@rpms);
