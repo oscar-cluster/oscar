@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.50 2002/11/18 01:18:15 jsquyres Exp $
+% $Id: detailed.tex,v 1.51 2002/11/29 16:41:19 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -805,8 +805,9 @@ you want to create.
 \detailed{
   
   When finished entering information, press the \button{Addclients}
-  button.  A sample dialog is shown in
-  Figure~\ref{fig:detailed-define-clients}.
+  button.  When those clients have been created in the database, a
+  popup will appear indicating the completion status.  A
+  sample dialog is shown in Figure~\ref{fig:detailed-define-clients}.
 
   \begin{figure}[htbp]
     \begin{center}
@@ -815,13 +816,29 @@ you want to create.
       \label{fig:detailed-define-clients}
     \end{center}
   \end{figure}
-  
-  After the clients are created, a dialog will pop up with the
-  completion status. After closing that, you may press the
-  \button{Close} button in the build clients dialogue and continue
-  with the next step.
-
 }
+
+Note that this step can be executed multiple times.  The GUI panel
+that is presented has limited flexibility in IP address numbering --
+the starting IP address will only increment the least significant byte
+by one for each successive client.  Hence, if you need to define more
+than 255 clients, you will need to run this step multiple times and
+change the starting IP address.  There is no need to close the panel
+and return to the main OSCAR menu before executing it again; simply
+edit the information and click on the \button{Addclients} button as
+many times as is required.
+
+Additionally, you can run this step multiple times to use more
+structured IP addressing schemes.  With a larger cluster, for example,
+it may be desirable to assign IP addresses based on the top-level
+switch that they are connected to.  For example, the 32 clients
+connected to switch 1 should have an address of the form 192.168.1.x.
+The next 32 clients will be connected to switch 2, and should
+therefore have an address of the form 192.168.2.x.  And so on.
+
+\detailed{After all clients have been created, you may press the
+  \button{Close} button in the build clients dialogue and continue
+  with the next step.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
