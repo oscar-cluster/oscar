@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.22 2003/04/10 17:02:43 ngorsuch Exp $
+# $Id: Selector.pm,v 1.23 2003/04/10 18:05:57 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -53,6 +53,7 @@ no warnings qw(closure);
 our $destroyed = 0;
 my($top);            # The Toplevel widget for the package selector window
 my($step_number);    # Step number in the OSCAR wizard
+my $useoda = 0;      # Read from/write to oda database for .selection.config
 ##############################################################
 #  MOVE THE STUFF ABOVE TO THE TOP OF THE PERL SOURCE FILE!  #
 ##############################################################
@@ -819,6 +820,8 @@ sub setSelectionConfigDefaults
 #########################################################################
 sub readInSelectionConfig
 {
+if (!$useoda)
+  {
   my($writeconfig) = 0;  # Do we write out a new default config file?
   my($config) = "$oscarbasedir/.oscar/.selection.config";
 
@@ -845,6 +848,45 @@ sub readInSelectionConfig
 
   # If there was an incorrect or missing config file, write out a new one.
   writeOutSelectionConfig() if ($writeconfig);
+  }
+else
+  {
+  my $success = database_connect();
+  if ($success)
+    {
+      my @packageSets;
+      my @packages;
+      my @requested = ("packages.name");
+      database_execute_command("package_sets",\@packageSets);
+      if (scalar @packageSets > 0)
+        {
+          my @selected;
+          database_execute_command("selected_package_set",\@selected);
+          $selconf->{selected} = $selected[0];
+          foreach my $packset (@packageSets)
+            {
+              print "--> Found a package set named $packset\n";
+              database_execute_command("packages_in_package_set $packset",
+                \@packages);
+              foreach my $pack (@packages)
+                {
+                  print "    Adding package $pack to package set $packset\n";
+                  $selconf->{configs}{$packset}{packages}{$pack} = 1;
+                }
+            }
+        }
+      else
+        {
+          setSelectionConfigDefaults();
+        }
+      database_disconnect();
+    }
+  else
+    {
+      carp("Could not connect to the oda database");
+      setSelectionConfigDefaults();
+    }
+  }
 }
 
 #########################################################################
@@ -856,6 +898,8 @@ sub readInSelectionConfig
 #########################################################################
 sub writeOutSelectionConfig 
 {
+if (!$useoda)
+  {
   system("mkdir -p $oscarbasedir/.oscar");
   $selconf->{selected} = $configselectstring;
   XMLout($selconf,
@@ -865,6 +909,33 @@ sub writeOutSelectionConfig
          noattr => 1,
          keyattr => [],
         );
+  }
+else
+  {
+  my $success = database_connect();
+  if ($success)
+    {
+      database_execute_command("delete_all_package_sets");
+      database_execute_command("set_selected_package_set ".
+                               $selconf->{selected});
+      foreach my $config (keys %{ $selconf->{configs} })
+        {
+          print "--> Creating a new package set named $config\n";
+          database_execute_command("create_package_set $config");
+
+          foreach my $pack (keys %{ $selconf->{configs}{$config}{packages} })
+            {
+              print "    Adding package $pack to package set $config\n";
+              database_execute_command("add_package_to_package_set $pack $config");
+            }
+        }
+      database_disconnect();
+    }
+  else
+    {
+      carp("Could not connect to the oda database");
+    }
+  }
 }
 
 #########################################################################
