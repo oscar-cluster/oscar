@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.26 2002/11/17 04:02:39 jsquyres Exp $
+% $Id: release-notes.tex,v 1.27 2002/11/17 04:54:28 jsquyres Exp $
 %
 
 \section{Release Notes}
@@ -106,10 +106,6 @@ The following release notes apply to OSCAR version \oscarversion.
 \label{subsec:mdk82notes}
 
 \begin{itemize}
-\item This is the second release of OSCAR to support this distribution.
-  OSCAR \oscarversion\- has been tested and successfully installed on
-  this distribution (see Table~\ref{tab:oscar-distro-support});
-  
 \item Before running the OSCAR installer, you must install the
   \file{libexpat1\_95-devel} RPM (you may need Mandrake 8.2 CD's to run
   the \cmd{urpmi} command):
@@ -128,15 +124,6 @@ The following release notes apply to OSCAR version \oscarversion.
   # urpmi perl-XML-Simple perl-XML-Parser
 \end{verbatim}
   
-\item To avoid problems with the \file{modules} RPM, the following sym
-  link must be created {\em before} running the OSCAR installer:
-
-\begin{verbatim}
-  # ln -s /usr/lib/libtcl8.3.so /usr/lib/libtcl.so.0
-\end{verbatim}
-
-\item ODA is not currently supported on Mandrake.
-
 \item If installing the third-party package Ganglia, the
   \file{libpng} RPM version 1.0.8-2mdk must be manually installed
   before invoking the OSCAR install wizard.  This RPM can be
