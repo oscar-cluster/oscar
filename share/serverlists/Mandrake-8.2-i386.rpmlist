@@ -1,6 +1,7 @@
 apache
 apache-common
 apache-conf
+apache-modules
 dhcp-common
 dhcp-server
 expat
