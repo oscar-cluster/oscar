@@ -85,7 +85,7 @@ my $image = shift; # Optionally provide an image name.
 print "Updating pbs_server nodes\n";
 
 # Read in the current nodes as shown by 'pbsnodes -a'
-open (CMD,'/usr/local/pbs/bin/pbsnodes -a |');
+open (CMD,'/opt/pbs/bin/pbsnodes -a |');
 my $inp = "";
 my $server = "";
 my $opt = "";
@@ -121,19 +121,19 @@ foreach my $node (sort keys %nodes)
       {
         if (defined($default))
           {
-            system("/usr/local/pbs/bin/pbsnodes -o $hostname");
-            system('/usr/local/pbs/bin/qmgr -a -e -c "set node ' . 
+            system("/opt/pbs/bin/pbsnodes -o $hostname");
+            system('/opt/pbs/bin/qmgr -a -e -c "set node ' . 
                    $hostname . ' np = ' . 
                    ($nodes{$node}{NUM_PROCS} ? $nodes{$node}{NUM_PROCS} : 1) .
                    ' , properties = all"');
-            system("/usr/local/pbs/bin/pbsnodes -c $hostname");
+            system("/opt/pbs/bin/pbsnodes -c $hostname");
           }
         # Remove from pbsnodes hash
         delete $pbsnodes{$nodes{$node}{HOST}};
       }
     else
       { # Didn't find a match -> ADD the node
-        system('/usr/local/pbs/bin/qmgr -a -e -c "create node ' . 
+        system('/opt/pbs/bin/qmgr -a -e -c "create node ' . 
                $hostname . ' np = ' .
                ($nodes{$node}{NUM_PROCS} ? $nodes{$node}{NUM_PROCS} : 1) .
                ' , properties = all"');
@@ -148,7 +148,7 @@ foreach my $node (sort keys %nodes)
 # Now go through the remaining pbsnodes hash and delete these nodes
 foreach my $node (sort keys %pbsnodes) 
   {
-    system('/usr/local/pbs/bin/qmgr -a -e -c "delete node ' . $node . '"');
+    system('/opt/pbs/bin/qmgr -a -e -c "delete node ' . $node . '"');
   }
 
 # Next, use qmgr command to set up the values for workq
@@ -192,7 +192,7 @@ my @variable_params = (
 
 # First, read in the current values for the localhost
 undef $/;   # Suck in the entire files into one big string
-open (CMD,'/usr/local/pbs/bin/qmgr -a -e -c "print server @localhost" |');
+open (CMD,'/opt/pbs/bin/qmgr -a -e -c "print server @localhost" |');
 my $cmd_output = <CMD>;
 close (CMD);
 
@@ -236,8 +236,11 @@ foreach $line (@variable_params)
 # Run the qmgr command if necessary
 if ($cmd_input ne "")
   {
-    open (CMD,"|/usr/local/pbs/bin/qmgr -a -e ");
+    open (CMD,"|/opt/pbs/bin/qmgr -a -e ");
     print CMD $cmd_input;
     close (CMD) or croak("Configuration of PBS queues failed");
   }
+
+# Call the update PBS mom config script
+print `../packages/pbs/scripts/update_mom_config`;
 
