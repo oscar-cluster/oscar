@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile,v 1.3 2001/12/17 05:27:48 mchasal Exp $
+# $Id: Makefile,v 1.4 2001/12/17 22:41:58 mchasal Exp $
 #
 # $COPYRIGHT$
 #
@@ -45,40 +45,26 @@ PNG_FIG_FILES	= \
 # SBS (Screen-by-Screen) figures
 
 SBS_FIG_FILES	= \
-		sbs-cluster-setup.png \
-		sbs-completed.png \
-		sbs-define-clients.png \
-		sbs-define-clients-res.png \
-		sbs-define-clients-start.png \
-		sbs-define-server.png \
-		sbs-define-server-res.png \
-		sbs-etherboot.png \
-		sbs-getting-oscar.png \
+		sbs-addclients1.png \
+		sbs-addclients2.png \
+		sbs-build-image1.png \
+		sbs-build-image2.png \
+		sbs-collect-mac1.png \
+		sbs-collect-mac2.png \
+		sbs-collect-mac3.png \
+		sbs-collect-mac4.png \
 		sbs-install-oscar2.png \
 		sbs-install-oscar.png \
-		sbs-install-wizard.png \
-		sbs-install-wizard-s1.png \
-		sbs-install-wizard-s2.png \
-		sbs-install-wizard-s3.png \
-		sbs-install-wizard-s6.png \
-		sbs-install-wizard-s7.png \
-		sbs-mac-boot1-node.png \
-		sbs-mac-boot1.png \
-		sbs-mac-boot2-node.png \
-		sbs-mac-boot2.png \
-		sbs-mac-info.png \
-		sbs-mac.png \
-		sbs-mac-res1.png \
-		sbs-mac-res2.png \
-		sbs-node1-boot.png \
-		sbs-node1-install.png \
-		sbs-node1-login.png \
-		sbs-node2-boot.png \
-		sbs-node2-install.png \
-		sbs-pre-client-install.png \
-		sbs-pre-client-install-res2.png \
-		sbs-pre-client-install-res.png \
-		sbs-unpacking-oscar.png
+		sbs-no.png \
+		sbs-wizard-step1.png \
+		sbs-wizard-step2.png \
+		sbs-wizard-step3.png \
+		sbs-wizard-step4.png \
+		sbs-wizard-step5.png \
+		sbs-test1.png \
+		sbs-test2.png \
+		sbs-post-install.png
+
 
 #########################################################################
 #

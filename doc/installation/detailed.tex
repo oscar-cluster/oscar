@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.6 2001/12/17 05:52:04 mchasal Exp $
+% $Id: detailed.tex,v 1.7 2001/12/17 22:41:59 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -470,8 +470,7 @@ When finished entering information, press the \button{Add Clients} button.
 A sample dialog with input and output is shown in
 Figure~\ref{fig:detailed-define-clients}. After the clients are created,
 a dialog will pop up with the completion status. After closing that 
-you may press the \button{Close}
-button and continue with the next step.
+you may press the \button{Close} button and continue with the next step.
 
 \begin{figure}[htbp]
   \begin{center}
@@ -510,8 +509,7 @@ In order to collect the MAC addresses,  press the Step 3 button
   In order to use this tool, you will need to know
   how to network boot your client nodes.  For instructions on doing
   so, see Appendix~\ref{app:net-boot-client-nodes}. A sample dialog
-  that has been used to collect four client MAC addresses is shown in
-  Figure~\ref{fig:detailed-collect-mac}. 
+  is shown in Figure~\ref{fig:detailed-collect-mac}. 
  
   You may also configure your remote boot method from this panel. The
   \button{Build Autoinstall Floppy} button will build a boot floppy for
@@ -628,7 +626,18 @@ cluster components (PBS, MPI, and PVM) are functioning properly.
 Press the Step 5 button of the wizard entitled \button{Test
  Cluster Setup}. This will open a window that will test 
  the server services and then ask for a non-root user to use for the
- testing. Once the test setup completes do the following steps:
+ testing. A sample dialog is shown in Figure~\ref{fig:detailed-setup-test}.
+
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{setup-test.\figext}
+    \caption{Setup cluster tests}
+    \label{fig:detailed-setup-test}
+  \end{center}
+\end{figure}
+ 
+ Once the test setup completes do the following steps:
 \begin{enumerate}
  \item open another terminal 
  \item login as the user you gave in the setup
