@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.7 2003/07/18 21:23:38 ngorsuch Exp $
+      $Id: config.xml,v 1.8 2003/07/23 19:35:24 brechin Exp $
   -->
   <name>perl-Qt</name>
 
@@ -33,10 +33,18 @@
   <description>Perl-Qt allows for writing Qt programs in Perl</description>
 
   <rpmlist>
+    <filter distribution='redhat' />
     <rpm>qt</rpm>
     <rpm>qt-devel</rpm>
     <rpm>cups-libs</rpm>
   </rpmlist>
+
+  <rpmlist>
+    <filter distribution='mandrake' />
+    <rpm>libqt3</rpm>
+    <rpm>libqt3-devel</rpm>
+  </rpmlist>
+    
   <rpmlist>
 <!-- For distros with Perl 5.6 -->
     <filter distribution='redhat'   distribution_version='7.3' />
@@ -45,12 +53,12 @@
     <filter distribution='rhas'   distribution_version='2.1AS' />
       <rpm>perl-Qt-5.6</rpm>
   </rpmlist>
+
   <rpmlist>
 <!-- For distros with Perl 5.8 -->
     <filter distribution='redhat'   distribution_version='8.0' />
     <filter distribution='redhat'   distribution_version='9' />
     <filter distribution='mandrake' distribution_version='9.0' />
-    <filter distribution='mandrake' distribution_version='9.1' />
     <filter distribution='suse' />
       <rpm>perl-Qt</rpm>
   </rpmlist>
