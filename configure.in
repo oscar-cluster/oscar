@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.12 2002/05/22 20:05:33 naughtont Exp $
+# $Id: configure.in,v 1.13 2002/05/22 20:46:56 brechin Exp $
 #
 # $COPYRIGHT$
 #
@@ -108,6 +108,7 @@ AC_OUTPUT([
     packages/pvm/SRPMS/Makefile
     packages/sis/Makefile
     packages/sis/RPMS/Makefile
+    packages/sis/scripts/Makefile
     packages/switcher/Makefile
     packages/switcher/RPMS/Makefile
     packages/switcher/SRPMS/Makefile
