@@ -1,4 +1,4 @@
-% $Id: pkg-layout.tex,v 1.2 2003/09/08 22:31:34 naughtont Exp $
+% $Id: pkg-layout.tex,v 1.3 2003/09/09 06:21:17 naughtont Exp $
 
 \section{Package Layout}
 \label{sect:pkg-layout}
@@ -8,47 +8,127 @@ install a cluster needed to be cleanly seperated from the software that was
 to be installed.  The approach taken was to create \emph{OSCAR Packages}.
 The OSCAR Package layout is geared toward making things as simple as
 possible for package authors.  So, in its simplest form an OSCAR Package is
-an RPM~\footnote{A binary RPM compiled for an OSCAR supported Linux
+an RPM\footnote{A binary RPM compiled for an OSCAR supported Linux
 distribution.}.  However, most software requires further configuration for
 a cluster environment so additional scripts, documentation, etc. may be
-added.  The basic directory structure for an OSCAR Package is as follows:
+added.  The basic directory structure for an OSCAR Package is as follows
+along with a list of the available environment variables in 
+Table~\ref{tab:oscar-envvars}.
 
 \begin{quote}
 \begin{description}
-    \item[\file{config.xml}] -- meta file with description, version, etc.
-    \item[\file{RPMS/}] -- directory containing binary RPM(s) for the package
-    \item[\file{SRPMS/}] -- directory containing source RPM(s) used to build
+  \item[\file{config.xml}] -- meta file with description, version, etc.
+  \item[\directory{RPMS/}] -- directory containing binary RPM(s) for the package
+  \item[\directory{SRPMS/}] -- directory containing source RPM(s) used to build
                             the package
-    \item[\file{scripts/}] --  set of scripts that run at particular times
+  \item[\directory{scripts/}] --  set of scripts that run at particular times
                      during the installation/configuration of the cluster
-    \item[\file{testing/}] -- unit test scripts for the package
-    \item[\file{doc/}] -- documentation and/or license information
+  \item[\directory{testing/}] -- unit test scripts for the package
+  \item[\directory{doc/}] -- documentation and/or license information
 \end{description}
 \end{quote}
 
+% Table with all currently supported/recognized Environment Variables
+\input{oscar-envvars-table.tex}
 
 The packaging API provides authors the ability to make use of scripts to
 configure the cluster software outside of the RPM itself.  The scripts fire
-at different stages of the installation process and test scripts can be
-added to verify the process. Additionally, an OSCAR Package Downloader
-(OPD) (see Section~\ref{sect:opd}) is provided to simplify acquisition of
-new packages.
+at different stages of the installation process and \directory{testing/}
+scripts can be added to verify the process.  These are detailed in
+Table~\ref{tab:pkg-scripts} and Section~\ref{sect:pkg-testing}.  Lastly, an
+OSCAR Package Downloader (OPD) tool is provided to simplify acquisition of
+new packages (see Section~\ref{sect:opd}).
+
 
 
 
 \subsection{\file{config.xml}}
-This file provides the version/description information similar to that
-obtained from an \cmd{rpm --query --info \emph{RPM\_NAME}}.  Additionally,
-the list of RPMS and where they are to be installed, e.g., server or clients.
-There are also XML fields for expressing details about the distribution the 
-binary RPMS were compiled for as well as simple dependencies on other OSCAR
+
+This file provides the version/description information for the
+package\~footnote{This information is similar to that obtained from an
+\cmd{rpm --query --info \emph{RPM\_NAME}}}.  Additionally, the list of RPMS
+and where they are to be installed, e.g., server or clients.  There are
+also XML fields for expressing details about the distribution the binary
+RPMS were compiled for as well as simple dependencies on other OSCAR
 Packages, e.g., Env-Switcher.  If this meta file is not included a
-simplistic default is used--install all files in \file{RPMS/} on all
+simplistic default is used--install all files in \directory{RPMS/} on all
 machines in cluster.  The available XML tags for use in this file are
 listed in Table~\ref{tab:pkg-xml-tags}.
 
+
+% Table with all currently supported XML tags & brief description
 \input{pkg-xml-table.tex}
 
 
 \subsection{RPMS \& SRPMS}
+
+The binary RPMS are placed obviously enough in the \directory{RPMS}
+directory.  The OSCAR Wizard copies all files listed in the \xmltag{rpmlist} 
+from this \directory{RPMS} directory to the \directory{/tftpboot/rpm} directory 
+or alternately the directory specified by the environment variable 
+\envvar{OSCAR\_RPMPOOL}. 
+
+\begin{verse}
+   {\bfseries Notice: } As of OSCAR-2.3 the \xmltag{filter} tag does not yet
+   support the \xmlval{subdir} attribute, which is used to specify a
+   directory for the \xmltag{rpm}'s in the \xmltag{rpmlist}.  Due to this
+   limitation, some packages use a \file{setup} script to copy the
+   appropriate RPMS to this \directory{RPMS} area based on the value
+   returned from Perl method \verb={OSCAR::Distro::which_distro_server();=.
+\end{verse}
+
+
+
+% TJN: finish this section
+\subsection{scripts}
+
+The currently available API scripts are listed in Table~\ref{tab:pkg-scripts}.
+% Table with all currently supported API script & brief description.
+\input{pkg-scripts-table.tex}
+
+
+
+% TJN: finish this section
+\subsection{testing}
+\label{sect:pkg-testing}
+
+Basic tests are run for each package.  The two scripts that are available
+for this testing are: \file{test\_root} and \file{test\_user}.  When tests
+are run for the cluster, all \file{test\_root} scripts are sourced which
+perform any root level package tests.  
+
+\begin{verse}
+   {\bfseries Notice: } There are obvious security issues with this
+   but currently all operations in the cluster installation are being
+   performed by {\tt root} so care is expected at all phases.  The user
+   tests are run as an actual user so those tests are somewhat less 
+   dangerous and therefore most packages are using \file{test\_user}.
+\end{verse}
+
+
+The tests typically have PBS available and most of teh \file{test\_user}
+scripts simply setup and run a simple PBS jobs for the installed software,
+e.g., PVM, MPI's.  The testing framework is currently pretty simple with
+display functions provided which show boolean results of ``PASSED'' or
+``FAILED''.
+
+
+
+
+ 
+\subsection{doc}
+
+This directory contains supplemental documentation for the package.  There
+are a few pre-defined \LaTeX\ files that may be incorporated into the
+overall OSCAR documentation if the package's classification is either
+\emph{core} or \emph{selected}~\footnote{That is to say the package is
+included in the main distribution tarball -- not obtained via OPD.}.  These
+files are: \file{install.tex}, \file{user.tex} and \file{license.tex}.  The
+first is added to the overall \file{install.pdf} and contains information
+related to the installation of the particular software package.  The latter
+two files are incorporated into the \file{user.pdf}.   The user information
+can be complete or simply pointers to obtaining more thorough documentation
+for the particular package.  The license for all packages are listed in
+this document based on the contents of this \file{license.tex} file.
+
 
