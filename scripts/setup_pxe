@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.2 2001/12/12 20:45:12 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.3 2002/04/05 19:47:15 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -32,9 +32,7 @@ use POSIX;
 
 my $RPMPOOL = "/tftpboot/rpm";
 my $ARCH=(uname)[4]; # Default architecture
-if (($ARCH eq "i486") || ($ARCH eq "i586") ||($ARCH eq "i686")) {
-        $ARCH="i386";
-}
+$ARCH =~ s/i.86/i386/;
 
 my $options=AppConfig->new(
 		Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
@@ -77,31 +75,53 @@ copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or
 	croak("Unable to copy pxelinux.0 file to /tftpboot.");
 
 &verbose("Copying default pxelinux.cfg file");
-my $archdir;
-if ($ARCH eq "i386") {
-        $archdir="i386-boot";
-} elsif ($ARCH eq "ia64") {
-        $archdir="ia64-boot";
-}
-copy("/usr/share/systemimager/$archdir/pxelinux.cfg/default", "/tftpboot/pxelinux.cfg/") or 
-	croak("Unable to copy default pxelinux.cfg file to /tftpboot.");
+my $archdir = "$ARCH-boot";
 
-&verbose("Copying SystemImager kernel & ramdisk");
-copy("/usr/share/systemimager/$archdir/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
-	croak("Unable to copy default message.txt file to /tftpboot.");
+if($ARCH eq "i386") {
+    copy("/usr/share/systemimager/$archdir/pxelinux.cfg/default", "/tftpboot/pxelinux.cfg/") or 
+      croak("Unable to copy default pxelinux.cfg file to /tftpboot.");
+
+    &verbose("Copying SystemImager kernel & ramdisk");
+    copy("/usr/share/systemimager/$archdir/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
+      croak("Unable to copy default message.txt file to /tftpboot.");
+} elsif ($ARCH eq "ia64") {
+    copy("/boot/efi/elilo.efi","/tftpboot") or
+      croak("Unable to copy elilo.efi to /tftpboot");
+    symlink("elilo.efi","pxelinux.0");
+    open(OUT,">/tftpboot/elilo.conf") or croak("Couldn't open /tftpboot/elilo.conf for writing");
+    print OUT <<'END';
+prompt
+timeout=50
+default=sisboot
+
+image=kernel
+        label=sisboot
+        initrd=initrd.gz
+        read-only
+        root=/dev/ram
+
+END
+  
+} else {
+    croak("$ARCH is not a known architecture");
+}
 
 copy("/usr/share/systemimager/$archdir/kernel", "/tftpboot/") or 
-	croak("Unable to copy kernel file to /tftpboot.");
-
+  croak("Unable to copy kernel file to /tftpboot.");
+    
 copy("/usr/share/systemimager/$archdir/initrd.gz", "/tftpboot/") or 
-	croak("Unable to copy ramdisk file to /tftpboot.");
+  croak("Unable to copy ramdisk file to /tftpboot.");
 
 exit 0; 
 
 sub install_required_rpms {
-    my @rpms = qw(tftp-hpa
-                syslinux-1.63-1
-                );
+    my @rpms = qw(
+                  tftp-hpa
+                 );
+    if($ARCH eq "i386") {
+        push @rpms, qw(syslinux-1.63-1);
+    }
+    
 
     my @installme = ();
     foreach my $rpm (@rpms) {
