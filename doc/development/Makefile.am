@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.5 2002/02/09 19:00:36 jsquyres Exp $
+# $Id: Makefile.am,v 1.6 2002/09/09 14:04:11 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -16,6 +16,7 @@ MAIN_TEX	= development.tex
 OTHER_SRC_FILES	= \
 		cvs.tex \
 		core.tex \
+		collaboration.tex \
 		directories.tex \
 		defs.tex \
 		intro.tex \
