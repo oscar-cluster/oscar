@@ -10,72 +10,8 @@ Author: Terry Fleury <tfleury@ncsa.uiuc.edu>
   $Id:
 -->
 
-<!--
-  Notes:
-
-  classname = The name of the Perl module file containing the PerlQt NEW
-              function.  This will be used in creating a new instance of
-              this object.  Note that this name can be different from the
-              directory containing the Task/Tool.  For example, the Opder
-              may reside in the directory $OSCAR_HOME/Installer/Opder, but
-              the file containing the PerlQt NEW subroutine may be named
-              OpderMain.pm.  To create a new instance of the Opder, the
-              InstallerWorkspace would call something like this:
-
-              # Opder is directory name, so use it for lib path:
-              use lib "$ENV{OSCAR_HOME}/Installer/Opder";
-              # OpderMain is object name, so use it for instance creation:
-              my $obj = Opder::OpderMain;
-              # As with all PerlQt objects, NEW is called implicitly.
-
-              If the 'classname' field is absent, the directory name of the
-              Task/Tool is assumed.  So if no 'classname' field for the Opder 
-              directory, then the main object file defaults to Opder.pm.
-
-  fullname =  The "pretty" name for the Task/Tool which will appear in 
-              the pulldown menus.  This shouldn't be TOO long since it will
-              appear in a pulldown menu.  If the 'fullname' field is absent,
-              then it defaults to the 'classname' field.
--->
-
   <classname>Opder</classname>
-  <fullname>OSCAR Package Downloader</fullname>
-
-  <oda>
-
-  <!--
-    Notes:
-
-    command = Probably valid only for Tasks.  This is an arbitrary 'oda'
-              command which gets executed to see if this Task is allowed
-              to run.  If the test field (see below) is absent/null, then
-              the oda commands must return a non-null/non-zero value in
-              order for the Tasks to be allowed to run.  If the test field
-              is non-null, then the result of the oda command is placed in
-              the variable $a which can be used in arbitrary Perl code to
-              return a success/fail value.  The result of the Perl code
-              must be non-null/non-zero to allow the Task to run.  Note
-              that you do NOT need to prepend the leading 'oda' to the
-              command.  It is assumed that it will be called as 
-              'oda command'.
-
-    test = Arbitrary Perl code which should return a true/false (i.e.
-           non-zero/null) value.  The output of the oda command above is
-           stored in the variable $a.  You use this variable in your Perl
-           test code.  Note that your test will be surrounded by ((   ))
-           so you don't need to worry about extra parens.
-  -->
-
-    <command>oscar_version</command>
-    <test>($odaresult[0] &gt;= 2.3) and ($odaresult[0] &lt;= 4.0)</test>
-
-  </oda>
-
-<!-- 
-  <oda>
-    <command>oscar_name</command>
-  </oda>
--->
+  <fullname>Download Additional Packages</fullname>
 
 </oscar>
 
