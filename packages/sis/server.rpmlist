@@ -1,0 +1,11 @@
+systeminstaller
+systeminstaller-x11
+perl-Tk
+perl-DBI
+systemimager-common
+systemimager-server
+systemimager-i386boot
+libappconfig-perl
+libdbdcsv-perl
+dhcp
+rsync
