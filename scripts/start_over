@@ -218,6 +218,7 @@ sub cleanup_files {
               '/var/lib/clamdr',
 	      '/var/lib/mysql',
 	      '/var/lib/mysqld',
+	      '/var/lib/oscar',
               '/var/lib/systemimager',
               '/var/lib/systeminstaller',
               '/var/log/systemimager',
