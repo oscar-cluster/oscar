@@ -51,12 +51,12 @@ echo -e "\t\t\t----------"
 # Checks status of services listed below.  If they are not running, it
 # tries to start them, then checks again if they are running.  If unsuccessful
 # on any test, it dumps out
-pfilteron=0
-if [ `/sbin/service pfilter status | grep -c "is running"` -ne 0 ]; then
-  pfilteron=1
-fi
+#pfilteron=0
+#if [ `/sbin/service pfilter status | grep -c "is running"` -ne 0 ]; then
+#  pfilteron=1
+#fi
 
-for serv in pfilter sshd pbs_server maui ; do
+for serv in sshd pbs_server maui ; do
   if [ `/sbin/service $serv status | grep -c "is running"` -eq 0 ]; then
     # Let's try to restart the service
     /sbin/service $serv start
@@ -129,8 +129,8 @@ echo -n -e "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
 # Run user portion as the user for a valid test
 /bin/su -c "OSCAR_test/test_cluster $clients $ppn" - $test_user
 
-if [ $pfilteron -eq 0 ]; then
-  `/sbin/service pfilter stop`
-fi
+#if [ $pfilteron -eq 0 ]; then
+#  `/sbin/service pfilter stop`
+#fi
 
 waitexit
