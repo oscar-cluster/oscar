@@ -146,8 +146,20 @@
 
  # This creates a small list box with 1 item ($selection) selected.
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/Help.pm.orig	2003-04-09 10:31:41.000000000 -0700
-+++ /usr/lib/systeminstaller/SystemInstaller/Tk/Help.pm	2004-10-20 12:07:07.000000000 -0700
-@@ -69,10 +69,12 @@
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/Help.pm	2005-02-15 12:07:44.000000000 -0800
+@@ -28,9 +28,10 @@
+          "Package File" => "Package File:\n\nThis option specifies a text file which contains a list of all the packages that should be installed.\nThere are various samples for several distributions under /usr/share/systeminstaller/distinfo",
+          "Disk File" => "Disk File:\n\nThis option specifies a text file which contains the disk partitiontion table for the image.\n\nFor more information on the format please see the mksidisk man page. There is a sample disktable in /usr/share/doc/systeminstaller-<version>/disktable.",
+          "Target Architecture" => "Target Architecture:\n\nThis option specifies what architecture the images should be built for.  The value will default to the current architecture.\n\nThere is some support for cross architecture image building, though it is mostly untested.",
+-         "Post Install Action" => "Post Install Action:\n\nThis option specifies what the client should do after installation has completed.  There options are:\n\nbeep - Clients will beep incessantly after succussful completion of an autoinstall.\n\nreboot - Clients will reboot themselves after successful completion of an autoinstall.\n\nshutdown -- Clients will halt themselves after successful completion of an autoinstall.",
++         "Post Install Action" => "Post Install Action:\n\nThis option specifies what the client should do after installation has completed.  The options are:\n\nbeep - Clients will beep incessantly after succussful completion of an autoinstall.\n\nreboot - Clients will reboot themselves after successful completion of an autoinstall.\n\nshutdown -- Clients will halt themselves after successful completion of an autoinstall.",
+          "Virtual Disk" => "Virtual Disk:\n\nSpecify a virtual disk device for the Iseries machine.  The specified device will have the image copied to it, and can serve as a master virtual disk, that can be replicated using CPYNWSSTG commands.  WARNING:The contents of the  device  specified here will be completely destroyed.",
+          "IP Method" => "IP Assignment Method:\n\nThis option specifies how ip addresses will be assigned to clients. The options are:\n\ndhcp -- A DHCP server will assign IP addresses dynamically to clients installed. They may be assigned a different address each time.\n\nstatic -- The IP address the client uses during autoinstall will be permanently assigned to that client.\n\nreplicant -- Don't mess with the network settings in this image.  I'm using it as a backup and quick restore mechanism for a single machine.",
++         "Multicast" => "Multicast:\n\nPlease refer to the \"OSCAR Installation Guide\", Multicast Installs with SystemImager, for more information.\n\nNOTE: Multicast support is experimental and highly dependent on your network.",
+          #### Now we get the Addclients Help
+          "Image Name Addclients" => "Image Name:\n\nThe name of the image that this client will be attached to.  This image must already exist on your image server.",
+          "Domain Name" => "Domain Name:\n\nThe network domain name you wish to be assigned to the client.",
+@@ -69,10 +70,12 @@
      my $window = shift;
      my $tag = shift;
      my $helpwindow = $window->Toplevel();
