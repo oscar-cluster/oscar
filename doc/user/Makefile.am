@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.3 2002/06/19 17:33:50 mchasal Exp $
+# $Id: Makefile.am,v 1.4 2002/07/19 02:31:47 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -17,6 +17,7 @@ OTHER_SRC_FILES	= \
 		defs.tex \
 		titlepage.tex \
 		toc.tex \
+		intro.tex \
 		package-docs.tex \
 		package-license.tex
 
@@ -46,7 +47,8 @@ EPS_FIG_FILES	= $(FIG_FILES:.png=.eps)
 # Tell automake to include all the relevant files
 
 EXTRA_DIST	= $(MAIN_TEX) $(OTHER_SRC_FILES) $(FIG_FILES)
-CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~ package-docs.tex
+CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~ \
+		  package-docs.tex package-license.tex
 
 # Some common target names
 
