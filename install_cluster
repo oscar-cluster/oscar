@@ -215,6 +215,17 @@ oscar_log_subsection("Running: \"$cmd\"");
 !system($cmd)
     or die("Oscar Wizard preparation script failed to complete");
 oscar_log_subsection("Successfully ran wizard_prep");
+#
+# HORRIBLE HACK ALERT -- FIXING MANDRAKE SNAFU
+#
+#print __FILE__,":",__LINE__,":INC:",join(", ",@INC),"\n";
+my %incs = map { $_ => 1 } @INC;
+foreach ( `perl -e 'print "\$_\n" foreach \@INC'` ) {
+	chomp;
+	eval "use lib \"$_\"" unless $incs{$_};
+}
+undef %incs;
+#print __FILE__,":",__LINE__,":INC:",join(", ",@INC),"\n";
 
 # Seed ODA
 

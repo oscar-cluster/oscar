@@ -609,6 +609,7 @@ sub read_all_pkg_config_xml_files {
 #       oscar_log_subsection("Reading $config");
             $PACKAGE_CACHE->{$pkg} = eval { $xs->XMLin($config); };
             if ($@) {
+            oscar_log_subsection($@);
             oscar_log_subsection("WARNING! The config.xml file for $pkg is invalid.  Creating an empty one...");
             $PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
             } else {
