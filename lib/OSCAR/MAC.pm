@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.9 2002/08/17 04:50:55 jsquyres Exp $
+#   $Id: MAC.pm,v 1.10 2002/08/20 21:18:27 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.9 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.10 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -343,6 +343,15 @@ sub add_mac_to_hash {
     # if the mac is 00:00:00:00:00:00, it isn't real
     if($mac =~ /^[0\:]+$/) {
         return 0;
+    }
+    # Get the server's MAC(s) and make them ready for regex usage
+    open(CMD, "/sbin/ifconfig | grep HWaddr | tail -c 20 | sed -e 's-\:-\\\:-g' |");
+    my @hostmacs = <CMD>;
+    close CMD;
+    foreach my $hostmac (@hostmacs) {
+      if ($mac =~ /$hostmac/) {
+        return 0;
+      }
     }
     # if it already has an order, then we already know about it
     if($MAC{$mac}->{order}) {
