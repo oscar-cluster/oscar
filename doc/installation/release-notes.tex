@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.35 2003/08/05 22:47:00 naughtont Exp $
+% $Id: release-notes.tex,v 1.36 2003/08/13 22:11:39 naughtont Exp $
 %
 
 \section{Release Notes}
@@ -32,23 +32,30 @@ The following release notes apply to OSCAR version \oscarversion.
   
 \item A domain name must be specified for the client nodes when
   defining them.
-  
-\item The current version of C3 that is shipped with OSCAR requires
-  Python 2.x.  The Python 2.x RPMs that are provided in OSCAR are
-  re-built to work on RedHat 7.1 as well as RedHat 7.2.  However,
-  RedHat 7.2 ships with Python 2.x, so measures were taken such that
-  the OSCAR-shipped Python 2.x RPM will not be installed over the
-  default RedHat 7.x RPM (specifically, the RPM release number has
-  been decremented).  Due to some distribution portability issues,
-  OSCAR currently installs a ``compatibility''
-  (\file{python2-compat-1.0-1}) RPM to resolve the Python2
-  prerequisite that is slightly different across different Linux
-  distributions.  Also see the file
-  \file{packages/c3/RPMS/NOTE.python2}.
+
+%TJN: KEEP THIS (if we keep the python2-compat rpms under c3?)
+\item Due to some distribution portability issues, OSCAR currently installs
+  a ``compatibility'' (\file{python2-compat-1.0-1}) RPM to resolve the
+  Python2 prerequisite that is slightly different across different Linux
+  distributions.  Also see the file \file{packages/c3/RPMS/NOTE.python2}.
+
+%TJN: CUT THIS?
+% \item The current version of C3 that is shipped with OSCAR requires
+%   Python 2.x.  The Python 2.x RPMs that are provided in OSCAR are
+%   re-built to work on RedHat 7.1 as well as RedHat 7.2.  However,
+%   RedHat 7.2 ships with Python 2.x, so measures were taken such that
+%   the OSCAR-shipped Python 2.x RPM will not be installed over the
+%   default RedHat 7.x RPM (specifically, the RPM release number has
+%   been decremented).  Due to some distribution portability issues,
+%   OSCAR currently installs a ``compatibility''
+%   (\file{python2-compat-1.0-1}) RPM to resolve the Python2
+%   prerequisite that is slightly different across different Linux
+%   distributions.  Also see the file
+%   \file{packages/c3/RPMS/NOTE.python2}.
 
 \item In some cases, the test window that is opened from the 
   OSCAR wizard may close suddenly when there is a test failure. If
-  this happens, run the test script, \file{testing/test\_cluster\_as\_root},
+  this happens, run the test script, \file{testing/test\_cluster},
   manually in a shell window to diagnose the problem.
  
 \item Although OSCAR can be installed on pre-existing server nodes, it
@@ -72,9 +79,8 @@ The following release notes apply to OSCAR version \oscarversion.
   It is safe to ignore these messages.
   
 \item The OSCAR installer will install the MySQL package on the server
-  node if it is not already installed.  OSCAR \oscarversion\ requires
-  that there is no password required for \user{root} access to the
-  MySQL database.
+  node if it is not already installed.  You will be prompted to enter a
+  password to used for the MySQL database.
   
 \item The OSCAR installer GUI provides little protection for user
   mistakes.  If the user executes steps out of order, or provides
@@ -90,105 +96,100 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \end{itemize}
 
+%TJN: This section likely goes away...
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{RedHat 7.2 Notes}
-\label{subsec:rh72notes}
-
-\begin{itemize}
-\item The version of Perl that ships with RedHat 7.2 will complain
-  about many variables that ``will not remain shared'' upon invocation
-  of the OSCAR installer GUI.  These warnings are benign and can be
-  safely ignored.
-\end{itemize}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Mandrake 8.2 Notes}
-\label{subsec:mdk82notes}
-
-\begin{itemize}
-\item Before running the OSCAR installer, you must install the
-  \file{libexpat1\_95-devel} RPM (you may need Mandrake 8.2 CD's to run
-  the \cmd{urpmi} command):
-
-\begin{verbatim}
-  # urpmi libexpat1_95-devel
-\end{verbatim}
-
-  This RPM is a prerequisite for the perl-XML-Simple and
-  perl-XML-Parser Perl modules that are installed in the initial
-  installation of OSCAR.  Alternatively, you can install the Mandrake
-  RPMs for perl-XML-Simple and perl-XML-Parser before installing
-  OSCAR:
-
-\begin{verbatim}
-  # urpmi perl-XML-Simple perl-XML-Parser
-\end{verbatim}
-
-
-% TJN: Doc fix for BUG#686916 'xterm needed by SIS'
-%      Remove after 2.2 when add to server_prep/pre-req check areas.
-%     - on RH7.x systems the xterm binaray is packaged w/ XFree86 (big bundle)
-%     - on MDK8.x it showed up in it's own xterm rpm.
-\item The OSCAR wizard makes use of \cmd{xterm} so this package must be
-  installed.  You can check the RPM database for this package by typing
-  \cmd{rpm -q xterm}.  If \cmd{xterm} is not available, you must
-  install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake 8.2
-  CD's to run the \cmd{urpmi} command as mentioned above):
-
-\begin{verbatim}
-  # urpmi xterm
-\end{verbatim}
-
-
-\item There will be two warnings displayed while building the client
-  image -- the \file{lam-oscar} and \file{mpich-oscar} RPMs will
-  display errors regarding a lack of \file{libtcl.so.0}.  It is safe
-  to ignore these warnings.
-  
-\item If installing the third-party package Ganglia, the
-  \file{libpng} RPM version 1.0.8-2mdk must be manually installed
-  before invoking the OSCAR install wizard.  This RPM can be
-  found in the Ganglia distribution package in the following location:\\
-  \file{packages/ganglia/extras/libpng-1.0.8-2mdk.i586.rpm}
-  
-\end{itemize}
-
+% 
+% \subsection{Mandrake 8.2 Notes}
+% \label{subsec:mdk82notes}
+% 
+% \begin{itemize}
+% \item Before running the OSCAR installer, you must install the
+%   \file{libexpat1\_95-devel} RPM (you may need Mandrake 8.2 CD's to run
+%   the \cmd{urpmi} command):
+% 
+% \begin{verbatim}
+%   # urpmi libexpat1_95-devel
+% \end{verbatim}
+% 
+%   This RPM is a prerequisite for the perl-XML-Simple and
+%   perl-XML-Parser Perl modules that are installed in the initial
+%   installation of OSCAR.  Alternatively, you can install the Mandrake
+%   RPMs for perl-XML-Simple and perl-XML-Parser before installing
+%   OSCAR:
+% 
+% \begin{verbatim}
+%   # urpmi perl-XML-Simple perl-XML-Parser
+% \end{verbatim}
+% 
+% 
+% % TJN: Doc fix for BUG#686916 'xterm needed by SIS'
+% %      Remove after 2.2 when add to server_prep/pre-req check areas.
+% %     - on RH7.x systems the xterm binaray is packaged w/ XFree86 (big bundle)
+% %     - on MDK8.x it showed up in it's own xterm rpm.
+% \item The OSCAR wizard makes use of \cmd{xterm} so this package must be
+%   installed.  You can check the RPM database for this package by typing
+%   \cmd{rpm -q xterm}.  If \cmd{xterm} is not available, you must
+%   install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake 8.2
+%   CD's to run the \cmd{urpmi} command as mentioned above):
+% 
+% \begin{verbatim}
+%   # urpmi xterm
+% \end{verbatim}
+% 
+% 
+% \item There will be two warnings displayed while building the client
+%   image -- the \file{lam-oscar} and \file{mpich-oscar} RPMs will
+%   display errors regarding a lack of \file{libtcl.so.0}.  It is safe
+%   to ignore these warnings.
+%   
+% \item If installing the third-party package Ganglia, the
+%   \file{libpng} RPM version 1.0.8-2mdk must be manually installed
+%   before invoking the OSCAR install wizard.  This RPM can be
+%   found in the Ganglia distribution package in the following location:\\
+%   \file{packages/ganglia/extras/libpng-1.0.8-2mdk.i586.rpm}
+%   
+% \end{itemize}
+% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Mandrake 9.0 Notes}
 \label{subsec:mdk90notes}
 
-The following steps are required to be run before attempting to
-install OSCAR on a Mandrake 9.0 cluster.  Please note Mandrake 9.0 is
-only experimentally supported, and these steps have only been lightly
-tested.  Contact the OSCAR user's mailing list with questions and/or
-comments.
+The following may need to be run before attempting to install OSCAR on a
+Mandrake 9.0 cluster.  If there are problems during the server preparation
+related to C3 or Python2 this may solve the issue.
 
 \begin{itemize}
-\item Install some perl modules using CPAN:
-
-\begin{verbatim}
-  # perl -MCPAN -e shell
-  install SQL::Statement
-\end{verbatim}
-  
-\item Install the python 2 compatibility RPM.  This RPM can be found
+\item Install the Python 2 compatibility RPM.  This RPM can be found
   in the OSCAR distribution package, under the \file{packages/c3/RPMS}
   directory:
 
 \begin{verbatim}
-  # cd oscar-2.0/packages/c3/RPMS
+  # cd oscar-2.3/packages/c3/RPMS
   # rpm -Uvh python2-compat-1.0-1.noarch.rpm
 \end{verbatim}
 
+% (ORIGINALLY in the 8.2 notes)
+% TJN: Doc fix for BUG#686916 'xterm needed by SIS'
+%      Remove after 2.3 when add to server_prep/pre-req check areas.
+%     - on RH7.x systems the xterm binaray is packaged w/ XFree86 (big bundle)
+%     - on MDK8.x it showed up in it's own xterm rpm.
+\item The OSCAR wizard makes use of \cmd{xterm} so this package must be
+  installed.  You can check the RPM database for this package by typing
+  \cmd{rpm -q xterm}.  If \cmd{xterm} is not available, you must
+  install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake 
+  CD's to run the \cmd{urpmi} command as mentioned above):
+
+\begin{verbatim}
+  # urpmi xterm
+\end{verbatim}
+
 % TJN: relates to server_prep: unmunge_pathenv()
-\item \user{root}'s default shell configuration files hardcode the
-  value for {\tt PATH} environment variable, regardless of what is
+\item Lastly, \user{root}'s default shell configuration files hardcode the
+  value for the {\tt PATH} environment variable, regardless of what is
   added via {\tt profile.d/} startup scripts.  This effects various
   OSCAR installed components, which are installed into locations such
   as \file{/opt}.  As such, the OSCAR installer appends the global path,
@@ -204,42 +205,50 @@ comments.
 
 \end{itemize}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{IA64 and Other Bleeding Edge Systems Notes}
 \label{subsec:ia64notes}
 
-\begin{itemize}
+IA64 support was removed for the \oscarversion\ release of OSCAR due to
+timing problems and the significant differences between current IA32
+distributions and the freely available IA64 distributions.  IA64 suppor is
+fully expected to return in the next release.
 
-\item The OSCAR auto-install diskette will probably not work on Itanium
-  systems, but they mostly have support for network booting.
-  
-\item Some Itanium 1 or 2 systems are supported by OSCAR under
-  RedHat's Linux 7.2 release for Itanium.  Itanium systems that can
-  use the standard RedHat Itanium kernel for booting and network
-  access should work with OSCAR.
-
-\item Itanium 2 machines often have newer hardware interfaces for
-	things like networking or disk drives that sometimes require newer
-	kernels than those provided by official Linux distributions. RedHat 7.2
-	will work on some Itanium2 machines. Manufacturers will typically
-	provide driver disks or driver downloads for their machine's newer
-	hardware interfaces. The user will sometimes have to compile their own
-	kernel.  This is essentially a ``do it yourself'' kind
-    of process, and not recommended for novices.  Please consult the
-    OSCAR user's mailing list for more information.
-
-\item If an Itanium (or an IA32 based) system has new or unknown
-  hardware that is not supported by the stock kernel in the base
-  operating system release, it will not work with standard OSCAR,
-  since OSCAR uses the kernel RPMS supplied with the vendors release
-  to boot and load the compute nodes.  If you have a custom compiled
-  kernel/module set that works for your hardware, you should look at
-  the NCSA Kernel\_Picker utility at \url{http://oscar.ncsa.uiuc.edu/} to
-  enable you to use them in OSCAR.
-
-\end{itemize}
-
+%TJN: Uncomment when ia64 support returns (and update things!) ;)
+%
+% \begin{itemize}
+% 
+% \item The OSCAR auto-install diskette will probably not work on Itanium
+%   systems, but they mostly have support for network booting.
+%   
+% \item Some Itanium 1 or 2 systems are supported by OSCAR under
+%   RedHat's Linux 7.2 release for Itanium.  Itanium systems that can
+%   use the standard RedHat Itanium kernel for booting and network
+%   access should work with OSCAR.
+% 
+% \item Itanium 2 machines often have newer hardware interfaces for
+% 	things like networking or disk drives that sometimes require newer
+% 	kernels than those provided by official Linux distributions. RedHat 7.2
+% 	will work on some Itanium2 machines. Manufacturers will typically
+% 	provide driver disks or driver downloads for their machine's newer
+% 	hardware interfaces. The user will sometimes have to compile their own
+% 	kernel.  This is essentially a ``do it yourself'' kind
+%     of process, and not recommended for novices.  Please consult the
+%     OSCAR user's mailing list for more information.
+% 
+% \item If an Itanium (or an IA32 based) system has new or unknown
+%   hardware that is not supported by the stock kernel in the base
+%   operating system release, it will not work with standard OSCAR,
+%   since OSCAR uses the kernel RPMS supplied with the vendors release
+%   to boot and load the compute nodes.  If you have a custom compiled
+%   kernel/module set that works for your hardware, you should look at
+%   the NCSA Kernel\_Picker utility at \url{http://oscar.ncsa.uiuc.edu/} to
+%   enable you to use them in OSCAR.
+% 
+% \end{itemize}
+% 
 
 % LocalWords:  tex Exp TJN unmunge pathenv

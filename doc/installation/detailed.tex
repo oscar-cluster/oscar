@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.59 2003/03/18 01:43:52 jsquyres Exp $
+% $Id: detailed.tex,v 1.60 2003/08/13 22:11:38 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -139,7 +139,7 @@ Place the OSCAR distribution package in a directory such as
 \user{root}'s home directory on the server node.  Although there is no
 required installation directory (note that you may not use the
 directory \file{/usr/local/oscar} or \file{/opt/oscar} -- they are
-both reserved for future use), the rest of these instructions will
+both reserved for use by OSCAR), the rest of these instructions will
 assume that you downloaded the OSCAR distribution package to
 \user{root}'s home directory.
 
@@ -177,6 +177,8 @@ assume that you downloaded the OSCAR distribution package to
         \file{\obase/COPYING} & GNU General Public License
         v2 \\
                                 %
+        \file{\obase/dist} & distribution scripts for configure/install \\
+                                %
         \file{\obase/doc} & OSCAR documentation directory \\
                                 %
         \file{\obase/images} & auxiliary images used in the GUI \\
@@ -210,16 +212,54 @@ assume that you downloaded the OSCAR distribution package to
   
 } % end detailed
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Configure and Install OSCAR}
+\label{det:configure-install}
+
+%TJN: intentionally not using oscarversion 
+Starting with OSCAR 2.3, after unpacking the tarball you will need to
+configure and install OSCAR.  The configure portion sets up the release to
+be permantently installed on the system in \file{/opt/oscar} (default
+location).  The {\tt --prefix=\emph{ALT-DIR}} $\,$ flag can be used to
+configure and install OSCAR into an alternate directory.  
+
+The first step is to run the \file{configure} script, which is provided in
+the top-level directory of the OSCAR release.  
+
+  \vspace{11pt} {\tt
+          \# cd /root/oscar-\oscarversion \\
+  \indent \# ./configure }  \vspace{11pt} 
+
+Once the configure script sucessfully completes you are ready to actually
+install OSCAR on the server.  At this point no changes have been made to
+the system beyond the \file{oscar-\oscarversion} directory itself.  Running
+the following will copy the files to the system.  The files copied will
+include the base OSCAR toolkit as well as startup scripts for the
+\file{profile.d/} area.  The startup scripts add OSCAR to your path and set
+environment variables like {\tt OSCAR\_HOME}.
+
+  \vspace{11pt} {\tt
+  \indent \# make install} \vspace{11pt}
+
+
+At this point you will be ready to change to either the default
+\file{/opt/oscar} directory or whatever path was use with the {\tt
+--prefix} flag to perform the installation steps discussed in Section
+\ref{det:installcluster}.
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Configure the ethernet adapter for the cluster} 
 \label{det:serveradapter}
 
-Assuming you want your server to be connected to both an public
+Assuming you want your server to be connected to both a public
 network and the private cluster subnet, you will need to have two
 ethernet adapters installed in the server. This is the preferred OSCAR
-configuration because exposing your cluster may not only be a security
-risk, certain software used in OSCAR (such as DHCP) may conflict with
+configuration because exposing your cluster may be a security
+risk and certain software used in OSCAR (such as DHCP) may conflict with
 your external network.
 
 Once both adapters have been physically installed in the server node,
@@ -304,7 +344,10 @@ automatically).
   For each CD, locate the directory that contains the RPMs.  In RedHat
   7.x, the RPMs are located in the \file{RedHat/RPMS} directory (i.e.,
   \file{/mnt/cdrom/RedHat/RPMS}).  Copy the RPMS into the
-  \file{/tftpboot/rpm} directory with a command such as:
+  \file{/tftpboot/rpm} directory with a command such as~\footnote{It may be
+   helpful to use \cmd{rsync} for these mass copies to ensure the integrity of
+   the data (at a cost of longer transfer times).  For example replace 
+   the \cmd{cp} command in the example with \cmd{rsync -cav --stats}. }:
 
   % Turns out that you can't put verbatim mode in \detailed{}.  Arrgh!
 
