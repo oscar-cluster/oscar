@@ -10,7 +10,7 @@
     <major>3</major>
     <minor>2</minor>
     <subversion>5</subversion>
-    <release>7</release>
+    <release>9</release>
   </version>
 
   <class>included</class>
@@ -19,8 +19,8 @@
   <license>Maui license</license>
   <group>Applications/batch</group>
   <packager>
-    <name>Jason Brechin</name>
-    <email>brechin@ncsa.uiuc.edu</email>
+    <name>David N. Lombard</name>
+    <email>dnl@speakeasy.net</email>
   </packager>
 
   <description>
