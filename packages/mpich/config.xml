@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.8 2002/11/04 23:13:25 jsquyres Exp $
+      $Id: config.xml,v 1.9 2003/03/06 01:52:12 brechin Exp $
       -->
 
   <name>mpich</name>
@@ -18,7 +18,7 @@
   <version>
     <major>1</major>
     <minor>2</minor>
-    <subversion>4</subversion>
+    <subversion>5</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
@@ -57,7 +57,7 @@ libraries.</description>
   <package>
     <switcher>
       <tag>mpi</tag>
-      <name>mpich-1.2.4</name>
+      <name>mpich-1.2.5</name>
     </switcher>
   </package>
 
