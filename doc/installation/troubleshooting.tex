@@ -1,0 +1,110 @@
+% -*- latex -*-
+%
+% $Id: troubleshooting.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+%
+% $COPYRIGHT$
+%
+
+\section{Troubleshooting}
+\label{app:troubleshooting}
+
+\subsection{Known Problems and Solutions}
+\label{app:troubleshooting-known-problems}
+
+\subsubsection{Client nodes fail to network boot}
+\label{app:troubleshooting-known-problems-dhcp}
+
+There are two causes to this problem. The first is that the DHCP
+server is not running on the server machine, which probably means the
+\file{/etc/dhcpd.conf} file format is invalid. Check to see if it is
+running by running the command ``\cmd{service dhcpd status}'' in the
+terminal.  If no output is returned, the DHCP server is not running.
+See the problem solution for ``DHCP server not running'' below. If the
+DHCP server is running, the client probably timed out when trying to
+download its configuration file. This may happen when a client is
+requesting files from the server while multiple installs are taking
+place on other clients. If this is the case, just try the network boot
+again when the server is less busy. Occasionally, restarting the inet
+daemon also helps with this problem as it forces tftp to restart as
+well. To restart the daemon, issue the following command:
+
+\begin{verbatim}
+  service xinetd restart
+\end{verbatim}
+
+\subsubsection{DHCP server not running}
+
+Run the command ``\cmd{service dhcpd start}'' from the terminal and
+observe the output. If there are error messages, the DHCP
+configuration is probably invalid. A few common errors are documented
+below. For other error messages, see the \file{dhcpd.conf} man page.
+
+\begin{enumerate}
+\item If the error message produced reads something like
+  ``\msgout{Can't open lease database}'', you need to manually create
+  the DHCP leases database, \file{/var/lib/dhcp/dhcpd.leases}, by
+  issuing the following command in a terminal:
+
+\begin{verbatim}
+  touch /var/lib/dhcp/dhcpd.leases
+\end{verbatim}
+  
+\item If the error message produced reads something like ``\msg{Please
+    write a subnet declaration for the network segment to which
+    interface ethx is attached}'', you need to manually edit the DHCP
+  configuration file, \file{/etc/dhcpd.conf}, in order to try to get
+  it valid. A valid configuration file will have at least one subnet
+  stanza for each of your network adapters. To fix this, enter an
+  empty stanza for the interface mentioned in the error message, which
+  should look like the following:
+
+\begin{verbatim}
+  subnet subnet-number netmask subnet-mask { }
+\end{verbatim}
+  
+  The subnet number and netmask you should use in the above command
+  are the one's associated with the network interface mentioned in the
+  error message.
+\end{enumerate}
+
+\subsubsection{PBS is not working}
+
+The PBS configuration done by OSCAR did not complete successfully and
+requires some manual tweaking. Issue the following commands to
+configure the server and scheduler:
+
+\begchange
+\begin{verbatim}
+  service pbs_server start
+  service maui start
+  cd /root/OSCAR-1.1.1/pbs/config
+  /usr/local/pbs/bin/qmgr < pbs_server.conf
+\end{verbatim}
+
+Replace ``\file{/root}'' with the directory into which you unpacked
+\endchange
+OSCAR in the change directory command above.
+
+\subsection{What to do about unknown problems?}
+
+For help in solving problems not covered by this HowTo, send a
+detailed message describing the problem to the OSCAR users mailing
+list at \email{oscar-users@lists.sourceforge.net}. You may also wish
+to visit the OSCAR web site, \url{http://oscar.sourceforge.net}, for
+updates on newly found and resolved problems.
+
+\subsection{Starting Over or Uninstalling OSCAR}
+
+If you feel that you want to start the cluster installation process
+over from scratch in order to recover from irresolvable errors, you
+can do so with the \file{start\_over} script located in the
+\file{scripts} subdirectory. This script is interactive, and will
+prompt you when removing components installed by OSCAR that you may
+not want to remove.
+
+If you would like to remove all traces of OSCAR from your server, you
+may do so by running the \file{uninstall} script located in the
+\file{scripts} subdirectory. This will run the \file{start\_over}
+script and then remove the OSCAR directory created by unpacking the
+tarball, but does not remove the tarball itself.
+

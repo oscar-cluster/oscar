@@ -1,0 +1,315 @@
+% -*- latex -*-
+%
+% $Id: screen-by-screen.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+%
+% $COPYRIGHT$
+%
+
+%% Put ourselves on a new page because we go and change the margins for
+%% our images
+\newpage
+
+\section{Screen-by-Screen Walkthrough}
+\label{app:screen-by-screen}
+
+The following is a screen-by-screen walkthrough of a simple installation.
+It is intended as supplementary material to aid in providing a better feel
+for the general progression of the installation.  For a detailed discussion
+of the steps, please refer to the Detailed Cluster Installation Procedure.
+
+%% Adjust the margins so we can better handle our large images
+\setlength{\oddsidemargin}{-0.5in}
+\setlength{\evensidemargin}{-0.5in}
+\setlength{\textwidth}{7.5in}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-getting-oscar.\sbsext}
+    \caption{Getting OSCAR.}
+    \label{fig:sbs-getting-oscar}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-unpacking-oscar.\sbsext}
+    \caption{Unpacking OSCAR.}
+    \label{fig:sbs-unpacking-oscar}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-install-oscar.\sbsext}
+    \caption{Running the \cmd{install\_cluster} script.}
+    \label{fig:sbs-install-oscar}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-install-oscar2.\sbsext}
+    \caption{Running the \cmd{install\_cluster} script.}
+    \label{fig:sbs-install-oscar2}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-install-wizard.\sbsext}
+    \caption{The OSCAR installation wizard.}
+    \label{fig:sbs-install-wizard}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-install-wizard-s1.\sbsext}
+    \caption{Beginning step 1.}
+    \label{fig:sbs-install-wizard-s1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-define-server.\sbsext}
+    \caption{Step 1: Defining the server machine.}
+    \label{fig:sbs-define-server}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-define-server-res.\sbsext}
+    \caption{Step 1: Results.}
+    \label{fig:sbs-define-server-res}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-install-wizard-s2.\sbsext}
+    \caption{Beginning step 2.}
+    \label{fig:sbs-install-wizard-s2}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-mac.\sbsext}
+    \caption{Step 2: MAC address collection.}
+    \label{fig:sbs-mac}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-mac-boot1.\sbsext}
+    \caption{Step 2: Preparing to obtain the MAC address for the first node.}
+    \label{fig:sbs-mac-boot1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-mac-boot1-node.\sbsext}
+    \caption{Step 2: Rebooting the first node to obtain its MAC address.}
+    \label{fig:sbs-mac-boot1-node}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-mac-res1.\sbsext}
+    \caption{Step 2: MAC address for the first node obtained.}
+    \label{fig:sbs-mac-res1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-mac-boot2.\sbsext}
+    \caption{Step 2: Preparing to obtain the MAC address for the second node.}
+    \label{fig:sbs-mac-boot2}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-mac-boot2-node.\sbsext}
+    \caption{Step 2: Rebooting the second node to obtain its MAC address.}
+    \label{fig:sbs-mac-boot2-node}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-mac-res2.\sbsext}
+    \caption{Step 2: MAC address for the second node obtained.}
+    \label{fig:sbs-mac-res2}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-mac-info.\sbsext}
+    \caption{Step 2: The contents of the \file{/etc/MAC.info} file.}
+    \label{fig:sbs-mac-info}
+  \end{center}
+\end{figure}
+
+%% To take care of the "too many floats" (unresolved placement of figures)
+%% problem which occurs here, flush the page with a \clearpage
+\clearpage
+%% Re-adjust the margins so we can better handle our large images
+\setlength{\oddsidemargin}{-0.5in}
+\setlength{\evensidemargin}{-0.5in}
+\setlength{\textwidth}{7.5in}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-install-wizard-s3.\sbsext}
+    \caption{Beginning step 3.}
+    \label{fig:sbs-install-wizard-s3}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-define-clients.\sbsext}
+    \caption{Step 3: Define the client nodes.}
+    \label{fig:sbs-define-clients}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-define-clients-start.\sbsext}
+    \caption{Step 3: Defining the client nodes.}
+    \label{fig:sbs-define-clients-start}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-define-clients-res.\sbsext}
+    \caption{Step 3: The client nodes have been defined.}
+    \label{fig:sbs-define-clients-res}
+  \end{center}
+\end{figure}
+
+Notice that this screen-by-screen walkthrough is skipping steps 4 and 5,
+the definition and allocation of the resources.  This is because the client
+nodes have the same hardware configuration as the server.  If your hardware
+has mixed scsi/ide clusters, define and allocate disk resources.  For mixed
+kernel module (e.g. single and multiple processors) clusters, define and
+allocate the kernel and map resources.  For most hardware differences,
+you will also need to define and allocate ramdisk (initrd) resources.
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-install-wizard-s6.\sbsext}
+    \caption{Beginning step 6.}
+    \label{fig:sbs-install-wizard-s6}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-pre-client-install.\sbsext}
+    \caption{Step 6: Starting the preparation for the client installs.}
+    \label{fig:sbs-pre-client-install}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-pre-client-install-res.\sbsext}
+    \caption{Step 6: Results of the client install preparation.}
+    \label{fig:sbs-pre-client-install-res}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-pre-client-install-res2.\sbsext}
+    \caption{Step 6: Results of the client install preparation.}
+    \label{fig:sbs-pre-client-install-res2}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-etherboot.\sbsext}
+    \caption{Etherboot preparation.}
+    \label{fig:sbs-etherboot}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-node1-boot.\sbsext}
+    \caption{Booting node 1.}
+    \label{fig:sbs-node1-boot}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-node2-boot.\sbsext}
+    \caption{Booting node 2.}
+    \label{fig:sbs-node2-boot}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-node2-install.\sbsext}
+    \caption{Client install proceeding on node 2.}
+    \label{fig:sbs-node2-install}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-node1-install.\sbsext}
+    \caption{Client install proceeding on node 1.}
+    \label{fig:sbs-node1-install}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-node1-login.\sbsext}
+    \caption{Nodes have finished the install and have rebooted.}
+    \label{fig:sbs-node1-login}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-install-wizard-s7.\sbsext}
+    \caption{Beginning step 7.}
+    \label{fig:sbs-install-wizard-s7}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-cluster-setup.\sbsext}
+    \caption{Step 7: Completing the cluster setup.}
+    \label{fig:sbs-cluster-setup}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{sbs-completed.\sbsext}
+    \caption{The completed cluster setup.}
+    \label{fig:sbs-completed}
+  \end{center}
+\end{figure}
+
+%% Restore the margins to the defaults
+\clearpage
+

@@ -1,0 +1,79 @@
+% -*- latex -*-
+%
+% $Id: netboot.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+%
+% $COPYRIGHT$
+%
+
+\section{Network Booting Client Nodes}
+\label{app:net-boot-client-nodes}
+
+There are two methods available for network booting your client nodes.
+The first is to use the Preboot eXecution Environment (PXE) network
+boot option in the client's BIOS, if available. If the option is not
+available, you will need to create a network boot floppy disk using
+the Etherboot package. Each method is described below.
+
+\begin{enumerate}
+\item \msg{Network booting using PXE.} To use this method, your client
+  machines' BIOS and network adapter will need to support PXE version
+  2.0 or later. The PXE specification is available at
+  \url{http://developer.intel.com/ial/wfm/tools/pxepdk20/index.htm}.
+  Earlier versions may work, but experience has shown that versions
+  earlier than 2.0 are unreliable. As BIOS designs vary, there is not
+  a standard procedure for network booting client nodes using PXE.
+  More often than not, the option is presented in one of two ways.
+
+  \begin{enumerate}
+  \item The first is that the option can be specified in the BIOS boot
+    order list. If presented in the boot order list, you will need to
+    set the client to have network boot as the first boot device. In
+    addition, when you have completed the client installation,
+    remember to reset the BIOS and remove network boot from the boot
+    list so that the client will not attempt to do the installation
+    again.
+    
+    b)The second is that the user must watch the output of the client
+    node while booting and press a specified key such as ``N'' at the
+    appropriate time. In this case, you will need to do so for each
+    client as it boots.
+  \end{enumerate}
+  
+\item \msg{Network booting using an Etherboot floppy.} The Etherboot
+  package is provided with OSCAR just in case your machines do not
+  have a BIOS network boot option. The directory for Etherboot is
+  located in the \file{/usr/local/oscar} directory. For instructions`
+  on creating a network boot floppy, refer to the \file{index.html}
+  web page located in the Etherboot directory. The commands you will
+  run will probably look like the following (from within the Etherboot
+  directory and with a floppy inserted):
+
+\begin{verbatim}
+  cd src
+  make
+  make bin32/ethernet-card.fd0
+\end{verbatim}
+\end{enumerate}
+
+After creating the floppy, you will have to make one more change in
+order to make OSCAR function correctly with booting from a floppy. By
+default, OSCAR assumes you will be using PXE to do the network boot,
+and sets up the DHCP configuration file accordingly. To correct this,
+you need to edit the configuration file, \file{/etc/dhcpd.conf}, and
+replace all the references to ``\file{pxelinux.bin}'' with
+``\file{vmlinuz}'' in the filename entry for each client. After
+editing the file, you will need to restart DHCP by issuing the
+following command in a terminal: 
+
+\begin{verbatim}
+  service dhcpd restart
+\end{verbatim}
+
+Once you have created the network boot floppy and updated the DHCP
+configuration, set your client's BIOS to boot from the floppy
+drive. Insert the floppy and boot the machine to start the network
+boot. Check the output for errors to make sure your network boot
+floppy is working properly. Remember to remove the floppy when you
+reboot the clients after installation.
+
+

@@ -1,0 +1,40 @@
+% -*- latex -*-
+%
+% $Id: install.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+%
+% $COPYRIGHT$
+%
+
+\documentclass[letterpaper,11pt]{article}
+
+\input{defs}
+
+\begin{document}
+
+% Include all the relevant files
+
+\input{titlepage}
+\newpage
+
+\input{toc}
+\newpage
+
+\input{intro}
+\newpage
+
+\input{brief}
+\input{sis}
+\input{outline}
+\input{detailed}
+
+\newpage
+\appendix
+
+\input{netboot}
+\input{ramdisk}
+\input{client-install}
+\input{troubleshooting}
+\input{security}
+\input{screen-by-screen}
+
+\end{document}

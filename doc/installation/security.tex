@@ -1,0 +1,143 @@
+% -*- latex -*-
+%
+% $Id: security.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+%
+% $COPYRIGHT$
+%
+
+\section{Security}
+\label{app:security}
+
+\subsection{Security layers}
+Linux cluster security should, ideally, consist of multiple layers.
+Most people will not want to implement more than one or two security
+layers, but done properly, this can yield reasonable levels of security.
+The main security layers are router packet filtering, 
+network stack protections, host based packet filtering, tcpwrappers,
+service paring, service configuration, and secure communications.
+
+\subsection{Router packet filtering}
+
+This involves adding packet filtering rules to your border network router.
+Normally, this is not done because of the difficulty in modifying router
+tables. Packet filtering involves looking at each network packet,
+and deciding whether each packet should be allowed, dropped, or rejected,
+based on tables of rules.
+
+\subsection{Network stack protections}
+
+Linux kernels have security features built in that can help prevent 
+outsiders from pretending that they are part of your internal network.
+These features are enabled through /proc filesystem entries.
+A good firewall will turn these on appropriately.
+
+\subsection{Host based packet filtering}
+
+Like router packet filtering, host based network packet filtering
+involves examining each packet and deciding what do do with it.  But
+with host based filtering, each machine indivudually filters the
+network packets going to, from, or through it.  Linux kernels from 2.4
+on include connection tracking and ``stateful'' packet filtering,
+which keeps track of ongoing network connections, allowing better
+filtering decisions to be made based on whether packets are part of an
+already allowed connection. The problem with packet filtering is that
+it requires the administrator to generate filtering ``rulesets'' that
+the iptables and ipchains programs interpret and store in the running
+kernel.  Creating these rulesets is similar to writing software in
+assembly language, and like writing software, there are now higher
+level ``languages'' and compilers that can be used to generate the
+rulesets and provide firewalls.  One ruleset compiler/firewall package
+is the pfilter package.  For more information, and to download
+pfilter, see the \url{http://pfilter.sourceforge.net/}. This security
+layer, when done using a good ruleset compiler, yields a large
+security return for little effort.  For example, using the pfilter
+package a configuration file like this:
+
+\begin{verbatim}
+  OPEN    ssh
+  OPEN    ftp    121.122.0.0/16
+\end{verbatim}
+
+\noindent on a server machine that has client machines hidden behind it
+on a private network would set up the following:
+
+\begin{enumerate}
+\item The server machine would have complete access to the internet.
+\item The only access to the server machine from outside the cluster
+  would be through \cmd{ssh} logins from anywhere, and ftp access from
+  the local domain.
+\item Client machines in the server's cluster would have complete
+  access to the internet through IP masquerading, but would be hidden
+  and protected from the internet.
+\item Applicable network stack protections and packet forwarding would
+  be turned on.
+\end{enumerate}
+
+\subsection{Tcpwrappers}
+
+Tcpwrappers are an access control system that allows control over which
+network addresses or address ranges can access particular network services
+on a computer host.  This is controlled by the \file{/etc/hosts.allow} and
+\file{/etc/hosts.deny} files. This allows certain services to be only 
+accessable from your local domain, for instance.  A common use of this
+would be to limit exported NFS filesystems to only be accessable from
+your local domain, while allowing security logins through ssh to come
+in from anywhere.  This would be done with a \file{/etc/hosts.deny} file 
+that looks like this:
+
+\begin{verbatim}
+  ALL:   ALL
+\end{verbatim}
+
+\noindent and a \file{/etc/hosts.allow} file that looks like this:
+
+\begin{verbatim}
+  # allow nfs service to domain.net only
+  portmap:      .domain.net
+  rpc.mountd:   .domain.net
+  # allow ssh logins from anywhere
+  sshd:         ALL
+\end{verbatim}
+
+\subsection{Service paring}
+
+This is probably the most used of all the security layers, since turning off
+un-needed network services gets rid of opportunities for network breakins.
+To hunt down and turn off unwanted services, the lsof/chkconfig/service
+system commands can be used. To display which network services are currently
+listening on a system, do this:
+
+\begin{verbatim}
+  lsof -i | grep LISTEN | awk '{print $1,$(NF-2),$(NF-1)}' | sort | uniq
+\end{verbatim}
+
+/noindent To list the services that will be started by default at the current runlevel do this:
+
+\begin{verbatim}
+  chkconfig --list | grep `grep :initdefault: /etc/inittab | \
+  awk -F: '{print $2}'`:on | awk '{print $1}' | sort | column
+\end{verbatim}
+
+/noindent To find services started by xinetd do this:
+
+\begin{verbatim}
+  chkconfig --list | awk 'NF==2&&$2==''off''{print}' | \
+  awk -F: '{print $1}' | sort | column
+\end{verbatim}
+
+The nmap port scanning command is also useful to get a hackers-eye view of
+your systems.  The chkconfig and service commands can be used to turn
+on and off system services.
+
+\subsection{Service configuration}
+
+Some network services have their own configuration files. These should be 
+edited to tighten down outside access.  For instance, the NFS filesystem
+uses the \file{/etc/exports} to determin which network addresses can access
+individual file systems, and which have read-write or read-only access.
+
+\subsection{Secure communications}
+
+By all means, use ssh for network logins.  There are also modified versions
+of the venerable ftp programs that allow encrytion and other imrovements.
+
