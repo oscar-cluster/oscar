@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.35 2002/07/19 16:07:09 mchasal Exp $
+% $Id: detailed.tex,v 1.36 2002/07/19 16:49:03 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -424,8 +424,13 @@ change the post installation action and the IP assignment methods.
 
 Building the image will take a few minutes; the progress bar on the
 bottom will give you the status and a small dialog will appear when
-the image is complete.  If building the image fails, see Section
-\ref{subsec:rh72notes}.
+the image is complete.  There is a lot of output in the console window
+during this process. There may be some messages that look like 
+fatal errors, usually, unless the entire image build fails, these can 
+be ignored. If building the image does fail, look through the console output
+for some indication why (prereq failure, ran out of disk space, missing
+package file,...) and see Section
+\ref{sec:release-notes}.
   
 A sample dialog is shown in Figure~\ref{fig:detailed-build-image}.
 
