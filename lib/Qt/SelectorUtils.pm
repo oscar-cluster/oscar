@@ -112,9 +112,9 @@ sub getAllPackages # -> $allPackages
   my @requested = ("name","package","installable","class","description",
                    "version_major","version_minor",
                    "version_subversion","version_release",
-                   "packager_name","packager_email",
-                   "filter_architecture","filter_distribution",
-                   "filter_distribution_version");
+                   "packager_name","packager_email");
+                   #"filter_architecture","filter_distribution",
+                   #"filter_distribution_version");
   $allPackages = database_read_table_fields("packages",\@requested,undef);
 
   my $version;
