@@ -12,7 +12,6 @@ The software, called Open Source Cluster Applications Resources (OSCAR),
 is available for download from the OSCAR project page on SourceForge:
 http://oscar.sourceforge.net/
 
-[are we missing any company names here?]
 OSCAR is being developed by the Open Cluster Group, a collaboration
 among technology companies and major research centers led by IBM, Intel,
 Oak Ridge National Laboratory, Indiana University, University of
