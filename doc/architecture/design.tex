@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.5 2001/08/16 14:32:55 mjbrim Exp $
+% $Id: design.tex,v 1.6 2001/08/21 17:12:54 geiselha Exp $
 %
 % $COPYRIGHT$
 %
@@ -97,11 +97,13 @@ Write me.
 
 \subsubsection{ODR Categories}
 
-The ODR syntax module has been arranged to keep information about six
+The ODR syntax module has been arranged to keep information about five
 categories of data: \odrcat{adapter}, \odrcat{client},
-\odrcat{cluster}, \odrcat{group}, \odrcat{hostlist}, and 
-\odrcat{packagelist}. Within each category, there are a number of keys 
-that hold the information about each category item.
+\odrcat{cluster}, \odrcat{hostlist}, and 
+\odrcat{personality}. Within each category, there are a number of keys 
+that hold the information about each category item. Unless otherwise
+noted, each value within a category item is assumed to be a non-null
+character string.
 
 
 \paragraph{\odrcat{adapter} Category}
@@ -114,6 +116,9 @@ Table~\ref{tbl:design-odr-cats-adapter}.
 Notes:
 
 \begin{itemize}
+\item Each item in \odrcat{adapter} is uniquely identified by 
+both its \odrkey{HOST} and \odrkey{INTERFACE} value pair.
+
 \item \odrkey{HOST} is a cross reference field to the \odrkey{HOST}
   key in the \odrcat{client} category.
   
@@ -121,6 +126,14 @@ Notes:
   (e.g, the \odrkey{IP\_ADDR}, \odrkey{IP\_NETMASK}, and
   \odrkey{IP\_CONFIG} keys).  As support is added for other types of
   networks, new fields will be added as appropriate.
+
+\item If \odrkey{IP\_CONFIG} is specified as {\tt manual}, both 
+  \odrkey{IP\_ADDR} and \odrkey{IP\_NETMASK} are expected to be
+   provided.
+
+\item If \odrkey{IP\_CONFIG} is specified as {\tt dhcp}, both 
+  \odrkey{IP\_ADDR} and \odrkey{IP\_NETMASK} are expected to be
+   null.
 \end{itemize}
 
 \begin{table}[t]
@@ -132,7 +145,7 @@ Notes:
       \hline
       \odrkey{HOST} & Hostname of the machine containing the adapter \\
       \odrkey{INTERFACE} & Interface of the adapter (e.g., {\tt eth0}) \\
-      \odrkey{MAC} & Media Access Card (MAC) address \\
+      \odrkey{ETHER\_MAC} & Media Access Card (MAC) address \\
       \odrkey{IP\_ADDR} & IP address \\
       \odrkey{IP\_NETMASK} & IP subnet mask to be used with 
         \odrkey{IP\_ADDR} \\
@@ -155,6 +168,9 @@ Table~\ref{tbl:design-odr-cats-client}.
 Notes:
 
 \begin{itemize}
+\item Each item in the \odrcat{client} category is uniquely identified
+by its \odrkey{HOST} value.
+
 \item The \odrkey{HOST} key refers to the FQDN of the host to prevent
   any ambiguities.
   
@@ -162,6 +178,9 @@ Notes:
   whether or not to include the node in OSCAR functions; it
   does not refer to whether the machine is physically enabled or
   disabled.
+
+\item \odrkey{NUM\_PROCS} is expected to be a numeric value greater
+  than 0.
 \end{itemize}
 
 \begin{table}[t]
@@ -169,7 +188,7 @@ Notes:
     \begin{tabular}{|l|l|}
       \hline \multicolumn{1}{|c|}{Key} & \multicolumn{1}{c|}{Value} \\
       \hline \odrkey{HOST} & Fully qualified domain name of the machine \\
-      \odrkey{DEFAULT\_ROUTE} & IP address of this machine's gateway 
+      \odrkey{IP\_DEFAULT\_ROUTE} & IP address of this machine's gateway 
         machine \\ 
       \odrkey{STATE} & Current state of the machine ({\tt enabled}, {\tt
         disabled}) \\ \odrkey{NUM\_PROCS} & Number of processors in the
@@ -190,16 +209,22 @@ Table~\ref{tbl:design-odr-cats-cluster}.
 Notes:
 
 \begin{itemize}
+\item Each item in the \odrcat{cluster} category is uniquely identified
+  by its \odrkey{NAME} value.
+
 \item The ``head node'' is the node where OSCAR is installed.
 
 \item \odrkey{CLUSTER\_HEAD} and \odrkey{INSTALL\_NODE} are cross
   references to the \odrkey{HOST} key in the \odrcat{client} category.
-\end{itemize}
 
-\begin{discuss}
-  Is this category missing a cross reference to the \odrcat{group}
-  category?
-\end{discuss}
+\item \odrkey{OSCAR\_VERSION} is expected to be {\tt 2.0}, the current
+  OSCAR version.
+
+\item When initially defined, both the \odrkey{CLUSTER\_HEAD} and
+  \odrkey{INSTALL\_NODE} values may be null. As \odrcat{client} entries
+  are added to the cluster, these values are expected to be defined and
+  to refer to existing \odrcat{client} items.
+\end{itemize}
 
 \begin{table}[t]
   \begin{center}
@@ -221,21 +246,33 @@ Notes:
   \end{center}
 \end{table}
 
-\paragraph{\odrcat{group} Category}
+\paragraph{\odrcat{personality} Category}
 
-Each item in the \odrcat{group} category represents a group of client
-nodes.  A single record is maintained for each group.  The keys and
-their descriptions are listed in
-Table~\ref{tbl:design-odr-cats-group}.
+Items in the \odrcat{personality} category represent groupings of
+software packages. Items sharing a common \odrcat{NAME} value
+constitute a unique \odrcat{personality} - a group of software
+packages to be installed on a \odrcat{client}.
+The keys and their descriptions are listed in
+Table~\ref{tbl:design-odr-cats-personality}.
 
 Notes:
 
 \begin{itemize}
-\item \odrkey{PACKAGELIST} is a cross reference to the \odrkey{NAME}
-  key in the \odrcat{packagelist} category.
-  
-\item \odrkey{HOSTLIST} is a cross reference to the \odrkey{NAME} key
-  in the \odrcat{hostlist} category.
+\item Each item in the \odrcat{personality} category is uniquely
+  identified by its \odrkey{NAME}, \odrkey{SOFTWARE}, and 
+  \odrkey{VERSION} triplet.
+
+\item A software package (as defined by its \odrkey{SOFTWARE} and
+  \odrkey{VERSION} value pair) may exist in more than one personality.
+  During package installation, resolution of unique packages will
+  occur in the event a \odrcat{client} is assigned more than one 
+  \odrcat{personality}.
+
+\item \odrkey{VERSION} is a version string, preferably in a
+  GNU-like format ({\tt major.minor.release}).
+
+\item \odrkey{SERVER} is currently defined, and carried along
+  for historical reasons.
 \end{itemize}
 
 \begin{table}[t!]
@@ -245,44 +282,15 @@ Notes:
       \multicolumn{1}{|c|}{Key} &
       \multicolumn{1}{c|}{Value} \\
       \hline
-      \odrkey{NAME} & Group name \\
-      \odrkey{PACKAGELIST} & Name of software package list \\
-      \odrkey{HOSTLIST} & Name of host list \\
-      \hline
-    \end{tabular}
-    \caption{Keys maintained for the \odrcat{group} ODR category.}
-    \label{tbl:design-odr-cats-group}
-  \end{center}
-\end{table}
-
-\paragraph{\odrcat{packagelist} Category}
-
-Each item in the \odrcat{packagelist} category represents a list of
-software packages.  The keys and their descriptions are listed in
-Table~\ref{tbl:design-odr-cats-packagelist}.
-
-Notes:
-
-\begin{itemize}
-\item \odrkey{SERVER} is a cross reference to the \odrkey{HOST} key in
-  the \odrcat{client} category.
-\end{itemize}
-
-\begin{table}[t!]
-  \begin{center}
-    \begin{tabular}{|l|l|}
-      \hline
-      \multicolumn{1}{|c|}{Key} &
-      \multicolumn{1}{c|}{Value} \\
-      \hline
-      \odrkey{NAME} & Package list name \\
-      \odrkey{PACKAGE} & Name of software package \\
+      \odrkey{NAME} & Personality name \\
+      \odrkey{SOFTWARE} & Name of software package \\
+      \odrkey{VERSION} & Version of software package \\
       \odrkey{SERVER} & Hostname of the server for the package service
       (if not the cluster head node) \\
       \hline
     \end{tabular}
-    \caption{Keys maintained for the \odrcat{packagelist} ODR category.}
-    \label{tbl:design-odr-cats-packagelist}
+    \caption{Keys maintained for the \odrcat{personality} ODR category.}
+    \label{tbl:design-odr-cats-personality}
   \end{center}
 \end{table}
 
@@ -295,8 +303,14 @@ Table~\ref{tbl:design-odr-cats-hostlist}.
 Notes:
 
 \begin{itemize}
+\item Each item in the \odrcat{hostlist} category is uniquely
+  identified by its \odrkey{HOST} and \odrkey{PERSONALITY} value pair.
+
 \item \odrkey{HOST} is a cross reference to the \odrkey{HOST} key in
   the \odrcat{client} category.
+
+\item \odrkey{PERSONALITY} is a cross reference to the \odrkey{NAME} key in
+  the \odrcat{personality} category.
 \end{itemize}
 
 \begin{table}[t!]
@@ -306,8 +320,8 @@ Notes:
       \multicolumn{1}{|c|}{Key} &
       \multicolumn{1}{c|}{Value} \\
       \hline
-      \odrkey{NAME} & Host list name \\
-      \odrkey{HOST} & Client hostname \\
+      \odrkey{HOST} & Reference to the client name \\
+      \odrkey{PERSONALITY} & Reference to the personality to install \\
       \hline
     \end{tabular}
     \caption{Keys maintained for the \odrcat{hostlist} ODR category.}
