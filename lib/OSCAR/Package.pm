@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.11 2002/08/07 15:01:35 sdague Exp $
+#   $Id: Package.pm,v 1.12 2002/08/17 17:14:49 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.11 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.12 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -215,7 +215,7 @@ sub install_rpms {
     my @fullfiles = map {"$RPM_POOL/$_"} (sort values %bestrpms);
     
     if(!scalar(@fullfiles)) {
-	return 1;
+	return 0;
     }
     
     my $cmd = "rpm -Uhv " . join(' ', @fullfiles);
