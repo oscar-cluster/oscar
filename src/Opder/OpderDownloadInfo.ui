@@ -127,7 +127,6 @@ Information...</string>
     <slot>processRepository()</slot>
     <slot>extractPackageFieldNamesAndTypes()</slot>
     <slot>extractDownloadURIs()</slot>
-    <slot>deepcopy()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

@@ -411,28 +411,3 @@ void OpderDownloadInfo::extractDownloadURIs()
     }
 }
 
-void OpderDownloadInfo::deepcopy()
-{
-#########################################################################
-#  Subroutine: deepcopy                                                 #
-#  Parameter : A reference (hash or array) to copy                      # 
-#  Returns   : A copy of the passed in reference (hash or array)        #
-#  This subroutine is a general function to do a "deep copy" of a       #
-#  data structure.  A normal "shallow copy" only copies the elements of #
-#  a hash/array at the current level.  Any hashes/arrays at lower       #
-#  levels don't get copied.  A "deep copy" recurses down the tree and   #
-#  copies all levels.  This subroutine was taken from Unix Review       #
-#  Column 30, February 2000.                                            #
-#########################################################################
-
-  my $this = shift;
-  if (not ref $this)
-    { $this; }
-  elsif (ref $this eq "ARRAY")
-    { [map deepcopy($_), @$this]; }
-  elsif (ref $this eq "HASH")
-    { +{map { $_ => deepcopy($this->{$_}) } keys %$this}; }
-  else
-    { Carp::carp("What type is $_?"); }
-}
-
