@@ -60,6 +60,7 @@ elsif ($distro eq "Mandrake") {
 sub make_fix_table_fields{
     my ( $options_ref,
 	 $table_name, 
+	 $table_parameters,
 	 $fields_params_ref ) = @_;
 
     print_hash( "", "$0: in make_fix_table_fields table_name=<$table_name> fields_params=",
@@ -83,6 +84,7 @@ sub make_fix_table_fields{
 	@error_strings = ();
 	if ( ! oda::create_table( $options_ref,
 				  $table_name,
+				  $table_parameters,
 				  $fields_params_ref,
 				  \@error_strings ) ) {
 	    oda::disconnect( $options_ref,
@@ -592,9 +594,19 @@ foreach my $package_name ( sort keys %$xml_ref ) {
 			    ( ref($table_fields{$field_name}) eq "HASH" ) ?
 			    "VARCHAR(250)" : $$table_fields_ref{$field_name};
 		    }
+		    my $table_parameters = 
+			( exists $$table_ref{parameters} ) ?
+			    $$table_ref{parameters} : undef;
 		    make_fix_table_fields( \%options,
 					   "$table_name",
+					   $table_parameters,
 					   \%table_fields );
+		} else {
+		    warn "The config.xml file for package $package_name is trying\n"
+			. "to define a database table named $table_name using a\n"
+			. "<tables> </tables> block without having any fields\n"
+			. "defined inside that using <field> </field> blocks.\n"
+			. "The database table $table_name will not be created.\n";
 		}
 	    }
 	}
@@ -623,9 +635,19 @@ foreach my $package_name ( sort keys %$xml_ref ) {
 			    ( ref($table_fields{$field_name}) eq "HASH" ) ?
 			    "VARCHAR(250)" : $$table_fields_ref{$field_name};
 		    }
+		    my $table_parameters = 
+			( exists $$table_ref{parameters} ) ?
+			    $$table_ref{parameters} : undef;
 		    make_fix_table_fields( \%options,
 					   "$full_table_name",
+					   $table_parameters,
 					   \%table_fields );
+		} else {
+		    warn "The config.xml file for package $package_name is trying\n"
+			. "to define a database table named $full_table_name using a\n"
+			. "<tables> </tables> block without having any fields\n"
+			. "defined inside that using <field> </field> blocks.\n"
+			. "The database table $full_table_name will not be created.\n";
 		}
 	    }
 	}
@@ -739,6 +761,7 @@ $shortcuts_fields{ shortcut } = "VARCHAR(250)";
 $shortcuts_fields{ expansion } = "VARCHAR(250)";
 make_fix_table_fields( \%options,
 		       "oda_shortcuts",
+		       undef,
 		       \%shortcuts_fields );
 my $shortcuts_table_name = "oda_shortcuts";
 foreach my $shortcut ( sort keys %oda_shortcuts ) {
@@ -896,6 +919,7 @@ foreach my $table_name ( keys %package_specific_tables_fields ) {
     $$tables_fields_ref{ package } = "VARCHAR\(255\)";
     make_fix_table_fields( \%options,
 			   $table_name,
+			   undef,
 			   $tables_fields_ref );
 }
 # scan through the parsed config.xml files hash and
@@ -1027,6 +1051,7 @@ print_hash( "", "$0: package_field_types", \%package_field_types )
 # if the table already exists
 make_fix_table_fields( \%options,
 		       $packages_table_name,
+		       undef,
 		       \%package_field_types );
 
 # write out the records for the packages table
@@ -1247,6 +1272,7 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
     if ( keys %$table_fields_ref ) {
 	make_fix_table_fields( \%options,
 			       $table_name, 
+			       undef,
 			       $table_fields_ref );
 	# write out any records that aren't there already
 	my $records_ref = $multiple_tables_records{ $table_name };
