@@ -105,7 +105,7 @@ my $compute_on_head = ($configvalues->{compute_on_head}[0]);
 my $loglevel = ($configvalues->{loglevel}[0]);
 # In case configurator wasn't run, provide a default
 if ($loglevel eq "") {
-  my $loglevel = 64 ;
+  $loglevel = 64 ;
 }
 
 #print "Compute on head node is set to $compute_on_head\n";
