@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <testBatch>
+
   <info>
-    Simple installation checks for PVM. 
+    Basic installation tests for PVM.
   </info>
 
-  <test name="pvmd-path.apt"/>
+
+  <!-- These test check based on the Modules configs (ignore ENV) -->
+  <test name="pvmd-path-ls.apt"/>
+  <test name="pvm-module.apb"/>
+
+
+
+  <!-- These tests check using default (parent's) ENV -->
+  <test name="pvmd-path-which.apt"/>
   <test name="envvar.apb"/>
+
 
 </testBatch>
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <!-- 
+  Simple test to list the available Modules files 
+  on the system and see that PVM is included.  
+  
+  (Note, must call 'modulecmd' directly since there 
+  was trouble calling the 'module' shell alias. This
+  has a hardcoded path.)
+    -->
+<testDef>
+
+  <info>
+     Check to see if the PVM Modules file is 
+     registered/visible within the Modules system.
+     (not-necessarily in ENV yet)
+  </info>
+
+  <test type="cmd">
+    <command wdir='/tmp'>/opt/modules/3.1.6/bin/modulecmd</command> 
+
+    <input name="argument" format="literal">bash</input>
+    <input name="argument" format="literal">list</input> 
+
+    <!-- NOTE: output goes to STDERR not STDOUT ! -->
+    <output name="stderr" format="regexp">.*pvm.*</output> 
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+

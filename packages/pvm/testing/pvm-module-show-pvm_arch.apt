@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <!-- 
+  Simple test to show the information for the PVM
+  module file, checking for a few key items.
+  
+  (Note, must call 'modulecmd' directly since there 
+  was trouble calling the 'module' shell alias. This
+  has a hardcoded path.)
+    -->
+<testDef>
+
+  <info>
+     Check to see if the PVM Modules file is 
+     setting PVM_ARCH reasonably.
+     (not-necessarily in ENV yet)
+  </info>
+
+  <test type="cmd">
+
+    <command wdir='/tmp'>/opt/modules/3.1.6/bin/modulecmd</command> 
+
+    <input name="argument" format="literal">bash</input>
+    <input name="argument" format="literal">show</input> 
+    <input name="argument" format="literal">pvm</input> 
+
+
+    <!-- NOTE: output goes to STDERR not STDOUT ! -->
+    <output name="stderr" format="regexp">.*PVM_ARCH.*LINUX.*</output>
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <!--
+  -->
+
+<testBatch>
+  <info>
+   Check to make sure some Modules data
+   is setup for PVM, which does ENV setup.
+  </info>
+
+
+  <dep parent='modulecmd-path.apt'  child='pvm-module-list.apt' />
+  <dep parent='pvm-module-list.apt'  child='pvm-module-show.apb' />
+
+</testBatch>
+
