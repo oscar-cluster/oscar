@@ -46,17 +46,19 @@ my $folding_character = "_";
 my %list_of_multiple_value_folded_fields = ();
 #my %multiple_value_folded_fields = ();
 my %oda_fieldnames = ();
+my %oda_options = ( 'debug'        => 0,
+		    'verbose'      => 0 );
 my %oda_shortcuts = ();
-my %options = ();
+my %options = (  'changes'      => 1,
+		 'debug'        => 0,
+		 'verbose'      => 0 );
 my $package_tables_name_prefix = "package_";
 my $packages_table_name = "packages";
 #my %single_value_folded_fields = ();
 
 # function to insert a particular database table record 
 # if it doesn't exist already
-# inputs:  options_ref       pointer to command option parameters
-#                            hash to pass to oda functions
-#          table_name        string 
+# inputs:  table_name        string 
 #          match_record_ref  pointer to a hash of the record
 #                            with field names being the keys
 #                            and field values being the values
@@ -69,12 +71,11 @@ my $packages_table_name = "packages";
 #                            values will be written
 
 sub insert_or_verify_record {
-    my( $options_ref, 
-	$table_name,
+    my( $table_name,
 	$match_record_ref,
 	$write_record_ref ) = @_;
 
-    if ( $$options_ref{debug} ) {
+    if ( $options{debug} ) {
 	print_hash( "",
 		    "$0: in insert_or_verify_record table_name=<$table_name> match_record_ref=",
 		    $match_record_ref );
@@ -93,12 +94,12 @@ sub insert_or_verify_record {
     }
     my @already_existing_records = ();
     my @error_strings = ();
-    if ( ! oda::read_records( $options_ref,
+    if ( ! oda::read_records( \%oda_options,
 			      \@tables_fields,
 			      \@wheres,
 			      \@already_existing_records,
 			      1 ) ) {
-	oda::disconnect( \%options,
+	oda::disconnect( \%oda_options,
 			 \@error_strings );
 	warn shift @error_strings while @error_strings;
 	exit 1;
@@ -120,14 +121,16 @@ sub insert_or_verify_record {
 	# previously existing matching records
 	my @error_strings = ();
 	my @tables = ( "$table_name" );
-	if ( ! oda::delete_records( $options_ref,
-				    \@tables,
-				    \@wheres,
-				    \@error_strings ) ) {
-	    oda::disconnect( \%options,
-			     \@error_strings );
-	    warn shift @error_strings while @error_strings;
-	    exit 1;
+	if ( $options{changes} ) {
+	    if ( ! oda::delete_records( \%oda_options,
+					\@tables,
+					\@wheres,
+					\@error_strings ) ) {
+		oda::disconnect( \%oda_options,
+				 \@error_strings );
+		  warn shift @error_strings while @error_strings;
+		  exit 1;
+	      }
 	}
 
     }
@@ -139,17 +142,19 @@ sub insert_or_verify_record {
     foreach my $key ( keys %$record_ref ) {
 	push @assigns, "$table_name.$key = \'$$record_ref{$key}\'";
     }
-    if ( ! oda::insert_record( $options_ref,
-			       $table_name,
-			       \@assigns,
-#			       ( defined $write_record_ref ) ?
-#			       $write_record_ref : $match_record_ref,
-			       undef,
-			       \@error_strings ) ) {
-	oda::disconnect( \%options,
-			 \@error_strings );
-	warn shift @error_strings while @error_strings;
-	exit 1;
+    if ( $options{changes} ) {
+	if ( ! oda::insert_record( \%oda_options,
+				   $table_name,
+				   \@assigns,
+#			            ( defined $write_record_ref ) ?
+#			            $write_record_ref : $match_record_ref,
+			           undef,
+				   \@error_strings ) ) {
+	    oda::disconnect( \%oda_options,
+			     \@error_strings );
+	      warn shift @error_strings while @error_strings;
+	      exit 1;
+	  }
     }
 }
 
@@ -158,27 +163,24 @@ sub insert_or_verify_record {
 # already exist, or add any missing fields
 # if the table already exists.
 #
-# inputs:  options_ref       pointer to command option parameters
-#                            hash to pass to oda functions
-#          table_name        string 
+# inputs:  table_name        string 
 #          fields_params_ref pointer to a hash of the
 #                            wanted field names and parameters
 
 sub make_fix_table_fields{
-    my ( $options_ref,
-	 $table_name, 
+    my ( $table_name, 
 	 $table_parameters,
 	 $fields_params_ref ) = @_;
 
-    print_hash( "", "$0: in make_fix_table_fields table_name=<$table_name> fields_params=",
+    print_hash( "", "$0: in make_fix_table_fields table_name=<$table_name> table_parameters=<$table_parameters> fields_params=",
 		$fields_params_ref )
-	if $$options_ref{debug};
+	if $options{debug};
 
     # get a list of the tables and fields
     # that are already in the database
     my @error_strings = ();
     my $existing_tables_fields_ref = 
-      oda::list_tables_fields( $options_ref,
+      oda::list_tables_fields( \%oda_options,
 			       \@error_strings );
     warn shift @error_strings while @error_strings;
 
@@ -186,24 +188,27 @@ sub make_fix_table_fields{
     if ( ! exists $$existing_tables_fields_ref{ $table_name } ) {
 	print "Creating database table $table_name\n";
 	print_hash( "", "in make_fix_table_fields adding table <$table_name> fields=",
-		    $fields_params_ref ) if $$options_ref{debug};
+		    $fields_params_ref ) if $options{debug};
 	@error_strings = ();
-	if ( ! oda::create_table( $options_ref,
-				  $table_name,
-				  $table_parameters,
-				  $fields_params_ref,
-				  \@error_strings ) ) {
-	    oda::disconnect( $options_ref,
-			     \@error_strings );
-	    warn shift @error_strings while @error_strings;
-	    exit 1;
-	  }
+	if ( $options{changes} ) {
+	    if ( ! oda::create_table( \%oda_options,
+				      $table_name,
+				      $table_parameters,
+				      $fields_params_ref,
+				      \@error_strings ) ) {
+		oda::disconnect( \%oda_options,
+				 \@error_strings );
+		  warn shift @error_strings while @error_strings;
+		  exit 1;
+	      }
+	}
 #	$existing_tables_fields_ref = 
-#	  oda::list_tables_fields( $options_ref,
+#	  oda::list_tables_fields( \%oda_options,
 #				   \@error_strings );
 #	my %table_hash = ();
 #	$$existing_tables_fields{ $table_name } = \%table_hash;
     } else {
+	print "$0: Updating database table $table_name\n" if $options{debug};
 	my $table_hash_ref = $$existing_tables_fields_ref{ $table_name };
 	foreach my $field_name ( sort keys %$fields_params_ref ) {
 	    if ( ! exists $$table_hash_ref{ $field_name } ) {
@@ -215,18 +220,21 @@ sub make_fix_table_fields{
 		my %new_field;
 		$new_field{ $field_name } =
 		    $$fields_params_ref{ $field_name };
-		my @error_strings = ();
-		if ( ! oda::add_fields( $options_ref,
-					$table_name,
-					\%new_field,
-					\@error_strings ) ) {
-		    oda::disconnect( $options_ref,
-				     \@error_strings );
-		    warn shift @error_strings while @error_strings;
-		    exit 1;
-	        }
+		if ( $options{changes} ) {
+		    my @error_strings = ();
+		    if ( ! oda::add_fields( \%oda_options,
+					    $table_name,
+					    \%new_field,
+					    \@error_strings ) ) {
+			oda::disconnect( \%oda_options,
+					 \@error_strings );
+			warn shift @error_strings while @error_strings;
+			exit 1;
+		    }
+		}
 	    }
 	}
+	print "$0: Done updating database table $table_name\n" if $options{debug};
     }
 }
 
@@ -259,8 +267,7 @@ sub print_hash {
 # in the output tree unchanged (without unfolding)
 
 sub recursive_fold_fields{
-    my ( $options_ref,
-	 $single_values_ref, 
+    my ( $single_values_ref, 
 	 $multiple_values_ref,
 	 $level_ref, 
 	 $input_ids_list_ref ) = @_;
@@ -272,14 +279,13 @@ sub recursive_fold_fields{
 	if ( ref( $level_value ) eq "HASH" ) {
 	    my @ids_list = ( @$input_ids_list_ref,
 			     $level_key );
-	    recursive_fold_fields( $options_ref,
-				   $single_values_ref,
+	    recursive_fold_fields( $single_values_ref,
 				   $multiple_values_ref,
 				   $level_value, 
 				   \@ids_list );
 	} elsif ( ref( $level_value ) eq "ARRAY" ) {
 	    print "$0: adding folded field <$folded_fields_id> value <$level_value> to multiple values tables\n"
-		if $$options_ref{debug};
+		if $options{debug};
 	    $$multiple_values_ref{ $folded_fields_id } =
 		$level_value;
 	    $list_of_multiple_value_folded_fields
@@ -309,17 +315,11 @@ The only database fields in the package records that are
 preserved are: installable.
 
 Options:
-  --debug             turns on debug output
-  --database=DATABASE database name, default is oscar
-  --help              prints out usage information then exits
-  --host=HOST         database host, default localhost
-  --nodebug           turns off debug output
-  --password=PASSWORD database password, default allows access
-  --port=PORT         database port number, default 3306
-  --noverbose         turns off verbose output
-  --type=DATABASETYPE set the database type, default is mysql
-  --user USER         database user id, default anonymous if non-root
-  --verbose           turns on verbose output
+  --[no]changes     turns on[off] database changes, default is on
+  --[no]debug       turns on[off] debug output, default is off
+  --help            prints out usage information then exits
+  --oda=OPTION(S)   specifies options to be passed to ODA
+  --[no]verbose     turns on[off] verbose output, default is off
 
 Usage:
 $progname [options]
@@ -363,20 +363,12 @@ Getopt::Long::Configure("ignore_case"); # ignore case
 Getopt::Long::Configure("bundling");    # allow -a -b or -ab
 Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
 
-# set default option values
-my %options = ( 'debug'       => 0,
-                'verbose'     => 0 );
-
 # parse command line options
 GetOptions( \%options,
-            'database|d=s',
+	    'changes!',
             'debug!',
             'help',
-            'host|h=s',
-            'password=s',
-            'port|p=i',
-            'type|t=s',
-            'user|u=s',
+	    'oda=s',
             'verbose!',
             'version' )
     || usage(1);
@@ -385,6 +377,21 @@ oda::print_hash( "", "$0: options after GetOptions", \%options) if $options{debu
 
 # --help flag just prints out usage information and exits
 usage( 0 ) if exists $options{help};
+
+# debug flag also turns on verbose flag
+$options{ verbose } = 1 if $options{ debug };
+
+# --oda flag populates the oda options hash
+if ( exists $options{oda} ) {
+    my @strings = split( /\,/, $options{oda} );
+    foreach my $string ( @strings ) {
+	my ( $oda_option, $value ) = split( /\=/, $string, 2 );
+	$oda_options{ $oda_option } = 
+	    (defined $value) ? $value :
+	    ( ($oda_option =~ /^no/ ) ? 0 : 1 );
+    }
+    print_hash( "", "$0: oda_options", \%oda_options ) if $options{debug};
+}
 
 # there has to be a directory argument
 usage( 1, "Missing package directory name argument" )
@@ -441,7 +448,7 @@ usage( 1, "unknown argument(s) " . join( ' ', @ARGV ) ) if @ARGV;
 
 # connect to the database
 my @error_strings = ();
-if ( ! oda::connect( \%options,
+if ( ! oda::connect( \%oda_options,
 		     \@error_strings ) ) {
     warn shift @error_strings while @error_strings;
     die "$0: cannot connect to the OSCAR database";
@@ -464,6 +471,8 @@ if ( ! -f $config_file ) {
     if ($@) {
 	print "ERROR, $config_file is invalid, supplying one for package $package_name\n";
         $xml_ref = undef;
+	print "Trying to xmllint the $config_file to show problems:\n";
+	system "xmllint $config_file";
     }
 }
 if ( ! defined $xml_ref ) {
@@ -478,9 +487,9 @@ if ( $options{debug} ) {
     print "$0: xml_ref:\n";
     print Dumper($xml_ref);
 }
-# The function that reads in a package config.xml file 
-# outputs a hash of the xml fields and value. For inscance
-# if the package config.xml looked like this:
+# The function that reads in a package config.xml 
+# outputs a hash of the xml fields and value.
+# For example, if the config.xml looked like this:
 #
 # <oscar>
 #   <name>package name</name>
@@ -495,6 +504,9 @@ if ( $options{debug} ) {
 #       <shortcut> abcde fgh ij </shortcut>
 #       <shortcut> kl mnop qrst </shortcut>
 #       <fieldnames> packages_rpmlist scope </fieldnames>
+#     <package17>
+#       <shortcut> uv wx </shortcut>
+#       <shortcut> y z </shortcut>
 #     </oda>
 #     <packdir1>
 #       <tag>tag1</tag>
@@ -557,6 +569,12 @@ if ( $options{debug} ) {
 #                               'shortcut' => [
 #                                               ' abcde fgh ij ',
 #                                               ' kl mnop qrst '
+#                                             ],
+#                             },
+#                    'package17' => {
+#                               'shortcut' => [
+#                                               ' uv wx ',
+#                                               ' y z '
 #                                             ],
 #                             },
 #                  'packdir1' -> {
@@ -732,12 +750,15 @@ if ( $options{debug} ) {
 }
 
 # Find all 'package'->'oda'->'fieldnames' 
-# and all 'package'->'oda'->'shortcut'
+# and all 'package'->'PACKAGE'->'shortcut'
 # information, storing the information in the
 # oda_fieldnames and oda_shortcuts hashes, respectively,
 # swallowing the information from the xml_ref hash.
-# The above example would end up with this in the 
-# oda_fieldnames hash:
+# Note that only the config.xml file for oda can
+# store shortcuts without the package_name_ being
+# prepended to the shortcut names. The above example
+# would end up with this in the oda_fieldnames hash
+# (assuming it was oda's config.xml file):
 #
 # {
 #   'packages_rpmlist' -> 'scope'
@@ -747,7 +768,9 @@ if ( $options{debug} ) {
 #
 # {
 #   'abcde' -> 'fgh ij',
-#   'kl' -> 'mnop qrst'
+#   'kl' -> 'mnop qrst',
+#   'package_package17_uv' -> 'wx',
+#   'package_package17_y' -> 'z'
 # }
 #
 print "$0: looking for special oda data in package <$package_name>\n" 
@@ -760,31 +783,6 @@ if ( exists $$xml_ref{package} ) {
         print "$0: found oda package information in package <$package_name>\n"
             if $options{debug};
         my $oda_stuff_ref = $$xml_package_package_ref{oda};
-        # if there are shortcuts, store them
-        if ( exists $$oda_stuff_ref{shortcut} ) {
-            my $shortcuts_ref = $$oda_stuff_ref{shortcut};
-	    print( "$0: found oda shortcuts information\n" )
-		if $options{debug};
-	    foreach my $shortcut_line ( @$shortcuts_ref ) {
-		# parse out leading word and use it for the shortcut name
-		my @fields = grep( !/^$/, 
-				   split( /\s+/, $shortcut_line ) );
-		my $shortcut = shift @fields;
-		my $expansion = join( ' ', @fields );
-		print "$0: found shortcut=<$shortcut> value=<$expansion>\n"
-		    if $options{debug};
-		# store the shortcut if not already stored
-		if ( ! exists $oda_shortcuts{$shortcut} ) {
-		    $oda_shortcuts{$shortcut} = $expansion;
-		} else {
-		    warn "$0: duplicated oda shortcut $shortcut specified,\n";
-		    warn "ignoring value <$expansion> specified by package $package_name\n";
-		    warn "leaving value as previous value <$oda_shortcuts{$shortcut}>,\n";
-		}
-	    }
-	    # now swallow the data from the parsed xml
-	    delete $$oda_stuff_ref{shortcut};
-	}
         # if there are fieldname specifiers, store them
 	if ( exists $$oda_stuff_ref{fieldnames} ) {
 	    my $fieldnames_ref = $$oda_stuff_ref{fieldnames};
@@ -817,6 +815,53 @@ if ( exists $$xml_ref{package} ) {
 	    delete $$oda_stuff_ref{fieldnames};
 	}
     }
+    # for each key that points to a hash that has a 'shortcut' key in that, ...
+    foreach my $shortcuts_package ( keys %$xml_package_package_ref ) {
+	my $shortcuts_package_ref = $$xml_package_package_ref{ $shortcuts_package };
+	if ( ref( $shortcuts_package_ref ) eq "HASH" &&
+	     exists $$shortcuts_package_ref{shortcut} ) {
+	    my $shortcuts_ref = $$shortcuts_package_ref{shortcut};
+	    print( "$0: found oda shortcuts information for package $shortcuts_package\n" )
+		if $options{debug};
+	    if ( $package_name ne 'oda' &&
+		 $shortcuts_package eq 'oda' ) {
+		warn "The config.xml file for package $package_name cannot create\n"
+		    . "shortcuts using a <shortcut> </shortcut> block inside an\n"
+		    . "<oda> </oda> block. Only the oda package\'s config.xml\n"
+		    . "can do this. Non-oda packages should create shortcuts\n"
+		    . "using a package name block <name> </name> other than oda.\n"
+		    . "These shortcuts will not be created:\n";
+		my @shortcuts = ();
+		foreach my $shortcut_line ( @$shortcuts_ref ) {
+		    my @fields = grep( !/^$/, split( /\s+/, $shortcut_line ) );
+		    push @shortcuts, $fields[0];
+		}
+		warn join( ',', @shortcuts ) . "\n";
+	    } else {
+		foreach my $shortcut_line ( @$shortcuts_ref ) {
+		    # parse out leading word and use it for the shortcut name
+		    my @fields = grep( !/^$/, 
+				       split( /\s+/, $shortcut_line ) );
+		    my $shortcut = shift @fields;
+		    $shortcut = "package_" . $shortcuts_package . "_" . $shortcut
+			if $shortcuts_package ne 'oda';
+		    my $expansion = join( ' ', @fields );
+		    print "$0: found shortcut=<$shortcut> value=<$expansion>\n"
+			if $options{debug};
+		    # store the shortcut if not already stored
+		    if ( ! exists $oda_shortcuts{$shortcut} ) {
+			$oda_shortcuts{$shortcut} = $expansion;
+		    } else {
+			warn "$0: duplicated oda shortcut $shortcut specified,\n";
+			warn "ignoring value <$expansion> specified by package $package_name\n";
+			warn "leaving value as previous value <$oda_shortcuts{$shortcut}>,\n";
+		    }
+		}
+	    }
+	    # now swallow the data from the parsed xml
+	    delete $$shortcuts_package_ref{shortcut};
+	}
+    }
 }
 if ( $options{debug} ) {
     print_hash( "", "$0: oda_shortcuts", \%oda_shortcuts );
@@ -830,16 +875,16 @@ if ( $options{debug} ) {
 #
 # <oscar>
 #   ...
-#   <tables>
+#   <database_tables>
 #     <name1>
 #       <fields>
 #          <field11> </field11>
 #          <field12> </field12>
 #       </fields>
 #     </name1>
-#   </tables>
+#   </database_tables>
 #   <package>
-#     <tables>
+#     <database_tables>
 #       <name2>
 #         <fields>
 #            <field13>
@@ -849,7 +894,7 @@ if ( $options{debug} ) {
 #            <field15> </field15>
 #         </fields>
 #       </name2>
-#     </tables>
+#     </database_tables>
 #   </package>
 #   ...
 # <oscar>
@@ -892,7 +937,8 @@ if ( exists $$xml_ref{database_tables} ) {
 	    # inside this <table> ... </table> block, ...
 	    if ( exists $$table_ref{fields} ) {
 		my $table_fields_ref = $$table_ref{fields};
-		print_hash( "", "$0: for table $table_name table_ref", $table_ref ) if $options{debug};
+		print_hash( "", "$0: for table $table_name table_ref", $table_ref )
+		    if $options{debug};
 		my %table_fields = ();
 		foreach my $field_name ( sort keys %$table_fields_ref ) {
 		    my $table_field_ref = $$table_fields_ref{$field_name};
@@ -905,8 +951,7 @@ if ( exists $$xml_ref{database_tables} ) {
 		my $table_parameters = 
 		    ( exists $$table_ref{parameters} ) ?
 		    $$table_ref{parameters} : undef;
-		make_fix_table_fields( \%options,
-				       "$table_name",
+		make_fix_table_fields( "$table_name",
 				       $table_parameters,
 				       \%table_fields );
 	    } else {
@@ -946,8 +991,7 @@ if ( exists $$xml_ref{package} ) {
 		my $table_parameters = 
 		    ( exists $$table_ref{parameters} ) ?
 		    $$table_ref{parameters} : undef;
-		make_fix_table_fields( \%options,
-				       "$full_table_name",
+		make_fix_table_fields( "$full_table_name",
 				       $table_parameters,
 				       \%table_fields );
 	    } else {
@@ -1013,11 +1057,10 @@ print "$0: folding fields in xml data for package <$package_name>\n"
 my @field_ids_list = ();
 my %package_single_value_folded_fields = ();
 my %package_multiple_value_folded_fields = ();
-recursive_fold_fields( \%options,
-    \%package_single_value_folded_fields,
-    \%package_multiple_value_folded_fields,
-    $xml_ref,
-    \@field_ids_list );
+recursive_fold_fields( \%package_single_value_folded_fields,
+		       \%package_multiple_value_folded_fields,
+		       $xml_ref,
+		       \@field_ids_list );
 
 # go through all the single value fields, and if 
 # another package had multiple values for the
@@ -1126,8 +1169,7 @@ foreach my $table_name ( keys %package_specific_tables_fields ) {
     my $tables_fields_ref =
 	$package_specific_tables_fields{$table_name};
     $$tables_fields_ref{ package } = "VARCHAR\(255\)";
-    make_fix_table_fields( \%options,
-			   $table_name,
+    make_fix_table_fields( $table_name,
 			   undef,
 			   $tables_fields_ref );
 }
@@ -1172,7 +1214,7 @@ foreach my $table_name ( keys %tables_records ) {
 		$record_ref )
         if $options{debug};
     my @error_strings = ();
-    if ( ! oda::read_records( \%options,
+    if ( ! oda::read_records( \%oda_options,
 			      \@tables_fields,
 			      \@wheres,
 			      \@already_existing_records,
@@ -1187,13 +1229,15 @@ foreach my $table_name ( keys %tables_records ) {
 	    print_hash( "", "$0: inserting record in table <$table_name>",
 			$record_ref )
 		if $options{debug};
-	    my @error_strings = ();
-	    oda::insert_record( \%options,
-				$table_name,
-				$record_ref,
-				undef,
-				\@error_strings );
-	    warn shift @error_strings while @error_strings;
+	    if ( $options{changes} ) {
+		my @error_strings = ();
+		oda::insert_record( \%oda_options,
+				    $table_name,
+				    $record_ref,
+				    undef,
+				    \@error_strings );
+		warn shift @error_strings while @error_strings;
+	    }
 	}
     }
 }
@@ -1303,8 +1347,7 @@ print_hash( "", "$0: package_field_types", \%package_field_types )
 # proper field definitions if the table doesn't
 # already exist, or add any missing fields
 # if the table already exists
-make_fix_table_fields( \%options,
-		       $packages_table_name,
+make_fix_table_fields( $packages_table_name,
 		       undef,
 		       \%package_field_types );
 
@@ -1327,7 +1370,7 @@ push @package_record_wheres, "packages.version = \"$package_version\""
 my @read_results = ();
 my @error_strings = ();
 # this case for read error
-if ( ! oda::read_records( \%options,
+if ( ! oda::read_records( \%oda_options,
 			  \@table_fields,
 			  \@package_record_wheres,
 			  \@read_results,
@@ -1337,13 +1380,15 @@ if ( ! oda::read_records( \%options,
 # this case for no existing packages record for this package
 } elsif ( ! @read_results ) {
     print "Writing a new $packages_table_name record for package $package_name version $package_version\n";
-    @error_strings = ();
-    if ( ! oda::insert_record( \%options,
-			       $packages_table_name,
-			       \%package_single_value_folded_fields,
-			       undef,
-			       \@error_strings ) ) {
-	warn shift @error_strings while @error_strings;
+    if ( $options{changes} ) {
+	@error_strings = ();
+	if ( ! oda::insert_record( \%oda_options,
+				   $packages_table_name,
+				   \%package_single_value_folded_fields,
+				   undef,
+				   \@error_strings ) ) {
+	    warn shift @error_strings while @error_strings;
+	}
     }
 # this case for an already existing packages record for this package
 } else {
@@ -1365,7 +1410,7 @@ if ( ! oda::read_records( \%options,
     my %package_modification_field_values = ();
     my @field_names = ();
     @error_strings = ();
-    my $all_tables_fields_ref = oda::list_tables_fields( \%options,
+    my $all_tables_fields_ref = oda::list_tables_fields( \%oda_options,
 							 \@error_strings );
     my $packages_table_fields_ref;
     if ( defined $all_tables_fields_ref ) {
@@ -1421,12 +1466,14 @@ if ( ! oda::read_records( \%options,
 	print "$0: package_modification_field_values:\n";
 	print Dumper( \%package_modification_field_values );
     }
-    if ( ! oda::modify_records( \%options,
-				\@modified_tables,
-				\%package_modification_field_values,
-				\@package_record_wheres,
-				\@error_strings ) ) {
-	warn shift @error_strings while @error_strings;
+    if ( $options{changes} ) {
+	if ( ! oda::modify_records( \%oda_options,
+				    \@modified_tables,
+				    \%package_modification_field_values,
+				    \@package_record_wheres,
+				    \@error_strings ) ) {
+	    warn shift @error_strings while @error_strings;
+	}
     }
 }
     
@@ -1605,15 +1652,13 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
 	if $options{debug};
     my $table_fields_ref = $multiple_tables_fields{ $table_name };
     if ( keys %$table_fields_ref ) {
-	make_fix_table_fields( \%options,
-			       $table_name, 
+	make_fix_table_fields( $table_name, 
 			       undef,
 			       $table_fields_ref );
 	# write out any records that aren't there already
 	my $records_ref = $multiple_tables_records{ $table_name };
 	foreach my $record_ref ( @$records_ref ) {
-	    insert_or_verify_record( \%options,
-				     $table_name,
+	    insert_or_verify_record( $table_name,
 				     $record_ref );
 	}
     } else {
@@ -1626,8 +1671,7 @@ my %shortcuts_fields = ();
 $shortcuts_fields{ shortcut } = "VARCHAR(250)";
 $shortcuts_fields{ expansion } = "TEXT";
 my $shortcuts_table_name = "oda_shortcuts";
-make_fix_table_fields( \%options,
-		       $shortcuts_table_name,
+make_fix_table_fields( $shortcuts_table_name,
 		       undef,
 		       \%shortcuts_fields );
 #print "Looking for database shortcut definitions ...";
@@ -1640,8 +1684,7 @@ foreach my $shortcut ( sort keys %oda_shortcuts ) {
     my %write_record;
     $write_record{shortcut} = $shortcut;
     $write_record{expansion} = $oda_shortcuts{$shortcut};
-    insert_or_verify_record( \%options,
-			     $shortcuts_table_name,
+    insert_or_verify_record( $shortcuts_table_name,
 			     \%match_record,
 			     \%write_record );
 }
@@ -1658,8 +1701,8 @@ my $package_names_to_ids_hash_ref =
 				undef,
 				"name",
 				1,
-				$options{verbose},
-				$options{debug} );
+				$oda_options{verbose},
+				$oda_options{debug} );
 if ( $options{debug} ) {
     print "$0: package_names_to_ids_hash_ref:\n";
     print Dumper( $package_names_to_ids_hash_ref );
@@ -1912,14 +1955,16 @@ if ( ! defined $package_names_to_ids_hash_ref ) {
 	push @package_rpmlist_records_wheres,
 	    "packages_rpmlists.package_version = \"$package_version\""
 	    if $multiple_package_versions;
-	if ( ! oda::delete_records( \%options,
-				    \@tables,
-				    \@package_rpmlist_records_wheres,
-				    \@error_strings ) ) {
-	    oda::disconnect( \%options,
-			     \@error_strings );
-	    warn shift @error_strings while @error_strings;
-	    exit 1;
+	if ( $options{changes} ) {
+	    if ( ! oda::delete_records( \%oda_options,
+					\@tables,
+					\@package_rpmlist_records_wheres,
+					\@error_strings ) ) {
+		oda::disconnect( \%oda_options,
+				 \@error_strings );
+		warn shift @error_strings while @error_strings;
+		exit 1;
+	    }
 	}
     }
 }
@@ -1930,8 +1975,7 @@ if ( $options{debug} ) {
 foreach my $package_rpm_record_ref ( @package_rpm_records_refs ) {
     $$package_rpm_record_ref{package_version} = $package_version
 	if $multiple_package_versions;
-    insert_or_verify_record( \%options,
-			     "packages_rpmlists",
+    insert_or_verify_record( "packages_rpmlists",
 			     $package_rpm_record_ref );
 }
 
@@ -2055,14 +2099,16 @@ if ( ! defined $package_names_to_ids_hash_ref ) {
 	push @package_filter_records_wheres,
 	    "packages_filters.package_version = \"$package_version\""
 	    if $multiple_package_versions;
-	if ( ! oda::delete_records( \%options,
-				    \@tables,
-				    \@package_filter_records_wheres,
-				    \@error_strings ) ) {
-	    oda::disconnect( \%options,
-			     \@error_strings );
-	    warn shift @error_strings while @error_strings;
-	    exit 1;
+	if ( $options{changes} ) {
+	    if ( ! oda::delete_records( \%oda_options,
+					\@tables,
+					\@package_filter_records_wheres,
+					\@error_strings ) ) {
+		oda::disconnect( \%oda_options,
+				 \@error_strings );
+		warn shift @error_strings while @error_strings;
+		exit 1;
+	    }
 	}
     }
 }
@@ -2071,8 +2117,7 @@ if ( $options{debug} ) {
     print Dumper( \@package_filter_records_refs );
 }
 foreach my $package_filter_record_ref ( @package_filter_records_refs ) {
-    insert_or_verify_record( \%options,
-			     "packages_filters",
+    insert_or_verify_record( "packages_filters",
 			     $package_filter_record_ref );
 }
 
@@ -2081,7 +2126,7 @@ foreach my $package_filter_record_ref ( @package_filter_records_refs ) {
 # that value appropriately.  If this package is the oda package 
 # or any core package, it's always installable.
 my $installable;
-if ( $package_name eq "oda" ) {
+if ( $package_name eq 'oda' ) {
     print "$0: setting package oda installable\n" if $options{debug};
     $installable = 1;
 } elsif ( defined $package_single_value_folded_fields{class} &&
@@ -2129,14 +2174,16 @@ if ( $package_name eq "oda" ) {
 my @modified_tables = ( "$packages_table_name" );
 my %modified_fields;
 $modified_fields{installable} = $installable;
-if ( ! oda::modify_records( \%options,
-			    \@modified_tables,
-			    \%modified_fields,
-			    \@package_record_wheres,
-			    \@error_strings ) ) {
-    warn shift @error_strings while @error_strings;
-    warn "$0: failed to set the installable field for package record $package_name to a value of $installable";
+if ( $options{changes} ) {
+    if ( ! oda::modify_records( \%oda_options,
+				\@modified_tables,
+				\%modified_fields,
+				\@package_record_wheres,
+				\@error_strings ) ) {
+	warn shift @error_strings while @error_strings;
+	warn "$0: failed to set the installable field for package record $package_name to a value of $installable";
+    }
 }
 
-oda::disconnect( \%options );
+oda::disconnect( \%oda_options );
 exit 0;
