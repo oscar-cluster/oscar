@@ -90,7 +90,7 @@ sub mac_window {
                                    );
     my $networkboot = $frame->Button(
                                      -text => "Setup Network Boot",
-                                     -command => sub {},
+                                     -command => [\&run_setup_pxe, $window],
                                     );
 
     $start->grid($stop, $exitbutton, -sticky => "ew");
@@ -320,5 +320,16 @@ sub mactransform {
     my $return = join ':', (map {(length($_) == 1) ? "0$_" : "$_"} split (':',$mac));
     return $return;
 }
+
+# Sub to initiate the setup_pxe script
+sub run_setup_pxe {
+    my ($window) = @_;
+    $window->Busy(-recurse => 1);
+    print "Setting up network boot...\n";
+    !system("./setup_pxe -v") or (carp($!), $window->Unbusy(), return undef);
+    $window->Unbusy();
+    return 1;
+}
+
 
 1;
