@@ -7,15 +7,16 @@ package switcher::scripts::package_config;
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: package_config.pm,v 1.1 2002/11/01 04:48:28 jsquyres Exp $
+# $Id: package_config.pm,v 1.2 2002/12/09 12:48:57 jsquyres Exp $
 #
 
 use strict;
 use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
+use Data::Dumper;
 
 @EXPORT = qw(get);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 
 #
@@ -25,19 +26,20 @@ $VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
 #
 sub get {
 
-    # This is what I envision getting from ODA.  This is stuff from
-    # the package config.xml files.
+    # Query ODA to get the <switcher> blocks from other packages
 
-    my $result = {
-	lam => {
-	    tag => "mpi",
-	    name => "lam-6.5.7",
-	},
-	mpich => {
-	    tag => "mpi",
-	    name => "mpich-1.2.4",
-	},
-    };
+    open(ODA, "oda switcher_list_packages_tags_names|") || 
+	die("packages/switcher/scripts/package_config.pm could not run ODA");
+    my $result = undef;
+    while (<ODA>) {
+	chomp($_);
+	my ($package, $tag, $name) = split(/ /, $_);
+	$result->{$package} = {
+	    tag => $tag,
+	    name => $name,
+	};
+    }
+    close(ODA);
 
     # Traverse the data returned and construct a data mapping tags to
     # names/packages.
