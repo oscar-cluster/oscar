@@ -52,3 +52,64 @@ endif
 EOF
 close(OUT);
 chmod 0755, "$imagedir/etc/profile.d/mpi-01lam.csh";
+
+
+#
+# THIS IS AN UGLY HACK!  We need to make sure that the head node has the
+# /etc/profile.d scripts for LAM.  This is the easiest place to do
+# this for 1.2.  For 1.3, this should be removed and made better
+# somehow.
+#
+my $file = "/etc/profile.d/mpi-01lam.sh";
+
+if (! -f $file) {
+open(OUT,">$file") or croak("Couldn't open $file");
+
+print OUT <<EOF;
+#
+# Set LAM/MPI at the end of the path
+# Part of the OSCAR install
+#
+
+if [ "\$LAMMPI" = "" ] ; then
+  export LAMMPI="$PREFIX"
+  export PATH="\${PATH}:\${LAMMPI}/bin"
+  if [[ -z \$MANPATH ]]; then
+    export MANPATH="\$LAMMPI/man"
+  else
+    export MANPATH="\${MANPATH}:\$LAMMPI/man"
+  fi
+fi
+
+EOF
+close(OUT);
+chmod 0755, "$imagedir/etc/profile.d/mpi-01lam.sh";
+}
+
+
+
+$file = "/etc/profile.d/mpi-01lam.csh";
+if (! -f $file) {
+
+open(OUT,">$file") or croak("Couldn't open $file");
+print OUT <<EOF;
+#
+# Set LAM/MPI at the end of the path
+# Part of the OSCAR install
+#
+
+if (\$?LAMMPI == "0") then
+  set LAMMPI="$PREFIX"
+  set path = (\$path \$LAMMPI/bin)
+  if (\$?MANPATH == "0") then
+    set MANPATH="\$LAMMPI/man"
+  else
+    set MANPATH="\${MANPATH}:\$LAMMPI/man"
+  endif
+endif
+
+EOF
+close(OUT);
+chmod 0755, "$imagedir/etc/profile.d/mpi-01lam.csh";
+}
+
