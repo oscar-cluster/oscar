@@ -67,7 +67,7 @@ done
 # is called to install postfix rpm.
 #
 if [ -z "$service_name" ]; then
-    dir="$OSCAR_HOME/packages/disable-services/scripts"
+    dir="$OSCAR_PACKAGE_HOME/scripts"
     $dir/install_postfix
     service_name="postfix"
 fi
