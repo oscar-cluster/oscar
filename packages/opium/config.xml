@@ -2,23 +2,18 @@
 <!DOCTYPE package SYSTEM "../package.dtd">
 <oscar>
   <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
       This file is part of the OSCAR software package.  For license
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.16 2003/12/04 05:18:48 ngorsuch Exp $
+      $Id: config.xml,v 1.17 2004/02/16 16:42:29 brechin Exp $
   -->
   <name>opium</name>
 
   <version>
     <major>1</major>
-    <minor>5</minor>
-    <subversion>0</subversion>
-    <release>6</release>
-    <epoch>0</epoch>
+    <minor>6</minor>
+    <release>1</release>
   </version>
 
   <class>included</class>
@@ -35,23 +30,17 @@
 and groups synchronized from the the central OSCAR server out to the
 OSCAR compute nodes. OPIUM is compatible with the Pluggable Authentification
 Modules (PAM) mechanism (NIS, NIS+, LDAP, ...). The users and groups on 
-the OSCAR server are checked and synchronized (if necessary) periodically (configurable).
+the OSCAR server are checked and synchronized (if necessary) periodically 
+(configurable).  The opium package now uses the sync_files package to do all 
+synchronization.
   </description>
+
+  <requires>
+    <type>package</type>
+    <name>sync_files</name>
+  </requires>
 
   <rpmlist>
       <rpm>ssh-oscar</rpm>
   </rpmlist>
-  <rpmlist>
-      <filter group="oscar_server" distribution='fedora' />
-      <filter group="oscar_server" distribution='mandrake' />
-      <filter group="oscar_server" distribution='redhat' />
-      <rpm>sync_users-oscar</rpm>
-      <rpm>crontabs</rpm>
-  </rpmlist>
-  <rpmlist>
-      <filter group='oscar_server' distribution='suse' />
-      <rpm>sync_users-oscar</rpm>
-      <rpm>cron</rpm>
-  </rpmlist>
-
 </oscar>
