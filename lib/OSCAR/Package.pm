@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.25 2002/10/28 21:41:53 mchasal Exp $
+#   $Id: Package.pm,v 1.26 2002/10/28 22:33:48 tfleury Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,8 +32,11 @@ use File::Copy;
 use XML::Simple;
 use Carp;
 
-@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_user run_pkg_script_chroot rpmlist distro_rpmlist install_rpms pkg_config_xml);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.25 $ =~ /(\d+)\.(\d+)/);
+@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_user
+             run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
+             pkg_config_xml list_install_pkg getSelectionHash
+             isPackageSelectedForInstallation getConfigurationValues);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.26 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -86,7 +89,7 @@ sub list_pkg {
 
     # If no argument was specified, use "all"
 
-    $type = "all" if (!$type);
+    $type = "all" if ((!(defined $type)) || (!$type));
 
     # Now do the work
 
@@ -107,11 +110,13 @@ sub list_pkg {
 	if ($type eq "all") {
 	    push @packages_to_return, $pkg;
 	} elsif ($type eq "core") {
-	    if ($PACKAGE_CACHE->{$pkg}->{class} eq "core") {
+	    if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
+          ($PACKAGE_CACHE->{$pkg}->{class} eq "core")) {
 		push @packages_to_return, $pkg;
 	    }
 	} else {
-	    if ($PACKAGE_CACHE->{$pkg}->{class} ne "core") {
+	    if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
+          ($PACKAGE_CACHE->{$pkg}->{class} ne "core")) {
 		push @packages_to_return, $pkg;
 	    }
 	}
@@ -479,6 +484,147 @@ sub read_all_pkg_config_xml {
     close(PKGDIR);
 
     $PACKAGE_CACHE;
+}
+
+#########################################################################
+#  Subroutine: list_install_pkg                                         #
+#  Parameters: The "type" of packages - "core", "noncore", or "all"     #
+#  Returns   : A list of packages selected for installation.            #
+#  This subroutine reads in a hidden XML file generated when the user   #
+#  selects some OSCAR packages for installation.  It then returns a     #
+#  list of the OSCAR packages selected for installation.  If you do     #
+#  not specify the "type" of packages, "all" is assumed.  Use this      #
+#  subroutine in place of list_pkg when you want to get a list of       #
+#  OSCAR packages that the user has selected to be installed.           #
+#                                                                       #
+#  Usage: @packages_to_install = list_install_pkg();                    #
+#########################################################################
+sub list_install_pkg # ($type) -> @selectedlist
+{
+  my($type) = @_;
+  $type = "all" if (!$type);
+  my($selhash) = getSelectionHash(); 
+  my(@selected) = ();
+
+  if (scalar (keys %{ $selhash }) < 1)
+    { # No items implies missing .selection.config file.  Call list_pkg().
+      @selected = list_pkg($type);
+    }
+  else
+    { # Transfer the contents of $selhash to a list of packages
+      foreach my $package (keys %{ $selhash })
+        {
+          push(@selected,$package) if 
+            (defined $selhash->{$package}) && ($selhash->{$package}) &&
+              ( ($type eq 'all') ||
+                ( (defined $PACKAGE_CACHE->{$package}{class}) &&
+                  (
+                    (($type eq 'core') && 
+                     ($PACKAGE_CACHE->{$package}{class} eq 'core')) ||
+                    (($type eq 'noncore') &&
+                     ($PACKAGE_CACHE->{$package}{class} ne 'core'))
+                  )
+                )
+              );
+        }
+    }
+
+  return @selected;
+}
+
+#########################################################################
+#  Subroutine: isPackageSelectedForInstallation                         #
+#  Parameter : The name of an OSCAR package (directory)                 #
+#  Returns   : 1 if the passed in package is selected for installation, #
+#              0 otherwise                                              #
+#  Use this subroutine if you want a quick T/F answer if a particular   #
+#  OSCAR package is selected for installation or not.  Note that this   #
+#  subroutine doesn't take into account core/noncore packages.  It      #
+#  only cares if it was selected for installation or not.               #
+#                                                                       #
+#  Usage: $installit = isPackageSelectedForInstallation('mypackage');   #
+#########################################################################
+sub isPackageSelectedForInstallation # ($package) -> $yesorno
+{
+  my($package) = @_;
+  my($selhash) = getSelectionHash();
+  return $selhash->{$package};
+}
+
+#########################################################################
+#  Subroutine: getSelectionHash                                         #
+#  Parameters: None                                                     #
+#  Returns   : A hash of packages selected (or not) for installation.   #
+#  This subroutine reads in a hidden XML file generated when the user   #
+#  selects some OSCAR packages for installation.  It then returns a     #
+#  hash of all the OSCAR packages and whether or not each package       #
+#  was selected for installation.  Note that this subroutine doesn't    #
+#  take into account core/noncore packages.  It only cares if a         #
+#  package was selected for installation or not.                        #
+#                                                                       #
+#  Usage: $install_packages = getSelectionHash();                       #
+#         if ($install_packages->{'mypackage'}) then { print "Cool!"; } #
+#########################################################################
+sub getSelectionHash # () -> $selectionhashref
+{
+  my($selection);
+  my($config) = "$ENV{OSCAR_HOME}/.oscar/.selection.config";
+
+  # If we haven't read in all the package config.xml files, do so.
+  read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
+
+  if (-s $config)  # Make sure the file exists
+    { # Read in the hidden XML selection file
+      my($selconf) = eval { XMLin($config,suppressempty => ''); };
+      if ($@)
+        { # Whoops! Some problem with the file.
+          carp("Warning! The .selection.config file was invalid."); 
+        }
+      else
+        { # Get which configuration was selected
+          my $configname = $selconf->{selected};
+          $selection = $selconf->{configs}{$configname}{packages};
+        }
+    }
+  return $selection;
+}
+
+#########################################################################
+#  Subroutine: getConfigurationValues                                   #
+#  Parameter : The name of an OSCAR package (directory)                 #
+#  Returns   : A hash of configuration parameters and their values      #
+#  This subroutine takes in the name of an OSCAR package and returns    #
+#  The configuration values set by the user in Step 3 of the OSCAR      #
+#  install_cluster script.  These values are completely determined by   #
+#  each package maintainer in the HTML configuration file (if any).     #
+#  NOTE: To make things consistent, each value for a given parameter    #
+#        is stored in an array.  So to correctly access each value,     #
+#        you need to iterate through each hash parameter.  However, if  #
+#        you know that a particular parameter can have at most one      #
+#        value, you can access the zeroth element of the array.  See    #
+#        the example in the Usage clause below.                         #
+#                                                                       #
+#  Usage: $configvalues = getConfigurationValues('mypackage');          #
+#         $myvalue = $configvalues->{'value'}[0];  # Only one value     #
+#         @myvalues = $configvalues->{'happy'};    # Multiple values    #
+#########################################################################
+sub getConfigurationValues # ($package) -> $valueshashref
+{
+  my($package) = @_;
+  my($values);
+  my($filename) = "$ENV{OSCAR_HOME}/packages/$package/.configure.values";
+  print "Filename = $filename\n";
+
+  if (-s $filename)
+    {
+      $values =  eval { XMLin($filename, 
+                              suppressempty => '', 
+                              forcearray => '1'); 
+                      };
+      undef $values if ($@);
+    }
+
+  return $values;
 }
 
 1;
