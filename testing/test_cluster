@@ -42,7 +42,7 @@ if (@ARGV) {
         }
 }
 
-my @pkgs = list_pkg();
+my @pkgs = list_install_pkg();
 
 my $return = 0;
 
