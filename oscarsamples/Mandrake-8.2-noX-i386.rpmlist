@@ -29,7 +29,7 @@ utempter
 findutils
 gzip
 mkinitrd
-kernel
+kernel-2.4.18
 dosfstools
 mandrake-release-8.2
 console-tools
