@@ -26,11 +26,17 @@ my $gmondBuffer = "";
 my $gmetadBuffer = "";
 
 my $hostname = `hostname`;
+chomp($hostname);
 
 my $gmetad_conf = "/etc/gmetad.conf";
 my $gmond_conf = "/etc/gmond.conf";
 
 my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+
+# default settings if user does not configure the package
+my $data_source_default = "OSCAR Cluster";
+my $gridname_default = "OSCAR";
+my $owner_default = "OSCAR";
 
 # get headnode's interface information from OSCAR database
 my $iface = `oda read_records oscar.interface`;
@@ -50,33 +56,37 @@ $gmond_conf = ">".$gmond_conf;
 
 if (-e $xml_data) {
     $ref = XMLin($xml_data);
-    
-    ### gmetad ###
-
-    open(CONF, $gmetad_conf) or croak("Error: unable to open ($gmetad_conf)\n");
-    
-    while ($line = <CONF>) {
-	$gmetadBuffer = $gmetadBuffer.$line;
-    }
-    
-    close(CONF, $gmetad_conf);
-    
-    $gmetad_conf = ">".$gmetad_conf;
-    
-    $gmetadBuffer =~ s/data_source "my cluster" localhost/data_source "$ref->{datasource}" $hostname/;
-    $gmetadBuffer =~ s/# gridname "MyGrid"/gridname "$ref->{gridname}"/;
-    
-    open(CONF, $gmetad_conf) or croak("Error: unable to open ($gmetad_conf)\n");
-    
-    print CONF $gmetadBuffer;    
-    
-    close(CONF);
-
-    ### gmond ###
-
-    $gmondBuffer =~ s/# name  "My Cluster"/name  "$ref->{datasource}"/;
-    $gmondBuffer =~ s/# owner "My Organization"/owner "$ref->{owner}"/;
+} else {
+    $ref->{datasource} = $data_source_default;
+    $ref->{gridname} = $gridname_default;
+    $ref->{owner} = $owner_default;
 }
+    
+### gmetad ###
+
+open(CONF, $gmetad_conf) or croak("Error: unable to open ($gmetad_conf)\n");
+    
+while ($line = <CONF>) {
+    $gmetadBuffer = $gmetadBuffer.$line;
+}
+    
+close(CONF, $gmetad_conf);
+    
+$gmetad_conf = ">".$gmetad_conf;
+    
+$gmetadBuffer =~ s/data_source "my cluster" localhost/data_source "$ref->{datasource}" $hostname/;
+$gmetadBuffer =~ s/# gridname "MyGrid"/gridname "$ref->{gridname}"/;
+    
+open(CONF, $gmetad_conf) or croak("Error: unable to open ($gmetad_conf)\n");
+    
+print CONF $gmetadBuffer;    
+    
+close(CONF);
+
+### gmond ###
+
+$gmondBuffer =~ s/# name  "My Cluster"/name  "$ref->{datasource}"/;
+$gmondBuffer =~ s/# owner "My Organization"/owner "$ref->{owner}"/;
 
 if ($gmondBuffer =~ "# mcast_if  eth1") {
     $gmondBuffer =~ s/# mcast_if  eth1/mcast_if  $iface/;
