@@ -1,16 +1,30 @@
-# $Id: NOTE.python2,v 1.2 2002/05/22 21:11:31 naughtont Exp $
+# $Id: NOTE.python2,v 1.3 2002/05/29 16:15:06 naughtont Exp $
 
-We have to ship Python2 b/c it is not on the RH7.1 CD's.  Doh!
+PART 1:
+   We have to ship Python2 b/c it is not on the RH7.1 CD's.  Doh!
+   
+   Note, the file "python2-2.1.1-1.i386.rpm" was re-build for OSCAR 
+   from the "python2-2.1.1-2.src.rpm" so it would install on RH7.1 & RH7.2.
+   (The standard version on RH7.2 has a glibc >= 2.2.4 dependency.)
+   
+   Also, the revision was bumped down simply to make sure that the official
+   RedHat shipped version was used when installing OSCAR on RH7.2 systems.
+   
+   Other than the revision number change and re-build on a RH7.1 machine,
+   no other changes were made to the "official" python2-2.1.1-2.src.rpm.
 
-Note, the file "python2-2.1.1-1.i386.rpm" was re-build for OSCAR 
-from the "python2-2.1.1-2.src.rpm" so it would install on RH7.1 & RH7.2.
-(The standard version on RH7.2 has a glibc >= 2.2.4 dependency.)
+PART 2:
+   Due to some multi-distro issues, we're currently including a
+   "compatibility" (python2-compat-1.0-1) RPM to resolve the Python2
+   PreReq that is slightly different across distros.
 
-Also, the revision was bumped down simply to make sure that the official
-RedHat shipped version was used when installing OSCAR on RH7.2 systems.
+    Summary: Have a dependency on Python2, on RedHat systems Python1.x
+             must co-exist w/ Python2.x so they have two seperate
+             names in RPMland.  The issue is that Mandrake, etc. don't 
+             offer both and simply call things "Python" (which according 
+             to some departs from standard usage in tarballs from python.org
+             but that's another issue in itself).
 
-Other than the revision number change and re-build on a RH7.1 machine,
-no other changes were made to the "official" python2-2.1.1-2.src.rpm.
 
-  --tjn  5/22/02
+  --tjn  5/29/02
 
