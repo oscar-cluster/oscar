@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.10 2003/07/29 18:37:23 jsquyres Exp $
+# $Id: Makefile.am,v 1.11 2004/04/06 14:31:50 brechin Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -20,6 +20,7 @@ SUBDIRS			= \
 			packages \
 			scripts \
 			share \
+			src \
 			testing
 
 oscar_SCRIPTS		= install_cluster
