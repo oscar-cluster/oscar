@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2001/08/20 23:08:08 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2001/08/25 15:51:20 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -21,7 +21,9 @@ OTHER_SRC_FILES	= \
 		intro.tex \
 		oscar-1.tex \
 		requirements.tex \
-		design.tex
+		design.tex \
+		core-packages.tex \
+		included-packages.tex
 
 # xfig figures.  .eps and .pdf files will be automatically generated
 # from these.
