@@ -42,6 +42,9 @@ my $targetdir = $config->default_image_dir . "/$imagename";
 
 if(!-d $targetdir) {croak("The directory $targetdir doesn't exist");}
 
+oscar_log_subsection("post_rpm_install: Making sure /dev/null is r/w for all");
+!system("chmod a+rw $targetdir/dev/null") or croak("Couldn't set $targetdir/dev/null permissions!");
+
 oscar_log_subsection("post_rpm_install: Syncing system files");
 sync_system_files($targetdir) or croak("Couldn't sync system files");
 
