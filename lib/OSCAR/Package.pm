@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.46 2003/03/10 06:03:12 ngorsuch Exp $
+#   $Id: Package.pm,v 1.47 2003/03/10 19:57:49 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.46 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.47 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -612,10 +612,6 @@ sub getSelectionHash # () -> $selectionhashref
 {
   my($selection);
   my($config) = "$ENV{OSCAR_HOME}/.oscar/.selection.config";
-
-  print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n";
-  print "XXXXXXXXXXXXXXXXXXX getSelectionHash called XXXXXXXXXXXXXXXXXXXXXXXXXXX\n";
-  print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n";
 
   # If we haven't read in all the package config.xml files, do so.
   read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
