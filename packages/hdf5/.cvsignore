@@ -2,4 +2,3 @@ Makefile
 Makefile.am
 Makefile.in
 .oscar_made_makefile_am
-config.xml

@@ -2,10 +2,3 @@ Makefile
 Makefile.am
 .oscar_made_makefile_am
 Makefile.in
-config.log
-config.status
-config.guess
-config.sub
-install-sh
-setup
-autom4te.cache
