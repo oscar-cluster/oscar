@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.14 2002/09/07 14:43:51 jsquyres Exp $
+#   $Id: FrontPanel.pm,v 1.15 2002/10/15 05:41:40 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use OSCAR::Logger;
 use OSCAR::Tk;
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.15 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -52,7 +52,7 @@ my $mpich_value = "mpich-1.2.4";
 my ($parent_window, $fp_window);
 my ($setupbutton, $exitbutton);
 my ($lambutton, $mpichbutton, $mpivalue);
-my $have_run_already = 0;
+my $have_run_successfully = 0;
 my $vars;
 
 #
@@ -73,7 +73,7 @@ sub frontpanel_window {
 
     # Before we do anything else, see if we have already run this step
 
-    if ($have_run_already) {
+    if ($have_run_successfully) {
 	oscar_log_subsection("Warning: have already run this step");
 	yesno_window($parent_window,
 		     "Re-run step?",
@@ -176,10 +176,6 @@ sub server_prep {
 
     $fp_window->Busy(-recurse => 1);
 
-    # Mark it so that we know that we have already run this step
-
-    $have_run_already = 1;
-
     my $cmd = "./server_prep $$vars{interface}";
     oscar_log_subsection("Step 1: Running: $cmd");
     open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
@@ -215,6 +211,10 @@ sub server_prep {
     done_window($fp_window,
 		"Successfully prepared server for OSCAR installation",
 		\&fp_window_close);
+
+    # Mark it so that we know that we have already run this step
+
+    $have_run_successfully = 1;
 
     return 1;
 }
