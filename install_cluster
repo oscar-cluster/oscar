@@ -24,6 +24,16 @@ use vars qw($VERSION);
 use Cwd qw(chdir cwd);
 use Carp;
 
+# Fix to make multi lingualness work:
+$ENV{LANG} = "en_US";
+$ENV{LANGUAGE} = "en_US:en";
+$ENV{LC_COLLATE} = "en_US";
+$ENV{LC_CTYPE} = "en_US";
+$ENV{LC_MESSAGES} = "en_US";
+$ENV{LC_MONETARY} = "en_US";
+$ENV{LC_NUMERIC} = "en_US";
+$ENV{LC_TIME} = "en_US";
+
 # Setting this varible makes a lot of things much easier.  It might also do
 # us some good down the road
 $ENV{OSCAR_HOME} = cwd();
