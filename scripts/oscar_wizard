@@ -1,4 +1,14 @@
 #!/usr/bin/perl -w
+#
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: oscar_wizard,v 1.29 2002/10/23 15:19:00 jsquyres Exp $
+#
 
 use strict;
 use Tk;
@@ -13,6 +23,7 @@ use OSCAR::Distro;
 use OSCAR::DelNode;
 use OSCAR::AddNode;
 use OSCAR::Logger;
+use OSCAR::Package;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
@@ -29,10 +40,14 @@ if(!$ENV{OSCAR_HOME}) {
     croak "The environmental variable OSCAR_HOME is not set.  Please set it to the directory that OSCAR is untarred in, or run install_cluster again.";
 }
 
+# Some globals
+
+my $save_text;
 my $interface = $ARGV[0];
 
-$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$interface;
+# Set some things in the environment
 
+$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$interface;
 $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 
 # Create the main window...
@@ -50,30 +65,39 @@ my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
                          -background=>"white");
 my $GIF_t2=$window->Label(-image=> $window->Photo(-file=>$image),
                           -background=>"white");
-my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!",-background=>"white");
+my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!",
+			   -background=>"white");
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 
 # Step 1, Define OSCAR Server
-oscar_button($window, "Step 1:", "Prepare OSCAR Server For Install", [\&frontpanel_window, $window, {interface => $interface} ], 'prep_server');
+oscar_button($window, "Step 1:", "Prepare OSCAR Server For Install",
+	     [\&frontpanel_window, $window, {interface => $interface} ], 
+	     'prep_server');
 
 # Step 2, Build OSCAR Client Image
-oscar_button($window, "Step 2:", "Build OSCAR Client Image", [\&build_oscar_image, $window], 'build_image');
+oscar_button($window, "Step 2:", "Build OSCAR Client Image", 
+	     [\&build_oscar_image, $window], 'build_image');
 
 # Step 3, Add Clients to OSCAR Image
-oscar_button($window, "Step 3:", "Define OSCAR Clients", [\&build_oscar_clients, $window, $interface], 'addclients');
+oscar_button($window, "Step 3:", "Define OSCAR Clients", 
+	     [\&build_oscar_clients, $window, $interface], 'addclients');
 
 # Step 4, Setup Network Booting
-oscar_button($window, "Step 4:", "Setup Networking", [\&mac_window, $window, {interface => $interface}], 'netboot');
+oscar_button($window, "Step 4:", "Setup Networking", 
+	     [\&mac_window, $window, {interface => $interface}], 'netboot');
 
-my $boot=$window->Label (-text=>"Before continuing, network boot all of your nodes. 
+my $boot=$window->Label (-text => 
+			 "Before continuing, network boot all of your nodes. 
 Once they have completed installation, reboot them from 
 the hard drive. Once all the machines and their ethernet
 adaptors are up, move on to the next step.",-relief=>"groove");
 $boot->grid("-","-",-sticky=>"nsew");
 
 # Step 5, the Oscar post install script
-oscar_button($window, "Step 5:", "Complete Cluster Setup", [\&run_post_install, $window], 'post_install');
-oscar_button($window, "Step 6:", "Test Cluster Setup", [\&run_tests, $window], 'test_install');
+oscar_button($window, "Step 5:", "Complete Cluster Setup", 
+	     [\&run_post_install, $window], 'post_install');
+oscar_button($window, "Step 6:", "Test Cluster Setup", 
+	     [\&run_tests, $window], 'test_install');
 
 #
 # The buttons for node def maintenance
@@ -81,20 +105,27 @@ oscar_button($window, "Step 6:", "Test Cluster Setup", [\&run_tests, $window], '
 my $maint=$window->Label (-text=>"The following buttons are for managing 
 your node definitions after the initial install.",-relief=>"groove");
 $maint->grid("-","-",-sticky=>"nsew");
-oscar_button($window, "", "Add OSCAR Clients", [\&addnode_window, $window, $interface], 'add_nodes');
-oscar_button($window, "", "Delete OSCAR Clients", [\&delnode_window, $window], 'delete_nodes');
-
+oscar_button($window, "", "Add OSCAR Clients", 
+	     [\&addnode_window, $window, $interface], 'add_nodes');
+oscar_button($window, "", "Delete OSCAR Clients", 
+	     [\&delnode_window, $window], 'delete_nodes');
 
 #
 # The close button
 #
 my $cl_b=$window->Button(-text=>"Quit",
-	-borderwidth=>"6", -relief=>"groove",
-	-command=> sub {$window->destroy},-pady=>"8");
+			 -borderwidth=>"6", -relief=>"groove",
+			 -command=> sub {$window->destroy},-pady=>"8");
 $window->bind("<Escape>",sub {$cl_b->invoke()});
 $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 
+#
+# Execution goes into an infinite Tcl/Tk loop here
+#
+
 MainLoop;
+
+###########################################################################
 
 sub oscar_button {
     my ($window, $labeltxt, $buttontext, $buttoncmd, $helptext) = @_;
@@ -107,6 +138,83 @@ sub oscar_button {
                                -pady => 8);
     $label->grid($button, $help, -sticky => "nsew");
 }
+
+###########################################################################
+
+sub build_oscar_image {
+    my ($window) = @_;
+
+    my @df_lines = `df /`;
+    my $disk_type = "ide";
+    $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
+
+    oscar_log_section("Running step 2 of the OSCAR wizard");
+
+    # Get the distro list
+
+    my $arch = (uname)[4];
+    $arch =~ s/i.86/i386/;
+    my ($distroname, $distroversion) = which_distro('/tftpboot/rpm');
+    oscar_log_subsection("Step 2: Identified distro of clients: $distroname $distroversion");
+    my $rpmlist = "$ENV{OSCAR_HOME}/oscarsamples/$distroname-$distroversion-$arch.rpmlist";
+    oscar_log_subsection("Step 2: Using RPM list: $rpmlist");
+    
+    # Get a list of the client RPMs that we want to install.  Make a
+    # new file containing the names of all the RPMs to install.
+
+    my @pkgs = list_pkg("non-core");
+    my $outfile = "/tmp/oscar-install-rpmlist.$$";
+    my $save_text = $outfile;
+    open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
+    foreach my $pkg (@pkgs) {
+	my @rpms = rpmlist($pkg, "client");
+	foreach my $rpm (@rpms) {
+	    print OUTFILE "$rpm\n";
+	}
+    }
+    close(OUTFILE);
+    my $extraflags = " --filename=$outfile";
+
+    my $diskfile = "sample.disk.$disk_type" . 
+	(($arch eq "i386") ? "" : ".$arch");
+
+    my %vars = (
+                imgname => "oscarimage",
+                noshow => {
+                           arch => 1,
+                           imgpath => 1,
+                           password => 1,
+                          },
+                pkgfile => "$rpmlist",
+                pkgpath => "/tftpboot/rpm",
+                diskfile => "$ENV{OSCAR_HOME}/oscarsamples/$diskfile",
+                ipmeth => "static",
+                piaction => "beep",
+                extraflags => $extraflags,
+                postinstall => \&postimagebuild,
+               );
+
+    createimage_window($window, %vars);
+}
+
+sub postimagebuild {
+    my ($vars) = @_;
+
+    my $cmd = "./post_rpm_install $$vars{imgname} $interface";
+    oscar_log_subsection("Step 2: Running: $cmd");
+    !system($cmd) or (carp($!), return undef);
+
+    # All done -- remove the temp file that held all the RPM filenames
+    
+    unlink($save_text);
+
+    oscar_log_subsection("Step 2: Successfully ran: $cmd");
+    oscar_log_subsection("Step 2: Completed successfully");
+
+    return 1;
+}
+
+###########################################################################
 
 sub build_oscar_clients {
     my ($window, $interface) = @_;
@@ -144,49 +252,18 @@ sub build_oscar_clients {
     addclients_window($window, %vars);
 }
 
-sub build_oscar_image {
-    my ($window) = @_;
+sub postaddclients {
+    my ($vars) = @_;
 
-    my @df_lines = `df /`;
-    my $disk_type = "ide";
-#   $disk_type = "ide" if ( grep ( /\/dev\/hd/, ( @df_lines ) ) );
-    $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
-
-    oscar_log_section("Running step 2 of the OSCAR wizard");
-
-    my $arch = (uname)[4];
-    $arch =~ s/i.86/i386/;
-    my ($distroname, $distroversion) = which_distro('/tftpboot/rpm');
-    oscar_log_subsection("Step 2: Identified distro of clients: $distroname $distroversion");
-    my $rpmlist = "$ENV{OSCAR_HOME}/oscarsamples/$distroname-$distroversion-$arch.rpmlist";
-    oscar_log_subsection("Step 2: Using RPM list: $rpmlist");
-    
-    # now we get the list of the client rpms that we want to install
-    my @clientfiles = glob("$ENV{OSCAR_HOME}/packages/*/client.rpmlist");
-
-    my @fullfiles = map {" --filename=$_ "} @clientfiles;
-    my $extraflags = join('',@fullfiles);
-
-    my $diskfile = "sample.disk.$disk_type" . (($arch eq "i386") ? "" : ".$arch");
-
-    my %vars = (
-                imgname => "oscarimage",
-                noshow => {
-                           arch => 1,
-                           imgpath => 1,
-                           password => 1,
-                          },
-                pkgfile => "$rpmlist",
-                pkgpath => "/tftpboot/rpm",
-                diskfile => "$ENV{OSCAR_HOME}/oscarsamples/$diskfile",
-                ipmeth => "static",
-                piaction => "beep",
-                extraflags => $extraflags,
-                postinstall => \&postimagebuild,
-               );
-
-    createimage_window($window, %vars);
+    my $cmd = "./post_clients";
+    oscar_log_subsection("Step 3: Running: $cmd");
+    !system($cmd) or (carp($!), return undef);
+    oscar_log_subsection("Step 3: Successfully ran: $cmd");
+    oscar_log_subsection("Step 3: Completed successfully");
+    return 1;
 }
+
+###########################################################################
 
 sub run_tests {
     my ($window) = @_;
@@ -201,6 +278,8 @@ sub run_tests {
     $window->Unbusy();
     return 1;
 }
+
+###########################################################################
 
 sub run_post_install {
     my ($window) = @_;
@@ -223,24 +302,3 @@ sub run_post_install {
     return 1;
 }
 
-sub postaddclients {
-    my ($vars) = @_;
-
-    my $cmd = "./post_clients";
-    oscar_log_subsection("Step 3: Running: $cmd");
-    !system($cmd) or (carp($!), return undef);
-    oscar_log_subsection("Step 3: Successfully ran: $cmd");
-    oscar_log_subsection("Step 3: Completed successfully");
-    return 1;
-}
-
-sub postimagebuild {
-    my ($vars) = @_;
-
-    my $cmd = "./post_rpm_install $$vars{imgname} $interface";
-    oscar_log_subsection("Step 2: Running: $cmd");
-    !system($cmd) or (carp($!), return undef);
-    oscar_log_subsection("Step 2: Successfully ran: $cmd");
-    oscar_log_subsection("Step 2: Completed successfully");
-    return 1;
-}
