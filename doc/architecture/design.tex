@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.30 2002/10/29 20:56:12 jsquyres Exp $
+% $Id: design.tex,v 1.31 2002/10/31 16:18:02 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -320,6 +320,9 @@ directory is fairly simple:
 
 \item \directory{scripts}: Directory where the API scripts are located
   (see Section~\ref{sec:design-pkg-api}).
+  
+\item \directory{testing}: Directory where the test API scripts are located
+  (see Section~\ref{sec:design-pkg-test-api}).
   
 \item \directory{SRPMS}: Directory where the source RPMs for the
   package are located.  These SRPMs are not installed during the OSCAR
@@ -915,11 +918,6 @@ following variables defined that may be useful:
       (e.g., \file{/root/oscar-1.4}). \\ 
 %
       \hline
-      \envvar{OSCAR\_TESTPRINT} & The full filename for the
-      \cmd{testprint} tool (e.g., \file{/root/oscar-1.4/testing/testprint}).i
-      only provide to the test scripts.\\ 
-%
-      \hline
     \end{tabular}
     \caption{OSCAR API environment variables}
     \label{tab:design-pkg-api-env}
@@ -1158,7 +1156,39 @@ So let's now discuss each of the API calls in detail.
   \begin{itemize}
   \item None.
   \end{itemize}
+\end{itemize}
 
+\subsubsection{Test API calls}
+\label{sec:design-pkg-test-api}
+
+In addition to the variables defined to the API scripts in the 
+Section~\ref{sec:design-pkg-api}, the following variables 
+are provided:
+
+\begin{table}[htbp]
+  \begin{center}
+    \begin{tabular}{|l|p{3in}|}
+      \hline
+      \multicolumn{1}{|c|}{Variable} &
+      \multicolumn{1}{|c|}{Contents} \\
+      \hline
+      \hline
+      \envvar{OSCAR\_TESTPRINT} & The full filename for the
+      \cmd{testprint} tool (e.g., \file{/root/oscar-1.4/testing/testprint}).
+      Only provided to the test scripts.\\ 
+%
+      \hline
+    \end{tabular}
+    \caption{OSCAR Test API environment variables}
+    \label{tab:design-pkg-test-api-env}
+  \end{center}
+\end{table}
+
+So let's now discuss each of the API calls in detail. These scripts
+are located in the \file{testing} subdirectory under the package
+directory.
+
+\begin{itemize}
 \item \file{test\_root}
 
   Guidelines:
@@ -1349,12 +1379,24 @@ should be used. The environment variable \envvar{OSCAR\_TESTPRINT} will
 give the filename of this tool since it varies for the root and user 
 tests. The flags for \cmd{testprint} are:
 \begin{itemize}
-\item -l "label"  Specifies the test name. This is required.
-\item -s "status" Specifies the status test. This is optional and can be 
-                  used for timeout countdowns or subtasks.
-\item -p          Indicates that the test is complete and it passed.
-\item -f          Indicates that the test is complete and it failed.
+\item --label "label" i (-l)  Specifies the test name. This is required.
+\item --status "status" (-s)  Specifies the status test. This is optional and
+                              can be used for timeout countdowns or subtasks.
+\item --pass            (-p)  Indicates that the test is complete and it passed.
+\item --fail            (-f)  Indicates that the test is complete and it failed.
+\item --skipped               Indicates that the test was skipped.
 \end{itemize}
+
+If \cmd{--pass},\cmd{skipped} or \cmd{--fail} are not given, the line will not be closed.
+That is, it will not have a newline at the end. This allows the status
+to be updated repeatedly on the same line through successive calls to
+\cmd{testprint}, which is useful for timeouts or iterating through nodelists. 
+You must insure that before your test
+script exits, it closes out the open line by calling \cmd{testprint} 
+with either \cmd{--pass},\cmd{skipped} or \cmd{--fail}. 
+
+If a value is given for \cmd{status} when closing out the line, the text
+will be left in that field, otherwise, it will be cleared out.
 
 \begin{discuss}
   Discuss details of ODA API here -- reading / writing the OSCAR
