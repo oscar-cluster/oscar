@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.3 2002/06/20 05:08:38 jsquyres Exp $
+% $Id: install.tex,v 1.4 2002/07/17 13:37:19 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -10,12 +10,12 @@
 
 {\bf pfilter} is a firewall compiler.  The {\bf pfilter} package is
 used control the packet filtering capabilities available in the Linux
-kernel.  It takes in high level firewall directives, and produces a
-complete firewall output commands file, that can be turned on or off
-like other GNU/Linux services.  Like other compilers, {\bf pfilter}
-adds appropriate ``glue'' code to the compiled output.  In the case of
-{\bf pfilter}, the added ``glue'' code consists of common things that
-are done by any good firewall, including turning on TCP networking
+kernel.  It takes in high-level firewall directives, and produces a
+complete firewall output commands file that can be turned on or off
+like other Linux services.  Like other compilers, {\bf pfilter} adds
+appropriate ``glue'' code to the compiled output.  In the case of {\bf
+  pfilter}, the added ``glue'' code consists of common things that are
+done by any good firewall, including turning on TCP networking
 protective features.
 
 When OSCAR was installed, it modified the {\bf pfilter} installation
@@ -29,8 +29,8 @@ these things to the {\bf pfilter} configuration file:
 \begin{itemize}
 \item the default for network interfaces as set to be untrusted
 \item bad packet syslog logging is turned off
-\item the main OSCAR server machine has ssh logins enabled
-\item the main OSCAR server machine has http access enabled
+\item the main OSCAR server node has \cmd{ssh} logins enabled
+\item the main OSCAR server node has http access enabled
 \item all communication between nodes in the cluster is enabled
 \end{itemize}
 
