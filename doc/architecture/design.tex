@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.6 2001/08/21 17:12:54 geiselha Exp $
+% $Id: design.tex,v 1.7 2001/08/21 18:22:42 geiselha Exp $
 %
 % $COPYRIGHT$
 %
@@ -89,11 +89,186 @@ method behaving differently.
 
 \subsubsection{\cmd{readDR.pl} Usage}
 
-Write me.
+\subsection*{NAME}
+readDR.pl --- a script to read ODR data
+
+\subsection*{SYNOPSIS}\begin{verbatim}
+  readDR.pl --list                 # list all data files
+  readDR.pl client                 # read all client rows
+  readDR.pl --columns client       # list column names for table client
+  readDR.pl client NAME=test       # read all columns of client row 'test'
+  readDR.pl client NAME=test STATE # read STATE column of client row 'test'
+\end{verbatim}
+
+\subsection*{DESCRIPTION}
+{\bf readDR.pl} is a command line interface to read cluster persistent data.
+Parameters are read from the command line, output is written to STDOUT.
+Each output line consists of {\em NAME=VALUE\/} pairs where {\em NAME\/} is the
+column name and {\em VALUE\/} is the corresponding column value for a row
+matching the input search critera.
+
+\subsubsection*{Syntax}%
+\index{Syntax}
+
+readDR.pl {\tt [}{\em options\/}{\tt ]} filename {\tt [}{\em column spec\/}{\tt ]} {\tt [}{\em filter spec\/}{\tt ]}
+
+\subsubsection*{Options}%
+\index{Options}
+
+The following options are recognized:
+
+\begin{description}
+
+\item[-D, --Directory]%
+\index{-D, --Directory@-D, --Directory}%
+\hfil\\
+Directory where data files are located.
+
+\item[-d, --distinct]%
+\index{-d, --distinct@-d, --distinct}%
+\hfil\\
+List only distinct occurences.
+
+\item[-c, --columns]%
+\index{-c, --columns@-c, --columns}%
+\hfil\\
+List columns names only.
+
+\item[-l, --list]%
+\index{-l, --list@-l, --list}%
+\hfil\\
+List all data filenames.
+
+\item[-s, --syntax]%
+\index{-s, --syntax@-s, --syntax}%
+\hfil\\
+Syntax to apply when reading data files.
+
+\end{description}
+
+\subsubsection*{Filename}%
+\index{Filename}
+
+The name of the data file to read. A complete list of all defined data files may
+be obtained by issuing the command:
+
+readDR.pl --list
+
+\subsubsection*{Column spec}%
+\index{Column spec}
+
+Column specification is a whitespace delimited list of column names to display.
+A complete list of all columns for a given data file may be obtained by issuing
+the command:
+
+readDR.pl --columns {\em filename\/}
+
+If no column specification is provided, all columns will be displayed.
+
+\subsubsection*{Filter spec}%
+\index{Filter spec}
+
+Filter specification consists of whitespace delimited {\em NAME=VALUE\/} pairs. If provided,
+only the rows in the given data file matching the filter specification will be displayed.
+The complete filter specification is the logical {\bf AND} of all filter clauses. Note
+that the filter specification is an exact match only test.
 
 \subsubsection{\cmd{writeDR.pl} Usage}
 
-Write me.
+\subsection*{NAME}
+writeDR.pl --- script to add, update, delete ODR data
+
+\subsection*{SYNOPSIS}\begin{verbatim}
+  writeDR.pl --add client NAME=node1 DEFAULT_ROUTE=10.0.0.1 # add a client
+  writeDR.pl -f NAME=node1 client STATE=enabled # update client 'node1'
+  writeDR.pl -d client STATE=disabled # delete all clients with STATE=disabled
+\end{verbatim}
+
+\subsection*{DESCRIPTION}
+{\bf writeDR.pl} is a command line interface to write cluster persistent data.
+Parameters are read from the command line and are changes applied to the
+persistent data.
+
+\subsubsection*{Syntax}%
+\index{Syntax}
+
+writeDR.pl {\tt [}{\em options\/}{\tt ]} filename {\tt [}{\em column spec\/}{\tt ]}
+
+\subsubsection*{Options}%
+\index{Options}
+
+The following options are recognized:
+
+\begin{description}
+
+\item[-D, --Directory]%
+\index{-D, --Directory@-D, --Directory}%
+\hfil\\
+Directory where data files are located.
+
+\item[-F, --Force]%
+\index{-F, --Force@-F, --Force}%
+\hfil\\
+Force delete/update
+
+\item[-a, --add]%
+\index{-a, --add@-a, --add}%
+\hfil\\
+Add row to data file.
+
+\item[-d, --delete]%
+\index{-d, --delete@-d, --delete}%
+\hfil\\
+Delete row from data file.
+
+\item[-f, --filter={\em filer spec\/}]%
+\index{-f, --filter=filer spec@-f, --filter={\em filer spec\/}}%
+\hfil\\
+Filter specification
+
+\item[-s, --syntax]%
+\index{-s, --syntax@-s, --syntax}%
+\hfil\\
+Syntax to apply when reading data files.
+
+\end{description}
+
+\subsubsection*{Filename}%
+\index{Filename}
+
+The name of the data file to write. A complete list of all defined data files may
+be obtained by issuing the command:
+
+readDR.pl --list
+
+\subsubsection*{Column spec}%
+\index{Column spec}
+
+Column specification consists of whitespace delimited {\em NAME=VALUE\/} pairs
+used to assign values during {\bf add} or {\bf update} operation. Column names
+not provided for an {\bf add} operation will be assigned an undefined value.
+Column names not provided for an {\bf update} operation will be not be changed.
+Column spec is ignored for {\bf delete} operation.
+
+\subsubsection*{Filter spec}%
+\index{Filter spec}
+
+Filter specification consists of {\em NAME=VALUE\/} pairs specified on the {\bf {\tt --}filter} option.
+Multiple <--filter> options may be provided as in:
+
+-f A=2 --filter='B=3'
+
+or filters may be grouped using a ',' delimiter, as in:
+
+--filter='A=2,B=3'
+
+The complete filter specification is the logically {\bf and} of all filter clauses. Note
+that the filter specification is an exact match only test.
+
+Be aware that in the event no filter spec is provided for an {\bf update} or a {\bf delete}
+operation, all rows will be affected. In this situation, the {\bf {\tt --}Force} option must
+be supplied to coerce operation (this is strictly a safety measure to prevent
+inadvertent data modification).
 
 \subsubsection{ODR Categories}
 
