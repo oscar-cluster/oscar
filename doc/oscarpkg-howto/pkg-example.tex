@@ -1,4 +1,4 @@
-% $Id: pkg-example.tex,v 1.3 2003/09/10 04:38:33 naughtont Exp $
+% $Id: pkg-example.tex,v 1.4 2003/09/11 12:56:06 naughtont Exp $
 
 \section{Example Package}
 \label{sect:example-pkg}
@@ -162,5 +162,102 @@ file.  This reads those values to generate a configuration file
   print CONF "\n";
 
   close(CONF);
+\end{verbatim}
+\end{scriptsize}
+
+
+
+% TJN: Finish this section...
+\subsection{post\_clients}
+
+This is an example taken from C3 that builds the \file{/etc/c3.conf} using
+the information that was obtained after the nodes of the cluster have been
+defined. 
+\begin{scriptsize}
+\begin{verbatim}
+#!/usr/bin/perl
+# 'post_clients' -- generate the C3 configuration file '/etc/c3.conf'
+
+use strict;
+use Carp;
+use lib '/usr/lib/systeminstaller';
+use SystemInstaller::Machine;
+use Data::Dumper;
+
+my $image = shift;
+
+my $c3_conf = "/etc/c3.conf";
+
+my $hostname = `hostname`;
+chomp($hostname);
+
+my %hash = get_machine_listing($image);
+
+open(OUT,">$c3_conf") or croak("Couldn't open $c3_conf");
+print OUT "cluster oscar_cluster {\n";
+print OUT "\t$hostname\n";
+my $firstkey = 1;
+foreach my $key (sort numerically keys %hash) {
+    if ($firstkey)
+      {
+        $hash{$key}->{HOST} =~ /([a-zA-Z_\-]+)(\d*)/;
+        print OUT "\tdead remove_line_for_0-indexing\n" if 
+          (defined($2) && ($2 != 0));
+        $firstkey = 0;
+      }
+    print OUT "\t", $hash{$key}->{HOST}, "\n";
+}
+print OUT "}\n";
+close(OUT);
+
+
+
+# Sort hostnames numerically instead of an ascii sort.
+# Special sort() sub-rtn (uses $a, $b instead of @_)
+sub numerically
+{
+    $a =~ /(\d+)$/;  # pickoff number and
+    my $A = $1;      #  save in local var
+
+    $b =~ /(\d+)$/;  # pickoff number and
+    my $B = $1;      #  save in local var
+
+    ($A <=> $B)
+}
+\end{verbatim}
+\end{scriptsize}
+
+
+\subsection{post\_install}
+
+These two examples show two very simple examples of OSCAR packages that are
+using this final phase script.  The OPIUM package is used to synchronize
+system files across the cluster, e.g., account files like '/etc/passwd',
+etc.  It takes a simple option to \cmd{--force} synchronization once all
+nodes have been built since the account information is not stored in the
+image that is used to build the machines.
+
+\begin{scriptsize}
+\begin{verbatim}
+    #!/bin/sh
+    /opt/opium/bin/sync_users --force
+\end{verbatim}
+\end{scriptsize}
+
+
+The other package example making use of \file{post\_install} is the
+NTP configuration package.  It uses a C3 parallel execution command to
+restart the NTP daemon on all nodes of the cluster.
+
+\begin{scriptsize}
+\begin{verbatim}
+    #!/bin/bash
+    # Post install action to restart ntpds.  This is necessary because when the
+    # node is booting for the first time, other nodes are sometimes building,
+    # causing network saturation.  This causes the ntpd to give up and try
+    # later.
+  
+    . /etc/profile
+    cexec /etc/init.d/ntpd restart
 \end{verbatim}
 \end{scriptsize}

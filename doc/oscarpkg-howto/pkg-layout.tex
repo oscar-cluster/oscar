@@ -1,4 +1,4 @@
-% $Id: pkg-layout.tex,v 1.4 2003/09/10 03:31:28 naughtont Exp $
+% $Id: pkg-layout.tex,v 1.5 2003/09/11 12:56:06 naughtont Exp $
 
 % TJN: Mention the XML tools that are helpful, e.g., 'xmllint'
 %      which >= 2.5.8 (i believe) has --schema option too! :)
@@ -9,7 +9,7 @@
 \label{sect:pkg-layout}
 
 As OSCAR evolved it became obvious that the mechanism to configure and
-install a cluster needed to be cleanly seperated from the software that was
+install a cluster needed to be cleanly separated from the software that was
 to be installed.  The approach taken was to create \emph{OSCAR Packages}.
 The OSCAR Package layout is geared toward making things as simple as
 possible for package authors.  So, in its simplest form an OSCAR Package is
@@ -67,7 +67,7 @@ Section~\ref{sect:example-pkg}.
 
 The \xmltag{rpmlist} contains the list of RPM names (without version
 numbers) to be installed for the package.  There may be multiple instances
-of these \xmltag{rpmlist}'s using the \xmltag{filter} to differentiat where
+of these \xmltag{rpmlist}'s using the \xmltag{filter} to differentiate where
 necessary.  The \xmltag{filter} constraints enable an author to express
 what \xmlattr{distribution}, \xmlattr{distribution\_version} and
 \xmlattr{arch} the associated \xmltag{rpm}'s support.  The \xmlattr{group}
@@ -88,7 +88,7 @@ The OSCAR Wizard copies all files listed in the \xmltag{rpmlist} from this
 \directory{RPMS} directory to the \directory{/tftpboot/rpm} directory or
 alternately the directory specified by the environment variable
 \envvar{OSCAR\_RPMPOOL}.   The exact \xmltag{rpmlist} that is processed is
-deterimined based upon the the \xmltag{filter} that is entirely true and
+determined based upon the the \xmltag{filter} that is entirely true and
 most particular.  The list of supported distributions for each OSCAR
 release is typically stored in Table 1 of the installation document.
 
@@ -111,39 +111,116 @@ release is typically stored in Table 1 of the installation document.
    support the \xmlattr{subdir} attribute, which is used to specify a
    directory for the \xmltag{rpm}'s in the \xmltag{rpmlist}.  Due to this
    limitation, some packages use a \file{setup} script to copy the
-   appropriate RPMS to this \directory{RPMS} area based on the value
+   appropriate files to this \directory{RPMS} area based on the value
    returned from Perl method \verb=OSCAR::Distro::which_distro_server()=.
    To access this method from your \file{scripts/setup} file add the
    includes: 
+   \begin{footnotesize}
    \begin{verbatim}
            use lib "$ENV{OSCAR_HOME}/lib";
            use OSCAR::Distro;
    \end{verbatim}
+   \end{footnotesize}
 \end{verse}
 
 
 
 
-% TJN: finish this section
 \subsection{scripts}
 \label{sect:pkg-scripts}
 
-The configuration of a particular package 
-The currently available API scripts are listed in Table~\ref{tab:pkg-scripts}.
-% Table with all currently supported API script & brief description.
+The OSCAR framework recognizes the set of scripts outlined in
+Table~\ref{tab:pkg-scripts}.  A package author may use any/all of these as
+needed for application configuration.  The order of operation during the
+OSCAR installation process is summarized in
+Table~\ref{tab:sequence-of-events}.  The ``Location'' column indicates
+where the actual modification/operations take place\footnote{Note, the
+\file{post\_install} scripts in practice often operate on both the server
+and client filesystems -- regardless of what the original specifications
+suggested.}.  At each script level, the packages are processed in
+alph-order.
+%\footnote{The Perl function \file{readdir()} is used to build the list.}.
+% TJN: Confirm this before uncommenting...have to look at current code.
+
 \input{pkg-scripts-table.tex}
 
+% TJN: (9/10/03) Taken from the architecture/design.tex document 
+\begin{table}[h!]
+  \begin{center}
+      \begin{tabular}{rll}
+        \hline
+        \multicolumn{2}{c}{Description} &
+        \multicolumn{1}{c}{Location} \\
+        \hline
+        1. & Install server core RPMs & Server filesystem \\
+%
+        1.1. & Call the API scripts: \cmd{setup} & Server filesystem \\
+%
+        1.2. & Read XML config files & Server filesystem \\
+%
+        1.3. & Select which packages to install & Server filesystem \\
+%
+        1.4. & Call the API scripts: \cmd{pre\_configure} & Server
+             filesystem \\
+%
+        1.5. & Configure the selected packages & Server filesystem \\
+%
+        1.6. & Call the API scripts: \cmd{post\_configure} & Server
+             filesystem \\
+%
+        1.7. & Install the server non-core RPMs & Server filesystem \\
+%
+        2. & Call the API scripts: \cmd{post\_server\_rpm\_install} &
+        Server filesystem \\
+%
+        3. & Install all the client RPMs & Client filesystem \\
+%
+        4. & Call the API scripts: \cmd{post\_client\_rpm\_install} &
+        Client filesystem \\
+%
+        5. & Define clients in the OSCAR/SIS database & Server
+        filesystem \\
+%
+        6. & Call the API scripts: \cmd{post\_clients} & Server
+        filesystem \\
+%
+        7. & Push the images to the nodes & Server filesystem \\
+%
+        8. & Call the API scripts: \cmd{post\_install} & Server
+        filesystem \\
+        \hline
+      \end{tabular}
+      \caption{Note that step 7 won't happen in a non-SIS based install
+        -- this step will be skipped.}
+    \label{tab:sequence-of-events}
+  \end{center}
+\end{table}
+
+\subsubsection{Package Setup}
+
+The \file{setup} script executes before any packages are installed.  This
+phase can be used to move files around in the package's directory or to do
+dynamic setup before the package \file{config.xml} scripts are processed.
+Once these XML files have been processed the available packages are then
+passed to the GUI where they are processed by the Selector panel.  If any
+of the selected packages contain \file{pre\_configure} scripts those are
+processed and then handed to the Configurator.  After the Configurator has
+run any existing \file{post\_configure} scripts are processed.  At this
+point no package software has been installed and all that is know by the
+database is what packages were selected and their \file{config.xml}
+information (version, etc.).
 
 \subsubsection{Configurator}
 \label{sect:pkg-configurator}
 
-Packages are obtain user input via a simple facility called the
+Packages may obtain user input via a simple facility called the
 ``Configurator''.  The package author writes a simple HTML Form style
 document that is presented to the user if the package is selected for
 installation.  The standard multi-pick lists, radio button, checkbox fields
 are available.  Typically default values are provided to simplify matters
-where possible for users.  A full discussion is provided in the ``Config-HOWTO.html'' 
-document found in the documentation area of the OSCAR developer CVS tree.
+where possible for users.  A full discussion is provided in the
+``Config-HOWTO.html'' document found in the documentation area of the OSCAR
+developer CVS tree.
 
 To make use of this facility create a file in the top-level of the
 package's directory called \file{configurator.html}.  After the package
@@ -153,11 +230,61 @@ out in XML format to the top-level directory of the package in a file
 called \file{.configurator.values}.  At this point the
 \file{post\_configure} API scripts are fired so packages may read the
 results of the configuration phase.    The Perl \file{XML::Simple} module
-is typically used for processing these results in conjuntion with the
+is typically used for processing these results in conjunction with the
 \envvar{OSCAR\_PACKAGE\_HOME} environment variable.  See
 Section~\ref{sect:example-configurator} for an example of the input and
 a simple processing script.
 
+
+\subsubsection{Fixups without RPM modification}
+
+% TJN: finish this up
+This is where I'll discuss the \file{post\_server\_} and
+\file{post\_client\_rpm\_install} scripts.  Basically these scripts fire
+after the actual package RPM installs.  As the name suggests these are
+performed on the server (after all server packages have been installed) and
+on the clients (once the clients have been ``installed''\footnote{In the
+case of OSCAR this means that the SIS image (i.e., SystemImager image) has
+been built and client software is installed in this \cmd{chroot}'ed
+environment.}).
+
+
+\subsubsection{Setup after Clients Defined}
+footnotesize
+% TJN: finish this up
+This is where I'll discuss the \file{post\_clients} script.
+
+Basically at this point the actual cluster nodes have been defined, i.e.,
+the number of nodes, their hostnames/IP's.  However, the nodes themselves
+have not yet been physically installed.  This is the phase when anything
+that needs knowledge about cluster nodes can query for the count.  The
+method for obtaining this information is currently in flux but the
+following will provide a Perl hash containing host \& domain name, nprocs
+and IP for all defined nodes in the cluster.
+
+\begin{footnotesize}
+\begin{verbatim}
+       use lib '/usr/lib/systeminstaller';
+       use SystemInstaller::Machine;
+
+       my %hash = get_machine_listing($image);   #Image can be null for default
+
+       foreach my $key (sort numerically keys %hash) {
+           print $hash{$key}->{HOST}, ", ";
+           print $hash{$key}->{DOMAIN}, ", ";
+           print $hash{$key}->{NUM_PROCS}, ", ";
+           print $hash{$key}->{IPADDR}, "\n--------\n";
+       }
+\end{verbatim}
+\end{footnotesize}
+
+\subsubsection{Completing cluster configurations}
+
+% TJN: finish this section
+This is where I'll discuss the \file{post\_install} script.
+Basically this is after all the nodes have been installed.  It is typically
+assumed that they are accessible via C3 commands, e.g., \cmd{cexec} --
+parallel cluster execution.
 
 
 % TJN: finish this section
@@ -178,7 +305,7 @@ perform any root level package tests.
 \end{verse}
 
 
-The tests typically have PBS available and most of teh \file{test\_user}
+The tests typically have PBS available and most of the \file{test\_user}
 scripts simply setup and run a simple PBS jobs for the installed software,
 e.g., PVM, MPI's.  The testing framework is currently pretty simple with
 display functions provided which show boolean results of ``PASSED'' or
