@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.12 2002/07/20 17:20:54 jsquyres Exp $
+% $Id: release-notes.tex,v 1.13 2002/08/28 05:47:41 bligneri Exp $
 %
 % $COPYRIGHT$
 %
@@ -123,9 +123,33 @@ The following release notes apply to OSCAR version \oscarversion:
 \label{subsec:mdk82notes}
 
 \begin{itemize}
-\item Note that this is not a formally supported distribution.  OSCAR
-  \oscarversion\- has been only somewhat tested on this distribution
-  (see Table~\ref{tab:oscar-distro-support}).
+\item This is the first release of OSCAR to support this distribution. OSCAR
+  \oscarversion\- has been tested and successfully installed 
+  on this distribution (see Table~\ref{tab:oscar-distro-support}) but some
+  bugs can still be found !
+\item Copy only the original Mandrake 8.2 packages (ie, those from the CDs or
+from you local mirror but not the updates package from Mandrake Update).
+Indeed, because of some naming convention problem with mandrake rpms, updated rpms with the
+same version will not be selected and you will not be able to pass step 1
+(server install).
+\item To build your image (and so your clients!), select the {\tt
+oscarsamples/Mandrake-8.2-i386.rpmlist} (for complete client with X) or
+{\tt oscarsamples/Mandrake-8.2-noX-i386.rpmlist} (for smaller client with no
+X) as your rpm list.
+\item Ganglia : The web client is working if you change the line \\
+\verb+ $rrdtool = "/opt/rrdtool-1.0.35/bin/rrdtool";+ \\
+in the file \\
+{\tt /var/www/html/ganglia/ganglia.php}\\ to 
+\verb+ $rrdtool = "/usr/bin/rrdtool"+.
+\item Once the server has been installed, you can update your packages by
+using the {\tt MandrakeUpdate} or the {\tt urpmi --auto-select} method. It is
+recommended as some important packages have been upgraded (apache and openssl
+namely !). 
+However, in order to start the oscar wizard again, you need to remove all the 
+upgraded packages from {\tt share/serverlists/Mandrake-8.2-i386.rpmlist}. 
+At the time of this writing, delete the lines containing the folowing package
+name : {\tt  apache}, {\tt apache-common}, {\tt apache-conf}, {\tt
+apache-modules}, {\tt openssl}.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
