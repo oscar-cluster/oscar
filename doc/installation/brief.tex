@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: brief.tex,v 1.22 2002/09/09 02:58:48 jsquyres Exp $
+% $Id: brief.tex,v 1.23 2002/09/11 07:17:59 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -127,6 +127,24 @@ installation.
     distribution).
 
   \sbsdetail{det:unpack}
+  
+\item Download any optional third party OSCAR packages and unpack
+  them in the OSCAR tree.  For example, if you want OSCAR to install
+  the Ganglia package, download the Ganglia OSCAR tarball and expand
+  it into the \file{packages/} directory in the OSCAR tree (assuming
+  that \file{ganglia-oscar-\oscarversion.tar.gz} is in \user{root}'s
+  home directory):
+
+\vspace{11pt}
+
+{\tt 
+\ \ \# cd $^{\sim}$/oscar-\oscarversion/packages \\
+\indent \ \ \# tar zxf $^{\sim}$/ganglia-oscar-\oscarversion.tar.gz
+}
+
+\vspace{11pt}
+
+  \sbsdetail{det:third-party}
   
 \item Copy all the RPMs from \emph{all} of the distribution CD's to
   \file{/tftpboot/rpm} using these, or similar, commands:
