@@ -1,21 +1,51 @@
 #!/bin/sh
 #
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_user,v 1.1 2002/10/31 00:01:19 mchasal Exp $
+# $Id: test_user,v 1.2 2002/10/31 15:47:47 jsquyres Exp $
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
 
+cd
+clients=`echo $@ | wc -w`
+testprint_label="MPICH (via PBS)"
 
-cd ~
-clients=0
-for i in $@ 
-do
-    clients=`expr $clients + 1`
-done
+# Sanity check (somewhat overkill, but safe = good): check to see that
+# there is a MPICH installed.
 
-~/pbs_test $clients 1 ~/mpich/pbs_script.mpich "Hello" ~/lam/mpichtest 3 "PBS mpich Test"
+mpich="`switcher mpi --list | grep mpich | head -1`"
+if test -z "$mpich"; then
+    $OSCAR_TESTPRINT --label "$testprint_label"
+    $OSCAR_TESTPRINT --label "$testprint_label" --skipped
+    exit 0
+fi
 
+# If the user has a default MPI set in switcher, save it.  Then set
+# MPICH/MPI to be the default.
+
+user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
+switcher mpi --add-attr default $mpich --force --silent
+
+# Now run the test (results will be printed by the test itself)
+
+$HOME/pbs_test $clients 1 $HOME/mpich/pbs_script.mpich "Hello" \
+    $HOME/mpich/mpichtest 3 "$testprint_label"
+
+# If there was a user default set in switcher, set it back.
+# Otherwise, just remove the default that we set in this script.
+
+if test -n "$user_default_mpi"; then
+    switcher mpi --add-attr default $user_default_mpi --force --silent
+else
+    switcher mpi --rm-attr default --force --silent
+fi
+
+# All done
+
+exit 0
