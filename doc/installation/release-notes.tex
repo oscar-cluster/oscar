@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.22 2002/09/10 02:34:30 jsquyres Exp $
+% $Id: release-notes.tex,v 1.23 2002/09/11 07:20:19 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -52,10 +52,11 @@ The following release notes apply to OSCAR version \oscarversion:
   versions of OSCAR will not work on any flavors of Mandrake without
   significant modifications.
   
-\item The \rpmname{libpng} RPM version 1.0.8-2mdk must be manually
-  installed before invoking the OSCAR install wizard.  This RPM can be
-  found in the OSCAR distribution package in the following location:\\
-  \file{packages/ganglia/RPMS/libpng-1.0.8-2mdk.i586.rpm}
+\item If installing the third-party package Ganglia, the
+  \rpmname{libpng} RPM version 1.0.8-2mdk must be manually installed
+  before invoking the OSCAR install wizard.  This RPM can be
+  found in the Ganglia distribution package in the following location:\\
+  \file{packages/ganglia/extras/libpng-1.0.8-2mdk.i586.rpm}
   
 % TJN: relates to server_prep: unmunge_pathenv()
 \item \user{root}'s default shell configuration files hardcode the
@@ -108,9 +109,5 @@ The following release notes apply to OSCAR version \oscarversion:
   the NCSA utilities at \url{http://oscar.ncsa.uiuc.edu/} to
   enable you to use them in OSCAR.
 \end{itemize}
-
-
-
-
 
 % LocalWords:  tex Exp
