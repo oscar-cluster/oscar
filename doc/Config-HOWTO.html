@@ -1,0 +1,421 @@
+<html>
+<head>
+<title>Writing OSCAR Configuration Files</title>
+</head>
+<body>
+<center>
+<h1>Writing OSCAR Configuration Files</h1>
+</center>
+<h2>Purpose</h2>
+The purpose of this document is to assist you in writing configuration files
+for the OSCAR "Configurator".  The OSCAR Configurator allows a package
+maintainer to define options which a user can set.  To present these options
+to the user, the Configurator uses a simple HTML <B>Form</B>.  While the
+basics of writing HTML files and HTML forms are discussed in detail in many
+books and online tutorials, this document seeks to describe the HTML form
+tags available to a package maintainer and how to use those tags to get
+information from the user.
+<p>
+Many of the basic HTML tags are supported in the OSCAR Configurator,
+including:
+<ul>
+<li>various fonts and headers
+<li>line and paragraph breaks
+<li>horizontal (ruler) lines
+<li>centered text
+<li>images (GIFs and JPEGs)
+</ul>
+There is also a decent assortment of HTML Form tags such
+as:
+<ul>
+<li>input fields
+<li>checkboxes
+<li>radio buttons
+<li>single- and multi-selection lists
+<li>text boxes
+</ul>
+All of the available tags are described in detail below.
+<p>
+There are some HTML tags that are NOT allowed in a configuration file.  In
+particular, you may <font color="#CC0000">not</font> use:
+<ul>
+<li><font color="#CC0000">&lt;A HREF&gt;</font> - A hypertext link to other
+places on the web.  We don't want the user going off to another web page.
+<li><font color="#CC0000">&lt;TABLE&gt;, &lt;TR&gt;, &lt;TD&gt;</font> -
+While tables are parsed in without difficulty, they are not rendered as true
+talbes.  Better to use &lt;PRE&gt; (preformatted text) for this purpose.
+<li><font color="#CC0000">&lt;ISINDEX&gt;</font> - The document cannot be
+searchable.
+<li><font color="#CC0000">Form &lt;SUBMIT&gt;, &lt;BUTTON&gt;, and
+&lt;IMAGE&gt;</font> - The Configurator has its own button to submit the
+values of the form to the program, so these elements are unnecessary.
+<li><font color="#CC0000">&lt;FILE&gt;</font> - The user is not allowed to
+upload a file.
+</ul>
+If any of these tags are present in your HTML document, they are removed
+prior to rendering so that your document will appear without the offending
+tags.
+<p>
+<hr>
+<h2>A Basic HTML Form Document</h2>
+Since all of the configuration input from a user appears in an HTML Form,
+the minimum useful configuration file contains &lt;form&gt; and
+&lt;/form&gt; tags.  Between these two tags, the package maintainer adds
+&lt;input&gt; tags to get input from the user.  For example, if all you want
+from the user is his name, your configuration file might be as follows:
+<pre>
+           &lt;form&gt;
+           Enter your name: &lt;input name="username"&gt;
+           &lt;/form&gt;
+</pre>
+The resulting output would look like this:
+<p>
+<form>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+Enter your name: <input name="username">
+</form>
+<p>
+If you are HTML savvy, you may notice a few things missing from this
+example.  Specifically, we omitted the main &lt;html&gt;...&lt;/html&gt;
+tags, and the &lt;head&gt;&lt;/head&gt; and &lt;body&gt;&lt;/body&gt; tags.
+For basic configuration files, these tags are optional.  You may use them if
+you like (and some browsers would bonk if they were absent), but they are
+not required.  Also, there are no attributes for the &lt;form&gt; tag.  This
+is because the Configurator knows the action to take when the user saves the
+values, so no "action" label is needed.  Also, there can be only one pair of
+&lt;form&gt;&lt;/form&gt; tags in the configuration file, so there is no
+need for the "name" label.
+<p>
+<hr>
+<h2>A More Complete HTML Form</h2>
+A typical HTML document consists of at least two separate sections, a "head"
+and a "body".  The most important element of the "head" is the
+&lt;title&gt;...&lt;/title&gt; tag.  This sets the title of the window and
+also acts as the text for the header of the configuration window.  If you
+omit this tag or leave the value blank, it defaults to "Configuration".
+<p>
+The body is where the main part of the HTML document is stored.  It includes
+both the Form and any other "standard" HTML elements you want to display.
+Many of these elements can appear inside or outside of the Form, so it is
+sometimes easiest to have a configuration form that looks like this:
+<pre>
+           &lt;html&gt;
+             &lt;head&gt;
+               &lt;title&gt;The Title Of Your Configuration Form&lt;title&gt;
+             &lt;/head&gt;
+
+             &lt;body&gt;
+               &lt;form&gt;
+                 All of your main HTML configuration goes here.
+               &lt;/form&gt;
+             &lt;/body&gt;
+           &lt;/html&gt;
+</pre>
+In HTML files, whitespace (including carriage returns) are usually compacted
+to a single space.  So in the above example, the indentation and line
+spacing are shown simply to make the example easier to read.  We could just
+have easily put everything on a single line and the output would be the
+same.  This is important to know since if you want a true line break (say
+between paragraphs), you have to explicitly tell HTML by using the &lt;p&gt;
+(paragraph) tag.  Also, the case of the tags is unimportant, so you could
+also use all uppercase letters for your tags if you find that to me more
+readable.
+<p>
+<hr>
+<h2>Basic (non-form) HTML Tags</h2>
+There are many HTML tags which can be displayed by the Configurator that
+don't need to be in the form, but will be useful anyway.  The function of
+each of these tags are not listed here.  There are plenty of HTML reference
+books and online tutorials available.  Use your favorite search engine and
+do a search on "HTML tutorial" to get a big listing.  A primer available at
+NCSA can be found at <a
+href="http://archive.ncsa.uiuc.edu/General/Internet/WWW/index.html">archive.ncsa.uiuc.edu/General/Internet/WWW/index.html</A>.
+<p>
+<hr>
+<h2>HTML Form Tags</h2>
+The main tags that you will need for your configuration file are
+&lt;form&gt; tags.  These tags allow you do prompt the user for information
+to be entered via text boxes, check boxes, radio buttons, selection lists,
+etc.  This section describes each tag in detail and provides examples.
+<p>
+Note that all of these tags must appear between a
+&lt;form&gt;...&lt;/form&gt; tag pair.  Otherwise your values will not get
+submitted correctly.
+<p>
+<ul>
+<hr width=50%>
+<p>
+<li>&lt;input type="text" name="VARIABLE" value="INITIAL" size="NUMCHARS"
+maxlength="MAXCHARS"&gt; - <br>
+A <i>text</i> element is a single line text input field in which the user
+can enter text.  If you do not specify <b>type="text"</b>, then the
+&lt;input&gt; defaults to this type of text input field.  Of the various
+attributes, only <b>name</b> is required.  The <b>name</b> attribute
+designates the variable name for the data entered by the user.  If you also
+specify the <b>value</b> attribute, that text appears in the text input field
+when it first appears.  The <b>size</b> and <b>maxlength</b> attributes
+designate the number of characters that appear in the text box and the
+maximum length of the input text respectively.  
+<p>
+Example:
+<pre>
+           &lt;form&gt;
+           Enter your name: &lt;input type="text" name="username" value="johndoe" size="20" maxlength="30"&gt;
+           &lt;/form&gt;
+</pre>
+Output:
+<br>
+<form>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+Enter your name: <input type="text" name="username" value="johndoe" size="20" maxlength="30">
+</form>
+<p>
+<hr width=50%>
+<p>
+<li>&lt;input type="password" name="VARIABLE" value="INITIAL"
+size="NUMCHARS" maxlength="MAXCHARS"&gt; - <br>
+A <i>password</i> element is a text input field in which each character
+typed is displayed as a * to conceal the actual value entered.  In all other
+aspects, this element is the same as the <i>text</i> element.
+<p>
+Example:
+<pre>
+           &lt;form&gt;
+           Enter your password: &lt;input type="password" name="password" value="passwd" size="10" maxlength="20"&gt;
+           &lt;/form&gt;
+</pre>
+Output:
+<br>
+<form>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+Enter your password: <input type="password" name="password" value="passwd" size="10" maxlength="20">
+</form>
+<p>
+<hr width=50%>
+<p>
+<li>&lt;input type="checkbox" name="VARIABLE" value="RETURNVALUE"
+checked&gt; - <br>
+A <i>checkbox</i> is a toggle that the user can select (switch on) or
+deselect (switch off).  As with all &lt;input&gt; elements, the <b>name</b>
+attribute is required and designates the variable name for the value
+returned by the check box.  Usually, "ON" is returned when a check box has
+been checked by the user.  If you specify the <b>value</b> attribute, that
+value is returned instead when the check box has been checked by the user.
+You can optionally specify the <b>checked</b> attribute to make the check
+box initially selected when first displayed.  Otherwise, the check box is
+unselected when first displayed.  Any check boxes which are not checked when
+the form is submitted do not get passed to the Configurator, ie. their
+values will be "" (the empty string).
+<p>
+Example:
+<pre>
+           &lt;form&gt;
+           &lt;input type="checkbox" name="rootaccess" value="YES" checked&gt; Enable "root" access
+           &lt;/form&gt;
+</pre>
+Output:
+<br>
+<form>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+<input type="checkbox" name="rootaccess" value="YES" checked> Enable "root" access
+</form>
+<p>
+<hr width=50%>
+<p>
+<li>&lt;input type="radio" name="VARIABLE" value="RETURNVALUE" checked&gt; -
+<br>
+A <i>radio</i> element is a radio button.  A set of radio buttons consists
+of multiple radio buttons that all have the same <b>name</b> attribute.
+Only one radio button in the set can be selected at one time.  When the user
+selects a button in the set, all other buttons in the set are deselected.
+If one radio button in a set has the <b>checked</b> attribute, that one is
+selected when the set is first displayed.  Otherwise, none of the radio
+buttons are selected when first displayed (which may not be the desired
+functionality).  As with all &lt;input&gt; elements, the <b>name</b>
+attribute is required and designates the variable name for the value
+returned by the radio button set.  All radio buttons with the same
+<b>name</b> are in the same set, regardless of where they appear in the
+form.  The <b>value</b> attribute is the value that is returned for the
+radio button set when the form is submitted.  This default to "ON" which
+isn't very useful for a set of radio buttons, so be sure to give each radio
+button its own <b>value</b>.
+<p>
+Example:
+<pre>
+           &lt;form&gt;
+           User type:&lt;br&gt;
+           &lt;input type="radio" name="usertype" value="guest"&gt; Guest&lt;br&gt;
+           &lt;input type="radio" name="usertype" value="user" checked&gt; User&lt;br&gt;
+           &lt;input type="radio" name="usertype" value="admin"&gt; Admin&lt;br&gt;
+           &lt;/form&gt;
+</pre>
+Output:
+<br>
+<form>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+User type:<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+<input type="radio" name="usertype" value="guest"> Guest<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+<input type="radio" name="usertype" value="user" checked> User<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+<input type="radio" name="usertype" value="admin"> Admin<br>
+</form>
+<p>
+<hr width=50%>
+<p>
+<li>&lt;input type="hidden" name="VARIABLE" value="RETURNVALUE"&gt; - <br>
+A <i>hidden</i> element is an invisible element whose main purpose is to
+contain data that the user does not enter.  This data gets sent when the
+form is submitted.  This allows you to always pass a certain name/value pair
+to the Configurator without input from the user.  Both the <b>name</b> and
+<b>value</b> attributes are required.
+<p>
+Example:
+<pre>
+           &lt;form&gt;
+           There's a hidden element here!&lt;input type="hidden" name="version" value="5.23"&gt;
+           &lt;/form&gt;
+</pre>
+Output:
+<br>
+<form>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+There's a hidden element here!<input type="hidden" name="version" value="5.23">
+</form>
+<p>
+<hr width=50%>
+<p>
+<li>&lt;input type="reset" value="LABEL"&gt; - <br>
+When the user presses a <i>reset</i> button, all elements in the form are
+reset to the values that were present when the form was first displayed.
+Usually, the text of this button is "Reset", but you can change this by
+specifying the <b>value</b> attribute.
+<p>
+Example:
+<pre>
+           &lt;form&gt;
+           Reset form: &lt;input type="reset" value="Reset to Original Values"&gt;
+           &lt;/form&gt;
+</pre>
+Output:
+<br>
+<form>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+Reset form: <input type="reset" value="Reset to Original Values">
+</form>
+<p>
+<hr width=50%>
+<p>
+<li>&lt;textarea name="VARIABLE" cols="WIDTH" rows="HEIGHT"
+wrap="OFF"|"HARD"|"SOFT"&gt;Text to display&lt;/textarea&gt; - <br>
+The <i>textarea</i> tag defines a multiline input field into which the user
+can enter text.  As with &lt;input&gt; elements, the <b>name</b> attribute is
+required and designates the variable name for the text present in the box
+when the form is submitted.  The width and height (in terms of characters)
+of the text box is given by the optional <b>cols</b> and <b>rows</b>
+attributes.
+By default, any text entered by the user is displayed "as is" meaning that
+if the line input by the user is longer than the width of the text box, the
+text will scroll off the screen.  The only time a new row is started is when
+the user types a carriage return.  This is also the behavior when you use
+the <b>wrap="OFF"</b> attribute.  If you want to have the text word wrap
+automatically, use the <b>wrap="HARD"</b> or <b>wrap="SOFT"</b> attribute.  (In
+standard HTML, these two attributes differ by whether or not the extra carriage
+returns generated by word wrapping get submitted in the text or not.  For
+the Configurator, these extra carriage returns are never submitted, which is
+equivalent to <b>wrap="SOFT"</b>, so using <b>wrap="HARD"</b> generates the
+same behavior.)  Between the two &lt;textarea&gt;...&lt;/textarea&gt; tags,
+you can put optional "Text to display" when the textarea is first displayed.
+<p>
+Example:
+<pre>
+           &lt;form&gt;
+           Comments?&lt;br&gt;
+           &lt;textarea name="comments" cols=40 rows=5 wrap="SOFT"&gt;
+           Enter your comments or suggestions here.
+           &lt;/textarea&gt;
+           &lt;/form&gt;
+</pre>
+Output:
+<br>
+<form>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+Comments?<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+<textarea name="comments" cols=40 rows=5 wrap="SOFT">
+Enter your comments or suggestions here.
+</textarea>
+</form>
+<p>
+<hr width=50%>
+<p>
+<li>&lt;select name="VARIABLE" size="LISTLENGTH" multiple&gt;<br>
+&lt;option value="OPTIONVALUE"&gt;<br>
+&lt;option value="OPTIONVALUE" selected&gt;<br>
+&nbsp; &nbsp; ...<br>
+&lt;/select&gt; - <br>
+The <i>select</i> and <i>option</i> tags define a selection list.  A
+selection list displays a list of options from which the user can select one
+(or more) items.  If the <b>multiple</b> attribute is present, the user can
+select multiple items from the list at a time.  Otherwise, only a single
+item can be selected at a time.  As with <b>input</b> elements, the
+<b>name</b> attribute is required and designates the variable name for the
+value(s) selected in the list when the form is submitted.  The optional
+<b>size</b> attribute indicates how many items are presented in the box
+before scrolling is necessary.  This defaults to "10".  If you set
+<b>size</b> to "1" and do not set the <b>multiple</b> attribute, you get a
+single element drop-down list.  
+<p>
+To actually put items in the selection list, you use the <i>option</i> tag
+followed by the text you wish to appear in the list.  You can make that
+option selected when the list is initially displayed by using the
+<b>selected</b> attribute.  By default, the value that gets returned to the
+Configurator when an item is selected is the actual text of the item in the
+list.  You can override this behavior by using the optional <b>value</b>
+attribute.  When you set this value, it gets returned when that item in the
+list is selected.
+<p>
+Example:
+<pre>
+           &lt;form&gt;
+           Select the machines to use:&lt;br&gt;
+           &lt;select name="machinelist" size=5 multiple&gt;
+           &lt;option selected&gt;oscar1
+           &lt;option&gt;oscar2
+           &lt;option&gt;oscar3
+           &lt;option&gt;oscar4
+           &lt;option&gt;oscar5
+           &lt;option&gt;oscar6
+           &lt;option value="unlisted"&gt;unlisted machine
+           &lt;/select&gt;
+           &lt;/form&gt;
+</pre>
+Output:
+<br>
+<form>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+Select the machines to use:<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+<select name="machinelist" size=5 multiple>
+<option selected>oscar1
+<option>oscar2
+<option>oscar3
+<option>oscar4
+<option>oscar5
+<option>oscar6
+<option value="unlisted">unlisted machine
+</select>
+</form>
+<p>
+Note: when viewing the above example in a standard HTML browser, you might
+have to use the &lt;SHIFT&gt; or &lt;CTRL&gt; key in conjunction with
+clicking the mouse to select multiple items from the list.  In the
+Configurator, this extra step is not required.
+</ul>
+<p>
+<hr>
+<p>
+
+</body>
+</html>
