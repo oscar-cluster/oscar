@@ -61,18 +61,6 @@ for service in $services; do
     fi
 done
 
-#
-# The only postfix is supported for the oscar-3.0.1b1.
-# In a near future, the codes of this block is not needed to support the other mailing services.
-#
-#-------------------------------------------------------------------------
-if [ "$service_name" != postfix ] || [ -z "$service_name" ] ; then
-    dir="/tftpboot/rpm";
-    rpm -ivh $dir/postfix*
-    service_name="postfix";
-fi
-#-------------------------------------------------------------------------
-
 
 	# If $service_name contains the "postfix, sendmail, or exim",
     # each case handles the configuration corresponding to
@@ -195,7 +183,7 @@ EOF
     echo "WARNING: Please bug the OSCAR developers to finish the disable-servics package!"
     echo "WARNING: There will be no mail service running on the client nodes!"
 		;;
-	*) echo "WARNING: OSCAR did not found any mailing service"
+    *) echo "WARNING: OSCAR did not found any mailing service"
         ;;
 esac
 
