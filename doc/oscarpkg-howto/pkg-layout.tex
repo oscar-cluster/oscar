@@ -1,0 +1,50 @@
+% $Id: pkg-layout.tex,v 1.1 2003/08/22 20:35:51 naughtont Exp $
+
+\section{Package Layout}
+\label{sect:pkg-layout}
+
+As OSCAR evolved it became obvious that the mechanism to configure and
+install a cluster needed to be cleanly seperated from the software that was
+to be installed.  Thus the \emph{OSCAR Package} (OPkg) was born.  The OPkg
+layout is geared toward making things as simple as possible for package
+authors.  The desire to keep things simple as well as the ``best
+practices'' mantra of OSCAR led to the decision that at it's simplest, an
+OPkg could be a simple RPM.  However, most software requires further
+configuration for a cluster environment.  Additionally, OPkgs can contain
+suplemental documentation and verification/testing scripts.  The following
+will detain the contents of a typical OPkg and then elaborate on the
+available packaging APIs.
+
+As mentioned previously OPkgs can be as simple as a binary RPM compiled for
+an OSCAR supported distribution.  
+
+
+however, when they also provide supplemental documentation and a meta file
+describing the package.  The packaging API provides authors the ability to
+make use of scripts to configure the cluster software outside of the RPM
+itself.  The scripts fire at different stages of the installation process
+and test scripts can be added to verify the process. Additionally, an OSCAR
+Package Downloader (OPD) (see Section~\ref{sect:opd}) is provided to
+simplify acquisition of new packages.
+
+The basic directory structure for an OSCAR Package is as follows:
+\begin{quote}
+\begin{description}
+    \item[\file{config.xml}] -- meta file with description, version, etc.
+    \item[\file{RPMS/}] -- directory containing binary RPM(s) for the package
+    \item[\file{SRPMS/}] -- directory containing source RPM(s) used to build
+                            the package
+    \item[\file{scripts/}] --  set of scripts that run at particular times
+                     during the installation/configuration of the cluster
+    \item[\file{testing/}] -- unit test scripts for the package
+    \item[\file{doc/}] -- documentation and/or license information
+\end{description}
+\end{quote}
+
+
+\subsection{\file{config.xml}}
+If no meta file is included with the package a simplisitc default is used.
+The currently valide 
+
+\subsection{RPMS \& SRPMS}
+

@@ -1,0 +1,51 @@
+%---------------------------------------------------------------------------
+% $Id: opd.tex,v 1.1 2003/08/22 20:35:51 naughtont Exp $
+%
+% This section is from Jeff Squyres' section of the OLS'03 paper.
+%
+%  Ottawa Linux Symposium 2003 (OLS'03) Paper
+%  July 23-26, 2003,  Ottawa Canada
+%  http://www.linuxsymposium.org/2003/
+%
+% Information on the OSCAR package downloader.
+%
+%---------------------------------------------------------------------------
+
+The OSCAR Package Downloader (OPD) provides the capability to download
+and install OSCAR software from remote package repositories.  A
+package repository is simply an FTP or web site.  Given the ubiquitous
+access to FTP and web servers, any organization can host their own
+OSCAR package repository and publish their packages on it.  There is
+no central repository; the OPD network was designed to be distributed
+such that no central authority is required to publish OSCAR packages.
+%
+Although the OPD client program downloads an initial list of
+repositories from the OSCAR Working Group web site,\footnote{The
+  centralized repository list is maintained by the OSCAR working
+  group.  Upon request, the list maintainers will add most repository
+  sites.} arbitrary repository sites can be listed on the OPD command
+line.
+
+Since package repositories are FTP or web sites, any traditional FTP
+client or web browser can also be used to obtain OSCAR packages.  Most
+users prefer to use the OPD client itself, however, because it
+provides additional functionality over that provided by traditional
+clients.  OPD offers two interfaces: a simple menu-based mechanism
+suitable for interactive use and a command-line interface suitable for
+use by higher-level tools (or automated scripts).
+
+Partially inspired by the Comprehensive Perl Archive Network (CPAN),
+OPD provides the following high-level capabilities:
+%
+\begin{itemize}
+\item Automating access to a central list of repositories
+\item Browsing packages available at each repository
+\item Providing detailed information about packages
+\item Downloading, verifying, and extracting packages
+\end{itemize}
+%
+While the job that OPD performs is actually fairly simple and could be
+performed manually, having an automated tool for these functions
+provides ease of use for the end-user, performs multiple checks to
+ensure that downloaded and extracted properly, and lays the groundwork
+for higher-level OSCAR package/retrieval tools.

@@ -1,0 +1,36 @@
+% $Id: oscarpkg-howto.tex,v 1.1 2003/08/22 20:35:51 naughtont Exp $
+%
+% * Sun Jul 27 2003  11:11:44AM    Thomas Naughton  <naughtont@ornl.gov>
+% - Initial creation for distribution to OSCAR and SSS community to assist
+%   with creation of new OSCAR Packages.  Ultimately this should be merged 
+%   with the "OSCAR Architecture" document, but for now I'm just trying to
+%   get something out.
+% - I am pooling together information from the arch doc as well as some
+%   existing text from previous papers, specifically OLS'03.  
+% 
+% $COPYRIGHT$
+%  
+\documentclass[letterpaper]{article}
+
+\input{defs}
+
+\title{HOWTO: Create an OSCAR Package}
+\author{Core OSCAR Team}
+
+\begin{document}
+\maketitle
+
+% Comment out the Draft line once the paper is finished.
+\begin{center}
+  {\catcode`\$=11\tiny\noindent Draft $Id: oscarpkg-howto.tex,v 1.1 2003/08/22 20:35:51 naughtont Exp $}
+\end{center}
+
+\input{intro}
+\input{pkg-layout}
+\input{pkg-example}
+
+% This is from Jeff Squyres, taken from OLS'03 paper
+\input{opd}
+
+\end{document}
+

@@ -1,0 +1,12 @@
+Makefile
+Makefile.extrapdf
+*.aux
+*.dvi
+*.log
+*.bbl
+*.blg
+*.toc
+*.lof
+*.ps
+*.pdf
+
