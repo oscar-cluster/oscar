@@ -37,7 +37,7 @@ sub sort_uniq {
 
 my $conf_file = "/etc/pfilter.conf";
 
-if ( -f $conf_file ) { 
+if ( -f $conf_file && ! -f "$conf_file.pre_oscar" ) { 
     print  "mv $conf_file $conf_file.pre_oscar\n";
     system "mv $conf_file $conf_file.pre_oscar";
 }
@@ -49,10 +49,14 @@ open(CONF, ">$conf_file")
 my %nodes = get_machine_listing();
 my @nodes = sort keys %nodes;
 chomp @nodes;
+print "nodes=<@nodes>\n";
 
 # find all the names that the server goes under
-my @server_names = sort_uniq( `hostname`, `hostname -s`, `hostname -a`);
-chomp @server_names;
+my @hostnames = (`hostname`, `hostname -s`, `hostname -a`);
+chomp @hostnames;
+print "hostnames=,@hostnames>\n";
+my @server_names = sort_uniq( split( /\s/, "@hostnames" ));
+
 my $hostname = `hostname`;
 chomp $hostname;
 
@@ -61,14 +65,17 @@ print CONF <<ENDIT;
 
 # We don't want future pfilter updates to merge commented out
 # new types of configuration directives when pfilter is upgraded.
-nomerge
+NOMERGE
 
 # We don't trust anyone anywhere on any interface by default
 untrusted   all
 
+# Be nasty and drop rather than reject unwanted packets
+drop
+
 # the server gets ssh and http opened up
 %if %hostname% = $hostname
-OPEN    tcp     ssh http https
+open    tcp     ssh http https
 %endif
 
 # the server and every compute node trust each other
