@@ -1,4 +1,8 @@
-	Quick Start Guide for Oscar 1.2
+$Id: INSTALL,v 1.4 2001/12/19 02:19:56 jsquyres Exp $
+
+$COPYRIGHT$
+
+Quick Start Guide for Oscar 1.2
 
 This guide is intended for the impatient administrator that wants to
 get his cluster up and running *right now* without hearing all the
@@ -14,11 +18,11 @@ requirements are:
    drives, or all have SCSI drives, and have a floppy diskette drive
    (OSCAR 1.2 does support mixed clusters with different types of
    harddrives, and PXE (network) booting, but that is in the complete
-   guide document.)
+   guide document)
 -- ethernet connectivity to all the compute nodes from the server
 
 
-Steps to OSCAR 1.2
+Steps to install OSCAR 1.2
 
 1. Install a server with RH 7.1, select the 'everything' option to
    install all RPMs.  It is suggested that you manually partition the
@@ -28,11 +32,15 @@ Steps to OSCAR 1.2
 2. If you are not root, become root now and configure the ethernet
    device (e.g. eth0) attached to the compute nodes using netcfg.
 
-3. Copy all the RPMs from both the RH 7.1 CDs to /tftpboot/rpm
+3. Copy all the RPMs from both the RH 7.1 CDs to /tftpboot/rpm.
 
-4. Download the OSCAR 1.2 package to the server, in /root/oscar
+4. Download the OSCAR 1.2 package to the server; expand it into in
+   /root/oscar-1.2.  Notice that it has a configure script -- ignore
+   it.  The configure script is not used in the installation process
+   of OSCAR unless you need to build the documentation from its LaTeX
+   source.
 
-5. cd to /root/oscar
+5. cd to /root/oscar-1.2.
 
 6. Issue the "install_cluster <device>" command, where device is the
    ethernet device (e.g. eth0) through which you are attached to your
@@ -76,7 +84,7 @@ Steps to OSCAR 1.2
     with the mouse, then hilight a node hostname on the right side of
     the screen, and press the "Assign MAC to Node" button.  Repeat
     this step until all MAC addresses are assigned, and then press
-    "Stop Collecting"
+    "Stop Collecting".
 
 11. Still on the MAC Address Collection window, press the Configure
     DHCP Server button, which will update the /etc/dhcpd.conf file,
@@ -108,6 +116,3 @@ Steps to OSCAR 1.2
     oscar directory.  It uninstalls all the OSCAR 1.2 RPMs, deletes
     the OSCAR data base, and allows you to start over with downloading
     the OSCAR 1.2 package.
- 
-
-
