@@ -36,12 +36,6 @@ fi
 . /etc/profile.d/00-modules.sh
 module unload mpi
 module load mpi/$lam
-
-# Get new host warnings out of the way
-
-for m in `cat $PBS_NODEFILE |uniq` ; do
-    ssh $m hostname 2> /dev/null > /dev/null
-done
 #### END: This is not necessary in normal PBS LAM scripts ################
 
 # This is the test itself.  See?  It's really short.  <sigh>
