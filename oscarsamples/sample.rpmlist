@@ -177,8 +177,8 @@ tftp-0.17-9
 units-1.55-9
 tcl-8.3.1-53
 tk-8.3.1-53
-openpbs-oscar-2.2p5-2
-openpbs-oscar-mom-2.2p5-2
+openpbs-oscar-2.2p11-2
+openpbs-oscar-mom-2.2p11-2
 lam-6.5.5-usysv.1oscar
 pvm-3.4.3+7-2
 libappconfig-perl-1.52-1

@@ -9,7 +9,7 @@ my @rpms = qw(
               c3
               pfilter
               lam-6.5.4
-              openpbs-oscar-2.2p5 
+              openpbs-oscar-2.2p11 
               openpbs-oscar-mom
               openpbs-oscar-server
               openpbs-oscar-gui
