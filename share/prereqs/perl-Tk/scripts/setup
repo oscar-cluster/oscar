@@ -52,9 +52,16 @@ if ( system("rpm -q perl-Tk >/dev/null") != 0  ) {
         copy("$rpmdir/$file", "/tftpboot/rpm/$file") || croak("Unable to copy $rpmdir/$file to /tftpboot/rpm/$file");
       }
     }
-    if ( $distn eq 'mandrake' && $distv eq '9.1' ) {
-      @ptkrpms = qw( perl-Tk perl-PerlIO-gzip );
+    if ( $distn eq 'mandrake' ) {
+      if ( $distv eq '9.1' ) {
+	      #MDK9.1
+        @ptkrpms = qw( perl-Tk perl-PerlIO-gzip );
+      } else { 
+	      #MDK9.0
+        @ptkrpms = qw( perl-Tk pwlib1 );
+      }
     } else {
+	      #RH
       @ptkrpms = qw( perl-Tk );
     }
     install_rpms(@ptkrpms) || croak("perl-Tk cannot be installed, check for error messages from rpm");
