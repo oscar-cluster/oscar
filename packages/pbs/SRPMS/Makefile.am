@@ -1,9 +1,7 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.3 2002/04/05 18:36:09 ngorsuch Exp $
-#
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
-SUBDIRS			= RPMS scripts SRPMS
+EXTRA_DIST	= maui-oscar-3.0.6p9-2.src.rpm openpbs-oscar-2.2p11-4.src.rpm
