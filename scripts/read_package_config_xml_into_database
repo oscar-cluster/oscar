@@ -28,15 +28,29 @@ use Data::Dumper;
 use OSCAR::Distro;
 use OSCAR::Database;
 
+################################################################
+#                                                              #
+#  Set the multiple_package_versions variable to any non-zero  #
+#  value to allow multiple packages records for the same       #
+#  package with different package versions to be stored in     #
+#  database. The Oscar package selector will only allow one    #
+#  version of any package to be selected in each package set   #
+#  in any event. Setting the variable to zero will allow only  #
+#  one version of each package to be stored in the database.   #
+#                                                              #
+my $multiple_package_versions = 1;                             #
+#                                                              #
+################################################################
+
 my $folding_character = "_";
 my %list_of_multiple_value_folded_fields = ();
-my %multiple_value_folded_fields = ();
+#my %multiple_value_folded_fields = ();
 my %oda_fieldnames = ();
 my %oda_shortcuts = ();
 my %options = ();
 my $package_tables_name_prefix = "package_";
 my $packages_table_name = "packages";
-my %single_value_folded_fields = ();
+#my %single_value_folded_fields = ();
 
 # function to insert a particular database table record 
 # if it doesn't exist already
@@ -105,9 +119,9 @@ sub insert_or_verify_record {
 	# matching record), we need to get rid of all
 	# previously existing matching records
 	my @error_strings = ();
-	my @table = ( "$table_name" );
+	my @tables = ( "$table_name" );
 	if ( ! oda::delete_records( $options_ref,
-				    \@table,
+				    \@tables,
 				    \@wheres,
 				    \@error_strings ) ) {
 	    oda::disconnect( \%options,
@@ -338,7 +352,7 @@ else {
     $oscar_home =~ s,/\./,/,g;                 # change /./       to /
     $oscar_home =~ s,/packages/[^/]+/scripts/,/,g;
     $oscar_home =~ s,/[^/]+$,,;  # Remove the name of the program
-    die "$0: bad calculated oscar base directory <$oscar_home>"
+    die "$0: bad calculated oscar base directory $oscar_home"
 	if ( ! -d "$oscar_home");
     $ENV{OSCAR_HOME} = $oscar_home;
 }
@@ -409,10 +423,10 @@ if ( @ARGV ) {
 }
 print "$0: package_name=<$package_name>\n" if $options{debug};
 usage(1,
-      "Package name <$package_name> from directory <$package_directory> has to start with a letter" )
+      "Package name $package_name from directory $package_directory has to start with a letter" )
     if $package_name !~ /^[a-zA-Z]/;
 usage(1,
-      "Package name <$package_name> from directory <$package_directory> has illegal characters" )
+      "Package name $package_name from directory $package_directory has illegal characters" )
     if $package_name !~ /^[a-zA-Z0-9][a-zA-Z0-9\.\_\-]*$/;
 
 # and if there is a package short name argument, there
@@ -443,7 +457,7 @@ if ( ! -f $config_file ) {
     print "Processing $config_file for package $package_name ...\n";
     my $xs = new XML::Simple(keyattr => {}, forcearray => 
 			     [ "site", "uri", 
-			       "rpm",
+			       "rpm", "filter",
 			       "shortcut", "fieldnames",
 			       "requires", "conflicts", "provides" ]);
     $xml_ref = eval { $xs->XMLin( $config_file ); };
@@ -454,11 +468,10 @@ if ( ! -f $config_file ) {
 }
 if ( ! defined $xml_ref ) {
     my %faked_xml;
-    $faked_xml{name} = $package_name;
     $faked_xml{class} = "third-party";
-    $faked_xml{installable} = 1;
-    $faked_xml{summary} = "Not provided";
     $faked_xml{description} = "Not provided";
+    $faked_xml{name} = $package_name;
+    $faked_xml{summary} = "Not provided";
     $xml_ref = \%faked_xml;
 }
 #$options{debug}=1;
@@ -472,6 +485,8 @@ if ( $options{debug} ) {
 #
 # <oscar>
 #   <name>package name</name>
+#   <filter architecture="ia32">
+#   <filter architecture="ia64" distribution="redhat" distribution_version="7.2" >
 #   <version>
 #     <major>17</major>
 #     <minor>2</minor>
@@ -519,6 +534,18 @@ if ( $options{debug} ) {
 #
 # {
 #   'name' -> 'package name',
+#   'filter' => [
+#                 {
+#                   'architecture' => 'ia32'
+#                 }
+#               ],
+#               [
+#                 {
+#                   'architecture' => 'ia64',
+#                   'distribution' => 'redhat',
+#                   'distribution_versoin' => '7.2'
+#                 }
+#               ]
 #   'version' -> {
 #                  'major' -> '17',
 #                  'minor' -> '2',
@@ -596,10 +623,41 @@ if ( $options{debug} ) {
 # }
 #
 
-# Recursively loop through the xml config files hash, 
-# finding all 'rpmlist' information, storing the
+# Find all the package level 'filter' information, 
+# storing it in our filters list for later special 
+# processing, swallowing the information from the 
+# xml_ref hash.  The above example would end up with 
+# this in the filters list:
+#
+# {
+#   'architecture' => 'ia32'
+# },
+# {
+#   'architecture' => 'ia64',
+#   'distribution' => 'redhat',
+#   'distribution_version' => '7.2'
+# }
+#
+my $package_filters_ref;
+print "$0: looking for package filtering data in xml for package <$package_name>\n" 
+    if $options{debug};
+# if there is a 'filter' key in that, ...
+if ( exists $$xml_ref{filter} ) {
+    # move it into our seperate package filters list
+    $package_filters_ref = $$xml_ref{filter};
+    delete $$xml_ref{filter};
+}
+if ( $options{debug} ) {
+    print( "$0: package_filters_ref:\n" );
+    print Dumper($package_filters_ref);
+#    print "$0: xml_ref after pulling out package filterss:\n";
+#    print Dumper($xml_ref);
+}
+
+# Find all the 'rpmlist' information, storing the
 # information in our rpmlists hash for later special 
-# processing. The above example would end up with 
+# processing, swallowing the information from the 
+# xml_ref hash.  The above example would end up with 
 # this in the rpmlists list:
 #
 # {
@@ -670,12 +728,11 @@ if ( exists $$xml_ref{rpmlist} ) {
 if ( $options{debug} ) {
     print( "$0: package_rpmlists_ref:\n" );
     print Dumper($package_rpmlists_ref);
-#    print "$0: xml_ref after pulling out oda shortcuts and fieldnames:\n";
+#    print "$0: xml_ref after pulling out rpmlists:\n";
 #    print Dumper($xml_ref);
 }
 
-# Recursively loop through the xml config files hash, 
-# finding all 'package'->'oda'->'fieldnames' 
+# Find all 'package'->'oda'->'fieldnames' 
 # and all 'package'->'oda'->'shortcut'
 # information, storing the information in the
 # oda_fieldnames and oda_shortcuts hashes, respectively,
@@ -721,8 +778,8 @@ if ( exists $$xml_ref{package} ) {
 		if ( ! exists $oda_shortcuts{$shortcut} ) {
 		    $oda_shortcuts{$shortcut} = $expansion;
 		} else {
-		    warn "$0: duplicated oda shortcut <$shortcut> specified,\n";
-		    warn "ignoring value <$expansion> specified by <$package_name>\n";
+		    warn "$0: duplicated oda shortcut $shortcut specified,\n";
+		    warn "ignoring value <$expansion> specified by package $package_name\n";
 		    warn "leaving value as previous value <$oda_shortcuts{$shortcut}>,\n";
 		}
 	    }
@@ -747,13 +804,13 @@ if ( exists $$xml_ref{package} ) {
 			if $options{debug};
 		    $oda_fieldnames{$fieldnames_table} = \@fieldnames_fields;
 		} elsif ( $package_name eq "oda" ) {
-		    warn "$0: duplicated oda fieldnames <$fieldnames_table> specified,\n";
+		    warn "$0: duplicated oda fieldnames $fieldnames_table specified,\n";
 		    warn "previous value was <$oda_fieldnames{$fieldnames_table}>,\n";
 		    warn "over-riding with oda value <@fieldnames_fields>\n";
 		    $oda_fieldnames{$fieldnames_table} = \@fieldnames_fields;
 		} else {
-		    warn "$0: duplicated oda fieldnames <$fieldnames_table> specified,\n";
-		    warn "ignoring value <@fieldnames_fields> specified by <$package_name>\n";
+		    warn "$0: duplicated oda fieldnames $fieldnames_table specified,\n";
+		    warn "ignoring value <@fieldnames_fields> specified by package $package_name\n";
 		    warn "leaving value as previous value <$oda_fieldnames{$fieldnames_table}>,\n";
 		}
 	    }
@@ -816,7 +873,7 @@ if ( $options{debug} ) {
 # removing them from the hash.
 
 #print "Looking for explicitly defined database tables and fields ...\n";
-print "$0: looking for explicit table/field definitions in package <$package_name>\n" 
+print "$0: looking for explicit table/field definitions in package $package_name\n" 
     if $options{debug};
 # if there is a 'tables' key in that, ...
 if ( exists $$xml_ref{database_tables} ) {
@@ -829,7 +886,7 @@ if ( exists $$xml_ref{database_tables} ) {
 	    . join(' ', sort keys %$tables_ref ) . "\n";
     } else {
 	foreach my $table_name ( sort keys %$tables_ref ) {
-	    print "$0: found explicit table <$table_name> definition in $package_name config.xml\n"
+	    print "$0: found explicit table $table_name definition in $package_name config.xml\n"
 		if $options{debug};
 	    my $table_ref = $$tables_ref{$table_name};
 	    # if there is a <fields> ... </fields> block
@@ -840,7 +897,7 @@ if ( exists $$xml_ref{database_tables} ) {
 		my %table_fields = ();
 		foreach my $field_name ( sort keys %$table_fields_ref ) {
 		    my $table_field_ref = $$table_fields_ref{$field_name};
-		    print "$0: found explicit field   <$field_name> definition in $package_name config.xml\n"
+		    print "$0: found explicit field   $field_name definition in $package_name config.xml\n"
 			if $options{debug};
 		    $table_fields{$field_name} = 
 			( ref($table_fields{$field_name}) eq "HASH" ) ?
@@ -869,7 +926,7 @@ if ( exists $$xml_ref{package} ) {
     if ( exists $$package_package_ref{database_tables} ) {
 	my $tables_ref = $$package_package_ref{database_tables};
 	foreach my $table_name ( sort keys %$tables_ref ) {
-	    my $full_table_name = "package" . $package_name . "_" . $table_name;
+	    my $full_table_name = "package_" . $package_name . "_" . $table_name;
 	    print "$0: found explicit table <$full_table_name> definition in $package_name config.xml\n"
 		if $options{debug};
 	    my $table_ref = $$tables_ref{$table_name};
@@ -928,7 +985,7 @@ if ( exists $$xml_ref{package} ) {
 #                  subname10 -> value12 ]
 #              )
 #
-# into the %single_value_folded_fields hash as:
+# into the %package_single_value_folded_fields hash as:
 #
 #    field1_subname1_subsubname1 -> value1
 #    field1_subname1_subsubname2 -> value2
@@ -956,11 +1013,7 @@ print "$0: folding fields in xml data for package <$package_name>\n"
     if $options{debug};
 my @field_ids_list = ();
 my %package_single_value_folded_fields = ();
-$single_value_folded_fields{ $package_name } =
-    \%package_single_value_folded_fields;
 my %package_multiple_value_folded_fields = ();
-$multiple_value_folded_fields{ $package_name } =
-    \%package_multiple_value_folded_fields;
 recursive_fold_fields( \%options,
     \%package_single_value_folded_fields,
     \%package_multiple_value_folded_fields,
@@ -971,28 +1024,24 @@ recursive_fold_fields( \%options,
 # another package had multiple values for the
 # same field, move the single value field to the
 # multiple value fields tables
-my $package_folded_single_values_ref = 
-    $single_value_folded_fields{ $package_name };
-my $package_folded_multiple_values_ref = 
-    $multiple_value_folded_fields{ $package_name };
-foreach my $folded_field_id ( sort keys %$package_folded_single_values_ref ) {
+foreach my $folded_field_id ( sort keys %package_single_value_folded_fields ) {
     if ( $list_of_multiple_value_folded_fields{ $folded_field_id } ) {
 	print "$0: moving package <$package_name> folded field <$folded_field_id> to multiple values tables\n"
 	    if $options{debug};
 	my @folded_values_list = 
-	    $$package_folded_single_values_ref{ $folded_field_id };
-	$$package_folded_multiple_values_ref{ $folded_field_id } =
+	    $package_single_value_folded_fields{ $folded_field_id };
+	$package_multiple_value_folded_fields{ $folded_field_id } =
 	    \@folded_values_list;
-	delete $$package_folded_single_values_ref{ $folded_field_id };
+	delete $package_single_value_folded_fields{ $folded_field_id };
     }
 }
 if ( $options{debug} ) {
-    print_hash( "", "$0: single_value_folded_fields",
-		\%single_value_folded_fields );
+    print_hash( "", "$0: package_single_value_folded_fields",
+		\%package_single_value_folded_fields );
     print_hash( "", "$0: list_of_multiple_value_folded_fields",
 		\%list_of_multiple_value_folded_fields );
-    print "$0: multiple_value_folded_fields:\n";
-    print Dumper( \%multiple_value_folded_fields );
+    print "$0: package_multiple_value_folded_fields:\n";
+    print Dumper( \%package_multiple_value_folded_fields );
 }
 
 # Database tables that are for a particular package
@@ -1028,9 +1077,7 @@ if ( $options{debug} ) {
 # table for the package specific database tables
 #print "Looking for package specific database tables and fields ...\n";
 my %package_specific_tables_fields = ();
-my $package_folded_single_values_ref = 
-    $single_value_folded_fields{ $package_name };
-foreach my $folded_field_id ( sort keys %$package_folded_single_values_ref ) {
+foreach my $folded_field_id ( sort keys %package_single_value_folded_fields ) {
     # if this is a "package_*_" type field, ...
     if ( $folded_field_id =~ /^package_[^\_]+_[^\_]/ ) {
 	# parse the database table name and field id
@@ -1039,7 +1086,7 @@ foreach my $folded_field_id ( sort keys %$package_folded_single_values_ref ) {
 	my $table_name = $package_tables_name_prefix . shift @fields;
 	my $field_name = join( '_', @fields );
 	my $field_value = 
-	    $$package_folded_single_values_ref{$folded_field_id};
+	    $package_single_value_folded_fields{$folded_field_id};
 	print "$0: package=<$package_name> ffi=<$folded_field_id> table=<$table_name> field=<$field_name> value=<$field_value>\n"
 	    if $options{debug};
 	# put a package entry in if not there yet
@@ -1087,10 +1134,8 @@ foreach my $table_name ( keys %package_specific_tables_fields ) {
 }
 # scan through the parsed config.xml files hash and
 # insert the data into the package specific tables
-my $package_folded_single_values_ref = 
-    $single_value_folded_fields{ $package_name };
 my %tables_records = ();
-foreach my $folded_field_id ( keys %$package_folded_single_values_ref ) {
+foreach my $folded_field_id ( keys %package_single_value_folded_fields ) {
     # if this is a "package_*_" type field, ...
     if ( $folded_field_id =~ /^package_[^\_]+_[^\_]/ ) {
 	# parse the database table name and field id
@@ -1107,10 +1152,10 @@ foreach my $folded_field_id ( keys %$package_folded_single_values_ref ) {
 	}
 	my $tables_records_ref = $tables_records{$table_name};
 	$$tables_records_ref{$field_name} =
-	    $$package_folded_single_values_ref{$folded_field_id};
+	    $package_single_value_folded_fields{$folded_field_id};
 	# get rid of the single_value_folded_fields
 	# entry now that we have used it
-	delete $$package_folded_single_values_ref{$folded_field_id};
+	delete $package_single_value_folded_fields{$folded_field_id};
     }
 }
 foreach my $table_name ( keys %tables_records ) {
@@ -1161,41 +1206,41 @@ foreach my $table_name ( keys %tables_records ) {
 # wasn't specified on the command line.
 # Then set the version field.
 if ( $package_version eq "" ) {
-    if ( exists $$package_folded_single_values_ref{version} &&
-	 defined $$package_folded_single_values_ref{version} &&
-	 $$package_folded_single_values_ref{version} ne "" ) {
-	$package_version = $$package_folded_single_values_ref{version};
+    if ( exists $package_single_value_folded_fields{version} &&
+	 defined $package_single_value_folded_fields{version} &&
+	 $package_single_value_folded_fields{version} ne "" ) {
+	$package_version = $package_single_value_folded_fields{version};
     } else {
-	if ( exists $$package_folded_single_values_ref{version_major} &&
-	     defined $$package_folded_single_values_ref{version_major} &&
-	     $$package_folded_single_values_ref{version_major} ne "" ) {
-	    $package_version = $$package_folded_single_values_ref{version_major};
-	    if ( exists $$package_folded_single_values_ref{version_minor} &&
-		 defined $$package_folded_single_values_ref{version_minor} &&
-		 $$package_folded_single_values_ref{version_minor} ne "" ) {
+	if ( exists $package_single_value_folded_fields{version_major} &&
+	     defined $package_single_value_folded_fields{version_major} &&
+	     $package_single_value_folded_fields{version_major} ne "" ) {
+	    $package_version = $package_single_value_folded_fields{version_major};
+	    if ( exists $package_single_value_folded_fields{version_minor} &&
+		 defined $package_single_value_folded_fields{version_minor} &&
+		 $package_single_value_folded_fields{version_minor} ne "" ) {
 		$package_version = $package_version . "." . 
-		    $$package_folded_single_values_ref{version_minor};
-		if ( exists $$package_folded_single_values_ref{version_subversion} &&
-		     defined $$package_folded_single_values_ref{version_subversion} &&
-		     $$package_folded_single_values_ref{version_subversion} ne "" ) {
+		    $package_single_value_folded_fields{version_minor};
+		if ( exists $package_single_value_folded_fields{version_subversion} &&
+		     defined $package_single_value_folded_fields{version_subversion} &&
+		     $package_single_value_folded_fields{version_subversion} ne "" ) {
 		    $package_version = $package_version . "." .
-			$$package_folded_single_values_ref{version_subversion};
+			$package_single_value_folded_fields{version_subversion};
 		}
 	    }
 	    $package_version =~ s/\.0$//;
 	    $package_version =~ s/\.0$//;
-	    if ( exists $$package_folded_single_values_ref{version_release} &&
-		 defined $$package_folded_single_values_ref{version_release} &&
-		 $$package_folded_single_values_ref{version_release} ne "" ) {
+	    if ( exists $package_single_value_folded_fields{version_release} &&
+		 defined $package_single_value_folded_fields{version_release} &&
+		 $package_single_value_folded_fields{version_release} ne "" ) {
 		$package_version = $package_version . "-" . 
-		    $$package_folded_single_values_ref{version_release};
+		    $package_single_value_folded_fields{version_release};
 	    }
 	} else {
 	    $package_version = "Unknown";
 	}
     }
 }
-$$package_folded_single_values_ref{version} = $package_version;
+$package_single_value_folded_fields{version} = $package_version;
 
 # Determine the field names and types for the
 # packages database table which is a common 
@@ -1217,23 +1262,21 @@ $$package_folded_single_values_ref{version} = $package_version;
 # of the package into the "directory" field.
 
 my %package_field_types = ();
-my $package_folded_single_values_ref = 
-    $single_value_folded_fields{ $package_name };
-$$package_folded_single_values_ref{package} =
-    $$package_folded_single_values_ref{name}
-if exists $$package_folded_single_values_ref{name};
-$$package_folded_single_values_ref{name} = $package_name;
+$package_single_value_folded_fields{package} =
+    $package_single_value_folded_fields{name}
+    if exists $package_single_value_folded_fields{name};
+$package_single_value_folded_fields{name} = $package_name;
 print STDERR
     "$0: Warning,\n" .
-    "the config.xml file for package <$package_name>\n" .
+    "the config.xml file for package $package_name\n" .
     "has a <directory> block defined with a value of:\n" .
-    "$$package_folded_single_values_ref{directory},\n" .
+    "$package_single_value_folded_fields{directory},\n" .
     "which will be over-ridden with the actual package\n" .
     "directory location:\n" .
     "$package_directory.\n"
-    if exists $$package_folded_single_values_ref{directory};
-$$package_folded_single_values_ref{directory} = $package_directory;
-foreach my $folded_field_id ( sort keys %$package_folded_single_values_ref ) {
+    if exists $package_single_value_folded_fields{directory};
+$package_single_value_folded_fields{directory} = $package_directory;
+foreach my $folded_field_id ( sort keys %package_single_value_folded_fields ) {
     # if we haven't seen this field name yet,
     # save the field id as a lowly INT type
     $package_field_types{ $folded_field_id } = "INT"
@@ -1244,7 +1287,7 @@ foreach my $folded_field_id ( sort keys %$package_folded_single_values_ref ) {
 # simplest type, VARCHAR superceded INT,
 # TEXT supercedes INT and VARCHAR
 my $value = 
-    $$package_folded_single_values_ref{ $folded_field_id };
+    $package_single_value_folded_fields{ $folded_field_id };
 if ( length $value > 250 ) {
     $package_field_types{ $folded_field_id } = "TEXT";
 } elsif ( $value !~ /^[0-9]+$/ &&
@@ -1266,41 +1309,99 @@ make_fix_table_fields( \%options,
 		       undef,
 		       \%package_field_types );
 
-# write out the records for the packages table
-# if they aren't already there, modify them to 
-# add any new fields if they are there, and
-# don't forget we already moved the "name"
+# Write out the packages table record for this
+# package if it isn't already in the database.
+# If the database already includes a record for
+# this package, save a few key field values from
+# the previous record, wipe out any other field
+# field values from the previous record, and 
+# modify the record to have the new values from
+# the config.xml file that we just read in.
+# Don't forget we already moved the "name"
 # field value from the config.xml files into 
 # the "package" value and put the package 
 # directory location into the "name" field
-foreach my $package_name ( sort keys %single_value_folded_fields ) {
-    my @table_fields = ( $packages_table_name );
-#    my @wheres = ( "packages.name = \"$package_name\"",
-#		   "packages.version = \"$package_version\"" );
-    my @wheres = ( "packages.name = \"$package_name\"" );
-    my @read_results = ();
-    my @error_strings = ();
-    if ( ! oda::read_records( \%options,
-			      \@table_fields,
-			      \@wheres,
-			      \@read_results,
-			      1,
-			      \@error_strings ) ) {
-	warn shift @error_strings while @error_strings;
+my @table_fields = ( $packages_table_name );
+my @package_record_wheres = ( "packages.name = \"$package_name\"" );
+push @package_record_wheres, "packages.version = \"$package_version\""
+    if $multiple_package_versions;
+my @read_results = ();
+my @error_strings = ();
+if ( ! oda::read_records( \%options,
+			  \@table_fields,
+			  \@package_record_wheres,
+			  \@read_results,
+			  1,
+			  \@error_strings ) ) {
+    warn shift @error_strings while @error_strings;
+} else {
+    if ( ! @read_results ) {
+	print "Writing a new $packages_table_name record for package $package_name"
+	    . ( ( $multiple_package_versions ) ? " version $package_version" : "" ) . "\n";
+	@error_strings = ();
+	if ( ! oda::insert_record( \%options,
+				   $packages_table_name,
+				   \%package_single_value_folded_fields,
+				   undef,
+				   \@error_strings ) ) {
+	    warn shift @error_strings while @error_strings;
+	}
     } else {
-	if ( ! @read_results ) {
-	    print "Writing database table <$packages_table_name> record for package <$package_name>\n";
-	    @error_strings = ();
-	    if ( ! oda::insert_record( \%options,
-				       $packages_table_name,
-				       $single_value_folded_fields{ $package_name },
-				       undef,
-				       \@error_strings ) ) {
-		warn shift @error_strings while @error_strings;
+	print "Modifying existing $packages_table_name record(s) for package $package_name"
+	    . ( ( $multiple_package_versions ) ? " version $package_version" : "" ) . "\n";
+	print "$0: very strange, there is more than one $packages_table_name record" .
+	    "for package $package_name"
+	    . ( ( $multiple_package_versions ) ? " version $package_version" : "" ) . "\n"
+	    if scalar @read_results > 1;
+	# build up a modification hash, start with undefined values for all fields
+	my %package_modification_field_values = ();
+	my @field_names = ();
+	@error_strings = ();
+	if ( ! oda::list_fields( \%options,
+				 $packages_table_name,
+				 \@field_names,
+				 \@error_strings ) ) {
+	    warn shift @error_strings while @error_strings;
+	}
+	foreach my $field_name ( @field_names ) {
+	    $package_modification_field_values{$field_name} = undef;
+	}
+	# then overwrite with field values read from the config.xml file
+	foreach my $field_name ( keys %package_single_value_folded_fields ) {
+	    $package_modification_field_values{$field_name} =
+		$package_single_value_folded_fields{$field_name};
+	}
+	# a few fields are gotten from the already existing record
+	my $existing_field_values_ref = $read_results[0];
+	foreach my $field_name ( "installable" ) {
+	    if ( exists $$existing_field_values_ref{$field_name} &&
+		 defined $$existing_field_values_ref{$field_name} &&
+		 $$existing_field_values_ref{$field_name} ne "" ) {
+		$package_modification_field_values{$field_name} =
+		    $$existing_field_values_ref{$field_name};
 	    }
-	} else {
-	    print "$0: very strange, there are more than 2 package records for <$package_name> in table <$packages_table_name>\n"
-		if scalar @read_results > 1;
+	}
+	# and the main key fields are not written back out
+	delete $package_modification_field_values{id}
+	    if exists $package_modification_field_values{id};
+	delete $package_modification_field_values{name}
+	    if exists $package_modification_field_values{name};
+	delete $package_modification_field_values{version}
+	    if exists $package_modification_field_values{version} &&
+		$multiple_package_versions;
+	# now modify the existing record
+	@error_strings = ();
+	my @modified_tables = ( "$packages_table_name" );
+        if ( $options{debug} ) {
+            print "$0: package_modification_field_values:\n";
+            print Dumper( \%package_modification_field_values );
+        }
+	if ( ! oda::modify_records( \%options,
+				    \@modified_tables,
+				    \%package_modification_field_values,
+                                    \@package_record_wheres,
+                                    \@error_strings ) ) {
+	    warn shift @error_strings while @error_strings;
 	}
     }
 }
@@ -1348,128 +1449,122 @@ my %multiple_tables_fields = ();
 my %multiple_tables_records = ();
 print "$0: PMV processing multiple value fields ...\n"
     if $options{debug};
-foreach my $package_name ( sort keys %multiple_value_folded_fields ) {
-    print "$0: PMV package <$package_name> ...\n"
+foreach my $folded_name ( sort keys %package_multiple_value_folded_fields ) {
+    # figure out what the _ seperated fields are
+    my @folded_fields = split( '\_', $folded_name );
+    my $first_field = shift @folded_fields;
+    # figure out what database table this will go in
+    my $table_name = $packages_table_name . "_" . $first_field;
+    print "$0: PMV folded=<$folded_name> table=<$table_name> data=\n"
 	if $options{debug};
-    my $package_multiple_value_fields_ref = 
-	$multiple_value_folded_fields{ $package_name };
-    foreach my $folded_name ( sort keys %$package_multiple_value_fields_ref ) {
-	# figure out what the _ seperated fields are
-	my @folded_fields = split( '\_', $folded_name );
-	my $first_field = shift @folded_fields;
-	# figure out what database table this will go in
-	my $table_name = $packages_table_name . "_" . $first_field;
-	print "$0: PMV folded=<$folded_name> table=<$table_name> data=\n"
+    # get a pointer to the data parsed from xml,
+    # this could either be an array of scalar
+    # values, or it could be an array of hash 
+    # pointers
+    my $data_ref = $package_multiple_value_folded_fields{ $folded_name };
+    print Dumper( $data_ref ) if $options{debug};
+    # see if this is field will make a new database table
+    if ( ! exists $multiple_tables_fields{ $table_name } ) {
+	print "$0: marking new multiple value database table <$table_name>\n"
 	    if $options{debug};
-	# get a pointer to the data parsed from xml,
-	# this could either be an array of scalar
-	# values, or it could be an array of hash 
-	# pointers
-	my $data_ref = $$package_multiple_value_fields_ref{ $folded_name };
-	print Dumper( $data_ref ) if $options{debug};
-	# see if this is field will make a new database table
-	if ( ! exists $multiple_tables_fields{ $table_name } ) {
-	    print "$0: marking new multiple value database table <$table_name>\n"
-		if $options{debug};
-	    my %tables_fields = ();
-	    $multiple_tables_fields{ $table_name } = \%tables_fields;
-	    my @tables_records = ();
-	    $multiple_tables_records{ $table_name } = \@tables_records;
-	    print_hash( "", "$0: updated multiple_tables_fields",
-			\%multiple_tables_fields )
-		if $options{debug};
+	my %tables_fields = ();
+	$multiple_tables_fields{ $table_name } = \%tables_fields;
+	my @tables_records = ();
+	$multiple_tables_records{ $table_name } = \@tables_records;
+	print_hash( "", "$0: updated multiple_tables_fields",
+		    \%multiple_tables_fields )
+	    if $options{debug};
+    }
+    # get pointers to the stuff for this database table
+    my $tables_fields_ref = $multiple_tables_fields{ $table_name };
+    my $tables_records_ref = $multiple_tables_records{ $table_name };
+    # see if there were any field names 
+    # specified for this table elsewhere
+    my @specified_fieldnames = ();
+    if ( exists $oda_fieldnames{ $table_name } ) {
+	my $fieldnames_ref = $oda_fieldnames{ $table_name };
+	foreach my $fieldname ( @$fieldnames_ref ) {
+	    push @specified_fieldnames, $fieldname;
 	}
-	# get pointers to the stuff for this database table
-	my $tables_fields_ref = $multiple_tables_fields{ $table_name };
-	my $tables_records_ref = $multiple_tables_records{ $table_name };
-	# see if there were any field names 
-	# specified for this table elsewhere
-	my @specified_fieldnames = ();
-	if ( exists $oda_fieldnames{ $table_name } ) {
-	    my $fieldnames_ref = $oda_fieldnames{ $table_name };
-	    foreach my $fieldname ( @$fieldnames_ref ) {
-		push @specified_fieldnames, $fieldname;
+	print "$0: multiple values specified_fieldnames=(" .
+	    join( ',', @specified_fieldnames ) . ")\n"
+	    if $options{debug};
+    }
+    # get the array of data values
+    my @data_array = @$data_ref;
+    # we always have a package name field in this database
+    $$tables_fields_ref{ package } = "VARCHAR(250)";
+    # if the array is filled with hash pointers,
+    # that means that each key in the hash will 
+    # be a database table field name,
+    # with each value coming from that key, the only
+    # other database table field name will be the package
+    # which will have as data this package name
+    if ( ! @data_array ) {
+	print "$0: PMV empty data array\n" if $options{debug};
+    } elsif ( ref($data_array[0]) eq "HASH" ) {
+	foreach my $data_hash_ref ( @data_array ) {
+	    my %record = ();
+	    $record{ package } = $package_name;
+	    foreach my $field_name ( sort keys %$data_hash_ref ) {
+		# make sure this field name is going
+		# to be in the table
+		$$tables_fields_ref{ $field_name } = "VARCHAR(250)"
+		    if ! exists $$tables_fields_ref{ $field_name };
+		$record{ $field_name } = $$data_hash_ref{ $field_name };
 	    }
-	    print "$0: multiple values specified_fieldnames=(" .
-		join( ',', @specified_fieldnames ) . ")\n"
-		if $options{debug};
+	    push @$tables_records_ref, \%record;
 	}
-	# get the array of data values
-	my @data_array = @$data_ref;
-	# we always have a package name field in this database
-	$$tables_fields_ref{ package } = "VARCHAR(250)";
-	# if the array is filled with hash pointers,
-	# that means that each key in the hash will 
-	# be a database table field name,
-	# with each value coming from that key, the only
-	# other database table field name will be the package
-	# which will have as data this package name
-	if ( ! @data_array ) {
-	    print "$0: PMV empty data array\n" if $options{debug};
-	} elsif ( ref($data_array[0]) eq "HASH" ) {
-	    foreach my $data_hash_ref ( @data_array ) {
+    } else {
+	# all elements in the folded_fields array 
+	# database field value except for the last
+	# one which is the field name for the data
+	# that is in the data_array. the field names
+	# for the folded_fields array should be 
+	# specified in the specified_fieldnames
+	# array, make sure there are enough field
+	# names to go around and make some up
+	# if not enough
+	my $last_field_name = pop @folded_fields;
+	my @field_names = ( @specified_fieldnames, $last_field_name );
+	my @field_values_except_last = @folded_fields;
+	print "$0: specified_fieldnames=(" .
+	    join( ',', @specified_fieldnames ) .
+	    ") folded_fields=(" .
+	    join( ',', @folded_fields ) .
+	    ")\n"
+	    if $options{debug};
+	if ( scalar @specified_fieldnames <
+	     scalar @folded_fields ) {
+	    warn "$0: specified_fieldnames=(" . join( ',', @specified_fieldnames ) . ") folded_fields=(" . join( ',', @folded_fields ) . ")\n";
+	    warn "$0: package $package_name did not supply enough (or any)\n";
+	    warn "specified field names with a construct like this:\n";
+	    warn "<oscar>\n  <fieldnames> NAMES</fieldnames>\n</oscar>\n";
+	    warn "config.xml construct, not storing the data in the\n";
+	    warn join( '/', ($first_field, @folded_fields, $last_field_name) ) .
+		" having data (" . join( ',', @data_array ) . ")\n";
+	} elsif ( scalar @specified_fieldnames >
+		  scalar @folded_fields ) {
+	    warn "$0: package $package_name supplied too many\n";
+	    warn "specified field names with a construct like this:\n";
+	    warn "<oscar>\n  <fieldnames> NAMES</fieldnames>\n</oscar>\n";
+	    warn "config.xml construct, not storing the data in the\n";
+	    warn join( '/', ($first_field, @folded_fields, $last_field_name) ) .
+		" having data (" . join( ',', @data_array ) . ")\n";
+	} else {
+	    foreach my $last_data ( @data_array ) {
 		my %record = ();
+		my @field_values = ( @field_values_except_last, $last_data );
 		$record{ package } = $package_name;
-		foreach my $field_name ( sort keys %$data_hash_ref ) {
-		    # make sure this field name is going
-		    # to be in the table
+		foreach my $field_name ( @field_names ) {
 		    $$tables_fields_ref{ $field_name } = "VARCHAR(250)"
 			if ! exists $$tables_fields_ref{ $field_name };
-		    $record{ $field_name } = $$data_hash_ref{ $field_name };
+		    $record{ $field_name } = shift @field_values;
 		}
 		push @$tables_records_ref, \%record;
-	    }
-	} else {
-	    # all elements in the folded_fields array 
-	    # database field value except for the last
-	    # one which is the field name for the data
-	    # that is in the data_array. the field names
-	    # for the folded_fields array should be 
-	    # specified in the specified_fieldnames
-	    # array, make sure there are enough field
-	    # names to go around and make some up
-	    # if not enough
-	    my $last_field_name = pop @folded_fields;
-	    my @field_names = ( @specified_fieldnames, $last_field_name );
-	    my @field_values_except_last = @folded_fields;
-	    print "$0: specified_fieldnames=(" .
-		join( ',', @specified_fieldnames ) .
-		") folded_fields=(" .
-		join( ',', @folded_fields ) .
-		")\n"
-		if $options{debug};
-	    if ( scalar @specified_fieldnames <
-		 scalar @folded_fields ) {
-warn "$0: specified_fieldnames=(" . join( ',', @specified_fieldnames ) . ") folded_fields=(" . join( ',', @folded_fields ) . ")\n";
-		warn "$0: package <$package_name> did not supply enough (or any)\n";
-		warn "specified field names with a construct like this:\n";
-		warn "<oscar>\n  <fieldnames> NAMES</fieldnames>\n</oscar>\n";
-		warn "config.xml construct, not storing the data in the\n";
-		warn join( '/', ($first_field, @folded_fields, $last_field_name) ) .
-		    " having data (" . join( ',', @data_array ) . ")\n";
-	    } elsif ( scalar @specified_fieldnames >
-		      scalar @folded_fields ) {
-		warn "$0: package <$package_name> supplied too many\n";
-		warn "specified field names with a construct like this:\n";
-		warn "<oscar>\n  <fieldnames> NAMES</fieldnames>\n</oscar>\n";
-		warn "config.xml construct, not storing the data in the\n";
-		warn join( '/', ($first_field, @folded_fields, $last_field_name) ) .
-		    " having data (" . join( ',', @data_array ) . ")\n";
-	    } else {
-		foreach my $last_data ( @data_array ) {
-		    my %record = ();
-		    my @field_values = ( @field_values_except_last, $last_data );
-		    $record{ package } = $package_name;
-		    foreach my $field_name ( @field_names ) {
-			$$tables_fields_ref{ $field_name } = "VARCHAR(250)"
-			    if ! exists $$tables_fields_ref{ $field_name };
-			$record{ $field_name } = shift @field_values;
-		    }
-		    push @$tables_records_ref, \%record;
 #		    print_hash( "", "$0: inserting new updated multiple_tables_fields",
 #				\%multiple_tables_fields )
 #			if $options{debug};
-		}
 	    }
 	}
     }
@@ -1498,7 +1593,7 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
 				     $record_ref );
 	}
     } else {
-	warn "$0: empty multiple values package table <$table_name> ignored";
+	warn "$0: empty multiple values package table $table_name ignored";
     }
 }
 
@@ -1525,6 +1620,21 @@ foreach my $shortcut ( sort keys %oda_shortcuts ) {
 			     $shortcuts_table_name,
 			     \%match_record,
 			     \%write_record );
+}
+
+# get a hash of the package names going to package record ids,
+# and find the numeric package id number of this package
+my %table_fields = ();
+my @wanted_fields = ( "id" );
+my $package_names_to_ids_hash_ref =
+    database_read_table_fields( "packages",
+				\@wanted_fields,
+				undef,
+				"name",
+				1 );
+if ( $options{debug} ) {
+    print "$0: package_names_to_ids_hash_ref:\n";
+    print Dumper( $package_names_to_ids_hash_ref );
 }
 
 # now we process the rpmlists data that we
@@ -1594,27 +1704,18 @@ foreach my $shortcut ( sort keys %oda_shortcuts ) {
 #     package_id = numeric id for package 'packdir2' record
 #     rpm = pack2-rpm-9
 #
-# loop through the rpmlists hash for each package directory/name
-
-# get a hash of the package names going to package record ids
-my %table_fields = ();
-my @wanted_fields = ( "id" );
-my $package_names_to_ids_hash_ref =
-    database_read_table_fields( "packages",
-				\@wanted_fields,
-				undef,
-				"name",
-				1 );
 my @package_rpm_records_refs = ();
 #$options{debug}=1;
 if ( ! defined $package_names_to_ids_hash_ref ) {
     warn "Failed to read records from database table packages";
+    warn "Cannot store any rpmlist data for package $package_name";
 } else {
     print "$0: processing package <$package_name> in rpmlists ...\n"
 	if $options{debug};
     # find the packages table numeric identifier for this
     # package record
     if ( ! exists $$package_names_to_ids_hash_ref{$package_name} ) {
+	warn "Failed to read a record from database table packages for package $package_name";
 	warn "Cannot store any rpmlist data for package $package_name";
     } else {
 	my $package_id = $$package_names_to_ids_hash_ref{$package_name}->{id};
@@ -1650,14 +1751,14 @@ if ( ! defined $package_names_to_ids_hash_ref ) {
 			 || ! @$rpms_ref ) {
 			print STDERR
 			    "$0: Warning,\n" .
-			    "the config.xml file for package <$package_name>\n" .
+			    "the config.xml file for package $package_name\n" .
 			    "has an <rpmlist> block with a <$trigger_word>\n" .
 			    "block inside that, but with no <rpm> blocks\n" .
 			    "inside that.\n";
 		    } else {
 			print STDERR
 			    "$0: Warning,\n" .
-			    "the config.xml file for package <$package_name>\n" .
+			    "the config.xml file for package $package_name\n" .
 			    "has an <rpmlist> block with a <$trigger_word>\n" .
 			    "block inside that, which may be deprecated in\n" .
 			    "future versions of OSCAR.  That block should\n" .
@@ -1691,7 +1792,7 @@ if ( ! defined $package_names_to_ids_hash_ref ) {
 		if ( ! @$rpms_ref ) {
 		    print STDERR
 			"$0: Warning,\n" .
-			"the config.xml file for package <$package_name>\n" .
+			"the config.xml file for package $package_name\n" .
 			"has an <rpmlist> block with an empty <rpm>\n" .
 			"block inside that.\n";
 		} else {
@@ -1739,7 +1840,7 @@ if ( ! defined $package_names_to_ids_hash_ref ) {
 			foreach my $unknown_key ( keys %$filter_hash_ref ) {
 			    print STDERR
 				"$0: Warning,\n" .
-				"the config.xml file for package <$package_name>\n" .
+				"the config.xml file for package $package_name\n" .
 				"has an <rpmlist> block with a <rpm> block\n" .
 				"inside that, that includes an unknown filter\n" .
 				"element <$unknown_key>.\n";
@@ -1783,12 +1884,157 @@ if ( $options{debug} ) {
     print Dumper( \@package_rpm_records_refs );
 }
 foreach my $package_rpm_record_ref ( @package_rpm_records_refs ) {
-    my @error_strings = ();
-    $$package_rpm_record_ref{package_version} = $package_version;
+    $$package_rpm_record_ref{package_version} = $package_version
+	if $multiple_package_versions;
     insert_or_verify_record( \%options,
 			     "packages_rpmlists",
 			     $package_rpm_record_ref );
 }
+
+# now we process the package filters data that
+# we set aside earlier, we want to end up with 
+# these tables/fields from the previous example:
+# 
+# table packages_filters:
+#   record:
+#     package_id = numeric id for package record
+#     architecture = ia32
+#   record:
+#     package_id = numeric id for package record
+#     architecture = ia64
+#     distribution = redhat
+#     distribution_version = 7.2
+#
+my @package_filter_records_refs = ();
+#$options{debug}=1;
+if ( ! defined $package_names_to_ids_hash_ref ) {
+    warn "Failed to read records from database table packages";
+    warn "Cannot store any package filter data for package $package_name";
+} else {
+    print "$0: processing package $package_name in filters ...\n"
+	if $options{debug};
+# find the packages table numeric identifier for this
+# package record
+    if ( ! exists $$package_names_to_ids_hash_ref{$package_name} ) {
+	warn "Failed to read a record from database table packages for package $package_name";
+	warn "Cannot store any package filter data for package $package_name";
+    } else {
+	my $package_id = $$package_names_to_ids_hash_ref{$package_name}->{id};
+#	if ( $options{debug} ) {
+#	     print "$0: package_filters_ref:\n";
+#	     print Dumper( $package_filters_ref );
+#	}
+	# we can have either an array of hash references here,
+	# or just one hash, either way figure out a list
+	# of the hash references to process
+	my $hash_refs_ref;
+	if ( ref($package_filters_ref) eq "HASH" ) {
+	    my @hash_refs = ( $package_filters_ref );
+	    $hash_refs_ref = \@hash_refs;
+	} else {
+	    $hash_refs_ref = $package_filters_ref;
+	}
+	foreach my $filter_xml_ref ( @$hash_refs_ref ) {
+	    if ( $options{debug} ) {
+		print "$0: filter_xml_ref:\n";
+		print Dumper( $filter_xml_ref );
+	    }
+	    my $filter_hashes_ref;
+	    if ( ref($filter_xml_ref) eq "HASH" ) {
+		my @single_filter_hash = ( $filter_xml_ref );
+		$filter_hashes_ref = \@single_filter_hash;
+	    } else {
+		$filter_hashes_ref = $filter_xml_ref;
+	    }
+	    foreach my $filter_hash_ref ( @$filter_hashes_ref ) {
+		my $architecture = undef;
+		if ( exists $$filter_hash_ref{architecture} ) {
+		    $architecture = $$filter_hash_ref{architecture};
+		    delete $$filter_hash_ref{architecture};
+		}
+		my $distribution = undef;
+		if ( exists $$filter_hash_ref{distribution} ) {
+		    $distribution = $$filter_hash_ref{distribution};
+		    delete $$filter_hash_ref{distribution};
+		}
+		my $distribution_version = undef;
+		if ( exists $$filter_hash_ref{distribution_version} ) {
+		    $distribution_version = 
+			$$filter_hash_ref{distribution_version};
+		    delete $$filter_hash_ref{distribution_version};
+		}
+		my $group = undef;
+		if ( exists $$filter_hash_ref{group} ) {
+		    $group = $$filter_hash_ref{group};
+		    delete $$filter_hash_ref{group};
+		}
+		foreach my $unknown_key ( keys %$filter_hash_ref ) {
+		    print STDERR
+			"$0: Warning,\n" .
+			"the config.xml file for package $package_name\n" .
+			"has a package level filter that includes an\n" .
+			"unknown filter element <$unknown_key>.\n";
+		}
+		if ( $options{debug} ) {
+		    print "$0: packages_filters ";
+		    print "architecture=<$architecture> "
+			if defined $architecture;
+		    print "distribution=<$distribution> "
+			if defined $distribution;
+		    print "distribution_version=<$distribution_version> "
+			if defined $distribution_version;
+		    print "group=<$group> "
+			if defined $group;
+		    print "package_id=<$package_id>\n";
+		}
+		my %package_filter_record = ();
+		$package_filter_record{architecture} = $architecture
+		    if defined $architecture;
+		$package_filter_record{distribution} = $distribution
+		    if defined $distribution;
+		$package_filter_record{distribution_version} = 
+		    $distribution_version
+		    if defined $distribution_version;
+		$package_filter_record{group} = $group
+		    if defined $group;
+		$package_filter_record{package_id} = $package_id;
+		$package_filter_record{package_version} = $package_version;
+		push @package_filter_records_refs, 
+		\%package_filter_record;
+	    }
+	}
+	my @error_strings = ();
+	my @tables = ( "packages_filters" );
+	my @package_filter_records_wheres = 
+	    ( "packages_filters.package_id = \"$package_id\"" );
+	push @package_filter_records_wheres,
+	    "packages_filters.package_version = \"$package_version\""
+	    if $multiple_package_versions;
+	if ( ! oda::delete_records( \%options,
+				    \@tables,
+				    \@package_filter_records_wheres,
+				    \@error_strings ) ) {
+	    oda::disconnect( \%options,
+			     \@error_strings );
+	    warn shift @error_strings while @error_strings;
+	    exit 1;
+	}
+    }
+}
+if ( $options{debug} ) {
+    print "$0: package_filter_records_refs:\n";
+    print Dumper( \@package_filter_records_refs );
+}
+foreach my $package_filter_record_ref ( @package_filter_records_refs ) {
+    insert_or_verify_record( \%options,
+			     "packages_filters",
+			     $package_filter_record_ref );
+}
+
+# now that the package filters are written into the database for
+# this package, determine it's installable field value and set
+# tha value appropriately
+
 
 
 oda::disconnect( \%options );
