@@ -4,9 +4,12 @@
 
 . /etc/profile
 mom_config=/var/spool/pbs/mom_priv/config
+sed_tmp=/tmp/mom_config_tmp
 
 if [ -f $mom_config ] ; then
-  cat $mom_config |sed s/pbs_oscar/$HOSTNAME/g > $mom_config
+  cat $mom_config |sed s/pbs_oscar/$HOSTNAME/g > $sed_tmp
+  /bin/cp -f $sed_tmp $mom_config
+  /bin/rm -f $sed_tmp
   echo "PBS mom config file updated with clienthost: $HOSTNAME"
   echo "Pushing config file to clients..."
   if [ -x `which cpush` ] ; then
