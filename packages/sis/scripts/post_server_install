@@ -21,11 +21,5 @@
 use strict;
 use Carp;
 
-# XXX Remove when SystemImager v3.0.1 or greater packages are added.
-my $cmd = "cp -f $ENV{OSCAR_PACKAGE_HOME}/scripts/systemimager.init /etc/init.d/systemimager";
-!system("$cmd") or croak("Couldn't $cmd");
-my $cmd = "chmod 755 /etc/init.d/systemimager";
-!system("$cmd") or croak("Couldn't $cmd");
-
 !system("/etc/init.d/systemimager restart") or croak("Couldn't restart systemimager");
 
