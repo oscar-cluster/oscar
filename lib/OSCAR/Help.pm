@@ -1,6 +1,6 @@
 package OSCAR::Help;
 
-#   $Id: Help.pm,v 1.9 2003/10/14 17:58:46 tfleury Exp $
+#   $Id: Help.pm,v 1.10 2003/10/30 03:27:36 tfleury Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ use base qw(Exporter);
 
 @EXPORT = qw(open_help);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.9 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.10 $ =~ /(\d+)\.(\d+)/);
 
 # Help messages for the OSCAR GUI.
 
@@ -56,5 +56,7 @@ sub open_help {
          select_packages => "This button will launch a panel which lets you select the packages you want included in your OSCAR client image.",
          configure_packages => "This button will launch a panel that will allow you to configure any packages that you have selected for installation in your OSCAR client image.  If a package selected for installation does not have any configuration options, then it will not appear in the list.",
 	download_packages => "This button will open up a GUI interface to OPD, the OSCAR Package Downloader.  It will allow you to download packages not included in the main tarball or updated packages.  This step is optional.",
+         install_uninstall_packages => "This button will launch a panel which lets you update your cluster by selecting the OSCAR packages you want to install/uninstall from your current system.",
         );
 1;
+
