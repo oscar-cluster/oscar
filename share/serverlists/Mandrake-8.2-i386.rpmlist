@@ -8,3 +8,8 @@ openssh-server
 openssl
 tcpdump
 xinetd
+expat
+php
+php-common
+librrdtool0
+rrdtool
