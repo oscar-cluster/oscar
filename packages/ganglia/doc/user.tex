@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.5 2002/09/11 04:32:59 jsquyres Exp $
+% $Id: user.tex,v 1.6 2002/09/18 04:30:17 sad Exp $
 %
 % $COPYRIGHT$
 %
@@ -48,21 +48,50 @@ see if \cmd{apache} has been started along with the \cmd{gmond} and
 \cmd{ganglia-php-rrd} processes. The startup init scripts can be found
 in \file{/etc/init.d/}.
 
-Future versions of OSCAR will also include the \cmd{ganglia} python
+The 1.4 version of OSCAR also includes an optional \cmd{ganglia} python
 command line interface so access to the ganglia XML/XDR data can be
 scripted. This will depend on having \rpmname{python} and the
-\rpmname{PyXML} packages installed on the head node.
+\rpmname{PyXML-oscar} RPMs installed on the head node.
+Future versions of the OSCAR tool suite this will be installed by default
+when the rest of the ganglia tools are installed. Currently these additional
+RPMs can either be installed on the head node after the install by doing:
+
+\begin{verbatim}
+  # cd oscar-<version>/packages/ganglia/RPMS
+  # rpm -ivh PyXML-oscar-0.7.1-7.i386.rpm \
+            ganglia-python-oscar-2.0-5.noarch.rpm
+\end{verbatim}
+
+Or for an ia64 system:
+
+\begin{verbatim}
+  # cd oscar-<version>/packages/ganglia/RPMS
+  # rpm -ivh PyXML-oscar-0.7.1-7.ia64.rpm \
+            ganglia-python-oscar-2.0-5.noarch.rpm
+\end{verbatim}
+
+The other optional installation method is to include the following two lines
+in the server.rpmlist file found in the packages/ganglia/ directory:
+
+\begin{verbatim}
+	PyXML-oscar
+	ganglia-python-oscar
+\end{verbatim}
+
+This will automatically include the extra RPM files needed for the command
+line tools in the standard OSCAR installation.
 
 The current version of the Ganglia tools packaged for OSCAR is:
 
 \begin{itemize}
-\item \rpmname{ganglia-monitor-core-2.2.3-2oscar}
-\item \rpmname{ganglia-monitor-core-lib-2.2.3-2oscar}
-\item \rpmname{ganglia-php-rrd-client-1.0.4-4oscar}
-\item \rpmname{ganglia-python-2.0-1oscar}
+\item \rpmname{ganglia-monitor-core-2.2.3-3oscar}
+\item \rpmname{ganglia-monitor-core-lib-2.2.3-3oscar}
+\item \rpmname{ganglia-php-rrd-client-1.0.4-7}
+\item \rpmname{ganglia-python-oscar-2.0-5}
 \item \rpmname{perl-XML-Parser-2.30-32oscar}
-\item \rpmname{rrdtool-1.0.35-3oscar}
-\item \rpmname{rrdtool-devel-1.0.35-3oscar}
+\item \rpmname{rrdtool-oscar-1.0.35-2}
+\item \rpmname{rrdtool-oscar-devel-1.0.35-2}
+\item \rpmname{PyXML-oscar-0.7.1-7}
 \end{itemize}
 
 The \cmd{ganglia} package has a command line tool based on a python
@@ -138,7 +167,6 @@ the following enhancements:
 \begin{itemize}
 \item You can  do selection range on \file{host.php}
 \item Network graph on \file{host.php} and \file{index.php}
-\item Network general load (in + out) in the ``Cluster Overview''
 \item moved \cmdarg{\$rrd\_dir} and \cmdarg{\$rrdtool} from
   \file{graph.php} to \file{ganglia.php}
 \end{itemize}
