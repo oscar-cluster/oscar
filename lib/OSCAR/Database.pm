@@ -215,11 +215,11 @@ sub database_read_table_fields {
 
     my @fields = ();
     if ( defined($requested_fields_ref) && @$requested_fields_ref ) {
-	@fields = sort keys %fields_in_table;
-    } else {
 	@fields = @$requested_fields_ref;
 	push @fields, "name"
 	    if ! grep( /^name$/, @fields );
+    } else {
+	@fields = sort keys %fields_in_table;
     }
 
     # now read all the records from the packages database table,
@@ -244,35 +244,34 @@ sub database_read_table_fields {
 	OSCAR::Database::database_disconnect() if $was_connected_flag;
 	return undef;
     }
-
     # convert the array of hash pointers that read_records returned
     # into the hash of hashes format that the callers expect
 
-    my %result = ();
+    my %results = ();
+    my %duplicated_name_values = ();
+    my $missing_name_fields = 0;
     foreach my $record_ref ( @records ) {
-	my %duplicated_name_values = ();
-	my $missing_name_fields = 0;
 	if ( exists $$record_ref{name} && $$record_ref{name} ne "" ) {
-	    if ( exists $$record_ref{name} ) {
-		$duplicated_name_values{$$record_ref{name}} = 1;
+	    my $key = $$record_ref{name};
+	    if ( exists $results{$key} ) {
+		$duplicated_name_values{$key} = 1;
 	    } else {
-		delete $$record_ref{name};
-		$result{$$record_ref{name}} = $record_ref;
+		$results{$key} = $record_ref;
 	    }
 	} else {
 	    $missing_name_fields++;
 	}
-	if ( defined $print_errors_flag && $print_errors_flag ) {
-	    foreach my $name ( sort keys %duplicated_name_values ) {
-		warn "There are duplicated records in database table <$table> that";
-		warn "has the same <name> field value of <$name>.";
-	    }
-	    warn "Database\:\:database_read_table_fields will only return the first of each."
-		if %duplicated_name_values;
-	    if ( $missing_name_fields ) {
-		warn "$missing_name_fields records from the database table <$table> are missing the <name>";
-		warn "field and are not being returned by Database\:\:database_read_table_fields.";
-	    }
+    }
+    if ( defined $print_errors_flag && $print_errors_flag ) {
+	foreach my $name ( sort keys %duplicated_name_values ) {
+	    warn "There are duplicated records in database table <$table> that";
+	    warn "has the same <name> field value of <$name>.";
+	}
+	warn "Database\:\:database_read_table_fields will only return the first of each."
+	    if %duplicated_name_values;
+	if ( $missing_name_fields ) {
+	    warn "$missing_name_fields records from the database table <$table> are missing the <name>";
+	    warn "field and are not being returned by Database\:\:database_read_table_fields.";
 	}
     }
 
@@ -280,8 +279,8 @@ sub database_read_table_fields {
 
     OSCAR::Database::database_disconnect() if $was_connected_flag;
 
-#oda::print_hash("", "Database\:\:database_read_table_fields returning", \%result);
-    return \%result;
+#oda::print_hash("", "Database\:\:database_read_table_fields returning", \%results);
+    return \%results;
 }
 
 #
