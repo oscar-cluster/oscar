@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>hd5f</name>
+
+  <version>
+    <major>1</major>
+    <minor>0</minor>
+    <subversion>0</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>included</class>
+  <installable>@INSTALLABLE@</installable>
+
+  <summary>Heirarchical Data Format (HDF) software package</summary>
+  <license>freely distributable</license>
+  <copyright>2002</copyright>
+  <group>Development/Libraries</group>
+  <url>http://hdf5.ncsa.uiuc.edu//</url>
+  <maintainer>
+    <name>HDF5 Team</name>
+    <email>hdf5@ncsa.uiuc.edu</email>
+  </maintainer>
+  <packager>
+    <name>Jeremy Enos</name>
+    <email>jenos@ncsa.uiuc.edu</email>
+  </packager>
+  <vendor>NCSA</vendor>
+  <description>HDF5 is a Hierarchical Data Format product consisting
+of a data format specification and a supporting library
+implementation.</description>
+
+</package>
