@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.9 2002/12/09 04:22:21 ngorsuch Exp $
+      $Id: config.xml,v 1.10 2002/12/10 21:16:48 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -76,9 +76,9 @@
         To list all the things that a particular package requires:
             oda this-package-requires package_name
 	 -->
-        <shortcut> packages read_records|modify_records packages name %+ </shortcut>
-        <shortcut> packages_that_require read_records packages_requires package name=%1 </shortcut>
-        <shortcut> this_package_requires read_records packages_requires name package=%1 </shortcut>
+        <shortcut> packages read_records|modify_records packages package %+ </shortcut>
+        <shortcut> packages_that_require read_records packages_requires package package=%1 </shortcut>
+        <shortcut> this_package_requires read_records packages_requires package package=%1 </shortcut>
         <!--
         This defines the second field name for records in 
 	the packages_rpmlist which can't be surmised from 
