@@ -47,18 +47,9 @@ foreach my $package (@packages) {
     push @rpms, rpmlist($package,"server");
 }
 
-print Dumper(\@rpms);
+# Now install them nicely (i.e. don't install packages that are already there)
 
-# Give me the list of files for my rpms
-my %files = find_files(
-                       PKGDIR => $RPMPOOL, 
-                       PKGLIST => \@rpms
-                      );
-
-my @fullfiles = map {"$RPMPOOL/$_"} (values %files);
-
-my $cmd = "rpm -Uhv --replacepkgs " . join(' ', @fullfiles);
-!system($cmd) or croak("Couldn't install the required packages needed for OSCAR Wizard to start");
+install_rpms(@rpms) or croak("Couldn't install the required packages needed for OSCAR Wizard to run");
 
 foreach my $package (@packages) {
     run_pkg_script($package,"post_server_install") or croak("Failed running post_server_install for $package");
