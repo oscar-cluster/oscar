@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.15 2002/05/30 02:24:31 jsquyres Exp $
+# $Id: configure.in,v 1.16 2002/06/12 04:46:54 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -72,6 +72,8 @@ AC_OUTPUT([
     doc/installation/version.tex
     doc/introduction/Makefile
     doc/introduction/version.tex
+    doc/user/Makefile
+    doc/user/version.tex
 
     lib/Makefile
     lib/OSCAR/Makefile
@@ -85,6 +87,11 @@ AC_OUTPUT([
     packages/c3/RPMS/Makefile
     packages/c3/SRPMS/Makefile
     packages/c3/scripts/Makefile
+    packages/ganglia/Makefile
+    packages/ganglia/doc/Makefile
+    packages/ganglia/RPMS/Makefile
+    packages/ganglia/scripts/Makefile
+    packages/ganglia/SRPMS/Makefile
     packages/lam/Makefile
     packages/lam/RPMS/Makefile
     packages/lam/SRPMS/Makefile
@@ -111,6 +118,7 @@ AC_OUTPUT([
     packages/sis/RPMS/Makefile
     packages/sis/scripts/Makefile
     packages/switcher/Makefile
+    packages/switcher/doc/Makefile
     packages/switcher/RPMS/Makefile
     packages/switcher/SRPMS/Makefile
 
