@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.11 2001/08/30 22:30:51 jsquyres Exp $
+% $Id: design.tex,v 1.12 2002/03/13 05:51:07 bwbarrett Exp $
 %
 % $COPYRIGHT$
 %
@@ -63,33 +63,9 @@ This directory is intended for the core functionality of OSCAR.  All
 the packages in this directory will be installed regardless of the
 installation mode selected by the user.
 
-Examples of core packages include (but are not limited to): C3, System
-Installer Suite (SIS), OSCAR Package Management (OPM), and the OSCAR
-Data Repository (ODR).
+Examples of core packages include (but are not limited to): C3 Power
+Tools and the System Installer Suite (SIS)
 
-The OPM and ODR packages require special consideration -- they must be
-installed before any other OSCAR package can be installed.  As such,
-they are special: not only are they OSCAR packages, their entire
-source tree is included in an OSCAR distribution.  
-
-There are two cases:
-
-\begin{itemize}
-\item An initial install of an OSCAR cluster: if the top-level
-  installer script that the user invokes determines that this is an
-  initial install of an OSCAR cluster, the source trees will be used
-  to install OPM and ODR.  The OSCAR install then proceeds as normal
-  -- OPM and ODR are used to install/update all the core packages.
-
-\item An OSCAR cluster is being upgraded: in this case, OPM/ODR are
-  used to upgrade themselves.
-\end{itemize}
-
-Note that OPM and ODR will include version comparisons, so if the
-version of OPM/ODR that they are installing is the same as the version
-that is already installed, no action will be performed.  This is
-especially relevant for the initial installation scenario, described
-above.
 
 \subsubsection{\file{packages}}
 
@@ -104,6 +80,7 @@ Section~\ref{sec:design-wizard}.
 
 Examples of included packages include (but are not limited to):
 LAM/MPI, MPICH, PVM, OpenSSH, and PBS.
+
 
 \subsubsection{\file{contrib-packages}}
 
@@ -123,572 +100,6 @@ functionality.  However, these packages may have dependencies such
 that inclusion of one third party package may trigger the installation
 of other third party packages.
 
-\subsection{OSCAR Data Repository}
-
-The OSCAR Data Repository (ODR) is used by OSCAR to keep the
-information necessary for cluster installation and ongoing
-maintenance. The ODR is actually just one instantiation of the Command
-Line Accessible Modular Data Repository (CLAMDR). CLAMDR was
-originally developed for use as the ODR, but has since added features
-allowing it to be generic enough to be used by other projects, such as
-the System Installation Suite.
-
-The intent behind developing CLAMDR was to come up with a simple data
-repository that could hold generic information and was easily
-accessible from the command line. As development progressed, the
-developers were able to abstract the specification of the data to be
-stored in a separate "syntax module", and as such the project gained
-its 'modular' aspect. The actual format for the data files used by
-CLAMDR is that of flat files containing colon separated values, with
-one file for each of the categories defined in the syntax module,
-which itself is also a flat file.  This format was chosen to allow
-easy processing of data by standard scripting.
-
-Along with the actual data files themselves, CLAMDR provides two
-routines (\cmd{readDR.pl} and \cmd{writeDR.pl}) that may be called
-like normal command-line programs in order to read information from or
-write information to the repository. The \cmd{readDR.pl} routine may
-be called by any user. The \cmd{writeDR.pl} routine is reserved for
-use by the OSCAR Wizard and installers, which will operate as root.
-Both routines have multiple ways that they may be invoked, with each
-method behaving differently.
-
-\subsubsection{\cmd{readDR.pl} Usage}
-
-\subsection*{NAME}
-readDR.pl --- a script to read ODR data
-
-\subsection*{SYNOPSIS}\begin{verbatim}
-  readDR.pl --list                 # list all data files
-  readDR.pl client                 # read all client rows
-  readDR.pl --columns client       # list column names for table client
-  readDR.pl client NAME=test       # read all columns of client row 'test'
-  readDR.pl client NAME=test STATE # read STATE column of client row 'test'
-\end{verbatim}
-
-\subsection*{DESCRIPTION}
-{\bf readDR.pl} is a command line interface to read cluster persistent data.
-Parameters are read from the command line, output is written to STDOUT.
-Each output line consists of {\em NAME=VALUE\/} pairs where {\em NAME\/} is the
-column name and {\em VALUE\/} is the corresponding column value for a row
-matching the input search criteria.
-
-\subsubsection*{Syntax}%
-
-readDR.pl {\tt [}{\em options\/}{\tt ]} filename {\tt [}{\em column spec\/}{\tt ]} {\tt [}{\em filter spec\/}{\tt ]}
-
-\subsubsection*{Options}%
-
-The following options are recognized:
-
-\begin{description}
-
-\item[-D, --Directory={\em directory name\/}]%
-\hfil\\
-Directory where data files are located.
-
-\item[-d, --distinct]%
-\hfil\\
-List only distinct occurrences.
-
-\item[-c, --columns]%
-\hfil\\
-List columns names only.
-
-\item[-l, --list]%
-\hfil\\
-List all data filenames.
-
-\item[-s, --syntax={\em syntax name\/}]%
-\hfil\\
-Syntax to apply when reading data files.
-
-\end{description}
-
-\subsubsection*{Filename}%
-
-The name of the data file to read. A complete list of all defined data files may
-be obtained by issuing the command:
-
-readDR.pl --list
-
-\subsubsection*{Column spec}%
-
-Column specification is a whitespace delimited list of column names to display.
-A complete list of all columns for a given data file may be obtained by issuing
-the command:
-
-readDR.pl --columns {\em filename\/}
-
-If no column specification is provided, all columns will be displayed.
-
-\subsubsection*{Filter spec}%
-
-Filter specification consists of whitespace delimited {\em NAME=VALUE\/} pairs. If provided,
-only the rows in the given data file matching the filter specification will be displayed.
-The complete filter specification is the logical {\bf AND} of all filter clauses. Note
-that the filter specification is an exact match only test.
-
-\subsubsection{\cmd{writeDR.pl} Usage}
-
-\subsection*{NAME}
-writeDR.pl --- script to add, update, delete ODR data
-
-\subsection*{SYNOPSIS}\begin{verbatim}
-  writeDR.pl --add client NAME=node1 IP_DEFAULT_ROUTE=10.0.0.1 # add a client
-  writeDR.pl -f NAME=node1 client STATE=enabled # update client 'node1'
-  writeDR.pl -d client STATE=disabled # delete all clients with STATE=disabled
-\end{verbatim}
-
-\subsection*{DESCRIPTION}
-{\bf writeDR.pl} is a command line interface to write cluster persistent data.
-Parameters are read from the command line and are changes applied to the
-persistent data.
-
-\subsubsection*{Syntax}%
-
-writeDR.pl {\tt [}{\em options\/}{\tt ]} filename {\tt [}{\em column spec\/}{\tt ]}
-
-\subsubsection*{Options}%
-
-The following options are recognized:
-
-\begin{description}
-
-\item[-D, --Directory={\em directory name\/}]%
-\hfil\\
-Directory where data files are located.
-
-\item[-F, --Force]%
-\hfil\\
-Force delete/update
-
-\item[-a, --add]%
-\hfil\\
-Add row to data file.
-
-\item[-d, --delete]%
-\hfil\\
-Delete row from data file.
-
-\item[-f, --filter={\em filter spec\/}]%
-\hfil\\
-Filter specification
-
-\item[-s, --syntax={\em syntax name\/}]%
-\hfil\\
-Syntax to apply when reading data files.
-
-\end{description}
-
-\subsubsection*{Filename}%
-
-The name of the data file to write. A complete list of all defined data files may
-be obtained by issuing the command:
-
-readDR.pl --list
-
-\subsubsection*{Column spec}%
-
-Column specification consists of whitespace delimited {\em NAME=VALUE\/} pairs
-used to assign values during {\bf add} or {\bf update} operation. Column names
-not provided for an {\bf add} operation will be assigned an undefined value.
-Column names not provided for an {\bf update} operation will be not be changed.
-Column spec is ignored for {\bf delete} operation.
-
-\subsubsection*{Filter spec}%
-
-Filter specification consists of {\em NAME=VALUE\/} pairs specified on the {\bf {\tt --}filter} option.
-Multiple {\tt --filter} options may be provided as in:
-
--f A=2 --filter='B=3'
-
-or filters may be grouped using a ',' delimiter, as in:
-
---filter='A=2,B=3'
-
-The complete filter specification is the logically {\bf and} of all filter clauses. Note
-that the filter specification is an exact match only test.
-
-Be aware that in the event no filter spec is provided for an {\bf update} or a {\bf delete}
-operation, all rows will be affected. In this situation, the {\bf {\tt --}Force} option must
-be supplied to coerce operation (this is strictly a safety measure to prevent
-inadvertent data modification).
-
-\subsubsection{ODR Categories}
-
-The ODR syntax module has been arranged to keep information about five
-categories of data: \odrcat{adapter}, \odrcat{client},
-\odrcat{cluster}, \odrcat{hostlist}, and 
-\odrcat{personality}. Within each category, there are a number of keys 
-that hold the information about each category item. Unless otherwise
-noted, each value within a category item is assumed to be a non-null
-character string.
-
-
-\paragraph{\odrcat{adapter} Category}
-
-Each item in the \odrcat{adapter} category represents a network
-adapter. A single record is maintained for each network adapter.  The
-keys and their descriptions are listed in
-Table~\ref{tbl:design-odr-cats-adapter}.
-
-Notes:
-
-\begin{itemize}
-\item Each item in \odrcat{adapter} is uniquely identified by both its
-  \odrkey{HOST} and \odrkey{INTERFACE} value pair.
-  
-\item \odrkey{HOST} is a cross reference field to the \odrkey{HOST}
-  key in the \odrcat{client} category.
-  
-\item This category is currently only sufficient for IP-based networks
-  (e.g, the \odrkey{IP\_ADDR}, \odrkey{IP\_NETMASK}, and
-  \odrkey{IP\_CONFIG} keys).  As support is added for other types of
-  networks, new fields will be added as appropriate.
-  
-\item If \odrkey{IP\_CONFIG} is specified as {\tt manual}, both
-  \odrkey{IP\_ADDR} and \odrkey{IP\_NETMASK} are expected to be
-  provided.
-  
-\item If \odrkey{IP\_CONFIG} is specified as {\tt dhcp}, both
-  \odrkey{IP\_ADDR} and \odrkey{IP\_NETMASK} are expected to be null.
-\end{itemize}
-
-\begin{table}[t]
-  \begin{center}
-    \begin{tabular}{|l|l|}
-      \hline
-      \multicolumn{1}{|c|}{Key} &
-      \multicolumn{1}{c|}{Value} \\
-      \hline
-      \odrkey{HOST} & Hostname of the machine containing the adapter \\
-      \odrkey{INTERFACE} & Interface of the adapter (e.g., {\tt eth0}) \\
-      \odrkey{ETHER\_MAC} & Media Access Card (MAC) address \\
-      \odrkey{IP\_ADDR} & IP address \\
-      \odrkey{IP\_NETMASK} & IP subnet mask to be used with 
-        \odrkey{IP\_ADDR} \\
-      \odrkey{IP\_CONFIG} & Method used to configure adapter ({\tt
-        manual}, {\tt dhcp}) \\
-      \hline
-    \end{tabular}
-    \caption{Keys maintained for the \odrcat{adapter} ODR category.}
-    \label{tbl:design-odr-cats-adapter}
-  \end{center}
-\end{table}
-
-\paragraph{\odrcat{client} Category}
-
-Each item in the \odrcat{client} category represents a cluster client
-node.  A single record is maintained for each node.  The keys and
-their descriptions are listed in
-Table~\ref{tbl:design-odr-cats-client}.
-
-Notes:
-
-\begin{itemize}
-\item Each item in the \odrcat{client} category is uniquely identified
-  by its \odrkey{HOST} value.
-  
-\item The \odrkey{CLUSTER} key is a cross reference to the
-  \odrkey{NAME} key in the \odrcat{client} category.
-  
-\item The \odrkey{HOST} key refers to the FQDN of the host to prevent
-  any ambiguities.
-  
-\item The \odrkey{STATE} key refers to an administrative selection of
-  whether or not to include the node in OSCAR functions; it does not
-  refer to whether the machine is physically enabled or disabled.
-  
-\item \odrkey{NUM\_PROCS} is expected to be a numeric value greater
-  than 0.
-\end{itemize}
-
-\begin{table}[t]
-  \begin{center}
-    \begin{tabular}{|l|l|}
-      \hline \multicolumn{1}{|c|}{Key} & \multicolumn{1}{c|}{Value} \\
-      \hline \odrkey{HOST} & Fully qualified domain name of the machine \\
-      \odrkey{CLUSTER} & Name of the \odrcat{cluster} to which this node 
-        belongs \\
-      \odrkey{IP\_DEFAULT\_ROUTE} & IP address of this machine's gateway 
-        machine \\ 
-      \odrkey{STATE} & Current state of the machine ({\tt enabled}, {\tt
-        disabled}) \\ \odrkey{NUM\_PROCS} & Number of processors in the
-      machine \\ \hline
-    \end{tabular}
-    \caption{Keys maintained for the \odrcat{client} ODR category.}
-    \label{tbl:design-odr-cats-client}
-  \end{center}
-\end{table}
-
-\paragraph{\odrcat{cluster} Category}
-
-Each item in the \odrcat{cluster} category represents an entire
-cluster.  A single record is maintained for each cluster.  The keys
-and their descriptions are listed in
-Table~\ref{tbl:design-odr-cats-cluster}.
-
-Notes:
-
-\begin{itemize}
-\item Each item in the \odrcat{cluster} category is uniquely
-  identified by its \odrkey{NAME} value.
-
-\item The ``head node'' is the node where OSCAR is installed.
-  
-\item \odrkey{CLUSTER\_HEAD} and \odrkey{INSTALL\_NODE} are cross
-  references to the \odrkey{HOST} key in the \odrcat{client} category.
-  
-\item When initially defined, both the \odrkey{CLUSTER\_HEAD} and
-  \odrkey{INSTALL\_NODE} values may be null. As \odrcat{client}
-  entries are added to the cluster, these values are expected to be
-  defined and to refer to existing \odrcat{client} items.
-\end{itemize}
-
-\begin{table}[t]
-  \begin{center}
-    \begin{tabular}{|l|l|}
-      \hline
-      \multicolumn{1}{|c|}{Key} &
-      \multicolumn{1}{c|}{Value} \\
-      \hline
-      \odrkey{NAME} & Cluster name \\
-      \odrkey{CLUSTER\_HEAD} & Hostname of the head node of the cluster \\
-      \odrkey{INSTALL\_NODE} & Hostname of the node used to install clients \\
-      \odrkey{NETWORK\_TYPE} & Type of network cluster nodes reside on
-      ({\tt private}, {\tt public}) \\
-      \hline
-    \end{tabular}
-    \caption{Keys maintained for the \odrcat{cluster} ODR category.}
-    \label{tbl:design-odr-cats-cluster}
-  \end{center}
-\end{table}
-
-
-\paragraph{\odrcat{hostlist} Category}
-
-Each item in the \odrcat{hostlist} category represents a list of
-cluster clients.  The keys and their descriptions are listed in
-Table~\ref{tbl:design-odr-cats-hostlist}.
-
-Notes:
-
-\begin{itemize}
-\item Each item in the \odrcat{hostlist} category is uniquely
-  identified by its \odrkey{HOST} and \odrkey{PERSONALITY} value pair.
-  
-\item \odrkey{HOST} is a cross reference to the \odrkey{HOST} key in
-  the \odrcat{client} category.
-  
-\item \odrkey{PERSONALITY} is a cross reference to the \odrkey{NAME}
-  key in the \odrcat{personality} category.
-\end{itemize}
-
-\begin{table}[t!]
-  \begin{center}
-    \begin{tabular}{|l|l|}
-      \hline
-      \multicolumn{1}{|c|}{Key} &
-      \multicolumn{1}{c|}{Value} \\
-      \hline
-      \odrkey{HOST} & Reference to the client name \\
-      \odrkey{PERSONALITY} & Reference to the personality to install \\
-      \hline
-    \end{tabular}
-    \caption{Keys maintained for the \odrcat{hostlist} ODR category.}
-    \label{tbl:design-odr-cats-hostlist}
-  \end{center}
-\end{table}
-
-
-\paragraph{\odrcat{personality} Category}
-
-Items in the \odrcat{personality} category represent groupings of
-software packages. Items sharing a common \odrcat{NAME} value
-constitute a unique \odrcat{personality} - a group of software
-packages to be installed on a \odrcat{client}.  The keys and their
-descriptions are listed in
-Table~\ref{tbl:design-odr-cats-personality}.
-
-Notes:
-
-\begin{itemize}
-\item Each item in the \odrcat{personality} category is uniquely
-  identified by its \odrkey{NAME}, \odrkey{SOFTWARE}, and
-  \odrkey{VERSION} triplet.
-  
-\item A software package (as defined by its \odrkey{SOFTWARE} and
-  \odrkey{VERSION} value pair) may exist in more than one personality.
-  During package installation, resolution of unique packages will
-  occur in the event a \odrcat{client} is assigned more than one
-  \odrcat{personality}.
-  
-\item \odrkey{VERSION} is a version string, preferably in a GNU-like
-  format ({\tt major.minor.release}).
-  
-\item \odrkey{SERVER} is currently defined, and carried along for
-  historical reasons.
-\end{itemize}
-
-\begin{table}[t!]
-  \begin{center}
-    \begin{tabular}{|l|l|}
-      \hline
-      \multicolumn{1}{|c|}{Key} &
-      \multicolumn{1}{c|}{Value} \\
-      \hline
-      \odrkey{NAME} & Personality name \\
-      \odrkey{SOFTWARE} & Name of software package \\
-      \odrkey{VERSION} & Version of software package \\
-      \odrkey{SERVER} & Hostname of the server for the package service
-      (if not the cluster head node) \\
-      \hline
-    \end{tabular}
-    \caption{Keys maintained for the \odrcat{personality} ODR category.}
-    \label{tbl:design-odr-cats-personality}
-  \end{center}
-\end{table}
-
-
-\begchange
-
-\paragraph{\odrcat{version} Category}
-
-There will only be one item in the \odrcat{version} category; it
-represents the version number of OSCAR iteself.  This version number
-directly implies the format of the ODR (which may stay the same
-between multiple OSCAR versions).  The main purpose of the
-\odrcat{version} category is for version checking to ensure that OSCAR
-executables do not attempt to read / write to an ODR of a different
-version.  See Section~\ref{sec:design-odr-versioning} for more details
-on the versioning scheme.
-
-Notes:
-
-\begin{itemize}
-\item This category breaks the version number down into three
-  integers: major, minor, and release.  This purpose for this (instead
-  of a single, arbitrary string) is to allow package authors to check
-  the version of the ODR and perform version range comparisons
-  easily.  For example, OSCAR package foo may only work properly with
-  OSCAR versions 2.0 through 2.3.4.
-  
-\item The \odrkey{EXTRA} is an arbitrary string, mainly for
-  descriptive purposes.  It should not be relied upon for version
-  number range checking.
-\end{itemize}
-
-\begin{table}[t]
-  \begin{center}
-    \begin{tabular}{|l|l|}
-      \hline
-      \multicolumn{1}{|c|}{Key} &
-      \multicolumn{1}{c|}{Value} \\
-      \hline
-      \odrkey{MAJOR\_VERSION} & Integer major version number \\
-      \odrkey{MINOR\_VERSION} & Integer minor version number \\
-      \odrkey{RELEASE\_VERSION} & Integer release version number \\
-      \odrkey{EXTRA} & Arbitrary string for extra data \\
-      \hline
-    \end{tabular}
-    \caption{Keys maintained for the \odrcat{version} ODR category.}
-    \label{tbl:design-odr-cats-version}
-  \end{center}
-\end{table}
-
-\endchange
-
-
-\begchange
-
-\subsubsection{Location and Version Control}
-\label{sec:design-odr-versioning}
-
-OSCAR specifically maintains the actual data files outside of the
-OSCAR tree in a well-known location such as \file{/etc/oscar/odr}.  As
-a result, there will only ever be one ODR.  If a cluster is upgraded
-to a new version of OSCAR, it is the responsibility of the upgrade
-process to also upgrade the contents of the ODR to include any new
-data formats, convert old data to the new formats, etc.  Backwards
-compatibility of the ODR is not guaranteed.
-
-To prevent ODR accessors from accessing an ODR from a different OSCAR
-version, the ODR and its accessors will be marked with version
-numbers.  Before ODR accessors perform any read/write operations, they
-will first compare their internal version numbers against the version
-number of the ODR.  If they don't match, the accessor will refuse to
-run with some appropriate error message.
-
-Simply put, these standards dictate that only a single ODR will exist
-for a given cluster and will be strictly version constrained.  This
-scheme will prevent the possibility of competing (and therefore
-potentially inconsistent) ODRs when OSCAR clusters are upgraded.  They
-also disallow the possibility of users accidentally using old OSCAR
-executables after an upgrade.
-
-Package authors must therefore check the return status of ODR
-accessors for success or failure.  Upon failure, package scripts
-should take appropriate error recovery steps, which may include
-aborting the current operation.
-
-\endchange
-
-\subsection{OSCAR Wizard}
-\label{sec:design-wizard}
-
-The OSCAR Wizard will be the focus for all operations performed in
-version 2.0. The Wizard will be responsible for interfacing with users
-to gather information needed by OSCAR and the OS installation tools to
-install the cluster and store it into the OSCAR Data Repository. It
-will then use the information gathered to be the control mechanism for
-running the backend installation tasks.
-
-The Wizard will be implemented as a Webmin module. Webmin is a
-web-based interface for system administration under Unix that can be
-used with any browser that provides support for tables and
-forms. Webmin consists of a simple web server, and a number of CGI
-programs that perform the system tasks. In order to run Webmin, one
-needs only a Perl version 5 binary, since the server, all CGI
-programs, and any Webmin modules are written entirely in Perl.
-
-The Wizard will provide three modes of operation for users: simple,
-standard, and expert.  Each mode will imply a list of packages that
-will be installed by default (these lists are hard-coded into the
-wizard).  The installation of the operating system on clients will be
-an option to users of all three modes, but the level of control over
-this operation will be set according to the mode level.
-
-\subsubsection{Simple Installation Mode}
-
-In the simple mode of operation, users will only be required to answer
-a minimal set of questions needed (preferably none) to install an
-OSCAR cluster using the default set of packages. If a user selects to
-install the OS on clients, a default configuration will be assumed.
-
-\subsubsection{Standard Installation Mode}
-
-In the standard mode of operation, users will need to answer the same
-minimal set of questions, but will be allowed to select which cluster
-software packages to install (e.g., which MPI package to make as the
-default). Similarly, users will also be given the choice of blocking
-or allowing certain network services, for those users familiar with
-network security issues.  If a user selects to install the OS on
-clients, he or she will be allowed to modify the configuration for
-some basic parameters such as the kernel to install and the disk
-partitioning.
-
-\subsubsection{Expert Installation Mode}
-
-In the expert mode of operation, users will be given as much control
-as possible over the cluster installation process, including
-installation of the OS on clients, network configuration, software
-package selection, checklist selection of which third party packages
-to install, and network security levels.
-
-This mode will explicitly list all OSCAR packages found in the
-\file{contrib-packages} directory (if it exists) and allow the user to
-install them.  
 
 \subsection{Node Installation}
 
@@ -699,285 +110,403 @@ order to install the OS on client machines when users wish to do so.
 Any other future OS installation solutions will also need to be
 integrated with the Wizard.
 
+
 \subsection{Software Package Management}
 \label{sec:design-software-package-mgmt}
 
-The OSCAR framework only manages (i.e., installs and uninstalls) OSCAR
-packages.  OSCAR packages are typically a small set of shell scripts
-over another package management system (such as RPM) that allow for
-OSCAR-specific functionality.
-
-The OSCAR package management (OPM) software will perform automatic
-dependency resolution where necessary.  For example, if package A is
-selected for install that depends on package B, package B will
-automatically be selected for install as well.  If a whole list of
-packages are selected to be installed, OPM will automatically sort out
-the correct order of installation such that all dependencies are
-satisfied in order.
-
-OPM also maintains version numbers.  When OPM is used to install an
-OSCAR package, OPM first checks to see if it is already installed.  If
-the package is not already installed, it is installed.  If it is
-already installed, OPM checks the version number of the installed
-version versus the version number of the version to be installed.
-
-\begin{itemize}
-\item If the already-installed package has a version number higher
-  than the to-be-installed package, OPM prints an error and exits.
-
-\item If the already-installed package has the same version number as
-  the to-be-installed package, OPM treats the installation as a null
-  operation. 
-
-\item If the already-installed package has a version number lower than
-  the to-be-installed package, OPM will perform the upgrade.
-\end{itemize}
-
-Note that OPM can be used to upgrade itself to a newer version.
-
-Just as OSCAR 2.0 will support multiple installation methods, the
-software package management will also be generic enough to support
-multiple backends.  As such, the package management API only requires
-that integrators provide scripts that install, uninstall, and
-configure the software on a single machine. Each backend
-implementation to the package management will use these scripts in
-whatever means is appropriate.
-
-For the initial release of OSCAR 2.0, there will probably be at least
-two backends, one that incorporates using the Cluster Command and
-Control (C3) tools to do distributed updates on all clients and
-another that uses SystemImager to update client images that will be
-pushed to all clients.
-
-\subsection{Cluster Software Installation/Uninstallation}
-
-One of the greatest advantages of OSCAR for users wishing to quickly
-build clusters is that OSCAR automates the installation of all
-packages included. In addition, the second generation OSCAR will
-support user selection of which packages to install, as opposed to the
-first generation where all included software packages were
-automatically installed. Another feature that will make its way into
-the second generation OSCAR is the ability for users to uninstall
-packages installed by OSCAR.
-
-The new management scheme for installing/uninstalling software
-packages is based on the premise that most current cluster software is
-easily installed on a single machine. As such, the management scheme
-only requires package integrators to automate that single machine
-installation process through use of a script that will be initiated on
-each cluster node by OSCAR. Since the process for installation of a
-package on a server node may differ from that for client nodes, the
-script supplied must support a command-line switch that specifies the
-type of node and proceed accordingly.
-
-In order to support uninstallation, package integrators must also
-supply a single machine uninstallation script that will be used in the
-same manner as the installation script. The script should similarly
-support the distinction between server and client nodes.
-
-In addition to providing scripts for installation and uninstallation,
-package integrators will also be required to provide a list of files
-that are needed by the scripts.  Typically, these files would be that
-actual software package (e.g., RPM or tarball) and any supplementary
-scripts that are called from the installation/uninstallation scripts.
-
-\subsubsection{Cluster Configuration Updates}
-
-Another added functionality that will be supported in the second
-generation OSCAR is the ability to add/remove nodes to/from the
-cluster after the cluster has been initially installed. Such
-operations are common when clusters are being built in stages or when
-performing routine maintenance on cluster nodes. As a result, each
-package will be required to provide a script that updates any of its
-configuration files that keep cluster information whenever such an
-operation is performed. These scripts will have access to the OSCAR
-Data Repository (ODR) and its access routines, which will provide the
-updated configuration information. The configuration script should
-adhere to the same node type requirements specified for the
-(un)installation scripts.
-
-The package management scheme for configuration updates has also been
-designed to allow nodes which are not online at the time of the
-cluster configuration update to be notified of the update. In normal
-operation, the configuration scripts will be initiated on every
-cluster node after the configuration update has been
-performed. However, this means that any nodes not online at that point
-will not be notified of the update. As such, OSCAR will also employ
-the use of a boot time initialization script that will run the
-configuration scripts for each software package installed on a
-client. The OSCAR initialization script will be run as part of the
-init process for whichever Linux distribution is installed on the
-client. In order to support the two different times the configuration
-script will be run, the script will need to support a command-line
-option distinguishing whether the script was initiated by OSCAR or the
-OSCAR initialization script.
+\begin{discuss}
+We need to discuss this point at some point, because what we had here
+really doesn't apply any more...
+\end{discuss}
 
 \subsection{Package API Requirements}
 
-\begin{discuss}
-  We need to include verbage here about how to specify dependencies.
-  Note that depedency functionality was already discussed in
-  Section~\ref{sec:design-software-package-mgmt}.  This section needs
-  to discuss the API on how to specify and retrieve the dependencies
-  from the package.
-\end{discuss}
+Introduced in the 1.3 release, the Package API outlines the
+requirements on a package in order to be included in the OSCAR
+distribution.  This API is sufficient for image-based installation and
+has been designed with an eventual migration towards either
+image-based installation or node-based installation in mind.
 
-\begin{discuss}
-  It would seem beneficial to have OSCAR packages have a ``provides''
-  field, similar to RPMs.  For example, both LAM/MPI and MPICH can
-  have the same ``provides'' field of ``mpi'' so that OSCAR can
-  identify both packages as providing the same end-user functionality.
-  This would also allow the OSCAR installer to know to let the user
-  pick one package to be the default from the set that provides the
-  same functionality.
+This proposal does not discuss directory locations or the layout of an
+OSCAR package itself -- those details can be sorted out later.  This
+proposal attempts to tackle the design issues for the major steps of
+the API necessary for an OSCAR package.
 
-  This requires further discussion.
-\end{discuss}
 
-\begin{discuss}
-  It should be possible to change the role of a package without
-  uninstalling/reinstalling that package.  For example, if an OSCAR
-  admin wants to change the default MPI on his cluster from MPICH to
-  LAM/MPI, it should be a simple (and fast) operation.
+\subsubsection{Goals}
 
-  This requires further discussion.
-\end{discuss}
-
-The package management API is an attempt to simplify the interaction
-between individual software package scripts and OSCAR.  Since the
-installation, uninstallation, and configuration scripts for each
-package must support similar options, the API was condensed into a
-single interface. That interface is as follows:
-
-\cmd{opkgconfig --role role-arg1 [[role-arg2] ...] <action> [--atboot]}
+The goals of this API proposal are as follows:
 
 \begin{itemize}
-\item \cmd{<action>} is one of: {\tt install}, {\tt uninstall}, {\tt
-    configure}.
-  
-\item \cmd{--role}: passes a string to the package indicating what
-  role the package should install itself as.  The \cmd{-role} switch
-  will take one or more arguments, and there may be multiple
-  \cmd{-role} switches on a single command line.  Roles are discussed
-  below.
-  
-\item \cmd{--atboot}: indicates the script is being run from the boot
-  time initialization script, and is valid only with the
-  \cmd{configure} action.
+\item replace the API that is used for 1.2
+\item support current functionality used in all current OSCAR packages
+\item make an API that is implementable by 1.3
+\item make the API small
+\item allow functionality for adding and deleting a node
+\item allow functionality for adding a package after the initial install
+\item preserve the "do no harm" mentality
+\item allow for small "bite-size" increments to the API in successive
+      versions, hopefully without having to change the API that is in
+      place so far
 \end{itemize}
 
-The basic idea is that each integrator will create a \file{opkgconfig}
-script that will be invoked by either the OSCAR wizard or the boot
-time initialization script. How that script is implemented is left up
-to the integrator, but it must be executable.  Typically, the
-integrator would create three underlying scripts, one for each of the
-available actions, and call each script from \file{opkgconfig} based
-upon the command-line options.
+Note that we're still assuming the one-head-node, many-clients model.
 
-For each of the three actions, integrators must also provide a list of
-files that are needed to complete the action. The list for each action
-is named \file{<action>-files.txt} and should be placed in the
-package's base directory. The files specified in the list can be
-either absolute or relative pathnames.  The \file{opkgconfig} script
-itself is assumed in each of the file lists.
 
-Here is a list of the files that each package must provide in its
-directory:
+\subsubsection{Terminology}
+
+The following terminology is used throughout the document:
+
+{\bf Client filesystem}: The filesystem of the client, which may be an image
+on the server, or the filesystem on the client node itself.
+
+{\bf Client node}: Every package can partition the cluster nodes into
+server(s) and clients.  In the simplest cluster, every node except the
+head node is a client node for every package.
+
+{\bf Image-based installation}: An installation where an "image" of the
+node is maintained on a server.  This tree is then used to update
+clients.  This is the current OSCAR installation method, implemented
+by SIS.
+
+{\bf Node-based installation}: An installation where each node is
+individually installed and configured.  This is not currently
+implemented by OSCAR, but is expected at a later date.
+
+{\bf Server filesystem}: The filesystem on the server itself,
+*excluding* any client images that may reside on the server.
+
+{\bf Server node}: Every package can partition the cluster nodes into
+server(s) and clients.  In the simplest cluster, the headnode is the
+server for every package.
+
+
+\subsubsection{Sequence of Events}
+
+First, let's explain the sequence of events in the OSCAR installation.
+This will include the proposed API calls -- they'll be explained in
+more detail below.  
+
+% BWB: FIx me!
+\begin{verbatim}
+   Description                                  Location
+   -------------------------------------------- ------------------
+1. Install all the server RPMs                  Server filesystem
+2. Call the API script(s): post_server_rpm_install  Server filesystem
+3. Install all the client RPMs                  Client filesystem
+4. Call the API script(s): post_client_rpm_install     Client filesystem
+5. Define clients in the OSCAR/SIS database     Server filesystem
+6. Call the API script(s): post_clients         Server filesystem
+7. Push the images to the nodes (**)            Server filesystem
+8. Call the API script(s): post_install         Server filesystem
+   -------------------------------------------- ------------------
+\end{verbatim}
+
+(**) Note that step 7 won't happen in a node-based install -- this
+     step will be skipped.
+
+Every OSCAR package can have zero or more of the API scripts (this is
+different than what we have right now where there is only one
+server\_prep script, for example).  At steps 2, 4, 6, and 8 in the
+event sequence, each OSCAR package will be examined for the relevant
+API scripts.  If it exists, it will be called.  If it does not exist,
+that package will be skipped for that step.
+
+Note that this order of events may be slightly different for different
+forms of installation.  For example, in a kickstart-oriented
+installation, step 5 (define clients in a database) may actually occur
+earlier.  However, the order of execution of the API scripts will
+still remain the same.
+
+
+\subsubsection{Supplimental Files}
+
+Before discussing the API calls, there are two supplemental files that
+should be noted.
+
+\noindent {\bf server.rpmlist}
+
+This per-package file contains a list of RPM filenames (one per line) of
+RPMs that are installed during step 1.  At present, the RPM files
+listed in this file will be installed on the head node.  However, once
+the restriction on a single head node running all servers is removed,
+the server list may be installed on an arbitrary node or set of nodes
+in the cluster (at the user's discretion).
+
+Primitive conflict resolution is run on this list, checking for such
+things as two versions of the same RPM, etc.  However, the majority of
+burden for RPM conflict resolution is up to the package author --
+don't include RPMs that will be problematic \footnote{ Perhaps
+someday we can relax this constraint, but not for 1.3.  It still
+adheres to the "do-no-harm" philosophy, because packages that don't
+have conflicts will still be legal if we do eventually introduce
+sophisticated RPM conflict resolution.}.
+
+\noindent {\bf client.rpmlist}
+
+Same as the server.rpmlist file, except that it contains the RPM
+filenames for the RPMs installed in step 3.
+
+
+\subsubsection{API calls}
+
+So let's now discuss each of the API calls in detail.
+
+\noindent {\bf post\_server\_rpm\_install (step 2)}
+
+Guidelines:
 
 \begin{itemize}
-\item \cmd{<pkgname>/opkgconfig}
-\item \cmd{<pkgname>/install-files.txt}
-\item \cmd{<pkgname>/uninstall-files.txt}
-\item \cmd{<pkgname>/configure-files.txt}
+\item This script will be run on the head node.
+\item This use of this API script is strongly discouraged.  The contents
+  of this script should normally be contained in the \%post scripts in
+  the RPMs themselves.  This API script is only here to help taking
+  third party non-OSCAR-ized RPMs and graft them into the OSCAR
+  framework without needing to re-make the RPM.
+\item This script must be safely re-runnable; it may be run multiple times
+  over the life of the cluster.
+\item This script can *only* modify anything on the server filesystem, but
+  should restrict itself to only things that are relevant to that
+  package.
+\item This script cannot modify any client filesystems.
+\item This script cannot use anything from the OSCAR/SIS database,
+  because there isn't much (any?) information in it yet.
 \end{itemize}
 
-\subsubsection{Provides Functionality}
-
-\begin{discuss}
-  This seems like a good place to discuss the ``provides''
-  functionality.  Verbage must be included to say that package authors
-  should work together to agree on sensible ``provides'' strings.  For
-  example, LAM/MPI and MPICH OSCAR packages should both use ``mpi'' as
-  their provides string.  This is technically outside of the scope of
-  OSCAR -- it's up to the package authors.  But we should provide some
-  kind of suggested guidence.
-\end{discuss}
-
-\subsubsection{Roles}
-
-\begin{discuss}
-  This text is completely new, and probably somewhat rough.
-\end{discuss}
-
-The \cmd{--role} switch is a method to pass context information to the
-package installer.  Multiple \cmd{--role} switches may be specified on
-a single command line, each of which will have one or more arguments.
-The first argument to \cmd{--role} is called the {\em role}.  Each
-role will dictate the number and meaning of any following arguments.
-
-OSCAR defines a small number of role arguments that all OSCAR packages
-must understand.  Each of these roles are discussed below.  Future
-versions of OSCAR may allow arbitrary or package-specified role
-strings and arguments to provide additional information to the package
-installer.
+Parameters:
 
 \begin{itemize}
-  
-\item \cmd{server}.  The \cmd{server} role takes no additional
-  arguments.  It indicates that the package is being installed on the
-  OSCAR head node.  This role is mutually exclusive with the
-  \cmd{client} role.
-  
-\item \cmd{client}.  The \cmd{client} role takes no additional
-  arguments.  Indicates that the package is being installed on a node
-  that is not the OSCAR head node.  This role is mutually exclusive
-  with the \cmd{server} role.
-  
-\item \cmd{env}.  The \cmd{env} role indicates how the package should
-  install itself into the default user environmnet, if at all.  If the
-  package installs itself into the default user environment, it may do
-  so by adding files to \file{/etc/profile.d} that have a base
-  filename equal to the ``provides'' string of the package.
-  
-  For example, the PVM package has a provides string of ``\cmd{pvm}''.
-  Hence, if PVM is to be installed into the environment, it can add
-  shell script files of the form \file{/etc/profile.d/pvm*}.
-  
-  The \cmd{env} role takes one argument, which will be one of the
-  following:
-
-  \begin{itemize}
-  \item \cmd{default}.  The package can install itself in the default
-    in the user environment.  That is, users will find this
-    application's resources in their path, manpath, linker library
-    path, etc.
-    
-  \item \cmd{nondefault}.  This package can install itself into the
-    default user environment, but must ensure that a ``{\tt default}''
-    version of a package that provides the same functionality is found
-    first in the user's path, manpath, linker library path, etc.  This
-    argument is only useful when there are multiple packages that use
-    the same provides string (e.g., LAM/MPI and MPICH) -- they can all
-    be installed, but only one of them should be found first in the
-    user's path.
-
-    \begin{discuss}
-      Better text/definitions needs to be worked out here.  The intent
-      is that multiple packages of the same ``provides'' string can be
-      instaleld, and only one of them will be ``default''.  The others
-      will be either ``nondefault'' or ``none''.  This is specifically
-      to handle cases like LAM/MPI, MPICH, MPICH/gm, etc., etc. (so
-      it's not necessarily just for 2-way decisions).  However,
-      there's lots of corner cases to consider... this text is clearly
-      not sufficient yet.
-    \end{discuss}
-
-  \item \cmd{none}.  The package should not install itself into the
-    default user environment.
-  \end{itemize}
-
+\item None.
 \end{itemize}
 
+\noindent {\bf post\_client\_rpm\_install (step 4)}
+
+Guidelines:
+
+\begin{itemize}
+\item This script will be run on the client filesystem.  That is, it will
+  either be chrooted to the image or run on all of the actual nodes
+  themselves.
+\item This use of this API script is strongly discouraged.  The contents
+  of this script should normally be contained in the \%post scripts in
+  the RPMs themselves.  This API script is only here to help taking
+  third party non-OSCAR-ized RPMs and graft them into the OSCAR
+  framework without needing to re-make the RPM.
+\item This script must be safely re-runnable; it may be run multiple times
+  over the life of the cluster.
+\item This script can modify anything on the client filesystem, but should
+  restrict itself to only things that are relevant to that package.
+\item This script cannot use anything from the OSCAR/SIS database
+\footnote{This may change in future versions of the API, but for now,
+nothing in the OSCAR/SIS DB is available during this step.}
+  The only piece of global information that is available is the
+  hostname oscar\_server, which will be set correctly in the /etc/hosts
+  on every node/image.
+\end{itemize}
+
+
+Parameters:
+
+\begin{itemize}
+\item None.
+\end{itemize}
+
+\noindent {\bf post\_clients (step 6)}
+
+Guidelines:
+
+\begin{itemize}
+\item This script will only be run on the head node.
+\item This script must be safely re-runnable; it may be run multiple times
+  over the life of the cluster (e.g., when nodes are added/deleted,
+  packages are added, etc.)
+\item This script can modify anything on the server filesystem, but should
+  restrict itself to only things that are relevant to that package.
+\item This script can NOT modify anything on client filesystems.
+\item This script can read any information in the OSCAR/SIS database (no
+  write operations are supported).  Using the OSCAR/SIS database API
+  is the only way to read the database (see below).
+\end{itemize}
+
+Parameters:
+
+\begin{itemize}
+\item None.
+\end{itemize}
+
+\noindent {\bf post\_install (step 8)}
+
+Guidelines:
+
+\begin{itemize}
+\item This script will only be run on the head node.
+\item This script must be safely re-runnable; it may be run multiple times
+  over the life of the cluster (e.g., when nodes are added/deleted,
+  packages are added, etc.)
+\item This script can modify anything on the server filesystem, but should
+  restrict itself to only things that are relevant to that package.
+\item This script can NOT modify anything on client filesystems.
+\item This script can read any information in the OSCAR/SIS database (no
+  write operations are supported).  Using the OSCAR/SIS database API
+  is the only way to read the database (see below).
+\end{itemize}
+
+
+Parameters:
+
+\begin{itemize}
+\item None.
+\end{itemize}
+
+
+\subsubsection{Notes about RPMs}
+
+Because we anticipate eventually allowing upgrading of OSCAR packages,
+OSCAR RPMs should cleanly allow "rpm -Uvh" operations.
+
+Additionally, the \%post scripts in an RPM should be used whenever
+possible instead of steps 2 and 4 (post\_server\_rpm\_install and
+post\_client\_rpm\_install).  Steps 2 and 4 are intended to allow random,
+non-OSCAR-ized, third-party RPMs to become OSCAR packages by adding a
+script instead of needing to re-make the RPM with the appropriate
+\%post scripts.
+
+Scripts in an RPM (such as \%pre and \%post) [currently] cannot use any
+OSCAR database API calls, such as obtaining the number of nodes in an
+OSCAR cluster.  Future versions of this API may allow such calls, but
+with the stipulation that RPMS that invoke OSCAR database API calls
+depend on some OSCAR-specific RPM that provide the database API calls
+themselves.
+
+
+\subsubsection{Major actions and how the API is used}
+
+\noindent {\bf Initial OSCAR install}
+
+Run all steps -- 1 through 8 (of course, skip step 5 if using a
+node-based install).
+
+\begin{enumerate}
+\item Install all the server RPMs
+\item Call the API script(s): post\_server\_rpm\_install
+\item Install all the client RPMs
+\item Call the API script(s): post\_client\_rpm\_install
+\item Define clients in the OSCAR/SIS database
+\item Call the API script(s): post\_clients
+\item Push the images to the nodes
+\item Call the API script(s): post\_install
+\end{enumerate}
+
+\noindent {\bf Add a package after the initial OSCAR install}
+
+Run steps 1 through 4, and then steps 6 through 8.  Step 5 is not
+necessary because all the clients have already been defined --
+modifying the OSCAR/SIS database is not necessary just to install a
+new package.
+
+\begin{enumerate}
+\item Install all the server RPMs
+\item Call the API script(s): post\_server\_rpm\_install
+\item Install all the client RPMs
+\item Call the API script(s): post\_client\_rpm\_install
+\item $<$skipped$>$
+\item Call the API script(s): post\_clients
+\item Push the images to the nodes
+\item Call the API script(s): post\_install
+\end{enumerate}
+
+\noindent {\bf Add a node after the initial OSCAR install}
+
+Run steps 5 through 8.  This allows packages to reconfigure themselves
+if they need to, based upon the addition of a new node in the cluster
+(canonical example: PBS).
+
+\begin{enumerate}
+\item $<$skipped$>$
+\item $<$skipped$>$
+\item $<$skipped$>$
+\item $<$skipped$>$
+\item Define clients in the OSCAR/SIS database
+\item Call the API script(s): post\_clients
+\item Push the images to the nodes
+\item Call the API script(s): post\_install
+\end{enumerate}
+
+
+\noindent {\bf Remove a node after the initial OSCAR install}
+
+Run steps 5 through 8.  This allows packages to reconfigure themselves
+if they need to, based upon the deletion of a new node in the cluster
+(canonical example: PBS).
+
+\begin{enumerate}
+\item $<$skipped$>$
+\item $<$skipped$>$
+\item $<$skipped$>$
+\item $<$skipped$>$
+\item Define clients in the OSCAR/SIS database
+\item Call the API script(s): post\_clients
+\item Push the images to the nodes
+\item Call the API script(s): post\_install
+\end{enumerate}
+
+
+\noindent {\bf Accessing the OSCAR/SIS database}
+
+NOTE: It is required that all API scripts which need node information be
+written in Perl, and use the following function to gain access to the
+database.
+
+The SystemInstaller::Machine class exports a convenience function
+called get\_machine\_listing.  This can optionally take an image name as
+the argument \footnote{There should be a description of how to use
+this here...}
+
+\begin{discuss}
+SIS Guys - How do we import this funtion in our perl scripts?
+\end{discuss}
+
+get\_machine\_listing returns a hash.  The hash keys are the names of
+all the clients in the database (optionally associated with an image
+if that is specified).  The hash value for each key is a hash
+reference with the following keys defined:
+
+\begin{verbatim}
+  Key     Value
+  ------- -----------------------------
+  HOST    hostname
+  IPADDR  ip address of primary adapter
+  DOMAIN  domainname
+  NUMPROC number of processors on node
+  ------- -----------------------------
+  (other values can be added if required)
+\end{verbatim}
+
+It is recommended that all user exit scripts which need node
+information be written in Perl, and use this function to gain access
+to the database.
+
+Note that this function is currently SIS-specific, and will likely
+change in future versions of this API.
+
+
+\subsubsection{Points still unresolved}
+
+These issues can be addressed for API versions after 1.3.
+
+\begin{enumerate}
+\item How to do upgrades of packages?
+\item How to do upgrades of the entire OSCAR cluster?
+\item How to do package inter-relationships?
+\item How to remove a package?
+\item How to make OSCAR DB remotely available (for step 4)?
+
+\item Will need to make OSCAR DB info available remotely (in the chroot
+    jail or on the nodes) for post 2.0 for node-based installs --
+    perhaps some socket-based thingy.  Punted for now 'cause we'll be
+    image-based until 2.0.  Making it remotely accessible will make
+    OSCAR DB info in step 4.
+\end{enumerate}
 
 % LocalWords:  Exp Filesystem LSB FSH oscar doc HowTos Docs pkgname ODR CLAMDR
 % LocalWords:  readDR pl writeDR IP DDR ETMASK ONFIG CONFIG dhcp Hostname eth
