@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.20 2003/04/24 11:59:48 jsquyres Exp $
+# $Id: opd,v 1.21 2003/06/27 22:03:27 tfleury Exp $
 #
 
 use strict;
@@ -1312,7 +1312,7 @@ sub download_package {
 		$pkg->{download}->{md5sum}) {
 		my $digest = md5_hex($$content);
 		if ($digest ne $pkg->{download}->{md5sum}) {
-		    print("FAILED: $name $digest != $pkg->{donwload}->{md5sum}\n");
+		    print("FAILED: $name $digest != $pkg->{download}->{md5sum}\n");
 		    next;
 		} else {
 		    print("OK\n")
@@ -1343,7 +1343,7 @@ sub download_package {
                         if (!$argv_parsable);
 		}
 		if ($digest ne $pkg->{download}->{sha1sum}) {
-		    print("FAILED: $name $digest != $pkg->{donwload}->{sha1sum}\n");
+		    print("FAILED: $name $digest != $pkg->{download}->{sha1sum}\n");
 		    next;
 		} else {
 		    print("OK\n")
