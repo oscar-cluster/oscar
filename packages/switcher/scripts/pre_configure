@@ -90,16 +90,27 @@ if ($#pkg_config_keys < 0) {
 	}
 
 	# Otherwise, print a radio button for each possible name.
-	# Note that adding "default" to the first radio button is ok,
-	# because the configurator itself will override this if there
-	# was previously some other option selected (e.g., this is
-	# your second time running the configurator and you previously
-	# selected some other option)
+	# Note that adding "default" to the first value's radio button
+	# is ok, because the configurator itself will override this if
+	# there was previously some other option selected (e.g., this
+	# is your second time running the configurator and you
+	# previously selected some other option)
 
 	else {
-	    my $def = "checked";
 	    print OUTFILE 
 		"Default for tag \"$tag\" can be set to:\n    <ul>\n";
+
+	    # EF: we want the system-wide default to be "none" if not
+	    # set explicitely
+
+	    print OUTFILE
+		"    <li> <input type=\"radio\" name=\"$tag\" value=\"" .
+		"none" . "\"> " . "none" . "</li>\n";
+
+            # Cycle through all the available values; the first one
+            # will be checked by default
+
+	    my $def = "checked";
 	    foreach my $i (0 .. $#{$info->{names}}) {
 		print OUTFILE
 		    "    <li> <input $def type=\"radio\" name=\"$tag\" value=\"" .
