@@ -8,8 +8,16 @@ pms		= \
 
 pls		= nodemgmtDialog.pl
 
+uis		= \
+		nodemgmtdialog.ui \
+		nodesettingsdialog.ui
+
+uihs		= \
+		nodemgmtdialog.ui.h \
+		nodesettingsdialog.ui.h
+
 # These are items to be distributed
-EXTRA_DIST		= $(pms) $(pls) GUI.xml
+EXTRA_DIST		= $(pms) $(pls) $(uis) $(uihs) GUI.xml
 
 instdir			= $(prefix)/Installer/NodeMgmt
 inst_SCRIPTS		= $(pls) $(pms)
@@ -24,18 +32,10 @@ nodemgmtDialog.pm: nodemgmtdialog.ui.h nodemgmtdialog.ui nodesettingsDialog.pm n
 nodesettingsDialog.pm: nodesettingsdialog.ui nodesettingsdialog.ui.h
 	$(PUIC) -o nodesettingsDialog.pm nodesettingsdialog.ui
 
-# General rule to make a .pl from a .ui
-.ui.pl:
-	@ $(PUIC) -x -o $@ $<
-
-# General rule to make a .ui from a .pm
-.ui.pm:
-	@ $(PUIC) -o $@ $<
-
 # Hook target that Automake runs at the end of its own internal
 # "clean" target.
 clean-local:
-	rm -f nodesettingsDialog.pm $(pls)
+	rm -f nodemgmtDialog.pm nodesettingsDialog.pm $(pls)
 
 all-local: $(pls) $(pms)
 #echo "Fixing QWidgetStack problem"
