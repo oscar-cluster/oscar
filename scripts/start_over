@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
+use lib "$ENV{OSCAR_HOME}/lib", "../lib"; 
 use Carp;
 
 # all the rpms we KNOW we installed
@@ -8,8 +9,9 @@ use Carp;
 my @rpms = qw(
               c3
               pfilter
-              lam-6.5.4
-              openpbs-oscar-2.2p11 
+              lam
+              pvm
+              openpbs-oscar 
               openpbs-oscar-mom
               openpbs-oscar-server
               openpbs-oscar-gui
@@ -22,6 +24,7 @@ my @rpms = qw(
               systemconfigurator
               systemimager-server
               systemimager-common
+              systemimager-client
               systemimager-i386boot
               systemimager-ia64boot
 	      mpich
