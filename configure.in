@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.17 2002/06/12 14:32:38 jsquyres Exp $
+# $Id: configure.in,v 1.18 2002/06/13 02:02:50 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -101,14 +101,17 @@ AC_OUTPUT([
     packages/mpich/SRPMS/Makefile
     packages/mpich/scripts/Makefile
     packages/opium/Makefile
+    packages/opium/doc/Makefile
     packages/opium/RPMS/Makefile
     packages/opium/SRPMS/Makefile
     packages/opium/scripts/Makefile
     packages/pbs/Makefile
+    packages/pbs/doc/Makefile
     packages/pbs/RPMS/Makefile
     packages/pbs/SRPMS/Makefile
     packages/pbs/scripts/Makefile
     packages/pfilter/Makefile
+    packages/pfilter/doc/Makefile
     packages/pfilter/RPMS/Makefile
     packages/pfilter/SRPMS/Makefile
     packages/pfilter/scripts/Makefile
