@@ -59,6 +59,7 @@ purpose.</description>
   <rpmlist>
     <rpm>env-switcher</rpm>
     <rpm>modules-oscar</rpm>
+    <rpm>modules-default-manpath-oscar</rpm>
   </rpmlist>
   
 </oscar>
