@@ -67,6 +67,11 @@ fi
 
 node1=`/usr/local/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tail -1`
 
+if [ `ping -c 1 $node1 2>/dev/null | grep -c avg` -eq 0 ]; then
+  echo "No nodes free and pingable"
+  exit 1
+fi
+
 echo -n "server -> node SSH:"
 if [ `ssh $node1 hostname 2> /dev/null` = $node1 ]; then
   echo_success
