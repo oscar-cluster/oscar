@@ -14,17 +14,17 @@
   <class>core</class>
   <installable>1</installable>
 
-  <summary>System Installer Suite</summary>
+  <summary>System Installation Suite</summary>
   <license>GPL</license>
   <group>Application/System</group>
-  <url>http://systemimager.org/</url>
+  <url>http://sisuite.org/</url>
 
   <packager>
     <name>Michael Chase-Salerno</name>
     <email>mchasal@users.sourceforge.net</email>
   </packager>
 
-  <description>The System Installer Suite</description>
+  <description>The System Installation Suite</description>
 
   <rpmlist>
     <all>
