@@ -1,6 +1,6 @@
 #! /bin/sh 
 #
-# $Id: autogen.sh,v 1.6 2002/07/27 18:35:43 jsquyres Exp $
+# $Id: autogen.sh,v 1.7 2002/10/31 12:37:47 jsquyres Exp $
 #
 # This script is run on developer copies of OSCAR -- *not*
 # distribution tarballs.
@@ -213,7 +213,7 @@ run_global() {
     # and add it to the various lists of directories.
 
     echo "Generating Makefile.am's..."
-    rg_pkg_subdirs=". doc RPMS scripts SRPMS"
+    rg_pkg_subdirs=". doc RPMS scripts SRPMS testing"
     for rg_pkg in packages packages/*; do
 	if test "$rg_pkg" != "packages/CVS" \
 	    -a -d "$rg_pkg" \
