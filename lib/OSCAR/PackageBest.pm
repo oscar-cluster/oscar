@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.7 2002/02/18 23:48:08 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.8 2002/02/18 23:49:10 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -38,7 +38,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.8 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
@@ -335,7 +335,7 @@ sub verbose {
         my $FH = \*STDERR;
         if($VERBOSE) {
             my ($package, $filename, $line) = caller;
-            print $FH &timestamp . " [$package :: Line $line] " . join(', ', @_) . "\n";
+            print $FH  " [$package :: Line $line] " . join(', ', @_) . "\n";
         }
 }
 
