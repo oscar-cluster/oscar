@@ -1,0 +1,79 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: setup,v 1.1 2003/07/25 16:37:25 jsquyres Exp $
+#
+# setup script for the lam package
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX;
+use Carp;
+use OSCAR::Distro;
+use OSCAR::PackageBest;
+
+# Different distro's require different RPMs (mainly because libtcl appears
+# to be installed differently on different distros).  So put some
+# intelligence here to figure out what distro we're on and copythe
+# right RPM(s) to the packages/switcher/RPMS directory.
+
+my $source_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro/";
+my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
+
+my ($name, $ver) = OSCAR::Distro::which_distro_server();
+if ($name eq "mandrake") {
+  $source_dir .= "mdk90";
+} else {
+  $source_dir .= "rh80";
+}
+
+print "Using LAM/MPI RPMs from: $source_dir\n";
+
+# Quick sanity check
+
+if (! -d $dest_dir) {
+  croak("$dest_dir does not exist");
+} elsif (! -d $source_dir) {
+  croak("$source_dir does not exist");
+}
+
+# Remove any "lam-*oscar" RPMs in the dest dir
+
+opendir(DIR, $dest_dir);
+my @bad_files = grep {(/^lam-oscar/ || /^lam-with-gm-oscar/) && -f "$dest_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#bad_files > -1) {
+  printf("Removing old files:\n");
+  foreach my $file (@bad_files) {
+    printf(" - $dest_dir/$file\n");
+    unlink("$dest_dir/$file");
+  }
+}
+
+# Make a list of the new files and copy them over
+
+opendir(DIR, $source_dir);
+my @good_files = grep {(/^lam-oscar/ || /^lam-with-gm-oscar/) && -f "$source_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#good_files > -1) {
+  my $cmd = "cp ";
+  printf("Copying new files:\n");
+  foreach my $file (@good_files) {
+    $cmd .= "$source_dir/$file ";
+    printf(" - $source_dir/$file\n");
+  }
+  $cmd .= $dest_dir;
+  system($cmd);
+  print "Copied LAM/MPI RPMs to $dest_dir\n";
+}
+
+# All done
+
+exit 0
