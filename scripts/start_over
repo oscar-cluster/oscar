@@ -76,6 +76,11 @@ system("rm -rf /var/lib/clamdr");
 print "rm -rf /var/lib/systemimager\n";
 system("rm -rf /var/lib/systemimager");
 
+print "rm -f /etc/cron.daily/synctime.sh\n";     # tjn 1/18/02
+system("rm -f /etc/cron.daily/synctime.sh");
+
+
+
 sub delete_from_pool {
     my @rpms = @_;
     my $dir = "/tftpboot/rpm/";

@@ -29,6 +29,7 @@ use AppConfig;
 
 get_numproc();
 run_postinstalls("../");
+do_synctime();
 
 sub get_numproc {
 	my @machines=&clientList;
@@ -78,5 +79,25 @@ sub files_in_dir {
 }
 
 
+# tjn 1/18/02
+sub do_synctime {
+    my $sync_script = "/etc/cron.daily/synctime.sh";
+    open(FH, ">$sync_script") || croak("$!");
+    print FH <<EOF;
+#!/bin/sh
+# tjn 1/18/02
+# simple script to sync times for cluster nodes to the headnode (run daily)
+
+cur=`/bin/date \+"%D %T"`
+/opt/c3-2.7.2/bin/cexec -c \"date -s \\\\\\"\$cur\\\\\\""
+
+EOF
+
+    close(FH);
+    chmod(0550, $sync_script);
+    !system("$sync_script") || croak("$!");     # go ahead an run it once
+
+    print "\nSynchronization of Time Successfully Completed!\n";
+}
 
 
