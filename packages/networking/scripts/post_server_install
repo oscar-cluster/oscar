@@ -5,5 +5,5 @@
 # Start the name service daemon
 
 /sbin/chkconfig named on
-/etc/init.d/named start
+/etc/init.d/named restart
 
