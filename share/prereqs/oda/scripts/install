@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.2 2002/11/01 15:54:40 ngorsuch Exp $
+# $Id: install,v 1.3 2002/11/06 07:28:51 ngorsuch Exp $
 #
 
 #use strict;
@@ -72,7 +72,7 @@ closedir DIR;
 my $error_flag = 0;
 foreach my $wanted_rpm ( @wanted_rpms ) {
     oscar_log_subsection("Checking if rpm <$wanted_rpm> is already installed");
-    my $command = "rpm -q $wanted_rpm 2>/dev/null";
+    my $command = "rpm -q $wanted_rpm >/dev/null 2>&1";
     if ( system($command) == 0 ) {
 	oscar_log_subsection("rpm <$wanted_rpm> is already installed");
 	next;
