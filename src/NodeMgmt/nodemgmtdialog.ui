@@ -1,5 +1,5 @@
 <!DOCTYPE UI><UI version="3.1" stdsetdef="1">
-<class>nodemgmtdialogmake</class>
+<class>nodemgmtDialog</class>
 <widget class="QDialog">
     <property name="name">
         <cstring>nodemgmtdialog</cstring>
