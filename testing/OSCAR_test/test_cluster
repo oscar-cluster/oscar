@@ -1,9 +1,10 @@
 #!/bin/sh
-
+#
+# $Id: test_cluster,v 1.9 2002/05/18 04:30:06 jsquyres Exp $
+#
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
 #          Jeremy Enos
-# Last Updated: 05/15/2002
 
 #test to make sure root is not running this script
 if [ `id -un` = root ] ; then 
