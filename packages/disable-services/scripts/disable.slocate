@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: disable.slocate,v 1.1 2002/10/25 20:22:17 jsquyres Exp $
+# $Id: disable.slocate,v 1.2 2002/10/29 03:14:05 jsquyres Exp $
 #
 
 #
@@ -27,4 +27,7 @@ done
 # All done
 #
 
-exit 0
+#
+# Do not exit, because this script gets pasted together as
+# part of a larger script.
+#
