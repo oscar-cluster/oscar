@@ -3,6 +3,10 @@
 <package>
   <name>hdf5</name>
 
+  <filter architecture='ia32' distribution='redhat' distribution_version='7.2' />
+  <filter architecture='ia32' distribution='redhat' distribution_version='7.3' />
+  <filter architecture='ia32' distribution='redhat' distribution_version='8.0' />
+
   <version>
     <major>1</major>
     <minor>0</minor>
@@ -36,5 +40,13 @@ implementation.</description>
     <type>package</type>
     <name>switcher</name>
   </requires>
+
+  <rpmlist>
+    <filter architecture='ia32' distribution='redhat' distribution_version='7.2' />
+    <filter architecture='ia32' distribution='redhat' distribution_version='7.3' />
+    <filter architecture='ia32' distribution='redhat' distribution_version='8.0' />
+    <rpm>hdf5-oscar</rpm>
+    <rpm>hdf5-oscar-module</rpm>
+  </rpmlist>
 
 </package>
