@@ -18,30 +18,23 @@
 #   It will do all the fixups required.
 
 use strict;
-use lib '/usr/lib/systeminstaller';
+use lib "$ENV{OSCAR_HOME}/lib",'/usr/lib/systeminstaller';
 use Carp;
 use File::Copy;
 use File::Path;
 use File::Basename;
 use SIS::Image;
-use AppConfig;
+use OSCAR::Package;
+use Data::Dumper;
 
 !system("./allow_client_access") or croak("Couldn't run client access program");
 
 push_hosts() or croak("Couldn't push hosts file to images");
 
-run_postinstalls("../") or croak("Couldn't run post_clients scripts");
+my @pkgs = list_pkg();
 
-sub run_postinstalls {
-    my ($topdir) = @_;
-    foreach my $dir (files_in_dir("$topdir/packages")) {
-        my $postimagescript = "$dir/scripts/post_clients";
-        if(-x "./$postimagescript") {
-            print "About to run $postimagescript...\n";
-            !system("./$postimagescript") or croak("$!");
-        }
-    }
-    return 1;
+foreach my $pkg (@pkgs) {
+	run_pkg_script($pkg,"post_clients",1) or croak("Couldn't run post_clients script for $pkg");
 }
 
 sub push_hosts {
@@ -53,19 +46,4 @@ sub push_hosts {
     }
     return 1;
 }
-
-sub files_in_dir {
-    my $dir = shift;
-    opendir(IN,$dir);
-    my @temp = readdir(IN);
-    closedir(IN);
-    my @files = ();
-    foreach my $file (@temp) {
-       if($file !~ /^\./) {
-           push @files, $file;
-       }
-    } 
-    return map {"$dir/$_"} @files;
-}
-
 

@@ -28,7 +28,11 @@ use AppConfig;
 
 
 get_numproc();
-run_postinstalls("../");
+
+my @pkgs = list_pkg();
+foreach my $pkg (@pkgs) {
+	run_pkg_script($pkg,"post_install",1) or croak("Couldn't run 'post_install' script for $pkg");
+}
 do_synctime();
 
 sub get_numproc {
@@ -52,32 +56,6 @@ sub get_numproc {
 	}
 
 }
-sub run_postinstalls {
-    my ($topdir) = @_;
-    foreach my $dir (files_in_dir("$topdir/packages")) {
-        my $postimagescript = "$dir/scripts/post_install";
-        if(-x $postimagescript) {
-            print "About to run $postimagescript...\n";
-            !system("$postimagescript") or croak("$!");
-        }
-    }
-    print "\nPost Installation Scripts Successfully Completed!\n";
-}
-
-sub files_in_dir {
-    my $dir = shift;
-    opendir(IN,$dir);
-    my @temp = readdir(IN);
-    closedir(IN);
-    my @files = ();
-    foreach my $file (@temp) {
-       if($file !~ /^\./) {
-           push @files, $file;
-       }
-    } 
-    return map {"$dir/$_"} @files;
-}
-
 
 # tjn 1/18/02
 sub do_synctime {

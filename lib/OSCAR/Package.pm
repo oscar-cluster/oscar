@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.4 2002/02/19 21:01:35 sdague Exp $
+#   $Id: Package.pm,v 1.5 2002/02/20 00:22:53 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ use strict;
 use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL @COREPKGS %PHASES);
 use base qw(Exporter);
 use File::Basename;
+use File::Copy;
 use Carp;
 
 @EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist);
@@ -30,7 +31,7 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -63,9 +64,9 @@ sub list_pkg {
     if($type eq "core") {
         @pkgs = @COREPKGS;
     } else {
-        opendir(PKGDIR,"$ENV{OSCAR_HOME}/packages") or (carp("Couldn't open $ENV{OSCAR_HOME}/packages for reading"), return undef);
-        while(<PKGDIR>) {
-            unless (/^(\.|CVS)/) {
+	opendir(PKGDIR,"$ENV{OSCAR_HOME}/packages") or (carp("Couldn't open $ENV{OSCAR_HOME}/packages for reading"), return undef);
+        while($_ = readdir(PKGDIR)) {
+            unless (/^(\.|CVS|Make)/) {
                 my $pkg = $_;
                 chomp($pkg);
                 unless($type eq "noncore" and _is_core($pkg)) {
@@ -94,7 +95,7 @@ sub _is_core {
 
 
 sub run_pkg_script {
-    my ($pkg, $phase) = @_;
+    my ($pkg, $phase, $verbose) = @_;
     my $scriptname = $PHASES{$phase};
     if(!$scriptname) {
         carp("No such phase '$phase' in OSCAR package API");
@@ -102,6 +103,7 @@ sub run_pkg_script {
     }
     my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . $scriptname;
     if(-e $script) {
+	print "About to run $script for $pkg\n" if($verbose); 
         my $rc = system($script);
         if($rc) {
             my $realrc = $rc >> 8;
@@ -109,7 +111,7 @@ sub run_pkg_script {
             return 0;
         }
         return 1;
-    }
+    } 
     return 1;
 }
 
@@ -133,7 +135,7 @@ sub run_in_chroot {
     my $nscript = "$dir/tmp/$base";
     copy($script, $nscript) or (carp("Couldn't copy $script to $nscript"), return undef);
     chmod 0755, $nscript;
-    !system("chroot $dir /tmp/$script") or (carp("Couldn't run /tmp/$script"), return undef);
+    !system("chroot $dir /tmp/$base") or (carp("Couldn't run /tmp/$script"), return undef);
     unlink $nscript or (carp("Couldn't remove $nscript"), return undef);
     return 1;
 }
