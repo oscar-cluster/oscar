@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.6 2002/01/19 16:37:08 jsquyres Exp $
+# $Id: Makefile.am,v 1.7 2002/01/24 04:32:03 ngorsuch Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -16,7 +16,7 @@ EXTRA_DIST		= \
 			perl-Tk-4.2-1.i386.rpm \
 			pfilter-0.91-1.noarch.rpm \
 			rsh-server-0.17-2.5.i386.rpm \
-			sync-users-oscar-1.0-2.noarch.rpm \
+			sync-users-oscar-1.0-3.noarch.rpm \
 			syslinux-1.63-1.i386.rpm \
 			tcpdump-3.4-39.i386.rpm \
 			tftp-hpa-0.21-1oscar.i386.rpm \
