@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_user,v 1.1 2002/10/31 16:14:08 jsquyres Exp $
+# $Id: test_user,v 1.2 2002/10/31 19:21:25 jsquyres Exp $
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
@@ -17,5 +17,8 @@ cd $HOME
 clients=`echo $@ | wc -w`
 
 $HOME/pbs_test $clients 1 $HOME/pvm/pbs_script.pvm "SUCCESSFUL" \
-    $HOME/pbm/pvm 3 "PVM (via PBS)"
+    $HOME/pvm/pvmtext 3 "PVM (via PBS)"
 
+# All done
+
+exit 0
