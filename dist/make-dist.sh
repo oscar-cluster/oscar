@@ -1,8 +1,9 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.5 2002/01/15 03:20:50 jsquyres Exp $
+# $Id: make-dist.sh,v 1.6 2002/01/22 16:09:45 bwbarrett Exp $
 #
-# $COPYRIGHT$
+# For copyright information, please see the COPYING file in the
+# top-level directory
 #
 
 srcdir="`pwd`"
