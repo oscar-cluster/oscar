@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.2 2002/08/28 05:48:17 bligneri Exp $
+% $Id: install.tex,v 1.3 2002/08/28 12:35:48 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -8,48 +8,21 @@
 \subsection{HDF5}
 \label{app:hdf5-overview}
 
-HDF5 is a Hierarchical Data Format product consisting of a data format 
-specification and a supporting library implementation. The HDF5 library
-is included with the OSCAR distribution.
-
-
-HDF5 includes the following features which make it a widely-used 
-scientific data format:
-   --supports a user-defined hierarchical grouping structure with 
-     varied datatypes and attributes to organize large and varied data 
-         in research, development, and production environments,
-   --runs on parallel computing platforms using MPI I/O,
-   --supports an all-encompassing variety of datatypes, including 
-         compound and user-defined datatypes,
-   --supports very large files (theoretically terabyte and larger, 
-         though the outer limits have not been tested), 
-
-
-HDF5 is fully documented.  See
-   <<<JEREMY>>>/hdf5/doc/index.html
-   for the documentation that accompanied the release of HDF5 that is
-   installed with this OSCAR distribution. 
-For documentation of the current release of HDF5, as served from the 
-   HDF Group's website, see
-   http://hdf.ncsa.uiuc.edu/HDF5/doc/
-
-
-For further information regarding HDF5, such as lists of current users,
-supporting agencies, and applications that employ the library, see
-    http://hdf.ncsa.uiuc.edu/HDF5/
-
-
-OSCAR installs the HDF5 library at /opt/hdf5-oscar-1.4.4-post2/lib/
+\input{../../packages/hdf5/doc/common}
 
 When compiling HDF5, two compiler issues must be considered:
 
-First, there is a bug in the gcc 2.96 compiler which affects HDF5. 
-To work properly, both MPICH and HDF5 must be compiled with a compiler 
-other than 2.96. The HDF5 Group suggests using gcc 2.95.3 for both.
+\begin{itemize}
+\item there is a bug in the \cmd{gcc} 2.96 compiler which affects
+  HDF5.  To work properly, both the MPI implementation and HDF5 must
+  be compiled with a compiler other than 2.96. The HDF5 Group suggests
+  using \cmd{gcc} 2.95.3 for both.
+  
+\item when compiling MPICH on a Linux system with kernels 2.4 or
+  greater, you must specify that it should support $>$2GB file sizes.
+  To do so, configure the installation of MPICH with the following
+  configuration command-line option:
 
-Second, when compiling MPICH on a Linux system with kernels 2.4 or
-greater, you must specify that it should support >2GB file sizes. To
-do so, configure the installation of MPICH with the following
-configuration command-line option:\\
-{\small \verb+-cflags="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"+ }
+  \noindent {\small \verb+-cflags="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"+ }
+\end{itemize}
 
