@@ -27,3 +27,5 @@ zlib1-devel
 
 autoupdate-cfg-mandrake
 autoupdate-oscar
+autoupdate
+perl-libnet

@@ -20,3 +20,5 @@ libcap
 
 autoupdate-cfg-redhat
 autoupdate-oscar
+autoupdate
+perl-libnet
