@@ -743,7 +743,7 @@ make_fix_table_fields( \%options,
 my $shortcuts_table_name = "oda_shortcuts";
 foreach my $shortcut ( sort keys %oda_shortcuts ) {
     my @tables_fields = ( "$shortcuts_table_name", "shortcut", "expansion" );
-    my @wheres = ( "shortcut = $shortcut" );
+    my @wheres = ( "$shortcuts_table_name.shortcut = \"$shortcut\"" );
     my @already_existing_records = ();
     my @error_strings = ();
     if ( ! oda::read_records( \%options,
@@ -762,8 +762,8 @@ foreach my $shortcut ( sort keys %oda_shortcuts ) {
 		 $$hash_ref{ expansion } eq $oda_shortcuts{ $shortcut } ) ) {
 	    print "Updating shortcut $shortcut\n";
 	    my @tables = ( "$shortcuts_table_name" );
-	    my @assigns = ( "expansion~$oda_shortcuts{$shortcut}" );
-	    my @wheres = ( "shortcut = $shortcut" );
+	    my @assigns = ( "$shortcuts_table_name.expansion~$oda_shortcuts{$shortcut}" );
+	    my @wheres = ( "$shortcuts_table_name.shortcut = \"$shortcut\"" );
 	    my @error_strings = ();
 	    if ( ! oda::modify_records( \%options,
 					\@tables,
@@ -778,13 +778,14 @@ foreach my $shortcut ( sort keys %oda_shortcuts ) {
 	}
     } else {
 	print "Creating shortcut $shortcut\n";
-	my %inserts = ();
-	$inserts{ shortcut } = "$shortcut";
-	$inserts{ expansion } = $oda_shortcuts{$shortcut};
+	my %assigns = ();
+	$assigns{ shortcut } = "$shortcut";
+	$assigns{ expansion } = $oda_shortcuts{$shortcut};
 	my @error_strings = ();
 	if ( ! oda::insert_record( \%options,
 				   $shortcuts_table_name,
-				   \%inserts,
+				   \%assigns,
+				   undef,
 				   \@error_strings ) ) {
 	    oda::disconnect( \%options,
 			     \@error_strings );
@@ -933,7 +934,7 @@ foreach my $package_name ( sort keys %single_value_folded_fields ) {
 	my @already_existing_records = ();
 	foreach my $key ( keys %$record_ref ) {
 	    push @tables_fields, $key;
-	    push @wheres, "$key = $$record_ref{$key}";
+	    push @wheres, "$table_name.$key = \"$$record_ref{$key}\"";
 	}
 	print_hash( "", "$0: tables_fields=(" . 
 		    join(',', @tables_fields ) . ") wheres=(" .
@@ -947,24 +948,23 @@ foreach my $package_name ( sort keys %single_value_folded_fields ) {
 				  \@already_existing_records,
 				  1,
 				  \@error_strings ) ) {
-	    oda::disconnect( \%options,
-			     \@error_strings );
 	    warn shift @error_strings while @error_strings;
-	    exit 1;
-	}
-	print( "$0: returned already existing (" . 
-	       join(',', @already_existing_records ) . ")\n" )
-	       if $options{debug};
-	if ( ! @already_existing_records ) {
-	    print_hash( "", "$0: inserting record in table <$table_name>",
-			$record_ref )
+	} else {
+	    print( "$0: returned already existing (" . 
+		   join(',', @already_existing_records ) . ")\n" )
 		if $options{debug};
-	    my @error_strings = ();
-	    oda::insert_record( \%options,
-				$table_name,
-				$record_ref,
-				\@error_strings );
-	    warn shift @error_strings while @error_strings;
+	    if ( ! @already_existing_records ) {
+		print_hash( "", "$0: inserting record in table <$table_name>",
+			    $record_ref )
+		    if $options{debug};
+		my @error_strings = ();
+	      oda::insert_record( \%options,
+				  $table_name,
+				  $record_ref,
+				  undef,
+				  \@error_strings );
+		warn shift @error_strings while @error_strings;
+	    }
 	}
     }
 }
@@ -1038,7 +1038,7 @@ make_fix_table_fields( \%options,
 # directory location into the "name" field
 foreach my $package_name ( sort keys %single_value_folded_fields ) {
     my @table_fields = ( $packages_table_name );
-    my @wheres = ( "name = $package_name" );
+    my @wheres = ( "packages.name = \"$package_name\"" );
     my @read_results = ();
     my @error_strings = ();
     if ( ! oda::read_records( \%options,
@@ -1047,26 +1047,22 @@ foreach my $package_name ( sort keys %single_value_folded_fields ) {
 			      \@read_results,
 			      1,
 			      \@error_strings ) ) {
-	oda::disconnect( \%options,
-			 \@error_strings );
 	warn shift @error_strings while @error_strings;
-	exit 1; 
-    }
-    if ( ! @read_results ) {
-	print "Writing database table <$packages_table_name> record for package <$package_name>\n";
-	@error_strings = ();
-	if ( ! oda::insert_record( \%options,
-				   $packages_table_name,
-				   $single_value_folded_fields{ $package_name } ) ) {
-	    oda::disconnect( \%options,
-			     \@error_strings );
-	    warn shift @error_strings while @error_strings;
-	    exit 1;
+    } else {
+	if ( ! @read_results ) {
+	    print "Writing database table <$packages_table_name> record for package <$package_name>\n";
+	    @error_strings = ();
+	    if ( ! oda::insert_record( \%options,
+				       $packages_table_name,
+				       $single_value_folded_fields{ $package_name },
+				       undef,
+				       \@error_strings ) ) {
+		warn shift @error_strings while @error_strings;
+	    }
+	} else {
+	    print "$0: very strange, there are more than 2 package records for <$package_name> in table <$packages_table_name>\n"
+		if scalar @read_results > 1;
 	}
-    }
-    else {
-	print "$0: very strange, there are more than 2 package records for <$package_name> in table <$packages_table_name>\n"
-	    if scalar @read_results > 1;
     }
 }
     
@@ -1257,8 +1253,15 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
 	foreach my $record_ref ( @$records_ref ) {
 	    my @tables_fields = ( $table_name, "$table_name.package" );
 	    my @wheres = ();
+	    # put quotes around the record values so that 
+	    # they won't be confused for field names by oda
 	    foreach my $field_name ( sort keys %$record_ref ) {
-		push @wheres, "$field_name = $$record_ref{$field_name}";
+		$$record_ref{$field_name} = "\"$$record_ref{$field_name}\"";
+	    }
+	    # build up a wheres condition list and see if this record
+	    # is already in the database
+	    foreach my $field_name ( sort keys %$record_ref ) {
+		push @wheres, "$table_name.$field_name = $$record_ref{$field_name}";
 	    }
 	    my @already_existing_records = ();
 	    my @error_strings = ();
@@ -1277,6 +1280,7 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
 		if ( ! oda::insert_record( \%options,
 					   $table_name,
 					   $record_ref,
+					   undef,
 					   \@error_strings ) ) {
 		    oda::disconnect( \%options );
 		    warn shift @error_strings while @error_strings;
@@ -1289,4 +1293,15 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
     }
 }
 
+# copy the packages table installable field values to the selected field values
+print "Copying packages table installable fields values to selected fields\n";
+my @ignored_results;
+if ( ! oda::execute_command( \%options,
+			     "packages_copy_installable_to_selected",
+			     \@ignored_results,
+			     \@error_strings ) ) {
+    warn shift @error_strings while @error_strings;
+}    
+
+oda::disconnect( \%options );
 exit 0;
