@@ -1,6 +1,6 @@
 package OSCAR::DelNode;
 
-#   $Id: DelNode.pm,v 1.6 2003/01/28 21:50:47 mchasal Exp $
+#   $Id: DelNode.pm,v 1.7 2003/12/04 20:38:15 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ use SIS::Client;
 use SIS::DB;
 @EXPORT = qw(delnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
 
 sub delnode_window {
     my ($parent, $vars) = @_;
@@ -85,32 +85,30 @@ sub delnodes {
                 push @clients,$listbox->get($index);
         }
         my $clientstring=join(",",@clients);
-        if (system("mksimachine --Delete --name $clientstring")) {
-                carp("Failed to delete machines $clientstring");
-                fill_listbox($listbox);
-                error_window($window,"Failed to delete requested clients.");
-                return 0;
-        } else {
-                my $fail=0;
-                print "Executing post_clients phase\n";
-                if (system("./post_clients")) {
-                        carp("post_clients phase failed.");
-                        $fail++;
-                }
-                print "Executing post_install phase\n";
-                if (system("./post_install")) {
-                        carp("post_install phase failed.");
-                        $fail++;
-                }
-                fill_listbox($listbox);
-                if ($fail) {
-                        error_window($window,"Clients deleted, but reconfiguration failed.");
-                        return 0;
-                } else {
-                        done_window($window,"Clients deleted.");
-                        return 1;
-                }
+        my $fail=0;
+        print "Executing post_clients phase\n";
+        if (system("./post_clients")) {
+          carp("post_clients phase failed.");
+          $fail++;
         }
+        print "Executing post_install phase\n";
+        if (system("./post_install")) {
+          carp("post_install phase failed.");
+          $fail++;
+        }
+        if (system("mksimachine --Delete --name $clientstring")) {
+          carp("Failed to delete machines $clientstring");
+          $fail++;
+	}
+        fill_listbox($listbox);
+        if ($fail) {
+          error_window($window,"Clients deleted, but reconfiguration failed.");
+          return 0;
+        } else {
+          done_window($window,"Clients deleted.");
+          return 1;
+        }
+  
 
 }
 
