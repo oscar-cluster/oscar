@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.51 2003/07/17 19:50:34 ngorsuch Exp $
+      $Id: config.xml,v 1.52 2003/07/17 22:25:00 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -593,7 +593,13 @@
                    read_records
                    images.name
                    %+
-                  
+        </shortcut>
+	<shortcut> installable_package_directories
+                   read_records
+                   packages
+                   packages.installable!=0
+                   packages.directory
+                   %+
         </shortcut>
 	<shortcut> link_node_nic_to_network
                    modify_records
