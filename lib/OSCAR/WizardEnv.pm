@@ -54,7 +54,7 @@ sub update_env
 	croak "Error: '$env_cmd' not executable.\n" if( ! -x $env_cmd );
 
 	my ($rh, $wh);  # Handle autovivification 
-	my $pid = open2($rh, $wh, "$bash_cmd", "--login") or croak "Error: $!\n";
+	my $pid = open2($rh, $wh, "$bash_cmd") or croak "Error: $!\n";
 
 	 # TODO: May need to trap SIGPIPE for child, see IPC::Open2(3pm)
 	print $wh "$env_cmd";
