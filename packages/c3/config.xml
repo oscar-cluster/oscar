@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.12 2003/11/04 02:58:19 naughtont Exp $
+      $Id: config.xml,v 1.13 2003/11/12 20:57:02 naughtont Exp $
   -->
   <name>c3</name>
 
@@ -46,10 +46,8 @@ tasks on a cluster.</description>
       <rpm>c3-profiled</rpm>
   </rpmlist>
   <rpmlist>
-      <filter group="oscar_server" distribution='mandrake' distribution_version='9.2'/>
-      <rpm>c3</rpm>
+      <filter group="oscar_server" distribution='mandrake' distribution_version='9.0'/>
       <rpm>python2-compat</rpm>
-      <rpm>c3-profiled</rpm>
   </rpmlist>
   <rpmlist>
       <filter group="oscar_clients"/>
