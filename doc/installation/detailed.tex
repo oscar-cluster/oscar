@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.58 2003/02/27 20:58:50 jsquyres Exp $
+% $Id: detailed.tex,v 1.59 2003/03/18 01:43:52 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -370,7 +370,13 @@ process.
   \vspace{11pt} {\tt
     \# cd /root/oscar-\oscarversion \\
     \indent \# ./scripts/opd } \vspace{11pt}
-
+  
+  OPD can use either the \cmd{wget} command or the built-in Perl LWP
+  for downloading files.  By default, \cmd{wget} will be used if it
+  can be found.  However, the use of LWP may be forced if the argument
+  ``{\tt --lwp}'' is given on the command line.  LWP may be used in
+  order to utilize a proxy, for example.  See the {\tt LWP::UserAgent}
+  documentation for details on how to use proxies through LWP.
 } % end detailed
 
 OPD requires some Perl modules to be installed before running.  If
