@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2002/08/06 13:13:44 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2002/08/16 22:23:49 jenos Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -11,4 +11,4 @@
 
 noinst_SCRIPTS		= pbs_script.hdf5
 
-EXTRA_DIST		= ph5example.c testphdf5 t_mpi $(noinst_SCRIPTS)
+EXTRA_DIST		= hdf5_test.sh $(noinst_SCRIPTS)
