@@ -474,7 +474,7 @@ if ( ! -f $config_file ) {
     my $xs = new XML::Simple(keyattr => {}, forcearray => 
 			     [ "site", "uri", 
 			       "rpm", "filter",
-			       "shortcut", "fieldnames",
+			       "shortcut", "fieldnames", "service",
 			       "requires", "conflicts", "provides" ]);
     $xml_ref = eval { $xs->XMLin( $config_file ); };
     if ($@) {
@@ -755,6 +755,23 @@ if ( $options{debug} ) {
     print( "$0: package_rpmlists_ref:\n" );
     print Dumper($package_rpmlists_ref);
 #    print "$0: xml_ref after pulling out rpmlists:\n";
+#    print Dumper($xml_ref);
+}
+
+my $package_servicelists_ref;
+print "$0: looking for servicelist data in xml for package <$package_name>\n"
+    if $options{debug};
+# if there is an 'servicelist' key in that, ...
+if ( exists $$xml_ref{servicelist} ) {
+    # move the servicelist data into the servicelists hash
+    $package_servicelists_ref = $$xml_ref{servicelist};
+    delete $$xml_ref{servicelist};
+}
+
+if ( $options{debug} ) {
+    print( "$0: package_servicelists_ref:\n" );
+    print Dumper($package_servicelists_ref);
+#    print "$0: xml_ref after pulling out servicelists:\n";
 #    print Dumper($xml_ref);
 }
 
@@ -2071,6 +2088,183 @@ foreach my $package_rpm_record_ref ( @package_rpm_records_refs ) {
 	if $multiple_package_versions;
     verify_or_insert_record( "packages_rpmlists",
 			     $package_rpm_record_ref );
+}
+
+# process servicelist tag
+
+my @package_service_records_refs = ();
+#$options{debug}=1;
+if ( ! defined $package_names_to_ids_hash_ref ) {
+    warn "Failed to read records from database table packages";
+    warn "Cannot store any servicelist data for package $package_name";
+} else {
+    print "$0: processing package <$package_name> in servicelists ...\n"
+	if $options{debug};
+    # find the packages table numeric identifier for this
+    # package record
+    if ( ! exists $$package_names_to_ids_hash_ref{$package_name} ) {
+	warn "Failed to read a record from database table packages for package $package_name";
+	warn "Cannot store any servicelist data for package $package_name";
+    } else {
+	my $package_id = $$package_names_to_ids_hash_ref{$package_name}->{id};
+#	if ( $options{debug} ) {
+#	     print "$0: package_servicelists_ref:\n";
+#	     print Dumper( $package_servicelists_ref );
+#	}
+	# we can have either an array of hash references here,
+	# or just one hash, either way figure out a list
+	# of the hash references to process
+	my $hash_refs_ref;
+	if ( ref($package_servicelists_ref) eq "HASH" ) {
+	    my @hash_refs = ( $package_servicelists_ref );
+	    $hash_refs_ref = \@hash_refs;
+	} else {
+	    $hash_refs_ref = $package_servicelists_ref;
+	}
+	foreach my $package_servicelist_ref ( @$hash_refs_ref ) {
+	    if ( $options{debug} ) {
+		print "$0: package_servicelist_ref:\n";
+		print Dumper( $package_servicelist_ref );
+	    }
+	    # if they have an old deprecated style all, server, or client
+	    # block, we have to treat it in a special way
+#	    foreach my $trigger_word ( "client", "server", "all" ) {
+#		my $scope = undef;
+#		if ( exists $$package_rpmlist_ref{$trigger_word} ) {
+#		    $scope = "oscar_clients" if $trigger_word eq "client";
+#		    $scope = "oscar_server" if $trigger_word eq "server";
+#		    my $deprecated_hash_ref = $$package_rpmlist_ref{$trigger_word};
+#		    my $rpms_ref;
+#		    if ( ! defined ( $rpms_ref = $$deprecated_hash_ref{rpm} ) 
+#			 || ! @$rpms_ref ) {
+#			print STDERR
+#			    "$0: Warning,\n" .
+#			    "the config.xml file for package $package_name\n" .
+#			    "has an <rpmlist> block with a <$trigger_word>\n" .
+#			    "block inside that, but with no <rpm> blocks\n" .
+#			    "inside that.\n";
+#		    } else {
+#			print STDERR
+#			    "$0: Warning,\n" .
+#			    "the config.xml file for package $package_name\n" .
+#			    "has an <rpmlist> block with a <$trigger_word>\n" .
+#			    "block inside that, which may be deprecated in\n" .
+#			    "future versions of OSCAR.  That block should\n" .
+#			    "be changed to something like this:\n" .
+#			    "     <rpmlist>\n";
+#			print STDERR
+#			    "         <filter group=\"$scope\"/>\n"
+#			    if defined $scope;
+#			foreach my $rpm ( @$rpms_ref ) {
+#			    print STDERR "         <rpm>$rpm</rpm>\n";
+#			}
+#			print STDERR "     </rpmlist>\n";
+#			foreach my $rpm ( @$rpms_ref ) {
+#			    print "$0: packages_rpmlists " .
+#				( ( defined $scope ) ? "group=<$scope> " : "" ) .
+#				"package_id=<$package_id> rpm=<$rpm>\n"
+#				if $options{debug};
+#			    my %package_rpm_record = ();
+#			    $package_rpm_record{group} = $scope
+#				if defined $scope;
+#			    $package_rpm_record{package_id} = $package_id;
+#			    $package_rpm_record{rpm} = $rpm;
+#			    push @package_rpm_records_refs, 
+#			    \%package_rpm_record;
+#			}
+#		    }
+#		}
+#	    }
+	    if ( exists $$package_servicelist_ref{service} ) {
+		my $services_ref = $$package_servicelist_ref{service};;
+		if ( ! @$services_ref ) {
+		    print STDERR
+			"$0: Warning,\n" .
+			"the config.xml file for package $package_name\n" .
+			"has an <servicelist> block with an empty <service>\n" .
+			"block inside that.\n";
+		} else {
+		    my $filter_xml_ref;
+		    if ( exists $$package_servicelist_ref{filter} ) {
+			$filter_xml_ref = $$package_servicelist_ref{filter};
+		    } else {
+			my %empty_filters = ();
+			my @empty_filters_list = ( \%empty_filters );
+			$filter_xml_ref = \@empty_filters_list;
+		    }
+		    if ( $options{debug} ) {
+			print "$0: filter_xml_ref:\n";
+			print Dumper( $filter_xml_ref );
+		    }
+		    my $filter_hashes_ref;
+		    if ( ref($filter_xml_ref) eq "HASH" ) {
+			my @single_filter_hash = ( $filter_xml_ref );
+			$filter_hashes_ref = \@single_filter_hash;
+		    } else {
+			$filter_hashes_ref = $filter_xml_ref;
+		    }
+		    foreach my $filter_hash_ref ( @$filter_hashes_ref ) {
+			my $group = undef;
+			if ( exists $$filter_hash_ref{group} ) {
+			    $group = $$filter_hash_ref{group};
+			    delete $$filter_hash_ref{group};
+			}
+			foreach my $unknown_key ( keys %$filter_hash_ref ) {
+			    print STDERR
+				"$0: Warning,\n" .
+				"the config.xml file for package $package_name\n" .
+				"has an <servicelist> block with a <service> block\n" .
+				"inside that, that includes an unknown filter\n" .
+				"element <$unknown_key>.\n";
+			}
+			foreach my $service ( @$services_ref ) {
+			    if ( $options{debug} ) {
+				print "$0: packages_servicelists ";
+				print "group=<$group> "
+				    if defined $group;
+				print "package_id=<$package_id> service=<$service>\n";
+			    }
+			    my %package_service_record = ();
+			    $package_service_record{service} = $service;
+			    $package_service_record{group} = $group
+				if defined $group;
+			    $package_service_record{package_id} = $package_id;
+			    push @package_service_records_refs, 
+			    \%package_service_record;
+			}
+		    }
+		}
+	    }
+	}
+	my @error_strings = ();
+	my @tables = ( "packages_servicelists" );
+	my @package_servicelist_records_wheres = 
+	    ( "packages_servicelists.package_id = \"$package_id\"" );
+	push @package_servicelist_records_wheres,
+	    "packages_servicelists.package_version = \"$package_version\""
+	    if $multiple_package_versions;
+	if ( $options{changes} ) {
+	    if ( ! oda::delete_records( \%oda_options,
+					\@tables,
+					\@package_servicelist_records_wheres,
+					\@error_strings ) ) {
+		oda::disconnect( \%oda_options,
+				 \@error_strings );
+		warn shift @error_strings while @error_strings;
+		exit 1;
+	    }
+	}
+    }
+}
+if ( $options{debug} ) {
+    print "$0: package_service_records_refs:\n";
+    print Dumper( \@package_service_records_refs );
+}
+foreach my $package_service_record_ref ( @package_service_records_refs ) {
+    $$package_service_record_ref{package_version} = $package_version
+	if $multiple_package_versions;
+    verify_or_insert_record( "packages_servicelists",
+			     $package_service_record_ref );
 }
 
 # now we process the package filters data that
