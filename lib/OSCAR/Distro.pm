@@ -1,6 +1,6 @@
 package OSCAR::Distro;
 
-#   $Id: Distro.pm,v 1.3 2002/02/21 19:17:03 sdague Exp $
+#   $Id: Distro.pm,v 1.4 2002/04/11 20:41:02 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -25,12 +25,20 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(which_distro);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
                    'mandrake-release' => 'Mandrake',
                    'redhat-release' => 'RedHat',
                   };
+
+############################################################
+#  
+#  which_distro($directory) - this returns the name and version of a distribution
+#                             based on the contents of an directory of rpms
+#
+############################################################
+
 
 sub which_distro {
     my $directory = shift;
@@ -43,6 +51,30 @@ sub which_distro {
             $name = $DISTROFILES->{$file};
             last;
         }
+    }
+    return ($name, $version);
+}
+
+############################################################
+#
+#  which_distro_server - this returns the distribution version and name of
+#                        the running server.
+#
+############################################################
+
+
+sub which_distro_server {
+    my $name = "UnkownLinux";
+    my $version = "0";
+    foreach my $file (keys %$DISTROFILES) {
+        my $output = `rpm -q --qf '\%{VERSION}' $file`;
+        if($?) {
+            # Then the child had a bad exit, so the package is not here
+            next;
+        }
+        $version = $output;
+        $name = $DISTROFILES->{$file};
+        last;
     }
     return ($name, $version);
 }
