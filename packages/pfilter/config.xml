@@ -12,13 +12,13 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.10 2003/12/04 03:16:36 ngorsuch Exp $
+      $Id: config.xml,v 1.11 2003/12/12 22:09:57 ngorsuch Exp $
   -->
   <name>pfilter</name>
 
   <version>
     <major>1</major>
-    <minor>699</minor>
+    <minor>703</minor>
     <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
