@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.1 2002/02/18 02:19:54 sdague Exp $
+#   $Id: Package.pm,v 1.2 2002/02/18 21:32:54 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -22,14 +22,13 @@ package OSCAR::Package;
 use strict;
 use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL @COREPKGS %PHASES);
 use base qw(Exporter);
+use File::Basename;
 use Carp;
-
-$RPM_TABLE = {};
 
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -94,7 +93,7 @@ sub _is_core {
 
 sub run_pkg_script {
     my ($pkg, $phase) = @_;
-    my $scriptname = $->{$phase};
+    my $scriptname = $PHASES->{$phase};
     if(!$scriptname) {
         carp("No such phase '$phase' in OSCAR package API");
         return undef;
@@ -109,6 +108,31 @@ sub run_pkg_script {
         }
         return 1;
     }
+    return 1;
+}
+
+sub run_pkg_script_chroot {
+    my ($pkg, $dir) = @_;
+    my $scriptname = $PHASES->{post_rpm_install};
+    if(!$scriptname) {
+        carp("No such phase '$phase' in OSCAR package API");
+        return undef;
+    }
+    my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . $scriptname;
+    if(-e $script) {
+        run_in_chroot($dir,$script) or (carp "Script $script failed", return undef);
+    }
+    return 1;
+}
+
+sub run_in_chroot {
+    my ($dir, $script) = @_;
+    my $base = basename($script);
+    my $nscript = "$dir/tmp/$base";
+    copy($script, $nscript) or (carp("Couldn't copy $script to $nscript"), return undef);
+    chmod 0755, $nscript;
+    !system("chroot $dir /tmp/$script") or (carp("Couldn't run /tmp/$script"), return undef);
+    unlink $nscript or (carp("Couldn't remove $nscript"), return undef);
     return 1;
 }
 
