@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: requirements.tex,v 1.1 2001/08/14 22:27:59 jsquyres Exp $
+% $Id: requirements.tex,v 1.2 2001/08/14 23:24:03 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -68,14 +68,15 @@ benefits for doing so include:
 
 \begin{enumerate}
 \item The ability to support multiple methods for installing the OS on
-nodes (e.g., LUI, RedHat KickStart, from the distro CD), as users may
-be more comfortable/familiar with a method not provided by OSCAR.
-
+  nodes (e.g., LUI, RedHat KickStart, from the distribution CD), as
+  users may be more comfortable/familiar with a method not provided by
+  OSCAR.
+  
 \item Easier to support site differences such as non-private clusters
-and special purpose nodes.
-
+  and special purpose nodes.
+  
 \item The ability to turn workstations with an operating system
-already installed into a cluster without reinstalling the OS.
+  already installed into a cluster without reinstalling the OS.
 \end{enumerate}
 
 Therefore, in OSCAR 2.0 it was decided that OS installation would be a
@@ -105,7 +106,7 @@ in order to be integrated into OSCAR. In addition, the mechanism must
 support a installation scheme that is general enough for all possible
 software packages, since the OS installation can no longer be used for
 software installs. The package management API was designed accordingly
-and specifies the functionalities that each package integrator must
+and specifies the functionalities that each package integrater must
 provide. These basic functionalities include installation,
 uninstallation, and configuration. The OSCAR package management API is
 discussed in more detail in
@@ -126,3 +127,7 @@ added as a requirement for version 2.0 that users will be able to add
 and remove nodes at will from their cluster, and OSCAR will be
 responsible for doing any associated software configuration updates
 using the configure functionality provided by each package.
+
+% LocalWords:  Exp RedHat LUI SystemImager SystemInstaller SystemConfigurator
+% LocalWords:  PowerPC MSC TurboLinux Debian vs KickStart CD API integrater
+% LocalWords:  uninstallation

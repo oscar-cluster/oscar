@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.1 2001/08/14 22:27:59 jsquyres Exp $
+% $Id: design.tex,v 1.2 2001/08/14 23:24:03 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -24,23 +24,36 @@ OSCAR 2.0 and later will be installed into the \file{/opt} directory,
 in accordance with the Linux Standards Base Filesystem Hierarchy (LSB
 FSH).
 
-Once installed, the directory structure for OSCAR 2.0 will look
-like the following:
+The directory structure for OSCAR 2.0 will look like the following:
 
-oscar-<version>/                  (OSCAR base directory)
-               /core-packages/    (OSCAR Core Functionality Packages)
-               /doc/              (HowTos and other documentation)
-               /oscar             (Start OSCAR Wizard)
-               /packages/         (Third Party Packages)
-               /COPYING           (GNU General Public License v2.0)       
-               /README            (Quick Overview and Pointers to Docs)
+\begin{itemize}
+\item \file{oscar[-<version>]/}: OSCAR base directory.  As described
+  in the OSCAR Developer's Guide, this directory will have no version
+  number in a developer's copy, and will have a version number in an
+  OSCAR distribution package.
+  
+  All other directories and files listed below are in this top-level
+  directory.
+
+\item \file{core-packages/}: OSCAR core functionality packages.
+
+\item \file{doc/}: HowTos and other documentation.
+
+\item \file{oscar}: Executable to start the OSCAR Wizard.
+
+\item \file{packages/}: Third party OSCAR packages.
+
+\item \file{COPYING}: GNU General Public License v2.0.
+  
+\item \file{README}: Quick overview and pointers to documentation.
+\end{itemize}
 
 As shown above, there will be a \file{packages} subdirectory within
 the base OSCAR directory that will contain all of the third party
 software packages integrated into OSCAR. Each package will be located
 in its own directory under 'packages', with the directory name being
 of the form \file{pkgname}. All of the scripts and supporting files
-for a package will reside in this directory.  Similary, there will be
+for a package will reside in this directory.  Similarly, there will be
 a \file{core-packages} subdirectory which will hold the software
 packages which are responsible for core functionality within OSCAR.
 
@@ -98,25 +111,43 @@ adapter. A single record is maintained for each network adapter.  The
 keys and their descriptions are listed in
 Table~\ref{tbl:design-odr-cats-adapter}.
 
+Notes:
+
+\begin{itemize}
+\item \odrkey{HOST} is a cross reference field to the \odrkey{HOST}
+  key in the \odrcat{client} category.
+  
+\item This category is currently only sufficient for IP-based networks
+  (e.g, the \odrkey{IP\_ADDR}, \odrkey{IP\_NETMASK}, and
+  \odrkey{IP\_CONFIG} keys).  As support is added for other types of
+  networks, new fields will be added as appropriate.
+\end{itemize}
+
+\begin{discuss}
+  I changed the name \odrkey{CONFIG} to \odrkey{IP\_CONFIG} because
+  {\tt manual} and {\tt dhcp} really only apply to IP-based networks.
+\end{discuss}
+
 \begin{table}[t]
-\begin{center}
-\begin{tabular}{|l|l|}
-\hline
-\multicolumn{1}{|c|}{Key} &
-\multicolumn{1}{c|}{Value} \\
-\hline
-\odrkey{HOST} & Hostname of the machine containing the adapter \\
-\odrkey{INTERFACE} & Interface of the adapter (e.g., {\tt eth0}) \\
-\odrkey{MAC} & Media Access Card (MAC) address \\
-\odrkey{IP\_ADDR} & IP address \\
-\odrkey{IP\_NETMASK} & IP subnet mask to be used with \odrkey{IP\_ADDR} \\
-\odrkey{CONFIG} & Method used to configure adapter ({\tt manual}, {\tt
-dhcp}) \\
-\hline
-\end{tabular}
-\caption{Keys maintained for the \odrcat{adapter} ODR cateogry.}
-\label{tbl:design-odr-cats-adapter}
-\end{center}
+  \begin{center}
+    \begin{tabular}{|l|l|}
+      \hline
+      \multicolumn{1}{|c|}{Key} &
+      \multicolumn{1}{c|}{Value} \\
+      \hline
+      \odrkey{HOST} & Hostname of the machine containing the adapter \\
+      \odrkey{INTERFACE} & Interface of the adapter (e.g., {\tt eth0}) \\
+      \odrkey{MAC} & Media Access Card (MAC) address \\
+      \odrkey{IP\_ADDR} & IP address \\
+      \odrkey{IP\_NETMASK} & IP subnet mask to be used with 
+        \odrkey{IP\_ADDR} \\
+      \odrkey{IP\_CONFIG} & Method used to configure adapter ({\tt
+        manual}, {\tt dhcp}) \\
+      \hline
+    \end{tabular}
+    \caption{Keys maintained for the \odrcat{adapter} ODR category.}
+    \label{tbl:design-odr-cats-adapter}
+  \end{center}
 \end{table}
 
 \paragraph{\odrcat{client} Category}
@@ -126,23 +157,31 @@ node.  A single record is maintained for each node.  The keys and
 their descriptions are listed in
 Table~\ref{tbl:design-odr-cats-client}.
 
+Notes:
+
+\begin{itemize}
+\item The \odrkey{HOST} key refers to the FQDN of the host to prevent
+  any ambiguities.
+  
+\item The \odrkey{STATE} key refers to an administrative selection; it
+  does not refer to whether the machine is physically enabled or
+  disabled.
+\end{itemize}
+
 \begin{table}[t]
-\begin{center}
-\begin{tabular}{|l|l|}
-\hline
-\multicolumn{1}{|c|}{Key} &
-\multicolumn{1}{c|}{Value} \\
-\hline
-\odrkey{HOST} & Hostname of the machine \\
-\odrkey{DEFAULT\_ROUTE} & IP address of this machine's gateway machine \\
-\odrkey{STATE} & Current state of the machine ({\tt enabled}, {\tt
-  disabled}) \\
-\odrkey{NUM\_PROCS} & Number of processors in the machine \\
-\hline
-\end{tabular}
-\caption{Keys maintained for the \odrcat{client} ODR cateogry.}
-\label{tbl:design-odr-cats-client}
-\end{center}
+  \begin{center}
+    \begin{tabular}{|l|l|}
+      \hline \multicolumn{1}{|c|}{Key} & \multicolumn{1}{c|}{Value} \\
+      \hline \odrkey{HOST} & Fully qualified domain name of the machine \\
+      \odrkey{DEFAULT\_ROUTE} & IP address of this machine's gateway 
+        machine \\ 
+      \odrkey{STATE} & Current state of the machine ({\tt enabled}, {\tt
+        disabled}) \\ \odrkey{NUM\_PROCS} & Number of processors in the
+      machine \\ \hline
+    \end{tabular}
+    \caption{Keys maintained for the \odrcat{client} ODR category.}
+    \label{tbl:design-odr-cats-client}
+  \end{center}
 \end{table}
 
 \paragraph{\odrcat{cluster} Category}
@@ -152,24 +191,44 @@ cluster.  A single record is maintained for each cluster.  The keys
 and their descriptions are listed in
 Table~\ref{tbl:design-odr-cats-cluster}.
 
+Notes:
+
+\begin{itemize}
+\item \odrkey{CLUSTER\_HEAD} and \odrkey{INSTALL\_NODE} are cross
+  references to the \odrkey{HOST} key in the \odrcat{client} category.
+\end{itemize}
+
+\begin{discuss}
+  Is this category missing a cross reference to the \odrcat{group}
+  category?
+\end{discuss}
+
+\begin{discuss}
+  I notice that we use the term ``head'' node in this section, but
+  this term hasn't been defined anywhere yet.  Indeed, is this term
+  meaningful?  Particularly with the advent of third party packages
+  that may install the ``server'' portion of themselves on nodes other
+  than the ``head'' node?  (e.g., high-availability stuff, etc.)
+\end{discuss}
+
 \begin{table}[t]
-\begin{center}
-\begin{tabular}{|l|l|}
-\hline
-\multicolumn{1}{|c|}{Key} &
-\multicolumn{1}{c|}{Value} \\
-\hline
-\odrkey{NAME} & Cluster name \\
-\odrkey{OSCAR\_VERSION} & Version of OSCAR used to install the cluster \\
-\odrkey{CLUSTER\_HEAD} & Hostname of the head node of the cluster \\
-\odrkey{INSTALL\_NODE} & Hostname of the node used to install clients \\
-\odrkey{NETWORK\_TYPE} & Type of network cluster nodes reside on
-  ({\tt private}, {\tt public}) \\
-\hline
-\end{tabular}
-\caption{Keys maintained for the \odrcat{cluster} ODR cateogry.}
-\label{tbl:design-odr-cats-cluster}
-\end{center}
+  \begin{center}
+    \begin{tabular}{|l|l|}
+      \hline
+      \multicolumn{1}{|c|}{Key} &
+      \multicolumn{1}{c|}{Value} \\
+      \hline
+      \odrkey{NAME} & Cluster name \\
+      \odrkey{OSCAR\_VERSION} & Version of OSCAR used to install the cluster \\
+      \odrkey{CLUSTER\_HEAD} & Hostname of the head node of the cluster \\
+      \odrkey{INSTALL\_NODE} & Hostname of the node used to install clients \\
+      \odrkey{NETWORK\_TYPE} & Type of network cluster nodes reside on
+      ({\tt private}, {\tt public}) \\
+      \hline
+    \end{tabular}
+    \caption{Keys maintained for the \odrcat{cluster} ODR category.}
+    \label{tbl:design-odr-cats-cluster}
+  \end{center}
 \end{table}
 
 \paragraph{\odrcat{group} Category}
@@ -179,21 +238,31 @@ nodes.  A single record is maintained for each group.  The keys and
 their descriptions are listed in
 Table~\ref{tbl:design-odr-cats-group}.
 
-\begin{table}[t]
-\begin{center}
-\begin{tabular}{|l|l|}
-\hline
-\multicolumn{1}{|c|}{Key} &
-\multicolumn{1}{c|}{Value} \\
-\hline
-\odrkey{NAME} & Group name \\
-\odrkey{PACKAGELIST} & Name of software package list \\
-\odrkey{HOSTLIST} & Name of host list \\
-\hline
-\end{tabular}
-\caption{Keys maintained for the \odrcat{group} ODR cateogry.}
-\label{tbl:design-odr-cats-group}
-\end{center}
+Notes:
+
+\begin{itemize}
+\item \odrkey{PACKAGELIST} is a cross reference to the \odrkey{NAME}
+  key in the \odrcat{packagelist} category.
+  
+\item \odrkey{HOSTLIST} is a cross reference to the \odrkey{NAME} key
+  in the \odrcat{hostlist} category.
+\end{itemize}
+
+\begin{table}[t!]
+  \begin{center}
+    \begin{tabular}{|l|l|}
+      \hline
+      \multicolumn{1}{|c|}{Key} &
+      \multicolumn{1}{c|}{Value} \\
+      \hline
+      \odrkey{NAME} & Group name \\
+      \odrkey{PACKAGELIST} & Name of software package list \\
+      \odrkey{HOSTLIST} & Name of host list \\
+      \hline
+    \end{tabular}
+    \caption{Keys maintained for the \odrcat{group} ODR category.}
+    \label{tbl:design-odr-cats-group}
+  \end{center}
 \end{table}
 
 \paragraph{\odrcat{packagelist} Category}
@@ -202,22 +271,35 @@ Each item in the \odrcat{packagelist} category represents a list of
 software packages.  The keys and their descriptions are listed in
 Table~\ref{tbl:design-odr-cats-packagelist}.
 
-\begin{table}[t]
-\begin{center}
-\begin{tabular}{|l|l|}
-\hline
-\multicolumn{1}{|c|}{Key} &
-\multicolumn{1}{c|}{Value} \\
-\hline
-\odrkey{NAME} & Package list name \\
-\odrkey{PACKAGE} & Name of software package \\
-\odrkey{SERVER} & Hostname of the server for the package service
- (if not the cluster headnode) \\
-\hline
-\end{tabular}
-\caption{Keys maintained for the \odrcat{packagelist} ODR cateogry.}
-\label{tbl:design-odr-cats-packagelist}
-\end{center}
+Notes:
+
+\begin{itemize}
+\item \odrkey{SERVER} is a cross reference to the \odrkey{HOST} key in
+  the \odrcat{client} category.
+\end{itemize}
+
+\begin{discuss}
+  What is the form of \odrkey{PACKAGE}?  An RPM-style name string
+  (name-version-release)?  A GNU-style directory name string
+  (name-version)?
+\end{discuss}
+
+\begin{table}[t!]
+  \begin{center}
+    \begin{tabular}{|l|l|}
+      \hline
+      \multicolumn{1}{|c|}{Key} &
+      \multicolumn{1}{c|}{Value} \\
+      \hline
+      \odrkey{NAME} & Package list name \\
+      \odrkey{PACKAGE} & Name of software package \\
+      \odrkey{SERVER} & Hostname of the server for the package service
+      (if not the cluster headnode) \\
+      \hline
+    \end{tabular}
+    \caption{Keys maintained for the \odrcat{packagelist} ODR category.}
+    \label{tbl:design-odr-cats-packagelist}
+  \end{center}
 \end{table}
 
 \paragraph{\odrcat{hostlist} Category}
@@ -226,20 +308,27 @@ Each item in the \odrcat{hostlist} category represents a list of
 cluster clients.  The keys and their descriptions are listed in
 Table~\ref{tbl:design-odr-cats-hostlist}.
 
-\begin{table}[t]
-\begin{center}
-\begin{tabular}{|l|l|}
-\hline
-\multicolumn{1}{|c|}{Key} &
-\multicolumn{1}{c|}{Value} \\
-\hline
-\odrkey{NAME} & Host list name \\
-\odrkey{HOST} & Client hostname \\
-\hline
-\end{tabular}
-\caption{Keys maintained for the \odrcat{hostlist} ODR cateogry.}
-\label{tbl:design-odr-cats-hostlist}
-\end{center}
+Notes:
+
+\begin{itemize}
+\item \odrkey{HOST} is a cross reference to the \odrkey{HOST} key in
+  the \odrcat{client} category.
+\end{itemize}
+
+\begin{table}[t!]
+  \begin{center}
+    \begin{tabular}{|l|l|}
+      \hline
+      \multicolumn{1}{|c|}{Key} &
+      \multicolumn{1}{c|}{Value} \\
+      \hline
+      \odrkey{NAME} & Host list name \\
+      \odrkey{HOST} & Client hostname \\
+      \hline
+    \end{tabular}
+    \caption{Keys maintained for the \odrcat{hostlist} ODR category.}
+    \label{tbl:design-odr-cats-hostlist}
+  \end{center}
 \end{table}
 
 \subsection{OSCAR Wizard}
@@ -381,17 +470,22 @@ single interface. That interface is as follows:
 
 \cmd{pkgconfig \{-c|-s\} <function> [--atboot]}
 
+\begin{discuss}
+  Using a different name than \cmd{pkgconfig} might be good here; it's
+  a bit too similar to the Solaris \cmd{pkg} suite of commands.
+\end{discuss}
+
 \begin{itemize}
 \item \cmd{<function>} is one of: {\tt install}, {\tt uninstall}, {\tt
-configure}
+    configure}
 
 \item \cmd{-c}: specifies the script will be run on a package client
-
+  
 \item \cmd{-s}: specifies the script will be run on the package server
-
+  
 \item \cmd{--atboot}: indicates the script is being run from the boot
-time initialization script, and is valid only with the configure
-function
+  time initialization script, and is valid only with the configure
+  function
 \end{itemize}
 
 The basic idea is that each integrator will create a pkgconfig script
@@ -417,3 +511,10 @@ in its directory:
 \item \cmd{<pkgname>/uninstall.files}
 \item \cmd{<pkgname>/configure.files}
 \end{itemize}
+
+% LocalWords:  Exp Filesystem LSB FSH oscar doc HowTos Docs pkgname ODR CLAMDR
+% LocalWords:  readDR pl writeDR IP DDR ETMASK ONFIG CONFIG dhcp Hostname eth
+% LocalWords:  FQDN OUTE NUM ROCS EAD ERSION YPE PACKAGELIST packagelist Webmin
+% LocalWords:  HOSTLIST hostlist headnode hostname backend CGI Perl LUI API un
+% LocalWords:  SystemImager backends uninstall Uninstallation init
+% LocalWords:  uninstallation tarball pkgconfig atboot Solaris pkg
