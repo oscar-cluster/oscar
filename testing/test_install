@@ -16,8 +16,6 @@ function waitexit
 	exit $1
 }
 
-test_tarball="OSCAR_test.tgz"
-
 # check PBS configuration
 echo "Checking to make sure PBS is running & configured..."
 
@@ -129,7 +127,7 @@ if [ $? -eq 1 ]; then
 fi
 echo
 echo -n "Installing software into /home/$user..."
-/bin/tar -C /home/$user -zxf $test_tarball
+/bin/cp -a OSCAR_test /home/$user/
 /bin/chown -R $user /home/$user/OSCAR_test
 grp=`/usr/bin/id -g $user`
 /bin/chgrp -R $grp /home/$user/OSCAR_test
