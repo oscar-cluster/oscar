@@ -1,6 +1,6 @@
 #! /bin/sh 
 #
-# $Id: autogen.sh,v 1.1 2001/12/19 02:36:54 jsquyres Exp $
+# $Id: autogen.sh,v 1.2 2002/06/15 00:38:49 jsquyres Exp $
 #
 # This script is run on developer copies of OSCAR -- *not*
 # distribution tarballs.
@@ -72,14 +72,14 @@ test_for_existence libtool
 # Run them all
 #
 
-rm -f config/config.guess
-rm -f config/config.sub
-rm -f config/depcomp
-rm -f config/install-sh
-rm -f config/ltconfig
-rm -f config/ltmain.sh
-rm -f config/missing
-rm -f config/mkinstalldirs
+rm -f dist/config.guess
+rm -f dist/config.sub
+rm -f dist/depcomp
+rm -f dist/install-sh
+rm -f dist/ltconfig
+rm -f dist/ltmain.sh
+rm -f dist/missing
+rm -f dist/mkinstalldirs
 
 run_and_check aclocal
 # OSCAR doesn't (yet) need autoheader
