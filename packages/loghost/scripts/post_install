@@ -1,5 +1,5 @@
 #!/bin/bash
-file=/etc/syslog.conf
+syslog_file=/etc/syslog.conf
 loghost=pbs_oscar
 . /etc/profile
 grep $loghost /etc/hosts 2>&1 >/dev/null
@@ -11,9 +11,10 @@ fi
 loghost_ip=`grep $loghost /etc/hosts |head -1 |awk '{print $1}'`
 
 cexec " \
-  if [ \"\`grep -c oscar_loghost $file\`\" = \"0\" ] ; then echo >> $file ;\
+  if [ \"\`grep -c oscar_loghost $syslog_file\`\" = \"0\" ] ; then 
+    echo >> $syslog_file ;\
     echo \"*.* @`grep pbs_oscar /etc/hosts |head -1 |awk '{print $1}'` \
-    # oscar_loghost\" >> $file; \
+    # oscar_loghost\" >> $syslog_file; \
     echo \"Setting loghost to $loghost_ip\"; \
     /sbin/service syslog restart; \
   fi"
