@@ -102,7 +102,7 @@ sub sync_system_files {
 sub sync_user_files {
     my ($imagedir) = @_;
 
-    my @files = qw(/etc/gshadow /etc/shadow /etc/passwd /etc/group);
+    my @files = qw(/etc/gshadow /etc/shadow /etc/passwd /etc/group /etc/hosts);
     foreach my $file (@files) {
       if(-e $file) {
         copy($file,$imagedir . $file) or (carp("Couldn't populate $file to $imagedir"),
