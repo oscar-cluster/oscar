@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.13 2003/12/04 05:15:42 ngorsuch Exp $
+      $Id: config.xml,v 1.14 2003/12/04 18:53:52 brechin Exp $
   -->
   <name>base</name>
 
@@ -19,7 +19,7 @@
     <major>1</major>
     <minor>0</minor>
     <subversion>0</subversion>
-    <release>2</release>
+    <release>3</release>
   </version>
 
   <class>core</class>
@@ -32,27 +32,6 @@
   </packager>
 
   <description>Base RPM list for each distribution that we support</description>
-
-  <rpmlist>
-    <filter distribution='fedora' distribution_version='1' group='oscar_server' />
-        <rpm>dhcp</rpm>
-        <rpm>gd</rpm>
-        <rpm>nfs-utils</rpm>
-        <rpm>openssh</rpm>
-        <rpm>openssh-clients</rpm>
-        <rpm>openssh-server</rpm>
-        <rpm>openssl</rpm>
-        <rpm>tcpdump</rpm>
-        <rpm>xinetd</rpm>
-        <rpm>httpd</rpm>
-        <rpm>php</rpm>
-        <rpm>expat</rpm>
-        <rpm>python</rpm>
-        <rpm>zlib</rpm>
-        <rpm>zlib-devel</rpm>
-        <rpm>shadow-utils</rpm>
-        <rpm>libcap</rpm>
-  </rpmlist>
 
   <rpmlist>
     <filter distribution='mandrake' distribution_version='9.2' group='oscar_server' />
