@@ -37,7 +37,7 @@ my ($distro_name, $distro_version) = which_distro_server();
 
 my $mysqld;
 
-if ( $distro_name eq "redhat" || $distro_name eq "rhas" ) {
+if ( $distro_name eq "redhat" ) {
     @wanted_rpms = qw( mysql
 		       perl-DBD-MySQL
 		       perl-DBI

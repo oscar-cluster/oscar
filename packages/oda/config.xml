@@ -53,7 +53,6 @@
   <rpmlist>
     <filter group="oscar_server" distribution="fedora" distribution_version="1" />
     <filter group="oscar_server" distribution="redhat" distribution_version="7.3" />
-    <filter group="oscar_server" distribution="rhas" distribution_version="2.1AS" />
     <rpm>mysql-server</rpm>
   </rpmlist>
 
@@ -68,7 +67,7 @@
     <filter distribution="redhat" distribution_version="7.3" />
     <filter distribution="redhat" distribution_version="8.0" />
     <filter distribution="redhat" distribution_version="9"   />
-    <filter distribution="rhas" distribution_version="2.1AS" />
+    <filter distribution="redhat" distribution_version="3as" />
     <rpm>perl-CGI</rpm>
     <rpm>mysql</rpm>
     <rpm>perl-DBD-MySQL</rpm>

@@ -22,11 +22,7 @@ if( ($distro eq "fedora") && ($ver eq "1") ) {
 	remove_rpms(@rpms);
 
 }
-elsif( (($distro eq "redhat") && ($ver eq "7.3")) ||
-    (($distro eq "redhat") && ($ver eq "8.0")) ||
-    (($distro eq "redhat") && ($ver eq "9"))   ||
-    (($distro eq "rhas")   && ($ver eq "2.1AS"))
-  ) {
+elsif( $distro eq "redhat" ) {
 	my @rpms = qw(perl-CGI
 			mysql
 			perl-DBD-MySQL

@@ -39,7 +39,6 @@ my $DISTROFILES = {
 		   'fedora-release'   => 'fedora',
                    'mandrake-release' => 'mandrake',
                    'redhat-release'   => 'redhat',
-		   'redhat-release-as'=> 'rhas',
 		   'aaa_version'      => 'suse',
 		   'aaa_base'	      => 'suse',
                    'debian_version'   => 'debian',
@@ -123,12 +122,6 @@ sub which_mysql_name {
 CASE: {
 	      # redhat
 	      ($name eq "redhat") && do{
-		      return "mysqld";
-		      last CASE;
-	      };
-
-	      # rhas
-	      ($name eq "rhas") && do{
 		      return "mysqld";
 		      last CASE;
 	      };

@@ -88,15 +88,13 @@ elsif( ($distro eq "mandrake") && ($ver eq "9.2") ) {
 if( (($distro eq "redhat")   && ($ver eq "7.3"))   || 
     (($distro eq "redhat")   && ($ver eq "7.2"))   ||
     (($distro eq "mandrake") && ($ver eq "8.2"))   ||
-    (($distro eq "rhas")     && ($ver eq "2.1AS")) ||
   ) {
 	remove_rpms( "perl-Qt-5.6" );
 }
 # For distros with 5.8
 elsif( (($distro eq "fedora") && ($ver eq "1"))   ||
-       (($distro eq "redhat") && ($ver eq "8.0")) || 
-       (($distro eq "redhat") && ($ver eq "9"))   || 
-       ($distro eq "suse") 
+        ($distro eq "redhat")                     || 
+        ($distro eq "suse") 
      ) {
 	remove_rpms( "perl-Qt" );
 }

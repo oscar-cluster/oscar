@@ -44,11 +44,6 @@ if ($name eq "redhat") {
 	} else {
 		$source_dir .= "72";
 	}
-} elsif ($name eq "rhas") {
-	$source_dir  .= "rhas";
-	if ($ver eq "2.1") {
-		$source_dir .= "21";
-	}
 } elsif ($name eq "fedora") {
 	$source_dir .= $name;
 } 

@@ -36,7 +36,6 @@
   <description>Configure an apache web server to export /tftpboot/rpm.</description>
 
   <rpmlist>
-    <filter group="oscar_server" distribution="rhas"/> 
     <filter group="oscar_server" distribution="redhat"/> 
     <filter group="oscar_server" distribution="fedora"/> 
       <rpm>httpd</rpm>

@@ -115,7 +115,6 @@ sub which_distro_server {
            'redhat-release'   => 'redhat',
 		   'aaa_version'      => 'suse',
 		   'aaa_base'	      => 'suse',
-		   'redhat-release-as'=> 'rhas',
                   };
     my $name = "UnkownLinux";
     my $version = "0";

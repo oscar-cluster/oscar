@@ -203,7 +203,6 @@
 
   <rpmlist>
     <filter distribution='redhat' distribution_version='7.3' group='oscar_server' />
-    <filter distribution='rhas' distribution_version='2.1AS' group='oscar_server' />
     <filter distribution='whitebox' distribution_version='3.0' group='oscar_server' />
         <rpm>dhcp</rpm>
         <rpm>gd</rpm>
