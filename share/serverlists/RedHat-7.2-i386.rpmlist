@@ -13,3 +13,6 @@ gd
 mm
 expat
 python2
+zlib
+zlib-devel
+

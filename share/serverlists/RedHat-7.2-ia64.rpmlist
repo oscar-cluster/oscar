@@ -11,3 +11,6 @@ apache
 php
 expat
 python2
+zlib
+zlib-devel
+

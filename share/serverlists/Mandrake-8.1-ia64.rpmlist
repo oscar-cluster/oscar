@@ -10,3 +10,6 @@ python2-compat
 tcpdump
 x86-compat-libs
 xinetd
+zlib1
+zlib1-devel
+

@@ -20,3 +20,6 @@ python2-compat
 rrdtool
 tcpdump
 xinetd
+zlib1
+zlib1-devel
+
