@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.6 2002/06/12 06:37:58 jsquyres Exp $
+# $Id: Makefile.am,v 1.7 2002/06/12 07:14:20 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -23,6 +23,7 @@ OTHER_SRC_FILES	= \
 		sis.tex \
 		outline.tex \
 		detailed.tex \
+		notes.tex \
 		netboot.tex \
 		client-install.tex \
 		troubleshooting.tex \
@@ -91,7 +92,7 @@ EPS_FIG_FILES	= $(FIG_FILES:.png=.eps) $(SBS_FILES:.png=.eps)
 # Tell automake to include all the relevant files
 
 EXTRA_DIST	= $(MAIN_TEX) $(OTHER_SRC_FILES) $(FIG_FILES) $(SBS_FILES)
-CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~
+CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~ notes.tex
 
 # Some common target names
 
@@ -167,3 +168,9 @@ mostlyclean-generic:
 	-rm -f *~ *.bak *% \
 		  *.log *.aux *.dvi *.blg *.toc *.bbl *.lof *.lot *.out \
 		  $(EPS_FIG_FILES)
+
+# Meta-.tex file to include the doc/user.tex files from the various
+# package directories
+
+notes.tex: notes.tex.in ../../packages/*/doc/install.tex
+	./build-notes

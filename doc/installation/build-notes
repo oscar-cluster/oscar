@@ -1,0 +1,10 @@
+#!/bin/csh
+
+# Look in ../packages/* for doc/install.tex files.  When we find those
+# files, add them to install-notes.tex.
+
+cp -f notes.tex.in notes.tex
+
+foreach file (../../packages/*/doc/install.tex)
+    echo "\input{$file}" >> notes.tex
+end
