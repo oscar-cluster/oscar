@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.27 2003/01/23 22:31:20 brechin Exp $
+#   $Id: MAC.pm,v 1.28 2003/01/23 22:46:00 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.27 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.28 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -215,7 +215,9 @@ sub populate_MACS {
     %MAC = ();
     foreach my $client (@clients) {
         my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-        add_mac_to_hash($adapter->mac, $client->name);
+	if ($adapter->mac) {
+        	add_mac_to_hash($adapter->mac, $client->name);
+	}
     }
 }
 
