@@ -43,7 +43,7 @@ my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
 
 my ($name, $ver) = OSCAR::Distro::which_distro_server();
 if ($name eq "mandrake") {
-  $source_dir .= "mdk90";
+  $source_dir .= "mdk10";
 }  elsif ($name eq "fedora") {
   $source_dir .= $name;
 } else {
