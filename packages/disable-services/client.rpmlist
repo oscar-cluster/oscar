@@ -1,2 +1,2 @@
-disable-sendmail
+disable-incoming-mail
 disable-kudzu
