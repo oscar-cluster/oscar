@@ -11,4 +11,4 @@
 
 include $(top_srcdir)/dist/Makefile.options
 
-SUBDIRS			= prereqs serverlists
+SUBDIRS			= prereqs
