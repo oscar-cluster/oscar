@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.1 2002/10/15 08:10:38 jsquyres Exp $
+# $Id: opd,v 1.2 2002/10/22 15:15:13 jsquyres Exp $
 #
 
 use strict;
@@ -575,9 +575,12 @@ sub print_package {
     print_pkg_attr($p, $w, "License", "license", "", "");
     print_pkg_attr($p, $w, "Group", "group", "", "");
     print_pkg_attr($p, $w, "Project URL", "url", "", "");
+    $temp = "Maintainer:";
+    print_filled($temp, $w);
+    print(build_name_email_string("maintainer", $p) . "\n");
     $temp = "Packager:";
     print_filled($temp, $w);
-    print(build_packager_string($p) . "\n");
+    print(build_name_email_string("packager", $p) . "\n");
 
     print_pkg_array_attr($p, $w, \&build_provides_string, 
 			 "Provides", "provides", "", "");
@@ -750,12 +753,12 @@ sub build_size_string {
 }
 
 #
-# Build the packager string
+# Build the name/e-mail string
 #
 
-sub build_packager_string {
-    my ($pkg) = @_;
-    my $p = $pkg->{packager};
+sub build_name_email_string {
+    my ($field, $pkg) = @_;
+    my $p = $pkg->{$field};
     my $out;
     my $temp;
 
@@ -1079,7 +1082,6 @@ R can be a single integer value or a range
 
 set_pkgdir();
 mkdir_p($datadir);
-#make_datadir();
 read_repository_listing();
 update_repository_listing();
 select_default_repository();
