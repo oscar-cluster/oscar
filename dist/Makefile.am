@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.4 2003/07/04 14:18:25 jsquyres Exp $
+# $Id: Makefile.am,v 1.5 2003/07/29 18:30:04 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -22,4 +22,4 @@ EXTRA_DIST		= beta-notice.txt copyright-notice.txt VERSION \
 not_used_yet		= \
 			download-files.sh \
 			remove-urls.sh \
-			update.sh \
+			update.sh
