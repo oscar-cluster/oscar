@@ -1,6 +1,6 @@
 package DepMan::UpdateRPMs;
 
-#   $Id: UpdateRPMs.pm,v 1.1 2003/12/09 05:39:56 tuelusr Exp $
+#   $Id: UpdateRPMs.pm,v 1.2 2004/01/28 01:19:59 tuelusr Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ our $VERSION;
 $VERSION = '0.01';
 # initial release
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 # Must use this form due to compile-time checks by DepMan.
 use base qw(DepMan);
@@ -39,7 +39,7 @@ use base qw(DepMan);
 # boilerplate constructor because DepMan's is "abstract"
 sub new {
   ref (my $class = shift) and croak ("constructor called on instance");
-  my $new  = { ChRoot => shift };
+  my $new  = { ChRoot => shift, Cache => shift };
   bless ($new, $class);
   return ($new);
 }
@@ -57,10 +57,6 @@ sub usable {
   ref (shift) and croak ("usable is a class method");
   my $chroot = shift;
 
-  if (! -d '/var/cache/update-rpms') {
-    return (0);
-  }
-
   my ($distro, undef) = which_distro_server ($chroot);
   return (($distro eq "redhat") or
 	  ($distro eq "rhas") or
@@ -70,17 +66,22 @@ sub usable {
 
 # How update-rpms(8) queries uninstalled package file dependencies (not aggregatable)
 sub query_required_by_command_line {
-  0, 'update-rpms --check --quiet #args'
+  0, 'update-rpms --check --quiet #cache #args';
 }
 
 # How update-rpms(8) queries installed package dependencies (not aggregatable)
 sub query_requires_command_line {
-  0, 'update-rpms --check --remove --quiet #args'
+  0, 'update-rpms --check --remove --quiet #cache #args'
 }
 
 # How update-rpms(8) changes root
 sub chroot_arg_command_line {
   '--root=#chroot'
+}
+
+# How update-rpms(8) specifies the location of its database cache
+sub cache_arg_command_line {
+  '--cachedir=#cache'
 }
 
 1;
