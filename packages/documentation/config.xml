@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<oscar>
+  <!--
+      Copyright (c) 2002 The Trustees of Indiana University.  
+                         All rights reserved.
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id: config.xml,v 1.1 2002/11/09 08:18:53 sad Exp $ 
+  -->
+  <name>oscar-documentation</name>
+
+  <version>
+    <major>2</major>
+    <minor>0</minor>
+    <subversion>b1</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>third-party</class>
+  <installable>1</installable>
+
+  <summary>OSCAR tool suite documentation (html) package</summary>
+  <license>freely distributable</license>
+  <group>Documentation</group>
+  <url>http://oscar.sf.net/</url>
+
+  <packager>
+    <name>Steven A. DuChene and Benoit des Ligneris</name>
+    <email>linux-clusters@mindspring.com</email>
+    <email>ben@cyrus.physique.usherb.ca</email>
+  </packager>
+
+  <description>The html versions of the OSCAR cluster tool suite documentation.</description>
+
+  <rpmlist>
+    <all>
+    </all>
+    <server>
+      <rpm>oscar-install-docs-html</rpm>
+      <rpm>oscar-user-docs-html</rpm>
+    </server>
+    <client>
+    </client>
+  </rpmlist>
+</oscar>
