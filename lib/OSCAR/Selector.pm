@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.24 2003/04/10 20:01:15 tfleury Exp $
+# $Id: Selector.pm,v 1.25 2003/04/10 23:23:07 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -53,7 +53,7 @@ no warnings qw(closure);
 our $destroyed = 0;
 my($top);            # The Toplevel widget for the package selector window
 my($step_number);    # Step number in the OSCAR wizard
-my $useoda = 0;      # Read from/write to oda database for .selection.config
+my $useoda = 1;      # Read from/write to oda database for .selection.config
 ##############################################################
 #  MOVE THE STUFF ABOVE TO THE TOP OF THE PERL SOURCE FILE!  #
 ##############################################################
@@ -70,156 +70,157 @@ require Tk::Menu;
 # For use with Tk402.002, using the grid geometry manager
 
 sub Selector_ui {
-        $destroyed = 1;
-	our $root = shift;
-        my $parent = shift;
-	# widget creation 
-	
-	our($selectFrame) = $root->Frame (
-	);
-	my($frame_4) = $root->Frame (
-		-borderwidth => '2',
-		-relief => 'groove',
-	);
-	our($configSelectFrame) = $root->Frame (
-	);
-	my($label_1) = $root->Label (
-		-font => '-*-Helvetica-Bold-R-Normal-*-*-140-*-*-*-*-*-*',
-		-text => 'OSCAR Package Selection',
-	);
-	my($label_2) = $root->Label (
-		-justify => 'left',
-		-text => 'Configuration Name:',
-	);
-	my($newButton) = $root->Button (
-		-font => '-*-Helvetica-Medium-R-Normal-*-*-100-*-*-*-*-*-*',
-		-text => 'New',
-	);
-	my($renameButton) = $root->Button (
-		-font => '-*-Helvetica-Medium-R-Normal-*-*-100-*-*-*-*-*-*',
-		-text => 'Rename',
-	);
-	our($deleteButton) = $root->Button (
-		-font => '-*-Helvetica-Medium-R-Normal-*-*-100-*-*-*-*-*-*',
-		-state => 'disabled',
-		-text => 'Delete',
-	);
-	my($cancelButton) = $root->Button (
-		-default => 'active',
-		-text => 'Cancel',
-	);
-	my($saveButton) = $root->Button (
-		-text => 'Save',
-	);
+  our $root = shift;
+  my $parent = shift;
 
-	# widget commands
+  $destroyed = 1;
+  
+  # widget creation 
+  our($selectFrame) = $root->Frame (
+  );
+  my($frame_4) = $root->Frame (
+    -borderwidth => '2',
+    -relief => 'groove',
+  );
+  our($configSelectFrame) = $root->Frame (
+  );
+  my($label_1) = $root->Label (
+    -font => '-*-Helvetica-Bold-R-Normal-*-*-140-*-*-*-*-*-*',
+    -text => 'OSCAR Package Selection',
+  );
+  my($label_2) = $root->Label (
+    -justify => 'left',
+    -text => 'Configuration Name:',
+  );
+  my($newButton) = $root->Button (
+    -font => '-*-Helvetica-Medium-R-Normal-*-*-100-*-*-*-*-*-*',
+    -text => 'New',
+  );
+  my($renameButton) = $root->Button (
+    -font => '-*-Helvetica-Medium-R-Normal-*-*-100-*-*-*-*-*-*',
+    -text => 'Rename',
+  );
+  our($deleteButton) = $root->Button (
+    -font => '-*-Helvetica-Medium-R-Normal-*-*-100-*-*-*-*-*-*',
+    -state => 'disabled',
+    -text => 'Delete',
+  );
+  my($cancelButton) = $root->Button (
+    -default => 'active',
+    -text => 'Cancel',
+  );
+  my($saveButton) = $root->Button (
+    -text => 'Save',
+  );
 
-	$newButton->configure(
-		-command => \&OSCAR::Selector::newConfig
-	);
-	$renameButton->configure(
-		-command => \&OSCAR::Selector::renameConfig
-	);
-	$deleteButton->configure(
-		-command => \&OSCAR::Selector::deleteConfig
-	);
-	$cancelButton->configure(
-		-command => \&OSCAR::Selector::exitWithoutSaving
-	);
-	$saveButton->configure(
-		-command => \&OSCAR::Selector::saveAndExit
-	);
+  # widget commands
 
-	# Geometry management
+  $newButton->configure(
+    -command => \&OSCAR::Selector::newConfig
+  );
+  $renameButton->configure(
+    -command => \&OSCAR::Selector::renameConfig
+  );
+  $deleteButton->configure(
+    -command => \&OSCAR::Selector::deleteConfig
+  );
+  $cancelButton->configure(
+    -command => \&OSCAR::Selector::exitWithoutSaving
+  );
+  $saveButton->configure(
+    -command => \&OSCAR::Selector::saveAndExit
+  );
 
-	$selectFrame->grid(
-		-in => $root,
-		-column => '1',
-		-row => '3',
-		-columnspan => '2',
-		-sticky => 'nesw'
-	);
-	$frame_4->grid(
-		-in => $root,
-		-column => '1',
-		-row => '2',
-		-columnspan => '2',
-		-sticky => 'nesw'
-	);
-	$configSelectFrame->grid(
-		-in => $frame_4,
-		-column => '1',
-		-row => '2',
-		-sticky => 'nesw'
-	);
-	$label_1->grid(
-		-in => $root,
-		-column => '1',
-		-row => '1',
-		-columnspan => '2',
-		-sticky => 'ew'
-	);
-	$label_2->grid(
-		-in => $frame_4,
-		-column => '1',
-		-row => '1',
-		-sticky => 'ew'
-	);
-	$newButton->grid(
-		-in => $frame_4,
-		-column => '2',
-		-row => '1',
-		-sticky => 'ew'
-	);
-	$renameButton->grid(
-		-in => $frame_4,
-		-column => '3',
-		-row => '1',
-		-sticky => 'ew'
-	);
-	$deleteButton->grid(
-		-in => $frame_4,
-		-column => '2',
-		-row => '2',
-		-columnspan => '2',
-		-sticky => 'ew'
-	);
-	$cancelButton->grid(
-		-in => $root,
-		-column => '1',
-		-row => '4',
-		-sticky => 'ew'
-	);
-	$saveButton->grid(
-		-in => $root,
-		-column => '2',
-		-row => '4',
-		-columnspan => '2',
-		-sticky => 'ew'
-	);
+  # Geometry management
 
-	# Resize behavior management
+  $selectFrame->grid(
+    -in => $root,
+    -column => '1',
+    -row => '3',
+    -columnspan => '2',
+    -sticky => 'nesw'
+  );
+  $frame_4->grid(
+    -in => $root,
+    -column => '1',
+    -row => '2',
+    -columnspan => '2',
+    -sticky => 'nesw'
+  );
+  $configSelectFrame->grid(
+    -in => $frame_4,
+    -column => '1',
+    -row => '2',
+    -sticky => 'nesw'
+  );
+  $label_1->grid(
+    -in => $root,
+    -column => '1',
+    -row => '1',
+    -columnspan => '2',
+    -sticky => 'ew'
+  );
+  $label_2->grid(
+    -in => $frame_4,
+    -column => '1',
+    -row => '1',
+    -sticky => 'ew'
+  );
+  $newButton->grid(
+    -in => $frame_4,
+    -column => '2',
+    -row => '1',
+    -sticky => 'ew'
+  );
+  $renameButton->grid(
+    -in => $frame_4,
+    -column => '3',
+    -row => '1',
+    -sticky => 'ew'
+  );
+  $deleteButton->grid(
+    -in => $frame_4,
+    -column => '2',
+    -row => '2',
+    -columnspan => '2',
+    -sticky => 'ew'
+  );
+  $cancelButton->grid(
+    -in => $root,
+    -column => '1',
+    -row => '4',
+    -sticky => 'ew'
+  );
+  $saveButton->grid(
+    -in => $root,
+    -column => '2',
+    -row => '4',
+    -columnspan => '2',
+    -sticky => 'ew'
+  );
 
-	# container $frame_4 (rows)
-	$frame_4->gridRowconfigure(1, -weight  => 0, -minsize  => 2);
-	$frame_4->gridRowconfigure(2, -weight  => 0, -minsize  => 2);
+  # Resize behavior management
 
-	# container $frame_4 (columns)
-	$frame_4->gridColumnconfigure(1, -weight => 1, -minsize => 106);
-	$frame_4->gridColumnconfigure(2, -weight => 0, -minsize => 38);
-	$frame_4->gridColumnconfigure(3, -weight => 0, -minsize => 2);
+  # container $frame_4 (rows)
+  $frame_4->gridRowconfigure(1, -weight  => 0, -minsize  => 2);
+  $frame_4->gridRowconfigure(2, -weight  => 0, -minsize  => 2);
 
-	# container $root (rows)
-	$root->gridRowconfigure(1, -weight  => 0, -minsize  => 30);
-	$root->gridRowconfigure(2, -weight  => 0, -minsize  => 2);
-	$root->gridRowconfigure(3, -weight  => 1, -minsize  => 200);
-	$root->gridRowconfigure(4, -weight  => 0, -minsize  => 30);
+  # container $frame_4 (columns)
+  $frame_4->gridColumnconfigure(1, -weight => 1, -minsize => 106);
+  $frame_4->gridColumnconfigure(2, -weight => 0, -minsize => 38);
+  $frame_4->gridColumnconfigure(3, -weight => 0, -minsize => 2);
 
-	# container $root (columns)
-	$root->gridColumnconfigure(1, -weight => 1, -minsize => 168);
-	$root->gridColumnconfigure(2, -weight => 1, -minsize => 86);
-	
-	# additional interface code
+  # container $root (rows)
+  $root->gridRowconfigure(1, -weight  => 0, -minsize  => 30);
+  $root->gridRowconfigure(2, -weight  => 0, -minsize  => 2);
+  $root->gridRowconfigure(3, -weight  => 1, -minsize  => 200);
+  $root->gridRowconfigure(4, -weight  => 0, -minsize  => 30);
+
+  # container $root (columns)
+  $root->gridColumnconfigure(1, -weight => 1, -minsize => 168);
+  $root->gridColumnconfigure(2, -weight => 1, -minsize => 86);
+  
+  # additional interface code
   
 our($packagexml);             # Holds the XML configs for each package
 our(@packagedirs);            # A list of valid OSCAR package directories
@@ -255,7 +256,7 @@ sub exitWithoutSaving
     }
 
   # Then, destroy the root window.
-  if (defined($root)) { $root->destroy; }
+  $root->destroy if ($root);
 
   # Undefine a bunch of Tk widget variables for re-creation later.
   undef $root;
@@ -315,19 +316,20 @@ sub deepcopy # ($array_hash) -> $array_hash_copy
 sub fixCheckButtons
 {
 #  foreach my $package (sort keys %{ $packagexml } )
-    my @packages = OSCAR::Package::list_installable_package_dirs( );
-    foreach my $package ( @packages ) {
-	# First, remap the checkbuttons to variables for the new configuration
-	$packagecheckbuttons{$package}->configure(-variable =>
-						  \$selconf->{configs}{$configselectstring}{packages}{$package});
-	# Then, turn on/off the checkbuttons for the new configuration
-	if ($selconf->{configs}{$configselectstring}{packages}{$package})
+  my @packages = OSCAR::Package::list_installable_package_dirs( );
+  foreach my $package ( @packages ) 
+    {
+      # First, remap the checkbuttons to variables for the new configuration
+      $packagecheckbuttons{$package}->configure(-variable =>
+        \$selconf->{configs}{$configselectstring}{packages}{$package});
+      # Then, turn on/off the checkbuttons for the new configuration
+      if ($selconf->{configs}{$configselectstring}{packages}{$package})
         {
-	    $packagecheckbuttons{$package}->select;
+          $packagecheckbuttons{$package}->select;
         }
-	else
+      else
         {
-	    $packagecheckbuttons{$package}->deselect;
+          $packagecheckbuttons{$package}->deselect;
         }
     }
 }
@@ -854,6 +856,7 @@ else # Use oda
   my $success = database_connect();
   if ($success)
     {
+      undef $selconf;
       my @packageSets;
       my @packages;
       my @requested = ("packages.name");
@@ -862,17 +865,29 @@ else # Use oda
         {
           my @selected;
           database_execute_command("selected_package_set",\@selected);
-          $selconf->{selected} = $selected[0];
-          foreach my $packset (@packageSets)
+
+          if ((scalar @selected > 0) && (length $selected[0] > 0))
             {
-              print "--> Found a package set named $packset\n";
-              database_execute_command("packages_in_package_set $packset",
-                \@packages);
-              foreach my $pack (@packages)
+              $selconf->{selected} = $selected[0];
+              $configselectstring = $selconf->{selected};
+              $deleteButton->configure(-state => 'active') if 
+                (scalar (keys %{ $selconf->{configs} }) > 1);
+
+              foreach my $packset (@packageSets)
                 {
-                  print "    Adding package $pack to package set $packset\n";
-                  $selconf->{configs}{$packset}{packages}{$pack} = 1;
+                  print "--> Found a package set named $packset\n";
+                  database_execute_command("packages_in_package_set $packset",
+                    \@packages);
+                  foreach my $pack (@packages)
+                    {
+                      print "    Adding package $pack to package set $packset\n";
+                      $selconf->{configs}{$packset}{packages}{$pack} = 1;
+                    }
                 }
+            }
+          else
+            {
+              setSelectionConfigDefaults();
             }
         }
       else
@@ -898,10 +913,11 @@ else # Use oda
 #########################################################################
 sub writeOutSelectionConfig 
 {
+$selconf->{selected} = $configselectstring;
+
 if (!$useoda)
   {
   system("mkdir -p $oscarbasedir/.oscar");
-  $selconf->{selected} = $configselectstring;
   XMLout($selconf,
          outputfile => "$oscarbasedir/.oscar/.selection.config",
          noescape => 1,
@@ -915,12 +931,14 @@ else # Use oda
   my $success = database_connect();
   if ($success)
     {
-      database_execute_command("delete_all_package_sets");
-      my @idnum;
-      database_execute_command("package_set_name_to_id ".
-                               $selconf->{selected},\@idnum);
-      database_execute_command("modify_records " .
-                               "oscar.selected_package_set_id~" .  $idnum[0]);
+      # database_execute_command("delete_all_package_sets");
+      my @packageSets;
+      database_execute_command("package_sets",\@packageSets);
+      foreach my $set (@packageSets)
+        {
+          database_execute_command("delete_package_set $set");
+        }
+
       foreach my $config (keys %{ $selconf->{configs} })
         {
           print "--> Creating a new package set named $config\n";
@@ -928,10 +946,20 @@ else # Use oda
 
           foreach my $pack (keys %{ $selconf->{configs}{$config}{packages} })
             {
-              print "    Adding package $pack to package set $config\n";
-              database_execute_command("add_package_to_package_set $pack $config");
+              if ($selconf->{configs}{$config}{packages}{$pack})
+                {
+                  print "    Adding package $pack to package set $config\n";
+                  database_execute_command("add_package_to_package_set $pack $config");
+                }
             }
         }
+
+      my @idnum;
+      database_execute_command("package_set_name_to_id ".
+                               $selconf->{selected},\@idnum);
+      database_execute_command("modify_records " .
+                               'oscar.selected_package_set_id~' .  $idnum[0]);
+
       database_disconnect();
     }
   else
@@ -965,9 +993,8 @@ sub populateSelectorList
   buildDependencyTree();
   readInSelectionConfig();
 
-  if (defined $pane) {
-    $pane->destroy;
-  }
+  $pane->destroy if ($pane);
+
   # First, put a "Pane" widget in the center frame
   $pane = $selectFrame->Scrolled('Pane', -scrollbars => 'osoe');
   $pane->pack(-expand => '1', -fill => 'both');
@@ -999,7 +1026,7 @@ sub populateSelectorList
                              'ridge' : 'flat'),
             -variable =>
               \$selconf->{configs}{$configselectstring}{packages}{$package},
-		        -command => [ \&checkButtonPressed,
+            -command => [ \&checkButtonPressed,
                           $package 
                         ],
             )->pack(-side => 'left');
@@ -1063,6 +1090,7 @@ sub createConfigSelect
                    -textvariable => \$configselectstring,
                    -command => \&fixCheckButtons,
                  );
+
   foreach my $string (sort { lc($a) cmp lc($b) } keys %{ $selconf->{configs} })
     {
       $configselect->addOptions($string);
@@ -1088,27 +1116,29 @@ sub displayPackageSelector # ($parent)
   # Check to see if our toplevel selector window has been created yet.
   if (!$top)
     { # Create the toplevel window just once
-      if ($parent) {
+      if ($parent) 
+        {
           # Make the parent window busy
           $parent->Busy(-recurse => 1);
           $top = $parent->Toplevel(-title => 'Oscar Package Selection',
                                    -width => '260',
                                    -height => '260',
                                   );
-      }
+        }
       else 
         { # If no parent, then create a MainWindow at the top.
           $top = MainWindow->new();
           $top->title("Oscar Package Selection");
         }
-    $top->bind('<Destroy>', sub{
-      if ( defined($destroyed) ) {
-        undef $destroyed;
-        exitWithoutSaving();
-        #$parent->Unbusy();
-	return;
-      }
-     			       } );
+# THIS CODE KILLS THE RECREATION OF THE OPTIONMENU RIGHT NOW - REMOVE IT!
+#    $top->bind('<Destroy>', sub{
+#      if ( defined($destroyed) ) {
+#        undef $destroyed;
+#        exitWithoutSaving();
+#        #$parent->Unbusy();
+#  return;
+#      }
+#                  } );
 
       OSCAR::Selector::Selector_ui($top, $parent);  # Call the specPerl window creator
     }
@@ -1128,7 +1158,7 @@ sub displayPackageSelector # ($parent)
 #displayPackageSelector($top);
 
 
-	# end additional interface code
+  # end additional interface code
 }
 #Selector_ui $top;
 #Tk::MainLoop;
