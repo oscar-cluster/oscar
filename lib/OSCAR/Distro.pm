@@ -70,7 +70,7 @@ sub which_distro {
         }
     }
     # special treatment for RHEL and clones
-    if ($name eq "redhat" && $version =~ m/^3(WS|AS|WS)/) {
+    if ($name eq "redhat" && $version =~ m/^3(ES|AS|WS)/) {
         $version = "3as";
     }
     return (lc $name, lc $version);
@@ -103,7 +103,7 @@ sub which_distro_server {
         last;
     }
     # special treatment for RHEL and clones
-    if ($name eq "redhat" && $version =~ m/^3(WS|AS|WS)/) {
+    if ($name eq "redhat" && $version =~ m/^3(ES|AS|WS)/) {
         $version = "3as";
     }
     return (lc $name, lc $version);
