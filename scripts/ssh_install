@@ -59,7 +59,7 @@ echo server: $SERVER
 echo client machines list: $CLIENTS
 echo server and client machines list: $SERVER_AND_CLIENTS
 if [ ! -z "$BASES" ] ; then
-    echo client macnine image bases list: $BASES
+    echo client machine image bases list: $BASES
 fi
 
 #------------------------ end configuration section --------------------
@@ -181,28 +181,35 @@ for wantedno in RhostsAuthentication ; do
 done
 
 # set up each user including root so that they can log into the
-# entire cluster from anywhere in the cluster
+# entire cluster from anywhere in the cluster if a non-image(s)
+# install, or just set up root if this is an image(s) install
 
-echo finding users ...
-users=""
-for user in `awk -F: '{print $1}' /etc/passwd` ; do
-    userhome=`egrep "^$user\:" /etc/passwd | awk -F: '{print $6}' | tail -1`
-    usershell=`egrep "^$user\:" /etc/passwd | awk -F: '{print $7}' | tail -1`
-    # echo checking user $user with home directory $userhome and shell $usershell
-    if [ "$user" != "" \
-	-a "$userhome" != "" \
-	-a -d "$userhome" \
-	-a "$usershell" != "" \
-	-a -x "$usershell" \
-	-a "$usershell" != "/bin/false" \
-	-a "$user" != "halt" \
-	-a "$user" != "sync" \
-	-a "$user" != "shutdown" \
-	-a "$user" != "mailnull" ] ; then
-	echo ... found user $user
-	users="$users $user"
-    fi
-done
+if [ ! -z "$BASES" ] ; then
+    echo updating user root only
+    users=root
+else
+    echo finding users ...
+    users=""
+    for user in `awk -F: '{print $1}' /etc/passwd` ; do
+	userhome=`egrep "^$user\:" /etc/passwd | awk -F: '{print $6}' | tail -1`
+	usershell=`egrep "^$user\:" /etc/passwd | awk -F: '{print $7}' | tail -1`
+	# echo checking user $user with home directory $userhome and shell $usershell
+	if [ "$user" != "" \
+	    -a "$userhome" != "" \
+	    -a -d "$userhome" \
+	    -a "$usershell" != "" \
+	    -a -x "$usershell" \
+	    -a "$usershell" != "/bin/false" \
+	    -a "$user" != "halt" \
+	    -a "$user" != "sync" \
+	    -a "$user" != "shutdown" \
+	    -a "$user" != "mailnull" ] ; then
+	    echo ... found user $user
+	    users="$users $user"
+	fi
+    done
+fi
+
 for user in $users ; do
     echo ; echo setting up user $user on this machine
     home=`egrep "^$user\:" /etc/passwd | awk -F: '{print $6}' | tail -1`
@@ -333,3 +340,5 @@ done
 echo
 rm -rf $TEMP* 2>/dev/null
 exit 0
+
+
