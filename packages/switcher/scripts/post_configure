@@ -1,5 +1,59 @@
-#!/bin/sh
+#!/usr/bin/env perl
+#
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: post_configure,v 1.2 2002/10/29 15:57:53 jsquyres Exp $
+#
 
-echo "This is switchers post_configure script"
-echo "It is a placeholder for great things to come."
-exit 0
+use strict;
+use XML::Simple;
+use Carp;
+
+# Debugging
+use Data::Dumper;
+
+#
+# Global variables
+#
+
+my $results = undef;
+
+#
+# This will be re-written when Neil introduces the ODA interface where
+# I can search for this information in the database.  For the moment,
+# I'm going to hard-code it...
+#
+
+my $infile = "$ENV{OSCAR_HOME}/packages/switcher/.configurator.values";
+my $xs = new XML::Simple(keyattr => {});
+if (-e $infile) {
+    $results = $xs->XMLin($infile);
+}
+
+#
+# If we have output from the configurator step, analyze it and invoke
+# the proper switcher commands
+#
+
+if ($results) {
+    print Dumper($results);
+    foreach my $tag (sort(keys(%$results))) {
+	my $name = $results->{$tag};
+	my $cmd = "bash -c 'switcher $tag --add-attr default $name --force --system'";
+	print "Setting default for tag $tag (\"$name\")\n";
+	!system($cmd) ||
+	    carp("WARNING: Not able to set switcher default for tag $tag!");
+    }
+}
+
+
+#
+# All done
+#
+
+0;
