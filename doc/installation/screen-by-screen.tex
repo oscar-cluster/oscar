@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: screen-by-screen.tex,v 1.13 2002/08/31 22:36:18 jsquyres Exp $
+% $Id: screen-by-screen.tex,v 1.14 2002/09/02 14:30:04 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -24,28 +24,31 @@ information, it is judged to be ``close enough'' to the real 1.4
 release.  Just beware that some of the screenshots may not be {\em
   exactly} what you see in the 1.4 release.
 
+
 %% Adjust the margins so we can better handle our large images
 
 %\setlength{\oddsidemargin}{-0.5in}
 %\setlength{\evensidemargin}{-0.5in}
 %\setlength{\textwidth}{7.5in}
 
+
+%------------------------------------------------------------------
+% Running install_cluster
+%------------------------------------------------------------------
+
+\subsection{Running \cmd{install\_cluster}}
+
+This step comprises of running the \cmd{install\_cluster} script with
+the network interface name.  See details in
+Section~\ref{det:installcluster}, page~\pageref{det:installcluster}.
+
 \begin{figure}[htbp]
   \begin{center}
-    \centerline{\includegraphics[scale=\imgscale]{figs/0a_sbs-download.\sbsext}}
+    \centerline{\includegraphics[scale=1.0]{figs/0a_sbs-download.\sbsext}}
     \caption{Getting OSCAR.}
     \label{fig:sbs-getting-oscar}
   \end{center}
 \end{figure}
-
-%%% Not sure if this should go here?
-%\begin{figure}[htbp]
-%  \begin{center}
-%    \includegraphics[scale=\imgscale]{figs/0b_sbs-rh72notes-rpm-upgrd.\sbsext}
-%    \caption{Release Note: RedHat 7.2, upgrade default RPM.}
-%    \label{fig:sbs-rh72notes-rpm-upgrd}
-%  \end{center}
-%\end{figure}
 
 % JMS: These images were captured using KDE ``konsole'' tooles, with
 % the ``small'' font, using a black-on-white schema, and resized to be
@@ -58,7 +61,6 @@ release.  Just beware that some of the screenshots may not be {\em
     \label{fig:sbs-unpacking-oscar}
   \end{center}
 \end{figure}
-
 
 \begin{figure}[htbp]
   \begin{center}
@@ -77,7 +79,6 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
-
 \begin{figure}[htbp]
   \begin{center}
     \centerline{\includegraphics{figs/2_sbs-oscar-wizard.\sbsext}}
@@ -86,11 +87,18 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
+\clearpage
+
 
 %------------------------------------------------------------------
 % Step 1: Prepare OSCAR Server For Install
 %------------------------------------------------------------------
 
+\subsection{Step 1: Prepare OSCAR Server for Install}
+
+Step 1 is used to setup the server for the OSCAR cluster.  See details
+in Section~\ref{det:prepareforinstall},
+page~\pageref{det:prepareforinstall}. 
 
 \begin{figure}[htbp]
   \begin{center}
@@ -111,12 +119,18 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
+\clearpage
+
 
 %------------------------------------------------------------------
 % Step 2: Build OSCAR Client Image
 %------------------------------------------------------------------
 
+\subsection{Step 2: Build OSCAR Client Image}
 
+Step 2 builds a disk image for the clients to download and install
+onto their local disks.  See the details in
+Section~\ref{det:buildimage}, page~\pageref{det:buildimage}.
 
 \begin{figure}[htbp]
   \begin{center}
@@ -137,7 +151,6 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
-
 \begin{figure}[htbp]
   \begin{center}
     \centerline{\includegraphics{figs/4c_sbs-build-image3.\sbsext}}
@@ -146,18 +159,26 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
+\clearpage
+
+
 %------------------------------------------------------------------
 % Step 3: Define OSCAR Clients
 %------------------------------------------------------------------
+
+\subsection{Step 3: Define OSCAR Clients}
+
+Step 3 is used to specify how many client nodes there will be, and
+what their TCP/IP characteristics will be.  See the details in
+Section~\ref{det:defclients}, page~\pageref{det:defclients}.
  
-\begin{figure}[htbp]
+\begin{figure}[h]
   \begin{center}
     \centerline{\includegraphics{figs/5a_sbs-define-clients1.\sbsext}}
     \caption{Beginning step 3 -- Defining the clients.}
     \label{fig:sbs-define-clients}
   \end{center}
 \end{figure}
-
 
 \begin{figure}[htbp]
   \begin{center}
@@ -168,11 +189,20 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
+\clearpage
+
+
 %------------------------------------------------------------------
 % Step 4: Setup Networking
 %------------------------------------------------------------------
 
-\begin{figure}[htbp]
+\subsection{Step 4: Setup Networking}
+
+Step 4 is used to collect the MAC addresses of the client nodes, and
+then download the disk images to the client nodes.  See the details in
+Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
+
+\begin{figure}[h]
   \begin{center}
 
     \centerline{\includegraphics{figs/6a_sbs-collect-mac1.\sbsext}}
@@ -181,10 +211,10 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
+
 %-------
 % Show how to create the boot floppy...
 %-------
-
 
 \begin{figure}[htbp]
   \begin{center}
@@ -204,7 +234,6 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
-
 \begin{figure}[htbp]
   \begin{center}
     \centerline{\includegraphics{figs/6bc_sbs-autoinstall-flpy3.\sbsext}}
@@ -221,8 +250,6 @@ release.  Just beware that some of the screenshots may not be {\em
     \label{fig:sbs-collect-boot1}
   \end{center}
 \end{figure}
-
-\clearpage
 
 \begin{figure}[htbp]
   \begin{center}
@@ -250,7 +277,6 @@ release.  Just beware that some of the screenshots may not be {\em
     \label{fig:sbs-setup-network2}
   \end{center}
 \end{figure}
-
 
 \begin{figure}[htbp]
   \begin{center}
@@ -285,7 +311,6 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
   
-
 \begin{figure}[htbp]
   \begin{center}
     \centerline{\includegraphics{figs/6j_sbs-client-rsync.\sbsext}}
@@ -303,12 +328,20 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
+\clearpage
+
+
 %------------------------------------------------------------------
 % Step 5: Complete Cluster Install
 %------------------------------------------------------------------
- 
 
-\begin{figure}[htbp]
+\subsection{Step 5: Complete Cluster Install} 
+
+Step 5 is used to unify the server and client installations into a
+single cluster.  See the details in Section~\ref{det:completeinstall},
+page~\pageref{det:completeinstall}.
+
+\begin{figure}[h]
    \begin{center}
      \centerline{\includegraphics{figs/7_sbs-complete-cluster-setup.\sbsext}}
      \caption{Beginning step 5 -- Complete Cluster Setup.}
@@ -316,22 +349,30 @@ release.  Just beware that some of the screenshots may not be {\em
    \end{center}
  \end{figure}
 
+\clearpage
+
+
 %------------------------------------------------------------------
 % Step 6: Test Cluster Setup
 %------------------------------------------------------------------
 
+\subsection{Step 6: Test Cluster Setup}
 
- \begin{figure}[htbp]
-   \begin{center}
-     \centerline{\includegraphics{figs/8_sbs-test-cluster-prompt.\sbsext}}
-     \caption[Beginning step 6 -- Test cluster setup.]{Beginning step
-       6 -- Test cluster setup.  Note that this figure is shown as
-       having executed the test script manually, not running from the
-       OSCAR wizard GUI.} 
-     \label{fig:sbs-install-wizard-s6}
-   \end{center}
- \end{figure}
+Step 6 is used to test the cluster setup.  It can either be run from
+within the wizard, or, as shown here, from manually launching a shell
+script at a \user{root} command prompt.  See the details in
+Section~\ref{det:testcluster}, page~\pageref{det:testcluster}.
 
+\begin{figure}[h]
+  \begin{center}
+    \centerline{\includegraphics{figs/8_sbs-test-cluster-prompt.\sbsext}}
+    \caption[Beginning step 6 -- Test cluster setup.]{Beginning step
+      6 -- Test cluster setup.  Note that this figure is shown as
+      having executed the test script manually, not running from the
+      OSCAR wizard GUI.} 
+    \label{fig:sbs-install-wizard-s6}
+  \end{center}
+\end{figure}
 
 \begin{figure}[htbp]
   \begin{center}
@@ -349,7 +390,6 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
-
 \begin{figure}[htbp]
   \begin{center}
     \centerline{\includegraphics{figs/8_test-cluster-complete.\sbsext}}
@@ -358,68 +398,26 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
-%------------------------------------------------------------------
-% Add Node Button
-%------------------------------------------------------------------
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/9a_sbs-add-node.\sbsext}}
-    \caption{Add OSCAR Clients.}
-    \label{fig:sbs-add-node1}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics[scale=\imgscale]{figs/9b_sbs-add-node-mksirange.\sbsext}}
-    \caption{Add Node step 1 -- Defining the clients.}
-    \label{fig:sbs-add-node1-define-clients}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics[scale=\imgscale]{figs/9c_sbs-add-node-success.\sbsext}}
-    \caption{Add Node step 1 -- Defining the clients completed.}
-    \label{fig:sbs-add-node1-define-clients2}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics[scale=\imgscale]{figs/9d_sbs-add-node-mac1.\sbsext}}
-    \caption{Add Node step 2 -- Setting up networking for new node(s).}
-    \label{fig:sbs-add-node1-setup-network}
-  \end{center}
-\end{figure}
-
-%
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics[scale=\imgscale]{figs/9e_sbs-add-node-mac2.\sbsext}}
-    \caption{Add Node step 2 -- Setting up networking, got MAC address, stop scanning and configure DHCP server.}
-    \label{fig:sbs-add-node1-setup-network2}
-  \end{center}
-\end{figure}
-
 \clearpage
 
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics[scale=\imgscale]{figs/9f_sbs-add-node-complete.\sbsext}}
-    \caption{Add Node step 3 -- Complete Cluster Setup.}
-    \label{fig:sbs-add-node1-cluster-setup}
-  \end{center}
-\end{figure}
 
 %-----------------------------------------------------------------
 % Delete Node Button
 %-----------------------------------------------------------------
 
-\begin{figure}[htbp]
+\subsection{Delete Node Button}
+\label{app:sbs-delete-node}
+
+The Delete Node button can be used to delete nodes from an OSCAR
+cluster.  Note that this button only deletes OSCAR's knowledge of the
+nodes -- what physically happens to that node is not OSCAR's concern.
+This example shows deleting one of the client nodes setup in the
+previous sections -- \hostname{oscarnode2}.  The next section
+(Section~\ref{app:sbs-add-node}) will show adding it back.  See the
+details on deleting nodes in Section~\ref{det:deleting-clients},
+page~\pageref{det:deleting-clients}.
+
+\begin{figure}[h]
   \begin{center}
     \centerline{\includegraphics{figs/10a_sbs-del-node.\sbsext}}
     \caption{Delete OSCAR Clients.}
@@ -427,10 +425,9 @@ release.  Just beware that some of the screenshots may not be {\em
   \end{center}
 \end{figure}
 
-
 \begin{figure}[htbp]
   \begin{center}
-    \centerline{\includegraphics[scale=\imgscale]{figs/10b_sbs-del-node-partA.\sbsext}}
+    \centerline{\includegraphics{figs/10b_sbs-del-node-partA.\sbsext}}
     \caption{Node selected for deletion.}
     \label{fig:sbs-del-node1-done-partA}
   \end{center}
@@ -443,5 +440,75 @@ release.  Just beware that some of the screenshots may not be {\em
     \label{fig:sbs-del-node1-done-partB}
   \end{center}
 \end{figure}
+
+\clearpage
+
+
+%------------------------------------------------------------------
+% Add Node Button
+%------------------------------------------------------------------
+
+\subsection{Add Node Button}
+\label{app:sbs-add-node}
+
+The Add Node button will add nodes into an existing OSCAR cluster.  In
+this example, we will add back \hostname{oscarnode2} into the cluster.
+See the details of adding a node in Section~\ref{det:adding-clients},
+page~\pageref{det:adding-clients}.
+
+\begin{figure}[h]
+  \begin{center}
+    \centerline{\includegraphics{figs/9a_sbs-add-node.\sbsext}}
+    \caption{Add OSCAR Clients.}
+    \label{fig:sbs-add-node1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \centerline{\includegraphics{figs/9b_sbs-add-node-mksirange.\sbsext}}
+    \caption[Add Node step 1 -- Defining the clients.]{Add Node step 1
+      -- Defining the clients.  Note that you only define {\em new}
+      clients here (i.e., change the starting number, starting IP,
+      etc.).}
+    \label{fig:sbs-add-node1-define-clients}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \centerline{\includegraphics{figs/9c_sbs-add-node-success.\sbsext}}
+    \caption{Add Node step 1 -- Defining the clients completed.}
+    \label{fig:sbs-add-node1-define-clients2}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \centerline{\includegraphics{figs/9d_sbs-add-node-mac1.\sbsext}}
+    \caption{Add Node step 2 -- Setting up networking for new node(s).}
+    \label{fig:sbs-add-node1-setup-network}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \centerline{\includegraphics{figs/9e_sbs-add-node-mac2.\sbsext}}
+    \caption[Add Node step 2 -- Setting up networking, further
+    progress]{Add Node step 2 -- Setting up networking, got MAC
+      address, stop scanning and configure DHCP server.}
+    \label{fig:sbs-add-node1-setup-network2}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+    \centerline{\includegraphics{figs/9f_sbs-add-node-complete.\sbsext}}
+    \caption{Add Node step 3 -- Complete Cluster Setup.}
+    \label{fig:sbs-add-node1-cluster-setup}
+  \end{center}
+\end{figure}
+
+\clearpage
 
 % LocalWords:  tex Exp sbs
