@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.19 2002/10/29 02:09:10 jsquyres Exp $
+#   $Id: FrontPanel.pm,v 1.20 2002/10/29 07:19:52 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use OSCAR::Logger;
 use OSCAR::Tk;
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.19 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.20 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -65,7 +65,7 @@ sub frontpanel_window {
     $parent_window = shift;
     $vars = shift;
 
-    oscar_log_section("Running step $step_number of the OSCAR wizard");
+    oscar_log_section("Running step $step_number of the OSCAR wizard: Install OSCAR server packages");
 
     # Make the top-level OSCAR wizard window busy so that the user
     # can't click in another step while this one is running.
