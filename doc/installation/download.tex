@@ -1,0 +1,44 @@
+% -*- latex -*-
+%
+% $Id: download.tex,v 1.1 2002/07/13 17:52:10 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
+\section{Downloading an OSCAR Distribution Package}
+
+The OSCAR distribution packages can be downloaded from:
+
+\vspace{11pt}
+\centerline{\url{http://oscar.sourceforge.net/}}
+\vspace{11pt}
+
+Note that there are actually three flavors of distribution packages
+for OSCAR, depending on your bandwidth and installation/development
+needs:
+
+\begin{enumerate}
+\item ``Regular'': All the OSCAR installation stuff that most users
+  need to install and operate an OSCAR cluster.
+  
+\item ``Extra Crispy'': Same as Regular, except that the SRPMs for
+  most of the OSCAR-specific RPMs are also included.  This
+  distribution package is significantly larger than Regular, and is
+  not necessary for most users -- only those who are interested in
+  source RPMs need the Extra Crispy distribution.  The SRPMs can be
+  found under \file{packages/*/SRPMS/} directories.
+  
+\item ``Secret Sauce'': This distribution contains {\em only} the
+  SRPMs for OSCAR-specific RPMs in the Regular and Extra Crispy
+  distributions (it's essentially (Extra Crispy - Regular)).  It is
+  intended only for those who initially downloaded the Regular
+  distribution and later decided that they wanted the SRPMs as well.
+  The Secret Sauce distribution is intended to be expanded over your
+  Regular installation -- it will create \file{packages/*/SRPMS/}
+  directories and populate them with the relevant \file{.src.rpm}
+  files.
+\end{enumerate}
+
+All three distributions can be downloaded from the main OSCAR web
+page.
+

@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.12 2002/07/06 03:53:31 jsquyres Exp $
+# $Id: Makefile.am,v 1.13 2002/07/13 17:52:10 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -19,6 +19,7 @@ OTHER_SRC_FILES	= \
 		titlepage.tex \
 		toc.tex \
 		intro.tex \
+		download.tex \
 		supported.tex \
 		release-notes.tex \
 		brief.tex \
@@ -34,6 +35,7 @@ OTHER_SRC_FILES	= \
 
 QUICK_SRC_FILES= \
 		quick_titlepage.tex \
+		download.tex \
 		brief.tex \
 		supported.tex
 
