@@ -86,7 +86,7 @@ if ($@) {
     my @rpmsindir = readdir(RPMS);
     closedir(RPMS);
     # check if the rpm is in /tftpboot/rpm
-    if ( !( grep( /^perl-XML-Parser/, @rpmsindir ) ) ) {
+    if ( grep( /^perl-XML-Simple/, @rpmsindir ) ) {
        # there's no package there, copying one from sis's
        system ("cp $sisrpmsdir/perl-XML-Simple* /tftpboot/rpm");
     }
