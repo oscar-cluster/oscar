@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/opt/opium/bin/sync_users --crononly
