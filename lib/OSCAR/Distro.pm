@@ -1,6 +1,6 @@
 package OSCAR::Distro;
 
-#   $Id: Distro.pm,v 1.13 2004/02/17 17:09:17 tuelusr Exp $
+#   $Id: Distro.pm,v 1.14 2004/03/16 00:37:31 tfleury Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(which_distro which_distro_server);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.13 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
 		   'fedora-release'   => 'fedora',
@@ -82,7 +82,7 @@ sub which_distro_server {
     my $version = "0";
     foreach my $file (keys %$DISTROFILES) {
         my $output = $DISTROFILES->{$file} eq 'debian' ?
-                        `cat /etc/$file` :
+                        `cat /etc/$file 2>/dev/null` :
                         `rpm -q --qf '\%{VERSION}' $file 2>/dev/null`;
 
         if($?) {
