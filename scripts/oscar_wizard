@@ -197,8 +197,7 @@ sub run_tests {
     my $cmd = "cd ../testing && xterm -sl 500 -e ./test_cluster_as_root --wait";
     oscar_log_subsection("Step 6: Running tests: $cmd");
     !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
-    oscar_log_subsection("Step 6: Successfully ran tests");
-    oscar_log_subsection("Step 6: Completed successfully");
+    oscar_log_subsection("Step 6: Not waiting for script completion");
     $window->Unbusy();
     return 1;
 }
