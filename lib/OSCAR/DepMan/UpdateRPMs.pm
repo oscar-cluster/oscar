@@ -1,6 +1,6 @@
 package DepMan::UpdateRPMs;
 
-#   $Id: UpdateRPMs.pm,v 1.4 2004/02/17 17:19:29 tuelusr Exp $
+#   $Id: UpdateRPMs.pm,v 1.5 2004/03/11 14:23:08 tuelusr Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ our $VERSION;
 $VERSION = '0.01';
 # initial release
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 # Must use this form due to compile-time checks by DepMan.
 use base qw(DepMan);
@@ -48,6 +48,17 @@ sub new {
 #  database_read_table_fields ("oscar_file_server" "oscar_httpd_server_url",
 #			      null, \%oscar_file_server, 1) &&
 #  $new{Cache} = $oscar_file_server{oscar_httpd_server_url};
+#
+# FIX THIS. It needs to access oda via the Perl interface, not by invoking the
+# oda command line tool.
+# -- MCG
+
+  $oda_fd = open ("-|",
+    "oda read_records oscar_file_server oscar_httpd_server_url | head -1");
+  read ($oda_fh, $new{Cache}, 80);
+  $new{Cache} =~ s/\n$//g;
+  $new{Cache} =~ s/\r$//g;
+  close ($oda_fh);
 
   return ($new);
 }
