@@ -9,6 +9,9 @@ use Carp;
 
 my @rpms = qw(
               apache-1.3.22-6
+              autoupdate
+              autoupdate-cfg-redhat
+              autoupdate-oscar
               c3-profiled
               c3
 	      hdf5-oscar
@@ -30,6 +33,7 @@ my @rpms = qw(
               maui-oscar
               libdbdcsv-perl
               libappconfig-perl
+              rrdtool
               systeminstaller
               systeminstaller-x11
               systemconfigurator
