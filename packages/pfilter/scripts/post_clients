@@ -1,0 +1,79 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   post_clients for pfilter
+#                        generates pfilter config file from clamdr entries
+
+use strict;
+use Carp;
+use lib '/usr/lib/systeminstaller';
+use SystemInstaller::Machine;
+
+# function to return a sorted, unique lines only version of a passed list
+
+sub sort_uniq {
+    my ( @input_list ) = @_;
+    my %seen;
+    foreach my $value ( @input_list ) {
+	$seen{$value}++;
+    }
+    return sort ( keys %seen );
+}
+
+# Update the server's conf file
+
+my $conf_file = "/etc/pfilter.conf";
+
+if ( -f $conf_file ) { 
+    print  "mv $conf_file $conf_file.pre_oscar\n";
+    system "mv $conf_file $conf_file.pre_oscar";
+}
+
+open(CONF, ">$conf_file") 
+    or croak("config_server: could not write pfilter conf file\n");
+
+# find the names of the compute nodes
+my %nodes = get_machine_listing();
+my @nodes = sort keys %nodes;
+chomp @nodes;
+
+# find all the names that the server goes under
+my @server_names = sort_uniq( `hostname`, `hostname -s`, `hostname -a`);
+chomp @server_names;
+my $hostname = `hostname`;
+chomp $hostname;
+
+print CONF <<ENDIT;
+# This is a specially built pfilter configuration file for OSCAR
+
+# We don't want future pfilter updates to merge commented out
+# new types of configuration directives when pfilter is upgraded.
+nomerge
+
+# We don't trust anyone anywhere on any interface by default
+untrusted   all
+
+# the server gets ssh and http opened up
+%if %hostname% = $hostname
+OPEN    tcp     ssh http https
+%endif
+
+# the server and every compute node trust each other
+open    tcp     0:65535  from    @server_names @nodes
+open    udp     0:65535  from    @server_names @nodes
+ENDIT
+
+close(CONF);

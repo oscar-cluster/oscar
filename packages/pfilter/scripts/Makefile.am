@@ -1,10 +1,9 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.2 2002/05/15 23:09:19 ngorsuch Exp $
-#
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
-EXTRA_DIST		= \
-			pfilter-1.645-1.noarch.rpm \
+noinst_SCRIPTS		= post_clients
+
+EXTRA_DIST		= $(noinst_SCRIPTS)
