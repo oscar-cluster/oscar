@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: setup,v 1.1 2002/10/29 03:21:12 jsquyres Exp $
+#
+
+#
+# Create a post_client_rpm_install script that consists of all the
+# disable.* scripts in this directory.  This is necessary because
+# post_client_rpm_install runs in the client filesystem, and the
+# disable.* scripts will not be there.  So paste them all together
+# into a single post_client_rpm_install script to run later.
+#
+
+dir="$OSCAR_HOME/packages/disable-services/scripts"
+files="`ls disable.*`"
+output="post_client_rpm_install"
+
+rm -f $output
+for file in $files
+do
+  cat $file >> $output
+done
+chmod +x $output
+
+echo Created: $dir/$output
+
+#
+# All done
+#
+
+exit 0
+
