@@ -46,8 +46,6 @@ you will need to manually select the correct rpmlist before generating the
 client image.
 
   /opt/oscar/oscarsample/redhat-3asU2-i386.rpmlist
-or
-  /opt/oscar/oscarsample/redhat-3asU2-ia64.rpmlist
 
 ----------------------
 A3) tftp-server on x86
