@@ -1,0 +1,87 @@
+%  $Id: pkg-xml-table.tex,v 1.1 2003/09/08 22:31:35 naughtont Exp $
+
+% TJN: Note I'm using the "(" symbol for the \verb delimiters b/c
+%      I don't believe this symbol will occur in any of the XML elements
+%      or attributes.  Any other non-occuring char could be used.
+%
+% TJN: I need some way to convey heirarchy, currently using multi-columns
+%      xml   &      &  descr... \\
+%      dtd   &      &  descr... \\
+%      oscar &      &  descr... \\
+%            & name &  descr... \\
+%
+% TJN: Somehow I need to display <tag></tag>  VS. <tag/>
+%      Also, certain things like <description></description> must be
+%      on same line as closing multi-line text.  Need to check this out
+%      I believe it's a product of using XML::Simple.
+%
+% TJN: Also, I need to denote optional vs. required elements
+
+\begin{table}[htbp]
+  \begin{center}
+  \begin{tabular}{|l|l|l|} \hline
+  {\bfseries Top-Level Tag} & {\bfseries Sub Tag} & {\bfseries Description}\\\hline
+  \hline
+  \verb(<?xml version="1.0"?>( & &  Opening XML Version string         \\ \hline
+  %\verb(<!DOCTYPE package SYSTEM "../package.dtd">( & & DTD Include line\\\hline
+
+  \verb(<!DOCTYPE ...>( & & Document Type Definition (DTD) Include line\\ \hline
+  \verb(<oscar>(   &   & OSCAR Package Element                         \\ \hline
+  \verb(<name>(    &   & Name of the software package                  \\ \hline
+
+  %\verb(<version>( &   & Version of the software package               \\ \hline
+  \verb(<version>( &   & Version of the software package           \\\cline{2-3}
+     & \verb(<major>(  & Major version of the software package     \\\cline{2-3}
+     & \verb(<minor>(  & Minor version of the software package     \\\cline{2-3}
+     & \verb(<subversion>( & Sub-version of the software package   \\\cline{2-3}
+     & \verb(<release>(    & Release number of the software package\\\cline{2-3}
+     & \verb(<epoch>(      & Release number of the software package\\\hline
+
+  \verb(<class>(   &   & Classification of package, e.g. third-party   \\ \hline
+  \verb(<summary>( &   & Brief one-line description of package         \\ \hline
+  \verb(<license>( &   & Software licence for the package              \\ \hline
+  \verb(<group>(   &   & RPM-style software group, e.g., Application/System\\\hline
+  \verb(<url>(     &   & Homepage for software package                 \\ \hline
+
+  %\verb(<packager>(&   & OSCAR package author                         \\ \hline
+  \verb(<packager>(&   & OSCAR package author                      \\\cline{2-3}
+     & \verb(<name>(   & Name of package author                    \\\cline{2-3}
+     & \verb(<email>(  & Email address of package author           \\\hline
+
+  %\verb(<maintainer>(& & OSCAR package author                         \\ \hline
+  \verb(<maintainer>(& & OSCAR package author                      \\\cline{2-3}
+     & \verb(<name>(   & Name of package author                    \\\cline{2-3}
+     & \verb(<email>(  & Email address of package author           \\\hline
+
+  \verb(<description>(&& Brief description of the package              \\ \hline
+
+  %\verb(<rpmlist>(&    & List RPMS included in the rpmlist             \\ \hline
+  \verb(<rpmlist>(&    & List RPMS included in the rpmlist         \\\cline{2-3}
+     & \verb(<filter>( & Filter applied to all RPM in list         \\\cline{2-3}
+     & \verb(<rpm>(    & Name of RPM (without version)             \\\hline
+
+  %\verb(<filter>(&     & Filter Attributes used on RPMLIST              \\\hline
+  \verb(<filter>(&     & Filter Attributes used on RPMLIST            \\\cline{2-3}
+     & \verb(group=(   & Attribute specifying target location for RPMS\\
+     &                 & e.g., ``oscar\_server'' or ``oscar\_clients''\\\cline{2-3}
+     & \verb(distribution=(& Attribute specifying supported distribution   \\
+     &                 & e.g., ``redhat'', ``mandrake'', ``suse'', ``rhas''\\
+     &                 & see also: \emph{lib/OSCAR/Distro.pm}              \\\cline{2-3}
+     & \verb(distribution_version=(& Attribute specifying supported distribution version  \\
+     &                 & e.g., ``7.3'', ``9'', ``2.1AS''                   \\\hline
+
+  %\verb(<requires>(&   & List requirement/dependency                    \\\hline
+  \verb(<requires>(&   & List requirement/dependency                \\\cline{2-3}
+     & \verb(type=(    & Tag specifying type of requirement         \\
+     &                 &  e.g., ``package'' (OSCAR Package),        \\
+     &                 &  \emph{``rpm'' (not implemented yet)}      \\\hline
+
+  %\verb(<package>( &   & Package specific ODA material                \\\hline 
+  \verb(<package>( &    & Package specific ODA material            \\\cline{2-3}
+     & \verb(<shortcut>(& ODA shortcut defined by a package            \\\hline
+
+  \end{tabular}
+  \caption{Overview of existing XML tags for OSCAR Packages} 
+  \label{tab:pkg-xml-tags}
+  \end{center}  
+\end{table}

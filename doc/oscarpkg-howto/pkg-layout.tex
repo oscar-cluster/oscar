@@ -1,33 +1,18 @@
-% $Id: pkg-layout.tex,v 1.1 2003/08/22 20:35:51 naughtont Exp $
+% $Id: pkg-layout.tex,v 1.2 2003/09/08 22:31:34 naughtont Exp $
 
 \section{Package Layout}
 \label{sect:pkg-layout}
 
 As OSCAR evolved it became obvious that the mechanism to configure and
 install a cluster needed to be cleanly seperated from the software that was
-to be installed.  Thus the \emph{OSCAR Package} (OPkg) was born.  The OPkg
-layout is geared toward making things as simple as possible for package
-authors.  The desire to keep things simple as well as the ``best
-practices'' mantra of OSCAR led to the decision that at it's simplest, an
-OPkg could be a simple RPM.  However, most software requires further
-configuration for a cluster environment.  Additionally, OPkgs can contain
-suplemental documentation and verification/testing scripts.  The following
-will detain the contents of a typical OPkg and then elaborate on the
-available packaging APIs.
+to be installed.  The approach taken was to create \emph{OSCAR Packages}.
+The OSCAR Package layout is geared toward making things as simple as
+possible for package authors.  So, in its simplest form an OSCAR Package is
+an RPM~\footnote{A binary RPM compiled for an OSCAR supported Linux
+distribution.}.  However, most software requires further configuration for
+a cluster environment so additional scripts, documentation, etc. may be
+added.  The basic directory structure for an OSCAR Package is as follows:
 
-As mentioned previously OPkgs can be as simple as a binary RPM compiled for
-an OSCAR supported distribution.  
-
-
-however, when they also provide supplemental documentation and a meta file
-describing the package.  The packaging API provides authors the ability to
-make use of scripts to configure the cluster software outside of the RPM
-itself.  The scripts fire at different stages of the installation process
-and test scripts can be added to verify the process. Additionally, an OSCAR
-Package Downloader (OPD) (see Section~\ref{sect:opd}) is provided to
-simplify acquisition of new packages.
-
-The basic directory structure for an OSCAR Package is as follows:
 \begin{quote}
 \begin{description}
     \item[\file{config.xml}] -- meta file with description, version, etc.
@@ -42,9 +27,28 @@ The basic directory structure for an OSCAR Package is as follows:
 \end{quote}
 
 
+The packaging API provides authors the ability to make use of scripts to
+configure the cluster software outside of the RPM itself.  The scripts fire
+at different stages of the installation process and test scripts can be
+added to verify the process. Additionally, an OSCAR Package Downloader
+(OPD) (see Section~\ref{sect:opd}) is provided to simplify acquisition of
+new packages.
+
+
+
 \subsection{\file{config.xml}}
-If no meta file is included with the package a simplisitc default is used.
-The currently valide 
+This file provides the version/description information similar to that
+obtained from an \cmd{rpm --query --info \emph{RPM\_NAME}}.  Additionally,
+the list of RPMS and where they are to be installed, e.g., server or clients.
+There are also XML fields for expressing details about the distribution the 
+binary RPMS were compiled for as well as simple dependencies on other OSCAR
+Packages, e.g., Env-Switcher.  If this meta file is not included a
+simplistic default is used--install all files in \file{RPMS/} on all
+machines in cluster.  The available XML tags for use in this file are
+listed in Table~\ref{tab:pkg-xml-tags}.
+
+\input{pkg-xml-table.tex}
+
 
 \subsection{RPMS \& SRPMS}
 
