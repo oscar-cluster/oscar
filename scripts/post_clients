@@ -33,9 +33,20 @@ push_hosts() or croak("Couldn't push hosts file to images");
 
 my @pkgs = list_pkg();
 
+my $return = 0;
+
 foreach my $pkg (@pkgs) {
-	run_pkg_script($pkg,"post_clients",1) or croak("Couldn't run post_clients script for $pkg");
+    if(run_pkg_script($pkg,"post_clients",1)) {
+        carp("Couldn't run post_clients script for $pkg");
+        $return++;
+    }
 }
+
+if($return) {
+    carp("There were issues running post_clients.  Please check your logs");
+}
+
+exit($return);
 
 sub push_hosts {
     my @images = imageList();

@@ -49,9 +49,20 @@ sync_user_files($targetdir) or croak("Couldn't sync user files");
 
 my @pkgs = list_pkg();
 
+my $return = 0;
+
 foreach my $pkg (@pkgs) {
-    run_pkg_script_chroot($pkg,$targetdir) or croak("Couldn't run post_rpm_install for $pkg");
+    if(run_pkg_script_chroot($pkg,$targetdir)) {
+       carp("Couldn't run post_rpm_install for $pkg");
+       $return++;
+    }
 }
+
+if($return) {
+    carp("There were errors running post_rpm_install scripts.  Please check your logs.");
+}
+
+exit($return);
 
 sub link_kernel_files {
     my ($imagedir) = @_;
