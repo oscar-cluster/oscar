@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.36 2002/07/19 16:49:03 mchasal Exp $
+% $Id: detailed.tex,v 1.37 2002/07/20 15:11:18 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -30,6 +30,8 @@ server node in the OSCAR cluster.
 \subsubsection{Install Linux on the server machine} 
 \label{det:serverosinstall}
 
+\begchange
+
 If you have a machine you want to use that already has Linux
 installed, ensure that it meets the minimum requirements as listed in
 Section~\ref{sec:intro-min-sys}.  If it does, you may skip ahead to
@@ -51,14 +53,15 @@ added yeilds a sufficient installation for OSCAR to install
 successfully.
 
 If you install RedHat on the server node, during the installation you
-do not need to install the ipchains-base firewall that is included with
-the RedHat distribution, because OSCAR will install an iptables based
-packet filtering firewall named pfilter which is more versatile. 
-OSCAR does not turn on pfilter by default, however.
-If the Redhat ipchains based firewall is installed, OSCAR automatically
-disables portions of the RedHat firewall to keep it from interfering 
-with network traffic between the server node and the other nodes in 
-the cluster.
+do not need to install the \rpmname{ipchains}-based firewall that is
+included with the RedHat distribution, because OSCAR will install an
+\rpmname{iptables} based packet filtering firewall named
+\rpmname{pfilter} which is more versatile.  OSCAR does not turn on
+\rpmname{pfilter} by default, however.  If the Redhat
+\rpmname{ipchains} based firewall is installed, the OSCAR installation
+will fail.
+
+\endchange
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -187,67 +190,61 @@ distribution).
 \subsubsection{Configure the ethernet adapter for the cluster} 
 \label{det:serveradapter}
 
-Assuming you want your server to be connected to both an external
-network and the internal cluster subnet, you will need to have two
+Assuming you want your server to be connected to both an public
+network and the private cluster subnet, you will need to have two
 ethernet adapters installed in the server. It is preferred that you do
 this because exposing your cluster may be a security risk, and certain
 software used in OSCAR (such as DHCP) may conflict with your external
-network.  
+network.
 
-Once both adapters have been physically installed, you need to
-configure them.\footnote{Beware of 3COM network cards; there are
-  certain models which simply do not work under Linux.  See the OSCAR
-  web site for more information.}  The following section describes the
-use of the \cmd{neat} network configurator; however, any network
-configurator (including a text editor, if you know which files to
-edit) will do.
+\begchange
 
-Once you have booted Linux into an X environment, open a terminal and
-enter the command:
+Once both adapters have been physically installed in the server node,
+you need to configure them.\footnote{Beware of 3COM network cards;
+  there are certain models which may be problematic with the kernel
+  driver that is shipped in OSCAR.  See the OSCAR web site for more
+  information.}  Any network configurator is sufficient; popular
+applications include \cmd{neat}, \cmd{netcfg}, or a text editor.
 
-\begin{verbatim}
-  # neat &
-\end{verbatim}
-  
-The network configuration utility will be started, which you will use
-to configure your network adapters.
-  
-At this point, the \panel{Names} panel will be active. On this panel
-you will find the settings for the server's hostname, domain,
-additional search domains, and name servers. All of this information
-should have been filled in by the standard Linux installation. 
+The following major requirements need to be satisfied:
 
-To configure your ethernet adapters, you will need to first press the
-\button{Interfaces} button to bring up the panel that allows you to
-update the configuration of all of your server machines interfaces.
-You should now select the interface that is connected to the cluster
-network by clicking on the appropriate device. If your external
-adapter is configured on device ``\file{eth0}'', then you should most
-likely select ``\file{eth1}'' as the device, assuming you have no
-other adapters installed. 
+\paragraph{Hostname.} Most Linux distributions default to the hostname
+``{\tt localhost}''.  This must be changed in order to successfully
+install OSCAR -- choose another name that does not include any
+underscores (``{\tt \_}'').
 
-After selecting the appropriate interface, press the \button{Edit}
-button to update the information for the cluster network adapter.
-Enter a private IP address\footnote{There are three private IP address
-  ranges: 10.0.0.0 to 10.255.255.255; 172.16.0.0 to 172.32.255.255;
-  and 192.168.0.0 to 192.168.255.255.  Additional information on
-  private intranets is available in RFC 1918.  You should not use the
-  IP addresses 10.0.0.0 or 172.16.0.0 or 192.168.0.0 for the server.
-  If you use one of these addresses, the network installs of the
-  client nodes will fail. \label{foot:private-ip-ranges}} and the
-associated netmask\footnote{A class C netmask of 255.255.255.0 should
-  be sufficient for most OSCAR clusters. \label{foot:netmask}} in
-their respective fields.  Additionally, you should be sure to press
-the \button{Activate interface at boot time} button and set the
-\button{Interface configuration protocol} to ``none''.
+\paragraph{Public adaptor.}  This is the adaptor that connects the
+server node to a public network.  Although it is not required to have
+such an adaptor, if you do have one, you must configure it as
+appropriate for the public network (you may need to consult with your
+network administrator).
 
-After completing the updates, press the \button{Done} button to return
-to the main utility window, pressing the \button{Save} button in the
-Save current configuration menu that pops up.  Then press the
-\button{Save} button at the bottom of the main network configuration
-window to confirm your changes, and then press the \button{Quit} to
-leave the network configuration utility.
-  
+\paragraph{Private adaptor.}  This is the adaptor connected to
+the TCP/IP network with the rest of the cluster nodes.  This adaptor
+must be configured as follows:
+
+\begin{itemize}
+\item Use a private IP address\footnote{There are three private IP
+    address ranges: 10.0.0.0 to 10.255.255.255; 172.16.0.0 to
+    172.32.255.255; and 192.168.0.0 to 192.168.255.255.  Additional
+    information on private intranets is available in RFC 1918.  You
+    should not use the IP addresses 10.0.0.0 or 172.16.0.0 or
+    192.168.0.0 for the server.  If you use one of these addresses,
+    the network installs of the client nodes will fail.
+    \label{foot:private-ip-ranges}}
+
+\item Use an appropriate netmask\footnote{A class C netmask of
+    255.255.255.0 should be sufficient for most OSCAR clusters.
+    \label{foot:netmask}} 
+
+\item Ensure that the interface is activated at boot time
+
+\item Set the interface control protocol to ``none''
+
+\end{itemize}
+
+\endchange
+
 Now reboot the server node to ensure that all the changes are
 propagated to the appropriate configuration files. To confirm that all
 ethernet adapters are in the ``up'' state, once the machine has
@@ -747,7 +744,6 @@ This section describes the steps need when it becomes necessary to add
 or delete client nodes. If you have already built your cluster
 successfully and would like to add or delete a client node, execute
 the following from the top-level OSCAR directory:
-needs to
 
 \begin{verbatim}
   # ./install_cluster <device>

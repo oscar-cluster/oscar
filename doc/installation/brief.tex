@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: brief.tex,v 1.18 2002/07/19 14:47:30 jsquyres Exp $
+% $Id: brief.tex,v 1.19 2002/07/20 15:11:18 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -8,11 +8,15 @@
 \section{Quick Start OSCAR Installation on a Private Subnet}
 \label{sec:quick-start}
 
+\begchange
+
 {\bf WARNING:} Before you attempt a quick start installation, be sure
 to read the release \docswitch{notes in
   Section~\ref{sec:release-notes}.}{notes in the full installation
     guide.}  There are important references for RedHat 7.1 and 7.2
   that {\em must} be understood before attempting to install OSCAR.
+
+\endchange
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -51,6 +55,14 @@ installation instructions \docswitch{in Section~\ref{sec:detail}
   detailed installation instructions in parentheses at the end of each
   step.}{in the full OSCAR installation guide.}
 
+\begchange
+
+If you run into unexpected problems during the install, see the
+detailed installation instructions or visit the OSCAR web site where
+up-to-date, post-release information is maintained.
+
+\endchange
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Quick installation procedures}
@@ -75,13 +87,28 @@ installation.
     
     \sbsdetail{det:serverdiskpar}
   \item An X windowing system such as GNOME or KDE must be installed.
-  \item Networking must be set up and working on the public interface.
-    (Do yourself a favor and install some type of network security
-    if your system is exposed to the general internet. Oscar installs
-    a firewall package called pfilter that may be used for this,
-    but does not turn it on by default.)
-  \item The second network interface for the private cluster network
-    must be installed
+
+\begchange
+    
+  \item Ensure to assign a hostname that is not ``{\tt localhost}''
+    and does not contain any underscores.
+    
+  \item The network interface for the private cluster network must be
+    installed and configured properly.
+
+  \item Ensure that the \rpmname{ipchains} firewall software package
+    is not installed.
+    
+  \item If the server node is to be connected to a public network, the
+    network interace to the public network must be configured and
+    working properly (do yourself a favor and install some type of
+    network security if your system is exposed to the general
+    internet. Oscar installs a firewall package called
+    \rpmname{pfilter} that may be used for this, but does not turn it
+    on by default).
+
+\endchange
+
   \end{enumerate}
   
   \sbsdetail{det:serverosinstall}
@@ -125,13 +152,13 @@ installation.
   installation CDs.
   
   \sbsdetail{det:distro-updates}
-
+  
 \item Configure the second (private) cluster network adapter using a
-  command such as \cmd{/usr/sbin/netcfg}, or your favorite editor.
+  command such as \cmd{netcfg}, \cmd{neat}, or your favorite editor.
   Set the interface address to a relatively high IP address on the
   private network (e.g., 10.0.0.250), set the interface configuration
   protocol to ``none'', and set the interface to activate at boot
-  time.  
+  time.
 
 \sbsdetail{det:serveradapter}
 

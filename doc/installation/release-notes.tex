@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.10 2002/07/19 15:52:31 mchasal Exp $
+% $Id: release-notes.tex,v 1.11 2002/07/20 15:11:18 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -10,8 +10,16 @@
 
 The following release notes apply to OSCAR version \oscarversion:
 
+\begchange
+
 \begin{itemize}
-\item You {\em must} specify a domain name for your clients when
+\item The server node must have a hostname other than ``{\tt
+    localhost}'' that does not contain any underscores (``{\tt \_}'').
+  
+\item The {\tt ipchains} firewall software package cannot be installed
+  on the server node prior to running the OSCAR installation wizard.
+  
+\item A domain name must be specified for the client nodes when
   defining them.
   
 \item The current version of C3 that is shipped with OSCAR requires
@@ -32,6 +40,8 @@ The following release notes apply to OSCAR version \oscarversion:
   this happens, run the test script, \file{testing/test\_cluster\_as\_root},
   manually in a shell window to diagnose the problem.
 \end{itemize}
+
+\endchange
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
