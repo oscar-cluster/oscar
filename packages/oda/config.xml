@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.39 2003/04/22 06:04:32 ngorsuch Exp $
+      $Id: config.xml,v 1.40 2003/04/30 04:29:47 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -45,6 +45,33 @@
 
   <description>ODA provides a central database for OSCAR.</description>
 
+  <rpmlist2>
+    <scope>
+      <distribution>redhat</distribution>
+      <distribution_version>7.2</distribution_version>
+    </scope>
+    <rpm>mysql</rpm>
+    <rpm>perl-DBD-MySQL</rpm>
+    <rpm>perl-DBI</rpm>
+    <rpm>mysql-server</rpm>
+  </rpmlist2>
+
+  <rpmlist2>
+    <scope>
+      <distribution>redhat</distribution>
+      <distribution_version>8.0</distribution_version>
+    </scope>
+    <rpm>MySQL-client</rpm>
+    <rpm>libmysql10</rpm>
+    <rpm>perl-DBI</rpm>
+    <rpm>perl-Mysql</rpm>
+    <rpm>perl-ExtUtils-PerlPP</rpm>
+  </rpmlist2>
+
+  <rpmlist2>
+    <rpm>oda</rpm>
+  </rpmlist2>
+
   <rpmlist>
     <all>
       <rpm>mysql</rpm>
@@ -75,17 +102,30 @@
 	node          cluster node name of the record to modify
 
 	 -->
-	<shortcut> add_dns_server_to_node insert_record nodes_included_dns_servers nodes_included_dns_servers.server~%1 nodes.name=%2 nodes_included_dns_servers.node_id~nodes.id </shortcut>
+	<shortcut> add_dns_server_to_node
+ 	           insert_record
+                   nodes_included_dns_servers
+                   nodes_included_dns_servers.server~%1
+                   nodes.name=%2
+                   nodes_included_dns_servers.node_id~nodes.id
+        </shortcut>
         <!--
 
-	add_node_to_node_group adds a compute node to a
-	node group, required and only parameters are:
+	add_node_to_node_group adds a node to a node group,
+	required and only parameters are:
 
-	node          name of the cluster node to add to group
+	node          name of the node to add
 	node_group    name of the node group to add it to
 
 	 -->
-	<shortcut> add_node_to_node_group insert_record node_groups_included_nodes nodes.name=%1 node_groups.name=%2 node_groups_included_nodes.included_node_id~nodes.id node_groups_included_nodes.node_group_id~node_groups.id </shortcut>
+	<shortcut> add_node_to_node_group insert_record 
+	           node_groups_included_nodes
+	           nodes.name=%1
+		   node_groups_included_nodes.included_node_id~nodes.id
+		   node_groups.name=%2
+		   node_groups_included_nodes.node_group_id~node_groups.id
+       
+        </shortcut>
         <!--
 
 	add_package_set_to_node adds a software package set to a
@@ -95,7 +135,14 @@
 	node          name of the compute node record to add it to
 
 	 -->
-	<shortcut> add_package_set_to_node insert_record nodes_included_package_sets package_sets.name=%1 nodes.name=%2 nodes_included_package_sets.node_id~nodes.id nodes_included_package_sets.package_set_id~package_sets.id </shortcut>
+	<shortcut> add_package_set_to_node
+                   insert_record
+                   nodes_included_package_sets
+                   package_sets.name=%1
+                   nodes.name=%2
+                   nodes_included_package_sets.node_id~nodes.id
+                   nodes_included_package_sets.package_set_id~package_sets.id
+        </shortcut>
         <!--
 
 	add_package_to_package_set adds a software package set to
@@ -105,7 +152,14 @@
 	set           name of the package set record to add it to
 
 	 -->
-	<shortcut> add_package_to_package_set insert_record package_sets_included_packages packages.name=%1 package_sets.name=%2 package_sets_included_packages.included_package_id~packages.id package_sets_included_packages.package_set_id~package_sets.id </shortcut>
+	<shortcut> add_package_to_package_set
+                   insert_record
+                   package_sets_included_packages
+                   packages.name=%1
+                   package_sets.name=%2
+                   package_sets_included_packages.included_package_id~packages.id
+                   package_sets_included_packages.package_set_id~package_sets.id
+        </shortcut>
         <!--
 
 	add_partition_to_disk_layout adds a disk partition to a
@@ -118,8 +172,22 @@
 	layout	      name of the disk layout record to add it to
 
 	 -->
-	<shortcut> add_partition_to_disk_layout insert_record disk_partitions partition~%1 offset~%2 size~%3 type~%4 disk_layouts.name=%5 disk_layout_id~disk_layouts.id </shortcut>
-	<shortcut> conflicts_with_package read_records packages_conflicts package=%1 name </shortcut>
+	<shortcut> add_partition_to_disk_layout
+                   insert_record
+                   disk_partitions
+                   partition~%1
+                   offset~%2
+                   size~%3
+                   type~%4
+                   disk_layouts.name=%5
+                   disk_layout_id~disk_layouts.id
+        </shortcut>
+	<shortcut> conflicts_with_package
+                   read_records
+                   packages_conflicts
+                   package=%1
+                   name
+        </shortcut>
         <!--
 
 	create_disk_layout creates a new disk layout record,
@@ -132,7 +200,12 @@
 	units         for offsets and sizes (default mb)
 
 	 -->
-	<shortcut> create_disk_layout insert_record disk_partitions disk_partitions.name~%1 %+ </shortcut>
+	<shortcut> create_disk_layout
+                   insert_record
+                   disk_partitions
+                   disk_partitions.name~%1
+                   %+
+        </shortcut>
         <!--
 
 	create_image creates a new image record,
@@ -145,7 +218,12 @@
 	path          base directory path on server
 
 	 -->
-	<shortcut> create_image insert_record images images.name~%1 %+ </shortcut>
+	<shortcut> create_image
+                   insert_record
+                   images
+                   images.name~%1
+                   %+
+        </shortcut>
         <!--
 
 	create_network creates a new network record,
@@ -158,7 +236,12 @@
 	cluster_only  non-zero if private cluster network
 
 	 -->
-	<shortcut> create_network insert_record networks networks.name~%1 %+ </shortcut>
+	<shortcut> create_network
+                   insert_record
+                   networks
+                   networks.name~%1
+                   %+
+        </shortcut>
         <!--
 
 	create_nic_on_node creates a new network interface entry
@@ -178,7 +261,14 @@
         netmask	      netmask mask of the network
 
 	 -->
-	<shortcut> create_nic_on_node insert_record nics nics.name~%1 nodes.name=%2 nics.node_id~nodes.id %+ </shortcut>
+	<shortcut> create_nic_on_node
+                   insert_record
+                   nics
+                   nics.name~%1
+                   nodes.name=%2
+                   nics.node_id~nodes.id
+                   %+
+        </shortcut>
         <!--
 
 	create_node creates a new node record,
@@ -199,7 +289,12 @@
 	units	      units for ram and swap
 
 	 -->
-	<shortcut> create_node insert_record nodes nodes.name~%1 %+ </shortcut>
+	<shortcut> create_node
+                   insert_record
+                   nodes
+                   nodes.name~%1
+                   %+
+        </shortcut>
         <!--
 
 	create_node_group creates a new node group record,
@@ -208,7 +303,12 @@
 	name          name of the node group
 
 	 -->
-	<shortcut> create_node_group insert_record node_groups node_groups.name~%1 %+ </shortcut>
+	<shortcut> create_node_group
+                   insert_record
+                   node_groups
+                   node_groups.name~%1
+                   %+
+        </shortcut>
         <!--
 
 	create_package_set creates a new software package set record,
@@ -217,7 +317,34 @@
 	name          name of the package set
 
 	 -->
-	<shortcut> create_package_set insert_record package_sets package_sets.name~%1 %+ </shortcut>
+	<shortcut> create_package_set
+                   insert_record
+                   package_sets
+                   package_sets.name~%1
+                   %+
+        </shortcut>
+        <!--
+
+	delete_all_node_groups deletes all node groups.
+
+	The portions of this multiple commands shortcut do:
+	Remove all records from node groups/included nodes table.
+	Remove all records from node groups/included node groups table.
+	Remove all records from node_groups names/ids table.
+	 -->
+	<shortcut> delete_all_node_groups
+                   delete_records
+                   node_groups_included_nodes
+                   node_group_id=node_group_id
+                   ;
+                   delete_records
+                   node_groups_included_node_groups
+                   node_group_id=node_group_id
+                   ;
+                   delete_records
+                   node_groups
+                   name=name
+        </shortcut>
         <!--
 
 	delete_all_package_sets deletes all software packages.
@@ -229,13 +356,118 @@
 	Remove all records from nodes/included package sets table.
 	Remove all records from package_set names/ids table.
 	 -->
-	<shortcut> delete_all_package_sets modify_records oscar selected_package_set_id~0 ; delete_records package_sets_included_packages package_set_id=package_set_id ; delete_records package_sets_included_package_sets package_set_id=package_set_id ; delete_records package_sets_included_package_sets package_set_id=package_set_id ; delete_records nodes_included_package_sets node_id=node_id ; delete_records package_sets name=name </shortcut>
-	<shortcut> delete_disk_layout delete_records disk_partitions.disk_layout_id=disk_layouts.id disk_layouts.name=%1 ; delete_records disk_layouts name=%1 </shortcut>
-	<shortcut> delete_image modify_records nodes nodes.image_id=images.id images.name=%1 nodes.images_id~0 ; delete_records images name=%1 </shortcut>
-	<shortcut> delete_network modify_records nics nics.network_id=networks.id networks.name=%1 nics.network_id~0 ; delete_records networks name=%1 </shortcut>
-	<shortcut> delete_nic_from_node delete_records nics nics.name=%1 nodes.name=%2 nics.node_id=nodes.id </shortcut>
-	<shortcut> delete_node delete_records nics nics.node_id=nodes.id nodes.name=%1 ; delete_records node_groups_included_nodes node_groups_included_nodes.included_node_id=nodes.id nodes.name=%1 ; delete_records nodes_included_package_sets nodes_included_package_set.node_id=nodes.id nodes.name=%1 ; modify_records oscar oscar.oscar_server_node_id=nodes.id nodes.name=%1 oscar.oscar_server_node_id~0 ; delete_records nodes name=%1 </shortcut>
-	<shortcut> delete_records node_groups_included_nodes node_groups_included_nodes.node_group_id=node_groups.id node_groups.name=%1 ; delete_records node_groups_included_node_groups node_groups_included_node_groups.node_group_id=node_groups.id node_groups.name=%1 ; delete_records node_groups_included_node_groups node_groups_included_node_groups.included_node_group_id=node_groups.id node_groups.name=%1 ; delete_node_group delete_records node_groups name=%1 </shortcut>
+	<shortcut> delete_all_package_sets
+                   modify_records
+                   oscar
+                   selected_package_set_id~0
+                   ;
+                   delete_records
+                   package_sets_included_packages
+                   package_set_id=package_set_id
+                   ;
+                   delete_records
+                   package_sets_included_package_sets
+                   package_set_id=package_set_id
+                   ;
+                   delete_records
+                   package_sets_included_package_sets
+                   package_set_id=package_set_id
+                   ;
+                   delete_records
+                   nodes_included_package_sets
+                   node_id=node_id
+                   ;
+                   delete_records
+                   package_sets
+                   name=name
+        </shortcut>
+	<shortcut> delete_disk_layout
+                   delete_records
+                   disk_partitions.disk_layout_id=disk_layouts.id
+                   disk_layouts.name=%1
+                   ;
+                   delete_records
+                   disk_layouts
+                   name=%1
+        </shortcut>
+	<shortcut> delete_image
+                   modify_records
+                   nodes
+                   nodes.image_id=images.id
+                   images.name=%1
+                   nodes.images_id~0
+                   ;
+                   delete_records
+                   images
+                   name=%1
+        </shortcut>
+	<shortcut> delete_network
+                   modify_records
+                   nics
+                   nics.network_id=networks.id
+                   networks.name=%1
+                   nics.network_id~0
+                   ;
+                   delete_records
+                   networks
+                   name=%1
+        </shortcut>
+	<shortcut> delete_nic_from_node
+                   delete_records
+                   nics
+                   nics.name=%1
+                   nodes.name=%2
+                   nics.node_id=nodes.id
+        </shortcut>
+	<shortcut> delete_node
+                   delete_records
+                   nics
+                   nics.node_id=nodes.id
+                   nodes.name=%1
+                   ;
+                   delete_records
+                   node_groups_included_nodes
+                   node_groups_included_nodes.included_node_id=nodes.id
+                   nodes.name=%1
+                   ;
+                   delete_records
+                   nodes_included_package_sets
+                   nodes_included_package_set.node_id=nodes.id
+                   nodes.name=%1
+                   ;
+                   modify_records
+                   oscar
+                   oscar.oscar_server_node_id=nodes.id
+                   nodes.name=%1
+                   oscar.oscar_server_node_id~0
+                   ;
+                   delete_records
+                   nodes
+                   name=%1
+        </shortcut>
+        <!--
+
+	delete_node_group delete  a single node group.
+
+	The portions of this multiple commands shortcut do:
+	Remove all appropriate records from node groups/included nodes table.
+	Remove all appropriate records from node groups/included node groups table.
+	Remove the appropriate record from node_groups names/ids table.
+	 -->
+	<shortcut> delete_node_group
+                   remove_node_group_from_all_node_groups
+                   %1
+                   ;
+                   remove_all_nodes_from_node_group
+                   %1
+                   ;
+                   remove_all_node_groups_from_node_group
+                   %1
+                   ;
+                   delete_records
+                   node_groups
+                   name=%1
+        </shortcut>
         <!--
 
 	delete_package_set deletes a software package set record,
@@ -250,89 +482,615 @@
 	Remove all records for the deleted package set from the nodes/included package sets table.
 	Remove all records for the deleted package set from the package_set names/ids table.
 	 -->
-	<shortcut> delete_package_set modify_records oscar oscar.selected_package_set_id=package_sets.id package_sets.name=%1 oscar.selected_package_set_id~0 ; remove_all_packages_from_package_set %1 ; remove_all_package_sets_from_package_set %1 ; delete_records package_sets_included_package_sets package_sets_included_package_sets.package_set_id=package_sets.package_id package_sets.name=%1 ; delete_records nodes_included_package_sets nodes_included_package_sets.included_package_set_id=package_sets.id package_sets.name=%1 ; delete_records package_sets name=%1 </shortcut>
-	<shortcut> disk_layout_id_to_name read_records disk_layouts id=%1 name </shortcut>
-	<shortcut> disk_layout_name_to_id read_records disk_layouts name=%1 id </shortcut>
-	<shortcut> disk_layouts read_records|modify_records disk_layouts.name %+ </shortcut>
-	<shortcut> image_id_to_name read_records images id=%1 name </shortcut>
-	<shortcut> image_name_to_id read_records images name=%1 id </shortcut>
-	<shortcut> images read_records|modify_records images.name %+ </shortcut>
-	<shortcut> link_node_nic_to_network modify_records nics nodes.name=%1 nics.name=%2 networks.name=%3 nics.node_id~nodes.id nics.network_id~networks.id </shortcut>
-	<shortcut> link_node_to_disk_layout modify_records modes nodes.name=%1 disk_layouts.name=%2 nodes.disk_layout_id~disk_layouts.id </shortcut>
-	<shortcut> link_node_to_image modify_records nodes nodes.name=%1 images.name=%2 nodes.image_id~images.id </shortcut>
-	<shortcut> list_nics_on_node read_records nodes.name=%1 nics.node_id=nodes.id nics.name </shortcut>
-	<shortcut> list_node_nics_on_network read_records networks.name=%1 nics.node_id=nodes.id nics.network_id=networks.id nodes.name nics.name </shortcut>
-	<shortcut> list_nodes_in_disk_layout read_records disk_layouts.name=%1 disk_layouts.id=nodes.disk_layout_id nodes.name </shortcut>
-	<shortcut> list_nodes_in_image read_records images.name=%1 images.id=nodes.image_id nodes.name </shortcut>
-	<shortcut> list_nodes_on_network read_records networks.name=%1 nics.node_id=nodes.id nics.network_id=networks.id nodes.name </shortcut>
-	<shortcut> list_nodes_using_dns_server read_records nodes_included_dns_servers.server=%1 nodes_included_dns_servers.node_id=nodes.id nodes.name </shortcut>
-	<shortcut> network_id_to_name read_records networks id=%1 name </shortcut>
-	<shortcut> network_name_to_id read_records networks name=%1 id </shortcut>
-	<shortcut> networks read_records|modify_records networks.name %+ </shortcut>
-	<shortcut> nics read_records|modify_records nics.name %+ </shortcut>
-	<shortcut> node_cluster_only_ips read_records nodes.name=%1 nics.node_id=nodes.id nics.network_id=networks.id networks.cluster_only!=0 nics.ip </shortcut>
-	<shortcut> node_group_id_to_name read_records node_groups id=%1 name </shortcut>
-	<shortcut> node_group_name_to_id read_records node_groups name=%1 id </shortcut>
-	<shortcut> node_groups read_records|modify_records node_groups node_groups.name %+ </shortcut>
-	<shortcut> node_id_to_name read_records nodes id=%1 name </shortcut>
-	<shortcut> node_ips read_records nodes.name=%1 nics.node_id=nodes.id nics.network_id=networks.id nics.ip </shortcut>
-	<shortcut> node_name_to_id read_records nodes name=%1 id </shortcut>
-	<shortcut> node_public_ips read_records nodes.name=%1 nics.node_id=nodes.id nics.network_id=networks.id networks.cluster_only=0 nics.ip </shortcut>
-	<shortcut> nodes read_records|modify_records nodes nodes.name %+ </shortcut>
-	<shortcut> nodes_cluster_only_ips read_records nics.node_id=nodes.id nics.network_id=networks.id networks.cluster_only!=0 nics.ip </shortcut>
-	<shortcut> nodes_public_ips read_records nics.node_id=nodes.id nics.network_id=networks.id networks.cluster_only=0 nics.ip </shortcut>
-	<shortcut> oscar_server read_records oscar.oscar_server_id!=undef oscar.oscar_server_id=nodes.id nodes.name </shortcut>
-	<shortcut> oscar_version read_records oscar.oscar_version!=undef oscar.oscar_version </shortcut>
-	<shortcut> package_id_to_name read_records packages id=%1 name </shortcut>
-	<shortcut> package_name_to_id read_records packages name=%1 id </shortcut>
-	<shortcut> package_set_id_to_name read_records package_sets id=%1 name </shortcut>
-	<shortcut> package_set_name_to_id read_records package_sets name=%1 id </shortcut>
-	<shortcut> package_sets read_records package_sets.name %+ </shortcut>
-	<shortcut> packages read_records|modify_records packages packages.name %+ </shortcut>
-	<shortcut> packages_conflicts_with_package read_records packages_conflicts package=%1 type="package" name </shortcut>
-        <shortcut> packages_in_package_set read_records package_sets.name=%1 package_sets.id=package_sets_included_packages.package_set_id package_sets_included_packages.included_package_id=packages.id packages.name %+ </shortcut>
-        <shortcut> packages_in_selected_package_set packages_in_package_set package_sets.name oscar.selected_package_set_id=package_sets.id %+ </shortcut>
-	<shortcut> packages_installable packages packages.installable!=0 %+ </shortcut>
-        <shortcut> packages_installable_in_selected_package_set packages_in_selected_package_set packages.installable!=0 %+ </shortcut>
-	<shortcut> packages_provided_by_package provided_by_package %1 packages_provides.type="package" </shortcut>
-	<shortcut> packages_required_by_package required_by_package %1 packages_requires.type="package" </shortcut>
-	<shortcut> packages_that_conflict read_records packages_conflicts packages_conflicts.name=%1 packages_conflicts.package %+ </shortcut>
-	<shortcut> packages_that_conflict_package packages_that_conflict %1 packages_conflicts.type="package" </shortcut>
-	<shortcut> packages_that_provide read_records packages_provides packages_provides.name=%1 packages_provides.package %+ </shortcut>
-	<shortcut> packages_that_provide_package packages_that_provide %1 packages_provides.type="package" </shortcut>
-	<shortcut> packages_that_require read_records packages_requires packages_requires.name=%1 packages_requires.package </shortcut>
-	<shortcut> packages_that_require_package packages_that_require %1 packages_requires.type="package" </shortcut>
-	<shortcut> packages_uninstallable packages packages.installable=0 %+ </shortcut>
-	<shortcut> provided_by_package read_records packages_provides packages_provides.package=%1 packages_provides.name %+ </shortcut>
-	<shortcut> remove_all_package_sets_from_package_set delete_records package_sets_included_package_sets package_sets.name=%1 package_sets.id=package_sets_included_package_sets.included_package_set_id </shortcut>
-	<shortcut> remove_all_packages_from_all_package_sets delete_records package_sets_included_packages </shortcut>
-	<shortcut> remove_all_packages_from_package_set delete_records package_sets_included_packages package_sets.name=%1 package_sets.id=package_sets_included_packages.package_set_id </shortcut>
-	<shortcut> remove_disk_partition_from_disk_layout delete_records disk_partitions disk_partitions.partition=%1 disk_layouts.name=%2 disk_layouts.id=disk_partitions.disk_layout_id </shortcut>
-	<shortcut> remove_dns_server_from_node delete_records nodes_included_dns_servers nodes_included_dns_servers.server=%1 nodes.name=%2 nodes_included_dns_servers.node_id=nodes.id </shortcut>
-	<shortcut> remove_package_from_package_set delete_records package_sets_included_packages packages.name=%1 package_sets.name=%2 package_sets.id=package_sets_included_packages.package_set_id package_sets_included_packages.included_package_id=packages.id</shortcut>
-	<shortcut> remove_package_set_from_node delete_records nodes_included_package_sets nodes_included_package_sets.package_set_id=package_sets.id package_sets.name=%1 nodes.name=%2 nodes_included_package_sets.node_id=nodes.id </shortcut>
-	<shortcut> rename_disk_layout modify_records disk_layouts name=%1 name~%2 </shortcut>
-	<shortcut> rename_image modify_records images name=%1 name~%2 </shortcut>
-	<shortcut> rename_network modify_records networks name=%1 name~%2 </shortcut>
-	<shortcut> rename_node modify_records nodes name=%1 name~%2 </shortcut>
-	<shortcut> rename_node_group modify_records node_groups name=%1 name~%2 </shortcut>
-	<shortcut> rename_node_nic modify_records nics nodes.name=%1 nics.name=%2 nics.node_id=nodes.id nics.name~%3 </shortcut>
-	<shortcut> rename_package_set modify_records package_sets name=%1 name~%2 </shortcut>
-	<shortcut> required_by_package read_records packages_requires packages_requires.package=%1 packages_requires.name %+ </shortcut>
-	<shortcut> selected_package_set read_records oscar.selected_package_set_id!=undef oscar.selected_package_set_id=package_sets.id package_sets.name </shortcut>
-	<shortcut> set_package_installable modify_records packages name=%1 installable~1 </shortcut>
-	<shortcut> set_package_uninstallable modify_records packages name=%1 installable~0 </shortcut>
-	<shortcut> set_oscar_server modify_records nodes.name=%1 oscar.oscar_server_id~nodes.id </shortcut>
-	<shortcut> set_selected_package_set modify_records package_sets.name=%1 oscar.selected_package_set_id~package_sets.id </shortcut>
-	<shortcut> unlink_node_from_disk_layouts modify_records nodes nodes.name=%1 nodes.disk_layout_id~undef </shortcut>
-	<shortcut> unlink_node_from_images modify_records nodes nodes.name=%1 nodes.image_id~undef </shortcut>
-	<shortcut> unlink_node_nic_from_networks modify_records nics nodes.name=%1 nics.name=%2 nics.node_id=nodes.id nics.network_id~undef </shortcut>
-	<shortcut> which_disk_layout_has_node read_records disk_layouts.id=nodes.disk_layout_id nodes.name=%1 disk_layouts.name </shortcut>
-	<shortcut> which_image_has_node read_records images.id=nodes.image_id nodes.name=%1 images.name </shortcut>
-	<shortcut> which_networks_have_node read_records nodes.name=%1 nics.node_id=nodes.id nics.network_id=networks.id networks.name </shortcut>
-	<shortcut> which_node_groups_have_group read_records node_groups.name=%1 node_groups.id=node_groups_included_node_groups.included_group_id node_groups.name </shortcut>
-	<shortcut> which_node_groups_have_node read_records nodes.name=%1 nodes.id=node_groups_included_nodes.included_node_id node_groups.name </shortcut>
-	<shortcut> which_package_sets_have_package read_records packages.name=%1 package_sets_included_packages.included_package_id=packages.id package_sets_included_packages.package_set_id=package_sets.id package_sets.name </shortcut>
+	<shortcut> delete_package_set
+                   modify_records
+                   oscar
+                   oscar.selected_package_set_id=package_sets.id
+                   package_sets.name=%1
+                   oscar.selected_package_set_id~0
+                   ;
+                   remove_all_packages_from_package_set
+                   %1
+                   ;
+                   remove_all_package_sets_from_package_set
+                   %1
+                   ;
+                   delete_records
+                   package_sets_included_package_sets
+                   package_sets_included_package_sets.package_set_id=package_sets.package_id
+                   package_sets.name=%1
+                   ;
+                   delete_records
+                   nodes_included_package_sets
+                   nodes_included_package_sets.included_package_set_id=package_sets.id
+                   package_sets.name=%1
+                   ;
+                   delete_records
+                   package_sets
+                   name=%1
+        </shortcut>
+	<shortcut> disk_layout_id_to_name
+                   read_records
+                   disk_layouts
+                   id=%1
+                   name
+        </shortcut>
+	<shortcut> disk_layout_name_to_id
+                   read_records
+                   disk_layouts
+                   name=%1
+                   id
+        </shortcut>
+	<shortcut> disk_layouts
+                   read_records|modify_records
+                   disk_layouts.name
+                   %+
+        </shortcut>
+	<shortcut> image_id_to_name
+                   read_records
+                   images
+                   id=%1
+                   name
+        </shortcut>
+	<shortcut> image_name_to_id
+                   read_records
+                   images
+                   name=%1
+                   id
+        </shortcut>
+	<shortcut> images
+                   read_records|modify_records
+                   images.name
+                   %+
+                  
+        </shortcut>
+	<shortcut> link_node_nic_to_network
+                   modify_records
+                   nics
+                   nodes.name=%1
+                   nics.name=%2
+                   networks.name=%3
+                   nics.node_id~nodes.id
+                   nics.network_id~networks.id
+        </shortcut>
+	<shortcut> link_node_to_disk_layout
+                   modify_records
+                   modes
+                   nodes.name=%1
+                   disk_layouts.name=%2
+                   nodes.disk_layout_id~disk_layouts.id
+        </shortcut>
+	<shortcut> link_node_to_image
+                   modify_records
+                   nodes
+                   nodes.name=%1
+                   images.name=%2
+                   nodes.image_id~images.id
+        </shortcut>
+	<shortcut> list_nics_on_node
+                   read_records
+                   nodes.name=%1
+                   nics.node_id=nodes.id
+                   nics.name
+        </shortcut>
+	<shortcut> list_node_nics_on_network
+                   read_records
+                   networks.name=%1
+                   nics.node_id=nodes.id
+                   nics.network_id=networks.id
+                   nodes.name
+                   nics.name
+        </shortcut>
+	<shortcut> list_nodes_in_disk_layout
+                   read_records
+                   disk_layouts.name=%1
+                   disk_layouts.id=nodes.disk_layout_id
+                   nodes.name
+        </shortcut>
+	<shortcut> list_nodes_in_image
+                   read_records
+                   images.name=%1
+                   images.id=nodes.image_id
+                   nodes.name
+        </shortcut>
+	<shortcut> list_nodes_on_network
+                   read_records
+                   networks.name=%1
+                   nics.node_id=nodes.id
+                   nics.network_id=networks.id
+                   nodes.name
+        </shortcut>
+	<shortcut> list_nodes_using_dns_server
+                   read_records
+                   nodes_included_dns_servers.server=%1
+                   nodes_included_dns_servers.node_id=nodes.id
+                   nodes.name
+        </shortcut>
+	<shortcut> network_id_to_name
+                   read_records
+                   networks
+                   id=%1
+                   name
+        </shortcut>
+	<shortcut> network_name_to_id
+                   read_records
+                   networks
+                   name=%1
+                   id
+        </shortcut>
+	<shortcut> networks
+                   read_records|modify_records
+                   networks.name
+                   %+
+        </shortcut>
+	<shortcut> nics
+                   read_records|modify_records
+                   nics.name
+                   %+
+        </shortcut>
+	<shortcut> node_cluster_only_ips
+                   read_records
+                   nodes.name=%1
+                   nics.node_id=nodes.id
+                   nics.network_id=networks.id
+                   networks.cluster_only!=0
+                   nics.ip
+        </shortcut>
+	<shortcut> node_group_id_to_name
+                   read_records
+                   node_groups
+                   id=%1
+                   name
+        </shortcut>
+	<shortcut> node_group_name_to_id
+                   read_records
+                   node_groups
+                   name=%1
+                   id
+        </shortcut>
+	<shortcut> node_groups
+                   read_records|modify_records
+                   node_groups
+                   node_groups.name
+                   %+
+        </shortcut>
+	<shortcut> node_id_to_name
+                   read_records
+                   nodes
+                   id=%1
+                   name
+        </shortcut>
+	<shortcut> node_ips
+                   read_records
+                   nodes.name=%1
+                   nics.node_id=nodes.id
+                   nics.network_id=networks.id
+                   nics.ip
+        </shortcut>
+	<shortcut> node_name_to_id
+                   read_records
+                   nodes
+                   name=%1
+                   id
+        </shortcut>
+	<shortcut> node_public_ips
+                   read_records
+                   nodes.name=%1
+                   nics.node_id=nodes.id
+                   nics.network_id=networks.id
+                   networks.cluster_only=0
+                   nics.ip
+        </shortcut>
+	<shortcut> nodes
+                   read_records|modify_records
+                   nodes
+                   nodes.name
+                   %+
+        </shortcut>
+	<shortcut> nodes_cluster_only_ips
+                   read_records
+                   nics.node_id=nodes.id
+                   nics.network_id=networks.id
+                   networks.cluster_only!=0
+                   nics.ip
+        </shortcut>
+        <!--
+
+	nodes_in_node_group lists the nodes that are in a node group,
+	note that this does not include the nodes that are in node
+	groups that are also part of the main node group in question.
+	required parameters are:
+
+	name          name of the node group
+
+	 -->
+	<shortcut> nodes_in_node_group
+                   read_records
+                   node_groups.name=%1
+                   node_groups.id=node_groups_included_nodes.node_group_id
+                   node_groups_included_nodes.included_node_id=nodes.id
+                   nodes.name
+        </shortcut>
+	<shortcut> nodes_public_ips
+                   read_records
+                   nics.node_id=nodes.id
+                   nics.network_id=networks.id
+                   networks.cluster_only=0
+                   nics.ip
+        </shortcut>
+	<shortcut> oscar_server
+                   read_records
+                   oscar.oscar_server_id!=undef
+                   oscar.oscar_server_id=nodes.id
+                   nodes.name
+        </shortcut>
+	<shortcut> oscar_version
+                   read_records
+                   oscar.oscar_version!=undef
+                   oscar.oscar_version
+        </shortcut>
+	<shortcut> package_id_to_name
+                   read_records
+                   packages
+                   id=%1
+                   name
+        </shortcut>
+	<shortcut> package_name_to_id
+                   read_records
+                   packages
+                   name=%1
+                   id
+        </shortcut>
+	<shortcut> package_set_id_to_name
+                   read_records
+                   package_sets
+                   id=%1
+                   name
+        </shortcut>
+	<shortcut> package_set_name_to_id
+                   read_records
+                   package_sets
+                   name=%1
+                   id
+        </shortcut>
+	<shortcut> package_sets
+                   read_records
+                   package_sets.name
+                   %+
+        </shortcut>
+	<shortcut> packages
+                   read_records|modify_records
+                   packages
+                   packages.name
+                   %+
+        </shortcut>
+	<shortcut> packages_conflicts_with_package
+                   read_records
+                   packages_conflicts
+                   package=%1
+                   type="package"
+                   name
+        </shortcut>
+        <shortcut> packages_in_package_set
+                   read_records
+                   package_sets.name=%1
+                   package_sets.id=package_sets_included_packages.package_set_id
+                   package_sets_included_packages.included_package_id=packages.id
+                   packages.name
+                   %+
+        </shortcut>
+        <shortcut> packages_in_selected_package_set
+                   packages_in_package_set
+                   package_sets.name
+                   oscar.selected_package_set_id=package_sets.id
+                   %+
+        </shortcut>
+	<shortcut> packages_installable
+                   packages
+                   packages.installable!=0
+                   %+
+        </shortcut>
+        <shortcut> packages_installable_in_selected_package_set
+                   packages_in_selected_package_set
+                   packages.installable!=0
+                   %+
+        </shortcut>
+	<shortcut> packages_provided_by_package
+                   provided_by_package
+                   %1
+                   packages_provides.type="package"
+        </shortcut>
+	<shortcut> packages_required_by_package
+                   required_by_package
+                   %1
+                   packages_requires.type="package"
+        </shortcut>
+	<shortcut> packages_that_conflict
+                   read_records
+                   packages_conflicts
+                   packages_conflicts.name=%1
+                   packages_conflicts.package
+                   %+
+        </shortcut>
+	<shortcut> packages_that_conflict_package
+                   packages_that_conflict
+                   %1
+                   packages_conflicts.type="package"
+        </shortcut>
+	<shortcut> packages_that_provide
+                   read_records
+                   packages_provides
+                   packages_provides.name=%1
+                   packages_provides.package
+                   %+
+        </shortcut>
+	<shortcut> packages_that_provide_package
+                   packages_that_provide
+                   %1
+                   packages_provides.type="package"
+        </shortcut>
+	<shortcut> packages_that_require
+                   read_records
+                   packages_requires
+                   packages_requires.name=%1
+                   packages_requires.package
+        </shortcut>
+	<shortcut> packages_that_require_package
+                   packages_that_require
+                   %1
+                   packages_requires.type="package"
+        </shortcut>
+	<shortcut> packages_uninstallable
+                   packages
+                   packages.installable=0
+                   %+
+        </shortcut>
+	<shortcut> provided_by_package
+                   read_records
+                   packages_provides
+                   packages_provides.package=%1
+                   packages_provides.name
+                   %+
+        </shortcut>
+	<shortcut> remove_all_node_groups_from_node_group
+                   delete_records
+                   node_groups_included_node_groups
+                   node_groups.name=%1
+                   node_groups.id=node_groups_included_node_groups.node_group_id
+        </shortcut>
+	<shortcut> remove_all_nodes_from_all_node_groups
+                   delete_records
+                   node_groups_included_nodes
+                   node_group_id=node_group_id
+        </shortcut>
+	<shortcut> remove_all_nodes_from_node_group
+                   delete_records
+                   node_groups_included_nodes
+                   node_groups.name=%1
+                   node_groups.id=node_groups_included_nodes.node_group_id
+        </shortcut>
+	<shortcut> remove_node_from_all_node_groups
+                   delete_records
+                   node_groups_included_nodes
+                   nodes.name=%1
+                   nodes.id=node_groups_included_nodes.included_node_id
+        </shortcut>
+	<shortcut> remove_node_from_node_group
+                   delete_records
+                   node_groups_included_nodes
+                   nodes.name=%1
+                   nodes.id=node_groups_included_nodes.included_node_id
+                   node_groups.name=%2
+                   node_groups.id=node_groups_included_nodes.node_group_id
+        </shortcut>
+	<shortcut> remove_node_group_from_all_node_groups
+                   delete_records
+                   node_groups_included_node_groups
+                   node_groups.name=%1
+                   node_groups.id=node_groups_included_node_groups.included_node_group_id
+        </shortcut>
+	<shortcut> remove_package_from_all_package_sets
+                   delete_records
+                   package_sets_included_packages
+                   packages.name=%1
+                   packages.id=package_sets_included_packages.included_package_id
+        </shortcut>
+	<shortcut> remove_package_set_from_all_package_sets
+                   delete_records
+                   package_sets_included_package_sets
+                   package_sets.name=%1
+                   package_sets.id=package_sets_included_package_sets.included_package_set_id
+        </shortcut>
+
+
+	<shortcut> remove_all_node_groups_from_all_node_groups
+                   delete_records
+                   node_groups_included_node_groups
+                   node_group_id=node_group_id
+        </shortcut>
+	<shortcut> remove_all_package_sets_from_package_set
+                   delete_records
+                   package_sets_included_package_sets
+                   package_sets.name=%1
+                   package_sets.id=package_sets_included_package_sets.included_package_set_id
+        </shortcut>
+	<shortcut> remove_all_packages_from_all_package_sets
+                   delete_records
+                   package_sets_included_packages
+        </shortcut>
+	<shortcut> remove_all_packages_from_package_set
+                   delete_records
+                   package_sets_included_packages
+                   package_sets.name=%1
+                   package_sets.id=package_sets_included_packages.package_set_id
+        </shortcut>
+	<shortcut> remove_disk_partition_from_disk_layout
+                   delete_records
+                   disk_partitions
+                   disk_partitions.partition=%1
+                   disk_layouts.name=%2
+                   disk_layouts.id=disk_partitions.disk_layout_id
+        </shortcut>
+	<shortcut> remove_dns_server_from_node
+                   delete_records
+                   nodes_included_dns_servers
+                   nodes_included_dns_servers.server=%1
+                   nodes.name=%2
+                   nodes_included_dns_servers.node_id=nodes.id
+        </shortcut>
+	<shortcut> remove_package_from_package_set
+                   delete_records
+                   package_sets_included_packages
+                   packages.name=%1
+                   package_sets.name=%2
+                   package_sets.id=package_sets_included_packages.package_set_id
+                   package_sets_included_packages.included_package_id=packages.id</shortcut>
+	<shortcut> remove_package_set_from_node
+                   delete_records
+                   nodes_included_package_sets
+                   nodes_included_package_sets.package_set_id=package_sets.id
+                   package_sets.name=%1
+                   nodes.name=%2
+                   nodes_included_package_sets.node_id=nodes.id
+        </shortcut>
+	<shortcut> rename_disk_layout
+                   modify_records
+                   disk_layouts
+                   name=%1
+                   name~%2
+        </shortcut>
+	<shortcut> rename_image
+                   modify_records
+                   images
+                   name=%1
+                   name~%2
+        </shortcut>
+	<shortcut> rename_network
+                   modify_records
+                   networks
+                   name=%1
+                   name~%2
+        </shortcut>
+	<shortcut> rename_node
+                   modify_records
+                   nodes
+                   name=%1
+                   name~%2
+        </shortcut>
+	<shortcut> rename_node_group
+                   modify_records
+                   node_groups
+                   name=%1
+                   name~%2
+        </shortcut>
+	<shortcut> rename_node_nic
+                   modify_records
+                   nics
+                   nodes.name=%1
+                   nics.name=%2
+                   nics.node_id=nodes.id
+                   nics.name~%3
+        </shortcut>
+	<shortcut> rename_package_set
+                   modify_records
+                   package_sets
+                   name=%1
+                   name~%2
+        </shortcut>
+	<shortcut> required_by_package
+                   read_records
+                   packages_requires
+                   packages_requires.package=%1
+                   packages_requires.name
+                   %+
+        </shortcut>
+	<shortcut> selected_package_set
+                   read_records
+                   oscar.selected_package_set_id!=undef
+                   oscar.selected_package_set_id=package_sets.id
+                   package_sets.name
+        </shortcut>
+	<shortcut> set_package_installable
+                   modify_records
+                   packages
+                   name=%1
+                   installable~1
+        </shortcut>
+	<shortcut> set_package_uninstallable
+                   modify_records
+                   packages
+                   name=%1
+                   installable~0
+        </shortcut>
+	<shortcut> set_oscar_server
+                   modify_records
+                   nodes.name=%1
+                   oscar.oscar_server_id~nodes.id
+        </shortcut>
+	<shortcut> set_selected_package_set
+                   modify_records
+                   package_sets.name=%1
+                   oscar.selected_package_set_id~package_sets.id
+        </shortcut>
+	<shortcut> unlink_node_from_disk_layouts
+                   modify_records
+                   nodes
+                   nodes.name=%1
+                   nodes.disk_layout_id~undef
+        </shortcut>
+	<shortcut> unlink_node_from_images
+                   modify_records
+                   nodes
+                   nodes.name=%1
+                   nodes.image_id~undef
+        </shortcut>
+	<shortcut> unlink_node_nic_from_networks
+                   modify_records
+                   nics
+                   nodes.name=%1
+                   nics.name=%2
+                   nics.node_id=nodes.id
+                   nics.network_id~undef
+        </shortcut>
+	<shortcut> which_disk_layout_has_node
+                   read_records
+                   disk_layouts.id=nodes.disk_layout_id
+                   nodes.name=%1
+                   disk_layouts.name
+        </shortcut>
+	<shortcut> which_image_has_node
+                   read_records
+                   images.id=nodes.image_id
+                   nodes.name=%1
+                   images.name
+        </shortcut>
+	<shortcut> which_networks_have_node
+                   read_records
+                   nodes.name=%1
+                   nics.node_id=nodes.id
+                   nics.network_id=networks.id
+                   networks.name
+        </shortcut>
+	<shortcut> which_node_groups_have_group
+                   read_records
+                   node_groups.name=%1
+                   node_groups.id=node_groups_included_node_groups.included_group_id
+                   node_groups.name
+        </shortcut>
+	<shortcut> which_node_groups_have_node
+                   read_records
+                   nodes.name=%1
+                   nodes.id=node_groups_included_nodes.included_node_id
+                   node_groups_included_nodes.node_group_id=node_groups.id
+                   node_groups.name
+        </shortcut>
+	<shortcut> which_package_sets_have_package
+                   read_records
+                   packages.name=%1
+                   package_sets_included_packages.included_package_id=packages.id
+                   package_sets_included_packages.package_set_id=package_sets.id
+                   package_sets.name
+        </shortcut>
         <!--
         This defines the second field name for records in 
 	the packages_rpmlist which can't be surmised from 
@@ -500,8 +1258,12 @@
         <cpu_type/>
         <default_gateway/>
         <domain/>
-	<fqdn/>
-        <hostname/>
+	<fqdn>
+	  <parameters> unique </parameters>
+	</fqdn>
+        <hostname>
+	  <parameters> unique </parameters>
+	</hostname>
         <id> 
 	  <type> integer </type>
 	  <parameters> auto_increment not null unique primary key </parameters>
