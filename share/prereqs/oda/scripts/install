@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.5 2002/11/17 04:57:58 jsquyres Exp $
+# $Id: install,v 1.6 2003/03/04 06:10:50 ngorsuch Exp $
 #
 
 #use strict;
@@ -75,7 +75,7 @@ closedir DIR;
 
 foreach my $rpm_file (@package_rpm_files) {
     if (! -e "$oscar_rpms_dir/$rpm_file") {
-	print "Copying $rpm_file to $oscar_rpms_dir\n";
+	oscar_log_subsection("Copying $rpm_file to $oscar_rpms_dir\n");
 	copy("$package_rpms_dir/$rpm_file", "$oscar_rpms_dir/$rpm_file") ||
 	    croak("Unable to copy $rpm_file to $oscar_rpms_dir");
     }
@@ -83,7 +83,7 @@ foreach my $rpm_file (@package_rpm_files) {
 
 # Now install the "best" version of all the required RPMs if necessary
 
-oscar_log_subsection("Installing ODA RPMs");
+oscar_log_subsection("Installing ODA RPMs @wanted_rpms");
 install_rpms(@wanted_rpms) or 
     croak("ODA is giving up and will not be installed");
 
