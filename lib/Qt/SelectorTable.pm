@@ -183,12 +183,13 @@ sub populateTable
       # Get the list of all available packages
       my $allPackages = SelectorUtils::getAllPackages();
 
-      setNumRows(scalar keys %{ $allPackages }); 
       my $rownum = 0;
       foreach my $pack (keys %{ $allPackages })
         {
           # Don't even bother to display non-installable packages
           next if ($allPackages->{$pack}{installable} != 1);
+
+          setNumRows($rownum+1); 
 
           # Column 0 contains "short" names of packages
           setText($rownum,0,$pack);
