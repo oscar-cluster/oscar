@@ -20,7 +20,8 @@
 use strict;
 use Carp;
 
-systemimager-init-script.patch.sh
+my $script = $ENV{OSCAR_HOME} . "/package/sis/scripts/systemimager-init-script.patch.sh";
+!system("$script") or croak("Couldn't run patch script $script");
 
 !system("service systemimager restart") or croak("Couldn't restart systemimager");
 
