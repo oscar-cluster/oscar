@@ -66,4 +66,4 @@ print "msec not installed                                              [  OK  ]\
 
 # call script that makes the mod to the gmond init script for the internal interface
 
-!system("gmond_internal.sh") or croak("gmond_internal.sh failed");
+!system("./gmond_internal.sh") or croak("gmond_internal.sh failed");
