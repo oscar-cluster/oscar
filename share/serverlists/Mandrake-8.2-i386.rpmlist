@@ -10,6 +10,10 @@ librrdtool0
 locales
 locales-en
 mod_php
+openssh
+openssh-clients
+openssh-server
+openssl
 nfs-utils
 php
 php-common
