@@ -1,4 +1,4 @@
-%  $Id: pkg-scripts-table.tex,v 1.2 2003/09/26 06:52:32 naughtont Exp $
+%  $Id: pkg-scripts-table.tex,v 1.3 2003/09/26 07:05:00 naughtont Exp $
 
 
 \begin{table}[htbp]
@@ -38,6 +38,15 @@
 		&  Perform final configurations with fully install/booted cluster nodes
 		\\ \hline
 %
+\hline
+%
+    & \file{post\_server\_rpm\_uninstall}              
+		&  (\emph{NEW}) Runs on server's filesystem during OSCAR package uninstall
+		\\ \hline
+%
+    & \file{post\_client\_rpm\_uninstall}              
+		&  (\emph{NEW}) Runs on client's filesystem during OSCAR package uninstall
+		\\ \hline
   \end{tabular}
   \caption{The set of available OSCAR API scripts listed in order of execution.}
   \label{tab:pkg-scripts}
