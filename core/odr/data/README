@@ -1,0 +1,105 @@
+Data Files for Persistence
+
+In general, all data files consist of newline ("\n") delimited records.
+Each record in turn is delimited by a ":" character (these choices are
+arbitrary and can easily be changed). All fields in a record are 
+single-valued (ie normalized). If the value of a field cantains the
+record separator character, it must be escaped using the " character
+(see the adapter file).
+
+- syntax
+  Describes the schema in all subsequent files. Fields are
+  defined as follows:
+
+  syntax     the syntax to use for subsequent access
+  tabname    a table (ie file)
+  colname    a column (ie field) in that file
+  colseq     the order of the column
+  iskey      1=column participates in a PRIMARY key
+
+
+OSCAR syntax 
+===================================================================
+
+- adapter
+  Descibes network adapters
+
+  HOST       host name to which adapter is attached
+  INTERFACE  interface name (ie 'eth0')
+  MAC        MAC address 
+  IP_ADDR    dotted IP address
+  IP_MASK    network mask
+  CONFIG     network configuration (manual/dhcp)
+
+- client
+  Describes cluster clients
+
+  NAME           client hostname
+  DEFAULT_ROUTE  network default route
+  STATE          enabled/disabled
+  NUM_PROCS      number of processors
+
+- cluster
+  Describes the cluster
+
+  OSCAR_VERSION  OSCAR version used to install
+  CLUSTER_HEAD   head machine in cluster
+  INSTALL_NODE   machine from which installation occurred
+  NETWORK_TYPE   private/public
+
+- group
+  Describes groups of clients and their associated installed packages
+
+  NAME           descriptive name of group
+  PACKAGELIST    name of entry in packagelist describing installed packages
+  HOSTLIST       name of entry in hostlist describing clients in group
+
+- hostlist
+  Describes logically grouped clients
+
+  NAME           descriptive name
+  HOST           client machine in the group
+
+- packagelist
+  Describes logically grouped installed packages
+
+  NAME           descriptive name
+  PACKAGE        installed package in the group
+
+
+SIS syntax 
+===================================================================
+
+- Adapter
+  Descibes network adapters
+
+  HOST       host name to which adapter is attached
+  NAME       interface name (ie 'eth0')
+  MAC        MAC address 
+  IP_ADDR    dotted IP address
+  IP_NETMASK network mask
+  CONFIG     network configuration (manual/dhcp)
+
+- Cient
+  Describes cluster clients
+
+  NAME           client symbolic name
+  HOST           fully-qualified host name
+  DOMAIN	 domain name portion of hostname
+  DEFAULT_ROUTE  the default route
+  INSTALL_MODE   current install state
+  BOOTDEV        boot device
+  IMAGE          name of the Image to install
+
+- Group
+  Describes groups of clients
+
+  NAME           descriptive name of group
+  CLIENT         client name belonging to Group
+
+- Image
+  Describes an image to install on a Client
+
+  NAME           descriptive name
+  SERVER         fully-qualified address of server where Image resides
+  PATH           fully-qualified pathname to the image
