@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.5 2002/06/18 16:50:17 naughtont Exp $
+% $Id: release-notes.tex,v 1.6 2002/07/09 22:37:08 ngorsuch Exp $
 %
 % $COPYRIGHT$
 %
@@ -89,12 +89,33 @@ The following release notes apply to OSCAR version \oscarversion:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{IA64 Notes}
+\subsection{IA64 and Other Bleeding Edge Systems Notes}
 \label{subsec:ia64notes}
 
 \begin{itemize}
-\item \rpmname{pvm} does not currently work on ia64.
+\item \rpmname{pvm} does not currently work on Itanium.
 
-\item Itanium 1 is supported.  Itanium 2 is not.  More coming from
-  Jeremy on this issue.
+\item The OSCAR autoinstall diskette will probably not work
+on Itanium systems, but they mostly have support for network booting.
+
+\item Some Itanium 1 or 2 systems are supported by OSCAR 
+under RedHat's Linux 7.2 release for Itanium.
+Itanium systems that can use the standard RedHat Itanium
+kernel for booting and network access should work with OSCAR.
+
+\item If an Itanium (or an IA32 based) system 
+has new or unknown hardware that is not supported by
+the stock kernel in the base operating system release,
+it will not work with standard OSCAR, since OSCAR uses the
+kernel RPMS supplied with the vendors release to boot and
+load the compute nodes.
+If you have a custom compiled kernel/modules that works
+for your hardware, you should look at the NCSA utilities
+at \url{http://oscar.ncsa.uiuc.edu/oscar/} to enable you
+to use them in OSCAR.
+
 \end{itemize}
+
+
+
+
