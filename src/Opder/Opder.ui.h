@@ -65,6 +65,10 @@ void Opder::init()
       backButton->hide();
       nextButton->hide();
     }
+
+  # When this window closes, destroy it, too
+  my $flags = getWFlags();
+  setWFlags($flags | Qt::WDestructiveClose());
 }
 
 void Opder::closeButton_clicked()
