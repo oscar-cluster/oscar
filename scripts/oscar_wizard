@@ -134,13 +134,14 @@ sub build_oscar_image {
     $arch =~ s/i.86/i386/;
     my ($distroname, $distroversion) = which_distro('/tftpboot/rpm');
     my $rpmlist = "$ENV{OSCAR_HOME}/oscarsamples/$distroname-$distroversion-$arch.rpmlist";
-
+    
     # now we get the list of the client rpms that we want to install
     my @clientfiles = glob("$ENV{OSCAR_HOME}/packages/*/client.rpmlist");
 
     my @fullfiles = map {" --filename=$_ "} @clientfiles;
     my $extraflags = join('',@fullfiles);
 
+    my $diskfile = "sample.disk.$disk_type" . ($arch eq "i386") ? "" : ".$arch";
 
     my %vars = (
                 imgname => "oscarimage",
@@ -150,7 +151,7 @@ sub build_oscar_image {
                           },
                 pkgfile => "$rpmlist",
                 pkgpath => "/tftpboot/rpm",
-                diskfile => "$ENV{OSCAR_HOME}/oscarsamples/sample.disk.$disk_type",
+                diskfile => "$ENV{OSCAR_HOME}/oscarsamples/$diskfile",
                 ipmeth => "static",
                 piaction => "beep",
                 extraflags => $extraflags,
