@@ -9,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.42 2004/04/14 05:19:56 tuelusr Exp $
+# $Id: configure.in,v 1.43 2004/04/19 15:11:31 brechin Exp $
 #
 # $HEADER$
 #
@@ -60,7 +60,13 @@ if test "$found_oscar_progs" = "no" ; then
   AC_MSG_RESULT([not found])
   exit 1
 fi
-PUIC=/opt/perl-Qt/bin/puic
+
+AC_PATH_PROG(PUIC, puic, no, [$PATH:/opt/perl-Qt/bin])
+if test "$PUIC" = "no"; then
+   AC_MSG_WARN([*** You will not be able to build the OSCAR wizard])
+   AC_MSG_WARN([*** You need to install Perl-Qt to be able to build the wizard])
+   PUIC="@echo puic"
+fi
 AC_SUBST(PUIC)
 AC_SUBST(PERL)
 
