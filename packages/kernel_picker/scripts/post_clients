@@ -106,7 +106,7 @@ if (-e $valuesfile)
             $cmd .= "--autoselectimage ";
           }
         $cmd .= "--bootkernel $bootkernel --bootramdisk N --networkboot N ";
-        if ($values->{usesmodules}[0])
+        if ($values->{usesmodules}[0] eq 'Y')
           {
             $cmd .= "--kernelversion $kernelversion ";
             $cmd .= "--modulespath $modulespath ";
