@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.2 2003/10/29 00:28:39 muglerj Exp $
+#  $Id: PackageInUn.pm,v 1.3 2003/10/30 03:38:42 tfleury Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -19,21 +19,22 @@ package OSCAR::PackageInUn;
 # Copyright (c) 2003 Oak Ridge National Laboratory.
 #                    All rights reserved.
 
-use lib "$ENV{OSCAR_HOME}/lib";
 use strict;
+
+use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
-use Carp qw(cluck);
-use OSCAR::Database;
 use OSCAR::Package;
+use OSCAR::Database;
 
 #this doesn't seem to effect the namespace of the calling script
 use vars qw(@EXPORT);
 use base qw(Exporter);
-@EXPORT = qw(package_install,
-             package_uninstall,
-             set_installed,
-             set_uninstalled,
-             is_selected); 
+our @EXPORT = qw(install_uninstall_packages
+                 package_install
+                 package_uninstall
+                 set_installed
+                 set_uninstalled
+                 is_selected); 
 
 
 #Things to do in general:
@@ -44,6 +45,79 @@ use base qw(Exporter);
 #5. use run_pkg_script in Package.pm where and if possible
 
 
+
+
+#########################################################################
+#  Subroutine: install_uninstall_packages                               #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  Call this subroutine after you have run the GUI for install/         #
+#  uninstall packages (which is basically the 'Selector' run with the   #
+#  command line argument of '-installuninstall'.  This subroutine       #
+#  gets two lists from oda: (1) packages to be installed (that are      #
+#  not currently installed) and (2) packages to be uninstalled (that    #
+#  are currently installed).  It loops through the two lists and        #
+#  Does The Right Thing(tm) for each package.  At the end of the        #
+#  function, all of the flags should be updated appropriately in oda.   #
+#########################################################################
+sub install_uninstall_packages
+{
+  my $success;  # Return code for database calls
+  my $package;  # Name of a package to be installed/uninstalled
+  my @packagesThatShouldBeInstalled;    # List of packages to install
+  my @packagesThatShouldBeUninstalled;  # List of packages to uninstall
+                                                                                
+  # Get the lists of packages that need to be installed/uninstalled
+  $success = OSCAR::Database::database_execute_command(
+    "packages_that_should_be_installed",\@packagesThatShouldBeInstalled);
+  $success = OSCAR::Database::database_execute_command(
+    "packages_that_should_be_uninstalled",\@packagesThatShouldBeUninstalled);
+                                                                                
+  # Loop through the list of packages to be INSTALLED and do the right thing
+  foreach $package (@packagesThatShouldBeInstalled)
+    {
+      # INSERT APPROPRIATE CODE HERE, maybe something like this:
+      # $success = install_package($package);
+                                                                                
+      # If the installation was successful, set the 'installed' flag for
+      # that package in the database.  Also, clear the 'should_be_installed'
+      # flag for that package.
+      if ($success)
+        {
+          OSCAR::Database::database_execute_command(
+            "package_mark_installed $package");
+          OSCAR::Database::database_execute_command(
+            "package_clear_should_be_installed $package")
+        }
+    }
+                                                                                
+  # Loop through the list of packages to be UNINSTALLED and do the right
+  # thing
+  foreach $package (@packagesThatShouldBeUninstalled)
+    {
+      # INSERT APPROPRIATE CODE HERE, maybe something like this:
+      # $success = uninstall_package($package);
+                                                                                
+      # If the removal was successful, clear the 'installed' flag for
+      # that package in the database.  Also, clear the
+      # 'should_be_uninstalled'
+      # flag for that package.
+      if ($success)
+        {
+          OSCAR::Database::database_execute_command(
+            "package_clear_installed $package");
+          OSCAR::Database::database_execute_command(
+            "package_clear_should_be_uninstalled $package")
+        }
+    }
+                                                                                
+  # OPTIONALLY clear all of the install/uninstall flags at the end
+  OSCAR::Database::database_execute_command(
+    "packages_clear_all_should_be_installed");
+  OSCAR::Database::database_execute_command(
+    "packages_clear_all_should_be_uninstalled");
+}
+                                                                                
 
 #installs a package to either
 #all clients, the server, an image, or any
@@ -170,7 +244,7 @@ sub run_install_client
 
 	if($retval == 0)
 	{
-		for $rpm (@rpmlist)
+		foreach $rpm (@rpmlist)
 		{
 			@temp_list = split(/\//,$rpm);
 			if($testmode != 0)
@@ -285,7 +359,7 @@ sub run_install_image
 
 	if($retval == 0)
 	{
-		for $rpm (@rpmlist)
+		foreach $rpm (@rpmlist)
 		{
 			@temp_list = split(/\//,$rpm);
 
@@ -504,8 +578,8 @@ sub get_rpm_list
 		$cmd_string = "$var/$package_name/RPMS/";
 		if (-d $cmd_string)
 		{
-			opendir(DNAME, $cmd_string) or croak "cannot read directory: $!\n";
-			my @temp = readdir(DNAME) or croak "cannot read directory: $!\n";
+			opendir(DNAME, $cmd_string) or Carp::croak "cannot read directory: $!\n";
+			my @temp = readdir(DNAME) or Carp::croak "cannot read directory: $!\n";
 			@dirlist = grep( !/^\.{1,2}$/ && /\.rpm$/, @temp);
 			closedir(DNAME);
 			last;
@@ -520,12 +594,12 @@ sub get_rpm_list
 	}
 
 	#stick the rpms from the readdir into an aa
-	for $rpm (@dirlist)
+	foreach $rpm (@dirlist)
 	{
 		$openstring = "$rpmstring $cmd_string$rpm";
 		if (-f "$cmd_string$rpm")
 		{
-			open(RPMCMD, "$openstring |") or croak "cannot run rpm command:$!\n";
+			open(RPMCMD, "$openstring |") or Carp::croak "cannot run rpm command:$!\n";
 			$rpmname = <RPMCMD>;
 			if (length($rpmname) != 0)
 			{
