@@ -41,6 +41,8 @@ my $targetdir = $config->default_imagedir . "/$imagename";
 
 if(!-d $targetdir) {croak("The directory $targetdir doesn't exist");}
 
+sync_system_files($targetdir) or croak("Couldn't sync system files");
+
 sync_user_files($targetdir) or croak("Couldn't sync user files");
 
 !system("./ssh_install $targetdir") or croak("Couldn't generate ssh keys");
@@ -76,6 +78,19 @@ sub link_kernel_files {
 	}
     }
     chdir "$dir" or croak ("Can't change back to original directory");
+    return 1;
+}
+
+sub sync_system_files {
+    my ($imagedir) = @_;
+
+    my @files = qw(/etc/localtime);
+    foreach my $file (@files) {
+      if(-e $file) {
+        copy($file,$imagedir . $file) or (carp("Couldn't populate $file to $imagedir"),
+                                          return undef);
+      }
+    }
     return 1;
 }
 
