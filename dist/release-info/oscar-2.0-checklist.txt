@@ -1,0 +1,47 @@
+# $Id: oscar-2.0-checklist.txt,v 1.1 2002/12/06 06:07:19 naughtont Exp $
+
+List of places that the OSCAR 2.0 press release was sent:
+
+- The OSCAR web site, under "Press Releases" on the "papers/talks" page.
+  (HTML format)
+
+- HPCWire
+  Submission deadline: 10am PST for the following week's edition
+  Send plain text of releases to: editor@hpcwire.com
+  (Plain text)
+
+- Freshmeat
+  Sent to: sldague@us.ibm.com  (OSCAR FM contact)
+  (Plain text)
+
+- Infoworld
+  Sent to: carolyn_april@infoworld.com
+  E-mail address obtained from their "Contact us" web page
+  (Plain text)
+
+- LinuxPR.com
+  Free registration required to submit press releases
+  (HTML format)
+
+- Beowulf-underground.org
+  News/Announcements -- link to OSCAR web page announcement
+  (URL to OSCAR Web page)
+
+- Supercluster.org
+  Connection being MAUI is shipped w/ OSCAR
+  Sent to: Dave Jackson <jacksond@supercluster.org>
+  (URL to OSCAR Web page & Plain text)
+
+- LinuxJournal
+  Free Subscription, "Submit a Press Release" at http://pr.linuxjournal.com/
+  (HTML format)
+
+#- http://clusters.top500.org/
+#  (didn't send 1.1 release there; they already had an announcement
+#  from the actual 1.1 release)
+
+#- IEEE Cluster Computing Task Force didn't seem to have a news/press
+#  release section.  Appealed directly to the editors.
+
+#- SourceForge
+
