@@ -32,15 +32,15 @@
 MPI (http://www.mpi-forum.org), the Standard for message-passing
 libraries.</description>
 
-  <provide>
+  <provides>
     <type>package</type>
     <name>mpi</name>
-  </provide>
+  </provides>
 
-  <require>
+  <requires>
     <type>package</type>
     <name>switcher</name>
-  </require>
+  </requires>
 
   <switcher>
     <tag>mpi</tag>
