@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster,v 1.18 2002/08/16 13:28:44 jsquyres Exp $
+# $Id: test_cluster,v 1.19 2002/08/18 01:39:46 jenos Exp $
 #
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
@@ -301,12 +301,12 @@ if test "$mpi" != ""; then
     test_dir=hdf5
     pbs_script=pbs_script.hdf5
     output_file=hdf5test
-    grep_string="PHDF5 SUCCESS"
+    grep_string="HDF5 SUCCESS"
     exit_on_fail=no
     min_timeout=30
-    scaling_factor=60
+    scaling_factor=10
 # Skip this test for the moment -- hdf5 is currently non-operational.
-#    pbs_test_routine
+    pbs_test_routine
 else
     echo "Skipping HDF5 test (doesn't seem to be installed)"
 fi
