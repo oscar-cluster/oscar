@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # 
-#  $Id: package_install_uninstall,v 1.2 2003/10/27 19:22:21 muglerj Exp $
+#  $Id: package_install_uninstall,v 1.3 2003/10/29 00:21:43 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -68,13 +68,9 @@ elsif ($list)
 	{
 		$type = "oscar_server";
 	}
-	elsif($client)
-	{
-		$type = "oscar_client";
-	}
 	else
 	{
-		$type = "both";
+		$type = "oscar_clients";
 	}
 	list_rpms($list, $type);
 }
@@ -111,7 +107,7 @@ sub help_message
 	print "   --install     -i  PACKAGE NAME TARGET(S) = installs an oscar package to the TARGET(S).\n";
 	print "   --uninstall   -u  PACKAGE NAME TARGET(S) = uninstalls an oscar package to the TARGET(S).\n";
 
-	print "   --list        -l  [TARGET]               = lists rpms for a package, for a particular TARGET.\n";
+	print "   --list        -l  PACKAGE NAME TARGET    = lists rpms for a package, for a particular TARGET.\n";
 	print "   --database    -d                         = lists all packages (in database).\n";
 	print "   --xml         -x                         = lists all packages (on system, from xml).\n";
 	print "   --help        -h                         = this screen.\n";
@@ -124,7 +120,6 @@ sub help_message
 	print "   --server      -s                         = installs or uninstalls on the server or headnode.\n";
 	print "   --client      -c                         = installs or uninstalls on ALL compute nodes.\n";
 	print "\n";
-	exit()
 }
 
 sub list_rpms()
