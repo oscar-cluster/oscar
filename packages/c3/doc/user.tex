@@ -1,28 +1,8 @@
 %% LyX 1.1 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
-\documentclass[english]{article}
-\usepackage[T1]{fontenc}
-\usepackage[latin1]{inputenc}
-\usepackage{babel}
 
-\makeatletter
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
-\providecommand{\LyX}{L\kern-.1667em\lower.25em\hbox{Y}\kern-.125emX\@}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
- \newenvironment{lyxlist}[1]
-   {\begin{list}{}
-     {\settowidth{\labelwidth}{#1}
-      \setlength{\leftmargin}{\labelwidth}
-      \addtolength{\leftmargin}{\labelsep}
-      \renewcommand{\makelabel}[1]{##1\hfil}}}
-   {\end{list}}
-
-\makeatother
-\begin{document}
-
-\subsection{Overview}
+\subsection{Using C3}
+\subsubsection{Overview}
 
 The Cluster Command Control (C3) tools are a suite of cluster tools
 developed at Oak Ridge National Laboratory that are useful for both
@@ -31,7 +11,7 @@ cluster-wide command execution, file distribution and gathering, process
 termination, remote shutdown and restart, and system image updates.
 A short description of each tool follows:
 
-\begin{lyxlist}{00.00.0000}
+\begin{description}
 \item [cexec]general utility that enables the execution of any standard
 command on all cluster nodes
 \item [cget]retrieves files or directories from all cluster nodes
@@ -44,7 +24,7 @@ image captured by the SystemImager tool
 \item [cnum]returns a node range number based on node name
 \item [cname]returns node names based on node ranges
 \item [clist]returns all clusters and their type in a configuration file
-\end{lyxlist}
+\end{description}
 The default method of execution for the tools is to run the command
 on all cluster nodes concurrently. However, a serial version of cexec
 is also provided that may be useful for deterministic execution and
@@ -53,7 +33,7 @@ of cexec. For more information on how to use each tool, see the man
 page for the specific tool.
 
 
-\subsection{Basic File Format }
+\subsubsection{Basic File Format }
 
 Specific instances of C3 commands identify their compute nodes with
 the help of {*}{*}cluster configuration files{*}{*}: files that name
@@ -121,8 +101,6 @@ node1 occupies position 1. For a more detailed example see the c3.conf
 man page.
 
 
-\subsection{Ranges On the Command Line}
-
 
 \subsubsection{Specifying ranges }
 
@@ -152,37 +130,37 @@ be as follows:
 
 \cmd{cexec ls -l}
 
-The second case is a range on the default cluster. This is in a form
+\noindent the second case is a range on the default cluster. This is in a form
 of <:range>. An example cexec would be as follows:
 
 \cmd{cexec :1-4,6 ls -l}
 
-This would execute ls on nodes 1,2,3,4,6 of the default cluster. The
+\noindent This would execute ls on nodes 1,2,3,4,6 of the default cluster. The
 third method is specifying a specific cluster. This takes the form
 of <cluster\_name:>. And example cexec would be as follows:
 
 \cmd{cexec test: ls -l}
 
-This would execute ls on every node in cluster test. The fourth and
+\noindent This would execute ls on every node in cluster test. The fourth and
 final way of specifying a machine definition would be a range on a
 specific cluster. This takes the form of <cluster\_name:range>. An
 example cexec would be as follows:
 
 \cmd{cexec test:2-4,10 ls -l}
 
-This would execute ls on nodes 2,3,4,10 on cluster test. These four
+\noindent This would execute ls on nodes 2,3,4,10 on cluster test. These four
 methods can be mixed on a single command line. for example
 
 \cmd{cexec :0-4 htorc1: htorc2:1-5 ls -l}
 
-is a valid command. it would execute ls on nodes 0,1,2,3,4 of the
+\noindent is a valid command. it would execute ls on nodes 0,1,2,3,4 of the
 default cluster, all of htorc1 and 1,2,3,4,5 of htorc2. In this way
 One could easily do things such as add a user to several clusters
 or read /var/log/messages for an event across many clusters. See the
 c3-range man page for more detail.
 
 
-\subsection{Other Considerations}
+\subsubsection{Other Considerations}
 
 In most cases C3 has tried to mimic the standard Linux command it
 is based on, this is to make using the cluster as transparent as possible.
@@ -200,4 +178,3 @@ specific tasks, it is possible to create a cluster called {}``pbs-servers{}''
 and only execute a given command on those clusters. It is useful to
 separate nodes out based on things such as hardware (fast-ether/gig-ether),
 software (this set has this compiler), or role (pbs-servers).
-\end{document}
