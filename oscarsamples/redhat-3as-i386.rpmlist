@@ -7,11 +7,13 @@ basesystem
 bash
 bc
 beecrypt
+bind-libs
 bind-utils
 binutils
 bzip2
 bzip2-libs
 chkconfig
+chkfontpath
 cpio
 cpp
 cracklib
@@ -21,7 +23,6 @@ cyrus-sasl
 cyrus-sasl-md5
 db4
 dev
-dev86
 dhclient
 diffutils
 dosfstools
@@ -66,10 +67,11 @@ iproute
 iptables
 iputils
 redhat-config-keyboard
-kernel-smp-2.4.21-15.EL
-kernel-2.4.21-15.EL
+kernel-smp
+kernel
 kudzu
 krb5-libs
+laus-libs
 laus
 less
 libaio
@@ -94,7 +96,6 @@ MAKEDEV
 man
 man-pages
 mingetty
-mkbootdisk
 mkinitrd
 mktemp
 modutils
@@ -133,6 +134,7 @@ readline
 redhat-logos
 redhat-release
 rootfiles
+rpm-libs
 rpm
 rsh
 rsh-server
@@ -148,7 +150,6 @@ slang
 slocate
 strace
 sysklogd
-syslinux
 SysVinit
 tar
 tcl
@@ -177,12 +178,18 @@ jwhois
 words
 XFree86-font-utils
 XFree86-libs
+XFree86-xfs
 xinetd
 zlib
 zlib-devel
 libcap
 kbd
 perl-CGI
+perl-XML-Parser
+perl-libwww-perl
+perl-URI
+perl-HTML-Parser
+perl-HTML-Tagset
 libgcc
 libacl
 libf2c
@@ -205,4 +212,4 @@ pyxf86config
 XFree86-libs-data
 tcp_wrappers
 ttmkfdir
-tzdata-2003c-1
+tzdata

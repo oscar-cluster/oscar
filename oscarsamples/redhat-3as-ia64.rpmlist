@@ -6,6 +6,7 @@ basesystem
 bash
 bc
 beecrypt
+bind-libs
 bind-utils
 binutils
 bzip2
@@ -40,6 +41,7 @@ gcc
 gcc-c++
 gcc-g77
 gd
+libunwind
 gdb
 gdbm
 gettext
@@ -64,9 +66,11 @@ initscripts
 iproute
 iptables
 iputils
-kernel-2.4.21-15.EL
+redhat-config-keyboard
+kernel
 kudzu
 krb5-libs
+laus-libs
 laus
 less
 libaio
@@ -100,6 +104,7 @@ ncurses
 net-tools
 newt
 nfs-utils
+ntp
 ntsysv
 openldap
 openssh
@@ -127,6 +132,7 @@ readline
 redhat-logos
 redhat-release
 rootfiles
+rpm-libs
 rpm
 rsh
 rsh-server
@@ -142,7 +148,6 @@ slang
 slocate
 strace
 sysklogd
-systemimager-server
 SysVinit
 tar
 tcl
@@ -165,7 +170,6 @@ utempter
 util-linux
 vim-common
 vim-minimal
-vim-enhanced
 vixie-cron
 which
 jwhois
@@ -179,7 +183,6 @@ zlib-devel
 libcap
 kbd
 perl-CGI
-perl-XML-Simple
 perl-XML-Parser
 perl-libwww-perl
 perl-URI

@@ -87,6 +87,7 @@ if($ARCH eq "i386") {
 } elsif ($ARCH eq "ia64") {
     verbose("Copying elilo.efi to /tftpboot");
     copy("/boot/efi/elilo.efi","/tftpboot") or
+      copy("/boot/efi/EFI/redhat/elilo.efi","/tftpboot") or
       croak("Unable to copy \"elilo.efi\" to /tftpboot");
 
     verbose("Linking elilo.efi to pxelinux.0");

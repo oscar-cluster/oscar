@@ -68,5 +68,7 @@
       <filter group="oscar_server"/>
       <filter architecture="ia64"/>
       <rpm>systemimager-ia64boot-standard</rpm>
+      <rpm>systemimager-server</rpm>
+      <rpm>perl-XML-Simple</rpm>
   </rpmlist>
 </oscar>
