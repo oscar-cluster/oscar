@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.70 2004/02/02 21:27:48 ngorsuch Exp $
+      $Id: config.xml,v 1.71 2004/02/03 00:20:27 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -272,6 +272,19 @@
 	CONFIGURATIONS table shortcuts
         =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 	 -->
+
+        <!--
+	configurations lists the names of all node group records.
+	Adding further	parameters can also list specified
+	configuration field values and/or can specify conditions
+	to match only certain recoreds. No parameters are required.
+	 -->
+	<shortcut> configurations
+                   read_records
+                   configurations
+                   configurations.name
+                   %+
+        </shortcut>
 
         <!--
 	create_configuration creates a new named configuration,
