@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.7 2003/01/20 21:00:49 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.8 2003/01/20 21:26:32 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -98,7 +98,7 @@ default=sisboot
 
 image=kernel
         label=sisboot
-        initrd=initrd.gz
+        initrd=initrd.img
         read-only
         root=/dev/ram
 
@@ -111,7 +111,7 @@ END
 copy("/usr/share/systemimager/boot/$ARCH/standard/kernel", "/tftpboot/") or 
   croak("Unable to copy kernel file to /tftpboot.");
     
-copy("/usr/share/systemimager/boot/$ARCH/standard/initrd.gz", "/tftpboot/") or 
+copy("/usr/share/systemimager/boot/$ARCH/standard/initrd.img", "/tftpboot/") or 
   croak("Unable to copy ramdisk file to /tftpboot.");
 
 exit 0; 
