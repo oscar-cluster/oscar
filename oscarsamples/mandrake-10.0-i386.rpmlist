@@ -116,6 +116,9 @@ mount
 ncurses
 net-tools
 nfs-utils-clients
+nfs-utils
+tcpdump
+libpcap0
 numlock
 openldap
 openssh

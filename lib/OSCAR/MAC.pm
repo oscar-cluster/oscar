@@ -75,7 +75,6 @@ sub mac_window {
     $parent->Busy(-recurse => 1);
     # init this only once, as we don't add network cards during this process
     @SERVERMACS = set_servermacs();
-print "SERVERMACS->",join(",",@SERVERMACS),"<-\n";
 
     our $window = $parent->Toplevel;
     $window->withdraw;
@@ -315,11 +314,20 @@ sub clean_hostsfile {
     close(OUT);
     close(IN);
 }
+ 
+# Use Schwartzian transform to sort clients by node names alphabetically and numerically.
+# Names w/o numeric suffix precede those with numeric suffix.
+sub sortclients(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       @_;
+}
 
 # populates existing MAC entries into the global hash
 
 sub populate_MACS {
-    my @clients = list_client();
+    my @clients = sortclients list_client();
     %MAC = ();
     foreach my $client (@clients) {
         my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
@@ -333,7 +341,7 @@ sub regenerate_tree {
     our $tree;
     $tree->delete("all");
     $tree->add("|",-text => "All Clients",-itemtype => "text");
-    my @clients = list_client();
+    my @clients = sortclients list_client();
     foreach my $client (@clients) {
         my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
         $tree->add("|".$client->name, -text => $client->hostname, -itemtype => "text");
@@ -597,7 +605,11 @@ sub begin_collect_mac {
     $label->configure(-text => "Currently Scanning Network... Click \"$starttext\" to stop.");
     while($COLLECT and $_ = <TCPDUMP>) {
         # print $_ unless $_ =~ /echo/;
-        # This is the for tcp dump version 3.6 (MDK 8.0)
+        # This is for tcpdump version 3.8 (MDK 10.0)
+	if(/^\S+.*BOOTP\/DHCP,\sRequest\sfrom\s([a-f0-9\:]{11,17}).*$/) {
+	    regenerate_listbox() if add_mac_to_hash( $1 );
+	}
+	# This is the for tcp dump version 3.6 (MDK 8.0)
         if(/^\S+\s+([a-f0-9\:]{11,17}).*bootp.*\(DF\)/) {
 #            print "1 collected: ", $_||"NOTHING\n";
              regenerate_listbox() if add_mac_to_hash( $1 );
