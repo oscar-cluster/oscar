@@ -11,6 +11,6 @@
 
 include $(top_srcdir)/dist/Makefile.options
 
-oscar_SCRIPTS		= perl-Tk-800.024-2.i386.rpm
+oscar_SCRIPTS		= perl-Tk-800.024-2.i386.rpm perl-Tk-800.024-3.ia64.rpm
 
 EXTRA_DIST		= $(oscar_SCRIPTS)
