@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.12 2003/02/24 23:21:24 jsquyres Exp $
+# $Id: opd,v 1.13 2003/03/18 01:43:25 jsquyres Exp $
 #
 
 use strict;
@@ -56,9 +56,11 @@ my $opd_term = new Term::ReadLine 'OPD';
 
 my $argv_repository_uri;
 my $argv_force = 0;
+my $argv_wget = 0;
+my $argv_lwp = 0;
 
 my $num_download_retries = 3;
-my $ua = LWP::UserAgent->new;
+my $ua = LWP::UserAgent->new({ env_proxy => 1 });
 $ua->agent("OSCAR package downloader/1.0");
 
 my $empty_di_info = {
@@ -149,9 +151,11 @@ sub analyze_argv {
     Getopt::Long::Configure("bundling", "require_order");
     my $ok = Getopt::Long::GetOptions("repository|r=s" => \$argv_repository_uri,
 				      "force|f" => \$argv_force,
-				      );
+				      "wget" => \$argv_wget,	
+				      "lwp" => \$argv_lwp,	
+			      );
     if (!$ok) {
-	print("Usage: $ARGV[0] [--repository|-r URI] [--force|-f]\n");
+	print("Usage: $ARGV[0] [--repository|-r URI] [--force|-f] [--lwp|--wget]\n");
 	exit(1);
     }
 }
@@ -270,8 +274,19 @@ sub download_from_uri {
     my $happy = 0;
     my $msg;
 
-    $agents[scalar(@agents)] = "wget" if ($have_wget);
-    $agents[scalar(@agents)] = "LWP";
+    # Allow command line override of preference of download agents.
+    # User may wish to use LWP so that proxy settings can be used.
+
+    if ($argv_wget) {
+	$agents[scalar(@agents)] = "wget" if ($have_wget);
+	$agents[scalar(@agents)] = "LWP";
+    } elsif ($argv_lwp) {
+	$agents[scalar(@agents)] = "LWP";
+	$agents[scalar(@agents)] = "wget" if ($have_wget);
+    } else {
+	$agents[scalar(@agents)] = "wget" if ($have_wget);
+	$agents[scalar(@agents)] = "LWP";
+    }
 
     for ($i = 0; $i < $num_download_retries * scalar(@agents); ++$i) {
 	$agent = $i % scalar(@agents);
