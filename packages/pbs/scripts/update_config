@@ -1,9 +1,0 @@
-#!/bin/sh
-
-if [ $# != 2 ]; then
-  echo "usage: update_config <Total#Nodes> <Total#Procs>"
-  exit 1;
-else
-  awk -v nodes=$1 -v procs=$2 '{ sub(/MAX_NODES/, nodes); sub(/MAX_CPUS/, procs); print $0; }' pbs_server.default > pbs_server.conf
-  exit 0;
-fi
