@@ -165,7 +165,7 @@ sub database_execute_command {
 #                   print_err if defined and non-zero, print out
 #                             error messages
 
-sub read_table_fields {
+sub database_read_table_fields {
     
     my ( $table,
 	 $requested_fields_ref,
@@ -203,7 +203,7 @@ sub read_table_fields {
     if ( ! exists $fields_in_table{name} ) {
 	if ( defined $print_errors_flag && $print_errors_flag ) {
 	    warn "there is no <name> field in database table <$table>";
-	    warn "Database\:\:read_table_fields cannot supply the data as requested";
+	    warn "Database\:\:database_read_table_fields cannot supply the data as requested";
 	}
 	OSCAR::Database::database_disconnect() if $was_connected_flag;
 	return undef;
@@ -267,11 +267,11 @@ sub read_table_fields {
 		warn "There are duplicated records in database table <$table> that";
 		warn "has the same <name> field value of <$name>.";
 	    }
-	    warn "Database\:\:read_table_fields will only return the first of each."
+	    warn "Database\:\:database_read_table_fields will only return the first of each."
 		if %duplicated_name_values;
 	    if ( $missing_name_fields ) {
 		warn "$missing_name_fields records from the database table <$table> are missing the <name>";
-		warn "field and are not being returned by Database\:\:read_table_fields.";
+		warn "field and are not being returned by Database\:\:database_read_table_fields.";
 	    }
 	}
     }
@@ -280,7 +280,7 @@ sub read_table_fields {
 
     OSCAR::Database::database_disconnect() if $was_connected_flag;
 
-#oda::print_hash("", "Database\:\:read_table_fields returning", \%result);
+#oda::print_hash("", "Database\:\:database_read_table_fields returning", \%result);
     return \%result;
 }
 
