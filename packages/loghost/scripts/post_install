@@ -18,5 +18,7 @@ cexec " \
     |awk '{print $1}'`\" >> $syslog_file; \
     echo \"Setting loghost to $loghost_ip\"; \
     /sbin/service syslog restart; \
+  else
+    echo \"oscar_loghost already set\" ;\
   fi"
 
