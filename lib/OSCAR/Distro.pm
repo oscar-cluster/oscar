@@ -40,6 +40,7 @@ my $DISTROFILES = {
                    'mandrake-release' => 'mandrake',
                    'redhat-release'   => 'redhat',
 		   'redhat-release-as'=> 'rhas',
+		   'tao-release'      => 'rhas',
 		   'aaa_version'      => 'suse',
 		   'aaa_base'	      => 'suse',
                    'debian_version'   => 'debian',
@@ -67,6 +68,10 @@ sub which_distro {
         if($output =~ /^([\w\.]+)/) {
             $version = $1;
             $name = $DISTROFILES->{$file};
+	    print STDERR "file: $file, version: $version\n";
+	    if (($file eq "tao-release") && ($version =~ m/^1/)) {
+		$version = "3.0";
+	    }
             last;
         }
     }
@@ -96,6 +101,9 @@ sub which_distro_server {
 	if ($name eq "suse") { 
 		$version = `cat /etc/SuSE-release | tail -1 | cut -d '=' -f 2 | cut -b 2-`;
 		chomp $version;
+	}
+	if (($file eq "tao-release") && ($version =~ m/^1/)) {
+	    $version = "3.0";
 	}
         last;
     }
