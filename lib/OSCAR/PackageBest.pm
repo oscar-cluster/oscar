@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.13 2002/08/17 20:10:45 jsquyres Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.14 2002/08/31 17:29:24 bligneri Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -38,7 +38,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files find_best);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.13 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
@@ -224,20 +224,47 @@ sub find_best {
         # Output: the "highest" element.
         my @versions = @_;
 
-        my $nonnumeric = 0;
-        foreach my $entry (@versions) {
-                if($entry !~ /^\d+\.*\d*$/) {
-                        $nonnumeric++;
-                }
-        }
         my @best = ();
-        if($nonnumeric) {
-                @best = sort {$b cmp $a} @versions;
-        } else {
-                @best = sort {$b <=> $a} @versions;
-        }
+
+        @best = sort compare_versions @versions;
 
         return shift @best;
+}
+
+sub compare_versions {
+    # Have to separate the comparison from the main function (find_best) so
+    # that more complex operation on the string can be made in particular
+    # saving the original value and not affecting the $a and $b variables...
+    
+    # Save the values of the input variable
+    my $new_a=$a;
+    my $new_b=$b;
+    
+
+    # Remove the mdk and oscar end version tag
+    $new_a =~s/^(.+)(mdk|oscar)$/$1/;
+    $new_b =~s/^(.+)(mdk|oscar)$/$1/;
+
+    # Test for non numeric characters
+    my $nonnumeric = 0;
+
+    if (($new_a !~ /^\d+\.*\d*$/) || ($new_b !~ /^\d+\.*\d*$/)) {
+        $nonnumeric=1;
+    }
+
+    if ($nonnumeric) {
+        # String comparison
+        # This is "EVIL" as  rc3 > rc10 with this system !
+        # So signal it to error log
+        my $FH = \*STDERR;
+        my ($package, $filename, $line) = caller;
+            print $FH  " [$package :: Line $line] - non numeric comparison $a/$new_a cmp $b/$new_b\n";
+        return ($new_b cmp $new_a)
+    }
+    else {
+        # Number comparison
+        return ($new_b <=> $new_a)
+    }
 }
 
 sub find_best_arch {
