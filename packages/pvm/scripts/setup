@@ -62,6 +62,8 @@ elsif ($name eq "suse") {
 		$source_dir .= "91";
 	} elsif ($ver eq "9.2") {
 		$source_dir .= "92";
+	} elsif ($ver eq "10.0") {
+		$source_dir .= "10";
 	}
 }
 
