@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.23 2002/09/11 07:20:19 jsquyres Exp $
+% $Id: release-notes.tex,v 1.24 2002/11/16 03:53:11 bligneri Exp $
 %
 % $COPYRIGHT$
 %
@@ -46,12 +46,22 @@ The following release notes apply to OSCAR version \oscarversion:
 \label{subsec:mdk82notes}
 
 \begin{itemize}
-\item This is the first release of OSCAR to support this distribution.
+\item This is the second release of OSCAR to support this distribution.
   OSCAR \oscarversion\- has been tested and successfully installed on
-  this distribution (see Table~\ref{tab:oscar-distro-support}); prior
-  versions of OSCAR will not work on any flavors of Mandrake without
-  significant modifications.
-  
+  this distribution (see Table~\ref{tab:oscar-distro-support});
+
+\item Before any OSCAR installation, you should install the following perl packages
+\begin{verbatim}
+urpmi perl-XML-Simple
+perl-XML-Parser
+\end{verbatim}
+
+\item Problem with the TCL libraries (rpm not compiled on Mandrake). In order
+to avoid an error, make the following symlink~:
+\begin{verbatim}
+ln -s /usr/lib/libtcl8.3.so /usr/lib/libtcl.so.0
+\end{verbatim}
+
 \item If installing the third-party package Ganglia, the
   \rpmname{libpng} RPM version 1.0.8-2mdk must be manually installed
   before invoking the OSCAR install wizard.  This RPM can be
