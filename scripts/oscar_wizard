@@ -165,7 +165,7 @@ sub run_tests {
     my ($window) = @_;
     $window->Busy(-recurse => 1);
     print "Running tests...\n";
-    !system("cd ../testing && xterm -sl 500 -e ./test_install `pwd` --wait &") or (carp($!), $window->Unbusy(), return undef);
+    !system("cd ../testing && xterm -sl 500 -e ./test_cluster_as_root --wait &") or (carp($!), $window->Unbusy(), return undef);
     $window->Unbusy();
     return 1;
 }
@@ -173,7 +173,7 @@ sub run_tests {
 sub run_post_install {
     my ($window) = @_;
     $window->Busy(-recurse => 1);
-    print "Finallizing cluster setup...\n";
+    print "Finalizing cluster setup...\n";
     !system("./post_install") or (carp($!), $window->Unbusy(), return undef);
     $window->Unbusy();
     return 1;
