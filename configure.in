@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.22 2002/08/12 18:03:53 bligneri Exp $
+# $Id: configure.in,v 1.23 2002/08/17 04:37:38 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -67,6 +67,7 @@ AC_SUBST(PNMTOPS)
 
 AC_CONFIG_FILES([
     Makefile
+    VERSION
 
     dist/Makefile
     dist/programs.sh

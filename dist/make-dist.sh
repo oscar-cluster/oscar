@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.18 2002/07/27 18:50:32 jsquyres Exp $
+# $Id: make-dist.sh,v 1.19 2002/08/17 04:37:38 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -210,6 +210,7 @@ rm -f dist/beta-notice.txt
 echo "*** Removing extra kruft"
 rm -f aclocal.m4 acinclude.m4
 rm -f configure configure.in
+rm -f VERSION.in
 rm -rf dist
 find . -name Makefile\* -exec rm -f {} \; -print
 
