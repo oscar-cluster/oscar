@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+% $Id: detailed.tex,v 1.2 2001/12/13 22:16:26 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -292,7 +292,7 @@ a command sequence like this:
 
 \begin{verbatim}
   cd /mnt/cdrom/RedHat/RPMS
-  cat /root/OSCAR-1.1.1/oscarResources/sample.rpmlist | \
+  cat /root/OSCAR-\oscarversion/oscarResources/sample.rpmlist | \
   xargs -i sh -c "cd `pwd`;ls -1 {}*.rpm" 2>/dev/null | \
   xargs -i -t cp -f '{}' /tftpboot/rpm
 \end{verbatim}
@@ -315,7 +315,7 @@ If the OSCAR directory was placed in \file{/root} for example, you
 would issue the following commands:
 
 \begin{verbatim}
-  cd /root/OSCAR-1.2
+  cd /root/OSCAR-\oscarversion
   ./install_cluster eth0
 \end{verbatim}
 \endchange
@@ -833,7 +833,7 @@ quick and easy way to confirm network connectivity is to do the
 following (assuming OSCAR installed in \file{/root}):
 
 \begin{verbatim}
-  cd /root/OSCAR-1.1.1/scripts
+  cd /root/OSCAR-\oscarversion/scripts
   ./ping_clients
 \end{verbatim}
 \endchange
