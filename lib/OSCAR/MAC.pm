@@ -57,7 +57,7 @@ $VERSION = sprintf("%d.%02d", q$Revision: 1.47 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 
-my $SERVERMACS;     # a variable which stores a regex of the server mac addreses
+my @SERVERMACS;     # a variable which stores a regex of the server mac addreses
 my $ORDER = 1;      # global count variable
 my $COLLECT = 0;    # are we collecting or not?
 our $PINGPID = undef; # process id of the ping fork we make
@@ -74,9 +74,10 @@ sub mac_window {
     our ($vars) = @_;
     $parent->Busy(-recurse => 1);
     # init this only once, as we don't add network cards during this process
-    $SERVERMACS = set_servermacs();
+    @SERVERMACS = set_servermacs();
+print "SERVERMACS->",join(",",@SERVERMACS),"<-\n";
 
-    my $window = $parent->Toplevel;
+    our $window = $parent->Toplevel;
     $window->withdraw;
     $window->title("Setup Networking");
     
@@ -91,12 +92,13 @@ sub mac_window {
     my $frame = $window->Frame();
     my $topframe = $window->Frame();
 
-    my $listbox = $topframe->ScrlListbox(
+    our $listbox = $topframe->ScrlListbox(
                                        -selectmode => 'single',
                                        -background => "white",
                                        -scrollbars => 'osoe',
                                       );
-    my $tree = $topframe->Scrolled("Tree",    
+
+    our $tree = $topframe->Scrolled("Tree",    
                                  -background => "white",
                                  -itemtype => 'imagetext',
                                  -separator => '|',
@@ -104,15 +106,20 @@ sub mac_window {
                                  -scrollbars => 'osoe',
                                 );
 
+    $listbox->bind( "<ButtonRelease>", \&set_buttons );
+    $tree->bind( "<ButtonRelease>", \&set_buttons );
+
     $instructions->pack($label, -fill => 'x');
 
-    my $clear    = $topframe->Button( -text => "Remove",
+    our $clear    = $topframe->Button( -text => "Remove",
                     -height=>1,
-                    -command => [\&clearmacaddy, $listbox, $window ],
+                    -command => \&clearmacaddy,
+                    -state => "disabled",
                     );
-    my $clearall = $topframe->Button( -text => "Remove All",
+    our $clearall = $topframe->Button( -text => "Remove All",
                     -height=>1,
-                    -command => [\&clearallmacs, $listbox, $window ],
+                    -command => \&clearallmacs, 
+                    -state => "disabled",
                     );
     $frame->pack(-side => "bottom", -fill => "both", -expand => 1);
     $topframe->pack(-side => 'top', -fill => "both", -expand => 1);
@@ -123,13 +130,9 @@ sub mac_window {
     $topframe->gridColumnconfigure(1, -weight => 1);
     $topframe->gridColumnconfigure(2, -weight => 2);
 
-    # this populates the tree as it exists
-    populate_MACS();
- 
-    regenerate_tree($tree);
     our $start = $frame->Button(
                                    -textvariable => \$starttext,
-                                   -command => [\&begin_collect_mac, $window, $listbox, $$vars{interface} ],
+                                   -command => [\&begin_collect_mac, $$vars{interface} ],
                                    );
     our $exitbutton = $frame->Button(
                                      -text => "Close",
@@ -142,17 +145,19 @@ sub mac_window {
                                          $window->destroy;
                                      },
                                     );
-    my $assignbutton = $frame->Button(
+    our $assignbutton = $frame->Button(
                                       -text => "Assign MAC to Node",
-                                      -command => [\&assign2machine, $listbox, $tree, undef, undef, $window],
+                                      -command => [\&assign2machine, undef, undef],
+                                      -state => "disabled",
                                      );
-    my $deletebutton = $frame->Button(
+    our $deletebutton = $frame->Button(
                                       -text => "Delete MAC from Node",
-                                      -command => [\&clear_mac, $listbox, $tree, $window],
+                                      -command => \&clear_mac,
+                                      -state => "disabled",
                                      );
     my $dhcpbutton = $frame->Button(
                                     -text => "Configure DHCP Server",
-                                    -command => [\&setup_dhcpd, $$vars{interface}, $window],
+                                    -command => [\&setup_dhcpd, $$vars{interface}],
                                    );
 
     our $dyndhcp = 1;
@@ -170,11 +175,12 @@ sub mac_window {
     my $fileselector = $frame->FileSelect(-directory => "$ENV{HOME}");
     our $loadbutton = $frame->Button(
                                    -text=>"Import MACs from file...",
-                                   -command=> [\&macfile_selector, "load", $fileselector, $listbox],
+                                   -command=> [\&macfile_selector, "load", $fileselector],
                                   );
     our $savebutton = $frame->Button(
                                     -text => "Export MACs to file...",
-                                    -command => [\&macfile_selector, "save", $fileselector, $listbox],
+                                    -command => [\&macfile_selector, "save", $fileselector],
+                                    -state => "disabled",
                                    );
 
     our $bootfloppy = $frame->Button(
@@ -188,17 +194,18 @@ sub mac_window {
                                    );
     our $networkboot = $frame->Button(
                                      -text => "Setup Network Boot",
-                                     -command => [\&run_setup_pxe, $window],
+                                     -command => [\&run_setup_pxe],
                                     );
 
-    my $assignall   = $frame->Button(
+    our $assignall   = $frame->Button(
                                      -text => "Assign all MACs",
-                                     -command => [\&assignallmacs, $listbox, $tree, $window],
+                                     -command => \&assignallmacs,
+                                     -state => "disabled",
                                     );
-    my $clearallmacsfromnodes = $frame->Button(
-                                        -text =>"Remove all MACs",
-                                        -command => [\&clearallmacsfromnodes, $listbox, $tree, $window],
-                                        );
+#    my $clearallmacsfromnodes = $frame->Button(
+#                                        -text =>"Remove all MACs",
+#                                        -command => \&clearallmacsfromnodes,
+#                                        );
 
     $start->grid($assignall, $exitbutton, -sticky => "ew");
     $assignbutton->grid($deletebutton, $dhcpbutton, -sticky => "ew");
@@ -214,11 +221,53 @@ sub mac_window {
                                       return;
                                     }
                                    });
+    # this populates the tree as it exists
+    populate_MACS();
+ 
+    regenerate_tree();
     center_window( $window );
 }
 
+sub set_buttons {
+    our $listbox;
+    our $tree;
+    my $state;
+#
+#   Enabled iff at least one item selected in the listbox.
+#
+    my $lbs = defined $listbox->curselection();
+    $state = $lbs ? "normal" : "disabled";
+    our $clear->configure( -state => $state );
+#
+#   Enabled iff at least one item is in the listbox.
+#
+    $state = (defined $listbox->get( 0, 'end' )) ? "normal" : "disabled";
+    our $clearall->configure( -state => $state );
+    our $assignall->configure( -state => $state );
+    our $savebutton->configure( -state => $state );
+#
+#   Emabled iff at least one item selected in the listbox and the tree.
+#
+    my $trs = defined $tree->infoSelection();
+    $state = ($lbs && $trs) ? "normal" : "disabled";
+    our $assignbutton->configure( -state => $state );
+#
+#   Enabled iff at least one item selected in listbox and elected item in tree has a MAC.
+#
+    my $node = $tree->infoSelection();
+    if( $trs && $node =~ /^\|([^\|]+)/) {
+        my $client = list_client(name=>$1);
+        my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
+        $state = $adapter->mac ? "normal" : "disabled";
+    } else {
+        $state = "disabled";
+    }
+    our $deletebutton->configure( -state => $state );
+}
+
 sub setup_dhcpd {
-    my ($interface,$window) = @_;
+    my $interface = shift;
+    our $window;
     $window->Busy(-recurse => 1);
     oscar_log_subsection("Step $step_number: cleaning hostfile");
     clean_hostsfile() or (carp "Couldn't clean hosts file!",
@@ -281,7 +330,7 @@ sub populate_MACS {
 }
 
 sub regenerate_tree {
-    my ($tree) = @_;
+    our $tree;
     $tree->delete("all");
     $tree->add("|",-text => "All Clients",-itemtype => "text");
     my @clients = list_client();
@@ -295,15 +344,14 @@ sub regenerate_tree {
            -text => $adapter->devname . " ip = " . $adapter->ip, -itemtype => "text");
     }
     $tree->autosetmode;
-}
-
-sub message_window {
-    
+    set_buttons();
 }
 
 sub assign2machine {
 
-    my ($listbox, $tree, $mac, $node, $window, $noupdate) = @_;
+    my ($mac, $node, $noupdate) = @_;
+    our $listbox;
+    our $tree;
     unless ( defined($noupdate) ) { $noupdate = 0; }
     unless ( $mac ) {
       my $sel = $listbox->curselection;
@@ -320,7 +368,7 @@ sub assign2machine {
     }
 
     my $client;
-    clear_mac($listbox, $tree, $window);
+    clear_mac();
     if($node =~ /^\|([^\|]+)/) {
         oscar_log_subsection("Step $step_number: Assigned $mac to $1");
         $client = list_client(name=>$1);
@@ -331,22 +379,24 @@ sub assign2machine {
     $MAC{$mac}->{client} = $adapter->ip;
     $adapter->mac($mac);
     set_adapter($adapter);
-    regenerate_listbox($listbox);
-    if ( ! $noupdate ) { regenerate_tree($tree); }
+    regenerate_listbox();
+    if ( ! $noupdate ) { regenerate_tree(); }
     if ( our $dyndhcp && ! $noupdate ) {
       our $vars;
-      setup_dhcpd($$vars{interface}, $window);
+      setup_dhcpd($$vars{interface});
     }
 }
 
 sub assignallmacs {
-    my ($listbox, $tree, $window) = @_;
+    our $listbox;
+    our $tree;
+    our $window;
     $tree->selectionClear();
     $window->Busy(-recurse => 1);
     my @macs = $listbox->get(0, 'end');
     @macs = reverse @macs;
     $listbox->delete(0, 'end');
-    regenerate_listbox($listbox);
+    regenerate_listbox();
     my $client;
     my $adapter;
     my $tempnode = '|';
@@ -358,21 +408,22 @@ sub assignallmacs {
       $client = list_client(name=>$1);
       $adapter = list_adapter(client=>$client->name,devname=>"eth0");
       unless ( $adapter->mac ) {
-        assign2machine($listbox, $tree, pop @macs, $tempnode, $window, 1);
+        assign2machine(pop @macs, $tempnode, 1);
       }
     }
     $listbox->insert(0, @macs);
-    regenerate_listbox($listbox);
-    regenerate_tree($tree);
+    regenerate_listbox();
+    regenerate_tree();
     if ( our $dyndhcp ) {
       our $vars;
-      setup_dhcpd($$vars{interface}, $window);
+      setup_dhcpd($$vars{interface});
     }
     $window->Unbusy();
 }
 
 sub clearmacaddy {
-    my ($listbox, $window) = @_;
+    our $listbox;
+    our $window;
     my $macindex = '';
     $window->Busy(-recurse => 1);
     if ( defined($listbox->curselection) ) {
@@ -382,11 +433,13 @@ sub clearmacaddy {
       $listbox->delete($macindex);
       $listbox->update();
     }
+    set_buttons();
     $window->Unbusy();
 }
 
 sub clearallmacs {
-    my ($listbox, $window) = @_;
+	our $listbox;
+    our $window;
     $window->Busy(-recurse => 1);
     my @macs = $listbox->get(0, 'end');
     foreach my $mac (@macs) {
@@ -394,11 +447,14 @@ sub clearallmacs {
     }
     $listbox->delete(0, 'end');
     $listbox->update();
+    set_buttons();
     $window->Unbusy();
 }
 
 sub clear_mac {
-    my ($listbox, $tree, $window, $node, $noupdate) = @_;
+    my ($node, $noupdate) = @_;
+    our $listbox;
+    our $tree;
     unless( $node ) { $node = $tree->infoSelection() or return undef; }
     unless( defined($noupdate) ) {$noupdate = 0;}
     my $client;
@@ -418,16 +474,18 @@ sub clear_mac {
     $MAC{$mac}->{client} = undef;
     $adapter->mac("");
     set_adapter($adapter);
-    regenerate_listbox($listbox);
-    if ( ! $noupdate ) {regenerate_tree($tree);}
+    regenerate_listbox();
+    if ( ! $noupdate ) {regenerate_tree();}
     if ( our $dyndhcp && ! $noupdate ) {
       our $vars;
-      setup_dhcpd($$vars{interface}, $window);
+      setup_dhcpd($$vars{interface});
     }
 }
 
 sub clearallmacsfromnodes {
-    my ($listbox, $tree, $window) = @_;
+    our $listbox;
+    our $tree;
+    our $window;
     $tree->selectionClear();
     $window->Busy(-recurse => 1);
     my @macs = $listbox->get(0, 'end');
@@ -436,18 +494,18 @@ sub clearallmacsfromnodes {
     my $client;
     my $adapter;
     foreach my $child ( $tree->infoChildren('|') ) {
-      clear_mac($listbox, $tree, $window, $child, 1);
+      clear_mac($child, 1);
     }
-    regenerate_tree($tree);
+    regenerate_tree();
     if (our $dyndhcp) {
       our $vars;
-      setup_dhcpd($$vars{interface}, $window);
+      setup_dhcpd($$vars{interface});
     }
     $window->Unbusy();
 }
 
 sub regenerate_listbox {
-    my $listbox = shift;
+    our $listbox;
     $listbox->delete(0,"end");
     foreach my $key (sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC) {
         if(!$MAC{$key}->{client}) {
@@ -455,6 +513,7 @@ sub regenerate_listbox {
         }
     }
     $listbox->update;
+    set_buttons();
 }
 
 # Ok, here is the problem.  This whole thing works great on a network with
@@ -489,18 +548,19 @@ sub end_ping {
 }
 
 sub end_collect_mac {
-    my ($window, $listbox, $interface) = @_;
+    my $interface = shift;
+    our $listbox;
     our $label;
     our $starttext = $startcoll;
     $label->configure(-text => "Not Listening to Network. Click \"$starttext\" to start.");
 
     our $bootfloppy->configure(-state => 'normal');
     our $networkboot->configure(-state => 'normal');
-    our $savebutton->configure(-state => 'normal');
     our $loadbutton->configure(-state => 'normal');
     our $exitbutton->configure(-state => 'normal');
+    set_buttons();
 
-    our $start->configure(-command => [\&begin_collect_mac, $window, $listbox, $interface, $label ]);
+    our $start->configure(-command => [\&begin_collect_mac, $interface]);
     system("killall tcpdump");
     oscar_log_subsection("Step $step_number: Stopped listening to network");
     $COLLECT = 0;
@@ -516,7 +576,9 @@ sub end_collect_mac {
 sub begin_collect_mac {
     return if $COLLECT; # This is so we don't end up with 2 tcpdump processes
     $COLLECT = 1;
-    my ($window, $listbox, $interface) = @_;
+    my $interface = shift;
+    our $listbox;
+    our $window;
     our $starttext = $stopcoll;
     our $label;
     our $start;
@@ -527,7 +589,7 @@ sub begin_collect_mac {
     our $loadbutton->configure(-state => 'disabled');
     our $exitbutton->configure(-state => 'disabled');
 
-    $start->configure(-command => [\&end_collect_mac, $window, $listbox, $interface ]);
+    $start->configure(-command => [\&end_collect_mac, $interface]);
     start_ping($interface);
     my $cmd = "/usr/sbin/tcpdump -i $interface -n -e -l";
     oscar_log_subsection("Step $step_number: Starting to listen to network: $cmd");
@@ -537,24 +599,18 @@ sub begin_collect_mac {
         # print $_ unless $_ =~ /echo/;
         # This is the for tcp dump version 3.6 (MDK 8.0)
         if(/^\S+\s+([a-f0-9\:]{11,17}).*bootp.*\(DF\)/) {
-            my $mac = mactransform($1);
-            if(add_mac_to_hash($mac)) {
-                regenerate_listbox($listbox);
-            }
+#            print "1 collected: ", $_||"NOTHING\n";
+             regenerate_listbox() if add_mac_to_hash( $1 );
         } 
         # This is for tcp dump version 3.4 (RH 7.1)
         elsif (/^\S+\s+\S\s+([a-f0-9\:]{11,17}).*\[\|bootp\]/) {
-            my $mac = mactransform($1);
-            if(add_mac_to_hash($mac)) {
-                regenerate_listbox($listbox);
-            }
+#            print "2 collected: ", $_||"NOTHING\n";
+             regenerate_listbox() if add_mac_to_hash( $1 );
         }
         # This is for tcp dump version 3.6 (RH 7.2 for IA64)
         elsif(/^\S+\s+([a-f0-9\:]{11,17}).*bootp/) {
-            my $mac = mactransform($1);
-            if(add_mac_to_hash($mac)) {
-                regenerate_listbox($listbox);
-            }
+#            print "3 collected: ", $_||"NOTHING\n";
+             regenerate_listbox() if add_mac_to_hash( $1 );
         }
 
         $window->update;
@@ -567,7 +623,8 @@ sub begin_collect_mac {
 # 
 
 sub macfile_selector {
-    my ($op, $selector, $listbox) = @_;
+    my ($op, $selector) = @_;
+    our $listbox;
 
     # now we attempt to do some reasonable directory setting
     my $dir = $ENV{HOME};
@@ -588,7 +645,7 @@ sub macfile_selector {
     } elsif($op eq "save") {
         save_to_file($file);
     }
-    regenerate_listbox($listbox);
+    regenerate_listbox();
     return 1;
 }
 
@@ -620,21 +677,24 @@ sub load_from_file {
 }
 
 sub set_servermacs {
-    open(CMD, "/sbin/ifconfig | grep HWaddr | tail -c 20 | sed -e 's-\:-\\\:-g' |");
-    my @hostmacs = <CMD>;
+    open(CMD, "/sbin/ifconfig|");
+    my @hostmacs = map {/HWaddr\s+([[:xdigit:]:]+)\s+/} grep /HWaddr/, <CMD>;
     close CMD;
-    my $macregex = "(" . (join '|', @hostmacs) . ")";
-    return $macregex;
+    foreach (@hostmacs) {
+       $_ = uc mactransform( $_ );
+    }
+    return @hostmacs;
 }
 
 sub add_mac_to_hash {
-    my ($mac, $client) = @_;
+    my ($m, $client) = @_;
+    my $mac = uc mactransform( $m );
     # if the mac is 00:00:00:00:00:00, it isn't real
     if($mac =~ /^[0\:]+$/) {
         return 0;
     }
     # If the MAC is the server's, then get out of here
-    if ($mac =~ /$SERVERMACS/) {
+    if ( grep {$mac eq $_} @SERVERMACS ) {
         return 0;
     }
     # if it already has an order, then we already know about it
@@ -654,13 +714,13 @@ sub add_mac_to_hash {
 
 sub mactransform {
     my $mac = shift;
-    my $return = join ':', (map {(length($_) == 1) ? "0$_" : "$_"} split (':',$mac));
+    my $return = uc join ':', (map {(length($_) == 1) ? "0$_" : "$_"} split (':',$mac));
     return $return;
 }
 
 # Sub to initiate the setup_pxe script
 sub run_setup_pxe {
-    my ($window) = @_;
+    our $window;
     $window->Busy(-recurse => 1);
 
     my $cmd = "./setup_pxe -v";

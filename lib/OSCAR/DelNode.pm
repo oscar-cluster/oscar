@@ -41,8 +41,8 @@ sub delnode_window {
     $window->title("Delete Oscar Clients");
     my $inst=$window->Label (-text=>"In order to delete OSCAR clients 
 from your cluster, select the nodes
-you wish to delete and press the 
-\"Delete Clients\" button.",-relief=>"groove");
+you want to delete and press the 
+\"Delete Selected Clients\" button.",-relief=>"groove");
     $inst->grid("-",-sticky=>"nsew");
 
     my $listbox = $window->ScrlListbox(
@@ -55,8 +55,9 @@ you wish to delete and press the
 
     
     my $deletebutton = $window->Button(
-                                      -text => "Delete clients",
+                                      -text => "Delete Selected Clients",
                                       -command => [\&delnodes, $window, $listbox],
+                                      -state => "disabled",
                                      );
     my $exitbutton = $window->Button(
                                      -text => "Close",
@@ -64,6 +65,14 @@ you wish to delete and press the
                                     );
 
     $deletebutton->grid($exitbutton,-sticky => "ew");
+
+    $listbox->bind( "<ButtonRelease>",
+            [ sub { my ($lb,$b) = @_;
+                    $b->configure( -state => ( defined $lb->curselection ) ? "normal" : "disabled" );
+                  }, $deletebutton
+            ]
+        );
+
     center_window( $window );
 }
 
