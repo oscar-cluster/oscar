@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE package SYSTEM "../package.dtd">
-<package>
-
-    <!--
-   Copyright (c) 2002 The Trustees of Indiana University.  
-                      All rights reserved.
-   
-   This file is part of the OSCAR software package.  For license
-   information, see the COPYING file in the top level directory of the
-   OSCAR source distribution.
-  
-   $Id: config.xml,v 1.5 2002/11/02 00:45:46 bligneri Exp $
-   -->
+<oscar>
+  <!--
+      Copyright (c) 2002 The Trustees of Indiana University.  
+                         All rights reserved.
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id: config.xml,v 1.6 2002/11/04 23:14:08 jsquyres Exp $
+  -->
   <name>Environment Switcher</name>
 
   <version>
@@ -58,19 +57,21 @@ implementations is only used in this description as an example.  As
 such, it can be used in any environment for any "switching" kind of
 purpose.</description>
 
-  <oda>
-      <!--
-     This definition allows easier access to package requires/provides
+  <package>
+    <oda>
+        <!--
+       This definition allows easier access to package requires/provides
     
-     To list all the packages that provide a particular thing:
-         oda packages-that-provide provided_thing_name
+       To list all the packages that provide a particular thing:
+           oda packages-that-provide provided_thing_name
     
-     To list all the things that a particular package provides:
-         oda this-package-provides package_name
-         -->
-    <shortcut> packages-that-provide read-records packages_provides package name=$1 </shortcut>
-    <shortcut> this-package-provides read-records packages_provides name package=$1 </shortcut>
-    <shortcut> packages-that-require read-records packages_requires package name=$1 </shortcut>
-    <shortcut> this-package-requires read-records packages_requires name package=$1 </shortcut>
-   </oda>
-</package>
+       To list all the things that a particular package provides:
+           oda this-package-provides package_name
+       -->
+      <shortcut> switcher-packages-that-provide read-records packages_provides package name=$1 </shortcut>
+      <shortcut> switcher-this-package-provides read-records packages_provides name package=$1 </shortcut>
+      <shortcut> switcher-packages-that-require read-records packages_requires package name=$1 </shortcut>
+      <shortcut> switcher-this-package-requires read-records packages_requires name package=$1 </shortcut>
+     </oda>
+  </package>
+</oscar>
