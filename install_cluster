@@ -142,6 +142,6 @@ oscar_log_subsection("Successfully ran wizard_prep");
 $cmd = "./oscar_wizard $adapter";
 oscar_log_subsection("Running: \"$cmd\"");
 !system("$cmd 2>&1") or croak("Oscar Wizard failed to run successfully");
-oscar_log_subsection("Successfully ran oscar_wizard);
+oscar_log_subsection("Successfully ran oscar_wizard");
 
 oscar_log_subsection("Successfully ran OSCAR install_cluster script");
