@@ -1,0 +1,112 @@
+#!/usr/bin/env perl
+#########################################################################
+#  Script Name : post_clients                                           #
+#  Written by  : Terrence G. Fleury (tfleury@ncsa.uiuc.edu)             #
+#  Date        : January 24, 2003                                       #
+#  Purpose     : This post_install script looks to see what             #
+#                configuration options were selected for kernel_picker  #
+#                and takes appropriate action.  If the user selected    #
+#                an alternate kernel or a kernel found on the disk that #
+#                matches the running kernel, then we use kernel_picker  #
+#                to install that kernel into the oscarimage.            #
+#  Copyright (c) 2003 National Center for Supercomputing Applications   #
+#                     (NCSA) All rights reserved.                       #
+#########################################################################
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use Carp;
+use POSIX;
+use XML::Simple;
+use OSCAR::Configbox;
+
+my $VERSION = '$Id';
+my($valuesfile) = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+
+#####################
+# BEGIN MAIN SCRIPT #
+#####################
+
+if (-e $valuesfile)
+  {
+    my($values) = readInConfigValues($valuesfile);
+
+    # First, get any optional values
+    my $bootkernel = "";
+    my $kernelversion = "";
+    my $modulespath = "";
+    my $systemmap = "";
+
+    if ($values->{usesmodules}[0] eq 'Y')
+      {
+        $kernelversion = $values->{kernelversion}[0] if 
+          $values->{kernelversion}[0];
+        $modulespath = $values->{modulespath}[0] if $values->{modulespath}[0];
+        $modulespath =~ s,$kernelversion/?$,,;
+        $modulespath =~ s,lib/modules/?$,,;
+        $modulespath .= '/' if ($modulespath !~ /\/$/);
+        $systemmap = $values->{systemmap}[0] if $values->{systemmap}[0];
+
+        # Verify that these values are okay
+        if (length($kernelversion) < 1)
+          {
+            carp("Invalid value for kernel version");
+            $values->{usesmodules}[0] = 'N';
+          }
+        
+        $modulespath = "/lib/modules/$kernelversion" if 
+          (length($modulespath) < 1);
+        if (!(-d $modulespath))
+          {
+            carp("Invalid path for loadable modules");
+            $values->{usesmodules}[0] = 'N';
+          }
+
+        if ((length($systemmap) > 0) && (!(-e $systemmap)))
+          {
+            carp("The System.map file '$systemmap' does not exist. Ignoring.");
+            $systemmap = "";
+          }
+      }
+
+    # Figure out which kernel to load into the image (if any).
+    if ($values->{bootkernel}[0] eq 'default')
+      { # Install just the default kernel RPMs.  Do nothing special.
+      }
+    elsif (($values->{bootkernel}[0] eq 'alternate') &&
+           ((length($values->{altfile}[0]) > 0) && 
+           (-e $values->{altfile}[0])))
+      { # Install an alternate file specified by the user
+        $bootkernel = $values->{altfile}[0];
+      }
+    elsif (($values->{bootkernel}[0] ne 'default') &&
+           ($values->{bootkernel}[0] ne 'alternate') &&
+           (-e $values->{bootkernel}[0]))
+      { # Install the kernel file found on disk
+        $bootkernel = $values->{bootkernel}[0];
+      }
+    else
+      {
+        carp("Invalid boot kernel selected for kernel_picker configuration");
+      }
+
+    if ($bootkernel)
+      { # Build up the command string for kernel_picker.
+        my $cmd = "/opt/kernel_picker/bin/kernel_picker ".
+                  "--bootkernel $bootkernel --bootramdisk N --networkboot N ";
+        if ($values->{usesmodules}[0])
+          {
+            $cmd .= "--kernelversion $kernelversion ";
+            $cmd .= "--modulespath $modulespath ";
+            $cmd .= "--systemmap $systemmap " if $systemmap;
+          }
+
+        print "$cmd\n";
+        !system($cmd) or (print "DIDN'T RUN KERNEL_PICKER!\n");
+      }
+  }
+
+###################
+# END MAIN SCRIPT #
+###################
+

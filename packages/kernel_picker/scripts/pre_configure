@@ -1,0 +1,389 @@
+#!/usr/bin/env perl
+#########################################################################
+#  Script Name : pre_configure                                          #
+#  Written by  : Terrence G. Fleury (tfleury@ncsa.uiuc.edu)             #
+#  Date        : January 24, 2003                                       #
+#  Purpose     : This pre_configure script for kernel_picker checks     #
+#                to see if the currently running kernel corresponds     #
+#                to one of the kernel RPMs to be installed.  If this    #
+#                is not the case AND we can find a kernel file on       #
+#                disk which matches the running kernel, then we give    #
+#                the user the option to install (in the image) this     #
+#                kernel file in addition to the standard kernel RPM.    #
+#                Also, we always allow the user to specify an           #
+#                alternate kernel file to be installed in the image     #
+#                (assuming that the user knows the location on disk     #
+#                of this alternate kernel file).                        #
+#  Copyright (c) 2003 National Center for Supercomputing Applications   #
+#                     (NCSA) All rights reserved.                       #
+#########################################################################
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use Carp;
+use POSIX;
+use Cwd 'chdir';
+use File::Find;
+use OSCAR::Distro;
+use OSCAR::PackageBest;
+
+my $VERSION = '$Id';
+my $runningversion;    # Version number of the currently running kernel
+my $runningdate;       # Version compile date of the currently running kernel
+my @kernelfiles;       # List of files in /boot that match the running kernel
+my $htmlfile = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+
+#########################################################################
+#  Subroutine: getRunningKernelInfo                                     #
+#  Parameters: None                                                     #
+#  Returns   : 1. The version of the running kernel.                    #
+#              2. The compilation date of the running kernel.           #
+#  This subroutine checks the information in "/proc/version" and        #
+#  extracts out the Linux version number and the compilation date/time  #
+#  of the currently running kernel.  These are returned in a list to    #
+#  the calling routine.                                                 #
+#########################################################################
+sub getRunningKernelInfo # -> ($runversion,$rundate)
+{
+  my $runversion = "";
+  my $rundate = "";
+
+  open(VERS,"/proc/version") or (carp($!), return undef);
+  my $version = <VERS>;
+  close(VERS) or (carp ($!), return undef);
+
+  chomp $version;
+  ($version =~ /Linux\s+version\s+([^\s]*)\s/i) && ($runversion = $1);
+  ($version =~ /((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d+\s+\d+:\d+:\d+\s+\w+\s+\d+)/) && ($rundate = $1);
+  return ($runversion,$rundate);
+}
+
+#########################################################################
+#  Subroutine: isGzip                                                   #
+#  Parameter : The name of the file to test.                            #
+#  Returns   : "1" if the file is gzipped, "0" otherwise.               #
+#  This routine is taken from SystemConfig's Initrd::Generic module.    #
+#  It takes a file and tests to see if it has been gzipped.             #
+#########################################################################
+sub isGzip # -> ($isgzip)
+{ 
+  my($file)= @_;
+  my $isgzip = 0;
+
+  open(IN,"<$file") or (carp($!), return undef);
+  my $chr1 = getc IN;
+  my $chr2 = getc IN;
+  close(IN) or (carp($!), return undef);
+  $isgzip = 1 if(unpack("H*",$chr2) eq "8b" and unpack("H*",$chr1) eq "1f");
+
+  return $isgzip;
+}
+
+#########################################################################
+#  Subroutine: checkForKernelFile                                       #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This is a helper subroutine for findRunningKernelFiles.  It is the   #
+#  subroutine used by the File::Find module and is called for each file #
+#  in the /boot directory.  It checks to see if the given file is a     #
+#  kernel file which matches the version and compilation date of the    #
+#  currently running kernel.  If so, it pushes that file on to the      #
+#  global list @kernelfiles.                                            #
+#########################################################################
+sub checkForKernelFile
+{
+  # Skip any directories that we don't have access to (like lost+found)
+  $File::Find::prune = 1 if ((-d $File::Find::name) && 
+    !(-x $File::Find::name || -r $File::Find::name));
+   
+  if ((-r $File::Find::name) &&    # Make sure that the file is readable by us
+     (!(-l $File::Find::name)) &&  # Ignore symbolic links
+     (-B $File::Find::name))       # Check only binary files
+    {
+      if (isGzip($File::Find::name))  # Check for gzipped files
+        {
+          open(IN,"gzip -qdc $File::Find::name |") or 
+            croak("Couldn't run gzip -qdc $File::Find::name.");
+        }
+      else   # Open as a "normal" file
+        {
+          open(IN,"<$File::Find::name") or 
+            croak("Failed to open $File::Find::name.");
+        }
+
+      while (my $line = <IN>)
+        { # Find the line giving the version and compilation date of the file
+          if (($line =~ /[^\/\-]([1234]\.\d+\.\d+[\w\-]+[^\s]*)/) &&
+              ($runningversion eq $1) && 
+              ($line =~ /((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d+\s+\d+:\d+:\d+\s+\w+\s+\d+)/) && 
+              ($runningdate eq $1))
+            {
+              push(@kernelfiles,$File::Find::name);
+              last;
+            }
+        }
+      close IN;
+    }
+}
+
+#########################################################################
+#  Subroutine: findRunningKernelFiles                                   #
+#  Parameters: A list of directories to search for kernel files.        #
+#  Returns   : A list of files matching the currently running kernel.   #
+#  This is the main subroutine of this module.  It takes in a list of   #
+#  directories and checks every file in those directories (and sub-     #
+#  directories) for kernel files matching the currently running kernel. #
+#  The list of files found is returned (which may be empty).            #
+#########################################################################
+sub findRunningKernelFiles # (@searchdirs) -> @kernelfiles
+{
+  my(@searchdirs) = @_;
+  @kernelfiles = ();   # Clear global list of kernel files
+
+  @searchdirs = ('/boot') if (scalar(@searchdirs) == 0);  # Default to /boot
+  ($runningversion,$runningdate) = getRunningKernelInfo();
+  find(\&checkForKernelFile,@searchdirs);   # Use Perl's File::Find module
+
+  return @kernelfiles;   # Return the list of matching kernel files
+}
+
+#########################################################################
+#  Subroutine: getKernelListFromRPMList                                 #
+#  Parameters: None                                                     #
+#  Returns   : A list of RPMs with names starting with "kernel"         #
+#  This subroutine attempts to find which RPMs starting with the string #
+#  "kernel" (eg. kernel-smp, kernel-debug, etc.) are to be installed    #
+#  according to the default RPM list.  Usually this list contains just  #
+#  "kernel" and "kernel-smp".  The list of strings is returned.         #
+#########################################################################
+sub getKernelListFromRPMList # -> @kernellist
+{
+  my @kernellist = ();
+
+  # First, find out the default rpmlist for the currently running machine.
+  # This code is taken from the "build_oscar_image" subroutine located in
+  # the "oscar_wizard" script.
+  my $arch = (uname)[4];
+  $arch =~ s/i.86/i386/;
+  my($distroname,$distrovers) = which_distro('/tftpboot/rpm');
+  if ($distroname ne "UnknownLinux")
+    {
+      my $rpmlist =
+        "$ENV{OSCAR_HOME}/oscarsamples/$distroname-$distrovers-$arch.rpmlist";
+
+      # Then, open the file looking for lines starting with "kernel" and
+      # add them to the list to be returned. 
+      open(RPML,$rpmlist);
+      while (my $line = <RPML>)
+        {
+          chomp $line;
+          push(@kernellist,$line) if ($line =~ /^\s*kernel/);
+        }
+      close RPML;
+    }
+
+  return @kernellist;   # Return the list of matching "kernel*" lines
+}
+
+#########################################################################
+#  Subroutine: uniqueName                                               #
+#  Parameter : The filename/directory to check for uniqueness.          #
+#  Returns   : A string for a unique filename/directory.                #
+#  This subroutine takes in the name of a file/directory and checks     #
+#  to see if it already exists.  If so, it tacks on a dash and a number #
+#  to make a new "unique" file/directory name.  This string is returned #
+#  and you can use it to create a new unique file/directory.            #
+#########################################################################
+sub uniqueName # ($instr) -> $filename
+{
+  my($instr) = @_;
+  my($counter,$filename);
+
+  $filename = $instr;
+  while (-e $filename)
+    {
+      $counter++;
+      $filename = $instr . '-' . $counter;
+    }
+  return $filename; 
+}
+
+#########################################################################
+#  Subroutine: generateHTMLFile                                         #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This is the meat of the script.  We first check to see if there is   #
+#  a kernel file in the /boot directory (and subdirectories) which      #
+#  matches the running kernel.  Then we look at the default RPM list    #
+#  for the machine and see what kernel* RPMs are supposed to be         #
+#  installed.  We try to find these files in /tftpboot/rpm.  For each   #
+#  kernel* file that we find, we extract out the /boot/* files and      #
+#  check THEM for a kernel file which matches the running kernel.       #
+#  Finally, using all of this information, we generate a configurator   #
+#  HTML file for kernel_picker.                                         #
+#########################################################################
+sub generateHTMLFile
+{
+  my $errorcond = 0;
+  # $errorcond bit meanings
+  # 0  =>  No problem found.
+  # 1  =>  No /boot/kernel file(s) corresponding to running kernel
+  # 2  =>  No "kernel*" file available in /tftpboot/rpm
+  # 4  =>  Couldn't match the running kernel file with an RPM file
+
+  # Remove the old configurator.html file (if any).
+  unlink($htmlfile) if (-e $htmlfile);
+
+  # Find any files corresponding to the currently running kernel.
+  my @runlist = findRunningKernelFiles();
+  # Set error if we couldn't find any such kernel files.
+  $errorcond |= 1 if (scalar(@runlist) <= 0);
+
+  # Generate a list of all files that meet these conditions:
+  # (a) General package name (eg. "kernel-smp") is in the default RPM list.
+  # (b) The corresponding file exists in /tftpboot/rpm (as determined
+  #     by PackageBest.pm).
+  my @pkglist = getKernelListFromRPMList;
+  my %files;
+  %files = &find_files(PKGDIR=>"/tftpboot/rpm",PKGLIST=>\@pkglist) if @pkglist;
+  my @tftplist = ();
+  foreach (sort keys %files)
+    {
+      push(@tftplist,$_) if ($_ =~ /kernel/);
+    }
+  # Set error if there weren't any good "kernel*" files in /tftpboot/rpm.
+  # NOTE: This should never happen!!!
+  $errorcond |= 2 if (scalar(@tftplist) <= 0);
+
+  # If we found some kernel* RPMs in /tftpboot/rpm, check each one to see
+  # if the currently running kernel corresponds to something in one of the
+  # RPM's /boot/* files.  To do this, we need to extract out the /boot/*
+  # files from each kernel*.rpm and check against the running kernel.
+  if (!($errorcond & 2))
+    {
+      my $found = 0;
+      foreach my $rpmfile (@tftplist)
+        {
+          last if ($found);
+
+          # Create a temporary directory under /tmp to hold the /boot/*
+          # files from each kernel RPM we found in the previous step.
+          # Then extract out these files and check to see if any of them
+          # correspond to the currently running kernel.
+          my $tmpdirname = uniqueName('/tmp/kerneltemp');
+          mkdir $tmpdirname;
+          my $olddir = getcwd();
+          chdir $tmpdirname;
+          system("rpm2cpio /tftpboot/rpm/$rpmfile | cpio -i -d ./boot*");
+
+          my @tmprunlist = findRunningKernelFiles();
+          $found = 1 if (scalar(@tmprunlist) > 0);
+          chdir $olddir;
+          system("rm -rf $tmpdirname");
+        }
+
+      # Set error if we couldn't find the running kernel file in any
+      # of the RPM files.
+      $errorcond |= 4 if (!$found);
+    }
+
+  # Finally, generate the configurator.html file using the information 
+  # we gathered above. 
+  open(HTML,">$htmlfile") || croak("Unable to open $htmlfile");
+
+  print HTML "<html>\n";
+  print HTML "<head><title>Configuration for kernel_picker</title>\n";
+  print HTML "</head>\n";
+  print HTML "<body>\n";
+  print HTML "<center>\n";
+  print HTML "<h1>Select the Kernel for the Image</h1>\n";
+  print HTML "</center>\n";
+  print HTML "The default kernels (ie. vmlinux) specified in the RPM list";
+  print HTML "work for most machine configurations.  However, there are";
+  print HTML "occasions when you want to install a custom kernel into the";
+  print HTML "image file.  Here, you can choose to use the default kernel";
+  print HTML "or a different kernel.\n";
+  print HTML "<p>\n";
+  if ($errorcond & 4)
+    {
+      print HTML "<b>NOTICE!</b> The currently running kernel differs ";
+      print HTML "from the kernel RPM to be installed. \n";
+      if ($errorcond & 1)
+        {
+          print HTML "HOWEVER a file on the ";
+          print HTML "hard drive corresponding to the currently ";
+          print HTML "running kernel could <b>NOT</b> be found.  ";
+          print HTML "Thus, you might want to specify the location ";
+          print HTML "of an <i>alternate kernel file</i> below.\n";
+        }
+      print HTML "<p>\n";
+    }
+  print HTML "<form>\n";
+  print HTML "<b>Choose the kernel to install in the image:</b><br>\n";
+  print HTML "<ul>\n";
+
+  # If we couldn't find an RPM kernel that matched the running kernel
+  # but we DID find a kernel file on disk that matched the running
+  # kernel, then offer that as an option and make it the default
+  # selection for the user.
+  print HTML "<li><input type=radio ";
+  print HTML "checked " if (!(($errorcond & 4) and (!($errorcond & 1))));
+  print HTML "name=bootkernel value=default>Default kernel from RPM\n";
+  print HTML "<br>Kernel file matching the currently running kernel:\n";
+
+  my $runnum = 0;
+  foreach my $run (@runlist)
+    {
+      $runnum++;
+      print HTML "<li><input type=radio ";
+      print HTML "checked " if 
+        (($runnum == 1) && ($errorcond & 4) && (!($errorcond & 1)));
+      print HTML "name=bootkernel value='$run'>$run\n";
+    }
+
+  print HTML "<br>Alternate kernel file:\n";
+  print HTML "<li><input type=radio name=bootkernel value=alternate>";
+  print HTML "<input type=text name=altfile size=40>\n";
+  print HTML "</ul>\n";
+  print HTML "<p> <p> <hr> <p> <p>\n";
+  print HTML "If you selected a kernel other than the Default, enter the ";
+  print HTML "following information:<br>\n";
+  print HTML "<ul>\n";
+  print HTML "<li>Use loadable modules : ";
+  print HTML "<input type=radio name=usesmodules value=Y>&lt;--Yes";
+  print HTML " &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp; ";
+  print HTML "No--&gt;<input type=radio checked name=usesmodules value=N>\n";
+  print HTML "<li>If using loadable modules, enter the ";
+  print HTML "following information:\n";
+  print HTML "<ul>\n";
+  print HTML "<li>Kernel version number : ";
+  print HTML "<input type=text name=kernelversion size=20 value=";
+  print HTML $runningversion.">\n";
+  print HTML "<li>Loadable modules path : ";
+  print HTML "<input type=text name=modulespath size=30 value='/lib/modules/";
+  print HTML $runningversion."'>\n";
+  print HTML "<li>System.map file (optional) : ";
+  print HTML "<input type=text name=systemmap size=30>\n";
+  print HTML "</ul>\n";
+  print HTML "</ul>\n";
+  print HTML "<p>\n";
+  print HTML "<input type=reset value='Reset Form'>\n";
+  print HTML "<p>\n";
+  print HTML "</form>\n";
+  print HTML "<hr>\n";
+  print HTML "</body>\n";
+
+  close HTML;
+}
+
+
+#####################
+# BEGIN MAIN SCRIPT #
+#####################
+
+generateHTMLFile;
+
+###################
+# END MAIN SCRIPT #
+###################
+
