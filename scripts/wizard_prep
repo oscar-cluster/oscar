@@ -1,0 +1,115 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   Copyright 2002 International Business Machines
+#                  Sean Dague <japh@us.ibm.com>
+
+#   This is a script which does everything that needs to be done for
+#   the server to work for oscar.  It is long, but hopefully well structured.
+
+use File::Path;
+use File::Copy;
+use File::Basename;
+use OSCAR::Package;
+use OSCAR::PackageBest;
+use Carp;
+use strict;
+use Data::Dumper;
+use vars qw($RPMTABLE);
+
+my $INTERFACE = shift or croak("No interface specified");
+
+#   Make sure /tftpboot/rpm exists, if not create it.  Then copy all the rpms
+#   that we ship that need to be in the client into that directory
+
+my $RPMPOOL = $OSCAR::Package::RPM_POOL;
+
+prep_rpmpool($RPMPOOL) or croak("Couldn't prepare tftpboot directory");
+copy_rpms($ENV{OSCAR_HOME},$RPMPOOL) or croak("Couldn't copy rpms to $RPMPOOL");
+
+my @packages = list_pkg("core");
+my @rpms = ();
+foreach my $package (@packages) {
+    push @rpms, rpmlist($package,"server");
+}
+
+# Give me the list of files for my rpms
+my @files = find_files(
+                       PKGDIR => $RPMPOOL, 
+                       PKGLIST => \@rpms
+                      );
+
+my @fullfiles = map {"$RPMPOOL/$_"} @files;
+
+my $cmd = "rpm -Uhv --replacepkgs " . join(' ', @fullfiles);
+!system($cmd) or croak("Couldn't install the required packages needed for OSCAR Wizard to start");
+
+foreach my $package (@packages) {
+    run_pkg_script($package,"post_server_install") or croak("Failed running post_server_install for $package");
+}
+
+sub prep_rpmpool {
+    my $dir = shift;
+    if(!-d $dir) {
+        verbose("No $dir directory found.  Creating it now...");
+        mkpath($dir, 1, 0755) or return undef;
+    }
+    return 1;
+}
+
+sub copy_rpms {
+    my ($topdir, $target) = @_;
+
+    my @packagedirs = files_in_dir("$topdir/packages");
+
+    foreach my $dir (@packagedirs) {
+            my @files = files_in_dir("$dir/RPMS");
+            foreach my $file (@files) {
+                if($file =~ /\.rpm$/) {
+                    my $filename = basename($file);
+                    if(!-e "$RPMPOOL/$filename") {
+                        verbose("Copying $file to $RPMPOOL");
+                        copy("$file", "$RPMPOOL/$filename") or return undef;
+                    }
+                }
+            }
+    }
+    return 1;
+}
+
+sub files_in_dir {
+    my $dir = shift;
+    opendir(IN,$dir);
+    my @temp = readdir(IN);
+    closedir(IN);
+    my @files = ();
+    foreach my $file (@temp) {
+        if($file !~ /^\./) {
+            push @files, $file;
+        }
+    }
+    return map {"$dir/$_"} @files;
+}
+
+sub _is_installed {
+    my $rpm = shift;
+    if(system("rpm -q $rpm >/dev/null")) {
+        verbose("$rpm not installed.  Marking for install...");
+        return 0;
+    }
+    return 1;
+}
+
