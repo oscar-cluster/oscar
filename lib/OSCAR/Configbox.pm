@@ -32,6 +32,7 @@ use HTML::TreeBuilder 3;
 use XML::Simple;      
 no warnings qw(closure);
 
+our $destroyedi = 0;
 my($top);            # The Toplevel widget for the config box.
 my($web);            # The Tk::Web widget for displaying HTML file.
 my($packagedir);
@@ -52,6 +53,7 @@ require Tk::Menu;
 # For use with Tk402.002, using the grid geometry manager
 
 sub Configbox_ui {
+	$destroyedi = 1;
 	our($root) = @_;
 
 	# widget creation 
@@ -164,6 +166,7 @@ sub defaultConfiguration
 #########################################################################
 sub exitWithoutSaving
 {
+  undef $destroyedi;
   if ($root)
     {
       # If there are any children, make sure they are destroyed.
@@ -532,6 +535,14 @@ sub displayWebPage # ($parent,$file)
           $top = MainWindow->new();
           $top->title("Configuration");
         }
+      $top->bind('<Destroy>', sub{
+      if ( defined($destroyedi) ) {
+        undef $destroyedi;
+        exitWithoutSaving();
+        #$parent->Unbusy();
+        return;
+      }
+                                 } );
       OSCAR::Configbox::Configbox_ui $top;  # Call the specPerl window creator
     }
 

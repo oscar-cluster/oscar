@@ -1,6 +1,6 @@
 package OSCAR::Tk;
 
-#   $Id: Tk.pm,v 1.4 2003/01/29 19:51:15 brechin Exp $
+#   $Id: Tk.pm,v 1.5 2003/01/30 19:48:04 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,14 +28,14 @@ use OSCAR::Logger;
 use OSCAR::Tk;
 @EXPORT = qw(yesno_window done_window error_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 # Module-specific variables
 
 my $parent_window;
 my $yn_window;
 my ($on_yes, $on_no);
-our $destroyed = 0;
+#our $destroyed = 0;
 
 sub yesno_window {
     $parent_window = shift;
@@ -47,17 +47,17 @@ sub yesno_window {
 
     # Make the parent window busy
     
-    $parent_window->Busy(recurse => 1);
+#    $parent_window->Busy(recurse => 1);
 
     # Make the new yes/no window
 
     $yn_window = $parent_window->Toplevel;
-    $yn_window->bind('<Destroy>', sub { 
-      if ( $destroyed == 0 ) {
-	$destroyed = 1;
-	$parent_window->Unbusy(); return; 
-      }
-				      } );
+#    $yn_window->bind('<Destroy>', sub { 
+#      if ( $destroyed == 0 ) {
+#	$destroyed = 1;
+#	$parent_window->Unbusy(); return; 
+#      }
+#				      } );
 
     # Fill in the widgets
 

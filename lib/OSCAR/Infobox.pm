@@ -28,6 +28,7 @@ our @EXPORT = qw(displayInformation destroyInfoBox);
 our @EXPORT_OK = qw(closeInfoBox);
 require Tk::ROText;
 no warnings qw(closure);
+our $destroyedi = 0;
 
 my($top);            # The Toplevel widget for the information box
 my($infoTextBox);    # The Read-Only Textbox for the information text
@@ -47,6 +48,7 @@ require Tk::Menu;
 # For use with Tk402.002, using the grid geometry manager
 
 sub Infobox_ui {
+	$destroyedi = 1;
 	our($root) = @_;
 
 	# widget creation 
@@ -61,7 +63,7 @@ sub Infobox_ui {
 	# widget commands
 
 	$closeButton->configure(
-		-command => \&OSCAR::Infobox::closeInfoBox
+		-command => \&destroyInfoBox
 	);
 
 	# Geometry management
@@ -98,7 +100,8 @@ sub Infobox_ui {
 #########################################################################
 sub closeInfoBox
 {
-  $root->UnmapWindow if ($root);
+  undef $destroyedi;
+  if (defined($root)) {$root->UnmapWindow;}
 }
 
 #########################################################################
@@ -109,10 +112,11 @@ sub closeInfoBox
 #########################################################################
 sub destroyInfoBox
 {
-  if ($root)
+  undef $destroyedi;
+  if (defined($root))
     {
       closeInfoBox;
-
+      
       # Undefine the Tk widget variables for re-creation later.
       undef $root;
       undef $top;
@@ -152,6 +156,15 @@ sub displayInformation # ($parent,$titlestr,$infostr)
           $top = MainWindow->new();
           $top->title("Information");
         }
+      $top->bind('<Destroy>', sub{
+      if ( defined($destroyedi) ) {
+        undef $destroyedi;
+        destroyInfoBox();
+        #$parent->Unbusy();
+        return;
+      }
+                                 } );
+
       OSCAR::Infobox::Infobox_ui $top;   # Call the specPerl window creator
     }
 
