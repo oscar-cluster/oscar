@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.60 2003/09/18 03:39:53 ngorsuch Exp $
+      $Id: config.xml,v 1.61 2003/09/23 19:23:23 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -25,7 +25,7 @@
 
   <version>
     <major>1</major>
-    <minor>21</minor>
+    <minor>22</minor>
     <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
@@ -101,6 +101,11 @@
       <rpm>perl-DBI</rpm>
       <rpm>perl-Data-ShowTable</rpm>
       <rpm>mysql-shared</rpm>
+      <rpm>oda</rpm>
+  </rpmlist>
+
+  <rpmlist>
+      <filter group="oscar_clients"/>
       <rpm>oda</rpm>
   </rpmlist>
 
