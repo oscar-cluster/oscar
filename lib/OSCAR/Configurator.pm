@@ -40,6 +40,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use OSCAR::Configbox; # For the configuration HTML form display
 use OSCAR::Package;   # For list_installable_packages() and run_pkg_script()
+use OSCAR::Database;  # For locking() and unlock()
 use OSCAR::Logger;    # For oscar_log_section()
 use OSCAR::Tk;
 #use OSCAR::Selector;
@@ -158,7 +159,7 @@ sub getSelectedConfigurablePackages
   my %packages;
 
   # START LOCKING FOR NEST
-  my @tables = ("oscar", "packages", "packages_sets", "package_sets_included_packages", "oda_shortcuts");
+  my @tables = ("oscar", "packages", "package_sets", "package_sets_included_packages", "oda_shortcuts");
   my @error_list = ();
   my %options = ();
   locking("WRITE", \%options, \@tables, \@error_list);
