@@ -83,7 +83,7 @@ sub which_distro {
 #
 ############################################################
 sub which_distro_server {
-    my $name = "UnkownLinux";
+    my $name = "UnknownLinux";
     my $version = "0";
     foreach my $file (keys %$DISTROFILES) {
         my $output = $DISTROFILES->{$file} eq 'debian' ?
