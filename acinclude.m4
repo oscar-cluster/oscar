@@ -1,8 +1,11 @@
 #
-# $Id: acinclude.m4,v 1.1 2002/07/24 03:27:38 jsquyres Exp $
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# $Id: acinclude.m4,v 1.2 2003/07/04 14:01:01 jsquyres Exp $
 #
-# This file is part of the OSCAR distribution.
-# See the copyright and license notices in the top-level directory.
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
 #
 
 AC_DEFUN([OSCAR_CHECK_PROG], [
@@ -13,12 +16,17 @@ AC_DEFUN([OSCAR_CHECK_PROG], [
 #
 # $1 = variable to store result in
 # $2 = program to look for
+# $3 = whether we should abort if we can't find it
 #
 AC_CHECK_PROG($1, $2, $2, no)
 if test "$$1" = "no"; then
-    AC_MSG_WARN([*** Couldn't find program "$2" -- "$2" is necessary])
-    AC_MSG_WARN([*** to build an OSCAR distribution package.])
-    AC_MSG_ERROR([*** Cannot continue.])
+    AC_MSG_WARN([*** Couldn't find program "$2"])
+    if test "$3" = "yes"; then
+	AC_MSG_WARN([*** $2 is necessary to build an OSCAR distribution package])
+	AC_MSG_ERROR([*** Cannot continue.])
+    fi
+    found_oscar_progs=no
 fi
+
 AC_ARG_VAR([$1], [$2 program location])
 ])dnl
