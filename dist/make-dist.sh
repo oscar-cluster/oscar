@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.13 2002/06/15 03:54:26 jsquyres Exp $
+# $Id: make-dist.sh,v 1.14 2002/06/20 05:24:27 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -83,12 +83,12 @@ if test "$want_srpms" != "only"; then
     make clean pdf
     make mostlyclean
 
-    echo " - building introduction docs"
-    cd ../introduction
+#    echo " - building introduction docs"
+#    cd ../introduction
 #make clean ps
 #make mostlyclean pdf
-    make clean pdf
-    make mostlyclean
+#    make clean pdf
+#    make mostlyclean
 
     echo " - building user docs"
     cd ../user
@@ -105,7 +105,7 @@ if test "$want_srpms" != "only"; then
     
     echo " - copying build docs into distdir/doc"
     cp installation/install.pdf $distdir/doc
-    cp introduction/intro.pdf $distdir/doc
+#    cp introduction/intro.pdf $distdir/doc
     cp user/user.pdf $distdir/doc
 fi
 
@@ -161,7 +161,6 @@ EOF
 
     cat > $filelist <<EOF
 README
-README.ia64
 EOF
     for file in `cat $filelist`; do
 	sed -e s/OSCARVERSION/$OSCAR_VERSION/g $file > $file.out
