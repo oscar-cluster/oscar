@@ -255,7 +255,7 @@ my @directories = ();
 my @oda_directories = ();
 foreach my $packages_base_directory ( @base_directories ) {
     opendir(PACKAGES, $packages_base_directory)
-	|| warn "$0: cannot open packages directory $packages_base_directory";
+	|| next;
     while ( my $package = readdir(PACKAGES) ) {
 	chomp $package;
 	if ( $package eq "oda" ) {
