@@ -87,7 +87,10 @@ sub NEW
   setColumnReadOnly(2,1);
   setColumnReadOnly(3,1);
   setColumnReadOnly(4,1);
-  adjustColumn(1);            # Auto-set width of column 1
+  adjustColumn(1);            # Auto-set width of columns
+  adjustColumn(2);            
+  adjustColumn(3);
+  adjustColumn(4);
 
   # When the value of any cell changes, call cellValueChanged to 
   # catch checkboxes on/off.
