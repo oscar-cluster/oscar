@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.17 2003/01/21 21:47:21 mchasal Exp $
+#   $Id: MAC.pm,v 1.18 2003/01/21 22:23:35 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.17 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.18 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -206,8 +206,9 @@ sub regenerate_tree {
     foreach my $client (@clients) {
         my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
         $tree->add("|".$client->name, -text => $client->hostname, -itemtype => "text");
+	my $mac=$adapter->mac || "" ;
         $tree->add("|".$client->name . "|mac", 
-                   -text => $adapter->devname . " mac = " . $adapter->mac, -itemtype => "text");
+                   -text => $adapter->devname . " mac = " . $mac, -itemtype => "text");
         $tree->add("|".$client->name . "|ip" . $adapter->devname, 
            -text => $adapter->devname . " ip = " . $adapter->ip, -itemtype => "text");
     }
