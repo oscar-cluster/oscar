@@ -1,6 +1,6 @@
 package OSCAR::Distro;
 
-#   $Id: Distro.pm,v 1.7 2003/05/30 22:30:10 brechin Exp $
+#   $Id: Distro.pm,v 1.8 2003/06/22 03:15:05 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -16,6 +16,9 @@ package OSCAR::Distro;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# Copyright (c) 2003 NCSA
+#                    Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+
 #   Copyright 2002 International Business Machines
 #                  Sean Dague <japh@us.ibm.com>
 # Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
@@ -26,12 +29,12 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(which_distro which_distro_server);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.8 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
-                   'mandrake-release' => 'Mandrake',
-                   'redhat-release'   => 'RedHat',
-		   'aaa_version'      => 'SuSE',
+                   'mandrake-release' => 'mandrake',
+                   'redhat-release'   => 'redhat',
+		   'aaa_version'      => 'suse',
                   };
 
 ############################################################
@@ -54,7 +57,7 @@ sub which_distro {
             last;
         }
     }
-    return ($name, $version);
+    return (lc $name, lc $version);
 }
 
 ############################################################
@@ -82,7 +85,7 @@ sub which_distro_server {
 	}
         last;
     }
-    return ($name, $version);
+    return (lc $name, lc $version);
 }
 
 1;
