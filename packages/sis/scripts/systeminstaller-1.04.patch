@@ -402,7 +402,7 @@
 +
 +1;
 --- /usr/lib/systeminstaller/SystemInstaller/Package/RpmNoScripts.pm.orig	2002-11-06 14:54:07.000000000 -0800
-+++ /usr/lib/systeminstaller/SystemInstaller/Package/RpmNoScripts.pm	2005-04-04 21:55:06.660194496 -0700
++++ /usr/lib/systeminstaller/SystemInstaller/Package/RpmNoScripts.pm	2005-04-06 08:12:44.000000000 -0700
 @@ -47,22 +47,19 @@
  # Look at a directory and determine if it looks like rpms.
  # Input:        Directory name
@@ -449,40 +449,57 @@
          }
  
  	return 1;
-@@ -146,12 +138,13 @@
+@@ -146,39 +138,36 @@
          verbose("Extracting and running scriptlets from rpms.");
          foreach my $pkg (@order) {
                  my $piprog=undef;
 -                print "$pkg\n" if &get_verbose;
 -                my $cmd="$rpmcmd -q --scripts -p $pkgpath/$pkg";
-+                print "$pkg: " if &get_verbose;
++                print "$pkg:" if &get_verbose;
 +                my $cmd="$rpmcmd -q --scripts --root $imgpath $pkg";
                  open (SCRIPTQ,"$cmd |");
                  while (<SCRIPTQ>) {
++                        chomp;
                          if (/^postinstall script/) {
++                                my $shell = $_;
++                                $shell =~ s/^[^\/]*//;
++                                $shell =~ s/\).*$//;
++                                print " $shell" if &get_verbose;
                                  open (POST,">$imgpath$postfile");
-+                                print "s" if &get_verbose;
-                                 my ($j1,$shell)=split(/\(through /,$_);
-                                 $shell=~s/\).*$//;
+-                                my ($j1,$shell)=split(/\(through /,$_);
+-                                $shell=~s/\).*$//;
                                  print POST "#!$shell\n";
-@@ -159,6 +152,7 @@
+                                 print POST "# Post scriptlet for $pkg\n\n";
                                  $post_writing=1;
-                                 next;
+-                                next;
                          } elsif (/^postinstall program/) {
-+                                print "p" if &get_verbose;
                                  $piprog=$_;
                                  $piprog=~s/^.*://;
                                  $piprog=~s/^ *//;
-@@ -175,10 +169,8 @@
+-                                $piprog=~s/ *\n$//;
+-                                if ($piprog eq "/bin/sh") {
+-                                        $piprog=undef;
+-                                }
+-
++                                $piprog=~s/ *$//;
++                                $piprog=undef if $piprog eq "/bin/sh";
++                                print " $piprog" if $piprog && &get_verbose;
+                         } elsif (/^(post|pre)(un)?install/) {
+                                 $post_writing=0;
+-                        }
+-                        if ($post_writing) {
+-                                print POST "$_";
++                        } elsif( $post_writing ) {
++                                print POST "$_\n";
                          }
                  }
++                print "\n" if &get_verbose;
                  close (POST);
 -	        unless (close(SCRIPTQ)) {
 -                        carp("Failed to extract scripts from $pkg.");
 -		        return 0;
 -	        }
 +                close SCRIPTQ;
-+                print "\n" if &get_verbose;
                  if ($piprog) {
                          if (system("chroot $imgpath $piprog")) {
                                  carp("Post program for $pkg, failed.");
