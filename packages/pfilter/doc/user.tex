@@ -1,0 +1,20 @@
+% -*- latex -*-
+%
+% $COPYRIGHT$
+%
+
+\subsection{Packet Filtering with pfilter}
+\label{app:pfilter-overview}
+
+When the {\bf pfilter} packet filtering system is turned on, the
+default OSCAR settings allow any network communication between the
+machines in the cluster, and allow ssh and http access to the cluster
+main machine from the outside.
+
+Communication between cluster machines and the outside network are
+limited to outgoing connections only.  Incoming network connections to
+cluster machines are blocked.
+
+To allow outside network connections to ports on the cluster machines,
+special rules will have to be added to the {\bf pfilter}
+configuration.  See your cluster administrator for help on this.
