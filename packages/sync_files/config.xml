@@ -7,14 +7,14 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.1 2004/02/16 16:46:38 brechin Exp $
+      $Id: config.xml,v 1.4 2004/12/03 22:06:12 brechin Exp $
   -->
   <name>sync_files</name>
 
   <version>
     <major>1</major>
-    <minor>6</minor>
-    <release>5</release>
+    <minor>7</minor>
+    <release>1</release>
   </version>
 
   <class>core</class>
