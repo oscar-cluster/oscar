@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.12 2002/08/17 17:14:49 jsquyres Exp $
+#   $Id: Package.pm,v 1.13 2002/08/17 20:10:45 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.12 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.13 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -199,10 +199,14 @@ sub distro_rpmlist {
 
 sub install_rpms {
     my (@rpms) = @_;
-    my %bestrpms = find_files(
+    my ($ret, %bestrpms) = find_files(
                               PKGDIR => $RPM_POOL,
                               PKGLIST => [@rpms],
                              );
+    if ($ret == 0) {
+	oscar_log_subsection("Warning: OSCAR find_files errored out");
+	return 0;
+    }
 
     foreach my $key (keys %bestrpms) {
         my $fullfilename = "$RPM_POOL/$bestrpms{$key}";
@@ -215,7 +219,7 @@ sub install_rpms {
     my @fullfiles = map {"$RPM_POOL/$_"} (sort values %bestrpms);
     
     if(!scalar(@fullfiles)) {
-	return 0;
+	return 1;
     }
     
     my $cmd = "rpm -Uhv " . join(' ', @fullfiles);

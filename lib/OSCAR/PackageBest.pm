@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.12 2002/04/12 01:13:46 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.13 2002/08/17 20:10:45 jsquyres Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -38,7 +38,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files find_best);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.12 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.13 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
@@ -51,8 +51,11 @@ sub find_files {
         #       CACHEFILE The name for the cachefile, default: .pkgcache
         # 
         # Output: A hash whose keys are the package name and whose
-        #         values are the filenames.
+        # values are the filenames, as well as a scalar indicating
+        # whether the routine succeeded (1) or not (0), since an empty
+        # hash is not necessarily indicative of an error.
 
+        my %empty;
         my %args = (
                 ARCH            => (uname)[4],
                 RPMRC           => "/usr/lib/rpm/rpmrc",
@@ -65,14 +68,14 @@ sub find_files {
         my @compatlist; my $RPM_TABLE; 
 
         unless (cache_gen($args{PKGDIR},$args{CACHEFILE})) {
-                return;
+	    return (0, %empty);
         }
 
         unless (@compatlist=gen_compat_list($args{ARCH},$args{RPMRC})) {
-                return;
+	    return (0, %empty);
         }
         unless ($RPM_TABLE=populate_rpm_table($args{PKGDIR},$args{CACHEFILE})) {
-                return;
+	    return (0, %empty);
         }
 
         return find_best_files($RPM_TABLE,\@compatlist,@{$args{PKGLIST}});
@@ -123,9 +126,10 @@ sub find_best_files {
         $files{$pkg}=$file;
     }
     if ($missing) {
-        return;
+	my %empty;
+	return (0, %empty);
     }
-    return %files;
+    return (1, %files);
 }
 
 sub gen_compat_list {
