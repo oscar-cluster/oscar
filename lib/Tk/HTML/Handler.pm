@@ -26,11 +26,13 @@ require Tk::HTML::Form;
 use strict;
 use Carp;
 
+no warnings qw(uninitialized);
+
 delete $HTML::Element::OVERLOAD{'""'};
 
 # use vars qw($VERSION $AUTOLOAD);
 use vars qw($VERSION);
-$VERSION = '$Id: Handler.pm,v 1.2 2002/10/29 19:16:30 tfleury Exp $';
+$VERSION = '$Id: Handler.pm,v 1.3 2002/10/29 21:04:52 tfleury Exp $';
 
 sub HTML::Element::enclosing
 {
@@ -538,6 +540,7 @@ sub form
        @temparray = $val->Call();
        $val = $val->Call();
       }
+
      push(@val, ((scalar(@temparray) > 0) ? 
                  join('~~~',@temparray) : 
                  $val));
