@@ -2208,7 +2208,8 @@ foreach my $package_filter_record_ref ( @package_filter_records_refs ) {
 # or any core package, it's always installable.
 my $installable;
 if ( $package_name eq 'oda' ) {
-    print "$0: setting package oda installable\n" if $options{debug};
+    print "$0: setting package oda installable\n"
+        if $options{debug};
     $installable = 1;
 } elsif ( defined $package_single_value_folded_fields{class} &&
 	  $package_single_value_folded_fields{class} eq "core" ) {
@@ -2241,14 +2242,13 @@ if ( $package_name eq 'oda' ) {
 	      ! defined $distribution_version ||
 	      $$record_ref{distribution_version} eq $distribution_version )
 	    ) {
-	    print "$0: setting package $package_name installable\n"
-		if $options{debug};
 	    $installable = 1;
 	    last;
 	}
     }
-    print "$0: setting package $package_name non-installable\n"
-	if ! $installable && $options{debug};
+    print "$0: setting filtered package $package_name " .
+	( $installable ? "" : "non-" ) . "installable\n"
+	if $options{debug};
 }
 # now modify the existing record
 @error_strings = ();
