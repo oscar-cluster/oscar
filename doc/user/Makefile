@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile,v 1.1 2003/07/04 14:34:03 jsquyres Exp $
+# $Id: Makefile,v 1.2 2003/07/29 19:50:19 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -48,6 +48,11 @@ ifndef top_srcdir
 	top_builddir=../..
 endif
 
+version.tex: $(top_srcdir)/dist/VERSION
+	rm -f version.tex
+	ver="`$(top_srcdir)/dist/get-oscar-version.sh $(top_srcdir)`"; \
+		sed -e s/@OSCAR_VERSION@/$$ver/ version.tex.in > version.tex
+
 package-docs.tex: package-docs.tex.in $(top_srcdir)/packages/*/doc/*.tex
 	$(top_srcdir)/doc/user/build-package-docs
 
@@ -55,7 +60,7 @@ package-license.tex: package-docs.tex.in $(top_srcdir)/packages/*/doc/*.tex
 	$(top_srcdir)/doc/user/build-package-license
 
 EXTRA_DISTFILES	= build-package-docs build-package-license
-EXTRA_CLEANFILES= package-docs.tex package-license.tex
+EXTRA_CLEANFILES= package-docs.tex package-license.tex version.tex
 
 # All the logic to build documents.
 # Using a GNU make extension for this (clearly I'm heading for hell

@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile,v 1.8 2003/07/04 14:34:03 jsquyres Exp $
+# $Id: Makefile,v 1.9 2003/07/29 19:50:19 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -121,11 +121,16 @@ ifndef top_srcdir
 	top_builddir=../..
 endif
 
+version.tex: $(top_srcdir)/dist/VERSION
+	rm -f version.tex
+	ver="`$(top_srcdir)/dist/get-oscar-version.sh $(top_srcdir)`"; \
+		sed -e s/@OSCAR_VERSION@/$$ver/ version.tex.in > version.tex
+
 notes.tex: notes.tex.in $(top_srcdir)/packages/*/doc/*.tex
 	$(top_srcdir)/doc/installation/build-notes
 
 EXTRA_DISTFILES	= $(QUICK_TEX) $(QUICK_SRC_FILES) build-notes
-EXTRA_CLEANFILES= $(QUICK_PS) $(QUICK_DVI) $(QUICK_PDF) notes.tex
+EXTRA_CLEANFILES= $(QUICK_PS) $(QUICK_DVI) $(QUICK_PDF) notes.tex version.tex
 EXTRA_PS	= $(QUICK_PS)
 EXTRA_PDF	= $(QUICK_PDF)
 EXTRA_HTML	= $(QUICK_HTML)
