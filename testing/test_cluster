@@ -49,7 +49,7 @@ my @clientlist;
 if (@ARGV) {
         @clientlist=@ARGV;
 } else {
-        my @mlist = list_client;
+        my @mlist = list_client();
         foreach my $m (@mlist) {
                 push @clientlist,$m->hostname;
         }
@@ -89,9 +89,11 @@ my $test_user="oscartst";
 my ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) =
     getpwnam $test_user;
 unless ($test_user_homedir) {
-          if (system("/usr/sbin/useradd -m $test_user") ||
-	      system("/opt/opium/bin/sync_users --force >/dev/null 2>&1")) {
-                  croak("Unable to create test user and run user tests, exitting.");
+          if (system("/usr/sbin/useradd -m $test_user")) {
+                  croak("Unable to create test user: exiting.");
+          }
+          if (system("/opt/sync_files/bin/confmgr --syncnow --force --add /etc/gshadow > /dev/null 2>&1")) {
+                  croak("Unable to replicate user out to oscar nodes (confmgr failed): exiting.");
           }
           ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) = 
 	      getpwnam $test_user;
