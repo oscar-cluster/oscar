@@ -22,10 +22,12 @@
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
 use File::Basename;
 use OSCAR::Package;
+use OSCAR::Distro;
 use OSCAR::PackageBest;
 use Carp;
 use Data::Dumper;
@@ -37,6 +39,8 @@ my $INTERFACE = shift or croak("No interface specified");
 #   that we ship that need to be in the client into that directory
 
 my $RPMPOOL = $OSCAR::Package::RPM_POOL;
+my $ARCH = (uname)[4];
+$ARCH =~ s/i.86/i386/;
 
 prep_rpmpool($RPMPOOL) or croak("Couldn't prepare tftpboot directory");
 copy_rpms($ENV{OSCAR_HOME},$RPMPOOL) or croak("Couldn't copy rpms to $RPMPOOL");
@@ -46,6 +50,11 @@ my @rpms = ();
 foreach my $package (@packages) {
     push @rpms, rpmlist($package,"server");
 }
+
+# And now we add the extra rpms that are needed if
+# for each distribution
+my ($distname, $distver) = which_distro_server();
+push @rpms, distro_rpmlist($distname,$distver,$ARCH);
 
 # Now install them nicely (i.e. don't install packages that are already there)
 
