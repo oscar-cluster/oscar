@@ -25,8 +25,12 @@ use Carp;
 !system("chkconfig httpd on") or croak("Couldn't chkconfig httpd on");
 !system("service httpd start") or croak("Couldn't start httpd");
 
+# call script that makes the mod to the gmond.conf and gmetad.conf files for the internal interface
+
+!system("$ENV{OSCAR_HOME}/packages/ganglia/scripts/gmond_add_internal.sh") or croak("gmond_internal.sh failed");
+
 !system("service gmond start") or croak("Couldn't start gmond");
-!system("service ganglia-php-rrd start") or croak("Couldn't start ganglia-php-rrd");
+!system("service gmetad start") or croak("Couldn't start gmetad");
 
 # Test if Mandrake Security is installed and modify the permission for
 # /var/log/ganglia as requested for ganglia-php 
@@ -63,7 +67,3 @@ else
 print "msec not installed                                              [  OK  ]\n";
 }
 
-
-# call script that makes the mod to the gmond init script for the internal interface
-
-!system("$ENV{OSCAR_HOME}/packages/ganglia/scripts/gmond_add_internal.sh") or croak("gmond_internal.sh failed");
