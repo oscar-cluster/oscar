@@ -39,6 +39,7 @@ switcher mpi --add-attr default $mpich --force --silent
 
 $HOME/pbs_test $clients 1 $HOME/mpich/pbs_script.mpich "Hello" \
     $HOME/mpich/mpichtest 3 "$testprint_label"
+exit_status=$?
 
 # If there was a user default set in switcher, set it back.
 # Otherwise, just remove the default that we set in this script.
@@ -51,4 +52,4 @@ fi
 
 # All done
 
-exit 0
+exit $exit_status

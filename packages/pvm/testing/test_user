@@ -21,7 +21,8 @@ clients=`echo $@ | wc -w`
 
 $HOME/pbs_test $clients 1 $HOME/pvm/pbs_script.pvm "SUCCESSFUL" \
     $HOME/pvm/pvmtest 3 "PVM (via Torque)"
+exit_status=$?
 
 # All done
 
-exit 0
+exit $exit_status
