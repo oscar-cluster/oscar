@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.62 2003/08/18 14:56:35 naughtont Exp $
+% $Id: detailed.tex,v 1.63 2003/11/16 00:59:41 bernardli Exp $
 %
 % $COPYRIGHT$
 %
@@ -138,8 +138,11 @@ package).
 Place the OSCAR distribution package in a directory such as
 \user{root}'s home directory on the server node.  Although there is no
 required installation directory (note that you may not use the
-directory \file{/usr/local/oscar} or \file{/opt/oscar} -- they are
-both reserved for use by OSCAR), the rest of these instructions will
+\begchange
+directory \file{/usr/local/oscar}, \file{/opt/oscar}, 
+\file{/var/lib/oscar}, or \file{/var/cache/oscar}  -- they are
+reserved for use by OSCAR), the rest of these instructions will
+\endchange
 assume that you downloaded the OSCAR distribution package to
 \user{root}'s home directory.
 
@@ -248,6 +251,11 @@ At this point you will be ready to change to either the default
 \file{/opt/oscar} directory or whatever path was use with the {\tt
 --prefix} flag to perform the installation steps discussed in Section
 \ref{det:installcluster}.
+\begchange
+  In the remainder of this document, the variable \file{\$OSCAR\_HOME} will
+be used in place of the directory you installed OSCAR to -- by default
+this is \file{/opt/oscar}.
+\endchange
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -401,7 +409,9 @@ automatically).
 % \oscarversion inside.  This makes it somewhat painful -- much less
 % easy than {verbatim}.
   \vspace{11pt} {\tt
-    \# cd /root/oscar-\oscarversion \\
+\begchange
+    \# cd \file{\$OSCAR\_HOME} \\
+\endchange
     \indent \# ./install\_cluster $<$device$>$ } \vspace{11pt}
   
   In the above command, substitute the device name (e.g., \emph{eth1})
@@ -475,8 +485,13 @@ process.  The Wizard uses a GUI frontend to OPD affectionately known as
 \emph{OPDer}.  The addition of this frontend limits the need for direct
 access to the command-line OPD tool directly.\footnote{Note, if using OPD
 directly, the packages must be downloaded before the \button{Select OSCAR
-Packages To Install} step (see Section~\ref{det:select-packages}) .}  However, 
-the remainder of this sub-section describes the underlying OPD tool.
+Packages To Install} step (see Section~\ref{det:select-packages}) .}  
+\begchange
+If you would like to add additional repository URLs for testing
+purposes, you can do this by accessing the \button{File} menu and then 
+choosing \button{Additional Repositories...}. 
+The remainder of this sub-section describes the underlying OPD tool.
+\endchange
 
 \quick{The command-line OPD can be launched outside of the GUI Wizard by 
   running the command \cmd{opd} from the top-level OSCAR \file{scripts} 
@@ -490,7 +505,9 @@ the remainder of this sub-section describes the underlying OPD tool.
 % \oscarversion inside.  This makes it somewhat painful -- much less
 % easy than {verbatim}.
   \vspace{11pt} {\tt
-    \# cd /root/oscar-\oscarversion \\
+\begchange
+    \indent \# cd \file{\$OSCAR\_HOME} \\
+\endchange
     \indent \# ./scripts/opd } \vspace{11pt}
   
   OPD can use either the \cmd{wget} command or the built-in Perl LWP
@@ -550,9 +567,11 @@ Packages to install on the cluster.
   When you click on the button, a window similar to the one shown in
   Figure~\ref{fig:detailed-package-selection} appears.  Each of the
   packages that the OSCAR installer has found are listed in the main
-  frame. Packages that have black buttons are considered ``core''
-  packages, and must be selected (you cannot unselect them).  Blue
-  packages can be unselected.
+  frame. 
+\begchange
+  Core packages must be installed and cannot be unselected.  Included
+  packages can be unselected if desired.
+\endchange
 
   \begin{figure}[htbp]
     \begin{center}
@@ -566,11 +585,13 @@ Packages to install on the cluster.
   show individual RPMs.
   
   Once you have a selected a set of OSCAR packages to install, click
-  on the \button{Save and Exit} button to save your selections and
-  return to the main OSCAR window.  Click on the \button{Exit without
-    Saving} button to discard your changes and use the list of
-  selections that was initial displayed when you initially opened the
-  window.
+\begchange
+  on the \button{Exit} button to save your selections and
+  return to the main OSCAR window.  Note that closing the window yields
+  the same result and there is no way of `defaulting' to the original
+  settings, so make sure your package list is complete before proceeding to 
+  the next step.
+\endchange
 
 } % end detailed
 
@@ -600,11 +621,16 @@ window listing all the packages that can be configured.
   
   Clicking on any of the packages' \button{Config} button will bring
   up a panel for configuring that package.  Select whatever options
-  are appropriate for that package, and then click on the \button{Save
-    and Exit} button to save your selections, or \button{Exit without
-    Saving} to cancel all of your selections and leave the original
+\begchange
+  are appropriate for that package, and then click on the \button{Save}
+  button to save your selections, or the \button{Cancel} button
+  to cancel all of your selections and leave the original
+  settings.  If you have saved your changes but want to go back to the
+  default settings, simply click on the \button{Default Configuration} 
+  button and then the \button{Save} button to revert to the original 
   settings.
-  
+\endchange  
+
   This step is optional.  If you do not click on the \button{Configure
     Selected OSCAR Packages} button, defaults for all packages will be
   used.
@@ -1233,6 +1259,112 @@ press \button{Close}.
 
 } % end detail
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begchange
+\subsection{Install/Uninstall OSCAR Packages}
+
+The package installation system is a new feature in OSCAR 3.0 and is
+designed to help simplify adding and removing OSCAR packages after the
+initial system installaion.  The system is fairly straightforward for the
+user as packages are selected for the appropriate action from the wizard.
+This is the first release to support package install and uninstall from the
+Wizard therefore some general background is provided to assist the user if
+problems are encountered.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Selecting the Right Package}
+\label{det:select-package}
+
+Because of the way OSCAR handles packages, two packages of the same name
+cannot currently c-exist nicely on the system.  Packages can be in one of
+two spots:
+
+\begin{enumerate}
+
+\item \file{\$OSCAR\_HOME/packages} -- OSCAR installation directory
+\item \file{/var/lib/oscar/package} -- OPD download area
+
+\end{enumerate}
+
+If there are multiple packages on the system of the same name, the package
+located in the OPD download area is the package that the system recognizes.
+It is possible that a package placed in /var/lib/oscar/package via a download
+or manually could get loaded into the database, while the original package
+that is located in \file{\$OSCAR\_HOME/packages} is the one that is actually
+installed.  That is why this system does not support upgrades.  That is
+planned for a future OSCAR release.  This can be avoided by uninstalling the
+original package first before you download anything and then re-running the
+wizard.  When the wizard first runs (\file{./install\_cluster ethX}), the
+XML files are re-read for all packages and the database re-initialized.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Single Image Restriction}
+\label{det:single-image-restriction}
+
+Currently, if more than one image is detected on your system, the package
+install/uninstall system will not run.  Packages are installed and
+uninstalled to the clients (compute nodes), the server, and an image
+(singular).  This release does not support the mapping of nodes to an
+image for package install/uninstall through the wizard.  This single
+image restriction is instituted to help reduce the risk of error with this
+initial release, i.e., "keep it simpler".  The system looks for images in
+\file{/var/lib/systemimager/images} and no other place.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Failures to Install and Uninstall}
+\label{det:failures-install-uninstall}
+
+A package is not installed or uninstalled until it successfully installs or
+uninstalls on the compute nodes, the server, and a single image.  We will
+run through an example problem as the best way of describing how to debug 
+the system.  As a note, the system does sanity checking to try to avoid the
+following situation.
+
+For example, during the install process the clients may have been successfully
+installed, but the server installation died half way through for some unknown
+reason, and the install program exits with an error.  If this happens, a
+second attempt to install will probably fail even if the server's problem
+is resolved.
+
+The reason for this is that something happened on the clients and it
+succeeded, probably RPM's were installed.  So the second time you go to
+install the package, the \file{rpm -Uvh} command on the nodes will fail.
+A \file{-f} flag is avoided.
+
+So, what do you do?
+
+Really, you have two options.  The first is to look back through the log to
+see what commands were run, and undo those commands by hand.  The second
+would be to manually push out the uninstall scripts to the compute nodes,
+and run them outside of the wizard environment.  All scripts are re-runnable
+in OSCAR, and for serveral good reasons.
+
+These options are not good ones, and we recognize this fact.  We are working
+on better tools for general use.  Generally, it is a difficult problem to
+judge error codes on remote systems and try to guess the appropriate actions
+to take.  We have developed some additional software to start solving this
+problem, but there is still work that needs to be done in this area.
+
+On the uninstall side of things, the picture is much simpler.  The only
+action taken by the system is to run the package's uninstall script and
+judge the return code.  So an uninstall failure is probably a faulty
+uninstall script.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{More Debugging Info}
+\label{det:more-debug-info}
+
+Some amount of trouble was taken to insure that decent debugging output
+was printed to the log -- making best use of this output is your best bet
+in an error case.
+
+\endchange 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Starting over -- installing OSCAR again}
