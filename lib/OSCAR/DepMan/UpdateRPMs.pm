@@ -1,6 +1,6 @@
 package DepMan::UpdateRPMs;
 
-#   $Id: UpdateRPMs.pm,v 1.3 2004/02/17 17:10:35 tuelusr Exp $
+#   $Id: UpdateRPMs.pm,v 1.4 2004/02/17 17:19:29 tuelusr Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ our $VERSION;
 $VERSION = '0.01';
 # initial release
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
 
 # Must use this form due to compile-time checks by DepMan.
 use base qw(DepMan);
@@ -44,10 +44,10 @@ sub new {
   bless ($new, $class);
 
 # Added to get actual Cache from ODA
-  my %oscar_file_server;
-  database_read_table_fields ("oscar_file_server" "oscar_httpd_server_url",
-			      null, \%oscar_file_server, 1) &&
-  $new{Cache} = $oscar_file_server{oscar_httpd_server_url};
+#  my %oscar_file_server;
+#  database_read_table_fields ("oscar_file_server" "oscar_httpd_server_url",
+#			      null, \%oscar_file_server, 1) &&
+#  $new{Cache} = $oscar_file_server{oscar_httpd_server_url};
 
   return ($new);
 }
