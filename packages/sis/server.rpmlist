@@ -6,6 +6,7 @@ perl-DBI
 systemimager-common
 systemimager-server
 systemimager-i386boot
+systemimager-ia64boot
 libappconfig-perl
 libdbdcsv-perl
 dhcp
