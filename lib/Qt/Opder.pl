@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'Opder.ui'
 #
-# Created: Fri Jun 27 16:23:11 2003
+# Created: Tue Jul 1 18:41:53 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -16,6 +16,7 @@ use OpderTable;
 use Qt::isa qw(Qt::MainWindow);
 use Qt::slots
     aboutButton_clicked => [],
+    disableDownloadButton => [],
     downloadButton_clicked => [],
     exitButton_clicked => [],
     init => [],
@@ -23,7 +24,8 @@ use Qt::slots
     previousButton_clicked => [],
     refreshButton_clicked => [],
     rowSelectionChanged => [],
-    showEvent => [],
+    setRefreshButton => ['int'],
+    updateDownloadButton => [],
     updateTextBox => [];
 use Qt::attributes qw(
     titleLabel
@@ -262,6 +264,20 @@ sub aboutButton_clicked
 
 }
 
+sub disableDownloadButton
+{
+
+#########################################################################
+#  Subroutine: disableDownloadButton                                    #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This subroutine disabled the "Download Selected Packages" button.    #
+#########################################################################
+
+  downloadButton->setEnabled(0);
+
+}
+
 sub downloadButton_clicked
 {
 
@@ -269,6 +285,8 @@ sub downloadButton_clicked
 #  Subroutine: downloadButton_clicked                                   #
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
+#  When the "Download Selected Packages" button is clicked, show the    #
+#  "Downloading Package File" widget.                                   #
 #########################################################################
 
   downloadPackageForm->show();
@@ -297,7 +315,9 @@ sub init
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
 #  This code gets called after the widget is created but before it gets #
-#  displayed.  This is so we can populate the packageSetComboBox and    #
+#  displayed.  This is so we can set up all the connections for SIGNALs #
+#  and SLOTs.  Also, since all of the objects seem to need access to    #
+#  all the other objects, pass references around.                       #
 #  the packageTable, as well as any other setup work.                   #
 #########################################################################
 
@@ -306,18 +326,33 @@ sub init
   downloadInfoForm = OpderDownloadInfo(this,"downloadInfoForm");
   downloadPackageForm = OpderDownloadPackage(this,"downloadPackageForm");
 
-  Qt::Object::connect(packageTable,     SIGNAL 'selectionChanged()',
-                      this,             SLOT   'rowSelectionChanged()');
-  Qt::Object::connect(downloadInfoForm, SIGNAL 'readPackagesSuccess()',
-                      packageTable,     SLOT   'populateTable()');
+  # Connect the SIGNALs and SLOTs
+  Qt::Object::connect(packageTable,        SIGNAL 'selectionChanged()',
+                      this,                SLOT   'rowSelectionChanged()');
+  Qt::Object::connect(packageTable,        SIGNAL 'downloadButtonDisable()',
+                      this,                SLOT   'disableDownloadButton()');
+  Qt::Object::connect(packageTable,        SIGNAL 'downloadButtonUpdate()',
+                      this,                SLOT   'updateDownloadButton()');
+  Qt::Object::connect(downloadInfoForm,    SIGNAL 'readPackagesSuccess()',
+                      packageTable,        SLOT   'populateTable()');
+  Qt::Object::connect(downloadInfoForm,    SIGNAL 'downloadButtonDisable()',
+                      this            ,    SLOT   'disableDownloadButton()');
+  Qt::Object::connect(downloadInfoForm,    SIGNAL 'downloadButtonUpdate()',
+                      this,                SLOT   'updateDownloadButton()');
+  Qt::Object::connect(downloadPackageForm, SIGNAL 'downloadButtonUpdate()',
+                      this,                SLOT   'updateDownloadButton()');
+  Qt::Object::connect(downloadPackageForm, SIGNAL 'refreshButtonSet(int)',
+                      this,                SLOT   'setRefreshButton(int)');
 
-  packageTable->setObjectRefs(downloadInfoForm,downloadButton);
-  downloadInfoForm->setObjectRefs(downloadButton,packageTable);
-  downloadPackageForm->setObjectRefs(downloadInfoForm,downloadButton,
-                                     packageTable,refreshButton);
-  downloadButton->setEnabled(0);
+  # Hide the previous/next buttons until we actually use them later
   previousButton->hide();
   nextButton->hide();
+
+  # Can't download anything until something is selected
+  disableDownloadButton();
+
+  # Simulate a button click for the "Refresh Table" button to get OPD info
+  emit refreshButton->clicked();
 
 }
 
@@ -352,6 +387,8 @@ sub refreshButton_clicked
 #  Subroutine: refreshButton_clicked                                    #
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
+#  When the "Refresh Table" button is clicked, show the "Downloading    #
+#  Package Information..." widget.                                      #
 #########################################################################
 
   downloadInfoForm->show();
@@ -366,8 +403,9 @@ sub rowSelectionChanged
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
 #  This slot get called when a new row is selected in the packageTable. #
-#  We update the four text boxes at the bottom of the window:           #
-#  information (description), provides, requires, and conflicts.        #
+#  We update the five text boxes at the bottom of the window:           #
+#  information (description), provides, requires, conflicts, and        #
+#  packager.                                                            #
 #########################################################################
   
   # Figure out which row of the table is now selected
@@ -386,34 +424,57 @@ sub rowSelectionChanged
   updateTextBox("conflicts",$arraypos);
 
   # Update the packager names / emails
-  my $nameStr = @{$readPackages}[$arraypos]->{packager_name};
-  my $emailStr = @{$readPackages}[$arraypos]->{packager_email};
-  my @names = split /\",\"/, $nameStr;
-  my @emails = split /\",\"/, $emailStr;
+  # We read in the names/emails as a single string, but there might have
+  # been more than one packager.  If so , the delimiter is '","'.
+  my @names = split /\",\"/, @{$readPackages}[$arraypos]->{packager_name};
+  my @emails = split /\",\"/, @{$readPackages}[$arraypos]->{packager_email};
   my $packagerStr = "";
   $arraypos = 0;
-  foreach my $name (@names)
+  for ($arraypos = 0; $arraypos <= $#names; $arraypos++)
     {
-      $packagerStr .= $name;
+      $packagerStr .= $names[$arraypos];
       $packagerStr .= " <" . $emails[$arraypos] . ">" if 
         (length $emails[$arraypos] > 0);
       $packagerStr .= "\n";
-      $arraypos++;
     }
   packagerTextBox->setText($packagerStr);
 
 }
 
-sub showEvent
+sub setRefreshButton
 {
 
 #########################################################################
-#  Subroutine: showEvent                                                #
+#  Subroutine: setRefreshButton                                         #
+#  Parameters: 1 = Enable / 0 = Disable                                 #
+#  Returns   : Nothing                                                  #
+#  This subroutine is called to enable/disable the "Refresh Table"      #
+#  button.                                                              #
+#########################################################################
+
+  refreshButton->setEnabled(shift);
+
+}
+
+sub updateDownloadButton
+{
+
+#########################################################################
+#  Subroutine: updateDownloadButton                                     #
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
+#  This subroutine is called to update the status of the "Download      #
+#  Selected Package" button.  It checks to see how many check boxes     #
+#  are checked in the package table.  If 0, then disable the button.    #
+#  Otherwise, enable the button.                                        #
 #########################################################################
-  
-  emit refreshButton->clicked();
+
+  my $numchecked = 0;
+  for (my $rownum = 0; $rownum < packageTable->numRows(); $rownum++)
+    {
+      $numchecked++ if packageTable->item($rownum,1)->isChecked();
+    }
+  downloadButton->setEnabled($numchecked > 0);
 
 }
 

@@ -32,15 +32,16 @@ package OpderTable;
 use Qt;
 use Qt::isa qw(Qt::Table);
 use Qt::slots
-    populateTable => [ ],
+    populateTable => [],
     cellValueChanged => [ 'int', 'int' ];
+use Qt::signals
+    downloadButtonDisable => [],
+    downloadButtonUpdate => [];
 
 use Carp;
 use OpderDownloadInfo;
 
 my $tablePopulated = 0;
-my $downloadInfoFormRef;
-my $downloadButtonRef;
 
 sub NEW
 {
@@ -53,10 +54,10 @@ sub NEW
 #  for the table that never changes, like the number of columns,        #
 #  headers, read-only status, etc.  Then it show()s it at the end.      #
 #  The table is organized as follows:                                   #
-#        Col 0       Col 1      Col 2   Col 3                           #
-#        ShortName   LongName   Class   Location                        #
-#  Column 0 is HIDDEN.  It's there just so that we have a key for the   #
-#  $allPackages hash.                                                   #
+#        Col 0       Col 1        Col 2   Col 3    Col 4                #
+#        ArrayPos    PackageName  Class   Version  opd Repository       #
+#  Column 0 is HIDDEN.  It's there just so that we have an array index  #
+#  into the @successfullyReadPackages array.                            #
 #########################################################################
 
   shift->SUPER::NEW(@_[0..1]);
@@ -123,13 +124,8 @@ sub populateTable
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
 #  This subroutine should be called when you want to populate the       #
-#  table, either from scratch, or a "refresh".  If this function has    #
-#  never been called before, then it adds all of the packages and their #
-#  corresponding info to the table.  Otherwise, it simply updates the   #
-#  "checked" status for each package based on the currently selected    #
-#  package set.   This slot is connected to the Package Set ComboBox    #
-#  "activated" signal so that when a new package set is chosen, the     #
-#  checkbox info is updated appropriately.                              #
+#  table, either from scratch, or a "refresh".  This function will      #
+#  completely rebuild the table from scratch each time it is called.    #
 #########################################################################
 
   if ($tablePopulated)
@@ -142,12 +138,15 @@ sub populateTable
               clearCell($row,$col);
             }
         }
-      $downloadButtonRef->setEnabled(0);
+      emit downloadButtonDisable();
     }
 
-
   # Now rebuild the table from scratch
-  my $readPackages = $downloadInfoFormRef->getReadPackages();
+  # The downloadInfoForm's parent is the centralWidget, and the
+  # centralWidget's parent is the main window.  So go up two levels before
+  # heading back down to find the 'downloadInfoForm' child widget. Ugh!
+  my $readPackages = parent()->parent()->child(
+                     'downloadInfoForm')->getReadPackages();
   my $numrows = scalar(@{$readPackages});
   setNumRows($numrows);
   my $rownum = 0;
@@ -193,12 +192,10 @@ sub cellValueChanged
 #  Returns   : Nothing                                                  #
 #  This slot is called when the value of one of the packageTable's      #
 #  cells is changed.  We need to catch when the checkboxes are checked/ #
-#  unchecked so that we can add/delete the appropriate package from     #
-#  the current package set.  Note that this method gets called not      #
+#  unchecked so that we can check to see if we have a package with the  #
+#  same name already checked.  Note that this method gets called not    #
 #  only when the user clicks on one of the checkboxes, but also when    #
-#  the user selects a new row after a checkbox had been clicked.  This  #
-#  means that we should check to see if the package is in the package   #
-#  set (or not) before trying to add/delete it.                         #
+#  the user selects a new row after a checkbox had been clicked.        #
 #########################################################################
 
   my $row = shift;
@@ -220,28 +217,9 @@ sub cellValueChanged
             (item($rownum,1)->text() eq $package);
         }
 
-      # Count how many check boxes are checked.  If 0, then disable
-      # the downloadButton.  Otherwise, enable it.
-      my $numchecked = 0;
-      for (my $rownum = 0; $rownum < numRows(); $rownum++)
-        {
-          $numchecked++ if item($rownum,1)->isChecked();
-        }
-      $downloadButtonRef->setEnabled($numchecked > 0);
+      # Update the enabled/disabled status of the "Download Packages" button
+      emit downloadButtonUpdate();
     }
-}
-
-sub setObjectRefs
-{
-#########################################################################
-#  Subroutine: setObjectRefs                                            #
-#  Parameters: 1. Reference to the DownloadPackageInfo widget           #
-#              2. Reference to the downloadButton                       #
-#  Returns   : Nothing                                                  #
-#########################################################################
-
-  $downloadInfoFormRef = shift;
-  $downloadButtonRef = shift;
 }
 
 1;

@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'OpderAbout.ui'
 #
-# Created: Fri Jun 27 16:23:09 2003
+# Created: Tue Jul 1 18:41:51 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!

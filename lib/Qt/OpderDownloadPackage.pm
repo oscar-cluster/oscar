@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'OpderDownloadPackage.ui'
 #
-# Created: Fri Jun 27 16:37:59 2003
+# Created: Tue Jul 1 18:41:52 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -14,15 +14,16 @@ package OpderDownloadPackage;
 use Qt;
 use Qt::isa qw(Qt::Dialog);
 use Qt::slots
-    init => [],
-    showEvent => [],
-    hideEvent => [],
     cancelButton_clicked => [],
-    setObjectRefs => [],
-    readFromStdout => [],
-    downloadStart => [],
     downloadDone => [],
-    downloadNext => [];
+    downloadNext => [],
+    downloadStart => [],
+    hideEvent => [],
+    init => [],
+    getPackageTable => [],
+    readFromStdout => [],
+    setObjectRefs => [],
+    showEvent => [];
 use Qt::attributes qw(
     downloadLabel
     downloadLabel_font
@@ -33,10 +34,10 @@ use Qt::attributes qw(
     cancelButton_font
 );
 
-my ($downloadInfoFormRef,$downloadButtonRef,$packageTableRef,$refreshButtonRef);
 my ($dlProc,$dlPhase,$dlString,@dlPackages); # Execute opd and read results
 my $opdcmd = $ENV{OSCAR_HOME} . '/scripts/opd';
 use Carp;
+use Qt::signals refreshButtonSet=>['int'], downloadButtonUpdate=>[];
 
 sub uic_load_pixmap_OpderDownloadPackage
 {
@@ -108,60 +109,6 @@ sub NEW
 }
 
 
-sub init
-{
-
-#########################################################################
-#  Subroutine: init                                                     #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#########################################################################
-
-  $dlProc = Qt::Process(this);
-  Qt::Object::connect($dlProc, SIGNAL 'readyReadStdout()', 
-                               SLOT   'readFromStdout()');
-  Qt::Object::connect($dlProc, SIGNAL 'processExited()',  
-                               SLOT   'downloadDone()');
-
-}
-
-sub showEvent
-{
-
-#########################################################################
-#  Subroutine: showEvent                                                #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#########################################################################
-
-  progressBar->reset();
-  progressBar->setTotalSteps(0);
-  progressBar->setPercentageVisible(1);
-  progressBar->setCenterIndicator(1);
-
-  $refreshButtonRef->setEnabled(0);
-
-  downloadStart();
-
-}
-
-sub hideEvent
-{
-
-#########################################################################
-#  Subroutine: hideEvent                                                #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#########################################################################
-
-  $dlPhase = 0;
-  $dlProc->tryTerminate() if ($dlProc->isRunning());
-  Qt::Timer::singleShot(500, $dlProc, SLOT 'kill()');
-
-  $refreshButtonRef->setEnabled(1);
-
-}
-
 sub cancelButton_clicked
 {
 
@@ -175,71 +122,6 @@ sub cancelButton_clicked
 
 }
 
-sub setObjectRefs
-{
-
-#########################################################################
-#  Subroutine: setObjectRefs                                            #
-#  Parameters: 1. Reference to the DownloadPackageInfo widget           #
-#              2. Reference to the downloadButton button                #
-#              3. Reference to the packageTable Table                   #
-#              4. Reference to the refreshButton button                 #
-#  Returns   : Nothing                                                  #
-#########################################################################
-
-  $downloadInfoFormRef = shift;
-  $downloadButtonRef = shift;
-  $packageTableRef = shift;
-  $refreshButtonRef = shift;
-
-}
-
-sub readFromStdout
-{
-
-#########################################################################
-#  Subroutine: readFromStdout                                           #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#########################################################################
-
-  while ($dlProc->canReadLineStdout())
-    {
-      $dlString .= $dlProc->readLineStdout() . "\n";
-    }
-
-}
-
-sub downloadStart
-{
-
-#########################################################################
-#  Subroutine: downloadStart                                            #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#########################################################################
-
-  return unless ((-e $opdcmd) && (-x $opdcmd));
-
-  # Figure out which packages we have to download
-  @dlPackages = ();
-  my $readPackages = $downloadInfoFormRef->getReadPackages();
-  for (my $rownum = 0; $rownum < $packageTableRef->numRows(); $rownum++)
-    {
-      if ($packageTableRef->item($rownum,1)->isChecked())
-        {
-          my $arraypos = $packageTableRef->item($rownum,0)->text();
-          push @dlPackages, @{$readPackages}[$arraypos];
-        }
-    }
-
-  progressBar->setTotalSteps(scalar(@dlPackages));
-
-  $dlPhase = 1;
-  downloadNext();
-
-}
-
 sub downloadDone
 {
 
@@ -247,12 +129,16 @@ sub downloadDone
 #  Subroutine: downloadDone                                             #
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
+#  This slot gets called when the opd command completes.  We check to   #
+#  make sure that we got a successful completion condtion.  If so,      #
+#  we uncheck the checkbox in the package table for that package.       #
 #########################################################################
 
   return if (!$dlPhase);
 
   my $cmdlie;
   my @cmdlines = split /\n/, $dlString;
+  my $packageTableRef = getPackageTable();
   foreach my $cmdline (@cmdlines)
     {
       chomp $cmdline;
@@ -282,7 +168,7 @@ sub downloadDone
         {
           Carp::carp("Couldn't download package " . 
                      $dlPackages[$dlPhase-1]->{package} . " with opd");
-          $dlPhase++;
+          $dlPhase++;  # Try the next package in the list anyway
           last;
         }
     }
@@ -298,41 +184,187 @@ sub downloadNext
 #  Subroutine: downloadNext                                             #
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
+#  This subroutine is called to download the 'next' package with opd.   #
+#  It updates the progress bar and then sets up the opd command with    #
+#  the URL of the next package tarball.                                 #
 #########################################################################
 
   progressBar->setProgress($dlPhase-1);
 
+  # Make sure we haven't downloaded everything yet
   if ($dlPhase <= scalar(@dlPackages))
     {
+      # Update the string showing the package we are downloading
       packageLabel->setText($dlPackages[$dlPhase-1]->{package});
 
       my @args = ($opdcmd,
                   '--parsable',
                   '-r',$dlPackages[$dlPhase-1]->{repositoryURL},
                   '--package',$dlPackages[$dlPhase-1]->{downloadURI}[0]); 
-
       $dlProc->setArguments(\@args);
       $dlString = "";
       if (!$dlProc->start())
-        { # Error handling
+        {
           Carp::carp("Couldn't download package " . 
                      $dlPackages[$dlPhase]->{package} . " with opd");
         }
-      
     }
   else # All done!
     {
-      # Count how many check boxes are checked.  If 0, then disable
-      # the downloadButton.  Otherwise, enable it.
-      my $numchecked = 0;
-      for (my $rownum = 0; $rownum < $packageTableRef->numRows(); $rownum++)
-        {
-          $numchecked++ if $packageTableRef->item($rownum,1)->isChecked();
-        }
-      $downloadButtonRef->setEnabled($numchecked > 0);
-      
+      emit downloadButtonUpdate();
+      # Delay 1/2 second to show 100% status in progress bar before hiding
       Qt::Timer::singleShot(500, this, SLOT 'hide()');
     }
+
+}
+
+sub downloadStart
+{
+
+#########################################################################
+#  Subroutine: downloadStart                                            #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This gets called when the widget is shown (from showEvent).  It      #
+#  sets up the QProcess for downloading package tarballs with opd.      #
+#########################################################################
+
+  return unless ((-e $opdcmd) && (-x $opdcmd));  # Make sure opd is there
+  return if ($dlPhase);  # If we are already downloading, don't do it again
+
+  # Figure out which packages we need to download
+  @dlPackages = ();
+  my $readPackages = parent()->child('downloadInfoForm')->getReadPackages();
+  my $packageTableRef = getPackageTable();
+  for (my $rownum = 0; $rownum < $packageTableRef->numRows(); $rownum++)
+    {
+      if ($packageTableRef->item($rownum,1)->isChecked())
+        {
+          my $arraypos = $packageTableRef->item($rownum,0)->text();
+          push @dlPackages, @{$readPackages}[$arraypos];
+        }
+    }
+
+  progressBar->setTotalSteps(scalar(@dlPackages));
+
+  $dlPhase = 1;   # dlPhase = the number of package being downloaded
+  downloadNext();
+
+}
+
+sub hideEvent
+{
+
+#########################################################################
+#  Subroutine: hideEvent                                                #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  When the widget is hidden, one of three things happened: (1) the     #
+#  user closed the window by clicking on the "Cancel" button or the     #
+#  "close window" button; (2) the QProcess controlling opd completed    #
+#  successfuly; or (3) the main window got minimized and this widget    #
+#  along with it.  In any case, we need to do some clean up.            #
+#########################################################################
+
+  # It could be that the widget got hidden due to the parent window 
+  # (i.e. the main window) got minimized.  If so, then don't kill the
+  # QProcess controlling opd.  Let it try to finish with the window
+  # minimized/hidden.
+  if (!(parent()->isMinimized()))
+    {
+      $dlPhase = 0;
+      $dlProc->tryTerminate() if ($dlProc->isRunning());
+      Qt::Timer::singleShot(500, $dlProc, SLOT 'kill()');
+    }
+
+  emit refreshButtonSet(1);  # Enable the "Refresh Table" button
+
+}
+
+sub init
+{
+
+#########################################################################
+#  Subroutine: init                                                     #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This subroutine gets called after the widget gets created but before #
+#  it is displayed.  It creates the QProcess needed for opd commands.   #
+#########################################################################
+
+  $dlProc = Qt::Process(this);
+  Qt::Object::connect($dlProc, SIGNAL 'readyReadStdout()', 
+                               SLOT   'readFromStdout()');
+  Qt::Object::connect($dlProc, SIGNAL 'processExited()',  
+                               SLOT   'downloadDone()');
+
+}
+
+sub getPackageTable
+{
+
+#########################################################################
+#  Subroutine: getPackageTable                                          #
+#  Parameters: None                                                     #
+#  Returns   : A reference to the main window's QTable package table    #
+#########################################################################
+
+  return (parent()->child('packageTable'));
+
+}
+
+sub readFromStdout
+{
+
+#########################################################################
+#  Subroutine: readFromStdout                                           #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  When there is output on STDOUT due to the QProcess of opd, we get    #
+#  it into a temporary string.  The reason for this somewhat odd method #
+#  of getting info from STDOUT is because readStdout wasn't working     #
+#  when this code was written.  PerlQt didn't support QByteArrays.      #
+#########################################################################
+
+  while ($dlProc->canReadLineStdout())
+    {
+      $dlString .= $dlProc->readLineStdout() . "\n";
+    }
+
+}
+
+sub setObjectRefs
+{
+    print "OpderDownloadPackage->setObjectRefs(): Not implemented yet.\n";
+}
+
+sub showEvent
+{
+
+#########################################################################
+#  Subroutine: showEvent                                                #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  When the widget is shown, we need to check to see if it was "newly"  #
+#  shown (i.e. by the user clicking on the "Download Selected           #
+#  Packages" button) or un-minimized.  In the former case, we need to   #
+#  reset the progress bar and start the downloading of packages.  The   #
+#  latter case is tested for by checking to see if there is a running   #
+#  opd-download process.                                                #
+#########################################################################
+
+  # If the process isn't running, then reset the progress bar to zero
+  if (!($dlProc->isRunning()))
+    { 
+      # Reset the progress bar to 'empty'
+      progressBar->reset();
+      progressBar->setTotalSteps(0);
+      progressBar->setPercentageVisible(1);
+      progressBar->setCenterIndicator(1);
+    }
+
+  emit refreshButtonSet(0); # Disable the "Refresh Table" button
+  downloadStart();          # Do the acutal work in the background
 
 }
 
