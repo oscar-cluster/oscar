@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.9 2002/04/06 20:55:55 jsquyres Exp $
+# $Id: make-dist.sh,v 1.10 2002/04/06 20:58:00 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -205,8 +205,7 @@ if test "$want_srpms" = "only"; then
     # Now go remove everything in the remaining directories that does
     # not contain "README", "COPYING", or end in ".rpm"
     for file in `find . -type f`; do
-	if test "`echo $file | egrep 'README|COPYING'`" = "" -a \
-	    "`echo $file | egrep '\.rpm$'`" = ""; then
+	if test "`echo $file | egrep 'README|COPYING|\.rpm$'`" = ""; then
 	    echo " - removing file: $file"
 	    rm -rf $file
 	fi
