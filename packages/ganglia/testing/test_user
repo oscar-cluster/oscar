@@ -33,6 +33,7 @@ then
   $OSCAR_TESTPRINT --label "Ganglia test" -p
 else
   $OSCAR_TESTPRINT --label "Ganglia test" -f
+  exit 1
 fi
 
 exit 0
