@@ -65,6 +65,7 @@ info
 initscripts
 ipchains
 iproute
+iptables
 iputils
 redhat-config-keyboard
 kernel
