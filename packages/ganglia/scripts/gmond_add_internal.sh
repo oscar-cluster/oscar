@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_add_internal.sh,v 1.4 2002/10/31 20:37:49 sad Exp $
+# $Id: gmond_add_internal.sh,v 1.5 2002/10/31 20:44:14 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -85,3 +85,7 @@ rrd_rootdir \"\/var\/log\/ganglia\/rrds\"' -e '/#                http:\/\/gangli
     service gmetad restart
     echo successfully added internal interface to gmetad.conf
 fi
+
+echo adding library path to /etc/ld.so.conf for rrdtool libs
+echo "/opt/rrdtool-1.0.35/lib" >> /etc/ld.so.conf
+/sbin/ldconfig
