@@ -27,13 +27,35 @@ my %oda_options = ();
 my $database_available = 0;
 use Data::Dumper;
 
-@EXPORT = qw( database_connect 
+@EXPORT = qw( database_calling_traceback
+	      database_connect 
 	      database_disconnect 
 	      database_execute_command 
+	      database_program_variable_get
+	      database_program_variables_get
+	      database_program_variable_put
+	      database_program_variables_put
 	      database_read_filtering_information
 	      database_read_table_fields 
-	      database_rpmlist_for_package_and_group
-	      database_calling_traceback );
+	      database_return_list
+	      database_rpmlist_for_package_and_group );
+
+#
+# prints a traceback of the call stack
+#
+
+sub calling_traceback {
+    my $level = 1;
+    my ( $package, $filename, $line, $subroutine, $hasargs, 
+    $wantarray, $evaltext, $is_require, $hints, $bitmask );
+    do {
+	( $package, $filename, $line, $subroutine, $hasargs, $wantarray,
+	  $evaltext, $is_require, $hints, $bitmask ) = caller ( $level );
+	print "called from $filename\:$line $subroutine\(\)\n"
+	    if defined $filename;
+	$level++;;
+    } while defined $filename;
+}
 
 #
 # Connect to the oscar database if the oda package has been
@@ -44,44 +66,64 @@ use Data::Dumper;
 # function at the start of your program and leave the database
 # connected throughout the execution of your program.
 #
-# inputs:   print_errors_flag   if defined and non-zero,
-#                               print output error messages
+# inputs:   print_errors   if defined and a list reference,
+#                          put error messages into the list;
+#                          if defined and a non-zero scalar,
+#                          print out error messages on STDERR
 #
-# outputs:  status                 non-zero if success
+# outputs:  status         non-zero if success
 
 sub database_connect {
-    my ( $print_errors_flag ) = @_;
+    my ( $print_errors, 
+	 $verbose,
+	 $debug ) = @_;
+    $oda_options{verbose}=1 if defined $verbose && $verbose;
+    $oda_options{debug}=1 if defined $debug && $debug;
+    print "$0: database_connect called print_errors=$print_errors verbose=$oda_options{verbose} debug=$oda_options{debug}\n" if $oda_options{debug};
 
-    # if the database is already available and connected, success
-    return 1 if $database_available;
+    # if the database is not already available, ...
+    if ( ! $database_available ) {
 
-    # if oda was not installed the last time that 
-    # this was called, try to load in the module again
-    if ( ! $oda_available ) {
-	eval "use oda";
-	$oda_available = ! $@;
-	carp("in database_connect cannot use oda: $@") if ! $oda_available;
+	# if oda was not installed the last time that 
+	# this was called, try to load in the module again
+	if ( ! $oda_available ) {
+	    eval "use oda";
+	    $oda_available = ! $@;
+	    carp("in database_connect cannot use oda: $@") if ! $oda_available;
+	}
+	print "$0: database_connect now oda_available=$oda_available\n" 
+	    if $oda_options{debug};
+	
+	# assuming oda is available now, ...
+	if ( $oda_available ) {
+
+	    # try to connect to the database
+	    my @error_strings = ();
+	    my $error_strings_ref = ( defined $print_errors && 
+				      ref($print_errors) eq "ARRAY" ) ?
+				      $print_errors : \@error_strings;
+	    if ( oda::connect( \%oda_options,
+			       $error_strings_ref ) ) {
+		print "$0: database_connect connect worked\n" if $oda_options{debug};
+		$database_available = 1;
+
+#		# then try to execute an oscar shortcut command
+#		$database_available = 
+#		    oda::execute_command( undef, "packages", undef, undef );
+#		
+#		# disconnect from the database if no shortcuts
+#		oda::disconnect( undef, undef )
+#		    if ! $database_available;
+
+	    }
+	    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+		warn shift @$error_strings_ref while @$error_strings_ref;
+	    }
+	}
     }
 
-    # if oda is still not installed, done with failure
-    return 0 if ! $oda_available;
-
-    # try to connect to the database
-    my @error_strings = ();
-    if ( oda::connect( \%oda_options,
-		       \@error_strings ) ) {
-
-	# then try to execute an oscar shortcut command
-	$database_available = 
-	    oda::execute_command( undef, "packages", undef, undef );
-
-	# disconnect from the database if no shortcuts
-        oda::disconnect( undef, undef )
-	    if ! $database_available;
-    }
-    if ( defined $print_errors_flag && $print_errors_flag ) {
-	warn shift @error_strings while @error_strings;
-    }
+    print "$0: database_connect returning database_available=$database_available\n" 
+	if $oda_options{debug};
     return $database_available;
 }
 
@@ -102,14 +144,14 @@ sub database_disconnect {
     return 1;
 }
 
-#
 # This function executes an oda database command, parsing
 # the command from one or more string arguments, expanding
 # any database shortcuts if needed. It calls oda::execute_command
 # to execute a database command or shortcut, this is only needed
 # to avoid having calling code have to do the conditional 
 # "use OSCAR::oda" in case they are executing at a point when
-# the oda has not been installed yet.
+# the oda has not been installed yet. For returning lists from
+# exexcuted commands, see the subroutine database_return_list.
 #
 # inputs: command_args  either a single scalar string that
 #                       includes the command/shortcut and any
@@ -123,8 +165,10 @@ sub database_disconnect {
 #                       that do not return any result strings 
 #                       will place the integer number of records 
 #                       affected or modified in results_ref
-#         print_errors  if defined and non-zero, print out
-#                       error messages
+#         print_errors  if defined and a list reference,
+#                       put error messages into the list;
+#                       if defined and a non-zero scalar,
+#                       print out error messages on STDERR
 #
 # outputs: status       non-zero for success, note that success
 #                       just means that there are no database
@@ -139,22 +183,25 @@ sub database_execute_command {
 
     my ( $command_args_ref,
          $results_ref,
-	 $print_errors_flag ) = @_;
+	 $print_errors ) = @_;
 
     # sometimes this is called without a database_connent being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_available ) ||
-	OSCAR::Database::database_connect( $print_errors_flag ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
 	    return undef;
 
     # execute the command
     my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
     my $success = oda::execute_command( \%oda_options,
 					$command_args_ref,
 					$results_ref,
-					\@error_strings );
-    if ( defined $print_errors_flag && $print_errors_flag ) {
-	warn shift @error_strings while @error_strings;
+					$error_strings_ref );
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	warn shift @$error_strings_ref while @$error_strings_ref;
     }
 
     # if we weren't connected to the database when called, disconnect
@@ -163,20 +210,90 @@ sub database_execute_command {
     return $success;
 }
 
-# reads the global information used for package and rpm filtering,
-# if one or more of the values can't be read they are returned 
-# as undef
+# Reads all of the values for a given program variable, returning
+# them as a list. If the program name is invalid, or that variable
+# does not exist for that program, a zero length list is returned.
+# If there is some other error, undefined is returned.
 #
-# parameters are:   print_err     if defined and non-zero, print out
-#                                 error messages
-#
-# returned values:  architecture
-#                   distribution
-#                   distribution_version
+# paramaters are: program       program name
+#                 variable      variable name
+#                 print_errors  if defined and a list reference,
+#                               put error messages into the list;
+#                               if defined and a non-zero scalar,
+#                               print out error messages on STDERR
+#                 verbose       if defined and non-zero, verbose output
+#                 debug         if defined and non-zero, debug output
 
-sub database_read_filtering_information {
+sub database_program_variable_get {
     
-    my ( $print_errors_flag ) = @_;
+    my ( $program,
+	 $variable,
+	 $print_errors ) = @_;
+
+    # sometimes this is called without a database_connent being 
+    # called first, so we have to connect first if that is the case
+    ( my $was_connected_flag = $database_available ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
+	    return undef;
+
+    # do the database read for all of the variable values
+    # for the specified program and variable, returning
+    # undefined if any errors
+    my @tables_fields = qw( program_variable_values
+			    program_variable_values.value );
+    my @wheres = ( "program_variable_values.program=$program",
+		   "program_variable_values.variable=$variable" );
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+    my @records = ();
+    if ( ! oda::read_records( \%oda_options,
+			      \@tables_fields,
+			      \@wheres,
+			      \@records,
+			      1,
+			      $error_strings_ref ) ) {
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
+	}
+	OSCAR::Database::database_disconnect() if $was_connected_flag;
+	return undef;
+    }
+
+    # now put the values into a list
+    my @values = ();
+    foreach my $record_ref ( @records ) {
+	push @values, $$record_ref{value}
+	    if exists $$record_ref{value};
+    }
+
+    # if we weren't connected to the database when called, disconnect
+    OSCAR::Database::database_disconnect() if $was_connected_flag;
+
+    return @values;
+}
+
+# writes out values to a program variable for a given program.
+# If the value passed is a reference to a list, the list members 
+# are all written out to that variable, if the value passed is a
+# scalar, that single value is written out to that variable.
+# Any values already set for that variable are deleted first.
+#
+# paramaters are: program       program name
+#                 variable      variable name
+#                 values        single value or values list reference
+#                 print_errors  if defined and a list reference,
+#                               put error messages into the list;
+#                               if defined and a non-zero scalar,
+#                               print out error messages on STDERR
+
+sub database_program_variable_put {
+    
+    my ( $program,
+	 $variable,
+	 $values_ref,
+	 $print_errors ) = @_;
 
     # since we are going to do a number of database operations, we'll
     # try to be more effecient by connecting to the database first if
@@ -184,19 +301,280 @@ sub database_read_filtering_information {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_available ) ||
-	OSCAR::Database::database_connect( $print_errors_flag ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
+	return undef;
+    my $status = 1;
+
+    # remove all the previous values for this variable
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+    my @command_results = ();
+    if ( ! oda::execute_command( \%oda_options,
+				 "remove_program_variable $program $variable",
+				 \@command_results,
+				 $error_strings_ref ) ) {
+	push @$error_strings_ref,
+	"cannot remove old values for program $program variable $variable from the ODA database";
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
+	}
+	$status = 0;
+    }
+
+    # write out the new variable values ( do not bother using
+    # the set_program_variable_value shortcut for single value
+    # variables since we alread deleted all old values)
+    if ( ! ref( $values_ref ) ) {
+	my @single_value_list = ( $values_ref );
+	$values_ref = \@single_value_list;
+    }
+    my %assigns = ( 'program'  => $program,
+		    'variable' => $variable );
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+    foreach my $value ( @$values_ref ) {
+	my @command_results = ();
+	$assigns{value} = $value;
+	if ( ! oda::insert_record( \%oda_options,
+				   "program_variable_values",
+				   \%assigns,
+				   undef,
+				   $error_strings_ref ) ) {
+	    push @$error_strings_ref, 
+	    "cannot add value $value to variable $variable for program $program in the ODA database";
+	    $status = 0;
+	}
+    }
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+
+    # if we weren't connected to the database when called, disconnect
+    
+    OSCAR::Database::database_disconnect() if $was_connected_flag;
+    
+    return $status;
+}
+
+# Reads all of the program variables for a given program and returns
+# them in a hash. The keys of the hash are the variable names. Each
+# value in the hash is either a reference to a list of values for
+# that variable (if the variable has more than one value), or the 
+# scalar value for that variable (if the variable has one value).
+# This function allows spaces or other white space characters to 
+# be part of the variable values. If success, the hash reference is
+# returned, if failure undefined is returned.
+#
+# paramaters are: program       program name
+#                 print_errors  if defined and a list reference,
+#                               put error messages into the list;
+#                               if defined and a non-zero scalar,
+#                               print out error messages on STDERR
+
+sub database_program_variables_get {
+    
+    my ( $program,
+	 $print_errors ) = @_;
+
+    # sometimes this is called without a database_connent being 
+    # called first, so we have to connect first if that is the case
+    ( my $was_connected_flag = $database_available ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
+	    return undef;
+
+    # do the database read for all of the variable names
+    # and values for the specified program, returning
+    # undefined if any errors
+    my @tables_fields = qw( program_variable_values
+			    program_variable_values.variable
+			    program_variable_values.value );
+    my @wheres = ( "program_variable_values.program=$program" );
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+    my @records = ();
+    if ( ! oda::read_records( \%oda_options,
+			      \@tables_fields,
+			      \@wheres,
+			      \@records,
+			      1,
+			      $error_strings_ref ) ) {
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
+	}
+	OSCAR::Database::database_disconnect() if $was_connected_flag;
+	return undef;
+    }
+
+    # now translate it to a hash, with each variable name
+    # being a key, and all of the each variable's values as
+    # a referenced list
+    my %results = ();
+    foreach my $record_ref ( @records ) {
+	if ( exists $$record_ref{variable} &&
+	     exists $$record_ref{value} ) {
+	    my $variable = $$record_ref{variable};
+	    my $value = $$record_ref{value};
+	    if ( ! exists $results{$variable} ) {
+		my @values = ();
+		$results{$variable} = \@values;
+	    }
+	    my $values_ref = $results{$variable};
+	    push @$values_ref, $value;
+	}
+    }
+
+    # now change any variable that has exactly one value
+    # from a referenced list, to a scalar value
+    foreach my $variable ( keys %results ) {
+	my $values_ref = $results{$variable};
+	$results{$variable} = $$values_ref[0]
+	    if scalar @$values_ref == 1;
+    }
+
+    # if we weren't connected to the database when called, disconnect
+    OSCAR::Database::database_disconnect() if $was_connected_flag;
+
+    return \%results;
+}
+
+# writes all of the program variables for a given program that are
+# passed as a hash. The keys of the hash are the variable names.
+# Each value in the hash is either a reference to a list of values for
+# that variable (if the variable has more than one value), or the 
+# scalar value for that variable (if the variable has one value).
+# Any variables and/or values not in the hash will be removed from 
+# the database for that program.
+#
+# paramaters are: program       program name
+#                 variables     reference to variables/values hash
+#                 print_errors  if defined and a list reference,
+#                               put error messages into the list;
+#                               if defined and a non-zero scalar,
+#                               print out error messages on STDERR
+
+sub database_program_variables_put {
+    
+    my ( $program,
+	 $variables_ref,
+	 $print_errors ) = @_;
+
+    # since we are going to do a number of database operations, we'll
+    # try to be more effecient by connecting to the database first if
+    # we weren't connected when called, then perform the operations, 
+    # then disconnect if we weren't connected when we were called.
+
+    ( my $was_connected_flag = $database_available ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
+	    return ( undef, undef, undef );
+    my $status = 1;
+
+    # remove all the previous variables for this program
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+    my @command_results = ();
+    if ( ! oda::execute_command( \%oda_options,
+				 "remove_program_variables $program",
+				 \@command_results,
+				 $error_strings_ref ) ) {
+	push @$error_strings_ref,
+	"cannot remove old variables for program $program from the ODA database";
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
+	}
+	$status = 0;
+    }
+
+    # write out the new variable values ( do not bother using
+    # the set_program_variable_value shortcut for single value
+    # variables since we alread delete all old values)
+    foreach my $variable ( keys %$variables_ref ) {
+	my $values_ref = $$variables_ref{$variable};
+	if ( ! ref( $values_ref ) ) {
+	    my @single_value_list = ( $values_ref );
+	    $values_ref = \@single_value_list;
+	}
+	my %assigns = ( 'program'  => $program,
+			'variable' => $variable );
+	foreach my $value ( @$values_ref ) {
+	    my @command_results = ();
+	    $assigns{value} = $value;
+	    if ( ! oda::insert_record( \%oda_options,
+				       "program_variable_values",
+				       \%assigns,
+				       undef,
+				       $error_strings_ref ) ) {
+		push @$error_strings_ref,
+		"cannot add value $value to variable $variable for program $program in the ODA database";
+		if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+		    warn shift @$error_strings_ref while @$error_strings_ref;
+		}
+		$status = 0;
+	    }
+	}
+    }
+
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    
+    # if we weren't connected to the database when called, disconnect
+
+    OSCAR::Database::database_disconnect() if $was_connected_flag;
+
+    return $status;
+}
+
+# reads the global information used for package and rpm filtering,
+# if one or more of the values can't be read they are returned 
+# as undef
+#
+# parameters are: print_errors  if defined and a list reference,
+#                               put error messages into the list;
+#                               if defined and a non-zero scalar,
+#                               print out error messages on STDERR
+#
+# returned values:  architecture
+#                   distribution
+#                   distribution_version
+
+sub database_read_filtering_information {
+    
+    my ( $print_errors ) = @_;
+
+    # since we are going to do a number of database operations, we'll
+    # try to be more effecient by connecting to the database first if
+    # we weren't connected when called, then perform the operations, 
+    # then disconnect if we weren't connected when we were called.
+
+    ( my $was_connected_flag = $database_available ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
 	    return ( undef, undef, undef );
 
     # read them all in
+
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
 
     my @architecture_results = ();
     my $architecture = undef;
     if ( ! database_execute_command( "oscar_server_architecture",
 				     \@architecture_results,
-				     $print_errors_flag ) ) {
-	warn "Error reading the architecture from the database";
+				     $print_errors ) ) {
+	push @$error_strings_ref,
+	"Error reading the architecture from the database";
     } elsif ( ! @architecture_results ) {
-	warn "No results returned reading the architecture from the database";
+	push @$error_strings_ref,
+	"No results returned reading the architecture from the database";
     } else {
 	$architecture = $architecture_results[0];
     }
@@ -205,10 +583,12 @@ sub database_read_filtering_information {
     my $distribution = undef;
     if ( ! database_execute_command( "oscar_server_distribution",
 				     \@distribution_results,
-				     $print_errors_flag ) ) {
-	warn "Error reading the distribution from the database";
+				     $print_errors ) ) {
+	push @$error_strings_ref,
+	"Error reading the distribution from the database";
     } elsif ( ! @distribution_results ) {
-	warn "No results returned reading the distribution from the database";
+	push @$error_strings_ref,
+	"No results returned reading the distribution from the database";
     } else {
 	$distribution = $distribution_results[0];
     }
@@ -217,14 +597,20 @@ sub database_read_filtering_information {
     my $distribution_version = undef;
     if ( ! database_execute_command( "oscar_server_distribution_version",
 				     \@distribution_version_results,
-				     $print_errors_flag ) ) {
-	warn "Error reading the distribution version from the database";
+				     $print_errors ) ) {
+	push @$error_strings_ref,
+	"Error reading the distribution version from the database";
     } elsif ( ! @distribution_version_results ) {
-	warn "No results returned reading the distribution version from the database";
+	push @$error_strings_ref,
+	"No results returned reading the distribution version from the database";
     } else {
 	$distribution_version = $distribution_version_results[0];
     }
 
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    
     # if we weren't connected to the database when called, disconnect
 
     OSCAR::Database::database_disconnect() if $was_connected_flag;
@@ -248,8 +634,10 @@ sub database_read_filtering_information {
 #                               (if undef all records returned)
 #                 index_field   name of index field 
 #                               (if undef "name" is used)
-#                 print_err     if defined and non-zero, print out
-#                               error messages
+#                 print_errors  if defined and a list reference,
+#                               put error messages into the list;
+#                               if defined and a non-zero scalar,
+#                               print out error messages on STDERR
 
 sub database_read_table_fields {
     
@@ -257,7 +645,7 @@ sub database_read_table_fields {
 	 $requested_fields_ref,
 	 $wheres_ref,
 	 $passed_key_name,
-	 $print_errors_flag ) = @_;
+	 $print_errors ) = @_;
 
     # if they didn't specify an index field name, use "name"
     my $key_name = ( defined $passed_key_name ) ? $passed_key_name : "name";
@@ -268,20 +656,26 @@ sub database_read_table_fields {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_available ) ||
-	OSCAR::Database::database_connect( $print_errors_flag ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
 	    return undef;
+    print "entering database_read_table_fields table=$table key=$key_name\n"
+	if $oda_options{debug};
 
     # get a list of field names for this database table
 
     my %fields_in_table = ();
     my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
     if ( ! oda::list_fields( \%oda_options,
 			     $table,
 			     \%fields_in_table,
-			     \@error_strings ) ) {
-	if ( defined $print_errors_flag && $print_errors_flag ) {
-	    warn shift @error_strings while @error_strings;
-	    warn "cannot read the field names for database table <$table> from the ODA database";
+			     $error_strings_ref ) ) {
+	push @$error_strings_ref,
+	"cannot read the field names for database table <$table> from the ODA database";
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
 	}
 	OSCAR::Database::database_disconnect() if $was_connected_flag;
 	return undef;
@@ -291,9 +685,12 @@ sub database_read_table_fields {
     # have a serious problem
 
     if ( ! exists $fields_in_table{$key_name} ) {
-	if ( defined $print_errors_flag && $print_errors_flag ) {
-	    warn "there is no <$key_name> field in database table <$table>";
-	    warn "Database\:\:database_read_table_fields cannot supply the data as requested";
+	push @$error_strings_ref, 
+	"there is no <$key_name> field in database table <$table>";
+	push @$error_strings_ref, 
+	"Database\:\:database_read_table_fields cannot supply the data as requested";
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
 	}
 	OSCAR::Database::database_disconnect() if $was_connected_flag;
 	return undef;
@@ -327,9 +724,9 @@ sub database_read_table_fields {
 			      $wheres_ref,
 			      \@records,
 			      1,
-			      \@error_strings ) ) {
-	if ( defined $print_errors_flag && $print_errors_flag ) {
-	    warn shift @error_strings while @error_strings;
+			      $error_strings_ref ) ) {
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
 	}
 	OSCAR::Database::database_disconnect() if $was_connected_flag;
 	return undef;
@@ -352,17 +749,21 @@ sub database_read_table_fields {
 	    $missing_name_fields++;
 	}
     }
-    if ( defined $print_errors_flag && $print_errors_flag ) {
-	foreach my $name ( sort keys %duplicated_name_values ) {
-	    warn "There are duplicated records in database table <$table> that";
-	    warn "has the same <$key_name> field value of <$name>.";
-	}
-	warn "Database\:\:database_read_table_fields will only return the first of each."
-	    if %duplicated_name_values;
-	if ( $missing_name_fields ) {
-	    warn "$missing_name_fields records from the database table <$table> are missing the <$key_name>";
-	    warn "field and are not being returned by Database\:\:database_read_table_fields.";
-	}
+    foreach my $name ( sort keys %duplicated_name_values ) {
+	push @$error_strings_ref,
+	"There are duplicated records in database table <$table> that has the same <$key_name> field value of <$name>.";
+    }
+    push @$error_strings_ref,
+    "Database\:\:database_read_table_fields will only return the first of each."
+	if %duplicated_name_values;
+    if ( $missing_name_fields ) {
+	push @$error_strings_ref,
+	"$missing_name_fields records from the database table <$table> are missing the <$key_name>";
+	push @$error_strings_ref,
+	"field and are not being returned by Database\:\:database_read_table_fields.";
+    }
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	warn shift @$error_strings_ref while @$error_strings_ref;
     }
 
     # if we weren't connected to the database when called, disconnect
@@ -372,7 +773,73 @@ sub database_read_table_fields {
     return \%results;
 }
 
+# This function executes an oda database command, parsing
+# the command from one or more string arguments, expanding
+# any database shortcuts if needed. It nicely returns a list
+# all the result values. Note that if a returned value
+# includes white space it will be seperated into multiple
+# values in the returned list. If you want to read database
+# values and preserve funky value characters, use the 
+# database_read_table_fields function instead of this one.
 #
+# inputs: command_args  either a single scalar string that
+#                       includes the command/shortcut and any
+#                       arguments, or a reference to a list
+#                       strings that include the command/shortcut
+#                       and any arguments.
+#         print_errors  if defined and a list reference,
+#                       put error messages into the list;
+#                       if defined and a non-zero scalar,
+#                       print out error messages on STDERR
+#
+# outputs: values       The list of values returned by the 
+#                       database command. If no values were
+#                       returned, it returns a zero length list.
+#                       If an error occurred, it returns undef.
+
+sub database_return_list {
+
+    my ( $command_args_ref,
+	 $print_errors ) = @_;
+
+    # sometimes this is called without a database_connent being 
+    # called first, so we have to connect first if that is the case
+    ( my $was_connected_flag = $database_available ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
+	    return undef;
+
+    # execute the command
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+    my @command_results = ();
+    my $success = oda::execute_command( \%oda_options,
+					$command_args_ref,
+					\@command_results,
+					$error_strings_ref );
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+
+    # if we weren't connected to the database when called, disconnect
+    OSCAR::Database::database_disconnect() if $was_connected_flag;
+
+    # if the command failed, return failure
+    return undef
+	if ! $success;
+
+    # otherwise, seperate out the result value words from
+    # all the result records and return them as a list
+    my @values = ();
+    chomp @command_results;
+    foreach my $result ( grep( /[^\s]/, @command_results ) ) {
+	my @fields = split( '\s+', $result );
+	push @values, @fields if @fields;
+    }
+    return @values;
+}
+
 # reads specified fields from all the records in a specified database
 # table into a double deep hash with the first level of keys being
 # taken fromt the "name" field for each record, with data in the first
@@ -382,8 +849,10 @@ sub database_read_table_fields {
 #
 # paramaters are: package       package name
 #                 group         node group name or undef if any/all
-#                 print_err     if defined and non-zero, print out
-#                               error messages
+#                 print_errors  if defined and a list reference,
+#                               put error messages into the list;
+#                               if defined and a non-zero scalar,
+#                               print out error messages on STDERR
 #
 # returns a list of rpm names, or undef if an error
 
@@ -391,7 +860,7 @@ sub database_rpmlist_for_package_and_group {
     
     my ( $package,
 	 $group,
-	 $print_errors_flag ) = @_;
+	 $print_errors ) = @_;
 
     my ($calling_package, $calling_filename, $line) = caller;
 
@@ -401,7 +870,7 @@ sub database_rpmlist_for_package_and_group {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_available ) ||
-	OSCAR::Database::database_connect( $print_errors_flag ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
 	    return undef;
 
     # read in all the packages_rpmlists records for this package
@@ -415,18 +884,22 @@ sub database_rpmlist_for_package_and_group {
 		   "packages.id=packages_rpmlists.package_id" );
     my @packages_rpmlists_records = ();
     my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
     my $number_of_records = 0;
     if ( ! oda::read_records( \%oda_options,
 			      \@tables_fields,
 			      \@wheres,
 			      \@packages_rpmlists_records,
 			      1,
-			      \@error_strings,
+			      $error_strings_ref,
 			      \$number_of_records ) ) {
-	if ( defined $print_errors_flag && $print_errors_flag ) {
-	    warn shift @error_strings while @error_strings;
+	push @$error_strings_ref,
+	"Error reading packages_rpmlists records for package $package";
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
 	}
-	warn "Error reading packages_rpmlists records for package $package";
         OSCAR::Database::database_disconnect() if $was_connected_flag;
 	 return undef;
     }
@@ -435,7 +908,7 @@ sub database_rpmlist_for_package_and_group {
     my ( $architecture,
 	 $distribution,
 	 $distribution_version ) =
-	     database_read_filtering_information( $print_errors_flag );
+	     database_read_filtering_information( $print_errors );
 	
     # now build the matches list
     my @rpms = ();
@@ -462,23 +935,6 @@ sub database_rpmlist_for_package_and_group {
     OSCAR::Database::database_disconnect() if $was_connected_flag;
 
     return @rpms;
-}
-
-#
-# prints a traceback of the call stack
-#
-
-sub calling_traceback {
-    my $level = 1;
-    my ( $package, $filename, $line, $subroutine, $hasargs, 
-    $wantarray, $evaltext, $is_require, $hints, $bitmask );
-    do {
-	( $package, $filename, $line, $subroutine, $hasargs, $wantarray,
-	  $evaltext, $is_require, $hints, $bitmask ) = caller ( $level );
-	print "called from $filename\:$line $subroutine\(\)\n"
-	    if defined $filename;
-	$level++;;
-    } while defined $filename;
 }
 
 
