@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.18 2003/01/21 22:23:35 mchasal Exp $
+#   $Id: MAC.pm,v 1.19 2003/01/22 21:21:33 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.18 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.19 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -71,12 +71,14 @@ sub mac_window {
     my $listbox = $window->ScrlListbox(
                                        -selectmode => 'single',
                                        -background => "white",
+                                       -scrollbars => 'ose',
                                       );
     my $tree = $window->Scrolled("Tree",
                                  -background => "white",
                                  -itemtype => 'imagetext',
                                  -separator => '|',
                                  -selectmode => 'single',
+                                 -scrollbars => 'ose',
                                 );
 
     $instructions->pack($label);
