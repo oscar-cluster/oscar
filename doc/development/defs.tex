@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: defs.tex,v 1.4 2002/06/12 06:46:16 jsquyres Exp $
+% $Id: defs.tex,v 1.5 2002/08/07 02:43:13 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -42,10 +42,17 @@
 % Discussion item; stolen from the MPI standard
 
 \newenvironment{discuss}{\begin{list}{}{}\item[]{\it Discussion item:}
+\addcontentsline{toc}{subsection}{Discussion Item}
 }{{\rm ({\it End of discussion item.})} \end{list}}
+
+% Rationale item; stolen from the MPI standard
+
+\newenvironment{rationale}{\begin{list}{}{}\item[]{\it Rationale.}
+}{{\rm ({\it End of rationale.})} \end{list}}
 
 % Stolen from the MPI standard
 
 \newcommand{\file}[1]{\texttt{#1}}
 \newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\pkgname}[1]{\texttt{#1}}
 \newcommand{\version}[1]{\textbf{#1}}

@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: files.tex,v 1.4 2002/02/01 05:13:04 jsquyres Exp $
+% $Id: files.tex,v 1.5 2002/08/07 02:43:13 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -66,14 +66,25 @@ package:
   filename.  For example, {\tt third-party.tex}.
   
 \item Package files that were created specifically for OSCAR should
-  indicate that fact in their filenames.  A Mandrake-like convention
-  seems good for RPMs; tarballs can include the string ``{\tt oscar}''
-  right before ``{\tt .tar.gz}''.  For example:
+  indicate that fact in their filenames.  The ``name'' portion of an
+  RPM filename should include the string ``{\tt oscar}''.  For
+  example:
 
   \begin{itemize}
-  \item {\tt lam-{\rm X}.{\rm Y}.{\rm Z}-1oscar.i686.rpm}
-  \item {\tt lui-{\rm A}.{\rm B}.{\rm C}oscar.tar.gz}
+  \item \file{lam-oscar-{\rm X}.{\rm Y}.{\rm Z}-1.i586.rpm}
+  \item \file{pfilter-oscar-{\rm A}.{\rm B}.{\rm C}.tar.gz}
   \end{itemize}
+
+  \begin{rationale}
+    This convention is typically applied for RPMs that are part of
+    OSCAR packages.  It is used instead of a Mandrake-like convetion
+    (i.e., where the string ``\file{oscar}'' is part of the release
+    number of the RPM, such as \file{lam-\-{\rm X}\-.{\rm Y}\-.{\rm
+        Z}-\-1oscar\-.i586.rpm}) so that non-OSCAR-ized RPMs don't
+    automatically update OSCAR-ized RPMs through the RPM
+    \pkgname{autoupdate} package.  This issue is discussed further in
+    the OSCAR Architecture document.
+  \end{rationale}
 
 \item All executable scripts should have their execute bit set.
   

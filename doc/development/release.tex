@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release.tex,v 1.7 2002/07/17 00:02:24 jsquyres Exp $
+% $Id: release.tex,v 1.8 2002/08/07 02:43:13 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -96,22 +96,39 @@ attempt provide a quick overview that should help release technicians
 through the process.
 
 \begin{enumerate}
-
-\item Before making a distribution package file, ensure that:
+  
+\item Perform a CVS update, and/or otherwise are {\em absolutely sure}
+  that you have the latest version of all the files in the OSCAR tree.
+  
+\item Ensure that all documentation has been updated, including:
 
   \begin{enumerate}
-  \item You have performed a CVS update, and/or otherwise are {\em
-      absolutely sure} that you have the latest version of all the
-    files.
-  \item The top-level \file{README*} files have been updated
-  \item The documentation \LaTeX\ files have been updated
-  \item The \file{VERSION} file has been updated
-  \item You have re-run \file{autogen.sh} and \file{configure} ({\em
-      after} editing the \file{VERSION} file) to propgate the new
-    version number properly
+  \item The top-level \file{README*} file
+  \item The documentation \LaTeX\ files
   \end{enumerate}
   
-\item Make the distribution package file with ``{\tt make
+\item Ensure that \file{VERSION} file reflects the correct version
+  number. 
+  
+\item Ensure that all directories under the \file{packages/} directory
+  are either relevant to the OSCAR distribution package, or have a
+  file named \file{.oscar\_\-ignore}, which will cause that directory
+  to not be included in the distribution package.
+  
+\item Ensure that {\em all} files under the \file{packages/} directory
+  are either relevant to the OSCAR distribution package, or are in a
+  directory containing a \file{.oscar\_\-ignore} file.\footnote{Note
+    that ``backup'' files are automatically excluded from distribution
+    packages.  ``Backup'' files are defined as those that end in
+    ``{\tt $^{\sim}$}'' or ``{\tt .bak}''.}
+  
+\item Run the \cmd{autogen.sh} command to generate all relevant
+  \file{Makefile.am} files.
+
+\item Run the \cmd{configure} command to generate all relevant
+  \file{Makefile} files.
+  
+\item Make the distribution package file with ``\cmd{make
     oscar-dist}''.
   
   This will make three tarballs -- the so-called ``regular'' (RPMs and

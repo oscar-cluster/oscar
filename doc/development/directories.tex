@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: directories.tex,v 1.3 2002/01/23 05:13:41 jsquyres Exp $
+% $Id: directories.tex,v 1.4 2002/08/07 02:43:13 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -59,65 +59,42 @@ For example, ``{\tt oscar-2.0}''.\footnote{For brevity, the rest of
 This top-level directory will include at least the following files:
 
 \begin{itemize}
-\item {\tt COPYING}: The GNU public license file, version 2.0.
-
-\item {\tt Makefile.am}: A top-level file used for building an OSCAR
-  distribution package.
-
-\item {\tt configure.in}: Another top-level file used for building an
-  OSCAR distribution package.  Note that this file will probably
-  eventually change names to {\tt configure.ac} as newer versions of
-  the GNU {\tt autoconf} package become more commonly installed.
+\item \file{COPYING}: The GNU public license file, version 2.0.
   
-  Also note that {\tt configure} (and any other
+\item \file{Makefile.am}: A top-level file used for building an OSCAR
+  distribution package.
+  
+\item \file{configure.in}: Another top-level file used for building an
+  OSCAR distribution package.  Note that this file will probably
+  eventually change names to \file{configure.ac} as newer versions of
+  the GNU \cmd{autoconf} package become more commonly installed.
+  
+  Also note that \file{configure} (and any other
   automatically-generated files) is {\em not} maintained in CVS.  It
   is the developer's responsibility to invoke the right commands to
-  generate these files.  {\tt configure} (and other
+  generate these files.  \file{configure} (and other
   automatically-generated files) {\em will} be included in OSCAR
   distribution packages.
-
-\item {\tt README}: A text file describing generally what OSCAR is,
+  
+\item \file{autogen.sh}: Script to generate the relevant
+  \file{Makefile}s and the top-elvel \cmd{configure} script.
+  
+\item \file{README}: A text file describing generally what OSCAR is,
   listing the main OSCAR URL, and brief directions on where to find
-  the OSCAR installation guide.
+  the OSCAR installation files.
 \end{itemize}
 
 \noindent The subdirectories of {\tt oscar} are:
 
 \begin{itemize}
   
-\item {\tt core-packages}\footnote{Note that it would be a Bad Idea to
-    name this directory ``{\tt core}'', because at least some linux
-    distributions have cron jobs that actively seek out and {\tt rm
-      -rf} files named {\tt core}.}: This directory contains
-  subdirectories for each of the core packages in OSCAR.  Just as with
-  the {\tt packages} directory, there may be some top-level scripts in
-  this directory to assist in installing/uninstalling the core
-  packages.
-
-  Each core package will be entirely self-contained in its own
-  directory, the name of which will reflect the name of the core
-  package.  The subdirectory name will {\em not} include a version
-  number.
-
-  The core packages of OSCAR are:
-
-  \begin{itemize}
-  \item {\tt c3}: The C3 package.
-  \item {\tt odr}: The OSCAR data repository.
-  \item {\tt sis}: The System Installation Suite.
-  \item {\tt wizard}: The OSCAR wizard.
-  \end{itemize}
-  
-  The contents of these directories are discussed in
-  Section~\ref{sec:core-directories}.
-  
-\item {\tt dist}: This directory contains scripts and additional
+\item \file{dist}: This directory contains scripts and additional
   maintainer-level files that are used for making an OSCAR
   distribution.  This may include a top-level OSCAR RPM spec file,
   configuration or other helper shell scripts, etc.  This directory
   may or may not be included in a distribution OSCAR package.
   
-\item {\tt doc}: This directory contains various forms of
+\item \file{doc}: This directory contains various forms of
   documentation.  Top-level how-to's, text files, etc., are eligible
   to be included in this directory.  Any document that consists of
   multiple parts (e.g., documents that are made from \LaTeX\ source)
@@ -126,38 +103,44 @@ This top-level directory will include at least the following files:
   postscript and/or PDF files:
 
   \begin{itemize}
-  \item {\tt development}: This document; outlining the standards and
+  \item \file{architecture}: The OSCAR architecture document.
+
+  \item \file{development}: This document; outlining the standards and
     guidelines for OSCAR developers.
 
-  \item {\tt information}: A document containing general information
+  \item \file{information}: A document containing general information
     about OSCAR.
     
-  \item {\tt installation}: The installation guide for the OSCAR
+  \item \file{installation}: The installation guide for the OSCAR
     software package.
   \end{itemize}
   
   Distribution packages will include pre-made postscript and PDF
   versions of all documents that can be made into postscript/PDF.
 
-\item {\tt packages}: This directory contains subdirectories for each
-  of the third party packages that the OSCAR framework may install.
-  There may be some top-level scripts in this directory to assist in
-  installing/uninstalling third party packages.
+\item \file{images}: Some images used in the OSCAR installation
+  process.
 
-  The directory naming scheme is the same as with the {\tt
-    core-packages} directory.  Some examples of names include:
+\item \file{lib}: Supplementary library files and scripts used in the
+  OSCAR installation process.
 
-  \begin{itemize}
-  \item {\tt lam}
-  \item {\tt mpich}
-  \item {\tt openssh}
-  \item {\tt pbs}
-  \item {\tt pvm}
-  \end{itemize}
+\item \file{oscarsamples}: Supplementary data files used in the OSCAR
+  installation process.
+
+\item \file{packages}: This directory contains subdirectories for each
+  of the core and included packages in OSCAR.
   
-  The contents of these directories are discussed in
-  Section~\ref{sec:third-directories}.
-
+  Each package will be entirely self-contained in its own directory,
+  the name of which will reflect the name of the package.  The
+  subdirectory name will {\em not} include a version number.
+  
+\item \file{scripts}: Supplementary scripts used in the OSCAR
+  installation process.
+  
+\item \file{share}: Supplementary data files used in the OSCAR
+  installation process.
+  
+\item \file{testing}: Top-level OSCAR test suite.
 \end{itemize}
 
 % LocalWords:  Exp oscar PL dist doc to's ource PDF lib lam mpi mpich pbs linux
