@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: make-dist.sh,v 1.22 2002/10/30 12:19:09 jsquyres Exp $
+# $Id: make-dist.sh,v 1.23 2003/05/07 20:33:23 jsquyres Exp $
 #
 
 srcdir="`pwd`"
@@ -224,7 +224,16 @@ echo "*** Removing extra kruft"
 rm -f aclocal.m4 acinclude.m4
 rm -f configure configure.in
 rm -f VERSION.in
-rm -rf dist
+
+# Save the get-oscar-version.sh and VERSION file, but nothing else in
+# dist
+cd dist
+mkdir foo
+mv * foo
+mv foo/get-oscar-version.sh foo/VERSION .
+rm -rf foo
+cd ..
+
 find . -name Makefile\* -exec rm -f {} \; -print
 
 #
