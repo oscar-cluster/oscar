@@ -35,6 +35,7 @@ my @known_rpms = qw(
                     mpich-oscar-module
                     mpich-oscar
 		    mysql
+		    mysql-common
 		    mysql-server
                     ntpconfig
                     pvm-modules-oscar
