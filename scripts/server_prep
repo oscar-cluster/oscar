@@ -78,50 +78,46 @@ sub update_hosts {
     }
     verbose("Backing up /etc/hosts");
     copy("/etc/hosts","/etc/hosts.bak") or return undef;
+    my $short;
     my $hostname = qx/hostname/;
     chomp($hostname);
-    my @additional = ( $ip, $hostname );  # mjc - 11/12/01
     if($hostname =~ /\./) {
-        my $short = $hostname;
+        $short = $hostname;
         $short =~ s/\..*//;
-        if($short ne $hostname) {
-            $additional[$#additional + 1] = $short; # mjc - 11/12/01
+        if($short eq $hostname) {
+            $short=undef;
         }
     }
-    $additional[$#additional + 1] = "nfs_oscar"; # mjc - 11/12/01
-    $additional[$#additional + 1] = "pbs_oscar"; # mjc - 11/12/01
+    my @aliases=qw(nfs_oscar pbs_oscar);
     open(IN,"</etc/hosts.bak") or return undef;
     open(OUT,">/etc/hosts") or return undef;
     verbose("Adding required entries to /etc/hosts");
 
     # mjc - 11/12/01 - start
-    # - If the ip is in there, snag all the items on the line and toss out
-    #   any that we have already specified for the line.  Any which we
-    #   didn't already have in the additional list, add to the list.  Then
-    #   create a line to replace the one that was there.
+    # - If the ip is in there, add the oscar aliases if they
+    #   aren't on the list.
     # - If the ip is not in there, add the line.
     # - If you stumble across another line in the file with a different ip
     #   but the same hostname, pull it out of the file and add it back in
     #   only after we have added the line for this specified ip
-    my $found = 0;
     my @hostlines = ();
-    my $line; # mjc - 12/13/01
+    my $line;
+    my $found=0;
 
-    while(<IN>) {
-      $line = $_; # mjc - 12/13/01
-      chop $line; # mjc - 12/13/01
+    while ($line=<IN>) {
+      chomp $line; # mjc - 12/13/01
       if( $line =~ /^$ip/ ) { # mjc - 12/13/01
-        # Same ip, grab all the items on the line and eliminate redundancies
+        # Same ip, grab all the items on the line and add the oscar 
+        # aliases if they aren't already there.
         $found = 1;
         my @items = split( /\s+/, $line ); # mjc - 12/13/01
-        my $item;
-        foreach $item ( @items ) {
-          if( ! &string_is_in( $item, \@additional ) ) {
-            $additional[$#additional + 1] = $item;
-          }
+        foreach my $alias (@aliases) {
+                unless (grep(/$alias/,@items)) {
+                        push (@items,$alias);
+                }
         }
-        # Add all the items on this line to the file
-        print OUT join( " ", @additional )."\n";
+        # print the modified line.
+        print OUT join( " ", @items )."\n";
       } elsif( $line =~ /$hostname/ ) {  # mjc - 12/13/01
         # Not the same ip, but same hostname, save this line for now
         $hostlines[$#hostlines + 1] = $line;
@@ -130,8 +126,9 @@ sub update_hosts {
         print OUT $line."\n"; # mjc - 12/13/01
       }
     }
+    # If there wasn't a line there, add it now.
     if(!$found) {
-      print OUT join( " ", @additional )."\n";
+      print OUT "$ip $hostname $short ". join( " ", @aliases )."\n";
     }
     # Add back in any lines found with the same hostname but different ip
     foreach $line ( @hostlines ) {
@@ -142,21 +139,6 @@ sub update_hosts {
     close(OUT);
     close(IN);
 }
-
-# mjc - 11/12/01 - start
-# Returns 1 if the specified string is equal to one of the strings in the
-# array given by the reference, 0 otherwise.
-sub string_is_in {
-  my( $target, $itemList ) = @_;
-  my( $item );
-  foreach $item ( @{$itemList} ) {
-    if( $target eq $item ) {
-      return 1;
-    }
-  }
-  return 0;
-}
-# mjc - 11/12/01 - end
 
 sub update_profile {
     verbose("Backing up /etc/profile");
