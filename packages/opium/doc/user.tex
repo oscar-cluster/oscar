@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.6 2002/07/19 02:28:56 jsquyres Exp $
+% $Id: user.tex,v 1.7 2002/07/26 22:27:12 brechin Exp $
 %
 % $COPYRIGHT$
 %
@@ -11,28 +11,9 @@
 The OPIUM package includes facilities which synchronize the cluster's
 accounts and configures \cmd{ssh} for users.  The user account
 synchronization may only be run by root, and is automatically
-triggered each time your sysadmin adds or removes users or groups.
+triggered at regular intervals
 OPIUM configures \cmd{ssh} such that every user can traverse the
 cluster securely without entering a password, once logged on to the
 head node.  This is done using \cmd{ssh} user keys, in the \file{.ssh}
 folder in your home directory.  It is not recommended that you make
 changes here unless you know what you are doing.
-
-\subsubsection{Caveats for OSCAR \oscarversion}
-
-\begin{itemize}
-\item Your \cmd{ssh} keys are automatically generated the first time
-  you log on to the OSCAR cluster's head node.  Your first log on must
-  be on the head node if you wish for your \cmd{ssh} keys to be
-  auto-generated.  This will change in future versions of OSCAR.
-  
-\item \cmd{chsh} and \cmd{passwd} commands will not trigger a
-  synchronization, so you may have to ask your sysadmin to invoke a
-  sync, or just wait until the next user is created, which will
-  trigger a sync anyway.  Keeping your password synced shouldn't be as
-  much of an issue anyway, since \cmd{ssh} makes it so they're not
-  really required.  If synchronization becomes a troublesome area for
-  you, you may want to ask your sysadmin to add \cmd{sync\_users} to
-  \user{root}'s crontab.
-\end{itemize}
-

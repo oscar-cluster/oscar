@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.7 2002/07/17 13:37:19 jsquyres Exp $
+% $Id: install.tex,v 1.8 2002/07/26 22:27:12 brechin Exp $
 %
 % $COPYRIGHT$
 %
@@ -8,60 +8,10 @@
 \subsection{The OSCAR Password Installer and User Management (OPIUM)}
 \label{app:opium-overview}
 
-OPIUM is OSCAR's facility to manage user accounts on the cluster.
 Currently, OPIUM does this by replicating files on a triggered basis.
-The user account files are copied to each node each time certain
-commands are invoked:
-
-\begin{itemize}
-\item \file{/etc/passwd}
-\item \file{/etc/shadow}
-\item \file{/etc/group}
-\item \file{/etc/gshadow}
-\end{itemize}
-
+The user account files are copied to each node on a regular interval.
 It is possible to add your own files to this list, by editing the
-command script which does the work.  The command is
-\cmd{/usr/sbin/sync\_users}.  It is triggered by wrapper scripts
-around the user management commands in Linux.  The wrapped scripts:
-
-\begin{itemize}
-\item \cmd{/usr/sbin/useradd}
-\item \cmd{/usr/sbin/userdel}
-\item \cmd{/usr/sbin/usermod}
-\item \cmd{/usr/sbin/groupadd}
-\item \cmd{/usr/sbin/groupdel}
-\item \cmd{/usr/sbin/groupmod}
-\end{itemize}
-
-\paragraph{Problems with \cmd{sync\_users}:}
-\begin{itemize}
-\item \cmd{chsh} and \cmd{passwd} commands don't trigger a sync.  It
-  is strongly recomended that system administrators install a
-  \user{root} \cmd{cron} entry similar to the following:
-
-\begin{verbatim}
-  0 * * * * /usr/sbin/sync_users > /dev/null 2>&1
-\end{verbatim}
-
-  This will automatically run the \cmd{sync\_users} script every
-  hour.  In this way, users can change their passwords and shells on
-  the server node and have them automatically propogate out to the
-  client nodes every hour.
-  
-\item If the shadow utils RPMs are updated (\cmd{useradd},
-  \cmd{userdel}, etc), the wrapped scripts are blown away, thus
-  removing the \cmd{sync\_users} triggers.
-  
-\item The ``-c'' option on \cmd{useradd} (used for comments) doesn't
-  work due to the wrapped script not handling quotation marks
-  properly.
-\end{itemize}
-
-These issues will all be fixed in the next version of OSCAR.  The
-shadow utils commands will no longer be wrapped, and a cron job will
-be watching a given list of files to synchronize with the client nodes
-when they change on the server node.
+config file \cmd(/opt/opium/etc/sync_users.conf).
 
 \paragraph{SSH Configuration}
 
