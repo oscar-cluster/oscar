@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.4 2004/02/17 17:25:40 tuelusr Exp $
+# $Id: setup,v 1.5 2004/02/27 16:59:50 brechin Exp $
 #
 # setup script for the update-rpms package
 #
@@ -22,7 +22,7 @@
 
 # What does this do?!
 # Just boilerplate a la all of the Perl scripts in OSCAR
-VERSION=$(echo "$Revision: 1.4 $" | cut --fields 2 --delimiter " ")
+VERSION=$(echo "$Revision: 1.5 $" | cut --fields 2 --delimiter " ")
 
 PACKAGE=update-rpms
 if [[ $0 = /*/ ]] ; then
@@ -36,19 +36,6 @@ RPM_DB_DIR=/var/cache/$PACKAGE
 
 CURRENT=$(ls -1 --sort=version --reverse "${MEDIA_DIR}/${PACKAGE}-*.noarch.rpm" |
 	head -1)
-
-if [ -s "${MEDIA_DIR}/md5sums" ]; then
-  echo "Checking MD5 checksums:"
-  (cd "${MEDIA_DIR}"
-    md5sum --check md5sums
-  )
-  if [ $? -ne 0 ]; then
-    echo "ERROR: MD5 checksum(s) for ${PACKAGE} don't match"
-    exit -1
-  fi
-else
-  echo "WARNING: No MD5 checksum(s) for ${CURRENT} found"
-fi
 
 echo "Installing ${CURRENT}"
 rpm --upgrade "${CURRENT}"
