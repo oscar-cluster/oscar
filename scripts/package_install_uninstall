@@ -1,0 +1,168 @@
+#!/usr/bin/perl
+# 
+#  $Id: package_install_uninstall,v 1.1 2003/10/24 21:39:17 muglerj Exp $
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# Copyright (c) 2003 Oak Ridge National Laboratory.
+#                    All rights reserved.
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use Getopt::Long;
+use OSCAR::Package;
+use OSCAR::PackageInUn;
+use OSCAR::Database;
+
+Getopt::Long::Configure('no_ignore_case'); #case-sensitive
+
+#cmdline processing stuff
+my $client;
+my $expert;
+my $database;
+my $help;
+my $Image;
+my $install;
+my $list;
+my $server;
+my $testmode;
+my $uninstall;
+my $xml;
+
+#others
+my $type;
+my $retval;
+
+GetOptions('client' => \$client,
+	   'expert' => \$expert,
+	   'database' => \$database,
+	   'help' => \$help,
+	   'Image=s' => \$Image,
+	   'install=s' => \$install,
+	   'list=s' => \$list,
+	   'server' => \$server,
+	  'testmode' => \$testmode,
+	   'uninstall=s' => \$uninstall,
+	   'xml' => \$xml);
+
+
+if ($help)
+{
+	help_message();
+}
+elsif ($list)
+{
+	if($server)
+	{
+		$type = "oscar_server";
+	}
+	elsif($client)
+	{
+		$type = "oscar_server";
+	}
+	else
+	{
+		$type = "both";
+	}
+	list_rpms($list, $type);
+}
+elsif ($database)
+{
+	list_all_packages();
+}
+elsif ($xml)
+{
+	list_all_installable();
+}
+elsif ($uninstall)
+{
+	$retval = OSCAR::PackageInUn::package_uninstall($uninstall, $server, $client, $Image, $testmode);
+	print "return code is $retval\n";
+
+}
+elsif ($install)
+{
+	$retval = OSCAR::PackageInUn::package_install($install, $server, $client, $Image, $testmode);
+	print "return code is $retval\n";
+}
+else
+{
+	help_message();
+}
+ 
+sub help_message
+{
+	print "\n Usage: package_install_uninstall OPTION\n\n";
+
+	print " OPTIONS:\n";
+
+	print "   --install     -i  PACKAGE NAME TARGET(S) = installs an oscar package to the TARGET(S).\n";
+	print "   --uninstall   -u  PACKAGE NAME TARGET(S) = uninstalls an oscar package to the TARGET(S).\n";
+
+	print "   --list        -l  [TARGET]               = lists rpms for a package, for a particular TARGET.\n";
+	print "   --database    -d                         = lists all packages (in database).\n";
+	print "   --xml         -x                         = lists all packages (on system, from xml).\n";
+	print "   --help        -h                         = this screen.\n";
+	print "   --testmode    -t                         = puts the program into test mode\n";
+	print "                                              does not actually execute anything.\n";
+
+	print "\n TARGETS:\n";
+
+	print "   --IMAGE       -I  IMAGE NAME             = installs or uninstalls on image, must provide an imagename.\n";
+	print "   --server      -s                         = installs or uninstalls on the server or headnode.\n";
+	print "   --client      -c                         = installs or uninstalls on ALL compute nodes.\n";
+	print "\n";
+	exit()
+}
+
+sub list_rpms()
+{
+	my ( $package_name,
+	     $type ) = @_;
+
+	my @rpm_list;
+	my $rpm;
+
+	@rpm_list = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, $type);
+	
+	foreach $rpm (@rpm_list)
+	{
+		print $rpm, "\n";
+	}
+}
+
+sub list_all_packages #from the database
+{
+	my $package;
+	my @my_list;
+
+	@my_list = OSCAR::Package::list_installable_packages("all");
+	foreach $package (@my_list)
+	{
+		print $package, "\n";
+	}
+}
+
+sub list_all_installable #from the xml
+{
+	my $package;
+	my @my_list;
+
+	@my_list = OSCAR::Package::list_installable_package_dirs("all");	
+	foreach $package (@my_list)
+	{
+		print $package, "\n";
+	}
+}
