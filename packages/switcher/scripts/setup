@@ -2,7 +2,9 @@
 #
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
-# 
+# Copyright 2004 Revolution Linux
+#           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
+#
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
@@ -41,6 +43,9 @@ if ($name eq "redhat") {
   $source_dir .= "suse81";
 } elsif ($name eq "mandrake") {
   $source_dir .= "mdk90";
+} elsif ($name eq "fedora") {
+  	$source_dir .= $name;
+	$source_dir .= $ver;
 }
 
 print "Using modules RPMs from: $source_dir\n";

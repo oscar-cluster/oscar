@@ -4,6 +4,8 @@
   <!--
       Copyright (c) 2003 NCSA
                          All rights reserved.
+     Copyright 2004 Revolution Linux
+            Benoit des Ligneris <bdesligneris@revolutionlinux.com>
 
       This file is part of the OSCAR software package.  For license
       information, see the COPYING file in the top level directory of the
@@ -95,6 +97,7 @@
   <rpmlist>
 <!-- For distros with Perl 5.8 -->
     <filter distribution='fedora'   distribution_version='1'   group='oscar_server'/>
+    <filter distribution='fedora'   distribution_version='2'   group='oscar_server'/>
     <filter distribution='redhat'   distribution_version='8.0' group='oscar_server'/>
     <filter distribution='redhat'   distribution_version='9'   group='oscar_server'/>
     <filter distribution='suse' group='oscar_server'/>

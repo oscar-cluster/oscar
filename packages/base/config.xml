@@ -6,11 +6,13 @@
   Copyright (c) 2003, The Board of Trustees of the University of Illinois.
                      All rights reserved.
   Author: Jason Brechin
-
+  Copyright 2004 Revolution Linux
+            Benoit des Ligneris <bdesligneris@revolutionlinux.com>
+ 
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.15 2003/12/04 20:26:09 brechin Exp $
+      $Id: config.xml 2315 2003-12-04 20:26:09Z brechin $
   -->
   <name>base</name>
 
@@ -131,10 +133,36 @@
 	<rpm>sfio</rpm>
 	<rpm>libgmp3</rpm>
   </rpmlist>
+  <rpmlist>
+    <filter distribution='fedora' distribution_version='2' group='oscar_server' />
+        <rpm>apr</rpm>
+        <rpm>apr-util</rpm>
+	<rpm>dhcp</rpm>
+        <rpm>gd</rpm>
+        <rpm>nfs-utils</rpm>
+        <rpm>openssh</rpm>
+        <rpm>openssh-clients</rpm>
+        <rpm>openssh-server</rpm>
+        <rpm>openssl</rpm>
+        <rpm>tcpdump</rpm>
+        <rpm>xinetd</rpm>
+        <rpm>httpd</rpm>
+	<rpm>php-pear</rpm>
+        <rpm>php</rpm>
+        <rpm>expat</rpm>
+        <rpm>python</rpm>
+        <rpm>zlib</rpm>
+        <rpm>zlib-devel</rpm>
+        <rpm>shadow-utils</rpm>
+        <rpm>libcap</rpm>
+	<rpm>ntp</rpm>
+  </rpmlist>
 
   <rpmlist>
     <filter distribution='redhat' distribution_version='7.3' group='oscar_server' />
     <filter distribution='rhas' distribution_version='2.1AS' group='oscar_server' />
+    <filter distribution='redhat' distribution_version='3AS' group='oscar_server' />
+    <filter distribution='whitebox' distribution_version='3.0' group='oscar_server' />
         <rpm>dhcp</rpm>
         <rpm>gd</rpm>
         <rpm>mm</rpm>
