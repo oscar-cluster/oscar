@@ -372,6 +372,7 @@ sub generateHTMLFile
   print HTML "</form>\n";
   print HTML "<hr>\n";
   print HTML "</body>\n";
+  print HTML "</html>\n";
 
   close HTML;
 }
