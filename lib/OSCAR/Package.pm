@@ -1,11 +1,13 @@
 package OSCAR::Package;
 
+# Copyright (c) 2003, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
 # Copyright 2001-2002 International Business Machines
 #                     Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.54 2003/06/25 16:48:07 brechin Exp $
+#   $Id: Package.pm,v 1.55 2003/06/27 15:16:53 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,10 +38,10 @@ use Carp;
 
 @EXPORT = qw(list_installable_packages list_installable_package_dirs 
 	     run_pkg_script run_pkg_user_test
-             run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
+             run_pkg_script_chroot rpmlist install_rpms
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.54 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.55 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -319,21 +321,25 @@ sub rpmlist {
 #
 
 sub distro_rpmlist {
-    my ($distro, $version, $arch) = @_;
-    my $listfile = "$distro-$version-$arch.rpmlist";
-    my $file = "$ENV{OSCAR_HOME}/share/serverlists/$listfile";
-    my @rpms = ();
-    open(IN,"<$file") 
-	or carp("Couldn't open package list file $file for reading!");
-    while(<IN>) {
-        # get rid of comments
-        s/\#.*//;
-        if(/(\S+)/) {
-            push @rpms, $1;
-        }
-    }
-    close(IN);
-    return @rpms;
+    print "This function, OSCAR::Package::distro_rpmlist is deprecated.\n";
+    print "Please use the functionality provided in the base package.\n";
+    return undef;
+
+#    my ($distro, $version, $arch) = @_;
+#    my $listfile = "$distro-$version-$arch.rpmlist";
+#    my $file = "$ENV{OSCAR_HOME}/share/serverlists/$listfile";
+#    my @rpms = ();
+#    open(IN,"<$file") 
+#	or carp("Couldn't open package list file $file for reading!");
+#    while(<IN>) {
+#        # get rid of comments
+#        s/\#.*//;
+#        if(/(\S+)/) {
+#            push @rpms, $1;
+#        }
+#    }
+#    close(IN);
+#    return @rpms;
 }
 
 #

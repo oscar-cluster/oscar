@@ -7,7 +7,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.28 2003/06/27 14:49:38 brechin Exp $
+# $Id: wizard_prep,v 1.29 2003/06/27 15:16:54 brechin Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -193,8 +193,9 @@ foreach my $package (@packages) {
 # And now we add the extra rpms that are needed if
 # for each distribution
 
-my ($distname, $distver) = OSCAR::Distro::which_distro_server();
-push @rpms, OSCAR::Package::distro_rpmlist($distname,$distver,$ARCH);
+# Deprecated by use of base package
+#my ($distname, $distver) = OSCAR::Distro::which_distro_server();
+#push @rpms, OSCAR::Package::distro_rpmlist($distname,$distver,$ARCH);
 
 # Now install them nicely (i.e. don't install packages that are already there)
 

@@ -1,6 +1,9 @@
 package OSCAR::AddNode;
 
-#   $Id: AddNode.pm,v 1.5 2003/01/23 22:31:18 brechin Exp $
+# Copyright (c) 2003, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+
+#   $Id: AddNode.pm,v 1.6 2003/06/27 15:16:53 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +35,7 @@ use base qw(Exporter);
 use SIS::Image;
 @EXPORT = qw(addnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
 
 sub addnode_window {
     my ($parent, $interface) = @_;

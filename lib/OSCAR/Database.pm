@@ -14,9 +14,8 @@ package OSCAR::Database;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# Copyright 2003 NCSA
-#                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
-
+# Copyright (c) 2003, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
 use strict;
 use vars qw(@EXPORT $VERSION @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);

@@ -1,6 +1,10 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.39 2003/05/27 19:33:21 brechin Exp $
+
+# Copyright (c) 2003, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+
+#   $Id: MAC.pm,v 1.40 2003/06/27 15:16:53 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +38,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.39 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.40 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}

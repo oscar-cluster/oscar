@@ -1,6 +1,8 @@
 package OSCAR::Tk;
 
-#   $Id: Tk.pm,v 1.5 2003/01/30 19:48:04 brechin Exp $
+# Copyright (c) 2003, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+#   $Id: Tk.pm,v 1.6 2003/06/27 15:16:53 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,7 +30,7 @@ use OSCAR::Logger;
 use OSCAR::Tk;
 @EXPORT = qw(yesno_window done_window error_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
 
 # Module-specific variables
 
