@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.38 2002/10/30 12:15:58 jsquyres Exp $
+# $Id: oscar_wizard,v 1.39 2002/11/07 19:17:13 brechin Exp $
 #
 
 use strict;
@@ -303,7 +303,11 @@ sub build_oscar_clients {
     my ($window, $step_number, $interface) = @_;
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
     my ($a, $b, $c, $d) = split(/\./,$ip);
-    $d++;
+    if ($d == 1) {
+      $d++;
+    } else {
+      $d = 1;
+    }
     my $startip = "$a.$b.$c.$d";
 
     my $hostname = (uname)[1];
