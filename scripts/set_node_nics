@@ -1,0 +1,1010 @@
+#! /usr/bin/perl
+
+# Copyright 2004 NCSA
+#           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# 
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   This script initializes or re-initializes the values in the database
+#   table "oscar" which is for global values.
+
+use strict;
+use Getopt::Long;
+use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR","../../../lib","../../../lib/OSCAR";
+use oda;
+use Data::Dumper;
+use OSCAR::Database;
+
+my $database_networks_ref;
+my $exit_status = 0;
+my %oda_options = ( 'debug'    => 0,
+		    'verbose'  => 0 );
+my %options =     ( 'changes'  => 1,
+		    'debug'    => 0,
+		    'networks' => 0,
+		    'nics'     => 1,
+		    'verbose'  => 0 );
+
+#=======================================================================
+#
+# Find all gateway addresses and interface names in the routing tables.
+# There should only be one, but sometimes things are mis-configurated.
+# This will get rid of multiple entries with same address or interface.
+# inputs:   print_errors   if defined and a list reference,
+#                          put error messages into the list;
+#                          if defined and a non-zero scalar,
+#                          print out error messages on STDERR
+#
+# outputs:  addresses      reference to list of gateway addresses, or
+#                          undefined if an error (no route command)
+#           interfaces     reference to list of gateway interface names, 
+#                          or undefined if an error (no route command)
+
+sub find_gateways {
+
+    my ( $print_errors ) = @_;
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+
+    my @route_output = `route -n 2>/dev/null`;
+    if ( ! @route_output ) {
+	push @$error_strings_ref,
+	"$0: cannot find nics with route command command";
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
+	}
+	return ( undef, undef );
+    }
+    chomp @route_output;
+    my @default_route_lines =  grep ( /^0\.0\.0\.0\s/, @route_output );
+    my %addresses_hash = ();
+    my %interfaces_hash = ();
+    foreach my $line ( @default_route_lines ) {
+	my @fields = split( /\s+/, $line );
+	$addresses_hash{$fields[1]} = 1;
+	$interfaces_hash{$fields[$#fields]} = 1;
+	print "$0: route line <$line> fields (" . join( ',', @fields ) . ") address=<$fields[1]> interface=<$fields[$#fields]>\n"
+	    if $options{debug};
+    }
+    my @addresses_list = keys %addresses_hash;
+    my @interfaces_list = keys %interfaces_hash;
+    return \@addresses_list, \@interfaces_list;
+}
+
+#=======================================================================
+#
+# find all current real nics for this host, returns nics hash reference:
+#    nics hash has nic names as keys, values references to each nic's hash:
+#        each nic's hash includes these key/value pairs:
+#           base_ip    nic network base IP address
+#           broadcast  nic broadcast address
+#           ip         nic IP address
+#           netmask    nic IP mask
+#           rfc1918    non-zero if entire network is private addresses
+#
+# inputs:   print_errors   if defined and a list reference,
+#                          put error messages into the list;
+#                          if defined and a non-zero scalar,
+#                          print out error messages on STDERR
+#
+# outputs:  nics hash ref  reference to nics hash, or undefined
+#                          if a severe error (no ifconfig command)
+
+sub find_nics {
+
+    my ( $print_errors ) = @_;
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+
+    my @ifconfig_output = `ifconfig 2>/dev/null`;
+    if ( ! @ifconfig_output ) {
+	push @$error_strings_ref,
+	"$0: cannot find nics with ifconfig command command";
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
+	}
+	return undef;
+    }
+
+    my $ip;
+    my $broadcast = "";
+    my $netmask;
+    my $name = "";
+    my %nics = ();
+    my $ptp;
+
+    # for each line of ifconfig output, ...
+
+    foreach (@ifconfig_output) {
+
+	# if it's the first line of an interface section, save the name
+
+	$name = $1 if /^(\S+)/;
+
+	# skip to next line if name is invalid
+
+	next unless $name =~ /^[a-z]+\d*$/;
+
+	# skip to next line if name is for the loopback interface
+
+	next if $name eq "lo";
+
+	# skip to next line if we can't parse and save ip and netmask
+
+	next unless ( ($ip, $broadcast, $netmask) =
+	    /^\s+inet addr:(\S+)\s+Bcast:(\S+)\s+Mask:(\S+)/ )
+	    ||
+	    ( ($ip, $ptp, $netmask) =
+	    /^\s+inet addr:(\S+)\s+P-t-P:(\S+)\s+Mask:(\S+)/ );
+	if ( ! valid_ip( $ip ) ) {
+	    push @$error_strings_ref, 
+	    "$0: invalid ip address $ip found for nic $name\n";
+	    next;
+	}
+	if ( ! valid_netmask( $netmask ) ) {
+	    push @$error_strings_ref, 
+	    "$0: invalid ip netmask $netmask found for nic $name\n";
+	    next;
+	}
+
+	# if the network is of form 0 - 31, convert it to N.N.N.N
+
+	if ( $netmask !~ /\./ ) {
+	    my @octets = ();
+	    my $netmask_bits_left = $netmask;
+	    while ( $netmask_bits_left >= 8 && scalar @octets < 6 ) {
+		push @octets, "255";
+		$netmask_bits_left -= 8;
+	    }
+	    push @octets, ( 255 << ( 7 - ( $netmask_bits_left % 8 ) ) ) & 255
+		if $netmask_bits_left > 0;
+	    push @octets, "0"
+		while scalar @octets < 4;
+	    $netmask = octets_to_ip( @octets );
+	}
+
+	# if we got the ip/netmask before the name, mistake
+
+	if ( $name eq "" ) {
+	    push @$error_strings_ref,
+	    "$0: ifconfig output has valid address/netmask before any interface names";
+	    next;
+	}
+
+	# find the base and highest ip addresses for the attached network
+
+	my ( $base_ip, $high_ip ) = ip_netmask_to_base_high( $ip,
+							     $netmask );
+	# build up the nic information hash
+
+	my %nic = ( base_ip => $base_ip,
+		    high_ip => $high_ip,
+		    ip      => $ip,
+		    netmask => $netmask );
+	$nic{broadcast} = $broadcast if $broadcast ne "";
+	$nic{rfc1918} =
+	    valid_rfc1918_ip( $base_ip ) &&
+	    valid_rfc1918_ip( $ip ) &&
+	    valid_rfc1918_ip( $high_ip );
+
+	# save this nic's information in our nics hash
+
+	$nics{$name} = \%nic;
+
+	# setup for parsing next nic out of remaining ifconfig lines
+
+	$broadcast = "";
+	$name = "";
+
+    }
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    return \%nics;
+}
+
+#=======================================================================
+#
+# logical and of two ip addresses/masks
+
+sub ip_and {
+
+    my  ( $ip1, $ip2 ) = @_;
+    
+    my @ip1_octets = split /\./, $ip1;
+    my @ip2_octets = split /\./, $ip2;
+    my @result_octets = ();
+    while ( ( @ip1_octets ) && ( @ip2_octets ) ) {
+	use integer;
+	my $int_ip1_octet = 0 + shift @ip1_octets;
+	my $int_ip2_octet = 0 + shift @ip2_octets;
+	push @result_octets, $int_ip1_octet & 0+$int_ip2_octet;
+    }
+    return join( '.', @result_octets );
+}
+
+#=======================================================================
+#
+# converts an ip address and network to the lowest and highest possible
+# ip addresses for that ip range
+
+sub ip_netmask_to_base_high {
+
+    my  ( $ip, $netmask ) = @_;
+    my $base_ip = ip_and( $ip, $netmask );
+    my $high_ip = ip_or( $ip, ip_not( $netmask ) );
+    return ( $base_ip, $high_ip );
+
+}
+
+#=======================================================================
+#
+# logical not an ip address/mask
+
+sub ip_not {
+
+    my  ( $ip ) = @_;
+    
+    my @ip_octets = split /\./, $ip;
+    my @result_octets = ();
+    while ( @ip_octets ) {
+	use integer;
+	my $int_octet = 0 + shift @ip_octets;
+	push @result_octets, 0+255 & ~$int_octet;
+    }
+
+    return join( '.', @result_octets );
+}
+
+#=======================================================================
+#
+# logical or of two ip addresses/masks
+
+sub ip_or {
+
+    my  ( $ip1, $ip2 ) = @_;
+    
+    my @ip1_octets = split /\./, $ip1;
+    my @ip2_octets = split /\./, $ip2;
+    my @result_octets = ();
+    while ( ( @ip1_octets ) && ( @ip2_octets ) ) {
+	use integer;
+	my $int_ip1_octet = 0 + shift @ip1_octets;
+	my $int_ip2_octet = 0 + shift @ip2_octets;
+	push @result_octets, $int_ip1_octet | 0+$int_ip2_octet;
+    }
+
+    return join( '.', @result_octets );
+}
+
+#=======================================================================
+#
+# links a node nic to a network in the database
+
+sub link_node_nic_to_network {
+
+    my ( $node_name, $nic_name, $network_name ) = @_;
+
+    my $command = 
+	"link_node_nic_to_network $node_name $nic_name $network_name";
+    print "$0: linking node $node_name nic $nic_name to network $network_name using command <$command>\n"
+	if $options{debug};
+    print "Linking node $node_name nic $nic_name to network $network_name.\n"
+	if $options{verbose} && ! $options{debug};
+    if ( ! database_execute_command( $command,
+				     undef,
+				     1 ) ) {
+	warn "$0: failed to link node $node_name nic $nic_name to "
+	    . " network $network_name.\n";
+	$exit_status = 1;
+    }
+}
+
+#=======================================================================
+#
+# returns a modifed name that is not in a passed list. If passed this:
+# private8, private9, private10 it will return private11
+
+sub new_name {
+
+    my ( $name, @nonos ) = @_;
+    
+    my $prefix = $name;
+    $prefix =~ s/[0-9]+$//;
+    my $number = $name;
+    $number =~ s/^.*([0-9])/$1/;
+    print "$0: in new_name name=<$name> nonos=(" . join( ',', ( @nonos ) ) .
+	") prefix=<$prefix> number=$number\n" if $options{debug};
+    do {
+	$number = ( $number ne "" ) ? $number + 1 : 1;
+    } while ( grep( /^$prefix$number$/, ( @nonos ) ) );
+    my $new_name = "$prefix$number";
+    print "$0: in new_name new_name=<$new_name>\n" if $options{debug};
+	
+    return $new_name;
+}
+
+#=======================================================================
+#
+# reads in all the database network records
+
+sub read_database_network_records {
+
+    $database_networks_ref = 
+	database_read_table_fields( "networks",
+				    undef,
+				    undef,
+				    undef,
+				    1 );
+    die "$0: cannot read current database network records\n"
+	if ! defined $database_networks_ref;
+    oda::print_hash( "", "$0: database network records", $database_networks_ref ) 
+	if $options{debug};
+}
+
+#=======================================================================
+#
+# returns true if a passed ip address string is of form N.N.N.N form
+# with each N being 0 through 255
+
+sub valid_ip {
+
+    my ($ip) = @_;
+
+    return ( $ip =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/ 
+	     && $1 <= 255
+	     && $2 <= 255 
+	     && $3 <= 255 
+	     && $4 <= 255 );
+}
+
+#=======================================================================
+#
+# returns true if a passed ip mask string is either of the form N where
+# 0 <= N <= 31 or of the form N.N.N.N where each N is between 0 and 255
+
+sub valid_netmask {
+
+    my ($mask) = @_;
+
+    return ( ( $mask =~ /^(\d+)$/
+	       && $1 <= 32 )
+	     ||
+	     ( $mask =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/ 
+	       && $1 <= 255
+	       && $2 <= 255 
+	       && $3 <= 255 
+	       && $4 <= 255 )
+	     );
+}
+
+#=======================================================================
+#
+# returns true if a passed ip address string is in one of the rfc1918
+# reserved address ranges (private non-internet-routable) addresses
+
+sub valid_rfc1918_ip {
+
+    my ($ip) = @_;
+    return 0 unless valid_ip ( $ip );
+
+    my @fields = $ip =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+    return 0 if @fields != 4;
+
+    return
+	( $fields[0] == 10 )
+	||
+	( $fields[0] == 172 && $fields[1] >= 16 && $fields[1] <= 31 )
+	||
+	( $fields[0] == 192 && $fields[1] == 168 );
+}
+
+#=======================================================================
+
+sub usage {
+
+    my ( $exit_status, @error_strings ) = @_;
+    my $progname = $0;
+    print <<USAGE;
+
+$progname
+
+$progname determines which network interfaces a machine has, and adds to
+or modifies the database accordingly. If given the --networks flag, it 
+also adds to or modified the networks information in the database.
+
+Options:
+  --[no]changes     [do not] perform any database changes (default: yes)
+  --[no]debug       [do not] turn on debug output (default: no)
+  --help            print out usage information then exits
+  --[no]networks    [do not] update the database networks info (default: no)
+  --[no]nics        [do not] update the database nics for this node (default: yes)
+  --oda=OPTION(S)   specifies options to be passed to ODA
+  --[no]verbose     [do not] turn on verbose output (default: no)
+
+Usage:
+$progname [options]
+
+USAGE
+    if ( @error_strings ) {
+	print "\n";
+	warn shift @error_strings while @error_strings;
+    }
+    exit $exit_status;
+}
+
+#=======================================================================
+
+# parse command line options
+
+Getopt::Long::Configure("ignore_case"); # ignore case
+Getopt::Long::Configure("bundling");    # allow -a -b or -ab
+Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
+GetOptions( \%options,
+            'changes!',
+            'debug!',
+            'help',
+            'networks!',
+            'nics!',
+	    'oda=s',
+	    'verbose!' )
+    || usage( 1 );
+print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
+oda::print_hash( "", "$0: options after GetOptions", \%options) 
+    if $options{debug};
+
+# --help flag just prints out usage information and exits
+
+usage( 0 ) if exists $options{help};
+
+# debug flag also turns on verbose flag
+
+$options{ verbose } = 1 if $options{ debug };
+
+# --oda flag populates the oda options hash
+
+if ( exists $options{oda} ) {
+    my @strings = split( /\,/, $options{oda} );
+    foreach my $string ( @strings ) {
+	my ( $oda_option, $value ) = split( /\=/, $string, 2 );
+	$oda_options{ $oda_option } = 
+	    (defined $value) ? $value :
+	    ( ($oda_option =~ /^no/ ) ? 0 : 1 );
+    }
+    oda::print_hash( "", "$0: oda_options", \%oda_options ) 
+	if $options{debug};
+}
+
+# any arguments left is an error
+
+usage( 1, "unknown argument(s) " . join( ' ', @ARGV ) ) if @ARGV;
+
+# find all the default gateway addresses on this machine
+
+print "Finding gateway addresses ...\n" if $options{verbose};
+my ( $gateway_addresses_ref, $gateway_interfaces_ref ) = find_gateways( 1 );
+my $gateway_address = undef;
+if ( defined $gateway_addresses_ref ) {
+    print "$0: gateway_addresses=(" . join(',', @$gateway_addresses_ref ) . ")\n"
+	if $options{debug};
+    if ( ! @$gateway_addresses_ref ) {
+	warn "$0: warning - no gateway addresses found for this machine";
+    } else {
+	$gateway_address = shift @$gateway_addresses_ref;
+	print "$0: using address $gateway_address as gateway\n"
+	    if $options{debug};
+	print "... found gateway address $gateway_address\n" 
+	    if $options{verbose} && ! $options{debug};
+	warn "$0: warning - too many gateway addresses found ( " .
+	    join( ', ', $gateway_address, @$gateway_addresses_ref ) . 
+	    " ), using $gateway_address\n"
+	    if @$gateway_addresses_ref;
+    }
+}
+my $gateway_interface = undef;
+if ( defined $gateway_interfaces_ref ) {
+    print "$0: gateway_interfaces=(" . join(',', @$gateway_interfaces_ref ) . ")\n"
+	if $options{debug};
+    if ( ! @$gateway_interfaces_ref ) {
+	warn "$0: warning - no gateway interfaces found for this machine";
+    } else {
+	$gateway_interface = shift @$gateway_interfaces_ref;
+	print "$0: using interface $gateway_interface as gateway\n" if $options{debug};
+	warn "$0: warning - too many gateway interfaces found ( " .
+	    join( ', ', $gateway_interface, @$gateway_interfaces_ref ) . 
+	    " ), using $gateway_interface\n"
+	    if @$gateway_interfaces_ref;
+    }
+}
+
+# find all of the network interfaces on this machine
+
+print "Determining machine network interfaces ...\n" 
+    if $options{verbose};
+my $ifconfig_nics_ref = find_nics( 1 );
+die "$0: fatal error running ifconfig command" if ! defined $ifconfig_nics_ref;
+oda::print_hash( "", "$0: ifconfig nics", $ifconfig_nics_ref ) if $options{debug};
+if ( $options{verbose} && ! $options{debug} ) {
+    my @ifconfig_nic_names = keys %$ifconfig_nics_ref;
+    print "... found " . scalar( @ifconfig_nic_names ) . " machine network interface"
+	. ( ( scalar(@ifconfig_nic_names) != 1 ) ? "s" : "" ) 
+	. ( (@ifconfig_nic_names) ? ":" : "." ) 
+	. "\n";
+    foreach my $nic_name ( @ifconfig_nic_names ) {
+	my $nic_ref = $$ifconfig_nics_ref{ $nic_name };
+	print "    $nic_name $$nic_ref{base_ip}\/$$nic_ref{netmask}" 
+	    . ( ( exists $$nic_ref{gateway} ) ? 
+		" gateway $$nic_ref{gateway}" : "" )
+	    . ( ( exists $$nic_ref{broadcast} ) ? 
+		" broadcast $$nic_ref{broadcast}" : "" )
+	    . "\n";
+    }
+}
+
+# fill in any gateway address on the nics
+
+if ( defined $gateway_address ) {
+    foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
+	my $nic_ref = $$ifconfig_nics_ref{ $nic_name };
+	if ( ip_and( $gateway_address, $$nic_ref{netmask} )
+	     eq 
+	     ip_and( $$nic_ref{base_ip}, $$nic_ref{netmask} ) ) {
+	    $$nic_ref{gateway} = $gateway_address;
+	    oda::print_hash( "", "$0: nic $nic_name gateway field set\n",
+			     $nic_ref ) if $options{debug};
+	    print "Gateway $gateway_address is on network interface $nic_name\n"
+		if $options{verbose} && ! $options{debug};
+	}
+    }
+}
+
+# count how many public and private addresses networks we
+# think are there based on the ifconfig nics information,
+# so that we can name the surmised networks nicely
+
+my $num_private = 0;
+my $num_public = 0;
+foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
+    my $nic_ref = $$ifconfig_nics_ref{$nic_name};
+    if ( exists $$nic_ref{rfc1918} && $$nic_ref{rfc1918} ) {
+	$num_private++;
+    } else {
+	$num_public++;
+    }
+}
+print "$0: num_private=$num_private num_public=$num_public\n"
+    if $options{debug};
+
+# find out what we think the attached networks are based on
+# the network interface settings for this machine
+
+my %surmised_networks = ();
+my $public_network_index = 1;
+my $private_network_index = 1;
+foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
+    my $nic_ref = $$ifconfig_nics_ref{$nic_name};
+    # figure out a reasonable network name
+    my $network_name;
+    if ( exists $$nic_ref{rfc1918} && $$nic_ref{rfc1918} ) {
+	if ( $num_private > 1 ) {
+	    $network_name = "private$private_network_index";
+	    $private_network_index++;
+	} else {
+	    $network_name = "private";
+	}
+    } else {
+	if ( $num_public > 1 ) {
+	    $network_name = "public$public_network_index";
+	    $public_network_index++;
+	} else {
+	    $network_name = "public";
+	}
+    }
+    # set up the command to create this network
+    my %network = ( 'name'    => $network_name,
+		    'base_ip' => $$nic_ref{base_ip},
+		    'netmask' => $$nic_ref{netmask} );
+    $network{ broadcast } = $$nic_ref{ broadcast }
+        if exists $$nic_ref{ broadcast };
+    $network{ gateway } = $$nic_ref{ gateway }
+        if exists $$nic_ref{ gateway };
+    $surmised_networks{ $network_name } = \%network;
+}
+oda::print_hash( "", "$0: ifconfig surmised networks", \%surmised_networks )
+    if $options{debug};
+
+# connect to the database
+
+my @error_strings = ();
+die "$0: cannot connect to the OSCAR database"
+    if ! database_connect( 1, \%oda_options );
+
+# find out our database node name for this machine
+
+my $node_name = database_find_node_name( 1 );
+if ( ! defined $node_name ) {
+    database_disconnect();
+    die "$0: cannot find node name of this machine";
+}
+print "$0: node name for this machine is <$node_name>\n"
+    if $options{debug};
+print "In the database this machine is named $node_name\n" 
+    if $options{verbose} && ! $options{debug};
+
+# read in the current networks
+
+print "Searching for networks in the database ...\n" if $options{verbose};
+read_database_network_records();
+if ( $options{verbose} && ! $options{debug} ) {
+    my @network_keys = keys %$database_networks_ref;
+    print "... found " . scalar( @network_keys ) . " network"
+	. ( ( scalar(@network_keys) != 1 ) ? "s" : "" ) 
+	    . " in the database" 
+	    . ( (@network_keys) ? ":" : "." ) 
+	    . "\n";
+    foreach my $network_name ( @network_keys ) {
+	my $network_ref = $$database_networks_ref{ $network_name };
+	print "    $network_name $$network_ref{base_ip}\/$$network_ref{netmask}"
+	    . ( ( exists $$network_ref{gateway} ) ? 
+		" gateway $$network_ref{gateway}" : "" )
+	    . ( ( exists $$network_ref{broadcast} ) ? 
+		" broadcast $$network_ref{broadcast}" : "" )
+	    . "\n";
+    }
+}
+
+# read in the current database nics for this node
+
+print "Searching for network interfaces for this machine in the database ...\n"
+    if $options{verbose};
+my @nic_wheres = ( "nodes.name=$node_name",
+		   "nodes.id=nics.node_id" );
+my $database_nics_ref = 
+    database_read_table_fields( "nics",
+				undef,
+				\@nic_wheres,
+				undef,
+				1 );
+die "$0: cannot read current database nic records for node $node_name\n"
+    if ! defined $database_networks_ref;
+oda::print_hash( "", "$0: database nics for node $node_name", $database_nics_ref ) 
+    if $options{debug};
+if ( $options{verbose} && ! $options{debug} ) {
+    my @database_nic_names = keys %$database_nics_ref;
+    print "... found " . scalar( @database_nic_names ) . " network interface"
+	. ( ( scalar(@database_nic_names) != 1 ) ? "s" : "" ) 
+	. " in the database for this machine" 
+	. ( (@database_nic_names) ? ":" : "." ) 
+	. "\n";
+    foreach my $nic_name ( @database_nic_names ) {
+	my $database_nic_ref = $$database_nics_ref{ $nic_name };
+	print "    $nic_name $$database_nic_ref{base_ip}\/$$database_nic_ref{netmask}"
+	    . ( ( exists $$database_nic_ref{gateway} ) ? 
+		" gateway $$database_nic_ref{gateway}" : "" )
+	    . ( ( exists $$database_nic_ref{broadcast} ) ? 
+		" broadcast $$database_nic_ref{broadcast}" : "" )
+	    . "\n";
+    }
+}
+
+# if the user wanted to set/update the networks, ...
+
+my @written_network_names = ();
+if ( $options{ networks } ) {
+    print "Determining if machine NICS should update datatabase networks information.\n"
+	if $options{verbose};
+
+    # for every surmised attached network, ...
+
+    foreach my $surmised_network_name ( keys %surmised_networks ) {
+	my $surmised_network_ref = 
+	    $surmised_networks{ $surmised_network_name };
+	my $surmised_network_base_ip = $$surmised_network_ref{ base_ip };
+	my $surmised_network_netmask = $$surmised_network_ref{ netmask };
+
+	# see if there was already a network in the database
+	# with the same address range (base address and netmask)
+
+	my $database_network_record_ref = undef;
+	foreach my $database_network_name ( keys %$database_networks_ref ) {
+	    my $database_network_ref = 
+		$$database_networks_ref{ $database_network_name };
+	     $database_network_record_ref = $database_network_ref
+		 if $surmised_network_base_ip eq 
+		 $$database_network_ref{ base_ip }
+	         &&
+		 $surmised_network_netmask eq 
+		 $$database_network_ref{ netmask };
+	}
+
+	# if there was a matching network in the database, ...
+
+	if ( defined $database_network_record_ref ) {
+
+	    # see if anything needs to be updated in this network
+	    # record, and if so modify the record in the database
+
+	    my %assigns = ();
+	    foreach my $field ( qw( base_ip broadcast gateway rfc1918 ) ) {
+
+		# if that field has a surmised value from the nic, ...
+
+		if ( exists $$surmised_network_ref{ $field }
+		     &&
+		     $$surmised_network_ref{ $field } ne "" ) {
+
+		    # ... and there is either no value or the
+		    # wrong value in the database network record,
+		    # mark the new value to be written out
+
+		    $assigns{ $field } = $$surmised_network_ref{ $field }
+		    if ! exists $$database_network_record_ref{ $field }
+		    || $$database_network_record_ref{ $field } ne 
+			$$surmised_network_ref{ $field };
+		}
+	    }
+
+	    # if there are field(s) to update in the database
+	    # network record, write out the modifiation(s)
+
+	    if ( %assigns ) {
+		my $record_id = $$database_network_record_ref{id};
+		print_hash( "", "$0: modifying network " .
+			    $$database_network_record_ref{base_ip} . "/" .
+			    $$database_network_record_ref{netmask} .
+			    "record id=$record_id with these values", 
+			    \%assigns )
+		    if $options{debug};
+		if ( $options{verbose} && ! $options{debug} ) {
+		    print "Modifying database network record:\n";
+		    foreach my $field ( keys %assigns ) {
+			print "    field $field to $assigns{field}\n";
+		    }
+		}
+		my @modified_tables = ( "networks" );
+		my @modify_wheres = ( "id=$record_id" );
+		if ( ! oda::modify_records( \%oda_options,
+					    \@modified_tables,
+					    \%assigns,
+					    \@modify_wheres,
+					    \@error_strings ) ) {
+		    warn "$0: failed to write out modified network " .
+			"$$database_network_record_ref{name} record\n";
+		    warn shift @error_strings while @error_strings;
+		    $exit_status = 1;
+		}
+	    }
+		
+	# if there is no matching network, write out this one,
+	# making sure we use the same name as an already exising
+	# network in the database
+
+	} else {
+	    while ( exists $$database_networks_ref{ $$surmised_network_ref{name} } ) {
+		my $old_name = $$surmised_network_ref{name};
+		$$surmised_network_ref{name} = 
+		    new_name( $old_name,
+			      @written_network_names,
+			      keys %$database_networks_ref );
+		print "$0: changed network name from <$old_name> to <$$surmised_network_ref{name}>\n"
+		    if $options{debug};
+	    }
+	    print "$0: writing out new database network record $$surmised_network_ref{name} $$surmised_network_ref{base_ip}\/$$surmised_network_ref{netmask}\n" if $options{verbose};
+	    oda::print_hash( "", "$0: writing out new network", $surmised_network_ref )
+		if $options{debug};
+	    if ( $options{verbose} && ! $options{debug} ) {
+		print "Writing out new database network record:\n";
+		print "    $$surmised_network_ref{name} $$surmised_network_ref{base_ip}\/$$surmised_network_ref{netmask}"
+	    . ( ( exists $$surmised_network_ref{gateway} ) ? 
+		" gateway $$surmised_network_ref{gateway}" : "" )
+	    . ( ( exists $$surmised_network_ref{broadcast} ) ? 
+		" broadcast $$surmised_network_ref{broadcast}" : "" )
+	    . "\n";
+	    }
+	    if ( ! oda::insert_record( \%oda_options,
+				       "networks",
+				       $surmised_network_ref,
+				       undef,
+				       \@error_strings ) ) {
+		warn "$0: failed to write out modified network " .
+		    "$$database_network_record_ref{name} record\n";
+		warn shift @error_strings while @error_strings;
+		$exit_status = 1;
+	    } else {
+		push @written_network_names, $$surmised_network_ref{name};
+	    }
+	}
+    }
+
+    # if we wrote out any network records, read in all the
+    # network records again so that we know all the updated
+    # records information
+
+    read_database_network_records() if @written_network_names;
+}
+
+# For each network interface on this machine, if it matches
+# a database network record, clear out any values in the 
+# network interface structure that are already in the
+# database network record, we will link the network interface
+# to the network record  in the database. Start by looping
+# through the ifconfig found network interfaces, ...
+
+foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
+    my $nic_ref = $$ifconfig_nics_ref{$nic_name};
+
+    # search the network records in the database for the same address
+    # range (base address and netmask) as on this network interface, ...
+
+    my $nic_base_ip = $$nic_ref{ base_ip };
+    my $nic_netmask = $$nic_ref{ netmask };
+    foreach my $network_name ( keys %$database_networks_ref ) {
+	my $database_network_ref = 
+	    $$database_networks_ref{ $network_name };
+
+	# if we found it, save the database network
+	# record id and the database network name so
+	# that we can compare it to the database record
+	# for this nic, although we will use the shortcut
+	# designed to link the nic to the network when
+	# we decide to do that, and then clear out any
+	# matching values forr certain fields
+
+	if ( $nic_base_ip eq $$database_network_ref{ base_ip } &&
+	     $nic_netmask eq $$database_network_ref{ netmask } ) {
+	    print "$0: nic $nic_name should be linked to network $network_name\n"
+		if $options{debug};
+	    $$nic_ref{network_id} = $$database_network_ref{id};
+	    $$nic_ref{network_name} = $network_name;
+	    foreach my $field ( "broadcast", "gateway" ) {
+		delete $$nic_ref{ $field }
+		if exists $$nic_ref{ $field }
+		&& exists $$database_network_ref{ $field }
+		&& $$nic_ref{ $field } eq $$database_network_ref{ $field };
+	    }
+	    oda::print_hash( "", "$0: linked modified ifconfig nic $nic_name",
+			     $nic_ref) if $options{debug};
+	    last;
+	}
+    }
+}
+
+# delete every database network interface record for
+# this machine that does not correspond to a network 
+# interface on this machine
+foreach my $database_nic_name ( keys %$database_nics_ref ) {
+    if ( ! exists $$ifconfig_nics_ref{ $database_nic_name } ) {
+	print "$0: Deleting database nic record node=$node_name nic=$database_nic_name\n"
+	    if $options{debug};
+	print "Deleting database record for network interface $database_nic_name"
+	    . " on node $node_name.\n"
+	    if $options{verbose} && ! $options{debug};
+	if ( ! database_execute_command( "delete_nic $database_nic_name",
+					 undef,
+					 1 ) ) {
+	    warn "$0: failed to delete database record for network interface "
+		. $database_nic_name . " on node $node_name.\n";
+	    $exit_status = 1;
+	}
+	delete $$database_nics_ref{ $database_nic_name };
+    }
+}
+
+# for every machine network interface, ...
+
+foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
+    my $ifconfig_nic_ref = $$ifconfig_nics_ref{$nic_name};
+
+    # save the network record id field and remove it from
+    # the hash, we will use this to determine if we need
+    # to link the network interface record to a network
+    
+    my $network_id = undef;
+    if ( exists $$ifconfig_nic_ref{network_id} ) {
+	$network_id = $$ifconfig_nic_ref{network_id};
+	delete $$ifconfig_nic_ref{network_id};
+    }
+    my $network_name = undef;
+    if ( exists $$ifconfig_nic_ref{network_name} ) {
+	$network_name = $$ifconfig_nic_ref{network_name};
+	delete $$ifconfig_nic_ref{network_name};
+    }
+
+    # if there is no corresponding record in the
+    # database already, write out this record
+
+    if  ( ! exists $$database_nics_ref{ name } ) {
+	my $command = "create_nic_on_node $nic_name $node_name";
+	foreach my $field ( qw( broadcast gateway ip mac netmask ) ) {
+	    $command .= " $field\~$$ifconfig_nic_ref{$field}"
+		if exists $$ifconfig_nic_ref{ $field };
+	}
+	print "$0: creating database nic record using command <$command>\n"
+	    if $options{debug};
+	print "Creating database record for nic $nic_name on node $node_name.\n"
+	    if $options{verbose} && ! $options{debug};
+	if ( ! database_execute_command( $command,
+					 undef,
+					 1 ) ) {
+	    warn "$0: failed to create database record for nic $nic_name"
+		. " on node $node_name.\n";
+	    $exit_status = 1;
+	    $network_name = undef;
+	}
+    }
+
+    # since there is a corresponding database nic record,
+    # see if there are any changed fields and modify the
+    # record if so
+
+    else {
+	my $database_nic_ref = $$database_nics_ref{ name };
+	my %assigns = ();
+	foreach my $field ( qw( broadcast gateway ip mac netmask  ) ) {
+	    if ( ! defined $$ifconfig_nic_ref{ $field }
+		 && defined $$database_nic_ref{ $field } ) {
+		$assigns{ $field } = undef;
+	    } elsif ( defined $$ifconfig_nic_ref{ $field }
+		      && ! defined $$database_nic_ref{ $field } ) {
+		$assigns{ $field } = $$ifconfig_nic_ref{ $field };
+	    } elsif ( defined $$ifconfig_nic_ref{ $field }
+		      && defined $$database_nic_ref{ $field }
+		      && $$ifconfig_nic_ref{ $field } ne
+		         $$database_nic_ref{ $field }) {
+		$assigns{ $field } = $$ifconfig_nic_ref{ $field };
+	    }
+	}
+	if ( %assigns ) {
+	    my $record_id = $$database_nic_ref{id};
+	    oda::print_hash( "", "$0: modifying node $node_name nic $nic_name",
+			     \%assigns )
+		if $options{debug};
+	    if ( $options{verbose} && ! $options{debug} ) {
+		print "Modifying database node $node_name nic $nic_name record:\n";
+		foreach my $field ( keys %assigns ) {
+		    print "    field $field to $assigns{field}\n";
+		}
+	    }
+	    my @modified_tables = ( "nics" );
+	    my @modify_wheres = ( "id=$record_id" );
+	    if ( ! oda::modify_records( \%oda_options,
+					\@modified_tables,
+					\%assigns,
+					\@modify_wheres,
+					\@error_strings ) ) {
+		warn "$0: failed to modify node $node_name nic $nic_name record\n";
+		warn shift @error_strings while @error_strings;
+		$exit_status = 1;
+	    }
+	}
+	$network_name = undef
+	    if defined $network_id 
+	    && exists $$database_nic_ref{ network_id }
+	    && $network_id eq $$database_nic_ref{ network_id };
+    }
+
+    # link this node nic to a network if we need to
+    link_node_nic_to_network( $node_name,
+			      $nic_name,
+			      $network_name )
+	if defined $network_name;
+}
+
+# done
+exit $exit_status;
