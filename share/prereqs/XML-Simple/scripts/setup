@@ -80,7 +80,7 @@ if ($@) {
 # -------- WE'LL INSTALL THE PACKAGE FROM THE RPM ------------------------------------
 
 # sis's RPMS contains an rpm of perl-XML-Simple in case the distro doesn't came with one
-    my $sisrpmsdir = "$ENV{OSCAR_HOME}/packages/sis/RPMS";
+    my $sisrpmsdir = "$ENV{OSCAR_HOME}/share/prereqs/XML-Simple/RPMS";
  
     opendir(RPMS, "/tftpboot/rpm");
     my @rpmsindir = readdir(RPMS);
@@ -100,8 +100,7 @@ if ($@) {
     # we can maintain the tarball and install it here if no rpm was found - this only
     # in case the distro doesn't came with one - RedHat 9, perhaps?
 														
-
-    
+   
     oscar_log_subsection("$module_name installed successfully");
 
     chdir($pwd);

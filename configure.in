@@ -196,7 +196,7 @@ AC_CONFIG_FILES([
     share/prereqs/XML-Simple/Makefile
     share/prereqs/XML-Simple/media/Makefile
     share/prereqs/XML-Simple/scripts/Makefile
-
+    share/prereqs/XML-Simple/RPMS/Makefile
     share/serverlists/Makefile
 
     src/Makefile

@@ -11,4 +11,4 @@
 
 include $(top_srcdir)/dist/Makefile.options
 
-SUBDIRS			= media scripts
+SUBDIRS			= media scripts RPMS
