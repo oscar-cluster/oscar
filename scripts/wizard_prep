@@ -1,5 +1,10 @@
 #!/usr/bin/perl
 
+# Copyright 2002 International Business Machines
+#                Sean Dague <japh@us.ibm.com>
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation; either version 2 of the License, or
@@ -13,9 +18,6 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-#   Copyright 2002 International Business Machines
-#                  Sean Dague <japh@us.ibm.com>
 
 #   This is a script which does everything that needs to be done for
 #   the server to work for oscar.  It is long, but hopefully well structured.
@@ -38,8 +40,8 @@ oscar_log_section("Running OSCAR wizard_prep script");
 
 my $INTERFACE = shift or croak("No interface specified");
 
-#   Make sure /tftpboot/rpm exists, if not create it.  Then copy all the rpms
-#   that we ship that need to be in the client into that directory
+# Make sure /tftpboot/rpm exists, if not create it.  Then copy all the
+# rpms that we ship that need to be in the client into that directory
 
 my $RPMPOOL = $OSCAR::Package::RPM_POOL;
 my $ARCH = (uname)[4];
@@ -51,6 +53,22 @@ oscar_log_subsection("Copying RPMs from " . $ENV{OSCAR_HOME} .
 copy_rpms($ENV{OSCAR_HOME},$RPMPOOL) or croak("Couldn't copy rpms to $RPMPOOL");
 oscar_log_subsection("Successfully copied RPMs from " . $ENV{OSCAR_HOME} . 
 		     " to $RPMPOOL\n");
+
+# Run the prerequsites
+
+oscar_log_subsection("Running OSCAR wizard prerequsites");
+my $prefix = "$ENV{OSCAR_HOME}/share/prereqs";
+opendir(PREREQDIR, $prefix) or 
+    croak("Couldn't open $prefix for reading");
+while(($_ = readdir(PREREQDIR))) {
+    my $abs = "$prefix/$_";
+    if (-d "$abs/scripts" && -f "$abs/scripts/install") {
+	if (system("$abs/scripts/install") != 0) {
+	    carp("WARNING: Prerequsite failure!");
+	}
+    }
+}
+closedir(PREREQDIR);
 
 # Get the list of core packages
 
