@@ -99,6 +99,7 @@ sub install_required_rpms {
                   systemimager-server
                   systemimager-common
                   systemimager-i386boot
+		  mpich
                   rsync
 		  nfs-utils
                  );
