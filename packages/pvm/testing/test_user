@@ -16,11 +16,17 @@
 #	   Bernard Li
 
 
+if test -e /usr/share/doc/openpbs*; then
+   scheduler="PBS"
+else
+   scheduler="Torque"
+fi
+
 cd $HOME
 clients=`echo $@ | wc -w`
 
 $HOME/pbs_test $clients 1 $HOME/pvm/pbs_script.pvm "SUCCESSFUL" \
-    $HOME/pvm/pvmtest 3 "PVM (via Torque)"
+    $HOME/pvm/pvmtest 3 "PVM (via $scheduler)"
 exit_status=$?
 
 # All done

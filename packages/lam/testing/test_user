@@ -13,9 +13,15 @@
 #          Jeremy Enos
 #	   Bernard Li
 
+if test -e /usr/share/doc/openpbs*; then
+   scheduler="PBS"
+else
+   scheduler="Torque"
+fi
+
 cd
 clients=`echo $@ | wc -w`
-testprint_label="LAM/MPI (via Torque)"
+testprint_label="LAM/MPI (via $scheduler)"
 
 # Sanity check (somewhat overkill, but safe = good): check to see that
 # there is a LAM installed.
