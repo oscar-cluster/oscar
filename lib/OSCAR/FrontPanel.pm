@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.13 2002/09/07 14:33:25 jsquyres Exp $
+#   $Id: FrontPanel.pm,v 1.14 2002/09/07 14:43:51 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use OSCAR::Logger;
 use OSCAR::Tk;
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.13 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -184,7 +184,8 @@ sub server_prep {
     oscar_log_subsection("Step 1: Running: $cmd");
     open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
                               error_window($fp_window,
-					   "Couldn't run command $cmd"),
+					   "Couldn't run command $cmd",
+					   sub { $fp_window->Unbusy() }),
 			      return undef);
 
     while(<OUTPUT>) {
@@ -194,7 +195,8 @@ sub server_prep {
 
     close(OUTPUT) or (carp("Couldn't run command $cmd"), 
                       error_window($fp_window,
-				   "Couldn't run command $cmd"),
+				   "Couldn't run command $cmd",
+				   sub { $fp_window->Unbusy() }),
 		      return undef);
 
     oscar_log_subsection("Step 1: Successfully ran command");
@@ -203,7 +205,8 @@ sub server_prep {
     oscar_log_subsection("Step 1: Running: $cmd");
     !system("$cmd") or
         (carp("Couldn't run command $cmd"),
-         error_window($fp_window, "Couldn't run command $cmd"),
+         error_window($fp_window, "Couldn't run command $cmd", 
+		      sub { $fp_window->Unbusy() }),
 	 return undef);
 
     oscar_log_subsection("Step 1: Successfully ran command");
