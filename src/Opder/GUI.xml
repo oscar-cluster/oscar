@@ -67,13 +67,15 @@ Author: Terry Fleury <tfleury@ncsa.uiuc.edu>
   -->
 
     <command>oscar_version</command>
-    <test>($odaresult[0] ge 2.3) and ($odaresult[0] le 4.0)</test>
+    <test>($odaresult[0] &gt;= 2.3) and ($odaresult[0] &lt;= 4.0)</test>
 
   </oda>
 
+<!-- 
   <oda>
     <command>oscar_name</command>
   </oda>
+-->
 
 </oscar>
 
