@@ -4,9 +4,11 @@
 
 . /etc/profile
 maui_config=/opt/maui/maui.cfg
+maui_config_tmp=/tmp/maui_config_tmp
 
 if [ -f $maui_config ] ; then
-  cat $maui_config |sed s/pbs_oscar/$HOSTNAME/g > $maui_config
+  cat $maui_config |sed s/pbs_oscar/$HOSTNAME/g > $maui_config_tmp
+  /bin/mv -f $maui_config_tmp $maui_config
   echo "Maui config file updated with PBS server set to: $HOSTNAME"
 else
   echo "Error:  Not updating Maui config file."
