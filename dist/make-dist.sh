@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+# Copyright (c) 2002-2004 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -12,6 +12,7 @@
 
 srcdir="`pwd`"
 distdir="$srcdir/$1"
+want_srpms="$2"
 
 ############################################################################
 
@@ -70,10 +71,16 @@ if ! test -f Makefile; then
 fi
 
 #
+# We need this later
+#
+
+cp autogen.sh $distdir
+
+#
 # Build the docs
 #
 
-if test -n "$OSCAR_SKIP_DOCS"; then
+if test -n "$OSCAR_SKIP_DOCS" -o "$want_srpms" = "only"; then
     doc_mode="SKIPPED"
     cat <<EOF
 
@@ -205,6 +212,80 @@ rm -f dist/copyright-notice.txt
 rm -f dist/beta-notice.txt
 
 #
+# Make regular, extra crispy, or secret sauce
+#
+
+echo want_srpms: $want_srpms
+if test "$want_srpms" = "regular" -o -z "$want_srpms"; then
+    echo REGULAR
+
+    # Whack all the SRPMS dirs
+
+    for dir in `find packages -name SRPMS -print`; do
+        echo " - Removing: $dir"
+        rm -rf $dir
+    done
+
+    # Ditch SRPMS from all Makefile.am's
+
+    for file in `find packages -name Makefile.am -print`; do
+        echo " - Updating: $file"
+
+        rm -f $file.new.$$
+        sed -e 's/SRPMS//g' $file > $file.new.$$
+        cp $file.new.$$ $file
+        rm $file.new.$$
+    done
+
+    # Ditch SRPM Makefiles from the m4 file
+
+    egrep -v /SRPMS/ dist/config_files_list.m4 > newfile.$$
+    cp newfile.$$ dist/config_files_list.m4
+
+    # Now re-run the tools to get everything proper in the configure
+    # script
+
+    echo " - Re-running aclocal"
+    aclocal
+    echo " - Re-running autoconf"
+    autoconf
+    echo " - Re-running automake"
+    automake -a --copy
+
+elif test "$want_srpms" = "only"; then
+    echo ONLY
+    rm -rf *m4 autogen* autom4te* config* dist* doc* images* install_cluster
+    rm -rf lib Makefile* oscarsamples scripts share src testing VERSION.in
+    cd packages
+    rm Makefile.* package.dtd
+    for dir in `/bin/ls`; do
+        echo checking dir: $dir
+        if test -d "$dir" -a "$dir" != "." -a "$dir" != ".."; then
+            echo removing all but SRPMS from package $dir
+            cd $dir
+            for subdir in `/bin/ls`; do
+                echo checking subdir: $subdir
+                if test "$subdir" != "." -a \
+                    "$subdir" != ".." -a "$subdir" != "SRPMS"; then
+                    rm -rf $subdir
+                fi
+            done
+            cd ..
+
+            # If there's nothing left (i.e., if there was no SRPMS),
+            # then just whack the dir
+
+            if test ! -d $dir/SRPMS; then
+                rm -rf $dir
+            else
+                rm -f $dir/SRPMS/Makefile* > /dev/null 2>&1
+            fi
+        fi
+    done
+    cd ..
+fi
+
+#
 # All done
 #
 
@@ -212,6 +293,7 @@ cat <<EOF
 
 ============================================================================== 
 OSCAR version $OSCAR_VERSION distribution created
+SRPMs: $want_srpms
 Documentation: $doc_mode
  
 Started: $start
