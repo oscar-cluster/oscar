@@ -11,6 +11,8 @@
 #                to install that kernel into the oscarimage.            #
 #  Copyright (c) 2003 National Center for Supercomputing Applications   #
 #                     (NCSA) All rights reserved.                       #
+#  Modifications:                                                       #
+#  Sep 03, 2003: Added --autoselectimage command line option - TGF      #
 #########################################################################
 
 use strict;
@@ -92,7 +94,7 @@ if (-e $valuesfile)
 
     if ($bootkernel)
       { # Build up the command string for kernel_picker.
-        my $cmd = "/opt/kernel_picker/bin/kernel_picker ".
+        my $cmd = "/opt/kernel_picker/bin/kernel_picker --autoselectimage ".
                   "--bootkernel $bootkernel --bootramdisk N --networkboot N ";
         if ($values->{usesmodules}[0])
           {
