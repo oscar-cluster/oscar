@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.32 2002/07/17 18:34:57 jsquyres Exp $
+% $Id: detailed.tex,v 1.33 2002/07/18 01:42:04 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -57,18 +57,18 @@ successfully.
 
 OSCAR has certain requirements for server disk space. Space will be
 needed to store the Linux RPMs and to store the images.  The RPMs will
-be stored in \file{/tftpboot/rpm}. Approximately 1GB is required to
+be stored in \file{/tftpboot/rpm}. Approximately 2GB is required to
 store the RPMs.  The images are stored in \file{/var/lib/systemimager}
-and will need approximately 1GB per image. Only one image is required,
+and will need approximately 2GB per image. Only one image is required,
 although you may want to create more in the future.
 
 If you are installing a new server, it is suggested that you allow for
-2GB in both the \file{/} (which contains \file{/tftpboot}) and
+4GB in both the \file{/} (which contains \file{/tftpboot}) and
 \file{/var} filesystems when partitioning the disk on your server.
 
 If you are using an existing server, you will need to verify that you
-have enough space on the disk partitions. Again 2GB of free space is
-recommended in both the \file{/} and \file{/var} partitions.
+have enough space on the disk partitions.  Again 2GB of free space is
+recommended under each of \file{/} and \file{/var}.
 
 You can check the amount of free space on your drive's partitions by
 issuing the command \cmd{df -h} in a terminal.  The result for each

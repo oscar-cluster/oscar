@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: intro.tex,v 1.9 2002/07/17 06:41:58 jsquyres Exp $
+% $Id: intro.tex,v 1.10 2002/07/18 01:42:04 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -64,9 +64,12 @@ server node:
 
 \begin{itemize}
 \item CPU of i586 or above
-\item 2 network interface cards that support a TCP/IP stack
-\item At least two contiguous areas of 2GB free space (for a total of
-  4GB free space)
+\item A network interface card that supports a TCP/IP stack
+\item If your OSCAR server node is going to be the router between a
+  public network and the cluster nodes, you will need a section
+  network interface card that supports a TCP/IP stack
+\item At least 4GB total free space -- 2GB under \file{/} and 2GB
+  under \file{/var}
 \item An installed version of Linux, preferably a {\em Fully
     supported} distribution from Table~\ref{tab:oscar-distro-support}
 \end{itemize}
@@ -81,9 +84,12 @@ client nodes:
 \item A network interface card that supports a TCP/IP
   stack\footnote{Beware of 3COM cards.  See the OSCAR web site for
   more information.}
-\item The Linux distribution (including version) must be the same as
-  the server
-\item Monitors and keyboards may be helpful, but are not required
+\item Same Linux distrobution and version as the server node
+\item All clients must have ``similar'' hardware:
+  \begin{itemize}
+  \item Same architecture (ia32 vs.\ ia64)
+  \item Monitors and keyboards may be helpful, but are not required
+  \end{itemize}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
