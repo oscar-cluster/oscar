@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.41 2002/11/14 01:32:40 tfleury Exp $
+#   $Id: Package.pm,v 1.42 2002/12/02 20:36:03 tfleury Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.41 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.42 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -590,7 +590,6 @@ sub getConfigurationValues # ($package) -> $valueshashref
   my($package) = @_;
   my($values);
   my($filename) = "$ENV{OSCAR_HOME}/packages/$package/.configurator.values";
-  print "Filename = $filename\n";
 
   if (-s $filename)
     {

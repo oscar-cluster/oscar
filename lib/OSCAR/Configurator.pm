@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.13 2002/11/14 01:32:40 tfleury Exp $
+# $Id: Configurator.pm,v 1.14 2002/12/02 20:36:00 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -44,6 +44,7 @@ use OSCAR::Logger;    # For oscar_log_section()
 use OSCAR::Selector;
 use XML::Simple;      # Read/write the .selection config files
 use Tk::Pane; 
+no warnings qw(closure);
 
 my($top);             # The Toplevel widget for the package configuration window
 my $stepnum;          # Step number in the OSCAR wizard

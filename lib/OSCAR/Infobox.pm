@@ -27,6 +27,7 @@ use base qw(Exporter);
 our @EXPORT = qw(displayInformation);
 our @EXPORT_OK = qw(closeInfoBox);
 require Tk::ROText;
+no warnings qw(closure);
 
 my($top);            # The Toplevel widget for the information box
 my($infoTextBox);    # The Read-Only Textbox for the information text
