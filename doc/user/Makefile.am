@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.2 2002/06/18 14:16:54 jsquyres Exp $
+# $Id: Makefile.am,v 1.3 2002/06/19 17:33:50 mchasal Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -17,7 +17,8 @@ OTHER_SRC_FILES	= \
 		defs.tex \
 		titlepage.tex \
 		toc.tex \
-		package-docs.tex
+		package-docs.tex \
+		package-license.tex
 
 NON_DIST_SRC_FILES= \
 		version.tex
@@ -128,3 +129,6 @@ mostlyclean-generic:
 
 package-docs.tex: package-docs.tex.in ../../packages/*/doc/*.tex
 	./build-package-docs
+
+package-license.tex: package-docs.tex.in ../../packages/*/doc/*.tex
+	./build-package-license
