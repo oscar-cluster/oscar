@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.10 2002/11/05 01:49:59 tfleury Exp $
+# $Id: Selector.pm,v 1.11 2002/11/12 22:56:47 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -552,7 +552,7 @@ sub deleteConfig
 #  Parameters : None                                                    #
 #  Returns    : Nothing                                                 #
 #  This function reads through the list of OSCAR "package" directories  #
-#  and checks for a file named ".selection".  If this file is found,    #
+#  and checks for a file named "config.xml".  If this file is found,    #
 #  it is parsed for various options which are stored in the global      #
 #  hash variable $packagexml.  This hash is indexed by the names of     #
 #  the OSCAR package directories.                                       #
