@@ -342,7 +342,18 @@ sub populate_rpm_table {
 
 sub find_best_version {
     my @versions = @_;
-    my @best = sort {$b cmp $a} @versions;
+    my $nonnumeric = 0;
+    foreach my $entry (@versions) {
+      if($entry !~ /^\d+\.*\d*$/) {
+        $nonnumeric++;
+      }
+    }
+    my @best = ();
+    if($nonnumeric) {
+      @best = sort {$b cmp $a} @versions;
+    } else {
+      @best = sort {$b <=> $a} @versions;
+    }
     return shift @best;
 }
 
