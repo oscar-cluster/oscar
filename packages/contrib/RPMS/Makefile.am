@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.8 2002/02/11 15:45:19 sdague Exp $
+# $Id: Makefile.am,v 1.9 2002/02/17 23:43:13 sdague Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -13,7 +13,6 @@ EXTRA_DIST		= \
 			openssh-clients-2.5.2p2-5.i386.rpm \
 			openssh-server-2.5.2p2-5.i386.rpm \
 			openssl-0.9.6-3.i386.rpm \
-			perl-Tk-4.2-1.i386.rpm \
 			pfilter-0.91-1.noarch.rpm \
 			sync-users-oscar-1.0-3.noarch.rpm \
 			syslinux-1.63-1.i386.rpm \
