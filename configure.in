@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.34 2002/11/25 11:52:01 bligneri Exp $
+# $Id: configure.in,v 1.35 2003/07/02 19:38:04 tfleury Exp $
 #
 # $HEADER$
 #
@@ -100,6 +100,7 @@ AC_CONFIG_FILES([
     lib/OSCAR/Makefile
     lib/Tk/Makefile
     lib/Tk/HTML/Makefile
+    lib/Qt/Makefile
 
     images/Makefile
 
