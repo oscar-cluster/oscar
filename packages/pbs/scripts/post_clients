@@ -21,6 +21,19 @@ use Carp;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 
+######################################################################
+#  Check to see if 'PBS Server' is running.  If not, then start it.  #
+######################################################################
+sub startPBSserver
+{
+  open(CMD,"/sbin/service pbs_server status |");
+  my $result = <CMD>;
+  close(CMD);
+  system('/sbin/service pbs_server start')
+    unless ($result =~ /is running/);
+}
+
+
 ################################################################
 #  Check to see if 'maui' is running.  If not, then start it.  #
 ################################################################
@@ -34,12 +47,16 @@ sub startMaui
 }
 
 
-
 ########################
 #  BEGIN MAIN PROGRAM  #
 ########################
 
+startPBSserver();
 startMaui();
+
+# Config PBS sched service not to start since we use Maui
+system('/sbin/chkconfig --del pbs_sched');
+
 print "...updating xpbsmonrc file\n";
 my $xpbsmonrc = "/usr/local/pbs/lib/xpbsmon/xpbsmonrc";
 open (RCFILE, "+<$xpbsmonrc") or croak("Error:  Couldn't open $xpbsmonrc.\n");
