@@ -325,7 +325,7 @@ sub database_hostname_to_node_name {
 		if $hostname eq $hostname_without_domain;
 	}
 	# if the record name field includes a domain, ...
-	if ( $$node_name =~ /\./ ) {
+	if ( $node_name =~ /\./ ) {
 	    # find the name field without the domain
 	    my @name_fields = split( '.', $node_name );
 	    my $name_without_domain = $name_fields[0];
