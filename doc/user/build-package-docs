@@ -5,6 +5,10 @@
 
 cp -f package-docs.tex.in package-docs.tex
 
-foreach file (../../packages/*/doc/user.tex)
+# Don't use a glob here, because this directly affects the ordering of
+# sections in the output doc.  So pipe the output of ls here though
+# sort so that we can have deterministic ordering of the sections.
+
+foreach file (`ls ../../packages/*/doc/user.tex | sort`)
     echo "\input{$file}" >> package-docs.tex
 end

@@ -5,6 +5,10 @@
 
 cp -f notes.tex.in notes.tex
 
-foreach file (../../packages/*/doc/install.tex)
+# Don't use a glob here, because this directly affects the ordering of
+# sections in the output doc.  So pipe the output of ls here though
+# sort so that we can have deterministic ordering of the sections.
+
+foreach file (`/bin/ls ../../packages/*/doc/install.tex | sort`)
     echo "\input{$file}" >> notes.tex
 end
