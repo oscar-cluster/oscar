@@ -3,6 +3,9 @@
 <oscar>
   <name>networking</name>
 
+  <filter distribution='redhat' />
+  <filter distribution='mandrake' />
+
   <version>
     <major>1</major>
     <minor>0</minor>
@@ -12,7 +15,6 @@
   </version>
 
   <class>included</class>
-  <installable>1</installable>
 
   <summary>Caching Nameserver to serve the cluster</summary>
   <license>GPL</license>
