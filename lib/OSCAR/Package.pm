@@ -7,7 +7,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.55 2003/06/27 15:16:53 brechin Exp $
+#   $Id: Package.pm,v 1.56 2003/07/08 20:45:08 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ use Carp;
              run_pkg_script_chroot rpmlist install_rpms
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.55 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.56 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -266,8 +266,8 @@ sub rpmlist {
   # Apparently Neil DID write the code to get this info... too bad he
   # didn't TELL ANYBODY!!!
   my @rpms_to_return = OSCAR::Database::database_rpmlist_for_package_and_group($pkg, $type, 0);
-  if ( scalar(@rpms_to_return) == 0 ) {
-
+  my @other_rpms = OSCAR::Database::database_rpmlist_for_package_and_group($pkg, undef, 0);
+  if ( ( scalar(@rpms_to_return) == 0 ) && ( scalar(@other_rpms) == 0 ) ) {
   # Default to all RPMs in the directory
     my $prefix;
     foreach my $pkg_dir (@PKG_SOURCE_LOCATIONS) {
