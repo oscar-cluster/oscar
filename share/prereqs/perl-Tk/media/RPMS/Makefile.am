@@ -1,5 +1,15 @@
-# $Id: Makefile.am,v 1.1 2003/05/26 19:03:14 brechin Exp $
+# -*- makefile -*-
 #
+# Copyright (c) 2003 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# $Id: Makefile.am,v 1.2 2003/07/04 14:47:36 jsquyres Exp $
+#
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
+#
+
+include $(top_srcdir)/dist/Makefile.options
 
 SUBDIRS                 = 5.6 5.8
 

@@ -1,13 +1,16 @@
 # -*- makefile -*-
 #
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
 # 
-# This file is part of the OSCAR software package.  For license
-# information, see the COPYING file in the top level directory of the
-# OSCAR source distribution.
+# $Id: Makefile.am,v 1.3 2003/07/04 14:47:35 jsquyres Exp $
 #
-# $Id: Makefile.am,v 1.2 2002/10/30 12:14:20 jsquyres Exp $
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
 #
 
-EXTRA_DIST	= XML-Parser-2.31.tar.gz
+include $(top_srcdir)/dist/Makefile.options
+
+oscar_DATA	= XML-Parser-2.31.tar.gz
+
+EXTRA_DIST	= $(oscar_DATA)

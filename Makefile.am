@@ -1,12 +1,15 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.8 2002/10/26 12:08:36 jsquyres Exp $
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# $Id: Makefile.am,v 1.9 2003/07/04 14:46:27 jsquyres Exp $
 #
-# This file is part of the OSCAR distribution.
-# See the copyright and license notices in the top-level directory.
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
 #
 
-AUTOMAKE_OPTIONS	= foreign
+include $(top_srcdir)/dist/Makefile.options
 
 SUBDIRS			= \
 			dist \
@@ -19,9 +22,10 @@ SUBDIRS			= \
 			share \
 			testing
 
-noinst_SCRIPTS		= install_cluster
+oscar_SCRIPTS		= install_cluster
+oscar_DATA		= COPYING README VERSION
 
-EXTRA_DIST		= COPYING README $(noinst_SCRIPTS) VERSION
+EXTRA_DIST		= $(oscar_SCRIPTS) $(oscar_DATA)
 
 #
 # Make the documentation

@@ -1,5 +1,16 @@
-# $Id: Makefile.am,v 1.1 2003/05/26 19:03:15 brechin Exp $
+# -*- makefile -*-
+#
+# Copyright (c) 2003 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# $Id: Makefile.am,v 1.2 2003/07/04 14:47:36 jsquyres Exp $
+#
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
 #
 
-EXTRA_DIST              = perl-Tk-800.024-2.i386.rpm
+include $(top_srcdir)/dist/Makefile.options
 
+oscar_SCRIPTS		= perl-Tk-800.024-2.i386.rpm
+
+EXTRA_DIST		= $(oscar_SCRIPTS)
