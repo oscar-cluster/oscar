@@ -69,13 +69,27 @@ sub startPBSserver
     unless ($result =~ /is running/);
 }
 
-
+######################################################################
+#  Check to see if 'Maui' is running.  If not, then start it.        #
+######################################################################
+sub startMaui
+{
+  open(CMD,"/sbin/service maui status |");
+  my $result = <CMD>;
+  close(CMD);
+  system('/sbin/service maui start')
+    unless ($result =~ /is running/);
+}
 
 ########################
 #  BEGIN MAIN PROGRAM  #
 ########################
 
+# Call the update PBS mom config script
+print `../packages/pbs/scripts/update_mom_config`;
+
 startPBSserver();
+startMaui();
 
 parseCommandLine();
 
@@ -240,7 +254,4 @@ if ($cmd_input ne "")
     print CMD $cmd_input;
     close (CMD) or croak("Configuration of PBS queues failed");
   }
-
-# Call the update PBS mom config script
-print `../packages/pbs/scripts/update_mom_config`;
 

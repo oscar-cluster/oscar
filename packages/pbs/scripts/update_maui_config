@@ -1,0 +1,16 @@
+#!/bin/bash
+# Updates maui config file with real PBS server hostname
+# 
+
+. /etc/profile
+maui_config=/opt/maui/maui.cfg
+
+if [ -f $maui_config ] ; then
+  cat $maui_config |sed s/pbs_oscar/$HOSTNAME/g > $maui_config
+  echo "Maui config file updated with PBS server set to: $HOSTNAME"
+else
+  echo "Error:  Not updating Maui config file."
+  echo "$maui_config not found."
+  exit 1
+fi
+
