@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: intro.tex,v 1.2 2001/12/17 03:32:16 mchasal Exp $
+% $Id: intro.tex,v 1.3 2002/06/09 16:29:10 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -13,19 +13,17 @@ as you install. This document does not describe what OSCAR is however.
 For an overview of OSCAR and the intentions behind it see the
 \file{oscar\_introduction} document located in the docs subdirectory.
 A list of software and hardware requirements for OSCAR can be found in
-the \file{oscar\_requirements} document as well. 
-\begchange
-There are both ``Quick Start'' and detailed installation sections in
-this guide. Due to the complicated nature of putting together a 
-high-performance cluster, it is strongly suggested that you read this 
-document through, without skipping any sections, and then use the
-detailed installation procedure to install your OSCAR cluster.
-Novice users will be comforted to know that anyone who has installed
-and used Linux can successfully navigate through the OSCAR cluster install.
-If you are too impatient to read manuals, and your cluster meets
-certain requirements, feel free to try your luck with the ``Quick Start''
+the \file{oscar\_requirements} document as well.  There are both
+``Quick Start'' and detailed installation sections in this guide. Due
+to the complicated nature of putting together a high-performance
+cluster, it is strongly suggested that you read this document through,
+without skipping any sections, and then use the detailed installation
+procedure to install your OSCAR cluster.  Novice users will be
+comforted to know that anyone who has installed and used Linux can
+successfully navigate through the OSCAR cluster install.  If you are
+too impatient to read manuals, and your cluster meets certain
+requirements, feel free to try your luck with the ``Quick Start''
 installation.
-\endchange
 
 Let's start with a few basic terms and concepts, so that everyone is
 starting out on the same level. The most important is the term
@@ -45,39 +43,27 @@ support installation of additional client nodes after the initial
 cluster installation is performed, although this functionality is
 planned for later releases.
 
-The rest of this document is organized as follows.  \begchange First,
-a ``Quick Start''section is provided for people who hate manuals.  The
-``Quick Start'' section is {\bf not} for the Linux or clustering
-novice. Then, an overview is given for the installation software used
-in OSCAR, known as SIS.
-%
-\begchange
-%
-Third, 
-%
-\endchange
-%
-an outline is given of the entire cluster install procedure, so that
-users have a general understanding of what they will be doing.  Next,
-the cluster installation procedure is presented in much detail.  The
-level of detail lies somewhere between ``the install will now update
-some files'' and ``the install will now replace the string `xyz' with
-`abc' in file \file{some\_file}.'' The reasoning behind providing this
-level of detail is to allow users to fully understand what it takes to
-put together a cluster, as well as to allow them to help troubleshoot
-any problems, should some arise. Last, but certainly not least, are
-the appendices.  Appendix~\ref{app:net-boot-client-nodes} covers the
-topic of network booting client nodes, which is so important that it
-deserved its own section.  
-Appendix~\ref{app:client-install} provides curious users an overview
-of what really happens during a client install.
-%
-\begchange
-%
+The rest of this document is organized as follows.  First, a ``Quick
+Start''section is provided for people who hate manuals.  The ``Quick
+Start'' section is {\bf not} for the Linux or clustering novice. Then,
+an overview is given for the installation software used in OSCAR,
+known as SIS.  Third, an outline is given of the entire cluster
+install procedure, so that users have a general understanding of what
+they will be doing.  Next, the cluster installation procedure is
+presented in much detail.  The level of detail lies somewhere between
+``the install will now update some files'' and ``the install will now
+replace the string `xyz' with `abc' in file \file{some\_file}.'' The
+reasoning behind providing this level of detail is to allow users to
+fully understand what it takes to put together a cluster, as well as
+to allow them to help troubleshoot any problems, should some arise.
+Last, but certainly not least, are the appendices.
+Appendix~\ref{app:net-boot-client-nodes} covers the topic of network
+booting client nodes, which is so important that it deserved its own
+section.  Appendix~\ref{app:client-install} provides curious users an
+overview of what really happens during a client install.
 Appendix~\ref{app:troubleshooting} tackles troubleshooting, providing
 fixes to known problems and where to find help for unknown problems,
 as well as telling how to start over with a new OSCAR install.  And
 finally, Appendix~\ref{app:security} covers some security aspects of a
 linux cluster.
-%
-\endchange
+
