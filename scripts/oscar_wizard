@@ -21,7 +21,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.45 2003/03/11 23:31:25 brechin Exp $
+# $Id: oscar_wizard,v 1.46 2003/03/11 23:49:27 tfleury Exp $
 #
 
 use strict;
@@ -46,6 +46,9 @@ use SystemInstaller::Tk::Common;
 use POSIX;
 use Carp;
 use vars qw($config);
+
+# First of all, enforce that the user running this script is 'root'
+croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
 if( $#ARGV != 0 ) {
     croak "usage: $0 <cluster interface>\n";

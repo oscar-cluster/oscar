@@ -5,7 +5,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: install_cluster,v 1.17 2003/03/03 23:10:14 ngorsuch Exp $
+# $Id: install_cluster,v 1.18 2003/03/11 23:46:19 tfleury Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,6 +33,9 @@ use OSCAR::Logger;
 use OSCAR::Distro;
 use POSIX;
 use Carp;
+
+# First of all, enforce that the user running this script is 'root'
+croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
 # Setting this varible makes a lot of things much easier.  It might also do
 # us some good down the road
