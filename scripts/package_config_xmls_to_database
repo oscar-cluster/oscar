@@ -793,10 +793,7 @@ foreach my $shortcut ( sort keys %oda_shortcuts ) {
 					\@assigns,
 					\@wheres,
 					\@error_strings ) ) {
-		oda::disconnect( \%options,
-				 \@error_strings );
 		warn shift @error_strings while @error_strings;
-		exit 1;
 	    }
 	}
     } else {
@@ -810,10 +807,7 @@ foreach my $shortcut ( sort keys %oda_shortcuts ) {
 				   \%assigns,
 				   undef,
 				   \@error_strings ) ) {
-	    oda::disconnect( \%options,
-			     \@error_strings );
 	    warn shift @error_strings while @error_strings;
-	    exit 1;
 	}
     }
 }
@@ -1318,6 +1312,28 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
 	warn "$0: empty multiple values package table <$table_name> ignored";
     }
 }
+
+# write out one global oscar record
+print "Creating the global oscar information record\n";
+my %assigns = ();
+my $oscar_version;
+if ( -r "$ENV{OSCAR_HOME}/VERSION" ) {
+    $oscar_version = `cat $ENV{OSCAR_HOME}/VERSION`;
+    chomp $oscar_version;
+} else {
+    $oscar_version = "CVS unknown version";
+}
+
+$assigns{ oscar_version } = $oscar_version;
+$assigns{ installation_date } = `date`;
+my @error_strings = ();
+if ( ! oda::insert_record( \%options,
+			   "oscar",
+			   \%assigns,
+			   undef,
+			   \@error_strings ) ) {
+    warn shift @error_strings while @error_strings;
+}    
 
 # copy the packages table installable field values to the selected field values
 print "Copying packages table installable fields values to selected fields\n";
