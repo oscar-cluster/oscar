@@ -23,7 +23,15 @@ my %hash = get_machine_listing($image);
 open(OUT,">$c3_conf") or croak("Couldn't open $c3_conf");
 print OUT "cluster oscar_cluster {\n";
 print OUT "\t$hostname\n";
+my $firstkey = 1;
 foreach my $key (sort keys %hash) {
+    if ($firstkey)
+      {
+        $hash{$key}->{HOST} =~ /([a-zA-Z_\-]+)(\d*)/;
+        print OUT "\tdead remove_line_for_0-indexing\n" if 
+          (defined($2) && ($2 != 0));
+        $firstkey = 0;
+      }
     print OUT "\t", $hash{$key}->{HOST}, "\n";
 }
 print OUT "}\n";
