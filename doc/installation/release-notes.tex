@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.33 2003/02/27 20:58:52 jsquyres Exp $
+% $Id: release-notes.tex,v 1.34 2003/04/16 17:09:35 naughtont Exp $
 %
 
 \section{Release Notes}
@@ -191,7 +191,7 @@ comments.
   install SQL::Statement
 \end{verbatim}
   
-\item Install the python 2 compatability RPM.  This RPM can be found
+\item Install the python 2 compatibility RPM.  This RPM can be found
   in the OSCAR distribution package, under the \file{packages/c3/RPMS}
   directory:
 
@@ -208,27 +208,9 @@ comments.
 \subsection{IA64 and Other Bleeding Edge Systems Notes}
 \label{subsec:ia64notes}
 
-IA64 support was removed for the 2.2 release of OSCAR due to timing
-problems during the release process.  IA64 support is fully expected
-to return in the next release.
-
-\newcommand\donotdisplay[1]{}
-
-\donotdisplay{
-
 \begin{itemize}
 
-% TJN: pretty sure things swapped w/ 2.2 Itanium1 out Itanium2 is in
-\begchange
-\item Itanium2 is supported on RedHat 7.2, but with 
-  version \oscarversion\ Itanium is not supported.
-  \footnote{The solution is for the user to compile
-    their own kernel.  This is essentially a ``do it yourself'' kind
-    of process, and not recommended for novices.  Please consult the
-    OSCAR user's mailing list for more information.}
-\endchange
-
-\item The OSCAR autoinstall diskette will probably not work on Itanium
+\item The OSCAR auto-install diskette will probably not work on Itanium
   systems, but they mostly have support for network booting.
   
 \item Some Itanium 1 or 2 systems are supported by OSCAR under
@@ -236,16 +218,26 @@ to return in the next release.
   use the standard RedHat Itanium kernel for booting and network
   access should work with OSCAR.
 
-% TJN: should this just refer to kernel_picker and be done w/ it?
+\item Itanium 2 machines often have newer hardware interfaces for
+	things like networking or disk drives that sometimes require newer
+	kernels than those provided by official Linux distributions. RedHat 7.2
+	will work on some Itanium2 machines. Manufacturers will typically
+	provide driver disks or driver downloads for their machine's newer
+	hardware interfaces. The user will sometimes have to compile their own
+	kernel.  This is essentially a ``do it yourself'' kind
+    of process, and not recommended for novices.  Please consult the
+    OSCAR user's mailing list for more information.
+
 \item If an Itanium (or an IA32 based) system has new or unknown
   hardware that is not supported by the stock kernel in the base
   operating system release, it will not work with standard OSCAR,
   since OSCAR uses the kernel RPMS supplied with the vendors release
   to boot and load the compute nodes.  If you have a custom compiled
   kernel/module set that works for your hardware, you should look at
-  the NCSA utilities at \url{http://oscar.ncsa.uiuc.edu/} to
+  the NCSA Kernel\_Picker utility at \url{http://oscar.ncsa.uiuc.edu/} to
   enable you to use them in OSCAR.
+
 \end{itemize}
-}
+
 
 % LocalWords:  tex Exp TJN unmunge pathenv
