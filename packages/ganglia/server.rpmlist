@@ -1,6 +1,4 @@
 ganglia-monitor-core
 ganglia-php-rrd-client
-ganglia-python
 rrdtool-oscar
 perl-XML-Parser
-PyXML-oscar
