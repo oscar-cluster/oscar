@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.3 2001/12/22 01:03:43 jsquyres Exp $
+# $Id: make-dist.sh,v 1.4 2001/12/22 01:29:03 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -106,16 +106,16 @@ if test "$OSCAR_BETA_VERSION" != "" -o "$OSCAR_ALPHA_VERSION" != ""; then
     echo " - This is a BETA version"
     file=/tmp/oscar-license.$$
     rm -f $file
-    cat dist/beta-notice.txt dist/license.hdr > $file
-    mv -f $file dist/license.hdr
+    cat dist/beta-notice.txt dist/copyright-notice.txt > $file
+    mv -f $file dist/copyright-notice.txt
     echo " - Ammended license notice ready"
 fi
 
 csh -f ./dist/insert-license.csh $filelist
 rm -rf $filelist
 
-rm -f dist/insertlic.*
-rm -f dist/license.hdr
+rm -f dist/insert-license.*
+rm -f dist/copyright-notice.txt
 rm -f dist/beta-notice.txt
 
 #
@@ -125,7 +125,7 @@ rm -f dist/beta-notice.txt
 cat <<EOF
 
 ============================================================================== 
-OSCAR version $ver distribution created
+OSCAR version $OSCAR_VERSION distribution created
  
 Started: $start
 Ended:   `date`

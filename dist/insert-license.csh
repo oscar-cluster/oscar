@@ -28,7 +28,7 @@ set year=`date +%Y`
 
 # Text comment file
 set dir="`dirname $0`"
-sed -e s/CURRENTYEAR/$year/ $dir/license.hdr > $textlicense
+sed -e s/CURRENTYEAR/$year/ $dir/copyright-notice.txt > $textlicense
 
 # LaTeX comment file
 sed -e 's/^/% /' $textlicense > $texlicense
