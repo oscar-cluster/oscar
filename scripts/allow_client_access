@@ -5,47 +5,26 @@
 #                       access to this server machine
 #
 # Author: Neil Gorsuch
+
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 
-my %machines = get_machine_listing();
-# set non-zero for verbose output
-$verbose = 0;
-
-# set non-zero for debug output
-$debug = 0;
-
 $IPCHAINS = "/etc/sysconfig/ipchains";
-
 $IPCHAINS_BKUP = "/etc/sysconfig/ipchains.bak";
 
 # find the names of the oscar client machines defined so far
+my %machines = get_machine_listing();
 my @clients = ();
-
-foreach my $client (sort keys %machines) {
-    push @clients, $client->{HOST};
-}
-
-# find the number of clients to use as a flag
-$num_clients = scalar ( @clients );
-
-# if there are no oscar clients yet, we are done
-if ( ! $num_clients ) {
-    print "There are no oscar clients yet, leaving $IPCHAINS as is.\n";
-    exit 0;
+foreach my $client_key (sort keys %machines) {
+    my $client_ref = $machines{$client_key};
+    my $host = $$client_ref{HOST};
+    push @clients, $host 
+	if $host !~ /^\s*$/;
 }
 
 # see if we are running ipchains
 if ( scalar ( @ipchains_cmd_out = `service ipchains status 2>/dev/null` ) ) {
-    print "It looks like this system is running\n";
-    print "the ipchains \"service\" from Redhat.\n";
-    print "Too bad (iptables is much nicer and\n";
-    print "more secure, especially if you get\n";
-    print "some nice packet filtering ruleset\n";
-    print "generator like pfilter, hint, hint).\n";
-    print "But we\'ll try to fix things so that\n";
-    print "the OSCAR clients aren\'t being blocked\n";
-    print "by the ipchains packet filtering rules.\n";
+    print "It looks like this system is running the ipchains \"service\" from Redhat.\n";
     print "Examining $IPCHAINS ...\n";
 
     # read in the ipchains configuration file and initialize the changed file
@@ -68,12 +47,13 @@ if ( scalar ( @ipchains_cmd_out = `service ipchains status 2>/dev/null` ) ) {
 	    push @clients_needed, $client;
 	}
     }
-    if ( ! scalar @clients_needed ) {
-	print "Congratulations, no lines need\n";
-	print "to added to allow client access.\n";
+    if ( ! @clients_needed ) {
+	print "Congratulations, no changes are needed to allow client access.\n";
     } else {
-	print "We need to add rules for these clients:\n";
-	print "@clients_needed\n";
+	print "We need to add rules to allow these clients access:\n";
+	foreach $client ( @clients_needed ) {
+	    print "$client\n";
+	}
 	@ipchains_new = ();
 	$inserted = 0;
 	foreach $line ( @ipchains_out ) {
@@ -101,10 +81,9 @@ if ( scalar ( @ipchains_cmd_out = `service ipchains status 2>/dev/null` ) ) {
     $line2 = "-A\ input\ -s\ 0/0\ 67\ -d\ 255.255.255.255\ 68\ -p\ udp\ -j\ ACCEPT";
     if ( ( grep ( /^$line1/, @ipchains_out ) ) &&
 	 ( grep ( /^$line2/, @ipchains_out ) ) ) {
-	print "Congratulations, the lines are already\n";
-	print "there to allow client net booting.\n";
+	print "Congratulations, the lines are already there to allow client net booting.\n";
     } else {
-	print "We need to add lines to allow installations.\n";
+	print "We need to add lines to allow client net booting.\n";
 	@ipchains_new = ();
 	$inserted = 0;
 	foreach $line ( @ipchains_out ) {
