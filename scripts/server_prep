@@ -102,9 +102,6 @@ sub install_required_rpms {
 		  mpich
                   rsync
 		  nfs-utils
-		  glibc
-		  glibc-common
-		  glibc-devel
                  );
 
     my @installme = @rpms;  		#changed

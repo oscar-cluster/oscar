@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.4 2002/01/18 04:27:24 sdague Exp $
+# $Id: Makefile.am,v 1.5 2002/01/18 04:28:02 sdague Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -8,9 +8,6 @@
 
 EXTRA_DIST		= \
 			dhcp-2.0pl5-4.i386.rpm \
-			glibc-2.2.4-19.3.i386.rpm \
-			glibc-devel-2.2.4-19.3.i386.rpm \
-			glibc-common-2.2.4-19.3.i386.rpm \
 			nfs-utils-0.3.1-5.i386.rpm \
 			openssh-2.5.2p2-10.7.i386.rpm \
 			openssh-clients-2.5.2p2-10.7.i386.rpm \
