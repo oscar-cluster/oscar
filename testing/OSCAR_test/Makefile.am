@@ -1,12 +1,12 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.2 2001/12/22 01:08:39 jsquyres Exp $
+# $Id: Makefile.am,v 1.3 2002/08/06 13:13:44 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
-SUBDIRS			= mpi pvm shell
+SUBDIRS			= hdf5 mpi pvm shell
 
 noinst_SCRIPTS		= test_cluster
 

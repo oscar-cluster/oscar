@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.20 2002/07/24 03:18:14 jsquyres Exp $
+# $Id: configure.in,v 1.21 2002/08/06 13:13:44 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -95,6 +95,7 @@ AC_CONFIG_FILES([
 
     testing/Makefile
     testing/OSCAR_test/Makefile
+    testing/OSCAR_test/hdf5/Makefile
     testing/OSCAR_test/mpi/Makefile
     testing/OSCAR_test/pvm/Makefile
     testing/OSCAR_test/shell/Makefile
