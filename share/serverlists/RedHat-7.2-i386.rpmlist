@@ -8,5 +8,8 @@ tcpdump
 xinetd
 apache
 php
+curl
+gd
+mm
 expat
 python2
