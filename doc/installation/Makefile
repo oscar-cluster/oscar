@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+# $Id: Makefile,v 1.2 2001/12/17 03:32:16 mchasal Exp $
 #
 # $COPYRIGHT$
 #
@@ -47,7 +47,6 @@ EPS_FIG_FILES	= \
 		define-ramdisk.eps \
 		allocate-resource.eps \
 		per-client.eps \
-		complete-cluster.eps
 
 # SBS (Screen-by-Screen) figures
 

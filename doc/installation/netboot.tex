@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: netboot.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+% $Id: netboot.tex,v 1.2 2001/12/17 03:32:16 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -12,7 +12,7 @@ There are two methods available for network booting your client nodes.
 The first is to use the Preboot eXecution Environment (PXE) network
 boot option in the client's BIOS, if available. If the option is not
 available, you will need to create a network boot floppy disk using
-the Etherboot package. Each method is described below.
+the SystemImager boot package. Each method is described below.
 
 \begin{enumerate}
 \item \msg{Network booting using PXE.} To use this method, your client
@@ -39,41 +39,17 @@ the Etherboot package. Each method is described below.
     client as it boots.
   \end{enumerate}
   
-\item \msg{Network booting using an Etherboot floppy.} The Etherboot
-  package is provided with OSCAR just in case your machines do not
-  have a BIOS network boot option. The directory for Etherboot is
-  located in the \file{/usr/local/oscar} directory. For instructions`
-  on creating a network boot floppy, refer to the \file{index.html}
-  web page located in the Etherboot directory. The commands you will
-  run will probably look like the following (from within the Etherboot
-  directory and with a floppy inserted):
-
-\begin{verbatim}
-  cd src
-  make
-  make bin32/ethernet-card.fd0
-\end{verbatim}
+\item \msg{Network booting using a SystemImager boot floppy.} The SystemImager
+  boot package is provided with OSCAR just in case your machines do not
+  have a BIOS network boot option.
+  You can create a boot floppy through the \file{oscar\_wizard} on the 
+  \button{Setup Networking} panel or by using the file{mkautoinstalldiskette}
+  command.
 \end{enumerate}
 
-After creating the floppy, you will have to make one more change in
-order to make OSCAR function correctly with booting from a floppy. By
-default, OSCAR assumes you will be using PXE to do the network boot,
-and sets up the DHCP configuration file accordingly. To correct this,
-you need to edit the configuration file, \file{/etc/dhcpd.conf}, and
-replace all the references to ``\file{pxelinux.bin}'' with
-``\file{vmlinuz}'' in the filename entry for each client. After
-editing the file, you will need to restart DHCP by issuing the
-following command in a terminal: 
-
-\begin{verbatim}
-  service dhcpd restart
-\end{verbatim}
-
-Once you have created the network boot floppy and updated the DHCP
-configuration, set your client's BIOS to boot from the floppy
+Once you have created the SystemImager boot floppy,
+set your client's BIOS to boot from the floppy
 drive. Insert the floppy and boot the machine to start the network
 boot. Check the output for errors to make sure your network boot
 floppy is working properly. Remember to remove the floppy when you
 reboot the clients after installation.
-
-

@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.4 2001/12/16 22:55:18 mchasal Exp $
+% $Id: detailed.tex,v 1.5 2001/12/17 03:32:16 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -294,9 +294,7 @@ file system by issuing these commands:
 If you wish to save space on your server's hard drive and will be
 using the default RPM list supplied with OSCAR (see
 Section~\ref{sec:detailed-cluster-def},
-item~\ref{sec:detailed-define-rpm-list} on
-page~\pageref{sec:detailed-define-rpm-list} for more information on
-this), you should only copy over the RPMs listed in the sample.
+you should only copy over the RPMs listed in the sample.
 \begchange
 For the Red Hat 7.1 distribution, this can be done for each CD with
 a command sequence like this:
@@ -384,7 +382,7 @@ OSCAR wizard in defining your cluster. If you encounter problems or
 wish to redo any of the SIS actions performed in the wizard steps 1,
 or 2, please refer to the SIS man pages.
 
-\subsubsection{build the image} 
+\subsubsection{Build the Image} 
 
 Press the Step 1 button of the wizard entitled \button{Build the OSCAR
 client image}. A dialog will be displayed. In most cases, the defaults 
@@ -415,47 +413,6 @@ shown in Figure~\ref{fig:detailed-build-image}.
   \end{center}
 \end{figure}
   
-\subsubsection{Collect client MAC addresses} 
-
-The MAC address of a client
-is a twelve hex-digit hardware address embedded in the client's
-ethernet adapter. MAC addresses look like 00:0A:CC:01:02:03, as
-opposed to the familiar format of IP addresses. These MAC addresses
-uniquely identify client machines on a network before they are
-assigned IP addresses. DHCP uses the MAC address to assign IP 
-addresses to the clients.
-
-
-In order to collect the MAC addresses,  press the Step 3 button
-  of the wizard entitled \button{Setup Networking}. The
-  OSCAR network utility dialog box will be displayed.
-  To start the collection, press the \button{Start Collecting} button and then
-  network boot the first client.  As the clients broadcast, their MAC addresses
-  will show up in the left hand window. Select a MAC address and the appropriate
-  client in the right side window. Click \button{Assign MAC to node} to 
-  associate that MAC address with that node. If you would like to make 
-  specific nodes associated with specific client definitions, you should
-  boot them one at a time. If you don't care which node gets associated
-  with which client, you may boot them all at once and randomly assign
-  the MAC addresses.
-
-  When you have collected all of the MAC addresses, click the \button{Stop Collecting}
-  button and then click the \button{Setup DHCP Server} button to configure it.
-
-  In order to use this tool, you will need to know
-  how to network boot your client nodes.  For instructions on doing
-  so, see Appendix~\ref{app:net-boot-client-nodes}. A sample dialog
-  that has been used to collect four client MAC addresses is shown in
-  Figure~\ref{fig:detailed-collect-mac}. When you have collected the
-  addresses for all your client nodes, press \button{Done}.
-
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=\imgscale]{collect-mac.\figext}
-    \caption{Collect client MAC addresses.}
-    \label{fig:detailed-collect-mac}
-  \end{center}
-\end{figure}
   
 \subsubsection{Define your client machines} 
 
@@ -506,14 +463,55 @@ button and continue with the next step.
   \end{center}
 \end{figure}
     
-\subsection{Secondary OSCAR Server Configuration}
-\label{sec:detailed-secondary-oscar-server-config}
+\subsubsection{Collect client MAC addresses and Setup Networking} 
 
-During this phase, the server will be prepared for the client installs
-based upon the information entered in the ``Cluster Definition''
-phase.
+The MAC address of a client
+is a twelve hex-digit hardware address embedded in the client's
+ethernet adapter. MAC addresses look like 00:0A:CC:01:02:03, as
+opposed to the familiar format of IP addresses. These MAC addresses
+uniquely identify client machines on a network before they are
+assigned IP addresses. DHCP uses the MAC address to assign IP 
+addresses to the clients.
 
-\begin{enumerate}
+In order to collect the MAC addresses,  press the Step 3 button
+  of the wizard entitled \button{Setup Networking}. The
+  OSCAR network utility dialog box will be displayed.
+  To start the collection, press the \button{Start Collecting} button and then
+  network boot the first client.  As the clients broadcast, their MAC addresses
+  will show up in the left hand window. Select a MAC address and the appropriate
+  client in the right side window. Click \button{Assign MAC to node} to 
+  associate that MAC address with that node. If you would like to make 
+  specific nodes associated with specific client definitions, you should
+  boot them one at a time. If you don't care which node gets associated
+  with which client, you may boot them all at once and randomly assign
+  the MAC addresses.
+
+  When you have collected all of the MAC addresses, click the \button{Stop Collecting}
+  button and then click the \button{Setup DHCP Server} button to configure it.
+
+  In order to use this tool, you will need to know
+  how to network boot your client nodes.  For instructions on doing
+  so, see Appendix~\ref{app:net-boot-client-nodes}. A sample dialog
+  that has been used to collect four client MAC addresses is shown in
+  Figure~\ref{fig:detailed-collect-mac}. 
+ 
+  You may also configure your remote boot method from this panel. The
+  \button{Build Autoinstall Floppy} button will build a boot floppy for
+  client nodes that do not support PXE booting. The \button{Setup Network 
+  Boot} button will configure the server to answer PXE boot requests if
+  your client hardware supports it. See Appendix~\ref{app:net-boot-client-nodes}
+  for more details.
+  When you have collected the
+  addresses for all your client nodes, and completed the networks setup
+  press \button{Done}.
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{collect-mac.\figext}
+    \caption{Collect client MAC addresses.}
+    \label{fig:detailed-collect-mac}
+  \end{center}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -532,28 +530,24 @@ network booting clients.
 
 \subsubsection{Check completion status of nodes}
 
-For each client, a log is kept detailing the progress of its
-installation. The log files for all clients are kept on the server in
-\file{/tftpboot/lim/log}. When a client installation completes, the
-last line in the log for that client will read ``\msgout{installation
-  is now complete, time to reboot!}'' Depending on the capabilities of
-your server and the number of simultaneous client installations, a
-client could take anywhere from five minutes to over an hour to
-complete its installation.
+After a few minutes, the clients should complete the installation.
+You can watch the client consoles to monitor the progress. Depending
+on the Post Installation Action you selected when building the image,
+the clients will either halt, reboot or beep incessantly when the 
+installation is completed. 
+The time required for installation deepends on the capabilities of
+your server, your clients, your network, and the number of simultaneous 
+client installations, it should complete within a few minutes.
   
 \subsubsection{Reboot the client nodes}
 
 After confirming that a client has completed its installation, you
 should reboot the node from its hard drive. If you chose to have your
-clients auto-reboot after installation, they will do this on their
-own. If the clients are not set to auto-reboot, you must log in to the
-node and reboot it. After logging in, issue the command ``\cmd{reboot
-  -f}'', which issues a reboot with the force option. The force
-option, which reboots the machine without shutting down any services,
-is needed so that the node does not hang on shutdown of its network.
-Since its file systems are network mounted during installation, the
-attempt to shutdown the network will hang the machine if the force
-option is not used. \msg{Note: If you had to change the BIOS boot
+clients reboot after installation, they will do this on their
+own. If the clients are not set to reboot, you must manually
+reboot them. The filesystems will have been unmounted so it is safe
+to simply reset or power cycle them.
+ \msg{Note: If you had to change the BIOS boot
   order on the client to do a network boot before booting from the
   local disk, you will need to reset the order to prevent the node
   from trying to do another network install.}
@@ -592,76 +586,40 @@ together as a cluster.
 
 \subsubsection{Complete the cluster configuration}
 
-Press the Step 7 button of the wizard entitled \button{Complete
-  Cluster Setup}.  This will run the \file{post\_install} script,
+Press the Step 4 button of the wizard entitled \button{Complete
+ Cluster Setup}.  This will run the \file{post\_install} script,
 which does the following:
 
 \begin{enumerate}
-\item updates hosts files on server and clients
+\item Queries number of processors from the client nodes.
   
-\item synchronizes password and group files on clients with server.
-  
+\end{enumerate}
+
   Note that any users created on the server after the OSCAR
   installation will not be in the password/group files of the clients
   until they have been synced with the server - you can accomplish
   this using the C3 \cmd{cpush} tool.
-
-\item updates clients' C3 configuration
-
-\item configures user \cmd{rsh} capabilities
-
-\item configures \cmd{ssh} on server and clients
-
-  \begin{itemize}
-  \item \user{root} authentication
-  \item user authentication
-  \end{itemize}
-
-\item installs SystemImager on server and clients
-  
-\item installs and configures MPI-CH in \file{/usr/local/mpich-1.2.1}
-
-\item installs and configures LAM/MPI in \file{/opt/lam-6.5.4}
-
-\item installs and configures PVM in \file{/opt/pvm3}
-
-\item installs Veridian's Portable Batch System (PBS)
-  
-  The PBS server and default scheduler are installed, but not the
-  execution MOM, since the server machine is not used for computation.
-
-\item installs the Maui scheduler for use with PBS
-
-\item synchronizes the clients' date and time with the server
-\end{enumerate}
-
-\msg{Note: there will be a several minute delay before the output for
-  this step will appear.}
-
-\subsubsection{Check for successful completion}
-
-In the output window for the above step, search for a message stating
-``\msgout{Congratulations, your cluster is now ready for use.}'' A
-sample successful output window is shown in
-Figure~\ref{fig:detailed-successful-cluster-setup}. If you do not find
-this message in the output, try to find out what may have failed by
-searching through the output for error messages.
-
-  \begin{figure}[htbp]
-    \begin{center}
-      \includegraphics[scale=\imgscale]{complete-cluster.\figext}
-      \caption{Successful Output Window for the ``Complete
-        Cluster Setup'' Step.}
-      \label{fig:detailed-successful-cluster-setup}
-    \end{center}
-  \end{figure}
 
 
 \subsubsection{Test your cluster using the OSCAR Cluster Test
   software}
             
 Provided along with OSCAR is a simple test to make sure the key
-cluster components (PBS, MPI, and PVM) are functioning properly. For
-information on installing and running the software, see the
-\file{oscar\_testing} document in the \file{docs} subdirectory.
+cluster components (PBS, MPI, and PVM) are functioning properly. 
 
+Press the Step 5 button of the wizard entitled \button{Test
+ Cluster Setup}. This will open a window that will test 
+ the server services and then ask for a non-root user to use for the
+ testing. Once the test setup completes do the following steps:
+\begin{enumerate}
+ \item open another terminal 
+ \item login as the user you gave in the setup
+ \item change to the \file{OSCAR\_test} directory
+ \item run the \file{test\_cluster} script, answering the questions
+ that are asked.
+\end{enumerate}
+
+\subsubsection{Congratulations!!}
+
+Your cluster setup is now complete. Your cluster nodes should
+be ready for work.
