@@ -9,4 +9,4 @@ else
   echo "HDF5 will be installed"
 fi
 
-/usr/bin/oda modify packages name="hdf5" installable~$installable
+/usr/bin/oda modify_records packages name="hdf5" installable~$installable
