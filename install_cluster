@@ -21,7 +21,7 @@
 
 use strict;
 use vars qw($VERSION);
-use Cwd qw(chdir);
+use Cwd qw(chdir cwd);
 use Carp;
 
 # Setting this varible makes a lot of things much easier.  It might also do
@@ -45,7 +45,7 @@ if ((scalar(@basesystem)==0) || (scalar(@rsync)==0)) {
 # to the OSCAR wizard.  All the rest of server prep is going to be
 # driven after the first panel of questions.
 
-!system("./wizard_prep $adapter 2>&1 | tee ../oscarinstall.log") or croak("Oscar Wizard preparation script failed to complete");
+!system("./wizard_prep $adapter 2>&1 ") or croak("Oscar Wizard preparation script failed to complete");
 
 !system("./oscar_wizard $adapter 2>&1 | tee -a ../oscarinstall.log") or croak("Oscar Wizard failed to run successfully");
 

@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.2 2002/02/18 21:32:54 sdague Exp $
+#   $Id: Package.pm,v 1.3 2002/02/18 23:32:04 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -25,10 +25,12 @@ use base qw(Exporter);
 use File::Basename;
 use Carp;
 
+@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist);
+
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -93,7 +95,7 @@ sub _is_core {
 
 sub run_pkg_script {
     my ($pkg, $phase) = @_;
-    my $scriptname = $PHASES->{$phase};
+    my $scriptname = $PHASES{$phase};
     if(!$scriptname) {
         carp("No such phase '$phase' in OSCAR package API");
         return undef;
@@ -113,9 +115,9 @@ sub run_pkg_script {
 
 sub run_pkg_script_chroot {
     my ($pkg, $dir) = @_;
-    my $scriptname = $PHASES->{post_rpm_install};
+    my $scriptname = $PHASES{post_rpm_install};
     if(!$scriptname) {
-        carp("No such phase '$phase' in OSCAR package API");
+        carp("No such phase 'post_rpm_install' in OSCAR package API");
         return undef;
     }
     my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . $scriptname;

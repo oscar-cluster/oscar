@@ -47,6 +47,8 @@ foreach my $package (@packages) {
     push @rpms, rpmlist($package,"server");
 }
 
+print Dumper(\@rpms);
+
 # Give me the list of files for my rpms
 my @files = find_files(
                        PKGDIR => $RPMPOOL, 
@@ -65,7 +67,7 @@ foreach my $package (@packages) {
 sub prep_rpmpool {
     my $dir = shift;
     if(!-d $dir) {
-        verbose("No $dir directory found.  Creating it now...");
+        print "No $dir directory found.  Creating it now...\n";
         mkpath($dir, 1, 0755) or return undef;
     }
     return 1;
@@ -82,7 +84,7 @@ sub copy_rpms {
                 if($file =~ /\.rpm$/) {
                     my $filename = basename($file);
                     if(!-e "$RPMPOOL/$filename") {
-                        verbose("Copying $file to $RPMPOOL");
+                        print "Copying $file to $RPMPOOL\n";
                         copy("$file", "$RPMPOOL/$filename") or return undef;
                     }
                 }
@@ -108,7 +110,7 @@ sub files_in_dir {
 sub _is_installed {
     my $rpm = shift;
     if(system("rpm -q $rpm >/dev/null")) {
-        verbose("$rpm not installed.  Marking for install...");
+        print "$rpm not installed.  Marking for install...\n";
         return 0;
     }
     return 1;
