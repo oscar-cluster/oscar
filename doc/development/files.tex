@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: files.tex,v 1.1 2001/08/14 18:17:53 jsquyres Exp $
+% $Id: files.tex,v 1.2 2001/08/25 15:52:07 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -75,30 +75,7 @@ package:
   \item {\tt lam-{\rm X}.{\rm Y}.{\rm Z}-1oscar.i686.rpm}
   \item {\tt lui-{\rm A}.{\rm B}.{\rm C}oscar.tar.gz}
   \end{itemize}
-  
-  \begin{discuss}
-    There is discussion in e-mail to standardize OSCAR-specific
-    packages with an ``{\tt oscar-}'' prefix instead of a
-    pseudo-suffix in the version number.  For example:
-  
-    \begin{itemize}
-    \item {\tt oscar-lam-{\rm X}.{\rm Y}.{\rm Z}-1.i686.rpm}
-    \item {\tt oscar-lui-{\rm A}.{\rm B}.{\rm C}.tar.gz}
-    \end{itemize}
-  \end{discuss}
-    
-  \begin{discuss}
-    There is also an issue about what version number to include in the
-    package filename -- should it be the package's version number, or
-    some kind of OSCAR version number (perhaps the OSCAR API version
-    number)?  e.g., should the LAM RPM listed above be {\tt
-    oscar-lam-2.0.0-1.i686.rpm}?  This has the advantage of making it
-    easy for the user to determine which third party packages work
-    with each version of OSCAR.
 
-    This has not yet been decided.
-  \end{discuss}
-  
 \item All executable scripts should have their execute bit set.
   
 \item All text files (scripts included) should include the CVS token
