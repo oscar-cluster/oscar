@@ -1,4 +1,4 @@
-$Id: checklist.txt,v 1.1 2001/08/31 19:39:59 jsquyres Exp $
+$Id: checklist.txt,v 1.2 2002/03/23 18:03:46 jsquyres Exp $
 
 List of places that the OSCAR 1.1 press release was sent:
 
@@ -24,4 +24,6 @@ List of places that the OSCAR 1.1 press release was sent:
 - IEEE Cluster Computing Task Force didn't seem to have a news/press
   release section.  Appealed directly to the editors.
 
+- SourceForge
 
+- Freshmeat
