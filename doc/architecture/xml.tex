@@ -1,0 +1,79 @@
+% -*- latex -*-
+%
+% $Id: xml.tex,v 1.1 2002/10/08 15:13:11 naughtont Exp $
+%
+% $COPYRIGHT$
+%
+
+\section{XML Examples}
+\label{append:xml-overview}
+\emph{The following sections contain examples of various XML files.  
+It may make more since to put some usage/tools info in the design doc 
+but for now there are only exmaples so this will suffice.
+Additionally, the DTD vs. Schema material might make since back here
+too.  :)}
+
+\subsection{\file{config.xml}}
+\begin{quote}
+ \begin{small}
+ \begin{verbatim}
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE oscar_package SYSTEM "oscar_package.dtd">
+
+<package>
+  <name>ganglia</name>
+
+  <version>
+    <major>2</major>
+    <minor>2</minor>
+    <subversion>3</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>third-party</class>
+  <installable>1</installable>
+  <summary>Ganglia Cluster Toolkit</summary>
+  <license>BSD</license>
+  <group>System Environment/Base</group>
+  <uri>http://ganglia.sourceforge.net/</uri>
+  <packager>Steve Duchene &lt;linux-clusters@mindspring.com&gt;</packager>
+  <description>Ganglia is a scalable, real-time cluster monitoring
+and execution environment with all execution requests and cluster
+statistics expressed in an open well-defined XML format.</description>
+
+  <provides>
+    <name>mpi</name>
+  </provides>
+
+  <requires>
+    <type>rpm</type>
+    <scope>server</scope>
+    <name>libpng</name>
+    <distro_name>Mandrake</distro_name>
+  </requires>
+
+  <requires>
+    <type>rpm</type>
+    <scope>server</scope>
+    <name>libpng</name>
+    <distro_name>RedHat</distro_name>
+    <distro_version>all</distro_version>
+  </requires>
+
+  <conflicts>
+    <type>rpm</type>
+    <name>anti-ganglia</name>
+  </conflicts>
+
+  <download>
+    <uri>http://www.osl.iu.edu/~jsquyres/oscar/ganglia-oscar-1.4.tar.gz</uri>
+    <uri>http://www.lam-mpi.org/~jsquyres/oscar/ganglia-oscar-1.4.tar.gz</uri>
+    <size>6714210</size>
+    <md5sum>298dc011ba93d9c9ed8a70b6e0c69e69</md5sum>
+  </download>
+</package>
+ \end{verbatim}
+ \end{small}
+\end{quote}
+
