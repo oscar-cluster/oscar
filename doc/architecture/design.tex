@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.3 2001/08/15 14:40:52 geiselha Exp $
+% $Id: design.tex,v 1.4 2001/08/16 03:04:55 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -194,6 +194,8 @@ Table~\ref{tbl:design-odr-cats-cluster}.
 Notes:
 
 \begin{itemize}
+\item The ``head node'' is the node where OSCAR is installed.
+
 \item \odrkey{CLUSTER\_HEAD} and \odrkey{INSTALL\_NODE} are cross
   references to the \odrkey{HOST} key in the \odrcat{client} category.
 \end{itemize}
@@ -201,14 +203,6 @@ Notes:
 \begin{discuss}
   Is this category missing a cross reference to the \odrcat{group}
   category?
-\end{discuss}
-
-\begin{discuss}
-  I notice that we use the term ``head'' node in this section, but
-  this term hasn't been defined anywhere yet.  Indeed, is this term
-  meaningful?  Particularly with the advent of third party packages
-  that may install the ``server'' portion of themselves on nodes other
-  than the ``head'' node?  (e.g., high-availability stuff, etc.)
 \end{discuss}
 
 \begin{table}[t]
@@ -468,12 +462,7 @@ installation, uninstallation, and configuration scripts for each
 package must support similar options, the API was condensed into a
 single interface. That interface is as follows:
 
-\cmd{pkgconfig \{-c|-s\} <function> [--atboot]}
-
-\begin{discuss}
-  Using a different name than \cmd{pkgconfig} might be good here; it's
-  a bit too similar to the Solaris \cmd{pkg} suite of commands.
-\end{discuss}
+\cmd{opkgconfig.sh \{-c|-s\} <function> [--atboot]}
 
 \begin{itemize}
 \item \cmd{<function>} is one of: {\tt install}, {\tt uninstall}, {\tt
@@ -488,28 +477,29 @@ single interface. That interface is as follows:
   function
 \end{itemize}
 
-The basic idea is that each integrator will create a pkgconfig script
-that will be invoked by either the OSCAR wizard or the boot time
-initialization script. How that script is implemented is left up to
-the integrator. Typically, the integrator would create three
-underlying scripts, one for each of the available functions, and call
-each script from pkgconfig based upon the command-line options.
+The basic idea is that each integrator will create a
+\file{opkgconfig.sh} script that will be invoked by either the OSCAR
+wizard or the boot time initialization script. How that script is
+implemented is left up to the integrator. Typically, the integrator
+would create three underlying scripts, one for each of the available
+functions, and call each script from pkgconfig based upon the
+command-line options.
 
 For each of the three functions, integrators must also provide a list
 of files that are needed to complete the function. The list for each
-function will be named '<function>.files' and should be placed in the
-package's base directory. The files specified in the list can be
-either absolute or relative pathnames. In addition, the pkgconfig
-script itself should be listed in each of the file lists.
+function will be named \file{<function>-files.txt} and should be
+placed in the package's base directory. The files specified in the
+list can be either absolute or relative pathnames. In addition, the
+pkgconfig script itself should be listed in each of the file lists.
 
 To recap, here is a list of the files that each package must provide
 in its directory:
 
 \begin{itemize}
-\item \cmd{<pkgname>/pkgconfig}
-\item \cmd{<pkgname>/install.files}
-\item \cmd{<pkgname>/uninstall.files}
-\item \cmd{<pkgname>/configure.files}
+\item \cmd{<pkgname>/opkgconfig.sh}
+\item \cmd{<pkgname>/install-files.txt}
+\item \cmd{<pkgname>/uninstall-files.txt}
+\item \cmd{<pkgname>/configure-files.txt}
 \end{itemize}
 
 % LocalWords:  Exp Filesystem LSB FSH oscar doc HowTos Docs pkgname ODR CLAMDR
