@@ -1,0 +1,17 @@
+VANCOUVER, British Columbia, November 8, 2004 -- Canada's Michael Smith Genome Sciences Centre (GSC) is pleased to announce that the OSCAR working group has released its latest version of the Open Source Cluster Application Resources (OSCAR) toolkit, version 4.0.
+
+With growing needs of High Performance Computing (HPC) in the Life Sciences and many other disciplines, the OSCAR toolkit was developed to support the challenges of configuring, operating, programming and managing a high-performance cluster.
+
+OSCAR is a complete HPC solution, it contains a collection of Open Source software integrated together to assist in quickly deploying and then answering computationally-intensive questions, whether it is in bioinformatics, computer animation, business or the oil industry.
+
+OSCAR 4.0 comes with numerous new features and added support for different Linux distributions and hardware architectures.  Improvements have been made to the user interface to make it more user friendly; the addition of DepMan, Packman modules for resolving package dependencies and ease the management of packages; Ganglia, a popular cluster monitoring tool has been added as an included package; and OpenPBS has been replaced as the default job scheduling system by Torque, an open source spin-off from the original OpenPBS project.
+
+OSCAR 4.0 has been fully tested on IA32 and IA64 (Itanium) processors, under Red Hat Linux 9, Red Hat Enterprise Linux 3, Fedora Core 2, and Mandrakelinux 10.0.
+
+The OSCAR system can be easily extended by means of 'Packages' which provide specialized cluster-aware applications.  These can be installed either during or after the initial deployment of the cluster and can also be created by end-users.
+
+To download the toolkit, please visit our official website at http://oscar.openclustergroup.org where you will also find useful information about OSCAR and other OSCAR-related projects.
+
+The OSCAR working group is a consortium of industry, academic and research participants.  Primary contributors include Bald Guy Software, Dell, Canada's Michael Smith Genome Sciences Centre (GSC), IBM, Indiana University, Intel, Louisiana Tech University, National Center for Supercomputing Applications (NCSA), Oak Ridge National Laboratory (ORNL) and Revolution Linux.  OSCAR is the product of the OSCAR working group of the Open Cluster Group (OCG).  OCG is dedicated to making cluster computing practical.  The OCG and its subgroups are open to all.
+
+Canada's Michael Smith Genome Sciences Centre at the BC Cancer Agency is an internationally recognized facility specializing in high throughput genome research activities.  With support from the BC Cancer Foundation and a primary mandate to apply genomics and bioinformatics tools and technologies to cancer and disease research, the GSC has partnered with researchers and clinicians to explore genomics solutions to cancer problems.  In partnership with Genome BC/Genome Canada, the GSC operates the Sequencing, Genome Mapping and Bioinformatics platforms and engages in collaborative basic genomics research.
