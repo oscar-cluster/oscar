@@ -7,7 +7,7 @@ package scripts::user_settings;
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: user_settings.pm,v 1.2 2003/01/21 21:55:52 jsquyres Exp $
+# $Id: user_settings.pm,v 1.3 2003/01/28 19:42:04 brechin Exp $
 #
 
 use strict;
@@ -18,7 +18,7 @@ use base qw(Exporter);
 use Data::Dumper;
 
 @EXPORT = qw(get);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 # Import some modules just for switcher
 
@@ -46,7 +46,7 @@ sub get {
     # Read in all the <switcher> blocks from the package
     # configurations
     
-    my $pkg_config = switcher::scripts::package_config::get();
+    my $pkg_config = scripts::package_config::get();
 
     # Merge the two together.  Wherever there is no user-specified
     # setting from the configurator, make a default setting.

@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: set_switcher_defaults,v 1.4 2003/01/21 21:55:51 jsquyres Exp $
+# $Id: set_switcher_defaults,v 1.5 2003/01/28 19:42:04 brechin Exp $
 #
 
 use strict;
@@ -26,7 +26,7 @@ use Data::Dumper;
 # Read in the results from the configurator
 #
 
-my $results = switcher::scripts::user_settings::get();
+my $results = scripts::user_settings::get();
 
 #
 # If we have output from the configurator step, analyze it and invoke
