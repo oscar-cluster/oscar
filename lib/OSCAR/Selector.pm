@@ -24,7 +24,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.5 2002/10/29 19:51:41 tfleury Exp $
+# $Id: Selector.pm,v 1.6 2002/10/29 22:37:38 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -558,16 +558,6 @@ sub writeOutSelectionConfig
 }
 
 #########################################################################
-#  This subroutine is called when one of the checkbuttons in the        #
-#  package listing is clicked.  Right now, all it does is enable the    #
-#  "Save and Exit" button.                                              #
-#########################################################################
-#sub checkButtonSelected
-#{
-#  $saveAndExitButton->configure(-state => 'active');
-#}
-
-#########################################################################
 #  Subroutine : populateSelectorList                                    #
 #  Parameters : None                                                    #
 #  Returns    : Nothing                                                 #
@@ -605,24 +595,23 @@ sub populateSelectorList
       my $pkgxml = pkg_config_xml();
       foreach my $package (sort keys %{ $packagexml } )
         {
-          $tempframe = $pane->Frame()->pack(-side => 'top',
-                                            -fill => 'x',
-                                           );
-          # Then add the checkbutton, info/config buttons, and package name
-          # First, the checkbutton
-          $packagecheckbuttons{$package} = $tempframe->Checkbutton(
+          # Create a frame and save it in a hash based on pkgdir name
+          $tempframe->{$package} = $pane->Frame();
+
+          # Add the checkbutton, info/config buttons, and package name label.
+          # First, the checkbutton...
+          $packagecheckbuttons{$package} = $tempframe->{$package}->Checkbutton(
             -state => (((defined $pkgxml->{$package}{class}) &&
                        ($pkgxml->{$package}{class} eq 'core')) ?
                        'disabled' : 'normal'),
             -variable =>
               \$selconf->{configs}{$configselectstring}{packages}{$package},
-            # -command => \&checkButtonSelected,
-          )->pack(-side => 'left');
+            )->pack(-side => 'left');
           $packagecheckbuttons{$package}->select if 
             $selconf->{configs}{$configselectstring}{packages}{$package};
 
-          # Then, the Info button
-          $tempframe->Button(
+          # Then, the Info button...
+          $tempframe->{$package}->Button(
             -text => 'Info',
             -command => [ \&OSCAR::Infobox::displayInformation , 
                           $root,
@@ -633,10 +622,28 @@ sub populateSelectorList
                       'disabled' : 'normal'),
             )->pack(-side => 'left');
 
-          # Finally, the package name label
-          $tempframe->Label(
+          # Finally, the package name label.
+          $tempframe->{$package}->Label(
             -text => $packagexml->{$package}{name},
             )->pack(-side => 'left');
+        }
+
+      # Now that we have created all of the temporary frames (each
+      # containing a checkbox, info button, and text label), add them to the
+      # scrolled pane in order of their "fancy" names rather than their
+      # package directory names.  To do this, create a reverse mapping from
+      # fancy names to directory names, sort on the fancy names, and use
+      # that as a hash key into the tempframe hash.
+      my(%map);
+      foreach my $package (sort keys %{ $packagexml } )
+        {
+          $map{$packagexml->{$package}{name}} = $package;
+        }
+      foreach my $pkgname (sort { lc($a) cmp lc($b) } keys %map)
+        {
+          $tempframe->{$map{$pkgname}}->pack(-side => 'top',
+                                             -fill => 'x',
+                                            );
         }
     }
 }

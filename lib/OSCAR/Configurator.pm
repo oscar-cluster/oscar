@@ -24,7 +24,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.8 2002/10/29 19:51:41 tfleury Exp $
+# $Id: Configurator.pm,v 1.9 2002/10/29 22:37:38 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -234,24 +234,41 @@ sub populateConfiguratorList
     { # Create a temp Frame widgit for each package row
       foreach my $package (sort keys %{ $packagexml } )
         {
-          $tempframe = $pane->Frame()->pack(-side => 'top',
-                                            -fill => 'x');
-          # Then add the config buttons and package names
-          # First the Config button
-          $tempframe->Button(
+          # Create a frame and save it in a hash based on pkgdir name
+          $tempframe->{$package} = $pane->Frame();
+
+          # Then add the config buttons and package name labels.
+          # First,the Config button...
+          $tempframe->{$package}->Button(
             -text => 'Config',
-            #-state => ((-s "$oscarbasedir/packages/$package/configurator.html") ?
-            #          'active' : 'disabled'),
             -command => [ \&OSCAR::Configbox::configurePackage,
                           $root,
                           "$oscarbasedir/packages/$package",
                         ],
             )->pack(-side => 'left');
 
-          # Finally, the package name label
-          $tempframe->Label(
+          # Then, the package name label.
+          $tempframe->{$package}->Label(
             -text => $packagexml->{$package}{name},
             )->pack(-side => 'left');
+        }
+
+      # Now that we have created all of the temporary frames (each
+      # containing a config button and text label), add them to the
+      # scrolled pane in order of their "fancy" names rather than their
+      # package directory names.  To do this, create a reverse mapping from
+      # fancy names to directory names, sort on the fancy names, and use
+      # that as a hash key into the tempframe hash.
+      my(%map);
+      foreach my $package (sort keys %{ $packagexml } )
+        {
+          $map{$packagexml->{$package}{name}} = $package;
+        }
+      foreach my $pkgname (sort { lc($a) cmp lc($b) } keys %map)
+        {
+          $tempframe->{$map{$pkgname}}->pack(-side => 'top',
+                                             -fill => 'x',
+                                            );
         }
     }
 }
