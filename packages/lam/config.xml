@@ -9,14 +9,14 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.9 2003/01/28 18:09:01 jsquyres Exp $
+      $Id: config.xml,v 1.10 2003/07/02 10:45:31 jsquyres Exp $
   -->
   <name>LAM/MPI</name>
 
   <version>
-    <major>6</major>
-    <minor>5</minor>
-    <subversion>9</subversion>
+    <major>7</major>
+    <minor>0</minor>
+    <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
@@ -84,7 +84,7 @@ visualized either at runtime or post-mortem.</description>
   <package>
     <switcher>
       <tag>mpi</tag>
-      <name>lam-6.5.9</name>
+      <name>lam-7.0</name>
     </switcher>
   </package>
 
