@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release.tex,v 1.5 2002/02/08 02:37:33 jsquyres Exp $
+% $Id: release.tex,v 1.6 2002/06/19 06:39:45 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -119,6 +119,10 @@ through the process.
   release, and that the licenses and copyrights were properly
   prepended to the text files.
   
+\item Run the \cmd{md5sum} command on the distribution tarball.
+  Record the output MD5 sum value string (it will be used below).
+\label{dist-step-md5sum}
+        
 \item Commit the \file{VERSION} file with the distribution version
   number (so that it can be tagged in CVS in the next step).
 
@@ -206,6 +210,9 @@ through the process.
         ensure proper formatting of the notice when it is displayed on
         a user's browser.
         
+      \item Paste the MD5 sum from step~\ref{dist-step-md5sum} at the
+        bottom of the release notes.
+
       \item Ensure that the ``Preserve my pre-formatted text''
         checkbox is {\em not} checked.  {\bf Note:} If you did not use
         HTML in the release notes, you may wish to check this option.
