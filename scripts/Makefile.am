@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.12 2003/07/04 14:39:32 jsquyres Exp $
+# $Id: Makefile.am,v 1.13 2003/07/25 23:04:12 ngorsuch Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -27,6 +27,7 @@ oscar_SCRIPTS		= \
 			post_clients \
 			post_install \
 			post_rpm_install \
+			read_package_config_xml_into_database \
 			set_global_oscar_values \
 			set_oscar_interface \
 			setup_pxe \
