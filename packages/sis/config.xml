@@ -49,7 +49,7 @@
       <rpm>systemimager-flamethrower</rpm>
       <rpm>flamethrower</rpm>
       <rpm>udpcast</rpm>
-      <rpm>tftp-hpa</rpm>
+      <rpm>tftp-server</rpm>
   </rpmlist>
 
   <rpmlist>

@@ -21,9 +21,7 @@ my @rpms = qw(systemconfigurator
 		systemimager-flamethrower
 		flamethrower
 		udpcast
-		tftp-hpa
 		perl-XML-Simple
-		perl-XML-Parser
 		);  #skipping rsync
 
 @files = qw(/usr/share/systeminstaller/distinfo/Fedora/stages

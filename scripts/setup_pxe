@@ -63,6 +63,8 @@ if ($options->Help){
 
 verbose("Restarting xinetd");
 !system("/etc/init.d/xinetd restart") or croak("Couldn't restart xinetd");
+verbose("Enabling tftp");
+!system("chkconfig tftp on") or croak("Couldn't enable tftp");
 
 verbose("Creating directories.");
 mkpath("/tftpboot/pxelinux.cfg");
