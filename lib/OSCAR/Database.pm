@@ -30,6 +30,7 @@ use Data::Dumper;
 @EXPORT = qw( database_connect 
 	      database_disconnect 
 	      database_execute_command 
+	      database_read_filtering_information
 	      database_read_table_fields 
 	      database_rpmlist_for_package_and_group
 	      database_calling_traceback );
@@ -161,7 +162,77 @@ sub database_execute_command {
     return $success;
 }
 
+# reads the global information used for package and rpm filtering,
+# if one or more of the values can't be read they are returned 
+# as undef
 #
+# parameters are:   print_err     if defined and non-zero, print out
+#                                 error messages
+#
+# returned values:  architecture
+#                   distribution
+#                   distribution_version
+
+sub database_read_filtering_information {
+    
+    my ( $print_errors_flag ) = @_;
+
+    # since we are going to do a number of database operations, we'll
+    # try to be more effecient by connecting to the database first if
+    # we weren't connected when called, then perform the operations, 
+    # then disconnect if we weren't connected when we were called.
+
+    ( my $was_connected_flag = $database_available ) ||
+	OSCAR::Database::database_connect( $print_errors_flag ) ||
+	    return ( undef, undef, undef );
+
+    # read them all in
+
+    my @architecture_results = ();
+    my $architecture = undef;
+    if ( ! database_execute_command( "oscar_server_architecture",
+				     \@architecture_results,
+				     $print_errors_flag ) ) {
+	warn "Error reading the architecture from the database";
+    } elsif ( ! @architecture_results ) {
+	warn "No results returned reading the architecture from the database";
+    } else {
+	$architecture = $architecture_results[0];
+    }
+
+    my @distribution_results = ();
+    my $distribution = undef;
+    if ( ! database_execute_command( "oscar_server_distribution",
+				     \@distribution_results,
+				     $print_errors_flag ) ) {
+	warn "Error reading the distribution from the database";
+    } elsif ( ! @distribution_results ) {
+	warn "No results returned reading the distribution from the database";
+    } else {
+	$distribution = $distribution_results[0];
+    }
+
+    my @distribution_version_results = ();
+    my $distribution_version = undef;
+    if ( ! database_execute_command( "oscar_server_distribution_version",
+				     \@distribution_version_results,
+				     $print_errors_flag ) ) {
+	warn "Error reading the distribution version from the database";
+    } elsif ( ! @distribution_version_results ) {
+	warn "No results returned reading the distribution version from the database";
+    } else {
+	$distribution_version = $distribution_version_results[0];
+    }
+
+    # if we weren't connected to the database when called, disconnect
+
+    OSCAR::Database::database_disconnect() if $was_connected_flag;
+
+    return ( $architecture,
+	     $distribution,
+	     $distribution_version );
+}
+
 # reads specified fields from all the records in a specified database
 # table into a double deep hash with the first level of keys being
 # taken fromt the "name" field for each record, with data in the first
@@ -363,55 +434,31 @@ sub database_rpmlist_for_package_and_group {
 #    print Dumper(\@packages_rpmlists_records);
 
     # read in the oscar global architecture, distribution, etc
-    my @distribution_results = ();
-    if ( ! database_execute_command( "oscar_server_distribution",
-				     \@distribution_results,
-				     1 ) ) {
-	if ( defined $print_errors_flag && $print_errors_flag ) {
-	    warn shift @error_strings while @error_strings;
-	}
-	warn "Error reading the distribution from the database";
-        OSCAR::Database::database_disconnect() if $was_connected_flag;
-	return undef;
-    }
-    if ( ! @distribution_results ) {
-	warn "No results returned reading the distribution from the database";
-        OSCAR::Database::database_disconnect() if $was_connected_flag;
-	return undef;
-    }
-    my $distribution = $distribution_results[0];
-    my @distribution_version_results = ();
-    if ( ! database_execute_command( "oscar_server_distribution_version",
-				     \@distribution_version_results,
-				     1 ) ) {
-	if ( defined $print_errors_flag && $print_errors_flag ) {
-	    warn shift @error_strings while @error_strings;
-	}
-	warn "Error reading the distribution_version from the database";
-        OSCAR::Database::database_disconnect() if $was_connected_flag;
-	return undef;
-    }
-    if ( ! @distribution_version_results ) {
-	warn "No results returned reading the distribution_version from the database";
-        OSCAR::Database::database_disconnect() if $was_connected_flag;
-	return undef;
-    }
-    my $distribution_version = $distribution_version_results[0];
+    my ( $architecture,
+	 $distribution,
+	 $distribution_version ) =
+	     database_read_filtering_information( $print_errors_flag );
 	
     # now build the matches list
     my @rpms = ();
     foreach my $record_ref ( @packages_rpmlists_records ) {
-	    if (
-		( ! defined $$record_ref{distribution} ||
-		  $$record_ref{distribution} eq $distribution )
-		&&
-		( ! defined $$record_ref{distribution_version} ||
-		  $$record_ref{distribution_version} eq $distribution_version )
-		&&
-		( ! defined $$record_ref{group} ||
-		  ! defined $group ||
-		  $$record_ref{group} eq $group )
-	       ) { push @rpms, $$record_ref{rpm}; }
+	if (
+	    ( ! defined $$record_ref{architecture} ||
+	      ! defined $architecture ||
+	      $$record_ref{architecture} eq $architecture )
+	    &&
+	    ( ! defined $$record_ref{distribution} ||
+	      ! defined $distribution ||
+	      $$record_ref{distribution} eq $distribution )
+	    &&
+	    ( ! defined $$record_ref{distribution_version} ||
+	      ! defined $distribution_version ||
+	      $$record_ref{distribution_version} eq $distribution_version )
+	    &&
+	    ( ! defined $$record_ref{group} ||
+	      ! defined $group ||
+	      $$record_ref{group} eq $group )
+	    ) { push @rpms, $$record_ref{rpm}; }
     }
 	    
     OSCAR::Database::database_disconnect() if $was_connected_flag;
