@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.29 2002/11/18 01:18:15 jsquyres Exp $
+% $Id: release-notes.tex,v 1.30 2002/12/13 21:26:41 jsquyres Exp $
 %
 
 \section{Release Notes}
@@ -85,6 +85,35 @@ The following release notes apply to OSCAR version \oscarversion.
   node, close the OSCAR installer GUI, launch the OSCAR installer GUI
   again, and then add the node.
 
+\item For clusters larger than 9 nodes, the C3 configuration file on
+  the head node will be out of order.  Specifically, it will be ASCII
+  sorted rather than numerically ordered.  For example, the following
+  is an excerpt from a configuration on a 32 node closer:
+
+\begin{verbatim}
+  node0
+  dead remove_line_for_0-indexing
+  node1.xtorc
+  node10.xtorc
+  node11.xtorc
+  node12.xtorc
+\end{verbatim}
+  
+  (See the C3-specific notes in the OSCAR Cluster User's Guide for an
+  explanation of the ``{\tt dead}'' line)
+  
+  If you execute any C3 commands and attempt to address a specific
+  node, C3 will use the ordering specified in the \file{/etc/c3.conf}
+  file.  Hence, using the above ordering, node 3 actually resolves to
+  {\tt node11.xtorc}.  For example:
+
+\begin{verbatim}
+  # cexec --pipe :3 hostname
+  oscar_cluster node11.xtorc: node11.xtorc
+\end{verbatim}
+  
+  You may wish to manually re-sort the C3 configuration file.
+  
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,7 +144,7 @@ The following release notes apply to OSCAR version \oscarversion.
   # urpmi libexpat1_95-devel
 \end{verbatim}
 
-  This RPM is a prerequsite for the perl-XML-Simple and
+  This RPM is a prerequisite for the perl-XML-Simple and
   perl-XML-Parser Perl modules that are installed in the initial
   installation of OSCAR.  Alternatively, you can install the Mandrake
   RPMs for perl-XML-Simple and perl-XML-Parser before installing
@@ -152,6 +181,38 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Mandrake 9.0 Notes}
+\label{subsec:mdk90notes}
+
+The following steps are required to be run before attempting to
+install OSCAR on a Mandrake 9.0 cluster.  Please note Mandrake 9.0 is
+only experimentally supported, and these steps have only been lightly
+tested.  Contact the OSCAR user's mailing list with questions and/or
+comments.
+
+\begin{itemize}
+\item Install some perl modules using CPAN:
+
+\begin{verbatim}
+  # perl -MCPAN -e shell
+  install SQL::Statement
+\end{verbatim}
+  
+\item Install the python 2 compatability RPM.  This RPM can be found
+  in the OSCAR distribution package, under the \file{packages/c3/RPMS}
+  directory:
+
+\begin{verbatim}
+  # cd oscar-2.0/packages/c3/RPMS
+  # rpm -Uvh python2-compat-1.0-1.noarch.rpm
+\end{verbatim}
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{IA64 and Other Bleeding Edge Systems Notes}
