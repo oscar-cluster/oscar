@@ -58,6 +58,10 @@ my @known_services = qw(
 			systemimager
 			);
 
+my @leave_rpms = qw(
+		    libpng
+		    );
+
 # find oscar home directory
 my $oscar_home = "";
 if ( exists $ENV{OSCAR_HOME} && -d $ENV{OSCAR_HOME} ) {
@@ -260,7 +264,9 @@ sub uninstall_rpms {
     my @deleteme = ();
     foreach my $rpm (@all_rpms) {
         if(_is_installed($rpm)) {
-            push @deleteme, $rpm;
+	    if ( ! grep( /^$rpm$/, @leave_rpms ) ) {
+		push @deleteme, $rpm;
+	    }
         }
     }
     if(scalar(@deleteme)) {
@@ -270,7 +276,9 @@ sub uninstall_rpms {
 	    @deleteme = ();
 	    foreach my $rpm (@all_rpms) {
 		if(_is_installed($rpm)) {
-		    push @deleteme, $rpm;
+		    if ( ! grep( /^$rpm$/, @leave_rpms ) ) {
+			push @deleteme, $rpm;
+		    }
 		}
 		my $rpmcmd = 'rpm -e --allmatches --nodeps --noscripts ' . (join ' ', @deleteme);
 		!do_command($rpmcmd) or croak "couldn't uninstall the rpms";
