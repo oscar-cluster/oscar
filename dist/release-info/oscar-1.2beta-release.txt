@@ -1,0 +1,15 @@
+The Open Cluster Group announces the availability of the BETA release of
+OSCAR version 1.2. This is a BETA release and is not intended for 
+inexperienced users or production environments. It is intended for
+developers, testers, and early adopters. 
+
+The major feature of this release is the replacement of the installer (LUI) 
+with the System Installation Suite(SIS).
+
+This BETA release is available for download at the OSCAR project page:
+
+        http://sourceforge.net/projects/oscar/
+
+Please use the oscar-devel mailing list for help and discussions and
+report any bugs in the bug tracker. Both of these are also available
+at the OSCAR project page.
