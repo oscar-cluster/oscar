@@ -1,7 +1,7 @@
 <!ELEMENT package (name,version,class,installable,summary,
-                   license,copyright?,group,url?,maintainer*,
-                   packager+,vendor?,description,provides*,requires*,
-                   switcher*,rpmlist*,oda?)>
+                   license,copyright?,group, url?,maintainer*,
+                   packager+,vendor?,description,rpmlist?, provides*,requires*,
+                   conflicts*,download?,switcher*,oda?)>
 
 <!--
 The easiest way to use this file and to validate the XML files config.xml is
@@ -51,8 +51,8 @@ Will show you all the packages that don't validate against the present DTD.
 <!ELEMENT type (#PCDATA)>
 
 <!ELEMENT requires (type,name)>
+<!ELEMENT conflicts (type,name)>
 
-<!ELEMENT switcher (tag,name)>
 <!ELEMENT tag (#PCDATA)>
 <!ELEMENT rpmlist (all?,server?,client?)>
 <!ELEMENT all (rpm+)>
@@ -61,9 +61,18 @@ Will show you all the packages that don't validate against the present DTD.
 <!ELEMENT rpm (#PCDATA)>
 <!ATTLIST rpm distro CDATA #IMPLIED>
 <!ATTLIST rpm version CDATA #IMPLIED>
+
+<!ELEMENT download (uri,size,(md5sum|sha1sum))>
+<!ELEMENT uri (#PCDATA)>
+<!ELEMENT size (#PCDATA)>
+<!ELEMENT md5sum (#PCDATA)>
+<!ELEMENT sha1sum (#PCDATA)>
+
+
 <!ELEMENT oda (shortcut*,fieldnames*)>
 <!ELEMENT shortcut (#PCDATA)>
 <!ELEMENT fieldnames (#PCDATA)>
+<!ELEMENT switcher (tag,name)>
 
 
 
