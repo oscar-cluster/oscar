@@ -28,6 +28,8 @@ use File::Copy;
 use File::Path;
 use File::Basename;
 use AppConfig;
+use OSCAR::Network;
+use OSCAR::Package;
 use Cwd;
 
 my $imagename = shift or croak("No image name specified!"); 
@@ -115,7 +117,7 @@ sub setup_nfs_homes {
 						return undef);
 	open(TMP,">/tmp/fstab.$$") or (carp("Can't open fstab file!"),
 						return undef);
-	my ($serverip,undef,undef) = &find_internal_ip($serverint);
+	my ($serverip,undef,undef) = interface2ip($serverint);
 	while (<FSTAB>){
 		unless (/:\/home/) {
 			print TMP $_;
