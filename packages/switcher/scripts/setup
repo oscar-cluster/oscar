@@ -1,27 +1,59 @@
-#!/bin/sh
+#!/usr/bin/env perl
 #
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.2 2002/11/17 05:01:41 jsquyres Exp $
+# $Id: setup,v 1.3 2003/07/17 17:47:13 jsquyres Exp $
 #
 # post_clients script for the switcher package
 #
 
-# It seems that the modules RPMs were compiled to dynamically link to
-# /usr/lib/tcl.so.0, but Mandrake 8.2 doesn't have this file.  So we
-# have to create a sym link to make it work.  Hackish, but actually
-# fairly safe because modules don't use too many TCL features.
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX;
+use Carp;
+use OSCAR::Distro;
+use OSCAR::PackageBest;
 
-src=/usr/lib/libtcl8.3.so
-dest=/usr/lib/libtcl.so.0
-if test ! -e $dest -a -e $src; then
-    ln -s $src $dest
-fi
+# Different distro's require different RPMs (mainly because libtcl appears
+# to be installed differently on different distros).  So put some
+# intelligence here to figure out what distro we're on and copythe
+# right RPM(s) to the packages/switcher/RPMS directory.
+
+my $source_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro/";
+my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
+
+my ($name, $ver) = OSCAR::Distro::which_distro_server();
+if ($name eq "redhat") {
+  $source_dir .= "rh";
+  if ($ver eq "8.0") {
+    $source_dir .= "80";
+  } elsif ($ver eq "9.0") {
+    $source_dir .= "90";
+  } else {
+    $source_dir .= "72";
+  }
+} elsif ($name eq "suse") {
+  $source_dir .= "rh80";
+} elsif ($name eq "mandrake") {
+  $source_dir .= "rh80";
+}
+
+print "Copy: $source_dir -> $dest_dir\n";
+
+# Quick sanity check
+
+if (! -d $dest_dir) {
+  croak("$dest_dir does not exist");
+} elsif (! -d $source_dir) {
+  croak("$source_dir does not exist");
+}
+system("rm $dest_dir/modules-oscar\* 2>&1 >/dev/null");
+system("cp $source_dir/*.rpm $dest_dir\n");
 
 # All done
 
