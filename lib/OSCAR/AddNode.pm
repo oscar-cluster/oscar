@@ -1,6 +1,6 @@
 package OSCAR::AddNode;
 
-#   $Id: AddNode.pm,v 1.1 2002/05/17 20:56:43 mchasal Exp $
+#   $Id: AddNode.pm,v 1.2 2002/05/17 21:16:15 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,17 +28,17 @@ use base qw(Exporter);
 use SIS::Image;
 @EXPORT = qw(addnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 sub addnode_window {
-    my ($parent, $vars) = @_;
+    my ($parent, $interface) = @_;
 
     my $window = $parent->Toplevel;
     $window->title("Add Oscar Nodes");
     my $inst=$window->Label (-text=>"Perform the following steps to add nodes to your OSCAR cluster",-relief=>"groove");
     $inst->grid("-","-",-sticky=>"nsew");
-    &main::oscar_button($window, "Step 1:", "Define OSCAR Clients", [\&main::build_oscar_clients, $window, $main::interface], 'addclients');
-    &main::oscar_button($window, "Step 2:", "Setup Networking", [\&main::mac_window, $window, {interface => $main::interface}], 'netboot');
+    &main::oscar_button($window, "Step 1:", "Define OSCAR Clients", [\&main::build_oscar_clients, $window, $interface], 'addclients');
+    &main::oscar_button($window, "Step 2:", "Setup Networking", [\&main::mac_window, $window, {interface => $interface}], 'netboot');
     my $boot=$window->Label (-text=>"Before continuing, network boot all of your nodes. 
     Once they have completed installation, reboot them from 
     the hard drive. Once all the machines and their ethernet

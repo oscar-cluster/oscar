@@ -77,7 +77,7 @@ oscar_button($window, "Step 6:", "Test Cluster Setup", [\&run_tests, $window], '
 my $maint=$window->Label (-text=>"The following buttons are for managing 
 your node definitions after the initial install.",-relief=>"groove");
 $maint->grid("-","-",-sticky=>"nsew");
-oscar_button($window, "", "Add OSCAR Clients", [\&addnode_window, $window], 'add_nodes');
+oscar_button($window, "", "Add OSCAR Clients", [\&addnode_window, $window, $interface], 'add_nodes');
 oscar_button($window, "", "Delete OSCAR Clients", [\&delnode_window, $window], 'delete_nodes');
 
 
