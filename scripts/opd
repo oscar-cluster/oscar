@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.10 2003/01/19 12:34:33 jsquyres Exp $
+# $Id: opd,v 1.11 2003/01/19 14:54:34 jsquyres Exp $
 #
 
 use strict;
@@ -82,11 +82,13 @@ $have_xml_parser = 0 if ($@);
 eval { require XML::Simple };
 $have_xml_simple = 0 if ($@);
 
-# Similar for Digest::SHA1
+# Similar for SHA1 support
 
 my $have_digest_sha1 = 1;
 eval { require Digest::SHA1; };
 $have_digest_sha1 = 0 if ($@);
+my $have_sha1sum = 1;
+$have_sha1sum = 0 if (system("which sha1sum > /dev/null 2>&1") != 0);
 
 # Print out some friendly error/warning messages
 
@@ -113,16 +115,22 @@ OSCAR installation.
     exit(1);
 }
 
-if (!$have_digest_sha1) {
-   print("WARNING: You do not appear to have the Perl modeul Digest::SHA1 installed.
-Packages that use SHA1 sums for verification WILL NOT BE ABLE TO BE CHECKED!
+if (!$have_digest_sha1 && !$have_sha1sum) {
 
-Although Digest::SHA1 is not *necessary*, you are STRONGLY urged to
-quit and install it before downloading any OSCAR packages.
-Digest::SHA1 can be easily installed using the Perl CPAN tool.  For
-example:
+   print("WARNING: You do not appear to have the Perl modeul
+Digest::SHA1 installed, nor do you have the sha1sum executable
+installed.  Packages that use SHA1 sums for verification WILL NOT BE
+ABLE TO BE CHECKED!
+
+Although SHA1 support is not *necessary*, you are STRONGLY urged to
+quit and install it before downloading any OSCAR packages.  The
+Digest::SHA1 Perl module can be easily installed using the Perl CPAN
+tool.  For example:
 
     perl -MCPAN -e \"install Digest::SHA1\"
+
+The sha1sum executable is part of recent versions of the GNU textutils
+distribute, available from ftp://ftp.gnu.org/gnu/.
 
 ");
 }
@@ -185,6 +193,7 @@ sub mkdir_p {
 #
 sub read_repository_listing {
     my $rfilename = "$metadatadir/$repository_filename";
+    my $now = time();
     
     # Do we need to update the master repository listing?
 
@@ -194,12 +203,15 @@ sub read_repository_listing {
 	my ($dev, $ino, $mode, $nlink, $uid, $gid, $rdev, $size,
 	    $atime, $mtime, $ctime, $blksize, $blocks)
 	    = stat($rfilename);
-	my $now = time();
-
 	$want_update = 1 if (($now - $mtime) > (24 * 60 * 60));
     }
     my $uri = $default_repository_uri;
-    $uri = $argv_repository_uri if (defined($argv_repository_uri));
+    if (defined($argv_repository_uri)) {
+	$uri = $argv_repository_uri;
+	$want_update = 1;
+    }
+
+    # If we want the update, go download it
 
     if ($want_update) {
 	$uri =~ s/\/$//g;
@@ -209,9 +221,22 @@ sub read_repository_listing {
 
 	print("Updating master repository listing from:\n  $uri\n");
 	my ($happy, $content) = download_from_uri("$uri/$repository_filename",
-						  "$rfilename.new");
-	print("WARNING: Unable to download repository listing\n")
-	    if ($happy != 1);
+						  "$rfilename.opd");
+	if ($happy == 1) {
+	    if (!move("$rfilename.opd", $rfilename)) {
+		print ("WARNING: Unable to overwrite $rfilename -- not updated");
+	    } else {
+
+		# Update the timestamp on the file that we just
+		# downloaded; download agents like wget will use the
+		# timestamp from the HTTP header (which may be a long
+		# time ago)
+
+		utime $now, $now, $rfilename;
+	    }
+	} else {
+	    print("WARNING: Unable to download repository listing\n");
+	}
     }
 
     # Read in the default repositories file
@@ -363,21 +388,21 @@ sub download_packages_file {
     my $happy;
     my $content;
     my $ffname = "$metadatadir/$package_filename";
-    ($happy, $content) = download_from_uri($uri, "$ffname.new");
+    ($happy, $content) = download_from_uri($uri, "$ffname.opd");
 
     # If we got it, save it to a file.  Then load each entry with an
     # empty download/install info hash
 
     if ($happy) {
 	if (!($package_listing = 
-	      $xs->XMLin("$ffname.new"))) {
+	      $xs->XMLin("$ffname.opd"))) {
 	    die("ERROR: I was unable to open the following file for reading:\n" .
 		"\t$ffname\nAborting.");
 	}
 
 	# Overwrite the old file; count how many packages available
 
-	move("$ffname.new", "$ffname");
+	move("$ffname.opd", "$ffname");
 	my $num_pkgs = $#{$package_listing->{package}} + 1;
 	print((($num_pkgs == 1) ?
 	       "Found 1 package" :
@@ -957,7 +982,7 @@ sub download_package {
 	# Download the file
 
 	($happy, $content) = download_from_uri($pkg->{download}->{uri}[$i],
-					       "$downloaddir/$filename.new");
+					       "$downloaddir/$filename.opd");
 	if ($happy) {
 
 	    # Check the downloaded file size
@@ -981,7 +1006,7 @@ sub download_package {
 		$pkg->{download}->{md5sum}) {
 		my $digest = md5_hex($$content);
 		if ($digest ne $pkg->{download}->{md5sum}) {
-		    print("FAILED\n");
+		    print("FAILED: $digest != $pkg->{donwload}->{md5sum}\n");
 		    next;
 		} else {
 		    print("OK\n");
@@ -995,9 +1020,20 @@ sub download_package {
 	    print("- Checking SHA1 sum... ");
 	    if (defined($pkg->{download}->{sha1sum}) &&
 		$pkg->{download}->{sha1sum}) {
-		my $digest = sha1_hex($$content);
+		my $digest;
+
+		if ($have_digest_sha1) {
+		    $digest = Digest::SHA1::sha1_hex($$content);
+		} elsif ($have_sha1sum) {
+		    if (open(SHA1, "sha1sum $downloaddir/$filename.opd|")) {
+			($digest) = split(/ /, <SHA1>);
+			close(SHA1);
+		    }
+		} else {
+		    print "NO SHA1 SUPPORT INSTALLED: ";
+		} 
 		if ($digest ne $pkg->{download}->{sha1sum}) {
-		    print("FAILED\n");
+		    print("FAILED: $digest != $pkg->{donwload}->{sha1sum}\n");
 		    next;
 		} else {
 		    print("OK\n");
@@ -1009,9 +1045,9 @@ sub download_package {
 	    # Save the file
 
 	    print("- Saving to $downloaddir/$filename... ");
-	    if (!move("$downloaddir/$filename.new", 
+	    if (!move("$downloaddir/$filename.opd", 
 		      "$downloaddir/$filename")) {
-		print("FAILED\n");
+		print("FAILED: could not overwrite $downloaddir/$filename\n");
 		next;
 	    }
 	    print("OK\n");
@@ -1021,7 +1057,7 @@ sub download_package {
 	    print("- Unpacking into $expanddir/... ");
 	    my $cmd = "cd $expanddir ; tar zxf $downloaddir/$filename";
 	    if (system($cmd)) {
-		print("FAILED\n");
+		print("FAILED: could not expand into $expanddir\n");
 		next;
 	    }
 	    print("OK\n");
