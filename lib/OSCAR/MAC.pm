@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.5 2002/02/17 04:44:54 sdague Exp $
+#   $Id: MAC.pm,v 1.6 2002/02/25 18:20:52 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use OSCAR::Network;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -223,7 +223,7 @@ sub regenerate_listbox {
     my $listbox = shift;
     $listbox->delete(0,"end");
     foreach my $key (sort keys %MAC) {
-        if($MAC{$key} == -1) {
+        if($MAC{$key} eq -1) {
             $listbox->insert("end",$key);
         }
     }
