@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.9 2002/12/08 17:19:31 sad Exp $
+% $Id: user.tex,v 1.10 2002/12/08 17:27:15 sad Exp $
 %
 % $COPYRIGHT$
 %
@@ -67,6 +67,57 @@ The current version of the Ganglia tools packaged for OSCAR is:
 \item \rpmname{rrdtool-oscar-devel-1.0.35-2}
 \item \rpmname{PyXML-oscar-0.7.1-7}
 \end{itemize}
+
+Once the ganglia-monitor-core-gmond rpm is installed there are some
+user customizations that should be made in the gmond config file
+located in:
+
+\vspace{10pt}
+\centerline{\cmd{/etc/gmond.conf}}
+\vspace{10pt}
+
+The file contains the following lines:
+
+\begin{verbatim}
+
+# This is the configuration file for the Ganglia Monitor Daemon (gmond)
+# Documentation can be found at http://ganglia.sourceforge.net/docs/
+#
+# To change a value from it's default simply uncomment the line
+# and alter the value
+#####################
+#
+# The name of the cluster this node is a part of
+# default: "unspecified"
+# name  "My Cluster"
+#
+# The owner of this cluster. Represents an administrative
+# domain. The pair name/owner should be unique for all clusters
+# in the world.
+# default: "unspecified"
+# owner "My Organization"
+#
+# The latitude and longitude GPS coordinates of this cluster on earth.
+# Specified to 1 mile accuracy with two decimal places per axis in Decimal
+# DMS format: "N61.18 W130.50".
+# default: "unspecified"
+# latlong "N32.87 W117.22"
+#
+# The URL for more information on the Cluster. Intended to give purpose,
+# owner, administration, and account details for this cluster.
+# default: "unspecified"
+# url "http://www.mycluster.edu/"
+#
+# The location of this host in the cluster. Given as a 3D coordinate:
+# "Rack,Rank,Plane" that corresponds to a Euclidean coordinate "x,y,z".
+# default: "unspecified"
+# location "0,0,0"
+#
+
+\end{verbatim}
+
+It is suggested that at least the name and owner configuration values
+for the head node be set to unique values for your organization.
 
 The addition of the \cmd{ganglia} command line tool makes it possible
 to access all of the available multicasted ganglia monitoring data
