@@ -41,8 +41,6 @@ my $targetdir = $config->default_imagedir . "/$imagename";
 
 if(!-d $targetdir) {croak("The directory $targetdir doesn't exist");}
 
-link_kernel_files($targetdir) or croak("Couldn't link kernel files");
-
 sync_user_files($targetdir) or croak("Couldn't sync user files");
 
 setup_nfs_homes($targetdir) or croak("Couldn't setup nfs mounted /home");
