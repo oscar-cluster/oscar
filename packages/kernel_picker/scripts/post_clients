@@ -99,12 +99,18 @@ if (-e $valuesfile)
           {
             $cmd .= " --autoselectimage";
           }
-        $cmd .= " --bootkernel $bootkernel --bootramdisk N --networkboot N";
+        $cmd .= " --bootkernel $bootkernel --networkboot N";
         if ($values->{usesmodules}[0] eq 'Y')
           {
+            $cmd .= " --bootramdisk Y";
+            $cmd .= " --bootlabel $kernelversion";
             $cmd .= " --kernelversion $kernelversion";
             $cmd .= " --modulespath $modulespath";
             $cmd .= " --systemmap $systemmap" if $systemmap;
+          }
+        else
+          {
+            $cmd .= " --bootramdisk N";
           }
 
         print "$cmd\n";
