@@ -27,6 +27,12 @@ if ( $distn eq 'mandrake' ) {
   if ( system("rpm --quiet -q perl-devel") != 0 ) {
     !system("rpm -Uvh /tftpboot/rpm/perl-devel-*.rpm") || croak "Couldn't install perl-devel!";
   }
+  if ( system("rpm --quiet -q perl-HTML-Tagset") != 0 ) {
+    !system("rpm -Uvh /tftpboot/rpm/perl-HTML-Tagset-*.rpm") || croak "Couldn't install perl-HTML-Tagset!";
+  }
+  if ( system("rpm --quiet -q perl-HTML-Parser") != 0 ) {
+    !system("rpm -Uvh /tftpboot/rpm/perl-HTML-Parser-*.rpm") || croak "Couldn't install perl-HTML-Parser!";
+  }
 }
 
 
