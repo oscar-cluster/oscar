@@ -141,7 +141,7 @@ sub build_oscar_image {
                 pkgfile => "$rpmlist",
                 pkgpath => "/tftpboot/rpm",
                 diskfile => "$Bin/../oscarsamples/sample.disk.$disk_type",
-                ipmeth => "dynamic_dhcp",
+                ipmeth => "static",
                 piaction => "beep",
                 postinstall => \&postimagebuild,
                );
