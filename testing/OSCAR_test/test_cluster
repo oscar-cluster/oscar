@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster,v 1.11 2002/06/05 17:07:42 jenos Exp $
+# $Id: test_cluster,v 1.12 2002/06/05 22:29:43 mchasal Exp $
 #
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
@@ -139,43 +139,48 @@ cd $homedir/$test_dir
 if [ -f $output_file.out ]; then /bin/rm -f $output_file.out; fi
 if [ -f $output_file.err ]; then /bin/rm -f $output_file.err; fi
 job=`$qsub -l nodes=$clients:ppn=$ppn $pbs_script`
-timeleft=$timeout
-job_state=incomplete
-while [ $job_state = incomplete ]; do 
-# Displays remaining seconds
-  echo -n " $timeleft"
-  if [ $timeleft -gt 99 ]; then
-    echo -n " "
-  elif [ $timeleft -gt 9 ]; then
-    echo -n "  "
-  else
-    echo -n "   "
-  fi
-  echo -n -e "\b\b\b\b\b"
-  sleep 1
-# Tests for success or timeout
-  if [ -f $output_file.out ] ; then
-    grep "$grep_string" $output_file.out > /dev/null
-    string_test=$?
-    if [ $string_test = 0 ] ; then
-      job_state=success
+# Check that job submitted properly
+if [ -z $job ]
+then
+  echo_failure
+else
+  timeleft=$timeout
+  job_state=incomplete
+  while [ $job_state = incomplete ]; do 
+  # Displays remaining seconds
+    echo -n " $timeleft"
+    if [ $timeleft -gt 99 ]; then
+      echo -n " "
+    elif [ $timeleft -gt 9 ]; then
+      echo -n "  "
+    else
+      echo -n "   "
+    fi
+    echo -n -e "\b\b\b\b\b"
+    sleep 1
+  # Tests for success or timeout
+    if [ -f $output_file.out ] ; then
+      grep "$grep_string" $output_file.out > /dev/null
+      string_test=$?
+      if [ $string_test = 0 ] ; then
+        job_state=success
+        echo -n -e "\b\b\b      "
+        echo_success
+      fi
+    fi
+    if [ $timeleft -eq 0 ]; then # more than timeout
       echo -n -e "\b\b\b      "
-      echo_success
-    fi
-  fi
-  if [ $timeleft -eq 0 ]; then # more than timeout
-    echo -n -e "\b\b\b      "
-    echo_failure
-    job_state=fail
-    if [ `/usr/local/pbs/bin/qstat |grep -c $job` -eq 1 ]; then
-    /usr/local/pbs/bin/qdel $job
-    sleep 1 # Allows nodes to free up again
-    fi
-    if [ $exit_on_fail = yes ]; then exit 1 ; fi
-  fi 
-  timeleft=`expr $timeleft - 1`
-done
-
+      echo_failure
+      job_state=fail
+      if [ `/usr/local/pbs/bin/qstat |grep -c $job` -eq 1 ]; then
+      /usr/local/pbs/bin/qdel $job
+      sleep 1 # Allows nodes to free up again
+      fi
+      if [ $exit_on_fail = yes ]; then exit 1 ; fi
+    fi 
+    timeleft=`expr $timeleft - 1`
+  done
+fi
 cd ..
 echo
 }
