@@ -75,7 +75,7 @@ if [ "\$LAMMPI" = "" ] ; then
   export LAMMPI="$PREFIX"
   export PATH="\${PATH}:\${LAMMPI}/bin"
   if [[ -z \$MANPATH ]]; then
-    export MANPATH="\$LAMMPI/man"
+    export MANPATH="/usr/share/man:\$LAMMPI/man"
   else
     export MANPATH="\${MANPATH}:\$LAMMPI/man"
   fi
@@ -102,7 +102,7 @@ if (\$?LAMMPI == "0") then
   set LAMMPI="$PREFIX"
   set path = (\$path \$LAMMPI/bin)
   if (\$?MANPATH == "0") then
-    set MANPATH="\$LAMMPI/man"
+    set MANPATH="/usr/share/man:\$LAMMPI/man"
   else
     set MANPATH="\${MANPATH}:\$LAMMPI/man"
   endif
