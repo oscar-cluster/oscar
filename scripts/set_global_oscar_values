@@ -1,0 +1,104 @@
+#! /usr/bin/perl
+
+# Copyright 2003 NCSA
+#           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# 
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   This script initializes or re-initializes the values in the database
+#   table "oscar" which is for global values.
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Database;
+use OSCAR::Package;
+use OSCAR::Distro;
+
+my %options = ();
+
+my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
+my $mysql_service_name;
+if ($oscar_server_distribution eq "redhat") {
+    $mysql_service_name="mysqld";
+} elsif ($oscar_server_distribution eq "mandrake") {
+    $mysql_service_name="mysql";
+} else {
+    die "$0: unknown distribution <$oscar_server_distribution>";
+}
+
+# open the database
+database_connect() ||
+die "$0: cannot connect to oda database";
+
+# write out one global oscar record, or modify an existing one
+my @assigns = ();
+my $oscar_version;
+if ( -r "$ENV{OSCAR_HOME}/VERSION" ) {
+    $oscar_version = `cat $ENV{OSCAR_HOME}/VERSION`;
+    chomp $oscar_version;
+} else {
+    $oscar_version = "CVS";
+}
+push @assigns, "oscar.oscar_version~$oscar_version";
+push @assigns, "oscar.oscar_server_distribution~$oscar_server_distribution"
+    if defined $oscar_server_distribution && $oscar_server_distribution ne "";
+push @assigns, "oscar.oscar_server_distribution_version~$oscar_server_distribution_version"
+    if defined $oscar_server_distribution_version && $oscar_server_distribution_version ne "";
+
+my $global_values_table = "oscar";
+
+my @table_fields = ( "$global_values_table" );
+my @read_results = ();
+my @error_strings = ();
+if ( ! oda::read_records( \%options,
+			  \@table_fields,
+			  undef,
+			  \@read_results,
+			  1,
+			  \@error_strings ) ) {
+    warn shift @error_strings while @error_strings;
+} else {
+    if ( ! @read_results ) {
+	print "Creating the global oscar information record\n";
+	if ( ! oda::insert_record( \%options,
+				   "oscar",
+				   \@assigns,
+				   undef,
+				   \@error_strings ) ) {
+	    warn shift @error_strings while @error_strings;
+	}
+    } else {
+	print "$0: very strange, there are more than 2 records table <$global_values_table>\n"
+	    if scalar @read_results > 1;
+	print "Modifying the global oscar information record\n";
+	if ( ! oda::modify_records( \%options,
+				    \@table_fields,
+				    \@assigns,
+				    undef,
+				    \@error_strings ) ) {
+	    warn shift @error_strings while @error_strings;
+	}
+    }
+}    
+
+database_disconnect();
+exit 0;
+
+
+
+
+
+
+
