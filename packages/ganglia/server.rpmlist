@@ -1,4 +1,5 @@
 ganglia-monitor-core
 ganglia-php-rrd-client
+libpng
 rrdtool-oscar
 perl-XML-Parser
