@@ -1,2 +1,4 @@
 Makefile
 Makefile.in
+oscar_home.sh
+oscar_home.csh
