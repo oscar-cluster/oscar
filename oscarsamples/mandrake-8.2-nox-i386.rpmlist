@@ -77,6 +77,8 @@ sh-utils
 libutempter0
 rmt
 less
+libaio
+libaio-devel
 tar
 net-tools
 common-licenses

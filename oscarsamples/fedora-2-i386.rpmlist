@@ -76,6 +76,7 @@ kernel-smp
 krb5-libs
 less
 libaio
+libaio-devel
 libjpeg
 libpng
 libselinux

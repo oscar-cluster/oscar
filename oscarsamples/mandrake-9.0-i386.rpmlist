@@ -73,6 +73,8 @@ ldconfig
 ldetect
 ldetect-lst
 less
+libaio
+libaio-devel
 libatk1.0_0
 libbinutils2
 libbzip2_1

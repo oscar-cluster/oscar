@@ -69,6 +69,8 @@ kudzu
 krb5-libs
 laus
 less
+libaio
+libaio-devel
 libgcc
 libjpeg
 libpng

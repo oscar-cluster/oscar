@@ -129,6 +129,8 @@ findutils
 grep
 dhcpcd
 less
+libaio
+libaio-devel
 man
 procmail 
 psmisc 

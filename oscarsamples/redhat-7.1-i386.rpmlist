@@ -70,6 +70,8 @@ kernel-smp
 krb5-libs
 ksymoops
 less
+libaio
+libaio-devel
 libjpeg
 libpng
 libstdc++

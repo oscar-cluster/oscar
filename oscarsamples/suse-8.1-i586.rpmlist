@@ -147,6 +147,8 @@ keramik
 ksymoops
 l2h-pngicons
 less
+libaio
+libaio-devel
 libPropList
 libart_lgpl
 libcap

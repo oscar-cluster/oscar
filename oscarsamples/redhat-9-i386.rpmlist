@@ -104,6 +104,7 @@ lftp
 lha
 libacl
 libaio
+libaio-devel
 libattr
 libcap
 libf2c
