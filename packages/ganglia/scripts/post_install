@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,12 +20,26 @@
 # (C)opyright Bernard Li <bli@bcgsc.ca>
 
 use Carp;
+use XML::Simple;
 
 my $gmond_conf = '/tmp/gmond.conf';
 my $confBuffer = "";
-my @result = split(/ = /,`grep 'DEVICE = eth' /var/lib/systemimager/scripts/*.master`);
+# not useful currently, may be useful when define client supports changing of
+# default interface via the GUI, as per RFE #791658
+#my @result = split(/ = /,`grep 'DEVICE = eth' /var/lib/systemimager/scripts/*.master`);
+my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+#my $iface = $result[1];
 
-my $iface = $result[1];
+# default interface for client nodes if package is not configured
+my $iface = "eth0";
+
+my $push_command = "cpush";
+my $exec_command = "cexec";
+
+if (-e $xml_data) {
+    $ref = XMLin($xml_data);
+    $iface = $ref->{iface};
+}
 
 system("cp /etc/gmond.conf $gmond_conf");
 
@@ -46,14 +60,14 @@ print CONF $confBuffer;
 close(CONF);
 
 # push the modified /etc/gmond.conf to the client nodes
-system("/opt/c3-4/cpush $gmond_conf /etc/gmond.conf");
+system("$push_command $gmond_conf /etc/gmond.conf");
 
 system("rm $gmond_conf");
 
 # stop all running daemons and restart them all (on headnode and clients)
 system("/etc/init.d/gmond stop");
 system("/etc/init.d/gmetad stop");
-system("/opt/c3-4/cexec /etc/init.d/gmond stop");
+system("$exec_command /etc/init.d/gmond stop");
 system("/etc/init.d/gmond start");
-system("/opt/c3-4/cexec /etc/init.d/gmond start");
+system("$exec_command /etc/init.d/gmond start");
 system("/etc/init.d/gmetad start");
