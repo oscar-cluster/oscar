@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.60 2003/08/13 22:11:38 naughtont Exp $
+% $Id: detailed.tex,v 1.61 2003/08/15 17:46:16 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -667,15 +667,17 @@ Before pressing the \button{Build OSCAR Client Image}, ensure that the
 following conditions on the server are true:
 
 \begin{itemize}
-\item Ensure that {\tt PermitRootLogin} is set to {\tt yes}.  After
-  the OSCAR installation, you may set this back to {\tt no} (if you
-  want), but it needs to be {\tt yes} during the install because the
-  config file is copied to the client nodes, and \user{root} {\em
-    must} be able to login to the client nodes remotely.
+
+\item Ensure that the SSH daemon's configuration file
+  (\file{/etc/ssh/sshd\_config}) on the headnode has {\tt PermitRootLogin} 
+  set to {\tt yes}.  After the OSCAR installation, you may set this back 
+  to {\tt no} (if you want), but it needs to be {\tt yes} during the install 
+  because the config file is copied to the client nodes, and \user{root} 
+  {\em must} be able to login to the client nodes remotely.
 
 \item By the same token, ensure that TCP wrappers settings are not
-  ``too tight''.  The \file{hosts.allow} and \file{hosts.deny} files
-  should allow all traffic from the entire private subnet.
+  ``too tight''.  The \file{/etc/hosts.allow} and \file{/etc/hosts.deny} 
+  files should allow all traffic from the entire private subnet.
   
 \item Also, beware of firewall software that restricts traffic in the
   private subnet.
