@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.7 2002/07/26 22:27:12 brechin Exp $
+% $Id: user.tex,v 1.8 2002/08/28 05:30:22 jenos Exp $
 %
 % $COPYRIGHT$
 %
@@ -11,9 +11,12 @@
 The OPIUM package includes facilities which synchronize the cluster's
 accounts and configures \cmd{ssh} for users.  The user account
 synchronization may only be run by root, and is automatically
-triggered at regular intervals
+triggered at regular intervals.
 OPIUM configures \cmd{ssh} such that every user can traverse the
 cluster securely without entering a password, once logged on to the
 head node.  This is done using \cmd{ssh} user keys, in the \file{.ssh}
 folder in your home directory.  It is not recommended that you make
 changes here unless you know what you are doing.
+If you change your password, make sure to change it on the OSCAR head node,
+because changes propagate to the cluster nodes from there.
+
