@@ -6,3 +6,4 @@ config.guess
 config.sub
 install-sh
 setup
+autom4te.cache
