@@ -78,7 +78,7 @@ void NodeMgmtDialog::populate_nodetable()
     oda::read_records( undef, \@fields, \@wheres, \@results, 1, undef);
     for ( my $i = 0; $i < scalar(@results); $i++ ) {
 	my $ref = $results[$i];	
-print "DEBUG:: adding " . $$ref{name} . " now\n";
+#print "DEBUG:: adding " . $$ref{name} . " now\n";
 	nodeTable->insertRows($i, 1);
 	my $ip = $$ref{ip};
 	my $name = $$ref{name};
@@ -90,7 +90,7 @@ print "DEBUG:: adding " . $$ref{name} . " now\n";
 	nodeTable->setItem($i, 2, $item);
 	$item = Qt::TableItem(nodeTable, 0, $assmac);
 	nodeTable->setItem($i, 3, $item);
-print "DEBUG:: added " . $$ref{name} . " just now\n";
+#print "DEBUG:: added " . $$ref{name} . " just now\n";
     }
 }
     
