@@ -550,7 +550,7 @@ sub configurePackage
   return if ((-s "$packagedir/.selection.ignore") ||
     (!(-s "$packagedir/configurator.html")));
 
-  my($tree) = readInDefaultConfig("$packagedir/.onfigurator.html");
+  my($tree) = readInDefaultConfig("$packagedir/configurator.html");
   return if (!$tree);
   my($values) = readInConfigValues("$packagedir/.configurator.values");
   preprocessConfig($tree,$values) if $values;
