@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.4 2002/11/01 05:25:08 jsquyres Exp $
+# $Id: opd,v 1.5 2002/11/05 02:51:22 bligneri Exp $
 #
 
 use strict;
@@ -370,9 +370,30 @@ sub list_packages_page {
     for (my $i = $start_pkg; $i <= $end_pkg; ++$i) {
 	my ($name, $version, $installable, $downloadable, $md5sum, $size) =
 	    get_package_info($i);
-	print("$i. $name $version ($size)");
-	print(" [not installable]") if ($installable != "yes");
-	print(" [not downloadable]") if (!$downloadable);
+
+    my $status="";
+    my $end="";
+
+    for (my $j = 0; $j <= $#packages_selected; ++$j) {
+	    if ($packages_selected[$j] == $i) {
+            $status=" SELECTED PACKAGE [ ";
+            $end=" ]";
+            
+        } 
+    }
+
+    if (!$status) {
+        if ($installable != "yes") {
+            $status="!!! Not Installable !!!";
+            $end="!";
+        }
+        elsif (!$downloadable){
+            $status="!!! Not Downloadable !!!";
+            $end="!";
+        }
+    }
+
+	print("$i.$status $name $version ($size) $end");
 	print("\n");
     }
 }
@@ -994,12 +1015,16 @@ sub main_menu {
 
 	# Select package(s) to download
 
-	elsif (/^s/i || /^se/i || /^sel/i || /^select/i) {
+	elsif (/^[0-9]+-[0-9]+/ || /^[0-9]+/ || /^s/i || /^se/i || /^sel/i || /^select/i) {
 	    print("\n");
-	    if ($#options < 0) {
-		list_selected_packages();
-	    } else {
-		do_packages_range(\&select_package, @options);
+        if (/^[0-9]+-[0-9]+/ || /^[0-9]+/) {
+		    do_packages_range(\&select_package, $cmd);
+        }
+        elsif ($#options < 0) {
+		    list_selected_packages();
+	    } 
+        else {
+		    do_packages_range(\&select_package, @options);
 	    }
 	    print("\n");
 	} 
@@ -1014,7 +1039,7 @@ sub main_menu {
 
 	# List the packages that are available
 
-	elsif (/^l/i || /^li/i || /^list/i) {
+	elsif (/^l/i || /^li/i || /^list/i || /^ls/i ) {
 	    print("\n");
 	    list_packages_page(1);
 	    print("\n");
@@ -1073,6 +1098,7 @@ R can be a single integer value or a range
     }
 }
 
+# Select number range
 
 #########################################################################
 #
