@@ -361,6 +361,7 @@
           config_opkgs
           config_opkgs.configurations_id~%1
           config_opkgs.package_id~%2
+          config_opkgs.syslog~%3
           %+
         </expansion>
       </shortcut>
@@ -420,6 +421,7 @@
           config_opkgs
           config_opkgs.configurations_id~%1
           config_opkgs.package_id~packages.id
+          config_opkgs.syslog~OK
           packages.name=%2
         </expansion>
       </shortcut>
@@ -4267,6 +4269,13 @@
         <package_id>
           <type> integer </type>
         </package_id>
+        <status>
+          <type> integer </type>
+          <default> 99 </default>
+        </status>
+        <syslog>
+          <type>text</type>
+        </syslog>
       </fields>
     </config_opkgs>
 

@@ -288,18 +288,27 @@ my %options = ();
 my @errors = ();
 locking("write", \%options, \@tables, \@errors);
 
-my $node_id = dec_already_locked("read_records nodes id name=oscar_server");
-my $config_id = dec_already_locked("read_records configurations id name=oscar_server");
-my $node_config = dec_already_locked("read_records node_config_revs.node_id node_id=$node_id configurations_id=$config_id");
+my @nodes_id = ();
+my @configs_id = ();
+my @nodes_configs = ();
+my @packages_id = ();
+dec_already_locked("read_records nodes id name=oscar_server",\@nodes_id,\@errors);
+my $node_id = pop @nodes_id;
+dec_already_locked("read_records configurations id name=oscar_server", \@configs_id, \@errors);
+my $config_id = pop @configs_id;
+dec_already_locked("read_records node_config_revs.node_id node_id=$node_id configurations_id=$config_id", \@nodes_configs, \@errors);
+my $node_config = pop @nodes_configs;
 if (! $node_config ){
     do_it_or_die( "add_node_config_revs $node_id $config_id",
                    undef,
                   "can not create node_config_revs record for oscar_server");
    
     print "Inserting CORE oscar packages into config_opkgs table :\n";
+    my $syslog = "OK";
     foreach my $opkg (@packages){
-        my $package_id = dec_already_locked("read_records packages id name=$opkg");
-        do_it_or_die( "add_config_opkgs $config_id $package_id",
+        dec_already_locked("read_records packages id name=$opkg", \@packages_id, \@errors);
+        my $package_id = pop @packages_id;
+        do_it_or_die( "add_config_opkgs $config_id $package_id $syslog",
                       undef,
                       "cannot create config_opkgs record for oscar_server" );
     }
@@ -309,10 +318,9 @@ if (! $node_config ){
 # packages.<pkg>installed true.  (best effort for now)
 
 oscar_log_subsection("Marking installed bit in ODA for server core Pkgs");
-
 foreach my $pkg (@packages) {
         oscar_log_subsection("Set package: $pkg");
-        my $ok_rslt = dec_already_locked("package_mark_installed $pkg");
+        my $ok_rslt = dec_already_locked("package_mark_installed $pkg", undef, \@errors);
         croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
 }
 # UNLOCKING FOR NEST

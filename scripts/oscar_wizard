@@ -462,11 +462,12 @@ sub populate_client_config_opkgs{
 			do_it_or_die( "add_node_config_revs $node_id $config_id",
 						   undef,
 						  "can not create node_config_revs record for oscar_server");                                                                                 
+            my $syslog = "OK";
 			foreach my $opkg (@pkgs){
 				my @packages_id = ();
                 dec_already_locked("read_records packages id name=$opkg", \@packages_id);
 				my $package_id = pop @packages_id;
-				do_it_or_die( "add_config_opkgs $config_id $package_id",
+				do_it_or_die( "add_config_opkgs $config_id $package_id $syslog",
 							   undef,
 							  "cannot create config_opkgs record for oscar_server" );
                         }

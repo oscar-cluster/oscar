@@ -88,8 +88,12 @@ my %options = ();
 my @errors = ();
 locking("write", \%options, \@tables, \@errors);
 
-my $node_id = dec_already_locked("read_records nodes id name=oscar_server");
-my $config_id = dec_already_locked("read_records configurations id name=oscar_server");
+my @nodes_id = ();
+my @configs_id = ();
+dec_already_locked("read_records nodes id name=oscar_server", \@nodes_id);
+my $node_id = pop @nodes_id;
+dec_already_locked("read_records configurations id name=oscar_server", \@configs_id);
+my $config_id = pop @configs_id;
 print "Inserting NON-CORE oscar packages into config_opkgs table :\n";
 foreach my $pkg (@packages){
     print "$pkg is deleted\n";
@@ -98,11 +102,12 @@ foreach my $pkg (@packages){
                   undef,
                   "cannot delete config_opkgs record for $pkg" );
 } 
+my $syslog = "OK";
 foreach my $opkg (@packages){
     my @packages_id = ();
     dec_already_locked("read_records packages id name=$opkg", \@packages_id);
     my $package_id = pop @packages_id;
-    do_it_or_die( "add_config_opkgs $config_id $package_id",
+    do_it_or_die( "add_config_opkgs $config_id $package_id $syslog",
                   undef,
                   "cannot create config_opkgs record for oscar_server" );
 }
@@ -115,7 +120,7 @@ oscar_log_subsection("Marking installed bit in ODA for server non-core RPMS");
 
 foreach my $pkg (@packages) {
         oscar_log_subsection("Set package: $pkg");
-        my $ok_rslt = dec_already_locked("package_mark_installed $pkg");
+        my $ok_rslt = dec_already_locked("package_mark_installed $pkg", undef, \@errors);
         croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
 }
 # UNLOCKING FOR NEST
