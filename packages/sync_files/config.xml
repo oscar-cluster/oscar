@@ -34,6 +34,7 @@
 
   <rpmlist>
       <filter group="oscar_server" distribution='redhat' />
+      <filter group="oscar_server" distribution='fedora' />
       <filter group="oscar_server" distribution='mandrake' />
       <rpm>sync_files</rpm>
       <rpm>crontabs</rpm>
