@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top-level directory of the
 % Env-switcher source distribution.
 %
-% $Id: user.tex,v 1.8 2002/10/30 12:16:17 jsquyres Exp $
+% $Id: user.tex,v 1.9 2004/03/09 04:23:37 jsquyres Exp $
 %
 
 \subsection{An overview of \cmd{switcher}}
@@ -122,7 +122,12 @@ It is important to note that {\em using the \cmd{switcher} command
   environments.  \cmd{switcher} does not change the environment of the
   shell from which it was invoked.}  This may seem seem inconvenient
 at first, but was done deliberately.  See the rationale provided at
-the beginning of this section for the reasons why.
+the beginning of this section for the reasons why.  If you're really
+sure that you know what you're doing, tou can use the
+``\cmd{switcher-reload}'' command after changing your switcher
+settings via the \cmd{switcher} command.  This will change your
+current shell/environment to reflect your most recent switcher
+settings.
 
 \cmd{env-switcher} manipulates four different kinds of entities: tags,
 attributes, and values.  

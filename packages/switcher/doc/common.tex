@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top-level directory of the
 % Env-switcher source distribution.
 %
-% $Id: common.tex,v 1.13 2002/11/16 19:21:04 jsquyres Exp $
+% $Id: common.tex,v 1.14 2004/03/09 04:23:33 jsquyres Exp $
 %
 
 OSCAR has a generalized mechanism to both set a system-level default
@@ -71,6 +71,25 @@ environment of the shell in which it was invoked.  For example:
   # which mpicc
   /opt/mpich-4.5.6/bin/mpicc
 \end{verbatim}
+
+If you wish to have your current shell reflect the status of your
+switcher settings, you must run the ``\cmd{switcher-reload}''
+command.  For example:
+
+\begin{verbatim}
+  # which mpicc
+  /opt/lam-1.2.3/bin/mpicc
+  # switcher mpi = mpich-4.5.6 --system
+  # which mpicc
+  /opt/lam-1.2.3/bin/mpicc
+  # switcher-reload
+  # which mpicc
+  /opt/mpich-4.5.6/bin/mpicc
+\end{verbatim}
+
+Note that this is {\em only} necessary if you want to change your
+current environment.  All new shells (including scripts) will
+automatically get the new switcher settings.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
