@@ -1,7 +1,0 @@
-Makefile
-Makefile.in
-.cvsignore
-.oscar_made_makefile_am
-NodeGroupLister.pm
-NodeGroupLister.pl
-images
