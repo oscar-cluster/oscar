@@ -187,9 +187,12 @@ sub display_todo{
 
     Your /etc/exports files and /tftpboot/pxe.cfg/default have been overwritten by this script.
 
-    Support for per node configuration and static IP should come soon.
+    Support for per node configuration and static IP should come soon as well as initial 
+    ramdisk (ie modular kernel !) and root-raid-ram disk so that we will be able to use
+    stock kernel from distributions !
 
-    Hints, ideas, suggestions : benoit\@des.ligneris.net
+    Hints, ideas, suggestions : benoit at des.ligneris.net
+
 fin666
 }
 # Convert an IP address into an hexadecimal
