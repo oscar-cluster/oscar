@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.6 2003/01/14 22:26:59 mchasal Exp $
+      $Id: config.xml,v 1.7 2003/04/02 17:55:32 brechin Exp $
   -->
   <name>sis</name>
 
@@ -17,7 +17,7 @@
     <major>2</major>
     <minor>1</minor>
     <subversion>3</subversion>
-    <release>1</release>
+    <release>2</release>
     <epoch>1</epoch>
   </version>
 
