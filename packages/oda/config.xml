@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.37 2003/04/17 20:04:14 ngorsuch Exp $
+      $Id: config.xml,v 1.38 2003/04/17 20:26:05 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -607,7 +607,7 @@
 	<type/>
 	<name/>
       </fields>
-    </packages_conflicts_with>
+    </packages_conflicts>
 
     <packages_provides>
       <fields> 
