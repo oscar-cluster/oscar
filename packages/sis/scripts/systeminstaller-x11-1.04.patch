@@ -1,5 +1,5 @@
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm.orig	2003-04-09 10:31:40.000000000 -0700
-+++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2005-03-23 11:38:45.000000000 -0800
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2005-03-23 20:09:40.000000000 -0800
 @@ -36,6 +36,7 @@
  
      my $window = shift;
@@ -8,25 +8,65 @@
                  imgname => "",
                  basename => "",
                  domainname => "",
-@@ -55,7 +56,8 @@
-     my %noshow = %{$vars{noshow}};
+@@ -51,16 +52,6 @@
+                 @_,
+                );
  
-     my $addclient_window = $window->Toplevel();
+-    my %defaults = %vars;
+-    my %noshow = %{$vars{noshow}};
+-
+-    my $addclient_window = $window->Toplevel();
 -    $addclient_window->title("Add Clients to a SIS Image");
+-
+-    #
+-    #  First line:  What is your image name?
+-    # 
+-
+     # Get the list of images and remove the default selection
+     my @allimages= list_image();
+     my @mostimages;
+@@ -74,9 +65,25 @@
+     }
+     # If the default selection wasn't found, just use 
+     # the first defined image.
+-    unless ($defimage) {
+-        $defimage=shift(@mostimages);
+-    }
++    $defimage = shift(@mostimages) unless $defimage;
++
++    unless( $defimage ) {
++        error_window($window,"You must build at least one image!");
++        $window->Unbusy();
++        return;
++	}
++
++
++    my %defaults = %vars;
++    my %noshow = %{$vars{noshow}};
++
++    my $addclient_window = $window->Toplevel();
 +    $addclient_window->withdraw;
 +    $addclient_window->title($vars{title});
++
++    #
++    #  First line:  What is your image name?
++    # 
  
-     #
-     #  First line:  What is your image name?
-@@ -97,6 +99,7 @@
-     label_entry_line($addclient_window, "Number of Hosts", \$vars{numhosts},"",
+     my $imagebox=label_listbox_line($addclient_window, "Image Name", $defimage, \@mostimages,
+                      helpbutton($addclient_window, 'Image Name Addclients')) unless $noshow{imgname};
+@@ -94,9 +101,10 @@
+     label_entry_line($addclient_window, "Base Name", \$vars{basename},"",
+                      helpbutton($addclient_window, 'Base Name')) unless $noshow{basename};
+ 
+-    label_entry_line($addclient_window, "Number of Hosts", \$vars{numhosts},"",
++    my $numentry=label_entry_line($addclient_window, "Number of Hosts", \$vars{numhosts},"",
                       helpbutton($addclient_window, 'Number of Hosts')) unless $noshow{numhosts};
  
 +    $vars{startinghostnum} = nexthostnum( $vars{basename} ) || $vars{startinghostnum};
      label_entry_line($addclient_window, "Starting Number", \$vars{startinghostnum},"",
                       helpbutton($addclient_window,'Starting Number')) unless $noshow{startinghostnum};
      # Number padding
-@@ -109,7 +112,7 @@
+@@ -109,7 +117,7 @@
      #
  
  
@@ -35,7 +75,14 @@
      label_entry_line($addclient_window, "Starting IP", \$vars{startip},"",
                       helpbutton($addclient_window, 'Starting IP')) unless $noshow{startip};
      label_entry_line($addclient_window, "Subnet Mask", \$vars{netmask},"",
-@@ -137,6 +140,7 @@
+@@ -131,12 +139,13 @@
+ 
+     my $activate_button = $addclient_window->Button(
+                                                 -text => "Addclients",
+-                                                -command => [\&run_addclients, $addclient_window, $imagebox, \%vars],
++                                                -command => [\&run_addclients, $addclient_window, $imagebox, $numentry, \%vars],
+                                                 -pady => 8,
+                                                 -padx => 8,
                                                 );
  
      $reset_button->grid($activate_button, quit_button($addclient_window) , -sticky => "nesw");
@@ -43,20 +90,31 @@
  
  }
  
-@@ -177,6 +181,12 @@
+@@ -164,7 +173,7 @@
+ }
+ 
+ sub run_addclients {
+-    my ($window, $imagebox, $vars) = @_;
++    my ($window, $imagebox, $numentry, $vars) = @_;
+     $window->Busy(-recurse => 1);
+     my %hashkeys = (
+                     numhosts => 'count',
+@@ -177,6 +186,14 @@
                      padding => 'pad',
                     );
  
 +    unless( $$vars{numhosts} > 0 ) {
 +        error_window($window,"You must add at least one host!");
 +        $window->Unbusy();
++        $numentry->focus;
++        $numentry->selectionRange( 0, "end" );
 +        return undef;
 +    }
 +
      my @imagesel=$imagebox->curselection;
      my $imagename=$imagebox->get($imagesel[0]);
  
-@@ -207,8 +217,35 @@
+@@ -207,8 +224,35 @@
      }
  
      done_window($window, "Successfully created clients for image $$vars{imgname}");
@@ -93,7 +151,7 @@
 +
  1;
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm.orig	2002-12-17 09:25:49.000000000 -0800
-+++ /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm	2005-02-18 08:23:05.000000000 -0800
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm	2005-03-23 19:31:31.000000000 -0800
 @@ -28,6 +28,7 @@
               resethash
               imageexists
@@ -202,12 +260,13 @@
  }
  
  sub init_si_config {
-@@ -154,7 +179,7 @@
+@@ -154,7 +179,8 @@
      my $label = $window->Label(-text => "$labeltext: ",
                                 -anchor => "w");
      my $entry = $window->Entry(-textvariable => $variable, @options);
 -    $label->grid($entry,@morewidgets);
 +    $label->grid($entry,@morewidgets, -sticky => "nesw");
++    return $entry;
  }
  
  # This creates a small list box with 1 item ($selection) selected.
