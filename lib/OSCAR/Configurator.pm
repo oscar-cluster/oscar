@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.17 2003/01/28 20:44:56 brechin Exp $
+# $Id: Configurator.pm,v 1.18 2003/01/29 19:51:15 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -46,6 +46,7 @@ use XML::Simple;      # Read/write the .selection config files
 use Tk::Pane; 
 no warnings qw(closure);
 
+our $destroyed = 0;
 my($top);             # The Toplevel widget for the package configuration window
 my $stepnum;          # Step number in the OSCAR wizard
 ##############################################################
@@ -132,8 +133,12 @@ sub doneButtonPressed
   # means that another MainWindow is managing the OSCAR Package
   # Configuration window.  Therefore, when we exit, we need to make the
   # parent window unbusy.
-  $root->Parent->Unbusy() if ($root->Parent);
-
+  undef $destroyed;
+  if (defined($root)) {
+    if (defined($root->Parent)) {
+      $root->Parent->Unbusy();
+    }
+  }
   # Destroy the Configbox if one was created.
   OSCAR::Configbox::exitWithoutSaving;
 
@@ -145,7 +150,7 @@ sub doneButtonPressed
     }
 
   # Then, destroy the root window.
-  $root->destroy;
+  if (defined($root)) { $root->destroy; }
 
   # Undefine a bunch of Tk widgeet variables for re-creation later.
   undef $root;
@@ -308,12 +313,25 @@ sub displayPackageConfigurator # ($parent)
                                    -width => '260',
                                    -height => '260',
                                   );
+          $top->bind('<Destroy>', sub {
+            if ( defined($destroyed)) {
+              undef $destroyed;
+              doneButtonPressed();
+              return;
+            }
+                                      } );
         }
       else
         { # If no parent, then create a MainWindow at the top.
           $top = MainWindow->new();
           $top->title("Oscar Package Configuration");
-          $top->bind('<Destroy>', sub { $parent->Unbusy(); return; } );
+          $top->bind('<Destroy>', sub { 
+	    if (defined($destroyed)) {
+	      undef $destroyed;
+	      doneButtonPressed();
+	      return;
+	    }
+			              } );
         }
       OSCAR::Configurator::Configurator_ui $top;  # Call specPerl window creator
     }

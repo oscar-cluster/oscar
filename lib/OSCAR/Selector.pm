@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.19 2003/01/28 20:44:57 brechin Exp $
+# $Id: Selector.pm,v 1.20 2003/01/29 19:51:15 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -49,6 +49,7 @@ use Tk::Dialog;
 use Tk::DialogBox;
 no warnings qw(closure);
 
+our $destroyed = 0;
 my($top);            # The Toplevel widget for the package selector window
 my($step_number);    # Step number in the OSCAR wizard
 ##############################################################
@@ -67,8 +68,9 @@ require Tk::Menu;
 # For use with Tk402.002, using the grid geometry manager
 
 sub Selector_ui {
-	our($root) = @_;
-
+        $destroyed = 1;
+	our $root = shift;
+        my $parent = shift;
 	# widget creation 
 
 	our($selectFrame) = $root->Frame (
@@ -216,7 +218,7 @@ sub Selector_ui {
 	$root->gridColumnconfigure(2, -weight => 1, -minsize => 86);
 
 	# additional interface code
-
+  
 our($packagexml);             # Holds the XML configs for each package
 our(@packagedirs);            # A list of valid OSCAR package directories
 our($oscarbasedir);           # Where the program is called from
@@ -236,7 +238,8 @@ sub exitWithoutSaving
   # If the $root window has a Parent, then it isn't a MainWindow, which
   # means that another MainWindow is managing the OSCAR Package Selection
   # window.  Therefore, when we exit, we need to make the parent window
-  # unbusy.  
+  # unbusy.
+  undef $destroyed;
   $root->Parent->Unbusy() if ($root->Parent);
 
   # Destroy the Infobox if one was created.
@@ -250,7 +253,7 @@ sub exitWithoutSaving
     }
 
   # Then, destroy the root window.
-  $root->destroy;
+  if (defined($root)) { $root->destroy; }
 
   # Undefine a bunch of Tk widget variables for re-creation later.
   undef $root;
@@ -885,7 +888,9 @@ sub populateSelectorList
   buildDependencyTree();
   readInSelectionConfig();
 
-  $pane->destroy if ($pane);
+  if (defined $pane) {
+    $pane->destroy;
+  }
   # First, put a "Pane" widget in the center frame
   $pane = $selectFrame->Scrolled('Pane', -scrollbars => 'osoe');
   $pane->pack(-expand => '1', -fill => 'both');
@@ -1006,22 +1011,29 @@ sub displayPackageSelector # ($parent)
   # Check to see if our toplevel selector window has been created yet.
   if (!$top)
     { # Create the toplevel window just once
-      if ($parent)
-        {
+      if ($parent) {
           # Make the parent window busy
           $parent->Busy(-recurse => 1);
           $top = $parent->Toplevel(-title => 'Oscar Package Selection',
                                    -width => '260',
                                    -height => '260',
                                   );
-          $top->bind('<Destroy>', sub { $parent->Unbusy(); return; } );
-        }
+      }
       else 
         { # If no parent, then create a MainWindow at the top.
           $top = MainWindow->new();
           $top->title("Oscar Package Selection");
         }
-      OSCAR::Selector::Selector_ui $top;  # Call the specPerl window creator
+    $top->bind('<Destroy>', sub{
+      if ( defined($destroyed) ) {
+        undef $destroyed;
+        exitWithoutSaving();
+        #$parent->Unbusy();
+	return;
+      }
+     			       } );
+
+      OSCAR::Selector::Selector_ui($top, $parent);  # Call the specPerl window creator
     }
 
   # Then create the scrollable package listing and place it in the grid.

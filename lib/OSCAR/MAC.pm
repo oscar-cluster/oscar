@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.34 2003/01/28 20:36:01 brechin Exp $
+#   $Id: MAC.pm,v 1.35 2003/01/29 19:51:15 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.34 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.35 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -49,8 +49,10 @@ my $ORDER = 1;      # global count variable
 my $COLLECT = 0;    # are we collecting or not?
 my $PINGPID = undef; # process id of the ping fork we make
 my $step_number;    # which step number of the oscar process we are in
+our $destroyed = 0;
 
 sub mac_window {
+    $destroyed = 1;
     my $parent = shift;
     $step_number = shift;
     our ($vars) = @_;
@@ -61,8 +63,6 @@ sub mac_window {
     my $window = $parent->Toplevel;
     $window->title("MAC Address Collection");
     
-    $window->bind('<Destroy>', sub { $parent->Unbusy(); return; });
-
     oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
 
     my $instructions = $window->Message(-text => "MAC Address Collection Tool.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click 'Assign MAC to Node'.", -aspect => 800);
@@ -123,6 +123,7 @@ sub mac_window {
     my $exitbutton = $frame->Button(
                                      -text => "Close",
                                      -command => sub {
+					 undef $destroyed;
 					 end_ping(); 
 					 end_collect_mac($label); 
 					 oscar_log_subsection("Step $step_number: Completed successfully"); 
@@ -184,6 +185,14 @@ sub mac_window {
     my $label2 = $frame->Label(-text => "Below are commands to create a boot environment.\nYou can either boot from floppy or network");
     $label2->grid("-","-",-sticky => "ew");
     $bootfloppy->grid($networkboot, $refreshdhcp, -sticky => "ew");
+
+    $window->bind('<Destroy>', sub {
+        if ( defined($destroyed) ) {
+          undef $destroyed;
+          $exitbutton->invoke();
+          return;
+        }
+                                   });
 }
 
 sub setup_dhcpd {
