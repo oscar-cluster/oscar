@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.25 2002/06/18 16:50:17 naughtont Exp $
+% $Id: detailed.tex,v 1.26 2002/07/09 20:49:45 loann09 Exp $
 %
 % $COPYRIGHT$
 %
@@ -325,7 +325,7 @@ the step.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{oscar-wizard.\figext}
+    \includegraphics[scale=\imgscale]{figs/2_sbs-oscar-wizard.\figext}
     \caption{OSCAR Wizard.}
     \label{fig:detailed-oscar-wizard}
   \end{center}
@@ -339,15 +339,20 @@ displayed to the user.
 \subsection{Cluster Definition}
 \label{sec:detailed-cluster-def}
 
-During this phase, you will complete steps one through five of the
+During this phase, you will complete steps one through six of the
 OSCAR wizard in defining your cluster. If you encounter problems or
-wish to redo any of the SIS actions performed in the wizard steps 1,
-or 2, please refer to the SIS man pages.
+wish to redo any of the SIS actions performed in the wizard steps 2,
+or 3, please refer to the SIS man pages.
+
+\subsubsection{Prepare OSCAR server for install} 
+\label{det:prepareforinstall}
+Begin the installation process by pressing the Step 1 button of the wizard entitled \button{Prepare OSCAR Server for Install}.
+%blah blah blah
 
 \subsubsection{Build the Image} 
 \label{det:buildimage}
 
-Press the Step 1 button of the wizard entitled \button{Build OSCAR
+Press the Step 2 button of the wizard entitled \button{Build OSCAR
 Client Image}. A dialog will be displayed. In most cases, the defaults 
 will be sufficient. You should verify that the disk partition file is
 the proper type for your client nodes. The sample files have the
@@ -363,13 +368,13 @@ Once you are satisfied with the input, click the \button{Build Image} button.
 
 Building the image will take a few minutes, the progress bar on the bottom 
 will give you the status and a small dialog will appear when the image
-is complete.  If image fails, see Section \ref{sec:release-notes}.
+is complete.  If image fails, see Section \ref{subsec:rh72notes}.
   
 A sample dialog is shown in Figure~\ref{fig:detailed-build-image}. 
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{build-image.\figext}
+    \includegraphics[scale=\imgscale]{figs/4a_sbs-build-image1.\figext}
     \caption{Build the image.}
     \label{fig:detailed-build-image}
   \end{center}
@@ -401,7 +406,7 @@ Here is a sample:
 
 The last partition specified will grow to fill the entire disk.
 You can create your own partition files, but make sure that you
-don't exceed the physical capacity of your client hardware. The sample
+do not exceed the physical capacity of your client hardware. The sample
 listed above, and some others, are in the \file{oscarsamples} directory.
 
 \subparagraph{Package lists}
@@ -432,7 +437,7 @@ contents of this file.
 \subsubsection{Define your client machines} 
 \label{det:defclients}
 
-Press the Step 2 button of the wizard entitled \button{Define OSCAR
+Press the Step 3 button of the wizard entitled \button{Define OSCAR
  Clients}. In the dialog box that is displayed, enter the
 appropriate information. Again the defaults will be correct in most
 cases. At a minumum, you will need to enter a value in the \field{Number of Hosts}
@@ -441,7 +446,7 @@ to specify how many clients you want to create.
 \begin{enumerate}
 
 \item The \field{Image Name} field should specify the image name that was used to 
-create the image in Step 1.
+create the image in Step 2.
 
 \item The \field{Domain Name} field should be used to specify the client's IP
 domain name. This field \emph{must} have a value. It should contain the server's
@@ -474,7 +479,7 @@ you may press the \button{Close} button and continue with the next step.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{define-clients.\figext}
+    \includegraphics[scale=\imgscale]{figs/5a_sbs-define-clients1.\figext}
     \caption{Define the Clients.}
     \label{fig:detailed-define-clients}
   \end{center}
@@ -491,7 +496,7 @@ uniquely identify client machines on a network before they are
 assigned IP addresses. DHCP uses the MAC address to assign IP 
 addresses to the clients.
 
-In order to collect the MAC addresses,  press the Step 3 button
+In order to collect the MAC addresses,  press the Step 4 button
 of the wizard entitled \button{Setup Networking}. The
 OSCAR network utility dialog box will be displayed.
 To use this tool, you will need to know
@@ -499,13 +504,13 @@ how to network boot your client nodes.  For instructions on doing
 so, see Appendix~\ref{app:net-boot-client-nodes}. A sample dialog
 is shown in Figure~\ref{fig:detailed-collect-mac}. 
 
-To start the collection, press the \button{Start Collecting} button and then
+To start the collection, press the \button{Collect MAC Address} button and then
 network boot the first client.  As the clients broadcast, their MAC addresses
 will show up in the left hand window. Select a MAC address and the appropriate
-client in the right side window. Click \button{Assign MAC to node} to 
+client in the right side window. Click \button{Assign MAC to Node} to 
 associate that MAC address with that node. If you would like to make 
 specific nodes associated with specific client definitions, you should
-boot them one at a time. If you don't care which node gets associated
+boot them one at a time. If you do not care which node gets associated
 with which client, you may boot them all at once and randomly assign
 the MAC addresses.
 
@@ -524,7 +529,7 @@ press \button{Close}.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{collect-mac.\figext}
+    \includegraphics[scale=\imgscale]{figs/6e_sbs-found-mac.\figext}
     \caption{Collect client MAC addresses.}
     \label{fig:detailed-collect-mac}
   \end{center}
@@ -609,7 +614,7 @@ together as a cluster.
 \subsubsection{Complete the cluster configuration}
 \label{det:completeinstall}
 
-Press the Step 4 button of the wizard entitled \button{Complete
+Press the Step 5 button of the wizard entitled \button{Complete
  Cluster Setup}.  This will run the \file{post\_install} script,
 which does the following:
 
@@ -631,15 +636,14 @@ which does the following:
 Provided along with OSCAR is a simple test to make sure the key
 cluster components (PBS, MPI, and PVM) are functioning properly. 
 
-Press the Step 5 button of the wizard entitled \button{Test
+Press the Step 6 button of the wizard entitled \button{Test
  Cluster Setup}. This will open a window that will test 
- the server services and then ask for a non-root user to use for the
- testing. A sample dialog is shown in Figure~\ref{fig:detailed-setup-test}.
+ the server services as both root and a non-root user. A sample dialog is shown in Figure~\ref{fig:detailed-setup-test}.
 
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{setup-test.\figext}
+    \includegraphics[scale=\imgscale]{figs/8_test-cluster-complete.\figext}
     \caption{Setup cluster tests}
     \label{fig:detailed-setup-test}
   \end{center}
