@@ -34,7 +34,7 @@ at the start of an installation via OPD and  then  installed  as  part	of
 normal OSCAR installation.
 
 OSCAR 2.3.1, has been fully tested for use with IA32 processors, under Red
-Hat 8.0, 9.0 and Mandrake 9.0.	OSCAR 2.3.1  does  not	yet  support  IA64
+Hat 8.0, 9.0  and  Mandrake  9.0.	OSCAR  2.3.1  does	not  support  IA64
 platforms.	Those seeking IA64 support should use version 2.2.1  of  OSCAR
 for now.
 
@@ -60,12 +60,12 @@ Related resources:
    + OSCAR Project Homepage
      http://sourceforge.net/projects/oscar
 
-   + Open Cluster Group Homepage
-     http://www.OpenClusterGroup.org
-
    + OSCAR Mailing Lists
       User Questions: <oscar-users@lists.sourceforge.net>
          Development: <oscar-devel@lists.sourcefore.net>
+
+   + Open Cluster Group Homepage
+     http://www.OpenClusterGroup.org
 
    + Thin-OSCAR (diskless) Working Group Homepage
      http://www.OpenClusterGroup.org/Thin-OSCAR
