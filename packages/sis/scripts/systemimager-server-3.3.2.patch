@@ -1,6 +1,6 @@
---- /etc/systemimager/autoinstallscript.template.orig	2004-07-06 07:13:29.000000000 -0700
-+++ /etc/systemimager/autoinstallscript.template	2004-07-06 07:16:44.000000000 -0700
-@@ -85,6 +85,71 @@
+--- /etc/systemimager/autoinstallscript.template.orig	2004-06-21 21:07:23.000000000 -0700
++++ /etc/systemimager/autoinstallscript.template	2005-02-18 08:23:05.000000000 -0800
+@@ -86,6 +86,84 @@
  #
  ################################################################################
  
@@ -62,6 +62,19 @@
 +    order=`expr $order : '[^,]*,\(.*\)'`
 +  done
 +  echo DISKS=$DISKS
++  [ $DISKS -eq 0 ] && {
++    beep
++    beep
++    echo ""
++    echo "NO DISK DEVICE FILES WERE FOUND.  THIS USUALLY MEANS THE KERNEL DID NOT"
++    echo "RECOGNIZE ANY OF THE ATTACHED DISKS."
++    echo ""
++    echo "The kernel boot messages, which preceeded this, may indicate why."
++    echo ""
++    echo "Reverting to disk configuration specified by image master script."
++    DISKORDER=
++    echo ""
++  }
 +  echo
 +  beep
 +}
@@ -72,7 +85,7 @@
  ##PARTITION_DISKS##
  
  echo "Load additional filesystem drivers."
-@@ -183,6 +248,28 @@
+@@ -184,6 +262,28 @@
  #
  ################################################################################
  
@@ -101,8 +114,8 @@
  
  ##################################################################
  #
---- /usr/lib/systemimager/perl/SystemImager/Server.pm.orig	2004-07-06 07:13:29.000000000 -0700
-+++ /usr/lib/systemimager/perl/SystemImager/Server.pm	2004-07-06 07:16:44.000000000 -0700
+--- /usr/lib/systemimager/perl/SystemImager/Server.pm.orig	2004-06-21 21:07:23.000000000 -0700
++++ /usr/lib/systemimager/perl/SystemImager/Server.pm	2005-02-18 08:23:05.000000000 -0800
 @@ -16,7 +16,7 @@
  use File::Copy;
  use File::Path;
@@ -110,9 +123,9 @@
 -use vars qw($VERSION @mount_points %device_by_mount_point %filesystem_type_by_mount_point);
 +use vars qw($VERSION @mount_points %device_by_mount_point %filesystem_type_by_mount_point $disk_no %dev2disk);
  
- $VERSION="3.2.0";
+ $VERSION="3.3.2";
  
-@@ -364,6 +364,16 @@
+@@ -384,6 +384,16 @@
          );
  
          my $devfs_dev = $devfs_map{$dev};
@@ -129,7 +142,7 @@
  
          print $out "### BEGIN partition $devfs_dev ###\n";
          print $out qq(echo "Partitioning $devfs_dev..."\n);
-@@ -630,6 +640,10 @@
+@@ -650,6 +660,10 @@
              print $out "\n";
  	    
              $part = &get_part_name($dev, $m);
@@ -140,7 +153,7 @@
              $cmd = "Creating partition $part.";
              print $out qq(echo "$cmd"\n);
              
-@@ -829,6 +843,9 @@
+@@ -849,6 +863,9 @@
  
      my @all_devices = get_all_devices($file);
      my %devfs_map = dev_to_devfs(@all_devices) or return undef;
@@ -150,7 +163,7 @@
  
  
      # Figure out if software RAID is in use. -BEF-
-@@ -854,7 +871,9 @@
+@@ -874,7 +891,9 @@
  	# file.  We should also look at the format and write functions for that 
  	# same file. -BEF-
          print $out qq(# /etc/raidtab that will be used for creating software RAID devices on client(s).\n);
@@ -161,7 +174,7 @@
          if (!$raidtab) {
              $raidtab = $image_dir . "/etc/raidtab";
          }
-@@ -863,6 +882,13 @@
+@@ -883,6 +902,13 @@
          }
          open(FILE,"<$raidtab") or croak("Couldn't open $raidtab for reading.");
              while (<FILE>) {
@@ -175,7 +188,7 @@
                  print $out $_;
              }
          close(FILE);
-@@ -920,6 +946,10 @@
+@@ -941,6 +967,10 @@
          # software RAID devices (/dev/md*)
          if ($real_dev =~ /\/dev\/md/) {
              print $out qq(mkraid --really-force $real_dev || shellout\n);
@@ -186,7 +199,7 @@
          }
  
          # swap
-@@ -1299,6 +1329,24 @@
+@@ -1320,6 +1350,24 @@
      }
  }
  
@@ -211,7 +224,7 @@
  sub write_sc_command {
      my ( $out, $ip_assignment_method ) = @_;
      my $sc_excludes_to = "/etc/systemimager/systemconfig.local.exclude";
-@@ -1379,6 +1427,11 @@
+@@ -1400,6 +1448,11 @@
      open (my $TEMPLATE, "<$template") || die "Can't open $template for reading\n";
      open (my $MASTER_SCRIPT, ">$file") || die "Can't open $file for writing\n";
  
@@ -223,7 +236,7 @@
      my $delim = '##';
      while (<$TEMPLATE>) {
          SWITCH: {
-@@ -1458,6 +1511,18 @@
+@@ -1479,6 +1532,18 @@
                  }
                  last SWITCH;
  	        }
@@ -242,7 +255,7 @@
  	        ### END end of autoinstall options ###
  	        print $MASTER_SCRIPT $_;
          }
-@@ -1704,4 +1769,4 @@
+@@ -1727,4 +1792,4 @@
  }
  
  
