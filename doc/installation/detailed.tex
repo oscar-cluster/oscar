@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.2 2001/12/13 22:16:26 mchasal Exp $
+% $Id: detailed.tex,v 1.3 2001/12/16 19:32:00 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -20,7 +20,7 @@ server for using OSCAR.
 \subsubsection{Install Linux on the server machine} 
 
 If you have a machine you want to use that already has Linux
-installed, you may use it and continue with step two. When installing
+installed, you may use it and continue with the next section. When installing
 Linux, it is required that you use a distribution that is based upon
 the RPM standard.  Furthermore, it should be noted that all testing up
 to this point has been done using the Red Hat 7.1 distribution. As
@@ -49,6 +49,50 @@ are exposed on the general network.
 See Appendix~\ref{app:security} for more information about firewalls
 and other security software that can be installed. 
 \endchange
+
+\subsubsection{Disk space and directory considerations}
+
+OSCAR has certain requirements for server disk space. Space will be
+needed to store the Linux rpms and to store the images.
+The rpms will be stored in /tftpboot/rpm. Approximately 1 gigabyte is required
+to store the rpms. 
+The images are stored in /var/lib/systemimager and will need approximately
+1 gigabyte per image. Only 1 image is required, although you may want to create
+more in the future. 
+
+If you are installing a new server, it is suggested that you allow for 
+2 gigabytes in both the \file{/}, which contains \file{/tftpboot},  
+and \file{/var} filesystems when partitioning the disk on your server.
+
+If you are using an existing server, you will need to verify that you have 
+enough space on the disk partitions. Again 2 gigabytes of free space
+is recommended in both the \file{/} and \file{/var} partitions.
+
+You can check
+the amount of free space on your drive's partitions by issuing the
+command \cmd{df -h} in a terminal.  The result for each file system is
+located below the \panel{Avail} heading. If your root (\file{/})
+partition has enough free space, enter the following command in a
+terminal:
+
+\begin{verbatim}
+  mkdir -p /tftpboot/rpm
+\end{verbatim}
+  
+If your root partition does not have enough free space, create the
+directories on a different partition that does have enough free space
+and create links to them from the root (\file{/}) directory.  For
+example, if the partition containing \file{/usr} contains enough
+space, you could do so by using the following commands:
+
+\begin{verbatim}
+  mkdir -p /usr/tftpboot/rpm
+  ln -s /usr/tftpboot /tftpboot
+\end{verbatim}
+
+The same procedure should be repeated for the \file{/var/lib/systemimager}
+subdirectory.
+
     
 \subsubsection{Get a copy of OSCAR and unpack on the server} 
 
@@ -216,39 +260,6 @@ before continuing. Typically, the problem is that the wrong module is
 specified for the given device. Try using the network configuration
 utility again to resolve the problem.
   
-\subsubsection{Create some necessary directories} 
-
-You need to create the \file{/tftpboot} and \file{/tftpboot/rpm}
-directories if they don't already exist. These directories will hold
-all the information needed for LUI to install the client nodes. As a
-result, the directories need to be placed on a partition that will
-have sufficient free space. 
-\begchange
-A good estimate of the amount of space
-required is 800MB for the RPMs.
-\endchange
-You can check
-the amount of free space on your drive's partitions by issuing the
-command \cmd{df -h} in a terminal.  The result for each file system is
-located below the \panel{Avail} heading. If your root (\file{/})
-partition has enough free space, enter the following command in a
-terminal:
-
-\begin{verbatim}
-  mkdir -p /tftpboot/rpm
-\end{verbatim}
-  
-If your root partition does not have enough free space, create the
-directories on a different partition that does have enough free space
-and create links to them from the root (\file{/}) directory.  For
-example, if the partition containing \file{/usr} contains enough
-space, you could do so by using the following commands:
-
-\begin{verbatim}
-  mkdir -p /usr/tftpboot/rpm
-  ln -s /usr/tftpboot /tftpboot
-\end{verbatim}
-  
 \subsubsection{Copy distribution RPMs to \file{/tftpboot/rpm}}
 
 In this step, you need to copy the RPMs included with your Linux
@@ -292,7 +303,7 @@ a command sequence like this:
 
 \begin{verbatim}
   cd /mnt/cdrom/RedHat/RPMS
-  cat /root/OSCAR-\oscarversion/oscarResources/sample.rpmlist | \
+  cat /root/OSCAR-\oscarversion/oscarsamples/sample.rpmlist | \
   xargs -i sh -c "cd `pwd`;ls -1 {}*.rpm" 2>/dev/null | \
   xargs -i -t cp -f '{}' /tftpboot/rpm
 \end{verbatim}
@@ -330,15 +341,13 @@ directory as shown above. The script will first run the part one
 server configuration script, which does the following:
 
 \begin{enumerate}
-\item creates the OSCAR directory - \file{/usr/local/oscar}
-\item installs system services (NFS, DHCP, TFTP)
-\item installs Syslinux (for network booting using PXE)
-\item installs Etherboot (for network booting using floppy disks)
-\item installs Perl-Tk (needed by OSCAR wizard)
-\item installs LUI in \file{/usr/local/lui}
+\item copies Oscar rpms to /tftpboot/rpm
+\item installs all server Oscar rpms
 \item updates \file{/etc/hosts} with OSCAR aliases
-\item updates \file{/etc/exports} and restarts NFS
+\item updates \file{/etc/exports} 
+\item adds Oscar paths to \file{/etc/profile} 
 \item updates system startup (\file{/etc/rc.d/init.d}) scripts
+\item restarts affected services
 \end{enumerate}
   
 If the part one script finishes successfully, \file{install\_cluster}
@@ -363,20 +372,7 @@ the step.
 \end{figure}
   
 As each of the steps are performed, there is output generated that is
-displayed to the user. Currently, there are two very annoying
-properties of these output windows. The first is that the \msg{output
-  is not shown until each command has completed in full}.  As some
-commands take minutes to complete, you may think that nothing is
-happening, when in fact the command is still running. In the
-instructions to follow, a notice will be given for steps where the
-output will not be displayed immediately. The second annoyance is that
-the standard output and standard error streams are displayed
-disjointedly, with the standard output being displayed first followed
-by the standard error. This causes problems in relating error messages
-to actions, as well as confuses users into thinking that some of the
-operations failed, since the error stream is displayed last. As a
-result, \msg{you should look through the output intently for
-  completion messages before assuming an operation has failed}.
+displayed to the user. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -385,11 +381,10 @@ result, \msg{you should look through the output intently for
 
 During this phase, you will complete steps one through five of the
 OSCAR wizard in defining your cluster. If you encounter problems or
-wish to redo any of the LUI actions performed in the wizard steps 1,
-3, 4, or 5, please refer to the LUI documentation in
-\file{/usr/local/lui}.
+wish to redo any of the SIS actions performed in the wizard steps 1,
+or 2, please refer to the SIS man pages.
 
-\subsubsection{Define the server machine} 
+\subsubsection{Define the image} 
 
 Press the Step 1 button of the wizard entitled \button{Define the
   Server}. In the dialog box that is displayed, enter a name for the
