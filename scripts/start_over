@@ -11,7 +11,7 @@ my @rpms = qw(
               pfilter
               lam
 	      modules
-	      switcher
+	      env-switcher
               pvm
               openpbs-oscar 
               openpbs-oscar-mom
