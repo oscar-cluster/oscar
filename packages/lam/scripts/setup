@@ -47,7 +47,7 @@ if ($name eq "mandrake") {
 }  elsif ($name eq "fedora") {
   $source_dir .= $name;
 } else {
-  $source_dir .= "rh90";
+  $source_dir .= "rh80";
 } 
 
 print "Using LAM/MPI RPMs from: $source_dir\n";
