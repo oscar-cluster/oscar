@@ -1,12 +1,12 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.4 2002/02/02 21:18:57 naughtont Exp $
+# $Id: Makefile.am,v 1.5 2002/09/17 19:20:50 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
-SUBDIRS			= architecture development installation introduction by-laws
+SUBDIRS			= architecture development installation by-laws
 
 #
 # Make the documentation
