@@ -9,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.41 2004/04/13 19:59:19 brechin Exp $
+# $Id: configure.in,v 1.42 2004/04/14 05:19:56 tuelusr Exp $
 #
 # $HEADER$
 #
@@ -171,6 +171,10 @@ AC_CONFIG_FILES([
     share/prereqs/00packman/RPMS/Makefile
     share/prereqs/00packman/SRPMS/Makefile
     share/prereqs/00packman/scripts/Makefile
+    share/prereqs/00update-rpms/Makefile
+    share/prereqs/00update-rpms/RPMS/Makefile
+    share/prereqs/00update-rpms/SRPMS/Makefile
+    share/prereqs/00update-rpms/scripts/Makefile
     share/prereqs/perl-Tk/Makefile
     share/prereqs/perl-Tk/media/Makefile
     share/prereqs/perl-Tk/media/RPMS/Makefile
@@ -184,10 +188,6 @@ AC_CONFIG_FILES([
     share/prereqs/XML-Simple/Makefile
     share/prereqs/XML-Simple/media/Makefile
     share/prereqs/XML-Simple/scripts/Makefile
-    share/prereqs/update-rpms/Makefile
-    share/prereqs/update-rpms/RPMS/Makefile
-    share/prereqs/update-rpms/SRPMS/Makefile
-    share/prereqs/update-rpms/scripts/Makefile
 
     share/serverlists/Makefile
 
