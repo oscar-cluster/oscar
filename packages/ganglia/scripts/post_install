@@ -1,0 +1,59 @@
+#!/usr/bin/perl
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# This script pushes a modified gmond.conf file from the server to the client 
+# nodes and restart the ganglia daemons
+
+# (C)opyright Bernard Li <bli@bcgsc.ca>
+
+use Carp;
+
+my $gmond_conf = '/tmp/gmond.conf';
+my $confBuffer = "";
+my @result = split(/ = /,`grep 'DEVICE = eth' /var/lib/systemimager/scripts/*.master`);
+
+my $iface = $result[1];
+
+system("cp /etc/gmond.conf $gmond_conf");
+
+open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
+
+while ($line = <CONF>) {
+    $confBuffer = $confBuffer.$line;
+}
+
+close(CONF, $gmond_conf);
+
+$confBuffer =~ s/mcast_if  eth[0-9]/mcast_if  $iface/;
+
+open(CONF, '>'.$gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
+
+print CONF $confBuffer;
+
+close(CONF);
+
+# push the modified /etc/gmond.conf to the client nodes
+system("/opt/c3-4/cpush $gmond_conf /etc/gmond.conf");
+
+system("rm $gmond_conf");
+
+# stop all running daemons and restart them all (on headnode and clients)
+system("/etc/init.d/gmond stop");
+system("/etc/init.d/gmetad stop");
+system("/opt/c3-4/cexec /etc/init.d/gmond stop");
+system("/etc/init.d/gmond start");
+system("/opt/c3-4/cexec /etc/init.d/gmond start");
+system("/etc/init.d/gmetad start");

@@ -1,0 +1,105 @@
+#!/usr/bin/perl
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# This script reads the Configurator result and sets up the configuration
+# files gmond.conf and gmetad.conf for the server
+
+# (C)opyright Bernard Li <bli@bcgsc.ca>
+
+use XML::Simple;
+use Carp;
+
+my $gmondBuffer = "";
+my $gmetadBuffer = "";
+
+my $hostname = `hostname`;
+
+my $gmetad_conf = "/etc/gmetad.conf";
+my $gmond_conf = "/etc/gmond.conf";
+
+my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+
+# get headnode's interface information from OSCAR database
+my $iface = `oda read_records oscar.interface`;
+
+chomp($iface);
+				
+# need to modify gmond.conf file whether .configurator.values exists or not
+open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
+
+while ($line = <CONF>) {
+    $gmondBuffer = $gmondBuffer.$line;
+}
+
+close(CONF, $gmond_conf);
+
+$gmond_conf = ">".$gmond_conf;
+
+if (-e $xml_data) {
+    $ref = XMLin($xml_data);
+    
+    ### gmetad ###
+
+    open(CONF, $gmetad_conf) or croak("Error: unable to open ($gmetad_conf)\n");
+    
+    while ($line = <CONF>) {
+	$gmetadBuffer = $gmetadBuffer.$line;
+    }
+    
+    close(CONF, $gmetad_conf);
+    
+    $gmetad_conf = ">".$gmetad_conf;
+    
+    $gmetadBuffer =~ s/data_source "my cluster" localhost/data_source "$ref->{datasource}" $hostname/;
+    $gmetadBuffer =~ s/# gridname "MyGrid"/gridname "$ref->{gridname}"/;
+    
+    open(CONF, $gmetad_conf) or croak("Error: unable to open ($gmetad_conf)\n");
+    
+    print CONF $gmetadBuffer;    
+    
+    close(CONF);
+
+    ### gmond ###
+
+    $gmondBuffer =~ s/# name  "My Cluster"/name  "$ref->{datasource}"/;
+    $gmondBuffer =~ s/# owner "My Organization"/owner "$ref->{owner}"/;
+}
+
+if ($gmondBuffer =~ "# mcast_if  eth1") {
+    $gmondBuffer =~ s/# mcast_if  eth1/mcast_if  $iface/;
+} else {
+    $gmondBuffer =~ s/mcast_if  eth[0-9]/mcast_if  $iface/;
+}
+
+open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
+    
+print CONF $gmondBuffer;    
+
+close(CONF);
+
+print("Ganglia configuration files modified, re-starting daemons...\n");
+
+# restart gmond and gmetad
+system("/etc/init.d/gmond restart");
+system("/etc/init.d/gmetad restart");
+
+print("Starting up apache...\n");
+
+# autoload apache in levels 345 and start it up
+system("/sbin/chkconfig --levels 345 httpd on");
+system("/etc/init.d/httpd start");
+
+print("Ganglia page is located at http://localhost/ganglia\n");

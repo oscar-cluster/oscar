@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<oscar>
+  <name>ganglia</name>
+  <filter distribution="redhat" distribution_version="9"/>
+  <filter distribution="fedora" distribution_version="2"/>
+
+  <version>
+    <major>2</major>
+    <minor>5</minor>
+    <subversion>6</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>third-party</class>
+
+  <summary>distributed monitoring and execution system</summary>
+  <license>freely distributable</license>
+  <group>Application/System</group>
+  <url>http://ganglia.sourceforge.net</url>
+
+  <maintainer>
+    <name>Matt Massie</name>
+    <email>massie@cs.berkeley.edu</email>
+  </maintainer>
+
+  <packager>
+    <name>Bernard Li</name>
+    <email>bli@bcgsc.ca</email>
+  </packager>
+
+  <description>Ganglia is a scalable distributed monitoring system for high-performance computing systems such as clusters and Grids.</description>
+
+  <rpmlist>
+      <rpm>ganglia-oscar-monitor-core-gmond</rpm>
+  </rpmlist>  
+
+  <rpmlist>
+      <filter group="oscar_server"/>
+      <rpm>ganglia-monitor-core-gmetad</rpm>
+      <rpm>ganglia-webfrontend</rpm>
+      <rpm>rrdtool</rpm>
+  </rpmlist>
+
+  <servicelist>
+      <service>gmond</service>
+  </servicelist>
+
+  <servicelist>
+      <filter group="oscar_server"/>
+      <service>gmetad</service>
+  </servicelist>
+</oscar>
