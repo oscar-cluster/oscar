@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.32 2002/10/28 23:14:13 mchasal Exp $
+# $Id: oscar_wizard,v 1.33 2002/10/29 01:42:00 jsquyres Exp $
 #
 
 use strict;
@@ -79,10 +79,10 @@ oscar_button($window, "Step 1:", "Select OSCAR Packages To Install",
 oscar_button($window, "Step 2:", "Configure Selected OSCAR Packages", 
        [\&displayPackageConfigurator, $window], 'configure_packages');
 
-# Step 3, Define OSCAR Server
-oscar_button($window, "Step 3:", "Prepare OSCAR Server For Install",
+# Step 3, Install OSCAR server packages
+oscar_button($window, "Step 3:", "Install OSCAR Server Packages",
 	     [\&frontpanel_window, $window, {interface => $interface} ], 
-	     'prep_server');
+	     'install_server');
 
 # Step 4, Build OSCAR Client Image
 oscar_button($window, "Step 4:", "Build OSCAR Client Image", 

@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.17 2002/10/28 22:33:48 tfleury Exp $
+#   $Id: FrontPanel.pm,v 1.18 2002/10/29 01:42:00 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use OSCAR::Logger;
 use OSCAR::Tk;
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.17 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.18 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -117,7 +117,7 @@ sub do_fp_work {
     # Make a new window for this step
 
     $fp_window = $parent_window->Toplevel;
-    $fp_window->title("OSCAR Server Prepartation");
+    $fp_window->title("OSCAR Server Installation");
     
     my $instructions = 
 	$fp_window->Message(-aspect => 500, 
@@ -140,8 +140,8 @@ sub do_fp_work {
 	$fp_window->Button(-text => "Close",
 			   -command => \&fp_window_close);
     $setupbutton = 
-	$fp_window->Button(-text => "Prepare Server for OSCAR",
-			   -command => [\&server_prep]);
+	$fp_window->Button(-text => "Install OSCAR Server",
+			   -command => [\&install_server]);
 
     $instructions->grid("-",-sticky => "ew");
     $mpitext->grid("-");
@@ -170,13 +170,13 @@ sub set_mpi {
 # Do the actual work of step 3.
 #
 
-sub server_prep {
+sub install_server {
     # Make this window busy so that the user can't click on anything
     # while this step is running.
 
     $fp_window->Busy(-recurse => 1);
 
-    my $cmd = "./server_prep $$vars{interface}";
+    my $cmd = "./install_server $$vars{interface}";
     oscar_log_subsection("Step 3: Running: $cmd");
     open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
                               error_window($fp_window,
@@ -209,7 +209,7 @@ sub server_prep {
     oscar_log_subsection("Step 3: Completed successfully");
 
     done_window($fp_window,
-		"Successfully prepared server for OSCAR installation",
+		"Successfully installed OSCAR server",
 		\&fp_window_close);
 
     # Mark it so that we know that we have already run this step
