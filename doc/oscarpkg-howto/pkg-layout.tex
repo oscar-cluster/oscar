@@ -1,4 +1,4 @@
-% $Id: pkg-layout.tex,v 1.14 2003/10/01 21:27:46 naughtont Exp $
+% $Id: pkg-layout.tex,v 1.15 2003/10/06 22:26:19 naughtont Exp $
 
 % TJN: Mention the XML tools that are helpful, e.g., 'xmllint'
 %      which >= 2.5.8 (i believe) has --schema option too! :)
@@ -208,10 +208,10 @@ processed in alph-order.
 		   Server filesystem (access to clients)\\
         \hline
       \end{tabular}
-      \caption{Note the \cmd{chroot}'d environment indicates 
-	  the operations happen in the SIS image not on the actual machine.
-	  In step 8, the script runs on the Server but can affect the clients,
-	  e.g., via C3 commands.}
+	  \caption[Outline of operations performed]{Note the \cmd{chroot}'d
+	  environment indicates the operations happen in the SIS image not on
+	  the actual machine.  In step 8, the script runs on the Server but can
+	  affect the clients, e.g., via C3 commands.}
     \label{tab:sequence-of-events}
   \end{center}
 \end{table}
