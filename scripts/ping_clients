@@ -1,0 +1,44 @@
+#!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/ping_clients,v 1.1 2001/12/18 23:14:10 mchasal Exp $
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+use strict;
+use lib "/usr/lib/systeminstaller";
+use SIS::Client;
+
+my @machines = clientList;
+my $mach;
+my $failcount=0;
+print "Pinging all clients, this may take minute...\n\n";
+foreach $mach (@machines) {
+	print "Pinging ".$mach->{HOST}."...";
+	my $cmd="ping -c3 ".$mach->{HOST}." >/dev/null 2>&1";
+	if (system($cmd)) {
+		print "Failed!!\n";
+		$failcount++;
+	} else {
+		print "Ok!!\n";
+	}
+	if ($failcount) {
+		print "\n$failcount client(s) failed to respond!!\n";
+	} else {
+		print "\nAll clients responded!!\n";
+	}
+}
