@@ -1,9 +1,11 @@
 # -*- makefile -*-
 #
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.13 2003/07/25 23:04:12 ngorsuch Exp $
+# $Id: Makefile.am,v 1.14 2004/04/22 19:02:59 brechin Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -13,10 +15,12 @@ include $(top_srcdir)/dist/Makefile.options
 
 oscar_SCRIPTS		= \
 			allow_client_access \
+			c3_conf_manager \
 			client_status \
 			create_and_populate_basic_node_info \
 			get_num_proc \
 			install_server \
+			mac_collector \
 			macinfo2sis \
 			make_database_password \
 			opd \
@@ -29,6 +33,7 @@ oscar_SCRIPTS		= \
 			post_rpm_install \
 			read_package_config_xml_into_database \
 			set_global_oscar_values \
+			set_node_nics \
 			set_oscar_interface \
 			setup_pxe \
 			ssh_install \
