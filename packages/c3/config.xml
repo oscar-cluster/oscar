@@ -44,14 +44,21 @@ tasks on a cluster.</description>
   </rpmlist>
 
   <rpmlist>
-      <filter group="oscar_server" distribution='mandrake' />
-      <rpm>python2-compat</rpm>
-  </rpmlist>
-
-  <rpmlist>
       <filter group="oscar_clients"/>
       <rpm>c3-ckillnode</rpm>
       <rpm>c3-c3cmd-filter</rpm>
   </rpmlist>
+ 
+ <!-- 
+     Removing the following (comment out for now) b/c I believe
+     all currently supported version of MDK have the '/usr/bin/python2'
+     file/link in the RPM MANIFEST to satisfy the c3 'Requires:' line.
+   -->
+ <!--
+  <rpmlist>
+      <filter group="oscar_server" distribution='mandrake' />
+      <rpm>python2-compat</rpm>
+  </rpmlist>
+   -->
 
 </oscar>
