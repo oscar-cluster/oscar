@@ -62,6 +62,8 @@ sub sync_user_files {
                                                    return undef);
     copy("/etc/passwd","$imagedir/etc/passwd") or (carp "Couldn't populate /etc/passwd to $imagedir",
                                                    return undef);
+    copy("/etc/group","$imagedir/etc/group") or (carp "Couldn't populate /etc/group to $imagedir",
+                                                   return undef);
     return 1;
 }
 
