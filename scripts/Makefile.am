@@ -7,12 +7,13 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Makefile.am,v 1.6 2002/10/25 18:04:47 jsquyres Exp $
+# $Id: Makefile.am,v 1.7 2002/10/29 01:53:20 jsquyres Exp $
 #
 
 EXTRA_DIST		= \
 			allow_client_access \
 			get_num_proc \
+			install_server \
 			macinfo2sis \
 			opd \
 			oscar_wizard \
@@ -20,7 +21,6 @@ EXTRA_DIST		= \
 			post_clients \
 			post_install \
 			post_rpm_install \
-			server_prep \
 			setup_pxe \
 			ssh_cluster_install \
 			ssh_install \
