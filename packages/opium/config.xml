@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.9 2003/05/29 18:19:12 bligneri Exp $
+      $Id: config.xml,v 1.10 2003/05/30 17:42:56 brechin Exp $
   -->
   <name>opium</name>
 
@@ -17,8 +17,8 @@
     <major>1</major>
     <minor>5</minor>
     <subversion>0</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
+    <release>4</release>
+    <epoch>0</epoch>
   </version>
 
   <class>included</class>
