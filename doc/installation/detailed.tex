@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.14 2002/01/17 23:04:12 mchasal Exp $
+% $Id: detailed.tex,v 1.15 2002/01/18 05:00:14 mjbrim Exp $
 %
 % $COPYRIGHT$
 %
@@ -256,21 +256,21 @@ before continuing. Typically, the problem is that the wrong module is
 specified for the given device. Try using the network configuration
 utility again to resolve the problem.
   
-\subsubsection{Copy distribution RPMs to \file{/tftpboot/rpm}}
+\subsubsection{Copy distribution rpms to \file{/tftpboot/rpm}}
 \label{det:rpmcopy}
 
-In this step, you need to copy the RPMs included with your Linux
+In this step, you need to copy the rpms included with your Linux
 distribution into the \file{/tftpboot/rpm} directory. 
 \begchange
 Insert each of the distribution CDs in turn.
 When each one is inserted, linux will automatically make the
 contents of the CD be available in the \file{/mnt/cdrom} directory.
-Then for each CD locate the directory that contains the RPMs.
-In Red Hat 7.1, the RPMs are located in the \file{RedHat/RPMS}
+Then for each CD locate the directory that contains the rpms.
+In Red Hat 7.1, the rpms are located in the \file{RedHat/RPMS}
 directory, which will appear on the system as the 
 \file{/mnt/cdrom/RedHat/RPMS} directory. 
 \endchange
- After locating the RPMs on the each CD, copy them into
+ After locating the rpms on the each CD, copy them into
 \file{/tftpboot/rpm} with a command such as:
 
 \begin{verbatim}
@@ -291,7 +291,7 @@ file system by issuing these commands:
 If you wish to save space on your server's hard drive and will be
 using the default RPM list supplied with OSCAR (see
 Section~\ref{sec:detailed-cluster-def}),
-you should only copy over the RPMs listed in the sample.
+you should only copy over the rpms listed in the sample.
 \begchange
 For the Red Hat 7.1 distribution, this can be done for each CD with
 a command sequence like this:
