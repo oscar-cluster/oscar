@@ -62,6 +62,10 @@ sub cleanup_files {
                   /usr/local/lib/systemimager
 		  /etc/systemimager
                   /etc/dhcpd.conf
+                  /etc/profile.d/mpi-00mpich.csh
+                  /etc/profile.d/mpi-00mpich.sh
+                  /etc/profile.d/mpi-01lam.csh
+                  /etc/profile.d/mpi-01lam.sh
                  );
     foreach my $file (@dirs) {
 	print "rm -rf $file \n";
