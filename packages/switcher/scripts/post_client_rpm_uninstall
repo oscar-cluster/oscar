@@ -11,24 +11,21 @@
 my ($distro, $ver) = which_distro_server();
 
 if( $distro eq "fedora" ) {
-	my @rpms = qw(tcl
-			env-switcher
+	my @rpms = qw( env-switcher
 			modules-oscar
 			); #skipping ed
 	remove_rpms(@rpms);
 
 }
 elsif( $distro eq "redhat" ) {
-	my @rpms = qw(tcl
-			env-switcher
+	my @rpms = qw(env-switcher
 			modules-oscar
 			); #skipping ed
 	remove_rpms(@rpms);
 
 }
 elsif( ($distro eq "mandrake") && ($ver eq "9.2") ) {
-	my @rpms = qw(tcl
-			env-switcher
+	my @rpms = qw(env-switcher
 			modules-oscar-mdk92
 			);  #skipping ed
 	remove_rpms(@rpms);
