@@ -139,6 +139,21 @@ sub delnodes {
           carp("Failed to delete machines $clientstring");
           $fail++;
 	}
+
+        print ">> Updating C3 configuration file\n";
+        if (system("$ENV{OSCAR_HOME}/packages/c3/scripts/post_clients")) {
+                carp("C3 configuration file update phase failed.");
+                $fail++;
+        }
+                                                                                
+        print ">> Re-starting client services on remaining nodes\n";
+        foreach my $generic_service (@generic_services) {
+                if (system("/opt/c3-4/cexec /etc/init.d/$generic_service restart")) {
+                        carp("client_services restart phase failed.");
+                        $fail++;
+                }
+        }
+
         fill_listbox($listbox);
         if ($fail) {
           error_window($window,"Clients deleted, but reconfiguration failed.");
