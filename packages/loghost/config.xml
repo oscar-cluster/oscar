@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE package SYSTEM "../package.dtd">
-<package>
+<oscar>
 
 <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.3 2002/11/02 00:45:44 bligneri Exp $
+      $Id: config.xml,v 1.4 2002/11/04 23:14:20 jsquyres Exp $
       -->
 
   <name>loghost</name>
@@ -44,4 +44,4 @@
     </server>
   </rpmlist>
 
-</package>
+</oscar>

@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE package SYSTEM "../package.dtd">
-<package>
-
-    <!-- 
-   Copyright (c) 2002 The Trustees of Indiana University.  
-                      All rights reserved.
-   
-   This file is part of the OSCAR software package.  For license
-   information, see the COPYING file in the top level directory of the
-   OSCAR source distribution.
-  
-   $Id: config.xml,v 1.4 2002/11/02 00:45:45 bligneri Exp $
-   -->
-
+<oscar>
+  <!--
+      Copyright (c) 2002 The Trustees of Indiana University.  
+                         All rights reserved.
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id: config.xml,v 1.5 2002/11/04 23:14:21 jsquyres Exp $
+  -->
   <name>sis</name>
 
   <version>
@@ -61,4 +59,4 @@
       <rpm>systemimager-client</rpm>
     </client>
   </rpmlist>
-</package>
+</oscar>
