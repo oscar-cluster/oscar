@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.5 2002/05/30 02:24:31 jsquyres Exp $
+# $Id: Makefile.am,v 1.6 2002/06/14 04:28:12 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -21,7 +21,7 @@ SUBDIRS			= \
 
 noinst_SCRIPTS		= install_cluster
 
-EXTRA_DIST		= COPYING README README.ia64 $(noinst_SCRIPTS)
+EXTRA_DIST		= COPYING README $(noinst_SCRIPTS)
 
 #
 # Make the documentation
