@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.14 2003/11/04 23:00:20 muglerj Exp $
+#  $Id: PackageInUn.pm,v 1.15 2003/11/05 20:13:16 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -69,6 +69,8 @@ sub install_uninstall_packages
 	my $package;  # Name of a package to be installed/uninstalled
 	my @packagesThatShouldBeInstalled;    # List of packages to install
 	my @packagesThatShouldBeUninstalled;  # List of packages to uninstall
+	my @all_packages; #list of all packages
+	my $flag = 0; #set to one if one package got installed
                                                                                 
 	# Get the lists of packages that need to be installed/uninstalled
 	$success = OSCAR::Database::database_execute_command(
@@ -81,7 +83,7 @@ sub install_uninstall_packages
 	#we only support one image in this version
 	if ($imagenumber != 1)
 	{
-		print "This program only supports one image\n";
+		print "This program only supports one image.\n";
 		exit (0);
 	}
 
@@ -97,17 +99,39 @@ sub install_uninstall_packages
 		# flag for that package.
 		if (!$success)
 		{
-			#bit is already set by underlying code
+			#this bit is already set by underlying code
 			#OSCAR::Database::database_execute_command(
 			#  "package_mark_installed $package");
 			OSCAR::Database::database_execute_command(
 				"package_clear_should_be_installed $package")
+			$flag = 1;
 		}
 		else
 		{
 			print "Error: package $package failed to install.\n";
 		}
 	}
+
+	#now run every packages post_install phase if it is installed
+	if ($flag == 1)
+	{
+		@all_packages = OSCAR::Package::list_installable_packages("all"); 
+		foreach $package (@all_packages)
+		{
+			if(is_installed($package) == 1)
+			{
+				if (OSCAR::Package::run_pkg_script($package, 'post_install', 1, '0'))
+				{
+					print "executed post_install phase on server for package:$package\n";
+				}
+				else
+				{
+					print "Warning: nothing ran for ($package) post_install phase on server\n";
+				}
+			}
+		}
+	}
+                                                                                
                                                                                 
 	#Loop through the list of packages to be UNINSTALLED and do the right
 	# thing
@@ -132,7 +156,7 @@ sub install_uninstall_packages
 			print "Error: package $package failed to uninstall.\n";
 		}
 	}
-                                                                                
+
 	# we'll give a shot at avoiding this for now
 	# OPTIONALLY clear all of the install/uninstall flags at the end
 	#OSCAR::Database::database_execute_command(
@@ -688,7 +712,7 @@ sub run_install_server
 	{
 		if (OSCAR::Package::run_pkg_script($package_name, 'post_server_install', 1, '0'))
 		{
-			print "executing post_server_install phase on server\n";
+			print "executed post_server_install phase on server\n";
 			#ran something
 			$flag = 1;
 		}
@@ -699,22 +723,12 @@ sub run_install_server
 		
 		if (OSCAR::Package::run_pkg_script($package_name, 'post_clients', 1, '0'))
 		{
-			print "executing post_clients phase on server\n";
+			print "executed post_clients phase on server\n";
 			$flag = 1;
 		}
 		else
 		{
 			print "Warning: nothing ran for ($package_name) post_clients phase on server\n";
-		}
-
-		if (OSCAR::Package::run_pkg_script($package_name, 'post_install', 1, '0'))
-		{
-			print "executing post_install phase on server\n";
-			$flag = 1;
-		}
-		else
-		{
-			print "Warning: nothing ran for ($package_name) post_install phase on server\n";
 		}
 	}
 	else
@@ -1554,6 +1568,8 @@ sub cexec_open
 	my $cmd  = shift;
 	my $aref = shift;
 	my @rslt;
+
+	print "Executing: $cmd\n";
 
 	if( defined( open(CMD, "$cmd 2>&1 |")) ) { # Redirect STDERR to STDOUT
 		@rslt = <CMD>;
