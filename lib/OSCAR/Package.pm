@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.50 2003/04/15 05:42:22 ngorsuch Exp $
+#   $Id: Package.pm,v 1.51 2003/06/23 17:53:30 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.50 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.51 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -253,7 +253,7 @@ sub run_pkg_user_test {
 # order of precedence in looking for the RPM list:
 #
 # 1. If XML RPM lists for client, server, or all exist, use them.
-# 2. If client.rpmlist or server.rpmlist exists, use them.
+
 # 3. Otherwise, get a listing of all the RPMs in package/[name]/RPMS,
 #    and use those.
 #
@@ -270,51 +270,73 @@ sub rpmlist {
     if (! $prefix) {
 	return ();
     }
-    my $cfile = "$prefix/client.rpmlist";
-    my $sfile = "$prefix/server.rpmlist";
-    my $listfile = ($type eq "client") ? $cfile : $sfile;
+# These files are deprecated
+#    my $cfile = "$prefix/client.rpmlist";
+#    my $sfile = "$prefix/server.rpmlist";
+#    my $listfile = ($type eq "client") ? $cfile : $sfile;
+
+
+# First try the database
     my @rpms_to_return = ();
-    
+    my @field = ( "rpm" );
+    my @wheres= ( "package=$pkg", "scope=$type" );
+    my $results;
+    my $key;
+    my $value;
+    if ( ($results = database_read_table_fields('packages_rpmlist', \@field, \@wheres, 'rpm', "Couldn't get $type rpms for package $pkg")) && keys(%$results) > 0) {
+
+	while (($key, $value) = each %$results) {
+	#  print "key: $key, value: $value\n";
+          push @rpms_to_return, $key;
+	}
+        #  print "RPMS: " . @rpms_to_return . "\n";
+	undef $results;
+    }
+
+
+# THE FOLLOWING SECTION IS DEPRECATED BY NEW ODA FUNCTIONALITY
     # If we haven't read in all the package config.xml files, do so.
 
-    read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
+#    read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
 
     # Double check to ensure that the package's "installable" XML
     # attribute is 1.  Return an empty RPM list if it's not.
 
     # Look for XML first
+#
+#    if ($PACKAGE_CACHE->{$pkg}->{rpmlist}->{server} ||
+#	$PACKAGE_CACHE->{$pkg}->{rpmlist}->{client} ||
+#	$PACKAGE_CACHE->{$pkg}->{rpmlist}->{all}) {
+#	
+#	foreach my $i (0 .. 
+#		       $#{$PACKAGE_CACHE->{$pkg}->{rpmlist}->{all}->{rpm}}) {
+#	    my $rpm = $PACKAGE_CACHE->{$pkg}->{rpmlist}->{all}->{rpm}[$i];
+#	    push @rpms_to_return, $rpm;
+#	}
+#
+#	foreach my $i (0 .. 
+#		       $#{$PACKAGE_CACHE->{$pkg}->{rpmlist}->{$type}->{rpm}}) {
+#	    my $rpm = $PACKAGE_CACHE->{$pkg}->{rpmlist}->{$type}->{rpm}[$i];
+#	    push @rpms_to_return, $rpm;
+#	}
+#    }
 
-    if ($PACKAGE_CACHE->{$pkg}->{rpmlist}->{server} ||
-	$PACKAGE_CACHE->{$pkg}->{rpmlist}->{client} ||
-	$PACKAGE_CACHE->{$pkg}->{rpmlist}->{all}) {
-	
-	foreach my $i (0 .. 
-		       $#{$PACKAGE_CACHE->{$pkg}->{rpmlist}->{all}->{rpm}}) {
-	    my $rpm = $PACKAGE_CACHE->{$pkg}->{rpmlist}->{all}->{rpm}[$i];
-	    push @rpms_to_return, $rpm;
-	}
 
-	foreach my $i (0 .. 
-		       $#{$PACKAGE_CACHE->{$pkg}->{rpmlist}->{$type}->{rpm}}) {
-	    my $rpm = $PACKAGE_CACHE->{$pkg}->{rpmlist}->{$type}->{rpm}[$i];
-	    push @rpms_to_return, $rpm;
-	}
-    }
-
+# server and client rpmlist files are deprecated
     # Next, look for client.rpmlist and/or server.rpmlist
 
-    elsif (-f $cfile || -f $sfile) {
-	if (open(IN,"<$listfile")) {
-	    while(<IN>) {
-		# get rid of comments
-		s/\#.*//;
-		if(/(\S+)/) {
-		    push @rpms_to_return, $1;
-		}
-	    }
-	    close(IN);
-	}
-    } 
+#    elsif (-f $cfile || -f $sfile) {
+#	if (open(IN,"<$listfile")) {
+#	    while(<IN>) {
+#		# get rid of comments
+#		s/\#.*//;
+#		if(/(\S+)/) {
+#		    push @rpms_to_return, $1;
+#		}
+#	    }
+#	    close(IN);
+#	}
+#    } 
 
     # Otherwise, get a list of files in packages/[name]/RPMS.
 
