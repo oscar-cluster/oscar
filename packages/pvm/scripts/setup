@@ -39,6 +39,8 @@ if ($name eq "redhat") {
 		$source_dir .= "80";
 	} elsif ($ver eq "9") {
 		$source_dir .= "90";
+	} elsif ($ver eq "3as") {
+		$source_dir .= "3as";
 	} else {
 		$source_dir .= "72";
 	}
