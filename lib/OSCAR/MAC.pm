@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.35 2003/01/29 19:51:15 brechin Exp $
+#   $Id: MAC.pm,v 1.36 2003/02/06 20:17:20 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.35 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.36 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -91,13 +91,15 @@ sub mac_window {
     my $clear    = $topframe->Button( 	-text => "Remove",
 					-height=>1,
 					-command => [\&clearmacaddy, $listbox, $window ],
-				  );
-    $clear->configure( -font => [ -size => 7 ] );
+				    );
+    $clear->configure( -font => { -size => 10 }, 
+		       -pady => 2 );
     my $clearall = $topframe->Button( 	-text => "Remove All",
 					-height=>1,
 					-command => [\&clearallmacs, $listbox, $window ],
-				  );
-    $clearall->configure( -font => [ -size => 7 ] );
+				    );
+    $clearall->configure( -font => { -size => 10 }, 
+			  -pady => 2 );
     $frame->pack(-side => "bottom", -fill => "both", -expand => 1);
     $topframe->pack(-side => 'top', -fill => "both", -expand => 1);
 
