@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.49 2003/06/27 14:49:38 brechin Exp $
+# $Id: oscar_wizard,v 1.50 2003/06/27 19:50:54 brechin Exp $
 #
 
 use strict;
@@ -39,7 +39,6 @@ use OSCAR::Distro;
 use OSCAR::DelNode;
 use OSCAR::AddNode;
 use OSCAR::Logger;
-use OSCAR::Selector;
 use OSCAR::Configurator;
 use OSCAR::Package;
 use OSCAR::Database;
@@ -95,7 +94,7 @@ $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 my $step_number = 1;
 oscar_button($window, "Step $step_number:", 
 	     "Select OSCAR Packages To Install...", 
-	     [\&displayPackageSelector, $window, $step_number], 
+	     [sub { system("cd ../lib/Qt; /usr/bin/perl Selector.pl; cd ../../scripts") }, $window, $step_number], 
 	     'select_packages');
 
 # Configure selected packages

@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.24 2003/04/22 06:03:07 ngorsuch Exp $
+# $Id: Configurator.pm,v 1.25 2003/06/27 19:50:53 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -41,7 +41,7 @@ use Carp;
 use OSCAR::Configbox; # For the configuration HTML form display
 use OSCAR::Package;   # For list_installable_packages() and run_pkg_script()
 use OSCAR::Logger;    # For oscar_log_section()
-use OSCAR::Selector;
+#use OSCAR::Selector;
 use XML::Simple;      # Read/write the .selection config files
 use Tk::Pane; 
 no warnings qw(closure);

@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.2 2003/06/27 19:01:32 brechin Exp $
+      $Id: config.xml,v 1.3 2003/06/27 19:50:53 brechin Exp $
   -->
   <name>base</name>
 
@@ -131,7 +131,24 @@
 
   <rpmlist>
     <filter distribution='redhat' distribution_version='8.0' group='oscar_server' />
-      <rpm>perl-libnet</rpm>
+        <rpm>dhcp</rpm>
+        <rpm>gd</rpm>
+        <rpm>nfs-utils</rpm>
+        <rpm>openssh</rpm>
+        <rpm>openssh-clients</rpm>
+        <rpm>openssh-server</rpm>
+        <rpm>openssl</rpm>
+        <rpm>tcpdump</rpm>
+        <rpm>xinetd</rpm>
+        <rpm>httpd</rpm>
+        <rpm>php</rpm>
+        <rpm>expat</rpm>
+        <rpm>python</rpm>
+        <rpm>zlib</rpm>
+        <rpm>zlib-devel</rpm>
+        <rpm>shadow-utils</rpm>
+        <rpm>libcap</rpm>
+
   </rpmlist>
 
   <rpmlist>
