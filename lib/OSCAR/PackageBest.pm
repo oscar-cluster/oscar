@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.9 2002/02/18 23:58:05 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.10 2002/02/19 00:04:26 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -38,7 +38,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.9 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.10 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
@@ -64,18 +64,18 @@ sub find_files {
 
         my @compatlist; my $RPM_TABLE; 
 
-        unless (cache_gen(%args->{PKGDIR},%args->{CACHEFILE})) {
+        unless (cache_gen($args{PKGDIR},$args{CACHEFILE})) {
                 return;
         }
 
-        unless (@compatlist=gen_compat_list(%args->{ARCH},%args->{RPMRC})) {
+        unless (@compatlist=gen_compat_list($args{ARCH},$args{RPMRC})) {
                 return;
         }
-        unless ($RPM_TABLE=populate_rpm_table(%args->{PKGDIR},%args->{CACHEFILE})) {
+        unless ($RPM_TABLE=populate_rpm_table($args{PKGDIR},$args{CACHEFILE})) {
                 return;
         }
 
-        return find_best_files($RPM_TABLE,\@compatlist,@{%args->{PKGLIST}});
+        return find_best_files($RPM_TABLE,\@compatlist,@{$args{PKGLIST}});
 }
 
 sub find_best_files {

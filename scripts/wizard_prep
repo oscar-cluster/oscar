@@ -50,12 +50,12 @@ foreach my $package (@packages) {
 print Dumper(\@rpms);
 
 # Give me the list of files for my rpms
-my @files = find_files(
+my %files = find_files(
                        PKGDIR => $RPMPOOL, 
                        PKGLIST => \@rpms
                       );
 
-my @fullfiles = map {"$RPMPOOL/$_"} @files;
+my @fullfiles = map {"$RPMPOOL/$_"} (values %files);
 
 my $cmd = "rpm -Uhv --replacepkgs " . join(' ', @fullfiles);
 !system($cmd) or croak("Couldn't install the required packages needed for OSCAR Wizard to start");

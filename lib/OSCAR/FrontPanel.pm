@@ -1,6 +1,6 @@
-package OSCAR::FrontPanel.pm;
+package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.2 2002/02/18 23:12:02 sdague Exp $
+#   $Id: FrontPanel.pm,v 1.3 2002/02/19 00:04:26 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ use File::Copy;
 use base qw(Exporter);
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -47,11 +47,11 @@ sub frontpanel_window {
                                       -text => "Prepare Server for OSCAR",
                                       -command => [\&server_prep, $vars, $window],
                                      );
-    my $exitbutton = $frame->Button(
+    my $exitbutton = $window->Button(
                                      -text => "Close",
                                      -command => sub {$window->destroy},
                                     );
-    $instructions->grid()
+    $instructions->grid();
     $setupbutton->grid(-sticky => "ew");
     $exitbutton->grid(-sticky => "ew");
 }
