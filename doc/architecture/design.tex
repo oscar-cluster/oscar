@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.16 2002/08/07 03:24:04 jsquyres Exp $
+% $Id: design.tex,v 1.17 2002/08/14 17:00:56 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -456,6 +456,29 @@ an OSCAR distribution package.
 
 \subsubsection{API calls}
 \label{sec:design-pkg-api}
+
+The environment that these API calls are exectuted under has the 
+following variables defined that may be useful:
+
+\begin{table}[htbp]
+  \begin{center}
+    \begin{tabular}{|l|p{3in}|}
+      \hline
+      \multicolumn{1}{|c|}{Variable} &
+      \multicolumn{1}{|c|}{Contents} \\
+      \hline
+      \hline
+      OSCAR\_HEAD\_INTERNAL\_INTERFACE & The network interface on the 
+      head node that connects to the cluster (e.g. eth0).\\
+%
+      OSCAR\_HOME & The root path of the OSCAR tree 
+      (e.g. /root/oscar-1.4). \\ 
+%
+    \end{tabular}
+    \caption{OSCAR API environment variables}
+    \label{tab:design-pkg-api-env}
+  \end{center}
+\end{table}
 
 So let's now discuss each of the API calls in detail.
 
