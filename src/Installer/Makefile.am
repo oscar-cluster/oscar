@@ -26,7 +26,7 @@ STATICTARGET	=	$(static_pms) $(static_pls)
 ALLTARGET	=	$(COMPILEDTARGET) $(STATICTARGET)
 
 # These are items to be distributed, i.e. put into the tarball
-EXTRA_DIST		=	$(ALLTARGET) Installer.xml
+EXTRA_DIST		=	$(ALLTARGET) Installer.xml images
 
 # Enter the name of the target directory for files during a 'make install'
 instdir			=	$(prefix)/Installer
