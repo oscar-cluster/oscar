@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # This script checks to see if the number of OSCAR clients (+ headnode)
-# equals the number of hosts Ganglia sees via the ganglia port
+# equals the number of hosts Ganglia sees by using gstat
 
 # (C)opyright Bernard Li <bli@bcgsc.ca>
 
@@ -25,8 +25,8 @@ clients=`echo $@ | wc -w`
 # number of client nodes + headnode
 numhosts=`expr $clients + 1`
 
-# trick to check connectivity of ganglia hosts
-hosts=`telnet localhost 8649 2>&1 | grep "<HOST NAME" | wc -l`
+# use gstat to determine number of hosts ganglia has detected 
+hosts=`gstat | grep 'Hosts' | head -n 1 | awk {'print $2'}`
 
 if [ $hosts -eq $numhosts ]
 then
