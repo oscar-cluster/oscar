@@ -228,7 +228,7 @@ open(OUT,">$c3_conf") or croak("Couldn't open $c3_conf");
 print OUT "cluster oscar_cluster {\n";
 print OUT "\t$hostname\n";
 my $firstkey = 1;
-foreach my $key (sort numerically keys %hash) {
+foreach my $key (sortnodes( keys %hash )) {
     if ($firstkey)
       {
         $hash{$key}->{HOST} =~ /([a-zA-Z_\-]+)(\d*)/;
@@ -241,19 +241,13 @@ foreach my $key (sort numerically keys %hash) {
 print OUT "}\n";
 close(OUT);
 
-
-
-# Sort hostnames numerically instead of an ascii sort.
-# Special sort() sub-rtn (uses $a, $b instead of @_)
-sub numerically
-{
-    $a =~ /(\d+)$/;  # pickoff number and
-    my $A = $1;      #  save in local var
-
-    $b =~ /(\d+)$/;  # pickoff number and
-    my $B = $1;      #  save in local var
-
-    ($A <=> $B)
+# Use Schwartzian transform to sort node names alphabetically and numerically.
+# Names w/o numeric suffix preceed those with numeric suffix.
+sub sortnodes(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, /^([\D]+)([\d]*)$/] }
+	       @_;
 }
 \end{verbatim}
 \end{scriptsize}

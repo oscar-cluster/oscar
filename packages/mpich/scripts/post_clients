@@ -22,6 +22,15 @@ use Carp;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 
+# Use Schwartzian transform to sort node names alphabetically and numerically.
+# Names w/o numeric suffix preceed those with numeric suffix.
+sub sortnodes(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, /^([\D]+)([\d]*)$/] }
+	       @_;
+}
+
 # Update the server's nodes file (optionally for only one image).
 
 print "...updating mpich_server nodes file\n";
@@ -32,7 +41,7 @@ open(NODES, ">$nodes_file") or croak("config_server: could not open mpich's node
 
 my %nodes = get_machine_listing();
 
-foreach my $node (sort keys %nodes) {
+foreach my $node (sortnodes( keys %nodes )) {
     if($nodes{$node}->{NUMPROC}) {
         foreach ( 1 .. $nodes{$node}->{NUMPROC} ) {
             print NODES "$node\n";

@@ -38,6 +38,15 @@ sub sort_uniq {
     return sort ( keys %seen );
 }
 
+# Use Schwartzian transform to sort node names alphabetically and numerically.
+# Names w/o numeric suffix preceed those with numeric suffix.
+sub sortnodes(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, /^([\D]+)([\d]*)$/] }
+	       @_;
+}
+
 #=================================================================
 
 # define the name of the pfilter configuration file
@@ -50,7 +59,7 @@ my $clients_file = "$server_file.clients";
 # find the names of the compute nodes
 
 my %nodes = get_machine_listing();
-my @nodes = sort keys %nodes;
+my @nodes = sortnodes( keys %nodes );
 chomp @nodes;
 
 #=================================================================

@@ -25,10 +25,19 @@ use SystemInstaller::Machine;
 $IPCHAINS = "/etc/sysconfig/ipchains";
 $IPCHAINS_BKUP = "/etc/sysconfig/ipchains.bak";
 
+# Use Schwartzian transform to sort node names alphabetically and numerically.
+# Names w/o numeric suffix preceed those with numeric suffix.
+sub sortnodes(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, /^([\D]+)([\d]*)$/] }
+	       @_;
+}
+
 # find the names of the oscar client machines defined so far
 my %machines = get_machine_listing();
 my @clients = ();
-foreach my $client_key (sort keys %machines) {
+foreach my $client_key (sortnodes( keys %machines )) {
     my $client_ref = $machines{$client_key};
     my $host = $$client_ref{HOST};
     push @clients, $host 

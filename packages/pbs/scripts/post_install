@@ -81,6 +81,15 @@ sub restartMaui
   #    unless ($result =~ /is running/);
 }
 
+# Use Schwartzian transform to sort node names alphabetically and numerically.
+# Names w/o numeric suffix preceed those with numeric suffix.
+sub sortnodes(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, /^([\D]+)([\d]*)$/] }
+	       @_;
+}
+
 ########################
 #  BEGIN MAIN PROGRAM  #
 ########################
@@ -126,7 +135,7 @@ my %nodes = get_machine_listing($image);
 my $TOT_NODES = 0;
 my $TOT_NP = 0;
 my $hostname = "";
-foreach my $node (sort keys %nodes) 
+foreach my $node (sortnodes( keys %nodes )) 
   {
     # If NUM_PROCS is not defined for this node, skip this node entirely
     next unless ($nodes{$node}{NUM_PROCS});
@@ -165,7 +174,7 @@ foreach my $node (sort keys %nodes)
 # print Dumper(\%nodes);
 
 # Now go through the remaining pbsnodes hash and delete these nodes
-foreach my $node (sort keys %pbsnodes) 
+foreach my $node (sortnodes( keys %pbsnodes )) 
   {
     system('/opt/pbs/bin/qmgr -a -e -c "delete node ' . $node . '"');
   }

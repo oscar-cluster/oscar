@@ -311,18 +311,19 @@ count, names, etc.
 
        my %hash = get_machine_listing($image);   #Image can be null for default
 
-       foreach my $key (sort numerically keys %hash) {   #Key is nodenameN
+       foreach my $key (sortnodes( keys %hash )) {   #Key is nodenameN
            print $hash{$key}->{HOST}, ", ";
            print $hash{$key}->{DOMAIN}, ", ";
            print $hash{$key}->{IPADDR}, "\n--------\n";
        }
 
-       # Special sort() sub-rtn (uses $a, $b instead of @_)
-       sub numerically 
-       {
-           $a =~ /(\d+)$/;  $A = $1;  #pickoff node num & save in local var
-           $b =~ /(\d+)$/;  $B = $1;  #pickoff node num & save in local var
-           ($A <=> $B);
+       # Use Schwartzian transform to sort node names alphabetically and numerically.
+       # Names w/o numeric suffix preceed those with numeric suffix.
+       sub sortnodes(@) {
+	       return map { $_->[0] }
+	              sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	              map { [$_, /^([\D]+)([\d]*)$/] }
+	              @_;
        }
   \end{verbatim}
   \end{footnotesize}
