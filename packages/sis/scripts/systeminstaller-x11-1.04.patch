@@ -1,5 +1,5 @@
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm.orig	2003-04-09 10:31:40.000000000 -0700
-+++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2005-02-23 14:05:52.000000000 -0800
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2005-03-23 11:38:45.000000000 -0800
 @@ -36,6 +36,7 @@
  
      my $window = shift;
@@ -43,7 +43,20 @@
  
  }
  
-@@ -207,8 +211,35 @@
+@@ -177,6 +181,12 @@
+                     padding => 'pad',
+                    );
+ 
++    unless( $$vars{numhosts} > 0 ) {
++        error_window($window,"You must add at least one host!");
++        $window->Unbusy();
++        return undef;
++    }
++
+     my @imagesel=$imagebox->curselection;
+     my $imagename=$imagebox->get($imagesel[0]);
+ 
+@@ -207,8 +217,35 @@
      }
  
      done_window($window, "Successfully created clients for image $$vars{imgname}");
