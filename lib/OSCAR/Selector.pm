@@ -1,3 +1,13 @@
+#
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: Selector.pm,v 1.3 2002/10/29 07:20:27 jsquyres Exp $
+# 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
 ##############################################################
@@ -20,7 +30,8 @@ use Tk::LabEntry;
 use Tk::Dialog;
 use Tk::DialogBox;
 
-my($top);          # The Toplevel widget for the package selector window
+my($top);            # The Toplevel widget for the package selector window
+my $step_number;     # Step number in the OSCAR wizard
 ##############################################################
 #  MOVE THE STUFF ABOVE TO THE TOP OF THE PERL SOURCE FILE!  #
 ##############################################################
@@ -214,7 +225,7 @@ sub exitWithoutSaving
     }
 
   # Write out a message to the OSCAR log
-  oscar_log_subsection("Step 1: Completed successfully");
+  oscar_log_subsection("Step $step_number: Completed successfully");
 }
 
 #########################################################################
@@ -641,7 +652,8 @@ sub createConfigSelect
 #########################################################################
 sub displayPackageSelector # ($parent)
 {
-  my($parent) = @_;
+  my $parent = shift;
+  $step_number = shift;  
 
   # Check to see if our toplevel selector window has been created yet.
   if (!$top)
@@ -665,7 +677,7 @@ sub displayPackageSelector # ($parent)
   populateSelectorList();
   # Create the Optionmenu widget for the configuration name.
   createConfigSelect();
-  oscar_log_section("Running step 1 of the OSCAR wizard");
+  oscar_log_section("Running step $step_number of the OSCAR wizard: Select OSCAR packages to install");
   $root->MapWindow;   # Put the window on the screen.
 }
 
