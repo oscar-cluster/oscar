@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.16 2002/07/06 05:01:18 jsquyres Exp $
+# $Id: make-dist.sh,v 1.17 2002/07/18 07:03:14 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -170,7 +170,7 @@ EOF
     # If this is a beta, prepend the beta notice to the license.  
     #
 
-    if test "$OSCAR_BETA_VERSION" != "" -o "$OSCAR_ALPHA_VERSION" != ""; then
+    if test "$OSCAR_BETA_VERSION" != "0" -o "$OSCAR_ALPHA_VERSION" != "0"; then
 	echo " - This is a BETA version"
 	file=/tmp/oscar-license.$$
 	rm -f $file
