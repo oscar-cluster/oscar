@@ -10,16 +10,16 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.9 2003/03/06 01:52:12 brechin Exp $
+      $Id: config.xml,v 1.10 2003/04/23 16:37:44 brechin Exp $
       -->
 
-  <name>mpich</name>
+  <name>mpich-p4</name>
 
   <version>
     <major>1</major>
     <minor>2</minor>
     <subversion>5</subversion>
-    <release>1</release>
+    <release>2</release>
     <epoch>1</epoch>
   </version>
 
@@ -36,8 +36,8 @@
     <email>mpich-bugs@mcs.anl.gov</email>
   </maintainer>
   <packager>
-    <name>Neil Gorsuch</name>
-    <email>ngorsuch@ncsa.uiuc.edu</email>
+    <name>Jason Brechin</name>
+    <email>brechin@ncsa.uiuc.edu</email>
   </packager>
 
   <description>MPICH is a freely available, portable implementation of
@@ -57,7 +57,7 @@ libraries.</description>
   <package>
     <switcher>
       <tag>mpi</tag>
-      <name>mpich-1.2.5</name>
+      <name>mpich-ch_p4-gcc-1.2.5.9</name>
     </switcher>
   </package>
 
