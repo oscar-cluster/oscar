@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.11 2003/10/22 16:51:55 giraldeau Exp $
+      $Id: config.xml,v 1.12 2003/11/25 19:14:17 brechin Exp $
   -->
   <name>base</name>
 
@@ -19,7 +19,7 @@
     <major>1</major>
     <minor>0</minor>
     <subversion>0</subversion>
-    <release>1</release>
+    <release>2</release>
   </version>
 
   <class>core</class>
@@ -194,6 +194,7 @@
         <rpm>zlib-devel</rpm>
         <rpm>shadow-utils</rpm>
         <rpm>libcap</rpm>
+	<rpm>ntp</rpm>
   </rpmlist>
 
   <rpmlist>
