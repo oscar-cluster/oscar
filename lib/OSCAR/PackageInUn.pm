@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.11 2003/11/03 17:53:37 muglerj Exp $
+#  $Id: PackageInUn.pm,v 1.12 2003/11/03 20:53:17 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -42,7 +42,8 @@ our @EXPORT = qw(install_uninstall_packages
                  set_uninstalled
                  is_selected
                  is_package_a_package
-                 check_package_dependancy); 
+                 check_package_dependancy
+                 check_dependant_package); 
 
 my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
 
@@ -944,6 +945,7 @@ sub get_rpm_list
 #   4 attempted uninstall on image, choked
 #   5 package is uninstalled already, taking no actions
 #   6 package is not a package
+#   7 other packages depend on this package
 #
 #   Important Note:
 #   also sets "installed" field in table packages 
@@ -983,6 +985,12 @@ sub package_uninstall
 	{
 		print "Error: no uninstall target selected\n";
 		return (1);
+	} 
+	#check to see if other packages need it
+	if( check_dependant_package($package_name))
+	{
+		print "Error: other packages depend on this package\n";
+		return (7);
 	} 
 
 	if ($allnodes)
@@ -1392,7 +1400,7 @@ sub run_command_general
 sub check_package_dependancy 
 {
 	my ($package_name) = @_;
-	my $cmdstring = "read_records packages_requires package name=\"$package_name\"";
+	my $cmdstring = "read_records packages_requires name package=\"$package_name\"";
 	my @my_result;
 	my $error_code = 1;
 	my $record;
@@ -1410,7 +1418,31 @@ sub check_package_dependancy
 	return (0);
 } 
 
+#checks to see if a package has other packages
+#that depend on it
+#	$package_name --> a valid package name
+#returns 1 if other packages depend on it
+#returns 0 otherwise
+sub check_dependant_package
+{
+	my ($package_name) = @_;
+	my $cmdstring = "read_records packages_requires package name=\"$package_name\"";
+	my @my_result;
+	my $error_code = 1;
+	my $record;
 
+	OSCAR::Database::database_execute_command($cmdstring, \@my_result, $error_code);
+
+	foreach $record (@my_result)
+	{
+		if( is_installed($record) )
+		{
+			print "Package $package_name is needed by package $record.\n";
+			return (1);
+		}
+	}
+	return (0);
+}
 
 #--------------------------------------------------------------------
 # FIXME: Note, it might make since to just get the full command
