@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.18 2003/11/12 21:14:17 muglerj Exp $
+#  $Id: PackageInUn.pm,v 1.19 2003/11/14 00:42:01 tfleury Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -26,10 +26,14 @@ package OSCAR::PackageInUn;
 use strict;
 
 use lib "$ENV{OSCAR_HOME}/lib";
+use lib "$ENV{OSCAR_HOME}/lib/Qt";
 use Carp;
+use Cwd;
 use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::Logger;
+use OSCAR::Configurator;
+use Tk::Dialog;
 use English;
 
 #this doesn't seem to effect the namespace of the calling script
@@ -49,40 +53,72 @@ my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
 
 #########################################################################
 #  Subroutine: install_uninstall_packages                               #
-#  Parameters: None                                                     #
+#  Parameters: Reference to the main Tk window                          #
 #  Returns   : 0, which generally means success                         #
 #              1 in the event of a failure...but we currently           #
 #              never return 1                                           #
-#  Call this subroutine after you have run the GUI for install/         #
-#  uninstall packages (which is basically the 'Selector' run with the   #
-#  command line argument of '-installuninstall'.  This subroutine       #
-#  gets two lists from oda: (1) packages to be installed (that are      #
-#  not currently installed) and (2) packages to be uninstalled (that    #
-#  are currently installed).  It loops through the two lists and        #
-#  Does The Right Thing(tm) for each package.  At the end of the        #
-#  function, all of the flags should be updated appropriately in oda.   #
+#  This subroutine pops up the "Updater" (which is simply the Selector  #
+#  run in a different mode).  This allows the user to select packages   #
+#  to install/uninstall.  When the Updater exits, we check to see if    #
+#  any packages selected for installation have optional configuration   #
+#  associated with them.  If so, we prompt the user if he wants to      #
+#  run the Configurator.  After that, we get the lists of packages      #
+#  to be installed/uninstalled and take appropriate action.  At the     #
+#  end of the subroutine, all of the flags should be updated            #
+#  appropriately in oda.                                                #
 #########################################################################
 sub install_uninstall_packages
 {
+  my $mainwindow = shift;
+
 	my $imagenumber; # number of images on the system
 	my %imagehash; #hash of imagename node range pairs
-	my @imagename; #a list of all the images, allthough we fail unless we have only one
+	my @imagename; #a list of all the images, but we fail unless we have only one
 	my $success;  # Return code for database calls
 	my $package;  # Name of a package to be installed/uninstalled
 	my @packagesThatShouldBeInstalled;    # List of packages to install
 	my @packagesThatShouldBeUninstalled;  # List of packages to uninstall
 	my @all_packages; #list of all packages
-                                                                                
+	my $flag = 0; #set to one if one package got installed
+
+  # First, bring up the "Updater", which is the "Selector" run with the
+  # command line option of '--installuninstall'.
+  my $olddir = Cwd::cwd();
+  chdir($ENV{OSCAR_HOME} . '/lib/Qt');
+  system('/usr/bin/perl Selector.pl -i');
+  chdir($olddir);
+
 	# Get the lists of packages that need to be installed/uninstalled
 	$success = OSCAR::Database::database_execute_command(
 		"packages_that_should_be_installed",\@packagesThatShouldBeInstalled);
 	$success = OSCAR::Database::database_execute_command(
 		"packages_that_should_be_uninstalled",\@packagesThatShouldBeUninstalled);
 
+  # If the user selected any packages for installation, prompt to see if he
+  # wants to run the Configurator.
+  if (@packagesThatShouldBeInstalled)
+    {
+      my $response = $mainwindow->messageBox(
+        -title=>"Configure?",
+        -message=>"You have selected packages for installation. " .
+                  "Do you want to run the Configurator?",
+        -type=>'YesNo',
+        -default=>'yes',
+        -icon=>'question');
+      if ($response =~ /yes/i)
+        {
+          oscar_log_subsection("PLEASE WAIT!  Bring up the Configurator...\n");
+          my $configwindow = OSCAR::Configurator::displayPackageConfigurator(
+                             $mainwindow,2);
+          $configwindow->waitWindow;  # Wait for the Configurator to exit
+        }
+    }
+
 	$imagenumber = get_image_info(\%imagehash);
 
 	#see if there is anything to do
-	if ( (scalar(@packagesThatShouldBeInstalled) <= 0) && (scalar(@packagesThatShouldBeUninstalled) <= 0) )
+	if ( (scalar(@packagesThatShouldBeInstalled) <= 0) && 
+       (scalar(@packagesThatShouldBeUninstalled) <= 0) )
 	{
 		print "Notice: Nothing to do.\n";
 		return (0);
