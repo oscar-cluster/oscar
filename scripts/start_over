@@ -10,8 +10,8 @@ use Carp;
 my @rpms = qw(
               c3
               lam
-	      modules
-	      env-switcher
+      	      modules
+	            env-switcher
               pvm
               openpbs-oscar 
               openpbs-oscar-mom
@@ -19,7 +19,8 @@ my @rpms = qw(
               openpbs-oscar-gui
               openpbs-oscar-commands
               lam-module
-              sync-users-oscar
+              sync_users-oscar
+              ssh-oscar
               maui-oscar
               libdbdcsv-perl
               libappconfig-perl
@@ -31,8 +32,8 @@ my @rpms = qw(
               systemimager-client
               systemimager-i386boot
               systemimager-ia64boot
-	      mpich-oscar
-	      mpich-oscar-module
+	            mpich-oscar
+      	      mpich-oscar-module
              );
 
 stop_services();
@@ -74,14 +75,14 @@ sub stop_services {
 
 sub cleanup_files {
     my @dirs = qw(
-                  /usr/spool/PBS
-                  /usr/local/pbs
-                  /usr/local/maui
+                  /var/spool/pbs
+                  /opt/pbs
+                  /opt/maui-3.0.7
                   /var/log/systemimager
                   /var/lib/clamdr
                   /var/lib/systeminstaller
                   /usr/local/lib/systemimager
-		  /etc/systemimager
+            		  /etc/systemimager
                   /etc/dhcpd.conf
                   /etc/profile.d/mpi-00mpich.csh
                   /etc/profile.d/mpi-00mpich.sh
@@ -89,8 +90,8 @@ sub cleanup_files {
                   /etc/profile.d/mpi-01lam.sh
                  );
     foreach my $file (@dirs) {
-	print "rm -rf $file \n";
-        system("rm -rf $file");
+    	print "rm -rf $file \n";
+      system("rm -rf $file");
     }
 }
 
