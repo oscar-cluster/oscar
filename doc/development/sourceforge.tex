@@ -1,0 +1,74 @@
+% -*- latex -*-
+%
+% $Id: sourceforge.tex,v 1.1 2002/02/09 19:00:36 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
+\section{SourceForce Usage}
+\label{sec:sf}
+
+SourceForce provides a number of development tools for the OSCAR
+project.  As with all computer system administration, having some
+``common sense'' policies ease the administrative burden and ensure
+the orderly progress of development.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Roles}
+
+The OSCAR working group uses several roles at SourceForge.  Sweat
+equity holders can fall into one or more roles.  Assuming one role or
+another is mainly an administrative distinction, and meant to ensure
+that common system-administrative tasks are carried out in a
+coordinated fashion.  {\em Roles do not indicate a member's relative
+  importance or status in the OSCAR working group}.  The OSCAR working
+group chair is the only member who automatically assumes a role -- all
+others are considered equal in terms of SourceForge roles.  Decisions
+on who is in each role should be achieved by group consensus whenever
+possible.
+
+The following roles are defined:
+
+\begin{itemize}
+\item Administrator: The OSCAR chair is, by default, the SourceForge
+  administrator for the OSCAR project.  The SourceForge administrator
+  can add and delete members to any of the other roles.  It is
+  strongly recomended to have at least one other administrator
+  (designated by the chair) as a backup.
+
+\item CVS committer: Any sweat equity holder who actively contributes
+  to the CVS tree.
+  
+\item Bug tracker administrators: This should be the same group of
+  members as CVS committers; because of the way that SourceForge
+  permissions work, only bug track administrators can change fields of
+  a bug.  All others can only add notes to a bug.  Since a bug can be
+  assigned to any CVS committer, that bug owner should be able to
+  change the fields on that bug.  Hence, all CVS committers need to be
+  bug tracker administrators.
+  
+\item Release technicians: This should be a small group of sweat
+  equity holders (at least two).  All releases must be approved by the
+  Release Manager.  See Section~\ref{sec:release} for procedures on
+  releasing on SourceForge -- it's not trivial.
+
+\item Mailing list administrators: This should be a small group of
+  sweat equity holders (at least two).  The mailing list
+  administrators should chosen so that at least one is generally
+  available to respond to mailing list administrative functions in a
+  timely manner.
+  
+\item Web page updaters: This group of sweat equity holders that are
+  directly responsible for keeping the OSCAR web pages up-to-date with
+  accurate information.  Since the OSCAR web pages are in the CVS
+  repository, any CVS committer has access to modify them, but if
+  possible, only this group should have permissions to actually modify
+  the ``live'' copy of the pages on the SourceForge site.
+\end{itemize}
+
+The members of each role should be listed on the OSCAR web site to
+make it easy for members to find out who to contact for any given
+SourceForge administrative actions.
+
+% LocalWords:  Exp
