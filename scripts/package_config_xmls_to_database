@@ -17,6 +17,9 @@
 # Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 # Copyright 2003 NCSA
 #                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# Copyright 2004 Revolution Linux
+#           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
+#
 
 use strict;
 use Getopt::Long;
@@ -188,16 +191,8 @@ usage( 1 ) if @ARGV;
 # find the name of the mysql service and start the mysql server,
 # and make sure it is run on every system reboot
 my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
-my $mysql_service_name;
-if ($oscar_server_distribution eq "redhat" || $oscar_server_distribution eq "rhas") {
-    $mysql_service_name="mysqld";
-} elsif ($oscar_server_distribution eq "mandrake") {
-    $mysql_service_name="mysql";
-} elsif ($oscar_server_distribution eq "suse") {
-    $mysql_service_name="mysql";
-} else {
-    die "$0: unknown distribution <$oscar_server_distribution>";
-}
+my $mysql_service_name=which_mysql_name($oscar_server_distribution,$oscar_server_distribution_version);
+
 my $command="LC_ALL=EN;/etc/init.d/$mysql_service_name status";
 #print $command;
 my @command_output = `$command`;
@@ -331,6 +326,7 @@ foreach my $directory ( @directories ) {
 	 $package ne "." &&
 	 $package ne ".." &&
 	 $package ne "CVS" &&
+	 $package ne ".svn" &&
 	 ! -e "$directory/.oscar_ignore" ) {
         print "$0: package=<$package>\n" if $options{debug};
 	my $script_with_options = $slurp_script;

@@ -16,6 +16,10 @@ package OSCAR::Distro;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# Copyright 2004 Revolution Linux
+#           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
+#
+
 # Copyright (c) 2003 NCSA
 #                    Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 
@@ -27,7 +31,7 @@ use strict;
 use vars qw($VERSION @EXPORT);
 use Carp;
 use base qw(Exporter);
-@EXPORT = qw(which_distro which_distro_server);
+@EXPORT = qw(which_distro which_distro_server which_mysql_name);
 
 $VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
 
@@ -75,8 +79,6 @@ sub which_distro {
 #                        the running server.
 #
 ############################################################
-
-
 sub which_distro_server {
     my $name = "UnkownLinux";
     my $version = "0";
@@ -98,6 +100,58 @@ sub which_distro_server {
         last;
     }
     return (lc $name, lc $version);
+}
+
+############################################################
+#
+#  which_mysql_name - this returns the name of the mysql service
+#                     of the distribution
+#
+############################################################
+sub which_mysql_name {
+	my $name = shift;
+	my $version = shift;
+
+CASE: {
+	      # redhat
+	      ($name eq "redhat") && do{
+		      return "mysqld";
+		      last CASE;
+	      };
+
+	      # rhas
+	      ($name eq "rhas") && do{
+		      return "mysqld";
+		      last CASE;
+	      };
+
+	      # fedora
+	      ($name eq "fedora") && do{
+		      return "mysqld";
+		      last CASE;
+	      };
+
+	      # mandrake
+	      ($name eq "mandrake") && do{
+		      return "mysql";
+		      last CASE;
+	      };
+
+	      # suse
+	      ($name eq "suse") && do{
+		      return "mysql";
+		      last CASE;
+	      };
+
+	      # suse
+	      ($name eq "debian") && do{
+		      return "mysql";
+		      last CASE;
+	      };
+
+
+      }
+
 }
 
 1;

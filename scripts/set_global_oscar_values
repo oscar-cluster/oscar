@@ -2,7 +2,9 @@
 
 # Copyright 2003 NCSA
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
-# 
+# Copyright 2004 Revolution Linux
+#           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
+#
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation; either version 2 of the License, or
@@ -51,16 +53,8 @@ print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
 oda::print_hash( "", "$0: options after GetOptions", \%options) if $options{debug};
 
 my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
-my $mysql_service_name;
-if ($oscar_server_distribution eq "redhat" || $oscar_server_distribution eq "rhas") {
-    $mysql_service_name="mysqld";
-} elsif ($oscar_server_distribution eq "mandrake") {
-    $mysql_service_name="mysql";
-} elsif ($oscar_server_distribution eq 'suse') {
-    $mysql_service_name='mysql';
-} else {
-    die "$0: unknown distribution <$oscar_server_distribution>";
-}
+my $mysql_service_name = which_mysql_name($oscar_server_distribution,$oscar_server_distribution_version);
+
 my $oscar_server_architecture;
 my $uname_data = (uname)[4];
 if ( $uname_data eq "i386" ) {
