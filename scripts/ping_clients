@@ -3,7 +3,7 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/ping_clients,v 1.2 2002/06/05 19:30:32 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/ping_clients,v 1.3 2003/03/19 20:12:07 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -21,15 +21,17 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 
 use strict;
 use lib "/usr/lib/systeminstaller";
+use SIS::Image;
 use SIS::Client;
+use SIS::DB;
 
-my @machines = clientList;
+my @machines = list_client();
 my $mach;
 my $failcount=0;
 print "Pinging all clients, this may take minute...\n\n";
 foreach $mach (@machines) {
-	print "Pinging ".$mach->{HOST}."...";
-	my $cmd="ping -c3 ".$mach->{HOST}." >/dev/null 2>&1";
+	print "Pinging ".$mach->hostname."...";
+	my $cmd="ping -c3 ".$mach->hostname." >/dev/null 2>&1";
 	if (system($cmd)) {
 		print "Failed!!\n";
 		$failcount++;
