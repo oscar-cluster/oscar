@@ -102,6 +102,7 @@ sub install_required_rpms {
 		  mpich
                   rsync
 		  nfs-utils
+		  sync-users-oscar
                  );
 
     my @installme = @rpms;  		#changed
