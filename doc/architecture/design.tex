@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.32 2002/11/04 23:10:45 jsquyres Exp $
+% $Id: design.tex,v 1.33 2003/02/19 18:03:15 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -816,7 +816,15 @@ see below.
     tarball specified by the \xmltag{uri} tags.  The string is
     case-insensitive. 
     
-    Mandatory/Single.
+    Optional/Single.  However, either \xmltag{md5sum} or
+    \xmltag{sha1sum} must be provided.
+    
+  \item \xmltag{sh1sum}: A string indicating the SHA1 sum of the
+    tarball specified by the \xmltag{uri} tags.  The string is
+    case-insensitive.
+    
+    Optional/Single.  However, either \xmltag{md5sum} or
+    \xmltag{sha1sum} must be provided.
   \end{itemize}
 \end{itemize}
 
