@@ -1,4 +1,4 @@
-$Id: README,v 1.6 2003/01/22 03:48:58 sad Exp $
+$Id: README,v 1.7 2003/01/22 04:58:22 sad Exp $
 
 This is the Ganglia package for OSCAR Linux clusters.
 
@@ -13,6 +13,13 @@ and other active developers.
 For additional information about the Ganglia project, see:
 
 http://ganglia.sourceforge.net/
+
+The OSCAR documentation provides directions on how to use the OSCAR
+Package Downloader (scripts/opd) to obtain additional OSCAR packages
+from the available OSCAR package repositories. Packages like ganglia,
+clumon, pvm-povray, and others are currently provided. For additional
+information on how to package other cluster tools see the OSCAR
+documentation.
 
 This tarball should be expanded in the OSCAR distribution tree under
 the directory "oscar-<version>/packages/".  After that, you'll have a
