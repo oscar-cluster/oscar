@@ -19,14 +19,11 @@ package OSCAR::PackageInUn;
 # Copyright (c) 2003 Oak Ridge National Laboratory.
 #                    All rights reserved.
 
-#Things to do in general:
-#1. get rid of the todo list
-#2. more testing
-
 use strict;
 
 use lib "$ENV{OSCAR_HOME}/lib";
 use lib "$ENV{OSCAR_HOME}/lib/Qt";
+use lib "/usr/lib/perl5/site_perl/OSCAR";
 use Carp;
 use Cwd;
 use OSCAR::Package;
@@ -35,6 +32,7 @@ use OSCAR::Logger;
 use OSCAR::Configurator;
 use Tk::Dialog;
 use English;
+use PackMan;
 
 #this doesn't seem to effect the namespace of the calling script
 use vars qw(@EXPORT);
@@ -47,7 +45,8 @@ our @EXPORT = qw(install_uninstall_packages
                  is_selected
                  is_package_a_package
                  check_package_dependancy
-                 check_dependant_package); 
+                 check_dependant_package
+                 uninstall_rpms_patch);
 
 my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
 my @error_list = ();
@@ -1299,7 +1298,7 @@ sub is_package_a_package
 	my ($package_name) = @_;
 
 	my $cmdstring = "read_records packages name name=\"$package_name\"";
-    my @tables = ("packages");
+	my @tables = ("packages");
 	my @my_result;
 	my $error_code = 1;
 
@@ -1379,6 +1378,92 @@ sub is_installed
 	return $my_result[0];
 }
 
+sub uninstall_rpms_patch
+#patch fuction added 2/20/05
+#uninstall's rpms, takes the database at its word
+#works on the headnode or the compute nodes/image
+#args:
+#$package_name = name of a valid OSCAR package
+#$type is either oscar_server or oscar_client
+#return:
+#0 on success
+#1 on failure
+{
+	my ($package_name, $type) = @_;
+	my @rpm_list;
+	my $cmd_string;
+	my $rpm;
+	my $pm;
+	my $retval = 0;
+	my @rslts;
+	
+	@rpm_list = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, $type, 1);
+
+	if ($type =~ "oscar_client")
+	{
+		#handle clients
+		$cmd_string = "$C3_HOME/cexec rpm -e";
+		print "client\n";
+
+	} 
+	elsif($type =~ "oscar_server")
+	{
+		print "server\n";
+		$cmd_string = "";
+	}
+
+	foreach $rpm (@rpm_list)
+	{
+		$cmd_string = $cmd_string." ".$rpm;
+	}
+	#print $cmd_string;
+	#exit (0);
+
+	if ($type =~ "oscar_client")
+	{
+		#$retval = cexec_open($cmd_string, \@rslts); 
+		if( $retval != 0 )
+		{ 
+			oscar_log_subsection("Error on client rpm un-install for $package_name \n");
+			my $e_string = "Error on client rpm un-install for $package_name \n";
+			add_error($e_string);
+			return(1);
+		}
+
+		#handle image
+		$pm = PackMan::RPM->new;
+		$pm->chroot("/var/lib/systemimager/images/oscarimage");
+		if($pm->remove( @rpm_list ))
+		{
+			return 0;
+		}
+		else
+		{
+			oscar_log_subsection("Error on image rpm un-install for $package_name \n");
+			my $e_string = "Error on image rpm un-install for $package_name \n";
+			add_error($e_string);
+			return 1;
+		}
+		
+	}
+	elsif($type =~ "oscar_server")
+	{
+		$pm = PackMan::RPM->new;
+		$pm->chroot(undef);
+		if($pm->remove( @rpm_list ))
+		{
+			return 0;
+		}
+		else
+		{
+			oscar_log_subsection("Error on server rpm un-install for $package_name \n");
+			my $e_string = "Error on server rpm un-install for $package_name \n";
+			add_error($e_string);
+			return 1;
+		}
+	}
+}
+
 #runs uninstall script on the server
 #	$package_name --> name of a package, scalar string
 #	$testmode --> if set to "1" run in testmode, scalar string
@@ -1398,6 +1483,13 @@ sub run_uninstall_server
 	my @cmd_out;
 
 	oscar_log_subsection("Running server un-install");
+	
+	if (uninstall_rpms_patch($package_name, "oscar_server") != 0)
+	{
+		my $e_string = "Error on server un-install for $package_name \n";
+		add_error($e_string);
+		return 1;
+	}
 
 	#get the package dir sanely
 	my $package_dir = OSCAR::Package::getOdaPackageDir($package_name);
@@ -1421,18 +1513,18 @@ sub run_uninstall_server
 		oscar_log_subsection("Completed un-install on server");
 		return (0);
 	}
-	else
-	{
-		my $e_string = "Error $package_name has no un-install script\n";
-		oscar_log_subsection("Error $package_name has no un-install script\n");
-		add_error($e_string);
-	}
+	#else
+	#{
+	#	my $e_string = "Error $package_name has no un-install script\n";
+	#	oscar_log_subsection("Error $package_name has no un-install script\n");
+	#	add_error($e_string);
+	#}
 
-	my $e_string = "Error on server un-install for $package_name \n";
-	add_error($e_string);
+	#my $e_string = "Error on server un-install for $package_name \n";
+	#add_error($e_string);
 
-	oscar_log_subsection("Error on server un-install for $package_name");
-	return (1);
+	#oscar_log_subsection("Error on server un-install for $package_name");
+	return (0);
 }
 
 #runs uninstall script on compute nodes or clients
@@ -1459,6 +1551,14 @@ sub run_uninstall_client
 	my @rslts;
 
 	oscar_log_subsection("Running client un-install");
+
+
+	if (uninstall_rpms_patch($package_name, "oscar_client") != 0)
+	{
+		my $e_string = "Error on server un-install for $package_name \n";
+		add_error($e_string);
+		return 1;
+	}
 
 	#get the package dir sanely
 	my $package_dir = OSCAR::Package::getOdaPackageDir($package_name);
@@ -1510,17 +1610,17 @@ sub run_uninstall_client
 		oscar_log_subsection("Completed un-install on client");
 		return (0);
 	}
-	else 
-	{
-		my $e_string = "Error $package_name has no un-install script\n";
-		add_error($e_string);
-		oscar_log_subsection("Error $package_name has no un-install script");
-	}
+#	else 
+#	{
+#		my $e_string = "Error $package_name has no un-install script\n";
+#		add_error($e_string);
+#		oscar_log_subsection("Error $package_name has no un-install script");
+#	}
 
-	my $e_string = "Error on client un-install for $package_name \n";
-	add_error($e_string);
-	oscar_log_subsection("Error on client un-install for $package_name");
-	return 1;
+#	my $e_string = "Error on client un-install for $package_name \n";
+#	add_error($e_string);
+#	oscar_log_subsection("Error on client un-install for $package_name");
+	return 0;
 }
 
 #runs uninstall script on an image
@@ -1587,18 +1687,18 @@ sub run_uninstall_image
 		oscar_log_subsection("Completed un-install on image");
 		return (0);
 	}
-	else
-	{
-		my $e_string = "Error $package_name has no un-install script\n";
-		add_error($e_string);
-		oscar_log_subsection("Error $package_name has no un-install script");
-	}
+	#else
+	#{
+	#	my $e_string = "Error $package_name has no un-install script\n";
+	#	add_error($e_string);
+	#	oscar_log_subsection("Error $package_name has no un-install script");
+	#}
 
-	my $e_string = "Error on image un-install for $package_name \n";
-	add_error($e_string);
-	oscar_log_subsection("Error on image un-install for $package_name");
+	#my $e_string = "Error on image un-install for $package_name \n";
+	#add_error($e_string);
+	#oscar_log_subsection("Error on image un-install for $package_name");
 
-	return (1);
+	return (0);
 }
 
 #invokes an mksimachine command to find out image info
