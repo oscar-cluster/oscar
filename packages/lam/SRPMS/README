@@ -1,0 +1,8 @@
+$Id: README,v 1.1 2002/04/21 22:09:52 jsquyres Exp $
+
+In case you're wondering why there's only one SRPM in this directory when
+there's more than one RPM in the lam/RPMS directory, it's because this one
+SRPM generates all of the OSCAR-ized LAM RPM's.  Specifically, if you 
+need to --rebuild the SRPM, all the necessary RPM's will be created.
+
+--The LAM Team
