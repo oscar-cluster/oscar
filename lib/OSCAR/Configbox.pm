@@ -122,12 +122,12 @@ sub Configbox_ui {
 sub defaultConfiguration
 {
   # Read in the non-modified HTML config file.  We do this instead of simply
-  # copying the .configure.html file to .configure.temp.html because the
+  # copying the configurator.html file to .configurator.temp.html because the
   # readInDefaultConfig subroutine removes some offensive HTML tags for us.
-  my($tree) = readInDefaultConfig("$packagedir/.configure.html");
-  # Delete the .configure.values modification file.
-  # system("rm -f $packagedir/.configure.values");
-  # Write out the temporary .configure.temp.html file.
+  my($tree) = readInDefaultConfig("$packagedir/configurator.html");
+  # Delete the .configurator.values modification file.
+  # system("rm -f $packagedir/.configurator.values");
+  # Write out the temporary .configurator.temp.html file.
   writeOutTempConfig($tree);
   $tree->delete;  # Always delete the tree when you are done with it.
 
@@ -135,7 +135,7 @@ sub defaultConfiguration
   $web->UnmapWindow;
   # Set the 'Save and Exit' button to active
   $saveAndExitButton->configure(-state => 'active');
-  loadHTMLFile("$packagedir/.configure.temp.html");
+  loadHTMLFile("$packagedir/.configurator.temp.html");
   # loadHTMLFile("$packagedir/test.html");
 }
 
@@ -156,7 +156,7 @@ sub exitWithoutSaving
 #########################################################################
 sub saveAndExit
 {
-  # Save the current configuration to the .configure.values file.
+  # Save the current configuration to the .configurator.values file.
   writeOutConfigValues();
   exitWithoutSaving();
 }
@@ -348,13 +348,13 @@ sub preprocessConfig # ($tree,$values)
 #  This subroutine takes in an HTML tree representing the combination   #
 #  of the default HTML config file and the current config options       #
 #  setttings.  It then writes out the tree to the file                  #
-#  .configure.temp.html, which is later read in and rendered.           #
+#  .configurator.temp.html, which is later read in and rendered.        #
 #########################################################################
 sub writeOutTempConfig # ($tree)
 {
   my($tree) = @_;
 
-  if (open(TREE,">$packagedir/.configure.temp.html"))
+  if (open(TREE,">$packagedir/.configurator.temp.html"))
     {
       print TREE $tree->as_HTML('<>&',"  ");
       close TREE;
@@ -372,7 +372,7 @@ sub writeOutTempConfig # ($tree)
 #  Returns   : Nothing                                                  #
 #  Call this subroutine when the user is finished entering values into  #
 #  the form.  This subroutine takes those values and writes them out    #
-#  to the .configure.values file using XML::Simple.                     #
+#  to the .configurator.values file using XML::Simple.                  #
 #########################################################################
 sub writeOutConfigValues
 {
@@ -414,7 +414,7 @@ sub writeOutConfigValues
 
   # We created the %result hash, now write it out to a Simple XML file.
   XMLout(\%result,
-         outputfile => "$packagedir/.configure.values",
+         outputfile => "$packagedir/.configurator.values",
          noescape => 1,
          rootname => 'config',
          noattr=> 1,
@@ -548,16 +548,16 @@ sub configurePackage
 
   # Check for the configuration HTML file
   return if ((-s "$packagedir/.selection.ignore") ||
-    (!(-s "$packagedir/.configure.html")));
+    (!(-s "$packagedir/configurator.html")));
 
-  my($tree) = readInDefaultConfig("$packagedir/.configure.html");
+  my($tree) = readInDefaultConfig("$packagedir/.onfigurator.html");
   return if (!$tree);
-  my($values) = readInConfigValues("$packagedir/.configure.values");
+  my($values) = readInConfigValues("$packagedir/.configurator.values");
   preprocessConfig($tree,$values) if $values;
   writeOutTempConfig($tree);
   $tree->delete;    # Always delete the tree when you are done with it.
 
-  displayWebPage($parent,"$packagedir/.configure.temp.html");
+  displayWebPage($parent,"$packagedir/.configurator.temp.html");
 }
 
 

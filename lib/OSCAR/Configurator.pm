@@ -126,7 +126,7 @@ sub doneButtonPressed
 #  any packages from $packagexml which have not been selected for       #
 #  installation and configuration.  In effect, we allow configuration   #
 #  of a package only if that package has been selected for installation #
-#  and if that package has a .configure.html file.                      #
+#  and if that package has a .configurator.html file.                   #
 #########################################################################
 sub getSelectedPackages
 {
@@ -146,9 +146,9 @@ sub getSelectedPackages
         ((defined $packagexml->{$package}) && 
           (!$packagexml->{$package}{selected}));
 
-      # Skip any packages which don't have a .configure.html file
+      # Skip any packages which don't have a .configurator.html file
       delete $packagexml->{$package} unless
-        (-s "$oscarbasedir/packages/$package/.configure.html");
+        (-s "$oscarbasedir/packages/$package/.configurator.html");
     }
 }
 
@@ -195,7 +195,7 @@ sub populateConfiguratorList
           # First the Config button
           $tempframe->Button(
             -text => 'Config',
-            #-state => ((-s "$oscarbasedir/packages/$package/.configure.html") ?
+            #-state => ((-s "$oscarbasedir/packages/$package/.configurator.html") ?
             #          'active' : 'disabled'),
             -command => [ \&OSCAR::Configbox::configurePackage,
                           $root,
