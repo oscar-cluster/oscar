@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_client_rpm_uninstall,v 1.1 2003/11/05 21:56:45 naughtont Exp $
+# $Id: post_client_rpm_uninstall,v 1.2 2003/12/04 05:09:07 ngorsuch Exp $
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -86,6 +86,7 @@ sub remove_files
 sub which_distro_server {
 	# Moved this hash inside the function since it was pulled from Distro.pm
 	my $DISTROFILES = {  
+           'fedora-release'   => 'fedora',
            'mandrake-release' => 'mandrake',
            'redhat-release'   => 'redhat',
 		   'aaa_version'      => 'suse',

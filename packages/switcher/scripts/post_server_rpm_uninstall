@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_server_rpm_uninstall,v 1.1 2003/11/05 21:56:45 naughtont Exp $
+# $Id: post_server_rpm_uninstall,v 1.2 2003/12/04 05:09:08 ngorsuch Exp $
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -14,7 +14,7 @@ use OSCAR::Distro;   # Run on server so have access to libs
 my ($distro, $ver) = which_distro_server();
 
 
-if( $distro eq "redhat" ) {
+if( ($distro eq "fedora") || ($distro eq "redhat") ) {
 	my @rpms = qw(tcl
 			env-switcher
 			modules-oscar

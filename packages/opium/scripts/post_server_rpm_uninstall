@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_server_rpm_uninstall,v 1.1 2003/11/05 21:56:45 naughtont Exp $
+# $Id: post_server_rpm_uninstall,v 1.2 2003/12/04 05:09:07 ngorsuch Exp $
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -15,7 +15,7 @@ my ($distro, $ver) = which_distro_server();
 
 remove_files( "ssh-oscar" );
 
-if( ($distro eq "redhat") || ($distro eq "mandrake") ) {
+if( ($distro eq "fedora") || ($distro eq "redhat") || ($distro eq "mandrake") ) {
 	my @rpms = qw(sync_users-oscar);  #skipping contabs
 	remove_rpms(@rpms);
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_server_rpm_uninstall,v 1.1 2003/11/05 21:56:44 naughtont Exp $
+# $Id: post_server_rpm_uninstall,v 1.2 2003/12/04 05:09:07 ngorsuch Exp $
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -13,7 +13,30 @@ use OSCAR::Distro;   # Run on server so have access to libs
 
 my ($distro, $ver) = which_distro_server();
 
-if( ($distro eq "mandrake") && ($ver eq "9.2") ) {
+if( ($distro eq "fedora") && ($ver eq "1") ) {
+	my @rpms = qw(dhcp
+			gd
+			nfs-utils
+			openssh
+			openssh-clients
+			openssh-server
+			openssl
+			tcpdump
+			xinetd
+			httpd
+			php
+			expat
+			python
+			zlib
+			zlib-devel
+			shadow-utils
+			libcap
+			);
+	remove_rpms(@rpms);
+
+}
+
+elsif( ($distro eq "mandrake") && ($ver eq "9.2") ) {
 	my @rpms = qw(apache
 			apache-conf
 			apache-modules
@@ -173,47 +196,6 @@ elsif( ($distro eq "redhat") && ($ver eq "9") ) {
 			);
 	remove_rpms(@rpms);
 
-}
-elsif( ($distro eq "redhat") && ($ver eq "9") ) {
-	my @rpms = qw(dhcp-server
-			dhcp-base
-			python
-			gd
-			mm
-			nfs-utils
-			openssh
-			openssl
-			tcpdump
-			xinetd
-			apache
-			mod_php4
-			mod_php4-core
-			libmcrypt
-			gmp
-			t1lib
-			ucdsnmp
-			libiodbc
-			libmcal
-			sablot
-			perl-SNMP
-			imap-lib
-			postgresql-libs
-			expat
-			zlib
-			zlib-devel
-			shadow
-			libcap
-			python2-compat
-			perl-HTML-Tagset
-			perl-HTML-Parser
-			perl-libwww-perl
-			perl-URI
-			freetype2-devel
-			libmng-devel
-			mesaglut-devel
-			libpng-devel
-			);
-	remove_rpms(@rpms);
 }
 
 #-------------------------------------------------------------
