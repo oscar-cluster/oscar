@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: brief.tex,v 1.11 2002/06/11 20:52:57 mchasal Exp $
+% $Id: brief.tex,v 1.12 2002/06/15 04:31:07 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -11,35 +11,36 @@
 
 \subsection{Why you shouldn't do a Quick Start install}
 
-If you meet the following criteria and are very brave, you can 
-try to install your cluster using the brief, mysterious,
-cryptic, terse, and obscure documentation in this section.  
-Otherwise, please do the right thing and read and use the 
-detailed installation procedure section of this installation guide.
-If you don't understand any of the following criteria, 
-then you probably don't meet them:
+If you meet the following criteria and are very brave, you can try to
+install your cluster using the brief, mysterious, cryptic, terse, and
+obscure documentation in this section.  Otherwise, please do the right
+thing and read and use the detailed installation procedure section of
+this installation guide.  If you don't understand any of the following
+criteria, then you probably don't meet them:
 
 \begin{enumerate}
-\item You hate to read manuals, documentation, or other printed matter.
-\item You are a unix guru. (You can uset \cmd{netcfg} or an editor to
-  configure network interfaces.)
+\item You hate to read manuals, documentation, or other printed
+  matter.
+\item You are a unix guru (you can use \cmd{netcfg} or an editor to
+  configure network interfaces).
 \item Your cluster client machines are on a private subnet.
-\item Your cluster server machine has two network interfaces, one public,
-  and one connected to the cluster client machines.
+\item Your cluster server machine has two network interfaces, one
+  public, and one connected to the cluster client machines.
 \item The default RPM list supplied by OSCAR for your distribution
-  (\file{oscar-\oscarversion/oscarsamples/<distro>-<version>-<arch>.rpmlist}) is
-  acceptable for your clients.
-\item You are using a distribution that is listed as \emph{Fully supported} 
- in Table~\ref{tab:oscar-distro-support}.
+  (\file{oscar\--\oscarversion/\-oscarsamples/\-<distro>-<version>-<arch>.rpmlist})
+  is acceptable for your clients.
+\item You are using a distribution that is listed as \emph{Fully
+    supported} in Table~\ref{tab:oscar-distro-support}.
 \item You know how to install your chosen distribution on a machine.
-\item You've never read completely through the installation instructions
-  of anything, ever. 
+\item You've never read completely through the installation
+  instructions of anything, ever.
 \end{enumerate}
 
-If you decide that the quick install isn't for you, see the detailed installation
-instructions in section \ref{det:top}.Throughout the quick install instructions,
-there is a reference to the appropriate section in the detailed installation 
-instructions in parenthesis at the end of each step.
+If you decide that the quick install isn't for you, see the detailed
+installation instructions in Section~\ref{det:top}
+(page~\pageref{det:top}). Throughout the quick install instructions,
+there are references to the appropriate section in the detailed
+installation instructions in parentheses at the end of each step.
 
 \subsection{Quick installation procedures}
 
@@ -47,70 +48,69 @@ Note: All actions specified herein should be performed by the
 \user{root} user on the service machine unless noted otherwise.
 
 \begin {enumerate}
+\item Install (or already have installed) Linux on your server
+  machine.  The only requirements for your Linux installation are:
 
-\item Install (or already have installed) Linux on your server machine.
-The only requirements for your Linux installation are:
-
-        \begin{enumerate}
-        \item There should be approximately 2 gigabytes free space in both
-        the \file{/} and \file{/var} filesystems. It is simplest if you
-        just create 1 large partition on the entire drive.(Detail:Section
-        \ref{det:serverdiskpar})
-        \item Some X environment such as GNOME or KDE must be installed.
-        \item Networking must be set up and working on the public interface.
-        (Do yourself a favor and install some type of network security if
-        your system is exposed to the general internet.)
-        \item The second network interface for the private cluster network
-        must be installed.
-        \end{enumerate}
-(Detail:Section \ref{det:serverosinstall})
-
-\item After the installation is complete, log on as root to the server 
-machine.
+  \begin{enumerate}
+  \item There should be approximately 2 gigabytes free space in both
+    the \file{/} and \file{/var} filesystems. It is simplest if you
+    just create 1 large partition on the entire drive.
+    
+    (Detail: See Section~\ref{det:serverdiskpar})
+  \item Some X environment such as GNOME or KDE must be installed.
+  \item Networking must be set up and working on the public interface
+    (do yourself a favor and install some type of network security if
+    your system is exposed to the general internet).
+  \item The second network interface for the private cluster network
+    must be installed.
+  \end{enumerate}
+  
+  (Detail: See Section~\ref{det:serverosinstall})
+  
+\item After the installation is complete, log on as root to the server
+  machine.
 
 \item Download and unpack OSCAR with these commands:
 
 % We have to use \tt instead of {verbatim} because we need to use
 % \oscarversion inside.  This makes it somewhat painful -- much less
 % easy than {verbatim}.
-\vspace{11pt}
-{\tt
-  \# cd $^\sim$ \\
-  \# ncftp ftp.sourceforge.net \\
-  ncftp / > cd pub/sourceforge/oscar \\
-  ncftp /pub/sourceforge/oscar > get oscar-\oscarversion.tar.gz \\
-  ncftp /pub/sourceforge/oscar > quit \\
-  \# tar -zxf oscar-\oscarversion.tar.gz
-}
-\vspace{11pt}
+  \vspace{11pt}
+  {\tt
+    \# cd $^\sim$ \\
+    \# ncftp ftp.sourceforge.net \\
+    ncftp / > cd pub/sourceforge/oscar \\
+    ncftp /pub/sourceforge/oscar > get oscar-\oscarversion.tar.gz \\
+    ncftp /pub/sourceforge/oscar > quit \\
+    \# tar -zxf oscar-\oscarversion.tar.gz
+    }
+  \vspace{11pt}
 
-Ignore the configure script, it is not used in the installation process
-of OSCAR.
+  (Detail: See Section~\ref{det:unpack})
 
-(Detail:Section \ref{det:unpack})
-
-\item Copy the rpms from \emph{all} of the distribution CD's to \file{/tftpboot/rpm}
-using these, or similar, commands:
+\item Copy the rpms from \emph{all} of the distribution CD's to
+  \file{/tftpboot/rpm} using these, or similar, commands:
 
 \begin{verbatim}
   (insert cd)
   # cp /mnt/cdrom/Redhat/RPMS/*.rpm /tftpboot/rpm
 \end{verbatim}
-(Detail:Section \ref{det:rpmcopy})
+(Detail: See Section~\ref{det:rpmcopy})
 
-\item Configure the second (private) cluster network adapter using the linux
-\cmd{/usr/sbin/netcfg} command or your favorite editor. Set the interface 
-IP address to 10.0.0.250, set the interface configuration protocol
-to ``none'', and set the interface to activate at boot time.
-Then reboot your machine. and make sure that the private cluster
-interface is properly setup and activated. 
-(Detail:Section \ref{det:serveradapter})
+\item Configure the second (private) cluster network adapter using the
+  linux \cmd{/usr/sbin/netcfg} command or your favorite editor. Set
+  the interface IP address to 10.0.0.250, set the interface
+  configuration protocol to ``none'', and set the interface to
+  activate at boot time.  Then reboot your machine. and make sure that
+  the private cluster interface is properly setup and activated.
 
-\item After the reboot is complete, log on as root to the server 
-machine.
+(Detail: See Section~\ref{det:serveradapter})
 
-\item To start the OSCAR cluster installation,  in the X environment do
-the following command:
+\item After the reboot is complete, log on as root to the server
+  machine.
+  
+\item To start the OSCAR cluster installation, in the X environment do
+  the following command:
 
 % We have to use \tt instead of {verbatim} because we need to use
 % \oscarversion inside.  This makes it somewhat painful -- much less
@@ -122,126 +122,145 @@ the following command:
 }
 \vspace{11pt}
   
-In the above command, substitute the device name 
-(e.g., \emph{eth1})
-for your server's private network ethernet adapter. After \cmd{install\_cluster}
-successfully completes some configuration, it will display 
-the OSCAR wizard.
-(Detail:Section \ref{det:installcluster})
+In the above command, substitute the device name (e.g., \emph{eth1})
+for your server's private network ethernet adapter. After
+\cmd{install\_cluster} successfully completes some configuration, it
+will display the OSCAR wizard.  
 
-\item Press the \button{Build OSCAR Client Image} button. 
-This pops up the "Create a SystemImager Image" window. Verify that the last
-part of the filename in the \field{Disk Partition File} field matches
-the type of drives that are in your clients. OSCAR ships \file{sample.disk.ide}
-\& \file{sample.disk.scsi} in the \file{oscarsamples} directory.
-Press the \button{BuildImage} button to build a SystemImager image for installation to
-the compute nodes.  You will see a progress bar across the bottom
-of the window as the image is built.  A dialog will pop up when the build is complete. 
-If it is successful, press the \button{Close} button on the pop up window 
-and then the \button{Close} button on the "Build a SystemImager
-Image" window. You have just built an installation image on the
-server, with the name \file{oscarimage}.
-(Detail:Section \ref{det:buildimage})
+(Detail: See Section~\ref{det:installcluster})
 
-\item Press the \button{Define OSCAR Clients} button on the OSCAR Wizard. 
-On the window that is opened, fill in the number of client nodes that your cluster
-contains. Verify that the IP information is correct and correct if it is not.
-Pay special attention to the domain name. Make sure one is filled in as it is
-required.
-Press the \button{Addclient} button to define the clients. Once that is 
-complete a dialog will pop up. 
-If it is successful, press the \button{Close} button on the pop up window 
-and then the \button{Close} button on the "Define OSCAR Clients"
-window. 
-(Detail:Section \ref{det:defclients})
+\item Press the \button{Build OSCAR Client Image} button.  This pops
+  up the ``Create a SystemImager Image'' window. Verify that the last
+  part of the filename in the \field{Disk Partition File} field
+  matches the type of drives that are in your clients. OSCAR ships
+  \file{sample.disk.ide} \& \file{sample.disk.scsi} in the
+  \file{oscarsamples} directory.  Press the \button{BuildImage} button
+  to build a SystemImager image for installation to the compute nodes.
+  You will see a progress bar across the bottom of the window as the
+  image is built.  A dialog will pop up when the build is complete.
+  If it is successful, press the \button{Close} button on the pop up
+  window and then the \button{Close} button on the ``Build a
+  SystemImager Image'' window. You have just built an installation
+  image on the server, with the name \file{oscarimage}.
+
+  (Detail: See Section~\ref{det:buildimage})
+  
+\item Press the \button{Define OSCAR Clients} button on the OSCAR
+  Wizard.  On the window that is opened, fill in the number of client
+  nodes that your cluster contains. Verify that the IP information is
+  correct and correct if it is not.  Pay special attention to the
+  domain name. Make sure one is filled in as it is required.  Press
+  the \button{Addclient} button to define the clients. Once that is
+  complete a dialog will pop up.  If it is successful, press the
+  \button{Close} button on the pop up window and then the
+  \button{Close} button on the ``Define OSCAR Clients'' window.
+
+  (Detail: See Section~\ref{det:defclients})
 
 \item Press the \button{Setup Networking} button on the OSCAR Wizard.
-The window that is opened will help you collect MAC addresses and configure
-the remote boot services. If your client nodes do not support PXE booting,
-you will need to create a boot diskette. Put a diskette in the floppy
-drive and press the \button{Build Autoinstall Floppy} button. You may create 
-several diskettes if you like.
-(Detail:Section \ref{det:setupnetwork})
+  The window that is opened will help you collect MAC addresses and
+  configure the remote boot services. If your client nodes do not
+  support PXE booting, you will need to create a boot diskette. Put a
+  diskette in the floppy drive and press the \button{Build Autoinstall
+    Floppy} button. You may create several diskettes if you like.
 
-\item Press the \button{Collect MAC Addresses} button. The wizard will start
-scanning the network as indicated in the message at the top of the window. 
-(Detail:Section \ref{det:setupnetwork})
+  (Detail:Section \ref{det:setupnetwork})
 
-\item Now, you need to network boot your nodes. This is done in one of 2 ways:
+\item Press the \button{Collect MAC Addresses} button. The wizard will
+  start scanning the network as indicated in the message at the top of
+  the window.
 
-        \begin{itemize}
-        \item If your nodes support PXE booting, set the boot order in the BIOS
-        to have the network adapter first.
-        \item If your nodes do not support PXE, insert the boot floppy created
-        in the previous step and boot off the floppy
-        \end{itemize}
+  (Detail: See Section~\ref{det:setupnetwork})
 
-(Detail:Appendix \ref{app:net-boot-client-nodes})
+\item Now, you need to network boot your nodes. This is done in one of
+  2 ways:
 
-\item As the nodes broadcast over the network, the MAC addresses detected will show
-up on the left side of the window. Select a MAC address and select its 
-corresponding client. Press the \button{Assign Mac to Node} button to give the
-node that MAC address. 
-(Detail:Section \ref{det:setupnetwork})
+  \begin{itemize}
+  \item If your nodes support PXE booting, set the boot order in the
+    BIOS to have the network adapter first.
+  \item If your nodes do not support PXE, insert the boot floppy
+    created in the previous step and boot off the floppy
+  \end{itemize}
+        
+  (Detail: See Appendix~\ref{app:net-boot-client-nodes})
 
-\item When you have assigned a MAC address to each node, press the \button{Stop Collecting}
-button to stop scanning the network. Then press the \button{Configure DHCP Server}
-to setup the server to answer the client requests.
-(Detail:Section \ref{det:setupnetwork})
+\item As the nodes broadcast over the network, the MAC addresses
+  detected will show up on the left side of the window. Select a MAC
+  address and select its corresponding client. Press the
+  \button{Assign Mac to Node} button to give the node that MAC
+  address.
 
-\item If your clients support PXE booting, press the \button{Setup Network Boot} 
-button to configure the server to answer PXE requests.
-(Detail:Section \ref{det:setupnetwork})
+  (Detail: See Section~\ref{det:setupnetwork})
+
+\item When you have assigned a MAC address to each node, press the
+  \button{Stop Collecting} button to stop scanning the network. Then
+  press the \button{Configure DHCP Server} to setup the server to
+  answer the client requests.
+
+  (Detail: See Section~\ref{det:setupnetwork})
+
+\item If your clients support PXE booting, press the \button{Setup
+    Network Boot} button to configure the server to answer PXE
+  requests.
+
+  (Detail: See Section~\ref{det:setupnetwork})
 
 \item Press \button{Close} to dismiss the network setup window.
+  
+\item Network boot the clients, as you did when collecting the MAC
+  addresses, again. This time the clients will be answered by the
+  server and will perform the installation. The install should only
+  take about 3-5 minutes depending on your hardware and your network.
+  You can install multiple clients simultaneously.
 
-\item Network boot the clients, as you did when collecting the MAC addresses,
-again. This time the clients will be answered by the server and will perform
-the installation. The install should only take about 3-5 minutes depending on 
-your hardware and your network. You can install multiple clients simultaneously.
-(Detail:Section \ref{det:clientinstall})
+  (Detail: See Section~\ref{det:clientinstall})
 
-\item As each client finishes, it will start beeping and printing a message to the 
-console. You should now reboot them off of thier newly installed hard disks.
+\item As each client finishes, it will start beeping and printing a
+  message to the console. You should now reboot them off of thier
+  newly installed hard disks.
 
-        \begin{itemize}
-        \item If you are using PXE boot, reboot the clients and set the BIOS
-        boot order to boot to hard disk before the network.
-        \item If you are using auto install diskettes, just remove the diskette
-        and reboot
-        \end{itemize}
-(Detail:Section \ref{det:clientfinish})
+  \begin{itemize}
+  \item If you are using PXE boot, reboot the clients and set the BIOS
+    boot order to boot to hard disk before the network.
+  \item If you are using auto install diskettes, just remove the
+    diskette and reboot
+  \end{itemize}
 
+  (Detail: See Section~\ref{det:clientfinish})
+  
 \item To verify that the clients are installed properly use
   \cmd{ping\_clients} script.  In a terminal as the root user issue
   \cmd{$^\sim$/oscar-\oscarversion/scripts/ping\_clients}.
-  (Detail:Section \ref{det:pingclients})
 
-\item Once all the clients have successfully booted, Press the 
-\button{Complete Cluster Setup} button. Your OSCAR cluster is
-now installed and configured.
-(Detail:Section \ref{det:completeinstall})
+  (Detail: See Section~\ref{det:pingclients})
+  
+\item Once all the clients have successfully booted, Press the
+  \button{Complete Cluster Setup} button. Your OSCAR cluster is now
+  installed and configured.
+
+  (Detail: See Section~\ref{det:completeinstall})
 
 \item To verify proper installation, you should test the cluster.
-OSCAR provides a test suite to verify the basic cluster
-functions. To perform the test, do the following:
+  OSCAR provides a test suite to verify the basic cluster functions.
+  To perform the test, do the following:
 
-        \begin{enumerate}
-        \item Press the \button{Test Cluster Setup} button. A window will
-        pop up that will ask for a non-root user. 
-        \item Enter the user name of a non-root user. If this user doesn't
-        exist it will create it. The OSCAR test suite will be installed
-        in the user's home directory.
-                \begin{enumerate}
-                \item Open a new terminal and login as the user given above.
-                \item change directory to \file{$^\sim$/OSCAR\_test}
-                \item run \cmd{./test\_cluster}
-                \item enter the number of cluster nodes and the number of 
-                processors per node when prompted. The test will submit
-                simple jobs to the cluster and print the output. If there
-                are any errors, there is a problem in your installation.
-                \end{enumerate}
-         \end{enumerate}
-(Detail:Section \ref{det:testcluster})
+  \begin{enumerate}
+  \item Press the \button{Test Cluster Setup} button. A window will
+    pop up that will ask for a non-root user.
+  \item Enter the user name of a non-root user. If this user doesn't
+    exist it will create it. The OSCAR test suite will be installed in
+    the user's home directory.
+    \begin{enumerate}
+    \item Open a new terminal and login as the user given above.
+    \item change directory to \file{$^\sim$/OSCAR\_test}
+    \item run \cmd{./test\_cluster}
+    \item enter the number of cluster nodes and the number of
+      processors per node when prompted. The test will submit simple
+      jobs to the cluster and print the output. If there are any
+      errors, there is a problem in your installation.
+    \end{enumerate}
+  \end{enumerate}
+
+  (Detail: See Section~\ref{det:testcluster})
 
 \end{enumerate}
