@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <oscar>
-  <!--
-      Copyright (c) 2003 NCSA 
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.62 2003/10/15 15:02:42 giraldeau Exp $
-  -->
-  <name>oda</name>
 
   <!--
   =====================================================
@@ -23,15 +12,27 @@
   =====================================================
   -->
 
+  <!--
+      Copyright (c) 2004 NCSA 
+                         All rights reserved.
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id: config.xml,v 1.63 2004/01/22 21:56:52 ngorsuch Exp $
+  -->
+  <name>oda</name>
+
   <version>
     <major>1</major>
-    <minor>22</minor>
+    <minor>26</minor>
     <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
 
-  <class>special</class>
+  <class>core</class>
 
   <summary>Oscar DAtabase</summary>
   <license>Freely distributable</license>
@@ -50,9 +51,17 @@
   <description>ODA provides a central database for OSCAR.</description>
 
   <rpmlist>
+    <filter group="oscar_server" distribution="fedora" distribution_version="1" />
     <filter group="oscar_server" distribution="redhat" distribution_version="7.3" />
     <filter group="oscar_server" distribution="rhas" distribution_version="2.1AS" />
     <rpm>mysql-server</rpm>
+  </rpmlist>
+
+  <rpmlist>
+    <filter distribution="fedora" distribution_version="1" />
+    <rpm>mysql</rpm>
+    <rpm>perl-DBD-MySQL</rpm>
+    <rpm>perl-DBI</rpm>
   </rpmlist>
 
   <rpmlist>
@@ -93,10 +102,10 @@
   </rpmlist>
     
   <rpmlist>
-   <filter distribution='mandrake' distribution_version='9.2' />
+    <filter distribution='mandrake' distribution_version='9.2' />
     <rpm>MySQL</rpm>
     <rpm>MySQL-client</rpm>
-    <rpm>libmysql10</rpm>
+    <rpm>libmysql12</rpm>
     <rpm>perl-CGI</rpm>
     <rpm>perl-DBI</rpm>
     <rpm>perl-Mysql</rpm>
@@ -109,21 +118,22 @@
   
   <rpmlist>
     <filter distribution='suse' />
-      <rpm>mysql</rpm>
-      <rpm>mysql-client</rpm>
-      <rpm>perl-Msql-Mysql-modules</rpm>
-      <rpm>perl-DBI</rpm>
-      <rpm>perl-Data-ShowTable</rpm>
-      <rpm>mysql-shared</rpm>
-      <rpm>oda</rpm>
+    <rpm>mysql</rpm>
+    <rpm>mysql-client</rpm>
+    <rpm>perl-Msql-Mysql-modules</rpm>
+    <rpm>perl-DBI</rpm>
+    <rpm>perl-Data-ShowTable</rpm>
+    <rpm>mysql-shared</rpm>
+    <rpm>oda</rpm>
   </rpmlist>
 
   <rpmlist>
-      <filter group="oscar_clients"/>
-      <rpm>oda</rpm>
+    <filter group="oscar_clients"/>
+    <rpm>oda</rpm>
   </rpmlist>
 
   <package>
+
     <oda>
         <!--
         ===============================================
@@ -133,13 +143,106 @@
         ==                                           ==
         ===============================================
         ===============================================
+	 -->
 
+        <!--
+	add_configuration_package_field_value adds another
+	value to a named configuration package field. 
+	This assumes that there is only one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_group_configuration_package_field_value shortcut
+	if you want to add a field value to the automatically created
+	configuration for a particular node group. 
+	See the add_node_configuration_package_field_value shortcut
+	if you want to add a field value to the automatically created
+	configuration for a particular node. 
+	Required parameters are:
+		configuration   name of the configuration
+		package	        name of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+	 -->
+	<shortcut> add_configuration_package_field_value
+	           insert_record
+		   package_configuration_values
+		   configurations.name=%1
+		   configurations.id=package_configurations.configuration_id
+		   packages.name=%2
+		   packages.id=package_configurations.package_id
+		   package_configurations.id=
+		   package_configuration_values.package_configuration_id
+		   package_configuration_values.field~%3
+		   package_configuration_values.value~%4
+		   %+
+        </shortcut>
+
+        <!--
+	add_configuration_package_version_field_value adds
+	another value to a named configuration package field. 
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_group_configuration_package_version_field_value
+	shortcut if you want to add a field value to the automatically
+	created configuration for a particular node group. 
+	See the add_node_configuration_package_version_field_value
+	shortcut if you want to add a field value to the automatically
+	created configuration for a particular node. 
+	Required and only parameters are:
+		configuration   name of the configuration
+		package	        name of the package
+		version	        version of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+	 -->
+	<shortcut> add_configuration_package_version_field_value
+	           add_configuration_package_field_value
+		   %1
+		   %2
+		   %4
+		   %5
+		   packages.version=%3
+		   %+
+        </shortcut>
+
+	<!--
+	add_configuration_to_node adds a named configuration to a
+	node (really this adds the configuration to the special 
+	node group that includes only that node), required and 
+	only parameters are:
+		configuration   name of configuration
+		node            name of node
+	 -->
+	<shortcut> add_configuration_to_node
+ 	           insert_record
+                   node_groups_included_configurations
+		   configurations.name=%1
+		   configurations.associated_node_group_flag=0
+		   nodes.name=%2
+		   nodes.name=node_groups.name
+		   node_groups_included_configurations.configuration_id~configurations.id
+		   node_groups_included_configurations.node_group_id~node_groups.id
+        </shortcut>
+
+        <!--
+	add_configuration_to_node_group adds a named configuration to a
+	node group, required and only parameters are:
+		configuration   name of configuration
+		group           name of node group
+	 -->
+	<shortcut> add_configuration_to_node_group
+ 	           insert_record
+                   node_groups_included_configurations
+		   configurations.name=%1
+		   configurations.associated_node_group_flag=0
+		   node_groups.name=%2
+		   node_groups_included_configurations.configuration_id~configurations.id
+		   node_groups_included_configurations.node_group_id~node_groups.id
+        </shortcut>
+
+        <!--
 	add_dns_server_to_node adds a dns server to a
 	node record, required and only parameters are:
-
-	dns_server    IP or dns name of dns server machine to add
-	node          cluster node name of the record to modify
-
+		dns_server    IP or dns name of dns server machine to add
+		node          cluster node name of the record to modify
 	 -->
 	<shortcut> add_dns_server_to_node
  	           insert_record
@@ -148,14 +251,124 @@
                    nodes.name=%2
                    nodes_included_dns_servers.node_id~nodes.id
         </shortcut>
-        <!--
 
+        <!--
+	add_node_configuration_package_field_value adds another
+	package field value to the automatically created
+	configuration that was associated with the specified node. 
+	This assumes that there is only one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_group_configuration_package_field_value shortcut
+	if you want to add a field value to the automatically created
+	configuration for a particular node group. 
+	Required parameters are:
+		node        name of the node
+		package	    name of the package
+		field       name of the field being added (to)
+		value	    value being added to the field
+	 -->
+	<shortcut> add_node_configuration_package_field_value
+	           insert_record
+		   package_configuration_values
+		   nodes.name=%1
+		   nodes.name=node_groups.name
+		   node_groups.name=configurations.name
+		   configurations.id=package_configurations.configuration_id
+		   packages.name=%2
+		   packages.id=package_configurations.package_id
+		   package_configurations.id=
+		   package_configuration_values.package_configuration_id
+		   package_configuration_values.field~%3
+		   package_configuration_values.value~%4
+		   %+
+        </shortcut>
+
+        <!--
+	add_node_configuration_package_version_field_value adds
+	another package field value to the automatically created
+	configuration that was associated with the specified node. 
+	This assumes that there me be more than one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_group_configuration_package_version_field_value
+	shortcut if you want to add a field value to the automatically
+	created configuration for a particular node. 
+	Required parameters are:
+		node        name of the node
+		package	    name of the package
+		version	    version of the package
+		field       name of the field being added (to)
+		value	    value being added to the field
+	 -->
+	<shortcut> add_node_group_configuration_package_version_field_value
+	           add_node_group_configuration_package_field_value
+		   %1
+		   %2
+		   %4
+		   %5
+		   packages.version=%3
+		   %+
+        </shortcut>
+
+        <!--
+	add_node_group_configuration_package_field_value adds
+	another package field value to the automatically created
+	configuration that was associated with the specified node group. 
+	This assumes that there is only one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_configuration_package_field_value shortcut
+	if you want to add a field value to the automatically created
+	configuration for a particular node. 
+	Required and only parameters are:
+		group       name of the node group
+		package	    name of the package
+		field       name of the field being added (to)
+		value	    value being added to the field
+	 -->
+	<shortcut> add_node_group_configuration_package_field_value
+	           insert_record
+		   package_configuration_values
+		   node_groups.name=%1
+		   node_groups.name=configurations.name
+		   configurations.id=package_configurations.configuration_id
+		   packages.name=%2
+		   packages.id=package_configurations.package_id
+		   package_configurations.id=
+		   package_configuration_values.package_configuration_id
+		   package_configuration_values.field~%3
+		   package_configuration_values.value~%4
+        </shortcut>
+
+        <!--
+	add_node_group_configuration_package_version_field_value adds
+	another package field value to the automatically created
+	configuration that was associated with the specified node group. 
+	This assumes that there me be more than one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_configuration_package_version_field_value
+	shortcut if you want to add a field value to the automatically
+	created configuration for a particular node. 
+	Required and only parameters are:
+		group       name of the node group
+		package	    name of the package
+		version	    version of the package
+		field       name of the field being added (to)
+		value	    value being added to the field
+	 -->
+	<shortcut> add_node_group_configuration_package_version_field_value
+                   add_node_group_configuration_package_field_value
+		   %1
+		   %2
+		   %4
+		   %5
+		   packages.version=%3
+		   %+
+        </shortcut>
+
+        <!--
 	add_node_to_cluster_partition adds a node to a cluster partition,
 	required and only parameters are:
-
-	node          name of the node to add
-	partition     name of the cluster partition to add it to
-
+		node          name of the node to add
+		partition     name of the cluster partition to add it to
 	 -->
 	<shortcut> add_node_to_cluster_partition modify_record 
 	           nodes
@@ -164,31 +377,12 @@
 		   nodes.cluster_partition_id~cluster_partitions.id
        
         </shortcut>
+
         <!--
-
-	add_node_to_node_group adds a node to a node group
-	required and only parameters are:
-
-	node          name of the node to add
-	group         name of the node group to add it to
-
-	 -->
-	<shortcut> add_node_to_node_group insert_record 
-	           node_groups_included_nodes
-	           nodes.name=%1
-		   node_groups_included_nodes.node_id~nodes.id
-		   node_groups.name=%2
-		   node_groups_included_nodes.node_group_id~node_groups.id
-       
-        </shortcut>
-        <!--
-
 	add_package_set_to_node adds a software package set to a
 	compute node record, required and only parameters are:
-
-	set           name of the package set to add to the node
-	node          name of the compute node record to add it to
-
+		set           name of the package set to add to the node
+		node          name of the compute node record to add it to
 	 -->
 	<shortcut> add_package_set_to_node
                    insert_record
@@ -198,14 +392,12 @@
                    nodes_included_package_sets.node_id~nodes.id
                    nodes_included_package_sets.package_set_id~package_sets.id
         </shortcut>
-        <!--
 
+        <!--
 	add_package_to_package_set adds a software package set to
 	a package set record, required and only parameters are:
-
-	package       name of the package to add to the package set
-	set           name of the package set record to add it to
-
+		package       name of the package to add to the package set
+		set           name of the package set record to add it to
 	 -->
 	<shortcut> add_package_to_package_set
                    insert_record
@@ -215,17 +407,15 @@
                    package_sets_included_packages.package_id~packages.id
                    package_sets_included_packages.package_set_id~package_sets.id
         </shortcut>
-        <!--
 
+        <!--
 	add_partition_to_disk_layout adds a disk partition to a
 	disk layout record, required and only parameters are:
-
-	name          partition name
-	offset        offset of the start of the partition
-	size          size of the partition
-	type          type of the partition
-	layout	      name of the disk layout record to add it to
-
+		name          partition name
+		offset        offset of the start of the partition
+		size          size of the partition
+		type          type of the partition
+		layout	      name of the disk layout record to add it to
 	 -->
 	<shortcut> add_partition_to_disk_layout
                    insert_record
@@ -237,23 +427,48 @@
                    disk_layouts.name=%5
                    disk_layout_id~disk_layouts.id
         </shortcut>
+
 	<shortcut> conflicts_with_package
                    read_records
                    packages_conflicts
                    package=%1
                    name
         </shortcut>
-        <!--
 
+        <!--
+	create_configuration creates a new named configuration,
+	required parameters are:
+		name          name of the configuration
+	 -->
+	<shortcut> create_configuration
+                   insert_record
+                   configurations
+                   configurations.name~%1
+		   %+
+        </shortcut>
+
+        <!--
+	configurations_in_node_group lists the names of all 
+	configuraitons that are included in a given node group,
+	required parameters are:
+		group          name of the node group
+	 -->
+	<shortcut> configurations_in_node_group
+                   read_records
+                   configurations
+                   configurations.name
+		   configurations.id=node_groups_included_configurations.configuration_id
+		   node_groups_included_configurations.node_group_id=node_groups.id
+		   node_groups.name=%1
+		   %+
+        </shortcut>
+
+        <!--
 	create_disk_layout creates a new disk layout record,
 	required parameters are:
-
-	name          name of the new disk layout record
-
+		name          name of the new disk layout record
 	Optional parameters are:
-
-	units         for offsets and sizes (default mb)
-
+		units         for offsets and sizes (default mb)
 	 -->
 	<shortcut> create_disk_layout
                    insert_record
@@ -261,16 +476,13 @@
                    disk_partitions.name~%1
                    %+
         </shortcut>
-        <!--
 
+        <!--
 	create_image creates a new image record,
 	required parameters are:
-
-	name          name of the new image record
-
+		name          name of the new image record
 	Optional parameters are:
-
-	path          base directory path on server
+		path          base directory path on server
 
 	 -->
 	<shortcut> create_image
@@ -279,17 +491,13 @@
                    images.name~%1
                    %+
         </shortcut>
-        <!--
 
+        <!--
 	create_network creates a new network record,
 	required parameters are:
-
-	name          name of the new network record
-
+		name          name of the new network record
 	Optional parameters are:
-
-	cluster_only  non-zero if private cluster network
-
+		cluster_only  non-zero if private cluster network
 	 -->
 	<shortcut> create_network
                    insert_record
@@ -297,24 +505,20 @@
                    networks.name~%1
                    %+
         </shortcut>
-        <!--
 
+        <!--
 	create_nic_on_node creates a new network interface entry
 	in a node record, required parameters are:
-
-	nic name      name of the new network interface entry
-	node name     name of the node record
-
+		nic name      name of the new network interface entry
+			node name     name of the node record
 	Optional parameters are:
-
-        assignment    method of assigning IP "static" or "dhcp"
-        broadcast     broadcast address of the network
-        driver_module name of the associated driver module
-        interface     name of the interface
-        ip            ip address of the nic
-        mac	      mac address of the nic
-        netmask	      netmask mask of the network
-
+	        assignment    method of assigning IP "static" or "dhcp"
+		broadcast     broadcast address of the network
+		driver_module name of the associated driver module
+                interface     name of the interface
+                ip            ip address of the nic
+                mac	      mac address of the nic
+                netmask	      netmask mask of the network
 	 -->
 	<shortcut> create_nic_on_node
                    insert_record
@@ -324,39 +528,37 @@
                    nics.node_id~nodes.id
                    %+
         </shortcut>
-        <!--
 
+        <!--
 	create_node creates a new node record,
 	 required parameters are:
-
-	name          name of the node record
-
+	 	name          name of the node record
 	Optional parameters are:
-
-	cpu_num       number of processors
-	cpu_speed     speed of processor(s)
-	cpu_type      type of processor(s)
-	default_gateway IP or dns name of the default gateway
-	domain        dns domain of the node
-	hostname      name of the node returned by hostname command
-	ram           amount of ram in the node
-	swap	      amount of swap space in the node
-	units	      units for ram and swap
-
+		cpu_num       number of processors
+		cpu_speed     speed of processor(s)
+		cpu_type      type of processor(s)
+		default_gateway IP or dns name of the default gateway
+		domain        dns domain of the node
+		hostname      name of the node returned by hostname command
+		ram           amount of ram in the node
+		swap	      amount of swap space in the node
+		units	      units for ram and swap
 	 -->
 	<shortcut> create_node
+		   create_node_group
+		   %1
+		   associated_node_flag~1
+		   ;
                    insert_record
                    nodes
                    nodes.name~%1
                    %+
         </shortcut>
-        <!--
 
+        <!--
 	create_cluster_partition creates a new cluster partition record,
 	required parameters are:
-
-	name          name of the cluster partition
-
+		name          name of the cluster partition
 	 -->
 	<shortcut> create_cluster_partition
                    insert_record
@@ -364,27 +566,66 @@
                    cluster_partitions.name~%1
                    %+
         </shortcut>
-        <!--
 
+        <!--
 	create_node_group creates a new node group record,
 	required parameters are:
-
-	name          name of the node set
-
+		name          name of the node set
 	 -->
 	<shortcut> create_node_group
+	           create_configuration
+		   %1
+		   configurations.associated_node_group_flag~1
+		   ;
                    insert_record
                    node_groups
                    node_groups.name~%1
                    %+
         </shortcut>
+
+        <!--
+	create_node_group_package_configuration creates,
+	for a specified node group, a package configuration for
+	a specified package (that only has one version),
+	required parameters are:
+		group         name of the node group
+		package       name of the package
+	 -->
+	<shortcut> create_node_group_package_configuration
+                   insert_record
+                   package_configurations
+		   node_groups.name=%1
+		   packages.name=%2
+                   package_configurations.node_group_id~node_groups.id
+                   package_configurations.package_id~packages.id
+                   %+
+        </shortcut>
+
+        <!--
+	create_node_group_package_version_configuration creates,
+	for a specified node group, a package configuration for
+	a specified version of a specified package,
+	required parameters are:
+	        group         name of the node group
+		package       name of the package
+		version       version of the package
+	 -->
+	<shortcut> create_node_group_package_version_configuration
+                   insert_record
+                   package_configurations
+		   node_groups.name=%1
+		   packages.name=%2
+		   packages.version=%3
+                   package_configurations.node_group_id~node_groups.id
+                   package_configurations.package_id~packages.id
+                   %+
+        </shortcut>
+
         <!--
 
 	create_package_set creates a new software package set record,
 	required parameters are:
-
-	name          name of the package set
-
+		name          name of the package set
 	 -->
 	<shortcut> create_package_set
                    insert_record
@@ -392,10 +633,9 @@
                    package_sets.name~%1
                    %+
         </shortcut>
+
         <!--
-
 	delete_all_cluster_partitions deletes all cluster partitions.
-
 	The portions of this multiple commands shortcut do:
 	Delete all cluster partition records.
 	Set all node records partition id to undefined.
@@ -410,27 +650,55 @@
 		   name=name
 		   nodes.cluster_partition_id~undef
         </shortcut>
+
         <!--
+	delete_all_configurations deletes all named configurations.
+	Note that this will not delete any configurations that 
+	are associated with a single node group.
+	 -->
+	<shortcut> delete_all_configurations
+                   delete_records
+                   node_groups_included_configurations
+                   node_groups_included_configurations.configuration_id=
+		   configurations.id
+		   configurations.associated_node_group_flag=0
+                   ;
+                   delete_records
+		   package_configurations
+		   package_configurations.configuration_id=
+		   configurations.id
+		   configurations.associated_node_group_flag=0
+		   ;
+                   delete_records
+                   configurations
+		   configurations.associated_node_group_flag=0
+        </shortcut>
 
+        <!--
 	delete_all_node_groups deletes all node groups.
-
 	The portions of this multiple commands shortcut do:
 	Remove all records from node groups/included nodes table.
 	Remove all records from node_groups names/ids table.
+	Note that this will not delete any node groups that 
+	are associated with a single node.
 	 -->
 	<shortcut> delete_all_node_groups
                    delete_records
-                   node_groups_included_nodes
+                   node_groups_included_configurations
                    node_group_id=node_group_id
+                   ;
+                   delete_records
+                   node_groups_included_node_groups
+                   child_node_group_id=child_node_group_id
                    ;
                    delete_records
                    node_groups
                    name=name
+		   associated_node_flag=0
         </shortcut>
+
         <!--
-
 	delete_all_package_sets deletes all software packages.
-
 	The portions of this multiple commands shortcut do:
 	Set no selected package set in the oscar table.
 	Remove all records from package sets/included packages table.
@@ -455,6 +723,32 @@
                    package_sets
                    name=name
         </shortcut>
+
+        <!--
+	delete_configuration deletes a single named configuration.
+	Note that this will not delete any configurations that 
+	are associated with a single node group.
+	 -->
+	<shortcut> delete_configuration
+                   delete_records
+                   node_groups_included_configurations
+                   node_groups_included_configurations.configuration_id=configurations.id
+		   configurations.name=%1
+		   configurations.associated_node_group_flag=0
+                   ;
+                   delete_records
+		   package_configurations
+		   package_configurations.configuration_id=
+		   configurations.id
+		   configurations.name=%1
+		   configurations.associated_node_group_flag=0
+		   ;
+                   delete_records
+                   configurations
+		   configurations.name=%1
+		   configurations.associated_node_group_flag=0
+        </shortcut>
+
 	<shortcut> delete_disk_layout
                    delete_records
                    disk_partitions.disk_layout_id=disk_layouts.id
@@ -464,6 +758,7 @@
                    disk_layouts
                    name=%1
         </shortcut>
+
 	<shortcut> delete_image
                    modify_records
                    nodes
@@ -475,6 +770,7 @@
                    images
                    name=%1
         </shortcut>
+
 	<shortcut> delete_network
                    modify_records
                    nics
@@ -486,6 +782,7 @@
                    networks
                    name=%1
         </shortcut>
+
 	<shortcut> delete_nic_from_node
                    delete_records
                    nics
@@ -493,21 +790,20 @@
                    nodes.name=%2
                    nics.node_id=nodes.id
         </shortcut>
+
 	<shortcut> delete_node
                    delete_records
                    nics
                    nics.node_id=nodes.id
                    nodes.name=%1
                    ;
-                   delete_records
-                   node_groups_included_nodes
-                   node_groups_included_nodes.node_id=nodes.id
-                   nodes.name=%1
-                   ;
-                   delete_records
-                   nodes_included_package_sets
-                   nodes_included_package_set.node_id=nodes.id
-                   nodes.name=%1
+		   modify_records
+		   node_groups
+		   node_groups.name=%1
+		   node_groups.associated_node_flag~0
+		   ;
+		   delete_node_group
+		   %1
                    ;
                    modify_records
                    oscar
@@ -518,26 +814,89 @@
                    delete_records
                    nodes
                    name=%1
+		   ;
+	           delete_node_group %1
         </shortcut>
+
         <!--
-
 	delete_node_group deletes a single node group.
-
 	The portions of this multiple commands shortcut do:
 	Remove all appropriate records from node groups/included nodes table.
 	Remove the appropriate record from node_groups names/ids table.
+	Note that this shortcut cannot delete a node group that is a
+	single node associated group, to do that the node has to be
+	deleted which will delete the associated node group.
 	 -->
 	<shortcut> delete_node_group
-                   remove_all_nodes_from_node_group
-                   %1
-                   ;
+                   delete_records
+                   node_groups_included_configurations
+                   node_groups_included_configurations.node_group_id=node_groups.id
+		   node_groups.name=%1
+		   node_groups.associated_node_flag=0
+		   ;
+                   delete_records
+                   node_groups_included_node_groups
+                   node_groups_included_node_groups.parent_node_group_id=node_groups.id
+		   node_groups.name=%1
+		   node_groups.associated_node_flag=0
+		   ;
                    delete_records
                    node_groups
-                   name=%1
+                   node_groups.name=%1
+		   node_groups.associated_node_flag=0
         </shortcut>
+
+        <!--
+
+	delete_node_group_package_configuration deletes,
+	for a specified node group, the package configuration for
+	a specified package (that only has one version),
+	required parameters are:
+		group         name of the node group
+		package       name of the package
+
+	 -->
+	<shortcut> delete_node_group_package_configuration
+                   remove_all_fields_from_node_group_package_configuration
+		   %1
+		   %2
+		   ;
+                   delete_records
+                   package_configurations
+		   node_groups.name=%1
+		   packages.name=%2
+                   package_configurations.node_group_id=node_groups.id
+                   package_configurations.package_id=packages.id
+                   %+
+        </shortcut>
+
+        <!--
+	delete_node_group_package_version_configuration deletes,
+	for a specified node group, the package configuration for
+	a specified version of a specified package,
+	required parameters are:
+		group         name of the node group
+		package       name of the package
+
+	 -->
+	<shortcut> delete_node_group_package_version_configuration
+                   remove_all_fields_from_node_group_package_version_configuration
+		   %1
+		   %2
+		   %3
+		   ;
+                   delete_records
+                   package_configurations
+		   node_groups.name=%1
+		   packages.name=%2
+		   packages.version=%3
+                   package_configurations.node_group_id=node_groups.id
+                   package_configurations.package_id=packages.id
+                   %+
+        </shortcut>
+
         <!--
 	delete_cluster_partition deletes a single cluster partition.
-
 	The portions of this multiple commands shortcut do:
 	Set all node records that point to this partition to no partition.
 	Delete the appropriate cluster partition record.
@@ -553,13 +912,42 @@
                    cluster_partitions
                    cluster_partitions.name=%1
         </shortcut>
+
+        <!--
+
+	delete_package deletes a single package record,
+	required parameters are:
+		name          name of the package(s)
+	The portions of this multiple commands shortcut do:
+	Remove the package from being included in any configurations,
+	Remove the package from being included in any package sets,
+	Remove the package from being included in any package filters,
+	Remove all rpmlist records for the package,
+	Remove the packages table record for the package.
+	 -->
+	<shortcut> delete_package
+                   remove_package_from_all_configurations
+                   %1
+                   ;
+                   remove_package_from_all_package_sets
+                   %1
+                   ;
+		   remove_package_from_all_packages_filters
+		   %1
+		   ;
+		   remove_package_from_all_packages_rpmlists
+		   %1
+                   ;
+                   delete_records
+                   packages
+                   name=%1
+        </shortcut>
+
         <!--
 
 	delete_package_set deletes a software package set record,
 	required parameters are:
-
-	name          name of the package set
-
+		name          name of the package set
 	The portions of this multiple commands shortcut do:
 	Set no selected package set if the deleted package was selected,
         in the oscar table.
@@ -587,40 +975,47 @@
                    package_sets
                    name=%1
         </shortcut>
+
 	<shortcut> disk_layout_id_to_name
                    read_records
                    disk_layouts
                    id=%1
                    name
         </shortcut>
+
 	<shortcut> disk_layout_name_to_id
                    read_records
                    disk_layouts
                    name=%1
                    id
         </shortcut>
+
 	<shortcut> disk_layouts
                    read_records
                    disk_layouts.name
                    %+
         </shortcut>
+
 	<shortcut> image_id_to_name
                    read_records
                    images
                    id=%1
                    name
         </shortcut>
+
 	<shortcut> image_name_to_id
                    read_records
                    images
                    name=%1
                    id
         </shortcut>
+
 	<shortcut> images
                    read_records
                    images.name
                    %+
         </shortcut>
+
 	<shortcut> installable_package_directories
                    read_records
                    packages
@@ -628,6 +1023,7 @@
                    packages.directory
                    %+
         </shortcut>
+
 	<shortcut> link_node_nic_to_network
                    modify_records
                    nics
@@ -637,6 +1033,7 @@
                    nics.node_id~nodes.id
                    nics.network_id~networks.id
         </shortcut>
+
 	<shortcut> link_node_to_disk_layout
                    modify_records
                    modes
@@ -644,6 +1041,7 @@
                    disk_layouts.name=%2
                    nodes.disk_layout_id~disk_layouts.id
         </shortcut>
+
 	<shortcut> link_node_to_image
                    modify_records
                    nodes
@@ -651,12 +1049,14 @@
                    images.name=%2
                    nodes.image_id~images.id
         </shortcut>
+
 	<shortcut> list_nics_on_node
                    read_records
                    nodes.name=%1
                    nics.node_id=nodes.id
                    nics.name
         </shortcut>
+
 	<shortcut> list_node_nics_on_network
                    read_records
                    networks.name=%1
@@ -665,18 +1065,21 @@
                    nodes.name
                    nics.name
         </shortcut>
+
 	<shortcut> list_nodes_in_disk_layout
                    read_records
                    disk_layouts.name=%1
                    disk_layouts.id=nodes.disk_layout_id
                    nodes.name
         </shortcut>
+
 	<shortcut> list_nodes_in_image
                    read_records
                    images.name=%1
                    images.id=nodes.image_id
                    nodes.name
         </shortcut>
+
 	<shortcut> list_nodes_on_network
                    read_records
                    networks.name=%1
@@ -684,52 +1087,61 @@
                    nics.network_id=networks.id
                    nodes.name
         </shortcut>
+
 	<shortcut> list_nodes_using_dns_server
                    read_records
                    nodes_included_dns_servers.server=%1
                    nodes_included_dns_servers.node_id=nodes.id
                    nodes.name
         </shortcut>
+
 	<shortcut> network_id_to_name
                    read_records
                    networks
                    id=%1
                    name
         </shortcut>
+
 	<shortcut> network_name_to_id
                    read_records
                    networks
                    name=%1
                    id
         </shortcut>
+
 	<shortcut> networks
                    read_records
                    networks.name
                    %+
         </shortcut>
+
 	<shortcut> nics
                    read_records
                    nics.name
                    %+
         </shortcut>
+
 	<shortcut> node_group_id_to_name
                    read_records
                    node_groups
                    id=%1
                    name
         </shortcut>
+
 	<shortcut> node_group_name_to_id
                    read_records
                    node_groups
                    name=%1
                    id
         </shortcut>
+
 	<shortcut> node_groups
                    read_records
                    node_groups
                    node_groups.name
                    %+
         </shortcut>
+
 	<shortcut> node_cluster_only_ips
                    read_records
                    nodes.name=%1
@@ -738,36 +1150,42 @@
                    networks.cluster_only!=0
                    nics.ip
         </shortcut>
+
 	<shortcut> cluster_partition_id_to_name
                    read_records
                    cluster_partitions
                    id=%1
                    name
         </shortcut>
+
 	<shortcut> cluster_partition_name_to_id
                    read_records
                    cluster_partitions
                    name=%1
                    id
         </shortcut>
+
 	<shortcut> cluster_partitions
                    read_records
                    cluster_partitions
                    cluster_partitions.name
                    %+
         </shortcut>
+
 	<shortcut> node_hostname_to_name
                    read_records
                    nodes
                    hostname=%1
                    name
         </shortcut>
+
 	<shortcut> node_id_to_name
                    read_records
                    nodes
                    id=%1
                    name
         </shortcut>
+
 	<shortcut> node_ips
                    read_records
                    nodes.name=%1
@@ -775,6 +1193,7 @@
                    nics.network_id=networks.id
                    nics.ip
         </shortcut>
+
 	<shortcut> node_name_to_hostname
                    read_records
                    nodes
@@ -782,12 +1201,14 @@
                    hostname!=undef
                    hostname
         </shortcut>
+
 	<shortcut> node_name_to_id
                    read_records
                    nodes
                    name=%1
                    id
         </shortcut>
+
 	<shortcut> node_public_ips
                    read_records
                    nodes.name=%1
@@ -796,12 +1217,14 @@
                    networks.cluster_only=0
                    nics.ip
         </shortcut>
+
 	<shortcut> nodes
                    read_records
                    nodes
                    nodes.name
                    %+
         </shortcut>
+
 	<shortcut> nodes_cluster_only_ips
                    read_records
                    nics.node_id=nodes.id
@@ -809,29 +1232,11 @@
                    networks.cluster_only!=0
                    nics.ip
         </shortcut>
+
         <!--
-
-	nodes_in_node_group lists the nodes in a given node group.
-	required parameters are:
-
-	group      name of the node group
-
-	 -->
-	<shortcut> nodes_in_node_group
-                   read_records
-                   node_groups.name=%1
-                   node_groups.id=node_groups_included_nodes.node_group_id
-                   node_groups_included_nodes.node_id=nodes.id
-                   nodes.name
-		   %+
-        </shortcut>
-        <!--
-
 	nodes_in_cluster_partition lists the nodes that are in a cluster partition.
 	required parameters are:
-
-	name          name of the cluster partition
-
+		name          name of the cluster partition
 	 -->
 	<shortcut> nodes_in_cluster_partition
                    read_records
@@ -839,6 +1244,7 @@
                    cluster_partitions.id=nodes.cluster_partition_id
                    nodes.name
         </shortcut>
+
 	<shortcut> nodes_public_ips
                    read_records
                    nics.node_id=nodes.id
@@ -846,41 +1252,72 @@
                    networks.cluster_only=0
                    nics.ip
         </shortcut>
+
 	<shortcut> oscar_server_architecture
                    read_records
 		   oscar
                    oscar_server_architecture!=undef
                    oscar_server_architecture
         </shortcut>
+
 	<shortcut> oscar_server_distribution
                    read_records
 		   oscar
                    oscar_server_distribution!=undef
                    oscar_server_distribution
         </shortcut>
+
 	<shortcut> oscar_server_distribution_version
                    read_records
 		   oscar
 		   oscar_server_distribution_version!=undef
                    oscar_server_distribution_version
         </shortcut>
+
 	<shortcut> oscar_server_node
                    read_records
                    oscar.oscar_server_node_id!=undef
                    oscar.oscar_server_node_id=nodes.id
                    nodes.name
         </shortcut>
+
 	<shortcut> oscar_version
                    read_records
                    oscar.oscar_version!=undef
                    oscar.oscar_version
         </shortcut>
+
+	<shortcut> package_clear_installed
+                   modify_records
+                   packages
+                   packages.name=%1
+                   packages.installed~0
+                   %+
+        </shortcut>
+
+	<shortcut> package_clear_should_be_installed
+                   modify_records
+                   packages
+                   packages.name=%1
+                   packages.should_be_installed~0
+                   %+
+        </shortcut>
+
+	<shortcut> package_clear_should_be_uninstalled
+                   modify_records
+                   packages
+                   packages.name=%1
+                   packages.should_be_uninstalled~0
+                   %+
+        </shortcut>
+
 	<shortcut> package_id_to_name
                    read_records
                    packages
                    id=%1
                    name
         </shortcut>
+
 	<shortcut> package_id_to_name_version
                    read_records
                    packages
@@ -888,12 +1325,14 @@
                    name
                    version
         </shortcut>
+
 	<shortcut> package_name_to_id
                    read_records
                    packages
                    name=%1
                    id
         </shortcut>
+
 	<shortcut> package_name_version_to_id
                    read_records
                    packages
@@ -901,29 +1340,79 @@
                    version=%2
                    id
         </shortcut>
+
 	<shortcut> package_set_id_to_name
                    read_records
                    package_sets
                    id=%1
                    name
         </shortcut>
+
 	<shortcut> package_set_name_to_id
                    read_records
                    package_sets
                    name=%1
                    id
         </shortcut>
+
+	<shortcut> package_mark_installed
+                   modify_records
+                   packages
+                   packages.name=%1
+                   packages.installed~1
+                   %+
+        </shortcut>
+
+	<shortcut> package_mark_should_be_installed
+                   modify_records
+                   packages
+                   packages.name=%1
+                   packages.should_be_installed~1
+                   %+
+        </shortcut>
+
+	<shortcut> package_mark_should_be_uninstalled
+                   modify_records
+                   packages
+                   packages.name=%1
+                   packages.should_be_uninstalled~1
+                   %+
+        </shortcut>
+
 	<shortcut> package_sets
                    read_records
                    package_sets.name
                    %+
         </shortcut>
+
 	<shortcut> packages
                    read_records
                    packages
                    packages.name
                    %+
         </shortcut>
+
+	<shortcut> packages_clear_all_installed
+                   modify_records
+                   packages
+                   packages.installed~0
+                   %+
+        </shortcut>
+
+	<shortcut> packages_clear_all_should_be_installed
+                   modify_records
+                   packages
+                   packages.should_be_installed~0
+                   %+
+        </shortcut>
+
+	<shortcut> packages_clear_all_should_be_uninstalled
+                   modify_records
+                   packages
+                   packages.should_be_uninstalled~0
+                   %+
+        </shortcut>
+
 	<shortcut> packages_conflicts_with_package
                    read_records
                    packages_conflicts
@@ -931,6 +1420,7 @@
                    type="package"
                    name
         </shortcut>
+
         <shortcut> packages_in_package_set
                    read_records
                    package_sets.name=%1
@@ -939,32 +1429,50 @@
                    packages.name
                    %+
         </shortcut>
+
         <shortcut> packages_in_selected_package_set
                    packages_in_package_set
                    package_sets.name
                    oscar.selected_package_set_id=package_sets.id
                    %+
         </shortcut>
+
 	<shortcut> packages_installable
                    packages
                    packages.installable!=0
                    %+
         </shortcut>
+
         <shortcut> packages_installable_in_selected_package_set
                    packages_in_selected_package_set
                    packages.installable!=0
                    %+
         </shortcut>
+
+	<shortcut> packages_installed
+                   packages
+                   packages.installed!=0
+                   %+
+        </shortcut>
+
+	<shortcut> packages_not_installed
+                   packages
+                   packages.installed=0
+                   %+
+        </shortcut>
+
 	<shortcut> packages_provided_by_package
                    provided_by_package
                    %1
                    packages_provides.type="package"
         </shortcut>
+
 	<shortcut> packages_required_by_package
                    required_by_package
                    %1
                    packages_requires.type="package"
         </shortcut>
+
 	<shortcut> packages_that_conflict
                    read_records
                    packages_conflicts
@@ -972,11 +1480,13 @@
                    packages_conflicts.package
                    %+
         </shortcut>
+
 	<shortcut> packages_that_conflict_package
                    packages_that_conflict
                    %1
                    packages_conflicts.type="package"
         </shortcut>
+
 	<shortcut> packages_that_provide
                    read_records
                    packages_provides
@@ -984,27 +1494,44 @@
                    packages_provides.package
                    %+
         </shortcut>
+
 	<shortcut> packages_that_provide_package
                    packages_that_provide
                    %1
                    packages_provides.type="package"
         </shortcut>
+
 	<shortcut> packages_that_require
                    read_records
                    packages_requires
                    packages_requires.name=%1
                    packages_requires.package
         </shortcut>
+
 	<shortcut> packages_that_require_package
                    packages_that_require
                    %1
                    packages_requires.type="package"
         </shortcut>
+
+	<shortcut> packages_that_should_be_installed
+                   packages
+                   packages.should_be_installed!=0
+                   %+
+        </shortcut>
+
+	<shortcut> packages_that_should_be_uninstalled
+                   packages
+                   packages.should_be_uninstalled!=0
+                   %+
+        </shortcut>
+
 	<shortcut> packages_uninstallable
                    packages
                    packages.installable=0
                    %+
         </shortcut>
+
 	<shortcut> provided_by_package
                    read_records
                    packages_provides
@@ -1012,23 +1539,139 @@
                    packages_provides.name
                    %+
         </shortcut>
-	<shortcut> remove_all_nodes_from_all_node_groups
+
+        <!--
+	remove_all_configurations_from_all_node_groups removes
+	all named configurations from all node groups.
+	Note that this will not remove any configurations that have
+	been automatically associated with a single node group.
+	 -->
+	<shortcut> remove_all_configurations_from_all_node_groups
+                   delete_records
+                   node_groups_included_configurations
+                   node_groups_included_configurations.configuration_id=configurations.id
+		   configurations.associated_node_group_flag=0
+        </shortcut>
+
+        <!--
+	remove_all_configurations_from_node_group removes
+	all named configurations from a specified node group.
+	Note that this will not remove the configuration that was
+	automatically associated with that node group.
+	 -->
+	<shortcut> remove_all_configurations_from_node_group
+                   delete_records
+                   node_groups_included_configurations
+                   node_groups_included_configurations.configuration_id=configurations.id
+		   configurations.associated_node_group_flag=0
+		   node_groups_included_configurations.node_group_id=node_groups.id
+		   node_groups.name=%1
+		   %+
+        </shortcut>
+
+	<shortcut> remove_all_node_groups_from_all_node_groups
                    delete_records
                    node_groups_included_nodes
-                   node_group_id=node_group_id
+                   child_node_group_id=child_node_group_id
         </shortcut>
-	<shortcut> remove_all_nodes_from_node_group
+
+	<shortcut> remove_all_node_groups_from_node_group
                    delete_records
                    node_groups_included_nodes
                    node_groups.name=%1
-                   node_groups.id=node_groups_included_nodes.node_group_id
+                   node_groups.id=node_groups_included_nodes.parent_node_group_id
         </shortcut>
+
+        <!--
+	remove_all_package_configurations_fields_from_node_group
+	removes all package configuration field values associated
+	with the specified node group, required parameters are:
+		group         name of the node group
+	 -->
+	<shortcut> remove_all_package_configuration_fields_from_node_group
+                   delete_records
+                   package_configuration_values
+		   node_groups.name=%1
+                   node_groups.id=package_configurations.node_group_id
+		   package_configurations.id=
+		   package_configuration_values.package_configuration_id
+        </shortcut>
+
+        <!--
+	remove_all_package_configurations_from_node_group removes
+	all package configurations associated with a specified
+	node group. It also removes all all package configuration
+	field values associated with the specified node group.
+	Required parameters are:
+		group         name of the node group
+	 -->
+	<shortcut> remove_all_package_configurations_from_node_group
+                   remove_all_package_configuration_fields_from_node_group
+		   %1
+		   ;
+                   delete_records
+                   package_configurations
+		   node_groups.name=%1
+                   package_configurations.node_group_id=node_groups.id
+        </shortcut>
+
 	<shortcut> remove_all_packages_from_package_set
                    delete_records
                    package_sets_included_packages
                    package_sets.name=%1
                    package_sets.id=package_sets_included_packages.package_set_id
         </shortcut>
+
+        <!--
+	remove_configuration_from_all_node_groups removes
+	a named configurations from all node groups.
+	Note that this will not remove the named configuration if it was
+	automatically associated with and created for a single node group.
+	 -->
+	<shortcut> remove_configuration_from_all_node_groups
+                   delete_records
+                   node_groups_included_configurations
+                   node_groups_included_configurations.configuration_id=configurations.id
+		   configurations.associated_node_group_flag=0
+		   configurations.name=%1
+        </shortcut>
+
+        <!--
+	remove_configuration_from_node removes a named configuration
+	from a specified node (really this removes the configuration
+	from the special node group that includes only that node).
+	Note that this will not remove the named configuration if it was
+	automatically associated with and created for a single node group.
+	 -->
+	<shortcut> remove_configuration_from_node
+                   delete_records
+                   node_groups_included_configurations
+		   configurations.name=%1
+		   configurations.associated_node_group_flag=0
+                   configurations.id=node_groups_included_configurations.configuration_id
+		   node_groups_included_configurations.node_group_id=node_groups.id
+		   node_groups.name=nodes.name
+		   nodes.name=%2
+		   %+
+        </shortcut>
+
+        <!--
+	remove_configuration_from_node_group removes
+	a named configuration from a specified node group.
+	Note that this will not remove the named configuration if it was
+	automatically associated with and created for a single node group.
+	 -->
+	<shortcut> remove_configuration_from_node_group
+                   delete_records
+                   node_groups_included_configurations
+                   node_groups_included_configurations.configuration_id=configurations.id
+		   configurations.associated_node_group_flag=0
+		   configurations.name=%1
+		   node_groups_included_configurations.node_group_id=node_groups.id
+		   node_groups.name=%2
+		   %+
+        </shortcut>
+
 	<shortcut> remove_disk_partition_from_disk_layout
                    delete_records
                    disk_partitions
@@ -1036,6 +1679,7 @@
                    disk_layouts.name=%2
                    disk_layouts.id=disk_partitions.disk_layout_id
         </shortcut>
+
 	<shortcut> remove_dns_server_from_node
                    delete_records
                    nodes_included_dns_servers
@@ -1043,32 +1687,191 @@
                    nodes.name=%2
                    nodes_included_dns_servers.node_id=nodes.id
         </shortcut>
-	<shortcut> remove_node_from_all_node_groups
+
+        <!--
+	remove_field_from_configuration_package removes a
+	field and all of it's values from a named configuration
+	for a specified package. This assumes that there is only
+	version of the package. Required and only parameters are:
+		field           name of the field being removed
+		configuration   name of the configuration
+		package	        name of the package
+	 -->
+	<shortcut> remove_field_from_configuration_package
                    delete_records
-                   node_groups_included_nodes
-                   nodes.name=%1
-		   node_groups_included_nodes.node_id=nodes.id
+		   package_configuration_values
+		   package_configuration_values.field=%1
+		   package_configuration_values.package_configuration_id=
+		   package_configurations.id
+		   package_configurations.configuration_id=configurations.id
+		   configurations.name=%2
+		   package_configurations.package_id=packages.id
+		   packages.name=%3
+		   %+
         </shortcut>
-	<shortcut> remove_node_from_node_group
+
+        <!--
+	remove_field_from_configuration_package_version removes a
+	field and all of it's values from a named configuration
+	for a specified package. Required and only parameters are:
+		field           name of the field being removed
+		configuration   name of the configuration
+		package	        name of the package
+		version	        version of the package
+	 -->
+	<shortcut> remove_field_from_configuration_package_version
+                   remove_field_from_configuration_package
+		   %1
+		   %2
+		   %3
+		   packages.version=%4
+		   %+
+        </shortcut>
+
+        <!--
+	remove_field_from_node_configuration_package removes a
+	field and all of it's values from an automatically created
+	configuration that was associated with the specified node.
+	This assumes that there is only version of the package.
+	Required parameters are:
+		field           name of the field being removed
+		node            name of the node
+		package	        name of the package
+	 -->
+	<shortcut> remove_field_from_node_configuration_package
                    delete_records
-                   node_groups_included_nodes
-		   nodes.name=%1
-                   node_groups.name=%2
-                   node_groups.id=node_groups_included_nodes.node_group_id
-                   nodes.id=node_groups_included_nodes.node_id
+		   package_configuration_values
+		   package_configuration_values.field=%1
+		   package_configuration_values.package_configuration_id=
+		   package_configurations.id
+		   package_configurations.configuration_id=configurations.id
+		   nodes.name=%2
+		   nodes.name=node_groups.name
+		   node_groups.name=configurations.name
+		   package_configurations.package_id=packages.id
+		   packages.name=%3
+		   %+
         </shortcut>
+
+        <!--
+	remove_field_from_node_configuration_package_version removes
+	a field and all of it's values from an automatically created
+	configuration that was associated with the specified node.
+	Required and only parameters are:
+		field           name of the field being removed
+		node            name of the node
+		package	        name of the package
+		version	        version of the package
+	 -->
+	<shortcut> remove_field_from_node_configuration_package_version
+                   remove_field_from_node_configuration_package
+		   %1
+		   %2
+		   %3
+		   packages.version=%4
+		   %+
+        </shortcut>
+
+        <!--
+	remove_field_from_node_group_configuration_package removes a
+	field and all of it's values from an automatically created
+	configuration that was associated with the specified node group.
+	This assumes that there is only version of the package.
+	Required parameters are:
+		field           name of the field being removed
+		group           name of the node group
+		package	        name of the package
+	 -->
+	<shortcut> remove_field_from_node_group_configuration_package
+                   delete_records
+		   package_configuration_values
+		   package_configuration_values.field=%1
+		   package_configuration_values.package_configuration_id=
+		   package_configurations.id
+		   package_configurations.configuration_id=configurations.id
+		   node_groups.name=%2
+		   node_groups.name=configurations.name
+		   package_configurations.package_id=packages.id
+		   packages.name=%3
+		   %+
+        </shortcut>
+
+        <!--
+	remove_field_from_node_group_configuration_package_version removes
+	a field and all of it's values from an automatically created
+	configuration that was associated with the specified node group.
+	Required and only parameters are:
+		field           name of the field being removed
+		group           name of the node group
+		package	        name of the package
+		version	        version of the package
+	 -->
+	<shortcut> remove_field_from_node_group_configuration_package_version
+                   remove_field_from_node_group_configuration_package
+		   %1
+		   %2
+		   %3
+		   packages.version=%4
+		   %+
+        </shortcut>
+
+	<shortcut> remove_node_group_from_all_node_groups
+                   delete_records
+                   node_groups_included_node_groups
+                   node_groups.name=%1
+		   node_groups_included_nodes.child_node_group_id=node_groups.id
+        </shortcut>
+
 	<shortcut> remove_node_from_cluster_partitions
                    modify_records
                    nodes
                    nodes.name=%1
                    nodes.cluster_partition_id=undef
         </shortcut>
+
+        <!--
+	remove_node_group_package_configuration_field removes all 
+	values for a node group package configuration field. 
+	Required and only parameters are:
+		group         name of the node group
+		package	      name of the package
+		field         name of the field being added (to)
+	 -->
+	<shortcut> remove_node_group_package_configuration_field
+	           delete_records
+		   package_configuration_values
+		   node_groups.name=%1
+		   node_groups.name=configurations.name
+		   configurations.id=
+		   packages.name=%2
+		   package_configuration_values.node_group_id~node_groups.id
+		   package_configuration_values.package_id~packages.id
+		   package_configuration_values.field~%3
+		   package_configuration_values.value~%4
+
+        </shortcut>
+
 	<shortcut> remove_package_from_all_package_sets
                    delete_records
                    package_sets_included_packages
                    packages.name=%1
                    packages.id=package_sets_included_packages.package_id
         </shortcut>
+
+	<shortcut> remove_package_from_all_packages_filters
+                   delete_records
+                   packages_filters
+                   packages.name=%1
+                   packages.id=packages_filters.package_id
+        </shortcut>
+
+	<shortcut> remove_package_from_all_packages_rpmlists
+                   delete_records
+                   packages_rpmlists
+                   packages.name=%1
+                   packages.id=packages_rpmlists.package_id
+        </shortcut>
+
 	<shortcut> remove_package_from_package_set
                    delete_records
                    package_sets_included_packages
@@ -1076,13 +1879,16 @@
                    package_sets.name=%2
                    package_sets.id=package_sets_included_packages.package_set_id
                    package_sets_included_packages.package_id=packages.id
+		   %+
         </shortcut>
+
         <shortcut> remove_package_set_from_all_nodes
                    delete_records
                    nodes_included_package_sets
                    nodes_included_package_sets.package_set_id=package_sets.id
                    package_sets.name=%1
         </shortcut>
+
 	<shortcut> remove_package_set_from_node
                    delete_records
                    nodes_included_package_sets
@@ -1091,42 +1897,79 @@
                    nodes.name=%2
                    nodes_included_package_sets.node_id=nodes.id
         </shortcut>
-	<shortcut> rename_disk_layout
-                   modify_records
-                   disk_layouts
-                   name=%1
-                   name~%2
-        </shortcut>
-	<shortcut> rename_image
-                   modify_records
-                   images
-                   name=%1
-                   name~%2
-        </shortcut>
-	<shortcut> rename_network
-                   modify_records
-                   networks
-                   name=%1
-                   name~%2
-        </shortcut>
-	<shortcut> rename_node
-                   modify_records
-                   nodes
-                   name=%1
-                   name~%2
-        </shortcut>
-	<shortcut> rename_node_group
-                   modify_records
-                   node_groups
-                   name=%1
-                   name~%2
-        </shortcut>
+
 	<shortcut> rename_cluster_partition
                    modify_records
                    cluster_partitions
                    name=%1
                    name~%2
         </shortcut>
+
+        <!--
+	rename_configuration renames a named configuration.
+	Note that this will not rename the configuration if it was
+	automatically associated with and created for a single node group,
+	this happens when the node group is renamed.
+	 -->
+	<shortcut> rename_configuration
+                   modify_records
+                   configurations
+		   configurations.associated_node_group_flag=0
+                   configurations.name=%1
+                   configurations.name~%2
+        </shortcut>
+
+	<shortcut> rename_disk_layout
+                   modify_records
+                   disk_layouts
+                   disk_layouts.name=%1
+                   disk_layouts.name~%2
+        </shortcut>
+
+	<shortcut> rename_image
+                   modify_records
+                   images
+                   images.name=%1
+                   images.name~%2
+        </shortcut>
+
+	<shortcut> rename_network
+                   modify_records
+                   networks
+                   networks.name=%1
+                   networks.name~%2
+        </shortcut>
+
+	<shortcut> rename_node
+                   modify_records
+                   nodes
+                   nodes.name=%1
+                   nodes.name~%2
+		   ;
+		   modify_records
+		   node_groups
+		   node_groups.name=%1
+		   node_groups.name~%2
+		   ;
+		   modify_records
+		   configurations
+		   configurations.name=%1
+		   configurations.name~%2
+        </shortcut>
+
+	<shortcut> rename_node_group
+                   modify_records
+                   node_groups
+		   associated_node_flag=0
+                   name=%1
+                   name~%2
+		   ;
+		   modify_records
+		   configurations
+		   configurations.name=%1
+		   configurations.name~%2
+        </shortcut>
+
 	<shortcut> rename_node_nic
                    modify_records
                    nics
@@ -1135,12 +1978,14 @@
                    nics.node_id=nodes.id
                    nics.name~%3
         </shortcut>
+
 	<shortcut> rename_package_set
                    modify_records
                    package_sets
                    name=%1
                    name~%2
         </shortcut>
+
 	<shortcut> required_by_package
                    read_records
                    packages_requires
@@ -1148,46 +1993,218 @@
                    packages_requires.name
                    %+
         </shortcut>
+
 	<shortcut> selected_package_set
                    read_records
                    oscar.selected_package_set_id!=undef
                    oscar.selected_package_set_id=package_sets.id
                    package_sets.name
         </shortcut>
+
+        <!--
+	set_configuration_package_field_value sets the value
+	of a named configuration field for a specified version.
+	This assumes that there is only one version of the package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		configuration   name of the configuration
+		package	        name of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+	 -->
+	<shortcut> set_configuration_package_field_value
+	           remove_field_from_configuration_package
+		   %1
+		   %2
+		   %3
+		   %+
+		   ;
+	           add_configuration_package_field_value
+		   %1
+		   %2
+		   %3
+		   %4
+		   %+
+        </shortcut>
+
+        <!--
+	set_configuration_package_version_field_value sets the value
+	of a named configuration field for a specified version.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		configuration   name of the configuration
+		package	        name of the package
+		version	        version of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+	 -->
+	<shortcut> set_configuration_package_version_field_value
+	           remove_field_from_configuration_package_version
+		   %1
+		   %2
+		   %3
+		   %4
+		   ;
+	           add_configuration_package_version_field_value
+		   %1
+		   %2
+		   %3
+		   %4
+		   %5
+        </shortcut>
+
+        <!--
+	set_node_configuration_package_field_value sets the
+	field value of an automatically created configuration that was
+	associated with the specified node for a specified package.
+	This assumes that there is only one version of the package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		node            name of the node
+		package	        name of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+	 -->
+	<shortcut> set_node_configuration_package_field_value
+	           remove_field_from_node_configuration_package
+		   %1
+		   %2
+		   %3
+		   ;
+	           add_node_configuration_package_field_value
+		   %1
+		   %2
+		   %3
+		   %4
+        </shortcut>
+
+        <!--
+	set_node_configuration_package_version_field_value sets the
+	field value of an automatically created configuration that was
+	associated with the specified node for a specified package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		group           name of the node group
+		package	        name of the package
+		version	        version of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+	 -->
+	<shortcut> set_node_configuration_package_version_field_value
+	           remove_field_from_node_configuration_package_version
+		   %1
+		   %2
+		   %3
+		   ;
+	           add_node_configuration_package_version_field_value
+		   %1
+		   %2
+		   %3
+		   %4
+        </shortcut>
+
+        <!--
+	set_node_group_configuration_package_field_value sets the
+	field value of an automatically created configuration that was
+	associated with the specified node group for a specified package.
+	This assumes that there is only one version of the package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		group           name of the node group
+		package	        name of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+	 -->
+	<shortcut> set_node_group_configuration_package_field_value
+	           remove_field_from_node_group_configuration_package
+		   %1
+		   %2
+		   %3
+		   ;
+	           add_node_group_configuration_package_field_value
+		   %1
+		   %2
+		   %3
+		   %4
+        </shortcut>
+
+        <!--
+	set_node_group_configuration_package_version_field_value sets the
+	field value of an automatically created configuration that was
+	associated with the specified node group for a specified package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		group           name of the node group
+		package	        name of the package
+		version	        version of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+	 -->
+	<shortcut> set_node_group_configuration_package_version_field_value
+	           remove_field_from_node_group_configuration_package_version
+		   %1
+		   %2
+		   %3
+		   ;
+	           add_node_group_configuration_package_version_field_value
+		   %1
+		   %2
+		   %3
+		   %4
+        </shortcut>
+
 	<shortcut> set_package_installable
                    modify_records
                    packages
                    name=%1
                    installable~1
         </shortcut>
+
 	<shortcut> set_package_uninstallable
                    modify_records
                    packages
                    name=%1
                    installable~0
         </shortcut>
+
 	<shortcut> set_oscar_server_node
                    modify_records
                    nodes.name=%1
                    oscar.oscar_server_node_id~nodes.id
         </shortcut>
+
 	<shortcut> set_selected_package_set
                    modify_records
                    package_sets.name=%1
                    oscar.selected_package_set_id~package_sets.id
         </shortcut>
+
 	<shortcut> unlink_node_from_disk_layouts
                    modify_records
                    nodes
                    nodes.name=%1
                    nodes.disk_layout_id~undef
         </shortcut>
+
 	<shortcut> unlink_node_from_images
                    modify_records
                    nodes
                    nodes.name=%1
                    nodes.image_id~undef
         </shortcut>
+
 	<shortcut> unlink_node_nic_from_networks
                    modify_records
                    nics
@@ -1196,18 +2213,21 @@
                    nics.node_id=nodes.id
                    nics.network_id~undef
         </shortcut>
+
 	<shortcut> which_disk_layout_has_node
                    read_records
                    disk_layouts.id=nodes.disk_layout_id
                    nodes.name=%1
                    disk_layouts.name
         </shortcut>
+
 	<shortcut> which_image_has_node
                    read_records
                    images.id=nodes.image_id
                    nodes.name=%1
                    images.name
         </shortcut>
+
 	<shortcut> which_networks_have_node
                    read_records
                    nodes.name=%1
@@ -1215,19 +2235,22 @@
                    nics.network_id=networks.id
                    networks.name
         </shortcut>
+
 	<shortcut> which_cluster_partition_has_node
                    read_records
                    nodes.name=%1
                    nodes.cluster_partition_id=cluster_partitions.id
                    cluster_partitions.name
         </shortcut>
-	<shortcut> which_node_groups_have_node
+
+	<shortcut> which_node_groups_have_configuration
                    read_records
-                   nodes.name=%1
-                   nodes.id=node_groups_included_node_groups.node_id
-                   node_groups_included_nodes.included_node_id=node_groups.id
-                   node_groups.name
+                   configurations.name=%1
+		   configurations.id=node_groups_included_configurations.configuration_id
+		   node_groups_included_configurations.node_group_id=node_groups.id
+		   node_groups.name
         </shortcut>
+
 	<shortcut> which_package_sets_have_package
                    read_records
                    packages.name=%1
@@ -1235,6 +2258,7 @@
                    package_sets_included_packages.package_set_id=package_sets.id
                    package_sets.name
         </shortcut>
+
         <!--
         This defines the second field name for records in 
 	the packages_rpmlist which can't be surmised from 
@@ -1244,8 +2268,10 @@
 	the same line.
         -->
         <fieldnames> packages_rpmlist scope </fieldnames>
+
      </oda>
-  </package>
+
+  </package>	
 
   <!--
   ==================================================
@@ -1270,6 +2296,22 @@
 	</name>
       </fields>
     </cluster_partitions>
+
+    <configurations>
+      <fields> 
+	<associated_node_group_flag>
+	  <type> integer </type>
+	  <default> 0 </default>
+	</associated_node_group_flag>
+        <id> 
+	  <type> integer </type>
+	  <parameters> auto_increment not null unique primary key </parameters>
+	</id>
+        <name>
+	  <parameters> not null unique </parameters>
+	</name>
+      </fields>
+    </configurations>
 
     <disk_layouts>
       <fields> 
@@ -1357,6 +2399,10 @@
 
     <node_groups>
       <fields> 
+	<associated_node_flag>
+	  <type> integer </type>
+	  <default> 0 </default>
+	</associated_node_flag>
         <id> 
 	  <type> integer </type>
 	  <parameters> auto_increment not null unique primary key </parameters>
@@ -1367,29 +2413,29 @@
       </fields>
     </node_groups>
 
-    <node_groups_included_nodes>
-      <parameters> unique(node_id,node_group_id) </parameters>
+    <node_groups_included_configurations>
+      <parameters> unique(node_group_id,configuration_id) </parameters>
       <fields> 
-        <node_id>
+        <configuration_id>
 	  <type> integer </type>
-	</node_id>
+        </configuration_id>
         <node_group_id>
 	  <type> integer </type>
 	</node_group_id>
       </fields>
-    </node_groups_included_nodes>
+    </node_groups_included_configurations>
 
-    <nodes_included_package_sets>
-      <parameters> unique(node_id,package_set_id) </parameters>
+    <node_groups_included_node_groups>
+      <parameters> unique(child_node_group_id,parent_node_group_id) </parameters>
       <fields> 
-        <package_set_id>
+        <child_node_group_id>
 	  <type> integer </type>
-	</package_set_id>
-        <node_id>
+	</child_node_group_id>
+        <parent_node_group_id>
 	  <type> integer </type>
-	</node_id>
+	</parent_node_group_id>
       </fields>
-    </nodes_included_package_sets>
+    </node_groups_included_node_groups>
 
     <nodes>
       <fields> 
@@ -1445,15 +2491,31 @@
       </fields>
     </nodes_included_dns_servers>
 
+    <nodes_included_package_sets>
+      <parameters> unique(node_id,package_set_id) </parameters>
+      <fields> 
+        <package_set_id>
+	  <type> integer </type>
+	</package_set_id>
+        <node_id>
+	  <type> integer </type>
+	</node_id>
+      </fields>
+    </nodes_included_package_sets>
+
     <oda_shortcuts>
       <fields> 
         <expansion>
 	  <type> text </type>
 	  <parameters> not null </parameters>
 	</expansion>
+	<package_id>
+	  <type> integer </type>
+	</package_id>
         <shortcut> 
 	  <parameters> not null unique primary key </parameters>
 	</shortcut>
+
       </fields>
     </oda_shortcuts>
 
@@ -1473,6 +2535,37 @@
 	</selected_package_set_id>
       </fields>
     </oscar>
+
+    <package_configurations>
+      <parameters> unique(configuration_id,package_id) </parameters>
+      <fields> 
+        <configuration_id>
+	  <type> integer </type>
+        </configuration_id>
+        <id> 
+	  <type> integer </type>
+	  <parameters> auto_increment not null unique primary key </parameters>
+	</id>
+        <install>
+	  <type> integer </type>
+	  <default> 1 </default>
+	</install>
+        <package_id>
+	  <type> integer </type>
+	</package_id>
+      </fields>
+    </package_configurations>
+
+    <package_configuration_values>
+      <fields> 
+        <field/>
+        <package_configuration_id>
+	  <type> integer </type>
+	  <parameters> auto_increment not null unique primary key </parameters>
+	</package_configuration_id>
+        <value/>
+      </fields>
+    </package_configuration_values>
 
     <package_sets>
       <fields> 
@@ -1522,6 +2615,10 @@
 	  <type> integer </type>
 	  <parameters> auto_increment not null unique primary key </parameters>
 	</id>
+        <installed> 
+	  <type> integer </type>
+	  <default> 0 </default>
+	</installed>
 	<installable/>
 	<license/>
 	<maintainer_email/>
@@ -1533,6 +2630,14 @@
 	<package/>
 	<packager_email/>
 	<packager_name/>
+        <should_be_installed> 
+	  <type> integer </type>
+	  <default> 0 </default>
+	</should_be_installed>
+        <should_be_uninstalled> 
+	  <type> integer </type>
+	  <default> 0 </default>
+	</should_be_uninstalled>
 	<summary/>
 	<url/>
 	<vendor/>
@@ -1550,7 +2655,7 @@
 	<version_release/>
 	<version_subversion/>
       </fields>
-    </packages>	
+    </packages>
 
     <packages_conflicts>
       <fields> 
@@ -1568,7 +2673,6 @@
         <package_id>
 	  <type> integer </type>
 	</package_id>
-        <package_version/>
       </fields>
     </packages_filters>
 
@@ -1597,7 +2701,6 @@
         <package_id>
 	  <type> integer </type>
 	</package_id>
-        <package_version/>
         <rpm/>        
       </fields>
     </packages_rpmlists>
