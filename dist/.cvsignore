@@ -6,3 +6,5 @@ config.sub
 install-sh
 missing
 mkinstalldirs
+ltmain.sh
+config_files_list.m4
