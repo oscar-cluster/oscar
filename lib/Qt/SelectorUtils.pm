@@ -178,9 +178,11 @@ sub getSubField
   if ($package && $field && (defined $allPackages->{$package}{$field}))
     {
       foreach my $href (@{ $allPackages->{$package}{$field} } )
-        {
-          if (((defined $href->{type}) && ($href->{type} eq 'package')) ||
-              (!defined $href->{type}) )
+        { # If the 'type' field is undefined OR defined but empty, 
+          # assume that 'type' is 'package'.
+          if ( (!defined $href->{type}) ||
+               ((defined $href->{type}) && ($href->{type} eq '')) ||
+               ((defined $href->{type}) && ($href->{type} eq 'package')) )
             {
               $rethash->{$href->{name}} = 1 if (defined $href->{name});
             }
