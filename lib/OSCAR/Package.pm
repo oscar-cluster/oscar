@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.45 2003/01/24 12:14:30 jsquyres Exp $
+#   $Id: Package.pm,v 1.46 2003/03/10 06:03:12 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ use strict;
 use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL %PHASES
 	    @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
+use OSCAR::Database;
 use OSCAR::PackageBest;
 use OSCAR::Logger;
 use File::Basename;
@@ -33,11 +34,11 @@ use File::Copy;
 use XML::Simple;
 use Carp;
 
-@EXPORT = qw(list_pkg run_pkg_script run_pkg_user_test
+@EXPORT = qw(list_pkg list_pkg_dirs run_pkg_script run_pkg_user_test
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.45 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.46 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -76,7 +77,7 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
 			  );
 
 #
-# list_pkg - this returns a list of packages.
+# list_pkg - this returns a list of installable packages.
 #
 # You may specify "core", "noncore", or "all" as the first argument to
 # get a list of core, noncore, or all packages (respectively).  If no
@@ -87,36 +88,76 @@ sub list_pkg {
     my $type = shift;
     my @packages_to_return = ();
 
-    # If we haven't read in all the package config.xml files, do so.
+    # If no argument was specified, use "all"
 
-    read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
+    $type = "all" if ((!(defined $type)) || (!$type));
+
+    my $command_args;
+    if ( $type eq "all" ) {
+	$command_args = "packages_installable";
+    } elsif ( $type eq "core" ) {
+	$command_args = "packages_installable class=core";
+    } else {
+	$command_args = "packages_installable class!=core";
+    }
+
+    my @error_strings = ();
+    if ( OSCAR::Database::database_execute_command( undef,
+						    $command_args, 
+						    \@packages_to_return,
+						    \@error_strings ) ) {
+	return @packages_to_return;
+    } else {
+	warn "Cannot read installable packages list from the ODA database.";
+	foreach my $error_string ( @error_strings ) {
+	    warn $error_string;
+	}
+	return undef;
+    }
+}
+
+#
+# list_pkg_dirs - this returns a list of packages without the database.
+#
+# You may specify "core", "noncore", or "all" as the first argument to
+# get a list of core, noncore, or all packages (respectively).  If no
+# argument is given, "all" is implied.
+#
+
+sub list_pkg_dirs {
+    my $type = shift;
+    my @packages_to_return = ();
 
     # If no argument was specified, use "all"
 
     $type = "all" if ((!(defined $type)) || (!$type));
 
+    # If we haven't read in all the package config.xml files, do so.
+    
+    read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
+    
     # Now do the work
-
+    
     my @packages = keys %{$PACKAGE_CACHE};
     foreach my $pkg (@packages) {
-    
-        # First, check if the package has its installable attribute set to 1.
-        next if ($PACKAGE_CACHE->{$pkg}->{installable} ne 1);
-
-        # If it's a valid package, see if it's the right kind or not
-        if ($type eq "all") {
-            push @packages_to_return, $pkg;
-        } elsif ($type eq "core") {
-            if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
-              ($PACKAGE_CACHE->{$pkg}->{class} eq "core")) {
-            push @packages_to_return, $pkg;
-            }
-        } else {
-            if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
-              ($PACKAGE_CACHE->{$pkg}->{class} ne "core")) {
-            push @packages_to_return, $pkg;
-            }
-        }
+	
+	# First, check if the package has its installable attribute set to 1.
+	next if ($PACKAGE_CACHE->{$pkg}->{installable} ne 1);
+	
+	# If it's a valid package, see if it's the right kind or not
+	if ($type eq "all") {
+	    push @packages_to_return, $pkg;
+	} elsif ($type eq "core") {
+	    if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
+		($PACKAGE_CACHE->{$pkg}->{class} eq "core")) {
+		push @packages_to_return, $pkg;
+	    }
+	} else {
+	    if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
+		($PACKAGE_CACHE->{$pkg}->{class} ne "core")) {
+		push @packages_to_return, $pkg;
+	    }
+	}
     }
 
     return @packages_to_return;
@@ -571,6 +612,10 @@ sub getSelectionHash # () -> $selectionhashref
 {
   my($selection);
   my($config) = "$ENV{OSCAR_HOME}/.oscar/.selection.config";
+
+  print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n";
+  print "XXXXXXXXXXXXXXXXXXX getSelectionHash called XXXXXXXXXXXXXXXXXXXXXXXXXXX\n";
+  print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n";
 
   # If we haven't read in all the package config.xml files, do so.
   read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
