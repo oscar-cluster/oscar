@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.18 2002/08/14 22:31:13 mchasal Exp $
+% $Id: design.tex,v 1.19 2002/08/22 03:34:33 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -397,6 +397,11 @@ The following guidelines should be followed when providing
   a larger section describing details of individual packages in the
   OSCAR distribution.  The first part of each file should be a \LaTeX\
   {\tt subsection} command to start the subsection.
+
+\item The top-level subsection should have a label of the form
+      \verb=\label{app:<PKG_NAME>-overview}= where \verb=<PKG_NAME>= is
+      the name of the package (same as the directory name), e.g.
+	 \verb=\label{app:pvm-overview}=.
 
 \item The following macros are available:
 
