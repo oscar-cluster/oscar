@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.8 2003/10/22 16:46:04 giraldeau Exp $
+# $Id: setup,v 1.9 2003/11/26 00:18:04 jsquyres Exp $
 #
 # post_clients script for the switcher package
 #
@@ -40,12 +40,7 @@ if ($name eq "redhat") {
 } elsif ($name eq "suse") {
   $source_dir .= "suse81";
 } elsif ($name eq "mandrake") {
-  if ($ver eq "9.0") {
-  	$source_dir .= "mdk90";
-  }
-  elsif ($ver eq "9.2") {
-	$source_dir .= "mdk92";
-  }
+  $source_dir .= "mdk90";
 }
 
 print "Using modules RPMs from: $source_dir\n";
