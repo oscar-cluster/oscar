@@ -1,9 +1,13 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.20 2002/10/25 13:20:56 jsquyres Exp $
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
 #
-# For copyright information, please see the COPYING file in the
-# top-level directory
+# $Id: make-dist.sh,v 1.21 2002/10/25 13:45:22 jsquyres Exp $
 #
 
 srcdir="`pwd`"
