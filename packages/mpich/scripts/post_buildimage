@@ -10,7 +10,7 @@ my $ARCH = "i386";
 my $PREFIX = "/opt/mpich-$VER";
 my $imagedir = "/var/lib/systemimager/images/$image";
 
-my $file = "$imagedir/etc/profile.d/mpi-01mpich.sh";
+my $file = "$imagedir/etc/profile.d/mpi-00mpich.sh";
 open( OUT, ">$file" ) or croak( "Couldn't open $file" );
 
 print OUT <<EOF;
@@ -26,7 +26,7 @@ EOF
 close( OUT );
 chmod 0755, "$file";
 
-$file = "$imagedir/etc/profile.d/mpi-01mpich.csh";
+$file = "$imagedir/etc/profile.d/mpi-00mpich.csh";
 open( OUT, ">$file" ) or croak( "Couldn't open $file" );
 print OUT <<EOF;
 #
