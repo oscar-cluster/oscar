@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.4 2002/06/12 04:04:00 jsquyres Exp $
+# $Id: Makefile.am,v 1.5 2002/06/12 04:07:05 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
