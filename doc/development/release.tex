@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release.tex,v 1.4 2002/02/02 04:27:20 jsquyres Exp $
+% $Id: release.tex,v 1.5 2002/02/08 02:37:33 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -55,18 +55,22 @@ Working version numbers in CVS should never equal a version that has
 already been publicly released.  As such, the version number in CVS
 should be changed as soon as a new version is released.
 
-Additionally, the version number in CVS should probably always be a
-beta so as to never confuse the CVS version from an official
-distribution package version.  Rationale for this is that users will
-use whatever version number is available to report bugs.  Consider the
-following scenario: OSCAR \version{x.y} is released and the CVS
-version number is incremented to \version{x.(y+1)} immediatedly.
-Eventually, OSCAR version \version{x.(y+1)} is released.  Now consider
-that there are bugs for \version{x.(y+1)} in the bug tracker.  Are
-they for the CVS version (and potentially already fixed before
-\version{x.(y+1)} was released) or the officially released version?
-If the CVS version number always has a ``beta'' nomenclature, such
-ambiguties are much easier to resolve.
+Additionally, during normal development, the version number in CVS
+should probably always be a beta so as to never confuse the CVS
+version from an official distribution package version.  Hence, the CVS
+version number should only be equal to a release version for a very
+short period of time (see Section~\ref{sec:release-sf}).
+
+Rationale for this is that users will use whatever version number is
+available to report bugs.  Consider the following scenario: OSCAR
+\version{x.y} is released and the CVS version number is incremented to
+\version{x.(y+1)} immediatedly.  Eventually, OSCAR version
+\version{x.(y+1)} is released.  Now consider that there are bugs for
+\version{x.(y+1)} in the bug tracker.  Are they for the CVS version
+(and potentially already fixed before \version{x.(y+1)} was released)
+or the officially released version?  If the CVS version number always
+has a ``beta'' nomenclature, such ambiguties are much easier to
+resolve.
 
 Hence, part of the release process is to set the version number to be
 an appropriate value for the distribution package and then to
@@ -84,6 +88,7 @@ CVS), and then bump up \file{VERSION} (e.g., to \version{1.2.1b1} or
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Releasing on SourceForge}
+\label{sec:release-sf}
 
 Making a release on SourceForge is a little less than obvious.  All of
 this is itemized in the main SourceForge documentation; this is an
@@ -106,6 +111,16 @@ through the process.
   \end{enumerate}
 
 \item Make the distribution package file with ``{\tt make dist}''.
+  
+  {\bf IMPORTANT:} Sanity check the tarball before going any further.
+  Expand it into a tree and spot-check a few of the files in the
+  tarball to ensure that it was made properly.  Check files like
+  \file{README}, etc., to see that they are both in-line for this
+  release, and that the licenses and copyrights were properly
+  prepended to the text files.
+  
+\item Commit the \file{VERSION} file with the distribution version
+  number (so that it can be tagged in CVS in the next step).
 
 \item Tag the CVS source tree with the version number of the tarball
   that you have just created.  
@@ -151,7 +166,8 @@ through the process.
   
 \item Uploading will likely take a few minutes.  While that is
   occuring, edit the \file{VERSION} file and bump up the [beta]
-  version number (see Section~\ref{sec:release-version-numbers}).
+  version number and commit it (see
+  Section~\ref{sec:release-version-numbers}).
 
 \item Login to the SourceForge web page.
 
