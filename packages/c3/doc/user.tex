@@ -1,0 +1,203 @@
+%% LyX 1.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{babel}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\providecommand{\LyX}{L\kern-.1667em\lower.25em\hbox{Y}\kern-.125emX\@}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+ \newenvironment{lyxlist}[1]
+   {\begin{list}{}
+     {\settowidth{\labelwidth}{#1}
+      \setlength{\leftmargin}{\labelwidth}
+      \addtolength{\leftmargin}{\labelsep}
+      \renewcommand{\makelabel}[1]{##1\hfil}}}
+   {\end{list}}
+
+\makeatother
+\begin{document}
+
+\subsection{Overview}
+
+The Cluster Command Control (C3) tools are a suite of cluster tools
+developed at Oak Ridge National Laboratory that are useful for both
+administration and application support. The suite includes tools for
+cluster-wide command execution, file distribution and gathering, process
+termination, remote shutdown and restart, and system image updates.
+A short description of each tool follows:
+
+\begin{lyxlist}{00.00.0000}
+\item [cexec]general utility that enables the execution of any standard
+command on all cluster nodes
+\item [cget]retrieves files or directories from all cluster nodes
+\item [ckill]terminates a user specified process on all cluster nodes
+\item [cpush]distribute files or directories to all cluster nodes
+\item [cpushimage]update the system image on all cluster nodes using an
+image captured by the SystemImager tool
+\item [crm]remove files or directories from all cluster nodes
+\item [cshutdown]shutdown or restart all cluster nodes
+\item [cnum]returns a node range number based on node name
+\item [cname]returns node names based on node ranges
+\item [clist]returns all clusters and their type in a configuration file
+\end{lyxlist}
+The default method of execution for the tools is to run the command
+on all cluster nodes concurrently. However, a serial version of cexec
+is also provided that may be useful for deterministic execution and
+debugging. To invoke the serial version of cexec, type cexecs instead
+of cexec. For more information on how to use each tool, see the man
+page for the specific tool.
+
+
+\subsection{Basic File Format }
+
+Specific instances of C3 commands identify their compute nodes with
+the help of {*}{*}cluster configuration files{*}{*}: files that name
+a set of accessible clusters and describe the set of machines in each
+accessible cluster. /etc/c3.conf, the default cluster configuration
+file, should consist of a list of {*}{*}cluster descriptor blocks{*}{*}:
+syntactic objects that name and describe a single cluster that is
+accessible to that system's users. The following is an example of
+a default configuration file that contains exactly one cluster descriptor
+block: a block that describes a cluster of 64 nodes:
+
+\begin{quotation}
+cluster local \{ 
+
+~~~htorc-00:node0 \#head node 
+
+~~~node{[}1-64{]} \#compute nodes 
+
+\}
+\end{quotation}
+the cluster tag denotes a new cluster descriptor block. The next word
+is the name of the cluster (in this example local). The first line
+in the configuration is the headnode. The first name is the external
+interface followed by a colon and then the internal interface. If
+only one name is specified then it is assumed to be both external
+and internal. Starting on the next line is the node definitions. Nodes
+can be either ranges or single machines. The above example uses ranges
+- node1 through node64. In the case of a node being offline two tags
+are used, exclude and dead. Exclude sets nodes offline that are declared
+in a range and dead indicates a single node declaration is dead. The
+below example declares 32 nodes in a range with several offline and
+then four more nodes listed singularly with two offline.
+
+\begin{quotation}
+cluster torc \{
+
+~~~node0~~~~~~~~~~\#headnode
+
+~~~dead placeholder~\#change command line to 1 indexing
+
+~~~node{[}1-32{]}~~~~~~\#first set of nodes
+
+~~~exclude 30~~~~~~\#offline nodes in the range
+
+~~~exclude {[}5-10{]}
+
+~~~node100~~~~~~~~\#single node definition
+
+~~~dead node101~~~~\#offline node
+
+~~~dead node102
+
+~~~node103
+
+\}
+\end{quotation}
+one other thing to note is the use of a place holder node. When specifying
+ranges on the command line a nodes position in the configuration file
+is relevant. Ranges on the command line are 0 indexed. For example,
+in the local cluster example (first example) node1 occupies position
+0 which may not be very intuitive to a user. Putting a node offline
+in front of the real compute nodes changes the indexing of the C3
+command line ranges. In the torc cluster example (second example)
+node1 occupies position 1. For a more detailed example see the c3.conf
+man page.
+
+
+\subsection{Ranges On the Command Line}
+
+
+\subsubsection{Specifying ranges }
+
+Ranges can be specified in two ways, one as a range, and the other
+as a single node. ranges are specified by the following format: m-n,
+where m is a positive integer (including zero) and n is a number larger
+than m. Single positions are just the position number. If discontinuous
+ranges are needed, each range must be separated by a \char`\"{},\char`\"{}.
+The range \char`\"{}0-5, 9, 11\char`\"{} would execute on positions
+0,1,2,3,4,5,9,11(nodes marked as offline will not participate in execution).
+There are two tools used to help manage keeping track of which nodes
+are at which position: cname(1) and cnum(1). cnum assumes that you
+know node names and want to know their position. cname takes a range
+argument and returns the node names at those positions (if no range
+is specified it assumes that you want all the nodes in the cluster).
+See their man pages for details of use. NOTE: ranges begin at zero!
+
+
+\subsubsection{MACHINE DEFINITIONS }
+
+Machine definitions are what C3 uses to specify clusters and ranges
+on the command line. There are four cases a machine definition can
+take. First is that one is not specified at all. C3 will execute on
+all the nodes on the default cluster in this case (the default cluster
+is the first cluster in the configuration file). An example would
+be as follows:
+
+\cmd{cexec ls -l}
+
+The second case is a range on the default cluster. This is in a form
+of <:range>. An example cexec would be as follows:
+
+\cmd{cexec :1-4,6 ls -l}
+
+This would execute ls on nodes 1,2,3,4,6 of the default cluster. The
+third method is specifying a specific cluster. This takes the form
+of <cluster\_name:>. And example cexec would be as follows:
+
+\cmd{cexec test: ls -l}
+
+This would execute ls on every node in cluster test. The fourth and
+final way of specifying a machine definition would be a range on a
+specific cluster. This takes the form of <cluster\_name:range>. An
+example cexec would be as follows:
+
+\cmd{cexec test:2-4,10 ls -l}
+
+This would execute ls on nodes 2,3,4,10 on cluster test. These four
+methods can be mixed on a single command line. for example
+
+\cmd{cexec :0-4 htorc1: htorc2:1-5 ls -l}
+
+is a valid command. it would execute ls on nodes 0,1,2,3,4 of the
+default cluster, all of htorc1 and 1,2,3,4,5 of htorc2. In this way
+One could easily do things such as add a user to several clusters
+or read /var/log/messages for an event across many clusters. See the
+c3-range man page for more detail.
+
+
+\subsection{Other Considerations}
+
+In most cases C3 has tried to mimic the standard Linux command it
+is based on, this is to make using the cluster as transparent as possible.
+One of the large differences is such as using the interactive options.
+Because one would not want to be asked yes or no multiple times for
+each node C3 will only ask ONCE if the interactive option is specified.
+This is very important to remember if running commands such as {}``crm
+--all -R /{}'' (recursively delete / on every node in every cluster
+you have access too). 
+
+Multiple cluster use does not necessarily need to be restricted to
+hardware, nodes can be grouped based on role also - basically a meta-cluster.
+For example one may wish to sometimes separate out pbs servers for
+specific tasks, it is possible to create a cluster called {}``pbs-servers{}''
+and only execute a given command on those clusters. It is useful to
+separate nodes out based on things such as hardware (fast-ether/gig-ether),
+software (this set has this compiler), or role (pbs-servers).
+\end{document}
