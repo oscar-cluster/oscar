@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2002-2004 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -16,12 +16,27 @@ want_srpms="$2"
 
 ############################################################################
 
+# We should only allow "make dist" from an SVN checkout
+
+if test ! -d .svn; then
+    cat <<EOF
+***************************************************************************
+You can only "make dist" from within a Subversion checkout.  "make dist"
+is not supported from OSCAR distribution tarballs.
+***************************************************************************
+EOF
+    exit 1
+fi
+
+############################################################################
+
 OSCAR_VERSION="`sh dist/get-oscar-version.sh $srcdir --full`"
 OSCAR_MAJOR_VERSION="`sh dist/get-oscar-version.sh $srcdir --major`"
 OSCAR_MINOR_VERSION="`sh dist/get-oscar-version.sh $srcdir --minor`"
 OSCAR_RELEASE_VERSION="`sh dist/get-oscar-version.sh $srcdir --release`"
 OSCAR_ALPHA_VERSION="`sh dist/get-oscar-version.sh $srcdir --alpha`"
 OSCAR_BETA_VERSION="`sh dist/get-oscar-version.sh $srcdir --beta`"
+OSCAR_SVN_VERSION="`sh dist/get-oscar-version.sh $srcdir --svn`"
 
 if test "$distdir" = ""; then
     echo "Must supply distdir as argv[1] -- aborting"
@@ -68,6 +83,11 @@ fi
 if ! test -f Makefile; then
     echo " - Running configure"
     ./configure
+fi
+
+svn_r=
+if test "`echo $OSCAR_SVN_VERSION | cut -c1`" = "r"; then
+    svn_r="`svnversion .`"
 fi
 
 #
@@ -148,6 +168,18 @@ fi
 
 cd $distdir
 umask 022
+
+#
+# See if we need VERSION.svn
+#
+
+if test -n "$svn_r"; then
+    rm -f VERSION.svn
+    echo "*** Created VERSION.svn file"
+    echo $svn_r > VERSION.svn
+else
+    echo "*** Did NOT create VERSION.svn file"
+fi
 
 #
 # Put in those headers.  
