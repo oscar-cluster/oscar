@@ -1,15 +1,5 @@
 --- /usr/lib/systemimager/perl/SystemImager/Server.pm.orig	2004-03-03 20:00:46.000000000 -0800
 +++ /usr/lib/systemimager/perl/SystemImager/Server.pm	2004-05-04 10:56:33.000000000 -0700
-@@ -5,6 +5,9 @@
- #  Copyright (C) 2002 Bald Guy Software
- #                     Brian Elliott Finley <bef@bgsw.net>
- #
-+#  4/30/2004, David N. Lombard, david.n.lombard@intel.com
-+#  Disk independence added.
-+#
- #   $Id: systemimager-server-3.2.0.patch,v 1.2 2004/06/04 22:38:18 dnl Exp $
- #
- 
 @@ -16,7 +19,7 @@ use strict;
  use File::Copy;
  use File::Path;
