@@ -1,8 +1,6 @@
 #!/bin/bash
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
-#		2005, Canada's Michael Smith Genome Sciences Centre.
-#		      All rights reserved.
 
 # Author:	Jeremy Enos jenos@ncsa.uiuc.edu
 #		Bernard Li <bli@bcgsc.ca>
