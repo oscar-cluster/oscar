@@ -1,0 +1,20 @@
+#!/bin/sh
+
+### Job name
+#PBS -N mpichtest
+
+### Output files
+#PBS -o mpichtest.out
+#PBS -e mpichtest.err
+
+### Queue name
+#PBS -q workq
+
+### Script Commands
+cd $PBS_O_WORKDIR
+NP=`(wc -l < $PBS_NODEFILE) | awk '{print $1}'`
+echo "Running MPICH test"
+$MPICHMPI/bin/mpicc cpi.c -o mpich-cpi
+$MPICHMPI/bin/mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cpi
+echo
+exit

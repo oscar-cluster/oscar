@@ -1,0 +1,116 @@
+#!/bin/sh
+
+# test_cluster - script to test MPI, PVM, & PBS
+# Author: Michael Brim
+# Last Updated: 07/10/2001
+
+# Initialize environment
+qsub=/usr/local/pbs/bin/qsub
+qstat=/usr/local/pbs/bin/qstat
+
+# Check usage
+if [ $# -eq 0 ]; then 
+  # Get cluster info from user
+  echo -n "Enter the number of client nodes: "
+  read clients
+  echo -n "Enter the number of processors per client: "
+  read ppn
+elif [ $# -ne 2 ]; then
+  echo "usage: $0 [<num clients> <num procs/client>]"
+  exit 1
+else
+  clients=$1
+  ppn=$2
+fi
+
+# Test PBS
+echo "Running a simple PBS shell job..."
+cd shell
+if [ -f shelltest.out ]; then /bin/rm -f shelltest.out; fi
+if [ -f shelltest.err ]; then /bin/rm -f shelltest.err; fi
+job=`$qsub -l nodes=$clients pbs_script.shell`
+sleep 10
+time=10
+while [ ! -f shelltest.out ]; do 
+  sleep 10
+  time=`expr $time + 10`
+  if [ $time -gt 120 ]; then # more than 2 minutes
+    echo "- simple test taking way too long - there is"
+    echo "  probably a problem with PBS, exiting"
+    exit 1
+  fi 
+done
+if [ ! -s shelltest.out ]; then
+  echo "PBS shell test failed - output file empty"
+  echo "Contents of shelltest.err:"
+  cat shelltest.err
+  echo
+  echo "Since simple PBS job failed, exiting"
+  exit 1
+else
+  echo "Output from shell test:"
+  cat shelltest.out
+fi
+cd ..
+echo
+
+# Test MPI under PBS
+echo "Running a simple MPICH job under PBS..."
+cd mpi
+if [ -f mpichtest.out ]; then /bin/rm -f mpichtest.out; fi
+if [ -f mpichtest.err ]; then /bin/rm -f mpichtest.err; fi
+job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.mpich`
+sleep 10
+while [ ! -f mpichtest.out ]; do sleep 10; done
+if [ ! -s mpichtest.out ]; then
+  echo "MPICH test failed - output file empty"
+  echo "Contents of mpichtest.err:"
+  cat mpichtest.err
+  echo
+else
+  echo "Output from MPICH test:"
+  cat mpichtest.out
+fi
+echo
+
+# Test LAM/MPI under PBS
+echo "Running a simple LAM/MPI job under PBS..."
+if [ -f lamtest.out ]; then /bin/rm -f lamtest.out; fi
+if [ -f lamtest.err ]; then /bin/rm -f lamtest.err; fi
+export MPI=/opt/lam-6.5.3
+job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.lam`
+sleep 10
+while [ ! -f lamtest.out ]; do sleep 10; done
+if [ ! -s lamtest.out ]; then
+  echo "LAM/MPI test failed - output file empty"
+  echo "Contents of lamtest.err:"
+  cat lamtest.err
+  echo
+else
+  echo "Output from LAM/MPI test:"
+  cat lamtest.out
+fi
+cd ..
+echo
+
+# Test PVM under PBS
+echo "Running a simple PVM job under PBS..."
+cd pvm
+if [ -f pvmtest.out ]; then /bin/rm -f pvmtest.out; fi
+if [ -f pvmtest.err ]; then /bin/rm -f pvmtest.err; fi
+job=`$qsub -l nodes=$clients pbs_script.pvm`
+sleep 10
+while [ ! -f pvmtest.out ]; do sleep 10; done
+if [ ! -s pvmtest.out ]; then
+  echo "PVM test failed - output file empty"
+  echo "Contents of pvmtest.err:"
+  cat pvmtest.err
+else
+  echo "Output from PVM test:"
+  cat pvmtest.out
+fi
+cd ..
+echo
+
+# Done
+exit 0

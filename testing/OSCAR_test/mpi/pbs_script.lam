@@ -1,0 +1,55 @@
+#!/bin/sh
+
+### Job name
+#PBS -N lamtest
+
+### Output files
+#PBS -o lamtest.out
+#PBS -e lamtest.err
+
+### Queue name
+#PBS -q workq
+
+### Script Commands
+cd $PBS_O_WORKDIR
+echo "Running LAM/MPI test"
+
+##########################################################################
+# Users won't need to do this in their normal PBS scripts -- they can
+# just add LAM to their PATH in their $HOME/.bashrc and forget about
+# it.  This will all be better in OSCAR 2.0...
+##########################################################################
+
+# If the user's shell is bash, the path *must* be set in the user's
+# .bashrc, or "hboot" won't be found on the remote side (stupid bash!)
+# because bash will only execute $HOME/.bashrc on the other side.
+# $LAMMPI is set in /etc/profile.d/mpi-01lam.*.  If it's not set here,
+# then our .files aren't set right for us to get the LAM paths and
+# whatnot properly.
+
+#### BEGIN: This is not necessary in normal PBS LAM scripts ##############
+lam_profile=/etc/profile.d/mpi-01lam.sh
+. $lam_profile
+echo ". $lam_profile # BoZo Bash" >> $HOME/.bashrc
+#### END: This is not necessary in normal PBS LAM scripts ################
+
+# This is the test itself.  See?  It's really short.  <sigh>
+
+$LAMMPI/bin/lamboot $PBS_NODEFILE
+$LAMMPI/bin/mpicc cpi.c -o lam-cpi
+$LAMMPI/bin/mpirun C lam-cpi
+$LAMMPI/bin/lamclean
+$LAMMPI/bin/lamhalt 
+
+#### BEGIN: This is not necessary in normal PBS LAM scripts ##############
+out=/tmp/lam-bashrc-fixer.$$
+grep -v "BoZo Bash" $HOME/.bashrc > $out
+mv $out $HOME/.bashrc
+chmod 644 $HOME/.bashrc
+#### END: This is not necessary in normal PBS LAM scripts ################
+
+echo "LAM/MPI test complete"
+echo "Unless there are errors above, test completed successfully."
+
+echo
+exit 0
