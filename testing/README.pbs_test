@@ -1,0 +1,18 @@
+To use pbs_test:
+
+Run without arguments to run in "interactive" mode, where it asks all the necessary
+questions.
+
+To run "non-interactively", run with arguments in the following order:
+
+clients to run job on
+processors per node
+FULL PATH to pbs script (i.e. /home/oscartst/OSCAR_test/shell/pbs_script.shell)
+String to be found in output for success (Hello and "Hello" are equivalent)
+FULL PATH to output file.  We assume that all have .err and .out extensions, leave them
+off
+timeout scaling factor
+test name
+
+If not specified, the last 3 options (output file, scale, name) will default to the
+script name, 3, and "PBS TEST", respectively.

@@ -23,7 +23,7 @@ if [ $# -eq 0 ]; then
   
   echo -n "Enter the name of the output file (defaults to the script name): "
   read output
-  opt=${output:=`basename $pbs_script`}
+  opt=${output:=$pbs_script}
 
   echo -n "Enter a time scaling factor (Default is 3): "
   read scaling_factor
@@ -41,7 +41,7 @@ else
   pbs_script=$3
   grep_string=$4
   opt=$5
-  output=${opt:=`basename $pbs_script`}
+  output=${opt:=$pbs_script}
   opt=$6
   scaling_factor=${opt:=3}
   opt=$7
