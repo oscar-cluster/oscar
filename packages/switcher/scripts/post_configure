@@ -7,53 +7,36 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: post_configure,v 1.2 2002/10/29 15:57:53 jsquyres Exp $
+# $Id: post_configure,v 1.3 2002/10/29 18:34:48 jsquyres Exp $
 #
 
 use strict;
-use XML::Simple;
-use Carp;
-
-# Debugging
-use Data::Dumper;
 
 #
-# Global variables
+# In the post_configure step, it is possible that the server noncore
+# RPMs have not been installed yet, hence, the tags that we want to
+# set the defaults for may or may not exist yet.  So the functionality
+# for setting the tags has been extracted to a common code chunk
+# ("set_switcher_defaults") that is invoked both in post_configure
+# (invoked immediately after the configurator, mainly to catch when
+# people run the OSCAR wizard to change their configuration, but don't
+# intend to click on the "Install OSCAR server" button a second time),
+# and in post_server_install (to catch the case of the initial
+# install, where the tags don't exist yet, but they will after the
+# server noncore RPMs are installed).
 #
 
-my $results = undef;
-
-#
-# This will be re-written when Neil introduces the ODA interface where
-# I can search for this information in the database.  For the moment,
-# I'm going to hard-code it...
-#
-
-my $infile = "$ENV{OSCAR_HOME}/packages/switcher/.configurator.values";
-my $xs = new XML::Simple(keyattr => {});
-if (-e $infile) {
-    $results = $xs->XMLin($infile);
+my $ret;
+my $cmd = "$ENV{OSCAR_HOME}/packages/switcher/scripts/set_switcher_defaults";
+if (-x $cmd) {
+    $ret = system($cmd);
+} else {
+    carp("WARNING: not able to execute $cmd");
+    $ret = 1;
 }
 
 #
-# If we have output from the configurator step, analyze it and invoke
-# the proper switcher commands
+# All done (return the value from the system() call, above)
 #
 
-if ($results) {
-    print Dumper($results);
-    foreach my $tag (sort(keys(%$results))) {
-	my $name = $results->{$tag};
-	my $cmd = "bash -c 'switcher $tag --add-attr default $name --force --system'";
-	print "Setting default for tag $tag (\"$name\")\n";
-	!system($cmd) ||
-	    carp("WARNING: Not able to set switcher default for tag $tag!");
-    }
-}
-
-
-#
-# All done
-#
-
-0;
+exit($ret);

@@ -1,17 +1,19 @@
 #!/bin/sh
 #
-# $Id: post_install,v 1.1 2002/09/04 07:43:45 jsquyres Exp $
+# $Id: post_install,v 1.2 2002/10/29 18:34:48 jsquyres Exp $
 #
 # Push the first copy of the system-level switcher settings out to
 # the nodes.
 #
 
-# It is necessary to push the $sw_file out to all nodes.  Since
-# the first time sync_users was run, the default MPI (i.e., switcher
-# settings) had already been set, so its checksums will not reflect
-# the fact that $sw_file has never been pushed out to the nodes.  So
-# use cpush to push it out there (we could sync_users --force, but
-# that will sync everything, which seems a little heavy-handed).
+# See if there's any defaults that we need to set from the
+# Configurator step
+
+cmd="$OSCAR_HOME/packages/switcher/scripts/set_switcher_defaults"
+$cmd
+
+# Since we just set the defaults, it is now necessary to push the
+# $sw_file out to all nodes.
 
 sw_file=/opt/env-switcher/etc/switcher.ini
 

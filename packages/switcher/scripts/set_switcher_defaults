@@ -1,0 +1,68 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: set_switcher_defaults,v 1.1 2002/10/29 18:34:48 jsquyres Exp $
+#
+
+use strict;
+use XML::Simple;
+use Carp;
+
+# Debugging
+use Data::Dumper;
+
+#
+# Global variables
+#
+
+my $results = undef;
+
+#
+# This will be re-written when Neil introduces the ODA interface where
+# I can search for this information in the database.  For the moment,
+# I'm going to hard-code it...
+#
+
+my $infile = "$ENV{OSCAR_HOME}/packages/switcher/.configurator.values";
+my $xs = new XML::Simple(keyattr => {});
+if (-e $infile) {
+    $results = $xs->XMLin($infile);
+}
+
+#
+# If we have output from the configurator step, analyze it and invoke
+# the proper switcher commands
+#
+
+if ($results) {
+    foreach my $tag (sort(keys(%$results))) {
+	my $cmd;
+	my $name = $results->{$tag};
+	print "Setting default for tag $tag (\"$name\")\n";
+
+	# First, check to see if this tag exists -- depending on when
+	# this script is called, it may not exist yet.
+
+	$cmd = "bash -c 'switcher $tag --list > /dev/null 2>&1'";
+	if (system($cmd)) {
+	    print "Tag \"$tag\" does not seem to exist yet.  Skipping.\n";
+	} else {
+	    $cmd = "bash -c 'switcher $tag --add-attr default $name --force --system'";
+	    !system($cmd) ||
+		carp("WARNING: Not able to set switcher default for tag $tag!");
+	}
+    }
+}
+
+
+#
+# All done
+#
+
+0;

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: post_clients,v 1.1 2002/07/28 05:56:01 jsquyres Exp $
+# $Id: post_clients,v 1.2 2002/10/29 18:34:48 jsquyres Exp $
 #
 # post_clients script for the switcher package
 #
@@ -8,11 +8,20 @@
 # across the cluster.
 #
 
+# The first time through the installation, the siwtcher config file
+# will not exist yet (we don't set the tag/name defaults until later).
+# So touch it so that sync_users won't complain that it doesn't exist.
+
+sw_file=/opt/env-switcher/etc/switcher.ini
+if (! -f $sw_file) then
+    touch $sw_file
+    chmod 644 $sw_file
+fi
+
 # Add /opt/switcher/etc/switcher.ini to /opt/opium/etc/opium.conf.
 # This script may be re-run, so ensure that it is only listed in the
 # file once.
 
-sw_file=/opt/env-switcher/etc/switcher.ini
 op_file=/opt/opium/etc/sync_users.conf
 ret=0
 
