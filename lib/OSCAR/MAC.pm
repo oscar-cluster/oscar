@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.13 2002/10/29 07:19:52 jsquyres Exp $
+#   $Id: MAC.pm,v 1.14 2002/10/29 14:29:25 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.13 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -45,10 +45,12 @@ my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $ORDER = 1;
 my $COLLECT = 0;
 my $PINGPID = undef;
-my $step_number = 6;
+my $step_number;
 
 sub mac_window {
-    my ($parent, $vars) = @_;
+    my $parent = shift;
+    $step_number = shift;
+    my ($vars) = @_;
 
     my $window = $parent->Toplevel;
     $window->title("MAC Address Collection");
