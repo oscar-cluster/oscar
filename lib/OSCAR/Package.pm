@@ -457,6 +457,7 @@ sub install_packages {
     return 1;
 }
 
+# FIXME OSCAR <= 4.1 doesn't use this; no idea why it's here FIXME
 sub server_version_goodenough {
     my ($file) = @_;
     my $output1 = `rpm -qp --qf '\%{NAME} \%{VERSION} \%{RELEASE}' $file`;
