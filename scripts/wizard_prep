@@ -5,7 +5,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.25 2003/06/24 16:06:30 brechin Exp $
+# $Id: wizard_prep,v 1.26 2003/06/25 17:16:36 brechin Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -156,6 +156,25 @@ my $exit_status =
 croak("Couldn't set up oda database")
     if $exit_status;
 
+# More ODA setup
+
+my $exit_status =
+    system( "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values" )
+    / 256;
+croak("Couldn't initialize the global database values table")
+    if $exit_status;
+
+my $exit_status =
+    system( "$ENV{OSCAR_HOME}/scripts/populate_default_package_set" )
+    / 256;
+croak("Couldn't set up a default package set")
+    if $exit_status;
+
+my $exit_status =
+    system( "$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info" )
+    / 256;
+croak("Couldn't set up basic node information")
+    if $exit_status;
 
 # Get the list of just core packages
 
@@ -181,26 +200,6 @@ oscar_log_subsection("Installing server core RPMs");
 OSCAR::Package::install_rpms(@rpms) 
     or croak("Couldn't install the required packages needed for OSCAR Wizard to run");
 oscar_log_subsection("Successfully installed server core RPMs");
-
-# More ODA setup
-
-my $exit_status =
-    system( "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values" )
-    / 256;
-croak("Couldn't initialize the global database values table")
-    if $exit_status;
-
-my $exit_status =
-    system( "$ENV{OSCAR_HOME}/scripts/populate_default_package_set" )
-    / 256;
-croak("Couldn't set up a default package set")
-    if $exit_status;
-
-my $exit_status =
-    system( "$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info" )
-    / 256;
-croak("Couldn't set up basic node information")
-    if $exit_status;
 
 # Run the post_server_rpm_install scripts
 
