@@ -108,13 +108,17 @@ my @ufiles = qw(testprint ssh_user_tests pbs_test test_cluster);
 foreach my $file (@ufiles) {
 	copy("$ENV{OSCAR_HOME}/testing/$file",$test_user_homedir);
         chmod(0755,"$test_user_homedir/$file");
+	chown($tid,$tgid,"$test_user_homedir/$file");
 }
 
 # Copy the packages test files to the user home dir.
 foreach my $pkg (@pkgs) {
     if (-d "$ENV{OSCAR_HOME}/packages/$pkg/testing") {
 	mkdir("$test_user_homedir/$pkg/");
+        # I know, shell badness, but so much easier than doing
+	# a recursive thing in perl.
 	system("cp -af $ENV{OSCAR_HOME}/packages/$pkg/testing/* $test_user_homedir/$pkg/");
+	system("chown -R $tid:$tgid $test_user_homedir/$pkg/");
     }
 }
 
