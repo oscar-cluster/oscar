@@ -1,0 +1,88 @@
+
+OAK RIDGE, Tenn., Apr.  22, 2003 -- The OSCAR working group is  pleased  to
+announce the release of version 2.2.1 of the Open Source Cluster Application
+Resources (OSCAR) toolkit.   
+
+
+The OSCAR toolkit is used to build, configure  and  manage  clusters.   Its
+primary objective is to make use  of  "best  practices"  for  Cluster  High
+Performance Computing (HPC).  OSCAR enables a user to setup and maintain  a
+cluster with the same software  typically  found  on  HPC  Clusters,  while
+greatly reducing the complexity.
+
+
+This release offers several enhancements, including  improved  support  for
+IA-64 based systems (e.g.  Itanium I, II).  The base SystemImager  tool  of
+the System Installation Suite (SIS) was upgraded to v3.0.  This upgrade adds
+a wealth of new functionality, including: modular kernel  support,  Gigabit
+Ethernet and USB keyboard support for autoinstall  clients.   The  improved
+hardware detection allows nodes to automatically load necessary modules based
+on the target hardware.  Also, the ability to  set  machines  to  initially
+network boot using PXE and then modify subsequent boots to use the local hard
+disk has been added.  See the SystemImager  webpage  for  further  details.
+
+
+There were several other package upgrades, including the Kernel_Picker tool, 
+which assists with the selection of alternate kernel in OSCAR installations.
+The OSCAR DAtabase (ODA) and OSCAR Package Downloader (OPD) were enhanced to 
+offer a more robust database and a remote package acquisition facility.  The
+C3   power   tools   were   updated   as   was   the    LAM/MPI    package.
+
+
+In addition to package updates,  the  network  collection  facilities  were
+enhanced.  The ability to both import and export MAC addresses from/to a file
+has been added to assist those maintaining large clusters or who have  this
+data available.  Also, an auto-assign and auto-dhcpd configuration was added,
+which when coupled with the import facility speeds the node definition process
+and subsequently nodes can start building faster.   
+
+
+The OPD tool allows for updated or "3rd party" packages to be obtained from
+remote OSCAR repositories.  Several packages are  available  including  the
+Ganglia system monitoring tool, the Clumon performance monitoring system and 
+GM-oscar,   a   tool   to   configure   Myrinet    on    OSCAR    clusters.
+
+
+The 2.2.1 releases offer full support for RedHat 7.2 & 7.3 and Mandrake 8.2.
+There  is  experimental  support  for  RedHat   7.1   and   Mandrake   9.0.
+
+
+Lastly, the group would like to invite all interested to attend  the  first
+annual  OSCAR  Symposium  this  May  11-14,  2003  in  Sherbrooke,  Canada.
+
+
+The OSCAR working group is a consortium of industry, academic and  research
+participants.  Primary contributors  are  Bald  Guy  Software,  Dell,  IBM,
+Intel,   Indiana   University   (IU),   Intel,    MSC.Software,    National
+Computational  Science  Alliance  (NCSA),  Oak  Ridge  National  Laboratory
+(ORNL) and Sherbrooke University.  OSCAR is  the  product  of  the  initial
+working group of the Open Cluster Group (OCG).  OCG is dedicated to  making
+cluster computing practical.  These groups are open  to  anyone  interested
+in participating.
+
+
+
+
+Related resources:
+ + OSCAR Working Group Homepage
+   http://www.OpenClusterGroup.org/OSCAR
+
+ + OSCAR Project Homepage
+   http://sourceforge.net/projects/oscar
+
+ + Open Cluster Group Homepage
+   http://www.OpenClusterGroup.org
+
+ + OSCAR Mailing Lists
+     User Questions: <oscar-users@lists.sourceforge.net>
+        Development: <oscar-devel@lists.sourcefore.net>
+
+ + 2003 OSCAR Symposium
+   May 11-14, Sherbrooke, Canada
+   http://oscar2003.ccs.usherbrooke.ca
+
+
+ORNL is a Department of Energy multiprogram research  facility  managed  by
+UT-Battelle.  
+
+
