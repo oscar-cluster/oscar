@@ -1,0 +1,168 @@
+% -*- latex -*-
+%
+% $Id: www.tex,v 1.1 2003/06/18 00:01:20 naughtont Exp $
+%
+% $COPYRIGHT$
+%
+
+\section{Web Maintenance}
+\label{sec:www}
+
+The OSCAR web pages are maintained in CVS.  The following section will
+outline the steps involved in management of the web material.  This will
+include the necessary steps to checkout the ``{\tt www}'' module from the
+OSCAR CVS repository and later make the changes ``live'' on 
+\url{http://oscar.sourceforge.net/}.   Note, the abreviated form of
+\url{sourceforge.net} is often used in the instructions, i.e., \url{sf.net}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Pre-requirements}
+
+As mentioned above the OSCAR projects web pages are located in the CVS
+module ``{\tt www}''.  In order to perform maintenance on the documents one
+must be able to connect to \url{cvs.oscar.sourceforge.net} and (aka
+\url{cvs.oscar.sf.net}) via \cmd{ssh}.  This may be an issue for developers
+behind firewalls. 
+
+Also, you must have an OSCAR developer account in order to commit changes
+to the repository.  You can send mail to the
+\listname{oscar-devel@lists.sourceforge.net} to request an account if
+necessary.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Overview of Steps}
+
+The steps involved in making changes to the OSCAR web pages involves
+two basic parts: (1) obtaining the material from CVS to the local
+``editing'' machine, (2) updating the ``online'' files at
+\url{oscar.sf.net}.  The set of steps involved include:
+
+\begin{enumerate}
+	\item Obtain (checkout) the material from CVS to the ``editing'' machine
+	\item Make changes and update CVS (update, commit)
+	\item Connect to web server \url{oscar.sf.net}
+	\item Update (update) the ``online'' copy for all changed files
+	\item Change permissions of new (update'd) files to be group writable
+	(\cmd{chgrp g+w})
+\end{enumerate}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Detail of Steps}
+
+The process of checking in/out from CVS is probably redundant for many but
+the following details an example usage for those less familar.  Note, there
+are many useful resources on the web as well as off the Source Forge
+project page for using CVS.  You are incouraged to read over the CVS(1)
+manual page.   In the following examples, the abreviated form of the
+\cmd{cvs} commands are also provided in parenthases, e.g., \cmd{checkout}
+(co).
+
+\begin{enumerate}
+	\item In the following examples the developer's username is
+	\emph{sgrundy}~\footnote{Solomon Grundy want OSCAR too!}.
+
+	\item Set a few necessary environment variables.
+	\begin{verbatim}
+		shell: $  export CVS_RSH=ssh
+		shell: $  export CVSROOT=sgrundy@cvs.oscar.sf.net:/cvsroot/oscar
+	\end{verbatim}
+
+	\item Perform a CVS checkout (co) of the {\tt www} module,
+	\begin{verbatim}
+		shell: $  cvs co -d oscar-www www
+		sgrundy@cvs.oscar.sf.net's password: 
+		U oscar-www/.cvsignore
+		U oscar-www/docs.php
+		U oscar-www/favicon.ico
+		U oscar-www/index.php
+		...
+	\end{verbatim}
+
+	\item Edit the exiting files or add any new
+	files/directories~\footnote{To add a new file/dir to CVS use: \cmd{cvs
+	add \emph{FILE}}.}
+
+	\item After making the changes update your checked out copy to obtain
+	any changes others might have made.  The~{\tt -dP}~options are helpful
+	to explicitly state a directory (-d  .) and to prune directories or
+	files that may be empty or stale (-P).
+	\begin{verbatim}
+		shell: $  cvs update -dP .
+		M index.php
+		cvs server: Updating docs
+		cvs server: Updating errata
+		...
+	\end{verbatim}
+	Note, CVS checks for changes recursively so it may be better to list
+	specific files or a directory to limit the scope of things checked.  
+	\begin{verbatim}
+		shell: $  cvs update  index.php
+		M index.php
+	\end{verbatim}
+
+	\item At this point only changes to the local checked out copy of the
+	module have been made through the \cmd{cvs update}.  The following
+	command will write (commit) the changes to the actual CVS repository.
+	Remember this is recursive so you may want to list explicit files/dirs
+	or change to the top of the relevant sub-directory containing changes.
+
+	Provide a descriptive log message for the changes being committed!  And
+	type \cmd{:wq} to save and quit changes from 'vi' (default editor).
+	\begin{verbatim}
+		shell: $  cvs commit index.php
+		* Added the new introduction text and removed the old OSCAR
+		  Symposium text.
+		CVS: ------------------------------------------------------------------
+		CVS: Enter Log.  Lines beginning with `CVS:' are removed automatically
+		CVS:
+		CVS: Committing in .
+		CVS:
+		CVS: Modified Files:
+		CVS:    index.php
+		CVS: ------------------------------------------------------------------
+
+		Checking in index.php;
+		/cvsroot/oscar/www/index.php,v  <--  index.php
+		new revision: 1.12; previous revision: 1.11
+		done
+		Mailing oscar-checkins@lists.sourceforge.net...
+		Generating notification message...
+		Generating notification message... done.
+	\end{verbatim}
+
+	\item The changes have been added to CVS and now need to be updated in
+	the ``live'' online copy.  This requires you to log into the web server
+	using \cmd{ssh}.  Then you will change to the appropriate directory and
+	update the checkout on the web server, e.g., update the \file{index.php}.
+	\begin{verbatim}
+		shell: $  ssh oscar.sf.net
+		sgrundy@oscar.sf.net's password:
+
+		sgrundy@sc8-pr-shell1:~$  cd oscar/htdocs/
+		sgrundy@sc8-pr-shell1:~/oscar/htdocs$ cvs update index.php
+		sgrundy@cvs1's password: 
+		P index.php
+	\end{verbatim}
+
+	\item {\bf *IMPORTANT*} You must now set any updated/new files to have
+	group writable permissions, e.g., \file{index.php}~\footnote{This is a
+	problem related to the CVS permissions not being honored, if you forget
+	this step noone else will be able to change this file.  It shouldn't
+	hurt to \cmd{chown g+w *} since all files should have this bit set.
+	Regardless, it is likely that others will not be happy with you if you
+	forget this step. :-)}.
+	\begin{verbatim}
+		sgrundy@sc8-pr-shell1:~/oscar/htdocs$ chown g+w index.php
+	\end{verbatim}
+
+\end{enumerate}
+
+
+
