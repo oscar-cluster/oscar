@@ -298,10 +298,10 @@ sub generateHTMLFile
   print HTML "<center>\n";
   print HTML "<h1>Select the Kernel for the Image</h1>\n";
   print HTML "</center>\n";
-  print HTML "The default kernels (ie. vmlinux) specified in the RPM list";
-  print HTML "work for most machine configurations.  However, there are";
-  print HTML "occasions when you want to install a custom kernel into the";
-  print HTML "image file.  Here, you can choose to use the default kernel";
+  print HTML "The default kernels (ie. vmlinux) specified in the RPM list ";
+  print HTML "work for most machine configurations.  However, there are ";
+  print HTML "occasions when you want to install a custom kernel into the ";
+  print HTML "image file.  Here, you can choose to use the default kernel ";
   print HTML "or a different kernel.\n";
   print HTML "<p>\n";
   if ($errorcond & 4)
