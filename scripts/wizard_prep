@@ -5,7 +5,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.20 2003/03/03 23:16:35 ngorsuch Exp $
+# $Id: wizard_prep,v 1.21 2003/03/10 05:58:48 ngorsuch Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -143,7 +143,7 @@ foreach my $d (@PKG_SOURCE_LOCATIONS) {
 
 # Get the list of just core packages
 
-@packages = OSCAR::Package::list_pkg("core");
+@packages = OSCAR::Package::list_pkg_dirs("core");
 oscar_log_subsection("Identified core packages: " . join(' ', @packages));
 
 # Get list of RPMs from the core packages
