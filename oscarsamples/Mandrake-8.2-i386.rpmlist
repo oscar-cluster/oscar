@@ -80,6 +80,7 @@ libbzip2_1
 libcurl2
 libdb3.3
 libdetect0
+libelf0
 libexpat1_95
 libext2fs2
 libgdbm2
@@ -160,6 +161,7 @@ perl-URI
 playmidi
 popt
 portmap
+postfix
 procmail
 procps
 psmisc
