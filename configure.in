@@ -9,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.46 2004/05/10 20:47:48 tfleury Exp $
+# $Id: configure.in,v 1.47 2004/05/19 20:28:29 tfleury Exp $
 #
 # $HEADER$
 #
@@ -203,6 +203,7 @@ AC_CONFIG_FILES([
     src/NodeMgmt/Makefile
     src/Opder/Makefile
     src/Selector/Makefile
+    src/NodeGroupLister/Makefile
 
     testing/Makefile
 ],[
