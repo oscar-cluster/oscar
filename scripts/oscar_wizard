@@ -10,6 +10,8 @@ use OSCAR::Network;
 use OSCAR::MAC;
 use OSCAR::FrontPanel;
 use OSCAR::Distro;
+use OSCAR::DelNode;
+use OSCAR::AddNode;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
@@ -68,6 +70,12 @@ $boot->grid("-","-",-sticky=>"nsew");
 # Step 5, the Oscar post install script
 oscar_button($window, "Step 5:", "Complete Cluster Setup", [\&run_post_install, $window], 'post_install');
 oscar_button($window, "Step 6:", "Test Cluster Setup", [\&run_tests, $window], 'test_install');
+my $maint=$window->Label (-text=>"The following buttons are for managing 
+your node definitions after the initial install.",-relief=>"groove");
+$maint->grid("-","-",-sticky=>"nsew");
+oscar_button($window, "", "Add OSCAR Clients", [\&addnode_window, $window], 'add_nodes');
+oscar_button($window, "", "Delete OSCAR Clients", [\&delnode_window, $window], 'delete_nodes');
+
 
 #
 # The close button
