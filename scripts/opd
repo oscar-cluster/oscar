@@ -337,12 +337,15 @@ sub download_from_uri {
 
     for ($i = 0; $i < $num_download_retries * scalar(@agents); ++$i) {
 	$agent = $i % scalar(@agents);
-	print("Attempting to download using $agents[$agent]:\n  $uri\n")
-            if (!$argv_parsable);
+
+	if( $uri =~ /^file:/ ) {
+	    return (1, read_file( $local_filename ));
 
 	# Use wget
 
-	if ($agents[$agent] =~ /^wget/) {
+	} elsif ($agents[$agent] =~ /^wget/) {
+	    print("Attempting to download using $agents[$agent]:\n  $uri\n")
+                if (!$argv_parsable);
 	    if (!system("$wget_cmd $uri -O $local_filename")) {
 		print("Successful!\n\n")
                     if (!$argv_parsable);
@@ -353,6 +356,8 @@ sub download_from_uri {
 	# Use LWP
 
 	else {
+	    print("Attempting to download using $agents[$agent]:\n  $uri\n")
+                if (!$argv_parsable);
             # If we haven't previously setup LWP, do so now.
 
             if ($ua == -1) {
@@ -511,31 +516,34 @@ sub download_packages_file {
     my $uri = $repository_listing->{site}[$repository_selected]->{uri}[0];
     my $name = $repository_listing->{site}[$repository_selected]->{name};
 
-    if (! $uri =~ /\/$/) {
-	$uri .= "/$file";
-    } else {
-	$uri .= "$file";
-    }
+    $uri .= "/" unless $uri =~ /\/$/;
+    $uri .= $file;
 
     # Download the packages file
 
     my $happy;
     my $content;
-    my $ffname = "$metadatadir/$package_filename";
-    ($happy, $content) = download_from_uri($uri, "$ffname.opd");
+    my $src;
+    my $dest;
+    if( $uri =~ /^file:\/\/(.*)$/ ) {
+	$src = $dest = $1;
+    } else {
+	$dest = "$metadatadir/$package_filename";
+	$src = "$dest.opd";
+    }
+    ($happy, $content) = download_from_uri($uri, $src);
 
     # If we got it, save it to a file.  Then load each entry with an
     # empty download/install info hash
 
     if ($happy) {
-	if (!($package_listing = 
-	      $xs->XMLin("$ffname.opd"))) {
-	    die("ERROR: Unable to open \"$ffname\" for reading");
+	if (!($package_listing = $xs->XMLin($src))) {
+	    die("ERROR: Unable to open \"$src\" for reading");
 	}
 
 	# Overwrite the old file; count how many packages available
 
-	move("$ffname.opd", "$ffname");
+	move($src, $dest) unless $src eq $dest;
 	my $num_pkgs = $#{$package_listing->{package}} + 1;
 	print((($num_pkgs == 1) ?
 	       "Found 1 package" :
@@ -1281,19 +1289,36 @@ sub download_package {
 
     # Try downloading the URI's in sequence
 
+    my $base = $argv_repository_uri || $argv_master_uri || $default_master_uri;
+    $base = $1 if $base =~ /^(.+)\/$/;
+    my $baser = $1 if $base =~ /^(.+:\/\/[^\/]*)\//;
+
     my $success = 0;
     my $happy = 0;
     my $content;
     my $name = $pkg->{name};
     for ($i = 0; $i <= $#{$pkg->{download}->{uri}}; ++$i) {
 	$content = undef;
-	my @parts = split(/\//, $pkg->{download}->{uri}[$i]);
-	my $filename = $parts[$#parts];
+	my $uri = $pkg->{download}->{uri}[$i];
+	unless( $uri =~ /^(file|ftp|https?):/ ) {
+		$uri = $uri =~ /^\// ?  "$baser$uri" : "$base/$uri";
+	}
+	my @parts = split(/\//, $uri);
+	my $dest = $parts[-1];
+	my $path;
+	my $src;
 
 	# Download the file
 
-	($happy, $content) = download_from_uri($pkg->{download}->{uri}[$i],
-					       "$downloaddir/$filename.opd");
+	if( $parts[0] =~ /^file:/ ) {
+	    $path = join( "/", splice @parts, 2, -1 );
+	    $src = $dest;
+	} else {
+	    $path = $downloaddir;
+	    $src = "$dest.opd";
+	}
+	($happy, $content) = download_from_uri($uri, "$path/$src");
+
 	if ($happy) {
 
 	    # Check the downloaded file size
@@ -1343,7 +1368,7 @@ sub download_package {
 		if ($have_digest_sha1) {
 		    $digest = Digest::SHA1::sha1_hex($$content);
 		} elsif ($have_sha1sum) {
-		    if (open(SHA1, "sha1sum $downloaddir/$filename.opd|")) {
+		    if (open(SHA1, "sha1sum $path/$src|")) {
 			($digest) = split(/ /, <SHA1>);
 			close(SHA1);
 		    }
@@ -1365,12 +1390,13 @@ sub download_package {
 
 	    # Save the file
 
-	    print("- Saving to $downloaddir/$filename... ")
-                if (!$argv_parsable);
-	    if (!move("$downloaddir/$filename.opd", 
-		      "$downloaddir/$filename")) {
-		print("FAILED: could not overwrite $downloaddir/$filename\n");
-		next;
+	    if( $src ne $dest ) {
+		print("- Saving to $path/$dest... ")
+		    if (!$argv_parsable);
+		if (!move("$path/$src", "$path/$dest")) {
+		    print("FAILED: could not overwrite $path/$dest\n");
+		    next;
+		}
 	    }
 	    print("OK\n")
                 if (!$argv_parsable);
@@ -1379,7 +1405,7 @@ sub download_package {
 
 	    print("- Unpacking into $expanddir/... ")
                 if (!$argv_parsable);
-	    my $cmd = "cd $expanddir ; tar zxf $downloaddir/$filename";
+	    my $cmd = "cd $expanddir ; tar zxf $path/$dest";
 	    if (system($cmd)) {
 		print("FAILED: $name could not expand into $expanddir\n");
 		next;
