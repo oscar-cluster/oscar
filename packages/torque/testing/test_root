@@ -1,6 +1,8 @@
 #!/bin/sh
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
+#               2005, Canada's Michael Smith Genome Sciences Centre.
+#                     All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -10,9 +12,10 @@
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
+#          Bernard Li
 
 
-# Stop PBS Server if any nodes exhibit "state-unknown" status.
+# Stop Torque Server if any nodes exhibit "state-unknown" status.
 # This condition could be due to the 5 minute polling interval to the moms
 # by the server.  Restarting the server will induce a fresh poll.
 unknown_nodes=`/opt/pbs/bin/pbsnodes -a |grep -c state-unknown`
@@ -21,10 +24,10 @@ if [ $unknown_nodes != 0 ] ; then
 fi
 unknown_nodes=`/opt/pbs/bin/pbsnodes -a |grep -c state-unknown`
 if [ $unknown_nodes != 0 ] ; then
-  $OSCAR_TESTPRINT --label "PBS node check" -f
+  $OSCAR_TESTPRINT --label "Torque node check" -f
 #  exit 1;
 else 
-  $OSCAR_TESTPRINT --label "PBS node check" -p
+  $OSCAR_TESTPRINT --label "Torque node check" -p
 fi
 
 for serv in pbs_server ; do
@@ -33,13 +36,13 @@ for serv in pbs_server ; do
     /etc/init.d/$serv start
     if [ `/etc/init.d/$serv status | grep -c "is running"` -eq 0 ]; then
       echo "Could not start $serv, please check configuration and rerun tests"
-        $OSCAR_TESTPRINT --label "PBS service check:$serv" -f
+        $OSCAR_TESTPRINT --label "Torque service check:$serv" -f
         exit 1
     else
-        $OSCAR_TESTPRINT --label "PBS service check:$serv" -p
+        $OSCAR_TESTPRINT --label "Torque service check:$serv" -p
     fi
   else
-    $OSCAR_TESTPRINT --label "PBS service check:$serv" -p
+    $OSCAR_TESTPRINT --label "Torque service check:$serv" -p
   fi
 done
 

@@ -1,6 +1,8 @@
 #!/bin/sh
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
+#               2005, Canada's Michael Smith Genome Sciences Centre.
+#                     All rights reserved.
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -10,7 +12,7 @@
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
-
+#          Bernard Li
 
 cd ~
 clients=0
@@ -19,14 +21,14 @@ do
     clients=`expr $clients + 1`
 done
 
-#                       DEFAULT PBS QUEUE
-#                       -----------------
+#                       DEFAULT TORQUE QUEUE
+#                       --------------------
 
 if [ `/opt/pbs/bin/qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
-        $OSCAR_TESTPRINT --label "PBS default queue definition" -p
+        $OSCAR_TESTPRINT --label "Torque default queue definition" -p
 else
-        $OSCAR_TESTPRINT --label "PBS default queue definition" -f
+        $OSCAR_TESTPRINT --label "Torque default queue definition" -f
 fi
 
-~/pbs_test $clients 1 ~/torque/pbs_script.shell "Hello" ~/torque/shelltest 3 "PBS Shell Test"
+~/pbs_test $clients 1 ~/torque/pbs_script.shell "Hello" ~/torque/shelltest 3 "Torque Shell Test"
 
