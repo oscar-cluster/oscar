@@ -16,7 +16,21 @@ echo "Running LAM/MPI test"
 
 # The LAM/MPI test itself
 
-lamboot $PBS_NODEFILE
+# Double check that we've got a TM boot module
+
+if test -z "`laminfo -parsable | grep ssi:boot:tm`"; then
+    cat 1>&2 <<EOF
+
+ERROR: LAM/MPI does not appear to have the tm boot SSI module!
+       This test script will now abort.
+
+EOF
+    exit 1
+else
+    echo "LAM/MPI appears to have TM suppport.  Yippee!"
+fi
+
+# Helper subroutine
 
 do_cmds() {
     cat <<EOF
@@ -34,20 +48,34 @@ EOF
     fi
 }
 
+# Start a LAM universe
+
+lamboot
+
+# Compile cpi and try running it
+
 p=`pwd`
 banner="MPI C bindings test:"
 cmds="cp cpi.c /tmp && cd /tmp && mpicc cpi.c -o lam-cpi && cp lam-cpi $p && cd $p && mpirun C lam-cpi && lamclean"
 do_cmds
 
+# Compile cxxhello and try running it
+
 banner="MPI C++ bindings test:"
 cmds="cp cxxhello.cc /tmp && cd /tmp && mpiCC cxxhello.cc -o lam-cxxhello && cp lam-cxxhello $p && cd $p && mpirun C lam-cxxhello && lamclean"
 do_cmds
+
+# Compile f77hello and try running it
 
 banner="MPI Fortran bindings test:"
 cmds="cp f77hello.f /tmp && cd /tmp && mpif77 f77hello.f -o lam-f77hello && cp lam-f77hello $p && cd $p && mpirun C lam-f77hello && lamclean"
 do_cmds
 
+# Shut down
+
 lamhalt 
+
+# All done!
 
 echo "LAM/MPI test complete"
 echo "Unless there are errors above, test completed successfully."
