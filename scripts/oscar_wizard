@@ -212,7 +212,7 @@ if( $ENV{'DEBUG_OSCAR_WIZARD'} ) {
 if( $ENV{'DEBUG_OSCAR_WIZARD'} ) {
     my $cl_b=$window->Button(-text=>"Dump Wizard Environment",
            -borderwidth=>"6", -relief=>"groove",
-           -command=> sub { use Data::Dumper; print "\nWizard Env:\n " . Dumper(%ENV) . "\n\n"; }
+           -command=> sub { use Data::Dumper; $Data::Dumper::Terse = 1; print "\nWizard Env: " . Dumper(\%ENV) . "\n\n"; }
            ,-pady=>"2");
     $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 }
