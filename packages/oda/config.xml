@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.77 2004/04/06 18:25:58 ngorsuch Exp $
+      $Id: config.xml,v 1.78 2004/04/21 13:09:51 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -222,7 +222,7 @@
           delete_all_cluster_partitions deletes all cluster partitions.
           The portions of this multiple commands shortcut do:
           Delete all cluster partition records.
-          Set all node records partition id to undefined.
+          Set all node records partition id to null.
         </description>
         <expansion>
           delete_records
@@ -232,7 +232,7 @@
           modify_records
           nodes
           name=name
-          nodes.cluster_partition_id~undef
+          nodes.cluster_partition_id~null
         </expansion>
       </shortcut>
 
@@ -249,7 +249,7 @@
           nodes
           cluster_partitions.name=%1
           cluster_parititons.id=nodes.cluster_partition_id
-          nodes.cluster_partition_id~undef
+          nodes.cluster_partition_id~null
           ;
           delete_records
           cluster_partitions
@@ -278,7 +278,7 @@
           modify_records
           nodes
           nodes.name=%1
-          nodes.cluster_partition_id=undef
+          nodes.cluster_partition_id=null
         </expansion>
       </shortcut>
 
@@ -870,7 +870,7 @@
           modify_records
           nodes
           nodes.name=%1
-          nodes.disk_layout_id~undef
+          nodes.disk_layout_id~null
         </expansion>
       </shortcut>
 
@@ -989,7 +989,7 @@
           modify_records
           nodes
           nodes.name=%1
-          nodes.image_id~undef
+          nodes.image_id~null
         </expansion>
       </shortcut>
 
@@ -1080,8 +1080,8 @@
         <expansion>
           delete_records
           nics
-          nics.name=%1
-          nodes.name=%2
+          nodes.name=%1
+          nics.name=%2
           nics.node_id=nodes.id
         </expansion>
       </shortcut>
@@ -1195,16 +1195,16 @@
           nodes.name=%1
           nodes.id=nics.node_id
           nics.name=%2
-          nics.broadcast!=undef
+          nics.broadcast!=null
           nics.broadcast
           ;
           read_records
           nodes.name=%1
           nodes.id=nics.node_id
           nics.name=%2
-          nics.broadcast=undef
+          nics.broadcast=null
           nics.network_id=networks.id
-          networks.broadcast!=undef
+          networks.broadcast!=null
           networks.broadcast
         </expansion>
       </shortcut>
@@ -1228,16 +1228,16 @@
           nodes.name=%1
           nodes.id=nics.node_id
           nics.name=%2
-          nics.gateway!=undef
+          nics.gateway!=null
           nics.gateway
           ;
           read_records
           nodes.name=%1
           nodes.id=nics.node_id
           nics.name=%2
-          nics.gateway=undef
+          nics.gateway=null
           nics.network_id=networks.id
-          networks.gateway!=undef
+          networks.gateway!=null
           networks.gateway
         </expansion>
       </shortcut>
@@ -1256,7 +1256,7 @@
           nodes.name=%1
           nodes.id=nics.node_id
           nics.name=%2
-          nics.ip!=undef
+          nics.ip!=null
           nics.ip
         </expansion>
       </shortcut>
@@ -1279,16 +1279,16 @@
           nodes.name=%1
           nodes.id=nics.node_id
           nics.name=%2
-          nics.netmask!=undef
+          nics.netmask!=null
           nics.netmask
           ;
           read_records
           nodes.name=%1
           nodes.id=nics.node_id
           nics.name=%2
-          nics.netmask=undef
+          nics.netmask=null
           nics.network_id=networks.id
-          networks.netmask!=undef
+          networks.netmask!=null
           networks.netmask
         </expansion>
       </shortcut>
@@ -1323,7 +1323,7 @@
           nodes.name=%1
           nics.name=%2
           nics.node_id=nodes.id
-          nics.network_id~undef
+          nics.network_id~null
         </expansion>
       </shortcut>
 
@@ -1481,23 +1481,23 @@
         <expansion>
           read_records
           nodes.name=%1
-          nodes.gateway!=undef
+          nodes.gateway!=null
           nodes.gateway
           ;
           read_records
           nodes.name=%1
-          nodes.gateway=undef
+          nodes.gateway=null
           nodes.id=nics.node_id
-          nics.gateway!=undef
+          nics.gateway!=null
           nics.gateway
           ;
           read_records
           nodes.name=%1
-          nodes.gateway=undef
+          nodes.gateway=null
           nodes.id=nics.node_id
-          nics.gateway=undef
+          nics.gateway=null
           nics.network_id=networks.id
-          networks.gateway!=undef
+          networks.gateway!=null
           networks.gateway
         </expansion>
       </shortcut>
@@ -1528,7 +1528,7 @@
           read_records
           nodes.name=%1
           nics.node_id=nodes.id
-          nics.ip!=undef
+          nics.ip!=null
           nics.ip
         </expansion>
       </shortcut>
@@ -1539,7 +1539,7 @@
           read_records
           nodes
           name=%1
-          hostname!=undef
+          hostname!=null
           hostname
         </expansion>
       </shortcut>
@@ -2193,7 +2193,7 @@
         <expansion>
           read_records
           oscar
-          oscar_server_architecture!=undef
+          oscar_server_architecture!=null
           oscar_server_architecture
         </expansion>
       </shortcut>
@@ -2203,7 +2203,7 @@
         <expansion>
           read_records
           oscar
-          oscar_server_distribution!=undef
+          oscar_server_distribution!=null
           oscar_server_distribution
         </expansion>
       </shortcut>
@@ -2213,7 +2213,7 @@
         <expansion>
           read_records
           oscar
-          oscar_server_distribution_version!=undef
+          oscar_server_distribution_version!=null
           oscar_server_distribution_version
         </expansion>
       </shortcut>
@@ -2222,7 +2222,7 @@
         <command> oscar_server_node </command>
         <expansion>
           read_records
-          oscar.oscar_server_node_id!=undef
+          oscar.oscar_server_node_id!=null
           oscar.oscar_server_node_id=nodes.id
           nodes.name
         </expansion>
@@ -2232,7 +2232,7 @@
         <command> oscar_version </command>
         <expansion>
           read_records
-          oscar.oscar_version!=undef
+          oscar.oscar_version!=null
           oscar.oscar_version
         </expansion>
       </shortcut>
@@ -2241,7 +2241,7 @@
         <command> selected_package_set </command>
         <expansion>
           read_records
-          oscar.selected_package_set_id!=undef
+          oscar.selected_package_set_id!=null
           oscar.selected_package_set_id=package_sets.id
           package_sets.name
         </expansion>
@@ -3552,8 +3552,12 @@
     </images>
 
     <networks>
+      <parameters> unique(base_ip,netmask) </parameters>
       <fields> 
-        <base_ip/>
+        <base_ip>
+	  <type> varchar(24) </type>
+          <default> 127.0.0.1 </default>
+        </base_ip>
         <broadcast/>
         <cluster_nodes> 
           <type> integer </type>
@@ -3571,7 +3575,10 @@
         <name>
           <parameters> not null unique </parameters>
         </name>
-        <netmask/>
+        <netmask>
+	  <type> varchar(24) </type>
+          <default> 255.255.255.0 </default>
+        </netmask>
         <rfc1918>
           <type> integer </type>
           <default> 0 </default>
