@@ -66,13 +66,13 @@ sub Configbox_ui {
 		-font => '-*-Helvetica-Bold-R-Normal-*-*-120-*-*-*-*-*-*',
 		-text => 'Default Configuration',
 	);
-	my($exitWithoutSavingButton) = $root->Button (
+	my($cancelButton) = $root->Button (
 		-default => 'active',
-		-text => 'Exit without Saving',
+		-text => 'Cancel',
 	);
-	our($saveAndExitButton) = $root->Button (
+	our($saveButton) = $root->Button (
 		-state => 'disabled',
-		-text => 'Save and Exit',
+		-text => 'Save',
 	);
 
 	# widget commands
@@ -80,10 +80,10 @@ sub Configbox_ui {
 	$defaultConfigurationButton->configure(
 		-command => \&OSCAR::Configbox::defaultConfiguration
 	);
-	$exitWithoutSavingButton->configure(
+	$cancelButton->configure(
 		-command => \&OSCAR::Configbox::exitWithoutSaving
 	);
-	$saveAndExitButton->configure(
+	$saveButton->configure(
 		-command => \&OSCAR::Configbox::saveAndExit
 	);
 
@@ -109,13 +109,13 @@ sub Configbox_ui {
 		-row => '3',
 		-sticky => 'ew'
 	);
-	$exitWithoutSavingButton->grid(
+	$cancelButton->grid(
 		-in => $root,
 		-column => '2',
 		-row => '3',
 		-sticky => 'ew'
 	);
-	$saveAndExitButton->grid(
+	$saveButton->grid(
 		-in => $root,
 		-column => '3',
 		-row => '3',
@@ -153,14 +153,14 @@ sub defaultConfiguration
 
   # Hide the window so that selection boxes draw correctly
   $web->UnmapWindow;
-  # Set the 'Save and Exit' button to active
-  $saveAndExitButton->configure(-state => 'active');
+  # Set the 'Save' button to active
+  $saveButton->configure(-state => 'active');
   loadHTMLFile("$packagedir/.configurator.temp.html");
   # loadHTMLFile("$packagedir/test.html");
 }
 
 #########################################################################
-#  Called when the "Exit without Saving" button is pressed.             #
+#  Called when the "Cancel" button is pressed.                          #
 #########################################################################
 sub exitWithoutSaving
 {
@@ -181,7 +181,7 @@ sub exitWithoutSaving
 }
 
 #########################################################################
-#  Called when the "Save and Exit" button is pressed.                   #
+#  Called when the "Save" button is pressed.                            #
 #########################################################################
 sub saveAndExit
 {
@@ -451,12 +451,12 @@ sub writeOutConfigValues
 }
 
 #########################################################################
-#  A convenience function called by loadHTMLFile to set the "Save and   #
-#  Exit" button's state to 'active'.                                    #
+#  A convenience function called by loadHTMLFile to set the "Save"      #
+#  button's state to 'active'.                                          #
 #########################################################################
-sub enableSaveAndExitButton
+sub enableSaveButton
 {
-  $saveAndExitButton->configure(-state => 'active');
+  $saveButton->configure(-state => 'active');
 }
 
 #########################################################################
@@ -474,7 +474,6 @@ sub loadHTMLFile # ($file)
     {
       $web->url($file);   # Read in and render the file.
       # Set the title of the window
-      # NEED TO FIX THIS!!!
       if (ref $web->{Configure}{-html}{_head}{_content}[0])
         {
           $configLabel->configure(-text => 
@@ -486,18 +485,17 @@ sub loadHTMLFile # ($file)
         }
       $web->pack();
 
-      # At program start, the 'Save and Exit' button is inactive.  When the
+      # At program start, the 'Save' button is inactive.  When the
       # user clicks ANYTHING in the main "web" window, set it active.
-      # NEED TO FIX THIS!!!
       if (($web->configure(-state))[4] ne 'active')
         {
           # A click in the "web" window activates the button.
-          $web->bind('<ButtonRelease-1>' => \&enableSaveAndExitButton);
+          $web->bind('<ButtonRelease-1>' => \&enableSaveButton);
           my (@kids) = $web->children;
           foreach my $kid (@kids)
             {
               # Argh! Every kid also needs to have an event tied to it!
-              $kid->bind('<ButtonRelease-1>' => \&enableSaveAndExitButton);
+              $kid->bind('<ButtonRelease-1>' => \&enableSaveButton);
             }
         }
     }
@@ -535,8 +533,8 @@ sub displayWebPage # ($parent,$file)
     }
 
   $root->MapWindow;  # Put the window on the screen.
-  # The SaveAndExit button should be disabled upon first display
-  $saveAndExitButton->configure(-state => 'disabled');
+  # The Save button should be disabled upon first display
+  $saveButton->configure(-state => 'disabled');
 
   # Check to see if the "web" window frame has been created yet.
   if (!$web)

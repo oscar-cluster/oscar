@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.14 2002/12/02 20:36:06 tfleury Exp $
+# $Id: Selector.pm,v 1.15 2002/12/02 21:29:25 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -100,12 +100,12 @@ sub Selector_ui {
 		-state => 'disabled',
 		-text => 'Delete',
 	);
-	my($exitNoSaveButton) = $root->Button (
+	my($cancelButton) = $root->Button (
 		-default => 'active',
-		-text => 'Exit without Saving',
+		-text => 'Cancel',
 	);
-	my($saveAndExitButton) = $root->Button (
-		-text => 'Save and Exit',
+	my($saveButton) = $root->Button (
+		-text => 'Save',
 	);
 
 	# widget commands
@@ -119,10 +119,10 @@ sub Selector_ui {
 	$deleteButton->configure(
 		-command => \&OSCAR::Selector::deleteConfig
 	);
-	$exitNoSaveButton->configure(
+	$cancelButton->configure(
 		-command => \&OSCAR::Selector::exitWithoutSaving
 	);
-	$saveAndExitButton->configure(
+	$saveButton->configure(
 		-command => \&OSCAR::Selector::saveAndExit
 	);
 
@@ -180,16 +180,17 @@ sub Selector_ui {
 		-columnspan => '2',
 		-sticky => 'ew'
 	);
-	$exitNoSaveButton->grid(
+	$cancelButton->grid(
 		-in => $root,
 		-column => '1',
 		-row => '4',
 		-sticky => 'ew'
 	);
-	$saveAndExitButton->grid(
+	$saveButton->grid(
 		-in => $root,
 		-column => '2',
 		-row => '4',
+		-columnspan => '2',
 		-sticky => 'ew'
 	);
 
@@ -228,7 +229,7 @@ our($providesmap);            # A map from 'provides' aliases to package names
 our($dependtree);             # Dependency tree for requires/conflicts
 
 #########################################################################
-#  Called when the "Exit without Saving" button is pressed.             #
+#  Called when the "Cancel" button is pressed.                          #
 #########################################################################
 sub exitWithoutSaving
 {
@@ -259,7 +260,7 @@ sub exitWithoutSaving
 }
 
 #########################################################################
-#  Called when the "Save and Exit" button is pressed.                   #
+#  Called when the "Save" button is pressed.                            #
 #########################################################################
 sub saveAndExit
 {
