@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'OpderDownloadPackage.ui'
 #
-# Created: Fri Jun 27 16:23:10 2003
+# Created: Fri Jun 27 16:37:59 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -276,14 +276,15 @@ sub downloadDone
                   last;
                 }
             }
+          $dlPhase++;
         }
       else
         {
           Carp::carp("Couldn't download package " . 
                      $dlPackages[$dlPhase-1]->{package} . " with opd");
+          $dlPhase++;
           last;
         }
-      $dlPhase++;
     }
 
   downloadNext();
