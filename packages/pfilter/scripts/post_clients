@@ -140,6 +140,7 @@ open    dhcp    from    %nodes%
 # the server and every compute node trust each other
 
 trusted %oscar_server% %nodes%
+open    multicast                        # for ganglia
 
 #
 # This is the end of the section added by OSCAR
