@@ -69,7 +69,7 @@
 +    echo "NO DISK DEVICE FILES WERE FOUND.  THIS USUALLY MEANS THE KERNEL DID NOT"
 +    echo "RECOGNIZE ANY OF THE ATTACHED DISKS."
 +    echo ""
-+    echo "The kernel boot messages, which preceeded this, may indicate why."
++    echo "The kernel boot messages, which preceded this, may indicate why."
 +    echo ""
 +    echo "Reverting to disk configuration specified by image master script."
 +    DISKORDER=
