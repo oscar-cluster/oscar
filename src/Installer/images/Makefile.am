@@ -32,26 +32,5 @@
 include $(top_srcdir)/dist/Makefile.options
 
 oscar_SCRIPTS = 
-oscar_DATA = \
-	backarrow.png \
-	ball1.png \
-	ball2.png \
-	ball3.png \
-	ball4.png \
-	ball5.png \
-	close.png \
-	download.png \
-	editcopy.png \
-	editcut.png \
-	editpaste.png \
-	filenew.png \
-	fileopen.png \
-	filesave.png \
-	getinfo.png \
-	nextarrow.png \
-	oscarbg.png \
-	print.png \
-	redo.png \
-	searchfind.png \
-	undo.png
+oscar_DATA = 
 EXTRA_DIST = $(oscar_SCRIPTS) $(oscar_DATA)
