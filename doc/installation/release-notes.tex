@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.6 2002/07/09 22:37:08 ngorsuch Exp $
+% $Id: release-notes.tex,v 1.7 2002/07/15 17:02:28 loann09 Exp $
 %
 % $COPYRIGHT$
 %
@@ -10,29 +10,16 @@
 The following release notes apply to OSCAR version \oscarversion:
 
 \begin{itemize}
-\item The documentation is not yet complete.  In particular, the
-  installation doc (i.e., this document) needs an overhaul before 1.3
-  is finally released.  It has not been updated since 1.2, and
-  therefore has many inaccuracies, specific references to RedHat 7.1,
-  etc.
-  
-  Do not despair -- this will definitely happen before 1.3 (final) is
-  released.  Until then, bear with us, and send your questions to the
-  OSCAR users / development list.
-  
 \item You {\em must} specify a domain name for your clients when
   defining them.
   
 \item The current version of C3 that is shipped with OSCAR requires
-  Python 2.x.  The RPMs that are provided are re-built to work on Red
-  Hat 7.1 system as well as Red Hat 7.2 system.  However, Red Hat 7.2
+  Python 2.x.  The Python 2.x RPMs that were provided are re-built to work on Red Hat 7.1 system as well as Red Hat 7.2 system.  However, Red Hat 7.2
   ships with Python 2.x so measures were taken so it will be chosen in
-  place of the one provided with OSCAR.  Specifically, we decremented
-  the RPM release number.
-  
-\item Due to some multi-distro issues, we're currently including a
+  place of the one provided with OSCAR.  (Specifically, we decremented
+  the RPM release number.) Due to some multi-distro issues, we're currently including a
   ``compatibility'' (\file{python2-compat-1.0-1}) RPM to resolve the
-  Python2 prerequsite that is slightly different across different
+  Python2 prerequisite that is slightly different across different
   Linux distributions (also see the file
   \file{packages/c3/RPMS/NOTE.python2}).
 \end{itemize}
@@ -43,12 +30,13 @@ The following release notes apply to OSCAR version \oscarversion:
 \label{subsec:rh72notes}
 \begin{itemize}
 \item You will need to update the \rpmname{rpm} RPM to
-  \file{rpm-4.0.4-7x} -- the version that ships on the 7.2 CD is
+  \file{rpm-4.0.4-7x}\- the version that ships on the 7.2 CD is
   buggy.  The 4.0.4-7x version is available on the Red Hat updates for
-  7.2 (\url{ftp://updates.redhat.com/7.2/en/os/i386/}).
-  
+  7.2 (\url{ftp://updates.redhat.com/7.2/en/os/i386/}). \begchange See also Appendix~\ref{app:screen-by-screen} figure~\ref{fig:sbs-rh72notes-rpm-upgrd}. In addition, for users working under KDE environment, you will also need to obtain \file{kdeadmin} and for MDK users, ... 
+\endchange  
 \item The image build may fail during install, you may need to edit
-  file \file{/etc/\-systeminstaller/\-systeminstaller.conf} and change
+  file \file{/etc/systeminstaller/\-
+systeminstaller.conf} and change
   the following:
 
 \begin{verbatim}
@@ -69,10 +57,10 @@ The following release notes apply to OSCAR version \oscarversion:
 
 \begin{itemize}
 \item Note that this is not a formally supported distribution.  OSCAR
-  \oscarversion has been only somewhat tested on this distribution
+  \oscarversion\- has been only somewhat tested on this distribution
   (see Table~\ref{tab:oscar-distro-support}).
 
-\item You may need the same \file{systeminstaller.com} fix as listed
+\item You may need the same \file{systeminstaller.conf} fix as listed
   in the RedHat 7.2 Notes section, above.
 \end{itemize}
 
@@ -83,7 +71,7 @@ The following release notes apply to OSCAR version \oscarversion:
 
 \begin{itemize}
 \item Note that this is not a formally supported distribution.  OSCAR
-  \oscarversion has been only somewhat tested on this distribution
+  \oscarversion\- has been only somewhat tested on this distribution
   (see Table~\ref{tab:oscar-distro-support}).
 \end{itemize}
 
@@ -93,6 +81,9 @@ The following release notes apply to OSCAR version \oscarversion:
 \label{subsec:ia64notes}
 
 \begin{itemize}
+
+\item Itanium is supported.  Itanium 2 is not supported.
+
 \item \rpmname{pvm} does not currently work on Itanium.
 
 \item The OSCAR autoinstall diskette will probably not work
@@ -113,6 +104,7 @@ If you have a custom compiled kernel/modules that works
 for your hardware, you should look at the NCSA utilities
 at \url{http://oscar.ncsa.uiuc.edu/oscar/} to enable you
 to use them in OSCAR.
+
 
 \end{itemize}
 

@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: brief.tex,v 1.13 2002/07/06 03:51:07 jsquyres Exp $
+% $Id: brief.tex,v 1.14 2002/07/15 17:02:27 loann09 Exp $
 %
 % $COPYRIGHT$
 %
@@ -21,7 +21,7 @@ criteria, then you probably don't meet them:
 \begin{enumerate}
 \item You hate to read manuals, documentation, or other printed
   matter.
-\item You are a unix guru (you can use \cmd{netcfg} or an editor to
+\item You are a UNIX guru (you can use \cmd{netcfg} or an editor to
   configure network interfaces).
 \item Your cluster client machines are on a private subnet.
 \item Your cluster server machine has two network interfaces, one
@@ -70,7 +70,7 @@ Note: All actions specified herein should be performed by the
   
   \sbsdetail{det:serverosinstall}
   
-\item After the installation is complete, log on as root to the server
+\item After the installation is complete, log on as \user{root} to the server
   machine.
 
 \item Download and unpack OSCAR with these commands:
@@ -245,24 +245,12 @@ will display the OSCAR wizard.
 
 \item To verify proper installation, you should test the cluster.
   OSCAR provides a test suite to verify the basic cluster functions.
-  To perform the test, do the following:
-
-  \begin{enumerate}
-  \item Press the \button{Test Cluster Setup} button. A window will
-    pop up that will ask for a non-root user.
-  \item Enter the user name of a non-root user. If this user doesn't
-    exist it will create it. The OSCAR test suite will be installed in
-    the user's home directory.
-    \begin{enumerate}
-    \item Open a new terminal and login as the user given above.
-    \item change directory to \file{$^\sim$/OSCAR\_test}
-    \item run \cmd{./test\_cluster}
-    \item enter the number of cluster nodes and the number of
+\begchange   Press the \button{Test Cluster Setup} button. A window will
+    pop up. Enter the number of cluster nodes and the number of
       processors per node when prompted. The test will submit simple
       jobs to the cluster and print the output. If there are any
       errors, there is a problem in your installation.
-    \end{enumerate}
-  \end{enumerate}
+ \endchange
 
   \sbsdetail{det:testcluster}
 

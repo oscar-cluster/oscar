@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.27 2002/07/14 03:07:25 naughtont Exp $
+% $Id: detailed.tex,v 1.28 2002/07/15 17:02:27 loann09 Exp $
 %
 % $COPYRIGHT$
 %
@@ -92,7 +92,6 @@ space, you could do so by using the following commands:
   mkdir -p /usr/tftpboot/rpm
   ln -s /usr/tftpboot /tftpboot
 \end{verbatim}
-
 The same procedure should be repeated for the \file{/var/lib/systemimager}
 subdirectory.
 
@@ -144,13 +143,13 @@ laid out as show in Table~\ref{tab:oscar-dir-struct} (again assuming
 %
       \file{/root/oscar-\oscarversion/doc} & OSCAR documentation directory \\
 %
-      \file{/root/oscar-\oscarversion/images} & auxillary images used
+      \file{/root/oscar-\oscarversion/images} & auxiliary images used
       in the GUI \\
 %
       \file{/root/oscar-\oscarversion/install\_cluster} & main installation
       script \\
 %
-      \file{/root/oscar-\oscarversion/lib} & auxillary library
+      \file{/root/oscar-\oscarversion/lib} & auxiliary library
       routines \\
 %
       \file{/root/oscar-\oscarversion/oscarsamples} & sample
@@ -164,7 +163,7 @@ laid out as show in Table~\ref{tab:oscar-dir-struct} (again assuming
       \file{/root/oscar-\oscarversion/scripts} & contains scripts that do most
       of the work \\
 %
-      \file{/root/oscar-\oscarversion/share} & more auxilliary helper
+      \file{/root/oscar-\oscarversion/share} & more auxiliary helper
       files \\
 %
       \file{/root/oscar-\oscarversion/testing} & contains OSCAR cluster test
@@ -189,7 +188,7 @@ have booted Linux into an X environment, open a terminal and enter the
 command:
 
 \begin{verbatim}
-  /usr/sbin/netcfg &
+  /usr/sbin/neat &
 \end{verbatim}
   
 The network configuration utility will be started, which you will use
@@ -308,6 +307,7 @@ server configuration script, which does the following:
 \item adds OSCAR paths to \file{/etc/profile} 
 \item updates system startup (\file{/etc/rc.d/init.d}) scripts
 \item restarts affected services
+
 \item if all the above is successful, launch \file{oscar\_wizard}
 \end{enumerate}
   
@@ -344,10 +344,11 @@ OSCAR wizard in defining your cluster. If you encounter problems or
 wish to redo any of the SIS actions performed in the wizard steps 2,
 or 3, please refer to the SIS man pages.
 
+\begchange %--loann
 \subsubsection{Prepare OSCAR server for install} 
 \label{det:prepareforinstall}
-Begin the installation process by pressing the Step 1 button of the wizard entitled \button{Prepare OSCAR Server for Install}.
-%blah blah blah
+Begin the installation process by pressing the Step 1 button of the wizard entitled \button{Prepare OSCAR Server for Install}. Here you will select the default MPI implementation for use on the cluster. This step also installs and starts other necessary software and devices.
+\endchange
 
 \subsubsection{Build the Image} 
 \label{det:buildimage}
@@ -370,8 +371,8 @@ Building the image will take a few minutes, the progress bar on the bottom
 will give you the status and a small dialog will appear when the image
 is complete.  If image fails, see Section \ref{subsec:rh72notes}.
   
-A sample dialog is shown in Figure~\ref{fig:detailed-build-image}. 
-
+A sample dialog is shown in Figure~\ref{fig:detailed-build-image}. \begchange Note that the following screen shot is from a 1.3b3 install, so your screen fields will be slightly different.   
+\endchange
 \begin{figure}[htbp]
   \begin{center}
     \includegraphics[scale=\imgscale]{figs/4a_sbs-build-image1.\figext}
@@ -412,8 +413,8 @@ listed above, and some others, are in the \file{oscarsamples} directory.
 \subparagraph{Package lists}
 The package list is simply a list of rpm file names, 1
 per line. Be sure and include all of the prerequisites that
-any packages you might add have. You do not need to specify
-the architecture portion of the filename, or the .rpm extension.
+any packages you might add have. \begchange You do not need to specify
+the version, architecture, or extension of the rpm filename. For example, \file{bash-2.05-8.i386.rpm} is simply \file{bash}. \endchange
 
 \subparagraph{Custom kernels}
 If you want to use a customized kernel, you can add it to the image
@@ -429,9 +430,7 @@ match your new kernel's filename.
 kernel. 
 \end{enumerate}
 Note that there is no \file{lilo.conf} file in the image. That file is created
-by System Configurator from the contents of the \file{systemconfigurator.conf} file.
-
-See the \file{systemconfig.conf} man page for full details on the
+by System Configurator from the contents of the \file{systemconfigurator.conf} file. See the \file{systemconfig.conf} man page for full details on the
 contents of this file.
 
 \subsubsection{Define your client machines} 
@@ -440,8 +439,8 @@ contents of this file.
 Press the Step 3 button of the wizard entitled \button{Define OSCAR
  Clients}. In the dialog box that is displayed, enter the
 appropriate information. Again the defaults will be correct in most
-cases. At a minumum, you will need to enter a value in the \field{Number of Hosts}
-to specify how many clients you want to create.
+cases. At a minimum, you will need to enter a value in the \field{Number of Hosts}
+to specifies how many clients you want to create.
 
 \begin{enumerate}
 
@@ -635,9 +634,15 @@ which does the following:
             
 Provided along with OSCAR is a simple test to make sure the key
 cluster components (PBS, MPI, and PVM) are functioning properly. 
+%%<<<<<<< detailed.tex
+
+\begchange
+%%=======
+%%>>>>>>> 1.27
 Press the Step 6 button of the wizard entitled \button{Test
- Cluster Setup}. This will open a window that will test 
- the server services as both root and a non-root user. A sample dialog is shown in Figure~\ref{fig:detailed-setup-test}.
+ Cluster Setup}. This will open a window that will prompt you for the number clients and number of processors per client. The systems \user{root} services are checked and then a set of user level tests are run. A sample dialog is shown in Figure~\ref{fig:detailed-setup-test}. If any of the test fail, then there is a problem with your installation.
+\endchange 
+
 
 
 \begin{figure}[htbp]
@@ -647,19 +652,51 @@ Press the Step 6 button of the wizard entitled \button{Test
     \label{fig:detailed-setup-test}
   \end{center}
 \end{figure}
+%%<<<<<<< detailed.tex
 
-% Don't believe this is needed anymore.  --tjn  7/13/02
-%% Once the test setup completes do the following steps:
-%%\begin{enumerate}
-%% \item open another terminal 
-%% \item login as the user you gave in the setup
-%% \item change to the \file{OSCAR\_test} directory
-%% \item change to the \file{testing} directory 
-%% \item run the \file{test\_cluster} script, answering the questions
-%% that are asked.
-%%\end{enumerate}
-%%
+%%=======
+%%>>>>>>> 1.27
+
 \subsubsection{Congratulations!!}
 
 Your cluster setup is now complete. Your cluster nodes should
 be ready for work.
+
+\begchange
+\subsection{Adding and Deleting client nodes}
+This section describes the steps need when it becomes necessary to add or delete
+client nodes. If you have already built your cluster successfully and would like to add or delete a client node, one simply needs to  
+
+\vspace{11pt}
+{\tt
+  cd /root/oscar-\oscarversion\ \\
+\indent  ./install\_cluster eth0
+}
+\vspace{11pt}
+  
+Like before, you must substitute the device name (e.g., \file{eth0}) for your server's internal ethernet adapter in the above command. See Section~\ref{det:installcluster}. Once the OSCAR wizard appears you are ready to add or delete clients. Note that these steps will reuse the existing images made with the initial install, however it will extend or contract the your defined clients.
+
+\subsubsection{Adding OSCAR clients}
+Press the button of the wizard entitled \button{Add OSCAR Clients}. A sample dialog is shown in Figure~\ref{fig:detailed-add-node}. These steps should seem familiar. They are same as steps 3, 4 and 5 of the initial install. Refer to Sections~\ref{det:defclients}, \ref{det:setupnetwork}, and \ref{det:completeinstall}.
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{figs/9a_sbs-add-node.\figext}
+    \caption{Adding OSCAR clients.}
+    \label{fig:detailed-add-node}
+  \end{center}
+\end{figure}
+
+\subsubsection{Deleting clients}
+
+Press the button of the wizard entitled \button{Delete OSCAR Clients}. A sample dialog is shown in Figure~\ref{fig:detailed-delete-node}. Select the node you wish to delete and simply press the button \button{Delete clients} then press \button{Close}.
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{figs/10a_sbs-del-node.\figext}
+    \caption{Deleting Oscar clients.}
+    \label{fig:detailed-delete-node}
+  \end{center}
+\end{figure}
+
+\endchange
