@@ -186,7 +186,7 @@ libbinutils2
 libbmpeg1
 libbonobo2
 libbzip2_1
-libcdda0-IIIa9.8
+libcdda0
 libcups1
 libcurl2
 libdb3.2
@@ -373,7 +373,7 @@ ppp
 procmail
 procps
 psmisc
-psutils-p17
+psutils
 pvm
 pwdb
 pwlib1
@@ -387,7 +387,7 @@ readline
 recode
 rep-gtk
 rep-gtk-gnome
-rgrep-B0.99.14
+rgrep
 rmt
 rootfiles
 rpm
@@ -457,8 +457,8 @@ wget
 which
 words
 XFree86
-XFree86
-XFree86
+XFree86-100dpi-fonts
+XFree86-75dpi-fonts
 XFree86-devel
 XFree86-libs
 XFree86-server
