@@ -1,0 +1,105 @@
+#! /usr/bin/perl
+
+# Copyright 2003 NCSA
+#           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# 
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   This script forces the "Default" package set to include
+#   the installable package names, and only the installable
+#   package names.
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Database;
+use OSCAR::Package;
+
+# name of default packages set
+my $DEFAULT = "Default";
+
+sub do_it_or_die {
+    my ( $command, $results_ref, $error ) = @_;
+    return if database_execute_command( $command, $results_ref );
+    database_disconnect();
+    die "$0: $error";
+}
+
+# open the database
+database_connect() ||
+die "$0: cannot connect to oda database";
+
+# get a list of all installable packages
+my @installable_packages = ();
+do_it_or_die( "packages_installable",
+	      \@installable_packages,
+	      "cannot read the list of installable packages" );
+
+# get the list of package_sets
+print "Checking for existence of package set <$DEFAULT>\n";
+my @package_set_names = ();
+do_it_or_die( "package_sets",
+	      \@package_set_names,
+	      "cannot read the list of package_sets from the oda database" );
+
+# if we already have a package set named "Default", ...
+if ( grep( /^$DEFAULT$/, @package_set_names ) ) {
+
+    # remove all of the packages in the default set
+    print "Removing all packages from package set <$DEFAULT>\n";
+    do_it_or_die( "remove_all_packages_from_package_set $DEFAULT",
+		  undef,
+		  "error removing all packages from package set <$DEFAULT>" );
+
+} else {
+
+    # create an empty default package set
+    print "Creating new empty package set <$DEFAULT>\n";
+    do_it_or_die( "create_package_set $DEFAULT",
+		  undef,
+		  "error creating package set <$DEFAULT>" );
+}
+
+# populate the default package set with all installable packages
+my $success = 1;
+foreach my $package ( @installable_packages ) {
+    print "Adding package <$package> to package set <$DEFAULT>\n";
+    if ( ! database_execute_command
+	 ( "add_package_to_package_set $package $DEFAULT",
+	   undef ) ) {
+	$success = 0;
+	warn "$0: error adding package <$package> to package set <$DEFAULT>";
+    }
+}
+
+# see if there is any selected package set
+my @selected_set = ();
+do_it_or_die( "selected_package_set",
+	      \@selected_set,
+	      "cannot read the name of the selectede package set" );
+
+# if not, set it to the default set
+if ( ! @selected_set ) {
+    print "Setting selected package set to <$DEFAULT>\n";
+    do_it_or_die( "set_selected_package_set $DEFAULT",
+		  undef,
+		  "cannot set the selected package set to $DEFAULT" );
+}
+
+database_disconnect();
+if ( $success ) {
+    exit 0;
+} else {
+    die "$0: error setting up default values for package set <$DEFAULT>";
+}
