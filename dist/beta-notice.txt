@@ -1,0 +1,12 @@
+*************************************************************************
+
+ATTENTION: This is a BETA version of OSCAR!  It is intended for early
+adopters, developers, and testers; it is not intended for production
+use.  This distribution is *not* guaranteed to be stable.  If you are
+looking for a robust version of OSCAR for installing a cluster, you
+should download the latest stable version from the main OSCAR web
+site:
+			http://oscar.sourceforge.net/
+
+*************************************************************************
+
