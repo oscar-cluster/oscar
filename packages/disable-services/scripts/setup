@@ -15,10 +15,9 @@ dir="$OSCAR_PACKAGE_HOME/scripts"
 
 #
 # Create a post_client_rpm_install script that consists of all the
-# disable.* scripts and enable.client.mail-locally in this directory.
+# disable.* scripts in this directory.
 # This is necessary because post_client_rpm_install runs in the client
-# filesystem, and the disable.* scripts and enable.client.mail-locally
-# will not be there.  So paste them all together
+# filesystem, and the disable.* scripts will not be there. So paste them all together
 # into a single post_client_rpm_install script to run later.
 #
 
@@ -41,15 +40,6 @@ do
   echo "# End of $file script:" >> $client_output
 done
 
-# Add to that script commands to enable a bunch of stuff.
-
-client_files="`ls enable.client.*`"
-for file in $client_files
-do
-  echo "# Contents of $file script:" >> $client_output
-  cat $file >> $client_output
-  echo "# End of $file script:" >> $client_output
-done
 
 chmod +x $client_output
 
