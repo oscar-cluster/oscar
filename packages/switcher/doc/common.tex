@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: common.tex,v 1.6 2002/07/20 17:27:50 jsquyres Exp $
+% $Id: common.tex,v 1.7 2002/07/28 05:56:00 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -44,28 +44,12 @@ The system-level default MPI implementation can be set in two ways:
    \cmd{--list} command.
 \end{enumerate}
 
-{\bf NOTE:} The current version of \cmd{switcher} is not
-``cluster-aware.''  Hence, if you set the system-level default on one
-machine in your cluster, it does {\em not} set the system-level
-default on all nodes.  In order to propogate the change in any
-\cmd{switcher} system-default settings, you must manually execute the
-following command:
-
-\begin{verbatim}
-  # cpush /opt/env-switcher-1.0.4/etc/switcher.ini \
-       /opt/env-switcher-1.0.4/etc/switcher.ini
-\end{verbatim}
-
-Similar to the workaround for the OPIUM package, it may be desirable
-to install a \user{root} \cmd{cron} entry that automatically executes
-this \cmd{cpush} at a low frequency (perhaps once an hour or once a
-day).
-
-The same is {\em not} true for user-level defaults.  Since user-level
-defaults are stored in the home directory for each user, the fact that
-user home directories are NFS-mounted on all nodes effectively takes
-care of ensuring that \cmd{switcher}'s user-level defaults are
-available everywhere.
+{\bf NOTE:} System-level defaults for \cmd{switcher} are currently
+propogated to the nodes on a periodic basis.  If you set the
+system-level MPI default, you will either need to wait until the next
+automatic ``push'' of configuration information, or manually execute
+the \cmd{/opt/opium/bin/sync\_users} command to push the changes
+to the compute nodes.
 
 {\bf NOTE:} Using the \cmd{switcher} command to change the default MPI
 implementation will modify the \cmd{PATH} and \cmd{MANPATH} for all
@@ -102,5 +86,3 @@ and revert the user to the system-level default:
 \begin{verbatim}
   $ switcher mpi = none
 \end{verbatim}
-
-
