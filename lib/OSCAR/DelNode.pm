@@ -29,6 +29,7 @@ use base qw(Exporter);
 use SIS::Client;
 use SIS::DB;
 use OSCAR::Database;
+use OSCAR::Package;
 @EXPORT = qw(delnode_window);
 
 $VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
@@ -154,11 +155,15 @@ sub delnodes {
 			$fail++;
 		}
         }
-
+        
         if (system("mksimachine --Delete --name $clientstring")) {
           carp("Failed to delete machines $clientstring");
           $fail++;
 	}
+
+        if(!run_pkg_script("sis","post_clients",1)) {
+                    carp("Couldn't run post_clients script for SIS");
+        }
 
         print ">> Updating C3 configuration file\n";
         if (system("$ENV{OSCAR_HOME}/packages/c3/scripts/post_clients")) {
