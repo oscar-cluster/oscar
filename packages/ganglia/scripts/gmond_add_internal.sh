@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_add_internal.sh,v 1.3 2002/10/31 18:49:23 sad Exp $
+# $Id: gmond_add_internal.sh,v 1.4 2002/10/31 20:37:49 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -63,4 +63,25 @@ else
     chmod 755 /etc/gmond.conf
     service gmond restart
     echo successfully added internal interface to gmond.conf
+fi
+
+grep -q OSCAR /etc/gmetad.conf
+
+if [ $? = 0 ]; then
+    echo "/etc/gmetad.conf is already modified with internal interface"
+    exit 0
+elif ! [ -f /etc/gmetad.conf ]; then
+    echo "/etc/gmetad.conf is missing"
+    exit 1
+else
+    sed -e '/# data_source \"another source\"  1.3.4.7:8655  1.3.4.8/a\
+data_source "\OSCAR\" localhost' -e '/# trusted_hosts 127.0.0.1 169.229.50.165/a\
+trusted_hosts 127.0.0.1' -e '/# rrd_rootdir \"\/some\/other\/place\"/a\
+rrd_rootdir \"\/var\/log\/ganglia\/rrds\"' -e '/#                http:\/\/ganglia.sourceforge.net\//a\
+# OSCAR gmetad.conf mods done' < /etc/gmetad.conf > /tmp/gmetad.conf.new
+    mv /etc/gmetad.conf /etc/gmetad.conf_before_oscar
+    mv /tmp/gmetad.conf.new /etc/gmetad.conf
+    chmod 755 /etc/gmetad.conf
+    service gmetad restart
+    echo successfully added internal interface to gmetad.conf
 fi
