@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.4 2001/12/22 01:29:03 jsquyres Exp $
+# $Id: make-dist.sh,v 1.5 2002/01/15 03:20:50 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -57,17 +57,27 @@ fi
 
 echo " - building installation docs"
 cd doc/installation
-make clean ps
-make mostlyclean pdf
+#make clean ps
+#make mostlyclean pdf
+make clean pdf
 make mostlyclean
-cp install.ps install.pdf $distdir/doc/installation
 
 echo " - building introduction docs"
 cd ../introduction
-make clean ps
-make mostlyclean pdf
+#make clean ps
+#make mostlyclean pdf
+make clean pdf
 make mostlyclean
-cp intro.ps intro.pdf $distdir/doc/introduction
+
+cd ..
+
+echo " - removing source for docs in dist tarball"
+touch $distdir/doc/foo
+rm -rf $distdir/doc/*
+
+echo " - copying build docs into distdir/doc"
+cp installation/install.pdf $distdir/doc
+cp introduction/intro.pdf $distdir/doc
 
 #########################################################
 # VERY IMPORTANT: Now go into the new distribution tree #
@@ -117,6 +127,16 @@ rm -rf $filelist
 rm -f dist/insert-license.*
 rm -f dist/copyright-notice.txt
 rm -f dist/beta-notice.txt
+
+#
+# Remove the configure/build system because it's not necessary in the
+# distribution tarball
+#
+
+rm -f aclocal.m4
+rm -f configure configure.in
+rm -rf dist
+find . -name Makefile\* -exec rm -f {} \; -print
 
 #
 # All done
