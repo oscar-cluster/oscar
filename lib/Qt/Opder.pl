@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'Opder.ui'
 #
-# Created: Wed Jul 30 10:12:52 2003
+# Created: Tue Oct 21 16:40:45 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -22,6 +22,8 @@ use Qt::slots
     downloadButton_clicked => [],
     previousButton_clicked => [],
     nextButton_clicked => [],
+    exitMenuItem_activated => [],
+    addRepositoryMenuItem_activated => [],
     updateTextBox => [],
     rowSelectionChanged => [],
     disableDownloadButton => [],
@@ -53,13 +55,18 @@ use Qt::attributes qw(
     exitButton_font
     nextButton
     nextButton_font
+    menubar
+    PopupMenu
+    addRepositoryMenuItem
+    exitMenuItem
 );
 
 use OpderDownloadPackage;
 use OpderAbout;
-use Qt::attributes qw( aboutForm downloadInfoForm downloadPackageForm );
+use Qt::attributes qw( aboutForm downloadInfoForm downloadPackageForm addRepositoryForm );
 use OpderDownloadInfo;
 use OpderImages;
+use OpderAddRepository;
 
 sub uic_load_pixmap_Opder
 {
@@ -237,6 +244,24 @@ sub NEW
 
     $OpderLayout->addLayout($Layout49, 0, 0);
 
+    addRepositoryMenuItem= Qt::Action(this, "addRepositoryMenuItem");
+    addRepositoryMenuItem->setText(trUtf8("Additional Repositories..."));
+    addRepositoryMenuItem->setToolTip(trUtf8("Specify URLs for additional OPD repositories"));
+    exitMenuItem= Qt::Action(this, "exitMenuItem");
+    exitMenuItem->setText(trUtf8("E&xit"));
+    exitMenuItem->setToolTip(trUtf8("Exit program and save state"));
+
+
+
+
+    menubar= Qt::MenuBar( this, "menubar");
+
+    PopupMenu= Qt::PopupMenu(this);
+    addRepositoryMenuItem->addTo(PopupMenu);
+    PopupMenu->insertSeparator;
+    exitMenuItem->addTo(PopupMenu);
+    menubar->insertItem(trUtf8("File"), PopupMenu);
+
 
 
     Qt::Object::connect(exitButton, SIGNAL "clicked()", this, SLOT "exitButton_clicked()");
@@ -245,6 +270,8 @@ sub NEW
     Qt::Object::connect(downloadButton, SIGNAL "clicked()", this, SLOT "downloadButton_clicked()");
     Qt::Object::connect(refreshButton, SIGNAL "clicked()", this, SLOT "refreshButton_clicked()");
     Qt::Object::connect(aboutButton, SIGNAL "clicked()", this, SLOT "aboutButton_clicked()");
+    Qt::Object::connect(exitMenuItem, SIGNAL "activated()", this, SLOT "exitMenuItem_activated()");
+    Qt::Object::connect(addRepositoryMenuItem, SIGNAL "activated()", this, SLOT "addRepositoryMenuItem_activated()");
 
     init();
 }
@@ -268,6 +295,7 @@ sub init
   aboutForm = OpderAbout(this,"aboutForm");
   downloadInfoForm = OpderDownloadInfo(this,"downloadInfoForm");
   downloadPackageForm = OpderDownloadPackage(this,"downloadPackageForm");
+  addRepositoryForm = OpderAddRepository(this,"addRepositoryForm");
 
   # Connect the SIGNALs and SLOTs
   Qt::Object::connect(packageTable,        SIGNAL 'selectionChanged()',
@@ -286,6 +314,8 @@ sub init
                       this,                SLOT   'updateDownloadButton()');
   Qt::Object::connect(downloadPackageForm, SIGNAL 'refreshButtonSet(int)',
                       this,                SLOT   'setRefreshButton(int)');
+  Qt::Object::connect(addRepositoryForm,   SIGNAL 'refreshTableNeeded()',
+                      this,                SLOT   'refreshButton_clicked()');
 
   # Hide the previous/next buttons until we actually use them later
   previousButton->hide();
@@ -378,6 +408,35 @@ sub nextButton_clicked
 #  Returns   : Nothing                                                  #
 #########################################################################
 
+
+}
+
+sub exitMenuItem_activated
+{
+
+#########################################################################
+#  Subroutine: exitMenuItem_activated                                   #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This subroutine is called when the user selects Exit from the File   #
+#  pulldown menu.  To make things simple, we simply call the code       #
+#  that gets executed when the Exit button is pressed.                  #
+#########################################################################
+
+  exitButton_clicked();
+
+}
+
+sub addRepositoryMenuItem_activated
+{
+
+#########################################################################
+#  Subroutine: addRepositoryMenuItem_activated                          #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#########################################################################
+  
+  addRepositoryForm->show();
 
 }
 
