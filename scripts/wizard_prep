@@ -7,7 +7,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.29 2003/06/27 15:16:54 brechin Exp $
+# $Id: wizard_prep,v 1.30 2003/07/04 14:40:51 jsquyres Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -57,8 +57,8 @@ my @prereqs = sort(readdir(PREREQDIR));
 closedir(PREREQDIR);
 foreach my $prereq (@prereqs) {
     my $abs = "$prefix/$prereq";
-    if (-d "$abs/scripts" && -f "$abs/scripts/install") {
-	if (system("$abs/scripts/install") != 0) {
+    if (-d "$abs/scripts" && -f "$abs/scripts/setup") {
+	if (system("$abs/scripts/setup") != 0) {
 	    croak("ERROR: Prerequisite failure!");
 	}
     }
@@ -67,9 +67,9 @@ foreach my $prereq (@prereqs) {
 # This must be done after the prerequisites, because the prerequisites
 # may have installed some Perl modules that OSCAR requires.
 
-require OSCAR::Package;
-require OSCAR::Distro;
-require OSCAR::PackageBest;
+eval("require OSCAR::Package");
+eval("require OSCAR::Distro");
+eval("require OSCAR::PackageBest");
 
 my $topdir;
 chomp($topdir = `pwd`);
