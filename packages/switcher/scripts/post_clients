@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: post_clients,v 1.2 2002/10/29 18:34:48 jsquyres Exp $
+# $Id: post_clients,v 1.3 2002/10/31 14:01:41 jsquyres Exp $
 #
 # post_clients script for the switcher package
 #
@@ -13,7 +13,7 @@
 # So touch it so that sync_users won't complain that it doesn't exist.
 
 sw_file=/opt/env-switcher/etc/switcher.ini
-if (! -f $sw_file) then
+if test ! -f $sw_file; then
     touch $sw_file
     chmod 644 $sw_file
 fi
