@@ -52,7 +52,7 @@ my @pkgs = list_pkg();
 my $return = 0;
 
 foreach my $pkg (@pkgs) {
-    if(run_pkg_script_chroot($pkg,$targetdir)) {
+    if(!run_pkg_script_chroot($pkg,$targetdir)) {
        carp("Couldn't run post_rpm_install for $pkg");
        $return++;
     }

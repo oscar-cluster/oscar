@@ -10,6 +10,8 @@ my @rpms = qw(
               c3
               pfilter
               lam
+	      modules
+	      switcher
               pvm
               openpbs-oscar 
               openpbs-oscar-mom
@@ -37,6 +39,8 @@ stop_services();
 # Delete the clients first so /etc/hosts gets cleaned
 print "/usr/bin/mksimachine --Delete --all\n";
 system("/usr/bin/mksimachine --Delete --all");
+
+uninstall_rpms("lam-module"); # Don't know why this doesn't work with the others
 
 uninstall_rpms(@rpms);
 
