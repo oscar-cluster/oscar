@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.6 2002/10/29 20:56:12 jsquyres Exp $
+# $Id: Makefile.am,v 1.7 2002/11/25 04:07:19 bligneri Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -41,6 +41,7 @@ SUFFIXES	= .tex .dvi .ps .pdf .eps .fig
 CHAP_CITE	= $(CHAP_CITE_TEX:.tex=)
 MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
 MAIN_PS		= $(MAIN_TEX:.tex=.ps)
+MAIN_HTML	= $(MAIN_TEX:.tex=)/$(MAIN_TEX:.tex=.html)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
 EPS_FIG_FILES	= $(FIG_FILES:.fig=.eps)
 PDF_FIG_FILES	= $(FIG_FILES:.fig=.pdf)
@@ -57,6 +58,7 @@ docs: $(MAIN_PS)
 
 ps: $(EPS_FIG_FILES) $(MAIN_PS) 
 pdf: $(PDF_FIG_FILES) $(MAIN_PDF)
+html: $(MAIN_HTML)
 
 #
 # Make the dependencies so that things build when they need to
@@ -65,6 +67,7 @@ pdf: $(PDF_FIG_FILES) $(MAIN_PDF)
 $(MAIN_PS): $(MAIN_DVI)
 $(MAIN_DVI): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIGURES)
 $(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PDF_FIGURES)
+$(MAIN_HTML): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIGURES)
 
 #
 # General rules
@@ -76,10 +79,12 @@ $(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PDF_FIGURES)
 .fig.pdf:
 	$(FIG2DEV) -L pdf $< $@
 
+$(MAIN_HTML): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIGURES)
+	$(LATEX2HTML) $(LATEX2HTML_OPTIONS) $(MAIN_TEX)
+
 .tex.dvi:
 	(unset TEXINPUTS; $(LATEX) $*)
 	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null ); \
-	then (unset TEXINPUTS; $(LATEX) $*) ; else :; fi
 	@ if ( grep 'Writing index file' $*.log > /dev/null ); \
 	then makeindex $* ; (unset TEXINPUTS; $(LATEX) $*) ; fi
 	@-if ( grep 'LaTeX Warning: Citation' $*.log > /dev/null ); then \
@@ -143,4 +148,3 @@ mostlyclean-generic:
 	-rm -f *~ *.bak *% \
 		  *.log *.aux *.dvi *.blg *.toc *.bbl *.lof *.lot *.out \
 		  $(EPS_FIG_FILES) $(PDF_FIG_FILES)
-

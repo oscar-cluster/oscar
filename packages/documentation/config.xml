@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.1 2002/11/09 08:18:53 sad Exp $ 
+      $Id: config.xml,v 1.2 2002/11/25 04:07:20 bligneri Exp $ 
   -->
   <name>oscar-documentation</name>
 
@@ -30,10 +30,13 @@
   <url>http://oscar.sf.net/</url>
 
   <packager>
-    <name>Steven A. DuChene and Benoit des Ligneris</name>
+      <name>Steven A. DuChene</name>
     <email>linux-clusters@mindspring.com</email>
-    <email>ben@cyrus.physique.usherb.ca</email>
-  </packager>
+    </packager>
+  <packager>
+      <name>Benoit des Ligneris</name>
+      <email>benoit@des.ligneris.net</email>
+    </packager>
 
   <description>The html versions of the OSCAR cluster tool suite documentation.</description>
 

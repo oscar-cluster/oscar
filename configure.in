@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.32 2002/11/01 04:46:28 jsquyres Exp $
+# $Id: configure.in,v 1.33 2002/11/25 04:07:19 bligneri Exp $
 #
 # $HEADER$
 #
@@ -58,6 +58,12 @@ OSCAR_CHECK_PROG(DVIPS, dvips)
 OSCAR_CHECK_PROG(FIG2DEV, fig2dev)
 OSCAR_CHECK_PROG(PNGTOPNM, pngtopnm)
 OSCAR_CHECK_PROG(PNMTOPS, pnmtops)
+OSCAR_CHECK_PROG(LATEX2HTML, latex2html)
+
+# Option for the HTML documentation
+
+LATEX2HTML_OPTIONS="--split=4 -local_icons -long_titles 3 -auto_navigation \
+--html_version=4.0 -show_section_numbers"
 
 # Need to put these here because automake < 1.6 doesn't recognize
 # AC_ARG_VAR -- so although the variables will be AC_SUBST'ed, they
@@ -69,6 +75,8 @@ AC_SUBST(DVIPS)
 AC_SUBST(FIG2DEV)
 AC_SUBST(PNGTOPNM)
 AC_SUBST(PNMTOPS)
+AC_SUBST(LATEX2HTML)
+AC_SUBST(LATEX2HTML_OPTIONS)
 
 # List all the files to be made
 

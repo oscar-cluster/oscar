@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.18 2002/11/18 01:18:15 jsquyres Exp $
+# $Id: Makefile.am,v 1.19 2002/11/25 04:07:19 bligneri Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -105,10 +105,12 @@ SUFFIXES	= .tex .dvi .ps .pdf .eps .png
 MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
 MAIN_PS		= $(MAIN_TEX:.tex=.ps)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
+MAIN_HTML	= $(MAIN_TEX:.tex=)/$(MAIN_TEX:.tex=.html)
 
 QUICK_DVI	= $(QUICK_TEX:.tex=.dvi)
 QUICK_PS	= $(QUICK_TEX:.tex=.ps)
 QUICK_PDF	= $(QUICK_TEX:.tex=.pdf)
+QUICK_HTML	= $(QUICK_TEX:.tex=)/$(QUICK_TEX:.tex=.html)
 
 TEX_SRC		= $(MAIN_TEX) $(OTHER_SRC_FILES) $(NON_DIST_SRC_FILES)
 QUICK_SRC	= $(QUICK_TEX) $(QUICK_SRC_FILES) $(NON_DIST_SRC_FILES)
@@ -129,6 +131,7 @@ docs: $(MAIN_PS) $(QUICK_PS)
 
 ps: $(EPS_FIG_FILES) $(MAIN_PS) $(QUICK_PS)
 pdf: $(PNG_FIG_FILES) $(MAIN_PDF) $(QUICK_PDF)
+html: $(MAIN_HTML) $(QUICK_HTML)
 
 #
 # Make the dependencies so that things build when they need to
@@ -137,14 +140,21 @@ pdf: $(PNG_FIG_FILES) $(MAIN_PDF) $(QUICK_PDF)
 $(MAIN_PS): $(MAIN_DVI)
 $(MAIN_DVI): $(TEX_SRC) $(EPS_FIG_FILES)
 $(MAIN_PDF): $(TEX_SRC) $(FIG_FILES) $(SBS_FILES)
+$(MAIN_HTML): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIGURES)
 
 $(QUICK_PS): $(QUICK_DVI)
 $(QUICK_DVI): $(QUICK_SRC)
 $(QUICK_PDF): $(QUICK_SRC)
+$(QUICK_HTML): $(QUICK_TEX)
 
 #
 # General rules
 #
+$(MAIN_HTML): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIGURES)
+	$(LATEX2HTML) $(LATEX2HTML_OPTIONS) $(MAIN_TEX)
+
+$(QUICK_HTML): $(QUICK_TEX)
+	$(LATEX2HTML) $(LATEX2HTML_OPTIONS) $(QUICK_TEX)
 
 .tex.dvi:
 	(unset TEXINPUTS; $(LATEX) $*)

@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.4 2002/07/19 02:31:47 jsquyres Exp $
+# $Id: Makefile.am,v 1.5 2002/11/25 04:07:20 bligneri Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -39,6 +39,7 @@ SUFFIXES	= .tex .dvi .ps .pdf .eps .png
 MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
 MAIN_PS		= $(MAIN_TEX:.tex=.ps)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
+MAIN_HTML	= $(MAIN_TEX:.tex=)/$(MAIN_TEX:.tex=.html)
 
 TEX_SRC		= $(MAIN_TEX) $(OTHER_SRC_FILES) $(NON_DIST_SRC_FILES)
 
@@ -57,6 +58,7 @@ docs: $(MAIN_PS)
 
 ps: $(EPS_FIG_FILES) $(MAIN_PS)
 pdf: $(PNG_FIG_FILES) $(MAIN_PDF)
+html: $(MAIN_HTML)
 
 #
 # Make the dependencies so that things build when they need to
@@ -65,10 +67,13 @@ pdf: $(PNG_FIG_FILES) $(MAIN_PDF)
 $(MAIN_PS): $(MAIN_DVI)
 $(MAIN_DVI): $(TEX_SRC) $(EPS_FIG_FILES)
 $(MAIN_PDF): $(TEX_SRC) $(FIG_FILES)
+$(MAIN_HTML): $(MAIN_TEX) $(FIG_FILES)
 
 #
 # General rules
 #
+$(MAIN_HTML): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIGURES)
+	$(LATEX2HTML) $(LATEX2HTML_OPTIONS) $(MAIN_TEX)
 
 .tex.dvi:
 	(unset TEXINPUTS; $(LATEX) $*)
