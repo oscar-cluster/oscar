@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.20 2002/10/08 07:19:04 jsquyres Exp $
+% $Id: design.tex,v 1.21 2002/10/15 08:25:23 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -506,20 +506,33 @@ or Optional, respectively.
   Optional/Singular.  If not supplied, the value
   ``\xmlval{$<$none$>$}'' is used.
   
-\item \xmltag{uri}: A string presenting the URI of where either the
+\item \xmltag{url}: A string presenting the URL of where either the
   OSCAR package or the native package itself may be found.
   
   Optional/Singular.  If not supplied, the value
   ``\xmlval{$<$none$>$}'' is used.
   
-\item \xmltag{packager}: A string the name and/or the e-mail address
-  of the person who created/maintains the OSCAR package.  E-mail
-  addresses should be presented in common RFC 2822 form -- surrounded
-  by ``$<>$''.  For example, ``{\tt Joe Shmoe $<$jshmoe@foo.com$>$}''.
-  
+\item \xmltag{packager}: An outter tag indicating the name and/or
+  e-mail address of the person / group maintaining the OSCAR package.
+
   Optional/Singular.  If not supplied, the value
   ``\xmlval{$<$none$>$}'' is used.
 
+  \begin{itemize}
+  \item \xmltag{name}: String indicating the name of the OSCAR
+    packager.
+    
+    Optional/Singular.  If supplied, it will be the first portion of
+    the ``Packager'' combined string.
+    
+  \item \xmltag{email}: String indicating the e-mail address of the
+    OSCAR packager.
+    
+    Optional/Singular.  If supplied, it will be the second portion of
+    the ``Packager'' combined string, and will be enclosed in $<$
+    and $>$.
+  \end{itemize}
+    
 \item \xmltag{description}: A string describing in some detail the
   contents of the OSCAR package.  This string may be of arbitrary
   length.
@@ -531,14 +544,23 @@ or Optional, respectively.
   synonyms for the package name for use during the dependency
   analysis.  There may be zero or more \xmltag{provides} 
   
-  Optional/Singular.  If not supplied, no synonyms for this package
+  Optional/Multi.  If not supplied, no synonyms for this package
   will be used in the dependency analysis.
 
   \begin{itemize}
+  \item \xmltag{type}: A string indicating the type of dependency.
+    Possible values are:
+
+    \begin{itemize}
+    \item \xmlval{package}: this synonym indicates an equivalent OSCAR
+      package name.
+    \end{itemize}
+
+    Mandatory/Singular.
   \item \xmltag{name}: A string indicating a synonym name for this
     package.
 
-    Optional/Multi.
+    Mandatory/Singular.
   \end{itemize}
 
 \item \xmltag{requires}: A top-level tag effectively indicating
@@ -553,54 +575,33 @@ or Optional, respectively.
     an RPM or another OSCAR package.  Possible values are:
 
     \begin{itemize}
-    \item \xmlval{rpm}: the dependency is an RPM.
-    \item \xmlval{oscar-package}: the dependency is another OSCAR
-      package.
+%    \item \xmlval{rpm}: the dependency is an RPM.
+    \item \xmlval{package}: the dependency is another OSCAR package.
     \end{itemize}
 
     Mandatory/Single.
     
-  \item \xmltag{scope}: A string indicating the scope of the
-    dependency.  Possible values are:
+%  \item \xmltag{scope}: A string indicating the scope of the
+%    dependency.  Possible values are:
 
-    \begin{itemize}
-    \item \xmlval{server}: indicates that the dependency only exists
-      on the server node.
-    \item \xmlval{client}: indicates that the dependency only exists
-      on the client nodes.
-    \item \xmlval{all}: indicates that the dependency exists on all
-      nodes.
-    \end{itemize}
+%    \begin{itemize}
+%    \item \xmlval{server}: indicates that the dependency only exists
+%      on the server node.
+%    \item \xmlval{client}: indicates that the dependency only exists
+%      on the client nodes.
+%    \item \xmlval{all}: indicates that the dependency exists on all
+%      nodes.
+%    \end{itemize}
     
-    Optional/Single.  If no value is specified, ``\xmlval{all}'' is
-    used.
+%    Optional/Single.  If no value is specified, ``\xmlval{all}'' is
+%    used.
     
-  \item \xmltag{name}: A string indicating the name of the RPM or
-    OSCAR package that this package depends on.
+  \item \xmltag{name}: A string indicating the name of the OSCAR
+    package that this package depends on.
 
     Mandatory/Single.
-    
-  \item \xmltag{distro\_name}: A string indicating which Linux
-    distribution the dependency exists on.  Possible values are:
-
-    \begin{itemize}
-    \item \xmlval{RedHat}: indicates that the dependency exists on
-      RedHat Linux distributions.
-    \item \xmlval{Mandrake}: indicates that the dependency exists on
-      Mandrake Linux distributions.
-    \item \xmlval{all}: indicates that the dependency exists on all
-      Linux distributions.
-    \end{itemize}
-    
-    Optional/Singular.  If not specified, ``\xmlval{all}'' is used.
-    
-  \item \xmltag{distro\_version}: A number indicating the version 
-    of Linux distribution the dependency exists on.
-
-    Optional/Singular.  If not specified, ``\xmlval{all}'' is used.
-    
   \end{itemize}
-  
+    
 \item \xmltag{conflicts}: A top-level tag effectively indicating
   conflicts for this OSCAR package.
   
@@ -609,55 +610,35 @@ or Optional, respectively.
   blocks may be specified to list multiple conflicts.
 
   \begin{itemize}
-  \item \xmltag{type}: A string indicating whether the conflict is an
-    RPM or another OSCAR package.  Possible values are:
+  \item \xmltag{type}: A string indicating the name of the conflicting
+    OSCAR package.  Possible values are:
 
     \begin{itemize}
-    \item \xmlval{rpm}: the conflict is an RPM.
-    \item \xmlval{oscar-package}: the conflict is another OSCAR
-      package.
+%    \item \xmlval{rpm}: the conflict is an RPM.
+    \item \xmlval{package}: the conflict is another OSCAR package.
     \end{itemize}
 
     Mandatory/Single.
     
-  \item \xmltag{scope}: A string indicating the scope of the conflict.
-    Possible values are:
+%  \item \xmltag{scope}: A string indicating the scope of the conflict.
+%    Possible values are:
 
-    \begin{itemize}
-    \item \xmlval{server}: indicates that the conflict only exists on
-      the server node.
-    \item \xmlval{client}: indicates that the conflict only exists on
-      the client nodes.
-    \item \xmlval{all}: indicates that the conflict exists on all
-      nodes.
-    \end{itemize}
+%    \begin{itemize}
+%    \item \xmlval{server}: indicates that the conflict only exists on
+%      the server node.
+%    \item \xmlval{client}: indicates that the conflict only exists on
+%      the client nodes.
+%    \item \xmlval{all}: indicates that the conflict exists on all
+%      nodes.
+%    \end{itemize}
     
-    Optional/Single.  If no value is specified, ``\xmlval{all}'' is
-    used.
+%    Optional/Single.  If no value is specified, ``\xmlval{all}'' is
+%    used.
     
-  \item \xmltag{name}: A string indicating the name of the RPM or
-    OSCAR package that this package conflicts with.
+  \item \xmltag{name}: A string indicating the name of the OSCAR
+    package that this package conflicts with.
 
     Mandatory/Single.
-    
-  \item \xmltag{distro\_name}: A string indicating which Linux
-    distribution the conflicts exists on.  Possible values are:
-
-    \begin{itemize}
-    \item \xmlval{RedHat}: indicates that the conflict exists on
-      RedHat Linux distributions.
-    \item \xmlval{Mandrake}: indicates that the conflict exists on
-      Mandrake Linux distributions.
-    \item \xmlval{all}: indicates that the conflict exists on all
-      Linux distributions.
-    \end{itemize}
-    
-    Optional/Singular.  If not specified, ``\xmlval{all}'' is used.
-    
-  \item \xmltag{distro\_version}: A number indicating the version of
-    Linux distribution the conflict exists on.
-
-    Optional/Singular.  If not specified, ``\xmlval{all}'' is used.
     
   \end{itemize}
   
