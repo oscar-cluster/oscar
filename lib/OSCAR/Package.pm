@@ -7,7 +7,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2004 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.61 2004/04/05 16:47:05 tuelusr Exp $
+#   $Id: Package.pm,v 1.62 2004/04/14 01:53:04 tuelusr Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ use Carp;
              run_pkg_script_chroot rpmlist install_packages copy_pkgs 
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.61 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.62 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 my ($distro_name, $distro_version) = which_distro_server();
@@ -431,8 +431,8 @@ sub install_packages {
     my $pm = PackMan->new;
     my $dm = DepMan->new;
 
-    if (! $pm->install (dm->required_by (@_))) {
-        carp("pm->install (dm->required_by ()) failed");
+    if (! $pm->install ($dm->required_by (@_))) {
+        carp('$pm->install ($dm->required_by ()) failed');
         return 0;
     }
 
