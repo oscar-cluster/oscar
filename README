@@ -1,11 +1,9 @@
-$Id: README,v 1.23 2002/07/22 04:49:47 jsquyres Exp $
-
 $COPYRIGHT$
 
 This is the general README file for OSCAR vOSCARVERSION.  See our
 wonderful web site:
 
-	http://oscar.sourceforge.net/
+	http://oscar.openclustergroup.org/
 
 Full installation instructions and release notes for OSCAR can be
 found in doc/install.pdf.  If you're brave, well familiar with Linux
