@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: defs.tex,v 1.14 2002/11/25 04:50:38 bligneri Exp $
+% $Id: defs.tex,v 1.15 2002/12/03 20:10:59 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -9,6 +9,7 @@
 \usepackage{graphicx}
 \usepackage{fullpage}
 \usepackage{verbatim}
+\usepackage{url}
 
 % Versions
 
@@ -37,20 +38,13 @@
               colorlinks=true,
               linkcolor=blue,filecolor=blue,pagecolor=blue,urlcolor=blue
               ]{hyperref}
-  \newcommand{\xref}[2]{\hyperref[#1]{#2}}
-  \newcommand{\mailto}[1]{\href{mailto:#1}{#1}}
   \def\imgscale{0.5}
 \else
-% Comment to be removed when HTML docs become formally integrated.
-%  \usepackage{html}
-  \newcommand{\xref}[2]{#2}
-  \newcommand{\href}[2]{\underline{#2}}
-  \newcommand{\url}[1]{\href{#1}{#1}}
-  \newcommand{\mailto}[1]{\href{#1}{#1}}
+  \usepackage[colorlinks=true,
+              linkcolor=blue,filecolor=blue,pagecolor=blue,urlcolor=blue
+              ]{hyperref}
   \def\imgscale{1}
 \fi
-
-\newcommand{\email}[1]{\href{#1}{#1}}
 
 % Stoopid European-based Linux distributions...
 % Gotta force letter size paper, not A4
