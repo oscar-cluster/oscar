@@ -9,14 +9,14 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml.mandrake,v 1.3 2002/12/10 01:28:59 ngorsuch Exp $
+      $Id: config.xml.mandrake,v 1.4 2002/12/13 02:11:20 ngorsuch Exp $
   -->
   <name>oda</name>
 
   <version>
     <major>0</major>
     <minor>9</minor>
-    <subversion>4</subversion>
+    <subversion>6</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
@@ -79,9 +79,9 @@
         To list all the things that a particular package requires:
             oda this-package-requires package_name
 	 -->
-        <shortcut> packages read_records|modify_records packages name %+ </shortcut>
-        <shortcut> packages_that_require read_records packages_requires package name=%1 </shortcut>
-        <shortcut> this_package_requires read_records packages_requires name package=%1 </shortcut>
+        <shortcut> packages read_records|modify_records packages package %+ </shortcut>
+        <shortcut> packages_that_require read_records packages_requires package package=%1 </shortcut>
+        <shortcut> this_package_requires read_records packages_requires package package=%1 </shortcut>
         <!--
         This defines the second field name for records in 
 	the packages_rpmlist which can't be surmised from 
