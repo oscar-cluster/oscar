@@ -20,13 +20,14 @@
 #   This is a script which does everything that needs to be done for
 #   the server to work for oscar.  It is long, but hopefully well structured.
 
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
 use File::Path;
 use File::Copy;
 use File::Basename;
 use OSCAR::Package;
 use OSCAR::PackageBest;
 use Carp;
-use strict;
 use Data::Dumper;
 use vars qw($RPMTABLE);
 

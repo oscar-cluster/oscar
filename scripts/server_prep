@@ -19,33 +19,43 @@
 #   This is a script which does everything that needs to be done for
 #   the server to work for oscar.  It is long, but hopefully well structured.
 
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
 use File::Path;
 use File::Copy;
 use File::Basename;
+use OSCAR::Package;
+use OSCAR::PackageBest;
 use Carp;
-use strict;
-use vars qw($RPM_TABLE);
 use Data::Dumper;
 
 my $INTERFACE = shift or croak("No interface specified");
-my $RPMPOOL = "/tftpboot/rpm";
 
-#   Make sure /tftpboot/rpm exists, if not create it.  Then copy all the rpms
-#   that we ship that need to be in the client into that directory
+my $RPMPOOL = $OSCAR::Package::RPM_POOL;
 
-
-prep_tftpboot() or croak("Couldn't prepare tftpboot directory");
-copy_rpms("..") or croak("Couldn't copy files to $RPMPOOL");
-verbose("Populating rpm table... this will take a minute.");
-populate_rpm_table($RPMPOOL) or croak("Couldn't populate rpm table");
-# print Dumper($RPM_TABLE);
-install_required_rpms() or croak("Couldn't install OSCAR required rpms");
-
-if(-e "/etc/xinetd.d/rsync") {
-    unlink "/etc/xinetd.d/rsync" or croak("Couldn't remove rsync from xinetd control");
+# Get a list of all non-core packages
+my @packages = list_pkg("noncore");
+my @rpms = ();
+foreach my $package (@packages) {
+    push @rpms, rpmlist($package,"server");
 }
 
-my ($ip,$bcast,$netmask) = find_internal_ip($INTERFACE) or croak("Couldn't determine internal ip address");
+# Give me the list of files for my rpms
+my @files = find_files(
+                       PKGDIR => $RPMPOOL, 
+                       PKGLIST => \@rpms
+                      );
+
+my @fullfiles = map {"$RPMPOOL/$_"} @files;
+
+my $cmd = "rpm -Uhv --replacepkgs " . join(' ', @fullfiles);
+!system($cmd) or croak("Couldn't install the required packages needed for OSCAR Wizard to start");
+
+foreach my $package (@packages) {
+    run_pkg_script($package,"post_server_install") or croak("Failed running post_server_install for $package");
+}
+
+my ($ip,$bcast,$netmask) = interface2ip($INTERFACE) or croak("Couldn't determine internal ip address");
 update_hosts($ip) or croak("Couldn't add required host entries to /etc/hosts");
 update_profile() or croak("Couldn't add path entries to /etc/profile");
 update_exports($ip,$netmask) or croak("Couldn't add filesystem entries to /etc/exports");
@@ -53,8 +63,6 @@ update_exports($ip,$netmask) or croak("Couldn't add filesystem entries to /etc/e
 verbose("Refreshing services");
 !system("service nfs start") or croak("Couldn't start nfs");
 !system("exportfs -a") or croak("Couldn't refresh nfs exports");
-!system("service xinetd restart") or croak("Couldn't restart xinetd");
-!system("service systemimager restart") or croak("Couldn't restart systemimager");
 !system("chkconfig --del pbs_mom");
 !system("chkconfig --del pbs_sched");
 !system("chkconfig --level 345 dhcpd on");
@@ -66,96 +74,6 @@ verbose("Refreshing services");
 mkpath("/usr/local/maui/log",1,0755);
 mkpath("/usr/local/maui/stats",1,0755);
 !system("service maui start") or croak("Couldn't start maui scheduler!");
-
-sub prep_tftpboot {
-    if(!-d $RPMPOOL) {
-        verbose("No $RPMPOOL directory found.  Creating it now...");
-        mkpath($RPMPOOL, 1, 0755) or return undef;
-    }
-    return 1;
-}
-
-sub install_required_rpms {
-    my @rpms = qw(tcpdump 
-                  pvm
-                  c3
-                  lam
-                  xinetd 
-                  openssl 
-                  openssh 
-                  openssh-clients 
-                  openssh-server 
-                  openpbs-oscar 
-                  openpbs-oscar-mom
-                  openpbs-oscar-server
-                  openpbs-oscar-gui
-                  openpbs-oscar-commands
-                  maui-oscar
-                  libdbdcsv-perl
-                  libappconfig-perl
-                  systeminstaller
-                  systeminstaller-x11
-                  systemconfigurator
-                  dhcp
-                  perl-Tk
-                  perl-DBI
-                  systemimager-server
-                  systemimager-common
-                  systemimager-i386boot
-		  mpich
-                  rsync
-                  nfs-utils
-		  sync-users-oscar
-                 );
-
-    my @installme = @rpms;  		#changed
-#    foreach my $rpm (@rpms) {
-#        # The no deps is temporary for now
-#        if(system("rpm -q $rpm >/dev/null")) {
-#            verbose("$rpm not installed.  Marking for install...");
-#            push @installme, $rpm;
-#        }
-#    } 
-    if(scalar(@installme)) {
-        my $command = "rpm -Uvh --replacepkgs " . (join ' ',versionchk(@installme));
-	verbose("Installing rpms using command:");
-	verbose($command);
-        !system($command) or return undef;
-    }
-    print "About to leave install required RPMS\n";
-    return 1;
-}
-
-sub copy_rpms {
-    my $topdir = shift;
-
-    my @packagedirs = files_in_dir("$topdir/packages");
-
-    foreach my $dir (@packagedirs) {
-            my @files = files_in_dir("$dir/RPMS");
-            foreach my $file (@files) {
-                if($file =~ /\.rpm$/) {
-                    my $filename = basename($file);
-                    if(!-e "$RPMPOOL/$filename") {
-                        verbose("Copying $file to $RPMPOOL");
-                        copy("$file", "$RPMPOOL/$filename") or return undef;
-                    }
-                }
-            }
-    }
-    return 1;
-}
-
-sub find_internal_ip {
-    my $interface = shift;
-    # normally I hate sub processes, but for this I make an exception
-    my $string = qx/ifconfig $interface | grep inet/;
-
-    if($string =~ /addr:([\d\.]+).*cast:([\d\.]+).*ask:([\d\.]+)/) {
-        return $1,$2,$3;
-    }
-    return undef;
-} #find_internal_ip
 
 sub verbose {
     print join " ", @_;
@@ -301,80 +219,6 @@ sub update_exports {
     }
     close(OUT);
     close(IN);
-}
-
-sub files_in_dir {
-    my $dir = shift;
-    opendir(IN,$dir);
-    my @temp = readdir(IN);
-    closedir(IN);
-    my @files = ();
-    foreach my $file (@temp) {
-       if($file !~ /^\./) {
-           push @files, $file;
-       }
-    } 
-    return map {"$dir/$_"} @files;
-}
-
-# This populates the grand rpm table with everything
-
-sub populate_rpm_table {
-    my $dir = shift;
-    opendir(RPMDIR,$dir) or croak("Can't open directory $dir!");
-    while($_ = readdir(RPMDIR)) {
-        my $file = "$dir/$_";
-       	if(!-f $file) {next;}
-	my $output = `/bin/rpm -qp --qf '\%{NAME} \%{VERSION} \%{RELEASE}' $file 2> /dev/null`;
-        # print "Output was $output for FILE: $file\n";
-        my ($name, $version, $release) = split (/\s+/, $output);
-        # Do some sanity checking to see that name is actually there
-        if($name) {
-            $RPM_TABLE->{$name}->{$version}->{$release} = $file;
-        }
-    }
-    closedir(RPMDIR);
-    return 1;
-}
-
-# find best version just takes an array, runs a sort on it, then returns
-# the top of the sort
-
-sub find_best_version {
-    my @versions = @_;
-    my $nonnumeric = 0;
-    foreach my $entry (@versions) {
-      if($entry !~ /^\d+\.*\d*$/) {
-        $nonnumeric++;
-      }
-    }
-    my @best = ();
-    if($nonnumeric) {
-      @best = sort {$b cmp $a} @versions;
-    } else {
-      @best = sort {$b <=> $a} @versions;
-    }
-    return shift @best;
-}
-
-# versionchk called as @filenamearray = versionchk(@rpmlist, $rpmdirectory);
-sub versionchk {
-    my @rpms = @_;
-    my @files = ();
-    
-    foreach my $rpm (@rpms) {
-        my $version = find_best_version(keys %{$RPM_TABLE->{$rpm}});
-        if(!$version) {
-            next;
-        }
-        my $release = find_best_version(keys %{$RPM_TABLE->{$rpm}->{$version}});
-        if(!$release) {
-            next;
-        }
-        my $file = $RPM_TABLE->{$rpm}->{$version}->{$release};
-        push @files, $file;
-    }
-    return @files;
 }
 
 

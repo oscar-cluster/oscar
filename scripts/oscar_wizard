@@ -42,16 +42,16 @@ my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!",-background=>"w
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 
 # Step 1, Define OSCAR Server
-# oscar_button($window, "Step 1:", "Prepare OSCAR Server", sub {}, 'prep_server'); 
+oscar_button($window, "Step 1:", "Prepare OSCAR Server", sub {}, 'prep_server'); 
 
 # Step 2, Build OSCAR Client Image
-oscar_button($window, "Step 1:", "Build OSCAR Client Image", [\&build_oscar_image, $window], 'build_image');
+oscar_button($window, "Step 2:", "Build OSCAR Client Image", [\&build_oscar_image, $window], 'build_image');
 
 # Step 3, Add Clients to OSCAR Image
-oscar_button($window, "Step 2:", "Define OSCAR Clients", [\&build_oscar_clients, $window, $interface], 'addclients');
+oscar_button($window, "Step 3:", "Define OSCAR Clients", [\&build_oscar_clients, $window, $interface], 'addclients');
 
 # Step 4, Setup Network Booting
-oscar_button($window, "Step 3:", "Setup Networking", [\&mac_window, $window, {interface => $interface}], 'netboot');
+oscar_button($window, "Step 4:", "Setup Networking", [\&mac_window, $window, {interface => $interface}], 'netboot');
 
 my $boot=$window->Label (-text=>"Before continuing, network boot all of your nodes. 
 Once they have completed installation, reboot them from 
@@ -60,8 +60,8 @@ adaptors are up, move on to the next step.",-relief=>"groove");
 $boot->grid("-","-",-sticky=>"nsew");
 
 # Step 5, the Oscar post install script
-oscar_button($window, "Step 4:", "Complete Cluster Setup", [\&run_post_install, $window], 'post_install');
-oscar_button($window, "Step 5:", "Test Cluster Setup", [\&run_tests, $window], 'test_install');
+oscar_button($window, "Step 5:", "Complete Cluster Setup", [\&run_post_install, $window], 'post_install');
+oscar_button($window, "Step 6:", "Test Cluster Setup", [\&run_tests, $window], 'test_install');
 
 #
 # The close button
@@ -176,7 +176,7 @@ sub postaddclients {
 
 sub postimagebuild {
     my ($vars) = @_;
-    print "This is where I would do the postimage fixups\n";
-    !system("./post_buildimage $$vars{imgname} $interface") or (carp($!), return undef);
+    print "Executing post_rpm_install phase";
+    !system("./post_rpm_install $$vars{imgname} $interface") or (carp($!), return undef);
     return 1;
 }
