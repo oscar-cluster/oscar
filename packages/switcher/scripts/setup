@@ -32,15 +32,12 @@ my ($name, $ver) = OSCAR::Distro::which_distro_server();
 
 if ($name eq "redhat") {
   $source_dir .= "rh";
-  if ($ver eq "8.0") {
-    $source_dir .= "80";
-  } elsif ($ver eq "9") {
+  if ($ver eq "9") {
     $source_dir .= "90";
   } elsif ($ver eq "3as") {
     $source_dir .= "3as";
-  }
-  else {
-    $source_dir .= "72";
+  } else {
+    print "Unsupported distro!\n";
   }
 } elsif ($name eq "suse") {
   $source_dir .= "suse81";
