@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: troubleshooting.tex,v 1.7 2002/02/05 05:50:43 naughtont Exp $
+% $Id: troubleshooting.tex,v 1.8 2002/02/06 01:43:34 bwbarrett Exp $
 %
 % $COPYRIGHT$
 %
@@ -199,7 +199,7 @@ Replace ``\file{/root}'' with the directory into which you unpacked
 \endchange
 OSCAR in the change directory command above.
 
-\subsubsection{Uni-processor nodes fail to boot}
+\subsubsection{Uni-processor P4 nodes fail to boot}
 \begchange
 This problem has occured on some newer machines after the 'oscar\_wizard' 
 has run and the nodes have rsync'd their files to the local harddrive. 
@@ -226,8 +226,10 @@ Currently, the simplest fix is to rebuild the image with the
 uni-processor kernel (e.g. \emph{kernel-2.4.2-2}) in the rpmlist 
 (e.g. \emph{oscarsamples/sample.rpmlist}) and re-install the failing node.  
 
-\noindent (\emph{We are currently investigating a more efficient workaround and 
-will add that fix once it is available.})
+We are currently investigating the problem further.  If you are experiencing 
+this problem, please check the OSCAR web page at
+{\tt http://oscar.sourceforge.net/} for the latest information and solutions
+to this problem.
 
 %%%A workable fix for this would be to do the following steps to
 %%%install the uni-processor kernel (\emph{kernel-2.4.2-2.i386.rpm}) into 
