@@ -1,10 +1,82 @@
-% $Id: pkg-example.tex,v 1.2 2003/09/10 03:31:28 naughtont Exp $
+% $Id: pkg-example.tex,v 1.3 2003/09/10 04:38:33 naughtont Exp $
 
 \section{Example Package}
 \label{sect:example-pkg}
 
 \subsection{A basic \file{config.xml}}
 \label{sect:example-config-xml}
+
+The following shows the meta file for a package called SSSlib.  
+
+\begin{verse}
+   {\bfseries Notice: } Due to the XML parser module used, currently
+   multi-line elements like \xmltag{description} must have the closing tag
+   on the same line as the last line of text.  
+\end{verse}
+
+
+\begin{scriptsize}
+\begin{verbatim}
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>SSSLib</name>
+
+  <version>
+    <major>0</major>
+    <minor>95</minor>
+    <subversion>2</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>third-party</class>
+  <installable>1</installable>
+
+  <summary>SciDAC:SSS Infrastructure components</summary>
+  <license>GPL</license>
+  <group>Application/System</group>
+  <url>http://www.scidac.org/ScalableSystems</url>
+  
+  <maintainer>
+     <name>Narayan Desai</name>
+     <email>narayan@anl.gov</email>
+  </maintainer>
+
+  <packager>
+    <name>Thomas Naughton</name>
+    <email>naughtont@ornl.gov</email>
+  </packager>
+
+  <description>The BCWG Infrastructure components for the SciDAC: Scalable 
+Systems Software.  These infrastructure components include the Service 
+Directory, Event Manager, etc. as well as the communication 
+library. </description>
+
+  <rpmlist>
+        <filter distribution="redhat" distribution_version="7.2" arch="ia32"/>
+        <filter distribution="redhat" distribution_version="7.3"/>
+        <rpm>ssslib</rpm>
+        <rpm>sss-clients</rpm>
+        <rpm>sss-infrastructure</rpm>
+        <rpm>ssslib-perl</rpm>
+        <rpm>ssslib-python</rpm>
+        <rpm>sss-nsm-client</rpm>
+        <rpm>sss-old</rpm>
+        <rpm>sss-schemas</rpm>
+        <rpm>sss-validate</rpm>
+        <rpm>sss-validate-python</rpm>
+	</rpmlist>
+
+	<rpmlist>
+        <filter group="oscar_server" distribution="redhat" distribution_version="7.2"/>
+        <filter group="oscar_server" distribution="redhat" distribution_version="7.3"/>
+        <rpm>sss-mayor-slave</rpm>
+        <rpm>sss-servers</rpm>
+  </rpmlist>
+</oscar>
+\end{verbatim}
+\end{scriptsize}
+
 
 \subsection{Using the Configurator}
 \label{sect:example-configurator}
@@ -13,7 +85,7 @@ The following is an example \file{configurator.html} used to setup a
 configuration file.  Default values are seeded so a user can simply click
 ``Ok'' if they like.
 
-\begin{small}
+\begin{scriptsize}
 \begin{verbatim}
 <html>
 <head> <title>SSSLib Configuration Settings</title> </head> 
@@ -54,7 +126,7 @@ Enable additional logging via syslog (logfile='/var/log/sss.log')<br>
 </form>
 </body> </html>
 \end{verbatim}
-\end{small}
+\end{scriptsize}
 
 
 \subsubsection{post\_configure}
@@ -64,7 +136,7 @@ of the Configurator that are stored in the XML \file{.configurator.values}
 file.  This reads those values to generate a configuration file
 \file{/etc/ssslib.conf}.
 
-\begin{small}
+\begin{scriptsize}
 \begin{verbatim}
   #!/usr/bin/env perl
   # 'post_configure' -- reads Configurator result to setup '/etc/ssslib.conf'
@@ -91,4 +163,4 @@ file.  This reads those values to generate a configuration file
 
   close(CONF);
 \end{verbatim}
-\end{small}
+\end{scriptsize}
