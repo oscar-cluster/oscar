@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.4 2002/02/22 07:23:08 jsquyres Exp $
+# $Id: Makefile.am,v 1.5 2002/05/30 02:24:31 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -16,6 +16,7 @@ SUBDIRS			= \
 			oscarsamples \
 			packages \
 			scripts \
+			share \
 			testing
 
 noinst_SCRIPTS		= install_cluster

@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.14 2002/05/22 21:15:40 naughtont Exp $
+# $Id: configure.in,v 1.15 2002/05/30 02:24:31 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -115,6 +115,9 @@ AC_OUTPUT([
     packages/switcher/SRPMS/Makefile
 
     scripts/Makefile
+
+    share/Makefile
+    share/serverlists/Makefile
 
     testing/Makefile
     testing/OSCAR_test/Makefile
