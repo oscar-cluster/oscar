@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.2 2003/07/04 14:37:08 jsquyres Exp $
+# $Id: Makefile.am,v 1.3 2003/10/21 21:53:54 tfleury Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -13,6 +13,7 @@ include $(top_srcdir)/dist/Makefile.options
 
 oscar_SCRIPTS		= \
 			OpderAbout.pm \
+      OpderAddRepository.pm \
 			OpderDownloadInfo.pm \
 			OpderDownloadPackage.pm \
 			OpderImages.pm \
