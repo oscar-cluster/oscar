@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.19 2002/08/17 04:37:38 jsquyres Exp $
+# $Id: make-dist.sh,v 1.20 2002/10/25 13:20:56 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -75,7 +75,16 @@ fi
 # Build the docs -- but not if we're not in an srpm-only mode
 #
 
-if test "$want_srpms" != "only"; then
+if test -n "$OSCAR_SKIP_DOCS"; then
+    doc_mode="SKIPPED"
+    cat <<EOF
+
+WARNING: Skipping OSCAR doc build because $OSCAR_SKIP_DOCS is set
+
+EOF
+
+elif test "$want_srpms" != "only"; then
+    doc_mode="built"
 
     #
     # Install docs
@@ -277,6 +286,7 @@ cat <<EOF
 ============================================================================== 
 OSCAR version $OSCAR_VERSION distribution created
 SRPM mode: $want_srpms
+Documentation: $doc_mode
  
 Started: $start
 Ended:   `date`
