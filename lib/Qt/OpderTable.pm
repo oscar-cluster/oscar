@@ -114,7 +114,38 @@ sub sortColumn
   my $ascending = shift;
   my $wholeRows = shift;
 
+  my $currPack = "";
+
+  # If we have a row selected, we need to unselect it and reselect it
+  # later since it's row number will probably have changed after sorting.
+  if (numSelections() == 1)
+    {
+      $currPack = item(selection(0)->bottomRow(),0)->text();
+      clearSelection(1);
+    }
+
   SUPER->sortColumn($col,$ascending,1);
+
+  # If we had a row selected, select the new row where the package is now.
+  if ($currPack)
+    { # Search for the new row number of the selected package
+      my $found = 0;
+      my $currRow = 0;
+      while ((!$found) && ($currRow < numRows()))
+        {
+          $found = 1 if (item($currRow,0)->text() eq $currPack);
+          $currRow++ if (!$found);
+        }
+                                                                                
+      # If we found the package's new row, create a selection for it.
+      if ($found)
+        {
+          my $sel = Qt::TableSelection();
+          $sel->init($currRow,0);
+          $sel->expandTo($currRow,4);
+          addSelection($sel);
+        }
+    }
 }
 
 sub populateTable
