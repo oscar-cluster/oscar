@@ -7,7 +7,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.34 2004/03/16 00:41:13 tfleury Exp $
+# $Id: wizard_prep,v 1.35 2004/04/21 13:20:32 ngorsuch Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -184,6 +184,10 @@ croak("Couldn't set up a default package set") if $exit_status;
 my $exit_status =
   system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info") / 256;
 croak("Couldn't set up basic node information") if $exit_status;
+
+my $exit_status =
+  system( "$ENV{OSCAR_HOME}/scripts/set_node_nics" ) / 256;
+croak("Couldn't initialize the nics and networks for the oscar server") if $exit_status;
 
 # Get the list of just core packages
 
