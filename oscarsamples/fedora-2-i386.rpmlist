@@ -122,6 +122,7 @@ perl
 pidentd
 popt
 portmap
+postfix
 procmail
 procps
 psmisc
