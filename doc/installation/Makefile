@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile,v 1.9 2003/07/29 19:50:19 jsquyres Exp $
+# $Id: Makefile,v 1.10 2003/07/29 19:53:05 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -51,11 +51,7 @@ FIG_FILES	= \
 		collect-mac.png \
 		define-clients.png \
 		build-image.png \
-		setup-test.png
-
-# SBS (Screen-by-Screen) figures
-
-SBS_FILES	= \
+		setup-test.png \
 			 figs/0c_sbs-unpack.png \
 			 figs/1a_sbs-install-oscar.png \
 			 figs/1b_sbs-install-oscar2.png \
