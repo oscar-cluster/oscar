@@ -20,13 +20,13 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.64 2004/01/26 16:36:56 ngorsuch Exp $
+      $Id: config.xml,v 1.65 2004/01/27 03:57:26 ngorsuch Exp $
   -->
   <name>oda</name>
 
   <version>
     <major>1</major>
-    <minor>27</minor>
+    <minor>28</minor>
     <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
