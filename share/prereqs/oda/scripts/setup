@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.12 2003/07/02 19:58:44 brechin Exp $
+# $Id: setup,v 1.1 2003/07/04 14:43:00 jsquyres Exp $
 #
 
 #use strict;

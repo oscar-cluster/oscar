@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.2 2002/10/30 12:14:20 jsquyres Exp $
+# $Id: setup,v 1.1 2003/07/04 14:42:39 jsquyres Exp $
 #
 
 use strict;
@@ -17,9 +17,9 @@ use Carp;
 
 # Version included in media directory
 
-my $ver = "3.14";
-my $real_name = "HTML-Tree";
-my $module_name = "HTML::Tree";
+my $ver = "1.08";
+my $real_name = "XML-Simple";
+my $module_name = "XML::Simple";
 
 # Helper subroutine
 
