@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.2 2002/06/12 14:14:31 jsquyres Exp $
+% $Id: release-notes.tex,v 1.3 2002/06/13 03:29:37 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -23,26 +23,6 @@ The following release notes apply to OSCAR version \oscarversion:
 \item You {\em must} specify a domain name for your clients when
   defining them.
   
-\item If the image build fails during install on Red Hat 7.2 or 7.3
-  install, the following fixes are possible:
-
-  \begin{enumerate}
-  \item edit \file{/etc/systeminstaller/systeminstaller.conf} to
-  change:
-
-\begin{verbatim}
-       pkginstfail=    1
-\end{verbatim}
-
-     to
-\begin{verbatim}
-       pkginstfail=    0
-\end{verbatim}
-     
-   \item update the \rpmname{rpm} to \file{rpm-4.0.4-7x} which is in
-     the Red Hat updates for 7.2 (this will only work for Red Hat 7.2).
-  \end{enumerate}
-  
 \item The current version of C3 that is shipped with OSCAR requires
   Python 2.x.  The RPMs that are provided are re-built to work on Red
   Hat 7.1 system as well as Red Hat 7.2 system.  However, Red Hat 7.2
@@ -55,5 +35,63 @@ The following release notes apply to OSCAR version \oscarversion:
   Python2 prerequsite that is slightly different across different
   Linux distributions (also see the file
   \file{packages/c3/RPMS/NOTE.python2}).
+\end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{RedHat 7.2 Notes}
+
+\begin{itemize}
+\item You will need to update the \rpmname{rpm} RPM to
+  \file{rpm-4.0.4-7x} -- the version that ships on the 7.2 CD is
+  buggy.  The 4.0.4-7x version is available on the Red Hat updates for
+  7.2 (\url{ftp://updates.redhat.com/7.2/en/os/i386/}
+  
+\item The image build may fail during install, you may need to edit
+  file \file{/etc/\-systeminstaller/\-systeminstaller.conf} and change
+  the following:
+
+\begin{verbatim}
+       pkginstfail=    1
+\end{verbatim}
+
+  to
+
+\begin{verbatim}
+       pkginstfail=    0
+\end{verbatim}
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{RedHat 7.3 Notes}
+
+\begin{itemize}
+\item Note that this is not a formally supported distribution.  OSCAR
+  \oscarversion has been only somewhat tested on this distribution
+  (see Table~\ref{tab:oscar-distro-support}).
+
+\item You may need the same \file{systeminstaller.com} fix as listed
+  in the RedHat 7.2 Notes section, above.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Mandrake 8.2 Notes}
+
+\begin{itemize}
+\item Note that this is not a formally supported distribution.  OSCAR
+  \oscarversion has been only somewhat tested on this distribution
+  (see Table~\ref{tab:oscar-distro-support}).
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{IA64 Notes}
+
+\begin{itemize}
+\item \rpmname{pvm} does not currently work on ia64.
+
+\item Itanium 1 is supported.  Itanium 2 is not.  More coming from
+  Jeremy on this issue.
 \end{itemize}
