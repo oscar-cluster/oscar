@@ -1,6 +1,6 @@
 <!DOCTYPE UI><UI version="3.1" stdsetdef="1">
 <class>NodeGroupLister</class>
-<widget class="QDialog">
+<widget class="QWidget">
     <property name="name">
         <cstring>NodeGroupLister</cstring>
     </property>
@@ -365,6 +365,9 @@
     <include location="local" impldecl="in declaration">use lib '../Installer'; use InstallerUtils; use InstallerImages;</include>
     <include location="local" impldecl="in implementation">NodeGroupLister.ui.h</include>
 </includes>
+<signals>
+    <signal>taskToolClosing(char*)</signal>
+</signals>
 <slots>
     <slot>closeButton_clicked()</slot>
     <slot>newButton_clicked()</slot>
@@ -373,6 +376,9 @@
     <slot>modifyButton_clicked()</slot>
     <slot>nodeGroupListBox_highlighted( const QString &amp; )</slot>
     <slot>enableButtons(int)</slot>
+    <slot>reReadOda(char*)</slot>
+    <slot>closeEvent(QCloseEvent*)</slot>
+    <slot>init()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

@@ -7,6 +7,20 @@
 ** place of a destructor.
 *****************************************************************************/
 
+void NodeGroupLister::init()
+{
+  # If there is a parent of this MainWindow, then we are probably running
+  # it in the InstallerWorkspace.  Need to connect some signals/slots.
+  if (parent())
+    {
+      Qt::Object::connect(parent(),
+                          SIGNAL 'odaWasUpdated(char*)',
+                          SLOT   'reReadOda(char*)');
+    }
+                                                                            
+  # When this window closes, destroy it, too
+  setWFlags(getWFlags() | Qt::WDestructiveClose());
+}
 
 void NodeGroupLister::closeButton_clicked()
 {
@@ -101,3 +115,37 @@ void NodeGroupLister::enableButtons( int )
   deleteButton->setEnabled($enable);
   modifyButton->setEnabled($enable);
 }
+
+
+void NodeGroupLister::reReadOda( char * )
+{
+#########################################################################
+#  Subroutine: reReadOda                                                #
+#  Parameter : The directory name of the Task/Tool that updated oda     #
+#  Returns   : Nothing                                                  #
+#  This subroutine (SLOT) is called the InstallerWorkspace receives     #
+#  notice that another Task/Tool updated the oda database.              #
+#########################################################################
+
+  my ($childname) = @_;
+                                                                            
+  # Ignore the signal if we were the one that updated oda
+  return if ($childname ne className());
+                                                                            
+  # Reread the oda database and update the GUI as necessary
+  # ...
+}
+
+void NodeGroupLister::closeEvent( QCloseEvent * )
+{
+#########################################################################
+#  Subroutine: closeEvent                                               #
+#  Parameter : A pointer to the QCloseEvent generated.                  #
+#  Returns   : Nothing                                                  #
+#########################################################################
+
+  # Send a signal to the parent workspace letting it know we are closing.
+  emit taskToolClosing(className());
+  SUPER->closeEvent(@_);   # Call the parent's closeEvent
+}
+
