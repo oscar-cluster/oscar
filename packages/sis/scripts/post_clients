@@ -50,7 +50,6 @@ my %oda_options = ( );
 
 # set default option values for this program
 my %options = ( 'changes'      => 1,
-		'daemon'       => 0,
 		'debug'        => 0,
 		'verbose'      => 0 );
 
