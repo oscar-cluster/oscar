@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.23 2003/04/16 05:38:00 ngorsuch Exp $
+# $Id: Configurator.pm,v 1.24 2003/04/22 06:03:07 ngorsuch Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -192,8 +192,8 @@ sub getSelectedConfigurablePackages
     my @fields = ( "name", "package" );
     my @wheres =
     ( "packages.installable\!\=0",
-      "oscar.selected_package_set_id=package_set_package_entries.package_set_id",
-      "package_set_package_entries.included_package_id=packages.id" );
+      "oscar.selected_package_set_id=package_sets_included_packages.package_set_id",
+      "package_sets_included_packages.included_package_id=packages.id" );
     my $configurable_ref =
       OSCAR::Database::database_read_table_fields( "packages",
 						   \@fields,
