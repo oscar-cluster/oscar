@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_add_internal.sh,v 1.5 2002/10/31 20:44:14 sad Exp $
+# $Id: gmond_add_internal.sh,v 1.6 2002/11/01 03:25:10 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -44,14 +44,22 @@
 #    echo successfully added internal interface to gmond startup script
 #fi
 
+grep -q rrdtool /etc/ld.so.conf
+
+if [ $? = 0 ]; then
+    echo "/etc/ld.so.conf is already modified with rrdtool lib path"
+else 
+echo adding library path to /etc/ld.so.conf for rrdtool libs
+echo "/opt/rrdtool-1.0.35/lib" >> /etc/ld.so.conf
+/sbin/ldconfig
+fi
+
 grep -q OSCAR /etc/gmond.conf
 
 if [ $? = 0 ]; then
     echo "/etc/gmond.conf is already modified with internal interface"
-    exit 0
 elif [ -z $OSCAR_HEAD_INTERNAL_INTERFACE ]; then
     echo "no internal interface being passed"
-    exit 1
 elif ! [ -f /etc/gmond.conf ]; then
     echo "/etc/gmond.conf is missing"
     exit 1
@@ -85,7 +93,3 @@ rrd_rootdir \"\/var\/log\/ganglia\/rrds\"' -e '/#                http:\/\/gangli
     service gmetad restart
     echo successfully added internal interface to gmetad.conf
 fi
-
-echo adding library path to /etc/ld.so.conf for rrdtool libs
-echo "/opt/rrdtool-1.0.35/lib" >> /etc/ld.so.conf
-/sbin/ldconfig
