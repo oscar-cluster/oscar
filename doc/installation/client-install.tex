@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: client-install.tex,v 1.3 2002/07/20 17:20:34 jsquyres Exp $
+% $Id: client-install.tex,v 1.4 2002/08/31 16:29:36 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -9,20 +9,20 @@
 \label{app:client-install}
 
 Once the client is network booted, it either boots off the autoinstall
-Diskette that you created or uses PXE to network boot.  It then loads
-the install kernel.  It then broadcasts a BOOTP/DHCP request to obtain
-the IP address associated with its MAC address. The DHCP server
-provides the IP information and the client looks for its auto-install
-script in \file{/var/lib/systemimager/scripts/}. The script is named
+Diskette that you created or uses PXE to network boot, and loads the
+install kernel.  It then broadcasts a BOOTP/DHCP request to obtain the
+IP address associated with its MAC address. The DHCP server provides
+the IP information and the client looks for its auto-install script in
+\file{/var/lib/systemimager/scripts/}. The script is named
 \file{$<$nodename$>$.sh} and is a symbolic link to the script for the
 desired image.  The auto-install script is the installation workhorse,
 and does the following:
 
 \begin{enumerate}
-\item partitions the disk as specified in the image in
-  \file{<imagedir>etc/systemimager/partitionschemes}.
+\item partitions the disk as specified in the image in \\
+  \file{<imagedir>/etc/systemimager/partitionschemes}.
         
-\item mounts the newly created partitions on \file{/a}
+\item mounts the newly created partitions on \file{/a}.
   
 \item chroots to \file{/a} and uses \cmd{rsync} to bring over all the
   files in the image.
@@ -30,7 +30,7 @@ and does the following:
 \item invokes \cmd{systemconfigurator} to customize the image to the
   client's particular hardware and configuration.
 
-\item unmounts \file{/a}
+\item unmounts \file{/a}.
 \end{enumerate}
 
 Once clone completes, the client will either reboot, halt, or beep as

@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: security.tex,v 1.4 2002/07/20 17:20:09 jsquyres Exp $
+% $Id: security.tex,v 1.5 2002/08/31 16:29:36 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -10,19 +10,19 @@
 
 \subsection{Security layers}
 Linux cluster security should, ideally, consist of multiple layers.
-The main security layers are router packet filtering, 
-network stack protections, host based packet filtering, TCP wrappers,
-service paring, service configuration, and secure communications.
-Oscar installs a host based packet filtering package called pfilter
-but does not turn it on by default.
+The main security layers are router packet filtering, network stack
+protections, host based packet filtering, TCP wrappers, service
+paring, service configuration, and secure communications.  Oscar
+installs a host based packet filtering package called
+\rpmname{pfilter}.
 
 \subsection{Router packet filtering}
 
-This involves adding packet filtering rules to your border network router.
-Normally, this is not done because of the difficulty in modifying router
-tables. Packet filtering involves looking at each network packet,
-and deciding whether each packet should be allowed, dropped, or rejected,
-based on tables of rules.
+This involves adding packet filtering rules to your border network
+router.  Normally, this is not done because of the difficulty in
+modifying router tables. Packet filtering involves looking at each
+network packet, and deciding whether each packet should be allowed,
+dropped, or rejected, based on tables of rules.
 
 \subsection{Network stack protections}
 
@@ -38,10 +38,10 @@ Like router packet filtering, host based network packet filtering
 involves examining each packet and deciding what do do with it.  But
 with host based filtering, each machine individually filters the
 network packets going to, from, or through it.  Linux kernels from 2.4
-on include support for connection tracking and ``statefull'' packet 
-filtering, which keeps track of ongoing network connections, allowing better
-filtering decisions to be made based on whether packets are part of an
-already allowed connection. 
+on include support for connection tracking and ``statefull'' packet
+filtering, which keeps track of ongoing network connections, allowing
+better filtering decisions to be made based on whether packets are
+part of an already allowed connection.
 
 The problem with packet filtering is that it requires generating
 filtering ``rulesets'' that the \cmd{iptables} or \cmd{ipchains}
@@ -50,21 +50,20 @@ rulesets is similar to writing software in assembly language. There
 are now higher level ``languages'' and compilers that can be used to
 generate the rulesets and provide firewalls.  OSCAR installs a ruleset
 compiler/firewall package called \rpmname{pfilter}.  For more
-information, see the \url{http://pfilter.sourceforge.net/}.  By
-default, OSCAR installs and configures \rpmname{pfilter} on the server
-node and on all of the cluster nodes, but does not turn it on.
+information, see the \url{http://pfilter.sourceforge.net/}.
 
 \subsection{TCP Wrappers}
 
-TCP wrappers are an access control system that allows control over which
-network addresses or address ranges can access particular network services
-on a computer host.  This is controlled by the \file{/etc/hosts.allow} and
-\file{/etc/hosts.deny} files. This allows certain services to be only 
-accessible from your local domain, for instance.  A common use of this
-would be to limit exported NFS filesystems to only be accessible from
-your local domain, while allowing security logins through ssh to come
-in from anywhere.  This would be done with a \file{/etc/hosts.deny} file 
-that looks like this:
+TCP wrappers are an access control system that allows control over
+which network addresses or address ranges can access particular
+network services on a computer host.  This is controlled by the
+\file{/etc/hosts.allow} and \file{/etc/hosts.deny} files. This allows
+certain services to be only accessible from your local domain, for
+instance.  A common use of this would be to limit exported NFS
+filesystems to only be accessible from your local domain, while
+allowing security logins through \cmd{ssh} to come in from anywhere.
+This would be done with a \file{/etc/hosts.deny} file that looks like
+this:
 
 \begin{verbatim}
   ALL:   ALL
@@ -90,22 +89,22 @@ used.  To display which network services are currently listening on a
 system, do this:
 
 \begin{verbatim}
-  lsof -i | grep LISTEN | awk '{print $1,$(NF-2),$(NF-1)}' | sort | uniq
+  # lsof -i | grep LISTEN | awk '{print $1,$(NF-2),$(NF-1)}' | sort | uniq
 \end{verbatim}
 
 \noindent To list the services that will be started by default at the
 current runlevel do this:
 
 \begin{verbatim}
-  chkconfig --list | grep `grep :initdefault: /etc/inittab | \
-  awk -F: '{print $2}'`:on | awk '{print $1}' | sort | column
+  # chkconfig --list | grep `grep :initdefault: /etc/inittab | \
+    awk -F: '{print $2}'`:on | awk '{print $1}' | sort | column
 \end{verbatim}
 
 \noindent To find services started by \cmd{xinetd} do this:
 
 \begin{verbatim}
-  chkconfig --list | awk 'NF==2&&$2==''off''{print}' | \
-  awk -F: '{print $1}' | sort | column
+  # chkconfig --list | awk 'NF==2&&$2==''off''{print}' | \
+    awk -F: '{print $1}' | sort | column
 \end{verbatim}
 
 The \cmd{nmap} port scanning command is also useful to get a
@@ -114,15 +113,25 @@ hackers-eye view of your systems.  The \cmd{chkconfig} and
 
 \subsection{Service configuration}
 
-Some network services have their own configuration files. These should be 
-edited to tighten down outside access.  For instance, the NFS filesystem
-uses the \file{/etc/exports} to determine which network addresses can access
-individual file systems, and which have read-write or read-only access.
+Some network services have their own configuration files. These should
+be edited to tighten down outside access.  For example, the NFS
+filesystem uses the \file{/etc/exports} to determine which network
+addresses can access individual file systems, and which have
+read-write or read-only access.  Indeed, OSCAR sets
+\file{/etc/exports} to only NFS export the \file{/home} directory to
+the OSCAR cluster nodes.
 
 \subsection{Secure communications}
 
-By all means, use \cmd{ssh} for network logins.  There are also
-modified versions of the venerable \cmd{ftp} programs that allow
-encryption and other imrovements.
+The OSCAR team {\em strongly} recomends using \cmd{ssh} for all
+network logins, and \cmd{scp} to copy files either between OSCAR
+nodes, or to remote hosts.  The use of \cmd{telnet}, \cmd{rsh},
+\cmd{ftp}, and other legacy network applications are strongly
+discouraged because of inherent security risks (passwords are
+transmitted ``in the clear'').  
+
+\cmd{ssh} and \cmd{scp} are fully functional replacements for these
+legacy commands -- OSCAR takes care of setting up all the
+authentication and key management issues for all users.
 
 % LocalWords:  ngorsuch Exp

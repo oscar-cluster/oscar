@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.38 2002/07/20 17:20:35 jsquyres Exp $
+% $Id: detailed.tex,v 1.39 2002/08/31 16:29:36 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -30,8 +30,6 @@ server node in the OSCAR cluster.
 \subsubsection{Install Linux on the server machine} 
 \label{det:serverosinstall}
 
-\begchange
-
 If you have a machine you want to use that already has Linux
 installed, ensure that it meets the minimum requirements as listed in
 Section~\ref{sec:intro-min-sys}.  If it does, you may skip ahead to
@@ -52,6 +50,10 @@ environment such as GNOME or KDE must be installed.  Typically, a
 added yields a sufficient installation for OSCAR to install
 successfully.
 
+\begin{discuss}
+  Is the above a true statement?
+\end{discuss}
+
 If you install RedHat on the server node, during the installation you
 do not need to install the \rpmname{ipchains}-based firewall that is
 included with the RedHat distribution, because OSCAR will install an
@@ -60,8 +62,6 @@ included with the RedHat distribution, because OSCAR will install an
 \rpmname{pfilter} by default, however.  If the RedHat
 \rpmname{ipchains} based firewall is installed, the OSCAR installation
 will fail.
-
-\endchange
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -85,9 +85,9 @@ recommended under each of \file{/} and \file{/var}.
 
 You can check the amount of free space on your drive's partitions by
 issuing the command \cmd{df -h} in a terminal.  The result for each
-file system is located below the \cmd{Avail} column heading. If your
-root (\file{/}) partition has enough free space, enter the following
-command in a terminal:
+file system is located below the \cmd{Available} column heading. If
+your root (\file{/}) partition has enough free space, enter the
+following command in a terminal:
 
 \begin{verbatim}
   # mkdir -p /tftpboot/rpm
@@ -95,8 +95,8 @@ command in a terminal:
   
 If your root partition does not have enough free space, create the
 directories on a different partition that does have enough free space
-and create links to them from the root (\file{/}) directory.  For
-example, if the partition containing \file{/usr} contains enough
+and create symbolic links to them from the root (\file{/}) directory.
+For example, if the partition containing \file{/usr} contains enough
 space, you could do so by using the following commands:
 
 \begin{verbatim}
@@ -112,12 +112,13 @@ The same procedure should be repeated for the
 \subsubsection{Get a copy of OSCAR and unpack on the server} 
 \label{det:unpack}
 
-If you are reading this, you probably already have a copy. If not, go
-to \url{http://oscar.sourceforge.net/} and download the latest OSCAR
+If you are reading this, you probably already have a copy of an OSCAR
+distribtuion package.  If not, go to
+\url{http://oscar.sourceforge.net/} and download the latest OSCAR
 Regular or Extra Crispy distribution package (see
 Section~\ref{sec:download}, page~\pageref{sec:download}).
 
-Copy the OSCAR distribution package to a directory such as
+Place the OSCAR distribution package to a directory such as
 \user{root}'s home directory on the server node.  Although there is no
 required installation directory (note that you may not use the
 directory \file{/usr/local/oscar} or \file{/opt/oscar} -- they are
@@ -125,15 +126,15 @@ both reserved for future use), the rest of these instructions will
 assume that you downloaded the OSCAR distribution package to
 \user{root}'s home directory.
 
-Do {\bf not} unpack the tarball on a Windows based machine and copy
+Do {\bf not} unpack the tarball on a Windows-based machine and copy
 the directories over to the server, as this will convert all the
 scripts to ``DOS'' format and will render them useless under Linux.
 
 Open a command terminal and issue the following commands to unpack the
-OSCAR distribution package (Regular):
+OSCAR distribution package:
 
 \begin{verbatim}
-  # cd ~
+  # cd
   # tar zxf <filename>
 \end{verbatim}
 
@@ -178,6 +179,8 @@ distribution).
       \file{\obase/share} & more auxiliary helper files \\
 %
       \file{\obase/testing} & contains OSCAR cluster test software \\
+%
+      \file{\obase/VERSION} & file containing the OSCAR version number \\
       \hline
     \end{tabular}
     \caption{OSCAR distribution package file and directory layout.}
@@ -200,18 +203,18 @@ network.
 \begchange
 
 Once both adapters have been physically installed in the server node,
-you need to configure them.\footnote{Beware of 3COM network cards;
-  there are certain models which may be problematic with the kernel
-  driver that is shipped in OSCAR.  See the OSCAR web site for more
-  information.}  Any network configurator is sufficient; popular
+you need to configure them.\footnote{Beware of certain models of 3COM
+  network cards, some of which may be problematic with the Linux
+  kernel driver that is shipped in OSCAR.  See the OSCAR web site for
+  more information.}  Any network configurator is sufficient; popular
 applications include \cmd{neat}, \cmd{netcfg}, or a text editor.
 
 The following major requirements need to be satisfied:
 
 \paragraph{Hostname.} Most Linux distributions default to the hostname
-``{\tt localhost}''.  This must be changed in order to successfully
-install OSCAR -- choose another name that does not include any
-underscores (``{\tt \_}'').
+``{\tt localhost}'' (or ``{\tt localhost.localdomain}'').  This must
+be changed in order to successfully install OSCAR -- choose another
+name that does not include any underscores (``{\tt \_}'').
 
 \paragraph{Public adapter.}  This is the adapter that connects the
 server node to a public network.  Although it is not required to have
@@ -269,11 +272,13 @@ utility again to resolve the problem.
 In this step, you need to copy the RPMs included with your Linux
 distribution into the \file{/tftpboot/rpm} directory.  When each CD is
 inserted, Linux should automatically make the contents of the CD be
-available in the \file{/mnt/cdrom} directory.  Then for each CD,
-locate the directory that contains the RPMs.  In RedHat 7.1, the RPMs
-are located in the \file{RedHat/RPMS} directory (i.e.,
-\file{/mnt/cdrom/RedHat/RPMS}).  After locating the RPMs on the each
-CD, copy them into \file{/tftpboot/rpm} with a command such as:
+available in the \file{/mnt/cdrom} directory (you may need to execute
+the command ``\cmd{mount /dev/cdrom}'' if the CD does not mount
+automatically).  Then for each CD, locate the directory that contains
+the RPMs.  In RedHat 7.1, the RPMs are located in the
+\file{RedHat/RPMS} directory (i.e., \file{/mnt/cdrom/RedHat/RPMS}).
+After locating the RPMs on the each CD, copy them into
+\file{/tftpboot/rpm} with a command such as:
 
 \begin{verbatim}
   # cp /mnt/cdrom/RedHat/RPMS/*.rpm /tftpboot/rpm
@@ -284,7 +289,7 @@ you will have to unmount it from the local file system and eject it by
 issuing these commands:
 
 \begin{verbatim}
-  # cd ~
+  # cd
   # eject cdrom
 \end{verbatim}
 
@@ -336,8 +341,8 @@ install wizard:
   
 In the above command, substitute the device name (e.g., \emph{eth1})
 in place of \cmd{$<$device$>$} for your server's private network
-ethernet adapter.  The script will first run the part one server
-configuration script, which does the following:
+ethernet adapter.  The script will execute some setup / configuration
+setps, including:
 
 \begin{enumerate}
 \item copies OSCAR RPMs to \file{/tftpboot/rpm}
@@ -347,19 +352,20 @@ configuration script, which does the following:
 \item adds OSCAR paths to \file{/etc/profile} 
 \item updates system startup (\file{/etc/rc.d/init.d}) scripts
 \item restarts affected services
-\item if all the above is successful, launch the OSCAR GUI
-  installation wizard
 \end{enumerate}
+
+After these steps have successfully finished, the OSCAR installation
+wizard GUI will automatically be launched.
   
 The wizard, as shown in Figure~\ref{fig:detailed-oscar-wizard}, is
 provided to guide you through the rest of the cluster installation.
 To use the wizard, you will complete a series of steps, with each step
 being initiated by the pressing of a button on the wizard. Do not go
 on to the next step until the instructions say to do so, as there are
-times when you must complete an action outside of the wizard before
-continuing on with the next step. For each step, there is also a
-\button{Help} button located directly to the right of the step button.
-When pressed, the \button{Help} button displays a message box
+times when you may need to complete an action outside of the wizard
+before continuing on with the next step. For each step, there is also
+a \button{Help} button located directly to the right of the step
+button.  When pressed, the \button{Help} button displays a message box
 describing the purpose of the step.
 
 \begin{figure}[htbp]
@@ -398,7 +404,7 @@ available for general use; this step simply picks which one will be
 the system default.
 
 This step also installs and starts other necessary software, devices,
-and services.
+and services on the server.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -416,18 +422,15 @@ change the post installation action and the IP assignment methods.
   local hard drive before attempting a network boot by default. If you
   have to change the boot order to do a network boot before a disk
   boot to install your client machines, you should not use automatic
-  reboot.}  Once you are satisfied with the input, click the
-\button{Build Image} button.
+  reboot.}  
 
-Building the image will take a few minutes; the progress bar on the
-bottom will give you the status and a small dialog will appear when
-the image is complete.  There is a lot of output in the console window
-during this process. There may be some messages that look like 
-fatal errors, usually, unless the entire image build fails, these can 
-be ignored. If building the image does fail, look through the console output
-for some indication why (prerequisite failure, ran out of disk space, missing
-package file,...) and see Section
-\ref{sec:release-notes}.
+Building the image may take several minutes; the red progress bar on
+the bottom of the window will indicate how far along the process is.
+
+There is a lot of output in the console window during the build.  It
+is normal to see some warning messages in the console.  You can safely
+ignore these messages and wait for the final popup window announcing
+the success or failure of the overall image build.
   
 A sample dialog is shown in Figure~\ref{fig:detailed-build-image}.
 
@@ -457,12 +460,10 @@ where each line is in the following format:
 
 Here is a sample (for a SCSI disk):
 
-\begin{verbatim}
-dev/sda1        24    ext2  /boot defaults
-/dev/sda5       128   swap
-/dev/sda6       1000  ext2  /     defaults
-nfs_oscar:/home  -    nfs   /home rw
-\end{verbatim}
+% Actually include the real file so that we're never out of sync with
+% what is shipped in the OSCAR distribution.
+
+\verbatiminput{../../oscarsamples/sample.disk.scsi}
 
 The last partition specified will grow to fill the entire disk.  You
 can create your own partition files, but make sure that you do not
@@ -483,6 +484,13 @@ be listed as ``\file{bash}''.
 
 If you want to use a customized kernel, you can add it to the image
 after it is built. Follow these steps:
+
+\begin{discuss}
+  Is much of this section now moot, and we can simply refer the user
+  to the package-specific notes for \rpmname{kernel-picker} (i.e.,
+  Section~\ref{app:kernel-picker-overview},
+  page~\pageref{app:kernel-picker-overview})?
+\end{discuss}
 
 \begin{enumerate}
 \item Copy the kernel and associated files (\file{System.map},
@@ -510,6 +518,23 @@ created by System Configurator from the contents of the
 \file{systemconfigurator.conf} file. See the \file{systemconfig.conf}
 man page for full details on the contents of this file.
 
+\subparagraph{Build the Image.}
+
+Once you are satisfied with the input, click the \button{Build Image}
+button.  When the image completes, a popup window will appear
+indicating whether the build succeeded or failed.  If successful,
+click the \button{Ok} button, and you will be returned to the main
+OSCAR wizard menu.
+
+If the build fails, look through the console output\footnote{Note that
+  all console output is also spooled into the file
+  \file{oscarinstall.log}.} for some indication as to what happened to
+cause the failure.  Common causes include: prerequisite failure, ran
+out of disk space, and missing package files.  Also see the Release
+Notes for this version of OSCAR in Section~\ref{sec:release-notes}
+(page~\pageref{sec:release-notes}).
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Step 3: Define your client machines} 
@@ -527,10 +552,23 @@ to specifies how many clients you want to create.
   was used to create the image in Step 2.
   
 \item The \field{Domain Name} field should be used to specify the
-  client's IP domain name.  {\bf This field \emph{must} have a value.}
+  client's IP domain name.  
+%
   It should contain the server node's domain (if it has one); if the
-  server does not have a domain name, use any name, such as
-  \emph{oscardomain}.
+  server does not have a domain name, the default name
+  \hostname{oscardomain} will be put in the field (although you may
+  change it).
+%
+  This field \emph{must} have a value -- it cannot be blank.
+%
+  Note that especially for compute nodes on a private network, the
+  domain name does not necessarily matter much.  The domain name
+  supplied in this field is used to form the fully-qualified name of
+  each host in the OSCAR cluster.  For example:
+  \hostname{oscarnode1.oscardomain},
+  \hostname{oscarnode2.oscardomain}, etc.  If your compute nodes are
+  on a public network, you may want to use the ``real'' domain name
+  that is part of their fully-qualified domain names.
 
 \item The \field{Base name} field is used to specify the first part of
   the client name and hostname. It will have an index appended to the
@@ -538,7 +576,7 @@ to specifies how many clients you want to create.
   character "\_".
 
 \item The \field{Number of Hosts} field specifies how many clients to
-  create.
+  create.  {\bf This number must be greater than 0.}
   
 \item The \field{Starting Number} specifies the index to append to the
   \field{Base Name} to derive the first client name. It will be
@@ -565,12 +603,13 @@ A sample dialog is shown in Figure~\ref{fig:detailed-define-clients}.
 
 After the clients are created, a dialog will pop up with the
 completion status. After closing that, you may press the
-\button{Close} button and continue with the next step.
+\button{Close} button in the build clients dialoge and continue with
+the next step.
 
 \begin{figure}[htbp]
   \begin{center}
     \includegraphics[scale=\imgscale]{figs/5a_sbs-define-clients1.\figext}
-    \caption{Define the Clients.}
+    \caption{NEED UPDATED IMAGE. Define the Clients.}
     \label{fig:detailed-define-clients}
   \end{center}
 \end{figure}
@@ -615,8 +654,8 @@ client nodes that do not support PXE booting. The \button{Setup
 requests if your client hardware supports it. See
 Appendix~\ref{app:net-boot-client-nodes} for more details.  
 
-When you have collected the addresses for all your client nodes, and
-completed the networks setup press \button{Close}.
+When you have collected the addresses for all your client nodes and
+completed the networks setup, press the \button{Close} button.
 
 \begin{figure}[htbp]
   \begin{center}
@@ -650,7 +689,7 @@ network booting clients.
 \subsubsection{Check completion status of nodes}
 \label{det:clientfinish}
 
-After a few minutes, the clients should complete the installation.
+After several minutes, the clients should complete the installation.
 You can watch the client consoles to monitor the progress. Depending
 on the Post Installation Action you selected when building the image,
 the clients will either halt, reboot, or beep incessantly when the
@@ -658,7 +697,7 @@ installation is completed.
 
 The time required for installation depends on the capabilities of your
 server, your clients, your network, and the number of simultaneous
-client installations.  Generally, it should complete within a few
+client installations.  Generally, it should complete within several
 minutes.
   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -690,16 +729,13 @@ together as a cluster.
 \subsubsection{Step 5: Complete the cluster configuration}
 \label{det:completeinstall}
 
+{\bf Ensure that all client nodes have fully booted before proceeding
+  with this step.}
+
 Press the Step 5 button of the wizard entitled \button{Complete
   Cluster Setup}.  This will run the final installation configurations
 scripts from each OSCAR software package, and perform various cleanup
 and re-initialization functions.
-
-Note that any users created on the server after the OSCAR installation
-will not be in the password/group files of the clients until they have
-been synchronized with the server -- you can accomplish this using the C3
-\cmd{cpush} tool (see the \cmd{cpush(1)} man page).
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -707,17 +743,19 @@ been synchronized with the server -- you can accomplish this using the C3
   software}
 \label{det:testcluster}
             
-Provided along with OSCAR is a simple test to make sure the key
-cluster components (OpenSSH, PBS, MPI, and PVM) are functioning
-properly.  {\bf All compute nodes must be fully booted before
-  attempting this step.}
+{\bf Ensure that all client nodes have fully booted before proceeding
+  with this step.}
+
+A simplistic test suite is provided in OSCAR to ensure that the key
+cluster components (OpenSSH, PBS, MPI, PVM, etc.) are functioning
+properly.
 
 Press the Step 6 button of the wizard entitled \button{Test Cluster
   Setup}. This will open a window that will prompt you for the number
 clients and number of processors per client. The system's basic
 services are checked and then a set of user level tests are run. A
 sample dialog is shown in Figure~\ref{fig:detailed-setup-test}. If any
-of the test fail, then there is a problem with your installation.
+of the test fail, then there may be problem with your installation.
 
 \begin{figure}[htbp]
   \begin{center}
@@ -735,6 +773,11 @@ of the test fail, then there is a problem with your installation.
 Your cluster setup is now complete. Your cluster nodes should
 be ready for work.
 
+Be sure to read Section~\ref{sec:pkg-specific-notes} (starting on
+page~\pageref{sec:pkg-specific-notes}) -- it contains vital system
+administrator-level information on several of the individual packages
+that were installed as part of OSCAR.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -751,7 +794,8 @@ the following from the top-level OSCAR directory:
 
 Like before, you must substitute the device name (e.g., \file{eth1})
 for the server node's internal ethernet adapter in the above command.
-See Section~\ref{det:installcluster}. Once the OSCAR wizard appears
+See Section~\ref{det:installcluster}
+(page~\pageref{det:installcluster}). Once the OSCAR wizard appears,
 you are ready to add or delete clients. Note that these steps will
 reuse the existing images made with the initial install, however, it
 will extend or contract the set of defined clients in the cluster.
@@ -769,7 +813,7 @@ initial install. Refer to Sections~\ref{det:defclients},
 \begin{figure}[htbp]
   \begin{center}
     \includegraphics[scale=\imgscale]{figs/9a_sbs-add-node.\figext}
-    \caption{Adding OSCAR clients.}
+    \caption{NEED UPDATED IMAGE Adding OSCAR clients.}
     \label{fig:detailed-add-node}
   \end{center}
 \end{figure}
@@ -780,8 +824,8 @@ initial install. Refer to Sections~\ref{det:defclients},
 
 Press the button of the wizard entitled \button{Delete OSCAR Clients}.
 A sample dialog is shown in Figure~\ref{fig:detailed-delete-node}.
-Select the node you wish to delete and simply press the button
-\button{Delete clients} then press \button{Close}.
+Select the node(s) that you wish to delete and press the button
+\button{Delete clients}, then press \button{Close}.
 
 \begin{figure}[htbp]
   \begin{center}
@@ -802,7 +846,7 @@ can do so with the \cmd{start\_over} script located in the
 
 It is important to note that \cmd{start\_over} is {\em not} an
 uninstaller.  That is, \cmd{start\_over} does {\em not} guarantee to
-return the head node to the start that it was in before OSCAR was
+return the head node to the state that it was in before OSCAR was
 installed.  It does a ``best attempt'' to do so, but the only
 guarantee that it provides is that the head node will be suitable for
 OSCAR re-installation.  For example, the RedHat 7.x series ships with
@@ -837,5 +881,9 @@ ways:
   intuitive, this may include the shell was that initially used to
   install the previous OSCAR installation.
 \end{enumerate}
+
+Note that the logout/login method is {\em strongly} encouraged, as it
+may be difficult to otherwise absolutely guarantee that a given
+shell/window has an untainted environment.
 
 % LocalWords:  Exp

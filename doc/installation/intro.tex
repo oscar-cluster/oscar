@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: intro.tex,v 1.15 2002/07/22 04:26:10 jsquyres Exp $
+% $Id: intro.tex,v 1.16 2002/08/31 16:29:36 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -84,10 +84,12 @@ client nodes:
 \item A disk on each client node, at least 2GB in size (OSCAR will
   format the disks during the installation)
 \item A network interface card that supports a TCP/IP
-  stack\footnote{Beware of 3COM cards.  See the OSCAR web site for
-  more information.}
+  stack\footnote{Beware of certain models of 3COM cards -- not all
+    models of 3COM cards are supported by the Linux kernel that is
+    shipped with OSCAR.  See the OSCAR web site for more information.}
 \item Same Linux distribution and version as the server node
-\item All clients must have the same architecture (ia32 vs.\ ia64)
+\item All clients must have the same architecture (e.g., ia32 vs.\ 
+  ia64)
 \item Monitors and keyboards may be helpful, but are not required
 \end{itemize}
 
@@ -114,7 +116,7 @@ First, Section~\ref{sec:download} tells how to obtain an OSCAR version
 \oscarversion\ distribution package.
 %
 Next, a ``Release Notes'' section (Section~\ref{sec:release-notes})
-that applies to OSCAR version \oscarversion\ and contains some
+that applies to OSCAR version \oscarversion\ contains some
 requirements and update issues that need to be resolved before the
 install.
 %
@@ -124,20 +126,26 @@ process.  It is intended for experienced users who do not need the
 step-by-step instructions for a complete install.  The ``Quick Start''
 section is {\bf not} for the Linux or clustering novice.
 %
-Section~\ref{sec:sis} provides an overview is given for the
-installation software used in OSCAR, known as SIS.  
+Section~\ref{sec:sis} provides an overview for the System Installation
+Suite software package used in OSCAR to perform the bulk of the
+cluster installation.
 %
 An outline is provided in Section~\ref{sec:outline} of the entire
 cluster install procedure, so that users have a general understanding
 of what they will be doing.
 %
-Finally, Section~\ref{sec:detail} details the cluster installation
-procedure.  The level of detail lies somewhere between ``the install
-will now update some files'' and ``the install will now replace the
-string `xyz' with `abc' in file \file{some\_file}.'' The reasoning
-behind providing this level of detail is to allow users to fully
-understand what it takes to put together a cluster, as well as to
-allow them to help troubleshoot any problems, should any arise.
+Section~\ref{sec:detail} details the cluster installation procedure.
+The level of detail lies somewhere between ``the install will now
+update some files'' and ``the install will now replace the string
+`xyz' with `abc' in file \file{some\_file}.'' The reasoning behind
+providing this level of detail is to allow users to fully understand
+what it takes to put together a cluster, as well as to allow them to
+help troubleshoot any problems that may occur.
+%
+Finally, Section~\ref{sec:pkg-specific-notes} contains system
+administration notes about several of the individual packages that are
+installed by OSCAR.  {\em This section is a ``must read'' for all
+  OSCAR system administrators.}
 
 Appendix~\ref{app:net-boot-client-nodes} covers the topic of network
 booting client nodes, which is so important that it deserved its own
