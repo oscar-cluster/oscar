@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.53 2003/07/17 23:03:53 ngorsuch Exp $
+      $Id: config.xml,v 1.54 2003/07/18 21:12:14 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -819,6 +819,24 @@
                    networks.cluster_only=0
                    nics.ip
         </shortcut>
+	<shortcut> oscar_server_architecture
+                   read_records
+		   oscar
+                   oscar_server_architecture!=undef
+                   oscar_server_architecture
+        </shortcut>
+	<shortcut> oscar_server_distribution
+                   read_records
+		   oscar
+                   oscar_server_distribution!=undef
+                   oscar_server_distribution
+        </shortcut>
+	<shortcut> oscar_server_distribution_version
+                   read_records
+		   oscar
+		   oscar_server_distribution_version!=undef
+                   oscar_server_distribution_version
+        </shortcut>
 	<shortcut> oscar_server_node
                    read_records
                    oscar.oscar_server_node_id!=undef
@@ -1095,18 +1113,6 @@
                    oscar.selected_package_set_id!=undef
                    oscar.selected_package_set_id=package_sets.id
                    package_sets.name
-        </shortcut>
-	<shortcut> oscar_server_distribution
-                   read_records
-		   oscar
-                   oscar_server_distribution!=undef
-                   oscar_server_distribution
-        </shortcut>
-	<shortcut> oscar_server_distribution_version
-                   read_records
-		   oscar
-		   oscar_server_distribution_version!=undef
-                   oscar_server_distribution_version
         </shortcut>
 	<shortcut> set_package_installable
                    modify_records
