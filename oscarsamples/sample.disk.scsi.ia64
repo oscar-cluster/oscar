@@ -1,0 +1,4 @@
+/dev/sda1       100            vfat             /boot/efi rw
+/dev/sda5       128          swap
+/dev/sda6       1000        ext2                /        rw
+
