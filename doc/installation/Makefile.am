@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2001/12/19 02:36:55 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2001/12/19 15:34:00 mchasal Exp $
 #
 # $COPYRIGHT$
 #
@@ -58,7 +58,6 @@ SBS_FILES	= \
 		sbs-collect-mac4.png \
 		sbs-install-oscar2.png \
 		sbs-install-oscar.png \
-		sbs-no.png \
 		sbs-wizard-step1.png \
 		sbs-wizard-step2.png \
 		sbs-wizard-step3.png \
