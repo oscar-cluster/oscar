@@ -759,54 +759,6 @@ if ( $options{debug} ) {
 #    print Dumper($xml_ref);
 }
 
-#
-# DongInn Kim (dikim@osl.iu.edu)
-# The following scripts handle the uninstalling of rpms that config.xml of
-# each package specifies by <uninstall_rpmlist> tag.
-# The usage of this tag is..
-# <uninstall_rpmlist>
-#   <rpm>rpm_1</rpm>
-#   <rpm>rpm_2</rpm>
-#   <rpm>rpm_3</rpm>
-#   ....
-# </uninstall_rpmlist>
-#
-my $package_uninstall_rpmlists_ref;
-print "$0: looking for rpmlist data in xml for package <$package_name>\n" 
-    if $options{debug};
-# if there is an 'uninstall-rpmlist' key in that, ...
-if ( exists $$xml_ref{uninstall_rpmlist} ) {
-    # move the uninstall-rpmlist data into the uninstall_rpmlists hash
-    $package_uninstall_rpmlists_ref = $$xml_ref{uninstall_rpmlist};
-    delete $$xml_ref{uninstall_rpmlist};
-}
-if (defined $package_uninstall_rpmlists_ref){
-    my $list_rpms = $package_uninstall_rpmlists_ref->{rpm};
-    my $pm = PackMan->new;
-    my @rpms_to_delete = ();
-    foreach my $one_rpm (@$list_rpms){
-        my $temp_rpms = undef;
-        if ( chomp( $temp_rpms = `rpm -qa | grep $one_rpm`) ){
-            push @rpms_to_delete, $temp_rpms;
-        } else {        
-            print "$one_rpm is not installed in the head node\n";
-        }
-    }
-    if(scalar @rpms_to_delete == 0){
-        print "There is no rpm to uninstall\n";
-    } else {
-        if ($pm->remove(@rpms_to_delete) ){
-            print "You have successfully removed the rpms..\n";
-        }else {
-            print "I am sorry that you failed to remove them\n";
-        }
-    }
-
-    if ( $options{debug} ) {
-        print( "$0: package_uninstall_rpmlists_ref:\n" );
-        print Dumper($package_uninstall_rpmlists_ref);
-    }
-}
 
 # Stores information about services which packages provide
 # When a node is deleted from the cluster, all the services which the node

@@ -57,32 +57,6 @@ echo Created: $dir/$client_output
 
 
 #
-# This script checks to see if the MTA, which OSCAR does
-# not support, exist such as sendmail and exim.
-# If any MTA (sendmail or exim) except for postfix is installed
-# it should be uninstalled since now OSCAR is supporting only postfix 
-# for disable-services package.
-#
-
-
-# Check if sendmail, exim, or postfix is running. If so, kill it.
-# No mailing service will run.
-
-services="sendmail exim postfix"
-for service in $services; do
-
-    # See if this is the daemon installed
-
-    chkconfig --list $service > /dev/null 2>&1
-    if test "$?" = "0"; then
-
-        #STOP the daemon
-        /etc/init.d/$service stop
-
-    fi
-done
-
-#
 # All done
 #
 

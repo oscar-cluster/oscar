@@ -35,11 +35,4 @@
   <description>OSCAR-specific scripts to disable some services on
 client nodes: kudzu, sendmail, slocate.</description>
 
-  <rpmlist>
-    <rpm>postfix</rpm>
-  </rpmlist>
-  <uninstall_rpmlist>
-    <rpm>sendmail</rpm>
-    <rpm>exim</rpm>
-  </uninstall_rpmlist>
 </oscar>

@@ -1,0 +1,28 @@
+#!/usr/bin/perl
+
+#
+# Copyright (c) 2004 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+
+#
+# $Id: install_postfix,v 1.0 2004/10/21 donginn Exp $
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Package;
+
+#
+# The only postfix is supported for the oscar-3.0.1b1.
+# In a near future, the codes of this block is not needed to support the other mailing services.
+#
+#-------------------------------------------------------------------------
+
+    my @rpm_lists = ("postfix");
+    install_packages(@rpm_lists);
+    
+#-------------------------------------------------------------------------

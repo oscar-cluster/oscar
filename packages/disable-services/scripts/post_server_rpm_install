@@ -61,6 +61,17 @@ for service in $services; do
     fi
 done
 
+#
+# The only postfix is supported for the oscar-3.0.1b1.
+# If there is no MTA in the head node, install_postfix (perl script)
+# is called to install postfix rpm.
+#
+if [ -z "$service_name" ]; then
+    dir="$OSCAR_HOME/packages/disable-services/scripts"
+    $dir/install_postfix
+    service_name="postfix"
+fi
+
 
 	# If $service_name contains the "postfix, sendmail, or exim",
     # each case handles the configuration corresponding to
@@ -163,11 +174,18 @@ EOF
             # Restart postfix.
             /etc/init.d/postfix stop
             /etc/init.d/postfix start
-
-            # Enable this service upon bootup 
-            chkconfig --add $service_name
-
-            echo "- finished configuring postfix"
+            
+            #check to see if postfix is running.
+            /etc/init.d/postfix status > /dev/null 2>&1
+            echo $?
+            if [ "$?" != "0" ]; then
+                echo "WARNING : The configuration of the postfix is completed"
+                echo "WARNING : Your postfix can not run. Please check your smtp port"
+            else
+                # Enable this service upon bootup 
+                chkconfig --add $service_name
+                echo "- finished configuring postfix"
+            fi
         else
             echo "WARNING: I could not find postfix's configuration file!"
             echo "WARNING: There will be no mail service running on the client nodes!"
