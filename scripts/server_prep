@@ -159,6 +159,9 @@ sub verbose {
 
 sub update_hosts {
     my $ip = shift;
+    if( ! $ip ) {   # mjc - 12/13/01
+      croak( "Cannot update hosts without a valid ip.\n" );
+    }
     verbose("Backing up /etc/hosts");
     copy("/etc/hosts","/etc/hosts.bak") or return undef;
     my $hostname = qx/hostname/;
@@ -188,12 +191,15 @@ sub update_hosts {
     #   only after we have added the line for this specified ip
     my $found = 0;
     my @hostlines = ();
+    my $line; # mjc - 12/13/01
 
     while(<IN>) {
-      if(/^$ip/) {
+      $line = $_; # mjc - 12/13/01
+      chop $line; # mjc - 12/13/01
+      if( $line =~ /^$ip/ ) { # mjc - 12/13/01
         # Same ip, grab all the items on the line and eliminate redundancies
         $found = 1;
-        my @items = split( /\s+/, $_ );
+        my @items = split( /\s+/, $line ); # mjc - 12/13/01
         my $item;
         foreach $item ( @items ) {
           if( ! &string_is_in( $item, \@additional ) ) {
@@ -202,21 +208,20 @@ sub update_hosts {
         }
         # Add all the items on this line to the file
         print OUT join( " ", @additional )."\n";
-      } elsif(/$hostname/) {
+      } elsif( $line =~ /$hostname/ ) {  # mjc - 12/13/01
         # Not the same ip, but same hostname, save this line for now
-        $hostlines[$#hostlines + 1] = $_;
+        $hostlines[$#hostlines + 1] = $line;
       } else {
         # Not a line we're interested in changing
-        print OUT $_;
+        print OUT $line."\n"; # mjc - 12/13/01
       }
     }
     if(!$found) {
       print OUT join( " ", @additional )."\n";
     }
     # Add back in any lines found with the same hostname but different ip
-    my $line;
     foreach $line ( @hostlines ) {
-      print OUT $line;
+      print OUT $line."\n"; # mjc - 12/13/01
     }
     # mjc - 11/12/01 - end
 
