@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.19 2003/01/30 21:55:02 brechin Exp $
+# $Id: Configurator.pm,v 1.20 2003/03/06 00:02:36 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -187,6 +187,7 @@ sub getSelectedPackages
 {
   my($package);
   my(@packages) = list_install_pkg();
+  my($found);     # Did we find a configurator.html file?
 
   # Set a "selected" field for all packages selected for installation
   foreach $package (@packages)
@@ -202,8 +203,13 @@ sub getSelectedPackages
           (!$packagexml->{$package}{selected}));
 
       # Skip any packages which don't have a configurator.html file
-      delete $packagexml->{$package} unless
-        (-s "$oscarbasedir/packages/$package/configurator.html");
+      $found = 0;
+      foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS)
+        {
+          (($found = 1) and last) if 
+            (-s "$dir/$package/configurator.html");
+        }
+      delete $packagexml->{$package} unless $found;
     }
 }
 
@@ -222,6 +228,7 @@ sub getSelectedPackages
 sub populateConfiguratorList
 {
   my($tempframe);
+  my($packagedir);
 
   # Set up the base directory where this script is being run
   $oscarbasedir = '.';
@@ -247,13 +254,21 @@ sub populateConfiguratorList
           # Create a frame and save it in a hash based on pkgdir name
           $tempframe->{$package} = $pane->Frame();
 
+          # Figure out where the package directory is located on the disk.
+          $packagedir =  "$oscarbasedir/packages/$package";  # Fallback
+          foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS)
+            {
+              (($packagedir = "$dir/$package") and last) if
+                (-d "$dir/$package");
+            }
+
           # Then add the config buttons and package name labels.
           # First,the Config button...
           $tempframe->{$package}->Button(
             -text => 'Config...',
             -command => [ \&OSCAR::Configbox::configurePackage,
                           $root,
-                          "$oscarbasedir/packages/$package",
+                          $packagedir,
                         ],
             )->pack(-side => 'left');
 
