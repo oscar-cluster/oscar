@@ -1,6 +1,6 @@
 #!/bin/csh
 #
-# $Id: build-notes,v 1.3 2002/06/13 01:33:17 jsquyres Exp $
+# $Id: build-notes,v 1.4 2002/06/20 05:56:05 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -8,7 +8,7 @@
 # Look in ../packages/* for doc/install.tex files.  When we find those
 # files, add them to install-notes.tex.
 
-cp -f notes.tex.in notes.tex
+\cp -f notes.tex.in notes.tex
 
 # Don't use a glob here, because this directly affects the ordering of
 # sections in the output doc.  So pipe the output of ls here though

@@ -1,6 +1,6 @@
 #!/bin/csh
 #
-# $Id: build-package-license,v 1.1 2002/06/19 17:33:50 mchasal Exp $
+# $Id: build-package-license,v 1.2 2002/06/20 05:56:07 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -8,7 +8,7 @@
 # Look in ../packages/* for doc/user.tex files.  When we find those
 # files, add them to package-docs.tex.
 
-cp -f package-license.tex.in package-license.tex
+\cp -f package-license.tex.in package-license.tex
 
 # Don't use a glob here, because this directly affects the ordering of
 # sections in the output doc.  So pipe the output of ls here though
