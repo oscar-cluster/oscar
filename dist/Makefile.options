@@ -1,0 +1,14 @@
+# -*- makefile -*-
+#
+# $Id: Makefile.options,v 1.1 2003/07/04 14:02:08 jsquyres Exp $
+#
+# This file is part of the OSCAR distribution.
+# See the copyright and license notices in the top-level directory.
+#
+
+AUTOMAKE_OPTIONS	= foreign
+
+# $OSCAR_HOME will come in from configure.  $subdir will be
+# automatically defined in each Makefile (by Automake).
+
+oscardir		= $(OSCAR_HOME)/$(subdir)
