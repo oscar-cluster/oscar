@@ -156,6 +156,7 @@ perl-MIME-Base64
 perl-URI
 playmidi
 popt
+portmap
 procmail
 procps
 psmisc
