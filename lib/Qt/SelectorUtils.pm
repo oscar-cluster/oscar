@@ -3,7 +3,7 @@
 #  Author: Terrence G. Fleury (tfleury@ncsa.uiuc.edu)                   #
 #  Date  : April 24, 2003                                               #
 #  This file contains a bunch of utility functions used by the          #
-#  Selector which are not necessarily GUI related.                      #
+#  Selector.                                                            #
 #########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -34,8 +34,15 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use Carp;
 
-my $allPackages;  # Cached hash reference of all available packages
-my $dependtree;   # Dependency tree for requires/conflicts
+my $allPackages;        # Cached hash reference of all available packages
+my $dependtree;         # Dependency tree for requires/conflicts
+my $greenText;          # These are Qt::Color objects for the items in 
+my $brightGreenText;    #    the SelectorTable when the GUI is run as
+my $darkGreenText;      #    the 'Updater'.  Text gets colored Red or
+my $redText;            #    Green depending if a package needs to be
+my $brightRedText;      #    installed or uninstalled.  The 'darks' are
+my $darkRedText;        #    the highlight colors.
+my $colorsCreated = 0;  # Have we created the above colors yet?
 
 sub addTypeNameFieldToPackage
 {
@@ -431,6 +438,77 @@ sub compactSpaces
   $string =~ s/ +/ /g if ($compact);  # Compact multiple spaces
 
   $string;  # Return string to calling procedure;
+}
+
+sub getTableItemColorGroup
+{
+#########################################################################
+#  Subroutine: getTableItemColorGroup                                   #
+#  Parameters: (1) TableItem which (possibly) needs a new QColorGroup   #
+#              (2) The current QColorGroup for the TableItem            #
+#  Returns   : The updated QColorGroup                                  #
+#  This subroutine gets called by the paint methods in                  #
+#  SelectorTableItem and SelectorCheckTableItem.  If the GUI is being   #
+#  run as the 'Updater', we want to change the color of the text in     #
+#  the SelectorTable to reflect what actions need to be taken.  Red     #
+#  text indicates that the package needs to be uninstalled.  Green      #
+#  text indicates that the package needs to be installed.               #
+#########################################################################
+
+  my $tableItem = shift;
+  my $qcolorgroup = shift;
+
+  # Create a copy of the passed-in QColorGroup to possibly modify
+  my $cg = Qt::ColorGroup($qcolorgroup);
+
+  if ($tableItem->table()->parent()->parent()->installuninstall)
+    { # Change font color depending on 'installed' bit
+      my $row = $tableItem->row();
+      my $col = $tableItem->col();
+      my $packagesInstalled = $tableItem->table()->getPackagesInstalled();
+      my $package = $tableItem->table()->item($row,0)->text();
+      my $checked = $tableItem->table()->item($row,1)->isChecked();
+
+      # If package is installed but unchecked, then need to uninstall
+      if (($packagesInstalled->{$package}) && (!$checked))
+        { # Need to uninstall => set color to 'red'
+          $cg->setColor(Qt::ColorGroup::Text(),$redText);
+          $cg->setColor(Qt::ColorGroup::Highlight(),$darkRedText);
+          $cg->setColor(Qt::ColorGroup::HighlightedText(),$brightRedText);
+        }
+
+      # If package is uninstalled and checked, then need to install
+      if ((!($packagesInstalled->{$package})) && ($checked))
+        { # Need to install => set color to 'green'
+          $cg->setColor(Qt::ColorGroup::Text(),$greenText);
+          $cg->setColor(Qt::ColorGroup::Highlight(),$darkGreenText);
+          $cg->setColor(Qt::ColorGroup::HighlightedText(),$brightGreenText);
+        }
+    }
+
+  return $cg;
+}
+
+sub createColors
+{
+#########################################################################
+#  Subroutine: createColor                                              #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This subroutine is called when the SelectorTable is created.  It     #
+#  creates the QColors needed when the GUI is run as the 'Updater'.     #
+#########################################################################
+
+  if (!$colorsCreated)
+    {
+      $colorsCreated = 1;
+      $greenText = Qt::Color(0,150,0);
+      $brightGreenText = Qt::Color(100,255,100);
+      $darkGreenText = Qt::Color(0,80,0);
+      $redText = Qt::Color(150,0,0);
+      $brightRedText = Qt::Color(255,100,100);
+      $darkRedText = Qt::Color(80,0,0);
+    }
 }
 
 1;

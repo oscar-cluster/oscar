@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'Selector.ui'
 #
-# Created: Tue Jul 1 18:33:14 2003
+# Created: Wed Oct 29 20:19:05 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -15,11 +15,13 @@ use Qt;
 use SelectorTable;
 use Qt::isa qw(Qt::MainWindow);
 use Qt::slots
-    refreshPackageSetComboBox => [],
     init => [],
+    parseCommandLine => [],
+    refreshPackageSetComboBox => [],
     aboutButton_clicked => [],
     manageSetsButton_clicked => [],
     exitButton_clicked => [],
+    cancelButton_clicked => [],
     updateTextBox => [],
     rowSelectionChanged => [];
 use Qt::attributes qw(
@@ -47,17 +49,20 @@ use Qt::attributes qw(
     previousButton_font
     exitButton
     exitButton_font
+    cancelButton
+    cancelButton_font
     nextButton
     nextButton_font
     menubar
 );
 
 use SelectorUtils;
-use Qt::attributes qw( aboutForm manageSetsForm );
+use Qt::attributes qw( aboutForm manageSetsForm installuninstall );
 use SelectorManageSets;
 use SelectorImages;
 use SelectorAbout;
 use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::Database;
+use Getopt::Long;
 
 sub uic_load_pixmap_Selector
 {
@@ -82,19 +87,20 @@ sub NEW
     {
         setName("Selector");
     }
-    resize(540,456);
+    resize(621,493);
     setCaption(trUtf8("OSCAR Package Selector"));
 
     setCentralWidget(Qt::Widget(this, "qt_central_widget"));
     my $SelectorLayout = Qt::GridLayout(centralWidget(), 1, 1, 11, 6, '$SelectorLayout');
 
-    my $Layout7 = Qt::VBoxLayout(undef, 0, 6, '$Layout7');
+    my $layout19 = Qt::VBoxLayout(undef, 0, 6, '$layout19');
 
     my $Layout19 = Qt::HBoxLayout(undef, 0, 0, '$Layout19');
 
     my $Layout14 = Qt::VBoxLayout(undef, 0, 6, '$Layout14');
 
     titleLabel = Qt::Label(centralWidget(), "titleLabel");
+    titleLabel->setSizePolicy(Qt::SizePolicy(7, 5, 0, 0, titleLabel->sizePolicy()->hasHeightForWidth()));
     titleLabel_font = Qt::Font(titleLabel->font);
     titleLabel_font->setFamily("Helvetica [Urw]");
     titleLabel_font->setPointSize(24);
@@ -138,16 +144,17 @@ sub NEW
     $Layout19->addLayout($Layout14);
 
     aboutButton = Qt::PushButton(centralWidget(), "aboutButton");
+    aboutButton->setSizePolicy(Qt::SizePolicy(0, 0, 0, 0, aboutButton->sizePolicy()->hasHeightForWidth()));
     aboutButton->setText(trUtf8(""));
     aboutButton->setPixmap(uic_load_pixmap_Selector("oscarsmall.png"));
     aboutButton->setFlat(1);
     Qt::ToolTip::add(aboutButton, trUtf8("View information about OSCAR"));
     $Layout19->addWidget(aboutButton);
-    $Layout7->addLayout($Layout19);
+    $layout19->addLayout($Layout19);
 
     packageTable = SelectorTable(centralWidget(), "packageTable");
     packageTable->setSizePolicy(Qt::SizePolicy(7, 7, 0, 3, packageTable->sizePolicy()->hasHeightForWidth()));
-    $Layout7->addWidget(packageTable);
+    $layout19->addWidget(packageTable);
 
     packageTabWidget = Qt::TabWidget(centralWidget(), "packageTabWidget");
     packageTabWidget->setSizePolicy(Qt::SizePolicy(7, 7, 0, 2, packageTabWidget->sizePolicy()->hasHeightForWidth()));
@@ -155,7 +162,7 @@ sub NEW
     Qt::ToolTip::add(packageTabWidget, trUtf8("Display of information about the package selected above"));
 
     informationTab = Qt::Widget(packageTabWidget, "informationTab");
-    my $informationTabLayout = Qt::GridLayout(informationTab, 1, 1, -1, -1, '$informationTabLayout');
+    my $informationTabLayout = Qt::GridLayout(informationTab, 1, 1, 0, 6, '$informationTabLayout');
 
     informationTextBox = Qt::TextEdit(informationTab, "informationTextBox");
     informationTextBox->setReadOnly(1);
@@ -164,7 +171,7 @@ sub NEW
     packageTabWidget->insertTab(informationTab, trUtf8("Information"));
 
     providesTab = Qt::Widget(packageTabWidget, "providesTab");
-    my $providesTabLayout = Qt::GridLayout(providesTab, 1, 1, -1, -1, '$providesTabLayout');
+    my $providesTabLayout = Qt::GridLayout(providesTab, 1, 1, 0, 6, '$providesTabLayout');
 
     providesTextBox = Qt::TextEdit(providesTab, "providesTextBox");
     providesTextBox->setReadOnly(1);
@@ -173,7 +180,7 @@ sub NEW
     packageTabWidget->insertTab(providesTab, trUtf8("Provides"));
 
     conflictsTab = Qt::Widget(packageTabWidget, "conflictsTab");
-    my $conflictsTabLayout = Qt::GridLayout(conflictsTab, 1, 1, -1, -1, '$conflictsTabLayout');
+    my $conflictsTabLayout = Qt::GridLayout(conflictsTab, 1, 1, 0, 6, '$conflictsTabLayout');
 
     conflictsTextBox = Qt::TextEdit(conflictsTab, "conflictsTextBox");
     conflictsTextBox->setReadOnly(1);
@@ -182,7 +189,7 @@ sub NEW
     packageTabWidget->insertTab(conflictsTab, trUtf8("Conflicts"));
 
     requiresTab = Qt::Widget(packageTabWidget, "requiresTab");
-    my $requiresTabLayout = Qt::GridLayout(requiresTab, 1, 1, -1, -1, '$requiresTabLayout');
+    my $requiresTabLayout = Qt::GridLayout(requiresTab, 1, 1, 0, 6, '$requiresTabLayout');
 
     requiresTextBox = Qt::TextEdit(requiresTab, "requiresTextBox");
     requiresTextBox->setReadOnly(1);
@@ -191,16 +198,16 @@ sub NEW
     packageTabWidget->insertTab(requiresTab, trUtf8("Requires"));
 
     packagerTab = Qt::Widget(packageTabWidget, "packagerTab");
-    my $packagerTabLayout = Qt::GridLayout(packagerTab, 1, 1, -1, -1, '$packagerTabLayout');
+    my $packagerTabLayout = Qt::GridLayout(packagerTab, 1, 1, 0, 6, '$packagerTabLayout');
 
     packagerTextBox = Qt::TextEdit(packagerTab, "packagerTextBox");
     packagerTextBox->setReadOnly(1);
 
     $packagerTabLayout->addWidget(packagerTextBox, 0, 0);
     packageTabWidget->insertTab(packagerTab, trUtf8("Packager"));
-    $Layout7->addWidget(packageTabWidget);
+    $layout19->addWidget(packageTabWidget);
 
-    my $Layout8 = Qt::HBoxLayout(undef, 0, 6, '$Layout8');
+    my $layout18 = Qt::HBoxLayout(undef, 11, 6, '$layout18');
 
     previousButton = Qt::PushButton(centralWidget(), "previousButton");
     previousButton->setSizePolicy(Qt::SizePolicy(1, 1, 1, 0, previousButton->sizePolicy()->hasHeightForWidth()));
@@ -211,7 +218,7 @@ sub NEW
     previousButton->setText(trUtf8("&Previous"));
     previousButton->setIconSet(Qt::IconSet(uic_load_pixmap_Selector("1leftarrow.png")));
     Qt::ToolTip::add(previousButton, trUtf8("Go to the previous step of the installer"));
-    $Layout8->addWidget(previousButton);
+    $layout18->addWidget(previousButton);
 
     exitButton = Qt::PushButton(centralWidget(), "exitButton");
     exitButton->setSizePolicy(Qt::SizePolicy(1, 1, 2, 0, exitButton->sizePolicy()->hasHeightForWidth()));
@@ -222,7 +229,18 @@ sub NEW
     exitButton->setText(trUtf8("E&xit"));
     exitButton->setIconSet(Qt::IconSet(uic_load_pixmap_Selector("exit.png")));
     Qt::ToolTip::add(exitButton, trUtf8("Exit the OSCAR Package Selector"));
-    $Layout8->addWidget(exitButton);
+    $layout18->addWidget(exitButton);
+
+    cancelButton = Qt::PushButton(centralWidget(), "cancelButton");
+    cancelButton->setSizePolicy(Qt::SizePolicy(1, 1, 2, 0, cancelButton->sizePolicy()->hasHeightForWidth()));
+    cancelButton_font = Qt::Font(cancelButton->font);
+    cancelButton_font->setFamily("Helvetica [Urw]");
+    cancelButton_font->setPointSize(14);
+    cancelButton->setFont(cancelButton_font);
+    cancelButton->setText(trUtf8("&Cancel"));
+    cancelButton->setIconSet(Qt::IconSet(uic_load_pixmap_Selector("cancel.png")));
+    Qt::ToolTip::add(cancelButton, trUtf8("Exit and abandon any changes"));
+    $layout18->addWidget(cancelButton);
 
     nextButton = Qt::PushButton(centralWidget(), "nextButton");
     nextButton->setSizePolicy(Qt::SizePolicy(1, 1, 1, 0, nextButton->sizePolicy()->hasHeightForWidth()));
@@ -233,10 +251,10 @@ sub NEW
     nextButton->setText(trUtf8("&Next"));
     nextButton->setIconSet(Qt::IconSet(uic_load_pixmap_Selector("1rightarrow.png")));
     Qt::ToolTip::add(nextButton, trUtf8("Go to the next step of the installer"));
-    $Layout8->addWidget(nextButton);
-    $Layout7->addLayout($Layout8);
+    $layout18->addWidget(nextButton);
+    $layout19->addLayout($layout18);
 
-    $SelectorLayout->addLayout($Layout7, 0, 0);
+    $SelectorLayout->addLayout($layout19, 0, 0);
 
 
 
@@ -247,6 +265,7 @@ sub NEW
     Qt::Object::connect(exitButton, SIGNAL "clicked()", this, SLOT "exitButton_clicked()");
     Qt::Object::connect(aboutButton, SIGNAL "clicked()", this, SLOT "aboutButton_clicked()");
     Qt::Object::connect(manageSetsButton, SIGNAL "clicked()", this, SLOT "manageSetsButton_clicked()");
+    Qt::Object::connect(cancelButton, SIGNAL "clicked()", this, SLOT "cancelButton_clicked()");
 
     setTabOrder(aboutButton, packageSetComboBox);
     setTabOrder(packageSetComboBox, manageSetsButton);
@@ -261,6 +280,92 @@ sub NEW
     init();
 }
 
+
+sub init
+{
+
+#########################################################################
+#  Subroutine: init                                                     #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This code gets called after the widget is created but before it gets #
+#  displayed.  This is so we can populate the packageSetComboBox and    #
+#  the packageTable, as well as any other setup work.                   #
+#########################################################################
+
+  # Scan the command line for options
+  parseCommandLine();
+
+  # Make sure the database is up and running
+  my $success = database_connect();
+  if ($success)
+    {
+      # Create the form windows for SelectorAbout and SelectorManageSets
+      aboutForm = SelectorAbout(this,"aboutForm");
+      manageSetsForm = SelectorManageSets(this,"manageSetsForm");
+
+      # Set up the SIGNALS / SLOTS connections
+      Qt::Object::connect(manageSetsForm, SIGNAL 'refreshPackageSets()', 
+                          this, SLOT 'refreshPackageSetComboBox()');
+      Qt::Object::connect(packageSetComboBox, 
+                          SIGNAL 'activated(const QString&)',
+                          packageTable,
+                          SLOT 'populateTable(const QString&)');
+      Qt::Object::connect(packageTable, SIGNAL 'selectionChanged()',
+                          this, SLOT 'rowSelectionChanged()');
+
+      # For now, hide the previous/next buttons, until they are needed
+      previousButton->hide();
+      nextButton->hide();
+
+      # Modify the GUI depending on whether we are running this script
+      # as the "OSCAR Selector" or "Install/Uninstall Packages".
+      if (installuninstall > 0)
+        {
+          this->setCaption("Install/Uninstall OSCAR Packages");
+          titleLabel->setText("Install/Uninstall Packages");
+          packLabel->hide();
+          packageSetComboBox->hide();
+          manageSetsButton->hide();
+          exitButton->setText('E&xecute');
+          Qt::ToolTip::add(packageTable, 
+            trUtf8("Green = Will Be Installed, Red = Will Be Uninstalled"));
+          Qt::ToolTip::remove(exitButton);
+          Qt::ToolTip::add(exitButton,
+            "Exit and execute install/uninstall of packages");
+        }
+      else
+        {
+          cancelButton->hide();
+        }
+
+      # Populate the Package Set ComboBox / packageTable
+      refreshPackageSetComboBox();
+    }
+  else
+    {
+      Carp::croak("The oda database isn't running.  Quitting"); 
+    }
+
+}
+
+sub parseCommandLine
+{
+
+#########################################################################
+#  Subroutine: parseCommandLine                                         #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This is called at program init to scan the command line for          #
+#  any options.                                                         #
+#########################################################################
+
+  $Getopt::Long::autoabbrev = 1;        # Allow abbreviated options
+  $Getopt::Long::getopt_compat = 1;     # Allow + for options
+  $Getopt::Long::order = $PERMUTE;      # Option reordering
+  &GetOptions("installuninstall" => \installuninstall);
+
+}
 
 sub refreshPackageSetComboBox
 {
@@ -304,50 +409,6 @@ sub refreshPackageSetComboBox
 
 }
 
-sub init
-{
-
-#########################################################################
-#  Subroutine: init                                                     #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#  This code gets called after the widget is created but before it gets #
-#  displayed.  This is so we can populate the packageSetComboBox and    #
-#  the packageTable, as well as any other setup work.                   #
-#########################################################################
-
-  # Make sure the database is up and running
-  my $success = database_connect();
-  if ($success)
-    {
-      # Create the form windows for SelectorAbout and SelectorManageSets
-      aboutForm = SelectorAbout(this,"aboutForm");
-      manageSetsForm = SelectorManageSets(this,"manageSetsForm");
-
-      # Set up the SIGNALS / SLOTS connections
-      Qt::Object::connect(manageSetsForm, SIGNAL 'refreshPackageSets()', 
-                          this, SLOT 'refreshPackageSetComboBox()');
-      Qt::Object::connect(packageSetComboBox, 
-                          SIGNAL 'activated(const QString&)',
-                          packageTable,
-                          SLOT 'populateTable(const QString&)');
-      Qt::Object::connect(packageTable, SIGNAL 'selectionChanged()',
-                          this, SLOT 'rowSelectionChanged()');
-
-      # For now, hide the previous/next buttons, until they are needed
-      previousButton->hide();
-      nextButton->hide();
-
-      # Populate the Package Set ComboBox / packageTable
-      refreshPackageSetComboBox();
-    }
-  else
-    {
-      Carp::croak("The oda database isn't running.  Quitting"); 
-    }
-
-}
-
 sub aboutButton_clicked
 {
 
@@ -385,6 +446,55 @@ sub exitButton_clicked
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
 #  When the exitButton is clicked, quit the application.                #
+#########################################################################
+
+  # If the GUI is running as the 'Updater', then we need to go through
+  # the list of all packages and find out which ones need to be installed
+  # or uninstalled.  
+  if (installuninstall > 0)
+    { 
+      my $success;  # Return code for database commands
+
+      # First, clear all install/uninstall flags
+      $success = database_execute_command(
+        "packages_clear_all_should_be_installed");
+      $success = database_execute_command(
+        "packages_clear_all_should_be_uninstalled");
+
+      # Then scan the table for packages to be installed/uninstalled
+      my $allPackages = SelectorUtils::getAllPackages();
+      my $packagesInstalled = packageTable->getPackagesInstalled();
+      for (my $row = 0; $row < packageTable->numRows(); $row++)
+        {
+          my $package = packageTable->item($row,0)->text();
+          my $checked = packageTable->item($row,1)->isChecked();
+
+          if (($packagesInstalled->{$package}) && (!$checked))
+            { # Need to uninstall package
+              $success = database_execute_command(
+                "package_mark_should_be_uninstalled $package");
+            }
+
+          if ((!($packagesInstalled->{$package})) && ($checked))
+            { # Need to install package
+              $success = database_execute_command(
+                "package_mark_should_be_installed $package");
+            }
+        }
+    }
+
+  database_disconnect();
+  Qt::Application::exit();
+
+}
+
+sub cancelButton_clicked
+{
+
+#########################################################################
+#  Subroutine: cancelButton_clicked                                     #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
 #########################################################################
 
   database_disconnect();
