@@ -61,8 +61,6 @@ echo ---------------------------------------------------------------------------
 # Test MPI under PBS
 cd mpi
 echo "Running a simple MPICH job under PBS..."
-echo "*******MPICH test bypassed in this beta*******"
-if [ `/bin/false` ]; then                         # Test bypasses mpich
 if [ -f mpichtest.out ]; then /bin/rm -f mpichtest.out; fi
 if [ -f mpichtest.err ]; then /bin/rm -f mpichtest.err; fi
 job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.mpich`
@@ -77,7 +75,6 @@ else
   echo "Output from MPICH test:"
   cat mpichtest.out
 fi
-fi                                                # Test bypasses mpich
 echo ________________________________________________________________________________
 echo LAM TEST
 echo --------------------------------------------------------------------------------
