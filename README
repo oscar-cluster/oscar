@@ -1,4 +1,4 @@
-$Id: README,v 1.4 2002/01/19 16:36:09 jsquyres Exp $
+$Id: README,v 1.5 2002/01/20 20:40:30 naughtont Exp $
 
 $COPYRIGHT$
 
@@ -15,6 +15,12 @@ Notes on the 1.2 beta release
 ***************************************************************
 
 There are some limitations to the 1.2 beta release, they are:
+
+-The test_install script skips MPICH for now, a new MPICH RPM
+will be available soon and this test will return.
+
+-There will be a new MPICH RPM added that uses "ssh" by default
+instead of "rsh" ("rsh" is disabled by default in the OSCAR install).
 
 - Only single processors are exploited on the nodes.  Be sure to tell
 the test script that you have 1 processor per node.
