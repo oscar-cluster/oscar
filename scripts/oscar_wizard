@@ -141,7 +141,7 @@ sub build_oscar_image {
     my @fullfiles = map {" --filename=$_ "} @clientfiles;
     my $extraflags = join('',@fullfiles);
 
-    my $diskfile = "sample.disk.$disk_type" . ($arch eq "i386") ? "" : ".$arch";
+    my $diskfile = "sample.disk.$disk_type" . (($arch eq "i386") ? "" : ".$arch");
 
     my %vars = (
                 imgname => "oscarimage",
