@@ -16,6 +16,8 @@ my @known_rpms = qw(
                     loghost
                     mpich-oscar-module
                     mpich-oscar
+		    mysql
+		    mysql-server
                     ntpconfig
                     pvm-modules-oscar
                     pvm
@@ -31,6 +33,7 @@ my @known_rpms = qw(
                     maui-oscar
                     libdbdcsv-perl
                     libappconfig-perl
+		    perl-DBD-MySQL
                     rrdtool
                     systeminstaller
                     systeminstaller-x11
@@ -118,6 +121,8 @@ print "found $paths_count rpm files.\n";
 
 print "Deleting oda database ...\n";
 system("oda drop_database");
+#print "Deleting oda database saved password file ...\n";
+#unlink "/etc/odapw";
 
 # find a list of all the services installed by the oscar rpms
 
@@ -211,6 +216,8 @@ sub cleanup_files {
               '/opt/rrdtool-1.0.35',
               '/usr/local/lib/systemimager',
               '/var/lib/clamdr',
+	      '/var/lib/mysql',
+	      '/var/lib/mysqld',
               '/var/lib/systemimager',
               '/var/lib/systeminstaller',
               '/var/log/systemimager',
