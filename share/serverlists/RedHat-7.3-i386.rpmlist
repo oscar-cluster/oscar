@@ -1,0 +1,13 @@
+dhcp
+gd
+mm
+nfs-utils
+openssh
+openssh-clients
+openssh-server
+openssl
+tcpdump
+xinetd
+apache
+php
+expat
