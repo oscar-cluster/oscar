@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'SelectorAbout.ui'
 #
-# Created: Fri Jun 27 14:08:34 2003
+# Created: Tue Jul 1 18:33:12 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!

@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'Selector.ui'
 #
-# Created: Fri Jun 27 14:08:36 2003
+# Created: Tue Jul 1 18:33:14 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -334,6 +334,7 @@ sub init
       Qt::Object::connect(packageTable, SIGNAL 'selectionChanged()',
                           this, SLOT 'rowSelectionChanged()');
 
+      # For now, hide the previous/next buttons, until they are needed
       previousButton->hide();
       nextButton->hide();
 
@@ -447,9 +448,20 @@ sub rowSelectionChanged
   updateTextBox("provides",$package);
   updateTextBox("requires",$package);
   updateTextBox("conflicts",$package);
-  my $packagerStr = $allPackages->{$package}{packager_name};
-  $packagerStr .= " <" .  $allPackages->{$package}{packager_email} . ">" if
-    (length $allPackages->{$package}{packager_email} > 0);
+
+  # Update the packager names / emails
+  # We read in the names/emails as a single string, but there might have
+  # been more than one packager.  If so , the delimiter is '","'.
+  my @names = split /\",\"/, $allPackages->{$package}{packager_name};
+  my @emails = split /\",\"/, $allPackages->{$package}{packager_email};
+  my $packagerStr = "";
+  for (my $arraypos = 0; $arraypos <= $#names; $arraypos++)
+    {
+      $packagerStr .= $names[$arraypos];
+      $packagerStr .= " <" . $emails[$arraypos] . ">" if
+        (length $emails[$arraypos] > 0);
+      $packagerStr .= "\n";
+    }
   packagerTextBox->setText($packagerStr);
 
 }

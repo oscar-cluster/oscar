@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'SelectorManageSets.ui'
 #
-# Created: Fri Jun 27 14:08:35 2003
+# Created: Tue Jul 1 18:33:13 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -398,6 +398,7 @@ sub doneButton_clicked
 #  This is called when the "Done" button is clicked.  It 'hides'        #
 #  the Manage Package Sets window so we don't have to create it again.  #
 #########################################################################
+
   hide();
 
 }
@@ -412,6 +413,7 @@ sub showEvent
 #  This is called when the Manage Package Sets window is shown.  It     #
 #  rebuilds the items in the List box each time.                        #
 #########################################################################
+
   refreshPackageSetsListBox();
 
 }
@@ -427,6 +429,7 @@ sub packageSetsListBox_doubleClicked
 #  set's names in the ListBox.  It simply calls the "renameButton"      #
 #  code to rename that item.                                            #
 #########################################################################
+
   renameButton_clicked();
 
 }

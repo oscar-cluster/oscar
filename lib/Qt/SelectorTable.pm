@@ -53,7 +53,7 @@ sub NEW
 #  headers, read-only status, etc.  Then it show()s it at the end.      #
 #  The table is organized as follows:                                   #
 #        Col 0       Col 1      Col 2   Col 3                           #
-#        ShortName   LongName   Class   Location                        #
+#        ShortName   LongName   Class   Location/Version                #
 #  Column 0 is HIDDEN.  It's there just so that we have a key for the   #
 #  $allPackages hash.                                                   #
 #########################################################################
@@ -87,7 +87,7 @@ sub NEW
   # When the value of any cell changes, call cellValueChanged to 
   # catch checkboxes on/off.
   Qt::Object::connect(this, SIGNAL 'valueChanged(int,int)',
-    this, SLOT 'cellValueChanged(int,int)');
+                            SLOT   'cellValueChanged(int,int)');
  
   show();
 }
@@ -135,7 +135,7 @@ sub getPackagesInPackageSet
   my @packagesInSet;
   my $packagesInSet;
   my $success = database_execute_command("packages_in_package_set $packageSet",
-                 \@packagesInSet);
+                                         \@packagesInSet);
   foreach my $pack (@packagesInSet)
     {
       $packagesInSet->{$pack} = 1;
@@ -329,8 +329,6 @@ sub cellValueChanged
 
   my $success;  # Value returned by database commands
 
-#  print "Cell [$row,$col] clicked\n";
-
   if ($col == 1)  # Column 1 contains the checkboxes
     {
       # We don't want to allow the user to change the checked status of core
@@ -357,7 +355,6 @@ sub cellValueChanged
             { # Package is NOT in the package set but should be -> add it!
               # Check for requires AND conflicts.
               # First, get list of recursively required packages for checkbox.
-#              print "Getting RequiresList\n";
               $reqhash = SelectorUtils::getRequiresList($reqhash,$package);
               # Add in any 'core' packages which are selected since they are
               # always required and should never have any conflicts (i.e.
@@ -370,7 +367,6 @@ sub cellValueChanged
                 }
 
               # Get a list of packages conflicting with the required ones.
-#              print "Getting ConflictsList\n";
               $conhash = SelectorUtils::getConflictsList($reqhash);
 
               # Check to see if the conflicts and the requires list coincide
@@ -394,7 +390,6 @@ sub cellValueChanged
                       if ((!(defined $packagesInSet->{$reqkey})) || 
                           ($packagesInSet->{$reqkey} != 1))
                         {
-#                          print "ADDING A REQUIREMENT: $reqkey\n";
                           $success = database_execute_command(
                             "add_package_to_package_set $reqkey $currSet");
                           Carp::carp("Could not do oda command 
@@ -411,7 +406,6 @@ sub cellValueChanged
                       if ((defined $packagesInSet->{$conkey}) &&
                           ($packagesInSet->{$conkey} == 1))
                         {
-#                          print "REMOVING A CONFLICT: $conkey\n";
                           $success = database_execute_command(
                             "remove_package_from_package_set $conkey $currSet");
                           Carp::carp("Could not do oda command 'remove_".
@@ -427,7 +421,6 @@ sub cellValueChanged
               if ((!(defined $packagesInSet->{$package})) || 
                   ($packagesInSet->{$package} != 1))
                 {
-#                  print "ADDING THE CHECKED PACKAGE: $package\n";
                   $success = database_execute_command(
                     "add_package_to_package_set $package $currSet");
                   Carp::carp("Could not do oda command 
@@ -444,7 +437,6 @@ sub cellValueChanged
             { # Package IS in the package set but should NOT be -> remove it!
               # Check for things that require it and unselect all of those
               # checkboxes EXCEPT for those buttons that are 'core'.
-#              print "Getting RequiredByList\n";
               $reqhash = SelectorUtils::getIsRequiredByList($reqhash,$package);
               foreach $reqkey (keys %{ $reqhash })
                 {
@@ -455,7 +447,6 @@ sub cellValueChanged
                       if ((defined $packagesInSet->{$reqkey}) || 
                           ($packagesInSet->{$reqkey} == 1))
                         {
-#                          print "REMOVING A REQUIREDBY: $reqkey\n";
                           $success = database_execute_command(
                             "remove_package_from_package_set " .
                               "$reqkey $currSet");
@@ -471,7 +462,6 @@ sub cellValueChanged
               if ((defined $packagesInSet->{$package}) || 
                   ($packagesInSet->{$package} == 1))
                 {
-#                  print "REMOVING THE CHECKED PACKAGE: $package\n";
                   $success = database_execute_command(
                     "remove_package_from_package_set $package $currSet");
                   Carp::carp("Could not do oda command 

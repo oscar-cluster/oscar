@@ -100,6 +100,8 @@ sub getAllPackages # -> $allPackages
 #     Conflicts      {conflicts}       Array of hash references:        #
 #                    {provides}[0]->{name} - Name of thing provided     #
 #                    {provides}[0]->{type} - package, rpm, file, etc.   #
+#     Packager Name  {packager_name}   Name(s) of packager              #
+#     Packager Email {packager_email}  Email address(es) of packager(s) #
 #########################################################################
 
   # If this function has been called once, then it should have already
@@ -127,7 +129,6 @@ sub getAllPackages # -> $allPackages
       # three fields {location}, {version}, and {repository}.  Here, the
       # {version} is actually a single string using the version_major,
       # version_minor, version_subversion, and version_release fields.  
-
       $version = "";
       $version  = $allPackages->{$pack}{version_major} if 
                   (length $allPackages->{$pack}{version_major} > 0);
@@ -147,7 +148,6 @@ sub getAllPackages # -> $allPackages
       # package.  Here the {provides}, {requires}, and {conflicts} fields
       # are arrays of hash references, each containing the two fields {name}
       # and {type}.  
-
       addTypeNameFieldToPackage("provides",$pack);
       if ((!defined $allPackages->{$pack}{provides}) ||
           (scalar @{ $allPackages->{$pack}{provides} } < 1))
