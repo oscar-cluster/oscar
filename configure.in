@@ -1,5 +1,7 @@
 # -*- shell-script -*-
 #
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
 # Copyright (c) 2002-2004 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
@@ -7,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.39 2004/04/13 18:34:58 tuelusr Exp $
+# $Id: configure.in,v 1.40 2004/04/13 19:40:27 brechin Exp $
 #
 # $HEADER$
 #
@@ -49,6 +51,18 @@ AC_CANONICAL_HOST
 
 CLEANFILES="*~ .*~ .\#*"
 AC_SUBST(CLEANFILES)
+
+# Look for tools to build the Perl-Qt wizard
+AC_MSG_CHECKING([for Perl environment])
+OSCAR_CHECK_PROG(PERL, perl, yes)
+if [ "x$found_oscar_progs" = "xno" ]; then
+  AC_MSG_WARN([*** You can not build the Perl-Qt wizard ***])
+  AC_MSG_RESULT([not found])
+  exit 1
+fi
+PUIC=/opt/perl-Qt/bin/puic
+AC_SUBST(PUIC)
+AC_SUBST(PERL)
 
 # Look for things to make the .tex documentation, but only if we have
 # .tex documentation to make.
