@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.9 2003/07/04 14:46:27 jsquyres Exp $
+# $Id: Makefile.am,v 1.10 2003/07/29 18:37:23 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -33,6 +33,26 @@ EXTRA_DIST		= $(oscar_SCRIPTS) $(oscar_DATA)
 
 docs:
 	(cd doc; $(MAKE) docs)
+
+
+#
+# Print a nice message when the install is done
+#
+
+install-exec-hook:
+	@echo "------------------------------------------------------------"
+	@echo ""
+	@echo "OSCAR has been successfully installed to $(prefix)."
+	@echo ""
+	@echo "You should change to that directory and start the OSCAR"
+	@echo "installation process:"
+	@echo ""
+	@echo "    shell# cd $(prefix)"
+	@echo "    shell# ./install_cluster <network_device>"
+	@echo ""
+	@echo "Consult the OSCAR installation guide for more information."
+	@echo ""
+	@echo "------------------------------------------------------------"
 
 
 #
