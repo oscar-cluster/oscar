@@ -1,4 +1,4 @@
-% $Id: configurator.tex,v 1.1 2003/10/01 20:36:37 naughtont Exp $
+% $Id: configurator.tex,v 1.2 2003/10/01 21:27:46 naughtont Exp $
 %
 % "Configurator HOWTO" (LaTeX-ified for inclusion w/ the Pkg howto)
 %  - The details the usage and syntax for working with the OSCAR Configurator.
@@ -79,20 +79,10 @@ the user is his name, your configuration file might be as follows:
 
 The resulting output would look like this:
 
-
-% \begin{figure}[h!]
-%   \begin{center}
-%     \includegraphics[scale=\imgscale]{figs/EnterYourName}
-%     %\caption{}
-%     \label{fig:config-enter-name}
-%   \end{center}
-% \end{figure}
-
 ~
 
-\includegraphics[%
-  %scale=0.5]{EnterYourName.png}
-  scale=0.5]{figs/EnterYourName}
+\includegraphics[scale=0.5]{figs/EnterYourName}
+
 
 ~
 
@@ -201,20 +191,9 @@ Example:
 
 Output:
 
-%%TJN: NEW need new capture
-%\begin{figure}[h!]
-%  \begin{center}
-%    \includegraphics[scale=\imgscale]{figs/sbs-configure-install}
-%    %\caption{}
-%    \label{fig:config-enter-name2}
-%  \end{center}
-%\end{figure}
-
 
 \begin{quote}
-\includegraphics[%
-  %scale=0.5]{EnterYourName2.png}
-  scale=0.5]{figs/EnterYourName2}
+\includegraphics[scale=0.5]{figs/EnterYourName2}
 \end{quote}
 \item $<$input type=\char`\"{}password\char`\"{} name=\char`\"{}VARIABLE\char`\"{}
 value=\char`\"{}INITIAL\char`\"{} size=\char`\"{}NUMCHARS\char`\"{}
@@ -239,9 +218,7 @@ Example:
 Output: 
 
 \begin{quote}
-\includegraphics[%
-  %scale=0.5]{EnterYourPassword.png}
-  scale=0.5]{figs/EnterYourPassword.eps}
+\includegraphics[scale=0.5]{figs/EnterYourPassword}
 \end{quote}
 \item $<$input type=\char`\"{}checkbox\char`\"{} name=\char`\"{}VARIABLE\char`\"{}
 value=\char`\"{}RETURNVALUE\char`\"{} checked$>$ - 
@@ -274,9 +251,7 @@ Example:
 Output: 
 
 \begin{quote}
-\includegraphics[%
-  %scale=0.5]{EnableRootAccess.png}
-  scale=0.5]{figs/EnableRootAccess.eps}
+\includegraphics[scale=0.5]{figs/EnableRootAccess}
 \end{quote}
 \item $<$input type=\char`\"{}radio\char`\"{} name=\char`\"{}VARIABLE\char`\"{}
 value=\char`\"{}RETURNVALUE\char`\"{} checked$>$ - 
@@ -314,9 +289,7 @@ Example:
 Output: 
 
 \begin{quote}
-\includegraphics[%
-  %scale=0.5]{UserType.png}
-  scale=0.5]{figs/UserType}
+\includegraphics[scale=0.5]{figs/UserType}
 \end{quote}
 \item $<$input type=\char`\"{}hidden\char`\"{} name=\char`\"{}VARIABLE\char`\"{}
 value=\char`\"{}RETURNVALUE\char`\"{}$>$ - 
@@ -342,9 +315,7 @@ Example:
 Output: 
 
 \begin{quote}
-\includegraphics[%
-  %scale=0.5]{HiddenElement.png}
-  scale=0.5]{figs/HiddenElement}
+\includegraphics[scale=0.5]{figs/HiddenElement}
 \end{quote}
 \item $<$input type=\char`\"{}reset\char`\"{}
 value=\char`\"{}LABEL\char`\"{}$>$
@@ -369,9 +340,7 @@ Example:
 Output: 
 
 \begin{quote}
-\includegraphics[%
-  %scale=0.5]{ResetForm.png}
-  scale=0.5]{figs/ResetForm}
+\includegraphics[scale=0.5]{figs/ResetForm}
 \end{quote}
 \item $<$textarea name=\char`\"{}VARIABLE\char`\"{} cols=\char`\"{}WIDTH\char`\"{}
 rows=\char`\"{}HEIGHT\char`\"{} 
@@ -417,9 +386,7 @@ Example:
 Output: 
 
 \begin{quote}
-\includegraphics[%
-  %scale=0.5]{Comments.png}
-  scale=0.5]{figs/Comments}
+\includegraphics[scale=0.5]{figs/Comments}
 \end{quote}
 \item $<$select name=\char`\"{}VARIABLE\char`\"{} size=\char`\"{}LISTLENGTH\char`\"{}
 multiple$>$ $<$option value=\char`\"{}OPTIONVALUE\char`\"{}$>$ $<$option value=\char`\"{}OPTIONVALUE\char`\"{}
@@ -470,9 +437,7 @@ Example:
 Output: 
 
 \begin{quote}
-\includegraphics[%
-  %scale=0.5]{SelectMachine.png}
-  scale=0.5]{figs/SelectMachine}
+\includegraphics[scale=0.5]{figs/SelectMachine}
 \end{quote}
 Note: when viewing the above example in a standard HTML browser, you
 might have to use the $<$SHIFT$>$ or $<$CTRL$>$ key in conjunction with clicking
