@@ -1,4 +1,4 @@
-$Id: README,v 1.21 2002/07/06 05:00:33 jsquyres Exp $
+$Id: README,v 1.22 2002/07/13 17:52:34 jsquyres Exp $
 
 $COPYRIGHT$
 
@@ -15,3 +15,29 @@ document in doc/quick_install.pdf.
 
 User instructions for utilizing the software installed on OSCAR
 clusters can be found in doc/user.pdf.
+
+Note that there are actually three flavors of distribution packages
+for OSCAR, depending on your bandwidth and installation/development
+needs:
+
+1. "Regular": All the OSCAR installation stuff that most users need to
+   install and operate an OSCAR cluster.
+
+2. "Extra Crispy": Same as Regular, except that the SRPMs for most of
+   the OSCAR-specific RPMs are also included.  This distribution
+   package is significantly larger than Regular, and is not necessary
+   for most users -- only those who are interested in source RPMs need
+   the Extra Crispy distribution.  The SRPMs can be found under
+   packages/*/SRPMS/ directories.
+
+3. "Secret Sauce": This distribution contains *only* the SRPMs for
+   OSCAR-specific RPMs in the Regular and Extra Crispy distributions
+   (it's essentially (Extra Crispy - Regular)).  It is intended only
+   for those who initially downloaded the Regular distribution and
+   later decided that they wanted the SRPMs as well.  The Secret Sauce
+   distribution is intended to be expanded over your Regular
+   installation -- it will create packages/*/SRPMS/ directories and
+   populate them with the relevant .src.rpm files.
+
+All three distributions can be downloaded from the main OSCAR web
+page.
