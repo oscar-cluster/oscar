@@ -4,10 +4,10 @@
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
-# information, see the LICENSE file in the top level directory of the
+# information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.29 2002/10/29 00:25:06 jsquyres Exp $
+# $Id: configure.in,v 1.30 2002/10/30 12:19:09 jsquyres Exp $
 #
 # $HEADER$
 #

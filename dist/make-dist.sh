@@ -4,10 +4,10 @@
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
-# information, see the LICENSE file in the top level directory of the
+# information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: make-dist.sh,v 1.21 2002/10/25 13:45:22 jsquyres Exp $
+# $Id: make-dist.sh,v 1.22 2002/10/30 12:19:09 jsquyres Exp $
 #
 
 srcdir="`pwd`"
