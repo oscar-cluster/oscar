@@ -67,7 +67,7 @@ if ( system("rpm -q perl-Tk >/dev/null") != 0  ) {
 	      #RH
       @ptkrpms = qw( perl-Tk );
     }
-    install_rpms(@ptkrpms) || croak("perl-Tk cannot be installed, check for error messages from rpm");
+    install_packages(@ptkrpms) || croak("perl-Tk cannot be installed, check for error messages from rpm");
   }
 } else {
   oscar_log_subsection("We don't need to install perl-Tk\n");

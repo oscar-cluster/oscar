@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.7 2003/12/04 03:57:11 ngorsuch Exp $
+# $Id: setup,v 1.8 2004/03/16 00:42:09 tfleury Exp $
 #
 
 #use strict;
@@ -133,7 +133,7 @@ foreach my $rpm_file (@package_rpm_files) {
 # Now install the "best" version of all the required RPMs if necessary
 if ( system("rpm -q oda >/dev/null 2>/dev/null") != 0 ) {
   oscar_log_subsection("Installing ODA RPMs @wanted_rpms");
-  install_rpms(@wanted_rpms) or 
+  install_packages(@wanted_rpms) or 
       croak("ODA is giving up and will not be installed");
 } else {
   oscar_log_subsection("ODA is already installed");
