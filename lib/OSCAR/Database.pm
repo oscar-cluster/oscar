@@ -26,11 +26,13 @@ eval " use oda; ";
 my $oda_available = ! $@;
 my %oda_options = ();
 my $database_available = 0;
+use Data::Dumper;
 
 @EXPORT = qw( database_connect 
 	      database_disconnect 
 	      database_execute_command 
 	      database_read_table_fields 
+	      database_rpmlist_for_package_and_group
 	      database_calling_traceback );
 
 #
@@ -286,6 +288,131 @@ sub database_read_table_fields {
     OSCAR::Database::database_disconnect() if $was_connected_flag;
 
     return \%results;
+}
+
+#
+# reads specified fields from all the records in a specified database
+# table into a double deep hash with the first level of keys being
+# taken fromt the "name" field for each record, with data in the first
+# level of keys being pointers to hashes one per database table record,
+# with the second level hashes being the requested fields with their
+# data being the values in the database fields.
+#
+# paramaters are: package       package name
+#                 group         node group name or undef if any/all
+#                 print_err     if defined and non-zero, print out
+#                               error messages
+#
+# returns a list of rpm names, or undef if an error
+
+sub database_rpmlist_for_package_and_group {
+    
+    my ( $package,
+	 $group,
+	 $print_errors_flag ) = @_;
+
+    my ($calling_package, $calling_filename, $line) = caller;
+    print "$0: database_rpmlist_for_package_and_group\($package\,$group\) called from package=$calling_package $calling_filename\:$line\n";
+
+    # since we are going to do a number of database operations, we'll
+    # try to be more effecient by connecting to the database first if
+    # we weren't connected when called, then perform the operations, 
+    # then disconnect if we weren't connected when we were called.
+
+    ( my $was_connected_flag = $database_available ) ||
+	OSCAR::Database::database_connect() ||
+	    return undef;
+
+    # read in all the packages_rpmlists records for this package
+    my @tables_fields = qw( packages_rpmlists
+			    packages_rpmlists.architecture
+			    packages_rpmlists.distribution
+			    packages_rpmlists.distribution_version
+			    packages_rpmlists.group
+			    packages_rpmlists.rpm );
+    my @wheres = ( "packages.name=$package", 
+		   "packages.id=packages_rpmlists.package_id" );
+    my @packages_rpmlists_records = ();
+    my @error_strings = ();
+    my $number_of_records = 0;
+    if ( ! oda::read_records( \%oda_options,
+			      \@tables_fields,
+			      \@wheres,
+			      \@packages_rpmlists_records,
+			      1,
+			      \@error_strings,
+			      \$number_of_records ) ) {
+	if ( defined $print_errors_flag && $print_errors_flag ) {
+	    warn shift @error_strings while @error_strings;
+	}
+	warn "Error reading packages_rpmlists records for package $package";
+        OSCAR::Database::database_disconnect() if $was_connected_flag;
+	 return undef;
+    }
+    print "$0: packages_rpmlists_records:\n";
+    print Dumper(\@packages_rpmlists_records);
+
+    # read in the oscar global architecture, distribution, etc
+    my @distribution_results = ();
+    if ( ! database_execute_command( "oscar_server_distribution",
+				     \@distribution_results,
+				     1 ) ) {
+	if ( defined $print_errors_flag && $print_errors_flag ) {
+	    warn shift @error_strings while @error_strings;
+	}
+	warn "Error reading the distribution from the database";
+        OSCAR::Database::database_disconnect() if $was_connected_flag;
+	return undef;
+    }
+    if ( ! @distribution_results ) {
+	warn "No results returned reading the distribution from the database";
+        OSCAR::Database::database_disconnect() if $was_connected_flag;
+	return undef;
+    }
+    my $distribution = $distribution_results[0];
+    my @distribution_version_results = ();
+    if ( ! database_execute_command( "oscar_server_distribution_version",
+				     \@distribution_version_results,
+				     1 ) ) {
+	if ( defined $print_errors_flag && $print_errors_flag ) {
+	    warn shift @error_strings while @error_strings;
+	}
+	warn "Error reading the distribution_version from the database";
+        OSCAR::Database::database_disconnect() if $was_connected_flag;
+	return undef;
+    }
+    if ( ! @distribution_version_results ) {
+	warn "No results returned reading the distribution_version from the database";
+        OSCAR::Database::database_disconnect() if $was_connected_flag;
+	return undef;
+    }
+    my $distribution_version = $distribution_version_results[0];
+	
+    # now build the matches list
+    my @rpms = ();
+    foreach my $record_ref ( @packages_rpmlists_records ) {
+	push @rpms, $$record_ref{rpm}
+	    if (
+		( ! exists $$record_ref{distribution} ||
+		  ! defined $$record_ref{distribution} ||
+		  $$record_ref{distribution} eq $distribution )
+		&&
+		( ! exists $$record_ref{distribution_version} ||
+		  ! defined $$record_ref{distribution_version} ||
+		  $$record_ref{distribution_version} eq $distribution_version )
+		&&
+		( ! exists $$record_ref{group} ||
+		  ! defined $$record_ref{group} ||
+		  ! defined $group ||
+		  $$record_ref{group} eq $group )
+	       );
+    }
+	    
+    OSCAR::Database::database_disconnect() if $was_connected_flag;
+
+    print "Returning group $group RPMs for $package: " . join(' ', @rpms) . "\n";
+
+    return @rpms;
 }
 
 #
