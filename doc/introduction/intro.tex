@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: intro.tex,v 1.1 2001/12/13 17:30:48 mchasal Exp $
+% $Id: intro.tex,v 1.2 2001/12/13 17:40:58 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -44,7 +44,7 @@ explaining what the goal of the OSCAR project is:
 
 First and foremost, OSCAR is an Open Source project.  Every component
 within OSCAR is available under one of the well known Open Source
-licenses (e.g. GPL).  The goal of OSCAR is making cluster easy to
+licenses (e.g. GPL).  The goal of OSCAR is making a cluster easy to
 build, easy to maintain and easy to use.  In other words, OSCAR
 contains the resources you need to apply cluster computing to your
 High Performance Computing problems.
@@ -165,6 +165,12 @@ Linux installation tool co-developed by the LUI team from IBM and
 the SystemImager\cite{SI}  team. It is released under the GPL.
 It is used to install heterogeneous Linux clusters over a network.
 
+SIS uses an image based model. That is, a copy of all the files that
+are installed on the nodes resides on the server. When the nodes install
+they use rsync to pull these files over to their local disks. This provides
+an option for maintenance as well since you can update the image on the server
+and have all the nodes update to match that image.
+
 We also use SIS to build a database describing the cluster itself.
 This database includes the node names, network information, cluster
 configuration data, and anything else required to install the other
@@ -184,11 +190,8 @@ The most common way to allow secure connections in a Linux environment
 is with OpenSSH \cite{OpenSSH}.  OpenSSH is a collection of packages
 that handle secure connections, server-side SSH services, secure-key
 generation and any other functions required to support secure
-connections between computers.  We provide OpenSSH as an installation
-option within OSCAR.  When running an isolated cluster, user may opt
-to use rsh, though we expect most sites running a production cluster
-will require OpenSSH.
-
+connections between computers.  We provide and configure OpenSSH 
+within OSCAR. 
 
 \subsection{Cluster management: C3}
 Each computer in a cluster runs its own copy of the operating system.
@@ -361,6 +364,10 @@ OSCAR.
         \item[RPM:] RedHat Package Manager.  RPM is the most widely used
         Linux method of packaging software so that it checks for pre-reqs
         and co-reqs during installation of the package.
+
+        \item[Image:] The copy of the operating system files for the nodes
+        that is stored on the server. This is propogated to the nodes using
+        SIS.
 \end{description}
 
 
