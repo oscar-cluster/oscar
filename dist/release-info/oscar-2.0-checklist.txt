@@ -1,4 +1,4 @@
-# $Id: oscar-2.0-checklist.txt,v 1.3 2002/12/09 19:08:03 naughtont Exp $
+# $Id: oscar-2.0-checklist.txt,v 1.4 2002/12/11 21:20:15 naughtont Exp $
 
 List of places that the OSCAR 2.0 press release was sent:
 
@@ -42,6 +42,9 @@ List of places that the OSCAR 2.0 press release was sent:
 #- HPC.devchannel.org (foundry stuffo)
 #  (got info about submit location after I released everything...get later)
 #    http://hpc.devchannel.org/submit.pl?section=hpcchannels
+
+#- SupercomputingOnline.com 
+#  (got info from Betsy Riley, http://www.supercomputingonline.com/submit.php ) 
 
 
 #- http://clusters.top500.org/
