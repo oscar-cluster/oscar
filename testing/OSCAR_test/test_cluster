@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster,v 1.12 2002/06/05 22:29:43 mchasal Exp $
+# $Id: test_cluster,v 1.13 2002/07/25 23:47:07 brechin Exp $
 #
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
@@ -13,9 +13,21 @@ if [ `id -un` = root ] ; then
   exit 1
 fi
 
+function waitexit
+{
+        # Function to wait for a key press before
+        # exiting. Used by guis.
+        if [ $wizard_launch ] && [ $wizard_launch = yes ]; then
+          echo ...Hit a key to exit...
+          read -n 1 -s  key
+        fi
+        exit 0
+}
+
+
 # Initialize environment
-qsub=/usr/local/pbs/bin/qsub
-qstat=/usr/local/pbs/bin/qstat
+qsub=/opt/pbs/bin/qsub
+qstat=/opt/pbs/bin/qstat
 homedir=~/OSCAR_test
 cd $homedir
 
@@ -52,7 +64,7 @@ echo -e "\t\t\t----------"
 #			-----------------
 
 echo -n "Checking PBS default queue definition:"
-if [ `/usr/local/pbs/bin/qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
+if [ `/opt/pbs/bin/qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
   echo_success
   echo
 else
@@ -66,11 +78,11 @@ fi
 # Uses the server and free nodes starting from the end of the list (as PBS
 # uses them).
 
-node1=`/usr/local/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tail -1`
+node1=`/opt/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tail -1`
 
 if [ `ping -c 1 $node1 2>/dev/null | grep -c avg` -eq 0 ]; then
   echo "No nodes free and pingable"
-  exit 1
+  waitexit
 fi
 
 echo -n "server -> node SSH:"
@@ -80,7 +92,7 @@ if [ "x`ssh $node1 hostname 2> /dev/null`" = "x$node1" ]; then
 else
   echo_failure
   echo
-  exit 1
+  waitexit
 fi
 
 echo -n "node -> server SSH:"
@@ -93,13 +105,13 @@ if [ "x$testval" = "x$server" ]; then
 else
   echo_failure
   echo
-  exit 1
+  waitexit
 fi
 
 
 if [ $clients -gt 1 ]; then # user specified more than one client, so
                             # we can do node -> node tests
-  node2=`/usr/local/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tail -2 | /usr/bin/head -1`
+  node2=`/opt/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tail -2 | /usr/bin/head -1`
 
   echo -n "node -> node SSH:"
   if [ "x`ssh $node1 ssh $node2 hostname 2> /dev/null`" = "x$node2" ]; then
@@ -108,7 +120,7 @@ if [ $clients -gt 1 ]; then # user specified more than one client, so
   else
     echo_failure
     echo
-    exit 1
+    waitexit
   fi
 fi 
 
@@ -116,7 +128,7 @@ fi
 #			---------------------
 # Shows only failure to find free nodes
 check_free_nodes () {
-free=`/usr/local/pbs/bin/pbsnodes -a | grep -c 'state = free'`
+free=`/opt/pbs/bin/pbsnodes -a | grep -c 'state = free'`
 if [ $free -eq $clients ] || [ $free -gt $clients ]; then    # at least $clients free nodes
 echo -n ""
 else
@@ -124,7 +136,7 @@ echo -n "Checking for $clients free nodes:"
   echo_failure
   echo
   echo Not enough free nodes.  Tests incomplete.
-  exit 1
+  waitexit
 fi
 }
 
@@ -132,6 +144,7 @@ fi
 #			----------------
 # Generic routine to run any test through PBS depending on environment
 pbs_test_routine () {
+sleep 1
 check_free_nodes
 echo -n $pbs_test_type
 echo -n ":    "
@@ -143,6 +156,7 @@ job=`$qsub -l nodes=$clients:ppn=$ppn $pbs_script`
 if [ -z $job ]
 then
   echo_failure
+  echo
 else
   timeleft=$timeout
   job_state=incomplete
@@ -166,23 +180,24 @@ else
         job_state=success
         echo -n -e "\b\b\b      "
         echo_success
+	echo
       fi
     fi
     if [ $timeleft -eq 0 ]; then # more than timeout
       echo -n -e "\b\b\b      "
       echo_failure
+      echo
       job_state=fail
-      if [ `/usr/local/pbs/bin/qstat |grep -c $job` -eq 1 ]; then
+      if [ `/opt/pbs/bin/qstat |grep -c $job` -eq 1 ]; then
       /usr/local/pbs/bin/qdel $job
       sleep 1 # Allows nodes to free up again
       fi
-      if [ $exit_on_fail = yes ]; then exit 1 ; fi
+      if [ $exit_on_fail = yes ]; then waitexit ; fi
     fi 
     timeleft=`expr $timeleft - 1`
   done
 fi
 cd ..
-echo
 }
 
   
@@ -232,5 +247,5 @@ exit_on_fail=no
 pbs_test_routine
 
 # Done
-exit 0
+waitexit
 

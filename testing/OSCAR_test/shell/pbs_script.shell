@@ -11,6 +11,6 @@
 #PBS -q workq
 
 ### Script commands
-/usr/local/pbs/bin/pbsdsh -s hostname
-/usr/local/pbs/bin/pbsdsh -s date +"Hello, date is %D, time is %T"
+/opt/pbs/bin/pbsdsh -s hostname
+/opt/pbs/bin/pbsdsh -s date +"Hello, date is %D, time is %T"
 exit

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster_as_root,v 1.9 2002/06/21 02:54:15 brechin Exp $
+# $Id: test_cluster_as_root,v 1.10 2002/07/25 23:47:07 brechin Exp $
 #
 # test_cluster_as_root - script to test services, NFS, 
 #                        and install/run user level tests
@@ -60,7 +60,7 @@ echo -e "\t\t\t----------"
 # Stop PBS Server if any nodes exhibit "state-unknown" status.
 # This condition could be due to the 5 minute polling interval to the moms
 # by the server.  Restarting the server will induce a fresh poll.
-unknown_nodes=`/usr/local/pbs/bin/pbsnodes -a |grep -c state-unknown`
+unknown_nodes=`/opt/pbs/bin/pbsnodes -a |grep -c state-unknown`
 if [ $unknown_nodes != 0 ] ; then
   echo "Found $unknown_nodes nodes in unknown state.  Stopping PBS server to invoke a poll."
   /sbin/service pbs_server stop
@@ -72,7 +72,7 @@ for serv in sshd pbs_server maui ; do
     /sbin/service $serv start
     if [ `/sbin/service $serv status | grep -c "is running"` -eq 0 ]; then
       echo "Could not restart $serv, please check configuration and rerun tests"
-      exit 1
+      waitexit 1
     else
       echo -n "$serv service:"
       echo_success
@@ -94,13 +94,9 @@ command='if [ -e /home/OSCARtestfile ]; then echo "1"; else echo "0"; fi'
 
 mounted=0
 # Grab all the node hostnames from pbsnodes
-for node in `/usr/local/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tac`; do 
+for node in `/opt/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tac`; do 
   if [ "x`ssh $node $command 2>/dev/null`" != "x1" ]; then
     echo "/home not mounted on $node"
-#    echo_failure
-#    echo
-#    `rm -f /home/OSCARtestfile`
-#    exit 1
   else
     mounted=`/usr/bin/expr $mounted + 1`
   fi
@@ -114,7 +110,7 @@ if [ $mounted -gt $clients ] || [ $mounted -eq $clients ]; then
 else
   echo_failure
   echo
-  exit 1
+  waitexit
 fi
 
 #			USER TESTS
@@ -132,7 +128,7 @@ if [ -z $test_user_homedir ]; then
   /usr/sbin/useradd -m $test_user > /dev/null 2>&1
   test_user_homedir=`grep $test_user /etc/passwd |awk -F : '{print $6}'`
   /bin/rm -rf $test_user_homedir/OSCAR_test
-  sync_users > /dev/null 2>&1
+  /opt/opium/bin/sync_users --force > /dev/null 2>&1
 fi
 
 # Make sure ssh keys are generated quietly
