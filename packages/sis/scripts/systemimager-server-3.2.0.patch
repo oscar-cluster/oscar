@@ -175,19 +175,18 @@
                  print $out $_;
              }
          close(FILE);
-@@ -920,6 +946,11 @@
+@@ -920,6 +946,10 @@
          # software RAID devices (/dev/md*)
          if ($real_dev =~ /\/dev\/md/) {
              print $out qq(mkraid --really-force $real_dev || shellout\n);
 +        # dnl
-+        } else {
-+            $real_dev =~ /^(.*?)(p?\d+)$/;
++        } elsif( $real_dev =~ /^(.*?)(p?\d+)$/ ) {
 +            $real_dev = "\${".$dev2disk{$1}."}".$2;
 +        # dnl
          }
  
          # swap
-@@ -1299,6 +1330,24 @@
+@@ -1299,6 +1329,24 @@
      }
  }
  
@@ -212,7 +211,7 @@
  sub write_sc_command {
      my ( $out, $ip_assignment_method ) = @_;
      my $sc_excludes_to = "/etc/systemimager/systemconfig.local.exclude";
-@@ -1379,6 +1428,11 @@
+@@ -1379,6 +1427,11 @@
      open (my $TEMPLATE, "<$template") || die "Can't open $template for reading\n";
      open (my $MASTER_SCRIPT, ">$file") || die "Can't open $file for writing\n";
  
@@ -224,7 +223,7 @@
      my $delim = '##';
      while (<$TEMPLATE>) {
          SWITCH: {
-@@ -1458,6 +1512,18 @@
+@@ -1458,6 +1511,18 @@
                  }
                  last SWITCH;
  	        }
@@ -243,7 +242,7 @@
  	        ### END end of autoinstall options ###
  	        print $MASTER_SCRIPT $_;
          }
-@@ -1704,4 +1770,4 @@
+@@ -1704,4 +1769,4 @@
  }
  
  
