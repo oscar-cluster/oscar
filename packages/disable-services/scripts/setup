@@ -1,35 +1,59 @@
 #!/bin/sh
 #
-# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+# Copyright (c) 2002-2004 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.3 2003/01/21 21:55:45 jsquyres Exp $
-#
-
-#
-# Create a post_client_rpm_install script that consists of all the
-# disable.* scripts in this directory.  This is necessary because
-# post_client_rpm_install runs in the client filesystem, and the
-# disable.* scripts will not be there.  So paste them all together
-# into a single post_client_rpm_install script to run later.
+# $Id: setup 2587 2004-08-17 21:24:46Z dikim $
 #
 
 dir="$OSCAR_PACKAGE_HOME/scripts"
-files="`ls disable.*`"
-output="post_client_rpm_install"
 
-rm -f $output
-for file in $files
+
+#
+# Create a post_client_rpm_install script that consists of all the
+# disable.* scripts and enable.client.mail-locally in this directory.
+# This is necessary because post_client_rpm_install runs in the client
+# filesystem, and the disable.* scripts and enable.client.mail-locally
+# will not be there.  So paste them all together
+# into a single post_client_rpm_install script to run later.
+#
+
+client_output="post_client_rpm_install"
+
+rm -f $client_output
+
+# Create a script that will exist on the client nodes.  Since we do
+# not have access to ODA out there, do a few lookups now (snice we're
+# running on the server) and put that information in the script that
+# will run on the client.
+
+# Create a script to disable a bunch of stuff on the clients.
+
+client_files="`ls disable.*`"
+for file in $client_files
 do
-  cat $file >> $output
+  echo "# Contents of $file script:" >> $client_output
+  cat $file >> $client_output
+  echo "# End of $file script:" >> $client_output
 done
-chmod +x $output
 
-echo Created: $dir/$output
+# Add to that script commands to enable a bunch of stuff.
+
+client_files="`ls enable.client.*`"
+for file in $client_files
+do
+  echo "# Contents of $file script:" >> $client_output
+  cat $file >> $client_output
+  echo "# End of $file script:" >> $client_output
+done
+
+chmod +x $client_output
+
+echo Created: $dir/$client_output
 
 #
 # All done
