@@ -889,7 +889,7 @@ foreach my $package_name ( sort keys %single_value_folded_fields ) {
 	    # figure out the type of this particular
 	    # value of this field, and upgrade the
 	    # type of this field if needed, INT is
-	    # simplest type, VARCHAR superceded INT,
+	    # simplest type, VARCHAR supercedes INT,
 	    # TEXT supercedes INT and VARCHAR
 	    if ( length $field_value > 250 ) {
 		$$tables_fields_ref{ $field_name } = "TEXT";
@@ -1087,9 +1087,9 @@ foreach my $package_name ( sort keys %single_value_folded_fields ) {
     }
 }
     
-# any of the fields fields in the package xml
-# that had multiple values such as rpmlist or
-# provides or requires, ended up being parsed 
+# any of the fields fields in the package xml that
+# had multiple values such as rpmlist or conflicts
+# or provides or requires, ended up being parsed 
 # into the %multiple_value_folded_fields hash
 # with arrays of hash references somewhere down
 # the chain of references. we need to take
