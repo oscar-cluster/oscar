@@ -7,7 +7,7 @@ my $image = shift;
 my $VER = "1.2.1";
 my $RELEASE = ".1oscar";
 my $ARCH = "i386";
-my $PREFIX = "/opt/mpich-$VER";
+my $PREFIX = "/usr/local/mpich-$VER";
 my $imagedir = "/var/lib/systemimager/images/$image";
 
 my $file = "$imagedir/etc/profile.d/mpi-01mpich.sh";
