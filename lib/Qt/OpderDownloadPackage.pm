@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'OpderDownloadPackage.ui'
 #
-# Created: Tue Jul 15 19:44:29 2003
+# Created: Wed Jul 23 16:27:18 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -231,7 +231,6 @@ sub downloadStart
 #  sets up the QProcess for downloading package tarballs with opd.      #
 #########################################################################
 
-  return unless ((-e $opdcmd) && (-x $opdcmd));  # Make sure opd is there
   return if ($dlPhase);  # If we are already downloading, don't do it again
 
   # Figure out which packages we need to download
@@ -355,8 +354,7 @@ sub updateOda
         {
           my @args = (
             "$ENV{OSCAR_HOME}/scripts/read_package_config_xml_into_database",
-            $tardir);
-
+              $tardir);
           (system(@args) == 0) or
             Carp::carp("Failure updating oda for package $package: $?");
         }
@@ -412,18 +410,27 @@ sub showEvent
 #  opd-download process.                                                #
 #########################################################################
 
-  # If the process isn't running, then reset the progress bar to zero
-  if (!($dlProc->isRunning()))
-    { 
-      # Reset the progress bar to 'empty'
-      progressBar->reset();
-      progressBar->setTotalSteps(0);
-      progressBar->setPercentageVisible(1);
-      progressBar->setCenterIndicator(1);
-    }
+  # Make sure the opd script is there
+  if ((-e $opdcmd) && (-x $opdcmd))
+    {
+      # If the process isn't running, then reset the progress bar to zero
+      if (!($dlProc->isRunning()))
+        { 
+          # Reset the progress bar to 'empty'
+          progressBar->reset();
+          progressBar->setTotalSteps(0);
+          progressBar->setPercentageVisible(1);
+          progressBar->setCenterIndicator(1);
+        }
 
-  emit refreshButtonSet(0); # Disable the "Refresh Table" button
-  downloadStart();          # Do the acutal work in the background
+      emit refreshButtonSet(0); # Disable the "Refresh Table" button
+      downloadStart();          # Do the acutal work in the background
+    }
+  else
+    {
+      Carp::carp("Could not find the 'opd' script");
+      Qt::Timer::singleShot(200, this, SLOT 'cancelButton_clicked()');
+    }
 
 }
 

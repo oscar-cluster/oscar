@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'OpderDownloadInfo.ui'
 #
-# Created: Tue Jul 1 18:41:51 2003
+# Created: Wed Jul 23 16:27:18 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -144,10 +144,19 @@ sub showEvent
 #  background.                                                          #
 #########################################################################
 
-  $ballNumber = 1;
-  $ballTimer->start(200,0);   # Animation update every .2 seconds
-  emit downloadButtonDisable();
-  refreshReadPackages();      # Do the actual work in the background
+  # Make sure the opd script is there
+  if ((-e $opdcmd) && (-x $opdcmd))
+    {
+      $ballNumber = 1;
+      $ballTimer->start(200,0);   # Animation update every .2 seconds
+      emit downloadButtonDisable();
+      refreshReadPackages();      # Do the actual work in the background
+    }
+  else
+    {
+      Carp::carp("Could not find the 'opd' script");
+      Qt::Timer::singleShot(200, this, SLOT 'cancelButton_clicked()');
+    }
 
 }
 
@@ -231,7 +240,6 @@ sub refreshReadPackages
 #  sets up the QProcess for reading repository information with opd.    #
 #########################################################################
 
-  return unless ((-e $opdcmd) && (-x $opdcmd));  # Make sure opd is there
   return if ($readPhase);  # If we are already reading, don't do it again
 
   my @args = ($opdcmd,'--parsable');
