@@ -19,6 +19,7 @@ my @known_rpms = qw(
 		    ntpconfig
 		    pvm-modules-oscar
 		    pvm
+		    oda
 		    openpbs-oscar 
 		    openpbs-oscar-mom
 		    openpbs-oscar-server
@@ -52,6 +53,7 @@ my @known_services = qw(
 			httpd
 			maui
 			ntpd
+			mysqld
 			pbs_server
 			systemimager
 			);
@@ -108,6 +110,10 @@ foreach ( @oscar_rpms ) {
 #print "oscar_rpms=\n";foreach my $rpm (@oscar_rpms){print "$rpm\n";}
 my $paths_count = scalar @oscar_rpm_paths;
 print "found $paths_count rpm files.\n";
+
+# delete the oscar database ?
+
+# system("oda --drop-database");
 
 # find a list of all the services installed by the oscar rpms
 
