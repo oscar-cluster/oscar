@@ -1063,4 +1063,161 @@ sub database_rpmlist_for_package_and_group {
 }
 
 
+#********************************************************************#
+#********************************************************************#
+#                            NEST                                    #
+# function to write/read lock one or more tables in the database     #
+#                                                                    #
+#********************************************************************#
+#********************************************************************#
+# inputs:  type_of_lock              String of lock types (READ/WRITE)
+#          passed_options            optional reference to options hash
+#          passed_tables_ref         reference to modified tables list
+#          passed_error_strings_ref  optional reference to array for errors
+#
+# outputs: non-zero if success
+
+
+sub locking{
+    my ( $type_of_lock,
+         $passed_options_ref,
+         $passed_tables_ref,
+	     $passed_error_strings_ref,
+     ) = @_;
+
+    # take care of faking any non-passed input parameters, and
+    # set any options to their default values if not already set
+    my ( $options_ref, $error_strings_ref ) = oda::fake_missing_parameters( $passed_options_ref, $passed_error_strings_ref );
+    my @empty_tables = ();
+    my $tables_ref = ( defined $passed_tables_ref ) ? $passed_tables_ref : \@empty_tables;
+
+    my $msg = "$0: in oda:";
+        $type_of_lock =~ s/(.*)/\U$1/gi;
+    if( $type_of_lock eq "WRITE" ){
+	    $msg .= "write_lock write_locked_tables=(";
+    } elsif ( $type_of_lock eq "READ" ) {
+	    $msg .= "read_lock read_locked_tables=(";
+    } else {
+	    return 0;
+    }
+	
+	
+    print $msg.
+	join( ',', @$tables_ref ) . ")\n"
+	if $$options_ref{debug};
+
+    # connect to the database if not already connected
+   	$database_connected ||
+	    oda::connect( $options_ref, $error_strings_ref ) ||
+	    return 0;
+    $database_connected = 1;
+
+    # be an optimist
+    my $parameter_errors_flag = 0;
+    
+    # find a list of all the table names, and all the fields in each table
+    my $all_tables_ref = oda::list_tables( $options_ref, $error_strings_ref );
+    if ( ! defined $all_tables_ref ) {
+        oda::disconnect( $options_ref,
+                 $error_strings_ref )
+            if ! $database_connected;
+        return 0;
+    }
+
+    # make sure that the specified modified table names
+    # are all valid table names, and save the valid ones
+    my @write_locked_tables = ();
+    foreach my $table_name ( @$tables_ref ) {
+        if ( exists $$all_tables_ref{$table_name} ) {
+            push @write_locked_tables, $table_name;
+        } else {
+            push @$error_strings_ref,
+            "$0: table <$table_name> does not exist in " .
+            "database <$$options_ref{database}>";
+            $parameter_errors_flag = 1;
+        }
+    }
+
+	# make the database command
+	my $sql_command = "LOCK TABLES " .
+	    join( " $type_of_lock, ", @write_locked_tables ) . " $type_of_lock;" ;  
+	
+    my $success = 1;
+
+    # now do the single command
+    $success = 0 
+    if ! oda::do_sql_command( $options_ref,
+			      $sql_command,
+			      "oda\:\:write_lock",
+			      "write lock in tables (" .
+			      join( ',', @write_locked_tables ) . ")",
+			      $error_strings_ref );
+
+    # disconnect from the database if we were not connected at start
+    oda::disconnect( $options_ref,
+		     $error_strings_ref )
+    if ! $database_connected;
+
+    return $success;
+}
+
+#********************************************************************#
+#********************************************************************#
+#                            NEST                                    #
+# function to unlock one or more tables in the database              #
+#                                                                    #
+#********************************************************************#
+#********************************************************************#
+# inputs:  options            optional reference to options hash
+#          tables_ref         reference to modified tables list
+#          error_strings_ref  optional reference to array for errors
+#
+# outputs: non-zero if success
+
+sub unlock {
+    my ( $passed_options_ref,
+	 $passed_error_strings_ref,
+     ) = @_;
+
+    # take care of faking any non-passed input parameters, and
+    # set any options to their default values if not already set
+    my ( $options_ref, $error_strings_ref ) = oda::fake_missing_parameters( $passed_options_ref, $passed_error_strings_ref );
+
+    print "$0: in oda:unlock \n"
+	if $$options_ref{debug};
+
+    # connect to the database if not already connected
+    $database_connected ||
+	oda::connect( $options_ref,
+		      $error_strings_ref ) ||
+	return 0;
+    $database_connected = 1;
+
+    # be an optimist
+    my $parameter_errors_flag = 0;
+    
+	# make the database command
+	my $sql_command = "UNLOCK TABLES ;" ;
+	
+    my $success = 1;
+
+	# now do the single command
+	$success = 0 
+	    if ! oda::do_sql_command( $options_ref,
+				      $sql_command,
+				      "oda\:\:unlock",
+				      "unlock the tables locked in the database",
+				      $error_strings_ref );
+
+    # disconnect from the database if we were not connected at start
+    oda::disconnect( $options_ref,
+		     $error_strings_ref )
+	if ! $database_connected;
+
+    $database_connected = 0;
+
+    return $success;
+
+}
+
 1;
