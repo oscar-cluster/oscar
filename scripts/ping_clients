@@ -3,7 +3,7 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/ping_clients,v 1.1 2001/12/18 23:14:10 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/ping_clients,v 1.2 2002/06/05 19:30:32 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,9 +36,9 @@ foreach $mach (@machines) {
 	} else {
 		print "Ok!!\n";
 	}
-	if ($failcount) {
-		print "\n$failcount client(s) failed to respond!!\n";
-	} else {
-		print "\nAll clients responded!!\n";
-	}
+}
+if ($failcount) {
+	print "\n$failcount client(s) failed to respond!!\n";
+} else {
+	print "\nAll clients responded!!\n";
 }
