@@ -1,4 +1,4 @@
-% $Id: pkg-example.tex,v 1.4 2003/09/11 12:56:06 naughtont Exp $
+% $Id: pkg-example.tex,v 1.5 2003/09/26 06:52:32 naughtont Exp $
 
 \section{Example Package}
 \label{sect:example-pkg}
@@ -54,7 +54,7 @@ library. </description>
 
   <rpmlist>
         <filter distribution="redhat" distribution_version="7.2" arch="ia32"/>
-        <filter distribution="redhat" distribution_version="7.3"/>
+        <filter distribution="mandrake" distribution_version="8.2"/>
         <rpm>ssslib</rpm>
         <rpm>sss-clients</rpm>
         <rpm>sss-infrastructure</rpm>
@@ -245,7 +245,7 @@ image that is used to build the machines.
 \end{scriptsize}
 
 
-The other package example making use of \file{post\_install} is the
+\noindent The other package example making use of \file{post\_install} is the
 NTP configuration package.  It uses a C3 parallel execution command to
 restart the NTP daemon on all nodes of the cluster.
 

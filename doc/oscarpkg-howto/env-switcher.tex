@@ -1,0 +1,121 @@
+%---------------------------------------------------------------------------
+% $Id: env-switcher.tex,v 1.1 2003/09/26 06:52:32 naughtont Exp $
+% (FROM: env-switcher.tex,v 1.4 2003/05/18 02:48:28 tjn)
+%
+%  Ottawa Linux Symposium 2003 (OLS'03) Paper
+%  July 23-26, 2003,  Ottawa Canada
+%  http://www.linuxsymposium.org/2003/
+%
+% Information on the env-switcher package.
+%
+%---------------------------------------------------------------------------
+%
+% TJN: I have removed the cites{} since we don't do a Reference section.
+%
+% TJN: (TODO) Add comments on how to install a switcher module & create
+%      a switcher RPM.
+%
+
+\section{Env-Switcher}
+\label{sect:switcher}
+
+Managing the shell environment -- both at the system-wide level as
+well as on a per-user basis -- has historically been a daunting task.
+For cluster-wide applications, system administrations typically need
+to provide custom, shell-defendant startup scripts that, create and/or
+augment \envvar{PATH}, \envvar{LD\_\-LIBRARY\_\-PATH}, and
+\envvar{MANPAGE} environment variables.
+%
+Alternatively, users could hand-edit their ``dot'' files (e.g.,
+\file{\$HOME/.profile}, \file{\$HOME/.bashrc}, and/or
+\file{\$HOME/.cshrc}) to create/augment the environment as necessary.
+%
+Both approaches, while functional and workable, typically lead to
+human error -- sometimes with disastrous results, such as users being
+unable to login due to errors in their ``dot'' files.
+
+Instead of these models, OSCAR provides the \package{env-switcher}
+OSCAR package. \package{env-switcher} forms the basis for simplified
+environment management in OSCAR clusters by providing a thin layer on
+top of the Environment Modules
+%package~\cite{furlani91:_modul,furlani96:_abstr_yours_with_modul}.
+package (Furlani \& Osel).
+Environment Modules provide an efficient, shell-agnostic method of
+manipulating the environment.  Basic primitives are provided for
+actions such as: add a directory to a \envvar{PATH}-like environment
+variables, displaying basic information about a package, and setting
+arbitrary environment variables.  For example, a module file for
+setting up a given application may include directives such as:
+%
+\begin{verbatim}
+  setenv FOO_OUTPUT $HOME/results
+  append-path PATH /opt/foo-1.2.3/bin
+  append-path MANPATH /opt/foo-1.2.3/man
+\end{verbatim}
+% Stupid emacs mode: $
+%
+The \package{env-switcher} package installs and configures the base
+Modules package and creates two types of modules: those that are
+unconditionally loaded, and those that are subject to system- and
+user-level defaults.
+
+Many OSCAR packages use the unconditional modules to append the
+\envvar{PATH}, set arbitrary environment variables, etc.  Hence, all
+users automatically have these settings applied to their environment
+(regardless of their shell) and guarantee to have them executed even
+when executing on remote nodes via \cmd{rsh}/\cmd{ssh}.
+
+Other modules are optional, or a provide one-of-many selection
+methodology between multiple equivalent packages.  This allows the
+system to provide a default set of applications, that optionally can
+be overridden by the user ({\em without} hand-editing ``dot'' files).
+%
+A common example in HPC clusters is having multiple Message Passing
+%Interface (MPI)~\cite{geist96:_mpi2_lyon,mpi_forum93:_mpi}
+Interface (MPI)
+implementations installed.  OSCAR installs both the
+%LAM/MPI~\cite{burns94:_lam} and MPICH~\cite{Gropp:1996:HPI}
+LAM/MPI and MPICH
+implementations of MPI.  Some users prefer one over the other, or have
+requirements only met by one of them.  Other users wish to use both,
+switching between them frequently (perhaps for performance
+comparisons).
+
+The \package{env-switcher} package provides trivial syntax for a user
+to select which MPI package to use.  The \cmd{switcher} command is
+used to select which modules are loaded at shell initialization time.
+For example, the following command shows a user selecting to use
+LAM/MPI:
+%
+\begin{verbatim}
+  shell$ switcher mpi = lam-6.5.9
+\end{verbatim}
+% Stupid emacs mode: $
+
+\subsection{Example Switcher Module file}
+
+This example was taken from the PVM module file, which gets loaded
+unconditionally for all shells.
+
+\begin{footnotesize}
+\begin{verbatim}
+# PVM modulefile for OSCAR clusters (based on LAM modulefile)
+
+proc ModulesHelp { } {
+  puts stderr "\tThis module adds PVM to the PATHand MANPATH."
+  puts stderr "\tAdditionally the PVM_ROOT and PVM_ARCH are set."
+}
+
+module-whatis   "Sets up the PVM environment for an OSCAR cluster."
+
+setenv PVM_RSH  ssh
+setenv PVM_ROOT /opt/pvm
+setenv PVM_ARCH LINUX
+
+append-path MANPATH /opt/pvm/man
+
+append-path PATH /opt/pvm/lib
+append-path PATH /opt/pvm/lib/LINUX
+append-path PATH /opt/pvm/bin/LINUX
+\end{verbatim}
+\end{footnotesize}

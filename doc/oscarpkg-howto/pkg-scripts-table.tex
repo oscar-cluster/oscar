@@ -1,18 +1,43 @@
-%  $Id: pkg-scripts-table.tex,v 1.1 2003/09/09 06:21:17 naughtont Exp $
+%  $Id: pkg-scripts-table.tex,v 1.2 2003/09/26 06:52:32 naughtont Exp $
 
 
 \begin{table}[htbp]
   \begin{center}
   \begin{tabular}{|c|l|l|} \hline
-  {\bfseries Seq\# } & {\bfseries Script Name} & {\bfseries Description} \\\hline
+%%%
+  {\bfseries Seq\# } & {\bfseries Script Name} 
+		& {\bfseries Description} 
+		\\\hline
+%%%
   \hline
-  1 & \file{setup}                      &  \\ \hline
-  2 & \file{pre\_configure}             &  \\ \hline
-  3 & \file{post\_configure}            &  \\ \hline
-  4 & \file{post\_server\_rpm\_install} &  \\ \hline
-  5 & \file{post\_client\_rpm\_install} &  \\ \hline
-  6 & \file{post\_clients}              &  \\ \hline
-  7 & \file{post\_install}              &  \\ \hline
+  1 & \file{setup}                      
+		& Perform any package setup 
+		\\ \hline
+%
+  2 & \file{pre\_configure}             
+		& Prepare package configuration (dynamic user input)
+		\\ \hline
+%
+  3 & \file{post\_configure}            
+		& Process results from package configuration (user input results)
+		\\ \hline
+%
+  4 & \file{post\_server\_rpm\_install} 
+		&  Perform ``out of RPM'' operations on server (limited cluster knowledge)
+		\\ \hline
+%
+  5 & \file{post\_client\_rpm\_install} 
+		&  Perform ``out of RPM'' operations on client (limited cluster knowledge)
+		\\ \hline
+%
+  6 & \file{post\_clients}              
+		&  Perform configurations with knowledge about cluster nodes (pre node install)
+		\\ \hline
+%
+  7 & \file{post\_install}              
+		&  Perform final configurations with fully install/booted cluster nodes
+		\\ \hline
+%
   \end{tabular}
   \caption{The set of available OSCAR API scripts listed in order of execution.}
   \label{tab:pkg-scripts}

@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile,v 1.1 2003/09/09 20:35:41 naughtont Exp $
+# $Id: Makefile,v 1.2 2003/09/26 06:52:32 naughtont Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -19,7 +19,9 @@ MAIN_TEX	= oscarpkg-howto.tex
 OTHER_SRC_FILES	= \
 		background.tex \
 		defs.tex \
+		env-switcher.tex \
 		intro.tex \
+		oda.tex \
 		opd.tex \
 		oscar-envvars-table.tex \
 		pkg-example.tex \

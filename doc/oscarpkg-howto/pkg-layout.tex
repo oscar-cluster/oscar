@@ -1,4 +1,4 @@
-% $Id: pkg-layout.tex,v 1.6 2003/09/25 20:42:23 naughtont Exp $
+% $Id: pkg-layout.tex,v 1.7 2003/09/26 06:52:32 naughtont Exp $
 
 % TJN: Mention the XML tools that are helpful, e.g., 'xmllint'
 %      which >= 2.5.8 (i believe) has --schema option too! :)
@@ -241,53 +241,67 @@ a simple processing script.
 
 \subsubsection{Fixups without RPM modification}
 
-% TJN: finish this up
-This is where I'll discuss the \file{post\_server\_} and
-\file{post\_client\_rpm\_install} scripts.  Basically these scripts fire
-after the actual package RPM installs.  As the name suggests these are
-performed on the server (after all server packages have been installed) and
-on the clients (once the clients have been ``installed''\footnote{In the
-case of OSCAR this means that the SIS image (i.e., SystemImager image) has
-been built and client software is installed in this \cmd{chroot}'ed
-environment.}).
+The \file{post\_server\_rpm\_install} and \file{post\_client\_rpm\_install}
+are useful when you would like to leave an RPM untouched and perform
+``fixups'' outside the RPM itself.  The actual cluster nodes have not yet
+been defined so no information about number of nodes or names is available
+at this phase.  As the name suggests these are performed on the server
+(after all server packages have been installed) and on the client (once the
+client has been ``installed''\footnote{In the case of OSCAR this means that
+the SIS image (i.e., SystemImager image) has been built and client software
+is installed in this \cmd{chroot}'ed environment but yet the physical
+hardware.}).  This pair of scripts is pretty limited in use but helps
+some instances where RPMs would otherwise have to be modified.
+
 
 
 \subsubsection{Setup after Clients Defined}
-footnotesize
-% TJN: finish this up
-This is where I'll discuss the \file{post\_clients} script.
 
-Basically at this point the actual cluster nodes have been defined, i.e.,
-the number of nodes, their hostnames/IP's.  However, the nodes themselves
-have not yet been physically installed.  This is the phase when anything
-that needs knowledge about cluster nodes can query for the count.  The
-method for obtaining this information is currently in flux but the
-following will provide a Perl hash containing host \& domain name, nprocs
-and IP for all defined nodes in the cluster.
+Once the cluster nodes have been defined the \file{post\_clients} scripts
+are processed.  The number of nodes, hostname/IPs and associated image are
+obtained in this ``definition'' phase.  However, the nodes themselves have
+not yet been physically installed.  This \file{post\_clients} phase is when
+any package that needs knowledge about cluster nodes can query for the
+count, names, etc.  
 
-\begin{footnotesize}
-\begin{verbatim}
+\begin{verse}
+   {\bfseries Notice: } The method for obtaining this information is
+   currently in flux but the following will provide a Perl hash containing
+   hostname,  domain name and IP for all nodes defined in the cluster, in
+   numeric order.
+  \begin{footnotesize}
+  \begin{verbatim}
        use lib '/usr/lib/systeminstaller';
        use SystemInstaller::Machine;
 
        my %hash = get_machine_listing($image);   #Image can be null for default
 
-       foreach my $key (sort numerically keys %hash) {
+       foreach my $key (sort numerically keys %hash) {   #Key is nodenameN
            print $hash{$key}->{HOST}, ", ";
            print $hash{$key}->{DOMAIN}, ", ";
-           print $hash{$key}->{NUM_PROCS}, ", ";
            print $hash{$key}->{IPADDR}, "\n--------\n";
        }
-\end{verbatim}
-\end{footnotesize}
+
+       # Special sort() sub-rtn (uses $a, $b instead of @_)
+       sub numerically 
+       {
+           $a =~ /(\d+)$/;  $A = $1;  #pickoff node num & save in local var
+           $b =~ /(\d+)$/;  $B = $1;  #pickoff node num & save in local var
+           ($A <=> $B);
+       }
+  \end{verbatim}
+  \end{footnotesize}
+\end{verse}
+
+
 
 \subsubsection{Completing cluster configurations}
 
-% TJN: finish this section
-This is where I'll discuss the \file{post\_install} script.
-Basically this is after all the nodes have been installed.  It is typically
+The final configuration script that fires is \file{post\_install}.  At this
+stage the nodes are completely installed and booted.  It is typically
 assumed that they are accessible via C3 commands, e.g., \cmd{cexec} --
-parallel cluster execution.
+parallel cluster execution.  Any closing modifications are performed, such as
+restarting service or pushing out files, e.g., \cmd{cpush} account files.
 
 
 % TJN: finish this section
@@ -300,21 +314,37 @@ are run for the cluster, all \file{test\_root} scripts are sourced which
 perform any root level package tests.  
 
 \begin{verse}
-   {\bfseries Notice: } There are obvious security issues with this
-   but currently all operations in the cluster installation are being
-   performed by {\tt root} so care is expected at all phases.  The user
-   tests are run as an actual user so those tests are somewhat less 
+   {\bfseries Notice: } There are obvious security issues with this but
+   currently all operations in the cluster installation are being performed
+   by {\tt root} so care is expected at all phases.  The user tests are run
+   as an actual user ({\tt oscartst}) so those tests are slightly ``less''
    dangerous and therefore most packages are using \file{test\_user}.
 \end{verse}
 
 
 The tests typically have PBS available and most of the \file{test\_user}
-scripts simply setup and run a simple PBS jobs for the installed software,
-e.g., PVM, MPI's.  The testing framework is currently pretty simple with
-display functions provided which show boolean results of ``PASSED'' or
-``FAILED''.
+scripts simply setup and run a basic PBS job for the installed software,
+e.g., PVM, MPI's.  The \file{pbs\_test} helper script is used to display
+results for the package's test as ``PASSED'' or ``FAILED'' based upon
+return codes.  As each \file{test\_user} script is processed, the list of
+nodes are passed as command line arguments.  The following is an excerpt
+taken from an example \file{test\_user} script that submites a PVM job to 
+PBS via \file{pbs\_script.pvm}.
+% test_user oscartst 0 node1 node2 node3 node4 node5 ...
+\begin{footnotesize}
+\begin{verbatim}
+      #!/bin/sh
+      cd $HOME
+      clients=`echo $@ | wc -w`    # Get number of args (nodes)
 
+      $HOME/pbs_test $clients 1 $HOME/pvm/pbs_script.pvm "SUCCESSFUL" \
+        $HOME/pvm/pvmtest 3 "PVM (via PBS)"
 
+      exit 0
+\end{verbatim}
+\end{footnotesize}
+(For further details see files in \file{\$OSCAR\_HOME/testing} and
+\file{\$OSCAR\_HOME/lib/OSCAR/Package.pm}.)
 
 
  
