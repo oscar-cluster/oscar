@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.6 2002/01/22 16:09:45 bwbarrett Exp $
+# $Id: make-dist.sh,v 1.7 2002/02/07 21:11:24 bwbarrett Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -19,6 +19,16 @@ OSCAR_BETA_VERSION="`sh dist/get-oscar-version.sh $srcdir --beta`"
 if test "$distdir" = ""; then
     echo "Must supply distdir as argv[1] -- aborting"
     exit 1
+fi
+
+MAKEFILE_OSCAR_VERSION="`grep OSCAR_VERSION Makefile | cut -d= -f2`"
+
+if ! test "$OSCAR_VERSION" = "$MAKEFILE_OSCAR_VERSION" ; then
+  echo "Version in Makefile and version in VERSION file do not match!"
+  echo "This means the VERSION file has changed since configure"
+  echo "was last run.  Please check VERSION file and rerun configure"
+  echo "Aborting!"
+  exit 1
 fi
 
 start=`date`
