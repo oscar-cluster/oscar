@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.9 2003/07/18 21:23:39 ngorsuch Exp $
+      $Id: config.xml,v 1.10 2003/07/25 21:39:38 naughtont Exp $
   -->
   <name>pvm</name>
 
@@ -17,7 +17,7 @@
     <major>3</major>
     <minor>4</minor>
     <subversion>4+11</subversion>
-    <release>1</release>
+    <release>3</release>
     <epoch>1</epoch>
   </version>
 
@@ -48,4 +48,8 @@ routines.</description>
     <name>switcher</name>
   </requires>
 
+  <rpmlist>
+    <rpm>pvm</rpm>
+    <rpm>pvm-modules-oscar</rpm>
+  </rpmlist>
 </oscar>
