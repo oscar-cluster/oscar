@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.17 2003/07/24 21:30:37 brechin Exp $
+      $Id: config.xml,v 1.18 2004/05/11 19:27:45 jsquyres Exp $
   -->
   <name>LAM/MPI</name>
 
@@ -93,8 +93,6 @@ visualized either at runtime or post-mortem.</description>
   <rpmlist>
     <filter distribution="redhat" distribution_version="8.0" />
     <filter distribution="redhat" distribution_version="9"   />
-    <rpm>libaio</rpm>
-    <rpm>libaio-devel</rpm>
   </rpmlist>
 
   <!-- SuSE 8.1/8.2 and MDK 9.0 don't ship with libaio.  So we got the
@@ -103,8 +101,6 @@ visualized either at runtime or post-mortem.</description>
   <rpmlist>
     <filter distribution="mandrake" />
     <filter distribution="suse" />
-    <rpm>libaio-oscar</rpm>
-    <rpm>libaio-oscar-devel</rpm>
   </rpmlist>
 
   <package>
