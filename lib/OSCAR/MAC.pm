@@ -43,8 +43,8 @@ use base qw(Exporter);
                 load_from_file
                 start_mac_collect
                 stop_mac_collect 
-		mac_window
-	     );
+                mac_window
+             );
 #REMOVE MAC_WINDOW FROM EXPORT WHEN NO LONGER NEEDED
 
 $VERSION = sprintf("%d.%02d", q$Revision: 1.47 $ =~ /(\d+)\.(\d+)/);
@@ -94,26 +94,26 @@ sub mac_window {
     my $listbox = $topframe->ScrlListbox(
                                        -selectmode => 'single',
                                        -background => "white",
-				       -scrollbars => 'osoe',
+                                       -scrollbars => 'osoe',
                                       );
     my $tree = $topframe->Scrolled("Tree",    
                                  -background => "white",
                                  -itemtype => 'imagetext',
                                  -separator => '|',
                                  -selectmode => 'single',
-				 -scrollbars => 'osoe',
+                                 -scrollbars => 'osoe',
                                 );
 
     $instructions->pack($label, -fill => 'x');
 
-    my $clear    = $topframe->Button( 	-text => "Remove",
-					-height=>1,
-					-command => [\&clearmacaddy, $listbox, $window ],
-				    );
-    my $clearall = $topframe->Button( 	-text => "Remove All",
-					-height=>1,
-					-command => [\&clearallmacs, $listbox, $window ],
-				    );
+    my $clear    = $topframe->Button( -text => "Remove",
+                    -height=>1,
+                    -command => [\&clearmacaddy, $listbox, $window ],
+                    );
+    my $clearall = $topframe->Button( -text => "Remove All",
+                    -height=>1,
+                    -command => [\&clearallmacs, $listbox, $window ],
+                    );
     $frame->pack(-side => "bottom", -fill => "both", -expand => 1);
     $topframe->pack(-side => 'top', -fill => "both", -expand => 1);
 
@@ -134,13 +134,13 @@ sub mac_window {
     our $exitbutton = $frame->Button(
                                      -text => "Close",
                                      -command => sub {
-					 undef $destroyed;
-					 end_ping(); 
-					 end_collect_mac($label); 
-					 oscar_log_subsection("Step $step_number: Completed successfully"); 
-					 $parent->Unbusy();
-					 $window->destroy;
-				     },
+                                         undef $destroyed;
+                                         end_ping(); 
+                                         end_collect_mac($label); 
+                                         oscar_log_subsection("Step $step_number: Completed successfully"); 
+                                         $parent->Unbusy();
+                                         $window->destroy;
+                                     },
                                     );
     my $assignbutton = $frame->Button(
                                       -text => "Assign MAC to Node",
@@ -157,15 +157,15 @@ sub mac_window {
 
     our $dyndhcp = 1;
     my $refreshdhcp = $frame->Checkbutton(
-				-text => "Dynamic DHCP update",
-				-variable => \$dyndhcp,
-				);
+                                -text => "Dynamic DHCP update",
+                                -variable => \$dyndhcp,
+                                );
 
     our $multicast = 0;
     my $selectmulticast = $frame->Checkbutton(
-				-text => "Enable Multicasting",
-				-variable => \$multicast,
-				);
+                                -text => "Enable Multicasting",
+                                -variable => \$multicast,
+                                );
 
     my $fileselector = $frame->FileSelect(-directory => "$ENV{HOME}");
     our $loadbutton = $frame->Button(
@@ -180,11 +180,11 @@ sub mac_window {
     our $bootfloppy = $frame->Button(
                                     -text => "Build Autoinstall Floppy...",
                                     -command => sub {
-					my $cmd = "xterm -T 'Build Autoinstall Floppy' -e mkautoinstalldiskette";
-					oscar_log_subsection("Step $step_number: Building autoinstall floppy: $cmd");
-					system($cmd);
-					oscar_log_subsection("Step $step_number: Successfully built autoinstallfloppy");
-				    }
+                                        my $cmd = "xterm -T 'Build Autoinstall Floppy' -e mkautoinstalldiskette";
+                                        oscar_log_subsection("Step $step_number: Building autoinstall floppy: $cmd");
+                                        system($cmd);
+                                        oscar_log_subsection("Step $step_number: Successfully built autoinstallfloppy");
+                                    }
                                    );
     our $networkboot = $frame->Button(
                                      -text => "Setup Network Boot",
@@ -192,13 +192,13 @@ sub mac_window {
                                     );
 
     my $assignall   = $frame->Button(
-				     -text => "Assign all MACs",
-				     -command => [\&assignallmacs, $listbox, $tree, $window],
-				    );
+                                     -text => "Assign all MACs",
+                                     -command => [\&assignallmacs, $listbox, $tree, $window],
+                                    );
     my $clearallmacsfromnodes = $frame->Button(
-					-text =>"Remove all MACs",
-					-command => [\&clearallmacsfromnodes, $listbox, $tree, $window],
-					);
+                                        -text =>"Remove all MACs",
+                                        -command => [\&clearallmacsfromnodes, $listbox, $tree, $window],
+                                        );
 
     $start->grid($assignall, $exitbutton, -sticky => "ew");
     $assignbutton->grid($deletebutton, $dhcpbutton, -sticky => "ew");
@@ -274,9 +274,9 @@ sub populate_MACS {
     %MAC = ();
     foreach my $client (@clients) {
         my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-	if ($adapter->mac) {
-        	add_mac_to_hash($adapter->mac, $client->name);
-	}
+        if ($adapter->mac) {
+                add_mac_to_hash($adapter->mac, $client->name);
+        }
     }
 }
 
@@ -288,7 +288,7 @@ sub regenerate_tree {
     foreach my $client (@clients) {
         my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
         $tree->add("|".$client->name, -text => $client->hostname, -itemtype => "text");
-	my $mac=$adapter->mac || "" ;
+        my $mac=$adapter->mac || "" ;
         $tree->add("|".$client->name . "|mac", 
                    -text => $adapter->devname . " mac = " . $mac, -itemtype => "text");
         $tree->add("|".$client->name . "|ip" . $adapter->devname, 
@@ -669,9 +669,9 @@ sub run_setup_pxe {
 
     $cmd = "../packages/kernel/scripts/fix_network_boot";
     if ( -x $cmd) {
-	oscar_log_subsection("Step $step_number: Finishing network boot: $cmd");
-	system($cmd);
-	oscar_log_subsection("Step $step_number: Successfully finished network boot");
+        oscar_log_subsection("Step $step_number: Finishing network boot: $cmd");
+        system($cmd);
+        oscar_log_subsection("Step $step_number: Successfully finished network boot");
     }
 
     oscar_log_subsection("Step $step_number: Successfully setup network boot");

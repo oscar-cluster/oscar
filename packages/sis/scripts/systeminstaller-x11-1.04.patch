@@ -1,20 +1,24 @@
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm.orig	2003-04-09 10:31:40.000000000 -0700
-+++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2004-10-09 23:44:24.000000000 -0700
-@@ -55,7 +59,12 @@
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2004-10-23 19:58:21.000000000 -0700
+@@ -36,6 +36,7 @@
+ 
+     my $window = shift;
+     my %vars = (
++                title => "Add Clients to an SIS Image",
+                 imgname => "",
+                 basename => "",
+                 domainname => "",
+@@ -55,7 +56,8 @@
      my %noshow = %{$vars{noshow}};
  
      my $addclient_window = $window->Toplevel();
 -    $addclient_window->title("Add Clients to a SIS Image");
 +    $addclient_window->withdraw;
-+    if( $ENV{OSCAR_HOME} ) {
-+        $addclient_window->title("Define OSCAR Clients");
-+    } else {
-+        $addclient_window->title("Add Clients to a SIS Image");
-+    }
++    $addclient_window->title($vars{title});
  
      #
      #  First line:  What is your image name?
-@@ -137,6 +146,7 @@
+@@ -137,6 +139,7 @@
                                                 );
  
      $reset_button->grid($activate_button, quit_button($addclient_window) , -sticky => "nesw");
@@ -32,8 +36,6 @@
               done_window
               error_window
              );
---- /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm.orig	2004-10-22 11:29:34.000000000 -0700
-+++ /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm	2004-10-22 12:05:38.000000000 -0700
 @@ -53,7 +53,8 @@
              $selector->configure(-directory => $dir2);
          }
@@ -159,22 +161,42 @@
  
  1;
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm.orig	2003-10-31 07:39:12.000000000 -0800
-+++ /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm	2004-10-21 15:28:37.000000000 -0700
-@@ -63,7 +63,12 @@
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm	2004-10-23 20:25:50.000000000 -0700
+@@ -36,6 +36,7 @@
+ 
+     my $window = shift;
+     my %vars = (
++                title => "Create an SIS Image",
+                 imgpath => $config->default_image_dir,
+                 imgname => "",
+                 arch => (uname)[4],
+@@ -63,7 +64,8 @@
      }
  
      my $image_window = $window->Toplevel();
 -    $image_window->title("Create a System Installation Suite Image");
 +    $image_window->withdraw;
-+    if( $ENV{OSCAR_HOME} ) {
-+        $image_window->title("Build OSCAR Client Image");
-+    } else {
-+        $image_window->title("Create a System Installation Suite Image");
-+    }
++    $image_window->title($vars{title});
      my $message = $image_window->Message(-text => "Fill out the following fields to build a System Installation Suite image.  If you need help on any field, click the help button next to it", -justify => "left", -aspect => 700);
      $message->grid("-","-","-");
  
-@@ -185,8 +190,8 @@
+@@ -169,24 +171,11 @@
+    
+     # Then a whole bunch of control buttons
+     
+-    my $reset_button = $image_window->Button(
+-                                             -text=>"Reset",
+-                                             -command=> [\&reset_window, $image_window, 
+-                                                         \%vars, \%defaults, {piaction => $postoption,
+-                                                                              arch => $archoption,
+-                                                                              ipmeth => $ipoption,
+-                                                                              mcast => $multicastOpts
+-                                                                             },
+-                                                        ],
+-                                            -pady => 8,
+-                                            -padx => 8,
+-                                           );
+-
      my $progress = $image_window->ProgressBar(
                                                -takefocus => 0,-width => 20,-length => 200,
                                                -anchor => 'w',-from => 0,-to => 100,
@@ -185,8 +207,23 @@
                                                -variable => \$vars{percent_done}
                                               );
      
-@@ -200,12 +205,13 @@
+@@ -198,24 +187,39 @@
+                                                 -padx => 8,
+                                                );
      
++    my $reset_button = $image_window->Button(
++                                             -text=>"Reset",
++                                             -command=> [\&reset_window, $image_window, $progress,
++                                                         \%vars, \%defaults, {piaction => $postoption,
++                                                                              arch => $archoption,
++                                                                              ipmeth => $ipoption,
++                                                                              mcast => $multicastOpts
++                                                                             },
++                                                        ],
++                                            -pady => 8,
++                                            -padx => 8,
++                                           );
++
      $reset_button->grid($activate_button, quit_button($image_window),"-" , -sticky => "nesw");
      
 -    $progress->grid("-","-", -sticky => "nesw");
@@ -200,7 +237,19 @@
  }
  
  sub reset_window {
-@@ -250,13 +256,16 @@
+-    my ($window, $curvars, $defvars, $optiondefaults) = @_;
++    my ($window, $progress, $curvars, $defvars, $optiondefaults) = @_;
+     resethash($curvars, $defvars);
+     foreach my $key (keys %$optiondefaults) {
+         if($$optiondefaults{$key} and $$curvars{$key}) {
+             $$optiondefaults{$key}->setOption($$curvars{$key});
+         }
+     }
++    $progress->value(0);
+ }
+ 
+ sub del_image {
+@@ -250,13 +254,16 @@
                                $window->Unbusy(), return undef);
  
      my $lines_so_far;
@@ -218,7 +267,7 @@
              $progress->update();
              print "$lines_so_far: $_";
          }
-@@ -264,10 +273,10 @@
+@@ -264,10 +271,10 @@
  
      close(OUTPUT) or (carp("Command $cmd failed to run properly"), 
                        error_window($window, "Failed to create Image!"),
@@ -231,7 +280,7 @@
  
      print "Built image from rpms\n";
  
-@@ -279,6 +288,8 @@
+@@ -279,6 +286,8 @@
                  password => $$vars{pass1}
              );
      }
@@ -240,7 +289,7 @@
  
      ##############################################
      # Update flamethrower.conf                   #
-@@ -289,14 +300,20 @@
+@@ -289,14 +298,20 @@
         $cmd = "/bin/mv -f /etc/systemimager/flamethrower.conf /etc/systemimager/flamethrower.conf.bak";
         open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
                 $window->Unbusy(), return undef);
@@ -261,7 +310,7 @@
  
         # add entry for boot-i386-standard module
         if ($$vars{arch} eq "i686" or $$vars{arch} eq "i586"  or $$vars{arch} eq "i486" or $$vars{arch} eq "i386"){
-@@ -308,10 +325,14 @@
+@@ -308,10 +323,14 @@
         $cmd = "/usr/lib/systemimager/perl/confedit --file /etc/systemimager/flamethrower.conf --entry $entryArg --data \"$entryArg \n DIR=/usr/share/systemimager/boot/i386/standard/\"";
         open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
                 $window->Unbusy(), return undef);
@@ -276,7 +325,7 @@
  
      my $diskcmd = "mksidisk -A --name $$vars{imgname} --file $$vars{diskfile}";
      
-@@ -319,6 +340,8 @@
+@@ -319,6 +338,8 @@
                            error_window($window, "Failed to set disk partitioning in image!"),
                            $window->Unbusy(),
                            return undef);
@@ -285,7 +334,7 @@
  
          print "Added Disk Table for $$vars{imgname} based on $$vars{diskfile}\n";
      
-@@ -333,6 +356,8 @@
+@@ -333,6 +354,8 @@
                  error_window($window, "Failed to build auto install script for image!"),
                  $window->Unbusy(), 
                  return undef);
@@ -294,7 +343,7 @@
  
      print "Ran mkautoinstallscript\n";
  
-@@ -345,6 +370,8 @@
+@@ -345,6 +368,8 @@
                                            $window->Unbusy(),
                                            return 0);
      }
@@ -303,7 +352,7 @@
      if(ref($$vars{postinstall}) eq "ARRAY") {
          my $sub = shift(@{$$vars{postinstall}});
          &$sub($vars, @{$$vars{postinstall}}) or (carp("Couldn't run postinstall"), 
-@@ -352,8 +379,10 @@
+@@ -352,8 +377,10 @@
                                                   $window->Unbusy(), 
                                                   return 0);
      }

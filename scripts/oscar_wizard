@@ -310,6 +310,7 @@ sub build_oscar_image {
 	(($arch eq "i386") ? "" : ".$arch");
 
     my %vars = (
+                title => "Build OSCAR Client Image",
                 imgname => "oscarimage",
                 noshow => {
                            arch => 1,
@@ -320,11 +321,11 @@ sub build_oscar_image {
                 pkgpath => "/tftpboot/rpm",
                 diskfile => "$ENV{OSCAR_HOME}/oscarsamples/$diskfile",
                 ipmeth => "static",
-		mcast  => "off",
+                mcast  => "off",
                 piaction => "beep",
                 extraflags => $extraflags,
                 postinstall => \&postimagebuild,
-		step_number => $step_number,
+                step_number => $step_number,
                );
 
     createimage_window($window, %vars);
@@ -386,6 +387,7 @@ sub build_oscar_clients {
     }
 
     my %vars = (
+                title => "Define OSCAR Clients",
                 imgname => "oscarimage",
                 basename => "oscarnode",
                 domainname => $domainname,
