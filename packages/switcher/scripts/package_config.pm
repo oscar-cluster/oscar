@@ -1,13 +1,13 @@
-package switcher::scripts::package_config;
+package scripts::package_config;
 
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: package_config.pm,v 1.2 2002/12/09 12:48:57 jsquyres Exp $
+# $Id: package_config.pm,v 1.3 2003/01/21 21:55:47 jsquyres Exp $
 #
 
 use strict;
@@ -16,7 +16,7 @@ use base qw(Exporter);
 use Data::Dumper;
 
 @EXPORT = qw(get);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 
 #

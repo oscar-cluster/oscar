@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 #
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: pre_configure,v 1.5 2002/11/01 04:48:28 jsquyres Exp $
+# $Id: pre_configure,v 1.6 2003/01/21 21:55:51 jsquyres Exp $
 #
 
 use strict;
@@ -16,8 +16,8 @@ use Carp;
 
 # Import some modules just for switcher
 
-use lib "$ENV{OSCAR_HOME}/packages";
-use switcher::scripts::package_config;
+use lib "$ENV{OSCAR_PACKAGE_HOME}";
+use scripts::package_config;
 
 # Debugging
 
@@ -28,7 +28,7 @@ use Data::Dumper;
 # Global variables
 #
 
-my $outfile = "$ENV{OSCAR_HOME}/packages/switcher/configurator.html";
+my $outfile = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
 #
 # Read in the settings from the database as to what packages provided

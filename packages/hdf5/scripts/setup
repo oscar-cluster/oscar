@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# Copyright (c) 2003 The Trustees of Indiana University.  
+#                    All rights reserved.
+#
+# $Id: setup,v 1.5 2003/01/21 21:55:47 jsquyres Exp $
+#
+
 installable=1
 
 if [ `/bin/uname -m` == 'ia64' ]; then
@@ -10,4 +16,4 @@ else
 fi
 
 perl -pi.bak -e "s/installable\>./installable>$installable/g" \
-$OSCAR_HOME/packages/hdf5/config.xml
+$OSCAR_PACKAGE_HOME/config.xml

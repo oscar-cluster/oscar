@@ -1,6 +1,13 @@
 #!/bin/sh
 #
-# $Id: post_install,v 1.2 2002/10/29 18:34:48 jsquyres Exp $
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: post_install,v 1.3 2003/01/21 21:55:50 jsquyres Exp $
 #
 # Push the first copy of the system-level switcher settings out to
 # the nodes.
@@ -9,7 +16,7 @@
 # See if there's any defaults that we need to set from the
 # Configurator step
 
-cmd="$OSCAR_HOME/packages/switcher/scripts/set_switcher_defaults"
+cmd="$OSCAR_PACKAGE_HOME/scripts/set_switcher_defaults"
 $cmd
 
 # Since we just set the defaults, it is now necessary to push the

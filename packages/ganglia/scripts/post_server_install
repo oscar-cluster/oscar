@@ -17,6 +17,8 @@
 #   ganglia Server Preparation script
 #   Steven A. DuChene  <linux-clusters@mindspring.com>
 #   mandrake msec modification : Benoit des Ligneris <benoit@des.ligneris.net>
+# Copyright (c) 2003 The Trustees of Indiana University.  
+#                    All rights reserved.
 
 use strict;
 use Carp;
@@ -27,7 +29,7 @@ use Carp;
 
 # call script that makes the mod to the gmond.conf and gmetad.conf files for the internal interface
 
-!system("$ENV{OSCAR_HOME}/packages/ganglia/scripts/gmond_add_internal.sh") or croak("gmond_internal.sh failed");
+!system("$ENV{OSCAR_PACKAGE_HOME}/scripts/gmond_add_internal.sh") or croak("gmond_internal.sh failed");
 
 !system("service gmond start") or croak("Couldn't start gmond");
 !system("service gmetad start") or croak("Couldn't start gmetad");

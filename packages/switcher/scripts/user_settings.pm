@@ -1,13 +1,13 @@
-package switcher::scripts::user_settings;
+package scripts::user_settings;
 
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: user_settings.pm,v 1.1 2002/11/01 04:48:28 jsquyres Exp $
+# $Id: user_settings.pm,v 1.2 2003/01/21 21:55:52 jsquyres Exp $
 #
 
 use strict;
@@ -18,12 +18,12 @@ use base qw(Exporter);
 use Data::Dumper;
 
 @EXPORT = qw(get);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 # Import some modules just for switcher
 
-use lib "$ENV{OSCAR_HOME}/packages";
-use switcher::scripts::package_config;
+use lib "$ENV{OSCAR_PACKAGE_HOME}";
+use scripts::package_config;
 
 
 #
@@ -36,7 +36,7 @@ sub get {
 
     # Read in the data from the results of the configurator step
 
-    my $infile = "$ENV{OSCAR_HOME}/packages/switcher/.configurator.values";
+    my $infile = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
     my $xs = new XML::Simple(keyattr => {});
     my $results;
     if (-e $infile) {

@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 #
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: post_configure,v 1.4 2002/10/30 12:16:17 jsquyres Exp $
+# $Id: post_configure,v 1.5 2003/01/21 21:55:49 jsquyres Exp $
 #
 
 use strict;
@@ -27,7 +27,7 @@ use strict;
 #
 
 my $ret;
-my $cmd = "$ENV{OSCAR_HOME}/packages/switcher/scripts/set_switcher_defaults";
+my $cmd = "$ENV{OSCAR_PACKAGE_HOME}/scripts/set_switcher_defaults";
 if (-x $cmd) {
     $ret = system($cmd);
 } else {
