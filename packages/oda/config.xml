@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.59 2003/07/25 21:40:30 brechin Exp $
+      $Id: config.xml,v 1.60 2003/09/18 03:39:53 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -542,11 +542,14 @@
 	name          name of the package set
 
 	The portions of this multiple commands shortcut do:
-	Set no selected package set if the deleted package was selected, in the oscar table.
-	Remove all records for the deleted package set from the package sets/included packages table.
-	Remove all records for the deleted package set from the package sets/included package sets table.
-	Remove all records for the deleted package set from the nodes/included package sets table.
-	Remove all records for the deleted package set from the package_set names/ids table.
+	Set no selected package set if the deleted package was selected,
+        in the oscar table.
+	Remove all records for the deleted package set from the package sets
+        included packages table.
+	Remove all records for the deleted package set from the nodes
+        included package sets table.
+	Remove all records for the deleted package set from the package_set 
+        names/ids table.
 	 -->
 	<shortcut> delete_package_set
                    modify_records
@@ -558,13 +561,8 @@
                    remove_all_packages_from_package_set
                    %1
                    ;
-                   remove_all_package_sets_from_package_set
+                   remove_package_set_from_all_nodes
                    %1
-                   ;
-                   delete_records
-                   nodes_included_package_sets
-                   nodes_included_package_sets.package_set_id=package_sets.id
-                   package_sets.name=%1
                    ;
                    delete_records
                    package_sets
@@ -1006,6 +1004,26 @@
                    node_groups.name=%1
                    node_groups.id=node_groups_included_nodes.node_group_id
         </shortcut>
+	<shortcut> remove_all_packages_from_package_set
+                   delete_records
+                   package_sets_included_packages
+                   package_sets.name=%1
+                   package_sets.id=package_sets_included_packages.package_set_id
+        </shortcut>
+	<shortcut> remove_disk_partition_from_disk_layout
+                   delete_records
+                   disk_partitions
+                   disk_partitions.partition=%1
+                   disk_layouts.name=%2
+                   disk_layouts.id=disk_partitions.disk_layout_id
+        </shortcut>
+	<shortcut> remove_dns_server_from_node
+                   delete_records
+                   nodes_included_dns_servers
+                   nodes_included_dns_servers.server=%1
+                   nodes.name=%2
+                   nodes_included_dns_servers.node_id=nodes.id
+        </shortcut>
 	<shortcut> remove_node_from_all_node_groups
                    delete_records
                    node_groups_included_nodes
@@ -1032,27 +1050,20 @@
                    packages.name=%1
                    packages.id=package_sets_included_packages.package_id
         </shortcut>
-	<shortcut> remove_disk_partition_from_disk_layout
-                   delete_records
-                   disk_partitions
-                   disk_partitions.partition=%1
-                   disk_layouts.name=%2
-                   disk_layouts.id=disk_partitions.disk_layout_id
-        </shortcut>
-	<shortcut> remove_dns_server_from_node
-                   delete_records
-                   nodes_included_dns_servers
-                   nodes_included_dns_servers.server=%1
-                   nodes.name=%2
-                   nodes_included_dns_servers.node_id=nodes.id
-        </shortcut>
 	<shortcut> remove_package_from_package_set
                    delete_records
                    package_sets_included_packages
                    packages.name=%1
                    package_sets.name=%2
                    package_sets.id=package_sets_included_packages.package_set_id
-                   package_sets_included_packages.package_id=packages.id</shortcut>
+                   package_sets_included_packages.package_id=packages.id
+        </shortcut>
+        <shortcut> remove_package_set_from_all_nodes
+                   delete_records
+                   nodes_included_package_sets
+                   nodes_included_package_sets.package_set_id=package_sets.id
+                   package_sets.name=%1
+        </shortcut>
 	<shortcut> remove_package_set_from_node
                    delete_records
                    nodes_included_package_sets
