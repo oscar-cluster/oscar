@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.12 2002/04/03 20:20:15 sdague Exp $
+# $Id: Makefile.am,v 1.13 2002/04/04 17:48:00 sdague Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -17,5 +17,5 @@ EXTRA_DIST		= \
 			systemimager-common-2.0.1-3.i386.rpm \
 			systemimager-i386boot-2.0.1-3.i386.rpm \
 			systemimager-server-2.0.1-3.i386.rpm \
-			systeminstaller-0.81-1.noarch.rpm \
-			systeminstaller-x11-0.81-1.noarch.rpm
+			systeminstaller-0.82-1.noarch.rpm \
+			systeminstaller-x11-0.82-1.noarch.rpm
