@@ -2,6 +2,9 @@
 <!DOCTYPE package SYSTEM "../package.dtd">
 <oscar>
   <!--
+      Copyright (c) 2004 Neil Gorsuch
+                         All rights reserved.
+
       Copyright (c) 2003 Neil Gorsuch
                          All rights reserved.
 
@@ -12,13 +15,13 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.11 2003/12/12 22:09:57 ngorsuch Exp $
+      $Id: config.xml,v 1.12 2004/01/15 04:04:32 ngorsuch Exp $
   -->
   <name>pfilter</name>
 
   <version>
     <major>1</major>
-    <minor>703</minor>
+    <minor>705</minor>
     <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
