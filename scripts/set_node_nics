@@ -638,11 +638,9 @@ die "$0: cannot connect to oda database";
 
 my @error_strings = ();
 # START LOCKING FOR NEST && open the database
-#chomp(my @tables = `oda list_tables`);
 my @tables =("oscar","nics", "oda_shortcuts", "networks",
             "node_groups", "nodes");
 
-#chomp(my @tables = `oda list_tables`);
 if(! locking("write", \%oda_options, \@tables, \@error_strings)){
     die "$0: cannot connect to oda database";
 }
@@ -653,11 +651,11 @@ if(! locking("write", \%oda_options, \@tables, \@error_strings)){
 my $node_name = database_find_node_name( 1 );
 if ( ! defined $node_name ) {
     database_disconnect();
+    # UNLOCKING FOR NEST && database disconnect
+    unlock(\%oda_options, \@error_strings);
     die "$0: cannot find node name of this machine";
 }
 
-# UNLOCKING FOR NEST && database disconnect
-unlock(\%oda_options, \@error_strings);
 
 print "$0: node name for this machine is <$node_name>\n"
     if $options{debug};

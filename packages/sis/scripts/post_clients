@@ -266,20 +266,10 @@ if ( exists $options{oda} ) {
 
 #=================================================================
 
-# open the oscar database
-
-my @error_strings = ();
-#if ( ! oda::connect( \%oda_options,
-#		     \@error_strings ) ) {
-#    warn shift @error_strings while @error_strings;
-#    usage( 1, "cannot connect to the OSCAR database" );
-#}
-
 # START LOCKING FOR NEST && open the oscar database
-#chomp(my @tables = `oda list_tables`);
+my @error_strings = ();
+
 my @tables = ("nodes","packages","nics","oda_shortcuts");
-#my %options = ();
-#my @errors = ();
 if(! locking("write", \%oda_options, \@tables, \@error_strings)){
     warn shift @error_strings while @error_strings;
     usage( 1, "cannot lock the database and connect to the OSCAR database" );

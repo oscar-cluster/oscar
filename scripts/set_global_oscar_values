@@ -73,7 +73,6 @@ if ( $uname_data eq "i386" ) {
 #database_connect() ||
 #die "$0: cannot connect to oda database";
 # START LOCKING FOR NEST && open the database
-#chomp(my @tables = `oda list_tables`);
 my @tables = ("oscar", "oda_shortcuts");
 my %options = ();
 my @errors = ();
@@ -137,7 +136,6 @@ if ( ! oda::read_records( \%options,
 # UNLOCKING FOR NEST
 unlock(\%options, \@errors);
 
-#database_disconnect();
 exit 0;
 
 

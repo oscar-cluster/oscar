@@ -50,11 +50,9 @@ print "Checking for database existance of node oscar_server ...\n";
 
 # START LOCKING FOR NEST and open the database.
 
-#my @tables =("configurations", "oda_shortcuts", "node_groups", "nodes");
-chomp(my @tables = `oda list_tables`);
-#my @tables = ("nodes", "node_groups", "configurations", "oda_shortcuts");
+my @tables =("configurations", "oda_shortcuts", "node_groups", "nodes");
 my @errors = ();
-#locking("write", \%options, \@tables, \@errors);
+locking("write", \%options, \@tables, \@errors);
 
 do_it_or_die( "nodes name=\"oscar_server\"",
 	      \@nodes,

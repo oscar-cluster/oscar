@@ -283,7 +283,6 @@ oscar_log_subsection("Successfully installed server core RPMs");
 #
 
 # START LOCKING FOR NEST && open the database
-#chomp(my @tables = `oda list_tables`);
 my @tables = ("nodes", "configurations", "node_config_revs", "config_opkgs","packages","oda_shortcuts");
 my %options = ();
 my @errors = ();

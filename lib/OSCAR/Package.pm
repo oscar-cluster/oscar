@@ -126,8 +126,6 @@ sub getOdaPackageDir # ($pkg) -> $pkgdir
                           "read",
                           \@tables,
                           \@list);
-#      my $success = database_execute_command("read_records " .
-#                          "packages name=$pkg directory", \@list);
       Carp::carp("Could not do oda command 'read_records packages name=$pkg " .
                  " directory'") if (!$success);
 
@@ -656,7 +654,7 @@ sub list_selected_packages # ($type) -> @selectedlist
     $command_args = "packages_in_selected_package_set packages.class!=core";
     }
     my @packages = ();
-    my @tables = ("packages", "package_sets", "package_sets_included_packages", "oscar", "oda_shortcuts", "packages_rpmlists");
+    my @tables = ("packages", "package_sets", "package_sets_included_packages", "oscar", "oda_shortcuts", "packages_rpmlists", "packages_conflicts");
     if ( OSCAR::Database::single_database_execute( $command_args,
                                                    "READ",
                                                    \@tables,

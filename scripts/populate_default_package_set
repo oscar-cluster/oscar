@@ -38,21 +38,9 @@ sub do_it_or_die {
 }
 
 # START LOCKING FOR NEST && open the database
-#chomp(my @tables = `oda list_tables`);
-my @sample_tables =("oscar","node_groups_included_configurations","nics",
-            "disk_partitions","config_opkgs","cluster_partitions",
-            "node_config_revs","nodes_included_package_sets","configurations",
-            "package_switcher","package_configuration_values","packages_provides",
-            "packages_filters","images","packages_conflicts","package_sets",
-            "oda_shortcuts","packages_requires","nodes_included_dns_servers",
-            "disk_layouts","networks","node_groups_included_node_groups",
-            "oscar_lock","program_variable_values","packages","node_groups",
-            "package_configurations","nodes","packages_rpmlists",
-            "package_sets_included_packages");
 
 my @tables =("oscar", "package_sets", "oda_shortcuts", "packages", "package_sets_included_packages");
 
-#my @tables = ("packages", "package_sets", "oda_shortcuts");
 my %options = ();
 my @errors = ();
 if(! locking("write", \%options, \@tables, \@errors)){

@@ -83,14 +83,11 @@ oscar_log_subsection("Successfully installed server non-core RPMs");
 #
 
 # START LOCKING FOR NEST
-#chomp(my @tables = `oda list_tables`);
 my @tables = ("nodes", "configurations", "packages", "config_opkgs", "node_config_revs", "oda_shortcuts" );
 my %options = ();
 my @errors = ();
 locking("write", \%options, \@tables, \@errors);
 
-#chomp(my $node_id = `oda rea nodes id name=oscar_server`);
-#chomp(my $config_id = `oda rea configurations id name=oscar_server`);
 my $node_id = dec_already_locked("read_records nodes id name=oscar_server");
 my $config_id = dec_already_locked("read_records configurations id name=oscar_server");
 print "Inserting NON-CORE oscar packages into config_opkgs table :\n";
@@ -102,11 +99,9 @@ foreach my $pkg (@packages){
                   "cannot delete config_opkgs record for $pkg" );
 } 
 foreach my $opkg (@packages){
-    #chomp(my $package_id = `oda rea packages id name=$opkg`);
     my @packages_id = ();
     dec_already_locked("read_records packages id name=$opkg", \@packages_id);
     my $package_id = pop @packages_id;
-   # chomp(my $config_opkg = `oda rea config_opkgs.configurations_id package_id=$package_id configurations_id=$config_id`);
     do_it_or_die( "add_config_opkgs $config_id $package_id",
                   undef,
                   "cannot create config_opkgs record for oscar_server" );

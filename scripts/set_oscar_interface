@@ -109,7 +109,6 @@ my @results;
 my $done = 0;
 
 # START LOCKING FOR NEST && open the database
-#chomp(my @tables = `oda list_tables`);
 my @tables = ("oscar", "network", "oda_shortcuts");
 my %options = ();
 my @errors = ();

@@ -1170,9 +1170,9 @@ sub database_rpmlist_for_package_and_group {
 #********************************************************************#
 #********************************************************************#
 # inputs:  type_of_lock              String of lock types (READ/WRITE)
-#          passed_options            optional reference to options hash
+#          options            optional reference to options hash
 #          passed_tables_ref         reference to modified tables list
-#          passed_error_strings_ref  optional reference to array for errors
+#          error_strings_ref  optional reference to array for errors
 #
 # outputs: non-zero if success
 
@@ -1239,8 +1239,8 @@ sub locking{
     $success = 0 
     if ! oda::do_sql_command( $options_ref,
 			      $sql_command,
-			      "oda\:\:write_lock",
-			      "write lock in tables (" .
+			      "oda\:\:$type_of_lock"."_lock",
+			      "$type_of_lock lock in tables (" .
 			      join( ',', @locked_tables ) . ")",
 			      $error_strings_ref );
     # disconnect from the database if we were not connected at start
@@ -1259,7 +1259,6 @@ sub locking{
 #********************************************************************#
 #********************************************************************#
 # inputs:  options            optional reference to options hash
-#          tables_ref         reference to modified tables list
 #          error_strings_ref  optional reference to array for errors
 #
 # outputs: non-zero if success
@@ -1294,10 +1293,10 @@ sub unlock {
 				      $error_strings_ref );
 
     # disconnect from the database if we were not connected at start
-    oda::initialize_locked_tables();
     database_disconnect( $options_ref,
 		     $error_strings_ref )
 	if ! $database_connected;
+    oda::initialize_locked_tables();
 
     $database_connected = 0;
 
