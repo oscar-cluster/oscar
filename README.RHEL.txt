@@ -1,4 +1,4 @@
-README for OSCAR 4.0 with Red Hat Enterprise Linux 3 AS
+README for OSCAR vOSCARVERSION with Red Hat Enterprise Linux 3
 
 Date:   Fri Feb 18 13:08:44 PST 2005
 

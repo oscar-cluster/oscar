@@ -193,6 +193,7 @@ rm -f $filelist
 
 cat > $filelist <<EOF
 README
+README.RHEL.txt
 EOF
 for file in `cat $filelist`; do
     sed -e s/OSCARVERSION/$OSCAR_VERSION/g $file > $file.out
