@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.1 2002/02/18 19:34:31 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.2 2002/02/18 19:39:29 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -31,17 +31,16 @@ use strict;
 
 use Carp;
 
-use vars qw($VERSION @ISA @EXPORT);
+use vars qw($VERSION @EXPORT);
 use POSIX;
+use base qw(Exporter)
 
-require Exporter;
-@ISA = qw(Exporter);
-@EXPORT = qw(FindFiles);
+@EXPORT = qw(find_files);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
-sub FindFiles {
+sub find_files {
         # Finds the best version of files to use based on an rpm list
         # Input:  a parameter list containing the following:
         #       PKGDIR  The location of the packages
@@ -250,7 +249,7 @@ SystemInstaller::Package::PackageBest - Choose best package file.
 
  my @pkglist = qw(bash filesystem basesystem nfs-utils);
 
- my %files = &FindFiles(PKGDIR=>"/tftpboot/rpm",ARCH=>"i386", PKGLIST=>\@pkglist);
+ my %files = &find_files(PKGDIR=>"/tftpboot/rpm",ARCH=>"i386", PKGLIST=>\@pkglist);
 
 =head1 DESCRIPTION
 
@@ -259,12 +258,12 @@ use for a given package name.
 
 =head1 FUNCTIONS
 
-&FindFiles(<parameters>);
+&find_files(<parameters>);
 
 Finds the best file to use from a directory  based on a list of
 package names.
 
- FindFiles(
+ find_files(
             PKGDIR  =>  "<directory that contains packages>",
             ARCH    =>  "<target architecture>",
             RPMRC   =>  "<filename of rpmrc file>",
