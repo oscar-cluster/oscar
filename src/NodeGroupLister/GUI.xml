@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+
+<!--
+Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+  All rights reserved.
+                                                                                
+Author: Terry Fleury <tfleury@ncsa.uiuc.edu>
+                                                                                
+  $Id:
+-->
+
+  <classname>NodeGroupLister</classname>
+  <fullname>Display Node Groups</fullname>
+
+</oscar>
+
