@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.3 2002/06/15 01:02:13 jenos Exp $
+% $Id: install.tex,v 1.4 2002/06/15 01:25:51 jenos Exp $
 %
 % $COPYRIGHT$
 %
@@ -20,7 +20,7 @@ The files:
 \end{itemize}
 It is possible to add your own files to this list, by editing the command
 script which does the work.
-The command is \cmd{/usr/sbin/sync_users}.  It is triggered by wrapper
+The command is \cmd{/usr/sbin/sync\_users}.  It is triggered by wrapper
 scripts around the user management commands in Linux.  The wrapped scripts:
 \begin{itemize}
 \item /usr/sbin/useradd
@@ -31,12 +31,12 @@ scripts around the user management commands in Linux.  The wrapped scripts:
 \item /usr/sbin/groupmod
 \end{itemize}
 
-\paragraph{Problems with sync_users:}
+\paragraph{Problems with sync\_users:}
 \begin{itemize}
 \item chsh and passwd commands don't trigger a sync (a cron entry is a
 recommended workaround)
 \item If shadow utils rpms are updated (useradd, userdel, etc), the wrapped 
-scripts are blown away, thus removing the sync_users triggers.
+scripts are blown away, thus removing the sync\_users triggers.
 \item The ''-c'' option on \cmd{useradd}(used for comments) doesn't work due to
 the wrapped script not handling quotation marks properly.
 \end{itemize}
@@ -47,7 +47,7 @@ files and syncing only if that file changes.
 \paragraph{SSH Configuration}
 The OPIUM package also handles the ssh key setup.  This is done by placing
 startup scripts in /etc/profile.d/ which generate ssh user key files if 
-they don't exist.  It also generates authorized_keys files which enable
+they don't exist.  It also generates authorized\_keys files which enable
 users to traverse the cluster securely without entering passwords.  Since
 these files reside in the users' home directories, it is necessary for
 the home directory to be mounted on a node in order for a user to ssh to
