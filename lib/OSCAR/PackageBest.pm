@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.8 2002/02/18 23:49:10 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.9 2002/02/18 23:58:05 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -38,7 +38,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.8 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.9 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
@@ -253,7 +253,7 @@ sub cache_gen {
         my %CLINES;
         my %FSIZES;
         local *PKGDIR;
-	my $rpmcmd="/bin/rpm"
+	my $rpmcmd="/bin/rpm";
 
         &verbose("Reading package directory");
         unless (opendir(PKGDIR,$path)) {
