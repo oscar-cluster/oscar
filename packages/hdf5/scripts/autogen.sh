@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: autogen.sh,v 1.2 2002/10/25 17:20:59 jsquyres Exp $
+# $Id: autogen.sh,v 1.3 2002/10/26 12:05:05 jsquyres Exp $
 #
 
 cmd="autoconf -o setup setup.ac"
@@ -20,7 +20,13 @@ fi
 
 ac_path="`which autoconf`"
 dir="`dirname $ac_path`"
-dir="`dirname $dir`/share/automake"
+dir="`dirname $dir`/share"
+dirs="`/bin/ls -d $dir/automake* 2>/dev/null`"
+if test "$dirs" = ""; then
+    echo "can't find automake!"
+    exit 1
+fi
+dir="`echo $dirs | awk '{print $1}'`"
 if test -d $dir; then
     files="config.guess config.sub install-sh"
     for file in $files; do
