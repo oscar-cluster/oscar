@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.13 2002/08/28 05:47:41 bligneri Exp $
+% $Id: release-notes.tex,v 1.14 2002/08/28 07:48:41 bligneri Exp $
 %
 % $COPYRIGHT$
 %
@@ -132,6 +132,12 @@ from you local mirror but not the updates package from Mandrake Update).
 Indeed, because of some naming convention problem with mandrake rpms, updated rpms with the
 same version will not be selected and you will not be able to pass step 1
 (server install).
+\item Copy the {\tt libcap} package from RedHat from this site\\
+{\tiny{ \tt
+ftp://ftp.rpmfind.net/linux/redhat/7.3/en/os/i386/RedHat/RPMS/libcap-1.10-8.i386.rpm
+}}
+to your {\tt /tftpboot/rpm} directory. For the moment this package is
+necessary and only RedHat is providing it.
 \item To build your image (and so your clients!), select the {\tt
 oscarsamples/Mandrake-8.2-i386.rpmlist} (for complete client with X) or
 {\tt oscarsamples/Mandrake-8.2-noX-i386.rpmlist} (for smaller client with no
