@@ -269,7 +269,7 @@ if ( exists $options{oda} ) {
 # START LOCKING FOR NEST && open the oscar database
 my @error_strings = ();
 
-my @tables = ("nodes","packages","nics","oda_shortcuts");
+my @tables = ("nodes","packages","nics","oda_shortcuts", "configurations", "node_groups");
 if(! locking("write", \%oda_options, \@tables, \@error_strings)){
     warn shift @error_strings while @error_strings;
     usage( 1, "cannot lock the database and connect to the OSCAR database" );
