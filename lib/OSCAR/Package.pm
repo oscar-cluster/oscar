@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.44 2003/01/21 21:49:17 jsquyres Exp $
+#   $Id: Package.pm,v 1.45 2003/01/24 12:14:30 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.44 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.45 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -448,8 +448,10 @@ sub make_empty_xml {
 #
 
 sub read_all_pkg_config_xml {
-    foreach my $pkg_dir(@PKG_SOURCE_LOCATIONS) {
-	opendir(PKGDIR, "$pkg_dir") 
+    foreach my $pkg_dir (@PKG_SOURCE_LOCATIONS) {
+	next if (! -d $pkg_dir);
+
+	opendir(PKGDIR, $pkg_dir) 
 	    or (carp("Couldn't open $pkg_dir for reading"), 
 		return undef);
 
