@@ -316,33 +316,34 @@ The following items highlight these issues.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begchange
-\subsection{Mandrakelinux 10.0 Notes}
-\label{subsec:mdk10notes}
-
-Mandrake users may experience the following fatal error if the
-install\_cluster script is run more than once.
-
-\begin{verbatim}
-/opt/oscar/scripts/set_node_nics: failed to create database
-record for nic eth0 on node oscar_server. Couldn't initialize the
-nics and networks for the oscar server at ./wizard_prep line 242
-Oscar Wizard preparation script failed to complete at
-./install_cluster line 215.
-\end{verbatim}
-
-To repair this problem, issue the following commands:
-\begin{verbatim}
-  # mysql oscar
-  mysql> DELETE from nics where 1;
-\end{verbatim}
-This should repair the database and allow the install\_cluster script
-to run again.  Alternatively, to get around this problem, you can invoke the OSCAR Wizard directly:
-\begin{verbatim}
-  # cd /opt/oscar/scripts
-  # ./oscar_wizard &
-\end{verbatim}
-\endchange
+% BLI Mandrakelinux 10.0 bug fixed in r3055
+%\begchange
+%\subsection{Mandrakelinux 10.0 Notes}
+%\label{subsec:mdk10notes}
+%
+%Mandrake users may experience the following fatal error if the
+%install\_cluster script is run more than once.
+%
+%\begin{verbatim}
+%/opt/oscar/scripts/set_node_nics: failed to create database
+%record for nic eth0 on node oscar_server. Couldn't initialize the
+%nics and networks for the oscar server at ./wizard_prep line 242
+%Oscar Wizard preparation script failed to complete at
+%./install_cluster line 215.
+%\end{verbatim}
+%
+%To repair this problem, issue the following commands:
+%\begin{verbatim}
+%  # mysql oscar
+%  mysql> DELETE from nics where 1;
+%\end{verbatim}
+%This should repair the database and allow the install\_cluster script
+%to run again.  Alternatively, to get around this problem, you can invoke the OSCAR Wizard directly:
+%\begin{verbatim}
+%  # cd /opt/oscar/scripts
+%  # ./oscar_wizard &
+%\end{verbatim}
+%\endchange
 
 % jlm - removed this section seeing as how there is no drake support
 % in 4.0
