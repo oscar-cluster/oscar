@@ -1,0 +1,9 @@
+#!/bin/sh
+
+installable=1
+
+if [ `/bin/uname -m` == 'ia64' ]; then
+  installable=0
+fi
+
+/usr/bin/oda modify packages name="hdf5" installable~$installable

@@ -12,7 +12,6 @@
   </version>
 
   <class>included</class>
-  <installable>@INSTALLABLE@</installable>
 
   <summary>Heirarchical Data Format (HDF) software package</summary>
   <license>freely distributable</license>
