@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.2 2001/12/22 01:06:44 jsquyres Exp $
+# $Id: Makefile.am,v 1.3 2001/12/22 18:35:01 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -16,6 +16,9 @@ MAIN_TEX	= intro.tex
 OTHER_SRC_FILES	= \
 		defs.tex \
 		intro-refs.bib
+
+NON_DIST_SRC_FILES= \
+		version.tex
 
 # png figures.  .eps and .pdf files will be automatically generated
 # from these.
@@ -33,6 +36,8 @@ SUFFIXES	= .tex .dvi .ps .pdf .eps
 MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
 MAIN_PS		= $(MAIN_TEX:.tex=.ps)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
+
+TEX_SRC		= $(MAIN_TEX) $(OTHER_SRC_FILES) $(NON_DIST_SRC_FILES)
 
 # Tell automake to include all the relevant files
 
@@ -52,8 +57,8 @@ pdf: $(PDF_FIG_FILES) $(MAIN_PDF)
 #
 
 $(MAIN_PS): $(MAIN_DVI)
-$(MAIN_DVI): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIG_FILES)
-$(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PNG_FIG_FILES)
+$(MAIN_DVI): $(TEX_SRC) $(EPS_FIG_FILES)
+$(MAIN_PDF): $(TEX_SRC) $(PNG_FIG_FILES)
 
 #
 # General rules

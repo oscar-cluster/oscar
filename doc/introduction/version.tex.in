@@ -1,0 +1,11 @@
+% -*- latex -*-
+%
+% $Id: version.tex.in,v 1.1 2001/12/22 18:35:01 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
+% Just so that we get the version # from configure
+
+\def\oscarversion{@OSCAR_VERSION@}
+\def\docsversion{@OSCAR_VERSION@}

@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.3 2001/12/22 01:02:09 jsquyres Exp $
+# $Id: configure.in,v 1.4 2001/12/22 18:35:01 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -60,17 +60,25 @@ AC_CHECK_PROG(WGET, wget, wget)
 
 AC_OUTPUT([
     Makefile
+
     dist/Makefile
     dist/programs.sh
+
     doc/Makefile
     doc/architecture/Makefile
     doc/development/Makefile
     doc/installation/Makefile
+    doc/installation/version.tex
     doc/introduction/Makefile
+    doc/introduction/version.tex
+
     lib/Makefile
     lib/OSCAR/Makefile
+
     images/Makefile
+
     oscarsamples/Makefile
+
     packages/lam/Makefile
     packages/lam/RPMS/Makefile
     packages/lam/scripts/Makefile
@@ -92,7 +100,9 @@ AC_OUTPUT([
     packages/pvm/Makefile
     packages/sis/RPMS/Makefile
     packages/sis/Makefile
+
     scripts/Makefile
+
     testing/Makefile
     testing/OSCAR_test/Makefile
     testing/OSCAR_test/mpi/Makefile
