@@ -96,7 +96,6 @@ dec_already_locked("read_records configurations id name=oscar_server", \@configs
 my $config_id = pop @configs_id;
 print "Inserting NON-CORE oscar packages into config_opkgs table :\n";
 foreach my $pkg (@packages){
-    print "$pkg is deleted\n";
     my $cmd = "delete_records config_opkgs config_opkgs.package_id=packages.id packages.name=$pkg config_opkgs.configurations_id=$config_id";
     do_it_or_die( "$cmd",
                   undef,
