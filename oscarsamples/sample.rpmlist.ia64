@@ -66,7 +66,6 @@ ipchains
 iproute
 iputils
 kbdconfig
-kernel
 kernel-headers
 kernel-smp
 krb5-libs
