@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.3 2002/07/19 02:28:56 jsquyres Exp $
+% $Id: user.tex,v 1.4 2002/08/06 06:37:01 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -57,14 +57,95 @@ The current version of the Ganglia tools packaged for OSCAR is:
 
 \begin{itemize}
 \item \rpmname{ganglia-monitor-core-2.2.3-2oscar}
-\item \rpmname{ganglia-php-rrd-client-1.0.4-oscar}
-\item \rpmname{perl-XML-Parser-2.30-31}
-\item \rpmname{rrdtool-1.0.35-2}
+\item \rpmname{ganglia-monitor-core-lib-2.2.3-2oscar}
+\item \rpmname{ganglia-php-rrd-client-1.0.4-4oscar}
+\item \rpmname{ganglia-python-2.0-1oscar}
+\item \rpmname{perl-XML-Parser-2.30-32oscar}
+\item \rpmname{rrdtool-1.0.35-3oscar}
+\item \rpmname{rrdtool-devel-1.0.35-3oscar}
 \end{itemize}
 
-There is a newer version of Ganglia that includes a distributed
-execution environment but OSCAR already includes the C3 tools that
-provides this functionality.  The newer versions of Ganglia with the
-distributed execution environment are still being studied for possible
-inclusion in future releases of OSCAR.
+The \cmd{ganglia} package in OSCAR \oscarversion has a command line
+tool based on a python class. The addition of this tool makes it
+possible to access all of the available multicasted ganglia monitoring
+data that is flowing across the cluster from the command line or
+various perl, shell, or other system admin created scripts.  The tool
+can be found in:
+
+\vspace{10pt}
+\centerline{\cmd{/usr/sbin/ganglia}}
+\vspace{10pt}
+
+\noindent and the actual python class file gets installed in:
+
+\vspace{10pt}
+\centerline{\cmd{/usr/lib/python2.1/site-packages/gmon/ganglia.py}}
+\vspace{10pt}
+
+Running this tool on the command line gives the following usage
+message:
+
+\begin{verbatim}
+  usage: ganglia < metric > [ metric metric ... ]
+\end{verbatim}
+
+where ``metric'' is one of:
+
+\begin{itemize}
+\item \cmdarg{sys\_clock}
+\item \cmdarg{cpu\_nice}
+\item \cmdarg{proc\_run}
+\item \cmdarg{boottime}
+\item \cmdarg{cpu\_system}
+\item \cmdarg{mem\_shared}
+\item \cmdarg{os\_release}
+\item \cmdarg{cpu\_aidle}
+\item \cmdarg{load\_one}
+\item \cmdarg{swap\_total}
+\item \cmdarg{mem\_buffers}
+\item \cmdarg{mem\_cached}
+\item \cmdarg{proc\_total}
+\item \cmdarg{os\_name}
+\item \cmdarg{cpu\_speed}
+\item \cmdarg{machine\_type}
+\item \cmdarg{mem\_total}
+\item \cmdarg{load\_five}
+\item \cmdarg{load\_fifteen}
+\item \cmdarg{cpu\_user}
+\item \cmdarg{swap\_free}
+\item \cmdarg{cpu\_num}
+\item \cmdarg{cpu\_idle}
+\item \cmdarg{mem\_free}
+\end{itemize}
+
+\noindent So for instance, the user can do:
+
+\begin{verbatim}
+  # ganglia swap_total cpu_speed cpu_num
+\end{verbatim}
+
+\noindent to produce the following output:
+
+\begin{verbatim}
+  startx          265064          851     1
+  xcvs            1582384         733     2
+\end{verbatim}
+
+A small Ganglia PHP patch has been incorperated into the Ganglia web
+display tool RPMs. This patch was developed by Goneri Le Bouderxi
+$<$\mailto{glebouder@mandrakesoft.com}$>$ of MandrakeSoft. It provides
+the following enhancements:
+
+\begin{itemize}
+\item You can  do selection range on \file{host.php}
+\item Network graph on \file{host.php} and \file{index.php}
+\item Network general load (in + out) in the ``Cluster Overview''
+\item moved \cmdarg{\$rrd\_dir} and \cmdarg{\$rrdtool} from
+  \file{graph.php} to \file{ganglia.php}
+\end{itemize}
+        
+Goneri had also incluuded a \cmd{ganglia-network.sh} script to be run
+periodically by the \cmd{cron} system to add network statistics to the
+Ganglia data stream but this has not been packaged up yet for the
+OSCAR cluster tool suite.
 
