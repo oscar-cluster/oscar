@@ -155,7 +155,7 @@ my @client_lines = ();
 if ( -f $clients_file  ) { 
     open(CLIENTS, "$clients_file") 
 	or croak("post_clients: cannot read pfilter configuration file $clients_file\n");
-    my @client_lines = <CLIENTS>;    # slurp in configuration file lines
+    @client_lines = <CLIENTS>;    # slurp in configuration file lines
     close(CLIENTS);
     chomp @client_lines;          # lop off new-line characters at end of lines
 }
