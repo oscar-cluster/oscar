@@ -26,15 +26,15 @@ OSCAR syntax
 
   HOST       host name to which adapter is attached
   INTERFACE  interface name (ie 'eth0')
-  MAC        MAC address 
+  MAC_ADDR   MAC address 
   IP_ADDR    dotted IP address
   IP_MASK    network mask
-  CONFIG     network configuration (manual/dhcp)
+  IP_CONFIG  network configuration (manual/dhcp)
 
 - client
   Describes cluster clients
 
-  NAME           client hostname
+  HOST           client FQDN hostname
   DEFAULT_ROUTE  network default route
   STATE          enabled/disabled
   NUM_PROCS      number of processors
@@ -65,7 +65,7 @@ OSCAR syntax
 
   NAME           descriptive name
   PACKAGE        installed package in the group
-
+  SERVER         server node for package (if not cluster head)
 
 SIS syntax 
 ===================================================================

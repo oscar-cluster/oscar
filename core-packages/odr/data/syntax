@@ -1,10 +1,10 @@
 oscar:adapter:HOST:1:1
 oscar:adapter:INTERFACE:2:1
-oscar:adapter:MAC:3
+oscar:adapter:MAC_ADDR:3
 oscar:adapter:IP_ADDR:4
 oscar:adapter:IP_NETMASK:5
-oscar:adapter:CONFIG:6
-oscar:client:NAME:1:1
+oscar:adapter:IP_CONFIG:6
+oscar:client:HOST:1:1
 oscar:client:DEFAULT_ROUTE:2
 oscar:client:STATE:3
 oscar:client:NUM_PROCS:4
@@ -20,9 +20,7 @@ oscar:hostlist:NAME:1:1
 oscar:hostlist:HOST:2:1
 oscar:packagelist:NAME:1:1
 oscar:packagelist:PACKAGE:2:1
-oscar:service:NAME:1:1
-oscar:service:PACKAGE:2
-oscar:service:HOST:3
+oscar:packagelist:SERVER:3
 sis:Adapter:HOST:1:1
 sis:Adapter:NAME:2:1
 sis:Adapter:MAC:3
