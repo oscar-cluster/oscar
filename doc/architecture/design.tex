@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.12 2002/03/13 05:51:07 bwbarrett Exp $
+% $Id: design.tex,v 1.13 2002/06/12 07:26:53 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -17,6 +17,8 @@ such, all operations and functionality available to the user will be
 initiated from within the Wizard. Similarly, all interaction with the
 OS installers, OSCAR Package Management, and OSCAR Data Repository
 will be performed by the Wizard.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Directory Structure}
 
@@ -57,6 +59,8 @@ location in the OSCAR directory tree.
 
 The three package directories are explained in the following sections.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsubsection{\file{core-packages}}
 
 This directory is intended for the core functionality of OSCAR.  All
@@ -66,6 +70,7 @@ installation mode selected by the user.
 Examples of core packages include (but are not limited to): C3 Power
 Tools and the System Installer Suite (SIS)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{\file{packages}}
 
@@ -81,6 +86,7 @@ Section~\ref{sec:design-wizard}.
 Examples of included packages include (but are not limited to):
 LAM/MPI, MPICH, PVM, OpenSSH, and PBS.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{\file{contrib-packages}}
 
@@ -100,6 +106,7 @@ functionality.  However, these packages may have dependencies such
 that inclusion of one third party package may trigger the installation
 of other third party packages.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Node Installation}
 
@@ -110,76 +117,78 @@ order to install the OS on client machines when users wish to do so.
 Any other future OS installation solutions will also need to be
 integrated with the Wizard.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Software Package Management}
 \label{sec:design-software-package-mgmt}
 
 \begin{discuss}
-We need to discuss this point at some point, because what we had here
-really doesn't apply any more...
+  We need to discuss this issue at some point, because what we had
+  here really doesn't apply any more...
 \end{discuss}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Package API Requirements}
 
-Introduced in the 1.3 release, the Package API outlines the
+Introduced in the 1.3 release, the package API outlines the
 requirements on a package in order to be included in the OSCAR
 distribution.  This API is sufficient for image-based installation and
 has been designed with an eventual migration towards either
 image-based installation or node-based installation in mind.
 
-This proposal does not discuss directory locations or the layout of an
-OSCAR package itself -- those details can be sorted out later.  This
-proposal attempts to tackle the design issues for the major steps of
-the API necessary for an OSCAR package.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Goals}
 
-The goals of this API proposal are as follows:
+The goals of this API are as follows:
 
 \begin{itemize}
-\item replace the API that is used for 1.2
 \item support current functionality used in all current OSCAR packages
-\item make an API that is implementable by 1.3
 \item make the API small
 \item allow functionality for adding and deleting a node
-\item allow functionality for adding a package after the initial install
-\item preserve the "do no harm" mentality
-\item allow for small "bite-size" increments to the API in successive
-      versions, hopefully without having to change the API that is in
-      place so far
+\item allow functionality for adding a package after the initial
+  install
+\item preserve the ``do no harm'' mentality
+\item allow for small ``bite-size'' increments to the API in
+  successive versions, hopefully without having to change the API that
+  is in place so far
 \end{itemize}
 
 Note that we're still assuming the one-head-node, many-clients model.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Terminology}
 
 The following terminology is used throughout the document:
 
-{\bf Client filesystem}: The filesystem of the client, which may be an image
-on the server, or the filesystem on the client node itself.
+\begin{itemize}
+\item Client filesystem: The filesystem of the client, which may be an
+  image on the server, or the filesystem on the client node itself.
+  
+\item Client node: Every package can partition the cluster nodes into
+  server(s) and clients.  In the simplest cluster, every node except
+  the head node is a client node for every package.
+  
+\item Image-based installation: An installation where an ``image'' of
+  the node is maintained on a server.  This tree is then used to
+  update clients.  This is the current OSCAR installation method,
+  implemented by SIS.
+  
+\item Node-based installation: An installation where each node is
+  individually installed and configured.  This is not currently
+  implemented by OSCAR, but is expected at a later date.
+  
+\item Server filesystem: The filesystem on the server itself, {\em
+    excluding} any client images that may reside on the server.
+  
+\item Server node: Every package can partition the cluster nodes into
+  server(s) and clients.  In the simplest cluster, the head node is the
+  server for every package.
+\end{itemize}
 
-{\bf Client node}: Every package can partition the cluster nodes into
-server(s) and clients.  In the simplest cluster, every node except the
-head node is a client node for every package.
-
-{\bf Image-based installation}: An installation where an "image" of the
-node is maintained on a server.  This tree is then used to update
-clients.  This is the current OSCAR installation method, implemented
-by SIS.
-
-{\bf Node-based installation}: An installation where each node is
-individually installed and configured.  This is not currently
-implemented by OSCAR, but is expected at a later date.
-
-{\bf Server filesystem}: The filesystem on the server itself,
-*excluding* any client images that may reside on the server.
-
-{\bf Server node}: Every package can partition the cluster nodes into
-server(s) and clients.  In the simplest cluster, the headnode is the
-server for every package.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Sequence of Events}
 
@@ -187,19 +196,19 @@ First, let's explain the sequence of events in the OSCAR installation.
 This will include the proposed API calls -- they'll be explained in
 more detail below.  
 
-% BWB: FIx me!
+% BWB: Fix me!
 \begin{verbatim}
-   Description                                  Location
-   -------------------------------------------- ------------------
-1. Install all the server RPMs                  Server filesystem
+   Description                                      Location
+   ------------------------------------------------ ------------------
+1. Install all the server RPMs                      Server filesystem
 2. Call the API script(s): post_server_rpm_install  Server filesystem
-3. Install all the client RPMs                  Client filesystem
-4. Call the API script(s): post_client_rpm_install     Client filesystem
-5. Define clients in the OSCAR/SIS database     Server filesystem
-6. Call the API script(s): post_clients         Server filesystem
-7. Push the images to the nodes (**)            Server filesystem
-8. Call the API script(s): post_install         Server filesystem
-   -------------------------------------------- ------------------
+3. Install all the client RPMs                      Client filesystem
+4. Call the API script(s): post_client_rpm_install  Client filesystem
+5. Define clients in the OSCAR/SIS database         Server filesystem
+6. Call the API script(s): post_clients             Server filesystem
+7. Push the images to the nodes (**)                Server filesystem
+8. Call the API script(s): post_install             Server filesystem
+   ------------------------------------------------ ------------------
 \end{verbatim}
 
 (**) Note that step 7 won't happen in a node-based install -- this
@@ -218,158 +227,290 @@ installation, step 5 (define clients in a database) may actually occur
 earlier.  However, the order of execution of the API scripts will
 still remain the same.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Supplimental Files}
+\subsubsection{Directory Layout}
+
+OSCAR packages are located under the top-level OSCAR directory, under
+the \directory{packages} sub-directory.  Each package has its own
+directory, for example, the \package{foo} package will live in the
+following directory:
+
+\vspace{10pt}
+\centerline{\directory{oscar[-<version>]/packages/foo/}}
+\vspace{10pt}
+
+The directory layout of packages under this top-level package
+directory is fairly simple:
+
+\begin{itemize}
+\item \directory{doc}: Directory where files are located that are
+  automatically included in the top-level \file{install.pdf} and
+  \file{user.pdf} OSCAR documentation files (see
+  Section~\ref{sec:design-pkg-docs}).
+  
+\item \directory{RPMS}: Directory where the RPMs for the package are
+  located.  These RPMs are installed during the normal course of an
+  OSCAR installation.
+
+\item \directory{scripts}: Directory where the API scripts are located
+  (see Section~\ref{sec:design-pkg-api}).
+  
+\item \directory{SRPMS}: Directory where the source RPMs for the
+  package are located.  These SRPMs are not installed during the OSCAR
+  install process -- they are provided for user information only.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Supplemental Files}
 
 Before discussing the API calls, there are two supplemental files that
-should be noted.
+should be noted.  These two supplemental files exist in the top-level
+package directory:
 
-\noindent {\bf server.rpmlist}
+\begin{itemize}
+\item \file{server.rpmlist}: This per-package file contains a list of
+  RPM filenames (one per line) of RPMs that are installed during step
+  1.  At present, the RPM files listed in this file will be installed
+  on the head node.  However, once the restriction on a single head
+  node running all servers is removed, the server list may be
+  installed on an arbitrary node or set of nodes in the cluster (at
+  the user's discretion).
+  
+  Primitive conflict resolution is run on this list, checking for such
+  things as two versions of the same RPM, etc.  However, the majority
+  of burden for RPM conflict resolution is up to the package author --
+  don't include RPMs that will be problematic.\footnote{ Perhaps
+    someday we can relax this constraint, but not for 1.3.  It still
+    adheres to the ``do-no-harm'' philosophy, because packages that
+    don't have conflicts will still be legal if we do eventually
+    introduce sophisticated RPM conflict resolution.}
+  
+\item \file{client.rpmlist} Same as the server.rpmlist file, except
+  that it contains the RPM filenames for the RPMs installed in step 3.
+\end{itemize}
 
-This per-package file contains a list of RPM filenames (one per line) of
-RPMs that are installed during step 1.  At present, the RPM files
-listed in this file will be installed on the head node.  However, once
-the restriction on a single head node running all servers is removed,
-the server list may be installed on an arbitrary node or set of nodes
-in the cluster (at the user's discretion).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Primitive conflict resolution is run on this list, checking for such
-things as two versions of the same RPM, etc.  However, the majority of
-burden for RPM conflict resolution is up to the package author --
-don't include RPMs that will be problematic \footnote{ Perhaps
-someday we can relax this constraint, but not for 1.3.  It still
-adheres to the "do-no-harm" philosophy, because packages that don't
-have conflicts will still be legal if we do eventually introduce
-sophisticated RPM conflict resolution.}.
+\subsubsection{Documentation}
+\label{sec:design-pkg-docs}
 
-\noindent {\bf client.rpmlist}
+OSCAR provides a mechanism for packages to get their documentation
+included in the top-level \file{install.pdf} and \file{user.pdf}
+files.  It is highly recomended that OSCAR package authors provide
+OSCAR-specific information about their package with this mechanism.
+If additional information is available elsewhere (e.g., a web site, a
+text file in an installed RPM, etc.), providing a link or reference to
+the external material is strongly encouraged (particularly in the user
+documentation).  The user documentation is not necessarily intended to
+be a ``one-stop-shop'' for all user-level documentation, but it {\em
+  is} intended to be the ``first-stop'' for user-level documentation.
+Hence, users should be able to either find the information that they
+are looking for, or find a pointer to where they can find the
+information that they are looking for.
 
-Same as the server.rpmlist file, except that it contains the RPM
-filenames for the RPMs installed in step 3.
+If there is a file \file{user.tex} in the \directory{doc} package
+subdirectory, it will automatically be included in the top-level OSCAR
+user manual.  Similarly, if there is a file \file{install.tex} in the
+same directory, it will automatically be included in the top-level
+OSCAR installation manual.
 
+The following guidelines should be followed when providing
+\file{user.tex} and/or \file{install.tex} files:
+
+\begin{itemize}
+\item These files should be \LaTeX\ source files.
+
+\item Each file should be a \LaTeX\ subsection -- they will be part of
+  a larger section describing details of individual packages in the
+  OSCAR distribution.  The first part of each file should be a \LaTeX\
+  {\tt subsection} command to start the subsection.
+
+\item The following macros are available:
+
+  \begin{itemize}
+  \item {\tt href}: Takes two arguments -- the first is the string
+    text, the second is the text of the link.
+
+  \item {\tt mailto}: Similar to {\tt href}, takes two arguments:
+    string text, link text.
+  \end{itemize}
+
+\item The following \LaTeX\ packages are included in the top-level
+  file and are available to package documentation files:
+
+  \begin{itemize}
+  \item \file{times}
+  \item \file{graphicx}
+  \item \file{fullpage}
+  \end{itemize}
+
+\item These files may include other files, such as \LaTeX\ files,
+  graphic files, etc.  Note that these files must be included in a
+  relative manner, and use the prefix: 
+
+  \vspace{10pt}
+  \centerline{\directory{../../packages/foo/doc/<filename>}}
+  
+\item These files may be built in either Postscript or PDF mode.
+  Graphic files must be suitable for both environments.  The {\tt
+    figext} macro will be set to ``\file{png}'' when building in PDF
+  mode, and will be set to ``\file{eps}'' when building in postscript
+  mode.  This can be used in the following manner:
+
+\begin{verbatim}
+  \includegraphics{../../packages/foo/doc/my-graphic.\figext}
+\end{verbatim}
+  
+  Alternatively, you can use the {\tt ifpdf} \LaTeX\ logical construct
+  to do different things when building in PDF mode versus when
+  building in postscript mode:
+
+\begin{verbatim}
+  \ifpdf
+     % Do things for PDF mode
+  \else
+     % Do things for postscript mode
+  \fi
+\end{verbatim}
+
+\end{itemize}
+
+Note that the top-level OSCAR user and installation documents are only
+buildable from within an OSCAR CVS tree -- they are not buildable from
+an OSCAR distribution package.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{API calls}
+\label{sec:design-pkg-api}
 
 So let's now discuss each of the API calls in detail.
 
-\noindent {\bf post\_server\_rpm\_install (step 2)}
-
-Guidelines:
-
 \begin{itemize}
-\item This script will be run on the head node.
-\item This use of this API script is strongly discouraged.  The contents
-  of this script should normally be contained in the \%post scripts in
-  the RPMs themselves.  This API script is only here to help taking
-  third party non-OSCAR-ized RPMs and graft them into the OSCAR
-  framework without needing to re-make the RPM.
-\item This script must be safely re-runnable; it may be run multiple times
-  over the life of the cluster.
-\item This script can *only* modify anything on the server filesystem, but
-  should restrict itself to only things that are relevant to that
-  package.
-\item This script cannot modify any client filesystems.
-\item This script cannot use anything from the OSCAR/SIS database,
-  because there isn't much (any?) information in it yet.
+\item \file{post\_server\_rpm\_install} (step 2)
+  
+  Guidelines:
+
+  \begin{itemize}
+  \item This script will be run on the head node.
+  \item This use of this API script is strongly discouraged.  The
+    contents of this script should normally be contained in the \%post
+    scripts in the RPMs themselves.  This API script is only here to
+    help taking third party non-OSCAR-ized RPMs and graft them into
+    the OSCAR framework without needing to re-make the RPM.
+  \item This script must be safely re-runnable; it may be run multiple
+    times over the life of the cluster.
+  \item This script can *only* modify anything on the server
+    filesystem, but should restrict itself to only things that are
+    relevant to that package.
+  \item This script cannot modify any client filesystems.
+  \item This script cannot use anything from the OSCAR/SIS database,
+    because there isn't much (any?) information in it yet.
+  \end{itemize}
+
+  Parameters:
+  
+  \begin{itemize}
+  \item None.
+  \end{itemize}
+
+\item \file{post\_client\_rpm\_install} (step 4)
+
+  Guidelines:
+
+  \begin{itemize}
+  \item This script will be run on the client filesystem.  That is, it
+    will either be chrooted to the image or run on all of the actual
+    nodes themselves.
+  \item This use of this API script is strongly discouraged.  The
+    contents of this script should normally be contained in the \%post
+    scripts in the RPMs themselves.  This API script is only here to
+    help taking third party non-OSCAR-ized RPMs and graft them into
+    the OSCAR framework without needing to re-make the RPM.
+  \item This script must be safely re-runnable; it may be run multiple
+    times over the life of the cluster.
+  \item This script can modify anything on the client filesystem, but
+    should restrict itself to only things that are relevant to that
+    package.
+  \item This script cannot use anything from the OSCAR/SIS database
+    \footnote{This may change in future versions of the API, but for
+      now, nothing in the OSCAR/SIS DB is available during this step.}
+    The only piece of global information that is available is the
+    hostname oscar\_server, which will be set correctly in the
+    /etc/hosts on every node/image.
+  \end{itemize}
+
+  Parameters:
+
+  \begin{itemize}
+  \item None.
+  \end{itemize}
+
+\item \file{post\_clients} (step 6)
+
+  Guidelines:
+
+  \begin{itemize}
+  \item This script will only be run on the head node.
+  \item This script must be safely re-runnable; it may be run multiple
+    times over the life of the cluster (e.g., when nodes are
+    added/deleted, packages are added, etc.)
+  \item This script can modify anything on the server filesystem, but
+    should restrict itself to only things that are relevant to that
+    package.
+  \item This script can NOT modify anything on client filesystems.
+  \item This script can read any information in the OSCAR/SIS database
+    (no write operations are supported).  Using the OSCAR/SIS database
+    API is the only way to read the database (see below).
+  \end{itemize}
+
+  Parameters:
+
+  \begin{itemize}
+  \item None.
+  \end{itemize}
+  
+  \file{post\_install} (step 8)
+
+  Guidelines:
+  
+  \begin{itemize}
+  \item This script will only be run on the head node.
+  \item This script must be safely re-runnable; it may be run multiple
+    times over the life of the cluster (e.g., when nodes are
+    added/deleted, packages are added, etc.)
+  \item This script can modify anything on the server filesystem, but
+    should restrict itself to only things that are relevant to that
+    package.
+  \item This script can NOT modify anything on client filesystems.
+  \item This script can read any information in the OSCAR/SIS database
+    (no write operations are supported).  Using the OSCAR/SIS database
+    API is the only way to read the database (see below).
+  \end{itemize}
+
+  Parameters:
+  
+  \begin{itemize}
+  \item None.
+  \end{itemize}
 \end{itemize}
 
-Parameters:
-
-\begin{itemize}
-\item None.
-\end{itemize}
-
-\noindent {\bf post\_client\_rpm\_install (step 4)}
-
-Guidelines:
-
-\begin{itemize}
-\item This script will be run on the client filesystem.  That is, it will
-  either be chrooted to the image or run on all of the actual nodes
-  themselves.
-\item This use of this API script is strongly discouraged.  The contents
-  of this script should normally be contained in the \%post scripts in
-  the RPMs themselves.  This API script is only here to help taking
-  third party non-OSCAR-ized RPMs and graft them into the OSCAR
-  framework without needing to re-make the RPM.
-\item This script must be safely re-runnable; it may be run multiple times
-  over the life of the cluster.
-\item This script can modify anything on the client filesystem, but should
-  restrict itself to only things that are relevant to that package.
-\item This script cannot use anything from the OSCAR/SIS database
-\footnote{This may change in future versions of the API, but for now,
-nothing in the OSCAR/SIS DB is available during this step.}
-  The only piece of global information that is available is the
-  hostname oscar\_server, which will be set correctly in the /etc/hosts
-  on every node/image.
-\end{itemize}
-
-
-Parameters:
-
-\begin{itemize}
-\item None.
-\end{itemize}
-
-\noindent {\bf post\_clients (step 6)}
-
-Guidelines:
-
-\begin{itemize}
-\item This script will only be run on the head node.
-\item This script must be safely re-runnable; it may be run multiple times
-  over the life of the cluster (e.g., when nodes are added/deleted,
-  packages are added, etc.)
-\item This script can modify anything on the server filesystem, but should
-  restrict itself to only things that are relevant to that package.
-\item This script can NOT modify anything on client filesystems.
-\item This script can read any information in the OSCAR/SIS database (no
-  write operations are supported).  Using the OSCAR/SIS database API
-  is the only way to read the database (see below).
-\end{itemize}
-
-Parameters:
-
-\begin{itemize}
-\item None.
-\end{itemize}
-
-\noindent {\bf post\_install (step 8)}
-
-Guidelines:
-
-\begin{itemize}
-\item This script will only be run on the head node.
-\item This script must be safely re-runnable; it may be run multiple times
-  over the life of the cluster (e.g., when nodes are added/deleted,
-  packages are added, etc.)
-\item This script can modify anything on the server filesystem, but should
-  restrict itself to only things that are relevant to that package.
-\item This script can NOT modify anything on client filesystems.
-\item This script can read any information in the OSCAR/SIS database (no
-  write operations are supported).  Using the OSCAR/SIS database API
-  is the only way to read the database (see below).
-\end{itemize}
-
-
-Parameters:
-
-\begin{itemize}
-\item None.
-\end{itemize}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Notes about RPMs}
 
 Because we anticipate eventually allowing upgrading of OSCAR packages,
-OSCAR RPMs should cleanly allow "rpm -Uvh" operations.
+OSCAR RPMs should cleanly allow ``\cmd{rpm -Uvh}'' operations.
 
 Additionally, the \%post scripts in an RPM should be used whenever
-possible instead of steps 2 and 4 (post\_server\_rpm\_install and
-post\_client\_rpm\_install).  Steps 2 and 4 are intended to allow random,
-non-OSCAR-ized, third-party RPMs to become OSCAR packages by adding a
-script instead of needing to re-make the RPM with the appropriate
-\%post scripts.
+possible instead of steps 2 and 4
+(\cmd{post\_\-server\_\-rpm\_\-install} and
+\cmd{post\_\-client\_\-rpm\_\-install}).  Steps 2 and 4 are intended
+to allow random, non-OSCAR-ized, third-party RPMs to become OSCAR
+packages by adding a script instead of needing to re-make the RPM with
+the appropriate \%post scripts.
 
 Scripts in an RPM (such as \%pre and \%post) [currently] cannot use any
 OSCAR database API calls, such as obtaining the number of nodes in an
@@ -378,6 +519,7 @@ with the stipulation that RPMS that invoke OSCAR database API calls
 depend on some OSCAR-specific RPM that provide the database API calls
 themselves.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Major actions and how the API is used}
 
@@ -388,13 +530,13 @@ node-based install).
 
 \begin{enumerate}
 \item Install all the server RPMs
-\item Call the API script(s): post\_server\_rpm\_install
+\item Call the API script(s): \cmd{post\_server\_rpm\_install}
 \item Install all the client RPMs
-\item Call the API script(s): post\_client\_rpm\_install
+\item Call the API script(s): \cmd{post\_client\_rpm\_install}
 \item Define clients in the OSCAR/SIS database
-\item Call the API script(s): post\_clients
+\item Call the API script(s): \cmd{post\_clients}
 \item Push the images to the nodes
-\item Call the API script(s): post\_install
+\item Call the API script(s): \cmd{post\_install}
 \end{enumerate}
 
 \noindent {\bf Add a package after the initial OSCAR install}
@@ -406,13 +548,13 @@ new package.
 
 \begin{enumerate}
 \item Install all the server RPMs
-\item Call the API script(s): post\_server\_rpm\_install
+\item Call the API script(s): \cmd{post\_server\_rpm\_install}
 \item Install all the client RPMs
-\item Call the API script(s): post\_client\_rpm\_install
+\item Call the API script(s): \cmd{post\_client\_rpm\_install}
 \item $<$skipped$>$
-\item Call the API script(s): post\_clients
+\item Call the API script(s): \cmd{post\_clients}
 \item Push the images to the nodes
-\item Call the API script(s): post\_install
+\item Call the API script(s): \cmd{post\_install}
 \end{enumerate}
 
 \noindent {\bf Add a node after the initial OSCAR install}
@@ -427,9 +569,9 @@ if they need to, based upon the addition of a new node in the cluster
 \item $<$skipped$>$
 \item $<$skipped$>$
 \item Define clients in the OSCAR/SIS database
-\item Call the API script(s): post\_clients
+\item Call the API script(s): \cmd{post\_clients}
 \item Push the images to the nodes
-\item Call the API script(s): post\_install
+\item Call the API script(s): \cmd{post\_install}
 \end{enumerate}
 
 
@@ -445,9 +587,9 @@ if they need to, based upon the deletion of a new node in the cluster
 \item $<$skipped$>$
 \item $<$skipped$>$
 \item Define clients in the OSCAR/SIS database
-\item Call the API script(s): post\_clients
+\item Call the API script(s): \cmd{post\_clients}
 \item Push the images to the nodes
-\item Call the API script(s): post\_install
+\item Call the API script(s): \cmd{post\_install}
 \end{enumerate}
 
 
@@ -458,17 +600,17 @@ written in Perl, and use the following function to gain access to the
 database.
 
 The SystemInstaller::Machine class exports a convenience function
-called get\_machine\_listing.  This can optionally take an image name as
-the argument \footnote{There should be a description of how to use
-this here...}
+called \cmd{get\_machine\_listing}.  This can optionally take an image
+name as the argument.\footnote{There should be a description of how to
+  use this here...}
 
 \begin{discuss}
 SIS Guys - How do we import this funtion in our perl scripts?
 \end{discuss}
 
-get\_machine\_listing returns a hash.  The hash keys are the names of
-all the clients in the database (optionally associated with an image
-if that is specified).  The hash value for each key is a hash
+\cmd{get\_machine\_listing} returns a hash.  The hash keys are the
+names of all the clients in the database (optionally associated with
+an image if that is specified).  The hash value for each key is a hash
 reference with the following keys defined:
 
 \begin{verbatim}
@@ -489,6 +631,7 @@ to the database.
 Note that this function is currently SIS-specific, and will likely
 change in future versions of this API.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Points still unresolved}
 
@@ -500,12 +643,12 @@ These issues can be addressed for API versions after 1.3.
 \item How to do package inter-relationships?
 \item How to remove a package?
 \item How to make OSCAR DB remotely available (for step 4)?
-
-\item Will need to make OSCAR DB info available remotely (in the chroot
-    jail or on the nodes) for post 2.0 for node-based installs --
-    perhaps some socket-based thingy.  Punted for now 'cause we'll be
-    image-based until 2.0.  Making it remotely accessible will make
-    OSCAR DB info in step 4.
+  
+\item Will need to make OSCAR DB info available remotely (in the
+  chroot jail or on the nodes) for post 2.0 for node-based installs --
+  perhaps some socket-based thingy.  Punted for now 'cause we'll be
+  image-based until 2.0.  Making it remotely accessible will make
+  OSCAR DB info in step 4.
 \end{enumerate}
 
 % LocalWords:  Exp Filesystem LSB FSH oscar doc HowTos Docs pkgname ODR CLAMDR
