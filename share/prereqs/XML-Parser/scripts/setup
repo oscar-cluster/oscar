@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.1 2003/07/04 14:42:01 jsquyres Exp $
+# $Id: setup,v 1.2 2003/07/18 18:48:29 brechin Exp $
 #
 
 use strict;
@@ -45,6 +45,24 @@ if ($@) {
     mkdir($tempdir) or carp("Can't create temp dir: $tempdir");
     chomp(my $pwd = `pwd`);
     chdir($tempdir);
+
+    oscar_log_subsection("Checking expat dependency");
+    my $expat = `rpm -qa | grep -c expat`;
+    chomp $expat;
+    if ( $expat == 0 ) {
+      oscar_log_subsection("It doesn't look like expat is installed");
+      oscar_log_subsection("Installing the expat libraries (expat or libexpat0)...");
+      opendir(RPMS, "/tftpboot/rpm");
+      my @rpmsindir = readdir(RPMS);
+      closedir(RPMS);
+      if ( grep( /^libexpat0/, @rpmsindir ) ) {
+        #Mandrake - install libexpat0
+        system("rpm -Uvh /tftpboot/rpm/libexpat0-*.rpm");
+      } else {
+        #elsewhere - install expat
+        system("rpm -Uvh /tftpboot/rpm/expat-*.rpm");
+      }
+    }
 
     do_run("tar zxf $tarball");
     croak("Not able to chdir($real_name-$ver)")
