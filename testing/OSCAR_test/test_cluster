@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster,v 1.14 2002/07/28 05:50:24 jsquyres Exp $
+# $Id: test_cluster,v 1.15 2002/07/28 06:04:14 jsquyres Exp $
 #
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
@@ -210,7 +210,7 @@ pbs_script=pbs_script.shell
 output_file=shelltest
 grep_string=Hello
 exit_on_fail=yes
-pbs_test_routine
+#pbs_test_routine
 
 
 #
@@ -223,29 +223,37 @@ user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
 #			MPICH TEST
 #			----------
 
-mpich="`switcher mpi --list | grep mpich | head -1`"
-switcher mpi --add-attr default $mpich --force
-pbs_test_type="Simple PBS MPICH job"
-test_dir=mpi
-pbs_script=pbs_script.mpich
-output_file=mpichtest
-grep_string="pi is approx"
-exit_on_fail=no
-pbs_test_routine
+mpi="`switcher mpi --list | grep mpich | head -1`"
+if test "$mpi" != ""; then 
+    switcher mpi --add-attr default $mpi --force
+    pbs_test_type="Simple PBS MPICH job"
+    test_dir=mpi
+    pbs_script=pbs_script.mpich
+    output_file=mpichtest
+    grep_string="pi is approx"
+    exit_on_fail=no
+    pbs_test_routine
+else
+    echo "Skipping MPICH test (doesn't seem to be installed)"
+fi
 
 
 #			LAM TEST
 #			--------
 
-mpich="`switcher mpi --list | grep lam | head -1`"
-switcher mpi --add-attr default $mpich --force
-pbs_test_type="Simple PBS LAM job"
-test_dir=mpi
-pbs_script=pbs_script.lam
-output_file=lamtest
-grep_string="pi is approx"
-exit_on_fail=no
-pbs_test_routine
+mpi="`switcher mpi --list | grep lam | head -1`"
+if test "$mpi" != ""; then 
+    switcher mpi --add-attr default $mpi --force
+    pbs_test_type="Simple PBS LAM job"
+    test_dir=mpi
+    pbs_script=pbs_script.lam
+    output_file=lamtest
+    grep_string="pi is approx"
+    exit_on_fail=no
+    pbs_test_routine
+else
+    echo "Skipping LAM test (doesn't seem to be installed)"
+fi
 
 
 #
