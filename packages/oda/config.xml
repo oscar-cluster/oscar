@@ -341,6 +341,13 @@
         </expansion>
       </shortcut>
 
+
+      <!--
+      ==================================================
+      ==           NEST SHORTCUTS <BEGIN>             ==
+      ==================================================
+      -->
+    
       <shortcut>
         <command> add_config_opkgs </command>
         <description>
@@ -370,13 +377,41 @@
         </description>
         <expansion>
           insert_record
-	  node_config_revs
+          node_config_revs
           node_config_revs.node_id~%1
           node_config_revs.configurations_id~%2
           %+
         </expansion>
       </shortcut>
+      
+      <shortcut>
+        <command> del_node_config_opkgs </command>
+        <description>
+          del_node_config_opkgs delete a record from node_config_revs 
+          and config_opkgs tables with a node name,
+          required parameters are:
+                  nodes.name                    Name of the node
+        </description>
+        <expansion>
+          delete_records
+          config_opkgs
+          configurations_id=node_config_revs.configurations_id
+          node_config_revs.node_id=nodes.id
+	      nodes.name=%1
+          ;
+          delete_records
+          node_config_revs
+          node_id=nodes.id
+          nodes.name=%1
+        </expansion>
+      </shortcut>
 
+      <!--
+      ==================================================
+      ==            NEST SHORTCUTS <END>              ==
+      ==================================================
+      -->
+    
       <shortcut>
         <command> delete_all_configurations </command>
         <description>
@@ -4146,19 +4181,7 @@
   ==================================================
   ==================================================
    -->
-
-    <node_opkgs>
-      <parameters> unique(node_id,package_id) </parameters>
-      <fields> 
-        <node_id>
-          <type> integer </type>
-        </node_id>
-        <package_id>
-          <type> integer </type>
-        </package_id>
-      </fields>
-    </node_opkgs>
-
+    
     <node_config_revs>
       <parameters> unique(node_id,configurations_id) </parameters>
       <fields> 

@@ -105,6 +105,7 @@ sub delnodes {
           error_window($window,"Clients deleted, but reconfiguration failed.");
           return 0;
         } else {
+	  &delete_client_config_opkgs(@clients);
           done_window($window,"Clients deleted.");
           return 1;
         }
@@ -112,8 +113,24 @@ sub delnodes {
 
 }
 
+#
+# NEST
+#
+# This script deletes the records from node_config_revs and config_opkgs
+# tables with a node name.
+#
+# del_node_config_opkgs is a shortcut to delete the record about node_config_revs
+# and config_opkgs.
+#
 
-
+sub delete_client_config_opkgs {
+    my @nodes = @_;
+    foreach my $node (@nodes){
+       if (system("oda del_node_config_opkgs $node")) {
+          carp("Failed to delete the records for node_config_revs and config_opkgs");
+       }
+    }
+}
 
 
 1;
