@@ -183,5 +183,6 @@ lam-6.5.5-usysv.1oscar
 pvm-3.4.3+7-2
 libappconfig-perl-1.52-1
 systemconfigurator-1.00-1
-systemimager-client-2.0.0-3oscar
-systemimager-common-2.0.0-3oscar
+systemimager-client-2.0.1-2
+systemimager-common-2.0.1-2
+c3-2.7.2-2

@@ -83,21 +83,6 @@ else
   echo "...PBS configuration is OK"
 fi
 
-# install C3 tools on clients (if not already installed)
-
-C3_DIR=/opt/c3-2.7.2
-
-client=`head -1 /etc/c3.conf`
-ssh $client "which cexec" > /dev/null 2>&1
-if [ $? -eq 1 ]; then
-  echo "installing C3 tools & man pages on clients"
-  ls $C3_DIR/bin/* > /tmp/c3files
-  cpush -e /usr/bin -f /tmp/c3files > /dev/null 2>&1
-  ls $C3_DIR/man/* > /tmp/c3files
-  cpush -e /usr/share/man/man1 -f /tmp/c3files > /dev/null 2>&1
-  rm -f /tmp/c3files
-fi
-
 # install software
 echo
 echo "About to install the OSCAR cluster test software"
