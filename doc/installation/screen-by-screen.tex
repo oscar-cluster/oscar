@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: screen-by-screen.tex,v 1.21 2003/08/19 07:44:46 naughtont Exp $
+% $Id: screen-by-screen.tex,v 1.22 2003/11/16 03:45:27 bernardli Exp $
 %
 % $COPYRIGHT$
 %
@@ -127,6 +127,14 @@ page~\pageref{det:opd}.
   \end{center}
 \end{figure}
 
+\begin{figure}[ht!]
+  \begin{center}
+    \centerline{\includegraphics[scale=\imgscale]{figs/sbs-opder-alt-repository}}
+    \caption[Adding additional OPD Repositories.]{Adding Additional OPD
+        Repositories.}
+    \label{fig:sbs-opder-alt-repository}
+  \end{center}
+\end{figure}
 
 %------------------------------------------------------------------
 % Select OSCAR packages to install
@@ -141,8 +149,7 @@ page~\pageref{det:select-packages}.
   \begin{center}
     \centerline{\includegraphics[scale=\imgscale]{figs/package-selection}}
     \caption[Selecting which OSCAR packages to install.]{Selecting
-      which OSCAR packages to install.  Packages with black checkboxes
-      are Core packages, and cannot be unselected.}
+      which OSCAR packages to install.}  
     \label{fig:sbs-package-selection}
   \end{center}
 \end{figure}
@@ -508,6 +515,35 @@ Section~\ref{det:adding-clients}, page~\pageref{det:adding-clients}.
     \centerline{\includegraphics[scale=\imgscale]{figs/9f_sbs-add-node-complete}}
     \caption{Add node / complete cluster setup.}
     \label{fig:sbs-add-node1-cluster-setup}
+  \end{center}
+\end{figure}
+
+%------------------------------------------------------------------
+% Install/Uninstall OSCAR Packages
+%------------------------------------------------------------------
+
+\subsection{Install/Uninstall OSCAR Packages}
+
+The Install/Uninstall OSCAR Packages button will let you add/remove packages from
+and an OSCAR cluster after the initial installation.  See the details and more
+in-depth look at the underlying concepts of this new feature in
+Section~\ref{det:install-uninstall-packages}, page~\pageref{det:install-uninstall-packages}.
+
+\begin{figure}[ht!]
+  \begin{center}
+    \centerline{\includegraphics[scale=\imgscale]{figs/sbs-pkgInUn-selector}}
+    \caption[Install/Uninstall OSCAR Packages.]{Install/Uninstall packages from an existing
+        OSCAR cluster.}
+    \label{fig:sbs-pkgInUn-selector}
+  \end{center}
+\end{figure}
+
+\begin{figure}[ht!]
+  \begin{center}
+    \centerline{\includegraphics[scale=\imgscale]{figs/sbs-pkgInUn-selector-example-colors}}
+    \caption[Install/Uninstall OSCAR Package selector sample colors.]{Individual OSCAR packages
+        are color-coded to show their current installation state.}
+    \label{fig:sbs-pkgInUn-selector-example-colors}
   \end{center}
 \end{figure}
 
