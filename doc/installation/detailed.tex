@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.53 2003/01/07 21:57:47 jsquyres Exp $
+% $Id: detailed.tex,v 1.54 2003/01/16 23:23:37 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -624,6 +624,27 @@ and status messages will appear in the shell window.
 
 \subsection{Build OSCAR Client Image}
 \label{det:build-client-image}
+
+Before pressing the \button{Build OSCAR Client Image}, ensure that the
+following conditions on the server are true:
+
+\begin{itemize}
+\item Ensure that {\tt PermitRootLogin} is set to {\tt yes}.  After
+  the OSCAR installation, you may set this back to {\tt no} (if you
+  want), but it needs to be {\tt yes} during the install because the
+  config file is copied to the client nodes, and \user{root} {\em
+    must} be able to login to the client nodes remotely.
+
+\item By the same token, ensure that TCP wrappers settings are not
+  ``too tight''.  The \file{hosts.allow} and \file{hosts.deny} files
+  should allow all traffic from the entire private subnet.
+  
+\item Also, beware of firewall software that restricts traffic in the
+  private subnet.
+\end{itemize}
+
+If these conditions are not met, the installation may fail during this
+step or later steps.
 
 Press the \button{Build OSCAR Client Image} button. A dialog will be
 displayed. In most cases, the defaults will be sufficient. You should
