@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.4 2002/11/04 23:14:20 jsquyres Exp $
+      $Id: config.xml,v 1.5 2003/06/23 15:49:43 brechin Exp $
       -->
 
   <name>loghost</name>
@@ -39,9 +39,8 @@
   <description>loghost configures syslog settings.</description>
 
   <rpmlist>
-    <server> 
+    <filter group="oscar_server"/> 
       <rpm>loghost</rpm>
-    </server>
   </rpmlist>
 
 </oscar>

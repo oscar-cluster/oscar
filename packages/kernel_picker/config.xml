@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.6 2003/04/29 20:25:28 tfleury Exp $
+      $Id: config.xml,v 1.7 2003/06/23 15:49:43 brechin Exp $
   -->
   <name>kernel_picker</name>
 
@@ -44,11 +44,10 @@ give via an option will cause the program to prompt you for that
 information.</description>
 
   <rpmlist>
-    <server>
+    <filter group="oscar_server"/>
       <rpm>systemconfigurator</rpm>
       <rpm>perl</rpm>
       <rpm>kernel_picker</rpm>
-    </server>
   </rpmlist>
 
 </oscar>

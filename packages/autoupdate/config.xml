@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.7 2003/04/09 18:19:35 brechin Exp $
+      $Id: config.xml,v 1.8 2003/06/23 15:49:43 brechin Exp $
   -->
   <name>autoupdate</name>
 
@@ -38,16 +38,13 @@ on an OSCAR cluster to update the server and clients without having to
 worry about autoupdate syntax.</description>
 
   <rpmlist>
-    <all>
-      <rpm>perl-libnet</rpm>
-    </all>
-    <client>
+      <filter group="oscar_clients"/>
       <rpm>autoupdate-client</rpm>
-    </client>
-    <server>
+  </rpmlist>
+  <rpmlist>
+      <filter group="oscar_server"/>
       <rpm>autoupdate-oscar</rpm>
       <rpm>autoupdate</rpm>
-    </server>	    
   </rpmlist>
 
 </oscar>

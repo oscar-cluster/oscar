@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.8 2003/04/21 21:58:40 brechin Exp $
+      $Id: config.xml,v 1.9 2003/06/23 15:49:44 brechin Exp $
   -->
   <name>pbs</name>
 
@@ -62,16 +62,14 @@ openpbs-oscar-server includes the software used to schedule jobs on
 the server node.</description>
 
   <rpmlist>
-    <all>
       <rpm>openpbs-oscar</rpm>
       <rpm>openpbs-oscar-mom</rpm>
       <rpm>openpbs-oscar-client</rpm>
-    </all>
-
-    <server>
+  </rpmlist>
+  <rpmlist>
+      <filter group="oscar_server"/>
       <rpm>openpbs-oscar-server</rpm>
       <rpm>openpbs-oscar-gui</rpm>
-    </server>
   </rpmlist>
 
 </oscar>

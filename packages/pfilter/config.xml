@@ -12,7 +12,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.7 2003/05/13 19:36:22 ngorsuch Exp $
+      $Id: config.xml,v 1.8 2003/06/23 15:49:44 brechin Exp $
   -->
   <name>pfilter</name>
 
@@ -42,10 +42,8 @@ file as input, and is installed as a chkconfig controlled
 system package.</description>
 
   <rpmlist>
-    <all>
       <rpm>pfilter</rpm>
       <rpm>iptables</rpm>
-    </all>
   </rpmlist>
 
 </oscar>

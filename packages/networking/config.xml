@@ -26,11 +26,10 @@
     distribution's caching nameserver on the OSCAR server.</description>
 
   <rpmlist>
-    <server>
+    <filter group="oscar_server"/>
       <rpm>caching-nameserver</rpm>
       <rpm>bind</rpm>
       <rpm>bind-utils</rpm>
-    </server>
   </rpmlist>
 
 </oscar>

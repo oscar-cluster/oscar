@@ -36,9 +36,8 @@ This version of Maui has been modified slightly to be usable under the
 OSCAR cluster software system.</description>
 
   <rpmlist>
-    <server>
+    <filter group="oscar_server"/>
       <rpm>maui-oscar</rpm>
-    </server>
   </rpmlist>
 
 </oscar>

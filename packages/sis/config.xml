@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.8 2003/05/26 19:04:22 brechin Exp $
+      $Id: config.xml,v 1.9 2003/06/23 15:49:45 brechin Exp $
   -->
   <name>sis</name>
 
@@ -37,12 +37,12 @@
   <description>The System Installation Suite</description>
 
   <rpmlist>
-    <all>
       <rpm>systemconfigurator</rpm>
       <rpm>systemimager-common</rpm>
       <rpm>perl-AppConfig</rpm>
-    </all>
-    <server>
+  </rpmlist>
+  <rpmlist>
+      <filter group="oscar_server"/>
       <rpm>systeminstaller</rpm>
       <rpm>systeminstaller-x11</rpm>
       <rpm>perl-MLDBM</rpm>
@@ -54,9 +54,9 @@
       <rpm>tftp-hpa</rpm>
       <rpm>perl-XML-Simple</rpm>
       <rpm>perl-XML-Parser</rpm>
-    </server>
-    <client>
+  </rpmlist>
+  <rpmlist>
+      <filter group="oscar_clients"/>
       <rpm>systemimager-client</rpm>
-    </client>
   </rpmlist>
 </oscar>
