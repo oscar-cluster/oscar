@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.18 2003/04/02 05:15:04 ngorsuch Exp $
+      $Id: config.xml,v 1.19 2003/04/02 05:35:29 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -335,7 +335,7 @@
 	  <parameters> auto_increment not null unique primary key </parameters>
 	</id>
         <name>
-	  <parameters> not null </parameters>
+	  <parameters> not null unique </parameters>
 	</name>
         <units> 
 	  <default> mb </default>
@@ -369,7 +369,7 @@
 	  <parameters> auto_increment not null unique primary key </parameters>
 	</id>
         <name>
-	  <parameters> not null </parameters>
+	  <parameters> not null unique </parameters>
 	</name>
         <path> </path>
       </fields> 
@@ -385,7 +385,7 @@
 	  <parameters> auto_increment not null unique primary key </parameters>
 	</id>
         <name>
-	  <parameters> not null </parameters>
+	  <parameters> not null unique </parameters>
 	</name>
       </fields> 
     </networks>
@@ -433,7 +433,7 @@
 	</image_id>
 	<installer> </installer>
         <name>
-	  <parameters> not null </parameters>
+	  <parameters> not null unique </parameters>
 	</name>
         <ram> 
 	  <type> integer </type>
@@ -454,7 +454,7 @@
 	  <parameters> auto_increment not null unique primary key </parameters>
 	</id>
         <name>
-	  <parameters> not null </parameters>
+	  <parameters> not null unique </parameters>
 	</name>
       </fields>
     </node_groups>
@@ -517,7 +517,7 @@
 	<maintainer_email> </maintainer_email>
 	<maintainer_name> </maintainer_name>
         <name>
-	  <parameters> not null </parameters>
+	  <parameters> not null unique </parameters>
 	</name>
 	<package> </package>
 	<packager_email> </packager_email>
@@ -550,7 +550,7 @@
 	  <parameters> auto_increment not null unique primary key </parameters>
 	</id>
         <name>
-	  <parameters> not null </parameters>
+	  <parameters> not null unique </parameters>
 	</name>
       </fields>
     </package_sets>
