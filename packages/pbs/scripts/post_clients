@@ -48,3 +48,12 @@ foreach my $node (sort keys %nodes) {
 }
 
 close(NODES);
+
+print "...updating xpbsmonrc file\n";
+my $xpbsmonrc = "/usr/local/pbs/lib/xpbsmon/xpbsmonrc";
+open (RCFILE, "+<$xpbsmonrc") or croak("Error:  Couldn't open $xpbsmonrc.\n");
+my @lines = <RCFILE>;
+grep { s/ICON.*$/ICON;pbs_oscar;pbs_oscar;;;}/ } @lines;
+print RCFILE @lines; 
+close (RCFILE);
+
