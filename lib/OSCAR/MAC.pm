@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.32 2003/01/28 19:10:09 brechin Exp $
+#   $Id: MAC.pm,v 1.33 2003/01/28 19:22:24 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.32 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.33 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -268,8 +268,19 @@ sub message_window {
 sub assign2machine {
     my ($listbox, $tree, $mac, $node, $window, $dhcp) = @_;
     unless ( defined($dhcp) ) { $dhcp = 1; }
-    unless ( $mac ) { $mac = $listbox->get($listbox->curselection) or return undef; }
-    unless ( $node) { $node = $tree->infoSelection() or return undef; }
+    unless ( $mac ) {
+      my $sel = $listbox->curselection;
+      if ( defined( $sel ) ) {
+        $mac = $listbox->get($listbox->curselection) or return undef; 
+      }
+      else { return undef; }
+    }
+    unless ( $node ) { 
+      if ( defined( $tree->infoSelection() ) ) {
+        $node = $tree->infoSelection() or return undef; 
+      }
+      else { return undef; }
+    }
     my $client;
     clear_mac($listbox, $tree, $window);
     if($node =~ /^\|([^\|]+)/) {
