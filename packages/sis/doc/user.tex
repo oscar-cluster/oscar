@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.2 2002/06/17 23:01:51 mchasal Exp $
+% $Id: user.tex,v 1.3 2002/06/18 18:57:27 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -49,7 +49,7 @@ clients. More importantly \cmd{mksimachine} can be used to update client
 definitions. If, for example, you needed to change the MAC address after replacing
 one of your clients, you could use \cmd{mksimachine}.
 
-\subsubsection{Maintaining your clients}
+\subsubsection{Maintaining your client software}
 
 There are many different ways to maintain the software installed on the client
 nodes. Since SIS is image based, it allows you to also use an image based 
@@ -58,3 +58,21 @@ and then resync the clients to their respective images. Since \cmd{rsync} is
 used, only the actual data that has changed will be sent over the network to 
 the client. The SIS command \cmd{updateclient} can be run on any client to
 initiate this update.
+
+\subsubsection{Additional information}
+
+To obtain more detailed information about SIS, please refer to the many man
+pages that are shipped with SIS. Some of the more popular pages are:
+
+\begin{itemize}
+\item tksis
+\item mksiimage
+\item mksidisk
+\item mksirange
+\item mksimachine
+\item systemconfigurator
+\item updateclient
+\end{itemize}
+
+You can also access the mailing lists and other docs through the sisuite
+home page, \url{http://sisuite.org/}.
