@@ -52,6 +52,7 @@ my @known_services = qw(
                         gmond
                         httpd
                         maui
+			named
                         ntpd
                         mysqld
                         pbs_server
@@ -125,9 +126,10 @@ my @oscar_services = ();
 foreach my $oscar_rpm_path ( @oscar_rpm_paths ) {
   my @files = `rpm -qpl $oscar_rpm_path`;
   chomp @files;
-  my @service_files = grep( /^\/etc\/rc\.d\/init\.d\/[^\/]/, @files );
+  my @service_files = grep( /^\/etc\/(rc\.d\/|)init\.d\/[^\/]/, @files );
   foreach ( @service_files ) {
     $_ =~ s,^.*/,,g;
+    #print "found service $_ in rpm $oscar_rpm_path\n";
   }
   push @oscar_services, @service_files;
 }
