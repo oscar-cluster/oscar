@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.81 2004/05/04 21:17:20 ngorsuch Exp $
+      $Id: config.xml,v 1.82 2004/05/04 22:54:31 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -2852,6 +2852,9 @@
 
       <shortcut>
         <command> packages </command>
+        <description>
+          packages lists all of the packages names.
+        </description>
         <expansion>
           read_records
           packages
@@ -2942,6 +2945,20 @@
         <expansion>
           packages
           packages.installable!=0
+          %+
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> packages_installable_allowed </command>
+        <description>
+          packages_installable_allowed lists all of the packages that
+	  are set to be installable and are allowed to be installed.
+        </description>
+        <expansion>
+          packages
+          packages.installable!=0
+          packages.install_allowed!=0
           %+
         </expansion>
       </shortcut>
@@ -3070,10 +3087,40 @@
 
       <shortcut>
         <command> packages_versions </command>
+        <description>
+          packages_versions lists all of the packages names and versions.
+        </description>
         <expansion>
           read_records
           packages.name
           packages.version
+          %+
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> packages_versions_installable </command>
+        <description>
+          packages_versions_installable lists all of the packages names
+	  and versions that are set to be installable.
+        </description>
+        <expansion>
+          packages_versions
+          packages.installable!=0
+          %+
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> packages_versions_installable_allowed </command>
+        <description>
+          packages_versions_installable_allowed lists all of the packages
+	  names and versions that are set to be installable and are allowed 
+	  to be installed.
+        </description>
+        <expansion>
+          packages_versions_installable
+          packages.install_allowed!=0
           %+
         </expansion>
       </shortcut>
@@ -3951,6 +3998,10 @@
           <type> integer </type>
           <parameters> auto_increment not null unique primary key </parameters>
         </id>
+        <install_allowed> 
+          <type> integer </type>
+          <default> 1 </default>
+        </install_allowed>
         <installed> 
           <type> integer </type>
           <default> 0 </default>
