@@ -11,9 +11,9 @@ use OSCAR::MAC;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
+use POSIX;
 use Carp;
 use vars qw($config);
-#use OSCAR::Tk;
 
 if( $#ARGV != 0 ) {
   die "usage: $0 <cluster interface>\n";
@@ -42,7 +42,7 @@ my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!",-background=>"w
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 
 # Step 1, Define OSCAR Server
-oscar_button($window, "Step 1:", "Prepare OSCAR Server", sub {}, 'prep_server'); 
+oscar_button($window, "Step 1:", "Prepare OSCAR Server For Install", sub {}, 'prep_server'); 
 
 # Step 2, Build OSCAR Client Image
 oscar_button($window, "Step 2:", "Build OSCAR Client Image", [\&build_oscar_image, $window], 'build_image');
@@ -122,9 +122,7 @@ sub build_oscar_image {
 #   $disk_type = "ide" if ( grep ( /\/dev\/hd/, ( @df_lines ) ) );
     $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
 
-    my @uname_line = `uname -m`;
-    chomp @uname_line;
-    my $arch = $uname_line[0];
+    my $arch = (arch())[4];
     my $rpmlist;
     if ( -r "$Bin/../oscarsamples/sample.rpmlist.$arch" ) {
 	$rpmlist = "$Bin/../oscarsamples/sample.rpmlist.$arch";
@@ -169,7 +167,7 @@ sub run_post_install {
 
 sub postaddclients {
     my ($vars) = @_;
-    print "This is where I would run addclients things\n";
+    print "Executing post_clients phase\n";
     !system("./post_clients") or (carp($!), return undef);
     return 1;
 }
