@@ -1,6 +1,6 @@
 #!/bin/csh
 #
-# $Id: build-package-docs,v 1.4 2002/06/20 05:56:07 jsquyres Exp $
+# $Id: build-package-docs,v 1.5 2002/09/11 01:26:33 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -15,5 +15,9 @@
 # sort so that we can have deterministic ordering of the sections.
 
 foreach file (`ls ../../packages/*/doc/user.tex | sort`)
-    echo "\input{$file}" >> package-docs.tex
+    set dir="`dirname $file`"
+    set dir="`dirname $dir`"
+    if (! -f $dir/.oscar_ignore) then
+	echo "\input{$file}" >> package-docs.tex
+    endif
 end
