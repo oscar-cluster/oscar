@@ -198,3 +198,13 @@ fontconfig
 hesiod
 zip
 XFree86-Mesa-libGL
+compat-gcc
+compat-libstdc++
+compat-libgcj
+compat-libgcj-devel
+compat-libstdc++-devel
+libobjc
+compat-gcc-c++
+compat-gcc-g77
+compat-gcc-java
+compat-gcc-objc
