@@ -8,7 +8,6 @@ use Carp;
 
 my @rpms = qw(
               c3
-              pfilter
               lam
 	      modules
 	      env-switcher
