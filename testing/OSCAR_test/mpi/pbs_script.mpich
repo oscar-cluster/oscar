@@ -13,8 +13,12 @@
 ### Script Commands
 cd $PBS_O_WORKDIR
 NP=`(wc -l < $PBS_NODEFILE) | awk '{print $1}'`
+
+mpich_profile=/etc/profile.d/mpi-01mpich.sh
+. $mpich_profile
+
 echo "Running MPICH test"
-$MPICHMPI/bin/mpicc cpi.c -o mpich-cpi
-$MPICHMPI/bin/mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cpi
+$MPICH/bin/mpicc cpi.c -o mpich-cpi
+$MPICH/bin/mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cpi
 echo
 exit
