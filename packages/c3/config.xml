@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>c3</name>
+
+  <version>
+    <major>3</major>
+    <minor>1</minor>
+    <subversion>1</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>core</class>
+  <installable>1</installable>
+
+  <summary>Cluster Command and Control (C3) - command line tool suite</summary>
+  <license>freely distributable</license>
+  <group>Application/System</group>
+  <url>http://www.csm.ornl.gov/torc/C3/</url>
+
+  <packager>
+    <name>Thomas Naughton</name>
+    <email>naughtont@ornl.gov</email>
+  </packager>
+
+  <description>The Cluster Command and Control (C3) tool suite
+offers a command line interface for system and user administration
+tasks on a cluster.</description>
+
+  <rpmlist>
+    <all>
+      <rpm>rsync</rpm>
+    </all>
+    <server>
+      <rpm>c3</rpm>
+      <rpm>c3-profiled</rpm>
+    </server>
+    <client>
+      <rpm>c3-ckillnode</rpm>
+    </client>
+  </rpmlist>
+</package>

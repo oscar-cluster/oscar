@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>Switcher</name>
+
+  <version>
+    <major>1</major>
+    <minor>0</minor>
+    <subversion>7</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>core</class>
+  <installable>1</installable>
+
+  <summary>Environment switcher</summary>
+  <license>Freely distributable</license>
+  <group>Application/Environment</group>
+  <url>http://env-switcher.sourceforge.net/</url>
+
+  <packager>
+    <name>Jeff Squyres</name>
+    <email>jsquyres@lam-mpi.org</email>
+  </packager>
+
+  <description>The env-switcher package provides an convenient method
+for users to switch between "similar" packages.  System- and
+user-level defaults are maintained in data files and are examined at
+shell invocation time to determine how the user's enviornment should
+be set up.
+
+The canonical example of where this is helpful is using multiple
+implementations of the Message Passing Interface (MPI).  This
+typically requires that the user's "dot" files are set appropriately
+on each machine that is used since rsh/ssh are typically used to
+invoke commands on remote nodes.
+
+The env-switcher package alleviates the need for users to manually
+edit their fot files, and instead gives the user commandline control
+to switch between multiple implementations of MPI.
+
+While this package was specifically motivated by the use of multiple
+MPI implementations on OSCAR clusters, there is nothing specific to
+either OSCAR or MPI in env-switcher -- switching between mulitple MPI
+implementations is only used in this description as an example.  As
+such, it can be used in any environment for any "switching" kind of
+purpose.</description>
+</package>
