@@ -4,7 +4,7 @@ package OSCAR::MAC;
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
-#   $Id: MAC.pm,v 1.42 2003/07/08 21:40:50 brechin Exp $
+#   $Id: MAC.pm,v 1.43 2003/07/15 20:29:51 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.42 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.43 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -51,7 +51,7 @@ my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $SERVERMACS;     # a variable which stores a regex of the server mac addreses
 my $ORDER = 1;      # global count variable
 my $COLLECT = 0;    # are we collecting or not?
-my $PINGPID = undef; # process id of the ping fork we make
+our $PINGPID = undef; # process id of the ping fork we make
 my $step_number;    # which step number of the oscar process we are in
 our $destroyed = 0;
 
@@ -427,12 +427,14 @@ sub start_ping {
     my $network = new Net::Netmask($ip, $nm);
     my $pid = fork();
 
-    oscar_log_subsection("Step $step_number: Launching background ping");
     if($pid) {
         $PINGPID = $pid;
     } else {
+        oscar_log_subsection("Step $step_number: Launching background ping");
         open(STDOUT,">/dev/null");
-        exec("ping -b " . $network->base);
+        system("ping -b " . $network->base);
+        oscar_log_subsection("Step $step_number: Background ping stopped");
+        exit 0;
     }
 }
 
@@ -442,7 +444,6 @@ sub end_ping {
         kill 15, $PINGPID;
         $PINGPID = undef;
     }
-    oscar_log_subsection("Step $step_number: Killed background ping");
 }
 
 sub end_collect_mac {
