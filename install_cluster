@@ -29,6 +29,22 @@ use OSCAR::Distro;
 use POSIX;
 use Carp;
 
+# Setting this varible makes a lot of things much easier.  It might also do
+# us some good down the road
+
+$ENV{OSCAR_HOME} = cwd();
+
+# Setup to capture all stdout/stderr
+
+my $oscar_logfile = $ENV{OSCAR_HOME} . "/oscarinstall.log";
+if (!open (STDOUT,"| tee $oscar_logfile") || !open(STDERR,">&STDOUT")) {
+    croak("ERROR: Cannot tee stdout/stderr into the OSCAR logfile:
+   $oscar_logfile
+Aborting the install.\n");
+}
+
+# First output banner
+
 oscar_log_section("Running OSCAR install_cluster script");
 
 # Fix to make multi lingualness work:
@@ -40,10 +56,6 @@ $ENV{LC_MESSAGES} = "en_US";
 $ENV{LC_MONETARY} = "en_US";
 $ENV{LC_NUMERIC} = "en_US";
 $ENV{LC_TIME} = "en_US";
-
-# Setting this varible makes a lot of things much easier.  It might also do
-# us some good down the road
-$ENV{OSCAR_HOME} = cwd();
 
 # add entries to path that we know we will need
 $ENV{PATH} = $ENV{PATH} . ':/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin';
@@ -80,14 +92,14 @@ oscar_log_subsection("PATH: " . $ENV{PATH});
 # now that this install won't [eventually] succeed.
 
 if ($shorthostname eq "localhost") {
-    croak(
-"ERROR: Your hostname is \"localhost\".
+    croak("
+ERROR: Your hostname is \"localhost\".
 OSCAR requires that you choose another hostname.
 Aborting the install.\n");
 }
 if ($hostname eq "localhost.localdomain") {
-    croak(
-"ERROR: Your hostname is \"localhost.localdomain\".
+    croak("
+ERROR: Your hostname is \"localhost.localdomain\".
 OSCAR requires that you choose another hostname.
 Aborting the install.\n");
 }
@@ -124,12 +136,12 @@ if ((scalar(@basesystem)==0) || (scalar(@rsync)==0)) {
 
 my $cmd = "./wizard_prep $adapter";
 oscar_log_subsection("Running: \"$cmd\"");
-!system("$cmd 2>&1 ") or croak("Oscar Wizard preparation script failed to complete");
-oscar_log_subsection("Successfully ran: \"$cmd\"");
+!system($cmd) or croak("Oscar Wizard preparation script failed to complete");
+oscar_log_subsection("Successfully ran wizard_prep");
 
 $cmd = "./oscar_wizard $adapter";
 oscar_log_subsection("Running: \"$cmd\"");
-!system("$cmd 2>&1 | tee -a ../oscarinstall.log") or croak("Oscar Wizard failed to run successfully");
-oscar_log_subsection("Successfully ran: \"$cmd\"");
+!system("$cmd 2>&1") or croak("Oscar Wizard failed to run successfully");
+oscar_log_subsection("Successfully ran oscar_wizard);
 
 oscar_log_subsection("Successfully ran OSCAR install_cluster script");
