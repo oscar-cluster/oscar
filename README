@@ -1,4 +1,4 @@
-$Id: README,v 1.20 2002/06/13 13:59:17 brechin Exp $
+$Id: README,v 1.21 2002/07/06 05:00:33 jsquyres Exp $
 
 $COPYRIGHT$
 
@@ -7,6 +7,11 @@ site:
 
 	http://oscar.sourceforge.net/
 
-Installation instructions and release notes for OSCAR can be found in
-doc/install.pdf.  User instructions for utilizing the software
-installed on OSCAR clusters can be found in doc/user.pdf.
+Full installation instructions and release notes for OSCAR can be
+found in doc/install.pdf.  If you're brave, well familiar with Linux
+system administration and cluster concepts, and feel that you can skip
+all the details, you can jump into the OSCAR quick installation
+document in doc/quick_install.pdf.
+
+User instructions for utilizing the software installed on OSCAR
+clusters can be found in doc/user.pdf.
