@@ -168,7 +168,7 @@ EOF
 	echo "WARNING: There will be no mail service running on the client nodes!"
 		;;
 	*) 
-	echo "ERROR- There is no rpm for a mailing service"
+	echo "WARNING: OSCAR did not found any mailing service"
 	        ;;
 esac
 
