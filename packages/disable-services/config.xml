@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <package>
-  <name>disable-services</name>
-
-  <class>included</class>
-  <installable>1</installable>
+  <name>Disable Uncommon Client Node Services</name>
 
   <version>
     <major>1</major>
@@ -13,6 +10,9 @@
     <release>1</release>
     <epoch>1</epoch>
   </version>
+
+  <class>included</class>
+  <installable>1</installable>
 
   <summary>Disable services on client nodes</summary>
   <license>Freely distributable</license>
