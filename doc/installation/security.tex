@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: security.tex,v 1.5 2002/08/31 16:29:36 jsquyres Exp $
+% $Id: security.tex,v 1.6 2002/11/17 04:02:40 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -93,7 +93,7 @@ system, do this:
 \end{verbatim}
 
 \noindent To list the services that will be started by default at the
-current runlevel do this:
+current run level do this:
 
 \begin{verbatim}
   # chkconfig --list | grep `grep :initdefault: /etc/inittab | \
@@ -123,7 +123,7 @@ the OSCAR cluster nodes.
 
 \subsection{Secure communications}
 
-The OSCAR team {\em strongly} recomends using \cmd{ssh} for all
+The OSCAR team {\em strongly} recommends using \cmd{ssh} for all
 network logins, and \cmd{scp} to copy files either between OSCAR
 nodes, or to remote hosts.  The use of \cmd{telnet}, \cmd{rsh},
 \cmd{ftp}, and other legacy network applications are strongly

@@ -7,13 +7,19 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.25 2002/11/16 19:24:16 jsquyres Exp $
+% $Id: release-notes.tex,v 1.26 2002/11/17 04:02:39 jsquyres Exp $
 %
 
 \section{Release Notes}
 \label{sec:release-notes}
 
-The following release notes apply to OSCAR version \oscarversion:
+The following release notes apply to OSCAR version \oscarversion.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Notes for All Systems}
+\label{subsec:release-notes}
 
 \begin{itemize}
 \item Each package in OSCAR has its own installation and release
@@ -48,7 +54,7 @@ The following release notes apply to OSCAR version \oscarversion:
   is typically easiest to use a machine that has a new, fresh install
   of a distribution listed in table~\ref{tab:oscar-distro-support}
   {\em with no updates installed}.  If the updates are installed,
-  there may be conflicts in RPM requirements.  It is recomended to
+  there may be conflicts in RPM requirements.  It is recommended to
   install updates {\em after} the initial OSCAR installation has
   completed.
   
@@ -72,8 +78,28 @@ The following release notes apply to OSCAR version \oscarversion:
   encouraged to closely follow the instructions provided in this
   document.
 
+\item The OSCAR installer GUI currently does not support deleting a
+  node and adding the same node back {\em in the same session}.  If
+  you wish to delete a node and then add it back, you must delete the
+  node, close the OSCAR installer GUI, launch the OSCAR installer GUI
+  again, and then add the node.
+
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{RedHat 7.2 Notes}
+\label{subsec:rh72notes}
+
+\begin{itemize}
+\item The version of Perl that ships with RedHat 7.2 will complain
+  about many variables that ``will not remain shared'' upon invocation
+  of the OSCAR installer GUI.  These warnings are benign and can be
+  safely ignored.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Mandrake 8.2 Notes}
@@ -84,22 +110,35 @@ The following release notes apply to OSCAR version \oscarversion:
   OSCAR \oscarversion\- has been tested and successfully installed on
   this distribution (see Table~\ref{tab:oscar-distro-support});
   
-\item Before any OSCAR installation, you should install the following
-  perl packages
+\item Before running the OSCAR installer, you must install the
+  \file{libexpat1\_95-devel} RPM (you may need Mandrake 8.2 CD's to run
+  the \cmd{urpmi} command):
+
+\begin{verbatim}
+  # urpmi libexpat1_95-devel
+\end{verbatim}
+
+  This RPM is a prerequsite for the perl-XML-Simple and
+  perl-XML-Parser Perl modules that are installed in the initial
+  installation of OSCAR.  Alternatively, you can install the Mandrake
+  RPMs for perl-XML-Simple and perl-XML-Parser before installing
+  OSCAR:
+
 \begin{verbatim}
   # urpmi perl-XML-Simple perl-XML-Parser
 \end{verbatim}
   
-\item There is a problem with the TCL libraries -- the RPM was
-  compiled on Mandrake.  In order to avoid an error, make the
-  following symlink before running the OSCAR installer:
+\item To avoid problems with the \file{modules} RPM, the following sym
+  link must be created {\em before} running the OSCAR installer:
 
 \begin{verbatim}
   # ln -s /usr/lib/libtcl8.3.so /usr/lib/libtcl.so.0
 \end{verbatim}
 
+\item ODA is not currently supported on Mandrake.
+
 \item If installing the third-party package Ganglia, the
-  \rpmname{libpng} RPM version 1.0.8-2mdk must be manually installed
+  \file{libpng} RPM version 1.0.8-2mdk must be manually installed
   before invoking the OSCAR install wizard.  This RPM can be
   found in the Ganglia distribution package in the following location:\\
   \file{packages/ganglia/extras/libpng-1.0.8-2mdk.i586.rpm}
@@ -135,7 +174,7 @@ The following release notes apply to OSCAR version \oscarversion:
     operating systems, and SIS does not properly pick up modules for
     the netbooted kernel.  The solution is for the user to compile
     their own kernel.  This is essentially a ``do it yourself'' kind
-    of process, and not recomended for novices.  Please consult the
+    of process, and not recommended for novices.  Please consult the
     OSCAR user's mailing list for more information.}
 
 \item The OSCAR autoinstall diskette will probably not work on Itanium
@@ -156,4 +195,4 @@ The following release notes apply to OSCAR version \oscarversion:
   enable you to use them in OSCAR.
 \end{itemize}
 
-% LocalWords:  tex Exp
+% LocalWords:  tex Exp TJN unmunge pathenv

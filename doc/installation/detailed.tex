@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.48 2002/11/16 19:24:16 jsquyres Exp $
+% $Id: detailed.tex,v 1.49 2002/11/17 04:02:39 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -115,7 +115,7 @@ The same procedure should be repeated for the
 \label{det:unpack}
 
 If you are reading this, you probably already have a copy of an OSCAR
-distribtuion package.  If not, go to
+distribution package.  If not, go to
 \url{http://oscar.sourceforge.net/} and download the latest OSCAR
 Regular or Extra Crispy distribution package (see
 Section~\ref{sec:download}, page~\pageref{sec:download}).  Ensure that
@@ -327,7 +327,7 @@ download additional OSCAR packages.\footnote{Ganglia is a notable
   process mentioned in this section will enable you to download
   Ganglia and install it with the rest of the OSCAR components.}  The
 OSCAR Package Downloader (OPD) is a unified method of downloading
-OSCAR packages and insertting them in the OSCAR installation hierarchy
+OSCAR packages and inserting them in the OSCAR installation hierarchy
 so that they will be installed during the main OSCAR installation
 process.
 
@@ -365,7 +365,7 @@ install these modules:
 \item Launch the OSCAR installer (see
   Section~\ref{det:installcluster}) and then quit immediately when the
   GUI window appears.  This is the preferred method, since the OSCAR
-  installer will install of its own prerequsites (i.e., the process is
+  installer will install of its own prerequisites (i.e., the process is
   automated).
 \end{enumerate}
 
@@ -402,10 +402,10 @@ install wizard:
 In the above command, substitute the device name (e.g., \emph{eth1})
 in place of \cmd{$<$device$>$} for your server's private network
 ethernet adapter.  The script will execute some setup / configuration
-setps, including (but not limited to):
+steps, including (but not limited to):
 
 \begin{enumerate}
-\item installs prerequsite packages on the server
+\item installs prerequisite packages on the server
 \item copies OSCAR RPMs to \file{/tftpboot/rpm}
 \item installs all OSCAR server RPMs
 \item updates \file{/etc/hosts} with OSCAR aliases
@@ -552,8 +552,8 @@ warning may appear in the shell window (it is safe to ignore):
 \label{det:install-server-packages}
 
 Press the \button{Install OSCAR Server Packages} button.  This will
-invoke the installation of various RPMs and auxillary configuration on
-the server node.  Executation may take several minutes; text output
+invoke the installation of various RPMs and auxiliary configuration on
+the server node.  Execution may take several minutes; text output
 and status messages will appear in the shell window.
 
 A popup will appear indicating the success or failure of this step.
@@ -667,7 +667,7 @@ Notes for this version of OSCAR in Section~\ref{sec:release-notes}
 
 Press the \button{Define OSCAR Clients} button.  In the dialog box
 that is displayed, enter the appropriate information.  Although the
-defaults will be suffient for most cases, you will need to enter a
+defaults will be sufficient for most cases, you will need to enter a
 value in the \field{Number of Hosts} field to specify how many clients
 you want to create.
 
@@ -741,7 +741,7 @@ A sample dialog is shown in Figure~\ref{fig:detailed-define-clients}.
 
 After the clients are created, a dialog will pop up with the
 completion status. After closing that, you may press the
-\button{Close} button in the build clients dialoge and continue with
+\button{Close} button in the build clients dialogue and continue with
 the next step.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -885,6 +885,10 @@ of the test fail, then there may be problem with your installation.
     \label{fig:detailed-setup-test}
   \end{center}
 \end{figure}
+
+At the beginning of the test, when the PBS server is shut down, you
+may see a benign error message about the \cmd{pbsnodes} command not
+being able to connect to the PBS server.  This is safe to ignore.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
