@@ -10,8 +10,9 @@ Note: These instructions are for Red Hat Enterprise Linux 3 (Update 3); see
 Step 2 if you are using the Gold or Update 2 versions.
 
 
-1) mysql-server
-   ------------
+-----------------------------------
+1) mysql-server (All architectures)
+-----------------------------------
 
 BEFORE YOU BEGIN: you will need to obtain a mysql-server RPM and put it into
 /tftpboot/rpm.  The easiest way is to get the SRPM and rebuild it,
@@ -30,8 +31,9 @@ if the version you could find is v3.23.58-2.3:
 The key here is to keep the MySQL versions consistent.
 
 
-2) Red Hat Enterprise Linux 3 (Gold or Update 2) rpmlist
-   -----------------------------------------------
+----------------------------------------------------------------------------
+2) Red Hat Enterprise Linux 3 (Gold or Update 2) rpmlist (All architectures)
+----------------------------------------------------------------------------
  
 IN OSCAR WIZARD STEP 4: if you're running an earlier version than Update 3,
 you will need to manually select the correct rpmlist before generating the
@@ -42,8 +44,9 @@ or
   /opt/oscar/oscarsample/redhat-3asU2-ia64.rpmlist
 
 
-3) Initrd and elilo.conf
-   ---------------------
+------------------------------------
+3) Initrd and elilo.conf (IA64 only)
+------------------------------------
 
 AFTER OSCAR WIZARD STEP 4: there is a problem generating a valid initrd on the
 nodes, so we must provide one in the image.  Copy a valid initrd to image
@@ -60,8 +63,9 @@ with the commands
     /var/lib/systemimager/images/oscarimage/boot/efi/EFI/redhat/
 
 
-4) systemconfig.conf
-   ----------------- 
+--------------------------------
+4) systemconfig.conf (IA64 only)
+--------------------------------
  
 AFTER OSCAR WIZARD STEP 4: you will need to add an INITRD entry to the image
 file
@@ -78,11 +82,12 @@ After the modification, the kernel section should look like this:
 where 2.4.21-20.EL is the kernel for Red Hat Enterprise Linux 3 (Update 3)
 you should substitute your kernel version if you're not running Update 3.
 
-NOTE: Note carefully the DOUBLE SLASH in the PATH and INITRD lines!
+NOTE CAREFULLY THE DOUBLE SLASH IN THE PATH AND INITRD LINES!
 
 
-5) SCSI and network
-   ----------------
+-------------------------------
+5) SCSI and network (IA64 only)
+-------------------------------
 
 AFTER OSCAR WIZARD STEP 4: you may also need to add a Hardware section with
 SCSI and network drivers.  In the image file
@@ -95,8 +100,9 @@ For an Intel SR870BH2, the hardware section of this file would look like:
     ORDER = e1000 e1000 mptscsih mptbase scsi_mod
 
 
-6) USB
-   ---
+------------------
+6) USB (IA64 only)
+------------------
 
 AFTER OSCAR WIZARD STEP 4: if you need to use the keyboard on a USB-only
 system, like the Intel SR870BH2, you need to add the USB controller to the
@@ -110,8 +116,9 @@ For example,
     /var/lib/systemimager/images/oscarimage/etc/modules.conf
 
 
-7) tftp-server
-   -----------
+----------------------------------
+7) tftp-server (All architectures)
+----------------------------------
 
 AFTER OSCAR WIZARD STEP 6, BEFORE YOU BOOT THE CLIENT NODES: you will need to
 replace the TFTP server.  If your distrubition doesn't come with a tftp-server
@@ -127,8 +134,9 @@ the package and turn it on:
   /sbin/chkconfig --level 345 tftp on 
 
 
-8) DISKORDER
-   ---------
+--------------------------------
+8) DISKORDER (All architectures)
+--------------------------------
 
 AFTER OSCAR WIZARD STEP 6, BEFORE YOU BOOT THE CLIENT NODES: you may have to
 modify the DISKORDER sequence used by SystemImager to prevent the system from
