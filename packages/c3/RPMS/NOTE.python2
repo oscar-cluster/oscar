@@ -1,0 +1,15 @@
+
+We have to ship Python2 b/c it is not on the RH7.1 CD's.  Doh!
+
+Note, the file "python2-2.1.1-1.i386.rpm" was re-build for OSCAR 
+from the "python2-2.1.1-2.src.rpm" so it would install on RH7.1 & RH7.2.
+(The standard version on RH7.2 has a glibc >= 2.2.4 dependency.)
+
+Also, the revision was bumped down simply to make sure that the official
+RedHat shipped version was used when installing OSCAR on RH7.2 systems.
+
+Other than the revision number change and re-build on a RH7.1 machine,
+no other changes were made to the "official" python2-2.1.1-2.src.rpm.
+
+  --tjn  5/22/02
+
