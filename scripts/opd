@@ -7,11 +7,10 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.6 2002/11/05 03:21:12 bligneri Exp $
+# $Id: opd,v 1.7 2002/11/05 21:06:04 jsquyres Exp $
 #
 
 use strict;
-use XML::Simple;
 use Carp;
 use LWP::UserAgent;
 use File::Copy;
@@ -23,10 +22,6 @@ use Digest::MD5 qw(md5_hex);
 use Data::Dumper;
 
 # Setup some global variables
-
-my $xs = new XML::Simple(keyattr => {}, forcearray => 
-			 [ "site", "uri", "package",
-			   "requires", "conflicts", "provides" ]);
 
 my $default_repository_location = "Bloomington, IN, USA";
 my $default_repository_uri = 
@@ -65,6 +60,45 @@ my $empty_di_info = {
     download_uri_index => -1,
     install => 0
 };
+
+# See if we have XML::Simple and XML::Parser installed
+
+my $have_xml_parser = 1;
+my $have_xml_simple = 1;
+eval { require XML::Parser };
+$have_xml_parser = 0 if ($@);
+eval { require XML::Simple };
+$have_xml_simple = 0 if ($@);
+
+if (!$have_xml_simple || !$have_xml_parser) {
+    print "The OSCAR Package Downloader (OPD) could not be run because you do
+not appear to have the prerequsite Perl modules installed.
+
+You appear to be missing:\n";
+
+    print "\tXML::Parser\n" if (!$have_xml_parser);
+    print "\tXML::Simple\n" if (!$have_xml_simple);
+
+print "
+You may either install these modules manually (try using the CPAN
+tool), or run the OSCAR Installer Wizard (which will automatically
+install them).  If you run the OSCAR Installer Wizard, let it complete
+its startup (i.e., install the required Perl modules) and display the
+initial GUI menu.  Then click the \"Exit\" button and run OPD again.
+
+You *must* have all packages dowloaded via OPD before performing your
+OSCAR installation.
+
+";
+    exit(1);
+}
+
+# Now that we know that we have XML::Simple, use it
+
+require XML::Simple;
+my $xs = new XML::Simple(keyattr => {}, forcearray => 
+			 [ "site", "uri", "package",
+			   "requires", "conflicts", "provides" ]);
 
 # Command line options
 
