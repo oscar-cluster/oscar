@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.4 2002/11/16 03:19:52 bligneri Exp $
+# $Id: install,v 1.5 2002/11/17 04:57:58 jsquyres Exp $
 #
 
 #use strict;
@@ -17,88 +17,76 @@ use Carp;
 use OSCAR::Distro;
 use OSCAR::Package;
 use XML::Simple;
+use File::Copy;
 
 # Version included in media directory
 
 my $ver = "0.90";
 my $package_dir = "oda";
+my $package_rpms_dir = "$ENV{OSCAR_HOME}/packages/$package_dir/RPMS";
+my $oscar_rpms_dir = "/tftpboot/rpm";
 
+oscar_log_subsection("Checking to see if we need to install ODA RPMs");
 
 # Definition of distro type and version
-my ($distro_name, $distro_version) = which_distro_server();
-# Helper subroutine
 
-sub do_run {
-    my $cmd = join(' ', @_);
-    if (system($cmd) != 0) {
-	croak("Not able to execute: $cmd");
-    }
-}
+my ($distro_name, $distro_version) = which_distro_server();
 
 # find a list of rpm names to check for and rpm files to install
-my @rpms = ( );
-# start by seeing if we're on a redhat system,
-# don't bother with redhat versions since the
-# following rpm set works on all the versions
-# oscar works on
 
-
-if ( $distro_name eq "RedHat") {
+if ($distro_name eq "RedHat") {
     @wanted_rpms = qw( mysql
 		perl-DBD-MySQL
 		perl-DBI
 		mysql-server
 		oda );
-
 }
+
+# If we're on Mandrake, abort.  ODA will not be installed.
+
 elsif ($distro_name eq "Mandrake") { 
     @wanted_rpms = qw( MySQL
-        MySQL-client
+		MySQL-client
+		libmysql10
 		perl-DBI
 		perl-Mysql
 		perl-ExtUtils-PerlPP
 		oda );
-        # FIXME (bligneri)
-        # Will just copy the XML file.
-        # Should be an argument in the XML file.
-        #my $xs = new XML::Simple(forcearray => 1, keeproot => 1);
-        #my $config = $xs->XMLin($ENV{"OSCAR_HOME"}."/packages/oda/config.xml");
-        my $command="cp -f ".$ENV{"OSCAR_HOME"}."/packages/oda/config.xml.mandrake ".$ENV{"OSCAR_HOME"}."/packages/oda/config.xml";
-        system $command;
+    # FIXME (bligneri)
+    # Will just copy the XML file.
+    # Should be an argument in the XML file.
+    #my $xs = new XML::Simple(forcearray => 1, keeproot => 1);
+    #my $config = $xs->XMLin($ENV{"OSCAR_HOME"}."/packages/oda/config.xml");
+    my $src = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml.mandrake";
+    my $dest = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml";
+    copy($src, $dest) ||
+	croak("Could not copy $src to $dest");
 }
 
-# find out where the corresponding rpm files are
-my @rpm_files = ();
-
 # read in the file names in this package's RPMS directory
-my $package_rpms_dir = "$ENV{OSCAR_HOME}/packages/$package_dir/RPMS";
+
 opendir(DIR, "$package_rpms_dir" )
-    || die "$0: CANNOT OPEN RPMS DIRECTORY $package_rpms_dir TO FIND RPMS FOR ODA";
-my @package_rpm_files = readdir(DIR);
+    || croak("Cannot open directory $package_rpms_dir to find RPMs for ODA");
+my @package_rpm_files = grep(/\.rpm$/, readdir(DIR));
 chomp @package_rpm_files;
 closedir DIR;
 
-# read in the file names in the oscar base rpms directory
-my $oscar_rpms_dir = "/tftpboot/rpm";
-opendir(DIR, "$oscar_rpms_dir" )
-    || die "$0: CANNOT OPEN RPMS DIRECTORY $oscar_rpms_dir TO FIND RPMS FOR ODA";
-my @oscar_rpm_files = readdir(DIR);
-chomp @oscar_rpm_files;
-closedir DIR;
+# Copy the ODA RPMs to the RPM pool (if they're not already there)
 
-my $error_flag = 0;
-
-install_rpms(@wanted_rpms) or croak("ODA is giving up and will not be installed !!!!!");
-
-if ( @rpm_files ) {
-    oscar_log_subsection("ODA is installing these rpm files:");
-    foreach my $rpm_file ( @rpm_files ) {
-	oscar_log_subsection("     $rpm_file");
+foreach my $rpm_file (@package_rpm_files) {
+    if (! -e "$oscar_rpms_dir/$rpm_file") {
+	print "Copying $rpm_file to $oscar_rpms_dir\n";
+	copy("$package_rpms_dir/$rpm_file", "$oscar_rpms_dir/$rpm_file") ||
+	    croak("Unable to copy $rpm_file to $oscar_rpms_dir");
     }
-    my $command = "rpm -ivh " . join( ' ', @rpm_files );
-    do_run( $command );
 }
 
-# All done
+# Now install the "best" version of all the required RPMs if necessary
 
-0;
+oscar_log_subsection("Installing ODA RPMs");
+install_rpms(@wanted_rpms) or 
+    croak("ODA is giving up and will not be installed");
+
+# Exit properly so that the exit status gets propogated
+
+exit(0);
