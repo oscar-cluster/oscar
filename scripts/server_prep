@@ -73,6 +73,8 @@ update_exports($ip,$netmask) or croak("Couldn't add filesystem entries to /etc/e
 verbose("Refreshing services");
 !system("service nfs start") or croak("Couldn't start nfs");
 !system("exportfs -a") or croak("Couldn't refresh nfs exports");
+!system("service sshd start") or croak("Couldn't start sshd");
+!system("chkconfig --level 345 sshd on");
 !system("chkconfig --del pbs_mom");
 !system("chkconfig --del pbs_sched");
 !system("chkconfig --level 345 dhcpd on");
