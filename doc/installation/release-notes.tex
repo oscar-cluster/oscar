@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.27 2002/11/17 04:54:28 jsquyres Exp $
+% $Id: release-notes.tex,v 1.28 2002/11/17 18:09:27 jsquyres Exp $
 %
 
 \section{Release Notes}
@@ -123,6 +123,11 @@ The following release notes apply to OSCAR version \oscarversion.
 \begin{verbatim}
   # urpmi perl-XML-Simple perl-XML-Parser
 \end{verbatim}
+
+\item There will be two warnings displayed while building the client
+  image -- the \file{lam-oscar} and \file{mpich-oscar} RPMs will
+  display errors regarding a lack of \file{libtcl.so.0}.  It is safe
+  to ignore these warnings.
   
 \item If installing the third-party package Ganglia, the
   \file{libpng} RPM version 1.0.8-2mdk must be manually installed

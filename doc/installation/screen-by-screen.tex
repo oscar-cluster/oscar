@@ -7,13 +7,14 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: screen-by-screen.tex,v 1.19 2002/11/17 04:02:40 jsquyres Exp $
+% $Id: screen-by-screen.tex,v 1.20 2002/11/17 18:09:27 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
 
-%% Put ourselves on a new page because we go and change the margins for
-%% our images
+% Put ourselves on a new page to get lining up of images to be much
+% easier / more consistent.
+
 \newpage
 
 \section{Screen-by-Screen Walkthrough}
@@ -28,8 +29,7 @@ Note the example screen shots were based in a Red Hat 7.3 using a
 pre-release version of OSCAR \oscarversion\ in the KDE graphical
 environment.  Since this section is intended as a supplementary source
 of information, it is judged to be ``close enough'' to the real
-\oscarversion\ release.  Just beware that some of the screenshots may
-not be {\em exactly} what you see in the \oscarversion\ release.
+\oscarversion\ release.  
 
 Also note that these images have been scaled down to fit within the
 document.  As such, although they are readable, the images may not
@@ -81,37 +81,76 @@ Section~\ref{det:installcluster}, page~\pageref{det:installcluster}.
 
 
 %------------------------------------------------------------------
-% Step 1: Prepare OSCAR Server For Install
+% Select OSCAR packages to install
 %------------------------------------------------------------------
 
-\subsection{Step 1: Prepare OSCAR Server for Install}
+\subsection{Select OSCAR Packages to Install}
 
-Step 1 is used to setup the server for the OSCAR cluster.  See details
-in Section~\ref{det:prepareforinstall},
-page~\pageref{det:prepareforinstall}. 
+An optional step.  See details in Section~\ref{det:select-packages},
+page~\pageref{det:select-packages}.
+
+\begin{figure}[ht!]
+  \begin{center}
+    \centerline{\includegraphics[scale=\imgscale]{figs/package-selection}}
+    \caption[Selecting which OSCAR packages to install.]{Selecting
+      which OSCAR packages to install.  Packages with black checkboxes
+      are Core packages, and cannot be unselected.}
+    \label{fig:sbs-package-selection}
+  \end{center}
+\end{figure}
+
+%------------------------------------------------------------------
+% Configure selected OSCAR packages
+%------------------------------------------------------------------
+
+\subsection{Configure Selected OSCAR Packages}
+
+An optional step.  See details in
+Section~\ref{det:configure-packages},
+page~\pageref{det:configure-packages}.
+
+\begin{figure}[ht!]
+  \begin{center}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/package-configuration}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/package-configuration-switcher}
+    }
+    \caption{Configuring selected OSCAR packages.  Only the
+      Environment Switcher package has configuration options.}
+    \label{fig:sbs-package-configuration}
+  \end{center}
+\end{figure}
+
+%------------------------------------------------------------------
+% Install OSCAR Server Packages
+%------------------------------------------------------------------
+
+\subsection{Install OSCAR Server Packages}
+
+This step is used to setup the server for the OSCAR cluster.  See
+details in Section~\ref{det:install-server-packages},
+page~\pageref{det:install-server-packages}.
 
 \begin{figure}[hb!]
   \begin{center}
-    \centerline{
-      \includegraphics[scale=\imgscale]{figs/3a_sbs-wizard-step1}
-      \hspace{\imghskip}
-      \includegraphics[scale=\imgscale]{figs/3b_sbs-wizard-step1}
-      }
-    \caption{Step 1 -- Select default MPI implementation and prepare server.}
+    \includegraphics[scale=\imgscale]{figs/install-server-pkgs-done}
+    \caption{Successfully installed the OSCAR server packages.}
     \label{fig:sbs-install-wizard-s1}
   \end{center}
 \end{figure}
 
 
 %------------------------------------------------------------------
-% Step 2: Build OSCAR Client Image
+% Build OSCAR Client Image
 %------------------------------------------------------------------
 
-\subsection{Step 2: Build OSCAR Client Image}
+\subsection{Build OSCAR Client Image}
 
-Step 2 builds a disk image for the clients to download and install
+This step builds a disk image for the clients to download and install
 onto their local disks.  See the details in
-Section~\ref{det:buildimage}, page~\pageref{det:buildimage}.
+Section~\ref{det:build-client-image},
+page~\pageref{det:build-client-image}.
 
 \begin{figure}[h!]
   \begin{center}
@@ -122,22 +161,22 @@ Section~\ref{det:buildimage}, page~\pageref{det:buildimage}.
       \hspace{\imghskip}
       \includegraphics[scale=\imgscale]{figs/4c_sbs-build-image3}
       }
-    \caption{Step 2 -- Building the image.}
+    \caption{Building the OSCAR client image.}
     \label{fig:sbs-build-image}
   \end{center}
 \end{figure}
 
 
 %------------------------------------------------------------------
-% Step 3: Define OSCAR Clients
+% Define OSCAR Clients
 %------------------------------------------------------------------
 
 \clearpage
-\subsection{Step 3: Define OSCAR Clients}
+\subsection{Define OSCAR Clients}
 
 Step 3 is used to specify how many clients there will be, and what
 their TCP/IP characteristics will be.  See the details in
-Section~\ref{det:defclients}, page~\pageref{det:defclients}.
+Section~\ref{det:define-clients}, page~\pageref{det:define-clients}.
  
 \begin{figure}[ht!]
   \begin{center}
@@ -146,26 +185,27 @@ Section~\ref{det:defclients}, page~\pageref{det:defclients}.
       \hspace{\imghskip}
       \includegraphics[scale=\imgscale]{figs/5b_sbs-define-clients2}
       }
-    \caption{Step 3 -- Defining the clients.}
+    \caption{Defining the OSCAR clients.}
     \label{fig:sbs-define-clients}
   \end{center}
 \end{figure}
 
 
 %------------------------------------------------------------------
-% Step 4: Setup Networking
+% Setup Networking
 %------------------------------------------------------------------
 
-\subsection{Step 4: Setup Networking}
+\subsection{Setup Networking}
 
-Step 4 is used to collect the MAC addresses of the clients, and then
-download the disk images to the clients.  See the details in
-Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
+This step is used to collect the MAC addresses of the clients, and
+then download the disk images to the clients.  See the details in
+Section~\ref{det:setup-networking},
+page~\pageref{det:setup-networking}.
 
 \begin{figure}[h!]
   \begin{center}
     \centerline{\includegraphics[scale=\imgscale]{figs/6a_sbs-collect-mac1}}
-    \caption{Beginning step 4 -- Setting up networking.}
+    \caption{Setup networking: initial window.}
     \label{fig:sbs-setup-network1}
   \end{center}
 \end{figure}
@@ -183,7 +223,7 @@ Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
       \hspace{\imghskip}
       \includegraphics[scale=\imgscale]{figs/6bc_sbs-autoinstall-flpy3}
       }
-    \caption{Further progress in step 4 -- Build Autoinstall Floppy.}
+    \caption{Setup networking: building an autoinstall floppy.}
     \label{fig:sbs-autoinstall-flpy1}
   \end{center}
 \end{figure}
@@ -199,7 +239,7 @@ Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
         \includegraphics[scale=\imgscale]{figs/6c_sbs-client-boot1}
         }
       }
-    \caption{Further progress in step 4 -- Booting the client.}
+    \caption{Setup networking: booting the client.}
     \label{fig:sbs-collect-boot1}
   \end{center}
 \end{figure}
@@ -208,8 +248,7 @@ Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
   \begin{center}
     \centerline{
       \includegraphics[scale=\imgscale]{figs/6ca_sbs-client-boot1}}
-    \caption{Further progress in step 4 -- Scan for booting client (DHCP
-      request).}
+    \caption{Setup networking: scan for booting client (DHCP request).}
     \label{fig:sbs-client-boot2}
   \end{center}
 \end{figure}
@@ -221,8 +260,8 @@ Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
         \includegraphics[scale=\imgscale]{figs/6d_sbs-broadcast}
         }
       }
-    \caption{Further progress in step 4 -- Client is broadcasting, in
-      order to acquire MAC address.}
+    \caption{Setup networking: client is broadcasting, allows capture
+      of MAC address.}
     \label{fig:sbs-collect-broadcast} 
   \end{center}
 \end{figure}
@@ -233,10 +272,10 @@ Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
       \includegraphics[scale=\imgscale]{figs/6e_sbs-found-mac}
       \hspace{\imghskip}
       \includegraphics[scale=\imgscale]{figs/6f_sbs-stop-collect-mac2}
-      }
-    \caption[Further progress in step 4 -- Assigning MACs to
-      IPs]{Further progress in step 4 -- Scanning network, found first
-        MAC address, then later assigned all MAC addresses.}
+    }
+    \caption[Setup networking: Assigning MACs to IPs]{Setup
+      networking: Scanning network, found first MAC address, then
+      later assigned all MAC addresses.}
     \label{fig:sbs-setup-network2}
   \end{center}
 \end{figure}
@@ -282,7 +321,7 @@ Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
   \end{center}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[!h]
   \begin{center}
     \centerline{
       \framebox{
@@ -297,13 +336,13 @@ Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
 
 
 %------------------------------------------------------------------
-% Step 5: Complete Cluster Install
+% Complete Cluster Setup
 %------------------------------------------------------------------
 
 \clearpage
-\subsection{Step 5: Complete Cluster Install} 
+\subsection{Step 5: Complete Cluster Setup} 
 
-Step 5 is used to unify the server and client installations into a
+This step is used to unify the server and client installations into a
 single cluster.  See the details in
 Section~\ref{det:complete-cluster-setup},
 page~\pageref{det:complete-cluster-setup}.
@@ -311,37 +350,29 @@ page~\pageref{det:complete-cluster-setup}.
 \begin{figure}[h!]
    \begin{center}
      \centerline{\includegraphics[scale=\imgscale]{figs/7_sbs-complete-cluster-setup}}
-     \caption{Step 5 -- Complete Cluster Setup.}
+     \caption{Complete Cluster Setup.}
      \label{fig:sbs-install-wizard-s5}
    \end{center}
  \end{figure}
 
 
 %------------------------------------------------------------------
-% Step 6: Test Cluster Setup
+% Test Cluster Setup
 %------------------------------------------------------------------
 
-\subsection{Step 6: Test Cluster Setup}
+\subsection{Test Cluster Setup}
 
-Step 6 is used to test the cluster setup.  It can either be run from
-within the wizard, or, as shown here, from manually launching a shell
-script at a \user{root} command prompt.  See the details in
+This step is used to test the cluster setup.  It can either be run
+from within the wizard, or, as shown here, from manually launching a
+shell script at a \user{root} command prompt.  See the details in
 Section~\ref{det:test-cluster}, page~\pageref{det:test-cluster}.
 
 \begin{figure}[h!]
   \begin{center}
     \centerline{
-      \includegraphics[scale=\imgscale]{figs/8_sbs-test-cluster-prompt}
-      \hspace{\imghskip}
-      \includegraphics[scale=\imgscale]{figs/8_sbs-test-cluster-root-tests}
-      }
-    \vspace{\imgvskip}
-    \centerline{
-      \includegraphics[scale=\imgscale]{figs/8_sbs-test-cluster-user-tests}
-      \hspace{\imghskip}
       \includegraphics[scale=\imgscale]{figs/8_test-cluster-complete}
       }
-    \caption{Step 6 -- Test the cluster.}
+    \caption{Test the cluster.}
     \label{fig:sbs-setup-test}
   \end{center}
 \end{figure}
@@ -392,7 +423,7 @@ In this example, we will add back \hostname{oscarnode2} into the
 cluster.  See the details of adding a client in
 Section~\ref{det:adding-clients}, page~\pageref{det:adding-clients}.
 
-\begin{figure}[h!]
+\begin{figure}[!h]
   \begin{center}
     \centerline{\includegraphics[scale=\imgscale]{figs/9a_sbs-add-node}}
     \caption{Add OSCAR Clients.}
@@ -400,37 +431,34 @@ Section~\ref{det:adding-clients}, page~\pageref{det:adding-clients}.
   \end{center}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[!hb]
   \begin{center}
     \centerline{
       \includegraphics[scale=\imgscale]{figs/9b_sbs-add-node-mksirange}
       \hspace{\imghskip}
       \includegraphics[scale=\imgscale]{figs/9c_sbs-add-node-success}
       }
-    \caption[Add Node step 1 -- Defining the clients.]{Add Node step 1
-      -- Defining the clients.  Note that you only define {\em new}
-      clients here (i.e., change the starting number, starting IP,
-      etc.).}
+    \caption{Add node / defining the clients.}
     \label{fig:sbs-add-node1-define-clients}
   \end{center}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[!t]
   \begin{center}
     \centerline{
       \includegraphics[scale=\imgscale]{figs/9d_sbs-add-node-mac1}
       \hspace{\imghskip}
       \includegraphics[scale=\imgscale]{figs/9e_sbs-add-node-mac2}
       }
-    \caption{Add Node step 2 -- Setting up networking for new client(s).}
+    \caption{Add node / setup networking.}
     \label{fig:sbs-add-node1-setup-network}
   \end{center}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[!b]
   \begin{center}
     \centerline{\includegraphics[scale=\imgscale]{figs/9f_sbs-add-node-complete}}
-    \caption{Add Node step 3 -- Complete Cluster Setup.}
+    \caption{Add node / complete cluster setup.}
     \label{fig:sbs-add-node1-cluster-setup}
   \end{center}
 \end{figure}

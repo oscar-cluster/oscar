@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.16 2002/11/16 19:24:16 jsquyres Exp $
+# $Id: Makefile.am,v 1.17 2002/11/17 18:09:27 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -50,19 +50,17 @@ FIG_FILES	= \
 # SBS (Screen-by-Screen) figures
 
 SBS_FILES	= \
-			 figs/0a_sbs-download.png \
 			 figs/0c_sbs-unpack.png \
+			 figs/1a_sbs-install-oscar.png \
+			 figs/1b_sbs-install-oscar2.png \
 			 figs/10a_sbs-del-node.png \
 			 figs/10b_sbs-del-node-partA.png \
 			 figs/10b_sbs-del-node-partB.png \
-			 figs/1a_sbs-install-oscar.png \
-			 figs/1b_sbs-install-oscar2.png \
+			 figs/install-server-pkgs-done.png \
 			 figs/2_sbs-oscar-wizard.png \
 			 figs/package-selection.png \
 			 figs/package-configuration.png \
 			 figs/package-configuration-switcher.png \
-			 figs/3a_sbs-wizard-step1.png \
-			 figs/3b_sbs-wizard-step1.png \
 			 figs/4a_sbs-build-image1.png \
 			 figs/4b_sbs-build-image2.png \
 			 figs/4c_sbs-build-image3.png \
@@ -82,9 +80,6 @@ SBS_FILES	= \
 			 figs/6j_sbs-client-rsync.png \
 			 figs/6k_sbs-rebootme.png \
 			 figs/7_sbs-complete-cluster-setup.png \
-			 figs/8_sbs-test-cluster-prompt.png \
-			 figs/8_sbs-test-cluster-root-tests.png \
-			 figs/8_sbs-test-cluster-user-tests.png \
 			 figs/8_test-cluster-complete.png \
 			 figs/9a_sbs-add-node.png \
 			 figs/9b_sbs-add-node-mksirange.png \
