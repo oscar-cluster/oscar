@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.11 2003/07/08 21:36:10 brechin Exp $
+      $Id: config.xml,v 1.12 2003/07/18 21:23:38 ngorsuch Exp $
       -->
 
   <name>mpich-p4</name>
@@ -24,7 +24,6 @@
   </version>
 
   <class>included</class>
-  <installable>1</installable>
 
   <summary>MPICH specifically packaged for OSCAR clusters</summary>
   <license>Freely distributable</license>

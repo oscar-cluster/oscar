@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.6 2002/11/04 23:14:20 jsquyres Exp $
+      $Id: config.xml,v 1.7 2003/07/18 21:23:37 ngorsuch Exp $
   -->
   <name>Disable Uncommon Client Node Services</name>
 
@@ -22,7 +22,6 @@
   </version>
 
   <class>included</class>
-  <installable>1</installable>
 
   <summary>Disable services on client nodes</summary>
   <license>Freely distributable</license>

@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.6 2003/07/17 22:22:41 brechin Exp $
+      $Id: config.xml,v 1.7 2003/07/18 21:23:38 ngorsuch Exp $
   -->
   <name>perl-Qt</name>
 
@@ -22,7 +22,6 @@
   </version>
 
   <class>core</class>
-  <installable>1</installable>
 
   <summary>Qt bindings for Perl</summary>
   <license>GPL</license>

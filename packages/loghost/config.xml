@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.5 2003/06/23 15:49:43 brechin Exp $
+      $Id: config.xml,v 1.6 2003/07/18 21:23:38 ngorsuch Exp $
       -->
 
   <name>loghost</name>
@@ -24,7 +24,6 @@
   </version>
 
   <class>included</class>
-  <installable>1</installable>
 
   <summary>Configures server to accept remote syslog entries</summary>
   <license>GPL</license>

@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.7 2003/06/23 15:49:43 brechin Exp $
+      $Id: config.xml,v 1.8 2003/07/18 21:23:38 ngorsuch Exp $
   -->
   <name>kernel_picker</name>
 
@@ -22,7 +22,6 @@
   </version>
 
   <class>included</class>
-  <installable>1</installable>
 
   <summary>A Perl script to substitute a kernel into an OSCAR (SIS) image.</summary>
   <license>GPL</license>
