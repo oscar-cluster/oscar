@@ -5,8 +5,8 @@
 	<version>
 		<major>0</major>
 		<minor>2</minor>
-		<subversion>5</subversion>
-		<release>1</release>
+		<subversion>5+1</subversion>
+		<release>2</release>
 		<epoch>1</epoch>
 	</version>
 
@@ -30,10 +30,9 @@
 	<description>A testing framework.</description>
 
 	<rpmlist>
-		<filter distribution="redhat" distribution_version="9"/>
+		<filter group="oscar_server"/>
 		<rpm>apitest</rpm>
 		<rpm>Twisted</rpm>
-		<rpm>Twisted-doc</rpm>
 		<rpm>elementtree</rpm>
 	</rpmlist>
 
