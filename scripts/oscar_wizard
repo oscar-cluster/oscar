@@ -12,6 +12,7 @@ use OSCAR::FrontPanel;
 use OSCAR::Distro;
 use OSCAR::DelNode;
 use OSCAR::AddNode;
+use OSCAR::Logger;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
@@ -117,6 +118,14 @@ sub build_oscar_clients {
     my $hostname = (uname)[1];
     my ($shorthostname,$domainname)  = split(/\./,$hostname,2);
 
+    oscar_log_section("Running step 3 of the OSCAR wizard");
+
+    # If the domainname is blank, stick in a default value
+
+    if (!$domainname) {
+	$domainname = "oscardomain";
+    }
+
     my %vars = (
                 imgname => "oscarimage",
                 basename => "oscarnode",
@@ -143,12 +152,14 @@ sub build_oscar_image {
 #   $disk_type = "ide" if ( grep ( /\/dev\/hd/, ( @df_lines ) ) );
     $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
 
-    
+    oscar_log_section("Running step 2 of the OSCAR wizard");
 
     my $arch = (uname)[4];
     $arch =~ s/i.86/i386/;
     my ($distroname, $distroversion) = which_distro('/tftpboot/rpm');
+    oscar_log_subsection("Step 2: Identified distro of clients: $distroname $distroversion");
     my $rpmlist = "$ENV{OSCAR_HOME}/oscarsamples/$distroname-$distroversion-$arch.rpmlist";
+    oscar_log_subsection("Step 2: Using RPM list: $rpmlist");
     
     # now we get the list of the client rpms that we want to install
     my @clientfiles = glob("$ENV{OSCAR_HOME}/packages/*/client.rpmlist");
@@ -180,8 +191,14 @@ sub build_oscar_image {
 sub run_tests {
     my ($window) = @_;
     $window->Busy(-recurse => 1);
-    print "Running tests...\n";
-    !system("cd ../testing && xterm -sl 500 -e ./test_cluster_as_root --wait &") or (carp($!), $window->Unbusy(), return undef);
+
+    oscar_log_section("Running step 6 of the OSCAR wizard");
+
+    my $cmd = "cd ../testing && xterm -sl 500 -e ./test_cluster_as_root --wait";
+    oscar_log_subsection("Step 6: Running tests: $cmd");
+    !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
+    oscar_log_subsection("Step 6: Successfully ran tests");
+    oscar_log_subsection("Step 6: Completed successfully");
     $window->Unbusy();
     return 1;
 }
@@ -189,28 +206,42 @@ sub run_tests {
 sub run_post_install {
     my ($window) = @_;
     $window->Busy(-recurse => 1);
-    print "Finalizing cluster setup...\n";
-    my $rc = system("./post_install");
+
+    oscar_log_section("Running step 5 of the OSCAR wizard");
+
+    my $cmd = "./post_install";
+    oscar_log_subsection("Step 5: Running post_install: $cmd");
+    my $rc = system($cmd);
     if($rc) {
         $window->Unbusy();
         error_window($window, "There was an error running the post install scripts, please check your logs.");
     } else {
+	oscar_log_subsection("Step 5: Successfully ran post_install");
         $window->Unbusy();
         done_window($window, "Cluster Setup Complete");
     }
+    oscar_log_subsection("Step 5: Completed successfully");
     return 1;
 }
 
 sub postaddclients {
     my ($vars) = @_;
-    print "Executing post_clients phase\n";
-    !system("./post_clients") or (carp($!), return undef);
+
+    my $cmd = "./post_clients";
+    oscar_log_subsection("Step 3: Running: $cmd");
+    !system($cmd) or (carp($!), return undef);
+    oscar_log_subsection("Step 3: Successfully ran: $cmd");
+    oscar_log_subsection("Step 3: Completed successfully");
     return 1;
 }
 
 sub postimagebuild {
     my ($vars) = @_;
-    print "Executing post_rpm_install phase";
-    !system("./post_rpm_install $$vars{imgname} $interface") or (carp($!), return undef);
+
+    my $cmd = "./post_rpm_install $$vars{imgname} $interface";
+    oscar_log_subsection("Step 2: Running: $cmd");
+    !system($cmd) or (carp($!), return undef);
+    oscar_log_subsection("Step 2: Successfully ran: $cmd");
+    oscar_log_subsection("Step 2: Completed successfully");
     return 1;
 }

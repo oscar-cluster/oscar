@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.9 2002/05/23 02:11:23 jsquyres Exp $
+#   $Id: FrontPanel.pm,v 1.10 2002/08/17 04:50:55 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ package OSCAR::FrontPanel;
 #                       Sean Dague <japh@us.ibm.com>
 
 use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
 use Net::Netmask;
 use vars qw($VERSION @EXPORT);
 use Tk;
@@ -28,9 +29,10 @@ use Carp;
 use SystemInstaller::Tk::Common;
 use File::Copy;
 use base qw(Exporter);
+use OSCAR::Logger;
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.9 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.10 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -40,6 +42,8 @@ my ($lambutton, $mpichbutton, $mpivalue);
 
 sub frontpanel_window {
     my ($parent, $vars) = @_;
+
+    oscar_log_section("Running step 1 of the OSCAR wizard");
 
     my $window = $parent->Toplevel;
     $window->title("OSCAR Server Prepartation");
@@ -81,7 +85,9 @@ sub server_prep {
     my $vars = shift;
     my $window = shift;
     $window->Busy(-recurse => 1);
+
     my $cmd = "./server_prep $$vars{interface}";
+    oscar_log_subsection("Step 1: Running: $cmd");
     open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
                               error_window($window,"Couldn't run command $cmd"),
                               $window->Unbusy(), return undef);
@@ -95,11 +101,16 @@ sub server_prep {
     close(OUTPUT) or (carp("Couldn't run command $cmd"), 
                       error_window($window,"Couldn't run command $cmd"),
                       $window->Unbusy(), return undef);
+    oscar_log_subsection("Step 1: Successfully ran command");
 
-    !system("bash -c 'switcher mpi --add-attr default $mpivalue --force --system'") or
+    $cmd = "bash -c 'switcher mpi --add-attr default $mpivalue --force --system'";
+    oscar_log_subsection("Step 1: Running: $cmd");
+    !system("$cmd") or
         (carp("Couldn't run command $cmd"),
          error_window($window,"Couldn't run command $cmd"),
          $window->Unbusy(), return undef);
+    oscar_log_subsection("Step 1: Successfully ran command");
+    oscar_log_subsection("Step 1: Completed successfully");
 
     done_window($window,"Successfully prepared server for OSCAR installation"),
     $window->Unbusy();

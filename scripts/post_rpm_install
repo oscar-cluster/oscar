@@ -30,6 +30,7 @@ use File::Basename;
 use AppConfig;
 use OSCAR::Network;
 use OSCAR::Package;
+use OSCAR::Logger;
 use Cwd;
 
 my $imagename = shift or croak("No image name specified!"); 
@@ -41,10 +42,13 @@ my $targetdir = $config->default_imagedir . "/$imagename";
 
 if(!-d $targetdir) {croak("The directory $targetdir doesn't exist");}
 
+oscar_log_subsection("post_rpm_install: Syncing system files");
 sync_system_files($targetdir) or croak("Couldn't sync system files");
 
+oscar_log_subsection("post_rpm_install: Syncing user files");
 sync_user_files($targetdir) or croak("Couldn't sync user files");
 
+oscar_log_subsection("post_rpm_install: Running ssh setup");
 !system("./ssh_install $targetdir") or croak("Couldn't generate ssh keys");
 
 # Here we run all the post_rpm_install scripts
@@ -53,6 +57,7 @@ my @pkgs = list_pkg();
 
 my $return = 0;
 
+oscar_log_subsection("post_rpm_install: Running OSCAR package post_rpm_install scripts");
 foreach my $pkg (@pkgs) {
     if(!run_pkg_script_chroot($pkg,$targetdir)) {
        carp("Couldn't run post_rpm_install for $pkg");
