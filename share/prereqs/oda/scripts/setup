@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.6 2003/10/15 15:02:42 giraldeau Exp $
+# $Id: setup,v 1.7 2003/12/04 03:57:11 ngorsuch Exp $
 #
 
 #use strict;
@@ -37,66 +37,79 @@ my ($distro_name, $distro_version) = which_distro_server();
 
 my $mysqld;
 
-if ($distro_name eq "redhat" || $distro_name eq "rhas" ) {
+if ( $distro_name eq "redhat" || $distro_name eq "rhas" ) {
     @wanted_rpms = qw( mysql
-		perl-DBD-MySQL
-		perl-DBI
-		perl-CGI
-		mysql-server
-		oda );
+		       perl-DBD-MySQL
+		       perl-DBI
+		       perl-CGI
+		       mysql-server
+		       oda );
     $mysqld      = 'mysqld';
 }
 
-if ($distro_name eq "suse") {
+elsif ( $distro_name eq "fedora" ) {
     @wanted_rpms = qw( mysql
-		mysql-client
-		perl-Msql-Mysql-modules
-		perl-DBI
-		perl-Data-ShowTable
-		mysql-shared
-		oda );
+		       perl-DBD-MySQL
+		       perl-DBI
+		       mysql-server
+		       oda );
+    $mysqld      = 'mysqld';
+}
+
+elsif ( $distro_name eq "suse") {
+    @wanted_rpms = qw( mysql
+		       mysql-client
+		       perl-Msql-Mysql-modules
+		       perl-DBI
+		       perl-Data-ShowTable
+		       mysql-shared
+		       oda );
     $mysqld      = 'mysql';
 }
 
-
-elsif ($distro_name eq "mandrake") {
-  if ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.2 ) {
-	  print "\n\nCoucou Mandrake 9.2!\n\n";
-    @wanted_rpms = qw( MySQL
-		       MySQL-client
-                       perl-DBI
-    		       perl-Mysql
-		       perl-Data-ShowTable
-		       perl-ExtUtils-PerlPP
-		       oda
-		       MySQL-common
-		       libmysql12
-		       perl-CGI );
-  }
-  elsif ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.1 ) {
-	  print "\n\nCoucou Mandrake 9.1!\n\n";
-    @wanted_rpms = qw( MySQL
-		       MySQL-client
-		       libmysql10
-		       perl-DBI
-    		       perl-Mysql
-		       perl-ExtUtils-PerlPP
-		       oda
-		       MySQL-common
-		       libmysql12
-		       perl-CGI );
-  } else {
-	  print "\n\nCoucou Mandrake! Autre\n\n";
-    @wanted_rpms = qw( MySQL
-		MySQL-client
-		libmysql10
-		perl-DBI
-		perl-CGI
-		perl-Mysql
-		perl-ExtUtils-PerlPP
-		oda );
-  }
+elsif ( $distro_name eq "mandrake") {
+    if ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.2 ) {
+	print "\n\nCoucou Mandrake 9.2!\n\n";
+	@wanted_rpms = qw( MySQL
+			   MySQL-client
+			   perl-DBI
+			   perl-Mysql
+			   perl-Data-ShowTable
+			   perl-ExtUtils-PerlPP
+			   oda
+			   MySQL-common
+			   libmysql12
+			   perl-CGI );
+    }
+    elsif ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.1 ) {
+	print "\n\nCoucou Mandrake 9.1!\n\n";
+	@wanted_rpms = qw( MySQL
+			   MySQL-client
+			   libmysql10
+			   perl-DBI
+			   perl-Mysql
+			   perl-ExtUtils-PerlPP
+			   oda
+			   MySQL-common
+			   libmysql12
+			   perl-CGI );
+    } else {
+	print "\n\nCoucou Mandrake! Autre\n\n";
+	@wanted_rpms = qw( MySQL
+			   MySQL-client
+			   libmysql10
+			   perl-DBI
+			   perl-CGI
+			   perl-Mysql
+			   perl-ExtUtils-PerlPP
+			   oda );
+    }
     $mysqld      = 'mysql';
+}
+
+else {
+    print "\n\nCannot determine distribution and version!!!!\nCannot determine oda rpms to install!!!!\n\n";
+    exit 1;
 }
 
 # read in the file names in this package's RPMS directory
