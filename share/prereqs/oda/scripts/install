@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.8 2003/06/22 04:00:59 ngorsuch Exp $
+# $Id: install,v 1.9 2003/06/24 15:12:43 brechin Exp $
 #
 
 #use strict;
@@ -41,6 +41,7 @@ if ($distro_name eq "redhat") {
 		perl-DBI
 		mysql-server
 		oda );
+    my $mysqld   = 'mysqld';
 }
 
 if ($distro_name eq "SuSE") {
@@ -51,6 +52,7 @@ if ($distro_name eq "SuSE") {
 		perl-Data-ShowTable
 		mysql-shared
 		oda );
+    my $mysqld   = 'mysql';
     my $src = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml.SuSE";
     my $dest = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml";
     copy($src, $dest) || croak("Could not copy $src to $dest");
@@ -66,6 +68,7 @@ elsif ($distro_name eq "mandrake") {
 		perl-Mysql
 		perl-ExtUtils-PerlPP
 		oda );
+    my $mysql    = 'mysql';
     # FIXME (bligneri)
     # Will just copy the XML file.
     # Should be an argument in the XML file.
@@ -102,5 +105,8 @@ install_rpms(@wanted_rpms) or
     croak("ODA is giving up and will not be installed");
 
 # Exit properly so that the exit status gets propogated
+
+oscar_log_subsection("Restarting MySQL server $mysqld");
+system("/etc/init.d/$mysqld restart") or croak("Couldn't restart $mysqld");
 
 exit(0);
