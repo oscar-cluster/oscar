@@ -81,25 +81,25 @@ cd $SSHCFGDIR || ( echo cannot cd to $SSHCFGDIR ; exit 1 )
 file=ssh_config
 echo ; echo checking configuration file $file ...
 
-for wantedyes in ; do
-    if [ yes`grep "^[[:space:]]*$wantedyes[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "yesyes" ] ; then
-	echo turning on $wantedyes parameter in configuration file $file ...
-	if [ ! -r $file.pre_ssh_install ] ; then
-	    if [ -r $file ] ; then
-		echo cp -fp $file $file.pre_ssh_install
-		cp -fp $file $file.pre_ssh_install || exit 1
-	    fi
-	fi
-        if grep "^[[:space:]]*$wantedyes[[:space:]]" $file 2>/dev/null ; then
-	    echo ... by modifying existing line\(s\)
-	    sed "s,$wantedyes.*\$,$wantedyes yes,g" <$file >$file.tmp
-	    mv $file.tmp $file || exit 1
-	else
-	    echo ... by adding a line
-	    echo "$wantedyes yes" >> $file || exit 1
-        fi
-    fi
-done
+#for wantedyes in ; do
+#    if [ yes`grep "^[[:space:]]*$wantedyes[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "yesyes" ] ; then
+#	echo turning on $wantedyes parameter in configuration file $file ...
+#	if [ ! -r $file.pre_ssh_install ] ; then
+#	    if [ -r $file ] ; then
+#		echo cp -fp $file $file.pre_ssh_install
+#		cp -fp $file $file.pre_ssh_install || exit 1
+#	    fi
+#	fi
+#        if grep "^[[:space:]]*$wantedyes[[:space:]]" $file 2>/dev/null ; then
+#	    echo ... by modifying existing line\(s\)
+#	    sed "s,$wantedyes.*\$,$wantedyes yes,g" <$file >$file.tmp
+#	    mv $file.tmp $file || exit 1
+#	else
+#	    echo ... by adding a line
+#	    echo "$wantedyes yes" >> $file || exit 1
+#        fi
+#    fi
+#done
 for wantedno in ForwardX11 StrictHostKeyChecking UsePrivilegedPort ; do
     if [ no`grep "^[[:space:]]*$wantedno[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "nono" ] ; then
 	echo turning off $wantedno parameter in configuration file $file ...
