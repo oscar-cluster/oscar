@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'OpderDownloadInfo.ui'
 #
-# Created: Wed Jul 30 10:12:49 2003
+# Created: Tue Oct 21 16:40:41 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -64,13 +64,13 @@ sub NEW
     {
         setName("OpderDownloadInfo");
     }
-    resize(146,162);
+    resize(144,164);
     setCursor(Qt::Cursor(0));
     setCaption(trUtf8("Wait..."));
 
     my $OpderDownloadInfoLayout = Qt::GridLayout(this, 1, 1, 11, 6, '$OpderDownloadInfoLayout');
 
-    my $Layout15 = Qt::VBoxLayout(undef, 0, 6, '$Layout15');
+    my $layout7 = Qt::VBoxLayout(undef, 11, 6, '$layout7');
 
     downloadLabel = Qt::Label(this, "downloadLabel");
     downloadLabel_font = Qt::Font(downloadLabel->font);
@@ -83,13 +83,15 @@ sub NEW
     "Package\n" .
     "Information..."));
     downloadLabel->setAlignment(int(&Qt::Label::AlignCenter));
-    $Layout15->addWidget(downloadLabel);
+    $layout7->addWidget(downloadLabel);
 
     fiveBalls = Qt::Label(this, "fiveBalls");
+    fiveBalls->setSizePolicy(Qt::SizePolicy(1, 0, 0, 0, fiveBalls->sizePolicy()->hasHeightForWidth()));
     fiveBalls->setCursor(Qt::Cursor(0));
     fiveBalls->setPixmap(uic_load_pixmap_OpderDownloadInfo("ball1.png"));
-    fiveBalls->setScaledContents(1);
-    $Layout15->addWidget(fiveBalls);
+    fiveBalls->setScaledContents(0);
+    fiveBalls->setAlignment(int(&Qt::Label::AlignCenter));
+    $layout7->addWidget(fiveBalls);
 
     cancelButton = Qt::PushButton(this, "cancelButton");
     cancelButton_font = Qt::Font(cancelButton->font);
@@ -97,9 +99,9 @@ sub NEW
     cancelButton_font->setPointSize(14);
     cancelButton->setFont(cancelButton_font);
     cancelButton->setText(trUtf8("&Cancel"));
-    $Layout15->addWidget(cancelButton);
+    $layout7->addWidget(cancelButton);
 
-    $OpderDownloadInfoLayout->addLayout($Layout15, 0, 0);
+    $OpderDownloadInfoLayout->addLayout($layout7, 0, 0);
 
     Qt::Object::connect(cancelButton, SIGNAL "clicked()", this, SLOT "cancelButton_clicked()");
 
@@ -223,8 +225,7 @@ sub advanceBallTimer
     {
       $ballNumber++;
       $ballNumber = 1 if ($ballNumber > 5);
-      fiveBalls->setPixmap(uic_load_pixmap_OpderDownloadInfo(
-                           "ball$ballNumber.png"));
+      fiveBalls->setPixmap(uic_load_pixmap_OpderDownloadInfo("ball$ballNumber.png"));
     }
 
 }
@@ -242,14 +243,39 @@ sub refreshReadPackages
 
   return if ($readPhase);  # If we are already reading, don't do it again
 
-  my @args = ($opdcmd,'--parsable');
-  $readProc->setArguments(\@args);
-  @readPackages = ();
-  $readPhase = 1;
-  $readString = "";
-  if (!$readProc->start())
-    { 
-      Carp::carp("Couldn't run 'opd --parsable'");
+  # If there are any user-specified repository URLs, add them to
+  # the hash of repositories to be processed.
+  my $text = parent()->child('addRepositoryForm')->urlText;
+  if (length($text) > 0)
+    {
+      foreach my $url (split /\n/, $text)
+        { # User-specified repositories don't have a 'name'
+          $repositories{$url} = "User Specified";
+        }
+    }
+
+  # Check to see if we should use ONLY the user-specified repositories
+  if (parent()->child('addRepositoryForm')->useRepositoriesExclusively)
+    {
+      if (length($text) > 0)
+        {
+          $readPhase = 2;
+          $readString = "";
+          @readPackages = ();
+          processRepository();
+        }
+    }
+  else
+    {
+      my @args = ($opdcmd,'--parsable');
+      $readProc->setArguments(\@args);
+      $readPhase = 1;
+      $readString = "";
+      @readPackages = ();
+      if (!$readProc->start())
+        { 
+          Carp::carp("Couldn't run 'opd --parsable'");
+        }
     }
 
 }
