@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.11 2003/10/15 15:02:42 giraldeau Exp $
+      $Id: config.xml,v 1.12 2003/11/04 02:58:19 naughtont Exp $
   -->
   <name>c3</name>
 
@@ -17,7 +17,7 @@
     <major>4</major>
     <minor>0</minor>
     <subversion>1</subversion>
-    <release>1</release>
+    <release>2</release>
     <epoch>1</epoch>
   </version>
 
@@ -54,5 +54,6 @@ tasks on a cluster.</description>
   <rpmlist>
       <filter group="oscar_clients"/>
       <rpm>c3-ckillnode</rpm>
+      <rpm>c3-c3cmd-filter</rpm>
   </rpmlist>
 </oscar>
