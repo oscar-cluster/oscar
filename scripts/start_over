@@ -114,7 +114,7 @@ use Carp;
 # and a list of all the rpm names corresponding to the non-source rpm files.
 
 print "Searching for non-source rpm files in $oscar_home ... ";
-my @oscar_rpm_paths = `find $oscar_home/* -name '*.rpm'`;
+my @oscar_rpm_paths = `find $oscar_home/* /var/lib/oscar/* -name '*.rpm'`;
 chomp @oscar_rpm_paths;
 @oscar_rpm_paths = grep( !/\.src\.rpm$/, @oscar_rpm_paths );
 @oscar_rpm_paths = sort_uniq( @oscar_rpm_paths );
