@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl 
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -474,7 +474,6 @@ if ( ! defined $xml_ref ) {
     $faked_xml{summary} = "Not provided";
     $xml_ref = \%faked_xml;
 }
-#$options{debug}=1;
 if ( $options{debug} ) {
     print "$0: xml_ref:\n";
     print Dumper($xml_ref);
@@ -1375,6 +1374,8 @@ if ( ! oda::read_records( \%options,
 	my %fields = ();
 	$packages_table_fields_ref = \%fields;
     }
+    print_hash( "", "$0: packages_table_fields_ref", $packages_table_fields_ref )
+	if $options{debug};
     foreach my $field_name ( keys %$packages_table_fields_ref ) {
 	my $field_information_ref = $$packages_table_fields_ref{$field_name};
 	$package_modification_field_values{$field_name} = 
@@ -1649,12 +1650,16 @@ foreach my $shortcut ( sort keys %oda_shortcuts ) {
 # and find the numeric package id number of this package
 my %table_fields = ();
 my @wanted_fields = ( "id" );
+#$options{verbose}=1;
+#$options{debug}=1;
 my $package_names_to_ids_hash_ref =
     database_read_table_fields( "packages",
 				\@wanted_fields,
 				undef,
 				"name",
-				1 );
+				1,
+				$options{verbose},
+				$options{debug} );
 if ( $options{debug} ) {
     print "$0: package_names_to_ids_hash_ref:\n";
     print Dumper( $package_names_to_ids_hash_ref );
