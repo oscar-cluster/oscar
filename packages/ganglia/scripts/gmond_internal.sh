@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_internal.sh,v 1.5 2002/08/22 09:14:09 sad Exp $
+# $Id: gmond_internal.sh,v 1.6 2002/08/23 21:17:12 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 internal_interface=${$OSCAR_HEAD_INTERNAL_INTERFACE:?"undefined!"}
 
 if [ -f /etc/init.d/gmond ]; then
-    sed "s/daemon \$GMOND/daemon \$GMOND -i$OSCAR_HEAD_INTERNAL_INTERFACE/" < /etc/init.d/gmond > /tmp/gmond.new
+    sed "s/daemon \$GMOND$/daemon \$GMOND -i$OSCAR_HEAD_INTERNAL_INTERFACE/" < /etc/init.d/gmond > /tmp/gmond.new
     mv /etc/init.d/gmond /etc/init.d/gmond.orig
     mv /tmp/gmond.new /etc/init.d/gmond
     chmod 755 /etc/init.d/gmond
