@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.6 2002/05/08 14:16:25 sdague Exp $
+#   $Id: FrontPanel.pm,v 1.7 2002/05/09 22:15:42 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ use File::Copy;
 use base qw(Exporter);
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -96,7 +96,7 @@ sub server_prep {
                       error_window($window,"Couldn't run command $cmd"),
                       $window->Unbusy(), return undef);
 
-    !system("switcher mpi --add-attr default $mpivalue --force --system") or
+    !system("bash -c 'switcher mpi --add-attr default $mpivalue --force --system'") or
         (carp("Couldn't run command $cmd"),
          error_window($window,"Couldn't run command $cmd"),
          $window->Unbusy(), return undef);
