@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.33 2002/11/25 04:07:19 bligneri Exp $
+# $Id: configure.in,v 1.34 2002/11/25 11:52:01 bligneri Exp $
 #
 # $HEADER$
 #
@@ -62,7 +62,7 @@ OSCAR_CHECK_PROG(LATEX2HTML, latex2html)
 
 # Option for the HTML documentation
 
-LATEX2HTML_OPTIONS="--split=4 -local_icons -long_titles 3 -auto_navigation \
+LATEX2HTML_OPTIONS="--split=6 -local_icons -long_titles 3 -auto_navigation \
 --html_version=4.0 -show_section_numbers"
 
 # Need to put these here because automake < 1.6 doesn't recognize
