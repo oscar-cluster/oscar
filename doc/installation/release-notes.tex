@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.39 2003/08/19 22:29:50 naughtont Exp $
+% $Id: release-notes.tex,v 1.40 2003/11/21 07:24:00 bernardli Exp $
 %
 
 \section{Release Notes}
@@ -80,8 +80,10 @@ The following release notes apply to OSCAR version \oscarversion.
   
 \item The OSCAR installer will install the MySQL package on the server
   node if it is not already installed.  You will be prompted to enter a
-  password to used for the MySQL database.
-  
+\begchange
+  password to be used for the MySQL database.
+\endchange  
+
 \item The OSCAR installer GUI provides little protection for user
   mistakes.  If the user executes steps out of order, or provides
   erroneous input, Bad Things may happen.  Users are strongly
@@ -240,7 +242,7 @@ related to C3 or Python2 this may solve the issue.
 
 IA64 support was removed for the \oscarversion\ release of OSCAR due to
 timing problems and the significant differences between current IA32
-distributions and the freely available IA64 distributions.  IA64 suppor is
+distributions and the freely available IA64 distributions.  IA64 support is
 fully expected to return in the next release.
 
 %TJN: Uncomment when ia64 support returns (and update things!) ;)
