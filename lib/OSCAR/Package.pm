@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.20 2002/10/25 12:47:37 jsquyres Exp $
+#   $Id: Package.pm,v 1.21 2002/10/25 14:18:13 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,8 +32,8 @@ use File::Copy;
 use XML::Simple;
 use Carp;
 
-@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist distro_rpmlist install_rpms read_all_pkg_config_xml);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.20 $ =~ /(\d+)\.(\d+)/);
+@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist distro_rpmlist install_rpms pkg_config_xml);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.21 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -68,11 +68,8 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
 #
 # list_pkg - this returns a list of packages.
 #
-# you may specify "core" or "noncore" as the first argument to get a
-# list of core or noncore packages instead of all packages.  Basic
-# theory, if you want core, return the core list.  If you want
-# something else, read the package directory, if 'noncore' through
-# away core packages as you hit them.
+# You may specify "core", "noncore", or "all" as the first argument to
+# get a list of core, noncore, or all packages (respectively).
 #
 
 sub list_pkg {
@@ -99,7 +96,9 @@ sub list_pkg {
 	
 	# If it's a valid package, see if it's the right kind or not
 
-	if ($type eq "core") {
+	if ($type eq "all") {
+	    push @packages_to_return, $pkg;
+	} elsif ($type eq "core") {
 	    if ($PACKAGE_CACHE->{$pkg}->{class} eq "core") {
 		push @packages_to_return, $pkg;
 	    }
@@ -368,6 +367,16 @@ sub server_version_goodenough {
     }
 }
 
+sub pkg_config_xml {
+    # If we haven't read in all the package config.xml files, do so.
+
+    read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
+
+    # Return the reference to it
+
+    $PACKAGE_CACHE;
+}
+
 ###########################################################################
 
 # Return an new, empty XML structure with most fields blank.  However,
@@ -427,6 +436,8 @@ sub read_all_pkg_config_xml {
 	    if (-f $config) {
 		oscar_log_subsection("Reading $config");
 		$PACKAGE_CACHE->{$pkg} = $xs->XMLin($config);
+		$PACKAGE_CACHE->{$pkg}->{installable} = 1
+		    if (!$PACKAGE_CACHE->{$pkg}->{installable});
 	    } else {
 		oscar_log_subsection("Got empty XML config for $pkg");
 		$PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
