@@ -15,6 +15,7 @@ use OSCAR::AddNode;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
+use SystemInstaller::Common;
 use POSIX;
 use Carp;
 use vars qw($config);
@@ -186,8 +187,14 @@ sub run_post_install {
     my ($window) = @_;
     $window->Busy(-recurse => 1);
     print "Finalizing cluster setup...\n";
-    !system("./post_install") or (carp($!), $window->Unbusy(), return undef);
-    $window->Unbusy();
+    my $rc = system("./post_install");
+    if($rc) {
+        $window->Unbusy();
+        error_window($window, "There was an error running the post install scripts, please check your logs.");
+    } else {
+        $window->Unbusy();
+        done_window($window, "Cluster Setup Complete");
+    }
     return 1;
 }
 

@@ -47,7 +47,10 @@ do_synctime();
 
 if($return) {
     carp("Some of the post install scripts failed, please check your logs for more info");
+} else {
+    print "Cluster setup complete!\n";
 }
+
 exit($return);
 
 
