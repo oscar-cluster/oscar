@@ -1,0 +1,29 @@
+% -*- latex -*-
+%
+% $Id: install.tex,v 1.1 2002/07/31 05:38:55 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
+\subsection{Disabling Services}
+
+The \cmd{disable-services} package disables the following services on
+the client nodes:
+
+\begin{itemize}
+\item Incoming mail service: the \cmd{sendmail}, \cmd{exim}, and
+  \cmd{postfix} daemons are disabled.  This prevents incoming mail
+  from being received on the nodes.  Note that outgoing mail is not
+  disabled; most outgoing mail is sent immediately.  If there is some
+  transient failure and the mail is not sent immediately, it will go
+  to the mail service's queue.  A \user{root} crontab is installed
+  that runs every hour to trigger the queue in case this happens.
+
+\item Kudzu: the Kudzu service looks for new hardware, usually upon
+  boot up.  At boot time, this process takes over 30 seconds.  It is
+  disabled in order to speed up the booting of individual nodes.
+
+\end{itemize}
+
+Note that these services are not uninstalled -- they are simply
+disabled at boot time.
