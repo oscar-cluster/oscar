@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.4 2002/04/28 14:44:41 sdague Exp $
+#   $Id: FrontPanel.pm,v 1.5 2002/05/08 12:40:30 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ use File::Copy;
 use base qw(Exporter);
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -68,7 +68,7 @@ sub frontpanel_window {
     $setupbutton->grid("-",-sticky => "ew");
     $exitbutton->grid("-",-sticky => "ew");
     # set lam as the default
-    $mpivalue = "lam";
+    $mpivalue = "lam-6.5.6";
 }
 
 sub set_mpi {
