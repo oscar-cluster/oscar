@@ -69,15 +69,14 @@ sub make_fix_table_fields{
 
     # get a list of the tables and fields
     # that are already in the database
-    my %existing_tables_fields = ();
     my @error_strings = ();
-    oda::list_tables_fields( $options_ref,
-			     \%existing_tables_fields,
-			     \@error_strings );
+    my $existing_tables_fields_ref = 
+      oda::list_tables_fields( $options_ref,
+			       \@error_strings );
     warn shift @error_strings while @error_strings;
 
     # check if the table in question exists
-    if ( ! exists $existing_tables_fields{ $table_name } ) {
+    if ( ! exists $$existing_tables_fields_ref{ $table_name } ) {
 	print "Creating database table $table_name\n";
 	print_hash( "", "in make_fix_table_fields adding table <$table_name> fields=",
 		    $fields_params_ref ) if $$options_ref{debug};
@@ -92,10 +91,13 @@ sub make_fix_table_fields{
 	    warn shift @error_strings while @error_strings;
 	    exit 1;
 	  }
-	my %table_hash = ();
-	$existing_tables_fields{ $table_name } = \%table_hash;
+#	$existing_tables_fields_ref = 
+#	  oda::list_tables_fields( $options_ref,
+#				   \@error_strings );
+#	my %table_hash = ();
+#	$$existing_tables_fields{ $table_name } = \%table_hash;
     } else {
-	my $table_hash_ref = $existing_tables_fields{ $table_name };
+	my $table_hash_ref = $$existing_tables_fields_ref{ $table_name };
 	foreach my $field_name ( sort keys %$fields_params_ref ) {
 	    if ( ! exists $$table_hash_ref{ $field_name } ) {
 		print "Adding to database table $table_name field $field_name" .
