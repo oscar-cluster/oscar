@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.30 2002/10/29 05:28:02 jsquyres Exp $
+#   $Id: Package.pm,v 1.31 2002/10/30 17:38:58 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.30 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.31 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -48,6 +48,7 @@ my $PACKAGE_CACHE = undef;
 my $xs = new XML::Simple(keyattr => {}, forcearray => 
 			 [ "site", "uri", 
 			   "rpm",
+			   "shortcut", 
 			   "requires", "conflicts", "provides" ]);
 
 # The list of phases that are valid for package install.  For more
