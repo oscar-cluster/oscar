@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.5 2003/07/23 16:13:02 brechin Exp $
+# $Id: setup,v 1.6 2003/10/15 15:02:42 giraldeau Exp $
 #
 
 #use strict;
@@ -58,14 +58,35 @@ if ($distro_name eq "suse") {
     $mysqld      = 'mysql';
 }
 
-# If we're on Mandrake, abort.  ODA will not be installed.
 
 elsif ($distro_name eq "mandrake") {
-  if ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.1 ) {
-    @wanted_rpms = qw( MySQL MySQL-client libmysql10 perl-DBI
-    		       perl-Mysql perl-ExtUtils-PerlPP oda
-		       MySQL-common libmysql12 perl-CGI );
+  if ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.2 ) {
+	  print "\n\nCoucou Mandrake 9.2!\n\n";
+    @wanted_rpms = qw( MySQL
+		       MySQL-client
+                       perl-DBI
+    		       perl-Mysql
+		       perl-Data-ShowTable
+		       perl-ExtUtils-PerlPP
+		       oda
+		       MySQL-common
+		       libmysql12
+		       perl-CGI );
+  }
+  elsif ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.1 ) {
+	  print "\n\nCoucou Mandrake 9.1!\n\n";
+    @wanted_rpms = qw( MySQL
+		       MySQL-client
+		       libmysql10
+		       perl-DBI
+    		       perl-Mysql
+		       perl-ExtUtils-PerlPP
+		       oda
+		       MySQL-common
+		       libmysql12
+		       perl-CGI );
   } else {
+	  print "\n\nCoucou Mandrake! Autre\n\n";
     @wanted_rpms = qw( MySQL
 		MySQL-client
 		libmysql10

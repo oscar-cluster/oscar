@@ -53,7 +53,10 @@ if ( system("rpm -q perl-Tk >/dev/null") != 0  ) {
       }
     }
     if ( $distn eq 'mandrake' ) {
-      if ( $distv eq '9.1' ) {
+      if ( $distv eq '9.2' ) {
+	      #MDK9.2
+	@ptkrpms = qw( perl-Tk perl-PerlIO-gzip );
+      }elsif ( $distv eq '9.1' ) {
 	      #MDK9.1
         @ptkrpms = qw( perl-Tk perl-PerlIO-gzip );
       } else { 
