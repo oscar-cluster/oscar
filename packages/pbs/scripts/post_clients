@@ -15,40 +15,31 @@
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #   post_clients for pbs
-#                        generates pbs config files from clamdr entries
 
 use strict;
 use Carp;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 
-# Update the server's nodes file (optionally for only one image).
-
-print "...updating pbs_server nodes file\n";
-
-my $nodes_file = "/usr/spool/PBS/server_priv/nodes";
-
-open(NODES, ">$nodes_file") or croak("config_server: could not open PBS server's nodes file\n");
-
-my %nodes = get_machine_listing();
-
-my $TOT_NODES = 0;
-my $TOT_NP = 0;
-
-foreach my $node (sort keys %nodes) {
-    if($nodes{$node}->{NUMPROC}) {
-        $TOT_NP += $nodes{$node}->{NUMPROC};
-        $TOT_NODES++;
-        print NODES "$nodes{$node}->{HOST} np=$nodes{$node}->{NUMPROC}\n";
-    } else {
-        $TOT_NP++;
-        $TOT_NODES++;
-        print NODES "$nodes{$node}->{HOST}\n";
-    }
+################################################################
+#  Check to see if 'maui' is running.  If not, then start it.  #
+################################################################
+sub startMaui
+{
+  open(CMD,"/sbin/service maui status |");
+  my $result = <CMD>;
+  close(CMD);
+  system('/sbin/service maui start')
+    unless ($result =~ /is running/);
 }
 
-close(NODES);
 
+
+########################
+#  BEGIN MAIN PROGRAM  #
+########################
+
+startMaui();
 print "...updating xpbsmonrc file\n";
 my $xpbsmonrc = "/usr/local/pbs/lib/xpbsmon/xpbsmonrc";
 open (RCFILE, "+<$xpbsmonrc") or croak("Error:  Couldn't open $xpbsmonrc.\n");
