@@ -3,16 +3,19 @@ This is the Ganglia package for OSCAR Linux clusters.
 This tarball should be expanded in the OSCAR distribution tree under
 the directory "oscar-<version>/packages/".  After that, you'll have a
 directory named oscar-<version>/packages/ganglia/, with all the
-Ganglia files in it.
+Ganglia files in it. If this is done prior to the start of the OSCAR
+install process the packages will be picked up by the OSCAR install
+suite (SIS) and be present on the resulting installed cluster head
+and client nodes.
 
------
-
-There are some known issues with this release of Ganglia:
-
-- Ganglia may not work reliably on all platforms, and/or may cause
-  failures during the OSCAR installation process.  If this is the
-  case, simply remove the ganglia package directory from the OSCAR
-  tree and re-run the OSCAR installer.
+WARNING: Ganglia is heavily based around TCP/IP Multicast protocol.
+(like it won''t work without a working multicast protocol stack).
+Fortunately the multicast support in Linux is excellent. Unfortunately
+the quality of the multicast support built into various network hubs,
+switches, routers and etc. can be hit or miss. What this means in practice
+is that you may or may not see some unusual issues with the ganglia
+packages once they are up and running. They can include all or none of
+the following:
 
 - Sometimes after installation the compute nodes are marked "dead"
   when they are actually available, or after rebooting/adding a node.
@@ -24,6 +27,24 @@ There are some known issues with this release of Ganglia:
   Running the command "service gmond restart" as root on the affected
   node(s) usually fixes the problem.
 
+- Even though the gmond daemon is running on all of the nodes (head
+  and client nodes) you may only see the head node in the reported stats
+  when pointing a web browser at the ganglia monitor web pages
+  (http://localhost.head.node/ganglia). This means the multicast protocol
+  may be blocked by the network hardware between the head node and the rest
+  of the cluster. If you see this please check to make sure mutlicast
+  is turned on in the configuration of your network hardware.
+
+Feel free to post such problems to the oscar-users mailing list and we
+will attempt to assist you in diagnosing the problem. However at some point
+in that diagnosis process we may be reduced to telling you to "get another
+brand of hub/switch/router"  Just a guess approximately 95% of the various
+network hubs/switches/routers do work fine but there is always the chance
+you could be part of that lucky 5%  :-)
+
+
+Additional issues include:
+
 - Mandrake 8.2 users need to install the following RPM on the server
   node before running the install_cluster script:
 
@@ -31,11 +52,44 @@ There are some known issues with this release of Ganglia:
 
   This RPM can be found in the directory packages/ganglia/extras/.
   This RPM is *not* automatically installed by OSCAR.
+  The reason for this is that the majority of the oscar software is
+  built on various RedHat systems and RedHat ships with libpng.so.2
+  but Mandrake does not.
 
 - After installation, the Ganglia output can be found by pointing your
   web browser to (on the head node):
 
         http://localhost/ganglia/
+
+- There are also two rpms included here that provide command line access
+  to the monitoring stats data stream. As detailed in the ganglia-user.pdf
+  doc this enables the user to build scripts around access to this data
+  stream. These two rpms are not installed by default with the rest of the
+  ganglia package. If you would like to use this tool it can be installed
+  in two different ways. Prior to starting the install of the OSCAR tool
+  suite the server.rpmlist in packages/ganglia/ can have the following two
+  lines added to it:
+
+	PyXML-oscar
+	ganglia-python-oscar
+
+  Then the ganglia command line tools will get installed on the server along
+  with the rest of the ganglia packages by the OSCAR installation wizard
+  system (SIS).
+
+  Alternatively after the cluster is installed and functioning the cluster
+  administrator can install the two additional rpms on the head node by hand.
+
+	rpm -ivh PyXML-oscar-0.7.1-7.i386.rpm ganglia-python-oscar-2.0-5.noarch.rpm
+
+  for the i386 platform or
+
+	rpm -ivh PyXML-oscar-0.7.1-7.ia64.rpm ganglia-python-oscar-2.0-5.noarch.rpm
+
+  for ia64 (Itanium) platforms.
+
+  As per the ganglia-user.pdf doc the tool can then be found in /usr/sbin/ganglia
+  Running this with no options gives a usage statement.
 
 - See the Ganglia user-level documentation in the directory:
 
