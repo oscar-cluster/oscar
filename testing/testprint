@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/testing/testprint,v 1.1 2002/10/15 18:31:52 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/testing/testprint,v 1.2 2002/10/22 21:23:09 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -22,7 +22,6 @@ use strict;
 use Carp;
 use AppConfig qw(:argcount);
 use Term::ANSIColor qw(:constants);
-use Term::ReadKey;
 use Term::Cap;
 use Data::Dumper;
 require POSIX;
@@ -66,7 +65,12 @@ my $term=Term::Cap->Tgetent({OSPEED => $ospeed});
 #print $clrstr;
 print "\033[1G"; # jump to the beginning of line
 
-my ($wchar, $hchar, $wpixels, $hpixels) = GetTerminalSize();  
+# Stty is used here since some distros don't provide
+# the Term::ReadKey module which has a nice function
+# for this. Oh well.
+my $output=`stty size`;
+chomp($output);
+my ($hchar, $wchar) = split(/ /,$output);
 unless ($wchar) {
         $wchar=60;
 }
