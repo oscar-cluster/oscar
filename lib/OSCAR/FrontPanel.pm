@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.15 2002/10/15 05:41:40 jsquyres Exp $
+#   $Id: FrontPanel.pm,v 1.16 2002/10/22 22:48:47 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use OSCAR::Logger;
 use OSCAR::Tk;
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.15 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.16 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -42,8 +42,8 @@ my $PINGPID = undef;
 # OSCAR.  These will someday change/be moved elsewhere when we have
 # proper MPI package detection.
 
-my $lam_text = "LAM/MPI 6.5.6";
-my $lam_value = "lam-6.5.6";
+my $lam_text = "LAM/MPI 6.5.7";
+my $lam_value = "lam-6.5.7";
 my $mpich_text = "MPICH 1.2.4";
 my $mpich_value = "mpich-1.2.4";
 
