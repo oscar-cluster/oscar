@@ -10,7 +10,9 @@ use OSCAR::Help;
 use OSCAR::MAC;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
+use SystemInstaller::Env;
 use Carp;
+use vars qw($config);
 #use OSCAR::Tk;
 
 if( $#ARGV != 0 ) {
@@ -18,6 +20,8 @@ if( $#ARGV != 0 ) {
 }
 
 my $interface = $ARGV[0];
+
+$ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 
 # Create the main window...
 my $window = MainWindow->new();
