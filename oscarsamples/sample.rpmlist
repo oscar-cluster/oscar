@@ -176,8 +176,3 @@ tftp
 units
 tcl
 tk
-openpbs-oscar
-openpbs-oscar-mom
-lam
-pvm
-mpich
