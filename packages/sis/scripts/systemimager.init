@@ -1,0 +1,67 @@
+#! /bin/sh
+#
+#   Written 
+#       by Miquel van Smoorenburg <miquels@cistron.nl>.
+#   Modified for Debian GNU/Linux
+#       by Ian Murdock <imurdock@gnu.ai.mit.edu>.
+#   Hacked for rsync as used by SystemImager
+#       by Brian Finley <bef@bgsw.net>.
+#
+#   $Id: systemimager.init,v 1.1 2003/02/18 19:44:48 brianfinley Exp $
+#
+#
+# Support for IRIX style chkconfig:
+# chkconfig:   2345 20 20
+# description: The rsync daemon used by SystemImager.
+#
+#
+# Support for LSB compliant init system:
+### BEGIN INIT INFO
+# Provides: systemimager
+# Required-Start: $network $syslog
+# Required-Stop:
+# Default-Start:  3 5
+# Default-Stop:   0 1 2 6
+# Short-Description: rsync daemon used by SystemImager
+# Description: rsync daemon used by SystemImager to serve up images, 
+#              autoinstall scripts, and other data used during the 
+#              installation and management of SystemImager client 
+#              machines.
+#
+### END INIT INFO
+
+
+export PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+NAME=rsync
+OPTIONS="--daemon --config=/etc/systemimager/rsyncd.conf"
+DAEMON=`which $NAME` || exit 0
+DESC="rsync daemon for systemimager"
+
+test -f $DAEMON || exit 0
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC: "
+	PID=`pidof $NAME`
+	[ ! -z "$PID" ] && echo "already running." && exit 0
+	$DAEMON $OPTIONS
+	echo "$NAME."
+	;;
+  stop)
+	echo -n "Stopping $DESC: "
+	PID=`pidof $NAME`
+	[ ! -z "$PID" ] && kill $PID
+	echo "$NAME."
+	;;
+  restart|force-reload)
+	$0 stop
+	sleep 1
+	$0 start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0
