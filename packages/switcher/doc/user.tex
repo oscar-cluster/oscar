@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.2 2002/06/12 04:39:50 jsquyres Exp $
+% $Id: user.tex,v 1.3 2002/06/12 07:33:00 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -202,78 +202,4 @@ See the man page for \cmd{switcher(1)} and the output of \cmd{switcher
 \subsubsection{Which MPI do you want to use?}
 \label{app:switcher-which-mpi-to-use}
 
-Starting with the OSCAR 1.3 series, there is a generalized mechanism
-to both set a system-level default MPI implementation, and also to
-allow users to override the system-level default with their own choice
-of MPI implementation.
-
-This allows multiple MPI implementations to be installed on an OSCAR
-cluster (e.g., LAM/MPI and MPICH), yet still provide unambiguous MPI
-implementation selection such that ``\cmd{mpicc foo.c -o foo}'' will
-give deterministic results.
-
-\subsubsection{Setting the system-level default}
-
-The system-level default MPI implementation can be set in two ways:
-
-\begin{enumerate}
-\item During the OSCAR installation, the GUI will prompt asking which
-  MPI should be the system-level default.  This will set the default
-  for all users on the system who do not provide their own individual
-  MPI settings.
-
-\item As root, execute the command:
-
-\begin{verbatim}
-  % switcher mpi --list
-\end{verbatim}
-
-   This will list all the MPI implementations available.  To set the
-   system-level default, execute the command:
-
-\begin{verbatim}
-  % switcher mpi = name --system
-\end{verbatim}
-   
-   where ``name'' is one of the names from the output of the
-   \cmd{--list} command.
-\end{enumerate}
-
-{\bf NOTE:} Using the \cmd{switcher} command to change the default MPI
-implementation will modify the \cmd{PATH} and \cmd{MANPATH} for all
-{\em future} shell invocations -- it does {\em not} change the
-environment of the shell in which it was invoked.  For example:
-
-\begin{verbatim}
-  % which mpicc
-  /opt/lam-1.2.3/bin/mpicc
-  % switcher mpi = mpich-4.5.6 --system
-  % which mpicc
-  /opt/lam-1.2.3/bin/mpicc
-  % csh
-  % which mpicc
-  /opt/mpich-4.5.6/bin/mpicc
-\end{verbatim}
-
-\subsubsection{Setting the user-level default}
-
-Setting a user-level default is essentially the same as setting the
-system-level default, except without the \cmd{--system} argument.
-This will set the user-level default instead of the system-level
-default.  Using the special name \cmd{none} will remove the user-level
-default and revert the user to the system-level default.
-
-\begin{verbatim}
-  # Set the user's default, overriding the system default:
-  % switcher mpi = lam-1.2.3
-  # Remove the user's default, and return to whatever the system
-  # default is:
-  % switcher mpi = none
-\end{verbatim}
-
-{\bf WARNING: The \cmd{switcher} command must be used with care!}  It
-immediately affects the environment of all future shell invocations
-(including the environment of scripts).  To get a full list of options
-available, read the \cmd{switcher(1)} man page, and/or run
-\cmd{switcher --help}.  Also see Section~\ref{app:switcher-overview},
-``An overview of \cmd{switcher}''.
+\input{../../packages/switcher/doc/common}
