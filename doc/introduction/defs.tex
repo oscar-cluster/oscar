@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: defs.tex,v 1.1 2001/12/13 17:30:48 mchasal Exp $
+% $Id: defs.tex,v 1.2 2001/12/22 01:20:51 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -35,11 +35,11 @@
   \newcommand{\xref}[2]{\hyperref[#1]{#2}}
 \else
   \def\figext{eps}
+  \newcommand{\url}[1]{\href{#1}{#1}}
   \newcommand{\xref}[2]{#2}
   \newcommand{\href}[2]{\underline{#2}}
 \fi
 
-\newcommand{\url}[1]{\href{#1}{#1}}
 \newcommand{\email}[1]{\href{#1}{#1}}
 
 % Stoopid European-based Linux distributions...
