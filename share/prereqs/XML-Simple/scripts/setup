@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.1 2003/07/04 14:42:39 jsquyres Exp $
+# $Id: setup,v 1.3 2003/07/22 22:26:07 brechin Exp $
 #
 
 use strict;
@@ -17,9 +17,9 @@ use Carp;
 
 # Version included in media directory
 
-my $ver = "1.08";
-my $real_name = "XML-Simple";
-my $module_name = "XML::Simple";
+my $ver = "2.31";
+my $real_name = "XML-Parser";
+my $module_name = "XML::Parser";
 
 # Helper subroutine
 
@@ -37,7 +37,12 @@ my $eval_str = "{ require $module_name }";
 eval $eval_str;
 if ($@) {
     oscar_log_subsection("$module_name is not yet installed");
+    
+    # check if this is a Mandrake distro:
+    
+    # if yes --> install it from the package
 
+    # if not, move on
     my $topdir = "$ENV{OSCAR_HOME}/share/prereqs/$real_name";
     my $tarball = "$topdir/media/$real_name-$ver.tar.gz";
     my $tempdir = "/tmp/oscar-install-$real_name.$$";
@@ -46,6 +51,52 @@ if ($@) {
     chomp(my $pwd = `pwd`);
     chdir($tempdir);
 
+    oscar_log_subsection("Checking expat dependency");
+    my $expat = `rpm -qa | grep expat | grep -c devel`;
+    chomp $expat;
+    if ( $expat == 0 ) {
+      oscar_log_subsection("It doesn't look like expat is installed");
+      oscar_log_subsection("Installing the expat libraries (expat or libexpat0)...");
+      opendir(RPMS, "/tftpboot/rpm");
+      my @rpmsindir = readdir(RPMS);
+      closedir(RPMS);
+      if ( grep( /^libexpat0/, @rpmsindir ) ) {
+        #Mandrake - install libexpat0
+	if ( `rpm -qa | grep -c libexpat0` != 0 ) {
+          system("rpm -Uvh /tftpboot/rpm/libexpat0-devel*.rpm");
+	} else {
+          system("rpm -Uvh /tftpboot/rpm/libexpat0-*.rpm");
+	}
+      } else {
+        #elsewhere - install expat
+	if ( `rpm -qa | grep -c expat` != 0 ) {
+          system("rpm -Uvh /tftpboot/rpm/expat-devel*.rpm");
+	} else {
+	  system("rpm -Uvh /tftpboot/rpm/expat-*.rpm");
+        }
+      }
+    }
+    # For Mandrake 10.0
+    # The Makefile of XML-Parser and XML-Simple are dependent of libraries provided by perl-devel
+    ######## This can be done in a different way, installing perl-XML-Parser rpm from /tftpboot/rpm
+    #instead of perl-devel. In one way or another, the packages perl-XML-Parser and perl-devel will
+    #be installed by other OSCAR scripts before the end of the installation. The question here is if
+    #we want to install XML-Parser from the tarball or from the distribution cds.
+    if ( `rpm -qa | grep -c mandrake-release` != 0 ) {
+      if ( `rpm -qa | grep -c perl-devel` == 0 ) {    
+	  oscar_log_subsection("This is a Mandrake system, installing perl-devel:");
+	  opendir(RPMS, "/tftpboot/rpm");
+          my @rpmsindir = readdir(RPMS);
+          closedir(RPMS);
+          if ( grep( /^perl-devel/, @rpmsindir ) ) {  
+	     system("rpm -Uvh /tftpboot/rpm/perl-devel*.rpm");
+          }
+	  else {
+	   oscar_log_subsection("Couldn't find perl-devel at /tftpboot/rpm - I may not be able to install XML-Parser...");
+          }
+      }
+    }
+    
     do_run("tar zxf $tarball");
     croak("Not able to chdir($real_name-$ver)")
 	if (!chdir("$real_name-$ver"));

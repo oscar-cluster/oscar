@@ -37,7 +37,12 @@ my $eval_str = "{ require $module_name }";
 eval $eval_str;
 if ($@) {
     oscar_log_subsection("$module_name is not yet installed");
+    
+    # check if this is a Mandrake distro:
+    
+    # if yes --> install it from the package
 
+    # if not, move on
     my $topdir = "$ENV{OSCAR_HOME}/share/prereqs/$real_name";
     my $tarball = "$topdir/media/$real_name-$ver.tar.gz";
     my $tempdir = "/tmp/oscar-install-$real_name.$$";
@@ -71,7 +76,27 @@ if ($@) {
         }
       }
     }
-
+    # For Mandrake 10.0
+    # The Makefile of XML-Parser and XML-Simple are dependent of libraries provided by perl-devel
+    ######## This can be done in a different way, installing perl-XML-Parser rpm from /tftpboot/rpm
+    #instead of perl-devel. In one way or another, the packages perl-XML-Parser and perl-devel will
+    #be installed by other OSCAR scripts before the end of the installation. The question here is if
+    #we want to install XML-Parser from the tarball or from the distribution cds.
+    if ( `rpm -qa | grep -c mandrake-release` != 0 ) {
+      if ( `rpm -qa | grep -c perl-devel` == 0 ) {    
+	  oscar_log_subsection("This is a Mandrake system, installing perl-devel:");
+	  opendir(RPMS, "/tftpboot/rpm");
+          my @rpmsindir = readdir(RPMS);
+          closedir(RPMS);
+          if ( grep( /^perl-devel/, @rpmsindir ) ) {  
+	     system("rpm -Uvh /tftpboot/rpm/perl-devel*.rpm");
+          }
+	  else {
+	   oscar_log_subsection("Couldn't find perl-devel at /tftpboot/rpm - I may not be able to install XML-Parser...");
+          }
+      }
+    }
+    
     do_run("tar zxf $tarball");
     croak("Not able to chdir($real_name-$ver)")
 	if (!chdir("$real_name-$ver"));
