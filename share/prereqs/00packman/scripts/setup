@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.1 2004/04/06 08:04:12 tuelusr Exp $
+# $Id: setup,v 1.2 2004/04/06 14:52:56 tuelusr Exp $
 #
 # setup script for the packman-depman package
 #
@@ -16,7 +16,7 @@ VERSION=1.3
 # Mat Garrett, <magarret@OSL.IU.edu>
 # Moved PackMan/DepMan out of .../lib/OSCAR into an RPM
 
-VERSION=$(echo "$Revision: 1.1 $" | cut --fields 2 --delimiter " ")
+VERSION=$(echo "$Revision: 1.2 $" | cut --fields 2 --delimiter " ")
 
 PACKAGE=packman-depman
 if [[ $0 = */* ]] ; then
@@ -29,19 +29,6 @@ fi
 
 CURRENT=$(ls -1 --sort=version --reverse "${MEDIA_DIR}/${PACKAGE}"-*.noarch.rpm |
 	head -1)
-
-if [ -s ${CURRENT}.md5sum ]; then
-  (
-    cd ${CURRENT%/*}
-    md5sum --check ${CURRENT}.md5sum
-  )
-  if [ $? -ne 0 ]; then
-    echo "ERROR: \`md5sum --check ${CURRENT}.md5sum\` failed!"
-    exit -1
-  fi
-else
-  echo "No md5sum check performed."
-fi
 
 echo "Installing ${CURRENT##*/}"
 rpm --upgrade "${CURRENT}"
