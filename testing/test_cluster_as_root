@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster_as_root,v 1.7 2002/06/05 02:50:52 brechin Exp $
+# $Id: test_cluster_as_root,v 1.8 2002/06/08 07:45:45 jenos Exp $
 #
 # test_cluster_as_root - script to test services, NFS, 
 #                        and install/run user level tests
@@ -57,6 +57,15 @@ echo -e "\t\t\t----------"
 #  pfilteron=1
 #fi
 
+# Stop PBS Server if any nodes exhibit "state-unknown" status.
+# This condition could be due to the 5 minute polling interval to the moms
+# by the server.  Restarting the server will induce a fresh poll.
+unknown_nodes=`/usr/local/pbs/bin/pbsnodes -a |grep -c state-unknown`
+if [ $unknown_nodes != 0 ] ; then
+  echo "Found $unknown_nodes nodes in unknown state.  Stopping PBS server to invoke a poll."
+  /sbin/service pbs_server stop
+fi
+
 for serv in sshd pbs_server maui ; do
   if [ `/sbin/service $serv status | grep -c "is running"` -eq 0 ]; then
     # Let's try to restart the service
@@ -81,32 +90,22 @@ done
 # Tests to make sure /home is NFS mounted and current
 
 `touch /home/OSCARtestfile`
-command='if [ -e /home/OSCARtestfile ]; then echo "1"; else echo "0"; fi'
+command='if [ -e /home/OSCARtestfile ]; then echo "1"; fi'
 
-mounted=0
 # Grab all the node hostnames from pbsnodes
-for node in `/usr/local/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tac`; do
-  if [ "`ssh $node $command 2>/dev/null`" != "1" ]; then
-    echo "/home not mounted on $node:"
-#    echo_failure
-#    echo
-#    `rm -f /home/OSCARtestfile`
-#    exit 1
-  else
-    mounted=`/usr/bin/expr $mounted + 1`
-  fi
-  
-done
-echo -n "/home mounted on $mounted free nodes, need $clients:"
-`rm -f /home/OSCARtestfile`
-  if [ $mounted -gt $clients ] || [ $mounted -eq $clients ]; then
-    echo_success
-    echo
-  else
+for node in `/usr/local/pbs/bin/pbsnodes -a | egrep '^\w+'`; do 
+  if [ `ssh $node $command` -ne 1 ]; then
+    echo -n "/home not mounted on $node:"
     echo_failure
     echo
+    `rm -f /home/OSCARtestfile`
     exit 1
   fi
+done
+echo -n "/home mounted on all nodes:"
+echo_success
+echo
+`rm -f /home/OSCARtestfile`
 
 #			USER TESTS
 #			----------
