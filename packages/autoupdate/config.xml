@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.5 2003/04/02 19:12:58 brechin Exp $
+      $Id: config.xml,v 1.6 2003/04/07 18:29:21 brechin Exp $
   -->
   <name>autoupdate</name>
 
@@ -17,7 +17,7 @@
     <major>4</major>
     <minor>8</minor>
     <subversion>2</subversion>
-    <release>4</release>
+    <release>5</release>
     <epoch>1</epoch>
   </version>
 
