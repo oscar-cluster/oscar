@@ -1,0 +1,7 @@
+chkconfig
+shadow-utils
+bash
+glibc
+perl
+libcap
+ntp

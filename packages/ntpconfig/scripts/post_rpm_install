@@ -1,0 +1,311 @@
+#!/usr/bin/perl
+#########################################################################
+#  Script Name  : post_rpm_install                                      #
+#  Programmed by: Terry Fleury (tfleury@ncsa.uiuc.edu)                  #
+#  Date         : August 5, 2002                                        #
+#  Purpose      : This Perl script sets the local machine's clock by    #
+#                 using NTP (Network Time Protocol).  You must be root  #
+#                 and have the ntp RPM package (version 4) installed.   #
+#                 This script is called when an OSCAR client image      #
+#                 is created.                                           #
+#########################################################################
+my $versionstring = '$Id: post_rpm_install,v 1.1 2002/08/09 19:15:31 jenos Exp $'; # RCS version string of the script
+
+use Getopt::Long;   # Used to get command line options
+
+# These are public ntp servers for use by the server.
+my @serverntpserverlist = ("ntp-1.cso.uiuc.edu",
+                           "ntp0.cornell.edu",
+                           "ntp.cmr.gov");
+# For the clients, use the main server only.
+my @clientntpserverlist = ("pbs_oscar");
+# Default to the server list unless the user specifies the --client flag.
+my @ntpserverlist = @serverntpserverlist;
+
+#########################################################################
+#  Subroutine name : parseCommandLine                                   #
+#  Parameters : none                                                    #
+#  Returns    : nothing                                                 #
+#  This function scans the command line for options and stores their    #
+#  values in the global variables $opt_OPTIONNAME where OPTIONNAME is   #
+#  the name of the command line option.                                 #
+#########################################################################
+sub parseCommandLine # 
+{
+  $Getopt::Long::autoabbrev = 1;        # Allow abbreviated options
+  $Getopt::Long::getopt_compat = 1;     # Allow + for options
+  $Getopt::Long::order = $PERMUTE;      # Option reordering
+  &GetOptions("ntpserver=s@",
+              "client",
+              "disable",
+              "nobackup",
+              "version",
+              "help"
+              );
+
+  # Since this is a "client" script, force the "--client" option.
+  # Also, don't bother to backup the configuration files.
+  $opt_client = 1;
+  $opt_nobackup = 1;
+
+  @ntpserverlist = @opt_ntpserver if defined(@opt_ntpserver);
+  @ntpserverlist = @clientntpserverlist if defined($opt_client);
+  if (defined($opt_version))
+    {
+      $versionstring =~ /\$Id: (.*)\d\d:\d\d:\d\d/ and
+      print "$1\n";
+      exit;
+    }
+  if (defined($opt_help))
+    {
+      print <<HELP;
+SYNOPSIS
+  ntpconfig [--ntpserver NTPSERVER] [--client] [--disable] [--nobackup]
+            [--version] [--help]
+
+DESCRIPTION
+  ntpconfig sets the local machine's clock by using NTP (Network Time
+  Protocol).  To do this, the machine should be connected to the internet
+  since it will attempt to connect to several public stratum 2 (secondary)  
+  ntp servers.  However, if you are not connected to the internet, the 
+  program will fail gracefully (ie. do nothing).
+
+OPTIONS
+  --ntpserver NTPSERVER
+    If you have a particular ntp server that you want to use, specify it
+    with this flag.  You can have multiple '--ntpserver' flags and all of
+    those servers will be consulted for time synchronization.
+  --client
+    Usually, this program uses several public secondary ntp servers
+    to synchronize the local machine.  When you want to synchronize
+    the client machines of your cluster, you want to use the clock of
+    your local server as the reference clock.  Specifying the '--client' 
+    flag does this so your client machines do not need to be connected to
+    the internet, just to your local cluster server.
+  --disable
+    If you want to turn off the ntp server, including preventing it from
+    running at boot time, use this option.
+  --nobackup
+    Usually, the configuration files /etc/ntp.conf and /etc/ntp/step-tickers
+    are saved by renaming them to a unique file name (such as ntp.conf.1).
+    However, since this process occurs every time this program is run, it
+    can generate quite a few extra backup configuration files.  Use this
+    option to omit the renaming/backup of the configuration files and simply
+    write out new configuration files.
+  --version
+    Prints out the RCS version string of this program.
+  --help
+    Prints out this help message.
+
+NOTES
+  You must be 'root' to run this program.
+  This program is a Perl script and requires Perl version >= 5.5.
+HELP
+      exit;
+    }
+}
+
+#########################################################################
+#  Subroutine name : uniqueFile                                         #
+#  Parameter: A string of the file name to be checked                   #
+#  Returns  : A string similar to the input string but made "unique"    #
+#             by appending a number                                     #
+#  This function takes in a string (which should be the name of a file  #
+#  to be saved to disk) and makes sure that it is unique.  It does this #
+#  by adding a number to the filename.  The new name is returned.       #
+#########################################################################
+sub uniqueFile # (instr) -> filename
+{
+  my($instr) = @_;
+  my($counter,$filename);
+
+  $filename = $instr;
+  while (-e $filename)
+    {
+      $counter++;
+      $filename = $instr . '-' . $counter;
+    }
+  return $filename;  # Return the 'new' string
+} 
+
+#########################################################################
+#  Subroutine name: writeConfigFile                                     #
+#  Parameters: none                                                     #
+#  Returns   : nothing                                                  #
+#  This function writes out a new configuration file for ntp to         #
+#  /etc/ntp.conf.  The config file is based on the configuration for    #
+#  ntp 4.1.0 and thus does not contain the extra restrictions typically #
+#  found in the 4.1.1 config file, but should work with ntpd >= 4.0.99. #
+#########################################################################
+sub writeConfigFile
+{
+  my $configfilename = '/etc/ntp.conf';
+  # By default, move the current /etc/ntp.conf file to a backup location
+  if (!(defined($opt_nobackup)))
+    {
+      my $newconfigfilename = uniqueFile($configfilename);
+      rename($configfilename,$newconfigfilename) if 
+        ($configfilename ne $newconfigfilename);
+    }
+
+  # Generate the config file and write it to disk.  This file is based
+  # on the config file from ntp version 4.1.0 and can be used with all
+  # versions of ntp >= 4.0.99 (ie. RedHat 7.1, 7.2, 7.3).
+  my $serverstring = "server " . join("\nserver ",@ntpserverlist);
+  open(CONF,">$configfilename");
+  print CONF <<CONFIG;
+# These are some servers for use by the ntp daemon.
+$serverstring
+
+# Undisciplined Local Clock. This is a fake driver intended for backup
+# and when no outside source of synchronized time is available. The
+# default stratum is usually 3, but in this case we elect to use stratum
+# 0. Since the server line does not have the prefer keyword, this driver
+# is never used for synchronization, unless no other other
+# synchronization source is available. In case the local host is
+# controlled by some external source, such as an external oscillator or
+# another protocol, the prefer keyword would cause the local host to
+# disregard all other synchronization sources, unless the kernel
+# modifications are in use and declare an unsynchronized condition.
+#
+server	127.127.1.0	# local clock
+fudge	127.127.1.0 stratum 10	
+
+#
+# Drift file.  Put this in a directory which the daemon can write to.
+# No symbolic links allowed, either, since the daemon updates the file
+# by creating a temporary in the same directory and then rename()'ing
+# it to the file.
+#
+driftfile /etc/ntp/drift
+#multicastclient			# listen on default 224.0.1.1
+broadcastdelay	0.008
+
+#
+# Authentication delay.  If you use, or plan to use someday, the
+# authentication facility you should make the programs in the auth_stuff
+# directory and figure out what this number should be on your machine.
+#
+authenticate no
+
+#
+# Keys file.  If you want to diddle your server at run time, make a
+# keys file (mode 600 for sure) and define the key number to be
+# used for making requests.
+#
+# PLEASE DO NOT USE THE DEFAULT VALUES HERE. Pick your own, or remote
+# systems might be able to reset your clock at will. Note also that
+# ntpd is started with a -A flag, disabling authentication, that
+# will have to be removed as well.
+#
+#keys		/etc/ntp/keys
+CONFIG
+
+  close CONF;
+}
+
+#########################################################################
+#  Subroutine name: writeStepTickers                                    #
+#  Parameters: none                                                     #
+#  Returns   : nothing                                                  #
+#  This function writes out a new /etc/ntp/step-tickers file.  This     #
+#  file is used when the ntpd service starts up to force the clock to   #
+#  be correct (by using ntpdate) before actually using ntpd to adjust   #
+#  the local clock using small steps.                                   #
+#########################################################################
+sub writeStepTickers
+{
+  my $stepfilename = '/etc/ntp/step-tickers';
+  # By default, move the current step-tickers file to a backup location
+  if (!(defined($opt_nobackup)))
+    {
+      my $newstepfilename = uniqueFile($stepfilename);
+      rename($stepfilename,$newstepfilename) if
+        ($stepfilename ne $newstepfilename);
+    }
+
+  my $serverstring = join(" ",@ntpserverlist);
+  open(STEP,">$stepfilename");
+  print STEP "$serverstring\n";
+  close STEP;
+}
+
+#########################################################################
+#  Subroutine name: changeNtpdStartup                                   #
+#  Parameters: none                                                     #
+#  Returns   : nothing                                                  #
+#  This function modifies the /etc/init.d/ntpd chkconfig configuration  #
+#  to make ntpd start up in runlevels 2-5 with a start priority of 85.  #
+#  For some stupid reason, Linux (both RedHat and Mandrake) has the     #
+#  ntpd daemon start up before domain name resolution.  Thus, if you    #
+#  use FQDNs in the /etc/ntp/step-tickers file, ntpd will FAIL because  #
+#  ntpdate (which is called by /etc/init.d/ntpd) will not be able to    #
+#  connect to those servers.  One solution would be to use only IP      #
+#  addresses in the step-tickers file.  However, the NTP documentation  #
+#  suggests that you always use FQDNs since the IP address mapping of   #
+#  the public NTP servers could change.  The other solution is to make  #
+#  ntpd start up at a later time AFTER the DNS resolution is working.   #
+#  This function modifies /etc/init.d/ntpd in place.  See the Perl      #
+#  Cookbook, section 7.10 for more info.                                #
+#########################################################################
+sub changeNtpdStartup
+{
+  open(NTPD,"+< /etc/init.d/ntpd") or return;
+  my $out = '';
+  while (<NTPD>)
+    {
+      s/#\s+chkconfig:\s+\S+\s+\S+\s+(\S+)/# chkconfig: 2345 85 $1/;
+      $out .= $_;
+    }
+  flock(NTPD, 2);
+  seek(NTPD,0,0);
+  print NTPD $out;
+  truncate(NTPD,tell(NTPD));
+  close NTPD;
+} 
+
+
+
+########################
+#  BEGIN MAIN PROGRAM  #
+########################
+
+# Get any command line options
+parseCommandLine();
+
+# Make sure the user running the script is 'root'.
+die "ERROR: You must be 'root' to run this script.  Aborting" if ($< != 0);
+
+# Make sure that the 'ntp' package is installed, at least version 4
+open(CMD,'rpm -q ntp |');
+my $cmd_output = <CMD>;
+close CMD;
+
+die "ERROR: ntp package is not installed.  Aborting" if 
+  (length($cmd_output) <= 0);
+
+$cmd_output =~ /^ntp-(\d+)/;
+die "ERROR: ntp package is not at least version 4.  Aborting" if ($1 < 4);
+
+# Next, write out the new config file and the step-tickers file.
+writeConfigFile();
+writeStepTickers();
+
+# Change the ntpd's startup priority and "on" run levels
+changeNtpdStartup();
+
+# Make sure the symlinks for ntpd in /etc/rc.d/init.d exist
+system("/sbin/chkconfig --add ntpd");  
+
+# Depending on the presence/absence of the "--disable" flag, stop/start ntpd
+if (defined($opt_disable))
+  { 
+    system("/sbin/service ntpd stop");
+    system("/sbin/chkconfig --level 2345 ntpd off");
+  }
+else
+  { 
+    system("/sbin/service ntpd restart");
+    system("/sbin/chkconfig --level 2345 ntpd on");
+  }
+
