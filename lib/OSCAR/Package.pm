@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.34 2002/10/30 20:27:25 ngorsuch Exp $
+#   $Id: Package.pm,v 1.35 2002/10/30 21:43:30 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.34 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.35 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -175,7 +175,7 @@ sub run_in_chroot {
 }
 
 #
-# run_pkg_script_user - runs the package script for a specific package as a user
+# run_pkg_user_test - runs the package test script as a user
 #
 
 sub run_pkg_user_test {
@@ -183,7 +183,13 @@ sub run_pkg_user_test {
 
     if (-e $script) {
             oscar_log_subsection("About to run $script") if $verbose;
-            my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} $script $args' - $user");
+            my $uid=getpwnam($user);
+	    my $rc;
+            if ($uid == $>) {
+            	$rc = system("$script $args");
+            } else {
+                $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} $script $args' - $user");
+            }
             if($rc) {
                 my $realrc = $rc >> 8;
                 carp("Script $script exitted badly with exit code '$realrc'") if $verbose;
