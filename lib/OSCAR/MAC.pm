@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.22 2003/01/23 20:09:41 brechin Exp $
+#   $Id: MAC.pm,v 1.23 2003/01/23 20:43:20 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@ package OSCAR::MAC;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   Copyright 2001-2002 International Business Machines
-#                       Sean Dague <japh@us.ibm.com>
+#   Copyright 2001-2003 International Business Machines
+#                       Sean Dague <sean@dague.net>
 
 use strict;
 use Net::Netmask;
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.22 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.23 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -44,12 +44,11 @@ $VERSION = sprintf("%d.%02d", q$Revision: 1.22 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 
-# a variable which stores a regex of the server mac addreses
-my $SERVERMACS;
-my $ORDER = 1;
-my $COLLECT = 0;
-my $PINGPID = undef;
-my $step_number;
+my $SERVERMACS;     # a variable which stores a regex of the server mac addreses
+my $ORDER = 1;      # global count variable
+my $COLLECT = 0;    # are we collecting or not?
+my $PINGPID = undef; # process id of the ping fork we make
+my $step_number;    # which step number of the oscar process we are in
 
 sub mac_window {
     my $parent = shift;
@@ -87,6 +86,9 @@ sub mac_window {
 
     $listbox->pack(-side => "left", -expand => 0, -fill => "y");
     $tree->pack(-side => "left", -expand => 1, -fill => "both", -anchor => "w");
+
+    # this populates the tree as it exists
+    populate_MACS();
     
     regenerate_tree($tree);
     our $starttext = "Collect MAC Addresses";
@@ -199,6 +201,17 @@ sub clean_hostsfile {
     }
     close(OUT);
     close(IN);
+}
+
+# populates existing MAC entries into the global hash
+
+sub populate_MACS {
+    my @clients = list_client();
+    %MAC = ();
+    foreach my $client (@clients) {
+        my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
+        add_mac_to_hash($adapter->mac, $client->name);
+    }
 }
 
 sub regenerate_tree {
@@ -439,7 +452,7 @@ sub set_servermacs {
 }
 
 sub add_mac_to_hash {
-    my $mac = shift;
+    my ($mac, $client) = @_;
     # if the mac is 00:00:00:00:00:00, it isn't real
     if($mac =~ /^[0\:]+$/) {
         return 0;
@@ -454,7 +467,7 @@ sub add_mac_to_hash {
     }
     # else, add the mac address with a null client
     $MAC{$mac} = {
-                  client => undef,
+                  client => $client,
                   order => $ORDER,
                  };
     $ORDER++;
