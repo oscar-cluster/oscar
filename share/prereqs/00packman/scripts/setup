@@ -9,12 +9,12 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.5 2004/04/13 17:34:24 brechin Exp $
+# $Id: setup,v 1.6 2004/04/14 10:07:13 tuelusr Exp $
 #
 # setup script for the packman-depman package
 #
 
-VERSION=$(echo "$Revision: 1.5 $" | cut --fields 2 --delimiter " ")
+VERSION=$(echo "$Revision: 1.6 $" | cut --fields 2 --delimiter " ")
 
 PACKAGE=packman-depman
 if [[ $0 = */* ]] ; then
@@ -27,8 +27,8 @@ CURRENT=$(ls -1 --sort=version --reverse "${MEDIA_DIR}/${PACKAGE}"-*.noarch.rpm 
 rpm -q packman-depman >/dev/null 2>&1
 if [ "x$?" == "x1" ]; then
   echo "Installing ${CURRENT##*/} in $OSCAR_HOME"
-  echo rpm -Uvh --relocate "/opt/oscar=$OSCAR_HOME" "${CURRENT}"
-  rpm -Uvh --relocate "/opt/oscar=$OSCAR_HOME" "${CURRENT}"
+  echo rpm -Uvh "${CURRENT}"
+  rpm -Uvh "${CURRENT}"
   echo "Done."
 else
   echo "No need to install packman-depman"
