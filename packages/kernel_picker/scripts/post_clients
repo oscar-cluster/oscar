@@ -42,32 +42,30 @@ if (-e $valuesfile)
 
     if ($values->{usesmodules}[0] eq 'Y')
       {
-        $kernelversion = $values->{kernelversion}[0] if 
-          $values->{kernelversion}[0];
-        $modulespath = $values->{modulespath}[0] if $values->{modulespath}[0];
-        $modulespath =~ s,$kernelversion/?$,,;
-        $modulespath =~ s,lib/modules/?$,,;
-        $modulespath .= '/' if ($modulespath !~ /\/$/);
-        $systemmap = $values->{systemmap}[0] if $values->{systemmap}[0];
+        $kernelversion = $values->{kernelversion}[0] || "";
+        $modulespath = $values->{modulespath}[0] || "";
+        $systemmap = $values->{systemmap}[0] || "";
 
         # Verify that these values are okay
-        if (length($kernelversion) < 1)
+        unless ($kernelversion)
           {
             carp("Invalid value for kernel version");
             $values->{usesmodules}[0] = 'N';
           }
         
-        $modulespath = "/lib/modules/$kernelversion" if 
-          (length($modulespath) < 1);
-        if (!(-d $modulespath))
+        $modulespath ||= "/lib/modules/$kernelversion";
+        $modulespath .= '/' if $modulespath && $modulespath !~ /\/$/;
+        unless (-d $modulespath)
           {
             carp("Invalid path for loadable modules");
             $values->{usesmodules}[0] = 'N';
           }
+        # Goofy kernel_picker refuses to accept actual path!
+        $modulespath =~ s{lib/modules/\Q$kernelversion\E/}{};
 
-        if ((length($systemmap) > 0) && (!(-e $systemmap)))
+        if ($systemmap && !-e $systemmap)
           {
-            carp("The System.map file '$systemmap' does not exist. Ignoring.");
+            carp("The System.map file \"$systemmap\" does not exist. Ignoring.");
             $systemmap = "";
           }
       }
@@ -76,15 +74,12 @@ if (-e $valuesfile)
     if ($values->{bootkernel}[0] eq 'default')
       { # Install just the default kernel RPMs.  Do nothing special.
       }
-    elsif (($values->{bootkernel}[0] eq 'alternate') &&
-           ((length($values->{altfile}[0]) > 0) && 
-           (-e $values->{altfile}[0])))
+    elsif ($values->{bootkernel}[0] eq 'alternate' &&
+           exists $values->{altfile} && -e $values->{altfile}[0])
       { # Install an alternate file specified by the user
         $bootkernel = $values->{altfile}[0];
       }
-    elsif (($values->{bootkernel}[0] ne 'default') &&
-           ($values->{bootkernel}[0] ne 'alternate') &&
-           (-e $values->{bootkernel}[0]))
+    elsif (-e $values->{bootkernel}[0])
       { # Install the kernel file found on disk
         $bootkernel = $values->{bootkernel}[0];
       }
@@ -95,26 +90,25 @@ if (-e $valuesfile)
 
     if ($bootkernel)
       { # Build up the command string for kernel_picker.
-        my $cmd = "/opt/kernel_picker/bin/kernel_picker ";
-        if ((defined $values->{oscarimage}) &&
-            (length($values->{oscarimage}[0]) > 0))
+        my $cmd = "/opt/kernel_picker/bin/kernel_picker";
+        if (exists $values->{oscarimage} && $values->{oscarimage}[0])
           {
-            $cmd .= "--oscarimage " . $values->{oscarimage}[0] . ' ';
+            $cmd .= " --oscarimage " . $values->{oscarimage}[0];
           }
         else
           {
-            $cmd .= "--autoselectimage ";
+            $cmd .= " --autoselectimage";
           }
-        $cmd .= "--bootkernel $bootkernel --bootramdisk N --networkboot N ";
+        $cmd .= " --bootkernel $bootkernel --bootramdisk N --networkboot N";
         if ($values->{usesmodules}[0] eq 'Y')
           {
-            $cmd .= "--kernelversion $kernelversion ";
-            $cmd .= "--modulespath $modulespath ";
-            $cmd .= "--systemmap $systemmap " if $systemmap;
+            $cmd .= " --kernelversion $kernelversion";
+            $cmd .= " --modulespath $modulespath";
+            $cmd .= " --systemmap $systemmap" if $systemmap;
           }
 
         print "$cmd\n";
-        !system($cmd) or (print "DIDN'T RUN KERNEL_PICKER!\n");
+        print "KERNEL_PICKER FAILED!\n" if system($cmd);
       }
   }
 
