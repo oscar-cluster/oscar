@@ -18,12 +18,13 @@
 #   It will do all the fixups required.
 
 use strict;
-use lib "/usr/lib/systeminstaller";
+use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller";
 use SIS::Client;
 use Carp;
 use File::Copy;
 use File::Path;
 use File::Basename;
+use OSCAR::Package;
 use AppConfig;
 
 
@@ -38,7 +39,7 @@ do_synctime();
 sub get_numproc {
 	my @machines=&clientList;
 	foreach my $mach (@machines) {
-		my $CMD="/usr/bin/ssh -v ".$mach->{HOST}." /bin/grep ^processor /proc/cpuinfo";
+		my $CMD="/usr/bin/ssh -v -n ".$mach->{HOST}." /bin/grep ^processor /proc/cpuinfo";
 		print "Gathering processor count from ".$mach->{NAME}.".\n";
 		open (CPIPE,"$CMD |") or (carp("Unable to query machine ".$mach->{NAME}),next);
 		my $count=0;
