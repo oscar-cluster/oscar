@@ -22,7 +22,7 @@ print OUT <<EOF;
   export MPICH=$PREFIX
   [[ :\$PATH: != *:\$MPICH/bin:* ]] && export PATH=\$PATH:\$MPICH/bin
   if [[ -z \$MANPATH ]]; then
-    export MANPATH="\$MPICH/man"
+    export MANPATH="/usr/share/man:\$MPICH/man"
   else
     export MANPATH="\${MANPATH}:\$MPICH/man"
   fi
@@ -42,7 +42,7 @@ if (\$?MPICH == "0") then
   set MPICH="$PREFIX"
   set path = (\$path \$MPICH/bin)
   if (\$?MANPATH == "0") then
-    set MANPATH="\$MPICH/man"
+    set MANPATH="/usr/share/man:\$MPICH/man"
   else
     set MANPATH="\${MANPATH}:\$MPICH/man"
   endif
