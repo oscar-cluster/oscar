@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.54 2003/01/16 23:23:37 jsquyres Exp $
+% $Id: detailed.tex,v 1.55 2003/01/19 12:26:44 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -369,18 +369,9 @@ process.
 % easy than {verbatim}.
   \vspace{11pt} {\tt
     \# cd /root/oscar-\oscarversion \\
-    \indent \# export OSCAR\_HOME=`pwd` \\
     \indent \# ./scripts/opd } \vspace{11pt}
 
 } % end detailed
-
-Setting the \env{OSCAR\_\-HOME} environment variable before invoking
-OPD will allow OPD unpack downloaded packages into the correct
-location in the OSCAR directory structure, such that they will
-automatically be detected, configured, and installed when you run the
-OSCAR installer.  If you don't set \env{OSCAR\_\-HOME}, OPD will place
-downloaded distribution packages in \file{\$HOME/.opd/downloads}, and
-you will have to place them in the OSCAR directory structure manually.
 
 OPD requires some Perl modules to be installed before running.  If
 they are not installed, you will receive a detailed error message
@@ -404,9 +395,7 @@ install these modules:
   choices listed.  OPD will then connect to that repository and query
   it for a list of available packages.  Select all the packages that
   you would like to download, and then use the ``download'' command to
-  actually download them.  If you set the \env{OSCAR\_\-HOME}
-  environment variable before running OPD, OPD will unpack the
-  downloaded packages in the correct directory in the OSCAR tree.
+  actually download them.
   
   Use the ``help'' command in OPD for listings of additional commands
   and help.
