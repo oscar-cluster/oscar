@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.18 2002/10/29 01:42:00 jsquyres Exp $
+#   $Id: FrontPanel.pm,v 1.19 2002/10/29 02:09:10 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use OSCAR::Logger;
 use OSCAR::Tk;
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.18 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.19 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -54,17 +54,18 @@ my ($setupbutton, $exitbutton);
 my ($lambutton, $mpichbutton, $mpivalue);
 my $have_run_successfully = 0;
 my $vars;
+my $step_number = 3;
 
 #
 # Initial front panel window code.  Set the parent window to busy and
-# sanity check to see if we have already run step 3.
+# sanity check to see if we have already run this step.
 #
 
 sub frontpanel_window {
     $parent_window = shift;
     $vars = shift;
 
-    oscar_log_section("Running step 3 of the OSCAR wizard");
+    oscar_log_section("Running step $step_number of the OSCAR wizard");
 
     # Make the top-level OSCAR wizard window busy so that the user
     # can't click in another step while this one is running.
@@ -88,7 +89,7 @@ sub frontpanel_window {
 
 
 #
-# Entry point for where we have already run step 3, yet the user
+# Entry point for where we have already run this step, yet the user
 # selects to run it again.
 #
 
@@ -99,7 +100,7 @@ sub fp_yes {
 
 
 #
-# Entry point for where we have already run step 3, and the user
+# Entry point for where we have already run this step, and the user
 # selects to *not* run it again.
 #
 
@@ -162,12 +163,12 @@ sub do_fp_work {
 
 sub set_mpi {
     my ($button) = @_;
-    oscar_log_subsection("Step 3: MPI selected: $mpivalue\n");
+    oscar_log_subsection("Step $step_number: MPI selected: $mpivalue\n");
 }
 
 
 #
-# Do the actual work of step 3.
+# Do the actual work of this step.
 #
 
 sub install_server {
@@ -177,7 +178,7 @@ sub install_server {
     $fp_window->Busy(-recurse => 1);
 
     my $cmd = "./install_server $$vars{interface}";
-    oscar_log_subsection("Step 3: Running: $cmd");
+    oscar_log_subsection("Step $step_number: Running: $cmd");
     open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
                               error_window($fp_window,
 					   "Couldn't run command $cmd",
@@ -195,18 +196,18 @@ sub install_server {
 				   sub { $fp_window->Unbusy() }),
 		      return undef);
 
-    oscar_log_subsection("Step 3: Successfully ran command");
+    oscar_log_subsection("Step $step_number: Successfully ran command");
 
     $cmd = "bash -c 'switcher mpi --add-attr default $mpivalue --force --system'";
-    oscar_log_subsection("Step 3: Running: $cmd");
+    oscar_log_subsection("Step $step_number: Running: $cmd");
     !system("$cmd") or
         (carp("Couldn't run command $cmd"),
          error_window($fp_window, "Couldn't run command $cmd", 
 		      sub { $fp_window->Unbusy() }),
 	 return undef);
 
-    oscar_log_subsection("Step 3: Successfully ran command");
-    oscar_log_subsection("Step 3: Completed successfully");
+    oscar_log_subsection("Step $step_number: Successfully ran command");
+    oscar_log_subsection("Step $step_number: Completed successfully");
 
     done_window($fp_window,
 		"Successfully installed OSCAR server",

@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.11 2002/10/28 22:33:48 tfleury Exp $
+#   $Id: MAC.pm,v 1.12 2002/10/29 02:09:11 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.11 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.12 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -45,6 +45,7 @@ my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $ORDER = 1;
 my $COLLECT = 0;
 my $PINGPID = undef;
+my $step_number = 6;
 
 sub mac_window {
     my ($parent, $vars) = @_;
@@ -52,7 +53,7 @@ sub mac_window {
     my $window = $parent->Toplevel;
     $window->title("MAC Address Collection");
     
-    oscar_log_section("Running step 6 of the OSCAR wizard");
+    oscar_log_section("Running step $step_number of the OSCAR wizard");
 
     my $instructions = $window->Message(-text => "MAC Address Collection Tool.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click 'Assign MAC to Node'.", -aspect => 800);
 
@@ -91,7 +92,7 @@ sub mac_window {
                                      -command => sub {
 					 end_ping(); 
 					 end_collect_mac($label); 
-					 oscar_log_subsection("Step 6: Completed successfully"); 
+					 oscar_log_subsection("Step $step_number: Completed successfully"); 
 					 $window->destroy;
 				     },
                                     );
@@ -111,9 +112,9 @@ sub mac_window {
                                     -text => "Build Autoinstall Floppy",
                                     -command => sub {
 					my $cmd = "xterm -T 'Build Autoinstall Floppy' -e mkautoinstalldiskette";
-					oscar_log_subsection("Step 6: Building autoinstall floppy: $cmd");
+					oscar_log_subsection("Step $step_number: Building autoinstall floppy: $cmd");
 					system($cmd);
-					oscar_log_subsection("Step 6: Successfully built autoinstallfloppy");
+					oscar_log_subsection("Step $step_number: Successfully built autoinstallfloppy");
 				    }
                                    );
     my $networkboot = $frame->Button(
@@ -130,7 +131,7 @@ sub mac_window {
 
 sub setup_dhcpd {
     my $interface = shift;
-    oscar_log_subsection("Step 6: cleaning hostfile");
+    oscar_log_subsection("Step $step_number: cleaning hostfile");
     clean_hostsfile() or (carp "Couldn't clean hosts file!",
                           return undef);
     
@@ -141,18 +142,18 @@ sub setup_dhcpd {
     }
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
     my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --bootfile=pxelinux.0 --gateway=$ip";
-    oscar_log_subsection("Step 6: Running command: $cmd");
+    oscar_log_subsection("Step $step_number: Running command: $cmd");
     !system($cmd) or (carp "Couldn't mkdhcpconf", return undef);
-    oscar_log_subsection("Step 6: Successfully ran command");
+    oscar_log_subsection("Step $step_number: Successfully ran command");
     if(!-e "/var/lib/dhcp/dhcpd.leases") {
         open(OUT,">/var/lib/dhcp/dhcpd.leases") or (carp "Couldn't create dhcpd.leases files",
                                                     return undef);
         close(OUT);
     }
-    oscar_log_subsection("Step 6: Restarting dhcpd service");
+    oscar_log_subsection("Step $step_number: Restarting dhcpd service");
     !system("service dhcpd restart") or (carp "Couldn't restart dhcpd", 
                                          return undef);
-    oscar_log_subsection("Step 6: Successfully restarted dhcpd service");
+    oscar_log_subsection("Step $step_number: Successfully restarted dhcpd service");
     
     return 1;
 }
@@ -210,7 +211,7 @@ sub assign2machine {
     my $node = $tree->infoSelection() or return undef;
     my $client;
     if($node =~ /^\|([^\|]+)/) {
-        oscar_log_subsection("Step 6: Assigned $mac to $1");
+        oscar_log_subsection("Step $step_number: Assigned $mac to $1");
         $client = findClient($1);
     } else {
         return undef;
@@ -234,7 +235,7 @@ sub clear_mac {
     }
     my $adapter = findAdapter($client->{NAME},"eth0");
     my $mac = $adapter->{MAC};
-    oscar_log_subsection("Step 6: Cleared $mac from $1");
+    oscar_log_subsection("Step $step_number: Cleared $mac from $1");
 
     # now put the mac back in the pool
     $MAC{$mac}->{client} = undef;
@@ -267,7 +268,7 @@ sub start_ping {
     my $network = new Net::Netmask($ip, $nm);
     my $pid = fork();
 
-    oscar_log_subsection("Step 6: Launching background ping");
+    oscar_log_subsection("Step $step_number: Launching background ping");
     if($pid) {
         $PINGPID = $pid;
     } else {
@@ -282,13 +283,13 @@ sub end_ping {
         kill 15, $PINGPID;
         $PINGPID = undef;
     }
-    oscar_log_subsection("Step 6: Killed background ping");
+    oscar_log_subsection("Step $step_number: Killed background ping");
 }
 
 sub end_collect_mac {
     my $label = shift;
     $label->configure(-text => "Not Listening to Network. Click 'Collect MAC Addresses' to start.");
-    oscar_log_subsection("Step 6: Stopped listening to network");
+    oscar_log_subsection("Step $step_number: Stopped listening to network");
     $COLLECT = 0;
 }
 
@@ -305,7 +306,7 @@ sub begin_collect_mac {
     my ($window, $listbox, $interface, $label) = @_;
     start_ping($interface);
     my $cmd = "/usr/sbin/tcpdump -i $interface -n -e -l";
-    oscar_log_subsection("Step 6: Starting to listen to network: $cmd");
+    oscar_log_subsection("Step $step_number: Starting to listen to network: $cmd");
     open(TCPDUMP,"$cmd |") or (carp("Could not run $cmd"), return undef);
     $label->configure(-text => "Currently Scanning Network... Click 'Stop Collecting' to stop.");
     while($COLLECT and $_ = <TCPDUMP>) {
@@ -380,17 +381,17 @@ sub run_setup_pxe {
     $window->Busy(-recurse => 1);
 
     my $cmd = "./setup_pxe -v";
-    oscar_log_subsection("Step 6: Setup network boot: $cmd");
+    oscar_log_subsection("Step $step_number: Setup network boot: $cmd");
     !system($cmd) or (carp($!), $window->Unbusy(), return undef);
 
     $cmd = "../packages/kernel/scripts/fix_network_boot";
     if ( -x $cmd) {
-	oscar_log_subsection("Step 6: Finishing network boot: $cmd");
+	oscar_log_subsection("Step $step_number: Finishing network boot: $cmd");
 	system($cmd);
-	oscar_log_subsection("Step 6: Successfully finished network boot");
+	oscar_log_subsection("Step $step_number: Successfully finished network boot");
     }
 
-    oscar_log_subsection("Step 6: Successfully setup network boot");
+    oscar_log_subsection("Step $step_number: Successfully setup network boot");
     $window->Unbusy();
     return 1;
 }
