@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.7 2003/01/30 21:30:01 brechin Exp $
+      $Id: config.xml,v 1.8 2003/05/16 15:09:24 brechin Exp $
   -->
   <name>opium</name>
 
@@ -45,6 +45,7 @@ checked and synchronized (if necessary) periodically (configurable).
 
     <server>
       <rpm>sync_users-oscar</rpm>
+      <rpm>crontabs</rpm>
     </server>
   </rpmlist>
 
