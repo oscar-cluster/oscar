@@ -22,7 +22,7 @@ my @rpms = qw(
       	      mpich-oscar-module
               mpich-oscar
               ntpconfig
-              pvm-modules
+              pvm-modules-oscar
               pvm
               openpbs-oscar 
               openpbs-oscar-mom
