@@ -43,6 +43,7 @@ use OSCAR::Configurator;
 use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::PackageInUn;
+use OSCAR::WizardEnv;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
@@ -208,6 +209,14 @@ if( $ENV{'DEBUG_OSCAR_WIZARD'} ) {
     $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 }
 
+if( $ENV{'DEBUG_OSCAR_WIZARD'} ) {
+    my $cl_b=$window->Button(-text=>"Dump Wizard Environment",
+           -borderwidth=>"6", -relief=>"groove",
+           -command=> sub { use Data::Dumper; print "\nWizard Env:\n " . Dumper(%ENV) . "\n\n"; }
+           ,-pady=>"2");
+    $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
+}
+
 center_window( $window );
 #
 # Execution goes into an infinite Tcl/Tk loop here
@@ -261,6 +270,7 @@ sub run_command {
 
 sub run_server_install {
     my ($window, $step_number, $vars) = @_;
+    my @mod_env = ();
 
     # Make the top-level OSCAR wizard window busy so that the user
     # can't click in another step while this one is running.
@@ -283,6 +293,9 @@ sub run_server_install {
 	},
     };
     run_command($window, $step_number, $cmd_vars);
+
+    oscar_log_subsection('Update Wizard Env (as needed)');
+    @mod_env = WizardEnv::update_env();
 }
 
 ###########################################################################
@@ -509,9 +522,14 @@ sub populate_client_config_opkgs{
 
 sub run_post_install {
     my ($window, $step_number) = @_;
+    my @mod_env = ();
+
     $window->Busy(-recurse => 1);
 
     oscar_log_section("Running step $step_number of the OSCAR wizard: Complete cluster setup");
+
+    oscar_log_subsection('Update Wizard Env (as needed)');
+    @mod_env = WizardEnv::update_env();
 
     my $cmd_vars = { 
 	cmd => "./post_install",
@@ -527,6 +545,9 @@ sub run_post_install {
 	},
     };
     run_command($window, $step_number, $cmd_vars);
+
+    oscar_log_subsection('Update Wizard Env (as needed)');
+    @mod_env = WizardEnv::update_env();
 }
 
 ###########################################################################
@@ -544,3 +565,4 @@ sub run_tests {
     $window->Unbusy();
     return 1;
 }
+
