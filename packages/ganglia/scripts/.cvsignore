@@ -1,4 +1,8 @@
 Makefile
 Makefile.in
-Makefile.am
-.oscar_made_makefile_am
+config.log
+config.status
+config.guess
+config.sub
+install-sh
+setup

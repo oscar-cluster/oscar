@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>pfilter</name>
+
+  <version>
+    <major>1</major>
+    <minor>678</minor>
+    <subversion>0</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <summary>pfilter - packet filtering ruleset generator</summary>
+  <license>GPL</license>
+  <group>Securit</group>
+  <packager>
+    <name>Neil Gorsuch</name>
+    <email>ngorsuch@ncsa.uiuc.edu</email>
+  </packager>
+
+  <description>The pfilter package is used to generate packet
+filtering rulesets.  It uses an easy to understand and edit text
+configuration file as input, and is installed as a chkconfig
+controlled system package.</description>
+
+  <rpmlist>
+    <all>
+      <rpm>pfilter</rpm>
+      <rpm>iptables</rpm>
+    </all>
+  </rpmlist>
+
+</package>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>mpich</name>
+
+  <version>
+    <major>1</major>
+    <minor>2</minor>
+    <subversion>4</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>included</class>
+  <installable>1</installable>
+
+  <summary>MPICH specifically packaged for OSCAR clusters</summary>
+  <license>Freely distributable</license>
+  <copyright>2002</copyright>
+  <group>Development/Libraries</group>
+  <url>http://www.lam-mpi.org/</url>
+  <maintainer>
+    <name>MPICH Team</name>
+    <email>mpich-bugs@mcs.anl.gov</email>
+  </maintainer>
+  <packager>
+    <name>Neil Gorsuch</name>
+    <email>ngorsuch@ncsa.uiuc.edu</email>
+  </packager>
+
+  <description>MPICH is a freely available, portable implementation of
+PI (http://www.mpi-forum.org), the Standard for message-passing
+libraries.</description>
+
+  <provides>
+    <type>package</type>
+    <name>mpi</name>
+  </provides>
+
+  <require>
+    <type>package</type>
+    <name>switcher</name>
+  </require>
+
+</package>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>pbs</name>
+
+  <version>
+    <major>2</major>
+    <minor>3</minor>
+    <subversion>16</subversion>
+    <release>7</release>
+    <epoch>1</epoch>
+  </version>
+
+  <summary>OSCARified Portable Batch System base software with gui</summary>
+  <license>PBS license (see PBS_License.txt)</license>
+  <group>Applications/batch</group>
+  <packager>
+    <name>Jeremy Enos</name>
+    <email>jenos@ncsa.uiuc.edu</email>
+  </packager>
+
+  <description>The Portable Batch System (PBS) is a flexible workload
+management system.  It operates on networked, multi-platform UNIX
+environments, including heterogeneous clusters of workstations,
+supercomputers, and massively parallel systems.
+
+This version of PBS also includes the following patches:
+the cplant fr patch to get rid of some hangs because of bad nodes;
+the NCSA scaling patch to allow using 500+ nodes;
+the NCSA patch to allow home directory spooling;
+the NCSA patch to allow compiling on RedHat 7.2;
+the ANL rpp tuning patch to minimize packet loss on large clusters;
+the NCSA patch to allow .pbs_spool home sub-directory spooling;
+the NCSA patch to lock pbs_mom into memory.
+the maui_rm_ext patch allows submission with the '-W x=&lt;XSTRING' flag.
+It simply tells PBS to allow, and opaquely pass the value of the
+specified string which Maui then processes.
+
+It has been modified slightly to be usable under the OSCAR cluster
+software system.
+
+This base package includes a few core directories necessary for the
+Openpbs system.  To make this package useful, you will need to install
+one or more of the following related packages: openpbs-oscar-client
+includes the client commands and documentation, openpbs-oscar-gui
+includes the gui interface to the client commands, openpbs-oscar-mom
+includes the software used to run jobs on computation nodes,
+openpbs-oscar-server includes the software used to schedule jobs on
+the server node.</description>
+
+  <rpmlist>
+    <all>
+      <rpm>openpbs-oscar</rpm>
+      <rpm>openpbs-oscar-mom</rpm>
+      <rpm>openpbs-oscar-client</rpm>
+    </all>
+
+    <server>
+      <rpm>openpbs-oscar-server</rpm>
+      <rpm>openpbs-oscar-gui</rpm>
+      <rpm>maui-oscar</rpm>
+    </server>
+  </rpmlist>
+
+</package>

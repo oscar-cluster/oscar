@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>lam</name>
+
+  <version>
+    <major>6</major>
+    <minor>5</minor>
+    <subversion>7</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>included</class>
+  <installable>1</installable>
+
+  <summary>LAM/MPI specifically packaged for OSCAR clusters</summary>
+  <license>BSD</license>
+  <copyright>2002</copyright>
+  <group>Development/Libraries</group>
+  <url>http://www.lam-mpi.org/</url>
+  <maintainer>
+    <name>LAM Team</name>
+    <email>lam@lam-mpi.org</email>
+  </maintainer>
+  <packager>
+    <name>Jeff Squyres</name>
+    <email>jsquyres@lam-mpi.org</email>
+  </packager>
+  <vendor>Open Systems Laboratory, Indiana University</vendor>
+
+  <description>This RPM is created specifically for the OSCAR
+distribution.  The main difference between this RPM and the official
+LAM RPMs distributed by the LAM Team is that it will be installed into
+the OSCARPREFIX tree.  Since LAM is the only package installed in
+OSCARPREFIX, the man pages and documentation files are installed in
+slightly different places as well (the "share" subdirectory is not
+really necessary).
+
+LAM (Local Area Multicomputer) is an MPI programming environment and
+development system for heterogeneous computers on a network. With
+LAM/MPI, a dedicated cluster or an existing network computing
+infrastructure can act as a single parallel computer.  LAM/MPI is
+considered to be "cluster friendly", in that it offers daemon-based
+process startup/control as well as fast client-to-client message
+passing protocols.  LAM/MPI can use TCP/IP and/or shared memory for
+message passing (currently, different RPMs are supplied for this --
+see the main LAM web site for details).
+
+LAM features a full implementation of MPI-1 (with the exception that
+LAM does not support cancelling of sends), and much of MPI-2.
+Compliant applications are source code portable between LAM/MPI and
+any other implementation of MPI.  In addition to providing a
+high-quality implementation of the MPI standard, LAM/MPI offers
+extensive monitoring capabilities to support debugging.  Monitoring
+happens on two levels.  First, LAM/MPI has the hooks to allow a
+snapshot of process and message status to be taken at any time during
+an application run.  This snapshot includes all aspects of
+synchronization plus datatype maps/signatures, communicator group
+membership, and message contents (see the XMPI application on the main
+LAM web site).  On the second level, the MPI library is instrumented
+to produce a cummulative record of communication, which can be
+visualized either at runtime or post-mortem.</description>
+
+  <provides>
+    <type>package</type>
+    <name>mpi</name>
+  </provides>
+
+  <require>
+    <type>package</type>
+    <name>switcher</name>
+  </require>
+
+</package>

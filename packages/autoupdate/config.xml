@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>autoupdate</name>
+
+  <version>
+    <major>1</major>
+    <minor>0</minor>
+    <subversion>0</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>included</class>
+  <installable>1</installable>
+
+  <summary>AutoUpdate wrapper for use with OSCAR</summary>
+  <license>GPL</license>
+  <group>Applications/System</group>
+  <url>http://www.mat.univie.ac.at/~gerald/ftp/autoupdate/</url>
+  <packager>
+    <name>Jason Brechin</name>
+    <email>brechin@ncsa.uiuc.edu</email>
+  </packager>
+
+  <description>This package contains the script cluster_update, used
+on an OSCAR cluster to update the server and clients without having to
+worry about autoupdate syntax.</description>
+
+  <rpmlist>
+    <client>
+      <rpm>autoupdate-client</rpm>
+      <rpm>perl-libnet</rpm>
+    </client>
+  </rpmlist>
+
+</package>

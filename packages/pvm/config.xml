@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>pvm</name>
+
+  <version>
+    <major>3</major>
+    <minor>4</minor>
+    <subversion>4+6</subversion>
+    <release>3</release>
+    <epoch>1</epoch>
+  </version>
+
+  <summary>Parallel Virtual Machine - Libraries for distributed computing.</summary>
+  <license>Freely distributable</license>
+  <group>Development/Libraries</group>
+  <packager>
+    <name>Thomas Naughton</name>
+    <email>naughtont@ornl.gov</email>
+  </packager>
+
+  <description>PVM is a software system that enables a collection of
+heterogeneous computers to be used as a coherent and flexible
+concurrent computational resource.
+
+The individual computers may be shared- or local-memory
+multiprocessors, vector supercomputers, specialized graphics engines,
+or scalar workstations, that may be interconnected by a variety of
+networks, such as Ethernet, FDDI.
+
+User programs written in C, C++ or Fortran access PVM through library
+routines.</description>
+
+</package>

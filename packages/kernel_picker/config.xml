@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>kernel_picker</name>
+
+  <version>
+    <major>1</major>
+    <minor>1</minor>
+    <subversion>0</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>included</class>
+  <installable>1</installable>
+
+  <summary>A Perl script to substitute a kernel into an OSCAR (SIS) image.</summary>
+  <license>GPL</license>
+  <copyright>2002</copyright>
+  <group>Application/System</group>
+  <url>http://oscar.ncsa.uiuc.edu/</url>
+  <packager>
+    <name>NCSA</name>
+    <email>oscar-users@lists.sourceforge.net</email>
+  </packager>
+  <vendor>NCSA</vendor>
+
+  <description>kernel_picker allows you to substitute a given kernel
+into your OSCAR (SIS) image prior to building your nodes.  If executed
+with no command line options, you will be prompted for all required
+information.  You can also specify command line options for (mostly)
+non-interactive execution.  Any necessary information that you do not
+give via an option will cause the program to prompt you for that
+information.</description>
+
+  <rpmlist>
+    <server>
+      <rpm>systemconfigurator</rpm>
+      <rpm>perl</rpm>
+      <rpm>kernel_picker</rpm>
+    </server>
+  </rpmlist>
+
+</package>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>ganglia</name>
+
+  <version>
+    <major>1</major>
+    <minor>0</minor>
+    <subversion>0</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>third-party</class>
+  <installable>1</installable>
+
+  <summary>Ganglia Monitoring Toolkit</summary>
+  <license>BSD</license>
+  <copyright>2002</copyright>
+  <group>System Environment/Base</group>
+  <url>http://ganglia.sourceforge.net/</url>
+  <packager>
+    <name>Steve Duchene</name>
+    <email>linux-clusters@mindspring.com</email>
+  </packager>
+
+  <description>Ganglia is a scalable, real-time cluster monitoring and
+execution environment with all execution requests and cluster
+statistics expressed in an open well-defined XML format.</description>
+
+  <rpmlist>
+    <all>
+      <rpm>ganglia-monitor-core</rpm>
+    </all>
+
+    <server>
+      <rpm>ganglia-php-rrd-client</rpm>
+      <rpm>rrdtool-oscar</rpm>
+      <rpm>perl-XML-Parser</rpm>
+      @LIBPNG_RPM@
+    </server>
+  </rpmlist>
+
+</package>

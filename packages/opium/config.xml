@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<package>
+  <name>opium</name>
+
+  <version>
+    <major>1</major>
+    <minor>3</minor>
+    <subversion>0</subversion>
+    <release>9</release>
+    <epoch>1</epoch>
+  </version>
+
+  <summary>OSCARified User File Synchronization System</summary>
+  <license>GPL</license>
+  <group>System Environment/Base</group>
+  <packager>
+    <name>Jason Brechin</name>
+    <email>jbrechin@ncsa.uiuc.edu</email>
+  </packager>
+
+  <description>The OSCAR User Synchronization System keeps the users
+and groups synchronizaed from the the central OSCAR server out to the
+OSCAR compute nodes. Whenever any of the following happens, the users
+and groups on the OSCAR server are copied to the OSCAR clients:
+periodically (configurable minute).</description>
+
+  <rpmlist>
+    <all>
+      <rpm>ssh-oscar</rpm>
+    </all>
+
+    <server>
+      <rpm>sync_users-oscar</rpm>
+    </server>
+  </rpmlist>
+
+</package>
