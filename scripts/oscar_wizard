@@ -70,6 +70,10 @@ $boot->grid("-","-",-sticky=>"nsew");
 # Step 5, the Oscar post install script
 oscar_button($window, "Step 5:", "Complete Cluster Setup", [\&run_post_install, $window], 'post_install');
 oscar_button($window, "Step 6:", "Test Cluster Setup", [\&run_tests, $window], 'test_install');
+
+#
+# The buttons for node def maintenance
+#
 my $maint=$window->Label (-text=>"The following buttons are for managing 
 your node definitions after the initial install.",-relief=>"groove");
 $maint->grid("-","-",-sticky=>"nsew");
