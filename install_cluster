@@ -164,15 +164,15 @@ oscar_log_section("Running OSCAR install_cluster script");
 
 # Fix to make multi lingualness work
 
-$ENV{LANG} = "en_US";
-#$ENV{LC_ALL} = "en_US";
-$ENV{LANGUAGE} = "en_US:en";
-$ENV{LC_COLLATE} = "en_US";
-$ENV{LC_CTYPE} = "en_US";
-$ENV{LC_MESSAGES} = "en_US";
-$ENV{LC_MONETARY} = "en_US";
-$ENV{LC_NUMERIC} = "en_US";
-$ENV{LC_TIME} = "en_US";
+$ENV{LANG} = "C";
+$ENV{LC_ALL} = "C";
+$ENV{LANGUAGE} = "C";
+$ENV{LC_COLLATE} = "C";
+$ENV{LC_CTYPE} = "C";
+$ENV{LC_MESSAGES} = "C";
+$ENV{LC_MONETARY} = "C";
+$ENV{LC_NUMERIC} = "C";
+$ENV{LC_TIME} = "C";
 
 # add entries to path that we know we will need
 
