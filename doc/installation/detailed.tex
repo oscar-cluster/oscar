@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.16 2002/01/18 05:13:18 mjbrim Exp $
+% $Id: detailed.tex,v 1.17 2002/01/22 20:16:45 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -471,7 +471,8 @@ to specify how many clients you want to create.
 create the image in Step 1.
 
 \item The \field{Domain Name} field should be used to specify the client's IP
-domain name.
+domain name. This field \emph{must} have a value. It should contain the server's
+domain if it has one. If it is blank, enter a domain like \emph{oscardomain}.
 
 \item The \field{Base name} field is used to specify the first part of the 
 client name and hostname. It will have an index appended to the end of it.
