@@ -1,4 +1,4 @@
-$Id: README,v 1.5 2002/01/20 20:40:30 naughtont Exp $
+$Id: README,v 1.6 2002/01/20 20:43:21 mchasal Exp $
 
 $COPYRIGHT$
 
@@ -21,17 +21,6 @@ will be available soon and this test will return.
 
 -There will be a new MPICH RPM added that uses "ssh" by default
 instead of "rsh" ("rsh" is disabled by default in the OSCAR install).
-
-- Only single processors are exploited on the nodes.  Be sure to tell
-the test script that you have 1 processor per node.
-
-- sshd may not be properly started on the server.  Make sure it is
-running before installing the nodes.
-
-- If you use rpms from another source other than the RedHat 7.1 CDs,
-you may recieve some file conflict messages when installing the
-server.  Just remove the conflicting RPM filenames from /tftpboot/rpms
-and rerun install_cluster.
 
 - You MUST specify a domain name for your clients when defining them.
 
