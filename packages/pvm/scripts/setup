@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.3 2003/07/30 18:31:08 naughtont Exp $
+# $Id: setup,v 1.4 2003/08/04 21:05:50 naughtont Exp $
 #
 # setup script for the pvm package
 # (snagged from Jeff's switcher pkg for 2.3 release)
@@ -67,20 +67,18 @@ if (! -d $dest_dir) {
   croak("$source_dir does not exist");
 }
 
-# TJN: don't think we can remove existing PVM's b/c they're part of distro
-#      PkgBest will just select the correct one.
-## Remove any "modules-oscar" RPMs in the dest dir
-#
-#opendir(DIR, $dest_dir);
-#my @bad_files = grep {/^modules-oscar/ && -f "$dest_dir/$_" } readdir(DIR);
-#closedir(DIR);
-#if ($#bad_files > -1) {
-#  printf("Removing old files:\n");
-#  foreach my $file (@bad_files) {
-#    printf(" - $dest_dir/$file\n");
-#    unlink("$dest_dir/$file");
-#  }
-#}
+# Remove any "pvm-*" RPMs in the dest dir e.g., RH9's pvm-3.4.4-12 
+
+opendir(DIR, $dest_dir);
+my @bad_files = grep {/^pvm-/ && -f "$dest_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#bad_files > -1) {
+  printf("Removing old files:\n");
+  foreach my $file (@bad_files) {
+    printf(" - $dest_dir/$file\n");
+    unlink("$dest_dir/$file");
+  }
+}
 
 # Make a list of the new files and copy them over
 
