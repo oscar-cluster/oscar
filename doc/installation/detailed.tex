@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.39 2002/08/31 16:29:36 jsquyres Exp $
+% $Id: detailed.tex,v 1.40 2002/08/31 22:36:18 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -204,10 +204,10 @@ network.
 
 Once both adapters have been physically installed in the server node,
 you need to configure them.\footnote{Beware of certain models of 3COM
-  network cards, some of which may be problematic with the Linux
-  kernel driver that is shipped in OSCAR.  See the OSCAR web site for
-  more information.}  Any network configurator is sufficient; popular
-applications include \cmd{neat}, \cmd{netcfg}, or a text editor.
+  network cards.  See footnote~\ref{foot:3com-warning} on
+  page~\pageref{foot:3com-warning}.}  Any network configurator is
+sufficient; popular applications include \cmd{neat}, \cmd{netcfg}, or
+a text editor.
 
 The following major requirements need to be satisfied:
 
@@ -370,7 +370,7 @@ describing the purpose of the step.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/2_sbs-oscar-wizard.\figext}
+    \includegraphics{figs/2_sbs-oscar-wizard.\figext}
     \caption{OSCAR Wizard.}
     \label{fig:detailed-oscar-wizard}
   \end{center}
@@ -436,7 +436,7 @@ A sample dialog is shown in Figure~\ref{fig:detailed-build-image}.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/4a_sbs-build-image1.\figext}
+    \includegraphics{figs/4a_sbs-build-image1.\figext}
     \caption{Build the image.}
     \label{fig:detailed-build-image}
   \end{center}
@@ -608,8 +608,8 @@ the next step.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/5a_sbs-define-clients1.\figext}
-    \caption{NEED UPDATED IMAGE. Define the Clients.}
+    \includegraphics{figs/5a_sbs-define-clients1.\figext}
+    \caption{Define the Clients.}
     \label{fig:detailed-define-clients}
   \end{center}
 \end{figure}
@@ -659,7 +659,7 @@ completed the networks setup, press the \button{Close} button.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6e_sbs-found-mac.\figext}
+    \includegraphics{figs/6e_sbs-found-mac.\figext}
     \caption{Collect client MAC addresses.}
     \label{fig:detailed-collect-mac}
   \end{center}
@@ -759,7 +759,7 @@ of the test fail, then there may be problem with your installation.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/8_test-cluster-complete.\figext}
+    \includegraphics{figs/8_test-cluster-complete.\figext}
     \caption{Setup cluster tests}
     \label{fig:detailed-setup-test}
   \end{center}
@@ -812,8 +812,8 @@ initial install. Refer to Sections~\ref{det:defclients},
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/9a_sbs-add-node.\figext}
-    \caption{NEED UPDATED IMAGE Adding OSCAR clients.}
+    \includegraphics{figs/9a_sbs-add-node.\figext}
+    \caption{Adding OSCAR clients.}
     \label{fig:detailed-add-node}
   \end{center}
 \end{figure}
@@ -829,7 +829,7 @@ Select the node(s) that you wish to delete and press the button
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/10a_sbs-del-node.\figext}
+    \includegraphics{figs/10a_sbs-del-node.\figext}
     \caption{Deleting Oscar clients.}
     \label{fig:detailed-delete-node}
   \end{center}

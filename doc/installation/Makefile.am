@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.14 2002/07/17 06:41:58 jsquyres Exp $
+# $Id: Makefile.am,v 1.15 2002/08/31 22:36:18 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -54,7 +54,6 @@ FIG_FILES	= \
 
 SBS_FILES	= \
 			 figs/0a_sbs-download.png \
-			 figs/0b_sbs-rh72notes-rpm-upgrd.png \
 			 figs/0c_sbs-unpack.png \
 			 figs/10a_sbs-del-node.png \
 			 figs/10b_sbs-del-node-partA.png \

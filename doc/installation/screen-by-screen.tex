@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: screen-by-screen.tex,v 1.12 2002/07/20 17:20:54 jsquyres Exp $
+% $Id: screen-by-screen.tex,v 1.13 2002/08/31 22:36:18 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -16,28 +16,23 @@ The following is a screen-by-screen walkthrough of a simple installation.
 It is intended as supplementary material to aid in providing a better feel
 for the general progression of the installation.  For a detailed discussion
 of the steps, please refer to the Detailed Cluster Installation Procedure. 
-Note the example screen shot were based in a Red Hat 7.2 therefore
-RPM's MUST be upgraded. 
+
+Note the example screen shots were based in a Red Hat 7.3 using a
+pre-release version of OSCAR (1.4b7) in the KDE graphical environment.
+Since this section is intended as a supplementary source of
+information, it is judged to be ``close enough'' to the real 1.4
+release.  Just beware that some of the screenshots may not be {\em
+  exactly} what you see in the 1.4 release.
 
 %% Adjust the margins so we can better handle our large images
-\setlength{\oddsidemargin}{-0.5in}
-\setlength{\evensidemargin}{-0.5in}
-\setlength{\textwidth}{7.5in}
 
-%%% Seems out of place in Release notes. Should I put it here or
-%%% after getting OSCAR from source forge?
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=\imgscale]{figs/0b_sbs-rh72notes-rpm-upgrd.\sbsext}
-    \caption{Release Note: RedHat 7.2, upgrade default RPM.}
-    \label{fig:sbs-rh72notes-rpm-upgrd}
-  \end{center}
-\end{figure}
-
+%\setlength{\oddsidemargin}{-0.5in}
+%\setlength{\evensidemargin}{-0.5in}
+%\setlength{\textwidth}{7.5in}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/0a_sbs-download.\sbsext}
+    \centerline{\includegraphics[scale=\imgscale]{figs/0a_sbs-download.\sbsext}}
     \caption{Getting OSCAR.}
     \label{fig:sbs-getting-oscar}
   \end{center}
@@ -52,9 +47,13 @@ RPM's MUST be upgraded.
 %  \end{center}
 %\end{figure}
 
+% JMS: These images were captured using KDE ``konsole'' tooles, with
+% the ``small'' font, using a black-on-white schema, and resized to be
+% 80x26.  This allows for 2 screenshots per page.
+
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/0c_sbs-unpack.\sbsext}
+    \centerline{\includegraphics{figs/0c_sbs-unpack.\sbsext}}
     \caption{Unpacking OSCAR.}
     \label{fig:sbs-unpacking-oscar}
   \end{center}
@@ -63,7 +62,7 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/1a_sbs-install-oscar.\sbsext}
+    \centerline{\includegraphics{figs/1a_sbs-install-oscar.\sbsext}}
     \caption{Running the \cmd{install\_cluster} script.}
     \label{fig:sbs-install-oscar}
   \end{center}
@@ -71,8 +70,9 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/1b_sbs-install-oscar2.\sbsext}
-    \caption{Running the \cmd{install\_cluster} script.}
+    \centerline{\includegraphics{figs/1b_sbs-install-oscar2.\sbsext}}
+    \caption{Further progress on running the \cmd{install\_cluster}
+      script.}
     \label{fig:sbs-install-oscar2}
   \end{center}
 \end{figure}
@@ -80,7 +80,7 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/2_sbs-oscar-wizard.\sbsext}
+    \centerline{\includegraphics{figs/2_sbs-oscar-wizard.\sbsext}}
     \caption{The OSCAR Installation Wizard.}
     \label{fig:sbs-install-wizard}
   \end{center}
@@ -94,7 +94,7 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/3a_sbs-wizard-step1.\sbsext}
+    \centerline{\includegraphics{figs/3a_sbs-wizard-step1.\sbsext}}
     \caption{Beginning step 1 -- Select default MPI implementation.}
     \label{fig:sbs-install-wizard-s1}
   \end{center}
@@ -102,8 +102,11 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/3b_sbs-wizard-step1.\sbsext}
-    \caption{Further progress step 1 -- Prepared server, completed.}
+    \centerline{\includegraphics{figs/3b_sbs-wizard-step1.\sbsext}}
+    \caption[Further progress in step 1 -- Prepared server,
+    completed.]{Further progress in step 1 -- Prepared server,
+      completed (there will also be lots of output in the terminal
+      window).}
     \label{fig:sbs-install-wizard-s1b}
   \end{center}
 \end{figure}
@@ -117,7 +120,7 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/4a_sbs-build-image1.\sbsext}
+    \centerline{\includegraphics{figs/4a_sbs-build-image1.\sbsext}}
     \caption{Beginning step 2 -- Building the image.}
     \label{fig:sbs-build-image}
   \end{center}
@@ -125,17 +128,20 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/4b_sbs-build-image2.\sbsext}
-    \caption{Further progress step 2 -- Building the image.}
-    \label{fig:sbs-build-image-progress}
+    \centerline{\includegraphics{figs/4b_sbs-build-image2.\sbsext}}
+    \caption[Further progress in step 2 -- Building the
+    image.]{Further progress in step 2 -- Building the image; the
+      progress bar shows that it is roughly half completed.}
+    \label{fig:sbs-build-image-progress}{Further progress in step 2 --
+      Building the image.}
   \end{center}
 \end{figure}
 
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/4c_sbs-build-image3.\sbsext}
-    \caption{Further progress step 2 -- Building the image, completed.}
+    \centerline{\includegraphics{figs/4c_sbs-build-image3.\sbsext}}
+    \caption{Further progress in step 2 -- Building the image, completed.}
     \label{fig:sbs-build-image2}
   \end{center}
 \end{figure}
@@ -146,7 +152,7 @@ RPM's MUST be upgraded.
  
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/5a_sbs-define-clients1.\sbsext}
+    \centerline{\includegraphics{figs/5a_sbs-define-clients1.\sbsext}}
     \caption{Beginning step 3 -- Defining the clients.}
     \label{fig:sbs-define-clients}
   \end{center}
@@ -155,8 +161,9 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/5b_sbs-define-clients2.\sbsext}
-    \caption{Further progress step 3 -- Create clients for image completed.}
+    \centerline{\includegraphics{figs/5b_sbs-define-clients2.\sbsext}}
+    \caption{Further progress in step 3 -- Create clients for image
+      completed.}
     \label{fig:sbs-define-clients2}
   \end{center}
 \end{figure}
@@ -167,7 +174,8 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6a_sbs-collect-mac1.\sbsext}
+
+    \centerline{\includegraphics{figs/6a_sbs-collect-mac1.\sbsext}}
     \caption{Beginning step 4 -- Setting up networking.}
     \label{fig:sbs-setup-network1}
   \end{center}
@@ -180,16 +188,18 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6ba_sbs-autoinstall-flpy1.\sbsext}
-    \caption{Further progress step 4 -- Build Autoinstall Floppy (part 1).}
+    \centerline{\includegraphics{figs/6ba_sbs-autoinstall-flpy1.\sbsext}}
+    \caption{Further progress in step 4 -- Build Autoinstall Floppy
+      (part 1).} 
     \label{fig:sbs-autoinstall-flpy1}
   \end{center}
 \end{figure}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6bb_sbs-autoinstall-flpy2.\sbsext}
-    \caption{Further progress step 4 -- Build Autoinstall Floppy (part 2).}
+    \centerline{\includegraphics{figs/6bb_sbs-autoinstall-flpy2.\sbsext}}
+    \caption{Further progress in step 4 -- Build Autoinstall Floppy
+      (part 2).} 
     \label{fig:sbs-autoinstall-flpy2}
   \end{center}
 \end{figure}
@@ -197,16 +207,17 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6bc_sbs-autoinstall-flpy3.\sbsext}
-    \caption{Further progress step 4 -- Build Autoinstall Floppy (part 3).}
+    \centerline{\includegraphics{figs/6bc_sbs-autoinstall-flpy3.\sbsext}}
+    \caption{Further progress in step 4 -- Build Autoinstall Floppy
+      (part 3).} 
     \label{fig:sbs-autoinstall-flpy3}
   \end{center}
 \end{figure}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6c_sbs-client-boot1.\sbsext}
-    \caption{Further progress step 4 -- Booting the client.}
+    \centerline{\includegraphics{figs/6c_sbs-client-boot1.\sbsext}}
+    \caption{Further progress in step 4 -- Booting the client.}
     \label{fig:sbs-collect-boot1}
   \end{center}
 \end{figure}
@@ -215,24 +226,27 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6ca_sbs-client-boot1.\sbsext}
-    \caption{Further progress step 4 -- Scan for booting client (DHCP request).}
+    \centerline{\includegraphics{figs/6ca_sbs-client-boot1.\sbsext}}
+    \caption{Further progress in step 4 -- Scan for booting client (DHCP
+      request).}
     \label{fig:sbs-client-boot2}
   \end{center}
 \end{figure}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6d_sbs-broadcast.\sbsext}
-    \caption{Further progress step 4 -- Client is broadcasting, in order to acquire MAC address.}
-    \label{fig:sbs-collect-broadcast}
+    \centerline{\includegraphics{figs/6d_sbs-broadcast.\sbsext}}
+    \caption{Further progress in step 4 -- Client is broadcasting, in
+      order to acquire MAC address.}
+    \label{fig:sbs-collect-broadcast} 
   \end{center}
 \end{figure}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6e_sbs-found-mac.\sbsext}
-    \caption{Further progress step 4 -- Scanning network, found first MAC address.}
+    \centerline{\includegraphics{figs/6e_sbs-found-mac.\sbsext}}
+    \caption{Further progress in step 4 -- Scanning network, found
+      first MAC address.}
     \label{fig:sbs-setup-network2}
   \end{center}
 \end{figure}
@@ -240,29 +254,33 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6f_sbs-stop-collect-mac2.\sbsext}
-   \caption{Further progress step 4 -- Setting up networking, got MAC address(s), stop scanning and configure DHCP server.}
+    \centerline{\includegraphics{figs/6f_sbs-stop-collect-mac2.\sbsext}}
+   \caption[Further progress in step 4 -- Completed setup of
+   networking.]{Further progress in step 4 -- Completed setting up of
+     networking, got and assigned all MAC address(s).  About to click
+     on ``Stop collecting'', and ``Configure DHCP server''.}
     \label{fig:sbs-setup-network3}
   \end{center}
 \end{figure}
 
 % Re-adjust the margins so we can better handle our large images
-\setlength{\oddsidemargin}{-0.5in}
-\setlength{\evensidemargin}{-0.5in}
-\setlength{\textwidth}{7.5in}
+%\setlength{\oddsidemargin}{-0.5in}
+%\setlength{\evensidemargin}{-0.5in}
+%\setlength{\textwidth}{7.5in}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6h_sbs-client-boot.\sbsext}
-    \caption{Booting the client.}
+    \centerline{\includegraphics{figs/6h_sbs-client-boot.\sbsext}}
+    \caption{Booting the client a second time to download the image.}
     \label{fig:sbs-install-boot}
   \end{center}
 \end{figure}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6i_sbs-client-diskpar.\sbsext}
-    \caption{Client partitioning disk.}
+    \centerline{\includegraphics{figs/6i_sbs-client-diskpar.\sbsext}}
+    \caption{Client partitioning disk, setting up the disk tables, and
+      starting to download the image.}
     \label{fig:sbs-install-diskpar}
   \end{center}
 \end{figure}
@@ -270,16 +288,17 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6j_sbs-client-rsync.\sbsext}
-    \caption{Client installing image.}
+    \centerline{\includegraphics{figs/6j_sbs-client-rsync.\sbsext}}
+    \caption{Client downloading and installing the image.}
     \label{fig:sbs-install-rsync}
   \end{center}
 \end{figure}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/6k_sbs-rebootme.\sbsext}
-    \caption{Nodes have finished the install.}
+    \centerline{\includegraphics{figs/6k_sbs-rebootme.\sbsext}}
+    \caption{A node has finished the install -- it is asking to be
+      rebooted.}
     \label{fig:sbs-install-finish}
   \end{center}
 \end{figure}
@@ -291,7 +310,7 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
    \begin{center}
-     \includegraphics[scale=\imgscale]{figs/7_sbs-complete-cluster-setup.\sbsext}
+     \centerline{\includegraphics{figs/7_sbs-complete-cluster-setup.\sbsext}}
      \caption{Beginning step 5 -- Complete Cluster Setup.}
      \label{fig:sbs-install-wizard-s5}
    \end{center}
@@ -304,8 +323,11 @@ RPM's MUST be upgraded.
 
  \begin{figure}[htbp]
    \begin{center}
-     \includegraphics[scale=\imgscale]{figs/8_sbs-test-cluster-prompt.\sbsext}
-     \caption{Beginning step 6 -- Test Cluster Setup.}
+     \centerline{\includegraphics{figs/8_sbs-test-cluster-prompt.\sbsext}}
+     \caption[Beginning step 6 -- Test cluster setup.]{Beginning step
+       6 -- Test cluster setup.  Note that this figure is shown as
+       having executed the test script manually, not running from the
+       OSCAR wizard GUI.} 
      \label{fig:sbs-install-wizard-s6}
    \end{center}
  \end{figure}
@@ -313,16 +335,16 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/8_sbs-test-cluster-root-tests.\sbsext}
-    \caption{Further progress step 6 -- Exectuting tests as root.}
+    \centerline{\includegraphics{figs/8_sbs-test-cluster-root-tests.\sbsext}}
+    \caption{Further progress in step 6 -- Exectuting tests as root.}
     \label{fig:sbs-setup-test}
   \end{center}
 \end{figure}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/8_sbs-test-cluster-user-tests.\sbsext}
-    \caption{Further progress step 6 -- Executing tests as a non-root user.}
+    \centerline{\includegraphics{figs/8_sbs-test-cluster-user-tests.\sbsext}}
+    \caption{Further progress in step 6 -- Executing tests as a non-root user.}
     \label{fig:sbs-setup-test1}
   \end{center}
 \end{figure}
@@ -330,8 +352,8 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/8_test-cluster-complete.\sbsext}
-    \caption{Further progress step 6 -- Cluster tests completed.}
+    \centerline{\includegraphics{figs/8_test-cluster-complete.\sbsext}}
+    \caption{Further progress in step 6 -- Cluster tests completed.}
     \label{fig:sbs-setup-test2}
   \end{center}
 \end{figure}
@@ -342,7 +364,7 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/9a_sbs-add-node.\sbsext}
+    \centerline{\includegraphics{figs/9a_sbs-add-node.\sbsext}}
     \caption{Add OSCAR Clients.}
     \label{fig:sbs-add-node1}
   \end{center}
@@ -351,16 +373,16 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/9b_sbs-add-node-mksirange.\sbsext}
-    \caption{ADD Node step 1 -- Defining the clients.}
+    \centerline{\includegraphics[scale=\imgscale]{figs/9b_sbs-add-node-mksirange.\sbsext}}
+    \caption{Add Node step 1 -- Defining the clients.}
     \label{fig:sbs-add-node1-define-clients}
   \end{center}
 \end{figure}
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/9c_sbs-add-node-success.\sbsext}
-    \caption{ADD Node step 1 -- Defining the clients completed.}
+    \centerline{\includegraphics[scale=\imgscale]{figs/9c_sbs-add-node-success.\sbsext}}
+    \caption{Add Node step 1 -- Defining the clients completed.}
     \label{fig:sbs-add-node1-define-clients2}
   \end{center}
 \end{figure}
@@ -368,8 +390,8 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/9d_sbs-add-node-mac1.\sbsext}
-    \caption{ADD Node step 2 -- Setting up networking for new node(s).}
+    \centerline{\includegraphics[scale=\imgscale]{figs/9d_sbs-add-node-mac1.\sbsext}}
+    \caption{Add Node step 2 -- Setting up networking for new node(s).}
     \label{fig:sbs-add-node1-setup-network}
   \end{center}
 \end{figure}
@@ -377,8 +399,8 @@ RPM's MUST be upgraded.
 %
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/9e_sbs-add-node-mac2.\sbsext}
-    \caption{ADD Node step 2 -- Setting up networking, got MAC address, stop scanning and configure DHCP server.}
+    \centerline{\includegraphics[scale=\imgscale]{figs/9e_sbs-add-node-mac2.\sbsext}}
+    \caption{Add Node step 2 -- Setting up networking, got MAC address, stop scanning and configure DHCP server.}
     \label{fig:sbs-add-node1-setup-network2}
   \end{center}
 \end{figure}
@@ -387,8 +409,8 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/9f_sbs-add-node-complete.\sbsext}
-    \caption{ADD Node step 3 -- Complete Cluster Setup.}
+    \centerline{\includegraphics[scale=\imgscale]{figs/9f_sbs-add-node-complete.\sbsext}}
+    \caption{Add Node step 3 -- Complete Cluster Setup.}
     \label{fig:sbs-add-node1-cluster-setup}
   \end{center}
 \end{figure}
@@ -399,7 +421,7 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/10a_sbs-del-node.\sbsext}
+    \centerline{\includegraphics{figs/10a_sbs-del-node.\sbsext}}
     \caption{Delete OSCAR Clients.}
     \label{fig:sbs-del-node1}
   \end{center}
@@ -408,7 +430,7 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/10b_sbs-del-node-partA.\sbsext}
+    \centerline{\includegraphics[scale=\imgscale]{figs/10b_sbs-del-node-partA.\sbsext}}
     \caption{Node selected for deletion.}
     \label{fig:sbs-del-node1-done-partA}
   \end{center}
@@ -416,7 +438,7 @@ RPM's MUST be upgraded.
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{figs/10b_sbs-del-node-partB.\sbsext}
+    \centerline{\includegraphics{figs/10b_sbs-del-node-partB.\sbsext}}
     \caption{Node deletion completed.}
     \label{fig:sbs-del-node1-done-partB}
   \end{center}
