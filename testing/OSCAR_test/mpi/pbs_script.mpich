@@ -17,6 +17,9 @@ NP=`(wc -l < $PBS_NODEFILE) | awk '{print $1}'`
 mpich_profile=/etc/profile.d/mpi-01mpich.sh
 . $mpich_profile
 
+### Get new host warnings out of the way
+for m in `cat $PBS_NODEFILE |uniq` ; do ssh $m hostname ; done 2> /dev/null > /dev/null
+
 echo "Running MPICH test"
 $MPICH/bin/mpicc cpi.c -o mpich-cpi
 $MPICH/bin/mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cpi
