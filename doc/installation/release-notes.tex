@@ -116,6 +116,9 @@ The following release notes apply to OSCAR version \oscarversion.
   during the OSCAR installation process:
 
 \begin{verbatim}
+  awk: cmd. line:2: fatal: cannot open file `/etc/fstab'
+    for reading (No such file or directory)
+
   rsync_stub_dir: no such variable at ...
 
   Use of uninitialized value in pattern match (m//) at
@@ -437,7 +440,7 @@ For example,
 \item The tftp-server RPM which came with Mandrakelinux 10.0 expects the
 pxelinux boot files to reside in \file{/var/lib/tftpboot} but OSCAR puts
 them in \file{/tftpboot}.  To get around this issue we simply create a
-symbolic link from \file{/var/lib/tftpboot} to \file{/tftpboot}. 
+symbolic link from \file{/var/lib/tftpboot} to \file{/tftpboot}.
 
 \item While Mandrakelinux 10.0 supports 2.4 kernel, OSCAR only supports
 2.6 kernel - this is explicitly specified in \file{oscarsamples/mandrake-10.0-i386.rpmlist}.
