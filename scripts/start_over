@@ -24,6 +24,7 @@ my @rpms = qw(
               systemimager-common
               systemimager-i386boot
               systemimager-ia64boot
+	      mpich
              );
 
 stop_services();
