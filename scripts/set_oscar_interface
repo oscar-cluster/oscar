@@ -1,0 +1,135 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# Copyright 2002 NCSA
+#                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+
+use Tk;
+use Tk::BrowseEntry;
+use Tk::DialogBox;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Database;
+
+my $force = $#ARGV;
+$force++;
+my $root;
+
+our $interface;
+
+open(CMD, "/sbin/ifconfig | grep -e '^[[:alpha:]]' | cut -d ' ' -f 1 | grep -v -e '^lo' |");
+my @interfaces = <CMD>;
+close CMD;
+chomp @interfaces;
+
+sub okpushed {
+#  print "interface selected: $interface\n";
+  $interface;
+  our $root->destroy();
+#  return $ret;
+}
+#########################################################################
+#  Subroutine: interfaceDialog                                          #
+#  Parameters: 1. The title for the DialogBox                           #
+#              2. The text for the prompt label                         #
+#  Returns   : The option chosen by the user if Ok was pressed, or      #
+#              "" (empty string) if Cancel was pressed.                 #
+#########################################################################
+sub interfaceDialog
+{
+  my ($title,$label,$pw) = @_; # 1. $title = The title for the box 
+                               # 2. $label = The label for the prompt
+                               # 3. $pw = 1 if you want "*" output
+
+  my $db;                      # The DialogBox widget
+  our $errorstring = "";       # The string to output if there was an error
+
+  our $root = MainWindow->new;
+  $root->title($title);
+      # Add a label for the error (if there was an error)
+      $root->Label(
+              -textvariable => \$errorstring,
+              -foreground => '#aa0000',
+             )->pack;
+      # Add a label for what the prompt
+      $root->Label( 
+               -text => $label,
+             )->pack;
+      # Add a (labeled) text entry box for the user to type in
+      our $entry = $root->BrowseEntry( 
+               -width => 30,
+               -variable => \$interface,
+	       -state => 'readonly',
+             );
+      foreach $int (@interfaces) {
+        $entry->insert("end", "$int");
+      }
+      $entry->pack;
+      $root->Button(
+		-text=>'Ok',
+                -command=>\&okpushed,
+	     )->pack(-side=>'left');
+      $root->Button(
+		-text=>'Cancel',
+ 		-command=>sub{
+			      $root->destroy();
+			      return '';
+                             },
+	     )->pack(-side=>'right');
+      $root->bind('<Escape>' => sub{ $root->destroy(); return '';
+			           } 
+                 );
+MainLoop;
+
+}
+
+# make sure we're effectively root
+
+if ( $> ) {
+  print "You need to be root to install an OSCAR cluster.\n";
+  exit 1;
+}
+my @results;
+my $done = 0;
+unless ( database_execute_command("read_records oscar.interface", \@results, 0) && defined(@results) ) {
+  database_execute_command("add_fields oscar interface=text", undef, 1);
+}
+
+database_execute_command("read_records oscar.interface", \@results, 1);
+my $default = $results[0];
+
+while ( !$done ) {
+  if ( !defined($interface) || !$interface || $force ) {
+    if ( $default && !$force ) {
+      $interface = $default;
+      $done = 1;
+    } else {
+      print "You must choose a cluster network interface\n";
+      undef $default;
+      undef $force;
+      $done = 0;
+      $cluster_interface = interfaceDialog("OSCAR Network Interface",
+        "Choose your cluster interface");
+    }
+  } elsif ( defined($interface) ) {
+    database_execute_command("modify_records oscar.interface~$interface", undef, 1);
+    $done = 1;
+  } else {
+    $cluster_interface = interfaceDialog("OSCAR Network Interface",
+        "Choose your cluster interface");
+  }
+}
+print "interface: $interface\n";
+exit 0;
