@@ -1,0 +1,44 @@
+This is the Ganglia package for OSCAR Linux clusters.
+
+This tarball should be expanded in the OSCAR distribution tree under
+the directory "oscar-<version>/packages/".  After that, you'll have a
+directory named oscar-<version>/packages/ganglia/, with all the
+Ganglia files in it.
+
+-----
+
+There are some known issues with this release of Ganglia:
+
+- Ganglia may not work reliably on all platforms, and/or may cause
+  failures during the OSCAR installation process.  If this is the
+  case, simply remove the ganglia package directory from the OSCAR
+  tree and re-run the OSCAR installer.
+
+- In some cases, the Ganglia daemon (gmond) seems to spin out of
+  control on some nodes and consume large amounts of CPU cycles.
+  Running the command "service gmond restart" as root on the affected
+  node(s) usually fixes the problem.
+
+- Mandrake 8.2 users need to install the following RPM on the server
+  node before running the install_cluster script:
+
+        libpng-1.0.8-2mdk.i586.rpm
+
+  This RPM can be found in the directory packages/ganglia/extras/.
+  This RPM is *not* automatically installed by OSCAR.
+
+- After installation, the Ganglia output can be found by pointing your
+  web browser to (on the head node):
+
+        http://localhost/ganglia/
+
+- See the Ganglia user-level documentation in the directory:
+
+        packages/ganglia/doc/ganglia-user.pdf
+
+---
+
+Send questions, comments, and bug reports to the OSCAR user's list.
+For details, see the main OSCAR web page:
+
+        http://oscar.sourceforge.net/
