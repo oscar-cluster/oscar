@@ -324,7 +324,12 @@ sub run_pkg_user_test {
             if ($uid == $>) {
                 $rc = system("$script $args");
             } else {
-                $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} $script $args' - $user");
+                if( defined($ENV{OSCAR_PACKAGE_TEST_HOME}) ) {
+                     # TJN: this EnvVar is used by 'test_user' scripts. 
+                    $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} OSCAR_PACKAGE_TEST_HOME=$ENV{OSCAR_PACKAGE_TEST_HOME} $script $args' - $user");
+                } else {
+                    $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} $script $args' - $user");
+                }
             }
             if($rc) {
                 my $realrc = $rc >> 8;
