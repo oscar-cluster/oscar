@@ -4,10 +4,10 @@
 #                     All rights reserved.
 # Copyright 2002 International Business Machines
 #                Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+# Copyright (c) 2002-2004 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.36 2004/04/21 18:43:26 ngorsuch Exp $
+# $Id: wizard_prep,v 1.37 2004/05/08 17:41:20 jsquyres Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -40,31 +40,76 @@ use Carp;
 
 oscar_log_section("Running OSCAR wizard_prep script");
 
-# Run the prerequisites
-
-# TEMPORARY FIX: XML-Simple needs XML-Parser.  Need some kind of
-# "requires" functionality in the prerequisites, but for the moment,
-# I'm just going to sort the result of readdir(), which will put them
-# in the correct order.  This is not a good/permanent solution, but
-# it's good enough for the moment.
+# Run the prerequisites.  Observe the order set in
+# share/prereqs/order.txt, and then run any that are not explicitly
+# listed in there.
 
 oscar_log_subsection("Running OSCAR wizard prerequisites");
 my $prefix = "$ENV{OSCAR_HOME}/share/prereqs";
+
+# First get a listing of all subdirs
+
 opendir(PREREQDIR, $prefix) or 
   croak("Couldn't open $prefix for reading");
-my @prereqs = sort(readdir(PREREQDIR));
+my @all_prereqs = grep { -d "$prefix/$_" && $_ ne "." && $_ ne ".." } sort(readdir(PREREQDIR));
 closedir PREREQDIR;
-foreach my $prereq (@prereqs) 
-  {
-    my $abs = "$prefix/$prereq";
-    if (-d "$abs/scripts" && -f "$abs/scripts/setup") 
-      {
-        if (system("$abs/scripts/setup") != 0) 
-          {
-            croak("ERROR: Prerequisite failure!");
-          }
-      }
-  }
+
+# Now read in the share/prereqs/order.txt file
+
+my @ordered_prereqs;
+if (-f "$prefix/order.txt") {
+    open ORDER, "$prefix/order.txt" or
+        croak("Could't open $prefix/order.txt for reading");
+    @ordered_prereqs = <ORDER>;
+    chomp @ordered_prereqs;
+    close(ORDER);
+}
+
+# Keep a list of which prereqs we've processed already
+
+my $processed_prereqs;
+
+# Traverse the @ordered_prereqs list, and save the name of each as we
+# go through it
+
+foreach my $prereq (@ordered_prereqs) {
+
+    # Strip out comments
+
+    my $rel = $prereq;
+    $rel =~ s/(\#.+)$//;
+    if ($rel) {
+        my $abs = "$prefix/$rel";
+        if (-d "$abs/scripts" && -f "$abs/scripts/setup") {
+            print "Running prereq setup script $rel (in order)\n";
+            if (system("$abs/scripts/setup") != 0)  {
+                croak("ERROR: Prerequisite failure!");
+            }
+        }
+
+        # Save the fact that we've been there
+
+        $processed_prereqs->{$rel} = 1;
+    }
+}
+
+# Now go through all the directories (in sorted order, thankyouvery
+# much) and if we haven't already processed it above, process it now.
+
+foreach my $prereq (@all_prereqs) {
+
+    # Have we processed this directory already?
+
+    if (!defined($processed_prereqs->{$prereq})) {
+        my $abs = "$prefix/$prereq";
+        if (-d "$abs/scripts" && -f "$abs/scripts/setup") {
+            print "Running prereq setup script $prereq (after ordered)\n";
+            if (system("$abs/scripts/setup") != 0)  {
+                croak("ERROR: Prerequisite failure!");
+            }
+        }
+    }
+}
 
 # This must be done after the prerequisites, because the prerequisites
 # may have installed some Perl modules that OSCAR requires.
