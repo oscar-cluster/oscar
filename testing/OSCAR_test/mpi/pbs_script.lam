@@ -17,9 +17,29 @@ echo "Running LAM/MPI test"
 # The LAM/MPI test itself
 
 lamboot $PBS_NODEFILE
-mpicc cpi.c -o lam-cpi
-mpirun C lam-cpi
-lamclean
+
+do_cmds() {
+    eval $cmds
+    if test "$?" != "0"; then
+	echo "TEST FAILED!"
+	echo "Commands: $cmds"
+	lamhalt
+	exit 1
+    fi
+}
+
+echo "MPI C bindings test:"
+cmds="mpicc cpi.c -o lam-cpi && mpirun C lam-cpi && lamclean"
+do_cmds
+
+echo "MPI C++ bindings test:"
+cmds="mpiCC cxxhello.cc -o lam-cxxhello && mpirun C lam-cxxhello && lamclean"
+do_cmds
+
+echo "MPI Fortran bindings test:"
+cmds="mpif77 f77hello.f -o lam-f77hello && mpirun C lam-f77hello && lamclean"
+do_cmds
+
 lamhalt 
 
 echo "LAM/MPI test complete"
