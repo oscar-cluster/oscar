@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Makefile.am,v 1.1 2002/10/25 13:05:06 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2002/10/25 17:21:19 jsquyres Exp $
 #
 
 # This file is necessary -- we can't use the OSCAR
@@ -20,3 +20,6 @@
 EXTRA_DIST = \
 	setup setup.ac config.xml.in \
 	config.guess config.sub install-sh
+
+dist-hook:
+	sh ./autogen.sh
