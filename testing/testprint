@@ -1,0 +1,156 @@
+#!/usr/bin/perl
+
+#   $Header: /home/user5/oscar-cvsroot/oscar/testing/testprint,v 1.1 2002/10/15 18:31:52 mchasal Exp $
+
+#   Copyright (c) 2001 International Business Machines
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+use strict;
+use Carp;
+use AppConfig qw(:argcount);
+use Term::ANSIColor qw(:constants);
+use Term::ReadKey;
+use Term::Cap;
+use Data::Dumper;
+require POSIX;
+
+
+my $options=AppConfig->new(
+		Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
+			ALIAS => "h"},
+		label=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                        ALIAS => "l"},
+		status=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                        ALIAS => "s"},
+		pass=> {ARGCOUNT=> ARGCOUNT_NONE,
+			ALIAS => "p"},
+		fail=> {ARGCOUNT=> ARGCOUNT_NONE,
+			ALIAS => "f"},
+		);
+
+unless ($options->getopt()){
+	&usage;
+	exit 1;
+}
+
+if (&check_args) {
+	&usage;
+	exit 1;
+}
+
+if ($options->Help){
+	&usage;
+	exit 0;
+}
+my $termios = new POSIX::Termios;
+$termios->getattr;
+my $ospeed = $termios->getospeed;
+my $term=Term::Cap->Tgetent({OSPEED => $ospeed});
+#This should reset to the front of line
+#but I can't get it working, the last print does
+#it, but may not be portable.
+#my $clrstr=$term->Tgoto('ch',1,0);
+#print $clrstr;
+print "\033[1G"; # jump to the beginning of line
+
+my ($wchar, $hchar, $wpixels, $hpixels) = GetTerminalSize();  
+unless ($wchar) {
+        $wchar=60;
+}
+my $columns=int(($wchar-17)/2);
+printf ("%-${columns}.${columns}s %-${columns}.${columns}s",$options->label,$options->status);
+
+if ($options->fail) {
+        print BOLD,RED, "[FAILED]\n", RESET;
+} elsif ($options->pass) {
+        print BOLD,GREEN, "[PASSED]\n", RESET;  
+}
+exit 0; 
+
+sub check_args {
+
+        my $fail=0;
+	if (($options->pass) && ($options->fail)){
+                carp("Only one of --pass or --fail may be specified.");
+                $fail++;
+        }
+        unless($options->label) {
+                carp("--label must be specified.");
+                $fail++;
+        }
+	return $fail;
+
+}# check_args
+
+sub usage {
+    my $progname = $0;
+    if ($progname =~ m/(.+\/)(\w+)/) {
+	$progname = $2;
+    }
+    print <<USAGE;
+usage: $progname <options>
+
+  options
+    --status "<status text>"     The text to print for status.
+    --label "<label text>"       The text to print for the label.
+    --pass                       Print successful result.
+    --fail                       Print failure result.
+
+
+USAGE
+} #usage
+
+__END__
+
+=head1 NAME
+
+command shell to setup pxe network booting
+
+=head1 SYNOPSIS
+
+  setup_pxe --arch i386
+
+=head1 DESCRIPTION
+
+The setup_pxe command is used to configure a server
+to respond properly to pxelinux boot requests.
+
+=head2 Syntax
+
+setup_pxe [options]
+
+=head2 Options
+
+Recognized options include:
+
+=over 4
+
+=item --arch <architecture>
+
+The architecture to setup kernel. The default is the 
+current machine's architecture.
+
+=back
+
+=head1 AUTHOR
+
+Michael Chase-Salerno, mchasal@users.sf.net
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
