@@ -29,6 +29,11 @@
       <stepnum>2</stepnum>
     </task>
 
+    <task>
+      <dirname>Selector</dirname>
+      <stepnum>3</stepnum>
+    </task>
+
   </tasks>
 
   <tools>
