@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.6 2002/02/25 18:20:52 sdague Exp $
+#   $Id: MAC.pm,v 1.7 2002/03/05 00:35:51 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,9 +32,16 @@ use OSCAR::Network;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
+
+# %MAC = (
+#                   'macaddr' => {client => 'clientname', order => 'order collected'}
+#                 );
+#                 client will be client name or undef for unassigned
+#                 order will be a number
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
+my $ORDER = 1;
 my $COLLECT = 0;
 my $PINGPID = undef;
 
@@ -191,7 +198,7 @@ sub assign2machine {
         return undef;
     }
     my $adapter = findAdapter($client->{NAME},"eth0");
-    $MAC{$mac} = $adapter->{IP_ADDR};
+    $MAC{$mac}->{client} = $adapter->{IP_ADDR};
     $adapter->{MAC} = $mac;
     $adapter->update;
     regenerate_listbox($listbox);
@@ -212,7 +219,7 @@ sub clear_mac {
     my $mac = $adapter->{MAC};
 
     # now put the mac back in the pool
-    $MAC{$mac} = -1;
+    $MAC{$mac}->{client} = undef;
     $adapter->{MAC} = "";
     $adapter->update;
     regenerate_listbox($listbox);
@@ -222,8 +229,8 @@ sub clear_mac {
 sub regenerate_listbox {
     my $listbox = shift;
     $listbox->delete(0,"end");
-    foreach my $key (sort keys %MAC) {
-        if($MAC{$key} eq -1) {
+    foreach my $key (sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC) {
+        if(!$MAC{$key}->{client}) {
             $listbox->insert("end",$key);
         }
     }
@@ -283,24 +290,21 @@ sub begin_collect_mac {
         # This is the for tcp dump version 3.6 (MDK 8.0)
         if(/^\S+\s+([a-f0-9\:]{11,17}).*bootp.*\(DF\)/) {
             my $mac = mactransform($1);
-            if(!$MAC{$mac}) {
-                $MAC{$mac} = -1;
+            if(add_mac_to_hash($mac)) {
                 regenerate_listbox($listbox);
             }
         } 
         # This is for tcp dump version 3.4 (RH 7.1)
         elsif (/^\S+\s+\S\s+([a-f0-9\:]{11,17}).*\[\|bootp\]/) {
             my $mac = mactransform($1);
-            if(!$MAC{$mac}) {
-                $MAC{$mac} = -1;
+            if(add_mac_to_hash($mac)) {
                 regenerate_listbox($listbox);
             }
         }
         # This is for tcp dump version 3.6 (RH 7.2 for IA64)
         elsif(/^\S+\s+([a-f0-9\:]{11,17}).*bootp/) {
             my $mac = mactransform($1);
-            if(!$MAC{$mac}) {
-                $MAC{$mac} = -1;
+            if(add_mac_to_hash($mac)) {
                 regenerate_listbox($listbox);
             }
         }
@@ -309,6 +313,25 @@ sub begin_collect_mac {
     }
     close(TCPDUMP);
     end_ping();
+}
+
+sub add_mac_to_hash {
+    my $mac = shift;
+    # if the mac is 00:00:00:00:00:00, it isn't real
+    if($mac =~ /^[0\:]+$/) {
+        return 0;
+    }
+    # if it already has an order, then we already know about it
+    if($MAC{$mac}->{order}) {
+        return 0;
+    }
+    # else, add the mac address with a null client
+    $MAC{$mac} = {
+                  client => undef,
+                  order => $ORDER,
+                 };
+    $ORDER++;
+    return 1;
 }
 
 # mac transform does a join map split trick to ensure that each octet is 2 characters
