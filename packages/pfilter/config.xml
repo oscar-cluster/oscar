@@ -2,6 +2,9 @@
 <!DOCTYPE package SYSTEM "../package.dtd">
 <oscar>
   <!--
+      Copyright (c) 2003 Neil Gorsuch
+                         All rights reserved.
+
       Copyright (c) 2002 The Trustees of Indiana University.  
                          All rights reserved.
       
@@ -9,7 +12,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.5 2002/11/04 23:14:21 jsquyres Exp $
+      $Id: config.xml,v 1.6 2002/11/06 07:30:17 ngorsuch Exp $
   -->
   <name>pfilter</name>
 
@@ -31,11 +34,12 @@
     <name>Neil Gorsuch</name>
     <email>ngorsuch@ncsa.uiuc.edu</email>
   </packager>
+  <vendor>Neil Gorsuch</vendor>
 
-  <description>The pfilter package is used to generate packet
-filtering rulesets.  It uses an easy to understand and edit text
-configuration file as input, and is installed as a chkconfig
-controlled system package.</description>
+  <description>The pfilter package is used to generate packet filtering
+rulesets.  It uses an easy to understand text configuration
+file as input, and is installed as a chkconfig controlled
+system package.</description>
 
   <rpmlist>
     <all>
