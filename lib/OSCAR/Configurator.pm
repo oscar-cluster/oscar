@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.28 2003/11/05 02:16:15 tfleury Exp $
+# $Id: Configurator.pm,v 1.29 2003/11/14 00:38:22 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -135,6 +135,7 @@ sub doneButtonPressed
   # Configuration window.  Therefore, when we exit, we need to make the
   # parent window unbusy.
   undef $destroyed;
+  $root->UnmapWindow if ($root);
   $root->Parent->Unbusy() if
     ((defined($root)) && (defined($root->Parent)));
 
@@ -311,8 +312,9 @@ sub populateConfiguratorList
 
 #########################################################################
 #  Subroutine : displayPackageConfigurator                              #
-#  Parameter  : The parent widget which manages the configurator window #
-#  Returns    : Nothing                                                 #
+#  Parameters : (1) Parent widget which manages the configurator window #
+#               (2) The step number of the oscar_wizard                 #
+#  Returns    : Reference to the newly created window                   #
 #########################################################################
 sub displayPackageConfigurator # ($parent)
 {
@@ -368,6 +370,8 @@ sub displayPackageConfigurator # ($parent)
   populateConfiguratorList();
 
   $root->MapWindow;   # Put the window on the screen.
+  
+  return $root;       # Return pointer to new window to calling function
 }
 
 ############################################
