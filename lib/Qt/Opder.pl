@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'Opder.ui'
 #
-# Created: Wed Jul 23 16:02:37 2003
+# Created: Wed Jul 30 10:12:52 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -15,18 +15,18 @@ use Qt;
 use OpderTable;
 use Qt::isa qw(Qt::MainWindow);
 use Qt::slots
-    aboutButton_clicked => [],
-    disableDownloadButton => [],
-    downloadButton_clicked => [],
-    exitButton_clicked => [],
     init => [],
-    nextButton_clicked => [],
-    previousButton_clicked => [],
+    aboutButton_clicked => [],
+    exitButton_clicked => [],
     refreshButton_clicked => [],
+    downloadButton_clicked => [],
+    previousButton_clicked => [],
+    nextButton_clicked => [],
+    updateTextBox => [],
     rowSelectionChanged => [],
-    setRefreshButton => ['int'],
+    disableDownloadButton => [],
     updateDownloadButton => [],
-    updateTextBox => [];
+    setRefreshButton => ['int'];
 use Qt::attributes qw(
     titleLabel
     titleLabel_font
@@ -84,7 +84,7 @@ sub NEW
     {
         setName("Opder");
     }
-    resize(617,509);
+    resize(676,517);
     setCaption(trUtf8("OSCAR Package Downloader"));
 
     setCentralWidget(Qt::Widget(this, "qt_central_widget"));
@@ -152,7 +152,7 @@ sub NEW
     Qt::ToolTip::add(packageTabWidget, trUtf8("Display of information about the package selected above"));
 
     informationTab = Qt::Widget(packageTabWidget, "informationTab");
-    my $informationTabLayout = Qt::GridLayout(informationTab, 1, 1, -1, -1, '$informationTabLayout');
+    my $informationTabLayout = Qt::GridLayout(informationTab, 1, 1, 11, 6, '$informationTabLayout');
 
     informationTextBox = Qt::TextEdit(informationTab, "informationTextBox");
     informationTextBox->setReadOnly(1);
@@ -161,7 +161,7 @@ sub NEW
     packageTabWidget->insertTab(informationTab, trUtf8("Information"));
 
     providesTab = Qt::Widget(packageTabWidget, "providesTab");
-    my $providesTabLayout = Qt::GridLayout(providesTab, 1, 1, -1, -1, '$providesTabLayout');
+    my $providesTabLayout = Qt::GridLayout(providesTab, 1, 1, 11, 6, '$providesTabLayout');
 
     providesTextBox = Qt::TextEdit(providesTab, "providesTextBox");
     providesTextBox->setReadOnly(1);
@@ -170,7 +170,7 @@ sub NEW
     packageTabWidget->insertTab(providesTab, trUtf8("Provides"));
 
     conflictsTab = Qt::Widget(packageTabWidget, "conflictsTab");
-    my $conflictsTabLayout = Qt::GridLayout(conflictsTab, 1, 1, -1, -1, '$conflictsTabLayout');
+    my $conflictsTabLayout = Qt::GridLayout(conflictsTab, 1, 1, 11, 6, '$conflictsTabLayout');
 
     conflictsTextBox = Qt::TextEdit(conflictsTab, "conflictsTextBox");
     conflictsTextBox->setReadOnly(1);
@@ -179,7 +179,7 @@ sub NEW
     packageTabWidget->insertTab(conflictsTab, trUtf8("Conflicts"));
 
     requiresTab = Qt::Widget(packageTabWidget, "requiresTab");
-    my $requiresTabLayout = Qt::GridLayout(requiresTab, 1, 1, -1, -1, '$requiresTabLayout');
+    my $requiresTabLayout = Qt::GridLayout(requiresTab, 1, 1, 11, 6, '$requiresTabLayout');
 
     requiresTextBox = Qt::TextEdit(requiresTab, "requiresTextBox");
     requiresTextBox->setReadOnly(1);
@@ -188,7 +188,7 @@ sub NEW
     packageTabWidget->insertTab(requiresTab, trUtf8("Requires"));
 
     packagerTab = Qt::Widget(packageTabWidget, "packagerTab");
-    my $packagerTabLayout = Qt::GridLayout(packagerTab, 1, 1, -1, -1, '$packagerTabLayout');
+    my $packagerTabLayout = Qt::GridLayout(packagerTab, 1, 1, 11, 6, '$packagerTabLayout');
 
     packagerTextBox = Qt::TextEdit(packagerTab, "packagerTextBox");
     packagerTextBox->setReadOnly(1);
@@ -250,63 +250,6 @@ sub NEW
 }
 
 
-sub aboutButton_clicked
-{
-
-#########################################################################
-#  Subroutine: aboutButton_clicked                                      #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#  When the mini OSCAR image is clicked, show the About Box form.       #
-#########################################################################
-
-  aboutForm->show();
-
-}
-
-sub disableDownloadButton
-{
-
-#########################################################################
-#  Subroutine: disableDownloadButton                                    #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#  This subroutine disabled the "Download Selected Packages" button.    #
-#########################################################################
-
-  downloadButton->setEnabled(0);
-
-}
-
-sub downloadButton_clicked
-{
-
-#########################################################################
-#  Subroutine: downloadButton_clicked                                   #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#  When the "Download Selected Packages" button is clicked, show the    #
-#  "Downloading Package File" widget.                                   #
-#########################################################################
-
-  downloadPackageForm->show();
-
-}
-
-sub exitButton_clicked
-{
-
-#########################################################################
-#  Subroutine: exitButton_clicked                                       #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#  When the exitButton is clicked, quit the application.                #
-#########################################################################
-
-  Qt::Application::exit();
-
-}
-
 sub init
 {
 
@@ -356,27 +299,31 @@ sub init
 
 }
 
-sub nextButton_clicked
+sub aboutButton_clicked
 {
 
 #########################################################################
-#  Subroutine: nextButton_clicked                                       #
+#  Subroutine: aboutButton_clicked                                      #
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
+#  When the mini OSCAR image is clicked, show the About Box form.       #
 #########################################################################
 
+  aboutForm->show();
 
 }
 
-sub previousButton_clicked
+sub exitButton_clicked
 {
 
 #########################################################################
-#  Subroutine: previousButton_clicked                                   #
+#  Subroutine: exitButton_clicked                                       #
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
+#  When the exitButton is clicked, quit the application.                #
 #########################################################################
 
+  Qt::Application::exit();
 
 }
 
@@ -392,6 +339,75 @@ sub refreshButton_clicked
 #########################################################################
 
   downloadInfoForm->show();
+
+}
+
+sub downloadButton_clicked
+{
+
+#########################################################################
+#  Subroutine: downloadButton_clicked                                   #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  When the "Download Selected Packages" button is clicked, show the    #
+#  "Downloading Package File" widget.                                   #
+#########################################################################
+
+  downloadPackageForm->show();
+
+}
+
+sub previousButton_clicked
+{
+
+#########################################################################
+#  Subroutine: previousButton_clicked                                   #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#########################################################################
+
+
+}
+
+sub nextButton_clicked
+{
+
+#########################################################################
+#  Subroutine: nextButton_clicked                                       #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#########################################################################
+
+
+}
+
+sub updateTextBox
+{
+
+#########################################################################
+#  Subroutine: updateTextBox                                            #
+#  Parameters: (1) Which box to update (provides/requires/conflicts)    #
+#              (2) Which array position in the @readPackages            #
+#  Returns   : Nothing                                                  #
+#  This subroutine is called by rowSelectedChanged to update the one    #
+#  of the three informational boxes providesTextBox, requiresTextBox,   #
+#  or conflictsTextBox.  Give it one of "provides", "requires", or      #
+#  "conflicts", and the name of the package to provide info for.        #
+#########################################################################
+
+  my $box = shift;
+  my $arraypos = shift;
+
+  my $output = "";
+  my $readPackages = downloadInfoForm->getReadPackages();
+
+  foreach my $row ( @{ @{$readPackages}[$arraypos]->{$box} } )
+    {
+      $output .= $row->{type} . ": " . $row->{name} . "\n"; 
+    }
+  # Use a sneaky 'eval' technique to choose the correct TextBox component
+  my $cmd = $box . 'TextBox->setText($output)';
+  eval $cmd;
 
 }
 
@@ -441,18 +457,17 @@ sub rowSelectionChanged
 
 }
 
-sub setRefreshButton
+sub disableDownloadButton
 {
 
 #########################################################################
-#  Subroutine: setRefreshButton                                         #
-#  Parameters: 1 = Enable / 0 = Disable                                 #
+#  Subroutine: disableDownloadButton                                    #
+#  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
-#  This subroutine is called to enable/disable the "Refresh Table"      #
-#  button.                                                              #
+#  This subroutine disabled the "Download Selected Packages" button.    #
 #########################################################################
 
-  refreshButton->setEnabled(shift);
+  downloadButton->setEnabled(0);
 
 }
 
@@ -478,33 +493,18 @@ sub updateDownloadButton
 
 }
 
-sub updateTextBox
+sub setRefreshButton
 {
 
 #########################################################################
-#  Subroutine: updateTextBox                                            #
-#  Parameters: (1) Which box to update (provides/requires/conflicts)    #
-#              (2) Which array position in the @readPackages            #
+#  Subroutine: setRefreshButton                                         #
+#  Parameters: 1 = Enable / 0 = Disable                                 #
 #  Returns   : Nothing                                                  #
-#  This subroutine is called by rowSelectedChanged to update the one    #
-#  of the three informational boxes providesTextBox, requiresTextBox,   #
-#  or conflictsTextBox.  Give it one of "provides", "requires", or      #
-#  "conflicts", and the name of the package to provide info for.        #
+#  This subroutine is called to enable/disable the "Refresh Table"      #
+#  button.                                                              #
 #########################################################################
 
-  my $box = shift;
-  my $arraypos = shift;
-
-  my $output = "";
-  my $readPackages = downloadInfoForm->getReadPackages();
-
-  foreach my $row ( @{ @{$readPackages}[$arraypos]->{$box} } )
-    {
-      $output .= $row->{type} . ": " . $row->{name} . "\n"; 
-    }
-  # Use a sneaky 'eval' technique to choose the correct TextBox component
-  my $cmd = $box . 'TextBox->setText($output)';
-  eval $cmd;
+  refreshButton->setEnabled(shift);
 
 }
 

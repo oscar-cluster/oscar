@@ -15,7 +15,7 @@
 #      images/oscar.png
 #      images/oscarsmall.png
 #
-# Created: Tue Jul 1 18:41:50 2003
+# Created: Wed Jul 30 10:12:47 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!

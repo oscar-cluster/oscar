@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'OpderAbout.ui'
 #
-# Created: Tue Jul 1 18:41:51 2003
+# Created: Wed Jul 30 10:12:48 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -47,7 +47,7 @@ sub NEW
     {
         setName("OpderAbout");
     }
-    resize(452,154);
+    resize(561,156);
     setCaption(trUtf8("About OSCAR Package Downloader"));
 
     my $OpderAboutLayout = Qt::GridLayout(this, 1, 1, 11, 6, '$OpderAboutLayout');

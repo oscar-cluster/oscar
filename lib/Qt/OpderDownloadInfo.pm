@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'OpderDownloadInfo.ui'
 #
-# Created: Wed Jul 23 16:27:18 2003
+# Created: Wed Jul 30 10:12:49 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -64,7 +64,7 @@ sub NEW
     {
         setName("OpderDownloadInfo");
     }
-    resize(130,130);
+    resize(146,162);
     setCursor(Qt::Cursor(0));
     setCaption(trUtf8("Wait..."));
 
