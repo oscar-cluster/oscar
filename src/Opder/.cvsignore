@@ -1,0 +1,10 @@
+Makefile
+Makefile.in
+.cvsignore
+.oscar_made_makefile_am
+OpderAddRepository.pm 
+OpderDownloadInfo.pm
+OpderDownloadPackage.pm
+Opder.pm
+Opder.pl
+images
