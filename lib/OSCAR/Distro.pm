@@ -1,6 +1,6 @@
 package OSCAR::Distro;
 
-#   $Id: Distro.pm,v 1.1 2002/02/21 19:06:45 sdague Exp $
+#   $Id: Distro.pm,v 1.2 2002/02/21 19:14:00 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(which_distro);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
                    'mandrake-release' => 'Mandrake',
@@ -37,7 +37,7 @@ sub which_distro {
     my $version = "0.0";
     my $name = "UnknownLinux";
     foreach my $file (keys %$DISTROFILES) {
-        my $output = `rpm -q --qf '\%VERSION' $directory/$file*`;
+        my $output = `rpm -q --qf '\%{VERSION}' $directory/$file*`;
         if($output =~ /^([\w\.]+)/) {
             $version = $1;
             $name = $DISTROFILES->{$file};
