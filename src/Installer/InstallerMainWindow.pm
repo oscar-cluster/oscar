@@ -43,6 +43,7 @@ use InstallerWorkspace;
 use InstallerImages;
 use InstallerParseXML;
 use InstallerUtils;
+use InstallerErrorDialog;
 use Qt::slots
     fileNew => [],
     fileOpen => [],
@@ -482,17 +483,18 @@ tasks and launches the selected task.
 
   return if (!$installerTasksAndTools->{$taskname}->{classname});
 
-  openTaskToolWindow($taskname,'task');
+  # Run all of the oda prereqs and show an error dialog if any fail
 
-#  my $success = processOdaCommandsAndTests($taskname);
-#
-#  if ($success)
-#    {
-#      openTaskToolWindow($taskname,'task');
-#    }
-#  else
-#    {
-#    }
+  my $success = processOdaCommandsAndTests($taskname);
+
+  if ($success)
+    {
+      openTaskToolWindow($taskname,'task');
+    }
+  else
+    {
+      showErrorDialog($taskname);
+    }
 }
 
 sub toolsMenuActivated
@@ -704,24 +706,35 @@ THIS STILL NEEDS TO BE COMMENTED AND CODED FURTHER...
 
 #########################################################################
 
-  my $tasktool = shift;
-  my $success = 0;
+  my $task = shift;
+  my $success = 1;   # Assume success
 
-  my $cmdcnt = scalar(@{$installerTasksAndTools->{$tasktool}->{command}});
+  # Clear out the result arrays from any previous executions
+  @{$installerTasksAndTools->{$task}->{testSuccess}} = ();
+  @{$installerTasksAndTools->{$task}->{errorString}} = ();
+
+  my $cmdcnt = scalar(@{$installerTasksAndTools->{$task}->{command}});
   for (my $i = 0; $i < $cmdcnt; $i++)
     {
-      @{$installerTasksAndTools->{$tasktool}->{commandresult}} = ();
-      $installerTasksAndTools->{$tasktool}->{testresult} = "";
-      if ($installerTasksAndTools->{$tasktool}->{command}[$i])
+      # Set the appropriate global variables in InstallerUtils corresponding
+      # to the <command>, <test>, and <error> tags.
+      $InstallerUtils::activeOdaCommand = 
+        $installerTasksAndTools->{$task}->{command}[$i];
+      $InstallerUtils::activeTestCode =
+        $installerTasksAndTools->{$task}->{test}[$i];
+
+      my $odasuccess = InstallerUtils::runActiveOdaTest();
+      $installerTasksAndTools->{$task}->{testSuccess}[$i] =
+        $InstallerUtils::testCodeSuccess;
+      if (!$odasuccess)
         {
-          my @result;
-          my $commandsuccess = OSCAR::Database::database_execute_command(
-            $installerTasksAndTools->{$tasktool}->{command}[$i],\@result);
-          push @{$installerTasksAndTools->{$tasktool}->{commandresult}}, 
-               @result if ($commandsuccess);
+          $success = 0;
+          $InstallerUtils::activeErrorCode =
+            $installerTasksAndTools->{$task}->{error}[$i];
+          $installerTasksAndTools->{$task}->{errorString}[$i] =
+            InstallerUtils::getActiveErrorString();
         }
     }
-
 
   return $success;
 }
@@ -751,6 +764,37 @@ Task/Tool was created.
   disconnectTaskTool($tasktool);
 
   delete $currTaskToolWidgets{$tasktool};
+}
+
+sub showErrorDialog
+{
+#########################################################################
+
+=item C<showErrorDialog($task)>
+
+=cut
+
+### @param $task The directory name of the Task which had prerequisite
+###              errors.
+
+#########################################################################
+
+  my $task = shift;
+
+  my $dialog = InstallerErrorDialog(this);
+  $dialog->setErrorMainText($installerTasksAndTools->{$task}->{stepnum},
+                            $installerTasksAndTools->{$task}->{fullname});
+
+  my $errortext = "";
+  my $cmdcnt = scalar(@{$installerTasksAndTools->{$task}->{command}});
+  for (my $i = 0; $i < $cmdcnt; $i++)
+    {
+      $errortext .= $installerTasksAndTools->{$task}->{errorString}[$i] if
+        (!($installerTasksAndTools->{$task}->{testSuccess}[$i]));
+    }
+  $dialog->setErrorDetailsText($errortext);
+
+  $dialog->exec();
 }
 
 

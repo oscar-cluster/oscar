@@ -10,8 +10,8 @@ InstallerUtils - Some basic utility subroutines for use by the Installer
                                                                                 
   my $newstring = compactSpaces($oldstring);
 
-  my $newarrayref = deepcopy(\@origarray);
-  my $newhashref = deepcopy(\%orighash);
+  my $newarrayref = deepcopy(@origarray);
+  my $newhashref = deepcopy(%orighash);
 
   my $installDir = getScriptDir();
 
@@ -122,7 +122,7 @@ sub deepcopy
 {
 #########################################################################
 
-=item C<deepcopy($hashOrArrayRef)>
+=item C<deepcopy($hashOrArray)>
 
 Do a "deep copy" of an array or a hash.
 
@@ -132,12 +132,9 @@ hash/array are copied.  Any sub-references are not.  This subroutine
 performs a "deep copy" by recursing down through the reference tree and
 copying everything.  
 
-Note that you must pass in a reference to the array/hash that you want to
-copy, and you are returned a reference to the copy of the array/hash.
-
 =cut
 
-### @param  $hashOrArrayRef A reference to an array or hash to be copied.
+### @param  $hashOrArray An array or hash to be copied.
 ### @return A reference to a "deep copy" of the passed-in array/hash.
 ### @note   This subroutine was taken from Unix Review Column 30, Feb. 2000.
 
@@ -221,6 +218,8 @@ corresponding test succeeded or failed.
 #########################################################################
 
   $odaCommandSuccess = 0;
+  @odaCommandResult = ();
+  @odaCommandError = ();
   $testCodeSuccess = 0;
 
   $odaCommandSuccess = OSCAR::Database::database_execute_command(
@@ -231,9 +230,9 @@ corresponding test succeeded or failed.
   # specified in the InstallerAPI.txt document.
   my $command = $activeOdaCommand;
   my $odasuccess = $odaCommandSuccess;
-  my @odaresult = deepcopy(\@odaCommandResult);
-  my @odaerror  = deepcopy(\@odaCommandError);
-  $testCodeSuccess = (eval { $activeTestCode }) if ($odaCommandSuccess);
+  my @odaresult = deepcopy(@odaCommandResult);
+  my @odaerror  = deepcopy(@odaCommandError);
+  $testCodeSuccess = (eval $activeTestCode) if ($odaCommandSuccess);
 
   return $testCodeSuccess;
 }
@@ -281,7 +280,7 @@ GUI.xml file and for some examples.
   $errorstr .= "error strings:\n" if scalar(@odaCommandError);
   foreach my $error (@odaCommandError)
     {
-      $errorstr .= "    error[$count++]: $error\n";
+      $errorstr .= "    error[" . $count++ . "]: $error\n";
     }
   $errorstr .= "test command: $activeTestCode\n";
   $errorstr .= "returned value: $testCodeSuccess\n";
@@ -344,7 +343,7 @@ last executed oda command and corresponding test code.
       my @odaerror    = deepcopy(@odaCommandError);
       my $test        = $activeTestCode;
       my $testsuccess = $testCodeSuccess;
-      $errorstr       = (eval { $activeErrorCode });
+      $errorstr       = (eval $activeErrorCode);
     }
   else
     {
