@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.7 2003/05/30 22:30:14 brechin Exp $
+# $Id: install,v 1.8 2003/06/22 04:00:59 ngorsuch Exp $
 #
 
 #use strict;
@@ -35,7 +35,7 @@ my ($distro_name, $distro_version) = which_distro_server();
 
 # find a list of rpm names to check for and rpm files to install
 
-if ($distro_name eq "RedHat") {
+if ($distro_name eq "redhat") {
     @wanted_rpms = qw( mysql
 		perl-DBD-MySQL
 		perl-DBI
@@ -58,7 +58,7 @@ if ($distro_name eq "SuSE") {
 
 # If we're on Mandrake, abort.  ODA will not be installed.
 
-elsif ($distro_name eq "Mandrake") { 
+elsif ($distro_name eq "mandrake") { 
     @wanted_rpms = qw( MySQL
 		MySQL-client
 		libmysql10
