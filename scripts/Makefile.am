@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Makefile.am,v 1.9 2002/11/01 15:33:41 jsquyres Exp $
+# $Id: Makefile.am,v 1.10 2002/11/01 22:48:06 jsquyres Exp $
 #
 
 EXTRA_DIST		= \
@@ -17,6 +17,7 @@ EXTRA_DIST		= \
 			macinfo2sis \
 			opd \
 			oscar_wizard \
+			package_config_xmls_to_database \
 			ping_clients \
 			post_clients \
 			post_install \
@@ -25,5 +26,4 @@ EXTRA_DIST		= \
 			ssh_cluster_install \
 			ssh_install \
 			start_over \
-			wizard_prep \
-			xml_to_database
+			wizard_prep
