@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.10 2003/06/27 15:16:54 brechin Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.11 2004/07/12 16:45:23 dnl Exp $
 
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
@@ -75,24 +75,24 @@ my $archdir = "$ARCH-boot";
 if($ARCH eq "i386") {
     verbose("Getting pxelinux.0.");
     copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
-      croak("Unable to copy pxelinux.0 file to /tftpboot.");
+      croak("Unable to copy \"pxelinux.0\" file to /tftpboot.");
     
     verbose("Copying default pxelinux.cfg file");
-    copy("/etc/systemimager/pxelinux.cfg/default", "/tftpboot/pxelinux.cfg/") or 
-      croak("Unable to copy default pxelinux.cfg file to /tftpboot.");
+    copy("/etc/systemimager/pxelinux.cfg/syslinux.cfg", "/tftpboot/pxelinux.cfg/default") or 
+      croak("Unable to copy \"default\" file to /tftpboot/pxelinux.cfg.");
 
     verbose("Copying SystemImager kernel & ramdisk");
     copy("/etc/systemimager/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
-      croak("Unable to copy default message.txt file to /tftpboot.");
+      croak("Unable to copy \"message.txt\" file to /tftpboot/pxelinux.cfg.");
 } elsif ($ARCH eq "ia64") {
     verbose("Copying elilo.efi to /tftpboot");
     copy("/boot/efi/elilo.efi","/tftpboot") or
-      croak("Unable to copy elilo.efi to /tftpboot");
+      croak("Unable to copy \"elilo.efi\" to /tftpboot");
 
     verbose("Linking elilo.efi to pxelinux.0");
     symlink("elilo.efi","/tftpboot/pxelinux.0");
 
-    verbose("Writing out elilo.conf file");
+    verbose("Writing out \"elilo.conf\" file");
     open(OUT,">/tftpboot/elilo.conf") or croak("Couldn't open /tftpboot/elilo.conf for writing");
     print OUT <<'END';
 prompt

@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.13 2003/07/25 21:40:28 brechin Exp $
+      $Id: config.xml,v 1.14 2004/07/12 16:45:23 dnl Exp $
       -->
 
   <name>mpich-p4</name>
@@ -41,6 +41,12 @@
   <description>MPICH is a freely available, portable implementation of
 MPI (http://www.mpi-forum.org), the Standard for message-passing
 libraries.</description>
+
+  <rpmlist>
+    <rpm>mpich-ch_p4-gcc-oscar</rpm>
+    <rpm>mpich-ch_p4-gcc-oscar-devel</rpm>
+    <rpm>mpich-ch_p4-gcc-oscar-module</rpm>
+  </rpmlist>
 
   <provides>
     <type>package</type>

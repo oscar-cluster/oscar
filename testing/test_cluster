@@ -37,6 +37,14 @@ unless (GetOptions(\%opts,"wait") ) {
         croak("Options incorrect.");
 }
 
+END{
+	if ($opts{wait}) {
+		print "\nERROR $? REPORTED ABOVE.\n" if $?;
+        print "\n...Hit <ENTER> key to exit...\n";
+        my $key=<STDIN>;
+	}
+}
+
 my @clientlist;
 if (@ARGV) {
         @clientlist=@ARGV;
@@ -164,17 +172,4 @@ if ($creturn) {
     print("There were issues running some user test scripts.  Please check your logs\n");
 }
 
-if ($opts{wait}) {
-        waitexit($return);
-} else {
-        exit($return);
-}
-
-
-sub waitexit {
-        my $rc=shift;
-        print "...Hit enter to exit...\n";
-        my $key=<STDIN>;
-        exit $rc;
-}        
-
+exit $return;

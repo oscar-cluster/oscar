@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.19 2004/05/31 12:59:27 jsquyres Exp $
+      $Id: config.xml,v 1.20 2004/07/12 16:45:22 dnl Exp $
   -->
   <name>LAM/MPI</name>
 
@@ -82,9 +82,9 @@ visualized either at runtime or post-mortem.</description>
 
   <rpmlist>
     <rpm>lam-oscar</rpm>
-    <rpm>lam-oscar-module</rpm>
-    <rpm>lam-gm-oscar</rpm>
-    <rpm>lam-gm-oscar-module</rpm>
+    <rpm>lam-oscar-modulefile</rpm>
+    <!-- <rpm>lam-gm-oscar</rpm>
+    <rpm>lam-gm-oscar-modulefile</rpm> -->
     <rpm>lam-switcher-modulefile</rpm>
   </rpmlist>
 
