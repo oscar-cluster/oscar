@@ -94,6 +94,11 @@ my %currTaskToolWidgets;
 # just once per class.  Used by launchTaskTool().
 my %alreadyImported;
 
+# Since Perl-Qt seems to have trouble deleting objects when subwindows
+# close, I have to create my own list of open windows.  This gets refreshed
+# in windowMenuAboutToShow().
+my @windowList;
+
 sub NEW
 {
 #########################################################################
@@ -421,8 +426,8 @@ into Qt so we don't have to do any extra work.)
   windowTileAction->addTo(windowMenu);
   windowMenu->insertSeparator();
 
-  # Get the list of all active windows
-  my @windowList = sort (values %currTaskToolWidgets);
+  # Get the list of all active tasks/tools windows
+  @windowList = sort (values %currTaskToolWidgets);
   my $numWindows = scalar(@windowList);
   windowCascadeAction->setEnabled($numWindows);
   windowTileAction->setEnabled($numWindows);
@@ -457,7 +462,6 @@ gives it the focus.
 
   my $windowNum = shift;
 
-  my @windowList = sort (values %currTaskToolWidgets);
   my $wid = $windowList[$windowNum];
   if ($wid)
     {
@@ -748,7 +752,9 @@ follows:
   @{$installerTasksAndTools->{$task}->{testSuccess}} = ();
   @{$installerTasksAndTools->{$task}->{errorString}} = ();
 
-  my $cmdcnt = scalar(@{$installerTasksAndTools->{$task}->{command}});
+  my $cmdcnt = 0;
+  $cmdcnt = scalar(@{$installerTasksAndTools->{$task}->{command}}) if 
+    (defined ($installerTasksAndTools->{$task}->{command}));
   for (my $i = 0; $i < $cmdcnt; $i++)
     {
       # Set the appropriate global variables in InstallerUtils corresponding
