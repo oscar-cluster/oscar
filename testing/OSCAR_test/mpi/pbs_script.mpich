@@ -23,7 +23,7 @@ echo "Running MPICH test"
 
 # If MPICH is not set as the user default, temporarily make it so
 
-mpich="mpich-1.2.1"
+mpich="mpich-1.2.4"
 user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
 if test "$user_default_mpi" != "$mpich"; then
     switcher mpi --add-attr default $mpich --force

@@ -26,7 +26,7 @@ use SystemInstaller::Machine;
 
 print "...updating mpich_server nodes file\n";
 
-my $nodes_file = "/opt/mpich-1.2.1/share/machines.LINUX";
+my $nodes_file = "/opt/mpich-1.2.4/share/machines.LINUX";
 
 open(NODES, ">$nodes_file") or croak("config_server: could not open mpich's nodes file\n");
 

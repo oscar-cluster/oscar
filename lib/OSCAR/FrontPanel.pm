@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.7 2002/05/09 22:15:42 mchasal Exp $
+#   $Id: FrontPanel.pm,v 1.8 2002/05/22 17:19:33 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ use File::Copy;
 use base qw(Exporter);
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.8 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -50,7 +50,7 @@ sub frontpanel_window {
 
     $lambutton = $window->Radiobutton(-text => "LAM/MPI 6.5.6", -value => "lam-6.5.6",
                                       -variable => \$mpivalue, -command => \&set_mpi);
-    $mpichbutton = $window->Radiobutton(-text => "MPICH 1.2.1", -value => "mpich-1.2.1",
+    $mpichbutton = $window->Radiobutton(-text => "MPICH 1.2.1", -value => "mpich-1.2.4",
                                       -variable => \$mpivalue, -command => \&set_mpi);
 
     my $setupbutton = $window->Button(
