@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.10 2003/07/02 16:01:34 brianfinley Exp $
+      $Id: config.xml,v 1.11 2003/07/10 18:54:28 brechin Exp $
   -->
   <name>sis</name>
 
@@ -40,6 +40,7 @@
       <rpm>systemconfigurator</rpm>
       <rpm>systemimager-common</rpm>
       <rpm>perl-AppConfig</rpm>
+      <rpm>systemimager-client</rpm>
   </rpmlist>
   <rpmlist>
       <filter group="oscar_server"/>
@@ -57,9 +58,5 @@
       <rpm>tftp-hpa</rpm>
       <rpm>perl-XML-Simple</rpm>
       <rpm>perl-XML-Parser</rpm>
-  </rpmlist>
-  <rpmlist>
-      <filter group="oscar_clients"/>
-      <rpm>systemimager-client</rpm>
   </rpmlist>
 </oscar>
