@@ -2,4 +2,7 @@
 
 #After client RPMs are installed (to image)
 
-echo "nameserver $HOSTIP" >> /etc/resolv.conf
+serverip=`ping -c 1 -w 1 oscar_server 2>/dev/null | cut -d ' ' -f 3 | \
+          grep -wE "[(]([[:digit:]].*)[)]" | perl -pe "s/[()]//g"`
+
+echo "nameserver $serverip" >> /etc/resolv.conf
