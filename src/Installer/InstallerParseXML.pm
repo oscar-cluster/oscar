@@ -47,8 +47,9 @@ Task/Tool look like this:
     {error}       that {command}[2], {test}[2], and {error}[2] all refer
                   to a single <oda>...</oda> entry in the GUI.xml file.  If
                   the <test> field is empty for a particular oda prereq, it
-                  gets set to a default of 'return $success', where $success
-                  is the return result of database_execute_command(...).
+                  gets set to a default of 'return $odasuccess', where
+                  $odasuccess is the return result of
+                  database_execute_command(...).
 
 Two other global arrays are also set by readInstallerXMLFile():
 @installerTasksSorted and @installerToolsSorted.  These contain the
@@ -231,8 +232,9 @@ name as its key, and contains the following sub-keys:
     {error}       that {command}[2], {test}[2], and {error}[2] all refer
                   to a single <oda>...</oda> entry in the GUI.xml file.  If
                   the <test> field is empty for a particular oda prereq, it
-                  gets set to a default of 'return $success', where $success
-                  is the return result of database_execute_command(...).
+                  gets set to a default of 'return $odasuccess', where
+                  $odasuccess is the return result of
+                  database_execute_command(...).
 
 Note that if a Task/Tool doesn't have a valid GUI.xml file, then none of the
 information for that Task/Tool (classname, fullname, etc.) will be set.
@@ -278,7 +280,7 @@ menus of Tasks/Tools.
           push @{$installerTasksAndTools->{$dir}->{command}},$oda->{command}[0];
           push @{$installerTasksAndTools->{$dir}->{test}},
             ((compactSpaces($oda->{test}[0])) ? 
-              $oda->{test}[0] : 'return $success;');
+              $oda->{test}[0] : 'return $odasuccess;');
           push @{$installerTasksAndTools->{$dir}->{error}},$oda->{error}[0];
         }
     }
