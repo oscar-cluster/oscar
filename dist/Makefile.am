@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.5 2003/07/29 18:30:04 jsquyres Exp $
+# $Id: Makefile.am,v 1.6 2003/08/05 19:10:55 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -14,7 +14,8 @@ include $(top_srcdir)/dist/Makefile.options
 noinst_SCRIPTS		= get-oscar-version.sh
 
 EXTRA_DIST		= beta-notice.txt copyright-notice.txt VERSION \
-			  insert-license.csh make-dist.sh $(noinst_SCRIPTS)
+			  insert-license.csh make-dist.sh \
+			  Makefile.options $(noinst_SCRIPTS)
 
 # These will be used in future versions of OSCAR (until we move to
 # subversion! :-)
