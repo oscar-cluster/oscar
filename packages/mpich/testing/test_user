@@ -1,7 +1,7 @@
 #!/bin/sh
 #
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
+#                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -12,6 +12,7 @@
 # Authors: Jason Brechin
 #          Jeremy Enos
 #	   Bernard Li
+#          Jeffrey M. Squyres
 
 if test -e /usr/share/doc/openpbs*; then
    scheduler="PBS"
@@ -39,6 +40,41 @@ fi
 user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
 switcher mpi --add-attr default $mpich --force --silent
 
+############################################################################
+# Do horrid checking to see if this has NFS propagated out to all the
+# nodes yet (per several bugs on the SF bug tracker).  This has nothing
+# to do with the MPI test, but if the NFS propagation doesn't occur in
+# a timely fashion, the MPI test will fail (because PATHs will be set
+# wrong, etc.).  So we have to wait until the NFS dust settles before
+# we can run the test.
+
+check_nfs_prop() {
+    want_prompt=$1
+    nfs_goodness=no
+    if test "$want_prompt" = "yes"; then
+        echo -n "Checking for NFS propagation of MPI preferences... "
+    fi
+    foo="`cexec switcher mpi --show | egrep '^user:default=' | cut -d= -f 2 | sort | uniq`"
+    if test "$foo" = "$mpich"; then
+        nfs_goodness=yes
+        if test "$want_prompt" = "yes"; then
+            echo "Good!"
+        fi
+    else
+        if test "$want_prompt" = "yes"; then
+            echo "Not yet"
+        fi
+    fi
+}
+
+check_nfs_prop no
+while test "$nfs_goodness" = "no"; do
+    sleep 1
+    check_nfs_prop yes
+done
+
+# End of horrid NFS checking
+############################################################################
 # Now run the test (results will be printed by the test itself)
 
 $HOME/pbs_test $clients 1 $HOME/mpich/pbs_script.mpich "Hello" \
