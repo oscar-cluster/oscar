@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.17 2003/11/10 22:56:12 muglerj Exp $
+#  $Id: PackageInUn.pm,v 1.18 2003/11/12 21:14:17 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -50,7 +50,9 @@ my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
 #########################################################################
 #  Subroutine: install_uninstall_packages                               #
 #  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
+#  Returns   : 0, which generally means success                         #
+#              1 in the event of a failure...but we currently           #
+#              never return 1                                           #
 #  Call this subroutine after you have run the GUI for install/         #
 #  uninstall packages (which is basically the 'Selector' run with the   #
 #  command line argument of '-installuninstall'.  This subroutine       #
@@ -79,18 +81,31 @@ sub install_uninstall_packages
 
 	$imagenumber = get_image_info(\%imagehash);
 
+	#see if there is anything to do
+	if ( (scalar(@packagesThatShouldBeInstalled) <= 0) && (scalar(@packagesThatShouldBeUninstalled) <= 0) )
+	{
+		print "Notice: Nothing to do.\n";
+		return (0);
+	}
+
 	#we only support one image in this version
 	if ($imagenumber != 1)
 	{
-		print "This program only supports one image.\n";
-		exit (0);
+		print "Warning: This program only supports one image.\n";
+		return (0);
 	}
-
 	@imagename = keys(%imagehash);
 	croak "Error: no imagename\n" if( !defined($imagename[0]) );
 
+	#sanity check
+	if ((sanity_check()) != 0)
+	{
+		print "Warning: sanity check failed.\n";
+		return (0);
+	}
+
 	#Loop through the list of packages to be UNINSTALLED and do the right
-	# thing
+	#thing
 	foreach $package (@packagesThatShouldBeUninstalled)
 	{
 		$success = package_uninstall($package, "1", "1", "1", $imagename[0], "blah", "0");
@@ -157,6 +172,26 @@ sub install_uninstall_packages
 	#  "packages_clear_all_should_be_installed");
 	#OSCAR::Database::database_execute_command(
 	#"packages_clear_all_should_be_uninstalled");
+
+	return 0;
+}
+
+#performs a (cexec hostname) as a basic cluster sanity check
+#returns 0 on success, 1 otherwise...
+#prints output if the sanity check fails 
+sub sanity_check
+{
+	my $cmd_string = "$C3_HOME/cexec --pipe c3cmd-filter hostname";
+	my $retval;
+	my @rslts;
+
+	$retval = cexec_open($cmd_string, \@rslts); 
+	if( $retval != 0 ) 
+	{
+		print @rslts; 
+		return(1);
+	}
+	return 0;
 }
 
 #installs a package to either
@@ -1408,6 +1443,7 @@ sub run_uninstall_image
 #	
 #
 #returns: number of images (note: this is the number of keys in $image_aa_ref
+#note: this function is not completely implemented, but is ok for now
 sub get_image_info
 {
 	my ($image_aa_ref) = @_;
