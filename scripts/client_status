@@ -1,0 +1,32 @@
+#!/bin/sh
+
+for node in $*; do
+
+building=`netstat -tu | grep "$node" | grep -c rsync`
+pingable=`ping -w 4 -nc 2 $node >/dev/null 2>&1; echo $?`
+pbsfree=`pbsnodes -a | grep -A1 $node | tail -1 | grep -c free`
+case "$pingable" in
+  2)
+    echo "Unknown host: $node"
+    ;;
+  1)
+    echo "$node is NOT pingable"
+    ;;
+  0)
+    echo "$node is pingable"
+    if [ $building -gt 0 ]; then
+      echo "$node is building"
+    else
+      echo "$node is NOT building"
+    fi
+    if [ $pbsfree -gt 0 ]; then
+      echo "$node is marked as free (according to PBS)"
+    else
+      echo "$node is NOT marked as free (according to PBS)"
+    fi
+    ;;
+  *)
+  echo "I don't know what happened when trying to ping $node"
+esac
+
+done
