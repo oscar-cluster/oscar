@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.2 2002/02/18 19:39:29 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.3 2002/02/18 20:17:20 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -33,12 +33,12 @@ use Carp;
 
 use vars qw($VERSION @EXPORT);
 use POSIX;
-use base qw(Exporter)
+use base qw(Exporter);
 
 @EXPORT = qw(find_files);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
