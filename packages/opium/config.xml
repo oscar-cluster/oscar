@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.5 2002/11/04 23:14:21 jsquyres Exp $
+      $Id: config.xml,v 1.6 2002/12/12 19:08:42 brechin Exp $
   -->
   <name>opium</name>
 
@@ -29,14 +29,14 @@
   <group>System Environment/Base</group>
   <packager>
     <name>Jason Brechin</name>
-    <email>jbrechin@ncsa.uiuc.edu</email>
+    <email>brechin@ncsa.uiuc.edu</email>
   </packager>
 
   <description>The OSCAR User Synchronization System keeps the users
-and groups synchronizaed from the the central OSCAR server out to the
-OSCAR compute nodes. Whenever any of the following happens, the users
-and groups on the OSCAR server are copied to the OSCAR clients:
-periodically (configurable minute).</description>
+and groups synchronized from the the central OSCAR server out to the
+OSCAR compute nodes.  The users and groups on the OSCAR server are 
+checked and synchronized (if necessary) periodically (configurable).
+  </description>
 
   <rpmlist>
     <all>
