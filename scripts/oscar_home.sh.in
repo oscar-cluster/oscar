@@ -1,0 +1,12 @@
+# Copyright (c) 2003 The Trustees of Indiana University.  
+#                    All rights reserved.
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: oscar_home.sh.in,v 1.1 2003/07/04 14:40:05 jsquyres Exp $
+# 
+
+OSCAR_HOME=@OSCAR_HOME@
+export OSCAR_HOME
