@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.16 2003/07/22 15:19:13 brechin Exp $
+      $Id: config.xml,v 1.17 2003/07/24 21:30:37 brechin Exp $
   -->
   <name>LAM/MPI</name>
 
@@ -101,7 +101,7 @@ visualized either at runtime or post-mortem.</description>
        RH 9 SRPM, tweaked the specfile a bit to change the name, and
        rebuilt it for OSCAR. -->
   <rpmlist>
-    <filter distribution="mdk" />
+    <filter distribution="mandrake" />
     <filter distribution="suse" />
     <rpm>libaio-oscar</rpm>
     <rpm>libaio-oscar-devel</rpm>
