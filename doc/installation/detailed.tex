@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.17 2002/01/22 20:16:45 mchasal Exp $
+% $Id: detailed.tex,v 1.18 2002/01/22 20:52:43 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -455,6 +455,25 @@ The package list is simply a list of rpm file names, 1
 per line. Be sure and include all of the prerequisites that
 any packages you might add have. You do not need to specify
 the architecture portion of the filename, or the .rpm extension.
+
+\subparagraph{Custom kernels}
+If you want to use a customized kernel, you can add it to the image
+after it is built. Follow these steps:
+\begin{enumerate}
+\item Copy the kernel and associated files (System.map, module-info, etc.) into the \\
+\file{/var/lib/systemimager/images/<imagename>/boot} directory.
+\item Edit the \file{systemconfig.conf} file in the \\
+\file{/var/lib/systemimager/images/<imagename>/etc/systemconfig/} 
+directory and change the \emph{PATH} parameter in the \emph{[KERNEL0]} stanza to 
+match your new kernel's filename.
+\item When the clients are installed, they will copy over and boot your new
+kernel. 
+\end{enumerate}
+Note that there is no \file{lilo.conf} file in the image. That file is created
+by System Configurator from the contents of the \file{systemconfigurator.conf} file.
+
+See the \file{systemconfig.conf} man page for full details on the
+contents of this file.
 
 \subsubsection{Define your client machines} 
 \label{det:defclients}
