@@ -1,13 +1,10 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2001/12/19 02:36:55 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2001/12/22 01:06:44 jsquyres Exp $
 #
-# $COPYRIGHT$
+# This file is part of the OSCAR distribution.
+# See the copyright and license notices in the top-level directory.
 #
-
-LATEX		= latex
-FIG2DEV		= fig2dev
-DVIPS		= dvips
 
 # The top-level file.
 
@@ -56,7 +53,7 @@ pdf: $(PDF_FIG_FILES) $(MAIN_PDF)
 
 $(MAIN_PS): $(MAIN_DVI)
 $(MAIN_DVI): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIG_FILES)
-$(MAIN_PDF): $(MAIN_PS)
+$(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PNG_FIG_FILES)
 
 #
 # General rules
@@ -86,8 +83,29 @@ $(MAIN_PDF): $(MAIN_PS)
 .dvi.ps:
 	$(DVIPS) -o $*.ps $*
 
-.ps.pdf:
-	ps2pdf $*.ps $*.pdf
+.tex.pdf:
+	(unset TEXINPUTS; $(PDFLATEX) $*)
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null ); \
+	then (unset TEXINPUTS; $(PDFLATEX) $*) ; else :; fi
+	@ if ( grep 'Writing index file' $*.log > /dev/null ); \
+	then makeindex $* ; (unset TEXINPUTS; $(PDFLATEX) $*) ; fi
+	@-if ( grep 'LaTeX Warning: Citation' $*.log > /dev/null ); then \
+	  bibtex $* ; \
+	  (unset TEXINPUTS; $(PDFLATEX) $*) ; \
+	fi
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
+	      grep 'LaTeX Warning: Citation' $*.log > /dev/null || \
+	      grep 'No file' $*.log > /dev/null); \
+	then (unset TEXINPUTS; $(PDFLATEX) $*) ; else :; fi
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
+	      grep 'LaTeX Warning: Citation' $*.log > /dev/null); \
+	then (unset TEXINPUTS; $(PDFLATEX) $*) ; else :; fi
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
+	      grep 'LaTeX Warning: Citation' $*.log > /dev/null); \
+	then (unset TEXINPUTS; $(PDFLATEX) $*) ; else :; fi
+
+.png.eps:
+	$(PNGTOPNM) $< | $(PNMTOPS) > $*.eps
 
 # Deleting kruft temporary files
 
