@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.10 2003/07/17 16:27:34 jsquyres Exp $
+      $Id: config.xml,v 1.11 2003/07/17 19:19:27 jsquyres Exp $
   -->
   <name>Environment Switcher</name>
 
@@ -56,20 +56,6 @@ either OSCAR or MPI in env-switcher -- switching between mulitple MPI
 implementations is only used in this description as an example.  As
 such, it can be used in any environment for any "switching" kind of
 purpose.</description>
-
-  <rpmlist>
-    <filter distribution='redhat'   distribution_version='7.2' />
-    <filter distribution='redhat'   distribution_version='7.3' />
-    <rpm>modules-oscar-rh72</rpm>
-  </rpmlist>
-  <rpmlist>
-    <filter distribution='redhat'   distribution_version='8.0' />
-    <rpm>modules-oscar-rh80</rpm>
-  </rpmlist>
-  <rpmlist>
-    <filter distribution='redhat'   distribution_version='9' />
-    <rpm>modules-oscar-rh90</rpm>
-  </rpmlist>
 
   <package>
     <oda>
