@@ -37,11 +37,12 @@ sub delnode_window {
     my ($parent, $vars) = @_;
 
     my $window = $parent->Toplevel;
-    $window->title("Delete Oscar Nodes");
+    $window->withdraw;
+    $window->title("Delete Oscar Clients");
     my $inst=$window->Label (-text=>"In order to delete OSCAR clients 
 from your cluster, select the nodes
 you wish to delete and press the 
-Delete Clients button.",-relief=>"groove");
+\"Delete Clients\" button.",-relief=>"groove");
     $inst->grid("-",-sticky=>"nsew");
 
     my $listbox = $window->ScrlListbox(
@@ -63,12 +64,22 @@ Delete Clients button.",-relief=>"groove");
                                     );
 
     $deletebutton->grid($exitbutton,-sticky => "ew");
+    center_window( $window );
+}
+
+# Use Schwartzian transform to sort node names alphabetically and numerically.
+# Names w/o numeric suffix preceed those with numeric suffix.
+sub sortnodes(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, /^([\D]+)([\d]*)$/] }
+	       @_;
 }
 
 sub fill_listbox {
         my $listbox=shift;
         my @elements;
-        my @clients = list_client();
+        my @clients = sortnodes( list_client() );
         foreach my $client (@clients) {
                 push (@elements,$client->name);
         }
