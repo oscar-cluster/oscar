@@ -7,3 +7,6 @@ openssl
 tcpdump
 x86-compat-libs
 xinetd
+apache
+php
+expat

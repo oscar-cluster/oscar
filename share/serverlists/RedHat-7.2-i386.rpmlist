@@ -6,3 +6,6 @@ openssh-server
 openssl
 tcpdump
 xinetd
+apache
+php
+expat
