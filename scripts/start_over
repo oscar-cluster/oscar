@@ -219,6 +219,7 @@ sub cleanup_files {
               '/opt/opium',
               '/etc/systemimager',
               '/etc/dhcpd.conf',
+	      '/etc/odapw',
               '/etc/profile.d/mpi-00mpich.csh',
               '/etc/profile.d/mpi-00mpich.sh',
               '/etc/profile.d/mpi-01lam.csh',
