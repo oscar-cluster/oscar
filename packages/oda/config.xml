@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.80 2004/04/21 19:11:56 ngorsuch Exp $
+      $Id: config.xml,v 1.81 2004/05/04 21:17:20 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -1185,15 +1185,6 @@
       </shortcut>
 
       <shortcut>
-        <command> nics </command>
-        <expansion>
-          read_records
-          nics.name
-          %+
-        </expansion>
-      </shortcut>
-
-      <shortcut>
         <command> node_nic_broadcast </command>
         <description>
           node_nic_broadcast reads the network broadcast value
@@ -1290,6 +1281,38 @@
       </shortcut>
 
       <shortcut>
+        <command> node_nic_high_ip </command>
+        <description>
+          node_nic_high_ip reads the network high ip address for a
+          particular nic on a node. First, for each nic attached 
+          to the node, it will try to use the nic high_ip field if
+          that has been set. Otherwise, if a network is linked to
+          the nic and the network has a high_ip address that has 
+          been set, the network high_ip field will be used.
+          Required and only parameters are:
+                  node        name of the node
+                  nic         name of the nic
+        </description>
+        <expansion>
+          read_records
+          nodes.name=%1
+          nodes.id=nics.node_id
+          nics.name=%2
+          nics.high_ip!=null
+          nics.high_ip
+          ;
+          read_records
+          nodes.name=%1
+          nodes.id=nics.node_id
+          nics.name=%2
+          nics.high_ip=null
+          nics.network_id=networks.id
+          networks.high_ip!=null
+          networks.high_ip
+        </expansion>
+      </shortcut>
+
+      <shortcut>
         <command> node_nic_ip </command>
         <description>
           node_nic_ip reads the network ip address value
@@ -1337,6 +1360,52 @@
           nics.network_id=networks.id
           networks.netmask!=null
           networks.netmask
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> node_nic_rfc1918 </command>
+        <description>
+          node_nic_rfc1918 reads the network rfc1918 value
+          for a specified nic interface on a specified node.
+          It will use the nic record's rfc1918 field if that
+          has been set, otherwise, if a network is linked to
+          the nic and the network has a rfc1918 value that
+          has been set the network record's rfc1918 field
+          will be used. Required and only parameters are:
+                  node        name of the node
+                  nic         name of nic interface
+        </description>
+        <expansion>
+          read_records
+          nodes.name=%1
+          nodes.id=nics.node_id
+          nics.name=%2
+          nics.rfc1918!=null
+          nics.rfc1918
+          ;
+          read_records
+          nodes.name=%1
+          nodes.id=nics.node_id
+          nics.name=%2
+          nics.rfc1918=null
+          nics.network_id=networks.id
+          networks.rfc1918!=null
+          networks.rfc1918
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> nodes_nics </command>
+        <description>
+          nodes_nics lists all of the node/nic pairs.
+        </description>
+        <expansion>
+          read_records
+	  nodes.name
+	  nodes.id=nics.node_id
+          nics.name
+          %+
         </expansion>
       </shortcut>
 
@@ -3615,6 +3684,7 @@
           <default> 0 </default>
         </cluster_only>
         <gateway/>
+	<high_ip/>
         <id> 
           <type> integer </type>
           <parameters> auto_increment not null unique primary key </parameters>
@@ -3641,6 +3711,7 @@
         <broadcast/>
         <driver_module/>
         <gateway/>
+	<high_ip/>
         <id> 
           <type> integer </type>
           <parameters> auto_increment not null unique primary key </parameters>
@@ -3655,6 +3726,7 @@
         <node_id>
           <type> integer </type>
         </node_id>
+        <rfc1918/>
       </fields> 
     </nics>
 
