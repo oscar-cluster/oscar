@@ -1,15 +1,17 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2001/12/19 02:36:54 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2001/12/22 01:08:08 jsquyres Exp $
 #
-# $COPYRIGHT$
+# This file is part of the OSCAR distribution.
+# See the copyright and license notices in the top-level directory.
 #
 
 noinst_SCRIPTS		= \
 			get-oscar-version.sh \
+			insert-license.csh \
 			make-dist.sh
 
-EXTRA_DIST		= VERSION $(noinst_SCRIPTS)
+EXTRA_DIST		= beta-notice.txt license.hdr VERSION $(noinst_SCRIPTS)
 
 # These will be used in future versions of OSCAR (until we move to
 # subversion! :-)
