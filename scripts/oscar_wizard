@@ -61,7 +61,7 @@ $boot->grid("-","-",-sticky=>"nsew");
 
 # Step 5, the Oscar post install script
 oscar_button($window, "Step 4:", "Complete Cluster Setup", [\&run_post_install, $window], 'post_install');
-oscar_button($window, "Step 5:", "Test Cluster Setup", [\&run_tests, $window], 'post_install');
+oscar_button($window, "Step 5:", "Test Cluster Setup", [\&run_tests, $window], 'test_install');
 
 #
 # The close button

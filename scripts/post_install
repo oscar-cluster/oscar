@@ -60,6 +60,7 @@ sub run_postinstalls {
             !system("$postimagescript") or croak("$!");
         }
     }
+    print "\nPost Installation Scripts Successfully Completed!\n";
 }
 
 sub files_in_dir {
