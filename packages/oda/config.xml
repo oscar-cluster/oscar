@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.30 2003/04/10 21:19:41 ngorsuch Exp $
+      $Id: config.xml,v 1.31 2003/04/11 01:39:50 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -271,13 +271,13 @@
 	<shortcut> oscar_version read_records oscar.oscar_version!=undef oscar.oscar_version </shortcut>
 	<shortcut> package_id_to_name read_records packages.name packages.id=%1 </shortcut>
 	<shortcut> package_name_to_id read_records packages.id packages.name=%1 </shortcut>
+        <shortcut> packages_in_selected_package_set read_records oscar.selected_package_set_id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.name %+ </shortcut>
 	<shortcut> package_set_id_to_name read_records package_sets.name package_sets.id=%1 </shortcut>
 	<shortcut> package_set_name_to_id read_records package_sets.id package_sets.name=%1 </shortcut>
 	<shortcut> package_set_selected modify_records packages packages.name=%1 selected~1 </shortcut>
 	<shortcut> package_sets read_records package_sets.name </shortcut>
 	<shortcut> package_unset_selected modify_records packages packages.name=%1 selected~0 </shortcut>
 	<shortcut> packages read_records|modify_records packages name %+ </shortcut>
-	<shortcut> packages_class_selected packages_selected class=%1 %+ </shortcut>
 	<shortcut> packages_class_unselected packages_unselected class=%1 %+ </shortcut>
         <shortcut> packages_in_package_set read_records package_sets.name=%1 package_sets.id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.name </shortcut>
 	<shortcut> packages_installable read_records packages.name installable!=0 %+ </shortcut>
