@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.36 2002/11/01 14:48:23 ngorsuch Exp $
+#   $Id: Package.pm,v 1.37 2002/11/04 19:43:25 tfleury Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.36 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.37 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -427,33 +427,39 @@ sub make_empty_xml {
 #
 
 sub read_all_pkg_config_xml {
-    opendir(PKGDIR,"$ENV{OSCAR_HOME}/packages") 
-	or (carp("Couldn't open $ENV{OSCAR_HOME}/packages for reading"), 
-	    return undef);
+  opendir(PKGDIR,"$ENV{OSCAR_HOME}/packages") 
+    or (carp("Couldn't open $ENV{OSCAR_HOME}/packages for reading"), 
+      return undef);
 
-    while (my $pkg = readdir(PKGDIR)) {
-	chomp($pkg);
-	my $dir = "$ENV{OSCAR_HOME}/packages/$pkg";
-	my $config = "$dir/config.xml";
+  while (my $pkg = readdir(PKGDIR)) {
+    chomp($pkg);
+    my $dir = "$ENV{OSCAR_HOME}/packages/$pkg";
+    my $config = "$dir/config.xml";
 
-  # Check if it's a valid package: not ".", not "..", not "CVS"
-  # and doesn't contain a .oscar_ignore file
-	if (-d $dir && $pkg ne "." && $pkg ne ".." && $pkg ne "CVS" &&
-      ! -e "$dir/.oscar_ignore") {
-	    if (-f $config) {
-#		oscar_log_subsection("Reading $config");
-		$PACKAGE_CACHE->{$pkg} = $xs->XMLin($config);
-		$PACKAGE_CACHE->{$pkg}->{installable} = 1
-		    if (!$PACKAGE_CACHE->{$pkg}->{installable});
-	    } else {
-#		oscar_log_subsection("Got empty XML config for $pkg");
-		$PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
-	    }
-	}
+    # Check if it's a valid package: not ".", not "..", not "CVS"
+    # and doesn't contain a .oscar_ignore file
+    if (-d $dir && $pkg ne "." && $pkg ne ".." && $pkg ne "CVS" &&
+        ! -e "$dir/.oscar_ignore") {
+      if (-f $config) {
+#       oscar_log_subsection("Reading $config");
+        $PACKAGE_CACHE->{$pkg} = eval { $xs->XMLin($config); };
+        if ($@) {
+          oscar_log_subsection("WARNING! The config.xml file for $pkg is invalid.  Creating an empty one...");
+            $PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
+          } else {
+          $PACKAGE_CACHE->{$pkg}->{installable} = 1 if 
+            (!$PACKAGE_CACHE->{$pkg}->{installable});
+        }
+      } else {
+#       oscar_log_subsection("Got empty XML config for $pkg");
+        $PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
+      }
     }
-    close(PKGDIR);
+  }
 
-    $PACKAGE_CACHE;
+  close(PKGDIR);
+
+  $PACKAGE_CACHE;
 }
 
 #########################################################################
