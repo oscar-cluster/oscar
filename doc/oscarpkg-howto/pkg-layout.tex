@@ -1,4 +1,4 @@
-% $Id: pkg-layout.tex,v 1.7 2003/09/26 06:52:32 naughtont Exp $
+% $Id: pkg-layout.tex,v 1.8 2003/09/26 07:11:11 naughtont Exp $
 
 % TJN: Mention the XML tools that are helpful, e.g., 'xmllint'
 %      which >= 2.5.8 (i believe) has --schema option too! :)
@@ -302,6 +302,13 @@ stage the nodes are completely installed and booted.  It is typically
 assumed that they are accessible via C3 commands, e.g., \cmd{cexec} --
 parallel cluster execution.  Any closing modifications are performed, such as
 restarting service or pushing out files, e.g., \cmd{cpush} account files.
+
+\subsubsection{Package Uninstall}
+
+The two ``uninstall'' scripts are run after the actual OSCAR package RPMS
+have been removed.  The \file{post\_server\_} and
+\file{post\_client\_rpm\_uninstall} scripts are used to clean up any
+modifications or files added outside the RPM, i.e., via OSCAR API scripts.
 
 
 % TJN: finish this section
