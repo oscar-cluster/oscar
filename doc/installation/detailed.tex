@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.22 2002/06/13 03:31:22 jsquyres Exp $
+% $Id: detailed.tex,v 1.23 2002/06/15 04:29:37 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -27,7 +27,8 @@ installed, you may use it and continue with the next section. When
 installing Linux, it is required that you use a distribution that is
 based upon the RPM standard.  Furthermore, it should be noted that all
 testing up to this point has been done using the distributions listed
-in Table~\ref{tab:oscar-distro-support}.  As such, use of
+in Table~\ref{tab:oscar-distro-support} on
+page~\pageref{tab:oscar-distro-support}.  As such, use of
 distributions other than those listed will require some porting of
 OSCAR, as many of the scripts and software within OSCAR are dependent
 on those distributions. Do not worry about doing a custom install, as
@@ -55,12 +56,12 @@ firewalls and other security software that can be installed.
 \label{det:serverdiskpar}
 
 OSCAR has certain requirements for server disk space. Space will be
-needed to store the Linux rpms and to store the images.
-The rpms will be stored in /tftpboot/rpm. Approximately 1 gigabyte is required
-to store the rpms. 
-The images are stored in /var/lib/systemimager and will need approximately
-1 gigabyte per image. Only 1 image is required, although you may want to create
-more in the future. 
+needed to store the Linux RPMs and to store the images.  The RPMs will
+be stored in \file{/tftpboot/rpm}. Approximately 1 gigabyte is
+required to store the RPMs.  The images are stored in
+\file{/var/lib/systemimager} and will need approximately 1 gigabyte
+per image. Only 1 image is required, although you may want to create
+more in the future.
 
 If you are installing a new server, it is suggested that you allow for 
 2 gigabytes in both the \file{/}, which contains \file{/tftpboot},  
@@ -241,17 +242,17 @@ before continuing. Typically, the problem is that the wrong module is
 specified for the given device. Try using the network configuration
 utility again to resolve the problem.
   
-\subsubsection{Copy distribution rpms to \file{/tftpboot/rpm}}
+\subsubsection{Copy distribution RPMs to \file{/tftpboot/rpm}}
 \label{det:rpmcopy}
 
-In this step, you need to copy the rpms included with your Linux
+In this step, you need to copy the RPMs included with your Linux
 distribution into the \file{/tftpboot/rpm} directory.  Insert each of
 the distribution CDs in turn.  When each one is inserted, linux will
 automatically make the contents of the CD be available in the
 \file{/mnt/cdrom} directory.  Then for each CD locate the directory
-that contains the rpms.  In Red Hat 7.1, the rpms are located in the
+that contains the RPMs.  In Red Hat 7.1, the RPMs are located in the
 \file{RedHat/RPMS} directory, which will appear on the system as the
-\file{/mnt/cdrom/RedHat/RPMS} directory.  After locating the rpms on
+\file{/mnt/cdrom/RedHat/RPMS} directory.  After locating the RPMs on
 the each CD, copy them into \file{/tftpboot/rpm} with a command such
 as:
 
@@ -300,8 +301,8 @@ directory as shown above. The script will first run the part one
 server configuration script, which does the following:
 
 \begin{enumerate}
-\item copies OSCAR rpms to /tftpboot/rpm
-\item installs all OSCAR server rpms
+\item copies OSCAR RPMs to /tftpboot/rpm
+\item installs all OSCAR server RPMs
 \item updates \file{/etc/hosts} with OSCAR aliases
 \item updates \file{/etc/exports} 
 \item adds OSCAR paths to \file{/etc/profile} 
