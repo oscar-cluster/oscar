@@ -5,7 +5,7 @@
 # Copyright (c) 2002-2004 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.18 2004/04/06 15:38:52 brechin Exp $
+# $Id: Makefile.am,v 1.19 2004/05/03 21:03:33 brechin Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -28,6 +28,7 @@ oscar_SCRIPTS		= \
 			PackageBest.pm \
 			Package.pm \
 			PackageInUn.pm \
+			SISBuildSetup.pm \
 			Tk.pm
 
 EXTRA_DIST		= $(oscar_SCRIPTS)
