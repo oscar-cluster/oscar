@@ -21,12 +21,14 @@ package OSCAR::DelNode;
 
 use strict;
 use vars qw($VERSION @EXPORT);
+use lib "$ENV{OSCAR_HOME}/lib/OSCAR";
 use Tk;
 use Carp;
 use SystemInstaller::Tk::Common;
 use base qw(Exporter);
 use SIS::Client;
 use SIS::DB;
+use OSCAR::Database;
 @EXPORT = qw(delnode_window);
 
 $VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
@@ -86,16 +88,53 @@ sub delnodes {
         }
         my $clientstring=join(",",@clients);
         my $fail=0;
-        print "Executing post_clients phase\n";
+
+        my @generic_services=();
+        my @server_services=();
+        my $print_error=1;
+
+        # get the list of services for clients
+        database_execute_command("list_services NULL", \@generic_services, $print_error);
+
+        # get the list of services for servers
+        database_execute_command("list_services oscar_server", \@server_services, $print_error);
+
+        print ">> Executing post_clients phase\n";
         if (system("./post_clients")) {
           carp("post_clients phase failed.");
           $fail++;
         }
-        print "Executing post_install phase\n";
+        print ">> Executing post_install phase\n";
         if (system("./post_install")) {
           carp("post_install phase failed.");
           $fail++;
         }
+
+        print ">> Turning off client services\n";
+        foreach my $client (@clients) {
+                foreach my $generic_service (@generic_services) {
+			print "[$client]\n";
+                        if (system("/usr/bin/ssh $client /etc/init.d/$generic_service stop")) {
+                                carp("client_services phase failed.");
+                                $fail++;
+                        }
+                }
+        }
+
+        print ">> Re-starting server services\n";
+	foreach my $generic_service (@generic_services) {
+        	if (system("/etc/init.d/$generic_service restart")) {
+                	carp("server_services generic phase failed.");
+                        $fail++;
+                }
+        }
+        foreach my $server_service (@server_services) {
+                if (system("/etc/init.d/$server_service restart")) {
+			carp("server_services server phase failed.");
+			$fail++;
+		}
+        }
+
         if (system("mksimachine --Delete --name $clientstring")) {
           carp("Failed to delete machines $clientstring");
           $fail++;
@@ -131,6 +170,5 @@ sub delete_client_config_opkgs {
        }
     }
 }
-
 
 1;
