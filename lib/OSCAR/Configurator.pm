@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.27 2003/07/02 20:23:04 brechin Exp $
+# $Id: Configurator.pm,v 1.28 2003/11/05 02:16:15 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -67,59 +67,59 @@ require Tk::Menu;
 
 sub Configurator_ui {
         $destroyed = 1;
-	our($root) = @_;
+  our($root) = @_;
 
-	# widget creation 
+  # widget creation 
 
-	our($configFrame) = $root->Frame (
-	);
-	my($label_1) = $root->Label (
-		-font => '-*-Helvetica-Bold-R-Normal-*-*-140-*-*-*-*-*-*',
-		-text => 'OSCAR Package Configuration',
-	);
-	my($doneButton) = $root->Button (
-		-default => 'active',
-		-text => 'Done',
-	);
+  our($configFrame) = $root->Frame (
+  );
+  my($label_1) = $root->Label (
+    -font => '-*-Helvetica-Bold-R-Normal-*-*-140-*-*-*-*-*-*',
+    -text => 'OSCAR Package Configuration',
+  );
+  my($doneButton) = $root->Button (
+    -default => 'active',
+    -text => 'Done',
+  );
 
-	# widget commands
+  # widget commands
 
-	$doneButton->configure(
-		-command => \&OSCAR::Configurator::doneButtonPressed
-	);
+  $doneButton->configure(
+    -command => \&OSCAR::Configurator::doneButtonPressed
+  );
 
-	# Geometry management
+  # Geometry management
 
-	$configFrame->grid(
-		-in => $root,
-		-column => '1',
-		-row => '2',
-		-sticky => 'nesw'
-	);
-	$label_1->grid(
-		-in => $root,
-		-column => '1',
-		-row => '1',
-		-sticky => 'ew'
-	);
-	$doneButton->grid(
-		-in => $root,
-		-column => '1',
-		-row => '3',
-		-sticky => 'ew'
-	);
+  $configFrame->grid(
+    -in => $root,
+    -column => '1',
+    -row => '2',
+    -sticky => 'nesw'
+  );
+  $label_1->grid(
+    -in => $root,
+    -column => '1',
+    -row => '1',
+    -sticky => 'ew'
+  );
+  $doneButton->grid(
+    -in => $root,
+    -column => '1',
+    -row => '3',
+    -sticky => 'ew'
+  );
 
-	# Resize behavior management
+  # Resize behavior management
 
-	# container $root (rows)
-	$root->gridRowconfigure(1, -weight  => 0, -minsize  => 30);
-	$root->gridRowconfigure(2, -weight  => 1, -minsize  => 200);
-	$root->gridRowconfigure(3, -weight  => 0, -minsize  => 30);
+  # container $root (rows)
+  $root->gridRowconfigure(1, -weight  => 0, -minsize  => 30);
+  $root->gridRowconfigure(2, -weight  => 1, -minsize  => 200);
+  $root->gridRowconfigure(3, -weight  => 0, -minsize  => 30);
 
-	# container $root (columns)
-	$root->gridColumnconfigure(1, -weight => 1, -minsize => 147);
+  # container $root (columns)
+  $root->gridColumnconfigure(1, -weight => 1, -minsize => 147);
 
-	# additional interface code
+  # additional interface code
 
 our(%configurable_packages);  # Holds the selected configurable packages info
 our($oscarbasedir);           # Where the program is called from
@@ -135,11 +135,9 @@ sub doneButtonPressed
   # Configuration window.  Therefore, when we exit, we need to make the
   # parent window unbusy.
   undef $destroyed;
-  if (defined($root)) {
-    if (defined($root->Parent)) {
-      $root->Parent->Unbusy();
-    }
-  }
+  $root->Parent->Unbusy() if
+    ((defined($root)) && (defined($root->Parent)));
+
   # Destroy the Configbox if one was created.
   OSCAR::Configbox::exitWithoutSaving;
 
@@ -151,7 +149,7 @@ sub doneButtonPressed
     }
 
   # Then, destroy the root window.
-  if (defined($root)) { $root->destroy; }
+  $root->destroy if (defined($root));
 
   # Undefine a bunch of Tk widgeet variables for re-creation later.
   undef $root;
@@ -159,12 +157,12 @@ sub doneButtonPressed
   undef $pane;
 
   # Call the post-configure API script in each selected package
-  my @packages = list_selected_packages();
-  foreach my $pkg (@packages) {
-      if (!run_pkg_script($pkg, "post_configure", 1, "")) {
-	  carp("Post-configure script for package \"$pkg\" failed");
-      }
-  }
+  my $packages_ref = getSelectedConfigurablePackages();
+  foreach my $pkg (sort keys %$packages_ref) 
+    {
+      carp("Post-configure script for package \"$pkg\" failed") if 
+        (!run_pkg_script($pkg, "post_configure", 1, ""));
+    }
 
   # Write out a message to the OSCAR log
   oscar_log_subsection("Step $stepnum: Completed successfully");
@@ -173,38 +171,46 @@ sub doneButtonPressed
 #########################################################################
 #  Subroutine name : getSelectedConfigurablePackages                    #
 #  Parameters: None                                                     #
-#  Returns   : a double deep array with package name being the first    #
-#              key, and the package longer name being the value         #
+#  Returns   : a reference to a hash with the keys being the short      #
+#              package name and the values being the long package name  #
 #  This subroutine reads in the list of package names from the database #
-#  that have been selected for installation, prunes the ones that do    #
-#  not have their own configurator.html file, and returns them.         #
+#  that have been selected for installation (via the Selector OR via    #
+#  the Updater) and returns them in a hash ref.  Note that if you       #
+#  just want the packages that have configurator.html files, you will   #
+#  need to post-process the hash.                                       #
 #########################################################################
 sub getSelectedConfigurablePackages
 {
+  # Read all records from the database table <packages> that are marked
+  # as being installable and as being selected, saving the long package
+  # name in the <package> field for each package (we could do this with
+  # a shortcut but this code is about to be replaced and want a special
+  # output format).
+  my @resultref;
+  my %packages;
+  OSCAR::Database::database_execute_command(
+    "packages_in_selected_package_set packages.package", \@resultref, 1);
 
-    # read all records from the database table <packages> that are marked
-    # as being installable and as being selected, saving the long package
-    # name in the <package> field for each package (we could do this with
-    # a shortcut but this code is about to be replaced and want a special
-    # output format
-    my @resultref;
-    my %packages;
-    OSCAR::Database::database_execute_command("packages_in_selected_package_set packages.package", \@resultref, 1);
-    foreach my $pkg (@resultref) {
+  # Transform the list into a hash; keys=short pkg name, values=long pkg name
+  foreach my $pkg (@resultref) 
+    {
       my ($pname, $ppackage) = split(' ', "$pkg", 2);
       $packages{$pname} = $ppackage;
     }
-    foreach my $package ( sort keys %packages ) {
-	# Skip any packages which don't have a configurator.html file
-	my $found = 0;
-	foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
-	  (($found = 1) and last) if (-s "$dir/$package/configurator.html");
-        }
-	if (! $found ) { 
-          delete $packages{$package}; 
-        }
+
+  # Add in any packages which "should_be_installed"
+  my @pkginstall = ();
+  OSCAR::Database::database_execute_command(
+    "packages_that_should_be_installed", \@pkginstall);
+  foreach my $package (@pkginstall)
+    { # Get the long name and add the short name/long name to the hash
+      my @longname = ();
+      OSCAR::Database::database_execute_command(
+        "read_records packages name=$package package",\@longname);
+      $packages{$package} = ((defined $longname[0]) ? $longname[0] : $package);
     }
-    return \%packages;
+
+  return \%packages;
 }
 
 #########################################################################
@@ -227,8 +233,20 @@ sub populateConfiguratorList
   # Set up the base directory where this script is being run
   $oscarbasedir = '.';
   $oscarbasedir = $ENV{OSCAR_HOME} if ($ENV{OSCAR_HOME});
+
   # Get the list of selected, configurable packages
   my $packages_ref = getSelectedConfigurablePackages();
+
+  # Skip any packages which don't have a configurator.html file
+  foreach my $package ( sort keys %$packages_ref ) 
+    {
+      my $found = 0;
+      foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) 
+        {
+          (($found = 1) and last) if (-s "$dir/$package/configurator.html");
+        }
+      delete $packages_ref->{$package} if (!$found);
+    }
 
   $pane->destroy if ($pane);
   # First, put a "Pane" widget in the center frame
@@ -303,9 +321,10 @@ sub displayPackageConfigurator # ($parent)
 
   oscar_log_section("Running step $stepnum of the OSCAR wizard: Configure selected OSCAR packages");
 
-  # Call the pre-configure API script in each selected package
-#  my @packages = list_selected_packages();
-  foreach my $pkg (my @packages = list_selected_packages()) 
+  # Call the pre-configure API script in each selected package and,
+  # for the install/uninstall stuff, any packages which "should_be_installed"
+  my $packages_ref = getSelectedConfigurablePackages();
+  foreach my $pkg (sort keys %$packages_ref) 
     {
      carp('Pre-configure script for package "' . $pkg . '" failed') if 
         (!run_pkg_script($pkg, "pre_configure", 1, ""));
@@ -335,12 +354,12 @@ sub displayPackageConfigurator # ($parent)
           $top = MainWindow->new();
           $top->title("Oscar Package Configuration");
           $top->bind('<Destroy>', sub { 
-	    if (defined($destroyed)) {
-	      undef $destroyed;
-	      doneButtonPressed();
-	      return;
-	    }
-			              } );
+      if (defined($destroyed)) {
+        undef $destroyed;
+        doneButtonPressed();
+        return;
+      }
+                    } );
         }
       OSCAR::Configurator::Configurator_ui $top;  # Call specPerl window creator
     }
@@ -358,7 +377,7 @@ sub displayPackageConfigurator # ($parent)
 #displayPackageConfigurator($top);
 
 
-	# end additional interface code
+  # end additional interface code
 }
 #Configurator_ui $top;
 #Tk::MainLoop;
