@@ -7,7 +7,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.33 2003/11/04 00:27:38 naughtont Exp $
+# $Id: wizard_prep,v 1.34 2004/03/16 00:41:13 tfleury Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -153,7 +153,7 @@ foreach my $d (@PKG_SOURCE_LOCATIONS)
     if (-d $d) 
       {
         oscar_log_subsection("Copying RPMs from $d to $RPMPOOL");
-        OSCAR::Package::copy_rpms($d) or 
+        OSCAR::Package::copy_pkgs($d) or 
           croak("Couldn't copy rpms to $RPMPOOL");
         oscar_log_subsection("Successfully copied RPMs from $d to $RPMPOOL");
       }
@@ -208,7 +208,7 @@ foreach my $package (@packages)
 # Now install them nicely (i.e. don't install packages that are already there)
 
 oscar_log_subsection("Installing server core RPMs");
-OSCAR::Package::install_rpms(@rpms) or 
+OSCAR::Package::install_packages(@rpms) or 
   croak("Couldn't install packages needed for OSCAR Wizard to run");
 oscar_log_subsection("Successfully installed server core RPMs");
 
