@@ -1,6 +1,13 @@
 % -*- latex -*-
 %
-% $Id: intro.tex,v 1.17 2002/08/31 22:36:18 jsquyres Exp $
+% Copyright (c) 2002 The Trustees of Indiana University.  
+%                    All rights reserved.
+% 
+% This file is part of the OSCAR software package.  For license
+% information, see the COPYING file in the top level directory of the
+% OSCAR source distribution.
+%
+% $Id: intro.tex,v 1.18 2002/11/16 19:24:16 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -22,13 +29,23 @@ OSCAR version \oscarversion.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Latest Documentation}
+
+Please be sure that you have the latest version of this document.  It
+is possible (and probable!) that newer versions of this document were
+released on the main OSCAR web site after the software was
+released. You are {\em strongly} encouraged to check
+\url{http://oscar.sourceforge.net} for the latest version of these
+instructions before proceeding.  Document versions can be compared by
+checking their version number and date on the cover page.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Terminology}
 
-Let's start with a few basic terms and concepts, so that everyone is
-starting out on the same level. The most important is the term
-\term{cluster}, which when mentioned herein refers to a group of
-individual computers bundled together using hardware and software in
-order to make them work as a single machine. 
+A common term used in this document is \term{cluster}, which refers to
+a group of individual computers bundled together using hardware and
+software in order to make them work as a single machine.
 
 Each individual machine of a cluster is referred to as a \term{node}.
 Within the OSCAR cluster to be installed, there are two types of
@@ -41,6 +58,30 @@ nodes, where all the client nodes [currently] must have homogeneous
 hardware.  The software contained within OSCAR does support doing
 multiple cluster installs from the same server, but no documentation
 is provided on how to do so.
+
+An \term{OSCAR package} is a set of files that is used to install a
+software package in an OSCAR cluster.  An OSCAR package can be as
+simple as a single RPM file, or it can be more complex, perhaps
+including a mixture of RPM and other auxilliary configuration /
+installation files.  OSCAR packages provide the majority of
+functionality in OSCAR clusters.  
+
+OSCAR packages fall into one of three categories:
+
+\begin{itemize}
+\item \term{Core packages} are required for the operation of OSCAR
+  itself (mostly involved with the installer).
+  
+\item \term{Included packages} are shipped in the official OSCAR
+  distribution.  These are usually authored and/or packaged by OSCAR
+  developers, and have some degreee of official testing before
+  release.
+  
+\item \term{Third party packages} are not included in the official
+  OSCAR distribution; they are ``add-ons'' that can be unpacked in the
+  OSCAR tree, and therefore installed using the OSCAR installation
+  framework.  
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -76,8 +117,8 @@ server node:
     supported} distribution from Table~\ref{tab:oscar-distro-support}
 \end{itemize}
 
-The following is a list of minimum system requirements for the OSCAR
-client nodes:
+\noindent The following is a list of minimum system requirements for
+the OSCAR client nodes:
 
 \begin{itemize}
 \item CPU of i586 or above
@@ -102,12 +143,13 @@ client nodes:
 
 There are both ``Quick Start'' and detailed installation sections in
 this guide. Due to the complicated nature of putting together a
-high-performance cluster, it is strongly suggested that you read this
-document through, without skipping any sections, and then use the
-detailed installation procedure to install your OSCAR cluster.  Novice
-users will be comforted to know that anyone who has installed and used
-Linux can successfully navigate through the OSCAR cluster install.  If
-you are too impatient to read manuals, and your cluster meets certain
+high-performance cluster, it is strongly suggested that even
+experienced administrators read this document through, without
+skipping any sections, and then use the detailed installation
+procedure to install your OSCAR cluster.  Novice users will be
+comforted to know that anyone who has installed and used Linux can
+successfully navigate through the OSCAR cluster install.  If you are
+too impatient to read manuals, and your cluster meets certain
 requirements, feel free to try your luck with the ``Quick Start''
 installation.
 
@@ -116,36 +158,23 @@ The rest of this document is organized as follows.
 First, Section~\ref{sec:download} tells how to obtain an OSCAR version
 \oscarversion\ distribution package.
 %
-Next, a ``Release Notes'' section (Section~\ref{sec:release-notes})
+Next, the ``Release Notes'' section (Section~\ref{sec:release-notes})
 that applies to OSCAR version \oscarversion\ contains some
 requirements and update issues that need to be resolved before the
 install.
-%
-Section~\ref{sec:quick-start} provides a ``Quick Start'' installation
-guide, which gives a brief overview of the entire installation
-process.  It is intended for experienced users who do not need the
-step-by-step instructions for a complete install.  The ``Quick Start''
-section is {\bf not} for the Linux or clustering novice.
 %
 Section~\ref{sec:sis} provides an overview for the System Installation
 Suite software package used in OSCAR to perform the bulk of the
 cluster installation.
 %
-An outline is provided in Section~\ref{sec:outline} of the entire
-cluster install procedure, so that users have a general understanding
-of what they will be doing.
-%
-Section~\ref{sec:detail} details the cluster installation procedure.
-The level of detail lies somewhere between ``the install will now
+Section~\ref{sec:detail} details the cluster installation procedure
+(the level of detail lies somewhere between ``the install will now
 update some files'' and ``the install will now replace the string
-`xyz' with `abc' in file \file{some\_file}.'' The reasoning behind
-providing this level of detail is to allow users to fully understand
-what it takes to put together a cluster, as well as to allow them to
-help troubleshoot any problems that may occur.
+`xyz' with `abc' in file \file{some\_file}.'')
 %
 Finally, Section~\ref{sec:pkg-specific-notes} contains system
 administration notes about several of the individual packages that are
-installed by OSCAR.  {\em This section is a ``must read'' for all
+installed by OSCAR.  {\bf\em This section is a ``must read'' for all
   OSCAR system administrators.}
 
 Appendix~\ref{app:net-boot-client-nodes} covers the topic of network
@@ -154,6 +183,9 @@ section.
 %
 Appendix~\ref{app:client-install} provides curious users an overview
 of what really happens during a client install.
+%
+Appendix~\ref{app:no_dhcp} discusses how to install an OSCAR cluster
+without a DHCP server.
 %
 Appendix~\ref{app:security} covers a primer of some security aspects
 of a Linux cluster.  Although not intended to be a comprehensive

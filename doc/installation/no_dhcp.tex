@@ -1,3 +1,17 @@
+% -*- latex -*-
+%
+% Copyright (c) 2002 The Trustees of Indiana University.  
+%                    All rights reserved.
+% 
+% This file is part of the OSCAR software package.  For license
+% information, see the COPYING file in the top level directory of the
+% OSCAR source distribution.
+%
+% $Id: no_dhcp.tex,v 1.2 2002/11/16 19:24:16 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
 \section{Installing without a DHCP server}
 \label{app:no_dhcp}
 
@@ -26,15 +40,15 @@ node, so we must use a special boot floppy.
 
 Unfortunately, we have to make a boot floppy for every node (since the
 boot floppy will have IP information encoded in it)\footnote{This
-process can obviously be automated, but we do not go into detail on
-that process here.}.  First, a configuration file that provides SIS
-with the needed boot information must be created.  The sample below
-is used to create a machine {\tt thumb1.osl.iu.edu}.  The fields are
+  process can obviously be automated, but we do not go into detail on
+  that process here.}.  First, a configuration file that provides SIS
+with the needed boot information must be created.  The sample below is
+used to create a machine {\tt thumb1.osl.iu.edu}.  The fields are
 self-explanatory.  The {\tt IMAGESERVER} should be set to the IP
 address of the OSCAR server node (where you are running the OSCAR
 wizard).  The other networking information must match the information
-given in Step 2 of the installation, otherwise your system might not
-be installable.
+given when building client image during the installation, otherwise
+your system might not be installable.
 
 \begin{verbatim}
 HOSTNAME=thumb1
@@ -56,11 +70,11 @@ configuration file created above.
 
 \subsubsection{Cluster Definition}
 
-In step 4 of the OSCAR installation wizard, it is not necessary to
-collect the MAC addresses of your client nodes.  However, to make sure
-all the proper steps of the OSCAR installation are performed, you
-should ensure that you open the Wizard pane and click on the ``Done''
-option.
+When setting up the networking in the OSCAR installation wizard, it is
+not necessary to collect the MAC addresses of your client nodes.
+However, to make sure all the proper steps of the OSCAR installation
+are performed, you should ensure that you open the Wizard pane and
+click on the ``Done'' option.
 
 \subsubsection{Adding and Deleting client nodes}
 

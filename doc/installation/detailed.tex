@@ -1,6 +1,13 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.47 2002/10/11 17:56:09 bligneri Exp $
+% Copyright (c) 2002 The Trustees of Indiana University.  
+%                    All rights reserved.
+% 
+% This file is part of the OSCAR software package.  For license
+% information, see the COPYING file in the top level directory of the
+% OSCAR source distribution.
+%
+% $Id: detailed.tex,v 1.48 2002/11/16 19:24:16 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -8,13 +15,16 @@
 \section{Detailed Cluster Installation Procedure}
 \label{sec:detail}
 
-All actions specified herein should be performed by the \user{root}
+All actions specified below should be performed by the \user{root}
 user on the server node unless noted otherwise.  Note that if you
 login as a regular user and use the \cmd{su} command to change to the
 \user{root} user, you {\em must} use ``\cmd{su -}'' to get the full
 \user{root} environment.  Using ``\cmd{su}'' (with no arguments) may
 not be sufficient, and may cause obscure errors during an OSCAR
 installation.
+
+Note that all the steps below are mandatory unless explicitly marked
+as optional.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,13 +52,18 @@ distributions other than those listed will likely require some porting
 of OSCAR, as many of the scripts and software within OSCAR are
 dependent on those distributions. 
 
-When installing Linux, do not worry about doing a ``custom'' install
-since OSCAR will install all the software on which it depends.  The
-main Linux installation requirement is that some X windowing
-environment such as GNOME or KDE must be installed.  Typically, a
-``Workstation'' install with the ``Software Development Tools'' group
-added yields a sufficient installation for OSCAR to install
-successfully.
+When installing Linux, it is not necessary to perform a ``custom''
+install since OSCAR will usually install all the software on which it
+depends.  The main Linux installation requirement is that some X
+windowing environment such as GNOME or KDE must be installed.
+Typically, a ``Workstation'' install with the ``Software Development
+Tools'' group added yields a sufficient installation for OSCAR to
+install successfully.
+
+It is best to {\em not} install distribution updates after you install
+Linux; doing so may disrupt some of OSCAR's RPM dependencies.
+Instead, install OSCAR first, and then install the distribution
+updates.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -57,17 +72,17 @@ successfully.
 
 OSCAR has certain requirements for server disk space. Space will be
 needed to store the Linux RPMs and to store the images.  The RPMs will
-be stored in \file{/tftpboot/rpm}. Approximately 2GB is required to
-store the RPMs.  The images are stored in \file{/var/lib/systemimager}
-and will need approximately 2GB per image. Only one image is required,
-although you may want to create more in the future.
+be stored in \file{/tftpboot/rpm}.  2GB is usually enough to store the
+RPMs.  The images are stored in \file{/var/lib/systemimager} and will
+need approximately 2GB per image.  Although only one image is required
+for OSCAR, you may want to create more images in the future.
 
 If you are installing a new server, it is suggested that you allow for
 4GB in both the \file{/} (which contains \file{/tftpboot}) and
 \file{/var} filesystems when partitioning the disk on your server.
 
 If you are using an existing server, you will need to verify that you
-have enough space on the disk partitions.  Again 2GB of free space is
+have enough space on the disk partitions.  Again 4GB of free space is
 recommended under each of \file{/} and \file{/var}.
 
 You can check the amount of free space on your drive's partitions by
@@ -103,9 +118,12 @@ If you are reading this, you probably already have a copy of an OSCAR
 distribtuion package.  If not, go to
 \url{http://oscar.sourceforge.net/} and download the latest OSCAR
 Regular or Extra Crispy distribution package (see
-Section~\ref{sec:download}, page~\pageref{sec:download}).
+Section~\ref{sec:download}, page~\pageref{sec:download}).  Ensure that
+you have the latest documentation (later documentation may be
+available on the OSCAR web site than in the OSCAR distribution
+package).
 
-Place the OSCAR distribution package to a directory such as
+Place the OSCAR distribution package in a directory such as
 \user{root}'s home directory on the server node.  Although there is no
 required installation directory (note that you may not use the
 directory \file{/usr/local/oscar} or \file{/opt/oscar} -- they are
@@ -165,7 +183,8 @@ distribution).
 %
       \file{\obase/share} & more auxiliary helper files \\
 %
-      \file{\obase/testing} & contains OSCAR cluster test software \\
+      \file{\obase/testing} & contains OSCAR cluster test helper
+      scripts \\
 %
       \file{\obase/VERSION} & file containing the OSCAR version number \\
       \hline
@@ -176,51 +195,16 @@ distribution).
 \end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-\subsubsection{Download and unpack third-party OSCAR packages}
-\label{det:third-party}
-
-Download and install any optional third party packages and unpack them
-into the OSCAR tree.
-
-For example, if you want OSCAR to install the Ganglia package,
-download the Ganglia OSCAR tarball from the main OSCAR SourceForge
-site.  Expand it into the \file{packages/} directory in the OSCAR tree
-(assuming that \file{ganglia-oscar-\oscarversion.tar.gz} is in
-\user{root}'s home directory):
-
-\vspace{11pt}
-
-{\tt 
-\ \ \# cd $^{\sim}$/oscar-\oscarversion/packages \\
-\indent \ \ \# tar zxf $^{\sim}$/ganglia-oscar-\oscarversion.tar.gz
-}
-
-\vspace{11pt}
-
-This will make the directory
-\file{oscar-\oscarversion/packages/ganglia} with all the files
-necessary to install Ganglia in an OSCAR cluster.  This step must be
-performed {\em before} the main OSCAR installation.
-
-Each third-party OSCAR package likely comes with its own
-documentation.  For example, the OSCAR Ganglia package comes with a
-\file{README} file and \file{doc/ganglia-user.pdf} which should both
-be read before attempting to install or use Ganglia.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Configure the ethernet adapter for the cluster} 
 \label{det:serveradapter}
 
 Assuming you want your server to be connected to both an public
 network and the private cluster subnet, you will need to have two
-ethernet adapters installed in the server. It is preferred that you do
-this because exposing your cluster may be a security risk, and certain
-software used in OSCAR (such as DHCP) may conflict with your external
-network.
-
-\begchange
+ethernet adapters installed in the server. This is the preferred OSCAR
+configuration because exposing your cluster may not only be a security
+risk, certain software used in OSCAR (such as DHCP) may conflict with
+your external network.
 
 Once both adapters have been physically installed in the server node,
 you need to configure them.\footnote{Beware of certain models of 3COM
@@ -266,11 +250,9 @@ must be configured as follows:
 
 \end{itemize}
 
-\endchange
-
 Now reboot the server node to ensure that all the changes are
-propagated to the appropriate configuration files. To confirm that all
-ethernet adapters are in the ``up'' state, once the machine has
+propagated to the appropriate configuration files.  To confirm that
+all ethernet adapters are in the ``up'' state, once the machine has
 rebooted, open another terminal window and enter the following
 command:
 
@@ -291,10 +273,10 @@ utility again to resolve the problem.
 
 In this step, you need to copy the RPMs included with your Linux
 distribution into the \file{/tftpboot/rpm} directory.  When each CD is
-inserted, Linux should automatically make the contents of the CD be
+inserted, Linux usually automatically makes the contents of the CD be
 available in the \file{/mnt/cdrom} directory (you may need to execute
 a command such as ``\cmd{mount /mnt/cdrom}'' if the CD does not mount
-automatically).  
+automatically).
 
 For each CD, locate the directory that contains the RPMs.  In RedHat
 7.x, the RPMs are located in the \file{RedHat/RPMS} directory (i.e.,
@@ -305,9 +287,9 @@ For each CD, locate the directory that contains the RPMs.  In RedHat
   # cp /mnt/cdrom/RedHat/RPMS/*.rpm /tftpboot/rpm
 \end{verbatim}
   
-Be sure to repeat the above process for all CDs.  After using each CD
-you will have to unmount it from the local file system and eject it by
-issuing these commands:
+Be sure to repeat the above process for {\em all} CDs.  After using
+each CD you will have to unmount it from the local file system and
+eject it by issuing these commands:
 
 \begin{verbatim}
   # cd
@@ -316,35 +298,92 @@ issuing these commands:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Copy distribution update RPMs to \file{/tftpboot/rpm}}
-\label{det:distro-updates}
+%\subsubsection{Copy distribution update RPMs to \file{/tftpboot/rpm}}
+%\label{det:distro-updates}
 
-Obtain all the relevant RPM updates for your distribution -- security
-patches, bug fixes, etc.  Most distributions (including RedHat)
-include a tool to automate this process (e.g., \cmd{up2date}) that
-will automatically download and install all relevant updated RPMs.
+%Obtain all the relevant RPM updates for your distribution -- security
+%patches, bug fixes, etc.  Most distributions (including RedHat)
+%include a tool to automate this process (e.g., \cmd{up2date}) that
+%will automatically download and install all relevant updated RPMs.
 
-Ensure that these updated RPMs are also copied to
-\file{/tftpboot/rpm}.  It does not matter if two different versions of
-the same RPM end up in \file{/tftpboot/rpm} (e.g.,
-\file{foo-1.2.3-1.i386.rpm} from the installation CD and
-\file{foo-1.2.4-1.i386.rpm} from the updates) -- OSCAR will
-automatically use the latest version when it selects RPMs to install.
+%Ensure that these updated RPMs are also copied to
+%\file{/tftpboot/rpm}.  It does not matter if two different versions of
+%the same RPM end up in \file{/tftpboot/rpm} (e.g.,
+%\file{foo-1.2.3-1.i386.rpm} from the installation CD and
+%\file{foo-1.2.4-1.i386.rpm} from the updates) -- OSCAR will
+%automatically use the latest version when it selects RPMs to install.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Downloading Additional OSCAR Packages}
+\label{det:opd}
+
+\optional
+
+Before initiating the main OSCAR installation process, you may wish to
+download additional OSCAR packages.\footnote{Ganglia is a notable
+  package that is not included in the main OSCAR distribution.  The
+  process mentioned in this section will enable you to download
+  Ganglia and install it with the rest of the OSCAR components.}  The
+OSCAR Package Downloader (OPD) is a unified method of downloading
+OSCAR packages and insertting them in the OSCAR installation hierarchy
+so that they will be installed during the main OSCAR installation
+process.
+
+The OPD tool can be executed from the top-level OSCAR directory with
+the following command:
+
+% We have to use \tt instead of {verbatim} because we need to use
+% \oscarversion inside.  This makes it somewhat painful -- much less
+% easy than {verbatim}.
+\vspace{11pt}
+{\tt
+\# cd /root/oscar-\oscarversion \\
+\indent \# export OSCAR\_HOME=`pwd` \\
+\indent \# ./scripts/opd
+}
+\vspace{11pt}
+
+Setting the \env{OSCAR\_\-HOME} environment variable before invoking
+OPD will allow OPD unpack downloaded packages into the correct
+location in the OSCAR directory structure, such that they will
+automatically be detected, configured, and installed when you run the
+OSCAR installer.  If you don't set \env{OSCAR\_\-HOME}, OPD will place
+downloaded distribution packages in \file{\$HOME/.opd/downloads}, and
+you will have to place them in the OSCAR directory structure manually.
+
+OPD requires some Perl modules to be installed before running.  If
+they are not installed, you will receive a detailed error message
+listing which modules need to be installed.  You have two options to
+install these modules:
+
+\begin{enumerate}
+\item Use a tool such as CPAN to download and install the required
+  modules.
+  
+\item Launch the OSCAR installer (see
+  Section~\ref{det:installcluster}) and then quit immediately when the
+  GUI window appears.  This is the preferred method, since the OSCAR
+  installer will install of its own prerequsites (i.e., the process is
+  automated).
+\end{enumerate}
+
+Upon launching OPD, select a repository for packages from the choices
+listed.  OPD will then connect to that repository and query it for a
+list of available packages.  Select all the packages that you would
+like to download, and then use the ``download'' command to actually
+download them.  If you set the \env{OSCAR\_\-HOME} environment
+variable before running OPD, OPD will unpack the downloaded packages
+in the correct directory in the OSCAR tree.
+
+Use the ``help'' command in OPD for listings of additional commands
+and help.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
-\subsection{Initial OSCAR Server Configuration}
-
-During this phase, the software needed to run OSCAR will be installed
-on the server. In addition, some initial server configuration will be
-performed. 
-
-The following steps must be run within an X windowing environment.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsubsection{Change to the OSCAR directory and run \file{install\_cluster}}
+\subsection{Launching the OSCAR Installer}
 \label{det:installcluster}
 
 Change directory to the top-level OSCAR directory and start the OSCAR
@@ -363,9 +402,10 @@ install wizard:
 In the above command, substitute the device name (e.g., \emph{eth1})
 in place of \cmd{$<$device$>$} for your server's private network
 ethernet adapter.  The script will execute some setup / configuration
-setps, including:
+setps, including (but not limited to):
 
 \begin{enumerate}
+\item installs prerequsite packages on the server
 \item copies OSCAR RPMs to \file{/tftpboot/rpm}
 \item installs all OSCAR server RPMs
 \item updates \file{/etc/hosts} with OSCAR aliases
@@ -404,53 +444,138 @@ describing the purpose of the step.
   \end{center}
 \end{figure}
   
-As each of the steps are performed, there is output generated that is
-displayed to the user. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Selecting Packages to Install}
+\label{det:select-packages}
+
+\optional
+
+If you wish to change the list of packages that are installed, click
+on the \button{Select OSCAR Packages To Install} button.  This step is
+optional -- if you do not click on this button, all OSCAR packages
+included in the OSCAR distribution and all packages downloaded and
+unpacked by OPD will be selected for installation.
+
+When you click on the button, a window similar to the one shown in
+Figure~\ref{fig:detailed-package-selection} appears.  Each of the
+packages that the OSCAR installer has found are listed in the main
+frame. Packages that have black buttons are considered ``core''
+packages, and must be selected (you cannot unselect them).  Blue
+packages can be unselected.
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{figs/package-selection}
+    \caption{OSCAR package selection.}
+    \label{fig:detailed-package-selection}
+  \end{center}
+\end{figure}
+
+Note that this window only shows {\em OSCAR packages} -- it does not
+show individual RPMs.  
+
+Once you have a selected a set of OSCAR packages to install, click on
+the \button{Save and Exit} button to save your selections and return
+to the main OSCAR window.  Click on the \button{Exit without Saving}
+button to discard your changes and use the list of selections that was
+initial displayed when you initially opened the window.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Cluster Definition}
-\label{sec:detailed-cluster-def}
+\subsection{Configuring OSCAR Packages}
+\label{det:configure-packages}
 
-During this phase, you will complete steps 1 through 6 of the OSCAR
-wizard in defining your cluster.  If you encounter problems or wish to
-redo any of the SIS actions performed in the wizard steps 2 or 3,
-please refer to the \cmd{SIS(1)} man pages.
+\optional
+
+Some OSCAR packages allow themselves to be configured.  Clicking on
+the \button{Configure Selected OSCAR Packages} button will bring up a
+window listing all the packages that can be configured.
+Figure~\ref{fig:detailed-package-configuration} shows a sample with
+only the Environment Switcher package listed.
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[scale=\imgscale]{figs/package-configuration}
+    \caption{OSCAR package configuration.}
+    \label{fig:detailed-package-configuration}
+  \end{center}
+\end{figure}
+
+Clicking on any of the packages' \button{Config} button will bring up
+a panel for configuring that package.  Select whatever options are
+appropriate for that package, and then click on the \button{Save and
+  Exit} button to save your selections, or \button{Exit without
+  Saving} to cancel all of your selections and leave the original
+settings.
+
+This step is optional.  If you do not click on the \button{Configure
+  Selected OSCAR Packages} button, defaults for all packages will be
+used.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Step 1: Prepare OSCAR server for install} 
-\label{det:prepareforinstall}
+\subsubsection{Selecting a Default MPI Implementation}
+\label{det:configure-packages-switcher}
 
-Begin the installation process by pressing the Step 1 button of the
-wizard entitled \button{Prepare OSCAR Server for Install}. 
+Although multiple MPI implementations can be installed, only one can
+be ``active'' for each user at a time.  Specifically, each user's path
+needs to be set to refer to a ``default'' MPI that will be used for
+all commands.  The Environment Switcher package provides a convenient
+mechanism for switching between multiple MPI implementations.
+Section~\ref{app:switcher-which-mpi-to-use} contains more details
+about this package (page~\pageref{app:switcher-which-mpi-to-use}).
 
-Here you will select the default MPI implementation for use on the
-cluster.  Note that all available MPI implementations will be
-available for general use; this step simply picks which one will be
-the system default.
+The Environment Switcher package is mentioned now, however, because
+its configuration panel allows you to select which MPI implementation
+will be the initial ``default'' for all users.  OSCAR currently
+includes two MPI implementations: LAM/MPI and MPICH.  Using
+Environment Switcher's configuration panel, you can select one of
+these two to be the cluster's default MPI.  
 
-This step also installs and starts other necessary software, devices,
-and services on the server.
+You can change this default setting later -- see
+Section~\ref{app:switcher-which-mpi-to-use} for more details.
+
+When you close the main Configuration window, the following benign
+warning may appear in the shell window (it is safe to ignore):
+
+\begin{verbatim}
+  Tag "mpi" does not seem to exist yet.  Skipping.
+\end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Step 2: Build the Image} 
-\label{det:buildimage}
+\subsection{Install OSCAR Server Packages}
+\label{det:install-server-packages}
 
-Press the Step 2 button of the wizard entitled \button{Build OSCAR
-  Client Image}. A dialog will be displayed. In most cases, the
-defaults will be sufficient. You should verify that the disk partition
-file is the proper type for your client nodes. The sample files have
-the disk type as the last part of the filename. You may also want to
-change the post installation action and the IP assignment methods.
-\msg{It is important to note that if you wish to use automatic reboot,
-  you should make sure the BIOS on each client is set to boot from the
-  local hard drive before attempting a network boot by default. If you
-  have to change the boot order to do a network boot before a disk
-  boot to install your client machines, you should not use automatic
-  reboot.}  
+Press the \button{Install OSCAR Server Packages} button.  This will
+invoke the installation of various RPMs and auxillary configuration on
+the server node.  Executation may take several minutes; text output
+and status messages will appear in the shell window.
+
+A popup will appear indicating the success or failure of this step.
+Click on the \button{Close} button to dismiss it.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Build OSCAR Client Image}
+\label{det:build-client-image}
+
+Press the \button{Build OSCAR Client Image} button. A dialog will be
+displayed. In most cases, the defaults will be sufficient. You should
+verify that the disk partition file is the proper type for your client
+nodes. The sample files have the disk type as the last part of the
+filename. You may also want to change the post installation action and
+the IP assignment methods.  \msg{It is important to note that if you
+  wish to use automatic reboot, you should make sure the BIOS on each
+  client is set to boot from the local hard drive before attempting a
+  network boot by default. If you have to change the boot order to do
+  a network boot before a disk boot to install your client machines,
+  you should not use automatic reboot.}
 
 Building the image may take several minutes; the red progress bar on
 the bottom of the window will indicate how far along the process is.
@@ -511,9 +636,9 @@ be listed as ``\file{bash}''.
 \subparagraph{Custom kernels.}
 
 If you want to use a customized kernel, you can add it to the image
-after it is built (after step 1, but before step 2).  See the
-\cmd{kernel\_\-picker} application description in
-Section~\ref{app:kernel-picker-overview} on
+after it is built (after installing the server OSCAR packages, but
+before building the client image).  See the \cmd{kernel\_\-picker}
+application description in Section~\ref{app:kernel-picker-overview} on
 page~\pageref{app:kernel-picker-overview}.
 
 \subparagraph{Build the Image.}
@@ -521,8 +646,9 @@ page~\pageref{app:kernel-picker-overview}.
 Once you are satisfied with the input, click the \button{Build Image}
 button.  When the image completes, a popup window will appear
 indicating whether the build succeeded or failed.  If successful,
-click the \button{Ok} button, and you will be returned to the main
-OSCAR wizard menu.
+click the \button{Close} button to close the popup, and then press the
+\button{Close} button on the build image window.  You will be back at
+the main OSCAR wizard menu.
 
 If the build fails, look through the console output\footnote{Note that
   all console output is also spooled into the file
@@ -534,20 +660,21 @@ Notes for this version of OSCAR in Section~\ref{sec:release-notes}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Step 3: Define your client machines} 
-\label{det:defclients}
+\subsection{Define OSCAR Clients}
+\label{det:define-clients}
 
-Press the Step 3 button of the wizard entitled \button{Define OSCAR
-  Clients}. In the dialog box that is displayed, enter the appropriate
-information. Again the defaults will be correct in most cases. At a
-minimum, you will need to enter a value in the \field{Number of Hosts}
-to specifies how many clients you want to create.
+Press the \button{Define OSCAR Clients} button.  In the dialog box
+that is displayed, enter the appropriate information.  Although the
+defaults will be suffient for most cases, you will need to enter a
+value in the \field{Number of Hosts} field to specify how many clients
+you want to create.
 
 \begin{enumerate}
   
 \item The \field{Image Name} field should specify the image name that
-  was used to create the image in Step 2.
+  was used to create the image in the previous step.
   
 \item The \field{Domain Name} field should be used to specify the
   client's IP domain name.  
@@ -585,6 +712,11 @@ to specifies how many clients you want to create.
   Footnote~\ref{foot:private-ip-ranges} on
   page~\pageref{foot:private-ip-ranges} for more information on how to
   pick a starting IP address.
+
+  Clients will be given IP addresses starting with this IP address,
+  and incrementing by 1 for each successive client.  Ensure that the
+  range of $[ starting\_ip, (starting\_ip + num\_clients) ]$ does not
+  conflict with the IP addresses of any other nodes on your network.
   
 \item The \field{Subnet Mask} specifies the IP netmask for all
   clients.  See Footnote~\ref{foot:netmask} on
@@ -599,11 +731,6 @@ to specifies how many clients you want to create.
 When finished entering information, press the \button{Addclients} button.
 A sample dialog is shown in Figure~\ref{fig:detailed-define-clients}. 
 
-After the clients are created, a dialog will pop up with the
-completion status. After closing that, you may press the
-\button{Close} button in the build clients dialoge and continue with
-the next step.
-
 \begin{figure}[htbp]
   \begin{center}
     \includegraphics[scale=\imgscale]{figs/5a_sbs-define-clients1}
@@ -611,11 +738,17 @@ the next step.
     \label{fig:detailed-define-clients}
   \end{center}
 \end{figure}
-    
+
+After the clients are created, a dialog will pop up with the
+completion status. After closing that, you may press the
+\button{Close} button in the build clients dialoge and continue with
+the next step.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Step 4: Collect client MAC addresses and Setup Networking} 
-\label{det:setupnetwork}
+\subsection{Setup Networking}
+\label{det:setup-networking}
 
 The MAC address of a client is a twelve hex-digit hardware address
 embedded in the client's ethernet adapter. For example, ``{\tt
@@ -624,12 +757,12 @@ addresses.  These MAC addresses uniquely identify client machines on a
 network before they are assigned IP addresses. DHCP uses the MAC
 address to assign IP addresses to the clients.
 
-In order to collect the MAC addresses, press the Step 4 button of the
-wizard entitled \button{Setup Networking}. The OSCAR network utility
-dialog box will be displayed.  To use this tool, you will need to know
-how to network boot your client nodes.  For instructions on doing so,
-see Appendix~\ref{app:net-boot-client-nodes}. A sample dialog is shown
-in Figure~\ref{fig:detailed-collect-mac}.
+In order to collect the MAC addresses, press the \button{Setup
+  Networking} button. The OSCAR network utility dialog box will be
+displayed.  To use this tool, you will need to know how to network
+boot your client nodes.  For instructions on doing so, see
+Appendix~\ref{app:net-boot-client-nodes}. A sample dialog is shown in
+Figure~\ref{fig:detailed-collect-mac}.
 
 To start the collection, press the \button{Collect MAC Address} button
 and then network boot the first client.  As the clients boot up, their
@@ -667,11 +800,10 @@ completed the networks setup, press the \button{Close} button.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Client Installations}
-\label{det:clientinstall}
+\label{det:client-install}
 
 During this phase, you will network boot your client nodes and they
-will automatically be installed and configured as specified in
-Section~\ref{sec:detailed-cluster-def} above. For a detailed
+will automatically be installed and configured.  For a detailed
 explanation of what happens during client installation, see
 Appendix~\ref{app:client-install}.
 
@@ -685,7 +817,7 @@ network booting clients.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Check completion status of nodes}
-\label{det:clientfinish}
+\label{det:client-finish}
 
 After several minutes, the clients should complete the installation.
 You can watch the client consoles to monitor the progress. Depending
@@ -717,41 +849,32 @@ to simply reset or power cycle them.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Cluster Configuration}
-
-During this phase, the server and clients will be configured to work
-together as a cluster.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsubsection{Step 5: Complete the cluster configuration}
-\label{det:completeinstall}
+\subsection{Complete the Cluster Setup}
+\label{det:complete-cluster-setup}
 
 {\bf Ensure that all client nodes have fully booted before proceeding
   with this step.}
 
-Press the Step 5 button of the wizard entitled \button{Complete
-  Cluster Setup}.  This will run the final installation configurations
-scripts from each OSCAR software package, and perform various cleanup
-and re-initialization functions.
+Press the \button{Complete Cluster Setup} button.  This will run the
+final installation configurations scripts from each OSCAR software
+package, and perform various cleanup and re-initialization functions.
+
+A popup window will indicate the success or failure of this step.
+Press the \button{Close} button to dismiss it.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Step 6: Test your cluster using the OSCAR Cluster Test
-  software}
-\label{det:testcluster}
+\subsection{Test Cluster Setup}
+\label{det:test-cluster}
             
-{\bf Ensure that all client nodes have fully booted before proceeding
-  with this step.}
-
 A simplistic test suite is provided in OSCAR to ensure that the key
 cluster components (OpenSSH, PBS, MPI, PVM, etc.) are functioning
 properly.
 
-Press the Step 6 button of the wizard entitled \button{Test Cluster
-  Setup}. This will open a window that will prompt you for the number
-clients and number of processors per client. The system's basic
-services are checked and then a set of user level tests are run. A
+Press the \button{Test Cluster Setup} button. This will open a
+separate window to run the tests in.  The cluster's basic services are
+checked and then a set of \user{root} and user level tests are run. A
 sample dialog is shown in Figure~\ref{fig:detailed-setup-test}. If any
 of the test fail, then there may be problem with your installation.
 
@@ -805,13 +928,13 @@ will extend or contract the set of defined clients in the cluster.
 
 Press the button of the wizard entitled \button{Add OSCAR Clients}. A
 sample dialog is shown in Figure~\ref{fig:detailed-add-node}. These
-steps should seem familiar -- they are same as steps 3, 4 and 5 of the
-initial install.  Refer to Sections~\ref{det:defclients},
-\ref{det:setupnetwork}, and \ref{det:completeinstall}.
+steps should seem familiar -- they are same as the initial install
+steps.  Refer to Sections~\ref{det:define-clients},
+\ref{det:setup-networking}, and \ref{det:complete-cluster-setup}.
 
-Note that when adding nodes, in the Defining OSCAR Clients step (step
-1), you will typically need to change the following fields to suit
-your particular configuration:
+Note that when adding nodes, in the Defining OSCAR Clients step, you
+will typically need to change the following fields to suit your
+particular configuration:
 
 \begin{itemize}
 \item Number of hosts

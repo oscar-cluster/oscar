@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.15 2002/08/31 22:36:18 jsquyres Exp $
+# $Id: Makefile.am,v 1.16 2002/11/16 19:24:16 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -22,9 +22,7 @@ OTHER_SRC_FILES	= \
 		download.tex \
 		supported.tex \
 		release-notes.tex \
-		brief.tex \
 		sis.tex \
-		outline.tex \
 		detailed.tex \
 		notes.tex \
 		netboot.tex \
@@ -35,7 +33,6 @@ OTHER_SRC_FILES	= \
 QUICK_SRC_FILES= \
 		quick_titlepage.tex \
 		download.tex \
-		brief.tex \
 		supported.tex
 
 NON_DIST_SRC_FILES= \
@@ -61,6 +58,9 @@ SBS_FILES	= \
 			 figs/1a_sbs-install-oscar.png \
 			 figs/1b_sbs-install-oscar2.png \
 			 figs/2_sbs-oscar-wizard.png \
+			 figs/package-selection.png \
+			 figs/package-configuration.png \
+			 figs/package-configuration-switcher.png \
 			 figs/3a_sbs-wizard-step1.png \
 			 figs/3b_sbs-wizard-step1.png \
 			 figs/4a_sbs-build-image1.png \
@@ -127,10 +127,13 @@ CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~ notes.tex \
 # Some common target names
 
 all: ps
-docs: $(MAIN_PS) $(QUICK_PS)
+#docs: $(MAIN_PS) $(QUICK_PS)
+docs: $(MAIN_PS)
 
-ps: $(EPS_FIG_FILES) $(MAIN_PS) $(QUICK_PS)
-pdf: $(PNG_FIG_FILES) $(MAIN_PDF) $(QUICK_PDF)
+#ps: $(EPS_FIG_FILES) $(MAIN_PS) $(QUICK_PS)
+#pdf: $(PNG_FIG_FILES) $(MAIN_PDF) $(QUICK_PDF)
+ps: $(EPS_FIG_FILES) $(MAIN_PS)
+pdf: $(PNG_FIG_FILES) $(MAIN_PDF)
 
 #
 # Make the dependencies so that things build when they need to

@@ -1,8 +1,13 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.24 2002/11/16 03:53:11 bligneri Exp $
+% Copyright (c) 2002 The Trustees of Indiana University.  
+%                    All rights reserved.
+% 
+% This file is part of the OSCAR software package.  For license
+% information, see the COPYING file in the top level directory of the
+% OSCAR source distribution.
 %
-% $COPYRIGHT$
+% $Id: release-notes.tex,v 1.25 2002/11/16 19:24:16 jsquyres Exp $
 %
 
 \section{Release Notes}
@@ -10,9 +15,11 @@
 
 The following release notes apply to OSCAR version \oscarversion:
 
-\begchange
-
 \begin{itemize}
+\item Each package in OSCAR has its own installation and release
+  notes.  See Section~\ref{sec:pkg-specific-notes} for additional
+  release notes.
+
 \item All nodes must have a hostname other than ``{\tt localhost}''
   that does not contain any underscores (``{\tt \_}'').
   
@@ -36,9 +43,36 @@ The following release notes apply to OSCAR version \oscarversion:
   OSCAR wizard may close suddenly when there is a test failure. If
   this happens, run the test script, \file{testing/test\_cluster\_as\_root},
   manually in a shell window to diagnose the problem.
-\end{itemize}
+  
+\item Although OSCAR can be installed on pre-existing server nodes, it
+  is typically easiest to use a machine that has a new, fresh install
+  of a distribution listed in table~\ref{tab:oscar-distro-support}
+  {\em with no updates installed}.  If the updates are installed,
+  there may be conflicts in RPM requirements.  It is recomended to
+  install updates {\em after} the initial OSCAR installation has
+  completed.
+  
+\item The following benign warning message will appear multiple times
+  during the OSCAR installation process:
 
-\endchange
+\begin{verbatim}
+  rsync_stub_dir: no such variable at ...
+\end{verbatim}
+
+  It is safe to ignore these messages.
+  
+\item The OSCAR installer will install the MySQL package on the server
+  node if it is not already installed.  OSCAR \oscarversion\ requires
+  that there is no password required for \user{root} access to the
+  MySQL database.
+  
+\item The OSCAR installer GUI provides little protection for user
+  mistakes.  If the user executes steps out of order, or provides
+  erroneous input, Bad Things may happen.  Users are strongly
+  encouraged to closely follow the instructions provided in this
+  document.
+
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -49,17 +83,19 @@ The following release notes apply to OSCAR version \oscarversion:
 \item This is the second release of OSCAR to support this distribution.
   OSCAR \oscarversion\- has been tested and successfully installed on
   this distribution (see Table~\ref{tab:oscar-distro-support});
-
-\item Before any OSCAR installation, you should install the following perl packages
+  
+\item Before any OSCAR installation, you should install the following
+  perl packages
 \begin{verbatim}
-urpmi perl-XML-Simple
-perl-XML-Parser
+  # urpmi perl-XML-Simple perl-XML-Parser
 \end{verbatim}
+  
+\item There is a problem with the TCL libraries -- the RPM was
+  compiled on Mandrake.  In order to avoid an error, make the
+  following symlink before running the OSCAR installer:
 
-\item Problem with the TCL libraries (rpm not compiled on Mandrake). In order
-to avoid an error, make the following symlink~:
 \begin{verbatim}
-ln -s /usr/lib/libtcl8.3.so /usr/lib/libtcl.so.0
+  # ln -s /usr/lib/libtcl8.3.so /usr/lib/libtcl.so.0
 \end{verbatim}
 
 \item If installing the third-party package Ganglia, the
