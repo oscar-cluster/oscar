@@ -1,0 +1,135 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   This script is designed to be run after the image is built.
+#   It will do all the fixups required.
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib",'/usr/lib/systeminstaller';
+
+use Carp;
+use File::Copy;
+use File::Path;
+use File::Basename;
+use SIS::Image;
+use SIS::Client;
+use OSCAR::Package;
+use Data::Dumper;
+use Getopt::Long;
+
+my %opts = ();
+unless (GetOptions(\%opts,"wait","nodes=i","procs=i") ) {
+        croak("Options incorrect.");
+}
+
+my @clientlist;
+if (@ARGV) {
+        @clientlist=@ARGV;
+} else {
+        my @mlist = clientList;
+        foreach my $m (@mlist) {
+                push @clientlist,$m->{NAME};
+        }
+}
+
+my @pkgs = list_pkg();
+
+my $return = 0;
+
+# First do the root tests
+$ENV{OSCAR_TESTPRINT}=$ENV{OSCAR_HOME}. "/testing/testprint";
+foreach my $pkg (@pkgs) {
+    if(!run_pkg_script($pkg,"test_root",0,join(" ",@clientlist))) {
+        $return++;
+    } 
+}
+
+if($return) {
+    print("There were issues running some root test scripts.  Please check your logs\n");
+}
+
+# Setup the user environment
+#
+
+my $test_user="oscartst";
+my $test_user_info=`grep $test_user /etc/passwd`;
+my ($tu,$tp,$ti,$tg,$tt,$test_user_homedir,$ts)=split(/:/,$test_user_info);
+unless ($test_user_homedir) {
+          if (system("/usr/sbin/useradd -m $test_user")) {
+                  croak("Unable to create test user and run user tests, exitting.");
+          }
+          $test_user_info=`grep $test_user /etc/passwd`;
+          ($tu,$tp,$ti,$tg,$tt,$test_user_homedir,$ts)=split(/:/,$test_user_info);
+}
+
+# Check for a properly mounted /home dir
+
+system("$ENV{OSCAR_TESTPRINT} --label '/home mounts'");
+open(TFILE,">$test_user_homedir/oscartestfile");
+print TFILE "OSCAR IS COOL\n";
+close(TFILE);
+my $homecount=0;
+foreach my $cli (@clientlist){
+        system("$ENV{OSCAR_TESTPRINT} --label '/home mounts' --status '$cli'");
+        if (system("ssh $cli ls $test_user_homedir/oscartestfile > /dev/null 2>&1")) {
+                $homecount++;
+        }
+}
+if ($homecount) {
+        system("$ENV{OSCAR_TESTPRINT} --label '/home mounts' -f ");
+} else {
+        system("$ENV{OSCAR_TESTPRINT} --label '/home mounts' -p ");
+}
+
+
+
+
+
+# Now the user tests
+
+# First test ssh
+#
+
+my $clistring=join(" ",@clientlist);
+my $script = "$ENV{OSCAR_HOME}/testing/ssh_user_tests";
+my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_HOME}/testing/testprint OSCAR_HOME=$ENV{OSCAR_HOME} $script $clistring' - $test_user");
+
+
+my $creturn=0;
+$ENV{OSCAR_TESTPRINT}=$ENV{OSCAR_HOME}. "/testing/testprint";
+foreach my $pkg (@pkgs) {
+    if(!run_pkg_script_user($pkg,"test_user",$test_user,0,join(" ",@clientlist))) {
+        $creturn++;
+    }
+}
+
+if($creturn) {
+    print("There were issues running some user test scripts.  Please check your logs\n");
+}
+
+if ($opts{wait}) {
+        waitexit($return);
+} else {
+        exit($return);
+}
+
+sub waitexit {
+        my $rc=shift;
+        print "...Hit enter to exit...\n";
+        my $key=<STDIN>;
+        exit $rc;
+}        
+
