@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.14 2002/08/17 22:37:49 jsquyres Exp $
+#   $Id: Package.pm,v 1.15 2002/10/09 05:27:08 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.15 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -67,8 +67,11 @@ sub list_pkg {
     } else {
 	opendir(PKGDIR,"$ENV{OSCAR_HOME}/packages") or (carp("Couldn't open $ENV{OSCAR_HOME}/packages for reading"), return undef);
         while($_ = readdir(PKGDIR)) {
-            unless (/^(\.|CVS|Make)/) {
-                my $pkg = $_;
+	    my $rel = "$_";
+	    my $abs = "$ENV{OSCAR_HOME}/packages/$rel";
+	    if (-d $abs && $rel ne "CVS" && $rel ne "." && $rel ne ".." && 
+		! -f "$abs/.oscar_ignore") {
+                my $pkg = $rel;
                 chomp($pkg);
                 unless($type eq "noncore" and _is_core($pkg)) {
                     push @pkgs, $pkg;
