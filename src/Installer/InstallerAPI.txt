@@ -280,14 +280,13 @@ Program Specifics for Tasks and Tools
     #########################################################################
 
       # Send a signal to the parent workspace letting it know we are closing.
-      emit taskToolClosing(className());
+      emit taskToolClosing("Opder");
       SUPER->closeEvent(@_);   # Call the parent's closeEvent
     }
 
-    This assumes that you have correctly set the class name to be the same as
-    the package name by calling setName("...").  You will also need to define
-    a Qt::signal for taskToolClosing.  You can easily do this in Qt Designer
-    or your can write the code which should look like this:
+    The parameter you pass to 'emit taskToolClosing(...)' is the name of the
+    directory containing your Task/Tool.  You will also need to define
+    a Qt::signal for taskToolClosingwhich should look like this:
 
     use Qt::signals
         taskToolClosing => ['char*'];
