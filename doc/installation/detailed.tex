@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.44 2002/09/10 03:25:21 jsquyres Exp $
+% $Id: detailed.tex,v 1.45 2002/09/11 07:18:40 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -49,10 +49,6 @@ environment such as GNOME or KDE must be installed.  Typically, a
 ``Workstation'' install with the ``Software Development Tools'' group
 added yields a sufficient installation for OSCAR to install
 successfully.
-
-\begin{discuss}
-  Is the above a true statement?
-\end{discuss}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -178,6 +174,39 @@ distribution).
     \label{tab:oscar-dir-struct}
   \end{center}
 \end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+\subsubsection{Download and unpack third-party OSCAR packages}
+\label{det:third-party}
+
+Download and install any optional third party packages and unpack them
+into the OSCAR tree.
+
+For example, if you want OSCAR to install the Ganglia package,
+download the Ganglia OSCAR tarball from the main OSCAR SourceForge
+site.  Expand it into the \file{packages/} directory in the OSCAR tree
+(assuming that \file{ganglia-oscar-\oscarversion.tar.gz} is in
+\user{root}'s home directory):
+
+\vspace{11pt}
+
+{\tt 
+\ \ \# cd $^{\sim}$/oscar-\oscarversion/packages \\
+\indent \ \ \# tar zxf $^{\sim}$/ganglia-oscar-\oscarversion.tar.gz
+}
+
+\vspace{11pt}
+
+This will make the directory
+\file{oscar-\oscarversion/packages/ganglia} with all the files
+necessary to install Ganglia in an OSCAR cluster.  This step must be
+performed {\em before} the main OSCAR installation.
+
+Each third-party OSCAR package likely comes with its own
+documentation.  For example, the OSCAR Ganglia package comes with a
+\file{README} file and \file{doc/ganglia-user.pdf} which should both
+be read before attempting to install or use Ganglia.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -482,40 +511,10 @@ be listed as ``\file{bash}''.
 \subparagraph{Custom kernels.}
 
 If you want to use a customized kernel, you can add it to the image
-after it is built. Follow these steps:
-
-\begin{discuss}
-  Is much of this section now moot, and we can simply refer the user
-  to the package-specific notes for \rpmname{kernel-picker} (i.e.,
-  Section~\ref{app:kernel-picker-overview},
-  page~\pageref{app:kernel-picker-overview})?
-\end{discuss}
-
-\begin{enumerate}
-\item Copy the kernel and associated files (\file{System.map},
-  \file{module-info}, etc.) into the directory:
-
-  \vspace{11pt}
-  \centerline{\file{/var/lib/systemimager/images/<imagename>/boot}}
-
-\item Edit the \file{systemconfig.conf} file in the following
-  directory:
-
-  \vspace{11pt}
-  \centerline{\file{/var/lib/systemimager/images/<imagename>/etc/systemconfig/}}
-  \vspace{11pt}
-  
-  Change the \emph{PATH} parameter in the \emph{[KERNEL0]} stanza to
-  match your new kernel's filename.
-
-\item When the clients are installed, they will copy over and boot
-  your new kernel.
-\end{enumerate}
-
-Note that there is no \file{lilo.conf} file in the image. That file is
-created by System Configurator from the contents of the
-\file{systemconfigurator.conf} file. See the \file{systemconfig.conf}
-man page for full details on the contents of this file.
+after it is built (after step 1, but before step 2).  See the
+\cmd{kernel\_\-picker} application description in
+Section~\ref{app:kernel-picker-overview} on
+page~\pageref{app:kernel-picker-overview}.
 
 \subparagraph{Build the Image.}
 
