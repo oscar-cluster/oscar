@@ -1,0 +1,37 @@
+#!/bin/sh
+
+### Job name
+#PBS -N hdf5test
+
+### Output files
+#PBS -o hdf5test.out
+#PBS -e hdf5test.err
+
+### Queue name
+#PBS -q workq
+
+rm -f $PBS_O_WORKDIR/hdf5test.{out,err}
+
+### Script Commands
+cd $PBS_O_WORKDIR
+echo "Running HDF5 test"
+
+# The HDF5 test itself
+
+NP=`(wc -l < $PBS_NODEFILE) | awk '{print $1}'`
+export HDF5_PARAPREFIX=$PBS_O_WORKDIR
+
+# Run a test of MPI for large files and the parallel HDF5 tests. Then test
+# that we can compile a parallel HDF5 file and run it.
+
+(mpirun -machinefile $PBS_NODEFILE -np $NP ./t_mpi && \
+ mpirun -machinefile $PBS_NODEFILE -np $NP ./testphdf5 && \
+h5cc ph5example.c -o ph5example && \
+mpirun -machinefile $PBS_NODEFILE -np $NP ./ph5example && \
+echo && echo "PHDF5 SUCCESS") || echo "PHDF5 FAILED"
+
+echo
+echo "HDF5 test complete"
+echo
+
+exit 0

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster,v 1.16 2002/07/28 06:09:17 jsquyres Exp $
+# $Id: test_cluster,v 1.17 2002/08/06 01:04:57 jenos Exp $
 #
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
@@ -18,7 +18,7 @@ function waitexit
         # Function to wait for a key press before
         # exiting. Used by guis.
         if [ $wizard_launch ] && [ $wizard_launch = yes ]; then
-          echo ...Hit a key to exit...
+          echo "...Hit a key to exit..."
           read -n 1 -s  key
         fi
         exit 0
@@ -26,8 +26,8 @@ function waitexit
 
 
 # Initialize environment
-qsub=/opt/pbs/bin/qsub
-qstat=/opt/pbs/bin/qstat
+qsub='/opt/pbs/bin/qsub'
+qstat='/opt/pbs/bin/qstat'
 homedir=~/OSCAR_test
 cd $homedir
 
@@ -47,11 +47,20 @@ else
 fi
 
 numprocs=`/usr/bin/expr $clients \* $ppn`
-timeout=`/usr/bin/expr $numprocs \* 3`
 
-if [ $timeout -lt 30 ]; then
-  timeout=30
+function calc_timeout {
+if [ ! $min_timeout ]; then min_timeout=30; fi
+if [ ! $scaling_factor ]; then scaling_factor=3; fi
+timeout=`echo "$numprocs $scaling_factor * p" | /usr/bin/dc | cut -d . -f 1`
+if [ $timeout -lt 30 ] || [ $timeout -lt $min_timeout ]; then
+  if [ $min_timeout -gt 30 ]; then
+    timeout=$min_timeout;
+  else
+    timeout=30;
+  fi
 fi
+}
+
 
 # Initialize some functions (should work for RedHat and Mandrake)
 source /etc/rc.d/init.d/functions
@@ -145,6 +154,7 @@ fi
 # Generic routine to run any test through PBS depending on environment
 pbs_test_routine () {
 sleep 1
+calc_timeout
 check_free_nodes
 echo -n $pbs_test_type
 echo -n ":    "
@@ -161,16 +171,18 @@ else
   timeleft=$timeout
   job_state=incomplete
   while [ $job_state = incomplete ]; do 
-  # Displays remaining seconds
-    echo -n " $timeleft"
-    if [ $timeleft -gt 99 ]; then
+    # Displays remaining seconds
+    max_digits=10
+    time_left_digits=`echo $timeleft | wc -c`
+    space_count=`expr $max_digits - $time_left_digits`
+    while [ $space_count -gt 0 ]; do
       echo -n " "
-    elif [ $timeleft -gt 9 ]; then
-      echo -n "  "
-    else
-      echo -n "   "
-    fi
-    echo -n -e "\b\b\b\b\b"
+      space_count=`expr $space_count - 1`
+    done
+    echo -n " $timeleft"
+    for i in `seq 1 $max_digits`; do
+      echo -n -e "\b"
+    done
     sleep 1
   # Tests for success or timeout
     if [ -f $output_file.out ] ; then
@@ -178,13 +190,19 @@ else
       string_test=$?
       if [ $string_test = 0 ] ; then
         job_state=success
-        echo -n -e "\b\b\b      "
+        for i in `seq 1 $max_digits`; do
+          echo -n -e " "
+        done
         echo_success
 	echo
+      else
+ 	timeleft=0
       fi
     fi
     if [ $timeleft -eq 0 ]; then # more than timeout
-      echo -n -e "\b\b\b      "
+      for i in `seq 1 $max_digits`; do
+        echo -n -e " "
+      done
       echo_failure
       echo
       job_state=fail
@@ -197,6 +215,8 @@ else
     timeleft=`expr $timeleft - 1`
   done
 fi
+unset min_timeout
+unset scaling_factor
 cd ..
 }
 
@@ -210,15 +230,14 @@ pbs_script=pbs_script.shell
 output_file=shelltest
 grep_string=Hello
 exit_on_fail=yes
+scaling_factor=3
 pbs_test_routine
-
 
 #
 # Setup MPI -- save any user default
 #
 
 user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
-
 
 #			MPICH TEST
 #			----------
@@ -232,6 +251,8 @@ if test "$mpi" != ""; then
     output_file=mpichtest
     grep_string="pi is approx"
     exit_on_fail=no
+    min_timeout=35
+    scaling_factor=3.1
     pbs_test_routine
 else
     echo "Skipping MPICH test (doesn't seem to be installed)"
@@ -250,20 +271,13 @@ if test "$mpi" != ""; then
     output_file=lamtest
     grep_string="pi is approx"
     exit_on_fail=no
+    min_timeout=30
+    scaling_factor=10
     pbs_test_routine
 else
     echo "Skipping LAM test (doesn't seem to be installed)"
 fi
 
-
-#
-# If there was a user-default MPI, restore it
-#
-
-switcher mpi --rm-attr default --force
-if test "$user_default_mpi" != ""; then
-    switcher mpi --add-attr default $user_default_mpi --force
-fi
 
 
 #			PVM TEST
@@ -276,6 +290,36 @@ output_file=pvmtest
 grep_string=SUCCESSFUL
 exit_on_fail=no
 pbs_test_routine
+
+#			HDF5 TEST
+#			---------
+
+mpi="`switcher mpi --list | grep mpich | head -1`"
+if test "$mpi" != ""; then 
+    switcher mpi --add-attr default $mpi --force
+    pbs_test_type="Simple PBS HDF5 job"
+    test_dir=hdf5
+    pbs_script=pbs_script.hdf5
+    output_file=hdf5test
+    grep_string="PHDF5 SUCCESS"
+    exit_on_fail=no
+    min_timeout=30
+    scaling_factor=60
+    pbs_test_routine
+else
+    echo "Skipping HDF5 test (doesn't seem to be installed)"
+fi
+
+#
+# If there was a user-default MPI, restore it
+#
+
+switcher mpi --rm-attr default --force
+if test "$user_default_mpi" != ""; then
+    switcher mpi --add-attr default $user_default_mpi --force
+fi
+
+
 
 # Done
 waitexit
