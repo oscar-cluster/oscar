@@ -25,6 +25,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Package;
 use OSCAR::Distro;
+use POSIX;
 
 my %options = ();
 
@@ -38,6 +39,18 @@ if ($oscar_server_distribution eq "redhat" || $oscar_server_distribution eq "rha
     $mysql_service_name='mysql';
 } else {
     die "$0: unknown distribution <$oscar_server_distribution>";
+}
+my $oscar_server_architecture;
+my $uname_data = (uname)[4];
+if ( $uname_data eq "i386" ) {
+    $oscar_server_architecture = "ia32";
+} elsif ( $uname_data eq "i686" ) {
+    $oscar_server_architecture = "ia32";
+} elsif ( $uname_data eq "ia64" ) {
+    $oscar_server_architecture = "ia64";
+} else {
+    my $oscar_server_architecture = "Unknown";
+    warn "$0: Cannot determine architecture of oscar server machine";
 }
 
 # open the database
@@ -54,6 +67,7 @@ if ( -r "$ENV{OSCAR_HOME}/VERSION" ) {
     $oscar_version = "CVS";
 }
 push @assigns, "oscar.oscar_version~$oscar_version";
+push @assigns, "oscar.oscar_server_architecture~$oscar_server_architecture";
 push @assigns, "oscar.oscar_server_distribution~$oscar_server_distribution"
     if defined $oscar_server_distribution && $oscar_server_distribution ne "";
 push @assigns, "oscar.oscar_server_distribution_version~$oscar_server_distribution_version"
