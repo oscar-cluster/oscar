@@ -1,107 +1,128 @@
-\documentclass{letter}
-\IfFileExists{TeXmacs.sty}
-  {\usepackage{TeXmacs}}
-  {\usepackage{/usr/local/share/TeXmacs-1.0/misc/latex/TeXmacs}}
-\newcommand{\chapter}[1]{\tmsection{\begin{center}\huge #1\end{center}}}
-\newcommand{\section}[1]{\tmsection{\LARGE #1}}
-\newcommand{\subsection}[1]{\tmsection{\Large #1}}
-\newcommand{\subsubsection}[1]{\tmsection{\large #1}}
-\newcommand{\paragraph}[1]{\tmparagraph{#1}}
-\newcommand{\subparagraph}[1]{\tmparagraph{#1}}
+% -*- latex -*-
+%
+% $Id: user.tex,v 1.3 2002/06/14 05:15:45 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
 
-\begin{document}
+\subsection{Using The Portable Batch System (PBS)}
+\label{app:pbs-overview}
 
-\subsection{Using The Portable Batch System (PBS)}\label{app:pbs-overview}
+All PBS commands can be found under \file{/usr/local/pbs/bin} on the
+OSCAR head node.  There are man pages available for these commands,
+but here are the most popular and some basic options:
 
-All PBS commands can be found under /usr/local/pbs/bin on the OSCAR head node.
-There are man pages available for these commands, but here are the most
-popular and some basic options:
+\begin{itemize}
+\item \cmd{qsub}: submits jobs to PBS
 
-\%Need bullets on commands
+\item \cmd{qdel}: deletes PBS jobs
+  
+\item \cmd{qstat [-n]}: displays current job status and node
+  associations
 
-qsub             submits jobs to PBS
+\item \cmd{pbsnodes [-a]}: displays node status
+  
+\item \cmd{pbsdsh}: distributed process launcher
+\end{itemize}
 
-qdel              deletes PBS jobs
+\subsubsection{PBS Architecture}
 
-qstat (-n)       displays current job status and node associations
+The PBS architecture consists of three major components:
 
-pbsnodes (-a)  displays node status
+\begin{itemize}
+\item The PBS server.  This runs on the OSCAR head node.  It controls
+  the submission and running of jobs.
+  
+\item The Maui scheduler.  This takes care of scheduling jobs across
+  the cluster according sophisticated algorithms.
 
-pbsdsh           distributed process launcher{\hspace*{\fill}}
+\item A ``mom'' daemon on each cluster node.  The moms are responsible
+  for actually starting and stopping jobs on the client nodes.
+\end{itemize}
 
-Submitting a Job
+\subsubsection{Submitting a PBS Job}
 
-The PBS client daemons are called "moms".  They are each polled by the PBS
-server.
+The \cmd{qsub} command is not necessarily intuitive.  Here are some
+handy tips to know:
 
-qsub:  Not necessarily intuitive.  here are some things to know:
+\begin{itemize}
+\item Be sure to read the \cmd{qsub} man page.
 
-\%Need bullets until "A sample qsub..."
+\item \cmd{qsub} only accepts a script filename for a target.
+  
+\item The target script cannot take any command line arguments.
+  
+\item For parallel jobs, the target script is only launched on one
+  node.  Therefore the script is responsible for launching all
+  processes in the parallel job.
+  
+\item Alternatively, the \cmd{pbsdsh} command can be used within the
+  script to launch an executable on all allocated processors and nodes
+  (specified as arguments to \cmd{qsub}).  Other methods of parallel
+  launch exist, such as commands like \cmd{mpirun}.
+  
+\item Job parameters can be specifed to \cmd{qsub} on the command
+  line, or within the submitted script.  You can get a good start by
+  looking at examples provided by the OSCAR test suite.  Ask your
+  system administrator if you would like to see these.  They can
+  likely be found in the home directory of the ``\user{oscartst}''
+  user.
+\end{itemize}
 
-only accepts a script for a target
+Here is a sample \cmd{qsub} command line:
 
-the target script cannot have arguments
+\begin{verbatim}
+$ qsub -N my_jobname -e my_stderr.txt -o my_stdout.txt -q workq -l \
+       nodes=X:ppn=Y:all,walltime=1:00:00 my_script.sh
+\end{verbatim}
 
-target script is only launched on one node, therefore the script is
-responsible for launching all processes
+Here is the contents of the \file{script.sh} file:
 
-pbsdsh can be used within the script to launch on all allocated processors and
-nodes (specified as arguments to qsub).  Other methods of parallel launch
-exist, such as mpirun.
+\begin{verbatim}
+#!/bin/sh
 
-Job parameters can be specifed to qsub on the command line, or within the
-submitted script.  You can get a good start by looking at examples provided by
-the OSCAR test suite.  Ask your sysadmin if you would like to see these.  They
-can likely be found in the home directory of the "oscartst" user.
+echo Launchnode is `hostname`
+pbsdsh /path/to/my_executable
 
-A sample qsub line and target script:
+# All done
+\end{verbatim}
 
-\% I tried to put a backslash in on the wrapped command line, but couldn't
+Alternatively, you can specify most of the qsub parameters in
+\file{script.sh} itself:
 
-qsub -N my\_jobname -e my\_stderr.txt -o my\_stdout.txt -q workq -l
-nodes=X:ppn=Y:all,walltime=1:00:00 my\_script.sh
+\begin{verbatim}
+$ qsub -l nodes=X:ppn=Y:all,walltime=1:00:00 script.sh
+\end{verbatim}
 
-script.sh:
+Here is the contents of the \file{script.sh} file:
 
-\#!/bin/sh
+\begin{verbatim}
+#!/bin/sh
+#PBS -N my_jobname
+#PBS -o my_stdout.txt
+#PBS -e my_stderr.txt
+#PBS -q workq
 
-echo Launchnode is $\tmop{hostname}$
+echo Launchnode is `hostname`
+pbsdsh /path/to/my_executable
 
-pbsdsh /my\_path/my\_executable
+# All done
+\end{verbatim}
 
-\#done
+\subsubsection{Other Points to Cover...}
 
+\begin{discuss}
+  Jeremy will write more stuff here -- major topics to write about are
+  listed below.
+\end{discuss}
 
+\begin{itemize}
+\item ``all'' is an optional specification of a node attribute, or
+  ``resource''
+  
+\item ``workq'' is a default queue name that is used in OSCAR clusters
 
-Or... an equivalent alternative is to include the qsub parameters in the
-script:
+\item 1:00:00 is in HH:MM:SS
+\end{itemize}
 
-qsub -l nodes=X:ppn=Y:all,walltime=1:00:00 script.sh
-
-script.sh:
-
-\#!/bin/sh
-
-\#PBS -N my\_jobname
-
-\#PBS -o my\_stdout.txt
-
-\#PBS -e my\_stderr.txt
-
-\#PBS -q workq
-
-\#echo Launchnode is $\tmop{hostname}$
-
-\#pbsdsh /my\_path/my\_executable
-
-\#done
-
-*    "all" is an optional specification of a node attribute, or "resource"
-
-**  "workq" is a default queue name that is used in OSCAR clusters
-
-*** 1:00:00 is in HH:MM:SS
-
-\%More to come later
-
-\end{document}
+% LocalWords:  Exp

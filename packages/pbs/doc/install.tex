@@ -1,51 +1,47 @@
-\documentclass{letter}
-\IfFileExists{TeXmacs.sty}
-  {\usepackage{TeXmacs}}
-  {\usepackage{/usr/local/share/TeXmacs-1.0/misc/latex/TeXmacs}}
-\newcommand{\chapter}[1]{\tmsection{\begin{center}\huge #1\end{center}}}
-\newcommand{\section}[1]{\tmsection{\LARGE #1}}
-\newcommand{\subsection}[1]{\tmsection{\Large #1}}
-\newcommand{\subsubsection}[1]{\tmsection{\large #1}}
-\newcommand{\paragraph}[1]{\tmparagraph{#1}}
-\newcommand{\subparagraph}[1]{\tmparagraph{#1}}
+% -*- latex -*-
+%
+% $Id: install.tex,v 1.3 2002/06/14 05:15:45 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
 
-\begin{document}
+\subsection{The Portable Batch System (PBS) and Maui Scheduler}
+\label{app:pbs-overview}
 
-\% Maui scheduler needs to be bolded below
+PBS serves as the job launcher and queuing system for OSCAR.  OSCAR
+uses the open source version of PBS, OpenPBS.  A commercial version
+(PBSPro) exists as well.  OpenPBS includes a basic FIFO scheduler with
+it, which is disabled by default in OSCAR.  A more robust, open source
+scheduler is enabled instead; called Maui.  In OSCAR 1.3, we are using
+OpenPBS version 2.2p11 and Maui 3.06p4.  Both PBS and Maui will be
+updated in future OSCAR releases.
 
-\subsection{The Portable Batch System (PBS)}\label{app:pbs-overview} and Maui
-Scheduler
+Basic PBS functionality is tested by OSCAR's test suite, and is also
+used to launch jobs when testing other software included in OSCAR.  If
+the PBS test passes, PBS and Maui are up and working.  
 
-PBS serves as the job launcher and queuing system for OSCAR.  OSCAR uses the
-open source version of PBS, OpenPBS.  A commercial version (PBSPro) exists as
-well.  OpenPBS includes a basic FIFO scheduler with it, which is disabled by
-default in OSCAR.  A more robust open source scheduler is enabled instead;
-called Maui.  In OSCAR 1.3, we are using OpenPBS version 2.2p11 and Maui
-3.06p4.  Both PBS and Maui will be updated in future OSCAR releases.
+If the users of your OSCAR cluster have not used PBS before, you can
+expect somewhat of a learning curve.  The OSCAR user's documentation
+contains some useful information to get them started.  The user's
+document instructs users to ask the system administrator to provide
+them with sample PBS scripts used in the OSCAR test suite.  These
+scripts can be found in the home directory of the \user{oscartst} user
+if the tests have been run previously.
 
-PBS is tested by OSCAR's test suite, and is also used to launch jobs when
-testing other software included in OSCAR.  If the PBS test passes, PBS and
-Maui are up and working.  If the users of your OSCAR cluster have not used PBS
-before, you can expect somewhat of a learning curve.  The users' documentation
-may contain some useful information to get them started.  The users's document
-instructs users to ask the sysadmin to provide them with sample PBS scripts
-used in the OSCAR test suite, which can be found in the home directory of
-"oscartst" if the tests have been run previously.
+\subsubsection{Other Points to Cover...}
 
+\begin{discuss}
+  Jeremy will write more about stuff here.
+\end{discuss}
 
+Some useful links:
 
-\%More docs to come here later
+\begin{itemize}
+\item OpenPBS: \url{http://www.openpbs.org/}
 
+\item PBSPro: \url{http://www.pbspro.com/}
 
+\item Maui Scheduler: \url{http://www.supercluster.org/}
+\end{itemize}
 
-Links:
-
-http://www.openpbs.org  (OpenPBS)
-
-http://www.pbspro.com  (PBSPro)
-
-http://www.supercluster.org  (Maui)
-
-
-
-\end{document}
+% LocalWords:  Exp
