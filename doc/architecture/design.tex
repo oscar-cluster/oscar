@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.22 2002/10/22 15:14:09 jsquyres Exp $
+% $Id: design.tex,v 1.23 2002/10/23 15:58:48 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -73,10 +73,8 @@ before running the OSCAR installer wizard.
 
 \subsubsection{\file{testing}}
 
-The OSCAR test suite is [currently] a self-contained set of scripts
-and executables that test the various portions of an OSCAR
-installation.  It will eventually be mixed in as part of the package
-API.
+The OSCAR test suite is a set of scripts that will call the individual
+package test scripts.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -904,6 +902,11 @@ following variables defined that may be useful:
       (e.g., \file{/root/oscar-1.4}). \\ 
 %
       \hline
+      \envvar{OSCAR\_TESTPRINT} & The full filename for the
+      \cmd{testprint} tool (e.g., \file{/root/oscar-1.4/testing/testprint}).i
+      only provide to the test scripts.\\ 
+%
+      \hline
     \end{tabular}
     \caption{OSCAR API environment variables}
     \label{tab:design-pkg-api-env}
@@ -1031,7 +1034,7 @@ So let's now discuss each of the API calls in detail.
   \item This script can NOT modify anything on client filesystems.
   \item This script can read any information in the OSCAR/SIS database
     (no write operations are supported).  Using the OSCAR/SIS database
-    API is the only way to read the database (see below).
+    API is the only way to read the database (see Section~\ref{sec:api-utils}).
   \end{itemize}
 
   Parameters:
@@ -1055,7 +1058,7 @@ So let's now discuss each of the API calls in detail.
   \item This script can NOT modify anything on client filesystems.
   \item This script can read any information in the OSCAR/SIS database
     (no write operations are supported).  Using the OSCAR/SIS database
-    API is the only way to read the database (see below).
+    API is the only way to read the database (see Section~\ref{sec:api-utils}).
   \end{itemize}
 
   Parameters:
@@ -1063,6 +1066,51 @@ So let's now discuss each of the API calls in detail.
   \begin{itemize}
   \item None.
   \end{itemize}
+
+  \file{test.root}
+
+  Guidelines:
+  \begin{itemize}
+  \item This script will only be run as root on the head node.
+  \item This script must be safely re-runnable; it may be run multiple
+    times over the life of the cluster (e.g., when nodes are
+    added/deleted, packages are added, etc.)
+  \item Any test cases that require root authority should be executed
+    in this script.
+  \item This script should return 0 if all tests succeed or 1 if any
+    fail.
+  \item Any status output should use the \cmd{testprint} tool
+    (see Section~\ref{sec:api-utils}).
+  \end{itemize}
+
+  Parameters:
+  
+  \begin{itemize}
+  \item A space delimited list of client nodes.
+  \end{itemize}
+
+  \file{test.user}
+
+  Guidelines:
+  \begin{itemize}
+  \item This script will only be run as a test user on the head node.
+  \item This script must be safely re-runnable; it may be run multiple
+    times over the life of the cluster (e.g., when nodes are
+    added/deleted, packages are added, etc.)
+  \item Any test cases that don't require root authority should be executed
+    in this script.
+  \item This script should return 0 if all tests succeed or 1 if any
+    fail.
+  \item Any status output should use the \cmd{testprint} tool
+    (see Section~\ref{sec:api-utils}).
+  \end{itemize}
+
+  Parameters:
+  
+  \begin{itemize}
+  \item A space delimited list of client nodes.
+  \end{itemize}
+
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1161,6 +1209,8 @@ if they need to, based upon the deletion of a new node in the cluster
 \end{enumerate}
 
 
+\subsubsection{Utilities available to the API calls.}
+\label{sec:api-utils}
 \noindent {\bf Accessing the OSCAR/SIS database}
 
 NOTE: It is required that all API scripts which need node information be
@@ -1198,6 +1248,23 @@ to the database.
 
 Note that this function is currently SIS-specific, and will likely
 change in future versions of this API.
+
+\noindent{\bf Providing output from test scripts}
+
+In order to provide consistent output from all the test scripts, OSCAR
+provides a tool, \cmd{testprint}. When printing status of a test, this tool
+should be used. The environment variable \envvar{OSCAR\_TESTPRINT} will
+give the filename of this tool since it varies for the root and user 
+tests. The flags for \cmd{testprint} are:
+\begin{itemize}
+\item -l "label"  Specifies the test name. This is required.
+\item -s "status" Specifies the status test. This is optional and can be 
+                  used for timeout countdowns or subtasks.
+\item -p          Indicates that the test is complete and it passed.
+\item -f          Indicates that the test is complete and it failed.
+\end{itemize}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
