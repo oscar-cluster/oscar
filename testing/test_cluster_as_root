@@ -1,0 +1,127 @@
+#!/bin/sh
+
+# test_asroot - script to test MPI, PVM, & PBS
+# Authors: Jason Brechin
+#          Jeremy Enos
+# Last Updated: 4/19/2002
+
+dir=`pwd`
+
+if [ $1 = --wait ]; then
+  wizard_launch=yes
+  shift
+fi
+
+
+# Initialize some functions (should work for RedHat and Mandrake)
+source /etc/rc.d/init.d/functions #must be sourced before /etc/profile
+source /etc/profile
+
+function waitexit
+{
+        # Function to wait for a key press before
+        # exiting. Used by guis.
+        if [ $wizard_launch = yes ]; then
+          echo ...Hit a key to exit...
+          read -n 1 -s  key
+        fi
+        exit 0
+}
+
+if [ $# -eq 0 ]; then
+  # Get cluster info from user
+  echo -n "Enter the number of client nodes: "
+  read clients
+  echo -n "Enter the number of processors per client: "
+  read ppn
+elif [ $# -ne 2 ]; then
+  echo "usage: $0 [<num clients> <num procs/client>]"
+  exit 1
+else
+  clients=$1
+  ppn=$2
+fi
+
+echo -e "\t\t\tROOT TESTS"
+echo -e "\t\t\t----------"
+
+#			SERVICES RUNNING
+#			----------------
+# Checks status of services listed below.  If they are not running, it
+# tries to start them, then checks again if they are running.  If unsuccessful
+# on any test, it dumps out
+
+for serv in sshd pbs_server maui ; do
+  if [ `/sbin/service $serv status | grep -c "is running..."` -eq 0 ]; then
+    # Let's try to restart the service
+    /sbin/service $serv start
+    if [ `/sbin/service $serv status | grep -c "is running..."` -eq 0 ]; then
+      echo "Could not restart $serv, please check configuration and rerun tests"
+      exit 1
+    else
+      echo -n "$serv service:"
+      echo_success
+      echo
+    fi
+  else
+    echo -n "$serv service:"
+    echo_success
+    echo
+  fi
+done
+
+#			HOME MOUNT CHECK
+#			----------------
+# Tests to make sure /home is NFS mounted and current
+
+`touch /home/OSCARtestfile`
+command='if [ -e /home/OSCARtestfile ]; then echo "1"; fi'
+
+# Grab all the node hostnames from pbsnodes
+for node in `/usr/local/pbs/bin/pbsnodes -a | egrep '^\w+'`; do 
+  if [ `ssh $node $command` -ne 1 ]; then
+    echo -n "/home not mounted on $node:"
+    echo_failure
+    echo
+    `rm -f /home/OSCARtestfile`
+    exit 1
+  fi
+done
+echo -n "/home mounted on all nodes:"
+echo_success
+echo
+`rm -f /home/OSCARtestfile`
+
+#			USER TESTS
+#			----------
+echo
+echo -n "Preparing user tests..."
+
+# Checks for existence of $test_user and its home directory and
+# copies the test suite
+
+test_user=oscartst
+test_user_homedir=`grep $test_user /etc/passwd |awk -F : '{print $6}'`
+# if not existent, we make $test_user
+if [ -z $test_user_homedir ]; then
+  /usr/sbin/useradd -m $test_user > /dev/null 2>&1
+  test_user_homedir=`grep $test_user /etc/passwd |awk -F : '{print $6}'`
+  /bin/rm -rf $test_user_homedir/OSCAR_test
+  sync_users > /dev/null 2>&1
+fi
+
+# Make sure ssh keys are generated quietly
+/bin/su -c '' - $test_user > /dev/null 2>&1
+# Copy test files to $test_user's homedir
+grp=`/usr/bin/id -g $test_user`
+/bin/cp -a $dir/OSCAR_test $test_user_homedir
+/bin/chown -R $test_user:$grp $test_user_homedir/OSCAR_test > /dev/null 2>&1
+
+# Clean up "Preparing user tests..." message to save screen space
+echo -n -e "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
+echo -n "                       "
+echo -n -e "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
+# Run user portion as the user for a valid test
+/bin/su -c "OSCAR_test/test_cluster $clients $ppn" - $test_user
+
+waitexit
