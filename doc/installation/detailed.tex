@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.61 2003/08/15 17:46:16 naughtont Exp $
+% $Id: detailed.tex,v 1.62 2003/08/18 14:56:35 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -381,75 +381,6 @@ automatically).
 %\file{foo-1.2.4-1.i386.rpm} from the updates) -- OSCAR will
 %automatically use the latest version when it selects RPMs to install.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Downloading Additional OSCAR Packages}
-\label{det:opd}
-
-\optional
-
-Before initiating the main OSCAR installation process, you may wish to
-download additional OSCAR packages.\footnote{Ganglia is a notable
-  package that is not included in the main OSCAR distribution.  The
-  process mentioned in this section will enable you to download
-  Ganglia and install it with the rest of the OSCAR components.}  The
-OSCAR Package Downloader (OPD) is a unified method of downloading
-OSCAR packages and inserting them in the OSCAR installation hierarchy
-so that they will be installed during the main OSCAR installation
-process.
-
-\quick{The OPD can be launched by running the command \cmd{opd} from
-  the top-level OSCAR \file{scripts} directory.}
-
-\detailed{
-  
-  The OPD tool can be executed from the top-level OSCAR directory with
-  the following command:
-
-% We have to use \tt instead of {verbatim} because we need to use
-% \oscarversion inside.  This makes it somewhat painful -- much less
-% easy than {verbatim}.
-  \vspace{11pt} {\tt
-    \# cd /root/oscar-\oscarversion \\
-    \indent \# ./scripts/opd } \vspace{11pt}
-  
-  OPD can use either the \cmd{wget} command or the built-in Perl LWP
-  for downloading files.  By default, \cmd{wget} will be used if it
-  can be found.  However, the use of LWP may be forced if the argument
-  ``{\tt --lwp}'' is given on the command line.  LWP may be used in
-  order to utilize a proxy, for example.  See the {\tt LWP::UserAgent}
-  documentation for details on how to use proxies through LWP.
-} % end detailed
-
-OPD requires some Perl modules to be installed before running.  If
-they are not installed, you will receive a detailed error message
-listing which modules need to be installed.  You have two options to
-install these modules:
-
-\begin{enumerate}
-\item Use a tool such as CPAN to download and install the required
-  modules.
-  
-\item Launch the OSCAR installer (see
-  Section~\ref{det:installcluster}) and then quit immediately when the
-  GUI window appears.  This is the preferred method, since the OSCAR
-  installer will install of its own prerequisites (i.e., the process is
-  automated).
-\end{enumerate}
-
-\detailed{
-  
-  Upon launching OPD, select a repository for packages from the
-  choices listed.  OPD will then connect to that repository and query
-  it for a list of available packages.  Select all the packages that
-  you would like to download, and then use the ``download'' command to
-  actually download them.
-  
-  Use the ``help'' command in OPD for listings of additional commands
-  and help.
-
-} % end detailed
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -527,6 +458,80 @@ installation wizard GUI will automatically be launched.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Downloading Additional OSCAR Packages}
+\label{det:opd}
+
+\optional
+
+The first step of the Wizard, ``Step 0'', enables you to download
+additional packages.\footnote{Ganglia is a notable
+  package that is not included in the main OSCAR distribution.  The
+  process mentioned in this section will enable you to download
+  Ganglia and install it with the rest of the OSCAR components.}  
+The OSCAR Package Downloader (OPD) is a unified method of downloading
+OSCAR packages and inserting them in the OSCAR installation hierarchy
+so that they will be installed during the main OSCAR installation
+process.  The Wizard uses a GUI frontend to OPD affectionately known as
+\emph{OPDer}.  The addition of this frontend limits the need for direct
+access to the command-line OPD tool directly.\footnote{Note, if using OPD
+directly, the packages must be downloaded before the \button{Select OSCAR
+Packages To Install} step (see Section~\ref{det:select-packages}) .}  However, 
+the remainder of this sub-section describes the underlying OPD tool.
+
+\quick{The command-line OPD can be launched outside of the GUI Wizard by 
+  running the command \cmd{opd} from the top-level OSCAR \file{scripts} 
+  directory.}
+
+\detailed{
+  The command-line OPD can be executed outside of the GUI Wizard from 
+  the top-level OSCAR directory with the following command:
+
+% We have to use \tt instead of {verbatim} because we need to use
+% \oscarversion inside.  This makes it somewhat painful -- much less
+% easy than {verbatim}.
+  \vspace{11pt} {\tt
+    \# cd /root/oscar-\oscarversion \\
+    \indent \# ./scripts/opd } \vspace{11pt}
+  
+  OPD can use either the \cmd{wget} command or the built-in Perl LWP
+  for downloading files.  By default, \cmd{wget} will be used if it
+  can be found.  However, the use of LWP may be forced if the argument
+  ``{\tt --lwp}'' is given on the command line.  LWP may be used in
+  order to utilize a proxy, for example.  See the {\tt LWP::UserAgent}
+  documentation for details on how to use proxies through LWP.
+
+OPD requires some Perl modules to be installed before running.  If
+they are not installed, you will receive a detailed error message
+listing which modules need to be installed.  You have two options to
+install these modules:
+
+\begin{enumerate}
+\item Use a tool such as CPAN to download and install the required
+  modules.
+  
+\item Launch the OSCAR installer (see
+  Section~\ref{det:installcluster}) and then quit immediately when the
+  GUI window appears.  This is the preferred method, since the OSCAR
+  installer will install of its own prerequisites (i.e., the process is
+  automated).
+\end{enumerate}
+
+  
+  Upon launching OPD, select a repository for packages from the
+  choices listed.  OPD will then connect to that repository and query
+  it for a list of available packages.  Select all the packages that
+  you would like to download, and then use the ``download'' command to
+  actually download them.
+  
+  Use the ``help'' command in OPD for listings of additional commands
+  and help.
+
+} % end detailed
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Selecting Packages to Install}
 \label{det:select-packages}
 
@@ -534,9 +539,11 @@ installation wizard GUI will automatically be launched.
 
 If you wish to change the list of packages that are installed, click
 on the \button{Select OSCAR Packages To Install} button.  This step is
-optional -- if you do not click on this button, all OSCAR packages
-included in the OSCAR distribution and all packages downloaded and
-unpacked by OPD will be selected for installation.
+optional -- by default all packages directly included in OSCAR are 
+selected and installed.  However, if you downloaded any additional packages, 
+e.g., via OPD/OPDer, they will not be selected for installation by default.  
+Therefore you will need to click this button and select the appropriate OSCAR 
+Packages to install on the cluster.
 
 \detailed{
   
@@ -841,6 +848,10 @@ you want to create.
   \field{Base Name} to derive the first client name. It will be
   incremented for each subsequent client.
   
+\item The \field{Padding} specifies the number of digits to pad the client
+names, e.g., 3 digits would yeild oscarnode001.  The default is 0 to have
+no padding between base name and number (index).
+
 \item The \field{Starting IP} specifies the IP address of the first
   client. It will be incremented for each subsequent client.
   \detailed{See Footnote~\ref{foot:private-ip-ranges} on
