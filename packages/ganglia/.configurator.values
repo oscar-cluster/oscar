@@ -1,5 +1,5 @@
 <config>
-  <owner>Oscar</owner>
-  <gridname>Ocar</gridname>
-  <datasource>Oscar Cluster</datasource>
+  <owner>OSCAR</owner>
+  <gridname>OSCAR</gridname>
+  <datasource>OSCAR Cluster</datasource>
 </config>
