@@ -43,8 +43,6 @@ if(!-d $targetdir) {croak("The directory $targetdir doesn't exist");}
 
 sync_user_files($targetdir) or croak("Couldn't sync user files");
 
-setup_nfs_homes($targetdir) or croak("Couldn't setup nfs mounted /home");
-
 !system("./ssh_install $targetdir") or croak("Couldn't generate ssh keys");
 
 # Here we run all the post_rpm_install scripts
@@ -93,24 +91,4 @@ sub init_si_config {
                               );
     $config->file("/etc/systemimager/systemimager.conf");
     return $config;
-}
-
-sub setup_nfs_homes {
-    	my ($imagedir) = @_;
-	open(FSTAB,"<$imagedir/etc/fstab") or (carp("Can't open image's fstab file!"),
-						return undef);
-	open(TMP,">/tmp/fstab.$$") or (carp("Can't open fstab file!"),
-						return undef);
-	my ($serverip,undef,undef) = interface2ip($serverint);
-	while (<FSTAB>){
-		unless (/:\/home/) {
-			print TMP $_;
-		}
-	}
-	print TMP "$serverip:/home /home nfs rw 0 2\n";
-	close(FSTAB);
-	close(TMP);
-	move("/tmp/fstab.$$","$imagedir/etc/fstab") or (carp("Unable to replace fstab file!"),
-						return undef);
-	return 1;
 }

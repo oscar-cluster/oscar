@@ -1,4 +1,4 @@
-/dev/sda1       100         vfat 	     /boot/efi rw
+/dev/sda1       100         vfat 	     /boot/efi defaults
 /dev/sda5       128         swap
-/dev/sda6       1000        ext2             /        rw
-
+/dev/sda6       1000        ext2             /        defaults
+nfs_oscar:/home  -          nfs                /home  rw
