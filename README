@@ -1,4 +1,4 @@
-$Id: README,v 1.18 2002/06/12 06:34:18 jsquyres Exp $
+$Id: README,v 1.19 2002/06/13 03:35:43 jsquyres Exp $
 
 $COPYRIGHT$
 
@@ -7,8 +7,6 @@ site:
 
 	http://oscar.sourceforge.net/
 
-Insturctions for installing an OSCAR distribution can be found in
+Installation insturctions and release notes for OSCAR can be found in
 doc/install.pdf.  User instructions for utilizing the software
 installed on OSCAR clusters can be found in doc/user.pdf.
-
-See also the Release Notes section in the installation document.
