@@ -542,7 +542,7 @@ run within the Installer Workspace.
         nextButtonWasClicked => ['char*'];           # Needed by Tasks only
     use Qt::slots
         reReadOda => ['char*'],
-        closeEvent => ['QCloseEvent'],
+        closeEvent => ['QCloseEvent*'],
         setButtonShown => ['char*','char*','bool'],  # Needed by Tasks only
         backButton_clicked => [],                    # Needed by Tasks only
         nextButton_clicked => [];                    # Needed by Tasks only
@@ -575,6 +575,9 @@ run within the Installer Workspace.
           backButton->hide();
           nextButton->hide();
         }
+
+      # When this window closes, destroy it, too
+      setWFlags(getWFlags() | Qt::WDestructiveClose());
     }
 
     sub setButtonShown
