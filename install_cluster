@@ -24,6 +24,10 @@ use vars qw($VERSION);
 use Cwd qw(chdir);
 use Carp;
 
+# Setting this varible makes a lot of things much easier.  It might also do
+# us some good down the road
+$ENV{OSCAR_HOME} = cwd();
+
 my $adapter = shift or croak("Program must be invoked as ./install_cluster <network device>");
 
 system("chmod 755 packages/*/scripts/*");
