@@ -24,6 +24,10 @@
 # relevant parts of /etc/profile should be run automatically.
 #. /etc/profile
 
+# Default timeout for PBS tests.  Increase this number if tests
+# are failing due to timeouts (not because of failing package tests)
+default_timeout=45
+
 qsub='/opt/pbs/bin/qsub'
 qstat='/opt/pbs/bin/qstat'
 exit_status=0
@@ -89,14 +93,14 @@ function waitexit {
 }
 
 function calc_timeout {
-  if [ ! $min_timeout ]; then min_timeout=30; fi
+  if [ ! $min_timeout ]; then min_timeout=$default_timeout; fi
   if [ ! $scaling_factor ]; then scaling_factor=3; fi
   timeout=`expr $numprocs \* $scaling_factor`
-  if [ $timeout -lt 30 ] || [ $timeout -lt $min_timeout ]; then
-    if [ $min_timeout -gt 30 ]; then
+  if [ $timeout -lt $default_timeout ] || [ $timeout -lt $min_timeout ]; then
+    if [ $min_timeout -gt $default_timeout ]; then
       timeout=$min_timeout;
     else
-      timeout=30;
+      timeout=$default_timeout;
     fi
   fi
 }              
