@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.4 2003/07/23 15:47:21 brechin Exp $
+# $Id: setup,v 1.5 2003/07/23 16:13:02 brechin Exp $
 #
 
 #use strict;
@@ -64,12 +64,13 @@ elsif ($distro_name eq "mandrake") {
   if ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.1 ) {
     @wanted_rpms = qw( MySQL MySQL-client libmysql10 perl-DBI
     		       perl-Mysql perl-ExtUtils-PerlPP oda
-		       MySQL-common libmysql12 );
+		       MySQL-common libmysql12 perl-CGI );
   } else {
     @wanted_rpms = qw( MySQL
 		MySQL-client
 		libmysql10
 		perl-DBI
+		perl-CGI
 		perl-Mysql
 		perl-ExtUtils-PerlPP
 		oda );

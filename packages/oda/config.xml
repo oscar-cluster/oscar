@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.56 2003/07/23 15:47:21 brechin Exp $
+      $Id: config.xml,v 1.57 2003/07/23 16:13:02 brechin Exp $
   -->
   <name>oda</name>
 
@@ -72,7 +72,7 @@
   </rpmlist>
 
   <rpmlist>
-    <filter distribution="mandrake" distribution_version="8.2" />
+    <filter distribution="mandrake" distribution_version="9.0" />
     <rpm>MySQL-client</rpm>
     <rpm>libmysql10</rpm>
     <rpm>perl-CGI</rpm>
@@ -87,6 +87,7 @@
     <rpm>MySQL</rpm>
     <rpm>MySQL-client</rpm>
     <rpm>libmysql10</rpm>
+    <rpm>perl-CGI</rpm>
     <rpm>perl-DBI</rpm>
     <rpm>perl-Mysql</rpm>
     <rpm>perl-ExtUtils-PerlPP</rpm>
