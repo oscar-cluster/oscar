@@ -242,11 +242,10 @@ sub update_rsyncd_conf {
 }
 
 
-# tjn: 9/6/02
+
+# tjn: 9/12/02
 # Used to fix MDK brain-dead defaults for root's .rc files.
 # Input: filename (e.g.  '/root/.bashrc').
-#
-# (Following form used by most other OSCAR subs.)
 sub unmunge_pathenv
 {
     my $file = pop @_;
@@ -261,8 +260,13 @@ sub unmunge_pathenv
     while(<IN>) {
         if(! /^\s*#/ ) {	#ignore comments
 
-            # if setting 'PATH=' w/o $PATH as an r-value then comment out line
-            if( /(.*PATH=.*)/ &&  ! /\$PATH/ ) {
+            # Bashrc fixups
+            if( $file =~ /bashrc/ && /(.*PATH=.*)/ &&  ! /\$PATH/ ) {
+                $_ = "#OSCAR: The following line commented out \n# $1\n";
+            }
+            # Cshrc fixups
+            elsif( $file =~ /cshrc/ && 
+                   /((set|setenv){0,1}\s+PATH.*)/i && !/\$\{PATH\}/i ) {
                 $_ = "#OSCAR: The following line commented out \n# $1\n";
             }
         }
@@ -272,4 +276,3 @@ sub unmunge_pathenv
     close(OUT);
     close(IN);
 }
-
