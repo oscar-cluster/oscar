@@ -4,6 +4,7 @@ apache-conf
 apache-modules
 dhcp-common
 dhcp-server
+ed
 expat
 libpcap0
 librrdtool0
@@ -19,12 +20,12 @@ php
 php-common
 php-xml
 python2-compat
+pwlib1
 rrdtool
 tcpdump
 xinetd
 zlib1
 zlib1-devel
-
 autoupdate-cfg-mandrake
 autoupdate-oscar
 autoupdate
