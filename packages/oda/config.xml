@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.75 2004/04/01 20:53:31 ngorsuch Exp $
+      $Id: config.xml,v 1.76 2004/04/05 18:45:52 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -3327,22 +3327,6 @@
 	  program variable. Required and only parameters are:
                   program       name of the program
                   variable      name of the variable being removed
-        </description>
-        <expansion>
-          read_records
-          program_variable_values
-          program_variable_values.program=%1
-          program_variable_values.variable=%2
-          program_variable_values.value
-        </expansion>
-      </shortcut>
-
-      <shortcut>
-        <command> program_variables </command>
-        <description>
-          program_variables lists all of the named variables for
-	  a program.  Required and only parameters are:
-                  program       name of the program
         </description>
         <expansion>
           read_records
