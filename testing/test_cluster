@@ -40,7 +40,7 @@ unless (GetOptions(\%opts,"wait") ) {
 END{
 	if ($opts{wait}) {
 		print "\nERROR $? REPORTED ABOVE.\n" if $?;
-        print "\n...Hit <ENTER> key to exit...\n";
+        print "\n...Hit <ENTER> key to exit...";
         my $key=<STDIN>;
 	}
 }
@@ -88,7 +88,7 @@ foreach my $pkg (@pkgs) {
 
 
 if ($return) {
-    print("There were issues running some root test scripts.  Please check your logs\n");
+    print("\nThere were issues running some root test scripts.  Please check your logs\nlocated in /home/oscartst.\n");
 }
 
 # Setup the user environment
@@ -180,7 +180,7 @@ foreach my $pkg (@pkgs) {
 }
 
 if ($creturn) {
-    print("There were issues running some user test scripts.  Please check your logs\n");
+    print("\nThere were issues running some user test scripts.  Please check your logs\nlocated in /home/oscartst.\n");
 }
 
 exit $return;
