@@ -341,7 +341,7 @@ sub versionchk {
   my @lines;
   foreach my $name(@names){
      for (my $j = 0; $j < @files; $j++){
-        if ("@files->[$j][0]" =~ m/$name/){
+        if ("@files->[$j][0]" =~ m/^$name$/){
            $count++;
            push @lines, $j;
         }
