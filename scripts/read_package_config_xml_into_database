@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -138,14 +138,10 @@ sub insert_or_verify_record {
     # at this point we need to write out the new record
     my $record_ref = ( defined $write_record_ref ) ?
 	$write_record_ref : $match_record_ref;
-    my @assigns = ();
-    foreach my $key ( keys %$record_ref ) {
-	push @assigns, "$table_name.$key = \'$$record_ref{$key}\'";
-    }
     if ( $options{changes} ) {
 	if ( ! oda::insert_record( \%oda_options,
 				   $table_name,
-				   \@assigns,
+				   $record_ref,
 #			            ( defined $write_record_ref ) ?
 #			            $write_record_ref : $match_record_ref,
 			           undef,
@@ -766,12 +762,12 @@ if ( $options{debug} ) {
 #
 # and this in the oda_shortcuts hash:
 #
-# {
-#   'abcde' -> 'fgh ij',
-#   'kl' -> 'mnop qrst',
-#   'package_package17_uv' -> 'wx',
-#   'package_package17_y' -> 'z'
-# }
+#REDO {
+#REDO   'abcde' -> 'fgh ij',
+#REDO   'kl' -> 'mnop qrst',
+#REDO   'package_package17_uv' -> 'wx',
+#REDO   'package_package17_y' -> 'z'
+#REDO }
 #
 print "$0: looking for special oda data in package <$package_name>\n" 
     if $options{debug};
@@ -832,29 +828,110 @@ if ( exists $$xml_ref{package} ) {
 		    . "using a package name block <name> </name> other than oda.\n"
 		    . "These shortcuts will not be created:\n";
 		my @shortcuts = ();
-		foreach my $shortcut_line ( @$shortcuts_ref ) {
-		    my @fields = grep( !/^$/, split( /\s+/, $shortcut_line ) );
-		    push @shortcuts, $fields[0];
+		foreach my $shortcut_data ( @$shortcuts_ref ) {
+		    if ( ref( $shortcut_data ) eq "HASH" ) {
+			push @shortcuts, $$shortcut_data{command} 
+			    if exists $$shortcut_data{command} &&
+			    $$shortcut_data{command} ne "";
+		    } else {
+			my @fields = grep( !/^$/, split( /\s+/, $shortcut_data ) );
+			push @shortcuts, $fields[0]
+			    if @fields && $fields[0] ne "";
+		    }
 		}
 		warn join( ',', @shortcuts ) . "\n";
 	    } else {
-		foreach my $shortcut_line ( @$shortcuts_ref ) {
-		    # parse out leading word and use it for the shortcut name
-		    my @fields = grep( !/^$/, 
-				       split( /\s+/, $shortcut_line ) );
-		    my $shortcut = shift @fields;
-		    $shortcut = "package_" . $shortcuts_package . "_" . $shortcut
-			if $shortcuts_package ne 'oda';
-		    my $expansion = join( ' ', @fields );
-		    print "$0: found shortcut=<$shortcut> value=<$expansion>\n"
-			if $options{debug};
-		    # store the shortcut if not already stored
-		    if ( ! exists $oda_shortcuts{$shortcut} ) {
-			$oda_shortcuts{$shortcut} = $expansion;
-		    } else {
-			warn "$0: duplicated oda shortcut $shortcut specified,\n";
-			warn "ignoring value <$expansion> specified by package $package_name\n";
-			warn "leaving value as previous value <$oda_shortcuts{$shortcut}>,\n";
+		foreach my $shortcut_data ( @$shortcuts_ref ) {
+		    my $found_shortcut_ref = undef;
+		    # if the new style of shortcut specification, ...
+		    if ( ref( $shortcut_data ) eq "HASH" ) {
+			print_hash( "", "$0: shortcut_data", $shortcut_data )
+			    if $options{debug};
+			# there has to a command block to specify the shortcut name
+			if ( ! exists $$shortcut_data{command} ) {
+			    warn "$0: package $package_name has a shortcut block\n";
+			    warn "without an enclosed command block to name the shortcut.\n";
+			}
+			# the shortcut name has to be non-blank
+			elsif ( $$shortcut_data{command} =~ /^\s*$/ ) {
+			    warn "$0: package $package_name has a shortcut block\n";
+			    warn "with a blank command block name for the shortcut.\n";
+			}
+			# there has to be an expansion block
+			elsif ( ! exists $$shortcut_data{expansion} ) {
+			    warn "$0: package $package_name has a shortcut block\n";
+			    warn "for shortcut $$shortcut_data{command} without an expansion.\n";
+			}
+			# the expansion name has to be non-blank
+			elsif ( $$shortcut_data{expansion} eq "" ) {
+			    warn "$0: package $package_name has a shortcut block\n";
+			    warn "for shortcut $$shortcut_data{command} with a blank expansion.\n";
+			} 
+			# save the shortcut data
+			else {
+			    my %shortcut = ();
+			    $shortcut{command} = $$shortcut_data{command};
+			    $shortcut{command} =~ s/^\s*//;
+			    $shortcut{command} =~ s/\s*$//;
+			    if ( exists $$shortcut_data{description} &&
+				 $$shortcut_data{description} ne "" ) {
+				my @lines = 
+				    split( /\n/, 
+					   $$shortcut_data{description} );
+				chomp @lines;
+				shift @lines
+				    while @lines && $lines[0] =~ /^\s*$/;
+				pop @lines 
+				    while @lines && $lines[$#lines] =~ /^\s*$/;
+				if ( $lines[0] =~ /^\s+/ ) {
+				    my $leading_space = $lines[0];
+				    $leading_space =~ s/^(\s*).*$/$1/;
+				    foreach $_ ( @lines ) {
+					$_ =~ s/^$leading_space//;
+				    }
+				}
+				$shortcut{description} = 
+				    join( "\n", @lines );
+			    }
+			    my @fields = grep( !/^$/, 
+					       split( /\s+/,
+						      $$shortcut_data{expansion} ) );
+			    $shortcut{expansion} = join( ' ', @fields );
+			    $found_shortcut_ref = \%shortcut;
+			}
+		    }
+		    # else if the old style of shortcut specification, ...
+		    else {
+			my %shortcut = ();
+			# parse out leading word and use it for the shortcut command
+			my @fields = grep( !/^$/, 
+					   split( /\s+/, $shortcut_data ) );
+			$shortcut{command} = shift @fields;
+			$shortcut{expansion} = join( ' ', @fields );
+			# make sure all is ok
+			if ( $shortcut{expansion} eq "" ) {
+			    warn "$0: package $package_name has a shortcut block\n";
+			    warn "for shortcut $shortcut{command} with a blank expansion.\n";
+			} else {
+			    $found_shortcut_ref = \%shortcut;
+			}
+		    }
+		    # if a valid shortcut was parsed, ...
+		    if ( defined $found_shortcut_ref ) {
+			my $command = $$found_shortcut_ref{command};
+			delete $$found_shortcut_ref{command};
+			print "$0: found shortcut=<$command> value=<$$found_shortcut_ref{expansion}>\n"
+			    if $options{debug};
+			$command = "package_" . $shortcuts_package . "_" . $command
+			    if $shortcuts_package ne 'oda';
+			# store the shortcut if not already stored
+			if ( ! exists $oda_shortcuts{$command} ) {
+			    $oda_shortcuts{$command} = $found_shortcut_ref;
+			} else {
+			    warn "$0: duplicated oda shortcut $command specified,\n";
+#			    warn "ignoring value <$expansion> specified by package $package_name\n";
+#			    warn "leaving value as previous value <$oda_shortcuts{$command}>,\n";
+			}
 		    }
 		}
 	    }
@@ -1668,7 +1745,8 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
 
 # store any found shortcuts in the database
 my %shortcuts_fields = ();
-$shortcuts_fields{ shortcut } = "VARCHAR(250)";
+$shortcuts_fields{ command } = "VARCHAR(250)";
+$shortcuts_fields{ description } = "TEXT";
 $shortcuts_fields{ expansion } = "TEXT";
 my $shortcuts_table_name = "oda_shortcuts";
 make_fix_table_fields( $shortcuts_table_name,
@@ -1678,12 +1756,15 @@ make_fix_table_fields( $shortcuts_table_name,
 my $shortcuts_existing = 0;
 my $shortcuts_created = 0;
 my $shortcuts_updated = 0;
-foreach my $shortcut ( sort keys %oda_shortcuts ) {
-    my %match_record;
-    $match_record{shortcut} = $shortcut;
+foreach my $command ( sort keys %oda_shortcuts ) {
+    my $shortcut_data = $oda_shortcuts{$command};
+    my %match_record = ();
+    $match_record{command} = $command;
     my %write_record;
-    $write_record{shortcut} = $shortcut;
-    $write_record{expansion} = $oda_shortcuts{$shortcut};
+    $write_record{command} = $command;
+    $write_record{description} = $$shortcut_data{description}
+        if exists $$shortcut_data{description};
+    $write_record{expansion} = $$shortcut_data{expansion};
     insert_or_verify_record( $shortcuts_table_name,
 			     \%match_record,
 			     \%write_record );
