@@ -80,6 +80,10 @@ use Qt::attributes qw(
     helpAboutAction
 );
 
+
+# This hash contains all of the currently instantiated Tasks and Tools and
+# is used to build the windowList.  The keys of the hash are the directory
+# names of the Tasks/Tools.
 my %currTaskToolWidgets;
 
 sub NEW
@@ -273,9 +277,11 @@ sub populateTasksMenu
 
 =item C<populateTasksMenu()>
 
-This is called when the "Tasks" pulldown menu is created.  It will
-EVENTUALLY read in configuration files for all of the Tasks (previously
-called Steps) to be performed during an OSCAR installation.  
+Fills in the Tasks pulldown menu.
+
+This is called when the "Tasks" pulldown menu is created at program startup.
+Note that you need to call readInstallerXMLFile() (which populates the
+$installerTasksAndTools hash) before calling this subroutine.
 
 =cut
 
@@ -284,7 +290,8 @@ called Steps) to be performed during an OSCAR installation.
   my $arraynum = 0;
   foreach my $task (@installerTasksSorted)
     {
-      my $menustr = "";
+      my $menustr = "";  # Build up 'pretty print' name: "<step> - <fullname>"
+      # Put an ampersand (&) in front of the first 9 Task numbers
       $menustr .= "&" if ($installerTasksAndTools->{$task}->{stepnum} < 10);
       $menustr .= $installerTasksAndTools->{$task}->{stepnum};
       $menustr .= ' - ';
@@ -301,9 +308,11 @@ sub populateToolsMenu
 
 =item C<populateToolsMenu()>
 
-This is called when the "Tools" pulldown menu is created.  It will
-EVENTUALLY read in configuration files for all of the Tools 
-which can be executed during an OSCAR installation.  
+Fills in the Tools pulldown menu.
+
+This is called when the "Tools" pulldown menu is created at program startup.
+Note that you need to call readInstallerXMLFile() (which populates the
+$installerTasksAndTools hash) before calling this subroutine.
 
 =cut
 
@@ -313,10 +322,17 @@ which can be executed during an OSCAR installation.
   my @letters;
   foreach my $tool (@installerToolsSorted)
     {
+      # The following is a little trick to try to put an ampersand (&) in
+      # the 'pretty print' name of the Tool, thus underlining a letter for
+      # quick selection via the <Alt> key.  It finds unique letters for each
+      # Tool by keeping track of which letters have already been used.
       my $searchstr = join '|', @letters;
       $installerTasksAndTools->{$tool}->{fullname} =~ /[^($searchstr)]/i;
-      my $menustr = $` . '&' . $& . $';
-      push @letters, $&;
+      if (length($&) > 0)
+        {
+          my $menustr = $` . '&' . $& . $';
+          push @letters, $&;
+        }
       my $id = toolsMenu->insertItem($menustr, this,
                                      SLOT "toolsMenuActivated(int)");
       toolsMenu->setItemParameter($id,$arraynum++);
@@ -374,11 +390,13 @@ sub windowMenuAboutToShow
 
 =item C<windowMenuAboutToShow()>
 
-This is a SLOT which gets called when the user clicks on the "Window" menu
-just before the pulldown gets displayed.  This way, we can populate the
-Window menu with a list of all open Tasks/Tools windows.  We also give the
-user the ability to Cascade or Tile the windows in the workspace.  (These
-functions are built into Qt so we don't have to do any extra work.)
+A SLOT which is called just before the Window menu is shown.
+
+This SLOT gets called when the user clicks on the "Window" menu just before
+the pulldown gets displayed.  This way, we can populate the Window menu with
+a list of all open Tasks/Tools windows.  We also give the user the ability
+to Cascade or Tile the windows in the workspace.  (These functions are built
+into Qt so we don't have to do any extra work.)
 
 =cut
 
@@ -410,9 +428,11 @@ sub windowMenuActivated
 
 =item C<windowMenuActivated($windowNum)>
 
-This is a SLOT which gets called when the user selects one of the window
-items in the "Window" list.  It brings that window to the front of all other
-windows and gives it the focus.
+A SLOT which is called when a Window item is selected.
+
+This SLOT gets called when the user selects one of the window items in the
+"Window" list.  It brings that window to the front of all other windows and
+gives it the focus.
 
 =cut
 
@@ -438,10 +458,12 @@ sub tasksMenuActivated
 
 =item C<tasksMenuActivated($taskNum)>
 
-This is a SLOT which gets called when the user selects one of the Tasks
-(aka installer Steps) from the "Tasks" list.  It checks to see if that
-task is already running.  If so, it brings it to the front.  If not, it
-closes out all other tasks and launches the selected task.
+A SLOT which is called when a Task item is selected.
+
+This SLOT gets called when the user selects one of the Tasks (aka installer
+Steps) from the "Tasks" list.  It checks to see if that task is already
+running.  If so, it brings it to the front.  If not, it closes out all other
+tasks and launches the selected task.
 
 =cut
 
@@ -473,6 +495,12 @@ sub toolsMenuActivated
 
 =item C<toolsMenuActivated($taskNum)>
 
+A SLOT which is called when a Tool item is selected.
+
+This SLOT gets called when the user selects one of the Tools from the
+"Tools" list.  It checks to see if that tool is already running.  If so, it
+brings it to the front.  
+
 =cut
 
 ### @param $toolNum The line item number selected from the Tasks Menu.
@@ -491,9 +519,24 @@ sub openTaskToolWindow
 {
 #########################################################################
 
-=item C<>
+=item C<openTaskToolWindow($tasktool,$type)>
+
+Lauches a specific Task or Tool, or brings it to the front if already
+running.
+
+This subroutine takes in the directory name of a Task/Tool which is to be
+launched, and the type of the Task/Tool (i.e. 'task' or 'tool').  It checks
+to see if that Task/Tool is already running, and if so, it brings it to the
+front and gives it the focus.  If not, it launches the Task/Tool.  Since
+only one Task can be active at a a time, it first closes any other Task
+currently running.
 
 =cut
+
+### @param $tasktool The directory name of the Task/Tool to be shown.  
+### @param $type Either 'task' or 'tool'.  This is needed because only
+###              one task can be active at a time, but any number of
+###              tools can be active at a time.
 
 #########################################################################
 
@@ -504,6 +547,7 @@ sub openTaskToolWindow
       $currTaskToolWidgets{$tasktool}->showNormal if
         ($currTaskToolWidgets{$tasktool}->isMinimized);
       $currTaskToolWidgets{$tasktool}->raise;
+      $currTaskToolWidgets{$tasktool}->setFocus;
     }
   else
     {
@@ -520,7 +564,7 @@ sub openTaskToolWindow
             }
         }
 
-      # Now create the new Task widget
+      # Now create the new Task/Tool widget
       $currTaskToolWidgets{$tasktool} = launchTaskTool($tasktool,
         $installerTasksAndTools->{$tasktool}->{classname});
 
@@ -536,6 +580,7 @@ sub openTaskToolWindow
             }
         }
 
+      # Set up the SIGNAL/SLOT connections for the Task/Tool
       connectTaskTool($tasktool);
     }
 }
@@ -544,9 +589,19 @@ sub connectTaskTool
 {
 #########################################################################
 
-=item C<>
+=item C<connectTaskTool($tasktool)>
+
+Set up SIGNAL/SLOT connections for a Task/Tool.
+
+This subroutine takes in the directory name of a Task/Tool and sets up a
+bunch of connections necessary for communication between the Workspace and
+the Task/Tool.  These connections will get disconnected when the Task/Tool
+closes.
 
 =cut
+
+### @param $tasktool The directory name of the Task/Tool to be shown.  
+### @see disconnectTaskTool()
 
 #########################################################################
   my $tasktool = shift;
@@ -562,9 +617,17 @@ sub disconnectTaskTool
 {
 #########################################################################
 
-=item C<>
+=item C<disconnectTaskTool($tasktool)>
+
+Disconnect SIGNAL/SLOT connections for a Task/Tool.
+
+This subroutine takes in the directory name of a Task/Tool and undoes the
+connections made when the Task/Tool was launched.
 
 =cut
+
+### @param $tasktool The directory name of the Task/Tool to be shown.  
+### @see connectTaskTool()
 
 #########################################################################
   my $tasktool = shift;
@@ -581,6 +644,13 @@ sub launchTaskTool
 #########################################################################
 
 =item C<launchTaskTool($dirname,$classname)>
+
+Create a new window instance of a given Task/Tool.
+
+This is called by openTaskToolWindow to start a new instance of a given
+Task/Tool.  The Task/Tool is specified by its directory name AND by its
+class name.  This subroutine then does some tricky require/import stuff to
+dynamically launch a new instance of the $classname QWidget.
 
 =cut
 
@@ -620,27 +690,29 @@ sub processOdaCommandsAndTests
 {
 #########################################################################
 
-=item C<>
+=item C<processOdaCommandsAndTests($tasktool)>
+
+THIS STILL NEEDS TO BE COMMENTED AND CODED FURTHER...
 
 =cut
 
 #########################################################################
 
-  my $dir = shift;
+  my $tasktool = shift;
   my $success = 0;
 
-  my $cmdcnt = scalar(@{$installerTasksAndTools->{$dir}->{command}});
+  my $cmdcnt = scalar(@{$installerTasksAndTools->{$tasktool}->{command}});
   for (my $i = 0; $i < $cmdcnt; $i++)
     {
-      @{$installerTasksAndTools->{$dir}->{commandresult}} = ();
-      $installerTasksAndTools->{$dir}->{testresult} = "";
-      if ($installerTasksAndTools->{$dir}->{command}[$i])
+      @{$installerTasksAndTools->{$tasktool}->{commandresult}} = ();
+      $installerTasksAndTools->{$tasktool}->{testresult} = "";
+      if ($installerTasksAndTools->{$tasktool}->{command}[$i])
         {
           my @result;
           my $commandsuccess = OSCAR::Database::database_execute_command(
-            $installerTasksAndTools->{$dir}->{command}[$i],\@result);
-          push @{$installerTasksAndTools->{$dir}->{commandresult}}, @result if 
-            ($commandsuccess);
+            $installerTasksAndTools->{$tasktool}->{command}[$i],\@result);
+          push @{$installerTasksAndTools->{$tasktool}->{commandresult}}, 
+               @result if ($commandsuccess);
         }
     }
 
@@ -652,9 +724,19 @@ sub taskToolClosed
 {
 #########################################################################
 
-=item C<>
+=item C<taskToolClosed($tasktool)>
+
+A SLOT which is called when a Task/Tool closes.
+
+When a Task/Tool exits (closes), it should send the SIGNAL
+'taskToolClosing($tasktool)' so that the MainWindow can update the list of
+currently running Tasks/Tools.  This subroutine also calls
+disconnectTaskTool($tasktool) to remove the connections set up when the
+Task/Tool was created.
 
 =cut
+
+### @param $tasktool The directory name of the Task/Tool which has closed.
 
 #########################################################################
 
@@ -701,7 +783,7 @@ Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
 
 First Created on February 2, 2004
 
-Last Modified on February 23, 2004
+Last Modified on April 19, 2004
 
 =cut
 
