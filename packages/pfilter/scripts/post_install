@@ -17,10 +17,7 @@
 # (re)start the pfilter service on this server
 
 print "(re)starting the pfilter firewall service on this server\n";
-$command = "service pfilter restart";
-print "$command\n";
-system( $command );
-my $command = "chkconfig --level=2345 pfilter on";
+$command = "/etc/init.d/pfilter restart";
 print "$command\n";
 system( $command );
 
@@ -34,10 +31,7 @@ system( $command ) && croak("pfilter configuration file push failed.");
 # (re)start the pfilter service on the clients
 
 print "(re)starting the pfilter firewall service on the clients\n";
-$command = ". /etc/profile.d/c3.sh && cexec service pfilter restart";
-print "$command\n";
-system( $command );
-my $command = ". /etc/profile.d/c3.sh && cexec chkconfig --level=2345 pfilter on";
+$command = ". /etc/profile.d/c3.sh && cexec /etc/init.d/pfilter restart";
 print "$command\n";
 system( $command );
 

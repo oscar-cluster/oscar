@@ -267,10 +267,7 @@ ENDIT
 
 print "(re)starting the pfilter firewall service on this server\n";
 
-my $command = "service pfilter restart";
-print "$command\n";
-system( $command );
-my $command = "chkconfig --level=2345 pfilter on";
+my $command = "/etc/init.d/pfilter restart";
 print "$command\n";
 system( $command );
 
