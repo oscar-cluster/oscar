@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.15 2002/12/02 21:29:25 tfleury Exp $
+# $Id: Selector.pm,v 1.16 2002/12/10 23:06:10 ngorsuch Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -564,6 +564,13 @@ sub readInPackageXMLs
   $packagexml = pkg_config_xml();
   my($package);
   my($hashkey);
+
+  # Remove any packages from the hash that have "installable" set to 0.
+  foreach my $package (sort keys %{ $packagexml } )
+    {
+      delete $packagexml->{$package} unless
+        ($packagexml->{$package}{installable});
+    }
 
   foreach $package (@packagedirs)
     { # Make sure that there is at least a "name" for all packages

@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.42 2002/12/02 20:36:03 tfleury Exp $
+#   $Id: Package.pm,v 1.43 2002/12/10 23:06:10 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.42 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.43 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -448,7 +448,7 @@ sub read_all_pkg_config_xml {
             $PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
           } else {
           $PACKAGE_CACHE->{$pkg}->{installable} = 1 if 
-            (!$PACKAGE_CACHE->{$pkg}->{installable});
+            (!defined($PACKAGE_CACHE->{$pkg}->{installable}));
         }
       } else {
 #       oscar_log_subsection("Got empty XML config for $pkg");
