@@ -30,7 +30,6 @@ require URI::URL;
 use Carp;
 use HTML::TreeBuilder 3;
 use XML::Simple;      
-no warnings qw(closure);
 
 my($top);            # The Toplevel widget for the config box.
 my($web);            # The Tk::Web widget for displaying HTML file.
