@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster_as_root,v 1.8 2002/06/08 07:45:45 jenos Exp $
+# $Id: test_cluster_as_root,v 1.9 2002/06/21 02:54:15 brechin Exp $
 #
 # test_cluster_as_root - script to test services, NFS, 
 #                        and install/run user level tests
@@ -90,22 +90,32 @@ done
 # Tests to make sure /home is NFS mounted and current
 
 `touch /home/OSCARtestfile`
-command='if [ -e /home/OSCARtestfile ]; then echo "1"; fi'
+command='if [ -e /home/OSCARtestfile ]; then echo "1"; else echo "0"; fi'
 
+mounted=0
 # Grab all the node hostnames from pbsnodes
-for node in `/usr/local/pbs/bin/pbsnodes -a | egrep '^\w+'`; do 
-  if [ `ssh $node $command` -ne 1 ]; then
-    echo -n "/home not mounted on $node:"
-    echo_failure
-    echo
-    `rm -f /home/OSCARtestfile`
-    exit 1
+for node in `/usr/local/pbs/bin/pbsnodes -a | /bin/grep -B1 'state = free' | /bin/egrep '^\w+' | /usr/bin/tac`; do 
+  if [ "x`ssh $node $command 2>/dev/null`" != "x1" ]; then
+    echo "/home not mounted on $node"
+#    echo_failure
+#    echo
+#    `rm -f /home/OSCARtestfile`
+#    exit 1
+  else
+    mounted=`/usr/bin/expr $mounted + 1`
   fi
 done
-echo -n "/home mounted on all nodes:"
-echo_success
-echo
+
+echo -n "/home mounted on $mounted free nodes, need $clients:"
 `rm -f /home/OSCARtestfile`
+if [ $mounted -gt $clients ] || [ $mounted -eq $clients ]; then
+  echo_success
+  echo
+else
+  echo_failure
+  echo
+  exit 1
+fi
 
 #			USER TESTS
 #			----------
