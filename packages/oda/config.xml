@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.74 2004/03/02 22:20:17 ngorsuch Exp $
+      $Id: config.xml,v 1.75 2004/04/01 20:53:31 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -146,9 +146,11 @@
        -->
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      CLUSTER_PARTITIONS table shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=							      =-=
+      =-= CLUSTER_PARTITIONS table shortcuts			      =-=
+      =-=							      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -301,9 +303,11 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      CONFIGURATIONS table shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=							      =-=
+      =-= CONFIGURATIONS table shortcuts			      =-=
+      =-=							      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -413,9 +417,11 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      CONFIGURATIONS <> NODE_GROUPS tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=							      =-=
+      =-= CONFIGURATIONS <> NODE_GROUPS shortcuts       	      =-=
+      =-=							      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -497,9 +503,11 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      CONFIGURATIONS <> NODES tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=							      =-=
+      =-= CONFIGURATIONS <> NODES shortcuts       		      =-=
+      =-=							      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -547,9 +555,11 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      CONFIGURATIONS <> PACKAGE_CONFIGURATION_VALUES tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=							      =-=
+      =-= CONFIGURATIONS <> PACKAGE_CONFIGURATION_VALUES shortcuts    =-=
+      =-=							      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -725,9 +735,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      DISK_PARTITIONS and DISK_LAYOUTS tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= DISK_PARTITIONS and DISK_LAYOUTS shortcuts       	      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -875,9 +885,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      IMAGES table shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= IMAGES table shortcuts				      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -994,9 +1004,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      NETWORKS and NODE_NICS  tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= NETWORKS and NODE_NICS  shortcuts       		      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -1329,9 +1339,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      NODES table shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= NODES table shortcuts					      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -1635,9 +1645,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      NODES <> PACKAGE_CONFIGURATION_VALUES tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= NODES <> PACKAGE_CONFIGURATION_VALUES shortcuts             =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -1814,9 +1824,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      NODE_GROUPS table shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= NODE_GROUPS table shortcuts				      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -1990,9 +2000,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      NODE_GROUPS <> PACKAGE_CONFIGURATIOS tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= NODE_GROUPS <> PACKAGE_CONFIGURATIOS shortcuts       	      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -2040,9 +2050,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      NODE_GROUPS <> PACKAGE_CONFIGURATION_VALUES tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= NODE_GROUPS <> PACKAGE_CONFIGURATION_VALUES shortcuts       =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -2173,9 +2183,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      OSCAR global cluster information table shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= OSCAR global cluster information table shortcuts	      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -2256,9 +2266,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      PACKAGE_CONFIGURATION_VALUES <> NODE_GROUPS tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= PACKAGE_CONFIGURATION_VALUES <> NODE_GROUPS shortcuts       =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -2348,9 +2358,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      PACKAGE_CONFIGURATIONS <> NODE_GROUPS tables shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= PACKAGE_CONFIGURATIONS <> NODE_GROUPS shortcuts             =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -2473,9 +2483,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      PACKAGES table shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= PACKAGES table shortcuts				      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -3015,9 +3025,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      PACKAGE_SETS table shortcuts
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= PACKAGE_SETS table shortcuts				      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -3283,10 +3293,124 @@
       <fieldnames> packages_rpmlist scope </fieldnames>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      SHORTCUT shortcuts for shortcut information
-      ( couldn't think of a way to put four shortcut words there )
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=							      =-=
+      =-= PROGRAM_VARIABLES shortcuts                                 =-=
+      =-=							      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+       -->
+
+      <shortcut>
+        <command> add_program_variable_value </command>
+        <description>
+          add_program_variable_value adds another value to a named
+	  program variable.  Using this shortcut, each variable is 
+	  treated as a list of values.
+          Required parameters are:
+                  program       name of the program
+                  variable      name of the variable being added (to)
+                  value         value being added to the variable
+        </description>
+        <expansion>
+          insert_record
+          program_variable_values
+          program_variable_values.program~%1
+          program_variable_values.variable~%2
+          program_variable_values.value~%3
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> program_variable_values </command>
+        <description>
+          program_variable_values lists all of the values of a named
+	  program variable. Required and only parameters are:
+                  program       name of the program
+                  variable      name of the variable being removed
+        </description>
+        <expansion>
+          read_records
+          program_variable_values
+          program_variable_values.program=%1
+          program_variable_values.variable=%2
+          program_variable_values.value
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> program_variables </command>
+        <description>
+          program_variables lists all of the named variables for
+	  a program.  Required and only parameters are:
+                  program       name of the program
+        </description>
+        <expansion>
+          read_records
+          program_variable_values
+          program_variable_values.program=%1
+          program_variable_values.variable=%2
+          program_variable_values.value
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> remove_program_variable </command>
+        <description>
+          remove_program_variable removes a variable and all of it's
+	  values from a named program. Required and only parameters are:
+                  program       name of the program
+                  variable      name of the variable being removed
+        </description>
+        <expansion>
+          delete_records
+          program_variable_values
+          program_variable_values.program=%1
+          program_variable_values.variable=%2
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> remove_program_variables </command>
+        <description>
+          remove_program_variables removes all of the variables
+	  from a named program. Required and only parameters are:
+                  program       name of the program
+        </description>
+        <expansion>
+          delete_records
+          program_variable_values
+          program_variable_values.program=%1
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> set_program_variable_value </command>
+        <description>
+          set_program_variable_value sets the value of a named 
+	  program variable. It will create a new single value 
+	  for the variable if needed. It will delete any extra 
+	  values for variable if there is already more than one 
+	  variable value there. Required and only parameters are:
+                  program       name of the program
+                  variable      name of the variable being added (to)
+                  value         value being added to the variable
+        </description>
+        <expansion>
+          remove_program_variable
+          %1
+          %2
+          ;
+          add_program_variable_value
+          %1
+          %2
+          %3
+        </expansion>
+      </shortcut>
+
+      <!--
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= SHORTCUT shortcuts for shortcut information		      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <shortcut>
@@ -3329,9 +3453,9 @@
       </shortcut>
 
       <!--
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      SWITCHER shortcuts for package provides/requires
-      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      =-= SWITCHER shortcuts for package provides/requires	      =-=
+      =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
        -->
 
       <!--
@@ -3797,6 +3921,14 @@
         <rpm/>        
       </fields>
     </packages_rpmlists>
+
+    <program_variable_values>
+      <fields> 
+        <program/>
+        <variable/>
+        <value/>
+      </fields>
+    </program_variable_values>
 
   </database_tables>
 
