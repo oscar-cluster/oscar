@@ -1,0 +1,77 @@
+% $Id: rules-of-thumb.tex,v 1.1 2004/01/22 03:42:04 naughtont Exp $
+
+\section{Rules of Thumb}
+\label{sect:rules-of-thumb}
+
+
+%--------------------------------------------------------------------------
+\subsection{Install Location}
+
+The general suggestion is to install into a non-global directory location.
+Typically the \directory{/opt} directory is used in OSCAR.  This was based
+on recommendations from the Linux File System Hierarchy standard drafts. 
+%TJN: Double check the FSH name.
+When installing into non-global directories, the recommended method for
+adding your application to \envvar{PATH} is via the Env-Switcher tool (aka
+Switcher) Appendix \ref{sect:switcher}, \pageref{sect:switcher}.
+
+
+
+%--------------------------------------------------------------------------
+\subsection{OSCAR Specific RPMS}
+
+When creating RPMs that are specific in some manner to OSCAR it is
+generally a good idea to modify the package's ``Name:'' (within the
+\file{.spec} file).  This reduces conflicts with any mainstream versions of
+the package when using automated update tool for example.  The suggested
+format is: \verb=<name>-oscar-<ver>-<rel>.<arch>.rpm=,  e.g.,
+\verb=lam-oscar-7.0.4-1.i586.rpm=.
+
+Another tip when making modifications to an existing RPM is to make sure
+you update the ``Packager:'' information to reflect who did the
+re-packaging.  Also it can be helpful to change the ``Conflicts:'' and
+``Provides:'' information as follows.
+\begin{itemize}
+
+	\item Conflicts: <Mainstream Packages Name/Version>
+
+	\item Provides: <Name of Mainstream Package/Version>
+
+\end{itemize}
+This can be used to keep the mainstream items from accidentally working
+with the modified OSCAR specific versions via the ``Conflicts:''.
+Additionally this lets you satisfy circular depedencies for packages you
+don't rebuild via the ``Provides:''.
+
+
+
+
+%--------------------------------------------------------------------------
+\subsection{\directory{init.d} scripts}
+
+It is a good idea to honor the \cmd{start}, \cmd{stop}, and \cmd{restart}
+targets.  It is also helpful to have a \cmd{status} target to display
+whether the given application is running currently.  Also, the scripts
+should behave properly when used in conjunction with the \cmd{service}
+command, e.g., \cmd{service sshd status}.  The \cmd{service} command is
+used throughout the Red Hat distributions and may be part of the new LSB
+drafts (\emph{not 100\% sure on LSB}).  The command runs in a stripped down
+environment which sometime caused problems if assuptions are made about the
+execution shell environment.
+
+
+
+
+%--------------------------------------------------------------------------
+\subsection{Generating Configuration Files}
+
+Often a default configuration file is included in the RPM itself.  While
+this can be helpful, it often leads to scripts that have to modify the
+default config file.  It is generally cleaner to just generate the file in
+one place.  
+
+Another thing to remember is that the hostname ``oscar\_server'' should
+always resolve to the internal interface of the OSCAR cluster.  This can be
+helpful when generating defaults.
+
+One other note 

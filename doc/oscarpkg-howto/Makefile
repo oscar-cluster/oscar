@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile,v 1.3 2003/10/01 20:36:37 naughtont Exp $
+# $Id: Makefile,v 1.4 2004/01/22 03:42:04 naughtont Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -27,7 +27,8 @@ OTHER_SRC_FILES	= \
 		pkg-layout.tex \
 		pkg-scripts-table.tex \
 		pkg-xml-table.tex \
-		configurator.tex 
+		configurator.tex \
+		rules-of-thumb.tex
 
 # xfig figures.  .eps and .pdf files will be automatically generated
 # from these.
