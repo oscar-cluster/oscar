@@ -1314,25 +1314,47 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
 }
 
 # write out one global oscar record, or modify an existing one
-print "Creating the global oscar information record\n";
-my %assigns = ();
+my @assigns = ();
 my $oscar_version;
 if ( -r "$ENV{OSCAR_HOME}/VERSION" ) {
     $oscar_version = `cat $ENV{OSCAR_HOME}/VERSION`;
     chomp $oscar_version;
 } else {
-    $oscar_version = "CVS unknown version";
+    $oscar_version = "CVS";
 }
-
-$assigns{ oscar_version } = $oscar_version;
-$assigns{ installation_date } = `date`;
+push @assigns, "oscar.oscar_version~$oscar_version";
+my @table_fields = ( "oscar" );
+my @read_results = ();
 my @error_strings = ();
-if ( ! oda::insert_record( \%options,
-			   "oscar",
-			   \%assigns,
-			   undef,
-			   \@error_strings ) ) {
+if ( ! oda::read_records( \%options,
+			  \@table_fields,
+			  undef,
+			  \@read_results,
+			  1,
+			  \@error_strings ) ) {
     warn shift @error_strings while @error_strings;
+} else {
+    if ( ! @read_results ) {
+	print "Creating the global oscar information record\n";
+	if ( ! oda::insert_record( \%options,
+				   "oscar",
+				   \@assigns,
+				   undef,
+				   \@error_strings ) ) {
+	    warn shift @error_strings while @error_strings;
+	}
+    } else {
+	print "$0: very strange, there are more than 2 package records for <oscar> in table <$packages_table_name>\n"
+	    if scalar @read_results > 1;
+	print "Modifying the global oscar information record\n";
+	if ( ! oda::modify_records( \%options,
+				    \@table_fields,
+				    \@assigns,
+				    undef,
+				    \@error_strings ) ) {
+	    warn shift @error_strings while @error_strings;
+	}
+    }
 }    
 
 oda::disconnect( \%options );
