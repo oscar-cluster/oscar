@@ -234,7 +234,7 @@ sub database_read_table_fields {
     my @records = ();
     if ( ! oda::read_records( \%oda_options,
 			      \@table_fields,
-			      $wheres_ref,,
+			      $wheres_ref,
 			      \@records,
 			      1,
 			      \@error_strings ) ) {
