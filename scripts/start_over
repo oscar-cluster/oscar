@@ -188,31 +188,32 @@ sub stop_services {
 }
 
 sub cleanup_files {
-    my @dirs = qw(
-		  /opt/kernel_picker
-		  /opt/opium
-            	  /etc/systemimager
-                  /etc/dhcpd.conf
-                  /etc/profile.d/mpi-00mpich.csh
-                  /etc/profile.d/mpi-00mpich.sh
-                  /etc/profile.d/mpi-01lam.csh
-                  /etc/profile.d/mpi-01lam.sh
-                  /etc/systeminstaller
-                  /opt/autoupdate
-                  /opt/env-switcher*
-                  /opt/lam*
-                  /opt/maui
-                  /opt/modules
-                  /opt/mpich*
-                  /opt/pbs
-                  /opt/rrdtool-1.0.35
-                  /usr/local/lib/systemimager
-                  /var/lib/clamdr
-                  /var/lib/systemimager
-                  /var/lib/systeminstaller
-                  /var/log/systemimager
-                  /var/spool/pbs
-                 );
+    my @dirs = (
+		'/opt/kernel_picker',
+		'/opt/opium',
+            	'/etc/systemimager',
+                '/etc/dhcpd.conf',
+                '/etc/profile.d/mpi-00mpich.csh',
+                '/etc/profile.d/mpi-00mpich.sh',
+                '/etc/profile.d/mpi-01lam.csh',
+                '/etc/profile.d/mpi-01lam.sh',
+                '/etc/systeminstaller',
+                '/opt/autoupdate',
+                '/opt/env-switcher*',
+                '/opt/lam*',
+                '/opt/maui',
+                '/opt/modules',
+                '/opt/mpich*',
+                '/opt/pbs',
+                '/opt/rrdtool-1.0.35',
+                '/usr/local/lib/systemimager',
+                '/var/lib/clamdr',
+                '/var/lib/systemimager',
+                '/var/lib/systeminstaller',
+                '/var/log/systemimager',
+                '/var/spool/pbs',
+                "$oscar_home/.oscar",
+               );
     foreach my $file (@dirs) {
     	print "rm -rf $file \n";
       system("rm -rf $file");
