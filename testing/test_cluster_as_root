@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster_as_root,v 1.10 2002/07/25 23:47:07 brechin Exp $
+# $Id: test_cluster_as_root,v 1.11 2002/08/13 02:03:25 bligneri Exp $
 #
 # test_cluster_as_root - script to test services, NFS, 
 #                        and install/run user level tests
@@ -88,8 +88,8 @@ done
 #			HOME MOUNT CHECK
 #			----------------
 # Tests to make sure /home is NFS mounted and current
-
 `touch /home/OSCARtestfile`
+sleep 2
 command='if [ -e /home/OSCARtestfile ]; then echo "1"; else echo "0"; fi'
 
 mounted=0
