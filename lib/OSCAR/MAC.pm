@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.16 2003/01/21 21:07:11 sdague Exp $
+#   $Id: MAC.pm,v 1.17 2003/01/21 21:47:21 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.16 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.17 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -254,7 +254,7 @@ sub clear_mac {
     } else {
         return undef;
     }
-    my $adapter = list_adapter(client=>$client->{NAME},devname=>"eth0");
+    my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
     my $mac = $adapter->mac;
     oscar_log_subsection("Step $step_number: Cleared $mac from $1");
 
