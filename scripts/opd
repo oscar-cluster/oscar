@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.16 2003/04/03 14:56:15 jsquyres Exp $
+# $Id: opd,v 1.17 2003/04/10 16:00:16 tfleury Exp $
 #
 
 use strict;
@@ -123,7 +123,7 @@ OSCAR installation.
 
 if (!$have_digest_sha1 && !$have_sha1sum) {
 
-   print("WARNING: You do not appear to have the Perl modeul
+   print("WARNING: You do not appear to have the Perl module
 Digest::SHA1 installed, nor do you have the sha1sum executable
 installed.  Packages that use SHA1 sums for verification WILL NOT BE
 ABLE TO BE CHECKED!
