@@ -1,4 +1,4 @@
-$Id: README.ia64,v 1.3 2002/01/19 16:36:39 jsquyres Exp $
+$Id: README.ia64,v 1.4 2002/02/20 22:43:22 sdague Exp $
 
 $COPYRIGHT$
 
@@ -6,27 +6,13 @@ Before doing the ./install_cluster eth0 command, do this:
 
   rpm -ivh --nodeps */*/*/openpbs-*.rpm
 
-  rpm -ivh packages/contrib/RPMS/syslinux-1.63-1.i386.rpm
-
-  rpm -e perl-Tk 2>/dev/null
-
-  rpm -ivh packages/contrib/RPMS/perl-Tk-4.2-2.ia64.rpm
-
-  perl -MCPAN -e shell
-  ...
-  no
-  ...
-  cpan> install DBD::CSV
-  ...
-  cpan> quit
-
 IF YOU HAVE CVS PROBLEMS WHEN THE WIZARD STARTS, DO THIS: Before doing
 the "Build Image" in the "Create a Systemimager Image" panel, edit the
 /etc/systeminstaller/systeminstaller.conf file and change this:
 
-  rpm=            /bin/rpm
+  pkginstfail=    1
 to this:
-  rpm=            /bin/rpm --nodeps
+  pkginstfail=    0
 
 When booting a client over the network via the boot cdrom,
 
