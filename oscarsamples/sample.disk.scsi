@@ -1,4 +1,4 @@
-/dev/sda1 	24            ext2		/boot defaults
-/dev/sda5	128          swap
-/dev/sda6	1000        ext2		/     defaults
-nfs_oscar:/home  -          nfs                /home  rw
+/dev/sda1       24            ext2      /boot    defaults
+/dev/sda5       128           swap
+/dev/sda6       1000          ext2      /        defaults
+nfs_oscar:/home -             nfs       /home    rw
