@@ -42,4 +42,9 @@ libraries.</description>
     <name>switcher</name>
   </require>
 
+  <switcher>
+    <tag>mpi</tag>
+    <name>mpich-1.2.4</name>
+  </switcher>
+
 </package>
