@@ -52,7 +52,7 @@ A3) tftp-server on x86
 ----------------------
 
 AFTER OSCAR WIZARD STEP 6, BEFORE YOU BOOT THE CLIENT NODES: you will need to
-replace the TFTP server.  If your distrubition doesn't come with a tftp-server
+replace the TFTP server.  If your distribution does not come with a tftp-server
 package you should download and install the appropriate file from a repository.
 
 Once you have downloaded and copied it to a known directory you must install
