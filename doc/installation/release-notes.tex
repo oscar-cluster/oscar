@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.15 2002/08/31 16:29:36 jsquyres Exp $
+% $Id: release-notes.tex,v 1.16 2002/09/01 15:39:36 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -103,17 +103,21 @@ The following release notes apply to OSCAR version \oscarversion:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{IA64 and Other Bleeding Edge Systems Notes}
-\label{subsec:ia64notes}
+\Label{subsec:ia64notes}
 
 \begin{itemize}
   
 \item Itanium is supported on RedHat 7.2.  Itanium 2 is not yet
-  supported.
+  supported.\footnote{Preliminary indications are that Itanium 2
+    support is possible, even if it is not formally supported.  The
+    main issues for OSCAR are that at the time of this writing,
+    Itanium 2 hardware post-dates the available binary versions of
+    operating systems, and SIS does not properly pick up modules for
+    the netbooted kernel.  The solution is for the user to compile
+    their own kernel.  This is essentially a ``do it yourself'' kind
+    of process, and not recomended for novices.  Please consult the
+    OSCAR user's mailing list for more information.}
 
-  \begin{discuss}
-    Is this still true?
-  \end{discuss}
-  
 \item The OSCAR autoinstall diskette will probably not work on Itanium
   systems, but they mostly have support for network booting.
   
