@@ -46,35 +46,62 @@ if ($@) {
     chomp(my $pwd = `pwd`);
     chdir($tempdir);
 
+# ---------------------------HERE'S THE INSTALL LINES FOR MDK10 ------------------------------------
     # For Mandrake 10.0
     # The Makefile of XML-Parser and XML-Simple are dependent of libraries provided by perl-devel
     ######## This can be done in a different way, installing perl-XML-Parser rpm from /tftpboot/rpm
     #instead of perl-devel. In one way or another, the packages perl-XML-Parser and perl-devel will
     #be installed by other OSCAR scripts before the end of the installation. The question here is if
     #we want to install XML-Parser from the tarball or from the distribution cds.
-    if ( `rpm -qa | grep -c mandrake-release` != 0 ) {
-       if ( `rpm -qa | grep -c perl-devel` == 0 ) {
-         oscar_log_subsection("This is a Mandrake system, installing perl-devel:");
-         opendir(RPMS, "/tftpboot/rpm");
-         my @rpmsindir = readdir(RPMS);
-         closedir(RPMS);
-         if ( grep( /^perl-devel/, @rpmsindir ) ) {
-           system("rpm -Uvh /tftpboot/rpm/perl-devel*.rpm");
-         }
-         else {
-           oscar_log_subsection("Couldn't find perl-devel at /tftpboot/rpm - I may not be able to install XML-Parser...");
-         }
-       }
-    }
+#    if ( `rpm -qa | grep -c mandrake-release` != 0 ) {
+#       if ( `rpm -qa | grep -c perl-devel` == 0 ) {
+#         oscar_log_subsection("This is a Mandrake system, installing perl-devel:");
+#         opendir(RPMS, "/tftpboot/rpm");
+#         my @rpmsindir = readdir(RPMS);
+#         closedir(RPMS);
+#         if ( grep( /^perl-devel/, @rpmsindir ) ) {
+#           system("rpm -Uvh /tftpboot/rpm/perl-devel*.rpm");
+#         }
+#         else {
+#           oscar_log_subsection("Couldn't find perl-devel at /tftpboot/rpm - I may not be able to install XML-Parser...");
+#         }
+#       }
+#    }
    
-    
-    do_run("tar zxf $tarball");
-    croak("Not able to chdir($real_name-$ver)")
-	if (!chdir("$real_name-$ver"));
-    do_run("perl Makefile.PL");
-    do_run("make all");
-    do_run("make install");
+# -------------------------HERE'S THE LINES TO INSTALL THE PACKAGE FROM THE TARBALL -----------------
+#    do_run("tar zxf $tarball");
+#    croak("Not able to chdir($real_name-$ver)")
+#	if (!chdir("$real_name-$ver"));
+#    do_run("perl Makefile.PL");
+#    do_run("make all");
+#    do_run("make install");
 
+
+# -------- WE'LL INSTALL THE PACKAGE FROM THE RPM ------------------------------------
+
+# sis's RPMS contains an rpm of perl-XML-Simple in case the distro doesn't came with one
+    my $sisrpmsdir = "$ENV{OSCAR_HOME}/packages/sis/RPMS";
+ 
+    opendir(RPMS, "/tftpboot/rpm");
+    my @rpmsindir = readdir(RPMS);
+    closedir(RPMS);
+    # check if the rpm is in /tftpboot/rpm
+    if ( !( grep( /^perl-XML-Parser/, @rpmsindir ) ) ) {
+       # there's no package there, copying one from sis's
+       system ("cp $sisrpmsdir/perl-XML-Simple* /tftpboot/rpm");
+    }
+    #check if the package is already installed and if it's not...
+    if ( `rpm -qa | grep -c perl-XML-Simple` == 0 ) {
+       system("rpm -Uvh /tftpboot/rpm/perl-XML-Simple*.rpm");
+    } else {
+       print "The package perl-XML-Parser is already installed";
+    }
+    
+    # we can maintain the tarball and install it here if no rpm was found - this only
+    # in case the distro doesn't came with one - RedHat 9, perhaps?
+														
+
+    
     oscar_log_subsection("$module_name installed successfully");
 
     chdir($pwd);
