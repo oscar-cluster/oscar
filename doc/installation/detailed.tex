@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.20 2002/06/09 16:18:18 jsquyres Exp $
+% $Id: detailed.tex,v 1.21 2002/06/11 20:52:59 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -26,16 +26,16 @@ If you have a machine you want to use that already has Linux
 installed, you may use it and continue with the next section. When installing
 Linux, it is required that you use a distribution that is based upon
 the RPM standard.  Furthermore, it should be noted that all testing up
-to this point has been done using the Red Hat 7.1 distribution. As
-such, use of distributions other than Red Hat 7.1 will require a
+to this point has been done using the distributions listed in Table~\ref{tab:oscar-distro-support}. 
+As such, use of distributions other than those listed will require some
 porting of OSCAR, as many of the scripts and software within OSCAR are
-dependent on Red Hat. Do not worry about doing a custom install, as
+dependent on those distributions. Do not worry about doing a custom install, as
 OSCAR contains all the software on which it depends.  The only other
 installation requirement is that some X environment such as GNOME or
 KDE must be installed. Therefore, a typical workstation install is
 sufficient.
 
-If you install Red Hat 7.1 on the server machine, during the
+If you install Red Hat on the server machine, during the
 installation you should enable the ipchains-base firewall that is
 included with the Red Hat distribution in medium mode.  Other
 firewalls that are stronger and more versatile can be installed later,
@@ -258,8 +258,8 @@ as:
   cp /mnt/cdrom/RedHat/RPMS/*.rpm /tftpboot/rpm
 \end{verbatim}
   
-Be sure to repeat the above process for both CDs when using Red Hat
-7.1.  After using each CD you will have to unmount it from the local
+Be sure to repeat the above process for all CDs. 
+After using each CD you will have to unmount it from the local
 file system by issuing these commands:
 
 \begin{verbatim}

@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: brief.tex,v 1.10 2002/06/09 16:17:17 jsquyres Exp $
+% $Id: brief.tex,v 1.11 2002/06/11 20:52:57 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -26,11 +26,12 @@ then you probably don't meet them:
 \item Your cluster client machines are on a private subnet.
 \item Your cluster server machine has two network interfaces, one public,
   and one connected to the cluster client machines.
-\item The default RPM list supplied by OSCAR
-  (\file{oscar-\oscarversion/oscarsamples/sample.rpmlist}) is
+\item The default RPM list supplied by OSCAR for your distribution
+  (\file{oscar-\oscarversion/oscarsamples/<distro>-<version>-<arch>.rpmlist}) is
   acceptable for your clients.
-\item You are using the Red Hat 7.1 distribution.
-\item You know how to install the Red Hat 7.1 distribution on a machine.
+\item You are using a distribution that is listed as \emph{Fully supported} 
+ in Table~\ref{tab:oscar-distro-support}.
+\item You know how to install your chosen distribution on a machine.
 \item You've never read completely through the installation instructions
   of anything, ever. 
 \end{enumerate}
@@ -88,8 +89,8 @@ of OSCAR.
 
 (Detail:Section \ref{det:unpack})
 
-\item Copy the rpms from \emph{all} of the Red Hat 7.1 CD's to \file{/tftpboot/rpm}
-using these commands:
+\item Copy the rpms from \emph{all} of the distribution CD's to \file{/tftpboot/rpm}
+using these, or similar, commands:
 
 \begin{verbatim}
   (insert cd)
