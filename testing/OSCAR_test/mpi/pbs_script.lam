@@ -31,6 +31,10 @@ echo "Running LAM/MPI test"
 lam_profile=/etc/profile.d/mpi-01lam.sh
 . $lam_profile
 echo ". $lam_profile # BoZo Bash" >> $HOME/.bashrc
+
+### Get new host warnings out of the way
+for m in `cat $PBS_NODEFILE |uniq` ; do ssh $m hostname ; done 2> /dev/null > /dev/null
+
 #### END: This is not necessary in normal PBS LAM scripts ################
 
 # This is the test itself.  See?  It's really short.  <sigh>
