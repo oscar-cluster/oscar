@@ -38,6 +38,7 @@ sub stop_services {
     my @services = qw(
                       systemimager
                       dhcpd
+                      pbs_server
                      );
     foreach my $service (@services) {
         print "service $service stop\n";
