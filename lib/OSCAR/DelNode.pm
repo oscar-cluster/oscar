@@ -1,6 +1,6 @@
 package OSCAR::DelNode;
 
-#   $Id: DelNode.pm,v 1.3 2002/05/21 20:35:51 mchasal Exp $
+#   $Id: DelNode.pm,v 1.4 2002/05/21 20:37:39 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,14 +28,14 @@ use base qw(Exporter);
 use SIS::Client;
 @EXPORT = qw(delnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
 
 sub delnode_window {
     my ($parent, $vars) = @_;
 
     my $window = $parent->Toplevel;
     $window->title("Delete Oscar Nodes");
-    my $inst=$window->Label (-text=>"In order to delete OSCAR clients from your cluster, select the nodes you wish to delete and press the Delete Clients button."
+    my $inst=$window->Label (-text=>"In order to delete OSCAR clients from your cluster, select the nodes you wish to delete and press the Delete Clients button.");
 
     my $listbox = $window->ScrlListbox(
                                        -selectmode => 'multiple',
