@@ -1,4 +1,4 @@
-$Id: README,v 1.7 2002/01/26 14:32:26 jsquyres Exp $
+$Id: README,v 1.8 2002/02/10 22:42:47 jsquyres Exp $
 
 $COPYRIGHT$
 
@@ -11,7 +11,7 @@ doc/install.pdf.
 
 
 ***************************************************************
-Notes on the 1.2 beta release
+Notes on the 1.3 beta release
 ***************************************************************
 
 There are some limitations to the 1.2 beta release, they are:
