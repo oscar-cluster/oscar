@@ -132,6 +132,7 @@ mount
 msec
 ncurses
 net-tools
+nfs-utils-clients
 numlock
 openssh
 openssh-clients
