@@ -1,0 +1,310 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   Sean Dague <japh@us.ibm.com>
+
+#   This is a script which does everything that needs to be done for
+#   the server to work for oscar.  It is long, but hopefully well structured.
+
+use File::Path;
+use File::Copy;
+use File::Basename;
+use Carp;
+use strict;
+
+my $INTERFACE = shift or croak("No interface specified");
+my $RPMPOOL = "/tftpboot/rpm";
+
+#   Make sure /tftpboot/rpm exists, if not create it.  Then copy all the rpms
+#   that we ship that need to be in the client into that directory
+
+
+prep_tftpboot() or croak("Couldn't prepare tftpboot directory");
+copy_rpms("..") or croak("Couldn't copy files to $RPMPOOL");
+install_required_rpms() or croak("Couldn't install OSCAR required rpms");
+
+if(-e "/etc/xinetd.d/rsync") {
+    unlink "/etc/xinetd.d/rsync" or croak("Couldn't remove rsync from xinetd control");
+}
+
+my ($ip,$bcast,$netmask) = find_internal_ip($INTERFACE) or croak("Couldn't determine internal ip address");
+update_hosts($ip) or croak("Couldn't add required host entries to /etc/hosts");
+update_profile() or croak("Couldn't add path entries to /etc/profile");
+update_exports($ip,$netmask) or croak("Couldn't add filesystem entries to /etc/exports");
+
+verbose("Refreshing services");
+!system("service nfs start") or croak("Couldn't start nfs");
+!system("exportfs -a") or croak("Couldn't refresh nfs exports");
+!system("service xinetd restart") or croak("Couldn't restart xinetd");
+!system("service systemimager restart") or croak("Couldn't restart systemimager");
+!system("chkconfig --del pbs_mom");
+!system("chkconfig --del pbs_sched");
+!system("chkconfig --level 345 dhcpd on");
+!system("chkconfig --level 345 portmap on");
+!system("chkconfig --level 345 nfs on");
+!system("service pbs_server start") or croak("Couldn't start pbs_server!");
+
+# The following is because the maui rpm is bust
+mkpath("/usr/local/maui/log",1,0755);
+mkpath("/usr/local/maui/stats",1,0755);
+!system("service maui start") or croak("Couldn't start maui scheduler!");
+
+sub prep_tftpboot {
+    if(!-d $RPMPOOL) {
+        verbose("No $RPMPOOL directory found.  Creating it now...");
+        mkpath($RPMPOOL, 1, 0755) or return undef;
+    }
+    return 1;
+}
+
+sub install_required_rpms {
+    my @rpms = qw(tcpdump 
+                  pfilter
+                  pvm-3.4.3+7
+                  c3-2.7.2
+                  lam-6.5.5
+                  xinetd 
+                  rsh-server 
+                  openssl 
+                  openssh-2.5.2p2 
+                  openssh-clients 
+                  openssh-server 
+                  openpbs-oscar-2.2p5 
+                  openpbs-oscar-mom
+                  openpbs-oscar-server
+                  openpbs-oscar-gui
+                  openpbs-oscar-commands
+                  maui-oscar
+                  libdbdcsv-perl
+                  libappconfig-perl
+                  systeminstaller
+                  systeminstaller-x11
+                  systemconfigurator
+                  dhcp-2.0pl5
+                  perl-Tk
+                  perl-DBI
+                  systemimager-server
+                  systemimager-common
+                  systemimager-i386boot
+                  systemimager-ia64boot
+                  rsync
+		  nfs-utils
+                 );
+
+    my @installme = ();
+    foreach my $rpm (@rpms) {
+        # The no deps is temporary for now
+        if(system("rpm -q $rpm >/dev/null")) {
+            verbose("$rpm not installed.  Marking for install...");
+            push @installme, "$RPMPOOL/$rpm*";
+        }
+    } 
+    if(scalar(@installme)) {
+        my $command = "rpm -Uhv " . (join ' ',@installme);
+	verbose("Installing rpms using command:");
+	verbose($command);
+        !system($command) or return undef;
+    }
+    print "About to leave install required RPMS\n";
+    return 1;
+}
+
+sub copy_rpms {
+    my $topdir = shift;
+
+    my @packagedirs = files_in_dir("$topdir/packages");
+
+    foreach my $dir (@packagedirs) {
+            my @files = files_in_dir("$dir/RPMS");
+            foreach my $file (@files) {
+                if($file =~ /\.rpm$/) {
+                    my $filename = basename($file);
+                    if(!-e "$RPMPOOL/$filename") {
+                        verbose("Copying $file to $RPMPOOL");
+                        copy("$file", "$RPMPOOL/$filename") or return undef;
+                    }
+                }
+            }
+    }
+    return 1;
+}
+
+sub find_internal_ip {
+    my $interface = shift;
+    # normally I hate sub processes, but for this I make an exception
+    my $string = qx/ifconfig $interface | grep inet/;
+
+    if($string =~ /addr:([\d\.]+).*cast:([\d\.]+).*ask:([\d\.]+)/) {
+        return $1,$2,$3;
+    }
+    return undef;
+} #find_internal_ip
+
+sub verbose {
+    print join " ", @_;
+    print "\n";
+}
+
+sub update_hosts {
+    my $ip = shift;
+    verbose("Backing up /etc/hosts");
+    copy("/etc/hosts","/etc/hosts.bak") or return undef;
+    my $hostname = qx/hostname/;
+    chomp($hostname);
+    my @additional = ( $ip, $hostname );  # mjc - 11/12/01
+    if($hostname =~ /\./) {
+        my $short = $hostname;
+        $short =~ s/\..*//;
+        if($short ne $hostname) {
+            $additional[$#additional + 1] = $short; # mjc - 11/12/01
+        }
+    }
+    $additional[$#additional + 1] = "nfs_oscar"; # mjc - 11/12/01
+    $additional[$#additional + 1] = "pbs_oscar"; # mjc - 11/12/01
+    open(IN,"</etc/hosts.bak") or return undef;
+    open(OUT,">/etc/hosts") or return undef;
+    verbose("Adding required entries to /etc/hosts");
+
+    # mjc - 11/12/01 - start
+    # - If the ip is in there, snag all the items on the line and toss out
+    #   any that we have already specified for the line.  Any which we
+    #   didn't already have in the additional list, add to the list.  Then
+    #   create a line to replace the one that was there.
+    # - If the ip is not in there, add the line.
+    # - If you stumble across another line in the file with a different ip
+    #   but the same hostname, pull it out of the file and add it back in
+    #   only after we have added the line for this specified ip
+    my $found = 0;
+    my @hostlines = ();
+
+    while(<IN>) {
+      if(/^$ip/) {
+        # Same ip, grab all the items on the line and eliminate redundancies
+        $found = 1;
+        my @items = split( /\s+/, $_ );
+        my $item;
+        foreach $item ( @items ) {
+          if( ! &string_is_in( $item, \@additional ) ) {
+            $additional[$#additional + 1] = $item;
+          }
+        }
+        # Add all the items on this line to the file
+        print OUT join( " ", @additional )."\n";
+      } elsif(/$hostname/) {
+        # Not the same ip, but same hostname, save this line for now
+        $hostlines[$#hostlines + 1] = $_;
+      } else {
+        # Not a line we're interested in changing
+        print OUT $_;
+      }
+    }
+    if(!$found) {
+      print OUT join( " ", @additional )."\n";
+    }
+    # Add back in any lines found with the same hostname but different ip
+    my $line;
+    foreach $line ( @hostlines ) {
+      print OUT $line;
+    }
+    # mjc - 11/12/01 - end
+
+    close(OUT);
+    close(IN);
+}
+
+# mjc - 11/12/01 - start
+# Returns 1 if the specified string is equal to one of the strings in the
+# array given by the reference, 0 otherwise.
+sub string_is_in {
+  my( $target, $itemList ) = @_;
+  my( $item );
+  foreach $item ( @{$itemList} ) {
+    if( $target eq $item ) {
+      return 1;
+    }
+  }
+  return 0;
+}
+# mjc - 11/12/01 - end
+
+sub update_profile {
+    verbose("Backing up /etc/profile");
+    copy("/etc/profile","/etc/profile.bak") or return undef;
+    open(IN,"</etc/profile.bak") or return undef;
+    open(OUT,">/etc/profile") or return undef;
+    verbose("Adding path entries to /etc/profile");
+    while(<IN>) {
+        if(/^PATH=/) {
+            if(!m{\b/usr/local/bin\b}) {
+                $_ =~ s{(=\".*)\"}{$1:/usr/local/bin\"};
+            }
+            if(!m{\b/usr/local/sbin\b}) {
+                $_ =~ s{(=\".*)\"}{$1:/usr/local/sbin\"};
+            }
+        }
+        print OUT $_;
+    }
+    close(OUT);
+    close(IN);
+}
+
+sub update_exports {
+    my $ip = shift;
+    my $netmask = shift;
+    my $done=0;
+    verbose("Backing up /etc/exports");
+    copy("/etc/exports","/etc/exports.bak") or return undef;
+    open(IN,"</etc/exports.bak") or return undef;
+    open(OUT,">/etc/exports") or return undef;
+    verbose("Checking for /home export");
+    while (<IN>) {
+	if (/^\/home/) {
+		verbose("Found /home entry");
+		$done=1;
+		if (/$ip\/$netmask\(rw,no_root_squash\)/) {
+			verbose("Existing /home entry ok, preserved");
+			print OUT $_;
+		} else {
+			verbose("Existing /home modified");
+			chomp;
+			print OUT $_." $ip/$netmask(rw,no_root_squash)\n";
+		}
+	} else {
+		print OUT $_;
+	}
+    }
+    unless ($done) {
+    	verbose("Adding /home export");
+	print OUT "/home $ip/$netmask(rw,no_root_squash)\n";
+    }
+    close(OUT);
+    close(IN);
+}
+
+sub files_in_dir {
+    my $dir = shift;
+    opendir(IN,$dir);
+    my @temp = readdir(IN);
+    closedir(IN);
+    my @files = ();
+    foreach my $file (@temp) {
+       if($file !~ /^\./) {
+           push @files, $file;
+       }
+    } 
+    return map {"$dir/$_"} @files;
+}
+

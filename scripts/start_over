@@ -1,0 +1,102 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Carp;
+
+# all the rpms we KNOW we installed
+
+my @rpms = qw(
+              c3
+              pfilter
+              lam-6.5.4
+              openpbs-oscar-2.2p5 
+              openpbs-oscar-mom
+              openpbs-oscar-server
+              openpbs-oscar-gui
+              openpbs-oscar-commands
+              maui-oscar
+              libdbdcsv-perl
+              libappconfig-perl
+              systeminstaller
+              systeminstaller-x11
+              systemconfigurator
+              systemimager-server
+              systemimager-common
+              systemimager-i386boot
+              systemimager-ia64boot
+             );
+
+stop_services();
+
+uninstall_rpms(@rpms);
+
+delete_from_pool(@rpms);
+
+cleanup_files();
+
+sub stop_services {
+    my @services = qw(
+                      systemimager
+                      dhcpd
+                     );
+    foreach my $service (@services) {
+        print "service $service stop\n";
+        system("service $service stop");
+    }
+}
+
+sub cleanup_files {
+    my @dirs = qw(
+                  /usr/spool/PBS
+                  /usr/local/pbs
+                  /usr/local/maui
+                  /var/log/systemimager
+                  /var/lib/clamdr
+                  /var/lib/systeminstaller
+                  /usr/local/lib/systemimager
+		  /etc/systemimager
+                  /etc/dhcpd.conf
+                 );
+    foreach my $file (@dirs) {
+	print "rm -rf $file \n";
+        system("rm -rf $file");
+    }
+}
+
+
+print "rm -rf /var/lib/clamdr\n";
+system("rm -rf /var/lib/clamdr");
+
+print "rm -rf /var/lib/systemimager\n";
+system("rm -rf /var/lib/systemimager");
+
+sub delete_from_pool {
+    my @rpms = @_;
+    my $dir = "/tftpboot/rpm/";
+    
+    foreach my $rpm (@rpms) {
+        print "rm -f $dir$rpm*\n";
+        system("rm -f $dir$rpm*");
+    }
+}
+
+sub uninstall_rpms {
+    my @rpms = @_;
+    my @deleteme = ();
+    foreach my $rpm (@rpms) {
+        if(_is_installed($rpm)) {
+            push @deleteme, $rpm;
+        }
+    }
+    if(scalar(@deleteme)) {
+        my $rpmcmd = 'rpm -e --nodeps ' . (join ' ', @deleteme);
+	print "$rpmcmd\n";
+        !system($rpmcmd) or croak "couldn't uninstall the rpms";
+    }
+   return 1;
+}
+
+sub _is_installed {
+    my $rpm = shift;
+    return !system("rpm -q $rpm");
+}

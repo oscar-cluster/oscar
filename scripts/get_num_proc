@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# script to return the number of processors on a remote machine
+# this script depends on being able to ssh to the node without a password
+#
+# Author: Neil Gorsuch ngorsuch@ncsa.uiuc.edu
+
+# check for one argument
+if [ "`echo $* | wc -w`" -ne 1 ] ; then
+    echo $0 exiting - exactly one remote machine name has to be specified
+    exit 1
+fi
+machine="$*"
+
+# temporary files prefix
+TEMP="/tmp/`echo $0 | sed 's,^.*/,,g'`.$$."
+
+# make sure we get rid of temprary files if we are aborted
+trap "echo rm -rf $TEMP\* ; rm -rf $TEMP* ; exit 1" 1 2 3 4 5 6 7 8 11 14 15
+
+# get the remote machine data, we have to go through all this stuff
+# to provent the script from hanging if a password would be required
+if ssh -o 'PasswordAuthentication no' $machine cat /proc/cpuinfo 2>/dev/null >$TEMP.cpuinfo ; then
+    numproc="`egrep ^processor $TEMP.cpuinfo | wc -l`"
+    if [ "$numproc" -ge 1 ] ; then
+	echo $numproc
+	exit 0
+    else
+	echo 1
+	exit 1
+    fi
+else
+    rm -rf $TEMP* 2>/dev/null
+    echo 1
+    exit 1
+fi

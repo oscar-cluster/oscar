@@ -1,0 +1,178 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Tk;
+use Tk::ROText;
+use FindBin qw($Bin);
+use lib "$Bin","../lib","/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl";
+use POSIX;
+use OSCAR::Help;
+use OSCAR::MAC;
+use SystemInstaller::Tk::Image;
+use SystemInstaller::Tk::AddClients;
+use Carp;
+#use OSCAR::Tk;
+
+if( $#ARGV != 0 ) {
+  die "usage: $0 <cluster interface>\n";
+}
+
+my $interface = $ARGV[0];
+
+# Create the main window...
+my $window = MainWindow->new();
+$window->title("OSCAR Installation Wizard");
+
+# Define the main buttons
+
+#
+# The title Group
+#
+my $image = "$Bin/../images/oscar.gif";
+
+my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
+                         -background=>"white");
+my $GIF_t2=$window->Label(-image=> $window->Photo(-file=>$image),
+                          -background=>"white");
+my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!",-background=>"white");
+$GIF_t->grid($Title_l,"-",-sticky=>"nsew");
+
+# Step 1, Define OSCAR Server
+# oscar_button($window, "Step 1:", "Prepare OSCAR Server", sub {}, 'prep_server'); 
+
+# Step 2, Build OSCAR Client Image
+oscar_button($window, "Step 1:", "Build OSCAR Client Image", [\&build_oscar_image, $window], 'build_image');
+
+# Step 3, Add Clients to OSCAR Image
+oscar_button($window, "Step 2:", "Define OSCAR Clients", [\&build_oscar_clients, $window], 'addclients');
+
+# Step 4, Setup Network Booting
+oscar_button($window, "Step 3:", "Setup Networking", [\&mac_window, $window, {interface => $interface}], 'netboot');
+
+my $boot=$window->Label (-text=>"Before continuing, network boot all of your nodes. 
+Once they have completed installation, reboot them from 
+the hard drive. Once all the machines and their ethernet
+adaptors are up, move on to the next step.",-relief=>"groove");
+$boot->grid("-","-",-sticky=>"nsew");
+
+# Step 5, the Oscar post install script
+oscar_button($window, "Step 4:", "Complete Cluster Setup", [\&run_post_install, $window], 'post_install');
+oscar_button($window, "Step 5:", "Test Cluster Setup", [\&run_tests, $window], 'post_install');
+
+#
+# The close button
+#
+my $cl_b=$window->Button(-text=>"Quit",
+	-borderwidth=>"6", -relief=>"groove",
+	-command=> sub {$window->destroy},-pady=>"8");
+$window->bind("<Escape>",sub {$cl_b->invoke()});
+$cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
+
+MainLoop;
+
+sub oscar_button {
+    my ($window, $labeltxt, $buttontext, $buttoncmd, $helptext) = @_;
+    my $label = $window->Label(-text => $labeltxt);
+    my $button = $window->Button(-text => $buttontext, 
+                                 -command => $buttoncmd, 
+                                 -pady => 8);
+    my $help = $window->Button(-text=>"Help",
+                               -command=> [\&open_help, $window, $helptext], 
+                               -pady => 8);
+    $label->grid($button, $help, -sticky => "nsew");
+}
+
+sub build_oscar_clients {
+    my ($window, $interface) = @_;
+    my ($ip, $netmask) = OSCAR::MAC::get_ip_net($interface);
+    my ($a, $b, $c, $d) = split(/\./,$ip);
+    $d++;
+    my $startip = "$a.$b.$c.$d";
+
+    my $hostname = (uname)[1];
+    my ($shorthostname,$domainname)  = split(/\./,$hostname,2);
+
+    my %vars = (
+                imgname => "oscarimage",
+                basename => "oscarnode",
+                domainname => $domainname,
+                numhosts => "0",
+                startinghostnum => "1",
+                netmask => $netmask,
+                gateway => $ip,
+                startip => $startip,
+                postinstall => \&postaddclients,
+                noshow => {
+                           endip => 1,
+                           endinghostnum => 1,
+                          },
+               );
+    addclients_window($window, %vars);
+}
+
+sub build_oscar_image {
+    my ($window) = @_;
+
+    my @df_lines = `df /`;
+    my $disk_type = "ide";
+#   $disk_type = "ide" if ( grep ( /\/dev\/hd/, ( @df_lines ) ) );
+    $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
+
+    my @uname_line = `uname -m`;
+    chomp @uname_line;
+    my $arch = $uname_line[0];
+    my $rpmlist;
+    if ( -r "$Bin/../oscarsamples/sample.rpmlist.$arch" ) {
+	$rpmlist = "$Bin/../oscarsamples/sample.rpmlist.$arch";
+    } else {
+	$rpmlist = "$Bin/../oscarsamples/sample.rpmlist";
+    }
+
+    my %vars = (
+                imgname => "oscarimage",
+                noshow => {
+                           arch => 1,
+                           imgpath => 1,
+                          },
+                pkgfile => "$rpmlist",
+                pkgpath => "/tftpboot/rpm",
+                diskfile => "$Bin/../oscarsamples/sample.disk.$disk_type",
+                ipmeth => "dynamic_dhcp",
+                piaction => "beep",
+                postinstall => \&postimagebuild,
+               );
+
+    createimage_window($window, %vars);
+}
+
+sub run_tests {
+    my ($window) = @_;
+    $window->Busy(-recurse => 1);
+    print "Running tests...\n";
+    !system("cd ../testing && xterm -sl 500 -e ./test_install --wait &") or (carp($!), $window->Unbusy(), return undef);
+    $window->Unbusy();
+    return 1;
+}
+
+sub run_post_install {
+    my ($window) = @_;
+    $window->Busy(-recurse => 1);
+    print "Finallizing cluster setup...\n";
+    !system("./post_install") or (carp($!), $window->Unbusy(), return undef);
+    $window->Unbusy();
+    return 1;
+}
+
+sub postaddclients {
+    my ($vars) = @_;
+    print "This is where I would run addclients things\n";
+    !system("./post_clients") or (carp($!), return undef);
+    return 1;
+}
+
+sub postimagebuild {
+    my ($vars) = @_;
+    print "This is where I would do the postimage fixups\n";
+    !system("./post_buildimage $$vars{imgname} $interface") or (carp($!), return undef);
+    return 1;
+}

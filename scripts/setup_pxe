@@ -1,0 +1,197 @@
+#!/usr/bin/perl
+
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.1 2001/11/15 19:33:50 sdague Exp $
+
+#   Copyright (c) 2001 International Business Machines
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+use strict;
+use vars qw($config);
+use lib "/usr/lib/systeminstaller";
+use lib "/usr/lib/systemconfig";
+use SystemInstaller::Env;
+use SystemInstaller::Log qw(start_verbose stop_verbose verbose);
+use Carp;
+use File::Copy;
+use File::Path;
+use AppConfig qw(:argcount);
+
+my $RPMPOOL = "/tftpboot/rpm";
+
+
+my $options=AppConfig->new(
+		Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
+			ALIAS => "h"},
+		arch=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                        ALIAS => "a"},
+		verbose=> {ARGCOUNT=> ARGCOUNT_NONE,
+			ALIAS => "v"},
+		);
+
+unless ($options->getopt()){
+	&usage;
+	exit 1;
+}
+
+unless (&check_args) {
+	&usage;
+	exit 1;
+}
+
+if ($options->Help){
+	&usage;
+	exit 0;
+}
+
+&verbose("Installing required rpms");
+&install_required_rpms or croak("Unable to install required rpms.");
+
+&verbose("Restarting xinetd");
+!system("service xinetd restart") or croak("Couldn't restart xinetd");
+
+&verbose("Creating directories.");
+mkpath("/tftpboot/pxelinux.cfg");
+unless (-d "/tftpboot/pxelinux.cfg") {
+	 croak("Unable to create /tftpboot directories.");
+}
+
+&verbose("Getting pxelinux.0.");
+copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
+	croak("Unable to copy pxelinux.0 file to /tftpboot.");
+
+&verbose("Copying default pxelinux.cfg file");
+my $archdir;
+if ($options->arch eq "i386") {
+        $archdir="i386-boot";
+} elsif ($options->arch eq "ia64") {
+        $archdir="ia64-boot";
+}
+copy("/usr/local/share/systemimager/$archdir/pxelinux.cfg/default", "/tftpboot/pxelinux.cfg/") or 
+	croak("Unable to copy default pxelinux.cfg file to /tftpboot.");
+
+&verbose("Copying SystemImager kernel & ramdisk");
+copy("/usr/local/share/systemimager/$archdir/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
+	croak("Unable to copy default message.txt file to /tftpboot.");
+
+copy("/usr/local/share/systemimager/$archdir/kernel", "/tftpboot/") or 
+	croak("Unable to copy kernel file to /tftpboot.");
+
+copy("/usr/local/share/systemimager/$archdir/initrd.gz", "/tftpboot/") or 
+	croak("Unable to copy ramdisk file to /tftpboot.");
+
+exit 0; 
+
+sub install_required_rpms {
+    my @rpms = qw(tftp-hpa
+                syslinux-1.63-1
+                );
+
+    my @installme = ();
+    foreach my $rpm (@rpms) {
+        if(system("rpm -q $rpm >/dev/null")) {
+            verbose("$rpm not installed.  Marking for install...");
+            push @installme, "$RPMPOOL/$rpm*";
+        }
+    }
+    if(scalar(@installme)) {
+        my $command = "rpm -Uhv " . (join ' ',@installme);
+        verbose("Installing rpms using command:");
+        verbose($command);
+        !system($command) or return undef;
+    }
+    return 1;
+}
+
+sub check_args {
+
+	# Get verbose option
+	if ($options->verbose ||  $config->verbose){
+		start_verbose;
+	}
+	# Default to list
+	&verbose("Checking arguments.");
+	unless ($options->arch){
+		carp("--arch is required.");
+		return 0;
+	}
+        if (($options->arch ne "i386")&&($options->arch ne "ia64")) {
+                carp("i386 and ia64 are the only valid architectures.");
+                return 0;
+        }
+	return 1;
+
+}# check_args
+
+sub usage {
+    my $progname = $0;
+    if ($progname =~ m/(.+\/)(\w+)/) {
+	$progname = $2;
+    }
+    print <<USAGE;
+usage: $progname <options>
+
+  options
+    --arch <architecture>        the filename to write the output to
+    -v, --verbose           massive verbose output
+
+
+USAGE
+} #usage
+
+__END__
+
+=head1 NAME
+
+command shell to setup pxe network booting
+
+=head1 SYNOPSIS
+
+  setup_pxe --arch i386
+
+=head1 DESCRIPTION
+
+The setup_pxe command is used to configure a server
+to respond properly to pxelinux boot requests.
+
+=head2 Syntax
+
+setup_pxe [options]
+
+=head2 Options
+
+Recognized options include:
+
+=over 4
+
+=item --arch <architecture>
+
+The architecture to setup kernel.
+
+=item -v, --verbose
+
+Lots of trace and debug output.
+
+=back
+
+=head1 AUTHOR
+
+Michael Chase-Salerno, mchasal@users.sf.net
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut

@@ -1,0 +1,81 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   This script is designed to be run after the image is built.
+#   It will do all the fixups required.
+
+use strict;
+use lib "/usr/lib/systeminstaller";
+use SIS::Client;
+use Carp;
+use File::Copy;
+use File::Path;
+use File::Basename;
+use AppConfig;
+
+
+get_numproc();
+run_postinstalls("../");
+
+sub get_numproc {
+	my @machines=&clientList;
+	foreach my $mach (@machines) {
+		my $CMD="/usr/bin/ssh -v ".$mach->{HOST}." /bin/grep ^processor /proc/cpuinfo";
+		print "Gathering processor count from ".$mach->{NAME}.".\n";
+		open (CPIPE,"$CMD |") or (carp("Unable to query machine ".$mach->{NAME}),next);
+		my $count=0;
+		while (<CPIPE>) {
+			$count++;
+		}
+		close(CPIPE);
+		if (($count !~ /^[0-9]+$/) || ($count == 0)) {
+			carp("Improper count ($count) returned from machine ".$mach->{NAME});
+		} else {
+			print "Updating database for machine ".$mach->{NAME}.".\n";
+			$mach->{NUM_PROCS}=$count;
+			$mach->update;
+		}
+	}
+
+}
+sub run_postinstalls {
+    my ($topdir) = @_;
+    foreach my $dir (files_in_dir("$topdir/packages")) {
+        my $postimagescript = "$dir/scripts/post_install";
+        if(-x $postimagescript) {
+            print "About to run $postimagescript...\n";
+            !system("$postimagescript") or croak("$!");
+        }
+    }
+}
+
+sub files_in_dir {
+    my $dir = shift;
+    opendir(IN,$dir);
+    my @temp = readdir(IN);
+    closedir(IN);
+    my @files = ();
+    foreach my $file (@temp) {
+       if($file !~ /^\./) {
+           push @files, $file;
+       }
+    } 
+    return map {"$dir/$_"} @files;
+}
+
+
+
+

@@ -1,0 +1,164 @@
+#!/usr/bin/perl
+
+# allow_client_access - script to update the default redhat 7.1
+#                       security installation to allow client 
+#                       access to this server machine
+#
+# Author: Neil Gorsuch
+use lib '/usr/lib/systeminstaller';
+use SystemInstaller::Machine;
+
+my %machines = get_machine_listing();
+# set non-zero for verbose output
+$verbose = 0;
+
+# set non-zero for debug output
+$debug = 0;
+
+$IPCHAINS = "/etc/sysconfig/ipchains";
+
+$IPCHAINS_BKUP = "/etc/sysconfig/ipchains.bak";
+
+# find the names of the oscar client machines defined so far
+my @clients = ();
+
+foreach my $client (sort keys %machines) {
+    push @clients, $client->{HOST};
+}
+
+# find the number of clients to use as a flag
+$num_clients = scalar ( @clients );
+
+# if there are no oscar clients yet, we are done
+if ( ! $num_clients ) {
+    print "There are no oscar clients yet, leaving $IPCHAINS as is.\n";
+    exit 0;
+}
+
+# see if we are running ipchains
+if ( scalar ( @ipchains_cmd_out = `service ipchains status 2>/dev/null` ) ) {
+    print "It looks like this system is running\n";
+    print "the ipchains \"service\" from Redhat.\n";
+    print "Too bad (iptables is much nicer and\n";
+    print "more secure, especially if you get\n";
+    print "some nice packet filtering ruleset\n";
+    print "generator like pfilter, hint, hint).\n";
+    print "But we\'ll try to fix things so that\n";
+    print "the OSCAR clients aren\'t being blocked\n";
+    print "by the ipchains packet filtering rules.\n";
+    print "Examining $IPCHAINS ...\n";
+
+    # read in the ipchains configuration file and initialize the changed file
+    if (open(INFILE, "<$IPCHAINS")) {
+	@ipchains_in = ( <INFILE> ) ;
+	close(INFILE);
+	chomp @ipchains_in;
+    } else {
+	@ipchains_in = ();
+    }
+    
+    @ipchains_out = @ipchains_in;
+
+    $ipchains_changed = 0;
+
+    # figure out which oscar clients are needed
+    @clients_needed = ();
+    foreach $client ( @clients ) {
+	if ( ! grep ( /^-A input -s $client /, @ipchains_out ) ) {
+	    push @clients_needed, $client;
+	}
+    }
+    if ( ! scalar @clients_needed ) {
+	print "Congratulations, no lines need\n";
+	print "to added to allow client access.\n";
+    } else {
+	print "We need to add rules for these clients:\n";
+	print "@clients_needed\n";
+	@ipchains_new = ();
+	$inserted = 0;
+	foreach $line ( @ipchains_out ) {
+	    if ( ! $inserted && grep ( /^-A /, $line ) ) {
+		foreach $client ( @clients_needed ) {
+#		    push @ipchains_new, "#following line added by OSCAR to allow client $client access";
+		    push @ipchains_new, "-A input -s $client -d 0/0 -j ACCEPT";
+		}
+		$inserted = 1;
+	    }
+	    push @ipchains_new, $line;
+	}
+	if ( ! $inserted ) {
+	    foreach $client ( @clients ) {
+#		push @ipchains_new, "#following line added by OSCAR to allow client $client access";
+		push @ipchains_new, "-A input -s $client -d 0/0 -j ACCEPT";
+	    }
+	}
+	@ipchains_out = @ipchains_new;
+	$ipchains_changed = 1;
+    }
+
+    # see if we already have lines enabling bootp loading
+    $line1 = "-A\ input\ -s\ 0/0\ 68\ -d\ 255.255.255.255\ 67\ -p\ udp\ -j\ ACCEPT";
+    $line2 = "-A\ input\ -s\ 0/0\ 67\ -d\ 255.255.255.255\ 68\ -p\ udp\ -j\ ACCEPT";
+    if ( ( grep ( /^$line1/, @ipchains_out ) ) &&
+	 ( grep ( /^$line2/, @ipchains_out ) ) ) {
+	print "Congratulations, the lines are already\n";
+	print "there to allow client net booting.\n";
+    } else {
+	print "We need to add lines to allow installations.\n";
+	@ipchains_new = ();
+	$inserted = 0;
+	foreach $line ( @ipchains_out ) {
+	    if ( ! $inserted && grep ( /^-A input/, $line ) ) {
+#		push @ipchains_new, "\# following line added by OSCAR to allow client installations:";
+		push @ipchains_new, $line1
+		    if ( ! grep ( /^$line1\$/, @ipchains_out ) );
+		push @ipchains_new, $line2
+		    if ( ! grep ( /^$line2\$/, @ipchains_out ) );
+		$inserted = 1;
+	    }
+	    push @ipchains_new, $line;
+	}
+	if ( ! $inserted ) {
+#	    push @ipchains_new, "# following line added by OSCAR to allow client installations:";
+	    push @ipchains_new, $line1
+		if ( ! grep ( /^$line1\$/, @ipchains_out ) );
+	    push @ipchains_new, $line2
+		if ( ! grep ( /^$line2\$/, @ipchains_out ) );
+	}
+	@ipchains_out = @ipchains_new;
+	$ipchains_changed = 1;
+    }
+
+    # if the file changed, save a copy and write out the new one
+    if ( ! $ipchains_changed ) {
+	print "No changes have been made.\n";
+    } else {
+#	if ( scalar ( @ipchains_in ) ) {
+#	    print "Here is what the old $IPCHAINS looked like:\n";
+#	    print "=======================================================================\n";
+#	    for $line ( @ipchains_in ) { print "$line\n"; };
+#	    print "=======================================================================\n";
+#	}
+#	print "Here is what the new $IPCHAINS looks like:\n";
+#	print "=======================================================================\n";
+#	for $line ( @ipchains_out ) { print "$line\n"; };
+#	print "=======================================================================\n";
+	if ( scalar ( @ipchains_in ) ) {
+	    print "cp -p $IPCHAINS $IPCHAINS_BKUP\n";
+	    die "cannot make a backup copy $IPCHAINS_BKUP of $IPCHAINS\n"
+		if ( system "cp -p $IPCHAINS $IPCHAINS_BKUP" );
+	}
+	print "Writing out modified $IPCHAINS file.\n";
+	open(OUTFILE, ">$IPCHAINS") or die "Could not write $IPCHAINS\n";
+	foreach $line ( @ipchains_out ) { print OUTFILE "$line\n" };
+	close(OUTFILE);
+	
+	print "Restarting ipchains packet filtering to catch new rules\n";
+	print "service ipchains restart\n";
+	`service ipchains restart`;
+    }
+}
+
+
+
+exit(0);

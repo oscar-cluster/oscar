@@ -1,0 +1,71 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   This script is designed to be run after the image is built.
+#   It will do all the fixups required.
+
+use strict;
+use lib '/usr/lib/systeminstaller';
+use Carp;
+use File::Copy;
+use File::Path;
+use File::Basename;
+use SIS::Image;
+use AppConfig;
+
+!system("./allow_client_access") or croak("Couldn't run client access program");
+
+push_hosts() or croak("Couldn't push hosts file to images");
+
+run_postinstalls("../") or croak("Couldn't run post_clients scripts");
+
+sub run_postinstalls {
+    my ($topdir) = @_;
+    foreach my $dir (files_in_dir("$topdir/packages")) {
+        my $postimagescript = "$dir/scripts/post_clients";
+        if(-x "./$postimagescript") {
+            print "About to run $postimagescript...\n";
+            !system("./$postimagescript") or croak("$!");
+        }
+    }
+    return 1;
+}
+
+sub push_hosts {
+    my @images = imageList();
+    foreach my $image (@images) {
+        my $dir = $image->{PATH};
+        copy("/etc/hosts","$dir/etc/hosts") or (carp "Can't copy /etc/hosts to $dir",
+                                                return undef);
+    }
+    return 1;
+}
+
+sub files_in_dir {
+    my $dir = shift;
+    opendir(IN,$dir);
+    my @temp = readdir(IN);
+    closedir(IN);
+    my @files = ();
+    foreach my $file (@temp) {
+       if($file !~ /^\./) {
+           push @files, $file;
+       }
+    } 
+    return map {"$dir/$_"} @files;
+}
+
+
