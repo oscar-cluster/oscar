@@ -1,4 +1,4 @@
-$Id: README,v 1.13 2002/05/22 20:06:32 naughtont Exp $
+$Id: README,v 1.14 2002/05/30 17:27:45 naughtont Exp $
 
 $COPYRIGHT$
 
@@ -38,5 +38,9 @@ Notes about Python2 shipped with 1.3b1:
   as well as Red Hat 7.2 system.  However, Red Hat 7.2 shipps with Python2
   so measures were taken so it will be chosen in place of the one provided
   with OSCAR, ie. we decremented the RPM release number.
-  (This has not been tested/re-built for IA-64.)
+
+- Due to some multi-distro issues, we're currently including a "compatibility" 
+  (python2-compat-1.0-1) RPM to resolve the Python2 PreReq that is slightly 
+  different across distros.
+  (see also: c3/packages/RPMS/NOTE.python2)
 
