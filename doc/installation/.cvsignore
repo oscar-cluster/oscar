@@ -8,7 +8,5 @@
 *.pdf
 *.toc
 *.out
-Makefile
-Makefile.in
 version.tex
 notes.tex
