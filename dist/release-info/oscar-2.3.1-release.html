@@ -4,69 +4,56 @@
 </head>
 <body>
 
+<p>
+OAK RIDGE, Tenn., October 7, 2003 -- The OSCAR working group has  released
+a new version of the Open Source  Cluster  Application  Resources  (OSCAR)
+toolkit, OSCAR 2.3.1.
 
 <p>
-OAK RIDGE, Tenn., October 6, 2003 -- The OSCAR working group  has  release
-version 2.3.1 of the Open Source  Cluster  Application	Resources  (OSCAR)
-toolkit.
+OSCAR is a software package that  supports  the  use  of  high-performance
+computing by reducing the work  of  cluster  configuration,  installation,
+operation, and management.  Enhancements to previous versions of OSCAR  in
+OSCAR 2.3.1  include  a  faster,  multicast-based  version  of  the  OSCAR
+installer; a more scalable version of  OSCAR's  remote  command  execution
+toolkit; a more expressive packaging API, which allows package authors  to
+more easily convey package requirements; and a  redesigned  and  improved,
+Qt-toolkit-based,  graphical  user  interface  for   the   OSCAR   Package
+Downloader (OPD) wizard.  This improved wizard enables a user to  download
+additional  packages  from  on-line  repositories  prior  to  the  cluster
+install.
 
 <p>
-The OSCAR toolkit is used to build, configure and  manage  clusters.   Its
-primary objective is to make use of  "best	practices"	for  Cluster  High
-Performance Computing (HPC).  OSCAR enables a user to setup  and  maintain
-a cluster with the same software typically found on  HPC  Clusters,  while
-greatly reducing the complexity  of  the  installation	and  configuration
-process.
+OSCAR 2.3.1 also includes the new LAM/MPI 7.0 communications library,  and
+supports the use of  several  previously  unsupported  software  packages,
+including Myrinet, PVFS, and Clumon. These new packages can be downloaded
+at the start of an installation via OPD and  then  installed  as  part  of
+normal OSCAR installation.
 
 <p>
-This release has fully tested support for Red Hat 8.0,	9.0  and  Mandrake
-9.0.  The underlying installation tool, System Installation  Suite	(SIS),
-was updated to include a new release of  SystemImager.	 The  SystemImager
-tool now  provides	multicast  installation  capabilities.	 The  Cluster,
-Command and Control (C3)  tool	have  also	been  updated  to  the	latest
-scalability  release  4.0.
+OSCAR 2.3.1, has been fully tested for use with IA32 processors, under Red
+Hat 8.0, 9.0 and Mandrake 9.0.  OSCAR 2.3.1  does  not  yet  support  IA64
+platforms.  Those seeking IA64 support should use version 2.2.1  of  OSCAR
+for now.
 
 <p>
-In addition to these build	system	enhancements,  a  new  graphical  user
-interface was added to the OSCAR Package Downloader (OPD).	This  addition
-to the OSCAR wizard enables a user to download	additional	packages  from
-on-line repositories prior to the cluster install.	Also, portions of  the
-wizard's appearance have been improved by using the Qt windowing  toolkit.
-
-<p>
-The OSCAR packaging API has been  enhanced	for  improved  expressiveness.
-Package authors can more easily convey what distribution and  architecture
-their package supports.  
-
-<p>
-This release includes the new LAM/MPI 7.0.	There  are	also  several  new
-OPD-able packages available, including: Myrinet, PVFS, and Clumon.	 These
-packages can be obtained at the start of the install now via the GUI based
-OPD and  installed	along  with  the  directly	included  packages.   This
-release
-
-<p>
-This release support IA32 systems.	Those seeking IA64 support should  use
-version 2.2.1 of OSCAR for now.  These releases,  as  well	as	additional
-information are available at the OSCAR project page:
+OSCAR 2.3.1, OSCAR 2.2.1,  and  additional  information  about  the  OSCAR
+project are available from the OSCAR project page:
 
    <center>
      <a href="http://sourceforge.net/projects/oscar/">http://sourceforge.net/projects/oscar/</a>
    </center>
 
 
-<br>
-<br>
-
 <p>
-The OSCAR working group is a consortium of industry, academic and research
-participants.  Primary contributors are  Bald  Guy	Software,  Dell,  IBM,
-Intel,	 Indiana   University	(IU),	Intel,	 MSC.Software,	  National
-Computational Science Applications (NCSA), Oak Ridge  National	Laboratory
-(ORNL) and Sherbrooke University.  OSCAR  is  the  product	of	the  OSCAR
-working group of the Open  Cluster	Group  (OCG).	OCG  is  dedicated	to
-making	cluster  computing	practical.	 These	groups	are  open  to  all
-interested   in participating.
+The OSCAR  working  group  is  a  consortium  of  industry,  academic  and
+research participants.  Primary contributors include  Bald  Guy  Software,
+Dell,  IBM,  Intel,  Indiana  University,  Intel,  MSC.Software,  National
+Computational Science Applications (NCSA), Oak Ridge  National  Laboratory
+(ORNL) and Sherbrooke University.  OSCAR  is  the  product  of  the  OSCAR
+working group of the Open Cluster Group (OCG). OCG is dedicated to making
+cluster computing practical.  The OCG and its subgroups are open  to  all.
+
+
 <p>
 Related resources:
 <ul>
@@ -81,18 +68,18 @@ Related resources:
         <br>
         <br>
         <li>Open Cluster Group Homepage
-            <br><a href="http://www.OpenClusterGroup.org/">http://www.OpenClusterGroup.org</a>
+        <br><a href="http://www.OpenClusterGroup.org/">http://www.OpenClusterGroup.org</a>
 
         <br>
         <br>
         <li>OSCAR Mailing Lists
-            <br>&nbsp;&nbsp;User Questions: &lt;<a href="mailto:oscar-users@lists.sourceforge.net">oscar-users@lists.sourceforge.net</a>&gt;
-            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Development: &lt;<a href="mailto:oscar-devel@lists.sourcefore.net">oscar-devel@lists.sourcefore.net</a>&gt;
+        <br>&nbsp;&nbsp;User Questions: &lt;<a href="mailto:oscar-users@lists.sourceforge.net">oscar-users@lists.sourceforge.net</a>&gt;
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Development: &lt;<a href="mailto:oscar-devel@lists.sourcefore.net">oscar-devel@lists.sourcefore.net</a>&gt;
 
 
         <br>
         <br>
-        <li>Thin-OSCAR (diskless) Working Group Homepage 
+        <li>Thin-OSCAR (diskless) Working Group Homepage
         <br><a href="http://www.OpenClusterGroup.org/Thin-OSCAR">http://www.OpenClusterGroup.org/Thin-OSCAR</a>
 
         <br>
@@ -101,10 +88,9 @@ Related resources:
         <br><a href="http://www.OpenClusterGroup.org/HA-OSCAR">http://www.OpenClusterGroup.org/HA-OSCAR</a>
 </ul>
 
-<br>
 <p>
-ORNL is a Department of Energy	multi-program  research  facility  managed
-by UT-Battelle.
+ORNL is a Department of Energy multi-program research facility managed  by
+UT-Battelle.
 
 
 </body>
