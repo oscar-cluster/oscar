@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.14 2002/06/20 05:24:27 jsquyres Exp $
+# $Id: make-dist.sh,v 1.15 2002/07/06 04:53:05 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -81,6 +81,14 @@ if test "$want_srpms" != "only"; then
 #make clean ps
 #make mostlyclean pdf
     make clean pdf
+    if test "$?" != "0"; then
+	cat <<EOF
+
+WARNING: It seems like install.pdf didn't build properly.  Aborting...
+
+EOF
+	exit 1
+    fi
     make mostlyclean
 
 #    echo " - building introduction docs"
@@ -95,6 +103,14 @@ if test "$want_srpms" != "only"; then
 #make clean ps
 #make mostlyclean pdf
     make clean pdf
+    if test "$?" != "0"; then
+	cat <<EOF
+
+WARNING: It seems like user.pdf didn't build properly.  Aborting...
+
+EOF
+	exit 1
+    fi
     make mostlyclean
 
     cd ..
@@ -104,9 +120,17 @@ if test "$want_srpms" != "only"; then
     rm -rf $distdir/doc/*
     
     echo " - copying build docs into distdir/doc"
-    cp installation/install.pdf $distdir/doc
-#    cp introduction/intro.pdf $distdir/doc
+    cp installation/install.pdf installation/quick_install.pdf $distdir/doc
     cp user/user.pdf $distdir/doc
+    if test ! -f $distdir/doc/install.pdf -o ! -f $distdir/doc/user.pdf; then
+	cat <<EOF
+
+WARNING: doc/user.pdf and / or doc/install.pdf doesn't seem to exist.
+WARNING: Aborting...
+
+EOF
+	exit 1
+    fi
 fi
 
 #########################################################
