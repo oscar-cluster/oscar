@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.56 2003/10/23 22:28:01 pramath Exp $
+# $Id: oscar_wizard,v 1.57 2003/10/30 03:26:36 tfleury Exp $
 #
 
 use strict;
@@ -42,6 +42,7 @@ use OSCAR::Logger;
 use OSCAR::Configurator;
 use OSCAR::Package;
 use OSCAR::Database;
+use OSCAR::PackageInUn;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
@@ -161,6 +162,11 @@ oscar_button($window, "", "Add OSCAR Clients...",
 	     [\&addnode_window, $window, $interface], 'add_nodes');
 oscar_button($window, "", "Delete OSCAR Clients...", 
 	     [\&delnode_window, $window], 'delete_nodes');
+oscar_button($window, "", 
+	     "Install/Uninstall OSCAR Packages...", 
+	     [sub { system("cd ../lib/Qt; /usr/bin/perl Selector.pl -i; cd ../../scripts"); OSCAR::PackageInUn::install_uninstall_packages(); }], 
+	     'install_uninstall_packages');
+
 
 #
 # The close button
