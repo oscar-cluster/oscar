@@ -72,11 +72,11 @@ sub startPBSserver
 ######################################################################
 #  Check to see if 'Maui' is running.  If not, then start it.        #
 ######################################################################
-sub startMaui
+sub restartMaui
 {
-  open(CMD,"/etc/init.d/maui status |");
-  my $result = <CMD>;
-  close(CMD);
+#  open(CMD,"/etc/init.d/maui status |");
+#  my $result = <CMD>;
+#  close(CMD);
   system('/etc/init.d/maui restart');
   #    unless ($result =~ /is running/);
 }
@@ -89,7 +89,6 @@ sub startMaui
 print `../packages/pbs/scripts/update_mom_config`;
 
 startPBSserver();
-startMaui();
 
 parseCommandLine();
 
@@ -260,4 +259,4 @@ if ($cmd_input ne "")
     print CMD $cmd_input;
     close (CMD) or croak("Configuration of PBS queues failed");
   }
-startMaui();
+restartMaui();

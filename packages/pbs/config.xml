@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.7 2003/04/21 21:42:25 brechin Exp $
+      $Id: config.xml,v 1.8 2003/04/21 21:58:40 brechin Exp $
   -->
   <name>pbs</name>
 
@@ -71,7 +71,6 @@ the server node.</description>
     <server>
       <rpm>openpbs-oscar-server</rpm>
       <rpm>openpbs-oscar-gui</rpm>
-      <rpm>maui-oscar</rpm>
     </server>
   </rpmlist>
 
