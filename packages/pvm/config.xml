@@ -34,4 +34,9 @@ networks, such as Ethernet, FDDI.
 User programs written in C, C++ or Fortran access PVM through library
 routines.</description>
 
+  <require>
+    <type>package</type>
+    <name>switcher</name>
+  </require>
+
 </package>
