@@ -48,7 +48,7 @@ my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!",-background=>"w
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 
 # Step 1, Define OSCAR Server
-oscar_button($window, "Step 1:", "Prepare OSCAR Server For Install", [\&frontpanel_window, $window], 'prep_server');
+oscar_button($window, "Step 1:", "Prepare OSCAR Server For Install", [\&frontpanel_window, $window, {interface => $interface} ], 'prep_server');
 
 # Step 2, Build OSCAR Client Image
 oscar_button($window, "Step 2:", "Build OSCAR Client Image", [\&build_oscar_image, $window], 'build_image');
