@@ -19,6 +19,12 @@ echo "Running MPICH test"
 NP=`(wc -l < $PBS_NODEFILE) | awk '{print $1}'`
 
 do_cmds() {
+    cat <<EOF
+
+--> $banner
+
+EOF
+
     eval $cmds
     if test "$?" != "0"; then
 	echo "TEST FAILED!"
@@ -27,15 +33,15 @@ do_cmds() {
     fi
 }
 
-echo "MPI C bindings test:"
+banner="MPI C bindings test:"
 cmds="mpicc cpi.c -o mpich-cpi && mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cpi"
 do_cmds
 
-echo "MPI C++ bindings test:"
+banner="MPI C++ bindings test:"
 cmds="mpiCC cxxhello.cc -o mpich-cxxhello && mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cxxhello"
 do_cmds
 
-echo "MPI Fortran bindings test:"
+banner="MPI Fortran bindings test:"
 cmds="mpif77 f77hello.f -o mpich-f77hello && mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-f77hello"
 do_cmds
 
