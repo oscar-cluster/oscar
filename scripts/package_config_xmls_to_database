@@ -414,6 +414,8 @@ if ( ! oda::connect( \%options,
 # other portions of the oscar wizard to do that:
 #    (have to find list)
 
+#$options{debug} = 1;
+
 print "Reading and parsing package config.xml files ...";
 my $xml_ref = pkg_config_xml();
 #die "Cannot read package XML config files" if ! defined $xml_ref;
@@ -476,7 +478,7 @@ foreach my $package_name ( sort keys %$xml_ref ) {
 		    }
 		}
 		# now swallow the data from the parsed xml
-		delete $$oda_stuff_ref{shortcuts};
+		delete $$oda_stuff_ref{shortcut};
 	    }
 	    # if there are fieldname specifiers, store them
 	    if ( exists $$oda_stuff_ref{fieldnames} ) {
@@ -515,6 +517,8 @@ foreach my $package_name ( sort keys %$xml_ref ) {
 if ( $options{debug} ) {
     print_hash( "", "$0: oda_shortcuts", \%oda_shortcuts );
     print_hash( "", "$0: oda_fieldnames", \%oda_fieldnames );
+    print "$0: xml_ref after pulling out oda shortcuts and fieldnames:\n";
+    print Dumper($xml_ref);
 }
 
 # Database tables and field names can be explictly 
@@ -652,8 +656,8 @@ foreach my $package_name ( sort keys %$xml_ref ) {
 			. "The database table $full_table_name will not be created.\n";
 		}
 	    }
+	    delete $$package_package_ref{database_tables};
 	}
-	delete $$package_ref{database_tables};
     }
 }
 
@@ -760,12 +764,12 @@ if ( $options{debug} ) {
 print "Looking for database shortcut definitions ...\n";
 my %shortcuts_fields = ();
 $shortcuts_fields{ shortcut } = "VARCHAR(250)";
-$shortcuts_fields{ expansion } = "VARCHAR(250)";
+$shortcuts_fields{ expansion } = "TEXT";
+my $shortcuts_table_name = "oda_shortcuts";
 make_fix_table_fields( \%options,
-		       "oda_shortcuts",
+		       $shortcuts_table_name,
 		       undef,
 		       \%shortcuts_fields );
-my $shortcuts_table_name = "oda_shortcuts";
 foreach my $shortcut ( sort keys %oda_shortcuts ) {
     my @tables_fields = ( "$shortcuts_table_name", "shortcut", "expansion" );
     my @wheres = ( "$shortcuts_table_name.shortcut = \"$shortcut\"" );
@@ -1222,6 +1226,7 @@ foreach my $package_name ( sort keys %multiple_value_folded_fields ) {
 		if $options{debug};
 	    if ( scalar @specified_fieldnames <
 		 scalar @folded_fields ) {
+warn "$0: specified_fieldnames=(" . join( ',', @specified_fieldnames ) . ") folded_fields=(" . join( ',', @folded_fields ) . ")\n";
 		warn "$0: package <$package_name> did not supply enough (or any)\n";
 		warn "specified field names with a construct like this:\n";
 		warn "<oscar>\n  <fieldnames> NAMES</fieldnames>\n</oscar>\n";
