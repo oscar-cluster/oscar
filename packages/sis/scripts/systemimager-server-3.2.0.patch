@@ -7,7 +7,7 @@
 +#  4/30/2004, David N. Lombard, david.n.lombard@intel.com
 +#  Disk independence added.
 +#
- #   $Id: systemimager-server-3.2.0.patch,v 1.1 2004/06/02 21:04:05 dnl Exp $
+ #   $Id: systemimager-server-3.2.0.patch,v 1.2 2004/06/04 22:38:18 dnl Exp $
  #
  
 @@ -16,7 +19,7 @@ use strict;
