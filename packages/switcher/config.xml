@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.13 2003/07/18 21:23:39 ngorsuch Exp $
+      $Id: config.xml,v 1.14 2003/07/24 16:25:45 brechin Exp $
   -->
   <name>Environment Switcher</name>
 
@@ -60,8 +60,9 @@ purpose.</description>
     <rpm>tcl</rpm>
     <rpm>env-switcher</rpm>
     <rpm>modules-oscar</rpm>
+    <rpm>ed</rpm>
   </rpmlist>
-
+  
   <package>
     <oda>
         <!--

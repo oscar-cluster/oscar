@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.8 2003/07/23 19:35:24 brechin Exp $
+      $Id: config.xml,v 1.9 2003/07/24 16:25:45 brechin Exp $
   -->
   <name>perl-Qt</name>
 
@@ -40,9 +40,14 @@
   </rpmlist>
 
   <rpmlist>
-    <filter distribution='mandrake' />
+    <filter distribution='mandrake' distribution_version='9.0'/>
     <rpm>libqt3</rpm>
     <rpm>libqt3-devel</rpm>
+    <rpm>libunixODBC2-devel</rpm>
+    <rpm>libmysql10-devel</rpm>
+    <rpm>postgresql-devel</rpm>
+    <rpm>libcups1</rpm>
+    <rpm>perl-Qt-mdk-compat</rpm>
   </rpmlist>
     
   <rpmlist>

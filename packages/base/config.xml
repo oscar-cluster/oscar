@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.7 2003/07/18 21:23:37 ngorsuch Exp $
+      $Id: config.xml,v 1.8 2003/07/24 16:25:45 brechin Exp $
   -->
   <name>base</name>
 
@@ -37,39 +37,6 @@
   </rpmlist>
 
   <rpmlist>
-    <filter distribution='mandrake' distribution_version='8.2' group='oscar_server' />
-	<rpm>apache</rpm>
-	<rpm>apache-common</rpm>
-	<rpm>apache-conf</rpm>
-	<rpm>apache-modules</rpm>
-	<rpm>bc</rpm>
-	<rpm>dhcp-common</rpm>
-	<rpm>dhcp-server</rpm>
-	<rpm>ed</rpm>
-	<rpm>expat</rpm>
-	<rpm>libpcap0</rpm>
-	<rpm>librrdtool0</rpm>
-	<rpm>locales</rpm>
-	<rpm>locales-en</rpm>
-	<rpm>mod_php</rpm>
-	<rpm>openssh</rpm>
-	<rpm>openssh-clients</rpm>
-	<rpm>openssh-server</rpm>
-	<rpm>openssl</rpm>
-	<rpm>nfs-utils</rpm>
-	<rpm>php</rpm>
-	<rpm>php-common</rpm>
-	<rpm>php-xml</rpm>
-	<rpm>python2-compat</rpm>
-	<rpm>pwlib1</rpm>
-	<rpm>rrdtool</rpm>
-	<rpm>tcpdump</rpm>
-	<rpm>xinetd</rpm>
-	<rpm>zlib1</rpm>
-	<rpm>zlib1-devel</rpm>
-  </rpmlist>
-
-  <rpmlist>
     <filter distribution='mandrake' distribution_version='9.0' group='oscar_server' />
         <rpm>apache</rpm>
         <rpm>apache-common</rpm>
@@ -93,17 +60,27 @@
         <rpm>perl-CGI</rpm>
         <rpm>perl-XML-Parser</rpm>
         <rpm>pwlib1</rpm>
-        <rpm>nfs-utils</rpm>
+	<rpm>nfs-utils</rpm>
+	<rpm>nfs-utils-clients</rpm>
         <rpm>php</rpm>
         <rpm>php-common</rpm>
         <rpm>php-xml</rpm>
-        <rpm>python2-compat</rpm>
+	<rpm>python</rpm>
+	<rpm>python2-compat</rpm>
         <rpm>rrdtool</rpm>
         <rpm>tcsh</rpm>
         <rpm>tcpdump</rpm>
         <rpm>xinetd</rpm>
         <rpm>zlib1</rpm>
-        <rpm>zlib1-devel</rpm>
+	<rpm>zlib1-devel</rpm>
+	<rpm>postgresql</rpm>
+	<rpm>libpgsql2</rpm>
+	<rpm>libpgperl</rpm>
+	<rpm>libpgtcl2</rpm>
+	<rpm>libecpg3</rpm>
+	<rpm>libpgsqlodbc0</rpm>
+	<rpm>sfio</rpm>
+	<rpm>libgmp3</rpm>
   </rpmlist>
 
   <rpmlist>
