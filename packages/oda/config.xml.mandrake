@@ -29,8 +29,11 @@
   <rpmlist>
     <all>
       <rpm>MySQL-client</rpm>
+      <rpm>libmysql10</rpm>
       <rpm>perl-Mysql</rpm>
       <rpm>perl-DBI</rpm>
+      <rpm>perl-CGI</rpm>
+      <rpm>perl-ExtUtils-PerlPP</rpm>
       <rpm>oda</rpm>
     </all>
     <server>
