@@ -30,10 +30,7 @@
     <name>Jeremy Enos</name>
     <email>jenos@ncsa.uiuc.edu</email>
   </packager>
-  <description>OSCAR-specific NTP configurator.  Sets up the OSCAR
-server to receive NTP from well-known NTP servers, and then act as a
-relay server to all the cluster hosts.</description>
-
+  <description>OSCAR-specific NTP configurator.  If configured, sets up the OSCAR server to receive NTP from user-specified NTP server and act as a time server for the cluster nodes.  Otherwise, the server is simply set up to act as a time relay server for all the cluster nodes.</description>
   <rpmlist>
       <filter distribution='fedora' />
       <filter distribution='mandrake' />

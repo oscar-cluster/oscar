@@ -1,41 +1,26 @@
-<HTML>
-<HEAD><TITLE>Configuration for ntpconfig</TITLE>
-</HEAD>
-<BODY>
-<CENTER>
-<H1>Select NTP Servers</H1>
-</CENTER>
-The ntpconfig package sets up ntp (the Network Time Protocol) on your
-cluster so that all of your machines will be synchronized to the same time.
-However, we also would like the OSCAR server node's time to be synchronized
-with the rest of the world.  In order to do that, we need to specify at
-least one public NTP server to which we can connect.
-<P>
-Below are three public NTP servers that should work just fine for most
-people.  However, you can select/deselect these servers as you like.  You
-can also add other servers to the list in the text box below.  In the text
-box, enter one server per line.
-<P>
-<B>NOTE:</B>You must have at least one NTP server selected/entered or by
-default you get the three general use public NTP servers below.
-<P>
-<HR>
-<P>
-<FORM>
-<H2>General Use Public NTP Servers</H2>
-<input type=checkbox name=basicserver1 value='ntp-1.cso.uiuc.edu' checked> ntp-1.cso.uiuc.edu<br>
-<input type=checkbox name=basicserver2 value='ntp0.cornell.edu' checked> ntp0.cornell.edu<br>
-<input type=checkbox name=basicserver3 value='ntp.cmr.gov' checked> ntp.cmr.gov<br>
-<P>
-<P>
-<H2>Additional/Alternate NTP Servers</H2>
-Enter additional FQDNs (fully qualified domain names) or IP addresses of NTP
-servers that you would like to use.  Enter one server per line.
-<P>
-<TEXTAREA cols=40 rows=4 name=extraservers></textarea>
-<P>
+<html>
+<head><title>Configuration for ntpconfig</title>
+</head>
+<body>
+<center>
+<h1>Configuring ntpconfig</h1>
+</center>
+<p>
+By default, if you do not configure the ntpconfig package, your cluster will be set up such that your
+nodes will be able to use the headnode as a time server.  If you select a NTP server to sync up, please make sure
+that you do have a network connection to the server (whether it is on your LAN or on the Internet).  The default, 
+pool.ntp.org is a known good NTP servers pool provided by ntp.org.
+</p>
+<p>
+If this is the first time for you to configure the ntpconfig package, hitting Cancel now will setup your headnode to act as a time server for your nodes.
+</p>
+<form>
+<p>NTP Server:&nbsp;<input name="ntpserver" value="pool.ntp.org">
+</p>
+<p>
 <input type=reset value='Reset Form'>
-<P>
-</FORM>
-<HR>
-</BODY>
+</p>
+</form>
+<hr>
+</body>
+</html>
