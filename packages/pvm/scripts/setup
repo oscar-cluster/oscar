@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.1 2003/07/25 21:39:45 naughtont Exp $
+# $Id: setup,v 1.2 2003/07/26 12:57:43 jsquyres Exp $
 #
 # setup script for the pvm package
 # (snagged from Jeff's switcher pkg for 2.3 release)
@@ -42,7 +42,7 @@ if ($name eq "redhat") {
     $source_dir .= "72";
   }
 } elsif ($name eq "rhas") {
-  $source_dir  .= "rhas");
+  $source_dir  .= "rhas";
   if ($ver eq "2.1") {
     $source_dir .= "21";
   }
