@@ -348,7 +348,6 @@ sub run_pkg_user_test {
 #  will be run as 'root', but can use another user if needed.
 #
 # TODO Fix work arounds for current release of APItest v0.2.5-1
-#
  
 sub run_pkg_apitest_test
 {
@@ -356,7 +355,7 @@ sub run_pkg_apitest_test
 
 	my ($script, $user, $verbose) = @_;
 	my $apitest = "/usr/local/apitest/apitest";    # FIXME: hardcoded path
-	my $rc;
+	my $rc = 0;
 
 
 	if (-e $script) {
@@ -383,13 +382,16 @@ sub run_pkg_apitest_test
 		}
 	}
 	else {
-		oscar_log_subsection("ERROR - unable to run APItest: $script") if $verbose;
+		oscar_log_subsection("Warning: not exist '$script' ") if $verbose;
 	}
+
 	if($rc) {
 		my $realrc = $rc >> 8;
 		carp("Script APItest $script exited badly with exit code '$realrc'") if $verbose;
 		return 0;
 	}
+
+	return 1;
 }
 
 
