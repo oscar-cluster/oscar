@@ -1,6 +1,6 @@
 
 static char rcsid[] =
-	"$Id: master1.c,v 1.1 2002/10/31 16:14:07 jsquyres Exp $";
+	"$Id: master1.c,v 1.2 2002/10/31 19:22:17 jsquyres Exp $";
 
 /*
  *         PVM version 3.4:  Parallel Virtual Machine System
@@ -28,6 +28,9 @@ static char rcsid[] =
  *
  * PVM version 3 was funded in part by the U.S. Department of Energy,
  * the National Science Foundation and the State of Tennessee.
+ *
+ * Copyright (c) 2002 The Trustees of Indiana University.  
+ *                    All rights reserved.
  */
 
 #include <stdio.h>
@@ -41,6 +44,8 @@ main()
     int n, nproc, numt, i, who, msgtype, nhost, narch;
     float data[100], result[32];
     struct pvmhostinfo *hostp;
+    int successful = 1;
+    float expected;
 
     /* enroll in pvm */
     mytid = pvm_mytid();
@@ -64,8 +69,7 @@ main()
        pvm_exit();
        exit(1);
     }
-	printf("SUCCESSFUL\n");
-    
+    printf("Done\n");
 
     /* Begin User Program */
     n = 100;
@@ -88,13 +92,16 @@ main()
        pvm_recv( -1, msgtype );
        pvm_upkint( &who, 1, 1 );
        pvm_upkfloat( &result[who], 1, 1 );
-       printf("I got %f from %d; ",result[who],who);
        if (who == 0)
-			printf( "(expecting %f)\n", (nproc - 1) * 100.0);
+	 expected = (nproc - 1) * 100.0;
        else
-			printf( "(expecting %f)\n", (2 * who - 1) * 100.0);
-		
+	 expected = (2 * who - 1) * 100.0;
+       printf("I got %f from %d; (expected %f)\n",result[who],who,expected);
+       if (result[who] != expected)
+	 successful = 0;		
     }
+    if (successful)
+      printf("SUCCESSFUL\n");
     /* Program Finished exit PVM before stopping */
     pvm_exit();
 }
