@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.43 2003/07/02 19:58:44 brechin Exp $
+      $Id: config.xml,v 1.44 2003/07/09 15:38:11 brechin Exp $
   -->
   <name>oda</name>
 
@@ -53,7 +53,7 @@
   <rpmlist>
     <filter distribution="redhat" distribution_version="7.3" />
     <filter distribution="redhat" distribution_version="8.0" />
-    <filter distribution="redhat" distribution_version="9.0" />
+    <filter distribution="redhat" distribution_version="9" />
     <rpm>perl-CGI</rpm>
     <rpm>mysql</rpm>
     <rpm>perl-DBD-MySQL</rpm>
