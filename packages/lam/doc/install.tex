@@ -1,0 +1,28 @@
+% -*- latex -*-
+%
+% Copyright (c) 2001-2004 The Trustees of Indiana University.  
+%                         All rights reserved.
+% Copyright (c) 1998-2001 University of Notre Dame. All rights reserved.
+% Copyright (c) 1994-1998 The Ohio State University.  All rights reserved.
+%
+
+\subsection{Uninstalling LAM/MPI}
+\label{app:lam-mpi-uninstall}
+
+Please note that there is a known bug in the
+\file{lam-switcher-modulefile} RPM such that if you use the OSCAR
+infrastructure to remove the LAM/MPI package and LAM is set as OSCAR's
+default MPI implementation, you will see errors from the switcher
+package.  You can clean up these problems by running (as root):
+
+\begin{verbatim}
+# switcher mpi = <some_other_mpi_implementation>
+\end{verbatim}
+
+Or explicitly state that there is no default OSCAR MPI implementation:
+
+\begin{verbatim}
+# switcher mpi = none
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
