@@ -1,6 +1,6 @@
 package OSCAR::Help;
 
-#   $Id: Help.pm,v 1.4 2002/05/21 20:35:51 mchasal Exp $
+#   $Id: Help.pm,v 1.5 2002/07/25 16:13:59 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ use base qw(Exporter);
 
 @EXPORT = qw(open_help);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 # Help messages for the OSCAR GUI.
 
@@ -45,6 +45,7 @@ sub open_help {
 }
 
 %Help = (
+         prep_server => "This button will launch a panel that will ask some questions about your desired configuration. It will then configure your server as an OSCAR server.",
          build_image => "This button will launch a panel which will let you define and build your OSCAR client image.  The defaults specified should work for most situations.",
          addclients => "This button will launch a panel which lets you define what clients are going to be installed with OSCAR.",
          netboot => "This button will launch the MAC Address Collection Tool which will enable you to assign specific MAC addresses to clients for installation.  Please follow the instructions on the MAC Address Collection Panel",
