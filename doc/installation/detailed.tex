@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.33 2002/07/18 01:42:04 jsquyres Exp $
+% $Id: detailed.tex,v 1.34 2002/07/18 02:38:44 ngorsuch Exp $
 %
 % $COPYRIGHT$
 %
@@ -49,6 +49,16 @@ environment such as GNOME or KDE must be installed.  Typically, a
 ``Workstation'' install with the ``Software Development Tools'' group
 added yeilds a sufficient installation for OSCAR to install
 successfully.
+
+If you install RedHat on the server node, during the installation you
+do not need to install the ipchains-base firewall that is included with
+the RedHat distribution, because OSCAR will install an iptables based
+packet filtering firewall named pfilter which is more versatile. 
+OSCAR does not turn on pfilter by default, however.
+If the Redhat ipchains based firewall is installed, OSCAR automatically
+disables portions of the RedHat firewall to keep it from interfering 
+with network traffic between the server node and the other nodes in 
+the cluster.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: security.tex,v 1.2 2002/01/18 05:15:52 mjbrim Exp $
+% $Id: security.tex,v 1.3 2002/07/18 02:38:44 ngorsuch Exp $
 %
 % $COPYRIGHT$
 %
@@ -10,11 +10,11 @@
 
 \subsection{Security layers}
 Linux cluster security should, ideally, consist of multiple layers.
-Most people will not want to implement more than one or two security
-layers, but done properly, this can yield reasonable levels of security.
 The main security layers are router packet filtering, 
 network stack protections, host based packet filtering, tcpwrappers,
 service paring, service configuration, and secure communications.
+Oscar installs a host based packet filtering package called pfilter
+but does not turn it on by default.
 
 \subsection{Router packet filtering}
 
@@ -29,7 +29,8 @@ based on tables of rules.
 Linux kernels have security features built in that can help prevent 
 outsiders from pretending that they are part of your internal network.
 These features are enabled through /proc filesystem entries.
-A good firewall will turn these on appropriately.
+A good firewall package will turn these on appropriately
+(pfilter does this when enabled).
 
 \subsection{Host based packet filtering}
 
@@ -37,41 +38,20 @@ Like router packet filtering, host based network packet filtering
 involves examining each packet and deciding what do do with it.  But
 with host based filtering, each machine indivudually filters the
 network packets going to, from, or through it.  Linux kernels from 2.4
-on include connection tracking and ``stateful'' packet filtering,
-which keeps track of ongoing network connections, allowing better
+on include support for connection tracking and ``stateful'' packet 
+filtering, which keeps track of ongoing network connections, allowing better
 filtering decisions to be made based on whether packets are part of an
 already allowed connection. The problem with packet filtering is that
-it requires the administrator to generate filtering ``rulesets'' that
-the iptables and ipchains programs interpret and store in the running
-kernel.  Creating these rulesets is similar to writing software in
-assembly language, and like writing software, there are now higher
-level ``languages'' and compilers that can be used to generate the
-rulesets and provide firewalls.  One ruleset compiler/firewall package
-is the pfilter package.  For more information, and to download
-pfilter, see the \url{http://pfilter.sourceforge.net/}. This security
-layer, when done using a good ruleset compiler, yields a large
-security return for little effort.  For example, using the pfilter
-package a configuration file like this:
-
-\begin{verbatim}
-  OPEN    ssh
-  OPEN    ftp    121.122.0.0/16
-\end{verbatim}
-
-\noindent on a server machine that has client machines hidden behind it
-on a private network would set up the following:
-
-\begin{enumerate}
-\item The server machine would have complete access to the internet.
-\item The only access to the server machine from outside the cluster
-  would be through \cmd{ssh} logins from anywhere, and ftp access from
-  the local domain.
-\item Client machines in the server's cluster would have complete
-  access to the internet through IP masquerading, but would be hidden
-  and protected from the internet.
-\item Applicable network stack protections and packet forwarding would
-  be turned on.
-\end{enumerate}
+it requires generating filtering ``rulesets'' that the iptables or 
+ipchains programs interpret and store in the running kernel.
+Creating these rulesets is similar to writing software in
+assembly language. There are now higher level ``languages'' and 
+compilers that can be used to generate the rulesets and provide firewalls.
+Oscar installs a ruleset compiler/firewall package called pfilter.
+For more information, and to download the latest
+pfilter, see the \url{http://pfilter.sourceforge.net/}.
+By default OSCAR installs and configures pfilter on the server machine
+and on all of the cluster nodes, but does not turn it on. 
 
 \subsection{Tcpwrappers}
 

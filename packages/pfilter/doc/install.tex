@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.4 2002/07/17 13:37:19 jsquyres Exp $
+% $Id: install.tex,v 1.5 2002/07/18 02:38:44 ngorsuch Exp $
 %
 % $COPYRIGHT$
 %
@@ -9,7 +9,7 @@
 \label{app:pfilter-overview}
 
 {\bf pfilter} is a firewall compiler.  The {\bf pfilter} package is
-used control the packet filtering capabilities available in the Linux
+used to control the packet filtering capabilities available in the Linux
 kernel.  It takes in high-level firewall directives, and produces a
 complete firewall output commands file that can be turned on or off
 like other Linux services.  Like other compilers, {\bf pfilter} adds
@@ -21,14 +21,15 @@ protective features.
 When OSCAR was installed, it modified the {\bf pfilter} installation
 by merging any pre-existing {\bf pfilter} configuration file and some
 new cluster specific commands.  The new configuration file is common
-to all machines in the cluster, using conditional expression
+to all machines in the cluster, using the conditional expression
 capabilities of {\bf pfilter} to allow different types of cluster
-machines to have different packet filtering attributes.  OSCAR adds
-these things to the {\bf pfilter} configuration file:
+machines to have different packet filtering attributes.  
+Here are some of the things that OSCAR adds
+to the {\bf pfilter} configuration file:
 
 \begin{itemize}
-\item the default for network interfaces as set to be untrusted
-\item bad packet syslog logging is turned off
+\item the default for network interfaces is set to be untrusted
+\item the syslog logging of bad network packets is turned off
 \item the main OSCAR server node has \cmd{ssh} logins enabled
 \item the main OSCAR server node has http access enabled
 \item all communication between nodes in the cluster is enabled
@@ -50,5 +51,5 @@ following command:
 
 For more information on how to use and configure {\bf pfilter}, see
 the \cmd{pfilter(8)} and \file{pfilter.conf(5)} and
-\file{pfilter.rulesets(5)} man pages.
-
+\file{pfilter.rulesets(5)} man pages. Before turning on {\bf pfilter},
+you might want to upgrade to the latest version.
