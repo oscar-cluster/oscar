@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.12 2003/07/18 16:35:20 jsquyres Exp $
+      $Id: config.xml,v 1.13 2003/07/18 19:23:42 jsquyres Exp $
   -->
   <name>LAM/MPI</name>
 
@@ -88,11 +88,24 @@ visualized either at runtime or post-mortem.</description>
     <rpm>lam-with-gm-oscar-module</rpm>
   </rpmlist>
 
+  <!-- RedHat 8.0, 9, and SuSE ship with libaio and libaio-devel.
+       We don't put just "redhat", though, because the IA64 RPM's
+       don't need libaio. -->
   <rpmlist>
     <filter distribution="redhat" distribution_version="8.0" />
     <filter distribution="redhat" distribution_version="9"   />
+    <filter distribution="suse" />
     <rpm>libaio</rpm>
     <rpm>libaio-devel</rpm>
+  </rpmlist>
+
+  <!-- MDK 9.0 doesn't ship with libaio.  So we got the RH 9 SRPM,
+       tweaked the specfile a bit to change the name, and rebuilt
+       it for OSCAR. -->
+  <rpmlist>
+    <filter distribution="mdk" />
+    <rpm>libaio-mdk-oscar</rpm>
+    <rpm>libaio-devel-mdk-oscar</rpm>
   </rpmlist>
 
   <package>
