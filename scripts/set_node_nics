@@ -948,7 +948,7 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
     # if there is no corresponding record in the
     # database already, write out this record
 
-    if  ( ! exists $$database_nics_ref{ name } ) {
+    if  ( ! exists $$database_nics_ref{ $nic_name } ) {
 	my $command = "create_nic_on_node $nic_name $node_name";
 	foreach my $field ( qw( base_ip
 				broadcast
@@ -980,7 +980,7 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
     # record if so
 
     else {
-	my $database_nic_ref = $$database_nics_ref{ name };
+	my $database_nic_ref = $$database_nics_ref{ $nic_name };
 	my %assigns = ();
 	foreach my $field ( qw( broadcast gateway ip mac netmask  ) ) {
 	    if ( ! defined $$ifconfig_nic_ref{ $field }
