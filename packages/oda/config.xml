@@ -26,10 +26,15 @@
   <description>ODA provides a central database for OSCAR.</description>
 
   <rpmlist>
-    <all>
-      <rpm>oda</rpm>
-      <rpm>perl-Mysql</rpm>
-    </all>
+      <all>
+          <rpm>mysql</rpm>
+          <rpm>perl-DBD-MySQL</rpm>
+          <rpm>perl-DBI</rpm>
+          <rpm>oda</rpm>
+      </all>
+      <server>
+            <rpm>mysql-server</rpm>
+       </server>
   </rpmlist>
 
   <oda>
