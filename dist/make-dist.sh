@@ -71,12 +71,6 @@ if ! test -f Makefile; then
 fi
 
 #
-# We need this later
-#
-
-cp autogen.sh $distdir
-
-#
 # Build the docs
 #
 
