@@ -238,32 +238,52 @@ if ( ! oda::connect( \%options,
 # initialize the oscar packages related database information by
 # slurping in (or supplying default) package config.xml files
 # for all packages that were supplied in the oscar tarball/rpm
+# and that have been downloaded through opd before this
 # (the config.xml file for oda is a special case and is always 
 # read in first since it defines a number of database tables
 # and is critical for oscar operations)
-my $packages_dir = "$oscar_home/packages";
-opendir(PACKAGES, $packages_dir)
-    || die "$0: cannot open packages directory $packages_dir";
-my @packages = ();
-my $oda_found = 0;
-while ( my $package = readdir(PACKAGES) ) {
-    chomp $package;
-    if ( $package eq "oda" ) {
-	$oda_found = 1;
-    } else {
-	push @packages, $package;
+my @base_directories = @OSCAR::Package::PKG_SOURCE_LOCATIONS;
+print "Searching these directories for packages:\n";
+foreach my $base_directory ( @base_directories ) {
+    print "    $base_directory\n";
+}
+my @directories = ();
+my @oda_directories = ();
+foreach my $packages_base_directory ( @base_directories ) {
+    opendir(PACKAGES, $packages_base_directory)
+	|| warn "$0: cannot open packages directory $packages_base_directory";
+    while ( my $package = readdir(PACKAGES) ) {
+	chomp $package;
+	if ( $package eq "oda" ) {
+	    push @oda_directories,
+	    "$packages_base_directory/$package";
+	} else {
+	    push @directories,
+	    "$packages_base_directory/$package";
+	}
     }
 }
-die "$0: cannot find oda package directory $packages_dir/oda"
-    if ! $oda_found;
-die "$0: cannot find oda package xml file $packages_dir/oda/$xml_file_name"
-    if ! -f "$packages_dir/oda/$xml_file_name";
+my @valid_oda_directories = ();
+foreach my $oda_directory ( @oda_directories ) {
+    if ( ! -f "$oda_directory/config.xml" ) {
+	warn "$0: ignoring the invalid oda package directory $oda_directory" .
+	    " that does not contain a config.xml file";
+    } else {
+	push @valid_oda_directories, $oda_directory;
+    }
+}
+die "$0: cannot find any valid oda packages in these directories: @base_directories"
+    if ! @valid_oda_directories;
+my $oda_directory = pop @valid_oda_directories;
+foreach my $skipped_oda_directory ( @valid_oda_directories ) {
+    warn "$0: ignoring oda package directory $skipped_oda_directory";
+}
 my $script = "$oscar_home/scripts/read_package_config_xml_into_database";
 die "$0: cannot find oscar script $script"
     if ! -x $script;
 my $script_with_options = $script;
 $script_with_options = "$script $option_strings" if $option_strings ne "";
-my $command = "$script_with_options $packages_dir/oda/ oda";
+my $command = "$script_with_options $oda_directory oda";
 print "$0: executing:\n$command\n" if $options{debug};
 system($command) == 0 || die "$0: failed to execute:\n$command";
 my @results = ();
@@ -271,19 +291,21 @@ my @error_strings = ();
 die "$0: cannot find or execute the oda shortcut \"packages\""
     if ! oda::execute_command( \%options, "packages" );
 
-print "$0: packages=(" . join( ',', @packages ) . ")\n" if $options{debug};
-foreach my $package ( @packages ) {
-    my $package_directory = "$packages_dir/$package";
-    if ( -d $package_directory &&
+print "$0: directories=(" . join( ',', @directories ) . ")\n"
+    if $options{debug};
+foreach my $directory ( @directories ) {
+    my $package = $directory;
+    $package =~ s,^.*/,,;
+    if ( -d $directory &&
 	 $package ne "." &&
 	 $package ne ".." &&
 	 $package ne "CVS" &&
-	 ! -e "$package_directory/.oscar_ignore" ) {
+	 ! -e "$directory/.oscar_ignore" ) {
         print "$0: package=<$package>\n" if $options{debug};
-        my $command = "$script_with_options $package_directory";
+        my $command = "$script_with_options $directory";
 	print "$0: executing:\n$command\n" if $options{debug};
 	system($command) == 0 ||
-	    warn "$0: failed to process package directory $package_directory for package $package";
+	    warn "$0: failed to process package directory $directory for package $package";
     }
 }
 
