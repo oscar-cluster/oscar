@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_internal.sh,v 1.2 2002/08/22 09:01:02 sad Exp $
+# $Id: gmond_internal.sh,v 1.3 2002/08/22 09:08:26 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ if [ -f /etc/init.d/gmond ]; then
     sed "s/daemon \$GMOND/daemon \$GMOND -i$OSCAR_HEAD_INTERNAL_INTERFACE/" < /etc/init.d/gmond > /tmp/gmond.new
     mv /etc/init.d/gmond /etc/init.d/gmond.orig
     mv /tmp/gmond.new /etc/init.d/gmond
+    chmod 755 /etc/init.d/gmond
     service gmond restart
 
 else
