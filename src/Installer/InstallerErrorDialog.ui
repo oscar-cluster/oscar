@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>386</width>
-            <height>392</height>
+            <width>394</width>
+            <height>370</height>
         </rect>
     </property>
     <property name="caption">
@@ -24,14 +24,11 @@
         </property>
         <widget class="QLayoutWidget" row="0" column="0">
             <property name="name">
-                <cstring>layout3</cstring>
+                <cstring>layout5</cstring>
             </property>
             <vbox>
                 <property name="name">
                     <cstring>unnamed</cstring>
-                </property>
-                <property name="spacing">
-                    <number>1</number>
                 </property>
                 <widget class="QLabel">
                     <property name="name">
@@ -74,6 +71,28 @@
                     <property name="text">
                         <string>Unable to start Task # 1 - "OSCAR Package Downloader" since some prerequisites were not satisfied.  Click the "Show Details" button to see which prerequisities failed and why.  Click the "OK" button when finished.</string>
                     </property>
+                    <property name="readOnly">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QTextEdit">
+                    <property name="name">
+                        <cstring>errorDetailsTextEdit</cstring>
+                    </property>
+                    <property name="enabled">
+                        <bool>true</bool>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>7</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>3</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="readOnly">
+                        <bool>true</bool>
+                    </property>
                 </widget>
                 <widget class="QLayoutWidget">
                     <property name="name">
@@ -107,25 +126,6 @@
                         </widget>
                     </hbox>
                 </widget>
-                <widget class="QTextEdit">
-                    <property name="name">
-                        <cstring>errorDetailsTextEdit</cstring>
-                    </property>
-                    <property name="enabled">
-                        <bool>true</bool>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>7</hsizetype>
-                            <vsizetype>7</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>3</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="readOnly">
-                        <bool>true</bool>
-                    </property>
-                </widget>
             </vbox>
         </widget>
     </grid>
@@ -145,6 +145,7 @@
     </connection>
 </connections>
 <includes>
+    <include location="local" impldecl="in declaration">my $errorDetailsHeight;</include>
     <include location="local" impldecl="in implementation">InstallerErrorDialog.ui.h</include>
 </includes>
 <slots>

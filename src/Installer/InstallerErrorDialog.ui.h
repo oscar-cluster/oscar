@@ -56,3 +56,7 @@ void InstallerErrorDialog::setErrorDetailsText()
   errorDetailsTextEdit->setText(shift);
 }
 
+
+
+
+
