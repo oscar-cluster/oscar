@@ -184,3 +184,10 @@ libuser1-devel
 libuser
 file
 libexpat0
+gcc
+gcc-cpp
+gcc-c++
+glibc-devel
+libstdc++5-devel
+glibc-g77
+libf2c
