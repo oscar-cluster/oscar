@@ -16,6 +16,8 @@ my @rpms = qw(
               openpbs-oscar-server
               openpbs-oscar-gui
               openpbs-oscar-commands
+              lam-profile-d-6.5.6-usysv.1oscar
+              sync-users-oscar
               maui-oscar
               libdbdcsv-perl
               libappconfig-perl
@@ -41,6 +43,19 @@ uninstall_rpms(@rpms);
 delete_from_pool(@rpms);
 
 cleanup_files();
+
+delete_oscar_users();
+
+sub delete_oscar_users {
+    my @oscar_users = qw(
+                   oscartst
+                  );
+    foreach my $oscar_user (@oscar_users) {
+        print "Removing user $oscar_user\n";
+        system("userdel -r $oscar_user");
+    }
+}
+
 
 sub stop_services {
     my @services = qw(
