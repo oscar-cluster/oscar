@@ -24,7 +24,7 @@ package Tk::HTML::Form;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '$Id: Form.pm,v 1.4 2002/11/14 01:32:40 tfleury Exp $';
+$VERSION = '$Id: Form.pm,v 1.5 2002/12/02 20:29:27 tfleury Exp $';
 
 # @ISA = qw(AutoLoader HTML::Element);
 @ISA = qw(HTML::Element);
@@ -138,7 +138,7 @@ sub CHECKBOX
  my $var = $form->Variable($elem);
  $elem->{'value'} = 1 unless (defined $elem->{'value'});
  ${$var} = ($elem->attr('checked')) ? $elem->attr('value'): undef;
- my $e = $w->Checkbutton(-variable => $var, -onvalue => $elem->attr('value'), -offvalue => undef);
+ my $e = $w->Checkbutton(-variable => $var, -onvalue => $elem->attr('value'), -offvalue => "");
  $w->window('create','insert',-window => $e);
  $h->{NL} = 0;                
 }
