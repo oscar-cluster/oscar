@@ -12,7 +12,6 @@
 
 ### Script Commands
 cd $PBS_O_WORKDIR
-cd ~oscartst/OSCAR_test/mpi
 echo "Running MPICH test"
 
 # The MPICH test iteself
