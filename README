@@ -1,4 +1,4 @@
-$Id: README,v 1.1 2001/08/14 18:29:56 jsquyres Exp $
+$Id: README,v 1.2 2001/12/19 02:20:43 jsquyres Exp $
 
 $COPYRIGHT$
 
@@ -7,6 +7,5 @@ This is the general README file for OSCAR.  See our wonderful web site:
 	http://oscar.sourceforge.net/
 
 Insturctions for installing an OSCAR distribution can be found in 
-doc/installation/installation.pdf.
+doc/installation/install.pdf.
 
-...write more stuff here...

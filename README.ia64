@@ -1,3 +1,7 @@
+$Id: README.ia64,v 1.2 2001/12/19 02:20:43 jsquyres Exp $
+
+$COPYRIGHT$
+
 Before doing the ./install_cluster eth0 command, do this:
 
 rpm -ivh --nodeps */*/*/openpbs-*.rpm
@@ -16,15 +20,18 @@ cpan> install DBD::CSV
 ...
 cpan> quit
 
-IF YOU HAVE CVS PROBLEMS WHEN THE WIZARD STARTS, DO THIS:
-Before doing the "Build Image" in the "Create a Systemimager Image" panel,
-exit the /etc/systeminstaller/systeminstaller.conf file and change this:
+IF YOU HAVE CVS PROBLEMS WHEN THE WIZARD STARTS, DO THIS: Before doing
+the "Build Image" in the "Create a Systemimager Image" panel, edit the
+/etc/systeminstaller/systeminstaller.conf file and change this:
+
 rpm=            /bin/rpm
 to this:
 rpm=            /bin/rpm --nodeps
 
 When booting a client over the network via the boot cdrom,
+
 fs1:
 elilo
-and remember to reboot from the installer cdrom on the client between the mac
-address collection and the network client install
+
+and remember to reboot from the installer cdrom on the client between
+the mac address collection and the network client install
