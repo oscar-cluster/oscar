@@ -15,6 +15,9 @@ MAIN_TEX	= ganglia-user.tex
 
 OTHER_SRC_FILES	= user.tex
 
+LATEX		= latex
+PDFLATEX	= pdflatex
+DVIPS		= dvips
 
 #########################################################################
 #
@@ -22,13 +25,13 @@ OTHER_SRC_FILES	= user.tex
 #
 #########################################################################
 
-SUFFIXES	= .tex .dvi .ps .pdf .eps .png
+.SUFFIXES:	 .tex .dvi .ps .pdf
 
 MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
 MAIN_PS		= $(MAIN_TEX:.tex=.ps)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
 
-TEX_SRC		= $(MAIN_TEX) $(OTHER_SRC_FILES) $(NON_DIST_SRC_FILES)
+TEX_SRC		= $(MAIN_TEX) $(OTHER_SRC_FILES)
 
 # Tell automake to include all the relevant files
 
@@ -100,12 +103,12 @@ $(MAIN_PDF): $(TEX_SRC)
 	      grep 'LaTeX Warning: Citation' $*.log > /dev/null); \
 	then (unset TEXINPUTS; $(PDFLATEX) $*) ; else :; fi
 
-.png.eps:
-	$(PNGTOPNM) $< | $(PNMTOPS) -noturn > $*.eps
-
 # Deleting kruft temporary files
 
-mostlyclean-generic:
+clean: mostlyclean
+	rm -rf $(CLEANFILES)
+
+mostlyclean:
 	-rm -f *~ *.bak *% \
 		  *.log *.aux *.dvi *.blg *.toc *.bbl *.lof *.lot *.out
 
