@@ -1,4 +1,4 @@
-% $Id: pkg-layout.tex,v 1.17 2003/10/22 10:56:20 jsquyres Exp $
+% $Id: pkg-layout.tex,v 1.18 2003/10/29 19:57:37 naughtont Exp $
 
 % TJN: Mention the XML tools that are helpful, e.g., 'xmllint'
 %      which >= 2.5.8 (i believe) has --schema option too! :)
@@ -142,10 +142,13 @@ where the actual modification/operations take place\footnote{Note, the
 \file{post\_install} scripts in practice often operate on both the server
 and client filesystems -- regardless of what the original specifications
 suggested.}.  Each phase of scripts is executed per package, with packages 
-processed in alph-order. 
+processed in alph-order.  
 %\footnote{The Perl function \file{readdir()} is used to build the list.}.
 % TJN: Confirm this before uncommenting...have to look at current code.
 
+\begin{verse}
+   {\bfseries Notice: } All OSCAR API scripts must be re-runnable.  
+\end{verse}
 
 % Table outlining the available OSCAR API scripts
 \input{pkg-scripts-table.tex}
@@ -341,7 +344,15 @@ The two ``uninstall'' scripts are run after the actual OSCAR package RPMS
 have been removed.  The \file{post\_\-server\_\-rpm\_\-uninstall} and
 \file{post\_\-client\_\-rpm\_\-uninstall} scripts are used to clean up any
 modifications or files added outside the RPM, i.e., via OSCAR API scripts.
+As with all other OSCAR API script, these scripts should be re-runnable.
 
+\begin{verse}
+   {\bfseries Notice: } Currently (Nov. 2003) all package removal 
+   operations are explicitly listed in these uninstall scripts.  This
+   includes the RPMs themselves.  When a package is uninstalled, these
+   scripts contain all information/operations that are used to remove the
+   package from the system.
+\end{verse}
 
 % TJN: finish this section
 \subsection{testing}
