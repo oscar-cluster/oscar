@@ -1,5 +1,10 @@
 #!/bin/sh
 
+source /etc/profile
+
+dir=$1
+shift
+
 # test_install - script to install the OSCAR cluster test
 # Author: Michael Brim
 
@@ -127,7 +132,7 @@ if [ $? -eq 1 ]; then
 fi
 echo
 echo -n "Installing software into /home/$user..."
-/bin/cp -a OSCAR_test /home/$user/
+/bin/cp -a $dir/OSCAR_test /home/$user/
 /bin/chown -R $user /home/$user/OSCAR_test
 grp=`/usr/bin/id -g $user`
 /bin/chgrp -R $grp /home/$user/OSCAR_test
