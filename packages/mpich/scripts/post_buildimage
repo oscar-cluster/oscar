@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+
+use strict;
+use Carp;
+
+my $image = shift;
+my $VER = "1.2.1";
+my $RELEASE = ".1oscar";
+my $ARCH = "i386";
+my $PREFIX = "/opt/mpich-$VER";
+my $imagedir = "/var/lib/systemimager/images/$image";
+
+my $file = "$imagedir/etc/profile.d/mpi-01mpich.sh";
+open( OUT, ">$file" ) or croak( "Couldn't open $file" );
+
+print OUT <<EOF;
+#
+# Append MPIch bin directory to PATH
+# Part of the OSCAR install
+#
+[[ -z \$MPICH ]] && {
+  export MPICH=$PREFIX
+  [[ :\$PATH: != *:\$MPICH/bin:* ]] && export PATH=\$PATH:\$MPICH/bin
+}
+EOF
+close( OUT );
+chmod 0755, "$file";
+
+$file = "$imagedir/etc/profile.d/mpi-01mpich.csh";
+open( OUT, ">$file" ) or croak( "Couldn't open $file" );
+print OUT <<EOF;
+#
+# Append MPIch bin directory to PATH
+# Part of the OSCAR install
+#
+if (\$?MPICH == "0") then
+  set MPICH="$PREFIX"
+  set path = (\$path \$MPICH/bin)
+endif
+EOF
+close( OUT );
+chmod 0755, "$file";

@@ -1,0 +1,24 @@
+#!/usr/bin/perl
+#
+# Generate the machine.LINUX list
+#
+use strict;
+use Carp;
+use lib '/usr/lib/systeminstaller';
+use SystemInstaller::Machine;
+use Data::Dumper;
+
+my $image = shift;
+my $VER = "1.2.1";
+my $RELEASE = ".1oscar";
+my $ARCH = "i386";
+my $PREFIX = "/opt/mpich-$VER";
+my $machinefile = $PREFIX . "/share/machines.LINUX";
+
+my %hash = get_machine_listing( $image );
+
+open( OUT, ">$machinefile" ) or croak( "Couldn't open $machinefile" );
+foreach (sort keys %hash) {
+    print OUT $hash{$_}->{HOST}, "\n";
+}
+close( OUT );
