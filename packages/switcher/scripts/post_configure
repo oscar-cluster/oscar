@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "This is switchers post_configure script"
+echo "It is a placeholder for great things to come."
+exit 0
