@@ -8,6 +8,33 @@
 *****************************************************************************/
 
 
+void OpderAddRepository::init()
+{
+#########################################################################
+#  Subroutine: init()                                                   #
+#  Parameters: None                                                     #
+#  Returns   : Nothing                                                  #
+#  This subroutine gets called when the window is first created. We     #
+#  check to see if the oda database is running, and if so, get the      #
+#  last values for the exclusiveCheckBox and urlTextBox.  Thus, these   #
+#  values are persistent across executions of the program.              #
+#########################################################################
+                                                                                
+  if (OSCAR::Database::database_connect())
+    {
+      my @urlText = OSCAR::Database::database_program_variable_get(
+        "Opder","urlText");
+      urlText = $urlText[0];
+      urlTextBox->setText(urlText);
+                                                                                
+      my @useRepositoriesExclusively = 
+        OSCAR::Database::database_program_variable_get(
+          "Opder","useRepositoriesExclusively");
+      useRepositoriesExclusively = $useRepositoriesExclusively[0];
+      exclusiveCheckBox->setChecked(useRepositoriesExclusively);
+    }
+}
+
 void OpderAddRepository::doneButton_clicked()
 {
 #########################################################################
@@ -55,7 +82,15 @@ void OpderAddRepository::hideEvent()
       # Add the completed url to the urlText global variable
       urlText .= "$rep\n";
     }
-  
+
+  if (OSCAR::Database::database_connect())
+    { # Write the values of the widgets to the oda database
+      OSCAR::Database::database_program_variable_put(
+        "Opder","urlText",urlText);
+      OSCAR::Database::database_program_variable_put(
+        "Opder","useRepositoriesExclusively",useRepositoriesExclusively);
+    }
+                                                                                
   # Finally, check for any changes which would require a "Refresh Table"
   my $update = 0;
   $update = 1 if (($oldUrlText ne urlText) ||

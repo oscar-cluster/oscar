@@ -89,11 +89,13 @@
 <includes>
     <include location="local" impldecl="in declaration">use Qt::attributes qw( useRepositoriesExclusively urlText );</include>
     <include location="local" impldecl="in declaration">use Qt::signals refreshTableNeeded=>[];</include>
+    <include location="local" impldecl="in declaration">use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::Database;</include>
     <include location="local" impldecl="in implementation">OpderAddRepository.ui.h</include>
 </includes>
 <slots>
     <slot>doneButton_clicked()</slot>
     <slot>hideEvent()</slot>
+    <slot>init()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
