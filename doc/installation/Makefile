@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile,v 1.11 2003/08/19 07:44:45 naughtont Exp $
+# $Id: Makefile,v 1.12 2003/11/16 03:43:16 bernardli Exp $
 # 
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -93,9 +93,10 @@ FIG_FILES	= \
 			 figs/sbs-make-install-1.png \
 			 figs/sbs-make-install-2.png \
 			 figs/sbs-oda-password.png \
-			 figs/sbs-download-packages.png 
-
-
+			 figs/sbs-download-packages.png \
+			 figs/sbs-opder-alt-repository.png \
+			 figs/sbs-pkgInUn-selector.png \
+			 figs/sbs-pkgInUn-selector-example-colors.png
 
 
 #########################################################################
