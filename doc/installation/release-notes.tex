@@ -74,6 +74,7 @@ The following release notes apply to OSCAR version \oscarversion.
   additional release notes.} \quick{See the full Installation Guide
   for these notes.}
 
+\begchange
 \item All nodes must have a hostname other than ``{\tt localhost}''
   that does not contain any underscores (``{\tt \_}'') or periods ``{\tt
   .}''.  Some distributions complicate this by putting a line such
@@ -87,6 +88,7 @@ The following release notes apply to OSCAR version \oscarversion.
   127.0.0.1 localhost.localdomain localhost
   192.168.0.1 yourhostname.yourdomain yourhostname
   \end{verbatim}
+\endchange
 
 \item A domain name must be specified for the client nodes when
   defining them.
@@ -104,7 +106,6 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \item Although OSCAR can be installed on pre-existing server nodes, it
   is typically easiest to use a machine that has a new, fresh install
-
   of a distribution listed in Table~\ref{tab:oscar-distro-support}
   {\em with no updates installed}.  If the updates are installed,
   there may be conflicts in RPM requirements.  It is recommended to
@@ -121,7 +122,6 @@ The following release notes apply to OSCAR version \oscarversion.
   Use of uninitialized value in pattern match (m//) at
   /usr/lib/perl5/site_perl/oda.pm ...
 \end{verbatim}
-\endchange
 
   It is safe to ignore these messages.
 
@@ -144,12 +144,6 @@ The following release notes apply to OSCAR version \oscarversion.
   you wish to delete a node and then add it back, you must delete the
   node, close the OSCAR installer GUI, launch the OSCAR installer GUI
   again, and then add the node.
-
-% This bug has been fixed
-%\item During the \button{Build OSCAR Client Image} step, the ``Successfully
-%  created image'' notice will appear even though the status bar looks
-%  incomplete.  This incomplete status bar can be ignored.
-
 
 \item If \cmd{ssh} produces warnings when logging into the compute
   nodes from the OSCAR head node, the C3 tools (e.g., \cmd{cexec}) may
@@ -198,16 +192,14 @@ The following release notes apply to OSCAR version \oscarversion.
   to experiment please check the {\tt oscar-users} and/or
   {\tt sisuite-users} mailing lists for tips.
 
-% BLI: This bug has been fixed
-%\item If you downloaded PBS through Step 0 \button{Download Addtional
-%  OSCAR Packages}, but did not select it for installation, you will get
-%  error messages complaining about conflicts. The way around this is to goto
-%  \file{/tftpboot/rpm} and remove all the OpenPBS RPMs. If you want to install
-%  PBS instead of Torque, select it in Step 1 \button{Select OSCAR Packages To
-%  Install}, then either copy the OpenPBS RPMs back to
-%  \file{/tftpboot/rpm} or just re-run the OSCAR wizard and the RPMs will be
-%  automatically copied back.
+\begchange
+\item In the \button{Setup Networking} step, MACs can
+  only be saved in /root which is the default directory.
 
+\item The man pages for the Torque package will not be available in
+  a default installation because /opt/pbs/man is missing from
+  MANPATH.  They should appear if this is added by hand.
+\endchange
 
 
 \end{itemize}
@@ -320,6 +312,29 @@ The following items highlight these issues.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begchange
+\subsection{Mandrake 10.0 Notes}
+\label{subsec:mdk10notes}
+
+Mandrake users may experience the following fatal error if the
+install_cluster script is run more than once.
+
+\begin{verbatim}
+/opt/oscar/scripts/set_node_nics: failed to create database
+record for nic eth0 on node oscar_server. Couldn't initialize the
+nics and networks for the oscar server at ./wizard_prep line 242
+Oscar Wizard preparation script failed to complete at
+./install_cluster line 215.
+\end{verbatim}
+
+To repair this problem, issue the following commands
+\begin{verbatim}
+  # mysql oscar
+  # DELETE from nics where 1;
+\end{verbatim}
+This should repair the database and allow the install_cluster script
+to run again.
+\endchange
 
 % jlm - removed this section seeing as how there is no drake support
 % in 4.0
