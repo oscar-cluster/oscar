@@ -1,0 +1,67 @@
+#!/bin/sh
+#
+# Copyright (c) 2003 The Trustees of Indiana University.
+#                         All rights reserved.
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: setup,v 1.1 2003/12/09 05:59:00 tuelusr Exp $
+#
+# setup script for the update-rpms package
+#
+
+VERSION="0.1"
+# Matt Garrett, <magarret@OSL.IU.edu>
+# initial release
+VERSION="0.2"
+# New version of update-rpms and new directory structure
+
+VERSION=$(echo "$Revision: 1.1 $" | cut --fields 2 --delimiter " ")
+
+PACKAGE="update-rpms"
+echo ${0} | grep -e "/.*/.*" 2>&1 > /dev/null
+if [ $? -ne 0 ]; then
+  MEDIA_DIR="${0%setup}../RPMS"
+else
+  MEDIA_DIR="${0%/*/*}/RPMS"
+fi
+# For the Bash-impaired, this just uses the location of the setup script,
+# strips off the "/scripts/setup" part and grafts on "/media". The alternative
+# does, anyway. The consequent is an ugly hack I used for testing.
+
+RPM_CACHE="/tftpboot/rpm"
+RPM_DB_DIR="/var/cache/${PACKAGE}"
+
+CURRENT=$(ls -1 --sort=version --reverse ${MEDIA_DIR}/${PACKAGE}-*.noarch.rpm |
+	head -1)
+#CURRENT=${CURRENT%.md5sum} # strip any .md5sum suffix
+
+if [ -s ${MEDIA_DIR}/md5sums ]; then
+  echo "Checking MD5 checksums:"
+  (cd ${MEDIA_DIR}
+    md5sum --check md5sums
+  )
+  if [ $? -ne 0 ]; then
+    echo "ERROR: MD5 checksum(s) for ${PACKAGE} don't match"
+    exit -1
+  fi
+else
+  echo "WARNING: No MD5 checksum(s) for ${CURRENT} found"
+fi
+
+echo "Installing ${CURRENT}"
+rpm --upgrade ${CURRENT}
+
+mkdir -p ${RPM_DB_DIR}
+if [ -d ${RPM_CACHE} ]; then
+  echo "Creating RPM cache database..."
+  cd ${RPM_DB_DIR}
+  update-rpms --cache=w --url ${RPM_CACHE}
+else
+  echo "WARNING: No RPM cache database exists."
+  echo "Am I being run from \"install_cluster --> wizard_prep\"?"
+fi
+
+echo "Done."
