@@ -5,8 +5,8 @@
          
          # Display the line count for GUI status bars.
 -        my $linecount = ((scalar(@pkglist) * 2) + $outlines);
-+        # 20 is the "slop" from the rpm installs, e.g., scriptlet output, &etc.
-+        my $linecount = (scalar(@pkglist) + 20 + $outlines);
++        # 20% is the "slop" from the rpm installs, e.g., scriptlet output, &etc.
++        my $linecount = (1.2*scalar(@pkglist) + $outlines);
          &verbose("Expected lines of output: $linecount");
  
          &verbose("Finding package install files.");

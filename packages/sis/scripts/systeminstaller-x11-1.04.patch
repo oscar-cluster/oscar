@@ -147,8 +147,8 @@
  
  1;
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm.orig	2003-10-31 07:39:12.000000000 -0800
-+++ /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm	2004-10-09 00:00:44.000000000 -0700
-@@ -63,7 +67,12 @@
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/Image.pm	2004-10-21 15:28:37.000000000 -0700
+@@ -63,7 +63,12 @@
      }
  
      my $image_window = $window->Toplevel();
@@ -188,12 +188,118 @@
  }
  
  sub reset_window {
-@@ -261,6 +269,8 @@
+@@ -250,13 +256,16 @@
+                               $window->Unbusy(), return undef);
+ 
+     my $lines_so_far;
++    $progress->value(0);
++    $progress->update();
+     while(<OUTPUT>) {
+         if(/Expected lines of output: (\d+)/) {
+             $totallines = $1;
+         }
+         if($totallines) {
+             $lines_so_far++;
+-            $progress->value(100 * $lines_so_far / $totallines);
++            $progress->value(90 * $lines_so_far / $totallines);
++            $progress->value(90) if $progress->value() > 90;
+             $progress->update();
              print "$lines_so_far: $_";
          }
+@@ -264,10 +273,10 @@
+ 
+     close(OUTPUT) or (carp("Command $cmd failed to run properly"), 
+                       error_window($window, "Failed to create Image!"),
+-                      $progress->value(0),
+-                      $progress->update(),
+                       $window->Unbusy(),
+                       return undef);
++    $progress->value(90);
++    $progress->update();
+ 
+     print "Built image from rpms\n";
+ 
+@@ -279,6 +288,8 @@
+                 password => $$vars{pass1}
+             );
+     }
++    $progress->value(91);
++    $progress->update();
+ 
+     ##############################################
+     # Update flamethrower.conf                   #
+@@ -289,14 +300,20 @@
+        $cmd = "/bin/mv -f /etc/systemimager/flamethrower.conf /etc/systemimager/flamethrower.conf.bak";
+        open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
+                $window->Unbusy(), return undef);
++       $progress->value(92);
++       $progress->update();
+ 
+        !system("sed -e 's/START_FLAMETHROWER_DAEMON = no/START_FLAMETHROWER_DAEMON = yes/' /etc/systemimager/flamethrower.conf.bak > /etc/systemimager/flamethrower.conf") or carp("Error encountered while changing START_FLAMETHROWER_DAEMON = no to yes in /etc/systemimager/flamethrower.conf");
++       $progress->value(93);
++       $progress->update();
+ 
+        # add entry in flamethrower for the image
+        my $entryArg = "[$$vars{imgname}]";
+        $cmd = "/usr/lib/systemimager/perl/confedit --file /etc/systemimager/flamethrower.conf --entry $entryArg --data \"$entryArg \n DIR=/var/lib/systemimager/scripts/\"";
+        open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
+                $window->Unbusy(), return undef);
++       $progress->value(94);
++       $progress->update();
+ 
+        # add entry for boot-i386-standard module
+        if ($$vars{arch} eq "i686" or $$vars{arch} eq "i586"  or $$vars{arch} eq "i486" or $$vars{arch} eq "i386"){
+@@ -308,10 +325,14 @@
+        $cmd = "/usr/lib/systemimager/perl/confedit --file /etc/systemimager/flamethrower.conf --entry $entryArg --data \"$entryArg \n DIR=/usr/share/systemimager/boot/i386/standard/\"";
+        open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
+                $window->Unbusy(), return undef);
++       $progress->value(95);
++       $progress->update();
+        print "Updated flamethrower.conf\n";
+ 
+        !system("/etc/init.d/systemimager-server-flamethrowerd restart") or carp("Couldn't start flamethrower");
+     }
++    $progress->value(96);
++    $progress->update();
+ 
+     my $diskcmd = "mksidisk -A --name $$vars{imgname} --file $$vars{diskfile}";
+     
+@@ -319,6 +340,8 @@
+                           error_window($window, "Failed to set disk partitioning in image!"),
+                           $window->Unbusy(),
+                           return undef);
++        $progress->value(97);
++        $progress->update();
+ 
+         print "Added Disk Table for $$vars{imgname} based on $$vars{diskfile}\n";
+     
+@@ -333,6 +356,8 @@
+                 error_window($window, "Failed to build auto install script for image!"),
+                 $window->Unbusy(), 
+                 return undef);
++        $progress->value(98);
++        $progress->update();
+ 
+     print "Ran mkautoinstallscript\n";
+ 
+@@ -345,6 +370,8 @@
+                                           $window->Unbusy(),
+                                           return 0);
+     }
++    $progress->value(99);
++    $progress->update();
+     if(ref($$vars{postinstall}) eq "ARRAY") {
+         my $sub = shift(@{$$vars{postinstall}});
+         &$sub($vars, @{$$vars{postinstall}}) or (carp("Couldn't run postinstall"), 
+@@ -352,8 +379,10 @@
+                                                  $window->Unbusy(), 
+                                                  return 0);
      }
 +    $progress->value(100);
 +    $progress->update();
  
-     close(OUTPUT) or (carp("Command $cmd failed to run properly"), 
-                       error_window($window, "Failed to create Image!"),
+-    done_window($window, "Successfully created image $$vars{imgname}", sub {$a = shift; $a->value(0); $a->update();}, $progress);
++    done_window($window, "Successfully created image $$vars{imgname}");
+     $window->Unbusy();
+     return 1;
+ }

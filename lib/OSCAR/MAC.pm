@@ -64,6 +64,9 @@ our $PINGPID = undef; # process id of the ping fork we make
 my $step_number;    # which step number of the oscar process we are in
 our $destroyed = 0;
 
+our $startcoll = "Start Collecting MACs";
+our $stopcoll = "Stop Collecting MACs";
+
 sub mac_window {
     $destroyed = 1;
     my $parent = shift;
@@ -79,9 +82,10 @@ sub mac_window {
     
     oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
 
-    my $instructions = $window->Message(-text => "MAC Address collection.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click 'Assign MAC to Node'.", -aspect => 800);
+    my $instructions = $window->Message(-text => "MAC Address collection.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click \"Assign MAC to Node\".", -aspect => 800);
 
-    our $label = $window->Label(-text => "Not Listening to Network. Click 'Collect MAC Addresses' to start.");
+    our $starttext = $startcoll;
+    our $label = $window->Label(-text => "Not Listening to Network. Click \"$starttext\" to start.", -relief => 'sunken');
 
 
     my $frame = $window->Frame();
@@ -100,20 +104,16 @@ sub mac_window {
 				 -scrollbars => 'osoe',
                                 );
 
-    $instructions->pack($label);
+    $instructions->pack($label, -fill => 'x');
 
     my $clear    = $topframe->Button( 	-text => "Remove",
 					-height=>1,
 					-command => [\&clearmacaddy, $listbox, $window ],
 				    );
-    $clear->configure( -font => { -size => 10 }, 
-		       -pady => 2 );
     my $clearall = $topframe->Button( 	-text => "Remove All",
 					-height=>1,
 					-command => [\&clearallmacs, $listbox, $window ],
 				    );
-    $clearall->configure( -font => { -size => 10 }, 
-			  -pady => 2 );
     $frame->pack(-side => "bottom", -fill => "both", -expand => 1);
     $topframe->pack(-side => 'top', -fill => "both", -expand => 1);
 
@@ -127,15 +127,10 @@ sub mac_window {
     populate_MACS();
  
     regenerate_tree($tree);
-    our $starttext = "Collect MAC Addresses";
     our $start = $frame->Button(
                                    -textvariable => \$starttext,
                                    -command => [\&begin_collect_mac, $window, $listbox, $$vars{interface} ],
                                    );
-#    my $stop = $frame->Button(
-#                                         -text => "Stop Collecting",
-#                                         -command => [\&end_collect_mac, $label, $starttext],
-#                                         );
     our $exitbutton = $frame->Button(
                                      -text => "Close",
                                      -command => sub {
@@ -191,7 +186,7 @@ sub mac_window {
 					oscar_log_subsection("Step $step_number: Successfully built autoinstallfloppy");
 				    }
                                    );
-    my $networkboot = $frame->Button(
+    our $networkboot = $frame->Button(
                                      -text => "Setup Network Boot",
                                      -command => [\&run_setup_pxe, $window],
                                     );
@@ -496,16 +491,16 @@ sub end_ping {
 sub end_collect_mac {
     my ($window, $listbox, $interface) = @_;
     our $label;
-    $label->configure(-text => "Not Listening to Network. Click 'Collect MAC Addresses' to start.");
-    our $starttext = "Start Collecting MACs";
-    our $start;
+    our $starttext = $startcoll;
+    $label->configure(-text => "Not Listening to Network. Click \"$starttext\" to start.");
 
     our $bootfloppy->configure(-state => 'normal');
+    our $networkboot->configure(-state => 'normal');
     our $savebutton->configure(-state => 'normal');
     our $loadbutton->configure(-state => 'normal');
     our $exitbutton->configure(-state => 'normal');
 
-    $start->configure(-command => [\&begin_collect_mac, $window, $listbox, $interface, $label ]);
+    our $start->configure(-command => [\&begin_collect_mac, $window, $listbox, $interface, $label ]);
     system("killall tcpdump");
     oscar_log_subsection("Step $step_number: Stopped listening to network");
     $COLLECT = 0;
@@ -522,12 +517,12 @@ sub begin_collect_mac {
     return if $COLLECT; # This is so we don't end up with 2 tcpdump processes
     $COLLECT = 1;
     my ($window, $listbox, $interface) = @_;
-    our $starttext;
+    our $starttext = $stopcoll;
     our $label;
     our $start;
-    $starttext = "Stop Collecting MACs";
 
     our $bootfloppy->configure(-state => 'disabled');
+    our $networkboot->configure(-state => 'disabled');
     our $savebutton->configure(-state => 'disabled');
     our $loadbutton->configure(-state => 'disabled');
     our $exitbutton->configure(-state => 'disabled');
@@ -537,7 +532,7 @@ sub begin_collect_mac {
     my $cmd = "/usr/sbin/tcpdump -i $interface -n -e -l";
     oscar_log_subsection("Step $step_number: Starting to listen to network: $cmd");
     open(TCPDUMP,"$cmd |") or (carp("Could not run $cmd"), return undef);
-    $label->configure(-text => "Currently Scanning Network... Click 'Stop Collecting' to stop.");
+    $label->configure(-text => "Currently Scanning Network... Click \"$starttext\" to stop.");
     while($COLLECT and $_ = <TCPDUMP>) {
         # print $_ unless $_ =~ /echo/;
         # This is the for tcp dump version 3.6 (MDK 8.0)
