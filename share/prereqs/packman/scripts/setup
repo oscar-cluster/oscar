@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
@@ -9,27 +9,34 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.3 2004/05/08 17:42:28 jsquyres Exp $
+# $Id: setup,v 1.4 2004/05/13 13:06:08 jsquyres Exp $
 #
 # setup script for the packman-depman package
 #
 
-VERSION=$(echo "$Revision: 1.3 $" | cut --fields 2 --delimiter " ")
+# Install the relevant RPMs.  Easy enough to hard-code for now, since
+# we only handle Linux/RPM.  This script will likely get more complicated.
 
-PACKAGE=packman-depman
-if [[ $0 = */* ]] ; then
-  MEDIA_DIR=${0%/*}/../RPMS
-else
-  MEDIA_DIR=${0%/*/*}/RPMS
+rpms="packman packman-rpm depman depman-updaterpms"
+
+# Check for each RPM
+
+echo "Checking for packman/depman RPMs..."
+need_to_install=
+for rpm in $rpms; do
+	rpm -q $rpm >/dev/null 2>&1
+	if test $? = 1; then
+		rpm_filename="`ls -1 $OSCAR_HOME/share/prereqs/packman/RPMS/$rpm-[0-9]*rpm`"
+		need_to_install="$rpm_filename $need_to_install"
+		echo "--> will install $rpm"
+	fi
+done
+
+if test -n "$need_to_install"; then
+	echo "Installing: $need_to_install"
+	rpm -Uvh $need_to_install
 fi
 
-CURRENT=$(ls -1 --sort=version --reverse "${MEDIA_DIR}/${PACKAGE}"-*.noarch.rpm | head -1)
-rpm -q packman-depman >/dev/null 2>&1
-if [ "x$?" == "x1" ]; then
-  echo "Installing ${CURRENT##*/} in $OSCAR_HOME"
-  echo rpm -Uvh "${CURRENT}"
-  rpm -Uvh "${CURRENT}"
-  echo "Done."
-else
-  echo "No need to install packman-depman"
-fi
+# All done
+
+exit 0
