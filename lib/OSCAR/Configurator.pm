@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.20 2003/03/06 00:02:36 tfleury Exp $
+# $Id: Configurator.pm,v 1.21 2003/04/10 17:06:30 ngorsuch Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -39,7 +39,7 @@ our @EXPORT = qw(populateConfiguratorList displayPackageConfigurator);
 use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use OSCAR::Configbox; # For the configuration HTML form display
-use OSCAR::Package;   # For list_pkg() and run_pkg_script()
+use OSCAR::Package;   # For list_installable_packages() and run_pkg_script()
 use OSCAR::Logger;    # For oscar_log_section()
 use OSCAR::Selector;
 use XML::Simple;      # Read/write the .selection config files
@@ -121,7 +121,7 @@ sub Configurator_ui {
 
 	# additional interface code
 
-our($packagexml);             # Holds the XML configs for each package
+our(%configurable_packages);  # Holds the selected configurable packages info
 our($oscarbasedir);           # Where the program is called from
 our($pane);                   # The pane holding the scrolling selection list
 
@@ -159,7 +159,7 @@ sub doneButtonPressed
   undef $pane;
 
   # Call the post-configure API script in each selected package
-  my @packages = list_install_pkg();
+  my @packages = list_selected_packages();
   foreach my $pkg (@packages) {
       if (!run_pkg_script($pkg, "post_configure", 1, "")) {
 	  carp("Post-configure script for package \"$pkg\" failed");
@@ -171,46 +171,42 @@ sub doneButtonPressed
 }
 
 #########################################################################
-#  Subroutine name : getSelectedPackages                                #
+#  Subroutine name : getSelectedConfigurablePackages                    #
 #  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
-#  This subroutine reads in the list of packages that have been         #
-#  selected for installation (using the .selection.config file located  #
-#  under the OSCAR installation directory) and then sets a "selected"   #
-#  flag in the $packagexml hash for each package.  It then removes      #
-#  any packages from $packagexml which have not been selected for       #
-#  installation and configuration.  In effect, we allow configuration   #
-#  of a package only if that package has been selected for installation #
-#  and if that package has a configurator.html file.                    #
+#  Returns   : a double deep array with package name being the first    #
+#              key, and the package longer name being the value         #
+#  This subroutine reads in the list of package names from the database #
+#  that have been selected for installation, prunes the ones that do    #
+#  not have their own configurator.html file, and returns them.         #
 #########################################################################
-sub getSelectedPackages
+sub getSelectedConfigurablePackages
 {
-  my($package);
-  my(@packages) = list_install_pkg();
-  my($found);     # Did we find a configurator.html file?
 
-  # Set a "selected" field for all packages selected for installation
-  foreach $package (@packages)
-    {
-      $packagexml->{$package}{selected} = 1;
-    }
-
-  foreach $package (keys %{ $packagexml } )
-    {
-      # Skip any packages which aren't selected to be installed
-      delete $packagexml->{$package} if 
-        ((defined $packagexml->{$package}) && 
-          (!$packagexml->{$package}{selected}));
-
-      # Skip any packages which don't have a configurator.html file
-      $found = 0;
-      foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS)
+    my %result = ();
+    
+    # read all records from the database table <packages> that are marked
+    # as being installable and as being selected, saving the long package
+    # name in the <package> field for each package
+    my @fields = qw( package ); 
+#    my @wheres = ( "packages.installable\!\=0", "packages.selected\!\=0" );
+    my @wheres = ( "packages.installable\!\=0" );
+    my $configurable_ref =
+      OSCAR::Database::database_read_table_fields( "packages",
+						   \@fields,
+						   \@wheres );
+    return \%result if ! defined $configurable_ref;
+    foreach my $package ( sort keys %$configurable_ref ) {
+	# Skip any packages which don't have a configurator.html file
+	my $found = 0;
+	foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS)
         {
-          (($found = 1) and last) if 
-            (-s "$dir/$package/configurator.html");
+	    (($found = 1) and last) if 
+		(-s "$dir/$package/configurator.html");
         }
-      delete $packagexml->{$package} unless $found;
+	my $record_ref = $$configurable_ref{$package};
+	$result{$package} = $$record_ref{package} if $found;
     }
+    return \%result;
 }
 
 #########################################################################
@@ -233,9 +229,8 @@ sub populateConfiguratorList
   # Set up the base directory where this script is being run
   $oscarbasedir = '.';
   $oscarbasedir = $ENV{OSCAR_HOME} if ($ENV{OSCAR_HOME});
-  # Read in all packages' config.xml files
-  $packagexml = deepcopy(pkg_config_xml());
-  getSelectedPackages();
+  # Get the list of selected, configurable packages
+  my $packages_ref = getSelectedConfigurablePackages();
 
   $pane->destroy if ($pane);
   # First, put a "Pane" widget in the center frame
@@ -243,13 +238,13 @@ sub populateConfiguratorList
   $pane->pack(-expand => '1', -fill => 'both');
 
   # Now, start adding OSCAR package stuff to the pane
-  if (scalar(keys %{ $packagexml } ) == 0)
+  if ( ! %$packages_ref )
     {
       $pane->Label(-text => "No OSCAR packages to configure.")->pack;
     }
   else
     { # Create a temp Frame widgit for each package row
-      foreach my $package (sort keys %{ $packagexml } )
+      foreach my $package (sort keys %$packages_ref )
         {
           # Create a frame and save it in a hash based on pkgdir name
           $tempframe->{$package} = $pane->Frame();
@@ -274,7 +269,7 @@ sub populateConfiguratorList
 
           # Then, the package name label.
           $tempframe->{$package}->Label(
-            -text => $packagexml->{$package}{name},
+            -text => $$packages_ref{$package},
             )->pack(-side => 'left');
         }
 
@@ -285,9 +280,9 @@ sub populateConfiguratorList
       # fancy names to directory names, sort on the fancy names, and use
       # that as a hash key into the tempframe hash.
       my(%map);
-      foreach my $package (sort keys %{ $packagexml } )
+      foreach my $package (sort keys %$packages_ref )
         {
-          $map{$packagexml->{$package}{name}} = $package;
+          $map{$$packages_ref{$package}} = $package;
         }
       foreach my $pkgname (sort { lc($a) cmp lc($b) } keys %map)
         {
@@ -311,7 +306,7 @@ sub displayPackageConfigurator # ($parent)
   oscar_log_section("Running step $stepnum of the OSCAR wizard: Configure selected OSCAR packages");
 
   # Call the pre-configure API script in each selected package
-  my @packages = list_install_pkg();
+  my @packages = list_selected_packages();
   foreach my $pkg (@packages) 
     {
       carp('Pre-configure script for package "' . $pkg . '" failed') if 
