@@ -1,6 +1,6 @@
 package OSCAR::AddNode;
 
-#   $Id: AddNode.pm,v 1.2 2002/05/17 21:16:15 mchasal Exp $
+#   $Id: AddNode.pm,v 1.3 2002/05/21 20:45:41 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ use base qw(Exporter);
 use SIS::Image;
 @EXPORT = qw(addnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 sub addnode_window {
     my ($parent, $interface) = @_;
@@ -52,7 +52,7 @@ sub addnode_window {
                                      -command => sub {$window->destroy},
                                     );
 
-    $exitbutton->grid("-",-sticky => "ew");
+    $exitbutton->grid("-","-",-sticky => "ew");
 
 }
 
