@@ -9,7 +9,7 @@
 #                 This script is called when an OSCAR client image      #
 #                 is created.                                           #
 #########################################################################
-my $versionstring = '$Id: post_rpm_install,v 1.2 2003/03/06 23:08:46 brechin Exp $'; # RCS version string of the script
+my $versionstring = '$Id: post_rpm_install,v 1.3 2003/07/21 21:20:10 jenos Exp $'; # RCS version string of the script
 
 use Getopt::Long;   # Used to get command line options
 
@@ -297,15 +297,19 @@ changeNtpdStartup();
 # Make sure the symlinks for ntpd in /etc/rc.d/init.d exist
 system("/sbin/chkconfig --add ntpd");  
 
+### Commented by jenos...
+# Items affecting processes should be in post_install and post_server_install
+# scripts.  Remember, this runs chrooted in the image.  Processes belong to
+# the host machine (server).
 # Depending on the presence/absence of the "--disable" flag, stop/start ntpd
-if (defined($opt_disable))
-  { 
-    system("/etc/init.d/ntpd stop");
-    system("/sbin/chkconfig --level 2345 ntpd off");
-  }
-else
-  { 
-    system("/etc/init.d/ntpd restart");
-    system("/sbin/chkconfig --level 2345 ntpd on");
-  }
+#if (defined($opt_disable))
+#  { 
+#    system("/etc/init.d/ntpd stop");
+#    system("/sbin/chkconfig --level 2345 ntpd off");
+#  }
+#else
+#  { 
+#    system("/etc/init.d/ntpd restart");
+#    system("/sbin/chkconfig --level 2345 ntpd on");
+#  }
 
