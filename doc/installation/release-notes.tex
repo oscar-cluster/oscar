@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.38 2003/08/19 07:44:46 naughtont Exp $
+% $Id: release-notes.tex,v 1.39 2003/08/19 22:29:50 naughtont Exp $
 %
 
 \section{Release Notes}
@@ -111,6 +111,12 @@ and/or Red Hat 8.0 clusters.  The following items highlight these
 issues.  
 
 \begin{itemize}
+
+\item Deselecting Pfilter causes the image creation to fail.  This is
+  due to a dependency with IPtables and when Pfilter is not selected
+  the IPtables RPM is not listed in the node (image) rpmlist.   The simple
+  fix is to add ``iptables'' to the Red Hat 9.0 rpmlist if you are not
+  installing Pfilter on the compute nodes.
 
 \item The RPM system has been updated with this Red Hat release.  The
  OSCAR install process will likely display several warnings due to unsigned
