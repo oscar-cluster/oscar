@@ -15,6 +15,10 @@
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
 use strict;
+use Carp;
+
+# First of all, enforce that the user running this script is 'root'
+croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
 my @known_rpms = qw(
                     apache
