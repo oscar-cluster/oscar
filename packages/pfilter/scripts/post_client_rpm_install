@@ -17,15 +17,14 @@
 #   post_client_rpm_isntall and post_clients for pfilter
 #
 #   This script makes/adjusts the /etc/pfilter.conf server pfilter configuration file,
-#   (re)starts the pfilter service on this server using the /etc/pfilter.conf file,
-#   and makes/adjusts the /etc/pfilter.conf.clients client pfilter configuration file.
+#   and (re)starts the pfilter service on this server using the /etc/pfilter.conf file.
 #
 #   Note that this does NOT copy out the pfilter configuration file for the clients.
 
 use strict;
 use Carp;
-use lib '/usr/lib/systeminstaller';
-use SystemInstaller::Machine;
+#use lib '/usr/lib/systeminstaller';
+#use SystemInstaller::Machine;
 
 # function to return a sorted, unique lines only version of a passed list
 
@@ -49,9 +48,9 @@ my $clients_file = "$server_file.clients";
 
 # find the names of the compute nodes
 
-my %nodes = get_machine_listing();
-my @nodes = sort keys %nodes;
-chomp @nodes;
+#my %nodes = get_machine_listing();
+#my @nodes = sort keys %nodes;
+#chomp @nodes;
 
 #=================================================================
 
@@ -95,7 +94,7 @@ close(SERVER);
 chomp @conf_lines;          # lop off new-line characters at end of lines
 
 # see if we already munched the server configuration file,
-# if so, just update the server and node lines, if not, 
+# if so, just update the server line, if not, 
 # append all our stuff to the end
 
 if ( grep( /^\%define oscar_server/, @conf_lines ) ) {
@@ -103,7 +102,6 @@ if ( grep( /^\%define oscar_server/, @conf_lines ) ) {
     print "Updating already modified pfilter configuration file $server_file\n";
     foreach my $conf_line ( @conf_lines ) {
 	$conf_line =~ s/^\%define oscar_server .*$/%define oscar_server $hostname/;
-	$conf_line =~ s/^\%define nodes .*$/%define nodes @nodes/;
     }
     open(SERVER, ">$server_file") 
 	or croak("post_clients: cannot write modified pfilter configuration file $server_file\n");
@@ -126,7 +124,7 @@ if ( grep( /^\%define oscar_server/, @conf_lines ) ) {
 # define the OSCAR compute nodes (this is updated when
 # compute nodes are added or taken away)
 
-%define nodes @nodes
+%define nodes
 
 # We don't want future pfilter updates to merge commented out
 # new types of configuration directives when pfilter is upgraded.
@@ -159,92 +157,13 @@ open    dhcp    $on_interface
 
 # the server and every compute node trust each other
 
-trusted %oscar_server% %nodes%
+trusted %oscar_server%
 open    multicast                        # for ganglia
 
 #
 # This is the end of the section added by OSCAR
 ENDIT
     close(SERVER);
-}
-
-#=================================================================
-
-# read in the current clients configuration file, if there
-
-my @client_lines = ();
-if ( -f $clients_file  ) { 
-    open(CLIENTS, "$clients_file") 
-	or croak("post_clients: cannot read pfilter configuration file $clients_file\n");
-    @client_lines = <CLIENTS>;    # slurp in configuration file lines
-    close(CLIENTS);
-    chomp @client_lines;          # lop off new-line characters at end of lines
-}
-
-# see if we already munched the clients configuration file,
-# if so, just update the server and node lines, if not, 
-# append all our stuff to the end
-
-if ( grep( /^\%define oscar_server/, @client_lines ) ) {
-
-    print "Updating already modified pfilter configuration file $clients_file\n";
-    foreach my $conf_line ( @client_lines ) {
-	$conf_line =~ s/^\%define oscar_server .*$/%define oscar_server $hostname/;
-	$conf_line =~ s/^\%define nodes .*$/%define nodes @nodes/;
-    }
-    open(CLIENTS, ">$clients_file") 
-	or croak("post_clients: cannot write modified pfilter configuration file $clients_file\n");
-    foreach my $conf_line ( @client_lines ) { print CLIENTS "$conf_line\n" };
-    close(CLIENTS);
-    
-} else {
-
-    open(CLIENTS, ">>$clients_file") 
-	or croak("post_clients: cannot append to pfilter configuration file $clients_file\n");
-    print "Adding OSCAR section to pfilter configuration file $clients_file\n";
-    print CLIENTS <<ENDIT;
-
-# This is the beginning of the section addded by OSCAR
-
-# define the main OSCAR server
-
-%define oscar_server $hostname
-
-# define the OSCAR compute nodes (this is updated when
-# compute nodes are added or taken away)
-
-%define nodes @nodes
-
-# We don't want future pfilter updates to merge commented out
-# new types of configuration directives when pfilter is upgraded.
-
-nomerge
-
-# We don't trust anyone anywhere on any interface by default
-
-untrusted  interfaces  all
-
-# We don't want to fill up system log files with packet
-# rejection messages
-
-nologging
-
-# Be nice and reject, rather than drop, unwanted packets
-
-reject
-
-# Open ssh from anywhere
-
-OPEN	tcp	ssh
-
-# the server and every compute node trust each other
-
-trusted %oscar_server% %nodes%
-
-#
-# This is the end of the section added by OSCAR
-ENDIT
-    close(CLIENTS);
 }
 
 # (re)start the pfilter service
