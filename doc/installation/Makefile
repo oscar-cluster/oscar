@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile,v 1.5 2001/12/18 17:06:51 mchasal Exp $
+# $Id: Makefile,v 1.6 2001/12/19 00:41:54 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -37,7 +37,7 @@ OTHER_SRC_FILES	= \
 
 # .eps and .pdf figure files are required to be pre-generated
 
-PNG_FIG_FILES	= \
+FIG_FILES	= \
 		oscar-wizard.png \
 		collect-mac.png \
 		define-clients.png \
@@ -46,11 +46,12 @@ PNG_FIG_FILES	= \
 
 # SBS (Screen-by-Screen) figures
 
-SBS_FIG_FILES	= \
+SBS_FILES	= \
 		sbs-addclients1.png \
 		sbs-addclients2.png \
 		sbs-build-image1.png \
 		sbs-build-image2.png \
+		sbs-client-rsync.png \
 		sbs-collect-mac1.png \
 		sbs-collect-mac2.png \
 		sbs-collect-mac3.png \
@@ -88,7 +89,8 @@ MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
 MAIN_PS		= $(MAIN_TEX:.tex=.ps)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
 
-EPS_SBS_FIG_FILES = $(SBS_FIG_FILES:.png=.eps)
+EPS_FIG_FILES	= $(FIG_FILES:.png=.eps) $(SBS_FILES:.png=.eps)
+PDF_FIG_FILES	= $(FIG_FILES:.png=.pdf) $(SBS_FILES:.png=.pdf)
 
 # Some common target names
 
@@ -102,8 +104,8 @@ pdf: $(PNG_FIG_FILES) $(MAIN_PDF)
 #
 
 $(MAIN_PS): $(MAIN_DVI)
-$(MAIN_DVI): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PNG_FIG_FILES) $(EPS_SBS_FIG_FILES)
-$(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PNG_FIG_FILES) $(SBS_FIG_FILES)
+$(MAIN_DVI): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIG_FILES)
+$(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(FIG_FILES) $(SBS_FILES)
 
 #
 # General rules
