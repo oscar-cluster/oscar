@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_add_internal.sh,v 1.8 2002/11/01 03:29:31 sad Exp $
+# $Id: gmond_add_internal.sh,v 1.9 2002/12/29 18:05:48 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ elif ! [ -f /etc/gmetad.conf ]; then
     exit 1
 else
     sed -e '/# data_source \"another source\"  1.3.4.7:8655  1.3.4.8/a\
-data_source "\OSCAR\" localhost' -e '/# trusted_hosts 127.0.0.1 169.229.50.165/a\
+data_source \"OSCAR\" localhost' -e '/# trusted_hosts 127.0.0.1 169.229.50.165/a\
 trusted_hosts 127.0.0.1' -e '/# rrd_rootdir \"\/some\/other\/place\"/a\
 rrd_rootdir \"\/var\/log\/ganglia\/rrds\"' -e '/#                http:\/\/ganglia.sourceforge.net\//a\
 # OSCAR gmetad.conf mods done' < /etc/gmetad.conf > /tmp/gmetad.conf.new
