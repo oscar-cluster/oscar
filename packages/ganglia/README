@@ -1,4 +1,4 @@
-$Id: README,v 1.5 2002/11/04 03:19:51 sad Exp $
+$Id: README,v 1.6 2003/01/22 03:48:58 sad Exp $
 
 This is the Ganglia package for OSCAR Linux clusters.
 
@@ -35,12 +35,13 @@ include all or none of the following:
   when they are actually available, or after rebooting/adding a node.
   If this occurs, restarting the Ganglia daemons (gmond's) around the
   cluster seems to resolve the issue, e.g., 'cexec service gmond
-  restart'.
-
-- In some cases, the gmond seems to spin out of control on some nodes
-  and consume large amounts of CPU cycles.  Running the command
-  "service gmond restart" as root on the affected node(s) usually
-  fixes the problem.
+  restart'. This issue has been traced to issues with reseting the system
+  time on the compute/client nodes into the past. This usually occurs
+  under the following conditions: vmware sessions (vmware doesn't handle
+  system time settings correctly), NTP (network time protocal), or
+  sys-admin resets it.  Even though this does not occur under normal
+  circumstances on a working cluster, a patch has submitted been submited
+  to the ganglia developers to fix this minor issue.
 
 - Even though the gmond daemon is running on all of the nodes (server
   and client nodes), you may only see the head node in the reported
