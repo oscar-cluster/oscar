@@ -23,6 +23,8 @@ use lib "$ENV{OSCAR_HOME}/lib",'/usr/lib/systeminstaller';
 use Carp;
 use File::Copy;
 use SIS::Client;
+use SIS::Image;
+use SIS::DB;
 use OSCAR::Package;
 use Data::Dumper;
 use Getopt::Long;
@@ -36,9 +38,9 @@ my @clientlist;
 if (@ARGV) {
         @clientlist=@ARGV;
 } else {
-        my @mlist = clientList;
+        my @mlist = list_client;
         foreach my $m (@mlist) {
-                push @clientlist,$m->{NAME};
+                push @clientlist,$m->hostname;
         }
 }
 

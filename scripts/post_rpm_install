@@ -38,7 +38,7 @@ my $serverint = shift or croak("No server interface name specified!");
 
 my $config = init_si_config();
 
-my $targetdir = $config->default_imagedir . "/$imagename";
+my $targetdir = $config->default_image_dir . "/$imagename";
 
 if(!-d $targetdir) {croak("The directory $targetdir doesn't exist");}
 
@@ -114,12 +114,16 @@ sub sync_user_files {
 
 sub init_si_config {
     my $config = new AppConfig(
-                               DEFAULT_IMAGEDIR => { ARGCOUNT => 1},
                                AUTOINSTALL_SCRIPT_DIR => { ARGCOUNT => 1},
                                AUTOINSTALL_BOOT_DIR => { ARGCOUNT => 1},
                                RSYNCD_CONF => { ARGCOUNT => 1},
-                               CONFIG_DIR => { ARGCOUNT => 1}
+                               CONFIG_DIR => { ARGCOUNT => 1},
+                               DEFAULT_IMAGE_DIR => { ARGCOUNT => 1},
+                               RSYNC_STUB_DIR => { ARGCOUNT => 1},
+                               TFTP_DIR => { ARGCOUNT => 1},
+                               NET_BOOT_DEFAULT => { ARGCOUNT => 1}
                               );
     $config->file("/etc/systemimager/systemimager.conf");
+    
     return $config;
 }

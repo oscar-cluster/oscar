@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.14 2002/10/29 14:29:25 jsquyres Exp $
+#   $Id: MAC.pm,v 1.15 2003/01/14 22:26:59 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,12 +28,13 @@ use Carp;
 use SIS::Client;
 use File::Copy;
 use SIS::Adapter;
+use SIS::DB;
 use OSCAR::Network;
 use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.15 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -183,14 +184,14 @@ sub regenerate_tree {
     my ($tree) = @_;
     $tree->delete("all");
     $tree->add("|",-text => "All Clients",-itemtype => "text");
-    my @clients = clientList();
+    my @clients = list_client();
     foreach my $client (@clients) {
-        my $adapter = findAdapter($client->{NAME},"eth0");
-        $tree->add("|".$client->{NAME}, -text => $client->{HOST}, -itemtype => "text");
-        $tree->add("|".$client->{NAME} . "|mac", 
-                   -text => $adapter->{NAME} . " mac = " . $adapter->{MAC}, -itemtype => "text");
-        $tree->add("|".$client->{NAME} . "|ip" . $adapter->{NAME}, 
-           -text => $adapter->{NAME} . " ip = " . $adapter->{IP_ADDR}, -itemtype => "text");
+        my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
+        $tree->add("|".$client->name, -text => $client->hostname, -itemtype => "text");
+        $tree->add("|".$client->name . "|mac", 
+                   -text => $adapter->devname . " mac = " . $adapter->mac, -itemtype => "text");
+        $tree->add("|".$client->name . "|ip" . $adapter->devname, 
+           -text => $adapter->devname . " ip = " . $adapter->ip, -itemtype => "text");
     }
     $tree->autosetmode;
 }
@@ -214,14 +215,14 @@ sub assign2machine {
     my $client;
     if($node =~ /^\|([^\|]+)/) {
         oscar_log_subsection("Step $step_number: Assigned $mac to $1");
-        $client = findClient($1);
+        $client = list_client(name=>$1);
     } else {
         return undef;
     }
-    my $adapter = findAdapter($client->{NAME},"eth0");
-    $MAC{$mac}->{client} = $adapter->{IP_ADDR};
-    $adapter->{MAC} = $mac;
-    $adapter->update;
+    my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
+    $MAC{$mac}->{client} = $adapter->ip;
+    $adapter->mac($mac);
+    set_adapter($adapter);
     regenerate_listbox($listbox);
     regenerate_tree($tree);
 }
@@ -231,18 +232,18 @@ sub clear_mac {
     my $node = $tree->infoSelection() or return undef;
     my $client;
     if($node =~ /^\|([^\|]+)/) {
-        $client = findClient($1);
+        $client = list_client(name=>$1);
     } else {
         return undef;
     }
-    my $adapter = findAdapter($client->{NAME},"eth0");
-    my $mac = $adapter->{MAC};
+    my $adapter = list_adapter(client=>$client->{NAME},devname=>"eth0");
+    my $mac = $adapter->mac;
     oscar_log_subsection("Step $step_number: Cleared $mac from $1");
 
     # now put the mac back in the pool
     $MAC{$mac}->{client} = undef;
-    $adapter->{MAC} = "";
-    $adapter->update;
+    $adapter->mac("");
+    set_adapter($adapter);
     regenerate_listbox($listbox);
     regenerate_tree($tree);
 }

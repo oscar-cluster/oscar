@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.5 2002/11/04 23:14:21 jsquyres Exp $
+      $Id: config.xml,v 1.6 2003/01/14 22:26:59 mchasal Exp $
   -->
   <name>sis</name>
 
@@ -46,14 +46,15 @@
       <rpm>systeminstaller</rpm>
       <rpm>systeminstaller-x11</rpm>
       <rpm>perl-Tk</rpm>
-      <rpm>perl-DBI</rpm>
+      <rpm>perl-MLDBM</rpm>
       <rpm>syslinux</rpm>
       <rpm>systemimager-server</rpm>
-      <rpm>systemimager-i386boot</rpm>
-      <rpm>systemimager-ia64boot</rpm>
-      <rpm>libdbdcsv-perl</rpm>
+      <rpm>systemimager-i386boot-standard</rpm>
+      <rpm>systemimager-ia64boot-standard</rpm>
       <rpm>rsync</rpm>
       <rpm>tftp-hpa</rpm>
+      <rpm>perl-XML-Simple</rpm>
+      <rpm>perl-XML-Parser</rpm>
     </server>
     <client>
       <rpm>systemimager-client</rpm>

@@ -24,6 +24,7 @@ use File::Copy;
 use File::Path;
 use File::Basename;
 use SIS::Image;
+use SIS::DB;
 use OSCAR::Package;
 use Data::Dumper;
 
@@ -49,9 +50,9 @@ if($return) {
 exit($return);
 
 sub push_hosts {
-    my @images = imageList();
+    my @images = list_image();
     foreach my $image (@images) {
-        my $dir = $image->{PATH};
+        my $dir = $image->location;
         copy("/etc/hosts","$dir/etc/hosts") or (carp "Can't copy /etc/hosts to $dir",
                                                 return undef);
     }
