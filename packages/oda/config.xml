@@ -406,6 +406,41 @@
         </expansion>
       </shortcut>
 
+      <shortcut>
+        <command> install_opkg </command>
+        <description>
+          install_opkg inserts a record from config_opkgs 
+          table with a package name,
+          required parameters are:
+                  configurations.id           ID of the configurations
+                  package.name                Name of the package
+        </description>
+        <expansion>
+          insert_record
+          config_opkgs
+          config_opkgs.configurations_id~%1
+          config_opkgs.package_id~packages.id
+          packages.name=%2
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> uninstall_opkg </command>
+        <description>
+          uninstall_opkg delete a record from config_opkgs 
+          table with a package name,
+          required parameters are:
+                  package.name                    Name of the package
+        </description>
+        <expansion>
+          delete_records
+          config_opkgs
+          config_opkgs.package_id=packages.id
+          packages.name=%1
+        </expansion>
+      </shortcut>
+
+
       <!--
       ==================================================
       ==            NEST SHORTCUTS <END>              ==

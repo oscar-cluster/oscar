@@ -157,6 +157,7 @@ sub install_uninstall_packages
 			#OSCAR::Database::database_execute_command(
 			# "package_clear_installed $package");
 			OSCAR::Database::database_execute_command("package_clear_should_be_uninstalled $package");
+			&uninstall_package($package);
 		}
 		else
 		{
@@ -180,6 +181,7 @@ sub install_uninstall_packages
 			#OSCAR::Database::database_execute_command(
 			#  "package_mark_installed $package");
 			OSCAR::Database::database_execute_command("package_clear_should_be_installed $package");
+			&install_package($package);
 		}
 		else
 		{
@@ -1828,5 +1830,37 @@ sub print_errors
 		print $error;
 	}
 }
+
+#
+# NEST SUBROUTINE BEGIN
+#
+
+# Uninstall a oscar package by delete records from the config_opkgs table
+# with the package name.
+# The records corresponding to the selected package name will be deleted.
+
+sub uninstall_package{
+    my $opkg = shift;
+    if (system("oda uninstall_opkg $opkg")) {
+         carp("Failed to delete a record from config_opkgs");
+    }
+}
+
+# Install a oscar package by Insert records from the config_opkgs table
+# with the package name.
+# The records corresponding to the selected package name will be inserted.
+sub install_package{
+    my $opkg = shift;
+    chomp(my @configs_id = `oda rea configurations.id configurations.name=nodes.name`);
+    foreach my $config_id (@configs_id){
+        if (system("oda install_opkg $config_id $opkg")) {
+             carp("Failed to insert a record into config_opkgs");
+        }
+    }
+}
+
+#
+# NEST SUBROUTINE END
+#
 
 1;
