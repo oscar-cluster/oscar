@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.16 2003/04/01 04:18:09 ngorsuch Exp $
+      $Id: config.xml,v 1.17 2003/04/01 04:48:38 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -235,11 +235,11 @@
 	<shortcut> delete_node delete_records nodes nodes.name=%1 </shortcut>
 	<shortcut> delete_node_group delete_records node_groups node_groups.name=%1 </shortcut>
 	<shortcut> delete_package_set delete_records package_sets package_sets.name=%1 </shortcut>
-	<shortcut> disk_layout_id_to_name read_records disk_layouts.name id=%1 </shortcut>
-	<shortcut> disk_layout_name_to_id read_records disk_layouts.id name=%1 </shortcut>
+	<shortcut> disk_layout_id_to_name read_records disk_layouts.name disk_layouts.id=%1 </shortcut>
+	<shortcut> disk_layout_name_to_id read_records disk_layouts.id disk_layouts.name=%1 </shortcut>
 	<shortcut> disk_layouts read_records|modify_records disk_layouts.name %+ </shortcut>
-	<shortcut> image_id_to_name read_records images.name id=%1 </shortcut>
-	<shortcut> image_name_to_id read_records images.id name=%1 </shortcut>
+	<shortcut> image_id_to_name read_records images.name images.id=%1 </shortcut>
+	<shortcut> image_name_to_id read_records images.id images.name=%1 </shortcut>
 	<shortcut> images read_records|modify_records images.name %+ </shortcut>
 	<shortcut> link_node_nic_to_network modify_records nics nodes.name=%1 nics.name=%2 networks.name=%3 nics.node_id~nodes.id nics.network_id~networks.id </shortcut>
 	<shortcut> link_node_to_disk_layout modify_records modes nodes.name=%1 disk_layouts.name=%2 nodes.disk_layout_id~disk_layouts.id </shortcut>
@@ -251,29 +251,29 @@
 	<shortcut> list_nodes_on_network read_records networks.name=%1 nics.node_id=nodes.id nics.network_id=networks.id nodes.name </shortcut>
 	<shortcut> list_nodes_using_dns_server read_records node_dns_server_entries.server=%1 node_dns_server_entries.node_id=nodes.id nodes.name </shortcut>
 	<shortcut> list_packages_in_package_set read_records package_sets.name=%1 package_sets.id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.name </shortcut>
-	<shortcut> network_id_to_name read_records networks.name id=%1 </shortcut>
-	<shortcut> network_name_to_id read_records networks.id name=%1 </shortcut>
+	<shortcut> network_id_to_name read_records networks.name networks.id=%1 </shortcut>
+	<shortcut> network_name_to_id read_records networks.id networks.name=%1 </shortcut>
 	<shortcut> networks read_records|modify_records networks.name %+ </shortcut>
 	<shortcut> nics read_records|modify_records nics.name %+ </shortcut>
 	<shortcut> node_cluster_only_ips read_records nodes.name=%1 nics.node_id=nodes.id nics.network_id=networks.id networks.cluster_only!=0 nics.ip </shortcut>
-	<shortcut> node_group_id_to_name read_records node_groups.name id=%1 </shortcut>
-	<shortcut> node_group_name_to_id read_records node_groups.id name=%1 </shortcut>
+	<shortcut> node_group_id_to_name read_records node_groups.name node_groups.id=%1 </shortcut>
+	<shortcut> node_group_name_to_id read_records node_groups.id node_groups.name=%1 </shortcut>
 	<shortcut> node_groups read_records|modify_records node_groups node_groups.name %+ </shortcut>
-	<shortcut> node_id_to_name read_records nodes.name id=%1 </shortcut>
+	<shortcut> node_id_to_name read_records nodes.name nodes.id=%1 </shortcut>
 	<shortcut> node_ips read_records nodes.name=%1 nics.node_id=nodes.id nics.network_id=networks.id nics.ip </shortcut>
-	<shortcut> node_name_to_id read_records nodes.id name=%1 </shortcut>
+	<shortcut> node_name_to_id read_records nodes.id nodes.name=%1 </shortcut>
 	<shortcut> node_public_ips read_records nodes.name=%1 nics.node_id=nodes.id nics.network_id=networks.id networks.cluster_only=0 nics.ip </shortcut>
 	<shortcut> nodes read_records|modify_records nodes name %+ </shortcut>
 	<shortcut> nodes_cluster_only_ips read_records nics.node_id=nodes.id nics.network_id=networks.id networks.cluster_only!=0 nics.ip </shortcut>
 	<shortcut> nodes_public_ips read_records nics.node_id=nodes.id nics.network_id=networks.id networks.cluster_only=0 nics.ip </shortcut>
 	<shortcut> oscar_server read_records oscar.oscar_server_id!=undef oscar.oscar_server_id=nodes.id nodes.name </shortcut>
-	<shortcut> package_id_to_name read_records packages.name id=%1 </shortcut>
-	<shortcut> package_name_to_id read_records packages.id name=%1 </shortcut>
-	<shortcut> package_set_id_to_name read_records package_sets.name id=%1 </shortcut>
-	<shortcut> package_set_name_to_id read_records package_sets.id name=%1 </shortcut>
-	<shortcut> package_set_selected modify_records packages name=%1 selected~1 </shortcut>
+	<shortcut> package_id_to_name read_records packages.name packages.id=%1 </shortcut>
+	<shortcut> package_name_to_id read_records packages.id packages.name=%1 </shortcut>
+	<shortcut> package_set_id_to_name read_records package_sets.name package_sets.id=%1 </shortcut>
+	<shortcut> package_set_name_to_id read_records package_sets.id package_sets.name=%1 </shortcut>
+	<shortcut> package_set_selected modify_records packages packages.name=%1 selected~1 </shortcut>
 	<shortcut> package_sets read_records package_sets.name </shortcut>
-	<shortcut> package_unset_selected modify_records packages name=%1 selected~0 </shortcut>
+	<shortcut> package_unset_selected modify_records packages packages.name=%1 selected~0 </shortcut>
 	<shortcut> packages read_records|modify_records packages name %+ </shortcut>
 	<shortcut> packages_class_selected packages_selected class=%1 %+ </shortcut>
 	<shortcut> packages_class_unselected packages_unselected class=%1 %+ </shortcut>
