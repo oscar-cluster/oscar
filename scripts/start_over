@@ -18,7 +18,7 @@ my @rpms = qw(
               openpbs-oscar-server
               openpbs-oscar-gui
               openpbs-oscar-commands
-              lam-profile-d-6.5.6-usysv.1oscar
+              lam-module
               sync-users-oscar
               maui-oscar
               libdbdcsv-perl
@@ -39,8 +39,6 @@ stop_services();
 # Delete the clients first so /etc/hosts gets cleaned
 print "/usr/bin/mksimachine --Delete --all\n";
 system("/usr/bin/mksimachine --Delete --all");
-
-uninstall_rpms("lam-module"); # Don't know why this doesn't work with the others
 
 uninstall_rpms(@rpms);
 
