@@ -14,26 +14,31 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# (re)start the pfilter service on this server
+
+print "(re)starting the pfilter firewall service on this server\n";
+$command = "service pfilter restart";
+print "$command\n";
+system( $command );
+my $command = "chkconfig --level=2345 pfilter on";
+print "$command\n";
+system( $command );
+
 # push out the pfilter configuration file
 
-my $command = ". /etc/profile.d/c3.sh && cpush /etc/pfilter.conf /etc";
+print "pushing out the clients pfilter firewall configuration file\n";
+my $command = ". /etc/profile.d/c3.sh && cpush /etc/pfilter.conf.clients /etc/pfilter.conf";
 print "$command\n";
 system( $command ) && croak("pfilter configuration file push failed.");
 
-# if pfilter is running on this server, restart it here and on the clients
+# (re)start the pfilter service on the clients
 
-if ( grep ( /running/, `service pfilter status` ) ) {
-
-    print "pfilter is running, restarting it here and on clients\n";
-
-    $command = "service pfilter restart";
-    print "$command\n";
-    system( $command );
-
-    $command = ". /etc/profile.d/c3.sh && cexec service pfilter restart";
-    print "$command\n";
-    system( $command );
-
-}
+print "(re)starting the pfilter firewall service on the clients\n";
+$command = ". /etc/profile.d/c3.sh && cexec service pfilter restart";
+print "$command\n";
+system( $command );
+my $command = ". /etc/profile.d/c3.sh && cexec chkconfig --level=2345 pfilter on";
+print "$command\n";
+system( $command );
 
 exit 0;
