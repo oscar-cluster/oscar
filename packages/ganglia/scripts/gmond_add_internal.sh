@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_add_internal.sh,v 1.7 2002/11/01 03:26:37 sad Exp $
+# $Id: gmond_add_internal.sh,v 1.8 2002/11/01 03:29:31 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ elif ! [ -f /etc/gmond.conf ]; then
     exit 1
 else
     sed -e "s/# mcast_if  eth1$/mcast_if  $OSCAR_HEAD_INTERNAL_INTERFACE/" -e '/# default: the kernel decides based on routing configuration/a\
-    # OSCAR internal interface mods done' < /etc/gmond.conf > /tmp/gmond.conf.new
+# OSCAR internal interface mods done' < /etc/gmond.conf > /tmp/gmond.conf.new
     mv /etc/gmond.conf /etc/gmond.conf_before_oscar
     mv /tmp/gmond.conf.new /etc/gmond.conf
     chmod 755 /etc/gmond.conf
