@@ -1,12 +1,19 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2002/10/28 22:43:56 tfleury Exp $
+# Copyright (c) 2003 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# $Id: Makefile.am,v 1.2 2003/07/04 14:37:08 jsquyres Exp $
 #
-# This file is part of the OSCAR distribution.
-# See the copyright and license notices in the top-level directory.
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
 #
 
-EXTRA_DIST		= \
+include $(top_srcdir)/dist/Makefile.options
+
+oscar_SCRIPTS		= \
 			Form.pm \
 			Handler.pm \
 			IO.pm
+
+EXTRA_DIST		= $(oscar_SCRIPTS)

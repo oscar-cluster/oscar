@@ -1,12 +1,17 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2003/07/02 18:15:29 tfleury Exp $
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# $Id: Makefile.am,v 1.2 2003/07/04 14:37:08 jsquyres Exp $
 #
-# This file is part of the OSCAR distribution.
-# See the copyright and license notices in the top-level directory.
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
 #
 
-EXTRA_DIST		= \
+include $(top_srcdir)/dist/Makefile.options
+
+oscar_SCRIPTS		= \
 			OpderAbout.pm \
 			OpderDownloadInfo.pm \
 			OpderDownloadPackage.pm \
@@ -18,4 +23,6 @@ EXTRA_DIST		= \
 			SelectorManageSets.pm \
 			Selector.pl \
 			SelectorTable.pm \
-			SelectorUtils.pm 
+			SelectorUtils.pm
+
+EXTRA_DIST		= $(oscar_SCRIPTS)

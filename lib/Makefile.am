@@ -1,12 +1,17 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.4 2003/07/02 18:16:07 tfleury Exp $
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# $Id: Makefile.am,v 1.5 2003/07/04 14:37:08 jsquyres Exp $
 #
-# This file is part of the OSCAR distribution.
-# See the copyright and license notices in the top-level directory.
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
 #
+
+include $(top_srcdir)/dist/Makefile.options
 
 SUBDIRS			= \
 			OSCAR \
-			Tk \
-			Qt 
+			Qt \
+			Tk
