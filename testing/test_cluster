@@ -14,6 +14,9 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+#   Copyright (c) 2003 The Trustees of Indiana University.  
+#                      All rights reserved.
+
 #   This script is designed to be run after the image is built.
 #   It will do all the fixups required.
 
@@ -50,15 +53,24 @@ my $return = 0;
 
 print "Performing root tests...\n";
 # First do the root tests
-$ENV{OSCAR_TESTPRINT}=$ENV{OSCAR_HOME}. "/testing/testprint";
+$ENV{OSCAR_TESTPRINT}="$ENV{OSCAR_HOME}/testing/testprint";
+my $file;
+my $script;
 foreach my $pkg (@pkgs) {
-    if(!run_pkg_user_test("$ENV{OSCAR_HOME}/packages/$pkg/testing/test_root","root",0,join(" ",@clientlist))) {
-  #  if(!run_pkg_script($pkg,"test_root",0,join(" ",@clientlist))) {
-        $return++;
-    } 
+    $file = "$pkg/testing/test_root";
+    for my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
+	$script = "$dir/$file";
+	if (-x $script) {
+	    if (!run_pkg_user_test($script, "root", 0,
+				   join(" ", @clientlist))) {
+		$return++;
+	    } 
+	}
+    }
 }
 
-if($return) {
+
+if ($return) {
     print("There were issues running some root test scripts.  Please check your logs\n");
 }
 
@@ -66,13 +78,15 @@ if($return) {
 #
 
 my $test_user="oscartst";
-my ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts)=getpwnam $test_user;
+my ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) =
+    getpwnam $test_user;
 unless ($test_user_homedir) {
           if (system("/usr/sbin/useradd -m $test_user") ||
 	      system("/opt/opium/bin/sync_users --force >/dev/null 2>&1")) {
                   croak("Unable to create test user and run user tests, exitting.");
           }
-          ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts)=getpwnam $test_user;
+          ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) = 
+	      getpwnam $test_user;
 }
 
 # Check for a properly mounted /home dir
@@ -96,10 +110,6 @@ if ($homecount) {
 }
 unlink("$test_user_homedir/oscartestfile");
 
-
-
-
-
 # Now the user tests
 
 print "\nPreparing user tests...\n";
@@ -116,12 +126,14 @@ foreach my $file (@ufiles) {
 
 # Copy the packages test files to the user home dir.
 foreach my $pkg (@pkgs) {
-    if (-d "$ENV{OSCAR_HOME}/packages/$pkg/testing") {
-	mkdir("$test_user_homedir/$pkg/");
-        # I know, shell badness, but so much easier than doing
-	# a recursive thing in perl.
-	system("cp -af $ENV{OSCAR_HOME}/packages/$pkg/testing/* $test_user_homedir/$pkg/");
-	system("chown -R $tid:$tgid $test_user_homedir/$pkg/");
+    foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
+	if (-d "$dir/$pkg/testing") {
+	    mkdir("$test_user_homedir/$pkg/");
+	    # I know, shell badness, but so much easier than doing
+	    # a recursive thing in perl.
+	    system("cp -af $dir/$pkg/testing/* $test_user_homedir/$pkg/");
+	    system("chown -R $tid:$tgid $test_user_homedir/$pkg/");
+	}
     }
 }
 
@@ -148,7 +160,7 @@ foreach my $pkg (@pkgs) {
     }
 }
 
-if($creturn) {
+if ($creturn) {
     print("There were issues running some user test scripts.  Please check your logs\n");
 }
 
@@ -157,7 +169,6 @@ if ($opts{wait}) {
 } else {
         exit($return);
 }
-
 
 
 sub waitexit {
