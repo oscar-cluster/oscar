@@ -161,6 +161,11 @@ sub delnodes {
           $fail++;
 	}
 
+        # Modifier : DongInn Kim (dikim@osl.iu.edu)
+        # It is added to update the oda database corresponding to the 
+        # the sis database.
+        # post_clients in sis package runs the delete_node, an oda shortcut,
+        # to update all related tables.
         if(!run_pkg_script("sis","post_clients",1)) {
                     carp("Couldn't run post_clients script for SIS");
         }
