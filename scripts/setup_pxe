@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.6 2002/06/04 21:01:40 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.7 2003/01/20 21:00:49 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -75,11 +75,11 @@ if($ARCH eq "i386") {
       croak("Unable to copy pxelinux.0 file to /tftpboot.");
     
     verbose("Copying default pxelinux.cfg file");
-    copy("/usr/share/systemimager/$archdir/pxelinux.cfg/default", "/tftpboot/pxelinux.cfg/") or 
+    copy("/etc/systemimager/pxelinux.cfg/default", "/tftpboot/pxelinux.cfg/") or 
       croak("Unable to copy default pxelinux.cfg file to /tftpboot.");
 
     verbose("Copying SystemImager kernel & ramdisk");
-    copy("/usr/share/systemimager/$archdir/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
+    copy("/etc/systemimager/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
       croak("Unable to copy default message.txt file to /tftpboot.");
 } elsif ($ARCH eq "ia64") {
     verbose("Copying elilo.efi to /tftpboot");
@@ -108,10 +108,10 @@ END
     croak("$ARCH is not a known architecture");
 }
 
-copy("/usr/share/systemimager/$archdir/kernel", "/tftpboot/") or 
+copy("/usr/share/systemimager/boot/$ARCH/standard/kernel", "/tftpboot/") or 
   croak("Unable to copy kernel file to /tftpboot.");
     
-copy("/usr/share/systemimager/$archdir/initrd.gz", "/tftpboot/") or 
+copy("/usr/share/systemimager/boot/$ARCH/standard/initrd.gz", "/tftpboot/") or 
   croak("Unable to copy ramdisk file to /tftpboot.");
 
 exit 0; 
