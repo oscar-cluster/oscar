@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.6 2002/11/04 23:14:08 jsquyres Exp $
+      $Id: config.xml,v 1.7 2002/11/06 07:32:22 ngorsuch Exp $
   -->
   <name>Environment Switcher</name>
 
@@ -68,10 +68,10 @@ purpose.</description>
        To list all the things that a particular package provides:
            oda this-package-provides package_name
        -->
-      <shortcut> switcher-packages-that-provide read-records packages_provides package name=$1 </shortcut>
-      <shortcut> switcher-this-package-provides read-records packages_provides name package=$1 </shortcut>
-      <shortcut> switcher-packages-that-require read-records packages_requires package name=$1 </shortcut>
-      <shortcut> switcher-this-package-requires read-records packages_requires name package=$1 </shortcut>
+      <shortcut> switcher_packages_that_provide read_records packages_provides package name=%1 </shortcut>
+      <shortcut> switcher_this_package_provides read_records packages_provides name package=%1 </shortcut>
+      <shortcut> switcher_packages_that_require read_records packages_requires package name=%1 </shortcut>
+      <shortcut> switcher_this_package_requires read_records packages_requires name package=%1 </shortcut>
      </oda>
   </package>
 </oscar>
