@@ -1,6 +1,6 @@
 package OSCAR::Distro;
 
-#   $Id: Distro.pm,v 1.12 2003/12/04 05:05:27 ngorsuch Exp $
+#   $Id: Distro.pm,v 1.13 2004/02/17 17:09:17 tuelusr Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(which_distro which_distro_server);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.12 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.13 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
 		   'fedora-release'   => 'fedora',
@@ -38,6 +38,7 @@ my $DISTROFILES = {
 		   'redhat-release-as'=> 'rhas',
 		   'aaa_version'      => 'suse',
 		   'aaa_base'	      => 'suse',
+                   'debian_version'   => 'debian',
                   };
 
 ############################################################
@@ -47,6 +48,11 @@ my $DISTROFILES = {
 #
 ############################################################
 
+# XXX: For Debian we're going to have to pull /etc/debian_version out of
+# base-files*.deb to figure out what release we're on... wow, that sucks
+#
+# This flavor of the function is _only_ called from
+# packages/kernel_picker/scripts/pre_configure and scripts/oscar_wizard
 
 sub which_distro {
     my $directory = shift;
@@ -75,7 +81,10 @@ sub which_distro_server {
     my $name = "UnkownLinux";
     my $version = "0";
     foreach my $file (keys %$DISTROFILES) {
-        my $output = `rpm -q --qf '\%{VERSION}' $file 2>/dev/null`;
+        my $output = $DISTROFILES->{$file} eq 'debian' ?
+                        `cat /etc/$file` :
+                        `rpm -q --qf '\%{VERSION}' $file 2>/dev/null`;
+
         if($?) {
             # Then the child had a bad exit, so the package is not here
             next;

@@ -7,7 +7,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.59 2003/11/15 00:22:41 tfleury Exp $
+#   $Id: Package.pm,v 1.60 2004/02/17 17:10:35 tuelusr Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -26,11 +26,13 @@ package OSCAR::Package;
 
 use strict;
 use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL %PHASES
-            @PKG_SOURCE_LOCATIONS);
+            @PKG_SOURCE_LOCATIONS $PKG_EXTENSION $PKG_DIRNAME $PKG_SEPARATOR);
 use base qw(Exporter);
 use OSCAR::Database;
 use OSCAR::PackageBest;
+use OSCAR::PackMan;
 use OSCAR::Logger;
+use OSCAR::Distro;
 use File::Basename;
 use File::Copy;
 use XML::Simple;
@@ -38,14 +40,26 @@ use Carp;
 
 @EXPORT = qw(list_installable_packages list_installable_package_dirs 
              run_pkg_script run_pkg_user_test
-             run_pkg_script_chroot rpmlist install_rpms copy_rpms 
+             run_pkg_script_chroot rpmlist install_packages copy_pkgs 
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.59 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.60 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
+my ($distro_name, $distro_version) = which_distro_server();
 
-$RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
+if ($distro_name ne 'debian') {
+    $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
+    $PKG_EXTENSION = ".rpm";
+    $PKG_DIRNAME = "RPMS";
+    $PKG_SEPARATOR = '-';
+} else {
+    # debian
+    $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/deb';
+    $PKG_EXTENSION = ".deb";
+    $PKG_DIRNAME = "Debs";
+    $PKG_SEPARATOR = '_';
+}
 
 # XML data from all the packages.
 
@@ -332,20 +346,23 @@ sub rpmlist {
   # Default to all RPMs in the directory
     my $prefix;
     foreach my $pkg_dir (@PKG_SOURCE_LOCATIONS) {
-    if (-d "$pkg_dir/$pkg") {
-        $prefix = "$pkg_dir/$pkg";
-        last;
-    }
+        if (-d "$pkg_dir/$pkg") {
+            $prefix = "$pkg_dir/$pkg";
+            last;
+        }
     }
     if (! $prefix) {
-    return ();
+        return ();
     }
-    if (-d "$prefix/RPMS") {
+
+    my $pkgdir = "$prefix/$PKG_DIRNAME";
+    
+    if (-d "$pkgdir") {
       my @parts;
       my %found;
       my $base;
-      opendir(PKGDIR, "$prefix/RPMS") ||
-      carp("Unable to open $prefix/RPMS");
+      opendir(PKGDIR, "$pkgdir") ||
+      carp("Unable to open $pkgdir");
         
     # Remember that there may be multiple versions /
     # architectures for each base RPM.  We don't try to
@@ -356,13 +373,13 @@ sub rpmlist {
     # Crude hueristic: take each *.rpm filename, split it by
     # the character "-" and drop the last 2 components.
         
-      foreach my $file (grep { /\.rpm$/ && -f "$prefix/RPMS/$_" }
+      foreach my $file (grep { /\.${PKG_EXTENSION}$/ && -f "$pkgdir/$_" }
               readdir(PKGDIR)) {
-     @parts = split(/\-/, $file);
-     pop @parts;
-    pop @parts;
-    $base = join("-", @parts);
-    $found{$base} = 1;
+        @parts = split(/$PKG_SEPARATOR/, $file);
+        pop @parts;
+        pop @parts;
+        $base = join($PKG_SEPARATOR, @parts);
+        $found{$base} = 1;
       }
       closedir(PKGDIR);
       @rpms_to_return = keys(%found);
@@ -371,7 +388,7 @@ sub rpmlist {
 
     # That's all she wrote
 
-  oscar_log_subsection("Returning $type RPMs for $pkg: " . 
+  oscar_log_subsection("Returning $type packages for $pkg: " . 
              join(' ', @rpms_to_return));
   @rpms_to_return;
 }
@@ -408,39 +425,46 @@ sub distro_rpmlist {
 # they don't already exist at a high enough version
 #
 
-sub install_rpms {
-    my (@rpms) = @_;
-    my ($ret, %bestrpms) = find_files(
+sub install_packages {
+    my (@pkgs) = @_;
+
+    my $findfunc = \&find_files;
+    if ($distro_name eq 'debian') {
+        $findfunc = \&find_files_deb; # swizzle function for Debian
+    }
+    my ($ret, %bestpkgs) = $findfunc->(
                               PKGDIR => $RPM_POOL,
-                              PKGLIST => [@rpms],
+                              PKGLIST => [@pkgs],
                              );
+
     if ($ret == 0) {
-    oscar_log_subsection("Warning: OSCAR find_files errored out");
-    return 0;
+        oscar_log_subsection("Warning: OSCAR find_files errored out");
+        return 0;
     }
 
-    foreach my $key (keys %bestrpms) {
-        my $fullfilename = "$RPM_POOL/$bestrpms{$key}";
-        if(server_version_goodenough($fullfilename)) {
+    foreach my $key (keys %bestpkgs) {
+        my $fullfilename = "$RPM_POOL/$bestpkgs{$key}";
+        # XXX skip this temporarily for debian
+        if(server_version_goodenough($fullfilename) && $distro_name ne 'debian') {
             # purge the package from the list
-            delete $bestrpms{$key};
+            delete $bestpkgs{$key};
         }
     }
 
-    my @fullfiles = map {"$RPM_POOL/$_"} (sort values %bestrpms);
+    my @fullfiles = map {"$RPM_POOL/$_"} (sort values %bestpkgs);
     
     if(!scalar(@fullfiles)) {
-    return 1;
-    }
-    
-    my $cmd = "rpm -Uhv " . join(' ', @fullfiles);
-    my $rc = system($cmd);
-    if($rc) {
-        carp("Couldn't run $cmd");
-        return 0;
-    } else {
         return 1;
     }
+
+    my $pm = PackMan->new;
+
+    if (! $pm->install(@fullfiles)) {
+        carp("pm->install failed");
+        return 0;
+    }
+
+    return 1;
 }
 
 sub server_version_goodenough {
@@ -553,7 +577,7 @@ sub read_all_pkg_config_xml_files {
 }
 
 #########################################################################
-#  Subroutine: copy_rpms                                                #
+#  Subroutine: copy_pkgs                                                #
 #  Parameters: A 'packages' directory, usually $OSCAR_HOME/packages or  #
 #              /var/lib/oscar/packages/                                 #
 #  Returns   : 1 if successful, undef if failure                        #
@@ -561,7 +585,7 @@ sub read_all_pkg_config_xml_files {
 #  passed in 'packages' directory to the $RPM_POOL directory (which is  #
 #  typically /tftpboot/rpm).                                            #
 #########################################################################
-sub copy_rpms # ($pkgdir) -> 1|undef
+sub copy_pkgs # ($pkgdir) -> 1|undef
 {
   my ($pkgdir) = @_;
                                                                                 
@@ -571,10 +595,11 @@ sub copy_rpms # ($pkgdir) -> 1|undef
   foreach my $dir (@packagedirs) 
     {
       # For each package, get a list of its RPMs
-      my @files = files_in_dir("$dir/RPMS");
+      my @files = files_in_dir("$dir/$PKG_DIRNAME");
       foreach my $file (@files) 
         {
-          if ($file =~ /\.rpm$/) 
+          # NOTE: this is slightly broken... not anchored to end of string with $
+          if ($file =~ /$PKG_EXTENSION/)
             {
               my $filename = basename($file);
               # Copy the file only if it isn't in the destination directory
@@ -594,7 +619,7 @@ sub copy_rpms # ($pkgdir) -> 1|undef
 #  Parameters: A directory                                              #
 #  Returns   : A list of all files/directories (except for '.' and      #
 #              '..') under the passed-in directory.                     #
-#  This subroutine is called by copy_rpms to get list of all files /    #
+#  This subroutine is called by copy_pkgs to get list of all files /    #
 #  directories under a given directory.  The list returned has the      #
 #  passed-in directory prepended to the file/directory name.            #
 #########################################################################

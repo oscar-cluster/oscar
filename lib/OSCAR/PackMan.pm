@@ -7,7 +7,7 @@ package PackMan;
 #  information, see the COPYING file in the top level directory of the
 #  OSCAR source distribution.
 #
-#  $Id: PackMan.pm,v 1.1 2003/12/09 05:39:56 tuelusr Exp $
+#  $Id: PackMan.pm,v 1.2 2004/02/17 17:08:29 tuelusr Exp $
 
 use 5.008;
 use strict;
@@ -24,7 +24,7 @@ $VERSION = '1.1';
 $VERSION = '1.2';
 # more cleanup (mostly docs)
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 # concrete package manager order of preference, for breaking ties on systems
 # where multiple package manager modules might claim usability.
@@ -49,7 +49,7 @@ BEGIN {
 # default package manager can be determined, all available package managers
 # will be consulted in an indeterminant order in a final attempt to find one
 # that's usable.
-  @preference = qw(RPM);
+  @preference = qw(RPM Deb);
 
   my $packman_dir = File::Spec->catdir ($installed_dir,
 					split ("::", __PACKAGE__));
@@ -243,21 +243,20 @@ sub do_simple_command {
   if ($aggregatable) {
     my $all_args = join " ", @lov;
     $cl =~ s/#args/$all_args/g;
-    my $pid = open(SYSTEM, "-|");
+    my $pid = fork();
     defined ($pid) or die "can't fork: $!";
     if ($pid) {
-      close (SYSTEM);
+      waitpid($pid, 0);
       $retval = $?;
     } else {
       exec ($command, split /\s+/, $cl) or die "can't exec program: $!";
     }
   } else {
     foreach my $package (@lov) {
-      my $pid = open (SYSTEM, "-|");
+      my $pid = fork();
       defined ($pid) or die "cannot fork: $!";
       if ($pid) {
-	close (SYSTEM);
-	# captures first non-zero return value
+        waitpid($pid, 0);
 	if ($retval == 0) {
 	  $retval = $?;
 	}
@@ -416,7 +415,8 @@ sub query_version {
       } else {
 	my $line = $cl;
 	$line =~ s/#args/$package/g;
-	exec ($command, split /\s+/, $line) or die "can't exec program: $!";
+	#exec ($command, split /\s+/, $line) or die "can't exec program: $!";
+	exec ("/bin/sh", "-c", "$command $line") or die "can't exec program: $!";
       }
 
       push @versions, (($? == 0) ? @captured_output : undef);

@@ -7,7 +7,7 @@ package DepMan;
 #  information, see the COPYING file in the top level directory of the
 #  OSCAR source distribution.
 #
-#  $Id: DepMan.pm,v 1.2 2004/01/28 01:18:03 tuelusr Exp $
+#  $Id: DepMan.pm,v 1.3 2004/02/17 17:10:34 tuelusr Exp $
 
 use 5.008;
 use strict;
@@ -19,8 +19,10 @@ use File::Spec;
 our $VERSION;
 $VERSION = '0.01';
 # initial release
+$VERSION = '1.2';
+# added oscar-httpd support
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 # concrete dependency manager order of preference, for breaking ties on
 # systems where multiple dependency manager modules might claim usability.
