@@ -14,6 +14,11 @@ There are some known issues with this release of Ganglia:
   case, simply remove the ganglia package directory from the OSCAR
   tree and re-run the OSCAR installer.
 
+- Sometimes after installation the compute nodes are marked "dead"
+  when they are actually available, or after rebooting/adding a node.
+  If this occurs, restarting the 'gmond's around the cluster seems
+  to resolve the issue, e.g.  'cexec service gmond restart'.
+
 - In some cases, the Ganglia daemon (gmond) seems to spin out of
   control on some nodes and consume large amounts of CPU cycles.
   Running the command "service gmond restart" as root on the affected
