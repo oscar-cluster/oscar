@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: screen-by-screen.tex,v 1.15 2002/09/10 00:22:36 jsquyres Exp $
+% $Id: screen-by-screen.tex,v 1.16 2002/09/10 00:29:39 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -128,8 +128,8 @@ Section~\ref{det:buildimage}, page~\pageref{det:buildimage}.
 \clearpage
 \subsection{Step 3: Define OSCAR Clients}
 
-Step 3 is used to specify how many client nodes there will be, and
-what their TCP/IP characteristics will be.  See the details in
+Step 3 is used to specify how many clients there will be, and what
+their TCP/IP characteristics will be.  See the details in
 Section~\ref{det:defclients}, page~\pageref{det:defclients}.
  
 \begin{figure}[ht!]
@@ -151,8 +151,8 @@ Section~\ref{det:defclients}, page~\pageref{det:defclients}.
 
 \subsection{Step 4: Setup Networking}
 
-Step 4 is used to collect the MAC addresses of the client nodes, and
-then download the disk images to the client nodes.  See the details in
+Step 4 is used to collect the MAC addresses of the clients, and then
+download the disk images to the clients.  See the details in
 Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
 
 \begin{figure}[h!]
@@ -282,8 +282,8 @@ Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
         \includegraphics[scale=\imgscale]{figs/6k_sbs-rebootme.\sbsext}
         }
       }
-    \caption{A node has finished the install -- it is asking to be
-      rebooted.}
+    \caption{A client has finished the install and is asking to be
+      rebooted.} 
     \label{fig:sbs-install-finish}
   \end{center}
 \end{figure}
@@ -303,7 +303,7 @@ page~\pageref{det:completeinstall}.
 \begin{figure}[h!]
    \begin{center}
      \centerline{\includegraphics[scale=\imgscale]{figs/7_sbs-complete-cluster-setup.\sbsext}}
-     \caption{Beginning step 5 -- Complete Cluster Setup.}
+     \caption{Step 5 -- Complete Cluster Setup.}
      \label{fig:sbs-install-wizard-s5}
    \end{center}
  \end{figure}
@@ -346,13 +346,13 @@ Section~\ref{det:testcluster}, page~\pageref{det:testcluster}.
 \subsection{Delete Node Button}
 \label{app:sbs-delete-node}
 
-The Delete Node button can be used to delete nodes from an OSCAR
+The Delete Node button can be used to delete clients from an OSCAR
 cluster.  Note that this button only deletes OSCAR's knowledge of the
-nodes -- what physically happens to that node is not OSCAR's concern.
-This example shows deleting one of the client nodes setup in the
+clients -- what physically happens to that client is not OSCAR's
+concern.  This example shows deleting one of the clients setup in the
 previous sections -- \hostname{oscarnode2}.  The next section
 (Section~\ref{app:sbs-add-node}) will show adding it back.  See the
-details on deleting nodes in Section~\ref{det:deleting-clients},
+details on deleting clients in Section~\ref{det:deleting-clients},
 page~\pageref{det:deleting-clients}.
 
 \begin{figure}[h!]
@@ -365,7 +365,7 @@ page~\pageref{det:deleting-clients}.
       \includegraphics[scale=\imgscale]{figs/10b_sbs-del-node-partB.\sbsext}
       }
     \caption[Delete OSCAR Clients.]{Delete OSCAR clients.  First image
-    is the intial window, second image is with a node selected, and
+    is the intial window, second image is with a client selected, and
     third image is when the action has completed.}
     \label{fig:sbs-del-node1}
   \end{center}
@@ -379,10 +379,10 @@ page~\pageref{det:deleting-clients}.
 \subsection{Add Node Button}
 \label{app:sbs-add-node}
 
-The Add Node button will add nodes into an existing OSCAR cluster.  In
-this example, we will add back \hostname{oscarnode2} into the cluster.
-See the details of adding a node in Section~\ref{det:adding-clients},
-page~\pageref{det:adding-clients}.
+The Add Node button will add clients into an existing OSCAR cluster.
+In this example, we will add back \hostname{oscarnode2} into the
+cluster.  See the details of adding a client in
+Section~\ref{det:adding-clients}, page~\pageref{det:adding-clients}.
 
 \begin{figure}[h!]
   \begin{center}
@@ -414,7 +414,7 @@ page~\pageref{det:adding-clients}.
       \hspace{\imghskip}
       \includegraphics[scale=\imgscale]{figs/9e_sbs-add-node-mac2.\sbsext}
       }
-    \caption{Add Node step 2 -- Setting up networking for new node(s).}
+    \caption{Add Node step 2 -- Setting up networking for new client(s).}
     \label{fig:sbs-add-node1-setup-network}
   \end{center}
 \end{figure}
