@@ -1327,6 +1327,7 @@ push @package_record_wheres, "packages.version = \"$package_version\""
     if $multiple_package_versions;
 my @read_results = ();
 my @error_strings = ();
+# this case for read error
 if ( ! oda::read_records( \%options,
 			  \@table_fields,
 			  \@package_record_wheres,
@@ -1334,82 +1335,97 @@ if ( ! oda::read_records( \%options,
 			  1,
 			  \@error_strings ) ) {
     warn shift @error_strings while @error_strings;
+# this case for no existing packages record for this package
+} elsif ( ! @read_results ) {
+    print "Writing a new $packages_table_name record for package $package_name version $package_version\n";
+    @error_strings = ();
+    if ( ! oda::insert_record( \%options,
+			       $packages_table_name,
+			       \%package_single_value_folded_fields,
+			       undef,
+			       \@error_strings ) ) {
+	warn shift @error_strings while @error_strings;
+    }
+# this case for an already existing packages record for this package
 } else {
-    if ( ! @read_results ) {
-	print "Writing a new $packages_table_name record for package $package_name"
-	    . ( ( $multiple_package_versions ) ? " version $package_version" : "" ) . "\n";
-	@error_strings = ();
-	if ( ! oda::insert_record( \%options,
-				   $packages_table_name,
-				   \%package_single_value_folded_fields,
-				   undef,
-				   \@error_strings ) ) {
-	    warn shift @error_strings while @error_strings;
-	}
+    my $existing_field_values_ref = $read_results[0];
+    my $former_package_version = 
+	( exists $$existing_field_values_ref{version} &&
+	  $$existing_field_values_ref{version} ne  "" ) ?
+	  $$existing_field_values_ref{version} : "Unknown";
+    print "Modifying existing $packages_table_name record for package $package_name"
+	. ( ( $multiple_package_versions ) ? " version $package_version" : "" ) . ".\n";
+    print "Version $former_package_version being over-written by version $package_version.\n"
+	if ! $multiple_package_versions && $former_package_version ne $package_version;
+    print "$0: very strange, there is more than one $packages_table_name record" .
+	"for package $package_name"
+	. ( ( $multiple_package_versions ) ? " version $package_version" : "" ) . "\n"
+	if scalar @read_results > 1;
+    # build up a modification hash, start with default
+    # or undefined values for all fields
+    my %package_modification_field_values = ();
+    my @field_names = ();
+    @error_strings = ();
+    my $all_tables_fields_ref = oda::list_tables_fields( \%options,
+							 \@error_strings );
+    my $packages_table_fields_ref;
+    if ( defined $all_tables_fields_ref ) {
+	$packages_table_fields_ref = $$all_tables_fields_ref{$packages_table_name};
     } else {
-	print "Modifying existing $packages_table_name record(s) for package $package_name"
-	    . ( ( $multiple_package_versions ) ? " version $package_version" : "" ) . "\n";
-	print "$0: very strange, there is more than one $packages_table_name record" .
-	    "for package $package_name"
-	    . ( ( $multiple_package_versions ) ? " version $package_version" : "" ) . "\n"
-	    if scalar @read_results > 1;
-	# build up a modification hash, start with undefined values for all fields
-	my %package_modification_field_values = ();
-	my @field_names = ();
-	@error_strings = ();
-	if ( ! oda::list_fields( \%options,
-				 $packages_table_name,
-				 \@field_names,
-				 \@error_strings ) ) {
-	    warn shift @error_strings while @error_strings;
-	}
-	foreach my $field_name ( @field_names ) {
-	    $package_modification_field_values{$field_name} = undef;
-	}
-	# Then overwrite with field values with the
-	# values read from the package's config.xml.
-	# For now, leave the installable field the way
-	# that the package's config.xml field was set,
-	# since we have to look at the package filtering
-	# information to set it and we haven't setup the
-	# package filtering information yet.
-	foreach my $field_name ( keys %package_single_value_folded_fields ) {
+	my %fields = ();
+	$packages_table_fields_ref = \%fields;
+    }
+    foreach my $field_name ( keys %$packages_table_fields_ref ) {
+	my $field_information_ref = $$packages_table_fields_ref{$field_name};
+	$package_modification_field_values{$field_name} = 
+	    ( exists $$field_information_ref{default} &&
+	      defined $$field_information_ref{default} ) ?
+	      $$field_information_ref{default} : undef;
+    }
+    # Then overwrite with field values with the
+    # values read from the package's config.xml.
+    # For now, leave the installable field the way
+    # that the package's config.xml field was set,
+    # since we have to look at the package filtering
+    # information to set it and we haven't setup the
+    # package filtering information yet.
+    foreach my $field_name ( keys %package_single_value_folded_fields ) {
+	$package_modification_field_values{$field_name} =
+	    $package_single_value_folded_fields{$field_name};
+    }
+    
+    # a few fields are gotten from the already existing record
+    my $existing_field_values_ref = $read_results[0];
+    foreach my $field_name ( "installed", "should_be_installed", "should_be_uninstalled" ) {
+	if ( exists $$existing_field_values_ref{$field_name} &&
+	     defined $$existing_field_values_ref{$field_name} &&
+	     $$existing_field_values_ref{$field_name} ne "" ) {
+	    print  "$0: field $field_name kept as value $$existing_field_values_ref{$field_name}\n" if $options{debug};
 	    $package_modification_field_values{$field_name} =
-		$package_single_value_folded_fields{$field_name};
+		$$existing_field_values_ref{$field_name};
 	}
-
-	# a few fields are gotten from the already existing record
-#	my $existing_field_values_ref = $read_results[0];
-#	foreach my $field_name ( ) {
-#	    if ( exists $$existing_field_values_ref{$field_name} &&
-#		 defined $$existing_field_values_ref{$field_name} &&
-#		 $$existing_field_values_ref{$field_name} ne "" ) {
-#		$package_modification_field_values{$field_name} =
-#		    $$existing_field_values_ref{$field_name};
-#	    }
-#	}
-	# and the main key fields are not written back out
-	delete $package_modification_field_values{id}
-	    if exists $package_modification_field_values{id};
-	delete $package_modification_field_values{name}
-	    if exists $package_modification_field_values{name};
-	delete $package_modification_field_values{version}
-	    if exists $package_modification_field_values{version} &&
-		$multiple_package_versions;
-	# now modify the existing record
-	@error_strings = ();
-	my @modified_tables = ( "$packages_table_name" );
-        if ( $options{debug} ) {
-            print "$0: package_modification_field_values:\n";
-            print Dumper( \%package_modification_field_values );
-        }
-	if ( ! oda::modify_records( \%options,
-				    \@modified_tables,
-				    \%package_modification_field_values,
-                                    \@package_record_wheres,
-                                    \@error_strings ) ) {
-	    warn shift @error_strings while @error_strings;
-	}
+    }
+    # and the main key fields are not written back out
+    delete $package_modification_field_values{id}
+    if exists $package_modification_field_values{id};
+    delete $package_modification_field_values{name}
+    if exists $package_modification_field_values{name};
+    delete $package_modification_field_values{version}
+    if exists $package_modification_field_values{version} &&
+	$multiple_package_versions;
+    # now modify the existing record
+    @error_strings = ();
+    my @modified_tables = ( "$packages_table_name" );
+    if ( $options{debug} ) {
+	print "$0: package_modification_field_values:\n";
+	print Dumper( \%package_modification_field_values );
+    }
+    if ( ! oda::modify_records( \%options,
+				\@modified_tables,
+				\%package_modification_field_values,
+				\@package_record_wheres,
+				\@error_strings ) ) {
+	warn shift @error_strings while @error_strings;
     }
 }
     
