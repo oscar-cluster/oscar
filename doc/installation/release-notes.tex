@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.31 2003/02/19 15:51:12 naughtont Exp $
+% $Id: release-notes.tex,v 1.32 2003/02/24 23:30:43 naughtont Exp $
 %
 
 \section{Release Notes}
@@ -50,14 +50,17 @@ The following release notes apply to OSCAR version \oscarversion.
   OSCAR wizard may close suddenly when there is a test failure. If
   this happens, run the test script, \file{testing/test\_cluster\_as\_root},
   manually in a shell window to diagnose the problem.
-  
+ 
 \item Although OSCAR can be installed on pre-existing server nodes, it
   is typically easiest to use a machine that has a new, fresh install
-  of a distribution listed in table~\ref{tab:oscar-distro-support}
+\begchange
+  of a distribution listed in Table~\ref{tab:oscar-distro-support}
   {\em with no updates installed}.  If the updates are installed,
   there may be conflicts in RPM requirements.  It is recommended to
-  install updates {\em after} the initial OSCAR installation has
-  completed.
+  install RedHat updates {\em after} the initial OSCAR installation has
+  completed.  On the Mandrake systems the security updates must be added
+  prior to the install.
+\endchange
   
 \item The following benign warning message will appear multiple times
   during the OSCAR installation process:
@@ -85,35 +88,6 @@ The following release notes apply to OSCAR version \oscarversion.
   node, close the OSCAR installer GUI, launch the OSCAR installer GUI
   again, and then add the node.
 
-\item For clusters larger than 9 nodes, the C3 configuration file on
-  the head node will be out of order.  Specifically, it will be ASCII
-  sorted rather than numerically ordered.  For example, the following
-  is an excerpt from a configuration on a 32 node closer:
-
-\begin{verbatim}
-  node0
-  dead remove_line_for_0-indexing
-  node1.xtorc
-  node10.xtorc
-  node11.xtorc
-  node12.xtorc
-\end{verbatim}
-  
-  (See the C3-specific notes in the OSCAR Cluster User's Guide for an
-  explanation of the ``{\tt dead}'' line)
-  
-  If you execute any C3 commands and attempt to address a specific
-  node, C3 will use the ordering specified in the \file{/etc/c3.conf}
-  file.  Hence, using the above ordering, node 3 actually resolves to
-  {\tt node11.xtorc}.  For example:
-
-\begin{verbatim}
-  # cexec --pipe :3 hostname
-  oscar_cluster node11.xtorc: node11.xtorc
-\end{verbatim}
-  
-  You may wish to manually re-sort the C3 configuration file.
-  
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -235,17 +209,16 @@ comments.
 \label{subsec:ia64notes}
 
 \begin{itemize}
-  
-\item Itanium is supported on RedHat 7.2.  Itanium 2 is not yet
-  supported.\footnote{Preliminary indications are that Itanium 2
-    support is possible, even if it is not formally supported.  The
-    main issues for OSCAR are that at the time of this writing,
-    Itanium 2 hardware post-dates the available binary versions of
-    operating systems, and SIS does not properly pick up modules for
-    the netbooted kernel.  The solution is for the user to compile
+
+% TJN: pretty sure things swapped w/ 2.2 Itanium1 out Itanium2 is in
+\begchange
+\item Itanium2 is supported on RedHat 7.2, but with 
+  version \oscarversion\ Itanium is not supported.
+  \footnote{The solution is for the user to compile
     their own kernel.  This is essentially a ``do it yourself'' kind
     of process, and not recommended for novices.  Please consult the
     OSCAR user's mailing list for more information.}
+\endchange
 
 \item The OSCAR autoinstall diskette will probably not work on Itanium
   systems, but they mostly have support for network booting.
@@ -254,7 +227,8 @@ comments.
   RedHat's Linux 7.2 release for Itanium.  Itanium systems that can
   use the standard RedHat Itanium kernel for booting and network
   access should work with OSCAR.
-  
+
+% TJN: should this just refer to kernel_picker and be done w/ it?
 \item If an Itanium (or an IA32 based) system has new or unknown
   hardware that is not supported by the stock kernel in the base
   operating system release, it will not work with standard OSCAR,
