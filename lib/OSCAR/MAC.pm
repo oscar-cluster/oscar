@@ -4,7 +4,7 @@ package OSCAR::MAC;
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
-#   $Id: MAC.pm,v 1.44 2003/10/23 22:28:00 pramath Exp $
+#   $Id: MAC.pm,v 1.45 2003/12/12 22:11:30 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.44 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.45 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -190,6 +190,10 @@ sub mac_window {
 				     -text => "Assign all MACs",
 				     -command => [\&assignallmacs, $listbox, $tree, $window],
 				    );
+    my $clearallmacsfromnodes = $frame->Button(
+					-text =>"Remove all MACs",
+					-command => [\&clearallmacsfromnodes, $listbox, $tree, $window],
+					);
 
     $start->grid($assignall, $exitbutton, -sticky => "ew");
     $assignbutton->grid($deletebutton, $dhcpbutton, -sticky => "ew");
@@ -197,7 +201,7 @@ sub mac_window {
     my $label2 = $frame->Label(-text => "Below are commands to create a boot environment.\nYou can either boot from floppy or network");
     $label2->grid("-","-",-sticky => "ew");
     $bootfloppy->grid($networkboot, $refreshdhcp, -sticky => "ew");
-
+#    $clearallmacsfromnodes->grid( -sticky => 'ew');
     $window->bind('<Destroy>', sub {
         if ( defined($destroyed) ) {
           undef $destroyed;
@@ -292,8 +296,9 @@ sub message_window {
 }
 
 sub assign2machine {
-    my ($listbox, $tree, $mac, $node, $window, $dhcp) = @_;
-    unless ( defined($dhcp) ) { $dhcp = 1; }
+
+    my ($listbox, $tree, $mac, $node, $window, $noupdate) = @_;
+    unless ( defined($noupdate) ) { $noupdate = 0; }
     unless ( $mac ) {
       my $sel = $listbox->curselection;
       if ( defined( $sel ) ) {
@@ -307,6 +312,7 @@ sub assign2machine {
       }
       else { return undef; }
     }
+
     my $client;
     clear_mac($listbox, $tree, $window);
     if($node =~ /^\|([^\|]+)/) {
@@ -320,8 +326,8 @@ sub assign2machine {
     $adapter->mac($mac);
     set_adapter($adapter);
     regenerate_listbox($listbox);
-    regenerate_tree($tree);
-    if ( our $dyndhcp && $dhcp ) {
+    if ( ! $noupdate ) { regenerate_tree($tree); }
+    if ( our $dyndhcp && ! $noupdate ) {
       our $vars;
       setup_dhcpd($$vars{interface}, $window);
     }
@@ -340,22 +346,22 @@ sub assignallmacs {
     my $tempnode = '|';
     MAC: while ( scalar(@macs)) {
       unless ( $tempnode = $tree->infoNext($tempnode) ) {
-        #$window->Unbusy();
         last MAC;
       }
       $tempnode =~ /^\|([^\|]+)/;
       $client = list_client(name=>$1);
       $adapter = list_adapter(client=>$client->name,devname=>"eth0");
       unless ( $adapter->mac ) {
-        assign2machine($listbox, $tree, pop @macs, $tempnode, $window, 0);
+        assign2machine($listbox, $tree, pop @macs, $tempnode, $window, 1);
       }
     }
+    $listbox->insert(0, @macs);
+    regenerate_listbox($listbox);
+    regenerate_tree($tree);
     if ( our $dyndhcp ) {
       our $vars;
       setup_dhcpd($$vars{interface}, $window);
     }
-    $listbox->insert(0, @macs);
-    regenerate_listbox($listbox);
     $window->Unbusy();
 }
 
@@ -365,8 +371,6 @@ sub clearmacaddy {
     $window->Busy(-recurse => 1);
     if ( defined($listbox->curselection) ) {
       $macindex=$listbox->curselection;
-      #print $listbox->get($macindex) . "\n";
-      #print $macindex . "\n";
       #$listbox->selectionClear(0, 'end');
       delete $MAC{$listbox->get($macindex)};
       $listbox->delete($macindex);
@@ -388,8 +392,9 @@ sub clearallmacs {
 }
 
 sub clear_mac {
-    my ($listbox, $tree, $window) = @_;
-    my $node = $tree->infoSelection() or return undef;
+    my ($listbox, $tree, $window, $node, $noupdate) = @_;
+    unless( $node ) { $node = $tree->infoSelection() or return undef; }
+    unless( defined($noupdate) ) {$noupdate = 0;}
     my $client;
     if($node =~ /^\|([^\|]+)/) {
         $client = list_client(name=>$1);
@@ -402,15 +407,37 @@ sub clear_mac {
     oscar_log_subsection("Step $step_number: Cleared $mac from $1");
 
     # now put the mac back in the pool
+    $listbox->selectionClear(0, 'end');
+    $listbox->insert('end', ( $mac ));
     $MAC{$mac}->{client} = undef;
     $adapter->mac("");
     set_adapter($adapter);
     regenerate_listbox($listbox);
-    regenerate_tree($tree);
-    if ( our $dyndhcp ) {
+    if ( ! $noupdate ) {regenerate_tree($tree);}
+    if ( our $dyndhcp && ! $noupdate ) {
       our $vars;
       setup_dhcpd($$vars{interface}, $window);
     }
+}
+
+sub clearallmacsfromnodes {
+    my ($listbox, $tree, $window) = @_;
+    $tree->selectionClear();
+    $window->Busy(-recurse => 1);
+    my @macs = $listbox->get(0, 'end');
+    @macs = reverse @macs;
+    $listbox->delete(0, 'end');
+    my $client;
+    my $adapter;
+    foreach my $child ( $tree->infoChildren('|') ) {
+      clear_mac($listbox, $tree, $window, $child, 1);
+    }
+    regenerate_tree($tree);
+    if (our $dyndhcp) {
+      our $vars;
+      setup_dhcpd($$vars{interface}, $window);
+    }
+    $window->Unbusy();
 }
 
 sub regenerate_listbox {
