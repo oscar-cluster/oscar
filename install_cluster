@@ -37,8 +37,8 @@ if ((scalar(@basesystem)==0) || (scalar(@rsync)==0)) {
 	croak("RPMs missing in /tftpboot/rpm/ (did you copy both CDs?)");
 }
 
-!system("./server_prep $adapter") or croak("Server preparation script failed to complete");
+!system("./server_prep $adapter 2>&1 | tee ../oscarinstall.log") or croak("Server preparation script failed to complete");
 
-!system("./oscar_wizard $adapter") or croak("Oscar Wizard failed to run successfully");
+!system("./oscar_wizard $adapter 2>&1 | tee -a ../oscarinstall.log") or croak("Oscar Wizard failed to run successfully");
 
 
