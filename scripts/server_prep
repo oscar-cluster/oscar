@@ -47,6 +47,7 @@ push @rpms, qw(
 	openssh-clients
 	openssh-server
 	xinetd
+	tcpdump
 	);
 
 # Give me the list of files for my rpms
