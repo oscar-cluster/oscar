@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.21 2003/03/10 06:02:11 ngorsuch Exp $
+# $Id: Selector.pm,v 1.22 2003/04/10 17:02:43 ngorsuch Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -40,7 +40,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use OSCAR::Database; # database access functions
 use OSCAR::Infobox;  # This is the pop-up information box
-use OSCAR::Package;  # For list_pkg()
+use OSCAR::Package;  # For list_installable_package_dirs()
 use OSCAR::Logger;   # For oscar_log_section()
 use XML::Simple;     # Read/write the .selection config files
 use Tk::Pane; 
@@ -314,7 +314,7 @@ sub deepcopy # ($array_hash) -> $array_hash_copy
 sub fixCheckButtons
 {
 #  foreach my $package (sort keys %{ $packagexml } )
-    my @packages = OSCAR::Package::list_pkg( );
+    my @packages = OSCAR::Package::list_installable_package_dirs( );
     foreach my $package ( @packages ) {
 	# First, remap the checkbuttons to variables for the new configuration
 	$packagecheckbuttons{$package}->configure(-variable =>
@@ -886,7 +886,7 @@ sub populateSelectorList
   # Set up the base directory where this script is being run
   $oscarbasedir = '.';
   $oscarbasedir = $ENV{OSCAR_HOME} if ($ENV{OSCAR_HOME});
-  @packagedirs = list_pkg();  # Scan for directories under "packages"
+  @packagedirs = list_installable_package_dirs();  # Scan for directories under "packages"
   readInPackageXMLs();        # Read in all packages' config.xml files
   buildDependencyTree();
   readInSelectionConfig();
