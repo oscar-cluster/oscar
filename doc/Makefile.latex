@@ -1,0 +1,136 @@
+# -*- Makefile -*-
+#
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# $Id: Makefile.latex,v 1.1 2003/07/04 14:29:45 jsquyres Exp $
+#
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
+#
+
+#########################################################################
+#
+# You should not need to edit below this line
+#
+#########################################################################
+
+include $(top_builddir)/dist/programs.sh
+
+.SUFFIXES: .tex .dvi .ps .pdf .eps .png
+
+MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
+MAIN_PS		= $(MAIN_TEX:.tex=.ps)
+MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
+MAIN_HTML	= $(MAIN_TEX:.tex=)/$(MAIN_TEX:.tex=.html)
+
+TEX_SRC		= $(MAIN_TEX) $(OTHER_SRC_FILES) $(NON_DIST_SRC_FILES)
+
+EPS_FIG_FILES	= $(FIG_FILES:.png=.eps)
+PDF_FIG_FILES	= $(FIG_FILES:.fig=.pdf)
+
+# Tell automake to include all the relevant files
+
+EXTRA_DIST	= $(MAIN_TEX) $(OTHER_SRC_FILES) $(FIG_FILES) $(EXTRA_DISTFILES)
+CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~ $(EXTRA_CLEANFILES)
+
+# Some common target names.
+
+all: $(doc_target)
+docs: pdf
+
+ps: $(EPS_FIG_FILES) $(MAIN_PS) $(EXTRA_PS)
+pdf: $(PNG_FIG_FILES) $(MAIN_PDF) $(EXTRA_PDF)
+html: $(MAIN_HTML) $(EXTRA_HTML)
+
+do-nothing:
+
+warning:
+	@ echo "*** WARNING: When you configured OSCAR, the GNU configure script"
+	@ echo "*** was unable to find some of the programs necessary to build"
+	@ echo "*** the OSCAR documentation.  Hence, the documentation will"
+	@ echo "*** not be built at this time.  Please re-run OSCAR's configure"
+	@ echo "*** script to see exactly which programs could not be found."
+	@ echo "*** Once you have fixed that problem, you should be able to"
+	@ echo "*** build the documentation in this directory."
+	@ exit 1
+
+#
+# Make the dependencies so that things build when they need to
+#
+
+$(MAIN_PS): $(MAIN_DVI)
+$(MAIN_DVI): $(TEX_SRC) $(EPS_FIG_FILES)
+$(MAIN_PDF): $(TEX_SRC) $(FIG_FILES)
+$(MAIN_HTML): $(TEX_SRC) $(EPS_FIGURES)
+
+#
+# General rules
+#
+
+.png.eps:
+	$(PNGTOPNM) $< | $(PNMTOPS) -noturn > $*.eps
+
+.fig.eps:
+	$(FIG2DEV) -L eps $< $@
+
+.fig.pdf:
+	$(FIG2DEV) -L pdf $< $@
+
+$(MAIN_HTML): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIGURES)
+	$(LATEX2HTML) $(LATEX2HTML_OPTIONS) $(MAIN_TEX)
+
+.tex.dvi:
+	$(LATEX) $*
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null ); \
+	then $(LATEX) $* ; else :; fi
+	@ if ( grep 'Writing index file' $*.log > /dev/null ); \
+	then makeindex $* ; $(LATEX) $* ; fi
+	@-if ( grep 'LaTeX Warning: Citation' $*.log > /dev/null ); then \
+	  bibtex $* ; \
+	  $(LATEX) $* ; \
+	fi
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
+	      grep 'LaTeX Warning: Citation' $*.log > /dev/null || \
+	      grep 'No file' $*.log > /dev/null); \
+	then $(LATEX) $* ; else :; fi
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
+	      grep 'LaTeX Warning: Citation' $*.log > /dev/null); \
+	then $(LATEX) $* ; else :; fi
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
+	      grep 'LaTeX Warning: Citation' $*.log > /dev/null); \
+	then $(LATEX) $* ; else :; fi
+
+.dvi.ps:
+	$(DVIPS) -o $*.ps $*
+
+.tex.pdf:
+	$(PDFLATEX) $*
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null ); \
+	then $(PDFLATEX) $* ; else :; fi
+	@ if ( grep 'Writing index file' $*.log > /dev/null ); \
+	then makeindex $* ; $(PDFLATEX) $* ; fi
+	@-if ( grep 'LaTeX Warning: Citation' $*.log > /dev/null ); then \
+	  bibtex $* ; \
+	  $(PDFLATEX) $* ; \
+	fi
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
+	      grep 'LaTeX Warning: Citation' $*.log > /dev/null || \
+	      grep 'No file' $*.log > /dev/null); \
+	then $(PDFLATEX) $* ; else :; fi
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
+	      grep 'LaTeX Warning: Citation' $*.log > /dev/null); \
+	then $(PDFLATEX) $* ; else :; fi
+	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
+	      grep 'LaTeX Warning: Citation' $*.log > /dev/null); \
+	then $(PDFLATEX) $* ; else :; fi
+
+# Deleting kruft temporary files
+
+clean: mostlyclean-generic
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+mostlyclean-generic:
+	-rm -f *~ *.bak *% \
+		  *.log *.aux *.dvi *.blg *.toc *.bbl *.lof *.lot *.out \
+		  $(EPS_FIG_FILES)
