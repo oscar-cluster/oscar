@@ -66,7 +66,7 @@ initscripts
 iproute2
 iputils
 isapnptools
-kernel-2.4.19.8mdk
+kernel-2.4.19.16mdk
 kernel-headers
 krb5-libs
 ldconfig
