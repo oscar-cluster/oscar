@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.4 2002/07/19 02:28:58 jsquyres Exp $
+% $Id: user.tex,v 1.5 2002/07/20 17:27:50 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -207,3 +207,12 @@ See the man page for \cmd{switcher(1)} and the output of \cmd{switcher
 \label{app:switcher-which-mpi-to-use}
 
 \input{../../packages/switcher/doc/common}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Use \cmd{switcher} with care!}
+
+\cmd{switcher} immediately affects the environment of all future shell
+invocations (including the environment of scripts).  To get a full
+list of options available, read the \cmd{switcher(1)} man page, and/or
+run \cmd{switcher --help}.
