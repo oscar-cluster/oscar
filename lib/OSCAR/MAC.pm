@@ -5,7 +5,7 @@ package OSCAR::MAC;
 #                     	All rights reserved.
 #			Jason Brechin <brechin@ncsa.uiuc.edu>
 
-#   $Id: MAC.pm,v 1.46 2004/04/02 16:22:40 brechin Exp $
+#   $Id: MAC.pm,v 1.47 2004/04/06 15:21:32 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ package OSCAR::MAC;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# These statements are only needed for the Tk window
 use Net::Netmask;
 use Tk;
 use Tk::Tree;
@@ -30,7 +29,6 @@ use File::Copy;
 use SIS::Adapter;
 use SIS::DB;
 use OSCAR::Network;
-# End Tk-only statements
 
 use strict;
 use Carp;
@@ -48,7 +46,7 @@ use base qw(Exporter);
 	     );
 #REMOVE MAC_WINDOW FROM EXPORT WHEN NO LONGER NEEDED
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.46 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.47 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -684,47 +682,4 @@ sub run_setup_pxe {
 }
 
 1;
-
-sub save_to_file {
-    my $file = shift;
-    my @macs = @_;
-    open(OUT,">$file") or croak "Couldn't open file: $file for writing";
-    print OUT "# Saved OSCAR MAC Addresses\n";
-    foreach my $mac ( @macs ) {
-        print OUT $mac, "\n";
-    }
-    close(OUT);
-}
-
-sub load_from_file {
-    my $file = shift;
-    my @macs;
-    open(IN,"<$file") or croak "Couldn't open file: $file for reading";
-    while(<IN>) {
-        if(/^\s*\#/) {
-            next;
-        }
-        if( my $mac = verify_mac($_) ) {
-            push @macs, $mac;
-        }
-    }
-    close(IN);
-    return @macs;
-}
-
-sub verify_mac {
-    my $mac = shift;
-    chomp($mac);
-    my $debug = shift;
-    if ( $mac =~ /^([a-fA-f0-9]{2}:){5}[a-fA-F0-9]{2}$/ ) {
-        if ( $debug ) { print "$mac is fully formed\n"; }
-        return $mac;
-    } elsif ( $mac =~ /^[a-fA-F0-9]{12}$/ ) {
-        if ( $debug ) { print "$mac has no colons \n"; }
-        return join(':', ( $mac =~ /(\w\w)(\w\w)(\w\w)(\w\w)(\w\w)(\w\w)/ ));
-    } else {
-        warn ( "$mac is not formed correctly!\n" );
-    }
-    return;
-}
 
