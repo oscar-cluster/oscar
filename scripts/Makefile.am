@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.4 2002/09/17 19:09:33 jsquyres Exp $
+# $Id: Makefile.am,v 1.5 2002/10/22 15:15:02 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -10,6 +10,7 @@ EXTRA_DIST		= \
 			allow_client_access \
 			get_num_proc \
 			macinfo2sis \
+			opd \
 			oscar_wizard \
 			ping_clients \
 			post_clients \
