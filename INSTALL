@@ -21,15 +21,18 @@ requirements are:
 Steps to OSCAR 1.2
 
 1. Install a server with RH 7.1, select the 'everything' option to
-   install all RPMs
+   install all RPMs.  It is suggested that you manually partition the
+   drive, making it all one partition, rather than allowing redhat
+   to automatically partition the drive during the install.
 
-2. Copy all the RPMs from both the RH 7.1 CDs to /tftpboot/rpm
+2. If you are not root, become root now and configure the ethernet
+   device (e.g. eth0) attached to the compute nodes using netcfg.
 
-3. Download the OSCAR 1.2 package to the server, in /root/oscar-ng
+3. Copy all the RPMs from both the RH 7.1 CDs to /tftpboot/rpm
 
-4. If you are not root, become root now
+4. Download the OSCAR 1.2 package to the server, in /root/oscar
 
-5. cd to /root/oscar-ng
+5. cd to /root/oscar
 
 6. Issue the "install_cluster <device>" command, where device is the
    ethernet device (e.g. eth0) through which you are attached to your
@@ -61,19 +64,13 @@ Steps to OSCAR 1.2
    "Close" on the pop up window, and "Close" on the "Add Clients"
    window.
 
-9. It's time to build a SystemImager installation diskette for each
-   compute node.  Put a diskette in the floppy drive, and do: dd
-   if=disks/bootdiskette.img of=/dev/fd0 to write the bootable
-   diskette.
+9. Press "Setup Network Booting" from the Oscar Wizard, put a diskette
+   in the floppy drive, and and press the button to create a boot
+   diskette for the compute nodes.
 
-10. If necessary, change the boot order on the compute nodes to make
-    sure that each compute node boots from the installation diskette,
-    and boot all the compute nodes.
-
-11. Press "Setup Network Booting" from the Oscar Wizard and press
-    "Collect MAC addresses". Reset each node that you want to install.
-    The node will boot from the SystemImager diskette, forcing a
-    broadcast of the MAC address, which the server will recognize and
+10. Press "Collect MAC addresses". Reset each node that you want to
+    install.  The node will boot from the SystemImager diskette, forcing
+    a broadcast of the MAC address, which the server will recognize and
     display on the left side of the MAC Address Collection
     window. When the MAC address appears, just hilight the MAC address
     with the mouse, then hilight a node hostname on the right side of
@@ -81,12 +78,12 @@ Steps to OSCAR 1.2
     this step until all MAC addresses are assigned, and then press
     "Stop Collecting"
 
-12. Still on the MAC Address Collection window, press the Configure
+11. Still on the MAC Address Collection window, press the Configure
     DHCP Server button, which will update the /etc/dhcpd.conf file,
     and restart dhcpd.  Now you can press Quit on the MAC Address
     Collection window.
 
-13. Reboot each node, leaving in the diskette, to force a diskette
+12. Reboot each node, leaving in the diskette, to force a diskette
     boot. Since dhcp knows aobut all the nodes now, SystemImager is
     all set to do an install.  The install takes about 3-5 minutes on
     a lightly loaded 100mb/s LAN, much of which is spent in booting
@@ -94,11 +91,11 @@ Steps to OSCAR 1.2
     done installing, pop out the SystemImager diskette, and reboot the
     client from local harddrive.
 
-14. Press the Complete Cluster Setup button on the wizard.  It prints
+13. Press the Complete Cluster Setup button on the wizard.  It prints
     out a bunch of messages, and then it's done.  (need to put a new
     message/instruction here).
 
-15. Press the Test Cluster Setup button on the wizard. It will prompt
+14. Press the Test Cluster Setup button on the wizard. It will prompt
     for a non-root userid, which you should enter.  When it completes,
     it will create an OSCAR_test directory in that user's home
     directory. Do an su - <userid> where userid is the userid you
@@ -107,8 +104,8 @@ Steps to OSCAR 1.2
     of nodes, and 'm' is the number of processors. This will execute a
     simple PBS shell job on those nodes.
 
-16. If all else fails, there is a scripts/start_over script in the
-    oscar_ng directory.  It uninstalls all the OSCAR 1.2 RPMs, deletes
+15. If all else fails, there is a scripts/start_over script in the
+    oscar directory.  It uninstalls all the OSCAR 1.2 RPMs, deletes
     the OSCAR data base, and allows you to start over with downloading
     the OSCAR 1.2 package.
  
