@@ -1,0 +1,54 @@
+#!/usr/bin/env perl
+
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Logger;
+use Carp;
+use OSCAR::Distro;
+use OSCAR::Package;
+use File::Copy;
+
+# Install script for Perl-Tk
+use Config;
+
+#print "Finding correct site_perl directory: \n";
+#print "$Config{'sitearchexp'}\n";
+oscar_log_subsection("Finding correct perl version: $Config{'version'}\n");
+my $perl_version = $Config{'version'};
+#my ($distro_name, $distro_version) = which_distro_server();
+my $rpmdir = "$ENV{OSCAR_HOME}/share/prereqs/perl-Tk/media/RPMS";
+
+opendir(DIR, "$rpmdir") || croak("Can't open $rpmdir for perl-Tk");
+my @rpmvers = grep{ !/^\./ && !/Makefile/ } readdir(DIR);
+#chomp @rpmvers;
+closedir DIR;
+
+my $match = 0;
+foreach my $dir (@rpmvers) {
+  $perl_version =~ $dir;
+  if ( $& eq $dir ) {
+    $rpmdir = "$rpmdir/$dir";
+    $match = 1;
+    break;
+  }
+}
+oscar_log_subsection("Checking to see if we need to install Perl-Tk\n");
+
+if ( `rpm -q perl-Tk` ) {
+  oscar_log_subsection("We do need to install perl-Tk\n");
+  if ( $match == 0 ) {
+    croak("Can't install perl-Tk for perl $perl_version, we have @rpmvers");
+  } else {
+    opendir(DIR, "$rpmdir") || croak("Can't open $rpmdir for perl-Tk");
+    my @rpms = grep { /.rpm/ } readdir(DIR);
+    closedir DIR;
+    foreach $file (@rpms) {
+      oscar_log_subsection("Copying $rpmdir/$file to /tftpboot/rpm/$file\n");
+      copy("$rpmdir/$file", "/tftpboot/rpm/$file") || croak("Unable to copy $rpmdir/$file to /tftpboot/rpm/$file");
+    }
+    install_rpms("perl-Tk") || croak("perl-Tk cannot be installed, check for error messages from rpm");
+  }
+} else {
+  oscar_log_subsection("We don't need to install perl-Tk\n");
+}
+
+exit(0);
