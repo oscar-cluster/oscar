@@ -29,6 +29,7 @@
     <server>
       <rpm>caching-nameserver</rpm>
       <rpm>bind</rpm>
+      <rpm>bind-utils</rpm>
     </server>
   </rpmlist>
 
