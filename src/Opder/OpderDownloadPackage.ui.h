@@ -213,7 +213,7 @@ void OpderDownloadPackage::downloadDone()
       else
         {
           Carp::carp("Couldn't download package " . 
-                     $dlPackages[$dlPhase-1]->{package} . " with opd");
+                     $dlPackages[$dlPhase-1]->{package} . " with opd\n$cmdline\n");
           $dlPhase++;  # Try the next package in the list anyway
           last;
         }

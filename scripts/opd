@@ -1305,7 +1305,7 @@ sub download_package {
 		print("not provided\n")
                     if (!$argv_parsable);
 	    } elsif (length($$content) ne $pkg->{download}->{size}) {
-                print("ERROR: $pkg->{name} " . length($$content) .
+                print("ERROR: $name LENGTH: " . length($$content) .
                           " != $pkg->{download}->{size}\n");
 		next;
 	    } else {
@@ -1321,7 +1321,7 @@ sub download_package {
 		$pkg->{download}->{md5sum}) {
 		my $digest = md5_hex($$content);
 		if ($digest ne $pkg->{download}->{md5sum}) {
-		    print("FAILED: $name $digest != $pkg->{download}->{md5sum}\n");
+		    print("FAILED: $name MD5SUM: $digest != $pkg->{download}->{md5sum}\n");
 		    next;
 		} else {
 		    print("OK\n")
@@ -1352,7 +1352,7 @@ sub download_package {
                         if (!$argv_parsable);
 		}
 		if ($digest ne $pkg->{download}->{sha1sum}) {
-		    print("FAILED: $name $digest != $pkg->{download}->{sha1sum}\n");
+		    print("FAILED: $name SHA1SUM: $digest != $pkg->{download}->{sha1sum}\n");
 		    next;
 		} else {
 		    print("OK\n")
