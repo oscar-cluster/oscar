@@ -1,5 +1,7 @@
 package OSCAR::MAC;
 
+#   $Id: MAC.pm,v 1.5 2002/02/17 04:44:54 sdague Exp $
+
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation; either version 2 of the License, or
@@ -14,6 +16,9 @@ package OSCAR::MAC;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+#   Copyright 2001-2002 International Business Machines
+#                       Sean Dague <japh@us.ibm.com>
+
 use strict;
 use Net::Netmask;
 use vars qw($VERSION @EXPORT);
@@ -23,8 +28,11 @@ use Carp;
 use SIS::Client;
 use File::Copy;
 use SIS::Adapter;
+use OSCAR::Network;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
+
+$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -110,7 +118,7 @@ sub setup_dhcpd {
         copy("/etc/dhcpd.conf", "/etc/dhcpd.conf.oscarbak") or (carp "Couldn't backup dhcpd.conf file", 
                                                             return undef);
     }
-    my ($ip, $netmask) = get_ip_net($interface);
+    my ($ip, $broadcast, $netmask) = interface2ip($interface);
     !system("mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --bootfile=pxelinux.0 --gateway=$ip") or (carp "Couldn't mkdhcpconf",
                                                              return undef);
     if(!-e "/var/lib/dhcp/dhcpd.leases") {
@@ -230,7 +238,8 @@ sub regenerate_listbox {
 sub start_ping {
     my $interface = shift;
     end_ping();
-    my $network = new Net::Netmask(get_ip_net($interface));
+    my ($ip, $broad, $nm) = interface2ip($interface);
+    my $network = new Net::Netmask($ip, $nm);
     my $pid = fork();
     if($pid) {
         $PINGPID = $pid;
@@ -238,17 +247,6 @@ sub start_ping {
         open(STDOUT,">/dev/null");
         exec("ping -b " . $network->base);
     }
-}
-
-sub get_ip_net {
-    my $interface = shift;
-    my $line = qx/ifconfig $interface | grep inet/;
-    my ($ip, $mask);
-    if($line =~ /addr:([\d\.]+).*Mask:([\d\.]+)/) {
-       $ip = $1;
-       $mask = $2;
-    }
-    return ($ip, $mask);
 }
 
 sub end_ping {
