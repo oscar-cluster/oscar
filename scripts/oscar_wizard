@@ -15,7 +15,7 @@ use OSCAR::AddNode;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
-use SystemInstaller::Common;
+use SystemInstaller::Tk::Common;
 use POSIX;
 use Carp;
 use vars qw($config);
