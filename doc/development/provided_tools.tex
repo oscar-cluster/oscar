@@ -1,0 +1,137 @@
+\section{Provided Tools}
+
+In this section, the avalaible tools for package creators and maitainers
+are described.  As this is the first draft of this section, 
+please report all documentation bug via the regular sourceforge bug interface.
+
+\subsection{PERL syntax and location of the tools}
+
+The OSCAR library is in \file{lib/OSCAR} and contain a lot of PERL packages.
+In order to use a package in your script, you have to use the following
+syntax~:\verb+ use OSCAR::PackageName+. The corresponding file will be
+\file{lib/OSCAR/PackageName.pm}.
+
+If you find a discrepancy with this documentation and the expected behavior,
+please have a look at the package file~: they are generally commented.
+
+\subsubsection{PERL invocation and mode}
+
+As OSCAR is a big project, you are strongly encourage to use the warning
+option, i.e.  \verb+/usr/bin/perl -w+ as well as the strict mode 
+\verb+use strict;+. Please check the existing OSCAR perl ressources so that you don't
+reinvent the wheel. If you think that some functionnality should be provided
+to all packages, please make a separate module in the \file{lib/OSCAR/}
+directory.
+
+\subsection{OSCAR logging~: \file{OSCAR::Logger}}
+
+This is an important package ! Please use it so that all logged information
+has the same look. It helps people to find their way inside the problems and
+their solutions !
+
+\subsubsection{oscar\_log\_section(section\_name)}
+
+It is used to produce a "section" title. Use it with your module name at the
+begining of your module script(s) so that it is clear where the problem
+happened !
+
+\subsubsection{oscar\_log\_subsection(log\_message)}
+
+Use this so send a standard log message.
+
+\subsubsection{Complete Example}
+
+\begin{verbatim}
+use OSCAR::Logger;
+my $oscar_version="12.2.3";
+oscar_log_section("Running OSCAR install_cluster script");
+oscar_log_subsection("OSCAR version: $oscar_version");
+\end{verbatim}
+
+\subsection{Distribution type and version~:\file{OSCAR::Distro}}
+
+The \file{OSCAR::Distro} provide the functions to obtain the distro name and
+version. For the moment, the only distro detected are "RedHat" and "Mandrake".
+
+\begin{verbatim}
+use OSCAR::Distro;
+my ($distro_name, $distro_version) = which_distro_server();
+\end{verbatim}
+
+\subsection{Package actions~: \file{OSCAR::Package}}
+
+The \file{OSCAR::Package} provide useful function to deal with all package
+related stuff. It is very well documented and you should have a serious look
+at it if you want to make an OSCAR package.
+
+Here is are some particularly usefull functions~:
+
+\subsubsection{install\_rpms(@rpm\_hash)}
+
+This routine install the best rpms on the server, only if
+they don't already exist at a high enough version.
+
+\subsubsection{list\_pkg(core or noncore or all)}
+
+Return a list (array) of packages that are avalaible for install.
+
+\subsubsection{isPackageSelectedForInstallation(package\_name)}
+
+Return 1 if selected, 0 otherwise. Usefull if your package actions depend of
+another package !
+
+\subsubsection{Other exported functions}
+
+\begin{verbatim}
+@EXPORT = qw(list_pkg run_pkg_script run_pkg_user_test
+             run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
+             pkg_config_xml list_install_pkg getSelectionHash
+             isPackageSelectedForInstallation getConfigurationValues);
+\end{verbatim}
+
+\subsection{Network Interface Information on the OSCAR server~: \file{OSCAR::Network}}
+
+The \file{OSCAR::Network} provides the ip address, broadcast and netmask
+of an interface. There is only one function~:\file{interface2ip}.
+
+\subsubsection{Complete Example}
+
+\begin{verbatim}
+use OSCAR::Network;
+my ($ip, $broadcast, $net) = interface2ip(eth0);
+\end{verbatim}
+
+\subsection{Environment variables}
+
+Two useful environment variable are used by OSCAR. 
+
+Note~: those variables are only avalaible when installing the cluster (i.e. running
+\file{install\_cluster}).
+
+\subsubsection{Interface of the cluster (private interface)}
+
+If your package configure some network parameter, you will certainly need this
+parameter~:
+\begin{itemize}
+\item \verb+OSCAR_HEAD_INTERNAL_INTERFACE+ : The interface where the cluster
+is installed (usually ethx).
+\end{itemize}
+
+\subsubsection{OSCAR tree root}
+
+This is useful in order to specify absolute path from anywhere !
+\begin{itemize}
+\item \verb+OSCAR_HOME+ : The localisation of OSCAR tree (i.e. the location of
+the file \file{install\_cluster}).
+\end{itemize}
+
+\subsubsection{Usage in PERL}
+
+All the environment variable are in the hash \verb+ENV+. You can access those
+variables this way~:
+\begin{itemize}
+\item \verb+$ENV{OSCAR_HOME}+
+\item \verb+$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}+
+\end{itemize}
+
+
