@@ -79,6 +79,20 @@ my $window = MainWindow->new();
 $window->withdraw();
 $window->title("OSCAR Installation Wizard");
 
+# Get the version
+#
+my $version;
+if( -e "$ENV{OSCAR_HOME}/VERSION" && open( F, "<$ENV{OSCAR_HOME}/VERSION" ) ) {
+	$version = <F>;
+	close F;
+} elsif( -e "$ENV{OSCAR_HOME}/dist/VERSION" ) {
+	$version = `$ENV{OSCAR_HOME}/dist/get-oscar-version.sh $ENV{OSCAR_HOME} --full 2>/dev/null`;
+} else {
+	$version = `svnversion . 2>/dev/null`;
+}
+chomp $version;
+$version ||= "[Unknown]";
+
 # Define the main buttons
 
 #
@@ -90,7 +104,7 @@ my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
                          -background=>"white");
 my $GIF_t2=$window->Label(-image=> $window->Photo(-file=>$image),
                           -background=>"white");
-my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!",
+my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!\n\nOSCAR Version: $version",
 			   -background=>"white");
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 
