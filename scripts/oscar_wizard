@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.40 2003/01/22 23:07:27 brechin Exp $
+# $Id: oscar_wizard,v 1.41 2003/01/22 23:12:26 brechin Exp $
 #
 
 use strict;
@@ -224,7 +224,6 @@ sub run_server_install {
 
 sub build_oscar_image {
     my ($window, $step_number) = @_;
-    $window->Busy(-recurse => 1);
     my @df_lines = `df /`;
     my $disk_type = "ide";
     $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
@@ -301,7 +300,6 @@ sub postimagebuild {
 
 sub build_oscar_clients {
     my ($window, $step_number, $interface) = @_;
-    $window->Busy(-recurse => 1);
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
     my ($a, $b, $c, $d) = split(/\./,$ip);
     if ($d == 1) {
