@@ -1,5 +1,154 @@
-#!/bin/sh
+#!/usr/bin/env perl
+#
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: pre_configure,v 1.2 2002/10/29 15:36:15 jsquyres Exp $
+#
 
-echo "This is switchers pre_configure script"
-echo "It is a placeholder for great things to come."
-exit 0
+use strict;
+use XML::Simple;
+use Carp;
+
+# Debugging
+use Data::Dumper;
+
+#
+# Global variables
+#
+
+my $outfile = "$ENV{OSCAR_HOME}/packages/switcher/configurator.html";
+
+#
+# This will be re-written when Neil introduces the ODA interface where
+# I can search for this information in the database.  For the moment,
+# I'm going to hard-code it...
+#
+
+my $result = {
+    lam => {
+	tag => "mpi",
+	name => "lam-6.5.7"
+    },
+
+    mpich => {
+	tag => "mpi",
+	name => "mpich-1.2.4"
+    },
+};
+
+#
+# Now that we know what packages use switcher, we can construct an
+# HTML page asking to choose between packages that use the same tag.
+#
+
+unlink($outfile);
+open (OUTFILE, ">$outfile") || 
+    croak("Unable to open $outfile");
+
+#
+# Write out the HTML header
+#
+
+print OUTFILE "<html>
+<head>
+<title>Environment Switcher OSCAR package configuration</title>
+</head>
+<body>
+<h1 align=center>Environment Switcher OSCAR package configuration</h1>
+
+<form>\n";
+
+#
+# Traverse the data returned and construct a data mapping tags to
+# names/packages.
+#
+
+my %tags;
+foreach my $k (sort(keys(%$result))) {
+    my $tag = $result->{$k}->{tag};
+
+    if (defined($tags{$tag})) {
+	++$tags{$tag}->{count};
+    } else {
+	$tags{$tag} = {
+	    count => 1,
+	    names => [],
+	    packages => [],
+	};
+    }
+    my $names = $tags{$tag}->{names};
+    push @$names, $result->{$k}->{name};
+    my $packages = $tags{$tag}->{packages};
+    push @$packages, $k;
+}
+
+#
+# - If we didn't find any tags, print a message saying so.
+# - Otherwise, for each tag:
+#   - If there is only one selection possible, then just print it out
+#   - Otherwise, print a bunch of radio buttons and let the user pick
+#     the default one
+#
+
+my @tags_keys = keys(%tags);
+if ($#tags_keys < 0) {
+    print "No tags found\n";
+    print OUTFILE "<p>No tags were supplied by any OSCAR packages -- nothing to configure.</p>\n\n";
+} else {
+
+    print OUTFILE "<p>\n<ol>\n";
+
+    foreach my $tag (sort(@tags_keys)) {
+	my $info = $tags{$tag};
+
+	print OUTFILE "<p>\n<li> ";
+
+	# If there's only one name, then automatically set it and
+	# don't give the user the opprotunity to change it
+
+	if ($info->{count} <= 1) {
+	    print OUTFILE "Default for tag \"$tag\" will be set to " . 
+		$info->{packages}[0] . " (\"" . $info->{names}[0] . "\")
+<input type=\"hidden\" name=\"$tag\" value=\"" . $info->{names}[0] . "\">";
+	}
+
+	# Otherwise, print a radio button for each possible name
+
+	else {
+	    print OUTFILE 
+		"Default for tag \"$tag\" can be set to:\n    <ul>\n";
+	    foreach my $i (0 .. $#{$info->{names}}) {
+		print OUTFILE
+		    "    <li> <input type=\"radio\" name=\"$tag\" value=\"" .
+		    $info->{names}[$i] . "\"> " . $info->{packages}[$i] .
+		    " (\"" . $info->{names}[$i] . "\")</li>\n";
+	    }
+	    print OUTFILE "    </ol>\n";
+	}
+
+	print OUTFILE "</li>\n</p>\n\n";
+    }
+
+    print OUTFILE "</ol>\n</p>\n\n";
+}
+
+#
+# Write out the HTML footer
+#
+
+print OUTFILE "</form>
+</body>
+</html>\n";
+
+#
+# All done
+#
+
+close(OUTFILE);
+
+0;
