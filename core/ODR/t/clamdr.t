@@ -1,4 +1,4 @@
-#   $Header: /home/user5/oscar-cvsroot/oscar/core/ODR/t/Attic/clamdr.t,v 1.1 2001/08/14 15:22:33 geiselha Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/core/ODR/t/Attic/clamdr.t,v 1.2 2001/08/14 16:12:23 geiselha Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -44,6 +44,5 @@ sub execute {
     close PIPE;
     return @output;
 }
-
 my @out = execute("readDR service NAME=PBS");
 ok $out[0], '/HOST=node3.csm.ornl.gov/';
