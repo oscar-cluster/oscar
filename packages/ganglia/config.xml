@@ -2,8 +2,6 @@
 <!DOCTYPE package SYSTEM "../package.dtd">
 <oscar>
   <name>ganglia</name>
-  <filter distribution="redhat" distribution_version="9"/>
-  <filter distribution="fedora" distribution_version="2"/>
 
   <version>
     <major>2</major>
