@@ -140,3 +140,5 @@ ENDIT
     close(CONF);
 }
 
+exit 0;
+
