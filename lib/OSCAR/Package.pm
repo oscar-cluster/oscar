@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.51 2003/06/23 17:53:30 brechin Exp $
+#   $Id: Package.pm,v 1.52 2003/06/23 19:13:29 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.51 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.52 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -277,13 +277,20 @@ sub rpmlist {
 
 
 # First try the database
+    my @field = ("id");
+    my @wheres= ( "name=$pkg" );
+    my $idresult = database_read_table_fields('packages', \@field, \@wheres, 'id');
+    my ($pkgid, $null) = each %$idresult;
     my @rpms_to_return = ();
-    my @field = ( "rpm" );
-    my @wheres= ( "package=$pkg", "scope=$type" );
-    my $results;
+    @field = ( "rpm" );
+    @wheres= ( "package_id=$pkgid", "group=$type" );
     my $key;
     my $value;
-    if ( ($results = database_read_table_fields('packages_rpmlist', \@field, \@wheres, 'rpm', "Couldn't get $type rpms for package $pkg")) && keys(%$results) > 0) {
+    my $results = database_read_table_fields('packages_rpmlists', \@field, \@wheres, 'rpm', "Couldn't get $type rpms for package $pkg");
+
+#print "keys: " . keys(%$results) . " values: " . values(%$results) . "\n";
+#print "defined? " . defined(%$results) . " true? " . %$results . "\n";
+    if ( keys(%$results) > 0 ) {
 
 	while (($key, $value) = each %$results) {
 	#  print "key: $key, value: $value\n";
