@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.52 2003/07/03 02:57:33 naughtont Exp $
+# $Id: oscar_wizard,v 1.53 2003/07/08 20:43:26 brechin Exp $
 #
 
 use strict;
@@ -274,9 +274,7 @@ sub build_oscar_image {
     $save_text = $outfile;
     open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
     foreach my $pkg (@pkgs) {
-#	my @rpms = rpmlist($pkg, "client");
-	my @rpms = database_rpmlist_for_package_and_group($pkg,
-							  "oscar_clients");
+	my @rpms = rpmlist($pkg, "oscar_clients");
 	foreach my $rpm (@rpms) {
 	    print OUTFILE "$rpm\n";
 	}
