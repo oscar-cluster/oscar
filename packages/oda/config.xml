@@ -103,6 +103,7 @@
     
   <rpmlist>
     <filter distribution='mandrake' distribution_version='9.2' />
+    <filter distribution='mandrake' distribution_version='10.0' />
     <rpm>MySQL</rpm>
     <rpm>MySQL-client</rpm>
     <rpm>libmysql12</rpm>
