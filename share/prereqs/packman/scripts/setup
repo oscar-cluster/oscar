@@ -9,12 +9,12 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.6 2004/04/14 10:07:13 tuelusr Exp $
+# $Id: setup,v 1.3 2004/05/08 17:42:28 jsquyres Exp $
 #
 # setup script for the packman-depman package
 #
 
-VERSION=$(echo "$Revision: 1.6 $" | cut --fields 2 --delimiter " ")
+VERSION=$(echo "$Revision: 1.3 $" | cut --fields 2 --delimiter " ")
 
 PACKAGE=packman-depman
 if [[ $0 = */* ]] ; then

@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2004 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.4 2004/04/14 10:05:24 tuelusr Exp $
+# $Id: Makefile.am,v 1.4 2004/05/08 17:42:28 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.

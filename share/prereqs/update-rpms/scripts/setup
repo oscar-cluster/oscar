@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.2 2004/05/07 16:00:19 dnl Exp $
+# $Id: setup,v 1.8 2004/05/08 17:42:30 jsquyres Exp $
 #
 # setup script for the update-rpms package
 #
@@ -24,7 +24,7 @@
 
 # What does this do?!
 # Just boilerplate a la all of the Perl scripts in OSCAR (essentially, nothing)
-VERSION=$(echo "$Revision: 1.2 $" | cut --fields 2 --delimiter " ")
+VERSION=$(echo "$Revision: 1.8 $" | cut --fields 2 --delimiter " ")
 
 PACKAGE=update-rpms
 if [[ $0 = /*/ ]] ; then
