@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: autogen.sh,v 1.11 2003/07/21 21:48:44 jsquyres Exp $
+# $Id: autogen.sh,v 1.12 2003/07/29 21:49:53 jsquyres Exp $
 #
 
 #
@@ -145,7 +145,8 @@ make_makefile() {
     # want anything more interesting, they can supply their own
     # Makefile.am's.
 
-    mm_extra_dist=
+    mm_extra_data=
+    mm_extra_scripts=
     mm_subdirs=
     
     touch $mm_dir/$sentinel_file
@@ -195,7 +196,11 @@ EOF
 		-a "`echo $mm_file | egrep '~$'`" == "" \
 		-a "`echo $mm_file | egrep '\.bak$'`" == "" \
 		; then
-		mm_extra_dist="$mm_file $mm_extra_dist"
+		if test -x "$mm_file"; then
+		    mm_extra_scripts="$mm_file $mm_extra_scripts"
+		else
+		    mm_extra_data="$mm_file $mm_extra_data"
+		fi
 	    fi
 	fi
     done
@@ -206,10 +211,12 @@ EOF
     if test -n "$mm_subdirs"; then
 	echo "SUBDIRS = $mm_subdirs" >> $mm_outfile
     fi
-    if test -n "$mm_extra_dist"; then
+    extra_dist=0
+    if test -n "$mm_extra_scripts" -o -n $"mm_extra_data"; then
 	cat >> $mm_outfile <<EOF
-oscar_DATA = $mm_extra_dist
-EXTRA_DIST = \$(oscar_DATA)
+oscar_SCRIPTS = $mm_extra_scripts
+oscar_DATA = $mm_extra_data
+EXTRA_DIST = \$(oscar_SCRIPTS) \$(oscar_DATA)
 EOF
     fi
 
