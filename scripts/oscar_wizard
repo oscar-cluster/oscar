@@ -30,6 +30,8 @@ if(!$ENV{OSCAR_HOME}) {
 
 my $interface = $ARGV[0];
 
+$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$interface;
+
 $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 
 # Create the main window...

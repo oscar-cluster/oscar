@@ -43,6 +43,8 @@ $ENV{PATH} = $ENV{PATH} . ':/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/lo
 
 my $adapter = shift or croak("Program must be invoked as ./install_cluster <network device>");
 
+$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
+
 system("chmod 755 packages/*/scripts/*");
 
 chdir("scripts") or croak("Couldn't chdir to scripts");
