@@ -1,8 +1,8 @@
 % -*- latex -*-
 %
-% Copyright (c) 2002 The Trustees of Indiana University.  
+% Copyright (c) 2002 The Trustees of Indiana University.
 %                    All rights reserved.
-% 
+%
 % This file is part of the OSCAR software package.  For license
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
@@ -27,7 +27,7 @@ The following release notes apply to OSCAR version \oscarversion.
 \item Ganglia now included in the default package set.
 \item Torque now included/OpenPBS is now an optional package.
 \item Multiple bug fixes and Wizard improvements.
-\item Updated user interface (updated/improved wizard). 
+\item Updated user interface (updated/improved wizard).
 
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,7 +47,7 @@ The following release notes apply to OSCAR version \oscarversion.
     non-understood where string <nics.driver_module = >
     /opt/oscar/packages/sis/scripts/post_clients: INTERNAL
     ODA ERROR - failing to convert where expression
-    <nics.driver_module = > in oda::delete_records - at 
+    <nics.driver_module = > in oda::delete_records - at
     least one record not deleted in table <nics> in database <oscar>
     /opt/oscar/packages/sis/scripts/post_clients: illegal or
     non-understood where string <nics.gateway = >
@@ -76,7 +76,7 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \item All nodes must have a hostname other than ``{\tt localhost}''
   that does not contain any underscores (``{\tt \_}'').
-  
+
 \item A domain name must be specified for the client nodes when
   defining them.
 
@@ -86,37 +86,37 @@ The following release notes apply to OSCAR version \oscarversion.
   Python2 prerequisite that is slightly different across different Linux
   distributions.  Also see the file \file{packages/c3/RPMS/NOTE.python2}.
 
-\item In some cases, the test window that is opened from the 
+\item In some cases, the test window that is opened from the
   OSCAR wizard may close suddenly when there is a test failure. If
   this happens, run the test script, \file{testing/test\_cluster},
   manually in a shell window to diagnose the problem.
- 
+
 \item Although OSCAR can be installed on pre-existing server nodes, it
   is typically easiest to use a machine that has a new, fresh install
-\begchange
+
   of a distribution listed in Table~\ref{tab:oscar-distro-support}
   {\em with no updates installed}.  If the updates are installed,
   there may be conflicts in RPM requirements.  It is recommended to
   install RedHat updates {\em after} the initial OSCAR installation has
   completed.  On the Mandrake systems the security updates must be added
   prior to the install.
-  
+
 \item The following benign warning messages will appear multiple times
   during the OSCAR installation process:
 
 \begin{verbatim}
   rsync_stub_dir: no such variable at ...
 
-  Use of uninitialized value in pattern match (m//) at 
+  Use of uninitialized value in pattern match (m//) at
   /usr/lib/perl5/site_perl/oda.pm ...
 \end{verbatim}
 \endchange
 
   It is safe to ignore these messages.
-  
+
 \item The OSCAR installer will install the MySQL package on the server
   node if it is not already installed.  A password will be automatically
-\begchange
+
   generated for the oscar user to access the oscar database.  This
   password will be stored in the file \file{/etc/odapw}.
 \endchange
@@ -138,7 +138,7 @@ The following release notes apply to OSCAR version \oscarversion.
 %  created image'' notice will appear even though the status bar looks
 %  incomplete.  This incomplete status bar can be ignored.
 
-\begchange
+
 \item If \cmd{ssh} produces warnings when logging into the compute
   nodes from the OSCAR head node, the C3 tools (e.g., \cmd{cexec}) may
   experience difficulties.  For example, if you use \cmd{ssh} to login
@@ -147,10 +147,10 @@ The following release notes apply to OSCAR version \oscarversion.
   message in the \cmd{cexec} output:
 
 \begin{verbatim}
-  Warning: No xauth data; using fake authentication data for 
+  Warning: No xauth data; using fake authentication data for
   X11 forwarding.
 \end{verbatim}
-  
+
   Although this is only a warning message from \cmd{ssh}, \cmd{cexec}
   may interpret it as a fatal error, and not run across all cluster
   nodes properly (e.g., the \button{Install/Uninstall Packages} button
@@ -166,10 +166,10 @@ The following release notes apply to OSCAR version \oscarversion.
   # export C3_RSH='ssh -x'
   # cexec uptime
 \end{verbatim}
-  
+
   The warnings about \cmd{xauth} should no longer appear (and the
   \button{Install/Uninstall Packages} button should work properly).
-  
+
 \item The \button{Cancel} button in the \button{Install/Uninstall
     Package} step does not work properly; if any packages are selected
   to be installed or uninstalled, clicking the \button{Cancel} button
@@ -181,22 +181,22 @@ The following release notes apply to OSCAR version \oscarversion.
   Note that if you do not select any additional packages to
   install/uninstall, nothing will run (as expected).
 
-\item The SIS multicast facility (Flamethrower) is ``experimentally'' 
-  supported.  If you are having problems with multicast and would like 
-  to experiment please check the {\tt oscar-users} and/or 
+\item The SIS multicast facility (Flamethrower) is ``experimentally''
+  supported.  If you are having problems with multicast and would like
+  to experiment please check the {\tt oscar-users} and/or
   {\tt sisuite-users} mailing lists for tips.
 
 % BLI: This bug has been fixed
-%\item If you downloaded PBS through Step 0 \button{Download Addtional 
+%\item If you downloaded PBS through Step 0 \button{Download Addtional
 %  OSCAR Packages}, but did not select it for installation, you will get
 %  error messages complaining about conflicts. The way around this is to goto
 %  \file{/tftpboot/rpm} and remove all the OpenPBS RPMs. If you want to install
 %  PBS instead of Torque, select it in Step 1 \button{Select OSCAR Packages To
 %  Install}, then either copy the OpenPBS RPMs back to
 %  \file{/tftpboot/rpm} or just re-run the OSCAR wizard and the RPMs will be
-%  automatically copied back. 
+%  automatically copied back.
 
-\endchange
+
 
 \end{itemize}
 
@@ -219,7 +219,7 @@ The following items highlight these issues.
 
 \item The RPM system has been updated with this Red Hat release.  The
  OSCAR install process will likely display several warnings due to unsigned
- RPMS.  These warnings can be ignored. 
+ RPMS.  These warnings can be ignored.
 
 %TJN: These are the notes Jeff posted for the "Re: mksiimage hang problems"
 %  thread on oscar-devel (2003-07-23)
@@ -236,7 +236,7 @@ The following items highlight these issues.
           indications that it has genuinely hung include: the disk is
           not running and load goes down to 0 (or nearly 0) and stays
           there.
-          
+
         \item Then do a \cmd{ps} and find the PID of the \cmd{rpm}
           process:
 \begin{verbatim}
@@ -244,13 +244,13 @@ The following items highlight these issues.
   ...output...
   # kill <PID_of_RPM>
 \end{verbatim}
-          
+
         \item This will probably not kill the process (it's likely to
           be in a state where it is ignoring signals), but it should
           be tried anyway -- this would allow \cmd{rpm} to exit
           cleanly.  If \cmd{rpm} does exit cleanly, jump down to the
           last step in this procedure.
-          
+
         \item If \cmd{rpm} does not exit within a short period of
           time, \cmd{kill -9 <PID\_of\_RPM>}.  This guarantees that
           \cmd{rpm} will not exit cleanly, but in this case, it's ok.
@@ -262,19 +262,19 @@ The following items highlight these issues.
   # cd /var/lib
   # tar zcvf /tmp/rpmdb.tar.gz rpm
 \end{verbatim}
-                          
+
                         \item Delete any existing RPM database locks:
 \begin{verbatim}
   # cd /var/lib/rpm
   # rm -f __db*
 \end{verbatim}
-                          
+
                         \item Rebuild the RPM database:
 \begin{verbatim}
   # rpm -vv --rebuilddb
 \end{verbatim}
                         \end{enumerate}
-                        
+
                       \item Now re-run the OSCAR step that hung.  If
                         RPM hangs again, repeat these steps to un-hang
                         it.  Testing has shown that it may be
@@ -294,14 +294,14 @@ The following items highlight these issues.
 \begin{itemize}
 
 \item SIS currently does not fully support 2.6 kernel, the way we make it
-  work right now is to run a script which generate \file{/etc/modprobe.conf} 
-  from \file{/etc/modules.conf} - this does not work 100\% of the time.  If 
-  you can deploy an image to your client nodes but are having problems 
+  work right now is to run a script which generate \file{/etc/modprobe.conf}
+  from \file{/etc/modules.conf} - this does not work 100\% of the time.  If
+  you can deploy an image to your client nodes but are having problems
   booting, chances are this is the issue.  To get around this problem, copy a
-  working \file{modprobe.conf} for your client nodes to the image directory 
+  working \file{modprobe.conf} for your client nodes to the image directory
   \file{/var\-/lib\-/systemimager\-/images\-/oscarimage\-/etc/}.  Re-image the
   nodes and it should work.  One quick way of getting the correct
-  \file{modprobe.conf} is to boot a node with the Fedora Core 2 CD 1 
+  \file{modprobe.conf} is to boot a node with the Fedora Core 2 CD 1
   and run the Rescue mode.  You will then be able to find
   \file{modprobe.conf} in \-/tmp.
 
@@ -309,7 +309,7 @@ The following items highlight these issues.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% jlm - removed this section seeing as how there is no drake support 
+% jlm - removed this section seeing as how there is no drake support
 % in 4.0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -338,7 +338,7 @@ The following items highlight these issues.
 %     - on MDK8.x it showed up in it's own xterm rpm.
 %$\item The OSCAR wizard makes use of \cmd{xterm} so this package must be installed.  You can check the RPM database for this package by typing
 %  \cmd{rpm -q xterm}.  If \cmd{xterm} is not available, you must
-%  install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake 
+%  install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake
 %  CD's to run the \cmd{urpmi} command as mentioned above):
 %
 %\begin{verbatim}
@@ -395,19 +395,19 @@ version you found is v3.23.58-2.3:
 
 \begin{verbatim}
   rpmbuild --rebuild mysql-3.23.58-2.3.src.rpm
-  cp /usr/src/redhat/RPMS/ia64/mysql*-3.23.58-2.3.ia64.rpm /tftpboot/rpm 
+  cp /usr/src/redhat/RPMS/ia64/mysql*-3.23.58-2.3.ia64.rpm /tftpboot/rpm
 \end{verbatim}
 
 Note: The key here is to keep the MySQL versions consistent.
 
 
 \item Red Hat Enterprise Linux 3 (Gold or Update 2) rpmlist
- 
+
 \emph{IN OSCAR WIZARD STEP 4}: if you're running an earlier version than Update 3, you will
 need to manually select the correct rpmlist before generating the client image.
 Select the appropriate file for your architecture
 
-  \file{/opt/oscar/oscarsample/redhat-3asU2-i386.rpmlist} 
+  \file{/opt/oscar/oscarsample/redhat-3asU2-i386.rpmlist}
   \ \\  % Force newline
 or
   \ \\  % Force newline
@@ -427,14 +427,14 @@ with the commands
 \begin{verbatim}
   cp /boot/efi/efi/redhat/initrd-*.img \
     /var/lib/systemimager/images/oscarimage/boot/efi/EFI/redhat/
-    
+
   cp /boot/efi/efi/redhat/elilo.conf \
     /var/lib/systemimager/images/oscarimage/boot/efi/EFI/redhat/
 \end{verbatim}
 
 
 \item \file{systemconfig.conf}
- 
+
 \emph{AFTER OSCAR WIZARD STEP 4}: you will need to add an INITRD entry to the image
 file
 
@@ -496,13 +496,13 @@ Once you have downloaded and copied it to a known directory you must install
 the package and turn it on:
 
 \begin{verbatim}
-  rpm -i tftp-server-0.32-4.ia64.rpm  
+  rpm -i tftp-server-0.32-4.ia64.rpm
 \end{verbatim}
 
 (it could be "ia64" or "i386", depending of your machine's architecture).
 
 \begin{verbatim}
-  /sbin/chkconfig --level 345 tftp on 
+  /sbin/chkconfig --level 345 tftp on
 \end{verbatim}
 
 
@@ -569,15 +569,15 @@ NOTE: elilo requires keywords in lower case.
 %TJN: Uncomment when ia64 support returns (and update things!) ;)
 %
 % \begin{itemize}
-% 
+%
 % \item The OSCAR auto-install diskette will probably not work on Itanium
 %   systems, but they mostly have support for network booting.
-%   
+%
 % \item Some Itanium 1 or 2 systems are supported by OSCAR under
 %   RedHat's Linux 7.2 release for Itanium.  Itanium systems that can
 %   use the standard RedHat Itanium kernel for booting and network
 %   access should work with OSCAR.
-% 
+%
 % \item Itanium 2 machines often have newer hardware interfaces for
 %       things like networking or disk drives that sometimes require newer
 %       kernels than those provided by official Linux distributions. RedHat 7.2
@@ -587,7 +587,7 @@ NOTE: elilo requires keywords in lower case.
 %       kernel.  This is essentially a ``do it yourself'' kind
 %     of process, and not recommended for novices.  Please consult the
 %     OSCAR user's mailing list for more information.
-% 
+%
 % \item If an Itanium (or an IA32 based) system has new or unknown
 %   hardware that is not supported by the stock kernel in the base
 %   operating system release, it will not work with standard OSCAR,
@@ -596,8 +596,8 @@ NOTE: elilo requires keywords in lower case.
 %   kernel/module set that works for your hardware, you should look at
 %   the NCSA Kernel\_Picker utility at \url{http://oscar.ncsa.uiuc.edu/} to
 %   enable you to use them in OSCAR.
-% 
+%
 % \end{itemize}
-% 
+%
 
 % LocalWords:  tex Exp TJN unmunge pathenv

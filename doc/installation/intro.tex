@@ -1,8 +1,8 @@
 % -*- latex -*-
 %
-% Copyright (c) 2002 The Trustees of Indiana University.  
+% Copyright (c) 2002 The Trustees of Indiana University.
 %                    All rights reserved.
-% 
+%
 % This file is part of the OSCAR software package.  For license
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
@@ -25,7 +25,7 @@ such as popular MPI implementations, PVM, PBS, etc.
 This document provides a step-by-step installation guide for system
 administrators, as well as a detailed explanation of what is happening
 as you install.  Note that this installation guide is specific to
-OSCAR version \oscarversion.  
+OSCAR version \oscarversion.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -51,7 +51,7 @@ Each individual machine of a cluster is referred to as a \term{node}.
 Within the OSCAR cluster to be installed, there are two types of
 nodes: \term{server} and \term{client}. A \term{server} node is
 responsible for servicing the requests of \term{client} nodes.  A
-\term{client} node is dedicated to computation.  
+\term{client} node is dedicated to computation.
 
 An OSCAR cluster consists of one server node and one or more client
 nodes, where all the client nodes [currently] must have homogeneous
@@ -64,23 +64,23 @@ software package in an OSCAR cluster.  An OSCAR package can be as
 simple as a single RPM file, or it can be more complex, perhaps
 including a mixture of RPM and other auxiliary configuration /
 installation files.  OSCAR packages provide the majority of
-functionality in OSCAR clusters.  
+functionality in OSCAR clusters.
 
 OSCAR packages fall into one of three categories:
 
 \begin{itemize}
 \item \term{Core packages} are required for the operation of OSCAR
   itself (mostly involved with the installer).
-  
+
 \item \term{Included packages} are shipped in the official OSCAR
   distribution.  These are usually authored and/or packaged by OSCAR
   developers, and have some degree of official testing before
   release.
-  
+
 \item \term{Third party packages} are not included in the official
   OSCAR distribution; they are ``add-ons'' that can be unpacked in the
   OSCAR tree, and therefore installed using the OSCAR installation
-  framework.  
+  framework.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -129,13 +129,10 @@ the OSCAR client nodes:
     kernel that is shipped with OSCAR.  See the OSCAR web site for
     more information. \label{foot:3com-warning}}
 \item Same Linux distribution and version as the server node
-\item All clients must have the same architecture (e.g., ia32 vs.\ 
+\item All clients must have the same architecture (e.g., ia32 vs.\
   ia64)
 \item Monitors and keyboards may be helpful, but are not required
-\begchange
 \item Floppy or PXE enabled BIOS
-\endchange
-
 \end{itemize}
 
 
@@ -151,7 +148,7 @@ Novice users will be comforted to know that anyone who has installed
 and used Linux can successfully navigate through the OSCAR cluster
 install.
 
-The rest of this document is organized as follows.  
+The rest of this document is organized as follows.
 %
 First, Section~\ref{sec:download} tells how to obtain an OSCAR version
 \oscarversion\ distribution package.
@@ -171,12 +168,12 @@ update some files'' and ``the install will now replace the string
 `xyz' with `abc' in file \file{some\_file}.'')
 %
 \detailed{
-  
+
   Finally, Section~\ref{sec:pkg-specific-notes} contains system
   administration notes about several of the individual packages that
   are installed by OSCAR.  {\bf\em This section is a ``must read'' for
     all OSCAR system administrators.}
-  
+
   Appendix~\ref{app:net-boot-client-nodes} covers the topic of network
   booting client nodes, which is so important that it deserved its own
   section.
