@@ -33,6 +33,7 @@ use Data::Dumper;
 	      database_disconnect 
 	      database_execute_command 
 	      database_find_node_name
+	      database_hostname_to_node_name
 	      database_program_variable_get
 	      database_program_variables_get
 	      database_program_variable_put
