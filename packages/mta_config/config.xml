@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<oscar>
+  <!--
+      Copyright (c) 2002 The Trustees of Indiana University.  
+                         All rights reserved.
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id: config.xml,v 1.0 2004/11/23 dikim Exp $
+  -->
+  <name>Configure Mailing Services for localhost</name>
+
+  <version>
+    <major>1</major>
+    <minor>1</minor>
+    <subversion>0</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>included</class>
+
+  <summary>Configure Mailing services for localhost on client nodes</summary>
+  <license>Freely distributable</license>
+  <copyright>2002</copyright>
+  <group>System Environment/Base</group>
+  <packager>
+    <name>DongInn Kim</name>
+    <email>dikim@osl.iu.edu</email>
+  </packager>
+  <vendor>Indiana University</vendor>
+  <description>OSCAR-specific scripts to configure mailing services for localhost on client nodes.</description>
+
+  <rpmlist>
+    <!-- Distributions that do not have the rpms dependent on postfix -->
+    <filter distribution='fedora'   distribution_version='1'  group='oscar_clients'  />
+    <filter distribution='fedora'   distribution_version='2'  group='oscar_clients'  />
+    <rpm>postfix-pflogsumm</rpm>
+    <rpm>perl-Date-Calc</rpm>
+    <rpm>perl-Bit-Vector</rpm>
+  </rpmlist>
+</oscar>

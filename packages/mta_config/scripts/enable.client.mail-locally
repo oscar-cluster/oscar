@@ -1,0 +1,194 @@
+#!/bin/sh
+#
+# Copyright (c) 2004 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: enable.client.mail-locally 2004-11-23 dikim $
+#
+
+#
+# Disable incoming mail upon bootup (ignore errors)
+#
+
+# Check if sendmail, exim, or postfix is running. If so, kill it.
+# No mailing service will run.
+
+services="sendmail exim postfix"
+for service in $services; do
+
+    # See if this service is installed.
+
+    chkconfig --list $service > /dev/null 2>&1
+    if test "$?" = "0"; then
+    	# Disable this service upon bootup
+
+    	chkconfig --del $service
+    fi
+done
+
+#
+# Configure a mailing service for localhost only in the client file system.
+#
+
+# Check if postfix, sendmail, or exim rpm is installed
+# If any one of them is installed, return the package name
+# and then the configuration file corresponding to the package name is configured
+# for only localhost.
+# Otherwise, it throws an error.
+
+# The list of the mailing service rpms
+services="postfix sendmail exim"
+for service in $services; do
+
+    # See if this is the rpm installed
+    rpm -qa | grep $service > /dev/null 2>&1
+    if test "$?" = "0"; then
+	    service_name=$service
+	    break
+    fi
+done
+
+# If $service_name contains the "postfix, sendmail, or exim",
+# each case handles the configuration corresponding to
+# the installed rpm for the localhost only.
+# Otherwise, the error will be thrown.
+
+case "$service_name" in
+	postfix) echo "- enabling postfix mail (localhost only) on client nodes"
+
+        # The list of configuration files possible for the Postfix in the current linux distro. 
+        configure_files="/etc/postfix/main.cf /etc/main.cf /usr/lib/postfix/main.cf"
+        found=0
+        for postfix_conf in $configure_files; do
+            if test -n "$found" -a -f $postfix_conf -a -n "`grep postfix $postfix_conf`"; then
+                found=1
+                break
+            fi
+        done
+
+        # If there is a configuration file, comment out all 'inet_interfaces = xxxx ',
+        # 'relayhost = xxxx ', 'myorigin = xxxx ', 'mydestination = xxxx ', and
+        # 'local_transport = ' parts 
+        # and save it to the new file (which is main.cf.client.$$).
+        # And then append 'inet_interfaces = localhost', 'relayhost = ip_address',
+        # 'mydestionation = bogus.example.com', 'myorgin = headnode.domain',
+        # 'local_transport = error', and 'relay_domains = ' at the end of the 
+        # main.cf.client.$$. 
+        # Copy the main.cf.client.$$ to the configuration file (main.cf)
+        # to update the original configuration.
+
+        if test $found = "1"; then
+
+            # Make a backup copy of the postfix config file before editing it.
+            cp $postfix_conf $postfix_conf.bak
+
+            # Comment out all 'inet_interfaces =' , 'relayhost =', 'myorgin =', 
+            # 'mydestination =', and 'local_transport = ' parts
+            cat $postfix_conf | sed -e 's/^[ \t]*inet_interfaces[ \t]*=/#inet_interfaces =/' \
+                -e 's/^[ \t]*relayhost[ \t]*=/#relayhost =/' \
+                -e 's/^[ \t]*myorigin[ \t]*=/#myorigin =/' \
+                -e 's/^[ \t]*mydestination[ \t]*=/#mydestination =/' \
+                -e 's/^[ \t]*local_transport[ \t]*=/#local_transport =/' \
+                > main.cf.client.$$
+            origin=`hostname -d`
+            
+            # Get the IP address of the server node from /etc/hosts
+            oscar_server_ipaddress=`grep oscar_server /etc/hosts | awk '{print $1;}'`
+            
+            cat >> main.cf.client.$$ << EOF
+
+#
+# ADDED CONFIGURATION OPTIONS FOR OSCAR
+#
+
+# The configuration options below were added specifically for OSCAR
+# for the following purposes:
+#
+# 1. Allow mail to originate from each of the client nodes. No
+# incoming mail will be accepted by the client nodes from external
+# sources.
+#
+# 2. Relay all mail from the client nodes to the oscar_server node --
+# let all mail routing decisions be made at the server.  The client
+# nodes act like dumb relays.
+#
+# 3. Make all mail from the client nodes have a "From" address that
+# looks like it originated from the head node.  This is necessary for
+# OSCAR clusters that are private and may have non-public IP names and
+# addresses -- some mail servers will reject mail if they have a
+# "From" address that is not DNS-resolvable.  Hence, we allow it to
+# have a "From" address the same as the OSCAR head node's public IP
+# address, which hopefully will be DNS resolvable.  Specifically, mail
+# servers receiving mail from the OSCAR server will accept it because
+# it can DNS resolve the OSCAR server (etc.).
+
+# This is configured for the client node to receive only local mail --
+# do not allow incoming mail from the network.
+inet_interfaces = localhost
+
+# Send *all* incoming mail directly to the OSCAR server; do not
+# attempt to process any mail locally (i.e,. let the OSCAR server make
+# all routing decisions).
+relayhost = [$oscar_server_ipaddress]
+
+# This is necessary to force postfix to ensure that ALL mail is routed
+# to the $relayhost; fake out Posfix to think that NO mail should be
+# terminated locally on this machine.  Note that the domain
+# "example.com" is covered by RFC 2606 and should never be used for a
+# real machine's domain name.
+mydestination = bogus.example.com
+
+# If the sender or recipient address is not specified with its domain namd,
+# its default domain name, $origin which is server's domain, is given
+myorigin = $origin
+
+# Makes the host not allow to receive any mail, not even from localhost.
+# But it does not affect sending mails.
+local_transport = error
+
+# Protect the unexpected relay by not mentioning the value of relay_domains
+relay_domains = 
+
+#
+# END OF ADDED CONFIGURATION OPTIONS FOR OSCAR
+#
+
+EOF
+            cp main.cf.client.$$ $postfix_conf
+    	    rm -rf main.cf.client.$$
+            echo "Postfix is succesfully configured. : CLIENT NODE";
+            
+            # Restart postfix.
+            /etc/init.d/postfix stop
+            /etc/init.d/postfix start
+
+            # Enable this service upon bootup 
+
+            chkconfig --add $service_name
+
+            echo "- finished configuring postfix"
+        else
+            echo "WARNING: I could not find postfix's configuration file!"
+	    echo "WARNING: There will be no mail service running on the client nodes!"
+        fi
+		;;
+	sendmail) 
+	echo "WARNING: OSCAR does not know how to configure sendmail yet."
+	echo "WARNING: Please bug the OSCAR developers to finish the disable-servics package!"
+	echo "WARNING: There will be no mail service running on the client nodes!"
+		;;
+	exim)
+	echo "WARNING: OSCAR does not know how to configure exim yet."
+	echo "WARNING: Please bug the OSCAR developers to finish the disable-servics package!"
+	echo "WARNING: There will be no mail service running on the client nodes!"
+		;;
+	*) 
+	echo "WARNING: OSCAR did not found any mailing service"
+	        ;;
+esac
+
+exit 0;

@@ -1,0 +1,208 @@
+#!/bin/sh
+#
+# Copyright (c) 2004 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+
+#
+# $Id: post_server_rpm_install 2004-11-23 dikim $
+#
+
+#
+# Disable incoming mail upon bootup (ignore errors)
+#
+
+# Check if sendmail, exim, or postfix is running. If so, kill it.
+# No mailing service will run.
+
+services="sendmail exim postfix"
+for service in $services; do
+
+    # See if this is the daemon installed
+
+    chkconfig --list $service > /dev/null 2>&1
+    if test "$?" = "0"; then
+
+	# Disable this service upon bootup
+
+	chkconfig --del $service
+    fi
+done
+
+
+#
+# Configure a mailing service for localhost only in the server file system
+#
+
+# Check if postfix, sendmail, or exim rpm is installed
+# If any one of them is installed, return the package name
+# and then the configuration file corresponding to the package name is configured
+# for only localhost.
+# Otherwise, it throws an error.
+
+# The list of the mailing service rpms
+services="postfix sendmail exim"
+for service in $services; do
+
+    # See if this is the rpm installed
+
+    rpm -qa | grep $service > /dev/null 2>&1
+    if test "$?" = "0"; then
+	service_name=$service
+
+	# If any above rpm exists,
+	# assign the name of the rpm found to the variable $service_name
+	# and then break out the 'for' loop 
+
+	break
+    fi
+done
+
+#
+# The only postfix is supported for the oscar-3.0.1b1.
+# If there is no MTA in the head node, install_postfix (perl script)
+# is called to install postfix rpm.
+#
+if [ -z "$service_name" ]; then
+    dir="$OSCAR_PACKAGE_HOME/scripts"
+    $dir/install_postfix
+    service_name="postfix"
+fi
+
+
+	# If $service_name contains the "postfix, sendmail, or exim",
+    # each case handles the configuration corresponding to
+	# the installed rpm for the localhost only.
+    # Otherwise, the error will be thrown.
+
+case "$service_name" in
+	postfix) echo "POSTFIX exists"
+
+        # The list of configuration files possible for the Postfix
+        # in the current linux distro. 
+
+        configure_files="/etc/postfix/main.cf /etc/main.cf /usr/lib/postfix/main.cf"
+        found=0
+        for file in $configure_files; do
+            if test -n "$found" -a -f $file -a -n "`grep postfix $file`"; then
+                found=1
+                break
+            fi
+        done
+
+        # First, comment out 'mynetworks_style = ' part.
+        # If the inet_interfaces = all, then leave that option.
+        # If the inet_interfaces has already a different option,
+        # then add the oscar option (oscar_server) behind it.
+        # If there is no option for inet_interfaces,
+        # uncomment out the "#inet_interfaces = all" and replace the 'all' option
+        # with the oscar option (oscar_server). 
+        # And then save it to the new file (which is main.cf.server.$$).
+        # And then append 'masquerade_domains = headnode.domain' at the end of 
+        # the main.cf.server.$$ if it is not configured yet. 
+        # Copy the main.cf.server.$$ to the configuration file (main.cf) to update
+        # the original configuration.
+
+        if test $found = "1"; then
+            postfix_conf=$file
+            # Make a backup copy of the postfix config file before editing it.
+            cp $file $file.bak
+
+            # Comment out 'mynetworks = ' part.
+            # If the inet_interfaces = all, then leave that option.
+            # If the inet_interfaces alreay has the oscar_server, remove it.
+            # If the inet_interfaces has a different option,
+            # then add the oscar option (oscar_server) behind it
+            cat $postfix_conf | sed  -e 's/^[ \t]*mynetworks[ \t]*=/#mynetworks =/' \
+                -e '/^[ \t]*inet_interfaces[ \t]*=[ \t]*all/! s/\(^[ \t]*inet_interfaces[ \t]*=[ \t]*\)\(.*\)\(, oscar_server\)/\1\2/' \
+                -e '/^[ \t]*inet_interfaces[ \t]*=[ \t]*all/! s/\(^[ \t]*inet_interfaces[ \t]*=[ \t]*\)\(.*\)/\1\2, oscar_server/' \
+                > main.cf.server.$$ 
+
+            # If there is no option for inet_interfaces,
+            # uncomment out the "#inet_interfaces = all" and replace the 'all' option
+            # with the oscar option (oscar_server). 
+            no_of_uncommented=`cat main.cf.server.$$ | sed -n '/^[ \t]*inet_interfaces[ \t]*=[ \t]*/p' | wc -l`
+            if test $no_of_uncommented = "0"; then
+                cat main.cf.server.$$ | sed \
+                    -e 's/^#\([ \t]*inet_interfaces[ \t]*=[ \t]*\)\(all\)/\1oscar_server/' \ 
+                    > main.cf.server.$$
+            fi
+            domains=`hostname -d`
+
+            cat >> main.cf.server.$$ << EOF
+
+#
+# ADDED CONFIGURATION OPTIONS FOR OSCAR
+#
+
+# The configuration options below were added specifically for OSCAR
+# for the following purpose:
+#
+# 1. Allow all nodes in the oscar cluster to access to the oscar_server
+# so that the oscar_server can receive the mail in the same domain.
+#
+# 2. Make all mail from the client nodes have a "From" address that
+# looks like it originated from the head node.  This is necessary for
+# OSCAR clusters that are private and may have non-public IP names and
+# addresses -- some mail servers will reject mail if they have a
+# "From" address that is not DNS-resolvable.  Hence, we allow it to
+# have a "From" address the same as the OSCAR head node's public IP
+# address, which hopefully will be DNS resolvable.  Specifically, mail
+# servers receiving mail from the OSCAR server will accept it because
+# it can DNS resolve the OSCAR server (etc.).
+
+EOF
+            # If the user has not configured the masquerdae_domains yet,
+            # assign the domain name of the head node to the masquerade_domains.
+            no_of_uncommented_masq=`cat main.cf.server.$$ | sed -n '/^[ \t]*masquerade_domains[ \t]*=[ \t]*/p' | wc -l`
+            if test $no_of_uncommented_masq = "0"; then
+                cat >> main.cf.server.$$ << EOF
+
+# Strips any.thing.$domains to $domains in the domain part of email address.
+masquerade_domains = $domains
+
+EOF
+            fi
+            
+            cp main.cf.server.$$ $postfix_conf
+    	    rm -rf main.cf.server.$$
+            echo "Postfix is succesfully configured. : SERVER NODE";
+            
+            # Restart postfix.
+            /etc/init.d/postfix stop
+            /etc/init.d/postfix start
+            
+            #check to see if postfix is running.
+            /etc/init.d/postfix status > /dev/null 2>&1
+            echo $?
+            if [ "$?" != "0" ]; then
+                echo "WARNING : The configuration of the postfix is completed"
+                echo "WARNING : Your postfix can not run. Please check your smtp port"
+            else
+                # Enable this service upon bootup 
+                chkconfig --add $service_name
+                echo "- finished configuring postfix"
+            fi
+        else
+            echo "WARNING: I could not find postfix's configuration file!"
+            echo "WARNING: There will be no mail service running on the client nodes!"
+        fi
+		;;
+	sendmail)
+    echo "WARNING: OSCAR does not know how to configure sendmail yet."
+    echo "WARNING: Please bug the OSCAR developers to finish the disable-servics package!"
+    echo "WARNING: There will be no mail service running on the client nodes!"
+		;;
+	exim)
+    echo "WARNING: OSCAR does not know how to configure exim yet."
+    echo "WARNING: Please bug the OSCAR developers to finish the disable-servics package!"
+    echo "WARNING: There will be no mail service running on the client nodes!"
+		;;
+    *) echo "WARNING: OSCAR did not found any mailing service"
+        ;;
+esac
+
+exit 0;
