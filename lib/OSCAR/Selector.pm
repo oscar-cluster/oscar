@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.23 2003/04/10 18:05:57 tfleury Exp $
+# $Id: Selector.pm,v 1.24 2003/04/10 20:01:15 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -849,7 +849,7 @@ if (!$useoda)
   # If there was an incorrect or missing config file, write out a new one.
   writeOutSelectionConfig() if ($writeconfig);
   }
-else
+else # Use oda
   {
   my $success = database_connect();
   if ($success)
@@ -910,14 +910,17 @@ if (!$useoda)
          keyattr => [],
         );
   }
-else
+else # Use oda
   {
   my $success = database_connect();
   if ($success)
     {
       database_execute_command("delete_all_package_sets");
-      database_execute_command("set_selected_package_set ".
-                               $selconf->{selected});
+      my @idnum;
+      database_execute_command("package_set_name_to_id ".
+                               $selconf->{selected},\@idnum);
+      database_execute_command("modify_records " .
+                               "oscar.selected_package_set_id~" .  $idnum[0]);
       foreach my $config (keys %{ $selconf->{configs} })
         {
           print "--> Creating a new package set named $config\n";
