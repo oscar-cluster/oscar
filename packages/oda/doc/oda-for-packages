@@ -1,0 +1,73 @@
+Packages should have a config.xml file in their base package
+directory. This file will be used to populate the OSCAR database with
+information about the package. It can also be used to create database
+tables and ODA shortcuts. Here is a minimum config.xml file:
+
+<oscar>
+  <name>snargle</name>
+  <version>
+    <major>A</major>
+    <minor>B</minor>
+    <subversion>C</subversion>
+    <release>D</release>
+  </version>         
+  <class>third-party</class>
+  <summary>installs the snargle utility</summary>
+  <license>LICENSE</license>
+  <group>GROUP/SUBGROUP</group>
+  <description>DESCRIPTION, CAN BE MULTI-LINE WITHIN BLOCK</description>
+</oscar>
+
+In the "oscar" database there is a table named "packages" which has a
+separate record for each oscar package. All of the tags directly
+within the <oscar> block of a package's config.xml file, such as the
+ones listed above, will populate that package's record. Some tag names
+are special and do other things, these are detailed in later sections
+of this document. Tags that are nested two levels deep within the
+<oscar> block, are combined with the outer block label. To make this
+clear, the above example would result in these fields and values being
+stored in the "packages" record for the snargle package:
+
+name -> "snargle"
+version_major -> "A"
+version_minor -> "A"
+version_subversion -> "A"
+version_release -> "A"
+class -> "third-party"
+summary -> "intalls the snargle utility"
+description -> "DESCRIPTION, CAN BE MULTI-LINE WITHIN BLOCK"
+
+
+
+<oscar>
+  <package>
+    <database_tables>
+      <table1>
+        <fields>
+          <field1>
+            <default> default1 </default>
+          </field1>
+          <field2>
+            <type> integer </type>
+            <default> 17 </default>
+          </field2>
+        </fields>
+      </table1>
+    </database_tables>
+    <snargle>
+      <shortcut> test1 expansion1 </shortcut>
+    </snargle>
+
+</oscar>
+
+The above config.xml file will set various fields in the packages
+database table for the snargle package record. For more complete
+examples, see any of the config.xml files included with OSCAR. For
+best example of how to create database tables or shortcuts, see the
+config.xml file for the oda package. The above example will also
+create a database table named package_snargle_table1 with fields named
+field1 and field2. The default value for field1 will be "default1",
+and field2 will be of type integer with a default value of 17. An ODA
+database shortcut will be created with the name
+"package_snargle_test1" that expands to "expansion1".
+

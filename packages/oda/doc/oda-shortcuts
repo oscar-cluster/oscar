@@ -1,0 +1,969 @@
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+CLUSTER_PARTITIONS table shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+add_node_to_cluster_partition:
+	add_node_to_cluster_partition adds a node to a cluster partition,
+	removing it from whichever cluster partition it belonged to 
+	previously, required and only parameters are:
+		node          name of the node to add
+		partition     name of the cluster partition to add it to
+
+cluster_partition_id_to_name:
+
+cluster_partition_name_to_id:
+
+cluster_partitions:
+
+create_cluster_partition:
+	create_cluster_partition creates a new cluster partition record,
+	required parameters are:
+		name          name of the cluster partition
+
+delete_all_cluster_partitions:
+	delete_all_cluster_partitions deletes all cluster partitions.
+	The portions of this multiple commands shortcut do:
+	Delete all cluster partition records.
+	Set all node records partition id to undefined.
+
+delete_cluster_partition:
+	delete_cluster_partition deletes a single cluster partition.
+	The portions of this multiple commands shortcut do:
+	Set all node records that point to this partition to no partition.
+	Delete the appropriate cluster partition record.
+
+nodes_in_cluster_partition:
+	nodes_in_cluster_partition lists the nodes that are in a cluster partition.
+	required parameters are:
+		name          name of the cluster partition
+
+remove_node_from_cluster_partitions:
+
+remove_node_from_cluster_partitions:
+
+rename_cluster_partition:
+
+which_cluster_partition_has_node:
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+CONFIGURATIONS table shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+create_configuration:
+	create_configuration creates a new named configuration,
+	required parameters are:
+		name          name of the configuration
+
+delete_all_configurations:
+	delete_all_configurations deletes all named configurations.
+	Note that this will not delete any configurations that 
+	are associated with a single node group.
+
+delete_configuration:
+	delete_configuration deletes a single named configuration.
+	Note that this will not delete any configurations that 
+	were created along with node groups with same names as 
+	the node group.
+
+rename_configuration:
+	rename_configuration renames a named configuration.
+	Note that this will not rename the configuration if it was
+	automatically associated with and created for a single node group,
+	this happens when the node group is renamed.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+CONFIGURATIONS <> NODE_GROUPS tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+add_configuration_to_node_group:
+	add_configuration_to_node_group adds a named configuration to a
+	node group, required and only parameters are:
+		configuration   name of configuration
+		group           name of node group
+
+configurations_in_node_group:
+	configurations_in_node_group lists the names of all 
+	configuraitons that are included in a given node group.
+	This is not recursive, it only lists the configurations 
+	linked directly to the node group, not the configurations
+	that are linked to other node groups that are part of
+	the specified node group. Required parameters are:
+		group          name of the node group
+
+remove_configuration_from_all_node_groups:
+	remove_configuration_from_all_node_groups removes
+	a named configurations from all node groups.
+	Note that this will not remove the named configuration if it was
+	automatically associated with and created for a single node group.
+
+remove_configuration_from_node_group:
+	remove_configuration_from_node_group removes
+	a named configuration from a specified node group.
+	Note that this will not remove the named configuration if it was
+	automatically associated with and created for a single node group.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+CONFIGURATIONS <> NODES tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+add_configuration_to_node:
+	add_configuration_to_node adds a named configuration to a
+	node (really this adds the configuration to the special 
+	node group that includes only that node), required and 
+	only parameters are:
+		configuration   name of configuration
+		node            name of node
+
+remove_configuration_from_node:
+	remove_configuration_from_node removes a named configuration
+	from a specified node (really this removes the configuration
+	from the special node group that includes only that node).
+	Note that this will not remove the named configuration if it was
+	automatically associated with and created for a single node group.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+CONFIGURATIONS <> PACKAGE_CONFIGURATION_VALUES tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+add_configuration_package_field_value:
+	add_configuration_package_field_value adds another
+	value to a named configuration package field. 
+	This assumes that there is only one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_group_configuration_package_field_value shortcut
+	if you want to add a field value to the automatically created
+	configuration for a particular node group. 
+	See the add_node_configuration_package_field_value shortcut
+	if you want to add a field value to the automatically created
+	configuration for a particular node. 
+	Required parameters are:
+		configuration   name of the configuration
+		package	        name of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+
+add_configuration_package_version_field_value:
+	add_configuration_package_version_field_value adds
+	another value to a named configuration package field. 
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_group_configuration_package_version_field_value
+	shortcut if you want to add a field value to the automatically
+	created configuration for a particular node group. 
+	See the add_node_configuration_package_version_field_value
+	shortcut if you want to add a field value to the automatically
+	created configuration for a particular node. 
+	Required and only parameters are:
+		configuration   name of the configuration
+		package	        name of the package
+		version	        version of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+
+remove_field_from_configuration_package:
+	remove_field_from_configuration_package removes a
+	field and all of it's values from a named configuration
+	for a specified package. This assumes that there is only
+	version of the package. Required and only parameters are:
+		field           name of the field being removed
+		configuration   name of the configuration
+		package	        name of the package
+
+remove_field_from_configuration_package_version:
+	remove_field_from_configuration_package_version removes a
+	field and all of it's values from a named configuration
+	for a specified package. Required and only parameters are:
+		field           name of the field being removed
+		configuration   name of the configuration
+		package	        name of the package
+		version	        version of the package
+
+set_configuration_package_field_value:
+	set_configuration_package_field_value sets the value
+	of a named configuration field for a specified version.
+	This assumes that there is only one version of the package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		configuration   name of the configuration
+		package	        name of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+
+set_configuration_package_version_field_value:
+	set_configuration_package_version_field_value sets the value
+	of a named configuration field for a specified version.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		configuration   name of the configuration
+		package	        name of the package
+		version	        version of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+DISK_PARTITIONS and DISK_LAYOUTS tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+add_partition_to_disk_layout:
+	add_partition_to_disk_layout adds a disk partition to a
+	disk layout record, required and only parameters are:
+		name          partition name
+		offset        offset of the start of the partition
+		size          size of the partition
+		type          type of the partition
+		layout	      name of the disk layout record to add it to
+
+create_disk_layout:
+	create_disk_layout creates a new disk layout record,
+	required parameters are:
+		name          name of the new disk layout record
+	Optional parameters are:
+		units         for offsets and sizes (default mb)
+
+delete_disk_layout:
+
+disk_layout_id_to_name:
+
+disk_layout_name_to_id:
+
+disk_layouts:
+
+link_node_to_disk_layout:
+
+list_nodes_in_disk_layout:
+
+remove_disk_partition_from_disk_layout:
+
+rename_disk_layout:
+
+unlink_node_from_disk_layouts:
+
+which_disk_layout_has_node:
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+IMAGES table shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+create_image:
+	create_image creates a new image record,
+	required parameters are:
+		name          name of the new image record
+	Optional parameters are:
+		path          base directory path on server
+
+
+delete_image:
+
+image_id_to_name:
+
+image_name_to_id:
+
+images:
+
+link_node_to_image:
+
+list_nodes_in_image:
+
+rename_image:
+
+unlink_node_from_images:
+
+which_image_has_node:
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+NETWORKS and NODE_NICS  tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+create_network:
+	create_network creates a new network record,
+	required parameters are:
+		name          name of the network
+		base_ip	      base ip address of the network
+		netmask	      netmask of the network
+	Optional parameters are:
+		broadcast     broadcast address of the network
+		cluster_only  non-zero if private cluster network, default 0
+		gateway       gateway address of the network
+
+create_nic_on_node:
+	create_nic_on_node creates a new network interface entry
+	in a node record, required parameters are:
+		interface    name of the new network interface entry
+		node         name of the node record
+		
+	Optional parameters are:
+	        assignment    method of assigning IP "static" or "dhcp"
+		broadcast     broadcast address of the network
+		driver_module name of the associated driver module
+		gateway       gateway address of the network
+                interface     name of the interface
+                ip            ip address of the nic
+                mac	      mac address of the nic
+                netmask	      netmask mask of the network
+
+delete_network:
+
+delete_node_nic:
+
+link_node_nic_to_network:
+	link_node_nic_to_network links a particular nic on a node
+	to a specified network, required parameters are:
+		node          name of the node
+		nic	      name of the nic on the node
+		network	      name of the network
+
+list_nics_on_node:
+
+list_node_nics_on_network:
+
+list_nodes_on_network:
+
+network_id_to_name:
+
+network_name_to_id:
+
+networks:
+
+nics:
+
+node_nic_broadcast:
+	node_nic_broadcast reads the network broadcast value
+	for a specified nic interface on a specified node.
+	It will use the nic record's broadcast field if that
+	has been set, otherwise, if a network is linked to
+	the nic and the network has a broadcast value that
+	has been set the network record's broadcast field
+	will be used. Required and only parameters are:
+		node        name of the node
+		nic         name of nic interface
+
+node_nic_gateway:
+	node_nic_gateway reads the network gateway address for a
+	particular nic on a node, ignoring the node gateway field.
+	First, for each nic attached to the node, it will try to
+	use the nic gateway field if that has been set. Otherwise,
+	if a network is linked to one of the node's nics and the 
+	network has a gateway address that has been set, the 
+	network gateway field will be used.
+	Required and only parameters are:
+		node        name of the node
+		nic         name of the nic
+
+node_nic_ip:
+	node_nic_ip reads the network ip address value
+	for a specified nic interface on a specified node.
+	Required and only parameters are:
+		node        name of the node
+		nic         name of nic interface
+
+node_nic_netmask:
+	node_nic_netmask reads the network netmask value
+	for a specified nic interface on a specified node.
+	It will use the nic record's netmask field if that
+	has been set, otherwise, if a network is linked to
+	the nic and the network has a netmask value that
+	has been set the network record's netmask field
+	will be used. Required and only parameters are:
+		node        name of the node
+		nic         name of nic interface
+
+rename_network:
+
+rename_node_nic:
+
+unlink_node_nic_from_networks:
+
+which_networks_have_node:
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+NODES table shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+add_dns_server_to_node:
+	add_dns_server_to_node adds a dns server to a
+	node record, required and only parameters are:
+		dns_server    IP or dns name of dns server machine to add
+		node          cluster node name of the record to modify
+
+create_node:
+	create_node creates a new node record. This also 
+	creates an associated node group record of the same
+	name which cannot have any other node groups be 
+	included in the associated node group, and it also
+	creates an associated configuration of the same name.
+	Required parameters are:
+	 	name          name of the node record
+	Optional parameters are:
+		cpu_num       number of processors
+		cpu_speed     speed of processor(s)
+		cpu_type      type of processor(s)
+		default_gateway IP or dns name of the default gateway
+		domain        dns domain of the node
+		hostname      name of the node returned by hostname command
+		ram           amount of ram in the node
+		swap	      amount of swap space in the node
+		units	      units for ram and swap
+
+delete_node:
+	delete_node deletes a node record. This also 
+	deletes the associated node group record of the same
+	name, and the associated configuration of the same name.
+	Note that this shortcut cannot delete any nodes that
+	are marked as being special. Required parameter is:
+	 	name          name of the node record
+
+ip_to_node_name:
+
+list_nodes_using_dns_server:
+
+node_cluster_only_ips:
+
+node_gateway:
+	node_gateway reads the network gateway address for node.
+	First, it will try to use the gateway field for the node.
+	Then, for each nic attached to the node, it will try to
+	use the nic gateway field if that has been set. Otherwise,
+	if a network is linked to one of the node's nics and the 
+	network has a gateway address that has been set, the 
+	network gateway field will be used. Note that more than one
+	gateway value can be returned if more than one nic
+	on the node has a gateway field set or points to a
+	network with a gateway field set.
+	Required and only parameters are:
+		node        name of the node
+
+node_hostname_to_name:
+
+node_id_to_name:
+
+node_ips:
+
+node_name_to_hostname:
+
+node_name_to_id:
+
+node_public_ips:
+
+nodes:
+	nodes lists the names of all nodes. Adding further
+	parameters can also list specified node field values
+	and/or can specify condition to match only certain nodes.
+	No parameters are requires.
+
+nodes_cluster_only_ips:
+
+nodes_public_ips:
+
+remove_dns_server_from_node:
+
+rename_node:
+	rename_node renames a node record. This also renames
+	the associated node group record of the same name, and
+	renames the associated configuration of the same name.
+	Note that this shortcut cannot rename any nodes that
+	are marked as being special. Required parameters are:
+	 	old          old name of the node record
+	 	new          new name of the node record
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+NODES <> PACKAGE_CONFIGURATION_VALUES tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+add_node_configuration_package_field_value:
+	add_node_configuration_package_field_value adds another
+	package field value to the automatically created
+	configuration that was associated with the specified node. 
+	This assumes that there is only one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_group_configuration_package_field_value shortcut
+	if you want to add a field value to the automatically created
+	configuration for a particular node group. 
+	Required parameters are:
+		node        name of the node
+		package	    name of the package
+		field       name of the field being added (to)
+		value	    value being added to the field
+
+add_node_configuration_package_version_field_value:
+	add_node_configuration_package_version_field_value adds
+	another package field value to the automatically created
+	configuration that was associated with the specified node. 
+	This assumes that there me be more than one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_group_configuration_package_version_field_value
+	shortcut if you want to add a field value to the automatically
+	created configuration for a particular node. 
+	Required parameters are:
+		node        name of the node
+		package	    name of the package
+		version	    version of the package
+		field       name of the field being added (to)
+		value	    value being added to the field
+
+remove_field_from_node_configuration_package:
+	remove_field_from_node_configuration_package removes a
+	field and all of it's values from an automatically created
+	configuration that was associated with the specified node.
+	This assumes that there is only version of the package.
+	Required parameters are:
+		field           name of the field being removed
+		node            name of the node
+		package	        name of the package
+
+remove_field_from_node_configuration_package_version:
+	remove_field_from_node_configuration_package_version removes
+	a field and all of it's values from an automatically created
+	configuration that was associated with the specified node.
+	Required and only parameters are:
+		field           name of the field being removed
+		node            name of the node
+		package	        name of the package
+		version	        version of the package
+
+set_node_configuration_package_field_value:
+	set_node_configuration_package_field_value sets the
+	field value of an automatically created configuration that was
+	associated with the specified node for a specified package.
+	This assumes that there is only one version of the package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		node            name of the node
+		package	        name of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+
+set_node_configuration_package_version_field_value:
+	set_node_configuration_package_version_field_value sets the
+	field value of an automatically created configuration that was
+	associated with the specified node for a specified package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		group           name of the node group
+		package	        name of the package
+		version	        version of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+NODE_GROUPS table shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+create_node_group:
+	create_node_group creates a new node group record.
+	This also creates an associated configuration of
+	the same name. Required parameter is:
+		name          name of the node set
+
+delete_all_node_groups:
+	delete_all_node_groups deletes all node groups.
+	The portions of this multiple commands shortcut do:
+	Remove all records from node groups/included nodes table.
+	Remove all records from node_groups names/ids table.
+	Note that this will not delete any node groups that 
+	are associated with a single node.
+
+delete_node_group:
+	delete_node_group deletes a single node group record.
+	The portions of this multiple commands shortcut do:
+	Remove all appropriate records from node groups/included nodes table.
+	Remove the appropriate record from node_groups names/ids table.
+	Note that this shortcut cannot delete a node group that is a
+	single node associated group, to do that the node has to be
+	deleted which will delete the associated node group.
+
+node_group_id_to_name:
+
+node_group_name_to_id:
+
+node_groups:
+	node_groups lists the names of all node group records.
+	Adding further 	parameters can also list specified node 
+	group field values and/or can specify conditions to 
+	match only certain nodes. No parameters are required.
+
+remove_all_node_groups_from_all_node_groups:
+
+remove_all_node_groups_from_node_group:
+
+remove_node_group_from_all_node_groups:
+
+rename_node_group:
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+NODE_GROUPS <> PACKAGE_CONFIGURATIOS tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+create_node_group_package_configuration:
+	create_node_group_package_configuration creates,
+	for a specified node group, a package configuration for
+	a specified package (that only has one version),
+	required parameters are:
+		group         name of the node group
+		package       name of the package
+
+create_node_group_package_version_configuration:
+	create_node_group_package_version_configuration creates,
+	for a specified node group, a package configuration for
+	a specified version of a specified package,
+	required parameters are:
+	        group         name of the node group
+		package       name of the package
+		version       version of the package
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+NODE_GROUPS <> PACKAGE_CONFIGURATION_VALUES tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+remove_all_package_configuration_fields_from_node_group:
+	remove_all_package_configurations_fields_from_node_group
+	removes all package configuration field values associated
+	with the specified node group, required parameters are:
+		group         name of the node group
+
+remove_field_from_node_group_configuration_package:
+	remove_field_from_node_group_configuration_package removes a
+	field and all of it's values from an automatically created
+	configuration that was associated with the specified node group.
+	This assumes that there is only version of the package.
+	Required parameters are:
+		field           name of the field being removed
+		group           name of the node group
+		package	        name of the package
+
+remove_field_from_node_group_configuration_package_version:
+	remove_field_from_node_group_configuration_package_version removes
+	a field and all of it's values from an automatically created
+	configuration that was associated with the specified node group.
+	Required and only parameters are:
+		field           name of the field being removed
+		group           name of the node group
+		package	        name of the package
+		version	        version of the package
+
+set_node_group_configuration_package_field_value:
+	set_node_group_configuration_package_field_value sets the
+	field value of an automatically created configuration that was
+	associated with the specified node group for a specified package.
+	This assumes that there is only one version of the package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		group           name of the node group
+		package	        name of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+
+set_node_group_configuration_package_version_field_value:
+	set_node_group_configuration_package_version_field_value sets the
+	field value of an automatically created configuration that was
+	associated with the specified node group for a specified package.
+	It will create a new single value for the field if needed.
+	It will delete any extra values for field if there is
+	already more than one field value there.
+	Required and only parameters are:
+		group           name of the node group
+		package	        name of the package
+		version	        version of the package
+		field           name of the field being added (to)
+		value	        value being added to the field
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+OSCAR global cluster information table shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+oscar_server_architecture:
+
+oscar_server_distribution:
+
+oscar_server_distribution_version:
+
+oscar_server_node:
+
+oscar_version:
+
+selected_package_set:
+
+set_oscar_server_node:
+
+set_selected_package_set:
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+PACKAGE_CONFIGURATION_VALUES <> NODE_GROUPS tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+add_node_group_configuration_package_field_value:
+	add_node_group_configuration_package_field_value adds
+	another package field value to the automatically created
+	configuration that was associated with the specified node group. 
+	This assumes that there is only one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_configuration_package_field_value shortcut
+	if you want to add a field value to the automatically created
+	configuration for a particular node. 
+	Required and only parameters are:
+		group       name of the node group
+		package	    name of the package
+		field       name of the field being added (to)
+		value	    value being added to the field
+
+add_node_group_configuration_package_version_field_value:
+	add_node_group_configuration_package_version_field_value adds
+	another package field value to the automatically created
+	configuration that was associated with the specified node group. 
+	This assumes that there me be more than one version of the package.
+	Using this shortcut, each field is treated as a list of values.
+	See the add_node_configuration_package_version_field_value
+	shortcut if you want to add a field value to the automatically
+	created configuration for a particular node. 
+	Required and only parameters are:
+		group       name of the node group
+		package	    name of the package
+		version	    version of the package
+		field       name of the field being added (to)
+		value	    value being added to the field
+
+remove_node_group_package_configuration_field:
+	remove_node_group_package_configuration_field removes all 
+	values for a node group package configuration field. 
+	Required and only parameters are:
+		group         name of the node group
+		package	      name of the package
+		field         name of the field being added (to)
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+PACKAGE_CONFIGURATIONS <> NODE_GROUPS tables shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+delete_node_group_package_configuration:
+	delete_node_group_package_configuration deletes,
+	for a specified node group, the package configuration for
+	a specified package (that only has one version),
+	required parameters are:
+		group         name of the node group
+		package       name of the package
+
+delete_node_group_package_version_configuration:
+	delete_node_group_package_version_configuration deletes,
+	for a specified node group, the package configuration for
+	a specified version of a specified package,
+	required parameters are:
+		group         name of the node group
+		package       name of the package
+
+
+remove_all_package_configurations_from_node_group:
+	remove_all_package_configurations_from_node_group removes
+	all package configurations associated with a specified
+	node group. It also removes all all package configuration
+	field values associated with the specified node group.
+	Required parameters are:
+		group         name of the node group
+
+remove_all_configurations_from_all_node_groups:
+	remove_all_configurations_from_all_node_groups removes
+	all named configurations from all node groups.
+	Note that this will not remove any configurations that have
+	been automatically associated with a single node group.
+
+remove_all_configurations_from_node_group:
+	remove_all_configurations_from_node_group removes
+	all named configurations from a specified node group.
+	Note that this will not remove the configuration that was
+	automatically associated with that node group.
+
+which_node_groups_have_configuration:
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+PACKAGES table shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+conflicts_with_package:
+
+delete_package:
+	delete_package deletes a single package record.
+	This assumes only one version of the package
+	is in the database. Required parameters are:
+		name          name of the package(s)
+	The portions of this multiple commands shortcut do:
+	Remove the package from being included in any configurations,
+	Remove the package from being included in any package sets,
+	Remove the package from being included in any package filters,
+	Remove all rpmlist records for the package,
+	Remove the packages table record for the package.
+
+delete_package_version:
+	delete_package_version deletes a single package record.
+	This will work when there are multiple versions of 
+	the same packages in the database. Required parameters are:
+		name          name of the package
+		vesion        version of the package
+	The portions of this multiple commands shortcut do:
+	Remove the package from being included in any configurations,
+	Remove the package from being included in any package sets,
+	Remove the package from being included in any package filters,
+	Remove all rpmlist records for the package,
+	Remove the packages table record for the package.
+
+installable_package_directories:
+
+package_clear_installed:
+
+package_clear_should_be_installed:
+
+package_clear_should_be_uninstalled:
+
+package_id_to_name:
+
+package_id_to_name_version:
+
+package_name_to_id:
+
+package_name_version_to_id:
+
+package_mark_installed:
+
+package_mark_should_be_installed:
+
+package_mark_should_be_uninstalled:
+
+package_version_clear_installed:
+
+package_version_clear_should_be_installed:
+
+packages:
+
+package_version_mark_installed:
+
+package_version_mark_should_be_installed:
+
+package_version_mark_should_be_uninstalled:
+
+packages_clear_all_installed:
+
+packages_clear_all_should_be_installed:
+
+packages_clear_all_should_be_uninstalled:
+
+packages_conflicts_with_package:
+
+packages_installable:
+
+packages_installed:
+
+packages_not_installed:
+
+packages_provided_by_package:
+
+packages_required_by_package:
+
+packages_that_conflict:
+
+packages_that_conflict_package:
+
+packages_that_provide:
+
+packages_that_provide_package:
+
+packages_that_require:
+
+packages_that_require_package:
+
+packages_that_should_be_installed:
+
+packages_that_should_be_uninstalled:
+
+packages_uninstallable:
+
+packages_versions:
+
+provided_by_package:
+
+remove_package_from_all_packages_filters:
+
+remove_package_from_all_packages_rpmlists:
+
+required_by_package:
+
+set_package_installable:
+
+set_package_uninstallable:
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+PACKAGE_SETS table shortcuts
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+add_package_set_to_node:
+	add_package_set_to_node adds a software package set to a
+	compute node record, required and only parameters are:
+		set           name of the package set to add to the node
+		node          name of the compute node record to add it to
+
+add_package_to_package_set:
+	add_package_to_package_set adds a software package set to
+	a package set record, required and only parameters are:
+		package       name of the package to add to the package set
+		set           name of the package set record to add it to
+
+create_package_set:
+	create_package_set creates a new software package set record,
+	required parameters are:
+		name          name of the package set
+
+delete_all_package_sets:
+	delete_all_package_sets deletes all software packages.
+	The portions of this multiple commands shortcut do:
+	Set no selected package set in the oscar table.
+	Remove all records from package sets/included packages table.
+	Remove all records from package sets/included package sets table.
+	Remove all records from nodes/included package sets table.
+	Remove all records from package_set names/ids table.
+
+delete_package_set:
+
+	delete_package_set deletes a software package set record,
+	required parameters are:
+		name          name of the package set
+	The portions of this multiple commands shortcut do:
+	Set no selected package set if the deleted package was selected,
+        in the oscar table.
+	Remove all records for the deleted package set from the package sets
+        included packages table.
+	Remove all records for the deleted package set from the nodes
+        included package sets table.
+	Remove all records for the deleted package set from the package_set 
+        names/ids table.
+
+package_set_id_to_name:
+
+package_set_name_to_id:
+
+package_sets:
+
+packages_in_package_set:
+
+packages_in_selected_package_set:
+
+packages_installable_in_selected_package_set:
+
+remove_all_packages_from_package_set:
+
+remove_package_from_all_package_sets:
+
+remove_package_from_package_set:
+
+remove_package_set_from_all_nodes:
+
+remove_package_set_from_node:
+
+rename_package_set:
+
+which_package_sets_have_package:
+
