@@ -40,7 +40,7 @@ use XML::Simple;
 use Carp;
 
 @EXPORT = qw(list_installable_packages list_installable_package_dirs 
-             run_pkg_script run_pkg_user_test
+             run_pkg_script run_pkg_user_test copy_rpms remove_rpms
              run_pkg_script_chroot rpmlist install_packages copy_pkgs 
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
@@ -581,7 +581,7 @@ sub copy_pkgs # ($pkgdir) -> 1|undef
                                                                                 
   # Get a list of all OSCAR/OPD packages
   my @packagedirs = files_in_dir($pkgdir);
-                                                                                
+
   foreach my $dir (@packagedirs) 
     {
       # For each package, get a list of its RPMs
@@ -593,13 +593,112 @@ sub copy_pkgs # ($pkgdir) -> 1|undef
             {
               my $filename = basename($file);
               # Copy the file only if it isn't in the destination directory
-              if (!-e "$RPM_POOL/$filename") 
+              if ( !-e "$RPM_POOL/$filename")
                 {
                   print "Copying $file to $RPM_POOL\n";
                   copy("$file", "$RPM_POOL/$filename") or return undef;
                 }
             }
         }
+    }
+  return 1; # Made it this far?  Success!
+}
+
+
+#########################################################################
+#  Subroutine: copy_rpms                                                #
+#  Parameters: A 'packages' directory, usually $OSCAR_HOME/packages or  #
+#              /var/lib/oscar/packages/                                 #
+#  Returns   : 1 if successful, undef if failure                        #
+#  This subroutine copies all of the RPMs for all packages under the    #
+#  passed in 'packages' directory to the $RPM_POOL directory (which is  #
+#  typically /tftpboot/rpm) only if the packages are selected.          #
+#########################################################################
+sub copy_rpms # ($pkgdir) -> 1|undef
+{
+  my ($pkgdir) = @_;
+                                                                                
+  # Get a list of all OSCAR/OPD packages
+  my @packagedirs = files_in_dir($pkgdir);
+
+  # Only selected packages should be copied to /tftpboot/rpm
+  # Author : dikim@osl.iu.edu
+  my @selected_packages = list_selected_packages("all");
+  my %selected_pkg_hash = ();
+  foreach my $one_pkg (@selected_packages){
+      $selected_pkg_hash{$one_pkg} = 1;
+  }
+                                                                                
+  foreach my $dir (@packagedirs) 
+    {
+      my $one_pkg = basename($dir);
+      if ( $selected_pkg_hash{$one_pkg} == 1 ){
+      # For each package, get a list of its RPMs
+      my @files = files_in_dir("$dir/$PKG_DIRNAME");
+      foreach my $file (@files) 
+        {
+          # NOTE: this is slightly broken... not anchored to end of string with $
+          if ($file =~ /$PKG_EXTENSION/)
+            {
+              my $filename = basename($file);
+              # Copy the file only if it isn't in the destination directory
+              if ( !-e "$RPM_POOL/$filename")
+                {
+                  print "Copying $file to $RPM_POOL\n";
+                  copy("$file", "$RPM_POOL/$filename") or return undef;
+                }
+            }
+        }
+      }
+    }
+  return 1; # Made it this far?  Success!
+}
+
+#########################################################################
+#  Subroutine: remove_rpms                                              #
+#  Parameters: A 'packages' directory, usually $OSCAR_HOME/packages or  #
+#              /var/lib/oscar/packages/                                 #
+#  Returns   : 1 if successful, undef if failure                        #
+#  This subroutine removes all of the RPMs for all unselected packages  #
+#  passed in 'packages' directory from the $RPM_POOL directory(which is #
+#  typically /tftpboot/rpm).                                            #
+#########################################################################
+sub remove_rpms # ($pkgdir) -> 1|undef
+{
+  my ($pkgdir) = @_;
+                                                                                
+  # Get a list of all OSCAR/OPD packages
+  my @packagedirs = files_in_dir($pkgdir);
+
+  # Only unselected packages should be removed from /tftpboot/rpm
+  # Author : dikim@osl.iu.edu
+  my @selected_packages = list_selected_packages("all");
+  my %selected_pkg_hash = ();
+  foreach my $one_pkg (@selected_packages){
+      $selected_pkg_hash{$one_pkg} = 1;
+  }
+                                                                                
+  foreach my $dir (@packagedirs) 
+    {
+      my $one_pkg = basename($dir);
+      if ( $selected_pkg_hash{$one_pkg} != 1 ){
+      # For each package, get a list of its RPMs
+      my @files = files_in_dir("$dir/$PKG_DIRNAME");
+      foreach my $file (@files) 
+        {
+          # NOTE: this is slightly broken... not anchored to end of string with $
+          if ($file =~ /$PKG_EXTENSION/)
+            {
+              my $filename = basename($file);
+              # Remove the file only if it isn't in the destination directory
+              if ( -e "$RPM_POOL/$filename")
+                {
+                  print "Deleting $filename from $RPM_POOL\n";
+                  move("$RPM_POOL/$filename", "$dir/$PKG_DIRNAME") or return undef;
+                }
+            }
+        }
+      }
     }
   return 1; # Made it this far?  Success!
 }

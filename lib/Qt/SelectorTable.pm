@@ -38,6 +38,7 @@ use Qt::slots
 
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
+use OSCAR::Package;
 use Carp;
 
 my $tablePopulated = 0;     # So we call populateTable only once
@@ -564,10 +565,12 @@ sub checkboxChangedForSelector
               $success = OSCAR::Database::database_execute_command(
                 "add_package_to_package_set $package $currSet");
               Carp::carp("Could not do oda command 
-                'add_package_to_package_set $package $currSet'") if 
-                  (!$success);
+                'add_package_to_package_set $package $currSet'") if(!$success);
             }
         }
+      # Copy any RPMs for the selected package over to the /tftpboot/rpm directory
+      OSCAR::Package::copy_rpms('/var/lib/oscar/packages');
+
     }
   else # Checkbox is not checked
     {
@@ -609,6 +612,9 @@ sub checkboxChangedForSelector
                   (!$success);
             }
         }
+      # Remove any RPMs for the unselected package over from the /tftpboot/rpm directory
+      OSCAR::Package::remove_rpms('/var/lib/oscar/packages');
+
     }
 }
 

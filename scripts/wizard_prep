@@ -205,8 +205,18 @@ foreach my $d (@PKG_SOURCE_LOCATIONS)
     if (-d $d) 
       {
         oscar_log_subsection("Copying RPMs from $d to $RPMPOOL");
-        OSCAR::Package::copy_pkgs($d) or 
-          croak("Couldn't copy rpms to $RPMPOOL");
+        # Selected packages can be determined after oda is created.
+        # Since /etc/odapw is created when oda is installed, if it exists
+        # then run copy_rpm. Otherwise, run copy_pkgs.
+        # copy_rpms : copy rpms of selected packages to /tftpboot/rpm.
+        # copy_pkgs : copy rpms of packages whether or not they are selected.
+        if(-e '/etc/odapw'){
+          OSCAR::Package::copy_rpms($d) or 
+            croak("Couldn't copy rpms to $RPMPOOL");
+        } else {
+          OSCAR::Package::copy_pkgs($d) or 
+            croak("Couldn't copy rpms to $RPMPOOL");
+        }
         oscar_log_subsection("Successfully copied RPMs from $d to $RPMPOOL");
       }
   }

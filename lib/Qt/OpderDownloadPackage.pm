@@ -425,6 +425,15 @@ sub updateOda
           chdir("$tardir/scripts");
           OSCAR::Package::run_pkg_script($pkg,'setup',1) or
             Carp::carp("Failed to run setup script for $pkg");
+
+          # The downloaded package is not selected to install yet.
+          # It should not be in the package_sets_included_packages table.
+          my $currSet = "Default";
+          my $success = OSCAR::Database::database_execute_command(
+            "remove_package_from_package_set $pkg $currSet");
+          Carp::carp("Could not do oda command 'remove_".
+            "package_from_package_set $pkg $currSet'") if 
+              (!$success);
           chdir($currdir);
         }
       else
@@ -436,9 +445,6 @@ sub updateOda
     {
       Carp::carp("Couldn't locate the tarball for $package");
     }
-
-  # Copy any RPMs for the package over to the /tftpboot/rpm directory
-  OSCAR::Package::copy_pkgs('/var/lib/oscar/packages');
 
 }
 
