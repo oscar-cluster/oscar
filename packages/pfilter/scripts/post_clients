@@ -137,5 +137,16 @@ ENDIT
     close(CONF);
 }
 
+# if the pfilter service is running, restart it
+
+if ( grep ( /running/, `service pfilter status` ) ) {
+
+    print "pfilter is running, restarting it here\n";
+
+    my $command = "service pfilter restart";
+    print "$command\n";
+    system( $command );
+}
+
 exit 0;
 
