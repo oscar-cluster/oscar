@@ -1,0 +1,171 @@
+%
+% $Id: user.tex,v 1.1 2002/08/22 05:24:31 naughtont Exp $
+%
+% $COPYRIGHT$
+%
+
+\subsection{Parallel Virtual Machine (PVM)}
+\label{app:pvm-overview}
+
+Parallel Virtual Machine (PVM) is ... \emph{overview stuff-o to be
+added here}.
+
+
+\subsubsection{Using PVM}
+\label{app:pvm-usage}
+
+The default OSCAR installation tests PVM via a PBS job (see also:
+Section~\ref{app:pbs-overview} on page~\pageref{app:pbs-overview}).
+However, some users may choose to use PVM outside of this context so a
+few words on usage may be helpful~\footnote{Note, the examples in this
+  section assume a shared filesystem, as is used with OSCAR.}.
+
+The default location for user executables is
+\file{\$HOME/pvm3/bin/\$PVM\_ARCH}.  On an IA-32 Linux machine, this
+is typically of the form: \file{/home/sgrundy/pvm3/bin/LINUX} (replace
+``\file{LINUX}'' with ``\file{LINUX64}'' on IA-64).  This is where
+binaries should be placed so that PVM can locate them when attempting
+to spawn tasks.  This is detailed in the \file{pvm\_intro(1PVM)}
+manual page when discussing the environment variables \file{PVM\_PATH}
+and \file{PVM\_WD}.
+
+The ``hello world'' example shipped with PVM demonstrates how one can
+compile and run a simple application outside of PBS.  The following
+screen log highlights this for a standard user \emph{sgrundy} (Solomon
+Grundy).
+
+\begin{small}
+\begin{verbatim}
+    # Crate default directory for PVM binaries (one time operation)
+  sgrundy: $ mkdir -p $HOME/pvm3/bin/$PVM_ARCH
+
+    # Copy examples to local 'hello' directory
+  sgrundy: $ cp $PVM_ROOT/examples/hello*  $HOME/hello-example
+  sgrundy: $ cd $HOME/hello-example
+
+    # Compile a hello world, using necessary include (-I) and library
+    # (-L) search path info as well as the PVM3 lib.
+  sgrundy: $ gcc -I$PVM_ROOT/include  hello.c -L$PVM_ROOT/lib/$PVM_ARCH  \
+  > -lpvm3  -o hello
+  sgrundy: $ gcc -I$PVM_ROOT/include  hello_other.c -L$PVM_ROOT/lib/$PVM_ARCH \
+  > -lpvm3  -o hello_other
+
+    # Move the companion that will be spawned to the default 
+    # PVM searchable directory
+  sgrundy: mv hello_other $HOME/pvm3/bin/$PVM_ARCH
+\end{verbatim}
+\end{small}
+
+\noindent At this point you can start PVM, add hosts to the virtual
+machine and run the application:
+
+\begin{small}
+\begin{verbatim}
+    # Start PVM and add one host "oscarnode1".
+  sgrundy: $ pvm
+  pvm> add oscarnode1
+  add oscarnode1
+  1 successful
+                     HOST    DTID
+               oscarnode1   80000
+  pvm> quit
+  quit
+
+  Console: exit handler called
+  pvmd still running.
+  sgrundy: $
+
+    # Run master portion of hello world which contacts the companion.
+  sgrundy: $ ./hello
+  i'm t40005
+  from t80002: hello, world from oscarnode1.localdomain
+
+    # Return to the PVM console and terminate ('halt') the virtual machine.
+  sgrundy: $
+  sgrundy: $ pvm
+  pvmd already running
+  pvm> halt
+  halt
+  Terminated
+  sgrundy: $
+\end{verbatim}
+\end{small}
+
+An alternate method is to use options in the hostfile supplied to
+\cmd{pvm} when started from the command-line.  The advantage to the
+hostfile options is that you don't have to place your binaries in the
+default location or edit any ``.dot'' files.  You can compile and run
+the ``hello world'' example in this fashion by using a simple hostfile
+as shown here.  
+
+The example below uses the same ``hello world'' program that was
+previously compiled, but using a hostfile with the appropriate options
+to override the default execution and working directory.  Remember
+that the ``\cmd{hello}'' program exists in the
+\file{/home/sgrundy/hello-example} directory:
+
+\begin{small}
+\begin{verbatim}
+  sgrumpy: $ cat myhostfile
+  *   ep=/home/sgrundy/hello-example  wd=/home/sgrundy/hello-example
+  oscarnode1
+\end{verbatim}
+\end{small}
+
+\noindent The options used here are: 
+\begin{quote}
+  \begin{description}
+  \item[{\tt *}] -- any node can connect
+  \item[{\tt ep}] -- execution path, here set to local directory
+  \item[{\tt wd}] -- working directory, here set to local directory
+  \item[\emph{nodes}] -- a list of nodes, one per line
+  \end{description}
+\end{quote}
+
+\noindent Now, we can startup \cmd{pvm} using this \file{myhostfile}
+and run the \file{hello} application once again.
+
+\begin{small}
+\begin{verbatim}
+   # Now, we just pass this as an argument to PVM upon startup.
+  sgrundy: $ pvm myhostfile
+  pvm> quit
+  quit
+  
+  Console: exit handler called
+  pvmd still running.
+
+   # The rest is the same as the previous example
+  sgrundy: $ ./hello
+  i'm t40005
+  from t80002: hello, world from oscarnode1.localdomain
+
+  sgrundy: $ pvm
+  pvmd already running
+  pvm> halt
+  halt
+  Terminated
+  sgrundy: $
+\end{verbatim}
+\end{small}
+
+\subsubsection{Other details}
+
+The OSCAR installation of PVM makes use of the \file{env-switcher}
+package (also see Section~\ref{app:switcher-overview},
+page~\pageref{app:switcher-overview}).  This is where the system-wide
+\verb=$PVM_ROOT, $PVM_ARCH= and \verb=$PVM_RSH= environment variable
+defaults are set.  Traditionally, this material was included in each
+user's ``.dot'' files to ensure availability with non-interactive
+shells (e.g. \cmd{rsh}/\cmd{ssh}).  Through the \file{env-ewitcher}
+package, a user can avoid any ``.dot'' file adjustments by using the
+hostfile directive or default paths for binaries as outlined in the
+Usage Section~\ref{app:pvm-usage}.
+
+\noindent For additional information see also:
+\begin{itemize}
+	\item PVM web site: \url{http://www.csm.ornl.gov/pvm/, http://www.csm.ornl.gov/pvm/}.
+	\item Manual Pages: pvm(1), pvm\_intro(1), pvmd3(1), etc.
+	\item Release docs: \verb=$PVM_ROOT/doc/*=
+\end{itemize}
+
