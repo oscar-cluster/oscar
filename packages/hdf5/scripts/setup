@@ -4,6 +4,9 @@ installable=1
 
 if [ `/bin/uname -m` == 'ia64' ]; then
   installable=0
+  echo "HDF5 will not be installed due to ia64 incompatibility"
+else
+  echo "HDF5 will be installed"
 fi
 
 /usr/bin/oda modify packages name="hdf5" installable~$installable
