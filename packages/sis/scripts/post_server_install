@@ -27,11 +27,11 @@ use OSCAR::Distro;
 
 !system("/etc/init.d/systemimager-server-rsyncd restart") or croak("Couldn't restart systemimager-server-rsyncd");
 
-!system("grep -q DISKORDER /etc/systemimager/autoinstallscript.template || patch -sbp0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systemimager-server-3.2.0.patch") or croak("Couldn't patch systemimager for disk independence");
+!system("patch --dry-run -stp0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systemimager-server-3.2.0.patch | grep -q 'Assuming -R' || patch -p0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systemimager-server-3.2.0.patch") or croak("Couldn't patch systemimager for disk independence");
 
-!system("patch -sbp0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systeminstaller-1.04.patch") or croak("Couldn't patch systeminstaller.");
+!system("patch --dry-run -stp0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systeminstaller-1.04.patch | grep -q 'Assuming -R' || patch -p0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systeminstaller-1.04.patch") or croak("Couldn't patch systeminstaller.");
 
-!system("patch -sbp0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systeminstaller-x11-1.04.patch") or croak("Couldn't patch systeminstaller-x11.");
+!system("patch --dry-run -stp0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systeminstaller-x11-1.04.patch | grep -q 'Assuming -R' || patch -p0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systeminstaller-x11-1.04.patch") or croak("Couldn't patch systeminstaller-x11.");
 
 # Quick hack to have Fedora support while this is worked out by the SIS Team
 # Benoit des Ligneris, Las Vegas
