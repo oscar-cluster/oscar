@@ -16,6 +16,7 @@
 
 # Copyright 2002 NCSA
 #                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 
 use strict;
 use Getopt::Long;
@@ -43,6 +44,9 @@ if ($distro eq "RedHat") {
     $mysql_service_name="mysqld";
 }
 elsif ($distro eq "Mandrake") {
+    $mysql_service_name="mysql";
+}
+elsif ($distro eq "SuSE") {
     $mysql_service_name="mysql";
 }
 

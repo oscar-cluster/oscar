@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
+# Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
@@ -7,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.6 2003/03/04 06:10:50 ngorsuch Exp $
+# $Id: install,v 1.7 2003/05/30 22:30:14 brechin Exp $
 #
 
 #use strict;
@@ -40,6 +41,19 @@ if ($distro_name eq "RedHat") {
 		perl-DBI
 		mysql-server
 		oda );
+}
+
+if ($distro_name eq "SuSE") {
+    @wanted_rpms = qw( mysql
+		mysql-client
+		perl-Msql-Mysql-modules
+		perl-DBI
+		perl-Data-ShowTable
+		mysql-shared
+		oda );
+    my $src = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml.SuSE";
+    my $dest = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml";
+    copy($src, $dest) || croak("Could not copy $src to $dest");
 }
 
 # If we're on Mandrake, abort.  ODA will not be installed.

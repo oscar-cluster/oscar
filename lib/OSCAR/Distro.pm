@@ -1,6 +1,6 @@
 package OSCAR::Distro;
 
-#   $Id: Distro.pm,v 1.6 2003/03/05 22:19:54 brechin Exp $
+#   $Id: Distro.pm,v 1.7 2003/05/30 22:30:10 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@ package OSCAR::Distro;
 
 #   Copyright 2002 International Business Machines
 #                  Sean Dague <japh@us.ibm.com>
+# Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 
 use strict;
 use vars qw($VERSION @EXPORT);
@@ -25,7 +26,7 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(which_distro which_distro_server);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
                    'mandrake-release' => 'Mandrake',
@@ -76,7 +77,8 @@ sub which_distro_server {
         $version = $output;
         $name = $DISTROFILES->{$file};
 	if ($name eq "SuSE") { 
-		$version = `cat /etc/SuSE-release | tail -1 | cut -d '=' -f 2 | cut -b 2-`
+		$version = `cat /etc/SuSE-release | tail -1 | cut -d '=' -f 2 | cut -b 2-`;
+		chomp $version;
 	}
         last;
     }

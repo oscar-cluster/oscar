@@ -16,6 +16,7 @@
 
 #   SIS Server Preparation script
 #   Michael Chase-Salerno (mchasal@users.sf.net)
+# Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 
 use strict;
 use Carp;
@@ -26,5 +27,5 @@ my $cmd = "cp -f $ENV{OSCAR_PACKAGE_HOME}/scripts/systemimager.init /etc/init.d/
 my $cmd = "chmod 755 /etc/init.d/systemimager";
 !system("$cmd") or croak("Couldn't $cmd");
 
-!system("service systemimager restart") or croak("Couldn't restart systemimager");
+!system("/etc/init.d/systemimager restart") or croak("Couldn't restart systemimager");
 
