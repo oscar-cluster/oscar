@@ -1,4 +1,4 @@
-$Id: README,v 1.14 2002/05/30 17:27:45 naughtont Exp $
+$Id: README,v 1.15 2002/05/30 17:28:16 naughtont Exp $
 
 $COPYRIGHT$
 
@@ -42,5 +42,5 @@ Notes about Python2 shipped with 1.3b1:
 - Due to some multi-distro issues, we're currently including a "compatibility" 
   (python2-compat-1.0-1) RPM to resolve the Python2 PreReq that is slightly 
   different across distros.
-  (see also: c3/packages/RPMS/NOTE.python2)
+  (see also: packages/c3/RPMS/NOTE.python2)
 
