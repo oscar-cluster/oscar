@@ -1,0 +1,23 @@
+% $Id: install.tex,v 1.1 2005/03/22 22:04:05 naughtont Exp $
+%
+% $COPYRIGHT$
+
+
+\subsection{APItest}
+\label{app:apitest}
+
+The \emph{APItest} tool has been developed as part of the SciDAC: Scalable
+System Software (SSS) project to provide a general testing framework.  Tests 
+are written in a simple XML format which can include either commands or
+embedded scripts (e.g., {\tt /bin/sh}, {\tt/usr/bin/perl}, etc.).  The
+framework allows for success/failure tests to be determined by literal or
+regular expression matches on the output or by checking return code status.  
+
+These basic tests are grouped together in batches to form more elaborate
+tests.  All tests (including test-batches) can express dependencies and the
+framework orders them for proper execution.  The results can be viewed from
+a basic command-line interface or a graphical web interface.  
+
+For further details see the supplied documentation and the SSS electronic
+notebooks at \url{http://www.scidac.org/ScalableSystems}.
+
