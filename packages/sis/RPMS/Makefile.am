@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.15 2002/04/06 19:56:52 jsquyres Exp $
+# $Id: Makefile.am,v 1.16 2002/04/21 21:23:48 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -18,5 +18,5 @@ EXTRA_DIST		= \
 			systemimager-server-2.1.3oscar-1.noarch.rpm \
 			systemimager-i386boot-2.1.3oscar-1.noarch.rpm \
 			systemimager-ia64boot-2.1.3oscar-1.noarch.rpm \
-			systeminstaller-0.82-1.noarch.rpm \
-			systeminstaller-x11-0.82-1.noarch.rpm
+			systeminstaller-0.83-1.noarch.rpm \
+			systeminstaller-x11-0.83-1.noarch.rpm
