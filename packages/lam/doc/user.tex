@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.1 2002/06/12 14:32:05 jsquyres Exp $
+% $Id: user.tex,v 1.2 2002/06/14 06:07:19 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -8,18 +8,147 @@
 \subsection{Using LAM/MPI}
 \label{app:lam-mpi-overview}
 
-LAM/MPI is a high-quality MPI implementation.... blah blah blah.
+LAM (Local Area Multicomputer) is an MPI programming environment and
+development system for heterogeneous computers on a network. With
+LAM/MPI, a dedicated cluster or an existing network computing
+infrastructure can act as a single parallel computer.  LAM/MPI is
+considered to be ``cluster friendly,'' in that it offers daemon-based
+process startup/control as well as fast client-to-client message
+passing protocols.  LAM/MPI can use TCP/IP and/or shared memory for
+message passing.
 
-\subsubsection{Getting Started with LAM/MPI}
+LAM features a full implementation of MPI-1, and much of MPI-2.
+Compliant applications are source code portable between LAM/MPI and
+any other implementation of MPI.  In addition to providing a
+high-quality implementation of the MPI standard, LAM/MPI offers
+extensive monitoring capabilities to support debugging.  Monitoring
+happens on two levels.  First, LAM/MPI has the hooks to allow a
+snapshot of process and message status to be taken at any time during
+an application run.  This snapshot includes all aspects of
+synchronization plus datatype maps/signatures, communicator group
+membership, and message contents (see the XMPI application on the main
+LAM web site).  On the second level, the MPI library is instrumented
+to produce a cummulative record of communication, which can be
+visualized either at runtime or post-mortem.
 
-Points to hit:
+\subsubsection{Notes about OSCAR's LAM/MPI Setup}
+
+The OSCAR environment is able to have multiple MPI implementations
+installed simultaneously -- see Section~\ref{app:switcher-overview}
+(page~\pageref{app:switcher-overview}) for a description of the
+\cmd{switcher} program.  
+
+LAM/MPI is configured on OSCAR to use the Secure Shell (\cmd{ssh}) to
+initially start processes on remote nodes.  Normally, using \cmd{ssh}
+requires each user to set up cryptographic keys before being able to
+execute commands on remote nodes with no password.  The OSCAR setup
+process has already taken care of this step for you.  Hence, the LAM
+command \cmd{lamboot} should work with no additional setup from the
+user.
+
+\subsubsection{Setting up \cmd{switcher} to use LAM/MPI}
+
+In order to use LAM/MPI successfully, you must first ensure that
+\cmd{switcher} is set to use LAM/MPI.  First, execute the following
+command:
+
+\begin{verbatim}
+  $ switcher mpi --show
+\end{verbatim}
+  
+If the result contains a line beginning with ``\file{default}''
+followed by a string containing ``\file{lam}'' (e.g.,
+``\cmd{lam-6.5.6}''), then you can skip the rest of this section.
+Otherwise, execute the following command:
+
+\begin{verbatim}
+  $ switcher mpi --list
+\end{verbatim}
+
+This shows all the MPI implementations that are available.  Choose one
+that contains the name ``\file{lam}'' (e.g., ``\cmd{lam-6.5.6}'') and
+run the following command:
+
+\begin{verbatim}
+  $ switcher mpi = lam-6.5.6
+\end{verbatim}
+
+This will set all {\em future} shells to use LAM/MPI.  In order to
+guarantee that all of your login environments contain the proper setup
+to use LAM/MPI, it is probably safest to logout and log back in again.
+Doing so will guarantee that all of your interactive shells will have
+the LAM commands and man pages will be found (i.e., your \cmd{\$PATH}
+and \cmd{\$MANPATH} environment variables set properly for LAM/MPI).
+
+Hence, you will be able to execute commands such as ``\cmd{mpirun}''
+and ``\cmd{man lamboot}'' without any additional setup.
+
+\subsubsection{General Usage}
+
+The general scheme of using LAM/MPI is as follows:
+
+\begin{enumerate}
+\item Use the \cmd{lamboot} command to start up the LAM run-time
+  environment (RTE) across a specified set of nodes.  The
+  \cmd{lamboot} command takes a single argument: the filename of a
+  hostfile containing a list of nodes to run on.  For example:
+
+\begin{verbatim}
+$ lamboot -v my_hostfile
+\end{verbatim}
+
+\item Repeat the following steps as many times as necessary:
+
+  \begin{enumerate}
+  \item Use the MPI ``wrapper'' compilers (\cmd{mpicc} for C programs,
+    \cmd{mpiCC} for C++ programs, and \cmd{mpif77} for fortran
+    programs) to compile your application.  These wrapper compilers
+    add in all the necessary compiler flags and then invoke the
+    underlying ``real'' compiler.  For example:
+    
+\begin{verbatim}
+$ mpicc myprogram.c -o myprogram
+\end{verbatim}
+    
+    The \cmd{mpirun} command has many options and arguments -- see the
+    man page and/or ``\cmd{mpirun -h}'' for more information.
+
+  \item Use the \cmd{mpirun} command to launch your parallel
+    application in the LAM RTE.  For example:
+
+\begin{verbatim}
+$ mpirun C myprogram
+\end{verbatim}
+    
+  \item If your parallel program fails ungracefully, use the
+    \cmd{lamclean} command to ``clean'' the LAM RTE and guarantee to
+    remove all instances of the running program.
+
+  \end{enumerate}
+
+\item Use the \cmd{lamhalt} command to take down the LAM RTE.  The
+  \cmd{lamhalt} command takes no arguments, and will shut down the LAM
+  RTE.
+\end{enumerate}
+
+Note that the wrapper compilers are all set to use the corresponding
+GNU compilers (\cmd{gcc}, \cmd{g++}, and \cmd{gf77}, respectively).
+Attempting to use other compilers may run into difficulties because
+their linking styles may be different than what the LAM libraries
+expect (particularly for C++ and Fortran compilers).
+
+\subsubsection{More Information}
+
+The LAM/MPI web site (\url{http://www.lam-mpi.org/} contains much,
+much more information, including:
 
 \begin{itemize}
-\item Ensure that switcher is set for LAM/MPI
-\item ssh'ing between nodes should already be taken care of by default
-  OSCAR setup
-\item General scheme (mpicc/mpiCC/mpif77, lamboot, mpirun, [mpirun
-  ,]*, lamhalt)
-\item mpicc, mpiCC, and mpif77 were all compiled with GNU compilers
-\item URL of web site.  Mention FAQ, tutorials, etc.
+\item A large Frequently Asked Questions (FAQ) list
+\item Usage tutorials and examples
+\item Access to the LAM user's mailing list, including subscription
+  instructions and web archives of the list
 \end{itemize}
+
+\noindent Make today a LAM/MPI day!
+
+% LocalWords:  Exp
