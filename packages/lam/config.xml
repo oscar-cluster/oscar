@@ -15,7 +15,7 @@
   <installable>1</installable>
 
   <summary>LAM/MPI specifically packaged for OSCAR clusters</summary>
-  <license>BSD</license>
+  <license>Freely distributable</license>
   <copyright>2002</copyright>
   <group>Development/Libraries</group>
   <url>http://www.lam-mpi.org/</url>
