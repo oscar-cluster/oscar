@@ -1,4 +1,5 @@
 Makefile
 Makefile.in
 Makefile.am
+.cvsignore
 .oscar_made_makefile_am
