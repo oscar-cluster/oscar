@@ -1,6 +1,6 @@
 #! /bin/sh 
 #
-# $Id: autogen.sh,v 1.5 2002/07/27 18:28:58 jsquyres Exp $
+# $Id: autogen.sh,v 1.6 2002/07/27 18:35:43 jsquyres Exp $
 #
 # This script is run on developer copies of OSCAR -- *not*
 # distribution tarballs.
@@ -178,7 +178,7 @@ EOF
 	    -a "$mm_file" != "CVS"; then
 	    mm_subdirs="$mm_file $mm_subdirs"
 	elif test -f "$mm_file"; then
-	    if test -a "$mm_file" != ".cvsignore" \
+	    if test "$mm_file" != ".cvsignore" \
 		-a "$mm_file" != "Makefile.am" \
 		-a "$mm_file" != "Makefile.in" \
 		-a "$mm_file" != "Makefile" \
