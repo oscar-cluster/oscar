@@ -9,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.24 2003/07/17 20:44:43 jsquyres Exp $
+# $Id: opd,v 1.25 2003/07/17 21:00:52 tfleury Exp $
 #
 
 use strict;
@@ -584,14 +584,14 @@ sub list_packages_page {
         # machine-parsable format
 
         if ($argv_parsable) {
-            my $sep = "\":\"";
+            my $sep = '":"';
             my $p = $package_listing->{package}[$i - 1];
             my $unwrapped_description = $p->{description};
             $unwrapped_description =~ s/\n/ /g;
 
             # A bunch of standalone information
 
-            print("\"" .
+            print('"' .
                   $p->{name} . $sep .
 
                   $p->{version}->{major} . $sep .
@@ -610,25 +610,23 @@ sub list_packages_page {
 
             my $num = $#{$p->{packager}};
             if ($num < 0) {
-                print "$sep$sep";
+                print $sep;
             } else {
                 for (my $i = 0; $i <= $num; ++$i) {
                     print($p->{packager}[$i]->{name});
-                    print("\",\"")
-                        if ($i < $num);
+                    print('","') if ($i < $num);
                 }
                 print $sep;
                 for (my $i = 0; $i <= $num; ++$i) {
                     print($p->{packager}[$i]->{email});
-                    print("\",\"")
-                        if ($i < $num);
+                    print('","') if ($i < $num);
                 }
             }
+            print $sep;
 
             # A bunch more stanalone information
 
-            print($sep .
-                  $unwrapped_description . $sep . 
+            print($unwrapped_description . $sep . 
                   $p->{license} . $sep . 
                   $p->{installable} . $sep . 
                   $p->{group} . $sep . 
@@ -641,70 +639,64 @@ sub list_packages_page {
             # List of download URIs
 
             my $num = $#{$p->{download}->{uri}};
-            if ($num < 0) {
-                print "$sep";
-            } else {
+            if ($num >= 0) {
                 for (my $i = 0; $i <= $num; ++$i) {
                     print($p->{download}->{uri}[$i]);
-                    print("\",\"")
-                        if ($i < $num);
+                    print('","') if ($i < $num);
                 }
             }
+            print $sep;
 
             # List of provides
 
             my $num = $#{$p->{provides}};
             if ($num < 0) {
-                print "$sep$sep";
+                print $sep;
             } else {
                 for (my $i = 0; $i <= $num; ++$i) {
                     print($p->{provides}[$i]->{name});
-                    print("\",\"")
-                        if ($i < $num);
+                    print('","') if ($i < $num);
                 }
                 print $sep;
                 for (my $i = 0; $i <= $num; ++$i) {
                     print($p->{provides}[$i]->{type});
-                    print("\",\"")
-                        if ($i < $num);
+                    print('","') if ($i < $num);
                 }
             }
+            print $sep;
 
             # List of requires
 
             my $num = $#{$p->{requires}};
             if ($num < 0) {
-                print "$sep$sep";
+                print $sep;
             } else {
                 for (my $i = 0; $i <= $num; ++$i) {
                     print($p->{requires}[$i]->{name});
-                    print("\",\"")
-                        if ($i < $num);
+                    print('","') if ($i < $num);
                 }
                 print $sep;
                 for (my $i = 0; $i <= $num; ++$i) {
                     print($p->{requires}[$i]->{type});
-                    print("\",\"")
-                        if ($i < $num);
+                    print('","') if ($i < $num);
                 }
             }
+            print $sep;
 
             # List of conflicts
 
             my $num = $#{$p->{conflicts}};
             if ($num < 0) {
-                print "$sep$sep";
+                print $sep;
             } else {
                 for (my $i = 0; $i <= $num; ++$i) {
                     print($p->{conflicts}[$i]->{name});
-                    print("\",\"")
-                        if ($i < $num);
+                    print('","') if ($i < $num);
                 }
                 print $sep;
                 for (my $i = 0; $i <= $num; ++$i) {
                     print($p->{conflicts}[$i]->{type});
-                    print("\",\"")
-                        if ($i < $num);
+                    print('","') if ($i < $num);
                 }
             }
 
