@@ -62,15 +62,6 @@ my @all_prereqs = grep { -d "$prefix/$_" && $_ ne "." && $_ ne ".." } sort(readd
 closedir PREREQDIR;
 
 
-# Printing list of prerequisites ---> for test only, those lines must be erased later
-print ("Printing prerequisites list:\n\n");
-print ("***********\n");
-foreach my $prerequisito (@all_prereqs) {
-  print $prerequisito;
-  print ("\n");
-}
-
-
 # Now read in the share/prereqs/order.txt file
 
 my @ordered_prereqs;
