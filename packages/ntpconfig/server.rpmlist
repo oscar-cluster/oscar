@@ -5,3 +5,4 @@ glibc
 perl
 libcap
 ntp
+ntpconfig
