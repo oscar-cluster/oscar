@@ -36,6 +36,7 @@ sis:Client:DEFAULT_ROUTE:4
 sis:Client:INSTALL_MODE:5
 sis:Client:BOOTDEV:6
 sis:Client:IMAGE:7
+sis:Client:NUM_PROCS:8
 sis:Group:NAME:1:1
 sis:Group:CLIENT:2:1
 sis:Image:NAME:1:1
