@@ -57,7 +57,7 @@ exit($return);
 sub get_numproc {
 	my @machines=&clientList;
 	foreach my $mach (@machines) {
-		my $CMD="/usr/bin/ssh -v -n ".$mach->{HOST}." /bin/grep ^processor /proc/cpuinfo";
+		my $CMD="/usr/bin/ssh -n ".$mach->{HOST}." /bin/grep ^processor /proc/cpuinfo";
 		print "Gathering processor count from ".$mach->{NAME}.".\n";
 		open (CPIPE,"$CMD |") or (carp("Unable to query machine ".$mach->{NAME}),next);
 		my $count=0;
