@@ -40,14 +40,15 @@ database_connect() ||
 die "$0: cannot connect to oda database";
 
 # see if there is already a node named oscar_server,
-# and make it if it doesn't already exist
+# and make it if it doesn't already exist, this will also
+# make a special associated node group named oscar_server
 my @nodes = ();
 print "Checking for existance of node record for oscar_server\n";
 do_it_or_die( "nodes name=\"oscar_server\"",
 	      \@nodes,
 	      "cannot read nodes database table" );
 if ( ! @nodes ) {
-    print "Creating node record for oscar_server\n";
+    print "Creating node and node group record for oscar_server\n";
     do_it_or_die( "create_node oscar_server",
 		  undef,
 		  "cannot create node record for oscar_server" );
@@ -69,33 +70,6 @@ if ( defined $dns_domain && $dns_domain ne "" ) {
 		  "cannot update the dns_domain field in the node record for oscar_server" );
 }    
 
-# see if there is already a node group named oscar_server,
-# and make it if it doesn't already exist
-print "Checking for existance of node group record for oscar_server\n";
-my @node_groups = ();
-do_it_or_die( "node_groups name=\"oscar_server\"",
-	      \@node_groups,
-	      "cannot read node groups database table" );
-if ( ! @node_groups ) {
-    print "Creating node group record for oscar_server\n";
-    do_it_or_die( "create_node_group oscar_server",
-		  undef,
-		  "cannot create node group record for oscar_server" );
-}
-
-# make sure that the oscar_server node is in the oscar_server node group
-print "Checking that the oscar_server node is in the oscar_server node group\n";
-@nodes = ();
-do_it_or_die( "nodes_in_node_group oscar_server nodes.name=oscar_server",
-	      \@nodes,
-	      "cannot read the list of nodes in the oscar_server node group" );
-if ( ! @nodes ) {
-    print "Adding the node oscar_server to the oscar_server node group\n";
-    do_it_or_die( "add_node_to_node_group oscar_server oscar_server",
-		  undef,
-		  "cannot add the node oscar_server to the node group oscar_server" );
-}
-
 # see if there is already a node group named oscar_clients,
 # and make it if it doesn't already exist
 print "Checking for existance of node group record for oscar_clients\n";
@@ -109,20 +83,6 @@ if ( ! @node_groups ) {
 		  undef,
 		  "cannot create node group record for oscar_clients" );
 }
-
-# make sure that the oscar_server node is not in the oscar_clients node group
-print "Checking that the oscar_server node is not in the oscar_clients node group\n";
-@nodes = ();
-do_it_or_die( "nodes_in_node_group oscar_clients nodes.name=oscar_server",
-	      \@nodes,
-	      "cannot read the list of nodes in the oscar_clients node group" );
-if ( ! @nodes ) {
-    print "Removing the node oscar_server from the oscar_clients node group\n";
-    do_it_or_die( "remove_node_from_node_group oscar_server oscar_clients",
-		  undef,
-		  "cannot remove the node oscar_server from the node group oscar_clients" );
-}
-
 
 database_disconnect();
 exit 0;
