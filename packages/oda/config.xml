@@ -57,9 +57,9 @@
     /// To list all the things that a particluar package requires:
     ///	    oda this-package-requires package_name
     ///
-    <shortcut> packages read_records|modify-records packages name $* </shortcut>
-    <shortcut> packages-that-require read_records packages_requires package name=$1 </shortcut>
-    <shortcut> this-package-requires read_records packages_requires name package=$1 </shortcut>
+    <shortcut> packages read_records|modify_records packages name $* </shortcut>
+    <shortcut> packages_that_require read_records packages_requires package name=$1 </shortcut>
+    <shortcut> this_package_requires read_records packages_requires name package=$1 </shortcut>
     ///
     /// This defines the second field name for records in the package_rpmlist
     /// which can't be surmised from the xml structure. If there were more
