@@ -1,9 +1,16 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.2 2001/12/22 01:08:36 jsquyres Exp $
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# $Id: Makefile.am,v 1.3 2003/07/04 14:36:10 jsquyres Exp $
 #
-# This file is part of the OSCAR distribution.
-# See the copyright and license notices in the top-level directory.
+# This file is part of the OSCAR distribution.  See license
+# information in the top-level directory.
 #
 
-EXTRA_DIST		= oscar.gif
+include $(top_srcdir)/dist/Makefile.options
+
+oscar_DATA		= oscar.gif
+
+EXTRA_DIST		= $(oscar_DATA)
