@@ -80,20 +80,29 @@ oscar_log_subsection("PATH: " . $ENV{PATH});
 # now that this install won't [eventually] succeed.
 
 if ($shorthostname eq "localhost") {
-    carp("ERROR: Your hostname is \"localhost\".
+    croak(
+"ERROR: Your hostname is \"localhost\".
 OSCAR requires that you choose another hostname.
 Aborting the install.\n");
 }
 if ($hostname eq "localhost.localdomain") {
-    carp("ERROR: Your hostname is \"localhost.localdomain\".
+    croak(
+"ERROR: Your hostname is \"localhost.localdomain\".
 OSCAR requires that you choose another hostname.
 Aborting the install.\n");
 }
 if ($distro_name eq "UnknownLinux") {
-    print "
+    carp("
 ##########################################################################
    WARNING: Installing OSCAR on an unsupported distribution of Linux!
-##########################################################################\n";
+##########################################################################\n");
+}
+if (!$ENV{DISPLAY}) {
+    croak("
+ERROR: Your \"DISPLAY\" environment variable is not set, probably
+indicating that you are not running in an X windows environment.
+OSCAR requires that you run the installer in an X windows environment.
+Aborting the install.\n");
 }
 
 # Now start the execution
