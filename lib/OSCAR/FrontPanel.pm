@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel.pm;
 
-#   $Id: FrontPanel.pm,v 1.1 2002/02/18 23:09:21 sdague Exp $
+#   $Id: FrontPanel.pm,v 1.2 2002/02/18 23:12:02 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,9 +28,9 @@ use Carp;
 use SystemInstaller::Tk::Common;
 use File::Copy;
 use base qw(Exporter);
-@EXPORT = qw(mac_window);
+@EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
