@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_internal.sh,v 1.6 2002/08/23 21:17:12 sad Exp $
+# $Id: gmond_add_internal.sh,v 1.1 2002/08/24 01:24:14 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -20,16 +20,23 @@
 #   in it's init script
 #   Steven A. DuChene  <linux-clusters@mindspring.com>
 
-internal_interface=${$OSCAR_HEAD_INTERNAL_INTERFACE:?"undefined!"}
+grep -q OSCAR /etc/init.d/gmond 
 
-if [ -f /etc/init.d/gmond ]; then
-    sed "s/daemon \$GMOND$/daemon \$GMOND -i$OSCAR_HEAD_INTERNAL_INTERFACE/" < /etc/init.d/gmond > /tmp/gmond.new
+	if [ $? = 0 ]; then
+	   echo "/etc/init.d/gmond is already modified with internal interface"
+           exit 1
+	elif [ -z $OSCAR_HEAD_INTERNAL_INTERFACE ]; then
+	   echo "no internal interface being passed"
+	   exit 1
+	elif ! [ -f /etc/init.d/gmond ]; then
+           echo "/etc/init.d/gmond is missing"
+	   exit 1
+	 else
+    sed -e "s/daemon \$GMOND$/daemon \$GMOND -i$OSCAR_HEAD_INTERNAL_INTERFACE/" -e '/# description: gmond startup script/a\
+# OSCAR internal interface mods done' < /etc/init.d/gmond > /tmp/gmond.new
     mv /etc/init.d/gmond /etc/init.d/gmond.orig
     mv /tmp/gmond.new /etc/init.d/gmond
     chmod 755 /etc/init.d/gmond
     service gmond restart
-
-else
-    echo "/etc/init.d/gmond is missing"
-    exit 1
+    echo successfully added internal interface to gmond startup script
 fi
