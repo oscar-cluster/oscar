@@ -192,7 +192,7 @@ sub database_execute_command {
          $results_ref,
 	 $print_errors ) = @_;
 
-    # sometimes this is called without a database_connent being 
+    # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
 	OSCAR::Database::database_connect( $print_errors ) ||
@@ -233,13 +233,6 @@ sub single_database_execute {
          $results_ref,
 	 $print_errors ) = @_;
 
-    # sometimes this is called without a database_connent being 
-    # called first, so we have to connect first if that is the case
-    #( my $was_connected_flag = $database_connected ) ||
-    #	OSCAR::Database::database_connect( $print_errors ) ||
-    #	    return undef;
-
-
     # execute the command
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
@@ -256,7 +249,7 @@ sub single_database_execute {
     my $lock_type = (defined $type_of_lock)? $type_of_lock : "READ";
     # START LOCKING FOR NEST && open the database
     my %options = ();
-    if(! locking($lock_type, \%options, \@tables, $error_strings_ref)){
+    if(! locking($lock_type, $options_ref, \@tables, $error_strings_ref)){
         return 0;
         #die "$0: cannot connect to oda database";
     }
@@ -265,11 +258,11 @@ sub single_database_execute {
 					$results_ref,
 					$error_strings_ref );
     # UNLOCKING FOR NEST
-    unlock(\%options, $error_strings_ref);
+    unlock($options_ref, $error_strings_ref);
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
 	warn shift @$error_strings_ref while @$error_strings_ref;
     }
-
+    
     return $success;
 }
 
@@ -286,7 +279,7 @@ sub dec_already_locked {
          $results_ref,
 	 $print_errors ) = @_;
 
-    # sometimes this is called without a database_connent being 
+    # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
 	OSCAR::Database::database_connect( $print_errors ) ||
@@ -458,7 +451,7 @@ sub database_program_variable_get {
 	 $variable,
 	 $print_errors ) = @_;
 
-    # sometimes this is called without a database_connent being 
+    # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
 	OSCAR::Database::database_connect( $print_errors ) ||
@@ -604,7 +597,7 @@ sub database_program_variables_get {
     my ( $program,
 	 $print_errors ) = @_;
 
-    # sometimes this is called without a database_connent being 
+    # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
 	OSCAR::Database::database_connect( $print_errors ) ||
@@ -1026,7 +1019,7 @@ sub database_return_list {
     my ( $command_args_ref,
 	 $print_errors ) = @_;
 
-    # sometimes this is called without a database_connent being 
+    # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
 	OSCAR::Database::database_connect( $print_errors ) ||
@@ -1205,7 +1198,6 @@ sub locking{
    	$database_connected ||
 	    database_connect( $options_ref, $error_strings_ref ) ||
 	    return 0;
-    $database_connected = 1;
     
     # find a list of all the table names, and all the fields in each table
     my $all_tables_ref = oda::list_tables( $options_ref, $error_strings_ref );
@@ -1277,7 +1269,6 @@ sub unlock {
 	database_connect( $options_ref,
 		      $error_strings_ref ) ||
 	return 0;
-    $database_connected = 1;
 
 	# make the database command
 	my $sql_command = "UNLOCK TABLES ;" ;
@@ -1296,9 +1287,8 @@ sub unlock {
     database_disconnect( $options_ref,
 		     $error_strings_ref )
 	if ! $database_connected;
-    oda::initialize_locked_tables();
 
-    $database_connected = 0;
+    oda::initialize_locked_tables();
 
     return $success;
 
