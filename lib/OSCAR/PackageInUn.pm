@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.5 2003/10/31 02:46:27 muglerj Exp $
+#  $Id: PackageInUn.pm,v 1.6 2003/10/31 18:52:52 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -22,8 +22,6 @@ package OSCAR::PackageInUn;
 #Things to do in general:
 #1. start using the oscar logger...log errors
 #2. grep cexec (rpm-filter) result array...need this script checked in
-#3. integrate install_uninstall_packages...we need the read clamdir stuff
-#   for imagename
 #100. integrate the range option...
 
 use strict;
@@ -59,7 +57,9 @@ our @EXPORT = qw(install_uninstall_packages
 #########################################################################
 sub install_uninstall_packages
 {
-  my $imagename; # Name of an image 
+  my $imagenumber; # number of images on the system
+  my %imagehash; #hash of imagename node range pairs
+  my @imagename; #a list of all the images, allthough we fail unless we have only one
   my $success;  # Return code for database calls
   my $package;  # Name of a package to be installed/uninstalled
   my @packagesThatShouldBeInstalled;    # List of packages to install
@@ -74,7 +74,17 @@ sub install_uninstall_packages
   # Loop through the list of packages to be INSTALLED and do the right thing
   foreach $package (@packagesThatShouldBeInstalled)
     {
-        $success = package_install($package, "1", "1", "1", $imagename, "ALL", "0");
+        $imagenumber = get_image_info(\%imagehash);
+
+		#we only support one image in this version
+		if ($imagenumber != 1)
+		{
+			print "This program only supports one image\n";
+			exit (0);
+		}
+
+        @imagename = keys(%imagehash);
+        $success = package_install($package, "1", "1", "1", $imagename[0], "blah", "0");
       # If the installation was successful, set the 'installed' flag for
       # that package in the database.  Also, clear the 'should_be_installed'
       # flag for that package.
@@ -96,7 +106,7 @@ sub install_uninstall_packages
   # thing
   foreach $package (@packagesThatShouldBeUninstalled)
     {
-      $success = package_uninstall($package, "1", "1", "1", $imagename, "ALL", "0");
+      $success = package_uninstall($package, "1", "1", "1", $imagename[0], "blah", "0");
                                                                                 
       # If the removal was successful, clear the 'installed' flag for
       # that package in the database.  Also, clear the
@@ -300,7 +310,7 @@ sub run_install_client
 				@temp_list = split(/\//,$rpm);
 				$all_rpms = "$all_rpms /tmp/tmpinstallrpm/$temp_list[$#temp_list]";
 			}
-			$cmd_string3 = "cexec rpm-filter $package_name rpm -U $all_rpms";
+			$cmd_string3 = "cexec $package_name rpm -U $all_rpms";
 			$cmd_string4 = "cexec rm -rf /tmp/tmpinstallrpm/";
 
 			if($testmode != 0)
@@ -1298,6 +1308,52 @@ sub run_uninstall_image
 		return (0);
 	}
 	return (1);
+}
+
+#invokes an mksirange command to find out image info
+#about the cluster.
+#	$image_aa_ref --> a reference to an aa that contains 
+#					image names as keys and node names as values
+#
+#returns: number of images (note: this is the number of keys in $image_aa_ref
+sub get_image_info
+{
+	my ($image_aa_ref) = @_;
+	my $line;
+	my @rslt;
+	my $cmd_string = "mksimachine --parse";
+	my @split_line;
+
+	open(NEWCMD, "$cmd_string |") or Carp::croak "cannot run command:$!\n";
+	@rslt = <NEWCMD>;
+	close(NEWCMD);
+
+	foreach $line (@rslt)
+	{
+		if ($line =~ "#Adapter definitions")
+		{
+			#done
+			last;
+		}
+		elsif ($line =~ "#Machine definitions")
+		{
+			#ignore
+			next;
+
+		}
+		elsif ($line =~ "#Name:Hostname:Gateway:Image")
+		{
+			#ignore
+			next;
+		}
+		else
+		{
+			#split the line, stick it in the ref
+			@split_line = split(/:/,$line);
+			$$image_aa_ref{$split_line[3]} = $split_line[0];
+		}
+	}
+	return keys(%$image_aa_ref);
 }
 
 1;
