@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.13 2002/07/13 17:52:10 jsquyres Exp $
+# $Id: Makefile.am,v 1.14 2002/07/17 06:41:58 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -29,7 +29,6 @@ OTHER_SRC_FILES	= \
 		notes.tex \
 		netboot.tex \
 		client-install.tex \
-		troubleshooting.tex \
 		security.tex \
 		screen-by-screen.tex
 

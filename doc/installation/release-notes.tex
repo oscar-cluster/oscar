@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.8 2002/07/16 14:39:46 jsquyres Exp $
+% $Id: release-notes.tex,v 1.9 2002/07/17 06:41:58 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -39,13 +39,33 @@ The following release notes apply to OSCAR version \oscarversion:
   buggy.  The 4.0.4-7x version is available on the Red Hat updates for
   7.2 (\url{ftp://updates.redhat.com/7.2/en/os/i386/}).  See also
   Appendix~\ref{app:screen-by-screen},
-  Figure~\ref{fig:sbs-rh72notes-rpm-upgrd}. In addition, for users
+  Figure~\ref{fig:sbs-rh72notes-rpm-upgrd}
+  (page~\pageref{fig:sbs-rh72notes-rpm-upgrd}). In addition, for users
   working under the KDE environment, you will also need to obtain and
   install the \file{kdeadmin} RPM.
   
-\item If the image build fails during the install, you may need to
-  edit the file \file{/etc/systeminstaller/\-systeminstaller.conf}
-  and change the following:
+  {\bf NOTE:} Although updating the \rpmname{rpm} RPM is {\em
+    strongly} recomended, it is not a trivial task -- \rpmname{rpm}
+  has many dependencies.  If you choose not to update the
+  \rpmname{rpm} RPM, a possible workaround is described below.
+  
+\item If you did not update the \rpmname{rpm} RPM, the image build
+  will likely fail during the install.  This is directly attributable
+  to a bug in the version of RPM that is installed by default.  That
+  is, all relevant RPMs will successfully be installed, but the
+  \cmd{rpm} command will report failure, which will cause
+  SystemInstaller to abort the entire installation.  
+
+  You can change SystemInstaller's default behavior for this case by
+  editing one of its config files to essentially tell it ``ignore
+  error return statuses from the \cmd{rpm} command.''  Edit the
+  following file:
+
+  \vspace{11pt}
+  \centerline{\file{/etc/systeminstaller/systeminstaller.conf}}
+  \vspace{11pt}
+
+  and change the following line:
 
 \begin{verbatim}
        pkginstfail=    1
@@ -54,12 +74,18 @@ The following release notes apply to OSCAR version \oscarversion:
 \begin{verbatim}
        pkginstfail=    0
 \end{verbatim}
-
-  \begin{discuss}
-    This item is very undescriptive -- why does the install fail?  How
-    does changing this value fix anything?  Put in a little more
-    detail here...
-  \end{discuss}
+  
+  {\bf WARNING:} This will cause SystemInstaller to {\em always}
+  proceed with the installation, regardless of the result of the
+  \cmd{rpm} command.  As such, even legitimate RPM errors will be
+  ignored.  OSCAR has been tested with the default RPM lists that are
+  shipped with it, and has been certified that the ``error'' that
+  occurs during the \cmd{rpm} command invocation is benign.  If you
+  use a different RPM list -- one with a legitimate error in it --
+  SystemInstaller will ignore the error and continue with the
+  installation.  It may not be apparent until much later in the
+  install process that there was actually an error during the RPM
+  installation phase.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -93,41 +119,25 @@ The following release notes apply to OSCAR version \oscarversion:
 \label{subsec:ia64notes}
 
 \begin{itemize}
-
-\item Itanium is supported.  Itanium 2 is not supported.
-
-\item \rpmname{pvm} does not currently work on Itanium.
-
-\begin{discuss}
-  Is this still true, that PVM does not work under Itanium?  I thought
-  that this had gotten fixed...?
-\end{discuss}
-
-\item The OSCAR autoinstall diskette will probably not work
-on Itanium systems, but they mostly have support for network booting.
-
-\item Some Itanium 1 or 2 systems are supported by OSCAR 
-under RedHat's Linux 7.2 release for Itanium.
-Itanium systems that can use the standard RedHat Itanium
-kernel for booting and network access should work with OSCAR.
-
-\item If an Itanium (or an IA32 based) system 
-has new or unknown hardware that is not supported by
-the stock kernel in the base operating system release,
-it will not work with standard OSCAR, since OSCAR uses the
-kernel RPMS supplied with the vendors release to boot and
-load the compute nodes.
-If you have a custom compiled kernel/module set that works
-for your hardware, you should look at the NCSA utilities
-at \url{http://oscar.ncsa.uiuc.edu/oscar/} to enable you
-to use them in OSCAR.
-
-
-\begin{discuss}
-  A minor point -- why is the NCSA URL redundant?  Why
-  oscar.ncsa.uiuc.edu/oscar instead of oscar.ncsa.uiuc.edu?
-\end{discuss}
-
+  
+\item Itanium is supported on RedHat 7.2.  Itanium 2 is not supported.
+  
+\item The OSCAR autoinstall diskette will probably not work on Itanium
+  systems, but they mostly have support for network booting.
+  
+\item Some Itanium 1 or 2 systems are supported by OSCAR under
+  RedHat's Linux 7.2 release for Itanium.  Itanium systems that can
+  use the standard RedHat Itanium kernel for booting and network
+  access should work with OSCAR.
+  
+\item If an Itanium (or an IA32 based) system has new or unknown
+  hardware that is not supported by the stock kernel in the base
+  operating system release, it will not work with standard OSCAR,
+  since OSCAR uses the kernel RPMS supplied with the vendors release
+  to boot and load the compute nodes.  If you have a custom compiled
+  kernel/module set that works for your hardware, you should look at
+  the NCSA utilities at \url{http://oscar.ncsa.uiuc.edu/} to
+  enable you to use them in OSCAR.
 \end{itemize}
 
 

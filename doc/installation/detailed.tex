@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.30 2002/07/16 15:02:56 mchasal Exp $
+% $Id: detailed.tex,v 1.31 2002/07/17 06:41:58 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -47,25 +47,6 @@ since OSCAR will install all the software on which it depends.  The
 only other Linux installation requirement is that some X windowing
 environment such as GNOME or KDE must be installed.  Therefore, a
 typical ``workstation'' install is usually sufficient.
-
-\begin{discuss}
-  Is this paragraph still relevant?
-\end{discuss}
-
-If you install RedHat on the server node, during the installation you
-should enable the ipchains-base firewall that is included with the
-RedHat distribution in medium mode.  Other firewalls that are stronger
-and more versatile can be installed later, but this will offer some
-protection until that time.  Note that OSCAR currently assumes that
-only the server node is exposed to the general network, with the
-server and the rest of the cluster's nodes being on a private network.
-To keep the RedHat firewall from interfering with network traffic
-between the server node and the other nodes in the cluster, OSCAR
-automatically disables portions of the RedHat firewall.  This may not
-have the intended results in the situation where all the cluster nodes
-are exposed on the general network.  See Appendix~\ref{app:security}
-for more information about firewalls and other security software that
-can be installed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -121,17 +102,13 @@ to \url{http://oscar.sourceforge.net/} and download the latest OSCAR
 Regular or Extra Crispy distribution package (see
 Section~\ref{sec:download}, page~\pageref{sec:download}).
 
-\begin{discuss}
-  Is \file{/usr/local/oscar} really still reserved?  Or is it
-  \file{/opt/oscar} nowadays?
-\end{discuss}
-
 Copy the OSCAR distribution package to a directory such as
 \user{root}'s home directory on the server node.  Although there is no
-required installation directory (note that you may not use
-\file{/usr/local/oscar} -- it is reserved for special use), the rest
-of these instructions will assume that you downloaded the OSCAR
-distribution package to \user{root}'s home directory.
+required installation directory (note that you may not use the
+directory \file{/usr/local/oscar} or \file{/opt/oscar} -- they are
+both reserved for future use), the rest of these instructions will
+assume that you downloaded the OSCAR distribution package to
+\user{root}'s home directory.
 
 Do {\bf not} unpack the tarball on a Windows based machine and copy
 the directories over to the server, as this will convert all the
@@ -239,18 +216,18 @@ other adapters installed.
 
 After selecting the appropriate interface, press the \button{Edit}
 button to update the information for the cluster network adapter.
-Enter a private IP address\footnote { There are three private IP
-  address ranges: 10.0.0.0 to 10.255.255.255; 172.16.0.0 to
-  172.32.255.255; and 192.168.0.0 to 192.168.255.255.  Additional
-  information on private intranets is available in RFC 1918.  You
-  should not use the IP addresses 10.0.0.0 or 172.16.0.0 or
-  192.168.0.0 for the server.  If you use one of these addresses, the
-  network installs of the client nodes will fail.}  and the associated
-netmask\footnote{The netmask 255.255.255.0 should be sufficient for
-  most OSCAR clusters.}  in their respective fields. Additionally, you
-should be sure to press the \button{Activate interface at boot time}
-button and set the \button{Interface configuration protocol} to
-``none''.
+Enter a private IP address\footnote{There are three private IP address
+  ranges: 10.0.0.0 to 10.255.255.255; 172.16.0.0 to 172.32.255.255;
+  and 192.168.0.0 to 192.168.255.255.  Additional information on
+  private intranets is available in RFC 1918.  You should not use the
+  IP addresses 10.0.0.0 or 172.16.0.0 or 192.168.0.0 for the server.
+  If you use one of these addresses, the network installs of the
+  client nodes will fail. \label{foot:private-ip-ranges}} and the
+associated netmask\footnote{A class C netmask of 255.255.255.0 should
+  be sufficient for most OSCAR clusters. \label{foot:netmask}} in
+their respective fields.  Additionally, you should be sure to press
+the \button{Activate interface at boot time} button and set the
+\button{Interface configuration protocol} to ``none''.
 
 After completing the updates, press the \button{Done} button to return
 to the main utility window, pressing the \button{Save} button in the
@@ -359,11 +336,6 @@ configuration script, which does the following:
 \item updates \file{/etc/hosts} with OSCAR aliases
 \item updates \file{/etc/exports} 
 \item adds OSCAR paths to \file{/etc/profile} 
-
-  \begin{discuss}
-    Do we really change /etc/profile?
-  \end{discuss}
-
 \item updates system startup (\file{/etc/rc.d/init.d}) scripts
 \item restarts affected services
 \item if all the above is successful, launch the OSCAR GUI
@@ -558,10 +530,15 @@ to specifies how many clients you want to create.
   incremented for each subsequent client.
 
 \item The \field{Starting IP} specifies the IP address of the first
-  client. It will be incremented for each subsequent client.
+  client. It will be incremented for each subsequent client.  See
+  Footnote~\ref{foot:private-ip-ranges} on
+  page~\pageref{foot:private-ip-ranges} for more information on how to
+  pick a starting IP address.
   
 \item The \field{Subnet Mask} specifies the IP netmask for all
-  clients.
+  clients.  See Footnote~\ref{foot:netmask} on
+  page~\pageref{foot:netmask} for more information on how to select a
+  netmask for your cluster.
   
 \item The \field{Default Gateway} specifies the default route for all
   clients.
@@ -686,30 +663,6 @@ to simply reset or power cycle them.
   network install.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsubsection{Check network connectivity to client nodes}
-\label{det:pingclients}
-
-In order to perform the final cluster configuration, the server must
-be able to communicate with the client nodes over the network. If a
-client's ethernet adapter is not properly configured upon boot,
-however, the server will not be able to communicate with the client. A
-quick and easy way to confirm network connectivity is to run the
-following from the top-level OSCAR directory:
-
-\begin{verbatim}
-  # ./scripts/ping_clients
-\end{verbatim}
-
-The above commands will run the \cmd{ping\_clients} script, which will
-attempt to ping each defined client and will print a message stating
-success or failure. If a client cannot be pinged, there was a problem
-configuring the ethernet adapter, and you will have to log in to the
-machine and manually configure the adapter. Once all the clients have
-been installed, rebooted, and their network connections have been
-confirmed, you may proceed with the next step.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Cluster Configuration}
@@ -723,16 +676,9 @@ together as a cluster.
 \label{det:completeinstall}
 
 Press the Step 5 button of the wizard entitled \button{Complete
-  Cluster Setup}.  This will do the following:
-
-\begin{enumerate}
-\item Queries number of processors from the client nodes.
-
-\item Run the \file{post\_install} script from each OSCAR software
-  package.
-
-\item Other final setups and configuration management.
-\end{enumerate}
+  Cluster Setup}.  This will run the final installation configurations
+scripts from each OSCAR software package, and perform various cleanup
+and re-initialization functions.
 
 Note that any users created on the server after the OSCAR installation
 will not be in the password/group files of the clients until they have
@@ -748,9 +694,12 @@ been synced with the server -- you can accomplish this using the C3
             
 Provided along with OSCAR is a simple test to make sure the key
 cluster components (OpenSSH, PBS, MPI, and PVM) are functioning
-properly.  Press the Step 6 button of the wizard entitled \button{Test
-  Cluster Setup}. This will open a window that will prompt you for the
-number clients and number of processors per client. The system's basic
+properly.  {\bf All compute nodes must be fully booted before
+  attempting this step.}
+
+Press the Step 6 button of the wizard entitled \button{Test Cluster
+  Setup}. This will open a window that will prompt you for the number
+clients and number of processors per client. The system's basic
 services are checked and then a set of user level tests are run. A
 sample dialog is shown in Figure~\ref{fig:detailed-setup-test}. If any
 of the test fail, then there is a problem with your installation.
@@ -764,8 +713,9 @@ of the test fail, then there is a problem with your installation.
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Congratulations!}
+\subsection{Congratulations!}
 
 Your cluster setup is now complete. Your cluster nodes should
 be ready for work.
@@ -827,4 +777,49 @@ Select the node you wish to delete and simply press the button
   \end{center}
 \end{figure}
 
-\endchange
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Starting over -- installing OSCAR again}
+
+If you feel that you want to start the cluster installation process
+over from scratch in order to recover from irresolvable errors, you
+can do so with the \cmd{start\_over} script located in the
+\file{scripts} subdirectory.
+
+It is important to note that \cmd{start\_over} is {\em not} an
+uninstaller.  That is, \cmd{start\_over} does {\em not} guarantee to
+return the head node to the start that it was in before OSCAR was
+installed.  It does a ``best attempt'' to do so, but the only
+guarantee that it provides is that the head node will be suitable for
+OSCAR re-installation.  For example, the RedHat 7.x series ships with
+a LAM/MPI RPM.  The OSCAR install process removes this RedHat-default
+RPM and installs a custom OSCAR-ized LAM/MPI RPM.  The
+\cmd{start\_over} script only removes the OSCAR-ized LAM/MPI RPM -- it
+does not re-install the RedHat-default LAM/MPI RPI.
+
+Another important fact to note is that because of the environment
+manipulation that was performed via \cmd{switcher} from the previous
+OSCAR install, {\em it is necessary to re-install OSCAR from a shell
+  that was not tainted by the previous OSCAR installation}.
+Specifically, the \cmd{start\_over} script can remove most files and
+packages that were installed by OSCAR, but it cannot chase down and
+patch up any currently-running user environments that were tainted by
+the OSCAR environment manipulation packages.
+
+Ensuring to have an untainted environment can be done in one of two
+ways:
+
+\begin{enumerate}
+\item After running \cmd{start\_over}, completely logout and log back
+  in again before re-installing.  {\em Simply launching a new shell
+    may not be sufficient} (e.g., if the parent environment was
+  tainted by the previous OSCAR install).  This will completely erase
+  the previous OSCAR installation's effect on the environment in all
+  user shells, and establish a set of new, untainted user
+  environments.
+  
+\item Use a shell that was established {\em before} the previous OSCAR
+  installation was established.  Although perhaps not entirely
+  intuitive, this may include the shell was that initially used to
+  install the previous OSCAR installation.
+\end{enumerate}
