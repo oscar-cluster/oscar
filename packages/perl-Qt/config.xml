@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.2 2003/06/27 19:15:09 brechin Exp $
+      $Id: config.xml,v 1.3 2003/07/02 16:20:43 brechin Exp $
   -->
   <name>perl-Qt</name>
 
@@ -18,7 +18,7 @@
     <major>3</major>
     <minor>0</minor>
     <subversion>6</subversion>
-    <release>2</release>
+    <release>4</release>
   </version>
 
   <class>core</class>
