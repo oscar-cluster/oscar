@@ -200,7 +200,7 @@ rhpl
 pyxf86config
 tcp_wrappers
 ttmkfdir
-tzdata
+tzdata-2003d-2
 xinitrc
 xorg-x11-libs-data
 xorg-x11-xfs
