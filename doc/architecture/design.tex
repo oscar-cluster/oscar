@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.14 2002/06/20 04:39:23 jsquyres Exp $
+% $Id: design.tex,v 1.15 2002/08/07 02:36:42 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -26,7 +26,7 @@ OSCAR 2.0 and later will be installed into the \file{/opt} directory,
 in accordance with the Linux Standards Base Filesystem Hierarchy (LSB
 FSH).
 
-The directory structure for OSCAR 2.0 will look like the following:
+The major directories for OSCAR 2.0 are:
 
 \begin{itemize}
 \item \file{oscar[-<version>]/}: OSCAR base directory.  As described
@@ -37,75 +37,46 @@ The directory structure for OSCAR 2.0 will look like the following:
   All other directories and files listed below are in this top-level
   directory.
 
-\item \file{core-packages/}: OSCAR core functionality packages.
-  
-\item \file{contrib-packages/}: OSCAR packages contributed by third
-  parties.
-
 \item \file{doc/}: HowTos and other documentation.
 
-\item \file{oscar}: Executable to start the OSCAR Wizard.
+\item \file{install\_cluster}: Executable to start the OSCAR Wizard.
 
-\item \file{packages/}: certified OSCAR packages.
+\item \file{packages/}: OSCAR packages.
 
 \item \file{COPYING}: GNU General Public License v2.0.
   
 \item \file{README}: Quick overview and pointers to documentation.
+
+\item \file{testing/}: OSCAR test suite.
 \end{itemize}
-
-Note that all three kinds of packages are identical in form and in the
-API that they utilize.  The only difference between them is their
-location in the OSCAR directory tree.
-
-The three package directories are explained in the following sections.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{\file{core-packages}}
+\subsubsection{\file{doc}}
 
-This directory is intended for the core functionality of OSCAR.  All
-the packages in this directory will be installed regardless of the
-installation mode selected by the user.
-
-Examples of core packages include (but are not limited to): C3 Power
-Tools and the System Installer Suite (SIS)
+In a distribution package, this directory contains PDF files for OSCAR
+documentation.  In a development tree, subdirectories exist containing
+the \LaTeX\ source code and images for the OSCAR documentation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{\file{packages}}
 
-Packages in this directory are likely to be authored by OCG members,
-but must certainly be certified by the OSCAR group.  They are
-considered part of the OSCAR distribution, and therefore fall in the
-same category of quality control as the core packages.
-
-Included packages may or may not be installed by default, depending on
-the installation mode selected by the user.  
-% See Section~\ref{sec:design-wizard}.
-
-Examples of included packages include (but are not limited to):
-LAM/MPI, MPICH, PVM, OpenSSH, and PBS.
+All OSCAR packages are placed in this directory.  Each package is a
+self-contained directory in itself.  Placing an OSCAR package
+in the \file{packages} directory will make it visible to the OSCAR
+installer.  The OSCAR distribution package ships with several ``built
+in'' packages, but additional packages may be placed in this directory
+before running the OSCAR installer wizard.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{\file{contrib-packages}}
+\subsubsection{\file{testing}}
 
-This directory does not exist in the developer's tree because it is
-exclusively intended as the location for third party developers to
-place their packages for inclusion in the OSCAR framework.  Depending
-on the installation mode,
-% (see Section~\ref{sec:design-wizard})
-the packages in this directory will be scanned and listed as optional
-packages that may be installed by OSCAR.
-
-That is, simply the presence of a package in this directory (and
-conformance to the OSCAR package API) will enable it to be installed
-and managed by the OSCAR framework.  
-
-All packages in this directory are considered optional for OSCAR
-functionality.  However, these packages may have dependencies such
-that inclusion of one third party package may trigger the installation
-of other third party packages.
+The OSCAR test suite is [currently] a self-contained set of scripts
+and executables that test the various portions of an OSCAR
+installation.  It will eventually be mixed in as part of the package
+API.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -113,20 +84,41 @@ of other third party packages.
 
 The default OS installer in OSCAR 2.0 will be the System Installation
 Suite (SIS), the collaboration between the LUI and SystemImager
-projects. As such, the Wizard will be designed to work with SIS in
-order to install the OS on client machines when users wish to do so.
-Any other future OS installation solutions will also need to be
-integrated with the Wizard.
+projects. As such, the Wizard is designed to work with SIS in order to
+install the OS on client machines when users wish to do so.  Any other
+future OS installation solutions will also need to be integrated with
+the Wizard.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Software Package Management}
 \label{sec:design-software-package-mgmt}
 
-\begin{discuss}
-  We need to discuss this issue at some point, because what we had
-  here really doesn't apply any more...
-\end{discuss}
+The base unit of an OSCAR installation is an RPM.  
+
+\subsubsection{OSCAR-Specific RPM Requirements}
+\label{sec:design-software-package-mgmt-rpm-reqs}
+
+OSCAR-specific RPMs should include the string ``{\tt oscar}'' in the
+name portion of the RPM filename as well as the {\tt Name:} tag of the
+RPM.  For example:
+
+\vspace{10pt}
+\centerline{\file{lam-oscar-{\rm X}.{\rm Y}.{\rm Z}-1.i586.rpm}}
+\vspace{10pt}
+
+The intent of this convention is to prevent RPM auto-updating packages
+from updating an OSCAR-ized RPM to be a non-OSCAR-ized RPM.  For
+example, if a Mandrake-like convention was used such that the string
+``{\tt oscar}'' was part of the RPM release number instead of part of
+the RPM name, an auto-update may replace \file{lam-\-{\rm X}\-.{\rm
+    Y}\-.{\rm Z}-\-1oscar\-.i586.rpm} (an OSCAR-ized RPM) with
+\file{lam-\-{\rm A}\-.{\rm B}\-.{\rm C}-\-1\-.i586.rpm} (where version
+$(A, B, C) > (X, Y, Z)$, of course).
+
+It is also strongly recomended that package RPM files named {\tt
+  foo-oscar} provide a ``{\tt Conflict: foo}'' statement such that
+they conflict with non-OSCAR-ized RPM of the base name.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -288,6 +280,13 @@ should be noted.  These two supplemental files exist in the top-level
 package directory:
 
 \begin{itemize}
+\item \file{configure}: 
+
+  \begin{discuss}
+    This has been agreed to (conceptually) in an OSCAR teleconference,
+    but its specifics have not yet been discussed.
+  \end{discuss}
+
 \item \file{server.rpmlist}: This per-package file contains a list of
   RPM filenames (one per line) of RPMs that are installed during step
   1.  At present, the RPM files listed in this file will be installed
@@ -415,7 +414,10 @@ an OSCAR distribution package.
 So let's now discuss each of the API calls in detail.
 
 \begin{itemize}
-\item \file{post\_server\_rpm\_install} (step 2)
+\item \file{post\_server\_rpm\_install} (step 2)\footnote{A deprecated
+    filename of this script is \file{post\_\-server\_\-install}.  The
+    new name \file{post\_server\_rpm\_install} should be used in all
+    new OSCAR packages.}
   
   Guidelines:
 
@@ -441,9 +443,12 @@ So let's now discuss each of the API calls in detail.
   \begin{itemize}
   \item None.
   \end{itemize}
-
-\item \file{post\_client\_rpm\_install} (step 4)
-
+  
+\item \file{post\_client\_rpm\_install} (step 4)\footnote{A deprecated
+    filename of this script is \file{post\_\-rpm\_\-install}.  The new
+    name \file{post\_client\_rpm\_install} should be used in all new
+    OSCAR packages.}  
+  
   Guidelines:
 
   \begin{itemize}
@@ -669,6 +674,8 @@ These issues can be addressed for API versions after 1.3.
 \item How to do package inter-relationships?
 \item How to remove a package?
 \item How to make OSCAR DB remotely available (for step 4)?
+\item An API for package testing so that packages can include their
+  own tests and have a top-level (OSCAR) test manager invoke them
   
 \item Will need to make OSCAR DB info available remotely (in the
   chroot jail or on the nodes) for post 2.0 for node-based installs --
