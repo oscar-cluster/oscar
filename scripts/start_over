@@ -114,7 +114,7 @@ use Carp;
 # and a list of all the rpm names corresponding to the non-source rpm files.
 
 print "Searching for non-source rpm files in $oscar_home ... ";
-my @oscar_rpm_paths = `find $oscar_home -name '*.rpm'`;
+my @oscar_rpm_paths = `find $oscar_home/* -name '*.rpm'`;
 chomp @oscar_rpm_paths;
 @oscar_rpm_paths = grep( !/\.src\.rpm$/, @oscar_rpm_paths );
 @oscar_rpm_paths = sort_uniq( @oscar_rpm_paths );
@@ -135,7 +135,7 @@ foreach ( @oscar_rpms ) {
 my $paths_count = scalar @oscar_rpm_paths;
 print "found $paths_count rpm files.\n";
 
-# delete the oscar database ?
+# delete the oscar database
 
 print "Deleting oda database ...\n";
 system("oda drop_database");
@@ -267,8 +267,23 @@ sub delete_from_pool {
   my @rpm_files = @_;
   my $dir = "/tftpboot/rpm/";
     
+  my @files = `cd $dir && ls -1`;
+  chomp @files;
+  my @files_to_delete = ();
   foreach my $rpm_file (@rpm_files) {
-    do_command( "rm -f $dir$rpm_file" ) if -r "$dir$rpm_file";
+    my $expression = "^$rpm_file\$";
+    my @non_number_segments = split( /[0-9]+/, $expression );
+    $expression = join( '[0-9]+', @non_number_segments );
+#    print "rpm_file=<$rpm_file> expression=<$expression>\n";
+    eval {
+      foreach my $file ( grep( /$expression/, @files ) ) {
+        push @files_to_delete, $file;
+      }
+    }
+  }
+  @files_to_delete = sort_uniq( @files_to_delete );
+  foreach my $file ( @files_to_delete ) {
+    do_command( "rm -f $dir$file" ) if -f "$dir$file";
   }
 }
 
