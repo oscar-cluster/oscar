@@ -292,6 +292,118 @@ The following items highlight these issues.
 
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Red Hat Enterprise Linux 3 Notes}
+\label{subsec:rhel3notes}
+
+Currently we only support Red Hat Enterprise Linux 3 Update 2 and Update
+3.  Gold and Update 4 are not supported.
+
+If you are installing a version of Red Hat Enterprise Linux 3 that does
+not provide a MySQL Server RPM (eg. WS), please refer to the first item 'mysql-server'.
+
+If you are installing on Red Hat Enterprise Linux 3 Update 2, please refer to
+the second item 'Red Hat Enterprise Linux 3 (Update 2) rpmlist'.
+
+The rest of the notes are only relevant if you are installing on ia64
+(Itanium) hardware.
+
+\begin{itemize}
+
+\item mysql-server
+
+\emph{BEFORE YOU BEGIN}: you will need to obtain a mysql-server RPM and put it into
+
+  \file{/tftpboot/rpm}
+
+The easiest way is to get the SRPM and rebuild it\begchange (i386
+users should replace ia64 with i386)\endchange,
+
+\begin{verbatim}
+  rpmbuild --rebuild mysql-3.23.58-1.src.rpm
+  cp /usr/src/redhat/RPMS/ia64/mysql-server-3.23.58-1.ia64.rpm /tftpboot/rpm
+\end{verbatim}
+
+MySQL v3.23.58-1 is the version that came with Red Hat Enterprise Linux 3, Update 3; if you cannot
+find that particular version, please make sure that you copy all the
+rebuilt MySQL RPMs (including the server RPM).  For example, if the
+version you found is v3.23.58-2.3:
+
+\begin{verbatim}
+  rpmbuild --rebuild mysql-3.23.58-2.3.src.rpm
+  cp /usr/src/redhat/RPMS/ia64/mysql*-3.23.58-2.3.ia64.rpm /tftpboot/rpm
+\end{verbatim}
+
+Note: The key here is to keep the MySQL versions consistent.
+
+\item Red Hat Enterprise Linux 3 (Update 2) rpmlist
+
+\emph{IN OSCAR WIZARD STEP 4}: if you're running Update 2, you will
+need to manually select the correct rpmlist before generating the client image.
+Select the appropriate file for your architecture
+
+  \file{/opt/oscar/oscarsample/redhat-3asU2-i386.rpmlist}
+  \ \\  % Force newline
+or
+  \ \\  % Force newline
+  \file{/opt/oscar/oscarsample/redhat-3asU2-ia64.rpmlist}
+
+
+\item \file{systemconfig.conf} on ia64
+
+\emph{AFTER OSCAR WIZARD STEP 4}: you will need to add an INITRD entry to the image
+file
+
+  \file{/var/lib/systemimager/images/oscarimage/etc/systemconfig/systemconfig.conf}
+
+After the modification, the kernel section should look like this:
+
+\begin{verbatim}
+  [KERNEL0]
+    PATH = /boot/efi//EFI/redhat/vmlinuz-2.4.21-20.EL
+    INITRD = /boot/efi//EFI/redhat/initrd-2.4.21-20.EL.img
+    LABEL = 2.4.21-20.EL
+\end{verbatim}
+
+where 2.4.21-20.EL is the kernel for Red Hat Enterprise Linux 3 (Update 3)
+you should substitute your kernel version if you're not running Update 3.
+
+{\bf Note: Note carefully the \emph{DOUBLE SLASH} in the PATH and INITRD lines!}
+
+
+\item SCSI and network on ia64
+
+\emph{AFTER OSCAR WIZARD STEP 4}: you may also need to add a Hardware section with
+SCSI and network drivers.  In the image file
+
+  \file{/var/lib/systemimager/images/oscarimage/etc/systemconfig/systemconfig.conf}
+
+For an Intel SR870BH2, the hardware section of this file would look like:
+
+\begin{verbatim}
+  [HARDWARE]
+    ORDER = e1000 e1000 mptscsih mptbase scsi_mod
+\end{verbatim}
+
+
+\item USB on ia64
+
+\emph{AFTER OSCAR WIZARD STEP 4}: if you need to use the keyboard on a USB-only
+system, like the Intel SR870BH2, you need to add the USB controller to the
+image file
+
+  \file{/var/lib/systemimager/images/oscarimage/etc/modules.conf}
+
+For example,
+
+\begin{verbatim}
+  echo alias usb-controller usb-uhci >> \
+    /var/lib/systemimager/images/oscarimage/etc/modules.conf
+\end{verbatim}
+
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -314,326 +426,18 @@ The following items highlight these issues.
   \file{modprobe.conf} in \-/tmp.
 
 \end{itemize}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% BLI Mandrakelinux 10.0 bug fixed in r3055
-%\begchange
-%\subsection{Mandrakelinux 10.0 Notes}
-%\label{subsec:mdk10notes}
-%
-%Mandrake users may experience the following fatal error if the
-%install\_cluster script is run more than once.
-%
-%\begin{verbatim}
-%/opt/oscar/scripts/set_node_nics: failed to create database
-%record for nic eth0 on node oscar_server. Couldn't initialize the
-%nics and networks for the oscar server at ./wizard_prep line 242
-%Oscar Wizard preparation script failed to complete at
-%./install_cluster line 215.
-%\end{verbatim}
-%
-%To repair this problem, issue the following commands:
-%\begin{verbatim}
-%  # mysql oscar
-%  mysql> DELETE from nics where 1;
-%\end{verbatim}
-%This should repair the database and allow the install\_cluster script
-%to run again.  Alternatively, to get around this problem, you can invoke the OSCAR Wizard directly:
-%\begin{verbatim}
-%  # cd /opt/oscar/scripts
-%  # ./oscar_wizard &
-%\end{verbatim}
-%\endchange
 
-% jlm - removed this section seeing as how there is no drake support
-% in 4.0
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%\subsection{Mandrake 9.0 Notes}
-%\label{subsec:mdk90notes}
-%
-%The following may need to be run before attempting to install OSCAR on a
-%Mandrake 9.0 cluster.  If there are problems during the server preparation
-%related to C3 or Python2 this may solve the issue.
-%
-%\begin{itemize}
-%\item Install the Python 2 compatibility RPM.  This RPM can be found
-%  in the OSCAR distribution package, under the \file{packages/c3/RPMS}
-%  directory:
-%
-%\begin{verbatim}
-%  # cd oscar-2.3/packages/c3/RPMS
-%  # rpm -Uvh python2-compat-1.0-1.noarch.rpm
-%\end{verbatim}
-%
-% (ORIGINALLY in the 8.2 notes)
-% TJN: Doc fix for BUG#686916 'xterm needed by SIS'
-%      Remove after 2.3 when add to server_prep/pre-req check areas.
-%     - on RH7.x systems the xterm binaray is packaged w/ XFree86 (big bundle)
-%     - on MDK8.x it showed up in it's own xterm rpm.
-%$\item The OSCAR wizard makes use of \cmd{xterm} so this package must be installed.  You can check the RPM database for this package by typing
-%  \cmd{rpm -q xterm}.  If \cmd{xterm} is not available, you must
-%  install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake
-%  CD's to run the \cmd{urpmi} command as mentioned above):
-%
-%\begin{verbatim}
-%  # urpmi xterm
-%\end{verbatim}
-%
-% TJN: relates to server_prep: unmunge_pathenv()
-%\item Lastly, \user{root}'s default shell configuration files hardcode the
-%  value for the {\tt PATH} environment variable, regardless of what is
-%  added via {\tt profile.d/} startup scripts.  This effects various
-%  OSCAR installed components, which are installed into locations such
-%  as \file{/opt}.  As such, the OSCAR installer appends the global path,
-%  e.g., {\tt \$PATH} or {\tt \$\{PATH\}} depending on the shell, to the end
-%  of the path so OSCAR installed applications are in the search
-%  environment.  This potentially makes changes to the following files:
-%
-%  \begin{itemize}
-%  \item \file{/root/.bashrc}
-%  \item \file{/root/.cshrc}
-%  \item \file{/root/.tcshrc}
-%  \end{itemize}
-%
-%\end{itemize}
-%
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Red Hat Enterprise Linux 3 (AS) Notes}
-\label{subsec:ia64notes}
-
-Note: These instructions are for Red Hat Enterprise Linux 3 (Update 3); see
-Step 2 if you are using the Gold or Update 2 versions.
+\subsection{Mandrakelinux 10.0 Notes}
+\label{subsec:mdk10notes}
 
 \begin{itemize}
 
-\item mysql-server
-
-\emph{BEFORE YOU BEGIN}: you will need to obtain a mysql-server RPM and put it into
-
-  \file{/tftpboot/rpm}
-
-The easiest way is to get the SRPM and rebuild it,
-
-\begin{verbatim}
-  rpmbuild --rebuild mysql-3.23.58-1.src.rpm
-  cp /usr/src/redhat/RPMS/ia64/mysql-server-3.23.58-1.ia64.rpm /tftpboot/rpm
-\end{verbatim}
-
-MySQL v3.23.58-1 is the version that came with Red Hat Enterprise Linux 3, Update 3; if you cannot
-find that particular version, please make sure that you copy all the
-rebuilt MySQL RPMs (including the server RPM).  For example, if the
-version you found is v3.23.58-2.3:
-
-\begin{verbatim}
-  rpmbuild --rebuild mysql-3.23.58-2.3.src.rpm
-  cp /usr/src/redhat/RPMS/ia64/mysql*-3.23.58-2.3.ia64.rpm /tftpboot/rpm
-\end{verbatim}
-
-Note: The key here is to keep the MySQL versions consistent.
-
-
-\item Red Hat Enterprise Linux 3 (Gold or Update 2) rpmlist
-
-\emph{IN OSCAR WIZARD STEP 4}: if you're running an earlier version than Update 3, you will
-need to manually select the correct rpmlist before generating the client image.
-Select the appropriate file for your architecture
-
-  \file{/opt/oscar/oscarsample/redhat-3asU2-i386.rpmlist}
-  \ \\  % Force newline
-or
-  \ \\  % Force newline
-  \file{/opt/oscar/oscarsample/redhat-3asU2-ia64.rpmlist}
-
-
-\item Initrd and \file{elilo.conf}
-
-\emph{AFTER OSCAR WIZARD STEP 4}: there is a problem generating a valid initrd on the
-nodes, so we must provide one in the image.  Copy a valid initrd to image
-directory
-
-  \file{/var/lib/systemimager/images/oscarimage/boot/efi/EFI/redhat}
-
-with the commands
-
-\begin{verbatim}
-  cp /boot/efi/efi/redhat/initrd-*.img \
-    /var/lib/systemimager/images/oscarimage/boot/efi/EFI/redhat/
-
-  cp /boot/efi/efi/redhat/elilo.conf \
-    /var/lib/systemimager/images/oscarimage/boot/efi/EFI/redhat/
-\end{verbatim}
-
-
-\item \file{systemconfig.conf}
-
-\emph{AFTER OSCAR WIZARD STEP 4}: you will need to add an INITRD entry to the image
-file
-
-  \file{/var/lib/systemimager/images/oscarimage/etc/systemconfig/systemconfig.conf}
-
-After the modification, the kernel section should look like this:
-
-\begin{verbatim}
-  [KERNEL0]
-    PATH = /boot/efi//EFI/redhat/vmlinuz-2.4.21-20.EL
-    INITRD = /boot/efi//EFI/redhat/initrd-2.4.21-20.EL.img
-    LABEL = 2.4.21-20.EL
-\end{verbatim}
-
-where 2.4.21-20.EL is the kernel for Red Hat Enterprise Linux 3 (Update 3)
-you should substitute your kernel version if you're not running Update 3.
-
-{\bf Note: Note carefully the \emph{DOUBLE SLASH} in the PATH and INITRD lines!}
-
-
-\item SCSI and network
-
-\emph{AFTER OSCAR WIZARD STEP 4}: you may also need to add a Hardware section with
-SCSI and network drivers.  In the image file
-
-  \file{/var/lib/systemimager/images/oscarimage/etc/systemconfig/systemconfig.conf}
-
-For an Intel SR870BH2, the hardware section of this file would look like:
-
-\begin{verbatim}
-  [HARDWARE]
-    ORDER = e1000 e1000 mptscsih mptbase scsi_mod
-\end{verbatim}
-
-
-\item USB
-
-\emph{AFTER OSCAR WIZARD STEP 4}: if you need to use the keyboard on a USB-only
-system, like the Intel SR870BH2, you need to add the USB controller to the
-image file
-
-  \file{/var/lib/systemimager/images/oscarimage/etc/modules.conf}
-
-For example,
-
-\begin{verbatim}
-  echo alias usb-controller usb-uhci >> \
-    /var/lib/systemimager/images/oscarimage/etc/modules.conf
-\end{verbatim}
-
-
-\item \file{tftp-server}
-
-\emph{AFTER OSCAR WIZARD STEP 6, BEFORE YOU BOOT THE CLIENT NODES}: you will need to
-replace the TFTP server.  If your distrubition doesn't come with a tftp-server
-package you should download and install the appropriate file from a repository.
-
-Once you have downloaded and copied it to a known directory you must install
-the package and turn it on:
-
-\begin{verbatim}
-  rpm -i tftp-server-0.32-4.ia64.rpm
-\end{verbatim}
-
-(it could be "ia64" or "i386", depending of your machine's architecture).
-
-\begin{verbatim}
-  /sbin/chkconfig --level 345 tftp on
-\end{verbatim}
-
-
-\item DISKORDER
-
-\emph{AFTER OSCAR WIZARD STEP 6, BEFORE YOU BOOT THE CLIENT NODES}: you may have to
-modify the DISKORDER sequence used by SystemImager to prevent the system from
-using your CD-ROM as a disk, resulting in a "Kernel panic" during the
-client's installation phase.  Add the following to the SystemImager
-kernel command line:
-
-\begin{verbatim}
-  DISKORDER=sd,hd,cciss,ida,rd
-\end{verbatim}
-
-For i386 clients, add this value to the "APPEND" keyword in the "KERNEL"
-section of
-
-  \file{/tftpboot/pxelinux.cfg/default}
-
-For example,
-
-\begin{verbatim}
-  DEFAULT systemimager
-  LABEL systemimager
-  DISPLAY message.txt
-  PROMPT 1
-  TIMEOUT 50
-  KERNEL kernel
-    APPEND vga=extended initrd=initrd.img root=/dev/ram \
-      DISKORDER=sd,hd,cciss,ida,rd
-\end{verbatim}
-
-For ia64 clients, add this value to the "append" keyword in the "image"
-section of
-
-  \file{/tftpboot/elilo.conf}
-
-For example,
-
-\begin{verbatim}
-  prompt
-  timeout=50
-  default=sisboot
-
-  image=kernel
-    label=sisboot
-    initrd=initrd.img
-    read-only
-    root=/dev/ram
-    append="DISKORDER=sd,hd,cciss,ida,rd"
-\end{verbatim}
-
-NOTE: elilo requires keywords in lower case.
+\item The tftp-server RPM which came with Mandrakelinux 10.0 expects the
+pxelinux boot files to reside in \file{/var/lib/tftpboot} but OSCAR puts
+them in \file{/tftpboot}.  To get around this issue we simply create a
+symbolic link from \file{/var/lib/tftpboot} to \file{/tftpboot}. 
 
 \end{itemize}
-
-%jlm - commented this out
-%IA64 support was removed for the \oscarversion\ release of OSCAR due to
-%timing problems and the significant differences between current IA32
-%distributions and the freely available IA64 distributions.  IA64 support is
-%fully expected to return in the next release.
-%
-%TJN: Uncomment when ia64 support returns (and update things!) ;)
-%
-% \begin{itemize}
-%
-% \item The OSCAR auto-install diskette will probably not work on Itanium
-%   systems, but they mostly have support for network booting.
-%
-% \item Some Itanium 1 or 2 systems are supported by OSCAR under
-%   RedHat's Linux 7.2 release for Itanium.  Itanium systems that can
-%   use the standard RedHat Itanium kernel for booting and network
-%   access should work with OSCAR.
-%
-% \item Itanium 2 machines often have newer hardware interfaces for
-%       things like networking or disk drives that sometimes require newer
-%       kernels than those provided by official Linux distributions. RedHat 7.2
-%       will work on some Itanium2 machines. Manufacturers will typically
-%       provide driver disks or driver downloads for their machine's newer
-%       hardware interfaces. The user will sometimes have to compile their own
-%       kernel.  This is essentially a ``do it yourself'' kind
-%     of process, and not recommended for novices.  Please consult the
-%     OSCAR user's mailing list for more information.
-%
-% \item If an Itanium (or an IA32 based) system has new or unknown
-%   hardware that is not supported by the stock kernel in the base
-%   operating system release, it will not work with standard OSCAR,
-%   since OSCAR uses the kernel RPMS supplied with the vendors release
-%   to boot and load the compute nodes.  If you have a custom compiled
-%   kernel/module set that works for your hardware, you should look at
-%   the NCSA Kernel\_Picker utility at \url{http://oscar.ncsa.uiuc.edu/} to
-%   enable you to use them in OSCAR.
-%
-% \end{itemize}
-%
-
-% LocalWords:  tex Exp TJN unmunge pathenv
