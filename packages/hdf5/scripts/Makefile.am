@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Makefile.am,v 1.2 2002/10/25 17:21:19 jsquyres Exp $
+# $Id: Makefile.am,v 1.3 2002/10/26 12:05:55 jsquyres Exp $
 #
 
 # This file is necessary -- we can't use the OSCAR
@@ -17,9 +17,19 @@
 # kruft in here as a result of running the setup script (e.g.,
 # config.log, config.status).
 
-EXTRA_DIST = \
-	setup setup.ac config.xml.in \
-	config.guess config.sub install-sh
+AUTOCONF_GENERATED	= setup
+AUTOGEN_GENERATED	= config.guess config.sub install-sh
+GENERATED_FILES		= $(AUTOCONF_GENERATED) $(AUTOGEN_GENERATED)
 
-dist-hook:
+EXTRA_DIST = setup.ac config.xml.in $(GENERATED_FILES)
+
+dist-hook: $(GENERATED_FILES)
+
+setup:
 	sh ./autogen.sh
+
+config.guess: setup
+config.sub: setup
+install-sh: setup
+
+CLEANFILES = *~ $(GENERATED_FILES)
