@@ -24,6 +24,8 @@ use File::Copy;
 use File::Basename;
 use Carp;
 use strict;
+use vars qw($RPM_TABLE);
+use Data::Dumper;
 
 my $INTERFACE = shift or croak("No interface specified");
 my $RPMPOOL = "/tftpboot/rpm";
@@ -34,6 +36,9 @@ my $RPMPOOL = "/tftpboot/rpm";
 
 prep_tftpboot() or croak("Couldn't prepare tftpboot directory");
 copy_rpms("..") or croak("Couldn't copy files to $RPMPOOL");
+verbose("Populating rpm table... this will take a minute.");
+populate_rpm_table($RPMPOOL) or croak("Couldn't populate rpm table");
+# print Dumper($RPM_TABLE);
 install_required_rpms() or croak("Couldn't install OSCAR required rpms");
 
 if(-e "/etc/xinetd.d/rsync") {
@@ -114,7 +119,7 @@ sub install_required_rpms {
 #        }
 #    } 
     if(scalar(@installme)) {
-        my $command = "rpm -Uvh --replacepkgs " . (join ' ',versionchk(@installme, $RPMPOOL));
+        my $command = "rpm -Uvh --replacepkgs " . (join ' ',versionchk(@installme));
 	verbose("Installing rpms using command:");
 	verbose($command);
         !system($command) or return undef;
@@ -314,71 +319,53 @@ sub files_in_dir {
     return map {"$dir/$_"} @files;
 }
 
+# This populates the grand rpm table with everything
+
+sub populate_rpm_table {
+    my $dir = shift;
+    opendir(RPMDIR,$dir) or croak("Can't open directory $dir!");
+    while($_ = readdir(RPMDIR)) {
+        my $file = "$dir/$_";
+       	if(!-f $file) {next;}
+	my $output = `/bin/rpm -qp --qf '\%{NAME} \%{VERSION} \%{RELEASE}' $file 2> /dev/null`;
+        # print "Output was $output for FILE: $file\n";
+        my ($name, $version, $release) = split (/\s+/, $output);
+        # Do some sanity checking to see that name is actually there
+        if($name) {
+            $RPM_TABLE->{$name}->{$version}->{$release} = $file;
+        }
+    }
+    closedir(RPMDIR);
+    return 1;
+}
+
+# find best version just takes an array, runs a sort on it, then returns
+# the top of the sort
+
+sub find_best_version {
+    my @versions = @_;
+    my @best = sort {$b cmp $a} @versions;
+    return shift @best;
+}
+
 # versionchk called as @filenamearray = versionchk(@rpmlist, $rpmdirectory);
 sub versionchk {
-  my @names = @_;
-  my $RPMPOOL = pop @names;
-  opendir(RPMDIR, $RPMPOOL) or die "directory isn't there: $!";
-  my @files;
-  while (my $file = readdir RPMDIR){
-     foreach my $name(@names){
-        if($file =~ m/^$name-\d/){
-           my @tmp =  split ' ', `/bin/rpm -qp --qf '\%{NAME} \%{VERSION} \%{RELEASE}' $RPMPOOL/$file`;
-           push @files, [@tmp, "$RPMPOOL/$file"];
+    my @rpms = @_;
+    my @files = ();
+    
+    foreach my $rpm (@rpms) {
+        my $version = find_best_version(keys %{$RPM_TABLE->{$rpm}});
+        if(!$version) {
+            next;
         }
-     }
-  }
-  close RPMDIR;
-
-#debug printing of all files found
-#for my $i (0 .. @files) {
-#       print "@files->[$i][3]\n";
-#}
-
-#Let's try to figure the best version of each RPM.
-  my $count = 0;
-  my $line  = 0;
-  my @lines;
-  foreach my $name(@names){
-     for (my $j = 0; $j < @files; $j++){
-        if ("@files->[$j][0]" =~ m/^$name$/){
-           $count++;
-           push @lines, $j;
+        my $release = find_best_version(keys %{$RPM_TABLE->{$rpm}->{$version}});
+        if(!$release) {
+            next;
         }
-
-     }
-# For speed and error collection, we'll check for absence of an RPM and the
-# existence of only one (which is the most common instance.
-     if ($count == 0) { die "Could not find package for $name, find and put in $RPMPOOL";}
-     if ($count == 1) { $name = @files->[pop @lines][3];
-#       print "$name\n";
-     }
-# This is where the hard work goes (checking major versions and releases)
-     if ($count > 1) {
-        my $best = @lines[0];
-        foreach my $line(@lines){
-           if ("@files->[$line][1]" gt "@files->[$best][1]"){
-              $best = $line;
-           }
-           if ("@files->[$line][1]" eq "@files->[$best][1]" &&
-               "@files->[$line][2]" gt "@files->[$best][2]"){
-                 $best = $line;
-           }
-        }
-        $name = @files->[$best][3];
-#       print "$name\n";
-        for my $foo (0 .. @lines) { pop @lines; }
-     }
-     $count = 0;
-  }
-#  my $command = "rpm -Uvh " . (join ' ', @names) . " --test";
-#  if (`$command` =~ m/failed/) {
-#	print "Something failed during command:\n";
-#	print "$command\n";
-#	die "RPMS could not be installed";
-#  }
-#  print "RPMS should install just fine";
-  return @names;
+        my $file = $RPM_TABLE->{$rpm}->{$version}->{$release};
+        push @files, $file;
+    }
+    return @files;
 }
 
 
