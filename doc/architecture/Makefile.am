@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.7 2002/11/25 04:07:19 bligneri Exp $
+# $Id: Makefile.am,v 1.8 2002/12/03 20:15:12 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -85,6 +85,7 @@ $(MAIN_HTML): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIGURES)
 .tex.dvi:
 	(unset TEXINPUTS; $(LATEX) $*)
 	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null ); \
+	then (unset TEXINPUTS; $(LATEX) $*) ; else :; fi
 	@ if ( grep 'Writing index file' $*.log > /dev/null ); \
 	then makeindex $* ; (unset TEXINPUTS; $(LATEX) $*) ; fi
 	@-if ( grep 'LaTeX Warning: Citation' $*.log > /dev/null ); then \

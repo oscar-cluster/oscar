@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: defs.tex,v 1.6 2002/10/22 15:14:09 jsquyres Exp $
+% $Id: defs.tex,v 1.7 2002/12/03 20:15:14 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -8,6 +8,7 @@
 \usepackage{times}
 \usepackage{graphicx}
 \usepackage{fullpage}
+\usepackage{url}
 
 % PDF stuff
  
@@ -26,12 +27,10 @@
               colorlinks=true,
               linkcolor=blue,filecolor=blue,pagecolor=blue,urlcolor=blue
               ]{hyperref}
-  \def\figext{pdf}
-  \newcommand{\xref}[2]{\hyperref[#1]{#2}}
 \else
-  \def\figext{eps}
-  \newcommand{\xref}[2]{#2}
-  \newcommand{\href}[2]{\underline{#2}}
+  \usepackage[colorlinks=true,
+              linkcolor=blue,filecolor=blue,pagecolor=blue,urlcolor=blue
+              ]{hyperref}
 \fi
 
 % Stoopid European-based Linux distributions...
