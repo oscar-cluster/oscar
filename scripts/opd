@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 #
+# Copyright (c) 2003, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
@@ -7,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.21 2003/06/27 22:03:27 tfleury Exp $
+# $Id: opd,v 1.22 2003/06/30 17:05:39 brechin Exp $
 #
 
 use strict;
@@ -1296,7 +1298,7 @@ sub download_package {
 		print("not provided\n")
                     if (!$argv_parsable);
 	    } elsif (length($$content) ne $pkg->{download}->{size}) {
-                print("ERROR: $pkg " . length($$content) .
+                print("ERROR: $pkg->{name} " . length($$content) .
                           " != $pkg->{download}->{size}\n");
 		next;
 	    } else {
