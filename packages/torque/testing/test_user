@@ -28,5 +28,5 @@ else
         $OSCAR_TESTPRINT --label "PBS default queue definition" -f
 fi
 
-~/pbs_test $clients 1 ~/pbs/pbs_script.shell "Hello" ~/pbs/shelltest 3 "PBS Shell Test"
+~/pbs_test $clients 1 ~/torque/pbs_script.shell "Hello" ~/torque/shelltest 3 "PBS Shell Test"
 
