@@ -1,0 +1,133 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>OpderDownloadInfo</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>OpderDownloadInfo</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>144</width>
+            <height>127</height>
+        </rect>
+    </property>
+    <property name="cursor">
+        <cursor>0</cursor>
+    </property>
+    <property name="caption">
+        <string>Wait...</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>1</number>
+        </property>
+        <widget class="QLayoutWidget" row="0" column="0">
+            <property name="name">
+                <cstring>layout19</cstring>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>downloadLabel</cstring>
+                    </property>
+                    <property name="font">
+                        <font>
+                            <pointsize>12</pointsize>
+                            <bold>1</bold>
+                        </font>
+                    </property>
+                    <property name="cursor">
+                        <cursor>0</cursor>
+                    </property>
+                    <property name="text">
+                        <string>Dowloading
+Package
+Information...</string>
+                    </property>
+                    <property name="alignment">
+                        <set>AlignCenter</set>
+                    </property>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>fiveBalls</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="cursor">
+                        <cursor>0</cursor>
+                    </property>
+                    <property name="pixmap">
+                        <pixmap>ball1.png</pixmap>
+                    </property>
+                    <property name="scaledContents">
+                        <bool>false</bool>
+                    </property>
+                    <property name="alignment">
+                        <set>AlignCenter</set>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>cancelButton</cstring>
+                    </property>
+                    <property name="font">
+                        <font>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Cancel</string>
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
+    </grid>
+</widget>
+<connections>
+    <connection>
+        <sender>cancelButton</sender>
+        <signal>clicked()</signal>
+        <receiver>OpderDownloadInfo</receiver>
+        <slot>cancelButton_clicked()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in declaration">my ($ballTimer,$ballNumber); # Animated graphic of 5 green balls</include>
+    <include location="local" impldecl="in declaration">my ($readProc,$readPhase,$readString,@readPackages,@successfullyReadPackages); # Execute opd and read results</include>
+    <include location="local" impldecl="in declaration">my (%repositories,$currRepositoryURL,$currRepositoryName); # Keep track of repositories read from opd</include>
+    <include location="local" impldecl="in declaration">my $opdcmd = $ENV{OSCAR_HOME} . '/scripts/opd';</include>
+    <include location="local" impldecl="in declaration">use Carp;</include>
+    <include location="local" impldecl="in declaration">use Qt::signals readPackagesSuccess=>[], downloadButtonDisable=>[], downloadButtonUpdate=>[];</include>
+    <include location="local" impldecl="in implementation">OpderDownloadInfo.ui.h</include>
+</includes>
+<slots>
+    <slot>init()</slot>
+    <slot>showEvent()</slot>
+    <slot>hideEvent()</slot>
+    <slot>cancelButton_clicked()</slot>
+    <slot>advanceBallTimer()</slot>
+    <slot>refreshReadPackages()</slot>
+    <slot>getReadPackages()</slot>
+    <slot>readFromStdout()</slot>
+    <slot>readDone()</slot>
+    <slot>processRepository()</slot>
+    <slot>extractPackageFieldNamesAndTypes()</slot>
+    <slot>extractDownloadURIs()</slot>
+    <slot>deepcopy()</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

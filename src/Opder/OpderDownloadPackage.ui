@@ -1,0 +1,197 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>OpderDownloadPackage</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>OpderDownloadPackage</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>286</width>
+            <height>178</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Wait...</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>1</number>
+        </property>
+        <widget class="QLayoutWidget" row="0" column="0">
+            <property name="name">
+                <cstring>layout20</cstring>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>downloadLabel</cstring>
+                    </property>
+                    <property name="font">
+                        <font>
+                            <pointsize>12</pointsize>
+                            <bold>1</bold>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>Dowloading Package File</string>
+                    </property>
+                    <property name="alignment">
+                        <set>AlignCenter</set>
+                    </property>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>packageLabel</cstring>
+                    </property>
+                    <property name="paletteForegroundColor">
+                        <color>
+                            <red>0</red>
+                            <green>0</green>
+                            <blue>179</blue>
+                        </color>
+                    </property>
+                    <property name="font">
+                        <font>
+                            <bold>1</bold>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>FooBar</string>
+                    </property>
+                    <property name="alignment">
+                        <set>AlignCenter</set>
+                    </property>
+                </widget>
+                <widget class="QProgressBar">
+                    <property name="name">
+                        <cstring>packageProgressBar</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="progress">
+                        <number>0</number>
+                    </property>
+                    <property name="percentageVisible">
+                        <bool>false</bool>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer1</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>10</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>packageLabel_2</cstring>
+                    </property>
+                    <property name="paletteForegroundColor">
+                        <color>
+                            <red>0</red>
+                            <green>0</green>
+                            <blue>0</blue>
+                        </color>
+                    </property>
+                    <property name="font">
+                        <font>
+                            <bold>1</bold>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string> Total Progress:</string>
+                    </property>
+                    <property name="alignment">
+                        <set>AlignVCenter|AlignLeft</set>
+                    </property>
+                </widget>
+                <widget class="QProgressBar">
+                    <property name="name">
+                        <cstring>totalProgressBar</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="progress">
+                        <number>0</number>
+                    </property>
+                    <property name="percentageVisible">
+                        <bool>false</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>cancelButton</cstring>
+                    </property>
+                    <property name="font">
+                        <font>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Cancel</string>
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
+    </grid>
+</widget>
+<connections>
+    <connection>
+        <sender>cancelButton</sender>
+        <signal>clicked()</signal>
+        <receiver>OpderDownloadPackage</receiver>
+        <slot>cancelButton_clicked()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in declaration">my ($dlProc,$dlPhase,$dlString,@dlPackages); # Execute opd and read results</include>
+    <include location="local" impldecl="in declaration">my $opdcmd = $ENV{OSCAR_HOME} . '/scripts/opd';</include>
+    <include location="local" impldecl="in declaration">use Carp;</include>
+    <include location="local" impldecl="in declaration">use Qt::signals refreshButtonSet=>['int'], downloadButtonUpdate=>[];</include>
+    <include location="local" impldecl="in declaration">use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::Package;</include>
+    <include location="local" impldecl="in implementation">OpderDownloadPackage.ui.h</include>
+</includes>
+<slots>
+    <slot>init()</slot>
+    <slot>showEvent()</slot>
+    <slot>hideEvent()</slot>
+    <slot>cancelButton_clicked()</slot>
+    <slot>downloadStart()</slot>
+    <slot>downloadNext()</slot>
+    <slot>downloadDone()</slot>
+    <slot>readFromStdout()</slot>
+    <slot>getPackageTable()</slot>
+    <slot>updateOda()</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

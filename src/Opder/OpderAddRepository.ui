@@ -1,0 +1,100 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>OpderAddRepository</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>OpderAddRepository</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>373</width>
+            <height>181</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Use Additional OPD Repositories</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>1</number>
+        </property>
+        <property name="spacing">
+            <number>0</number>
+        </property>
+        <widget class="QLayoutWidget" row="0" column="0">
+            <property name="name">
+                <cstring>layout8</cstring>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>textLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Enter URLs for additional OPD repositories, one per line.</string>
+                    </property>
+                </widget>
+                <widget class="QTextEdit">
+                    <property name="name">
+                        <cstring>urlTextBox</cstring>
+                    </property>
+                    <property name="textFormat">
+                        <enum>PlainText</enum>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Prepend URLs with http://, ftp://, or file:///</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>exclusiveCheckBox</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Use these repositories EXCLUSIVELY</string>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Ignore the standard OPD repositories</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>doneButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Done</string>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Close this window and apply changes</string>
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
+    </grid>
+</widget>
+<connections>
+    <connection>
+        <sender>doneButton</sender>
+        <signal>clicked()</signal>
+        <receiver>OpderAddRepository</receiver>
+        <slot>doneButton_clicked()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in declaration">use Qt::attributes qw( useRepositoriesExclusively urlText );</include>
+    <include location="local" impldecl="in declaration">use Qt::signals refreshTableNeeded=>[];</include>
+    <include location="local" impldecl="in implementation">OpderAddRepository.ui.h</include>
+</includes>
+<slots>
+    <slot>doneButton_clicked()</slot>
+    <slot>hideEvent()</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
