@@ -38,6 +38,7 @@
   <rpmlist>
       <rpm>systemconfigurator</rpm>
       <rpm>systemimager-common</rpm>
+      <rpm>perl-AppConfig</rpm>
       <rpm>systemimager-client</rpm>
   </rpmlist>
 
