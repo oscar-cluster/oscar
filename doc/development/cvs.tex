@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: cvs.tex,v 1.2 2001/08/21 19:31:09 jsquyres Exp $
+% $Id: cvs.tex,v 1.3 2001/08/28 00:55:55 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -93,11 +93,20 @@ on the main OSCAR web site:
 \vspace{10pt}
 
 Lists of which binary files are to be used are included in the {\tt
-  Makefile.am} in each directory.  The macro {\tt BINARY\_\-FILES}
-controls the majority of downloading; it is loaded with a list of
-binary files that should be obtained.  Additionally, a top-level file
-is included in the {\tt Makefile.am} that will actually do the
-relevant file tests and downloads.
+  Makefile.am} in each directory.  The macro {\tt DOWNLOAD\_\-FILES}
+lists files that need to be downloaded that include version numbers in
+their names; it is loaded with a list of binary files that should be
+obtained.  Each file in this list will be downloaded if it does not
+exist in the local directory.  
+%
+The macro {\tt DOWNLOAD\_\-DATES\_\-FILES} is used to download files
+that do not have version numbers in their filenames; these files will
+be downloaded if they do not exist in the local directory, or they are
+older than the version of the file on the server.
+%
+Additionally, a top-level file is included in the {\tt Makefile.am}
+that will actually do the relevant file tests and downloads.
+%
 Figure~\ref{fig:makefile-bin-download} shows an example.
 
 \begin{figure}[tbp]
@@ -110,11 +119,17 @@ Figure~\ref{fig:makefile-bin-download} shows an example.
 lam_prefix              = http://oscar.sourceforge.net/pub/packages/lam
 lam_version             = 6.5.4
 
-# The BINARY_FILES macro holds the list of files that will be
+# The DOWNLOAD_FILES macro holds the list of files that will be
 # downloaded for this directory.
-BINARY_FILES            = \
+DOWNLOAD_FILES            = \
         $(lam_prefix)/lam-$(lam_version)-usysv.1oscar.i686.rpm \
         $(lam_prefix)/lam-$(lam_version)-usysv.1oscar.src.rpm
+
+# The DOWNLOAD_DATES_FILES is for files that do not have version
+# numbers in them; the files will only be obtained if they do not
+# exist locally, or they are older than the copy on the server.
+DOWNLOAD_DATES_FILES      = \
+        $(lam_prefix)/lam-logo.jpg
 
 # This file includes the logic for the file tests and downloading. The
 # use of $(top_srcdir) ensures that this will even work for a VPATH build.
