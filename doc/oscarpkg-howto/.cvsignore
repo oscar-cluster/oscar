@@ -1,5 +1,3 @@
-Makefile
-Makefile.extrapdf
 *.aux
 *.dvi
 *.log
