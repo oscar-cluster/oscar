@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.5 2003/08/05 21:38:00 naughtont Exp $
+# $Id: setup,v 1.6 2003/10/22 16:48:23 giraldeau Exp $
 #
 # setup script for the pvm package
 # (snagged from Jeff's switcher pkg for 2.3 release)
@@ -55,6 +55,8 @@ if ($name eq "redhat") {
     $source_dir .= "90";
   } elsif ($ver eq "9.1") {
     $source_dir .= "91";
+  } elsif ($ver eq "9.2") {
+     $source_dir .= "92";
   }
 }
 
