@@ -4,10 +4,10 @@ package OSCAR::Package;
 #                     All rights reserved.
 # Copyright 2001-2002 International Business Machines
 #                     Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+# Copyright (c) 2002-2004 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.60 2004/02/17 17:10:35 tuelusr Exp $
+#   $Id: Package.pm,v 1.61 2004/04/05 16:47:05 tuelusr Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ use base qw(Exporter);
 use OSCAR::Database;
 use OSCAR::PackageBest;
 use OSCAR::PackMan;
+use OSCAR::DepMan;
 use OSCAR::Logger;
 use OSCAR::Distro;
 use File::Basename;
@@ -43,7 +44,7 @@ use Carp;
              run_pkg_script_chroot rpmlist install_packages copy_pkgs 
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.60 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.61 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 my ($distro_name, $distro_version) = which_distro_server();
@@ -426,41 +427,12 @@ sub distro_rpmlist {
 #
 
 sub install_packages {
-    my (@pkgs) = @_;
-
-    my $findfunc = \&find_files;
-    if ($distro_name eq 'debian') {
-        $findfunc = \&find_files_deb; # swizzle function for Debian
-    }
-    my ($ret, %bestpkgs) = $findfunc->(
-                              PKGDIR => $RPM_POOL,
-                              PKGLIST => [@pkgs],
-                             );
-
-    if ($ret == 0) {
-        oscar_log_subsection("Warning: OSCAR find_files errored out");
-        return 0;
-    }
-
-    foreach my $key (keys %bestpkgs) {
-        my $fullfilename = "$RPM_POOL/$bestpkgs{$key}";
-        # XXX skip this temporarily for debian
-        if(server_version_goodenough($fullfilename) && $distro_name ne 'debian') {
-            # purge the package from the list
-            delete $bestpkgs{$key};
-        }
-    }
-
-    my @fullfiles = map {"$RPM_POOL/$_"} (sort values %bestpkgs);
-    
-    if(!scalar(@fullfiles)) {
-        return 1;
-    }
 
     my $pm = PackMan->new;
+    my $dm = DepMan->new;
 
-    if (! $pm->install(@fullfiles)) {
-        carp("pm->install failed");
+    if (! $pm->install (dm->required_by (@_))) {
+        carp("pm->install (dm->required_by ()) failed");
         return 0;
     }
 
