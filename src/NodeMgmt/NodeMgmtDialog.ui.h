@@ -8,11 +8,11 @@
 *****************************************************************************/
 
 void NodeMgmtDialog::init()
-{
+{    
     $nodes = OSCAR::Database::database_execute_command("read_records nodes id!=1");
     @macs = ();
 # set up advanced widget group as an extension
-    this->setExtension(advancedBox);
+    advancedBox->hide();
     Qt::Object::connect(advancedButton,
 		      SIGNAL 'toggled(bool)',
 		      this,
@@ -61,12 +61,13 @@ void NodeMgmtDialog::init()
   }
    
    refreshsamplenode();
-   populate_nodetable();   
+   if ( $nodes ) { populate_nodetable(); }
    othermacs_dimmer();
    straymacs_dimmer();
    nodeTable->adjustColumn(2);
    nodeTable->adjustColumn(1);
    nodeTable->adjustColumn(3);
+   
 }
 
 void NodeMgmtDialog::populate_nodetable()
@@ -75,10 +76,9 @@ void NodeMgmtDialog::populate_nodetable()
     my @fields = qw( nodes.name nics.ip nics.mac );
     my @wheres = qw( nodes.id!=1 nics.node_id=nodes.id );
     oda::read_records( undef, \@fields, \@wheres, \@results, 1, undef);
-
     for ( my $i = 0; $i < scalar(@results); $i++ ) {
 	my $ref = $results[$i];	
-#print "DEBUG:: adding " . $$ref{name} . " now\n";
+print "DEBUG:: adding " . $$ref{name} . " now\n";
 	nodeTable->insertRows($i, 1);
 	my $ip = $$ref{ip};
 	my $name = $$ref{name};
@@ -90,7 +90,7 @@ void NodeMgmtDialog::populate_nodetable()
 	nodeTable->setItem($i, 2, $item);
 	$item = Qt::TableItem(nodeTable, 0, $assmac);
 	nodeTable->setItem($i, 3, $item);
-#print "DEBUG:: added " . $$ref{name} . " just now\n";
+print "DEBUG:: added " . $$ref{name} . " just now\n";
     }
 }
     
@@ -99,10 +99,11 @@ void NodeMgmtDialog::advancedButton_toggled(bool)
     my $on = shift;
     if ( $on ) {
 	advancedButton->setText("Basic <<");
+	advancedBox->show();
     } else {
 	advancedButton->setText("Advanced >>");
+	advancedBox->hide();
     }
-    this->showExtension( $on );
 }
 
 void NodeMgmtDialog::nodesettingschange_clicked()
@@ -232,6 +233,8 @@ void NodeMgmtDialog::straytounass_clicked()
 	straymacs->removeItem( straymacs->currentItem );
     }
     straymacs->clearSelection();
+    straymacs_dimmer();
+    othermacs_dimmer();
 }
 
 void NodeMgmtDialog::allstraytounass_clicked()
@@ -241,6 +244,8 @@ void NodeMgmtDialog::allstraytounass_clicked()
     }
     straymacs->clearSelection();
     straymacs->clear();
+    straymacs_dimmer();
+    othermacs_dimmer();   
 }
 
 void NodeMgmtDialog::unasstostray_clicked()
@@ -250,6 +255,8 @@ void NodeMgmtDialog::unasstostray_clicked()
 	othermacs->removeItem( othermacs->currentItem() );
     }
     othermacs->clearSelection();
+    straymacs_dimmer();
+    othermacs_dimmer();    
 }
 
 void NodeMgmtDialog::allunasstostray_clicked()
@@ -259,6 +266,8 @@ void NodeMgmtDialog::allunasstostray_clicked()
     }
     othermacs->clearSelection();
     othermacs->clear();
+    straymacs_dimmer();
+    othermacs_dimmer();    
 }
 
 void NodeMgmtDialog::clearmacs_clicked()
@@ -267,6 +276,8 @@ void NodeMgmtDialog::clearmacs_clicked()
 	delete $usedmacs{$mac};
     }
     othermacs->clearSelection();
+    straymacs_dimmer();
+    othermacs_dimmer();    
 }
 
 void NodeMgmtDialog::closeDialog_clicked()
@@ -350,25 +361,8 @@ void NodeMgmtDialog::assignmac_clicked()
     }  elsif ( nodeTable->currentSelection == -1 ) { #MAC selected, no node selected
         if ( autodefine->isChecked() && assignblanksfirst->isChecked() ) {
 	my $blank = 0;
-	NODE: for ( my $i = 0; $i < $nodes; $i++ ) {
-	    if ( nodeTable->text($i, 3) eq '' ) {
-		my $name = nodeTable->text( $i, 1 );
-		my @results;
-		OSCAR::Database::database_execute_command("list_nics_on_node $name", 
-							  \@results, undef);
-		my $interface = $results[0];
-		nodeTable->setText( $i, 3, $assmac );
-		OSCAR::Database::database_execute_command("modify_records nics.mac~$assmac nodes.name=$name nics.node_id=nodes.id nics.name=$interface", undef, undef);
-		$blank = 1;
-		last NODE;
-	    }
-	}
-	if ( $blank == 0 ) {
-	    definenode($assmac);
-	}
-	othermacs->removeItem(othermacs->currentItem());
-	othermacs->clearSelection();
-	return 0;
+	print "NYI: Assign MAC, MAC selected, no node selection, assignblanksfirst\n";
+	return 1;
         } elsif ( autodefine->isChecked() ) {
 	definenode($assmac);
 	othermacs->removeItem(othermacs->currentItem());
@@ -411,20 +405,7 @@ void NodeMgmtDialog::assignallmacs_clicked()
     othermacs->clear();
     
     if ( autodefine->isChecked() && assignblanksfirst->isChecked() ) {
-	NODE: for ( my $i = 0; $i < $nodes; $i++ ) {
-	    if ( nodeTable->text($i, 3) eq '' ) {
-		my $assmac = pop(@assmacs) or last NODE;
-		my $name = nodeTable->text( $i, 1 );
-		my @results;
-		OSCAR::Database::database_execute_command("list_nics_on_node $name",   \@results, undef);
-		my $interface = $results[0];
-		nodeTable->setText( $i, 3, $assmac );
-		OSCAR::Database::database_execute_command("modify_records nics.mac~$assmac nodes.name=$name nics.node_id=nodes.id nics.name=$interface", undef, undef);
-	    }
-	}
-	while ( my $assmac = pop(@assmacs) ) {
-	    definenode( $assmac );
-	}
+	print "NYI: assignall, assignblanksfirst\n";
     } elsif ( autodefine->isChecked() ) {
         while ( my $assmac = pop(@assmacs) ) {
 	    definenode( $assmac );

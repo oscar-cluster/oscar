@@ -8,7 +8,7 @@
 *****************************************************************************/
 
 
-void nodesettingsDialog::init()
+void NodeSettingsDialog::init()
 {
     Qt::Object::connect(nodesettingsCancel,
 			SIGNAL 'clicked()',
@@ -27,6 +27,7 @@ void nodesettingsDialog::init()
 			SIGNAL 'clicked()',
 			this,
 			SLOT 'setundopoint()');
+    
 #    my $gateway = OSCAR::Database::database_execute_command('  
 #    ***GET HOST IP OR PUBLIC GATEWAY*** ');
     
@@ -42,7 +43,7 @@ void nodesettingsDialog::init()
     setundopoint();
 }
 
-void nodesettingsDialog::setundopoint()
+void NodeSettingsDialog::setundopoint()
 {
      our ($uprefix, $ustartnum, $ustartip, $upadding, $unetmask, $ugateway, $uinterface, @uinterfaces);
      $uprefix = nameprefix->text;
@@ -58,7 +59,7 @@ void nodesettingsDialog::setundopoint()
      }
 }
 
-void nodesettingsDialog::restoreundo()
+void NodeSettingsDialog::restoreundo()
 {
     our ($uprefix, $ustartnum, $ustartip, $upadding, $unetmask, $ugateway, $uinterface, @uinterfaces);
     nameprefix->setText($uprefix);

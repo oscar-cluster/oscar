@@ -1,6 +1,6 @@
 <!DOCTYPE UI><UI version="3.1" stdsetdef="1">
 <class>NodeMgmtDialog</class>
-<widget class="QDialog">
+<widget class="QMainWindow">
     <property name="name">
         <cstring>NodeMgmtDialog</cstring>
     </property>
@@ -8,14 +8,14 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>650</width>
+            <width>631</width>
             <height>704</height>
         </rect>
     </property>
     <property name="minimumSize">
         <size>
-            <width>650</width>
-            <height>350</height>
+            <width>576</width>
+            <height>556</height>
         </size>
     </property>
     <property name="maximumSize">
@@ -34,9 +34,6 @@
         <string>Manage Nodes</string>
         <comment>Use this window to manage node information</comment>
     </property>
-    <property name="sizeGripEnabled">
-        <bool>false</bool>
-    </property>
     <grid>
         <property name="name">
             <cstring>unnamed</cstring>
@@ -45,11 +42,154 @@
             <number>2</number>
         </property>
         <property name="spacing">
-            <number>0</number>
+            <number>1</number>
         </property>
+        <widget class="QGroupBox" row="1" column="0">
+            <property name="name">
+                <cstring>advancedBox</cstring>
+            </property>
+            <property name="enabled">
+                <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>1</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>190</width>
+                    <height>120</height>
+                </size>
+            </property>
+            <property name="maximumSize">
+                <size>
+                    <width>225</width>
+                    <height>150</height>
+                </size>
+            </property>
+            <property name="title">
+                <string>Advanced</string>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>11</number>
+                </property>
+                <property name="spacing">
+                    <number>0</number>
+                </property>
+                <widget class="QPushButton" row="0" column="0">
+                    <property name="name">
+                        <cstring>exportmacs</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                        <size>
+                            <width>150</width>
+                            <height>30</height>
+                        </size>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>175</width>
+                            <height>45</height>
+                        </size>
+                    </property>
+                    <property name="font">
+                        <font>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Export MAC Addresses...</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox" row="1" column="0">
+                    <property name="name">
+                        <cstring>multicast</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                        <size>
+                            <width>150</width>
+                            <height>30</height>
+                        </size>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>175</width>
+                            <height>45</height>
+                        </size>
+                    </property>
+                    <property name="font">
+                        <font>
+                            <family>Helvetica</family>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>Enable Multicast Support</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton" row="2" column="0">
+                    <property name="name">
+                        <cstring>macfiltering</cstring>
+                    </property>
+                    <property name="enabled">
+                        <bool>false</bool>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>1</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                        <size>
+                            <width>150</width>
+                            <height>30</height>
+                        </size>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>175</width>
+                            <height>45</height>
+                        </size>
+                    </property>
+                    <property name="font">
+                        <font>
+                            <family>Helvetica</family>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>Filter MAC Addresses...</string>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
         <widget class="QLayoutWidget" row="0" column="0">
             <property name="name">
-                <cstring>layout50</cstring>
+                <cstring>layout56</cstring>
             </property>
             <vbox>
                 <property name="name">
@@ -57,17 +197,11 @@
                 </property>
                 <widget class="QLayoutWidget">
                     <property name="name">
-                        <cstring>layout40</cstring>
+                        <cstring>layout55</cstring>
                     </property>
                     <hbox>
                         <property name="name">
                             <cstring>unnamed</cstring>
-                        </property>
-                        <property name="margin">
-                            <number>0</number>
-                        </property>
-                        <property name="spacing">
-                            <number>0</number>
                         </property>
                         <widget class="QLayoutWidget">
                             <property name="name">
@@ -189,21 +323,15 @@
                         </widget>
                         <widget class="QLayoutWidget">
                             <property name="name">
-                                <cstring>layout39</cstring>
+                                <cstring>layout54</cstring>
                             </property>
                             <vbox>
                                 <property name="name">
                                     <cstring>unnamed</cstring>
                                 </property>
-                                <property name="margin">
-                                    <number>0</number>
-                                </property>
-                                <property name="spacing">
-                                    <number>0</number>
-                                </property>
                                 <widget class="QLayoutWidget">
                                     <property name="name">
-                                        <cstring>layout37</cstring>
+                                        <cstring>layout53</cstring>
                                     </property>
                                     <hbox>
                                         <property name="name">
@@ -213,11 +341,11 @@
                                             <number>0</number>
                                         </property>
                                         <property name="spacing">
-                                            <number>0</number>
+                                            <number>2</number>
                                         </property>
                                         <widget class="QLayoutWidget">
                                             <property name="name">
-                                                <cstring>layout36</cstring>
+                                                <cstring>layout52</cstring>
                                             </property>
                                             <vbox>
                                                 <property name="name">
@@ -227,30 +355,13 @@
                                                     <number>0</number>
                                                 </property>
                                                 <property name="spacing">
-                                                    <number>0</number>
+                                                    <number>1</number>
                                                 </property>
-                                                <spacer>
-                                                    <property name="name">
-                                                        <cstring>spacer4</cstring>
-                                                    </property>
-                                                    <property name="orientation">
-                                                        <enum>Vertical</enum>
-                                                    </property>
-                                                    <property name="sizeType">
-                                                        <enum>Preferred</enum>
-                                                    </property>
-                                                    <property name="sizeHint">
-                                                        <size>
-                                                            <width>16</width>
-                                                            <height>30</height>
-                                                        </size>
-                                                    </property>
-                                                </spacer>
                                                 <widget class="QLayoutWidget">
                                                     <property name="name">
-                                                        <cstring>layout35</cstring>
+                                                        <cstring>layout36</cstring>
                                                     </property>
-                                                    <hbox>
+                                                    <vbox>
                                                         <property name="name">
                                                             <cstring>unnamed</cstring>
                                                         </property>
@@ -260,135 +371,28 @@
                                                         <property name="spacing">
                                                             <number>0</number>
                                                         </property>
+                                                        <spacer>
+                                                            <property name="name">
+                                                                <cstring>spacer4</cstring>
+                                                            </property>
+                                                            <property name="orientation">
+                                                                <enum>Vertical</enum>
+                                                            </property>
+                                                            <property name="sizeType">
+                                                                <enum>Preferred</enum>
+                                                            </property>
+                                                            <property name="sizeHint">
+                                                                <size>
+                                                                    <width>16</width>
+                                                                    <height>30</height>
+                                                                </size>
+                                                            </property>
+                                                        </spacer>
                                                         <widget class="QLayoutWidget">
                                                             <property name="name">
-                                                                <cstring>layout18</cstring>
+                                                                <cstring>layout35</cstring>
                                                             </property>
-                                                            <vbox>
-                                                                <property name="name">
-                                                                    <cstring>unnamed</cstring>
-                                                                </property>
-                                                                <property name="margin">
-                                                                    <number>2</number>
-                                                                </property>
-                                                                <property name="spacing">
-                                                                    <number>1</number>
-                                                                </property>
-                                                                <widget class="QPushButton">
-                                                                    <property name="name">
-                                                                        <cstring>assignmac</cstring>
-                                                                    </property>
-                                                                    <property name="sizePolicy">
-                                                                        <sizepolicy>
-                                                                            <hsizetype>1</hsizetype>
-                                                                            <vsizetype>1</vsizetype>
-                                                                            <horstretch>0</horstretch>
-                                                                            <verstretch>0</verstretch>
-                                                                        </sizepolicy>
-                                                                    </property>
-                                                                    <property name="minimumSize">
-                                                                        <size>
-                                                                            <width>30</width>
-                                                                            <height>30</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="maximumSize">
-                                                                        <size>
-                                                                            <width>30</width>
-                                                                            <height>32767</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="font">
-                                                                        <font>
-                                                                            <family>Helvetica</family>
-                                                                        </font>
-                                                                    </property>
-                                                                    <property name="text">
-                                                                        <string>&lt;</string>
-                                                                    </property>
-                                                                    <property name="toolTip" stdset="0">
-                                                                        <string>Assign MAC to Node</string>
-                                                                    </property>
-                                                                </widget>
-                                                                <widget class="QPushButton">
-                                                                    <property name="name">
-                                                                        <cstring>assignallmacs</cstring>
-                                                                    </property>
-                                                                    <property name="sizePolicy">
-                                                                        <sizepolicy>
-                                                                            <hsizetype>1</hsizetype>
-                                                                            <vsizetype>1</vsizetype>
-                                                                            <horstretch>0</horstretch>
-                                                                            <verstretch>0</verstretch>
-                                                                        </sizepolicy>
-                                                                    </property>
-                                                                    <property name="minimumSize">
-                                                                        <size>
-                                                                            <width>30</width>
-                                                                            <height>30</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="maximumSize">
-                                                                        <size>
-                                                                            <width>30</width>
-                                                                            <height>32767</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="font">
-                                                                        <font>
-                                                                            <family>Helvetica</family>
-                                                                        </font>
-                                                                    </property>
-                                                                    <property name="text">
-                                                                        <string>&lt;&lt;</string>
-                                                                    </property>
-                                                                    <property name="toolTip" stdset="0">
-                                                                        <string>Assign All MACs</string>
-                                                                    </property>
-                                                                </widget>
-                                                                <widget class="QPushButton">
-                                                                    <property name="name">
-                                                                        <cstring>unassignmac</cstring>
-                                                                    </property>
-                                                                    <property name="sizePolicy">
-                                                                        <sizepolicy>
-                                                                            <hsizetype>1</hsizetype>
-                                                                            <vsizetype>1</vsizetype>
-                                                                            <horstretch>0</horstretch>
-                                                                            <verstretch>0</verstretch>
-                                                                        </sizepolicy>
-                                                                    </property>
-                                                                    <property name="minimumSize">
-                                                                        <size>
-                                                                            <width>30</width>
-                                                                            <height>30</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="maximumSize">
-                                                                        <size>
-                                                                            <width>30</width>
-                                                                            <height>32767</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="font">
-                                                                        <font>
-                                                                            <family>Helvetica</family>
-                                                                        </font>
-                                                                    </property>
-                                                                    <property name="text">
-                                                                        <string>&gt;</string>
-                                                                    </property>
-                                                                    <property name="toolTip" stdset="0">
-                                                                        <string>Unassign MAC from Node</string>
-                                                                    </property>
-                                                                </widget>
-                                                            </vbox>
-                                                        </widget>
-                                                        <widget class="QLayoutWidget">
-                                                            <property name="name">
-                                                                <cstring>layout34</cstring>
-                                                            </property>
-                                                            <vbox>
+                                                            <hbox>
                                                                 <property name="name">
                                                                     <cstring>unnamed</cstring>
                                                                 </property>
@@ -398,77 +402,236 @@
                                                                 <property name="spacing">
                                                                     <number>0</number>
                                                                 </property>
-                                                                <widget class="QLabel">
+                                                                <widget class="QLayoutWidget">
                                                                     <property name="name">
-                                                                        <cstring>textLabel8</cstring>
+                                                                        <cstring>layout18</cstring>
                                                                     </property>
-                                                                    <property name="sizePolicy">
-                                                                        <sizepolicy>
-                                                                            <hsizetype>3</hsizetype>
-                                                                            <vsizetype>1</vsizetype>
-                                                                            <horstretch>2</horstretch>
-                                                                            <verstretch>1</verstretch>
-                                                                        </sizepolicy>
-                                                                    </property>
-                                                                    <property name="minimumSize">
-                                                                        <size>
-                                                                            <width>60</width>
-                                                                            <height>30</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="maximumSize">
-                                                                        <size>
-                                                                            <width>130</width>
-                                                                            <height>32767</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="font">
-                                                                        <font>
-                                                                        </font>
-                                                                    </property>
-                                                                    <property name="text">
-                                                                        <string>Unassigned MAC Addresses</string>
-                                                                    </property>
-                                                                    <property name="alignment">
-                                                                        <set>WordBreak|AlignCenter</set>
-                                                                    </property>
-                                                                    <property name="buddy" stdset="0">
-                                                                        <cstring>othermacs</cstring>
-                                                                    </property>
+                                                                    <vbox>
+                                                                        <property name="name">
+                                                                            <cstring>unnamed</cstring>
+                                                                        </property>
+                                                                        <property name="margin">
+                                                                            <number>0</number>
+                                                                        </property>
+                                                                        <property name="spacing">
+                                                                            <number>1</number>
+                                                                        </property>
+                                                                        <widget class="QPushButton">
+                                                                            <property name="name">
+                                                                                <cstring>assignmac</cstring>
+                                                                            </property>
+                                                                            <property name="sizePolicy">
+                                                                                <sizepolicy>
+                                                                                    <hsizetype>1</hsizetype>
+                                                                                    <vsizetype>1</vsizetype>
+                                                                                    <horstretch>0</horstretch>
+                                                                                    <verstretch>0</verstretch>
+                                                                                </sizepolicy>
+                                                                            </property>
+                                                                            <property name="minimumSize">
+                                                                                <size>
+                                                                                    <width>30</width>
+                                                                                    <height>30</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="maximumSize">
+                                                                                <size>
+                                                                                    <width>30</width>
+                                                                                    <height>32767</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="font">
+                                                                                <font>
+                                                                                    <family>Helvetica</family>
+                                                                                </font>
+                                                                            </property>
+                                                                            <property name="text">
+                                                                                <string>&lt;</string>
+                                                                            </property>
+                                                                            <property name="toolTip" stdset="0">
+                                                                                <string>Assign MAC to Node</string>
+                                                                            </property>
+                                                                        </widget>
+                                                                        <widget class="QPushButton">
+                                                                            <property name="name">
+                                                                                <cstring>assignallmacs</cstring>
+                                                                            </property>
+                                                                            <property name="sizePolicy">
+                                                                                <sizepolicy>
+                                                                                    <hsizetype>1</hsizetype>
+                                                                                    <vsizetype>1</vsizetype>
+                                                                                    <horstretch>0</horstretch>
+                                                                                    <verstretch>0</verstretch>
+                                                                                </sizepolicy>
+                                                                            </property>
+                                                                            <property name="minimumSize">
+                                                                                <size>
+                                                                                    <width>30</width>
+                                                                                    <height>30</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="maximumSize">
+                                                                                <size>
+                                                                                    <width>30</width>
+                                                                                    <height>32767</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="font">
+                                                                                <font>
+                                                                                    <family>Helvetica</family>
+                                                                                </font>
+                                                                            </property>
+                                                                            <property name="text">
+                                                                                <string>&lt;&lt;</string>
+                                                                            </property>
+                                                                            <property name="toolTip" stdset="0">
+                                                                                <string>Assign All MACs</string>
+                                                                            </property>
+                                                                        </widget>
+                                                                        <widget class="QPushButton">
+                                                                            <property name="name">
+                                                                                <cstring>unassignmac</cstring>
+                                                                            </property>
+                                                                            <property name="sizePolicy">
+                                                                                <sizepolicy>
+                                                                                    <hsizetype>1</hsizetype>
+                                                                                    <vsizetype>1</vsizetype>
+                                                                                    <horstretch>0</horstretch>
+                                                                                    <verstretch>0</verstretch>
+                                                                                </sizepolicy>
+                                                                            </property>
+                                                                            <property name="minimumSize">
+                                                                                <size>
+                                                                                    <width>30</width>
+                                                                                    <height>30</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="maximumSize">
+                                                                                <size>
+                                                                                    <width>30</width>
+                                                                                    <height>32767</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="font">
+                                                                                <font>
+                                                                                    <family>Helvetica</family>
+                                                                                </font>
+                                                                            </property>
+                                                                            <property name="text">
+                                                                                <string>&gt;</string>
+                                                                            </property>
+                                                                            <property name="toolTip" stdset="0">
+                                                                                <string>Unassign MAC from Node</string>
+                                                                            </property>
+                                                                        </widget>
+                                                                    </vbox>
                                                                 </widget>
-                                                                <widget class="QListBox">
+                                                                <widget class="QLayoutWidget">
                                                                     <property name="name">
-                                                                        <cstring>othermacs</cstring>
+                                                                        <cstring>layout34</cstring>
                                                                     </property>
-                                                                    <property name="sizePolicy">
-                                                                        <sizepolicy>
-                                                                            <hsizetype>3</hsizetype>
-                                                                            <vsizetype>7</vsizetype>
-                                                                            <horstretch>2</horstretch>
-                                                                            <verstretch>3</verstretch>
-                                                                        </sizepolicy>
-                                                                    </property>
-                                                                    <property name="minimumSize">
-                                                                        <size>
-                                                                            <width>110</width>
-                                                                            <height>0</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="maximumSize">
-                                                                        <size>
-                                                                            <width>120</width>
-                                                                            <height>32767</height>
-                                                                        </size>
-                                                                    </property>
-                                                                    <property name="font">
-                                                                        <font>
-                                                                            <family>Helvetica</family>
-                                                                        </font>
-                                                                    </property>
+                                                                    <vbox>
+                                                                        <property name="name">
+                                                                            <cstring>unnamed</cstring>
+                                                                        </property>
+                                                                        <property name="margin">
+                                                                            <number>0</number>
+                                                                        </property>
+                                                                        <property name="spacing">
+                                                                            <number>0</number>
+                                                                        </property>
+                                                                        <widget class="QLabel">
+                                                                            <property name="name">
+                                                                                <cstring>textLabel8</cstring>
+                                                                            </property>
+                                                                            <property name="sizePolicy">
+                                                                                <sizepolicy>
+                                                                                    <hsizetype>3</hsizetype>
+                                                                                    <vsizetype>1</vsizetype>
+                                                                                    <horstretch>2</horstretch>
+                                                                                    <verstretch>1</verstretch>
+                                                                                </sizepolicy>
+                                                                            </property>
+                                                                            <property name="minimumSize">
+                                                                                <size>
+                                                                                    <width>60</width>
+                                                                                    <height>30</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="maximumSize">
+                                                                                <size>
+                                                                                    <width>130</width>
+                                                                                    <height>32767</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="font">
+                                                                                <font>
+                                                                                </font>
+                                                                            </property>
+                                                                            <property name="text">
+                                                                                <string>Unassigned MAC Addresses</string>
+                                                                            </property>
+                                                                            <property name="alignment">
+                                                                                <set>WordBreak|AlignCenter</set>
+                                                                            </property>
+                                                                            <property name="buddy" stdset="0">
+                                                                                <cstring>othermacs</cstring>
+                                                                            </property>
+                                                                        </widget>
+                                                                        <widget class="QListBox">
+                                                                            <property name="name">
+                                                                                <cstring>othermacs</cstring>
+                                                                            </property>
+                                                                            <property name="sizePolicy">
+                                                                                <sizepolicy>
+                                                                                    <hsizetype>3</hsizetype>
+                                                                                    <vsizetype>7</vsizetype>
+                                                                                    <horstretch>2</horstretch>
+                                                                                    <verstretch>3</verstretch>
+                                                                                </sizepolicy>
+                                                                            </property>
+                                                                            <property name="minimumSize">
+                                                                                <size>
+                                                                                    <width>110</width>
+                                                                                    <height>0</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="maximumSize">
+                                                                                <size>
+                                                                                    <width>120</width>
+                                                                                    <height>32767</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="font">
+                                                                                <font>
+                                                                                    <family>Helvetica</family>
+                                                                                </font>
+                                                                            </property>
+                                                                        </widget>
+                                                                    </vbox>
                                                                 </widget>
-                                                            </vbox>
+                                                            </hbox>
                                                         </widget>
-                                                    </hbox>
+                                                    </vbox>
+                                                </widget>
+                                                <widget class="QPushButton">
+                                                    <property name="name">
+                                                        <cstring>clearmacs</cstring>
+                                                    </property>
+                                                    <property name="maximumSize">
+                                                        <size>
+                                                            <width>150</width>
+                                                            <height>32767</height>
+                                                        </size>
+                                                    </property>
+                                                    <property name="font">
+                                                        <font>
+                                                            <family>Helvetica</family>
+                                                        </font>
+                                                    </property>
+                                                    <property name="text">
+                                                        <string>Clear Unassigned MACs</string>
+                                                    </property>
                                                 </widget>
                                             </vbox>
                                         </widget>
@@ -479,12 +642,6 @@
                                             <vbox>
                                                 <property name="name">
                                                     <cstring>unnamed</cstring>
-                                                </property>
-                                                <property name="margin">
-                                                    <number>0</number>
-                                                </property>
-                                                <property name="spacing">
-                                                    <number>0</number>
                                                 </property>
                                                 <widget class="QButtonGroup">
                                                     <property name="name">
@@ -524,10 +681,10 @@
                                                             <cstring>unnamed</cstring>
                                                         </property>
                                                         <property name="margin">
-                                                            <number>13</number>
+                                                            <number>8</number>
                                                         </property>
                                                         <property name="spacing">
-                                                            <number>1</number>
+                                                            <number>0</number>
                                                         </property>
                                                         <widget class="QRadioButton" row="2" column="0">
                                                             <property name="name">
@@ -600,7 +757,7 @@
                                                                 <cstring>unnamed</cstring>
                                                             </property>
                                                             <property name="margin">
-                                                                <number>3</number>
+                                                                <number>0</number>
                                                             </property>
                                                             <property name="spacing">
                                                                 <number>0</number>
@@ -612,9 +769,6 @@
                                                                 <vbox>
                                                                     <property name="name">
                                                                         <cstring>unnamed</cstring>
-                                                                    </property>
-                                                                    <property name="margin">
-                                                                        <number>0</number>
                                                                     </property>
                                                                     <property name="spacing">
                                                                         <number>1</number>
@@ -782,10 +936,10 @@
                                                                                         <cstring>unnamed</cstring>
                                                                                     </property>
                                                                                     <property name="margin">
-                                                                                        <number>1</number>
+                                                                                        <number>0</number>
                                                                                     </property>
                                                                                     <property name="spacing">
-                                                                                        <number>1</number>
+                                                                                        <number>0</number>
                                                                                     </property>
                                                                                     <widget class="QLabel">
                                                                                         <property name="name">
@@ -899,7 +1053,7 @@
                                                                 <cstring>unnamed</cstring>
                                                             </property>
                                                             <property name="margin">
-                                                                <number>3</number>
+                                                                <number>0</number>
                                                             </property>
                                                             <property name="spacing">
                                                                 <number>0</number>
@@ -1035,7 +1189,7 @@
                                                                 <cstring>unnamed</cstring>
                                                             </property>
                                                             <property name="margin">
-                                                                <number>3</number>
+                                                                <number>0</number>
                                                             </property>
                                                             <property name="spacing">
                                                                 <number>0</number>
@@ -1154,25 +1308,6 @@
                                             </vbox>
                                         </widget>
                                     </hbox>
-                                </widget>
-                                <widget class="QPushButton">
-                                    <property name="name">
-                                        <cstring>clearmacs</cstring>
-                                    </property>
-                                    <property name="maximumSize">
-                                        <size>
-                                            <width>150</width>
-                                            <height>32767</height>
-                                        </size>
-                                    </property>
-                                    <property name="font">
-                                        <font>
-                                            <family>Helvetica</family>
-                                        </font>
-                                    </property>
-                                    <property name="text">
-                                        <string>Clear Unassigned MACs</string>
-                                    </property>
                                 </widget>
                                 <widget class="QButtonGroup">
                                     <property name="name">
@@ -1310,33 +1445,6 @@
                                             </vbox>
                                         </widget>
                                     </grid>
-                                </widget>
-                                <widget class="QPushButton">
-                                    <property name="name">
-                                        <cstring>closeDialog</cstring>
-                                    </property>
-                                    <property name="sizePolicy">
-                                        <sizepolicy>
-                                            <hsizetype>7</hsizetype>
-                                            <vsizetype>0</vsizetype>
-                                            <horstretch>2</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>50</width>
-                                            <height>0</height>
-                                        </size>
-                                    </property>
-                                    <property name="font">
-                                        <font>
-                                            <family>Helvetica</family>
-                                        </font>
-                                    </property>
-                                    <property name="text">
-                                        <string>Close</string>
-                                    </property>
                                 </widget>
                             </vbox>
                         </widget>
@@ -1578,153 +1686,107 @@
                         </widget>
                     </hbox>
                 </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout51</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QPushButton">
+                            <property name="name">
+                                <cstring>backButton</cstring>
+                            </property>
+                            <property name="enabled">
+                                <bool>true</bool>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>1</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>1</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="font">
+                                <font>
+                                </font>
+                            </property>
+                            <property name="text">
+                                <string>&amp;Back</string>
+                            </property>
+                            <property name="iconSet">
+                                <iconset></iconset>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>Go to the previous step of the installer</string>
+                            </property>
+                        </widget>
+                        <widget class="QPushButton">
+                            <property name="name">
+                                <cstring>closeDialog</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>1</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>2</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>50</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="font">
+                                <font>
+                                    <family>Helvetica</family>
+                                </font>
+                            </property>
+                            <property name="text">
+                                <string>&amp;Close</string>
+                            </property>
+                        </widget>
+                        <widget class="QPushButton">
+                            <property name="name">
+                                <cstring>nextButton</cstring>
+                            </property>
+                            <property name="enabled">
+                                <bool>true</bool>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>1</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>1</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="font">
+                                <font>
+                                </font>
+                            </property>
+                            <property name="text">
+                                <string>&amp;Next</string>
+                            </property>
+                            <property name="iconSet">
+                                <iconset></iconset>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>Go to the next step of the installer</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
             </vbox>
-        </widget>
-        <widget class="QGroupBox" row="1" column="0">
-            <property name="name">
-                <cstring>advancedBox</cstring>
-            </property>
-            <property name="enabled">
-                <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>1</hsizetype>
-                    <vsizetype>1</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="minimumSize">
-                <size>
-                    <width>190</width>
-                    <height>120</height>
-                </size>
-            </property>
-            <property name="maximumSize">
-                <size>
-                    <width>225</width>
-                    <height>150</height>
-                </size>
-            </property>
-            <property name="title">
-                <string>Advanced</string>
-            </property>
-            <grid>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <property name="margin">
-                    <number>11</number>
-                </property>
-                <property name="spacing">
-                    <number>0</number>
-                </property>
-                <widget class="QPushButton" row="0" column="0">
-                    <property name="name">
-                        <cstring>exportmacs</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>1</hsizetype>
-                            <vsizetype>0</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>150</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>175</width>
-                            <height>45</height>
-                        </size>
-                    </property>
-                    <property name="font">
-                        <font>
-                        </font>
-                    </property>
-                    <property name="text">
-                        <string>&amp;Export MAC Addresses...</string>
-                    </property>
-                </widget>
-                <widget class="QCheckBox" row="1" column="0">
-                    <property name="name">
-                        <cstring>multicast</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>1</hsizetype>
-                            <vsizetype>0</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>150</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>175</width>
-                            <height>45</height>
-                        </size>
-                    </property>
-                    <property name="font">
-                        <font>
-                            <family>Helvetica</family>
-                        </font>
-                    </property>
-                    <property name="text">
-                        <string>Enable Multicast Support</string>
-                    </property>
-                </widget>
-                <widget class="QPushButton" row="2" column="0">
-                    <property name="name">
-                        <cstring>macfiltering</cstring>
-                    </property>
-                    <property name="enabled">
-                        <bool>false</bool>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>1</hsizetype>
-                            <vsizetype>1</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>150</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>175</width>
-                            <height>45</height>
-                        </size>
-                    </property>
-                    <property name="font">
-                        <font>
-                            <family>Helvetica</family>
-                        </font>
-                    </property>
-                    <property name="text">
-                        <string>Filter MAC Addresses...</string>
-                    </property>
-                </widget>
-            </grid>
         </widget>
     </grid>
 </widget>
+<toolbars>
+</toolbars>
 <customwidgets>
     <customwidget>
         <class>NodeMgmtTable</class>
