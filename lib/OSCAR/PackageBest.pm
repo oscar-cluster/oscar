@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.14 2002/08/31 17:29:24 bligneri Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.15 2003/05/15 21:23:52 tfleury Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -38,7 +38,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files find_best);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.15 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
@@ -231,6 +231,126 @@ sub find_best {
         return shift @best;
 }
 
+#########################################################################
+#  Subroutine name : compareversion                                     #
+#  Parameters : Two version strings to compare                          #
+#  Returns    : +1 if the first version string is higher,               #
+#                0 if the two version strings are equal,                #
+#               -1 if the second version string is higher               #
+#  Written by : Terry Fleury (tfleury@ncsa.uiuc.edu)                    #
+#  This subroutine is used for comparing two version strings that you   #
+#  might find in an rpm filename.  It is a recursive function.  It      #
+#  strips off the leading digits/letters and compares until we find     #
+#  a difference or until the strings are empty.  Note that this         #
+#  subroutine is written so that you can use it as the sorting function #
+#  for 'sort'.                                                          #
+#########################################################################
+sub compareversion ($$) # ($a,$b) -> +1|0|-1
+{ 
+  my($a,$b) = @_;
+
+  my $retval = 0;  # The value to be returned
+
+  # Break $a and $b into two parts - split by a period, dash, or comma.
+  # The first parts are $acmp and $bcmp.  These are the substrings
+  # that we are concerned about for this pass through.
+  my($acmp,$aremain) = split /[\.\-\,]/, $a, 2;
+  my($bcmp,$bremain) = split /[\.\-\,]/, $b, 2;
+
+  if ((length $acmp == 0) && (length $bcmp == 0))
+    {
+      # If the parts of $a and $b before a period (or dash/comma) are
+      # both empty, then check the remaining parts.  If either one of
+      # the remains is not empty, then recurse.  Otherwise, everything
+      # was empty and thus the versions are the same.
+      if ((length $aremain > 0) || (length $bremain > 0))
+        {
+          return &compareversion($aremain,$bremain);
+        }
+      else
+        {
+          $retval = 0;
+        }
+    }
+  elsif (length $acmp == 0)
+    { # $bcmp is non-empty which means that $b is higher
+      $retval = -1;
+    }
+  elsif (length $bcmp == 0)
+    { # $acmp is non-empty which means that $a is higher
+      $retval = +1;
+    }
+  else # Both $acmp and $bcmp are non-empty
+    {
+      my($a1,$atype,$arest);
+      my($b1,$btype,$brest);
+
+      # For $acmp, figure out if the beginning of the string is a bunch of
+      # numbers or not.  The beginning of the string is stored in $a1.  The
+      # remainder of the string (if any) is stored in $arest.  The type of
+      # $a1 is stored in $atype is either 'digit' or 'other'.
+      if ($acmp =~ /^(\d+)(.*)/)
+        {
+          $a1 = $1;
+          $arest = $2;
+          $atype = 'digit';
+        }
+      else
+        {
+          $acmp =~ /^([^\d]+)(.*)/;
+          $a1 = $1;
+          $arest = $2;
+          $atype = 'other';
+        }
+
+      # Do something similar for $bcmp.
+      if ($bcmp =~ /^(\d+)(.*)/)
+        {
+          $b1 = $1;
+          $brest = $2;
+          $btype = 'digit';
+        }
+      else
+        {
+          $bcmp =~ /^([^\d]+)(.*)/;
+          $b1 = $1;
+          $brest = $2;
+          $btype = 'other';
+        }
+
+      # If both $atype and $btype are 'digit', then do a numerical
+      # comparison on $a1 and $b1.  Otherwise, do a string comparison.
+      if (($atype eq 'digit') && ($btype eq 'digit'))
+        {
+          if ($a1 == $b1)
+            { # Must recurse on the rest of the string.  The new string is
+              # built up by concatenating $arest and $aremain with a period
+              # inbetween.  Note that this really has nothing to do with the
+              # original string, but the newly inserted period gets removed
+              # by the 'split' command.
+              return &compareversion($arest.'.'.$aremain,$brest.'.'.$bremain);
+            }
+          else
+            { # $a1 and $b1 are different, so just use numerical comparison
+              $retval = ($a1 <=> $b1);
+            }
+        }
+      else
+        { # At least one of $a1,$b1 is not a digit, so do a string comparison.
+          if ($a1 eq $b1)
+            { # Must recurse on the rest of the string.
+              return &compareversion($arest.'.'.$aremain,$brest.'.'.$bremain);
+            }
+          else
+            { # $a1 and $b1 are different, so just use string comparison.
+              $retval = ($a1 cmp $b1);
+            }
+        }
+    }
+
+  return $retval;
+}
+
 sub compare_versions {
     # Have to separate the comparison from the main function (find_best) so
     # that more complex operation on the string can be made in particular
@@ -245,26 +365,7 @@ sub compare_versions {
     $new_a =~s/^(.+)(mdk|oscar)$/$1/;
     $new_b =~s/^(.+)(mdk|oscar)$/$1/;
 
-    # Test for non numeric characters
-    my $nonnumeric = 0;
-
-    if (($new_a !~ /^\d+\.*\d*$/) || ($new_b !~ /^\d+\.*\d*$/)) {
-        $nonnumeric=1;
-    }
-
-    if ($nonnumeric) {
-        # String comparison
-        # This is "EVIL" as  rc3 > rc10 with this system !
-        # So signal it to error log
-        my $FH = \*STDERR;
-        my ($package, $filename, $line) = caller;
-            print $FH  " [$package :: Line $line] - non numeric comparison $a/$new_a cmp $b/$new_b\n";
-        return ($new_b cmp $new_a)
-    }
-    else {
-        # Number comparison
-        return ($new_b <=> $new_a)
-    }
+    return compareversion($new_b,$new_a);
 }
 
 sub find_best_arch {
