@@ -11,7 +11,7 @@ userexits have been defined that any oscar package may tie into.  The
 oscar_wizard is launched.  Possible operations here would be
 restarting of services.
 
-- post_imagebuild : This is called right after an image is built and is
+- post_buildimage : This is called right after an image is built and is
 passed the imagename and imagedirectory as the two arguments.  This
 would be required to fix up files in the image after all the rpms were
 installed.  A contributed package could even possibly use this step to

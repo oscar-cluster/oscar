@@ -45,7 +45,7 @@ sub run_postinstalls {
     my ($topdir, $image) = @_;
     my $imagedir = $config->default_imagedir . "/$image";
     foreach my $dir (files_in_dir("$topdir/packages")) {
-        my $postimagescript = "$dir/scripts/post_image";
+        my $postimagescript = "$dir/scripts/post_buildimage";
         if(-x $postimagescript) {
             print "About to run $postimagescript...\n";
             !system("$postimagescript $image $imagedir") or croak("$!");
