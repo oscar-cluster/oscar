@@ -1,7 +1,8 @@
 #!/usr/bin/perl -w
 
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib", "../lib"; 
+use lib "$ENV{OSCAR_HOME}/lib";
+use lib "../lib"; 
 use Carp;
 
 # all the rpms we KNOW we installed
@@ -126,7 +127,18 @@ sub uninstall_rpms {
     if(scalar(@deleteme)) {
         my $rpmcmd = 'rpm -e --allmatches --nodeps ' . (join ' ', @deleteme);
 	print "$rpmcmd\n";
-        !system($rpmcmd) or croak "couldn't uninstall the rpms";
+        if ( system($rpmcmd) ) {
+	    print "couldn't uninstall the rpms, trying again with --noscripts\n";
+	    @deleteme = ();
+	    foreach my $rpm (@rpms) {
+		if(_is_installed($rpm)) {
+		    push @deleteme, $rpm;
+		}
+		my $rpmcmd = 'rpm -e --allmatches --nodeps --noscripts ' . (join ' ', @deleteme);
+		print "$rpmcmd\n";
+		!system($rpmcmd) or croak "couldn't uninstall the rpms";
+	    }
+	}
     }
    return 1;
 }
