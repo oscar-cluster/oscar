@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: xml.tex,v 1.1 2002/10/08 15:13:11 naughtont Exp $
+% $Id: xml.tex,v 1.2 2002/10/08 15:15:34 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -21,56 +21,61 @@ too.  :)}
 <!DOCTYPE oscar_package SYSTEM "oscar_package.dtd">
 
 <package>
-  <name>ganglia</name>
+  <name>hello</name>
 
   <version>
     <major>2</major>
-    <minor>2</minor>
-    <subversion>3</subversion>
+    <minor>1</minor>
+    <subversion>1</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
 
   <class>third-party</class>
   <installable>1</installable>
-  <summary>Ganglia Cluster Toolkit</summary>
-  <license>BSD</license>
-  <group>System Environment/Base</group>
-  <uri>http://ganglia.sourceforge.net/</uri>
-  <packager>Steve Duchene &lt;linux-clusters@mindspring.com&gt;</packager>
-  <description>Ganglia is a scalable, real-time cluster monitoring
-and execution environment with all execution requests and cluster
-statistics expressed in an open well-defined XML format.</description>
+  <summary>Hello World</summary>
+  <license>GNU</license>
+  <group>Utilities</group>
+  <uri>http://www.gnu.org/software/hello/hello.html</uri>
+  <packager>The King &lt;king@gnu.org&gt;</packager>
+  <description>The GNU implementation of this classic program is
+   brought to you by the efforts of several people, including 
+   Mike Haertel, David MacKenzie, Jan Brittenson, Roland McGrath, 
+   Charles Hannum, and The King.
+
+   The basic algorithm is described in: "The C Programming Language", 
+   by B. W. Kernighan and D. M. Ritchie, Prentice-Hall, New Jersey, 1978;
+   the program is an enhancement of the one published in that book.  
+  </description>
 
   <provides>
-    <name>mpi</name>
+    <name>hello</name>
   </provides>
 
   <requires>
     <type>rpm</type>
-    <scope>server</scope>
-    <name>libpng</name>
+    <scope>all</scope>
+    <name>glibc</name>
     <distro_name>Mandrake</distro_name>
   </requires>
 
   <requires>
     <type>rpm</type>
-    <scope>server</scope>
-    <name>libpng</name>
+    <scope>all</scope>
+    <name>glibc</name>
     <distro_name>RedHat</distro_name>
     <distro_version>all</distro_version>
   </requires>
 
   <conflicts>
     <type>rpm</type>
-    <name>anti-ganglia</name>
+    <name>goodbye</name>
   </conflicts>
 
   <download>
-    <uri>http://www.osl.iu.edu/~jsquyres/oscar/ganglia-oscar-1.4.tar.gz</uri>
-    <uri>http://www.lam-mpi.org/~jsquyres/oscar/ganglia-oscar-1.4.tar.gz</uri>
-    <size>6714210</size>
-    <md5sum>298dc011ba93d9c9ed8a70b6e0c69e69</md5sum>
+    <uri>http://ftp.gnu.org/gnu/hello/hello-2.1.1.tar.gz</uri>
+    <size>389363</size>
+    <md5sum>70c9ccf9fac07f762c24f2df2290784d</md5sum>
   </download>
 </package>
  \end{verbatim}
