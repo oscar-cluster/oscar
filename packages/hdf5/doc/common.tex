@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: common.tex,v 1.2 2002/08/31 16:32:10 jsquyres Exp $
+% $Id: common.tex,v 1.3 2002/09/01 15:41:50 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -15,9 +15,17 @@ scientific data format:
 \item supports a user-defined hierarchical grouping structure with
   varied datatypes and attributes to organize large and varied data in
   research, development, and production environments,
-\item runs on parallel computing platforms using MPI I/O,
+
+% JMS: When HDF5 is updated to run in parallel, the following
+% paragraph must be ammended.
+
+\item runs on parallel computing platforms using MPI I/O (note that
+  the compiled version of HDF5 supplied in OSCAR currently only
+  supports serial operation),
+
 \item supports an all-encompassing variety of datatypes, including
   compound and user-defined datatypes,
+
 \item supports very large files (theoretically terabyte and larger,
   though the outer limits have not been tested)
 \end{itemize}
@@ -33,17 +41,12 @@ For further information regarding HDF5, such as lists of current
 users, supporting agencies, and applications that employ the library,
 see \url{http://hdf.ncsa.uiuc.edu/HDF5/}.
 
+% JMS: When HDF5 is updated to run in parallel, the following
+% paragraph must be ammended.
+
 OSCAR installs the HDF5 library at
 \file{/opt/hdf5-oscar-1.4.4-post2/lib/}.  Please note that the HDF5
-library included in OSCAR is presently only available for the MPICH
-implementation of MPI.
+library included in OSCAR is presently only available for serial
+operation.  Parallel operation will be enabled in a future version of
+OSCAR.
 
-\begin{discuss}
-  Is this a true statement -- that HDF5 only [currently] supports
-  MPICH?  I thought that the HDF5 in OSCAR currently is only compiled
-  to run in serial mode...?
-  
-  I'm pretty sure that I (Jeff) added this statement about MPICH after
-  Jeremy wrote the initial docs, so it may not not reflect Jeremy's
-  original intent... (hence, this clarification question)
-\end{discuss}
