@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.4 2001/12/22 01:08:36 jsquyres Exp $
+# $Id: Makefile.am,v 1.5 2002/06/19 06:31:32 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -51,7 +51,8 @@ CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF)
 
 # Some common target names
 
-docs: pdf
+all: ps
+docs: $(MAIN_PS)
 
 ps: $(EPS_FIG_FILES) $(MAIN_PS) 
 pdf: $(PDF_FIG_FILES) $(MAIN_PDF)
