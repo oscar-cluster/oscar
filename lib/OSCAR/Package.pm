@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.47 2003/03/10 19:57:49 ngorsuch Exp $
+#   $Id: Package.pm,v 1.48 2003/04/10 16:55:26 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,11 +34,12 @@ use File::Copy;
 use XML::Simple;
 use Carp;
 
-@EXPORT = qw(list_pkg list_pkg_dirs run_pkg_script run_pkg_user_test
+@EXPORT = qw(list_installable_packages list_installable_package_dirs 
+	     run_pkg_script run_pkg_user_test
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
-             pkg_config_xml list_install_pkg getSelectionHash
+             pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.47 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.48 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -77,54 +78,50 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
 			  );
 
 #
-# list_pkg - this returns a list of installable packages.
+# list_installable_packages - this returns a list of installable packages.
 #
 # You may specify "core", "noncore", or "all" as the first argument to
 # get a list of core, noncore, or all packages (respectively).  If no
 # argument is given, "all" is implied.
 #
 
-sub list_pkg {
+sub list_installable_packages {
     my $type = shift;
-    my @packages_to_return = ();
 
     # If no argument was specified, use "all"
 
     $type = "all" if ((!(defined $type)) || (!$type));
+
+    # make the database command and do the database read
 
     my $command_args;
     if ( $type eq "all" ) {
 	$command_args = "packages_installable";
     } elsif ( $type eq "core" ) {
-	$command_args = "packages_installable class=core";
+	$command_args = "packages_installable packages.class=core";
     } else {
-	$command_args = "packages_installable class!=core";
+	$command_args = "packages_installable packages.class!=core";
     }
-
-    my @error_strings = ();
-    if ( OSCAR::Database::database_execute_command( undef,
-						    $command_args, 
-						    \@packages_to_return,
-						    \@error_strings ) ) {
-	return @packages_to_return;
+    my @packages = ();
+    if ( OSCAR::Database::database_execute_command( $command_args, 
+						    \@packages ) ) {
+	return @packages;
     } else {
 	warn "Cannot read installable packages list from the ODA database.";
-	foreach my $error_string ( @error_strings ) {
-	    warn $error_string;
-	}
 	return undef;
     }
 }
 
 #
-# list_pkg_dirs - this returns a list of packages without the database.
+# list_installable_package_dirs - this returns a list of installable 
+# packages without using the database.
 #
 # You may specify "core", "noncore", or "all" as the first argument to
 # get a list of core, noncore, or all packages (respectively).  If no
 # argument is given, "all" is implied.
 #
 
-sub list_pkg_dirs {
+sub list_installable_package_dirs {
     my $type = shift;
     my @packages_to_return = ();
 
@@ -132,9 +129,9 @@ sub list_pkg_dirs {
 
     $type = "all" if ((!(defined $type)) || (!$type));
 
-    # If we haven't read in all the package config.xml files, do so.
+    # read in the database packages table configuration
     
-    read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
+    read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
     
     # Now do the work
     
@@ -458,7 +455,7 @@ sub server_version_goodenough {
 sub pkg_config_xml {
     # If we haven't read in all the package config.xml files, do so.
 
-    read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
+    read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
 
     # Return the reference to it
 
@@ -485,10 +482,13 @@ sub make_empty_xml {
 
 #
 # Returns a hash of *all* packages' config.xml files (or empty hashes
-# for the ones that don't have config.xml files).
+# for the ones that don't have config.xml files), reading them directly
+# from each package's config.xml files. This should only be used if the
+# oda database has not been initialized. Once the oda database has been
+# initialized, the function read_all_pkg_config should be used instead.
 #
 
-sub read_all_pkg_config_xml {
+sub read_all_pkg_config_xml_files {
     foreach my $pkg_dir (@PKG_SOURCE_LOCATIONS) {
 	next if (! -d $pkg_dir);
 
@@ -529,50 +529,39 @@ sub read_all_pkg_config_xml {
 }
 
 #########################################################################
-#  Subroutine: list_install_pkg                                         #
+#  Subroutine: list_selected_packages                                   #
 #  Parameters: The "type" of packages - "core", "noncore", or "all"     #
 #  Returns   : A list of packages selected for installation.            #
-#  This subroutine reads in a hidden XML file generated when the user   #
-#  selects some OSCAR packages for installation.  It then returns a     #
-#  list of the OSCAR packages selected for installation.  If you do     #
-#  not specify the "type" of packages, "all" is assumed.  Use this      #
-#  subroutine in place of list_pkg when you want to get a list of       #
-#  OSCAR packages that the user has selected to be installed.           #
+#  If you do not specify the "type" of packages, "all" is assumed.      #
 #                                                                       #
-#  Usage: @packages_to_install = list_install_pkg();                    #
+#  Usage: @packages_that_are_selected = list_selected_packages();       #
 #########################################################################
-sub list_install_pkg # ($type) -> @selectedlist
+sub list_selected_packages # ($type) -> @selectedlist
 {
-  my($type) = @_;
-  $type = "all" if (!$type);
-  my($selhash) = getSelectionHash(); 
-  my(@selected) = ();
-  my($dir) = "";
+    my $type = shift;
 
-  if (scalar (keys %{ $selhash }) < 1)
-    { # No items implies missing .selection.config file.  Call list_pkg().
-      @selected = list_pkg($type);
-    }
-  else
-    { # Transfer the contents of $selhash to a list of packages
-      foreach my $package (keys %{ $selhash })
-        {
-          push(@selected,$package) if 
-            (defined $selhash->{$package}) && ($selhash->{$package}) &&
-              ( ($type eq 'all') ||
-                ( (defined $PACKAGE_CACHE->{$package}{class}) &&
-                  (
-                    (($type eq 'core') && 
-                     ($PACKAGE_CACHE->{$package}{class} eq 'core')) ||
-                    (($type eq 'noncore') &&
-                     ($PACKAGE_CACHE->{$package}{class} ne 'core'))
-                  )
-                )
-              );
-        }
-    }
+    # If no argument was specified, use "all"
 
-  return @selected;
+    $type = "all" if ((!(defined $type)) || (!$type));
+
+    # make the database command and do the database read
+
+    my $command_args;
+    if ( $type eq "all" ) {
+	$command_args = "packages_selected";
+    } elsif ( $type eq "core" ) {
+	$command_args = "packages_selected packages.class=core";
+    } else {
+	$command_args = "packages_selected packages.class!=core";
+    }
+    my @packages = ();
+    if ( OSCAR::Database::database_execute_command( $command_args, 
+						    \@packages ) ) {
+	return @packages;
+    } else {
+	warn "Cannot read selected packages list from the ODA database.";
+	return undef;
+    }
 }
 
 #########################################################################
