@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2002/06/12 04:42:52 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2002/06/18 14:16:54 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -123,7 +123,8 @@ mostlyclean-generic:
 		  $(EPS_FIG_FILES)
 
 # Meta-.tex file to include the doc/user.tex files from the various
-# package directories
+# package directories.  This covers a few more dependencies than it
+# really should, but better safe than sorry...
 
-package-docs.tex: package-docs.tex.in ../../packages/*/doc/user.tex
+package-docs.tex: package-docs.tex.in ../../packages/*/doc/*.tex
 	./build-package-docs
