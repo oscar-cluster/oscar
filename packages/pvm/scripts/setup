@@ -34,30 +34,33 @@ my $oscar_rpm_pool = '/tftpboot/rpm';   # No env var, using name in Package.pm
 # TJN: may want to pair down once I see which RPMS are required where
 my ($name, $ver) = OSCAR::Distro::which_distro_server();
 if ($name eq "redhat") {
-  $source_dir .= "rh";
-  if ($ver eq "8.0") {
-    $source_dir .= "80";
-  } elsif ($ver eq "9") {
-    $source_dir .= "90";
-  } else {
-    $source_dir .= "72";
-  }
+	$source_dir .= "rh";
+	if ($ver eq "8.0") {
+		$source_dir .= "80";
+	} elsif ($ver eq "9") {
+		$source_dir .= "90";
+	} else {
+		$source_dir .= "72";
+	}
 } elsif ($name eq "rhas") {
-  $source_dir  .= "rhas";
-  if ($ver eq "2.1") {
-    $source_dir .= "21";
-  }
-} elsif ($name eq "suse") {
-  $source_dir .= "suse81";
+	$source_dir  .= "rhas";
+	if ($ver eq "2.1") {
+		$source_dir .= "21";
+	}
+} elsif ($name eq "fedora") {
+	$source_dir .= $name;
+} 
+elsif ($name eq "suse") {
+	$source_dir .= "suse81";
 } elsif ($name eq "mandrake") {
-  $source_dir .= "mdk";
-  if ($ver eq "9.0") {
-    $source_dir .= "90";
-  } elsif ($ver eq "9.1") {
-    $source_dir .= "91";
-  } elsif ($ver eq "9.2") {
-     $source_dir .= "92";
-  }
+	$source_dir .= "mdk";
+	if ($ver eq "9.0") {
+		$source_dir .= "90";
+	} elsif ($ver eq "9.1") {
+		$source_dir .= "91";
+	} elsif ($ver eq "9.2") {
+		$source_dir .= "92";
+	}
 }
 
 print "Using $pkg_name RPMs from: $source_dir\n";
