@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.20 2003/01/22 22:27:15 brechin Exp $
+#   $Id: MAC.pm,v 1.21 2003/01/22 23:07:26 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.20 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.21 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -55,7 +55,7 @@ sub mac_window {
     my $parent = shift;
     $step_number = shift;
     my ($vars) = @_;
-
+    $parent->Busy(-recurse => 1);
     # init this only once, as we don't add network cards during this process
     $SERVERMACS = set_servermacs();
 
@@ -104,6 +104,7 @@ sub mac_window {
 					 end_ping(); 
 					 end_collect_mac($label); 
 					 oscar_log_subsection("Step $step_number: Completed successfully"); 
+					 $parent->Unbusy();
 					 $window->destroy;
 				     },
                                     );
