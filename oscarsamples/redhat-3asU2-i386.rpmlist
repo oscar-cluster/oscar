@@ -187,7 +187,6 @@ perl-libwww-perl
 perl-URI
 perl-HTML-Parser
 perl-HTML-Tagset
-libgcc
 libacl
 libf2c
 libattr
