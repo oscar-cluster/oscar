@@ -61,6 +61,34 @@ if ($options->Help){
 	exit 0;
 }
 
+# Mandrake's tftp-server expects the tftpboot directory to be under /var/lib/,
+# but OSCAR's standard location is simply under /.
+# Most code by TJN, with mods by BLI
+if (-e "/etc/mandrake-release") {        
+	my $root_tftp = "/tftpboot";
+        my $var_tftp = "/var/lib/tftpboot";
+
+        croak "Error: $! - $root_tftp\n" if( not -e $root_tftp );
+
+        my $symlinks_exist = eval { symlink("", ""); 1 };
+
+        if( $symlinks_exist && ! $@ ) {
+		if( ( not -l $var_tftp ) && ( -d $var_tftp ) ) {
+			# if $var_tftp is a directory and not a link, remove
+			verbose("Removing directory $var_tftp.");
+			rmdir($var_tftp);
+		}
+                if( not -e $var_tftp ) {
+                        symlink($root_tftp, $var_tftp) or croak "Error: $!\n";
+                        verbose("Created symlink: $var_tftp => $root_tftp\n") if($?
+ == 0);
+                }
+        } else {
+                  carp "Symlinks not supportted on this system! - $@\n";
+        }
+
+}
+
 verbose("Restarting xinetd");
 !system("/etc/init.d/xinetd restart") or croak("Couldn't restart xinetd");
 verbose("Enabling tftp");
