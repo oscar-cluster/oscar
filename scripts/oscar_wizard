@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.31 2002/10/28 22:50:22 tfleury Exp $
+# $Id: oscar_wizard,v 1.32 2002/10/28 23:14:13 mchasal Exp $
 #
 
 use strict;
@@ -281,7 +281,7 @@ sub run_tests {
 
     oscar_log_section("Running step 8 of the OSCAR wizard");
 
-    my $cmd = "cd ../testing && xterm -sl 500 -e ./test_cluster_as_root --wait";
+    my $cmd = "cd ../testing && xterm -sl 500 -e ./test_cluster --wait";
     oscar_log_subsection("Step 8: Running tests: $cmd");
     !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
     oscar_log_subsection("Step 8: Not waiting for completion");
