@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.9 2002/11/05 01:43:38 tfleury Exp $
+# $Id: Selector.pm,v 1.10 2002/11/05 01:49:59 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -47,9 +47,6 @@ use Tk::BrowseEntry;
 use Tk::LabEntry;
 use Tk::Dialog;
 use Tk::DialogBox;
-
-      use Data::Dumper;
-      $Data::Dumper::Indent = 1;
 
 my($top);            # The Toplevel widget for the package selector window
 my($step_number);    # Step number in the OSCAR wizard
