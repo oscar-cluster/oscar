@@ -2,14 +2,14 @@
 
 <oscar>
   <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
+      Copyright (c) 2002 NCSA 
                          All rights reserved.
       
       This file is part of the OSCAR software package.  For license
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.8 2002/12/09 04:21:08 ngorsuch Exp $
+      $Id: config.xml,v 1.9 2002/12/09 04:22:21 ngorsuch Exp $
   -->
   <name>oda</name>
 
