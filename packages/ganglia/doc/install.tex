@@ -1,0 +1,33 @@
+% -*- latex -*-
+%
+%
+
+\subsection{Ganglia}
+\label{app:ganglia}
+
+The following is an overview about Ganglia which is taken from
+the official website at \url{http://www.ganglia.info}:
+
+``Ganglia is a scalable distributed monitoring system for high-performance
+computing systems such as clusters and Grids.  It is based on a
+hierarchical design targeted at federations of clusters.  It
+leverages widely used technologies such as XML for data representation,
+XDR for compact, portable data transport, and RRDtool for data storage
+and visualization.  It uses carefully engineered data structures and
+algorithms to achieve very low per-node overheads and high concurrency.
+The implementation is robust, has been ported to an extensive set of
+operating systems and processor architectures, and is currently in use
+on over 500 clusters around the world.  It has been used to link
+clusters across university campuses and around the world and can scale
+to handle clusters with 2000 nodes.''
+
+Ganglia is an included package in OSCAR and it is highly recommended
+that you select it to be installed as it is a great tool for monitoring
+and visualizing usage of your cluster.
+
+By default, it is assumed that \file{eth0} is the network interface your
+compute nodes use to communicate with the headnode.  If this is not
+the case, then you will need to configure the package prior to
+installation and choose the correct interface.  Other than that,
+minimal configuration is required as the other configurable options
+are mostly to do with the names of the cluster, grid and owner.

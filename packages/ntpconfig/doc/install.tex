@@ -14,69 +14,32 @@ can operate as a client (by connecting to other NTP servers to get the
 current time) and as a server (by providing the current time to other
 NTP clients).
 
-\bigskip
+The ntpconfig package which configures NTP for your OSCAR cluster,
+has been completely re-written since OSCAR 4.1.
 
-OSCAR uses NTP to synchronize:
-\begin{itemize}
-\item the server to an external source of time (if the server is
-  connected to the internet), and
-\item the clients to the OSCAR server (so that the clients do not need
-  to be connected to the internet).
-\end{itemize}
+\subsubsection{Configuring ntpconfig}
 
-For the OSCAR server, NTP is configured to contact several public NTP
-servers for time synchronization.  If none of these external servers
-can be contacted (because the server is not connected to the internet
-for example), it will still be used by the OSCAR clients as a source
-for the current time.  Thus, your OSCAR cluster will be locally
-synchronized even if it is not in-sync with the rest of the world.
+If not configured, the package will set
+up your cluster nodes such that they will use the headnode as the time 
+server and sync time against it.  This mode is useful if you do not 
+have an Internet connection.
 
-For each OSCAR client, NTP is configured to contact only the OSCAR
-server.  If you want to have your clients connect to other public NTP
-servers, you will have to edit the NTP configuration files.
+The package will not overwrite any of your existing configurations for
+NTP, e.g. during the initial OS installation on your
+headnode, you set up NTP to sync time with \file{time.apple.com}, the
+package will not change that and will simply set up your headnode as
+the time server for your cluster nodes.  As a result, your compute
+nodes' time will be synced relative to \file{time.apple.com}'s clock.
 
-\subsubsection{Configuring NTP}
+If you choose to configure the ntpconfig package, you can select a
+NTP server to sync time with (we recommend \file{pool.ntp.org}), and your
+headnode will then synchronize clock with the NTP server you chose and
+any other time servers previously configured manually by modifying the
+\file{/etc/ntp.conf} file.
 
-By default, the OSCAR server is set up to use several public NTP
-servers for its time source, and the OSCAR clients are set up to use
-the OSCAR server for their time sources.  If you want to change the
-servers used for time synchronization, you will need to edit two
-configuration files: \file{/etc/ntp.conf} and
-\file{/etc/ntp/step-tickers}.
-
-For the \file{/etc/ntp.conf} file, place entries of the form ``{\tt
-  server SERVER\_NAME\_OR\_IP}'' at the top of the file, one entry per
-line.  You can have as many {\tt server} lines as you want.  However,
-ALL of the listed servers are consulted for time synchronization, so
-you may want to limit the number of servers to three or less.  Here is
-an example of the first few lines of a typical \file{/etc/ntp.conf}
-file:
-
-\begin{verbatim}
-     # These are some servers for use by the ntpd daemon.
-     server 130.126.24.24
-     server ntp0.cornell.edu
-     server ntp.cmr.gov
-\end{verbatim}
-
-Notice that you may use either FQDNs (fully qualified domain names) or
-IP addresses.  Most NTP servers prefer that you use FQDNs in case they
-change the server IP address, but typically these IP addresses are
-fairly static.
-
-For the \file{/etc/ntp/step-tickers} file, place these NTP servers on
-a single line separated by spaces.  Here is an example of the
-\file{/etc/ntp/step-tickers} file using the same servers:
-
-\begin{verbatim}
-     130.126.24.24 ntp0.cornell.edu ntp.cmr.gov
-\end{verbatim}
-
-The servers used in the \file{/etc/ntp.conf} file and the
-\file{/etc/ntp/step-tickers} file do not have to be the same.  The
-\file{/etc/ntp/step-tickers} file is used to force the clock to be set
-correctly at boot time, while the \file{/etc/ntp.conf} file is used to
-adjust the clock in small increments while the system is running.
+If you have previously configured NTP using the ntpconfig package, 
+and have configured it to use another server, the previous setting
+will be overwritten.
 
 \subsubsection{Enabling/Disabling the NTP Service}
 
@@ -108,5 +71,3 @@ commands:
 
 For more information on NTP, see the (rather lengthy) documentation at
 \url{http://www.ntp.org/}.
-
-
