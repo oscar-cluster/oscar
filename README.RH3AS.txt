@@ -1,52 +1,102 @@
 README for OSCAR 4.0 with Red Hat Enterprise Linux 3 AS
 
-Date: 2004/12/13
+Date:   Fri Feb 18 13:08:44 PST 2005
 
-Author: David Lombard
+Author: David Lombard <david.n.lombard@intel.com>
         Yves Trudeau <yves.trudeau@revolutionlinux.com>
         Fernando Camargos <fernando@revolutionlinux.com>
 
-Note: These instructions are for Red Hat Enterprise Linux 3 (Update 3); see
-Step 2 if you are using the Gold or Update 2 versions.
+Notes:
+
+1) These instructions are for Red Hat Enterprise Linux 3 (Update 3); users
+of the Gold or Update 2 versions will want to pay particular attention to
+Step A2 (x86) or B2 (ia64).
+
+2) If you are building an x86-based cluster, please see steps A1 through A3.
+
+3) If you are building an ia64-based cluster, please see steps B1 through B7.
 
 
------------------------------------
-1) mysql-server (All architectures)
------------------------------------
+-----------------------
+A1) mysql-server on x86
+-----------------------
 
 BEFORE YOU BEGIN: you will need to obtain a mysql-server RPM and put it into
 /tftpboot/rpm.  The easiest way is to get the SRPM and rebuild it,
 
-  rpmbuild --rebuild mysql-3.23.58-1.src.rpm
-  cp /usr/src/redhat/RPMS/ia64/mysql-server-3.23.58-1.ia64.rpm /tftpboot/rpm
+  # rpmbuild --rebuild mysql-3.23.58-1.src.rpm
+  # cp /usr/src/redhat/RPMS/i386/mysql-server-3.23.58-1.i386.rpm /tftpboot/rpm
 
 MySQL v3.23.58-1 is the version that came with Red Hat Enterprise Linux 3,
 Update 3; if you cannot find that particular version, please make sure that
 you copy all the rebuilt MySQL RPMs (including the server RPM).  For example,
 if the version you could find is v3.23.58-2.3:
 
-  rpmbuild --rebuild mysql-3.23.58-2.3.src.rpm
-  cp /usr/src/redhat/RPMS/ia64/mysql*-3.23.58-2.3.ia64.rpm /tftpboot/rpm 
+  # rpmbuild --rebuild mysql-3.23.58-2.3.src.rpm
+  # cp /usr/src/redhat/RPMS/i386/mysql*-3.23.58-2.3.i386.rpm /tftpboot/rpm 
 
-The key here is to keep the MySQL versions consistent.
+The key is to keep the MySQL versions consistent.
 
-
-----------------------------------------------------------------------------
-2) Red Hat Enterprise Linux 3 (Gold or Update 2) rpmlist (All architectures)
-----------------------------------------------------------------------------
+----------------------------------------------------------------
+A2) Red Hat Enterprise Linux 3 (Gold or Update 2) rpmlist on x86
+----------------------------------------------------------------
  
 IN OSCAR WIZARD STEP 4: if you're running an earlier version than Update 3,
 you will need to manually select the correct rpmlist before generating the
-client image.  Select the appropriate file for your architecture
+client image.
 
   /opt/oscar/oscarsample/redhat-3asU2-i386.rpmlist
 or
   /opt/oscar/oscarsample/redhat-3asU2-ia64.rpmlist
 
+----------------------
+A3) tftp-server on x86
+----------------------
 
-------------------------------------
-3) Initrd and elilo.conf (IA64 only)
-------------------------------------
+AFTER OSCAR WIZARD STEP 6, BEFORE YOU BOOT THE CLIENT NODES: you will need to
+replace the TFTP server.  If your distrubition doesn't come with a tftp-server
+package you should download and install the appropriate file from a repository.
+
+Once you have downloaded and copied it to a known directory you must install
+the package and turn it on:
+
+  # rpm -i tftp-server-0.32-4.i386.rpm  
+  # /sbin/chkconfig --level 345 tftp on 
+
+
+------------------------
+B1) mysql-server on ia64
+------------------------
+
+BEFORE YOU BEGIN: you will need to obtain a mysql-server RPM and put it into
+/tftpboot/rpm.  The easiest way is to get the SRPM and rebuild it,
+
+  # rpmbuild --rebuild mysql-3.23.58-1.src.rpm
+  # cp /usr/src/redhat/RPMS/ia64/mysql-server-3.23.58-1.ia64.rpm /tftpboot/rpm
+
+MySQL v3.23.58-1 is the version that came with Red Hat Enterprise Linux 3,
+Update 3; if you cannot find that particular version, please make sure that
+you copy all the rebuilt MySQL RPMs (including the server RPM).  For example,
+if the version you could find is v3.23.58-2.3:
+
+  # rpmbuild --rebuild mysql-3.23.58-2.3.src.rpm
+  # cp /usr/src/redhat/RPMS/ia64/mysql*-3.23.58-2.3.ia64.rpm /tftpboot/rpm 
+
+The key is to keep the MySQL versions consistent.
+
+-----------------------------------------------------------------
+B2) Red Hat Enterprise Linux 3 (Gold or Update 2) rpmlist in ia64
+-----------------------------------------------------------------
+ 
+IN OSCAR WIZARD STEP 4: if you're running an earlier version than Update 3,
+you will need to manually select the correct rpmlist before generating the
+client image.
+
+  /opt/oscar/oscarsample/redhat-3asU2-ia64.rpmlist
+
+---------------------------------
+B3) Initrd and elilo.conf on ia64
+---------------------------------
 
 AFTER OSCAR WIZARD STEP 4: there is a problem generating a valid initrd on the
 nodes, so we must provide one in the image.  Copy a valid initrd to image
@@ -56,16 +106,15 @@ directory
 
 with the commands
 
-  cp /boot/efi/efi/redhat/initrd-*.img \
+  # cp /boot/efi/efi/redhat/initrd-*.img \
     /var/lib/systemimager/images/oscarimage/boot/efi/EFI/redhat/
     
-  cp /boot/efi/efi/redhat/elilo.conf \
+  # cp /boot/efi/efi/redhat/elilo.conf \
     /var/lib/systemimager/images/oscarimage/boot/efi/EFI/redhat/
 
-
---------------------------------
-4) systemconfig.conf (IA64 only)
---------------------------------
+-----------------------------
+B4) systemconfig.conf on ia64
+-----------------------------
  
 AFTER OSCAR WIZARD STEP 4: you will need to add an INITRD entry to the image
 file
@@ -84,41 +133,38 @@ you should substitute your kernel version if you're not running Update 3.
 
 NOTE CAREFULLY THE DOUBLE SLASH IN THE PATH AND INITRD LINES!
 
-
--------------------------------
-5) SCSI and network (IA64 only)
--------------------------------
+----------------------------
+B5) SCSI and network on ia64
+----------------------------
 
 AFTER OSCAR WIZARD STEP 4: you may also need to add a Hardware section with
 SCSI and network drivers.  In the image file
 
   /var/lib/systemimager/images/oscarimage/etc/systemconfig/systemconfig.conf
 
-For an Intel SR870BH2, the hardware section of this file would look like:
+the hardware section of this file would look like for an Intel SR870BH2:
 
   [HARDWARE]
     ORDER = e1000 e1000 mptscsih mptbase scsi_mod
 
-
-------------------
-6) USB (IA64 only)
-------------------
+---------------
+B6) USB on ia64
+---------------
 
 AFTER OSCAR WIZARD STEP 4: if you need to use the keyboard on a USB-only
 system, like the Intel SR870BH2, you need to add the USB controller to the
-image file
+image file:
 
   /var/lib/systemimager/images/oscarimage/etc/modules.conf
 
 For example,
 
-  echo alias usb-controller usb-uhci >> \
+  # echo alias usb-controller usb-uhci >> \
     /var/lib/systemimager/images/oscarimage/etc/modules.conf
 
-
-----------------------------------
-7) tftp-server (All architectures)
-----------------------------------
+-----------------------
+B7) tftp-server on ia64
+-----------------------
 
 AFTER OSCAR WIZARD STEP 6, BEFORE YOU BOOT THE CLIENT NODES: you will need to
 replace the TFTP server.  If your distrubition doesn't come with a tftp-server
@@ -127,57 +173,6 @@ package you should download and install the appropriate file from a repository.
 Once you have downloaded and copied it to a known directory you must install
 the package and turn it on:
 
-  rpm -i tftp-server-0.32-4.ia64.rpm  
+  # rpm -i tftp-server-0.32-4.ia64.rpm  
 
-(it could be "ia64" or "i386", depending of your machine's architecture).
-
-  /sbin/chkconfig --level 345 tftp on 
-
-
---------------------------------
-8) DISKORDER (All architectures)
---------------------------------
-
-AFTER OSCAR WIZARD STEP 6, BEFORE YOU BOOT THE CLIENT NODES: you may have to
-modify the DISKORDER sequence used by SystemImager to prevent the system from
-using your CD-ROM as a disk, resulting in a "Kernel panic" during the
-client's installation phase.  Add the following to the SystemImager
-kernel command line:
-
-  DISKORDER=sd,hd,cciss,ida,rd
-
-For i386 clients, add this value to the "APPEND" keyword in the "KERNEL"
-section of
-
-  /tftpboot/pxelinux.cfg/default
-
-For example,
-
-  DEFAULT systemimager
-  LABEL systemimager
-  DISPLAY message.txt
-  PROMPT 1
-  TIMEOUT 50
-  KERNEL kernel
-    APPEND vga=extended initrd=initrd.img root=/dev/ram \
-      DISKORDER=sd,hd,cciss,ida,rd
-
-For ia64 clients, add this value to the "append" keyword in the "image"
-section of
-
-  /tftpboot/elilo.conf
-
-For example,
-
-  prompt
-  timeout=50
-  default=sisboot
-
-  image=kernel
-    label=sisboot
-    initrd=initrd.img
-    read-only
-    root=/dev/ram
-    append="DISKORDER=sd,hd,cciss,ida,rd"
-
-NOTE: elilo requires keywords in lower case.
+  # /sbin/chkconfig --level 345 tftp on 
