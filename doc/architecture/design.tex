@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.4 2001/08/16 03:04:55 jsquyres Exp $
+% $Id: design.tex,v 1.5 2001/08/16 14:32:55 mjbrim Exp $
 %
 % $COPYRIGHT$
 %
@@ -97,11 +97,11 @@ Write me.
 
 \subsubsection{ODR Categories}
 
-The ODR syntax module has been arranged to keep information about five
+The ODR syntax module has been arranged to keep information about six
 categories of data: \odrcat{adapter}, \odrcat{client},
-\odrcat{cluster}, \odrcat{group}, and \odrcat{service}. Within each
-category, there are a number of keys that hold the information about
-each category item.
+\odrcat{cluster}, \odrcat{group}, \odrcat{hostlist}, and 
+\odrcat{packagelist}. Within each category, there are a number of keys 
+that hold the information about each category item.
 
 
 \paragraph{\odrcat{adapter} Category}
@@ -122,11 +122,6 @@ Notes:
   \odrkey{IP\_CONFIG} keys).  As support is added for other types of
   networks, new fields will be added as appropriate.
 \end{itemize}
-
-\begin{discuss}
-  I changed the name \odrkey{CONFIG} to \odrkey{IP\_CONFIG} because
-  {\tt manual} and {\tt dhcp} really only apply to IP-based networks.
-\end{discuss}
 
 \begin{table}[t]
   \begin{center}
@@ -163,7 +158,8 @@ Notes:
 \item The \odrkey{HOST} key refers to the FQDN of the host to prevent
   any ambiguities.
   
-\item The \odrkey{STATE} key refers to an administrative selection; it
+\item The \odrkey{STATE} key refers to an administrative selection of
+  whether or not to include the node in OSCAR functions; it
   does not refer to whether the machine is physically enabled or
   disabled.
 \end{itemize}
@@ -272,12 +268,6 @@ Notes:
   the \odrcat{client} category.
 \end{itemize}
 
-\begin{discuss}
-  What is the form of \odrkey{PACKAGE}?  An RPM-style name string
-  (name-version-release)?  A GNU-style directory name string
-  (name-version)?
-\end{discuss}
-
 \begin{table}[t!]
   \begin{center}
     \begin{tabular}{|l|l|}
@@ -288,7 +278,7 @@ Notes:
       \odrkey{NAME} & Package list name \\
       \odrkey{PACKAGE} & Name of software package \\
       \odrkey{SERVER} & Hostname of the server for the package service
-      (if not the cluster headnode) \\
+      (if not the cluster head node) \\
       \hline
     \end{tabular}
     \caption{Keys maintained for the \odrcat{packagelist} ODR category.}
@@ -462,7 +452,7 @@ installation, uninstallation, and configuration scripts for each
 package must support similar options, the API was condensed into a
 single interface. That interface is as follows:
 
-\cmd{opkgconfig.sh \{-c|-s\} <function> [--atboot]}
+\cmd{opkgconfig \{-c|-s\} <function> [--atboot]}
 
 \begin{itemize}
 \item \cmd{<function>} is one of: {\tt install}, {\tt uninstall}, {\tt
@@ -478,25 +468,25 @@ single interface. That interface is as follows:
 \end{itemize}
 
 The basic idea is that each integrator will create a
-\file{opkgconfig.sh} script that will be invoked by either the OSCAR
+\file{opkgconfig} script that will be invoked by either the OSCAR
 wizard or the boot time initialization script. How that script is
-implemented is left up to the integrator. Typically, the integrator
-would create three underlying scripts, one for each of the available
-functions, and call each script from pkgconfig based upon the
-command-line options.
+implemented is left up to the integrator, but it must be executable. 
+Typically, the integrator would create three underlying scripts, one 
+for each of the available functions, and call each script from 
+\file{opkgconfig} based upon the command-line options.
 
 For each of the three functions, integrators must also provide a list
 of files that are needed to complete the function. The list for each
 function will be named \file{<function>-files.txt} and should be
 placed in the package's base directory. The files specified in the
 list can be either absolute or relative pathnames. In addition, the
-pkgconfig script itself should be listed in each of the file lists.
+\file{opkgconfig} script itself should be listed in each of the file lists.
 
 To recap, here is a list of the files that each package must provide
 in its directory:
 
 \begin{itemize}
-\item \cmd{<pkgname>/opkgconfig.sh}
+\item \cmd{<pkgname>/opkgconfig}
 \item \cmd{<pkgname>/install-files.txt}
 \item \cmd{<pkgname>/uninstall-files.txt}
 \item \cmd{<pkgname>/configure-files.txt}
