@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.7 2002/02/07 21:11:24 bwbarrett Exp $
+# $Id: make-dist.sh,v 1.8 2002/02/22 07:23:08 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -8,6 +8,13 @@
 
 srcdir="`pwd`"
 distdir="$srcdir/$1"
+want_srpms="$2"
+
+############################################################################
+
+if test "$want_srpms" = ""; then
+    want_srpms="none"
+fi
 
 OSCAR_VERSION="`sh dist/get-oscar-version.sh $srcdir --full`"
 OSCAR_MAJOR_VERSION="`sh dist/get-oscar-version.sh $srcdir --major`"
@@ -21,7 +28,7 @@ if test "$distdir" = ""; then
     exit 1
 fi
 
-MAKEFILE_OSCAR_VERSION="`grep OSCAR_VERSION Makefile | cut -d= -f2`"
+MAKEFILE_OSCAR_VERSION="`egrep ^OSCAR_VERSION Makefile | awk '{ print $3 }'`"
 
 if ! test "$OSCAR_VERSION" = "$MAKEFILE_OSCAR_VERSION" ; then
   echo "Version in Makefile and version in VERSION file do not match!"
@@ -36,6 +43,8 @@ cat <<EOF
 
 ============================================================================== 
 Creating OSCAR distribution version $OSCAR_VERSION
+SRPM mode: $want_srpms
+
 In directory: `pwd`
 Started: $start
 ============================================================================== 
@@ -50,7 +59,7 @@ EOF
 #
 
 #
-# Run autogen.sh and configure if necessary
+# Run autogen.sh and configure if necessary (yeah, that means always)
 #
 
 if ! test -f configure; then
@@ -63,32 +72,34 @@ if ! test -f Makefile; then
 fi
 
 #
-# Build the docs
+# Build the docs -- but not if we're not in an srpm-only mode
 #
 
-echo " - building installation docs"
-cd doc/installation
+if test "$want_srpms" != "only"; then
+    echo " - building installation docs"
+    cd doc/installation
 #make clean ps
 #make mostlyclean pdf
-make clean pdf
-make mostlyclean
+    make clean pdf
+    make mostlyclean
 
-echo " - building introduction docs"
-cd ../introduction
+    echo " - building introduction docs"
+    cd ../introduction
 #make clean ps
 #make mostlyclean pdf
-make clean pdf
-make mostlyclean
+    make clean pdf
+    make mostlyclean
 
-cd ..
+    cd ..
 
-echo " - removing source for docs in dist tarball"
-touch $distdir/doc/foo
-rm -rf $distdir/doc/*
-
-echo " - copying build docs into distdir/doc"
-cp installation/install.pdf $distdir/doc
-cp introduction/intro.pdf $distdir/doc
+    echo " - removing source for docs in dist tarball"
+    touch $distdir/doc/foo
+    rm -rf $distdir/doc/*
+    
+    echo " - copying build docs into distdir/doc"
+    cp installation/install.pdf $distdir/doc
+    cp introduction/intro.pdf $distdir/doc
+fi
 
 #########################################################
 # VERY IMPORTANT: Now go into the new distribution tree #
@@ -98,42 +109,44 @@ cd $distdir
 umask 022
 
 #
-# Put in those headers
-#
- 
+# Put in those headers.  Again, skip all this if we're in SRPM-only mode.
+# 
+
 echo "*** Inserting license headers..."
 
-cd $distdir
-filelist=/tmp/oscar-license-filelist.$$
-rm -f $filelist
-cat > $filelist <<EOF
+if test "$want_srpms" != "only"; then
+    cd $distdir
+    filelist=/tmp/oscar-license-filelist.$$
+    rm -f $filelist
+    cat > $filelist <<EOF
 README
 README.ia64
 EOF
-find dist -type f -print >> $filelist
-find doc -type f -print | egrep -v '.png$' >> $filelist
-find images -type f -print | egrep -v '.gif$' >> $filelist
-find lib -type f -print >> $filelist
-find oscarsamples -type f -print >> $filelist
-find packages -type f -print | egrep -v '.rpm$' >> $filelist
-find scripts -type f -print >> $filelist
-find testing -type f -print >> $filelist
+    find dist -type f -print >> $filelist
+    find doc -type f -print | egrep -v '.png$' >> $filelist
+    find images -type f -print | egrep -v '.gif$' >> $filelist
+    find lib -type f -print >> $filelist
+    find oscarsamples -type f -print >> $filelist
+    find packages -type f -print | egrep -v '.rpm$' >> $filelist
+    find scripts -type f -print >> $filelist
+    find testing -type f -print >> $filelist
+    
+    #
+    # If this is a beta, prepend the beta notice to the license.  
+    #
 
-#
-# If this is a beta, prepend the beta notice to the license.  
-#
+    if test "$OSCAR_BETA_VERSION" != "" -o "$OSCAR_ALPHA_VERSION" != ""; then
+	echo " - This is a BETA version"
+	file=/tmp/oscar-license.$$
+	rm -f $file
+	cat dist/beta-notice.txt dist/copyright-notice.txt > $file
+	mv -f $file dist/copyright-notice.txt
+	echo " - Ammended license notice ready"
+    fi
 
-if test "$OSCAR_BETA_VERSION" != "" -o "$OSCAR_ALPHA_VERSION" != ""; then
-    echo " - This is a BETA version"
-    file=/tmp/oscar-license.$$
-    rm -f $file
-    cat dist/beta-notice.txt dist/copyright-notice.txt > $file
-    mv -f $file dist/copyright-notice.txt
-    echo " - Ammended license notice ready"
+    csh -f ./dist/insert-license.csh $filelist
+    rm -rf $filelist
 fi
-
-csh -f ./dist/insert-license.csh $filelist
-rm -rf $filelist
 
 rm -f dist/insert-license.*
 rm -f dist/copyright-notice.txt
@@ -144,10 +157,56 @@ rm -f dist/beta-notice.txt
 # distribution tarball
 #
 
+echo "*** Removing extra kruft"
 rm -f aclocal.m4
 rm -f configure configure.in
 rm -rf dist
 find . -name Makefile\* -exec rm -f {} \; -print
+
+#
+# Do we want just the SRPMs, or no SRPMs?
+#
+
+if test "$want_srpms" = "only"; then
+    echo "*** Removing everything except SRPMs..."
+    rm -f srpm.dirs other.dirs
+    find . -name SRPMS > srpm.dirs
+    find . -type d | grep -v SRPMS > other.dirs
+    for dir in `cat srpm.dirs`; do
+	d="$dir"
+	
+        # Make list of dirs not to remove (parents of SRPMS dirs)
+	while test "$d" != "."; do
+	    d="`dirname $d`"
+	    if test "$d" != "."; then
+		echo $d >> srpm.dirs
+	    fi
+	done
+    done
+
+    # Go compare one-by-one
+    for possibly in `cat other.dirs`; do
+	ok_to_remove=1
+	for dont in `cat srpm.dirs`; do
+	    if test "$dont" = "$possibly"; then
+		ok_to_remove=0
+	    fi
+	done
+	if test "$possibly" = "."; then
+	    ok_to_remove=0
+	fi
+	if test "$ok_to_remove" = "1"; then
+	    echo " - removing directory: $possibly"
+	    rm -rf $possibly
+	fi
+    done
+    rm -f srpm.dirs other.dirs install_cluster
+elif test "$want_srpms" = "including"; then
+    echo "*** Leaving SRPMs included"
+else
+    echo "*** Removing SRPMs..."
+    rm -rf packages/*/SRPMS
+fi
 
 #
 # All done
@@ -157,6 +216,7 @@ cat <<EOF
 
 ============================================================================== 
 OSCAR version $OSCAR_VERSION distribution created
+SRPM mode: $want_srpms
  
 Started: $start
 Ended:   `date`

@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.3 2001/12/22 01:08:36 jsquyres Exp $
+# $Id: Makefile.am,v 1.4 2002/02/22 07:23:08 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -20,7 +20,7 @@ SUBDIRS			= \
 
 noinst_SCRIPTS		= install_cluster
 
-EXTRA_DIST		= README README.ia64 $(noinst_SCRIPTS)
+EXTRA_DIST		= COPYING README README.ia64 $(noinst_SCRIPTS)
 
 #
 # Make the documentation
@@ -34,5 +34,14 @@ docs:
 # For making OSCAR distributions
 #
 
+oscar-dist:
+	$(MAKE) dist WANT_SRPMS=only
+	mv oscar-$(OSCAR_VERSION).tar.gz \
+		oscar-only-srpms-$(OSCAR_VERSION).tar.gz
+	$(MAKE) dist WANT_SRPMS=including
+	mv oscar-$(OSCAR_VERSION).tar.gz \
+		oscar-including-srpms-$(OSCAR_VERSION).tar.gz
+	$(MAKE) dist WANT_SRPMS=
+
 dist-hook:
-	sh ./dist/make-dist.sh $(DESTDIR)$(distdir)
+	sh ./dist/make-dist.sh $(DESTDIR)$(distdir) $(WANT_SRPMS)
