@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.15 2002/07/06 04:53:05 jsquyres Exp $
+# $Id: make-dist.sh,v 1.16 2002/07/06 05:01:18 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -76,10 +76,13 @@ fi
 #
 
 if test "$want_srpms" != "only"; then
+
+    #
+    # Install docs
+    #
+
     echo " - building installation docs"
     cd doc/installation
-#make clean ps
-#make mostlyclean pdf
     make clean pdf
     if test "$?" != "0"; then
 	cat <<EOF
@@ -91,17 +94,12 @@ EOF
     fi
     make mostlyclean
 
-#    echo " - building introduction docs"
-#    cd ../introduction
-#make clean ps
-#make mostlyclean pdf
-#    make clean pdf
-#    make mostlyclean
+    #
+    # User docs
+    #
 
     echo " - building user docs"
     cd ../user
-#make clean ps
-#make mostlyclean pdf
     make clean pdf
     if test "$?" != "0"; then
 	cat <<EOF
@@ -118,15 +116,21 @@ EOF
     echo " - removing source for docs in dist tarball"
     touch $distdir/doc/foo
     rm -rf $distdir/doc/*
-    
+
+    #
+    # Copy the docs over; ensure that they were generated correctly
+    #
+
     echo " - copying build docs into distdir/doc"
     cp installation/install.pdf installation/quick_install.pdf $distdir/doc
     cp user/user.pdf $distdir/doc
-    if test ! -f $distdir/doc/install.pdf -o ! -f $distdir/doc/user.pdf; then
+    if test ! -f $distdir/doc/install.pdf -o \
+	    ! -f $distdir/doc/quick_install.pdf -o \
+	    ! -f $distdir/doc/user.pdf; then
 	cat <<EOF
 
-WARNING: doc/user.pdf and / or doc/install.pdf doesn't seem to exist.
-WARNING: Aborting...
+WARNING: doc/user.pdf, doc/install.pdf, and/or doc/quick_install.pdf 
+WANRING: don't seem to exist.  Aborting...
 
 EOF
 	exit 1
