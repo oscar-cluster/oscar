@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.14 2002/12/02 20:36:00 tfleury Exp $
+# $Id: Configurator.pm,v 1.15 2002/12/14 00:56:15 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -133,6 +133,9 @@ sub doneButtonPressed
   # Configuration window.  Therefore, when we exit, we need to make the
   # parent window unbusy.
   $root->Parent->Unbusy() if ($root->Parent);
+
+  # Destroy the Configbox if one was created.
+  OSCAR::Configbox::exitWithoutSaving;
 
   # If there are any children, make sure they are destroyed.
   my (@kids) = $root->children;

@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.16 2002/12/10 23:06:10 ngorsuch Exp $
+# $Id: Selector.pm,v 1.17 2002/12/14 00:56:15 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -238,6 +238,9 @@ sub exitWithoutSaving
   # window.  Therefore, when we exit, we need to make the parent window
   # unbusy.  
   $root->Parent->Unbusy() if ($root->Parent);
+
+  # Destroy the Infobox if one was created.
+  OSCAR::Infobox::destroyInfoBox;
 
   # If there are any children, make sure they are destroyed.
   my (@kids) = $root->children;

@@ -24,7 +24,7 @@ package OSCAR::Configbox;
 
 use strict;
 use base qw(Exporter);
-our @EXPORT = qw(configurePackage);
+our @EXPORT = qw(configurePackage exitWithoutSaving);
 require Tk::Web;
 require URI::URL;
 use Carp;
@@ -164,20 +164,23 @@ sub defaultConfiguration
 #########################################################################
 sub exitWithoutSaving
 {
-  # If there are any children, make sure they are destroyed.
-  my (@kids) = $root->children;
-  foreach my $kid (@kids)
+  if ($root)
     {
-      $kid->destroy;
+      # If there are any children, make sure they are destroyed.
+      my (@kids) = $root->children;
+      foreach my $kid (@kids)
+        {
+          $kid->destroy;
+        }
+
+      # Then, destroy the root window.
+      $root->destroy;
+
+      # Undefine a bunch of Tk widget variables for re-creation later.
+      undef $root;
+      undef $top;
+      undef $web;
     }
-
-  # Then, destroy the root window.
-  $root->destroy;
-
-  # Undefine a bunch of Tk widget variables for re-creation later.
-  undef $root;
-  undef $top;
-  undef $web;
 }
 
 #########################################################################

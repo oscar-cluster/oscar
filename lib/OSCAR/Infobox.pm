@@ -24,7 +24,7 @@ package OSCAR::Infobox;
 
 use strict;
 use base qw(Exporter);
-our @EXPORT = qw(displayInformation);
+our @EXPORT = qw(displayInformation destroyInfoBox);
 our @EXPORT_OK = qw(closeInfoBox);
 require Tk::ROText;
 no warnings qw(closure);
@@ -98,7 +98,26 @@ sub Infobox_ui {
 #########################################################################
 sub closeInfoBox
 {
-  $root->UnmapWindow;
+  $root->UnmapWindow if ($root);
+}
+
+#########################################################################
+#  When the Selector is all done, it deletes all of its children. The   #
+#  infoTextBox just happens to be one of the children!  So when the     #
+#  Selector gets destroyed, call this subroutine just before you delete #
+#  all of Selector's children.                                          #
+#########################################################################
+sub destroyInfoBox
+{
+  if ($root)
+    {
+      closeInfoBox;
+
+      # Undefine the Tk widget variables for re-creation later.
+      undef $root;
+      undef $top;
+      undef $infoTextBox;
+    }
 }
 
 #########################################################################
