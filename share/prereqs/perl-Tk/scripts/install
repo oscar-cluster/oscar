@@ -33,7 +33,7 @@ foreach my $dir (@rpmvers) {
 }
 oscar_log_subsection("Checking to see if we need to install Perl-Tk\n");
 
-if ( `rpm -q perl-Tk` ) {
+if ( system("rpm -q perl-Tk >/dev/null") != 0  ) {
   oscar_log_subsection("We do need to install perl-Tk\n");
   if ( $match == 0 ) {
     croak("Can't install perl-Tk for perl $perl_version, we have @rpmvers");
@@ -42,8 +42,10 @@ if ( `rpm -q perl-Tk` ) {
     my @rpms = grep { /.rpm/ } readdir(DIR);
     closedir DIR;
     foreach $file (@rpms) {
-      oscar_log_subsection("Copying $rpmdir/$file to /tftpboot/rpm/$file\n");
-      copy("$rpmdir/$file", "/tftpboot/rpm/$file") || croak("Unable to copy $rpmdir/$file to /tftpboot/rpm/$file");
+      if (! -e "/tftpboot/rpm/$file" ) {
+        oscar_log_subsection("Copying $rpmdir/$file to /tftpboot/rpm/$file\n");
+        copy("$rpmdir/$file", "/tftpboot/rpm/$file") || croak("Unable to copy $rpmdir/$file to /tftpboot/rpm/$file");
+      }
     }
     install_rpms("perl-Tk") || croak("perl-Tk cannot be installed, check for error messages from rpm");
   }

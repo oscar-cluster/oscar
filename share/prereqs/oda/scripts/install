@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.10 2003/06/24 15:21:26 brechin Exp $
+# $Id: install,v 1.11 2003/06/25 15:11:43 brechin Exp $
 #
 
 #use strict;
@@ -101,11 +101,13 @@ foreach my $rpm_file (@package_rpm_files) {
 }
 
 # Now install the "best" version of all the required RPMs if necessary
-
-oscar_log_subsection("Installing ODA RPMs @wanted_rpms");
-install_rpms(@wanted_rpms) or 
-    croak("ODA is giving up and will not be installed");
-
+if ( system("rpm -q oda >/dev/null") != 0 ) {
+  oscar_log_subsection("Installing ODA RPMs @wanted_rpms");
+  install_rpms(@wanted_rpms) or 
+      croak("ODA is giving up and will not be installed");
+} else {
+  oscar_log_subsection("ODA is already installed");
+}
 # Exit properly so that the exit status gets propogated
 
 oscar_log_subsection("Checking status of MySQL server $mysqld");
