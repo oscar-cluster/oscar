@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.1 2002/10/31 22:02:21 ngorsuch Exp $
+# $Id: install,v 1.2 2002/11/01 15:54:40 ngorsuch Exp $
 #
 
 #use strict;
@@ -29,12 +29,26 @@ sub do_run {
     }
 }
 
-# list of rpm names to check for and rpm files to install
-my @rpms = qw( mysql
-	       mysql-server
-	       perl-DBD-MySQL
-	       perl-DBI
-	       oda );
+# find a list of rpm names to check for and rpm files to install
+my @rpms = ( );
+# start by seeing if we're on a redhat system,
+# don't bother with redhat versions since the
+# following rpm set works on all the versions
+# oscar works on
+if ( -r "/etc/redhat-release" ) {
+    @wanted_rpms = qw( mysql
+		mysql-server
+		perl-DBD-MySQL
+		perl-DBI
+		oda );
+} else { 
+# for now assume it's mandrake if not redhat
+    @wanted_rpms = qw( mysql
+		perl-dbi
+		perl-mysql
+		perl-ExtUtils-PerlPP
+		oda );
+}
 
 # find out where the corresponding rpm files are
 my @rpm_files = ();
@@ -56,39 +70,39 @@ chomp @oscar_rpm_files;
 closedir DIR;
 
 my $error_flag = 0;
-foreach my $rpm ( @rpms ) {
-    oscar_log_subsection("Checking if rpm <$rpm> is already installed");
-    my $command = "rpm -q $rpm 2>/dev/null";
+foreach my $wanted_rpm ( @wanted_rpms ) {
+    oscar_log_subsection("Checking if rpm <$wanted_rpm> is already installed");
+    my $command = "rpm -q $wanted_rpm 2>/dev/null";
     if ( system($command) == 0 ) {
-	oscar_log_subsection("rpm <$rpm> is already installed");
+	oscar_log_subsection("rpm <$wanted_rpm> is already installed");
 	next;
     }
-    oscar_log_subsection("Looking for the rpm file to install <$rpm>");
+    oscar_log_subsection("Looking for the rpm file to install <$wanted_rpm>");
     my @package_matching_rpm_files = 
-	grep ( /^$rpm\-[0-9][0-9\.]*\-/, @package_rpm_files );
+	grep ( /^$wanted_rpm\-[0-9][0-9\.]*\-/, @package_rpm_files );
     my @oscar_matching_rpm_files =
-	grep ( /^$rpm\-[0-9][0-9\.]*\-/, @oscar_rpm_files );
+	grep ( /^$wanted_rpm\-[0-9][0-9\.]*\-/, @oscar_rpm_files );
     if ( scalar @oscar_matching_rpm_files > 1 ) {
-	warn "rpm <$rpm> for ODA matched too many files <@oscar_matching_rpm_files> in <$oscar_rpms_dir>\n";
-	oscar_log_subsection("rpm <$rpm> for ODA matched too many files <@oscar_matching_rpm_files> in <$oscar_rpms_dir>\n");
+	warn "rpm <$wanted_rpm> for ODA matched too many files <@oscar_matching_rpm_files> in <$oscar_rpms_dir>\n";
+	oscar_log_subsection("rpm <$wanted_rpm> for ODA matched too many files <@oscar_matching_rpm_files> in <$oscar_rpms_dir>\n");
 	$error_flag = 1;
     } elsif ( scalar @oscar_matching_rpm_files == 1 ) {
         my $rpm_file = "$oscar_rpms_dir/$oscar_matching_rpm_files[0]";
-	print "rpm <$rpm> will be supplied by file <$rpm_file>";
-	oscar_log_subsection("<$rpm> will be supplied by the rpm file <$rpm_file>");
+	print "rpm <$wanted_rpm> will be supplied by file <$rpm_file>";
+	oscar_log_subsection("<$wanted_rpm> will be supplied by the rpm file <$rpm_file>");
 	push @rpm_files, $rpm_file;
     } elsif ( scalar @package_matching_rpm_files > 1 ) {
-	warn "rpm <$rpm> for ODA matched too many files <@package_matching_rpm_files> in <$package_rpms_dir>\n";
-	oscar_log_subsection("rpm <$rpm> for ODA matched too many files <@package_matching_rpm_files> in <$package_rpms_dir>\n");
+	warn "rpm <$wanted_rpm> for ODA matched too many files <@package_matching_rpm_files> in <$package_rpms_dir>\n";
+	oscar_log_subsection("rpm <$wanted_rpm> for ODA matched too many files <@package_matching_rpm_files> in <$package_rpms_dir>\n");
 	$error_flag = 1;
     } elsif ( scalar @package_matching_rpm_files == 1 ) {
         my $rpm_file = "$package_rpms_dir/$package_matching_rpm_files[0]";
-	print "rpm <$rpm> will be supplied by file <$rpm_file>";
-	oscar_log_subsection("<$rpm> will be supplied by the rpm file <$rpm_file>");
+	print "rpm <$wanted_rpm> will be supplied by file <$rpm_file>";
+	oscar_log_subsection("<$wanted_rpm> will be supplied by the rpm file <$rpm_file>");
 	push @rpm_files, $rpm_file;
     } else {
-	warn "rpm <$rpm> for ODA does not have a matching file in $oscar_rpms_dir or $package_rpms_dir";
-	oscar_log_subsection("rpm <$rpm> for ODA does not have a file in $oscar_rpms_dir or $package_rpms_dir");
+	warn "rpm <$wanted_rpm> for ODA does not have a matching file in $oscar_rpms_dir or $package_rpms_dir";
+	oscar_log_subsection("rpm <$wanted_rpm> for ODA does not have a file in $oscar_rpms_dir or $package_rpms_dir");
 	$error_flag = 1;
     }
 }
