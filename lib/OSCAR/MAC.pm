@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.23 2003/01/23 20:43:20 sdague Exp $
+#   $Id: MAC.pm,v 1.24 2003/01/23 21:14:55 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.23 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.24 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -70,14 +70,14 @@ sub mac_window {
     my $listbox = $window->ScrlListbox(
                                        -selectmode => 'single',
                                        -background => "white",
-				       -scrollbars => 'ose',
+				       -scrollbars => 'osoe',
                                       );
-    my $tree = $window->Scrolled("Tree",
+    my $tree = $window->Scrolled("Tree",    
                                  -background => "white",
                                  -itemtype => 'imagetext',
                                  -separator => '|',
                                  -selectmode => 'single',
-				 -scrollbars => 'ose',
+				 -scrollbars => 'osoe',
                                 );
 
     $instructions->pack($label);
@@ -147,7 +147,12 @@ sub mac_window {
                                      -command => [\&run_setup_pxe, $window],
                                     );
 
-    $start->grid("-", $exitbutton, -sticky => "ew");
+    my $assignall   = $frame->Button(
+				     -text => "Assign all MACs",
+				     -command => [\&assignallmacs, $listbox, $tree, $window],
+				    );
+
+    $start->grid($assignall, $exitbutton, -sticky => "ew");
     $assignbutton->grid($deletebutton, $dhcpbutton, -sticky => "ew");
     $loadbutton->grid($savebutton, -sticky => "ew");
     my $label2 = $frame->Label(-text => "Below are commands to create a boot environment.\nYou can either boot from floppy or network");
@@ -235,18 +240,10 @@ sub message_window {
     
 }
 
-#sub assignwindow {
-#    my ($parent) = @_;
-#    my $window = $parent->Toplevel;
-#    $window->title("Assign MAC Address");
-#    my $listbox
-    
-#}
-
 sub assign2machine {
-    my ($listbox, $tree) = @_;
-    my $mac = $listbox->get($listbox->curselection) or return undef;
-    my $node = $tree->infoSelection() or return undef;
+    my ($listbox, $tree, $mac, $node) = @_;
+    unless ( $mac ) { $mac = $listbox->get($listbox->curselection) or return undef; }
+    unless ( $node) { $node = $tree->infoSelection() or return undef; }
     my $client;
     clear_mac($listbox, $tree);
     if($node =~ /^\|([^\|]+)/) {
@@ -261,6 +258,29 @@ sub assign2machine {
     set_adapter($adapter);
     regenerate_listbox($listbox);
     regenerate_tree($tree);
+}
+
+sub assignallmacs {
+    my ($listbox, $tree, $window) = @_;
+    $window->Busy(-recurse => 1);
+    my @macs = $listbox->get(0, 'end');
+    $listbox->delete(0, 'end');
+    regenerate_listbox($listbox);
+    my $client;
+    my $adapter;
+    my $tempnode = '|';
+    while ( $tempnode = $tree->infoNext($tempnode) ) {
+      $tempnode =~ /^\|([^\|]+)/;
+      $client = list_client(name=>$1);
+      $adapter = list_adapter(client=>$client->name,devname=>"eth0");
+      unless ( $adapter->mac ) {
+#        print "no adapter for $1\n";
+        assign2machine($listbox, $tree, pop @macs, $tempnode);
+      }
+#      else { print $adapter->mac . "\n"; }
+    }
+    $listbox->insert(0, @macs);
+    $window->Unbusy();
 }
 
 sub clear_mac {
