@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.3 2002/06/14 05:15:45 jsquyres Exp $
+% $Id: install.tex,v 1.4 2002/06/14 07:45:29 jenos Exp $
 %
 % $COPYRIGHT$
 %
@@ -28,11 +28,44 @@ them with sample PBS scripts used in the OSCAR test suite.  These
 scripts can be found in the home directory of the \user{oscartst} user
 if the tests have been run previously.
 
-\subsubsection{Other Points to Cover...}
+\subsubsection{Configuring PBS}
+By default, PBS installs without any queues or cluster specific
+paremeters defined.  OSCAR configures PBS with sensible defaults based
+on what it finds in the SIS database.  Whenever the "Complete Cluster
+Setup" step is executed from the wizard, the post_install script from
+the PBS package in OSCAR is called.  The post_install configures only
+PBS parameters that are non-existent, so as not to overwrite customizations
+by the sysadmin.  However, if you wish to force the default values back
+in place over any customizations, the post_install script can be called
+manually with a --default option.  This will revert all values to the 
+original OSCAR settings.
+qmgr can be used to configure queues and PBS server parameters.  The PBS
+post_install uses qmgr behind the scenes.  There are man pages available,
+but reading the PBS admin guide is the best way to learn how to use it.
+It is available on OpenPBS's homepage, listed below.  You will have to 
+create an account on their site in order to download the admin guide.
 
-\begin{discuss}
-  Jeremy will write more about stuff here.
-\end{discuss}
+PBS Resources
+Abitrary node properties can be set by the administrator.  PBS calls these
+properties "resources".  These resources can be specified on the qsub
+command line when a user submits a job.  This allows a user to restrict
+their jobs to run only on nodes exhibiting certain properties.  If some
+nodes of a cluster have more memory, a different network, faster prcoessors, 
+etc., jobs can be submitted so they only run a specific subset.  These
+properties are stored in plain text in /usr/spool/PBS/server_priv/nodes.
+However, if adjusted in the plain text file, the PBS server must be
+restarted in order for changes to take effect.  The more elaborate method
+is to use the qmgr command to modify node properties via the PBS API.
+OSCAR gives each node a starting property of "all".
+
+An FAQueue:
+A popular misconception about PBS queues is that they are bound to a group
+of nodes.  This is false.  If you have a four node queue defined, it is
+not associated with any specific nodes.  You can think of a queue as a
+multidimensional box that a job must fit in in order to allow submission.
+i.e.  The submitted parameters must fit within certain max and min values
+for nodes, ppn (procs per node), walltime, etc.  If specific nodes are
+desired to run on, then resource attributes must be defined.
 
 Some useful links:
 
