@@ -30,6 +30,7 @@ oscar_SCRIPTS		= \
 			Package.pm \
 			PackageInUn.pm \
 			SISBuildSetup.pm \
-			Tk.pm
+			Tk.pm \
+			WizardEnv.pm
 
 EXTRA_DIST		= $(oscar_SCRIPTS)
