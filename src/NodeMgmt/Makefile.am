@@ -38,6 +38,8 @@ inst_DATA		=	GUI.xml
 all-local:	$(COMPILEDTARGET)
 		ln -sf ../Installer/images; \
 		cd ../Installer; ln -sf ../NodeMgmt
+		echo "Fixing QWidgetStack problem"  .ui.pl: $<.h $< 
+		perl -pi -e 's/QWidgetStack/Qt::WidgetStack/' *.p* 
 
 ### SHOULDN'T NEED TO CHANGE ANYTHING BELOW HERE!
 
