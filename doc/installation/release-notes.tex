@@ -1,12 +1,13 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.7 2002/07/15 17:02:28 loann09 Exp $
+% $Id: release-notes.tex,v 1.8 2002/07/16 14:39:46 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
 
 \section{Release Notes}
 \label{sec:release-notes}
+
 The following release notes apply to OSCAR version \oscarversion:
 
 \begin{itemize}
@@ -14,40 +15,51 @@ The following release notes apply to OSCAR version \oscarversion:
   defining them.
   
 \item The current version of C3 that is shipped with OSCAR requires
-  Python 2.x.  The Python 2.x RPMs that were provided are re-built to work on Red Hat 7.1 system as well as Red Hat 7.2 system.  However, Red Hat 7.2
-  ships with Python 2.x so measures were taken so it will be chosen in
-  place of the one provided with OSCAR.  (Specifically, we decremented
-  the RPM release number.) Due to some multi-distro issues, we're currently including a
-  ``compatibility'' (\file{python2-compat-1.0-1}) RPM to resolve the
-  Python2 prerequisite that is slightly different across different
-  Linux distributions (also see the file
-  \file{packages/c3/RPMS/NOTE.python2}).
+  Python 2.x.  The Python 2.x RPMs that are provided in OSCAR are
+  re-built to work on RedHat 7.1 as well as RedHat 7.2.  However,
+  RedHat 7.2 ships with Python 2.x, so measures were taken such that
+  the OSCAR-shipped Python 2.x RPM will not be installed over the
+  default RedHat 7.x RPM (specifically, the RPM release number has
+  been decremented).  Due to some distribution portability issues,
+  OSCAR currently installs a ``compatibility''
+  (\file{python2-compat-1.0-1}) RPM to resolve the Python2
+  prerequisite that is slightly different across different Linux
+  distributions.  Also see the file
+  \file{packages/c3/RPMS/NOTE.python2}.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{RedHat 7.2 Notes}
 \label{subsec:rh72notes}
+
 \begin{itemize}
 \item You will need to update the \rpmname{rpm} RPM to
-  \file{rpm-4.0.4-7x}\- the version that ships on the 7.2 CD is
+  \file{rpm-4.0.4-7x} because the version that ships on the 7.2 CD is
   buggy.  The 4.0.4-7x version is available on the Red Hat updates for
-  7.2 (\url{ftp://updates.redhat.com/7.2/en/os/i386/}). \begchange See also Appendix~\ref{app:screen-by-screen} figure~\ref{fig:sbs-rh72notes-rpm-upgrd}. In addition, for users working under KDE environment, you will also need to obtain \file{kdeadmin} and for MDK users, ... 
-\endchange  
-\item The image build may fail during install, you may need to edit
-  file \file{/etc/systeminstaller/\-
-systeminstaller.conf} and change
-  the following:
+  7.2 (\url{ftp://updates.redhat.com/7.2/en/os/i386/}).  See also
+  Appendix~\ref{app:screen-by-screen},
+  Figure~\ref{fig:sbs-rh72notes-rpm-upgrd}. In addition, for users
+  working under the KDE environment, you will also need to obtain and
+  install the \file{kdeadmin} RPM.
+  
+\item If the image build fails during the install, you may need to
+  edit the file \file{/etc/systeminstaller/\-systeminstaller.conf}
+  and change the following:
 
 \begin{verbatim}
        pkginstfail=    1
 \end{verbatim}
-
   to
-
 \begin{verbatim}
        pkginstfail=    0
 \end{verbatim}
+
+  \begin{discuss}
+    This item is very undescriptive -- why does the install fail?  How
+    does changing this value fix anything?  Put in a little more
+    detail here...
+  \end{discuss}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -86,6 +98,11 @@ systeminstaller.conf} and change
 
 \item \rpmname{pvm} does not currently work on Itanium.
 
+\begin{discuss}
+  Is this still true, that PVM does not work under Itanium?  I thought
+  that this had gotten fixed...?
+\end{discuss}
+
 \item The OSCAR autoinstall diskette will probably not work
 on Itanium systems, but they mostly have support for network booting.
 
@@ -100,11 +117,16 @@ the stock kernel in the base operating system release,
 it will not work with standard OSCAR, since OSCAR uses the
 kernel RPMS supplied with the vendors release to boot and
 load the compute nodes.
-If you have a custom compiled kernel/modules that works
+If you have a custom compiled kernel/module set that works
 for your hardware, you should look at the NCSA utilities
 at \url{http://oscar.ncsa.uiuc.edu/oscar/} to enable you
 to use them in OSCAR.
 
+
+\begin{discuss}
+  A minor point -- why is the NCSA URL redundant?  Why
+  oscar.ncsa.uiuc.edu/oscar instead of oscar.ncsa.uiuc.edu?
+\end{discuss}
 
 \end{itemize}
 

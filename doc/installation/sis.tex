@@ -1,54 +1,58 @@
 % -*- latex -*-
 %
-% $Id: sis.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+% $Id: sis.tex,v 1.2 2002/07/16 14:39:46 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
 
-\section{Overview of SIS}
+\section{Overview of System Installation Suite (SIS)}
+\label{sec:sis}
 
-The first question you may have is what is SIS. The System Installation
-Suite (SIS) is a cluster installation tool developed by the collaboration
-of the IBM Linux Technology Center and the SystemImager team.
-The main reason that SIS was chosen as the
-installation mechanism was that it does not require that client nodes
-already have Linux installed.
-SIS also has many other distinguishing features that make it the mechanism
-of choice. The most highly used quality of SIS in the OSCAR install is
-the cluster information database that it maintains. The database
-contains all the information on each node needed to both install and
-configure the cluster. A second desirable quality is that SIS makes
-use of the Red Hat Package Manager (RPM) standard for software
-installation, which simplifies software installation
-tremendously. Another quality, which up to this point has not been
-taken advantage of in OSCAR, is the heterogeneous nature of SIS,
-allowing clients to contain not only heterogeneous hardware, but
-heterogeneous software as well. An obvious application of the future
-use of this quality is in the installation of heterogeneous clusters,
-allowing certain clients to be used for specialized purposes.
+The first question you may have is ``what is SIS?''. The System
+Installation Suite (SIS) is a cluster installation tool developed by
+the collaboration of the IBM Linux Technology Center and the
+SystemImager team.  SIS was chosen to be the installation mechanism
+for OSCAR for multiple reasons:
+
+\begin{itemize}
+\item SIS is a high-quality, third party, open source product that
+  works well in production environments
+
+\item SIS does not require the client nodes to already have Linux
+  installed
+  
+\item SIS maintains a database containing installation and
+  configuration information about each node in the cluster
+
+\item SIS uses RPM as a standard for software installation
+  
+\item SIS supports heterogenous hardware and software installation
+  (although this feature is not [yet] used by OSCAR)
+\end{itemize}
 
 In order to understand some of the steps in the upcoming install, you
 will need knowledge of the main concepts used within SIS. The first
-concept is that of an image. In SIS, an image is defined for use by
-the cluster nodes. This image is a copy of the operating system files 
-stored on the server. The client nodes install by replicating this image
-to their local disk partitions. Another important concept from SIS it the
-client definition.  A SIS client is  defined for each of your cluster nodes. 
-These client definitions keep track of the pertinent information about each
-client.
-The server machine is responsible for creating the cluster
-information database and for servicing client installation requests.
-The information that is stored for  each client includes;
+concept is that of an \term{image}. In SIS, an \term{image} is defined
+for use by the cluster nodes. This image is a copy of the operating
+system files stored on the server. The client nodes install by
+replicating this image to their local disk partitions. Another
+important concept from SIS it the client definition.  A SIS client is
+defined for each of your cluster nodes.  These client definitions keep
+track of the pertinent information about each client.  The server node
+is responsible for creating the cluster information database and for
+servicing client installation requests.  The information that is
+stored for each client includes:
 
 \begin{itemize}
-        \item IP information like hostname, IPaddress, route.
-        \item Image name.
+\item IP information like hostname, IPaddress, route.
+\item Image name.
 \end{itemize}
 
-Each of these pieces of information will be discussed further as part of the
-detailed install procedure.
+Each of these pieces of information will be discussed further as part
+of the detailed install procedure.
 
 For additional information on the concepts in SIS and how to use it,
-you should refer to the SIS manpage. In addition, you can visit the SIS web site at
-\url{http://sisuite.org} for recent updates.
+you should refer to the \file{SIS(1)} man page.  In addition, you can
+visit the SIS web site at \url{http://sisuite.org/} for recent
+updates.
 

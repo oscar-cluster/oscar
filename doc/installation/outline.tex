@@ -1,84 +1,93 @@
 % -*- latex -*-
 %
-% $Id: outline.tex,v 1.2 2002/01/18 05:00:14 mjbrim Exp $
+% $Id: outline.tex,v 1.3 2002/07/16 14:39:46 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
 
 \section{Outline of Cluster Installation Procedure}
+\label{sec:outline}
 
-Notice: You do not perform many of the steps in this outline, as they
-are automated by the install. It will be clear in the detailed
-procedure what exactly you are expected to do.
+The following outline is a general description of how an OSCAR cluster
+is installed.  Users do not manually perform many of the steps in this
+outline -- they are automatically executed as part of the OSCAR
+installation process.
 
 \begin{enumerate}
-        \item Server Installation and Configuration
-        \begin{enumerate}
-                \item install Linux on server machine
-                \item get OSCAR distribution
-                \item configure ethernet adapter for cluster
-                \item copy Red Hat rpms from cds
-        \end{enumerate}
-
-        \item Initial OSCAR Server Configuration
-        \begin{enumerate}
-                \item creates OSCAR directories
-                \item installs necessary software
-                \begin{itemize}
-                        \item Parallel Virtual Machine (PVM)
-                        \item C3
-                        \item LAM
-                        \item OpenPBS
-                        \item Maui
-                        \item SIS
-                        \item services
-                        \begin{enumerate}
-                                \item Network File System (NFS)
-                                \item Dynamic Host Configuration Protocol (DHCP)
-                                \item Rsync
-                                \item OpenSSH
-                        \end{enumerate}
-                \end{itemize}
-                \item updates some system files
-                \item updates system startup scripts
-                \item starts/restarts affected services
-        \end{enumerate}
-
-        \item Cluster Definition
-        \begin{enumerate}
-                \item build and customize image
-                \begin{enumerate}
-                        \item install Red Hat rpms
-                        \item install OSCAR rpms
-                        \item customize and copy system and user files
-                        \item setup nfs mount for /home
-                        \item generate ssh keys
-                \end{enumerate}
-                \item define disk partitioning and filesystems
-                \item define clients
-                \begin{enumerate}
-                        \item update hosts files on server and in images.
-                \end{enumerate}
-                \item collect client MAC addresses
-                \item setup remote booting, network or diskette
-        \end{enumerate}
-
-        \item Client Installations
-        \begin{enumerate}
-                \item boot clients to start install
-                \item reboot each client when finished installing
-        \end{enumerate}
-        \item Complete cluster setup
-        \begin{enumerate}
-                \item Get number of processors from clients
-        \end{enumerate}
-        \item Test cluster
-        \begin{enumerate}
-                \item test PBS
-                \item test MPICH
-                \item test LAM
-                \item test PVM
-        \end{enumerate}
-        \item \emph{Cluster setup complete!}
+\item Server Installation and Configuration
+  \begin{enumerate}
+  \item install Linux on the server node
+  \item get an OSCAR distribution package
+  \item configure the ethernet adapter for cluster
+  \item copy Linux distribution RPMs from CDs to \file{/tftpboot/rpms}
+  \item get updated distribution-specific RPMs
+  \item copy updated RPMs to \file{/tftpboot/rpms}
+  \end{enumerate}
+  
+\item Initial OSCAR Server Configuration
+  \begin{enumerate}
+  \item create OSCAR directories
+  \item install OSCAR-specific software
+    \begin{itemize}
+    \item C3
+    \item Ganglia
+    \item LAM/MPI
+    \item MPICH
+    \item OPIUM
+    \item OpenPBS
+    \item Maui
+    \item pfilter
+    \item PVM
+    \item SIS
+    \item Switcher
+    \item Various services:
+      \begin{enumerate}
+      \item Network File System (NFS)
+      \item Dynamic Host Configuration Protocol (DHCP)
+      \item rsync
+      \item OpenSSH
+      \end{enumerate}
+    \end{itemize}
+  \item update some system files
+  \item update system startup scripts
+  \item start/restart affected services
+  \end{enumerate}
+  
+\item Cluster Definition
+  \begin{enumerate}
+  \item build and customize image
+    \begin{enumerate}
+    \item install Linux distribution RPMs
+    \item install OSCAR RPMs
+    \item customize and copy system and user files
+    \item setup NFS mount for \file{/home}
+    \item generate SSH keys
+    \end{enumerate}
+  \item define disk partitioning and filesystems
+  \item define clients
+    \begin{enumerate}
+    \item update hosts files on server and in images
+    \end{enumerate}
+  \item collect client MAC addresses
+  \item setup remote booting (network or diskette)
+  \end{enumerate}
+  
+\item Client Installations
+  \begin{enumerate}
+  \item boot clients to start install
+  \item reboot each client when finished installing
+  \end{enumerate}
+\item Complete cluster setup
+  \begin{enumerate}
+  \item Get number of processors from clients
+  \end{enumerate}
+\item Test cluster
+  \begin{enumerate}
+  \item test PBS
+  \item test OpenSSH
+  \item test MPICH
+  \item test LAM/MPI
+  \item test PVM
+  \end{enumerate}
+\item \emph{Cluster setup complete!}
 \end{enumerate}
-
