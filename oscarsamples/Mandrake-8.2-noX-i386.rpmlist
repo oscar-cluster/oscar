@@ -115,3 +115,12 @@ ldetect-lst
 libnewt0.50
 make
 libpython2.2
+gcc
+gcc-cpp
+gcc-c++
+kernel-headers
+glibc-devel
+binutils
+libbinutils2
+libstdc++2.10
+libstdc++2.10-devel
