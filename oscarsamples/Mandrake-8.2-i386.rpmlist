@@ -72,7 +72,7 @@ initscripts
 iproute2
 iputils
 isapnptools
-kernel-2.4.18
+kernel-2.4.18.6mdk
 kernel-headers
 krb5-libs
 kudzu
