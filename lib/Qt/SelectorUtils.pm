@@ -1,0 +1,455 @@
+#########################################################################
+#  File  : SelectorUtils.pm                                             #
+#  Author: Terrence G. Fleury (tfleury@ncsa.uiuc.edu)                   #
+#  Date  : April 24, 2003                                               #
+#  This file contains a bunch of utility functions used by the          #
+#  Selector which are not necessarily GUI related.                      #
+#########################################################################
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  Copyright (c) 2003 The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+#########################################################################
+
+use strict;
+use utf8;
+
+package SelectorUtils;
+
+use Qt;
+
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Database;
+use Carp;
+
+my $allPackages;  # Cached hash reference of all available packages
+my $dependtree;   # Dependency tree for requires/conflicts
+
+sub addTypeNameFieldToPackage
+{
+#########################################################################
+#  Subroutine: addTypeNameFieldToPackage                                #
+#  Parameters: (1) The field name to add (ie. "provides", "requires",   #
+#                  or "conflicts").                                     #
+#              (2) The short name of the package to add the field to.   #
+#  Returns   : Nothing                                                  #
+#  This subroutine is called to add the "provides", "requires", and     #
+#  "conflicts" fields to the $allPackages->{$package} hash.  Each of    #
+#  these fields is actually an array of hash references, where each     #
+#  hash reference has the two fields {name} and {type}.  So a sample    #
+#  usage code fragment might look like this:                            #
+#     my $requiresname = $allPackages->{lam}{requires}[0]->{name}       #
+#     my $requirestype = $allPackages->{lam}{requires}[0]->{type}       #
+#########################################################################
+
+  my($field,$package) = @_;
+  my $href;
+  my @list = ();
+  my $success = database_execute_command("read_records ".
+                "packages_$field package=$package type name", \@list);
+  Carp::carp("Could not do oda command 'read_records packages_$field ".
+       "package=$package type name'") if (!$success);
+  foreach my $item (@list)
+    {
+      my($type,$name) = split / /, $item, 2;
+      my $href;
+      $href->{type} = $type;
+      $href->{name} = $name;
+      push @{ $allPackages->{$package}{$field} }, $href;
+    }
+}
+
+sub getAllPackages # -> $allPackages
+{
+#########################################################################
+#  Subroutine: getAllPackages                                           #
+#  Parameters: None                                                     #
+#  Returns   : Reference to a hash containing info about packages.      #
+#  Any time you need to find out all the packages available for OSCAR   #
+#  (and all associated information), call this subroutine.  It first    #
+#  gets all package info from the oda database.  Then it uses opd       #
+#  (OSCAR package downloader) to get information from various           #
+#  repositories about additional packages available.  All information   #
+#  is integrated into a single hash reference.  Info in the hash:       #
+#     Information    How to access     Value                            #
+#     -----------    -------------     -----                            #
+#     ShortName      keys of the hash  string w/o spaces                #
+#     ShortName      {name}            duplication of above info        #
+#     LongName       {package}         long string                      #
+#     Installable    {installable}     0 or 1                           #
+#     Class          {class}           core/included/third party        #
+#     Information    {description}     long string                      #
+#     Loc/Vers/Rep   {location}        Array of hash references:        #
+#                    {location}[0]->{location} - Local or opd           #
+#                    {location}[0]->{version} - version number: #.#.#-# #
+#                    {location}[0]->{repository} - URL of (opd) package #
+#     Provides       {provides}        Array of hash references:        #
+#     Requires       {requires}        Array of hash references:        #
+#     Conflicts      {conflicts}       Array of hash references:        #
+#                    {provides}[0]->{name} - Name of thing provided     #
+#                    {provides}[0]->{type} - package, rpm, file, etc.   #
+#########################################################################
+
+  # If this function has been called once, then it should have already
+  # found all available packages and stored it in the $allPackages cache.
+  return $allPackages if ($allPackages);
+
+  # First, get information on all packages in the local OSCAR packages dir
+  my @requested = ("name","package","installable","class","description",
+                   "version_major","version_minor",
+                   "version_subversion","version_release",
+                   "packager_name","packager_email",
+                   "filter_architecture","filter_distribution",
+                   "filter_distribution_version");
+  $allPackages = database_read_table_fields("packages",\@requested,undef);
+
+  my $version;
+  my $href;
+  foreach my $pack (keys %{ $allPackages })
+    {
+      undef $href;
+
+      # For each of the OSCAR packages read in above, add a "location" field
+      # to correspond to the Location column of the packagesTable.  This
+      # field is actually an array of hash references, each containing the
+      # three fields {location}, {version}, and {repository}.  Here, the
+      # {version} is actually a single string using the version_major,
+      # version_minor, version_subversion, and version_release fields.  
+
+      $version = "";
+      $version  = $allPackages->{$pack}{version_major} if 
+                  (length $allPackages->{$pack}{version_major} > 0);
+      $version .= '.' . $allPackages->{$pack}{version_minor} if 
+                  (length $allPackages->{$pack}{version_minor} > 0);
+      $version .= '.' . $allPackages->{$pack}{version_subversion} if 
+                  (length $allPackages->{$pack}{version_subversion} > 0);
+      $version .= '-' . $allPackages->{$pack}{version_release} if 
+                  (length $allPackages->{$pack}{version_release} > 0);
+
+      $href->{version} = $version;
+      $href->{location} = "Local";
+      $href->{repository} = "";
+      push @{ $allPackages->{$pack}{location} }, $href;
+
+      # Next, get the provides, requires, and conflicts lists for each
+      # package.  Here the {provides}, {requires}, and {conflicts} fields
+      # are arrays of hash references, each containing the two fields {name}
+      # and {type}.  
+
+      addTypeNameFieldToPackage("provides",$pack);
+      if ((!defined $allPackages->{$pack}{provides}) ||
+          (scalar @{ $allPackages->{$pack}{provides} } < 1))
+        { # If nothing else, a package provides itself.
+          my $href;
+          $href->{type} = "package";
+          $href->{name} = $pack;
+          push @{ $allPackages->{$pack}{provides} }, $href;
+        }
+
+      addTypeNameFieldToPackage("requires",$pack);
+      addTypeNameFieldToPackage("conflicts",$pack);
+    }
+
+  getDependencyTree();
+  return $allPackages;
+}
+
+sub getSubField
+{
+#########################################################################
+#  Subroutine : getSubField                                             #
+#  Parameters : 1. The short name of an OSCAR package.                  #
+#               2. The subfield name (can be one of 'provides',         #
+#                  'requires', or 'conflicts').                         #
+#  Returns    : A hash reference containing all of the names for the    #
+#               passed-in subfield.                                     #
+#  This subroutine is called to get the "provides", "requires", and     #
+#  conflicts.  It returns a list of those fields defined in             #
+#  $allPackages.  Note that the "type" field must either be             #
+#  'package' (meaning an OSCAR package) or empty (so default to an      #
+#  OSCAR package).                                                      #
+#########################################################################
+
+  my($package,$field) = @_;
+  my($rethash);
+
+  if ($package && $field && (defined $allPackages->{$package}{$field}))
+    {
+      foreach my $href (@{ $allPackages->{$package}{$field} } )
+        {
+          if (((defined $href->{type}) && ($href->{type} eq 'package')) ||
+              (!defined $href->{type}) )
+            {
+              $rethash->{$href->{name}} = 1 if (defined $href->{name});
+            }
+        }
+    }
+
+  return $rethash;
+}
+
+sub getDependencyTree
+{
+#########################################################################
+#  Subroutine : getDependencyTree                                       #
+#  Parameters : None                                                    #
+#  Returns    : Nothing                                                 #
+#  This subroutine builds up the dependency tree for later use.  We     #
+#  need to do this since the 'requires' and 'conflicts' fields can use  #
+#  names (aliases) defined in the 'provides' fields which may be        #
+#  different than the name of the package directory.  By building this  #
+#  tree using only package directory names, it's easier to handle       #
+#  checkbutton pushes later.  Each package might have other packages    #
+#  it requires (which means that there are packages that are required   #
+#  BY other packages) and other packages that it conflicts with.  Thus  #
+#  each 'requires' and 'conflicts' needs a bidirectional link in the    #
+#  dependency tree.  Access items in the dependency like this:          #
+#      if ($dependtree->{packageA}{requires}{packageB}) { ... }         #
+#      if ($dependtree->{packageB}{isrequiredby}{packageA}) { ... }     #
+#      if ($dependtree->{packageC}{conflictswith}{packageD}) { ... }    #
+#########################################################################
+
+  return $dependtree if ($dependtree);
+
+  # First, create a mapping for what provides what
+  getAllPackages();
+  my $providesmap;
+  foreach my $package (keys %{ $allPackages })
+    {
+      my($providesaliashash) = getSubField($package,'provides');
+      foreach my $provideskey (keys %{ $providesaliashash } )
+        {
+          $providesmap->{$provideskey} = $package;
+        }
+    }
+
+  # Then build dependency tree for requirements and conflicts
+  foreach my $package (keys %{ $allPackages })
+    { # First the 'requires' list
+      my($reqaliashash) = getSubField($package,'requires');
+      foreach my $hashkey (keys %{ $reqaliashash } )
+        { # If A requires B, then B is "required by" A
+          $dependtree->{$package}{requires}{$providesmap->{$hashkey}} = 1;
+          $dependtree->{$providesmap->{$hashkey}}{isrequiredby}{$package} = 1;
+        }
+      # Then the 'conflicts' list - notice conflicts are bidirectional
+      my($conaliashash) = getSubField($package,'conflicts');
+      foreach my $hashkey (keys %{ $conaliashash } )
+        {
+          $dependtree->{$package}{conflictswith}{$providesmap->{$hashkey}} = 1;
+          $dependtree->{$providesmap->{$hashkey}}{conflictswith}{$package} = 1;
+        }
+    }
+
+  return $dependtree;
+}
+
+sub getRequiresList
+{
+#########################################################################
+#  Subroutine: getRequiresList                                          #
+#  Parameters: 1. A hash of required packages.                          #
+#              2. The package we are checking for requirements.         #
+#  This recursive subroutine is called when a checkbutton is selected.  #
+#  It takes the name of a package and (recursively) finds all of the    #
+#  packages that it needs.  This list is a simple boolean hash returned #
+#  as a hash ref with the required packages as the keys.                #
+#########################################################################
+
+  my($packhash,$package) = @_;
+
+  # Mark this package as required
+  $packhash->{$package} = 1;
+  # For each package in the list, check for its list of required packages
+  foreach my $hashkey (keys %{ $dependtree->{$package}{requires} } )
+    {
+      $packhash = getRequiresList($packhash,$hashkey) if
+        (!defined $packhash->{$hashkey});
+    }
+
+  return $packhash;
+}
+
+sub getIsRequiredByList
+{
+#########################################################################
+#  Subroutine: getIsRequiredByList                                      #
+#  Parameters: 1. A hash of required packages.                          #
+#              2. The package we are checking for dependencies.         #
+#  This recursive subroutine is called when a checkbutton is            #
+#  unselected.  Similar to getRequiresList, this subroutine takes the   #
+#  name of a package and (recursively) finds all of the packages that   #
+#  need it (ie. "is required by").  This list is a simple boolean hash  #
+#  returned as a hash ref with the requiring packages as the keys.      #
+#########################################################################
+
+  my($packhash,$package) = @_;
+
+  # Mark this package as "required by" something else
+  $packhash->{$package} = 1;
+  # For each package in the list, check for its list of requiring packages
+  foreach my $hashkey (keys %{ $dependtree->{$package}{isrequiredby} } )
+    {
+      $packhash = getIsRequiredByList($packhash,$hashkey) if
+        (!defined $packhash->{$hashkey});
+    }
+
+  return $packhash;
+}
+
+sub getConflictsList
+{
+#########################################################################
+#  Subroutine: getConflictsList                                         #
+#  Parameter : A hash of required packages.                             #
+#  This subroutine is called when a checkbutton is selected.  It takes  #
+#  in a list of required packages (generated by getRequiredList) and    #
+#  checks each one for a list of conflicts.  The union of all of the    #
+#  conflicts is returned as a hash ref with the conflicting packages    #
+#  as the keys.                                                         #
+#########################################################################
+
+  my($reqhash) = @_;
+  my($conhash);
+
+  foreach my $reqkey (keys %{ $reqhash } )
+    {
+      foreach my $conkey (keys %{ $dependtree->{$reqkey}{conflictswith} } )
+        {
+          $conhash->{$conkey} = 1
+        }
+    }
+
+  return $conhash;
+}
+
+sub createDefaultPackageSet # -> ($success)
+{
+#########################################################################
+#  Subroutine: createDefaultPackageSet                                  #
+#  Parameters: None                                                     #
+#  Returns   : Success (1) or failure (0)                               #
+#  This subroutine should be called when there are no package sets      #
+#  currently in the oda database.  We first create a new package set    #
+#  named "Default".  Then we make it the "selected" package set.        #
+#  Finally we add all available packages to this package set.           #
+#########################################################################
+
+  # First create a new package set name 'Default'
+  my $success = database_execute_command("create_package_set Default");
+  if ($success)
+    { 
+      # Make Default the "selected" package set
+      $success = database_execute_command("set_selected_package_set Default");
+
+      # Then, add all packages to this Default set
+      getAllPackages();
+      foreach my $pack (keys %{ $allPackages })
+        {
+          $success = database_execute_command("add_package_to_package_set " .
+                       "$pack Default"); 
+          Carp::carp("Could not do oda command 'add_package_to_package_set " .
+            "$pack Default'") if (!$success);
+        }
+    }
+
+  return $success;
+}
+
+sub populatePackageSetList
+{
+#########################################################################
+#  Subroutine: populatePackageSetList                                   #
+#  Parameters: A widget to add items to.                                #
+#  Returns   : Nothing                                                  #
+#  This subroutine takes in a widget which has both the "insertItem"    #
+#  and "clear" methods and adds package set names in alphabetical       #
+#  order.  This is used by the packageSetComboBox and the               #
+#  packageSetsListBox.                                                  #
+#########################################################################
+
+  my $widget = shift;
+
+  return if (!$widget);
+
+  $widget->clear();
+  my @packageSets;           # List of package sets in oda
+  my $createDefault = 0;     # Should we create a "Default" package set?
+
+  my $success = database_execute_command("package_sets",\@packageSets);
+  if ($success)
+    {
+      if ((scalar @packageSets) > 0) # Make sure there's at least 1 package set
+        {
+          foreach my $pkg (sort { lc($a) cmp lc($b) } @packageSets)
+            { # Insert Package Set names in alphabetical order - ignore case
+              $widget->insertItem($pkg,-1)
+            }
+
+          # For the packageSetComboBox, set the "selected" package set
+          if ($widget->className() eq "QComboBox")
+            {
+              my @selpack;
+              my $success = database_execute_command("selected_package_set",
+                \@selpack);
+              $widget->setCurrentText($selpack[0]) if (scalar @selpack > 0);
+            }
+        }
+      else
+        {
+          $createDefault = 1;
+        }
+    }
+  else
+    {
+      $createDefault = 1;
+    }
+  
+  if ($createDefault)  # Need to have at least 1 package set
+    {
+      $success = createDefaultPackageSet();
+      $widget->insertItem("Default",-1) if ($success);
+      # Update the ComboBox and Table to reflect newly created package set
+      emit SelectorManageSets::refreshPackageSets();
+    }
+}
+
+sub compactSpaces
+{
+#########################################################################
+#  Subroutine: compactSpaces                                            #
+#  Parameters: (1) The string from which to remove spaces               #
+#              (2) If $compact==1, then compress multi spaces to 1      #
+#              (3) If $commas==1, then change commas to spaces          #
+#  Returns   : The new string with spaces removed/compressed.           #
+#  This subroutine strips off the leading and trailing spaces from a    #
+#  string.  You can also pass a second parameter flag (=1) to compact   #
+#  multiple intervening spaces down to one space.  You can also pass a  #
+#  third parameter flag (=1) to change commas to spaces prior to doing  #
+#  the space removal/compression.                                       #
+#########################################################################
+
+  my($string,$compact,$commas) = @_;
+
+  $string =~ s/,/ /g if ($commas);    # Change commas to spaces
+  $string =~ s/^ *//;                 # Strip off leading spaces
+  $string =~ s/ *$//;                 # Strip off trailing spaces
+  $string =~ s/ +/ /g if ($compact);  # Compact multiple spaces
+
+  $string;  # Return string to calling procedure;
+}
+
+1;
+
