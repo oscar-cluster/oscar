@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.15 2002/01/18 05:00:14 mjbrim Exp $
+% $Id: detailed.tex,v 1.16 2002/01/18 05:13:18 mjbrim Exp $
 %
 % $COPYRIGHT$
 %
@@ -518,35 +518,35 @@ assigned IP addresses. DHCP uses the MAC address to assign IP
 addresses to the clients.
 
 In order to collect the MAC addresses,  press the Step 3 button
-  of the wizard entitled \button{Setup Networking}. The
-  OSCAR network utility dialog box will be displayed.
-  To start the collection, press the \button{Start Collecting} button and then
-  network boot the first client.  As the clients broadcast, their MAC addresses
-  will show up in the left hand window. Select a MAC address and the appropriate
-  client in the right side window. Click \button{Assign MAC to node} to 
-  associate that MAC address with that node. If you would like to make 
-  specific nodes associated with specific client definitions, you should
-  boot them one at a time. If you don't care which node gets associated
-  with which client, you may boot them all at once and randomly assign
-  the MAC addresses.
+of the wizard entitled \button{Setup Networking}. The
+OSCAR network utility dialog box will be displayed.
+To use this tool, you will need to know
+how to network boot your client nodes.  For instructions on doing
+so, see Appendix~\ref{app:net-boot-client-nodes}. A sample dialog
+is shown in Figure~\ref{fig:detailed-collect-mac}. 
 
-  When you have collected all of the MAC addresses, click the \button{Stop Collecting}
-  button and then click the \button{Setup DHCP Server} button to configure it.
+To start the collection, press the \button{Start Collecting} button and then
+network boot the first client.  As the clients broadcast, their MAC addresses
+will show up in the left hand window. Select a MAC address and the appropriate
+client in the right side window. Click \button{Assign MAC to node} to 
+associate that MAC address with that node. If you would like to make 
+specific nodes associated with specific client definitions, you should
+boot them one at a time. If you don't care which node gets associated
+with which client, you may boot them all at once and randomly assign
+the MAC addresses.
 
-  In order to use this tool, you will need to know
-  how to network boot your client nodes.  For instructions on doing
-  so, see Appendix~\ref{app:net-boot-client-nodes}. A sample dialog
-  is shown in Figure~\ref{fig:detailed-collect-mac}. 
+When you have collected all of the MAC addresses, click the \button{Stop Collecting}
+button and then click the \button{Setup DHCP Server} button to configure it.
  
-  You may also configure your remote boot method from this panel. The
-  \button{Build Autoinstall Floppy} button will build a boot floppy for
-  client nodes that do not support PXE booting. The \button{Setup Network 
-  Boot} button will configure the server to answer PXE boot requests if
-  your client hardware supports it. See Appendix~\ref{app:net-boot-client-nodes}
-  for more details.
-  When you have collected the
-  addresses for all your client nodes, and completed the networks setup
-  press \button{Close}.
+You may also configure your remote boot method from this panel. The
+\button{Build Autoinstall Floppy} button will build a boot floppy for
+client nodes that do not support PXE booting. The \button{Setup Network 
+Boot} button will configure the server to answer PXE boot requests if
+your client hardware supports it. See Appendix~\ref{app:net-boot-client-nodes}
+for more details.
+When you have collected the
+addresses for all your client nodes, and completed the networks setup
+press \button{Close}.
 
 \begin{figure}[htbp]
   \begin{center}
