@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.29 2002/10/29 02:01:16 tfleury Exp $
+#   $Id: Package.pm,v 1.30 2002/10/29 05:28:02 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ package OSCAR::Package;
 
 
 use strict;
-use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL @COREPKGS %PHASES);
+use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL %PHASES);
 use base qw(Exporter);
 use OSCAR::PackageBest;
 use OSCAR::Logger;
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.29 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.30 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -50,16 +50,13 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
 			   "rpm",
 			   "requires", "conflicts", "provides" ]);
 
-# This defines which packages are core packages (i.e. MUST be
-# installed before the wizard comes up).  
-
-@COREPKGS = qw(c3 sis switcher);
-
 # The list of phases that are valid for package install.  For more
 # info, please see the developement doc
 
 %PHASES = (
 	   setup => ['setup'],
+	   pre_configure => ['pre_configure'],
+	   post_configure => ['post_configure'],
            post_server_install => ['post_server_install',
 				   'post_server_rpm_install'],
            post_rpm_install => ['post_client_rpm_install',

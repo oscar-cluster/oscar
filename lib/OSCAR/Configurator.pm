@@ -1,3 +1,13 @@
+#
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: Configurator.pm,v 1.4 2002/10/29 05:28:02 jsquyres Exp $
+# 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
 ##############################################################
@@ -11,7 +21,7 @@ our @EXPORT = qw(populateConfiguratorList displayPackageConfigurator);
 use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use OSCAR::Configbox; # For the configuration HTML form display
-use OSCAR::Package;   # For list_pkg()
+use OSCAR::Package;   # For list_pkg() and run_pkg_script()
 use OSCAR::Logger;    # For oscar_log_section()
 use OSCAR::Selector;
 use XML::Simple;      # Read/write the .selection config files
@@ -110,6 +120,14 @@ sub doneButtonPressed
     {
       $kid->UnmapWindow;
     }
+
+  # Call the post-configure API script in each selected package
+  my @packages = list_install_pkg();
+  foreach my $pkg (@packages) {
+      if (!run_pkg_script($pkg, "post_configure", 1)) {
+	  carp("Post-configure script for package \"$pkg\" failed");
+      }
+  }
 
   # Write out a message to the OSCAR log
   oscar_log_subsection("Step 2: Completed successfully");
@@ -241,6 +259,15 @@ sub displayPackageConfigurator # ($parent)
   # Then create the scrollable package listing and place it in the grid.
   populateConfiguratorList();
   oscar_log_section("Running step 2 of the OSCAR wizard");
+
+  # Call the pre-configure API script in each selected package
+  my @packages = list_install_pkg();
+  foreach my $pkg (@packages) {
+      if (!run_pkg_script($pkg, "pre_configure", 1)) {
+	  carp("Pre-configure script for package \"$pkg\" failed");
+      }
+  }
+
   $root->MapWindow;   # Put the window on the screen.
 }
 
