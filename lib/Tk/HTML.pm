@@ -17,6 +17,7 @@
 #
 # Written by Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
 #
+# Code is based on Tk::HTML written by Nick Ing-Simmons 24 Jan 1998
 
 package Tk::HTML;
 require Tk::ROText;
@@ -25,7 +26,7 @@ require Tk::HTML::Handler;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '$Id: HTML.pm,v 1.2 2002/10/29 19:12:09 tfleury Exp $';
+$VERSION = '$Id: HTML.pm,v 1.3 2002/10/29 19:18:27 tfleury Exp $';
 
 @ISA = qw(Tk::Derived Tk::ROText);
 use strict;

@@ -17,7 +17,8 @@
 #
 # Written by Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
 #
-
+# Code is based on Tk::HTML written by Nick Ing-Simmons 24 Jan 1998
+  
 package Tk::UserAgent;
 require Tk;
 require Tk::LabEntry;
@@ -28,7 +29,7 @@ use LWP();
 
 
 use vars qw($VERSION);
-$VERSION = '$Id: Web.pm,v 1.2 2002/10/29 19:12:09 tfleury Exp $';
+$VERSION = '$Id: Web.pm,v 1.3 2002/10/29 19:18:27 tfleury Exp $';
 
 @ISA = qw(LWP::UserAgent);
 use strict;
@@ -79,7 +80,7 @@ sub get_basic_credentials
 package Tk::Web;
 
 use vars qw($VERSION);
-$VERSION = '$Id: Web.pm,v 1.2 2002/10/29 19:12:09 tfleury Exp $';
+$VERSION = '$Id: Web.pm,v 1.3 2002/10/29 19:18:27 tfleury Exp $';
 
 require Tk::HTML;
 
