@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.45 2002/09/11 07:18:40 jsquyres Exp $
+% $Id: detailed.tex,v 1.46 2002/09/14 20:38:14 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -806,8 +806,18 @@ will extend or contract the set of defined clients in the cluster.
 Press the button of the wizard entitled \button{Add OSCAR Clients}. A
 sample dialog is shown in Figure~\ref{fig:detailed-add-node}. These
 steps should seem familiar -- they are same as steps 3, 4 and 5 of the
-initial install. Refer to Sections~\ref{det:defclients},
+initial install.  Refer to Sections~\ref{det:defclients},
 \ref{det:setupnetwork}, and \ref{det:completeinstall}.
+
+Note that when adding nodes, in the Defining OSCAR Clients step (step
+1), you will typically need to change the following fields to suit
+your particular configuration:
+
+\begin{itemize}
+\item Number of hosts
+\item Starting number
+\item Starting IP
+\end{itemize}
 
 \begin{figure}[htbp]
   \begin{center}
