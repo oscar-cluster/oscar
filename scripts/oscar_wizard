@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.36 2002/10/29 14:32:06 jsquyres Exp $
+# $Id: oscar_wizard,v 1.37 2002/10/29 18:35:54 jsquyres Exp $
 #
 
 use strict;
@@ -283,28 +283,18 @@ sub postimagebuild {
     my ($vars) = @_;
     my $step_number = $$vars{step_number};
 
-    # Parent window is not already busy, so don't make it unbusy
-    
-    my $cmd_vars = { 
-	cmd => "./post_rpm_install $$vars{imgname} $interface",
-	success => {
-	    message => "Successfully built the OSCAR client image",
-	    unbusy => 0,
-	    return_status => 1,
-	},
-	failure => {
-	    message => "Failed to properly build the OSCAR client image; please check the logs",
-	    unbusy => 0,
-	    return_status => 0,
-	}
-    };
-    my $ret = run_command($window, $step_number, $cmd_vars);
-    
+    my $cmd = "./post_rpm_install $$vars{imgname} $interface";
+    oscar_log_subsection("Step $step_number: Running: $cmd");
+    !system($cmd) or (carp($!), return undef);
+    oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
+
     # All done -- remove the temp file that held all the RPM filenames
     
     unlink($save_text);
 
-    $ret;
+    oscar_log_subsection("Step $step_number: Completed successfully");
+
+    1;
 }
 
 ###########################################################################
@@ -390,11 +380,10 @@ sub run_tests {
 
     oscar_log_section("Running step $step_number of the OSCAR wizard: Test cluster setup");
 
-    my $cmd = "cd ../testing && xterm -sl 500 -e ./test_cluster --wait";
+    my $cmd = "cd $ENV{OSCAR_HOME}/testing && xterm -sl 500 -e ./test_cluster --wait";
     oscar_log_subsection("Step $step_number: Running tests: $cmd");
     !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
     oscar_log_subsection("Step $step_number: Not waiting for completion");
     $window->Unbusy();
     return 1;
 }
-
