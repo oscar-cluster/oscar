@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.7 2001/12/17 22:41:59 mchasal Exp $
+% $Id: detailed.tex,v 1.8 2001/12/17 23:14:09 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -145,34 +145,19 @@ laid out as show in Table~\ref{tab:oscar-dir-struct} (again assuming
 %
       \file{/root/OSCAR-\oscarversion/README.first} & README first document \\
 %
-      \file{/root/OSCAR-\oscarversion/c3} & contains files for C3
-      installation \\
+      \file{/root/OSCAR-\oscarversion/packages} & contains rpms and installation
+      files for the OSCAR packages \\
 %
       \file{/root/OSCAR-\oscarversion/docs} & OSCAR documentation directory \\
 %
       \file{/root/OSCAR-\oscarversion/install\_cluster} & main installation
       script \\
 %
-      \file{/root/OSCAR-\oscarversion/lui} & contains files for LUI
-      installation \\
-%
-      \file{/root/OSCAR-\oscarversion/oscarResources} & contains sample OSCAR
-      resources \\
-%
-      \file{/root/OSCAR-\oscarversion/oscarRPM} & contains RPMs for software
-      installed \\
-%
-      \file{/root/OSCAR-\oscarversion/pbs} & contains files for PBS
-      installation \\
-%
-      \file{/root/OSCAR-\oscarversion/prog\_env} & contains files for MPI and
-      PVM installations \\
+      \file{/root/OSCAR-\oscarversion/oscarsamples} & contains sample OSCAR
+      files \\
 %
       \file{/root/OSCAR-\oscarversion/scripts} & contains scripts that do most
       of the work \\
-%
-      \file{/root/OSCAR-\oscarversion/systemimager} & contains files for
-      SystemImager installation \\
 %
       \file{/root/OSCAR-\oscarversion/testing} & contains OSCAR Cluster Test
       software \\
@@ -293,7 +278,7 @@ file system by issuing these commands:
 \endchange
 If you wish to save space on your server's hard drive and will be
 using the default RPM list supplied with OSCAR (see
-Section~\ref{sec:detailed-cluster-def},
+Section~\ref{sec:detailed-cluster-def}),
 you should only copy over the RPMs listed in the sample.
 \begchange
 For the Red Hat 7.1 distribution, this can be done for each CD with
@@ -339,17 +324,17 @@ directory as shown above. The script will first run the part one
 server configuration script, which does the following:
 
 \begin{enumerate}
-\item copies Oscar rpms to /tftpboot/rpm
-\item installs all server Oscar rpms
+\item copies OSCAR rpms to /tftpboot/rpm
+\item installs all OSCAR server rpms
 \item updates \file{/etc/hosts} with OSCAR aliases
 \item updates \file{/etc/exports} 
-\item adds Oscar paths to \file{/etc/profile} 
+\item adds OSCAR paths to \file{/etc/profile} 
 \item updates system startup (\file{/etc/rc.d/init.d}) scripts
 \item restarts affected services
+\item if all the above is successful, launch \file{oscar_wizard}
 \end{enumerate}
   
-If the part one script finishes successfully, \file{install\_cluster}
-will then start the OSCAR wizard. The wizard, as shown in
+The wizard, as shown in
 Figure~\ref{fig:detailed-oscar-wizard}, is provided to guide you
 through the rest of the cluster installation.  To use the wizard, you
 will complete a series of steps, with each step being initiated by the
@@ -384,10 +369,10 @@ or 2, please refer to the SIS man pages.
 
 \subsubsection{Build the Image} 
 
-Press the Step 1 button of the wizard entitled \button{Build the OSCAR
-client image}. A dialog will be displayed. In most cases, the defaults 
+Press the Step 1 button of the wizard entitled \button{Build OSCAR
+Client Image}. A dialog will be displayed. In most cases, the defaults 
 will be sufficient. You should verify that the disk partition file is
-the proper type for your client nodes disks. The sample files have the
+the proper type for your client nodes. The sample files have the
 disk type as the last part of the filename. You may also want to change
 the post installation action and the IP assignment methods.
 \msg{It is important to note that if you wish to
@@ -402,8 +387,7 @@ Building the image will take a few minutes, the progress bar on the bottom
 will give you the status and a small dialog will appear when the image
 is complete.
   
-A sample dialog with input and successful output is
-shown in Figure~\ref{fig:detailed-build-image}. 
+A sample dialog is shown in Figure~\ref{fig:detailed-build-image}. 
 
 \begin{figure}[htbp]
   \begin{center}
@@ -437,8 +421,8 @@ portion that you specify will be used.
 Press the Step 2 button of the wizard entitled \button{Define OSCAR
  Clients}. In the dialog box that is displayed, enter the
 appropriate information. Again the defaults will be correct in most
-cases. At a minumum, you will need to enter the number of clients that you want
-to create.
+cases. At a minumum, you will need to enter a value in the \field{Number of Hosts}
+to specify how many clients you want to create.
 
 \begin{enumerate}
 
@@ -466,9 +450,10 @@ will be incremented for each subsequent client.
 
 \end{enumerate}
   
-When finished entering information, press the \button{Add Clients} button.
-A sample dialog with input and output is shown in
-Figure~\ref{fig:detailed-define-clients}. After the clients are created,
+When finished entering information, press the \button{Addclients} button.
+A sample dialog is shown in Figure~\ref{fig:detailed-define-clients}. 
+
+After the clients are created,
 a dialog will pop up with the completion status. After closing that 
 you may press the \button{Close} button and continue with the next step.
 
@@ -484,7 +469,7 @@ you may press the \button{Close} button and continue with the next step.
 
 The MAC address of a client
 is a twelve hex-digit hardware address embedded in the client's
-ethernet adapter. MAC addresses look like 00:0A:CC:01:02:03, as
+ethernet adapter. MAC addresses look like, \emp{00:0A:CC:01:02:03}, as
 opposed to the familiar format of IP addresses. These MAC addresses
 uniquely identify client machines on a network before they are
 assigned IP addresses. DHCP uses the MAC address to assign IP 
@@ -519,7 +504,7 @@ In order to collect the MAC addresses,  press the Step 3 button
   for more details.
   When you have collected the
   addresses for all your client nodes, and completed the networks setup
-  press \button{Done}.
+  press \button{Close}.
 
 \begin{figure}[htbp]
   \begin{center}
