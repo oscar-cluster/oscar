@@ -21,6 +21,7 @@ set tempdir=/tmp/license-oscar.$$
 mkdir -p $tempdir
 set clicense=$tempdir/license.hdr.c
 set cpplicense=$tempdir/license.hdr.cpp
+set flicense=$tempdir/license.hdr.f
 set shelllicense=$tempdir/license.hdr.shell
 set textlicense=$tempdir/license.hdr.text
 set texlicense=$tempdir/license.hdr.tex
@@ -39,6 +40,9 @@ sed -e 's/^/ * /' $textlicense > $clicense
 # C++ comment file
 sed -e 's/^/\/\/ /' $textlicense > $cpplicense
 
+# Fortran comment file
+sed -e 's/^/c /' $textlicense > $flicense
+
 # Shell comment file
 sed -e 's/^/# /' $textlicense > $shelllicense
 
@@ -56,6 +60,18 @@ cat > $sedscript <<EOF
 # C with /* */ style comments
 /\*.*\\\$COPYRIGHT\\\$/ {
 	r $clicense
+	d
+}
+
+# Fortran with c style comments
+/c.*\\\$COPYRIGHT\\\$/ {
+	r $flicense
+	d
+}
+
+# Fortran with C style comments
+/C.*\\\$COPYRIGHT\\\$/ {
+	r $flicense
 	d
 }
 
