@@ -170,7 +170,7 @@ Details:
               $odasuccess = OSCAR::Database::database_execute_command(
                             $command,\@odaresult,\@odaerror);
 
-              In effect, the $odasuccess varilable holds 0 or 1 for the return
+              In effect, the $odasuccess variable holds 0 or 1 for the return
               value of oda's execute_command.  This value isn't necessarily
               too useful since it is set to 0 only upon a major database
               problem.  The @odaresult array is the actual data returned by
@@ -341,11 +341,11 @@ signalButtonShown(char* childname, char* buttonname, bool shown)
     Tasks must have three buttons at the bottom for navigation among the
     various steps: Back, Close, and Next.  The first step doesn't need a Back
     button and the last step doesn't need a Next button.  However, since each
-    Task should have to care where it appears in the execution path, we need a
-    way to have the InstallerWorkspace tell a Task to hide/show its buttons.
-    When the InstallerWorkspace wants one of its child Tasks to hide/show
-    either the Back or Next button, it emits this signal with the following
-    three arguments:
+    Task shouldn't have to care where it appears in the execution path, we
+    need a way to have the InstallerWorkspace tell a Task to hide/show its
+    buttons.  When the InstallerWorkspace wants one of its child Tasks to
+    hide/show either the Back or Next button, it emits this signal with the
+    following three arguments:
       (1) the name of the child (actually the name of the Task directory),
       (2) the name of the button, either "Back" or "Next", and
       (3) 0 for hidden, 1 for shown.
@@ -538,14 +538,14 @@ run within the Installer Workspace.
     # At the top of your Main Window package:
     use Qt::signals
         taskToolClosing => ['char*'],
-        backButtonWasClicked => ['char*'],
-        nextButtonWasClicked => ['char*'];
+        backButtonWasClicked => ['char*'],           # Needed by Tasks only
+        nextButtonWasClicked => ['char*'];           # Needed by Tasks only
     use Qt::slots
-        setButtonShown => ['char*','char*','bool'],
         reReadOda => ['char*'],
-        backButton_clicked => [],
-        nextButton_clicked => [],
-        closeEvent => ['QCloseEvent'];
+        closeEvent => ['QCloseEvent'],
+        setButtonShown => ['char*','char*','bool'],  # Needed by Tasks only
+        backButton_clicked => [],                    # Needed by Tasks only
+        nextButton_clicked => [];                    # Needed by Tasks only
 
 
     sub init
@@ -555,13 +555,13 @@ run within the Installer Workspace.
       if (parent())
         {
           Qt::Object::connect(parent(),
-                              SIGNAL 'signalButtonShown(char*,char*,bool)',
-                              SLOT   'setButtonShown(char*,char*,bool)');
-          Qt::Object::connect(parent(),
                               SIGNAL 'odaWasUpdated(char*)',
                               SLOT   'reReadOda(char*)');
 
           # For Tasks, do stuff when we click the Back or Next Buttons
+          Qt::Object::connect(parent(),
+                              SIGNAL 'signalButtonShown(char*,char*,bool)',
+                              SLOT   'setButtonShown(char*,char*,bool)');
           Qt::Object::connect(backButton, 
                               SIGNAL 'clicked()', 
                               SLOT   'backButton_clicked(char*)');
