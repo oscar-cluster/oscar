@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.7 2001/08/21 18:22:42 geiselha Exp $
+% $Id: design.tex,v 1.8 2001/08/21 18:46:52 geiselha Exp $
 %
 % $COPYRIGHT$
 %
@@ -108,46 +108,38 @@ column name and {\em VALUE\/} is the corresponding column value for a row
 matching the input search critera.
 
 \subsubsection*{Syntax}%
-\index{Syntax}
 
 readDR.pl {\tt [}{\em options\/}{\tt ]} filename {\tt [}{\em column spec\/}{\tt ]} {\tt [}{\em filter spec\/}{\tt ]}
 
 \subsubsection*{Options}%
-\index{Options}
 
 The following options are recognized:
 
 \begin{description}
 
-\item[-D, --Directory]%
-\index{-D, --Directory@-D, --Directory}%
+\item[-D, --Directory={\em dirrectory name\/}]%
 \hfil\\
 Directory where data files are located.
 
 \item[-d, --distinct]%
-\index{-d, --distinct@-d, --distinct}%
 \hfil\\
 List only distinct occurences.
 
 \item[-c, --columns]%
-\index{-c, --columns@-c, --columns}%
 \hfil\\
 List columns names only.
 
 \item[-l, --list]%
-\index{-l, --list@-l, --list}%
 \hfil\\
 List all data filenames.
 
-\item[-s, --syntax]%
-\index{-s, --syntax@-s, --syntax}%
+\item[-s, --syntax={\em syntax name\/}]%
 \hfil\\
 Syntax to apply when reading data files.
 
 \end{description}
 
 \subsubsection*{Filename}%
-\index{Filename}
 
 The name of the data file to read. A complete list of all defined data files may
 be obtained by issuing the command:
@@ -155,7 +147,6 @@ be obtained by issuing the command:
 readDR.pl --list
 
 \subsubsection*{Column spec}%
-\index{Column spec}
 
 Column specification is a whitespace delimited list of column names to display.
 A complete list of all columns for a given data file may be obtained by issuing
@@ -166,7 +157,6 @@ readDR.pl --columns {\em filename\/}
 If no column specification is provided, all columns will be displayed.
 
 \subsubsection*{Filter spec}%
-\index{Filter spec}
 
 Filter specification consists of whitespace delimited {\em NAME=VALUE\/} pairs. If provided,
 only the rows in the given data file matching the filter specification will be displayed.
@@ -179,7 +169,7 @@ that the filter specification is an exact match only test.
 writeDR.pl --- script to add, update, delete ODR data
 
 \subsection*{SYNOPSIS}\begin{verbatim}
-  writeDR.pl --add client NAME=node1 DEFAULT_ROUTE=10.0.0.1 # add a client
+  writeDR.pl --add client NAME=node1 IP_DEFAULT_ROUTE=10.0.0.1 # add a client
   writeDR.pl -f NAME=node1 client STATE=enabled # update client 'node1'
   writeDR.pl -d client STATE=disabled # delete all clients with STATE=disabled
 \end{verbatim}
@@ -190,51 +180,42 @@ Parameters are read from the command line and are changes applied to the
 persistent data.
 
 \subsubsection*{Syntax}%
-\index{Syntax}
 
 writeDR.pl {\tt [}{\em options\/}{\tt ]} filename {\tt [}{\em column spec\/}{\tt ]}
 
 \subsubsection*{Options}%
-\index{Options}
 
 The following options are recognized:
 
 \begin{description}
 
-\item[-D, --Directory]%
-\index{-D, --Directory@-D, --Directory}%
+\item[-D, --Directory={\em dirrectory name\/}]%
 \hfil\\
 Directory where data files are located.
 
 \item[-F, --Force]%
-\index{-F, --Force@-F, --Force}%
 \hfil\\
 Force delete/update
 
 \item[-a, --add]%
-\index{-a, --add@-a, --add}%
 \hfil\\
 Add row to data file.
 
 \item[-d, --delete]%
-\index{-d, --delete@-d, --delete}%
 \hfil\\
 Delete row from data file.
 
-\item[-f, --filter={\em filer spec\/}]%
-\index{-f, --filter=filer spec@-f, --filter={\em filer spec\/}}%
+\item[-f, --filter={\em filter spec\/}]%
 \hfil\\
 Filter specification
 
-\item[-s, --syntax]%
-\index{-s, --syntax@-s, --syntax}%
+\item[-s, --syntax={\em syntax name\/}]%
 \hfil\\
 Syntax to apply when reading data files.
 
 \end{description}
 
 \subsubsection*{Filename}%
-\index{Filename}
 
 The name of the data file to write. A complete list of all defined data files may
 be obtained by issuing the command:
@@ -242,7 +223,6 @@ be obtained by issuing the command:
 readDR.pl --list
 
 \subsubsection*{Column spec}%
-\index{Column spec}
 
 Column specification consists of whitespace delimited {\em NAME=VALUE\/} pairs
 used to assign values during {\bf add} or {\bf update} operation. Column names
@@ -251,10 +231,9 @@ Column names not provided for an {\bf update} operation will be not be changed.
 Column spec is ignored for {\bf delete} operation.
 
 \subsubsection*{Filter spec}%
-\index{Filter spec}
 
 Filter specification consists of {\em NAME=VALUE\/} pairs specified on the {\bf {\tt --}filter} option.
-Multiple <--filter> options may be provided as in:
+Multiple {\tt --filter} options may be provided as in:
 
 -f A=2 --filter='B=3'
 
