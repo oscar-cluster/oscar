@@ -15,6 +15,7 @@ my @rpms = qw(
               c3-profiled
               c3
 	      hdf5-oscar
+	      hdf5-oscar-module
               lam-module
               lam
               loghost
