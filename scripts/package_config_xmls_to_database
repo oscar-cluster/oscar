@@ -235,13 +235,16 @@ if ( ! oda::connect( \%options,
     die "$0: cannot connect to the OSCAR database";
 }
 
-# initialize the oscar packages related database information by
+# Initialize the oscar packages related database information by
 # slurping in (or supplying default) package config.xml files
 # for all packages that were supplied in the oscar tarball/rpm
-# and that have been downloaded through opd before this
-# (the config.xml file for oda is a special case and is always 
+# and that have been downloaded through opd before this.
+# The config.xml file for oda is a special case and is always 
 # read in first since it defines a number of database tables
-# and is critical for oscar operations)
+# and is critical for oscar operations.
+# First find the list of all the package directories,
+# keeping a seperate list of the oda package directories
+# (a newer version of the oda package might have been downloaded).
 my @base_directories = @OSCAR::Package::PKG_SOURCE_LOCATIONS;
 print "Searching these directories for packages:\n";
 foreach my $base_directory ( @base_directories ) {
@@ -278,11 +281,16 @@ my $oda_directory = pop @valid_oda_directories;
 foreach my $skipped_oda_directory ( @valid_oda_directories ) {
     warn "$0: ignoring oda package directory $skipped_oda_directory";
 }
-my $script = "$oscar_home/scripts/read_package_config_xml_into_database";
-die "$0: cannot find oscar script $script"
-    if ! -x $script;
-my $script_with_options = $script;
-$script_with_options = "$script $option_strings" if $option_strings ne "";
+
+# Now slurp in the oda package config.xml file which will 
+# also define most of the database tables and fields.
+my $slurp_script = 
+    "$oscar_home/scripts/read_package_config_xml_into_database";
+die "$0: cannot find oscar config.xml slurping script $slurp_script"
+    if ! -x $slurp_script;
+my $script_with_options = $slurp_script;
+$script_with_options = "$script_with_options $option_strings" 
+    if $option_strings ne "";
 my $command = "$script_with_options $oda_directory oda";
 print "$0: executing:\n$command\n" if $options{debug};
 system($command) == 0 || die "$0: failed to execute:\n$command";
@@ -291,6 +299,23 @@ my @error_strings = ();
 die "$0: cannot find or execute the oda shortcut \"packages\""
     if ! oda::execute_command( \%options, "packages" );
 
+# Initialize the global database record in the oscar table,
+# since we can't set the installable bits on the other packages
+# without that data.
+print "Setting oscar global values record\n";
+my $set_global_script = 
+    "$oscar_home/scripts/set_global_oscar_values";
+die "$0: cannot find oscar set global variables script $set_global_script"
+    if ! -x $set_global_script;
+my $script_with_options = $set_global_script;
+$script_with_options = "$script_with_options $option_strings" 
+    if $option_strings ne "";
+my $command = "$script_with_options";
+print "$0: executing:\n$command\n" if $options{debug};
+system($command) == 0 || die "$0: failed to execute:\n$command";
+
+# Slurp in all the non-oda package config.xml files, populating
+# the database as needed.
 print "$0: directories=(" . join( ',', @directories ) . ")\n"
     if $options{debug};
 foreach my $directory ( @directories ) {
@@ -302,6 +327,9 @@ foreach my $directory ( @directories ) {
 	 $package ne "CVS" &&
 	 ! -e "$directory/.oscar_ignore" ) {
         print "$0: package=<$package>\n" if $options{debug};
+	my $script_with_options = $slurp_script;
+	$script_with_options = "$script_with_options $option_strings"
+	    if $option_strings ne "";
         my $command = "$script_with_options $directory";
 	print "$0: executing:\n$command\n" if $options{debug};
 	system($command) == 0 ||
