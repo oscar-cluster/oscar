@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.6 2003/07/04 14:27:39 jsquyres Exp $
+# $Id: Makefile.am,v 1.7 2003/08/06 01:38:45 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -37,6 +37,33 @@ docs:
 	     || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
 	  fi; \
 	done; 
+
+#
+# The PDF files may or may not be present (depending on what flavor
+# installation this is, whether it's a development tree, etc.).  Hence,
+# we can't list them directly in oscar_DATA.   So only install/uninstall 
+# them if there's already here.  Leverage using the real install/uninstall
+# automake target logic, but just override the oscar_DATA macro when the
+# files are actually present.
+#
+
+install-data-local:
+	@if test "$(oscar_DATA)" = "README"; then \
+	  for file in install.pdf user.pdf; do \
+	    if test -f $$file; then \
+              $(MAKE) oscar_DATA=$$file install; \
+	    fi; \
+	  done; \
+	fi
+
+uninstall-local:
+	@if test "$(oscar_DATA)" = "README"; then \
+	  for file in install.pdf user.pdf; do \
+	    if test -f $$file; then \
+              $(MAKE) oscar_DATA=$$file uninstall; \
+	    fi; \
+	  done; \
+	fi
 
 clean-local:
 	set fnord $(MAKEFLAGS); amf=$$2; \
