@@ -1,6 +1,6 @@
 package clamdr::API;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/core-packages/odr/lib/clamdr/Attic/API.pm,v 1.2 2001/08/30 14:57:34 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/core-packages/odr/lib/clamdr/Attic/API.pm,v 1.3 2001/10/22 00:44:59 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -25,9 +25,9 @@ use vars qw($VERSION $DATADIR $DBH @ISA @EXPORT @EXPORT_OK);
 
 require Exporter;
 
-@ISA = qw(Exporter AutoLoader);
+@ISA = qw(Exporter);
 @EXPORT = qw($DATADIR $DBH initialize query);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 use DBI;
 use Text::CSV_XS;
