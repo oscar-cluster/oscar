@@ -25,13 +25,12 @@ services="postfix sendmail exim"
 for service in $services; do
 
     # See if this is the rpm installed
-    rpm -qa $service > /dev/null 2>&1
+    rpm -qa | grep $service > /dev/null 2>&1
     if test "$?" = "0"; then
 	    service_name=$service
 	    break
     fi
 done
-
 
 # If $service_name contains the "postfix, sendmail, or exim",
 # each case handles the configuration corresponding to
