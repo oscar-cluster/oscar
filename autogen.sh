@@ -1,6 +1,6 @@
 #! /bin/sh 
 #
-# $Id: autogen.sh,v 1.4 2002/07/24 03:20:20 jsquyres Exp $
+# $Id: autogen.sh,v 1.5 2002/07/27 18:28:58 jsquyres Exp $
 #
 # This script is run on developer copies of OSCAR -- *not*
 # distribution tarballs.
@@ -177,11 +177,16 @@ EOF
 	    -a "$mm_file" != ".." \
 	    -a "$mm_file" != "CVS"; then
 	    mm_subdirs="$mm_file $mm_subdirs"
-	elif test -f "$mm_file" -a "$mm_file" != ".cvsignore" \
-	    -a "$mm_file" != "Makefile.am" \
-	    -a "$mm_file" != "Makefile.in" \
-	    -a "$mm_file" != "Makefile"; then
-	    mm_extra_dist="$mm_file $mm_extra_dist"
+	elif test -f "$mm_file"; then
+	    if test -a "$mm_file" != ".cvsignore" \
+		-a "$mm_file" != "Makefile.am" \
+		-a "$mm_file" != "Makefile.in" \
+		-a "$mm_file" != "Makefile" \
+		-a "`echo $mm_file | egrep '~$'`" == "" \
+		-a "`echo $mm_file | egrep '\.bak$'`" == "" \
+		; then
+		mm_extra_dist="$mm_file $mm_extra_dist"
+	    fi
 	fi
     done
     cd "$mm_curdir"
