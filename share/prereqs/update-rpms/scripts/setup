@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.3 2004/02/06 19:46:50 brechin Exp $
+# $Id: setup,v 1.4 2004/02/17 17:25:40 tuelusr Exp $
 #
 # setup script for the update-rpms package
 #
@@ -17,9 +17,12 @@
 # David N. Lombard  dnl@speakeasy.net
 # New version of update-rpms
 # script cleanup
+# Matt Garrett, <magarret@OSL.IU.edu>
+# Added oscar-httpd support
 
 # What does this do?!
-VERSION=$(echo "$Revision: 1.3 $" | cut --fields 2 --delimiter " ")
+# Just boilerplate a la all of the Perl scripts in OSCAR
+VERSION=$(echo "$Revision: 1.4 $" | cut --fields 2 --delimiter " ")
 
 PACKAGE=update-rpms
 if [[ $0 = /*/ ]] ; then
@@ -31,14 +34,42 @@ fi
 RPM_CACHE=/tftpboot/rpm
 RPM_DB_DIR=/var/cache/$PACKAGE
 
-CURRENT=$(ls --sort=version --reverse $MEDIA_DIR/$PACKAGE-*.noarch.rpm | head -1)
-#CURRENT=${CURRENT%.md5sum} # strip any .md5sum suffix
+CURRENT=$(ls -1 --sort=version --reverse "${MEDIA_DIR}/${PACKAGE}-*.noarch.rpm" |
+	head -1)
 
-echo "Installing $CURRENT"
-rpm --upgrade $CURRENT
+if [ -s "${MEDIA_DIR}/md5sums" ]; then
+  echo "Checking MD5 checksums:"
+  (cd "${MEDIA_DIR}"
+    md5sum --check md5sums
+  )
+  if [ $? -ne 0 ]; then
+    echo "ERROR: MD5 checksum(s) for ${PACKAGE} don't match"
+    exit -1
+  fi
+else
+  echo "WARNING: No MD5 checksum(s) for ${CURRENT} found"
+fi
+
+echo "Installing ${CURRENT}"
+rpm --upgrade "${CURRENT}"
+
+mkdir -p "${RPM_DB_DIR}"
 
 [[ -d $RPM_DB_DIR ]] || mkdir -p $RPM_DB_DIR
 if [[ -d $RPM_CACHE ]]; then
+
+ODA_BIN="/usr/bin/oda"
+${ODA_BIN} list_tables 2>&1 | grep ^oscar_file_server$ > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  DOCROOT=`${ODA_BIN} read_records oscar_file_server.oscar_httpd_doc_root`B
+  echo "Making symlink from ${DOCROOT}/dep/${PACKAGE} to ${RPM_DB_DIR}"
+  ln -s "${RPM_DB_DIR}" "${DOCROOT}/dep/${PACKAGE}"
+  RPM_CACHE=`${ODA_BIN} read_records oscar_file_server.oscar_httpd_server_url`
+else
+  echo -n "WARNING: Appears oscar-httpd was not installed. "
+  echo "Defaulting to local filesystem."
+fi
+
   echo "Creating RPM cache database..."
   cd $RPM_DB_DIR
   $PACKAGE --cache=u --url $RPM_CACHE
