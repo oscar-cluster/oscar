@@ -1,0 +1,93 @@
+#!/usr/bin/perl
+
+#   $Id: macinfo2sis,v 1.1 2002/03/05 03:36:47 sdague Exp $
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   Copyright 2002 - International Business Machines
+#                    Sean Dague <sean@dague.net>
+#
+#   macinfo2sis - imports old macinfo files to sis db
+#
+
+use strict;
+use Carp;
+
+if(!scalar(@ARGV)) {
+    usage();
+    exit(255);
+}
+
+my $file = shift;
+
+if($file =~ /^\-+h/i) {
+    # if it looks like they were asking for --help?  Give them usage
+    usage();
+    exit(255);
+}
+
+my $failures = 0;
+my $successes = 0;
+
+open(IN,"<$file") or croak("Couldn't open file $file for reading");
+while(<IN>) {
+    if(/^\s*(\S+)\s+([a-f0-9\:]+)\s*$/) {
+        my ($node, $mac) = ($1,$2);
+        if(!add_mac_client($node,$mac)) {
+            carp("Couldn't add MAC: $mac to NODE:$node");
+            $failures++;
+        } else {
+            $successes++;
+        }
+    }
+}
+
+my $total = $failures + $successes;
+
+print <<END;
+Attempted import of $total records
+    $successes successes
+    $failures failures
+END
+
+exit($failures);
+
+sub add_mac_client {
+    my ($client, $mac) = @_;
+    return !system("mksimachine -U --name=$client --MACaddress=$mac");
+}
+
+sub usage {
+    print <<END;
+This is the macinfo2sis program.  It is designed to take an old style
+MAC.info file (circa OSCAR 1.1) and insert that information into
+the SIS database for OSCAR > 1.2.
+
+ Usage:  macinfo2sis MAC.info
+
+The MAC.info file has the following expected format:
+
+node001 00:11:22:33:44:55
+node002 11:11:22:33:33:44
+...
+
+This program will attempt to add all the information to the database.
+It will complain everytime a node update can not be made.
+
+The exit code is the number of failed updates, not to exceed 250.
+
+END
+
+}
