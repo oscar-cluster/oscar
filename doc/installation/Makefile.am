@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.17 2002/11/17 18:09:27 jsquyres Exp $
+# $Id: Makefile.am,v 1.18 2002/11/18 01:18:15 jsquyres Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -31,9 +31,12 @@ OTHER_SRC_FILES	= \
 		screen-by-screen.tex
 
 QUICK_SRC_FILES= \
-		quick_titlepage.tex \
+		detailed.tex \
 		download.tex \
-		supported.tex
+		intro.tex \
+		quick_titlepage.tex \
+		supported.tex \
+		toc.tex
 
 NON_DIST_SRC_FILES= \
 		version.tex
@@ -122,13 +125,10 @@ CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~ notes.tex \
 # Some common target names
 
 all: ps
-#docs: $(MAIN_PS) $(QUICK_PS)
-docs: $(MAIN_PS)
+docs: $(MAIN_PS) $(QUICK_PS)
 
-#ps: $(EPS_FIG_FILES) $(MAIN_PS) $(QUICK_PS)
-#pdf: $(PNG_FIG_FILES) $(MAIN_PDF) $(QUICK_PDF)
-ps: $(EPS_FIG_FILES) $(MAIN_PS)
-pdf: $(PNG_FIG_FILES) $(MAIN_PDF)
+ps: $(EPS_FIG_FILES) $(MAIN_PS) $(QUICK_PS)
+pdf: $(PNG_FIG_FILES) $(MAIN_PDF) $(QUICK_PDF)
 
 #
 # Make the dependencies so that things build when they need to
