@@ -64,7 +64,6 @@ my @known_rpms = qw(
                     systemimager-ia64boot
                     tftp-hpa
                     ganglia-monitor-core
-                    ganglia-php-rrd-client
                     env-switcher
                     modules
                    );
@@ -234,7 +233,6 @@ sub cleanup_files {
               '/opt/mpich*',
               '/opt/pbs',
 	      '/opt/perl-Qt',
-              '/opt/rrdtool-1.0.35',
 	      '/opt/sync_files',
               '/usr/local/lib/systemimager',
               '/var/lib/clamdr',
