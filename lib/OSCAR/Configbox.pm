@@ -163,11 +163,20 @@ sub defaultConfiguration
 #########################################################################
 sub exitWithoutSaving
 {
-  # If the $root window has a Parent, then it isn't a MainWindow, which
-  # means that another MainWindow is managing the OSCAR Package Selection
-  # window.  Therefore, when we exit, unmap the window.  If there is
-  # no parent, then it IS a MainWindow, so destroy the window.
-  $root->Parent ? $root->UnmapWindow : $root->destroy;
+  # If there are any children, make sure they are destroyed.
+  my (@kids) = $root->children;
+  foreach my $kid (@kids)
+    {
+      $kid->destroy;
+    }
+
+  # Then, destroy the root window.
+  $root->destroy;
+
+  # Undefine a bunch of Tk widget variables for re-creation later.
+  undef $root;
+  undef $top;
+  undef $web;
 }
 
 #########################################################################
