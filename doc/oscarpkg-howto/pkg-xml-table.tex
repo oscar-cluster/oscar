@@ -1,101 +1,367 @@
-%  $Id: pkg-xml-table.tex,v 1.4 2003/09/11 12:56:06 naughtont Exp $
-
-% This contains the available XML tags in a tabular form.  
-% Note, those editing this file should expand their display beyond 
-% 80 chars b/c of the length of each table row...deal with it.
-
-% TJN: Note I'm using the "(" symbol for the \verb delimiters b/c
-%      I don't believe this symbol will occur in any of the XML elements
-%      or attributes.  Any other non-occuring char could be used.
+%  $Id: pkg-xml-table.tex,v 1.5 2003/09/25 20:42:23 naughtont Exp $
 %
-% TJN: I need some way to convey heirarchy, currently using multi-columns
-%      xml   &      &  descr... \\
-%      dtd   &      &  descr... \\
-%      oscar &      &  descr... \\
-%            & name &  descr... \\
-%
-% TJN: Somehow I need to display <tag></tag>  VS. <tag/>
-%      Also, certain things like <description></description> must be
-%      on same line as closing multi-line text.  Need to check this out
-%      I believe it's a product of using XML::Simple.
-%
-% TJN: Also, I need to denote optional vs. required elements
+% TJN: Need to add a column telling which elements can be repeated
+%      mulitple times!
 
-\begin{table}[htbp]
+
+\section{Supported XML Tags}
+\label{sect:supported-xml-tags}
+
+The following table contains the currently recognized XML tags along with a
+brief description.  The syntax used for XML elements and attributes:
+%- Syntax Key for Table -------------------------------------
+\begin{table}[h!]
+\begin{footnotesize}
+  \begin{tabular}{llcl} 
+  Table syntax:  
+  	& \verb|<element>|
+	& implies
+	& \verb|<element>...</element>| \\
+  %
+	& \verb|<element/>|
+	& implies
+	& \verb|<element ... />| \\
+  %
+  	& \hspace{3pt} \verb|attr=|
+	& implies
+	& \verb|<element attr= ...| 
+  \end{tabular}
+  \end{footnotesize}
+\end{table}
+
+
+\begin{table}[h!]
+%
+%- Main XML Flag Table -------------------------------------
+%
+% TJN: don't need internal internal font size changes b/c wrapping w/
+%     {small} since table is soo large.  Fix/update later.
+%
+\begin{small}
   \begin{center}
-  \begin{tabular}{|c|l|l|l|} \hline
-  {\bfseries Require} & {\bfseries Elements} & {\bfseries Sub Elements} & {\bfseries Description}\\\hline
+  \begin{tabular}{|c|l|l|l|} 
   \hline
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  {\bfseries Require} & {\bfseries Elements} 
+		& {\bfseries Sub Elements} 
+		& {\bfseries Description} 
+		\\\hline
+		\hline
 
-% TJN: These are not particular to OSCAR elements, just XML-ness.
-%  Y & \verb(<?xml version="1.0"?>( & &  Opening XML Element/tag           \\ \hline
-%  N & \verb(<!DOCTYPE oscar ...>( & & Document Type Definition (DTD) include \\ \hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Y & \verb|<xml>|
+		& 
+		& Standard XML opening element
+		\\
+    & 
+		&                 
+		&  e.g., {\footnotesize \verb|<?xml version="1.0" encoding="ISO-8859-1"?>|}
+		\\\hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<DOCTYPE>|
+  		&
+		& Document Type Definition (DTD) include
+		\\
+	& 
+		&
+		& e.g., {\footnotesize \verb|<!DOCTYPE oscar SYSTEM "../package.dtd">|}
+		\\\hline
 
-  Y & \verb(oscar(   &   & Top-level OSCAR Package element               \\ \hline
-  Y & \verb(name(    &   & Name of the software package                  \\ \hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Y & \verb|<oscar>|   
+		&   
+		& Top-level OSCAR Package element               
+		\\ \hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Y & \verb|<name>|    
+		&   
+		& Name of the software package                  
+        \\ \hline
 
-  Y & \verb(version(& & Version of the software package           \\\cline{3-4}
-    & & \verb(major(  & Major version of the software package     \\\cline{3-4}
-    & & \verb(minor(  & Minor version of the software package     \\\cline{3-4}
-    & & \verb(subversion( & Sub-version of the software package   \\\cline{3-4}
-    & & \verb(release(    & Release number of the software package\\\cline{3-4}
-    & & \verb(epoch(      & Release number of the software package\\\hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Y & \verb|<version>|
+        & 
+        & Version of the software package           
+        \\\cline{3-4}
+%
+    & 
+		& \verb|<major>|  
+		& Major version of the software package     
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<minor>|  
+		& Minor version of the software package     
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<subversion>| 
+		& Sub-version of the software package   
+		\\\cline{3-4}
+%
+	& 
+		& \verb|<release>|    
+		& Release number of the software package
+		\\\cline{3-4}
+%
+	& 
+		& \verb|<epoch>|      
+		& Release number of the software package
+		\\\hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Y & \verb|<class>|   
+		&   
+		& Classification of package: {\small 'core', 'included', or  'third-party'}
+		\\ \hline
 
-  Y & \verb(class(   &   & Classification of package, e.g. third-party   \\ \hline
-  Y & \verb(summary( &   & Brief one-line description of package         \\ \hline
-  N & \verb(license( &   & Software license for the package              \\ \hline
-  N & \verb(group(   &   & RPM-style software group, e.g., Application/System\\\hline
-  N & \verb(url(     &   & Homepage for software package                 \\ \hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Y & \verb|<installable>|   
+		&   
+		& Boolean integer install flag, \emph{Configurator} modifiable 
+		\\ 
+    &
+		&
+		& (1=install OR 0=not-install)
+		\\\hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Y & \verb|<summary>| 
+		&   
+		& Brief one-line description of package         
+		\\ \hline
 
-  N & \verb(packager(&   & Packager of OSCAR package              \\\cline{3-4}
-    & & \verb(name(   & Name of package author                    \\\cline{3-4}
-    & & \verb(email(  & Email address of package author           \\\hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<license>| 
+		&   
+		& Software license for the package              
+		\\ \hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<group>|   
+		&   
+		& RPM-style software group, e.g., Application/System
+		\\\hline
 
-  N & \verb(maintainer(& & Original author of software            \\\cline{3-4}
-    & & \verb(name(   & Name of package author                    \\\cline{3-4}
-    & & \verb(email(  & Email address of package author           \\\hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<url>|     
+		&   
+		& Homepage for software package                 
+		\\ \hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<packager>|
+		&   
+		& Packager of OSCAR package              
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<name>|   
+		& Name of package author                    
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<email>|  
+		& Email address of package author           
+		\\\hline
 
-  Y & \verb(description(&& Brief description of the package              \\ \hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<maintainer>|
+		& 
+		& Original author of software            
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<name>|   
+		& Name of package author                    
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<email>|  
+		& Email address of package author           
+		\\\hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<vendor>|
+		& 
+		& Vendor name for package
+		\\\hline
 
-  N & \verb(rpmlist(&    & List RPMS included in the rpmlist         \\\cline{3-4}
-    & & \verb(filter( & Filter applied to all RPM in list         \\\cline{3-4}
-    & & \verb(rpm(    & Name of RPM (without version)             \\\hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Y & \verb|<description>|
+		&
+		& Brief description of the package              
+		\\ \hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<rpmlist>|
+		&    
+		& List RPMS included in the rpmlist         
+		\\\cline{3-4}
+%
+	& 
+		& \verb|<filter/>| 
+		& Filter applied to all RPM in list         
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<rpm>|    
+		& Name of RPM (without version)             
+		\\\hline
 
-  N & \verb(filter(&     & Filter Attributes used on RPMLIST                 \\\cline{3-4}
-    & & \verb(group=(   & Attribute specifying target location for RPMS     \\
-    & &                 & e.g., ``oscar\_server'' or ``oscar\_clients''     \\\cline{3-4}
-    & & \verb(distribution=(& Attribute specifying supported distribution   \\
-    & &                 & e.g., ``redhat'', ``mandrake'', ``suse'', ``rhas''\\
-    & &                 & see also: \emph{lib/OSCAR/Distro.pm}              \\\cline{3-4}
-    & & \verb(distribution_version=(& Attribute specifying supported distribution version  \\
-    & &                 & e.g., ``7.3'', ``9'', ``2.1AS''                   \\\cline{3-4}
-    & & \verb(arch=(    & Architecture the RPM was compiled to support      \\
-    & &                 & e.g., ``ia32'', ``ia64''                          \\\hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<filter/>|
+		&     
+		& Filter Attributes used on RPMLIST                 
+		\\\cline{3-4}
+%
+    & 
+		& \verb|group=|   
+		& Attribute specifying target location for RPMS     
+		\\
+    & 
+		&                 
+		& e.g., ``oscar\_server'' or ``oscar\_clients''     
+		\\\cline{3-4}
+%
+    & 
+		& \verb|distribution=|
+		& Attribute specifying supported distribution   
+		\\
+    & 
+		&                 
+		& e.g., ``redhat'', ``mandrake'', ``suse'', ``rhas''
+		\\
+    & 
+		&                 
+		& see also: \emph{lib/OSCAR/Distro.pm}              
+		\\\cline{3-4}
+%
+    & 
+		& \verb|distribution_version=|
+		& Attribute specifying supported distribution version  
+		\\
+    & 
+		&                 
+		& e.g., ``7.3'', ``9'', ``2.1AS''                   
+		\\\cline{3-4}
+%
+    & 
+		& \verb|arch=|    
+		& Architecture the RPM was compiled to support      
+		\\
+    & 
+		&                 
+		& e.g., ``ia32'', ``ia64''                          
+		\\\hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<requires>|
+  		&   
+		& Express requirement/dependency 
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<type>|    
+		& Specifying dependence type: 'package', 'rpm'
+		\\
+    & 
+		&                 
+		&  ``package'' is OSCAR pkg, \emph{``rpm'' (not implemented yet)}      
+		\\\cline{3-4}
+	&
+%
+		& \verb|<name>|
+		& Name for dependence analysis
+		\\\hline
 
-  N & \verb(requires(&   & List requirement/dependency                \\\cline{3-4}
-    & & \verb(type=(    & Tag specifying type of requirement         \\
-    & &                 &  e.g., ``package'' (OSCAR Package),        \\
-    & &                 &  \emph{``rpm'' (not implemented yet)}      \\\hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<provides>|
+  		&   
+		& Expresss capabilities/synonym for package name
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<type>|    
+		& Specifying dependence type: 'package', 'rpm'
+		\\
+    & 
+		&                 
+		&  ``package'' is OSCAR pkg, \emph{``rpm'' (not implemented yet)}      
+		\\\cline{3-4}
+%
+	&
+		& \verb|<name>|
+		& Name for dependence analysis
+		\\\hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<conflicts>|
+  		&   
+		& Expresss conflicts for dependence analysis
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<type>|    
+		& Specifying dependence type: 'package', 'rpm'
+		\\\cline{3-4}
+%
+	&
+		& \verb|<name>|
+		& Name for dependence analysis
+		\\\hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<package>| 
+		&    
+		& Package specific namespace, to define own tags
+		\\\hline
 
-  N & \verb(package( &    & Package specific namespace (see detail text) \\\hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<download>| 
+		&    
+		& Location to obtain package (see also: OPD)
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<uri>|   
+		& Full Universal Resource Identifier, to download pkg
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<size>|   
+		& Integer size (bytes) for tarball specified by \verb|<uri>|
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<md5sum>|   
+		& Value of MD5 sum for tarball specified by \verb|<uri>|
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<sha1sum>|   
+		& Value of SHA1 sum for tarball specified by \verb|<uri>|
+		\\\hline
 
-  N & \verb(oda(     &    & OSCAR Database (ODA) defines for package     \\\cline{3-4}
-    & & \verb(shortcut(   & ODA shortcut defined by a package            \\\hline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  N & \verb|<oda>|     
+		&    
+		& OSCAR Database (ODA) defines for package     
+		\\\cline{3-4}
+%
+    & 
+		& \verb|<shortcut>|   
+		& ODA shortcut defined by a package            
+		\\\hline
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   \end{tabular}
-  \caption{Overview of existing XML tags for OSCAR Packages} 
-  \label{tab:pkg-xml-tags}
   \end{center}  
+\end{small}
+  \caption{Overview of existing XML tags for OSCAR Packages.}  
+  \label{tab:pkg-xml-tags}
 \end{table}

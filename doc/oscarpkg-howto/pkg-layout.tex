@@ -1,4 +1,4 @@
-% $Id: pkg-layout.tex,v 1.5 2003/09/11 12:56:06 naughtont Exp $
+% $Id: pkg-layout.tex,v 1.6 2003/09/25 20:42:23 naughtont Exp $
 
 % TJN: Mention the XML tools that are helpful, e.g., 'xmllint'
 %      which >= 2.5.8 (i believe) has --schema option too! :)
@@ -62,21 +62,21 @@ simple dependencies (\xmltag{requires}) upon other OSCAR Packages, e.g.,
 Env-Switcher.  If this meta file is not included a simplistic default is
 used---install all files in \directory{RPMS/} on all machines in cluster.
 The available XML elements for use in this file are listed in
-Table~\ref{tab:pkg-xml-tags} with a complete example given in
-Section~\ref{sect:example-pkg}.
+Appendix~\ref{sect:supported-xml-tags}, page~\pageref{sect:supported-xml-tags}
+with a complete example given in Section~\ref{sect:example-pkg}.
 
 The \xmltag{rpmlist} contains the list of RPM names (without version
 numbers) to be installed for the package.  There may be multiple instances
-of these \xmltag{rpmlist}'s using the \xmltag{filter} to differentiate where
-necessary.  The \xmltag{filter} constraints enable an author to express
-what \xmlattr{distribution}, \xmlattr{distribution\_version} and
+of these \xmltag{rpmlist}'s using the \xmltag{filter} to differentiate
+where necessary.  The \xmltag{filter} constraints enable an author to
+express what \xmlattr{distribution}, \xmlattr{distribution\_version} and
 \xmlattr{arch} the associated \xmltag{rpm}'s support.  The \xmlattr{group}
 value specifies where the to install the \xmltag{rpm}'s.   Things are
 implicitly global if no constraints are provided, i.e., entire cluster for
-all distributions.
+all distributions.  
 
 % Table with all currently supported XML tags & brief description
-\input{pkg-xml-table.tex}
+%\input{pkg-xml-table.tex}
 
 
 \subsection{RPMS \& SRPMS}
@@ -137,12 +137,15 @@ Table~\ref{tab:sequence-of-events}.  The ``Location'' column indicates
 where the actual modification/operations take place\footnote{Note, the
 \file{post\_install} scripts in practice often operate on both the server
 and client filesystems -- regardless of what the original specifications
-suggested.}.  At each script level, the packages are processed in
-alph-order.
+suggested.}.  Each phase of scripts is executed per package, with packages 
+processed in alph-order. 
 %\footnote{The Perl function \file{readdir()} is used to build the list.}.
 % TJN: Confirm this before uncommenting...have to look at current code.
 
+
+% Table outlining the available OSCAR API scripts
 \input{pkg-scripts-table.tex}
+
 
 % TJN: (9/10/03) Taken from the architecture/design.tex document 
 \begin{table}[h!]

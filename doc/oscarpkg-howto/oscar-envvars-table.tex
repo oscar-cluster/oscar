@@ -1,4 +1,4 @@
-%  $Id: oscar-envvars-table.tex,v 1.2 2003/09/10 03:31:28 naughtont Exp $
+%  $Id: oscar-envvars-table.tex,v 1.3 2003/09/25 20:42:23 naughtont Exp $
 
 
 \begin{table}[htbp]
@@ -6,14 +6,22 @@
   \begin{tabular}{|l|l|} \hline
   {\bfseries Environment Variable} & {\bfseries Description} \\\hline
   \hline
-  \envvar{OSCAR\_HOME} & Defines top-level directory for OSCAR installation \\\hline
-
-  \envvar{OSCAR\_PACKAGE\_HOME} & Points to a packages directory (used with OPD) \\\hline
-
-  \envvar{OSCAR\_HEAD\_INTERNAL\_INTERFACE} & Contains the value provided to 'install\_cluster \emph{ethX}' \\\hline
-
-  \envvar{OSCAR\_RPMPOOL} & Defines an alt. location for RPM (default = \directory{/tftpboot/rpm})  \\\hline
-
+  \envvar{OSCAR\_HOME} & 
+       Defines top-level directory for OSCAR installation 
+	   \\\hline
+%
+  \envvar{OSCAR\_PACKAGE\_HOME} & 
+       Points to a packages directory (used with OPD) 
+	   \\\hline
+%
+  \envvar{OSCAR\_HEAD\_INTERNAL\_INTERFACE} & 
+       Contains the value provided to 'install\_cluster \emph{ethX}' 
+	   \\\hline
+%
+  \envvar{OSCAR\_RPMPOOL} & 
+       Defines an alt. location for RPM (default = \directory{/tftpboot/rpm})  
+	   \\\hline
+%
   \end{tabular}
   \caption{Environment variables currently recognized/used by OSCAR.} 
   \label{tab:oscar-envvars}

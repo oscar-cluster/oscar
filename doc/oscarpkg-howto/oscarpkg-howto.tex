@@ -1,4 +1,4 @@
-% $Id: oscarpkg-howto.tex,v 1.2 2003/09/11 12:56:05 naughtont Exp $
+% $Id: oscarpkg-howto.tex,v 1.3 2003/09/25 20:42:23 naughtont Exp $
 %
 % * Sun Jul 27 2003  11:11:44AM    Thomas Naughton  <naughtont@ornl.gov>
 % - Initial creation for distribution to OSCAR and SSS community to assist
@@ -22,17 +22,63 @@
 
 % Comment out the Draft line once the paper is finished.
 \begin{center}
-  {\catcode`\$=11\tiny\noindent Draft $Id: oscarpkg-howto.tex,v 1.2 2003/09/11 12:56:05 naughtont Exp $}
+  {\catcode`\$=11\tiny\noindent Draft $Id: oscarpkg-howto.tex,v 1.3 2003/09/25 20:42:23 naughtont Exp $}
 
   \begin{large}Early Release\end{large}
 \end{center}
 
+%-------------------------------------------------------------
+% Section: Introduction 
+%-------------------------------------------------------------
 \input{intro}
+
+
+%-------------------------------------------------------------
+% Section: Package Layout
+%-------------------------------------------------------------
 \input{pkg-layout}
+
+
+%-------------------------------------------------------------
+% Section: Example Package
+%-------------------------------------------------------------
 \input{pkg-example}
 
-% This is from Jeff Squyres, taken from OLS'03 paper
+
+%-------------------------------------------------------------
+% Section: OSCAR Package Downloader
+% (This is from Jeff Squyres, taken from OLS'03 paper)
+%-------------------------------------------------------------
 \input{opd}
+
+
+
+%=============================================================
+%
+% **** START APPENDIX SECTIONS ****
+%
+%=============================================================
+%\newpage   %don't use newpage to keep formatting.."sane" for now
+\appendix
+
+
+%-------------------------------------------------------------
+% Appendix: Section w/ Table of supported XML tags
+%-------------------------------------------------------------
+\input{pkg-xml-table.tex}
+
+
+%-------------------------------------------------------------
+% Appendix: Switcher for Environment Mgmt
+%-------------------------------------------------------------
+%\input{switcher.tex}
+
+
+%-------------------------------------------------------------
+% Appendix: Add information about using XML tools like 'xmllint'
+%           and the DTD/Schema material.
+%-------------------------------------------------------------
+%\input{xml-tools.tex}
 
 \end{document}
 

@@ -1,4 +1,4 @@
-% $Id: intro.tex,v 1.2 2003/09/09 06:21:16 naughtont Exp $
+% $Id: intro.tex,v 1.3 2003/09/25 20:42:23 naughtont Exp $
 
 \section{Introduction}
 \label{sect:intro}
@@ -14,4 +14,39 @@ document will describe what comprises an \emph{OSCAR Package}, giving
 examples for clarity.  The intent is to provide a single document for those
 seeking to create packages for use with the OSCAR toolkit.
 
+\subsection{Super Short Summary}
+
+For the truely impatient here is a very short summary of what it takes to
+create an OSCAR package.  The remainder of this document will describe
+things in more detail.  The items marked \emph{Optional} are just that, but
+are highly recommended.
+
+\begin{itemize}
+	\item Make a directory based on the package's name, e.g., \file{pvm/}.
+
+	\item Create the package directory structure,
+	       \file{<PKG\_NAME>/\{RPMS,SRPMS,scripts,testing,doc\}}
+
+	\item Add a \file{config.xml} meta file to the top-level package directory.
+
+	\item Add a binary RPM to the \file{<PKG\_NAME>/RPMS} directory for 
+	      supported OSCAR distro(s).
+
+	\item (\emph{Optional}) Add the the Source RPM (SRPM) to the
+	      \file{<PKG\_NAME>/SRPMS} directory
+
+	\item (\emph{Optional}) Add any configuration scripts as per OSCAR
+	      script API to \file{<PKG\_NAME>/scripts}
+
+	\item (\emph{Optional}) Add package tests to
+	\file{<PKG\_NAME>/testing}, (special: \file{test\_user, test\_root})
+
+	\item (\emph{Optional}) Add package documentation/license to
+	\file{<PKG\_NAME>/doc}, (special: \file{\{user,install,license\}.tex})
+
+	\item Tar/gzip the entire package directory and add to an OPD
+		repository\footnote{How things are added to OSCAR varies but most all
+		packages can be obtained via on-line package repositories via
+		OPD.}, e.g., \cmd{tar -zcvf <PKG\_NAME>.tar.gz}.
+\end{itemize}
 
