@@ -38,7 +38,6 @@
     <filter distribution='mandrake' group='oscar_server'/>
     <rpm>perl-Qt-mdk10</rpm>
     <rpm>libsmokeqt1</rpm>
-    <rpm>libMesaglut3</rpm>
   </rpmlist>
 
   <rpmlist>
