@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.27 2002/10/28 23:46:15 tfleury Exp $
+#   $Id: Package.pm,v 1.28 2002/10/29 00:33:29 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.27 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.28 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -468,12 +468,12 @@ sub read_all_pkg_config_xml {
 	if (-d $dir && $pkg ne "." && $pkg ne ".." && $pkg ne "CVS" &&
       ! -e "$dir/.oscar_ignore") {
 	    if (-f $config) {
-		oscar_log_subsection("Reading $config");
+#		oscar_log_subsection("Reading $config");
 		$PACKAGE_CACHE->{$pkg} = $xs->XMLin($config);
 		$PACKAGE_CACHE->{$pkg}->{installable} = 1
 		    if (!$PACKAGE_CACHE->{$pkg}->{installable});
 	    } else {
-		oscar_log_subsection("Got empty XML config for $pkg");
+#		oscar_log_subsection("Got empty XML config for $pkg");
 		$PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
 	    }
 	}
