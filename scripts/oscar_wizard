@@ -135,6 +135,11 @@ sub build_oscar_image {
 	$rpmlist = "$ENV{OSCAR_HOME}/oscarsamples/sample.rpmlist";
     }
 
+    # now we get the list of the client rpms that we want to install
+    my @clientfiles = glob("$ENV{OSCAR_HOME}/packages/*/client.rpmlist");
+
+    my $extraflags = map {" --filename=$_ "} @clientfiles;
+
     my %vars = (
                 imgname => "oscarimage",
                 noshow => {
@@ -146,6 +151,7 @@ sub build_oscar_image {
                 diskfile => "$ENV{OSCAR_HOME}/oscarsamples/sample.disk.$disk_type",
                 ipmeth => "static",
                 piaction => "beep",
+                extraflags => $extraflags,
                 postinstall => \&postimagebuild,
                );
 
