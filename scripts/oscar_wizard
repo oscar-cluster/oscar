@@ -3,10 +3,10 @@
 use strict;
 use Tk;
 use Tk::ROText;
-use FindBin qw($Bin);
-use lib "$Bin","../lib","/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl";
+use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use POSIX;
 use OSCAR::Help;
+use OSCAR::Network;
 use OSCAR::MAC;
 use OSCAR::FrontPanel;
 use SystemInstaller::Tk::Image;
@@ -17,7 +17,11 @@ use Carp;
 use vars qw($config);
 
 if( $#ARGV != 0 ) {
-  die "usage: $0 <cluster interface>\n";
+    croak "usage: $0 <cluster interface>\n";
+}
+
+if(!$ENV{OSCAR_HOME}) {
+    croak "The environmental variable OSCAR_HOME is not set.  Please set it to the directory that OSCAR is untarred in.";
 }
 
 my $interface = $ARGV[0];
@@ -33,7 +37,7 @@ $window->title("OSCAR Installation Wizard");
 #
 # The title Group
 #
-my $image = "$Bin/../images/oscar.gif";
+my $image = "$ENV{OSCAR_HOME}/images/oscar.gif";
 
 my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
                          -background=>"white");
@@ -43,7 +47,7 @@ my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!",-background=>"w
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 
 # Step 1, Define OSCAR Server
-oscar_button($window, "Step 1:", "Prepare OSCAR Server For Install", [\&frontpanel_window, {}, $window], 'prep_server'); 
+oscar_button($window, "Step 1:", "Prepare OSCAR Server For Install", [\&frontpanel_window, $window], 'prep_server');
 
 # Step 2, Build OSCAR Client Image
 oscar_button($window, "Step 2:", "Build OSCAR Client Image", [\&build_oscar_image, $window], 'build_image');
@@ -89,7 +93,7 @@ sub oscar_button {
 
 sub build_oscar_clients {
     my ($window, $interface) = @_;
-    my ($ip, $netmask) = OSCAR::MAC::get_ip_net($interface);
+    my ($ip, $broadcast, $netmask) = interface2ip($interface);
     my ($a, $b, $c, $d) = split(/\./,$ip);
     $d++;
     my $startip = "$a.$b.$c.$d";
@@ -123,12 +127,12 @@ sub build_oscar_image {
 #   $disk_type = "ide" if ( grep ( /\/dev\/hd/, ( @df_lines ) ) );
     $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
 
-    my $arch = (arch())[4];
+    my $arch = (uname)[4];
     my $rpmlist;
-    if ( -r "$Bin/../oscarsamples/sample.rpmlist.$arch" ) {
-	$rpmlist = "$Bin/../oscarsamples/sample.rpmlist.$arch";
+    if ( -r "$ENV{OSCAR_HOME}/oscarsamples/sample.rpmlist.$arch" ) {
+	$rpmlist = "$ENV{OSCAR_HOME}/oscarsamples/sample.rpmlist.$arch";
     } else {
-	$rpmlist = "$Bin/../oscarsamples/sample.rpmlist";
+	$rpmlist = "$ENV{OSCAR_HOME}/oscarsamples/sample.rpmlist";
     }
 
     my %vars = (
@@ -139,7 +143,7 @@ sub build_oscar_image {
                           },
                 pkgfile => "$rpmlist",
                 pkgpath => "/tftpboot/rpm",
-                diskfile => "$Bin/../oscarsamples/sample.disk.$disk_type",
+                diskfile => "$ENV{OSCAR_HOME}/oscarsamples/sample.disk.$disk_type",
                 ipmeth => "static",
                 piaction => "beep",
                 postinstall => \&postimagebuild,
