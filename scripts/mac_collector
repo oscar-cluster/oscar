@@ -3,7 +3,7 @@
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
-#   $Id: mac_collector,v 1.1 2004/02/12 20:01:24 brechin Exp $
+#   $Id: mac_collector,v 1.2 2004/03/01 19:03:15 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -25,11 +25,12 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::MAC;
 use OSCAR::Logger;
 use OSCAR::Database;
+use sigtrap qw(handler sighandle normal-signals);
 
+my @results;
+OSCAR::Database::database_execute_command("read_records oscar.interface", \@results, 0);
+my $cluster_interface = $results[0];
 
-#TESTING    my $cluster_interface = OSCAR::Database::database_read_table_fields('oscar', qw( interface ), undef, undef, 0);
-
-my $cluster_interface='eth1';
 my $cmd = "/usr/sbin/tcpdump -i $cluster_interface -nn -e -t -l -p -q broadcast and src port 68 and dst port 67";
 
 my $tcpdumppid = open(TCPDUMP, "$cmd 2>/dev/null |") || carp("Could not run $cmd: $!");
@@ -46,3 +47,10 @@ while( <TCPDUMP> ) {
 }
 close TCPDUMP;
 
+
+sub sighandle {
+  print "killing $tcpdumppid\n";
+  kill $tcpdumppid;
+  open(STDERR, ">/dev/null");
+  croak;
+}
