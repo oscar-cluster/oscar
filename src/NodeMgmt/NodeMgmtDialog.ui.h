@@ -7,7 +7,7 @@
 ** place of a destructor.
 *****************************************************************************/
 
-void nodemgmtdialog::init()
+void NodeMgmtDialog::init()
 {
     $nodes = OSCAR::Database::database_execute_command("read_records nodes id!=1");
     @macs = ();
@@ -24,7 +24,7 @@ void nodemgmtdialog::init()
     collectionmethod->addWidget(manual, 2);
     
 # create instance of the settings dialog
-  settingsDialog = nodesettingsDialog(this,"settingsDialog");
+  settingsDialog = NodeSettingsDialog(this,"settingsDialog");
   Qt::Object::connect(settingsDialog->nodesettingsOK ,
 		      SIGNAL 'clicked()',
 		      this,
@@ -69,7 +69,7 @@ void nodemgmtdialog::init()
    nodeTable->adjustColumn(3);
 }
 
-void nodemgmtdialog::populate_nodetable()
+void NodeMgmtDialog::populate_nodetable()
 {
     my @results;
     my @fields = qw( nodes.name nics.ip nics.mac );
@@ -94,7 +94,7 @@ void nodemgmtdialog::populate_nodetable()
     }
 }
     
-void nodemgmtdialog::advancedButton_toggled(bool)
+void NodeMgmtDialog::advancedButton_toggled(bool)
 {
     my $on = shift;
     if ( $on ) {
@@ -105,19 +105,19 @@ void nodemgmtdialog::advancedButton_toggled(bool)
     this->showExtension( $on );
 }
 
-void nodemgmtdialog::nodesettingschange_clicked()
+void NodeMgmtDialog::nodesettingschange_clicked()
 {
 # nodesettingschange_clicked opens the node settings dialog
     
   settingsDialog->show();
 }
 
-void nodemgmtdialog::refreshsamplenode()
+void NodeMgmtDialog::refreshsamplenode()
 {
   nodelook->setText("The next node will be created as " . getnextnodename() );
 }
 
-void nodemgmtdialog::defineNnodes()
+void NodeMgmtDialog::defineNnodes()
 {
 # defineNnodes is used by the Define ( n nodes) button
 # it will define the next N nodes, where N is the value in the SpinBox
@@ -134,7 +134,7 @@ void nodemgmtdialog::defineNnodes()
     refreshsamplenode();
 }
 
-void nodemgmtdialog::startnetcollection()
+void NodeMgmtDialog::startnetcollection()
 {
     if ( mac_collectorProcess->start() ) {
 	stopcollect->setEnabled(1);
@@ -144,7 +144,7 @@ void nodemgmtdialog::startnetcollection()
     }
 }
 
-void nodemgmtdialog::stopnetcollection()
+void NodeMgmtDialog::stopnetcollection()
 {
     macprocessTimer->stop();
     mac_collectorProcess->tryTerminate();
@@ -154,7 +154,7 @@ void nodemgmtdialog::stopnetcollection()
     networkcollect->setText("Network");
 }
 
-void nodemgmtdialog::processnetmacs()
+void NodeMgmtDialog::processnetmacs()
 {
     if (scalar(@macs)) {
 	foreach my $mac (@macs) {    
@@ -167,7 +167,7 @@ void nodemgmtdialog::processnetmacs()
     }
 }
 
-void nodemgmtdialog::getcollectedmacs()
+void NodeMgmtDialog::getcollectedmacs()
 {
     while (mac_collectorProcess->canReadLineStdout()) {
 	while ( my $a = mac_collectorProcess->readLineStdout() ) {
@@ -177,7 +177,7 @@ void nodemgmtdialog::getcollectedmacs()
 #processnetmacs();
 }
 
-void nodemgmtdialog::importfilebrowse_clicked()
+void NodeMgmtDialog::importfilebrowse_clicked()
 {
     my $file = Qt::FileDialog::getOpenFileName(
 	    "$ENV{HOME}",
@@ -188,7 +188,7 @@ void nodemgmtdialog::importfilebrowse_clicked()
     importmacfile->setText($file);
 }
 
-void nodemgmtdialog::importmacs_clicked()
+void NodeMgmtDialog::importmacs_clicked()
 {
     my @newmacs = OSCAR::MACops::load_from_file( importmacfile->text() );
     while ( my $mac = pop(@newmacs) ) {
@@ -199,7 +199,7 @@ void nodemgmtdialog::importmacs_clicked()
     }
 }
 
-void nodemgmtdialog::exportmacs_clicked()
+void NodeMgmtDialog::exportmacs_clicked()
 {
     my $file = Qt::FileDialog::getSaveFileName(
 	    "$ENV{HOME}",
@@ -215,7 +215,7 @@ void nodemgmtdialog::exportmacs_clicked()
     OSCAR::MACops::save_to_file($file, @macs);
 }
 
-void nodemgmtdialog::importmanualmac_clicked()
+void NodeMgmtDialog::importmanualmac_clicked()
 {
     my $mac = manualmac->text();
     if ( $mac = OSCAR::MACops::verify_mac($mac) && $usedmacs{$mac} != 1 ) {
@@ -225,7 +225,7 @@ void nodemgmtdialog::importmanualmac_clicked()
     }
 }
 
-void nodemgmtdialog::straytounass_clicked()
+void NodeMgmtDialog::straytounass_clicked()
 {
     if ( straymacs->currentItem > -1 ) {
 	othermacs->insertItem( straymacs->text( straymacs->currentItem() ) );
@@ -234,7 +234,7 @@ void nodemgmtdialog::straytounass_clicked()
     straymacs->clearSelection();
 }
 
-void nodemgmtdialog::allstraytounass_clicked()
+void NodeMgmtDialog::allstraytounass_clicked()
 {
     for ( my $i = 0; $i < straymacs->count; $i++ ) {
 	othermacs->insertItem( straymacs->text( $i ) );
@@ -243,7 +243,7 @@ void nodemgmtdialog::allstraytounass_clicked()
     straymacs->clear();
 }
 
-void nodemgmtdialog::unasstostray_clicked()
+void NodeMgmtDialog::unasstostray_clicked()
 {
     if ( othermacs->currentItem > -1  ) {
 	straymacs->insertItem( othermacs->text( othermacs->currentItem() ) );
@@ -252,7 +252,7 @@ void nodemgmtdialog::unasstostray_clicked()
     othermacs->clearSelection();
 }
 
-void nodemgmtdialog::allunasstostray_clicked()
+void NodeMgmtDialog::allunasstostray_clicked()
 {
     for ( my $i = 0; $i < othermacs->count; $i++ ) {
 	straymacs->insertItem( othermacs->text( $i ) );
@@ -261,7 +261,7 @@ void nodemgmtdialog::allunasstostray_clicked()
     othermacs->clear();
 }
 
-void nodemgmtdialog::clearmacs_clicked()
+void NodeMgmtDialog::clearmacs_clicked()
 {
     while ( my $mac = othermacs->text(0) && othermacs->removeItem(0) ) {
 	delete $usedmacs{$mac};
@@ -269,13 +269,13 @@ void nodemgmtdialog::clearmacs_clicked()
     othermacs->clearSelection();
 }
 
-void nodemgmtdialog::closeDialog_clicked()
+void NodeMgmtDialog::closeDialog_clicked()
 {
     stopnetcollection();
     this->close();
 }
 
-void nodemgmtdialog::definenode()
+void NodeMgmtDialog::definenode()
 {
     my $assmac = shift;
     unless ($assmac) { $assmac = ''; }
@@ -297,7 +297,7 @@ void nodemgmtdialog::definenode()
     nodeTable->adjustColumn(2);
     nodeTable->adjustColumn(1);
     nodeTable->adjustColumn(3);
-    my $interface = nodesettingsDialog->interface->currentText();
+    my $interface = NodeSettingsDialog->interface->currentText();
     
     OSCAR::Database::database_execute_command("create_node $name", undef, undef);
     OSCAR::Database::database_execute_command(
@@ -307,7 +307,7 @@ void nodemgmtdialog::definenode()
     return $name, $ip;
 }
 
-void nodemgmtdialog::getnextnodeip()
+void NodeMgmtDialog::getnextnodeip()
 {
 # getnextnodeip will define a single node
 # it returns the IP of the next node to be defined
@@ -322,7 +322,7 @@ void nodemgmtdialog::getnextnodeip()
     return $nodeip;
 }
 
-void nodemgmtdialog::getnextnodename()
+void NodeMgmtDialog::getnextnodename()
 {
 # getnextnodename calculates the name of the next node
 # given the current settings of prefix, padding, and number
@@ -342,7 +342,7 @@ void nodemgmtdialog::getnextnodename()
     return $nextname;
 }
 
-void nodemgmtdialog::assignmac_clicked()
+void NodeMgmtDialog::assignmac_clicked()
 {
     my $assmac = othermacs->currentText();
     if ( ! $assmac ) {   #no current MAC selected
@@ -395,7 +395,7 @@ void nodemgmtdialog::assignmac_clicked()
     }
 }
 
-void nodemgmtdialog::assignallmacs_clicked() 
+void NodeMgmtDialog::assignallmacs_clicked() 
 {
     if ( othermacs->count > 0 ) { 
 	nodeTable->clearSelection;
@@ -450,7 +450,7 @@ void nodemgmtdialog::assignallmacs_clicked()
     }
 }
 
-void nodemgmtdialog::unassignmac_clicked()
+void NodeMgmtDialog::unassignmac_clicked()
 {
     my $row = nodeTable->currentRow;
      if ( $row == -1 ) { #no node selected
@@ -470,7 +470,7 @@ void nodemgmtdialog::unassignmac_clicked()
     }
 }
 
-void nodemgmtdialog::othermacs_dimmer()
+void NodeMgmtDialog::othermacs_dimmer()
 {
     if ( othermacs->currentItem == -1 ) { 
 	assignmac->setEnabled(0);
@@ -482,7 +482,7 @@ void nodemgmtdialog::othermacs_dimmer()
     }
 }
 
-void nodemgmtdialog::straymacs_dimmer()
+void NodeMgmtDialog::straymacs_dimmer()
 {
     if ( straymacs->currentItem == -1 ) {
 	straytounass->setEnabled(0);

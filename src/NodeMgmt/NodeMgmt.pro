@@ -3,8 +3,8 @@ unix {
   MOC_DIR = .moc
   OBJECTS_DIR = .obj
 }
-FORMS	= nodemgmtdialog.ui \
-	nodesettingsdialog.ui
+FORMS	= NodeMgmtDialog.ui \
+	NodeSettingsDialog.ui
 TEMPLATE	=app
 CONFIG	+= qt warn_on release
 LANGUAGE	= C++

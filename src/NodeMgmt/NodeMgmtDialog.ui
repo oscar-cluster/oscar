@@ -1,8 +1,8 @@
 <!DOCTYPE UI><UI version="3.1" stdsetdef="1">
-<class>nodemgmtDialog</class>
+<class>NodeMgmtDialog</class>
 <widget class="QDialog">
     <property name="name">
-        <cstring>nodemgmtdialog</cstring>
+        <cstring>NodeMgmtDialog</cstring>
     </property>
     <property name="geometry">
         <rect>
@@ -118,7 +118,7 @@
                                         <string>Change New Node Settings...</string>
                                     </property>
                                 </widget>
-                                <widget class="nodemgmtTable">
+                                <widget class="NodeMgmtTable">
                                     <property name="name">
                                         <cstring>nodeTable</cstring>
                                     </property>
@@ -1727,8 +1727,8 @@
 </widget>
 <customwidgets>
     <customwidget>
-        <class>nodemgmtTable</class>
-        <header location="local">nodemgmtTable.pm</header>
+        <class>NodeMgmtTable</class>
+        <header location="local">NodeMgmtTable.pm</header>
         <sizehint>
             <width>200</width>
             <height>200</height>
@@ -1758,13 +1758,13 @@
     <connection>
         <sender>nodesettingschange</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>nodesettingschange_clicked()</slot>
     </connection>
     <connection>
         <sender>closeDialog</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>closeDialog_clicked()</slot>
     </connection>
     <connection>
@@ -1776,109 +1776,109 @@
     <connection>
         <sender>definenodesButton</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>defineNnodes()</slot>
     </connection>
     <connection>
         <sender>startcollect</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>startnetcollection()</slot>
     </connection>
     <connection>
         <sender>stopcollect</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>stopnetcollection()</slot>
     </connection>
     <connection>
         <sender>advancedButton</sender>
         <signal>toggled(bool)</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>advancedButton_toggled(bool)</slot>
     </connection>
     <connection>
         <sender>importfilebrowse</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>importfilebrowse_clicked()</slot>
     </connection>
     <connection>
         <sender>importmacs</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>importmacs_clicked()</slot>
     </connection>
     <connection>
         <sender>exportmacs</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>exportmacs_clicked()</slot>
     </connection>
     <connection>
         <sender>importmanualmac</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>importmanualmac_clicked()</slot>
     </connection>
     <connection>
         <sender>straytounass</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>straytounass_clicked()</slot>
     </connection>
     <connection>
         <sender>unasstostray</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>unasstostray_clicked()</slot>
     </connection>
     <connection>
         <sender>allstraytounass</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>allstraytounass_clicked()</slot>
     </connection>
     <connection>
         <sender>allunasstostray</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>allunasstostray_clicked()</slot>
     </connection>
     <connection>
         <sender>clearmacs</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>clearmacs_clicked()</slot>
     </connection>
     <connection>
         <sender>assignmac</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>assignmac_clicked()</slot>
     </connection>
     <connection>
         <sender>assignallmacs</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>assignallmacs_clicked()</slot>
     </connection>
     <connection>
         <sender>unassignmac</sender>
         <signal>clicked()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>unassignmac_clicked()</slot>
     </connection>
     <connection>
         <sender>othermacs</sender>
         <signal>selectionChanged()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>othermacs_dimmer()</slot>
     </connection>
     <connection>
         <sender>straymacs</sender>
         <signal>selectionChanged()</signal>
-        <receiver>nodemgmtdialog</receiver>
+        <receiver>NodeMgmtDialog</receiver>
         <slot>straymacs_dimmer()</slot>
     </connection>
 </connections>
@@ -1892,14 +1892,14 @@
     <tabstop>exportmacs</tabstop>
 </tabstops>
 <includes>
-    <include location="local" impldecl="in declaration">use nodesettingsDialog;</include>
+    <include location="local" impldecl="in declaration">use NodeSettingsDialog;</include>
     <include location="local" impldecl="in declaration">use Qt::attributes qw(settingsDialog macprocessTimer mac_collectorProcess);</include>
     <include location="local" impldecl="in declaration">use lib "$ENV{OSCAR_HOME}/lib";</include>
     <include location="local" impldecl="in declaration">use OSCAR::MACops;</include>
     <include location="local" impldecl="in declaration">my @macs;</include>
     <include location="local" impldecl="in declaration">my $nodes;</include>
     <include location="local" impldecl="in declaration">my %usedmacs;</include>
-    <include location="local" impldecl="in implementation">nodemgmtdialog.ui.h</include>
+    <include location="local" impldecl="in implementation">NodeMgmtDialog.ui.h</include>
 </includes>
 <slots>
     <slot>init()</slot>
@@ -1934,6 +1934,6 @@
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
 <includehints>
-    <includehint>nodemgmttable.h</includehint>
+    <includehint>NodeMgmtTable.h</includehint>
 </includehints>
 </UI>

@@ -1,6 +1,6 @@
 #########################################################################
-#  File  : nodemgmtTable.pm                                             #
-#  Author: Terrence G. Fleury (tfleury@ncsa.uiuc.edu)                   #
+#  File  : NodeMgmtTable.pm                                             #
+#  Author: Jason Brechin (brechin@ncsa.uiuc.edu)                        #
 #  Date  : April 24, 2003                                               #
 #  This perl package is a subclass of a Qt QTable.  I had to subclass   #
 #  QTable (rather than add a basic QTable in Designer) since I needed   #
@@ -27,7 +27,7 @@
 use strict;
 use utf8;
 
-package nodemgmtTable;
+package NodeMgmtTable;
 use Qt;
 use Qt::isa qw(Qt::Table);
 use Qt::slots
@@ -59,7 +59,7 @@ sub NEW
 
   shift->SUPER::NEW(@_[0..1]);
 
-  setName("nodemgmtTable") if (name() eq "unnamed");
+  setName("NodeMgmtTable") if (name() eq "unnamed");
 
   setNumCols(4);
   horizontalHeader()->setLabel(0,"Short Name");

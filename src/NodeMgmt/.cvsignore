@@ -2,5 +2,6 @@ Makefile
 Makefile.in
 .cvsignore
 .oscar_made_makefile_am
-nodemgmtDialog.pl
-nodesettingsDialog.pm
+NodeMgmtDialog.pm
+NodeSettingsDialog.pm
+NodeMgmtDialog.pl

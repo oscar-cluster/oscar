@@ -10,7 +10,7 @@ Author: Jason Brechin <brechin@ncsa.uiuc.edu>
   $Id:
 -->
 
-  <classname>nodemgmtDialog</classname>
+  <classname>NodeMgmtDialog</classname>
   <fullname>Node Management</fullname>
 
   <oda>
