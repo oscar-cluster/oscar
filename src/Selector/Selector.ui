@@ -1,0 +1,355 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>Selector</class>
+<widget class="QMainWindow">
+    <property name="name">
+        <cstring>Selector</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>675</width>
+            <height>518</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>OSCAR Package Selector/Configurator</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>1</number>
+        </property>
+        <property name="spacing">
+            <number>0</number>
+        </property>
+        <widget class="QLayoutWidget" row="0" column="0">
+            <property name="name">
+                <cstring>layout14</cstring>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="SelectorTable" row="0" column="0">
+                    <property name="name">
+                        <cstring>packageTable</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>7</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>3</verstretch>
+                        </sizepolicy>
+                    </property>
+                </widget>
+                <widget class="QTabWidget" row="1" column="0">
+                    <property name="name">
+                        <cstring>packageTabWidget</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>7</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>2</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="tabShape">
+                        <enum>Triangular</enum>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Display of information about the package selected above</string>
+                    </property>
+                    <widget class="QWidget">
+                        <property name="name">
+                            <cstring>informationTab</cstring>
+                        </property>
+                        <attribute name="title">
+                            <string>Information</string>
+                        </attribute>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <property name="margin">
+                                <number>0</number>
+                            </property>
+                            <widget class="QTextEdit" row="0" column="0">
+                                <property name="name">
+                                    <cstring>informationTextBox</cstring>
+                                </property>
+                                <property name="readOnly">
+                                    <bool>true</bool>
+                                </property>
+                            </widget>
+                        </grid>
+                    </widget>
+                    <widget class="QWidget">
+                        <property name="name">
+                            <cstring>providesTab</cstring>
+                        </property>
+                        <attribute name="title">
+                            <string>Provides</string>
+                        </attribute>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <property name="margin">
+                                <number>0</number>
+                            </property>
+                            <widget class="QTextEdit" row="0" column="0">
+                                <property name="name">
+                                    <cstring>providesTextBox</cstring>
+                                </property>
+                                <property name="readOnly">
+                                    <bool>true</bool>
+                                </property>
+                            </widget>
+                        </grid>
+                    </widget>
+                    <widget class="QWidget">
+                        <property name="name">
+                            <cstring>conflictsTab</cstring>
+                        </property>
+                        <attribute name="title">
+                            <string>Conflicts</string>
+                        </attribute>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <property name="margin">
+                                <number>0</number>
+                            </property>
+                            <widget class="QTextEdit" row="0" column="0">
+                                <property name="name">
+                                    <cstring>conflictsTextBox</cstring>
+                                </property>
+                                <property name="readOnly">
+                                    <bool>true</bool>
+                                </property>
+                            </widget>
+                        </grid>
+                    </widget>
+                    <widget class="QWidget">
+                        <property name="name">
+                            <cstring>requiresTab</cstring>
+                        </property>
+                        <attribute name="title">
+                            <string>Requires</string>
+                        </attribute>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <property name="margin">
+                                <number>0</number>
+                            </property>
+                            <widget class="QTextEdit" row="0" column="0">
+                                <property name="name">
+                                    <cstring>requiresTextBox</cstring>
+                                </property>
+                                <property name="readOnly">
+                                    <bool>true</bool>
+                                </property>
+                            </widget>
+                        </grid>
+                    </widget>
+                    <widget class="QWidget">
+                        <property name="name">
+                            <cstring>packagerTab</cstring>
+                        </property>
+                        <attribute name="title">
+                            <string>Packager</string>
+                        </attribute>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <property name="margin">
+                                <number>0</number>
+                            </property>
+                            <widget class="QTextEdit" row="0" column="0">
+                                <property name="name">
+                                    <cstring>packagerTextBox</cstring>
+                                </property>
+                                <property name="readOnly">
+                                    <bool>true</bool>
+                                </property>
+                            </widget>
+                        </grid>
+                    </widget>
+                </widget>
+                <widget class="QLayoutWidget" row="2" column="0">
+                    <property name="name">
+                        <cstring>layout13</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QPushButton">
+                            <property name="name">
+                                <cstring>backButton</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>1</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>1</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="text">
+                                <string>&amp;Back</string>
+                            </property>
+                            <property name="iconSet">
+                                <iconset>backarrow.png</iconset>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>Go to the previous step of the installer</string>
+                            </property>
+                        </widget>
+                        <widget class="QPushButton">
+                            <property name="name">
+                                <cstring>closeButton</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>1</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>2</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="text">
+                                <string>&amp;Close</string>
+                            </property>
+                            <property name="iconSet">
+                                <iconset>close.png</iconset>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>Exit the OSCAR Package Selector</string>
+                            </property>
+                        </widget>
+                        <widget class="QPushButton">
+                            <property name="name">
+                                <cstring>nextButton</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>1</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>1</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="text">
+                                <string>&amp;Next</string>
+                            </property>
+                            <property name="iconSet">
+                                <iconset>nextarrow.png</iconset>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>Go to the next step of the installer</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+            </grid>
+        </widget>
+    </grid>
+</widget>
+<menubar>
+    <property name="name">
+        <cstring>menubar</cstring>
+    </property>
+</menubar>
+<toolbars>
+</toolbars>
+<customwidgets>
+    <customwidget>
+        <class>SelectorTable</class>
+        <header location="local">SelectorTable.pm</header>
+        <sizehint>
+            <width>300</width>
+            <height>200</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="XPM.GZ" length="45">789cd3d7528808f055d0d2e72a2e492cc94c5648ce482c52d04a29cdcdad8c8eb5ade6523250004143a55a6b2e0026630c4f</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>closeButton</sender>
+        <signal>clicked()</signal>
+        <receiver>Selector</receiver>
+        <slot>closeButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>backButton</sender>
+        <signal>clicked()</signal>
+        <receiver>Selector</receiver>
+        <slot>backButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>nextButton</sender>
+        <signal>clicked()</signal>
+        <receiver>Selector</receiver>
+        <slot>nextButton_clicked()</slot>
+    </connection>
+</connections>
+<tabstops>
+    <tabstop>packageTabWidget</tabstop>
+    <tabstop>informationTextBox</tabstop>
+    <tabstop>providesTextBox</tabstop>
+    <tabstop>requiresTextBox</tabstop>
+    <tabstop>backButton</tabstop>
+    <tabstop>closeButton</tabstop>
+    <tabstop>nextButton</tabstop>
+</tabstops>
+<includes>
+    <include location="local" impldecl="in declaration">use SelectorUtils;</include>
+    <include location="local" impldecl="in declaration">use lib "../Installer"; use InstallerImages;</include>
+    <include location="local" impldecl="in declaration">use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::Database;</include>
+    <include location="local" impldecl="in declaration">use Getopt::Long;</include>
+    <include location="local" impldecl="in implementation">Selector.ui.h</include>
+</includes>
+<signals>
+    <signal>taskToolClosing(char*)</signal>
+    <signal>backButtonWasClicked(char*)</signal>
+    <signal>nextButtonWasClicked(char*)</signal>
+</signals>
+<slots>
+    <slot>init()</slot>
+    <slot>closeButton_clicked()</slot>
+    <slot>backButton_clicked()</slot>
+    <slot>nextButton_clicked()</slot>
+    <slot>updateTextBox()</slot>
+    <slot>rowSelectionChanged()</slot>
+    <slot>reReadOda( char * )</slot>
+    <slot>setButtonShown( char *, char *, bool )</slot>
+    <slot>closeEvent( QCloseEvent * )</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+<includehints>
+    <includehint>selectortable.h</includehint>
+</includehints>
+</UI>
