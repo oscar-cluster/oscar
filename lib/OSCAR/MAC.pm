@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.21 2003/01/22 23:07:26 brechin Exp $
+#   $Id: MAC.pm,v 1.22 2003/01/23 20:09:41 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.21 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.22 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -235,6 +235,7 @@ sub assign2machine {
     my $mac = $listbox->get($listbox->curselection) or return undef;
     my $node = $tree->infoSelection() or return undef;
     my $client;
+    clear_mac($listbox, $tree);
     if($node =~ /^\|([^\|]+)/) {
         oscar_log_subsection("Step $step_number: Assigned $mac to $1");
         $client = list_client(name=>$1);
@@ -260,6 +261,7 @@ sub clear_mac {
     }
     my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
     my $mac = $adapter->mac;
+    if ( ! $mac ) { return undef; }
     oscar_log_subsection("Step $step_number: Cleared $mac from $1");
 
     # now put the mac back in the pool
