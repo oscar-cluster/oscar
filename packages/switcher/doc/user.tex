@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.5 2002/07/20 17:27:50 jsquyres Exp $
+% $Id: user.tex,v 1.6 2002/10/11 20:10:42 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -119,43 +119,52 @@ It is important to note that {\em using the \cmd{switcher} command
 at first, but was done deliberately.  See the rationale provided at
 the beginning of this section for the reasons why.
 
-\cmd{env-switcher} manipulates three different kinds of entities:
-names, attributes, and values.  ``Names'' are best thought of as
-``packages''.  In OSCAR, for example, an obvious name that is used
-frequently is ``mpi''.  Each name can have zero or more attributes.
-An attribute, if defined, must have a single value.  An attribute
-specifies something about a given name by having an assigned value.
+\cmd{env-switcher} manipulates four different kinds of entities: tags,
+attributes, and values.  
+
+\begin{itemize}
+\item {\em Tags} are used to group similar software packages.  In
+  OSCAR, for example, ``mpi'' is a commonly used tag.
+  
+\item {\em Names} are strings that indicate individual software
+  package names in a tag.
+
+\item Each tag can have zero or more {\em attributes}.  
+  
+\item An attribute, if defined, must have a single {\em value}.  An
+  attribute specifies something about a given tag by having an
+  assigned value.
+\end{itemize}
+
 There are a few built-in attributes with special meanings (any other
 attribute will be ignored by \cmd{env-switcher}, and can therefore be
 used to cache arbitrary values).  ``default'' is probably the
 most-commonly used attribute -- its value specifies which package will
-be loaded.
-
-For example, setting the ``default'' attribute on the ``mpi'' name to
-a given value will control which MPI implementation is loaded into the
-environment.
+be loaded (as such, its value is always a name).  For example, setting
+the ``default'' attribute on the ``mpi'' tag to a given value will
+control which MPI implementation is loaded into the environment.
 
 \cmd{env-switcher} operates at two different levels: system-level and
-user-level.  The system-level names, attributes, and values are stored
-in a central location.  User-level names, attributes, and values are
+user-level.  The system-level tags, attributes, and values are stored
+in a central location.  User-level tags, attributes, and values are
 stored in each user's \file{\$HOME} directory.
 
 When \cmd{env-switcher} looks up entity that it manipulates (for
 example, to determine the value of the ``default'' attribute on the
-``mpi'' name), it attempts to resolves the value in a specific
+``mpi'' tag), it attempts to resolves the value in a specific
 sequence:
 
 \begin{enumerate}
-\item Look for a ``default'' attribute value on the ``mpi'' name in
+\item Look for a ``default'' attribute value on the ``mpi'' tag in
   the user-level defaults
   
-\item Look for a ``default'' attribute value on the ``global'' name in
+\item Look for a ``default'' attribute value on the ``global'' tag in
   the user-level defaults
   
-\item Look for a ``default'' attribute value on the ``mpi'' name in
+\item Look for a ``default'' attribute value on the ``mpi'' tag in
   the system-level defaults
   
-\item Look for a ``default'' attribute value on the ``global'' name in
+\item Look for a ``default'' attribute value on the ``global'' tag in
   the system-level defaults
 \end{enumerate}
 
@@ -169,29 +178,35 @@ are:
 \begin{enumerate}
 \item \cmd{switcher --list}
   
-  List all available names.
+  List all available tags.
 
-\item \cmd{switcher <name> --list}
+\item \cmd{switcher <tag> --list}
   
-  List all defined attributes for the name \cmd{<name>}.
+  List all defined attributes for the tag \cmd{<tag>}.
 
-\item \cmd{switcher <name> = <value> [--system]} 
+\item \cmd{switcher <tag> = <value> [--system]} 
   
   A shortcut nomenclature to set the ``default'' attribute on
-  \cmd{<name>} equal to the value \cmd{<value>}.  Note that the
-  special value ``\cmd{none}'' will remove the value from a given
-  attribute.  If the \cmd{--system} parameter is used, the change will
-  affect the system-level defaults; otherwise, the user's personal
-  user-level defaults are changed.
+  \cmd{<tag>} equal to the value \cmd{<value>}.  If the
+  \cmd{--system} parameter is used, the change will affect the
+  system-level defaults; otherwise, the user's personal user-level
+  defaults are changed.
 
-\item \cmd{switcher <name> --show}
+\item \cmd{switcher <tag> --show}
 
-  Show the all attribute / value pairs for the name \cmd{<name>}.  The
+  Show the all attribute / value pairs for the tag \cmd{<tag>}.  The
   values shown will be for attributes that have a resolvable value
   (using the resolution sequence described above).  Hence, this output
-  may vary from user to user for a given \cmd{<name>} depending on the
+  may vary from user to user for a given \cmd{<tag>} depending on the
   values of user-level defaults.
 
+\item \cmd{switcher <tag> --rm-attr <attr> [--system]} 
+  
+  Remove the attribute \cmd{<attr>} from a given tag.  If the
+  \cmd{--system} parameter is used, the change will affect the system
+  level defaults; otherwise, the user's personal user-level defaults
+  are used.
+  
 \end{enumerate}
 
 Section~\ref{app:switcher-which-mpi-to-use} shows an example scenario

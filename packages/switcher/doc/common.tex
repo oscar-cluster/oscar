@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: common.tex,v 1.9 2002/09/09 04:55:26 jsquyres Exp $
+% $Id: common.tex,v 1.10 2002/10/11 20:10:42 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -81,9 +81,23 @@ default:
   $ switcher mpi = lam-1.2.3
 \end{verbatim}
 
-Using the special name \cmd{none} will remove the user-level default
-and revert the user to the system-level default:
+Using the special name \cmd{none} will indicate that no module should
+be loaded for the \cmd{mpi} tag.  It is most often used by users to
+specify that they do not want a particular software package loaded.
 
 \begin{verbatim}
   $ switcher mpi = none
+\end{verbatim}
+
+Removing a user default (and therefore reverting to the system-level
+default) is done by removing the \cmd{default} attribute:
+
+\begin{verbatim}
+  $ switcher mpi --show
+  user:default=mpich-1.2.4
+  system:exists=true
+  $ switcher mpi --rm-attr default
+  $ switcher mpi --show
+  system:default=lam-6.5.6
+  system:exists=true
 \end{verbatim}
