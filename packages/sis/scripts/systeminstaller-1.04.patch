@@ -54,9 +54,9 @@
  
  sub pkg_install {
  # Head sub to do all the steps, use this or the individual subs below.
---- /dev/null	2004-06-24 11:04:38.000000000 -0700
-+++ /usr/lib/systeminstaller/SystemInstaller/Package/UpdateRpms.pm	2005-02-14 15:49:08.000000000 -0800
-@@ -0,0 +1,336 @@
+--- /usr/lib/systeminstaller/SystemInstaller/Package/UpdateRpms.pm.orig	2005-03-11 14:19:00.000000000 -0800
++++ /usr/lib/systeminstaller/SystemInstaller/Package/UpdateRpms.pm	2005-03-11 15:27:33.000000000 -0800
+@@ -0,0 +1,344 @@
 +package SystemInstaller::Package::UpdateRpms;
 +
 +#   Copyright (c) 2001 International Business Machines
@@ -132,14 +132,22 @@
 +        my $cmd = "update-rpms --root=none --cache=u --check ";
 +        $cmd .= join " ", @pkglist;
 +        if( open( CMD, $cmd."|" ) ) {
++                my @missing;
 +                while (<CMD>) {
 +                        chomp;
 +                        my @items = split /\t/;
 +                        $items[2] =~ /([^\/]+)$/;
-+                        $files{$items[1]} = $1;
++                        if( $items[2] ) {
++                                $files{$items[1]} = $1;
++                        } else {
++                                push @missing, $items[1];
++                        }
 +                }
 +                close CMD;
-+                carp("Couldn't find all files: $?.") if $?;
++                if( $? || @missing ) {
++                    carp("ERROR: The following RPMs are missing from $rpmdir:\n ".join( "\n ",@missing )."\n\n" );
++                    return;
++                }
 +        }
 +        unless (%files) {
 +                carp("Couldn't any files.");
