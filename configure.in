@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.5 2002/02/02 21:18:57 naughtont Exp $
+# $Id: configure.in,v 1.6 2002/02/02 21:28:29 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -66,12 +66,12 @@ AC_OUTPUT([
 
     doc/Makefile
     doc/architecture/Makefile
+    doc/by-laws/Makefile
     doc/development/Makefile
     doc/installation/Makefile
     doc/installation/version.tex
     doc/introduction/Makefile
     doc/introduction/version.tex
-	doc/by-laws/Makefile
 
     lib/Makefile
     lib/OSCAR/Makefile
