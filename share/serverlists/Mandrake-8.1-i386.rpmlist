@@ -15,6 +15,7 @@ openssl
 php
 php-common
 php-xml
+python2-compat
 rrdtool
 tcpdump
 xinetd

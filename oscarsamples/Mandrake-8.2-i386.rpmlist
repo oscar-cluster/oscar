@@ -168,6 +168,7 @@ pygtk
 python
 python-base
 python-numeric
+python2-compat
 qiv
 readline
 reiserfsprogs

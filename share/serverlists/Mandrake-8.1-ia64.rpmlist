@@ -6,6 +6,7 @@ openssh
 openssh-clients
 openssh-server
 openssl
+python2-compat
 tcpdump
 x86-compat-libs
 xinetd

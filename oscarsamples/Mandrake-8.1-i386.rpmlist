@@ -379,6 +379,7 @@ pwdb
 pwlib1
 python
 python-docs
+python2-compat
 qiv
 quanta
 rcs
