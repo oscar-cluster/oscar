@@ -8,17 +8,19 @@ use Carp;
 # all the rpms we KNOW we installed
 
 my @rpms = qw(
+              c3-profiled
               c3
+              lam-module
               lam
-      	      modules
-              env-switcher
+      	      mpich-oscar-module
+              mpich-oscar
+              pvm-modules
               pvm
               openpbs-oscar 
               openpbs-oscar-mom
               openpbs-oscar-server
               openpbs-oscar-gui
               openpbs-oscar-commands
-              lam-module
               sync_users-oscar
               ssh-oscar
               maui-oscar
@@ -32,12 +34,11 @@ my @rpms = qw(
               systemimager-client
               systemimager-i386boot
               systemimager-ia64boot
-              mpich-oscar
-      	      mpich-oscar-module
               tftp-hpa
               ganglia-monitor-core
               ganglia-php-rrd-client
-              pvm-modules
+              env-switcher
+      	      modules
              );
 
 stop_services();
@@ -53,6 +54,21 @@ delete_from_pool(@rpms);
 cleanup_files();
 
 delete_oscar_users();
+
+print "
+##########################################################################
+The OSCAR installation process modifies the environment of both the
+shell that it was installed from as well as any shells that were started
+after the OSCAR installer was invoked.  
+
+This script does not attempt to clean the environment of this shell.
+It is not possible for this script to clean the environment of any
+other currently running shells.
+
+It is therefore **HIGHLY** recomended that you logout and log back in
+before attempting most actions (including re-installing OSCAR).
+##########################################################################
+";
 
 sub delete_oscar_users {
     my @oscar_users = qw(
