@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.24 2002/10/28 20:38:37 mchasal Exp $
+#   $Id: Package.pm,v 1.25 2002/10/28 21:41:53 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,8 +32,8 @@ use File::Copy;
 use XML::Simple;
 use Carp;
 
-@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist distro_rpmlist install_rpms pkg_config_xml);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.24 $ =~ /(\d+)\.(\d+)/);
+@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_user run_pkg_script_chroot rpmlist distro_rpmlist install_rpms pkg_config_xml);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.25 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -139,7 +139,7 @@ sub run_pkg_script {
             my $rc = system("$script $args");
             if($rc) {
                 my $realrc = $rc >> 8;
-                carp("Script $script exitted badly with exit code '$realrc'");
+                carp("Script $script exitted badly with exit code '$realrc'") if $verbose;
                 return 0;
             }
         } 
@@ -178,6 +178,32 @@ sub run_in_chroot {
     return 1;
 }
 
+#
+# run_pkg_script_user - runs the package script for a specific package as a user
+#
+
+sub run_pkg_script_user {
+    my ($pkg, $phase, $user, $verbose, $args) = @_;
+    my $scripts = $PHASES{$phase};
+    if (!$scripts) {
+        carp("No such phase '$phase' in OSCAR package API");
+        return undef;
+    }
+
+    foreach my $scriptname (@$scripts) {
+        my $script = "$ENV{OSCAR_HOME}/packages/$pkg/scripts/$scriptname";
+        if (-e $script) {
+            oscar_log_subsection("About to run $script for $pkg") if $verbose;
+            my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_HOME}/testing/testprint OSCAR_HOME=$ENV{OSCAR_HOME} $script $args' - $user");
+            if($rc) {
+                my $realrc = $rc >> 8;
+                carp("Script $script exitted badly with exit code '$realrc'") if $verbose;
+                return 0;
+            }
+        } 
+    }
+    return 1;
+}
 #
 # This returns the type of rpm list for a package file.  Use this
 # order of precedence in looking for the RPM list:
