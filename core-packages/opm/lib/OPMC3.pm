@@ -1,6 +1,6 @@
 package OPMC3;
 
-#$Id: OPMC3.pm,v 1.3 2001/08/16 14:00:10 mjbrim Exp $
+#$Id: OPMC3.pm,v 1.4 2001/08/16 18:51:13 mjbrim Exp $
 
 # OSCAR Package Management Library
 # (uses C3 Tool Suite version 3.0 or later)
@@ -32,9 +32,9 @@ sub install_pkg {
   my $action = "install";
   
   # check to see if package is installed
-  $pkglist = `readDR -D $ENV{ODRDATA} group PACKAGELIST NAME=$group | awk -F= '{print \$2}'`;
+  $pkglist = `readODR.pl  group PACKAGELIST NAME=$group | awk -F= '{print \$2}'`;
   ($pkglist, $rest) = split(/ /, $pkglist);
-  $out = `readDR -D $ENV{ODRDATA} packagelist PACKAGE NAME=$pkglist | grep $pkg`;
+  $out = `readODR.pl packagelist PACKAGE NAME=$pkglist | grep $pkg`;
   if( $out ne "" ) {
     print "OPMC3::configure_pkg : package $pkg already installed, aborting install\n";
     return 1;
@@ -46,7 +46,7 @@ sub install_pkg {
   } 
   else {
     # update ODR group packagelist 
-    $cmd = "writeDR -D $ENV{ODRDATA} -a packagelist NAME=$pkglist PACKAGE=$pkg ";
+    $cmd = "writeODR.pl -a packagelist NAME=$pkglist PACKAGE=$pkg ";
     if( $server ne "" ) {
       $cmd .= "SERVER=$server";
     }
@@ -60,9 +60,9 @@ sub uninstall_pkg {
   my $action = "uninstall";
   
   # check to see if package is installed
-  $pkglist = `readDR -D $ENV{ODRDATA} group PACKAGELIST NAME=$group | awk -F= '{print \$2}'`;
+  $pkglist = `readODR.pl group PACKAGELIST NAME=$group | awk -F= '{print \$2}'`;
   ($pkglist, $rest) = split(/ /, $pkglist);
-  $out = `readDR -D $ENV{ODRDATA} packagelist PACKAGE NAME=$pkglist | grep $pkg`;
+  $out = `readODR.pl packagelist PACKAGE NAME=$pkglist | grep $pkg`;
   if( $out eq "" ) {
     print "OPMC3::uninstall_pkg : package $pkg not installed, aborting uninstall\n";
     return 1;
@@ -74,7 +74,7 @@ sub uninstall_pkg {
   } 
   else { 
     # update ODR group packagelist
-    $cmd = "writeDR -D $ENV{ODRDATA} -d packagelist NAME=$pkglist PACKAGE=$pkg";
+    $cmd = "writeODR.pl -d packagelist NAME=$pkglist PACKAGE=$pkg";
     system($cmd);
     return 0;
   }
@@ -85,9 +85,9 @@ sub configure_pkg {
   my $action = "configure";
   
   # check to see if package is installed
-  $pkglist = `readDR -D $ENV{ODRDATA} group PACKAGELIST NAME=$group | awk -F= '{print \$2}'`;
+  $pkglist = `readODR.pl group PACKAGELIST NAME=$group | awk -F= '{print \$2}'`;
   ($pkglist, $rest) = split(/ /, $pkglist);
-  $out = `readDR -D $ENV{ODRDATA} packagelist PACKAGE NAME=$pkglist | grep $pkg`;
+  $out = `readODR.pl packagelist PACKAGE NAME=$pkglist | grep $pkg`;
   if( $out eq "" ) {
     print "OPMC3::configure_pkg : package $pkg not installed, aborting configure\n";
     return 1;
@@ -99,10 +99,10 @@ sub configure_pkg {
   } 
   else {
     # update ODR group packagelist (only if pkg server changed) 
-    $curr_server = `readDR -D $ENV{ODRDATA} packagelist SERVER NAME=$pkglist PACKAGE=$pkg | awk -F= '{print \$2}'`;
+    $curr_server = `readODR.pl packagelist SERVER NAME=$pkglist PACKAGE=$pkg | awk -F= '{print \$2}'`;
     ($curr_server, $rest) = split(/ /, $curr_server);
     if( $curr_server ne $server ) {
-      $cmd = "writeDR -D $ENV{ODRDATA} -f NAME=$pkglist,PACKAGE=$pkg packagelist SERVER=$server";
+      $cmd = "writeODR.pl -f NAME=$pkglist,PACKAGE=$pkg packagelist SERVER=$server";
       system($cmd); 
     }
     return 0;
