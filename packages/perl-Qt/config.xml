@@ -36,6 +36,7 @@
 
   <rpmlist>
     <filter distribution='fedora' group='oscar_server' />
+    <filter distribution='whitebox' group='oscar_server' />
     <filter distribution='redhat' group='oscar_server' />
     <rpm>qt</rpm>
     <rpm>qt-devel</rpm>
@@ -100,6 +101,8 @@
     <filter distribution='fedora'   distribution_version='2'   group='oscar_server'/>
     <filter distribution='redhat'   distribution_version='8.0' group='oscar_server'/>
     <filter distribution='redhat'   distribution_version='9'   group='oscar_server'/>
+    <filter distribution='redhat'   distribution_version='3as'   group='oscar_server'/>
+    <filter distribution='whitebox' group='oscar_server' />
     <filter distribution='suse' group='oscar_server'/>
       <rpm>perl-Qt</rpm>
   </rpmlist>
