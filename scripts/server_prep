@@ -55,6 +55,7 @@ my ($ip,$bcast,$netmask) = interface2ip($INTERFACE) or croak("Couldn't determine
 update_hosts($ip) or croak("Couldn't add required host entries to /etc/hosts");
 update_profile() or croak("Couldn't add path entries to /etc/profile");
 update_exports($ip,$netmask) or croak("Couldn't add filesystem entries to /etc/exports");
+update_rsyncd_conf($ip,$netmask) or croak("Couldn't update rsyncd.conf file");
 
 verbose("Refreshing services");
 !system("service nfs start") or croak("Couldn't start nfs");
@@ -211,4 +212,39 @@ sub update_exports {
     close(IN);
 }
 
+sub update_rsyncd_conf {
+    my ($ip, $netmask) = @_;
+    my $done = 0;
+
+    verbose("Backing up rsyncd header stub");
+    my $basefile = "/etc/systemimager/rsync_stubs/10header";
+    my $backup = $basefile . '~';
+    copy($basefile,$backup) or return undef;
+
+    open(IN,"<$backup") or return undef;
+    open(OUT,">$basefile") or return undef;
+    while(<IN>) {
+	if (/hosts allow/) {
+	    verbose("Found hosts allow stanza");
+	    if(/hosts allow = $ip\/$netmask/) {
+		$done = 1;
+		verbose("Looks like we alread have it!");
+	    }
+	}
+	if(/\[scripts\]/ and !$done) {
+	    verbose("Adding hosts allow to file");
+	    print OUT "hosts allow = $ip/$netmask\n\n";
+	}
+	print OUT $_;
+    }
+
+    close(IN);
+    close(OUT);
+    unlink($backup);
+
+    !system("/usr/sbin/update_si_rsync") or return undef;
+    verbose("Updated rsyncd.conf file");
+
+    return 1;
+}
 
