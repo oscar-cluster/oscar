@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.30 2002/12/13 21:26:41 jsquyres Exp $
+% $Id: release-notes.tex,v 1.31 2003/02/19 15:51:12 naughtont Exp $
 %
 
 \section{Release Notes}
@@ -153,6 +153,22 @@ The following release notes apply to OSCAR version \oscarversion.
 \begin{verbatim}
   # urpmi perl-XML-Simple perl-XML-Parser
 \end{verbatim}
+
+
+% TJN: Doc fix for BUG#686916 'xterm needed by SIS'
+%      Remove after 2.2 when add to server_prep/pre-req check areas.
+%     - on RH7.x systems the xterm binaray is packaged w/ XFree86 (big bundle)
+%     - on MDK8.x it showed up in it's own xterm rpm.
+\item The OSCAR wizard makes use of \cmd{xterm} so this package must be
+  installed.  You can check the RPM database for this package by typing
+  \cmd{rpm -q xterm}.  If \cmd{xterm} is not available, you must
+  install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake 8.2
+  CD's to run the \cmd{urpmi} command as mentioned above):
+
+\begin{verbatim}
+  # urpmi xterm
+\end{verbatim}
+
 
 \item There will be two warnings displayed while building the client
   image -- the \file{lam-oscar} and \file{mpich-oscar} RPMs will
