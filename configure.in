@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.18 2002/06/13 02:02:50 jsquyres Exp $
+# $Id: configure.in,v 1.19 2002/06/20 05:58:53 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -84,6 +84,7 @@ AC_OUTPUT([
 
     packages/Makefile
     packages/c3/Makefile
+    packages/c3/doc/Makefile
     packages/c3/RPMS/Makefile
     packages/c3/SRPMS/Makefile
     packages/c3/scripts/Makefile
@@ -97,6 +98,7 @@ AC_OUTPUT([
     packages/lam/RPMS/Makefile
     packages/lam/SRPMS/Makefile
     packages/mpich/Makefile
+    packages/mpich/doc/Makefile
     packages/mpich/RPMS/Makefile
     packages/mpich/SRPMS/Makefile
     packages/mpich/scripts/Makefile
@@ -117,8 +119,10 @@ AC_OUTPUT([
     packages/pfilter/scripts/Makefile
     packages/pvm/Makefile
     packages/pvm/RPMS/Makefile
+    packages/pvm/doc/Makefile
     packages/pvm/SRPMS/Makefile
     packages/sis/Makefile
+    packages/sis/doc/Makefile
     packages/sis/RPMS/Makefile
     packages/sis/scripts/Makefile
     packages/switcher/Makefile
