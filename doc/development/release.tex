@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release.tex,v 1.1 2002/01/23 05:13:41 jsquyres Exp $
+% $Id: release.tex,v 1.2 2002/01/26 14:55:38 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -49,6 +49,54 @@ through the process.
 
 \begin{enumerate}
 
+\item Before making a distribution package file, ensure that:
+
+  \begin{enumerate}
+  \item You have performed a CVS update, and/or otherwise are {\em
+      absolutely sure} that you have the latest version of all the
+    files.
+  \item The top-level \file{README*} files have been updated
+  \item The \file{VERSION} file has been updated
+  \item You have re-run \file{autogen.sh} and \file{configure} to
+    propgate the new version number properly
+  \end{enumerate}
+
+\item Make the distribution package file with ``{\tt make dist}''.
+
+\item Tag the CVS source tree with the version number of the tarball
+  that you have just created.  
+
+  \begin{enumerate}
+  \item The nomenclature of the tag names should be
+    \file{rel-MAJOR-MINOR[-RELEASE]}.  Note that beta releases are
+    consider part of the RELEASE number.  See
+    Table~\ref{tab:release-cvs-tags} for some example CVS tag names.
+
+    \begin{table}[htbp]
+      \begin{center}
+        \begin{tabular}{|l|l|}
+          \hline
+          \multicolumn{1}{|c|}{Version} &
+          \multicolumn{1}{|c|}{CVS tag} \\
+          \hline
+          1.2b6 & \file{rel-1-2-b6} \\
+          1.2.1b3 & \file{rel-1-2-1b3} \\
+          1.2 & \file{rel-1-2} \\
+          1.3b4 & \file{rel-1-3-b4} \\
+          \hline
+        \end{tabular}
+        \caption{Example CVS tags for corresponding OSCAR version numbers}
+        \label{tab:release-cvs-tags}
+      \end{center}
+    \end{table}
+    
+  \item Ensure to use the \cmd{-F} option to CVS's \cmd{tag} command
+    to force the tag to be placed on the current version.  This is
+    necessary if you need to tag the tree twice with the same tag
+    (should only happen if you screw up and need to tag the tree a
+    second time with the same tag).
+  \end{enumerate}
+
 \item Upload the distribution package file to {\tt
     ftp://upload.sf.net/incoming/}.
 
@@ -85,10 +133,18 @@ through the process.
         package.
         
       \item Paste the release text in the ``Paste the Notes In:'' text
-        box.
+        box.  It is preferable to use HTML in the release text to
+        ensure proper formatting of the notice when it is displayed on
+        a user's browser.
         
       \item Ensure that the ``Preserve my pre-formatted text''
-        checkbox is {\em not} checked.
+        checkbox is {\em not} checked.  {\bf Note:} If you did not use
+        HTML in the release notes, you may wish to check this option.
+        If you do, ensure that paragraphs do not contain any line
+        breaks so that each paragraph is one long line (to ensure
+        proper formatting of the notice when it is displayed on a
+        user's browser -- particularly since you just pasted the text
+        into the text box.
 
       \item {\bf IMPORTANT:} Click on the ``Submit/Refresh'' button.
         This saves your work so far.
