@@ -35,6 +35,9 @@ my $INTERFACE = shift or croak("No interface specified");
 
 my $RPMPOOL = $OSCAR::Package::RPM_POOL;
 
+# List of root's .rc files (MDK PATH fixup)
+my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
+
 # Get a list of all non-core packages
 my @packages = list_pkg("noncore");
 my @rpms = ();
@@ -65,6 +68,14 @@ verbose("Refreshing services");
 !system("chkconfig --level 345 dhcpd on");
 !system("chkconfig --level 345 portmap on");
 !system("chkconfig --level 345 nfs on");
+
+
+
+# MDK fixup, comment out hard-coded PATH line
+#foreach my $f (@rcfiles) {
+#	unmunge_pathenv($f);
+#}
+
 
 sub verbose {
     print join " ", @_;
@@ -228,5 +239,37 @@ sub update_rsyncd_conf {
     verbose("Updated rsyncd.conf file");
 
     return 1;
+}
+
+
+# tjn: 9/6/02
+# Used to fix MDK brain-dead defaults for root's .rc files.
+# Input: filename (e.g.  '/root/.bashrc').
+#
+# (Following form used by most other OSCAR subs.)
+sub unmunge_pathenv
+{
+    my $file = pop @_;
+
+    #verbose("Making any necessary fixes to ($file)");
+    print "Making any necessary PATH fixes to ($file)\n";
+    copy($file, "$file.bak") or return undef;
+
+    open(IN, "<$file.bak") or return undef;
+    open(OUT,">$file") or return undef;
+
+    while(<IN>) {
+        if(! /^\s*#/ ) {	#ignore comments
+
+            # if setting 'PATH=' w/o $PATH as an r-value then comment out line
+            if( /(.*PATH=.*)/ &&  ! /\$PATH/ ) {
+                $_ = "#OSCAR: The following line commented out \n# $1\n";
+            }
+        }
+        print OUT $_;
+    }
+
+    close(OUT);
+    close(IN);
 }
 
