@@ -1,6 +1,6 @@
 package OSCAR::Distro;
 
-#   $Id: Distro.pm,v 1.5 2002/04/12 18:34:15 sdague Exp $
+#   $Id: Distro.pm,v 1.6 2003/03/05 22:19:54 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -25,11 +25,12 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(which_distro which_distro_server);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
                    'mandrake-release' => 'Mandrake',
-                   'redhat-release' => 'RedHat',
+                   'redhat-release'   => 'RedHat',
+		   'aaa_version'      => 'SuSE',
                   };
 
 ############################################################
@@ -74,6 +75,9 @@ sub which_distro_server {
         }
         $version = $output;
         $name = $DISTROFILES->{$file};
+	if ($name eq "SuSE") { 
+		$version = `cat /etc/SuSE-release | tail -1 | cut -d '=' -f 2 | cut -b 2-`
+	}
         last;
     }
     return ($name, $version);
