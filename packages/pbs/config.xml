@@ -11,6 +11,9 @@
     <epoch>1</epoch>
   </version>
 
+  <class>included</class>
+  <installable>1</installable>
+
   <summary>OSCARified Portable Batch System base software with gui</summary>
   <license>PBS license (see PBS_License.txt)</license>
   <group>Applications/batch</group>

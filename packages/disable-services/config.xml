@@ -3,6 +3,9 @@
 <package>
   <name>disable-services</name>
 
+  <class>included</class>
+  <installable>1</installable>
+
   <version>
     <major>1</major>
     <minor>1</minor>

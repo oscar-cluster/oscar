@@ -11,6 +11,9 @@
     <epoch>1</epoch>
   </version>
 
+  <class>included</class>
+  <installable>1</installable>
+
   <summary>pfilter - packet filtering ruleset generator</summary>
   <license>GPL</license>
   <group>Securit</group>

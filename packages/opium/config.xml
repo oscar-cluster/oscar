@@ -11,6 +11,9 @@
     <epoch>1</epoch>
   </version>
 
+  <class>included</class>
+  <installable>1</installable>
+
   <summary>OSCARified User File Synchronization System</summary>
   <license>GPL</license>
   <group>System Environment/Base</group>

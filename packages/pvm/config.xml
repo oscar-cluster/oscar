@@ -11,6 +11,9 @@
     <epoch>1</epoch>
   </version>
 
+  <class>included</class>
+  <installable>1</installable>
+
   <summary>Parallel Virtual Machine - Libraries for distributed computing.</summary>
   <license>Freely distributable</license>
   <group>Development/Libraries</group>
