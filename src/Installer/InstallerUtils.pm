@@ -50,6 +50,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use Exporter;
 use Carp;
+use Qt;
 
 our $VERSION = 1.0;
 our @ISA = qw(Exporter);
@@ -78,6 +79,7 @@ my @odaCommandError;
 my $testCodeSuccess;
 
 my $installerDir = undef;  # Local storage of dir found by FindBin
+my $perlQtVersion;         # Local storage for version of installed Perl-Qt
 
 sub compactSpaces
 {
@@ -350,6 +352,57 @@ last executed oda command and corresponding test code.
     }
 
   return $errorstr;
+}
+
+
+sub getPixmap
+{
+#########################################################################
+
+=item C<getPixmap($imageName)>
+
+Return a Qt::Pixmap for a given image name.
+
+Use this subroutine when you need to load an image from the
+InstallerImages.pm file.  Use the original filename of the image (i.e.
+including the '.png' extension).  A QPixmap will be returned.
+
+This subroutine is needed to handle different ways QPixmaps are loaded in
+with Perl-Qt-3.006 and Perl-Qt-3.008 (and above).  (The older version of
+Perl-Qt needed a MimeSourceFactory.)
+
+=cut
+
+### @param $imageName The original filename of the image to be loaded.  Note
+###                   that this really isn't a filename since the image
+###                   actually resides in the InstallerImages.pm file.
+### @return The Qt::Pixmap loaded in.
+
+#########################################################################
+
+  my $imageName = shift;
+  my $image;
+
+  # Get the perl-Qt version.  Can't use Qt::VERSION since it's not reliable.
+  if (!defined($perlQtVersion))
+    {
+      open(CMD,"rpm -q --queryformat %{VERSION} perl-Qt |");
+      $perlQtVersion = <CMD>;
+      close CMD;
+    }
+
+  if ($perlQtVersion >= 3.008)
+    {
+      $image = Qt::Pixmap::fromMimeSource($imageName);
+    }
+  else
+    {
+      $image = Qt::Pixmap();
+      my $m = Qt::MimeSourceFactory::defaultFactory()->data($imageName);
+      Qt::ImageDrag::decode($m,$image) if ($m);
+    }
+
+  return $image;
 }
 
 1;

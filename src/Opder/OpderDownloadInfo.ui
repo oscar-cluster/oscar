@@ -111,6 +111,7 @@ Information...</string>
     <include location="local" impldecl="in declaration">my $opdcmd = $ENV{OSCAR_HOME} . '/scripts/opd';</include>
     <include location="local" impldecl="in declaration">use Carp;</include>
     <include location="local" impldecl="in declaration">use Qt::signals readPackagesSuccess=>[], downloadButtonDisable=>[], downloadButtonUpdate=>[];</include>
+    <include location="local" impldecl="in declaration">use lib "../Installer"; use InstallerImages; use InstallerUtils;</include>
     <include location="local" impldecl="in implementation">OpderDownloadInfo.ui.h</include>
 </includes>
 <slots>

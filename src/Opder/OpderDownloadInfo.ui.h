@@ -69,7 +69,7 @@ void OpderDownloadInfo::hideEvent()
 #########################################################################
 
   # Stop the timer for the green ball animation
-  fiveBalls->setPixmap(Qt::Pixmap::fromMimeSource('ball1.png'));
+  fiveBalls->setPixmap(InstallerUtils::getPixmap('ball1.png'));
   $ballTimer->stop();
 
   # It could be that the widget got hidden due to the parent window 
@@ -113,7 +113,7 @@ void OpderDownloadInfo::advanceBallTimer()
     {
       $ballNumber++;
       $ballNumber = 1 if ($ballNumber > 5);
-      fiveBalls->setPixmap(Qt::Pixmap::fromMimeSource("ball$ballNumber.png"));
+      fiveBalls->setPixmap(InstallerUtils::getPixmap("ball$ballNumber.png"));
     }
 }
 

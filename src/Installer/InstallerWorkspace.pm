@@ -43,6 +43,7 @@ the decoration or the behaviour of the widget itself.>
                                                                                 
 use strict;
 use utf8;
+use InstallerUtils;
                                                                                 
 use Qt;
 use Qt::isa qw(Qt::Workspace);
@@ -80,7 +81,7 @@ sub NEW
   shift->SUPER::NEW(@_[0..1]);
 
   setName("InstallerWorkspace") if (name() eq "unnamed");
-  setPaletteBackgroundPixmap(Qt::Pixmap::fromMimeSource("oscarbg.png"));
+  setPaletteBackgroundPixmap(InstallerUtils::getPixmap("oscarbg.png"));
 
   setScrollBarsEnabled(1);
 

@@ -142,21 +142,24 @@ like C<classname->>C<NEW(args...)>.
   menuBar()->findItem(1)->setText(trUtf8("&File"));
 
   fileNewAction = Qt::Action(this,"fileNewAction");
-  fileNewAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("filenew.png")));
+  fileNewAction->setIconSet(
+    Qt::IconSet(InstallerUtils::getPixmap("filenew.png")));
   fileNewAction->setText(trUtf8("New"));
   fileNewAction->setMenuText(trUtf8("&New"));
   fileNewAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+N")));
   fileNewAction->addTo(fileMenu);
 
   fileOpenAction = Qt::Action(this,"fileOpenAction");
-  fileOpenAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("fileopen.png")));
+  fileOpenAction->setIconSet(
+    Qt::IconSet(InstallerUtils::getPixmap("fileopen.png")));
   fileOpenAction->setText(trUtf8("Open"));
   fileOpenAction->setMenuText(trUtf8("&Open..."));
   fileOpenAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+O")));
   fileOpenAction->addTo(fileMenu);
 
   fileSaveAction = Qt::Action(this,"fileSaveAction");
-  fileSaveAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("filesave.png")));
+  fileSaveAction->setIconSet(
+    Qt::IconSet(InstallerUtils::getPixmap("filesave.png")));
   fileSaveAction->setText(trUtf8("Save"));
   fileSaveAction->setMenuText(trUtf8("&Save"));
   fileSaveAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+S")));
@@ -170,7 +173,8 @@ like C<classname->>C<NEW(args...)>.
   fileMenu->insertSeparator();
 
   filePrintAction = Qt::Action(this,"filePrintAction");
-  filePrintAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("print.png")));
+  filePrintAction->setIconSet(
+    Qt::IconSet(InstallerUtils::getPixmap("print.png")));
   filePrintAction->setText(trUtf8("Print"));
   filePrintAction->setMenuText(trUtf8("&Print..."));
   filePrintAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+P")));
@@ -179,7 +183,8 @@ like C<classname->>C<NEW(args...)>.
   fileMenu->insertSeparator();
 
   fileExitAction = Qt::Action(this,"fileExitAction");
-  fileExitAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("close.png")));
+  fileExitAction->setIconSet(
+    Qt::IconSet(InstallerUtils::getPixmap("close.png")));
   fileExitAction->setText(trUtf8("Exit"));
   fileExitAction->setMenuText(trUtf8("E&xit"));
   fileExitAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+Q")));
@@ -327,10 +332,11 @@ $installerTasksAndTools hash) before calling this subroutine.
       # quick selection via the <Alt> key.  It finds unique letters for each
       # Tool by keeping track of which letters have already been used.
       my $searchstr = join '|', @letters;
-      $installerTasksAndTools->{$tool}->{fullname} =~ /[^($searchstr)]/i;
+      my $menustr = $installerTasksAndTools->{$tool}->{fullname};
+      $menustr =~ /[^($searchstr)]/i;
       if (length($&) > 0)
         {
-          my $menustr = $` . '&' . $& . $';
+          $menustr = $` . '&' . $& . $';
           push @letters, $&;
         }
       my $id = toolsMenu->insertItem($menustr, this,
