@@ -22,83 +22,207 @@ use lib "/usr/lib/systeminstaller";
 use Carp;
 use Data::Dumper;
 use SystemInstaller::Machine;
+use Getopt::Long;  # Used to get command line option
+my $default;       # Did we type --default on the command line?
 
-# Update the server's nodes file (optionally for only one image).
+#########################################################################
+#  compactSpaces strips off the leading and trailing spaces from a      #
+#  string.  If you also pass in $compact=1, then it compresses multiple #
+#  spaces within the string down to 1 space.  Also, you can pass in     #
+#  $commas=1 to change commas to spaces prior to compacting.            #
+#########################################################################
+sub compactSpaces # ($string,$compact,$commas) -> $string
+{
+  my($string,$compact,$commas) = @_;
 
-my $image = shift; # Optionally provide an image name.
-
-print "...updating pbs_server nodes file\n";
-
-my $nodes_file = "/usr/spool/PBS/server_priv/nodes";
-
-open(NODES, ">$nodes_file") or croak("config_server: could not open PBS server's nodes file\n");
-
-my %nodes = get_machine_listing($image);
-
-my $TOT_NODES = 0;
-my $TOT_NP = 0;
-
-foreach my $node (sort keys %nodes) {
-print Dumper(\%nodes);
-
-    if($nodes{$node}->{NUM_PROCS}) {
-        $TOT_NP += $nodes{$node}{NUM_PROCS};
-        $TOT_NODES++;
-        print NODES "$nodes{$node}{HOST} np=$nodes{$node}{NUM_PROCS}\n";
-    } else {
-        $TOT_NP++;
-        $TOT_NODES++;
-        print NODES "$nodes{$node}{HOST}\n";
-    }
+  $string =~ s/,/ /g if ($commas);     # Change commas to spaces
+  $string =~ s/^\s*//;                 # Strip off leading spaces
+  $string =~ s/\s*$//;                 # Strip off trailing spaces
+  $string =~ s/\s+/ /g if ($compact);  # Compact multiple spaces
+  return $string; 
 }
 
-close(NODES);
+#########################################################################
+#  Subroutine name : parseCommandLine                                   #
+#  Parameters : none                                                    #
+#  Returns    : nothing                                                 #
+#  This function scans the command line for options and stores their    #
+#  values in global variables.                                          #
+#########################################################################
+sub parseCommandLine
+{
+  $Getopt::Long::autoabbrev = 1;
+  $Getopt::Long::getopt_compat = 1;     # Allow + for options
+  $Getopt::Long::order = $PERMUTE;      # Option reordering
+  &GetOptions("default" => \$default);
+}
 
-print "Restarting pbs server...\n";
 
-!system("service pbs_server stop") or croak("Couldn't stop pbs_server");
 
-!system("service pbs_server start") or croak("Couldn't start pbs_server");
+########################
+#  BEGIN MAIN PROGRAM  #
+########################
 
-print "Creating pbs queue...\n";
+parseCommandLine();
 
-# Update the pbs server configuration
+# Update the server's nodes file (optionally for only one image).
+my $image = shift; # Optionally provide an image name.
 
-open (QMGRCMD,"|/usr/local/pbs/bin/qmgr -a -e ");
-my $conf = <<PBSCONF;
-# Create queues and set their attributes.
-create queue workq
-set queue workq queue_type = Execution
-set queue workq resources_max.cput = 10000:00:00
-set queue workq resources_max.ncpus = $TOT_NP
-set queue workq resources_max.nodect = $TOT_NODES
-set queue workq resources_max.walltime = 10000:00:00
-set queue workq resources_min.cput = 00:00:01
-set queue workq resources_min.ncpus = 1
-set queue workq resources_min.nodect = 1
-set queue workq resources_min.walltime = 00:00:01
-set queue workq resources_default.cput = 10000:00:00
-set queue workq resources_default.ncpus = 1
-set queue workq resources_default.nodect = 1
-set queue workq resources_default.walltime = 10000:00:00
-set queue workq resources_available.nodect = $TOT_NODES
-set queue workq enabled = True
-set queue workq started = True
-# Set server attributes.
-set server scheduling = True
-set server default_queue = workq
-set server log_events = 511
-set server mail_from = adm
-set server resources_available.ncpus = $TOT_NP
-set server resources_available.nodect = $TOT_NODES
-set server resources_available.nodes = $TOT_NODES
-set server resources_max.ncpus = $TOT_NP
-set server resources_max.nodes = $TOT_NODES
-set server scheduler_iteration = 60
+print "Updating pbs_server nodes\n";
 
-PBSCONF
+# Read in the current nodes as shown by 'pbsnodes -a'
+open (CMD,'/usr/local/pbs/bin/pbsnodes -a |');
+my $inp = "";
+my $server = "";
+my $opt = "";
+my $val = "";
+my %pbsnodes;
+while ($inp = <CMD>)
+  {
+    chomp($inp);
+    if ($inp =~ /^\s*([^=]+)\s*$/) 
+      { 
+        $server = $1; 
+      }
+    elsif ($inp =~ /^\s*([^=]+)\s*=\s*([^=]+)\s*$/) 
+      { 
+        $opt = $1; 
+        $val = $2; 
+        $pbsnodes{$server}{$opt} = $val;
+      } 
+  }
+close (CMD);
+# print Dumper(\%pbsnodes);
 
-print $conf;
-print QMGRCMD $conf;
+# Get listing of nodes from the SIS database
+my %nodes = get_machine_listing($image);
+my $TOT_NODES = 0;
+my $TOT_NP = 0;
+my $hostname = "";
+foreach my $node (sort keys %nodes) 
+  {
+    # Check each node against the output from 'pbsnodes -a'
+    $hostname = $nodes{$node}{HOST};
+    if ($pbsnodes{$hostname})
+      {
+        if (defined($default))
+          {
+            system("/usr/local/pbs/bin/pbsnodes -o $hostname");
+            system('/usr/local/pbs/bin/qmgr -a -e -c "set node ' . 
+                   $hostname . ' np = ' . 
+                   ($nodes{$node}{NUM_PROCS} ? $nodes{$node}{NUM_PROCS} : 1) .
+                   ' , properties = all"');
+            system("/usr/local/pbs/bin/pbsnodes -c $hostname");
+          }
+        # Remove from pbsnodes hash
+        delete $pbsnodes{$nodes{$node}{HOST}};
+      }
+    else
+      { # Didn't find a match -> ADD the node
+        system('/usr/local/pbs/bin/qmgr -a -e -c "create node ' . 
+               $hostname . ' np = ' .
+               ($nodes{$node}{NUM_PROCS} ? $nodes{$node}{NUM_PROCS} : 1) .
+               ' , properties = all"');
+      }
+    
+    # Count up the number of nodes and processors
+    $TOT_NODES++;
+    $TOT_NP += ($nodes{$node}{NUM_PROCS} ? $nodes{$node}{NUM_PROCS} : 1);
+  }
+# print Dumper(\%nodes);
 
-close (QMGRCMD) or croak("Configuration of PBS queues failed");
+# Now go through the remaining pbsnodes hash and delete these nodes
+foreach my $node (sort keys %pbsnodes) 
+  {
+    system('/usr/local/pbs/bin/qmgr -a -e -c "delete node ' . $node . '"');
+  }
+
+# Next, use qmgr command to set up the values for workq
+print "Creating pbs workq queue...\n";
+ 
+# These are default values set only when not present or when --default
+my @default_params = (
+  'create queue workq',
+  'set queue workq queue_type                 = Execution',
+  'set queue workq resources_max.cput         = 10000:00:00',
+  'set queue workq resources_max.walltime     = 10000:00:00',
+  'set queue workq resources_min.cput         = 00:00:01',
+  'set queue workq resources_min.ncpus        = 1',
+  'set queue workq resources_min.nodect       = 1',
+  'set queue workq resources_min.walltime     = 00:00:01',
+  'set queue workq resources_default.cput     = 10000:00:00',
+  'set queue workq resources_default.ncpus    = 1',
+  'set queue workq resources_default.nodect   = 1',
+  'set queue workq resources_default.walltime = 10000:00:00',
+  'set queue workq enabled                    = True',
+  'set queue workq started                    = True',
+  'set server scheduling                      = True',
+  'set server default_queue                   = workq',
+  'set server log_events                      = 511',
+  'set server mail_from                       = adm',
+  'set server scheduler_iteration             = 60',
+);
+
+# These are variable parameters that are set everytime
+my @variable_params = (
+  "set queue workq resources_max.ncpus        = $TOT_NP",
+  "set queue workq resources_max.nodect       = $TOT_NODES",
+  "set queue workq resources_available.nodect = $TOT_NODES",
+  "set server resources_available.ncpus       = $TOT_NP",
+  "set server resources_available.nodect      = $TOT_NODES",
+  "set server resources_available.nodes       = $TOT_NODES",
+  "set server resources_max.ncpus             = $TOT_NP",
+  "set server resources_max.nodes             = $TOT_NODES",
+);
+
+# First, read in the current values for the localhost
+undef $/;   # Suck in the entire files into one big string
+open (CMD,'/usr/local/pbs/bin/qmgr -a -e -c "print server @localhost" |');
+my $cmd_output = <CMD>;
+close (CMD);
+
+# Next, build up a command string to pass back to the qmgr command.
+my $line = "";
+my $key = "";
+my $value = "";
+my $cmd_input = "";
+
+# Search through the default_params for anything missing.
+foreach $line (@default_params)
+  {
+    ($key,$value) = split /=/, $line;
+    $key = compactSpaces($key);
+    $value = compactSpaces($value);
+    if ($value eq "")
+      { # Search for just the $key since there's no value for it.
+        $cmd_input .= "$key\n" if
+          ($cmd_output !~ /$key/m) || 
+          (defined($default) && $key !~ /create/);
+      }
+    else
+      { # Search for "$key =".  Output key and value if needed.
+        $cmd_input .= "$key = $value\n" if
+          ($cmd_output !~ /$key\s*=/m) || defined($default);
+      }
+  }
+
+# Then, force the setting of the of the variable_params.
+foreach $line (@variable_params)
+  {
+    ($key,$value) = split /=/, $line;
+    $key = compactSpaces($key);
+    $value = compactSpaces($value);
+    $cmd_input .= "$key";
+    $cmd_input .= " = $value"
+      if ($value ne "");
+    $cmd_input .= "\n";
+  }
+
+# Run the qmgr command if necessary
+if ($cmd_input ne "")
+  {
+    open (CMD,"|/usr/local/pbs/bin/qmgr -a -e ");
+    print CMD $cmd_input;
+    close (CMD) or croak("Configuration of PBS queues failed");
+  }
+
