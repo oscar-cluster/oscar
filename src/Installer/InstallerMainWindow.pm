@@ -58,7 +58,9 @@ use Qt::slots
     windowMenuActivated => ['int'],
     tasksMenuActivated => ['int'],
     toolsMenuActivated => ['int'],
-    taskToolClosed => ['char*'];
+    taskToolClosed => ['char*'],
+    taskBackButton => ['char*'],
+    taskNextButton => ['char*'];
 use Qt::attributes qw(
     installerWorkspace
     centralWidget
@@ -425,7 +427,7 @@ into Qt so we don't have to do any extra work.)
                                       this, SLOT "windowMenuActivated(int)");
       windowMenu->setItemParameter($id,$i);
       windowMenu->setItemChecked($id,
-        installerWorkspace->activeWindow() == $windowList[$i]);
+        installerWorkspace->activeWindow()->name() eq $windowList[$i]->name());
     }
 }
 
@@ -617,8 +619,13 @@ closes.
   # Catch the widget's "taskToolClosing" signal.
   Qt::Object::connect($currTaskToolWidgets{$tasktool},
                       SIGNAL "taskToolClosing(char*)",
-                      this,
                       SLOT   "taskToolClosed(char*)");
+  Qt::Object::connect($currTaskToolWidgets{$tasktool},
+                      SIGNAL "backButtonWasClicked(char*)",
+                      SLOT   "taskBackButton(char*)");
+  Qt::Object::connect($currTaskToolWidgets{$tasktool},
+                      SIGNAL "nextButtonWasClicked(char*)",
+                      SLOT   "taskNextButton(char*)");
 }
 
 sub disconnectTaskTool
@@ -642,10 +649,14 @@ connections made when the Task/Tool was launched.
 
   Qt::Object::disconnect($currTaskToolWidgets{$tasktool},
                          SIGNAL "taskToolClosing(char*)",
-                         this,
                          SLOT   "taskToolClosed(char*)");
+  Qt::Object::disconnect($currTaskToolWidgets{$tasktool},
+                         SIGNAL "backButtonWasClicked(char*)",
+                         SLOT   "taskBackButton(char*)");
+  Qt::Object::disconnect($currTaskToolWidgets{$tasktool},
+                         SIGNAL "nextButtonWasClicked(char*)",
+                         SLOT   "taskNextButton(char*)");
 }
-
 
 sub launchTaskTool
 {
@@ -700,7 +711,7 @@ sub processOdaCommandsAndTests
 
 =item C<processOdaCommandsAndTests($tasktool)>
 
-THIS STILL NEEDS TO BE COMMENTED AND CODED FURTHER...
+THIS STILL NEEDS TO BE COMMENTED!
 
 =cut
 
@@ -723,10 +734,9 @@ THIS STILL NEEDS TO BE COMMENTED AND CODED FURTHER...
       $InstallerUtils::activeTestCode =
         $installerTasksAndTools->{$task}->{test}[$i];
 
-      my $odasuccess = InstallerUtils::runActiveOdaTest();
       $installerTasksAndTools->{$task}->{testSuccess}[$i] =
-        $InstallerUtils::testCodeSuccess;
-      if (!$odasuccess)
+        InstallerUtils::runActiveOdaTest();
+      if (!$installerTasksAndTools->{$task}->{testSuccess}[$i])
         {
           $success = 0;
           $InstallerUtils::activeErrorCode =
@@ -766,11 +776,109 @@ Task/Tool was created.
   delete $currTaskToolWidgets{$tasktool};
 }
 
+sub taskBackButton
+{
+#########################################################################
+
+=item C<taskBackButton($tasktool)>
+
+A SLOT which is called when a Task signals that its Back button was pressed.
+
+When a Task's Back button pressed, the Task emits a signal to let the
+MainWindow know to try to go to the previous Task (step).  It simply calls
+taskBackNextButtonPressed with -1 and lets that subroutine handle the messy
+details.
+
+=cut
+
+### @param $task The directory name of the Task which said that its Back
+###              button was pressed.
+### @see taskBackNextButtonPressed()
+
+#########################################################################
+
+  taskBackNextButtonPressed(shift,-1);
+}
+
+sub taskNextButton
+{
+#########################################################################
+
+=item C<taskNextButton($tasktool)>
+
+A SLOT which is called when a Task signals that its Next button was pressed.
+
+When a Task's Next button pressed, the Task emits a signal to let the
+MainWindow know to try to go to the next Task (step).  It simply calls
+taskBackNextButtonPressed with +1 and lets that subroutine handle the messy
+details.
+
+=cut
+
+### @param $task The directory name of the Task which said that its Next
+###              button was pressed.
+### @see taskBackNextButtonPressed()
+
+#########################################################################
+
+  taskBackNextButtonPressed(shift,1);
+}
+
+sub taskBackNextButtonPressed
+{
+#########################################################################
+
+=item C<taskBackNextButtonPressed($task,$backnext)>
+
+Called when a Task has its Back/Next button pressed.
+
+When a Task's Back/Next button is pressed, we should try to go to the
+previous/next step in the installation process.  We first check to verify
+that the previous/next step actually exists (i.e. prevent out of array range
+errors) and then call tasksMenuActivated with the new Task array position to
+do the messy work.
+
+=cut
+
+### @param $task The directory name of the Task which said that its 
+###              Back/Next button was pressed.
+### @param $backnext -1 for Back / +1 for Next
+
+#########################################################################
+
+  my($task,$backnext) = @_;
+ 
+  my $arraypos = -1;  # Assume lookup failure
+  # Find location of the $task in the sorted array of Tasks
+  for (my $i = 0; $i <= $#installerTasksSorted; $i++)
+    {
+      if ($installerTasksSorted[$i] eq $task)
+        {
+          $arraypos = $i;
+          last;
+        }
+    }
+
+  # If we didn't find the Task for some weird reason, do nothing.  Also, if
+  # the previous/next step would be out of bounds of the array (again for
+  # some weird reason since the Back/Next buttons should be hidden on the
+  # first/last Tasks respectively), do nothing.
+  my $newarraypos = $arraypos + $backnext;
+  return if (($arraypos == -1) ||
+             ($newarraypos < 0) ||
+             ($newarraypos > $#installerTasksSorted));
+
+  # If we got this far, then then try to launch the new Task
+  tasksMenuActivated($newarraypos);
+}
+
 sub showErrorDialog
 {
 #########################################################################
 
 =item C<showErrorDialog($task)>
+
+THIS STILL NEEDS TO BE COMMENTED!
 
 =cut
 
