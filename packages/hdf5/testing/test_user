@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+
+# $Id: test_user,v 1.1 2002/10/31 00:06:54 mchasal Exp $
+#
+# Authors: Jason Brechin
+#          Jeremy Enos
+
+
+cd ~
+clients=0
+for i in $@ 
+do
+    clients=`expr $clients + 1`
+done
+
+~/pbs_test $clients 1 ~/hdf5/pbs_script.hdf5 "SUCCESS" ~/hdf5/hdf5test 3 "PBS HDF5 Test"
+
