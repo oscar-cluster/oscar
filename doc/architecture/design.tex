@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.13 2002/06/12 07:26:53 jsquyres Exp $
+% $Id: design.tex,v 1.14 2002/06/20 04:39:23 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -80,8 +80,8 @@ considered part of the OSCAR distribution, and therefore fall in the
 same category of quality control as the core packages.
 
 Included packages may or may not be installed by default, depending on
-the installation mode selected by the user.  See
-Section~\ref{sec:design-wizard}.
+the installation mode selected by the user.  
+% See Section~\ref{sec:design-wizard}.
 
 Examples of included packages include (but are not limited to):
 LAM/MPI, MPICH, PVM, OpenSSH, and PBS.
@@ -93,8 +93,9 @@ LAM/MPI, MPICH, PVM, OpenSSH, and PBS.
 This directory does not exist in the developer's tree because it is
 exclusively intended as the location for third party developers to
 place their packages for inclusion in the OSCAR framework.  Depending
-on the installation mode (see Section~\ref{sec:design-wizard}), the
-packages in this directory will be scanned and listed as optional
+on the installation mode,
+% (see Section~\ref{sec:design-wizard})
+the packages in this directory will be scanned and listed as optional
 packages that may be installed by OSCAR.
 
 That is, simply the presence of a package in this directory (and
@@ -196,23 +197,40 @@ First, let's explain the sequence of events in the OSCAR installation.
 This will include the proposed API calls -- they'll be explained in
 more detail below.  
 
-% BWB: Fix me!
-\begin{verbatim}
-   Description                                      Location
-   ------------------------------------------------ ------------------
-1. Install all the server RPMs                      Server filesystem
-2. Call the API script(s): post_server_rpm_install  Server filesystem
-3. Install all the client RPMs                      Client filesystem
-4. Call the API script(s): post_client_rpm_install  Client filesystem
-5. Define clients in the OSCAR/SIS database         Server filesystem
-6. Call the API script(s): post_clients             Server filesystem
-7. Push the images to the nodes (**)                Server filesystem
-8. Call the API script(s): post_install             Server filesystem
-   ------------------------------------------------ ------------------
-\end{verbatim}
-
-(**) Note that step 7 won't happen in a node-based install -- this
-     step will be skipped.
+\begin{table}[htbp]
+  \begin{center}
+      \begin{tabular}{rll}
+        \hline
+        \multicolumn{2}{c}{Description} &
+        \multicolumn{1}{c}{Location} \\
+        \hline
+        1. & Install all the server RPMs & Server filesystem \\
+%
+        2. & Call the API script(s): \cmd{post\_server\_rpm\_install} &
+        Server filesystem \\
+%
+        3. & Install all the client RPMs & Client filesystem \\
+%
+        4. & Call the API script(s): \cmd{post\_client\_rpm\_install} &
+        Client filesystem \\
+%
+        5. & Define clients in the OSCAR/SIS database & Server
+        filesystem \\
+%
+        6. & Call the API script(s): \cmd{post\_clients} & Server
+        filesystem \\
+%
+        7. & Push the images to the nodes & Server filesystem \\
+%
+        8. & Call the API script(s): \cmd{post\_install} & Server
+        filesystem \\
+        \hline
+      \end{tabular}
+      \caption{Note that step 7 won't happen in a node-based install
+        -- this step will be skipped.}
+    \label{tab:sequence-of-events}
+  \end{center}
+\end{table}
 
 Every OSCAR package can have zero or more of the API scripts (this is
 different than what we have right now where there is only one
@@ -312,9 +330,17 @@ information that they are looking for.
 
 If there is a file \file{user.tex} in the \directory{doc} package
 subdirectory, it will automatically be included in the top-level OSCAR
-user manual.  Similarly, if there is a file \file{install.tex} in the
-same directory, it will automatically be included in the top-level
-OSCAR installation manual.
+user manual.  
+%
+Similarly, if there is a file \file{license.tex} in the same
+directory, it will also be included in the OSCAR user manual in the
+section containing licenses from all the packages.  {\bf It is {\em
+    strongly} recomended that each package include their license in
+  the OSCAR user's documentation.}
+%
+Finally, if there is a file \file{install.tex} in the same directory,
+it will automatically be included in the top-level OSCAR installation
+manual.  
 
 The following guidelines should be followed when providing
 \file{user.tex} and/or \file{install.tex} files:
