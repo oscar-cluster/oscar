@@ -1884,6 +1884,22 @@ if ( ! defined $package_names_to_ids_hash_ref ) {
 		}
 	    }
 	}
+	my @error_strings = ();
+	my @tables = ( "packages_rpmlists" );
+	my @package_rpmlist_records_wheres = 
+	    ( "packages_rpmlists.package_id = \"$package_id\"" );
+	push @package_rpmlist_records_wheres,
+	    "packages_rpmlists.package_version = \"$package_version\""
+	    if $multiple_package_versions;
+	if ( ! oda::delete_records( \%options,
+				    \@tables,
+				    \@package_rpmlist_records_wheres,
+				    \@error_strings ) ) {
+	    oda::disconnect( \%options,
+			     \@error_strings );
+	    warn shift @error_strings while @error_strings;
+	    exit 1;
+	}
     }
 }
 if ( $options{debug} ) {
