@@ -31,7 +31,7 @@ use Data::Dumper;
 
 push_hosts() or croak("Couldn't push hosts file to images");
 
-my @pkgs = list_pkg();
+my @pkgs = list_install_pkg();
 
 my $return = 0;
 

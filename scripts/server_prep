@@ -4,7 +4,7 @@
 #                     Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
-# $Id: server_prep,v 1.33 2002/10/25 21:10:46 jsquyres Exp $
+# $Id: server_prep,v 1.34 2002/10/28 22:50:22 tfleury Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
 
 # Get a list of all non-core packages
 
-my @packages = list_pkg("noncore");
+my @packages = list_install_pkg("noncore");
 oscar_log_subsection("Identified non-core packages: " . join(' ', @packages));
 
 # Get list of RPMs from the non-core packages
