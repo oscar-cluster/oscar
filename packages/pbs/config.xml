@@ -61,6 +61,11 @@ includes the software used to run jobs on computation nodes,
 openpbs-oscar-server includes the software used to schedule jobs on
 the server node.</description>
 
+  <conflicts>
+    <type>package</type>
+    <name>torque</name>
+  </conflicts>
+
   <rpmlist>
       <rpm>openpbs-oscar</rpm>
       <rpm>openpbs-oscar-mom</rpm>
