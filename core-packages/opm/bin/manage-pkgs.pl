@@ -1,15 +1,15 @@
 #!/usr/bin/perl
 
-# $Id: manage_pkgs.pl,v 1.1 2001/08/14 18:22:54 jsquyres Exp $
+#$Id: manage-pkgs.pl,v 1.1 2001/08/14 22:10:12 mjbrim Exp $
 
-# manage_pkgs - OSCAR package management master script
+# manage-pkgs - OSCAR package management master script
 
-# $COPYRIGHT$
+#$COPYRIGHT$
 
 # Setup Environment
 # (should use oscar environment script later on)
 
-use lib "$ENV{OPM}/lib";
+use lib "$ENV{OPMLIB}";
 use OPMC3;
 use Getopt::Long;
 
@@ -72,9 +72,9 @@ $| = 1;
 $nodes = "/tmp/$opt_group.nodes";
 open(NODES, ">$nodes") or
     die "$0: could not write nodes file, exiting\n";
-$hostlist = `$ENV{ODR}/bin/readDR group HOSTLIST NAME=$opt_group | awk -F= '{print \$2}'`;
+$hostlist = `readDR -D $ENV{ODRDATA} group HOSTLIST NAME=$opt_group | awk -F= '{print \$2}'`;
 chomp($hostlist);
-@clients = `$ENV{ODR}/bin/readDR hostlist HOST NAME=$hostlist | awk -F= '{print \$2}'`;
+@clients = `readDR -D $ENV{ODRDATA} hostlist HOST NAME=$hostlist | awk -F= '{print \$2}'`;
 foreach $client (@clients) {
     print NODES "$client";
 }
@@ -98,21 +98,21 @@ while(<PKGS>) {
     if( $opt_install ) {
 	$rc = install_pkg($name, $pkg_dir, $nodes, $opt_group, $server);
         if( $rc != 0 ) {
-            print"$0: installation of package $_ failed\n";
+            print"$0: installation of package $name failed\n";
             $RC = 1;
         }
     }
     elsif( $opt_uninstall ) {
 	$rc = uninstall_pkg($name, $pkg_dir, $nodes, $opt_group, $server);
         if( $rc != 0 ) {
-            print"$0: uninstallation of package $_ failed\n";
+            print"$0: uninstallation of package $name failed\n";
             $RC = 1;
         }
     }
     else {
 	$rc = configure_pkg($name, $pkg_dir, $nodes, $opt_group, $server);
         if( $rc != 0 ) {
-            print"$0: configuration of package $_ failed\n";
+            print"$0: configuration of package $name failed\n";
             $RC = 1;
         }
     }
@@ -126,14 +126,14 @@ exit $RC;
 
 sub check_valid {
     my ($name, $item) = @_;
-    $out = `$ENV{ODR}/bin/readDR $item NAME=$name`;
+    $out = `readDR -D $ENV{ODRDATA} $item NAME=$name`;
     if( $out eq "" ) { return 1; }
     else { return 0; }
 }
 
 sub check_version {
     my $cluster = shift;
-    $version = `$ENV{ODR}/bin/readDR cluster OSCAR_VERSION NAME=$cluster | awk -F= '{print \$2}'`;
+    $version = `readDR -D $ENV{ODRDATA} cluster OSCAR_VERSION NAME=$cluster | awk -F= '{print \$2}'`;
     ($version, $rest) = split(/ /, $version);
     if( $version eq $ENV{OSCARVERSION} ) { return 0; }
     else { return 1; }
