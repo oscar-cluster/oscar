@@ -13,6 +13,7 @@ my @rpms = qw(
 	      hdf5-oscar
               lam-module
               lam
+              loghost
       	      mpich-oscar-module
               mpich-oscar
               pvm-modules
