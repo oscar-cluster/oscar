@@ -1,2 +1,5 @@
 Makefile
 Makefile.in
+.cvsignore
+.oscar_made_makefile_am
+InstallerImages.pm

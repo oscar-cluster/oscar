@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+
+<!--
+  Author: Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
+  Copyright (c) 2004 The Board of Trustees of the University of Illinois.
+                     All rights reserved.
+-->
+
+<!--
+  Notes:
+
+  name = The name of Task/Tool subdirectory (under $OSCAR_HOME/Installer/).
+
+  num  = The step number for the task - MUST be unique or the Installer will
+         exit with an error condition.  Tasks must have a number.  Tools
+         must not.
+-->
+
+  <tasks>
+
+    <task>
+      <dirname>Opder</dirname>
+      <stepnum>1</stepnum>
+    </task>
+
+    <task>
+      <dirname>NodeMgmt</dirname>
+      <stepnum>2</stepnum>
+    </task>
+
+  </tasks>
+
+  <tools>
+
+    <tool>
+      <dirname>NodeGroups</dirname>
+    </tool>
+
+    <tool>
+      <dirname>FileList</dirname>
+    </tool>
+
+  </tools>
+
+</oscar>
+

@@ -1,0 +1,106 @@
+#########################################################################
+#  File  : Doxyfile                                                     #
+#  Author: Terrence G. Fleury (tfleury@ncsa.uiuc.edu)                   #
+#  Date  : April 19, 2004                                               #
+#  This file is the default doxygen configuration file for the OSCAR    #
+#  Qt Installer. To use it, you must have the following installed:      #
+#                                                                       #
+# (1) Doxygen  - Comes with RedHat but also available at:               #
+#                http://www.stack.nl/~dimitri/doxygen/                  #
+# (2) DoxyFilt - A filter for transforming Perl POD documentation into  #
+#                doxygen documentation. To get it to work properly:     #
+#                (a) Download latest version of DoxyFilt from           #
+#                    ftp://ftp.doorways.org/doxyfilt/                   #
+#                (b) Untar and then do "perl Makefile.PL; make"         #
+#                (c) As root, do "make install"                         #
+#                (d) Copy DoxyFilt.pl and DoxyLine.pl to /usr/local/bin #
+# (3) Graphviz - (Optional) Contains utility program 'dot' to create    #
+#                inheritence diagrams within doxygen documentation.     #
+#                Available at:                                          #
+#     http://www.research.att.com/sw/tools/graphviz/download.html       #
+#                                                                       #
+#  When all of the above software is installed, type "doxygen" in this  #
+#  directory.  The doxygen documentation will be available in the html  #
+#  subdirectory.  Open index.htm with your favorite web browser.        #
+#                                                                       #
+#  Copyright (c) 2004 The Board of Trustees of the University of        #
+#                     Illinois.  All rights reserved.                   #
+#########################################################################
+
+PROJECT_NAME           = "OSCAR Installer"
+PROJECT_NUMBER         = 1.0-alpha
+
+OUTPUT_LANGUAGE        = English
+
+EXTRACT_ALL            = YES
+
+JAVADOC_AUTOBRIEF      = YES
+BRIEF_MEMBER_DESC      = YES
+REPEAT_BRIEF           = YES
+
+INTERNAL_DOCS          = NO
+STRIP_CODE_COMMENTS    = YES
+SHOW_INCLUDE_FILES     = YES
+TAB_SIZE               = 8
+
+GENERATE_BUGLIST       = YES
+GENERATE_TESTLIST      = YES
+GENERATE_TODOLIST      = YES
+SHOW_USED_FILES        = YES
+VERBATIM_HEADERS       = NO
+
+ALPHABETICAL_INDEX     = YES
+COLS_IN_ALPHA_INDEX    = 5
+
+CASE_SENSE_NAMES       = YES
+
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_FORMAT            = "$file:$line: $text"
+WARN_LOGFILE           = "logs/doxygen.log"
+
+INPUT                  = .
+RECURSIVE              = NO
+EXCLUDE                = CVS InstallerImages.pm
+FILE_PATTERNS          = Installer*.pl Installer*.pm
+EXCLUDE_PATTERNS       = blib
+
+INPUT_FILTER           = DoxyFilt.pl
+
+SOURCE_BROWSER         = NO
+FILTER_SOURCE_FILES    = NO
+
+EXAMPLE_PATH           = .
+
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+SEARCH_INCLUDES        = YES
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .htm
+
+HAVE_DOT               = NO
+DOT_PATH               = 
+DOT_IMAGE_FORMAT       = png
+MAX_DOT_GRAPH_WIDTH    = 512
+MAX_DOT_GRAPH_HEIGHT   = 356
+GENERATE_LEGEND        = YES
+DOT_CLEANUP            = YES
+
+CLASS_DIAGRAMS         = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+TEMPLATE_RELATIONS     = NO
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+GRAPHICAL_HIERARCHY    = YES
+
+GENERATE_LATEX         = NO
+GENERATE_MAN           = NO
+GENERATE_RTF           = NO
+GENERATE_XML           = NO
+
+SEARCHENGINE           = NO
+

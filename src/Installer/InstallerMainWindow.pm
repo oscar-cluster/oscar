@@ -1,0 +1,712 @@
+package InstallerMainWindow;
+
+#########################################################################
+
+=head1 NAME
+
+InstallerMainWindow - Creates a new QMainWindow for a Qt application.
+
+=head1 SYNOPSIS
+
+  package main;
+
+  use Qt;
+  use InstallerMainWindow;
+
+  my $appl = Qt::Application(\@ARGV);
+  my $main = InstallerMainWindow;
+  $appl->setMainWidget($main);
+  $main->show;
+  exit $appl->exec;
+
+=head1 DESCRIPTION
+
+This class is a subclass of Qt::MainWindow and creates a new main window for
+the OSCAR Installer.  The central widget of this main window contains a
+Qt::Workspace which contains all of the tasks and tools for the OSCAR
+Installer.  
+
+=head1 METHODS
+
+=over
+
+=cut
+
+#########################################################################
+
+use strict;
+use utf8;
+
+use Qt;
+use Qt::isa qw(Qt::MainWindow);
+use InstallerWorkspace;
+use InstallerImages;
+use InstallerParseXML;
+use InstallerUtils;
+use Qt::slots
+    fileNew => [],
+    fileOpen => [],
+    fileSave => [],
+    fileSaveAs => [],
+    filePrint => [],
+    fileExit => [],
+    helpIndex => [],
+    helpContents => [],
+    helpAbout => [],
+    windowMenuAboutToShow => [],
+    windowMenuActivated => ['int'],
+    tasksMenuActivated => ['int'],
+    toolsMenuActivated => ['int'],
+    taskToolClosed => ['char*'];
+use Qt::attributes qw(
+    installerWorkspace
+    centralWidget
+    gridLayout
+    fileMenu
+    tasksMenu
+    toolsMenu
+    windowMenu
+    helpMenu
+    fileNewAction
+    fileOpenAction
+    fileSaveAction
+    fileSaveAsAction
+    filePrintAction
+    fileExitAction
+    windowCascadeAction
+    windowTileAction
+    helpContentsAction
+    helpIndexAction
+    helpAboutAction
+);
+
+my %currTaskToolWidgets;
+
+sub NEW
+{
+#########################################################################
+
+=item C<NEW($parent, $name, $flags)>
+
+The constructor for the InstallerMainWindow class.  
+
+This returns a pointer to a new InstallerMainWindow widget.  It sets up all
+of the pulldown menus (for File, Edit, etc.), connects some SIGNALS and
+SLOTS, and adds a new InstallerWorkspace to the central widget.  The
+InstallerWorkspace is the parent of all other windows (Tasks, Tools, etc.)
+However, since the "Windows" menu is generated dynamically by the windows
+within the workspace (and thus the workspace requires access to that
+pulldown menu), the InstallerWorkspace has to be added here.
+
+If the $parent parameter is empty, then this is a top-level window (which is
+what you probably want).  If the $name parameter is empty, the object is
+given the default name "InstallerMainWindow".
+
+B<Note>: As with any PerlQt constructor, the NEW constructor is called
+implicitly when you reference the class.  You do not need to call something
+like C<classname->>C<NEW(args...)>.
+
+=cut
+
+### @param $parent Pointer to the parent of this widget.  If empty (or null)
+###                then this widget is a top-level window.
+### @param $name   Name of the widget.  Will be set to "InstallerMainWindow"
+###                if empty (or null).
+### @param $flags  Flags for construction of QMainWindow.
+### @return A Pointer to a new InstallerMainWindow widget.
+
+#########################################################################
+
+  shift->SUPER::NEW(@_[0..2]);
+
+  setName("InstallerMainWindow") if (name() eq "unnamed");
+  setCaption(trUtf8("OSCAR Wizard Installer") );
+
+  # Set up the grid layout for the central widget and InstallerWorkspace
+  centralWidget = Qt::Widget(this,"InstallerCentralWidget");
+  setCentralWidget(centralWidget);
+  gridLayout = Qt::GridLayout(centralWidget,1,1,1);
+  installerWorkspace = InstallerWorkspace(centralWidget,"InstallerWorkspace");
+  gridLayout->addWidget(installerWorkspace,0,0);
+
+  # Create the status bar
+  statusBar();
+
+  # Create pulldown menus.  First: File menu
+  fileMenu = Qt::PopupMenu(this);
+  menuBar()->insertItem("",fileMenu,1);
+  menuBar()->findItem(1)->setText(trUtf8("&File"));
+
+  fileNewAction = Qt::Action(this,"fileNewAction");
+  fileNewAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("filenew.png")));
+  fileNewAction->setText(trUtf8("New"));
+  fileNewAction->setMenuText(trUtf8("&New"));
+  fileNewAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+N")));
+  fileNewAction->addTo(fileMenu);
+
+  fileOpenAction = Qt::Action(this,"fileOpenAction");
+  fileOpenAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("fileopen.png")));
+  fileOpenAction->setText(trUtf8("Open"));
+  fileOpenAction->setMenuText(trUtf8("&Open..."));
+  fileOpenAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+O")));
+  fileOpenAction->addTo(fileMenu);
+
+  fileSaveAction = Qt::Action(this,"fileSaveAction");
+  fileSaveAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("filesave.png")));
+  fileSaveAction->setText(trUtf8("Save"));
+  fileSaveAction->setMenuText(trUtf8("&Save"));
+  fileSaveAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+S")));
+  fileSaveAction->addTo(fileMenu);
+
+  fileSaveAsAction = Qt::Action(this,"fileSaveAsAction");
+  fileSaveAsAction->setText(trUtf8("Save As"));
+  fileSaveAsAction->setMenuText(trUtf8("Save &As..."));
+  fileSaveAsAction->addTo(fileMenu);
+
+  fileMenu->insertSeparator();
+
+  filePrintAction = Qt::Action(this,"filePrintAction");
+  filePrintAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("print.png")));
+  filePrintAction->setText(trUtf8("Print"));
+  filePrintAction->setMenuText(trUtf8("&Print..."));
+  filePrintAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+P")));
+  filePrintAction->addTo(fileMenu);
+
+  fileMenu->insertSeparator();
+
+  fileExitAction = Qt::Action(this,"fileExitAction");
+  fileExitAction->setIconSet(Qt::IconSet(Qt::Pixmap::fromMimeSource("close.png")));
+  fileExitAction->setText(trUtf8("Exit"));
+  fileExitAction->setMenuText(trUtf8("E&xit"));
+  fileExitAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+Q")));
+  fileExitAction->addTo(fileMenu);
+
+  # Read in all of the XML file configuration information for Tasks/Tools
+  readInstallerXMLFile();
+
+  # Second: Tasks menu 
+  tasksMenu = Qt::PopupMenu(this);
+  menuBar()->insertItem("",tasksMenu,2);
+  menuBar()->findItem(2)->setText(trUtf8("&Tasks"));
+  populateTasksMenu();
+
+  # Third: Tools menu
+  toolsMenu = Qt::PopupMenu(this);
+  menuBar()->insertItem("",toolsMenu,3);
+  menuBar()->findItem(3)->setText(trUtf8("T&ools"));
+  populateToolsMenu();
+
+  # Fourth: Window menu - updated when Tools/Tasks are created/destroyed
+  windowMenu = Qt::PopupMenu(this,"windowMenu");
+  menuBar()->insertItem("",windowMenu,4);
+  menuBar()->findItem(4)->setText(trUtf8("&Window"));
+  
+  windowCascadeAction = Qt::Action(this,"windowCascadeAction");
+  windowCascadeAction->setText(trUtf8("Cascade"));
+  windowCascadeAction->setMenuText(trUtf8("&Cascade"));
+  windowCascadeAction->addTo(windowMenu);
+
+  windowTileAction = Qt::Action(this,"windowTileAction");
+  windowTileAction->setText(trUtf8("Tile"));
+  windowTileAction->setMenuText(trUtf8("&Tile"));
+  windowTileAction->addTo(windowMenu);
+
+  windowMenu->insertSeparator();
+
+  # Fifth: Help menu - Not sure about how much help there will be...
+  helpMenu = Qt::PopupMenu(this);
+  menuBar()->insertItem("",helpMenu,5);
+  menuBar()->findItem( 5 )->setText( trUtf8("&Help") );
+
+  helpContentsAction = Qt::Action(this,"helpContentsAction");
+  helpContentsAction->setText(trUtf8("Contents"));
+  helpContentsAction->setMenuText(trUtf8("&Contents..."));
+  helpContentsAction->addTo(helpMenu);
+
+  helpIndexAction = Qt::Action(this,"helpIndexAction");
+  helpIndexAction->setText(trUtf8("Index"));
+  helpIndexAction->setMenuText(trUtf8("&Index..."));
+  helpIndexAction->addTo(helpMenu);
+
+  helpMenu->insertSeparator();
+
+  helpAboutAction = Qt::Action(this,"helpAboutAction");
+  helpAboutAction->setText(trUtf8("About"));
+  helpAboutAction->setMenuText(trUtf8("&About"));
+  helpAboutAction->addTo(helpMenu);
+
+  my $resize = Qt::Size(800,600);
+  $resize = $resize->expandedTo(minimumSizeHint());
+  resize($resize);
+  clearWState(&Qt::WState_Polished);
+
+  # Then, connect the signals for the pulldown menus to appropriate slots
+  Qt::Object::connect(fileNewAction,      SIGNAL "activated()", 
+                      this,               SLOT "fileNew()");
+  Qt::Object::connect(fileOpenAction,     SIGNAL "activated()", 
+                      this,               SLOT "fileOpen()");
+  Qt::Object::connect(fileSaveAction,     SIGNAL "activated()", 
+                      this,               SLOT "fileSave()");
+  Qt::Object::connect(fileSaveAsAction,   SIGNAL "activated()", 
+                      this,               SLOT "fileSaveAs()");
+  Qt::Object::connect(filePrintAction,    SIGNAL "activated()", 
+                      this,               SLOT "filePrint()");
+  Qt::Object::connect(fileExitAction,     SIGNAL "activated()", 
+                      this,               SLOT "fileExit()");
+  Qt::Object::connect(windowCascadeAction,SIGNAL "activated()", 
+                      installerWorkspace, SLOT "cascade()");
+  Qt::Object::connect(windowTileAction,   SIGNAL "activated()", 
+                      installerWorkspace, SLOT "tile()");
+  Qt::Object::connect(helpIndexAction,    SIGNAL "activated()",
+                      this,               SLOT "helpIndex()");
+  Qt::Object::connect(helpContentsAction, SIGNAL "activated()",
+                      this,               SLOT "helpContents()");
+  Qt::Object::connect(helpAboutAction,    SIGNAL "activated()", 
+                      this,               SLOT "helpAbout()");
+  Qt::Object::connect(windowMenu,         SIGNAL "aboutToShow()",
+                      this,               SLOT "windowMenuAboutToShow()");
+}
+
+sub populateTasksMenu
+{
+#########################################################################
+
+=item C<populateTasksMenu()>
+
+This is called when the "Tasks" pulldown menu is created.  It will
+EVENTUALLY read in configuration files for all of the Tasks (previously
+called Steps) to be performed during an OSCAR installation.  
+
+=cut
+
+#########################################################################
+
+  my $arraynum = 0;
+  foreach my $task (@installerTasksSorted)
+    {
+      my $menustr = "";
+      $menustr .= "&" if ($installerTasksAndTools->{$task}->{stepnum} < 10);
+      $menustr .= $installerTasksAndTools->{$task}->{stepnum};
+      $menustr .= ' - ';
+      $menustr .= $installerTasksAndTools->{$task}->{fullname};
+      my $id = tasksMenu->insertItem($menustr, this, 
+                                     SLOT "tasksMenuActivated(int)");
+      tasksMenu->setItemParameter($id,$arraynum++);
+    }
+}
+
+sub populateToolsMenu
+{
+#########################################################################
+
+=item C<populateToolsMenu()>
+
+This is called when the "Tools" pulldown menu is created.  It will
+EVENTUALLY read in configuration files for all of the Tools 
+which can be executed during an OSCAR installation.  
+
+=cut
+
+#########################################################################
+
+  my $arraynum = 0;
+  my @letters;
+  foreach my $tool (@installerToolsSorted)
+    {
+      my $searchstr = join '|', @letters;
+      $installerTasksAndTools->{$tool}->{fullname} =~ /[^($searchstr)]/i;
+      my $menustr = $` . '&' . $& . $';
+      push @letters, $&;
+      my $id = toolsMenu->insertItem($menustr, this,
+                                     SLOT "toolsMenuActivated(int)");
+      toolsMenu->setItemParameter($id,$arraynum++);
+    }
+}
+
+sub fileNew
+{
+  print "fileNew(): Not implemented yet.\n";
+}
+
+sub fileOpen
+{
+  print "fileOpen(): Not implemented yet.\n";
+}
+
+sub fileSave
+{
+  print "fileSave(): Not implemented yet.\n";
+}
+
+sub fileSaveAs
+{
+  print "fileSaveAs(): Not implemented yet.\n";
+}
+
+sub filePrint
+{
+  print "filePrint(): Not implemented yet.\n";
+}
+
+sub fileExit
+{
+  Qt::Application::exit();
+}
+
+sub helpIndex
+{
+  print "helpIndex(): Not implemented yet.\n";
+}
+
+sub helpContents
+{
+  print "helpContents(): Not implemented yet.\n";
+}
+
+sub helpAbout
+{
+  print "helpAbout(): Not implemented yet.\n";
+}
+
+sub windowMenuAboutToShow
+{
+#########################################################################
+
+=item C<windowMenuAboutToShow()>
+
+This is a SLOT which gets called when the user clicks on the "Window" menu
+just before the pulldown gets displayed.  This way, we can populate the
+Window menu with a list of all open Tasks/Tools windows.  We also give the
+user the ability to Cascade or Tile the windows in the workspace.  (These
+functions are built into Qt so we don't have to do any extra work.)
+
+=cut
+
+#########################################################################
+
+  windowMenu->clear();
+  windowCascadeAction->addTo(windowMenu);
+  windowTileAction->addTo(windowMenu);
+  windowMenu->insertSeparator();
+
+  my @windowList = sort (values %currTaskToolWidgets);
+  my $numWindows = scalar(@windowList);
+  windowCascadeAction->setEnabled($numWindows);
+  windowTileAction->setEnabled($numWindows);
+
+  for (my $i = 0; $i < $numWindows; $i++)
+    {
+      my $id = windowMenu->insertItem($windowList[$i]->caption(),
+                                      this, SLOT "windowMenuActivated(int)");
+      windowMenu->setItemParameter($id,$i);
+      windowMenu->setItemChecked($id,
+        installerWorkspace->activeWindow() == $windowList[$i]);
+    }
+}
+
+sub windowMenuActivated
+{
+#########################################################################
+
+=item C<windowMenuActivated($windowNum)>
+
+This is a SLOT which gets called when the user selects one of the window
+items in the "Window" list.  It brings that window to the front of all other
+windows and gives it the focus.
+
+=cut
+
+### @param $windowNum The line item number selected from the Window Menu.
+
+#########################################################################
+
+  my $windowNum = shift;
+
+  my @windowList = sort (values %currTaskToolWidgets);
+  my $wid = $windowList[$windowNum];
+  if ($wid)
+    {
+      $wid->showNormal if ($wid->isMinimized);
+      $wid->raise;
+      $wid->setFocus;
+    }
+}
+
+sub tasksMenuActivated
+{
+#########################################################################
+
+=item C<tasksMenuActivated($taskNum)>
+
+This is a SLOT which gets called when the user selects one of the Tasks
+(aka installer Steps) from the "Tasks" list.  It checks to see if that
+task is already running.  If so, it brings it to the front.  If not, it
+closes out all other tasks and launches the selected task.
+
+=cut
+
+### @param $taskNum The line item number selected from the Tasks Menu.
+
+#########################################################################
+
+  my $taskline = shift;
+  my $taskname = $installerTasksSorted[$taskline];
+
+  return if (!$installerTasksAndTools->{$taskname}->{classname});
+
+  openTaskToolWindow($taskname,'task');
+
+#  my $success = processOdaCommandsAndTests($taskname);
+#
+#  if ($success)
+#    {
+#      openTaskToolWindow($taskname,'task');
+#    }
+#  else
+#    {
+#    }
+}
+
+sub toolsMenuActivated
+{
+#########################################################################
+
+=item C<toolsMenuActivated($taskNum)>
+
+=cut
+
+### @param $toolNum The line item number selected from the Tasks Menu.
+
+#########################################################################
+
+  my $toolline = shift;
+  my $toolname = $installerToolsSorted[$toolline];
+
+  return if (!$installerTasksAndTools->{$toolname}->{classname});
+
+  openTaskToolWindow($toolname,'tool');
+}
+
+sub openTaskToolWindow
+{
+#########################################################################
+
+=item C<>
+
+=cut
+
+#########################################################################
+
+  my ($tasktool,$type) = @_;
+
+  if ($currTaskToolWidgets{$tasktool})
+    { # If the Task/Tool is already running, bring it to the front.
+      $currTaskToolWidgets{$tasktool}->showNormal if
+        ($currTaskToolWidgets{$tasktool}->isMinimized);
+      $currTaskToolWidgets{$tasktool}->raise;
+    }
+  else
+    {
+      if ($type eq 'task')
+        { # Find out if we already have one Task running.  If so, kill it.
+          foreach my $temptask (keys %currTaskToolWidgets)
+            {
+              if ($installerTasksAndTools->{$temptask}->{type} eq 'task')
+                {
+                  $currTaskToolWidgets{$temptask}->close(1);
+                  delete $currTaskToolWidgets{$temptask};
+                  last;
+                }
+            }
+        }
+
+      # Now create the new Task widget
+      $currTaskToolWidgets{$tasktool} = launchTaskTool($tasktool,
+        $installerTasksAndTools->{$tasktool}->{classname});
+
+      if ($type eq 'task')
+        { # If the Task is the first/last, hide the Back/Next button
+          if ($tasktool eq $installerTasksSorted[0])
+            { # First Task -> hide its Back button
+              emit installerWorkspace->signalButtonShown($tasktool,'Back',0);
+            }
+          elsif ($tasktool eq $installerTasksSorted[$#installerTasksSorted])
+            { # Last Task -> hide its Next button
+              emit installerWorkspace->signalButtonShown($tasktool,'Next',0);
+            }
+        }
+
+      connectTaskTool($tasktool);
+    }
+}
+
+sub connectTaskTool
+{
+#########################################################################
+
+=item C<>
+
+=cut
+
+#########################################################################
+  my $tasktool = shift;
+
+  # Catch the widget's "taskToolClosing" signal.
+  Qt::Object::connect($currTaskToolWidgets{$tasktool},
+                      SIGNAL "taskToolClosing(char*)",
+                      this,
+                      SLOT   "taskToolClosed(char*)");
+}
+
+sub disconnectTaskTool
+{
+#########################################################################
+
+=item C<>
+
+=cut
+
+#########################################################################
+  my $tasktool = shift;
+
+  Qt::Object::disconnect($currTaskToolWidgets{$tasktool},
+                         SIGNAL "taskToolClosing(char*)",
+                         this,
+                         SLOT   "taskToolClosed(char*)");
+}
+
+
+sub launchTaskTool
+{
+#########################################################################
+
+=item C<launchTaskTool($dirname,$classname)>
+
+=cut
+
+### @param  $dirname The name of the (sub)directory of the Task/Tool to 
+###         be launched.  
+### @param  $classname The name of the Task/Tool's class, which is the
+###         same as the main Perl module for the Task/Tool, minus the
+###         .pm extension.
+### @return The newly created Task/Tool widget.
+
+#########################################################################
+
+  my($dirname,$classname) = @_;
+
+  # Get the base directory of the Installer.pl script
+  my $installerDir = getScriptDir();
+  
+  return if ((!(-d "$installerDir/$dirname")) || 
+             (!(-e "$installerDir/$dirname/$classname.pm")));
+
+  # Prepend the Task/Tool directory to Perl's @INC array.  We can't do
+  # 'use' for the following statements since 'use' is done at compile time
+  # and the dirname and classname aren't known until run time.
+  unshift(@INC,"$installerDir/$dirname");
+  require $classname. '.pm';
+  import $classname;
+  no strict 'refs'; # Needed so that the next statement doesn't complain
+
+  my $widget = &$classname(installerWorkspace);
+  $widget->show;
+  shift(@INC);      # Remove the Task/Tool directory we prepended earlier
+  
+  return $widget;   # Return the newly created widget
+}
+
+sub processOdaCommandsAndTests
+{
+#########################################################################
+
+=item C<>
+
+=cut
+
+#########################################################################
+
+  my $dir = shift;
+  my $success = 0;
+
+  my $cmdcnt = scalar(@{$installerTasksAndTools->{$dir}->{command}});
+  for (my $i = 0; $i < $cmdcnt; $i++)
+    {
+      @{$installerTasksAndTools->{$dir}->{commandresult}} = ();
+      $installerTasksAndTools->{$dir}->{testresult} = "";
+      if ($installerTasksAndTools->{$dir}->{command}[$i])
+        {
+          my @result;
+          my $commandsuccess = OSCAR::Database::database_execute_command(
+            $installerTasksAndTools->{$dir}->{command}[$i],\@result);
+          push @{$installerTasksAndTools->{$dir}->{commandresult}}, @result if 
+            ($commandsuccess);
+        }
+    }
+
+
+  return $success;
+}
+
+sub taskToolClosed
+{
+#########################################################################
+
+=item C<>
+
+=cut
+
+#########################################################################
+
+  my $tasktool = shift;
+
+  disconnectTaskTool($tasktool);
+
+  delete $currTaskToolWidgets{$tasktool};
+}
+
+
+1;
+
+__END__
+
+=back
+
+=head1 SEE ALSO
+
+http://www.trolltech.com/
+
+=head1 COPYRIGHT
+
+Copyright E<copy> 2004 The Board of Trustees of the University of Illinois.
+All rights reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+=head1 AUTHOR
+
+Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
+
+First Created on February 2, 2004
+
+Last Modified on February 23, 2004
+
+=cut
+
+#########################################################################
+#                          MODIFICATION HISTORY                         #
+# Mo/Da/Yr                        Change                                #
+# -------- ------------------------------------------------------------ #
+#########################################################################

@@ -1,0 +1,412 @@
+                Structure and API of new OSCAR Installer
+                ----------------------------------------
+
+First Created : February 25, 2004
+Last Updated  : February 25, 2004
+Author        : Jason Brechin <brechin@ncsa.uiuc.edu>
+Author        : Terry Fleury  <tfleury@ncsa.uiuc.edu>
+Copyright (c) 2004 The Board of Trustees of the University of Illinois.
+                   All rights reserved.
+
+Directory Structure
+-------------------
+
+Summary: 
+
+The main OSCAR Installer Perl code will reside in a directory named
+"Installer" directly underneath the $OSCAR_HOME directory.  Within this
+directory will be all of the Perl modules necessary to run the OSCAR
+Installer.  The main Perl executable will be named Installer.pl.
+
+Under the Installer directory will be directories for each Task and Tool
+which can appear within the Installer workspace.  These directories must
+be listed in the Installer.xml file (located in the main Installer
+directory) to classify it as a Task (with a step number) or a Tool (without
+a step number).  Only one Task can be displayed at a time, while any number
+of Tools can be displayed at a time.
+
+Details:
+
+$OSCAR_HOME/Installer/
+    Installer.xml - List of all Tasks and Tools (see below)
+    Installer.pl - Main OSCAR Installer Perl application
+    InstallerMainWindow.pm - QMainWindow containing pulldown menus, status
+        bar, workspace, etc.
+    InstallerWorkspace.pm - QWorkspace which is parent of all Tasks/Tools
+    ... - Other files required for main Installer window
+
+$OSCAR_HOME/Installer/<Tasks&Tools>/
+$OSCAR_HOME/Installer/Opder/ - example of a Task directory
+    GUI.xml - Configuration file for this Task/Tool
+    setup - An optional script which is executed when the Installer starts
+    OpderMain.pm - Main QObject / child of InstallerWorkspace (see below)
+    ... - Other files required for Task/Tool window
+
+    Note that with this directory scheme, the Perl modules in each Task/Tool
+    directory will have the package name of "Directory"::"FileName".  So
+    for example, the OpderMain.pm file would have a Package directive of
+        package Opder::OpderMain;
+
+
+Format of Installer.xml File
+----------------------------
+
+Summary:
+
+The Installer.xml file is located in the $OSCAR_HOME/Installer/ directory.
+It contains a list of all Tasks/Tools available in the Installer.  These
+Tasks/Tools reside in subdirectories under the $OSCAR_HOME/Installer/
+directory.  The Task/Tool is listed in by its directory name.
+
+Details:
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+
+<!--
+  Notes:
+
+  dirname = The name of Task/Tool subdirectory (under $OSCAR_HOME/Installer/).
+
+  stepnum = The step number for the task - MUST be unique or the Installer
+            will exit with an error condition.  Tasks must have a number.
+            Tools must not.
+-->
+  <tasks>
+
+    <task>
+      <dirname>Opder</dirname>
+      <stepnum>1</stepnum>
+    </task>
+
+    <task>
+      <dirname>NodeMgmt</dirname>
+      <stepnum>2</stepnum>
+    </task>
+
+  </tasks>
+
+  <tools>
+
+    <tool>
+      <name>NodeGroups</name>
+    </tool>
+
+    <tool>
+      <name>FileList</name>
+    </tool>
+
+  </tools>
+
+</oscar>
+
+
+Format of GUI.xml Files
+-----------------------
+
+Summary:
+
+Each Task/Tool directory SHOULD contain a GUI.xml file.  (If the file is not
+present, then a bunch of defaults will be assumed, as described below.)
+This file describes the Task/Tool in terms of its main object class (which
+is called by the InstallerWorkspace), a 'full name' which will appear in the
+pulldown lists of Tasks/Tools, and oda commands/tests which must be run and
+succeed in order for the Task/Tool to be allowed to execute.  In terms of
+Tools, this list of oda commands/tests should be empty since by definition a
+Tool should be able to run ANYTIME.  If it can't find all of the information
+it needs in the oda database, it should deal with it gracefully.  For Tasks,
+if any of the oda commands/tests fails, then that Task is not allowed to
+run.
+
+Details:
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+
+<!--
+  Notes:
+
+  classname = The name of the Perl module file containing the PerlQt NEW
+              function.  This will be used in creating a new instance of this
+              object.  Note that this name can be different from the directory
+              containing the Task/Tool.  For example, the Opder may reside in
+              the directory $OSCAR_HOME/Installer/Opder, but the file
+              containing the PerlQt NEW subroutine may be named OpderMain.pm.
+              To create a new instance of the Opder, the InstallerWorkspace
+              would call something like this:
+
+              # Opder is directory name, so use it for lib path:
+              use lib "$ENV{OSCAR_HOME}/Installer/Opder";
+              # OpderMain is object name, so use it for instance creation:
+              my $obj = Opder::OpderMain;
+              # As with all PerlQt objects, NEW is called implicitly.
+
+              If the 'classname' field is absent, the directory name of the
+              Task/Tool is assumed.  So if no 'classname' field for the Opder
+              directory, then the main object file defaults to Opder.pm.
+
+  fullname =  The "pretty" name for the Task/Tool which will appear in 
+              the pulldown menus.  This shouldn't be TOO long since it will
+              appear in a pulldown menu.  If the 'fullname' field is absent,
+              then it defaults to the 'classname' field.
+-->
+
+  <classname>OpderMain</classname>
+  <fullname>OSCAR Package Downloader</fullname>
+
+  <oda>
+
+  <!--
+    Notes:
+    
+    command = Valid only for Tasks.  This is an arbitrary 'oda' command
+              which is executed prior to the opening of a particular
+              Task's window.  The results of the oda command can be passed to
+              the 'test' (listed below) for further processing.  Let this
+              field be stored in the perl variable $command.  Then, the actual
+              code executed by the Installer is as follows:
+
+              my $odasuccess = undef;
+              my @odaresult = undef;
+              my @odaerror = undef;
+              $odasuccess = OSCAR::Database::database_execute_command(
+                            $command,\@odaresult,\@odaerror);
+
+              In effect, the $odasuccess varilable holds 0 or 1 for the return
+              value of oda's execute_command.  This value isn't necessarily
+              too useful since it is set to 0 only upon a major database
+              problem.  The @odaresult array is the actual data returned by
+              the given oda command (if anything).  The @odaerror array is an
+              array of error strings generated by oda, and may or may not be
+              useful in figuring out what went wrong.
+
+              The $odasuccess, @odaresult, and @odaerror values are used by
+              the 'test' and 'error' fields below.  If the 'command' field is
+              blank, then $odasuccess, @odaresult, and @odaerror are all
+              undefined, but the 'test' code is still executed.  It is an
+              error to have both the 'command' field and the 'test' field be
+              empty.
+
+    test    = Arbitrary Perl code which should return 0 or 1.  The values
+              $command, $odasuccess, @odaresult, and @odaerror generated by
+              the oda 'command' above are available to your Perl test code.
+              Your code is executed by the Installer as follows:
+
+              my $testsuccess = (eval { $test } );
+              
+              Your test code should simply return 0 or 1 for failure or
+              success.  If the 'test' field is blank, then the test code
+              defaults to 'return $odasuccess'.  This may not be what you
+              really want since $odasuccess is 0 only upon a major database
+              problem. 
+
+    error   = Arbitrary Perl code which should return a string describing the
+              error condition if the 'test' above returns 0.  The variables
+              $command, $odasuccess, @odaresult, @odaerror, $test, and 
+              $testsuccess generated by the 'command' and 'test' above are all
+              available to your Perl code.  Upon failure of the 'test', your
+              error code is executed by the Installer as follows:
+
+              return (eval { $error } );
+              
+              Your error code should simply return a string.  This string is
+              displayed in the "Details" section of the error message dialog,
+              so you can make it as simple or as complex as you like.  If the
+              'error' field is blank, then the default is to print out all
+              available information including the oda 'command' and its
+              associated variables ($odasuccess, @odaresult, @odaerror), and
+              the 'test' and its return value $testsuccess.  
+
+              If you want to include the default error string in your custom
+              error string, call the subroutine 'getDefaultErrorString()'
+              which returns a string.  You can concatenate this string with
+              your own error string and return the resulting string.
+
+    In summary, the following variables are generated by and available to
+    the <oda>, <command>, and <test> fields above:
+
+        $command    = The <command> field, which is passed as the first
+                      argument to database_execute_command(...).
+        $odasuccess = The return value from database_execute_command(...).
+        @odaresult  = The result array which is set as the second 
+                      argument to database_execute_command(...).  This array
+                      usually contains the 'useful' information output by
+                      the oda command.
+        @odaerror   = The error string array which is set as the third
+                      argument to database_execute_command(...) upon failure.
+        $test       = The <test> field, which is passed to an 'eval' statement
+                      and should return 0 or 1.
+        $testsuccess= The result of the (eval { $test }) command.
+  -->
+
+    <command>oscar_version</command>
+    <test>$odasuccess and ($odaresult[0] >= 2.3) and ($odaresult[0] <= 3.1)
+    </test>
+    <error>"OSCAR version is $odaresult[0]. " . 
+           "We need OSCAR version between 2.3 and 3.1 inclusive."
+    </error>
+
+  </oda>
+
+  <oda>
+    <command>read_records packages_provides package=lam type name</command>
+    <!-- No test means that the above oda command must return success, which
+         is probaby not what you want, since all that means is that the oda
+         database is working and the read_records command didn't die. -->
+    <error>return ("Major problem with oda!!! " . getDefaultErrorString());
+  </oda>
+
+</oscar>
+
+####   END HERE!!!   ####
+
+Program Specifics for Tasks and Tools
+-------------------------------------
+
+(1) To exit your application, do not use Qt::Application::exit().  Instead, do
+    this->close(1) in the MainWindow widget.  When you do a close() in the
+    top-level widget, the application will exit.  Passing '1' as an argument
+    to close(1) attempts to destroy the widget as well.
+
+(2) In your MainWindow widget, define the closeEvent subroutine so as to
+    override the default closeEvent handler.  The code should look like this:
+
+    sub closeEvent
+    {
+    #########################################################################
+    #  Subroutine: closeEvent                                               #
+    #  Parameter : A pointer to the QCloseEvent generated.                  #
+    #  Returns   : Nothing                                                  #
+    #########################################################################
+
+      # Send a signal to the parent workspace letting it know we are closing.
+      emit taskToolClosing(className());
+      SUPER->closeEvent(@_);   # Call the parent's closeEvent
+    }
+
+    This assumes that you have correctly set the class name to be the same as
+    the package name by calling setName("...").  You will also need to define
+    a Qt::signal for taskToolClosing.  You can easily do this in Qt Designer
+    or your can write the code which should look like this:
+
+    use Qt::signals
+        taskToolClosing => ['char*'];
+
+(3) 
+   
+ 
+
+
+Qt SLOTS and SIGNALS Implemented by InstallerWorkspace and Its Children
+-----------------------------------------------------------------------
+
+Summary:
+
+In order to allow for communication between the InstallerWorkspace and its
+children, there are several SIGNALS and SLOTS that need to be implemented in
+both the workspace and its children.  
+
+SIGNALS emitted by InstallerWorkspace
+-------------------------------------
+
+signalButtonShown(char* childname, char* buttonname, bool shown)
+    When the InstallerWorkspace wants one of its child Tasks/Tools to hide/
+    show either the Back or Next button, it emits this signal with the
+    following three arguments:
+      (1) the name of the child (actually the name of the Task/Tool directory),
+      (2) the name of the button, either "Back" or "Next", and
+      (3) 0 for hidden, 1 for shown.
+    This signal is emitted by the InstallerWorkspace to hide the Back
+    button for the first Task and the Next button for the final Task.
+
+    In your Task/Tool, you might connect the signal to a slot as follows:
+
+    # If there is a parent of this Task/Tool, then we are probably running
+    # it in the InstallerWorkspace.  Need to catch some signals.
+    if (parent())
+      {
+        Qt::Object::connect(parent(),
+                            SIGNAL 'signalButtonShown(char*,char*,bool)',
+                            SLOT 'setButtonShown(char*,char*,bool)');
+      }
+
+    sub setButtonShown
+    {
+    #########################################################################
+    #  Subroutine: setButtonShown                                           #
+    #  Parameters: (1) The name of the target task/tool for the signal      #
+    #              (2) The name of the button to show/hide ("Back"/"Next")  #
+    #              (3) 1 = Show / 0 = Hide                                  #
+    #  Returns   : Nothing                                                  #
+    #  This subroutine is called to show/hide the Back/Next button,         #
+    #  usually when the parent InstallerWorkspace says to.                  #
+    #########################################################################
+
+      my ($childname,$buttonname,$shown) = @_;
+      
+      return if ($childname ne className());
+
+      if ($buttonname =~ /Back/i)
+        {
+          ($shown) ? backButton->show() : backButton->hide();
+        }
+      elsif ($buttonname =~ /Next/i)
+        {
+          ($shown) ? nextButton->show() : nextButton->hide();
+        }
+    }
+
+
+
+
+SIGNALS caught by InstallerWorkspace
+------------------------------------
+
+Details:
+
+The following connections are made automatically for each Task/Tool child of
+the InstallerWorkspace.  Some of these require that certain SLOTS be written
+for each child.
+
+Qt::Object::connect($childTaskTool,   SIGNAL "childUpdatedOda()",
+                    $parentWorkspace, SIGNAL "odaUpdated()");
+    When the child changes information in the oda database, it should emit
+    the SIGNAL "childUpdatedOda()".  This connection will cause the
+    workspace to emit the SIGNAL "odaUpdated()" which is in turn handled by
+    each child with the next connection.
+
+The following connections can be made within the child to communicate with
+the parent workspace:
+
+Qt::Object::connect($previousButton,  SIGNAL "clicked()",
+                    $parentWorkspace, SLOT   "previousButtonClicked()");
+    When the child's "Previous" button is clicked, let the workspace know so
+    it can try to display the previous step.  The child should then close
+    itself (usually via a call to Qt::Application::exit());
+Qt::Object::connect($nextButton,      SIGNAL "clicked()",
+                    $parentWorkspace, SLOT   "nextButtonClicked()");
+    When the child's "Next" button is clicked, let the workspace know so
+    it can try to display the next step.  The child should then close
+    itself (usually via a call to Qt::Application::exit());
+Qt::Object::connect($closeButton,     SIGNAL "clicked()",
+                    $parentWorkspace, SLOT   "closeButtonClicked()");
+    When the child's "Close" button is clicked, let the workspace know so
+    it can update the list of windows open.  The child should then close
+    itself (usually via a call to Qt::Application::exit());
+
+'enablePrevButton(int)' - This SIGNAL is genereated by the workspace
+
+Summary:
+
+In each child, the following SIGNALS may be emitted.
+
+In each child, the following SLOTS must be implemented.
+
+sub handleOdaUpdated { # Reread the oda database and update itself as needed }
+
+In each child, the following subroutines must be implemented.
+
+sub enablePreviousButton ($) { # Call setEnabled(@_[0]) for Previous Button }
+sub enableNextButton ($)     { # Call setEnabled(@_[0]) for Next Button }
+sub enableCloseButton ($)    { # Call setEnabled(@_[0]) for Close Button }
+
