@@ -74,6 +74,7 @@ if [ -s mpichtest.err ]; then
 else
   echo "Output from MPICH test:"
   cat mpichtest.out
+  echo MPICH test appears to be successful.
 fi
 echo ________________________________________________________________________________
 echo LAM TEST
