@@ -1,4 +1,0 @@
-node1.csm.ornl.gov:eth0:"00:01:02:AB:CD:EF":192.168.98.1:255.255.255.0:static
-node2.csm.ornl.gov:eth0:"00:01:02:AB:EF:00":::dhcp
-node3.csm.ornl.gov:eth0:"00:01:02:AB:EF:10":::dhcp
-node4.csm.ornl.gov:eth0:"00:01:02:AB:CD:11":192.168.98.2:255.255.255.0:static

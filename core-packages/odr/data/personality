@@ -1,5 +1,0 @@
-pbsnode:PBS:2.2.1
-pbsnode:MPICH:1.2.1-1
-pbsnode:PVM-3.4.3-5
-sshnode:OpenSSH-2.3.2-1
-sshnode:OpenSSL-0.9.3a-3
