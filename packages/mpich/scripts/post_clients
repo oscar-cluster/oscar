@@ -12,7 +12,7 @@ my $image = shift;
 my $VER = "1.2.1";
 my $RELEASE = ".1oscar";
 my $ARCH = "i386";
-my $PREFIX = "/usr/local/mpich-$VER";
+my $PREFIX = "/opt/mpich-$VER";
 my $machinefile = $PREFIX . "/share/machines.LINUX";
 
 my %hash = get_machine_listing( $image );
