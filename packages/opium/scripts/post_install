@@ -18,7 +18,9 @@ use strict;
 use Carp;
 use Data::Dumper;
 
-if (system("/usr/sbin/sync_users")){
+# Quick hack to src c3 path so sync_users knows where cpush is located.
+# tjn  5/22/02
+if (system(". /etc/profile.d/c3.sh && /usr/sbin/sync_users")){
         croak("User syncronization failed.");
 }
 
