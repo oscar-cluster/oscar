@@ -24,7 +24,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.4 2002/10/29 19:11:37 tfleury Exp $
+# $Id: Selector.pm,v 1.5 2002/10/29 19:51:41 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -49,7 +49,7 @@ use Tk::Dialog;
 use Tk::DialogBox;
 
 my($top);            # The Toplevel widget for the package selector window
-my $step_number;     # Step number in the OSCAR wizard
+my($step_number);    # Step number in the OSCAR wizard
 ##############################################################
 #  MOVE THE STUFF ABOVE TO THE TOP OF THE PERL SOURCE FILE!  #
 ##############################################################
@@ -231,16 +231,25 @@ sub exitWithoutSaving
 {
   # If the $root window has a Parent, then it isn't a MainWindow, which
   # means that another MainWindow is managing the OSCAR Package Selection
-  # window.  Therefore, when we exit, unmap the window.  If there is
-  # no parent, then it IS a MainWindow, so destroy the window.
-  $root->Parent ? $root->UnmapWindow : $root->destroy;
+  # window.  Therefore, when we exit, we need to make the parent window
+  # unbusy.  
+  $root->Parent->Unbusy() if ($root->Parent);
 
-  # If there are any children, make sure they are unmapped.
+  # If there are any children, make sure they are destroyed.
   my (@kids) = $root->children;
   foreach my $kid (@kids)
     {
-      $kid->UnmapWindow;
+      $kid->destroy;
     }
+
+  # Then, destroy the root window.
+  $root->destroy;
+
+  # Undefine a bunch of Tk widget variables for re-creation later.
+  undef $root;
+  undef $pane;
+  undef $top;
+  undef $configselect;
 
   # Write out a message to the OSCAR log
   oscar_log_subsection("Step $step_number: Completed successfully");
@@ -678,6 +687,8 @@ sub displayPackageSelector # ($parent)
     { # Create the toplevel window just once
       if ($parent)
         {
+          # Make the parent window busy
+          $parent->Busy(-recurse => 1);
           $top = $parent->Toplevel(-title => 'Oscar Package Selection',
                                    -width => '260',
                                    -height => '260',

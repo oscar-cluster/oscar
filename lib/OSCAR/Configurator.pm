@@ -24,7 +24,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.7 2002/10/29 19:11:37 tfleury Exp $
+# $Id: Configurator.pm,v 1.8 2002/10/29 19:51:41 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -129,16 +129,24 @@ sub doneButtonPressed
 {
   # If the $root window has a Parent, then it isn't a MainWindow, which
   # means that another MainWindow is managing the OSCAR Package
-  # Configuration window.  Therefore, when we exit, unmap the window.  If
-  # there is no parent, then it IS a MainWindow, so destroy the window.
-  $root->Parent ? $root->UnmapWindow : $root->destroy;
+  # Configuration window.  Therefore, when we exit, we need to make the
+  # parent window unbusy.
+  $root->Parent->Unbusy() if ($root->Parent);
 
-  # If there are any children, make sure they are unmapped.
+  # If there are any children, make sure they are destroyed.
   my (@kids) = $root->children;
   foreach my $kid (@kids)
     {
-      $kid->UnmapWindow;
+      $kid->destroy;
     }
+
+  # Then, destroy the root window.
+  $root->destroy;
+
+  # Undefine a bunch of Tk widgeet variables for re-creation later.
+  undef $root;
+  undef $top;
+  undef $pane;
 
   # Call the post-configure API script in each selected package
   my @packages = list_install_pkg();
@@ -273,6 +281,8 @@ sub displayPackageConfigurator # ($parent)
     { # Create the toplevel window just once
       if ($parent)
         {
+          # Make the parent window busy
+          $parent->Busy(-recurse => 1);
           $top = $parent->Toplevel(-title => 'Oscar Package Configuration',
                                    -width => '260',
                                    -height => '260',
