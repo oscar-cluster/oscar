@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+
+# gen_c3_conf - script to generate the /etc/c3.conf file from the ORNL
+#               cluster definition file
+# Author: Brian Leuthke
+# Last Updated: 10/10/2000
+
+use strict;
+use Carp;
+use lib '/usr/lib/systeminstaller';
+use SystemInstaller::Machine;
+use Data::Dumper;
+
+my $image = shift;
+my $imagedir = shift;
+
+unlink "$imagedir/etc/c3.conf";
+
