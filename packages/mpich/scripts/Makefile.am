@@ -1,11 +1,9 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.5 2002/05/15 21:46:00 ngorsuch Exp $
-#
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
-SUBDIRS			= RPMS SRPMS scripts
+noinst_SCRIPTS		= post_clients
 
-EXTRA_DIST		= client.rpmlist server.rpmlist
+EXTRA_DIST		= $(noinst_SCRIPTS)

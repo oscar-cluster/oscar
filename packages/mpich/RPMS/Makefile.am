@@ -1,9 +1,9 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.3 2002/01/22 03:35:10 jsquyres Exp $
+# $Id: Makefile.am,v 1.4 2002/05/15 21:46:01 ngorsuch Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
-EXTRA_DIST		= mpich-1.2.1-2oscar.msc.i386.rpm
+EXTRA_DIST		= mpich-oscar-1.2.1-1.i386.rpm mpich-oscar-module-1.2.1-1.i386.rpm
