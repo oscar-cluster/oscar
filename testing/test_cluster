@@ -55,7 +55,7 @@ if (@ARGV) {
         }
 }
 
-my @pkgs = list_installable_packages();
+my @pkgs = list_selected_packages();
 
 my $return = 0;
 
