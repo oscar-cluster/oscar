@@ -1,4 +1,4 @@
-% $Id: pkg-example.tex,v 1.9 2003/10/01 21:27:46 naughtont Exp $
+% $Id: pkg-example.tex,v 1.10 2003/10/03 05:26:28 naughtont Exp $
 
 \section{Example Package}
 \label{sect:example-pkg}
@@ -30,7 +30,6 @@ The following shows the meta file for a package called SSSlib.
   </version>
 
   <class>third-party</class>
-  <installable>1</installable>
 
   <summary>SciDAC:SSS Infrastructure components</summary>
   <license>GPL</license>
@@ -53,8 +52,10 @@ Directory, Event Manager, etc. as well as the communication
 library. </description>
 
   <rpmlist>
-        <filter distribution="redhat" distribution_version="7.2" architecture="ia32"/>
-        <filter distribution="mandrake" distribution_version="8.2"/>
+        <!-- explicitly stating 'architecture', often this is simply assumed ia32 -->
+        <filter distribution="redhat" distribution_version="9" architecture="ia32"/>
+        <filter distribution="redhat" distribution_version="8.0"/>
+        <filter distribution="mandrake" distribution_version="9.0"/>
         <rpm>ssslib</rpm>
         <rpm>sss-clients</rpm>
         <rpm>sss-infrastructure</rpm>
@@ -68,8 +69,10 @@ library. </description>
 	</rpmlist>
 
 	<rpmlist>
-        <filter group="oscar_server" distribution="redhat" distribution_version="7.2"/>
-        <filter group="oscar_server" distribution="redhat" distribution_version="7.3"/>
+        <!-- explicitly stating 'architecture', often this is simply assumed ia32 -->
+        <filter group="oscar_server" distribution="redhat" distribution_version="9" architecture='ia32'/>
+        <filter group="oscar_server" distribution="redhat" distribution_version="8.0"/>
+        <filter group="oscar_server" distribution="redhat" distribution_version="9.0"/>
         <rpm>sss-mayor-slave</rpm>
         <rpm>sss-servers</rpm>
   </rpmlist>
