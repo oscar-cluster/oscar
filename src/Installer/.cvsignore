@@ -4,3 +4,6 @@ Makefile.in
 .oscar_made_makefile_am
 InstallerImages.pm
 InstallerErrorDialog.pm
+NodeMgmt
+Opder
+Selector
