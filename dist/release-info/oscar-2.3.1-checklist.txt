@@ -1,0 +1,75 @@
+# $Id: oscar-2.3.1-checklist.txt,v 1.1 2003/10/06 19:23:33 naughtont Exp $
+
+# NOTE: Any postings to "neutral" sites, e.g., oscar.sf.net, should
+#  not contain the org specific head/footers.  For example the 
+#  opening 'OAK RIDGE, Tenn...' blurb should be cut, as should the
+#  closing, 'ORNL is a Dept. of Energy...'.
+#
+
+#  NOTE, make sure to use the correct acronym for NCSA in the
+#  press release itself.  The one used w/ 2.2.1 (and others)
+#  is wrong, using "... Alliance".  The correct version is
+#  "National Center for Supercomputing Applications (NCSA)"
+#
+
+List of places that the OSCAR 2.3.1 press release was sent:
+
++ The OSCAR web site, under "Press Releases" on the "papers/talks" page.
+  (HTML format)
+
++ A OSCAR/sf.net "News" item.
+  (text/abbreviated info)
+
++ Post to oscar-users
+  (Plain text [email])
+
++ HPCWire
+  Submission deadline: 10am PST for the following week's edition
+  Send plain text of releases to: editor@hpcwire.com
+  (Plain text [email])
+
++ Freshmeat
+  Sent to: sldague@us.ibm.com  (OSCAR FM contact)
+  (Plain text)
+
++ Infoworld
+  Sent to: carolyn_april@infoworld.com
+  E-mail address obtained from their "Contact us" web page
+  (Plain text)
+
++ LinuxPR.com
+  Free registration required to submit press releases
+  (HTML format)
+
++ Beowulf-underground.org
+  "Software/Administration" -- link to OSCAR web page announcement
+  (URL to OSCAR Web page)
+
++ LinuxJournal
+  Free Subscription, "Submit a Press Release" at http://pr.linuxjournal.com/
+  (HTML format)
+
++ HPC.devchannel.org (foundry stuffo)
+  http://hpc.devchannel.org/submit.pl?section=hpcchannels
+  (HTML format)
+
++ SupercomputingOnline.com 
+  Free subscription, "Submit News" / Topic="Government News"
+  http://www.supercomputingonline.com/submit.php
+
+
+#########################################################################3
+# Not released, but worth noting for possible future use.
+
+# Send to DaveJ when we release v2.3, b/c it will have the new MAUI version
+#o Supercluster.org
+#  Connection being MAUI is shipped w/ OSCAR
+#  Sent to: Dave Jackson <jacksond@supercluster.org>
+#  (URL to OSCAR Web page & Plain text)
+
+#- http://clusters.top500.org/
+#  (didn't send 2.0 release there, couldn't find a place to submit?)
+
+#- IEEE Cluster Computing Task Force 
+#  (didn't send 2.0 release there, couldn't find a place to submit?)
+
