@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.11 2002/08/17 20:13:07 jsquyres Exp $
+#   $Id: FrontPanel.pm,v 1.12 2002/09/04 05:55:12 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use OSCAR::Logger;
 use OSCAR::Tk;
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.11 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.12 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
@@ -184,8 +184,8 @@ sub server_prep {
     oscar_log_subsection("Step 1: Running: $cmd");
     open(OUTPUT,"$cmd |") or (carp("Couldn't run command $cmd"), 
                               error_window($fp_window,
-					   "Couldn't run command $cmd"),
-			      fp_window_close(),
+					   "Couldn't run command $cmd",
+					   sub { fp_window_close() }),
 			      return undef);
 
     while(<OUTPUT>) {
@@ -194,18 +194,21 @@ sub server_prep {
     }
 
     close(OUTPUT) or (carp("Couldn't run command $cmd"), 
-                      error_window($fp_window,"Couldn't run command $cmd"),
-		      fp_window_close(),
+                      error_window($fp_window,
+				   "Couldn't run command $cmd",
+				   sub { fp_window_close() }),
 		      return undef);
+
     oscar_log_subsection("Step 1: Successfully ran command");
 
     $cmd = "bash -c 'switcher mpi --add-attr default $mpivalue --force --system'";
     oscar_log_subsection("Step 1: Running: $cmd");
     !system("$cmd") or
         (carp("Couldn't run command $cmd"),
-         error_window($fp_window,"Couldn't run command $cmd"),
-	 fp_window_close(),
+         error_window($fp_window, "Couldn't run command $cmd", 
+		      sub { fp_window_close() }), 
 	 return undef);
+
     oscar_log_subsection("Step 1: Successfully ran command");
     oscar_log_subsection("Step 1: Completed successfully");
 
