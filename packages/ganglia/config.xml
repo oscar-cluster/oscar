@@ -10,7 +10,7 @@
   /// information, see the COPYING file in the top level directory of the
   /// OSCAR source distribution.
   ///
-  /// $Id: config.xml,v 1.3 2002/11/01 04:48:00 jsquyres Exp $
+  /// $Id: config.xml,v 1.4 2002/11/01 05:09:44 sad Exp $
   ///
 
   <name>ganglia</name>
@@ -42,15 +42,15 @@ statistics expressed in an open well-defined XML format.</description>
 
   <rpmlist>
     <all>
-      <rpm>ganglia-monitor-core</rpm>
+      <rpm>ganglia-monitor-core-gmond</rpm>
     </all>
 
     <server>
+      <rpm>ganglia-monitor-core-gmetad</rpm>
       <rpm>ganglia-python-oscar</rpm>
       <rpm>ganglia-webfrontend</rpm>
       <rpm>PyXML-oscar</rpm>
       <rpm>rrdtool-oscar</rpm>
-      <rpm>perl-XML-Parser</rpm>
       <rpm>libpng</rpm>
     </server>
   </rpmlist>
