@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.28 2002/10/28 22:54:19 tfleury Exp $
+# $Id: configure.in,v 1.29 2002/10/29 00:25:06 jsquyres Exp $
 #
 # $HEADER$
 #
@@ -104,6 +104,9 @@ AC_CONFIG_FILES([
     share/prereqs/HTML-Tree/Makefile
     share/prereqs/HTML-Tree/media/Makefile
     share/prereqs/HTML-Tree/scripts/Makefile
+    share/prereqs/XML-Parser/Makefile
+    share/prereqs/XML-Parser/media/Makefile
+    share/prereqs/XML-Parser/scripts/Makefile
     share/prereqs/XML-Simple/Makefile
     share/prereqs/XML-Simple/media/Makefile
     share/prereqs/XML-Simple/scripts/Makefile
