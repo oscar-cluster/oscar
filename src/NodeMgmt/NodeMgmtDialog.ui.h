@@ -272,7 +272,7 @@ void NodeMgmtDialog::clearmacs_clicked()
 void NodeMgmtDialog::closeDialog_clicked()
 {
     stopnetcollection();
-    this->close();
+    this->close(1);
 }
 
 void NodeMgmtDialog::definenode()
@@ -489,4 +489,17 @@ void NodeMgmtDialog::straymacs_dimmer()
     } else {
 	straytounass->setEnabled(1);
     }
+}
+
+void NodeMgmtDialog::closeEvent()
+{
+#########################################################################
+#  Subroutine: closeEvent                                               #
+#  Parameter : A pointer to the QCloseEvent generated.                  #
+#  Returns   : Nothing                                                  #
+#########################################################################
+    
+  # Send a signal to the parent workspace letting it know we are closing.
+  emit taskToolClosing("NodeMgmt");
+  SUPER->closeEvent(@_);   # Call the parent's closeEvent
 }

@@ -1899,6 +1899,7 @@
     <include location="local" impldecl="in declaration">my @macs;</include>
     <include location="local" impldecl="in declaration">my $nodes;</include>
     <include location="local" impldecl="in declaration">my %usedmacs;</include>
+    <include location="local" impldecl="in declaration">use Qt::signals taskToolClosing => ['char*'];</include>
     <include location="local" impldecl="in implementation">NodeMgmtDialog.ui.h</include>
 </includes>
 <slots>
@@ -1930,10 +1931,11 @@
     <slot>unassignmac_clicked()</slot>
     <slot>othermacs_dimmer()</slot>
     <slot>straymacs_dimmer()</slot>
+    <slot>closeEvent()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
 <includehints>
-    <includehint>NodeMgmtTable.h</includehint>
+    <includehint>nodemgmttable.h</includehint>
 </includehints>
 </UI>
