@@ -37,7 +37,6 @@
   <rpmlist>
     <filter distribution='mandrake' group='oscar_server'/>
     <rpm>perl-Qt-mdk10</rpm>
-    <rpm>libsmokeqt1</rpm>
   </rpmlist>
 
   <rpmlist>
