@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.2 2002/06/14 23:36:12 jenos Exp $
+% $Id: install.tex,v 1.3 2002/06/15 01:02:13 jenos Exp $
 %
 % $COPYRIGHT$
 %
@@ -13,38 +13,38 @@ OPIUM does this by replicating files on a triggered basis.  The user account
 files are copied to each node each time certain commands are invoked.
 The files:
 \begin{itemize}
-/etc/passwd
-/etc/shadow
-/etc/group
-/etc/gshadow
+\item /etc/passwd
+\item /etc/shadow
+\item /etc/group
+\item /etc/gshadow
 \end{itemize}
 It is possible to add your own files to this list, by editing the command
 script which does the work.
 The command is \cmd{/usr/sbin/sync_users}.  It is triggered by wrapper
 scripts around the user management commands in Linux.  The wrapped scripts:
 \begin{itemize}
-/usr/sbin/useradd
-/usr/sbin/userdel
-/usr/sbin/usermod
-/usr/sbin/groupadd
-/usr/sbin/groupdel
-/usr/sbin/groupmod
+\item /usr/sbin/useradd
+\item /usr/sbin/userdel
+\item /usr/sbin/usermod
+\item /usr/sbin/groupadd
+\item /usr/sbin/groupdel
+\item /usr/sbin/groupmod
 \end{itemize}
 
-Problems with sync_users:
+\paragraph{Problems with sync_users:}
 \begin{itemize}
-chsh and passwd commands don't trigger a sync (a cron entry is a recommended
-workaround)
-If shadow utils rpms are updated (useradd, userdel, etc), the wrapped scripts
-are blown away, thus removing the sync_users triggers.
-The ''-c'' option on \cmd{useradd}(used for comments) doesn't work due to
+\item chsh and passwd commands don't trigger a sync (a cron entry is a
+recommended workaround)
+\item If shadow utils rpms are updated (useradd, userdel, etc), the wrapped 
+scripts are blown away, thus removing the sync_users triggers.
+\item The ''-c'' option on \cmd{useradd}(used for comments) doesn't work due to
 the wrapped script not handling quotation marks properly.
 \end{itemize}
 In OSCAR 1.3.1, these issues will all be fixed.  The shadow utils commands
 will no longer be wrapped, and a cron job will be watching a given list of
 files and syncing only if that file changes.
 
-SSH Configuration
+\paragraph{SSH Configuration}
 The OPIUM package also handles the ssh key setup.  This is done by placing
 startup scripts in /etc/profile.d/ which generate ssh user key files if 
 they don't exist.  It also generates authorized_keys files which enable
@@ -54,6 +54,4 @@ the home directory to be mounted on a node in order for a user to ssh to
 it.  Also, a user must log on to the head node in order for the keys to
 be generated, as the /etc/profile.d/ scripts are not installed on the
 compute nodes in OSCAR 1.3.  SSH1 and SSH2 key files are supported.  
-
-
 
