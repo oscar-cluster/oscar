@@ -1,9 +1,9 @@
 package OPMC3;
 
-#$Id: OPMC3.pm,v 1.2 2001/08/14 22:16:25 mjbrim Exp $
+#$Id: OPMC3.pm,v 1.3 2001/08/16 14:00:10 mjbrim Exp $
 
 # OSCAR Package Management Library
-# (uses C3 Tool Suite version 3.0)
+# (uses C3 Tool Suite version 3.0 or later)
 
 #$COPYRIGHT$
 
@@ -147,7 +147,7 @@ sub write_c3_files {
 }
 
 sub write_c3_conf {
-    my ($nodes, $conf) = @_;
+    my ($nodes, $conf, $server) = @_;
     my $hostname;
 
     #open files
@@ -163,7 +163,7 @@ sub write_c3_conf {
     print CONF "cluster oscar {\n";
     print CONF "\t$hostname:$hostname\n";
     foreach $node (@nodelist) {
-        print CONF "\t$node";
+        if( $node ne $server ) { print CONF "\t$node"; }
     }
     print CONF "}\n";
 
@@ -175,13 +175,13 @@ sub write_c3_cmds {
   my $time = `date +%H%M%S`;
   chomp($time);
   my $tmp_dir = "/tmp/$pkg-$action.$time";
-  my $files = "$dir/$action.files";
+  my $files = "$dir/$action-files.txt";
   my $file = "";
   my $config = 0;
   if( $action eq "configure" ) { $config = 1; }
   
   #generate C3 config file
-  write_c3_conf($nodes, $c3conf);
+  write_c3_conf($nodes, $c3conf, $server);
 
   #generate C3 file list
   write_c3_files($files, $tmp_dir, $c3files, $config, $nodes);
@@ -201,8 +201,8 @@ sub write_c3_cmds {
   if( $server eq "" ) {
     if( $config ) { $file = $nodes; }
     print CMDS "echo \"...processing package server on localhost\"\n";
-    print CMDS "echo \"   -> executing pkgconfig -s $action $file\"\n";
-    print CMDS "./pkgconfig -s $action $file\n";
+    print CMDS "echo \"   -> executing opkgconfig -s $action $file\"\n";
+    print CMDS "./opkgconfig -s $action $file\n";
   }
   else {
     if( $config ) { chomp($file = "$tmp_dir/" . `basename $nodes`); }
@@ -213,8 +213,8 @@ sub write_c3_cmds {
     print CMDS "for file in `cat $c3files | awk '{print \$1}'`; do\n";
     print CMDS "  rcp \$file $server:$tmp_dir > /dev/null \n";
     print CMDS "done;\n";
-    print CMDS "echo \"   -> executing pkgconfig -s $action $file\"\n";
-    print CMDS "rsh $server \"$tmp_dir/pkgconfig -s $action $file\"\n";  
+    print CMDS "echo \"   -> executing opkgconfig -s $action $file\"\n";
+    print CMDS "rsh $server \"$tmp_dir/opkgconfig -s $action $file\"\n";  
     print CMDS "echo \"   -> removing temporary directory\"\n";
     print CMDS "rsh $server \"/bin/rm -rf $tmp_dir\" > /dev/null \n";
   }
@@ -226,8 +226,8 @@ sub write_c3_cmds {
   print CMDS "cexec -f $c3conf /bin/mkdir $tmp_dir > /dev/null \n";
   print CMDS "echo \"   -> transferring files\"\n";
   print CMDS "cpush -f $c3conf -l $c3files > /dev/null \n";
-  print CMDS "echo \"   -> executing pkgconfig -c $action $file\"\n";
-  print CMDS "cexec -f $c3conf $tmp_dir/pkgconfig -c $action $file\n";
+  print CMDS "echo \"   -> executing opkgconfig -c $action $file\"\n";
+  print CMDS "cexec -f $c3conf $tmp_dir/opkgconfig -c $action $file\n";
   print CMDS "echo \"   -> removing temporary directory\"\n";
   print CMDS "crm -f $c3conf -r -o $tmp_dir > /dev/null \n";
 
