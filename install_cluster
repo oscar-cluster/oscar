@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# Copyright 2004 Revolution Linux
+#           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 # Copyright 2002 International Business Machines
@@ -135,10 +137,10 @@ if (-f $lockfile) {
     chmod($pid);
     print "There is an OSCAR installer lockfile that says an installer process\n";
     print "is still running with process id $pid. Checking if that is true ...\n";
-    my $pids_cmd = 'ps -a | awk \'{print $1}\'';
-    my @pids = `$pids_cmd`;
-    chomp @pids;
-    if ( grep( /^$pid$/, @pids ) ) {
+    my $pid_cmd = "ps --no-headers p $pid";
+    my $is_running = `$pid_cmd`;
+    chomp $is_running;
+    if ($is_running ne "") {
 	print "There is a process running with that process id.\n";
 	print "If this is no an OSCAR installer process, remove\n";
 	print "the following file and run $0 again:\n";
