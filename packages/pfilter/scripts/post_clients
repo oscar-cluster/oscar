@@ -86,8 +86,7 @@ if ( grep( /^\%define oscar_server/, @conf_lines ) ) {
 	or croak("config_server: cannot append to pfilter configuration file $conf_file\n");
     print "Adding OSCAR section to pfilter configuration file $conf_file\n";
     print CONF <<ENDIT;
-#=============================================================
-#
+
 # This is the beginning of the section addded by OSCAR
 
 # define the main OSCAR server
@@ -134,8 +133,6 @@ trusted %oscar_server% %nodes%
 
 #
 # This is the end of the section added by OSCAR
-#
-#============================================================
 ENDIT
     close(CONF);
 }
