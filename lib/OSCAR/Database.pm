@@ -157,20 +157,26 @@ sub database_execute_command {
 # with the second level hashes being the requested fields with their
 # data being the values in the database fields.
 #
-# paramaters are:   table     database table name
-#                   fields    pointer to requested field nanes list
-#                             (if undef or empty returns all fields)
-#                   wheres    pointer to where expressions
-#                             (if undef all records returned)
-#                   print_err if defined and non-zero, print out
-#                             error messages
+# paramaters are: table         database table name
+#                 fields        pointer to requested field nanes list
+#                               (if undef or empty returns all fields)
+#                 wheres        pointer to where expressions
+#                               (if undef all records returned)
+#                 index_field   name of index field 
+#                               (if undef "name" is used)
+#                 print_err     if defined and non-zero, print out
+#                               error messages
 
 sub database_read_table_fields {
     
     my ( $table,
 	 $requested_fields_ref,
 	 $wheres_ref,
+	 $passed_key_name,
 	 $print_errors_flag ) = @_;
+
+    # if they didn't specify an index field name, use "name"
+    my $key_name = ( defined $passed_key_name ) ? $passed_key_name : "name";
 
     # since we are going to do a number of database operations, we'll
     # try to be more effecient by connecting to the database first if
@@ -197,12 +203,12 @@ sub database_read_table_fields {
 	return undef;
     }
 
-    # if there isn't a "name" field in this database table, we
+    # if there isn't a key_name field in this database table, we
     # have a serious problem
 
-    if ( ! exists $fields_in_table{name} ) {
+    if ( ! exists $fields_in_table{$key_name} ) {
 	if ( defined $print_errors_flag && $print_errors_flag ) {
-	    warn "there is no <name> field in database table <$table>";
+	    warn "there is no <$key_name> field in database table <$table>";
 	    warn "Database\:\:database_read_table_fields cannot supply the data as requested";
 	}
 	OSCAR::Database::database_disconnect() if $was_connected_flag;
@@ -211,13 +217,13 @@ sub database_read_table_fields {
 	
     # if the caller supplied an undef or empty fields list,
     # we'll supply all fields for this database. Also, make
-    # sure that the field <name> is included.
+    # sure that the field <$key_name> is included.
 
     my @fields = ();
     if ( defined($requested_fields_ref) && @$requested_fields_ref ) {
 	@fields = @$requested_fields_ref;
-	push @fields, "name"
-	    if ! grep( /^name$/, @fields );
+	push @fields, "$key_name"
+	    if ! grep( /^$key_name$/, @fields );
     } else {
 	@fields = sort keys %fields_in_table;
     }
@@ -251,8 +257,8 @@ sub database_read_table_fields {
     my %duplicated_name_values = ();
     my $missing_name_fields = 0;
     foreach my $record_ref ( @records ) {
-	if ( exists $$record_ref{name} && $$record_ref{name} ne "" ) {
-	    my $key = $$record_ref{name};
+	if ( exists $$record_ref{$key_name} && $$record_ref{$key_name} ne "" ) {
+	    my $key = $$record_ref{$key_name};
 	    if ( exists $results{$key} ) {
 		$duplicated_name_values{$key} = 1;
 	    } else {
@@ -265,12 +271,12 @@ sub database_read_table_fields {
     if ( defined $print_errors_flag && $print_errors_flag ) {
 	foreach my $name ( sort keys %duplicated_name_values ) {
 	    warn "There are duplicated records in database table <$table> that";
-	    warn "has the same <name> field value of <$name>.";
+	    warn "has the same <$key_name> field value of <$name>.";
 	}
 	warn "Database\:\:database_read_table_fields will only return the first of each."
 	    if %duplicated_name_values;
 	if ( $missing_name_fields ) {
-	    warn "$missing_name_fields records from the database table <$table> are missing the <name>";
+	    warn "$missing_name_fields records from the database table <$table> are missing the <$key_name>";
 	    warn "field and are not being returned by Database\:\:database_read_table_fields.";
 	}
     }
@@ -279,7 +285,6 @@ sub database_read_table_fields {
 
     OSCAR::Database::database_disconnect() if $was_connected_flag;
 
-#oda::print_hash("", "Database\:\:database_read_table_fields returning", \%results);
     return \%results;
 }
 
