@@ -1,20 +1,15 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile,v 1.1 2001/08/14 22:27:59 jsquyres Exp $
+# $Id: Makefile.am,v 1.1 2001/08/20 23:08:08 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
 
-# Program names.
-
-LATEX		= latex
-PDFLATEX	= pdflatex
-DVIPS		= dvips
-FIG2DEV		= fig2dev
+AUTOMAKE_OPTIONS	= no-dependencies
 
 # The top-level file.
 
-MAIN_TEX	= architecture.tex
+MAIN_TEX	= development.tex
 
 # All other .tex files that are necessary to build the paper (for
 # dependencies).
@@ -24,9 +19,11 @@ OTHER_SRC_FILES	= \
 		titlepage.tex \
 		toc.tex \
 		intro.tex \
-		oscar-1.tex \
-		requirements.tex \
-		design.tex
+		cvs.tex \
+		directories.tex \
+		files.tex \
+		core.tex \
+		third-party.tex
 
 # xfig figures.  .eps and .pdf files will be automatically generated
 # from these.
@@ -39,7 +36,7 @@ FIG_FILES	=
 #
 #########################################################################
 
-.SUFFIXES: .tex .dvi .ps .pdf .eps .fig
+SUFFIXES	= .tex .dvi .ps .pdf .eps .fig
 
 CHAP_CITE	= $(CHAP_CITE_TEX:.tex=)
 MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
@@ -48,15 +45,17 @@ MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
 EPS_FIG_FILES	= $(FIG_FILES:.fig=.eps)
 PDF_FIG_FILES	= $(FIG_FILES:.fig=.pdf)
 
+# Tell automake to include all the relevant files
+
+EXTRA_DIST	= $(MAIN_TEX) $(OTHER_SRC_FILES) $(FIG_FILES)
+CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF)
+
 # Some common target names
-# Note that the default target is "ps"
+
+docs: pdf
 
 ps: $(EPS_FIG_FILES) $(MAIN_PS) 
-postscript: ps
 pdf: $(PDF_FIG_FILES) $(MAIN_PDF)
-acrobat: pdf
-
-all: ps
 
 #
 # Make the dependencies so that things build when they need to
@@ -137,14 +136,10 @@ $(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PDF_FIGURES)
 	      grep 'LaTeX Warning: Citation' $*.log > /dev/null); \
 	then (unset TEXINPUTS; $(PDFLATEX) $*) ; else :; fi
 
-#
-# Standard targets
-#
+# Deleting kruft temporary files
 
-clean:
-	/bin/rm -f *~ *.bak *% $(EPS_FIG_FILES) $(PDF_FIG_FILES)
+mostlyclean-generic:
+	-rm -f *~ *.bak *% \
+		  *.log *.aux *.dvi *.blg *.toc *.bbl *.lof *.lot *.out \
+		  $(EPS_FIG_FILES) $(PDF_FIG_FILES)
 
-distclean: squeaky
-squeaky: clean
-	/bin/rm -f *.log *.aux *.dvi *.blg *.toc *.bbl *.lof *.lot *.out \
-		$(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF)

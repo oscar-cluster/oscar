@@ -1,0 +1,76 @@
+# -*- shell-script -*-
+#
+# $Id: configure.in,v 1.1 2001/08/20 23:08:07 jsquyres Exp $
+#
+# $COPYRIGHT$
+#
+
+# Disable caching
+
+define([AC_CACHE_LOAD], )
+define([AC_CACHE_SAVE], )
+
+# Init autoconf
+
+AC_INIT(./doc/development/development.tex)
+AC_CONFIG_AUX_DIR(./dist)
+
+# Get the version of OSCAR that we are installing
+
+get_version="sh $srcdir/dist/get-oscar-version.sh $srcdir"
+OSCAR_VERSION="`eval $get_version --full`"
+OSCAR_MAJOR_VERSION="`eval $get_version --major`"
+OSCAR_MINOR_VERSION="`eval $get_version --minor`"
+OSCAR_RELEASE_VERSION="`eval $get_version --release`"
+OSCAR_ALPHA_VERSION="`eval $get_version --alpha`"
+OSCAR_BETA_VERSION="`eval $get_version --beta`"
+
+AC_SUBST(OSCAR_MAJOR_VERSION)
+AC_SUBST(OSCAR_MINOR_VERSION)
+AC_SUBST(OSCAR_RELEASE_VERSION)
+AC_SUBST(OSCAR_ALPHA_VERSION)
+AC_SUBST(OSCAR_BETA_VERSION)
+AC_SUBST(OSCAR_VERSION)
+
+echo "Configuring OSCAR version $OSCAR_VERSION"
+
+# Intialize automake
+
+AM_INIT_AUTOMAKE(oscar, $OSCAR_VERSION, 'no')
+
+# Just because we might as well... :-)
+
+AC_CANONICAL_HOST
+
+# Make automake clean emacs ~ files for "make clean"
+
+CLEANFILES="*~"
+AC_SUBST(CLEANFILES)
+
+# Look for things to make the .tex documentation
+
+AC_CHECK_PROG(LATEX, latex, latex)
+AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex)
+AC_CHECK_PROG(DVIPS, dvips, dvips)
+AC_CHECK_PROG(FIG2DEV, fig2dev, fig2dev)
+
+# Look for things that we need to download files remotely
+
+AC_CHECK_PROG(WGET, wget, wget)
+
+# Generate all the necessary files
+
+AC_OUTPUT([
+  Makefile
+  core-packages/Makefile
+  core-packages/opm/Makefile
+  core-packages/opm/bin/Makefile
+  core-packages/opm/lib/Makefile
+  dist/programs.sh
+  doc/Makefile
+  doc/development/Makefile
+  doc/architecture/Makefile
+  packages/Makefile
+  packages/lam/Makefile
+])
+

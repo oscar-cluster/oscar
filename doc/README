@@ -1,0 +1,27 @@
+$Id: README,v 1.1 2001/08/20 23:08:07 jsquyres Exp $
+
+$COPYRIGHT$
+
+This directory contains various documents for the OSCAR software
+package.  Subdirectories that contain LaTeX documents have associated
+Makefiles to build postscript and PDF versions of the documents.  They
+contain the following make targets:
+
+<default>:    Do nothing
+docs:         Build the document into a PDF file
+ps:           Build the document into a postscript file
+pdf:	      Build the document into a PDF file
+clean:	      Remove the postscript and PDF documents, as well as all
+	      temporary latex/pdflatex files
+mostlyclean:  Remove all the temporary latex/pdflatex files
+
+Note that you *must* make mostlyclean (or clean) between making the
+postscript and PDF files; latex and pdflatex create conflicting and
+incompatible temporary files.  For example, the following commands
+could be used to reliably generate both the postscript and PDF
+documents for an OSCAR distribution package and leave no temporary
+files:
+
+	 make clean ps
+	 make mostlyclean pdf
+	 make mostlyclean

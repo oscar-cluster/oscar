@@ -6,3 +6,5 @@
 *.pdf
 *.toc
 *.out
+Makefile
+Makefile.in
