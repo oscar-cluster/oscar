@@ -1,13 +1,15 @@
-$Id: README,v 1.16 2002/06/01 05:13:57 jsquyres Exp $
+$Id: README,v 1.17 2002/06/12 04:03:21 jsquyres Exp $
 
 $COPYRIGHT$
 
-This is the general README file for OSCAR.  See our wonderful web site:
+This is the general README file for OSCAR.  See our wonderful web
+site:
 
 	http://oscar.sourceforge.net/
 
-Insturctions for installing an OSCAR distribution can be found in 
-doc/install.pdf.
+Insturctions for installing an OSCAR distribution can be found in
+doc/install.pdf.  User instructions for utilizing the software
+installed on OSCAR clusters can be found in doc/user.pdf.
 
 
 ***************************************************************
@@ -28,49 +30,6 @@ There are some limitations to the OSCARVERSION release, they are:
 
   2) update rpm to rpm-4.0.4-7x which is in the Red Hat updates
      for 7.2 (this will only work for Red Hat 7.2)
-
-
-***************************************************************
-Which MPI do you want to use?
-***************************************************************
-
-Starting with OSCAR 1.3, there is a generalized mechanism to both set
-a system-level default MPI implementation, and also to allow users to
-override the system-level default with their own choice of MPI
-implementation.  
-
-This allows multiple MPI implementations to be installed on an OSCAR
-cluster (e.g., LAM/MPI and MPICH), yet still provide unambiguous MPI
-implementation selection such that "mpicc foo.c -o foo" will give
-deterministic results.
-
-The system-level default MPI implementation can be set in two ways:
-
-1. During the OSCAR installation, the GUI will prompt asking which MPI
-   should be the system-level default.  This will set the default for
-   all users on the system who do not provide their own individual MPI
-   settings.
-
-2. As root, execute the command:
-
-   % switcher mpi --list
-
-   This will list all the MPI implementations available.  To set the
-   system-level default, execute the command:
-
-   % switcher mpi = name --system
-
-   where "name" is one of the names from the output of the --list
-   command.
-
-Setting a user-level default is essentially the same as #2, except
-without the "--system" argument.  This will set the user-level default
-instead of the system-level default.  Using the special name "none"
-will remove the user-level default and revert the user to the
-system-level default.
-
-To get a full list of options available, read the switcher(1) man
-page, and/or run "switcher --help".
 
 
 ***************************************************************
