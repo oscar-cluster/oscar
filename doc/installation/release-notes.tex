@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.41 2003/11/26 03:05:02 bernardli Exp $
+% $Id: release-notes.tex,v 1.42 2003/11/26 03:36:11 bernardli Exp $
 %
 
 \section{Release Notes}
@@ -115,14 +115,20 @@ The following release notes apply to OSCAR version \oscarversion.
   This is actually just a warning message however if you are having problems
   using the 
   \\ \button{Install/Uninstall Package} feature, you may want to
-  disable X forwarding by passing ssh the \cmd{-x} option, i.e.:
+  disable X forwarding.  You can do this by setting the \cmd{C3\_RSH} environment
+  variable to \cmd{ssh -x}.  You can do this by adding the following line to the
+  \cmd{root} user's \cmd{.bash\_profile} file:
 
 \begin{verbatim}
-  ssh -x oscar
+  export C3_RSH=ssh -x
 \end{verbatim}
 
+  All subsequent shells will have X forwarding disabled.
+
 \item During the \button{Install/Uninstall Package} step, if you hit the cancel
-  button, the post* scripts will still run.  This is normal and should not really
+  button or close down the window, the post* (post installation) scripts will still run.  
+  This is 
+  normal and should not really
   affect anything (i.e. if you did not pick any packages to install/uninstall, they
   will not be).
 
