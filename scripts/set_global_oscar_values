@@ -34,6 +34,8 @@ if ($oscar_server_distribution eq "redhat" || $oscar_server_distribution eq "rha
     $mysql_service_name="mysqld";
 } elsif ($oscar_server_distribution eq "mandrake") {
     $mysql_service_name="mysql";
+} elsif ($oscar_server_distribution eq 'suse') {
+    $mysql_service_name='mysql';
 } else {
     die "$0: unknown distribution <$oscar_server_distribution>";
 }

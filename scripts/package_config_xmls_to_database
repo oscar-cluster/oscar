@@ -286,8 +286,9 @@ if ($oscar_server_distribution eq "redhat" || $oscar_server_distribution eq "rha
 my $command="LC_ALL=EN;/etc/init.d/$mysql_service_name status";
 #print $command;
 my @command_output = `$command`;
+my $status = $?;
 chomp @command_output;
-if ( ! grep( /is\ running/, @command_output ) ) {
+if ( ! grep( /is\ running/, @command_output ) || ! $status ) {
     print "Starting the mysql database server ...\n";
     my $command = "LC_ALL=EN;/etc/init.d/$mysql_service_name start";
     print "$command\n";
