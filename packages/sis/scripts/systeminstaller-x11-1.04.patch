@@ -1,5 +1,5 @@
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm.orig	2003-04-09 10:31:40.000000000 -0700
-+++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2004-10-23 19:58:21.000000000 -0700
++++ /usr/lib/systeminstaller/SystemInstaller/Tk/AddClients.pm	2005-02-23 14:05:52.000000000 -0800
 @@ -36,6 +36,7 @@
  
      my $window = shift;
@@ -18,7 +18,24 @@
  
      #
      #  First line:  What is your image name?
-@@ -137,6 +139,7 @@
+@@ -97,6 +99,7 @@
+     label_entry_line($addclient_window, "Number of Hosts", \$vars{numhosts},"",
+                      helpbutton($addclient_window, 'Number of Hosts')) unless $noshow{numhosts};
+ 
++    $vars{startinghostnum} = nexthostnum( $vars{basename} ) || $vars{startinghostnum};
+     label_entry_line($addclient_window, "Starting Number", \$vars{startinghostnum},"",
+                      helpbutton($addclient_window,'Starting Number')) unless $noshow{startinghostnum};
+     # Number padding
+@@ -109,7 +112,7 @@
+     #
+ 
+ 
+-
++    $vars{startip} = nextip() || $vars{startip};
+     label_entry_line($addclient_window, "Starting IP", \$vars{startip},"",
+                      helpbutton($addclient_window, 'Starting IP')) unless $noshow{startip};
+     label_entry_line($addclient_window, "Subnet Mask", \$vars{netmask},"",
+@@ -137,6 +140,7 @@
                                                 );
  
      $reset_button->grid($activate_button, quit_button($addclient_window) , -sticky => "nesw");
@@ -26,6 +43,42 @@
  
  }
  
+@@ -207,8 +211,35 @@
+     }
+ 
+     done_window($window, "Successfully created clients for image $$vars{imgname}");
++
++    $$vars{startinghostnum} = nexthostnum( $$vars{basename} ) || $$vars{startinghostnum};
++    $$vars{startip} = nextip() || $$vars{startip};
++    $window->update();
++
+     $window->Unbusy();
+     return 1;
+ }
+ 
++sub nexthostnum($)
++{
++    my $bn = quotemeta shift;
++
++    my @hosts = grep { /^$bn\d/ } map { $_->name } list_client();
++    return 1 + (sort { $a <=> $b } map { /(\d+)$/ } @hosts)[-1] if @hosts;
++}
++
++sub nextip()
++{
++    my @allip = map { $_->ip } list_adapter();
++    if( @allip ) {
++        my $lastip = hex( (sort map { sprintf "%.2x%.2x%.2x%.2x", split /\./, $_ } @allip)[-1] );
++        my $x;
++        do {
++            $lastip++;
++            $x = sprintf "%8.8x", $lastip;
++        } while $x =~ /00$/ || $x =~ /ff$/;
++        return join( ".", map { (sprintf "%d", hex $_) } ($x =~ /../g));
++    }
++}
++
+ 1;
 --- /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm.orig	2002-12-17 09:25:49.000000000 -0800
 +++ /usr/lib/systeminstaller/SystemInstaller/Tk/Common.pm	2005-02-18 08:23:05.000000000 -0800
 @@ -28,6 +28,7 @@
