@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: autogen.sh,v 1.10 2003/07/21 21:45:11 jsquyres Exp $
+# $Id: autogen.sh,v 1.11 2003/07/21 21:48:44 jsquyres Exp $
 #
 
 #
@@ -282,13 +282,11 @@ run_global() {
     rg_config_files=
     for rg_dir in `find packages -type d`; do
 	base="`basename $rg_dir`"
-	echo checking dir: $rg_dir / $base
 	if test "$base" != "CVS" -a \
 	    ! -f "$rg_dir/$ignore_file" -a \
 	    -f "$rg_dir/$sentinel_file" -a \
 	    -f "$rg_dir/Makefile.am" ; then
 	    rg_config_files="$rg_dir/Makefile $rg_config_files"
-	    echo added: $rg_dir/Makefile
 	fi
     done
 
