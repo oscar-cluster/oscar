@@ -242,6 +242,7 @@ sub cleanup_files {
               '/var/lib/systeminstaller',
               '/var/log/systemimager',
               '/var/spool/pbs',
+	      '/usr/share/systeminstaller/distinfo',
               "$oscar_home/.oscar",
              );
   foreach my $file (@dirs) {
