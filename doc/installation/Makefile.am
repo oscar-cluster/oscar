@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.10 2002/07/06 03:18:03 naughtont Exp $
+# $Id: Makefile.am,v 1.11 2002/07/06 03:45:23 naughtont Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -67,11 +67,9 @@ SBS_FILES	= \
 			 figs/6bc_sbs-autoinstall-flpy3.png \
 			 figs/6ca_sbs-client-boot1.png \
 			 figs/6c_sbs-client-boot1.png \
-			 figs/6c_sbs-client-boot22.png \
 			 figs/6d_sbs-broadcast.png \
 			 figs/6e_sbs-found-mac.png \
 			 figs/6f_sbs-stop-collect-mac2.png \
-			 figs/6g_sbs-assign-mac.png \
 			 figs/6h_sbs-client-boot.png \
 			 figs/6i_sbs-client-diskpar.png \
 			 figs/6j_sbs-client-rsync.png \
