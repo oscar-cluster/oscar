@@ -86,7 +86,7 @@ sub mac_window {
                                    );
     my $bootfloppy = $frame->Button(
                                     -text => "Build Autoinstall Floppy",
-                                    -command => sub {system("xterm -T 'Build Autoinstall Floppy' -e /usr/local/bin/mkautoinstalldiskette");},
+                                    -command => sub {system("xterm -T 'Build Autoinstall Floppy' -e mkautoinstalldiskette");},
                                    );
     my $networkboot = $frame->Button(
                                      -text => "Setup Network Boot",
