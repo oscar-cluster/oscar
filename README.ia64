@@ -1,14 +1,10 @@
-$Id: README.ia64,v 1.4 2002/02/20 22:43:22 sdague Exp $
+$Id: README.ia64,v 1.5 2002/04/04 00:38:29 sdague Exp $
 
 $COPYRIGHT$
 
-Before doing the ./install_cluster eth0 command, do this:
-
-  rpm -ivh --nodeps */*/*/openpbs-*.rpm
-
-IF YOU HAVE CVS PROBLEMS WHEN THE WIZARD STARTS, DO THIS: Before doing
-the "Build Image" in the "Create a Systemimager Image" panel, edit the
-/etc/systeminstaller/systeminstaller.conf file and change this:
+If the image build fails the first time do to some sort error 
+with install-info edit the /etc/systeminstaller/systeminstaller.conf
+file and change:
 
   pkginstfail=    1
 to this:
@@ -21,3 +17,10 @@ When booting a client over the network via the boot cdrom,
 
 and remember to reboot from the installer cdrom on the client between
 the mac address collection and the network client install
+
+CAVEATS
+
+pvm doesn't currently work on ia64
+
+network boot setup isn't yet done for ia64... this is comming before
+1.3 final
