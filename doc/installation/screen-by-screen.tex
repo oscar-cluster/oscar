@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: screen-by-screen.tex,v 1.20 2002/11/17 18:09:27 jsquyres Exp $
+% $Id: screen-by-screen.tex,v 1.21 2003/08/19 07:44:46 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -25,8 +25,8 @@ It is intended as supplementary material to aid in providing a better feel
 for the general progression of the installation.  For a detailed discussion
 of the steps, please refer to the Detailed Cluster Installation Procedure. 
 
-Note the example screen shots were based in a Red Hat 7.3 using a
-pre-release version of OSCAR \oscarversion\ in the KDE graphical
+Note the example screen shots were based in a Red Hat 9.0 using a
+pre-release version of OSCAR \oscarversion\ in the GNOME graphical
 environment.  Since this section is intended as a supplementary source
 of information, it is judged to be ``close enough'' to the real
 \oscarversion\ release.  
@@ -43,9 +43,12 @@ an actual printout.
 
 \subsection{Running \cmd{install\_cluster}}
 
-This step comprises of running the \cmd{install\_cluster} script with
-the network interface name.  See details in
-Section~\ref{det:installcluster}, page~\pageref{det:installcluster}.
+
+These Figures \ref{fig:sbs-unpacking-oscar} -- \ref{fig:sbs-oda-password}
+walk through the steps needed to prepare and run the \cmd{install\_cluster}
+script with the network interface name, which will begin the actual cluster
+installation.  See details in Section~\ref{det:installcluster},
+page~\pageref{det:installcluster}.
 
 % JMS: These images were captured using KDE ``konsole'' tools, with
 % the ``small'' font, using a black-on-white schema, and resized to be
@@ -56,6 +59,22 @@ Section~\ref{det:installcluster}, page~\pageref{det:installcluster}.
     \centerline{\includegraphics[scale=\imgscale]{figs/0c_sbs-unpack}}
     \caption{Unpacking OSCAR.}
     \label{fig:sbs-unpacking-oscar}
+  \end{center}
+\end{figure}
+
+%TODO
+%TJN: NEW need new capture
+\begin{figure}[h!]
+  \begin{center}
+    \centerline{\includegraphics[scale=\imgscale]{figs/sbs-configure-install}}
+      \vspace{\imgvskip}
+	\centerline{
+      \includegraphics[scale=\imgscale]{figs/sbs-make-install-1}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/sbs-make-install-2}
+      }
+    \caption{Configure \& Install the OSCAR Toolkit.}
+    \label{fig:sbs-configure-install}
   \end{center}
 \end{figure}
 
@@ -71,11 +90,40 @@ Section~\ref{det:installcluster}, page~\pageref{det:installcluster}.
   \end{center}
 \end{figure}
 
+%TODO
+%TJN: NEW need new capture
+\begin{figure}[h!]
+  \begin{center}
+    \centerline{\includegraphics[scale=\imgscale]{figs/sbs-oda-password}}
+    \caption{Enter an OSCAR Database (ODA) password.}
+    \label{fig:sbs-oda-password}
+  \end{center}
+\end{figure}
+
 \begin{figure}[ht!]
   \begin{center}
     \centerline{\includegraphics[scale=\imgscale]{figs/2_sbs-oscar-wizard}}
     \caption{The OSCAR Installation Wizard.}
     \label{fig:sbs-install-wizard}
+  \end{center}
+\end{figure}
+
+%------------------------------------------------------------------
+% Select OSCAR packages to download w/ OPD/OPDer
+%------------------------------------------------------------------
+
+%TJN: NEW need new capture
+\subsection{Download Additional OSCAR Packages...}
+
+An optional step.  See details in Section~\ref{det:opd},
+page~\pageref{det:opd}.
+
+\begin{figure}[ht!]
+  \begin{center}
+    \centerline{\includegraphics[scale=\imgscale]{figs/sbs-download-packages}}
+    \caption[Downloading additional OSCAR packages.]{Selecting additional 
+	OSCAR packages to download using OPD/OPDer.}
+    \label{fig:sbs-download-packages}
   \end{center}
 \end{figure}
 
@@ -116,7 +164,7 @@ page~\pageref{det:configure-packages}.
       \hspace{\imghskip}
       \includegraphics[scale=\imgscale]{figs/package-configuration-switcher}
     }
-    \caption{Configuring selected OSCAR packages.  Only the
+    \caption{Configuring selected OSCAR packages.  For example, the
       Environment Switcher package has configuration options.}
     \label{fig:sbs-package-configuration}
   \end{center}

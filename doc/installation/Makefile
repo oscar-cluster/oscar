@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile,v 1.10 2003/07/29 19:53:05 jsquyres Exp $
+# $Id: Makefile,v 1.11 2003/08/19 07:44:45 naughtont Exp $
 # 
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -88,7 +88,12 @@ FIG_FILES	= \
 			 figs/9c_sbs-add-node-success.png \
 			 figs/9d_sbs-add-node-mac1.png \
 			 figs/9e_sbs-add-node-mac2.png \
-			 figs/9f_sbs-add-node-complete.png 
+			 figs/9f_sbs-add-node-complete.png  \
+			 figs/sbs-configure-install.png \
+			 figs/sbs-make-install-1.png \
+			 figs/sbs-make-install-2.png \
+			 figs/sbs-oda-password.png \
+			 figs/sbs-download-packages.png 
 
 
 
