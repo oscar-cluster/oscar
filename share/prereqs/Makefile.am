@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Makefile.am,v 1.1 2002/10/23 14:57:26 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2002/10/29 00:33:40 jsquyres Exp $
 #
 
-SUBDIRS			= HTML-Tree XML-Simple
+SUBDIRS			= HTML-Tree XML-Parser XML-Simple
