@@ -162,6 +162,10 @@ open    dhcp    $on_interface
 trusted %oscar_server% %nodes%
 open    multicast                        # for ganglia
 
+# let us be pingable from everywhere
+
+open    ping
+
 #
 # This is the end of the section added by OSCAR
 ENDIT
@@ -235,11 +239,15 @@ reject
 
 # Open ssh from anywhere
 
-OPEN	tcp	ssh
+open	tcp	ssh
 
 # the server and every compute node trust each other
 
 trusted %oscar_server% %nodes%
+
+# let us be pingable from everywhere
+
+open    ping
 
 #
 # This is the end of the section added by OSCAR
