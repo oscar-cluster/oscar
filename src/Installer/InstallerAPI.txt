@@ -2,7 +2,7 @@
                 ----------------------------------------
 
 First Created : February 25, 2004
-Last Updated  : February 25, 2004
+Last Updated  : April 27, 2004
 Author        : Jason Brechin <brechin@ncsa.uiuc.edu>
 Author        : Terry Fleury  <tfleury@ncsa.uiuc.edu>
 Copyright (c) 2004 The Board of Trustees of the University of Illinois.
@@ -38,15 +38,15 @@ $OSCAR_HOME/Installer/
 $OSCAR_HOME/Installer/<Tasks&Tools>/
 $OSCAR_HOME/Installer/Opder/ - example of a Task directory
     GUI.xml - Configuration file for this Task/Tool
-    setup - An optional script which is executed when the Installer starts
     OpderMain.pm - Main QObject / child of InstallerWorkspace (see below)
     ... - Other files required for Task/Tool window
 
-    Note that with this directory scheme, the Perl modules in each Task/Tool
-    directory will have the package name of "Directory"::"FileName".  So
-    for example, the OpderMain.pm file would have a Package directive of
-        package Opder::OpderMain;
-
+    Note that with this directory scheme, Task/Tool files would normally have
+    package names of "Directory::Filename" (e.g. "package Opder::OpderMain").
+    However, the Installer does some clever manipulation of the @INC path, so
+    you can simpy name your packages "Filename" (e.g. "package OpderMain").
+    This simpifies development of Tasks/Tools to be run outside of the
+    Installer window.
 
 Format of Installer.xml File
 ----------------------------
@@ -56,7 +56,7 @@ Summary:
 The Installer.xml file is located in the $OSCAR_HOME/Installer/ directory.
 It contains a list of all Tasks/Tools available in the Installer.  These
 Tasks/Tools reside in subdirectories under the $OSCAR_HOME/Installer/
-directory.  The Task/Tool is listed in by its directory name.
+directory.  The Task/Tool is listed in the XML file by its directory name.
 
 Details:
 
@@ -108,15 +108,13 @@ Summary:
 
 Each Task/Tool directory SHOULD contain a GUI.xml file.  (If the file is not
 present, then a bunch of defaults will be assumed, as described below.)
-This file describes the Task/Tool in terms of its main object class (which
+This XML file describes the Task/Tool in terms of its main object class (which
 is called by the InstallerWorkspace), a 'full name' which will appear in the
-pulldown lists of Tasks/Tools, and oda commands/tests which must be run and
-succeed in order for the Task/Tool to be allowed to execute.  In terms of
-Tools, this list of oda commands/tests should be empty since by definition a
-Tool should be able to run ANYTIME.  If it can't find all of the information
-it needs in the oda database, it should deal with it gracefully.  For Tasks,
-if any of the oda commands/tests fails, then that Task is not allowed to
-run.
+pulldown lists of Tasks/Tools, and oda commands/tests which must run and
+succeed in order for the Task to be allowed to execute (used only for Tasks
+since Tools can run at any time).  If a Task can't find all of the information
+it needs in the oda database, it should deal with it gracefully.  However,
+if any of the oda commands/tests fails, then that Task is not allowed to run.
 
 Details:
 
@@ -192,13 +190,13 @@ Details:
               the oda 'command' above are available to your Perl test code.
               Your code is executed by the Installer as follows:
 
-              my $testsuccess = (eval { $test } );
+              my $testsuccess = (eval ( $test ) );
               
               Your test code should simply return 0 or 1 for failure or
               success.  If the 'test' field is blank, then the test code
               defaults to 'return $odasuccess'.  This may not be what you
               really want since $odasuccess is 0 only upon a major database
-              problem. 
+              problem.  You may want to use 'return $odaresult[0]' instead.
 
     error   = Arbitrary Perl code which should return a string describing the
               error condition if the 'test' above returns 0.  The variables
@@ -207,7 +205,7 @@ Details:
               available to your Perl code.  Upon failure of the 'test', your
               error code is executed by the Installer as follows:
 
-              return (eval { $error } );
+              return (eval ( $error ) );
               
               Your error code should simply return a string.  This string is
               displayed in the "Details" section of the error message dialog,
@@ -236,11 +234,16 @@ Details:
                       argument to database_execute_command(...) upon failure.
         $test       = The <test> field, which is passed to an 'eval' statement
                       and should return 0 or 1.
-        $testsuccess= The result of the (eval { $test }) command.
+        $testsuccess= The result of the (eval ( $test )) command.
+
+    One important note: Since these fields are stored in an XML file, you MUST
+    use XML/HTML-style notations for special symbols.  For example, use '&lt;'
+    for '<' and '&gt;' for '>'.  Otherwise, your XML file will not parse
+    correctly.
   -->
 
     <command>oscar_version</command>
-    <test>$odasuccess and ($odaresult[0] >= 2.3) and ($odaresult[0] <= 3.1)
+    <test>($odaresult[0] &gt;= 2.3) and ($odaresult[0] &lt;= 3.1)
     </test>
     <error>"OSCAR version is $odaresult[0]. " . 
            "We need OSCAR version between 2.3 and 3.1 inclusive."
@@ -258,7 +261,6 @@ Details:
 
 </oscar>
 
-####   END HERE!!!   ####
 
 Program Specifics for Tasks and Tools
 -------------------------------------
@@ -278,7 +280,6 @@ Program Specifics for Tasks and Tools
     #  Parameter : A pointer to the QCloseEvent generated.                  #
     #  Returns   : Nothing                                                  #
     #########################################################################
-
       # Send a signal to the parent workspace letting it know we are closing.
       emit taskToolClosing("Opder");
       SUPER->closeEvent(@_);   # Call the parent's closeEvent
@@ -286,14 +287,41 @@ Program Specifics for Tasks and Tools
 
     The parameter you pass to 'emit taskToolClosing(...)' is the name of the
     directory containing your Task/Tool.  You will also need to define
-    a Qt::signal for taskToolClosingwhich should look like this:
+    a Qt::signal for taskToolClosing which should look like this:
 
-    use Qt::signals
-        taskToolClosing => ['char*'];
+    use Qt::signals taskToolClosing => ['char*'];
 
-(3) 
-   
- 
+(3) When you want to use images (e.g. '.png' files) in your Task/Tool, you
+    should put them in the $ENV{OSCAR_HOME}/Installer/images/ subdirectory and
+    make sure they have the '.png' extension.  In your Makefile.am, you should
+    add a rule to the 'all-local:' target to create a symbolic link to this
+    images directory.  For example:
+
+    all-local:	$(COMPILEDTARGET)
+    		ln -sf ../Installer/images; \
+		cd ../Installer; ln -sf ../NodeMgmt
+
+    The first 'ln -sf' creates a symbolic link from an 'images' directory in
+    your Task/Tool subdirectory.  You will probably need this symbolic link if
+    you design your Task/Tool in Qt-Designer since Qt-Designer expects all
+    images to reside in a subdirectory named 'images'.  The second 'ln -sf'
+    creates a symbolic link within the Installer directory to your Task/Tool
+    directory.  This way, you can put your Task/Tool at the same directory
+    level as the Installer for development, but still run the Installer as if
+    you had installed the compiled source code.
+
+    Then in the .ui.h file of the Qt-Designer widget that includes images (on
+    any buttons, for example), you must add the following line in the
+    "Includes (in Declaration)" section:
+
+    "use lib "../Installer"; use InstallerImages;"
+
+    If you do any loading of images yourself, you MUST ALSO add 
+    "use InstallerUtils;" to the above line.  This is because Perl-Qt-3.006
+    and Perl-Qt-3.008 (and above) have different methods for loading in
+    pixmaps (images).  A utility subroutine named 'getPixmap($imageName)' is
+    available in InstallerUtils.pm to handle this issue.  Anytime you need to
+    load a pixmap, use 'InstallerUtils::getPixmap(...)'.
 
 
 Qt SLOTS and SIGNALS Implemented by InstallerWorkspace and Its Children
@@ -309,41 +337,47 @@ SIGNALS emitted by InstallerWorkspace
 -------------------------------------
 
 signalButtonShown(char* childname, char* buttonname, bool shown)
-    When the InstallerWorkspace wants one of its child Tasks/Tools to hide/
-    show either the Back or Next button, it emits this signal with the
-    following three arguments:
-      (1) the name of the child (actually the name of the Task/Tool directory),
+
+    Tasks must have three buttons at the bottom for navigation among the
+    various steps: Back, Close, and Next.  The first step doesn't need a Back
+    button and the last step doesn't need a Next button.  However, since each
+    Task should have to care where it appears in the execution path, we need a
+    way to have the InstallerWorkspace tell a Task to hide/show its buttons.
+    When the InstallerWorkspace wants one of its child Tasks to hide/show
+    either the Back or Next button, it emits this signal with the following
+    three arguments:
+      (1) the name of the child (actually the name of the Task directory),
       (2) the name of the button, either "Back" or "Next", and
       (3) 0 for hidden, 1 for shown.
     This signal is emitted by the InstallerWorkspace to hide the Back
     button for the first Task and the Next button for the final Task.
 
-    In your Task/Tool, you might connect the signal to a slot as follows:
+    In your Task, you might connect the signal to a slot as follows:
 
-    # If there is a parent of this Task/Tool, then we are probably running
+    # If there is a parent of this Task, then we are probably running
     # it in the InstallerWorkspace.  Need to catch some signals.
     if (parent())
       {
         Qt::Object::connect(parent(),
                             SIGNAL 'signalButtonShown(char*,char*,bool)',
-                            SLOT 'setButtonShown(char*,char*,bool)');
+                            SLOT   'setButtonShown(char*,char*,bool)');
       }
 
     sub setButtonShown
     {
     #########################################################################
     #  Subroutine: setButtonShown                                           #
-    #  Parameters: (1) The name of the target task/tool for the signal      #
+    #  Parameters: (1) The directory name of the target Task for the signal #
     #              (2) The name of the button to show/hide ("Back"/"Next")  #
     #              (3) 1 = Show / 0 = Hide                                  #
     #  Returns   : Nothing                                                  #
-    #  This subroutine is called to show/hide the Back/Next button,         #
+    #  This subroutine (SLOT) is called to show/hide the Back/Next button,  #
     #  usually when the parent InstallerWorkspace says to.                  #
     #########################################################################
-
       my ($childname,$buttonname,$shown) = @_;
       
-      return if ($childname ne className());
+      # Ignore Hide/Show requests to other Tasks
+      return if ($childname ne "Opder");
 
       if ($buttonname =~ /Back/i)
         {
@@ -356,56 +390,269 @@ signalButtonShown(char* childname, char* buttonname, bool shown)
     }
 
 
+odaWasUpdated(char* childname);
+
+    When a Task/Tool writes information to the oda database, it should tell
+    the other Tasks/Tools that the oda database has been updated so that they
+    can reread the database and update their GUIs as appropriate.  To do so,
+    the InstallerWorkspace emits the "odaWasUpdated(childname)" SIGNAL, where
+    the 'childname' is the name of the directory of the Task/Tool that wrote
+    to the database.  Each Task/Tool needs to catch this SIGNAL so they can
+    have the option of rereading the database and updating their interfaces as
+    appropriate.
+
+    The argument to the 'odaWasUpdated' SIGNAL is the directory name of the
+    Task/Tool that updated the oda database.  This is so that Task/Tool that
+    updated the database can ignore the SIGNAL and not update itself again.
+
+    To catch the SIGNAL in your Task/Tool, you might connect the signal to a
+    slot as follows:
+
+    # If there is a parent of this Task/Tool, then we are probably running
+    # it in the InstallerWorkspace.  Need to catch some signals.
+    if (parent())
+      {
+        Qt::Object::connect(parent(),
+                            SIGNAL 'odaWasUpdated(char*)',
+                            SLOT   'reReadOda(char*)');
+      }
+
+    sub reReadOda
+    {
+    #########################################################################
+    #  Subroutine: reReadOda                                                #
+    #  Parameter : The directory name of the Task/Tool that updated oda     #
+    #  Returns   : Nothing                                                  #
+    #  This subroutine (SLOT) is called the InstallerWorkspace receives     #
+    #  notice that another Task/Tool updated the oda database.              #
+    #########################################################################
+      my ($childname) = @_;
+      
+      # Ignore the signal if we were the one that updated oda
+      return if ($childname ne "Opder");
+
+      # Reread the oda database and update the GUI as necessary
+      # ...
+    }
 
 
-SIGNALS caught by InstallerWorkspace
-------------------------------------
+SIGNALS emitted by Tasks/Tools
+------------------------------
 
-Details:
+parent()->odaWasUpdated(char* childname)
 
-The following connections are made automatically for each Task/Tool child of
-the InstallerWorkspace.  Some of these require that certain SLOTS be written
-for each child.
+    This is related to the SIGNAL/SLOT connection we just created above.
+    This isn't really a SIGNAL implemented in the Task/Tool, but it is a
+    signal that should be emitted when the Task/Tool updates the oda database.
+    Here, "parent()" returns a pointer to the InstallerWorkspace, and since
+    that is where the 'odaWasUpdated' SIGNAL is implemented, we end up
+    notifying other Tasks/Tools of changes to the oda database.  So, put this
+    statement after every write to oda performed by your Task/Tool.
 
-Qt::Object::connect($childTaskTool,   SIGNAL "childUpdatedOda()",
-                    $parentWorkspace, SIGNAL "odaUpdated()");
-    When the child changes information in the oda database, it should emit
-    the SIGNAL "childUpdatedOda()".  This connection will cause the
-    workspace to emit the SIGNAL "odaUpdated()" which is in turn handled by
-    each child with the next connection.
+taskToolClosing(char* childname)
 
-The following connections can be made within the child to communicate with
-the parent workspace:
+    When a Task/Tool closes/exits, it needs to let the InstallerWorkspace know
+    so the workspace can update the list of open windows.  Do to this, the
+    MainWindow of each Task/Tool needs to emit the
+    'taskToolClosing(childname)' SIGNAL when the main window closes.  To do
+    this, you first define the SIGNAL as follows:
 
-Qt::Object::connect($previousButton,  SIGNAL "clicked()",
-                    $parentWorkspace, SLOT   "previousButtonClicked()");
-    When the child's "Previous" button is clicked, let the workspace know so
-    it can try to display the previous step.  The child should then close
-    itself (usually via a call to Qt::Application::exit());
-Qt::Object::connect($nextButton,      SIGNAL "clicked()",
-                    $parentWorkspace, SLOT   "nextButtonClicked()");
-    When the child's "Next" button is clicked, let the workspace know so
-    it can try to display the next step.  The child should then close
-    itself (usually via a call to Qt::Application::exit());
-Qt::Object::connect($closeButton,     SIGNAL "clicked()",
-                    $parentWorkspace, SLOT   "closeButtonClicked()");
-    When the child's "Close" button is clicked, let the workspace know so
-    it can update the list of windows open.  The child should then close
-    itself (usually via a call to Qt::Application::exit());
+    use Qt::signals taskToolClosing => ['char*'];
 
-'enablePrevButton(int)' - This SIGNAL is genereated by the workspace
+    Next, you must override the main window's closeEvent as follows:
 
-Summary:
+    sub closeEvent
+    {
+    #########################################################################
+    #  Subroutine: closeEvent                                               #
+    #  Parameter : A pointer to the QCloseEvent generated.                  #
+    #  Returns   : Nothing                                                  #
+    #########################################################################
+      # Send a signal to the parent workspace letting it know we are closing.
+      emit taskToolClosing("Opder");
+      SUPER->closeEvent(@_);   # Call the parent's closeEvent
+    }
 
-In each child, the following SIGNALS may be emitted.
+    The parameter to the taskToolClosing SIGNAL is the name of the Task/Tool
+    directory.
 
-In each child, the following SLOTS must be implemented.
+backButtonWasClicked(char* childname)
+nextButtonWasClicked(char* childname)
 
-sub handleOdaUpdated { # Reread the oda database and update itself as needed }
+    When the user clicks on a Task's "Back" or "Next" button, it needs to emit
+    a SIGNAL to the InstallerWorkspace to have it go to the previous or next
+    step in the installation sequence.  However, since a Task can have
+    prerequisites that must be fulfilled before it is allowed to run, we don't
+    necessarily go to the previous/next step.  So when the InstallerWorkspace
+    gets notice of a Task's Back/Next button being pressed, it first checks to
+    see if the prerequisites for the previous/next Task are fulfilled, and if
+    so, it closes the current Task and opens the previous/next one.
 
-In each child, the following subroutines must be implemented.
+    So first you must define these two SIGNALS as follows:
 
-sub enablePreviousButton ($) { # Call setEnabled(@_[0]) for Previous Button }
-sub enableNextButton ($)     { # Call setEnabled(@_[0]) for Next Button }
-sub enableCloseButton ($)    { # Call setEnabled(@_[0]) for Close Button }
+    use Qt::signals backButtonWasClicked => ['char*'],
+                    nextButtonWasClicked => ['char*'];
+
+    Then, you must connect the 'clicked' SIGNALs for the Back/Next buttons to
+    appropriate SLOTS.  For example:
+
+    Qt::Object::connect(backButton, SIGNAL 'clicked()', 
+                                    SLOT   'backButton_clicked(char*)');
+    Qt::Object::connect(nextButton, SIGNAL 'clicked()', 
+                                    SLOT   'nextButton_clicked(char*)');
+
+    And the implementations of these SLOTS might look like this:
+
+    sub backButton_clicked
+    {
+    #########################################################################
+    #  Subroutine: backButton_clicked                                       #
+    #  Parameters: None                                                     #
+    #  Returns   : Nothing                                                  #
+    #  When the backButton is clicked, inform the InstallerWorkspace.       #
+    #########################################################################
+      emit backButtonWasClicked("Opder");
+    }
+
+    sub nextButton_clicked
+    {
+    #########################################################################
+    #  Subroutine: nextButton_clicked                                       #
+    #  Parameters: None                                                     #
+    #  Returns   : Nothing                                                  #
+    #  When the nextButton is clicked, inform the InstallerWorkspace.       #
+    #########################################################################
+      emit nextButtonWasClicked("Opder");
+    }
+
+    Note again that the argument to the backButtonWasClicked/
+    nextButtonWasClicked SINGALs is the name of the Task's directory.
+
+
+CODE CHANGES IN SUMMARY 
+-----------------------
+
+The following modifications need to be made to your Task/Tool to allow it to
+run within the Installer Workspace.
+
+    # At the top of your Main Window package:
+    use Qt::signals
+        taskToolClosing => ['char*'],
+        backButtonWasClicked => ['char*'],
+        nextButtonWasClicked => ['char*'];
+    use Qt::slots
+        setButtonShown => ['char*','char*','bool'],
+        reReadOda => ['char*'],
+        backButton_clicked => [],
+        nextButton_clicked => [],
+        closeEvent => ['QCloseEvent'];
+
+
+    sub init
+    {
+      # If there is a parent of this MainWindow, then we are probably running
+      # it in the InstallerWorkspace.  Need to connect some signals/slots.
+      if (parent())
+        {
+          Qt::Object::connect(parent(),
+                              SIGNAL 'signalButtonShown(char*,char*,bool)',
+                              SLOT   'setButtonShown(char*,char*,bool)');
+          Qt::Object::connect(parent(),
+                              SIGNAL 'odaWasUpdated(char*)',
+                              SLOT   'reReadOda(char*)');
+
+          # For Tasks, do stuff when we click the Back or Next Buttons
+          Qt::Object::connect(backButton, 
+                              SIGNAL 'clicked()', 
+                              SLOT   'backButton_clicked(char*)');
+          Qt::Object::connect(nextButton, 
+                              SIGNAL 'clicked()", 
+                              SLOT   'nextButton_clicked(char*)');
+        }
+      else
+        { # For Tasks, hide the Back/Next button if not running inside
+          # the InstallerWorkspace window.
+          backButton->hide();
+          nextButton->hide();
+        }
+    }
+
+    sub setButtonShown
+    {
+    #########################################################################
+    #  Subroutine: setButtonShown                                           #
+    #  Parameters: (1) The directory name of the target Task for the signal #
+    #              (2) The name of the button to show/hide ("Back"/"Next")  #
+    #              (3) 1 = Show / 0 = Hide                                  #
+    #  Returns   : Nothing                                                  #
+    #  This subroutine (SLOT) is called to show/hide the Back/Next button,  #
+    #  usually when the parent InstallerWorkspace says to.                  #
+    #########################################################################
+      my ($childname,$buttonname,$shown) = @_;
+      
+      # Ignore Hide/Show requests to other Tasks
+      return if ($childname ne "Opder");
+
+      if ($buttonname =~ /Back/i)
+        {
+          ($shown) ? backButton->show() : backButton->hide();
+        }
+      elsif ($buttonname =~ /Next/i)
+        {
+          ($shown) ? nextButton->show() : nextButton->hide();
+        }
+    }
+
+    sub backButton_clicked
+    {
+    #########################################################################
+    #  Subroutine: backButton_clicked                                       #
+    #  Parameters: None                                                     #
+    #  Returns   : Nothing                                                  #
+    #  When the backButton is clicked, inform the InstallerWorkspace.       #
+    #########################################################################
+      emit backButtonWasClicked("Opder");
+    }
+
+    sub nextButton_clicked
+    {
+    #########################################################################
+    #  Subroutine: nextButton_clicked                                       #
+    #  Parameters: None                                                     #
+    #  Returns   : Nothing                                                  #
+    #  When the nextButton is clicked, inform the InstallerWorkspace.       #
+    #########################################################################
+      emit nextButtonWasClicked("Opder");
+    }
+
+    sub reReadOda
+    {
+    #########################################################################
+    #  Subroutine: reReadOda                                                #
+    #  Parameter : The directory name of the Task/Tool that updated oda     #
+    #  Returns   : Nothing                                                  #
+    #  This subroutine (SLOT) is called the InstallerWorkspace receives     #
+    #  notice that another Task/Tool updated the oda database.              #
+    #########################################################################
+      my ($childname) = @_;
+      
+      # Ignore the signal if we were the one that updated oda
+      return if ($childname ne "Opder");
+
+      # Reread the oda database and update the GUI as necessary
+      # ...
+    }
+
+    sub closeEvent
+    {
+    #########################################################################
+    #  Subroutine: closeEvent                                               #
+    #  Parameter : A pointer to the QCloseEvent generated.                  #
+    #  Returns   : Nothing                                                  #
+    #########################################################################
+      # Send a signal to the parent workspace letting it know we are closing.
+      emit taskToolClosing("Opder");
+      SUPER->closeEvent(@_);   # Call the parent's closeEvent
+    }
+
 
