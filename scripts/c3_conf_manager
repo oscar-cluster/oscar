@@ -40,6 +40,7 @@ sub usage () {
   'rm=s'	=> \$delete,
   'zero|0|z'	=> \$zero,
   'list:s'	=> \$list,
+  'listclusters:s'=> \$list,
   'l:s'		=> \$list,
 #  '<>'		=> sub { push @nodes, @ARGV; },
 );
