@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.15 2003/11/05 20:13:16 muglerj Exp $
+#  $Id: PackageInUn.pm,v 1.16 2003/11/05 20:16:20 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -103,7 +103,7 @@ sub install_uninstall_packages
 			#OSCAR::Database::database_execute_command(
 			#  "package_mark_installed $package");
 			OSCAR::Database::database_execute_command(
-				"package_clear_should_be_installed $package")
+				"package_clear_should_be_installed $package");
 			$flag = 1;
 		}
 		else
@@ -933,7 +933,7 @@ sub get_rpm_list
 			}
 
 			print "RPMS that need to be installed:\n";
-			foreach my $rpm ( @{$rpmlistref} ) 
+			foreach $rpm ( @{$rpmlistref} ) 
 			{
 				print " - $rpm\n";
 			}
@@ -1014,7 +1014,7 @@ sub get_rpm_list
 		}
 
 		print "RPMS that need to be installed:\n";
-		foreach my $rpm ( @{$rpmlistref} ) 
+		foreach $rpm ( @{$rpmlistref} ) 
 		{
 			print " - $rpm\n";
 		}
