@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.27 2002/10/29 06:26:32 jsquyres Exp $
+% $Id: design.tex,v 1.28 2002/10/29 07:18:28 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -233,32 +233,41 @@ proposed API calls -- they'll be explained in more detail below.
         \multicolumn{2}{c}{Description} &
         \multicolumn{1}{c}{Location} \\
         \hline
-        1. & Install all the server RPMs & Server filesystem \\
+        1. & Install server core RPMs & Server filesystem \\
 %
-        1.1. & Call the API script(s): \cmd{setup} & Server filesystem \\
+        1.1. & Call the API scripts: \cmd{setup} & Server filesystem \\
 %
-        1.2. & Read XML config files \\
+        1.2. & Read XML config files & Server filesystem \\
 %
-        1.3. & ......More stuff about selecting / installing
-             packages... \\
+        1.3. & Select which packages to install & Server filesystem \\
 %
-        2. & Call the API script(s): \cmd{post\_server\_rpm\_install} &
+        1.4. & Call the API scripts: \cmd{pre\_configure} & Server
+             filesystem \\
+%
+        1.5. & Configure the selected packages & Server filesystem \\
+%
+        1.6. & Call the API scripts: \cmd{post\_configure} & Server
+             filesystem \\
+%
+        1.7. & Install the server non-core RPMs & Server filesystem \\
+%
+        2. & Call the API scripts: \cmd{post\_server\_rpm\_install} &
         Server filesystem \\
 %
         3. & Install all the client RPMs & Client filesystem \\
 %
-        4. & Call the API script(s): \cmd{post\_client\_rpm\_install} &
+        4. & Call the API scripts: \cmd{post\_client\_rpm\_install} &
         Client filesystem \\
 %
         5. & Define clients in the OSCAR/SIS database & Server
         filesystem \\
 %
-        6. & Call the API script(s): \cmd{post\_clients} & Server
+        6. & Call the API scripts: \cmd{post\_clients} & Server
         filesystem \\
 %
         7. & Push the images to the nodes & Server filesystem \\
 %
-        8. & Call the API script(s): \cmd{post\_install} & Server
+        8. & Call the API scripts: \cmd{post\_install} & Server
         filesystem \\
         \hline
       \end{tabular}
@@ -426,6 +435,16 @@ Each package may have a file named \file{config.xml}.
 several different phases of the OSCAR installation process for that
 package.  The tags and their hierarchy are described below.
 
+The file \file{config.xml}, if it exists, is read before the
+\cmd{setup} setup is performed.  If it does not exist, a default
+(mostly empty) configuration will be automatically supplied by the
+OSCAR framework for that package.  As soon as the \cmd{setup} API
+script is invoked, the \file{config.xml} file will be ignored --
+packages must use the provided API to supply and/or update their
+configuration.  Regardless of when they are provided/updated, the tags
+in a package's configuration are always the same (i.e., the ones
+listed in this section).
+
 The \xmltag{package} tag is the outer level tag for the entire block.
 It contains all other tags in this file. As such, all other tags are
 listed in a hierarchical fashion, below.  
@@ -581,6 +600,12 @@ or Optional, respectively.
     and $>$.
   \end{itemize}
     
+\item \xmltag{vendor}: A string describing the vendor name of the
+  package.
+  
+  Optional/Singular.  If not supplied, the value
+  ``\xmlval{$<$none$>$}'' is used.
+
 \item \xmltag{description}: A string describing in some detail the
   contents of the OSCAR package.  This string may be of arbitrary
   length.
@@ -843,18 +868,13 @@ The following guidelines should be followed when providing
   \centerline{\directory{../../packages/foo/doc/<filename>}}
   
 \item These files may be built in either Postscript or PDF mode.
-  Graphic files must be suitable for both environments.  The {\tt
-    figext} macro will be set to ``\file{png}'' when building in PDF
-  mode, and will be set to ``\file{eps}'' when building in postscript
-  mode.  This can be used in the following manner:
-
-\begin{verbatim}
-  \includegraphics{../../packages/foo/doc/my-graphic.\figext}
-\end{verbatim}
+  Graphic files must be suitable for both environments -- both EPS and
+  PNG graphic files must be supplied so that the document can be
+  constructured in different output formts.
   
-  Alternatively, you can use the {\tt ifpdf} \LaTeX\ logical construct
-  to do different things when building in PDF mode versus when
-  building in postscript mode:
+\item Additionally, you can use the {\tt ifpdf} \LaTeX\ logical
+  construct to do different things when building in PDF mode versus
+  when building in postscript mode:
 
 \begin{verbatim}
   \ifpdf
@@ -918,12 +938,16 @@ So let's now discuss each of the API calls in detail.
   It is intended to allow packages to customize themselves for the
   particular system that they are being installed on (analogous to GNU
   \cmd{configure} scripts).  This customization typically involes
-  running some tests and then writing (or re-writing) the package's
-  XML configuration file (this step is run before the OSCAR framework
-  reads the package's XML configuration file).  Hence, typical actions
-  that the \cmd{setup} API script can perform include: selecting a set
-  of system-specific RPMs to be installed, declaring that the package
-  is not installable on this system, etc.
+  running some tests and then updating (or initially providing) the
+  package's configuration.  Hence, typical actions that the
+  \cmd{setup} API script can perform include: selecting a set of
+  system-specific RPMs to be installed, declaring that the package is
+  not installable on this system, etc.
+
+  \begin{discuss}
+    Awaiting Neil to have ODA-based API for packages to update their
+    configuration.
+  \end{discuss}
 
   Guidelines:
 
@@ -937,6 +961,63 @@ So let's now discuss each of the API calls in detail.
   \item This script cannot modify any client filesystems.
   \item This script cannot use anything from the OSCAR/SIS database,
     because there isn't much (any?) information in it yet.
+    \begin{discuss}
+      This point will become moot soon.
+    \end{discuss}
+  \end{itemize}
+
+  Parameters:
+  
+  \begin{itemize}
+  \item None.
+  \end{itemize}
+
+\item \file{pre\_configure} (step N)
+  
+  This script is invoked (if it exists) when the ``Configure Selected
+  OSCAR Packages'' button is pressed in the OSCAR wizard.  The purpose
+  of this script is to allow packages to query the OSCAR database and
+  customize their \file{configurator.html} file before it is read and
+  a corresponding GUI configuration screen is created based on it.
+  [Re-]writing the \file{configurator.html} file is typically based on
+  which packages were selected for installation.
+
+  Guidelines:
+
+  \begin{itemize}
+  \item This script will be run on the head node.
+  \item This script must be safely re-runnable; it may be run multiple
+    times over the life of the cluster.
+  \item This script can {\em only} modify anything on the server
+    filesystem, but must restrict itself to only things that are
+    relevant to that package.
+  \item This script cannot modify any client filesystems.
+  \end{itemize}
+
+  Parameters:
+  
+  \begin{itemize}
+  \item None.
+  \end{itemize}
+
+\item \file{post\_configure} (step N)
+  
+  This script is invoked (if it exists) when the ``Done'' button is
+  pushed in the ``Configure Selected OSCAR Packages'' window of the
+  OSCAR wizard.  The purpose of this script is to give packages a
+  chance to react to the configuration information that was entered in
+  its configuration panel.
+
+  Guidelines:
+
+  \begin{itemize}
+  \item This script will be run on the head node.
+  \item This script must be safely re-runnable; it may be run multiple
+    times over the life of the cluster.
+  \item This script can {\em only} modify anything on the server
+    filesystem, but must restrict itself to only things that are
+    relevant to that package.
+  \item This script cannot modify any client filesystems.
   \end{itemize}
 
   Parameters:
@@ -969,6 +1050,10 @@ So let's now discuss each of the API calls in detail.
   \item This script cannot modify any client filesystems.
   \item This script cannot use anything from the OSCAR/SIS database,
     because there isn't much (any?) information in it yet.
+
+    \begin{discuss}
+      This point will become moot soon.
+    \end{discuss}
   \end{itemize}
 
   Parameters:
@@ -998,12 +1083,16 @@ So let's now discuss each of the API calls in detail.
   \item This script can modify anything on the client filesystem, but
     should restrict itself to only things that are relevant to that
     package.
-  \item This script cannot use anything from the OSCAR/SIS database
+  \item This script cannot use anything from the OSCAR/SIS database.
     \footnote{This may change in future versions of the API, but for
       now, nothing in the OSCAR/SIS DB is available during this step.}
     The only piece of global information that is available is the
     hostname oscar\_server, which will be set correctly in the
     /etc/hosts on every node/image.
+
+    \begin{discuss}
+      This point will become moot soon.
+    \end{discuss}
   \end{itemize}
 
   Parameters:
@@ -1027,7 +1116,12 @@ So let's now discuss each of the API calls in detail.
   \item This script can NOT modify anything on client filesystems.
   \item This script can read any information in the OSCAR/SIS database
     (no write operations are supported).  Using the OSCAR/SIS database
-    API is the only way to read the database (see Section~\ref{sec:api-utils}).
+    API is the only way to read the database (see
+    Section~\ref{sec:api-utils}).
+
+    \begin{discuss}
+      Is this really true?
+    \end{discuss}
   \end{itemize}
 
   Parameters:
@@ -1036,7 +1130,7 @@ So let's now discuss each of the API calls in detail.
   \item None.
   \end{itemize}
   
-  \file{post\_install} (step 8)
+\item \file{post\_install} (step 8)
 
   Guidelines:
   
@@ -1051,7 +1145,12 @@ So let's now discuss each of the API calls in detail.
   \item This script can NOT modify anything on client filesystems.
   \item This script can read any information in the OSCAR/SIS database
     (no write operations are supported).  Using the OSCAR/SIS database
-    API is the only way to read the database (see Section~\ref{sec:api-utils}).
+    API is the only way to read the database (see
+    Section~\ref{sec:api-utils}).
+
+    \begin{discuss}
+      Is this really true?
+    \end{discuss}
   \end{itemize}
 
   Parameters:
@@ -1060,7 +1159,7 @@ So let's now discuss each of the API calls in detail.
   \item None.
   \end{itemize}
 
-  \file{test\_root}
+\item \file{test\_root}
 
   Guidelines:
   \begin{itemize}
@@ -1082,7 +1181,7 @@ So let's now discuss each of the API calls in detail.
   \item A space delimited list of client nodes.
   \end{itemize}
 
-  \file{test\_user}
+\item \file{test\_user}
 
   Guidelines:
   \begin{itemize}
@@ -1257,7 +1356,10 @@ tests. The flags for \cmd{testprint} are:
 \item -f          Indicates that the test is complete and it failed.
 \end{itemize}
 
-
+\begin{discuss}
+  Discuss details of ODA API here -- reading / writing the OSCAR
+  database.
+\end{discuss}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
