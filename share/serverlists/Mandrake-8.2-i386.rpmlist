@@ -7,12 +7,10 @@ dhcp-server
 expat
 libpcap0
 librrdtool0
+locales
+locales-en
 mod_php
 nfs-utils
-openssh
-openssh-clients
-openssh-server
-openssl
 php
 php-common
 php-xml
