@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.6 2002/04/12 01:13:45 sdague Exp $
+#   $Id: Package.pm,v 1.7 2002/04/12 01:49:54 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -27,12 +27,12 @@ use File::Basename;
 use File::Copy;
 use Carp;
 
-@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist);
+@EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist install_rpms);
 
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
