@@ -139,6 +139,13 @@ sub database_execute_command {
          $results_ref,
 	 $print_errors_flag ) = @_;
 
+    # sometimes this is called without a database_connent being 
+    # called first, so we have to connect first if that is the case
+    ( my $was_connected_flag = $database_available ) ||
+	OSCAR::Database::database_connect( $print_errors_flag ) ||
+	    return undef;
+
+    # execute the command
     my @error_strings = ();
     my $success = oda::execute_command( \%oda_options,
 					$command_args_ref,
@@ -147,6 +154,10 @@ sub database_execute_command {
     if ( defined $print_errors_flag && $print_errors_flag ) {
 	warn shift @error_strings while @error_strings;
     }
+
+    # if we weren't connected to the database when called, disconnect
+    OSCAR::Database::database_disconnect() if $was_connected_flag;
+
     return $success;
 }
 
@@ -185,7 +196,7 @@ sub database_read_table_fields {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_available ) ||
-	OSCAR::Database::database_connect() ||
+	OSCAR::Database::database_connect( $print_errors_flag ) ||
 	    return undef;
 
     # get a list of field names for this database table
@@ -319,7 +330,7 @@ sub database_rpmlist_for_package_and_group {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_available ) ||
-	OSCAR::Database::database_connect() ||
+	OSCAR::Database::database_connect( $print_errors_flag ) ||
 	    return undef;
 
     # read in all the packages_rpmlists records for this package
