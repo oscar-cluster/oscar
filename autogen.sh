@@ -1,6 +1,6 @@
 #! /bin/sh 
 #
-# $Id: autogen.sh,v 1.7 2002/10/31 12:37:47 jsquyres Exp $
+# $Id: autogen.sh,v 1.8 2002/11/16 18:01:58 jsquyres Exp $
 #
 # This script is run on developer copies of OSCAR -- *not*
 # distribution tarballs.
@@ -175,6 +175,7 @@ EOF
 	    -a ! -f "$mm_file/.oscar_ignore" \
 	    -a "$mm_file" != "." \
 	    -a "$mm_file" != ".." \
+	    -a "$mm_file" != "autom4te.cache" \
 	    -a "$mm_file" != "CVS"; then
 	    mm_subdirs="$mm_file $mm_subdirs"
 	elif test -f "$mm_file"; then
