@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.19 2003/01/22 21:21:33 brechin Exp $
+#   $Id: MAC.pm,v 1.20 2003/01/22 22:27:15 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.19 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.20 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -66,19 +66,19 @@ sub mac_window {
 
     my $instructions = $window->Message(-text => "MAC Address Collection Tool.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click 'Assign MAC to Node'.", -aspect => 800);
 
-    my $label = $window->Label(-text => "Not Listening to Network. Click 'Collect MAC Addresses' to start.");
+    our $label = $window->Label(-text => "Not Listening to Network. Click 'Collect MAC Addresses' to start.");
 
     my $listbox = $window->ScrlListbox(
                                        -selectmode => 'single',
                                        -background => "white",
-                                       -scrollbars => 'ose',
+				       -scrollbars => 'ose',
                                       );
     my $tree = $window->Scrolled("Tree",
                                  -background => "white",
                                  -itemtype => 'imagetext',
                                  -separator => '|',
                                  -selectmode => 'single',
-                                 -scrollbars => 'ose',
+				 -scrollbars => 'ose',
                                 );
 
     $instructions->pack($label);
@@ -89,15 +89,15 @@ sub mac_window {
     $tree->pack(-side => "left", -expand => 1, -fill => "both", -anchor => "w");
     
     regenerate_tree($tree);
-
-    my $start = $frame->Button(
-                                   -text => "Collect MAC Addresses",
-                                   -command => [\&begin_collect_mac, $window, $listbox, $$vars{interface}, $label],
+    our $starttext = "Collect MAC Addresses";
+    our $start = $frame->Button(
+                                   -textvariable => \$starttext,
+                                   -command => [\&begin_collect_mac, $window, $listbox, $$vars{interface} ],
                                    );
-    my $stop = $frame->Button(
-                                         -text => "Stop Collecting",
-                                         -command => [\&end_collect_mac, $label],
-                                         );
+#    my $stop = $frame->Button(
+#                                         -text => "Stop Collecting",
+#                                         -command => [\&end_collect_mac, $label, $starttext],
+#                                         );
     my $exitbutton = $frame->Button(
                                      -text => "Close",
                                      -command => sub {
@@ -144,7 +144,7 @@ sub mac_window {
                                      -command => [\&run_setup_pxe, $window],
                                     );
 
-    $start->grid($stop, $exitbutton, -sticky => "ew");
+    $start->grid("-", $exitbutton, -sticky => "ew");
     $assignbutton->grid($deletebutton, $dhcpbutton, -sticky => "ew");
     $loadbutton->grid($savebutton, -sticky => "ew");
     my $label2 = $frame->Label(-text => "Below are commands to create a boot environment.\nYou can either boot from floppy or network");
@@ -311,8 +311,12 @@ sub end_ping {
 }
 
 sub end_collect_mac {
-    my $label = shift;
+    my ($window, $listbox, $interface) = @_;
+    our $label;
     $label->configure(-text => "Not Listening to Network. Click 'Collect MAC Addresses' to start.");
+    our $starttext = "Start Collecting MACs";
+    our $start;
+    $start->configure(-command => [\&begin_collect_mac, $window, $listbox, $interface, $label ]);
     oscar_log_subsection("Step $step_number: Stopped listening to network");
     $COLLECT = 0;
 }
@@ -327,7 +331,12 @@ sub end_collect_mac {
 sub begin_collect_mac {
     return if $COLLECT; # This is so we don't end up with 2 tcpdump processes
     $COLLECT = 1;
-    my ($window, $listbox, $interface, $label) = @_;
+    my ($window, $listbox, $interface) = @_;
+    our $starttext;
+    our $label;
+    our $start;
+    $starttext = "Stop Collecting MACs";
+    $start->configure(-command => [\&end_collect_mac, $window, $listbox, $interface ]);
     start_ping($interface);
     my $cmd = "/usr/sbin/tcpdump -i $interface -n -e -l";
     oscar_log_subsection("Step $step_number: Starting to listen to network: $cmd");
