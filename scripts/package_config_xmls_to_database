@@ -22,7 +22,7 @@ use Getopt::Long;
 use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR","../../../lib","../../../lib/OSCAR";
 use OSCAR::Package;
 use OSCAR::Network;
-use OSCAR::oda;
+use oda;
 use Data::Dumper;
 use OSCAR::Distro;
 
@@ -413,15 +413,11 @@ if ( ! oda::connect( \%options,
 print "Reading and parsing package config.xml files ...";
 my $xml_ref = pkg_config_xml();
 #die "Cannot read package XML config files" if ! defined $xml_ref;
-if ( $options{debug} ) {
-#    oda::print_hash( "", "$0: read_all_pkg_config_xml returned",
-#		     $xml_ref );
-    if ( $options{debug} ) {
-	print "$0: xml_ref:\n";
-	print Dumper($xml_ref);
-    }
-}
 print " done\n";
+if ( $options{debug} ) {
+    print "$0: xml_ref:\n";
+    print Dumper($xml_ref);
+}
 
 # Recursively loop through the xml config files hash, 
 # finding all package->'package'->'oda'->'fieldnames' 

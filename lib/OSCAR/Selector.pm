@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.20 2003/01/29 19:51:15 brechin Exp $
+# $Id: Selector.pm,v 1.21 2003/03/10 06:02:11 ngorsuch Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -38,6 +38,7 @@ our @EXPORT = qw(displayPackageSelector populateSelectorList deepcopy);
 
 use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
+use OSCAR::Database; # database access functions
 use OSCAR::Infobox;  # This is the pop-up information box
 use OSCAR::Package;  # For list_pkg()
 use OSCAR::Logger;   # For oscar_log_section()
@@ -72,7 +73,7 @@ sub Selector_ui {
 	our $root = shift;
         my $parent = shift;
 	# widget creation 
-
+	
 	our($selectFrame) = $root->Frame (
 	);
 	my($frame_4) = $root->Frame (
@@ -216,7 +217,7 @@ sub Selector_ui {
 	# container $root (columns)
 	$root->gridColumnconfigure(1, -weight => 1, -minsize => 168);
 	$root->gridColumnconfigure(2, -weight => 1, -minsize => 86);
-
+	
 	# additional interface code
   
 our($packagexml);             # Holds the XML configs for each package
@@ -312,18 +313,20 @@ sub deepcopy # ($array_hash) -> $array_hash_copy
 #########################################################################
 sub fixCheckButtons
 {
-  foreach my $package (sort keys %{ $packagexml } )
-    { # First, remap the checkbuttons to variables for the new configuration
-      $packagecheckbuttons{$package}->configure(-variable =>
-        \$selconf->{configs}{$configselectstring}{packages}{$package});
-      # Then, turn on/off the checkbuttons for the new configuration
-      if ($selconf->{configs}{$configselectstring}{packages}{$package})
+#  foreach my $package (sort keys %{ $packagexml } )
+    my @packages = OSCAR::Package::list_pkg( );
+    foreach my $package ( @packages ) {
+	# First, remap the checkbuttons to variables for the new configuration
+	$packagecheckbuttons{$package}->configure(-variable =>
+						  \$selconf->{configs}{$configselectstring}{packages}{$package});
+	# Then, turn on/off the checkbuttons for the new configuration
+	if ($selconf->{configs}{$configselectstring}{packages}{$package})
         {
-          $packagecheckbuttons{$package}->select;
+	    $packagecheckbuttons{$package}->select;
         }
-      else
+	else
         {
-          $packagecheckbuttons{$package}->deselect;
+	    $packagecheckbuttons{$package}->deselect;
         }
     }
 }
