@@ -1,6 +1,6 @@
 package OSCAR::AddNode;
 
-#   $Id: AddNode.pm,v 1.3 2002/05/21 20:45:41 mchasal Exp $
+#   $Id: AddNode.pm,v 1.4 2002/11/16 21:01:08 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@ package OSCAR::AddNode;
 
 #   Copyright 2001-2002 International Business Machines
 #                       Sean Dague <japh@us.ibm.com>
+#
+#   Copyright (c) 2002 The Trustees of Indiana University.  
+#                      All rights reserved.
+# 
 
 use strict;
 use vars qw($VERSION @EXPORT);
@@ -28,24 +32,35 @@ use base qw(Exporter);
 use SIS::Image;
 @EXPORT = qw(addnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
 
 sub addnode_window {
     my ($parent, $interface) = @_;
+    my $step_number = 1;
 
     my $window = $parent->Toplevel;
     $window->title("Add Oscar Nodes");
-    my $inst=$window->Label (-text=>"Perform the following steps to add nodes to your OSCAR cluster",-relief=>"groove");
+    my $inst = $window->Label(-text => "Perform the following steps to add nodes to your OSCAR cluster",-relief=>"groove");
     $inst->grid("-","-",-sticky=>"nsew");
-    &main::oscar_button($window, "Step 1:", "Define OSCAR Clients", [\&main::build_oscar_clients, $window, $interface], 'addclients');
-    &main::oscar_button($window, "Step 2:", "Setup Networking", [\&main::mac_window, $window, {interface => $interface}], 'netboot');
+    &main::oscar_button($window, "Step $step_number:", "Define OSCAR Clients", 
+			[\&main::build_oscar_clients, $window, $step_number,
+
+			 $interface], 'addclients');
+    $step_number++;
+    &main::oscar_button($window, "Step $step_number:", "Setup Networking",
+			[\&main::mac_window, $window, $step_number,
+			 {interface => $interface}], 'netboot');
     my $boot=$window->Label (-text=>"Before continuing, network boot all of your nodes. 
     Once they have completed installation, reboot them from 
     the hard drive. Once all the machines and their ethernet
     adaptors are up, move on to the next step.",-relief=>"groove");
     $boot->grid("-","-",-sticky=>"nsew");
 
-    &main::oscar_button($window, "Step 3:", "Complete Cluster Setup", [\&main::run_post_install, $window], 'post_install');
+    $step_number++;
+    &main::oscar_button($window, "Step $step_number:",
+			"Complete Cluster Setup",
+			[\&main::run_post_install, $window, $step_number],
+			'post_install');
 
     my $exitbutton = $window->Button(
                                      -text => "Close",
