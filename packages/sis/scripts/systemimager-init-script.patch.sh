@@ -1,10 +1,10 @@
 #!/bin/sh
 
 #
-#   $Id: systemimager-init-script.patch.sh,v 1.5 2003/02/13 16:04:32 brianfinley Exp $
+#   $Id: systemimager-init-script.patch.sh,v 1.6 2003/02/13 16:30:01 brianfinley Exp $
 #
 
-PATCH="${OSCAR_PACKAGE_HOME}/scripts/${PATCH}"
+PATCH="${OSCAR_PACKAGE_HOME}/scripts/systemimager-init-script.patch.sh"
 
 cd /etc/init.d 
 patch -p0 < ${PATCH}
