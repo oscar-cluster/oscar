@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.14 2003/07/18 21:23:38 ngorsuch Exp $
+      $Id: config.xml,v 1.15 2003/07/21 13:43:09 jsquyres Exp $
   -->
   <name>LAM/MPI</name>
 
@@ -98,13 +98,14 @@ visualized either at runtime or post-mortem.</description>
     <rpm>libaio-devel</rpm>
   </rpmlist>
 
-  <!-- MDK 9.0 doesn't ship with libaio.  So we got the RH 9 SRPM,
-       tweaked the specfile a bit to change the name, and rebuilt
-       it for OSCAR. -->
+  <!-- SuSE 8.1/8.2 and MDK 9.0 don't ship with libaio.  So we got the
+       RH 9 SRPM, tweaked the specfile a bit to change the name, and
+       rebuilt it for OSCAR. -->
   <rpmlist>
     <filter distribution="mdk" />
-    <rpm>libaio-mdk-oscar</rpm>
-    <rpm>libaio-devel-mdk-oscar</rpm>
+    <filter distribution="suse" />
+    <rpm>libaio-oscar</rpm>
+    <rpm>libaio-oscar-devel</rpm>
   </rpmlist>
 
   <package>
