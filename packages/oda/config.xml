@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.79 2004/04/21 18:54:34 ngorsuch Exp $
+      $Id: config.xml,v 1.80 2004/04/21 19:11:56 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -1226,16 +1226,47 @@
       </shortcut>
 
       <shortcut>
+        <command> node_nic_base_ip </command>
+        <description>
+          node_nic_base_ip reads the network base ip address for a
+          particular nic on a node. First, for each nic attached 
+          to the node, it will try to use the nic base_ip field if
+          that has been set. Otherwise, if a network is linked to
+          the nic and the network has a base_ip address that has 
+          been set, the network base_ip field will be used.
+          Required and only parameters are:
+                  node        name of the node
+                  nic         name of the nic
+        </description>
+        <expansion>
+          read_records
+          nodes.name=%1
+          nodes.id=nics.node_id
+          nics.name=%2
+          nics.base_ip!=null
+          nics.base_ip
+          ;
+          read_records
+          nodes.name=%1
+          nodes.id=nics.node_id
+          nics.name=%2
+          nics.base_ip=null
+          nics.network_id=networks.id
+          networks.base_ip!=null
+          networks.base_ip
+        </expansion>
+      </shortcut>
+
+      <shortcut>
         <command> node_nic_gateway </command>
         <description>
           node_nic_gateway reads the network gateway address for a
           particular nic on a node, ignoring the node gateway field.
           First, for each nic attached to the node, it will try to
           use the nic gateway field if that has been set. Otherwise,
-          if a network is linked to one of the node's nics and the 
-          network has a gateway address that has been set, the 
-          network gateway field will be used.
-          Required and only parameters are:
+          if a network is linked to the nic and the network has a 
+          gateway address that has been set, the network gateway 
+          field will be used. Required and only parameters are:
                   node        name of the node
                   nic         name of the nic
         </description>
@@ -3606,6 +3637,7 @@
       <parameters> unique(name,node_id) </parameters>
       <fields> 
         <assignment_method/>
+        <base_ip/>
         <broadcast/>
         <driver_module/>
         <gateway/>
