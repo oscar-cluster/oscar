@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.25 2003/04/10 23:23:07 tfleury Exp $
+# $Id: Selector.pm,v 1.26 2003/04/10 23:35:55 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -870,8 +870,6 @@ else # Use oda
             {
               $selconf->{selected} = $selected[0];
               $configselectstring = $selconf->{selected};
-              $deleteButton->configure(-state => 'active') if 
-                (scalar (keys %{ $selconf->{configs} }) > 1);
 
               foreach my $packset (@packageSets)
                 {
@@ -884,6 +882,9 @@ else # Use oda
                       $selconf->{configs}{$packset}{packages}{$pack} = 1;
                     }
                 }
+
+              $deleteButton->configure(-state => 'active') if 
+                (scalar (keys %{ $selconf->{configs} }) > 1);
             }
           else
             {
