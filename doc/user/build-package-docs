@@ -1,0 +1,10 @@
+#!/bin/csh
+
+# Look in ../packages/* for doc/user.tex files.  When we find those
+# files, add them to package-docs.tex.
+
+cp -f package-docs.tex.in package-docs.tex
+
+foreach file (../../packages/*/doc/user.tex)
+    echo "\input{$file}" >> package-docs.tex
+end

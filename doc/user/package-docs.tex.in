@@ -1,0 +1,10 @@
+% -*- latex -*-
+%
+% $Id: package-docs.tex.in,v 1.1 2002/06/12 04:42:52 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
+% Meta file that includes the doc/user.tex files from the package
+% directories.
+
