@@ -2,10 +2,10 @@
 
 # Copyright 2002 International Business Machines
 #                Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.18 2003/01/16 18:02:29 brechin Exp $
+# $Id: wizard_prep,v 1.19 2003/01/21 21:49:19 jsquyres Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -69,23 +69,48 @@ require OSCAR::Package;
 require OSCAR::Distro;
 require OSCAR::PackageBest;
 
-# Run the setup script for every package.  Do not use list_pkg() here,
-# because that will read in all the per-package config.xml files.  We
-# must run the setup scripts *before* the XML files are read in.
-
-oscar_log_subsection("Running package setup scripts");
-opendir(PACKAGE_DIR, "$ENV{OSCAR_HOME}/packages");
-my @packages = sort(readdir(PACKAGE_DIR));
-closedir(PACKAGE_DIR);
 my $topdir;
 chomp($topdir = `pwd`);
+
+# Make a list of all available packages.  Do not use list_pkg() here,
+# because that will read in all the per-package config.xml files.
+# This is in preparation of running all the package setup scripts, and
+# the setup scripts must be run *before* reading the XML files in.
+
+my @PKG_SOURCE_LOCATIONS = @OSCAR::Package::PKG_SOURCE_LOCATIONS;
+oscar_log_subsection("Finding available packages");
+my @packages = ();
+my @temp_array = ();
+foreach my $d (@PKG_SOURCE_LOCATIONS) {
+    if (-d $d) {
+	opendir(PACKAGE_DIR, $d);
+	foreach my $pkg_name (readdir(PACKAGE_DIR)) {
+	    next if ($pkg_name eq "." || $pkg_name eq ".." ||
+		     $pkg_name eq "CVS" || ! -d "$d/$pkg_name" ||
+		     -e "$d/$pkg_name/.oscar_ignore");
+	    push @temp_array, $pkg_name;
+	}
+	closedir(PACKAGE_DIR);
+    }
+}
+@packages = sort(@temp_array);
+oscar_log_subsection("Found packages: " . join(", ", @packages));
+
+# Now that we have a good list of packages, run all the setup scripts.
+
+oscar_log_subsection("Running package setup scripts");
 foreach my $pkg (@packages) {
-    my $dir = "$ENV{OSCAR_HOME}/packages/$pkg";
+    my $dir;
 
-    # Skip irrlevant entries
-
-    next if ($pkg eq "." || $pkg eq ".." || $pkg eq "CVS" ||
-	     ! -d $dir || -e "$dir/.oscar_ignore");
+    $dir = undef;
+    foreach my $d (@PKG_SOURCE_LOCATIONS) {
+	if (-d "$d/$pkg") {
+	    $dir = "$d/$pkg";
+	    last;
+	}
+    }
+    croak("Unexpectedly can't find a package: $pkg")
+	if (!defined($dir));
 
     # If it's a good package, run its setup script (if it has one) in
     # the scripts directory.
@@ -109,12 +134,16 @@ my $ARCH = (uname)[4];
 $ARCH =~ s/i.86/i386/;
 
 prep_rpmpool($RPMPOOL) or croak("Couldn't prepare tftpboot directory");
-oscar_log_subsection("Copying RPMs from " . $ENV{OSCAR_HOME} .
-		     " to $RPMPOOL\n");
-copy_rpms($ENV{OSCAR_HOME},$RPMPOOL) 
-    or croak("Couldn't copy rpms to $RPMPOOL");
-oscar_log_subsection("Successfully copied RPMs from " . $ENV{OSCAR_HOME} . 
-		     " to $RPMPOOL\n");
+
+oscar_log_subsection("Copying RPMs to $RPMPOOL");
+foreach my $d (@PKG_SOURCE_LOCATIONS) {
+    if (-d $d) {
+	oscar_log_subsection("Copying RPMs from $d to $RPMPOOL");
+	copy_rpms($d,$RPMPOOL) 
+	    or croak("Couldn't copy rpms to $RPMPOOL");
+	oscar_log_subsection("Successfully copied RPMs from $d to $RPMPOOL");
+    }
+}
 
 # Get the list of just core packages
 
@@ -166,7 +195,7 @@ sub prep_rpmpool {
 sub copy_rpms {
     my ($topdir, $target) = @_;
 
-    my @packagedirs = files_in_dir("$topdir/packages");
+    my @packagedirs = files_in_dir($topdir);
 
     foreach my $dir (@packagedirs) {
             my @files = files_in_dir("$dir/RPMS");

@@ -2,10 +2,10 @@ package OSCAR::Package;
 
 # Copyright 2001-2002 International Business Machines
 #                     Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.43 2002/12/10 23:06:10 ngorsuch Exp $
+#   $Id: Package.pm,v 1.44 2003/01/21 21:49:17 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@ package OSCAR::Package;
 
 
 use strict;
-use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL %PHASES);
+use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL %PHASES
+	    @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
 use OSCAR::PackageBest;
 use OSCAR::Logger;
@@ -36,7 +37,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.43 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.44 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -68,6 +69,11 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
            test_user    => ['test_user'],
           );
 
+# The possible places where packages may live.  
+
+@PKG_SOURCE_LOCATIONS = ( "$ENV{OSCAR_HOME}/packages", 
+			  "/var/lib/oscar/packages",
+			  );
 
 #
 # list_pkg - this returns a list of packages.
@@ -128,17 +134,21 @@ sub run_pkg_script {
         return undef;
     }
 
-    foreach my $scriptname (@$scripts) {
-        my $script = "$ENV{OSCAR_HOME}/packages/$pkg/scripts/$scriptname";
-        if (-e $script) {
-            oscar_log_subsection("About to run $script for $pkg") if $verbose;
-            my $rc = system("$script $args");
-            if($rc) {
-                my $realrc = $rc >> 8;
-                carp("Script $script exitted badly with exit code '$realrc'") if $verbose;
-                return 0;
-            }
-        } 
+    foreach my $dir (@PKG_SOURCE_LOCATIONS) {
+	foreach my $scriptname (@$scripts) {
+	    my $script = "$dir/$pkg/scripts/$scriptname";
+	    if (-e $script) {
+		oscar_log_subsection("About to run $script for $pkg") if $verbose;
+		$ENV{OSCAR_PACKAGE_HOME} = "$dir/$pkg";
+		my $rc = system("$script $args");
+		delete $ENV{OSCAR_PACKAGE_HOME};
+		if($rc) {
+		    my $realrc = $rc >> 8;
+		    carp("Script $script exitted badly with exit code '$realrc'") if $verbose;
+		    return 0;
+		}
+	    } 
+	}
     }
     return 1;
 }
@@ -151,11 +161,13 @@ sub run_pkg_script_chroot {
         return undef;
     }
     foreach my $scriptname (@$scripts) {
-        my $script = "$ENV{OSCAR_HOME}/packages/$pkg/scripts/$scriptname";
-        if (-e $script) {
-            oscar_log_subsection("About to run $script for $pkg");
-            run_in_chroot($dir,$script) or (carp "Script $script failed", 
-					    return undef);
+	foreach my $pkg_dir (@PKG_SOURCE_LOCATIONS) {
+	    my $script = "$pkg_dir/$pkg/scripts/$scriptname";
+	    if (-e $script) {
+		oscar_log_subsection("About to run $script for $pkg");
+		run_in_chroot($dir,$script) or (carp "Script $script failed", 
+						return undef);
+	    }
         }
     }
     return 1;
@@ -210,7 +222,16 @@ sub run_pkg_user_test {
 
 sub rpmlist {
     my ($pkg, $type) = @_;
-    my $prefix = "$ENV{OSCAR_HOME}/packages/$pkg";
+    my $prefix;
+    foreach my $pkg_dir (@PKG_SOURCE_LOCATIONS) {
+	if (-d "$pkg_dir/$pkg") {
+	    $prefix = "$pkg_dir/$pkg";
+	    last;
+	}
+    }
+    if (! $prefix) {
+	return ();
+    }
     my $cfile = "$prefix/client.rpmlist";
     my $sfile = "$prefix/server.rpmlist";
     my $listfile = ($type eq "client") ? $cfile : $sfile;
@@ -427,39 +448,41 @@ sub make_empty_xml {
 #
 
 sub read_all_pkg_config_xml {
-  opendir(PKGDIR,"$ENV{OSCAR_HOME}/packages") 
-    or (carp("Couldn't open $ENV{OSCAR_HOME}/packages for reading"), 
-      return undef);
+    foreach my $pkg_dir(@PKG_SOURCE_LOCATIONS) {
+	opendir(PKGDIR, "$pkg_dir") 
+	    or (carp("Couldn't open $pkg_dir for reading"), 
+		return undef);
 
-  while (my $pkg = readdir(PKGDIR)) {
-    chomp($pkg);
-    my $dir = "$ENV{OSCAR_HOME}/packages/$pkg";
-    my $config = "$dir/config.xml";
-
-    # Check if it's a valid package: not ".", not "..", not "CVS"
-    # and doesn't contain a .oscar_ignore file
-    if (-d $dir && $pkg ne "." && $pkg ne ".." && $pkg ne "CVS" &&
-        ! -e "$dir/.oscar_ignore") {
-      if (-f $config) {
+	while (my $pkg = readdir(PKGDIR)) {
+	    chomp($pkg);
+	    my $dir = "$pkg_dir/$pkg";
+	    my $config = "$dir/config.xml";
+	    
+	    # Check if it's a valid package: not ".", not "..", not "CVS"
+	    # and doesn't contain a .oscar_ignore file
+	    if (-d $dir && $pkg ne "." && $pkg ne ".." && $pkg ne "CVS" &&
+		! -e "$dir/.oscar_ignore") {
+		if (-f $config) {
 #       oscar_log_subsection("Reading $config");
-        $PACKAGE_CACHE->{$pkg} = eval { $xs->XMLin($config); };
-        if ($@) {
-          oscar_log_subsection("WARNING! The config.xml file for $pkg is invalid.  Creating an empty one...");
-            $PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
-          } else {
-          $PACKAGE_CACHE->{$pkg}->{installable} = 1 if 
-            (!defined($PACKAGE_CACHE->{$pkg}->{installable}));
-        }
-      } else {
+		    $PACKAGE_CACHE->{$pkg} = eval { $xs->XMLin($config); };
+		    if ($@) {
+			oscar_log_subsection("WARNING! The config.xml file for $pkg is invalid.  Creating an empty one...");
+			$PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
+		    } else {
+			$PACKAGE_CACHE->{$pkg}->{installable} = 1 if 
+			    (!defined($PACKAGE_CACHE->{$pkg}->{installable}));
+		    }
+		} else {
 #       oscar_log_subsection("Got empty XML config for $pkg");
-        $PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
-      }
+		    $PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
+		}
+	    }
+	}
+	
+	close(PKGDIR);
     }
-  }
 
-  close(PKGDIR);
-
-  $PACKAGE_CACHE;
+    $PACKAGE_CACHE;
 }
 
 #########################################################################
@@ -589,18 +612,21 @@ sub getConfigurationValues # ($package) -> $valueshashref
 {
   my($package) = @_;
   my($values);
-  my($filename) = "$ENV{OSCAR_HOME}/packages/$package/.configurator.values";
+  my($filename);
 
-  if (-s $filename)
-    {
-      $values =  eval { XMLin($filename, 
-                              suppressempty => '', 
-                              forcearray => '1'); 
-                      };
-      undef $values if ($@);
-    }
+  foreach my $dir (@PKG_SOURCE_LOCATIONS) {
+      $filename = "$dir/$package/.configurator.values";
+      if (-s $filename) {
+	  $values =  eval { XMLin($filename, 
+				  suppressempty => '', 
+				  forcearray => '1'); 
+			};
+	  undef $values if ($@);
+	  return $values;
+      }
+  }
 
-  return $values;
+  return undef;
 }
 
 1;
