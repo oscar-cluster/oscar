@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.10 2002/04/12 22:00:33 sdague Exp $
+#   $Id: Package.pm,v 1.11 2002/08/07 15:01:35 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.10 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.11 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -42,10 +42,10 @@ $VERSION = sprintf("%d.%02d", q$Revision: 1.10 $ =~ /(\d+)\.(\d+)/);
 # see the developement doc
 
 %PHASES = (
-           post_server_install => 'post_server_install',
-           post_rpm_install => 'post_rpm_install',
-           post_clients => 'post_clients',
-           post_install => 'post_install',
+           post_server_install => ['post_server_install','post_server_rpm_install'],
+           post_rpm_install => ['post_client_rpm_install','post_rpm_install'],
+           post_clients => ['post_clients'],
+           post_install => ['post_install'],
           );
 
 
@@ -101,35 +101,39 @@ sub _is_core {
 
 sub run_pkg_script {
     my ($pkg, $phase, $verbose) = @_;
-    my $scriptname = $PHASES{$phase};
-    if(!$scriptname) {
+    my $scripts = $PHASES{$phase};
+    if(!$scripts) {
         carp("No such phase '$phase' in OSCAR package API");
         return undef;
     }
-    my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . $scriptname;
-    if(-e $script) {
-	print "About to run $script for $pkg\n" if($verbose); 
-        my $rc = system($script);
-        if($rc) {
-            my $realrc = $rc >> 8;
-            carp("Script $script exitted badly with exit code '$realrc'");
-            return 0;
-        }
-        return 1;
-    } 
+
+    foreach my $scriptname (@$scripts) {
+        my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . $scriptname;
+        if(-e $script) {
+            print "About to run $script for $pkg\n" if($verbose); 
+            my $rc = system($script);
+            if($rc) {
+                my $realrc = $rc >> 8;
+                carp("Script $script exitted badly with exit code '$realrc'");
+                return 0;
+            }
+        } 
+    }
     return 1;
 }
 
 sub run_pkg_script_chroot {
     my ($pkg, $dir) = @_;
-    my $scriptname = $PHASES{post_rpm_install};
-    if(!$scriptname) {
+    my $scripts = $PHASES{post_rpm_install};
+    if(!$scripts) {
         carp("No such phase 'post_rpm_install' in OSCAR package API");
         return undef;
     }
-    my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . $scriptname;
-    if(-e $script) {
-        run_in_chroot($dir,$script) or (carp "Script $script failed", return undef);
+    foreach my $scriptname (@$scripts) {
+        my $script = $ENV{OSCAR_HOME} . "/packages/" . $pkg . "/scripts/" . $scriptname;
+        if(-e $script) {
+            run_in_chroot($dir,$script) or (carp "Script $script failed", return undef);
+        }
     }
     return 1;
 }
