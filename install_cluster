@@ -34,6 +34,10 @@ use Carp;
 
 $ENV{OSCAR_HOME} = cwd();
 
+# Set perl to autoflush all output
+
+$| = 1;
+
 # Setup to capture all stdout/stderr
 
 my $oscar_logfile = $ENV{OSCAR_HOME} . "/oscarinstall.log";
@@ -58,9 +62,11 @@ $ENV{LC_NUMERIC} = "en_US";
 $ENV{LC_TIME} = "en_US";
 
 # add entries to path that we know we will need
-$ENV{PATH} = $ENV{PATH} . ':/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin';
+$ENV{PATH} = $ENV{PATH} .
+    ':/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin';
 
-my $adapter = shift or croak("Program must be invoked as ./install_cluster <network device>");
+my $adapter = shift 
+    or croak("Program must be invoked as ./install_cluster <network device>");
 
 $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
 
