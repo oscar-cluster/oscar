@@ -84,7 +84,7 @@ function check_free_nodes () {
     # at least $clients free nodes
     echo -n ""
   else
-    testprint --label "Checking for $clients free nodes:" --fail
+    $OSCAR_TESTPRINT --label "Checking for $clients free nodes:" --fail
     echo Not enough free nodes.  Tests incomplete.
     waitexit
   fi
@@ -97,20 +97,20 @@ pbs_test_routine () {
   sleep 1
   calc_timeout
   check_free_nodes
-  testprint --label "$pbs_test_type"
+  $OSCAR_TESTPRINT --label "$pbs_test_type"
   cd `dirname $pbs_script`
   if [ -f $output.out ]; then /bin/rm -f $output.out; fi
   if [ -f $output.err ]; then /bin/rm -f $output.err; fi
   job=`$qsub -l nodes=$clients:ppn=$ppn $pbs_script`
   # Check that job submitted properly
   if [ -z $job ]; then 
-    testprint --label "$pbs_test_type" --fail
+    $OSCAR_TESTPRINT --label "$pbs_test_type" --fail
   else
     timeleft=$timeout
     job_state=incomplete
     while [ $job_state = incomplete ]; do
       # Displays remaining seconds
-      testprint --label "$pbs_test_type" --status "$timeleft"
+      $OSCAR_TESTPRINT --label "$pbs_test_type" --status "$timeleft"
       sleep 1
       # Tests for success or timeout
       if [ -f "$output.out" ]; then
@@ -118,13 +118,13 @@ pbs_test_routine () {
         string_test=$?
         if [ $string_test = 0 ]; then
           job_state=success
-          testprint --label "$pbs_test_type" --pass
+          $OSCAR_TESTPRINT --label "$pbs_test_type" --pass
         else
           timeleft=0
         fi
       fi
       if [ $timeleft -eq 0 ]; then  #more than timeout
-        testprint --label "$pbs_test_type" --fail
+        $OSCAR_TESTPRINT --label "$pbs_test_type" --fail
         job_state=fail
         if [ `/opt/pbs/bin/qstat |grep -c $job` -eq 1 ]; then
           /opt/pbs/bin/qdel $job
