@@ -4,3 +4,4 @@ Makefile.am
 .oscar_made_makefile_am
 .configurator.temp.html
 .configurator.values
+configurator.html
