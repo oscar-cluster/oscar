@@ -3,6 +3,7 @@ systeminstaller
 systeminstaller-x11
 perl-Tk
 perl-DBI
+syslinux
 systemimager-common
 systemimager-server
 systemimager-i386boot
@@ -10,3 +11,4 @@ systemimager-ia64boot
 libappconfig-perl
 libdbdcsv-perl
 rsync
+tftp-hpa
