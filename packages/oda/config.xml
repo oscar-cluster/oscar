@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.22 2003/04/04 17:11:05 ngorsuch Exp $
+      $Id: config.xml,v 1.23 2003/04/07 20:33:53 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -345,20 +345,20 @@
 
     <disk_partition_entries>
       <fields> 
-        <active> </active>
-        <bootable> </bootable>
+        <active/>
+        <bootable/>
         <disk_layout_id>
 	  <type> integer </type>
 	</disk_layout_id>
-        <mount_point> </mount_point>
+        <mount_point/>
         <offset>
 	  <type> integer </type>
 	</offset>
-        <partition> </partition>
+        <partition/>
         <size>
 	  <type> integer </type>
 	</size>
-        <type> </type>
+        <type/>
       </fields>
     </disk_partition_entries>
 
@@ -371,7 +371,7 @@
         <name>
 	  <parameters> not null unique </parameters>
 	</name>
-        <path> </path>
+        <path/>
       </fields> 
     </images>
 
@@ -392,17 +392,17 @@
 
     <nics>
       <fields> 
-        <assignment_method> </assignment_method>
-        <broadcast> </broadcast>
-        <driver_module> </driver_module>
+        <assignment_method/>
+        <broadcast/>
+        <driver_module/>
         <id> 
 	  <type> integer </type>
 	  <parameters> auto_increment not null unique primary key </parameters>
 	</id>
-        <interface> </interface>
-        <ip> </ip>
-        <mac> </mac>
-        <netmask> </netmask>
+        <interface/>
+        <ip/>
+        <mac/>
+        <netmask/>
         <network_id>
 	  <type> integer </type>
 	</network_id>
@@ -420,10 +420,11 @@
         <cpu_speed> 
 	  <type> integer </type>
 	</cpu_speed>
-        <cpu_type> </cpu_type>
-        <default_gateway> </default_gateway>
-        <domain> </domain>
-        <hostname> </hostname>
+        <cpu_type/>
+        <default_gateway/>
+        <domain/>
+	<fqdn/>
+        <hostname/>
         <id> 
 	  <type> integer </type>
 	  <parameters> auto_increment not null unique primary key </parameters>
@@ -431,7 +432,7 @@
         <image_id>
 	  <type> integer </type>
 	</image_id>
-	<installer> </installer>
+	<installer/>
         <name>
 	  <parameters> not null unique </parameters>
 	</name>
@@ -482,13 +483,13 @@
     </node_group_node_entries>
 
     <oscar>
-      <single_record> </single_record>
+      <single_record/>
       <fields> 
-        <installation_date> </installation_date>
+        <installation_date/>
         <oscar_server_node_id>
 	  <type> integer </type>
 	</oscar_server_node_id>
-        <version> </version>
+        <version/>
       </fields>
     </oscar>
 
@@ -505,41 +506,41 @@
     -->
     <packages>
       <fields>
-        <class> </class>
-	<copyright> </copyright>
-	<group> </group>
+        <class/>
+	<copyright/>
+	<group/>
         <id> 
 	  <type> integer </type>
 	  <parameters> auto_increment not null unique primary key </parameters>
 	</id>
-	<installable> </installable>
-	<license> </license>
-	<maintainer_email> </maintainer_email>
-	<maintainer_name> </maintainer_name>
+	<installable/>
+	<license/>
+	<maintainer_email/>
+	<maintainer_name/>
         <name>
 	  <parameters> not null unique </parameters>
 	</name>
-	<package> </package>
-	<packager_email> </packager_email>
-	<packager_name> </packager_name>
-	<require_name> </require_name>
-	<require_type> </require_type>
+	<package/>
+	<packager_email/>
+	<packager_name/>
+	<require_name/>
+	<require_type/>
         <selected> 
 	  <type> integer </type>
 	  <default> 0 </default>
 	</selected>
-	<summary> </summary>
-	<url> </url>
-	<vendor> </vendor>
-	<version_epoch> </version_epoch>
+	<summary/>
+	<url/>
+	<vendor/>
+	<version_epoch/>
 	<version_major> 
 	  <type> integer </type>
 	</version_major>
 	<version_minor> 
 	  <type> integer </type>
 	</version_minor>
-	<version_release> </version_release>
-	<version_subversion> </version_subversion>
+	<version_release/>
+	<version_subversion/>
       </fields>
     </packages>	
 
