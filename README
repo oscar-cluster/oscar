@@ -1,4 +1,4 @@
-$Id: README,v 1.12 2002/05/22 17:16:00 sdague Exp $
+$Id: README,v 1.13 2002/05/22 20:06:32 naughtont Exp $
 
 $COPYRIGHT$
 
@@ -30,4 +30,13 @@ There are some limitations to the 1.3b1 release, they are:
      for 7.2 (this will only work for Red Hat 7.2)
 
 
+
+Notes about Python2 shipped with 1.3b1:
+
+- The current version of C3 that is shipped with OSCAR requires Python2.
+  The RPMs that are provided are re-built to work on Red Hat 7.1 system
+  as well as Red Hat 7.2 system.  However, Red Hat 7.2 shipps with Python2
+  so measures were taken so it will be chosen in place of the one provided
+  with OSCAR, ie. we decremented the RPM release number.
+  (This has not been tested/re-built for IA-64.)
 
