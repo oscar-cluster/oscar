@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.10 2002/10/29 14:29:51 jsquyres Exp $
+# $Id: Makefile.am,v 1.11 2003/04/22 02:26:43 naughtont Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -10,6 +10,7 @@ EXTRA_DIST		= \
 			AddNode.pm \
 			Configbox.pm \
 			Configurator.pm \
+			Database.pm \
 			DelNode.pm \
 			Distro.pm \
 			Help.pm \
