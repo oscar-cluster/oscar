@@ -1,0 +1,44 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   Sean Dague <japh@us.ibm.com
+#
+#   This is the oscar installation program.  It must be called with one arguement
+#   which is the installation network device
+
+use strict;
+use vars qw($VERSION);
+use Cwd qw(chdir);
+use Carp;
+
+my $adapter = shift or croak("Program must be invoked as ./install_cluster <network device>");
+
+system("chmod 755 packages/*/scripts/*");
+
+chdir("scripts") or croak("Couldn't chdir to scripts");
+
+#Check for 2 rpms 1 from each cd
+my @basesystem=glob("/tftpboot/rpm/basesystem*rpm");
+my @rsync=glob("/tftpboot/rpm/rsync*rpm");
+if ((scalar(@basesystem)==0) || (scalar(@rsync)==0)) {
+	croak("RPMs missing in /tftpboot/rpm/ (did you copy both CDs?)");
+}
+
+!system("./server_prep $adapter") or croak("Server preparation script failed to complete");
+
+!system("./oscar_wizard $adapter") or croak("Oscar Wizard failed to run successfully");
+
+
