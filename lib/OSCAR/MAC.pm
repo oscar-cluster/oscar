@@ -111,7 +111,7 @@ sub setup_dhcpd {
                                                             return undef);
     }
     my ($ip, $netmask) = get_ip_net($interface);
-    !system("mkdhcpconf -o /etc/dhcpd.conf --bootfile=pxelinux.0 --gateway=$ip") or (carp "Couldn't mkdhcpconf",
+    !system("mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --bootfile=pxelinux.0 --gateway=$ip") or (carp "Couldn't mkdhcpconf",
                                                              return undef);
     if(!-e "/var/lib/dhcp/dhcpd.leases") {
         open(OUT,">/var/lib/dhcp/dhcpd.leases") or (carp "Couldn't create dhcpd.leases files",
