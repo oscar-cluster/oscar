@@ -2,6 +2,7 @@ apache
 apache-common
 apache-conf
 apache-modules
+bc
 dhcp-common
 dhcp-server
 ed
