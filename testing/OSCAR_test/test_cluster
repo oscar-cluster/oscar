@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: test_cluster,v 1.13 2002/07/25 23:47:07 brechin Exp $
+# $Id: test_cluster,v 1.14 2002/07/28 05:50:24 jsquyres Exp $
 #
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
@@ -212,9 +212,19 @@ grep_string=Hello
 exit_on_fail=yes
 pbs_test_routine
 
+
+#
+# Setup MPI -- save any user default
+#
+
+user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
+
+
 #			MPICH TEST
 #			----------
 
+mpich="`switcher mpi --list | grep mpich | head -1`"
+switcher mpi --add-attr default $mpich --force
 pbs_test_type="Simple PBS MPICH job"
 test_dir=mpi
 pbs_script=pbs_script.mpich
@@ -227,6 +237,8 @@ pbs_test_routine
 #			LAM TEST
 #			--------
 
+mpich="`switcher mpi --list | grep lam | head -1`"
+switcher mpi --add-attr default $mpich --force
 pbs_test_type="Simple PBS LAM job"
 test_dir=mpi
 pbs_script=pbs_script.lam
@@ -234,6 +246,17 @@ output_file=lamtest
 grep_string="pi is approx"
 exit_on_fail=no
 pbs_test_routine
+
+
+#
+# If there was a user-default MPI, restore it
+#
+
+switcher mpi --rm-attr default --force
+if test "$user_default_mpi" != ""; then
+    switcher mpi --add-attr default $user_default_mpi --force
+fi
+
 
 #			PVM TEST
 #			--------

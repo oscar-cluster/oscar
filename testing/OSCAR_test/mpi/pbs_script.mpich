@@ -14,49 +14,15 @@
 cd $PBS_O_WORKDIR
 echo "Running MPICH test"
 
-#### BEGIN: This is not necessary in normal PBS MPICH scripts ##############
-# Users won't need to do this in their normal PBS scripts.  This
-# script has to account for the fact that MPICH may not be the default
-# MPI implementation.  So we have to temporarily make it the user's
-# default, run the test, and then switch it back to whatever it was
-# before we started.
-
-# If MPICH is not set as the user default, temporarily make it so
-
-mpich="mpich-1.2.4"
-user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
-if test "$user_default_mpi" != "$mpich"; then
-    switcher mpi --add-attr default $mpich --force
-fi
-
-# Now ensure that we have MPICH loaded here.  Remember that PBS is
-# stupid and does not run .files.  So we have to manually setup the
-# modules environment.
-
-. /etc/profile.d/00-modules.sh
-module unload mpi
-module load mpi/$mpich
-#### END: This is not necessary in normal PBS MPICH scripts ################
+# The MPICH test iteself
 
 NP=`(wc -l < $PBS_NODEFILE) | awk '{print $1}'`
-
-#mpich_profile=/etc/profile.d/mpi-00mpich.sh
-#. $mpich_profile
-
-### Get new host warnings out of the way
-#$for m in `cat $PBS_NODEFILE |uniq` ; do ssh $m hostname ; done 2> /dev/null > /dev/null
 
 mpicc cpi.c -o mpich-cpi
 mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cpi
 
-#### BEGIN: This is not necessary in normal PBS MPICH scripts ##############
-if test "$user_default_mpi" = ""; then
-    switcher mpi --rm-attr default --force
-else
-    switcher mpi --rm-attr default --force
-    switcher mpi --add-attr default $mpich --force
-fi
-#### END: This is not necessary in normal PBS MPICH scripts ################
+echo "MPICH test complete"
+echo "Unless there are errors above, test completed successfully."
 
 echo
 exit 0
