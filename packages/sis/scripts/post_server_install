@@ -39,7 +39,7 @@ use OSCAR::Distro;
 my ($name, $ver) = OSCAR::Distro::which_distro_server();
 
 if ($name eq "fedora") {
-	print "Patching systeminstaller so that it support $name\n";
+	print "Patching SystemInstaller so that it supports $name\n";
 	# If there is no patch, apply it
 	if (! (-f "/usr/share/systeminstaller/distinfo/Fedora/stages")) {
 	my @patches = glob("$ENV{OSCAR_PACKAGE_HOME}/scripts/fedora.patch/*.patch");
@@ -49,9 +49,8 @@ if ($name eq "fedora") {
 	}
 	print "SIS patch for $name done\n";
 	}
-}
-if ($name eq "redhat") {
-	print "Patching the systeminstaller so that it support $name\n";
+} elsif ($name eq "redhat") {
+	print "Patching SystemInstaller so that it supports $name\n";
 	if (! (-f "/usr/share/systeminstaller/distinfo/Redhat/3AS/stages")) {
 	my @patches = glob("$ENV{OSCAR_PACKAGE_HOME}/scripts/redhat.patch/*.patch");
 	foreach my $patch (@patches) {
@@ -59,6 +58,16 @@ if ($name eq "redhat") {
     		!system("cd / && patch -p1 < $patch");
 	}
 	print "SIS patch for $name done\n";
+	}
+} elsif ($name eq "mandrake") {
+	print "Patching SystemInstaller so that it supports $name\n";
+	unless( -f "/usr/share/systeminstaller/distinfo/Mandrake/stages" ) {
+	    my @patches = glob("$ENV{OSCAR_PACKAGE_HOME}/scripts/mandrake.patch/*.patch");
+	    foreach (@patches) {
+		    print "Applying patch $_\n";
+    		system("patch -p0 < $_");
+	    }
+	    print "SIS patch for $name done\n";
 	}
 }
 

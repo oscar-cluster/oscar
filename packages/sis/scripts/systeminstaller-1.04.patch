@@ -402,8 +402,40 @@
 +
 +1;
 --- /usr/lib/systeminstaller/SystemInstaller/Package/RpmNoScripts.pm.orig	2002-11-06 14:54:07.000000000 -0800
-+++ /usr/lib/systeminstaller/SystemInstaller/Package/RpmNoScripts.pm	2005-02-17 07:39:12.000000000 -0800
-@@ -116,12 +116,7 @@
++++ /usr/lib/systeminstaller/SystemInstaller/Package/RpmNoScripts.pm	2005-04-04 21:55:06.660194496 -0700
+@@ -47,22 +47,19 @@
+ # Look at a directory and determine if it looks like rpms.
+ # Input:        Directory name
+ # Returns:      Boolean of match
+-	my $class=shift;
++        my $class=shift;
+         my $mode=shift;
+         my $path=shift;
+-	my $rpmcmd=$main::config->rpm;
++        my $rpmcmd=$main::config->rpm;
+         if ($mode eq "install") {
+                 if (glob "$path/*.rpm")  {
+-                        open(RPMCMD, "$rpmcmd --version |");
+-                        while (<RPMCMD>) {
+-                                chomp;
+-                                my ($R,$V,$rpmver)=split;
+-                                my ($V1,$V2,$V3)=split(/\./,$rpmver);
+-                                if (( $V1 >= 4) && ($V2 >= 0) && ($V3 >= 3)) {
+-                                        return 1;
+-                                }
+-                        }
+-                        close(RPMCMD);
++                        my $line = `$rpmcmd --version 2>/dev/null`;
++                        chomp $line;
++                        my $rpmver = (split /\s+/, $line)[2];
++                        my ($V1,$V2,$V3)=split(/\./,$rpmver);
++                        return $V1 >= 4 if $V1 <=> 4;
++                        return $V2 >= 0 if $V2;
++                        return $V3 >= 3;
+                 }
+         }
+ 
+@@ -116,12 +113,7 @@
  		        return 0;
  	        }
                  &pre_run_scriptlets($imgpath);
@@ -417,7 +449,7 @@
          }
  
  	return 1;
-@@ -146,12 +141,13 @@
+@@ -146,12 +138,13 @@
          verbose("Extracting and running scriptlets from rpms.");
          foreach my $pkg (@order) {
                  my $piprog=undef;
@@ -433,7 +465,7 @@
                                  my ($j1,$shell)=split(/\(through /,$_);
                                  $shell=~s/\).*$//;
                                  print POST "#!$shell\n";
-@@ -159,6 +155,7 @@
+@@ -159,6 +152,7 @@
                                  $post_writing=1;
                                  next;
                          } elsif (/^postinstall program/) {
@@ -441,7 +473,7 @@
                                  $piprog=$_;
                                  $piprog=~s/^.*://;
                                  $piprog=~s/^ *//;
-@@ -175,10 +172,8 @@
+@@ -175,10 +169,8 @@
                          }
                  }
                  close (POST);
