@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.20 2003/04/02 17:55:10 ngorsuch Exp $
+      $Id: config.xml,v 1.21 2003/04/02 17:56:47 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -284,7 +284,7 @@
 	<shortcut> packages_uninstallable read_records packages.name installable=0 %+ </shortcut>
 	<shortcut> remove_disk_partition_from_disk_layout delete_records disk_partition_entries disk_partition_entries.partition=%1 disk_layouts.name=%2 disk_layouts.id=disk_partition_entries.disk_layout_id </shortcut>
 	<shortcut> remove_dns_server_from_node delete_records node_dns_server_entries node_dns_server_entries.server=%1 nodes.name=%2 node_dns_server_entries.node_id=nodes.id </shortcut>
-	<shortcut> remove_package_from_package_set delete_records package_set_package_entries packages.name=%1 package_sets.name=%2 package_sets.id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.name </shortcut>
+	<shortcut> remove_package_from_package_set delete_records package_set_package_entries packages.name=%1 package_sets.name=%2 package_sets.id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id</shortcut>
 	<shortcut> remove_package_set_from_node delete_records node_package_set_entries node_package_set_entries.package_set_id=package_sets.id package_sets.name=%1 nodes.name=%2 node_package_set_entries.node_id=nodes.id </shortcut>
 	<shortcut> rename_disk_layout modify_records disk_layouts disk_layouts.name=%1 disk_layouts.name~%2 </shortcut>
 	<shortcut> rename_image modify_records images images.name=%1 images.name~%2 </shortcut>
