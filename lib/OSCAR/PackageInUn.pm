@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.12 2003/11/03 20:53:17 muglerj Exp $
+#  $Id: PackageInUn.pm,v 1.13 2003/11/04 04:35:53 naughtont Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -344,7 +344,11 @@ sub run_install_client
 			else
 			{
 				$retval = cexec_open($cmd_string1, \@rslts); 
-				print @rslts if($retval != 0);
+				if( $retval != 0 ) 
+				{
+					print @rslts; 
+					return(0);
+				}
 
 				foreach $rpm (@newrpmlist)
 				{
@@ -356,9 +360,18 @@ sub run_install_client
 
 				}
 				$retval = cexec_open($cmd_string3, \@rslts); 
-				print @rslts if($retval != 0);
+				if( $retval != 0 ) 
+				{
+					print @rslts; 
+					return(0);
+				}
+				
 				$retval = cexec_open($cmd_string4, \@rslts); 
-				print @rslts if($retval != 0);
+				if( $retval != 0 ) 
+				{
+					print @rslts; 
+					return(0);
+				}
 			}
 		}
 		$flag = 1;
@@ -390,10 +403,18 @@ sub run_install_client
 				return 0;
 			}
 			$retval = cexec_open($cmd_string2, \@rslts); 
-			print @rslts if($retval != 0);
-			$retval = cexec_open($cmd_string3, \@rslts); 
-			print @rslts if($retval != 0);
+			if( $retval != 0 ) 
+			{
+				print @rslts; 
+				return(0);
+			}
 
+			$retval = cexec_open($cmd_string3, \@rslts); 
+			if( $retval != 0 ) 
+			{
+				print @rslts; 
+				return(0);
+			}
 		}
 		$flag = 1;
 	}
@@ -417,9 +438,17 @@ sub run_install_client
 				return 0;
 			}
 			$retval = cexec_open($cmd_string2, \@rslts); 
-			print @rslts if($retval != 0);
+			if( $retval != 0 ) 
+			{
+				print @rslts; 
+				return(0);
+			}
 			$retval = cexec_open($cmd_string3, \@rslts); 
-			print @rslts if($retval != 0);
+			if( $retval != 0 ) 
+			{
+				print @rslts; 
+				return(0);
+			}
 		}
 		$flag = 1;
 	}
@@ -561,7 +590,7 @@ sub run_install_image
 		}
 		else
 		{
-			print "No image script ran in post_rpm_install phase.\n";
+			print "Warning: nothing ran for ($package_name) post_rpm_install phase on the image.\n";
 		}
 	}
 	else
@@ -665,7 +694,7 @@ sub run_install_server
 		}
 		else
 		{
-			print "No server script ran in post_server_install\n";
+			print "Warning: nothing ran for ($package_name) post_server_install \n";
 		}
 		
 		if (OSCAR::Package::run_pkg_script($package_name, 'post_clients', 1, '0'))
@@ -675,7 +704,7 @@ sub run_install_server
 		}
 		else
 		{
-			print "No server script ran in post_clients phase.\n";
+			print "Warning: nothing ran for ($package_name) post_clients phase on server\n";
 		}
 	}
 	else
@@ -1215,9 +1244,17 @@ sub run_uninstall_client
 				return 1;
 			}
 			$retval = cexec_open($cmd_string2, \@rslts); 
-			print @rslts if($retval != 0);
+			if( $retval != 0 ) 
+			{
+				print @rslts; 
+				return(0);
+			}
 			$retval = cexec_open($cmd_string3, \@rslts); 
-			print @rslts if($retval != 0);
+			if( $retval != 0 ) 
+			{
+				print @rslts; 
+				return(0);
+			}
 		}
 		oscar_log_subsection("Completed un-install on client");
 		return (0);
@@ -1444,10 +1481,6 @@ sub check_dependant_package
 	return (0);
 }
 
-#--------------------------------------------------------------------
-# FIXME: Note, it might make since to just get the full command
-#        and internally prepend the 'cexec --pipe c3cmd-filter'
-#        since it must be used for the function to work properly at all!
 #--------------------------------------------------------------------
 #  Descr: Wrapper to perform a C3 cexec command w/ error checking.
 #         Return a boolean code for success/errors & upon error pass
