@@ -77,7 +77,14 @@ $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 # Create the main window...
 my $window = MainWindow->new();
 $window->withdraw();
-$window->title("OSCAR Installation Wizard");
+if( $ENV{'DEBUG_OSCAR_WIZARD'} ) {
+	my $rev = '$Rev$';
+	$rev =~ s/^[^:]+://;
+	$rev =~ s/\s+//;
+	$window->title("OSCAR Installation Wizard ($rev)");
+} else {
+	$window->title("OSCAR Installation Wizard");
+}
 
 # Define the main buttons
 
