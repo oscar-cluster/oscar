@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Makefile.am,v 1.2 2002/10/23 14:57:26 jsquyres Exp $
+# $Id: Makefile.am,v 1.1 2002/10/23 14:57:26 jsquyres Exp $
 #
 
-SUBDIRS			= prereqs serverlists
+SUBDIRS			= media scripts

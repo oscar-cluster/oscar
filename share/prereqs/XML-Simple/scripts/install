@@ -1,0 +1,70 @@
+#!/usr/bin/env perl
+
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: install,v 1.1 2002/10/23 14:57:26 jsquyres Exp $
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Logger;
+use Carp;
+
+# Version included in media directory
+
+my $ver = "1.08";
+my $real_name = "XML-Simple";
+my $module_name = "XML::Simple";
+
+# Helper subroutine
+
+sub do_run {
+    my $cmd = join(' ', @_);
+    if (system($cmd) != 0) {
+	croak("Not able to execute: $cmd");
+    }
+}
+
+# See if we need to install the perl module
+
+oscar_log_subsection("Checking to see if we need to install $module_name");
+my $eval_str = "{ require $module_name }";
+eval $eval_str;
+if ($@) {
+    oscar_log_subsection("$module_name is not yet installed");
+
+    my $topdir = "$ENV{OSCAR_HOME}/share/prereqs/$real_name";
+    my $tarball = "$topdir/media/$real_name-$ver.tar.gz";
+    my $tempdir = "/tmp/oscar-install-$real_name.$$";
+
+    mkdir($tempdir) or carp("Can't create temp dir: $tempdir");
+    chomp(my $pwd = `pwd`);
+    chdir($tempdir);
+
+    do_run("tar zxf $tarball");
+    croak("Not able to chdir($real_name-$ver)")
+	if (!chdir("$real_name-$ver"));
+    do_run("perl Makefile.PL");
+    do_run("make all");
+    do_run("make install");
+
+    oscar_log_subsection("$module_name installed successfully");
+
+    chdir($pwd);
+    system("rm -rf $tempdir");
+} 
+
+# It's already installed -- nothing to do
+
+else {
+    oscar_log_subsection("$module_name appears to be installed already");
+}
+
+# All done
+
+0;
