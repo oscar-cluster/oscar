@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.58 2003/11/01 01:25:41 naughtont Exp $
+# $Id: oscar_wizard,v 1.59 2003/11/14 00:44:06 tfleury Exp $
 #
 
 use strict;
@@ -95,14 +95,22 @@ $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 my $step_number = 0;
 oscar_button($window, "Step $step_number:",
 	     "Download Additional OSCAR Packages...",
-	     [sub { system("cd ../lib/Qt; /usr/bin/perl Opder.pl; cd ../../scripts") }],
+	     [sub { my $olddir = Cwd::cwd();
+              chdir($ENV{OSCAR_HOME} . '/lib/Qt');
+              system('/usr/bin/perl Opder.pl'); 
+              chdir($olddir);
+            }],
 	     'download_packages');
 
 # Select packages for installation
 $step_number++;
 oscar_button($window, "Step $step_number:", 
 	     "Select OSCAR Packages To Install...", 
-	     [sub { system("cd ../lib/Qt; /usr/bin/perl Selector.pl; cd ../../scripts") }], 
+	     [sub { my $olddir = Cwd::cwd();
+              chdir($ENV{OSCAR_HOME} . '/lib/Qt');
+              system('/usr/bin/perl Selector.pl');
+              chdir($olddir);
+            }], 
 	     'select_packages');
 
 # Configure selected packages
@@ -164,8 +172,7 @@ oscar_button($window, "", "Delete OSCAR Clients...",
 	     [\&delnode_window, $window], 'delete_nodes');
 oscar_button($window, "", 
 	     "Install/Uninstall OSCAR Packages...", 
-	     [sub { system("cd ../lib/Qt; /usr/bin/perl Selector.pl -i; cd ../../scripts"); OSCAR::PackageInUn::install_uninstall_packages(); }], 
-	     'install_uninstall_packages');
+       [\&install_uninstall_packages, $window], 'install_uninstall_packages');
 
 
 #
