@@ -7,13 +7,12 @@
 % information, see the COPYING file in the top-level directory of the
 % Env-switcher source distribution.
 %
-% $Id: common.tex,v 1.12 2002/10/30 12:16:17 jsquyres Exp $
+% $Id: common.tex,v 1.13 2002/11/16 19:21:04 jsquyres Exp $
 %
 
-Starting with the OSCAR 1.3 series, there is a generalized mechanism
-to both set a system-level default MPI implementation, and also to
-allow users to override the system-level default with their own choice
-of MPI implementation.
+OSCAR has a generalized mechanism to both set a system-level default
+MPI implementation, and also to allow users to override the
+system-level default with their own choice of MPI implementation.
 
 This allows multiple MPI implementations to be installed on an OSCAR
 cluster (e.g., LAM/MPI and MPICH), yet still provide unambiguous MPI
@@ -86,6 +85,8 @@ default:
   $ switcher mpi = lam-1.2.3
 \end{verbatim}
 
+% Stupid emacs latex mode: $
+
 Using the special name \cmd{none} will indicate that no module should
 be loaded for the \cmd{mpi} tag.  It is most often used by users to
 specify that they do not want a particular software package loaded.
@@ -93,6 +94,8 @@ specify that they do not want a particular software package loaded.
 \begin{verbatim}
   $ switcher mpi = none
 \end{verbatim}
+
+% Stupid emacs latex mode: $
 
 Removing a user default (and therefore reverting to the system-level
 default) is done by removing the \cmd{default} attribute:
@@ -106,3 +109,5 @@ default) is done by removing the \cmd{default} attribute:
   system:default=lam-6.5.6
   system:exists=true
 \end{verbatim}
+
+% Stupid emacs latex mode: $
