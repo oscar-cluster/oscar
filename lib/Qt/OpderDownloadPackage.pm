@@ -437,7 +437,7 @@ sub updateOda
     }
 
   # Copy any RPMs for the package over to the /tftpboot/rpm directory
-  OSCAR::Package::copy_rpms('/var/lib/oscar/packages');
+  OSCAR::Package::copy_pkgs('/var/lib/oscar/packages');
 
 }
 
