@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.21 2002/10/15 08:25:23 jsquyres Exp $
+% $Id: design.tex,v 1.22 2002/10/22 15:14:09 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -134,8 +134,6 @@ image-based installation or node-based installation in mind.
 
 \subsubsection{Package Philosophy}
 
-\begchange
-
 OSCAR packages are essentially collections of RPMs that are
 selectively installed on nodes within an OSCAR cluster.
 
@@ -145,8 +143,6 @@ such as those that contain helper scripts and/or XML-based
 configuration that dictates specific installation behavior.  Package
 authors can choose simplistic or complex models, depending on the
 requirements of their package.
-
-\endchange
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -207,9 +203,30 @@ The following terminology is used throughout the document:
 
 \subsubsection{Sequence of Events}
 
-First, let's explain the sequence of events in the OSCAR installation.
-This will include the proposed API calls -- they'll be explained in
-more detail below.  
+First, let's explain the sequence of events in the OSCAR installation
+(see Table~\ref{tab:sequence-of-events}).  This will include the
+proposed API calls -- they'll be explained in more detail below.
+
+\begchange
+
+\begin{discuss}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Need to add verbage about:
+
+  \begin{itemize}
+  \item download additional OSCAR packages
+  \item run setup API script
+  \item read XML config scripts
+  \item fill in any missing data (e.g., RPM lists)
+  \item select OSCAR packages to install
+  \item configure selected OSCAR packages
+  \end{itemize}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{discuss}
 
 \begin{table}[htbp]
   \begin{center}
@@ -219,6 +236,13 @@ more detail below.
         \multicolumn{1}{c}{Location} \\
         \hline
         1. & Install all the server RPMs & Server filesystem \\
+%
+        1.1. & Call the API script(s): \cmd{setup} & Server filesystem \\
+%
+        1.2. & Read XML config files \\
+%
+        1.3. & ......More stuff about selecting / installing
+             packages... \\
 %
         2. & Call the API script(s): \cmd{post\_server\_rpm\_install} &
         Server filesystem \\
@@ -258,6 +282,8 @@ forms of installation.  For example, in a kickstart-oriented
 installation, step 5 (define clients in a database) may actually occur
 earlier.  However, the order of execution of the API scripts will
 still remain the same.
+
+\endchange
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -302,35 +328,36 @@ that should be noted.  These supplemental files exist in the top-level
 package directory:
 
 \begin{itemize}
-\item \file{configure}: 
 
-  \begin{discuss}
-    This has been agreed to (conceptually) in an OSCAR teleconference,
-    but its specifics have not yet been discussed.
-  \end{discuss}
+\begchange
 
-\item \file{server.rpmlist}: This per-package file contains a list of
-  RPM filenames (one per line) of RPMs that are installed during step
-  1.  At present, the RPM files listed in this file will be installed
-  on the head node.  However, once the restriction on a single head
-  node running all servers is removed, the server list may be
-  installed on an arbitrary node or set of nodes in the cluster (at
-  the user's discretion).
+\item \file{server.rpmlist}: {\em This file is deprecated in favor of
+    functionality in \file{config.xml}.  Support for this file will be
+    removed in a future OSCAR release.}
+  
+  This per-package file contains a list of RPM filenames (one per
+  line) of RPMs that are installed during step 1.  At present, the RPM
+  files listed in this file will be installed on the head node.
+  However, once the restriction on a single head node running all
+  servers is removed, the server list may be installed on an arbitrary
+  node or set of nodes in the cluster (at the user's discretion).
   
   Primitive conflict resolution is run on this list, checking for such
   things as two versions of the same RPM, etc.  However, the majority
   of burden for RPM conflict resolution is up to the package author --
   don't include RPMs that will be problematic.\footnote{ Perhaps
-    someday we can relax this constraint, but not for 1.3.  It still
-    adheres to the ``do-no-harm'' philosophy, because packages that
-    don't have conflicts will still be legal if we do eventually
-    introduce sophisticated RPM conflict resolution.}
+    someday we can relax this constraint, but not for this version.
+    It still adheres to the ``do-no-harm'' philosophy, because
+    packages that don't have conflicts will still be legal if we do
+    eventually introduce sophisticated RPM conflict resolution.}
   
-\item \file{client.rpmlist} Same as the server.rpmlist file, except
-  that it contains the RPM filenames for the RPMs installed in step 3.
+\item \file{client.rpmlist}: {\em This file is deprecated in favor of
+    functionality in \file{config.xml}.  Support for this file will be
+    removed in a future OSCAR release.}
   
-\begchange
-
+  Same as the server.rpmlist file, except that it contains the RPM
+  filenames for the RPMs installed in step 3.
+  
 \item \file{config.xml} This file is a combination of many different
   configuration items.  It is described in
   Section~\ref{sec:config-xml}.
@@ -338,7 +365,8 @@ package directory:
 \end{itemize}
 
 Note that if neither \file{server.rpmlist} nor \file{client.rpmlist}
-are present, then all RPMs will be installed on all nodes.
+are present (and no \xmltag{rpmlist} stanzas are listed in the
+\file{config.cml} file), then all RPMs will be installed on all nodes.
 
 \endchange
 
@@ -511,7 +539,29 @@ or Optional, respectively.
   
   Optional/Singular.  If not supplied, the value
   ``\xmlval{$<$none$>$}'' is used.
-  
+
+\item \xmltag{Maintainer}: An outter tag indicating the name and/or
+  e-mail address of the person / group maintaining the original
+  software package.
+
+  Optional/Singular.  If not supplied, the value
+  ``\xmlval{$<$none$>$}'' is used.
+
+  \begin{itemize}
+  \item \xmltag{name}: String indicating the name of the OSCAR
+    packager.
+    
+    Optional/Singular.  If supplied, it will be the first portion of
+    the ``Maintainer'' combined string.
+    
+  \item \xmltag{email}: String indicating the e-mail address of the
+    package maintainer.
+    
+    Optional/Singular.  If supplied, it will be the second portion of
+    the ``Maintainer'' combined string, and will be enclosed in $<$
+    and $>$.
+  \end{itemize}
+
 \item \xmltag{packager}: An outter tag indicating the name and/or
   e-mail address of the person / group maintaining the OSCAR package.
 
@@ -539,7 +589,52 @@ or Optional, respectively.
   
   Optional/Singular.  If not supplied, the value
   ``\xmlval{$<$none$>$}'' is used.
+
+\item \xmltag{rpmlist}: A top-level tag supplying lists of RPMs to be
+  installed by the OSCAR framework.  This functionality is meant to
+  replace the now-deprecated \file{server.rpmlist} and
+  \file{client.rpmlist} files.  If this tag is supplied, one or more
+  scoping stanzas will be listed that contain lists of RPM filenames.  
+    
+  There are currently only three scoping tags defined.  Each scope, if
+  listed, includes a list of RPM names.  Primitive conflict resolution
+  is run on this list, checking for such things as two versions of the
+  same RPM, etc.  However, the majority of burden for RPM conflict
+  resolution is up to the package author -- don't include RPMs that
+  will be problematic.\footnote{ Perhaps someday we can relax this
+    constraint, but not yet.}
+
+  Optional/Singular.  If not supplied (and the \file{client.rpmlist}
+  and \file{server.rpmlist} files do not exist), then all RPMs found
+  in the \file{RPMS} directory will be installed on all nodes.  
   
+  \begin{itemize}
+  \item \xmltag{all}: Install all the listed RPMs in all available
+    scopes.
+
+    Optional/Singular.
+    
+  \item \xmltag{server}: Install all the listed RPMs on the OSCAR
+    server node.
+
+    Optional/Singular.
+
+  \item \xmltag{client}: Install all the listed RPMs on the OSCAR
+    client nodes.
+
+    Optional/Singular.
+  \end{itemize}
+
+  It is erroneous to have a \xmltag{rpmlist} stanza without at least
+  one scoping tag containing at least one valid RPM name.
+  
+  Each provided scoping tag must contain one or more \xmltag{rpm}
+  tags.  Each \xmltag{rpm} tag contains a single RPM filename.
+  Typically, only the ``unique'' portion of the RPM filename is
+  required, not the entire filename.  For example, the string
+  ``\file{lam-oscar}'' is all that is required to specify the RPM
+  named \file{lam-oscar-6.5.7-usysv.7.i586.rpm}.
+
 \item \xmltag{provides}: A top-level tag effectively indicating
   synonyms for the package name for use during the dependency
   analysis.  There may be zero or more \xmltag{provides} 
@@ -800,12 +895,13 @@ following variables defined that may be useful:
       \multicolumn{1}{|c|}{Contents} \\
       \hline
       \hline
-      OSCAR\_HEAD\_INTERNAL\_INTERFACE & The network interface on the 
-      head node that connects to the cluster (e.g. eth0).\\
+      \envvar{OSCAR\_HEAD\_INTERNAL\_INTERFACE} & The network
+      interface on the head node that connects to the cluster (e.g.,
+      \file{eth0}).\\
 %
       \hline
-      OSCAR\_HOME & The root path of the OSCAR tree 
-      (e.g. /root/oscar-1.4). \\ 
+      \envvar{OSCAR\_HOME} & The root path of the OSCAR tree 
+      (e.g., \file{/root/oscar-1.4}). \\ 
 %
       \hline
     \end{tabular}
@@ -817,6 +913,44 @@ following variables defined that may be useful:
 So let's now discuss each of the API calls in detail.
 
 \begin{itemize}
+
+\begchange
+
+\item \file{setup} (step N)
+  
+  This script is called before anything else happens with the package.
+  It is intended to allow packages to customize themselves for the
+  particular system that they are being installed on (analogous to GNU
+  \cmd{configure} scripts).  This customization typically involes
+  running some tests and then writing (or re-writing) the package's
+  XML configuration file (this step is run before the OSCAR framework
+  reads the package's XML configuration file).  Hence, typical actions
+  that the \cmd{setup} API script can perform include: selecting a set
+  of system-specific RPMs to be installed, declaring that the package
+  is not installable on this system, etc.
+
+  Guidelines:
+
+  \begin{itemize}
+  \item This script will be run on the head node.
+  \item This script must be safely re-runnable; it may be run multiple
+    times over the life of the cluster.
+  \item This script can {\em only} modify anything on the server
+    filesystem, but must restrict itself to only things that are
+    relevant to that package.
+  \item This script cannot modify any client filesystems.
+  \item This script cannot use anything from the OSCAR/SIS database,
+    because there isn't much (any?) information in it yet.
+  \end{itemize}
+
+  Parameters:
+  
+  \begin{itemize}
+  \item None.
+  \end{itemize}
+
+\endchange
+  
 \item \file{post\_server\_rpm\_install} (step 2)\footnote{A deprecated
     filename of this script is \file{post\_\-server\_\-install}.  The
     new name \file{post\_server\_rpm\_install} should be used in all
@@ -833,7 +967,7 @@ So let's now discuss each of the API calls in detail.
     the OSCAR framework without needing to re-make the RPM.
   \item This script must be safely re-runnable; it may be run multiple
     times over the life of the cluster.
-  \item This script can *only* modify anything on the server
+  \item This script can {\em only} modify anything on the server
     filesystem, but should restrict itself to only things that are
     relevant to that package.
   \item This script cannot modify any client filesystems.
