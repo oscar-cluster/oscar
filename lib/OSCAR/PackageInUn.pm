@@ -51,6 +51,7 @@ our @EXPORT = qw(install_uninstall_packages
 
 my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
 my @error_list = ();
+my %options = ();
 
 #########################################################################
 #  Subroutine: install_uninstall_packages                               #
@@ -89,11 +90,20 @@ sub install_uninstall_packages
   system('/usr/bin/perl Selector.pl -i');
   chdir($olddir);
 
+
+	# START LOCKING FOR NEST
+	my @tables = ("packages", "oda_shortcuts");
+	
+	locking("read", \%options, \@tables, \@error_list);
+	
 	# Get the lists of packages that need to be installed/uninstalled
-	$success = OSCAR::Database::database_execute_command(
+	$success = OSCAR::Database::dec_already_locked(
 		"packages_that_should_be_installed",\@packagesThatShouldBeInstalled);
-	$success = OSCAR::Database::database_execute_command(
+	$success = OSCAR::Database::dec_already_locked(
 		"packages_that_should_be_uninstalled",\@packagesThatShouldBeUninstalled);
+	# UNLOCKING FOR NEST
+	unlock(\%options, \@error_list);
+
 
   # If the user selected any packages for installation, prompt to see if he
   # wants to run the Configurator.
@@ -154,10 +164,14 @@ sub install_uninstall_packages
 		if (!$success)
 		{
 			#already done by underlying functions
-			#OSCAR::Database::database_execute_command(
-			# "package_clear_installed $package");
-			OSCAR::Database::database_execute_command("package_clear_should_be_uninstalled $package");
+
+			my @tables = ("packages","oda_shortcuts");
+			
+			my @error_list = ();
+	
+			OSCAR::Database::single_database_execute("package_clear_should_be_uninstalled $package","write",\@tables,undef,\@error_list);
 			&uninstall_package($package);
+
 		}
 		else
 		{
@@ -178,10 +192,14 @@ sub install_uninstall_packages
 		if (!$success)
 		{
 			#this bit is already set by underlying code
-			#OSCAR::Database::database_execute_command(
-			#  "package_mark_installed $package");
-			OSCAR::Database::database_execute_command("package_clear_should_be_installed $package");
+
+			my @tables = ("packages", "oda_shortcuts");
+			
+			my @error_list = ();
+	
+			OSCAR::Database::single_database_execute("package_clear_should_be_installed $package","write",\@tables,undef,\@error_list);
 			&install_package($package);
+
 		}
 		else
 		{
@@ -1267,10 +1285,11 @@ sub is_package_a_package
 	my ($package_name) = @_;
 
 	my $cmdstring = "read_records packages name name=\"$package_name\"";
+    my @tables = ("packages");
 	my @my_result;
 	my $error_code = 1;
 
-	OSCAR::Database::database_execute_command($cmdstring, \@my_result, $error_code);
+	OSCAR::Database::single_database_execute($cmdstring,"READ",\@tables, \@my_result, $error_code);
 
 	if ($my_result[0] =~ $package_name)
 	{
@@ -1293,7 +1312,13 @@ sub set_installed
 
 	my $cmdstring = "modify_records packages name=\"$package_name\" installed~1";
 
-	OSCAR::Database::database_execute_command($cmdstring, \@my_result, $error_code);
+	my @tables = ("packages");
+	
+	my @error_list = ();
+	
+	OSCAR::Database::single_database_execute($cmdstring,"WRITE",\@tables,\@my_result, $error_code);
+
+
 }
 
 #this sets the installed field in table packages to 0
@@ -1310,7 +1335,12 @@ sub set_uninstalled
 
 	my $cmdstring = "modify_records packages name=\"$package_name\" installed~0";
 
-	OSCAR::Database::database_execute_command($cmdstring, \@my_result, $error_code);
+	my @tables = ("packages");
+	
+	my @error_list = ();
+	
+	OSCAR::Database::single_database_execute($cmdstring,"WRITE",\@tables,\@my_result, $error_code);
+
 }
 
 #queries oda to see if a package is installed
@@ -1328,8 +1358,9 @@ sub is_installed
 	my $error_code; 
 
 	my $cmdstring = "read_records packages installed name=\"$package_name\"";
+	my @tables = ("packages");
 
-	OSCAR::Database::database_execute_command($cmdstring, \@my_result, $error_code);
+	OSCAR::Database::single_database_execute($cmdstring,"READ",\@tables,\@my_result, $error_code);
 
 	return $my_result[0];
 }
@@ -1660,10 +1691,11 @@ sub check_package_dependancy
 	my ($package_name) = @_;
 	my $cmdstring = "read_records packages_requires name package=\"$package_name\"";
 	my @my_result;
+    my @tables = ("packages_requires");
 	my $error_code = 1;
 	my $record;
 
-	OSCAR::Database::database_execute_command($cmdstring, \@my_result, $error_code);
+	OSCAR::Database::single_database_execute($cmdstring,"READ",\@tables,\@my_result, $error_code);
 
 	foreach $record (@my_result)
 	{
@@ -1686,10 +1718,11 @@ sub check_dependant_package
 	my ($package_name) = @_;
 	my $cmdstring = "read_records packages_requires package name=\"$package_name\"";
 	my @my_result;
+    my @tables = ("packages_requires");
 	my $error_code = 1;
 	my $record;
 
-	OSCAR::Database::database_execute_command($cmdstring, \@my_result, $error_code);
+	OSCAR::Database::single_database_execute($cmdstring,"READ",\@tables,\@my_result, $error_code);
 
 	foreach $record (@my_result)
 	{
@@ -1840,8 +1873,9 @@ sub print_errors
 # The records corresponding to the selected package name will be deleted.
 
 sub uninstall_package{
+    my @tables = ("config_opkgs", "node_config_revs", "oda_shortcuts");
     my $opkg = shift;
-    if (system("oda uninstall_opkg $opkg")) {
+    if (! single_database_execute("uninstall_opkg $opkg", "WRITE",\@tables,undef,\@error_list) ) {
          carp("Failed to delete a record from config_opkgs");
     }
 }
@@ -1851,12 +1885,17 @@ sub uninstall_package{
 # The records corresponding to the selected package name will be inserted.
 sub install_package{
     my $opkg = shift;
-    chomp(my @configs_id = `oda rea configurations.id configurations.name=nodes.name`);
+    my @error_list = ();
+    my @configs_id =();
+    my @tables = ("configurations", "nodes","config_opkgs","node_config_revs","oda_shortcuts");
+    locking("WRITE",\%options, \@tables, \@error_list);
+    dec_already_locked("read_records configurations.id configurations.name=nodes.name", \@configs_id);
     foreach my $config_id (@configs_id){
-        if (system("oda install_opkg $config_id $opkg")) {
+        if (! dec_already_locked("install_opkg $config_id $opkg") ) {
              carp("Failed to insert a record into config_opkgs");
         }
     }
+    unlock(\%options, \@error_list);
 }
 
 #

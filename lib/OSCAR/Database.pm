@@ -1105,13 +1105,21 @@ sub database_rpmlist_for_package_and_group {
 			      ref($print_errors) eq "ARRAY" ) ?
 			      $print_errors : \@error_strings;
     my $number_of_records = 0;
-    if ( ! oda::read_records( $options_ref,
+    # START LOCKING FOR NEST
+    my %options = ();
+    my @tables = ("packages", "packages_rpmlists");
+    locking("read", \%options, \@tables, $error_strings_ref);
+    my $success = 
+         oda::read_records( $options_ref,
 			      \@tables_fields,
 			      \@wheres,
 			      \@packages_rpmlists_records,
 			      1,
 			      $error_strings_ref,
-			      \$number_of_records ) ) {
+			      \$number_of_records ) ;
+    # UNLOCKING FOR NEST
+    unlock(\%options, $error_strings_ref);
+    if ( ! $success ) {
 	push @$error_strings_ref,
 	"Error reading packages_rpmlists records for package $package";
 	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {

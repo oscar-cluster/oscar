@@ -189,7 +189,13 @@ sub getSelectedConfigurablePackages
   # output format).
   my @resultref;
   my %packages;
-  OSCAR::Database::database_execute_command(
+
+  # START LOCKING FOR NEST
+  my @tables = ("oscar", "packages", "packages_sets", "package_sets_included_packages", "oda_shortcuts");
+  my @error_list = ();
+  my %options = ();
+  locking("WRITE", \%options, \@tables, \@error_list);
+  OSCAR::Database::dec_already_locked(
     "packages_in_selected_package_set packages.package", \@resultref, 1);
 
   # Transform the list into a hash; keys=short pkg name, values=long pkg name
@@ -201,15 +207,17 @@ sub getSelectedConfigurablePackages
 
   # Add in any packages which "should_be_installed"
   my @pkginstall = ();
-  OSCAR::Database::database_execute_command(
+  OSCAR::Database::dec_already_locked(
     "packages_that_should_be_installed", \@pkginstall);
   foreach my $package (@pkginstall)
     { # Get the long name and add the short name/long name to the hash
       my @longname = ();
-      OSCAR::Database::database_execute_command(
+      OSCAR::Database::dec_already_locked(
         "read_records packages name=$package package",\@longname);
       $packages{$package} = ((defined $longname[0]) ? $longname[0] : $package);
     }
+  # UNLOCKING FOR NEST
+  unlock(\%options, \@error_list);
 
   return \%packages;
 }
