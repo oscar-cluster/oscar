@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 
 #   ganglia Server Preparation script
 #   Steven A. DuChene  <linux-clusters@mindspring.com>
+#   mandrake msec modification : Benoit des Ligneris <benoit@des.ligneris.net>
 
 use strict;
 use Carp;
@@ -27,3 +28,37 @@ use Carp;
 !system("service gmond start") or croak("Couldn't start gmond");
 !system("service ganglia-php-rrd start") or croak("Couldn't start ganglia-php-rrd");
 
+# Test if Mandrake Security is installed and modify the permission for
+# /var/log/ganglia as requested for ganglia-php 
+
+if (`rpm -q msec --queryformat "%{NAME}"` eq "msec") {
+	# msec is installed
+	# Have to adjust the security for /var/log/ganglia
+
+	if (`grep "#OSCAR msec modification" /etc/security/msec/perm.local`)
+		{
+			system("/bin/chmod -R ugo+rx /var/log/ganglia/");
+			print "msec modification already done for ganglia                      [  OK  ]\n";
+		}
+	else
+		{
+			open (MSEC,">>/etc/security/msec/perm.local") or
+			croak ("No /etc/security/msec/perm.local found !");
+
+			print MSEC <<__EOF
+#OSCAR msec modification
+/var/log/ganglia				root.root		755
+/var/log/ganglia/*				root.root		755
+/var/log/ganglia/rrds/*				root.root		755
+__EOF
+;
+
+			close MSEC ;
+			system("/bin/chmod -R ugo+rx /var/log/ganglia/");
+			print "OSCAR msec Modification for ganglia                             [  OK  ]\n";
+}
+}
+else
+{
+print "msec not installed                                              [  OK  ]\n";
+}
