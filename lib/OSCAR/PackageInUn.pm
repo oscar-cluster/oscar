@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.9 2003/11/03 02:23:05 muglerj Exp $
+#  $Id: PackageInUn.pm,v 1.10 2003/11/03 05:54:23 naughtont Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -1425,5 +1425,118 @@ sub check_package_dependancy
 	}
 	return (0);
 } 
+
+
+
+#--------------------------------------------------------------------
+# FIXME: Note, it might make since to just get the full command
+#        and internally prepend the 'cexec --pipe c3cmd-filter'
+#        since it must be used for the function to work properly at all!
+#--------------------------------------------------------------------
+#  Descr: Wrapper to perform a C3 cexec command w/ error checking.
+#         Return a boolean code for success/errors & upon error pass
+#         the command output back for logging, etc.
+#  Input: Command to execute (cexec --pipe c3cmd-filter ...)
+#         Array reference to hold error output
+# Output: Result array containing command output 
+# Return: 0 (success), 1 (errors)
+#  Usage:  my $rc = cexec_open($cmd, \@rslts); 
+#          print @rslts if($rc != 0);
+#
+#   Note: Requires 'c3cmd-filter' to determine node errors.
+#   Note: Returns all output upon error, use trimmer function to trim
+#         to only the problem nodes, ie. only get node that failed.
+#--------------------------------------------------------------------
+sub cexec_open
+{
+	my $cmd  = shift;
+	my $aref = shift;
+	my @rslt;
+
+	if( defined( open(CMD, "$cmd 2>&1 |")) ) { # Redirect STDERR to STDOUT
+		@rslt = <CMD>;
+		close(CMD);
+
+		if( $CHILD_ERROR == 0 ) {
+			# C3 cmd went fine, process results from 'c3cmd-filter'
+			if( eval_c3cmd_filter(@rslt) == 0 ) {
+				# Success: No node errors
+				@{$aref} = ();
+				return(0);
+			}
+			else {
+				# Errors: Node(s) had errors
+				push @{$aref}, @rslt;
+				return(1); 
+			}
+        	}
+		else {
+			# C3 Command had an erroneous result
+			push @{$aref}, @rslt;
+			return($CHILD_ERROR);
+		}
+	}
+	else {
+		# Open failed
+		push @{$aref}, "Error: Open failed ($cmd) $!\n";
+		return(1);
+	}
+
+	# Should never get here.
+	return(0);
+}
+
+
+#--------------------------------------------------------------------
+#  Descr: Walk over output from 'cexec --pipe c3cmd-filter CMD' and
+#         return a boolean code for success/errors.
+#  Input: Array containing output from 'cexec --pipe c3cmd-filter'
+# Output: n/a
+# Return: 0 (success), 1 (errors)
+#  Usage:  $rc = eval_c3cmd_filter(@rslt);
+#   Note: Requires 'c3cmd-filter' to determine node errors.
+#--------------------------------------------------------------------
+sub eval_c3cmd_filter
+{
+	my @rslt = @_;
+	my $e = 0;
+
+	foreach my $ln (@rslt) {
+		my ($node, $output) = split(/:(.*)$/, $ln);
+		if($output) {
+			$e = 1;
+			last;
+		}
+	}	
+
+	return( $e );
+}
+
+
+
+#--------------------------------------------------------------------
+# FIXME: I still have to code this method.  The main reason I've not done
+#        this yet is b/c I want to make sure I don't skip blank lines from
+#        commands, even when they are erroneous, ie. error lines but have '\n\n' :)
+#        Likely use a HoL, and keys() is the num nodes & then flatten to array
+#        upon return for easy caller usage.
+#--------------------------------------------------------------------
+#  Descr: Trims 'cexec --pipe' output to remove blank responses from nodes.
+#  Input: Array reference for trimmed results,
+#         Array containing output from a 'cexec --pipe'
+# Output: Array reference containing trimmed output 
+# Return: Number of unique nodes remaining in output
+#  Usage:  $n = trim_cexec-pipe_output(\@trim_rslts, @output);
+#--------------------------------------------------------------------
+sub trim_cexec_pipe_output
+{
+	my $trslts = shift;  # Array ref (output variable)
+	my $rslts  = @_;  
+	my $n = 0; 
+
+	print "STUB: THIS IS NOT READY YET.\n";
+	return(-1);
+}
+
 
 1;
