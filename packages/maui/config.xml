@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<oscar>
+  <!--
+      $Id: 
+  -->
+  <name>maui</name>
+
+  <version>
+    <major>3</major>
+    <minor>2</minor>
+    <subversion>5</subversion>
+    <release>7</release>
+  </version>
+
+  <class>included</class>
+  <installable>1</installable>
+
+  <summary>Maui Scheduler</summary>
+  <license>Maui license</license>
+  <group>Applications/batch</group>
+  <packager>
+    <name>Jason Brechin</name>
+    <email>brechin@ncsa.uiuc.edu</email>
+  </packager>
+
+  <description>
+Maui is an advanced job scheduler for use on clusters and supercomputers.
+It is a highly configurable tool capable of supporting a large array of
+fairness policies, dynamic priorities, extensive reservations, and fairshare.
+It is currently in use at many of the leading government and academic labs
+throughtout the US and around the world.  It is running on machines ranging
+from clusters of a few processors to multi-teraflop supercomputers.
+
+This version of Maui has been modified slightly to be usable under the
+OSCAR cluster software system.</description>
+
+  <rpmlist>
+    <server>
+      <rpm>maui-oscar</rpm>
+    </server>
+  </rpmlist>
+
+</oscar>

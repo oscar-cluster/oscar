@@ -1,0 +1,28 @@
+#!/bin/sh
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+
+# $Id:
+#
+# Authors: Jason Brechin
+
+for serv in maui ; do
+  if [ `/etc/init.d/$serv status | grep -c "is running"` -eq 0 ]; then
+    # Let's try to start the service
+    /etc/init.d/$serv start
+    if [ `/etc/init.d/$serv status | grep -c "is running"` -eq 0 ]; then
+      echo "Could not start $serv, please check configuration and rerun tests"
+        $OSCAR_TESTPRINT --label "Maui service check:$serv" -f
+        exit 1
+    else
+        $OSCAR_TESTPRINT --label "Maui service check:$serv" -p
+    fi
+  else
+    $OSCAR_TESTPRINT --label "Maui service check:$serv" -p
+  fi
+done
+
+exit 0
+
