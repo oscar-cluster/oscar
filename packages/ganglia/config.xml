@@ -11,7 +11,7 @@
     <epoch>1</epoch>
   </version>
 
-  <class>third-party</class>
+  <class>included</class>
 
   <summary>distributed monitoring and execution system</summary>
   <license>freely distributable</license>
