@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.19 2002/05/08 21:03:53 mchasal Exp $
+% $Id: detailed.tex,v 1.20 2002/06/09 16:18:18 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -35,23 +35,20 @@ installation requirement is that some X environment such as GNOME or
 KDE must be installed. Therefore, a typical workstation install is
 sufficient.
 
-\begchange
 If you install Red Hat 7.1 on the server machine, during the
-installation you should enable the ipchains-base firewall that is 
-included with the Red Hat distribution in medium mode.
-Other firewalls that are stronger and more versatile can be installed
-later, but this will offer some protection until that time.
-Note that OSCAR currently assumes that only the server machine is
-exposed to the general network, with the server and the rest of the
-cluster's machines being on a private network. To keep the Red Hat
-firewall from interfering with network traffic between the server
-machine and the other machines in the cluster, OSCAR automatically
-disables portions of the Red Hat firewall. This may not have the
-intended results in the situation where all the cluster machines
-are exposed on the general network.
-See Appendix~\ref{app:security} for more information about firewalls
-and other security software that can be installed. 
-\endchange
+installation you should enable the ipchains-base firewall that is
+included with the Red Hat distribution in medium mode.  Other
+firewalls that are stronger and more versatile can be installed later,
+but this will offer some protection until that time.  Note that OSCAR
+currently assumes that only the server machine is exposed to the
+general network, with the server and the rest of the cluster's
+machines being on a private network. To keep the Red Hat firewall from
+interfering with network traffic between the server machine and the
+other machines in the cluster, OSCAR automatically disables portions
+of the Red Hat firewall. This may not have the intended results in the
+situation where all the cluster machines are exposed on the general
+network.  See Appendix~\ref{app:security} for more information about
+firewalls and other security software that can be installed.
 
 \subsubsection{Disk space and directory considerations}
 \label{det:serverdiskpar}
@@ -104,38 +101,32 @@ subdirectory.
 If you are reading this, you probably already have a copy. If not, go
 to \url{http://oscar.sourceforge.net/} and download the latest OSCAR
 tarball, which will be named something like
-\file{oscar-\oscarversion.tgz}.  The version used in these
+\file{oscar-\oscarversion.tar.gz}.  The version used in these
 instructions is \oscarversion, which you should replace with the
-version you download in any of the sample \begchange commands. Copy
-the OSCAR tarball to a directory such as \file{/root} on \endchange
-your server. There is no required installation directory, except that
-you may not use \file{/usr/local/oscar}, which is reserved for special
-use. Do {\bf not} unpack the tarball on a Windows based machine and
-copy the directories over to the server, as this will convert all the
-scripts to the dreaded ``DOS'' format and will render them useless
-under Linux.  Assuming you placed the OSCAR tarball in \begchange
-\file{/root}, \endchange open a command terminal and issue the
-following commands to unpack OSCAR:
+version you download in any of the sample commands. Copy the OSCAR
+tarball to a directory such as \file{/root} on your server.  There is
+no required installation directory, except that you may not use
+\file{/usr/local/oscar}, which is reserved for special use. Do {\bf
+  not} unpack the tarball on a Windows based machine and copy the
+directories over to the server, as this will convert all the scripts
+to the dreaded ``DOS'' format and will render them useless under
+Linux.  Assuming you placed the OSCAR tarball in \file{/root}, open a
+command terminal and issue the following commands to unpack OSCAR:
 
 % We have to use \tt instead of {verbatim} because we need to use
 % \oscarversion inside.  This makes it somewhat painful -- much less
 % easy than {verbatim}.
 \vspace{11pt}
-\begchange
 {\tt
   cd /root \\
-\indent  tar -zxvf oscar-\oscarversion.tgz
+\indent  tar -zxvf oscar-\oscarversion.tar.gz
 }
-\endchange
 \vspace{11pt}
     
 The result is the creation of an OSCAR directory structure that is
 laid out as show in Table~\ref{tab:oscar-dir-struct} (again assuming
-\begchange
 \file{/root}).
-\endchange
 
-\begchange
 \begin{table}[htbp]
   \begin{center}
     \begin{tabular}{|l|p{3in}|}
@@ -149,36 +140,40 @@ laid out as show in Table~\ref{tab:oscar-dir-struct} (again assuming
       \file{/root/oscar-\oscarversion/COPYING} & GNU General Public License
       v2 \\
 %
-      \file{/root/oscar-\oscarversion/README.first} & README first document \\
+      \file{/root/oscar-\oscarversion/doc} & OSCAR documentation directory \\
 %
-      \file{/root/oscar-\oscarversion/packages} & contains rpms and installation
-      files for the OSCAR packages \\
-%
-      \file{/root/oscar-\oscarversion/docs} & OSCAR documentation directory \\
+      \file{/root/oscar-\oscarversion/images} & auxillary images used
+      in the GUI \\
 %
       \file{/root/oscar-\oscarversion/install\_cluster} & main installation
       script \\
 %
-      \file{/root/oscar-\oscarversion/oscarsamples} & contains sample OSCAR
-      files \\
+      \file{/root/oscar-\oscarversion/lib} & auxillary library
+      routines \\
+%
+      \file{/root/oscar-\oscarversion/oscarsamples} & sample
+      configuration files \\
+%
+      \file{/root/oscar-\oscarversion/packages} & RPM and installation
+      files for the OSCAR packages \\
+%
+      \file{/root/oscar-\oscarversion/README*} & text README documents \\
 %
       \file{/root/oscar-\oscarversion/scripts} & contains scripts that do most
       of the work \\
 %
-      \file{/root/oscar-\oscarversion/testing} & contains OSCAR Cluster Test
+      \file{/root/oscar-\oscarversion/share} & more auxilliary helper
+      files \\
+%
+      \file{/root/oscar-\oscarversion/testing} & contains OSCAR cluster test
       software \\
       \hline
     \end{tabular}
-    \caption{OSCAR file directory layout.}
+    \caption{OSCAR distribution package file and directory layout.}
     \label{tab:oscar-dir-struct}
   \end{center}
 \end{table}
-\endchange
-Notice that the base directory  has a configure script -- ignore
-it.  The configure script is not used in the installation process
-of OSCAR unless you need to build the documentation from its LaTeX
-source.
-  
+
 \subsubsection{Configure the ethernet adapter for the cluster} 
 \label{det:serveradapter}
 
@@ -211,35 +206,24 @@ adapter is configured on device ``\file{eth0}'', then you should most
 likely select ``\file{eth1}'' as the device, assuming you have no
 other adapters installed. After selecting the appropriate interface,
 press the \button{Edit} button to update the information for the
-cluster network adapter. Enter a private IP address
-\begchange
-\footnote
-{
-  There are
-  three private IP address ranges: 10.0.0.0 to 10.255.255.255;
+cluster network adapter. Enter a private IP address\footnote { There
+  are three private IP address ranges: 10.0.0.0 to 10.255.255.255;
   172.16.0.0 to 172.32.255.255; and 192.168.0.0 to 192.168.255.255.
   Additional information on private intranets is available in RFC
-  1918.
-  You should not use the IP addresses 10.0.0.0 or 172.16.0.0 or 
-  192.168.0.0 for the server.  If you use one of these addresses 
-  the network installs of the client nodes will fail (rpc has 
-  problems).
-}
-\endchange
-and the associated netmask\footnote{The netmask
-  255.255.255.0 should be sufficient for most OSCAR clusters.}  in
-their respective fields. Additionally, you should be sure to press the
-\button{Activate interface at boot time} button and set the
-\button{Interface configuration protocol} to ``none''.  After
-completing the updates, press the \button{Done} button to return to
-the main utility window,
-\begchange
+  1918.  You should not use the IP addresses 10.0.0.0 or 172.16.0.0 or
+  192.168.0.0 for the server.  If you use one of these addresses the
+  network installs of the client nodes will fail (rpc has problems).
+  } and the associated netmask\footnote{The netmask 255.255.255.0
+  should be sufficient for most OSCAR clusters.}  in their respective
+fields. Additionally, you should be sure to press the \button{Activate
+  interface at boot time} button and set the \button{Interface
+  configuration protocol} to ``none''.  After completing the updates,
+press the \button{Done} button to return to the main utility window,
 pressing the \button{Save} button in the Save current configuration
-menu that pops up.
-\endchange
-Then press the \button{Save} button at the bottom of the main network
-configuration window to confirm your changes, and then press the
-\button{Quit} to leave the network configuration utility.
+menu that pops up.  Then press the \button{Save} button at the bottom
+of the main network configuration window to confirm your changes, and
+then press the \button{Quit} to leave the network configuration
+utility.
   
 Now reboot your machine to ensure that all the changes are propagated
 to the appropriate configuration files. To confirm that all ethernet
@@ -260,34 +244,28 @@ utility again to resolve the problem.
 \label{det:rpmcopy}
 
 In this step, you need to copy the rpms included with your Linux
-distribution into the \file{/tftpboot/rpm} directory. 
-\begchange
-Insert each of the distribution CDs in turn.
-When each one is inserted, linux will automatically make the
-contents of the CD be available in the \file{/mnt/cdrom} directory.
-Then for each CD locate the directory that contains the rpms.
-In Red Hat 7.1, the rpms are located in the \file{RedHat/RPMS}
-directory, which will appear on the system as the 
-\file{/mnt/cdrom/RedHat/RPMS} directory. 
-\endchange
- After locating the rpms on the each CD, copy them into
-\file{/tftpboot/rpm} with a command such as:
+distribution into the \file{/tftpboot/rpm} directory.  Insert each of
+the distribution CDs in turn.  When each one is inserted, linux will
+automatically make the contents of the CD be available in the
+\file{/mnt/cdrom} directory.  Then for each CD locate the directory
+that contains the rpms.  In Red Hat 7.1, the rpms are located in the
+\file{RedHat/RPMS} directory, which will appear on the system as the
+\file{/mnt/cdrom/RedHat/RPMS} directory.  After locating the rpms on
+the each CD, copy them into \file{/tftpboot/rpm} with a command such
+as:
 
 \begin{verbatim}
   cp /mnt/cdrom/RedHat/RPMS/*.rpm /tftpboot/rpm
 \end{verbatim}
   
 Be sure to repeat the above process for both CDs when using Red Hat
-7.1.
-\begchange
-After using each CD you will have to unmount it from the local
+7.1.  After using each CD you will have to unmount it from the local
 file system by issuing these commands:
 
 \begin{verbatim}
   cd
   umount /mnt/cdrom
 \end{verbatim}
-\endchange
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
@@ -301,7 +279,6 @@ environment, due to the graphical nature of the OSCAR.
 \subsubsection{Change to the OSCAR directory and run \file{install\_cluster}}
 \label{det:installcluster}
 
-\begchange
 If the OSCAR directory was placed in \file{/root} for example, you
 would issue the following commands:
 
@@ -314,12 +291,8 @@ would issue the following commands:
 \indent  ./install\_cluster eth0
 }
 \vspace{11pt}
-\endchange
   
-\begchange
-In the above command, substitute the device name 
-\endchange
-(e.g., \file{eth0})
+In the above command, substitute the device name (e.g., \file{eth0})
 for your server's internal ethernet adapter. Also note that the
 \file{install\_cluster} script must be run from within the OSCAR base
 directory as shown above. The script will first run the part one
@@ -604,7 +577,6 @@ be able to communicate with the client nodes over the network. If a
 client's ethernet adapter is not properly configured upon boot,
 however, the server will not be able to communicate with the client. A
 quick and easy way to confirm network connectivity is to do the
-\begchange
 following (assuming OSCAR installed in \file{$^\sim$root}):
 
 % We have to use \tt instead of {verbatim} because we need to use
@@ -617,15 +589,12 @@ following (assuming OSCAR installed in \file{$^\sim$root}):
 }
 \vspace{11pt}
 
-\endchange
-
 The above commands will run the \cmd{ping\_clients} script, which will
 attempt to ping each defined client and will print a message stating
 success or failure. If a client cannot be pinged, there was a problem
-configuring the 
-ethernet adapter, and you will have to log in to the machine and
-manually configure the adapter. Once all the clients have been
-installed, rebooted, and their network connections have been
+configuring the ethernet adapter, and you will have to log in to the
+machine and manually configure the adapter. Once all the clients have
+been installed, rebooted, and their network connections have been
 confirmed, you may proceed with the next step.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
