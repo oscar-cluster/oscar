@@ -5,7 +5,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: wizard_prep,v 1.12 2002/10/29 00:41:24 jsquyres Exp $
+# $Id: wizard_prep,v 1.13 2002/10/29 05:27:34 jsquyres Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -84,7 +84,6 @@ foreach my $pkg (@packages) {
 
     # Skip irrlevant entries
 
-    print "Checking pkg: $pkg\n";
     next if ($pkg eq "." || $pkg eq ".." || $pkg eq "CVS" ||
 	     ! -d $dir || -e "$dir/.oscar_ignore");
 
@@ -92,7 +91,7 @@ foreach my $pkg (@packages) {
     # the scripts directory.
 
     chdir("$dir/scripts");
-    OSCAR::Package::run_pkg_script($pkg, "setup") 
+    OSCAR::Package::run_pkg_script($pkg, "setup", 1) 
 	or croak("Failed running server for $pkg");
     chdir($topdir);
 }
