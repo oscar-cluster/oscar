@@ -59,7 +59,7 @@ Once you have downloaded and copied it to a known directory you must install
 the package and turn it on:
 
   # rpm -i tftp-server-0.32-4.i386.rpm  
-  # /sbin/chkconfig --level 345 tftp on 
+  # chkconfig tftp on 
 
 
 ------------------------
