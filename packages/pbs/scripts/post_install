@@ -260,4 +260,4 @@ if ($cmd_input ne "")
     print CMD $cmd_input;
     close (CMD) or croak("Configuration of PBS queues failed");
   }
-
+startMaui();
