@@ -13,7 +13,8 @@ include $(top_srcdir)/dist/Makefile.options
 
 oscar_DATA		= \
 			perl-Tk-800.024-2.src.rpm \
-			perl-Tk-800.024-1.src.rpm
+			perl-Tk-800.024-1.src.rpm \
+			perl-Tk-800.024-3.src.rpm
 
 EXTRA_DIST		= $(oscar_DATA)
 
