@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: release-notes.tex,v 1.34 2003/04/16 17:09:35 naughtont Exp $
+% $Id: release-notes.tex,v 1.35 2003/08/05 22:47:00 naughtont Exp $
 %
 
 \section{Release Notes}
@@ -155,20 +155,6 @@ The following release notes apply to OSCAR version \oscarversion.
   found in the Ganglia distribution package in the following location:\\
   \file{packages/ganglia/extras/libpng-1.0.8-2mdk.i586.rpm}
   
-% TJN: relates to server_prep: unmunge_pathenv()
-\item \user{root}'s default shell configuration files hardcode the
-  value for {\tt PATH} environment variable, regardless of what is
-  added via {\tt profile.d/} startup scripts.  This effects various
-  OSCAR installed components, which are installed into locations such
-  as \file{/opt}.  As such, the OSCAR installer comments out these
-  lines in following files:
-
-  \begin{itemize}
-  \item \file{/root/.bashrc}
-  \item \file{/root/.cshrc}
-  \item \file{/root/.tcshrc}
-  \end{itemize}
-
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -199,6 +185,22 @@ comments.
   # cd oscar-2.0/packages/c3/RPMS
   # rpm -Uvh python2-compat-1.0-1.noarch.rpm
 \end{verbatim}
+
+% TJN: relates to server_prep: unmunge_pathenv()
+\item \user{root}'s default shell configuration files hardcode the
+  value for {\tt PATH} environment variable, regardless of what is
+  added via {\tt profile.d/} startup scripts.  This effects various
+  OSCAR installed components, which are installed into locations such
+  as \file{/opt}.  As such, the OSCAR installer appends the global path,
+  e.g., {\tt \$PATH} or {\tt \$\{PATH\}} depending on the shell, to the end
+  of the path so OSCAR installed applications are in the search
+  environment.  This potentially makes changes to the following files:
+
+  \begin{itemize}
+  \item \file{/root/.bashrc}
+  \item \file{/root/.cshrc}
+  \item \file{/root/.tcshrc}
+  \end{itemize}
 
 \end{itemize}
 
