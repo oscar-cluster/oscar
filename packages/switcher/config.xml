@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.7 2002/11/06 07:32:22 ngorsuch Exp $
+      $Id: config.xml,v 1.8 2002/12/09 04:06:38 ngorsuch Exp $
   -->
   <name>Environment Switcher</name>
 
@@ -60,18 +60,21 @@ purpose.</description>
   <package>
     <oda>
         <!--
-       This definition allows easier access to package requires/provides
+       These definitions allow easier access to switcher information
     
-       To list all the packages that provide a particular thing:
-           oda packages-that-provide provided_thing_name
+       To list all the packages that provide a switched thing:
+           oda switcher_packages_that_provide switchable_thing_name
     
-       To list all the things that a particular package provides:
-           oda this-package-provides package_name
+       To list all the switchable things that a single package provides:
+           oda switcher_this_package_provides package_name
+
+       To list all the switchable information with these three
+       fields per line: package_name switchable_tag switchable_name
+           oda switcher_list_packages_tags_names
        -->
-      <shortcut> switcher_packages_that_provide read_records packages_provides package name=%1 </shortcut>
-      <shortcut> switcher_this_package_provides read_records packages_provides name package=%1 </shortcut>
-      <shortcut> switcher_packages_that_require read_records packages_requires package name=%1 </shortcut>
-      <shortcut> switcher_this_package_requires read_records packages_requires name package=%1 </shortcut>
+      <shortcut> switcher_packages_that_provide read_records package_switcher package tag=%1</shortcut>
+      <shortcut> switcher_this_package_provides read_records package_switcher tag package=%1 </shortcut>
+      <shortcut> switcher_list_packages_tags_names read_records package_switcher package tag name</shortcut>
      </oda>
   </package>
 </oscar>
