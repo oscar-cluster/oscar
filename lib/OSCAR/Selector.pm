@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.7 2002/10/30 12:18:50 jsquyres Exp $
+# $Id: Selector.pm,v 1.8 2002/11/02 00:02:40 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -604,6 +604,12 @@ sub populateSelectorList
             -state => (((defined $pkgxml->{$package}{class}) &&
                        ($pkgxml->{$package}{class} eq 'core')) ?
                        'disabled' : 'normal'),
+            -selectcolor => (((defined $pkgxml->{$package}{class}) &&
+                             ($pkgxml->{$package}{class} eq 'core')) ?
+                             'black' : '#6666FF'),
+            -relief => (((defined $pkgxml->{$package}{class}) &&
+                             ($pkgxml->{$package}{class} eq 'core')) ?
+                             'ridge' : 'flat'),
             -variable =>
               \$selconf->{configs}{$configselectstring}{packages}{$package},
             )->pack(-side => 'left');
