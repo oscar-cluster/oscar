@@ -1,9 +1,13 @@
-# $Id: oscar-2.3.1-checklist.txt,v 1.1 2003/10/06 19:23:33 naughtont Exp $
+# $Id: oscar-2.3.1-checklist.txt,v 1.2 2003/10/07 21:22:53 naughtont Exp $
 
 # NOTE: Any postings to "neutral" sites, e.g., oscar.sf.net, should
 #  not contain the org specific head/footers.  For example the 
 #  opening 'OAK RIDGE, Tenn...' blurb should be cut, as should the
 #  closing, 'ORNL is a Dept. of Energy...'.
+#
+#  However, on the 2.3.1 PR's, I only included the ORNL blurb 
+#  with HPCwire & SuperComputing Online.
+#  
 #
 
 #  NOTE, make sure to use the correct acronym for NCSA in the
@@ -14,21 +18,22 @@
 
 List of places that the OSCAR 2.3.1 press release was sent:
 
-+ The OSCAR web site, under "Press Releases" on the "papers/talks" page.
+- The OSCAR web site, under "Press Releases" on the "papers/talks" page.
   (HTML format)
 
 + A OSCAR/sf.net "News" item.
   (text/abbreviated info)
 
-+ Post to oscar-users
+- Post to oscar-users  # coming out late so not repost, to avoid confusion
   (Plain text [email])
 
-+ HPCWire
+- HPCWire
+  # Included ORNL blurb for 2.3.1
   Submission deadline: 10am PST for the following week's edition
   Send plain text of releases to: editor@hpcwire.com
   (Plain text [email])
 
-+ Freshmeat
+- Freshmeat
   Sent to: sldague@us.ibm.com  (OSCAR FM contact)
   (Plain text)
 
@@ -37,24 +42,25 @@ List of places that the OSCAR 2.3.1 press release was sent:
   E-mail address obtained from their "Contact us" web page
   (Plain text)
 
-+ LinuxPR.com
-  Free registration required to submit press releases
+- LinuxPR.com
+  Free registration required to submit press releases 
   (HTML format)
 
-+ Beowulf-underground.org
-  "Software/Administration" -- link to OSCAR web page announcement
-  (URL to OSCAR Web page)
+- LinuxHPC.com
+  http://www.linuxhpc.org/contrib.php
+  (HTML format)
 
-+ LinuxJournal
+- LinuxJournal
   Free Subscription, "Submit a Press Release" at http://pr.linuxjournal.com/
   (HTML format)
 
-+ HPC.devchannel.org (foundry stuffo)
+- HPC.devchannel.org (foundry stuffo)
   http://hpc.devchannel.org/submit.pl?section=hpcchannels
   (HTML format)
 
-+ SupercomputingOnline.com 
-  Free subscription, "Submit News" / Topic="Government News"
+- SupercomputingOnline.com 
+  # Included ORNL blurb for 2.3.1
+  Free subscription, "Submit News" / Topic="Product News"
   http://www.supercomputingonline.com/submit.php
 
 
@@ -69,7 +75,13 @@ List of places that the OSCAR 2.3.1 press release was sent:
 
 #- http://clusters.top500.org/
 #  (didn't send 2.0 release there, couldn't find a place to submit?)
+#  TJN (10/7/03): sent email asking about submitting PR's, <clusters@top500.org>
+#   maybe it'll make the next release's PR
 
 #- IEEE Cluster Computing Task Force 
 #  (didn't send 2.0 release there, couldn't find a place to submit?)
 
+# (10/2003) They have retired.
+#+ Beowulf-underground.org
+#  "Software/Administration" -- link to OSCAR web page announcement
+#  (URL to OSCAR Web page)
