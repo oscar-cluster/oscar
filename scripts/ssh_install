@@ -81,7 +81,7 @@ cd $SSHCFGDIR || ( echo cannot cd to $SSHCFGDIR ; exit 1 )
 file=ssh_config
 echo ; echo checking configuration file $file ...
 
-for wantedyes in X11Forward ; do
+for wantedyes in ForwardX11 ; do
     if [ yes`grep "^[[:space:]]*$wantedyes[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "yesyes" ] ; then
 	echo turning on $wantedyes parameter in configuration file $file ...
 	if [ ! -r $file.pre_ssh_install ] ; then
