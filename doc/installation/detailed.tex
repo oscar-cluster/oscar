@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.3 2001/12/16 19:32:00 mchasal Exp $
+% $Id: detailed.tex,v 1.4 2001/12/16 22:55:18 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -384,80 +384,70 @@ OSCAR wizard in defining your cluster. If you encounter problems or
 wish to redo any of the SIS actions performed in the wizard steps 1,
 or 2, please refer to the SIS man pages.
 
-\subsubsection{Define the image} 
+\subsubsection{build the image} 
 
-Press the Step 1 button of the wizard entitled \button{Define the
-  Server}. In the dialog box that is displayed, enter a name for the
-LUI server machine. For consistency purposes, you should use the same
-name as was used when configuring your internal ethernet adapter. Next
-enter the internal server IP address and cluster netmask. The last
-piece of information you need to provide is the default reboot action
-for all clients associated with the server after they have
-successfully completed their installation. You can either have them
-automatically reboot by selecting ``true'', or show a prompt by
-selecting ``false''. \msg{It is important to note that if you wish to
+Press the Step 1 button of the wizard entitled \button{Build the OSCAR
+client image}. A dialog will be displayed. In most cases, the defaults 
+will be sufficient. You should verify that the disk partition file is
+the proper type for your client nodes disks. The sample files have the
+disk type as the last part of the filename. You may also want to change
+the post installation action and the IP assignment methods.
+\msg{It is important to note that if you wish to
   use automatic reboot, you should make sure the BIOS on each client
   is set to boot from the local hard drive before attempting a network
   boot by default. If you have to change the boot order to do a
   network boot before a disk boot to install your client machines, you
-  should not use automatic reboot.} Press the \button{Apply} button
-when finished.  A sample dialog with input and successful output is
-shown in Figure~\ref{fig:detailed-define-server}. If any warning
-messages about the nfsd service and the exporting of the \file{/usr}
-and \file{/tftpboot} directories are displayed in the output, you may
-safely ignore them since these requirements are met later in the OSCAR
-installation procedure. Press the \button{Close} button to complete
-the step.
+  should not use automatic reboot.} 
+Once you are satisfied with the input, click the \button{Build Image} button.
+
+Building the image will take a few minutes, the progress bar on the bottom 
+will give you the status and a small dialog will appear when the image
+is complete.
+  
+A sample dialog with input and successful output is
+shown in Figure~\ref{fig:detailed-build-image}. 
 
 \begin{figure}[htbp]
   \begin{center}
-    \includegraphics[scale=\imgscale]{define-server.\figext}
-    \caption{Define the server.}
-    \label{fig:detailed-define-server}
+    \includegraphics[scale=\imgscale]{build-image.\figext}
+    \caption{Build the image.}
+    \label{fig:detailed-build-image}
   \end{center}
 \end{figure}
   
 \subsubsection{Collect client MAC addresses} 
 
-What you do at this time is dependent upon whether you already know
-the MAC addresses of your clients or not. The MAC address of a client
+The MAC address of a client
 is a twelve hex-digit hardware address embedded in the client's
 ethernet adapter. MAC addresses look like 00:0A:CC:01:02:03, as
-opposed to the familiar format of IP addresses.
+opposed to the familiar format of IP addresses. These MAC addresses
+uniquely identify client machines on a network before they are
+assigned IP addresses. DHCP uses the MAC address to assign IP 
+addresses to the clients.
 
-\begin{enumerate}
-\item If you do know the addresses, you should edit the file
-  \file{/etc/MAC.info} using your favorite editor. The format for the
-  file is one line for each client, where each line is of the form:
 
-\begin{verbatim}
-  node-id  MAC-address
-\end{verbatim}
-    
-  The node id is simply a symbolic tag used by different collection
-  tools to refer to the MAC address. Typically, one would use a node
-  id such as ``\file{node0}''. Enter a node id and MAC address for
-  each of your clients. Be sure to write down the node id for the
-  first client you enter, which will be used later in defining the
-  client machines.
-    
-\item If you do not know the client MAC addresses, or do not want to
-  edit the \file{/etc/MAC.info} file manually, press the Step 2 button
-  of the wizard entitled \button{Collect Client MAC Addresses}. The
-  OSCAR MAC address collection utility dialog box will be displayed.
-  To start the collection, press the \button{Collect} button and then
-  network boot the first client.  Follow the directions given in the
-  dialog output window to collect the rest of your clients' addresses.
-  Please do not press \button{Collect} more than needed, as each time
-  it is pressed the utility will wait until a valid MAC is collected
-  before continuing. In order to use this tool, you will need to know
+In order to collect the MAC addresses,  press the Step 3 button
+  of the wizard entitled \button{Setup Networking}. The
+  OSCAR network utility dialog box will be displayed.
+  To start the collection, press the \button{Start Collecting} button and then
+  network boot the first client.  As the clients broadcast, their MAC addresses
+  will show up in the left hand window. Select a MAC address and the appropriate
+  client in the right side window. Click \button{Assign MAC to node} to 
+  associate that MAC address with that node. If you would like to make 
+  specific nodes associated with specific client definitions, you should
+  boot them one at a time. If you don't care which node gets associated
+  with which client, you may boot them all at once and randomly assign
+  the MAC addresses.
+
+  When you have collected all of the MAC addresses, click the \button{Stop Collecting}
+  button and then click the \button{Setup DHCP Server} button to configure it.
+
+  In order to use this tool, you will need to know
   how to network boot your client nodes.  For instructions on doing
   so, see Appendix~\ref{app:net-boot-client-nodes}. A sample dialog
   that has been used to collect four client MAC addresses is shown in
   Figure~\ref{fig:detailed-collect-mac}. When you have collected the
   addresses for all your client nodes, press \button{Done}.
-
-\end{enumerate}
 
 \begin{figure}[htbp]
   \begin{center}
@@ -469,71 +459,43 @@ opposed to the familiar format of IP addresses.
   
 \subsubsection{Define your client machines} 
 
-Press the Step 3 button of the wizard entitled \button{Define the
-  Client Machines}. In the dialog box that is displayed, enter the
-appropriate information.
+Press the Step 2 button of the wizard entitled \button{Define OSCAR
+ Clients}. In the dialog box that is displayed, enter the
+appropriate information. Again the defaults will be correct in most
+cases. At a minumum, you will need to enter the number of clients that you want
+to create.
 
 \begin{enumerate}
-\item In the \field{Starting IP Address} field, enter the first client
-  IP entered in \file{/etc/hosts} in the previous step. The wizard
-  will assume that the IP entered in this field should be associated
-  with the starting MAC id entered later, or the first id in
-  \file{/etc/MAC.info} if no id is specified.
-    
-\item For \field{Netmask}, enter the cluster netmask used when
-  defining the server.
-    
-\item If you decided to edit the \file{/etc/MAC.info} file yourself,
-  enter the node id of the first client in the \field{Starting MAC ID}
-  field. Otherwise, you may leave this field blank.
-    
-\item Enter the number of client machines to create in \field{Number
-    of clients to create}. The number of clients should be equal to
-  the number of entries you added in \file{/etc/hosts}. If you leave
-  this field blank, the number of clients created will default to the
-  number of entries in \file{/etc/MAC.info} starting from the MAC id
-  specified in the previous step. For example, if the starting MAC id
-  was the fourth from the last entry in \file{/etc/MAC.info}, four
-  clients will be created. If no starting MAC id was given, the number
-  of clients created will be equal to the number of entries in
-  \file{/etc/MAC.info}.
-    
-\item For \field{Default Route and Default Gateway}, enter the
-  internal server IP address if you plan to use your server to route
-  messages from your client nodes to the external network. Although
-  OSCAR does not configure the server for routing of client messages,
-  by entering the server IP now you can save yourself from having to
-  manually update the clients later. If you have no plans to route
-  internal messages to the external network, you may leave both fields
-  blank.
-    
-\item In the \field{PBS String} field, you may enter an arbitrary
-  string of words to describe your cluster nodes. The words in this
-  string can be used within PBS to make scheduling decisions. When all
-  of your client machines will be homogeneous, you can safely leave
-  this field blank. However, if you plan to do multiple cluster
-  installations using the same server, you should enter a string to
-  distinguish these client nodes from those you may define and install
-  at a later time. A suggested string in this case is the client group
-  name specified in the next field.
-    
-\item In the \field{Machine Groups} field, enter a name for the group
-  of clients to be created (e.g., ``myclients''). Note that this is
-  \msg{not} optional, even though the wizard implies that it is.
-  \msg{Remember to write down your client group name, as it will be
-    used later}.
-    
-\item Finally, choose whether or not the clients should use the
-  default server setting for automatically rebooting after
-  installation. If they should, select ``\file{default}'' from the
-  \field{Client auto-reboot} list. If not, then select the desired
-  action by choosing ``true'' or ``false''.
+
+\item The \field{Image Name} field should specify the image name that was used to 
+create the image in Step 1.
+
+\item The \field{Domain Name} field should be used to specify the client's IP
+domain name.
+
+\item The \field{Base name} field is used to specify the first part of the 
+client name and hostname. It will have an index appended to the end of it.
+
+\item The \field{Number of Hosts} field specifys how many clients to create.
+
+\item The \field{Starting Number} specifies the index to append
+to the \field{Base Name} to derive the first client name. It will be incremented
+for each subsequent client.
+
+\item The \field{Starting IP} specifies the IP address of the first client. It 
+will be incremented for each subsequent client.
+
+\item The \field{Subnet Mask} specifies the IP netmask for the clients.
+
+\item The \field{Default Gateway} specifies the default route for the clients.
+
 \end{enumerate}
   
-When finished entering information, press the \button{Apply} button.
+When finished entering information, press the \button{Add Clients} button.
 A sample dialog with input and output is shown in
-Figure~\ref{fig:detailed-define-clients}. After viewing the output,
-which may be delayed by several minutes, press the \button{Close}
+Figure~\ref{fig:detailed-define-clients}. After the clients are created,
+a dialog will pop up with the completion status. After closing that 
+you may press the \button{Close}
 button and continue with the next step.
 
 \begin{figure}[htbp]
@@ -544,185 +506,6 @@ button and continue with the next step.
   \end{center}
 \end{figure}
     
-\subsubsection{Define your resources} 
-
-If you meet the following criteria for a homogeneous cluster, no
-resource definitions need to be made and you may skip steps 4 and 5 of
-the wizard.
-
-Criteria:
-
-\begin{enumerate}
-\item Server and client machines contain identical hardware.
-  
-\item Server's root (\file{/}) filesystem is on same disk type (IDE
-  or SCSI) as clients will use for their root filesystem.
-    
-\item Server is running the same kernel version as will be installed
-  on the clients (must be RPM installed kernel). Note that UP and
-  SMP kernels are considered different.
-  
-\item The default RPM list supplied by OSCAR
-  (\file{OSCAR-\oscarversion/oscarResources/sample.rpmlist}) is
-  acceptable for your clients.
-\end{enumerate}
-
-If you meet the above criteria and do not wish to specify any
-resources in addition to or other than the defaults, you may skip
-ahead to Section~\ref{sec:detailed-secondary-oscar-server-config},
-Secondary OSCAR Server Configuration. Otherwise, press the Step 4
-button of the wizard entitled \button{Define the Resources}.  The
-``Define a Resource'' dialog will be displayed, which is used to
-define all the resources to be allocated to the clients. When defining
-your resources, it is best to assign them to a resource group as you
-go, otherwise you will need to know the names of all your resources
-when allocating them to the client group defined in the previous step.
-The ``Define a Resource'' dialog contains a \field{Resource Groups}
-entry field in which you can enter the name of the resource group
-(e.g., ``myresources'') to add resources to.  For each of the
-resources defined below, be sure to enter your resource group name in
-its field.  \msg{Remember to write down your resource group name, as
-  it will be used later.} If you make any mistakes whilst defining
-your resources, you will need to use LUI to delete the errant
-resource. See the LUI documentation for instructions on deleting
-resources.
-
-\begin{enumerate}
-\item \msg{Define a disk table.} Create a disk table that specifies
-  how your client hard drives will be partitioned. Refer to the
-  \file{/usr/local/lui/README.disk} file for instructions on creating
-  a disk table. Additionally, OSCAR provides sample IDE and SCSI disk
-  tables in the \file{oscarResources} subdirectory. Be sure to include
-  \file{/home} in your disk table as an NFS partition. Each of the
-  filesystems you include in the disk table will be automatically
-  defined as file resources to LUI. If you do not define a disk
-  resource, OSCAR will automatically define the disk resource using
-  the sample disk table for the type of drive (IDE or SCSI) on which
-  the server's root (\file{/}) filesystem resides. A sample disk table
-  for an IDE drive with a 24MB boot partition, a 128MB swap partition,
-  and the rest of the disk allocated to the root partition is shown
-  below:
-
-\begin{verbatim}
-  /dev/hda1     ext2          24      m     y     /boot
-  /dev/hda2     extended      *       m     n
-  /dev/hda5     swap          128     m     
-  /dev/hda6     ext2          *       m     n     /
-  nfs           nfs           /home         rw    10.0.0.50
-\end{verbatim}
-    
-  Once you have created your disk table, enter a name to refer to the
-  disk resource by in the \field{Name} field, select ``disk'' in the
-  resource type list, and enter the location of your disk table in the
-  \field{Full Path Name} field. When finished, press the
-  \button{Apply} button. A sample dialog showing a disk table being
-  defined and the associated output is shown in
-  Figure~\ref{fig:detailed-define-disk-resource}
-
-  \begin{figure}[htbp]
-    \begin{center}
-      \includegraphics[scale=\imgscale]{define-disk.\figext}
-      \caption{Define the disk resource.}
-      \label{fig:detailed-define-disk-resource}
-    \end{center}
-  \end{figure}
-    
-\item \msg{Define a custom kernel (Optional).} \msg{If you would like
-    to use the default kernel from your Linux distribution, do not
-    define a kernel resource, as it will already be installed during
-    the installation of RPMs.} If you have a compiled a custom kernel
-  you would like to use on your client machines instead, you need to
-  define a custom kernel resource for it by specifying a resource
-  name, selecting ``kernel'' from the resource types, and entering the
-  path to the custom kernel.  When finished, press the \button{Apply}
-  button.
-    
-\item \msg{Define a system map (Optional).} \msg{If you did not define
-    a custom kernel resource, you do not need to define a system map
-    resource.} If you did define a custom kernel resource, you will
-  need to have a system map file resource that is compatible with that
-  kernel. Define the custom system map by entering a resource name,
-  selecting ``map'' from the resource types, and entering the path to
-  the map file. When finished, press the \button{Apply} button.
-    
-\item \msg{Define an initial ramdisk.} The initial ramdisk resource is
-  one of the most important for a modular kernel, as it is crucial in
-  making sure that clients boot after installation. See Appendix B for
-  instructions on creating an initial ramdisk. If you do not create a
-  ramdisk resource, OSCAR will automatically generate one using the
-  information from the server. However, the initial ramdisk generated
-  will only work if the hardware on your server and clients are
-  identical and the kernel to be installed on the clients is the one
-  currently running on the server. After creating the ramdisk, create
-  a resource for it by entering a resource name, selecting ``ramdisk''
-  from the resource types, and specifying the path to the ramdisk.
-  When finished, press the \button{Apply} button. A sample dialog
-  showing a ramdisk being defined and the associated output is shown
-  in Figure~\ref{fig:detailed-define-initial-ramdisk-resource}.
-
-  \begin{figure}[htbp]
-    \begin{center}
-      \includegraphics[scale=\imgscale]{define-ramdisk.\figext}
-      \caption{Define the initial ramdisk resource.}
-      \label{fig:detailed-define-initial-ramdisk-resource}
-    \end{center}
-  \end{figure}
-    
-\item \msg{Define the RPM list (Optional).} If you do not define an
-  rpm resource, the sample OSCAR RPM list will be used automatically.
-  OSCAR provides a sample RPM list that contains a minimal set of RPMs
-  needed to install RedHat 7.1 and the cluster software on a client
-  machine that is based on the i686 architecture. The list is located
-  in the \file{oscarResources} subdirectory and is named
-  \file{sample.rpmlist}. If you are using another Linux distribution
-  or client machine architecture, you will need to create an RPM list
-  that will work for that distribution and includes the RPMs located
-  in the \file{oscarRPM} subdirectory. If you have additional RPMs for
-  software that you would like installed on the clients, add them to
-  the sample list and copy the RPMs into \file{/tftpboot/rpm}. Create
-  the RPM list resource by specifying a resource name, selecting
-  ``rpm'' from the resource types, and entering the location of the
-  RPM list. When finished, press the \button{Apply} button.
-    \label{sec:detailed-define-rpm-list}
-  \end{enumerate}
-  
-\subsubsection{Allocate the resources to clients}
-
-Press the Step 5 button of the wizard entitled \button{Allocate the
-  Resources}. At this point you will need to know your client and
-resource group names. If you did not specify a resource group when
-defining your resources, see the paragraph below. Allocate the
-resources to the clients by entering the resource group name in the
-\field{Resource Groups} field and the client group name in the
-\field{Machine Groups} field.  When finished, press the \button{Apply}
-button. A sample dialog with input and output is shown in
-Figure~\ref{fig:detailed-alloc-resource-to-client}. After allocating
-the resources, continue on to the next step.
-  
-If you did not use a resource group, you will need to know the names
-of all the resources defined in the previous step. If you forgot to
-write them down, you should be able to figure the names out from a
-listing of the \file{/tftpboot/lim} directory. A file located in the
-directory, with the file's name being of the form
-\file{resource\_name.resource\_type}, represents each resource defined
-to LUI. To allocate the resources to your clients, enter the resource
-names separated by commas in the \field{Resource Names} field and the
-client group name in the \field{Machine Groups} field.  Be careful not
-to use spaces in the resource names field, as they are not allowed.
-  
-If at any point after you allocate your resources to the client
-machines you realize you need to change, add, or delete some
-resources, you should use LUI to deallocate the resources. See the LUI
-documentation for more information on deallocation of resources.
-  
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=\imgscale]{allocate-resource.\figext}
-    \caption{Allocate the Resource Group to the Client Group.}
-    \label{fig:detailed-alloc-resource-to-client}
-  \end{center}
-\end{figure}
-
 \subsection{Secondary OSCAR Server Configuration}
 \label{sec:detailed-secondary-oscar-server-config}
 
@@ -731,48 +514,6 @@ based upon the information entered in the ``Cluster Definition''
 phase.
 
 \begin{enumerate}
-\item Run secondary server configuration. Press the Step 6 button of
-  the wizard entitled \button{Prepare for Client Installs}. This will
-  run the pre client installation server configuration script, which
-  does the following:
-
-  \begin{enumerate}
-  \item uses cluster information database to update \file{/etc/dhcpd.conf}
-    
-  \item installs C3 tools and man pages in \file{/opt/c3-2.7.2}
-
-  \item generates OSCAR default resources and allocates them to clients
-    
-  \item configures NFS and ipchains services on server to allow OSCAR
-    client installations
-
-  \item makes sure DHCP server is running
-  \end{enumerate}
-  
-\item Check for successful completion. In the output window for the
-  above step, check for a message stating ``Begin booting client
-  nodes'' before continuing. A sample successful output window is
-  shown in Figure~\ref{fig:detailed-successful-output-window}. At this
-  point, you may continue with the client installations phase. If you
-  do not find this message in the output, try to find out what may
-  have failed by searching through the output for error messages.
-  
-  If instead of the above message, you get a message stating that the
-  ``DHCP server is not running'', see
-  Appendix~\ref{app:troubleshooting-known-problems-dhcp}
-  (page~\pageref{app:troubleshooting-known-problems-dhcp}) for help.
-  Once you have the DHCP server running, you may continue with the
-  client installations phase.
- 
-  \begin{figure}[htbp]
-    \begin{center}
-      \includegraphics[scale=\imgscale]{per-client.\figext}
-      \caption{Successful Output Window for the ``Prepare for Client
-        Installs'' Step.}
-      \label{fig:detailed-successful-output-window}
-    \end{center}
-  \end{figure}
-\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
