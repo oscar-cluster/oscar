@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: defs.tex,v 1.5 2002/08/06 06:36:47 jsquyres Exp $
+% $Id: defs.tex,v 1.6 2002/12/03 20:18:12 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -8,6 +8,7 @@
 \usepackage{times}
 \usepackage{graphicx}
 \usepackage{fullpage}
+\usepackage{url}
 
 % Versions
 
@@ -33,20 +34,11 @@
               colorlinks=true,
               linkcolor=blue,filecolor=blue,pagecolor=blue,urlcolor=blue
               ]{hyperref}
-  \def\figext{png}
-  \def\sbsext{png}
-  \newcommand{\xref}[2]{\hyperref[#1]{#2}}
-  \newcommand{\mailto}[1]{\href{mailto:#1}{#1}}
 \else
-  \def\figext{eps}
-  \def\sbsext{eps}
-  \newcommand{\xref}[2]{#2}
-  \newcommand{\href}[2]{\underline{#2}}
-  \newcommand{\url}[1]{\href{#1}{#1}}
-  \newcommand{\mailto}[1]{\href{#1}{#1}}
+  \usepackage[colorlinks=true,
+              linkcolor=blue,filecolor=blue,pagecolor=blue,urlcolor=blue
+              ]{hyperref}
 \fi
-
-\newcommand{\email}[1]{\href{#1}{#1}}
 
 % Stoopid European-based Linux distributions...
 % Gotta force letter size paper, not A4
