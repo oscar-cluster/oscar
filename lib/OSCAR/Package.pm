@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.33 2002/10/30 20:20:46 mchasal Exp $
+#   $Id: Package.pm,v 1.34 2002/10/30 20:27:25 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.33 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.34 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -47,7 +47,7 @@ $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 my $PACKAGE_CACHE = undef;
 my $xs = new XML::Simple(keyattr => {}, forcearray => 
 			 [ "site", "uri", 
-			   "rpmlist", "rpm",
+			   "rpm",
 			   "shortcut", "fieldnames",
 			   "requires", "conflicts", "provides" ]);
 
