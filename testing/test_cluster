@@ -44,12 +44,21 @@ END{
         my $key=<STDIN>;
 	}
 }
+ 
+# Use Schwartzian transform to sort clients by node names alphabetically and numerically.
+# Names w/o numeric suffix precede those with numeric suffix.
+sub sortclients(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       @_;
+}
 
 my @clientlist;
 if (@ARGV) {
         @clientlist=@ARGV;
 } else {
-        my @mlist = list_client();
+        my @mlist = sortclients list_client();
         foreach my $m (@mlist) {
                 push @clientlist,$m->hostname;
         }

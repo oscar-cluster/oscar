@@ -79,20 +79,20 @@ you want to delete and press the
 
     center_window( $window );
 }
-
-# Use Schwartzian transform to sort node names alphabetically and numerically.
-# Names w/o numeric suffix preceed those with numeric suffix.
-sub sortnodes(@) {
+ 
+# Use Schwartzian transform to sort clients by node names alphabetically and numerically.
+# Names w/o numeric suffix precede those with numeric suffix.
+sub sortclients(@) {
 	return map { $_->[0] }
 	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
-	       map { [$_, /^([\D]+)([\d]*)$/] }
+	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
 	       @_;
 }
 
 sub fill_listbox {
         my $listbox=shift;
         my @elements;
-        my @clients = sortnodes( list_client() );
+        my @clients = sortclients list_client();
         foreach my $client (@clients) {
                 push (@elements,$client->name);
         }

@@ -52,10 +52,18 @@ if($return) {
 }
 
 exit($return);
-
+ 
+# Use Schwartzian transform to sort clients by node names alphabetically and numerically.
+# Names w/o numeric suffix precede those with numeric suffix.
+sub sortclients(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       @_;
+}
 
 sub get_numproc {
-	my @machines=list_client();
+	my @machines= sortclients list_client();
 	foreach my $mach (@machines) {
 		my $CMD="/usr/bin/ssh -n ".$mach->hostname." /bin/grep ^processor /proc/cpuinfo";
 		print "Gathering processor count from ".$mach->hostname.".\n";

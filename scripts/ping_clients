@@ -24,8 +24,17 @@ use lib "/usr/lib/systeminstaller";
 use SIS::Image;
 use SIS::Client;
 use SIS::DB;
+ 
+# Use Schwartzian transform to sort clients by node names alphabetically and numerically.
+# Names w/o numeric suffix precede those with numeric suffix.
+sub sortclients(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       @_;
+}
 
-my @machines = list_client();
+my @machines = sortclients list_client();
 my $mach;
 my $failcount=0;
 print "Pinging all clients, this may take minute...\n\n";

@@ -380,10 +380,19 @@ foreach my $node_result_ref ( @nodes_results ) {
 # read the pertinant SIS database information.
 
 print "reading SIS database for node and adapters information ...\n";
+ 
+# Use Schwartzian transform to sort clients by node names alphabetically and numerically.
+# Names w/o numeric suffix precede those with numeric suffix.
+sub sortclients(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       @_;
+}
 
 # get a list of node names from SIS
 
-my @sis_clients = list_client();
+my @sis_clients = sortclients list_client();
 my %sis_nodes = ();
 
 # for each node name returned by SIS, ...

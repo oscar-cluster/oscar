@@ -10,3 +10,42 @@
          &verbose("Expected lines of output: $linecount");
  
          &verbose("Finding package install files.");
+--- /usr/lib/systeminstaller/SystemInstaller/Machine.pm.orig	2003-01-14 09:07:32.000000000 -0800
++++ /usr/lib/systeminstaller/SystemInstaller/Machine.pm	2004-11-23 08:31:45.000000000 -0800
+@@ -54,6 +54,14 @@
+     return %results;
+ }
+ 
++# Use Schwartzian transform to sort clients by node names alphabetically and numerically.
++# Names w/o numeric suffix precede those with numeric suffix.
++sub sortclients(@) {
++	return map { $_->[0] }
++	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
++	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
++	       @_;
++}
+ 
+ sub synchosts {
+ 	my @delhosts=@_;
+@@ -97,7 +105,7 @@
+ 	&verbose("Re-adding currently defined machines.");
+ 
+ 	print TMP "\n# These entries are managed by SIS, please don't modify them.\n";
+-	foreach my $mach (@machinelist) {
++	foreach my $mach (sortclients @machinelist) {
+                 my $name=$mach->name;
+                 if ($ADAPTERS{$name}) {
+ 	                printf TMP "%-20.20s %s\t%s\n", $ADAPTERS{$name},$mach->hostname,$name;
+--- /usr/lib/systeminstaller/SystemInstaller/Image.pm.orig	2004-12-08 10:48:28.000000000 +0100
++++ /usr/lib/systeminstaller/SystemInstaller/Image.pm	2004-12-08 10:50:23.000000000 +0100
+@@ -153,6 +153,10 @@
+                 # Now find the version
+                 $relfiles[0]=~s/.*\///;
+                 my ($j1,$j2,$version,$j3)=split(/-/,$relfiles[0]);
++		#EF# treat 3WS, 3ES like 3AS
++		if ($version =~ m/3(WS|ES)/) {
++			$version = "3AS";
++		}
+                 return($distro,$version);
+         }
+         undef @relfiles;
