@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+
+<!--
+Copyright (c) 2004, The Board of Trustees of the University of Illinois. 
+	All rights reserved.
+
+Author: Jason Brechin <brechin@ncsa.uiuc.edu>
+
+  $Id:
+-->
+
+  <classname>nodemgmtDialog</classname>
+  <fullname>Node Management</fullname>
+
+  <oda>
+    <command>read_records oscar.interface</command>
+  </oda>
+
+</oscar>
