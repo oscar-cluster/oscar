@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.1 2003/07/25 16:37:25 jsquyres Exp $
+# $Id: setup,v 1.2 2003/11/11 19:31:20 jsquyres Exp $
 #
 # setup script for the lam package
 #
@@ -18,6 +18,20 @@ use POSIX;
 use Carp;
 use OSCAR::Distro;
 use OSCAR::PackageBest;
+use OSCAR::Logger;
+
+# Per bug 831746, check to see if the OS already has a LAM RPM
+# installed.  If so, print out a warning and uninstall it.
+
+my $status = system("rpm -q lam > /dev/null 2>&1");
+$status >>= 8;
+if ($status == 0) {
+    oscar_log_subsection("Removing OS-installed LAM RPM");
+    system("rpm -e lam");
+    oscar_log_subsection("OS-installed LAM RPM done");
+} else {
+    oscar_log_subsection("There is no pre-installed LAM RPM");
+}
 
 # Different distro's require different RPMs (mainly because libtcl appears
 # to be installed differently on different distros).  So put some
