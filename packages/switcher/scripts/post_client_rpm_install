@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: post_client_rpm_install,v 1.1 2002/11/17 04:56:56 jsquyres Exp $
+#
+# post_clients script for the switcher package
+#
+
+# It seems that the modules RPMs were compiled to dynamically link to
+# /usr/lib/tcl.so.0, but Mandrake 8.2 doesn't have this file.  So we
+# have to create a sym link to make it work.  Hackish, but actually
+# fairly safe because modules don't use too many TCL features.
+
+src=/usr/lib/libtcl8.3.so
+dest=/usr/lib/libtcl.so.0
+if test ! -e $dest -a -e $src; then
+    ln -s $src $dest
+fi
+
+# All done
+
+exit $ret
