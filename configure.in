@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.2 2001/12/19 02:36:54 jsquyres Exp $
+# $Id: configure.in,v 1.3 2001/12/22 01:02:09 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -48,6 +48,9 @@ AC_CHECK_PROG(LATEX, latex, latex)
 AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex)
 AC_CHECK_PROG(DVIPS, dvips, dvips)
 AC_CHECK_PROG(FIG2DEV, fig2dev, fig2dev)
+AC_CHECK_PROG(EPS2PDF, eps2pdf, eps2pdf)
+AC_CHECK_PROG(PNGTOPNM, pngtopnm, pngtopnm)
+AC_CHECK_PROG(PNMTOPS, pnmtops, pnmtops)
 
 # Look for things that we need to download files remotely
 
