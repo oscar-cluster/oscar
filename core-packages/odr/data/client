@@ -1,0 +1,4 @@
+node1.csm.ornl.gov:10.0.0.1:enabled:1
+node2.csm.ornl.gov:10.0.0.1:enabled:4
+node3.csm.ornl.gov:10.0.0.1:enabled:2
+node4.csm.ornl.gov:10.0.0.1:enabled:1
