@@ -9,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.22 2003/06/30 17:05:39 brechin Exp $
+# $Id: opd,v 1.23 2003/07/16 01:11:10 tfleury Exp $
 #
 
 use strict;
@@ -308,15 +308,14 @@ sub download_from_uri {
     } else {
         $wget_cmd = "wget";
     }
-    if ($argv_wget) {
-	$agents[scalar(@agents)] =  $wget_cmd if ($have_wget);
-	$agents[scalar(@agents)] = "LWP";
-    } elsif ($argv_lwp) {
-	$agents[scalar(@agents)] = "LWP";
-	$agents[scalar(@agents)] = $wget_cmd if ($have_wget);
+
+    # If user specified LWP, use it first, else use wget first
+    if ($argv_lwp) {
+      push(@agents,"LWP");
+      push(@agents,$wget_cmd) if ($have_wget);
     } else {
-	$agents[scalar(@agents)] = $wget_cmd if ($have_wget);
-	$agents[scalar(@agents)] = "LWP";
+      push(@agents,$wget_cmd) if ($have_wget);
+      push(@agents,"LWP");
     }
 
     for ($i = 0; $i < $num_download_retries * scalar(@agents); ++$i) {
@@ -326,8 +325,8 @@ sub download_from_uri {
 
 	# Use wget
 
-	if ($agents[$agent] eq "wget") {
-	    if (!system("wget $uri -O $local_filename")) {
+	if ($agents[$agent] =~ /^wget/) {
+	    if (!system("$wget_cmd $uri -O $local_filename")) {
 		print("Successful!\n\n")
                     if (!$argv_parsable);
 		return (1, read_file($local_filename));
@@ -337,7 +336,6 @@ sub download_from_uri {
 	# Use LWP
 
 	else {
-
             # If we haven't previously setup LWP, do so now.
 
             if ($ua == -1) {
@@ -1385,7 +1383,11 @@ sub download_package {
             print("\"$name\":\"downloaded\":\"expanded\"\n")
                 if ($argv_parsable);
 	    last;
-	}
+	} else {
+    print("FAILED: could not download $name\n") 
+      if ($argv_parsable);
+  }
+
     }
 }
 
