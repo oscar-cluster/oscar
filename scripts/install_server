@@ -4,7 +4,7 @@
 #                     Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
-# $Id: install_server,v 1.9 2003/07/31 23:05:48 naughtont Exp $
+# $Id: install_server,v 1.10 2003/10/30 16:34:37 naughtont Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -62,6 +62,21 @@ oscar_log_subsection("Installing server non-core RPMs " .
 install_rpms(@rpms) 
     or croak("Couldn't install the required packages needed for OSCAR");
 oscar_log_subsection("Successfully installed server non-core RPMs");
+
+
+
+# Have installed Server RPMs & did not croak, so mark packages.<pkg>installed 
+# true. If clients (image) fail they will set it to false. (best effort for now)
+
+oscar_log_subsection("Marking installed bit in ODA for server non-core RPMS");
+
+foreach my $pkg (@packages) {
+        oscar_log_subsection("Set package: $pkg");
+        my $ok_rslt = database_execute_command("package_mark_installed $pkg");
+        croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
+}
+oscar_log_subsection("Done marking installed bits in ODA");
+
 
 # And do the post install script
 
