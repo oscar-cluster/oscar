@@ -1,0 +1,158 @@
+% -*- latex -*-
+%
+% $Id: release.tex,v 1.1 2002/01/23 05:13:41 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
+\section{Release Procedures}
+\label{sec:release}
+
+OSCAR distribution packages are supervised by a Release Manager.  All
+decisions about a release must be approved through the Release
+Manager.
+
+\subsection{Approaching a Release}
+
+As a release approaches, the Release Manager will declare the CVS tree
+``frozen''.  The following guidelines will be followed after the CVS
+tree is frozen until the version is formally released:
+
+\begin{enumerate}
+\item Developers will only work on ``show stoppers'' for a release
+  that has been frozen.  Show stoppers defined as ``can we ship with
+  this bug?''
+  
+\item Show stoppers will have a priority of 9 for the current release.
+  
+\item The Release Manager has to approve show stoppers -- i.e., bump
+  up to 9 and/or assign someone to work on it.
+  
+\item Developers must have bugs assigned to you in the tracker before
+  working on them.
+  
+\item Documentation bugs have to be marked as category
+  ``documentation'' in the tracker.  Documentation issues and bugs can
+  be fixed at any time -- they are not subject to the same ``show
+  stopper'' rules as described above.
+\end{enumerate}
+
+The Release Manager will determine when a version is ready for
+release.
+
+\subsection{Releasing on SourceForge}
+
+Making a release on SourceForge is a little less than obvious.  All of
+this is itemized in the main SourceForge documentation; this is an
+attempt provide a quick overview that should help release technicians
+through the process.
+
+\begin{enumerate}
+
+\item Upload the distribution package file to {\tt
+    ftp://upload.sf.net/incoming/}.
+
+\item Login to the SourceForge web page.
+
+\item Go to the ``Admin'' section.
+
+\item Go to the ``Edit/Release Files'' subsection.
+
+{\bf Note:} Stable distribution packages are released under the ``{\tt
+  oscar}'' SourceForge package; development/beta distribution packages
+  are released under the ``{\tt oscar-devel} SourceForge package.
+
+\item Select ``Add Release'' next to the appropriate SourceForge
+  package ({\tt oscar} or {\tt oscar-devel}.
+
+\item Type in the version number in the ``New release name'' text
+  box.  It should correspond to the version number of the OSCAR
+  distribution package.  For example, ``{\tt 1.1}'', ``{\tt 1.2b7}'',
+  and ``{\tt 1.2}''.
+
+\item There are four steps to finish the release:
+
+  \begin{enumerate}
+
+    \item Meta information
+      \begin{itemize}
+      \item Ensure that the text fields for Release Date and Release
+        Name are correct.
+        
+      \item Set the Status field to ``Active''.
+        
+      \item Ensure the Of Package field is set to the appropriate
+        package.
+        
+      \item Paste the release text in the ``Paste the Notes In:'' text
+        box.
+        
+      \item Ensure that the ``Preserve my pre-formatted text''
+        checkbox is {\em not} checked.
+
+      \item {\bf IMPORTANT:} Click on the ``Submit/Refresh'' button.
+        This saves your work so far.
+      \end{itemize}
+
+  \item Add the distribution package file to the release.
+
+    \begin{itemize}
+    \item In the Step 2 section, there is a list of files.  Check the
+      OSCAR distribution package file.
+      
+    \item {\bf IMPORTANT:} Click on the ``Add Files and/or Refresh
+      View'' button.  This saves your work so far.
+    \end{itemize}
+
+  \item Edit files in the release
+
+    \begin{itemize}
+    \item Once you have completed the previous step, the OSCAR
+      distribution file will appear in step 3.
+
+    \item Ensure that all the data in the fields in step 3 is
+      correct.  All fields must be filled in, or the file will not
+      show up on the release.
+      
+    \item {\bf IMPORTANT:} Click on the ``Update/Refresh'' button.
+      This saves your work so far.
+    \end{itemize}
+
+  \item Email release notice
+
+    \begin{itemize}
+    \item Check the ``I'm sure'' checkbox
+
+    \item Click on the ``Send Notice'' button.  This sends a mail to
+    all SourceForge users who are monitoring the OSCAR package.
+    \end{itemize}
+    
+  \end{enumerate}
+\end{enumerate}
+
+Note that the release will show up on the OSCAR download page
+immediately, but the distribution package file will not show up for
+some time (usually somewhere between 15-30 minutes).
+
+{\large IMPORTANT NOTICE}: {\em Since you cannot delete releases}, do
+{\em not} create a new release if you mess one up.  You cannot put a
+release in a state that cannot be fixed -- instead of creating a new
+one, just go back and fix your previous mistake (you can edit a
+previous release .  If necessary, close
+your browser and restart the editing process.
+
+\subsection{Removing Old Releases}
+
+SourceForge does not allow deleting of old releases.  All you can do
+is ``Hide'' an old release.  That is, go edit the specific release and
+set its status to ``Hide''.  This will immediately remove it from the
+OSCAR download page.
+
+Note that this will also remove the number of downloads from the total
+downloads sum on the downloads page.  Specifically -- the ``total
+downloads'' sum shown on the OSCAR download page only reflects the
+total number of downloads of all currently active releases.  The total
+number of downloads is still maintained on the stats page, regardless
+of which releases are hidden and active.
+
+% LocalWords:  Exp

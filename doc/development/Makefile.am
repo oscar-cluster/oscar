@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.3 2001/12/22 01:08:36 jsquyres Exp $
+# $Id: Makefile.am,v 1.4 2002/01/23 05:13:41 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -14,15 +14,16 @@ MAIN_TEX	= development.tex
 # dependencies).
 
 OTHER_SRC_FILES	= \
-		defs.tex \
-		titlepage.tex \
-		toc.tex \
-		intro.tex \
 		cvs.tex \
-		directories.tex \
-		files.tex \
 		core.tex \
-		third-party.tex
+		directories.tex \
+		defs.tex \
+		intro.tex \
+		files.tex \
+		release.tex \
+		third-party.tex \
+		titlepage.tex \
+		toc.tex
 
 # xfig figures.  .eps and .pdf files will be automatically generated
 # from these.
@@ -35,44 +36,40 @@ FIG_FILES	=
 #
 #########################################################################
 
-SUFFIXES	= .tex .dvi .ps .pdf .eps .fig
+SUFFIXES	= .tex .dvi .ps .pdf .eps .png
 
-CHAP_CITE	= $(CHAP_CITE_TEX:.tex=)
 MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
 MAIN_PS		= $(MAIN_TEX:.tex=.ps)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
-EPS_FIG_FILES	= $(FIG_FILES:.fig=.eps)
-PDF_FIG_FILES	= $(FIG_FILES:.fig=.pdf)
+
+TEX_SRC		= $(MAIN_TEX) $(OTHER_SRC_FILES) $(NON_DIST_SRC_FILES)
+
+EPS_FIG_FILES	= $(FIG_FILES:.png=.eps)
 
 # Tell automake to include all the relevant files
 
 EXTRA_DIST	= $(MAIN_TEX) $(OTHER_SRC_FILES) $(FIG_FILES)
-CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF)
+CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~
 
 # Some common target names
 
-docs: pdf
+all: ps
+docs: $(MAIN_PS)
 
-ps: $(EPS_FIG_FILES) $(MAIN_PS) 
-pdf: $(PDF_FIG_FILES) $(MAIN_PDF)
+ps: $(EPS_FIG_FILES) $(MAIN_PS)
+pdf: $(PNG_FIG_FILES) $(MAIN_PDF)
 
 #
 # Make the dependencies so that things build when they need to
 #
 
 $(MAIN_PS): $(MAIN_DVI)
-$(MAIN_DVI): $(MAIN_TEX) $(OTHER_SRC_FILES) $(EPS_FIGURES)
-$(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PDF_FIGURES)
+$(MAIN_DVI): $(TEX_SRC) $(EPS_FIG_FILES)
+$(MAIN_PDF): $(TEX_SRC) $(FIG_FILES)
 
 #
 # General rules
 #
-
-.fig.eps:
-	$(FIG2DEV) -L eps $< $@
-
-.fig.pdf:
-	$(FIG2DEV) -L pdf $< $@
 
 .tex.dvi:
 	(unset TEXINPUTS; $(LATEX) $*)
@@ -81,15 +78,7 @@ $(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PDF_FIGURES)
 	@ if ( grep 'Writing index file' $*.log > /dev/null ); \
 	then makeindex $* ; (unset TEXINPUTS; $(LATEX) $*) ; fi
 	@-if ( grep 'LaTeX Warning: Citation' $*.log > /dev/null ); then \
-	  if test "$(CHAP_CITE)" ; then \
-	    for file in bogus $(CHAP_CITE) ; do \
-	      if test "$$file" != "bogus"; then \
-		bibtex $$file ; \
-	      fi ; \
-	    done ; \
-	  else \
-	    bibtex $* ; \
-	  fi ; \
+	  bibtex $* ; \
 	  (unset TEXINPUTS; $(LATEX) $*) ; \
 	fi
 	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
@@ -113,15 +102,7 @@ $(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PDF_FIGURES)
 	@ if ( grep 'Writing index file' $*.log > /dev/null ); \
 	then makeindex $* ; (unset TEXINPUTS; $(PDFLATEX) $*) ; fi
 	@-if ( grep 'LaTeX Warning: Citation' $*.log > /dev/null ); then \
-	  if test "$(CHAP_CITE)" ; then \
-	    for file in bogus $(CHAP_CITE) ; do \
-	      if test "$$file" != "bogus"; then \
-		bibtex $$file ; \
-	      fi ; \
-	    done ; \
-	  else \
-	    bibtex $* ; \
-	  fi ; \
+	  bibtex $* ; \
 	  (unset TEXINPUTS; $(PDFLATEX) $*) ; \
 	fi
 	@if ( grep 'LaTeX Warning: Label(s) may' $*.log > /dev/null || \
@@ -135,10 +116,12 @@ $(MAIN_PDF): $(MAIN_TEX) $(OTHER_SRC_FILES) $(PDF_FIGURES)
 	      grep 'LaTeX Warning: Citation' $*.log > /dev/null); \
 	then (unset TEXINPUTS; $(PDFLATEX) $*) ; else :; fi
 
+.png.eps:
+	$(PNGTOPNM) $< | $(PNMTOPS) -noturn > $*.eps
+
 # Deleting kruft temporary files
 
 mostlyclean-generic:
 	-rm -f *~ *.bak *% \
 		  *.log *.aux *.dvi *.blg *.toc *.bbl *.lof *.lot *.out \
-		  $(EPS_FIG_FILES) $(PDF_FIG_FILES)
-
+		  $(EPS_FIG_FILES)
