@@ -67,8 +67,7 @@ void Opder::init()
     }
 
   # When this window closes, destroy it, too
-  my $flags = getWFlags();
-  setWFlags($flags | Qt::WDestructiveClose());
+  setWFlags(getWFlags() | Qt::WDestructiveClose());
 }
 
 void Opder::closeButton_clicked()
