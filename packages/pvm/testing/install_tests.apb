@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<testBatch>
+  <info>
+    Simple installation checks for PVM. 
+  </info>
+
+  <test name="pvmd-path.apt"/>
+  <test name="envvar.apb"/>
+
+</testBatch>
+

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <!-- 
+      Trivial test to check path of 'pvmd'
+    -->
+<testDef>
+
+  <info>
+     Check to see if 'pvmd' is installed in 
+     the standard OSCAR "/opt" FSH location.
+  </info>
+
+  <test type="cmd">
+   
+    <command interpreter="/bin/sh" uid="0">/usr/bin/which</command>
+
+    <input name="argument" format="literal">pvmd</input>
+
+    <output name="stdout" format="regexp">/opt/pvm3/lib/pvmd\n</output>
+    <output name="stderr" format="literal"></output>
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <!--
+  -->
+
+<testBatch>
+  <info>
+   Check to make sure important environment variables
+   for PVM are set.
+  </info>
+
+  <test name="envvar-pvmroot.apt"/>
+  <test name="envvar-pvmarch.apt"/>
+
+</testBatch>
+

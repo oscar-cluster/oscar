@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<testDef>
+
+  <info>
+     Check that the PVM_ROOT environment variable is set.
+     (Assuming default FSH form used by OSCAR.)
+  </info>
+
+  <test type="script">
+
+    <command interpreter="/bin/sh" wdir="/tmp">
+echo -n "$PVM_ROOT"
+exit 0
+    </command>
+
+    <output name="stdout" format="literal">/opt/pvm3</output>
+    <output name="stderr" format="literal"></output>
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
