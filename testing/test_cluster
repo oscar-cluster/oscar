@@ -22,17 +22,13 @@ use lib "$ENV{OSCAR_HOME}/lib",'/usr/lib/systeminstaller';
 
 use Carp;
 use File::Copy;
-use File::Path;
-use File::Find;
-use File::Basename;
-use SIS::Image;
 use SIS::Client;
 use OSCAR::Package;
 use Data::Dumper;
 use Getopt::Long;
 
 my %opts = ();
-unless (GetOptions(\%opts,"wait","nodes=i","procs=i") ) {
+unless (GetOptions(\%opts,"wait") ) {
         croak("Options incorrect.");
 }
 
@@ -54,7 +50,8 @@ print "Performing root tests...\n";
 # First do the root tests
 $ENV{OSCAR_TESTPRINT}=$ENV{OSCAR_HOME}. "/testing/testprint";
 foreach my $pkg (@pkgs) {
-    if(!run_pkg_script($pkg,"test_root",0,join(" ",@clientlist))) {
+    if(!run_pkg_user_test("$ENV{OSCAR_HOME}/packages/$pkg/testing/test_root","root",0,join(" ",@clientlist))) {
+  #  if(!run_pkg_script($pkg,"test_root",0,join(" ",@clientlist))) {
         $return++;
     } 
 }
@@ -67,14 +64,12 @@ if($return) {
 #
 
 my $test_user="oscartst";
-my $test_user_info=`grep $test_user /etc/passwd`;
-my ($tu,$tp,$ti,$tg,$tt,$test_user_homedir,$ts)=split(/:/,$test_user_info);
+my ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts)=getpwnam $test_user;
 unless ($test_user_homedir) {
           if (system("/usr/sbin/useradd -m $test_user")) {
                   croak("Unable to create test user and run user tests, exitting.");
           }
-          $test_user_info=`grep $test_user /etc/passwd`;
-          ($tu,$tp,$ti,$tg,$tt,$test_user_homedir,$ts)=split(/:/,$test_user_info);
+          ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts)=getpwnam $test_user;
 }
 
 # Check for a properly mounted /home dir
@@ -83,6 +78,7 @@ system("$ENV{OSCAR_TESTPRINT} --label '/home mounts'");
 open(TFILE,">$test_user_homedir/oscartestfile");
 print TFILE "OSCAR IS COOL\n";
 close(TFILE);
+sleep 2; #just in case
 my $homecount=0;
 foreach my $cli (@clientlist){
         system("$ENV{OSCAR_TESTPRINT} --label '/home mounts' --status '$cli'");
@@ -106,7 +102,7 @@ unlink("$test_user_homedir/oscartestfile");
 print "\nPreparing user tests...\n";
 
 $ENV{OSCAR_TESTPRINT}="$test_user_homedir/testprint";
-my @ufiles = qw(testprint ssh_user_tests pbs_test); 
+my @ufiles = qw(testprint ssh_user_tests pbs_test test_cluster); 
 
 # Copy the base files
 foreach my $file (@ufiles) {
