@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.25 2002/10/24 20:44:55 bwbarrett Exp $
+% $Id: design.tex,v 1.26 2002/10/25 11:21:01 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -538,7 +538,7 @@ or Optional, respectively.
   Optional/Singular.  If not supplied, the value
   ``\xmlval{$<$none$>$}'' is used.
 
-\item \xmltag{Maintainer}: An outter tag indicating the name and/or
+\item \xmltag{maintainer}: An outter tag indicating the name and/or
   e-mail address of the person / group maintaining the original
   software package.
 
@@ -595,12 +595,12 @@ or Optional, respectively.
   scoping stanzas will be listed that contain lists of RPM filenames.  
     
   There are currently only three scoping tags defined.  Each scope, if
-  listed, includes a list of RPM names.  Primitive conflict resolution
-  is run on this list, checking for such things as two versions of the
-  same RPM, etc.  However, the majority of burden for RPM conflict
-  resolution is up to the package author -- don't include RPMs that
-  will be problematic.\footnote{ Perhaps someday we can relax this
-    constraint, but not yet.}
+  listed, includes one or more \xmltag{rpm} tags.  Primitive conflict
+  resolution is run on this list, checking for such things as two
+  versions of the same RPM, etc.  However, the majority of burden for
+  RPM conflict resolution is up to the package author -- don't include
+  RPMs that will be problematic.\footnote{Perhaps someday we can relax
+    this constraint, but not yet.}
 
   Optional/Singular.  If not supplied (and the \file{client.rpmlist}
   and \file{server.rpmlist} files do not exist), then all RPMs found
@@ -616,15 +616,15 @@ or Optional, respectively.
     server node.
 
     Optional/Singular.
-
+    
   \item \xmltag{client}: Install all the listed RPMs on the OSCAR
     client nodes.
 
     Optional/Singular.
   \end{itemize}
-
+  
   It is erroneous to have a \xmltag{rpmlist} stanza without at least
-  one scoping tag containing at least one valid RPM name.
+  one scoping tag containing at least one valid \xmltag{rpm} tag.
   
   Each provided scoping tag must contain one or more \xmltag{rpm}
   tags.  Each \xmltag{rpm} tag contains a single RPM filename.
@@ -764,13 +764,6 @@ or Optional, respectively.
     Mandatory/Single.
   \end{itemize}
 \end{itemize}
-
-\begin{discuss}
-  If we want to replace/supplement the \file{server.rpmlist} and
-  \file{client.rpmlist} files, additional XML tags should be
-  specified, as well as an ordering of resolution (e.g., use the XML,
-  use the files, then install RPMs everywhere).
-\end{discuss}
 
 \endchange
 
