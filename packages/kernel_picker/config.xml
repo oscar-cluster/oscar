@@ -9,13 +9,13 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.4 2002/11/04 23:14:20 jsquyres Exp $
+      $Id: config.xml,v 1.5 2003/03/06 00:12:10 tfleury Exp $
   -->
   <name>kernel_picker</name>
 
   <version>
     <major>1</major>
-    <minor>1</minor>
+    <minor>3</minor>
     <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>

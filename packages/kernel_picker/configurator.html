@@ -1,0 +1,34 @@
+<html>
+<head><title>Configuration for kernel_picker</title>
+</head>
+<body>
+<center>
+<h1>Select the Kernel for the Image</h1>
+</center>
+The default kernels (ie. vmlinux) specified in the RPM listwork for most machine configurations.  However, there areoccasions when you want to install a custom kernel into theimage file.  Here, you can choose to use the default kernelor a different kernel.
+<p>
+<form>
+<h2>Choose the kernel to install in the image:</h2>
+<ul>
+<li><input type=radio checked name=kernel value=default>Default kernel<br>
+<li>
+<input type=radio name=kernel value=alternate>Alternate kernel file: <input type=text name=altfile size=40>
+</ul>
+<p> <p> <hr> <p> <p>
+If you selected a kernel other than the Default, enter the following information:<br>
+<ul>
+<li>Boot label: <input type=text name=bootlabel size=20 value=Alternate>
+<li>Use loadable modules : <input type=radio name=usemodules value=Y>&lt;--Yes &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp; No--&gt;<input type=radio checked name=usemodules value=N><br>
+<li>If using loadable modules, enter the following information:<br>
+<ul>
+<li>Kernel version number : <input type=text name=kernelversion size=20 value=2.4.18-19.7.xsmp>
+<li>Loadable modules path : <input type=text name=modulespath size=30 value='/lib/modules/2.4.18-19.7.xsmp'>
+<li>System.map file (optional) : <input type=text name=systemmap size=30>
+</ul>
+</ul>
+<p>
+<input type=reset value='Reset Form'>
+<p>
+</form>
+<hr>
+</body>
