@@ -23,6 +23,7 @@ use File::Copy;
 use File::Path;
 use File::Basename;
 use AppConfig;
+use Cwd;
 
 my $imagename = shift or croak("No image name specified!"); 
 my $serverint = shift or croak("No server interface name specified!"); 
@@ -32,6 +33,8 @@ my $config = init_si_config();
 my $targetdir = $config->default_imagedir . "/$imagename";
 
 if(!-d $targetdir) {croak("The directory $targetdir doesn't exist");}
+
+link_kernel_files($targetdir) or croak("Couldn't link kernel files");
 
 sync_user_files($targetdir) or croak("Couldn't sync user files");
 
@@ -51,6 +54,21 @@ sub run_postinstalls {
             !system("$postimagescript $image $imagedir") or croak("$!");
         }
     }
+    return 1;
+}
+
+sub link_kernel_files {
+    my ($imagedir) = @_;
+    my @file;
+    my $dir=cwd();
+    chdir "$imagedir/boot" or croak ("Can't change to image /boot directory");
+    foreach my $link ("module-info","System.map","vmlinuz") {
+        unless (-e $link) {
+	    @file = glob("$link*smp");
+	    symlink($file[0], $link) or croak("Couldn't make symlink for $link");
+	}
+    }
+    chdir "$dir" or croak ("Can't change back to original directory");
     return 1;
 }
 
