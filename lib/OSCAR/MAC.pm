@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.28 2003/01/23 22:46:00 mchasal Exp $
+#   $Id: MAC.pm,v 1.29 2003/01/24 16:57:48 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.28 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.29 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -168,8 +168,7 @@ sub setup_dhcpd {
     
     carp "About to run setup_dhcpd";
     if(-e "/etc/dhcpd.conf") {
-        copy("/etc/dhcpd.conf", "/etc/dhcpd.conf.oscarbak") or (carp "Couldn't backup dhcpd.conf file", 
-                                                            return undef);
+        copy("/etc/dhcpd.conf", "/etc/dhcpd.conf.oscarbak") or (carp "Couldn't backup dhcpd.conf file", return undef);
     }
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
     my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --bootfile=pxelinux.0 --gateway=$ip";
@@ -177,8 +176,7 @@ sub setup_dhcpd {
     !system($cmd) or (carp "Couldn't mkdhcpconf", return undef);
     oscar_log_subsection("Step $step_number: Successfully ran command");
     if(!-e "/var/lib/dhcp/dhcpd.leases") {
-        open(OUT,">/var/lib/dhcp/dhcpd.leases") or (carp "Couldn't create dhcpd.leases files",
-                                                    return undef);
+        open(OUT,">/var/lib/dhcp/dhcpd.leases") or (carp "Couldn't create dhcpd.leases files", return undef);
         close(OUT);
     }
     oscar_log_subsection("Step $step_number: Restarting dhcpd service");
@@ -266,6 +264,7 @@ sub assignallmacs {
     my ($listbox, $tree, $window) = @_;
     $window->Busy(-recurse => 1);
     my @macs = $listbox->get(0, 'end');
+    @macs = reverse @macs;
     $listbox->delete(0, 'end');
     regenerate_listbox($listbox);
     my $client;
