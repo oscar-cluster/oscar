@@ -28,7 +28,6 @@ use Carp;
 my $ntpBuffer = "";
 my $ntp_conf = "/etc/ntp.conf";
 my $step_tickers = "/etc/ntp/step-tickers";
-#my $xml_data = "/opt/oscar/packages/ntpconfig/.configurator.values";
 my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
 
 # get headnode's interface information from OSCAR database

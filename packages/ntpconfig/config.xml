@@ -14,7 +14,7 @@
   <name>ntpconfig</name>
 
   <version>
-    <major>1</major>
+    <major>2</major>
     <minor>0</minor>
     <subversion>0</subversion>
     <release>1</release>
@@ -27,8 +27,8 @@
   <license>Freely distributable</license>
   <group>System Environment/Base</group>
   <packager>
-    <name>Jeremy Enos</name>
-    <email>jenos@ncsa.uiuc.edu</email>
+    <name>Bernard Li</name>
+    <email>bli@bcgsc.ca</email>
   </packager>
   <description>OSCAR-specific NTP configurator.  If configured, sets up the OSCAR server to receive NTP from user-specified NTP server and act as a time server for the cluster nodes.  Otherwise, the server is simply set up to act as a time relay server for all the cluster nodes.</description>
   <rpmlist>
