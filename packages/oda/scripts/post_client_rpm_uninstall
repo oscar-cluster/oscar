@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_client_rpm_uninstall,v 1.1 2003/11/05 21:56:44 naughtont Exp $
+# $Id: post_client_rpm_uninstall,v 1.2 2003/12/04 03:14:51 ngorsuch Exp $
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -13,7 +13,16 @@ my ($distro, $ver) = which_distro_server();
 remove_rpms( "oda" );
 
 
-if( (($distro eq "redhat") && ($ver eq "7.3")) ||
+if( ($distro eq "fedora") && ($ver eq "1") ) {
+	my @rpms = qw(perl-CGI
+			mysql
+			perl-DBD-MySQL
+			perl-DBI
+			);
+	remove_rpms(@rpms);
+
+}
+elsif( (($distro eq "redhat") && ($ver eq "7.3")) ||
     (($distro eq "redhat") && ($ver eq "8.0")) ||
     (($distro eq "redhat") && ($ver eq "9"))   ||
     (($distro eq "rhas")   && ($ver eq "2.1AS"))
@@ -158,6 +167,7 @@ sub remove_files
 sub which_distro_server {
 	# Moved this hash inside the function since it was pulled from Distro.pm
 	my $DISTROFILES = {  
+           'fedora-release'   => 'fedora',
            'mandrake-release' => 'mandrake',
            'redhat-release'   => 'redhat',
 		   'aaa_version'      => 'suse',

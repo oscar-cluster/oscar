@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_server_rpm_uninstall,v 1.1 2003/11/05 21:56:45 naughtont Exp $
+# $Id: post_server_rpm_uninstall,v 1.2 2003/12/04 03:14:52 ngorsuch Exp $
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -18,7 +18,8 @@ if( (($distro eq "redhat") && ($ver eq "7.3")) ||
 	remove_rpms( "mysql-server" );
 }
 
-if( (($distro eq "redhat") && ($ver eq "7.3")) ||
+if( (($distro eq "fedora") && ($ver eq "1")) ||
+    (($distro eq "redhat") && ($ver eq "7.3")) ||
     (($distro eq "redhat") && ($ver eq "8.0")) ||
     (($distro eq "redhat") && ($ver eq "9"))   ||
     (($distro eq "rhas")   && ($ver eq "2.1AS"))
