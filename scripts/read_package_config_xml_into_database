@@ -1366,21 +1366,28 @@ if ( ! oda::read_records( \%options,
 	foreach my $field_name ( @field_names ) {
 	    $package_modification_field_values{$field_name} = undef;
 	}
-	# then overwrite with field values read from the config.xml file
+	# Then overwrite with field values with the
+	# values read from the package's config.xml.
+	# For now, leave the installable field the way
+	# that the package's config.xml field was set,
+	# since we have to look at the package filtering
+	# information to set it and we haven't setup the
+	# package filtering information yet.
 	foreach my $field_name ( keys %package_single_value_folded_fields ) {
 	    $package_modification_field_values{$field_name} =
 		$package_single_value_folded_fields{$field_name};
 	}
+
 	# a few fields are gotten from the already existing record
-	my $existing_field_values_ref = $read_results[0];
-	foreach my $field_name ( "installable" ) {
-	    if ( exists $$existing_field_values_ref{$field_name} &&
-		 defined $$existing_field_values_ref{$field_name} &&
-		 $$existing_field_values_ref{$field_name} ne "" ) {
-		$package_modification_field_values{$field_name} =
-		    $$existing_field_values_ref{$field_name};
-	    }
-	}
+#	my $existing_field_values_ref = $read_results[0];
+#	foreach my $field_name ( ) {
+#	    if ( exists $$existing_field_values_ref{$field_name} &&
+#		 defined $$existing_field_values_ref{$field_name} &&
+#		 $$existing_field_values_ref{$field_name} ne "" ) {
+#		$package_modification_field_values{$field_name} =
+#		    $$existing_field_values_ref{$field_name};
+#	    }
+#	}
 	# and the main key fields are not written back out
 	delete $package_modification_field_values{id}
 	    if exists $package_modification_field_values{id};
@@ -2031,11 +2038,67 @@ foreach my $package_filter_record_ref ( @package_filter_records_refs ) {
 			     $package_filter_record_ref );
 }
 
-# now that the package filters are written into the database for
+# Now that the package filters are written into the database for
 # this package, determine it's installable field value and set
-# tha value appropriately
-
-
+# that value appropriately.  If this package is the oda package 
+# or any core package, it's always installable.
+my $installable;
+if ( $package_name eq "oda" ) {
+    print "$0: setting package oda installable\n" if $options{debug};
+    $installable = 1;
+} elsif ( defined $package_single_value_folded_fields{class} &&
+	  $package_single_value_folded_fields{class} eq "core" ) {
+    print "$0: setting core package $package_name installable\n"
+	if $options{debug};
+    $installable = 1;
+# otherwise, if there are no package filters for this package,
+# the package is installable
+} elsif ( ! @package_filter_records_refs ) {
+    print "$0: setting filter-less package $package_name installable\n"
+	if $options{debug};
+    $installable = 1;
+} else {
+    my ( $architecture,
+	 $distribution,
+	 $distribution_version ) =
+	     database_read_filtering_information( 1 );
+    $installable = 0;
+    foreach my $record_ref ( @package_filter_records_refs ) {
+	if (
+	    ( ! defined $$record_ref{architecture} ||
+	      ! defined $architecture ||
+	      $$record_ref{architecture} eq $architecture )
+	    &&
+	    ( ! defined $$record_ref{distribution} ||
+	      ! defined $distribution ||
+	      $$record_ref{distribution} eq $distribution )
+	    &&
+	    ( ! defined $$record_ref{distribution_version} ||
+	      ! defined $distribution_version ||
+	      $$record_ref{distribution_version} eq $distribution_version )
+	    ) {
+	    print "$0: setting package $package_name installable\n"
+		if $options{debug};
+	    $installable = 1;
+	    last;
+	}
+    }
+    print "$0: setting package $package_name non-installable\n"
+	if ! $installable && $options{debug};
+}
+# now modify the existing record
+@error_strings = ();
+my @modified_tables = ( "$packages_table_name" );
+my %modified_fields;
+$modified_fields{installable} = $installable;
+if ( ! oda::modify_records( \%options,
+			    \@modified_tables,
+			    \%modified_fields,
+			    \@package_record_wheres,
+			    \@error_strings ) ) {
+    warn shift @error_strings while @error_strings;
+    warn "$0: failed to set the installable field for package record $package_name to a value of $installable";
+}
 
 oda::disconnect( \%options );
 exit 0;
