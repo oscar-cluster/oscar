@@ -342,6 +342,42 @@
       </shortcut>
 
       <shortcut>
+        <command> add_config_opkgs </command>
+        <description>
+          add_config_opkgs insert a configurations_id and package_id,
+          required parameters are:
+                  configurations_id          ID of the configurations
+                  package_id                 ID of the package
+        </description>
+        <expansion>
+          insert_record
+          config_opkgs
+          config_opkgs.configurations_id~%1
+          config_opkgs.package_id~%2
+          %+
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> add_node_config_revs </command>
+        <description>
+          add_node_config_revs insert a node_id and configurations_id with config's revison,
+          required parameters are:
+                  node_id                    ID of the node
+                  configurations_id          ID of the configurations
+          Optional parameters are:
+                  version         To control the change of configuration (default 0)
+        </description>
+        <expansion>
+          insert_record
+	  node_config_revs
+          node_config_revs.node_id~%1
+          node_config_revs.configurations_id~%2
+          %+
+        </expansion>
+      </shortcut>
+
+      <shortcut>
         <command> delete_all_configurations </command>
         <description>
           delete_all_configurations deletes all named configurations.
@@ -4100,6 +4136,58 @@
       </fields>
     </program_variable_values>
 
-  </database_tables>
+  
+  <!--
+  ==================================================
+  ==================================================
+  ==                                              ==
+  ==                NEST tables                   ==
+  ==                                              ==
+  ==================================================
+  ==================================================
+   -->
 
+    <node_opkgs>
+      <parameters> unique(node_id,package_id) </parameters>
+      <fields> 
+        <node_id>
+          <type> integer </type>
+        </node_id>
+        <package_id>
+          <type> integer </type>
+        </package_id>
+      </fields>
+    </node_opkgs>
+
+    <node_config_revs>
+      <parameters> unique(node_id,configurations_id) </parameters>
+      <fields> 
+        <node_id>
+          <type> integer </type>
+        </node_id>
+        <configurations_id>
+          <type> integer </type>
+        </configurations_id>
+        <version>
+          <type> integer </type>
+          <default> 0 </default>
+        </version>
+      </fields>
+    </node_config_revs>
+
+    <config_opkgs>
+      <parameters> unique(configurations_id,package_id) </parameters>
+      <fields> 
+        <configurations_id>
+          <type> integer </type>
+        </configurations_id>
+        <package_id>
+          <type> integer </type>
+        </package_id>
+      </fields>
+    </config_opkgs>
+
+
+
+  </database_tables>
 </oscar>

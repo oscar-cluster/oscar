@@ -22,12 +22,13 @@
 use strict;
 use Getopt::Long;
 use Carp;
-use lib '/usr/lib/systeminstaller';
+use lib "/usr/lib/systeminstaller";
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
 use SIS::DB;
 use oda;
+
 
 # list of oscar database nics table fields that we want to
 # read and/or set in the oscar database, and the names that
@@ -499,6 +500,23 @@ foreach my $node_name ( keys %sis_nodes ) {
 		if $oscar_node_exists = execute_it
 		( "create_node $node_name",
 		  "creating node $node_name" );
+	    chomp(my $node_id = `oda rea nodes id name=$node_name`);
+	    chomp(my $config_id = `oda rea configurations id name=$node_name`);
+	    if ($node_id && $config_id){
+			do_it_first_or_usage( "add_node_config_revs $node_id $config_id",
+					  "can not create node_config_revs record for $node_name");
+	    }
+	    my @opkgs = 
+		("oda", "sync_files", "switcher", "sis", "pvm", "pfilter", "perl-Qt", "pbs", "opium", "ntpconfig", "networking", "mpich", "maui", "loghost", "lam", "kernel_picker", "hdf5", "disable-services", "c3","base");
+	    if ( $config_id && @opkgs ){
+			print "Configuration of $node_name has the following oscar packages :\n";
+			foreach my $opkg (@opkgs){
+				chomp(my $package_id = `oda rea packages id name=$opkg`);
+				do_it_first_or_usage( "add_config_opkgs $config_id $package_id",
+					  "cannot create config_opkgs record for $node_name" );
+			}
+	    }
+		
 	}
 	my %node = ();
 	$oscar_nodes{ $node_name } = \%node;
