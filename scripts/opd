@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.3 2002/10/30 12:15:58 jsquyres Exp $
+# $Id: opd,v 1.4 2002/11/01 05:25:08 jsquyres Exp $
 #
 
 use strict;
@@ -25,7 +25,7 @@ use Data::Dumper;
 # Setup some global variables
 
 my $xs = new XML::Simple(keyattr => {}, forcearray => 
-			 [ "site", "uri", 
+			 [ "site", "uri", "package",
 			   "requires", "conflicts", "provides" ]);
 
 my $default_repository_location = "Bloomington, IN, USA";
