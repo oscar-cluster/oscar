@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.8 2003/01/20 21:26:32 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.9 2003/03/06 23:18:33 brechin Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -59,7 +59,7 @@ if ($options->Help){
 }
 
 verbose("Restarting xinetd");
-!system("service xinetd restart") or croak("Couldn't restart xinetd");
+!system("/etc/init.d/xinetd restart") or croak("Couldn't restart xinetd");
 
 verbose("Creating directories.");
 mkpath("/tftpboot/pxelinux.cfg");

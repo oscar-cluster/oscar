@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.36 2003/02/06 20:17:20 brechin Exp $
+#   $Id: MAC.pm,v 1.37 2003/03/06 23:18:32 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.36 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.37 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -218,7 +218,7 @@ sub setup_dhcpd {
         close(OUT);
     }
     oscar_log_subsection("Step $step_number: Restarting dhcpd service");
-    !system("service dhcpd restart") or (carp "Couldn't restart dhcpd", 
+    !system("/etc/init.d/dhcpd restart") or (carp "Couldn't restart dhcpd", 
                                          return undef);
     oscar_log_subsection("Step $step_number: Successfully restarted dhcpd service");
     $window->Unbusy();

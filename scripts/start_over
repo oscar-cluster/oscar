@@ -191,7 +191,7 @@ sub stop_services {
   my @all_services = ( @found_services, @known_services );
   @all_services = sort_uniq( @all_services );
   foreach my $service (@all_services) {
-    do_command( "service $service stop" ) if -r "/etc/rc.d/init.d/$service";
+    do_command( "/etc/init.d/$service stop" ) if -r "/etc/rc.d/init.d/$service";
   }
 }
 

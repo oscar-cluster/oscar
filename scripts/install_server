@@ -4,7 +4,7 @@
 #                     Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
-# $Id: install_server,v 1.4 2003/01/14 22:26:59 mchasal Exp $
+# $Id: install_server,v 1.5 2003/03/06 23:18:33 brechin Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -97,9 +97,9 @@ oscar_log_subsection("Updating rsyncd.conf");
 update_rsyncd_conf($ip,$netmask) or croak("Couldn't update rsyncd.conf file");
 
 oscar_log_subsection("Refreshing services");
-!system("service nfs start") or croak("Couldn't start nfs");
+!system("/etc/init.d/nfs start") or croak("Couldn't start nfs");
 !system("exportfs -a") or croak("Couldn't refresh nfs exports");
-!system("service sshd start") or croak("Couldn't start sshd");
+!system("/etc/init.d/sshd start") or croak("Couldn't start sshd");
 !system("chkconfig --level 345 sshd on");
 !system("chkconfig --level 345 dhcpd on");
 !system("chkconfig --level 345 portmap on");

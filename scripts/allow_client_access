@@ -30,7 +30,7 @@ if (! -r "/etc/init.d/ipchains") {
 }
 
 # see if we are running ipchains
-if ( scalar ( @ipchains_cmd_out = `service ipchains status 2>/dev/null` ) ) {
+if ( scalar ( @ipchains_cmd_out = `/etc/init.d/ipchains status 2>/dev/null` ) ) {
     print "It looks like this system is running the ipchains \"service\" from Redhat.\n";
     print "Examining $IPCHAINS ...\n";
 
@@ -140,8 +140,8 @@ if ( scalar ( @ipchains_cmd_out = `service ipchains status 2>/dev/null` ) ) {
 	close(OUTFILE);
 	
 	print "Restarting ipchains packet filtering to catch new rules\n";
-	print "service ipchains restart\n";
-	`service ipchains restart`;
+	print "/etc/init.d/ipchains restart\n";
+	`/etc/init.d/ipchains restart`;
     }
 }
 
