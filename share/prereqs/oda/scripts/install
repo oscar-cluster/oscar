@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: install,v 1.9 2003/06/24 15:12:43 brechin Exp $
+# $Id: install,v 1.10 2003/06/24 15:21:26 brechin Exp $
 #
 
 #use strict;
@@ -35,13 +35,15 @@ my ($distro_name, $distro_version) = which_distro_server();
 
 # find a list of rpm names to check for and rpm files to install
 
+my $mysqld;
+
 if ($distro_name eq "redhat") {
     @wanted_rpms = qw( mysql
 		perl-DBD-MySQL
 		perl-DBI
 		mysql-server
 		oda );
-    my $mysqld   = 'mysqld';
+    $mysqld      = 'mysqld';
 }
 
 if ($distro_name eq "SuSE") {
@@ -52,7 +54,7 @@ if ($distro_name eq "SuSE") {
 		perl-Data-ShowTable
 		mysql-shared
 		oda );
-    my $mysqld   = 'mysql';
+    $mysqld      = 'mysql';
     my $src = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml.SuSE";
     my $dest = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml";
     copy($src, $dest) || croak("Could not copy $src to $dest");
@@ -68,7 +70,7 @@ elsif ($distro_name eq "mandrake") {
 		perl-Mysql
 		perl-ExtUtils-PerlPP
 		oda );
-    my $mysql    = 'mysql';
+    $mysqld      = 'mysql';
     # FIXME (bligneri)
     # Will just copy the XML file.
     # Should be an argument in the XML file.
@@ -106,7 +108,11 @@ install_rpms(@wanted_rpms) or
 
 # Exit properly so that the exit status gets propogated
 
-oscar_log_subsection("Restarting MySQL server $mysqld");
-system("/etc/init.d/$mysqld restart") or croak("Couldn't restart $mysqld");
+oscar_log_subsection("Checking status of MySQL server $mysqld");
+if ( !system("/etc/init.d/$mysqld status | grep -c stopped") ) {
+  !system("/etc/init.d/$mysqld restart") or croak("Couldn't restart $mysqld");
+} else {
+  oscar_log_subsection("$mysqld already running");
+}
 
 exit(0);
