@@ -5,7 +5,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: wizard_prep,v 1.13 2002/10/29 05:27:34 jsquyres Exp $
+# $Id: wizard_prep,v 1.14 2002/10/29 07:26:56 jsquyres Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -132,19 +132,21 @@ push @rpms, OSCAR::Package::distro_rpmlist($distname,$distver,$ARCH);
 
 # Now install them nicely (i.e. don't install packages that are already there)
 
-oscar_log_subsection("Installing core RPMs");
+oscar_log_subsection("Installing server core RPMs");
 OSCAR::Package::install_rpms(@rpms) 
     or croak("Couldn't install the required packages needed for OSCAR Wizard to run");
-oscar_log_subsection("Successfully installed core RPMs");
+oscar_log_subsection("Successfully installed server core RPMs");
 
 # Run the post_server_rpm_install scripts
 
-oscar_log_subsection("Running post_server_install scripts for core packages");
+oscar_log_subsection("Running post_server_install scripts for " .
+		     "server core packages");
 foreach my $package (@packages) {
     OSCAR::Package::run_pkg_script($package,"post_server_install") 
 	or croak("Failed running post_server_install for $package");
 }
-oscar_log_subsection("Successfully ran core package post_server_install scripts");
+oscar_log_subsection("Successfully ran server core package " .
+		     "post_server_install scripts");
 
 oscar_log_subsection("Successfully ran OSCAR wizard_prep script");
 
