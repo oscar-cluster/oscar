@@ -1,4 +1,4 @@
-% $Id: configurator.tex,v 1.2 2003/10/01 21:27:46 naughtont Exp $
+% $Id: configurator.tex,v 1.3 2003/10/01 22:44:07 naughtont Exp $
 %
 % "Configurator HOWTO" (LaTeX-ified for inclusion w/ the Pkg howto)
 %  - The details the usage and syntax for working with the OSCAR Configurator.
@@ -23,38 +23,44 @@ Many of the basic HTML tags are supported in the OSCAR Configurator,
 including:
 
 \begin{itemize}
-\item various fonts and headers 
-\item line and paragraph breaks 
-\item horizontal (ruler) lines 
-\item centered text 
-\item images (GIFs and JPEGs) 
+	\item various fonts and headers 
+	\item line and paragraph breaks 
+	\item horizontal (ruler) lines 
+	\item centered text 
+	\item images (GIFs and JPEGs) 
 \end{itemize}
 There is also a decent assortment of HTML Form tags such as:
 
 \begin{itemize}
-\item input fields
-\item checkboxes
-\item radio buttons
-\item single- and multi-selection lists
-\item text boxes 
+	\item input fields
+	\item checkboxes
+	\item radio buttons
+	\item single- and multi-selection lists
+	\item text boxes 
 \end{itemize}
-All of the available tags are described in detail below.
+All of the available tags are described in detail in below.  There are some
+HTML tags that are NOT allowed in a configuration file.  In particular, you
+may \textbf{not} use:
+%
+\begin{description}
 
-There are some HTML tags that are NOT allowed in a configuration file.
-In particular, you may \textbf{not} use:
+	\item[\xmltag{A HREF}] - A hypertext link to other places on the web.
+	We don't want the user going off to another web page.
 
-\begin{itemize}
-\item $<$A HREF$>$ - A hypertext link to other places on the web. We don't want
-the user going off to another web page.
-\item $<$TABLE$>$, $<$TR$>$, $<$TD$>$ - While tables are parsed in without difficulty,
-they are not rendered as true talbes. Better to use $<$PRE$>$ (preformatted
-text) for this purpose.
-\item $<$ISINDEX$>$ - The document cannot be searchable.
-\item Form $<$SUBMIT$>$, $<$BUTTON$>$, and $<$IMAGE$>$ - The Configurator has its own
-button to submit the values of the form to the program, so these elements
-are unnecessary.
-\item $<$FILE$>$ - The user is not allowed to upload a file. 
-\end{itemize}
+	\item[\xmltag{TABLE}, \xmltag{TR}, \xmltag{TD}] - While tables are
+	parsed in without difficulty, they are not rendered as true talbes.
+	Better to use \xmltag{PRE} (preformatted text) for this purpose.
+
+	\item[\xmltag{ISINDEX}] - The document cannot be searchable.
+
+	\item[\xmltag{SUBMIT}, \xmltag{BUTTON}, \& \xmltag{IMAGE}] - The
+	Configurator has its own button to submit the values of the form to the
+	program, so these elements are unnecessary.
+
+	\item[\xmltag{FILE}] - The user is not allowed to upload a file. 
+
+\end{description}
+%
 If any of these tags are present in your HTML document, they are removed
 prior to rendering so that your document will appear without the offending
 tags.
@@ -62,12 +68,12 @@ tags.
 
 \subsubsection*{A Basic HTML Form Document}
 
-Since all of the configuration input from a user appears in an HTML
-Form, the minimum useful configuration file contains $<$form$>$ and
-$<$/form$>$
-tags. Between these two tags, the package maintainer adds $<$input$>$
-tags to get input from the user. For example, if all you want from
-the user is his name, your configuration file might be as follows:
+Since all of the configuration input from a user appears in an HTML Form,
+the minimum useful configuration file contains \xmltag{form} and
+\xmltag{/form} tags. Between these two tags, the package maintainer adds
+\xmltag{input} tags to get input from the user. For example, if all you
+want from the user is his name, your configuration file might be as
+follows:
 
 \begin{footnotesize}
 \begin{verbatim}
@@ -88,22 +94,22 @@ The resulting output would look like this:
 
 
 If you are HTML savvy, you may notice a few things missing from this
-example. Specifically, we omitted the main $<$html$>$...$<$/html$>$ tags,
-and the $<$head$>$$<$/head$>$ and $<$body$>$$<$/body$>$ tags. For basic configuration
-files, these tags are optional. You may use them if you like (and
-some browsers would bonk if they were absent), but they are not required.
-Also, there are no attributes for the $<$form$>$ tag. This is because
-the Configurator knows the action to take when the user saves the
-values, so no {}``action'' label is needed. Also, there can be only
-one pair of $<$form$>$$<$/form$>$ tags in the configuration file, so there
-is no need for the {}``name'' label.
+example. Specifically, we omitted the main \xmltag{html}...\xmltag{/html}
+tags, and the \xmltag{head}\xmltag{/head} and \xmltag{body}\xmltag{/body}
+tags. For basic configuration files, these tags are optional. You may use
+them if you like (and some browsers would bonk if they were absent), but
+they are not required.  Also, there are no attributes for the \xmltag{form}
+tag. This is because the Configurator knows the action to take when the
+user saves the values, so no {}``action'' label is needed. Also, there can
+be only one pair of \xmltag{form}\xmltag{/form} tags in the configuration
+file, so there is no need for the {}``name'' label.
 
 
 \subsubsection*{A More Complete HTML Form}
 
 A typical HTML document consists of at least two separate sections,
 a {}``head'' and a {}``body''. The most important element of the
-{}``head'' is the $<$title$>$...$<$/title$>$ tag. This sets the title of
+{}``head'' is the \xmltag{title}...\xmltag{/title} tag. This sets the title of
 the window and also acts as the text for the header of the configuration
 window. If you omit this tag or leave the value blank, it defaults
 to {}``Configuration''.
@@ -136,7 +142,7 @@ and line spacing are shown simply to make the example easier to read.
 We could just have easily put everything on a single line and the
 output would be the same. This is important to know since if you want
 a true line break (say between paragraphs), you have to explicitly
-tell HTML by using the $<$p$>$ (paragraph) tag. Also, the case of the
+tell HTML by using the \xmltag{p} (paragraph) tag. Also, the case of the
 tags is unimportant, so you could also use all uppercase letters for
 your tags if you find that to be more readable.
 
@@ -153,23 +159,25 @@ listing.
 
 \subsubsection*{HTML Form Tags}
 
-The main tags that you will need for your configuration file are $<$form$>$
+The main tags that you will need for your configuration file are \xmltag{form}
 tags. These tags allow you to prompt the user for information to be
 entered via text boxes, check boxes, radio buttons, selection lists,
 etc. This section describes each tag in detail and provides examples.
 
-Note that all of these tags must appear between a $<$form$>$...$<$/form$>$
+Note that all of these tags must appear between a \xmltag{form}...\xmltag{/form}
 tag pair. Otherwise your values will not get submitted correctly.
 
 \begin{itemize}
-\item $<$input type=\char`\"{}text\char`\"{} name=\char`\"{}VARIABLE\char`\"{}
-value=\char`\"{}INITIAL\char`\"{} size=\char`\"{}NUMCHARS\char`\"{}
-maxlength=\char`\"{}MAXCHARS\char`\"{}$>$ - 
+
+%------ITEM------------
+\item $<$input {}type=\char`\"{}text\char`\"{}
+name=\char`\"{}VARIABLE\char`\"{} value=\char`\"{}INITIAL\char`\"{}
+size=\char`\"{}NUMCHARS\char`\"{} maxlength=\char`\"{}MAXCHARS\char`\"{}$>$ 
 
 
 A \textit{text} element is a single line text input field in which
 the user can enter text. If you do not specify \textbf{type=''text''},
-then the $<$input$>$ defaults to this type of text input field. Of the
+then the \xmltag{input} defaults to this type of text input field. Of the
 various attributes, only \textbf{name} is required. The \textbf{name}
 attribute designates the variable name for the data entered by the
 user. If you also specify the \textbf{value} attribute, that text
@@ -195,6 +203,7 @@ Output:
 \begin{quote}
 \includegraphics[scale=0.5]{figs/EnterYourName2}
 \end{quote}
+%------ITEM------------
 \item $<$input type=\char`\"{}password\char`\"{} name=\char`\"{}VARIABLE\char`\"{}
 value=\char`\"{}INITIAL\char`\"{} size=\char`\"{}NUMCHARS\char`\"{}
 maxlength=\char`\"{}MAXCHARS\char`\"{}$>$ -
@@ -220,22 +229,23 @@ Output:
 \begin{quote}
 \includegraphics[scale=0.5]{figs/EnterYourPassword}
 \end{quote}
+
+%------ITEM------------
 \item $<$input type=\char`\"{}checkbox\char`\"{} name=\char`\"{}VARIABLE\char`\"{}
 value=\char`\"{}RETURNVALUE\char`\"{} checked$>$ - 
 
 
-A \textit{checkbox} is a toggle that the user can select (switch on)
-or deselect (switch off). As with all $<$input$>$ elements, the \textbf{name}
-attribute is required and designates the variable name for the value
-returned by the check box. Usually, {}``ON'' is returned when a
+A \textit{checkbox} is a toggle that the user can select (switch on) or
+deselect (switch off). As with all \xmltag{input} elements, the
+\textbf{name} attribute is required and designates the variable name for
+the value returned by the check box. Usually, {}``ON'' is returned when a
 check box has been checked by the user. If you specify the \textbf{value}
 attribute, that value is returned instead when the check box has been
 checked by the user. You can optionally specify the \textbf{checked}
 attribute to make the check box initially selected when first displayed.
 Otherwise, the check box is unselected when first displayed. Any check
-boxes which are not checked when the form is submitted do not get
-passed to the Configurator, ie. their values will be {}``'' (the
-empty string).
+boxes which are not checked when the form is submitted do not get passed to
+the Configurator, ie. their values will be {}``'' (the empty string).
 
 Example:
 
@@ -253,25 +263,27 @@ Output:
 \begin{quote}
 \includegraphics[scale=0.5]{figs/EnableRootAccess}
 \end{quote}
+
+%------ITEM------------
 \item $<$input type=\char`\"{}radio\char`\"{} name=\char`\"{}VARIABLE\char`\"{}
 value=\char`\"{}RETURNVALUE\char`\"{} checked$>$ - 
 
 
-A \textit{radio} element is a radio button. A set of radio buttons
-consists of multiple radio buttons that all have the same \textbf{name}
-attribute. Only one radio button in the set can be selected at one
-time. When the user selects a button in the set, all other buttons
-in the set are deselected. If one radio button in a set has the \textbf{checked}
-attribute, that one is selected when the set is first displayed. Otherwise,
-none of the radio buttons are selected when first displayed (which
-may not be the desired functionality). As with all $<$input$>$ elements,
-the \textbf{name} attribute is required and designates the variable
-name for the value returned by the radio button set. All radio buttons
-with the same \textbf{name} are in the same set, regardless of where
-they appear in the form. The \textbf{value} attribute is the value
-that is returned for the radio button set when the form is submitted.
-This default to {}``ON'' which isn't very useful for a set of radio
-buttons, so be sure to give each radio button its own \textbf{value}.
+A \textit{radio} element is a radio button. A set of radio buttons consists
+of multiple radio buttons that all have the same \textbf{name} attribute.
+Only one radio button in the set can be selected at one time. When the user
+selects a button in the set, all other buttons in the set are deselected.
+If one radio button in a set has the \textbf{checked} attribute, that one
+is selected when the set is first displayed. Otherwise, none of the radio
+buttons are selected when first displayed (which may not be the desired
+functionality). As with all \xmltag{input} elements, the \textbf{name}
+attribute is required and designates the variable name for the value
+returned by the radio button set. All radio buttons with the same
+\textbf{name} are in the same set, regardless of where they appear in the
+form. The \textbf{value} attribute is the value that is returned for the
+radio button set when the form is submitted.  This default to {}``ON''
+which isn't very useful for a set of radio buttons, so be sure to give each
+radio button its own \textbf{value}.
 
 Example:
 
@@ -291,6 +303,8 @@ Output:
 \begin{quote}
 \includegraphics[scale=0.5]{figs/UserType}
 \end{quote}
+
+%------ITEM------------
 \item $<$input type=\char`\"{}hidden\char`\"{} name=\char`\"{}VARIABLE\char`\"{}
 value=\char`\"{}RETURNVALUE\char`\"{}$>$ - 
 
@@ -317,6 +331,8 @@ Output:
 \begin{quote}
 \includegraphics[scale=0.5]{figs/HiddenElement}
 \end{quote}
+
+%------ITEM------------
 \item $<$input type=\char`\"{}reset\char`\"{}
 value=\char`\"{}LABEL\char`\"{}$>$
 - 
@@ -342,6 +358,9 @@ Output:
 \begin{quote}
 \includegraphics[scale=0.5]{figs/ResetForm}
 \end{quote}
+
+%------ITEM------------
+\item $<$input type=\char`\"{}reset\char`\"{}
 \item $<$textarea name=\char`\"{}VARIABLE\char`\"{} cols=\char`\"{}WIDTH\char`\"{}
 rows=\char`\"{}HEIGHT\char`\"{} 
 
@@ -349,26 +368,26 @@ rows=\char`\"{}HEIGHT\char`\"{}
 wrap=\char`\"{}OFF\char`\"{}|\char`\"{}HARD\char`\"{}|\char`\"{}SOFT\char`\"{}$>$Text
 to display$<$/textarea$>$ - 
 
-The \textit{textarea} tag defines a multiline input field into which
-the user can enter text. As with $<$input$>$ elements, the \textbf{name}
-attribute is required and designates the variable name for the text
-present in the box when the form is submitted. The width and height
-(in terms of characters) of the text box is given by the optional
-\textbf{cols} and \textbf{rows} attributes. By default, any text entered
-by the user is displayed {}``as is'' meaning that if the line input
-by the user is longer than the width of the text box, the text will
-scroll off the screen. The only time a new row is started is when
-the user types a carriage return. This is also the behavior when you
-use the \textbf{wrap=\char`\"{}OFF\char`\"{}} attribute. If you want
-to have the text word wrap automatically, use the \textbf{wrap=\char`\"{}HARD\char`\"{}}
-or \textbf{wrap=\char`\"{}SOFT\char`\"{}} attribute. (In standard
-HTML, these two attributes differ by whether or not the extra carriage
-returns generated by word wrapping get submitted in the text or not.
-For the Configurator, these extra carriage returns are never submitted,
-which is equivalent to \textbf{wrap=\char`\"{}SOFT\char`\"{}}, so
-using \textbf{wrap=\char`\"{}HARD\char`\"{}} generates the same behavior.)
-Between the two $<$textarea$>$...$<$/textarea$>$ tags, you can put optional
-{}``Text to display'' when the textarea is first displayed.
+The \textit{textarea} tag defines a multiline input field into which the
+user can enter text. As with \xmltag{input} elements, the \textbf{name}
+attribute is required and designates the variable name for the text present
+in the box when the form is submitted. The width and height (in terms of
+characters) of the text box is given by the optional \textbf{cols} and
+\textbf{rows} attributes. By default, any text entered by the user is
+displayed {}``as is'' meaning that if the line input by the user is longer
+than the width of the text box, the text will scroll off the screen. The
+only time a new row is started is when the user types a carriage return.
+This is also the behavior when you use the
+\textbf{wrap=\char`\"{}OFF\char`\"{}} attribute. If you want to have the
+text word wrap automatically, use the \textbf{wrap=\char`\"{}HARD\char`\"{}} 
+or \textbf{wrap=\char`\"{}SOFT\char`\"{}} attribute. (In standard HTML, these
+two attributes differ by whether or not the extra carriage returns
+generated by word wrapping get submitted in the text or not.  For the
+Configurator, these extra carriage returns are never submitted, which is
+equivalent to \textbf{wrap=\char`\"{}SOFT\char`\"{}}, so using
+\textbf{wrap=\char`\"{}HARD\char`\"{}} generates the same behavior.)
+Between the two \xmltag{textarea}...\xmltag{/textarea} tags, you can put
+optional {}``Text to display'' when the textarea is first displayed.
 
 Example:
 
@@ -388,9 +407,12 @@ Output:
 \begin{quote}
 \includegraphics[scale=0.5]{figs/Comments}
 \end{quote}
-\item $<$select name=\char`\"{}VARIABLE\char`\"{} size=\char`\"{}LISTLENGTH\char`\"{}
-multiple$>$ $<$option value=\char`\"{}OPTIONVALUE\char`\"{}$>$ $<$option value=\char`\"{}OPTIONVALUE\char`\"{}
-selected$>$ ... $<$/select$>$ - 
+
+%------ITEM------------
+\item $<$select name=\char`\"{}VARIABLE\char`\"{}
+ size=\char`\"{}LISTLENGTH\char`\"{} multiple$>$ $<$option
+ value=\char`\"{}OPTIONVALUE\char`\"{}$>$ $<$option
+ value=\char`\"{}OPTIONVALUE\char`\"{} selected$>$ ... $<$/select$>$ - 
 
 
 The \textit{select} and \textit{option} tags define a selection list.
@@ -439,8 +461,11 @@ Output:
 \begin{quote}
 \includegraphics[scale=0.5]{figs/SelectMachine}
 \end{quote}
-Note: when viewing the above example in a standard HTML browser, you
-might have to use the $<$SHIFT$>$ or $<$CTRL$>$ key in conjunction with clicking
-the mouse to select multiple items from the list. In the Configurator,
-this extra keypress is not required.\end{itemize}
+
+Note: when viewing the above example in a standard HTML browser, you might
+have to use the \xmltag{SHIFT} or \xmltag{CTRL} key in conjunction with
+clicking the mouse to select multiple items from the list. In the
+Configurator, this extra keypress is not required.
+
+\end{itemize}
 
