@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.9 2003/06/23 15:49:44 brechin Exp $
+      $Id: config.xml,v 1.10 2003/07/15 21:20:31 brechin Exp $
   -->
   <name>pbs</name>
 
@@ -17,7 +17,7 @@
     <major>2</major>
     <minor>3</minor>
     <subversion>16</subversion>
-    <release>9</release>
+    <release>11</release>
     <epoch>1</epoch>
   </version>
 
@@ -28,8 +28,8 @@
   <license>PBS license (see PBS_License.txt)</license>
   <group>Applications/batch</group>
   <packager>
-    <name>Jeremy Enos</name>
-    <email>jenos@ncsa.uiuc.edu</email>
+    <name>Jason Brechin</name>
+    <email>brechin@ncsa.uiuc.edu</email>
   </packager>
 
   <description>The Portable Batch System (PBS) is a flexible workload
@@ -46,6 +46,7 @@ the ANL rpp tuning patch to minimize packet loss on large clusters;
 the NCSA patch to allow .pbs_spool home sub-directory spooling;
 the NCSA patch to lock pbs_mom into memory.
 the maui_rm_ext patch allows submission with the '-W x=&lt;XSTRING' flag.
+the IA64 patch
 It simply tells PBS to allow, and opaquely pass the value of the
 specified string which Maui then processes.
 
