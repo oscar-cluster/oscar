@@ -172,6 +172,10 @@ sub install_uninstall_packages
 			OSCAR::Database::single_database_execute("package_clear_should_be_uninstalled $package","write",\@tables,undef,\@error_list);
 			&uninstall_package($package);
 
+			# new tables to lock for next query
+			@tables = ("package_sets_included_packages","packages","package_sets","oda_shortcuts");
+			# make sure the package we un-installed is un-selected in selector so scripts won't run
+			OSCAR::Database::single_database_execute("remove_package_from_all_package_sets $package","write",\@tables,undef,\@error_list);
 		}
 		else
 		{
@@ -199,6 +203,13 @@ sub install_uninstall_packages
 	
 			OSCAR::Database::single_database_execute("package_clear_should_be_installed $package","write",\@tables,undef,\@error_list);
 			&install_package($package);
+
+			# new tables to lock for next query
+                        @tables = ("package_sets_included_packages","packages","package_sets","oda_shortcuts");
+			# hardcoding package_set name to 'Default'
+			my $package_set = 'Default';
+			# make sure that package we installed is being selected so scripts will run
+                        OSCAR::Database::single_database_execute("add_package_to_package_set $package $package_set","write",\@tables,undef,\@error_list);
 
 		}
 		else
@@ -243,6 +254,8 @@ sub install_uninstall_packages
 	#OSCAR::Database::database_execute_command(
 	#"packages_clear_all_should_be_uninstalled");
 
+	oscar_log_section("Finished running Install/Uninstall OSCAR Packages");
+	
 	return 0;
 }
 
@@ -673,6 +686,7 @@ sub run_install_image
 		{
 
 			$all_rpms_full_path = "";
+			$all_rpms = "";
 			foreach $rpm (@newrpmlist)
 			{
 				@temp_list = split(/\//,$rpm);
@@ -1868,26 +1882,26 @@ sub print_errors
 # NEST SUBROUTINE BEGIN
 #
 
-# Uninstall a oscar package by delete records from the config_opkgs table
+# Uninstall an oscar package by deleting records from the config_opkgs table
 # with the package name.
 # The records corresponding to the selected package name will be deleted.
 
 sub uninstall_package{
-    my @tables = ("config_opkgs", "node_config_revs", "oda_shortcuts");
+    my @tables = ("config_opkgs","packages", "node_config_revs", "oda_shortcuts");
     my $opkg = shift;
     if (! single_database_execute("uninstall_opkg $opkg", "WRITE",\@tables,undef,\@error_list) ) {
          carp("Failed to delete a record from config_opkgs");
     }
 }
 
-# Install a oscar package by Insert records from the config_opkgs table
+# Install an oscar package by Inserting records from the config_opkgs table
 # with the package name.
 # The records corresponding to the selected package name will be inserted.
 sub install_package{
     my $opkg = shift;
     my @error_list = ();
     my @configs_id =();
-    my @tables = ("configurations", "nodes","config_opkgs","node_config_revs","oda_shortcuts");
+    my @tables = ("configurations", "nodes","config_opkgs","packages","oda_shortcuts");
     locking("WRITE",\%options, \@tables, \@error_list);
     dec_already_locked("read_records configurations.id configurations.name=nodes.name", \@configs_id);
     foreach my $config_id (@configs_id){
