@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: autogen.sh,v 1.12 2003/07/29 21:49:53 jsquyres Exp $
+# $Id: autogen.sh,v 1.13 2004/04/05 19:36:45 brechin Exp $
 #
 
 #
@@ -121,7 +121,7 @@ run_gnu_tools() {
 
 	run_and_check aclocal
 	run_and_check autoconf
-	run_and_check automake --foreign -a --copy
+	run_and_check automake -a --copy
 	
         # Go back to the original directory
 
@@ -252,6 +252,23 @@ traverse_tree() {
 # Subroutine to run across the entire OSCAR tree
 #
 run_global() {
+    # Write src Makefile source
+    # Blatant and probably poor redux of the code below
+    echo "Generating src/Makefile.am..."
+    base="`basename src`"
+    if 	[ -d "src" -a \
+	"$base" != "." -a \
+	"$base" != ".." -a \
+	 ! -f "src/$ignore_file" ]; then
+	for subdir in src; do
+	  if [ -d $subdir -a \
+	     ! -f $subdir/$ignore_file -a \
+	     "$subdir" != "src/CVS" ]; then
+		make_makefile "src"
+          fi
+	done
+    fi
+
     # Now examine all the package/*/{set} directories (where {set} is
     # a pre-defined set of expected directories in each OSCAR
     # package).  If they don't already have a Makefile.am, make one,
