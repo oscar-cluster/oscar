@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.41 2002/09/02 14:30:02 jsquyres Exp $
+% $Id: detailed.tex,v 1.42 2002/09/09 02:58:48 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -53,15 +53,6 @@ successfully.
 \begin{discuss}
   Is the above a true statement?
 \end{discuss}
-
-If you install RedHat on the server node, during the installation you
-do not need to install the \rpmname{ipchains}-based firewall that is
-included with the RedHat distribution, because OSCAR will install an
-\rpmname{iptables} based packet filtering firewall named
-\rpmname{pfilter} which is more versatile.  OSCAR does not turn on
-\rpmname{pfilter} by default, however.  If the RedHat
-\rpmname{ipchains} based firewall is installed, the OSCAR installation
-will fail.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -273,12 +264,13 @@ In this step, you need to copy the RPMs included with your Linux
 distribution into the \file{/tftpboot/rpm} directory.  When each CD is
 inserted, Linux should automatically make the contents of the CD be
 available in the \file{/mnt/cdrom} directory (you may need to execute
-the command ``\cmd{mount /dev/cdrom}'' if the CD does not mount
-automatically).  Then for each CD, locate the directory that contains
-the RPMs.  In RedHat 7.1, the RPMs are located in the
-\file{RedHat/RPMS} directory (i.e., \file{/mnt/cdrom/RedHat/RPMS}).
-After locating the RPMs on the each CD, copy them into
-\file{/tftpboot/rpm} with a command such as:
+a command such as ``\cmd{mount /mnt/cdrom}'' if the CD does not mount
+automatically).  
+
+For each CD, locate the directory that contains the RPMs.  In RedHat
+7.x, the RPMs are located in the \file{RedHat/RPMS} directory (i.e.,
+\file{/mnt/cdrom/RedHat/RPMS}).  Copy the RPMS into the
+\file{/tftpboot/rpm} directory with a command such as:
 
 \begin{verbatim}
   # cp /mnt/cdrom/RedHat/RPMS/*.rpm /tftpboot/rpm
@@ -354,8 +346,15 @@ setps, including:
 \item restarts affected services
 \end{enumerate}
 
-After these steps have successfully finished, the OSCAR installation
-wizard GUI will automatically be launched.
+A lot of output will be displayed in the console window where you
+invoked \cmd{install\_cluster}.  This reflects normal operational
+output from the various installation commands that OSCAR executes.
+The output is also saved in the file \file{oscarinstall.log} for later
+reference (particularly if something goes during during the
+installation).
+
+After the steps listed above have successfully finished, the OSCAR
+installation wizard GUI will automatically be launched.
   
 The wizard, as shown in Figure~\ref{fig:detailed-oscar-wizard}, is
 provided to guide you through the rest of the cluster installation.
@@ -559,7 +558,7 @@ to specifies how many clients you want to create.
   \hostname{oscardomain} will be put in the field (although you may
   change it).
 %
-  This field \emph{must} have a value -- it cannot be blank.
+  {\bf This field \emph{must} have a value -- it cannot be blank.}
 %
   Note that especially for compute nodes on a private network, the
   domain name does not necessarily matter much.  The domain name
@@ -573,7 +572,7 @@ to specifies how many clients you want to create.
 \item The \field{Base name} field is used to specify the first part of
   the client name and hostname. It will have an index appended to the
   end of it. This name \emph{cannot} contain an underscore 
-  character "\_".
+  character ``\_''.
 
 \item The \field{Number of Hosts} field specifies how many clients to
   create.  {\bf This number must be greater than 0.}
@@ -620,9 +619,9 @@ the next step.
 \label{det:setupnetwork}
 
 The MAC address of a client is a twelve hex-digit hardware address
-embedded in the client's ethernet adapter. MAC addresses look like,
-``{\tt 00:0A:CC:01:02:03}'', as opposed to the familiar format of IP
-addresses. These MAC addresses uniquely identify client machines on a
+embedded in the client's ethernet adapter. For example, ``{\tt
+  00:0A:CC:01:02:03}'', as opposed to the familiar format of IP
+addresses.  These MAC addresses uniquely identify client machines on a
 network before they are assigned IP addresses. DHCP uses the MAC
 address to assign IP addresses to the clients.
 
@@ -855,7 +854,7 @@ OSCAR re-installation.  For example, the RedHat 7.x series ships with
 a LAM/MPI RPM.  The OSCAR install process removes this RedHat-default
 RPM and installs a custom OSCAR-ized LAM/MPI RPM.  The
 \cmd{start\_over} script only removes the OSCAR-ized LAM/MPI RPM -- it
-does not re-install the RedHat-default LAM/MPI RPI.
+does not re-install the RedHat-default LAM/MPI RPM.
 
 Another important fact to note is that because of the environment
 manipulation that was performed via \cmd{switcher} from the previous

@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.19 2002/09/06 15:07:38 naughtont Exp $
+% $Id: release-notes.tex,v 1.20 2002/09/09 02:58:48 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -62,16 +62,28 @@ The following release notes apply to OSCAR version \oscarversion:
     This needs to be fixed before 1.4 soup.
   \end{discuss}
   
-\item Copy the {\tt libcap} package from RedHat from this site: \\
+\item Copy the \rpmname{libcap} package from RedHat from this site: \\
   \file{ftp://ftp.rpmfind.net/linux/redhat/7.3/en/os/i386/RedHat/RPMS/libcap-1.10-8.i386.rpm}
   to your {\tt /tftpboot/rpm} directory. For the moment, this package
   is necessary, and only RedHat is providing it.
+
+\item The \rpmname{libpng} RPM version 1.0.8-2mdk must be manually
+  installed before invoking the OSCAR install wizard.  This RPM can be
+  found in the OSCAR distribution package in the following location:\\
+  \file{packages/ganglia/RPMS/libpng-1.0.8-2mdk.i586.rpm}
   
-\item To build your image, select the
-  \file{oscarsamples/Mandrake-8.2-i386.rpmlist} (for a complete client
-  with X) or \file{oscarsamples/Mandrake-8.2-noX-i386.rpmlist} (for a
-  smaller client with no X) as your RPM list.  Note that the former (X
-  client) will be selected by default.
+\item A ``thin'' RPM list is included in the OSCAR distribution for
+  building ``thin'' client nodes.  Although it is not a true ``thin
+  client'' solution, it does offer an OSCAR client node with
+  significantly less packages.  To use this ``thin'' configuration,
+  select the RPM list file
+  \file{oscarsamples/Mandrake-8.2-noX-i386.rpmlist} instead of the
+  default \file{oscarscamples/Mandrake-8.2-i386.rpmlist}.
+  
+  Note that using this ``noX'' configuration will cause some of the
+  test suite cases to fail.  This is because the OSCAR test suite
+  currently assumes that compilers are installed on the clients, and
+  the ``noX'' configuration does not install compilers on the clients.
 
 \item Ganglia : The web client is working if you change the line \\
   \verb+ $rrdtool = "/opt/rrdtool-1.0.35/bin/rrdtool";+ \\
@@ -82,16 +94,23 @@ The following release notes apply to OSCAR version \oscarversion:
   \begin{discuss}
     This needs to be fixed before 1.4 soup.
   \end{discuss}
-
+  
 \item Once the server has been installed, you can update your packages
   by using the {\tt MandrakeUpdate} or the {\tt urpmi --auto-select}
   method. It is recommended as some important packages have been
-  upgraded (apache and openssl namely !).  However, in order to start
-  the oscar wizard again, you need to remove all the upgraded packages
-  from {\tt share/serverlists/Mandrake-8.2-i386.rpmlist}.  At the time
-  of this writing, delete the lines containing the folowing package
-  name : {\tt apache}, {\tt apache-common}, {\tt apache-conf}, {\tt
-    apache-modules}, {\tt openssl}.
+  upgraded (e.g., \rpmname{apache} and \rpmname{openssl}).  However,
+  in order to start the OSCAR wizard again, you need to remove all the
+  upgraded packages from {\tt
+    share/serverlists/Mandrake-8.2-i386.rpmlist}.  At the time of this
+  writing, delete the lines containing the folowing package names:
+
+  \begin{itemize}
+  \item \rpmname{apache}
+  \item \rpmname{apache-common}
+  \item \rpmname{apache-conf}
+  \item \rpmname{apache-modules}
+  \item \rpmname{openssl}
+  \end{itemize}
   
   \begin{discuss}
     What about using the \rpmname{autoupdater} package that is
@@ -99,17 +118,19 @@ The following release notes apply to OSCAR version \oscarversion:
   \end{discuss}
 
 % TJN: relates to server_prep: unmunge_pathenv()
-\item The default for {\tt root}'s shell configuration files hardcode
-  the value for {\tt PATH}, regardless of what is added via
-  {\tt profile.d/} files.  This effects various OSCAR installed
-  components, which are installed into locations such as {\tt /opt}.
-  These lines are marked and commented out for the following files:
-  \file{/root/.bashrc, /root/.cshrc, /root/.tcshrc}. 
+\item \user{root}'s default shell configuration files hardcode the
+  value for {\tt PATH} environment variable, regardless of what is
+  added via {\tt profile.d/} startup scripts.  This effects various
+  OSCAR installed components, which are installed into locations such
+  as \file{/opt}.  As such, the OSCAR installer comments out these
+  lines in following files:
 
-  \begin{discuss}
-    I believe this was agreed upon, need to dlb. check.  Also, 
-	see if anyone ever got a real/valid reason for this odd behaviour.
-  \end{discuss}
+  \begin{itemize}
+  \item \file{/root/.bashrc}
+  \item \file{/root/.cshrc}
+  \item \file{/root/.tcshrc}
+  \end{itemize}
+
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
