@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release-notes.tex,v 1.18 2002/09/06 09:26:24 naughtont Exp $
+% $Id: release-notes.tex,v 1.19 2002/09/06 15:07:38 naughtont Exp $
 %
 % $COPYRIGHT$
 %
@@ -98,8 +98,7 @@ The following release notes apply to OSCAR version \oscarversion:
     installed by OSCAR?  Does that work, or no?
   \end{discuss}
 
-% TJN: Still need to uncomment the call in 'server_prep', so
-%      this comment will be in sync w/ the code. (waiting on lvl=9)
+% TJN: relates to server_prep: unmunge_pathenv()
 \item The default for {\tt root}'s shell configuration files hardcode
   the value for {\tt PATH}, regardless of what is added via
   {\tt profile.d/} files.  This effects various OSCAR installed
