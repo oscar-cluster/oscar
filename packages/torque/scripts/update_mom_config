@@ -1,8 +1,13 @@
 #!/bin/bash
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
+#		2005, Canada's Michael Smith Genome Sciences Centre.
+#		      All rights reserved.
+
 # Author:	Jeremy Enos jenos@ncsa.uiuc.edu
-# Updates mom config file with real PBS server hostname and pushes it out.
+#		Bernard Li <bli@bcgsc.ca>
+
+# Updates mom config file with real Torque server hostname and pushes it out.
 # 
 
 . /etc/profile
@@ -13,7 +18,7 @@ if [ -f $mom_config ] ; then
   cat $mom_config |sed s/pbs_oscar/$HOSTNAME/g > $sed_tmp
   /bin/cp -f $sed_tmp $mom_config
   /bin/rm -f $sed_tmp
-  echo "PBS mom config file updated with clienthost: $HOSTNAME"
+  echo "Torque mom config file updated with clienthost: $HOSTNAME"
   echo "Pushing config file to clients..."
   if [ -x `which cpush` ] ; then
     cpush $mom_config $mom_config
@@ -29,7 +34,7 @@ if [ -f $mom_config ] ; then
     exit 1
   fi
 else
-  echo "Error:  Not updating PBS mom config file."
+  echo "Error:  Not updating Torque mom config file."
   echo "$mom_config not found."
   exit 1
 fi

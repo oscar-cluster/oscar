@@ -2,6 +2,8 @@
 
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
+#		2005, Canada's Michael Smith Genome Sciences Centre.
+#		      All rights reserved.
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -62,9 +64,9 @@ sub parseCommandLine
   &GetOptions("default" => \$default);
 }
 
-######################################################################
-#  Check to see if 'PBS Server' is running.  If not, then start it.  #
-######################################################################
+#########################################################################
+#  Check to see if 'Torque Server' is running.  If not, then start it.  #
+#########################################################################
 sub startPBSserver
 {
   open(CMD,"/etc/init.d/pbs_server status |");
@@ -115,7 +117,7 @@ if ($loglevel eq "") {
 
 #print "Compute on head node is set to $compute_on_head\n";
 
-# Call the update PBS mom config script
+# Call the update Torque mom config script
 print `../packages/torque/scripts/update_mom_config`;
 
 
@@ -311,7 +313,7 @@ if ($cmd_input ne "")
   {
     open (CMD,"|/opt/pbs/bin/qmgr -a -e ");
     print CMD $cmd_input;
-    close (CMD) or croak("Configuration of PBS queues failed");
+    close (CMD) or croak("Configuration of Torque queues failed");
   }
 restartMaui();
 
