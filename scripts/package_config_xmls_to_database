@@ -1313,7 +1313,7 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
     }
 }
 
-# write out one global oscar record
+# write out one global oscar record, or modify an existing one
 print "Creating the global oscar information record\n";
 my %assigns = ();
 my $oscar_version;
@@ -1332,16 +1332,6 @@ if ( ! oda::insert_record( \%options,
 			   \%assigns,
 			   undef,
 			   \@error_strings ) ) {
-    warn shift @error_strings while @error_strings;
-}    
-
-# copy the packages table installable field values to the selected field values
-print "Copying packages table installable fields values to selected fields\n";
-my @ignored_results;
-if ( ! oda::execute_command( \%options,
-			     "packages_copy_installable_to_selected",
-			     \@ignored_results,
-			     \@error_strings ) ) {
     warn shift @error_strings while @error_strings;
 }    
 
