@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.8 2003/11/01 21:53:08 naughtont Exp $
+#  $Id: PackageInUn.pm,v 1.9 2003/11/03 02:23:05 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -20,10 +20,9 @@ package OSCAR::PackageInUn;
 #                    All rights reserved.
 
 #Things to do in general:
-#1. start using the oscar logger...log errors
-#2. grep cexec (rpm-filter) result array...need this script checked in
-#3. better error checking on open(), see c3cmd-filter code
-#100. integrate the range option...
+#1. get rid of the todo list
+#2. need to cexec filter stuff, will run without it
+#3. more testing
 
 use strict;
 
@@ -32,6 +31,7 @@ use Carp;
 use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::Logger;
+use English;
 
 #this doesn't seem to effect the namespace of the calling script
 use vars qw(@EXPORT);
@@ -42,7 +42,10 @@ our @EXPORT = qw(install_uninstall_packages
                  set_installed
                  set_uninstalled
                  is_selected
-                 is_package_a_package); 
+                 is_package_a_package
+                 check_package_dependancy); 
+
+my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
 
 #########################################################################
 #  Subroutine: install_uninstall_packages                               #
@@ -59,95 +62,83 @@ our @EXPORT = qw(install_uninstall_packages
 #########################################################################
 sub install_uninstall_packages
 {
-  my $imagenumber; # number of images on the system
-  my %imagehash; #hash of imagename node range pairs
-  my @imagename; #a list of all the images, allthough we fail unless we have only one
-  my $success;  # Return code for database calls
-  my $package;  # Name of a package to be installed/uninstalled
-  my @packagesThatShouldBeInstalled;    # List of packages to install
-  my @packagesThatShouldBeUninstalled;  # List of packages to uninstall
+	my $imagenumber; # number of images on the system
+	my %imagehash; #hash of imagename node range pairs
+	my @imagename; #a list of all the images, allthough we fail unless we have only one
+	my $success;  # Return code for database calls
+	my $package;  # Name of a package to be installed/uninstalled
+	my @packagesThatShouldBeInstalled;    # List of packages to install
+	my @packagesThatShouldBeUninstalled;  # List of packages to uninstall
                                                                                 
-  # Get the lists of packages that need to be installed/uninstalled
-  $success = OSCAR::Database::database_execute_command(
-    "packages_that_should_be_installed",\@packagesThatShouldBeInstalled);
-  $success = OSCAR::Database::database_execute_command(
-    "packages_that_should_be_uninstalled",\@packagesThatShouldBeUninstalled);
+	# Get the lists of packages that need to be installed/uninstalled
+	$success = OSCAR::Database::database_execute_command(
+		"packages_that_should_be_installed",\@packagesThatShouldBeInstalled);
+	$success = OSCAR::Database::database_execute_command(
+		"packages_that_should_be_uninstalled",\@packagesThatShouldBeUninstalled);
 
-  # Loop through the list of packages to be INSTALLED and do the right thing
-  foreach $package (@packagesThatShouldBeInstalled)
-    {
-        $imagenumber = get_image_info(\%imagehash);
+	$imagenumber = get_image_info(\%imagehash);
 
-		#we only support one image in this version
-		if ($imagenumber != 1)
+	#we only support one image in this version
+	if ($imagenumber != 1)
+	{
+		print "This program only supports one image\n";
+		exit (0);
+	}
+
+	@imagename = keys(%imagehash);
+	croak "Error: no imagename\n" if( !defined($imagename[0]) );
+
+	# Loop through the list of packages to be INSTALLED and do the right thing
+	foreach $package (@packagesThatShouldBeInstalled)
+	{
+		$success = package_install($package, "1", "1", "1", $imagename[0], "blah", "0");
+		# If the installation was successful, set the 'installed' flag for
+		# that package in the database.  Also, clear the 'should_be_installed'
+		# flag for that package.
+		if (!$success)
 		{
-			print "This program only supports one image\n";
-			exit (0);
+			#bit is already set by underlying code
+			#OSCAR::Database::database_execute_command(
+			#  "package_mark_installed $package");
+			OSCAR::Database::database_execute_command(
+				"package_clear_should_be_installed $package")
 		}
-
-        @imagename = keys(%imagehash);
-        croak "Error: no imagename\n" if( !defined($imagename[0]) );
-
-        $success = package_install($package, "1", "1", "1", $imagename[0], "blah", "0");
-      # If the installation was successful, set the 'installed' flag for
-      # that package in the database.  Also, clear the 'should_be_installed'
-      # flag for that package.
-      if (!$success)
-        {
-          #bit is already set by underlying code
-          #OSCAR::Database::database_execute_command(
-          #  "package_mark_installed $package");
-          OSCAR::Database::database_execute_command(
-            "package_clear_should_be_installed $package")
-        }
-      else
-        {
-          print "Error: package $package failed to install.\n";
-        }
-    }
+		else
+		{
+			print "Error: package $package failed to install.\n";
+		}
+	}
                                                                                 
-  # Loop through the list of packages to be UNINSTALLED and do the right
-  # thing
-  foreach $package (@packagesThatShouldBeUninstalled)
-    {
-      $imagenumber = get_image_info(\%imagehash);
-
-      #we only support one image in this version
-      if ($imagenumber != 1)
-        {
-          print "This program only supports one image\n";
-          exit (0);
-        }
-
-      @imagename = keys(%imagehash);
-      croak "Error: no imagename\n" if( !defined($imagename[0]) );
-
-      $success = package_uninstall($package, "1", "1", "1", $imagename[0], "blah", "0");
+	#Loop through the list of packages to be UNINSTALLED and do the right
+	# thing
+	foreach $package (@packagesThatShouldBeUninstalled)
+	{
+		$success = package_uninstall($package, "1", "1", "1", $imagename[0], "blah", "0");
                                                                                 
-      # If the removal was successful, clear the 'installed' flag for
-      # that package in the database.  Also, clear the
-      # 'should_be_uninstalled'
-      # flag for that package.
-      if (!$success)
-        {
-          #already done by underlying functions
-          #OSCAR::Database::database_execute_command(
-          # "package_clear_installed $package");
-          OSCAR::Database::database_execute_command(
-            "package_clear_should_be_uninstalled $package")
-        }
-      else
-        {
-          print "Error: package $package failed to uninstall.\n";
-        }
-    }
+		# If the removal was successful, clear the 'installed' flag for
+		# that package in the database.  Also, clear the
+		# 'should_be_uninstalled'
+		# flag for that package.
+		if (!$success)
+		{
+			#already done by underlying functions
+			#OSCAR::Database::database_execute_command(
+			# "package_clear_installed $package");
+			OSCAR::Database::database_execute_command(
+				"package_clear_should_be_uninstalled $package")
+		}
+		else
+		{
+			print "Error: package $package failed to uninstall.\n";
+		}
+	}
                                                                                 
-  # we'll give a shot at avoiding this for now
-  # OPTIONALLY clear all of the install/uninstall flags at the end
-  #OSCAR::Database::database_execute_command(
-  #  "packages_clear_all_should_be_installed");
-  #OSCAR::Database::database_execute_command(
-  #"packages_clear_all_should_be_uninstalled");
+	# we'll give a shot at avoiding this for now
+	# OPTIONALLY clear all of the install/uninstall flags at the end
+	#OSCAR::Database::database_execute_command(
+	#  "packages_clear_all_should_be_installed");
+	#OSCAR::Database::database_execute_command(
+	#"packages_clear_all_should_be_uninstalled");
 }
 
 #installs a package to either
@@ -170,6 +161,7 @@ sub install_uninstall_packages
 #   4 attempted install on image, choked
 #   5 package is installed already, taking no actions
 #   6 package is not a package
+#   7 package is dependant on another package
 #
 #   Important Note:
 #   also sets "installed" field in table packages 
@@ -179,7 +171,7 @@ sub package_install
 {
 	my ($package_name,
 		$headnode,
-	    $allnodes,
+		$allnodes,
 		$image,
 		$imagename,
 		$range,
@@ -204,9 +196,16 @@ sub package_install
 		return (5);
 	}
 
+	#check to see if package is dependant on anything
+	if( check_package_dependancy($package_name))
+	{
+		print "Error: package has dependancies\n";
+		return (7);
+	} 
+
 	if (!$headnode && !$allnodes && !$image)
 	{
-		print "Error: no install target selected...\n";
+		print "Error: no install target selected.\n";
 		return (1);
 	}
 
@@ -214,7 +213,7 @@ sub package_install
 	{
 		if(!run_install_client($package_name, $testmode, $imagename, $range))
 		{
-			print "cannot install to the nodes...\n";
+			print "Error: cannot install to the nodes.\n";
 			return (3);
 		}
 	}
@@ -223,7 +222,7 @@ sub package_install
 	{
 		if(!run_install_server($package_name, $testmode))
 		{
-			print "cannot install on the server...\n";
+			print "Error: cannot install on the server.\n";
 			return (2);
 		}
 	}
@@ -232,7 +231,7 @@ sub package_install
 	{
 		if(!run_install_image($package_name, $testmode, $imagename))
 		{
-			print "cannot install to the image:$image\n";
+			print "Error: cannot install to the image:$image\n";
 			return (4);
 		}
 	}
@@ -291,18 +290,11 @@ sub run_install_client
 
 	my $retval;
 
-	my $command_out;
-	
-	if($testmode != 0)
-	{
-		print "client install starts:\n";
-	}
-
 	my $imagepath = "/var/lib/systemimager/images/$imagename";
 
 	if (!(-d $imagepath))
 	{
-		print "PackageInUn.run_install_client: image name is invalid\n";
+		print "Error: image name is invalid\n";
 		return (0);
 	}
 
@@ -319,13 +311,14 @@ sub run_install_client
 	{
 		if((check_rpm_list("image", \@rpmlist, \@newrpmlist, "/var/lib/systemimager/images/$imagename")) != 0)
 		{
-			print "PackageInUn.run_install_client: check_rpm_list() failed\n";
+			print "Error: check_rpm_list() failed\n";
 			return (0);
 		}
 
 		if (scalar(@newrpmlist) > 0)
 		{
-			$cmd_string1 = "/opt/c3-4/cexec --pipe mkdir -p /tmp/tmpinstallrpm/";
+			$cmd_string1 = "$C3_HOME/cexec --pipe mkdir -p /tmp/tmpinstallrpm/";
+			$all_rpms = "";
 			foreach $rpm (@newrpmlist)
 			{
 				@temp_list = split(/\//,$rpm);
@@ -333,52 +326,45 @@ sub run_install_client
 				my $rpm_name = $temp_list[$#temp_list];
 				$all_rpms = "$all_rpms /tmp/tmpinstallrpm/$rpm_name";
 			}
-			$cmd_string3 = "/opt/c3-4/cexec --pipe rpm -Uvh $all_rpms";
-			$cmd_string4 = "/opt/c3-4/cexec --pipe rm -rf /tmp/tmpinstallrpm/";
+			$cmd_string3 = "$C3_HOME/cexec --pipe rpm -Uvh $all_rpms";
+			$cmd_string4 = "$C3_HOME/cexec --pipe rm -rf /tmp/tmpinstallrpm/";
 
 			if($testmode != 0)
 			{
-				print "PackageInUn.run_install_client: $cmd_string1\n";
+				print "executing: $cmd_string1\n";
 				foreach $rpm (@newrpmlist)
 				{
-					$cmd_string2 = "/opt/c3-4/cpush $rpm /tmp/tmpinstallrpm/";
-					print "PackageInUn.run_install_client: $cmd_string2\n";
+					$cmd_string2 = "$C3_HOME/cpush $rpm /tmp/tmpinstallrpm/";
+					print "executing: $cmd_string2\n";
 				}
-				print "PackageInUn.run_install_client: $cmd_string3\n";
-				print "PackageInUn.run_install_client: $cmd_string4\n";
+				print "executing: $cmd_string3\n";
+				print "executing: $cmd_string4\n";
 			}
 			else
 			{
-				open(NEWCMD, "$cmd_string1 |") or Carp::croak "[$cmd_string1] cannot run command:$!\n";
-				#add logging or sanity check
-				$command_out = <NEWCMD>;
-				close(NEWCMD);
-				print "$cmd_string1\n";
+				if ( run_command_general($cmd_string1) )
+				{
+					return 0;
+				}
 
 				foreach $rpm (@newrpmlist)
 				{
-					$cmd_string2 = "/opt/c3-4/cpush $rpm /tmp/tmpinstallrpm/";
-					open(NEWCMD, "$cmd_string2 |") or Carp::croak "[$cmd_string2] cannot run command:$!\n";
-					#add logging or sanity check
-					$command_out = <NEWCMD>;
-					close(NEWCMD);
-					print "$cmd_string2\n";
+					$cmd_string2 = "$C3_HOME/cpush $rpm /tmp/tmpinstallrpm/";
+					if ( run_command_general($cmd_string2) )
+					{
+						return 0;
+					}
+
 				}
-
-				open(NEWCMD, "$cmd_string3 |") or Carp::croak "[$cmd_string3] cannot run command:$!\n";
-				#add logging or sanity check
-				my @cmd_out = <NEWCMD>;
-				close(NEWCMD);
-				print "$cmd_string3\n";
-				print "@cmd_out\n";
-
-				open(NEWCMD, "$cmd_string4 |") or Carp::croak "[$cmd_string4] cannot run command:$!\n";
-				#add logging or sanity check
-				$command_out = <NEWCMD>;
-				close(NEWCMD);
-				print "$cmd_string4\n";
+				if ( run_command_general($cmd_string3) )
+				{
+					return 0;
+				}
+				if ( run_command_general($cmd_string4) )
+				{
+					return 0;
+				}
 			}
-			
 		}
 		$flag = 1;
 	}
@@ -386,36 +372,37 @@ sub run_install_client
 	{
 		return (0); #error in rpms
 	}
+
+	##end rpms
+	print "finished with rpms\n";
 	
 	$script_path = "$package_dir/scripts/post_client_rpm_install";
 	if (-x $script_path)
 	{
-		$cmd_string1 = "/opt/c3-4/cpush $script_path /tmp";
-		$cmd_string2 = "/opt/c3-4/cexec --pipe /tmp/post_client_rpm_install";
-		$cmd_string3 = "/opt/c3-4/cexec --pipe rm -f /tmp/post_client_rpm_install";
+		$cmd_string1 = "$C3_HOME/cpush $script_path /tmp";
+		$cmd_string2 = "$C3_HOME/cexec --pipe /tmp/post_client_rpm_install";
+		$cmd_string3 = "$C3_HOME/cexec --pipe rm -f /tmp/post_client_rpm_install";
 		if($testmode != 0)
 		{
-			print "PackageInUn.run_install_client: $cmd_string1\n";
-			print "PackageInUn.run_install_client: $cmd_string2\n";
-			print "PackageInUn.run_install_client: $cmd_string3\n";
+			print "executing: $cmd_string1\n";
+			print "executing: $cmd_string2\n";
+			print "executing: $cmd_string3\n";
 		}
 		else
 		{
-				open(NEWCMD, "$cmd_string1 |") or Carp::croak "cannot run command:$!\n";
-				#add logging or sanity check
-				$command_out = <NEWCMD>;
-				close(NEWCMD);
+			if ( run_command_general($cmd_string1) )
+			{
+				return 0;
+			}
+			if ( run_command_general($cmd_string2) )
+			{
+				return 0;
+			}
+			if ( run_command_general($cmd_string3) )
+			{
+				return 0;
+			}
 
-				open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
-				#add logging or sanity check
-				my @cmd_out = <NEWCMD>;
-				close(NEWCMD);
-				print "Client install ($cmd_string2):\n@cmd_out\n";
-
-				open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
-				#add logging or sanity check
-				$command_out = <NEWCMD>;
-				close(NEWCMD);
 		}
 		$flag = 1;
 	}
@@ -423,36 +410,34 @@ sub run_install_client
 	$script_path = "$package_dir/scripts/post_client_install";
 	if(-x $script_path)
 	{
-		$cmd_string1 = "/opt/c3-4/cpush $script_path /tmp";
-		$cmd_string2 = "/opt/c3-4/cexec --pipe /tmp/post_client_install";
-		$cmd_string3 = "/opt/c3-4/cexec --pipe rm -f /tmp/post_client_install";
+		$cmd_string1 = "$C3_HOME/cpush $script_path /tmp";
+		$cmd_string2 = "$C3_HOME/cexec --pipe /tmp/post_client_install";
+		$cmd_string3 = "$C3_HOME/cexec --pipe rm -f /tmp/post_client_install";
 		if($testmode != 0)
 		{
-			print "PackageInUn.run_install_client: $cmd_string1\n";
-			print "PackageInUn.run_install_client: $cmd_string2\n";
-			print "PackageInUn.run_install_client: $cmd_string3\n";
+			print "executing: $cmd_string1\n";
+			print "executing: $cmd_string2\n";
+			print "executing: $cmd_string3\n";
 		}
 		else
 		{
-			open(NEWCMD, "$cmd_string1 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-
-			open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-
-			open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
+			if ( run_command_general($cmd_string1) )
+			{
+				return 0;
+			}
+			if ( run_command_general($cmd_string2) )
+			{
+				return 0;
+			}
+			if ( run_command_general($cmd_string3) )
+			{
+				return 0;
+			}
 		}
 		$flag = 1;
 	}
 
-	oscar_log_subsection("Successfully completed install on clients");
+	oscar_log_subsection("Completed install on clients");
 
 	return $flag;
 }
@@ -490,20 +475,14 @@ sub run_install_image
 	my @rpmlist;
 	my @newrpmlist;
 	my $retval;
-	my $command_out;
 
-	oscar_log_subsection("Running install on image");	
+	oscar_log_subsection("Starting run_install_image.");	
 
 	#hope those images are all in the same place
 	if (!(-d "/var/lib/systemimager/images/$imagename"))
 	{
 		print "Error: image name ($imagename) is invalid\n";
 		return (0);
-	}
-
-	if($testmode != 0)
-	{
-		print "image install starts:\n";
 	}
 
 	#get the package dir sanely
@@ -527,6 +506,7 @@ sub run_install_image
 		if (scalar(@newrpmlist) > 0)
 		{
 
+			$all_rpms_full_path = "";
 			foreach $rpm (@newrpmlist)
 			{
 				@temp_list = split(/\//,$rpm);
@@ -542,43 +522,34 @@ sub run_install_image
 
 			if ($testmode != 0)
 			{
-				print "PackageInUn.run_install_image: $cmd_string1\n";
-				print "PackageInUn.run_install_image: $cmd_string2\n";
-				print "PackageInUn.run_install_image: $cmd_string3\n";
-				print "PackageInUn.run_install_image: $cmd_string4\n";
-				print "PackageInUn.run_install_image: $cmd_string5\n";
+				print "executing: $cmd_string1\n";
+				print "executing: $cmd_string2\n";
+				print "executing: $cmd_string3\n";
+				print "executing: $cmd_string4\n";
+				print "executing: $cmd_string5\n";
 			}
 			else
 			{
-				open(NEWCMD, "$cmd_string1 |") or Carp::croak "cannot run command:$!\n";
-				#add logging or sanity check
-				$command_out = <NEWCMD>;
-				close(NEWCMD);
-				print "$cmd_string1\n";
-
-				open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
-				#add logging or sanity check
-				$command_out = <NEWCMD>;
-				close(NEWCMD);
-				print "$cmd_string2\n";
-
-				open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
-				#add logging or sanity check
-				my @cmd_out = <NEWCMD>;
-				close(NEWCMD);
-				print "$cmd_string3\n@cmd_out\n";
-
-				open(NEWCMD, "$cmd_string4 |") or Carp::croak "cannot run command:$!\n";
-				#add logging or sanity check
-				$command_out = <NEWCMD>;
-				close(NEWCMD);
-				print "$cmd_string4\n";
-
-				open(NEWCMD, "$cmd_string5 |") or Carp::croak "cannot run command:$!\n";
-				#add logging or sanity check
-				$command_out = <NEWCMD>;
-				close(NEWCMD);
-				print "$cmd_string5\n";
+				if ( run_command_general($cmd_string1) )
+				{
+					return 0;
+				}
+				if ( run_command_general($cmd_string2) )
+				{
+					return 0;
+				}
+				if ( run_command_general($cmd_string3) )
+				{
+					return 0;
+				}
+				if ( run_command_general($cmd_string4) )
+				{
+					return 0;
+				}
+				if ( run_command_general($cmd_string5) )
+				{
+					return 0;
+				}
 			}
 
 			$flag = 1;
@@ -590,80 +561,28 @@ sub run_install_image
 		return (0); 
 	}
 
-	$script_path = "$package_dir/scripts/post_client_rpm_install";
-	$cmd_string1 = "/bin/cp $script_path /var/lib/systemimager/images/$imagename/tmp";
-	$cmd_string2 = "/usr/sbin/chroot /var/lib/systemimager/images/$imagename /tmp/post_client_rpm_install";
-	$cmd_string3 = "/bin/rm -f /var/lib/systemimager/images/$imagename/tmp/post_client_rpm_install";
+	#end rpms
+	print "finished with rpms\n";
 
-	if (-x $script_path)
+	if($testmode != 1)
 	{
-		if($testmode != 0)
+		if( OSCAR::Package::run_pkg_script_chroot($package_name, "/var/lib/systemimager/images/$imagename") )
 		{
-			print "PackageInUn.run_install_image: $cmd_string1\n";
-			print "PackageInUn.run_install_image: $cmd_string2\n";
-			print "PackageInUn.run_install_image: $cmd_string3\n";
+			#returns 1 it worked, sorta
+			print "executed phase post_rpm_install on the image.\n";
+			$flag = 1;
 		}
 		else
 		{
-			open(NEWCMD, "$cmd_string1 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-			print "$cmd_string1\n";
-
-			open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			my @cmd_out = <NEWCMD>;
-			close(NEWCMD);
-			print "$cmd_string2\n@cmd_out\n";
-
-			open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-			print "$cmd_string3\n";
+			print "No image script ran in post_rpm_install phase.\n";
 		}
-		$flag = 1;
 	}
-
-	$script_path = "$package_dir/scripts/post_client_install";
-	$cmd_string1 = "/bin/cp $script_path /var/lib/systemimager/images/$imagename/tmp";
-	$cmd_string2 = "/usr/sbin/chroot /var/lib/systemimager/images/$imagename /tmp/post_client_install";
-	$cmd_string3 = "/bin/rm -f /var/lib/systemimager/images/$imagename/tmp/post_client_install";
-
-	if(-x $script_path)
+	else
 	{
-		if($testmode != 0)
-		{
-			print "PackageInUn.run_install_image: $cmd_string1\n";
-			print "PackageInUn.run_install_image: $cmd_string2\n";
-			print "PackageInUn.run_install_image: $cmd_string3\n";
-		}
-		else
-		{
-			open(NEWCMD, "$cmd_string1 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-			print "$cmd_string1\n";
-
-			open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-			print "$cmd_string2\n";
-
-			open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-			print "$cmd_string3\n";
-		}
-		$flag = 1;
+		print "run_pkg_script_chroot($package_name, /var/lib/systemimager/images/$imagename)\n";
 	}
 
-	oscar_log_subsection("Successfully completed install on image"); 
-
+	oscar_log_subsection("Completed run_install_image."); 
 	return ($flag);
 }
 
@@ -690,9 +609,7 @@ sub run_install_server
 	my $rpm;
 	my $retval;
 
-	my $command_out;
-
-	oscar_log_subsection("Running install on server");
+	oscar_log_subsection("Starting run_install_server");
 
 	#get the package dir sanely
 	my $package_dir = OSCAR::Package::getOdaPackageDir($package_name);
@@ -731,11 +648,10 @@ sub run_install_server
 			}
 			else
 			{	
-				open(NEWCMD, "$cmd_string |") or Carp::croak "cannot run command:$!\n";
-				#add logging or sanity check
-				my @cmd_out = <NEWCMD>;
-				close(NEWCMD);
-				print "OK: $cmd_string\n@cmd_out\n";
+				if ( run_command_general($cmd_string) )
+				{
+					return 0;
+				}
 			}
 			$flag = 1;
 		}
@@ -749,59 +665,39 @@ sub run_install_server
 		print "No RPMS to install on server for ($package_name)\n";
 	}
 	
-	$script_path = "$package_dir/scripts/post_server_rpm_install";
-	if (-x $script_path)
+	#end rpms section
+	print "finished with rpms\n";
+
+	if($testmode != 1)
 	{
-		if($testmode != 0)
+		if (OSCAR::Package::run_pkg_script($package_name, 'post_server_install', 1, '0'))
 		{
-			print "PackageInUn.run_install_server: $script_path\n";
+			print "executing post_server_install phase on server\n";
+			#ran something
+			$flag = 1;
 		}
 		else
 		{
-			open(NEWCMD, "$script_path |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
+			print "No server script ran in post_server_install\n";
 		}
-		$flag = 1;
-	}
-
-	$script_path = "$package_dir/scripts/post_clients";
-	if (-x $script_path)
-	{
-		if($testmode!= 0)
+		
+		if (OSCAR::Package::run_pkg_script($package_name, 'post_clients', 1, '0'))
 		{
-			print "PackageInUn.run_install_server: $script_path\n";
+			print "executing post_clients phase on server\n";
+			$flag = 1;
 		}
 		else
 		{
-			open(NEWCMD, "$script_path |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
+			print "No server script ran in post_clients phase.\n";
 		}
-		$flag = 1;
 	}
-
-	$script_path = "$package_dir/scripts/post_server_install";
-	if (-x $script_path)
+	else
 	{
-		if($testmode!= 0)
-		{
-			print "PackageInUn.run_install_server: $script_path\n";
-		}
-		else
-		{
-			open(NEWCMD, "$script_path |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-		}
-		$flag = 1;
+		print "run_pkg_script($package_name, 'post_server_install', '0', '0')\n";
+		print "run_pkg_script($package_name, 'post_clients', '0', '0')\n";
 	}
 
-	oscar_log_subsection("Successfully completed install on server");
-
+	oscar_log_subsection("Completed run_install_server");
 	return ($flag);
 }
 
@@ -848,6 +744,8 @@ sub check_rpm_list
 		if (-f "$rpm")
 		{
 			open(RPMCMD, "$openstring |") or Carp::croak "cannot run rpm command:$!\n";
+			#this is only supposed to be a string return...add a check to see
+			#if it is more
 			$rpmname = <RPMCMD>;
 			if (length($rpmname) != 0)
 			{
@@ -956,6 +854,7 @@ sub get_rpm_list
 		opendir(DNAME, $cmd_string) or Carp::croak "cannot read directory: $!\n";
 		@temp = readdir(DNAME) or Carp::croak "cannot read directory: $!\n";
 		#add strip out all .ia64.rpm or non-good rpms
+		#we are hardcoded for x86 basically
 		@dirlist = grep( !/^\.{1,2}$/ && /\.rpm$/ && !/ia64\.rpm$/, @temp);
 		closedir(DNAME);
 	}
@@ -1079,7 +978,6 @@ sub package_uninstall
 	my $test_value;
 	
 	oscar_log_section("Running OSCAR package un-install");
-	print "DBG: Imagename=($imagename)\n";
 
 	if ((is_package_a_package($package_name)) =~ 1)
 	{
@@ -1105,7 +1003,7 @@ sub package_uninstall
 	{
 		if (run_uninstall_client($package_name, $testmode, $imagename, $range))
 		{
-			print "Error: cannot uninstall on clients...\n";
+			print "Error: cannot uninstall on clients.\n";
 			return (3);
 		}
 	}
@@ -1114,7 +1012,7 @@ sub package_uninstall
 	{ 
 		if (run_uninstall_server($package_name, $testmode))
 		{
-			print "Error: cannot uninstall on server...\n";
+			print "Error: cannot uninstall on server.\n";
 			return (2);
 		}
 	}
@@ -1123,7 +1021,7 @@ sub package_uninstall
 	{
 		if(run_uninstall_image($package_name, $testmode, $imagename))
 		{
-			print "cannot uninstall on the image...\n";
+			print "Error: cannot uninstall on the image.\n";
 			return (4);
 		}
 	}
@@ -1230,7 +1128,7 @@ sub run_uninstall_server
 	my @temp_list;
 	my $cmd_string2;
 	my $cmd_string3;
-	my $command_out;
+	my @cmd_out;
 
 	oscar_log_subsection("Running server un-install");
 
@@ -1244,16 +1142,16 @@ sub run_uninstall_server
 
 		if ($testmode != 0)
 		{
-			print "server uninstall actions:\n";
-			print "PackageInUn.run_uninstall_server: $cmd_string1\n";
+			print "executing: $cmd_string1\n";
 		}
 		else
 		{
-			open(NEWCMD, "$cmd_string1 |") or Carp::croak "cannot run command:$!\n";
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
+			if ( run_command_general($cmd_string1))
+			{
+				return 1;
+			}
 		}
-		oscar_log_subsection("Successfully completed un-install on server");
+		oscar_log_subsection("Completed un-install on server");
 		return (0);
 	}
 	else
@@ -1262,7 +1160,6 @@ sub run_uninstall_server
 	}
 
 	oscar_log_subsection("Error on server un-install for $package_name");
-
 	return (1);
 }
 
@@ -1285,7 +1182,7 @@ sub run_uninstall_client
 	my @temp_list;
 	my $cmd_string2;
 	my $cmd_string3;
-	my $command_out;
+	my @cmd_out = <NEWCMD>;
 
 	oscar_log_subsection("Running client un-install");
 
@@ -1304,36 +1201,33 @@ sub run_uninstall_client
 			return (1);
 		}
 
-		$cmd_string1 = "/opt/c3-4/cpush $script_path /tmp/";
-		$cmd_string2 = "/opt/c3-4/cexec --pipe /tmp/$temp_list[$#temp_list]";
-		$cmd_string3 = "/opt/c3-4/cexec --pipe rm -f /tmp/$temp_list[$#temp_list]";
+		$cmd_string1 = "$C3_HOME/cpush $script_path /tmp/";
+		$cmd_string2 = "$C3_HOME/cexec --pipe /tmp/$temp_list[$#temp_list]";
+		$cmd_string3 = "$C3_HOME/cexec --pipe rm -f /tmp/$temp_list[$#temp_list]";
 
 		if ($testmode != 0)
 		{
 			print "client uninstall actions:\n";
-			print "PackageInUn.run_uninstall_client: $cmd_string1\n";
-			print "PackageInUn.run_uninstall_client: $cmd_string2\n";
-			print "PackageInUn.run_uninstall_client: $cmd_string3\n";
+			print "executing: $cmd_string1\n";
+			print "executing: $cmd_string2\n";
+			print "executing: $cmd_string3\n";
 		}
 		else
 		{
-			open(NEWCMD, "$cmd_string1 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-
-			open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			my @cmd_out = <NEWCMD>;
-			close(NEWCMD);
-			print "Client un-install ($cmd_string2):\n@cmd_out\n";
-
-			open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
+			if ( run_command_general($cmd_string1))
+			{
+				return 1;
+			}
+			if ( run_command_general($cmd_string2))
+			{
+				return 1;
+			}
+			if ( run_command_general($cmd_string3))
+			{
+				return 1;
+			}
 		}
-		oscar_log_subsection("Successfully completed un-install on client");
+		oscar_log_subsection("Completed un-install on client");
 		return (0);
 	}
 	else 
@@ -1342,7 +1236,6 @@ sub run_uninstall_client
 	}
 
 	oscar_log_subsection("Error on client un-install for $package_name");
-
 	return 1;
 }
 
@@ -1363,7 +1256,7 @@ sub run_uninstall_image
 	my @temp_list;
 	my $cmd_string2;
 	my $cmd_string3;
-	my $command_out;
+	my @cmd_out;
 
 	oscar_log_subsection("Running image un-install");
 
@@ -1379,36 +1272,33 @@ sub run_uninstall_image
 			print "Error: not a valid imagename ($imagename)\n";
 			return (1);
 		}
-		print "DBG: IMAGENAME=($imagename)\n";
+
 		$cmd_string1 = "cp $script_path /var/lib/systemimager/images/$imagename/tmp/";
 		$cmd_string2 = "chroot /var/lib/systemimager/images/$imagename /tmp/$temp_list[$#temp_list]";
 		$cmd_string3 = "rm -f /var/lib/systemimager/images/$imagename/tmp/$temp_list[$#temp_list]";
 
 		if ($testmode != 0)
 		{
-			print "image uninstall actions:\n";
-			print "PackageInUn.run_uninstall_image: $cmd_string1\n";
-			print "PackageInUn.run_uninstall_image: $cmd_string2\n";
-			print "PackageInUn.run_uninstall_image: $cmd_string3\n";
+			print "executing: $cmd_string1\n";
+			print "executing: $cmd_string2\n";
+			print "executing: $cmd_string3\n";
 		}
 		else
 		{
-			open(NEWCMD, "$cmd_string1 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-
-			open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
-
-			open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
-			#add logging or sanity check
-			$command_out = <NEWCMD>;
-			close(NEWCMD);
+			if ( run_command_general($cmd_string1))
+			{
+				return 1;
+			}
+			if ( run_command_general($cmd_string2))
+			{
+				return 1;
+			}
+			if ( run_command_general($cmd_string3))
+			{
+				return 1;
+			}
 		}
-		oscar_log_subsection("Successfully completed un-install on image");
+		oscar_log_subsection("Completed un-install on image");
 		return (0);
 	}
 	else
@@ -1421,10 +1311,11 @@ sub run_uninstall_image
 	return (1);
 }
 
-#invokes an mksirange command to find out image info
+#invokes an mksimachine command to find out image info
 #about the cluster.
 #	$image_aa_ref --> a reference to an aa that contains 
 #					image names as keys and node names as values
+#	
 #
 #returns: number of images (note: this is the number of keys in $image_aa_ref
 sub get_image_info
@@ -1467,5 +1358,72 @@ sub get_image_info
 	}
 	return keys(%$image_aa_ref);
 }
+
+#runs a commandstring and uses the open()
+#to do it...prints what it is trying to run, and 
+#prints all stderr and stdout on a detected error
+#	$cmd_string --> a string of a command to run
+sub run_command_general
+{
+	my ($cmd_string) = @_;
+
+	my $aline;
+	my @cmd_out;
+
+	if (defined (open (CMD, "$cmd_string 2>&1 |")))
+	{
+		print "executing:$cmd_string\n";
+		@cmd_out = <CMD>;
+		chomp(@cmd_out);
+		close(CMD);
+	}
+	else
+	{
+		print "Error executing:$cmd_string\n";
+		return 1;
+	} 
+
+	if ($CHILD_ERROR == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		#log results
+		print "Error executing:$cmd_string\n:";
+		foreach $aline (@cmd_out)
+		{	
+			print $aline."\n";
+		}
+		return 1;
+	}
+}
+
+#checks to see if a package is dependant on another
+#	$package_name --> a valid package name
+#returns 1 if
+#if it is and that package is already installed
+#if it is not dependant on anything
+#returns 0 otherwise
+sub check_package_dependancy 
+{
+	my ($package_name) = @_;
+	my $cmdstring = "read_records packages_requires package name=\"$package_name\"";
+	my @my_result;
+	my $error_code = 1;
+	my $record;
+
+	OSCAR::Database::database_execute_command($cmdstring, \@my_result, $error_code);
+
+	foreach $record (@my_result)
+	{
+		if( !is_installed($record) )
+		{
+			print "Package $package_name needs $record to be installed first.\n";
+			return (1);
+		}
+	}
+	return (0);
+} 
 
 1;
