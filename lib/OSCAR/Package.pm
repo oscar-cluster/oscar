@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.49 2003/04/11 01:41:32 ngorsuch Exp $
+#   $Id: Package.pm,v 1.50 2003/04/15 05:42:22 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.49 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.50 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -277,7 +277,7 @@ sub rpmlist {
     
     # If we haven't read in all the package config.xml files, do so.
 
-    read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
+    read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
 
     # Double check to ensure that the package's "installable" XML
     # attribute is 1.  Return an empty RPM list if it's not.
@@ -603,7 +603,7 @@ sub getSelectionHash # () -> $selectionhashref
   my($config) = "$ENV{OSCAR_HOME}/.oscar/.selection.config";
 
   # If we haven't read in all the package config.xml files, do so.
-  read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
+  read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
 
   if (-s $config)  # Make sure the file exists
     { # Read in the hidden XML selection file
