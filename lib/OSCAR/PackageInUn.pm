@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.7 2003/11/01 01:25:42 naughtont Exp $
+#  $Id: PackageInUn.pm,v 1.8 2003/11/01 21:53:08 naughtont Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -270,7 +270,7 @@ sub run_install_client
 
 	my $type = "oscar_clients";
 
-	oscar_log_subsection("Running install clients");
+	oscar_log_subsection("Running install on clients");
 
 	my $script_path;
 	my $cmd_string1;
@@ -325,17 +325,16 @@ sub run_install_client
 
 		if (scalar(@newrpmlist) > 0)
 		{
-			$cmd_string1 = "/opt/c3-4/cexec mkdir -p /tmp/tmpinstallrpm/";
+			$cmd_string1 = "/opt/c3-4/cexec --pipe mkdir -p /tmp/tmpinstallrpm/";
 			foreach $rpm (@newrpmlist)
 			{
 				@temp_list = split(/\//,$rpm);
-				my $tmpFoo = $temp_list[$#temp_list];
-				print "DBG: PackageInUn.run_install_client: tmpfoo($tmpFoo)\n";
 				#$all_rpms = "$all_rpms /tmp/tmpinstallrpm/$temp_list[$#temp_list]";
-				$all_rpms = "$all_rpms /tmp/tmpinstallrpm/$tmpFoo";
+				my $rpm_name = $temp_list[$#temp_list];
+				$all_rpms = "$all_rpms /tmp/tmpinstallrpm/$rpm_name";
 			}
-			$cmd_string3 = "/opt/c3-4/cexec $package_name rpm -U $all_rpms";
-			$cmd_string4 = "/opt/c3-4/cexec rm -rf /tmp/tmpinstallrpm/";
+			$cmd_string3 = "/opt/c3-4/cexec --pipe rpm -Uvh $all_rpms";
+			$cmd_string4 = "/opt/c3-4/cexec --pipe rm -rf /tmp/tmpinstallrpm/";
 
 			if($testmode != 0)
 			{
@@ -354,7 +353,7 @@ sub run_install_client
 				#add logging or sanity check
 				$command_out = <NEWCMD>;
 				close(NEWCMD);
-				print "$cmd_string1 completed successfully\n";
+				print "$cmd_string1\n";
 
 				foreach $rpm (@newrpmlist)
 				{
@@ -363,20 +362,21 @@ sub run_install_client
 					#add logging or sanity check
 					$command_out = <NEWCMD>;
 					close(NEWCMD);
-					print "$cmd_string2 completed successfully\n";
+					print "$cmd_string2\n";
 				}
 
 				open(NEWCMD, "$cmd_string3 |") or Carp::croak "[$cmd_string3] cannot run command:$!\n";
 				#add logging or sanity check
-				$command_out = <NEWCMD>;
+				my @cmd_out = <NEWCMD>;
 				close(NEWCMD);
-				print "$cmd_string3 completed successfully\n";
+				print "$cmd_string3\n";
+				print "@cmd_out\n";
 
 				open(NEWCMD, "$cmd_string4 |") or Carp::croak "[$cmd_string4] cannot run command:$!\n";
 				#add logging or sanity check
 				$command_out = <NEWCMD>;
 				close(NEWCMD);
-				print "$cmd_string4 completed successfully\n";
+				print "$cmd_string4\n";
 			}
 			
 		}
@@ -391,8 +391,8 @@ sub run_install_client
 	if (-x $script_path)
 	{
 		$cmd_string1 = "/opt/c3-4/cpush $script_path /tmp";
-		$cmd_string2 = "/opt/c3-4/cexec /tmp/post_client_rpm_install";
-		$cmd_string3 = "/opt/c3-4/cexec rm -f /tmp/post_client_rpm_install";
+		$cmd_string2 = "/opt/c3-4/cexec --pipe /tmp/post_client_rpm_install";
+		$cmd_string3 = "/opt/c3-4/cexec --pipe rm -f /tmp/post_client_rpm_install";
 		if($testmode != 0)
 		{
 			print "PackageInUn.run_install_client: $cmd_string1\n";
@@ -408,8 +408,9 @@ sub run_install_client
 
 				open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
 				#add logging or sanity check
-				$command_out = <NEWCMD>;
+				my @cmd_out = <NEWCMD>;
 				close(NEWCMD);
+				print "Client install ($cmd_string2):\n@cmd_out\n";
 
 				open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
 				#add logging or sanity check
@@ -423,8 +424,8 @@ sub run_install_client
 	if(-x $script_path)
 	{
 		$cmd_string1 = "/opt/c3-4/cpush $script_path /tmp";
-		$cmd_string2 = "/opt/c3-4/cexec /tmp/post_client_install";
-		$cmd_string3 = "/opt/c3-4/cexec rm -f /tmp/post_client_install";
+		$cmd_string2 = "/opt/c3-4/cexec --pipe /tmp/post_client_install";
+		$cmd_string3 = "/opt/c3-4/cexec --pipe rm -f /tmp/post_client_install";
 		if($testmode != 0)
 		{
 			print "PackageInUn.run_install_client: $cmd_string1\n";
@@ -451,7 +452,7 @@ sub run_install_client
 		$flag = 1;
 	}
 
-	oscar_log_subsection("Successfully completed install clients");
+	oscar_log_subsection("Successfully completed install on clients");
 
 	return $flag;
 }
@@ -491,7 +492,7 @@ sub run_install_image
 	my $retval;
 	my $command_out;
 
-	oscar_log_subsection("Running install image");	
+	oscar_log_subsection("Running install on image");	
 
 	#hope those images are all in the same place
 	if (!(-d "/var/lib/systemimager/images/$imagename"))
@@ -535,7 +536,7 @@ sub run_install_image
 
 			$cmd_string1 = "/bin/mkdir -p /var/lib/systemimager/images/$imagename/tmp/tmpinstallrpm/";
 			$cmd_string2 = "/bin/cp $all_rpms_full_path /var/lib/systemimager/images/$imagename/tmp/tmpinstallrpm/";
-			$cmd_string3 = "/bin/rpm -U --root /var/lib/systemimager/images/$imagename  $all_rpms";
+			$cmd_string3 = "/bin/rpm -Uvh --root /var/lib/systemimager/images/$imagename  $all_rpms";
 			$cmd_string4 = "/bin/rm -rf /var/lib/systemimager/images/$imagename/tmp/tmpinstallrpm/*";
 			$cmd_string5 = "/bin/rmdir /var/lib/systemimager/images/$imagename/tmp/tmpinstallrpm/";
 
@@ -553,31 +554,31 @@ sub run_install_image
 				#add logging or sanity check
 				$command_out = <NEWCMD>;
 				close(NEWCMD);
-				print "$cmd_string1 completed successfully\n";
+				print "$cmd_string1\n";
 
 				open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
 				#add logging or sanity check
 				$command_out = <NEWCMD>;
 				close(NEWCMD);
-				print "$cmd_string2 completed successfully\n";
+				print "$cmd_string2\n";
 
 				open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
 				#add logging or sanity check
-				$command_out = <NEWCMD>;
+				my @cmd_out = <NEWCMD>;
 				close(NEWCMD);
-				print "$cmd_string3 completed successfully\n";
+				print "$cmd_string3\n@cmd_out\n";
 
 				open(NEWCMD, "$cmd_string4 |") or Carp::croak "cannot run command:$!\n";
 				#add logging or sanity check
 				$command_out = <NEWCMD>;
 				close(NEWCMD);
-				print "$cmd_string4 completed successfully\n";
+				print "$cmd_string4\n";
 
 				open(NEWCMD, "$cmd_string5 |") or Carp::croak "cannot run command:$!\n";
 				#add logging or sanity check
 				$command_out = <NEWCMD>;
 				close(NEWCMD);
-				print "$cmd_string5 completed successfully\n";
+				print "$cmd_string5\n";
 			}
 
 			$flag = 1;
@@ -608,19 +609,19 @@ sub run_install_image
 			#add logging or sanity check
 			$command_out = <NEWCMD>;
 			close(NEWCMD);
-			print "$cmd_string1 completed successfully\n";
+			print "$cmd_string1\n";
 
 			open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
 			#add logging or sanity check
-			$command_out = <NEWCMD>;
+			my @cmd_out = <NEWCMD>;
 			close(NEWCMD);
-			print "$cmd_string2 completed successfully\n";
+			print "$cmd_string2\n@cmd_out\n";
 
 			open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
 			#add logging or sanity check
 			$command_out = <NEWCMD>;
 			close(NEWCMD);
-			print "$cmd_string3 completed successfully\n";
+			print "$cmd_string3\n";
 		}
 		$flag = 1;
 	}
@@ -644,24 +645,24 @@ sub run_install_image
 			#add logging or sanity check
 			$command_out = <NEWCMD>;
 			close(NEWCMD);
-			print "$cmd_string1 completed successfully\n";
+			print "$cmd_string1\n";
 
 			open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
 			#add logging or sanity check
 			$command_out = <NEWCMD>;
 			close(NEWCMD);
-			print "$cmd_string2 completed successfully\n";
+			print "$cmd_string2\n";
 
 			open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
 			#add logging or sanity check
 			$command_out = <NEWCMD>;
 			close(NEWCMD);
-			print "$cmd_string3 completed successfully\n";
+			print "$cmd_string3\n";
 		}
 		$flag = 1;
 	}
 
-	oscar_log_subsection("Successfully completed install image"); 
+	oscar_log_subsection("Successfully completed install on image"); 
 
 	return ($flag);
 }
@@ -691,7 +692,7 @@ sub run_install_server
 
 	my $command_out;
 
-	oscar_log_subsection("Running install server");
+	oscar_log_subsection("Running install on server");
 
 	#get the package dir sanely
 	my $package_dir = OSCAR::Package::getOdaPackageDir($package_name);
@@ -718,7 +719,7 @@ sub run_install_server
 
 		if (scalar(@newrpmlist) != 0)
 		{
-			$cmd_string = "rpm -U";
+			$cmd_string = "rpm -Uvh";
 			foreach $rpm (@newrpmlist)
 			{ 
 				$cmd_string = "$cmd_string $rpm";
@@ -732,8 +733,9 @@ sub run_install_server
 			{	
 				open(NEWCMD, "$cmd_string |") or Carp::croak "cannot run command:$!\n";
 				#add logging or sanity check
-				$command_out = <NEWCMD>;
+				my @cmd_out = <NEWCMD>;
 				close(NEWCMD);
+				print "OK: $cmd_string\n@cmd_out\n";
 			}
 			$flag = 1;
 		}
@@ -741,6 +743,10 @@ sub run_install_server
 	elsif($retval == 2)
 	{
 		return (0); #error in rpms
+	}
+	else
+	{
+		print "No RPMS to install on server for ($package_name)\n";
 	}
 	
 	$script_path = "$package_dir/scripts/post_server_rpm_install";
@@ -794,7 +800,7 @@ sub run_install_server
 		$flag = 1;
 	}
 
-	oscar_log_subsection("Successfully completed install server");
+	oscar_log_subsection("Successfully completed install on server");
 
 	return ($flag);
 }
@@ -883,9 +889,15 @@ sub check_rpm_list
 		if (index($rpmname, $key) != 0)
 		{
 			${$new_rpmlistref}[$count] = $rpmhash{$key};
+			$count++;
 		}
-		$count++;
 	}
+
+	print "RPMS that will be installed:\n";
+	foreach my $val ( @{$new_rpmlistref} ) {
+		print " - $val\n";
+	}
+
 	return ($flag);
 }
 
@@ -927,6 +939,9 @@ sub get_rpm_list
 
 	my $package_dir = OSCAR::Package::getOdaPackageDir($package_name);
 	@rpm_list_database = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, $type);
+
+	print "RPMS for Package ($package_name)\n"; 
+	foreach my $pkgrpm (@rpm_list_database) { print "  - $pkgrpm\n"; }
 
 	#make sure there is supposed to be at least 1 rpm
 	if (scalar(@rpm_list_database) == 0)
@@ -1013,8 +1028,6 @@ sub get_rpm_list
 				print "Error: No rpm found for:$rpm\n";
 			}
 		}
-		my $tmpPrn = $rpmhash{$rpm};
-		print "PackageInUn.get_rpm_list: key=($rpm)=>($tmpPrn)\n";
 	}
 
 	#if the number we found doesn't match the number we need
@@ -1155,7 +1168,8 @@ sub set_installed
 {
 	my ($package_name) = @_;	
 	my @my_result;
-	my $error_code = 1;
+	#my $error_code = 1; #enable oda debug mode
+	my $error_code;
 
 	my $cmdstring = "modify_records packages name=\"$package_name\" installed~1";
 
@@ -1171,7 +1185,8 @@ sub set_uninstalled
 	my ($package_name) = @_;	
 
 	my @my_result;
-	my $error_code = 1;
+	#my $error_code = 1; #enable oda debug mode
+	my $error_code;
 
 	my $cmdstring = "modify_records packages name=\"$package_name\" installed~0";
 
@@ -1189,7 +1204,8 @@ sub is_installed
 	my ($package_name) = @_;	
 
 	my @my_result;
-	my $error_code = 1;
+	#my $error_code = 1; #enable oda debug mode
+	my $error_code; 
 
 	my $cmdstring = "read_records packages installed name=\"$package_name\"";
 
@@ -1237,7 +1253,7 @@ sub run_uninstall_server
 			$command_out = <NEWCMD>;
 			close(NEWCMD);
 		}
-		oscar_log_subsection("Successfully completed server un-install");
+		oscar_log_subsection("Successfully completed un-install on server");
 		return (0);
 	}
 	else
@@ -1289,8 +1305,8 @@ sub run_uninstall_client
 		}
 
 		$cmd_string1 = "/opt/c3-4/cpush $script_path /tmp/";
-		$cmd_string2 = "/opt/c3-4/cexec /tmp/$temp_list[$#temp_list]";
-		$cmd_string3 = "/opt/c3-4/cexec rm -f /tmp/$temp_list[$#temp_list]";
+		$cmd_string2 = "/opt/c3-4/cexec --pipe /tmp/$temp_list[$#temp_list]";
+		$cmd_string3 = "/opt/c3-4/cexec --pipe rm -f /tmp/$temp_list[$#temp_list]";
 
 		if ($testmode != 0)
 		{
@@ -1308,15 +1324,16 @@ sub run_uninstall_client
 
 			open(NEWCMD, "$cmd_string2 |") or Carp::croak "cannot run command:$!\n";
 			#add logging or sanity check
-			$command_out = <NEWCMD>;
+			my @cmd_out = <NEWCMD>;
 			close(NEWCMD);
+			print "Client un-install ($cmd_string2):\n@cmd_out\n";
 
 			open(NEWCMD, "$cmd_string3 |") or Carp::croak "cannot run command:$!\n";
 			#add logging or sanity check
 			$command_out = <NEWCMD>;
 			close(NEWCMD);
 		}
-		oscar_log_subsection("Successfully completed client un-install");
+		oscar_log_subsection("Successfully completed un-install on client");
 		return (0);
 	}
 	else 
@@ -1391,7 +1408,7 @@ sub run_uninstall_image
 			$command_out = <NEWCMD>;
 			close(NEWCMD);
 		}
-		oscar_log_subsection("Successfully completed image un-install");
+		oscar_log_subsection("Successfully completed un-install on image");
 		return (0);
 	}
 	else
