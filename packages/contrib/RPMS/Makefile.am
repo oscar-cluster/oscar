@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.2 2001/12/22 01:08:37 jsquyres Exp $
+# $Id: Makefile.am,v 1.3 2002/01/16 21:46:26 brechin Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -8,10 +8,13 @@
 
 EXTRA_DIST		= \
 			dhcp-2.0pl5-4.i386.rpm \
+			glibc-2.2.4-19.3.i386.rpm \
+			glibc-devel-2.2.4-19.3.i386.rpm \
+			glibc-common-2.2.4-19.3.i386.rpm \
 			nfs-utils-0.3.1-5.i386.rpm \
-			openssh-2.5.2p2-5.i386.rpm \
-			openssh-clients-2.5.2p2-5.i386.rpm \
-			openssh-server-2.5.2p2-5.i386.rpm \
+			openssh-2.9p2-10.7.i386.rpm \
+			openssh-clients-2.9p2-10.7.i386.rpm \
+			openssh-server-2.9p2-10.7.i386.rpm \
 			openssl-0.9.6-3.i386.rpm \
 			perl-Tk-4.2-1.i386.rpm \
 			pfilter-0.91-1.noarch.rpm \
