@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.23 2003/04/07 20:33:53 ngorsuch Exp $
+      $Id: config.xml,v 1.24 2003/04/09 17:50:41 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -26,7 +26,7 @@
   <version>
     <major>1</major>
     <minor>0</minor>
-    <subversion>7</subversion>
+    <subversion>8</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
@@ -523,8 +523,6 @@
 	<package/>
 	<packager_email/>
 	<packager_name/>
-	<require_name/>
-	<require_type/>
         <selected> 
 	  <type> integer </type>
 	  <default> 0 </default>
