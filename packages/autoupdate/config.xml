@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.8 2003/06/23 15:49:43 brechin Exp $
+      $Id: config.xml,v 1.9 2003/07/09 16:28:48 brechin Exp $
   -->
   <name>autoupdate</name>
 
@@ -45,6 +45,11 @@ worry about autoupdate syntax.</description>
       <filter group="oscar_server"/>
       <rpm>autoupdate-oscar</rpm>
       <rpm>autoupdate</rpm>
+  </rpmlist>
+
+  <rpmlist>
+      <filter group="oscar_server" distribution="redhat" />
+      <rpm>perl-DB_File</rpm>
   </rpmlist>
 
 </oscar>
