@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.13 2003/03/18 01:43:25 jsquyres Exp $
+# $Id: opd,v 1.14 2003/04/01 19:59:48 jsquyres Exp $
 #
 
 use strict;
@@ -694,7 +694,15 @@ sub print_package {
     print_pkg_attr($p, $w, "Name", "name", "", "");
     $temp = "Version:";
     print_filled($temp, $w);
-    print(build_version_string($p) . "\n");
+    print(build_version_string($p->{version}) . "\n");
+
+    $temp = "OSCAR Version:";
+    print_filled($temp, $w);
+    if ($p->{oscar_version}) {
+        print(build_version_string($p->{oscar_version}) . "\n");
+    } else {
+        printf("<none>\n");
+    }
 
     print_pkg_attr($p, $w, "Class", "class", "", "");
     print_pkg_attr($p, $w, "Installable", "installable", "", "");
@@ -816,8 +824,7 @@ sub print_pkg_array_attr {
 # they exist.
 #
 sub build_version_string {
-    my ($pkg) = @_;
-    my $v = $pkg->{version};
+    my ($v) = @_;
     my $out;
     my $temp;
 
@@ -945,7 +952,7 @@ sub get_package_info {
     my $pkg = $package_listing->{package}[$i - 1];
 
     my $name = $pkg->{name};
-    my $version = build_version_string($pkg);
+    my $version = build_version_string($pkg->{version});
     my $installable = $pkg->{general}->{installable};
     my $downloadable = $pkg->{download}->{uri};
     my $md5sum = $pkg->{download}->{md5sum};
