@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   post_clients for pbs
+#                        generates pbs config files from clamdr entries
+
+use strict;
+use Carp;
+use lib '/usr/lib/systeminstaller';
+use SystemInstaller::Machine;
+
+# Update the server's nodes file (optionally for only one image).
+
+print "...updating pbs_server nodes file\n";
+
+my $nodes_file = "/usr/spool/PBS/server_priv/nodes";
+
+open(NODES, ">$nodes_file") or croak("config_server: could not open PBS server's nodes file\n");
+
+my %nodes = get_machine_listing();
+
+my $TOT_NODES = 0;
+my $TOT_NP = 0;
+
+foreach my $node (sort keys %nodes) {
+    if($nodes{$node}->{NUMPROC}) {
+        $TOT_NP += $nodes{$node}->{NUMPROC};
+        $TOT_NODES++;
+        print NODES "$nodes{$node}->{HOST} np=$nodes{$node}->{NUMPROC}\n";
+    } else {
+        $TOT_NP++;
+        $TOT_NODES++;
+        print NODES "$nodes{$node}->{HOST}\n";
+    }
+}
+
+close(NODES);

@@ -1,0 +1,104 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   post_clients for pbs
+#                        generates pbs config files from clamdr entries
+
+use strict;
+use lib "/usr/lib/systeminstaller";
+use Carp;
+use Data::Dumper;
+use SystemInstaller::Machine;
+
+# Update the server's nodes file (optionally for only one image).
+
+my $image = shift; # Optionally provide an image name.
+
+print "...updating pbs_server nodes file\n";
+
+my $nodes_file = "/usr/spool/PBS/server_priv/nodes";
+
+open(NODES, ">$nodes_file") or croak("config_server: could not open PBS server's nodes file\n");
+
+my %nodes = get_machine_listing($image);
+
+my $TOT_NODES = 0;
+my $TOT_NP = 0;
+
+foreach my $node (sort keys %nodes) {
+print Dumper(\%nodes);
+
+    if($nodes{$node}->{NUM_PROCS}) {
+        $TOT_NP += $nodes{$node}{NUM_PROCS};
+        $TOT_NODES++;
+        print NODES "$nodes{$node}{HOST} np=$nodes{$node}{NUM_PROCS}\n";
+    } else {
+        $TOT_NP++;
+        $TOT_NODES++;
+        print NODES "$nodes{$node}{HOST}\n";
+    }
+}
+
+close(NODES);
+
+print "Restarting pbs server...\n";
+
+!system("service pbs_server stop") or croak("Couldn't stop pbs_server");
+
+!system("service pbs_server start") or croak("Couldn't start pbs_server");
+
+print "Creating pbs queue...\n";
+
+# Update the pbs server configuration
+
+open (QMGRCMD,"|/usr/local/pbs/bin/qmgr -a -e ");
+my $conf = <<PBSCONF;
+# Create queues and set their attributes.
+create queue workq
+set queue workq queue_type = Execution
+set queue workq resources_max.cput = 10000:00:00
+set queue workq resources_max.ncpus = $TOT_NP
+set queue workq resources_max.nodect = $TOT_NODES
+set queue workq resources_max.walltime = 10000:00:00
+set queue workq resources_min.cput = 00:00:01
+set queue workq resources_min.ncpus = 1
+set queue workq resources_min.nodect = 1
+set queue workq resources_min.walltime = 00:00:01
+set queue workq resources_default.cput = 10000:00:00
+set queue workq resources_default.ncpus = 1
+set queue workq resources_default.nodect = 1
+set queue workq resources_default.walltime = 10000:00:00
+set queue workq resources_available.nodect = $TOT_NODES
+set queue workq enabled = True
+set queue workq started = True
+# Set server attributes.
+set server scheduling = True
+set server default_queue = workq
+set server log_events = 511
+set server mail_from = adm
+set server resources_available.ncpus = $TOT_NP
+set server resources_available.nodect = $TOT_NODES
+set server resources_available.nodes = $TOT_NODES
+set server resources_max.ncpus = $TOT_NP
+set server resources_max.nodes = $TOT_NODES
+set server scheduler_iteration = 60
+
+PBSCONF
+
+print $conf;
+print QMGRCMD $conf;
+
+close (QMGRCMD) or croak("Configuration of PBS queues failed");
