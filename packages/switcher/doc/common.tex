@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: common.tex,v 1.1 2002/06/12 07:33:00 jsquyres Exp $
+% $Id: common.tex,v 1.2 2002/06/18 14:17:30 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -41,6 +41,24 @@ The system-level default MPI implementation can be set in two ways:
    where ``name'' is one of the names from the output of the
    \cmd{--list} command.
 \end{enumerate}
+
+{\bf NOTE:} The current version of \cmd{switcher} is not
+``cluster-aware.''  Hence, if you set the system-level default on one
+machine in your cluster, it does {\em not} set the system-level
+default on all nodes.  In order to propogate the change in any
+\cmd{switcher} system-default settings, you must manually execute the
+following command:
+
+\begin{verbatim}
+  $ cpush -s /opt/env-switcher-1.0.4/etc/switcher.ini \
+       -e /opt/env-switcher-1.0.4/etc/switcher.ini
+\end{verbatim}
+
+The same is {\em not} true for user-level defaults.  Since user-level
+defaults are stored in the home directory for each user, the fact that
+user home directories are NFS-mounted on all nodes effectively takes
+care of ensuring that \cmd{switcher}'s user-level defaults are
+available everywhere.
 
 {\bf NOTE:} Using the \cmd{switcher} command to change the default MPI
 implementation will modify the \cmd{PATH} and \cmd{MANPATH} for all
