@@ -20,6 +20,7 @@
 #   This script initializes or re-initializes the values in the database
 #   table "oscar" which is for global values.
 
+use Getopt::Long;
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
@@ -28,6 +29,26 @@ use OSCAR::Distro;
 use POSIX;
 
 my %options = ();
+
+# set default option values
+my %options = ( 'debug'       => 0,
+                'verbose'     => 0 );
+
+# parse command line options
+GetOptions( \%options,
+            'debug!',
+            'database|d=s',
+            'help',
+            'host|h=s',
+            'password=s',
+            'port|p=i',
+            'type|t=s',
+            'user|u=s',
+            'verbose!',
+            'version' )
+    || usage(1);
+print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
+oda::print_hash( "", "$0: options after GetOptions", \%options) if $options{debug};
 
 my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
 my $mysql_service_name;
