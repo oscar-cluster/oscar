@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.10 2002/04/06 20:58:00 jsquyres Exp $
+# $Id: make-dist.sh,v 1.11 2002/06/01 05:11:45 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -145,7 +145,23 @@ EOF
     fi
 
     csh -f ./dist/insert-license.csh $filelist
-    rm -rf $filelist
+    rm -f $filelist
+
+    #
+    # Substitute in the current version number to some top-level text
+    # files
+    #
+
+    cat > $filelist <<EOF
+README
+README.ia64
+EOF
+    for file in `cat $filelist`; do
+	sed -e s/OSCARVERSION/$OSCAR_VERSION/g $file > $file.out
+	cp $file.out $file
+	rm -f $file.out
+    done
+    rm -f $filelist
 fi
 
 rm -f dist/insert-license.*
