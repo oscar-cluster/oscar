@@ -14,6 +14,9 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
+# Copyright (c) 2003 NCSA
+#                    Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+#
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
@@ -21,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.47 2003/04/18 22:34:58 ngorsuch Exp $
+# $Id: oscar_wizard,v 1.48 2003/06/22 03:51:21 ngorsuch Exp $
 #
 
 use strict;
@@ -39,6 +42,7 @@ use OSCAR::Logger;
 use OSCAR::Selector;
 use OSCAR::Configurator;
 use OSCAR::Package;
+use OSCAR::Database;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
@@ -264,7 +268,9 @@ sub build_oscar_image {
     $save_text = $outfile;
     open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
     foreach my $pkg (@pkgs) {
-	my @rpms = rpmlist($pkg, "client");
+#	my @rpms = rpmlist($pkg, "client");
+	my @rpms = database_rpmlist_for_package_and_group($pkg,
+							  "oscar_clients");
 	foreach my $rpm (@rpms) {
 	    print OUTFILE "$rpm\n";
 	}
