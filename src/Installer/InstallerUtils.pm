@@ -19,6 +19,8 @@ InstallerUtils - Some basic utility subroutines for use by the Installer
   $activeTestCode = '$odasuccess && ($odaresult[0] >= 2.3)';
   my $odatestsuccess = runActiveOdaTest();
   my $errorstr = getActiveErrorString() if (!$odatestsuccess);
+
+  my $pixmap = getPixmap('oscar.png');
                                                                                 
 =head1 DESCRIPTION
 
