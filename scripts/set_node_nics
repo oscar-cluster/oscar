@@ -872,7 +872,7 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 		if $options{debug};
 	    $$nic_ref{network_id} = $$database_network_ref{id};
 	    $$nic_ref{network_name} = $network_name;
-	    foreach my $field ( "broadcast", "gateway" ) {
+	    foreach my $field ( qw( base_ip broadcast gateway netmask ) ) {
 		delete $$nic_ref{ $field }
 		if exists $$nic_ref{ $field }
 		&& exists $$database_network_ref{ $field }
@@ -931,7 +931,7 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 
     if  ( ! exists $$database_nics_ref{ name } ) {
 	my $command = "create_nic_on_node $nic_name $node_name";
-	foreach my $field ( qw( broadcast gateway ip mac netmask ) ) {
+	foreach my $field ( qw( base_ip broadcast gateway ip mac netmask ) ) {
 	    $command .= " $field\~$$ifconfig_nic_ref{$field}"
 		if exists $$ifconfig_nic_ref{ $field };
 	}
