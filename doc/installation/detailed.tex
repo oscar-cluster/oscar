@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.18 2002/01/22 20:52:43 mchasal Exp $
+% $Id: detailed.tex,v 1.19 2002/05/08 21:03:53 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -287,27 +287,6 @@ file system by issuing these commands:
   cd
   umount /mnt/cdrom
 \end{verbatim}
-\endchange
-If you wish to save space on your server's hard drive and will be
-using the default RPM list supplied with OSCAR (see
-Section~\ref{sec:detailed-cluster-def}),
-you should only copy over the rpms listed in the sample.
-\begchange
-For the Red Hat 7.1 distribution, this can be done for each CD with
-a command sequence like this:
-
-% We have to use \tt instead of {verbatim} because we need to use
-% \oscarversion inside.  This makes it somewhat painful -- much less
-% easy than {verbatim}.
-\vspace{11pt}
-{\tt
-  cd /mnt/cdrom/RedHat/RPMS \\
-\indent  cat /root/oscar-\oscarversion/oscarsamples/sample.rpmlist | \textbackslash \\
-\indent\indent  xargs -i sh -c "cd `pwd`;ls -1 \{\}*.rpm" 2>/dev/null | \textbackslash \\
-\indent\indent  xargs -i -t cp -f '\{\}' /tftpboot/rpm
-}
-\vspace{11pt}
-
 \endchange
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
