@@ -661,12 +661,37 @@ foreach my $package_name ( sort keys %single_value_folded_fields ) {
     }
     foreach my $table_name ( keys %tables_records ) {
 	my $record_ref = $tables_records{$table_name};
-	print_hash( "", "$0: inserting record in table <$table_name>",
+	my @tables_fields = ( "$table_name" );
+	my @wheres = ();
+	my @already_existing_records = ();
+	foreach my $key ( keys %$record_ref ) {
+	    push @tables_fields, $key;
+	    push @wheres, "$key = $$record_ref{$key}";
+	}
+	print_hash( "", "$0: tables_fields=(" . 
+		    join(',', @tables_fields ) . ") wheres=(" .
+		    join(',', @wheres ) . ") record",
 		    $record_ref )
 	    if $options{debug};
-	oda::insert_record( \%options,
-			    $table_name,
-			    $record_ref );
+	if ( ! oda::read_records( \%options,
+				  \@tables_fields,
+				  \@wheres,
+				  \@already_existing_records,
+				  1 ) ) {
+	    oda::disconnect( \%options );
+	    exit 1;
+	}
+	print( "$0: returned already existing (" . 
+	       join(',', @already_existing_records ) . ")\n" )
+	       if $options{debug};
+	if ( ! @already_existing_records ) {
+	    print_hash( "", "$0: inserting record in table <$table_name>",
+			$record_ref )
+		if $options{debug};
+	    oda::insert_record( \%options,
+				$table_name,
+				$record_ref );
+	}
     }
 }
 #print_hash( "", "$0: package_field_types", \%package_field_types )
