@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.15 2003/10/22 16:51:55 giraldeau Exp $
+      $Id: config.xml,v 1.16 2004/02/10 17:49:19 ngorsuch Exp $
   -->
   <name>Environment Switcher</name>
 
@@ -57,6 +57,7 @@ such, it can be used in any environment for any "switching" kind of
 purpose.</description>
 
   <rpmlist>
+    <filter distribution='fedora'/>
     <filter distribution='redhat'/>
     <rpm>tcl</rpm>
     <rpm>env-switcher</rpm>
@@ -72,24 +73,4 @@ purpose.</description>
     <rpm>ed</rpm>
   </rpmlist>
   
-  <package>
-    <oda>
-        <!--
-       These definitions allow easier access to switcher information
-    
-       To list all the packages that provide a switched thing:
-           oda switcher_packages_that_provide switchable_thing_name
-    
-       To list all the switchable things that a single package provides:
-           oda switcher_this_package_provides package_name
-
-       To list all the switchable information with these three
-       fields per line: package_name switchable_tag switchable_name
-           oda switcher_list_packages_tags_names
-       -->
-      <shortcut> switcher_packages_that_provide read_records package_switcher.package package_switcher.tag=%1 </shortcut>
-      <shortcut> switcher_this_package_provides read_records package_switcher.tag package_switcher.package=%1 </shortcut>
-      <shortcut> switcher_list_packages_tags_names read_records package_switcher package_switcher.package package_switcher.tag package_switcher.name </shortcut>
-     </oda>
-  </package>
 </oscar>
