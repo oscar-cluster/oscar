@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.35 2002/10/29 07:26:37 jsquyres Exp $
+# $Id: oscar_wizard,v 1.36 2002/10/29 14:32:06 jsquyres Exp $
 #
 
 use strict;
@@ -18,7 +18,6 @@ use POSIX;
 use OSCAR::Help;
 use OSCAR::Network;
 use OSCAR::MAC;
-use OSCAR::FrontPanel;
 use OSCAR::Distro;
 use OSCAR::DelNode;
 use OSCAR::AddNode;
@@ -88,8 +87,8 @@ oscar_button($window, "Step $step_number:",
 # Install OSCAR server packages
 $step_number++;
 oscar_button($window, "Step $step_number:", "Install OSCAR Server Packages",
-	     [\&frontpanel_window, $window, {interface => $interface} ], 
-	     'install_server');
+	     [\&run_server_install, $window, $step_number,
+	      {interface => $interface} ], 'install_server');
 
 # Build OSCAR Client Image
 $step_number++;
@@ -105,7 +104,8 @@ oscar_button($window, "Step $step_number:", "Define OSCAR Clients",
 # Setup Network Booting
 $step_number++;
 oscar_button($window, "Step $step_number:", "Setup Networking", 
-	     [\&mac_window, $window, {interface => $interface}], 'netboot');
+	     [\&mac_window, $window, $step_number,
+	      {interface => $interface}], 'netboot');
 
 my $boot=$window->Label (-text => 
 			 "Before continuing, network boot all of your nodes. 
@@ -162,6 +162,62 @@ sub oscar_button {
                                -command=> [\&open_help, $window, $helptext], 
                                -pady => 2);
     $label->grid($button, $help, -sticky => "nsew");
+}
+
+###########################################################################
+
+sub run_command {
+    my ($parent_window, $step_number, $vars) = @_;
+    my $result;
+    my $window_func;
+
+    oscar_log_subsection("Step $step_number: Running: $$vars{cmd}");
+
+    if (system($$vars{cmd})) {
+	$result = $$vars{failure};
+	$window_func = \&error_window;
+    } else {
+	$result = $$vars{success};
+	$window_func = \&done_window;
+    }
+
+    oscar_log_subsection("Step $step_number: " . $result->{message});
+    if ($result->{unbusy}) {
+	&$window_func($parent_window, $result->{message},
+		     sub { $parent_window->Unbusy(); });
+    } else {
+	&$window_func($parent_window, $result->{message});
+    }
+
+    $result->{return_status};
+}
+
+###########################################################################
+
+sub run_server_install {
+    my ($window, $step_number, $vars) = @_;
+
+    # Make the top-level OSCAR wizard window busy so that the user
+    # can't click in another step while this one is running.
+
+    $window->Busy(-recurse => 1);
+
+    oscar_log_section("Running step $step_number of the OSCAR wizard: Install OSCAR server packages");
+
+    my $cmd_vars = { 
+	cmd => "./install_server $$vars{interface}",
+	success => {
+	    message => "Successfully installed OSCAR server",
+	    unbusy => 1,
+	    return_status => 0,
+	},
+	failure => {
+	    message => "Failed to properly install OSCAR server; please check the logs",
+	    unbusy => 1,
+	    return_status => 1,
+	},
+    };
+    run_command($window, $step_number, $cmd_vars);
 }
 
 ###########################################################################
@@ -227,18 +283,28 @@ sub postimagebuild {
     my ($vars) = @_;
     my $step_number = $$vars{step_number};
 
-    my $cmd = "./post_rpm_install $$vars{imgname} $interface";
-    oscar_log_subsection("Step $step_number: Running: $cmd");
-    !system($cmd) or (carp($!), return undef);
-
+    # Parent window is not already busy, so don't make it unbusy
+    
+    my $cmd_vars = { 
+	cmd => "./post_rpm_install $$vars{imgname} $interface",
+	success => {
+	    message => "Successfully built the OSCAR client image",
+	    unbusy => 0,
+	    return_status => 1,
+	},
+	failure => {
+	    message => "Failed to properly build the OSCAR client image; please check the logs",
+	    unbusy => 0,
+	    return_status => 0,
+	}
+    };
+    my $ret = run_command($window, $step_number, $cmd_vars);
+    
     # All done -- remove the temp file that held all the RPM filenames
     
     unlink($save_text);
 
-    oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
-    oscar_log_subsection("Step $step_number: Completed successfully");
-
-    return 1;
+    $ret;
 }
 
 ###########################################################################
@@ -300,19 +366,20 @@ sub run_post_install {
 
     oscar_log_section("Running step $step_number of the OSCAR wizard: Complete cluster setup");
 
-    my $cmd = "./post_install";
-    oscar_log_subsection("Step $step_number: Running post_install: $cmd");
-    my $rc = system($cmd);
-    if($rc) {
-        $window->Unbusy();
-        error_window($window, "There was an error running the post install scripts, please check your logs.");
-    } else {
-	oscar_log_subsection("Step $step_number: Successfully ran post_install");
-        $window->Unbusy();
-        done_window($window, "Cluster Setup Complete");
-    }
-    oscar_log_subsection("Step $step_number: Completed successfully");
-    return 1;
+    my $cmd_vars = { 
+	cmd => "./post_install",
+	success => {
+	    message => "Successfully completed the cluster install",
+	    unbusy => 1,
+	    return_status => 1,
+	},
+	failure => {
+	    message => "Failed to properly complete the cluster install; please check the logs",
+	    unbusy => 1,
+	    return_status => 0,
+	},
+    };
+    run_command($window, $step_number, $cmd_vars);
 }
 
 ###########################################################################
