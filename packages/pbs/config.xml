@@ -21,7 +21,7 @@
     <epoch>1</epoch>
   </version>
 
-  <class>included</class>
+  <class>third-party</class>
 
   <summary>OSCARified Portable Batch System base software with gui</summary>
   <license>PBS license (see PBS_License.txt)</license>
