@@ -19,8 +19,8 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   post_clients for pbs
-#                        generates pbs config files from clamdr entries
+#   post_clients for torque
+#                        generates torque config files from clamdr entries
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -227,7 +227,7 @@ foreach my $node (sortnodes( keys %pbsnodes ))
 restartPBSserver();
 
 # Next, use qmgr command to set up the values for workq
-print "Creating pbs workq queue...\n";
+print "Creating torque workq queue...\n";
  
 # These are default values set only when not present or when --default
 my @default_params = (
