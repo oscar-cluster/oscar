@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.15 2003/01/14 22:26:59 mchasal Exp $
+#   $Id: MAC.pm,v 1.16 2003/01/21 21:07:11 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.15 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.16 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -43,6 +43,9 @@ $VERSION = sprintf("%d.%02d", q$Revision: 1.15 $ =~ /(\d+)\.(\d+)/);
 #                 order will be a number
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
+
+# a variable which stores a regex of the server mac addreses
+my $SERVERMACS;
 my $ORDER = 1;
 my $COLLECT = 0;
 my $PINGPID = undef;
@@ -52,6 +55,9 @@ sub mac_window {
     my $parent = shift;
     $step_number = shift;
     my ($vars) = @_;
+
+    # init this only once, as we don't add network cards during this process
+    $SERVERMACS = set_servermacs();
 
     my $window = $parent->Toplevel;
     $window->title("MAC Address Collection");
@@ -111,6 +117,17 @@ sub mac_window {
                                     -text => "Configure DHCP Server",
                                     -command => [\&setup_dhcpd, $$vars{interface}],
                                    );
+
+    my $fileselector = $frame->FileSelect(-directory => "$ENV{HOME}");
+    my $loadbutton = $frame->Button(
+                                   -text=>"Load MACs from file",
+                                   -command=> [\&macfile_selector, "load", $fileselector, $listbox],
+                                  );
+    my $savebutton = $frame->Button(
+                                    -text => "Save MACs to file",
+                                    -command => [\&macfile_selector, "save", $fileselector, $listbox],
+                                   );
+
     my $bootfloppy = $frame->Button(
                                     -text => "Build Autoinstall Floppy",
                                     -command => sub {
@@ -127,6 +144,7 @@ sub mac_window {
 
     $start->grid($stop, $exitbutton, -sticky => "ew");
     $assignbutton->grid($deletebutton, $dhcpbutton, -sticky => "ew");
+    $loadbutton->grid($savebutton, -sticky => "ew");
     my $label2 = $frame->Label(-text => "Below are commands to create a boot environment.\nYou can either boot from floppy or network");
     $label2->grid("-","-",-sticky => "ew");
     $bootfloppy->grid($networkboot, -sticky => "ew");
@@ -342,20 +360,78 @@ sub begin_collect_mac {
     end_ping();
 }
 
+# 
+
+sub macfile_selector {
+    my ($op, $selector, $listbox) = @_;
+
+    # now we attempt to do some reasonable directory setting
+    my $dir = $ENV{HOME};
+    if(-d $dir) {
+        $selector->configure(-directory => $dir);
+    } else {
+        my $dir2 = dirname($dir);
+        if(-d $dir2) {
+            $selector->configure(-directory => $dir2);
+        }
+    }
+    my $file = $selector->Show();
+    if(!$file) {
+        return 1;
+    } 
+    if($op eq "load") {
+        load_from_file($file);
+    } elsif($op eq "save") {
+        save_to_file($file);
+    }
+    regenerate_listbox($listbox);
+    return 1;
+}
+
+sub save_to_file {
+    my $file = shift;
+    open(OUT,">$file") or croak "Couldn't open file: $file for writing";
+    print OUT "# Saved OSCAR Mac Addresses\n";
+    foreach my $mac (sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC) {
+        print OUT $mac, "\n";
+    }
+    close(OUT);
+    return 1;
+}
+
+sub load_from_file {
+    my $file = shift;
+    open(IN,"<$file") or croak "Couldn't open file: $file for reading";
+    while(<IN>) {
+        if(/^\s*\#/) {
+            next;
+        }
+        if(/^\s*([a-fA-F0-9\:]{11,17})/) {
+            my $mac = $1;
+            add_mac_to_hash($mac);
+        }
+    }
+    close(IN);
+    return 1;
+}
+
+sub set_servermacs {
+    open(CMD, "/sbin/ifconfig | grep HWaddr | tail -c 20 | sed -e 's-\:-\\\:-g' |");
+    my @hostmacs = <CMD>;
+    close CMD;
+    my $macregex = "(" . (join '|', @hostmacs) . ")";
+    return $macregex;
+}
+
 sub add_mac_to_hash {
     my $mac = shift;
     # if the mac is 00:00:00:00:00:00, it isn't real
     if($mac =~ /^[0\:]+$/) {
         return 0;
     }
-    # Get the server's MAC(s) and make them ready for regex usage
-    open(CMD, "/sbin/ifconfig | grep HWaddr | tail -c 20 | sed -e 's-\:-\\\:-g' |");
-    my @hostmacs = <CMD>;
-    close CMD;
-    foreach my $hostmac (@hostmacs) {
-      if ($mac =~ /$hostmac/) {
+    # If the MAC is the server's, then get out of here
+    if ($mac =~ /$SERVERMACS/) {
         return 0;
-      }
     }
     # if it already has an order, then we already know about it
     if($MAC{$mac}->{order}) {
