@@ -23,7 +23,7 @@ use Tk::BrowseEntry;
 use Tk::DialogBox;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
-
+use OSCAR::Network;
 my $force = $#ARGV;
 $force++;
 my $root;
@@ -75,7 +75,8 @@ sub interfaceDialog
 	       -state => 'readonly',
              );
       foreach $int (@interfaces) {
-        $entry->insert("end", "$int");
+        my ($ip,$bcast,$netmask) = interface2ip($int);
+        $entry->insert("end", "$int $ip/$netmask");
       }
       $entry->pack;
       $root->Button(
@@ -125,12 +126,12 @@ while ( !$done ) {
         "Choose your cluster interface");
     }
   } elsif ( defined($interface) ) {
-    database_execute_command("modify_records oscar.interface~$interface", undef, 1);
+    $interface =~ /^(\S*)\s.*$/;
+    database_execute_command("modify_records oscar.interface~$1", undef, 1);
     $done = 1;
   } else {
     $cluster_interface = interfaceDialog("OSCAR Network Interface",
         "Choose your cluster interface");
   }
 }
-print "interface: $interface\n";
 exit 0;
