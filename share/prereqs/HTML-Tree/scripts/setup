@@ -7,19 +7,28 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.1 2003/07/04 14:41:47 jsquyres Exp $
+# $Id: setup,v 1.2 2003/07/23 15:58:52 brechin Exp $
 #
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use Carp;
+use OSCAR::Distro;
 
 # Version included in media directory
 
 my $ver = "3.14";
 my $real_name = "HTML-Tree";
 my $module_name = "HTML::Tree";
+my ( $distn, $distv ) = which_distro_server();
+
+if ( $distn eq 'mandrake' ) {
+  if ( system("rpm --quiet -q perl-devel") != 0 ) {
+    !system("rpm -Uvh /tftpboot/rpm/perl-devel-*.rpm") || croak "Couldn't install perl-devel!";
+  }
+}
+
 
 # Helper subroutine
 
