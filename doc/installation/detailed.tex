@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.56 2003/02/11 21:46:57 mchasal Exp $
+% $Id: detailed.tex,v 1.57 2003/02/25 13:50:19 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -827,6 +827,7 @@ you want to create.
 
   \begin{figure}[htbp]
     \begin{center}
+      % JMS Need this one with right net numbers and domainname
       \includegraphics[scale=\imgscale]{figs/5a_sbs-define-clients1}
       \caption{Define the Clients.}
       \label{fig:detailed-define-clients}
@@ -876,24 +877,60 @@ therefore have an address of the form 192.168.2.x.  And so on.
 In order to collect the MAC addresses, press the \button{Setup
   Networking} button. The OSCAR network utility dialog box will be
 displayed.  To use this tool, you will need to know how to network
-boot your client nodes.  \detailed{For instructions on doing so, see
-  Appendix~\ref{app:net-boot-client-nodes}. A sample dialog is shown
-  in Figure~\ref{fig:detailed-collect-mac}.}
+boot your client nodes, or have a file that lists all the MACs from
+your cluster.  \detailed{For instructions on doing network booting,
+  see Appendix~\ref{app:net-boot-client-nodes}. A sample dialog is
+  shown in Figure~\ref{fig:detailed-collect-mac}.}
 
-To start the collection, press the \button{Collect MAC Address} button
-and then network boot the first client.  As the clients boot up, their
-MAC addresses will show up in the left hand window. Select a MAC
-address and the appropriate client in the right side window. Click
-\button{Assign MAC to Node} to associate that MAC address with that
-node. If you would like to make specific nodes associated with
-specific client definitions, you should boot them one at a time. If
-you do not care which node gets associated with which client, you may
-boot them all at once and randomly assign the MAC addresses.
+If you need to collect the MACs in your cluster, start the collection
+by pressing the \button{Collect MAC Address} button and then network
+boot the first client.  As the clients boot up, their MAC addresses
+will show up in the left hand window. You have multiple options for
+assigning MACs to nodes; you can either:
 
-When you have collected all of the MAC addresses, click the
-\button{Stop Collecting} button and then click the \button{Configure
-  DHCP Server} button to configure the DHCP server.
- 
+\begin{itemize}
+\item manually select MAC address and the appropriate client in the
+  right side window. Click \button{Assign MAC to Node} to associate
+  that MAC address with that node.
+  
+\item click \button{Assign all MACs} button to assign all the MACs in
+  the left hand window to all the open nodes in the right hand window.
+\end{itemize}
+
+\noindent Some notes that are relevant to collecting MAC addresses from the
+network:
+
+\begin{itemize}
+\item The \button{Dynamic DHCP Update} checkbox at the bottom right of
+  the window controls refreshing the DHCP server.  If it is selected
+  (the default), the DHCP server configuration will be refreshed each
+  time a MAC is assigned to a node.  If it is off, you will need to
+  click the \button{Configure DHCP Server} (at least once) to give it
+  the associations between MACs and IP addresses.
+  
+\detailed {  
+\item To remove extraneous MAC addresses from the left hand window
+  (e.g., if the collector finds MACs that are not part of your
+  cluster), select the address and click on the \button{Remove}
+  button.  Or click on the \button{Remove All} button to remove all of
+  them.
+
+\item At any time, you may click on the \button{Export MACs to
+    file...} button to save the MAC address list to a file.  If you
+    need to re-run the OSCAR installation, you can later click on
+    \button{Import MACs from file...} to import this file rather than
+    re-collecting all the MACs.
+
+\item When you have collected all of the MAC addresses, click the
+  \button{Stop Collecting MACs} button.  If you do not have
+  \button{Dynamic DHCP update} selected, you need to click the
+  \button{Configure DHCP Server} button to configure the DHCP server.
+}
+
+\item You {\em must} click on the \button{Stop Collecting MACs} before
+  closing the MAC Address Collection window!
+\end{itemize}
+
 You may also configure your remote boot method from this panel. The
 \button{Build Autoinstall Floppy} button will build a boot floppy for
 client nodes that do not support PXE booting. The \button{Setup
@@ -908,6 +945,7 @@ requests if your client hardware supports it. \detailed{See
 
   \begin{figure}[htbp]
     \begin{center}
+      % JMS Need this one with right net numbers and domainname
       \includegraphics[scale=\imgscale]{figs/6e_sbs-found-mac}
       \caption{Collect client MAC addresses.}
       \label{fig:detailed-collect-mac}
