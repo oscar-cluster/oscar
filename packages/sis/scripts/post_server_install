@@ -20,5 +20,7 @@
 use strict;
 use Carp;
 
+systemimager-init-script.patch.sh
+
 !system("service systemimager restart") or croak("Couldn't restart systemimager");
 

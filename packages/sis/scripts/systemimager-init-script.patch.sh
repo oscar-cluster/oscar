@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-#   $Id: systemimager-init-script.patch,v 1.1 2003/02/11 19:48:56 brianfinley Exp $
+#   $Id: systemimager-init-script.patch.sh,v 1.1 2003/02/11 20:06:21 brianfinley Exp $
 #
 
 DIR=`pwd`
@@ -25,8 +25,8 @@ exit 0
  #   Hacked for rsync as used by SystemImager
  #       by Brian Finley <bef@bgsw.net>.
  #
--#   $Id: systemimager-init-script.patch,v 1.1 2003/02/11 19:48:56 brianfinley Exp $
-+#   $Id: systemimager-init-script.patch,v 1.1 2003/02/11 19:48:56 brianfinley Exp $
+-#   $Id: systemimager-init-script.patch.sh,v 1.1 2003/02/11 20:06:21 brianfinley Exp $
++#   $Id: systemimager-init-script.patch.sh,v 1.1 2003/02/11 20:06:21 brianfinley Exp $
  #
  #
  # Support for IRIX style chkconfig:
