@@ -62,8 +62,8 @@ if [ -f mpichtest.err ]; then /bin/rm -f mpichtest.err; fi
 job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.mpich`
 sleep 10
 while [ ! -f mpichtest.out ]; do sleep 10; done
-if [ ! -s mpichtest.out ]; then
-  echo "MPICH test failed - output file empty"
+if [ -s mpichtest.err ]; then
+  echo "MPICH test failed - error file not empty"
   echo "Contents of mpichtest.err:"
   cat mpichtest.err
   echo
@@ -77,12 +77,12 @@ echo
 echo "Running a simple LAM/MPI job under PBS..."
 if [ -f lamtest.out ]; then /bin/rm -f lamtest.out; fi
 if [ -f lamtest.err ]; then /bin/rm -f lamtest.err; fi
-export MPI=/opt/lam-6.5.3
+export MPI=/opt/lam-6.5.5
 job=`$qsub -l nodes=$clients:ppn=$ppn pbs_script.lam`
 sleep 10
 while [ ! -f lamtest.out ]; do sleep 10; done
-if [ ! -s lamtest.out ]; then
-  echo "LAM/MPI test failed - output file empty"
+if [ -s lamtest.err ]; then
+  echo "LAM/MPI test failed - error file not empty"
   echo "Contents of lamtest.err:"
   cat lamtest.err
   echo
