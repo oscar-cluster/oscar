@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile,v 1.4 2001/12/17 22:41:58 mchasal Exp $
+# $Id: Makefile,v 1.5 2001/12/18 17:06:51 mchasal Exp $
 #
 # $COPYRIGHT$
 #
@@ -41,6 +41,8 @@ PNG_FIG_FILES	= \
 		oscar-wizard.png \
 		collect-mac.png \
 		define-clients.png \
+		build-image.png \
+		setup-test.png
 
 # SBS (Screen-by-Screen) figures
 
@@ -63,6 +65,13 @@ SBS_FIG_FILES	= \
 		sbs-wizard-step5.png \
 		sbs-test1.png \
 		sbs-test2.png \
+		sbs-download.png \
+		sbs-unpack.png \
+		sbs-client-boot.png \
+		sbs-client-broadcast.png \
+		sbs-client-answer.png \
+		sbs-client-diskpar.png \
+		sbs-client-finished.png \
 		sbs-post-install.png
 
 
