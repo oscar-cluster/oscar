@@ -9,7 +9,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.23 2003/07/16 01:11:10 tfleury Exp $
+# $Id: opd,v 1.24 2003/07/17 20:44:43 jsquyres Exp $
 #
 
 use strict;
@@ -28,6 +28,21 @@ use Data::Dumper;
 # First of all, enforce that the user running this script is 'root'
 # This is necessary for access to /var/cache/oscar/downloads
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
+
+# Lame hack to set the locale to "C".  If we don't do this, then
+# functions like length() may barf on the downloaded binary data
+# because they may not conform to the locale's conception of valid
+# characters.  I tried using the setlocale() function, but couldn't
+# get that to work.  So just reset the LC_ALL environment variable and
+# re-exec.  Sigh.
+
+if (($ENV{LC_ALL} && $ENV{LC_ALL} ne "C") ||
+    ($ENV{LANG} && $ENV{LANG} ne "C")) {
+    $ENV{LC_ALL} = "C";
+    $ENV{LANG} = "C";
+    exec($0, @ARGV) || 
+	die("Could not re-exec to reset the locale properly!\n");
+}
 
 # Setup some global variables
 
