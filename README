@@ -1,4 +1,4 @@
-$Id: README,v 1.10 2002/02/11 19:30:05 bwbarrett Exp $
+$Id: README,v 1.11 2002/04/05 18:05:55 sdague Exp $
 
 $COPYRIGHT$
 
@@ -11,10 +11,21 @@ doc/install.pdf.
 
 
 ***************************************************************
-Notes on the 1.2.1 release
+Notes on the 1.3b1 release
 ***************************************************************
 
-There are some limitations to the 1.2.1 release, they are:
+There are some limitations to the 1.3b1 release, they are:
 
 - You MUST specify a domain name for your clients when defining them.
+
+- If the image build fails during install on Red Hat 7.2 there are
+  2 possible fixes:
+
+  1) edit /etc/systeminstaller/systeminstaller.conf to change
+       pkginstfail=    1
+     to
+       pkginstfail=    0
+
+  2) update rpm to rpm-4.0.4-7x which is in the Red Hat updates
+     for 7.2
 
