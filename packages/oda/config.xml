@@ -1238,7 +1238,7 @@
           nodes.name=%1
           nics.name=%2
           networks.name=%3
-          nics.node_id~nodes.id
+          nics.node_id=nodes.id
           nics.network_id~networks.id
         </expansion>
       </shortcut>
