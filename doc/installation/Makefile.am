@@ -1,17 +1,10 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.2 2001/12/19 15:34:00 mchasal Exp $
+# $Id: Makefile.am,v 1.3 2001/12/22 01:05:24 jsquyres Exp $
+# 
+# This file is part of the OSCAR distribution.
+# See the copyright and license notices in the top-level directory.
 #
-# $COPYRIGHT$
-#
-
-LATEX		= latex
-PDFLATEX	= pdflatex
-FIG2DEV		= fig2dev
-DVIPS		= dvips
-EPS2PDF		= epstopdf
-PNGTOPNM	= pngtopnm
-PNMTOPS		= pnmtops -noturn
 
 # The top-level file.
 
