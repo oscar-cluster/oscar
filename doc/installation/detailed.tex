@@ -7,7 +7,7 @@
 % information, see the COPYING file in the top level directory of the
 % OSCAR source distribution.
 %
-% $Id: detailed.tex,v 1.65 2003/11/17 06:37:59 bernardli Exp $
+% $Id: detailed.tex,v 1.66 2003/11/21 07:23:38 bernardli Exp $
 %
 % $COPYRIGHT$
 %
@@ -224,7 +224,9 @@ assume that you downloaded the OSCAR distribution package to
 %TJN: intentionally not using oscarversion 
 Starting with OSCAR 2.3, after unpacking the tarball you will need to
 configure and install OSCAR.  The configure portion sets up the release to
-be permantently installed on the system in \file{/opt/oscar} (default
+\begchange
+be permanently installed on the system in \file{/opt/oscar} (default
+\endchange
 location).  The {\tt --prefix=\emph{ALT-DIR}} $\,$ flag can be used to
 configure and install OSCAR into an alternate directory.  
 
@@ -436,7 +438,7 @@ A lot of output will be displayed in the console window where you
 invoked \cmd{install\_cluster}.  This reflects normal operational
 output from the various installation commands that OSCAR executes.
 The output is also saved in the file \file{oscarinstall.log} for later
-reference (particularly if something goes during during the
+reference (particularly if something goes wrong during during the
 installation).
   
 After the steps listed above have successfully finished, the OSCAR
@@ -1044,6 +1046,12 @@ Since this new feature is still in its early stage, we recommend only the
 adventurous to try it as it may not work on all networking gear.  Some
 have reported favorable results with the Force10 and HP 4000M network
 switches.
+
+Incase you cannot get this feature working and want to switch back to 
+using rsync, simply go back to the \button{Setup Networking} menu, make
+sure that the \button{Enable Multicasting} checkbox is disabled (should be
+disabled by default) and then click on \button{Configure DHCP Server} -
+this should revert back to the default settings.
 \endchange
 
 \detailed{
