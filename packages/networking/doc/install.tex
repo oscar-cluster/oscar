@@ -1,0 +1,18 @@
+% -*- latex -*-
+%
+% $Id: install.tex,v 1.1 2003/01/28 19:35:55 brechin Exp $
+%
+% $COPYRIGHT$
+%
+
+\subsection{Networking Package}
+\label{app:networking-overview}
+
+The networking package was created to set up the OSCAR server as a caching 
+nameserver and/or set the clients' DNS server.  
+
+By default, this package will set up a caching nameserver on the OSCAR server.
+If chosen in the configurator, this package will set the nameserver entry in
+the clients' \begin{verbatim} /etc/resolv.conf \end{verbatim}.  If the clients
+are pointed to an external (i.e. not in the cluster) DNS server, then their
+networking options (esp. gateway) are set properly.
