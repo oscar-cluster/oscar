@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.37 2002/07/20 15:11:18 jsquyres Exp $
+% $Id: detailed.tex,v 1.38 2002/07/20 17:20:35 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -49,7 +49,7 @@ since OSCAR will install all the software on which it depends.  The
 main Linux installation requirement is that some X windowing
 environment such as GNOME or KDE must be installed.  Typically, a
 ``Workstation'' install with the ``Software Development Tools'' group
-added yeilds a sufficient installation for OSCAR to install
+added yields a sufficient installation for OSCAR to install
 successfully.
 
 If you install RedHat on the server node, during the installation you
@@ -57,7 +57,7 @@ do not need to install the \rpmname{ipchains}-based firewall that is
 included with the RedHat distribution, because OSCAR will install an
 \rpmname{iptables} based packet filtering firewall named
 \rpmname{pfilter} which is more versatile.  OSCAR does not turn on
-\rpmname{pfilter} by default, however.  If the Redhat
+\rpmname{pfilter} by default, however.  If the RedHat
 \rpmname{ipchains} based firewall is installed, the OSCAR installation
 will fail.
 
@@ -213,14 +213,14 @@ The following major requirements need to be satisfied:
 install OSCAR -- choose another name that does not include any
 underscores (``{\tt \_}'').
 
-\paragraph{Public adaptor.}  This is the adaptor that connects the
+\paragraph{Public adapter.}  This is the adapter that connects the
 server node to a public network.  Although it is not required to have
-such an adaptor, if you do have one, you must configure it as
+such an adapter, if you do have one, you must configure it as
 appropriate for the public network (you may need to consult with your
 network administrator).
 
-\paragraph{Private adaptor.}  This is the adaptor connected to
-the TCP/IP network with the rest of the cluster nodes.  This adaptor
+\paragraph{Private adapter.}  This is the adapter connected to
+the TCP/IP network with the rest of the cluster nodes.  This adapter
 must be configured as follows:
 
 \begin{itemize}
@@ -425,7 +425,7 @@ the image is complete.  There is a lot of output in the console window
 during this process. There may be some messages that look like 
 fatal errors, usually, unless the entire image build fails, these can 
 be ignored. If building the image does fail, look through the console output
-for some indication why (prereq failure, ran out of disk space, missing
+for some indication why (prerequisite failure, ran out of disk space, missing
 package file,...) and see Section
 \ref{sec:release-notes}.
   
@@ -537,7 +537,7 @@ to specifies how many clients you want to create.
   end of it. This name \emph{cannot} contain an underscore 
   character "\_".
 
-\item The \field{Number of Hosts} field specifys how many clients to
+\item The \field{Number of Hosts} field specifies how many clients to
   create.
   
 \item The \field{Starting Number} specifies the index to append to the
@@ -697,7 +697,7 @@ and re-initialization functions.
 
 Note that any users created on the server after the OSCAR installation
 will not be in the password/group files of the clients until they have
-been synced with the server -- you can accomplish this using the C3
+been synchronized with the server -- you can accomplish this using the C3
 \cmd{cpush} tool (see the \cmd{cpush(1)} man page).
 
 
@@ -837,3 +837,5 @@ ways:
   intuitive, this may include the shell was that initially used to
   install the previous OSCAR installation.
 \end{enumerate}
+
+% LocalWords:  Exp
