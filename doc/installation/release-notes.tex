@@ -75,7 +75,18 @@ The following release notes apply to OSCAR version \oscarversion.
   for these notes.}
 
 \item All nodes must have a hostname other than ``{\tt localhost}''
-  that does not contain any underscores (``{\tt \_}'').
+  that does not contain any underscores (``{\tt \_}'') or periods ``{\tt
+  .}''.  Some distributions complicate this by putting a line such
+  as as the following in /etc/hosts:
+  \begin{verbatim}
+    127.0.0.1   localhost.localdomain   localhost
+    yourhostname.yourdomain    yourhostname
+  \end{verbatim}
+  If this occurs the file should be separated as follows:
+  \begin{verbatim}
+  127.0.0.1 localhost.localdomain localhost
+  192.168.0.1 yourhostname.yourdomain yourhostname
+  \end{verbatim}
 
 \item A domain name must be specified for the client nodes when
   defining them.
@@ -115,10 +126,11 @@ The following release notes apply to OSCAR version \oscarversion.
   It is safe to ignore these messages.
 
 \item The OSCAR installer will install the MySQL package on the server
-  node if it is not already installed.  A password will be automatically
+  node if it is not already installed.  A random password will be automatically
 
   generated for the oscar user to access the oscar database.  This
-  password will be stored in the file \file{/etc/odapw}.
+  password will be stored in the file \file{/etc/odapw}.  It should
+  not be needed by other users.
 \endchange
 
 \item The OSCAR installer GUI provides little protection for user

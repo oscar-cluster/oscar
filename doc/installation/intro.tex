@@ -13,19 +13,22 @@
 %
 
 \section{Introduction}
+OSCAR version \oscarversion is a snapshot of the best known methods
+for building, programming, and using clusters. It consists of a
+fully integrated and easy to install software bundle designed for
+high performance cluster computing (HPC). Everything needed to
+install, build, maintain, and use a modest sized Linux cluster is
+included in the suite, making it unnecessary to download or even
+install any individual software packages on your cluster.
 
-The OSCAR (Open Source Cluster Application Resource) software package
-is intended to simplify the complex tasks required to install a
-cluster.  While the usual intended use for OSCAR clusters is for
-high-performance computing (HPC), OSCAR clusters can be used for any
-cluster-enabled kinds of applications.  Note that since OSCAR is aimed
-towards HPC, several HPC-related packages are installed by default,
-such as popular MPI implementations, PVM, PBS, etc.
+OSCAR is the first project by the Open Cluster Group. For more
+information on the group and its projects, visit its website
+\url{http://www.OpenClusterGroup.org/}.
 
 This document provides a step-by-step installation guide for system
-administrators, as well as a detailed explanation of what is happening
-as you install.  Note that this installation guide is specific to
-OSCAR version \oscarversion.
+administrators, as well as a detailed explanation of what is
+happening as you install.  Note that this installation guide is
+specific to OSCAR version \oscarversion.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -56,8 +59,8 @@ responsible for servicing the requests of \term{client} nodes.  A
 An OSCAR cluster consists of one server node and one or more client
 nodes, where all the client nodes [currently] must have homogeneous
 hardware.  The software contained within OSCAR does support doing
-multiple cluster installs from the same server, but no documentation
-is provided on how to do so.
+multiple cluster installs from the same server, but that process is
+outside the scope of this guide.
 
 An \term{OSCAR package} is a set of files that is used to install a
 software package in an OSCAR cluster.  An OSCAR package can be as

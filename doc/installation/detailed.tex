@@ -20,9 +20,9 @@ All actions specified below should be performed by the \user{root}
 user on the server node unless noted otherwise.  Note that if you
 login as a regular user and use the \cmd{su} command to change to the
 \user{root} user, you {\em must} use ``\cmd{su -}'' to get the full
-\user{root} environment.  Using ``\cmd{su}'' (with no arguments) may
-not be sufficient, and may cause obscure errors during an OSCAR
-installation.
+\user{root} environment.  Using ``\cmd{su}'' (with no arguments) is
+not sufficient, and will cause obscure errors during an
+OSCAR installation.
 
 Note that all the steps below are mandatory unless explicitly marked
 as optional.
@@ -63,9 +63,8 @@ dependent on those distributions.
   ``custom'' install since OSCAR will usually install all the software
   on which it depends.  The main Linux installation requirement is
   that some X windowing environment such as GNOME or KDE must be
-  installed.  Typically, a ``Workstation'' install with the ``Software
-  Development Tools'' group added yields a sufficient installation for
-  OSCAR to install successfully.}
+  installed.  Typically, a ``Workstation'' install yields a sufficient
+  installation for OSCAR to install successfully.}
 
 It is best to {\em not} install distribution updates after you install
 Linux; doing so may disrupt some of OSCAR's RPM dependencies.
@@ -138,7 +137,12 @@ package).
 Place the OSCAR distribution package in a directory such as
 \user{root}'s home directory on the server node.  Although there is no
 required installation directory (note that you may not use the
+<<<<<<< .mine
+\begchange
 directory \file{/usr/local/oscar}, \file{/opt/oscar},
+=======
+directory \file{/usr/local/oscar}, \file{/opt/oscar},
+>>>>>>> .r3028
 \file{/var/lib/oscar}, or \file{/var/cache/oscar}  -- they are
 reserved for use by OSCAR), the rest of these instructions will
 assume that you downloaded the OSCAR distribution package to
@@ -219,6 +223,16 @@ assume that you downloaded the OSCAR distribution package to
 \subsubsection{Configure and Install OSCAR}
 \label{det:configure-install}
 
+<<<<<<< .mine
+%TJN: intentionally not using oscarversion
+Starting with OSCAR 2.3, after unpacking the tarball you will need to
+configure and install OSCAR.  The configure portion sets up the release to
+\begchange
+be permanently installed on the system in \file{/opt/oscar} (default
+\endchange
+location).  The {\tt --prefix=\emph{ALT-DIR}} $\,$ flag can be used to
+configure and install OSCAR into an alternate directory.
+=======
 %TJN: intentionally not using oscarversion
 Starting with OSCAR 2.3, after unpacking the tarball you will need
 to configure and install OSCAR.  The configure portion sets up the
@@ -226,6 +240,7 @@ release to be permanently installed on the system in
 \file{/opt/oscar} (default location).  The {\tt
 --prefix=\emph{ALT-DIR}} $\,$ flag can be used to configure and
 install OSCAR into an alternate directory.
+>>>>>>> .r3028
 
 The first step is to run the \file{configure} script, which is provided in
 the top-level directory of the OSCAR release.
@@ -234,13 +249,14 @@ the top-level directory of the OSCAR release.
           \# cd /root/oscar-\oscarversion \\
   \indent \# ./configure }  \vspace{11pt}
 
-Once the configure script sucessfully completes you are ready to actually
-install OSCAR on the server.  At this point no changes have been made to
-the system beyond the \file{oscar-\oscarversion} directory itself.  Running
-the following will copy the files to the system.  The files copied will
-include the base OSCAR toolkit as well as startup scripts for the
-\file{profile.d/} area.  The startup scripts add OSCAR to your path and set
-environment variables like {\tt OSCAR\_HOME}.
+Once the configure script successfully completes you are ready to
+actually install OSCAR on the server.  At this point no changes have
+been made to the system beyond the \file{oscar-\oscarversion}
+directory itself.  Running the following will copy the files to the
+system.  The files copied will include the base OSCAR toolkit as
+well as startup scripts for the \file{profile.d/} area.  The startup
+scripts add OSCAR to your path and set environment variables like
+{\tt OSCAR\_HOME}.
 
   \vspace{11pt} {\tt
   \indent \# make install} \vspace{11pt}
@@ -280,7 +296,25 @@ The following major requirements need to be satisfied:
 \paragraph{Hostname.} Most Linux distributions default to the hostname
 ``{\tt localhost}'' (or ``{\tt localhost.localdomain}'').  This must
 be changed in order to successfully install OSCAR -- choose another
-name that does not include any underscores (``{\tt \_}'').
+name that does not include any underscores (``{\tt \_}'').  This may
+involve editing /etc/hosts by hand as some distributions hide the
+lines involving ``{\tt localhost}'' in their graphical configuration
+tools.  Do not remove all reference to ``{\tt localhost} from
+/etc/hosts as this will cause no end of problems.
+
+For example if your distribution automatically generates the
+/etc/hosts file:
+  \begin{verbatim}
+    127.0.0.1   localhost.localdomain   localhost
+    yourhostname.yourdomain    yourhostname
+  \end{verbatim}
+  This file should be separated as follows:
+  \begin{verbatim}
+  127.0.0.1 localhost.localdomain localhost
+  192.168.0.1 yourhostname.yourdomain yourhostname
+  \end{verbatim}
+  Additional lines may be needed if more than one network adapter
+  is present.
 
 \paragraph{Public adapter.}  This is the adapter that connects the
 server node to a public network.  Although it is not required to have
@@ -338,18 +372,28 @@ must be configured as follows:
 \subsubsection{Copy distribution installation RPMs to \file{/tftpboot/rpm}}
 \label{det:rpmcopy}
 
-In this step, you need to copy the RPMs included with your Linux
-distribution into the \file{/tftpboot/rpm} directory.  When each CD is
-inserted, Linux usually automatically makes the contents of the CD be
-available in the \file{/mnt/cdrom} directory (you may need to execute
-a command such as ``\cmd{mount /mnt/cdrom}'' if the CD does not mount
+In this step, you need to copy all the RPMs included with your Linux
+distribution into the \file{/tftpboot/rpm} directory.  Most
+distributions have more RPMs than are generally necessary for
+installation, it is important that the RPMs from all the
+installation discs are included. When each CD is inserted, Linux
+usually automatically makes the contents of the CD be available in
+the \file{/mnt/cdrom} directory (you may need to execute a command
+such as ``\cmd{mount /mnt/cdrom}'' if the CD does not mount
 automatically).
 
 \detailed{
+<<<<<<< .mine
+
+  For each CD, locate the directory that contains the RPMs.  In Fedora Core
+  distributions, the RPMs are located in the \file{Fedora/RPMS} directory (i.e.,
+  \file{/mnt/cdrom/Fedora/RPMS}).  Copy the RPMS into the
+=======
 
   For each CD, locate the directory that contains the RPMs.  In RedHat
   7.x, the RPMs are located in the \file{RedHat/RPMS} directory (i.e.,
   \file{/mnt/cdrom/RedHat/RPMS}).  Copy the RPMS into the
+>>>>>>> .r3028
   \file{/tftpboot/rpm} directory with a command such as~\footnote{It may be
    helpful to use \cmd{rsync} for these mass copies to ensure the integrity of
    the data (at a cost of longer transfer times).  For example replace
@@ -470,6 +514,23 @@ installation wizard GUI will automatically be launched.
 \optional
 
 The first step of the Wizard, ``Step 0'', enables you to download
+<<<<<<< .mine
+additional packages.
+The OSCAR Package Downloader (OPD) is a unified method of downloading
+OSCAR packages and inserting them in the OSCAR installation hierarchy
+so that they will be installed during the main OSCAR installation
+process.  The Wizard uses a GUI frontend to OPD affectionately known as
+\emph{OPDer}.  The addition of this frontend limits the need for direct
+access to the command-line OPD tool directly.\footnote{Note, if using OPD
+directly, the packages must be downloaded before the \button{Select OSCAR
+Packages To Install} step (see Section~\ref{det:select-packages}) .}
+\begchange
+If you would like to add additional repository URLs for testing
+purposes, you can do this by accessing the \button{File} menu and then
+choosing \button{Additional Repositories...}.
+The remainder of this sub-section describes the underlying OPD tool.
+\endchange
+=======
 additional packages. The OSCAR Package Downloader (OPD) is a unified
 method of downloading OSCAR packages and inserting them in the OSCAR
 installation hierarchy so that they will be installed during the
@@ -483,6 +544,7 @@ would like to add additional repository URLs for testing purposes,
 you can do this by accessing the \button{File} menu and then
 choosing \button{Additional Repositories...}. The remainder of this
 sub-section describes the underlying OPD tool.
+>>>>>>> .r3028
 
 \quick{The command-line OPD can be launched outside of the GUI Wizard by
   running the command \cmd{opd} from the top-level OSCAR \file{scripts}
@@ -505,6 +567,11 @@ sub-section describes the underlying OPD tool.
   ``{\tt --lwp}'' is given on the command line.  LWP may be used in
   order to utilize a proxy, for example.  See the {\tt LWP::UserAgent}
   documentation for details on how to use proxies through LWP.
+
+OPD also will make use of the ``{\tt http_proxy}'' environment
+variable if it is set, as will many other shell applications.  Refer
+to the related man pages for the proper methods of setting these
+environment variables.
 
 OPD requires some Perl modules to be installed before running.  If
 they are not installed, you will receive a detailed error message
@@ -556,7 +623,12 @@ Packages to install on the cluster.
   When you click on the button, a window similar to the one shown in
   Figure~\ref{fig:detailed-package-selection} appears.  Each of the
   packages that the OSCAR installer has found are listed in the main
+<<<<<<< .mine
   frame.
+\begchange
+=======
+  frame.
+>>>>>>> .r3028
   Core packages must be installed and cannot be unselected.  Included
   packages can be unselected if desired.
 
@@ -570,10 +642,18 @@ Packages to install on the cluster.
 
   Note that this window only shows {\em OSCAR packages} -- it does not
   show individual RPMs.
+<<<<<<< .mine
+
+  Once you have a selected a set of OSCAR packages to install, click
+\begchange
+  on the \button{Exit} button to save your selections and
+  return to the main OSCAR window.  Note that closing the window yields
+=======
 
   Once you have a selected a set of OSCAR packages to install, click on
   the \button{Exit} button to save your selections and return to the
   main OSCAR window.  Note that closing the window yields
+>>>>>>> .r3028
   the same result and there is no way of `defaulting' to the original
   settings, so make sure your package list is complete before proceeding to
   the next step.
@@ -613,6 +693,10 @@ window listing all the packages that can be configured.
   default settings, simply click on the \button{Default Configuration}
   button and then the \button{Save} button to revert to the original
   settings.
+<<<<<<< .mine
+\endchange
+=======
+>>>>>>> .r3028
 
   This step is optional.  If you do not click on the \button{Configure
     Selected OSCAR Packages} button, defaults for all packages will be
@@ -715,8 +799,13 @@ the IP assignment methods.  \msg{It is important to note that if you
   you should not use automatic reboot.}
 
 \detailed{
+<<<<<<< .mine
+
+  Building the image may take several minutes; the green progress bar on
+=======
 
   Building the image may take several minutes; the red progress bar on
+>>>>>>> .r3028
   the bottom of the window will indicate how far along the process is.
 
   There is a lot of output in the console window during the build.  It
@@ -847,8 +936,13 @@ you want to create.
 
 \item The \field{Base name} field is used to specify the first part of
   the client name and hostname. It will have an index appended to the
+<<<<<<< .mine
+  end of it. {\bf This name \emph{cannot} contain an underscore
+  character ``\_'' or a period ``.''.}
+=======
   end of it. This name \emph{cannot} contain an underscore
   character ``\_''.
+>>>>>>> .r3028
 
 \item The \field{Number of Hosts} field specifies how many clients to
   create.  {\bf This number must be greater than 0.}
@@ -1007,17 +1101,30 @@ network:
   closing the MAC Address Collection window!
 \end{itemize}
 
-You may also configure your remote boot method from this panel. The
-\button{Build Autoinstall Floppy} button will build a boot floppy for
-client nodes that do not support PXE booting. The \button{Setup
-  Network Boot} button will configure the server to answer PXE boot
-requests if your client hardware supports it. \detailed{See
-  Appendix~\ref{app:net-boot-client-nodes} for more details.}
+This menu also allows you to choose your remote boot method.  You
+should do one of two things after collecting your MAC addresses but
+before leaving the menu:
 
+<<<<<<< .mine
+\begin{itemize}
+\item The \button{Build Autoinstall Floppy} button will build a boot floppy
+   for client nodes that do not support PXE booting.
+\item The \button{Setup Network Boot} button will configure the server
+   to answer PXE boot requests if your client hardware supports it.
+   \detailed{See Appendix~\ref{app:net-boot-client-nodes} for more
+   details.}
+\end{itemize}
+=======
 
 If your network switch supports multicasting, there is a new feature in
 OSCAR 3.0 which uses multicast to push files to the clients.  To enable
 this feature simply click on the \button{Enable Multicasting} checkbox.
+>>>>>>> .r3028
+
+\begchange If your network switch supports multicasting, there is a
+new feature in OSCAR 3.0 which uses multicast to push files to the
+clients as part of the Network Boot option.  To enable this feature
+simply click on the \button{Enable Multicasting} checkbox.
 
 Once this feature is enabled, rsync will not be used for file distribution
 but instead by a program called Flamethrower which is bundled with
@@ -1028,12 +1135,21 @@ adventurous to try it as it may not work on all networking gear.  Some
 have reported favorable results with the Force10 and HP 4000M network
 switches.
 
+<<<<<<< .mine
+Incase you cannot get this feature working and want to switch back to
+using rsync, simply go back to the \button{Setup Networking} menu, make
+sure that the \button{Enable Multicasting} checkbox is disabled (should be
+disabled by default) and then click on \button{Configure DHCP Server} -
+this should revert back to the default settings.
+\endchange
+=======
 Incase you cannot get this feature working and want to switch back
 to using rsync, simply go back to the \button{Setup Networking}
 menu, make sure that the \button{Enable Multicasting} checkbox is
 disabled (should be disabled by default) and then click on
 \button{Configure DHCP Server} - this should revert back to the
 default settings.
+>>>>>>> .r3028
 
 \detailed{
 
@@ -1119,7 +1235,10 @@ to simply reset or power cycle them.
 
 Press the \button{Complete Cluster Setup} button.  This will run the
 final installation configurations scripts from each OSCAR software
-package, and perform various cleanup and re-initialization functions.
+package, and perform various cleanup and re-initialization
+functions.  This step can be repeated should networking problems or
+other types of errors prevent it from being successful the first
+time.
 
 \detailed{
 
@@ -1269,6 +1388,12 @@ press \button{Close}.
 \subsection{Install/Uninstall OSCAR Packages}
 \label{det:install-uninstall-packages}
 
+<<<<<<< .mine
+The package installation system is designed to help simplify adding
+and removing OSCAR packages after the initial system installaion.
+The system is fairly straightforward for the user as packages are
+selected for the appropriate action from the wizard.
+=======
 The package installation system is a new feature in OSCAR 3.0 and is
 designed to help simplify adding and removing OSCAR packages after
 the initial system installation.  The system is fairly
@@ -1277,14 +1402,15 @@ appropriate action from the wizard. This is the first release to
 support package install and uninstall from the Wizard therefore some
 general background is provided to assist the user if problems are
 encountered.
+>>>>>>> .r3028
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Selecting the Right Package}
 \label{det:select-package}
 
-Because of the way OSCAR handles packages, two packages of the same name
-cannot currently c-exist nicely on the system.  Packages can be in one of
-two spots:
+Because of the way OSCAR handles packages, two packages of the same
+name cannot currently coexist nicely on the system.  Packages can be
+in one of two spots:
 
 \begin{enumerate}
 
@@ -1336,9 +1462,9 @@ second attempt to install will probably fail even if the server's problem
 is resolved.
 
 The reason for this is that something happened on the clients and it
-succeeded, probably RPM's were installed.  So the second time you go to
-install the package, the \file{rpm -Uvh} command on the nodes will fail.
-A \file{-f} flag is avoided.
+succeeded, probably RPM's were installed.  So the second time you go
+to install the package, the \file{rpm -Uvh} command on the nodes
+will fail.
 
 So, what do you do?
 
@@ -1374,6 +1500,10 @@ Some amount of trouble was taken to insure that decent debugging output
 was printed to the log -- making best use of this output is your best bet
 in an error case.
 
+<<<<<<< .mine
+\endchange
+=======
+>>>>>>> .r3028
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
