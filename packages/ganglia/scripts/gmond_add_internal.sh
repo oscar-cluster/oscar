@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_add_internal.sh,v 1.2 2002/08/31 18:17:29 bligneri Exp $
+# $Id: gmond_add_internal.sh,v 1.3 2002/10/31 18:49:23 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -20,23 +20,47 @@
 #   in it's init script
 #   Steven A. DuChene  <linux-clusters@mindspring.com>
 
-grep -q OSCAR /etc/init.d/gmond 
+# the following is for the old version of ganglia-monitor-core
+# may need some of this later to work on oscar upgrade stuff
+
+#grep -q OSCAR /etc/init.d/gmond 
+
+#if [ $? = 0 ]; then
+#    echo "/etc/init.d/gmond is already modified with internal interface"
+#    exit 0
+#elif [ -z $OSCAR_HEAD_INTERNAL_INTERFACE ]; then
+#    echo "no internal interface being passed"
+#    exit 1
+#elif ! [ -f /etc/init.d/gmond ]; then
+#    echo "/etc/init.d/gmond is missing"
+#    exit 1
+#else
+#    sed -e "s/daemon \$GMOND$/daemon \$GMOND -i$OSCAR_HEAD_INTERNAL_INTERFACE/" -e '/# description: gmond startup script/a\
+#    # OSCAR internal interface mods done' < /etc/init.d/gmond > /tmp/gmond.new
+#    mv /etc/init.d/gmond /etc/init.d/gmond.orig
+#    mv /tmp/gmond.new /etc/init.d/gmond
+#    chmod 755 /etc/init.d/gmond
+#    service gmond restart
+#    echo successfully added internal interface to gmond startup script
+#fi
+
+grep -q OSCAR /etc/gmond.conf
 
 if [ $? = 0 ]; then
-    echo "/etc/init.d/gmond is already modified with internal interface"
+    echo "/etc/gmond.conf is already modified with internal interface"
     exit 0
 elif [ -z $OSCAR_HEAD_INTERNAL_INTERFACE ]; then
     echo "no internal interface being passed"
     exit 1
-elif ! [ -f /etc/init.d/gmond ]; then
-    echo "/etc/init.d/gmond is missing"
+elif ! [ -f /etc/gmond.conf ]; then
+    echo "/etc/gmond.conf is missing"
     exit 1
 else
-    sed -e "s/daemon \$GMOND$/daemon \$GMOND -i$OSCAR_HEAD_INTERNAL_INTERFACE/" -e '/# description: gmond startup script/a\
-    # OSCAR internal interface mods done' < /etc/init.d/gmond > /tmp/gmond.new
-    mv /etc/init.d/gmond /etc/init.d/gmond.orig
-    mv /tmp/gmond.new /etc/init.d/gmond
-    chmod 755 /etc/init.d/gmond
+    sed -e "s/# mcast_if  eth1$/mcast_if  $OSCAR_HEAD_INTERNAL_INTERFACE/" -e '/# default: the kernel decides based on routing configuration/a\
+    # OSCAR internal interface mods done' < /etc/gmond.conf > /tmp/gmond.conf.new
+    mv /etc/gmond.conf /etc/gmond.conf_before_oscar
+    mv /tmp/gmond.conf.new /etc/gmond.conf
+    chmod 755 /etc/gmond.conf
     service gmond restart
-    echo successfully added internal interface to gmond startup script
+    echo successfully added internal interface to gmond.conf
 fi
