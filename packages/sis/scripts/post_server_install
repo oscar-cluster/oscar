@@ -69,9 +69,10 @@ my $script = '/var/lib/systemimager/scripts/post-install/22all.generate_modprobe
 `cat << EOL > $script
 #!/bin/sh
 #
-# Generates /etc/modprobe.conf on 2.6 kernel
+# Generates /etc/modprobe.conf on 2.6 kernel and run systemconfigurator
 #
-if [ -f /sbin/generate-modprobe.conf ]; then
+if [ -f /sbin/generate-modprobe.conf ] && [ ! -f /etc/modprobe.conf ]; then
   /sbin/generate-modprobe.conf > /etc/modprobe.conf
+  systemconfigurator --excludesto=/etc/systemimager/systemconfig.local.exclude --confighw
 fi
 EOL`;
