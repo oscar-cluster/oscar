@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.24 2003/01/23 21:14:55 brechin Exp $
+#   $Id: MAC.pm,v 1.25 2003/01/23 21:29:25 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.24 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.25 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -269,17 +269,20 @@ sub assignallmacs {
     my $client;
     my $adapter;
     my $tempnode = '|';
-    while ( $tempnode = $tree->infoNext($tempnode) ) {
+    MAC: while ( scalar(@macs)) {
+      unless ( $tempnode = $tree->infoNext($tempnode) ) {
+        #$window->Unbusy();
+        last MAC;
+      }
       $tempnode =~ /^\|([^\|]+)/;
       $client = list_client(name=>$1);
       $adapter = list_adapter(client=>$client->name,devname=>"eth0");
       unless ( $adapter->mac ) {
-#        print "no adapter for $1\n";
         assign2machine($listbox, $tree, pop @macs, $tempnode);
       }
-#      else { print $adapter->mac . "\n"; }
     }
     $listbox->insert(0, @macs);
+    regenerate_listbox($listbox);
     $window->Unbusy();
 }
 
