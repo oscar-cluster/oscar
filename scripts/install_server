@@ -4,7 +4,7 @@
 #                     Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
-# $Id: install_server,v 1.8 2003/07/03 18:27:41 brechin Exp $
+# $Id: install_server,v 1.9 2003/07/31 23:05:48 naughtont Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -281,38 +281,46 @@ sub update_rsyncd_conf {
     return 1;
 }
 
-# tjn: 9/12/02
+# tjn: 9/12/02, updated 7/31/03
 # Used to fix MDK brain-dead defaults for root's .rc files.
 # Input: filename (e.g., '/root/.bashrc').
 sub unmunge_pathenv
 {
     my $file = pop @_;
 
-    #verbose("Making any necessary fixes to ($file)");
     print "Making any necessary PATH fixes to ($file)\n";
     copy($file, "$file.bak") or return;
 
     if (!open(IN, "<$file.bak")) {
-	unlink("$file.bak");
-	return;
+        unlink("$file.bak");
+        return;
     }
     if (!open(OUT,">$file")) {
-	close(IN);
-	unlink("$file.bak");
-	return;
+        close(IN);
+        unlink("$file.bak");
+        return;
     }
 
     while (<IN>) {
         if (! /^\s*#/ ) {	#ignore comments
 
             # Bashrc fixups
+            # RegEx: if processing bashrc file, check for line containing 
+            #  PATH and not containing $PATH, remember value found ($1)
             if ($file =~ /bashrc/ && /(.*PATH=.*)/ &&  ! /\$PATH/) {
-                $_ = "#OSCAR: The following line commented out \n# $1\n";
+                $_ = "#OSCAR: Modified following line to contain all PATH\n";
+                $_ .= "$1:" . '$PATH' . "\n";	
             }
             # Cshrc fixups
+            # RegEx: if processing cshrc files, check for set|setenv line
+            #  containing PATH and not containing ${PATH}, remember value
+            #  found ($2) and stuff in front of it ($1)
             elsif ($file =~ /cshrc/ && 
-                   /((set|setenv){0,1}\s+PATH.*)/i && !/\$\{PATH\}/i) {
-                $_ = "#OSCAR: The following line commented out \n# $1\n";
+                   /((set|setenv){0,1}\s+PATH\s*[=]{0,1}\s*)"(.*)"/ && 
+                   ! /\$\{PATH\}/i) 
+            {
+                $_ = "#OSCAR: Modified following line to contain all PATH\n";
+                $_ .= "$1\"$3:" . '${PATH}' . "\" \n";
             }
         }
         print OUT $_;
