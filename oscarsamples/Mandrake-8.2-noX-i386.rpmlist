@@ -58,6 +58,7 @@ gawk
 textutils
 diffutils
 zlib1
+zlib1-devel
 libncurses5
 libglib1.2
 grep
