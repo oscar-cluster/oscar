@@ -127,7 +127,7 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \item The OSCAR installer will install the MySQL package on the server
   node if it is not already installed.  A random password will be automatically
-
+\begchange
   generated for the oscar user to access the oscar database.  This
   password will be stored in the file \file{/etc/odapw}.  It should
   not be needed by other users.
@@ -207,7 +207,7 @@ The following release notes apply to OSCAR version \oscarversion.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Red Hat 9 Notes}
+\subsection{Red Hat Linux 9 Notes}
 \label{subsec:rh90notes}
 
 There are a few issues that may crop up when using OSCAR on Red Hat 9.
@@ -313,11 +313,11 @@ The following items highlight these issues.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begchange
-\subsection{Mandrake 10.0 Notes}
+\subsection{Mandrakelinux 10.0 Notes}
 \label{subsec:mdk10notes}
 
 Mandrake users may experience the following fatal error if the
-install_cluster script is run more than once.
+install\_cluster script is run more than once.
 
 \begin{verbatim}
 /opt/oscar/scripts/set_node_nics: failed to create database
@@ -327,13 +327,18 @@ Oscar Wizard preparation script failed to complete at
 ./install_cluster line 215.
 \end{verbatim}
 
-To repair this problem, issue the following commands
+To repair this problem, issue the following commands:
 \begin{verbatim}
   # mysql oscar
-  # DELETE from nics where 1;
+  mysql> DELETE from nics where 1;
 \end{verbatim}
-This should repair the database and allow the install_cluster script
-to run again.
+This should repair the database and allow the install\_cluster script
+to run again.  Alternative, you can invoke the OSCAR Wizard by running
+the oscar\_wizard script directly:
+\begin{verbatim}
+  # cd /opt/oscar/scripts
+  # ./oscar_wizard &
+\end{verbatim}
 \endchange
 
 % jlm - removed this section seeing as how there is no drake support
