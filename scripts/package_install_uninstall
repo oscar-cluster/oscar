@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # 
-#  $Id: package_install_uninstall,v 1.3 2003/10/29 00:21:43 muglerj Exp $
+#  $Id: package_install_uninstall,v 1.4 2003/10/31 02:58:45 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@ my $help;
 my $Image;
 my $install;
 my $list;
+my $name;
+my $range;
 my $server;
 my $testmode;
 my $uninstall;
@@ -46,16 +48,18 @@ my $type;
 my $retval;
 
 GetOptions('client' => \$client,
-	   'expert' => \$expert,
-	   'database' => \$database,
-	   'help' => \$help,
-	   'Image=s' => \$Image,
-	   'install=s' => \$install,
-	   'list=s' => \$list,
-	   'server' => \$server,
-	  'testmode' => \$testmode,
-	   'uninstall=s' => \$uninstall,
-	   'xml' => \$xml);
+		'expert' => \$expert,
+		'database' => \$database,
+		'help' => \$help,
+		'Image' => \$Image,
+		'install=s' => \$install,
+		'list=s' => \$list,
+		'name=s' => \$name,
+		'range=s' => \$range,
+		'server' => \$server,
+		'testmode' => \$testmode,
+		'uninstall=s' => \$uninstall,
+		'xml' => \$xml);
 
 
 if ($help)
@@ -84,13 +88,53 @@ elsif ($xml)
 }
 elsif ($uninstall)
 {
-	$retval = OSCAR::PackageInUn::package_uninstall($uninstall, $server, $client, $Image, $testmode);
+	if($client)
+	{
+		if(!$range and !$name)
+		{
+			help_message();
+			exit(0);
+		}
+		if(!$range or !$name)
+		{
+			help_message();
+			exit(0);
+		}
+	}
+
+	if($Image and !$name)
+	{
+		help_message();
+		exit(0);
+	}
+		
+	$retval = OSCAR::PackageInUn::package_uninstall($uninstall, $server, $client, $Image, $name, $range, $testmode);
 	print "return code is $retval\n";
 
 }
 elsif ($install)
 {
-	$retval = OSCAR::PackageInUn::package_install($install, $server, $client, $Image, $testmode);
+	if($client)
+	{
+		if(!$range and !$name)
+		{
+			help_message();
+			exit(0);
+		}
+		if(!$range or !$name)
+		{
+			help_message();
+			exit(0);
+		}
+	}
+
+	if($Image and !$name)
+	{
+		help_message();
+		exit(0);
+	}
+		
+	$retval = OSCAR::PackageInUn::package_install($install, $server, $client, $Image, $name, $range, $testmode);
 	print "return code is $retval\n";
 }
 else
@@ -100,25 +144,37 @@ else
  
 sub help_message
 {
-	print "\n Usage: package_install_uninstall OPTION\n\n";
+	print "\nWARNING: you will shoot your foot off with this\ncommand if you do not understand what it does!\n\n";
+	print "We strongly advise running the wizard!\n";
+	print "\nUsage: package_install_uninstall CMD [ARGS] [TARGETS]\n\n";
+	print "CMDS:\n";
+	print " --install   -i  pkgname ARGS(S) TARGET(S) = installs an oscar\n"; 
+	print "                                             package to the TARGET(S).\n";
+	print " --uninstall -u  pkgname ARGS(S) TARGET(S) = uninstalls an oscar\n";
+	print "                                             package to the TARGET(S).\n";
+	print " --list      -l  pkgname TARGET            = lists rpms for a\n"; 
+	print "                                             package, for a particular\n";
+	print "                                             TARGET.\n";
+	print " --database  -d                            = lists all packages\n";
+	print "                                             (in database).\n";
+	print " --xml       -x                            = lists all packages\n";
+	print "                                             (on system, from xml).\n";
+	print " --help      -h                            = this screen.\n";
 
-	print " OPTIONS:\n";
+	print "\n\n\nARGS:\n"; 
+	print " --name      -n  imagename   = an imagename, not a fully qualified path.\n";
+	print " --range     -r  range       = a range of nodes in valid C3 syntax.\n";
+	print "                               note: this is not supported currently.\n";
+	print " --testmode  -t              = puts the program into test mode\n";
+	print "                               does not actually execute anything.\n";
 
-	print "   --install     -i  PACKAGE NAME TARGET(S) = installs an oscar package to the TARGET(S).\n";
-	print "   --uninstall   -u  PACKAGE NAME TARGET(S) = uninstalls an oscar package to the TARGET(S).\n";
+	print "\n\nTARGETS:\n";
 
-	print "   --list        -l  PACKAGE NAME TARGET    = lists rpms for a package, for a particular TARGET.\n";
-	print "   --database    -d                         = lists all packages (in database).\n";
-	print "   --xml         -x                         = lists all packages (on system, from xml).\n";
-	print "   --help        -h                         = this screen.\n";
-	print "   --testmode    -t                         = puts the program into test mode\n";
-	print "                                              does not actually execute anything.\n";
-
-	print "\n TARGETS:\n";
-
-	print "   --IMAGE       -I  IMAGE NAME             = installs or uninstalls on image, must provide an imagename.\n";
-	print "   --server      -s                         = installs or uninstalls on the server or headnode.\n";
-	print "   --client      -c                         = installs or uninstalls on ALL compute nodes.\n";
+	print " --IMAGE     -I              = installs or uninstalls on image.\n";
+	print "                               note: must provide an imagename.\n";
+	print " --server    -s              = installs or uninstalls on the server(headnode).\n";
+	print " --client    -c              = installs or uninstalls on compute nodes.\n";
+	print "                               note: must provide an imagename and a range.\n";
 	print "\n";
 }
 
