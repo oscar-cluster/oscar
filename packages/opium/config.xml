@@ -9,15 +9,15 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.8 2003/05/16 15:09:24 brechin Exp $
+      $Id: config.xml,v 1.9 2003/05/29 18:19:12 bligneri Exp $
   -->
   <name>opium</name>
 
   <version>
     <major>1</major>
-    <minor>4</minor>
+    <minor>5</minor>
     <subversion>0</subversion>
-    <release>2</release>
+    <release>1</release>
     <epoch>1</epoch>
   </version>
 
@@ -34,8 +34,9 @@
 
   <description>The OSCAR User Synchronization System keeps the users
 and groups synchronized from the the central OSCAR server out to the
-OSCAR compute nodes.  The users and groups on the OSCAR server are 
-checked and synchronized (if necessary) periodically (configurable).
+OSCAR compute nodes. OPIUM is compatible with the Pluggable Authentification
+Modules (PAM) mechanism (NIS, NIS+, LDAP, ...). The users and groups on 
+the OSCAR server are checked and synchronized (if necessary) periodically (configurable).
   </description>
 
   <rpmlist>
