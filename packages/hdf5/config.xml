@@ -32,9 +32,9 @@
 of a data format specification and a supporting library
 implementation.</description>
 
-  <require>
+  <requires>
     <type>package</type>
     <name>switcher</name>
-  </require>
+  </requires>
 
 </package>
