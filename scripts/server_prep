@@ -26,6 +26,7 @@ use File::Copy;
 use File::Basename;
 use OSCAR::Package;
 use OSCAR::PackageBest;
+use OSCAR::Network;
 use Carp;
 use Data::Dumper;
 
@@ -40,16 +41,24 @@ foreach my $package (@packages) {
     push @rpms, rpmlist($package,"server");
 }
 
+push @rpms, qw(
+	nfs-utils
+	openssh
+	openssh-clients
+	openssh-server
+	xinetd
+	);
+
 # Give me the list of files for my rpms
-my @files = find_files(
+my %files = find_files(
                        PKGDIR => $RPMPOOL, 
                        PKGLIST => \@rpms
                       );
 
-my @fullfiles = map {"$RPMPOOL/$_"} @files;
+my @fullfiles = map {"$RPMPOOL/$_"} (sort values %files);
 
 my $cmd = "rpm -Uhv --replacepkgs " . join(' ', @fullfiles);
-!system($cmd) or croak("Couldn't install the required packages needed for OSCAR Wizard to start");
+!system($cmd) or croak("Couldn't install the required packages needed for OSCAR Wizard to start.\nCmd: $cmd");
 
 foreach my $package (@packages) {
     run_pkg_script($package,"post_server_install") or croak("Failed running post_server_install for $package");
