@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.5 2002/04/05 19:53:38 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.6 2002/06/04 21:01:40 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -57,9 +57,6 @@ if ($options->Help){
 	&usage;
 	exit 0;
 }
-
-verbose("Installing required rpms");
-&install_required_rpms or croak("Unable to install required rpms.");
 
 verbose("Restarting xinetd");
 !system("service xinetd restart") or croak("Couldn't restart xinetd");
@@ -118,31 +115,6 @@ copy("/usr/share/systemimager/$archdir/initrd.gz", "/tftpboot/") or
   croak("Unable to copy ramdisk file to /tftpboot.");
 
 exit 0; 
-
-sub install_required_rpms {
-    my @rpms = qw(
-                  tftp-hpa
-                 );
-    if($ARCH eq "i386") {
-        push @rpms, qw(syslinux-1.63-1);
-    }
-    
-
-    my @installme = ();
-    foreach my $rpm (@rpms) {
-        if(system("rpm -q $rpm >/dev/null")) {
-            verbose("$rpm not installed.  Marking for install...");
-            push @installme, "$RPMPOOL/$rpm*";
-        }
-    }
-    if(scalar(@installme)) {
-        my $command = "rpm -Uhv " . (join ' ',@installme);
-        verbose("Installing rpms using command:");
-        verbose($command);
-        !system($command) or return undef;
-    }
-    return 1;
-}
 
 sub check_args {
 
