@@ -10,3 +10,5 @@ example/*
 *.ps
 *.pdf
 *.out
+*.lot
+*.lof
