@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.30 2003/01/24 22:44:50 brechin Exp $
+#   $Id: MAC.pm,v 1.31 2003/01/24 23:05:10 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.30 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.31 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -129,11 +129,11 @@ sub mac_window {
 				     },
                                     );
     my $assignbutton = $frame->Button(
-                                      -text => "Assign Mac to Node",
+                                      -text => "Assign MAC to Node",
                                       -command => [\&assign2machine, $listbox, $tree, undef, undef, $window],
                                      );
     my $deletebutton = $frame->Button(
-                                      -text => "Delete Mac from Node",
+                                      -text => "Delete MAC from Node",
                                       -command => [\&clear_mac, $listbox, $tree, $window],
                                      );
     my $dhcpbutton = $frame->Button(
@@ -266,7 +266,8 @@ sub message_window {
 }
 
 sub assign2machine {
-    my ($listbox, $tree, $mac, $node, $window) = @_;
+    my ($listbox, $tree, $mac, $node, $window, $dhcp) = @_;
+    unless ( defined($dhcp) ) { $dhcp = 1; }
     unless ( $mac ) { $mac = $listbox->get($listbox->curselection) or return undef; }
     unless ( $node) { $node = $tree->infoSelection() or return undef; }
     my $client;
@@ -283,7 +284,7 @@ sub assign2machine {
     set_adapter($adapter);
     regenerate_listbox($listbox);
     regenerate_tree($tree);
-    if ( our $dyndhcp ) {
+    if ( our $dyndhcp && $dhcp ) {
       our $vars;
       setup_dhcpd($$vars{interface}, $window);
     }
@@ -309,8 +310,12 @@ sub assignallmacs {
       $client = list_client(name=>$1);
       $adapter = list_adapter(client=>$client->name,devname=>"eth0");
       unless ( $adapter->mac ) {
-        assign2machine($listbox, $tree, pop @macs, $tempnode, $window);
+        assign2machine($listbox, $tree, pop @macs, $tempnode, $window, 0);
       }
+    }
+    if ( our $dyndhcp ) {
+      our $vars;
+      setup_dhcpd($$vars{interface}, $window);
     }
     $listbox->insert(0, @macs);
     regenerate_listbox($listbox);
@@ -505,7 +510,7 @@ sub macfile_selector {
 sub save_to_file {
     my $file = shift;
     open(OUT,">$file") or croak "Couldn't open file: $file for writing";
-    print OUT "# Saved OSCAR Mac Addresses\n";
+    print OUT "# Saved OSCAR MAC Addresses\n";
     foreach my $mac (sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC) {
         print OUT $mac, "\n";
     }
