@@ -55,18 +55,19 @@ do_it_or_die( "package_sets",
 
 # if we already have a package set named "Default", ...
 if ( grep( /^$DEFAULT$/, @package_set_names ) ) {
+# if the package set exists, we should be doing NOTHING
 
     # remove all of the packages included in the default set
-    print "Removing all packages from package set <$DEFAULT>\n";
-    do_it_or_die( "remove_all_packages_from_package_set $DEFAULT",
-		  undef,
-		  "error removing all packages from package set <$DEFAULT>" );
+#    print "Removing all packages from package set <$DEFAULT>\n";
+#    do_it_or_die( "remove_all_packages_from_package_set $DEFAULT",
+#		  undef,
+#		  "error removing all packages from package set <$DEFAULT>" );
 
     # remove all of the package sets included in the default set
-    print "Removing all package sets from package set <$DEFAULT>\n";
-    do_it_or_die( "remove_all_package_sets_from_package_set $DEFAULT",
-		  undef,
-		  "error removing all packages from package set <$DEFAULT>" );
+#    print "Removing all package sets from package set <$DEFAULT>\n";
+#    do_it_or_die( "remove_all_package_sets_from_package_set $DEFAULT",
+#		  undef,
+#		  "error removing all packages from package set <$DEFAULT>" );
 
 } else {
 
