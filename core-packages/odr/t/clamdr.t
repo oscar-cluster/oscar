@@ -1,4 +1,4 @@
-#   $Header: /home/user5/oscar-cvsroot/oscar/core-packages/odr/t/Attic/clamdr.t,v 1.2 2001/08/15 13:03:49 geiselha Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/core-packages/odr/t/Attic/clamdr.t,v 1.3 2001/08/30 14:57:06 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -23,6 +23,10 @@ use FindBin qw($Bin);
 
 my $path = $ENV{PATH};
 $ENV{PATH} .= ":$Bin/../bin";
+
+$ENV{CLAMDRHOME} = $ENV{PWD} . "/data";
+
+print STDERR $ENV{CLAMDRHOME}, "\n";
 
 BEGIN {
     plan tests => 1;

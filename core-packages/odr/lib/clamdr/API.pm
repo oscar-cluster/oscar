@@ -1,6 +1,6 @@
 package clamdr::API;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/core-packages/odr/lib/clamdr/Attic/API.pm,v 1.1 2001/08/14 20:01:58 geiselha Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/core-packages/odr/lib/clamdr/Attic/API.pm,v 1.2 2001/08/30 14:57:34 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -27,14 +27,13 @@ require Exporter;
 
 @ISA = qw(Exporter AutoLoader);
 @EXPORT = qw($DATADIR $DBH initialize query);
-$VERSION = '0.01';
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
-use FindBin qw($Bin);
 use DBI;
 use Text::CSV_XS;
 use clamdr::Syntax;
 
-$DATADIR = "$Bin/../data"; # default directory for data files
+$DATADIR = $ENV{CLAMDRHOME} || "/var/lib/clamdr"; # default directory for data files
 
 #
 # read the syntax file to discover schema for all other files
