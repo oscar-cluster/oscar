@@ -4,7 +4,7 @@ package OSCAR::MAC;
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
-#   $Id: MAC.pm,v 1.41 2003/06/27 21:50:59 brechin Exp $
+#   $Id: MAC.pm,v 1.42 2003/07/08 21:40:50 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ use vars qw($VERSION @EXPORT);
 use Tk;
 use Tk::Tree;
 use Carp;
-use SIS::Client;
+use SystemImager::Client;
 use File::Copy;
 use SIS::Adapter;
 use SIS::DB;
@@ -38,7 +38,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.41 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.42 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
