@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.5 2003/03/06 00:12:10 tfleury Exp $
+      $Id: config.xml,v 1.6 2003/04/29 20:25:28 tfleury Exp $
   -->
   <name>kernel_picker</name>
 
@@ -30,8 +30,8 @@
   <group>Application/System</group>
   <url>http://oscar.ncsa.uiuc.edu/</url>
   <packager>
-    <name>NCSA</name>
-    <email>oscar-users@lists.sourceforge.net</email>
+    <name>Terry Fleury</name>
+    <email>tfleury@ncsa.uiuc.edu</email>
   </packager>
   <vendor>NCSA</vendor>
 
