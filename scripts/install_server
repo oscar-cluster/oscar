@@ -4,7 +4,7 @@
 #                     Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
-# $Id: install_server,v 1.1 2002/10/29 01:53:21 jsquyres Exp $
+# $Id: install_server,v 1.2 2002/10/29 07:25:47 jsquyres Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -57,26 +57,31 @@ foreach my $package (@packages) {
 
 # Now install the rpms that we found
 
-oscar_log_subsection("Installing non-core RPMs");
+oscar_log_subsection("Installing server non-core RPMs " .
+		     "(core RPMs already installed)");
 install_rpms(@rpms) 
     or croak("Couldn't install the required packages needed for OSCAR");
-oscar_log_subsection("Successfully installed non-core RPMs");
+oscar_log_subsection("Successfully installed server non-core RPMs");
 
 # And do the post install script
 
-oscar_log_subsection("Running post_server_install scripts for non-core packages");
+oscar_log_subsection("Running post_server_install scripts " .
+		     "for server non-core packages");
 foreach my $package (@packages) {
     run_pkg_script($package,"post_server_install") 
 	or croak("Failed running post_server_install for $package");
 }
-oscar_log_subsection("Successfully ran non-core package post_server_install scripts");
+oscar_log_subsection("Successfully ran server non-core package ".
+		     "post_server_install scripts");
 
 # Additional housekeeping
 
 oscar_log_subsection("Getting internal IP address");
 my ($ip,$bcast,$netmask) = interface2ip($INTERFACE) 
     or croak("Couldn't determine internal ip address");
-oscar_log_subsection("Got: [IP $ip], [broadcast $bcast], [netmask $netmask]");
+oscar_log_subsection("Got: [IP $ip]");
+oscar_log_subsection("Got: [broadcast $bcast]");
+oscar_log_subsection("Got: [netmask $netmask]");
 
 oscar_log_subsection("Adding hosts to /etc/hosts");
 update_hosts($ip) or croak("Couldn't add required host entries to /etc/hosts");
