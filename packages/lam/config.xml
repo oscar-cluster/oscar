@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE package SYSTEM "../package.dtd">
-<package>
-
-<!--
+<oscar>
+  <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
                          All rights reserved.
       
@@ -10,9 +9,8 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.7 2002/11/02 00:45:44 bligneri Exp $
-      -->
-
+      $Id: config.xml,v 1.8 2002/11/04 23:12:52 jsquyres Exp $
+  -->
   <name>LAM/MPI</name>
 
   <version>
@@ -83,9 +81,11 @@ visualized either at runtime or post-mortem.</description>
     <name>switcher</name>
   </requires>
 
-  <switcher>
-    <tag>mpi</tag>
-    <name>lam-6.5.7</name>
-  </switcher>
+  <package>
+    <switcher>
+      <tag>mpi</tag>
+      <name>lam-6.5.7</name>
+    </switcher>
+  </package>
 
-</package>
+</oscar>
