@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.5 2002/02/20 00:22:53 sdague Exp $
+#   $Id: Package.pm,v 1.6 2002/04/12 01:13:45 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ package OSCAR::Package;
 use strict;
 use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL @COREPKGS %PHASES);
 use base qw(Exporter);
+use OSCAR::PackageBest;
 use File::Basename;
 use File::Copy;
 use Carp;
@@ -31,11 +32,11 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
-@COREPKGS = qw(c3 sis);
+@COREPKGS = qw(c3 sis switcher);
 
 # The list of phases that are valid for package install.  For more info, please
 # see the developement doc
@@ -78,6 +79,10 @@ sub list_pkg {
     }
     return @pkgs;
 }
+
+#
+#  _is_core - pretty simple, is the pacakge a core package
+#
 
 sub _is_core {
     my $pkg = shift;
@@ -140,6 +145,10 @@ sub run_in_chroot {
     return 1;
 }
 
+#
+#  This returns the type of rpm list for a package file
+#
+
 sub rpmlist {
     my ($pkg, $type) = @_;
     my $listfile = ($type eq "client") ? "client.rpmlist" : "server.rpmlist";
@@ -155,6 +164,70 @@ sub rpmlist {
     }
     close(IN);
     return @rpms;
+}
+
+#
+#  This is a routine to install the best rpms on the server, only if they don't already
+#  exist at a high enough version
+#
+
+sub install_rpms {
+    my (@rpms) = @_;
+    my %bestrpms = find_files(
+                              PKGDIR => $RPM_POOL,
+                              PKGLIST => [@rpms],
+                             );
+
+    foreach my $key (keys %bestrpms) {
+        my $fullfilename = "$RPM_POOL/$bestrpms{$key}";
+        if(server_version_goodenough($fullfilename)) {
+            # purge the package from the list
+            delete $bestrpms{$key};
+        }
+    }
+
+    my @fullfiles = map {"$RPM_POOL/$_"} (sort values %bestrpms);
+    my $cmd = "rpm -Uhv " . join(' ', @fullfiles);
+    my $rc = system($cmd);
+    if($rc) {
+        carp("Couldn't run $cmd");
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+sub server_version_goodenough {
+    my ($file) = @_;
+    my $output1 = `rpm -qp --qf '\%{NAME} \%{VERSION} \%{RELEASE}' $file`;
+    my ($n1, $v1, $r1) = split(/ /,$output1);
+    my $output2 = `rpm -q --qf '\%{NAME} \%{VERSION} \%{RELEASE}' $n1`;
+    if($?) {
+        # Then the package doesn't exist on the server at all
+        return 0;
+    }
+    my ($n2, $v2, $r2) = split(/ /,$output2);
+
+    if($v1 eq $v2) {
+        # are the versions the same?
+        if($r1 eq $r2) {
+            # if the versions are the same and the releases are as well, 
+            # we know we are good enough
+            return 1;
+        } elsif (find_best($r1, $r2) eq $r2) {
+            # the release on the server is better than the file
+            return 1;
+        } else {
+            # release in file is better than server
+            return 0;
+        }
+    } elsif (find_best($v1, $v2) eq $v2) {
+        # the version on server is better
+        return 1;
+    } else {
+        # the version in file is better
+        return 0;
+    }
 }
 
 1;
