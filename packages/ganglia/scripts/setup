@@ -1,0 +1,87 @@
+#!/usr/bin/env perl
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# Setup script for Ganglia package
+# Copies distro specific RPMs to the package's RPMs directory
+
+# (C)opyright Bernard Li <bli@bcgsc.ca>
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX;
+use Carp;
+use OSCAR::Distro;
+use OSCAR::PackageBest;
+
+my $pkg_name = "rrdtool";
+my $source_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro/";
+my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
+my $oscar_rpm_pool = '/tftpboot/rpm';   # No env var, using name in Package.pm
+
+my ($name, $ver) = OSCAR::Distro::which_distro_server();
+if ($name eq "redhat") {
+        $source_dir .= "redhat";
+} elsif ($name eq "fedora") {
+        $source_dir .= $name;
+} elsif ($name eq "mandrake") {
+        $source_dir .= $name;
+}
+
+print "Using $pkg_name RPM from: $source_dir\n";
+
+# Quick sanity check
+
+if (! -d $dest_dir) {
+  croak("$dest_dir does not exist");
+} elsif (! -d $source_dir) {
+  croak("$source_dir does not exist");
+}
+
+# Remove rrdtool RPMs from RPMs directory prior to copying distro-specific
+# ones over - eg. after running start_over script, RPMs dir will have rrdtool
+# RPMs from previous install
+
+opendir(DIR, $dest_dir);
+my @bad_files = grep {/^rrdtool-/ && -f "$dest_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#bad_files > -1) {
+  printf("Removing old files:\n");
+  foreach my $file (@bad_files) {
+    printf(" - $dest_dir/$file\n");
+    unlink("$oscar_rpm_pool/$file");
+  }
+}
+
+# Make a list of the new files and copy them over
+
+opendir(DIR, $source_dir);
+my @good_files = grep {/^$pkg_name/ && -f "$source_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#good_files > -1) {
+  my $cmd = "cp ";
+  printf("Copying new files:\n");
+  foreach my $file (@good_files) {
+    $cmd .= "$source_dir/$file ";
+    printf(" - $source_dir/$file\n");
+  }
+  $cmd .= $dest_dir;
+  system($cmd);
+  print "Copied $pkg_name RPMs to $dest_dir\n";
+}
+
+# All done
+
+exit 0
