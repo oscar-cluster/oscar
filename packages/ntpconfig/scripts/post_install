@@ -1,0 +1,8 @@
+#!/bin/bash
+# Post install action to restart ntpds.  This is necessary because when the
+# node is booting for the first time, other nodes are sometimes building,
+# causing network saturation.  This causes the ntpd to give up and try later.
+
+. /etc/profile
+cexec service ntpd restart
+
