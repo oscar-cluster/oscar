@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: defs.tex,v 1.10 2002/09/10 00:22:36 jsquyres Exp $
+% $Id: defs.tex,v 1.11 2002/10/11 17:56:09 bligneri Exp $
 %
 % $COPYRIGHT$
 %
@@ -38,13 +38,10 @@
               colorlinks=true,
               linkcolor=blue,filecolor=blue,pagecolor=blue,urlcolor=blue
               ]{hyperref}
-  \def\figext{png}
-  \def\sbsext{png}
   \newcommand{\xref}[2]{\hyperref[#1]{#2}}
   \newcommand{\mailto}[1]{\href{mailto:#1}{#1}}
 \else
-  \def\figext{eps}
-  \def\sbsext{eps}
+  \usepackage{html}
   \newcommand{\xref}[2]{#2}
   \newcommand{\href}[2]{\underline{#2}}
   \newcommand{\url}[1]{\href{#1}{#1}}
