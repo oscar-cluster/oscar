@@ -1,11 +1,13 @@
 #!/usr/bin/perl
 
+# Copyright (c) 2003, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
 # Copyright 2002 International Business Machines
 #                Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.27 2003/06/27 14:36:23 brechin Exp $
+# $Id: wizard_prep,v 1.28 2003/06/27 14:49:38 brechin Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
