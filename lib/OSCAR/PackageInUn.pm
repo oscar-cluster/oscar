@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.13 2003/11/04 04:35:53 naughtont Exp $
+#  $Id: PackageInUn.pm,v 1.14 2003/11/04 23:00:20 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -706,6 +706,16 @@ sub run_install_server
 		{
 			print "Warning: nothing ran for ($package_name) post_clients phase on server\n";
 		}
+
+		if (OSCAR::Package::run_pkg_script($package_name, 'post_install', 1, '0'))
+		{
+			print "executing post_install phase on server\n";
+			$flag = 1;
+		}
+		else
+		{
+			print "Warning: nothing ran for ($package_name) post_install phase on server\n";
+		}
 	}
 	else
 	{
@@ -840,30 +850,23 @@ sub get_rpm_list
 	my @rpm_list_database;
 	my @dirlist;
 	my @temp;
+	my @trimmed_list;
 
 	my $rpm;
 	my $rawrpm;
 	my %rpmhash;
+	my %tftpbootrpmhash;
 	my $rpmstring = "/bin/rpm -q --nosignature --queryformat=\"%{NAME}\" -p ";
 	my $rpmname;
 	my $count;
 	my $openstring;
+	my $key;
 
 	my @tftprpmlist;
 
 	my $package_dir = OSCAR::Package::getOdaPackageDir($package_name);
-	@rpm_list_database = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, $type);
+	@rpm_list_database = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, $type, 1);
 
-	print "RPMS for Package ($package_name)\n"; 
-	foreach my $pkgrpm (@rpm_list_database) { print "  - $pkgrpm\n"; }
-
-	#make sure there is supposed to be at least 1 rpm
-	if (scalar(@rpm_list_database) == 0)
-	{
-		print "no rpms in database\n";
-		return (1);
-	}
- 
 	$cmd_string = "$package_dir/RPMS/";
 	if (-d $cmd_string)
 	{
@@ -892,68 +895,118 @@ sub get_rpm_list
 		}
 	}
 
-	#Stick the rpms from /tftpboot/rpm into a list in case we need them later
-	opendir(DNAME, "/tftpboot/rpm") or Carp::croak "cannot read directory: $!\n";
-	@temp = readdir(DNAME) or Carp::croak "cannot read directory: $!\n";
-	@tftprpmlist = grep( !/^\.{1,2}$/ && /\.rpm$/ && !/ia64\.rpm$/, @temp);
-	closedir(DNAME);
+	#make sure there is supposed to be at least 1 rpm
+	if (scalar(@rpm_list_database) == 0)
+	{
+		#add logic here to deal with the null case
+		print "Warning: No rpms listed for $type in database.\n";
+		@rpm_list_database = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, "both", 1);
+		if (scalar(@rpm_list_database) == 0)
+		{
+			print "Warning: No rpms listed for both in database.\n";
+			print "Warning: trying to get rpms from $package_dir/RPMS\n";
+			$count = 0;
 
+			foreach $key (keys(%rpmhash))
+			{
+				${$rpmlistref}[$count] = $rpmhash{$key};
+				$count++;
+			}
 
-	#make sure we have all of them...one real file per
-	#rpm from the database
-	$count = 0;
-	foreach $rpm (@rpm_list_database)
+			if($count == 0)
+			{
+				return (1);
+			}
+
+			print "RPMS that need to be installed:\n";
+			foreach my $rpm ( @{$rpmlistref} ) 
+			{
+				print " - $rpm\n";
+			}
+			return (0);
+		}
+	}
+	else
 	{
 
-		if( exists( $rpmhash{$rpm} ) ) #if its not a key, its not on the system
+		#Stick the rpms from /tftpboot/rpm into a list
+		opendir(DNAME, "/tftpboot/rpm") or Carp::croak "cannot read directory: $!\n";
+		@temp = readdir(DNAME) or Carp::croak "cannot read directory: $!\n";
+		@tftprpmlist = grep( !/^\.{1,2}$/ && /\.rpm$/ && !/ia64\.rpm$/, @temp);
+		closedir(DNAME);
+
+		#trim down the list to possibles
+		foreach $rpm (@rpm_list_database)
 		{
-			#since it is a key, put the rpm in the list 
-			${$rpmlistref}[$count] = $rpmhash{$rpm};
-			$count++; 
+			@temp = grep(/^$rpm/,@tftprpmlist);
+			push @trimmed_list, @temp;
 		}
-		else
+		
+		#Stick the trimmed down list of rpms from /tftpboot/rpm into an aa 
+		#in case we need them later
+		$cmd_string = "/tftpboot/rpm/";
+		foreach $rpm (@trimmed_list)
 		{
-			#AH-HA...time to look at /tftpboot/rpm for the missing rpm
-			#put all possible matches in the aa
-			foreach $rawrpm (@tftprpmlist)
+			$openstring = "$rpmstring $cmd_string$rpm";
+			if (-f "$cmd_string$rpm")
 			{
-				if(index($rawrpm, $rpm) == 0)
+				open(RPMCMD, "$openstring |") or Carp::croak "cannot run rpm command:$!\n";
+				$rpmname = <RPMCMD>;
+				close(RPMCMD);
+				chomp($rpmname);
+				if (length($rpmname) != 0)
 				{
-					#found the name...read it in with its full path
-					$openstring = "$rpmstring /tftpboot/rpm/$rawrpm";
-					open(RPMCMD, "$openstring |") or Carp::croak "cannot run rpm command:$!\n";
-					$rpmname = <RPMCMD>;
-					chomp($rpmname);
-					if (length($rpmname) != 0)
-					{
-						$rpmhash{$rpm} = "/tftpboot/rpm/$rawrpm";
-					}
-					close(RPMCMD);
+					$tftpbootrpmhash{$rpmname} = "$cmd_string$rpm";
 				}
 			}
-			#now see if it matches again if you found any
-			if( exists( $rpmhash{$rpm} ) )
+		}
+
+
+		#make sure we have all of them...one real file per
+		#rpm from the database
+		$count = 0;
+		foreach $rpm (@rpm_list_database)
+		{
+
+			if( exists( $rpmhash{$rpm} ) ) #if its not a key, its not on the system
 			{
+				#since it is a key, put the rpm in the list 
 				${$rpmlistref}[$count] = $rpmhash{$rpm};
 				$count++; 
 			}
 			else
 			{
-				#no match even in /tftpboot/rpm...punt
-				print "Error: No rpm found for:$rpm\n";
+				#AH-HA...time to look at /tftpboot/rpm for the missing rpm
+				if( exists ($tftpbootrpmhash{$rpm}) ) #else error
+				{
+					${$rpmlistref}[$count] = $tftpbootrpmhash{$rpm};
+					$count++; 
+				}
+				else
+				{
+					#no match even in /tftpboot/rpm...punt
+					print "Error: No rpm found for:$rpm\n";
+				}
 			}
 		}
-	}
 
-	#if the number we found doesn't match the number we need
-	if ($count != scalar(@rpm_list_database))
-	{
-		#in a sane world this should fail...
-		#and now it does, because we are looking in /tftpboot/rpms also...whew...
-		print "Error: number of rpms in database do not match number found on filesystem.\n";
-		return 2;
-	}
-	return (0);
+		#if the number we found doesn't match the number we need
+		if ($count != scalar(@rpm_list_database))
+		{
+			#in a sane world this should fail...
+			#and now it does
+			print "Error: number of rpms in database do not match number found on filesystem.\n";
+			return 2;
+		}
+
+		print "RPMS that need to be installed:\n";
+		foreach my $rpm ( @{$rpmlistref} ) 
+		{
+			print " - $rpm\n";
+		}
+		return (0);
+
+	}#end else
 }
 
 #uninstalls a package from all clients, the server, optionally an image
