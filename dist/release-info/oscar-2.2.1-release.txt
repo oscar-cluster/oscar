@@ -1,5 +1,5 @@
 
-OAK RIDGE, Tenn., April 21, 2003 -- The OSCAR working group is pleased
+OAK RIDGE, Tenn., April 22, 2003 -- The OSCAR working group is pleased
 to announce the release of version 2.2.1 of the Open Source Cluster
 Application Resources (OSCAR) toolkit.
 
