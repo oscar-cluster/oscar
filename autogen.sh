@@ -143,7 +143,7 @@ make_makefile() {
     # Make the Makefile.am in a given directory.  The primary contents
     # of this file will be the EXTRA_DIST variable and the SUBDIRS
     # variable.  For these simplistic templates, we take all files and
-    # subdirectories (except those named "CVS").  If package authors
+    # subdirectories (except those named ".svn").  If package authors
     # want anything more interesting, they can supply their own
     # Makefile.am's.
 
@@ -203,7 +203,7 @@ EOF
 	    -a "$mm_file" != "." \
 	    -a "$mm_file" != ".." \
 	    -a "$mm_file" != "autom4te.cache" \
-	    -a "$mm_file" != "CVS"; then
+	    -a "$mm_file" != ".svn"; then
 	    mm_subdirs="$mm_file $mm_subdirs"
 	elif test -f "$mm_file"; then
 	    if test "$mm_file" != ".cvsignore" \
@@ -254,7 +254,7 @@ traverse_tree() {
     # Now recursivelytraverse children subdirs
 
     for file in "$topdir"/*; do
-	if test "$file" != "$topdir/CVS" -a \
+	if test "$file" != "$topdir/.svn" -a \
 	    "$file" != "." -a \
 	    "$file" != ".." -a \
 	    -d "$file" -a \
@@ -280,7 +280,7 @@ run_global() {
 	for subdir in src; do
 	  if [ -d $subdir -a \
 	     ! -f $subdir/$ignore_file -a \
-	     "$subdir" != "src/CVS" ]; then
+	     "$subdir" != "src/.svn" ]; then
 		make_makefile "src"
           fi
 	done
@@ -295,7 +295,7 @@ run_global() {
     rg_pkg_subdirs=". distro doc RPMS scripts SRPMS testing"
     for rg_pkg in packages packages/*; do
 	rg_base="`basename $rg_pkg`"
-	if test "$rg_pkg" != "packages/CVS" -a \
+	if test "$rg_pkg" != "packages/.svn" -a \
 	    -d "$rg_pkg" -a \
 	    "$rg_base" != "." -a \
 	    "$rg_base" != ".." -a \
@@ -323,7 +323,7 @@ run_global() {
     rg_config_files=
     for rg_dir in `find packages -type d`; do
 	base="`basename $rg_dir`"
-	if test "$base" != "CVS" -a \
+	if test "$base" != ".svn" -a \
 	    ! -f "$rg_dir/$ignore_file" -a \
 	    -f "$rg_dir/$sentinel_file" -a \
 	    -f "$rg_dir/Makefile.am" ; then
