@@ -4,7 +4,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_user,v 1.2 2002/10/30 22:52:40 mchasal Exp $
+# $Id: test_user,v 1.3 2002/10/30 23:16:42 mchasal Exp $
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
@@ -26,5 +26,5 @@ else
         $OSCAR_TESTPRINT --label "PBS default queue definition" -f
 fi
 
-~/pbs_test $clients 1 ~/pbs/pbs_script.shell "Hello" ~/pbs/shell 3 "PBS Shell Test"
+~/pbs_test $clients 1 ~/pbs/pbs_script.shell "Hello" ~/shelltest 3 "PBS Shell Test"
 
