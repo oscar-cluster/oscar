@@ -9,8 +9,10 @@
 #                 This script is called after the OSCAR server is       #
 #                 installed.                                            #
 #########################################################################
-my $versionstring = '$Id: post_server_install,v 1.1 2002/08/09 19:15:31 jenos Exp $'; # RCS version string of the script
+my $versionstring = '$Id: post_server_install,v 1.2 2002/11/14 00:50:30 tfleury Exp $'; # RCS version string of the script
 
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Package;
 use Getopt::Long;   # Used to get command line options
 
 # These are public ntp servers for use by the server.
@@ -19,8 +21,9 @@ my @serverntpserverlist = ("ntp-1.cso.uiuc.edu",
                            "ntp.cmr.gov");
 # For the clients, use the main server only.
 my @clientntpserverlist = ("pbs_oscar");
-# Default to the server list unless the user specifies the --client flag.
-my @ntpserverlist = @serverntpserverlist;
+
+# The actual list of NTP servers to be used
+my @ntpserverlist;
 
 #########################################################################
 #  Subroutine name : parseCommandLine                                   #
@@ -43,8 +46,6 @@ sub parseCommandLine #
               "help"
               );
 
-  @ntpserverlist = @opt_ntpserver if defined(@opt_ntpserver);
-  @ntpserverlist = @clientntpserverlist if defined($opt_client);
   if (defined($opt_version))
     {
       $versionstring =~ /\$Id: (.*)\d\d:\d\d:\d\d/ and
@@ -122,6 +123,37 @@ sub uniqueFile # (instr) -> filename
     }
   return $filename;  # Return the 'new' string
 } 
+
+#########################################################################
+#  Subroutine name: setNTPServerList                                    #
+#  Parameters: none                                                     #
+#  Returns   : nothing                                                  #
+#  Call this subroutine to set the global list of NTP servers:          #
+#  @ntpserverlist.                                                      #
+#########################################################################
+sub setNTPServerList
+{
+  # Check to see if the user specified some OSCAR options for ntpconfig
+  my $configvalues = getConfigurationValues('ntpconfig');
+  if ($configvalues)
+    {
+      push @ntpserverlist, $configvalues->{basicserver1}[0] if
+        ($configvalues->{basicserver1}[0]);
+      push @ntpserverlist, $configvalues->{basicserver2}[0] if
+        ($configvalues->{basicserver2}[0]);
+      push @ntpserverlist, $configvalues->{basicserver3}[0] if
+        ($configvalues->{basicserver3}[0]);
+      push @ntpserverlist, (split /\s+/,$configvalues->{extraservers}[0]);
+    }
+
+  # Default to the server's list if the above step yielded no servers
+  @ntpserverlist = @serverntpserverlist if (scalar @ntpserverlist < 1);
+
+  # User can alternately specify multiple servers on the command line
+  @ntpserverlist = @opt_ntpserver if defined(@opt_ntpserver);
+  # If the user specifies the --client flag, that overrides everything else
+  @ntpserverlist = @clientntpserverlist if defined($opt_client);
+}
 
 #########################################################################
 #  Subroutine name: writeConfigFile                                     #
@@ -281,6 +313,9 @@ die "ERROR: ntp package is not installed.  Aborting" if
 
 $cmd_output =~ /^ntp-(\d+)/;
 die "ERROR: ntp package is not at least version 4.  Aborting" if ($1 < 4);
+
+# Set the list of ntp servers
+setNTPServerList();
 
 # Next, write out the new config file and the step-tickers file.
 writeConfigFile();
