@@ -9,15 +9,15 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.6 2002/12/12 19:08:42 brechin Exp $
+      $Id: config.xml,v 1.7 2003/01/30 21:30:01 brechin Exp $
   -->
   <name>opium</name>
 
   <version>
     <major>1</major>
-    <minor>3</minor>
+    <minor>4</minor>
     <subversion>0</subversion>
-    <release>9</release>
+    <release>2</release>
     <epoch>1</epoch>
   </version>
 
