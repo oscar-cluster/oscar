@@ -31,7 +31,8 @@ if ($name eq "redhat") {
 	if ($ver eq "9") {
 		$source_dir .= "9";
 	} elsif ($ver eq "3as") {
-		$source_dir .= "3as";
+		#$source_dir .= "3as";
+		$source_dir .= "9";
 	} else {
 	    print "Error - $pkg_name: no support for $name $ver\n";
         exit(1);
@@ -44,10 +45,6 @@ if ($name eq "redhat") {
 		print "Error - $pkg_name: no support for $name $ver\n";
 		exit(1);
 	}
-} 
-elsif ($name eq "suse") {
-	print "Error - $pkg_name: no support for $name $ver\n";
-	exit(1);
 } elsif ($name eq "mandrake") {
 	$source_dir .= "mdk";
 	if ($ver eq "10.0") {
@@ -56,6 +53,9 @@ elsif ($name eq "suse") {
 		print "Error - $pkg_name: no support for $name $ver\n";
 		exit(1);
 	}
+} else {
+	print "Error - $pkg_name: no support for $name $ver\n";
+	exit(1);
 }
 
 print "Using $pkg_name RPMs from: $source_dir\n";
@@ -72,7 +72,7 @@ if (! -d $dest_dir) {
 # Make a list of the new files and copy them over
 
 opendir(DIR, $source_dir);
-my @good_files = grep {/^$pkg_name/ && -f "$source_dir/$_" } readdir(DIR);
+my @good_files = grep {/\.rpm$/ && -f "$source_dir/$_" } readdir(DIR);
 closedir(DIR);
 if ($#good_files > -1) {
   my $cmd = "cp ";
