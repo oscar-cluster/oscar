@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_user,v 1.2 2002/10/31 15:47:47 jsquyres Exp $
+# $Id: test_user,v 1.3 2003/05/06 20:59:17 brechin Exp $
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
@@ -19,7 +19,7 @@ testprint_label="MPICH (via PBS)"
 # Sanity check (somewhat overkill, but safe = good): check to see that
 # there is a MPICH installed.
 
-mpich="`switcher mpi --list | grep mpich | head -1`"
+mpich="`switcher mpi --list | grep 'mpich-ch_p4' | head -1`"
 if test -z "$mpich"; then
     $OSCAR_TESTPRINT --label "$testprint_label"
     $OSCAR_TESTPRINT --label "$testprint_label" --skipped
