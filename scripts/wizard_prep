@@ -5,7 +5,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: wizard_prep,v 1.11 2002/10/25 18:04:37 jsquyres Exp $
+# $Id: wizard_prep,v 1.12 2002/10/29 00:41:24 jsquyres Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -41,19 +41,26 @@ my $INTERFACE = shift or croak("No interface specified");
 
 # Run the prerequsites
 
+# TEMPORARY FIX: XML-Simple needs XML-Parser.  Need some kind of
+# "requires" functionality in the prerequsites, but for the moment,
+# I'm just going to sort the result of readdir(), which will put them
+# in the correct order.  This is not a good/permanent solution, but
+# it's good enough for the moment.
+
 oscar_log_subsection("Running OSCAR wizard prerequsites");
 my $prefix = "$ENV{OSCAR_HOME}/share/prereqs";
 opendir(PREREQDIR, $prefix) or 
     croak("Couldn't open $prefix for reading");
-while(($_ = readdir(PREREQDIR))) {
-    my $abs = "$prefix/$_";
+my @prereqs = sort(readdir(PREREQDIR));
+closedir(PREREQDIR);
+foreach my $prereq (@prereqs) {
+    my $abs = "$prefix/$prereq";
     if (-d "$abs/scripts" && -f "$abs/scripts/install") {
 	if (system("$abs/scripts/install") != 0) {
-	    carp("WARNING: Prerequsite failure!");
+	    croak("ERROR: Prerequsite failure!");
 	}
     }
 }
-closedir(PREREQDIR);
 
 # This must be done after the prerequisites, because the prerequisites
 # may have installed some Perl modules that OSCAR requires.
@@ -68,7 +75,7 @@ require OSCAR::PackageBest;
 
 oscar_log_subsection("Running package setup scripts");
 opendir(PACKAGE_DIR, "$ENV{OSCAR_HOME}/packages");
-my @packages = readdir(PACKAGE_DIR);
+my @packages = sort(readdir(PACKAGE_DIR));
 closedir(PACKAGE_DIR);
 my $topdir;
 chomp($topdir = `pwd`);
@@ -79,7 +86,7 @@ foreach my $pkg (@packages) {
 
     print "Checking pkg: $pkg\n";
     next if ($pkg eq "." || $pkg eq ".." || $pkg eq "CVS" ||
-	     ! -d $dir || -f "$dir/.oscar_ignore");
+	     ! -d $dir || -e "$dir/.oscar_ignore");
 
     # If it's a good package, run its setup script (if it has one) in
     # the scripts directory.
