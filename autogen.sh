@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: autogen.sh,v 1.13 2004/04/05 19:36:45 brechin Exp $
+# $Id: autogen.sh,v 1.14 2004/04/05 19:48:12 brechin Exp $
 #
 
 #
@@ -156,9 +156,6 @@ make_makefile() {
     cat > $mm_outfile <<EOF
 # -*- makefile -*-
 #
-# Copyright (c) 2002-2003 The Trustees of Indiana University.  
-#                         All rights reserved.
-# 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
