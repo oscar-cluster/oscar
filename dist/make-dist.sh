@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: make-dist.sh,v 1.12 2002/06/12 04:47:33 jsquyres Exp $
+# $Id: make-dist.sh,v 1.13 2002/06/15 03:54:26 jsquyres Exp $
 #
 # For copyright information, please see the COPYING file in the
 # top-level directory
@@ -128,7 +128,6 @@ if test "$want_srpms" != "only"; then
     rm -f $filelist
     cat > $filelist <<EOF
 README
-README.ia64
 EOF
     find dist -type f -print >> $filelist
     find doc -type f -print | egrep -v '.png$' >> $filelist
