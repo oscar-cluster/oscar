@@ -213,6 +213,10 @@ nologging
 
 reject
 
+# Open ssh from anywhere
+
+OPEN	tcp	ssh
+
 # the server and every compute node trust each other
 
 trusted %oscar_server% %nodes%
