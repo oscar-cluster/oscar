@@ -7,3 +7,4 @@ config.status
 config.log
 VERSION
 oscar-*.tar.gz
+oscarinstall.log
