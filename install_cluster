@@ -7,7 +7,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: install_cluster,v 1.25 2003/07/15 18:08:37 brechin Exp $
+# $Id: install_cluster,v 1.26 2003/07/17 22:22:41 brechin Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -199,6 +199,22 @@ if (! -d "/tftpboot/rpm") {
 
 system("chmod 755 packages/*/scripts/*");
 
+# Check to see if rpms for tftp and/or tftp-server are installed.
+# If so, remove them because they conflict with the tftp-hpa rpm.
+foreach my $rpm ('tftp', 'tftp-server')
+  {
+    if ( !system("rpm -q $rpm >/dev/null 2>/dev/null") )
+      {
+        system("rpm -e $rpm");
+        oscar_log_subsection("Removing $rpm RPM");
+      }
+  }
+my $pqtv = `rpm -q --qf '%{VERSION}' perl-Qt 2>/dev/null`;
+if ( $pqtv && $pqtv < 3 ) {
+  !system("rpm -e perl-Qt") or warn("Couldn't remove perl-Qt");
+  oscar_log_subsection("Removing perl-Qt RPM");
+}
+
 # Run the wizard_prep script
 
 my $cmd = "cd $ENV{OSCAR_HOME}/scripts && ./wizard_prep";
@@ -283,20 +299,6 @@ my @rsync=glob("/tftpboot/rpm/rsync*rpm");
 if ((scalar(@filesystem)==0) || (scalar(@rsync)==0)) {
     oscar_die("RPMs missing in /tftpboot/rpm/ (did you copy all CDs?)");
 }
-
-# Check to see if rpms for tftp and/or tftp-server are installed.  
-# If so, remove them because they conflict with the tftp-hpa rpm.
-foreach my $rpm ('tftp', 'tftp-server')
-  {
-    open(CMD,"rpm -q $rpm |");
-    my $cmd_output = <CMD>;
-    close CMD;
-    if ($cmd_output !~ /$rpm is not installed/)
-      {
-        system("rpm -e $rpm");
-        oscar_log_subsection("Removing $rpm RPM");
-      }
-  }
 
 # Now start the execution
 

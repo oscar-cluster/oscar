@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.5 2003/07/09 16:18:06 brechin Exp $
+      $Id: config.xml,v 1.6 2003/07/17 22:22:41 brechin Exp $
   -->
   <name>perl-Qt</name>
 
@@ -18,7 +18,7 @@
     <major>3</major>
     <minor>0</minor>
     <subversion>6</subversion>
-    <release>4</release>
+    <release>5</release>
   </version>
 
   <class>core</class>
@@ -54,6 +54,14 @@
     <filter distribution='mandrake' distribution_version='9.1' />
     <filter distribution='suse' />
       <rpm>perl-Qt</rpm>
+  </rpmlist>
+
+  <rpmlist>
+    <filter distribution='suse' />
+      <rpm>xdevel</rpm>
+      <rpm>qt3</rpm>
+      <rpm>qt3-devel</rpm>
+      <rpm>perl-Qt-qt3-compat</rpm>
   </rpmlist>
 
 </oscar>

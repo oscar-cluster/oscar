@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.5 2003/07/09 16:18:06 brechin Exp $
+      $Id: config.xml,v 1.6 2003/07/17 22:22:41 brechin Exp $
   -->
   <name>base</name>
 
@@ -204,6 +204,14 @@
         <rpm>shadow</rpm>
         <rpm>libcap</rpm>
         <rpm>python2-compat</rpm>
+        <rpm>perl-HTML-Tagset</rpm>
+        <rpm>perl-HTML-Parser</rpm>
+	<rpm>perl-libwww-perl</rpm>
+	<rpm>perl-URI</rpm>
+	<rpm>freetype2-devel</rpm>
+        <rpm>libmng-devel</rpm>
+        <rpm>mesaglut-devel</rpm>
+        <rpm>libpng-devel</rpm>
   </rpmlist>
 
 </oscar>
