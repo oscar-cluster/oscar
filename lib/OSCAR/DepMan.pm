@@ -7,7 +7,7 @@ package DepMan;
 #  information, see the COPYING file in the top level directory of the
 #  OSCAR source distribution.
 #
-#  $Id: DepMan.pm,v 1.1 2003/12/09 05:39:56 tuelusr Exp $
+#  $Id: DepMan.pm,v 1.2 2004/01/28 01:18:03 tuelusr Exp $
 
 use 5.008;
 use strict;
@@ -20,7 +20,7 @@ our $VERSION;
 $VERSION = '0.01';
 # initial release
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 # concrete dependency manager order of preference, for breaking ties on
 # systems where multiple dependency manager modules might claim usability.
@@ -91,8 +91,8 @@ BEGIN {
 }
 
 # AUTOLOAD named constructors for the concrete modules
-# Makes DepMan->Update_RPMs (<root dir>) do the same as
-# DepMan::Update_RPMs->new (<root dir>)
+# Makes DepMan->Update_RPMs (<root dir>, <cache location>) do the same as
+# DepMan::Update_RPMs->new (<root dir>, <cache location>)
 sub AUTOLOAD {
   no strict 'refs';
   our $AUTOLOAD;
@@ -141,7 +141,7 @@ sub new {
 # variable values.
 sub clone {
   ref (my $self = shift) or croak "clone is an instance method";
-  my $new  = { ChRoot => $self->{ChRoot} };
+  my $new  = { ChRoot => $self->{ChRoot}, Cache => $self->{Cache} };
   bless ($new, ref ($self));
   return ($new);
 }
@@ -150,6 +150,7 @@ sub clone {
 sub DESTROY {
   ref (my $self = shift) or croak "DESTROY is an instance method";
   delete $self->{ChRoot};
+  delete $self->{Cache};
 }
 
 # Set the ChRoot instance variable for this object. A value of undef is
@@ -168,6 +169,25 @@ sub chroot {
     return ($self);
   } else {
     return ($self->{ChRoot});
+  }
+}
+
+# Set the Cache instance variable for this object. A value of undef is
+# treated as a directive to quash all cache tags, ostensibly operating from
+# the local cache.
+sub cache {
+  ref (my $self = shift) or croak "cache is an instance method";
+  if (@_) {
+    my $cache = shift;
+    if (defined ($cache) && ($cache =~ m/\s+/)) {
+      croak "Cache value invalid " .
+            "(contains whitespace)";
+    } else {
+      $self->{Cache} = $cache;
+    }
+    return ($self);
+  } else {
+    return ($self->{Cache});
   }
 }
 
@@ -213,6 +233,37 @@ sub command_helper {
   } else {
     # just clear $cl of any #chroot tags
     $cl =~ s/#chroot//g;
+  }
+
+  if (defined ($self->{Cache})) {
+    # substitute value of $Cache into implementation's cache_arg_command_line
+    $self->can ('cache_arg_command_line') or
+      croak "Concrete " . __PACKAGE__ . " module doesn't implement method " .
+            "cache_arg_command_line";
+    $cache_arg = $self->cache_arg_command_line;
+
+    if ($cache_arg =~ m/#cache/) {
+      # put everywhere #cache tag is
+      $cache_arg =~ s/#chroot/$self->{Cache}/g;
+    } else {
+      # put on end
+      $cache_arg = $cache_arg . " " . $self->{Cache};
+    }
+
+    # substitute value of $cache_arg into implementations
+    if ($cl =~ m/#cache/) {
+      # put everywhere #cache tag is
+      $cl =~ s/#cache/$cache_arg/g;
+    } elsif ($cl =~ m/#args/) {
+      # put in front of first #args tag
+      $cl =~ s/#args/$cace_arg #args/;
+    } else {
+      # put on end
+      $cl = $cl . " " . $cache_arg;
+    }
+  } else {
+    # just clear $cl of any #cache tags
+    $cl =~ s/#cache//g;
   }
 
   # guarantee that there's a #args tag somewhere
@@ -332,9 +383,17 @@ DepMan - Perl extension for Dependency Manager abstraction
   $dm->chroot ("/mnt/other_root");
  
   $dm->chroot ("/");    # wrong, will cause chroot argument substitute anyway
+  $dm->chroot ("");	# wrong, same reason, but won't even work
   $dm->chroot (undef);  # right, no chroot argument will be used
 
   my $dm_chroot = $dm->chroot;
+
+  $dm->cache ("/var/cache/update-rpms");
+ 
+  $dm->cache ("");	# wrong, see above
+  $dm->cache (undef);	# right, no cache argument will be used
+
+  my $dm_cache = $dm->cache;  
 
   my @dependencies = $dm->query_requires [<package> ...];
 
