@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: security.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+% $Id: security.tex,v 1.2 2002/01/18 05:15:52 mjbrim Exp $
 %
 % $COPYRIGHT$
 %
@@ -111,14 +111,14 @@ listening on a system, do this:
   lsof -i | grep LISTEN | awk '{print $1,$(NF-2),$(NF-1)}' | sort | uniq
 \end{verbatim}
 
-/noindent To list the services that will be started by default at the current runlevel do this:
+\noindent To list the services that will be started by default at the current runlevel do this:
 
 \begin{verbatim}
   chkconfig --list | grep `grep :initdefault: /etc/inittab | \
   awk -F: '{print $2}'`:on | awk '{print $1}' | sort | column
 \end{verbatim}
 
-/noindent To find services started by xinetd do this:
+\noindent To find services started by xinetd do this:
 
 \begin{verbatim}
   chkconfig --list | awk 'NF==2&&$2==''off''{print}' | \
@@ -133,11 +133,10 @@ on and off system services.
 
 Some network services have their own configuration files. These should be 
 edited to tighten down outside access.  For instance, the NFS filesystem
-uses the \file{/etc/exports} to determin which network addresses can access
+uses the \file{/etc/exports} to determine which network addresses can access
 individual file systems, and which have read-write or read-only access.
 
 \subsection{Secure communications}
 
 By all means, use ssh for network logins.  There are also modified versions
 of the venerable ftp programs that allow encrytion and other imrovements.
-
