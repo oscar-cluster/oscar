@@ -190,43 +190,20 @@ sub populateTable
           # Don't even bother to display non-installable packages
           next if ($allPackages->{$pack}{installable} != 1);
 
-          # First column contains checkboxes and "long" package names
+          # Column 0 contains "short" names of packages
+          setText($rownum,0,$pack);
+
+          # Column 1 contains checkboxes and "long" package names
           my $checkbox=Qt::CheckTableItem(this,$allPackages->{$pack}{package});
           setItem($rownum,1,$checkbox);
 
-          # Build up the list of "Local/opd + version num" strings 
-          my @locationlist = ();
-          for (my $index = 0; 
-               $index < (scalar @{ $allPackages->{$pack}{location} });
-               $index++)
-            {
-              my $locstr = 
-                $allPackages->{$pack}{location}[$index]->{location} . " " .
-                $allPackages->{$pack}{location}[$index]->{version} . " " .
-                $allPackages->{$pack}{location}[$index]->{repository};
-                
-              push @locationlist, $locstr;
-              $index++;
-            }
-
-          # If we have only 1 item in the Location list which we just 
-          # built, then create a simple text cell.  Otherwise, create
-          # a combo box listing all of the locations.
-          my $lastcol;
-          if (scalar @locationlist > 1)
-            {
-              $lastcol = Qt::ComboTableItem(this,\@locationlist,1);
-              setItem($rownum,3,$lastcol);
-            }
-          elsif (scalar @locationlist == 1)
-            {
-              setText($rownum,3,$locationlist[0]);
-            }
-
-          # Column 0 contains "short" names of packages
-          setText($rownum,0,$pack);
           # Column 2 contains the "class" of packages
           setText($rownum,2,$allPackages->{$pack}{class});
+
+          # Column 3 contains the Location + Version
+          setText($rownum,3,$allPackages->{$pack}{location} . " " .
+                            $allPackages->{$pack}{version});
+
           $rownum++;
         }
 

@@ -91,13 +91,11 @@ sub getAllPackages # -> $allPackages
 #     Installable    {installable}     0 or 1                           #
 #     Class          {class}           core/included/third party        #
 #     Information    {description}     long string                      #
-#     Loc/Vers/Rep   {location}        Array of hash references:        #
-#                    {location}[0]->{location} - Local or opd           #
-#                    {location}[0]->{version} - version number: #.#.#-# #
-#                    {location}[0]->{repository} - URL of (opd) package #
-#     Provides       {provides}        Array of hash references:        #
-#     Requires       {requires}        Array of hash references:        #
-#     Conflicts      {conflicts}       Array of hash references:        #
+#     Version        {vesrion}         long version string              #
+#     Location       {location}        OSCAR or OPD                     #
+#     Provides       {provides}        array of hash references:        #
+#     Requires       {requires}        array of hash references:        #
+#     Conflicts      {conflicts}       array of hash references:        #
 #                    {provides}[0]->{name} - Name of thing provided     #
 #                    {provides}[0]->{type} - package, rpm, file, etc.   #
 #     Packager Name  {packager_name}   Name(s) of packager              #
@@ -110,11 +108,11 @@ sub getAllPackages # -> $allPackages
 
   # First, get information on all packages in the local OSCAR packages dir
   my @requested = ("name","package","installable","class","description",
-                   "version_major","version_minor",
-                   "version_subversion","version_release",
-                   "packager_name","packager_email");
-                   #"filter_architecture","filter_distribution",
-                   #"filter_distribution_version");
+                   "version","directory",
+                   "packager_name","packager_email",
+                   # "filter_architecture","filter_distribution",
+                   # "filter_distribution_version"
+                  );
   $allPackages = database_read_table_fields("packages",\@requested,undef);
 
   my $version;
@@ -122,27 +120,11 @@ sub getAllPackages # -> $allPackages
   foreach my $pack (keys %{ $allPackages })
     {
       undef $href;
-
       # For each of the OSCAR packages read in above, add a "location" field
-      # to correspond to the Location column of the packagesTable.  This
-      # field is actually an array of hash references, each containing the
-      # three fields {location}, {version}, and {repository}.  Here, the
-      # {version} is actually a single string using the version_major,
-      # version_minor, version_subversion, and version_release fields.  
-      $version = "";
-      $version  = $allPackages->{$pack}{version_major} if 
-                  (length $allPackages->{$pack}{version_major} > 0);
-      $version .= '.' . $allPackages->{$pack}{version_minor} if 
-                  (length $allPackages->{$pack}{version_minor} > 0);
-      $version .= '.' . $allPackages->{$pack}{version_subversion} if 
-                  (length $allPackages->{$pack}{version_subversion} > 0);
-      $version .= '-' . $allPackages->{$pack}{version_release} if 
-                  (length $allPackages->{$pack}{version_release} > 0);
-
-      $href->{version} = $version;
-      $href->{location} = "Local";
-      $href->{repository} = "";
-      push @{ $allPackages->{$pack}{location} }, $href;
+      # to correspond to the Location column of the packagesTable.  
+      $allPackages->{$pack}{location} = 
+        (($allPackages->{$pack}{directory} =~ /\/var\/lib\/oscar\/packages/) ?
+         "OPD" : "OSCAR");
 
       # Next, get the provides, requires, and conflicts lists for each
       # package.  Here the {provides}, {requires}, and {conflicts} fields
