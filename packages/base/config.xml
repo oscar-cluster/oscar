@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.10 2003/10/21 18:15:17 giraldeau Exp $
+      $Id: config.xml,v 1.11 2003/10/22 16:51:55 giraldeau Exp $
   -->
   <name>base</name>
 
@@ -48,6 +48,8 @@
         <rpm>locales-en</rpm>
         <rpm>lynx</rpm>
         <rpm>mod_php</rpm>
+	<rpm>php-ini</rpm>
+	<rpm>libphp_common432</rpm>
         <rpm>libmm1</rpm>
         <rpm>openssh</rpm>
         <rpm>openssh-clients</rpm>

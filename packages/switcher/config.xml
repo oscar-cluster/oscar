@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.14 2003/07/24 16:25:45 brechin Exp $
+      $Id: config.xml,v 1.15 2003/10/22 16:51:55 giraldeau Exp $
   -->
   <name>Environment Switcher</name>
 
@@ -57,9 +57,18 @@ such, it can be used in any environment for any "switching" kind of
 purpose.</description>
 
   <rpmlist>
+    <filter distribution='redhat'/>
     <rpm>tcl</rpm>
     <rpm>env-switcher</rpm>
     <rpm>modules-oscar</rpm>
+    <rpm>ed</rpm>
+  </rpmlist>
+
+  <rpmlist>
+  <filter distribution='mandrake' distribution_version='9.2'/>
+    <rpm>tcl</rpm>
+    <rpm>env-switcher</rpm>
+    <rpm>modules-oscar-mdk92</rpm>
     <rpm>ed</rpm>
   </rpmlist>
   

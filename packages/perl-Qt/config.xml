@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.12 2003/10/15 15:02:42 giraldeau Exp $
+      $Id: config.xml,v 1.13 2003/10/22 16:51:55 giraldeau Exp $
   -->
   <name>perl-Qt</name>
 
@@ -70,9 +70,10 @@
     <rpm>postgresql-devel</rpm>
     <rpm>libcups2</rpm>
     <rpm>perl-Qt-mdk</rpm>
+    <rpm>libpq3</rpm>
     <rpm>libmng1</rpm>
     <rpm>liblcms1</rpm>
-    <! --<rpm>libpgsql2</rpm> -->
+    <!--<rpm>libpgsql2</rpm> -->
     <!-- <rpm>libpgperl</rpm> -->
     <rpm>libecpg3</rpm>
     <!-- Mis en commentaire... <rpm>libpgsqlodbc0</rpm> -->
