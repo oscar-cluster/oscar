@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-
+<!DOCTYPE package SYSTEM "../package.dtd">
 <package>
   <name>oda</name>
 
@@ -27,45 +27,41 @@
 
   <rpmlist>
     <all>
-      <rpm>mysql</rpm>
-      <rpm>perl-DBD-MySQL</rpm>
-      <rpm>perl-DBI</rpm>
       <rpm>oda</rpm>
+      <rpm>perl-Mysql</rpm>
     </all>
-    <server>
-      <rpm>mysql-server</rpm>
-    </server>
   </rpmlist>
 
   <oda>
-    /// This definition allows easier reading (or modifying) of package records
-    /// to list all package names:
-    ///     oda packages
-    /// to list the package names and packager names for all packages:
-    ///     oda packages packager_name
-    /// to list the package names and packager email of all installable packages:
-    ///     oda packages installable=1 packager_email
-    /// to list the package names of all included class installable packages:
-    ///     oda packages class=included installable=1
-    /// to change the packager email address for package foo:
-    ///     oda packages name=foo packager_email~new_email@newplace.com
-    ///
-    /// To list all the packages that require a particular thing:
-    ///     oda packages-that-require required_thing_name
-    ///
-    /// To list all the things that a particluar package requires:
-    ///	    oda this-package-requires package_name
-    ///
+     <!--
+     This definition allows easier reading (or modifying) of package records
+     to list all package names:
+         oda packages
+     to list the package names and packager names for all packages:
+         oda packages packager_name
+     to list the package names and packager email of all installable packages:
+         oda packages installable=1 packager_email
+     to list the package names of all included class installable packages:
+         oda packages class=included installable=1
+     to change the packager email address for package foo:
+         oda packages name=foo packager_email~new_email@newplace.com
+    
+     To list all the packages that require a particular thing:
+         oda packages-that-require required_thing_name
+    
+     To list all the things that a particluar package requires:
+    	    oda this-package-requires package_name
+    -->
     <shortcut> packages read-records|modify-records packages name $* </shortcut>
     <shortcut> packages-that-require read-records packages_requires package name=$1 </shortcut>
     <shortcut> this-package-requires read-records packages_requires name package=$1 </shortcut>
-    ///
-    /// This defines the second field name for records in the package_rpmlist
-    /// which can't be surmised from the xml structure. If there were more
-    /// than one field names that needed to be specified for a particular
-    /// table, they would be specified all on the same line.
-    ///
+    <!--
+     This defines the second field name for records in the package_rpmlist
+     which can't be surmised from the xml structure. If there were more
+     than one field names that needed to be specified for a particular
+     table, they would be specified all on the same line.
+     -->
     <fieldnames> packages_rpmlist scope </fieldnames>
-    ///
+    
    </oda>
 </package>

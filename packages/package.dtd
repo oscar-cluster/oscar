@@ -1,0 +1,69 @@
+<!ELEMENT package (name,version,class,installable,summary,
+                   license,copyright?,group,url?,maintainer*,
+                   packager+,vendor?,description,provides*,requires*,
+                   switcher*,rpmlist*,oda?)>
+
+<!--
+The easiest way to use this file and to validate the XML files config.xml is
+to use the xmllint software that is avalaible with the libxml library (package
+avalaible for all? distro.
+
+In order to check your XML syntax, you can just make a
+xmllint config.xml
+to ensure that you produce correct XML.
+
+In order to validate against this DTD you can do a
+xmllint -\-valid config.xml
+This will format the document to STDOUT, errors will be at the beginning of
+the document.
+
+To test the valididy (against the present DTD) you can use the -\-noout option
+(if all is correct, xmllint will produce no output).
+
+For instance, from this directory
+xmllint -\-valid -\-noout */config.xml
+
+Will show you all the packages that don't validate against the present DTD.
+-->
+
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT summary (#PCDATA)>
+<!ELEMENT version (major,minor,subversion,release,epoch)>
+<!ELEMENT major (#PCDATA)>
+<!ELEMENT minor (#PCDATA)>
+<!ELEMENT subversion (#PCDATA)>
+<!ELEMENT release (#PCDATA)>
+<!ELEMENT epoch (#PCDATA)>
+<!ELEMENT class (#PCDATA)>
+<!ELEMENT installable (#PCDATA)>
+<!ELEMENT license (#PCDATA)>
+<!ELEMENT copyright (#PCDATA)>
+<!ELEMENT url (#PCDATA)>
+<!ELEMENT maintainer (name,email)>
+<!ELEMENT email (#PCDATA)>
+<!ELEMENT packager (name,email)>
+<!ELEMENT vendor (#PCDATA)>
+<!ELEMENT group (#PCDATA)>
+<!ELEMENT description (#PCDATA)>
+
+
+<!ELEMENT provides (type,name)>
+<!ELEMENT type (#PCDATA)>
+
+<!ELEMENT requires (type,name)>
+
+<!ELEMENT switcher (tag,name)>
+<!ELEMENT tag (#PCDATA)>
+<!ELEMENT rpmlist (all?,server?,client?)>
+<!ELEMENT all (rpm+)>
+<!ELEMENT server (rpm+)>
+<!ELEMENT client (rpm+)>
+<!ELEMENT rpm (#PCDATA)>
+<!ATTLIST rpm distro CDATA #IMPLIED>
+<!ATTLIST rpm version CDATA #IMPLIED>
+<!ELEMENT oda (shortcut*,fieldnames*)>
+<!ELEMENT shortcut (#PCDATA)>
+<!ELEMENT fieldnames (#PCDATA)>
+
+
+
