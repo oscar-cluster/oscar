@@ -12,7 +12,7 @@ oscar:cluster:NAME:1:1
 oscar:cluster:OSCAR_VERSION:2
 oscar:cluster:CLUSTER_HEAD:3
 oscar:cluster:INSTALL_NODE:4
-oscar:cluster:NETWORK_TYPE:5
+oscar:cluster:NETWORK_TYPE:5 
 oscar:group:NAME:1:1
 oscar:group:PACKAGELIST:2
 oscar:group:HOSTLIST:2
