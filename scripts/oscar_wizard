@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.57 2003/10/30 03:26:36 tfleury Exp $
+# $Id: oscar_wizard,v 1.58 2003/11/01 01:25:41 naughtont Exp $
 #
 
 use strict;
@@ -320,6 +320,19 @@ sub postimagebuild {
     oscar_log_subsection("Step $step_number: Running: $cmd");
     !system($cmd) or (carp($!), return undef);
     oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
+
+    # Have installed Client RPMs & did not croak, so mark 
+    # packages.<pkg>installed # true. (best effort for now)
+    
+    oscar_log_subsection("Marking installed bit in ODA for client RPMS");
+    
+    my @pkgs = list_selected_packages("all");
+    foreach my $pkg (@pkgs) {
+            oscar_log_subsection("Set package: $pkg");
+            my $ok_rslt = database_execute_command("package_mark_installed $pkg");
+            croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
+    }
+    oscar_log_subsection("Done marking installed bits in ODA");
 
     # All done -- remove the temp file that held all the RPM filenames
     

@@ -4,7 +4,7 @@
 #                     Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
-# $Id: install_server,v 1.10 2003/10/30 16:34:37 naughtont Exp $
+# $Id: install_server,v 1.11 2003/11/01 01:25:41 naughtont Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ use OSCAR::Package;
 use OSCAR::PackageBest;
 use OSCAR::Network;
 use OSCAR::Logger;
+use OSCAR::Database;
 use Carp;
 use Data::Dumper;
 

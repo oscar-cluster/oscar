@@ -7,7 +7,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.31 2003/07/30 15:50:03 tfleury Exp $
+# $Id: wizard_prep,v 1.32 2003/11/01 01:25:41 naughtont Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
+use OSCAR::Database;
 use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
@@ -210,6 +211,21 @@ oscar_log_subsection("Installing server core RPMs");
 OSCAR::Package::install_rpms(@rpms) or 
   croak("Couldn't install packages needed for OSCAR Wizard to run");
 oscar_log_subsection("Successfully installed server core RPMs");
+
+
+# Have installed Core Server RPMs & did not croak, so mark 
+# packages.<pkg>installed true.  (best effort for now)
+
+oscar_log_subsection("Marking installed bit in ODA for server core RPMS");
+
+foreach my $pkg (@rpms) {
+        oscar_log_subsection("Set package: $pkg");
+        my $ok_rslt = database_execute_command("package_mark_installed $pkg");
+        croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
+}
+oscar_log_subsection("Done marking installed bits in ODA");
+
+
 
 # Run the post_server_rpm_install scripts
 
