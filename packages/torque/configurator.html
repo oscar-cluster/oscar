@@ -1,0 +1,34 @@
+<!--
+Copyright (c) 2003, The Board of Trustees of the University of Illinois. All rights reserved.
+Author: Jeremy Enos jenos@ncsa.uiuc.edu
+-->
+<HTML>
+<HEAD><TITLE>Torque Batch System Configuration</TITLE>
+</HEAD>
+<BODY>
+<form>
+<H2>Head node as compute node.</H2>
+For smaller clusters, some admins may wish to use the head node (OSCAR server) as a compute node too.  This is not recommended for larger clusters.
+<P>
+<input type="checkbox" name="compute_on_head" value="YES">  Run batch system client (pbs_mom) on head node
+<P>
+
+<H2>Server log level</H2>
+Each level includes those before it.  Select one:<br>
+<input type="radio" name="loglevel" value="1"> 1 - Error Events<br>
+<input type="radio" name="loglevel" value="2"> 2 - Batch System/Server Events<br>
+<input type="radio" name="loglevel" value="4"> 4 - Administration Events<br>
+<input type="radio" name="loglevel" value="8"> 8 - Job Events<br>
+<input type="radio" name="loglevel" value="16"> 16 - Job Resource Usage<br>
+<input type="radio" name="loglevel" value="32"> 32 - Security Violations<br>
+<input type="radio" name="loglevel" value="64" checked> 64 - Scheduler Calls (recommended, default)<br>
+<input type="radio" name="loglevel" value="128"> 128 - Debug Messages<br>
+<input type="radio" name="loglevel" value="256"> 256 - Extra Debug Messages<br>
+<input type="radio" name="loglevel" value="511"> 511 - Everything On<br>
+<P>
+<input type=reset value='Reset Form'>
+<P>
+</FORM>
+<HR>
+</BODY>
+

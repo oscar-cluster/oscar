@@ -1,0 +1,17 @@
+#!/bin/sh
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+### Job name
+#PBS -N shelltest
+
+### Output
+#PBS -o shelltest.out
+#PBS -e shelltest.err
+
+### Queue name
+#PBS -q workq
+
+### Script commands
+/opt/pbs/bin/pbsdsh -s hostname
+/opt/pbs/bin/pbsdsh -s date +"Hello, date is %D, time is %T"
+exit

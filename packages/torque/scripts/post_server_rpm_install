@@ -1,0 +1,60 @@
+#!/usr/bin/perl
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   post_server_rpm_install for pbs
+
+use strict;
+use Carp;
+use lib '/usr/lib/systeminstaller';
+use SystemInstaller::Machine;
+
+######################################################################
+#  Check to see if 'PBS Server' is running.  If not, then start it.  #
+######################################################################
+sub startPBSserver
+{
+#  open(CMD,"/etc/init.d/pbs_server status |");
+#  my $result = <CMD>;
+#  close(CMD);
+  system('/etc/init.d/pbs_server start');
+#    unless ($result =~ /is running/);
+}
+
+
+########################
+#  BEGIN MAIN PROGRAM  #
+########################
+
+startPBSserver();
+
+# Config PBS sched service not to start since we use Maui
+system('/sbin/chkconfig --del pbs_sched');
+# Config PBS server service to start
+system('/sbin/chkconfig --add pbs_server');
+
+print "...updating xpbsmonrc file\n";
+my $xpbsmonrc = "/opt/pbs/lib/xpbsmon/xpbsmonrc";
+
+my @lines = `cat $xpbsmonrc`;
+grep { s/ICON.*$/ICON;pbs_oscar;pbs_oscar;;;}/ } @lines;
+
+open (RCFILE, ">$xpbsmonrc") 
+  or croak("Error: XPBSMONRC not setup - Couldn't open $xpbsmonrc.\n");
+print RCFILE @lines; 
+close (RCFILE);
+

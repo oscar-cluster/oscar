@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<!--
+Copyright (c) 2004, The Board of Trustees of the University of Illinois. All rights reserved.
+Author: Jeremy Enos jenos@ncsa.uiuc.edu
+-->
+<oscar>
+  <name>Torque</name>
+
+  <version>
+    <major>1</major>
+    <minor>0</minor>
+    <subversion>1p5</subversion>
+    <release>3</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>included</class>
+
+  <summary>Torque (formerly Scalable PBS)</summary>
+  <license>PBS license (see PBS_License.txt)</license>
+  <group>Applications/batch</group>
+  <packager>
+    <name>Jeremy Enos</name>
+    <email>jenos@ncsa.uiuc.edu</email>
+  </packager>
+
+  <description>Torque (Tera-scale Open-source Resource and QUEue manager) is a resource manager providing control over batch jobs and distributed compute nodes.  Torque is based on OpenPBS version 2.3.12 and incorporates scalability, fault tolerance, and feature extension patches provided by NCSA, OSC, the U.S. Dept of Energy, Sandia, PNNL, U of Buffalo, TeraGrid, and many other leading edge HPC organizations.  This version may be freely modified and redistributed subject to the constraints of the included license.
+
+</description>
+  <url>http://supercluster.org/projects/torque</url>
+  <rpmlist>
+      <rpm>torque</rpm>
+      <rpm>torque-mom</rpm>
+      <rpm>torque-client</rpm>
+  </rpmlist>
+  <rpmlist>
+      <filter group="oscar_server"/>
+      <rpm>torque-server</rpm>
+      <rpm>torque-gui</rpm>
+  </rpmlist>
+<conflicts>
+  <name>pbs</name>
+  <type>package</type>
+</conflicts>
+</oscar>
+

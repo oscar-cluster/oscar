@@ -1,0 +1,32 @@
+#!/bin/sh
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+
+# $Id: test_user,v 1.2 2004/03/12 19:47:25 jenos Exp $
+#
+# Authors: Jason Brechin
+#          Jeremy Enos
+
+
+cd ~
+clients=0
+for i in $@ 
+do
+    clients=`expr $clients + 1`
+done
+
+#                       DEFAULT PBS QUEUE
+#                       -----------------
+
+if [ `/opt/pbs/bin/qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
+        $OSCAR_TESTPRINT --label "PBS default queue definition" -p
+else
+        $OSCAR_TESTPRINT --label "PBS default queue definition" -f
+fi
+
+~/pbs_test $clients 1 ~/pbs/pbs_script.shell "Hello" ~/pbs/shelltest 3 "PBS Shell Test"
+
