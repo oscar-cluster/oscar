@@ -3,8 +3,9 @@
 <package>
   <name>hdf5</name>
 
-  <filter architecture='ia32' />
-
+  <filter architecture='ia32' distribution='redhat' distribution_version='8.0' />
+  <filter architecture='ia32' distribution='mandrake' />
+  
   <version>
     <major>1</major>
     <minor>0</minor>
