@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.3 2002/04/05 19:47:15 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.4 2002/04/05 19:51:07 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
 
@@ -58,36 +58,41 @@ if ($options->Help){
 	exit 0;
 }
 
-&verbose("Installing required rpms");
+verbose("Installing required rpms");
 &install_required_rpms or croak("Unable to install required rpms.");
 
-&verbose("Restarting xinetd");
+verbose("Restarting xinetd");
 !system("service xinetd restart") or croak("Couldn't restart xinetd");
 
-&verbose("Creating directories.");
+verbose("Creating directories.");
 mkpath("/tftpboot/pxelinux.cfg");
 unless (-d "/tftpboot/pxelinux.cfg") {
 	 croak("Unable to create /tftpboot directories.");
 }
 
-&verbose("Getting pxelinux.0.");
-copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
-	croak("Unable to copy pxelinux.0 file to /tftpboot.");
-
-&verbose("Copying default pxelinux.cfg file");
 my $archdir = "$ARCH-boot";
 
 if($ARCH eq "i386") {
+    verbose("Getting pxelinux.0.");
+    copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
+      croak("Unable to copy pxelinux.0 file to /tftpboot.");
+    
+    verbose("Copying default pxelinux.cfg file");
     copy("/usr/share/systemimager/$archdir/pxelinux.cfg/default", "/tftpboot/pxelinux.cfg/") or 
       croak("Unable to copy default pxelinux.cfg file to /tftpboot.");
 
-    &verbose("Copying SystemImager kernel & ramdisk");
+    verbose("Copying SystemImager kernel & ramdisk");
     copy("/usr/share/systemimager/$archdir/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
       croak("Unable to copy default message.txt file to /tftpboot.");
 } elsif ($ARCH eq "ia64") {
+    verbose("Copying elilo.efi to /tftpboot");
     copy("/boot/efi/elilo.efi","/tftpboot") or
       croak("Unable to copy elilo.efi to /tftpboot");
+
+    verbose("Linking elilo.efi to pxelinux.0");
     symlink("elilo.efi","pxelinux.0");
+
+    verbose("Writing out elilo.conf file");
     open(OUT,">/tftpboot/elilo.conf") or croak("Couldn't open /tftpboot/elilo.conf for writing");
     print OUT <<'END';
 prompt
@@ -145,7 +150,7 @@ sub check_args {
 	if ($options->verbose ||  $config->verbose){
 		start_verbose;
 	}
-	&verbose("Checking arguments.");
+	verbose("Checking arguments.");
 	if ($options->arch){
                 $ARCH=$options->arch;
         }
