@@ -101,7 +101,7 @@ pbs_test_routine () {
   cd `dirname $pbs_script`
   if [ -f $output.out ]; then /bin/rm -f $output.out; fi
   if [ -f $output.err ]; then /bin/rm -f $output.err; fi
-  job=`$qsub -l nodes=$clients:ppn=$ppn $pbs_script`
+  job=`$qsub -o $output.out -e $output.err -l nodes=$clients:ppn=$ppn $pbs_script`
   # Check that job submitted properly
   if [ -z $job ]; then 
     $OSCAR_TESTPRINT --label "$pbs_test_type" --fail
