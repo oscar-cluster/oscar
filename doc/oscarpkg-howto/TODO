@@ -1,0 +1,26 @@
+TODO:
+  + Get feedback from others & roll in changes/updates
+  + XML stuffo
+      o Update DTD
+      o Add text about 'xmllint' for pkg validation of "config.xml"
+      o Create Schema (xmllint --schema, 2.5.8+)
+  + Add text about ODA and shortcuts
+  + Add *better* switcher module example & how to create a switcher RPM
+  + Add reference section
+      o OSCAR Config-HOWTO.html
+      o OSCAR Architecture Document
+      o Maximum RPM
+      o XML DTD/Schema/Xmllint(libxml2)???
+      o Syntax for HTML forms,
+        http://www.w3.org/TR/1999/REC-html401-19991224/interact/forms.html
+      o cite OSCAR Papers?
+  + Some tricks?
+      o .oscar_ignore
+
+DONE:
+  - Add text about Configurator
+  - Finish XML element table
+  - Finish 'Pkg Layout Section'
+      o Pkg scripts table
+	  o "This is where..." areas
+

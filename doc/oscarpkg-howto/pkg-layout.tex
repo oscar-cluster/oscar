@@ -1,4 +1,4 @@
-% $Id: pkg-layout.tex,v 1.9 2003/09/26 18:58:08 naughtont Exp $
+% $Id: pkg-layout.tex,v 1.10 2003/09/26 20:06:42 naughtont Exp $
 
 % TJN: Mention the XML tools that are helpful, e.g., 'xmllint'
 %      which >= 2.5.8 (i believe) has --schema option too! :)
@@ -190,10 +190,11 @@ processed in alph-order.
         2. & Call the API scripts: \cmd{post\_server\_rpm\_install} &
         Server filesystem \\
 %
-        3. & Install all the client RPMs & Client filesystem \\
+        3. & Install all the client RPMs & 
+		Client/\cmd{chroot}'d environment \\
 %
         4. & Call the API scripts: \cmd{post\_client\_rpm\_install} &
-        Client filesystem \\
+        Client/\cmd{chroot}'d environment \\
 %
         5. & Define clients in the OSCAR/SIS database & Server
         filesystem \\
@@ -203,12 +204,12 @@ processed in alph-order.
 %
         7. & Push the images to the nodes & Server filesystem \\
 %
-        8. & Call the API scripts: \cmd{post\_install} & Server
-        filesystem \\
+        8. & Call the API scripts: \cmd{post\_install} & 
+		   Server and/or Client filesystem \\
         \hline
       \end{tabular}
-      \caption{Note that step 7 won't happen in a non-SIS based install
-        -- this step will be skipped.}
+      \caption{Note the \cmd{chroot}'d environment indicates 
+	  the operations happen in the SIS image not on the actual machine.}
     \label{tab:sequence-of-events}
   \end{center}
 \end{table}
@@ -269,9 +270,12 @@ at this phase.  As the name suggests these are performed on the server
 (after all server packages have been installed) and on the client (once the
 client has been ``installed''\footnote{In the case of OSCAR this means that
 the SIS image (i.e., SystemImager image) has been built and client software
-is installed in this \cmd{chroot}'ed environment but yet the physical
-hardware.}).  This pair of scripts is pretty limited in use but helps
-some instances where RPMs would otherwise have to be modified.
+is installed in this \cmd{chroot}'ed environment on the server node, but is
+not yet on the physical compute node hardware.  This precludes the use of
+things like client specific environment variables or process managment
+tools e.g., \cmd{service}.}).  This pair of scripts is pretty limited in
+use but helps some instances where RPMs would otherwise have to be
+modified.
 
 
 
