@@ -1,0 +1,822 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# Copyright 2002 NCSA
+#                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+
+# cannot calculate where these are
+use strict;
+use Getopt::Long;
+use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR","../../../lib","../../../lib/OSCAR";
+use OSCAR::Package;
+use OSCAR::Network;
+use OSCAR::oda;
+use Data::Dumper;
+
+my $folding_character = "_";
+my %list_of_multiple_value_folded_fields = ();
+my %multiple_value_folded_fields = ();
+my %oda_fieldnames = ();
+my %oda_shortcuts = ();
+my %options = ();
+my $packages_table_name = "packages";
+my %single_value_folded_fields = ();
+
+# function to create a database table with the
+# proper field definitions if the table doesn't
+# already exist, or add any missing fields
+# if the table already exists.
+sub make_fix_table{
+    my ( $table_name, $field_types_ref ) = @_;
+
+    print_hash( "", "$0: in make_fix_table table_name=<$table_name> field_types=",
+		$field_types_ref )
+	if $options{debug};
+    # get a list of the tables and fields
+    # that are already in the database
+    my %existing_tables_fields = ();
+    if ( ! oda::list_tables_fields( \%options,
+				    \%existing_tables_fields ) ) {
+	oda::disconnect( \%options );
+	exit 1;
+    }
+
+    # check if the table in question exists
+    print "Checking if database table <$table_name> exists ... ";
+    if ( ! exists $existing_tables_fields{ $table_name } ) {
+	print "does not exist. Adding ...\n";
+	print_hash( "", "in make_fix_table adding table <$table_name> fields=",
+		    $field_types_ref ) if $options{debug};
+	if ( ! oda::create_table( \%options,
+				  $table_name,
+				  $field_types_ref ) ) {
+	    oda::disconnect( \%options );
+	      exit 1;
+	  }
+	my %table_hash = ();
+	$existing_tables_fields{ $table_name } = \%table_hash;
+    } else {
+	print "exists.\n";
+	my $table_hash_ref = $existing_tables_fields{ $table_name };
+	print "Checking if all required fields are in table <$table_name> ...\n";
+	foreach my $field_name ( sort keys %$field_types_ref ) {
+	    print "Checking for required field named <$field_name> ... ";
+	    if ( exists $$table_hash_ref{ $field_name } ) {
+		print "exists\n";
+	    } else {
+		print "does not exist.\n";
+		print "Adding field named <$field_name> of type $$field_types_ref{ $field_name } in database table <$table_name> ...\n";
+		my %new_field;
+		$new_field{ $field_name } =
+		    $$field_types_ref{ $field_name };
+		if ( ! oda::add_fields( \%options,
+					$table_name,
+					\%new_field ) ) {
+		    oda::disconnect( \%options );
+		      exit 1;
+		  }
+	    }
+	}
+    }
+}
+
+sub print_hash {
+    my( $leading_spaces, $name, $hashref ) = @_;
+    print "$0: $leading_spaces$name ->\n";
+    foreach my $key ( sort keys %$hashref ) {
+	my $value = $$hashref{$key};
+	if (ref($value) eq "HASH") {
+	    print_hash(  "$leading_spaces    ", $key, $value );
+	} elsif (ref($value) eq "ARRAY") {
+	    my $string = join(',', @$value);
+	    print "$0: $leading_spaces    $key => ($string)\n";
+	} elsif (ref($value) eq "SCALAR") {
+	    print "$0: $leading_spaces    $key is a scalar ref\n";
+	    print "$0: $leading_spaces    $key => $$value\n";
+	} else {
+	    $value = "undef" unless defined $value;
+	    print "$0: $leading_spaces    $key => <$value>\n";
+	}
+    }
+}
+
+# note that this will leave arrays of hash references
+# in the output tree unchanged (without unfolding)
+sub recursive_fold_fields{
+    my ( $single_values_ref, $multiple_values_ref,
+	 $level_ref, $input_ids_list_ref ) = @_;
+#    if ( $options{debug} ) {
+#	print( "$0: ids_list=<@negative_ids_list>\n");
+#	print_hash( "", "$0: level_ref", $level_ref);
+#    }
+    foreach my $level_key ( sort keys %$level_ref ) {
+	my $level_value = $$level_ref{$level_key};
+	my $folded_fields_id = join( '_', 
+				     @$input_ids_list_ref,
+				     $level_key );
+	if ( ref( $level_value ) eq "HASH" ) {
+	    my @ids_list = ( @$input_ids_list_ref,
+			     $level_key );
+	    recursive_fold_fields( $single_values_ref,
+				   $multiple_values_ref,
+				   $level_value, 
+				   \@ids_list );
+	} elsif ( ref( $level_value ) eq "ARRAY" ) {
+	    print "$0: adding folded field <$folded_fields_id> value <$level_value> to multiple values tables\n"
+		if $options{debug};
+	    $$multiple_values_ref{ $folded_fields_id } =
+		$level_value;
+	    $list_of_multiple_value_folded_fields
+	    { $folded_fields_id } = 1;
+	} else {
+	    $$single_values_ref{ $folded_fields_id } =
+		$level_value;
+	}
+	delete $$level_ref{$level_key};
+    }
+}
+
+sub usage {
+    my ( $exit_status, @error_strings ) = @_;
+    my $progname = $0;
+    print <<USAGE;
+
+$progname reads the package configuration XML files
+that reside in the OSCAR_INSTALL_BASE/packages/*
+directories, and makes or updates the oda database.
+Already existing records and fields are not modified.
+
+Options:
+  --debug             turns on debug output
+  --database=DATABASE database name, default is oscar
+  --help              prints out usage information then exits
+  --host=HOST         database host, default localhost
+  --nodebug           turns off debug output
+  --password=PASSWORD database password, default allows access
+  --port=PORT         database port number, default 3306
+  --noverbose         turns off verbose output
+  --type=DATABASETYPE set the database type, default is mysql
+  --user USER         database user id, default anonymous if non-root
+  --verbose           turns on verbose output
+
+Usage:
+$progname [options]
+
+USAGE
+    if ( @error_strings ) {
+	print "\n";
+	foreach my $error_string ( @error_strings ) {
+	    print "$0: $error_string\n";
+	}
+    }
+    exit $exit_status;
+}
+
+# find the base directory of the oscar distribution,
+my $oscar_home;
+# first try the environmental variable
+if ( exists $ENV{OSCAR_HOME} ) {
+    $oscar_home = $ENV{OSCAR_HOME};
+    die "Bad OSCAR_HOME environmental variable value <$oscar_home>"
+	if ( ! -d "$oscar_home");
+} 
+# then try to figure out the directory this program was run from
+else {
+    $oscar_home = $0;
+    my $cwd = `pwd`;
+    chomp $cwd;
+    $oscar_home = $cwd . '/' . $oscar_home
+	if $oscar_home !~ /^\//;   # prepend current dir if not abs
+    $oscar_home =~ s,/\.\./[^/][^/][^/]+/,/,g; # get rid of /../???*/
+    $oscar_home =~ s,/\.\./[^\./][^\./]/,/,g;  # get rid of /../??/
+    $oscar_home =~ s,/\./,/,g;                 # get rid of /./
+    $oscar_home =~ s,/packages/[^/]+/scripts/,/,g;
+    $oscar_home =~ s,/[^/]+$,,;  # Remove the name of the program
+    die "Bad calculated oscar base directory <$oscar_home>"
+	if ( ! -d "$oscar_home");
+    $ENV{OSCAR_HOME} = $oscar_home;
+}
+print "$0: oscar_home=<$oscar_home>\n" if $options{debug};
+
+# configure command line options parsing
+Getopt::Long::Configure("ignore_case"); # ignore case
+Getopt::Long::Configure("bundling");    # allow -a -b or -ab
+Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
+
+# set default option values
+my %options = ( 'debug'       => 0,
+                'verbose'     => 0 );
+
+# parse command line options
+GetOptions( \%options,
+            'debug!',
+            'database|d=s',
+            'help',
+            'host|h=s',
+            'password=s',
+            'port|p=i',
+            'type|t=s',
+            'user|u=s',
+            'verbose!',
+            'version' )
+    || usage(1);
+print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
+oda::print_hash( "", "$0: options after GetOptions", \%options) if $options{debug};
+
+# --help flag just prints out usage information and exits
+if ( exists $options{help} ) {
+    usage( 0 );
+}
+
+# any arguments left is an error
+usage( 1 ) if @ARGV;
+
+# slurp in all the package xml files
+my $xml_ref = pkg_config_xml();
+#die "Cannot read package XML config files" if ! defined $xml_ref;
+if ( $options{debug} ) {
+#    oda::print_hash( "", "$0: read_all_pkg_config_xml returned",
+#		     $xml_ref );
+    if ( $options{debug} ) {
+	print "$0: xml_ref:\n";
+	print Dumper($xml_ref);
+    }
+}
+
+# recursively loop through xml config data, 
+# finding all first level package field names
+# that begin with "oda_" and moving them from
+# the main xml hash into a seperate storage 
+# place, folding the field names
+
+foreach my $package_name ( sort keys %$xml_ref ) {
+    print "$0: looking for special oda fields in xml for package <$package_name>\n" 
+	if $options{debug};
+    my $xml_package_ref = $$xml_ref{$package_name};
+
+    # loop through every upper level xml field name 
+    # for this package
+
+    foreach my $package_xml_field_name ( sort keys %$xml_package_ref ) {
+
+	# if the upper level xml field name is "oda_*"
+
+	if ( $package_xml_field_name =~ /^oda$/ ) {
+	    print_hash( "", "found oda special information in $package_name",
+			$$xml_package_ref{$package_xml_field_name} )
+		if $options{debug};
+
+	    # move the oda information sub-hash 
+	    # into a temporary hash and fold the
+	    # the names into new lists
+	    my @field_ids_list = ();
+	    my %multiple_values = ();
+	    my %single_values = ();
+	    my %source = ();
+	    $source{$package_xml_field_name} = 
+		$$xml_package_ref{$package_xml_field_name};
+	    delete $$xml_package_ref{$package_xml_field_name};
+	    recursive_fold_fields( \%single_values,
+				   \%multiple_values,
+				   \%source,
+				   \@field_ids_list );
+	    if ( $options{debug} ) {
+		print_hash( "", "converted special information single values",
+			    \%single_values );
+		print_hash( "", "converted special information multiple values",
+			    \%multiple_values );
+	    }
+
+	    # now look for oda specified fieldnames and store them
+	    if ( exists $multiple_values{oda_fieldnames} ) {
+		my $fieldnames_ref = $multiple_values{oda_fieldnames};
+		foreach my $fieldnames ( @$fieldnames_ref ) {
+		    # parse out leading word and use it for the fieldnames table name
+		    my @fieldnames_fields = grep( !/^$/, 
+				      split( /\s+/, $fieldnames ) );
+		    my $fieldnames_table = shift @fieldnames_fields;
+		    # make sure someone else didn't alread define this one
+		    if ( ! exists $oda_fieldnames{$fieldnames_table} ) {
+			print "$0: storing fieldnames table=<$fieldnames_table> fields=<@fieldnames_fields>\n"
+			    if $options{debug};
+			$oda_fieldnames{$fieldnames_table} = \@fieldnames_fields;
+		    } elsif ( $package_name eq "oda" ) {
+			warn "$0: duplicated oda fieldnames <$fieldnames_table> specified,\n";
+			warn "previous value was <$oda_fieldnames{$fieldnames_table}>,\n";
+			warn "over-riding with oda value <@fieldnames_fields>\n";
+			$oda_fieldnames{$fieldnames_table} = \@fieldnames_fields;
+		    } else {
+			warn "$0: duplicated oda fieldnames <$fieldnames_table> specified,\n";
+			warn "ignoring value <@fieldnames_fields> specified by <$package_name>\n";
+			warn "leaving value as previous value <$oda_fieldnames{$fieldnames_table}>,\n";
+		    }
+		}
+	    }
+	    delete $multiple_values{oda_fieldnames};
+
+	    # now look for oda shortcuts and store them
+	    if ( exists $multiple_values{oda_shortcut} ) {
+		my $shortcuts_ref = $multiple_values{oda_shortcut};
+		foreach my $shortcut ( @$shortcuts_ref ) {
+		    # parse out leading word and use it for the shortcut name
+		    my @shortcut_fields = grep( !/^$/, 
+				      split( /\s+/, $shortcut ) );
+		    my $shortcut_name = shift @shortcut_fields;
+		    my $shortcut_value = join( ' ', @shortcut_fields );
+		    # make sure someone else didn't alread define this one
+		    if ( ! exists $oda_shortcuts{$shortcut_name} ) {
+			print "$0: storing shortcut name=<$shortcut_name> value=<$shortcut_value>\n"
+			    if $options{debug};
+			$oda_shortcuts{$shortcut_name} = $shortcut_value;
+		    } elsif ( $package_name eq "oda" ) {
+			warn "$0: duplicated oda shortcut <$shortcut_name> specified,\n";
+			warn "previous value was <$oda_shortcuts{$shortcut_name}>,\n";
+			warn "over-riding with oda value <$shortcut_value>\n";
+			$oda_shortcuts{$shortcut_name} = $shortcut_value;
+		    } else {
+			warn "$0: duplicated oda shortcut <$shortcut_name> specified,\n";
+			warn "ignoring value <$shortcut_value> specified by <$package_name>\n";
+			warn "leaving value as previous value <$oda_shortcuts{$shortcut_name}>,\n";
+		    }
+		}
+	    }
+	    delete $multiple_values{oda_shortcut};
+
+	} # end if the upper level xml field name was "oda_*"
+
+    } # end looping through uppper level xml field names
+
+} # end looping through xml package sections
+if ( $options{debug} ) {
+    print_hash( "", "$0: oda_shortcuts", \%oda_shortcuts );
+    print_hash( "", "$0: oda_fieldnames", \%oda_fieldnames );
+}
+
+# recursively loop through xml config data, 
+# converting this kind of info in the $xml_ref
+# hash:
+#
+# package1 ->
+#    field1 ->
+#        subname1 ->
+#            subsubname1 -> value1
+#            subsubname2 -> value2
+#        subname3 -> value3
+#        subname4 -> (value4,value5,value6)
+#    field2 ->
+#        subname5 ->
+#            subsubname3 -> (value7,value8)
+# package2 ->
+#    field3 ->
+#        subname6 -> value9
+#    field4 -> (
+#                [ subname7 -> value10
+#                  subname8 -> value10 ]
+#               ,
+#                [ subname9 -> value11
+#                  subname10 -> value12 ]
+#              )
+#
+# into the %single_value_folded_fields hash as:
+#
+# package1 ->
+#    field1_subname1_subsubname1 -> value1
+#    field1_subname1_subsubname2 -> value2
+#    field1_subname3 -> value3
+# package2 ->
+#    field3_subname6 -> value9
+#
+# and into %multiple_value_folded_fields hash as:
+#
+# package1 ->
+#    field1_subname4 -> (value4,value5,value6)
+#    field2_subname5_subsubname3 -> (value7,value8)
+# package2 ->
+#    field4 -> ( HASHsubnames7and8, HASHsubnames9and10 )
+#
+# and with a flag hash %list_of_multiple_value_folded_fields:
+#
+# field1_subname4 -> 1
+# field2_subname5_subsubname3 -> 1
+
+# go through all of the parsed package config xml files
+# hash, for each package have another level of hashes,
+# for each comvined field id put it in either the single
+# values table or the multiple values table
+foreach my $package_name ( sort keys %$xml_ref ) {
+    print "$0: folding fields in xml data for package <$package_name>\n" 
+	if $options{debug};
+    my @field_ids_list = ();
+    my %package_single_value_folded_fields = ();
+    $single_value_folded_fields{ $package_name } =
+	\%package_single_value_folded_fields;
+    my %package_multiple_value_folded_fields = ();
+    $multiple_value_folded_fields{ $package_name } =
+	\%package_multiple_value_folded_fields;
+    recursive_fold_fields( \%package_single_value_folded_fields,
+			   \%package_multiple_value_folded_fields,
+			   $$xml_ref{$package_name},
+			   \@field_ids_list );
+}
+
+# go through all the single value fields, and if 
+# another package had multiple values for the
+# same field, move the single value field to the
+# multiple value fields tables
+foreach my $package_name ( sort keys %$xml_ref ) {
+    my $package_folded_single_values_ref = 
+	$single_value_folded_fields{ $package_name };
+    my $package_folded_multiple_values_ref = 
+	$multiple_value_folded_fields{ $package_name };
+    foreach my $folded_field_id ( sort keys %$package_folded_single_values_ref ) {
+	if ( $list_of_multiple_value_folded_fields{ $folded_field_id } ) {
+	    print "$0: moving package <$package_name> folded field <$folded_field_id> to multiple values tables\n"
+		if $options{debug};
+	    my @folded_values_list = 
+		$$package_folded_single_values_ref{ $folded_field_id };
+	    $$package_folded_multiple_values_ref{ $folded_field_id } =
+		\@folded_values_list;
+	    delete $$package_folded_single_values_ref{ $folded_field_id };
+	}
+    }
+}
+if ( $options{debug} ) {
+#    print_hash( "", "$0: xml_ref", $xml_ref );
+    print_hash( "", "$0: single_value_folded_fields",
+		\%single_value_folded_fields );
+    print_hash( "", "$0: list_of_multiple_value_folded_fields",
+		\%list_of_multiple_value_folded_fields );
+    print "$0: multiple_value_folded_fields:\n";
+    print Dumper( \%multiple_value_folded_fields );
+}
+
+# start the mysql server
+print "Checking if the mysql database server is running ... ";
+my @command_output = `service mysqld status`;
+chomp @command_output;
+if ( grep( /is\ running/, @command_output ) ) {
+    print "running.\n";
+} else {
+    print "no it is not running.\nStarting the mysql database server ...\n";
+    my $command = "service mysqld start";
+    print "$command\n";
+    if ( system( $command ) ) {
+	oda::disconnect( \%options );
+	die "Cannot start the mysql database server!";
+    }
+}
+    
+# create the database if not already there and leave us connected to it
+print "Checking for existance of the OSCAR database ...\n";
+my %databases = ();
+oda::list_databases( \%options, \%databases )
+    || die "Cannot list the databases";
+if ( $databases{ oscar } ) {
+    print "... OSCAR database exists.\n";
+} else {
+    print "... not there.\nCreating the OSCAR database ...\n";
+    oda::create_database( \%options )
+	|| die "Cannot create the OSCAR database";
+    print "... OSCAR database successfully created.\n";
+    oda::connect( \%options )
+	|| die "Cannot connect to the newly created OSCAR database";
+}
+
+# store any found shortcuts in the database
+my %shortcuts_fields = ();
+$shortcuts_fields{ shortcut } = "VARCHAR(250)";
+$shortcuts_fields{ expansion } = "VARCHAR(250)";
+make_fix_table( "oda_shortcuts", \%shortcuts_fields );
+my $shortcuts_table_name = "oda_shortcuts";
+foreach my $shortcut ( sort keys %oda_shortcuts ) {
+    print "Checking for existing oda shortcut <$shortcut> in database <$shortcuts_table_name> ...";
+    my @tables_fields = ( "$shortcuts_table_name", "shortcut", "expansion" );
+    my @wheres = ( "shortcut = $shortcut" );
+    my @already_existing_records = ();
+    if ( ! oda::read_records( \%options,
+			      \@tables_fields,
+			      \@wheres,
+			      \@already_existing_records,
+			      1 ) ) {
+	oda::disconnect( \%options );
+	exit 1;
+    }
+    if ( @already_existing_records ) {
+	my $hash_ref = shift @already_existing_records;
+	if ( exists $$hash_ref{ expansion } &&
+	     $$hash_ref{ expansion } eq $oda_shortcuts{ $shortcut } ) {
+	    print " found with the same expansion\n";
+	} else {
+	    print " found with a different value.\n";
+	    print "Changing previous <$$hash_ref{expansion}> to <$oda_shortcuts{$shortcut}>\n";
+	    my @tables = ( "$shortcuts_table_name" );
+	    my @assigns = ( "expansion~$oda_shortcuts{$shortcut}" );
+	    my @wheres = ( "shortcut = $shortcut" );
+	    if ( ! oda::modify_records( \%options,
+					\@tables,
+					\@assigns,
+					\@wheres ) ) {
+		oda::disconnect( \%options );
+		exit 1;
+	    }
+	}
+    } else {
+	print " not found.\nWriting new shortcut record.\n";
+	my %inserts = ();
+	$inserts{ shortcut } = "$shortcut";
+	$inserts{ expansion } = $oda_shortcuts{$shortcut};
+	if ( ! oda::insert_record( \%options,
+				   $shortcuts_table_name,
+				   \%inserts ) ) {
+	    oda::disconnect( \%options );
+	    exit 1;
+	}
+    }
+}
+
+# determine the field names and types for the
+# packages database table which is a common 
+# table for most package information, these
+# are the single value fields parsed above
+my %package_field_types = ();
+foreach my $package_name ( sort keys %single_value_folded_fields ) {
+    my $package_folded_single_values_ref = 
+	$single_value_folded_fields{ $package_name };
+    foreach my $folded_field_id ( sort keys %$package_folded_single_values_ref ) {
+	# if we haven't seen this field name yet,
+	# save the field id as a lowly INT type
+	$package_field_types{ $folded_field_id } = "INT"
+	    if ! exists $package_field_types{ $folded_field_id };
+	# figure out the type of this particular
+	# value of this field, and upgrade the
+	# type of this field if needed, INT is
+	# simplest type, VARCHAR superceded INT,
+	# TEXT supercedes INT and VARCHAR
+	my $value = 
+	    $$package_folded_single_values_ref{ $folded_field_id };
+	if ( length $value > 250 ) {
+	    $package_field_types{ $folded_field_id } = "TEXT";
+	} elsif ( $value !~ /^[0-9]+$/ &&
+		  $package_field_types{ $folded_field_id } eq "INT" ) {
+	    $package_field_types{ $folded_field_id } = "VARCHAR\(255\)";
+	}
+#	print "$0: folded_field_id=<$folded_field_id> value=<$value> type=<$package_field_types{ $folded_field_id }>\n"
+#	    if $options{debug};
+    }
+}
+print_hash( "", "$0: package_field_types", \%package_field_types )
+    if $options{debug};
+
+# create the packages database table with the
+# proper field definitions if the table doesn't
+# already exist, or add any missing fields
+# if the table already exists
+make_fix_table( $packages_table_name,
+		\%package_field_types );
+
+# write out the records for the packages table
+# if they aren't already there, modify them to 
+# add any new fields if they are there
+foreach my $package_name ( sort keys %single_value_folded_fields ) {
+    print "Checking for existing package record <$package_name> in database <package> ...";
+    my @table_fields = ( $packages_table_name );
+    my @wheres = ( "name = $package_name" );
+    my @read_results = ();
+    if ( ! oda::read_records( \%options,
+			      \@table_fields,
+			      \@wheres,
+			      \@read_results,
+			      1 ) ) {
+	oda::disconnect( \%options );
+	exit 1; 
+    }
+    if ( ! @read_results ) {
+	print " no record\n";
+	print "Writing new packages record <$package_name> in table <$packages_table_name> ...\n";
+	if ( ! oda::insert_record( \%options,
+				   $packages_table_name,
+				   $single_value_folded_fields{ $package_name } ) ) {
+	    oda::disconnect( \%options );
+	      exit 1;
+	}
+    }
+    else {
+	print "found\n";
+	print "$0: very strange, there are more than 2 package records for <$package_name> in table <$packages_table_name>\n"
+	    if scalar @read_results > 1;
+    }
+}
+    
+# any of the fields fields in the package xml
+# that had multiple values such as rpmlist or
+# provides or requires, ended up being parsed 
+# into the %multiple_value_folded_fields hash
+# with arrays of hash references somewhere down
+# the chain of references. we need to take
+# the contents that look like this:
+#
+# package1 ->
+#    provides -> ( 
+#                  {
+#                    type -> type1
+#                    name -> name1
+#                  }
+#                )
+#    requires -> ( 
+#                  {
+#                    type -> type2
+#                    name -> name2
+#                  }
+#                )
+#    rpmlist_all_rpm -> ( rpm1, rpm2 )
+#               )
+# package2 ->
+#    rpmlist_all_rpm -> ( rpm3 )
+#    rpmlist_server_rpm -> ( rpm4, rpm5 )
+#
+# This needs to create these 3 new database tables
+# with these records of field=value filled in:
+#
+# package_provides
+#    package=package1   type=type1   name=name1
+# package_requires
+#    package=package1   type=type2   name=name2
+# package_rpmlist
+#    package=package1   scope=all    rpm=rpm3
+#    package=package2   scope=server rpm=rpm4
+#    package=package2   scope=server rpm=rpm5
+
+my %multiple_tables_fields = ();
+my %multiple_tables_records = ();
+print "$0: PMV processing multiple value fields ...\n"
+    if $options{debug};
+foreach my $package_name ( sort keys %multiple_value_folded_fields ) {
+    print "$0: PMV package <$package_name> ...\n"
+	if $options{debug};
+    my $package_multiple_value_fields_ref = 
+	$multiple_value_folded_fields{ $package_name };
+    foreach my $folded_name ( sort keys %$package_multiple_value_fields_ref ) {
+	# figure out what the _ seperated fields are
+	my @folded_fields = split( '\_', $folded_name );
+	my $first_field = shift @folded_fields;
+	# figure out what database table this will go in
+	my $table_name = $packages_table_name . "_" . $first_field;
+	print "$0: PMV folded=<$folded_name> table=<$table_name> data=\n"
+	    if $options{debug};
+	# get a pointer to the data parsed from xml,
+	# this could either be an array of scalar
+	# values, or it could be an array of hash 
+	# pointers
+	my $data_ref = $$package_multiple_value_fields_ref{ $folded_name };
+	print Dumper( $data_ref ) if $options{debug};
+	# see if this is field will make a new database table
+	if ( ! exists $multiple_tables_fields{ $table_name } ) {
+	    print "$0: marking new multiple value database table <$table_name>\n"
+		if $options{debug};
+	    my %tables_fields = ();
+	    $multiple_tables_fields{ $table_name } = \%tables_fields;
+	    my @tables_records = ();
+	    $multiple_tables_records{ $table_name } = \@tables_records;
+	}
+	# get pointers to the stuff for this database table
+	my $tables_fields_ref = $multiple_tables_fields{ $table_name };
+	my $tables_records_ref = $multiple_tables_records{ $table_name };
+	# see if there were any field names 
+	# specified for this table elsewhere
+	my @specified_fieldnames = ();
+	if ( exists $oda_fieldnames{ $table_name } ) {
+	    my $fieldnames_ref = $oda_fieldnames{ $table_name };
+	    foreach my $fieldname ( @$fieldnames_ref ) {
+		push @specified_fieldnames, $fieldname;
+	    }
+	    print "$0: multiple values specified fieldnames = (" .
+		join( ',', @specified_fieldnames ) . ")\n"
+		if $options{debug};
+	}
+	# get the array of data values
+	my @data_array = @$data_ref;
+	# we always have a package name field in this database
+	$$tables_fields_ref{ package } = "VARCHAR(250)";
+	# if the array is filled with hash pointers,
+	# that means that each key in the hash will 
+	# be a database table field name,
+	# with each value coming from that key, the only
+	# other database table field name will be the package
+	# which will have as data this package name
+	if ( ! @data_array ) {
+	    print "$0: PMV empty data array\n" if $options{debug};
+	} elsif ( ref($data_array[0]) eq "HASH" ) {
+	    foreach my $data_hash_ref ( @data_array ) {
+		my %record = ();
+		$record{ package } = $package_name;
+		foreach my $field_name ( sort keys %$data_hash_ref ) {
+		    # make sure this field name is going
+		    # to be in the table
+		    $$tables_fields_ref{ $field_name } = "VARCHAR(250)"
+			if ! exists $$tables_fields_ref{ $field_name };
+		    $record{ $field_name } = $$data_hash_ref{ $field_name };
+		}
+		push @$tables_records_ref, \%record;
+	    }
+	} else {
+	    # all elements in the folded_fields array 
+	    # database field value except for the last
+	    # one which is the field name for the data
+	    # that is in the data_array. the field names
+	    # for the folded_fields array should be 
+	    # specified in the specified_fieldnames
+	    # array, make sure there are enough field
+	    # names to go around and make some up
+	    # if not enough
+	    my $last_field_name = pop @folded_fields;
+	    my @field_names = ( @specified_fieldnames, $last_field_name );
+	    my @field_values_except_last = @folded_fields;
+	    if ( scalar @specified_fieldnames <
+		 scalar @folded_fields ) {
+		warn "$0: package <$package_name> did not supply enough (or any)\n";
+		warn "specified field names with a construct like this:\n";
+		warn "<oda>\n  <fieldnames> NAMES</fieldnames>\n</oda>\n";
+		warn "config.xml construct, not storing the data in the\n";
+		warn join( '/', ($first_field, @folded_fields, $last_field_name) ) .
+		    " having data (" . join( ',', @data_array ) . ")\n";
+	    } elsif ( scalar @specified_fieldnames >
+		      scalar @folded_fields ) {
+		warn "$0: package <$package_name> supplied too many\n";
+		warn "specified field names with a construct like this:\n";
+		warn "<oda>\n  <fieldnames> NAMES</fieldnames>\n</oda>\n";
+		warn "config.xml construct, not storing the data in the\n";
+		warn join( '/', ($first_field, @folded_fields, $last_field_name) ) .
+		    " having data (" . join( ',', @data_array ) . ")\n";
+	    } else {
+		foreach my $last_data ( @data_array ) {
+		    my %record = ();
+		    my @field_values = ( @field_values_except_last, $last_data );
+		    $record{ package } = $package_name;
+		    foreach my $field_name ( @field_names ) {
+			$$tables_fields_ref{ $field_name } = "VARCHAR(250)"
+			    if ! exists $$tables_fields_ref{ $field_name };
+			$record{ $field_name } = shift @field_values;
+		    }
+		    push @$tables_records_ref, \%record;
+		}
+	    }
+	}
+    }
+}
+if ( $options{debug} ) {
+    print_hash( "", "multiple_tables_fields", \%multiple_tables_fields );
+    print "$0: multiple_tables_records:\n";
+    print Dumper( \%multiple_tables_records );
+}
+# make and populate the database tables
+foreach my $table_name ( sort keys %multiple_tables_fields ) {
+    print "$0: making/updating database table <$table_name>\n" 
+	if $options{debug};
+    my $table_fields_ref = $multiple_tables_fields{ $table_name };
+    if ( keys %$table_fields_ref ) {
+	make_fix_table( $table_name, 
+			$table_fields_ref );
+	# write out any records that aren't there already
+	my $records_ref = $multiple_tables_records{ $table_name };
+	foreach my $record_ref ( @$records_ref ) {
+	    my @tables_fields = ( $table_name, "$table_name.package" );
+	    my @wheres = ();
+	    foreach my $field_name ( sort keys %$record_ref ) {
+		push @wheres, "$field_name = $$record_ref{$field_name}";
+	    }
+	    my @already_existing_records = ();
+	    if ( ! oda::read_records( \%options,
+				      \@tables_fields,
+				      \@wheres,
+				      \@already_existing_records ) ) {
+		oda::disconnect( \%options );
+		exit 1;
+	    }
+	    if ( ! @already_existing_records ) {
+		if ( ! oda::insert_record( \%options,
+					   $table_name,
+					   $record_ref ) ) {
+		    oda::disconnect( \%options );
+		    exit 1;
+		}  
+	    }
+	}
+    } else {
+	warn "$0: empty multiple values package table <$table_name> ignored";
+    }
+}
+
+exit 0;
