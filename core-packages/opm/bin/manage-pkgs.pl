@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#$Id: manage-pkgs.pl,v 1.1 2001/08/14 22:10:12 mjbrim Exp $
+#$Id: manage-pkgs.pl,v 1.2 2001/08/16 18:48:06 mjbrim Exp $
 
 # manage-pkgs - OSCAR package management master script
 
@@ -53,12 +53,6 @@ if( check_valid($opt_group, "group") ) {
     exit 1;
 }
 
-if( check_version($opt_cluster) ) {
-    print "$0: cluster $opt_cluster has a version which is incompatible\n";
-    print "$0: with the current version of OSCAR, exiting\n";
-    exit 1; 
-}
-
 # Check Files
 
 if((! -f $opt_pkgs)
@@ -72,9 +66,9 @@ $| = 1;
 $nodes = "/tmp/$opt_group.nodes";
 open(NODES, ">$nodes") or
     die "$0: could not write nodes file, exiting\n";
-$hostlist = `readDR -D $ENV{ODRDATA} group HOSTLIST NAME=$opt_group | awk -F= '{print \$2}'`;
+$hostlist = `readODR.pl group HOSTLIST NAME=$opt_group | awk -F= '{print \$2}'`;
 chomp($hostlist);
-@clients = `readDR -D $ENV{ODRDATA} hostlist HOST NAME=$hostlist | awk -F= '{print \$2}'`;
+@clients = `readODR.pl hostlist HOST NAME=$hostlist | awk -F= '{print \$2}'`;
 foreach $client (@clients) {
     print NODES "$client";
 }
@@ -126,15 +120,7 @@ exit $RC;
 
 sub check_valid {
     my ($name, $item) = @_;
-    $out = `readDR -D $ENV{ODRDATA} $item NAME=$name`;
+    $out = `readODR.pl $item NAME=$name`;
     if( $out eq "" ) { return 1; }
     else { return 0; }
-}
-
-sub check_version {
-    my $cluster = shift;
-    $version = `readDR -D $ENV{ODRDATA} cluster OSCAR_VERSION NAME=$cluster | awk -F= '{print \$2}'`;
-    ($version, $rest) = split(/ /, $version);
-    if( $version eq $ENV{OSCARVERSION} ) { return 0; }
-    else { return 1; }
 }
