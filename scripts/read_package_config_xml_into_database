@@ -56,104 +56,6 @@ my $package_tables_name_prefix = "package_";
 my $packages_table_name = "packages";
 #my %single_value_folded_fields = ();
 
-# function to insert a particular database table record 
-# if it doesn't exist already
-# inputs:  table_name        string 
-#          match_record_ref  pointer to a hash of the record
-#                            with field names being the keys
-#                            and field values being the values
-#                            that will be matched
-#          write_record_ref  optional pointer to a hash of 
-#                            the record that will be written
-#                            with field names being the keys
-#                            and field values being the values,
-#                            if not specified, the match record
-#                            values will be written
-
-sub insert_or_verify_record {
-    my( $table_name,
-	$match_record_ref,
-	$write_record_ref ) = @_;
-
-    if ( $options{debug} ) {
-	print_hash( "",
-		    "$0: in insert_or_verify_record table_name=<$table_name> match_record_ref=",
-		    $match_record_ref );
-	print_hash( "",
-		    "$0: write_record_ref=",
-		    $write_record_ref ) 
-	    if defined $write_record_ref;
-    }
-
-    # see if there are any matching records
-    my @tables_fields = ( "$table_name" );
-    my @wheres = ();
-    foreach my $key ( keys %$match_record_ref ) {
-	push @tables_fields, $key;
-	push @wheres, "$table_name.$key = \"$$match_record_ref{$key}\"";
-    }
-    my @already_existing_records = ();
-    my @error_strings = ();
-    if ( ! oda::read_records( \%oda_options,
-			      \@tables_fields,
-			      \@wheres,
-			      \@already_existing_records,
-			      1 ) ) {
-	oda::disconnect( \%oda_options,
-			 \@error_strings );
-	warn shift @error_strings while @error_strings;
-	exit 1;
-    }
-
-    # if there are already existing matching records, ...
-    if ( @already_existing_records ) {
-
-	# ... and there was no specified write record 
-	# we can just assume it's all right to leave
-	# the already existing record(s) alone and we're
-	# done with this function
-	return if ! defined $write_record_ref;
-
-	# Since there were already existing matching
-	# records, and there was a specified write record 
-	# (which is presumed to be different than the
-	# matching record), we need to get rid of all
-	# previously existing matching records
-	my @error_strings = ();
-	my @tables = ( "$table_name" );
-	if ( $options{changes} ) {
-	    if ( ! oda::delete_records( \%oda_options,
-					\@tables,
-					\@wheres,
-					\@error_strings ) ) {
-		oda::disconnect( \%oda_options,
-				 \@error_strings );
-		  warn shift @error_strings while @error_strings;
-		  exit 1;
-	      }
-	}
-
-    }
-
-    # at this point we need to write out the new record
-    my $record_ref = ( defined $write_record_ref ) ?
-	$write_record_ref : $match_record_ref;
-    if ( $options{changes} ) {
-	if ( ! oda::insert_record( \%oda_options,
-				   $table_name,
-				   $record_ref,
-#			            ( defined $write_record_ref ) ?
-#			            $write_record_ref : $match_record_ref,
-			           undef,
-				   \@error_strings ) ) {
-	    oda::disconnect( \%oda_options,
-			     \@error_strings );
-	      warn shift @error_strings while @error_strings;
-	      exit 1;
-	  }
-    }
-}
-
 # function to create a database table with the
 # proper field definitions if the table doesn't
 # already exist, or add any missing fields
@@ -280,7 +182,8 @@ sub recursive_fold_fields{
 				   $level_value, 
 				   \@ids_list );
 	} elsif ( ref( $level_value ) eq "ARRAY" ) {
-	    print "$0: adding folded field <$folded_fields_id> value <$level_value> to multiple values tables\n"
+	    print "$0: adding folded field <$folded_fields_id> values (" .
+		join( ',', @$level_value ), ") to multiple values tables\n"
 		if $options{debug};
 	    $$multiple_values_ref{ $folded_fields_id } =
 		$level_value;
@@ -326,6 +229,116 @@ USAGE
 	warn shift @error_strings while @error_strings;
     }
     exit $exit_status;
+}
+
+# function to insert a particular database table record 
+# if it doesn't exist already
+# inputs:  table_name        string 
+#          match_record_ref  pointer to a hash of the record
+#                            with field names being the keys
+#                            and field values being the values
+#                            that will be matched
+#          write_record_ref  optional pointer to a hash of 
+#                            the record that will be written
+#                            with field names being the keys
+#                            and field values being the values,
+#                            if not specified, the match record
+#                            values will be written
+
+sub verify_or_insert_record {
+    my( $table_name,
+	$match_record_ref,
+	$write_record_ref ) = @_;
+
+    if ( $options{debug} ) {
+	print_hash( "",
+		    "$0: in verify_or_insert_record table_name=<$table_name> match_record_ref=",
+		    $match_record_ref );
+	print_hash( "",
+		    "$0: write_record_ref=",
+		    $write_record_ref ) 
+	    if defined $write_record_ref;
+    }
+
+    # see if there are any matching records
+    my @tables_fields = ( "$table_name" );
+    my @wheres = ();
+    foreach my $key ( keys %$match_record_ref ) {
+	push @tables_fields, $key;
+	push @wheres, "$table_name.$key = \"$$match_record_ref{$key}\"";
+    }
+    my @already_existing_records = ();
+    my @error_strings = ();
+    if ( ! oda::read_records( \%oda_options,
+			      \@tables_fields,
+			      \@wheres,
+			      \@already_existing_records,
+			      1 ) ) {
+	oda::disconnect( \%oda_options,
+			 \@error_strings );
+	warn shift @error_strings while @error_strings;
+	exit 1;
+    }
+    if ( $options{debug} ) {
+	print "$0: already_existing_records:\n";
+	print Dumper(\@already_existing_records);
+    }
+
+    # if there are already existing matching records, ...
+    if ( @already_existing_records ) {
+
+	# ... and there was no specified write record 
+	# we can just assume it's all right to leave
+	# the already existing record(s) alone and we're
+	# done with this function
+	return if ! defined $write_record_ref;
+
+	# Since there were already existing matching
+	# records, and there was a specified write record 
+	# (which is presumed to be different than the
+	# matching record), we need to get rid of all
+	# previously existing matching records
+	my @error_strings = ();
+	my @tables = ( "$table_name" );
+	if ( $options{changes} ) {
+	    if ( ! oda::delete_records( \%oda_options,
+					\@tables,
+					\@wheres,
+					\@error_strings ) ) {
+		oda::disconnect( \%oda_options,
+				 \@error_strings );
+		  warn shift @error_strings while @error_strings;
+		  exit 1;
+	      }
+	}
+
+    }
+
+    # at this point we need to write out the new record,
+    # while first making sure that field values are
+    # surrounded by quotation marks so that oda doesn't
+    # mistake a value for a table field name
+    my $record_ref = ( defined $write_record_ref ) ?
+	$write_record_ref : $match_record_ref;
+    if ( $options{changes} ) {
+        foreach my $field ( keys %$record_ref ) {
+	    my $value = $$record_ref{$field};
+	    $$record_ref{$field} = "\"$$record_ref{$field}\""
+		if $value !~ /^\".*\"$/ && $value !~ /^\'.*\'$/;
+	}
+	if ( ! oda::insert_record( \%oda_options,
+				   $table_name,
+				   $record_ref,
+#			            ( defined $write_record_ref ) ?
+#			            $write_record_ref : $match_record_ref,
+			           undef,
+				   \@error_strings ) ) {
+	    oda::disconnect( \%oda_options,
+			     \@error_strings );
+	      warn shift @error_strings while @error_strings;
+	      exit 1;
+	  }
+    }
 }
 
 # find the base directory of the oscar distribution,
@@ -1735,7 +1748,7 @@ foreach my $table_name ( sort keys %multiple_tables_fields ) {
 	# write out any records that aren't there already
 	my $records_ref = $multiple_tables_records{ $table_name };
 	foreach my $record_ref ( @$records_ref ) {
-	    insert_or_verify_record( $table_name,
+	    verify_or_insert_record( $table_name,
 				     $record_ref );
 	}
     } else {
@@ -1765,7 +1778,7 @@ foreach my $command ( sort keys %oda_shortcuts ) {
     $write_record{description} = $$shortcut_data{description}
         if exists $$shortcut_data{description};
     $write_record{expansion} = $$shortcut_data{expansion};
-    insert_or_verify_record( $shortcuts_table_name,
+    verify_or_insert_record( $shortcuts_table_name,
 			     \%match_record,
 			     \%write_record );
 }
@@ -2056,7 +2069,7 @@ if ( $options{debug} ) {
 foreach my $package_rpm_record_ref ( @package_rpm_records_refs ) {
     $$package_rpm_record_ref{package_version} = $package_version
 	if $multiple_package_versions;
-    insert_or_verify_record( "packages_rpmlists",
+    verify_or_insert_record( "packages_rpmlists",
 			     $package_rpm_record_ref );
 }
 
@@ -2198,7 +2211,7 @@ if ( $options{debug} ) {
     print Dumper( \@package_filter_records_refs );
 }
 foreach my $package_filter_record_ref ( @package_filter_records_refs ) {
-    insert_or_verify_record( "packages_filters",
+    verify_or_insert_record( "packages_filters",
 			     $package_filter_record_ref );
 }
 
