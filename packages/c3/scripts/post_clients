@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_clients,v 1.4 2002/12/16 03:04:14 naughtont Exp $
+# $Id: post_clients,v 1.5 2003/12/04 21:20:04 brechin Exp $
 #
 # gen_c3_conf - script to generate the /etc/c3.conf file from the ORNL
 #               cluster definition file
@@ -15,31 +15,12 @@ use Data::Dumper;
 
 my $image = shift;
 
-my $c3_conf = "/etc/c3.conf";
-
-my $hostname = `hostname`;
-chomp($hostname);
-
 my %hash = get_machine_listing($image);
+my @hosts = sort numerically keys %hash;
+my $c3mgr = "$ENV{OSCAR_HOME}/scripts/c3_conf_manager";
 
-open(OUT,">$c3_conf") or croak("Couldn't open $c3_conf");
-print OUT "cluster oscar_cluster {\n";
-print OUT "\t$hostname\n";
-my $firstkey = 1;
-foreach my $key (sort numerically keys %hash) {
-    if ($firstkey)
-      {
-        $hash{$key}->{HOST} =~ /([a-zA-Z_\-]+)(\d*)/;
-        print OUT "\tdead remove_line_for_0-indexing\n" if 
-          (defined($2) && ($2 != 0));
-        $firstkey = 0;
-      }
-    print OUT "\t", $hash{$key}->{HOST}, "\n";
-}
-print OUT "}\n";
-close(OUT);
-
-
+!system("$c3mgr --rm oscar_cluster && $c3mgr --add oscar_cluster " . join(' ', @hosts)) or 
+	Carp("I couldn't manage to update the C3 configuration!\n");
 
 # Sort hostnames numerically instead of an ascii sort.
 # Special sort() sub-rtn (uses $a, $b instead of @_)
