@@ -6,7 +6,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.4 2002/10/29 05:28:02 jsquyres Exp $
+# $Id: Configurator.pm,v 1.5 2002/10/29 07:19:26 jsquyres Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -27,7 +27,8 @@ use OSCAR::Selector;
 use XML::Simple;      # Read/write the .selection config files
 use Tk::Pane; 
 
-my($top);       # The Toplevel widget for the package configuration window
+my($top);            # The Toplevel widget for the package configuration window
+my $step_number;     # Step number in the OSCAR wizard
 ##############################################################
 #  MOVE THE STUFF ABOVE TO THE TOP OF THE PERL SOURCE FILE!  #
 ##############################################################
@@ -124,13 +125,13 @@ sub doneButtonPressed
   # Call the post-configure API script in each selected package
   my @packages = list_install_pkg();
   foreach my $pkg (@packages) {
-      if (!run_pkg_script($pkg, "post_configure", 1)) {
+      if (!run_pkg_script($pkg, "post_configure", 1, "")) {
 	  carp("Post-configure script for package \"$pkg\" failed");
       }
   }
 
   # Write out a message to the OSCAR log
-  oscar_log_subsection("Step 2: Completed successfully");
+  oscar_log_subsection("Step $step_number: Completed successfully");
 }
 
 #########################################################################
@@ -236,7 +237,8 @@ sub populateConfiguratorList
 #########################################################################
 sub displayPackageConfigurator # ($parent)
 {
-  my($parent) = @_;
+  my $parent = shift;
+  $step_number = shift;
 
   # Check to see if our toplevel configurator window has been created yet.
   if (!$top)
@@ -258,12 +260,12 @@ sub displayPackageConfigurator # ($parent)
 
   # Then create the scrollable package listing and place it in the grid.
   populateConfiguratorList();
-  oscar_log_section("Running step 2 of the OSCAR wizard");
+  oscar_log_section("Running step $step_number of the OSCAR wizard: Configure selected OSCAR packages");
 
   # Call the pre-configure API script in each selected package
   my @packages = list_install_pkg();
   foreach my $pkg (@packages) {
-      if (!run_pkg_script($pkg, "pre_configure", 1)) {
+      if (!run_pkg_script($pkg, "pre_configure", 1, "")) {
 	  carp("Pre-configure script for package \"$pkg\" failed");
       }
   }
