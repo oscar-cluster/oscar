@@ -23,6 +23,7 @@ use lib "$ENV{OSCAR_HOME}/lib",'/usr/lib/systeminstaller';
 use Carp;
 use File::Copy;
 use File::Path;
+use File::Find;
 use File::Basename;
 use SIS::Image;
 use SIS::Client;
@@ -49,6 +50,7 @@ my @pkgs = list_pkg();
 
 my $return = 0;
 
+print "Performing root tests...\n";
 # First do the root tests
 $ENV{OSCAR_TESTPRINT}=$ENV{OSCAR_HOME}. "/testing/testprint";
 foreach my $pkg (@pkgs) {
@@ -93,6 +95,7 @@ if ($homecount) {
 } else {
         system("$ENV{OSCAR_TESTPRINT} --label '/home mounts' -p ");
 }
+unlink("$test_user_homedir/oscartestfile");
 
 
 
@@ -100,19 +103,45 @@ if ($homecount) {
 
 # Now the user tests
 
+print "\nPreparing user tests...\n";
+
+$ENV{OSCAR_TESTPRINT}="$test_user_homedir/testprint";
+my @ufiles = qw(testprint ssh_user_tests pbs_test); 
+
+# Copy the base files
+foreach my $file (@ufiles) {
+	copy("$ENV{OSCAR_HOME}/testing/$file",$test_user_homedir);
+        chmod(0755,"$test_user_homedir/$file");
+}
+
+# Copy the packages test files to the user home dir.
+foreach my $pkg (@pkgs) {
+    if (-d "$ENV{OSCAR_HOME}/packages/$pkg/testing") {
+	mkdir("$test_user_homedir/$pkg/");
+	system("cp -af $ENV{OSCAR_HOME}/packages/$pkg/testing/* $test_user_homedir/$pkg/");
+    }
+}
+
 # First test ssh
 #
+# Make sure ssh keys are generated quietly
+system("/bin/su -c '' - $test_user > /dev/null 2>&1");
 
 my $clistring=join(" ",@clientlist);
-my $script = "$ENV{OSCAR_HOME}/testing/ssh_user_tests";
-my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_HOME}/testing/testprint OSCAR_HOME=$ENV{OSCAR_HOME} $script $clistring' - $test_user");
 
+print "Performing user tests...\n";
+
+my $script = "$test_user_homedir/ssh_user_tests";
+my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} $script $clistring' - $test_user");
 
 my $creturn=0;
-$ENV{OSCAR_TESTPRINT}=$ENV{OSCAR_HOME}. "/testing/testprint";
+
 foreach my $pkg (@pkgs) {
-    if(!run_pkg_script_user($pkg,"test_user",$test_user,0,join(" ",@clientlist))) {
-        $creturn++;
+    if (-e "$test_user_homedir/$pkg/test_user") {
+
+    	if(!run_pkg_user_test("$test_user_homedir/$pkg/test_user",$test_user,0,join(" ",@clientlist))) {
+        	$creturn++;
+    	}
     }
 }
 
@@ -125,6 +154,8 @@ if ($opts{wait}) {
 } else {
         exit($return);
 }
+
+
 
 sub waitexit {
         my $rc=shift;
