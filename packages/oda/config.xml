@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.33 2003/04/15 19:07:16 ngorsuch Exp $
+      $Id: config.xml,v 1.34 2003/04/16 16:58:22 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -271,7 +271,6 @@
 	<shortcut> oscar_version read_records oscar.oscar_version!=undef oscar.oscar_version </shortcut>
 	<shortcut> package_id_to_name read_records packages.name packages.id=%1 </shortcut>
 	<shortcut> package_name_to_id read_records packages.id packages.name=%1 </shortcut>
-        <shortcut> packages_in_selected_package_set read_records oscar.selected_package_set_id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.name %+ </shortcut>
 	<shortcut> package_set_id_to_name read_records package_sets.name package_sets.id=%1 </shortcut>
 	<shortcut> package_set_name_to_id read_records package_sets.id package_sets.name=%1 </shortcut>
 	<shortcut> package_set_selected modify_records packages packages.name=%1 selected~1 </shortcut>
@@ -280,7 +279,9 @@
 	<shortcut> packages read_records|modify_records packages name %+ </shortcut>
 	<shortcut> packages_class_unselected packages_unselected class=%1 %+ </shortcut>
         <shortcut> packages_in_package_set read_records package_sets.name=%1 package_sets.id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.name </shortcut>
-	<shortcut> packages_installable read_records packages.name installable!=0 %+ </shortcut>
+        <shortcut> packages_in_selected_package_set read_records oscar.selected_package_set_id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.name %+ </shortcut>
+	<shortcut> packages_installable read_records packages.name packages.installable!=0 %+ </shortcut>
+        <shortcut> packages_installable_in_selected_package_set read_records oscar.selected_package_set_id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.installable!=0 packages.name %+ </shortcut>
 	<shortcut> packages_that_require read_records packages_requires package name=%1 </shortcut>
 	<shortcut> packages_uninstallable read_records packages.name installable=0 %+ </shortcut>
 	<shortcut> remove_all_packages_from_all_package_sets delete_records package_set_package_entries </shortcut>
@@ -516,6 +517,9 @@
     <packages>
       <fields>
         <class/>
+	<description>
+	  <type> text </type>
+	</description>
 	<copyright/>
 	<group/>
         <id> 
