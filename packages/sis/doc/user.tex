@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: user.tex,v 1.1 2002/06/17 20:15:47 mchasal Exp $
+% $Id: user.tex,v 1.2 2002/06/17 23:01:51 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -28,7 +28,7 @@ networking information for that specific client and it is then rebooted.
 When booting the client will come up off the local disk and be ready
 to join the OSCAR cluster.
 
-\subsection{Building a SIS image}
+\subsubsection{Building a SIS image}
 
 Normally, an OSCAR image is built using the \button{Build OSCAR Client Image} 
 button on the OSCAR wizard. This button brings up a panel that is actually 
@@ -40,7 +40,7 @@ to delete images as well. Images can take a fair amount of disk space, so if
 you end up with images that you aren't using, you can delete them to recover 
 some space.
 
-\subsection{Managing SIS clients}
+\subsubsection{Managing SIS clients}
 
 Much like the OSCAR image creation, the \button{Define OSCAR Clients} actually
 invokes a \cmd{tksis} panel. There are a couple of SIS commands that are used 
@@ -48,3 +48,13 @@ to manage the client definitions. \cmd{mksirange} is used to define a group of
 clients. More importantly \cmd{mksimachine} can be used to update client 
 definitions. If, for example, you needed to change the MAC address after replacing
 one of your clients, you could use \cmd{mksimachine}.
+
+\subsubsection{Maintaining your clients}
+
+There are many different ways to maintain the software installed on the client
+nodes. Since SIS is image based, it allows you to also use an image based 
+maintenance scheme. Basically, you apply updates and patches to your images 
+and then resync the clients to their respective images. Since \cmd{rsync} is
+used, only the actual data that has changed will be sent over the network to 
+the client. The SIS command \cmd{updateclient} can be run on any client to
+initiate this update.
