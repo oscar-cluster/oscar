@@ -552,6 +552,7 @@ sub displayWebPage # ($parent,$file)
       $web->pack(-expand => '1', -fill => 'both');
       $web->configure(-height => '15',
                       -width => '60',
+                      -cursor => 'left_ptr',
                      );
       # Add optional scrollbars to the bottom and right sides.
       $root->AddScrollbars($web);
