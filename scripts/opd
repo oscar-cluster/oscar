@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.18 2003/04/10 16:06:56 tfleury Exp $
+# $Id: opd,v 1.19 2003/04/16 13:22:06 jsquyres Exp $
 #
 
 use strict;
@@ -148,7 +148,7 @@ distribute, available from ftp://ftp.gnu.org/gnu/.
 # Now that we know that we have XML::Simple, use it
 
 my $xs = new XML::Simple(keyattr => {}, forcearray => 
-			 [ "site", "uri", "package",
+			 [ "site", "uri", "package", "packager", "maintainer",
 			   "requires", "conflicts", "provides" ]);
 
 
@@ -579,10 +579,22 @@ sub list_packages_page {
                   $p->{oscar_version}->{minor} . $sep .
                   $p->{oscar_version}->{release} . $sep .
                   $p->{oscar_version}->{subversion} . $sep .
-                  $p->{oscar_version}->{epoch} . $sep .
+                  $p->{oscar_version}->{epoch} . $sep);
 
-                  $p->{packager}->{name} . $sep .
-                  $p->{packager}->{email} . $sep .
+            my $num = $#{$p->{packager}};
+            for (my $i = 0; $i <= $num; ++$i) {
+                print($p->{packager}[$i]->{name});
+                print("\",\"")
+                    if ($i < $num);
+            }
+            print $sep;
+            for (my $i = 0; $i <= $num; ++$i) {
+                print($p->{packager}[$i]->{email});
+                print("\",\"")
+                    if ($i < $num);
+            }
+
+            print($sep .
                   $unwrapped_description . $sep . 
                   $p->{license} . $sep . 
                   $p->{installable} . $sep . 
@@ -1046,16 +1058,20 @@ sub build_name_email_string {
     my $p = $pkg->{$field};
     my $out;
     my $temp;
+    my $addr;
+    my $name;
 
-    if ($p->{email}) {
-	$out = "<" . $p->{email} . ">";
-    }
-    if ($p->{name}) {
-	if ($out) {
-	    $out = $p->{name} . " $out";
-	} else {
-	    $out = $p->{name};
-	}
+    my $num = $#{$p};
+    for (my $i = 0; $i <= $num; ++$i) {
+        $addr = ($p->[$i]->{email}) ? "<" . $p->[$i]->{email} . ">" : "";
+        $name = ($p->[$i]->{name}) ? $p->[$i]->{name} : "";
+
+        $out .= ", "
+            if ($i > 0);
+        $out .= "$name "
+            if ($name);
+        $out .= "$addr"
+            if ($addr);
     }
     $out = $none_attribute if (!$out);
 
