@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.76 2004/04/05 18:45:52 ngorsuch Exp $
+      $Id: config.xml,v 1.77 2004/04/06 18:25:58 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -3555,6 +3555,10 @@
       <fields> 
         <base_ip/>
         <broadcast/>
+        <cluster_nodes> 
+          <type> integer </type>
+          <default> 0 </default>
+        </cluster_nodes>
         <cluster_only> 
           <type> integer </type>
           <default> 0 </default>
@@ -3568,6 +3572,10 @@
           <parameters> not null unique </parameters>
         </name>
         <netmask/>
+        <rfc1918>
+          <type> integer </type>
+          <default> 0 </default>
+        </rfc1918>
       </fields> 
     </networks>
 
