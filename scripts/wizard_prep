@@ -5,7 +5,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: wizard_prep,v 1.17 2002/12/10 22:59:28 ngorsuch Exp $
+# $Id: wizard_prep,v 1.18 2003/01/16 18:02:29 brechin Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -39,15 +39,15 @@ oscar_log_section("Running OSCAR wizard_prep script");
 
 my $INTERFACE = shift or croak("No interface specified");
 
-# Run the prerequsites
+# Run the prerequisites
 
 # TEMPORARY FIX: XML-Simple needs XML-Parser.  Need some kind of
-# "requires" functionality in the prerequsites, but for the moment,
+# "requires" functionality in the prerequisites, but for the moment,
 # I'm just going to sort the result of readdir(), which will put them
 # in the correct order.  This is not a good/permanent solution, but
 # it's good enough for the moment.
 
-oscar_log_subsection("Running OSCAR wizard prerequsites");
+oscar_log_subsection("Running OSCAR wizard prerequisites");
 my $prefix = "$ENV{OSCAR_HOME}/share/prereqs";
 opendir(PREREQDIR, $prefix) or 
     croak("Couldn't open $prefix for reading");
@@ -57,7 +57,7 @@ foreach my $prereq (@prereqs) {
     my $abs = "$prefix/$prereq";
     if (-d "$abs/scripts" && -f "$abs/scripts/install") {
 	if (system("$abs/scripts/install") != 0) {
-	    croak("ERROR: Prerequsite failure!");
+	    croak("ERROR: Prerequisite failure!");
 	}
     }
 }
