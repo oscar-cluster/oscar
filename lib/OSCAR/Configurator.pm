@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.16 2003/01/23 22:31:19 brechin Exp $
+# $Id: Configurator.pm,v 1.17 2003/01/28 20:44:56 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -313,6 +313,7 @@ sub displayPackageConfigurator # ($parent)
         { # If no parent, then create a MainWindow at the top.
           $top = MainWindow->new();
           $top->title("Oscar Package Configuration");
+          $top->bind('<Destroy>', sub { $parent->Unbusy(); return; } );
         }
       OSCAR::Configurator::Configurator_ui $top;  # Call specPerl window creator
     }

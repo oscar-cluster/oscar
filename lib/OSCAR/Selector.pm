@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.18 2003/01/23 22:31:20 brechin Exp $
+# $Id: Selector.pm,v 1.19 2003/01/28 20:44:57 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -1014,6 +1014,7 @@ sub displayPackageSelector # ($parent)
                                    -width => '260',
                                    -height => '260',
                                   );
+          $top->bind('<Destroy>', sub { $parent->Unbusy(); return; } );
         }
       else 
         { # If no parent, then create a MainWindow at the top.
