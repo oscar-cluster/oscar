@@ -23,3 +23,4 @@ use Carp;
 
 !system("/etc/init.d/systemimager-server-rsyncd restart") or croak("Couldn't restart systemimager-server-rsyncd");
 
+!system("grep -q DISKORDER /etc/systemimager/autoinstallscript.template || patch -p0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systemimager-server-3.2.0.patch") or croak("Couldn't patch systemimager for disk independence");

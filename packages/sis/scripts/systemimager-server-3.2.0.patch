@@ -1,0 +1,158 @@
+--- /usr/lib/systemimager/perl/SystemImager/Server.pm.orig	2004-03-03 20:00:46.000000000 -0800
++++ /usr/lib/systemimager/perl/SystemImager/Server.pm	2004-05-04 10:56:33.000000000 -0700
+@@ -5,6 +5,9 @@
+ #  Copyright (C) 2002 Bald Guy Software
+ #                     Brian Elliott Finley <bef@bgsw.net>
+ #
++#  4/30/2004, David N. Lombard, david.n.lombard@intel.com
++#  Disk independence added.
++#
+ #   $Id: systemimager-server-3.2.0.patch,v 1.1 2004/06/02 21:04:05 dnl Exp $
+ #
+ 
+@@ -16,7 +19,7 @@ use strict;
+ use File::Copy;
+ use File::Path;
+ use XML::Simple;
+-use vars qw($VERSION @mount_points %device_by_mount_point %filesystem_type_by_mount_point);
++use vars qw($VERSION @mount_points %device_by_mount_point %filesystem_type_by_mount_point $disk_no %dev2disk);
+ 
+ $VERSION="3.2.0";
+ 
+@@ -364,6 +367,16 @@ sub _read_partition_info_and_prepare_par
+         );
+ 
+         my $devfs_dev = $devfs_map{$dev};
++        # dnl
++        $dev2disk{$devfs_dev} = "DISK".$disk_no++;
++        print $out "if [ -z \$DISKORDER ] ; then\n";
++        print $out "  $dev2disk{$devfs_dev}=$devfs_dev\n";
++        print $out "elif [ -z \$$dev2disk{$devfs_dev} ] ; then\n";
++        print $out qq(  echo "Undefined: $dev2disk{$devfs_dev}"\n);
++        print $out "  shellout\n";
++        print $out "fi\n";
++        $devfs_dev = '$'.$dev2disk{$devfs_dev};
++        # dnl
+ 
+         print $out "### BEGIN partition $devfs_dev ###\n";
+         print $out qq(echo "Partitioning $devfs_dev..."\n);
+@@ -630,6 +643,10 @@ sub _read_partition_info_and_prepare_par
+             print $out "\n";
+ 	    
+             $part = &get_part_name($dev, $m);
++            #dnl
++            $part =~ /^(.*?)(p?\d+)$/;
++            $part = "\${".$dev2disk{$1}."}".$2;
++            #dnl
+             $cmd = "Creating partition $part.";
+             print $out qq(echo "$cmd"\n);
+             
+@@ -829,6 +846,9 @@ sub _write_out_mkfs_commands {
+ 
+     my @all_devices = get_all_devices($file);
+     my %devfs_map = dev_to_devfs(@all_devices) or return undef;
++    #dnl
++    my @d2dkeys = reverse sort keys %dev2disk;
++    #dnl
+ 
+ 
+     # Figure out if software RAID is in use. -BEF-
+@@ -854,7 +874,9 @@ sub _write_out_mkfs_commands {
+ 	# file.  We should also look at the format and write functions for that 
+ 	# same file. -BEF-
+         print $out qq(# /etc/raidtab that will be used for creating software RAID devices on client(s).\n);
+-        print $out qq(cat <<'EOF' > /etc/raidtab\n);
++        #dnl
++        print $out qq(cat <<EOF > /etc/raidtab\n);
++        #dnl
+         if (!$raidtab) {
+             $raidtab = $image_dir . "/etc/raidtab";
+         }
+@@ -863,6 +885,13 @@ sub _write_out_mkfs_commands {
+         }
+         open(FILE,"<$raidtab") or croak("Couldn't open $raidtab for reading.");
+             while (<FILE>) {
++                #dnl
++                foreach my $key (@d2dkeys) {
++                    next unless /\Q$key/;
++                    s/\Q$key\E/\${$dev2disk{$key}}/;
++                    last;
++                }
++                #dnl
+                 print $out $_;
+             }
+         close(FILE);
+@@ -920,6 +949,11 @@ sub _write_out_mkfs_commands {
+         # software RAID devices (/dev/md*)
+         if ($real_dev =~ /\/dev\/md/) {
+             print $out qq(mkraid --really-force $real_dev || shellout\n);
++        # dnl
++        } else {
++            $real_dev =~ /^(.*?)(p?\d+)$/;
++            $real_dev = "\${".$dev2disk{$1}."}".$2;
++        # dnl
+         }
+ 
+         # swap
+@@ -1299,6 +1333,24 @@ sub _write_out_umount_commands {
+     }
+ }
+ 
++#dnl
++sub show_disk_edits{
++    my ($out) = shift;
++    foreach (sort keys %dev2disk) {
++        print $out qq(  echo " $_ -> \$$dev2disk{$_}"\n);
++    }
++}
++sub edit_disk_names{
++    my ($out) = shift;
++    foreach (reverse sort keys %dev2disk) {
++        print $out qq(    sed s:$_:%$dev2disk{$_}%:g |\n);
++    }
++    for (my $i = 0; $i < scalar keys %dev2disk; $i++) {
++        print $out qq(    sed s:%DISK$i%:\$DISK$i:g |\n);
++    }
++}
++#dnl
++
+ sub write_sc_command {
+     my ( $out, $ip_assignment_method ) = @_;
+     my $sc_excludes_to = "/etc/systemimager/systemconfig.local.exclude";
+@@ -1379,6 +1431,11 @@ sub create_autoinstall_script{
+     open (my $TEMPLATE, "<$template") || die "Can't open $template for reading\n";
+     open (my $MASTER_SCRIPT, ">$file") || die "Can't open $file for writing\n";
+ 
++    # dnl
++    $disk_no = 0;
++    %dev2disk = ();
++    # dnl
++
+     my $delim = '##';
+     while (<$TEMPLATE>) {
+         SWITCH: {
+@@ -1458,6 +1515,18 @@ sub create_autoinstall_script{
+                 }
+                 last SWITCH;
+ 	        }
++
++			# dnl
++			if (/^\s*${delim}SHOW_DISK_EDITS${delim}\s*$/) {
++				show_disk_edits( $MASTER_SCRIPT );
++				last SWITCH;
++			}
++			if (/^\s*${delim}EDIT_DISK_NAMES${delim}\s*$/) {
++				edit_disk_names( $MASTER_SCRIPT );
++				last SWITCH;
++			}
++			# dnl
++
+ 	        ### END end of autoinstall options ###
+ 	        print $MASTER_SCRIPT $_;
+         }
+@@ -1704,4 +1773,4 @@ sub _write_boel_devstyle_entry {
+ }
+ 
+ 
+-
++1
