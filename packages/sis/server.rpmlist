@@ -9,5 +9,4 @@ systemimager-i386boot
 systemimager-ia64boot
 libappconfig-perl
 libdbdcsv-perl
-dhcp
 rsync

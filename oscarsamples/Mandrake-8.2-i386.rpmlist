@@ -135,6 +135,7 @@ net-tools
 numlock
 openssh
 openssh-clients
+openssh-server
 openssl
 pam
 passwd
