@@ -11,7 +11,7 @@ my @rpms = qw(
               c3
               lam
       	      modules
-	            env-switcher
+              env-switcher
               pvm
               openpbs-oscar 
               openpbs-oscar-mom
@@ -32,8 +32,12 @@ my @rpms = qw(
               systemimager-client
               systemimager-i386boot
               systemimager-ia64boot
-	            mpich-oscar
+              mpich-oscar
       	      mpich-oscar-module
+              tftp-hpa
+              ganglia-monitor-core
+              ganglia-php-rrd-client
+              pvm-modules
              );
 
 stop_services();
@@ -66,6 +70,8 @@ sub stop_services {
                       systemimager
                       dhcpd
                       pbs_server
+                      maui
+                      gmond
                      );
     foreach my $service (@services) {
         print "service $service stop\n";
@@ -77,12 +83,19 @@ sub cleanup_files {
     my @dirs = qw(
                   /var/spool/pbs
                   /opt/pbs
-                  /opt/maui-3.0.7
+                  /opt/maui
+                  /opt/modules
+                  /opt/lam*
+                  /opt/mpich*
+                  /opt/env-switcher*
                   /var/log/systemimager
                   /var/lib/clamdr
                   /var/lib/systeminstaller
+                  /var/lib/systemimager
                   /usr/local/lib/systemimager
-            		  /etc/systemimager
+                  /etc/systeminstaller
+            	  /etc/systemimager
+                  /etc/cron.daily/synctime.sh
                   /etc/dhcpd.conf
                   /etc/profile.d/mpi-00mpich.csh
                   /etc/profile.d/mpi-00mpich.sh
@@ -94,17 +107,6 @@ sub cleanup_files {
       system("rm -rf $file");
     }
 }
-
-
-print "rm -rf /var/lib/clamdr\n";
-system("rm -rf /var/lib/clamdr");
-
-print "rm -rf /var/lib/systemimager\n";
-system("rm -rf /var/lib/systemimager");
-
-print "rm -f /etc/cron.daily/synctime.sh\n";     # tjn 1/18/02
-system("rm -f /etc/cron.daily/synctime.sh");
-
 
 
 sub delete_from_pool {
