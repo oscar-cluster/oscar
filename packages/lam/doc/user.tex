@@ -1,6 +1,7 @@
 % -*- latex -*-
 %
-% $COPYRIGHT$
+% Copyright (c) 2001-2005 The Trustees of Indiana University.  
+%                         All rights reserved.
 %
 
 \subsection{Using LAM/MPI}
@@ -56,7 +57,7 @@ command:
   
 If the result contains a line beginning with ``\file{default}''
 followed by a string containing ``\file{lam}'' (e.g.,
-``\cmd{lam-6.5.9}''), then you can skip the rest of this section.
+``\cmd{lam-7.0.6}''), then you can skip the rest of this section.
 Otherwise, execute the following command:
 
 \begin{verbatim}
@@ -64,11 +65,11 @@ Otherwise, execute the following command:
 \end{verbatim}
 
 This shows all the MPI implementations that are available.  Choose one
-that contains the name ``\file{lam}'' (e.g., ``\cmd{lam-6.5.9}'') and
+that contains the name ``\file{lam}'' (e.g., ``\cmd{lam-7.0.6}'') and
 run the following command:
 
 \begin{verbatim}
-  $ switcher mpi = lam-6.5.9
+  $ switcher mpi = lam-7.0.6
 \end{verbatim}
 
 This will set all {\em future} shells to use LAM/MPI.  In order to
