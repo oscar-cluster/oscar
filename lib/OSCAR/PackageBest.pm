@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.10 2002/02/19 00:04:26 sdague Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.11 2002/04/05 17:04:22 sdague Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -38,7 +38,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.10 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.11 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
@@ -219,7 +219,20 @@ sub find_best {
         # Input: array to be sorted
         # Output: the "highest" element.
         my @versions = @_;
-        my @best = sort {$b cmp $a} @versions;
+
+        my $nonnumeric = 0;
+        foreach my $entry (@versions) {
+                if($entry !~ /^\d+\.*\d*$/) {
+                        $nonnumeric++;
+                }
+        }
+        my @best = ();
+        if($nonnumeric) {
+                @best = sort {$b cmp $a} @versions;
+        } else {
+                @best = sort {$b <=> $a} @versions;
+        }
+
         return shift @best;
 }
 
