@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.7 2002/03/05 00:35:51 sdague Exp $
+#   $Id: MAC.pm,v 1.8 2002/05/24 19:36:15 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use OSCAR::Network;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.8 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -348,6 +348,9 @@ sub run_setup_pxe {
     $window->Busy(-recurse => 1);
     print "Setting up network boot...\n";
     !system("./setup_pxe -v") or (carp($!), $window->Unbusy(), return undef);
+    if ( -x "../packages/kernel/scripts/fix_network_boot" ) {
+      system("../packages/kernel/scripts/fix_network_boot"); 
+    }
     $window->Unbusy();
     return 1;
 }
