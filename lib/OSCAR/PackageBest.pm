@@ -1,6 +1,6 @@
 package OSCAR::PackageBest;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.4 2002/02/18 23:35:01 mchasal Exp $
+#   $Header: /home/user5/oscar-cvsroot/oscar/lib/OSCAR/PackageBest.pm,v 1.5 2002/02/18 23:40:43 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -38,7 +38,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list
@@ -64,7 +64,7 @@ sub find_files {
 
         my @compatlist; my $RPM_TABLE; 
 
-        unless (@compatlist=gen_cache(%args->{PKGDIR},%args->{CACHEFILE})) {
+        unless (gen_cache(%args->{PKGDIR},%args->{CACHEFILE})) {
                 return;
         }
 
