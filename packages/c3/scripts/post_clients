@@ -1,9 +1,11 @@
 #!/usr/bin/perl
-
+# $Id: post_clients,v 1.4 2002/12/16 03:04:14 naughtont Exp $
+#
 # gen_c3_conf - script to generate the /etc/c3.conf file from the ORNL
 #               cluster definition file
 # Author: Brian Leuthke
 # Last Updated: 10/10/2000, 5/15/2002
+
 
 use strict;
 use Carp;
@@ -24,7 +26,7 @@ open(OUT,">$c3_conf") or croak("Couldn't open $c3_conf");
 print OUT "cluster oscar_cluster {\n";
 print OUT "\t$hostname\n";
 my $firstkey = 1;
-foreach my $key (sort keys %hash) {
+foreach my $key (sort numerically keys %hash) {
     if ($firstkey)
       {
         $hash{$key}->{HOST} =~ /([a-zA-Z_\-]+)(\d*)/;
@@ -37,3 +39,17 @@ foreach my $key (sort keys %hash) {
 print OUT "}\n";
 close(OUT);
 
+
+
+# Sort hostnames numerically instead of an ascii sort.
+# Special sort() sub-rtn (uses $a, $b instead of @_)
+sub numerically
+{
+	$a =~ /(\d+)$/;	 # pickoff number and
+	my $A = $1;	     #  save in local var
+
+	$b =~ /(\d+)$/;	 # pickoff number and
+	my $B = $1;	     #  save in local var
+
+	($A <=> $B)
+}
