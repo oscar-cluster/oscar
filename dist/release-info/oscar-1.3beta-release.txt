@@ -31,7 +31,7 @@ intended for developers, testers, and early adopters.
 page:
 
 <P><center><a
-href="http://sourceforge.net/projects/oscar/">http://sourceforge.net/projects/oscar/</a>
+href="http://sourceforge.net/projects/oscar/">http://sourceforge.net/projects/oscar/</a></center>
 
 <P> (note that SourceForge marks the download file as "i386", but the
 file will work on ia64 platforms as well)
