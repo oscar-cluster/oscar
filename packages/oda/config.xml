@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.36 2003/04/16 20:43:45 ngorsuch Exp $
+      $Id: config.xml,v 1.37 2003/04/17 20:04:14 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -122,6 +122,7 @@
 
 	 -->
 	<shortcut> add_partition_to_disk_layout insert_record disk_partition_entries partition~%1 offset~%2 size~%3 type~%4 disk_layouts.name=%5 disk_layout_id~disk_layouts.id </shortcut>
+	<shortcut> conflicts_with_package read_records packages_conflicts package=%1 name </shortcut>
         <!--
 
 	create_disk_layout creates a new disk layout record,
@@ -278,12 +279,21 @@
 	<shortcut> package_unset_selected modify_records packages packages.name=%1 selected~0 </shortcut>
 	<shortcut> packages read_records|modify_records packages name %+ </shortcut>
 	<shortcut> packages_class_unselected packages_unselected class=%1 %+ </shortcut>
+	<shortcut> packages_conflicts_with_package read_records packages_conflicts package=%1 type="package" name </shortcut>
         <shortcut> packages_in_package_set read_records package_sets.name=%1 package_sets.id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.name </shortcut>
         <shortcut> packages_in_selected_package_set read_records oscar.selected_package_set_id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.name %+ </shortcut>
 	<shortcut> packages_installable read_records packages.name packages.installable!=0 %+ </shortcut>
         <shortcut> packages_installable_in_selected_package_set read_records oscar.selected_package_set_id=package_set_package_entries.package_set_id package_set_package_entries.included_package_id=packages.id packages.installable!=0 packages.name %+ </shortcut>
-	<shortcut> packages_that_require read_records packages_requires package name=%1 </shortcut>
+	<shortcut> packages_provided_by_package read_records packages_provides package=%1 type="package" name </shortcut>
+	<shortcut> packages_required_by_package read_records packages_requires package=%1 type="package" name </shortcut>
+	<shortcut> packages_that_conflict read_records packages_conflicts name=%1 package </shortcut>
+	<shortcut> packages_that_conflict_package read_records packages_conflicts name=%1 type="package" package </shortcut>
+	<shortcut> packages_that_provide read_records packages_provides name=%1 package </shortcut>
+	<shortcut> packages_that_provide_package read_records packages_provides name=%1 type="package" package </shortcut>
+	<shortcut> packages_that_require read_records packages_requires name=%1 package </shortcut>
+	<shortcut> packages_that_require_package read_records packages_requires name=%1 type="package" package </shortcut>
 	<shortcut> packages_uninstallable read_records packages.name installable=0 %+ </shortcut>
+	<shortcut> provided_by_package read_records packages_provides package=%1 name </shortcut>
 	<shortcut> remove_all_packages_from_all_package_sets delete_records package_set_package_entries </shortcut>
 	<shortcut> remove_all_packages_from_package_set delete_records package_set_package_entries package_sets.name=%1 package_sets.id=package_set_package_entries.package_set_id </shortcut>
 	<shortcut> remove_disk_partition_from_disk_layout delete_records disk_partition_entries disk_partition_entries.partition=%1 disk_layouts.name=%2 disk_layouts.id=disk_partition_entries.disk_layout_id </shortcut>
@@ -297,10 +307,10 @@
 	<shortcut> rename_node_group modify_records node_groups node_groups.name=%1 node_groups.name~%2 </shortcut>
 	<shortcut> rename_node_nic modify_records nics nodes.name=%1 nics.name=%2 nics.node_id=nodes.id nics.name~%3 </shortcut>
 	<shortcut> rename_package_set modify_records package_sets package_sets.name=%1 package_sets.name~%2 </shortcut>
+	<shortcut> required_by_package read_records packages_requires package=%1 name </shortcut>
 	<shortcut> selected_package_set read_records oscar.selected_package_set_id!=undef oscar.selected_package_set_id=package_sets.id package_sets.name </shortcut>
 	<shortcut> set_oscar_server modify_records nodes.name=%1 oscar.oscar_server_id~nodes.id </shortcut>
 	<shortcut> set_selected_package_set modify_records package_sets.name=%1 oscar.selected_package_set_id~package_sets.id </shortcut>
-	<shortcut> this_package_requires read_records packages_requires package=%1 name </shortcut>
 	<shortcut> unlink_node_from_disk_layouts modify_records nodes nodes.name=%1 nodes.disk_layout_id~undef </shortcut>
 	<shortcut> unlink_node_from_images modify_records nodes nodes.name=%1 nodes.image_id~undef </shortcut>
 	<shortcut> unlink_node_nic_from_networks modify_records nics nodes.name=%1 nics.name=%2 nics.node_id=nodes.id nics.network_id~undef </shortcut>
@@ -503,6 +513,42 @@
       </fields>
     </oscar>
 
+    <package_sets>
+      <fields> 
+        <id> 
+	  <type> integer </type>
+	  <parameters> auto_increment not null unique primary key </parameters>
+	</id>
+        <name>
+	  <parameters> not null unique </parameters>
+	</name>
+      </fields>
+    </package_sets>
+
+    <package_set_package_entries>
+      <parameters> unique(included_package_id,package_set_id) </parameters>
+      <fields> 
+        <included_package_id>
+	  <type> integer </type>
+	</included_package_id>
+        <package_set_id>
+	  <type> integer </type>
+	</package_set_id>
+      </fields>
+    </package_set_package_entries>
+
+    <package_set_set_entries>
+      <parameters> unique(included_package_set_id,package_set_id) </parameters>
+      <fields> 
+        <included_package_set_id>
+	  <type> integer </type>
+	</included_package_set_id>
+        <package_set_id>
+	  <type> integer </type>
+	</package_set_id>
+      </fields>
+    </package_set_set_entries>
+
     <!--
     Note that fields in the packages table will also
     be defined by the combination of all the fields 
@@ -555,42 +601,33 @@
       </fields>
     </packages>	
 
-    <package_sets>
+    <packages_conflicts>
       <fields> 
-        <id> 
-	  <type> integer </type>
-	  <parameters> auto_increment not null unique primary key </parameters>
-	</id>
-        <name>
-	  <parameters> not null unique </parameters>
-	</name>
+        <package/>
+	<type/>
+	<name/>
       </fields>
-    </package_sets>
+    </packages_conflicts_with>
 
-    <package_set_package_entries>
-      <parameters> unique(included_package_id,package_set_id) </parameters>
+    <packages_provides>
       <fields> 
-        <included_package_id>
-	  <type> integer </type>
-	</included_package_id>
-        <package_set_id>
-	  <type> integer </type>
-	</package_set_id>
+        <package/>
+	<type/>
+	<name/>
       </fields>
-    </package_set_package_entries>
+    </packages_provides>
 
-    <package_set_set_entries>
-      <parameters> unique(included_package_set_id,package_set_id) </parameters>
+    <packages_requires>
       <fields> 
-        <included_package_set_id>
-	  <type> integer </type>
-	</included_package_set_id>
-        <package_set_id>
-	  <type> integer </type>
-	</package_set_id>
+        <package/>
+	<type/>
+	<name/>
       </fields>
-    </package_set_set_entries>
+    </packages_requires>
 
   </database_tables>
 
 </oscar>
+
+
+
