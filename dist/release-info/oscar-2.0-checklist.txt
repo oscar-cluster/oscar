@@ -1,4 +1,4 @@
-# $Id: oscar-2.0-checklist.txt,v 1.1 2002/12/06 06:07:19 naughtont Exp $
+# $Id: oscar-2.0-checklist.txt,v 1.2 2002/12/06 07:34:02 naughtont Exp $
 
 List of places that the OSCAR 2.0 press release was sent:
 
@@ -24,7 +24,7 @@ List of places that the OSCAR 2.0 press release was sent:
   (HTML format)
 
 - Beowulf-underground.org
-  News/Announcements -- link to OSCAR web page announcement
+  "Software/Administration" -- link to OSCAR web page announcement
   (URL to OSCAR Web page)
 
 - Supercluster.org
@@ -37,11 +37,8 @@ List of places that the OSCAR 2.0 press release was sent:
   (HTML format)
 
 #- http://clusters.top500.org/
-#  (didn't send 1.1 release there; they already had an announcement
-#  from the actual 1.1 release)
+#  (didn't send 2.0 release there, couldn't find a place to submit?)
 
-#- IEEE Cluster Computing Task Force didn't seem to have a news/press
-#  release section.  Appealed directly to the editors.
-
-#- SourceForge
+#- IEEE Cluster Computing Task Force 
+#  (didn't send 2.0 release there, couldn't find a place to submit?)
 
