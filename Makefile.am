@@ -1,15 +1,25 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2001/08/20 23:08:07 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2001/12/19 02:36:54 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
 
-AUTOMAKE_OPTIONS	= foreign no-dependencies
+AUTOMAKE_OPTIONS	= foreign
 
-#SUBDIRS			= core-packages packages doc
-SUBDIRS			= packages doc
-EXTRA_DIST		= README
+SUBDIRS			= \
+			dist \
+			doc \
+			lib \
+			images \
+			oscarsamples \
+			packages \
+			scripts \
+			testing
+
+noinst_SCRIPTS		= install_cluster
+
+EXTRA_DIST		= README README.ia64 $(noinst_SCRIPTS)
 
 #
 # Make the documentation
@@ -24,4 +34,4 @@ docs:
 #
 
 dist-hook:
-	sh ./dist/make-dist.sh
+	sh ./dist/make-dist.sh $(DESTDIR)$(distdir)

@@ -1,13 +1,11 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2001/08/20 23:08:07 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2001/12/19 02:36:54 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
 
-AUTOMAKE_OPTIONS	= no-dependencies
-
-SUBDIRS			= architecture development
+SUBDIRS			= architecture development installation introduction
 
 #
 # Make the documentation

@@ -1,18 +1,13 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.1 2001/08/20 23:08:07 jsquyres Exp $
+# $Id: configure.in,v 1.2 2001/12/19 02:36:54 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
 
-# Disable caching
-
-define([AC_CACHE_LOAD], )
-define([AC_CACHE_SAVE], )
-
 # Init autoconf
 
-AC_INIT(./doc/development/development.tex)
+AC_INIT(./doc/installation/install.tex)
 AC_CONFIG_AUX_DIR(./dist)
 
 # Get the version of OSCAR that we are installing
@@ -44,7 +39,7 @@ AC_CANONICAL_HOST
 
 # Make automake clean emacs ~ files for "make clean"
 
-CLEANFILES="*~"
+CLEANFILES="*~ .*~ .\#*"
 AC_SUBST(CLEANFILES)
 
 # Look for things to make the .tex documentation
@@ -61,16 +56,44 @@ AC_CHECK_PROG(WGET, wget, wget)
 # Generate all the necessary files
 
 AC_OUTPUT([
-  Makefile
-  core-packages/Makefile
-  core-packages/opm/Makefile
-  core-packages/opm/bin/Makefile
-  core-packages/opm/lib/Makefile
-  dist/programs.sh
-  doc/Makefile
-  doc/development/Makefile
-  doc/architecture/Makefile
-  packages/Makefile
-  packages/lam/Makefile
+    Makefile
+    dist/Makefile
+    dist/programs.sh
+    doc/Makefile
+    doc/architecture/Makefile
+    doc/development/Makefile
+    doc/installation/Makefile
+    doc/introduction/Makefile
+    lib/Makefile
+    lib/OSCAR/Makefile
+    images/Makefile
+    oscarsamples/Makefile
+    packages/lam/Makefile
+    packages/lam/RPMS/Makefile
+    packages/lam/scripts/Makefile
+    packages/mpich/RPMS/Makefile
+    packages/mpich/SRPMS/Makefile
+    packages/mpich/scripts/Makefile
+    packages/mpich/Makefile
+    packages/Makefile
+    packages/c3/RPMS/Makefile
+    packages/c3/scripts/Makefile
+    packages/c3/Makefile
+    packages/contrib/RPMS/Makefile
+    packages/contrib/Makefile
+    packages/pbs/RPMS/Makefile
+    packages/pbs/scripts/Makefile
+    packages/pbs/Makefile
+    packages/pvm/RPMS/Makefile
+    packages/pvm/SRPMS/Makefile
+    packages/pvm/Makefile
+    packages/sis/RPMS/Makefile
+    packages/sis/Makefile
+    scripts/Makefile
+    testing/Makefile
+    testing/OSCAR_test/Makefile
+    testing/OSCAR_test/mpi/Makefile
+    testing/OSCAR_test/pvm/Makefile
+    testing/OSCAR_test/shell/Makefile
 ])
 

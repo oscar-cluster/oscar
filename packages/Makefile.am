@@ -1,10 +1,8 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2001/08/20 23:08:08 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2001/12/19 02:36:56 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
 
-AUTOMAKE_OPTIONS	= no-dependencies
-
-SUBDIRS			= lam
+SUBDIRS			= c3 contrib lam mpich pbs pvm sis

@@ -1,11 +1,9 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.2 2001/08/25 15:51:20 jsquyres Exp $
+# $Id: Makefile.am,v 1.3 2001/12/19 02:36:54 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
-
-AUTOMAKE_OPTIONS	= no-dependencies
 
 # The top-level file.
 

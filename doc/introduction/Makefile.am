@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile,v 1.1 2001/12/13 17:30:48 mchasal Exp $
+# $Id: Makefile.am,v 1.1 2001/12/19 02:36:55 jsquyres Exp $
 #
 # $COPYRIGHT$
 #
@@ -23,9 +23,7 @@ OTHER_SRC_FILES	= \
 # png figures.  .eps and .pdf files will be automatically generated
 # from these.
 
-#EPS_FIG_FILES	= \
-#		per-client.eps \
-#		complete-cluster.eps
+PNG_FIG_FILES	=
 
 #########################################################################
 #
@@ -34,14 +32,19 @@ OTHER_SRC_FILES	= \
 #########################################################################
 
 SUFFIXES	= .tex .dvi .ps .pdf .eps
-.SUFFIXES:        .tex .dvi .ps .pdf .eps
 
 MAIN_DVI	= $(MAIN_TEX:.tex=.dvi)
 MAIN_PS		= $(MAIN_TEX:.tex=.ps)
 MAIN_PDF	= $(MAIN_TEX:.tex=.pdf)
 
+# Tell automake to include all the relevant files
+
+EXTRA_DIST	= $(MAIN_TEX) $(OTHER_SRC_FILES) $(PNG_FIG_FILES)
+CLEANFILES	= $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF) *~
+
 # Some common target names
 
+all: ps
 docs: $(MAIN_PS)
 
 ps: $(EPS_FIG_FILES) $(MAIN_PS)
@@ -88,10 +91,7 @@ $(MAIN_PDF): $(MAIN_PS)
 
 # Deleting kruft temporary files
 
-clean: mostlyclean
-	-rm -f $(MAIN_PS) $(MAIN_DVI) $(MAIN_PDF)
-
-mostlyclean:
+mostlyclean-generic:
 	-rm -f *~ *.bak *% \
-		  *.log *.aux *.dvi *.blg *.toc *.bbl *.lof *.lot *.out
-
+		  *.log *.aux *.dvi *.blg *.toc *.bbl *.lof *.lot *.out \
+		  $(EPS_FIG_FILES)
