@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.25 2003/06/27 19:50:53 brechin Exp $
+# $Id: Configurator.pm,v 1.26 2003/07/01 06:07:42 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -182,35 +182,29 @@ sub doneButtonPressed
 sub getSelectedConfigurablePackages
 {
 
-    my %result = ();
-    
     # read all records from the database table <packages> that are marked
     # as being installable and as being selected, saving the long package
     # name in the <package> field for each package (we could do this with
     # a shortcut but this code is about to be replaced and want a special
     # output format
-    my @fields = ( "name", "package" );
-    my @wheres =
-    ( "packages.installable\!\=0",
-      "oscar.selected_package_set_id=package_sets_included_packages.package_set_id",
-      "package_sets_included_packages.included_package_id=packages.id" );
-    my $configurable_ref =
-      OSCAR::Database::database_read_table_fields( "packages",
-						   \@fields,
-						   \@wheres );
-    return \%result if ! defined $configurable_ref;
-    foreach my $package ( sort keys %$configurable_ref ) {
+    my @resultref;
+    my %packages;
+    OSCAR::Database::database_execute_command("packages_in_selected_package_set packages.package", \@resultref, 1);
+    foreach my $pkg (@resultref) {
+      my ($pname, $ppackage) = split(' ', "$pkg", 2);
+      $packages{$pname} = $ppackage;
+    }
+    foreach my $package ( sort keys %packages ) {
 	# Skip any packages which don't have a configurator.html file
 	my $found = 0;
-	foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS)
-        {
-	    (($found = 1) and last) if 
-		(-s "$dir/$package/configurator.html");
+	foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
+	  (($found = 1) and last) if (-s "$dir/$package/configurator.html");
         }
-	my $record_ref = $$configurable_ref{$package};
-	$result{$package} = $$record_ref{package} if $found;
+	if (! $found ) { 
+          delete $packages{$package}; 
+        }
     }
-    return \%result;
+    return \%packages;
 }
 
 #########################################################################
@@ -310,11 +304,11 @@ sub displayPackageConfigurator # ($parent)
   oscar_log_section("Running step $stepnum of the OSCAR wizard: Configure selected OSCAR packages");
 
   # Call the pre-configure API script in each selected package
-  my @packages = list_selected_packages();
-  foreach my $pkg (@packages) 
+#  my @packages = list_selected_packages();
+  foreach my $pkg (my @packages = list_selected_packages()) 
     {
-      carp('Pre-configure script for package "' . $pkg . '" failed') if 
-        (!run_pkg_script($pkg, "pre_configure", 1, ""));
+     # carp('Pre-configure script for package "' . $pkg . '" failed') if 
+      #  (!run_pkg_script($pkg, "pre_configure", 1, ""));
     }
 
   # Check to see if our toplevel configurator window has been created yet.
