@@ -1,6 +1,13 @@
 #!/bin/sh
 #
-# $Id: test_cluster,v 1.22 2002/09/14 02:34:42 naughtont Exp $
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the LICENSE file in the top level directory of the
+# OSCAR source distribution.
+
+# $Id: test_cluster,v 1.23 2002/10/23 20:24:12 jsquyres Exp $
 #
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
@@ -244,7 +251,7 @@ user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
 
 mpi="`switcher mpi --list | grep mpich | head -1`"
 if test "$mpi" != ""; then 
-    switcher mpi --add-attr default $mpi --force
+    switcher mpi --add-attr default $mpi --force --silent
     pbs_test_type="Simple PBS MPICH job"
     test_dir=mpi
     pbs_script=pbs_script.mpich
@@ -264,7 +271,7 @@ fi
 
 mpi="`switcher mpi --list | grep lam | head -1`"
 if test "$mpi" != ""; then 
-    switcher mpi --add-attr default $mpi --force
+    switcher mpi --add-attr default $mpi --force --silent
     pbs_test_type="Simple PBS LAM job"
     test_dir=mpi
     pbs_script=pbs_script.lam
@@ -296,7 +303,7 @@ pbs_test_routine
 
 mpi="`switcher mpi --list | grep mpich | head -1`"
 if test "$mpi" != ""; then 
-    switcher mpi --add-attr default $mpi --force
+    switcher mpi --add-attr default $mpi --force --silent
     pbs_test_type="Simple PBS HDF5 job"
     test_dir=hdf5
     pbs_script=pbs_script.hdf5
@@ -315,9 +322,9 @@ fi
 # If there was a user-default MPI, restore it
 #
 
-switcher mpi --rm-attr default --force
+switcher mpi --rm-attr default --force --silent
 if test "$user_default_mpi" != ""; then
-    switcher mpi --add-attr default $user_default_mpi --force
+    switcher mpi --add-attr default $user_default_mpi --force --silent
 fi
 
 
