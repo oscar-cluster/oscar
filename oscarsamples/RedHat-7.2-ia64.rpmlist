@@ -174,3 +174,4 @@ xinetd
 zlib
 zlib-devel
 libcap
+autoupdate-cfg-redhat
