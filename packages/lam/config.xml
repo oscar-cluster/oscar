@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <package>
-  <name>lam</name>
+  <name>LAM/MPI</name>
 
   <version>
     <major>6</major>
@@ -71,5 +71,10 @@ visualized either at runtime or post-mortem.</description>
     <type>package</type>
     <name>switcher</name>
   </require>
+
+  <switcher>
+    <tag>mpi</tag>
+    <name>lam-6.5.7</name>
+  </switcher>
 
 </package>
