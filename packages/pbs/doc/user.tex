@@ -1,20 +1,107 @@
-% -*- latex -*-
-%
-% $Id: user.tex,v 1.1 2002/06/13 02:01:24 jsquyres Exp $
-%
-% $COPYRIGHT$
-%
+\documentclass{letter}
+\IfFileExists{TeXmacs.sty}
+  {\usepackage{TeXmacs}}
+  {\usepackage{/usr/local/share/TeXmacs-1.0/misc/latex/TeXmacs}}
+\newcommand{\chapter}[1]{\tmsection{\begin{center}\huge #1\end{center}}}
+\newcommand{\section}[1]{\tmsection{\LARGE #1}}
+\newcommand{\subsection}[1]{\tmsection{\Large #1}}
+\newcommand{\subsubsection}[1]{\tmsection{\large #1}}
+\newcommand{\paragraph}[1]{\tmparagraph{#1}}
+\newcommand{\subparagraph}[1]{\tmparagraph{#1}}
 
-\subsection{Using The Portable Batch Scheduler (PBS)}
-\label{app:pbs-overview}
+\begin{document}
 
-PBS is cool...
+\subsection{Using The Portable Batch System (PBS)}\label{app:pbs-overview}
 
-Points to hit:
+All PBS commands can be found under /usr/local/pbs/bin on the OSCAR head node.
+There are man pages available for these commands, but here are the most
+popular and some basic options:
 
-\begin{itemize}
-\item Mini tutorial about PBS (qsub, qdel, qstat, etc.)
-\item Pointer to more docs / tutorials
-\item Mention 15 min stdout problem
-\item This will be all better in 1.3.1
-\end{itemize}
+\%Need bullets on commands
+
+qsub             submits jobs to PBS
+
+qdel              deletes PBS jobs
+
+qstat (-n)       displays current job status and node associations
+
+pbsnodes (-a)  displays node status
+
+pbsdsh           distributed process launcher{\hspace*{\fill}}
+
+Submitting a Job
+
+The PBS client daemons are called "moms".  They are each polled by the PBS
+server.
+
+qsub:  Not necessarily intuitive.  here are some things to know:
+
+\%Need bullets until "A sample qsub..."
+
+only accepts a script for a target
+
+the target script cannot have arguments
+
+target script is only launched on one node, therefore the script is
+responsible for launching all processes
+
+pbsdsh can be used within the script to launch on all allocated processors and
+nodes (specified as arguments to qsub).  Other methods of parallel launch
+exist, such as mpirun.
+
+Job parameters can be specifed to qsub on the command line, or within the
+submitted script.  You can get a good start by looking at examples provided by
+the OSCAR test suite.  Ask your sysadmin if you would like to see these.  They
+can likely be found in the home directory of the "oscartst" user.
+
+A sample qsub line and target script:
+
+\% I tried to put a backslash in on the wrapped command line, but couldn't
+
+qsub -N my\_jobname -e my\_stderr.txt -o my\_stdout.txt -q workq -l
+nodes=X:ppn=Y:all,walltime=1:00:00 my\_script.sh
+
+script.sh:
+
+\#!/bin/sh
+
+echo Launchnode is $\tmop{hostname}$
+
+pbsdsh /my\_path/my\_executable
+
+\#done
+
+
+
+Or... an equivalent alternative is to include the qsub parameters in the
+script:
+
+qsub -l nodes=X:ppn=Y:all,walltime=1:00:00 script.sh
+
+script.sh:
+
+\#!/bin/sh
+
+\#PBS -N my\_jobname
+
+\#PBS -o my\_stdout.txt
+
+\#PBS -e my\_stderr.txt
+
+\#PBS -q workq
+
+\#echo Launchnode is $\tmop{hostname}$
+
+\#pbsdsh /my\_path/my\_executable
+
+\#done
+
+*    "all" is an optional specification of a node attribute, or "resource"
+
+**  "workq" is a default queue name that is used in OSCAR clusters
+
+*** 1:00:00 is in HH:MM:SS
+
+\%More to come later
+
+\end{document}
