@@ -3,7 +3,7 @@
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
-#   $Id: mac_collector,v 1.3 2004/03/01 19:04:08 brechin Exp $
+#   $Id: mac_collector,v 1.4 2004/03/02 17:35:32 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -35,7 +35,8 @@ my $cmd = "/usr/sbin/tcpdump -i $cluster_interface -nn -e -t -l -p -q broadcast 
 
 my $tcpdumppid = open(TCPDUMP, "$cmd 2>/dev/null |") || carp("Could not run $cmd: $!");
 
-#print "tcpdump pid = $tcpdumppid\n";
+my @pids = split(' ', `ps -C tcpdump -o pid= -o ppid= | grep "$tcpdumppid"` );
+$tcpdumppid = $pids[0];
 
 my $mac;
 my $collect = 1;
@@ -49,8 +50,8 @@ close TCPDUMP;
 
 
 sub sighandle {
-  #print "killing $tcpdumppid\n";
-  kill $tcpdumppid;
   open(STDERR, ">/dev/null");
+  kill 1, $tcpdumppid;
+  close TCPDUMP;
   croak;
 }
