@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: troubleshooting.tex,v 1.3 2002/01/18 05:55:21 jsquyres Exp $
+% $Id: troubleshooting.tex,v 1.4 2002/01/18 16:16:58 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -72,6 +72,44 @@ to add the following line before \file{/etc/bashrc} is invoked:
 
 Similarly, \file{csh}-style shell users can \cmd{source} the
 \file{mpi-01lam.csh} script in their \file{.cshrc} file.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Managing machines and images}
+\label{app:troubleshooting-machines-images}
+During the life of your cluster, you may want to delete unused machines
+or images, create new images, or change the image that a client uses.
+Currently OSCAR doesn't have a direct interface to do this, but you can use
+the SIS commands directly. Here are some useful examples:
+\begin{itemize}
+\item To list all defined machines, run:
+\begin{verbatim}
+        mksimachine --List
+\end{verbatim}
+\item To list all defined images, run:
+\begin{verbatim}
+        mksiimage --List
+\end{verbatim}
+\item To delete an image, run:
+\begin{verbatim}
+        mksiimage --Delete --name <imagename>
+\end{verbatim}
+\item To delete a machine, run:
+\begin{verbatim}
+        mksimachine --Delete --name <machinename>
+\end{verbatim}
+\item To delete all machines, run:
+\begin{verbatim}
+        mksimachine --Delete --all
+\end{verbatim}
+\item To change which image a machine will install, run:
+\begin{verbatim}
+        mksimachine --Update --name <machinename> --image <imagename>
+\end{verbatim}
+\end{itemize}
+
+More details on these commands can be obtained from their respective man
+pages.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
