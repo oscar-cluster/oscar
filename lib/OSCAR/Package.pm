@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.35 2002/10/30 21:43:30 mchasal Exp $
+#   $Id: Package.pm,v 1.36 2002/11/01 14:48:23 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.35 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.36 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -414,33 +414,10 @@ sub make_empty_xml {
 
     return {
 	name => $package_name,
-	version => {
-	    major => 0,
-	    minor => 0,
-	    subversion => 0,
-	    release => 0,
-	    epoch => 0
-	    },
 	class => "third-party",
 	installable => 1,
 	summary => "Not provided",
-	license => "",
-	group => "",
-	url => "",
-	maintainer => {
-	    name => "",
-	    email => ""
-	},
-	packager => {
-	    name => "",
-	    email => ""
-	},
 	description => "Not provided",
-	download => {
-	    uri => [ "" ],
-	    size => 0,
-	    md5sum => ""
-	},
     };
 }
 
