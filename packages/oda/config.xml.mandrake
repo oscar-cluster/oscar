@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<package>
+<oscar>
+  <!--
+      Copyright (c) 2002 NCSA 
+                         All rights reserved.
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id: config.xml.mandrake,v 1.3 2002/12/10 01:28:59 ngorsuch Exp $
+  -->
   <name>oda</name>
 
   <version>
     <major>0</major>
     <minor>9</minor>
-    <subversion>0</subversion>
+    <subversion>4</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
@@ -17,7 +27,6 @@
   <summary>Oscar DAtabase</summary>
   <license>Freely distributable</license>
   <group>Application/Environment</group>
-///  <url>http://env-switcher.sourceforge.net/</url>
 
   <packager>
     <name>Neil Gorsuch</name>
@@ -41,35 +50,47 @@
     </server>
   </rpmlist>
 
-  <oda>
-    /// This definition allows easier reading (or modifying) of package records
-    /// to list all package names:
-    ///     oda packages
-    /// to list the package names and packager names for all packages:
-    ///     oda packages packager_name
-    /// to list the package names and packager email of all installable packages:
-    ///     oda packages installable=1 packager_email
-    /// to list the package names of all included class installable packages:
-    ///     oda packages class=included installable=1
-    /// to change the packager email address for package foo:
-    ///     oda packages name=foo packager_email~new_email@newplace.com
-    ///
-    /// To list all the packages that require a particular thing:
-    ///     oda packages-that-require required_thing_name
-    ///
-    /// To list all the things that a particluar package requires:
-    ///	    oda this-package-requires package_name
-    ///
-    <shortcut> packages read_records|modify_records packages name $* </shortcut>
-    <shortcut> packages_that_require read_records packages_requires package name=$1 </shortcut>
-    <shortcut> this_package_requires read_records packages_requires name package=$1 </shortcut>
-    ///
-    /// This defines the second field name for records in the package_rpmlist
-    /// which can't be surmised from the xml structure. If there were more
-    /// than one field names that needed to be specified for a particular
-    /// table, they would be specified all on the same line.
-    ///
-    <fieldnames> packages_rpmlist scope </fieldnames>
-    ///
-   </oda>
-</package>
+  <package>
+    <oda>
+        <!--
+	This definition allows easier reading and
+	modifying of records in the "packages" table
+
+        To list all package names:
+            oda packages
+    
+        To list the package names for all packages:
+            oda packages packager_name
+    
+        To list the package names and packager email
+	of all installable packages:
+            oda packages installable=1 packager_email
+    
+        To list the package names of all installable
+	packages that are in the included class:
+            oda packages class=included installable=1
+    
+        To change the packager email address for package foo:
+            oda packages name=foo packager_email~new_email@newplace.com
+    
+        To list all the packages that require a particular thing:
+            oda packages-that-require required_thing_name
+    
+        To list all the things that a particular package requires:
+            oda this-package-requires package_name
+	 -->
+        <shortcut> packages read_records|modify_records packages name %+ </shortcut>
+        <shortcut> packages_that_require read_records packages_requires package name=%1 </shortcut>
+        <shortcut> this_package_requires read_records packages_requires name package=%1 </shortcut>
+        <!--
+        This defines the second field name for records in 
+	the packages_rpmlist which can't be surmised from 
+	the xml structure. If there were more than one 
+	field name that needed to be specified for a 
+	particular table, they would be specified all on 
+	the same line.
+        -->
+        <fieldnames> packages_rpmlist scope </fieldnames>
+     </oda>
+  </package>
+</oscar>
