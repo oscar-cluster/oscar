@@ -1,51 +1,59 @@
-# $Id: oscar-2.2.1-checklist.txt,v 1.1 2003/04/21 20:17:21 naughtont Exp $
+# $Id: oscar-2.2.1-checklist.txt,v 1.2 2003/04/22 06:20:41 naughtont Exp $
 
 List of places that the OSCAR 2.2.1 press release was sent:
 
-o The OSCAR web site, under "Press Releases" on the "papers/talks" page.
+- The OSCAR web site, under "Press Releases" on the "papers/talks" page.
   (HTML format)
 
-o HPCWire
+- A OSCAR/sf.net "News" item.
+  (text/abbreviated info)
+
+- Post to oscar-users
+  (Plain text [email])
+
+- HPCWire
   Submission deadline: 10am PST for the following week's edition
   Send plain text of releases to: editor@hpcwire.com
-  (Plain text)
+  (Plain text [email])
 
-o Freshmeat
+- Freshmeat
   Sent to: sldague@us.ibm.com  (OSCAR FM contact)
   (Plain text)
 
-o Infoworld
+- Infoworld
   Sent to: carolyn_april@infoworld.com
   E-mail address obtained from their "Contact us" web page
   (Plain text)
 
-o LinuxPR.com
+- LinuxPR.com
   Free registration required to submit press releases
   (HTML format)
 
-o Beowulf-underground.org
+- Beowulf-underground.org
   "Software/Administration" -- link to OSCAR web page announcement
   (URL to OSCAR Web page)
 
-o Supercluster.org
-  Connection being MAUI is shipped w/ OSCAR
-  Sent to: Dave Jackson <jacksond@supercluster.org>
-  (URL to OSCAR Web page & Plain text)
-
-o LinuxJournal
+- LinuxJournal
   Free Subscription, "Submit a Press Release" at http://pr.linuxjournal.com/
   (HTML format)
 
-o HPC.devchannel.org (foundry stuffo)
+- HPC.devchannel.org (foundry stuffo)
   http://hpc.devchannel.org/submit.pl?section=hpcchannels
   (HTML format)
 
-o SupercomputingOnline.com 
-  (got info from Betsy Riley, http://www.supercomputingonline.com/submit.php ) 
+- SupercomputingOnline.com 
+  Free subscription, "Submit News" / Topic="Government News"
+  http://www.supercomputingonline.com/submit.php
 
 
 #########################################################################3
 # Not released, but worth noting for possible future use.
+
+# Send to DaveJ when we release v2.3, b/c it will have the new MAUI version
+#o Supercluster.org
+#  Connection being MAUI is shipped w/ OSCAR
+#  Sent to: Dave Jackson <jacksond@supercluster.org>
+#  (URL to OSCAR Web page & Plain text)
 
 #- http://clusters.top500.org/
 #  (didn't send 2.0 release there, couldn't find a place to submit?)
