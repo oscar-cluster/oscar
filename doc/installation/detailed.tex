@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.5 2001/12/17 03:32:16 mchasal Exp $
+% $Id: detailed.tex,v 1.6 2001/12/17 05:52:04 mchasal Exp $
 %
 % $COPYRIGHT$
 %
@@ -413,7 +413,25 @@ shown in Figure~\ref{fig:detailed-build-image}.
   \end{center}
 \end{figure}
   
-  
+\paragraph{Customizing your image}
+
+The defaults of this panel use the sample disk partition and rpm package files
+that can be found in the \file{oscarsamples} directory.
+At some point, you may want to customize these files to make the image
+suit your particular requirements.
+
+\subparagraph{Disk partitioning}
+
+The disk partition file has the following format:
+
+\subparagraph{Package lists}
+The package list is simply a list of rpm file names, 1
+per line. Be sure and include all of the prerequisites that
+any packages you might add have. You do not need to specify
+the architecture portion of the filename, nor do you need 
+to specify the version. The highest version that matches the
+portion that you specify will be used.
+
 \subsubsection{Define your client machines} 
 
 Press the Step 2 button of the wizard entitled \button{Define OSCAR
