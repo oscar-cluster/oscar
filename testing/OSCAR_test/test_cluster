@@ -3,10 +3,10 @@
 # test_cluster - script to test MPI, PVM, & PBS
 # Authors: Jason Brechin
 #          Jeremy Enos
-# Last Updated: 4/22/2002
+# Last Updated: 05/15/2002
 
 #test to make sure root is not running this script
-if [ `/usr/bin/id -un` = root ] ; then 
+if [ `id -un` = root ] ; then 
   echo "This test script MUST be run from a user account."
   echo "Exiting..."
   exit 1

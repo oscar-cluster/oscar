@@ -1,9 +1,10 @@
 #!/bin/sh
 
-# test_asroot - script to test MPI, PVM, & PBS
+# test_cluster_as_root - script to test services, NFS, 
+#                        and install/run user level tests
 # Authors: Jason Brechin
 #          Jeremy Enos
-# Last Updated: 4/19/2002
+# Last Updated: 5/15/2002
 
 dir=`pwd`
 
@@ -117,7 +118,7 @@ fi
 # Make sure ssh keys are generated quietly
 /bin/su -c '' - $test_user > /dev/null 2>&1
 # Copy test files to $test_user's homedir
-grp=`/usr/bin/id -g $test_user`
+grp=`id -g $test_user`
 /bin/cp -a $dir/OSCAR_test $test_user_homedir
 /bin/chown -R $test_user:$grp $test_user_homedir/OSCAR_test > /dev/null 2>&1
 
