@@ -1,0 +1,132 @@
+#!/bin/sh
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+
+# $Id: test_user,v 1.1 2002/10/30 20:27:58 mchasal Exp $
+#
+# Authors: Jason Brechin
+#          Jeremy Enos
+
+
+# Initialize environment
+qsub='/opt/pbs/bin/qsub'
+qstat='/opt/pbs/bin/qstat'
+cd ~
+clients=0
+for i in $@ 
+do
+    clients=`expr $clients + 1`
+done
+
+function calc_timeout {
+if [ ! $min_timeout ]; then min_timeout=30; fi
+if [ ! $scaling_factor ]; then scaling_factor=3; fi
+timeout=`echo "$numprocs $scaling_factor * p" | /usr/bin/dc | cut -d . -f 1`
+if [ $timeout -lt 30 ] || [ $timeout -lt $min_timeout ]; then
+  if [ $min_timeout -gt 30 ]; then
+    timeout=$min_timeout;
+  else
+    timeout=30;
+  fi
+fi
+}
+
+#                       DEFAULT PBS QUEUE
+#                       -----------------
+
+if [ `/opt/pbs/bin/qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
+        $OSCAR_TESTPRINT --label "PBS default queue definition" -p
+else
+        $OSCAR_TESTPRINT --label "PBS default queue definition" -f
+fi
+
+#                       PBSNODES FREE ROUTINE
+#                       ---------------------
+# Shows only failure to find free nodes
+check_free_nodes () {
+free=`/opt/pbs/bin/pbsnodes -a | grep -c 'state = free'`
+if [ $free -eq $clients ] || [ $free -gt $clients ]; then    # at least $clients
+ free nodes
+echo -n ""
+else
+echo -n "Checking for $clients free nodes:"
+        $OSCAR_TESTPRINT --label "PBS free node check" -f
+  echo Not enough free nodes.  Tests incomplete.
+  exit 1
+fi
+}
+
+#			PBS TEST ROUTINE
+#			----------------
+# Generic routine to run any test through PBS depending on environment
+pbs_test_routine () {
+sleep 1
+calc_timeout
+check_free_nodes
+echo -n $pbs_test_type
+echo -n ":    "
+cd $homedir/$test_dir
+if [ -f $output_file.out ]; then /bin/rm -f $output_file.out; fi
+if [ -f $output_file.err ]; then /bin/rm -f $output_file.err; fi
+job=`$qsub -l nodes=$clients:ppn=$ppn $pbs_script`
+# Check that job submitted properly
+if [ -z $job ]
+then
+        $OSCAR_TESTPRINT --label "PBS shell test" -f
+else
+  timeleft=$timeout
+  job_state=incomplete
+  while [ $job_state = incomplete ]; do 
+    # Displays remaining seconds
+    max_digits=10
+    $OSCAR_TESTPRINT --label "PBS shell test" --status "$timeleft"
+    sleep 1
+  # Tests for success or timeout
+    if [ -f $output_file.out ] ; then
+      grep "$grep_string" $output_file.out > /dev/null
+      string_test=$?
+      if [ $string_test = 0 ] ; then
+        job_state=success
+        for i in `seq 1 $max_digits`; do
+          echo -n -e " "
+        done
+        $OSCAR_TESTPRINT --label "PBS shell test" -p
+      else
+ 	timeleft=0
+      fi
+    fi
+    if [ $timeleft -eq 0 ]; then # more than timeout
+      for i in `seq 1 $max_digits`; do
+        echo -n -e " "
+      done
+       $OSCAR_TESTPRINT --label "PBS shell test" -f
+      job_state=fail
+      if [ `/opt/pbs/bin/qstat |grep -c $job` -eq 1 ]; then
+      /opt/pbs/bin/qdel $job
+      sleep 1 # Allows nodes to free up again
+      fi
+      if [ $exit_on_fail = yes ]; then exit 1 ; fi
+    fi 
+    timeleft=`expr $timeleft - 1`
+  done
+fi
+unset min_timeout
+unset scaling_factor
+cd ..
+}
+
+  
+#			PBS SHELL TEST
+#			--------------
+
+pbs_test_type="Simple PBS shell job"
+test_dir=shell
+pbs_script=pbs_script.shell
+output_file=shelltest
+grep_string=Hello
+exit_on_fail=yes
+scaling_factor=3
+pbs_test_routine
+
