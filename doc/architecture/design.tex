@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.19 2002/08/22 03:34:33 naughtont Exp $
+% $Id: design.tex,v 1.20 2002/10/08 07:19:04 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -116,13 +116,13 @@ the RPM name, an auto-update may replace \file{lam-\-{\rm X}\-.{\rm
 \file{lam-\-{\rm A}\-.{\rm B}\-.{\rm C}-\-1\-.i586.rpm} (where version
 $(A, B, C) > (X, Y, Z)$, of course).
 
-It is also strongly recomended that package RPM files named {\tt
+It is also strongly recommended that package RPM files named {\tt
   foo-oscar} provide a ``{\tt Conflict: foo}'' statement such that
 they conflict with non-OSCAR-ized RPM of the base name.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Package API Requirements}
+\subsection{OSCAR Packages}
 
 Introduced in the 1.3 release, the package API outlines the
 requirements on a package in order to be included in the OSCAR
@@ -132,9 +132,31 @@ image-based installation or node-based installation in mind.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Goals}
+\subsubsection{Package Philosophy}
 
-The goals of this API are as follows:
+\begchange
+
+OSCAR packages are essentially collections of RPMs that are
+selectively installed on nodes within an OSCAR cluster.
+
+The simplest OSCAR package is a single RPM file in a specific
+directory structure.  More complex OSCAR packages are also possible,
+such as those that contain helper scripts and/or XML-based
+configuration that dictates specific installation behavior.  Package
+authors can choose simplistic or complex models, depending on the
+requirements of their package.
+
+\endchange
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{API Goals}
+
+A package can have helper scripts to provide specific configuration
+and customization during the OSCAR installation process.  These
+scripts adhere to a specific API, and, if present, are invoked at
+strategic points during the OSCAR installation.  The goals of this API
+are as follows:
 
 \begin{itemize}
 \item support current functionality used in all current OSCAR packages
@@ -306,7 +328,19 @@ package directory:
   
 \item \file{client.rpmlist} Same as the server.rpmlist file, except
   that it contains the RPM filenames for the RPMs installed in step 3.
+  
+\begchange
+
+\item \file{config.xml} This file is a combination of many different
+  configuration items.  It is described in
+  Section~\ref{sec:config-xml}.
+
 \end{itemize}
+
+Note that if neither \file{server.rpmlist} nor \file{client.rpmlist}
+are present, then all RPMs will be installed on all nodes.
+
+\endchange
 
 Additionally, if a package is contained within the OSCAR CVS tree,
 some optional files may be present in each package's directory
@@ -356,12 +390,324 @@ are included in the OSCAR distribution packages.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsubsection{XML Configuration File}
+\label{sec:config-xml}
+
+\begchange
+
+Each package may have a file named \file{config.xml}.
+\file{config.xml} is an XML file that contains tags that customize
+several different phases of the OSCAR installation process for that
+package.  The tags and their hierarchy are described below.
+
+The \xmltag{package} tag is the outer level tag for the entire block.
+It contains all other tags in this file. As such, all other tags are
+listed in a hierarchical fashion, below.  
+
+Each tag listed below is marked as either ``Mandatory'' or
+``Optional''.  Mandatory tags {\em must} be specified -- if they are
+not supplied, the XML is considered to be erroneous.  Optional tags
+may or may not be supplied; if they are not supplied, a default value
+will be assumed.  
+
+Each tag is also marked as ``Singular'' or ``Multi''.  Tags marked as
+singular can only have one instance (it is erroneous to have multiple
+instances of a Singular tag).  Multi tags can have multiple instances
+-- whether there can be one or more instances, or zero or more
+instances depends on whether the specific tag is marked as Mandatory
+or Optional, respectively.
+
+\begin{itemize}
+\item \xmltag{name}: This is a string tag that is the name
+  of the package.  It should be the same as the package's directory
+  name in the \file{packages/} directory.
+
+  Mandatory/Singular.
+  
+\item \xmltag{version}: An outer tag containing several sub-tags that
+  specify the version number of the package.
+
+  Mandatory/Singular.
+  
+  \begin{itemize}
+  \item \xmltag{major}: An integer major version number of
+    the OSCAR package.
+
+    Mandatory/Singular.
+    
+  \item \xmltag{minor}: An integer minor version number of the OSCAR
+    package.
+
+    Mandatory/Singular.
+    
+  \item \xmltag{subversion}: An integer subversion number of the OSCAR
+    package.
+    
+    Optional/Singular.  If not present, ``0'' is assumed.
+    
+  \item \xmltag{release}: An integer release number of the OSCAR
+    package.
+    
+    Optional/Singular.  If not present, ``1'' is assumed.
+    
+  \item \xmltag{epoch}: An integer epoch number of the OSCAR package.
+    
+    Optional/Singular.  If not present, ``1'' is assumed.
+  \end{itemize}
+  
+  This version number is intentionally analogous to RPM version numbers.
+  Put together, the version number can be represented as
+  \xmltag{major}.\xmltag{minor}.\xmltag{subversion}-\xmltag{release}.
+  The epoch number is not typically displayed, but is used mainly as a
+  ``tie breaker'' between multiple otherwise equivalent versions -- it
+  is not intended to be typically used (most epochs will be either not
+  specified and/or specifically noted as ``1'').
+  
+\item \xmltag{class}: A string indicating whether the package is a
+  core, included, or third party package.  Possible values are:
+
+  \begin{itemize}
+  \item \xmlval{core}: indicates that the package is a core package.
+  \item \xmlval{included}: indicates that the package is an included
+    package.
+  \item \xmlval{third-party}: indicates that the package is a third
+    party package.
+  \end{itemize}
+
+  Mandatory/Singular.
+  
+\item \xmltag{installable}: An integer indicating whether the package
+  is installable or not.\footnote{This field may be changed in the
+    pre-configure step of the API.  For example, if pre-configure
+    determines that this package cannot be installed on the current
+    platform, it may change the value of \xmltag{installable} to be 0
+    so that it will not be installed.}  ``\xmlval{0}'' indicates that
+  it will not be installed -- all other integer values indicate that
+  it will be installed.
+  
+  Mandatory/Singular.
+  
+\item \xmltag{summary}: A string presenting a short summary
+  description of the package.  This string is typically one (short)
+  sentence.
+  
+  Optional/Singular.  If not supplied, the value
+  ``\xmlval{$<$none$>$}'' is used.
+
+\item \xmltag{license}: A string naming the license of the package.
+  
+  Optional/Singular.  If not supplied, the value
+  ``\xmlval{$<$none$>$}'' is used.
+
+\item \xmltag{group}: A string naming the functional group of the
+  package.  This field is intended to follow the nomenclature of the
+  SourceForge Trove categorization names.
+  
+  Optional/Singular.  If not supplied, the value
+  ``\xmlval{$<$none$>$}'' is used.
+  
+\item \xmltag{uri}: A string presenting the URI of where either the
+  OSCAR package or the native package itself may be found.
+  
+  Optional/Singular.  If not supplied, the value
+  ``\xmlval{$<$none$>$}'' is used.
+  
+\item \xmltag{packager}: A string the name and/or the e-mail address
+  of the person who created/maintains the OSCAR package.  E-mail
+  addresses should be presented in common RFC 2822 form -- surrounded
+  by ``$<>$''.  For example, ``{\tt Joe Shmoe $<$jshmoe@foo.com$>$}''.
+  
+  Optional/Singular.  If not supplied, the value
+  ``\xmlval{$<$none$>$}'' is used.
+
+\item \xmltag{description}: A string describing in some detail the
+  contents of the OSCAR package.  This string may be of arbitrary
+  length.
+  
+  Optional/Singular.  If not supplied, the value
+  ``\xmlval{$<$none$>$}'' is used.
+  
+\item \xmltag{provides}: A top-level tag effectively indicating
+  synonyms for the package name for use during the dependency
+  analysis.  There may be zero or more \xmltag{provides} 
+  
+  Optional/Singular.  If not supplied, no synonyms for this package
+  will be used in the dependency analysis.
+
+  \begin{itemize}
+  \item \xmltag{name}: A string indicating a synonym name for this
+    package.
+
+    Optional/Multi.
+  \end{itemize}
+
+\item \xmltag{requires}: A top-level tag effectively indicating
+  dependencies for this OSCAR package.  
+  
+  Optional/Multi.  If not supplied, no dependencies for this package
+  will be used in the dependency analysis.  Multiple \xmltag{requires}
+  blocks may be specified to list multiple dependencies.
+
+  \begin{itemize}
+  \item \xmltag{type}: A string indicating whether the dependency is
+    an RPM or another OSCAR package.  Possible values are:
+
+    \begin{itemize}
+    \item \xmlval{rpm}: the dependency is an RPM.
+    \item \xmlval{oscar-package}: the dependency is another OSCAR
+      package.
+    \end{itemize}
+
+    Mandatory/Single.
+    
+  \item \xmltag{scope}: A string indicating the scope of the
+    dependency.  Possible values are:
+
+    \begin{itemize}
+    \item \xmlval{server}: indicates that the dependency only exists
+      on the server node.
+    \item \xmlval{client}: indicates that the dependency only exists
+      on the client nodes.
+    \item \xmlval{all}: indicates that the dependency exists on all
+      nodes.
+    \end{itemize}
+    
+    Optional/Single.  If no value is specified, ``\xmlval{all}'' is
+    used.
+    
+  \item \xmltag{name}: A string indicating the name of the RPM or
+    OSCAR package that this package depends on.
+
+    Mandatory/Single.
+    
+  \item \xmltag{distro\_name}: A string indicating which Linux
+    distribution the dependency exists on.  Possible values are:
+
+    \begin{itemize}
+    \item \xmlval{RedHat}: indicates that the dependency exists on
+      RedHat Linux distributions.
+    \item \xmlval{Mandrake}: indicates that the dependency exists on
+      Mandrake Linux distributions.
+    \item \xmlval{all}: indicates that the dependency exists on all
+      Linux distributions.
+    \end{itemize}
+    
+    Optional/Singular.  If not specified, ``\xmlval{all}'' is used.
+    
+  \item \xmltag{distro\_version}: A number indicating the version 
+    of Linux distribution the dependency exists on.
+
+    Optional/Singular.  If not specified, ``\xmlval{all}'' is used.
+    
+  \end{itemize}
+  
+\item \xmltag{conflicts}: A top-level tag effectively indicating
+  conflicts for this OSCAR package.
+  
+  Optional/Multi.  If not supplied, no conflicts for this package will
+  be used in the dependency analysis.  Multiple \xmltag{conflicts}
+  blocks may be specified to list multiple conflicts.
+
+  \begin{itemize}
+  \item \xmltag{type}: A string indicating whether the conflict is an
+    RPM or another OSCAR package.  Possible values are:
+
+    \begin{itemize}
+    \item \xmlval{rpm}: the conflict is an RPM.
+    \item \xmlval{oscar-package}: the conflict is another OSCAR
+      package.
+    \end{itemize}
+
+    Mandatory/Single.
+    
+  \item \xmltag{scope}: A string indicating the scope of the conflict.
+    Possible values are:
+
+    \begin{itemize}
+    \item \xmlval{server}: indicates that the conflict only exists on
+      the server node.
+    \item \xmlval{client}: indicates that the conflict only exists on
+      the client nodes.
+    \item \xmlval{all}: indicates that the conflict exists on all
+      nodes.
+    \end{itemize}
+    
+    Optional/Single.  If no value is specified, ``\xmlval{all}'' is
+    used.
+    
+  \item \xmltag{name}: A string indicating the name of the RPM or
+    OSCAR package that this package conflicts with.
+
+    Mandatory/Single.
+    
+  \item \xmltag{distro\_name}: A string indicating which Linux
+    distribution the conflicts exists on.  Possible values are:
+
+    \begin{itemize}
+    \item \xmlval{RedHat}: indicates that the conflict exists on
+      RedHat Linux distributions.
+    \item \xmlval{Mandrake}: indicates that the conflict exists on
+      Mandrake Linux distributions.
+    \item \xmlval{all}: indicates that the conflict exists on all
+      Linux distributions.
+    \end{itemize}
+    
+    Optional/Singular.  If not specified, ``\xmlval{all}'' is used.
+    
+  \item \xmltag{distro\_version}: A number indicating the version of
+    Linux distribution the conflict exists on.
+
+    Optional/Singular.  If not specified, ``\xmlval{all}'' is used.
+    
+  \end{itemize}
+  
+\item \xmltag{download}: A top-level tag indicating where this package
+  may be downloaded from.  This tag is typically used in the OSCAR
+  Package Downloader (OPD) -- it is not used in the OSCAR installation
+  process.
+  
+  Optional/Singular.  If not specified, this package will not be able
+  to be downloaded from anywhere. 
+
+  \begin{itemize}
+  \item \xmltag{uri}: A string specifying a full URI from where a
+    tarball containing the package can be downloaded from.  See
+    Section~\ref{sec:oscar-package-downloader} for more details on the
+    OPD and the specifications of this URI.
+
+    Mandatory/Multi.  Multiple URIs may be specified, each of which
+    will be treated equivalently.  
+    
+  \item \xmltag{size}: An integer specifying the size (in bytes) of
+    the tarball specified by the \xmltag{uri} tags.
+
+    Mandatory/Single.
+    
+  \item \xmltag{md5sum}: A string indicating the MD5 sum of the
+    tarball specified by the \xmltag{uri} tags.  The string is
+    case-insensitive. 
+    
+    Mandatory/Single.
+  \end{itemize}
+\end{itemize}
+
+\begin{discuss}
+  If we want to replace/supplement the \file{server.rpmlist} and
+  \file{client.rpmlist} files, additional XML tags should be
+  specified, as well as an ordering of resolution (e.g., use the XML,
+  use the files, then install RPMs everywhere).
+\end{discuss}
+
+\endchange
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsubsection{Documentation}
 \label{sec:design-pkg-docs}
 
 OSCAR provides a mechanism for packages to get their documentation
 included in the top-level \file{install.pdf} and \file{user.pdf}
-files.  It is highly recomended that OSCAR package authors provide
+files.  It is highly recommended that OSCAR package authors provide
 OSCAR-specific information about their package with this mechanism.
 If additional information is available elsewhere (e.g., a web site, a
 text file in an installed RPM, etc.), providing a link or reference to
@@ -380,7 +726,7 @@ user manual.
 Similarly, if there is a file \file{license.tex} in the same
 directory, it will also be included in the OSCAR user manual in the
 section containing licenses from all the packages.  {\bf It is {\em
-    strongly} recomended that each package include their license in
+    strongly} recommended that each package include their license in
   the OSCAR user's documentation.}
 %
 Finally, if there is a file \file{install.tex} in the same directory,
@@ -401,7 +747,7 @@ The following guidelines should be followed when providing
 \item The top-level subsection should have a label of the form
       \verb=\label{app:<PKG_NAME>-overview}= where \verb=<PKG_NAME>= is
       the name of the package (same as the directory name), e.g.
-	 \verb=\label{app:pvm-overview}=.
+         \verb=\label{app:pvm-overview}=.
 
 \item The following macros are available:
 
@@ -462,7 +808,7 @@ an OSCAR distribution package.
 \subsubsection{API calls}
 \label{sec:design-pkg-api}
 
-The environment that these API calls are exectuted under has the 
+The environment that these API calls are executed under has the 
 following variables defined that may be useful:
 
 \begin{table}[htbp]
@@ -712,7 +1058,7 @@ name as the argument.\footnote{There should be a description of how to
   use this here...}
 
 \begin{discuss}
-SIS Guys - How do we import this funtion in our perl scripts?
+SIS Guys - How do we import this function in our perl scripts?
 \end{discuss}
 
 \cmd{get\_machine\_listing} returns a hash.  The hash keys are the
@@ -767,4 +1113,4 @@ These issues can be addressed for API versions after 1.3.
 % LocalWords:  SystemImager backends uninstall Uninstallation init geiselha OPM
 % LocalWords:  uninstallation tarball pkgconfig atboot Solaris pkg contrib OCG
 % LocalWords:  AC EFAULT accessor ODRs integrators verbage vs admin opkgconfig
-% LocalWords:  integrator txt
+% LocalWords:  integrator txt naughtont
