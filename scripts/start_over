@@ -107,7 +107,7 @@ sub uninstall_rpms {
         }
     }
     if(scalar(@deleteme)) {
-        my $rpmcmd = 'rpm -e --nodeps ' . (join ' ', @deleteme);
+        my $rpmcmd = 'rpm -e --allmatches --nodeps ' . (join ' ', @deleteme);
 	print "$rpmcmd\n";
         !system($rpmcmd) or croak "couldn't uninstall the rpms";
     }
