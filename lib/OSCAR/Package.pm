@@ -1,6 +1,6 @@
 package OSCAR::Package;
 
-#   $Id: Package.pm,v 1.13 2002/08/17 20:10:45 jsquyres Exp $
+#   $Id: Package.pm,v 1.14 2002/08/17 22:37:49 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use Carp;
 # Trying to figure out the best way to set this.
 $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.13 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
 
 # This defines which packages are core packages (i.e. MUST be installed before
 # the wizard comes up)
@@ -158,15 +158,16 @@ sub rpmlist {
     my $listfile = ($type eq "client") ? "client.rpmlist" : "server.rpmlist";
     my $file = "$ENV{OSCAR_HOME}/packages/$pkg/$listfile";
     my @rpms = ();
-    open(IN,"<$file") or carp("Couldn't open package list file $file for reading!");
-    while(<IN>) {
-        # get rid of comments
-        s/\#.*//;
-        if(/(\S+)/) {
-            push @rpms, $1;
-        }
+    if (open(IN,"<$file")) {
+	while(<IN>) {
+	    # get rid of comments
+	    s/\#.*//;
+	    if(/(\S+)/) {
+		push @rpms, $1;
+	    }
+	}
+	close(IN);
     }
-    close(IN);
     return @rpms;
 }
 
