@@ -57,21 +57,24 @@ for installation:
 
 c3
 --
+post_buildimage - remove old /etc/c3.conf
 post_clients - script to generate /etc/c3.conf
 
 pbs
 ---
-post_clients - script to generate node listings and start services
-post_install - script to regenerate node listings with instrumented
-values for number of processors and restart services
+post_clients - script to generate server nodes listing file
+post_install - set queue values for pbs
+server_prep - script to configure pbs and start pbs server and maui scheduler
+update_config - set the right number of nodes and cpus in pbs_server.conf
 
 lam
 ---
-post_install - generation of node listings on server
+post_buildimage - generation of profile.d scripts on server and nodes
 
 mpich
 -----
-post_install - generation of node listings on server
+post_buildimage - generation of profile.d scripts on server and nodes
+post_clients - generation of node listings on server
 
 pvm
 ---
