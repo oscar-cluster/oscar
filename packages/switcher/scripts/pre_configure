@@ -7,15 +7,22 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: pre_configure,v 1.4 2002/10/31 15:48:08 jsquyres Exp $
+# $Id: pre_configure,v 1.5 2002/11/01 04:48:28 jsquyres Exp $
 #
 
 use strict;
 use XML::Simple;
 use Carp;
 
+# Import some modules just for switcher
+
+use lib "$ENV{OSCAR_HOME}/packages";
+use switcher::scripts::package_config;
+
 # Debugging
+
 use Data::Dumper;
+
 
 #
 # Global variables
@@ -24,22 +31,11 @@ use Data::Dumper;
 my $outfile = "$ENV{OSCAR_HOME}/packages/switcher/configurator.html";
 
 #
-# This will be re-written when Neil introduces the ODA interface where
-# I can search for this information in the database.  For the moment,
-# I'm going to hard-code it...
+# Read in the settings from the database as to what packages provided
+# switcher blocks
 #
 
-my $result = {
-    lam => {
-	tag => "mpi",
-	name => "lam-6.5.7"
-    },
-
-    mpich => {
-	tag => "mpi",
-	name => "mpich-1.2.4"
-    },
-};
+my $pkg_config = switcher::scripts::package_config::get();
 
 #
 # Now that we know what packages use switcher, we can construct an
@@ -64,30 +60,6 @@ print OUTFILE "<html>
 <form>\n";
 
 #
-# Traverse the data returned and construct a data mapping tags to
-# names/packages.
-#
-
-my %tags;
-foreach my $k (sort(keys(%$result))) {
-    my $tag = $result->{$k}->{tag};
-
-    if (defined($tags{$tag})) {
-	++$tags{$tag}->{count};
-    } else {
-	$tags{$tag} = {
-	    count => 1,
-	    names => [],
-	    packages => [],
-	};
-    }
-    my $names = $tags{$tag}->{names};
-    push @$names, $result->{$k}->{name};
-    my $packages = $tags{$tag}->{packages};
-    push @$packages, $k;
-}
-
-#
 # - If we didn't find any tags, print a message saying so.
 # - Otherwise, for each tag:
 #   - If there is only one selection possible, then just print it out
@@ -95,16 +67,16 @@ foreach my $k (sort(keys(%$result))) {
 #     the default one
 #
 
-my @tags_keys = keys(%tags);
-if ($#tags_keys < 0) {
-    print "No tags found\n";
-    print OUTFILE "<p>No tags were supplied by any OSCAR packages -- nothing to configure.</p>\n\n";
+my @pkg_config_keys = keys(%$pkg_config);
+if ($#pkg_config_keys < 0) {
+    print "No pkg_config found\n";
+    print OUTFILE "<p>No pkg_config were supplied by any OSCAR packages -- nothing to configure.</p>\n\n";
 } else {
 
     print OUTFILE "<p>\n<ol>\n";
 
-    foreach my $tag (sort(@tags_keys)) {
-	my $info = $tags{$tag};
+    foreach my $tag (sort(@pkg_config_keys)) {
+	my $info = $pkg_config->{$tag};
 
 	print OUTFILE "<p>\n<li> ";
 

@@ -7,33 +7,26 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: set_switcher_defaults,v 1.2 2002/10/30 12:16:18 jsquyres Exp $
+# $Id: set_switcher_defaults,v 1.3 2002/11/01 04:48:28 jsquyres Exp $
 #
 
 use strict;
 use XML::Simple;
 use Carp;
 
+# Import some modules just for switcher
+
+use lib "$ENV{OSCAR_HOME}/packages";
+use switcher::scripts::user_settings;
+
 # Debugging
 use Data::Dumper;
 
 #
-# Global variables
+# Read in the results from the configurator
 #
 
-my $results = undef;
-
-#
-# This will be re-written when Neil introduces the ODA interface where
-# I can search for this information in the database.  For the moment,
-# I'm going to hard-code it...
-#
-
-my $infile = "$ENV{OSCAR_HOME}/packages/switcher/.configurator.values";
-my $xs = new XML::Simple(keyattr => {});
-if (-e $infile) {
-    $results = $xs->XMLin($infile);
-}
+my $results = switcher::scripts::user_settings::get();
 
 #
 # If we have output from the configurator step, analyze it and invoke
