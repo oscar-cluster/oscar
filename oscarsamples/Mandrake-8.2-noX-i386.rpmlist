@@ -101,7 +101,6 @@ tcl
 tcsh
 rsync
 tmpwatch
-kudzu
 sendmail
 automake
 ed

@@ -70,7 +70,6 @@ kernel-headers
 kernel-smp
 krb5-libs
 ksymoops
-kudzu
 less
 libjpeg
 libpng
