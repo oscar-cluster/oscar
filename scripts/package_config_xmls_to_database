@@ -297,8 +297,9 @@ print "$0: executing:\n$command\n" if $options{debug};
 system($command) == 0 || die "$0: failed to execute:\n$command";
 my @results = ();
 my @error_strings = ();
+my @tables = ("packages","oda_shortcuts");
 die "$0: cannot find or execute the oda shortcut \"packages\""
-    if ! oda::execute_command( \%options, "packages" );
+    if ! single_database_execute( "packages","READ",\@tables,\@results,\@error_strings);
 
 # Initialize the global database record in the oscar table,
 # since we can't set the installable bits on the other packages

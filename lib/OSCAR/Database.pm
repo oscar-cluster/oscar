@@ -17,6 +17,7 @@ package OSCAR::Database;
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 use strict;
+use lib "/usr/lib/perl5/site_perl";
 use Carp;
 use vars qw(@EXPORT $VERSION @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
@@ -41,7 +42,11 @@ use Data::Dumper;
 	      database_read_filtering_information
 	      database_read_table_fields 
 	      database_return_list
-	      database_rpmlist_for_package_and_group );
+	      database_rpmlist_for_package_and_group 
+	      dec_already_locked
+	      locking
+	      single_database_execute
+	      unlock);
 
 #
 # prints a traceback of the call stack
@@ -182,6 +187,100 @@ sub database_disconnect {
 #                       number of records being affected
 
 sub database_execute_command {
+
+    my ( $command_args_ref,
+         $results_ref,
+	 $print_errors ) = @_;
+
+    # sometimes this is called without a database_connent being 
+    # called first, so we have to connect first if that is the case
+    ( my $was_connected_flag = $database_connected ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
+	    return undef;
+
+    # execute the command
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+    my $success = oda::execute_command( $options_ref,
+					$command_args_ref,
+					$results_ref,
+					$error_strings_ref );
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+
+    # if we weren't connected to the database when called, disconnect
+    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+
+    return $success;
+}
+
+#
+# NEST
+# This is locking a single database_execute_command with some argurments
+# Basically Lock -> 1 oda::execute_command -> unlock
+# $type_of_lock is optional, if it is omitted, the default type of lock is "READ".
+# The required argument is $tables_ref, which is the reference of the list of tables.
+# The other arguments are the same as the database_execute_command.
+#
+sub single_database_execute {
+
+    my ( $command_args_ref,
+         $type_of_lock,
+         $tables_ref,
+         $results_ref,
+	 $print_errors ) = @_;
+
+    # sometimes this is called without a database_connent being 
+    # called first, so we have to connect first if that is the case
+    #( my $was_connected_flag = $database_connected ) ||
+    #	OSCAR::Database::database_connect( $print_errors ) ||
+    #	    return undef;
+
+
+    # execute the command
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+    my @tables = ();
+    if ( (ref($tables_ref) eq "ARRAY")
+        && (defined $tables_ref)
+        && (scalar @$tables_ref != 0) ){
+        @tables = @$tables_ref;
+    } else {
+        chomp(@tables = `oda list_tables`);
+    }
+    my $lock_type = (defined $type_of_lock)? $type_of_lock : "READ";
+    # START LOCKING FOR NEST && open the database
+    my %options = ();
+    if(! locking($lock_type, \%options, \@tables, $error_strings_ref)){
+        return 0;
+        #die "$0: cannot connect to oda database";
+    }
+    my $success = oda::execute_command( $options_ref,
+					$command_args_ref,
+					$results_ref,
+					$error_strings_ref );
+    # UNLOCKING FOR NEST
+    unlock(\%options, $error_strings_ref);
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+
+    return $success;
+}
+
+#
+# NEST
+# This subroutine is renamed from database_execute_command and represents
+# the $command_args_ref in the subroutine is already locked in the outer lock block.
+# Basically this subroutine is the exactly same as database_execute_command
+# except for its name.
+#
+sub dec_already_locked {
 
     my ( $command_args_ref,
          $results_ref,
@@ -1080,14 +1179,11 @@ sub database_rpmlist_for_package_and_group {
 
 sub locking{
     my ( $type_of_lock,
-         $passed_options_ref,
+         $options_ref,
          $passed_tables_ref,
-	     $passed_error_strings_ref,
+	 $error_strings_ref,
      ) = @_;
 
-    # take care of faking any non-passed input parameters, and
-    # set any options to their default values if not already set
-    my ( $options_ref, $error_strings_ref ) = oda::fake_missing_parameters( $passed_options_ref, $passed_error_strings_ref );
     my @empty_tables = ();
     my $tables_ref = ( defined $passed_tables_ref ) ? $passed_tables_ref : \@empty_tables;
 
@@ -1101,24 +1197,20 @@ sub locking{
 	    return 0;
     }
 	
-	
     print $msg.
 	join( ',', @$tables_ref ) . ")\n"
 	if $$options_ref{debug};
 
     # connect to the database if not already connected
    	$database_connected ||
-	    oda::connect( $options_ref, $error_strings_ref ) ||
+	    database_connect( $options_ref, $error_strings_ref ) ||
 	    return 0;
     $database_connected = 1;
-
-    # be an optimist
-    my $parameter_errors_flag = 0;
     
     # find a list of all the table names, and all the fields in each table
     my $all_tables_ref = oda::list_tables( $options_ref, $error_strings_ref );
     if ( ! defined $all_tables_ref ) {
-        oda::disconnect( $options_ref,
+        database_disconnect( $options_ref,
                  $error_strings_ref )
             if ! $database_connected;
         return 0;
@@ -1126,21 +1218,20 @@ sub locking{
 
     # make sure that the specified modified table names
     # are all valid table names, and save the valid ones
-    my @write_locked_tables = ();
+    my @locked_tables = ();
     foreach my $table_name ( @$tables_ref ) {
         if ( exists $$all_tables_ref{$table_name} ) {
-            push @write_locked_tables, $table_name;
+            push @locked_tables, $table_name;
         } else {
             push @$error_strings_ref,
             "$0: table <$table_name> does not exist in " .
             "database <$$options_ref{database}>";
-            $parameter_errors_flag = 1;
         }
     }
 
-	# make the database command
-	my $sql_command = "LOCK TABLES " .
-	    join( " $type_of_lock, ", @write_locked_tables ) . " $type_of_lock;" ;  
+    # make the database command
+    my $sql_command = "LOCK TABLES " .
+        join( " $type_of_lock, ", @locked_tables ) . " $type_of_lock;" ;  
 	
     my $success = 1;
 
@@ -1150,11 +1241,10 @@ sub locking{
 			      $sql_command,
 			      "oda\:\:write_lock",
 			      "write lock in tables (" .
-			      join( ',', @write_locked_tables ) . ")",
+			      join( ',', @locked_tables ) . ")",
 			      $error_strings_ref );
-
     # disconnect from the database if we were not connected at start
-    oda::disconnect( $options_ref,
+    database_disconnect( $options_ref,
 		     $error_strings_ref )
     if ! $database_connected;
 
@@ -1175,27 +1265,21 @@ sub locking{
 # outputs: non-zero if success
 
 sub unlock {
-    my ( $passed_options_ref,
-	 $passed_error_strings_ref,
+    my ( $options_ref,
+	 $error_strings_ref,
      ) = @_;
 
-    # take care of faking any non-passed input parameters, and
-    # set any options to their default values if not already set
-    my ( $options_ref, $error_strings_ref ) = oda::fake_missing_parameters( $passed_options_ref, $passed_error_strings_ref );
 
     print "$0: in oda:unlock \n"
 	if $$options_ref{debug};
 
     # connect to the database if not already connected
     $database_connected ||
-	oda::connect( $options_ref,
+	database_connect( $options_ref,
 		      $error_strings_ref ) ||
 	return 0;
     $database_connected = 1;
 
-    # be an optimist
-    my $parameter_errors_flag = 0;
-    
 	# make the database command
 	my $sql_command = "UNLOCK TABLES ;" ;
 	
@@ -1210,7 +1294,8 @@ sub unlock {
 				      $error_strings_ref );
 
     # disconnect from the database if we were not connected at start
-    oda::disconnect( $options_ref,
+    oda::initialize_locked_tables();
+    database_disconnect( $options_ref,
 		     $error_strings_ref )
 	if ! $database_connected;
 

@@ -29,6 +29,7 @@ use OSCAR::Database;
 use OSCAR::Package;
 use OSCAR::Distro;
 use POSIX;
+use oda;
 
 my %options = ();
 
@@ -69,8 +70,17 @@ if ( $uname_data eq "i386" ) {
 }
 
 # open the database
-database_connect() ||
-die "$0: cannot connect to oda database";
+#database_connect() ||
+#die "$0: cannot connect to oda database";
+# START LOCKING FOR NEST && open the database
+#chomp(my @tables = `oda list_tables`);
+my @tables = ("oscar", "oda_shortcuts");
+my %options = ();
+my @errors = ();
+if(! locking("write", \%options, \@tables, \@errors)){
+    die "$0: cannot connect to oda database";
+}
+
 
 # write out one global oscar record, or modify an existing one
 my @assigns = ();
@@ -124,7 +134,10 @@ if ( ! oda::read_records( \%options,
     }
 }    
 
-database_disconnect();
+# UNLOCKING FOR NEST
+unlock(\%options, \@errors);
+
+#database_disconnect();
 exit 0;
 
 

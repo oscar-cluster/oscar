@@ -307,7 +307,7 @@ sub link_node_nic_to_network {
 	if $options{debug};
     print "Linking node $node_name nic $nic_name to network $network_name.\n"
 	if $options{verbose} && ! $options{debug};
-    if ( ! database_execute_command( $command,
+    if ( ! dec_already_locked( $command,
 				     undef,
 				     1 ) ) {
 	warn "$0: failed to link node $node_name nic $nic_name to "
@@ -633,10 +633,20 @@ oda::print_hash( "", "$0: ifconfig surmised networks", \%surmised_networks )
     if $options{debug};
 
 # connect to the database
+database_connect() ||
+die "$0: cannot connect to oda database";
 
 my @error_strings = ();
-die "$0: cannot connect to the OSCAR database"
-    if ! database_connect( 1, \%oda_options );
+# START LOCKING FOR NEST && open the database
+#chomp(my @tables = `oda list_tables`);
+my @tables =("oscar","nics", "oda_shortcuts", "networks",
+            "node_groups", "nodes");
+
+#chomp(my @tables = `oda list_tables`);
+if(! locking("write", \%oda_options, \@tables, \@error_strings)){
+    die "$0: cannot connect to oda database";
+}
+
 
 # find out our database node name for this machine
 
@@ -645,6 +655,10 @@ if ( ! defined $node_name ) {
     database_disconnect();
     die "$0: cannot find node name of this machine";
 }
+
+# UNLOCKING FOR NEST && database disconnect
+unlock(\%oda_options, \@error_strings);
+
 print "$0: node name for this machine is <$node_name>\n"
     if $options{debug};
 print "In the database this machine is named $node_name\n" 
@@ -705,7 +719,6 @@ if ( $options{verbose} && ! $options{debug} ) {
 	    . "\n";
     }
 }
-
 # if the user wanted to set/update the networks, ...
 
 my @written_network_names = ();
@@ -903,7 +916,7 @@ foreach my $database_nic_name ( keys %$database_nics_ref ) {
 	print "Deleting database record for network interface $database_nic_name"
 	    . " on node $node_name.\n"
 	    if $options{verbose} && ! $options{debug};
-	if ( ! database_execute_command( "delete_nic $database_nic_name",
+	if ( ! dec_already_locked( "delete_nic $database_nic_name",
 					 undef,
 					 1 ) ) {
 	    warn "$0: failed to delete database record for network interface "
@@ -954,7 +967,7 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 	    if $options{debug};
 	print "Creating database record for nic $nic_name on node $node_name.\n"
 	    if $options{verbose} && ! $options{debug};
-	if ( ! database_execute_command( $command,
+	if ( ! dec_already_locked( $command,
 					 undef,
 					 1 ) ) {
 	    warn "$0: failed to create database record for nic $nic_name"
@@ -1020,6 +1033,9 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 			      $network_name )
 	if defined $network_name;
 }
+
+# UNLOCKING FOR NEST
+unlock(\%oda_options, \@error_strings);
 
 # done
 exit $exit_status;

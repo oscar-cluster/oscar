@@ -120,8 +120,14 @@ sub getOdaPackageDir # ($pkg) -> $pkgdir
   my $odaProblem = system('mysqlshow oscar >/dev/null 2>&1');
   if (!$odaProblem)
     {
-      my $success = database_execute_command("read_records " .
-                    "packages name=$pkg directory", \@list);
+      my @tables = ("packages");
+      my $success = single_database_execute("read_records " .
+                          "packages name=$pkg directory",
+                          "read",
+                          \@tables,
+                          \@list);
+#      my $success = database_execute_command("read_records " .
+#                          "packages name=$pkg directory", \@list);
       Carp::carp("Could not do oda command 'read_records packages name=$pkg " .
                  " directory'") if (!$success);
 
@@ -172,8 +178,12 @@ sub list_installable_packages {
       $command_args = "packages_installable packages.class!=core";
     }
     my @packages = ();
-    if ( OSCAR::Database::database_execute_command( $command_args, 
-                                                   \@packages ) ) {
+    my @tables = ("packages", "oda_shortcuts");
+    if ( OSCAR::Database::single_database_execute( $command_args,
+                                                    "READ",
+                                                    \@tables,
+                                                    \@packages,
+                                                    undef) ) {
       return @packages;
     } else {
       warn "Cannot read installable packages list from the ODA database.";
@@ -646,8 +656,12 @@ sub list_selected_packages # ($type) -> @selectedlist
     $command_args = "packages_in_selected_package_set packages.class!=core";
     }
     my @packages = ();
-    if ( OSCAR::Database::database_execute_command( $command_args, 
-                            \@packages ) ) {
+    my @tables = ("packages", "package_sets", "package_sets_included_packages", "oscar", "oda_shortcuts", "packages_rpmlists");
+    if ( OSCAR::Database::single_database_execute( $command_args,
+                                                   "READ",
+                                                   \@tables,
+                                                   \@packages,
+                                                   undef) ) {
     return @packages;
     } else {
     warn "Cannot read selected packages list from the ODA database.";

@@ -25,26 +25,46 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Package;
+use oda;
 
 # name of default packages set
 my $DEFAULT = "Default";
 
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
-    return if database_execute_command( $command, $results_ref );
+    return if dec_already_locked( $command, $results_ref );
     database_disconnect();
     die "$0: $error";
 }
 
-# open the database
-database_connect() ||
-die "$0: cannot connect to oda database";
+# START LOCKING FOR NEST && open the database
+#chomp(my @tables = `oda list_tables`);
+my @sample_tables =("oscar","node_groups_included_configurations","nics",
+            "disk_partitions","config_opkgs","cluster_partitions",
+            "node_config_revs","nodes_included_package_sets","configurations",
+            "package_switcher","package_configuration_values","packages_provides",
+            "packages_filters","images","packages_conflicts","package_sets",
+            "oda_shortcuts","packages_requires","nodes_included_dns_servers",
+            "disk_layouts","networks","node_groups_included_node_groups",
+            "oscar_lock","program_variable_values","packages","node_groups",
+            "package_configurations","nodes","packages_rpmlists",
+            "package_sets_included_packages");
+
+my @tables =("oscar", "package_sets", "oda_shortcuts", "packages", "package_sets_included_packages");
+
+#my @tables = ("packages", "package_sets", "oda_shortcuts");
+my %options = ();
+my @errors = ();
+if(! locking("write", \%options, \@tables, \@errors)){
+    die "$0: cannot connect to oda database";
+}
 
 # get a list of all installable packages
 my @installable_packages = ();
 do_it_or_die( "packages_installable",
 	      \@installable_packages,
 	      "cannot read the list of installable packages" );
+
 
 # get the list of package_sets
 print "Checking for existence of package set <$DEFAULT>\n";
@@ -68,7 +88,7 @@ if ( grep( /^$DEFAULT$/, @package_set_names ) ) {
   # populate the default package set with all installable packages
   foreach my $package ( @installable_packages ) {
     print "Adding package <$package> to package set <$DEFAULT>\n";
-    if ( ! database_execute_command( 
+    if ( ! dec_already_locked( 
 		"add_package_to_package_set $package $DEFAULT",
 		undef ) ) {
       $success = 0;
@@ -76,7 +96,6 @@ if ( grep( /^$DEFAULT$/, @package_set_names ) ) {
     }
   }
 }
-
 # see if there is any selected package set
 my @selected_set = ();
 do_it_or_die( "selected_package_set",
@@ -90,8 +109,9 @@ if ( ! @selected_set ) {
 		  undef,
 		  "cannot set the selected package set to $DEFAULT" );
 }
+# UNLOCKING FOR NEST
+unlock(\%options, \@errors);
 
-database_disconnect();
 if ( $success ) {
     exit 0;
 } else {

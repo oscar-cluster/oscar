@@ -64,8 +64,10 @@ my $save_text;
 my $interface = $ARGV[0];
 
 if ( !defined($interface) || $interface eq '' ) {
-  $interface = `oda read_records oscar.interface`;
-  chomp $interface;
+  my @tables = ("oscar");
+  my @result = ();
+  single_database_execute("read_records oscar.interface", "READ", \@tables, \@result, undef);
+  $interface = pop @result;
 }
 
 # Set some things in the environment
@@ -425,29 +427,46 @@ sub postaddclients {
 
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
-    return if database_execute_command( $command, $results_ref, 1 );
+    return if dec_already_locked( $command, $results_ref, 1 );
+    #return if database_execute_command( $command, $results_ref, 1 );
     database_disconnect();
     die "$0: $error";
 }
 
 sub populate_client_config_opkgs{
 	my @pkgs = list_selected_packages();
-
-	chomp(my @nodes_id = `oda rea nodes id name!=oscar_server`);
+    my %options = ();
+    my @errors = ();
+    my @tables = ("nodes", "configurations", "node_config_revs", "config_opkgs", "packages", "oda_shortcuts");
+    locking("WRITE", \%options, \@tables, \@errors);
+	my @nodes_id = ();
+        dec_already_locked("read_records nodes id name!=oscar_server",\@nodes_id);
+#	chomp(my @nodes_id = `oda rea nodes id name!=oscar_server`);
 	foreach my $node_id (@nodes_id){
-		chomp(my $config_id = `oda rea configurations.id configurations.name=nodes.name nodes.id=$node_id`);
-		chomp(my $node_config = `oda rea node_config_revs.node_id node_id=$node_id configurations_id=$config_id`);
+		my @configs_id = ();
+                dec_already_locked("read_records configurations.id configurations.name=nodes.name nodes.id=$node_id", \@configs_id);
+                my $config_id = pop @configs_id;
+		#chomp(my $config_id = `oda rea configurations.id configurations.name=nodes.name nodes.id=$node_id`);
+		my @nodes_configs = ();
+                dec_already_locked("read_records node_config_revs.node_id node_id=$node_id configurations_id=$config_id", \@nodes_configs);
+		my $node_config = pop @nodes_configs;
+		#chomp(my $node_config = `oda rea node_config_revs.node_id node_id=$node_id configurations_id=$config_id`);
 		if (! $node_config ){
 			do_it_or_die( "add_node_config_revs $node_id $config_id",
 						   undef,
 						  "can not create node_config_revs record for oscar_server");                                                                                 
 			foreach my $opkg (@pkgs){
-				chomp(my $package_id = `oda rea packages id name=$opkg`);
+				my @packages_id = ();
+                dec_already_locked("read_records packages id name=$opkg", \@packages_id);
+				my $package_id = pop @packages_id;
+				#chomp(my $package_id = `oda rea packages id name=$opkg`);
 				do_it_or_die( "add_config_opkgs $config_id $package_id",
 							   undef,
-							  "cannot create config_opkgs record for oscar_server" );        }
+							  "cannot create config_opkgs record for oscar_server" );
+                        }
 		}
 	}
+    unlock(\%options, \@errors);
 }
 
 ###########################################################################

@@ -39,7 +39,7 @@ use Data::Dumper;
 
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
-    return if database_execute_command( $command, $results_ref, 1 );
+    return if dec_already_locked( $command, $results_ref, 1 );
     database_disconnect();
     die "$0: $error";
 }
@@ -81,23 +81,36 @@ oscar_log_subsection("Successfully installed server non-core RPMs");
 #    add_config_opkgs is a shortcut to insert a record of configurations_id and package_id
 #    e.g) add_config_opkgs [$configurations_id] [$package_id]
 #
-chomp(my $node_id = `oda rea nodes id name=oscar_server`);
-chomp(my $config_id = `oda rea configurations id name=oscar_server`);
+
+# START LOCKING FOR NEST
+#chomp(my @tables = `oda list_tables`);
+my @tables = ("nodes", "configurations", "packages", "config_opkgs", "node_config_revs", "oda_shortcuts" );
+my %options = ();
+my @errors = ();
+locking("write", \%options, \@tables, \@errors);
+
+#chomp(my $node_id = `oda rea nodes id name=oscar_server`);
+#chomp(my $config_id = `oda rea configurations id name=oscar_server`);
+my $node_id = dec_already_locked("read_records nodes id name=oscar_server");
+my $config_id = dec_already_locked("read_records configurations id name=oscar_server");
 print "Inserting NON-CORE oscar packages into config_opkgs table :\n";
 foreach my $pkg (@packages){
+    print "$pkg is deleted\n";
     my $cmd = "delete_records config_opkgs config_opkgs.package_id=packages.id packages.name=$pkg config_opkgs.configurations_id=$config_id";
     do_it_or_die( "$cmd",
                   undef,
                   "cannot delete config_opkgs record for $pkg" );
 } 
 foreach my $opkg (@packages){
-    chomp(my $package_id = `oda rea packages id name=$opkg`);
+    #chomp(my $package_id = `oda rea packages id name=$opkg`);
+    my @packages_id = ();
+    dec_already_locked("read_records packages id name=$opkg", \@packages_id);
+    my $package_id = pop @packages_id;
    # chomp(my $config_opkg = `oda rea config_opkgs.configurations_id package_id=$package_id configurations_id=$config_id`);
     do_it_or_die( "add_config_opkgs $config_id $package_id",
                   undef,
                   "cannot create config_opkgs record for oscar_server" );
 }
-
 
 
 # Have installed Server RPMs & did not croak, so mark packages.<pkg>installed 
@@ -107,9 +120,12 @@ oscar_log_subsection("Marking installed bit in ODA for server non-core RPMS");
 
 foreach my $pkg (@packages) {
         oscar_log_subsection("Set package: $pkg");
-        my $ok_rslt = database_execute_command("package_mark_installed $pkg");
+        my $ok_rslt = dec_already_locked("package_mark_installed $pkg");
         croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
 }
+# UNLOCKING FOR NEST
+unlock(\%options, \@errors);
+
 oscar_log_subsection("Done marking installed bits in ODA");
 
 

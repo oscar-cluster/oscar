@@ -24,6 +24,8 @@ use Tk::DialogBox;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Network;
+use oda;
+
 my $force = $#ARGV;
 $force++;
 my $root;
@@ -105,11 +107,19 @@ if ( $> ) {
 }
 my @results;
 my $done = 0;
-unless ( database_execute_command("read_records oscar.interface", \@results, 0) && defined(@results) ) {
-  database_execute_command("add_fields oscar interface=text", undef, 1);
+
+# START LOCKING FOR NEST && open the database
+#chomp(my @tables = `oda list_tables`);
+my @tables = ("oscar", "network", "oda_shortcuts");
+my %options = ();
+my @errors = ();
+locking("write", \%options, \@tables, \@errors);
+
+unless ( dec_already_locked("read_records oscar.interface", \@results, 0) && defined(@results) ) {
+  dec_already_locked("add_fields oscar interface=text", undef, 1);
 }
 
-database_execute_command("read_records oscar.interface", \@results, 1);
+dec_already_locked("read_records oscar.interface", \@results, 1);
 my $default = $results[0];
 
 while ( !$done ) {
@@ -127,11 +137,14 @@ while ( !$done ) {
     }
   } elsif ( defined($interface) ) {
     $interface =~ /^(\S*)\s.*$/;
-    database_execute_command("modify_records oscar.interface~$1", undef, 1);
+    dec_already_locked("modify_records oscar.interface~$1", undef, 1);
     $done = 1;
   } else {
     $cluster_interface = interfaceDialog("OSCAR Network Interface",
         "Choose your cluster interface");
   }
 }
+# UNLOCKING FOR NEST
+unlock(\%options, \@errors);
+
 exit 0;

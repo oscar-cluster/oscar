@@ -30,17 +30,15 @@ use oda;
 
 my %options = ();
 
+
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
-    return if database_execute_command( $command, $results_ref, 1 );
+    
+    return if dec_already_locked( $command, $results_ref, 1 );
     database_disconnect();
     die "$0: $error";
 }
 
-# open the database
-
-database_connect() ||
-die "$0: cannot connect to oda database";
 
 # see if there is already a node named oscar_server,
 # and make it if it doesn't already exist, this will also
@@ -49,6 +47,15 @@ die "$0: cannot connect to oda database";
 
 my @nodes = ();
 print "Checking for database existance of node oscar_server ...\n";
+
+# START LOCKING FOR NEST and open the database.
+
+#my @tables =("configurations", "oda_shortcuts", "node_groups", "nodes");
+chomp(my @tables = `oda list_tables`);
+#my @tables = ("nodes", "node_groups", "configurations", "oda_shortcuts");
+my @errors = ();
+#locking("write", \%options, \@tables, \@errors);
+
 do_it_or_die( "nodes name=\"oscar_server\"",
 	      \@nodes,
 	      "cannot read nodes database table" );
@@ -93,7 +100,6 @@ foreach my $node_group_name ( "oscar_clients", "all" ) {
 }
 
 # make sure that certain named configurations exist
-
 foreach my $configuration_name ( "default" ) {
     print "Checking for existance of configuration $configuration_name ...\n";
     my @configurations = ();
@@ -108,7 +114,10 @@ foreach my $configuration_name ( "default" ) {
     }
 }
 
-database_disconnect();
+# UNLOCKING FOR NEST.
+unlock(\%options, \@errors);
+
+
 exit 0;
 
 

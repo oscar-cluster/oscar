@@ -40,7 +40,7 @@ use Carp;
 
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
-    return if database_execute_command( $command, $results_ref, 1 );
+    return if dec_already_locked( $command, $results_ref, 1 );
     database_disconnect();
     die "$0: $error";
 }
@@ -281,9 +281,17 @@ oscar_log_subsection("Successfully installed server core RPMs");
 #    add_config_opkgs is a shortcut to insert a record of configurations_id and package_id
 #    e.g) add_config_opkgs [$configurations_id] [$package_id]
 #
-chomp(my $node_id = `oda rea nodes id name=oscar_server`);
-chomp(my $config_id = `oda rea configurations id name=oscar_server`);
-chomp(my $node_config = `oda rea node_config_revs.node_id node_id=$node_id configurations_id=$config_id`);
+
+# START LOCKING FOR NEST && open the database
+#chomp(my @tables = `oda list_tables`);
+my @tables = ("nodes", "configurations", "node_config_revs", "config_opkgs","packages","oda_shortcuts");
+my %options = ();
+my @errors = ();
+locking("write", \%options, \@tables, \@errors);
+
+my $node_id = dec_already_locked("read_records nodes id name=oscar_server");
+my $config_id = dec_already_locked("read_records configurations id name=oscar_server");
+my $node_config = dec_already_locked("read_records node_config_revs.node_id node_id=$node_id configurations_id=$config_id");
 if (! $node_config ){
     do_it_or_die( "add_node_config_revs $node_id $config_id",
                    undef,
@@ -291,13 +299,12 @@ if (! $node_config ){
    
     print "Inserting CORE oscar packages into config_opkgs table :\n";
     foreach my $opkg (@packages){
-        chomp(my $package_id = `oda rea packages id name=$opkg`);
+        my $package_id = dec_already_locked("read_records packages id name=$opkg");
         do_it_or_die( "add_config_opkgs $config_id $package_id",
                       undef,
                       "cannot create config_opkgs record for oscar_server" );
     }
 }
-
 
 # Have installed Core Server Pkgs & did not croak, so mark 
 # packages.<pkg>installed true.  (best effort for now)
@@ -306,9 +313,12 @@ oscar_log_subsection("Marking installed bit in ODA for server core Pkgs");
 
 foreach my $pkg (@packages) {
         oscar_log_subsection("Set package: $pkg");
-        my $ok_rslt = database_execute_command("package_mark_installed $pkg");
+        my $ok_rslt = dec_already_locked("package_mark_installed $pkg");
         croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
 }
+# UNLOCKING FOR NEST
+unlock(\%options, \@errors);
+
 oscar_log_subsection("Done marking installed bits in ODA");
 
 
