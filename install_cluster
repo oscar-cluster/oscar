@@ -5,7 +5,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: install_cluster,v 1.15 2002/10/31 17:22:21 jsquyres Exp $
+# $Id: install_cluster,v 1.16 2002/12/11 00:04:17 tfleury Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -174,6 +174,20 @@ my @rsync=glob("/tftpboot/rpm/rsync*rpm");
 if ((scalar(@basesystem)==0) || (scalar(@rsync)==0)) {
     oscar_die("RPMs missing in /tftpboot/rpm/ (did you copy all CDs?)");
 }
+
+# Check to see if rpms for tftp and/or tftp-server are installed.  
+# If so, remove them because they conflict with the tftp-hpa rpm.
+foreach my $rpm ('tftp', 'tftp-server')
+  {
+    open(CMD,"rpm -q $rpm |");
+    my $cmd_output = <CMD>;
+    close CMD;
+    if ($cmd_output !~ /$rpm is not installed/)
+      {
+        system("rpm -e $rpm");
+        oscar_log_subsection("Removing $rpm RPM");
+      }
+  }
 
 # Now start the execution
 
