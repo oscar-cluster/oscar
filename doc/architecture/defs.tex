@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: defs.tex,v 1.1 2001/08/14 22:27:59 jsquyres Exp $
+% $Id: defs.tex,v 1.2 2001/08/30 22:30:51 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -44,9 +44,24 @@
 \newenvironment{discuss}{\begin{list}{}{}\item[]{\it Discussion item:}
 }{{\rm ({\it End of discussion item.})} \end{list}}
 
+% Rationale item; stolen from the MPI standard
+
+\newenvironment{rationale}{\begin{list}{}{}\item[]{\it Rationale.}
+}{{\rm ({\it End of rationale.})} \end{list}}
+
 % Stolen from the MPI standard
 
 \newcommand{\cmd}[1]{\texttt{#1}}
 \newcommand{\odrcat}[1]{\textsf{#1}}
 \newcommand{\odrkey}[1]{\texttt{#1}}
 \newcommand{\file}[1]{\texttt{#1}}
+
+% Also stolen from the MPI standard
+% intended for general change marks not associated with a certain version
+\def\begchange{\marginpar[\hspace*{-60pt}\mbox{\hspace*{10pt}
+$\top$ \tiny (General)}]{\mbox{$\top$ \tiny (General)}}}
+\def\endchange{\marginpar[\hspace*{-60pt}\mbox{\hspace*{10pt}
+$\bot$ \tiny (General)}]{\mbox{$\bot$ \tiny (General)}}}
+%get rid of these change marks
+%\def\begchange{}
+%\def\endchange{}
