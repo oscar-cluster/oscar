@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.14 2003/04/01 19:59:48 jsquyres Exp $
+# $Id: opd,v 1.15 2003/04/01 20:31:46 jsquyres Exp $
 #
 
 use strict;
@@ -461,29 +461,36 @@ sub list_packages_page {
     for (my $i = $start_pkg; $i <= $end_pkg; ++$i) {
 	my ($name, $version, $installable, $downloadable, 
 	    $md5sum, $sha1sum, $size) =
-	    get_package_info($i);
+                get_package_info($i);
 
-    my $status="";
-    my $end="";
+        my $status="";
+        my $end="";
 
-    for (my $j = 0; $j <= $#packages_selected; ++$j) {
-	    if ($packages_selected[$j] == $i) {
-            $status=" SELECTED PACKAGE [ ";
-            $end=" ]";
+        for (my $j = 0; $j <= $#packages_selected; ++$j) {
+            if ($packages_selected[$j] == $i) {
+                $status=" SELECTED PACKAGE [ ";
+                $end=" ]";
+            } 
+        }
+
+        if (!$status) {
+            if ($installable != "yes") {
+                $status="!!! Not Installable !!!";
+                $end="!";
+            }
+            elsif (!$downloadable){
+                $status="!!! Not Downloadable !!!";
+                $end="!";
+            }
+        }
+
+        my $oscar_ver = "";
+        if (defined($package_listing->{package}[$i - 1]->{oscar_version})) {
+            $end .= "\n   (intended for OSCAR v" .
+                build_version_string($package_listing->{package}[$i - 1]->{oscar_version}) .
+                ")";
             
-        } 
-    }
-
-    if (!$status) {
-        if ($installable != "yes") {
-            $status="!!! Not Installable !!!";
-            $end="!";
         }
-        elsif (!$downloadable){
-            $status="!!! Not Downloadable !!!";
-            $end="!";
-        }
-    }
 
 	print("$i.$status $name $version ($size) $end");
 	print("\n");
