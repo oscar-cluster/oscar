@@ -62,10 +62,10 @@ LAM web site).  On the second level, the MPI library is instrumented
 to produce a cummulative record of communication, which can be
 visualized either at runtime or post-mortem.</description>
 
-  <provides>
+  <provide>
     <type>package</type>
     <name>mpi</name>
-  </provides>
+  </provide>
 
   <require>
     <type>package</type>

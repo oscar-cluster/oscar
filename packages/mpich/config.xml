@@ -32,10 +32,10 @@
 PI (http://www.mpi-forum.org), the Standard for message-passing
 libraries.</description>
 
-  <provides>
+  <provide>
     <type>package</type>
     <name>mpi</name>
-  </provides>
+  </provide>
 
   <require>
     <type>package</type>
