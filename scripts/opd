@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 #
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.8 2003/01/08 20:49:45 jsquyres Exp $
+# $Id: opd,v 1.9 2003/01/19 00:39:58 jsquyres Exp $
 #
 
 use strict;
@@ -17,6 +17,8 @@ use File::Copy;
 use Getopt::Long;
 use Term::ReadLine;
 use Digest::MD5 qw(md5_hex);
+use Cwd;
+use File::Basename;
 
 # Debugging
 use Data::Dumper;
@@ -45,13 +47,17 @@ my $kilobyte = 1024;
 my $megabyte = $kilobyte * 1024;
 my $gigabyte = $megabyte * 1024;
 
-my $oscardir = "$ENV{HOME}/.oscar";
-my $datadir = "$oscardir/opd";
-my $pkgdir;
+my $cachedir = "/var/cache/oscar";
+my $downloaddir = "$cachedir/downloads";
+my $metadatadir = "$cachedir/opd";
+my $expanddir = "/var/lib/oscar/packages";
 
 my $opd_term = new Term::ReadLine 'OPD';
 
-my $num_lwp_retries = 3;
+my $argv_repository_uri;
+my $argv_force = 0;
+
+my $num_download_retries = 3;
 my $ua = LWP::UserAgent->new;
 $ua->agent("OSCAR package downloader/1.0");
 
@@ -61,6 +67,12 @@ my $empty_di_info = {
     install => 0
 };
 
+# See if we have wget
+
+my $have_wget = 1;
+$have_wget = 0 if (system("which wget > /dev/null 2>&1") != 0);
+
+# Do some primitive error checks before we go any further
 # See if we have XML::Simple and XML::Parser installed
 
 my $have_xml_parser = 1;
@@ -69,6 +81,14 @@ eval { require XML::Parser };
 $have_xml_parser = 0 if ($@);
 eval { require XML::Simple };
 $have_xml_simple = 0 if ($@);
+
+# Similar for Digest::SHA1
+
+my $have_digest_sha1 = 1;
+eval { require Digest::SHA1; };
+$have_digest_sha1 = 0 if ($@);
+
+# Print out some friendly error/warning messages
 
 if (!$have_xml_simple || !$have_xml_parser) {
     print "The OSCAR Package Downloader (OPD) could not be run because you do
@@ -80,11 +100,11 @@ You appear to be missing:\n";
     print "\tXML::Simple\n" if (!$have_xml_simple);
 
 print "
-You may either install these modules manually (try using the CPAN
-tool), or run the OSCAR Installer Wizard (which will automatically
-install them).  If you run the OSCAR Installer Wizard, let it complete
-its startup (i.e., install the required Perl modules) and display the
-initial GUI menu.  Then click the \"Exit\" button and run OPD again.
+You may either install these modules manually (try using CPAN), or run
+the OSCAR Installer Wizard (which will automatically install them).
+If you run the OSCAR Installer Wizard, let it complete its startup
+(i.e., install the required Perl modules) and display the initial GUI
+menu.  Then click the \"Exit\" button and run OPD again.
 
 You *must* have all packages dowloaded via OPD before performing your
 OSCAR installation.
@@ -93,49 +113,48 @@ OSCAR installation.
     exit(1);
 }
 
+if (!$have_digest_sha1) {
+   print("WARNING: You do not appear to have the Perl modeul Digest::SHA1 installed.
+Packages that use SHA1 sums for verification WILL NOT BE ABLE TO BE CHECKED!
+
+Although Digest::SHA1 is not *necessary*, you are STRONGLY urged to
+quit and install it before downloading any OSCAR packages.
+Digest::SHA1 can be easily installed using the Perl CPAN tool.  For
+example:
+
+    perl -MCPAN -e \"install Digest::SHA1\"
+
+");
+}
+
 # Now that we know that we have XML::Simple, use it
 
-require XML::Simple;
 my $xs = new XML::Simple(keyattr => {}, forcearray => 
 			 [ "site", "uri", "package",
 			   "requires", "conflicts", "provides" ]);
 
-# Command line options
 
-Getopt::Long::Configure("auto_abbrev");
-#####################
-# To be expanded... #
-#####################
-
-# If we don't have OSCAR_HOME environment variable, give a warning
-
-sub set_pkgdir() {
-    my $bad;
-
-    if (! $ENV{OSCAR_HOME}) {
-	$bad = "WARNING: The OSCAR_HOME environment variable does not " .
-	    "appear to be set.\n";
-    } elsif(! -d "$ENV{OSCAR_HOME}") {
-	$bad = "WARNING: The OSCAR_HOME environment variable points to " .
-	    "a directory that does not exist:\n  " . $ENV{OSCAR_HOME}. "\n";
-    } elsif(! -d "$ENV{OSCAR_HOME}/packages") {
-	$bad = "WARNING: The \$OSCAR_HOME/packages directory does not seem " .
-	    "to exist.\n";
-    }
-    
-    if ($bad) {
-	$pkgdir = "$ENV{HOME}/.oscar/opd/downloads";
-	mkdir_p($pkgdir);
-	print($bad . "All downloads will be saved to $pkgdir\n" .
-	     "and will not be extracted into the proper directory under the\n".
-	     "OSCAR installation tree.\n\n");
-    } else {
-	$pkgdir = "$ENV{OSCAR_HOME}/packages";
+#
+# Analyze the command line options
+#
+sub analyze_argv {
+    Getopt::Long::Configure("bundling", "require_order");
+    my $ok = Getopt::Long::GetOptions("repository|r=s" => \$argv_repository_uri,
+				      "force|f" => \$argv_force,
+				      );
+    if (!$ok) {
+	print "Usage: $ARGV[0] [--repository|-r=URI] [--force|-f]\n";
+	exit(1);
     }
 }
 
-# Equivalent of "mkdir -p"
 
+#
+# Equivalent of "mkdir -p".  Something similar is also in
+# Meta::Utils::File::Mkdir, but that's yet another RPM that has to be
+# installed (that isn't installed by default).  So we just have
+# something relatively simple here.
+#
 sub mkdir_p {
     my ($dir) = @_;
 
@@ -153,143 +172,148 @@ sub mkdir_p {
     # Make the current directory
 
     if (!mkdir($dir, 0700)) {
-	print "I was not able to create the following directory:\n" .
-	    "\t$dir\n";
-	return 0;
+        print "I was not able to create the following directory:\n" .
+            "\t$dir\n";
+	exit(1);
     }
 
     1;
 }
 
-# Read the repository listing
 
+#
+# Read the repository listing file, updating it if necessary
+#
 sub read_repository_listing {
+    my $rfilename = "$metadatadir/$repository_filename";
+    
+    # Do we need to update the master repository listing?
 
-    # If we don't have a repository listing, get one from the default URI
-    
-    if (! -f "$datadir/$repository_filename") {
-	my $file = "$ENV{OSCAR_HOME}/share/$repository_filename";
-	if (-f $file) {
-	    print("Copying default OSCAR repositories listing...\n");
-	    if (!copy($file, $datadir)) {
-		carp("WARNING: I was not able to copy the file:\n" .
-		     "\t$file\nto\t$datadir\nAborting.\n");
-	    }
-	}
+    my $want_update = 0;
+    $want_update = 1 if (! -f $rfilename || $argv_force);
+    if ($want_update == 0 && -f $rfilename) {
+	my ($dev, $ino, $mode, $nlink, $uid, $gid, $rdev, $size,
+	    $atime, $mtime, $ctime, $blksize, $blocks)
+	    = stat($rfilename);
+	my $now = time();
+
+	$want_update = 1 if (($now - $mtime) > (24 * 60 * 60));
     }
-    
+    my $uri = $default_repository_uri;
+    $uri = $argv_repository_uri if (defined($argv_repository_uri));
+
+    if ($want_update) {
+	$uri =~ s/\/$//g;
+	my $str = "\$uri =~ s/$repository_filename\$//g";
+	eval $str;
+	$uri =~ s/\/$//g;
+
+	print "Updating master repository listing from:\n  $uri\n";
+	my ($happy, $content) = download_from_uri("$uri/$repository_filename",
+						  "$rfilename.new");
+	print("WARNING: Unable to download repository listing\n")
+	    if ($happy != 1);
+    }
+
     # Read in the default repositories file
     
-    if (-f "$datadir/$repository_filename") {
+    if (-f $rfilename) {
 	if (!($repository_listing = 
-	      $xs->XMLin("$datadir/$repository_filename"))) {
-	    carp("ERROR: Unable to open $datadir/$repository_filename.  " .
-		 "Aborting.");
-	    exit(1);
+	      $xs->XMLin($rfilename))) {
+	    die("ERROR: Unable to open $rfilename.\nAborting.\n");
 	}
+    } else {
+	die("ERROR: I was unable to open $rfilename.\nAborting.\n");
     }
+
+    # Now fill in some data
+
+    $package_filename = $repository_listing->{files}->{package_listing};
 }
 
-# Download a file from any of the repositories that we have listed.
-# Save the index of the repository that we end up using.
-
-sub download_from_any {
-    my ($file) = @_;
-    shift;
-    my ($repos_listing) = @_;
-    my $num_sites = $#{$repos_listing->{site}};
-
-    if ($num_sites <= 0) {
-	print "We have no repository URI's.  Using default.\n";
-	$repos_listing->{site}[0] = {
-	    location => $default_repository_location,
-	    uri => [ $default_repository_uri ],
-	    name => $default_repository_name
-	    };
-    }
-
-    my $happy = 0;
-    my $content = "";
-    foreach my $i (0 .. $#{$repos_listing->{site}}) {
-	my $uri = $repos_listing->{site}[$i]->{uri}[0];
-	my $name = $repos_listing->{site}[$i]->{name};
-	if (! $uri =~ /\/$/) {
-	    $uri .= "/";
-	}
-	($happy, $content) = download_from_uri("$uri$file");
-	if ($happy) {
-	    $repository_selected = $i;
-	    last;
-	} 
-    }
-
-    ($happy, $content);
-}
 
 #
 # Download a file from a specific repository.  Return the content or
 # an error message indicating what went wrong.
 #
-
 sub download_from_uri {
-    my ($uri) = @_;
+    my ($uri, $local_filename) = @_;
     my $i;
     my $res;
- 
-    for ($i = 0; $i < $num_lwp_retries; ++$i) {
-	print("Attempting to download from:\n  $uri\n");
-	my $req = HTTP::Request->new(GET => $uri);
-	$res = $ua->request($req);
-	
-	if ($res->is_success()) {
-	    print "Successful!\n\n";
-	    return (1, $res->content);
+
+    my $agent;
+    my @agents = ();
+    my $happy = 0;
+    my $msg;
+
+    $agents[scalar(@agents)] = "wget" if ($have_wget);
+    $agents[scalar(@agents)] = "LWP";
+
+    for ($i = 0; $i < $num_download_retries * scalar(@agents); ++$i) {
+	$agent = $i % scalar(@agents);
+	print("Attempting to download using $agents[$agent]:\n  $uri\n");
+
+	# Use wget
+
+	if ($agents[$agent] eq "wget") {
+	    if (!system("wget $uri -O $local_filename")) {
+		print("Successful!\n\n");
+		return (1, read_file($local_filename));
+	    }
+	}
+
+	# Use LWP
+
+	else {
+	    my $req = HTTP::Request->new(GET => $uri);
+	    $res = $ua->request($req);
+	    if ($res->is_success()) {
+		open(FILE, ">$local_filename") || 
+		    die("ERROR: Could not write to $local_filename\n");
+		print FILE $res->content;
+		close(FILE);
+		print("Successful!\n\n");
+		return (1, \$res->content);
+	    } else {
+		$msg = $res->message;
+	    }
+	}
+
+	if ($msg) {
+	    print("Failed: $msg\n");
 	} else {
-	    print "Failed: " . $res->message . "\n";
+	    print("Failed\n");
 	}
     }
 
-    print("Failed after $num_lwp_retries -- giving up\n");
-    return (0, $res->message);
+    print("Failed after $num_download_retries -- giving up\n");
+    return (0, $msg);
 }
 
 
-# Try to update the repository listing file
+#
+# Utility function to read a file into a returned string
+#
+sub read_file {
+    my $filename = shift;
 
-sub update_repository_listing {
-    my $happy;
-    my $data;
-    ($happy, $data) = download_from_any($repository_filename,
-					$repository_listing);
-    if (!$happy) {
-	carp("ERROR: I was unable to download an updated copy of " . 
-	     "the repository listing.\nAborting.\n");
-	exit(1);
+    my $content = "";
+    if (-f $filename) {
+	open(FILE, $filename);
+	seek(FILE, 0, 2);
+	my $size = tell(FILE);
+	seek(FILE, 0, 0);
+	sysread(FILE, $content, $size);
+	close(FILE);
     }
-    if (!open (OUTFILE, ">$datadir/$repository_filename.new")) {
-	carp("ERROR: I was unable to open the following file for writing:\n" .
-	     "\t$datadir/$repository_filename\nAborting.");
-	exit(1);
-    }
-    print OUTFILE $data;
-    close(OUTFILE);
-    if (!($repository_listing = 
-	  $xs->XMLin("$datadir/$repository_filename.new"))) {
-	carp("WARNING: New repository file seems to be corrupted.  " .
-	     "Ignoring.\n");
-	unlink("$datadir/$repository_filename.new");
-    }
-    $package_filename = $repository_listing->{files}->{package_listing};
-    if (!move("$datadir/$repository_filename.new", 
-	      "$datadir/$repository_filename")) {
-	carp("WARNING: I was not able to overwrite the old repository " .
-	     "list file:\n  $datadir/$repository_filename\n" .
-	     "Using the new data, but ignoring this error.\n");
-    }
+
+    \$content;
 }
 
+
+#
 # Make the user select a repository
-
+#
 sub select_default_repository {
     my $selection = -1;
     my $num_repos = $#{$repository_listing->{site}} + 1;
@@ -318,8 +342,10 @@ sub select_default_repository {
     }
 }
 
-# Download the packages file from a repository
 
+#
+# Download the packages file from a repository
+#
 sub download_packages_file {
     select_default_repository() if ($repository_selected == -1);
 
@@ -337,30 +363,22 @@ sub download_packages_file {
 
     my $happy;
     my $content;
-    ($happy, $content) = download_from_uri($uri);
+    my $ffname = "$metadatadir/$package_filename";
+    ($happy, $content) = download_from_uri($uri, "$ffname.new");
 
     # If we got it, save it to a file.  Then load each entry with an
     # empty download/install info hash
 
     if ($happy) {
-	if (!open (OUTFILE, ">$datadir/$package_filename.new")) {
-	    carp("ERROR: I was unable to open the following file for writing:\n" .
-		 "\t$datadir/$package_filename\nAborting.");
-	    exit(1);
-	}
-	print OUTFILE $content;
-	close(OUTFILE);
-
 	if (!($package_listing = 
-	      $xs->XMLin("$datadir/$package_filename.new"))) {
-	    carp("ERROR: I was unable to open the following file for reading:\n" .
-		 "\t$datadir/$package_filename\nAborting.");
-	    exit(1);
+	      $xs->XMLin("$ffname.new"))) {
+	    die("ERROR: I was unable to open the following file for reading:\n" .
+		"\t$ffname\nAborting.");
 	}
 
 	# Overwrite the old file; count how many packages available
 
-	move("$datadir/$package_filename.new", "$datadir/$package_filename");
+	move("$ffname.new", "$ffname");
 	my $num_pkgs = $#{$package_listing->{package}} + 1;
 	print((($num_pkgs == 1) ?
 	       "Found 1 package" :
@@ -379,11 +397,11 @@ sub download_packages_file {
     # If we didn't get it, complain
 
     else {
-	carp("ERROR: I was unable to download the following file:\n" .
+	die("ERROR: I was unable to download the following file:\n" .
 	     "\t$uri\nAborting.\n");
-	exit(1);
     }
 }
+
 
 #
 # $page is 1 indexed
@@ -402,7 +420,8 @@ sub list_packages_page {
     $end_pkg = $num_pkgs if ($end_pkg > $num_pkgs);
 
     for (my $i = $start_pkg; $i <= $end_pkg; ++$i) {
-	my ($name, $version, $installable, $downloadable, $md5sum, $size) =
+	my ($name, $version, $installable, $downloadable, 
+	    $md5sum, $sha1sum, $size) =
 	    get_package_info($i);
 
     my $status="";
@@ -432,10 +451,10 @@ sub list_packages_page {
     }
 }
 
+
 #
 # Resolve ranges of packages and then apply a function to each package
 #
-
 sub do_packages_range {
     my ($func) = @_;
     shift;
@@ -471,9 +490,11 @@ sub do_packages_range {
     }
 }
 
+
+#
 # Find the index number of a given package, either of its name or its
 # provides name
-
+#
 sub find_index {
     my ($name, $top) = @_;
     my $i = -1;
@@ -504,8 +525,10 @@ sub find_index {
     -1;
 }
 
-# Build a list of indices of requirements for a specific package
 
+#
+# Build a list of indices of requirements for a specific package
+#
 sub build_requires_list {
     my ($package_index, $top, $results) = @_;
     my $pkg = $top->{package}[$package_index - 1];
@@ -559,8 +582,10 @@ sub build_requires_list {
     $results;
 }
 
-# Print a list of selected packages
 
+#
+# Print a list of selected packages
+#
 sub list_selected_packages {
     if ($#packages_selected < 0) {
 	print "No packages selected\n";
@@ -573,8 +598,10 @@ sub list_selected_packages {
     }
 }
 
-# Mark a package for downloading
 
+#
+# Mark a package for downloading
+#
 sub select_package {
     my ($pkg_index) = @_;
     my $pkg = $package_listing->{package}[$pkg_index - 1];
@@ -585,10 +612,10 @@ sub select_package {
 	my @parts = split(/\//, $pkg->{download}->{uri}[$i]);
 	my $filename = $parts[$#parts];
 
-	if (-f "$datadir/$filename") {
+	if (-f "$downloaddir/$filename") {
 	    print "This package appears to already have been downloaded.
 If you wish to download it again, remove the following file:
-  $datadir/$filename
+  $downloaddir/$filename
 and then select to download this package again.\n\n";
 	    return;
 	}
@@ -616,8 +643,10 @@ and then select to download this package again.\n\n";
     print "Package \"" . $pkg->{name} . "\" is selected\n";
 }
 
-# Print information about a specific package
 
+#
+# Print information about a specific package
+#
 sub print_package {
     my ($i) = @_;
     my $p = $package_listing->{package}[$i - 1];
@@ -654,6 +683,7 @@ sub print_package {
     print_filled($temp, $w);
     print(build_size_string($p->{download}->{size}) . "\n");
     print_pkg_attr($p, $w, "Download md5sum", "download", "md5sum", "");
+    print_pkg_attr($p, $w, "Download sha1sum", "download", "sha1sum", "");
     $temp = "Download URIs:";
     for ($i = 0; $i <= $#{$p->{download}->{uri}}; ++$i) {
 	print_filled($temp, $w);
@@ -671,10 +701,10 @@ sub print_package {
     }
 }
 
+
 #
 # Simple formatting function -- right pad with spaces to desired width
 #
-
 sub print_filled {
     my ($text, $w) = @_;
 
@@ -690,10 +720,10 @@ sub print_filled {
     print(" ");
 }
 
+
 #
 # Print a filled field name and then a given attribute off a package
 #
-
 sub print_pkg_attr {
     my ($p, $w, $text, $a1, $a2, $a3) = @_;
     my $attr;
@@ -710,11 +740,11 @@ sub print_pkg_attr {
     print("$attr\n");
 }
 
+
 #
 # Similar to print_pkg_attr, but do it for an attribute that is an
 # array (i.e., loop over printing all elements in the attribute array)
 #
-
 sub print_pkg_array_attr {
     my ($p, $w, $func, $text, $a1, $a2, $a3) = @_;
     my $array;
@@ -741,12 +771,12 @@ sub print_pkg_array_attr {
     }
 }
 
+
 #
 # Build a version number from its components.  Always show the major
 # and minor number, only show the subversion and release numbers if
 # they exist.
 #
-
 sub build_version_string {
     my ($pkg) = @_;
     my $v = $pkg->{version};
@@ -789,10 +819,10 @@ sub build_version_string {
     $out;
 }
 
+
 #
 # Build a size string
 #
-
 sub build_size_string {
     my ($size) = @_;
 
@@ -813,10 +843,10 @@ sub build_size_string {
     $size;
 }
 
+
 #
 # Build the name/e-mail string
 #
-
 sub build_name_email_string {
     my ($field, $pkg) = @_;
     my $p = $pkg->{$field};
@@ -838,40 +868,40 @@ sub build_name_email_string {
     $out;
 }
 
+
 #
 # Build the provides string
 #
-
 sub build_provides_string {
     my ($provides) = @_;
 
     $provides->{name};
 }
 
+
 #
 # Build the requires string
 #
-
 sub build_requires_string {
     my ($requires) = @_;
 
     $requires->{name} . " (" . $requires->{type} . ")";
 }
 
+
 #
 # Build the conflicts string
 #
-
 sub build_conflicts_string {
     my ($conflicts) = @_;
 
     $conflicts->{name} . " (" . $conflicts->{type} . ")";
 }
 
+
 #
 # Return some basic info
 #
-
 sub get_package_info {
     my ($i) = @_;
     my $pkg = $package_listing->{package}[$i - 1];
@@ -881,13 +911,16 @@ sub get_package_info {
     my $installable = $pkg->{general}->{installable};
     my $downloadable = $pkg->{download}->{uri};
     my $md5sum = $pkg->{download}->{md5sum};
+    my $sha1sum = $pkg->{download}->{sha1sum};
     my $size = build_size_string($pkg->{download}->{size});
 
-    ($name, $version, $installable, $downloadable, $md5sum, $size);
+    ($name, $version, $installable, $downloadable, $md5sum, $sha1sum, $size);
 }
 
-# Download the selected packages
 
+#
+# Download the selected packages
+#
 sub download_selected_packages {
     if ($#packages_selected < 0) {
 	print "No packages are selected\n";
@@ -905,15 +938,16 @@ sub download_selected_packages {
     }
 }
 
-# Download a package
 
+#
+# Download a package
+#
 sub download_package {
     my ($i) = @_;
     my $pkg = $package_listing->{package}[$i - 1];
 
     # Try downloading the URI's in sequence
 
-    my $cwd;
     my $success = 0;
     my $happy = 0;
     my $content;
@@ -924,7 +958,8 @@ sub download_package {
 
 	# Download the file
 
-	($happy, $content) = download_from_uri($pkg->{download}->{uri}[$i]);
+	($happy, $content) = download_from_uri($pkg->{download}->{uri}[$i],
+					       "$downloaddir/$filename.new");
 	if ($happy) {
 
 	    # Check the downloaded file size
@@ -933,8 +968,9 @@ sub download_package {
 	    if (!$pkg->{download}->{size} ||
 		$pkg->{download}->{size} < 0) {
 		print "not provided\n";
-	    } elsif (length($content) ne $pkg->{download}->{size}) {
-		print "FAILED\n";
+	    } elsif (length($$content) ne $pkg->{download}->{size}) {
+		print "FAILED: " . length($$content) .
+		    " != $pkg->{download}->{size}\n";
 		next;
 	    } else {
 		print "OK\n";
@@ -943,42 +979,54 @@ sub download_package {
 	    # Check the downloaded MD5 sum
 
 	    print "- Checking MD5 sum... ";
-	    my $digest = md5_hex($content);
-	    if (!$pkg->{download}->{md5sum} ||
-		$pkg->{download}->{md5sum} < 0) {
-		print "not provided\n";
-	    } elsif ($digest ne $pkg->{download}->{md5sum}) {
-		print "FAILED\n";
-		next;
+	    if (defined($pkg->{download}->{md5sum}) &&
+		$pkg->{download}->{md5sum}) {
+		my $digest = md5_hex($$content);
+		if ($digest ne $pkg->{download}->{md5sum}) {
+		    print "FAILED\n";
+		    next;
+		} else {
+		    print "OK\n";
+		}
 	    } else {
-		print "OK\n";
+		print("Not provided\n");
+	    }
+
+	    # Check the downloaded SHA1 sum
+
+	    print "- Checking SHA1 sum... ";
+	    if (defined($pkg->{download}->{sha1sum}) &&
+		$pkg->{download}->{sha1sum}) {
+		my $digest = sha1_hex($$content);
+		if ($digest ne $pkg->{download}->{sha1sum}) {
+		    print "FAILED\n";
+		    next;
+		} else {
+		    print "OK\n";
+		}
+	    } else {
+		print("Not provided\n");
 	    }
 
 	    # Save the file
 
-	    print "- Saving to $pkgdir/$filename... ";
-	    if (!open (OUTFILE, ">$pkgdir/$filename")) {
+	    print "- Saving to $downloaddir/$filename... ";
+	    if (!move("$downloaddir/$filename.new", 
+		      "$downloaddir/$filename")) {
 		print "FAILED\n";
 		next;
 	    }
-	    print OUTFILE $content;
-	    close(OUTFILE);
 	    print "OK\n";
 
 	    # If we have OSCAR_HOME, expand the file 
 
-	    print "- Unpacking into \$OSCAR_HOME/packages/... ";
-	    if (!$ENV{OSCAR_HOME}) {
-		print "\$OSCAR_HOME is not set\n";
-	    } else {
-		my $cmd = "cd " . $ENV{OSCAR_HOME} . 
-		    "/packages ; tar zxf $pkgdir/$filename";
-		if (system($cmd)) {
-		    print "FAILED\n";
-		    next;
-		}
-		print "OK\n";
+	    print "- Unpacking into $expanddir/... ";
+	    my $cmd = "cd $expanddir ; tar zxf $downloaddir/$filename";
+	    if (system($cmd)) {
+		print "FAILED\n";
+		next;
 	    }
+	    print "OK\n";
 
 	    # If all went well, then this URI was good enough
 
@@ -987,8 +1035,10 @@ sub download_package {
     }
 }
 
-# Loop over the main menu
 
+#
+# Loop over the main menu
+#
 sub main_menu {
     my $selection;
 
@@ -1141,18 +1191,20 @@ R can be a single integer value, a range or an enumeration of all that :
     }
 }
 
-# Select number range
-
 #########################################################################
 #
 # Main
 #
 #########################################################################
 
-set_pkgdir();
-mkdir_p($datadir);
+analyze_argv();
+
+mkdir_p($downloaddir);
+mkdir_p($metadatadir);
+mkdir_p($expanddir);
+
 read_repository_listing();
-update_repository_listing();
+
 select_default_repository();
 download_packages_file();
 main_menu();
