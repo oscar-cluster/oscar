@@ -20,7 +20,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.78 2004/04/21 13:09:51 ngorsuch Exp $
+      $Id: config.xml,v 1.79 2004/04/21 18:54:34 ngorsuch Exp $
   -->
   <name>oda</name>
 
@@ -1083,6 +1083,22 @@
           nodes.name=%1
           nics.name=%2
           nics.node_id=nodes.id
+        </expansion>
+      </shortcut>
+
+      <shortcut>
+        <command> ip_to_node </command>
+        <description>
+          ip_to_node returns the node name which has the given
+          network ip address on one of the node nics, required
+          parameter is:
+                  ip            ip address
+        </description>
+        <expansion>
+          read_records
+          nics.ip=%1
+          nics.node_id=nodes.id
+          nodes.name
         </expansion>
       </shortcut>
 
