@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.50 2003/06/27 19:50:54 brechin Exp $
+# $Id: oscar_wizard,v 1.51 2003/06/27 21:50:59 brechin Exp $
 #
 
 use strict;
@@ -90,11 +90,18 @@ my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!",
 			   -background=>"white");
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 
+# Download packages using OPD
+my $step_number = 0;
+oscar_button($window, "Step $step_number:",
+	     "Download Additional OSCAR Packages...",
+	     [sub { system("cd ../lib/Qt; /usr/bin/perl Opder.pl; cd ../../scripts") }],
+	     'download_packages');
+
 # Select packages for installation
-my $step_number = 1;
+$step_number++;
 oscar_button($window, "Step $step_number:", 
 	     "Select OSCAR Packages To Install...", 
-	     [sub { system("cd ../lib/Qt; /usr/bin/perl Selector.pl; cd ../../scripts") }, $window, $step_number], 
+	     [sub { system("cd ../lib/Qt; /usr/bin/perl Selector.pl; cd ../../scripts") }], 
 	     'select_packages');
 
 # Configure selected packages

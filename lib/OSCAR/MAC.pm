@@ -4,7 +4,7 @@ package OSCAR::MAC;
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
-#   $Id: MAC.pm,v 1.40 2003/06/27 15:16:53 brechin Exp $
+#   $Id: MAC.pm,v 1.41 2003/06/27 21:50:59 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.40 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.41 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -115,7 +115,7 @@ sub mac_window {
 
     # this populates the tree as it exists
     populate_MACS();
-    
+ 
     regenerate_tree($tree);
     our $starttext = "Collect MAC Addresses";
     our $start = $frame->Button(
@@ -126,7 +126,7 @@ sub mac_window {
 #                                         -text => "Stop Collecting",
 #                                         -command => [\&end_collect_mac, $label, $starttext],
 #                                         );
-    my $exitbutton = $frame->Button(
+    our $exitbutton = $frame->Button(
                                      -text => "Close",
                                      -command => sub {
 					 undef $destroyed;
@@ -157,16 +157,16 @@ sub mac_window {
 				);
 
     my $fileselector = $frame->FileSelect(-directory => "$ENV{HOME}");
-    my $loadbutton = $frame->Button(
+    our $loadbutton = $frame->Button(
                                    -text=>"Import MACs from file...",
                                    -command=> [\&macfile_selector, "load", $fileselector, $listbox],
                                   );
-    my $savebutton = $frame->Button(
+    our $savebutton = $frame->Button(
                                     -text => "Export MACs to file...",
                                     -command => [\&macfile_selector, "save", $fileselector, $listbox],
                                    );
 
-    my $bootfloppy = $frame->Button(
+    our $bootfloppy = $frame->Button(
                                     -text => "Build Autoinstall Floppy...",
                                     -command => sub {
 					my $cmd = "xterm -T 'Build Autoinstall Floppy' -e mkautoinstalldiskette";
@@ -451,6 +451,12 @@ sub end_collect_mac {
     $label->configure(-text => "Not Listening to Network. Click 'Collect MAC Addresses' to start.");
     our $starttext = "Start Collecting MACs";
     our $start;
+
+    our $bootfloppy->configure(-state => 'normal');
+    our $savebutton->configure(-state => 'normal');
+    our $loadbutton->configure(-state => 'normal');
+    our $exitbutton->configure(-state => 'normal');
+
     $start->configure(-command => [\&begin_collect_mac, $window, $listbox, $interface, $label ]);
     system("killall tcpdump");
     oscar_log_subsection("Step $step_number: Stopped listening to network");
@@ -472,6 +478,12 @@ sub begin_collect_mac {
     our $label;
     our $start;
     $starttext = "Stop Collecting MACs";
+
+    our $bootfloppy->configure(-state => 'disabled');
+    our $savebutton->configure(-state => 'disabled');
+    our $loadbutton->configure(-state => 'disabled');
+    our $exitbutton->configure(-state => 'disabled');
+
     $start->configure(-command => [\&end_collect_mac, $window, $listbox, $interface ]);
     start_ping($interface);
     my $cmd = "/usr/sbin/tcpdump -i $interface -n -e -l";
