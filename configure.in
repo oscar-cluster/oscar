@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.13 2002/05/22 20:46:56 brechin Exp $
+# $Id: configure.in,v 1.14 2002/05/22 21:15:40 naughtont Exp $
 #
 # $COPYRIGHT$
 #
@@ -94,6 +94,7 @@ AC_OUTPUT([
     packages/mpich/scripts/Makefile
     packages/opium/Makefile
     packages/opium/RPMS/Makefile
+    packages/opium/SRPMS/Makefile
     packages/opium/scripts/Makefile
     packages/pbs/Makefile
     packages/pbs/RPMS/Makefile
