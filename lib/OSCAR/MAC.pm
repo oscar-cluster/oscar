@@ -243,6 +243,10 @@ sub set_buttons {
     $state = (defined $listbox->get( 0, 'end' )) ? "normal" : "disabled";
     our $clearall->configure( -state => $state );
     our $assignall->configure( -state => $state );
+#
+#	Enabled iff at least one MAC exists.
+#
+    $state = (scalar keys %MAC) ? "normal" : "disabled";
     our $savebutton->configure( -state => $state );
 #
 #   Emabled iff at least one item selected in the listbox and the tree.
@@ -664,7 +668,7 @@ sub macfile_selector {
 sub save_to_file {
     my $file = shift;
     open(OUT,">$file") or croak "Couldn't open file: $file for writing";
-    print OUT "# Saved OSCAR MAC Addresses\n";
+    print OUT "# Saved OSCAR MAC Addresses; ", scalar localtime, "\n";
     foreach my $mac (sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC) {
         print OUT $mac, "\n";
     }
