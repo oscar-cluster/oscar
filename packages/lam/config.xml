@@ -9,14 +9,14 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.18 2004/05/11 19:27:45 jsquyres Exp $
+      $Id: config.xml,v 1.19 2004/05/31 12:59:27 jsquyres Exp $
   -->
   <name>LAM/MPI</name>
 
   <version>
     <major>7</major>
     <minor>0</minor>
-    <subversion>0</subversion>
+    <subversion>6</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
@@ -83,30 +83,15 @@ visualized either at runtime or post-mortem.</description>
   <rpmlist>
     <rpm>lam-oscar</rpm>
     <rpm>lam-oscar-module</rpm>
-    <rpm>lam-with-gm-oscar</rpm>
-    <rpm>lam-with-gm-oscar-module</rpm>
-  </rpmlist>
-
-  <!-- RedHat 8.0, 9, and SuSE ship with libaio and libaio-devel.
-       We don't put just "redhat", though, because the IA64 RPM's
-       don't need libaio. -->
-  <rpmlist>
-    <filter distribution="redhat" distribution_version="8.0" />
-    <filter distribution="redhat" distribution_version="9"   />
-  </rpmlist>
-
-  <!-- SuSE 8.1/8.2 and MDK 9.0 don't ship with libaio.  So we got the
-       RH 9 SRPM, tweaked the specfile a bit to change the name, and
-       rebuilt it for OSCAR. -->
-  <rpmlist>
-    <filter distribution="mandrake" />
-    <filter distribution="suse" />
+    <rpm>lam-gm-oscar</rpm>
+    <rpm>lam-gm-oscar-module</rpm>
+    <rpm>lam-switcher-modulefile</rpm>
   </rpmlist>
 
   <package>
     <switcher>
       <tag>mpi</tag>
-      <name>lam-7.0</name>
+      <name>lam-7.0.6</name>
     </switcher>
   </package>
 
