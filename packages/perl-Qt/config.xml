@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.9 2003/07/24 16:25:45 brechin Exp $
+      $Id: config.xml,v 1.10 2003/07/25 16:13:37 brechin Exp $
   -->
   <name>perl-Qt</name>
 
@@ -18,7 +18,7 @@
     <major>3</major>
     <minor>0</minor>
     <subversion>6</subversion>
-    <release>5</release>
+    <release>6</release>
   </version>
 
   <class>core</class>
@@ -44,10 +44,20 @@
     <rpm>libqt3</rpm>
     <rpm>libqt3-devel</rpm>
     <rpm>libunixODBC2-devel</rpm>
+    <rpm>libunixODBC2</rpm>
     <rpm>libmysql10-devel</rpm>
     <rpm>postgresql-devel</rpm>
     <rpm>libcups1</rpm>
-    <rpm>perl-Qt-mdk-compat</rpm>
+    <rpm>perl-Qt-mdk</rpm>
+    <rpm>libmng1</rpm>
+    <rpm>liblcms1</rpm>
+    <rpm>libpgsql2</rpm>
+    <rpm>libpgperl</rpm>
+    <rpm>libecpg3</rpm>
+    <rpm>libpgsqlodbc0</rpm>
+    <rpm>postgresql</rpm>
+    <rpm>sfio</rpm>
+    <rpm>libpgtcl2</rpm>
   </rpmlist>
     
   <rpmlist>
@@ -63,7 +73,6 @@
 <!-- For distros with Perl 5.8 -->
     <filter distribution='redhat'   distribution_version='8.0' />
     <filter distribution='redhat'   distribution_version='9' />
-    <filter distribution='mandrake' distribution_version='9.0' />
     <filter distribution='suse' />
       <rpm>perl-Qt</rpm>
   </rpmlist>
