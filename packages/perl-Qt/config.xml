@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.10 2003/07/25 16:13:37 brechin Exp $
+      $Id: config.xml,v 1.11 2003/08/12 18:25:00 brechin Exp $
   -->
   <name>perl-Qt</name>
 
@@ -33,14 +33,14 @@
   <description>Perl-Qt allows for writing Qt programs in Perl</description>
 
   <rpmlist>
-    <filter distribution='redhat' />
+    <filter distribution='redhat' group='oscar_server' />
     <rpm>qt</rpm>
     <rpm>qt-devel</rpm>
     <rpm>cups-libs</rpm>
   </rpmlist>
 
   <rpmlist>
-    <filter distribution='mandrake' distribution_version='9.0'/>
+    <filter distribution='mandrake' distribution_version='9.0' group='oscar_server'/>
     <rpm>libqt3</rpm>
     <rpm>libqt3-devel</rpm>
     <rpm>libunixODBC2-devel</rpm>
@@ -62,23 +62,23 @@
     
   <rpmlist>
 <!-- For distros with Perl 5.6 -->
-    <filter distribution='redhat'   distribution_version='7.3' />
-    <filter distribution='redhat'   distribution_version='7.2' />
-    <filter distribution='mandrake' distribution_version='8.2' />
-    <filter distribution='rhas'   distribution_version='2.1AS' />
+    <filter distribution='redhat'   distribution_version='7.3' group='oscar_server'/>
+    <filter distribution='redhat'   distribution_version='7.2' group='oscar_server'/>
+    <filter distribution='mandrake' distribution_version='8.2' group='oscar_server'/>
+    <filter distribution='rhas'   distribution_version='2.1AS' group='oscar_server'/>
       <rpm>perl-Qt-5.6</rpm>
   </rpmlist>
 
   <rpmlist>
 <!-- For distros with Perl 5.8 -->
-    <filter distribution='redhat'   distribution_version='8.0' />
-    <filter distribution='redhat'   distribution_version='9' />
-    <filter distribution='suse' />
+    <filter distribution='redhat'   distribution_version='8.0' group='oscar_server'/>
+    <filter distribution='redhat'   distribution_version='9' group='oscar_server'/>
+    <filter distribution='suse' group='oscar_server'/>
       <rpm>perl-Qt</rpm>
   </rpmlist>
 
   <rpmlist>
-    <filter distribution='suse' />
+    <filter distribution='suse' group='oscar_server'/>
       <rpm>xdevel</rpm>
       <rpm>qt3</rpm>
       <rpm>qt3-devel</rpm>
