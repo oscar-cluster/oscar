@@ -198,7 +198,11 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \item The man pages for the Torque package will not be available in
   a default installation because /opt/pbs/man is missing from
-  MANPATH.  They should appear if this is added by hand.
+  MANPATH.  They should appear if this is added by hand eg:
+
+\begin{verbatim}
+  # export MANPATH=$MANPATH:/opt/pbs/man
+\end{verbatim}
 \endchange
 
 
