@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-#   $Id: Package.pm,v 1.48 2003/04/10 16:55:26 ngorsuch Exp $
+#   $Id: Package.pm,v 1.49 2003/04/11 01:41:32 ngorsuch Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.48 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.49 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -548,11 +548,11 @@ sub list_selected_packages # ($type) -> @selectedlist
 
     my $command_args;
     if ( $type eq "all" ) {
-	$command_args = "packages_selected";
+	$command_args = "packages_in_selected_package_set";
     } elsif ( $type eq "core" ) {
-	$command_args = "packages_selected packages.class=core";
+	$command_args = "packages_in_selected_package_set packages.class=core";
     } else {
-	$command_args = "packages_selected packages.class!=core";
+	$command_args = "packages_in_selected_package_set packages.class!=core";
     }
     my @packages = ();
     if ( OSCAR::Database::database_execute_command( $command_args, 
