@@ -1,3 +1,4 @@
 ganglia-monitor-core
+ganglia-php-rrd-client
 rrdtool
 perl-XML-Parser
