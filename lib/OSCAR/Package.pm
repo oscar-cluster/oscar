@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.26 2002/10/28 22:33:48 tfleury Exp $
+#   $Id: Package.pm,v 1.27 2002/10/28 23:46:15 tfleury Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ use Carp;
              run_pkg_script_chroot rpmlist distro_rpmlist install_rpms
              pkg_config_xml list_install_pkg getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.26 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.27 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -95,31 +95,24 @@ sub list_pkg {
 
     my @packages = keys %{$PACKAGE_CACHE};
     foreach my $pkg (@packages) {
-	
-	# First, check if it's a valid package: not ".", not "..", not
-	# "CVS", doesn't contain a .oscar_ignore file, and has its
-	# installable attribute set to 1.
-	
-	my $dir = "$ENV{OSCAR_HOME}/packages/$pkg";
-	next if (! -d $dir || $pkg eq "." || $pkg eq ".." || $pkg eq "CVS" ||
-		 -f "$dir/.oscar_ignore" ||
-		 $PACKAGE_CACHE->{$pkg}->{installable} ne 1);
-	
-	# If it's a valid package, see if it's the right kind or not
+    
+        # First, check if the package has its installable attribute set to 1.
+        next if ($PACKAGE_CACHE->{$pkg}->{installable} ne 1);
 
-	if ($type eq "all") {
-	    push @packages_to_return, $pkg;
-	} elsif ($type eq "core") {
-	    if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
-          ($PACKAGE_CACHE->{$pkg}->{class} eq "core")) {
-		push @packages_to_return, $pkg;
-	    }
-	} else {
-	    if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
-          ($PACKAGE_CACHE->{$pkg}->{class} ne "core")) {
-		push @packages_to_return, $pkg;
-	    }
-	}
+        # If it's a valid package, see if it's the right kind or not
+        if ($type eq "all") {
+            push @packages_to_return, $pkg;
+        } elsif ($type eq "core") {
+            if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
+              ($PACKAGE_CACHE->{$pkg}->{class} eq "core")) {
+            push @packages_to_return, $pkg;
+            }
+        } else {
+            if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
+              ($PACKAGE_CACHE->{$pkg}->{class} ne "core")) {
+            push @packages_to_return, $pkg;
+            }
+        }
     }
 
     return @packages_to_return;
@@ -469,7 +462,11 @@ sub read_all_pkg_config_xml {
 	chomp($pkg);
 	my $dir = "$ENV{OSCAR_HOME}/packages/$pkg";
 	my $config = "$dir/config.xml";
-	if (-d $dir && $pkg ne "." && $pkg ne ".." && $pkg ne "CVS") {
+
+  # Check if it's a valid package: not ".", not "..", not "CVS"
+  # and doesn't contain a .oscar_ignore file
+	if (-d $dir && $pkg ne "." && $pkg ne ".." && $pkg ne "CVS" &&
+      ! -e "$dir/.oscar_ignore") {
 	    if (-f $config) {
 		oscar_log_subsection("Reading $config");
 		$PACKAGE_CACHE->{$pkg} = $xs->XMLin($config);
@@ -505,6 +502,7 @@ sub list_install_pkg # ($type) -> @selectedlist
   $type = "all" if (!$type);
   my($selhash) = getSelectionHash(); 
   my(@selected) = ();
+  my($dir) = "";
 
   if (scalar (keys %{ $selhash }) < 1)
     { # No items implies missing .selection.config file.  Call list_pkg().

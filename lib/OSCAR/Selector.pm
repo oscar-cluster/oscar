@@ -548,9 +548,8 @@ sub populateSelectorList
   # Set up the base directory where this script is being run
   $oscarbasedir = '.';
   $oscarbasedir = $ENV{OSCAR_HOME} if ($ENV{OSCAR_HOME});
-  # Scan for directories under "packages"
-  @packagedirs = list_pkg();
-  readInPackageXMLs();         # Read in all packages' config.xml files
+  @packagedirs = list_pkg();  # Scan for directories under "packages"
+  readInPackageXMLs();        # Read in all packages' config.xml files
   readInSelectionConfig();
 
   $pane->destroy if ($pane);
