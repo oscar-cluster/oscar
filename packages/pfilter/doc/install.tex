@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.6 2002/08/31 16:32:11 jsquyres Exp $
+% $Id: install.tex,v 1.7 2002/09/10 14:01:13 ngorsuch Exp $
 %
 % $COPYRIGHT$
 %
@@ -18,27 +18,26 @@ on or off like other Linux services.  Like other compilers, {\bf
 done by any good firewall, including turning on TCP networking
 protective features.
 
-When OSCAR was installed, it modified the {\bf pfilter} installation
-by merging any pre-existing {\bf pfilter} configuration file and some
-new cluster specific commands.  The new configuration file is common
-to all machines in the cluster, using the conditional expression
-capabilities of {\bf pfilter} to allow different types of cluster
-machines to have different packet filtering attributes.  
-Here are some of the things that OSCAR adds
-to the {\bf pfilter} configuration file:
+When OSCAR was installed, it merged any pre-existing server 
+{\bf pfilter} installation configuration into a new configuration,
+and created new client machine {\bf pfilter} configurations. 
+The resulting {\bf pfilter} configurations do the following:
 
 \begin{itemize}
-\item the default for network interfaces is set to be untrusted
-\item the syslog logging of bad network packets is turned off
-\item the main OSCAR server node has \cmd{ssh} logins enabled
-\item the main OSCAR server node has http access enabled
-\item all communication between nodes in the cluster is enabled
+\item any network connections that were specifically allowed in the
+former server {\bf pfilter} installation configuration are still allowed 
+to the main OSCAR server node
+\item the main OSCAR server node and all client OSCAR nodes allow\cmd{ssh} logins from anywhere
+\item the main OSCAR server node has http access enabled from anywhere
+\item any remaining network connections from outside the cluster are blocked
+\item the logging of bad network packets to syslog is turned off
+\item all network communication of any kind between nodes in the cluster is enabled
 \end{itemize}
 
-\begin{discuss}
-  Is this all still true?  I think we enable multicasting in the
-  cluster, don't we?  Does this need to be listed?
-\end{discuss}
+If the main OSCAR server has two or more network interfaces, {\bf pfilter}
+will attempt to determine which network interface is the public interface,
+and then enable packet forwarding and network address translation for the 
+remaining interfaces if it can.
 
 {\bf pfilter} is turned on by default -- this is considered good
 ``defense in depth'' security for a cluster (see
