@@ -11,7 +11,7 @@
      
       $Id: config.xml,v 1.9 2003/12/04 05:17:11 ngorsuch Exp $
   -->
-  <name>ntpconfig</name>
+  <name>NTP Configurator</name>
 
   <version>
     <major>2</major>

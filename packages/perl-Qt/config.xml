@@ -13,7 +13,7 @@
 
       $Id: config.xml,v 1.14 2003/12/04 05:19:26 ngorsuch Exp $
   -->
-  <name>perl-Qt</name>
+  <name>Perl-Qt</name>
 
 
   <version>

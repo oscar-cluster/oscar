@@ -14,7 +14,7 @@
 
       $Id: config.xml 2315 2003-12-04 20:26:09Z brechin $
   -->
-  <name>base</name>
+  <name>OSCAR Base</name>
 
 
   <version>

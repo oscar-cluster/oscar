@@ -22,7 +22,7 @@
      
       $Id: config.xml,v 1.82 2004/05/04 22:54:31 ngorsuch Exp $
   -->
-  <name>oda</name>
+  <name>ODA</name>
 
   <version>
     <major>1</major>

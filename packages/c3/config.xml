@@ -11,7 +11,7 @@
      
       $Id: config.xml,v 1.13 2003/11/12 20:57:02 naughtont Exp $
   -->
-  <name>c3</name>
+  <name>C3</name>
 
   <version>
     <major>4</major>

@@ -11,7 +11,7 @@
      
       $Id: config.xml,v 1.8 2003/07/18 21:23:38 ngorsuch Exp $
   -->
-  <name>kernel_picker</name>
+  <name>Client Kernel Selector</name>
 
   <version>
     <major>1</major>
@@ -23,7 +23,7 @@
 
   <class>included</class>
 
-  <summary>A Perl script to substitute a kernel into an OSCAR (SIS) image.</summary>
+  <summary>A Perl script to install a user-specified kernel into an OSCAR (SIS) client image.</summary>
   <license>GPL</license>
   <copyright>2002</copyright>
   <group>Application/System</group>

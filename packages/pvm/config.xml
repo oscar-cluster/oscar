@@ -11,7 +11,7 @@
      
       $Id: config.xml,v 1.10 2003/07/25 21:39:38 naughtont Exp $
   -->
-  <name>pvm</name>
+  <name>PVM</name>
 
   <version>
     <major>3</major>

@@ -8,7 +8,7 @@
      
       $Id: config.xml,v 1.17 2004/02/16 16:42:29 brechin Exp $
   -->
-  <name>opium</name>
+  <name>Opium</name>
 
   <version>
     <major>1</major>

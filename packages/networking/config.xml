@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE package SYSTEM "../package.dtd">
 <oscar>
-  <name>networking</name>
+  <name>Caching Nameserver</name>
 
   <filter distribution='redhat' />
   <filter distribution='mandrake' />

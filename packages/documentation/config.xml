@@ -9,7 +9,7 @@
      
       $Id: config.xml,v 1.4 2003/07/18 21:23:38 ngorsuch Exp $ 
   -->
-  <name>oscar-documentation</name>
+  <name>OSCAR Documentation</name>
 
   <version>
     <major>2</major>

@@ -13,7 +13,7 @@
       $Id: config.xml,v 1.6 2003/07/18 21:23:38 ngorsuch Exp $
       -->
 
-  <name>loghost</name>
+  <name>Loghost</name>
 
   <version>
     <major>1</major>

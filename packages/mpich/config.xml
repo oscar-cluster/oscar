@@ -13,7 +13,7 @@
       $Id: config.xml,v 1.14 2004/07/12 16:45:23 dnl Exp $
       -->
 
-  <name>mpich-p4</name>
+  <name>MPICH-P4</name>
 
   <version>
     <major>1</major>
