@@ -8,7 +8,7 @@ pms		= \
 pls		= nodemgmtDialog.pl
 
 # These are items to be distributed
-#EXTRA_DIST		= $(pms) $(pls) GUI.xml
+EXTRA_DIST		= $(pms) $(pls) GUI.xml
 
 instdir			= $(prefix)/Installer/NodeMgmt
 inst_SCRIPTS		= $(pls) $(pms)
@@ -16,6 +16,9 @@ inst_DATA		= GUI.xml
 
 nodemgmtDialog.pl: nodemgmtdialog.ui.h nodemgmtdialog.ui $(pms)
 	$(PUIC) -x -o nodemgmtDialog.pl nodemgmtdialog.ui
+
+nodemgmtDialog.pm: nodemgmtdialog.ui.h nodemgmtdialog.ui $(pms)
+	$(PUIC) -o nodemgmtDialog.pm nodemgmtdialog.ui
 
 nodesettingsDialog.pm: nodesettingsdialog.ui nodesettingsdialog.ui.h
 	$(PUIC) -o nodesettingsDialog.pm nodesettingsdialog.ui
