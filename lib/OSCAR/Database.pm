@@ -17,12 +17,12 @@ package OSCAR::Database;
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 use strict;
+use Carp;
 use vars qw(@EXPORT $VERSION @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
 
 # oda may or may not be installed and initialized
-eval " use oda; ";
-my $oda_available = ! $@;
+my $oda_available = 0;
 my %oda_options = ();
 my $database_available = 0;
 use Data::Dumper;
@@ -58,8 +58,9 @@ sub database_connect {
     # if oda was not installed the last time that 
     # this was called, try to load in the module again
     if ( ! $oda_available ) {
-	eval "use OSCAR::oda";
+	eval "use oda";
 	$oda_available = ! $@;
+	carp("in database_connect cannot use oda: $@") if ! $oda_available;
     }
 
     # if oda is still not installed, done with failure
@@ -393,7 +394,6 @@ sub database_rpmlist_for_package_and_group {
 	 $print_errors_flag ) = @_;
 
     my ($calling_package, $calling_filename, $line) = caller;
-#    print "$0: database_rpmlist_for_package_and_group\($package\,$group\) called from package=$calling_package $calling_filename\:$line\n";
 
     # since we are going to do a number of database operations, we'll
     # try to be more effecient by connecting to the database first if
@@ -430,8 +430,6 @@ sub database_rpmlist_for_package_and_group {
         OSCAR::Database::database_disconnect() if $was_connected_flag;
 	 return undef;
     }
-#    print "$0: packages_rpmlists_records:\n";
-#    print Dumper(\@packages_rpmlists_records);
 
     # read in the oscar global architecture, distribution, etc
     my ( $architecture,
@@ -462,8 +460,6 @@ sub database_rpmlist_for_package_and_group {
     }
 	    
     OSCAR::Database::database_disconnect() if $was_connected_flag;
-
-#    print "Returning group $group RPMs for $package: " . join(' ', @rpms) . "\n";
 
     return @rpms;
 }
