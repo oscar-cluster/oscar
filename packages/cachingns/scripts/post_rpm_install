@@ -1,0 +1,5 @@
+#!/bin/sh
+
+#After client RPMs are installed (to image)
+
+echo "nameserver $HOSTIP" >> /etc/resolv.conf
