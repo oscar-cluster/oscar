@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.27 2002/10/23 15:04:05 jsquyres Exp $
+# $Id: configure.in,v 1.28 2002/10/28 22:54:19 tfleury Exp $
 #
 # $HEADER$
 #
@@ -90,6 +90,8 @@ AC_CONFIG_FILES([
 
     lib/Makefile
     lib/OSCAR/Makefile
+    lib/Tk/Makefile
+    lib/Tk/HTML/Makefile
 
     images/Makefile
 
