@@ -57,11 +57,25 @@ sub parseCommandLine
   &GetOptions("default" => \$default);
 }
 
+######################################################################
+#  Check to see if 'PBS Server' is running.  If not, then start it.  #
+######################################################################
+sub startPBSserver
+{
+  open(CMD,"/sbin/service pbs_server status |");
+  my $result = <CMD>;
+  close(CMD);
+  system('/sbin/service pbs_server start')
+    unless ($result =~ /is running/);
+}
+
 
 
 ########################
 #  BEGIN MAIN PROGRAM  #
 ########################
+
+startPBSserver();
 
 parseCommandLine();
 
