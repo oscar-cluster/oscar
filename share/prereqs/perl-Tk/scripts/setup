@@ -19,7 +19,7 @@ use Config;
 #print "$Config{'sitearchexp'}\n";
 oscar_log_subsection("Finding correct perl version: $Config{'version'}\n");
 my $perl_version = $Config{'version'};
-#my ($distro_name, $distro_version) = which_distro_server();
+my ($distn, $distv) = which_distro_server();
 my $rpmdir = "$ENV{OSCAR_HOME}/share/prereqs/perl-Tk/media/RPMS";
 
 opendir(DIR, "$rpmdir") || croak("Can't open $rpmdir for perl-Tk");
@@ -52,7 +52,12 @@ if ( system("rpm -q perl-Tk >/dev/null") != 0  ) {
         copy("$rpmdir/$file", "/tftpboot/rpm/$file") || croak("Unable to copy $rpmdir/$file to /tftpboot/rpm/$file");
       }
     }
-    install_rpms("perl-Tk") || croak("perl-Tk cannot be installed, check for error messages from rpm");
+    if ( $distn eq 'mandrake' && $distv eq '9.1' ) {
+      @ptkrpms = qw( perl-Tk perl-PerlIO-gzip );
+    } else {
+      @ptkrpms = qw( perl-Tk );
+    }
+    install_rpms(@ptkrpms) || croak("perl-Tk cannot be installed, check for error messages from rpm");
   }
 } else {
   oscar_log_subsection("We don't need to install perl-Tk\n");
