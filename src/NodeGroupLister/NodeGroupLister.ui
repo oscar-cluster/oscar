@@ -215,7 +215,7 @@
                                         <cstring>renameButton</cstring>
                                     </property>
                                     <property name="enabled">
-                                        <bool>true</bool>
+                                        <bool>false</bool>
                                     </property>
                                     <property name="sizePolicy">
                                         <sizepolicy>
@@ -237,7 +237,7 @@
                                         <cstring>deleteButton</cstring>
                                     </property>
                                     <property name="enabled">
-                                        <bool>true</bool>
+                                        <bool>false</bool>
                                     </property>
                                     <property name="sizePolicy">
                                         <sizepolicy>
@@ -259,7 +259,7 @@
                                         <cstring>modifyButton</cstring>
                                     </property>
                                     <property name="enabled">
-                                        <bool>true</bool>
+                                        <bool>false</bool>
                                     </property>
                                     <property name="sizePolicy">
                                         <sizepolicy>
@@ -356,9 +356,9 @@
     </connection>
     <connection>
         <sender>nodeGroupListBox</sender>
-        <signal>highlighted(const QString&amp;)</signal>
+        <signal>highlighted(QListBoxItem*)</signal>
         <receiver>NodeGroupLister</receiver>
-        <slot>nodeGroupListBox_highlighted(const QString&amp;)</slot>
+        <slot>nodeGroupListBox_highlighted(QListBoxItem*)</slot>
     </connection>
 </connections>
 <includes>
@@ -369,16 +369,20 @@
     <signal>taskToolClosing(char*)</signal>
 </signals>
 <slots>
+    <slot>init()</slot>
     <slot>closeButton_clicked()</slot>
     <slot>newButton_clicked()</slot>
     <slot>renameButton_clicked()</slot>
     <slot>deleteButton_clicked()</slot>
     <slot>modifyButton_clicked()</slot>
-    <slot>nodeGroupListBox_highlighted( const QString &amp; )</slot>
-    <slot>enableButtons(int)</slot>
-    <slot>reReadOda(char*)</slot>
-    <slot>closeEvent(QCloseEvent*)</slot>
-    <slot>init()</slot>
+    <slot>nodeGroupListBox_highlighted( QListBoxItem * )</slot>
+    <slot>enableButtons( int )</slot>
+    <slot>reReadOda( char * )</slot>
+    <slot>closeEvent( QCloseEvent * )</slot>
+    <slot>showEvent()</slot>
+    <slot>refreshNodeGroupListBox()</slot>
+    <slot>nodeGroupIsSpecial(char*)</slot>
+    <slot>refreshMembershipListBoxes()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

@@ -98,12 +98,16 @@ void NodeGroupLister::modifyButton_clicked()
 }
 
 
-
-void NodeGroupLister::nodeGroupListBox_highlighted( const QString & )
+void NodeGroupLister::nodeGroupListBox_highlighted( QListBoxItem * )
 {
-  my $hiliteString = shift;
+  my $hilitedItem = shift;
 
-  print "New item highlighted: '$hiliteString'\n";
+  my $nodeGroupText = nodeGroupListBox->currentText();
+  print "New item highlighted: '$nodeGroupText'\n";
+
+  enableButtons(!(nodeGroupIsSpecial($nodeGroupText)));
+
+  refreshTextBoxes();
 }
 
 
@@ -149,3 +153,49 @@ void NodeGroupLister::closeEvent( QCloseEvent * )
   SUPER->closeEvent(@_);   # Call the parent's closeEvent
 }
 
+
+
+
+
+void NodeGroupLister::showEvent()
+{
+  refreshNodeGroupListBox();
+}
+
+void NodeGroupLister::refreshNodeGroupListBox()
+{
+  nodeGroupListBox->clear();
+  my @nodeGroups = OSCAR::Database::database_return_list("node_groups");
+  foreach my $group (sort @nodeGroups)
+    {
+      nodeGroupListBox->insertItem($group);
+    }
+}
+
+
+
+void NodeGroupLister::nodeGroupIsSpecial( char * )
+{
+  my $nodeGroup = shift;
+  my $retval = 0;
+
+  # The node groups named 'all', 'oscar_clients', and 'oscar_server' are
+  # always special and cannot be modified by the user.
+  $retval = 1 if (($nodeGroup eq 'all') or
+                  ($nodeGroup eq 'oscar_clients') or
+                  ($nodeGroup eq 'oscar_server'));
+
+  # Check to see if the nodeGroup is one of the special groups that contains
+  # only the single node with the same name as the node group.
+  $retval = (OSCAR::Database::database_return_list(
+    "read_records node_groups name =$nodeGroup special"))[0] if
+      (!$retval);
+
+  return $retval;
+}
+
+
+void NodeGroupLister::refreshMembershipListBoxes()
+{
+  
+}
