@@ -163,6 +163,7 @@ sub build_oscar_image {
                 noshow => {
                            arch => 1,
                            imgpath => 1,
+                           password => 1,
                           },
                 pkgfile => "$rpmlist",
                 pkgpath => "/tftpboot/rpm",
