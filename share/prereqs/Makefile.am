@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Makefile.am,v 1.3 2002/10/30 12:14:20 jsquyres Exp $
+# $Id: Makefile.am,v 1.4 2002/11/01 04:45:58 jsquyres Exp $
 #
 
-SUBDIRS			= HTML-Tree XML-Parser XML-Simple
+SUBDIRS			= HTML-Tree oda XML-Parser XML-Simple
