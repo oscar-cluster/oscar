@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
@@ -23,16 +23,12 @@ use Carp;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 
-#########################################################################
-#  Check to see if 'Torque Server' is running.  If not, then start it.  #
-#########################################################################
+#######################################################
+#  Start up 'Torque Server' by restarting the daemon  #
+#######################################################
 sub startPBSserver
 {
-#  open(CMD,"/etc/init.d/pbs_server status |");
-#  my $result = <CMD>;
-#  close(CMD);
-  system('/etc/init.d/pbs_server start');
-#    unless ($result =~ /is running/);
+  system('/etc/init.d/pbs_server restart');
 }
 
 
@@ -57,4 +53,3 @@ open (RCFILE, ">$xpbsmonrc")
   or croak("Error: XPBSMONRC not setup - Couldn't open $xpbsmonrc.\n");
 print RCFILE @lines; 
 close (RCFILE);
-
