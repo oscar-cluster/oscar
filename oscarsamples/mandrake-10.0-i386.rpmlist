@@ -51,8 +51,8 @@ initscripts
 iproute2
 iputils
 isapnptools
-kernel-2.4.25.2mdk
-kernel-smp-2.4.25.2mdk
+kernel-2.6.3.7mdk
+kernel-smp-2.6.3.7mdk
 ldconfig
 ldetect
 ldetect-lst
