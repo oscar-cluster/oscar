@@ -23,15 +23,15 @@ else
     OSCAR_BETA_VERSION="`cat $srcdir/dist/VERSION | grep beta | cut -d= -f2`"
     OSCAR_SVN_VERSION="`cat $srcdir/dist/VERSION | grep svn | cut -d= -f2`"
     if test "$OSCAR_RELEASE_VERSION" != "0" -a "$OSCAR_RELEASE_VERSION" != ""; then
-	OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION.$OSCAR_RELEASE_VERSION"
+        OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION.$OSCAR_RELEASE_VERSION"
     else
-	OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION"
+        OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION"
     fi
 
     if test "`expr $OSCAR_ALPHA_VERSION \> 0`" = "1"; then
-	OSCAR_VERSION="${OSCAR_VERSION}a$OSCAR_ALPHA_VERSION"
+        OSCAR_VERSION="${OSCAR_VERSION}a$OSCAR_ALPHA_VERSION"
     elif test "`expr $OSCAR_BETA_VERSION \> 0`" = "1"; then
-	OSCAR_VERSION="${OSCAR_VERSION}b$OSCAR_BETA_VERSION"
+        OSCAR_VERSION="${OSCAR_VERSION}b$OSCAR_BETA_VERSION"
     fi
 
     if test "$OSCAR_SVN_VERSION" = "1"; then
@@ -43,40 +43,40 @@ else
             ver="svn`date '+%m%d%Y'`"
         fi
         OSCAR_SVN_VERSION="$ver"
-	OSCAR_VERSION="${OSCAR_VERSION}$ver"
+        OSCAR_VERSION="${OSCAR_VERSION}$ver"
     else
         OSCAR_SVN_VERSION=
     fi
 
     if test "$option" = ""; then
-	option="--full"
+        option="--full"
     fi
 fi
 
 case "$option" in
     --full|-v|--version)
-	echo $OSCAR_VERSION
+        echo $OSCAR_VERSION
 	;;
     --major)
-	echo $OSCAR_MAJOR_VERSION
+        echo $OSCAR_MAJOR_VERSION
 	;;
     --minor)
-	echo $OSCAR_MINOR_VERSION
+        echo $OSCAR_MINOR_VERSION
 	;;
     --release)
-	echo $OSCAR_RELEASE_VERSION
+        echo $OSCAR_RELEASE_VERSION
 	;;
     --alpha)
-	echo $OSCAR_ALPHA_VERSION
+        echo $OSCAR_ALPHA_VERSION
 	;;
     --beta)
-	echo $OSCAR_BETA_VERSION
+        echo $OSCAR_BETA_VERSION
 	;;
     --svn)
-	echo $OSCAR_SVN_VERSION
+        echo $OSCAR_SVN_VERSION
 	;;
     *)
-	cat <<EOF
+        cat <<EOF
 $0 <srcdir> [<option>]
 
 <srcdir>  - Top-level directory of the OSCAR source tree
@@ -90,7 +90,7 @@ $0 <srcdir> [<option>]
     --svn     - SVN revision number
     --help    - This message
 EOF
-	;;
+        ;;
 esac
 
 exit 0
