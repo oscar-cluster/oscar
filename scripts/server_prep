@@ -47,6 +47,7 @@ update_exports($ip,$netmask) or croak("Couldn't add filesystem entries to /etc/e
 
 verbose("Refreshing services");
 !system("service nfs start") or croak("Couldn't start nfs");
+!system("service sshd start") or croak("Couldn't start sshd");
 !system("exportfs -a") or croak("Couldn't refresh nfs exports");
 !system("service xinetd restart") or croak("Couldn't restart xinetd");
 !system("service systemimager restart") or croak("Couldn't restart systemimager");
@@ -55,6 +56,7 @@ verbose("Refreshing services");
 !system("chkconfig --level 345 dhcpd on");
 !system("chkconfig --level 345 portmap on");
 !system("chkconfig --level 345 nfs on");
+!system("chkconfig --level 345 sshd on");
 !system("service pbs_server start") or croak("Couldn't start pbs_server!");
 
 # The following is because the maui rpm is bust
