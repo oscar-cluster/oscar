@@ -277,7 +277,7 @@ sub update_rsyncd_conf {
 	    verbose("Found hosts allow stanza");
 	    if(/hosts allow = $ip\/$netmask/) {
 		$done = 1;
-		verbose("Looks like we alread have it!");
+		verbose("Looks like we already have it!");
 	    }
 	}
 	if(/\[scripts\]/ and !$done) {
