@@ -66,7 +66,7 @@ my $interface = $ARGV[0];
 if ( !defined($interface) || $interface eq '' ) {
   my @tables = ("oscar");
   my @result = ();
-  single_database_execute("read_records oscar.interface", "READ", \@tables, \@result, undef);
+  single_dec_locked("read_records oscar.interface", "READ", \@tables, \@result, undef);
   $interface = pop @result;
 }
 

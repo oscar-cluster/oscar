@@ -299,7 +299,7 @@ my @results = ();
 my @error_strings = ();
 my @tables = ("packages","oda_shortcuts");
 die "$0: cannot find or execute the oda shortcut \"packages\""
-    if ! single_database_execute( "packages","READ",\@tables,\@results,\@error_strings);
+    if ! single_dec_locked( "packages","READ",\@tables,\@results,\@error_strings);
 
 # Initialize the global database record in the oscar table,
 # since we can't set the installable bits on the other packages

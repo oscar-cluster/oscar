@@ -45,7 +45,7 @@ use Data::Dumper;
 	      database_rpmlist_for_package_and_group 
 	      dec_already_locked
 	      locking
-	      single_database_execute
+	      single_dec_locked
 	      unlock);
 
 #
@@ -225,7 +225,7 @@ sub database_execute_command {
 # The required argument is $tables_ref, which is the reference of the list of tables.
 # The other arguments are the same as the database_execute_command.
 #
-sub single_database_execute {
+sub single_dec_locked {
 
     my ( $command_args_ref,
          $type_of_lock,

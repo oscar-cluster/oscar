@@ -121,7 +121,7 @@ sub getOdaPackageDir # ($pkg) -> $pkgdir
   if (!$odaProblem)
     {
       my @tables = ("packages");
-      my $success = single_database_execute("read_records " .
+      my $success = single_dec_locked("read_records " .
                           "packages name=$pkg directory",
                           "read",
                           \@tables,
@@ -177,7 +177,7 @@ sub list_installable_packages {
     }
     my @packages = ();
     my @tables = ("packages", "oda_shortcuts");
-    if ( OSCAR::Database::single_database_execute( $command_args,
+    if ( OSCAR::Database::single_dec_locked( $command_args,
                                                     "READ",
                                                     \@tables,
                                                     \@packages,
@@ -655,7 +655,7 @@ sub list_selected_packages # ($type) -> @selectedlist
     }
     my @packages = ();
     my @tables = ("packages", "package_sets", "package_sets_included_packages", "oscar", "oda_shortcuts", "packages_rpmlists", "packages_conflicts");
-    if ( OSCAR::Database::single_database_execute( $command_args,
+    if ( OSCAR::Database::single_dec_locked( $command_args,
                                                    "READ",
                                                    \@tables,
                                                    \@packages,

@@ -31,7 +31,7 @@ $| = 1;
 
 my @results;
 my @tables = ("oscar");
-OSCAR::Database::single_database_execute("read_records oscar.interface","READ",\@tables,\@results, 0);
+OSCAR::Database::single_dec_locked("read_records oscar.interface","READ",\@tables,\@results, 0);
 my $cluster_interface = $results[0];
 
 my $cmd = "/usr/sbin/tcpdump -i $cluster_interface -nn -e -t -l -p -q broadcast and src port 68 and dst port 67";
