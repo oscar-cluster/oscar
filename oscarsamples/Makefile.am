@@ -1,17 +1,19 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.6 2002/04/09 03:47:26 sdague Exp $
+# $Id: Makefile.am,v 1.7 2002/08/28 18:33:49 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
 EXTRA_DIST		= \
-			sample.disk.ide \
-			sample.disk.scsi \
-			sample.disk.scsi.ia64 \
+			Mandrake-8.1-i386.rpmlist \
+			Mandrake-8.2-i386.rpmlist \
+			Mandrake-8.2-noX-i386.rpmlist \
 			RedHat-7.1-i386.rpmlist \
 			RedHat-7.2-i386.rpmlist \
 			RedHat-7.2-ia64.rpmlist \
-			Mandrake-8.1-i386.rpmlist \
-			Mandrake-8.2-i386.rpmlist
+			RedHat-7.3-i386.rpmlist \
+			sample.disk.ide \
+			sample.disk.scsi \
+			sample.disk.scsi.ia64
