@@ -8,5 +8,11 @@ should download the latest stable version from the main OSCAR web
 site:
 			http://oscar.sourceforge.net/
 
+Please post to the oscar-devel mailing list for help and open
+any problems in the bug tracker. Both of these can be found at the
+oscar project page on SourceForge:
+           
+			http://sourceforge.net/projects/oscar
+
 *************************************************************************
 
