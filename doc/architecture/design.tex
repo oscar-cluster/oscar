@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.31 2002/10/31 16:18:02 mchasal Exp $
+% $Id: design.tex,v 1.32 2002/11/04 23:10:45 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -448,15 +448,15 @@ configuration.  Regardless of when they are provided/updated, the tags
 in a package's configuration are always the same (i.e., the ones
 listed in this section).
 
-The \xmltag{package} tag is the outer level tag for the entire block.
-It contains all other tags in this file. As such, all other tags are
-listed in a hierarchical fashion, below.  
+The \xmltag{oscar} tag is the outer level tag for the entire block.
+It contains all other tags in this file.  As such, all other tags are
+listed in a hierarchical fashion, below.
 
 Each tag listed below is marked as either ``Mandatory'' or
 ``Optional''.  Mandatory tags {\em must} be specified -- if they are
 not supplied, the XML is considered to be erroneous.  Optional tags
 may or may not be supplied; if they are not supplied, a default value
-will be assumed.  
+will be assumed.
 
 Each tag is also marked as ``Singular'' or ``Multi''.  Tags marked as
 singular can only have one instance (it is erroneous to have multiple
@@ -464,6 +464,11 @@ instances of a Singular tag).  Multi tags can have multiple instances
 -- whether there can be one or more instances, or zero or more
 instances depends on whether the specific tag is marked as Mandatory
 or Optional, respectively.
+
+No top-level tags other than those listed below may appear in the
+\file{config.xml} file.  Packages that need to cache private data to
+share data with other packages can do using the \xmltag{package} tag;
+see below.
 
 \begin{itemize}
 \item \xmltag{name}: This is a string tag that is the name of the
@@ -762,7 +767,29 @@ or Optional, respectively.
     Mandatory/Single.
     
   \end{itemize}
+
+\item \xmltag{package}: A top-level tag that contains package-specific
+  configuration information.  This tag provides a separate namespace
+  for packages to define their own tags.
+
+  Packages can create any sub-tags inside the \xmltag{package} tag
+  provided that they follow two rules:
+
+  \begin{enumerate}
+  \item Tags and data belonging to the individual package must be
+    within a tag corresponding to the package name.
+    
+  \item Tags and data that are to be provided to other packages must
+    be within an a tag corresponding to that package's name, and only
+    use tags defined by that package.
+  \end{enumerate}
   
+  Appendix~\ref{append:xml-overview}
+  (page~\pageref{append:xml-overview}) provides an example using the
+  \xmltag{package} tag.
+
+  Optional/Single.
+
 \item \xmltag{download}: A top-level tag indicating where this package
   may be downloaded from.  This tag is typically used in the OSCAR
   Package Downloader (OPD) -- it is not used in the OSCAR installation

@@ -1,17 +1,17 @@
 % -*- latex -*-
 %
-% $Id: xml.tex,v 1.4 2002/10/29 20:56:12 jsquyres Exp $
+% $Id: xml.tex,v 1.5 2002/11/04 23:10:45 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
 
 \section{XML Examples}
 \label{append:xml-overview}
-\emph{The following sections contain examples of various XML files.  
-It may make more since to put some usage/tools info in the design doc 
-but for now there are only exmaples so this will suffice.
-Additionally, the DTD vs. Schema material might make since back here
-too.  :)}
+
+The following sections contain examples of various XML files.  It may
+make more since to put some usage/tools info in the design doc but for
+now there are only exmaples so this will suffice.  Additionally, the
+DTD vs.\ Schema material might make since back here too.
 
 \subsection{\file{config.xml}}
 \begin{quote}
@@ -19,7 +19,7 @@ too.  :)}
  \begin{verbatim}
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<package>
+<oscar>
   <name>hello</name>
 
   <version>
@@ -48,41 +48,71 @@ too.  :)}
    the program is an enhancement of the one published in that book.  
   </description>
 
+  <!-- This package also can be referenced by the name "aloha" -->
   <provides>
     <type>package</type>
-    <name>hello</name>
+    <name>aloha</name>
   </provides>
 
+  <!-- This package requires the C standard libraries -->
   <requires>
     <type>package</type>
-    <name>compiler</name>
+    <name>libc</name>
   </requires>
 
+  <!-- This package cannot be installed when the "goodbye" package is
+       also installed -->
   <conflicts>
-    <package>rpm</package>
+    <type>package</type>
     <name>goodbye</name>
   </conflicts>
 
   <rpmlist>
+    <!-- The following RPM(s) will be installed on all nodes -->
     <all>
       <rpm>hello-common</rpm>
       <rpm>glibc</rpm>
     </all>
+    <!-- The following RPM(s) will be only be installed on the OSCAR
+         server --> 
     <server>
       <rpm>hello-server</rpm>
     </server>
+    <!-- The following RPM(s) will be only be installed on the OSCAR
+         clients --> 
     <client>
       <rpm>hello-client</rpm>
     </client>
   </rpmlist>
 
+  <!-- Package-specific data can be supplied in the <package> tag -->
+  <package>
+    <!-- Data for this package must be specified in an outter-level
+         tag that corresponds to this package's name. -->
+    <hello>
+       <language>english</language>
+       <dialect>eastern</dialect>
+    </hello>
+
+    <!-- Data that is provided to other packages must be in an
+         outter-level tag that corresponds to that package's name, and
+         only use tags that the target package defines. -->
+    <switcher>
+      <tag>test</tag>
+      <name>hello-2.1.1</name>
+    </switcher>
+  </package>
+
+  <!-- The download tag can be used to specify where this package can
+       be downloaded from using the the OSCAR Package Downloader
+       (OPD). -->
   <download>
     <uri>http://ftp.gnu.org/gnu/hello/hello-2.1.1.tar.gz</uri>
     <uri>http://ftp.alternate.gnu.org/gnu/hello/hello-2.1.1.tar.gz</uri>
     <size>389363</size>
     <md5sum>70c9ccf9fac07f762c24f2df2290784d</md5sum>
   </download>
-</package>
+</oscar>
 \end{verbatim}
 \end{small}
 \end{quote}
