@@ -10,7 +10,7 @@
 +#
 +# Note the kludgey way to get /dev/sd* and /dev/*/c*d* to sort properly...
 +#
-+echo DISKORDER=${DISKORDER=hd,sd,cciss,ida,rd}
++echo DISKORDER=${DISKORDER=sd,cciss,ida,rd,hd}
 +[ -z $DISKORDER ] || {
 +  echo enumerate_disks
 +  order=`echo "$DISKORDER" | sed 's/ /,/g' | sed s/,,*/,/g | sed s/^,//`
