@@ -1,12 +1,12 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.9 2002/07/23 19:49:55 luethkeb Exp $
+# $Id: Makefile.am,v 1.10 2002/07/23 20:03:07 luethkeb Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
-EXTRA_DIST		= c3-3.1.1-1.noarch.rpm \
+EXTRA_DIST		= c3-3.1.1-2.noarch.rpm \
 			c3-ckillnode-3.1-2.noarch.rpm \
 			c3-profiled-3.1-2.noarch.rpm \
 			NOTE.python2 \
