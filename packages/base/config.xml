@@ -10,7 +10,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
 
-      $Id: config.xml,v 1.14 2003/12/04 18:53:52 brechin Exp $
+      $Id: config.xml,v 1.15 2003/12/04 20:26:09 brechin Exp $
   -->
   <name>base</name>
 
@@ -35,6 +35,7 @@
 
   <rpmlist>
     <filter distribution='mandrake' distribution_version='9.2' group='oscar_server' />
+	<rpm>xterm</rpm>
         <rpm>apache</rpm>
 	<!-- <rpm>apache-common</rpm> -->
         <rpm>apache-conf</rpm>
@@ -85,6 +86,7 @@
 
   <rpmlist>
     <filter distribution='mandrake' distribution_version='9.0' group='oscar_server' />
+	<rpm>xterm</rpm>
         <rpm>apache</rpm>
         <rpm>apache-common</rpm>
         <rpm>apache-conf</rpm>
