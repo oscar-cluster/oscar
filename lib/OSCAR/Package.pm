@@ -5,7 +5,7 @@ package OSCAR::Package;
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-#   $Id: Package.pm,v 1.22 2002/10/25 18:05:03 jsquyres Exp $
+#   $Id: Package.pm,v 1.23 2002/10/25 20:44:59 jsquyres Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ use XML::Simple;
 use Carp;
 
 @EXPORT = qw(list_pkg run_pkg_script run_pkg_script_chroot rpmlist distro_rpmlist install_rpms pkg_config_xml);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.22 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.23 $ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 
@@ -69,7 +69,8 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
 # list_pkg - this returns a list of packages.
 #
 # You may specify "core", "noncore", or "all" as the first argument to
-# get a list of core, noncore, or all packages (respectively).
+# get a list of core, noncore, or all packages (respectively).  If no
+# argument is given, "all" is implied.
 #
 
 sub list_pkg {
@@ -79,6 +80,10 @@ sub list_pkg {
     # If we haven't read in all the package config.xml files, do so.
 
     read_all_pkg_config_xml() if (!$PACKAGE_CACHE);
+
+    # If no argument was specified, use "all"
+
+    $type = "all" if (!$type);
 
     # Now do the work
 
