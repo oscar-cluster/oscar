@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: gmond_add_internal.sh,v 1.6 2002/11/01 03:25:10 sad Exp $
+# $Id: gmond_add_internal.sh,v 1.7 2002/11/01 03:26:37 sad Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -69,7 +69,6 @@ else
     mv /etc/gmond.conf /etc/gmond.conf_before_oscar
     mv /tmp/gmond.conf.new /etc/gmond.conf
     chmod 755 /etc/gmond.conf
-    service gmond restart
     echo successfully added internal interface to gmond.conf
 fi
 
@@ -90,6 +89,5 @@ rrd_rootdir \"\/var\/log\/ganglia\/rrds\"' -e '/#                http:\/\/gangli
     mv /etc/gmetad.conf /etc/gmetad.conf_before_oscar
     mv /tmp/gmetad.conf.new /etc/gmetad.conf
     chmod 755 /etc/gmetad.conf
-    service gmetad restart
     echo successfully added internal interface to gmetad.conf
 fi
