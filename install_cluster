@@ -7,7 +7,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: install_cluster,v 1.22 2003/07/04 14:17:40 jsquyres Exp $
+# $Id: install_cluster,v 1.23 2003/07/14 16:26:14 brechin Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -309,7 +309,7 @@ chdir("scripts") or oscar_die("Couldn't chdir to scripts");
 # server prep is going to be driven after the first panel of
 # questions.
 
-$cmd = "./oscar_wizard $adapter";
+$cmd = "./oscar_wizard";
 oscar_log_subsection("Running: \"$cmd\"");
 !system("$cmd 2>&1") 
     or oscar_die("Oscar Wizard failed to run successfully");

@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.53 2003/07/08 20:43:26 brechin Exp $
+# $Id: oscar_wizard,v 1.54 2003/07/14 16:26:14 brechin Exp $
 #
 
 use strict;
@@ -53,10 +53,6 @@ use vars qw($config);
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
-if( $#ARGV != 0 ) {
-    croak "usage: $0 <cluster interface>\n";
-}
-
 if(!$ENV{OSCAR_HOME}) {
     croak "The environmental variable OSCAR_HOME is not set.  Please set it to the directory that OSCAR is untarred in, or run install_cluster again.";
 }
@@ -66,11 +62,14 @@ if(!$ENV{OSCAR_HOME}) {
 my $save_text;
 my $interface = $ARGV[0];
 
-# Set some things in the environment
+if ( !defined($interface) || $interface eq '' ) {
+  $interface = `oda read_records oscar.interface`;
+}
 
+# Set some things in the environment
+  
 $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$interface;
 $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
-
 # Create the main window...
 my $window = MainWindow->new();
 $window->title("OSCAR Installation Wizard");
