@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.42 2003/06/23 15:49:43 brechin Exp $
+      $Id: config.xml,v 1.43 2003/07/02 19:58:44 brechin Exp $
   -->
   <name>oda</name>
 
@@ -46,26 +46,27 @@
   <description>ODA provides a central database for OSCAR.</description>
 
   <rpmlist>
-    <filter group="oscar_server" distribution="redhat" distribution_version="7.2" />
     <filter group="oscar_server" distribution="redhat" distribution_version="7.3" />
     <rpm>mysql-server</rpm>
   </rpmlist>
 
   <rpmlist>
-    <filter distribution="redhat" distribution_version="7.2" />
     <filter distribution="redhat" distribution_version="7.3" />
+    <filter distribution="redhat" distribution_version="8.0" />
+    <filter distribution="redhat" distribution_version="9.0" />
+    <rpm>perl-CGI</rpm>
     <rpm>mysql</rpm>
     <rpm>perl-DBD-MySQL</rpm>
     <rpm>perl-DBI</rpm>
   </rpmlist>
 
   <rpmlist>
-    <filter group="oscar_server" distribution="mandrake" distribution_version="8.0" />
+    <filter group="oscar_server" distribution="mandrake" distribution_version="8.2" />
     <rpm>perl-Mysql</rpm>
   </rpmlist>
 
   <rpmlist>
-    <filter distribution="mandrake" distribution_version="8.0" />
+    <filter distribution="mandrake" distribution_version="8.2" />
     <rpm>MySQL</rpm>
     <rpm>MySQL-client</rpm>
     <rpm>libmysql10</rpm>
