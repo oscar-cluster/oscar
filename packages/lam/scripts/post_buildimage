@@ -8,9 +8,8 @@ my $LAMVER="6.5.5";
 my $LAMRELEASE="usysv.1oscar";
 my $LAMARCH="i686";
 my $PREFIX="/opt/lam-$LAMVER";
-
-
 my $imagedir = "/var/lib/systemimager/images/$image";
+my $imagedir = "/tmp";
 
 open(OUT,">$imagedir/etc/profile.d/mpi-01lam.sh") or croak("Couldn't open $imagedir/etc/profile.d/mpi-01lam.sh");
 
@@ -23,6 +22,11 @@ print OUT <<EOF;
 if [ "\$LAMMPI" = "" ] ; then
   export LAMMPI="$PREFIX"
   export PATH="\${PATH}:\${LAMMPI}/bin"
+  if [[ -z \$MANPATH ]]; then
+    export MANPATH="\$LAMMPI/man"
+  else
+    export MANPATH="\${MANPATH}:\$LAMMPI/man"
+  fi
 fi
 
 EOF
@@ -39,6 +43,11 @@ print OUT <<EOF;
 if (\$?LAMMPI == "0") then
   set LAMMPI="$PREFIX"
   set path = (\$path \$LAMMPI/bin)
+  if (\$?MANPATH == "0") then
+    set MANPATH="\$LAMMPI/man"
+  else
+    set MANPATH="\${MANPATH}:\$LAMMPI/man"
+  endif
 endif
 
 EOF
