@@ -1,11 +1,12 @@
 # -*- makefile -*-
 #
-# $Id: Makefile.am,v 1.3 2002/05/15 23:09:19 ngorsuch Exp $
+# $Id: Makefile.am,v 1.4 2002/06/13 02:02:25 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
 #
 
-SUBDIRS			= RPMS SRPMS scripts
+DIST_SUBDIRS		= RPMS SRPMS scripts
+SUBDIRS			= doc $(DIST_SUBDIRS)
 
 EXTRA_DIST		= server.rpmlist
