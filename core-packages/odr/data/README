@@ -26,7 +26,7 @@ OSCAR syntax
 
   HOST       host name to which adapter is attached
   INTERFACE  interface name (ie 'eth0')
-  MAC_ADDR   MAC address 
+  ETHER_MAC  MAC address 
   IP_ADDR    dotted IP address
   IP_MASK    network mask
   IP_CONFIG  network configuration (manual/dhcp)
@@ -34,37 +34,33 @@ OSCAR syntax
 - client
   Describes cluster clients
 
-  HOST           client FQDN hostname
-  DEFAULT_ROUTE  network default route
-  STATE          enabled/disabled
-  NUM_PROCS      number of processors
+  HOST             client FQDN hostname
+  CLUSTER	   cluster to which client is assigned
+  IP_DEFAULT_ROUTE network default route
+  STATE            enabled/disabled
+  NUM_PROCS        number of processors
 
 - cluster
   Describes the cluster
 
+  NAME	         descriptive name of the cluster
   OSCAR_VERSION  OSCAR version used to install
   CLUSTER_HEAD   head machine in cluster
   INSTALL_NODE   machine from which installation occurred
   NETWORK_TYPE   private/public
 
-- group
-  Describes groups of clients and their associated installed packages
-
-  NAME           descriptive name of group
-  PACKAGELIST    name of entry in packagelist describing installed packages
-  HOSTLIST       name of entry in hostlist describing clients in group
-
 - hostlist
-  Describes logically grouped clients
+  Describes logical grouping of personalities to clients
 
-  NAME           descriptive name
   HOST           client machine in the group
+  PERSONALITY    personality to assign to HOST
 
-- packagelist
-  Describes logically grouped installed packages
+- personality
+  Describes logically grouped packages to install
 
   NAME           descriptive name
-  PACKAGE        installed package in the group
+  SOFTWARE       software package name
+  VERSION        software package version
   SERVER         server node for package (if not cluster head)
 
 SIS syntax 

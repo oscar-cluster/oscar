@@ -1,4 +1,5 @@
-hosts1:node1.csm.ornl.gov
-hosts1:node2.csm.ornl.gov
-hosts2:node3.csm.ornl.gov
-hosts2:node4.csm.ornl.gov
+node1.csm.ornl.gov:pbsnode
+node1.csm.ornl.gov:sshnode
+node2.csm.ornl.gov:sshnode
+node3.csm.ornl.gov:sshnode
+node4.csm.ornl.gov:sshnode
