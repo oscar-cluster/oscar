@@ -33,6 +33,9 @@ page:
 <P><center><a
 href="http://sourceforge.net/projects/oscar/">http://sourceforge.net/projects/oscar/</a>
 
+<P> (note that SourceForge marks the download file as "i386", but the
+file will work on ia64 platforms as well)
+
 <P> Please use the oscar-devel mailing list for help and discussions and
 report any bugs in the bug tracker. Both of these are also available
 at the OSCAR project page.
