@@ -7,7 +7,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_wizard,v 1.29 2002/10/23 15:19:00 jsquyres Exp $
+# $Id: oscar_wizard,v 1.30 2002/10/25 14:16:17 jsquyres Exp $
 #
 
 use strict;
@@ -162,7 +162,7 @@ sub build_oscar_image {
     # Get a list of the client RPMs that we want to install.  Make a
     # new file containing the names of all the RPMs to install.
 
-    my @pkgs = list_pkg("non-core");
+    my @pkgs = list_pkg("all");
     my $outfile = "/tmp/oscar-install-rpmlist.$$";
     my $save_text = $outfile;
     open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
