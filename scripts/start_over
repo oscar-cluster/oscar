@@ -10,6 +10,7 @@ use Carp;
 my @rpms = qw(
               c3-profiled
               c3
+	      hdf5-oscar
               lam-module
               lam
       	      mpich-oscar-module
