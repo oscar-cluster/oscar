@@ -21,6 +21,7 @@ else
     OSCAR_RELEASE_VERSION="`cat $srcdir/dist/VERSION | grep release | cut -d= -f2`"
     OSCAR_ALPHA_VERSION="`cat $srcdir/dist/VERSION | grep alpha | cut -d= -f2`"
     OSCAR_BETA_VERSION="`cat $srcdir/dist/VERSION | grep beta | cut -d= -f2`"
+    OSCAR_SVN_VERSION="`cat $srcdir/dist/VERSION | grep svn | cut -d= -f2`"
     if test "$OSCAR_RELEASE_VERSION" != "0" -a "$OSCAR_RELEASE_VERSION" != ""; then
 	OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION.$OSCAR_RELEASE_VERSION"
     else
@@ -33,9 +34,23 @@ else
 	OSCAR_VERSION="${OSCAR_VERSION}b$OSCAR_BETA_VERSION"
     fi
 
+    if test "$OSCAR_SVN_VERSION" = "1"; then
+        if test -d .svn; then
+            ver="r`svnversion .`"
+        elif test -f "$srcdir/VERSION.svn"; then
+            ver="`cat $srcdir/VERSION.svn`"
+        else
+            ver="svn`date '+%m%d%Y'`"
+        fi
+        OSCAR_SVN_VERSION="$ver"
+	OSCAR_VERSION="${OSCAR_VERSION}$ver"
+    else
+        OSCAR_SVN_VERSION=
+    fi
+
     if test "$option" = ""; then
 	option="--full"
-	fi
+    fi
 fi
 
 case "$option" in
@@ -57,6 +72,9 @@ case "$option" in
     --beta)
 	echo $OSCAR_BETA_VERSION
 	;;
+    --svn)
+	echo $OSCAR_SVN_VERSION
+	;;
     *)
 	cat <<EOF
 $0 <srcdir> [<option>]
@@ -69,6 +87,7 @@ $0 <srcdir> [<option>]
     --release - Release version number
     --alpha   - Alpha version number
     --beta    - Beta version nmumber
+    --svn     - SVN revision number
     --help    - This message
 EOF
 	;;
