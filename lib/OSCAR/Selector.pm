@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Selector.pm,v 1.8 2002/11/02 00:02:40 tfleury Exp $
+# $Id: Selector.pm,v 1.9 2002/11/05 01:43:38 tfleury Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -47,6 +47,9 @@ use Tk::BrowseEntry;
 use Tk::LabEntry;
 use Tk::Dialog;
 use Tk::DialogBox;
+
+      use Data::Dumper;
+      $Data::Dumper::Indent = 1;
 
 my($top);            # The Toplevel widget for the package selector window
 my($step_number);    # Step number in the OSCAR wizard
@@ -221,8 +224,10 @@ our($oscarbasedir);           # Where the program is called from
 our($pane);                   # The pane holding the scrolling selection list
 our($configselect);           # The Optionmenu widget for Configuration Name
 our($configselectstring);     # The current selection of the Optionmenu
-our($selconf); 
-our(%packagecheckbuttons);
+our($selconf);                # Which packages are selected per configuration
+our(%packagecheckbuttons);    # Checkbuttons for each package
+our($providesmap);            # A map from 'provides' aliases to package names
+our($dependtree);             # Dependency tree for requires/conflicts
 
 #########################################################################
 #  Called when the "Exit without Saving" button is pressed.             #
@@ -314,6 +319,93 @@ sub fixCheckButtons
       else
         {
           $packagecheckbuttons{$package}->deselect;
+        }
+    }
+}
+
+#########################################################################
+#  Subroutine: checkButtonPressed                                       #
+#  Parameters: The package (directory) name of the checkbutton pressed. #
+#  Returns   : Nothing                                                  #
+#  This subroutine gets called every time a checkbutton is pressed,     #
+#  whether it is selected (checked) or unselected (unchecked).  It does #
+#  all of the hard work of figuring out the requires/conflicts stuff    #
+#  for each package.  There are two cases:                              #
+#  1. A checkbutton was selected.  This means that we have to do a      #
+#     recursive check for all packages required.  For example,  if we   #
+#     check package A, A depends on B, and B depends on C, then we need #
+#     to make sure that all A,B,C are selected.  We also have to do a   #
+#     (non-recursive) check for all buttons that should be checked      #
+#     based on the requirement tree.  So, if package C conflicts with   #
+#     D, then selecting A should turn off D.  If there is ever a case   #
+#     where the two list (requires and conflicts) overlap, then we      #
+#     print out an error message and take no further steps.             #
+#  2. A checkbutton was unselected.  In this case, we need to do a      #
+#     recursive check for all packages that are required by the         #
+#     unselected package.  This is very similar to checking for all     #
+#     packages that are required, except we traverse the tree (actually #
+#     it's a graph since we can have circular dependencies) in the      #
+#     reverse order to get a list of packages to unselect.  Conflicts   #
+#     do not occur in this case since we aren't adding any packages.    #
+#########################################################################
+sub checkButtonPressed
+{
+  my($package) = @_;     # The checkbutton that was selected/unselected
+  my($reqhash,$conhash); # Lists of requires and conflicts
+  my($reqkey,$conkey);
+  my($donothing) = 0;    # If clash between requires & conflicts, do nothing
+
+  if ($selconf->{configs}{$configselectstring}{packages}{$package})
+    { # That button was selected - check for requires AND conflicts
+      # First, get a list of recursively required packages for the checkbutton.
+      $reqhash = getRequiresList($reqhash,$package);
+      # Add in any 'core' packages which are selected since they are always
+      # required and should never have any conflicts (ie. get unselected).
+      foreach my $pkg (@packagedirs)
+        {
+          $reqhash->{$pkg} = 1 if
+            ((defined $packagexml->{$package}{class}) && 
+             ($packagexml->{$package}{class} eq 'core') && 
+             ($selconf->{configs}{$configselectstring}{packages}{$package}));
+        }
+
+      # Get a list of packages conflicting with the required packages.
+      $conhash = getConflictsList($reqhash);
+
+      # Check to see if the conflicts and the requires lists coincide
+      foreach $conkey (keys %{ $conhash } )
+        {
+          if ($reqhash->{$conkey})
+            { # Whoops!  Conflict - print error message and do nothing
+              oscar_log_subsection("ERROR! Package $conkey is required by AND conflicts with $package\n");
+              $donothing = 1;
+            }
+        }
+
+      # If there was no conflict, then select/unselect the correct checkbuttons
+      if (!$donothing)
+        { # Select all of the "requires"
+          foreach $reqkey (keys %{ $reqhash } )
+            {
+              $packagecheckbuttons{$reqkey}->select;
+            }
+          # Unselect all of the "conflicts"
+          foreach $conkey (keys %{ $conhash } )
+            {
+              $packagecheckbuttons{$conkey}->deselect;
+            }
+        }
+    }
+  else
+    { # That button was unselected - check for things that require it
+      # and unselect all of those checkbuttons EXCEPT for those buttons
+      # that are 'core'.
+      $reqhash = getIsRequiredByList($reqhash,$package);
+      foreach $reqkey (keys %{ $reqhash } )
+        {
+          $packagecheckbuttons{$reqkey}->deselect unless
+            ((defined $packagexml->{$reqkey}{class}) && 
+             ($packagexml->{$reqkey}{class} eq 'core'));
         }
     }
 }
@@ -459,9 +551,9 @@ sub deleteConfig
 }
 
 #########################################################################
-#  Subroutine name : readInPackageXMLs                                  #
-#  Parameters: None                                                     #
-#  Returns   : Nothing                                                  #
+#  Subroutine : readInPackageXMLs                                       #
+#  Parameters : None                                                    #
+#  Returns    : Nothing                                                 #
 #  This function reads through the list of OSCAR "package" directories  #
 #  and checks for a file named ".selection".  If this file is found,    #
 #  it is parsed for various options which are stored in the global      #
@@ -471,14 +563,217 @@ sub deleteConfig
 sub readInPackageXMLs
 {
   $packagexml = pkg_config_xml();
+  my($package);
+  my($hashkey);
 
-  # Make sure that there is at least a "name" for all packages
-  foreach my $package (@packagedirs)
-    { 
+  foreach $package (@packagedirs)
+    { # Make sure that there is at least a "name" for all packages
       $packagexml->{$package}{name} = $package if 
         ((!$packagexml) || (!$packagexml->{$package}) || 
          (!$packagexml->{$package}{name}));
+
+      # Create a reverse mapping from things "provided" to 
+      # the package directories that provide them.
+      my($providesaliashash) = getProvides($package);
+      foreach my $provideskey (keys %{ $providesaliashash } )
+        {
+          $providesmap->{$provideskey} = $package;
+        }
     }
+}
+
+#########################################################################
+#  Subroutine : buildDependencyTree                                     #
+#  Parameters : None                                                    #
+#  Returns    : Nothing                                                 #
+#  This subroutine builds up the dependency tree for later use.  We     #
+#  need to do this since the 'requires' and 'conflicts' fields can use  #
+#  names (aliases) defined in the 'provides' fields which may be        #
+#  different than the name of the package directory.  By building this  #
+#  tree using only package directory names, it's easier to handle       #
+#  checkbutton pushes later.  Each package might have other packages    #
+#  it requires (which means that there are packages that are required   #
+#  BY other packages) and other packages that it conflicts with.  Thus  #
+#  each 'requires' and 'conflicts' needs a bidirectional link in the    #
+#  dependency tree.  Access items in the dependency like this:          #
+#      if ($dependtree->{packageA}{requires}{packageB}) { ... }         #
+#      if ($dependtree->{packageB}{isrequiredby}{packageA}) { ... }     #
+#      if ($dependtree->{packageC}{conflictswith}{packageD}) { ... }    #
+#########################################################################
+sub buildDependencyTree
+{
+  foreach my $package (@packagedirs)
+    { # First the 'requires' list
+      my($reqaliashash) = getRequires($package);
+      foreach my $hashkey (keys %{ $reqaliashash } )
+        {
+          $dependtree->{$package}{requires}{$providesmap->{$hashkey}} = 1;
+          $dependtree->{$providesmap->{$hashkey}}{isrequiredby}{$package} = 1;
+        }
+      # Then the 'conflicts' list - notice conflicts are bidirectional
+      my($conaliashash) = getConflicts($package);
+      foreach my $hashkey (keys %{ $conaliashash } )
+        {
+          $dependtree->{$package}{conflictswith}{$providesmap->{$hashkey}} = 1;
+          $dependtree->{$providesmap->{$hashkey}}{conflictswith}{$package} = 1;
+        }
+    }
+}
+
+#########################################################################
+#  Subroutine: getRequiresList                                          #
+#  Parameters: 1. A hash of required packages.                          #
+#              2. The package we are checking for requirements.         #
+#  This recursive subroutine is called when a checkbutton is selected.  #
+#  It takes the name of a package and (recursively) finds all of the    #
+#  packages that it needs.  This list is a simple boolean hash returned #
+#  as a hash ref with the required packages as the keys.                #
+#########################################################################
+sub getRequiresList
+{
+  my($packhash,$package) = @_;
+
+  # Mark this package as required
+  $packhash->{$package} = 1;
+  # For each package in the list, check for its list of required packages
+  foreach my $hashkey (keys %{ $dependtree->{$package}{requires} } )
+    {
+      $packhash = getRequiresList($packhash,$hashkey) if
+        (!defined $packhash->{$hashkey});
+    }
+
+  return $packhash;
+}
+
+#########################################################################
+#  Subroutine: getIsRequiredByList                                      #
+#  Parameters: 1. A hash of required packages.                          #
+#              2. The package we are checking for dependencies.         #
+#  This recursive subroutine is called when a checkbutton is            #
+#  unselected.  Similar to getRequiresList, this subroutine takes the   #
+#  name of a package and (recursively) finds all of the packages that   #
+#  need it (ie. "is required by").  This list is a simple boolean hash  #
+#  returned as a hash ref with the requiring packages as the keys.      #
+#########################################################################
+sub getIsRequiredByList
+{
+  my($packhash,$package) = @_;
+
+  # Mark this package as "required by" something else
+  $packhash->{$package} = 1;
+  # For each package in the list, check for its list of requiring packages
+  foreach my $hashkey (keys %{ $dependtree->{$package}{isrequiredby} } )
+    {
+      $packhash = getIsRequiredByList($packhash,$hashkey) if
+        (!defined $packhash->{$hashkey});
+    }
+
+  return $packhash;
+}
+
+#########################################################################
+#  Subroutine: getConflictsList                                         #
+#  Parameter : A hash of required packages.                             #
+#  This subroutine is called when a checkbutton is selected.  It takes  #
+#  in a list of required packages (generated by getRequiredList) and    #
+#  checks each one for a list of conflicts.  The union of all of the    #
+#  conflicts is returned as a hash ref with the conflicting packages    #
+#  as the keys.                                                         #
+#########################################################################
+sub getConflictsList
+{
+  my($reqhash) = @_;
+  my($conhash);
+
+  foreach my $reqkey (keys %{ $reqhash } )
+    {
+      foreach my $conkey (keys %{ $dependtree->{$reqkey}{conflictswith} } )
+        {
+          $conhash->{$conkey} = 1
+        }
+    }
+
+  return $conhash;
+}
+
+#########################################################################
+#  Subroutine : getSubField                                             #
+#  Parameters : 1. The name of an OSCAR package (directory).            #
+#               2. The subfield name (can be one of 'provides',         #
+#                  'requires', or 'conflicts').                         #
+#  Returns    : A hash ref containing all of the names for the passed-  #
+#               in subfield.                                            #
+#  This subroutine is called by getProvides, getRequires, and           #
+#  getConflicts to return a list of those fields defined in the         #
+#  config.xml file.  Note that the "type" field must either be          #
+#  'package' (meaning an OSCAR package) or empty (so default to an      #
+#  OSCAR package).                                                      #
+#########################################################################
+sub getSubField
+{
+  my($package,$field) = @_;
+  my($rethash);
+
+  if ($package && $field && (defined $packagexml->{$package}{$field}))
+    {
+      foreach my $href (@{ $packagexml->{$package}{$field} } )
+        {
+          if (((defined $href->{type}) && ($href->{type} eq 'package')) ||
+              (!defined $href->{type}) )
+            {
+              $rethash->{$href->{name}} = 1 if (defined $href->{name});
+            }
+        }
+    }
+
+  return $rethash;
+}
+
+#########################################################################
+#  Subroutine: getProvides                                              #
+#  Parameter : The name of an OSCAR package (directory).                #
+#  Returns   : A hash ref containing all of the things (usually just    #
+#              the name of the package) provided by a particular        #
+#              package, with the "things" as keys of the hash and the   #
+#              values set to '1'.  Note that a single package can       #
+#              'provide' more capabilities than just the name of the    #
+#              package, and other packages may use those names.  So     #
+#              be sure to use the $providesmap in those cases.          #
+#########################################################################
+sub getProvides
+{
+  my($package) = @_;
+  my($provides) = getSubField($package,'provides');
+  $provides->{$package} = 1 if ((scalar keys %{ $provides } ) < 1);
+  return $provides;
+}
+
+#########################################################################
+#  Subroutine: getRequires                                              #
+#  Parameter : The name of an OSCAR package (directory).                #
+#  Returns   : A hash ref containing all of the things (usually just    #
+#              the name of the package) required by a particular        #
+#              package, with the "things" as keys of the hash and the   #
+#              values set to '1'.                                       #
+#########################################################################
+sub getRequires
+{ 
+  my($package) = @_;
+  return getSubField($package,'requires');
+}
+
+#########################################################################
+#  Subroutine: getConflicts                                             #
+#  Parameter : The name of an OSCAR package (directory).                #
+#  Returns   : A hash ref containing all of the things (usually just    #
+#              the name of the package) conflicting with a particular   #
+#              package, with the "things" as keys of the hash and the   #
+#              values set to '1'.                                       #
+#########################################################################
+sub getConflicts
+{
+  my($package) = @_;
+  return getSubField($package,'conflicts');
 }
 
 #########################################################################
@@ -578,6 +873,7 @@ sub populateSelectorList
   $oscarbasedir = $ENV{OSCAR_HOME} if ($ENV{OSCAR_HOME});
   @packagedirs = list_pkg();  # Scan for directories under "packages"
   readInPackageXMLs();        # Read in all packages' config.xml files
+  buildDependencyTree();
   readInSelectionConfig();
 
   $pane->destroy if ($pane);
@@ -612,6 +908,9 @@ sub populateSelectorList
                              'ridge' : 'flat'),
             -variable =>
               \$selconf->{configs}{$configselectstring}{packages}{$package},
+		        -command => [ \&checkButtonPressed,
+                          $package 
+                        ],
             )->pack(-side => 'left');
           $packagecheckbuttons{$package}->select if 
             $selconf->{configs}{$configselectstring}{packages}{$package};
@@ -635,11 +934,11 @@ sub populateSelectorList
         }
 
       # Now that we have created all of the temporary frames (each
-      # containing a checkbox, info button, and text label), add them to the
-      # scrolled pane in order of their "fancy" names rather than their
-      # package directory names.  To do this, create a reverse mapping from
-      # fancy names to directory names, sort on the fancy names, and use
-      # that as a hash key into the tempframe hash.
+      # containing a checkbutton, info button, and text label), add them to
+      # the scrolled pane in order of their "fancy" names rather than
+      # their package directory names.  To do this, create a reverse mapping
+      # from fancy names to directory names, sort on the fancy names, and
+      # use that as a hash key into the tempframe hash.
       my(%map);
       foreach my $package (sort keys %{ $packagexml } )
         {
