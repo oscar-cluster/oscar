@@ -55,10 +55,13 @@ void Opder::init()
   if (parent())
     {
       Qt::Object::connect(parent(),SIGNAL 'signalButtonShown(char*,char*,bool)',
-                          this,    SLOT 'setButtonShown(char*,char*,bool)');
+                                   SLOT   'setButtonShown(char*,char*,bool)');
+      Qt::Object::connect(parent(),SIGNAL 'odaWasUpdated(char*)',
+                                   SLOT   'reReadOda(char*)');
     }
   else 
-    { # Hide the back/next buttons until we actually use them later
+    { # For Tasks, hide the Back/Next buttons if not running inside
+      # the InstallerWorkspace window.
       backButton->hide();
       nextButton->hide();
     }
@@ -110,6 +113,7 @@ void Opder::backButton_clicked()
 #  Returns   : Nothing                                                  #
 #########################################################################
 
+  emit backButtonWasClicked(className());
 }
 
 void Opder::nextButton_clicked()
@@ -120,6 +124,7 @@ void Opder::nextButton_clicked()
 #  Returns   : Nothing                                                  #
 #########################################################################
 
+  emit nextButtonWasClicked(className());
 }
 
 void Opder::closeMenuItem_activated()
@@ -278,6 +283,7 @@ void Opder::setButtonShown( char *, char *, bool )
 
   my ($childname,$buttonname,$shown) = @_;
   
+  # Ignore signals meant for other Tasks/Tools
   return if ($childname ne className());
 
   if ($buttonname =~ /Back/i)
@@ -289,7 +295,6 @@ void Opder::setButtonShown( char *, char *, bool )
       ($shown) ? nextButton->show() : nextButton->hide();
     }
 }
-
 
 void Opder::closeEvent( QCloseEvent * )
 {
@@ -303,3 +308,20 @@ void Opder::closeEvent( QCloseEvent * )
   emit taskToolClosing(className());
   SUPER->closeEvent(@_);   # Call the parent's closeEvent
 }
+
+void Opder::reReadOda(char*)
+{
+#########################################################################
+#  Subroutine: reReadOda                                                #
+#  Parameter : The directory name of the Task/Tool that updated oda.    #
+#  Returns   : Nothing                                                  #
+#  This subroutine (SLOT) gets called when a Task/Tool tells the        #
+#  InstallerWorkspace that the oda database has been updated.           #
+#########################################################################
+
+  my $classname = shift;
+  
+  # Ignore the signal if I generated it.
+  return if ($classname eq className());
+}
+

@@ -482,6 +482,8 @@
 </includes>
 <signals>
     <signal>taskToolClosing(char*)</signal>
+    <signal>backButtonWasClicked(char*)</signal>
+    <signal>nextButtonWasClicked(char*)</signal>
 </signals>
 <slots>
     <slot>init()</slot>
@@ -497,8 +499,9 @@
     <slot>disableDownloadButton()</slot>
     <slot>updateDownloadButton()</slot>
     <slot>setRefreshButton( int )</slot>
-    <slot>setButtonShown(char*,char*,bool)</slot>
-    <slot>closeEvent(QCloseEvent*)</slot>
+    <slot>setButtonShown( char *, char *, bool )</slot>
+    <slot>closeEvent( QCloseEvent * )</slot>
+    <slot>reReadOda( char * )</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
