@@ -56,7 +56,7 @@ replace the TFTP server.  If your distribution does not come with a tftp-server
 package you should download and install the appropriate file from a repository.
 
 Once you have downloaded and copied it to a known directory you must install
-the package and turn it on:
+the package and turn it on, e.g.,
 
   # rpm -i tftp-server-0.32-4.i386.rpm  
   # chkconfig tftp on 
@@ -169,8 +169,7 @@ replace the TFTP server.  If your distrubition doesn't come with a tftp-server
 package you should download and install the appropriate file from a repository.
 
 Once you have downloaded and copied it to a known directory you must install
-the package and turn it on:
+the package and turn it on, e.g.,
 
   # rpm -i tftp-server-0.32-4.ia64.rpm  
-
-  # /sbin/chkconfig --level 345 tftp on 
+  # chkconfig tftp on 
