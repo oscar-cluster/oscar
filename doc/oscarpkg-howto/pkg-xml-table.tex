@@ -1,4 +1,8 @@
-%  $Id: pkg-xml-table.tex,v 1.1 2003/09/08 22:31:35 naughtont Exp $
+%  $Id: pkg-xml-table.tex,v 1.2 2003/09/10 03:31:28 naughtont Exp $
+
+% This contains the available XML tags in a tabular form.  
+% Note, those editing this file should expand their display beyond 
+% 80 chars b/c of the length of each table row...deal with it.
 
 % TJN: Note I'm using the "(" symbol for the \verb delimiters b/c
 %      I don't believe this symbol will occur in any of the XML elements
@@ -19,66 +23,76 @@
 
 \begin{table}[htbp]
   \begin{center}
-  \begin{tabular}{|l|l|l|} \hline
-  {\bfseries Top-Level Tag} & {\bfseries Sub Tag} & {\bfseries Description}\\\hline
+  \begin{tabular}{|c|l|l|l|} \hline
+  {\bfseries Require} & {\bfseries Elements} & {\bfseries Sub Elements} & {\bfseries Description}\\\hline
   \hline
-  \verb(<?xml version="1.0"?>( & &  Opening XML Version string         \\ \hline
-  %\verb(<!DOCTYPE package SYSTEM "../package.dtd">( & & DTD Include line\\\hline
 
-  \verb(<!DOCTYPE ...>( & & Document Type Definition (DTD) Include line\\ \hline
-  \verb(<oscar>(   &   & OSCAR Package Element                         \\ \hline
-  \verb(<name>(    &   & Name of the software package                  \\ \hline
+% TJN: These are not particular to OSCAR elements, just XML-ness.
+%  Y & \verb(<?xml version="1.0"?>( & &  Opening XML Element/tag           \\ \hline
+%  N & \verb(<!DOCTYPE oscar ...>( & & Document Type Definition (DTD) include \\ \hline
 
-  %\verb(<version>( &   & Version of the software package               \\ \hline
-  \verb(<version>( &   & Version of the software package           \\\cline{2-3}
-     & \verb(<major>(  & Major version of the software package     \\\cline{2-3}
-     & \verb(<minor>(  & Minor version of the software package     \\\cline{2-3}
-     & \verb(<subversion>( & Sub-version of the software package   \\\cline{2-3}
-     & \verb(<release>(    & Release number of the software package\\\cline{2-3}
-     & \verb(<epoch>(      & Release number of the software package\\\hline
 
-  \verb(<class>(   &   & Classification of package, e.g. third-party   \\ \hline
-  \verb(<summary>( &   & Brief one-line description of package         \\ \hline
-  \verb(<license>( &   & Software licence for the package              \\ \hline
-  \verb(<group>(   &   & RPM-style software group, e.g., Application/System\\\hline
-  \verb(<url>(     &   & Homepage for software package                 \\ \hline
+  Y & \verb(oscar(   &   & Top-level OSCAR Package element               \\ \hline
+  Y & \verb(name(    &   & Name of the software package                  \\ \hline
 
-  %\verb(<packager>(&   & OSCAR package author                         \\ \hline
-  \verb(<packager>(&   & OSCAR package author                      \\\cline{2-3}
-     & \verb(<name>(   & Name of package author                    \\\cline{2-3}
-     & \verb(<email>(  & Email address of package author           \\\hline
 
-  %\verb(<maintainer>(& & OSCAR package author                         \\ \hline
-  \verb(<maintainer>(& & OSCAR package author                      \\\cline{2-3}
-     & \verb(<name>(   & Name of package author                    \\\cline{2-3}
-     & \verb(<email>(  & Email address of package author           \\\hline
+  Y & \verb(version(& & Version of the software package           \\\cline{3-4}
+    & & \verb(major(  & Major version of the software package     \\\cline{3-4}
+    & & \verb(minor(  & Minor version of the software package     \\\cline{3-4}
+    & & \verb(subversion( & Sub-version of the software package   \\\cline{3-4}
+    & & \verb(release(    & Release number of the software package\\\cline{3-4}
+    & & \verb(epoch(      & Release number of the software package\\\hline
 
-  \verb(<description>(&& Brief description of the package              \\ \hline
 
-  %\verb(<rpmlist>(&    & List RPMS included in the rpmlist             \\ \hline
-  \verb(<rpmlist>(&    & List RPMS included in the rpmlist         \\\cline{2-3}
-     & \verb(<filter>( & Filter applied to all RPM in list         \\\cline{2-3}
-     & \verb(<rpm>(    & Name of RPM (without version)             \\\hline
+  Y & \verb(class(   &   & Classification of package, e.g. third-party   \\ \hline
+  Y & \verb(summary( &   & Brief one-line description of package         \\ \hline
+  N & \verb(license( &   & Software licence for the package              \\ \hline
+  N & \verb(group(   &   & RPM-style software group, e.g., Application/System\\\hline
+  N & \verb(url(     &   & Homepage for software package                 \\ \hline
 
-  %\verb(<filter>(&     & Filter Attributes used on RPMLIST              \\\hline
-  \verb(<filter>(&     & Filter Attributes used on RPMLIST            \\\cline{2-3}
-     & \verb(group=(   & Attribute specifying target location for RPMS\\
-     &                 & e.g., ``oscar\_server'' or ``oscar\_clients''\\\cline{2-3}
-     & \verb(distribution=(& Attribute specifying supported distribution   \\
-     &                 & e.g., ``redhat'', ``mandrake'', ``suse'', ``rhas''\\
-     &                 & see also: \emph{lib/OSCAR/Distro.pm}              \\\cline{2-3}
-     & \verb(distribution_version=(& Attribute specifying supported distribution version  \\
-     &                 & e.g., ``7.3'', ``9'', ``2.1AS''                   \\\hline
 
-  %\verb(<requires>(&   & List requirement/dependency                    \\\hline
-  \verb(<requires>(&   & List requirement/dependency                \\\cline{2-3}
-     & \verb(type=(    & Tag specifying type of requirement         \\
-     &                 &  e.g., ``package'' (OSCAR Package),        \\
-     &                 &  \emph{``rpm'' (not implemented yet)}      \\\hline
+  N & \verb(packager(&   & OSCAR package author                      \\\cline{3-4}
+    & & \verb(name(   & Name of package author                    \\\cline{3-4}
+    & & \verb(email(  & Email address of package author           \\\hline
 
-  %\verb(<package>( &   & Package specific ODA material                \\\hline 
-  \verb(<package>( &    & Package specific ODA material            \\\cline{2-3}
-     & \verb(<shortcut>(& ODA shortcut defined by a package            \\\hline
+
+  N & \verb(maintainer(& & OSCAR package author                      \\\cline{3-4}
+    & & \verb(name(   & Name of package author                    \\\cline{3-4}
+    & & \verb(email(  & Email address of package author           \\\hline
+
+
+  Y & \verb(description(&& Brief description of the package              \\ \hline
+
+
+  N & \verb(rpmlist(&    & List RPMS included in the rpmlist         \\\cline{3-4}
+    & & \verb(filter( & Filter applied to all RPM in list         \\\cline{3-4}
+    & & \verb(rpm(    & Name of RPM (without version)             \\\hline
+
+
+  N & \verb(filter(&     & Filter Attributes used on RPMLIST                 \\\cline{3-4}
+    & & \verb(group=(   & Attribute specifying target location for RPMS     \\
+    & &                 & e.g., ``oscar\_server'' or ``oscar\_clients''     \\\cline{3-4}
+    & & \verb(distribution=(& Attribute specifying supported distribution   \\
+    & &                 & e.g., ``redhat'', ``mandrake'', ``suse'', ``rhas''\\
+    & &                 & see also: \emph{lib/OSCAR/Distro.pm}              \\\cline{3-4}
+    & & \verb(distribution_version=(& Attribute specifying supported distribution version  \\
+    & &                 & e.g., ``7.3'', ``9'', ``2.1AS''                   \\\cline{3-4}
+    & & \verb(arch=(    & Architecture the RPM was compiled to support      \\
+    & &                 & e.g., ``ia32'', ``ia64''                          \\\hline
+
+
+  N & \verb(requires(&   & List requirement/dependency                \\\cline{3-4}
+    & & \verb(type=(    & Tag specifying type of requirement         \\
+    & &                 &  e.g., ``package'' (OSCAR Package),        \\
+    & &                 &  \emph{``rpm'' (not implemented yet)}      \\\hline
+
+
+
+  N & \verb(package( &    & Package specific namespace (see detail text) \\\hline
+
+  N & \verb(oda(     &    & OSCAR Database (ODA) defines for package     \\\cline{3-4}
+    & & \verb(shortcut(   & ODA shortcut defined by a package            \\\hline
+
 
   \end{tabular}
   \caption{Overview of existing XML tags for OSCAR Packages} 
