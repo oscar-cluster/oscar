@@ -473,13 +473,13 @@ if ( grep( /is\ running/, @command_output ) ) {
 	oda::disconnect( \%options );
 	die "Cannot start the mysql database server!";
     }
+    sleep 2;
 }
     
 # create the database if not already there and leave us connected to it
 print "Checking for existance of the OSCAR database ...\n";
 my %databases = ();
-oda::list_databases( \%options, \%databases )
-    || die "Cannot list the databases";
+oda::list_databases( \%options, \%databases );
 if ( $databases{ oscar } ) {
     print "... OSCAR database exists.\n";
 } else {
@@ -487,9 +487,9 @@ if ( $databases{ oscar } ) {
     oda::create_database( \%options )
 	|| die "Cannot create the OSCAR database";
     print "... OSCAR database successfully created.\n";
-    oda::connect( \%options )
-	|| die "Cannot connect to the newly created OSCAR database";
 }
+oda::connect( \%options )
+    || die "Cannot connect to the newly created OSCAR database";
 
 # store any found shortcuts in the database
 my %shortcuts_fields = ();

@@ -5,7 +5,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: wizard_prep,v 1.15 2002/11/01 14:39:26 ngorsuch Exp $
+# $Id: wizard_prep,v 1.16 2002/11/01 21:17:06 ngorsuch Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ require OSCAR::PackageBest;
 
 # Start the database and copy the package xml files into the database
 
-system( "$ENV{OSCAR_HOME}/scripts/xml_to_database" );
+system( "$ENV{OSCAR_HOME}/scripts/package_config_xmls_to_database" );
 
 # Run the setup script for every package.  Do not use list_pkg() here,
 # because that will read in all the per-package config.xml files.  We

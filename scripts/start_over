@@ -113,7 +113,8 @@ print "found $paths_count rpm files.\n";
 
 # delete the oscar database ?
 
-# system("oda --drop-database");
+print "Deleting oda database ...\n";
+system("oda drop_database");
 
 # find a list of all the services installed by the oscar rpms
 
