@@ -1,0 +1,69 @@
+% -*- latex -*-
+%
+% $Id: ganglia-user.tex,v 1.1 2002/09/11 04:32:59 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{fullpage}
+\usepackage{verbatim}
+
+% PDF stuff
+ 
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+   \pdffalse
+\else
+   \pdfoutput=1
+   \pdftrue
+\fi
+ 
+\setcounter{tocdepth}{3}
+ 
+\ifpdf
+  \usepackage[pdftex,
+              colorlinks=true,
+              linkcolor=blue,filecolor=blue,pagecolor=blue,urlcolor=blue
+              ]{hyperref}
+  \def\figext{png}
+  \def\sbsext{png}
+  \newcommand{\xref}[2]{\hyperref[#1]{#2}}
+  \newcommand{\mailto}[1]{\href{mailto:#1}{#1}}
+\else
+  \def\figext{eps}
+  \def\sbsext{eps}
+  \newcommand{\xref}[2]{#2}
+  \newcommand{\href}[2]{\underline{#2}}
+  \newcommand{\url}[1]{\href{#1}{#1}}
+  \newcommand{\mailto}[1]{\href{#1}{#1}}
+\fi
+
+\newcommand{\email}[1]{\href{#1}{#1}}
+\newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\rpmname}[1]{\texttt{#1}}
+\newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\cmdarg}[1]{\texttt{#1}}
+
+% Stoopid European-based Linux distributions...
+% Gotta force letter size paper, not A4
+
+\ExecuteOptions{letterpaper}
+
+% All done with the setup
+
+\begin{document}
+
+\title{Ganglia OSCAR Documentation}
+
+\author{The Open Cluster Group \\
+\url{http://www.openclutergroup.org/}}
+\maketitle
+
+\input{user}
+\input{license}
+
+\end{document}
