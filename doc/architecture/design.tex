@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: design.tex,v 1.29 2002/10/29 18:05:51 brechin Exp $
+% $Id: design.tex,v 1.30 2002/10/29 20:56:12 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -658,9 +658,9 @@ or Optional, respectively.
   ``\file{lam-oscar}'' is all that is required to specify the RPM
   named \file{lam-oscar-6.5.7-usysv.7.i586.rpm}.
 
-\item \xmltag{provide}: A top-level tag effectively indicating
+\item \xmltag{provides}: A top-level tag effectively indicating
   synonyms for the package name for use during the dependency
-  analysis.  There may be zero or more \xmltag{provide} 
+  analysis.  There may be zero or more \xmltag{provides} tags.
   
   Optional/Multi.  If not supplied, no synonyms for this package
   will be used in the dependency analysis.
@@ -681,11 +681,11 @@ or Optional, respectively.
     Mandatory/Singular.
   \end{itemize}
 
-\item \xmltag{require}: A top-level tag effectively indicating
-  dependencies for this OSCAR package.  
+\item \xmltag{requires}: A top-level tag effectively indicating
+  dependencies for this OSCAR package.
   
   Optional/Multi.  If not supplied, no dependencies for this package
-  will be used in the dependency analysis.  Multiple \xmltag{require}
+  will be used in the dependency analysis.  Multiple \xmltag{requires}
   blocks may be specified to list multiple dependencies.
 
   \begin{itemize}

@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: xml.tex,v 1.3 2002/10/29 18:03:46 brechin Exp $
+% $Id: xml.tex,v 1.4 2002/10/29 20:56:12 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -18,7 +18,6 @@ too.  :)}
  \begin{small}
  \begin{verbatim}
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE oscar_package SYSTEM "oscar_package.dtd">
 
 <package>
   <name>hello</name>
@@ -33,8 +32,9 @@ too.  :)}
 
   <class>third-party</class>
   <installable>1</installable>
+
   <summary>Hello World</summary>
-  <license>GNU</license>
+  <license>GPL</license>
   <group>Utilities</group>
   <uri>http://www.gnu.org/software/hello/hello.html</uri>
   <packager>The King &lt;king@gnu.org&gt;</packager>
@@ -48,37 +48,42 @@ too.  :)}
    the program is an enhancement of the one published in that book.  
   </description>
 
-  <provide>
+  <provides>
+    <type>package</type>
     <name>hello</name>
-  </provide>
+  </provides>
 
-  <require>
-    <type>rpm</type>
-    <scope>all</scope>
-    <name>glibc</name>
-    <distro_name>Mandrake</distro_name>
-  </require>
-
-  <require>
-    <type>rpm</type>
-    <scope>all</scope>
-    <name>glibc</name>
-    <distro_name>RedHat</distro_name>
-    <distro_version>all</distro_version>
-  </require>
+  <requires>
+    <type>package</type>
+    <name>compiler</name>
+  </requires>
 
   <conflicts>
-    <type>rpm</type>
+    <package>rpm</package>
     <name>goodbye</name>
   </conflicts>
 
+  <rpmlist>
+    <all>
+      <rpm>hello-common</rpm>
+      <rpm>glibc</rpm>
+    </all>
+    <server>
+      <rpm>hello-server</rpm>
+    </server>
+    <client>
+      <rpm>hello-client</rpm>
+    </client>
+  </rpmlist>
+
   <download>
     <uri>http://ftp.gnu.org/gnu/hello/hello-2.1.1.tar.gz</uri>
+    <uri>http://ftp.alternate.gnu.org/gnu/hello/hello-2.1.1.tar.gz</uri>
     <size>389363</size>
     <md5sum>70c9ccf9fac07f762c24f2df2290784d</md5sum>
   </download>
 </package>
- \end{verbatim}
- \end{small}
+\end{verbatim}
+\end{small}
 \end{quote}
 

@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.5 2002/06/19 06:31:32 jsquyres Exp $
+# $Id: Makefile.am,v 1.6 2002/10/29 20:56:12 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -22,7 +22,8 @@ OTHER_SRC_FILES	= \
 		requirements.tex \
 		design.tex \
 		core-packages.tex \
-		included-packages.tex
+		included-packages.tex \
+		xml.tex
 
 # xfig figures.  .eps and .pdf files will be automatically generated
 # from these.
