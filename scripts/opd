@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.7 2002/11/05 21:06:04 jsquyres Exp $
+# $Id: opd,v 1.8 2003/01/08 20:49:45 jsquyres Exp $
 #
 
 use strict;
@@ -23,9 +23,9 @@ use Data::Dumper;
 
 # Setup some global variables
 
-my $default_repository_location = "Bloomington, IN, USA";
+my $default_repository_location = "SourceForge, USA";
 my $default_repository_uri = 
-    "http://www.osl.iu.edu/~jsquyres/oscar/repository/";
+    "http://oscar.sourceforge.net/repository/";
 my $default_repository_name = "Main OSCAR package repository";
 
 my $none_attribute = "<none>";
