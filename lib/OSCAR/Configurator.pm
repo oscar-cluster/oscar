@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.18 2003/01/29 19:51:15 brechin Exp $
+# $Id: Configurator.pm,v 1.19 2003/01/30 21:55:02 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -66,6 +66,7 @@ require Tk::Menu;
 # For use with Tk402.002, using the grid geometry manager
 
 sub Configurator_ui {
+        $destroyed = 1;
 	our($root) = @_;
 
 	# widget creation 
