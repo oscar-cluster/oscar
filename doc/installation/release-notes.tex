@@ -14,7 +14,22 @@
 \label{sec:release-notes}
 
 The following release notes apply to OSCAR version \oscarversion.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Release Features}
+\label{subsec:release-features}
 
+\begin{itemize}
+
+\item Red Hat 9.0 and Fedora Core 2 support on x86.
+\item New rpm dependency finder helps build the server (DepMan/PacMan).
+\item Ganglia now included in the default package set.
+\item Torque now included/OpenPBS is now an optional package.
+\item Multiple bug fixes and Wizard improvements.
+\item Experimental Red Hat Enterprise Linux (RHEL) 3 on Itanium and x86.
+\item Updated user interface (updated/improved wizard). 
+
+\end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -22,10 +37,38 @@ The following release notes apply to OSCAR version \oscarversion.
 \label{subsec:release-notes}
 
 \begin{itemize}
+
+\item There is currently a known issue with the Delete Nodes functionality.
+  You may notice error messages like the following when you delete the
+  last node of a cluster:
+
+  \begin{verbatim}
+    /opt/oscar/packages/sis/scripts/post_clients: illegal or
+    non-understood where string <nics.driver_module = >
+    /opt/oscar/packages/sis/scripts/post_clients: INTERNAL
+    ODA ERROR - failing to convert where expression
+    <nics.driver_module = > in oda::delete_records - at 
+    least one record not deleted in table <nics> in database <oscar>
+    /opt/oscar/packages/sis/scripts/post_clients: illegal or
+    non-understood where string <nics.gateway = >
+    /opt/oscar/packages/sis/scripts/post_clients: INTERNAL
+    ODA ERROR - failing to convert where expression
+    <nics.gateway = > in oda::delete_records - at least one
+    record not deleted in table <nics> in database <oscar>
+    /opt/oscar/packages/sis/scripts/post_clients: illegal or
+    non-understood where string <nics.assignment_method = >
+  \end{verbatim}
+
+  This is not 'harmful' but will leave the ODA database inconsistent
+  with the SIS database.  The information on network interfaces is
+  currently not used therefore it is not really damaging to your
+  installation.  This will be fixed in the next release.
+
+
 \item Each package in OSCAR has its own installation and release
   notes.  \detailed{See Section~\ref{sec:pkg-specific-notes} for
-    additional release notes.} \quick{See the full Installation Guide
-    for these notes.}
+  additional release notes.} \quick{See the full Installation Guide
+  for these notes.}
 
 \item All nodes must have a hostname other than ``{\tt localhost}''
   that does not contain any underscores (``{\tt \_}'').
@@ -35,23 +78,9 @@ The following release notes apply to OSCAR version \oscarversion.
 
 %TJN: KEEP THIS (if we keep the python2-compat rpms under c3?)
 \item Due to some distribution portability issues, OSCAR currently installs
-  a ``compatibility'' (\file{python2-compat-1.0-1}) RPM to resolve the
+  a ``compatibility''  (\file{python2\--compat\--1.0-1}) RPM to resolve the
   Python2 prerequisite that is slightly different across different Linux
   distributions.  Also see the file \file{packages/c3/RPMS/NOTE.python2}.
-
-%TJN: CUT THIS?
-% \item The current version of C3 that is shipped with OSCAR requires
-%   Python 2.x.  The Python 2.x RPMs that are provided in OSCAR are
-%   re-built to work on RedHat 7.1 as well as RedHat 7.2.  However,
-%   RedHat 7.2 ships with Python 2.x, so measures were taken such that
-%   the OSCAR-shipped Python 2.x RPM will not be installed over the
-%   default RedHat 7.x RPM (specifically, the RPM release number has
-%   been decremented).  Due to some distribution portability issues,
-%   OSCAR currently installs a ``compatibility''
-%   (\file{python2-compat-1.0-1}) RPM to resolve the Python2
-%   prerequisite that is slightly different across different Linux
-%   distributions.  Also see the file
-%   \file{packages/c3/RPMS/NOTE.python2}.
 
 \item In some cases, the test window that is opened from the 
   OSCAR wizard may close suddenly when there is a test failure. If
@@ -153,19 +182,18 @@ The following release notes apply to OSCAR version \oscarversion.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Red Hat 8/9.0 Notes}
+\subsection{Red Hat 9 Notes}
 \label{subsec:rh90notes}
 
-There are a few issues that may crop up when using OSCAR on Red Hat 9.0
-and/or Red Hat 8.0 clusters.  The following items highlight these
-issues.  
+There are a few issues that may crop up when using OSCAR on Red Hat 9.
+The following items highlight these issues.
 
 \begin{itemize}
 
 \item Deselecting Pfilter causes the image creation to fail.  This is
   due to a dependency with IPtables and when Pfilter is not selected
   the IPtables RPM is not listed in the node (image) rpmlist.   The simple
-  fix is to add ``iptables'' to the Red Hat 9.0 rpmlist if you are not
+  fix is to add ``iptables'' to the Red Hat 9 rpmlist if you are not
   installing Pfilter on the compute nodes.
 
 \item The RPM system has been updated with this Red Hat release.  The
@@ -177,7 +205,7 @@ issues.
 \item In some OSCAR pre-release testing, RPM would hang during the
   building of a client image (Section~\ref{det:build-client-image}).
   This is a documented bug in the version of RPM that ships with
-  Redhat 8 and 9.0; it is not a problem with OSCAR.  The procedure
+  Redhat 9; it is not a problem with OSCAR.  The procedure
   that was used to remedy this situation is outlined below (excerpts
   taken from \url{http://www.rpm.org/hintskinks/repairdb-2003-06/}):
         \begin{itemize}
@@ -236,72 +264,147 @@ issues.
 \end{itemize}
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Mandrake 9.0 Notes}
-\label{subsec:mdk90notes}
-
-The following may need to be run before attempting to install OSCAR on a
-Mandrake 9.0 cluster.  If there are problems during the server preparation
-related to C3 or Python2 this may solve the issue.
+\subsection{Fedora Core 2 Notes}
+\label{subsec:fc2notes}
 
 \begin{itemize}
-\item Install the Python 2 compatibility RPM.  This RPM can be found
-  in the OSCAR distribution package, under the \file{packages/c3/RPMS}
-  directory:
 
-\begin{verbatim}
-  # cd oscar-2.3/packages/c3/RPMS
-  # rpm -Uvh python2-compat-1.0-1.noarch.rpm
-\end{verbatim}
+\item SIS currently does not fully support 2.6 kernel, the way we make it
+  work right now is to run a script which generate \file{/etc/modprobe.conf} 
+  from \file{/etc/modules.conf} - this does not work 100\% of the time.  If 
+  you can deploy an image to your client nodes but are having problems 
+  booting, chances are this is the issue.  To get around this problem, copy a
+  working \file{modprobe.conf} for your client nodes to the image directory 
+  \file{/var\-/lib\-/systemimager\-/images\-/oscarimage\-/etc/}.  Re-image the
+  nodes and it should work.  One quick way of getting the correct
+  \file{modprobe.conf} is to boot a node with the Fedora Core 2 CD 1 
+  and run the Rescue mode.  You will then be able to find
+  \file{modprobe.conf} in \-/tmp.
 
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% jlm - removed this section seeing as how there is no drake support 
+% in 4.0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%\subsection{Mandrake 9.0 Notes}
+%\label{subsec:mdk90notes}
+%
+%The following may need to be run before attempting to install OSCAR on a
+%Mandrake 9.0 cluster.  If there are problems during the server preparation
+%related to C3 or Python2 this may solve the issue.
+%
+%\begin{itemize}
+%\item Install the Python 2 compatibility RPM.  This RPM can be found
+%  in the OSCAR distribution package, under the \file{packages/c3/RPMS}
+%  directory:
+%
+%\begin{verbatim}
+%  # cd oscar-2.3/packages/c3/RPMS
+%  # rpm -Uvh python2-compat-1.0-1.noarch.rpm
+%\end{verbatim}
+%
 % (ORIGINALLY in the 8.2 notes)
 % TJN: Doc fix for BUG#686916 'xterm needed by SIS'
 %      Remove after 2.3 when add to server_prep/pre-req check areas.
 %     - on RH7.x systems the xterm binaray is packaged w/ XFree86 (big bundle)
 %     - on MDK8.x it showed up in it's own xterm rpm.
-\item The OSCAR wizard makes use of \cmd{xterm} so this package must be
-  installed.  You can check the RPM database for this package by typing
-  \cmd{rpm -q xterm}.  If \cmd{xterm} is not available, you must
-  install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake 
-  CD's to run the \cmd{urpmi} command as mentioned above):
-
-\begin{verbatim}
-  # urpmi xterm
-\end{verbatim}
-
+%$\item The OSCAR wizard makes use of \cmd{xterm} so this package must be installed.  You can check the RPM database for this package by typing
+%  \cmd{rpm -q xterm}.  If \cmd{xterm} is not available, you must
+%  install the \file{xterm-165-3mdk.i586.rpm} RPM (you may need Mandrake 
+%  CD's to run the \cmd{urpmi} command as mentioned above):
+%
+%\begin{verbatim}
+%  # urpmi xterm
+%\end{verbatim}
+%
 % TJN: relates to server_prep: unmunge_pathenv()
-\item Lastly, \user{root}'s default shell configuration files hardcode the
-  value for the {\tt PATH} environment variable, regardless of what is
-  added via {\tt profile.d/} startup scripts.  This effects various
-  OSCAR installed components, which are installed into locations such
-  as \file{/opt}.  As such, the OSCAR installer appends the global path,
-  e.g., {\tt \$PATH} or {\tt \$\{PATH\}} depending on the shell, to the end
-  of the path so OSCAR installed applications are in the search
-  environment.  This potentially makes changes to the following files:
+%\item Lastly, \user{root}'s default shell configuration files hardcode the
+%  value for the {\tt PATH} environment variable, regardless of what is
+%  added via {\tt profile.d/} startup scripts.  This effects various
+%  OSCAR installed components, which are installed into locations such
+%  as \file{/opt}.  As such, the OSCAR installer appends the global path,
+%  e.g., {\tt \$PATH} or {\tt \$\{PATH\}} depending on the shell, to the end
+%  of the path so OSCAR installed applications are in the search
+%  environment.  This potentially makes changes to the following files:
+%
+%  \begin{itemize}
+%  \item \file{/root/.bashrc}
+%  \item \file{/root/.cshrc}
+%  \item \file{/root/.tcshrc}
+%  \end{itemize}
+%
+%\end{itemize}
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  \begin{itemize}
-  \item \file{/root/.bashrc}
-  \item \file{/root/.cshrc}
-  \item \file{/root/.tcshrc}
-  \end{itemize}
+\subsection{IA64 on RHEL 3.0 Notes}
+\label{subsec:ia64notes}
+
+\begin{itemize}
+
+\item In order to use some i386 binaries like tftp-hpa with the emulator, 
+  we must modify the \file{/usr\-/lib\-/rpm\-/rpmrc} file. 
+  Change the entry: \ \\
+    \file{arch\_compat: ia64: noarch} \ \\ 
+  to: \ \\
+    \file{arch\_compat: ia64: i386 noarch}
+
+\item There is a problem generating a valid initrd files on the nodes, so we 
+  must provides one in the image.  After the client image is generated by the 
+  oscar wizard (step 4), simply copy a valid initrd in the 
+  \file{/boot/efi/efi/redhat}:
+
+  \begin{verbatim}
+     cp /boot/efi/efi/redhat/initrd-2.4.21-15.EL.img \
+      /var/lib/systemimager/images/oscarimage/boot/efi/EFI/redhat/
+  \end{verbatim}
+
+  You will also need to add an INITRD entry to the image
+  \file{/etc/systemconfig/systemconfig.conf} file. After the modification, the 
+  kernel section should look like this:
+
+  \begin{verbatim}
+    [KERNEL0]
+        PATH = /boot/efi/EFI/redhat/vmlinuz-2.4.21-15.EL
+        INITRD = /boot/efi/EFI/redhat/initrd-2.4.21-15.EL.img
+        LABEL = 2.4.21-15.EL
+  \end{verbatim}
+
+\item Edit the file \file{/var\-/lib\-/systemimager\-/images\-/oscarimage2\-/etc\-/systemconfig\-/system\-config.conf}
+  and add an Hardware section with scsi and network drivers. For the SR870BH2,
+  the hardware section of this file will look like this:
+
+  \begin{verbatim}
+     [HARDWARE]
+        ORDER = e1000 e1000 mptscsih mptbase scsi_mod
+  \end{verbatim}
+
+\item If you need to use the keyboard on a usb only system like the Intel 
+  SR870BH2, you need to add the usb controller to \file{/etc/modules.conf} 
+  of the oscar image. In our image, \file{/etc/modules.conf} cat like this:
+
+  \begin{verbatim}
+     [root@rh3as2 etc]# cat modules.conf
+     alias usb-controller usb-uhci
+  \end{verbatim}
 
 \end{itemize}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{IA64 and Other Bleeding Edge Systems Notes}
-\label{subsec:ia64notes}
-
-IA64 support was removed for the \oscarversion\ release of OSCAR due to
-timing problems and the significant differences between current IA32
-distributions and the freely available IA64 distributions.  IA64 support is
-fully expected to return in the next release.
-
+%jlm - commented this out
+%IA64 support was removed for the \oscarversion\ release of OSCAR due to
+%timing problems and the significant differences between current IA32
+%distributions and the freely available IA64 distributions.  IA64 support is
+%fully expected to return in the next release.
+%
 %TJN: Uncomment when ia64 support returns (and update things!) ;)
 %
 % \begin{itemize}
