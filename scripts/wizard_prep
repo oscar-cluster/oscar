@@ -38,6 +38,13 @@ use Data::Dumper;
 use vars qw($RPMTABLE);
 use Carp;
 
+sub do_it_or_die {
+    my ( $command, $results_ref, $error ) = @_;
+    return if database_execute_command( $command, $results_ref, 1 );
+    database_disconnect();
+    die "$0: $error";
+}
+
 oscar_log_section("Running OSCAR wizard_prep script");
 
 # Run the prerequisites.  Observe the order set in
@@ -260,6 +267,36 @@ oscar_log_subsection("Installing server core RPMs");
 OSCAR::Package::install_packages(@rpms) or 
   croak("Couldn't install packages needed for OSCAR Wizard to run");
 oscar_log_subsection("Successfully installed server core RPMs");
+
+#
+# NEST
+#
+# Unless node_config_revs already has the record of node_id and configurations_id,
+# do the following two steps. Otherwise, skip them.
+# 1. Insert node_config data for oscar_server.
+#    add_node_config_revs is a shortcut to insert a record of node_id, configurations_id, and version
+#    e.g) add_node_config_revs [$node_id] [$configurations_id] [$version]
+#         Where $version is optional (The default value of $version is 0).
+# 2. Insert core packages into config_opkgs table for oscar_server.
+#    add_config_opkgs is a shortcut to insert a record of configurations_id and package_id
+#    e.g) add_config_opkgs [$configurations_id] [$package_id]
+#
+chomp(my $node_id = `oda rea nodes id name=oscar_server`);
+chomp(my $config_id = `oda rea configurations id name=oscar_server`);
+chomp(my $node_config = `oda rea node_config_revs.node_id node_id=$node_id configurations_id=$config_id`);
+if (! $node_config ){
+    do_it_or_die( "add_node_config_revs $node_id $config_id",
+                   undef,
+                  "can not create node_config_revs record for oscar_server");
+   
+    print "Inserting CORE oscar packages into config_opkgs table :\n";
+    foreach my $opkg (@packages){
+        chomp(my $package_id = `oda rea packages id name=$opkg`);
+        do_it_or_die( "add_config_opkgs $config_id $package_id",
+                      undef,
+                      "cannot create config_opkgs record for oscar_server" );
+    }
+}
 
 
 # Have installed Core Server Pkgs & did not croak, so mark 

@@ -48,7 +48,6 @@ die "$0: cannot connect to oda database";
 # and a special associated configuration named oscar_server
 
 my @nodes = ();
-my @opkgs = ();
 print "Checking for database existance of node oscar_server ...\n";
 do_it_or_die( "nodes name=\"oscar_server\"",
 	      \@nodes,
@@ -58,23 +57,6 @@ if ( ! @nodes ) {
     do_it_or_die( "create_node oscar_server",
 		  undef,
 		  "cannot create node record for oscar_server" );
-    chomp(my $node_id = `oda rea nodes id name=oscar_server`);
-    chomp(my $config_id = `oda rea configurations id name=oscar_server`);
-    if ($node_id && $config_id){
-	do_it_or_die( "add_node_config_revs $node_id $config_id",
-		      undef,
-		      "can not create node_config_revs record for oscar_server");
-    }
-    my @opkgs = OSCAR::Package::list_installable_package_dirs("all");
-    if ( $config_id && @opkgs ){
-	print "Configuration of oscar_server has the following oscar packages :\n";
-	foreach my $opkg (@opkgs){
-	    chomp(my $package_id = `oda rea packages id name=$opkg`);
- 	    do_it_or_die( "add_config_opkgs $config_id $package_id",
-		          undef,
-		          "cannot create config_opkgs record for oscar_server" );
-	}
-    }
 }
 
 # update some of the fields in the node record for oscar_server
@@ -108,17 +90,6 @@ foreach my $node_group_name ( "oscar_clients", "all" ) {
 		      undef,
 		      "cannot create node group record for $node_group_name" );
     }
-    chomp(my $config_id = `oda rea configurations id name=$node_group_name`);
-    my @opkgs = OSCAR::Package::list_installable_package_dirs("all");
-    if ( $config_id && @opkgs ){
-	print "Configuration of $node_group_name has the following oscar packages :\n";
-	foreach my $opkg (@opkgs){
-	    chomp(my $package_id = `oda rea packages id name=$opkg`);
- 	    do_it_or_die( "add_config_opkgs $config_id $package_id",
-		          undef,
-		          "cannot create config_opkgs record for $node_group_name" );
-	}
-    }
 }
 
 # make sure that certain named configurations exist
@@ -134,17 +105,6 @@ foreach my $configuration_name ( "default" ) {
 	do_it_or_die( "create_configuration $configuration_name",
 		      undef,
 		      "cannot create configuration record for $configuration_name" );
-    }
-    chomp(my $config_id = `oda rea configurations id name=default`);
-    my @opkgs = OSCAR::Package::list_installable_package_dirs("all");
-    if ( $config_id && @opkgs ){
-	print "Configuration of default has the following oscar packages :\n";
-	foreach my $opkg (@opkgs){
-	    chomp(my $package_id = `oda rea packages id name=$opkg`);
- 	    do_it_or_die( "add_config_opkgs $config_id $package_id",
-		          undef,
-		          "cannot create config_opkgs record for default" );
-	}
     }
 }
 

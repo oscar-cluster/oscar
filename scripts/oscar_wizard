@@ -400,9 +400,54 @@ sub postaddclients {
     my $cmd = "./post_clients";
     oscar_log_subsection("Step $step_number: Running: $cmd");
     !system($cmd) or (carp($!), return undef);
+	&populate_client_config_opkgs;
     oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
     oscar_log_subsection("Step $step_number: Completed successfully");
     return 1;
+}
+
+#
+# NEST
+#
+# This script inserts the records into node_config_revs and config_opkgs
+# tables for client nodes.
+# Unless node_config_revs already has the record of node_id and configurations_id,
+# do the following two steps. Otherwise, skip them.
+# 1. Insert node_config data for client nodes.
+#    add_node_config_revs is a shortcut to insert a record of node_id, configurations_id, and version
+#    e.g) add_node_config_revs [$node_id] [$configurations_id] [$version]
+#         Where $version is optional (The default value of $version is 0).
+# 2. Insert core packages into config_opkgs table for client nodes.
+#    add_config_opkgs is a shortcut to insert a record of configurations_id and
+#    package_id
+#    e.g) add_config_opkgs [$configurations_id] [$package_id]
+#
+
+sub do_it_or_die {
+    my ( $command, $results_ref, $error ) = @_;
+    return if database_execute_command( $command, $results_ref, 1 );
+    database_disconnect();
+    die "$0: $error";
+}
+
+sub populate_client_config_opkgs{
+	my @pkgs = list_selected_packages();
+
+	chomp(my @nodes_id = `oda rea nodes id name!=oscar_server`);
+	foreach my $node_id (@nodes_id){
+		chomp(my $config_id = `oda rea configurations.id configurations.name=nodes.name nodes.id=$node_id`);
+		chomp(my $node_config = `oda rea node_config_revs.node_id node_id=$node_id configurations_id=$config_id`);
+		if (! $node_config ){
+			do_it_or_die( "add_node_config_revs $node_id $config_id",
+						   undef,
+						  "can not create node_config_revs record for oscar_server");                                                                                 
+			foreach my $opkg (@pkgs){
+				chomp(my $package_id = `oda rea packages id name=$opkg`);
+				do_it_or_die( "add_config_opkgs $config_id $package_id",
+							   undef,
+							  "cannot create config_opkgs record for oscar_server" );        }
+		}
+	}
 }
 
 ###########################################################################
