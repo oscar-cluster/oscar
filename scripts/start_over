@@ -31,7 +31,8 @@ my @rpms = qw(
               systemimager-client
               systemimager-i386boot
               systemimager-ia64boot
-	      mpich
+	      mpich-oscar
+	      mpich-oscar-module
              );
 
 stop_services();
