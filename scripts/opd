@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: opd,v 1.19 2003/04/16 13:22:06 jsquyres Exp $
+# $Id: opd,v 1.20 2003/04/24 11:59:48 jsquyres Exp $
 #
 
 use strict;
@@ -68,8 +68,7 @@ my $argv_parsable = 0;
 my @argv_packages = ();
 
 my $num_download_retries = 3;
-my $ua = LWP::UserAgent->new({ env_proxy => 1 });
-$ua->agent("OSCAR package downloader/1.0");
+my $ua = -1;
 
 my $empty_di_info = {
     download => 0,
@@ -336,6 +335,14 @@ sub download_from_uri {
 	# Use LWP
 
 	else {
+
+            # If we haven't previously setup LWP, do so now.
+
+            if ($ua == -1) {
+                $ua = LWP::UserAgent->new({ env_proxy => 1 });
+                $ua->agent("OSCAR package downloader/1.0");
+            }
+
 	    my $req = HTTP::Request->new(GET => $uri);
 	    $res = $ua->request($req);
 	    if ($res->is_success()) {
@@ -566,6 +573,9 @@ sub list_packages_page {
             my $p = $package_listing->{package}[$i - 1];
             my $unwrapped_description = $p->{description};
             $unwrapped_description =~ s/\n/ /g;
+
+            # A bunch of standalone information
+
             print("\"" .
                   $p->{name} . $sep .
 
@@ -581,18 +591,26 @@ sub list_packages_page {
                   $p->{oscar_version}->{subversion} . $sep .
                   $p->{oscar_version}->{epoch} . $sep);
 
+            # List of packagers and e-mail addresses
+
             my $num = $#{$p->{packager}};
-            for (my $i = 0; $i <= $num; ++$i) {
-                print($p->{packager}[$i]->{name});
-                print("\",\"")
-                    if ($i < $num);
+            if ($num < 0) {
+                print "$sep$sep";
+            } else {
+                for (my $i = 0; $i <= $num; ++$i) {
+                    print($p->{packager}[$i]->{name});
+                    print("\",\"")
+                        if ($i < $num);
+                }
+                print $sep;
+                for (my $i = 0; $i <= $num; ++$i) {
+                    print($p->{packager}[$i]->{email});
+                    print("\",\"")
+                        if ($i < $num);
+                }
             }
-            print $sep;
-            for (my $i = 0; $i <= $num; ++$i) {
-                print($p->{packager}[$i]->{email});
-                print("\",\"")
-                    if ($i < $num);
-            }
+
+            # A bunch more stanalone information
 
             print($sep .
                   $unwrapped_description . $sep . 
@@ -604,12 +622,77 @@ sub list_packages_page {
                   $p->{class} . $sep . 
                   $p->{download}->{md5sum} . $sep . 
                   $p->{download}->{sha1sum} . $sep);
+
+            # List of download URIs
+
             my $num = $#{$p->{download}->{uri}};
-            for (my $i = 0; $i <= $num; ++$i) {
-                print($p->{download}->{uri}[$i]);
-                print("\",\"")
-                    if ($i < $num);
+            if ($num < 0) {
+                print "$sep";
+            } else {
+                for (my $i = 0; $i <= $num; ++$i) {
+                    print($p->{download}->{uri}[$i]);
+                    print("\",\"")
+                        if ($i < $num);
+                }
             }
+
+            # List of provides
+
+            my $num = $#{$p->{provides}};
+            if ($num < 0) {
+                print "$sep$sep";
+            } else {
+                for (my $i = 0; $i <= $num; ++$i) {
+                    print($p->{provides}[$i]->{name});
+                    print("\",\"")
+                        if ($i < $num);
+                }
+                print $sep;
+                for (my $i = 0; $i <= $num; ++$i) {
+                    print($p->{provides}[$i]->{type});
+                    print("\",\"")
+                        if ($i < $num);
+                }
+            }
+
+            # List of requires
+
+            my $num = $#{$p->{requires}};
+            if ($num < 0) {
+                print "$sep$sep";
+            } else {
+                for (my $i = 0; $i <= $num; ++$i) {
+                    print($p->{requires}[$i]->{name});
+                    print("\",\"")
+                        if ($i < $num);
+                }
+                print $sep;
+                for (my $i = 0; $i <= $num; ++$i) {
+                    print($p->{requires}[$i]->{type});
+                    print("\",\"")
+                        if ($i < $num);
+                }
+            }
+
+            # List of conflicts
+
+            my $num = $#{$p->{conflicts}};
+            if ($num < 0) {
+                print "$sep$sep";
+            } else {
+                for (my $i = 0; $i <= $num; ++$i) {
+                    print($p->{conflicts}[$i]->{name});
+                    print("\",\"")
+                        if ($i < $num);
+                }
+                print $sep;
+                for (my $i = 0; $i <= $num; ++$i) {
+                    print($p->{conflicts}[$i]->{type});
+                    print("\",\"")
+                        if ($i < $num);
+                }
+            }
+
             print("\"\n");
         } 
 
@@ -1085,7 +1168,7 @@ sub build_name_email_string {
 sub build_provides_string {
     my ($provides) = @_;
 
-    $provides->{name};
+    $provides->{name} . " (" . $provides->{type} . ")";
 }
 
 
