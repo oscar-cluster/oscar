@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.26 2003/07/01 06:07:42 brechin Exp $
+# $Id: Configurator.pm,v 1.27 2003/07/02 20:23:04 brechin Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -307,8 +307,8 @@ sub displayPackageConfigurator # ($parent)
 #  my @packages = list_selected_packages();
   foreach my $pkg (my @packages = list_selected_packages()) 
     {
-     # carp('Pre-configure script for package "' . $pkg . '" failed') if 
-      #  (!run_pkg_script($pkg, "pre_configure", 1, ""));
+     carp('Pre-configure script for package "' . $pkg . '" failed') if 
+        (!run_pkg_script($pkg, "pre_configure", 1, ""));
     }
 
   # Check to see if our toplevel configurator window has been created yet.
