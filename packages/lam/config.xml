@@ -9,7 +9,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.10 2003/07/02 10:45:31 jsquyres Exp $
+      $Id: config.xml,v 1.11 2003/07/17 22:00:46 jsquyres Exp $
   -->
   <name>LAM/MPI</name>
 
@@ -80,6 +80,19 @@ visualized either at runtime or post-mortem.</description>
     <type>package</type>
     <name>switcher</name>
   </requires>
+
+  <rpmlist>
+    <rpm>lam-oscar</rpm>
+    <rpm>lam-oscar-module</rpm>
+    <rpm>lam-with-gm-oscar</rpm>
+    <rpm>lam-with-gm-oscar-module</rpm>
+  </rpmlist>
+
+  <rpmlist>
+    <filter distribution="redhat" distribution_version="8.0" />
+    <filter distribution="redhat" distribution_version="9"   />
+    <rpm>libaio</rpm>
+  </rpmlist>
 
   <package>
     <switcher>
