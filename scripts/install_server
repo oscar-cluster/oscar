@@ -84,14 +84,18 @@ oscar_log_subsection("Successfully installed server non-core RPMs");
 chomp(my $node_id = `oda rea nodes id name=oscar_server`);
 chomp(my $config_id = `oda rea configurations id name=oscar_server`);
 print "Inserting NON-CORE oscar packages into config_opkgs table :\n";
+foreach my $pkg (@packages){
+    my $cmd = "delete_records config_opkgs config_opkgs.package_id=packages.id packages.name=$pkg config_opkgs.configurations_id=$config_id";
+    do_it_or_die( "$cmd",
+                  undef,
+                  "cannot delete config_opkgs record for $pkg" );
+} 
 foreach my $opkg (@packages){
     chomp(my $package_id = `oda rea packages id name=$opkg`);
-    chomp(my $config_opkg = `oda rea config_opkgs.configurations_id package_id=$package_id configurations_id=$config_id`);
-    if(! $config_opkg){
-        do_it_or_die( "add_config_opkgs $config_id $package_id",
-                      undef,
-                      "cannot create config_opkgs record for oscar_server" );
-    }
+   # chomp(my $config_opkg = `oda rea config_opkgs.configurations_id package_id=$package_id configurations_id=$config_id`);
+    do_it_or_die( "add_config_opkgs $config_id $package_id",
+                  undef,
+                  "cannot create config_opkgs record for oscar_server" );
 }
 
 
