@@ -1,6 +1,6 @@
 package OSCAR::MAC;
 
-#   $Id: MAC.pm,v 1.25 2003/01/23 21:29:25 brechin Exp $
+#   $Id: MAC.pm,v 1.26 2003/01/23 22:12:03 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ use OSCAR::Logger;
 use base qw(Exporter);
 @EXPORT = qw(mac_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.25 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.26 $ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}
@@ -125,11 +125,11 @@ sub mac_window {
 
     my $fileselector = $frame->FileSelect(-directory => "$ENV{HOME}");
     my $loadbutton = $frame->Button(
-                                   -text=>"Load MACs from file",
+                                   -text=>"Import MACs from file",
                                    -command=> [\&macfile_selector, "load", $fileselector, $listbox],
                                   );
     my $savebutton = $frame->Button(
-                                    -text => "Save MACs to file",
+                                    -text => "Export MACs to file",
                                     -command => [\&macfile_selector, "save", $fileselector, $listbox],
                                    );
 
