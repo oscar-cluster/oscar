@@ -1,6 +1,6 @@
 package OSCAR::FrontPanel;
 
-#   $Id: FrontPanel.pm,v 1.3 2002/02/19 00:04:26 sdague Exp $
+#   $Id: FrontPanel.pm,v 1.4 2002/04/28 14:44:41 sdague Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -30,11 +30,13 @@ use File::Copy;
 use base qw(Exporter);
 @EXPORT = qw(frontpanel_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
 
 my %MAC = (); # mac will be -1 for unknown, machine name for known
 my $COLLECT = 0;
 my $PINGPID = undef;
+
+my ($lambutton, $mpichbutton, $mpivalue);
 
 sub frontpanel_window {
     my ($parent, $vars) = @_;
@@ -42,7 +44,15 @@ sub frontpanel_window {
     my $window = $parent->Toplevel;
     $window->title("OSCAR Server Prepartation");
     
-    my $instructions = $window->Message(-text => "We need to ask you some questions about you preferences for the cluster.");
+    my $instructions = $window->Message(-aspect => 500, -text => "Welcome to the OSCAR Cluster Installer.  Before we get started we need to ask you a couple of questions.\n");
+
+    my $mpitext = $window->Message(-aspect => 400, -text => "Which MPI Implementation do you wish to use by default? If you don't know, the default value should be appropriate.");
+
+    $lambutton = $window->Radiobutton(-text => "LAM/MPI 6.5.6", -value => "lam-6.5.6",
+                                      -variable => \$mpivalue, -command => \&set_mpi);
+    $mpichbutton = $window->Radiobutton(-text => "MPICH 1.2.1", -value => "mpich-1.2.1",
+                                      -variable => \$mpivalue, -command => \&set_mpi);
+
     my $setupbutton = $window->Button(
                                       -text => "Prepare Server for OSCAR",
                                       -command => [\&server_prep, $vars, $window],
@@ -51,9 +61,20 @@ sub frontpanel_window {
                                      -text => "Close",
                                      -command => sub {$window->destroy},
                                     );
-    $instructions->grid();
-    $setupbutton->grid(-sticky => "ew");
-    $exitbutton->grid(-sticky => "ew");
+
+    $instructions->grid("-",-sticky => "ew");
+    $mpitext->grid("-");
+    $lambutton->grid($mpichbutton);
+    $setupbutton->grid("-",-sticky => "ew");
+    $exitbutton->grid("-",-sticky => "ew");
+    # set lam as the default
+    $mpivalue = "lam";
+}
+
+sub set_mpi {
+    my ($button) = @_;
+    print $mpivalue,"\n";
+    
 }
 
 sub server_prep {
@@ -70,11 +91,16 @@ sub server_prep {
         $window->update();
     }
 
+
     close(OUTPUT) or (carp("Couldn't run command $cmd"), 
                       error_window($window,"Couldn't run command $cmd"),
                       $window->Unbusy(), return undef);
 
-    
+    system("switcher lam --add-attr default $mpivalue --force --system") or
+        (carp("Couldn't run command $cmd"),
+         error_window($window,"Couldn't run command $cmd"),
+         $window->Unbusy(), return undef);
+
     done_window($window,"Successfully prepared server for OSCAR installation"),
     $window->Unbusy();
     return 1;
