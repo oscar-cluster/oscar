@@ -1,6 +1,6 @@
 package OSCAR::DelNode;
 
-#   $Id: DelNode.pm,v 1.1 2002/05/17 20:56:43 mchasal Exp $
+#   $Id: DelNode.pm,v 1.2 2002/05/17 20:59:05 mchasal Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -20,18 +20,15 @@ package OSCAR::DelNode;
 #                       Sean Dague <japh@us.ibm.com>
 
 use strict;
-use Net::Netmask;
 use vars qw($VERSION @EXPORT);
 use Tk;
-use Tk::Tree;
 use Carp;
 use SystemInstaller::Tk::Common;
-use File::Copy;
 use base qw(Exporter);
 use SIS::Client;
 @EXPORT = qw(delnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 sub delnode_window {
     my ($parent, $vars) = @_;
