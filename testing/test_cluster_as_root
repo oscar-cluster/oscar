@@ -7,7 +7,7 @@
 
 dir=`pwd`
 
-if [ "$1" = --wait ]; then
+if [ $# -gt 0 ] && [ $1 = --wait ]; then
   wizard_launch=yes
   shift
 fi
@@ -21,7 +21,7 @@ function waitexit
 {
         # Function to wait for a key press before
         # exiting. Used by guis.
-        if [ "$wizard_launch" = yes ]; then
+        if [ $wizard_launch ] && [ $wizard_launch = yes ]; then
           echo ...Hit a key to exit...
           read -n 1 -s  key
         fi
@@ -50,12 +50,16 @@ echo -e "\t\t\t----------"
 # Checks status of services listed below.  If they are not running, it
 # tries to start them, then checks again if they are running.  If unsuccessful
 # on any test, it dumps out
+pfilteron=0
+if [ `/sbin/service pfilter status | grep -c "is running"` -ne 0 ]; then
+  pfilteron=1
+fi
 
-for serv in sshd pbs_server maui ; do
-  if [ `/sbin/service $serv status | grep -c "is running..."` -eq 0 ]; then
+for serv in pfilter sshd pbs_server maui ; do
+  if [ `/sbin/service $serv status | grep -c "is running"` -eq 0 ]; then
     # Let's try to restart the service
     /sbin/service $serv start
-    if [ `/sbin/service $serv status | grep -c "is running..."` -eq 0 ]; then
+    if [ `/sbin/service $serv status | grep -c "is running"` -eq 0 ]; then
       echo "Could not restart $serv, please check configuration and rerun tests"
       exit 1
     else
@@ -79,7 +83,7 @@ command='if [ -e /home/OSCARtestfile ]; then echo "1"; fi'
 
 # Grab all the node hostnames from pbsnodes
 for node in `/usr/local/pbs/bin/pbsnodes -a | egrep '^\w+'`; do 
-  if [ "`ssh $node $command`" != "1" ]; then
+  if [ `ssh $node $command` -ne 1 ]; then
     echo -n "/home not mounted on $node:"
     echo_failure
     echo
@@ -123,5 +127,9 @@ echo -n "                       "
 echo -n -e "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
 # Run user portion as the user for a valid test
 /bin/su -c "OSCAR_test/test_cluster $clients $ppn" - $test_user
+
+if [ $pfilteron -eq 0 ]; then
+  `/sbin/service pfilter stop`
+fi
 
 waitexit
