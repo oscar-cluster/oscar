@@ -4,7 +4,9 @@
 #                Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
-
+#
+# $Id: wizard_prep,v 1.10 2002/10/25 12:49:50 jsquyres Exp $
+# 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation; either version 2 of the License, or
@@ -24,35 +26,18 @@
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Logger;
 use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
 use File::Basename;
-use OSCAR::Logger;
-use OSCAR::Package;
-use OSCAR::Distro;
-use OSCAR::PackageBest;
-use Carp;
 use Data::Dumper;
 use vars qw($RPMTABLE);
+use Carp;
 
 oscar_log_section("Running OSCAR wizard_prep script");
 
 my $INTERFACE = shift or croak("No interface specified");
-
-# Make sure /tftpboot/rpm exists, if not create it.  Then copy all the
-# rpms that we ship that need to be in the client into that directory
-
-my $RPMPOOL = $OSCAR::Package::RPM_POOL;
-my $ARCH = (uname)[4];
-$ARCH =~ s/i.86/i386/;
-
-prep_rpmpool($RPMPOOL) or croak("Couldn't prepare tftpboot directory");
-oscar_log_subsection("Copying RPMs from " . $ENV{OSCAR_HOME} .
-		     " to $RPMPOOL\n");
-copy_rpms($ENV{OSCAR_HOME},$RPMPOOL) or croak("Couldn't copy rpms to $RPMPOOL");
-oscar_log_subsection("Successfully copied RPMs from " . $ENV{OSCAR_HOME} . 
-		     " to $RPMPOOL\n");
 
 # Run the prerequsites
 
@@ -70,16 +55,38 @@ while(($_ = readdir(PREREQDIR))) {
 }
 closedir(PREREQDIR);
 
+# This must be done after the prerequisites, because the prerequisites
+# may have installed some Perl modules that OSCAR requires.
+
+require OSCAR::Package;
+require OSCAR::Distro;
+require OSCAR::PackageBest;
+
+# Make sure /tftpboot/rpm exists, if not create it.  Then copy all the
+# rpms that we ship that need to be in the client into that directory
+
+my $RPMPOOL = $OSCAR::Package::RPM_POOL;
+my $ARCH = (uname)[4];
+$ARCH =~ s/i.86/i386/;
+
+prep_rpmpool($RPMPOOL) or croak("Couldn't prepare tftpboot directory");
+oscar_log_subsection("Copying RPMs from " . $ENV{OSCAR_HOME} .
+		     " to $RPMPOOL\n");
+copy_rpms($ENV{OSCAR_HOME},$RPMPOOL) 
+    or croak("Couldn't copy rpms to $RPMPOOL");
+oscar_log_subsection("Successfully copied RPMs from " . $ENV{OSCAR_HOME} . 
+		     " to $RPMPOOL\n");
+
 # Get the list of core packages
 
-my @packages = list_pkg("core");
+my @packages = OSCAR::Package::list_pkg("core");
 oscar_log_subsection("Identified core packages: " . join(' ', @packages));
 
 # Run the setup scripts
 
 oscar_log_subsection("Running setup scripts for core packages");
 foreach my $package (@packages) {
-    run_pkg_script($package, "setup") 
+    OSCAR::Package::run_pkg_script($package, "setup") 
 	or croak("Failed running server for $package");
 }
 oscar_log_subsection("Successfully ran core package server scripts");
@@ -88,19 +95,19 @@ oscar_log_subsection("Successfully ran core package server scripts");
 
 my @rpms = ();
 foreach my $package (@packages) {
-    push @rpms, rpmlist($package,"server");
+    push @rpms, OSCAR::Package::rpmlist($package,"server");
 }
 
 # And now we add the extra rpms that are needed if
 # for each distribution
 
-my ($distname, $distver) = which_distro_server();
-push @rpms, distro_rpmlist($distname,$distver,$ARCH);
+my ($distname, $distver) = OSCAR::Distro::which_distro_server();
+push @rpms, OSCAR::Package::distro_rpmlist($distname,$distver,$ARCH);
 
 # Now install them nicely (i.e. don't install packages that are already there)
 
 oscar_log_subsection("Installing core RPMs");
-install_rpms(@rpms) 
+OSCAR::Package::install_rpms(@rpms) 
     or croak("Couldn't install the required packages needed for OSCAR Wizard to run");
 oscar_log_subsection("Successfully installed core RPMs");
 
@@ -108,7 +115,7 @@ oscar_log_subsection("Successfully installed core RPMs");
 
 oscar_log_subsection("Running post_server_install scripts for core packages");
 foreach my $package (@packages) {
-    run_pkg_script($package,"post_server_install") 
+    OSCAR::Package::run_pkg_script($package,"post_server_install") 
 	or croak("Failed running post_server_install for $package");
 }
 oscar_log_subsection("Successfully ran core package post_server_install scripts");
@@ -134,7 +141,7 @@ sub copy_rpms {
             foreach my $file (@files) {
                 if($file =~ /\.rpm$/) {
                     my $filename = basename($file);
-                    if(!-e "$RPMPOOL/$filename") {
+                    if (!-e "$RPMPOOL/$filename") {
                         print "Copying $file to $RPMPOOL\n";
                         copy("$file", "$RPMPOOL/$filename") or return undef;
                     }
