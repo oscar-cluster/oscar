@@ -21,7 +21,7 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \begin{itemize}
 
-\item Red Hat 9 and Fedora Core 2 support on x86.
+\item Red Hat Linux 9, Fedora Core 2 and Mandrakelinux 10.0 support on x86.
 \item Red Hat Enterprise Linux (RHEL) 3 support on Itanium and x86.
 \item New RPM dependency finder helps build the server (DepMan/PackMan).
 \item Ganglia now included in the default package set.
@@ -115,10 +115,11 @@ The following release notes apply to OSCAR version \oscarversion.
   It is safe to ignore these messages.
   
 \item The OSCAR installer will install the MySQL package on the server
-  node if it is not already installed.  You will be prompted to enter a
+  node if it is not already installed.  A password will be automatically
 \begchange
-  password to be used for the MySQL database.
-\endchange  
+  generated for the oscar user to access the oscar database.  This
+  password will be stored in the file \file{/etc/odapw}.
+\endchange
 
 \item The OSCAR installer GUI provides little protection for user
   mistakes.  If the user executes steps out of order, or provides
@@ -185,14 +186,15 @@ The following release notes apply to OSCAR version \oscarversion.
   to experiment please check the {\tt oscar-users} and/or 
   {\tt sisuite-users} mailing lists for tips.
 
-\item If you downloaded PBS through Step 0 \button{Download Addtional 
-  OSCAR Packages}, but did not select it for installation, you will get
-  error messages complaining about conflicts. The way around this is to goto
-  \file{/tftpboot/rpm} and remove all the OpenPBS RPMs. If you want to install
-  PBS instead of Torque, select it in Step 1 \button{Select OSCAR Packages To
-  Install}, then either copy the OpenPBS RPMs back to
-  \file{/tftpboot/rpm} or just re-run the OSCAR wizard and the RPMs will be
-  automatically copied back. 
+% BLI: This bug has been fixed
+%\item If you downloaded PBS through Step 0 \button{Download Addtional 
+%  OSCAR Packages}, but did not select it for installation, you will get
+%  error messages complaining about conflicts. The way around this is to goto
+%  \file{/tftpboot/rpm} and remove all the OpenPBS RPMs. If you want to install
+%  PBS instead of Torque, select it in Step 1 \button{Select OSCAR Packages To
+%  Install}, then either copy the OpenPBS RPMs back to
+%  \file{/tftpboot/rpm} or just re-run the OSCAR wizard and the RPMs will be
+%  automatically copied back. 
 
 \endchange
 
