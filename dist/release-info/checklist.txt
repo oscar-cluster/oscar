@@ -1,0 +1,27 @@
+$Id: checklist.txt,v 1.1 2001/08/31 19:39:59 jsquyres Exp $
+
+List of places that the OSCAR 1.1 press release was sent:
+
+- The OSCAR web site, under "Press Releases" on the "papers/talks" page.
+
+- HPCWire
+  Submission deadline: 10am PST for the following week's edition
+  Send plain text of releases to: editor@hpcwire.com
+
+- Infoworld
+  Sent to: carolyn_april@infoworld.com
+  E-mail address obtained from their "Contact us" web page
+
+- http://clusters.top500.org/
+  (didn't send 1.1 release there; they already had an announcement
+  from the actual 1.1 release)
+
+- LinuxPR.com
+  Free registration required to submit press releases
+
+- Newsforge.com
+
+- IEEE Cluster Computing Task Force didn't seem to have a news/press
+  release section.  Appealed directly to the editors.
+
+
