@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# $Id: post_clients,v 1.6 2002/10/30 22:19:56 naughtont Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -62,9 +63,12 @@ system('/sbin/chkconfig --del pbs_sched');
 
 print "...updating xpbsmonrc file\n";
 my $xpbsmonrc = "/opt/pbs/lib/xpbsmon/xpbsmonrc";
-open (RCFILE, "+<$xpbsmonrc") or croak("Error:  Couldn't open $xpbsmonrc.\n");
-my @lines = <RCFILE>;
+
+my @lines = `cat $xpbsmonrc`;
 grep { s/ICON.*$/ICON;pbs_oscar;pbs_oscar;;;}/ } @lines;
+
+open (RCFILE, ">$xpbsmonrc") 
+  or croak("Error: XPBSMONRC not setup - Couldn't open $xpbsmonrc.\n");
 print RCFILE @lines; 
 close (RCFILE);
 
