@@ -138,7 +138,9 @@ sub build_oscar_image {
     # now we get the list of the client rpms that we want to install
     my @clientfiles = glob("$ENV{OSCAR_HOME}/packages/*/client.rpmlist");
 
-    my $extraflags = map {" --filename=$_ "} @clientfiles;
+    my @fullfiles = map {" --filename=$_ "} @clientfiles;
+    my $extraflags = join('',@fullfiles);
+
 
     my %vars = (
                 imgname => "oscarimage",
