@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.1 2002/01/27 18:29:58 jsquyres Exp $
+# $Id: Makefile.am,v 1.2 2002/02/02 21:18:57 naughtont Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -16,6 +16,7 @@ MAIN_TEX	= by-laws.tex
 OTHER_SRC_FILES	= \
 		defs.tex \
 		differences.tex \
+		intro.tex
 		titlepage.tex \
 		toc.tex
 
