@@ -3,7 +3,7 @@
 # Copyright (c) 2003 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-# $Id: Makefile.am,v 1.2 2003/07/04 14:47:36 jsquyres Exp $
+# $Id: Makefile.am,v 1.3 2003/08/05 19:11:15 jsquyres Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -11,8 +11,6 @@
 
 include $(top_srcdir)/dist/Makefile.options
 
-oscar_DATA		= \
-			perl-Tk-800.024-2.i386.rpm \
-			perl-Tk-800.024-2.ia64.rpm
+oscar_DATA		= perl-Tk-800.024-2.i386.rpm
 
 EXTRA_DIST		= $(oscar_DATA)
