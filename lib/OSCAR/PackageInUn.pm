@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.10 2003/11/03 05:54:23 naughtont Exp $
+#  $Id: PackageInUn.pm,v 1.11 2003/11/03 17:53:37 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -21,8 +21,7 @@ package OSCAR::PackageInUn;
 
 #Things to do in general:
 #1. get rid of the todo list
-#2. need to cexec filter stuff, will run without it
-#3. more testing
+#2. more testing
 
 use strict;
 
@@ -289,6 +288,7 @@ sub run_install_client
 	my $all_rpms;
 
 	my $retval;
+	my @rslts;
 
 	my $imagepath = "/var/lib/systemimager/images/$imagename";
 
@@ -317,7 +317,7 @@ sub run_install_client
 
 		if (scalar(@newrpmlist) > 0)
 		{
-			$cmd_string1 = "$C3_HOME/cexec --pipe mkdir -p /tmp/tmpinstallrpm/";
+			$cmd_string1 = "$C3_HOME/cexec --pipe c3cmd-filter mkdir -p /tmp/tmpinstallrpm/";
 			$all_rpms = "";
 			foreach $rpm (@newrpmlist)
 			{
@@ -326,8 +326,8 @@ sub run_install_client
 				my $rpm_name = $temp_list[$#temp_list];
 				$all_rpms = "$all_rpms /tmp/tmpinstallrpm/$rpm_name";
 			}
-			$cmd_string3 = "$C3_HOME/cexec --pipe rpm -Uvh $all_rpms";
-			$cmd_string4 = "$C3_HOME/cexec --pipe rm -rf /tmp/tmpinstallrpm/";
+			$cmd_string3 = "$C3_HOME/cexec --pipe c3cmd-filter rpm -Uvh $all_rpms";
+			$cmd_string4 = "$C3_HOME/cexec --pipe c3cmd-filter rm -rf /tmp/tmpinstallrpm/";
 
 			if($testmode != 0)
 			{
@@ -342,10 +342,8 @@ sub run_install_client
 			}
 			else
 			{
-				if ( run_command_general($cmd_string1) )
-				{
-					return 0;
-				}
+				$retval = cexec_open($cmd_string1, \@rslts); 
+				print @rslts if($retval != 0);
 
 				foreach $rpm (@newrpmlist)
 				{
@@ -356,14 +354,10 @@ sub run_install_client
 					}
 
 				}
-				if ( run_command_general($cmd_string3) )
-				{
-					return 0;
-				}
-				if ( run_command_general($cmd_string4) )
-				{
-					return 0;
-				}
+				$retval = cexec_open($cmd_string3, \@rslts); 
+				print @rslts if($retval != 0);
+				$retval = cexec_open($cmd_string4, \@rslts); 
+				print @rslts if($retval != 0);
 			}
 		}
 		$flag = 1;
@@ -380,8 +374,8 @@ sub run_install_client
 	if (-x $script_path)
 	{
 		$cmd_string1 = "$C3_HOME/cpush $script_path /tmp";
-		$cmd_string2 = "$C3_HOME/cexec --pipe /tmp/post_client_rpm_install";
-		$cmd_string3 = "$C3_HOME/cexec --pipe rm -f /tmp/post_client_rpm_install";
+		$cmd_string2 = "$C3_HOME/cexec --pipe c3cmd-filter /tmp/post_client_rpm_install";
+		$cmd_string3 = "$C3_HOME/cexec --pipe c3cmd-filter rm -f /tmp/post_client_rpm_install";
 		if($testmode != 0)
 		{
 			print "executing: $cmd_string1\n";
@@ -394,14 +388,10 @@ sub run_install_client
 			{
 				return 0;
 			}
-			if ( run_command_general($cmd_string2) )
-			{
-				return 0;
-			}
-			if ( run_command_general($cmd_string3) )
-			{
-				return 0;
-			}
+			$retval = cexec_open($cmd_string2, \@rslts); 
+			print @rslts if($retval != 0);
+			$retval = cexec_open($cmd_string3, \@rslts); 
+			print @rslts if($retval != 0);
 
 		}
 		$flag = 1;
@@ -411,8 +401,8 @@ sub run_install_client
 	if(-x $script_path)
 	{
 		$cmd_string1 = "$C3_HOME/cpush $script_path /tmp";
-		$cmd_string2 = "$C3_HOME/cexec --pipe /tmp/post_client_install";
-		$cmd_string3 = "$C3_HOME/cexec --pipe rm -f /tmp/post_client_install";
+		$cmd_string2 = "$C3_HOME/cexec --pipe c3cmd-filter /tmp/post_client_install";
+		$cmd_string3 = "$C3_HOME/cexec --pipe c3cmd-filter rm -f /tmp/post_client_install";
 		if($testmode != 0)
 		{
 			print "executing: $cmd_string1\n";
@@ -425,14 +415,10 @@ sub run_install_client
 			{
 				return 0;
 			}
-			if ( run_command_general($cmd_string2) )
-			{
-				return 0;
-			}
-			if ( run_command_general($cmd_string3) )
-			{
-				return 0;
-			}
+			$retval = cexec_open($cmd_string2, \@rslts); 
+			print @rslts if($retval != 0);
+			$retval = cexec_open($cmd_string3, \@rslts); 
+			print @rslts if($retval != 0);
 		}
 		$flag = 1;
 	}
@@ -1182,7 +1168,9 @@ sub run_uninstall_client
 	my @temp_list;
 	my $cmd_string2;
 	my $cmd_string3;
-	my @cmd_out = <NEWCMD>;
+	my @cmd_out;
+	my $retval;
+	my @rslts;
 
 	oscar_log_subsection("Running client un-install");
 
@@ -1202,8 +1190,8 @@ sub run_uninstall_client
 		}
 
 		$cmd_string1 = "$C3_HOME/cpush $script_path /tmp/";
-		$cmd_string2 = "$C3_HOME/cexec --pipe /tmp/$temp_list[$#temp_list]";
-		$cmd_string3 = "$C3_HOME/cexec --pipe rm -f /tmp/$temp_list[$#temp_list]";
+		$cmd_string2 = "$C3_HOME/cexec --pipe c3cmd-filter /tmp/$temp_list[$#temp_list]";
+		$cmd_string3 = "$C3_HOME/cexec --pipe c3cmd-filter rm -f /tmp/$temp_list[$#temp_list]";
 
 		if ($testmode != 0)
 		{
@@ -1218,14 +1206,10 @@ sub run_uninstall_client
 			{
 				return 1;
 			}
-			if ( run_command_general($cmd_string2))
-			{
-				return 1;
-			}
-			if ( run_command_general($cmd_string3))
-			{
-				return 1;
-			}
+			$retval = cexec_open($cmd_string2, \@rslts); 
+			print @rslts if($retval != 0);
+			$retval = cexec_open($cmd_string3, \@rslts); 
+			print @rslts if($retval != 0);
 		}
 		oscar_log_subsection("Completed un-install on client");
 		return (0);
