@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: autogen.sh,v 1.9 2003/07/04 14:00:32 jsquyres Exp $
+# $Id: autogen.sh,v 1.10 2003/07/21 21:45:11 jsquyres Exp $
 #
 
 #
@@ -217,6 +217,31 @@ EOF
 }
 
 #
+# Subroutine to traverse a tree in make Makefile.am's in all
+# subdirectories.
+#
+traverse_tree() {
+    topdir="$1"
+
+    # Make the Makefile.am in this directory
+
+    make_makefile "$topdir"
+
+    # Now recursivelytraverse children subdirs
+
+    for file in "$topdir"/*; do
+	if test "$file" != "$topdir/CVS" -a \
+	    "$file" != "." -a \
+	    "$file" != ".." -a \
+	    -d "$file" -a \
+	    ! -f "$file/$ignore_file" -a \
+	    \( ! -f "$file/Makefile.am" -o -f "$file/$sentinel_file" \); then
+	    traverse_tree "$file"
+	fi
+    done
+}
+
+#
 # Subroutine to run across the entire OSCAR tree
 #
 run_global() {
@@ -226,17 +251,24 @@ run_global() {
     # and add it to the various lists of directories.
 
     echo "Generating Makefile.am's..."
-    rg_pkg_subdirs=". doc RPMS scripts SRPMS testing"
+    rg_pkg_subdirs=". distro doc RPMS scripts SRPMS testing"
     for rg_pkg in packages packages/*; do
-	if test "$rg_pkg" != "packages/CVS" \
-	    -a -d "$rg_pkg" \
-	    -a ! -f "$rg_pkg/$ignore_file"; then
+	rg_base="`basename $rg_pkg`"
+	if test "$rg_pkg" != "packages/CVS" -a \
+	    -d "$rg_pkg" -a \
+	    "$rg_base" != "." -a \
+	    "$rg_base" != ".." -a \
+	    ! -f "$rg_pkg/$ignore_file"; then
 	    for rg_subdir in $rg_pkg_subdirs; do
-		if test -d "$rg_pkg/$rg_subdir" \
-		    -a ! -f "$rg_pkg/$rg_subdir/$ignore_file"; then
-		    if test ! -f "$rg_pkg/$rg_subdir/Makefile.am" \
-			-o -f "$rg_pkg/$rg_subdir/$sentinel_file"; then
-			make_makefile "$rg_pkg/$rg_subdir"
+		if test -d "$rg_pkg/$rg_subdir" -a \
+		    ! -f "$rg_pkg/$rg_subdir/$ignore_file"; then
+		    if test ! -f "$rg_pkg/$rg_subdir/Makefile.am" -o \
+			-f "$rg_pkg/$rg_subdir/$sentinel_file"; then
+			if test "`basename $rg_subdir`" != "."; then
+			    traverse_tree "$rg_pkg/$rg_subdir"
+			else
+			    make_makefile "$rg_pkg"
+			fi
 		    fi
 		fi
 	    done
@@ -248,24 +280,15 @@ run_global() {
 
     echo "Generating AC_CONFIG_FILES list..."
     rg_config_files=
-    for rg_pkg in packages packages/*; do
-	if test "$rg_pkg" != "packages/CVS" \
-	    -a -d "$rg_pkg" \
-	    -a ! -f "$rg_pkg/$ignore_file"; then
-	    for rg_subdir in $rg_pkg_subdirs; do
-		if test -d "$rg_pkg/$rg_subdir" \
-		    -a ! -f "$rg_pkg/$rg_subdir/$ignore_file"; then
-		    if test -f "$rg_pkg/$rg_subdir/Makefile.am"; then
-			if test "$rg_subdir" = "."; then
-			    rg_ddir="$rg_pkg"
-			else
-			    rg_ddir="$rg_pkg/$rg_subdir"
-			fi
-			echo " - $rg_ddir/Makefile.am"
-			rg_config_files="$rg_ddir/Makefile $rg_config_files"
-		    fi
-		fi
-	    done
+    for rg_dir in `find packages -type d`; do
+	base="`basename $rg_dir`"
+	echo checking dir: $rg_dir / $base
+	if test "$base" != "CVS" -a \
+	    ! -f "$rg_dir/$ignore_file" -a \
+	    -f "$rg_dir/$sentinel_file" -a \
+	    -f "$rg_dir/Makefile.am" ; then
+	    rg_config_files="$rg_dir/Makefile $rg_config_files"
+	    echo added: $rg_dir/Makefile
 	fi
     done
 
