@@ -24,7 +24,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.21 2003/04/10 17:06:30 ngorsuch Exp $
+# $Id: Configurator.pm,v 1.22 2003/04/15 05:08:40 ngorsuch Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -186,10 +186,14 @@ sub getSelectedConfigurablePackages
     
     # read all records from the database table <packages> that are marked
     # as being installable and as being selected, saving the long package
-    # name in the <package> field for each package
+    # name in the <package> field for each package (we could do this with
+    # a shortcut but this code is about to be replaced and want a special
+    # output format
     my @fields = qw( package ); 
-#    my @wheres = ( "packages.installable\!\=0", "packages.selected\!\=0" );
-    my @wheres = ( "packages.installable\!\=0" );
+    my @wheres =
+    ( "packages.installable \!\= 0",
+      "oscar.selected_package_set_id = package_set_package_entries.package_set_id",
+      "package_set_package_entries.included_package_id = packages.id" );
     my $configurable_ref =
       OSCAR::Database::database_read_table_fields( "packages",
 						   \@fields,
