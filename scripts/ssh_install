@@ -18,9 +18,8 @@
 
 #--------------------- begin configuration section --------------------
 
-# see if they specified a directory, if so, instead of looping through
-# rcp copies into the client machines over the network, it will do a
-# single copy into a client "image" tree.
+# this script requires them to specify one or more directories
+# that are the base directories of system images to be updated.
 
 BASES=""
 if [ "`echo $* | wc -w`" -lt 1 ] ; then
@@ -44,23 +43,6 @@ SSHCFGDIR=/etc/ssh
 
 # temporary files prefix
 TEMP="/tmp/`echo $0 | sed 's,^.*/,,g'`.$$."
-
-# server name
-SERVER=lui_oscar
-
-# client names - changed by MJB on 12/19/2000
-for file in `ls /tftpboot/lim/*.client`
-do
-  name=`cat $file | awk -F: '{print $7;}'`
-  CLIENTS="$CLIENTS $name"
-done
-SERVER_AND_CLIENTS="$SERVER $CLIENTS"
-echo server: $SERVER
-echo client machines list: $CLIENTS
-echo server and client machines list: $SERVER_AND_CLIENTS
-if [ ! -z "$BASES" ] ; then
-    echo client machine image bases list: $BASES
-fi
 
 #------------------------ end configuration section --------------------
 
@@ -104,8 +86,8 @@ for wantedyes in ; do
 	echo turning on $wantedyes parameter in configuration file $file ...
 	if [ ! -r $file.pre_ssh_install ] ; then
 	    if [ -r $file ] ; then
-		echo cp -p $file $file.pre_ssh_install
-		cp -p $file $file.pre_ssh_install || exit 1
+		echo cp -fp $file $file.pre_ssh_install
+		cp -fp $file $file.pre_ssh_install || exit 1
 	    fi
 	fi
         if grep "^[[:space:]]*$wantedyes[[:space:]]" $file 2>/dev/null ; then
@@ -123,8 +105,8 @@ for wantedno in ForwardX11 StrictHostKeyChecking UsePrivilegedPort ; do
 	echo turning off $wantedno parameter in configuration file $file ...
 	if [ ! -r $file.pre_ssh_install ] ; then
 	    if [ -r $file ] ; then
-		echo cp -p $file $file.pre_ssh_install
-		cp -p $file $file.pre_ssh_install || exit 1
+		echo cp -fp $file $file.pre_ssh_install
+		cp -fp $file $file.pre_ssh_install || exit 1
 	    fi
 	fi
         if grep "^[[:space:]]*$wantedno[[:space:]]" $file 2>/dev/null ; then
@@ -146,8 +128,8 @@ for wantedyes in IgnoreRhosts X11Forwarding RhostsRSAAuthentication RSAAuthentic
 	echo turning on $wantedyes parameter in configuration file $file ...
 	if [ ! -r $file.pre_ssh_install ] ; then
 	    if [ -r $file ] ; then
-		echo cp -p $file $file.pre_ssh_install
-		cp -p $file $file.pre_ssh_install || exit 1
+		echo cp -fp $file $file.pre_ssh_install
+		cp -fp $file $file.pre_ssh_install || exit 1
 	    fi
 	fi
         if grep "^[[:space:]]*$wantedyes[[:space:]]" $file 2>/dev/null ; then
@@ -165,8 +147,8 @@ for wantedno in RhostsAuthentication ; do
 	echo turning off $wantedno parameter in configuration file $file ...
 	if [ ! -r $file.pre_ssh_install ] ; then
 	    if [ -r $file ] ; then
-		echo cp -p $file $file.pre_ssh_install
-		cp -p $file $file.pre_ssh_install || exit 1
+		echo cp -fp $file $file.pre_ssh_install
+		cp -fp $file $file.pre_ssh_install || exit 1
 	    fi
 	fi
         if grep "^[[:space:]]*$wantedno[[:space:]]" $file 2>/dev/null ; then
@@ -180,161 +162,75 @@ for wantedno in RhostsAuthentication ; do
     fi
 done
 
-# set up each user including root so that they can log into the
-# entire cluster from anywhere in the cluster if a non-image(s)
-# install, or just set up root if this is an image(s) install
+# set up root
 
-if [ ! -z "$BASES" ] ; then
-    echo updating user root only
-    users=root
+user=root
+echo ; echo setting up user $user on this machine
+home=`egrep "^$user\:" /etc/passwd | awk -F: '{print $6}' | tail -1`
+if [ `echo $home | wc -w` -ne 1 ] ; then
+    echo cannot determine home directory of user $user
 else
-    echo finding users ...
-    users=""
-    for user in `awk -F: '{print $1}' /etc/passwd` ; do
-	userhome=`egrep "^$user\:" /etc/passwd | awk -F: '{print $6}' | tail -1`
-	usershell=`egrep "^$user\:" /etc/passwd | awk -F: '{print $7}' | tail -1`
-	# echo checking user $user with home directory $userhome and shell $usershell
-	if [ "$user" != "" \
-	    -a "$userhome" != "" \
-	    -a -d "$userhome" \
-	    -a "$usershell" != "" \
-	    -a -x "$usershell" \
-	    -a "$usershell" != "/bin/false" \
-	    -a "$user" != "halt" \
-	    -a "$user" != "sync" \
-	    -a "$user" != "shutdown" \
-	    -a "$user" != "mailnull" ] ; then
-	    echo ... found user $user
-	    users="$users $user"
-	fi
-    done
-fi
-
-for user in $users ; do
-    echo ; echo setting up user $user on this machine
-    home=`egrep "^$user\:" /etc/passwd | awk -F: '{print $6}' | tail -1`
-    if [ `echo $home | wc -w` -ne 1 ] ; then
-	echo cannot determine home directory of user $user
+    echo the home directory for user $user is $home
+    echo cd $home
+    if ! cd $home ; then
+	echo cannot cd to home directory $home
     else
-	echo the home directory for user $user is $home
-	echo cd $home
-	if ! cd $home ; then
-	    echo cannot cd to home directory $home
-	else
 
-	    file=$home/.ssh/id_dsa
-	    type=dsa
-	    if [ ! -e $file ] ; then
-		echo su - $user --command=\"ssh-keygen -t $type -N \'\' -f $file\"
-		su - $user --command="ssh-keygen -t $type -N '' -f $file"
-	    fi
-
-	    file=$home/.ssh/identity
-	    type=rsa1
-	    if [ ! -e $file ] ; then
-		echo su - $user --command=\"ssh-keygen -t $type -N \'\' -f $file\"
-		su - $user --command="ssh-keygen -t $type -N '' -f $file"
-	    fi
-
-	    file=$home/.ssh/id_rsa
-	    type=rsa
-	    if [ ! -e $file ] ; then
-		echo su - $user --command=\"ssh-keygen -t $type -N \'\' -f $file\"
-		su - $user --command="ssh-keygen -t $type -N '' -f $file"
-	    fi
-
-	    id="`cat $home/.ssh/id_dsa.pub`"
-	    file=$home/.ssh/authorized_keys2
-	    if ! grep "^$id\$" $file >/dev/null 2>&1 ; then
-		echo su - $user --command=\"echo $id \>\> $file\"
-		su - $user --command="echo $id >> $file"
-	    fi
-
-	    id="`cat $home/.ssh/identity.pub`"
-	    file=$home/.ssh/authorized_keys
-	    if ! grep "^$id\$" $file >/dev/null 2>&1 ; then
-		echo su - $user --command=\"echo $id \>\> $file\"
-		su - $user --command="echo $id >> $file"
-	    fi
-
-	    id="`cat $home/.ssh/id_rsa.pub`"
-	    file=$home/.ssh/authorized_keys2
-	    if ! grep "^$id\$" $file >/dev/null 2>&1 ; then
-		echo su - $user --command=\"echo $id \>\> $file\"
-		su - $user --command="echo $id >> $file"
-	    fi
-
-	    echo chmod 600 $home/.ssh/authorized_keys*
-	    chmod 600 $home/.ssh/authorized_keys*
-
+        file=$home/.ssh/id_rsa
+        type=rsa
+        if [ ! -e $file ] ; then
+            echo ssh-keygen -t $type -N \'\' -f $file
+            ssh-keygen -t $type -N '' -f $file
+            pub="`cat $home/.ssh/id_rsa.pub`"
+            keys=$home/.ssh/authorized_keys2
+            echo echo $pub \>\> $keys
+            echo $pub >> $keys
 	fi
-    fi
-done
-
-# set up the server ssh_known_hosts file.  later we will copy this
-# file to the images.  we have to make sure to save any other
-# host entries that were already in the file for systems that are 
-# not part of the cluster.
-
-echo ; echo updating non-root ssh permissions on $SERVER ...
-cd $SSHCFGDIR || ( echo cannot cd to $SSHCFGDIR ; exit 1 )
-file=ssh_known_hosts
-rm -f $TEMP$file.temporary
-cp $file $TEMP$file.temporary 2>/dev/null || touch $TEMP$file.temporary
-for machine in $SERVER_AND_CLIENTS ; do
-    egrep -v "^$machine[\,\ ]" $TEMP$file.temporary >$TEMP$file.temporary2
-    mv $TEMP$file.temporary2 $TEMP$file.temporary
-done
-for machine in $SERVER_AND_CLIENTS ; do
-    ipstring=",`awk </etc/hosts \"{f=0;for (i=1;i<=NF;i++) if (\\\$i==\\\"$machine\\\")print \\\$1}\"`"
-    ipstring="`echo $ipstring | sed 's.^,$..g'`" # in case no ipstring found
-    sed <ssh_host_key.pub 's,\ [^\ ]*$,,g' | sed "s/^/$machine$ipstring /g" >>$TEMP$file.temporary
-done
-if ! cmp -s $file $TEMP$file.temporary 2>/dev/null ; then
-    ssh_known_hosts_changed=1
-    if [ ! -r $file.pre_ssh_install ] ; then
-	if [ -r $file ] ; then
-	    echo cp -p $file $file.pre_ssh_install
-	    cp -p $file $file.pre_ssh_install || exit 1
+    
+        file=$home/.ssh/id_dsa
+        type=dsa
+        if [ ! -e $file ] ; then
+            echo ssh-keygen -t $type -N \'\' -f $file
+            ssh-keygen -t $type -N '' -f $file
+	    pub="`cat $home/.ssh/id_dsa.pub`"
+	    keys=$home/.ssh/authorized_keys2
+            echo echo $pub \>\> $keys
+            echo $pub >> $keys
 	fi
+	
+        file=$home/.ssh/identity
+        type=rsa1
+        if [ ! -e $file ] ; then
+            echo ssh-keygen -t $type -N \'\' -f $file
+            ssh-keygen -t $type -N '' -f $file
+	    pub="`cat $home/.ssh/identity.pub`"
+	    keys=$home/.ssh/authorized_keys
+            echo echo $pub \>\> $keys
+            echo $pub >> $keys
+	fi
+    
+        echo chmod 600 $home/.ssh/authorized_keys*
+        chmod 600 $home/.ssh/authorized_keys*
+    
     fi
-    if [ -r $file ] ; then
-        echo $file changed from `wc -l <$file` entries to `wc -l <$TEMP$file.temporary` entries
-    else
-        echo new $file has `wc -l <$TEMP$file.temporary` entries
-    fi
-    mv $TEMP$file.temporary $file
-else
-    ssh_known_hosts_changed=0
-    echo unchanged $file has `wc -l <$file` entries
 fi
-rm -f $TEMP$file.temporary
 
 # now we take care of updating each specified image
-for client in $BASES ; do
-    echo ; echo checking/updating client $client ...
-    echo cp -pr $SSHCFGDIR $client`dirname $SSHCFGDIR`
-    rcp -pr $SSHCFGDIR $client`dirname $SSHCFGDIR`
+for image in $BASES ; do
+    echo ; echo checking/updating image $image ...
+    echo cp -fpr $SSHCFGDIR $image`dirname $SSHCFGDIR`
+    cp -fpr $SSHCFGDIR $image`dirname $SSHCFGDIR`
 
     # every user except root ends up being taken care of by /home cross-mount
-    for user in $users ; do
-        home=`egrep "^$user\:" /etc/passwd | awk -F: '{print $6}' | tail -1`
-	if [ `echo $home | wc -w` -ne 1 ] ; then
-	    echo cannot determine home directory of user $user
-	else
-	    if ! echo $home | egrep '^/home/' >/dev/null ; then
-		echo ; echo copying ssh files for $user to $client
-		if [ ! -d $client$home ] ; then
-		    echo mkdir -p $client$home
-		    mkdir -p $client$home
-		    echo chown $user $client$home
-		    chown $user $client$home
-		fi
-		echo cp -pr $home/.ssh $client$home
-		cp -pr $home/.ssh $client$home
-	    fi
-        fi
-    done
+    echo ; echo copying ssh files for $user to image $image
+    if [ ! -d $image$home ] ; then
+        echo mkdir -p $image$home
+        mkdir -p $image$home
+        echo chown $user $image$home
+        chown $user $image$home
+    fi
+    echo cp -fpr $home/.ssh $image$home
+    cp -fpr $home/.ssh $image$home
 done
 
 echo
