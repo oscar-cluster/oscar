@@ -21,6 +21,11 @@ print OUT <<EOF;
 [[ -z \$MPICH ]] && {
   export MPICH=$PREFIX
   [[ :\$PATH: != *:\$MPICH/bin:* ]] && export PATH=\$PATH:\$MPICH/bin
+  if [[ -z \$MANPATH ]]; then
+    export MANPATH="\$MPICH/man"
+  else
+    export MANPATH="\${MANPATH}:\$MPICH/man"
+  fi
 }
 EOF
 close( OUT );
@@ -36,6 +41,11 @@ print OUT <<EOF;
 if (\$?MPICH == "0") then
   set MPICH="$PREFIX"
   set path = (\$path \$MPICH/bin)
+  if (\$?MANPATH == "0") then
+    set MANPATH="\$MPICH/man"
+  else
+    set MANPATH="\${MANPATH}:\$MPICH/man"
+  endif
 endif
 EOF
 close( OUT );
