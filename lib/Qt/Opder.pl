@@ -1,6 +1,6 @@
 # Form implementation generated from reading ui file 'Opder.ui'
 #
-# Created: Tue Jul 1 18:41:53 2003
+# Created: Wed Jul 23 16:02:37 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
 # WARNING! All changes made in this file will be lost!
@@ -352,7 +352,7 @@ sub init
   disableDownloadButton();
 
   # Simulate a button click for the "Refresh Table" button to get OPD info
-  emit refreshButton->clicked();
+  Qt::Timer::singleShot(500, this, SLOT 'refreshButton_clicked()');
 
 }
 
