@@ -72,7 +72,6 @@ krb5-libs
 ksymoops
 kudzu
 less
-libappconfig-perl
 libjpeg
 libpng
 libstdc++
@@ -144,9 +143,6 @@ slang
 slocate
 strace
 sysklogd
-systemconfigurator
-systemimager-client
-systemimager-common
 SysVinit
 tar
 tcl
