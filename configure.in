@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# $Id: configure.in,v 1.11 2002/05/20 19:11:22 mchasal Exp $
+# $Id: configure.in,v 1.12 2002/05/22 20:05:33 naughtont Exp $
 #
 # $COPYRIGHT$
 #
@@ -83,6 +83,7 @@ AC_OUTPUT([
     packages/Makefile
     packages/c3/Makefile
     packages/c3/RPMS/Makefile
+    packages/c3/SRPMS/Makefile
     packages/c3/scripts/Makefile
     packages/lam/Makefile
     packages/lam/RPMS/Makefile
