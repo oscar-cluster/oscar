@@ -1,6 +1,6 @@
 # -*- Makefile -*-!ls
 #
-# $Id: Makefile.am,v 1.8 2002/11/25 04:07:19 bligneri Exp $
+# $Id: Makefile.am,v 1.9 2003/06/18 00:00:02 naughtont Exp $
 #
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -26,7 +26,8 @@ OTHER_SRC_FILES	= \
 		titlepage.tex \
 		sourceforge.tex \
         provided_tools.tex \
-		toc.tex
+		toc.tex \
+		www.tex
 
 # xfig figures.  .eps and .pdf files will be automatically generated
 # from these.
