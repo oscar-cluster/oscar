@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: screen-by-screen.tex,v 1.14 2002/09/02 14:30:04 jsquyres Exp $
+% $Id: screen-by-screen.tex,v 1.15 2002/09/10 00:22:36 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -24,12 +24,10 @@ information, it is judged to be ``close enough'' to the real 1.4
 release.  Just beware that some of the screenshots may not be {\em
   exactly} what you see in the 1.4 release.
 
-
-%% Adjust the margins so we can better handle our large images
-
-%\setlength{\oddsidemargin}{-0.5in}
-%\setlength{\evensidemargin}{-0.5in}
-%\setlength{\textwidth}{7.5in}
+Also note that these images have been scaled down to fit within the
+document.  As such, although they are readable, the images may not
+render nicely on a screen.  The images tend be much more readable on
+an actual printout.
 
 
 %------------------------------------------------------------------
@@ -42,52 +40,37 @@ This step comprises of running the \cmd{install\_cluster} script with
 the network interface name.  See details in
 Section~\ref{det:installcluster}, page~\pageref{det:installcluster}.
 
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics[scale=1.0]{figs/0a_sbs-download.\sbsext}}
-    \caption{Getting OSCAR.}
-    \label{fig:sbs-getting-oscar}
-  \end{center}
-\end{figure}
-
 % JMS: These images were captured using KDE ``konsole'' tooles, with
 % the ``small'' font, using a black-on-white schema, and resized to be
-% 80x26.  This allows for 2 screenshots per page.
+% 80x26.
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/0c_sbs-unpack.\sbsext}}
+    \centerline{\includegraphics[scale=\imgscale]{figs/0c_sbs-unpack.\sbsext}}
     \caption{Unpacking OSCAR.}
     \label{fig:sbs-unpacking-oscar}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/1a_sbs-install-oscar.\sbsext}}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/1a_sbs-install-oscar.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/1b_sbs-install-oscar2.\sbsext}
+      }
     \caption{Running the \cmd{install\_cluster} script.}
     \label{fig:sbs-install-oscar}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[ht!]
   \begin{center}
-    \centerline{\includegraphics{figs/1b_sbs-install-oscar2.\sbsext}}
-    \caption{Further progress on running the \cmd{install\_cluster}
-      script.}
-    \label{fig:sbs-install-oscar2}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/2_sbs-oscar-wizard.\sbsext}}
+    \centerline{\includegraphics[scale=\imgscale]{figs/2_sbs-oscar-wizard.\sbsext}}
     \caption{The OSCAR Installation Wizard.}
     \label{fig:sbs-install-wizard}
   \end{center}
 \end{figure}
-
-\clearpage
 
 
 %------------------------------------------------------------------
@@ -100,26 +83,17 @@ Step 1 is used to setup the server for the OSCAR cluster.  See details
 in Section~\ref{det:prepareforinstall},
 page~\pageref{det:prepareforinstall}. 
 
-\begin{figure}[htbp]
+\begin{figure}[hb!]
   \begin{center}
-    \centerline{\includegraphics{figs/3a_sbs-wizard-step1.\sbsext}}
-    \caption{Beginning step 1 -- Select default MPI implementation.}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/3a_sbs-wizard-step1.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/3b_sbs-wizard-step1.\sbsext}
+      }
+    \caption{Step 1 -- Select default MPI implementation and prepare server.}
     \label{fig:sbs-install-wizard-s1}
   \end{center}
 \end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/3b_sbs-wizard-step1.\sbsext}}
-    \caption[Further progress in step 1 -- Prepared server,
-    completed.]{Further progress in step 1 -- Prepared server,
-      completed (there will also be lots of output in the terminal
-      window).}
-    \label{fig:sbs-install-wizard-s1b}
-  \end{center}
-\end{figure}
-
-\clearpage
 
 
 %------------------------------------------------------------------
@@ -132,64 +106,43 @@ Step 2 builds a disk image for the clients to download and install
 onto their local disks.  See the details in
 Section~\ref{det:buildimage}, page~\pageref{det:buildimage}.
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/4a_sbs-build-image1.\sbsext}}
-    \caption{Beginning step 2 -- Building the image.}
+    \centerline{\includegraphics[scale=\imgscale]{figs/4a_sbs-build-image1.\sbsext}}
+    \vspace{\imgvskip}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/4b_sbs-build-image2.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/4c_sbs-build-image3.\sbsext}
+      }
+    \caption{Step 2 -- Building the image.}
     \label{fig:sbs-build-image}
   \end{center}
 \end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/4b_sbs-build-image2.\sbsext}}
-    \caption[Further progress in step 2 -- Building the
-    image.]{Further progress in step 2 -- Building the image; the
-      progress bar shows that it is roughly half completed.}
-    \label{fig:sbs-build-image-progress}{Further progress in step 2 --
-      Building the image.}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/4c_sbs-build-image3.\sbsext}}
-    \caption{Further progress in step 2 -- Building the image, completed.}
-    \label{fig:sbs-build-image2}
-  \end{center}
-\end{figure}
-
-\clearpage
 
 
 %------------------------------------------------------------------
 % Step 3: Define OSCAR Clients
 %------------------------------------------------------------------
 
+\clearpage
 \subsection{Step 3: Define OSCAR Clients}
 
 Step 3 is used to specify how many client nodes there will be, and
 what their TCP/IP characteristics will be.  See the details in
 Section~\ref{det:defclients}, page~\pageref{det:defclients}.
  
-\begin{figure}[h]
+\begin{figure}[ht!]
   \begin{center}
-    \centerline{\includegraphics{figs/5a_sbs-define-clients1.\sbsext}}
-    \caption{Beginning step 3 -- Defining the clients.}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/5a_sbs-define-clients1.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/5b_sbs-define-clients2.\sbsext}
+      }
+    \caption{Step 3 -- Defining the clients.}
     \label{fig:sbs-define-clients}
   \end{center}
 \end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/5b_sbs-define-clients2.\sbsext}}
-    \caption{Further progress in step 3 -- Create clients for image
-      completed.}
-    \label{fig:sbs-define-clients2}
-  \end{center}
-\end{figure}
-
-\clearpage
 
 
 %------------------------------------------------------------------
@@ -202,154 +155,158 @@ Step 4 is used to collect the MAC addresses of the client nodes, and
 then download the disk images to the client nodes.  See the details in
 Section~\ref{det:setupnetwork}, page~\pageref{det:setupnetwork}.
 
-\begin{figure}[h]
+\begin{figure}[h!]
   \begin{center}
-
-    \centerline{\includegraphics{figs/6a_sbs-collect-mac1.\sbsext}}
+    \centerline{\includegraphics[scale=\imgscale]{figs/6a_sbs-collect-mac1.\sbsext}}
     \caption{Beginning step 4 -- Setting up networking.}
     \label{fig:sbs-setup-network1}
   \end{center}
 \end{figure}
 
-
 %-------
-% Show how to create the boot floppy...
+% Show how to create the boot floppy
 %-------
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/6ba_sbs-autoinstall-flpy1.\sbsext}}
-    \caption{Further progress in step 4 -- Build Autoinstall Floppy
-      (part 1).} 
+    \centerline{\includegraphics[scale=\imgscale]{figs/6ba_sbs-autoinstall-flpy1.\sbsext}}
+    \vspace{\imgvskip}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/6bb_sbs-autoinstall-flpy2.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/6bc_sbs-autoinstall-flpy3.\sbsext}
+      }
+    \caption{Further progress in step 4 -- Build Autoinstall Floppy.}
     \label{fig:sbs-autoinstall-flpy1}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/6bb_sbs-autoinstall-flpy2.\sbsext}}
-    \caption{Further progress in step 4 -- Build Autoinstall Floppy
-      (part 2).} 
-    \label{fig:sbs-autoinstall-flpy2}
-  \end{center}
-\end{figure}
+%-------
+% Booting the client
+%-------
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/6bc_sbs-autoinstall-flpy3.\sbsext}}
-    \caption{Further progress in step 4 -- Build Autoinstall Floppy
-      (part 3).} 
-    \label{fig:sbs-autoinstall-flpy3}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/6c_sbs-client-boot1.\sbsext}}
+    \centerline{
+      \framebox{
+        \includegraphics[scale=\imgscale]{figs/6c_sbs-client-boot1.\sbsext}
+        }
+      }
     \caption{Further progress in step 4 -- Booting the client.}
     \label{fig:sbs-collect-boot1}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/6ca_sbs-client-boot1.\sbsext}}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/6ca_sbs-client-boot1.\sbsext}}
     \caption{Further progress in step 4 -- Scan for booting client (DHCP
       request).}
     \label{fig:sbs-client-boot2}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/6d_sbs-broadcast.\sbsext}}
+    \centerline{
+      \framebox{
+        \includegraphics[scale=\imgscale]{figs/6d_sbs-broadcast.\sbsext}
+        }
+      }
     \caption{Further progress in step 4 -- Client is broadcasting, in
       order to acquire MAC address.}
     \label{fig:sbs-collect-broadcast} 
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/6e_sbs-found-mac.\sbsext}}
-    \caption{Further progress in step 4 -- Scanning network, found
-      first MAC address.}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/6e_sbs-found-mac.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/6f_sbs-stop-collect-mac2.\sbsext}
+      }
+    \caption[Further progress in step 4 -- Assigning MACs to
+      IPs]{Further progress in step 4 -- Scanning network, found first
+        MAC address, then later assigned all MAC addresses.}
     \label{fig:sbs-setup-network2}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/6f_sbs-stop-collect-mac2.\sbsext}}
-   \caption[Further progress in step 4 -- Completed setup of
-   networking.]{Further progress in step 4 -- Completed setting up of
-     networking, got and assigned all MAC address(s).  About to click
-     on ``Stop collecting'', and ``Configure DHCP server''.}
-    \label{fig:sbs-setup-network3}
-  \end{center}
-\end{figure}
+%-------
+% Client downloading and installing the image
+%-------
 
-% Re-adjust the margins so we can better handle our large images
-%\setlength{\oddsidemargin}{-0.5in}
-%\setlength{\evensidemargin}{-0.5in}
-%\setlength{\textwidth}{7.5in}
-
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/6h_sbs-client-boot.\sbsext}}
+    \centerline{
+      \framebox{
+        \includegraphics[scale=\imgscale]{figs/6h_sbs-client-boot.\sbsext}
+        }
+      }
     \caption{Booting the client a second time to download the image.}
     \label{fig:sbs-install-boot}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/6i_sbs-client-diskpar.\sbsext}}
+    \centerline{
+      \framebox{
+        \includegraphics[scale=\imgscale]{figs/6i_sbs-client-diskpar.\sbsext}
+        }
+      }
     \caption{Client partitioning disk, setting up the disk tables, and
       starting to download the image.}
     \label{fig:sbs-install-diskpar}
   \end{center}
 \end{figure}
   
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/6j_sbs-client-rsync.\sbsext}}
+    \centerline{
+      \framebox{
+        \includegraphics[scale=\imgscale]{figs/6j_sbs-client-rsync.\sbsext}
+        }
+      }
     \caption{Client downloading and installing the image.}
     \label{fig:sbs-install-rsync}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/6k_sbs-rebootme.\sbsext}}
+    \centerline{
+      \framebox{
+        \includegraphics[scale=\imgscale]{figs/6k_sbs-rebootme.\sbsext}
+        }
+      }
     \caption{A node has finished the install -- it is asking to be
       rebooted.}
     \label{fig:sbs-install-finish}
   \end{center}
 \end{figure}
 
-\clearpage
-
 
 %------------------------------------------------------------------
 % Step 5: Complete Cluster Install
 %------------------------------------------------------------------
 
+\clearpage
 \subsection{Step 5: Complete Cluster Install} 
 
 Step 5 is used to unify the server and client installations into a
 single cluster.  See the details in Section~\ref{det:completeinstall},
 page~\pageref{det:completeinstall}.
 
-\begin{figure}[h]
+\begin{figure}[h!]
    \begin{center}
-     \centerline{\includegraphics{figs/7_sbs-complete-cluster-setup.\sbsext}}
+     \centerline{\includegraphics[scale=\imgscale]{figs/7_sbs-complete-cluster-setup.\sbsext}}
      \caption{Beginning step 5 -- Complete Cluster Setup.}
      \label{fig:sbs-install-wizard-s5}
    \end{center}
  \end{figure}
-
-\clearpage
 
 
 %------------------------------------------------------------------
@@ -363,42 +320,23 @@ within the wizard, or, as shown here, from manually launching a shell
 script at a \user{root} command prompt.  See the details in
 Section~\ref{det:testcluster}, page~\pageref{det:testcluster}.
 
-\begin{figure}[h]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/8_sbs-test-cluster-prompt.\sbsext}}
-    \caption[Beginning step 6 -- Test cluster setup.]{Beginning step
-      6 -- Test cluster setup.  Note that this figure is shown as
-      having executed the test script manually, not running from the
-      OSCAR wizard GUI.} 
-    \label{fig:sbs-install-wizard-s6}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/8_sbs-test-cluster-root-tests.\sbsext}}
-    \caption{Further progress in step 6 -- Exectuting tests as root.}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/8_sbs-test-cluster-prompt.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/8_sbs-test-cluster-root-tests.\sbsext}
+      }
+    \vspace{\imgvskip}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/8_sbs-test-cluster-user-tests.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/8_test-cluster-complete.\sbsext}
+      }
+    \caption{Step 6 -- Test the cluster.}
     \label{fig:sbs-setup-test}
   \end{center}
 \end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/8_sbs-test-cluster-user-tests.\sbsext}}
-    \caption{Further progress in step 6 -- Executing tests as a non-root user.}
-    \label{fig:sbs-setup-test1}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/8_test-cluster-complete.\sbsext}}
-    \caption{Further progress in step 6 -- Cluster tests completed.}
-    \label{fig:sbs-setup-test2}
-  \end{center}
-\end{figure}
-
-\clearpage
 
 
 %-----------------------------------------------------------------
@@ -417,31 +355,21 @@ previous sections -- \hostname{oscarnode2}.  The next section
 details on deleting nodes in Section~\ref{det:deleting-clients},
 page~\pageref{det:deleting-clients}.
 
-\begin{figure}[h]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/10a_sbs-del-node.\sbsext}}
-    \caption{Delete OSCAR Clients.}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/10a_sbs-del-node.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/10b_sbs-del-node-partA.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/10b_sbs-del-node-partB.\sbsext}
+      }
+    \caption[Delete OSCAR Clients.]{Delete OSCAR clients.  First image
+    is the intial window, second image is with a node selected, and
+    third image is when the action has completed.}
     \label{fig:sbs-del-node1}
   \end{center}
 \end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/10b_sbs-del-node-partA.\sbsext}}
-    \caption{Node selected for deletion.}
-    \label{fig:sbs-del-node1-done-partA}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/10b_sbs-del-node-partB.\sbsext}}
-    \caption{Node deletion completed.}
-    \label{fig:sbs-del-node1-done-partB}
-  \end{center}
-\end{figure}
-
-\clearpage
 
 
 %------------------------------------------------------------------
@@ -456,17 +384,21 @@ this example, we will add back \hostname{oscarnode2} into the cluster.
 See the details of adding a node in Section~\ref{det:adding-clients},
 page~\pageref{det:adding-clients}.
 
-\begin{figure}[h]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/9a_sbs-add-node.\sbsext}}
+    \centerline{\includegraphics[scale=\imgscale]{figs/9a_sbs-add-node.\sbsext}}
     \caption{Add OSCAR Clients.}
     \label{fig:sbs-add-node1}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/9b_sbs-add-node-mksirange.\sbsext}}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/9b_sbs-add-node-mksirange.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/9c_sbs-add-node-success.\sbsext}
+      }
     \caption[Add Node step 1 -- Defining the clients.]{Add Node step 1
       -- Defining the clients.  Note that you only define {\em new}
       clients here (i.e., change the starting number, starting IP,
@@ -475,40 +407,24 @@ page~\pageref{det:adding-clients}.
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/9c_sbs-add-node-success.\sbsext}}
-    \caption{Add Node step 1 -- Defining the clients completed.}
-    \label{fig:sbs-add-node1-define-clients2}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/9d_sbs-add-node-mac1.\sbsext}}
+    \centerline{
+      \includegraphics[scale=\imgscale]{figs/9d_sbs-add-node-mac1.\sbsext}
+      \hspace{\imghskip}
+      \includegraphics[scale=\imgscale]{figs/9e_sbs-add-node-mac2.\sbsext}
+      }
     \caption{Add Node step 2 -- Setting up networking for new node(s).}
     \label{fig:sbs-add-node1-setup-network}
   \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[h!]
   \begin{center}
-    \centerline{\includegraphics{figs/9e_sbs-add-node-mac2.\sbsext}}
-    \caption[Add Node step 2 -- Setting up networking, further
-    progress]{Add Node step 2 -- Setting up networking, got MAC
-      address, stop scanning and configure DHCP server.}
-    \label{fig:sbs-add-node1-setup-network2}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-    \centerline{\includegraphics{figs/9f_sbs-add-node-complete.\sbsext}}
+    \centerline{\includegraphics[scale=\imgscale]{figs/9f_sbs-add-node-complete.\sbsext}}
     \caption{Add Node step 3 -- Complete Cluster Setup.}
     \label{fig:sbs-add-node1-cluster-setup}
   \end{center}
 \end{figure}
-
-\clearpage
 
 % LocalWords:  tex Exp sbs
