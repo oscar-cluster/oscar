@@ -37,7 +37,7 @@ my ($name, $ver) = OSCAR::Distro::which_distro_server();
 if ($name eq "fedora") {
 	print "Patching systeminstaller so that it support $name\n";
 	# If there is no patch, apply it
-	if (! -f "/usr/share/systeminstaller/distinfo/Fedora/stages") {
+	if (! (-f "/usr/share/systeminstaller/distinfo/Fedora/stages")) {
 	my @patches = glob("$ENV{OSCAR_PACKAGE_HOME}/scripts/fedora.patch/*.patch");
 	foreach my $patch (@patches) {
 		print "Applying patch $patch\n";

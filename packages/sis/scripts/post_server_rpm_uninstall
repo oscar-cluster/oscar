@@ -25,7 +25,12 @@ my @rpms = qw(systemconfigurator
 		perl-XML-Simple
 		perl-XML-Parser
 		);  #skipping rsync
+
+@files = qw(/usr/share/systeminstaller/distinfo/Fedora/stages
+	);
+
 remove_rpms(@rpms);
+remove_files(@files);
 
 
 #-------------------------------------------------------------
