@@ -6,7 +6,7 @@
 # information, see the LICENSE file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator.pm,v 1.5 2002/10/29 07:19:26 jsquyres Exp $
+# $Id: Configurator.pm,v 1.6 2002/10/29 15:32:32 jsquyres Exp $
 # 
 ##############################################################
 #  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
@@ -240,6 +240,16 @@ sub displayPackageConfigurator # ($parent)
   my $parent = shift;
   $step_number = shift;
 
+  oscar_log_section("Running step $step_number of the OSCAR wizard: Configure selected OSCAR packages");
+
+  # Call the pre-configure API script in each selected package
+  my @packages = list_install_pkg();
+  foreach my $pkg (@packages) {
+      if (!run_pkg_script($pkg, "pre_configure", 1, "")) {
+	  carp("Pre-configure script for package \"$pkg\" failed");
+      }
+  }
+
   # Check to see if our toplevel configurator window has been created yet.
   if (!$top)
     { # Create the toplevel window just once
@@ -260,15 +270,6 @@ sub displayPackageConfigurator # ($parent)
 
   # Then create the scrollable package listing and place it in the grid.
   populateConfiguratorList();
-  oscar_log_section("Running step $step_number of the OSCAR wizard: Configure selected OSCAR packages");
-
-  # Call the pre-configure API script in each selected package
-  my @packages = list_install_pkg();
-  foreach my $pkg (@packages) {
-      if (!run_pkg_script($pkg, "pre_configure", 1, "")) {
-	  carp("Pre-configure script for package \"$pkg\" failed");
-      }
-  }
 
   $root->MapWindow;   # Put the window on the screen.
 }
