@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 #
-# $Id: Makefile.am,v 1.8 2002/06/18 14:16:14 jsquyres Exp $
+# $Id: Makefile.am,v 1.9 2002/06/21 08:38:29 naughtont Exp $
 # 
 # This file is part of the OSCAR distribution.
 # See the copyright and license notices in the top-level directory.
@@ -70,7 +70,38 @@ SBS_FILES	= \
 		sbs-client-answer.png \
 		sbs-client-diskpar.png \
 		sbs-client-finished.png \
-		sbs-post-install.png
+		sbs-post-install.png \
+		figs/0a_sbs-download.png \
+		figs/0b_sbs-rh72notes-rpm-upgrd.png \
+		figs/0c_sbs-unpack.png \
+		figs/10a_sbs-del-node.png \
+		figs/10b_sbs-del-node-partA.png \
+		figs/10b_sbs-del-node-partB.png \
+		figs/1a_sbs-install-oscar.png \
+		figs/1b_sbs-install-oscar2.png \
+		figs/2_sbs-oscar-wizard.png \
+		figs/3a_sbs-wizard-step1.png \
+		figs/3b_sbs-wizard-step1.png \
+		figs/4a_sbs-build-image1.png \
+		figs/4b_sbs-build-image2.png \
+		figs/4c_sbs-build-image3.png \
+		figs/5a_sbs-define-clients1.png \
+		figs/5b_sbs-define-clients2.png \
+		figs/6a_sbs-collect-mac1.png \
+		figs/6ba_sbs-autoinstall-flpy1.png \
+		figs/6bb_sbs-autoinstall-flpy2.png \
+		figs/6bc_sbs-autoinstall-flpy3.png \
+		figs/6c_sbs-client-boot1.png \
+		figs/6c_sbs-client-boot22.png \
+		figs/6d_sbs-broadcast.png \
+		figs/6e_sbs-found-mac.png \
+		figs/6g_sbs-assign-mac.png \
+		figs/6h_sbs-client-boot.png \
+		figs/6i_sbs-client-diskpar.png \
+		figs/6j_sbs-client-rsync.png \
+		figs/6k_sbs-rebootme.png \
+		figs/9a_sbs-add-node.png 
+
 
 
 #########################################################################
