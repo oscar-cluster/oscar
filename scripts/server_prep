@@ -66,10 +66,8 @@ update_exports($ip,$netmask) or croak("Couldn't add filesystem entries to /etc/e
 
 verbose("Refreshing services");
 !system("service nfs start") or croak("Couldn't start nfs");
-!system("service gmond start") or croak("Couldn't start gmond");
 !system("exportfs -a") or croak("Couldn't refresh nfs exports");
 !system("service sshd start") or croak("Couldn't start sshd");
-!system("service ganglia-php-rrd start") or croak("Couldn't start ganglia-php-rrd");
 !system("chkconfig --level 345 sshd on");
 !system("chkconfig --level 345 dhcpd on");
 !system("chkconfig --level 345 portmap on");
