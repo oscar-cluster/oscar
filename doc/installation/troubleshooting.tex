@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: troubleshooting.tex,v 1.1 2001/12/13 22:14:12 mchasal Exp $
+% $Id: troubleshooting.tex,v 1.2 2002/01/17 03:04:23 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -74,12 +74,17 @@ requires some manual tweaking. Issue the following commands to
 configure the server and scheduler:
 
 \begchange
-\begin{verbatim}
-  service pbs_server start
-  service maui start
-  cd /root/OSCAR-1.1.1/pbs/config
-  /usr/local/pbs/bin/qmgr < pbs_server.conf
-\end{verbatim}
+% We have to use \tt instead of {verbatim} because we need to use
+% \oscarversion inside.  This makes it somewhat painful -- much less
+% easy than {verbatim}.
+\vspace{11pt}
+{\tt
+  service pbs\_server start \\
+\indent  service maui start \\
+\indent  cd /root/oscar-\oscarversion/pbs/config \\
+\indent  /usr/local/pbs/bin/qmgr < pbs\_server.conf
+}
+\vspace{11pt}
 
 Replace ``\file{/root}'' with the directory into which you unpacked
 \endchange

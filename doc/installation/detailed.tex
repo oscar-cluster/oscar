@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: detailed.tex,v 1.12 2001/12/19 23:46:03 mchasal Exp $
+% $Id: detailed.tex,v 1.13 2002/01/17 03:04:23 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -103,30 +103,31 @@ subdirectory.
 
 If you are reading this, you probably already have a copy. If not, go
 to \url{http://oscar.sourceforge.net/} and download the latest OSCAR
-tarball, which will be named something like \file{ oscar-version.tgz}.
-The version used in these instructions is \oscarversion, which you
-should replace with the version you download in any of the sample
-\begchange
-commands. Copy the OSCAR tarball to a directory such as \file{/root} on
-\endchange
+tarball, which will be named something like
+\file{oscar-\oscarversion.tgz}.  The version used in these
+instructions is \oscarversion, which you should replace with the
+version you download in any of the sample \begchange commands. Copy
+the OSCAR tarball to a directory such as \file{/root} on \endchange
 your server. There is no required installation directory, except that
 you may not use \file{/usr/local/oscar}, which is reserved for special
 use. Do {\bf not} unpack the tarball on a Windows based machine and
 copy the directories over to the server, as this will convert all the
 scripts to the dreaded ``DOS'' format and will render them useless
-under Linux.  Assuming you placed the OSCAR tarball in
-\begchange
-\file{/root},
-\endchange
-open a command terminal and issue the following commands to unpack
-OSCAR:
+under Linux.  Assuming you placed the OSCAR tarball in \begchange
+\file{/root}, \endchange open a command terminal and issue the
+following commands to unpack OSCAR:
 
+% We have to use \tt instead of {verbatim} because we need to use
+% \oscarversion inside.  This makes it somewhat painful -- much less
+% easy than {verbatim}.
+\vspace{11pt}
 \begchange
-\begin{verbatim}
-  cd /root
-  tar -zxvf oscar-<VERSION>.tgz
-\end{verbatim}
+{\tt
+  cd /root \\
+\indent  tar -zxvf oscar-\oscarversion.tgz
+}
 \endchange
+\vspace{11pt}
     
 The result is the creation of an OSCAR directory structure that is
 laid out as show in Table~\ref{tab:oscar-dir-struct} (again assuming
@@ -143,28 +144,28 @@ laid out as show in Table~\ref{tab:oscar-dir-struct} (again assuming
       \multicolumn{1}{|c|}{Contents} \\
       \hline
       \hline
-      \file{/root/OSCAR-\oscarversion/} & the base OSCAR directory \\
+      \file{/root/oscar-\oscarversion/} & the base OSCAR directory \\
 %
-      \file{/root/OSCAR-\oscarversion/COPYING} & GNU General Public License
+      \file{/root/oscar-\oscarversion/COPYING} & GNU General Public License
       v2 \\
 %
-      \file{/root/OSCAR-\oscarversion/README.first} & README first document \\
+      \file{/root/oscar-\oscarversion/README.first} & README first document \\
 %
-      \file{/root/OSCAR-\oscarversion/packages} & contains rpms and installation
+      \file{/root/oscar-\oscarversion/packages} & contains rpms and installation
       files for the OSCAR packages \\
 %
-      \file{/root/OSCAR-\oscarversion/docs} & OSCAR documentation directory \\
+      \file{/root/oscar-\oscarversion/docs} & OSCAR documentation directory \\
 %
-      \file{/root/OSCAR-\oscarversion/install\_cluster} & main installation
+      \file{/root/oscar-\oscarversion/install\_cluster} & main installation
       script \\
 %
-      \file{/root/OSCAR-\oscarversion/oscarsamples} & contains sample OSCAR
+      \file{/root/oscar-\oscarversion/oscarsamples} & contains sample OSCAR
       files \\
 %
-      \file{/root/OSCAR-\oscarversion/scripts} & contains scripts that do most
+      \file{/root/oscar-\oscarversion/scripts} & contains scripts that do most
       of the work \\
 %
-      \file{/root/OSCAR-\oscarversion/testing} & contains OSCAR Cluster Test
+      \file{/root/oscar-\oscarversion/testing} & contains OSCAR Cluster Test
       software \\
       \hline
     \end{tabular}
@@ -295,12 +296,17 @@ you should only copy over the RPMs listed in the sample.
 For the Red Hat 7.1 distribution, this can be done for each CD with
 a command sequence like this:
 
-\begin{verbatim}
-  cd /mnt/cdrom/RedHat/RPMS
-  cat /root/OSCAR-\oscarversion/oscarsamples/sample.rpmlist | \
-  xargs -i sh -c "cd `pwd`;ls -1 {}*.rpm" 2>/dev/null | \
-  xargs -i -t cp -f '{}' /tftpboot/rpm
-\end{verbatim}
+% We have to use \tt instead of {verbatim} because we need to use
+% \oscarversion inside.  This makes it somewhat painful -- much less
+% easy than {verbatim}.
+\vspace{11pt}
+{\tt
+  cd /mnt/cdrom/RedHat/RPMS \\
+\indent  cat /root/oscar-\oscarversion/oscarsamples/sample.rpmlist | \textbackslash \\
+\indent\indent  xargs -i sh -c "cd `pwd`;ls -1 \{\}*.rpm" 2>/dev/null | \textbackslash \\
+\indent\indent  xargs -i -t cp -f '\{\}' /tftpboot/rpm
+}
+\vspace{11pt}
 
 \endchange
 
@@ -320,10 +326,15 @@ environment, due to the graphical nature of the OSCAR.
 If the OSCAR directory was placed in \file{/root} for example, you
 would issue the following commands:
 
-\begin{verbatim}
-  cd /root/OSCAR-\oscarversion
-  ./install_cluster eth0
-\end{verbatim}
+% We have to use \tt instead of {verbatim} because we need to use
+% \oscarversion inside.  This makes it somewhat painful -- much less
+% easy than {verbatim}.
+\vspace{11pt}
+{\tt
+  cd /root/oscar-\oscarversion \\
+\indent  ./install\_cluster eth0
+}
+\vspace{11pt}
 \endchange
   
 \begchange
@@ -579,12 +590,18 @@ client's ethernet adapter is not properly configured upon boot,
 however, the server will not be able to communicate with the client. A
 quick and easy way to confirm network connectivity is to do the
 \begchange
-following (assuming OSCAR installed in \file{~root}):
+following (assuming OSCAR installed in \file{$^\sim$root}):
 
-\begin{verbatim}
-  cd ~/OSCAR-\oscarversion/scripts
-  ./ping_clients
-\end{verbatim}
+% We have to use \tt instead of {verbatim} because we need to use
+% \oscarversion inside.  This makes it somewhat painful -- much less
+% easy than {verbatim}.
+\vspace{11pt}
+{\tt
+  cd $^\sim$/oscar-\oscarversion/scripts \\
+\indent  ./ping\_clients
+}
+\vspace{11pt}
+
 \endchange
 
 The above commands will run the \cmd{ping\_clients} script, which will
