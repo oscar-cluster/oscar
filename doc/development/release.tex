@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: release.tex,v 1.6 2002/06/19 06:39:45 jsquyres Exp $
+% $Id: release.tex,v 1.7 2002/07/17 00:02:24 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -104,13 +104,20 @@ through the process.
       absolutely sure} that you have the latest version of all the
     files.
   \item The top-level \file{README*} files have been updated
+  \item The documentation \LaTeX\ files have been updated
   \item The \file{VERSION} file has been updated
   \item You have re-run \file{autogen.sh} and \file{configure} ({\em
       after} editing the \file{VERSION} file) to propgate the new
     version number properly
   \end{enumerate}
-
-\item Make the distribution package file with ``{\tt make dist}''.
+  
+\item Make the distribution package file with ``{\tt make
+    oscar-dist}''.
+  
+  This will make three tarballs -- the so-called ``regular'' (RPMs and
+  OSCAR install infrastructure), ``extra crispy'' (RPMs, SRPMs, and
+  OSCAR install infrastructure), and ``secret sauce'' (SRPM only)
+  tarballs.
   
   {\bf IMPORTANT:} Sanity check the tarball before going any further.
   Expand it into a tree and spot-check a few of the files in the
@@ -119,7 +126,7 @@ through the process.
   release, and that the licenses and copyrights were properly
   prepended to the text files.
   
-\item Run the \cmd{md5sum} command on the distribution tarball.
+\item Run the \cmd{md5sum} command on the distribution tarballs.
   Record the output MD5 sum value string (it will be used below).
 \label{dist-step-md5sum}
         
@@ -164,8 +171,8 @@ through the process.
     (should only happen if you screw up and need to tag the tree a
     second time with the same tag).
   \end{enumerate}
-
-\item Upload the distribution package file to {\tt
+  
+\item Upload the three distribution package files to {\tt
     ftp://upload.sf.net/incoming/}.
   
 \item Uploading will likely take a few minutes.  While that is
@@ -210,8 +217,9 @@ through the process.
         ensure proper formatting of the notice when it is displayed on
         a user's browser.
         
-      \item Paste the MD5 sum from step~\ref{dist-step-md5sum} at the
-        bottom of the release notes.
+      \item Paste the MD5 sums from step~\ref{dist-step-md5sum} at the
+        bottom of the release notes, and notate which MD5 sum is for
+        which distribution package.
 
       \item Ensure that the ``Preserve my pre-formatted text''
         checkbox is {\em not} checked.  {\bf Note:} If you did not use
@@ -226,11 +234,11 @@ through the process.
         This saves your work so far.
       \end{itemize}
 
-  \item Add the distribution package file to the release.
+  \item Add the three distribution package files to the release.
 
     \begin{itemize}
     \item In the Step 2 section, there is a list of files.  Check the
-      OSCAR distribution package file.
+      three OSCAR distribution package files.
       
     \item {\bf IMPORTANT:} Click on the ``Add Files and/or Refresh
       View'' button.  This saves your work so far.
@@ -239,15 +247,16 @@ through the process.
   \item Edit files in the release
 
     \begin{itemize}
-    \item Once you have completed the previous step, the OSCAR
-      distribution file will appear in step 3.
-
-    \item Ensure that all the data in the fields in step 3 is
-      correct.  All fields must be filled in, or the file will not
-      show up on the release.
+    \item Once you have completed the previous step, the three OSCAR
+      distribution files will appear in step 3.
       
-    \item {\bf IMPORTANT:} Click on the ``Update/Refresh'' button.
-      This saves your work so far.
+    \item For each of the three distribution files, set the data in
+      the fields in step 3 (architecture, etc.).  All fields must be
+      filled in, or the file will not show up on the release.  
+      
+    \item {\bf IMPORTANT:} After you edit the fields {\em for each
+        file}, click on the ``Update/Refresh'' button.  {\bf You must
+        do this for each of the three files.}
     \end{itemize}
 
   \item Email release notice
