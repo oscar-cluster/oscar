@@ -5,7 +5,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
-# $Id: wizard_prep,v 1.19 2003/01/21 21:49:19 jsquyres Exp $
+# $Id: wizard_prep,v 1.20 2003/03/03 23:16:35 ngorsuch Exp $
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -122,10 +122,6 @@ foreach my $pkg (@packages) {
 }
 oscar_log_subsection("Successfully ran package setup scripts");
 
-# Start the database and copy the package xml files into the database
-
-system( "$ENV{OSCAR_HOME}/scripts/package_config_xmls_to_database" );
-
 # Make sure /tftpboot/rpm exists, if not create it.  Then copy all the
 # rpms that we ship that need to be in the client into that directory
 
@@ -169,6 +165,20 @@ oscar_log_subsection("Installing server core RPMs");
 OSCAR::Package::install_rpms(@rpms) 
     or croak("Couldn't install the required packages needed for OSCAR Wizard to run");
 oscar_log_subsection("Successfully installed server core RPMs");
+
+# Make sure there is a database password
+
+oscar_log_subsection("Making sure there is an ODA database password");
+system( "$ENV{OSCAR_HOME}/scripts/make_database_password" );
+
+# Start the database and copy the package xml files into the database
+
+oscar_log_subsection("Initializing ODA database from package config.xml files");
+my $exit_status =
+    system( "$ENV{OSCAR_HOME}/scripts/package_config_xmls_to_database" )
+    / 256;
+croak("Couldn't set up oda database")
+    if $exit_status;
 
 # Run the post_server_rpm_install scripts
 
