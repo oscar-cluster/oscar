@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.2 2003/07/09 16:18:06 brechin Exp $
+# $Id: setup,v 1.3 2003/07/10 16:50:22 brechin Exp $
 #
 
 #use strict;
@@ -47,7 +47,7 @@ if ($distro_name eq "redhat" || $distro_name eq "rhas" ) {
     $mysqld      = 'mysqld';
 }
 
-if ($distro_name eq "SuSE") {
+if ($distro_name eq "suse") {
     @wanted_rpms = qw( mysql
 		mysql-client
 		perl-Msql-Mysql-modules
@@ -56,9 +56,6 @@ if ($distro_name eq "SuSE") {
 		mysql-shared
 		oda );
     $mysqld      = 'mysql';
-    my $src = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml.SuSE";
-    my $dest = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml";
-    copy($src, $dest) || croak("Could not copy $src to $dest");
 }
 
 # If we're on Mandrake, abort.  ODA will not be installed.
@@ -72,15 +69,6 @@ elsif ($distro_name eq "mandrake") {
 		perl-ExtUtils-PerlPP
 		oda );
     $mysqld      = 'mysql';
-    # FIXME (bligneri)
-    # Will just copy the XML file.
-    # Should be an argument in the XML file.
-    #my $xs = new XML::Simple(forcearray => 1, keeproot => 1);
-    #my $config = $xs->XMLin($ENV{"OSCAR_HOME"}."/packages/oda/config.xml");
-    my $src = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml.mandrake";
-    my $dest = $ENV{"OSCAR_HOME"} . "/packages/oda/config.xml";
-    copy($src, $dest) ||
-	croak("Could not copy $src to $dest");
 }
 
 # read in the file names in this package's RPMS directory
@@ -102,7 +90,7 @@ foreach my $rpm_file (@package_rpm_files) {
 }
 
 # Now install the "best" version of all the required RPMs if necessary
-if ( system("rpm -q oda >/dev/null") != 0 ) {
+if ( system("rpm -q oda >/dev/null 2>/dev/null") != 0 ) {
   oscar_log_subsection("Installing ODA RPMs @wanted_rpms");
   install_rpms(@wanted_rpms) or 
       croak("ODA is giving up and will not be installed");
