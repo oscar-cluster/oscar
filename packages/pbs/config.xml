@@ -10,6 +10,7 @@
       OSCAR source distribution.
      
       $Id: config.xml,v 1.11 2003/07/18 21:23:38 ngorsuch Exp $
+
   -->
   <name>pbs</name>
 
@@ -17,7 +18,7 @@
     <major>2</major>
     <minor>3</minor>
     <subversion>16</subversion>
-    <release>11</release>
+    <release>12</release>
     <epoch>1</epoch>
   </version>
 
@@ -67,12 +68,13 @@ the server node.</description>
   </conflicts>
 
   <rpmlist>
+      <filter distribution="redhat" distribution_version="9" architecture="ia32"/>
       <rpm>openpbs-oscar</rpm>
       <rpm>openpbs-oscar-mom</rpm>
       <rpm>openpbs-oscar-client</rpm>
   </rpmlist>
   <rpmlist>
-      <filter group="oscar_server"/>
+      <filter group="oscar_server" distribution="redhat" distribution_version="9" architecture="ia32"/>
       <rpm>openpbs-oscar-server</rpm>
       <rpm>openpbs-oscar-gui</rpm>
   </rpmlist>
