@@ -1,6 +1,6 @@
 package SystemInstaller::Image;
 
-#   $Header: /home/user5/oscar-cvsroot/oscar/packages/sis/scripts/fedora_patch/Image.pm,v 1.2 2004/03/03 21:23:56 bligneri Exp $
+#   $Header: /cvsroot/oscar/oscar/packages/sis/scripts/fedora_patch/Image.pm,v 1.1.2.1 2004/01/29 18:53:35 bligneri Exp $
 
 #   Copyright (c) 2001 International Business Machines
  
@@ -30,7 +30,7 @@ use Carp;
 @EXPORT = qw(find_distro init_image del_image write_scconf cp_image split_version); 
 @EXPORT_OK = qw(find_distro init_image del_image write_scconf cp_image split_version); 
  
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.1.2.1 $ =~ /(\d+)\.(\d+)/);
 
 my @MODS=qw(Kernel_ia64 Kernel_iseries Kernel_x86);
 use SystemInstaller::Image::Kernel_x86;

@@ -1,0 +1,47 @@
+--- /usr/lib/systeminstaller/SystemInstaller/Image.pm.orig      2004-07-13 23:15:49.000000000 -0400
++++ /usr/lib/systeminstaller/SystemInstaller/Image.pm   2004-07-13 23:16:27.000000000 -0400
+@@ -1,6 +1,6 @@
+ package SystemInstaller::Image;
+
+-#   $Header: /cvsroot/systeminstaller/systeminstaller/lib/SystemInstaller/Image.pm,v 1.30 2003/04/09 20:44:41 mchasal Exp $
++#   $Header: /cvsroot/oscar/oscar/packages/sis/scripts/fedora_patch/Image.pm,v 1.1.2.1 2004/01/29 18:53:35 bligneri Exp $
+
+ #   Copyright (c) 2001 International Business Machines
+
+@@ -19,6 +19,7 @@
+ #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+ #   Michael Chase-Salerno <salernom@us.ibm.com>
++#   Copyright (c) 2004, Revolution Linux Inc, Benoit des Ligneris
+ use strict;
+
+ use base qw(Exporter);
+@@ -30,7 +31,7 @@
+ @EXPORT = qw(find_distro init_image del_image write_scconf cp_image split_version);
+ @EXPORT_OK = qw(find_distro init_image del_image write_scconf cp_image split_version);
+
+-$VERSION = sprintf("%d.%02d", q$Revision: 1.30 $ =~ /(\d+)\.(\d+)/);
++$VERSION = sprintf("%d.%02d", q$Revision: 1.1.2.1 $ =~ /(\d+)\.(\d+)/);
+
+ my @MODS=qw(Kernel_ia64 Kernel_iseries Kernel_x86);
+ use SystemInstaller::Image::Kernel_x86;
+@@ -146,6 +147,18 @@
+                 $version=~s/AS//;
+                 return($distro,$version);
+         }
++
++       # Is it Fedora ?
++        @relfiles=glob("$pkgdir/fedora-release*.rpm");
++        if (scalar(@relfiles) == 1) {
++                $distro="Fedora";
++                # Now find the version
++                $relfiles[0]=~s/.*\///;
++                my ($j1,$j2,$version,$j3)=split(/-/,$relfiles[0]);
++                return($distro,$version);
++        }
++        undef @relfiles;
++
+         # Is this Redhat?
+         @relfiles=glob("$pkgdir/redhat-release*.rpm");
+         if (scalar(@relfiles) == 1) {
+

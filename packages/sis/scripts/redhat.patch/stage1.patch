@@ -1,0 +1,17 @@
+--- /usr/share/systeminstaller/distinfo/Redhat.orig/3AS/stages  1969-12-31 19:00:00.000000000 -0500
++++ /usr/share/systeminstaller/distinfo/Redhat/3AS/stages       2004-06-30 14:29:47.000000000 -0400
+@@ -0,0 +1,13 @@
++# Default Redhat stage file
++# basesystem and its prereqs
++# Copyright (c) 2004 Revolution Linux Inc, Benoit des Ligneris
++SISstage
++filesystem
++setup
++basesystem
++glibc-common
++glibc
++libtermcap
++termcap
++libgcc
++tzdata
+

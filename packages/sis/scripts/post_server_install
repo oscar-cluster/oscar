@@ -20,7 +20,39 @@
 
 use strict;
 use Carp;
+use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX;
+use Carp;
+use OSCAR::Distro;
 
 !system("/etc/init.d/systemimager-server-rsyncd restart") or croak("Couldn't restart systemimager-server-rsyncd");
 
 !system("grep -q DISKORDER /etc/systemimager/autoinstallscript.template || patch -bp0 < $ENV{OSCAR_PACKAGE_HOME}/scripts/systemimager-server-3.2.0.patch") or croak("Couldn't patch systemimager for disk independence");
+
+# Quick hack to have Fedora support while this is worked out by the SIS Team
+# Benoit des Ligneris, Las Vegas
+# To be removed as soon as the packages become avalaible !!!!
+my ($name, $ver) = OSCAR::Distro::which_distro_server();
+
+if ($name eq "fedora") {
+	print "Patching systeminstaller so that it support $name\n";
+	# If there is no patch, apply it
+	if (! -f "/usr/share/systeminstaller/distinfo/Fedora/stages") {
+	my @patches = glob("$ENV{OSCAR_PACKAGE_HOME}/scripts/fedora.patch/*.patch");
+	foreach my $patch (@patches) {
+		print "Applying patch $patch\n";
+    		!system("cd / && patch -p1 < $patch");
+	}
+	print "SIS patch for $name done\n";
+	}
+}
+if ($name eq "redhat") {
+	print "Patching the systeminstaller so that it support $name\n";
+	my @patches = glob("$ENV{OSCAR_PACKAGE_HOME}/scripts/redhat.patch/*.patch");
+	foreach my $patch (@patches) {
+		print "Applying patch $patch\n";
+    		!system("cd / && patch -p1 < $patch");
+	}
+	print "SIS patch for $name done\n";
+}
+

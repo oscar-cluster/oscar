@@ -1,0 +1,18 @@
+--- /usr/share/systeminstaller/distinfo.orig/Fedora/stages      1969-12-31 19:00:00.000000000 -0500
++++ /usr/share/systeminstaller/distinfo/Fedora/stages   2004-01-28 21:26:38.000000000 -0500
+@@ -0,0 +1,13 @@
++# Default fedora stage file
++# basesystem and its prereqs
++# Copyright (c) 2004, Revolution Linux Inc., Benoit des Ligneris
++SISstage
++filesystem
++setup
++basesystem
++glibc-common
++glibc
++tzdata
++libgcc
++libtermcap
++termcap
++
+

@@ -46,15 +46,27 @@
       <rpm>systeminstaller</rpm>
       <rpm>systeminstaller-x11</rpm>
       <rpm>perl-MLDBM</rpm>
-      <rpm>syslinux</rpm>
       <rpm>systemimager-server</rpm>
-      <rpm>systemimager-i386boot-standard</rpm>
       <rpm>systemimager-flamethrower</rpm>
       <rpm>flamethrower</rpm>
       <rpm>udpcast</rpm>
-      <rpm>rsync</rpm>
       <rpm>tftp-hpa</rpm>
+      <rpm>rsync</rpm>
       <rpm>perl-XML-Simple</rpm>
       <rpm>perl-XML-Parser</rpm>
+  </rpmlist>
+  <rpmlist>
+      <filter group="oscar_server"/>
+      <filter architecture="i386"/>
+      <filter architecture="i486"/>
+      <filter architecture="i586"/>
+      <filter architecture="i686"/>
+      <rpm>syslinux</rpm>
+      <rpm>systemimager-i386boot-standard</rpm>
+  </rpmlist>
+  <rpmlist>
+      <filter group="oscar_server"/>
+      <filter architecture="ia64"/>
+      <rpm>systemimager-ia64boot-standard</rpm>
   </rpmlist>
 </oscar>
