@@ -15,7 +15,7 @@
     <property name="minimumSize">
         <size>
             <width>576</width>
-            <height>556</height>
+            <height>562</height>
         </size>
     </property>
     <property name="maximumSize">
@@ -1717,7 +1717,7 @@
                                 <string>&amp;Back</string>
                             </property>
                             <property name="iconSet">
-                                <iconset></iconset>
+                                <iconset>backarrow.png</iconset>
                             </property>
                             <property name="toolTip" stdset="0">
                                 <string>Go to the previous step of the installer</string>
@@ -1749,6 +1749,9 @@
                             <property name="text">
                                 <string>&amp;Close</string>
                             </property>
+                            <property name="iconSet">
+                                <iconset>close.png</iconset>
+                            </property>
                         </widget>
                         <widget class="QPushButton">
                             <property name="name">
@@ -1773,7 +1776,7 @@
                                 <string>&amp;Next</string>
                             </property>
                             <property name="iconSet">
-                                <iconset></iconset>
+                                <iconset>nextarrow.png</iconset>
                             </property>
                             <property name="toolTip" stdset="0">
                                 <string>Go to the next step of the installer</string>
@@ -1943,6 +1946,18 @@
         <receiver>NodeMgmtDialog</receiver>
         <slot>straymacs_dimmer()</slot>
     </connection>
+    <connection>
+        <sender>backButton</sender>
+        <signal>clicked()</signal>
+        <receiver>NodeMgmtDialog</receiver>
+        <slot>backButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>nextButton</sender>
+        <signal>clicked()</signal>
+        <receiver>NodeMgmtDialog</receiver>
+        <slot>nextButton_clicked()</slot>
+    </connection>
 </connections>
 <tabstops>
     <tabstop>othermacs</tabstop>
@@ -1961,9 +1976,14 @@
     <include location="local" impldecl="in declaration">my @macs;</include>
     <include location="local" impldecl="in declaration">my $nodes;</include>
     <include location="local" impldecl="in declaration">my %usedmacs;</include>
-    <include location="local" impldecl="in declaration">use Qt::signals taskToolClosing => ['char*'];</include>
+    <include location="local" impldecl="in declaration">use lib "../Installer"; use InstallerImages;</include>
     <include location="local" impldecl="in implementation">NodeMgmtDialog.ui.h</include>
 </includes>
+<signals>
+    <signal>backButtonWasClicked(char*)</signal>
+    <signal>nextButtonWasClicked(char*)</signal>
+    <signal>taskToolClosing(char*)</signal>
+</signals>
 <slots>
     <slot>init()</slot>
     <slot>populate_nodetable()</slot>
@@ -1994,6 +2014,10 @@
     <slot>othermacs_dimmer()</slot>
     <slot>straymacs_dimmer()</slot>
     <slot>closeEvent()</slot>
+    <slot>backButton_clicked()</slot>
+    <slot>nextButton_clicked()</slot>
+    <slot>setButtonShown( char *, char *, bool )</slot>
+    <slot>reReadOda( char * )</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

@@ -24,7 +24,8 @@ IMAGES	= images/ball1.png \
 	images/print.png \
 	images/redo.png \
 	images/searchfind.png \
-	images/undo.png
+	images/undo.png \
+	images/backarrow.png
 TEMPLATE	=app
 CONFIG	+= qt warn_on release
 LANGUAGE	= C++

@@ -41,6 +41,23 @@ void NodeMgmtDialog::init()
 		      this,
 		      SLOT 'getcollectedmacs()');
 
+# If there is a parent of this window, then we are probably running
+# it in the InstallerWorkspace.  Need to connect some signals/slots.
+  if (parent()) {
+      Qt::Object::connect(parent(),
+                          SIGNAL 'signalButtonShown(char*,char*,bool)',
+                          SLOT   'setButtonShown(char*,char*,bool)');
+      Qt::Object::connect(parent(),
+                          SIGNAL 'odaWasUpdated(char*)',
+                          SLOT   'reReadOda(char*)');
+  } else {
+    # For Tasks, hide the Back/Next buttons if not running inside
+    # the InstallerWorkspace window.
+    backButton->hide();
+    nextButton->hide();
+  }
+
+  
 #create instance of timer for net collection
   macprocessTimer = Qt::Timer(this, "macprocessTimer");
     Qt::Object::connect(macprocessTimer,
@@ -483,4 +500,59 @@ void NodeMgmtDialog::closeEvent()
   # Send a signal to the parent workspace letting it know we are closing.
   emit taskToolClosing("NodeMgmt");
   SUPER->closeEvent(@_);   # Call the parent's closeEvent
+}
+
+
+void NodeMgmtDialog::backButton_clicked()
+{
+   emit backButtonWasClicked("NodeMgmt");
+}
+
+
+void NodeMgmtDialog::nextButton_clicked()
+{
+   emit nextButtonWasClicked("NodeMgmt");
+
+}
+
+void NodeMgmtDialog::setButtonShown( char *, char *, bool )
+{
+#########################################################################
+#  Subroutine: setButtonShown                                           #
+#  Parameters: (1) The directory name of the target Task for the signal #
+#              (2) The name of the button to show/hide ("Back"/"Next")  #
+#              (3) 1 = Show / 0 = Hide                                  #
+#  Returns   : Nothing                                                  #
+#  This subroutine (SLOT) is called to show/hide the Back/Next button,  #
+#  usually when the parent InstallerWorkspace says to.                  #
+#########################################################################
+    my ($childname,$buttonname,$shown) = @_;
+      
+    # Ignore Hide/Show requests to other Tasks
+    return if ($childname ne "NodeMgmt");
+
+    if ($buttonname =~ /Back/i) {
+	($shown) ? backButton->show() : backButton->hide();
+    } elsif ($buttonname =~ /Next/i) {
+        ($shown) ? nextButton->show() : nextButton->hide();
+    }
+}
+
+
+void NodeMgmtDialog::reReadOda( char * )
+{
+#########################################################################
+#  Subroutine: reReadOda                                                #
+#  Parameter : The directory name of the Task/Tool that updated oda     #
+#  Returns   : Nothing                                                  #
+#  This subroutine (SLOT) is called the InstallerWorkspace receives     #
+#  notice that another Task/Tool updated the oda database.              #
+#########################################################################
+    my ($childname) = @_;
+      
+    # Ignore the signal if we were the one that updated oda
+    return if ($childname ne "NodeMgmt");
+
+    # Reread the oda database and update the GUI as necessary
+    # ...
 }
