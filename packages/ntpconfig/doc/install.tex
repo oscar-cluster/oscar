@@ -1,53 +1,56 @@
-%% -*- latex -*-
-%%
-%% $Id: install.tex,v 1.2 2002/08/13 18:54:35 tfleury Exp $
-%%
-%% $COPYRIGHT$
-%%
+% -*- latex -*-
+%
+% $Id: install.tex,v 1.3 2002/08/31 16:32:10 jsquyres Exp $
+%
+% $COPYRIGHT$
+%
 
 \subsection{Managing NTP for the OSCAR Server and Clients}
 \label{app:ntp-overview}
 
-NTP is the Network Time Protocol which is used to synchronize the computer
-clock to external sources of time.  The \file{ntpd} daemon can operate as a
-client (by connecting to other NTP servers to get the current time) and as a
-server (by providing the current time to other NTP clients). 
+NTP is the Network Time Protocol which is used to synchronize the
+computer clock to external sources of time.  The \file{ntpd} daemon
+can operate as a client (by connecting to other NTP servers to get the
+current time) and as a server (by providing the current time to other
+NTP clients).
 
 \bigskip
 
-OSCAR uses NTP to synchronize
+OSCAR uses NTP to synchronize:
 \begin{itemize}
 \item the server to an external source of time (if the server is
-      connected to the internet) and
-\item the clients to the OSCAR server (so that the clients do not need to be 
-      connected to the internet).
+  connected to the internet), and
+\item the clients to the OSCAR server (so that the clients do not need
+  to be connected to the internet).
 \end{itemize}
 
 For the OSCAR server, NTP is configured to contact several public NTP
-servers for time synchronization.  If none of these external servers can be
-contacted (because the server is not connected to the internet for example),
-it will still be used by the OSCAR clients as a source for the current time.
-Thus, your OSCAR cluster will be locally synchronized even if it is not
-in-sync with the rest of the world.
+servers for time synchronization.  If none of these external servers
+can be contacted (because the server is not connected to the internet
+for example), it will still be used by the OSCAR clients as a source
+for the current time.  Thus, your OSCAR cluster will be locally
+synchronized even if it is not in-sync with the rest of the world.
 
-For each OSCAR client, NTP is configured to contact only the OSCAR server.
-If you want to have your clients connect to other public NTP servers,
-you will have to edit the NTP configuration files.
+For each OSCAR client, NTP is configured to contact only the OSCAR
+server.  If you want to have your clients connect to other public NTP
+servers, you will have to edit the NTP configuration files.
 
 \subsubsection{Configuring NTP}
 
-By default, the OSCAR server is set up to use several public NTP servers for
-its time source, and the OSCAR clients are set up to use the OSCAR server for
-their time sources.  If you want to change the servers used for time
-synchronization, you will need to edit two configuration files:
-\file{/etc/ntp.conf} and \file{/etc/ntp/step-tickers}.
+By default, the OSCAR server is set up to use several public NTP
+servers for its time source, and the OSCAR clients are set up to use
+the OSCAR server for their time sources.  If you want to change the
+servers used for time synchronization, you will need to edit two
+configuration files: \file{/etc/ntp.conf} and
+\file{/etc/ntp/step-tickers}.
 
-For the \file{/etc/ntp.conf} file, place entries of the form "{\tt server
-SERVER\_NAME\_OR\_IP}" at the top of the file, one entry per line.  You can
-have as many {\tt server} lines as you want.  However, ALL of the listed
-servers are consulted for time synchronization, so you may want to limit the
-number of servers to three or less.  Here is an example of the first few
-lines of a typical \file{/etc/ntp.conf} file:
+For the \file{/etc/ntp.conf} file, place entries of the form ``{\tt
+  server SERVER\_NAME\_OR\_IP}'' at the top of the file, one entry per
+line.  You can have as many {\tt server} lines as you want.  However,
+ALL of the listed servers are consulted for time synchronization, so
+you may want to limit the number of servers to three or less.  Here is
+an example of the first few lines of a typical \file{/etc/ntp.conf}
+file:
 
 \begin{verbatim}
      # These are some servers for use by the ntpd daemon.
@@ -56,12 +59,13 @@ lines of a typical \file{/etc/ntp.conf} file:
      server ntp.cmr.gov
 \end{verbatim}
 
-Notice that you may use either FQDNs (fully qualified domain names) or IP
-addresses.  Most NTP servers prefer that you use FQDNs in case they change
-the server IP address, but typically these IP addresses are fairly static.
+Notice that you may use either FQDNs (fully qualified domain names) or
+IP addresses.  Most NTP servers prefer that you use FQDNs in case they
+change the server IP address, but typically these IP addresses are
+fairly static.
 
-For the \file{/etc/ntp/step-tickers} file, place these NTP servers on a
-single line separated by spaces.  Here is an example of the
+For the \file{/etc/ntp/step-tickers} file, place these NTP servers on
+a single line separated by spaces.  Here is an example of the
 \file{/etc/ntp/step-tickers} file using the same servers:
 
 \begin{verbatim}
@@ -76,17 +80,17 @@ adjust the clock in small increments while the system is running.
 
 \subsubsection{Enabling/Disabling the NTP Service}
 
-By default, the \file{ntpd} daemon is configured to start at boot time in
-run levels 2 through 5.  If for some reason you want to disable NTP without
-actually uninstalling it, execute the following commands:
+By default, the \file{ntpd} daemon is configured to start at boot time
+in run levels 2 through 5.  If for some reason you want to disable NTP
+without actually uninstalling it, execute the following commands:
 
 \begin{verbatim}
-     /sbin/service ntpd stop
-     /sbin/chkconfig --level 2345 ntpd off
+ # /sbin/service ntpd stop
+ # /sbin/chkconfig --level 2345 ntpd off
 \end{verbatim}
 
-This will not only stop any currently running \file{ntpd} daemon, but also
-prevent NTP from starting up at boot time.
+This will not only stop any currently running \file{ntpd} daemon, but
+also prevent NTP from starting up at boot time.
 
 \bigskip 
 
@@ -98,11 +102,11 @@ To restart NTP and make NTP start up at boot time, execute the following
 commands:
 
 \begin{verbatim}
-     /sbin/service ntpd restart
-     /sbin/chkconfig --level 2345 ntpd on
+ # /sbin/service ntpd restart
+ # /sbin/chkconfig --level 2345 ntpd on
 \end{verbatim}
 
-For more information on NTP, see the (rather lengthy) documentation at 
+For more information on NTP, see the (rather lengthy) documentation at
 \url{http://www.ntp.org/}.
 
 

@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: common.tex,v 1.7 2002/07/28 05:56:00 jsquyres Exp $
+% $Id: common.tex,v 1.8 2002/08/31 16:32:11 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -12,14 +12,15 @@ of MPI implementation.
 
 This allows multiple MPI implementations to be installed on an OSCAR
 cluster (e.g., LAM/MPI and MPICH), yet still provide unambiguous MPI
-implementation selection such that ``\cmd{mpicc foo.c -o foo}'' will
-give deterministic results.
+implementation selection for each user such that ``\cmd{mpicc foo.c -o
+  foo}'' will give deterministic results.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Setting the system-level default}
 
-The system-level default MPI implementation can be set in two ways:
+The system-level default MPI implementation can be set in two
+different (yet equivalent) ways:
 
 \begin{enumerate}
 \item During the OSCAR installation, the GUI will prompt asking which
@@ -57,13 +58,13 @@ implementation will modify the \cmd{PATH} and \cmd{MANPATH} for all
 environment of the shell in which it was invoked.  For example:
 
 \begin{verbatim}
-  $ which mpicc
+  # which mpicc
   /opt/lam-1.2.3/bin/mpicc
-  $ switcher mpi = mpich-4.5.6 --system
-  $ which mpicc
+  # switcher mpi = mpich-4.5.6 --system
+  # which mpicc
   /opt/lam-1.2.3/bin/mpicc
-  $ bash
-  $ which mpicc
+  # bash
+  # which mpicc
   /opt/mpich-4.5.6/bin/mpicc
 \end{verbatim}
 

@@ -1,11 +1,11 @@
 %% -*- latex -*-
 %%
-%% $Id: install.tex,v 1.2 2002/07/27 18:29:26 jsquyres Exp $
+%% $Id: install.tex,v 1.3 2002/08/31 16:32:10 jsquyres Exp $
 %%
 %% $COPYRIGHT$
 %%
 
-\subsection{Selecting a Different Kernel with kernel\_picker}
+\subsection{Selecting a Different Kernel with \rpmname{kernel\_picker}}
 \label{app:kernel-picker-overview}
 
 \cmd{kernel\_picker} is a Perl script which allows a user to install a
@@ -26,9 +26,13 @@ original OSCAR image is in a subdirectory named \file{oscarimage}.
 \cmd{kernel\_picker} is installed in the
 \file{/opt/kernel\_picker/bin} directory.  Documentation is available
 in HTML, PostScript, PDF, plain text, and manpage formats.  To see the
-manpage documentation, type the following at the Unix command prompt:
+manpage documentation, type the following at a Unix command prompt:
 
 \begin{verbatim}
   $ man /opt/kernel_picker/man/man1/kernel_picker.1
 \end{verbatim}
 
+\begin{discuss}
+  When does one run this command?  Does one typically run this between
+  steps 1 and 2 in the OSCAR Wizard?
+\end{discuss}

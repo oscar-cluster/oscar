@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.9 2002/07/27 18:29:46 jsquyres Exp $
+% $Id: install.tex,v 1.10 2002/08/31 16:32:10 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -8,16 +8,17 @@
 \subsection{The OSCAR Password Installer and User Management (OPIUM)}
 \label{app:opium-overview}
 
-Currently, OPIUM does this by replicating files on a triggered basis.
-The user account files are copied to each node on a regular interval.
-It is possible to add your own files to this list, by editing the
-configuation file \cmd{/opt/opium/etc/sync\_users.conf}.
+Currently, OPIUM manages users and passwords by replicating files on a
+triggered basis.  The user account files are copied to each node on a
+regular interval.  It is possible to add your own files to this list,
+by editing the configuation file
+\cmd{/opt/opium/etc/sync\_users.conf}.
 
-\paragraph{SSH Configuration}
+\subsubsection{SSH Configuration}
 
 The OPIUM package also handles the SSH key setup.  This is done by
 placing startup scripts in \file{/etc/profile.d} which generate SSH
-user key files if they don't exist.  It also generates
+user key files if they don't already exist.  It also generates
 \file{authorized\_keys} files which enable users to traverse the
 cluster securely without entering passwords.  Since these files reside
 in the users' home directories, it is necessary for the home directory

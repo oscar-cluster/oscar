@@ -1,6 +1,6 @@
 % -*- latex -*-
 %
-% $Id: install.tex,v 1.5 2002/07/18 02:38:44 ngorsuch Exp $
+% $Id: install.tex,v 1.6 2002/08/31 16:32:11 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
@@ -9,12 +9,12 @@
 \label{app:pfilter-overview}
 
 {\bf pfilter} is a firewall compiler.  The {\bf pfilter} package is
-used to control the packet filtering capabilities available in the Linux
-kernel.  It takes in high-level firewall directives, and produces a
-complete firewall output commands file that can be turned on or off
-like other Linux services.  Like other compilers, {\bf pfilter} adds
-appropriate ``glue'' code to the compiled output.  In the case of {\bf
-  pfilter}, the added ``glue'' code consists of common things that are
+used to control the packet filtering capabilities available in the
+Linux kernel.  It takes in high-level firewall directives, and
+produces a complete firewall output commands file that can be turned
+on or off like other Linux services.  Like other compilers, {\bf
+  pfilter} adds appropriate ``glue'' code to the compiled output.
+{\bf pfilter}'s added ``glue'' code consists of common things that are
 done by any good firewall, including turning on TCP networking
 protective features.
 
@@ -35,8 +35,18 @@ to the {\bf pfilter} configuration file:
 \item all communication between nodes in the cluster is enabled
 \end{itemize}
 
-{\bf pfilter} is turned off by default. To enable {\bf pfilter} packet
-filtering on subsequent system boots, execute the following command:
+\begin{discuss}
+  Is this all still true?  I think we enable multicasting in the
+  cluster, don't we?  Does this need to be listed?
+\end{discuss}
+
+{\bf pfilter} is turned on by default -- this is considered good
+``defense in depth'' security for a cluster (see
+Section~\ref{app:security} for more information on cluster security).
+If for some reason you need to disable {\bf pfilter} packet filtering
+(perhaps for debugging -- disabling it permanently is not recomended),
+you can disable {\bf pfilter} subsequent system boots with the
+following command:
 
 \begin{verbatim}
   # chkconfig --level=2345 pfilter on
@@ -51,5 +61,4 @@ following command:
 
 For more information on how to use and configure {\bf pfilter}, see
 the \cmd{pfilter(8)} and \file{pfilter.conf(5)} and
-\file{pfilter.rulesets(5)} man pages. Before turning on {\bf pfilter},
-you might want to upgrade to the latest version.
+\file{pfilter.rulesets(5)} man pages. 

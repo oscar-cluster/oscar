@@ -1,13 +1,12 @@
 % -*- latex -*-
 %
-% $Id: common.tex,v 1.1 2002/08/28 12:35:48 jsquyres Exp $
+% $Id: common.tex,v 1.2 2002/08/31 16:32:10 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
 
 HDF5 is a Hierarchical Data Format product consisting of a data format
-specification and a supporting library implementation. The HDF5
-library is included with the OSCAR distribution.
+specification and a supporting library implementation.
 
 HDF5 includes the following features which make it a widely-used
 scientific data format:
@@ -23,11 +22,11 @@ scientific data format:
   though the outer limits have not been tested)
 \end{itemize}
 
-HDF5 is fully documented.  See
+HDF5 is fully documented -- see
 \file{/opt/hdf5-oscar-1.4.4-post2/doc/hdf5/index.html} for the
 documentation that accompanied the release of HDF5 that is installed
 with this OSCAR distribution.  For documentation of the current
-release of HDF5, as served from the HDF Group's website, see
+release of HDF5 as served from the HDF Group's website, see
 \url{http://hdf.ncsa.uiuc.edu/HDF5/doc/}.
 
 For further information regarding HDF5, such as lists of current
@@ -39,3 +38,12 @@ OSCAR installs the HDF5 library at
 library included in OSCAR is presently only available for the MPICH
 implementation of MPI.
 
+\begin{discuss}
+  Is this a true statement -- that HDF5 only [currently] supports
+  MPICH?  I thought that the HDF5 in OSCAR currently is only compiled
+  to run in serial mode...?
+  
+  I'm pretty sure that I (Jeff) added this statement about MPICH after
+  Jeremy wrote the initial docs, so it may not not reflect Jeremy's
+  original intent... (hence, this clarification question)
+\end{discuss}
