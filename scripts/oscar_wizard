@@ -380,6 +380,7 @@ sub postimagebuild {
 
 sub build_oscar_clients {
     my ($window, $step_number, $interface) = @_;
+
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
     my ($a, $b, $c, $d) = split(/\./,$ip);
     if ($d == 1) {
@@ -388,6 +389,20 @@ sub build_oscar_clients {
       $d = 1;
     }
     my $startip = "$a.$b.$c.$d";
+
+    # Select the right GW address: server-gw if one nic; interface-ip if multiple nics.
+
+    my $gw;
+    my @tables = qw( nodes nics networks );
+    my @results;
+    my $cmd = "read_records nodes.name=oscar_server nics.node_id=nodes.id nics.name";
+    single_dec_locked( $cmd, "READ", \@tables, \@results, undef );
+    if( @results == 1 ) {
+      $cmd .= "=$interface nics.network_id=networks.id networks.gateway";
+      single_dec_locked( $cmd, "READ", \@tables, \@results, undef );
+      $gw = $results[-1] if @results;
+    }
+    $gw ||= $ip;
 
     my $hostname = (uname)[1];
     my ($shorthostname,$domainname)  = split(/\./,$hostname,2);
@@ -408,7 +423,7 @@ sub build_oscar_clients {
                 numhosts => "0",
                 startinghostnum => "1",
                 netmask => $netmask,
-                gateway => $ip,
+                gateway => $gw,
                 startip => $startip,
                 postinstall => \&postaddclients,
                 noshow => {
