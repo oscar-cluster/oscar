@@ -198,7 +198,7 @@ sub restart_dhcpd
 #restarts the dhcpd by calling a 'service restart'
 #returns 0 if successfull restarting the daemon, 1 otherwise
 {
-	my $command = "/sbin/service dhcpd restart"; #invoke init/dhcpd directly? dunno
+	my $command = "/etc/init.d/dhcpd restart"; 
 	return (run_command_general($command));
 }
 
