@@ -1,9 +1,11 @@
 # -*- makefile -*-
 #
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.11 2004/04/06 14:31:50 brechin Exp $
+# $Id: Makefile.am,v 1.12 2004/04/06 14:33:16 brechin Exp $
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
