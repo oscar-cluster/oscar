@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: pre_configure,v 1.3 2002/10/30 12:16:18 jsquyres Exp $
+# $Id: pre_configure,v 1.4 2002/10/31 15:48:08 jsquyres Exp $
 #
 
 use strict;
@@ -117,16 +117,23 @@ if ($#tags_keys < 0) {
 <input type=\"hidden\" name=\"$tag\" value=\"" . $info->{names}[0] . "\">";
 	}
 
-	# Otherwise, print a radio button for each possible name
+	# Otherwise, print a radio button for each possible name.
+	# Note that adding "default" to the first radio button is ok,
+	# because the configurator itself will override this if there
+	# was previously some other option selected (e.g., this is
+	# your second time running the configurator and you previously
+	# selected some other option)
 
 	else {
+	    my $def = "checked";
 	    print OUTFILE 
 		"Default for tag \"$tag\" can be set to:\n    <ul>\n";
 	    foreach my $i (0 .. $#{$info->{names}}) {
 		print OUTFILE
-		    "    <li> <input type=\"radio\" name=\"$tag\" value=\"" .
+		    "    <li> <input $def type=\"radio\" name=\"$tag\" value=\"" .
 		    $info->{names}[$i] . "\"> " . $info->{packages}[$i] .
 		    " (\"" . $info->{names}[$i] . "\")</li>\n";
+		$def = "";
 	    }
 	    print OUTFILE "    </ol>\n";
 	}
