@@ -1,12 +1,79 @@
 % -*- latex -*-
 %
-% $Id: troubleshooting.tex,v 1.2 2002/01/17 03:04:23 jsquyres Exp $
+% $Id: troubleshooting.tex,v 1.3 2002/01/18 05:55:21 jsquyres Exp $
 %
 % $COPYRIGHT$
 %
 
 \section{Troubleshooting}
 \label{app:troubleshooting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Using LAM/MPI Instead of MPICH}
+
+Both LAM/MPI and MPICH are installed on all nodes in an OSCAR cluster.
+As of OSCAR version \oscarversion, MPICH is the default MPI
+implementation for all users.  LAM/MPI can be made the default for all
+users, or on a user-by-user basis.
+
+Scripts in the \file{/etc/profile.d} directory add both LAM/MPI and
+MPICH to each user's environment.  Scripts in this directory are
+executed in sorted order.  Four scripts in particular are relevant:
+
+\begin{verbatim}
+  /etc/profile.d/mpi-00mpich.sh
+  /etc/profile.d/mpi-00mpich.csh
+  /etc/profile.d/mpi-01lam.sh
+  /etc/profile.d/mpi-01lam.csh
+\end{verbatim}
+
+Each script adds the respective MPI implementation to the user's
+environment by appending a directory to the end of the user's path.
+Since the MPICH scripts are run before the LAM scripts, the MPICH
+\file{bin} directory is added to the user's path before the LAM
+\file{bin} directory.  Hence, the MPICH binaries are found before the
+LAM binaries.  For example, in the \cmd{bash} shell, the command:
+
+\begin{verbatim}
+  % which mpirun
+\end{verbatim}
+
+\noindent will show the path for the MPICH \cmd{mpirun}.
+
+Please note that future versions of OSCAR will make the process of
+switching between LAM/MPI and MPICH (for all users and for individual
+users) much simpler.
+
+\subsubsection{Making LAM/MPI the Default for All Users}
+
+To set the default environment for all users to use LAM/MPI instead of
+MPICH, either delete the \file{mpi\-00mpich*} files, or rename them to
+have a number higher than \file{01} so that they will be executed
+after the LAM script.  For example:
+
+\begin{verbatim}
+  % cd /etc/profile.d
+  % mv mpi-00mpich.sh mpi-05mpich.sh
+  % mv mpi-00mpich.csh mpi-05mpich.csh
+\end{verbatim}
+
+\subsubsection{Making LAM/MPI the Default for an Individual Users}
+
+If inidividual users want to use LAM/MPI instead of MPICH, they should
+edit their shell-setup file to invoke the LAM \file{profile.d} setup
+script before all the other \file{/etc/profile.d} scripts.  For
+example, \cmd{bash} users can typically edit their \file{.bashrc} file
+to add the following line before \file{/etc/bashrc} is invoked:
+
+\begin{verbatim}
+  . /etc/profile.d/mpi-01lam.sh
+\end{verbatim}
+
+Similarly, \file{csh}-style shell users can \cmd{source} the
+\file{mpi-01lam.csh} script in their \file{.cshrc} file.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Known Problems and Solutions}
 \label{app:troubleshooting-known-problems}
@@ -113,3 +180,5 @@ may do so by running the \file{uninstall} script located in the
 script and then remove the OSCAR directory created by unpacking the
 tarball, but does not remove the tarball itself.
 
+
+% LocalWords:  Exp
