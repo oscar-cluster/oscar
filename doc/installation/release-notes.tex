@@ -207,6 +207,37 @@ The following release notes apply to OSCAR version \oscarversion.
 \end{verbatim}
 \endchange
 
+\item PVM Installation (APItest) tests showing {\tt FAIL}.  In some cases,
+  namely the first pass through the OSCAR Wizard to install the system (from
+  original shell without PVM installed) may show output similar to the
+  following:
+  \begin{small}
+  \begin{verbatim}
+     [PASS]       2005-04-08T15:57:32Z   pvmd-path-ls.apt
+     [FAIL]       2005-04-08T15:57:32Z   envvar-pvm_arch.apt
+     [FAIL]       2005-04-08T15:57:32Z   envvar-pvm_root.apt
+     [FAIL]       2005-04-08T15:57:32Z   pvmd-path-which.apt
+     [PASS]       2005-04-08T15:57:33Z   modulecmd-path-ls.apt
+     [PASS]       2005-04-08T15:57:33Z   pvm-module-list.apt
+     [PASS]       2005-04-08T15:57:33Z   pvm-module-show-pvm_rsh.apt
+     [PASS]       2005-04-08T15:57:33Z   pvm-module-show-pvm_arch.apt
+     [PASS]       2005-04-08T15:57:34Z   pvm-module-show-pvm_root.apt
+  \end{verbatim}
+  \end{small}
+
+  The three tests marked as {\tt FAIL} (with all others showing {\tt PASS})
+  can typically be ignored.  These three tests check PVM setting using the
+  same environment as the OSCAR Wizard.  If it the Wizard is being run from
+  the same shell that was used during the initial OSCAR install (i.e., the
+  shell used to install PVM via the Wizard) then the PVM setting are absent
+  from the environment and therefore will not appear in the child process
+  (APItests).  The fact that the other tests show {\tt PASS} indicates that
+  starting a new shell should update the environment and all tests should
+  pass.  To confirm this:
+  (1) Exit the OSCAR Wizard, (2) Start a new shell,
+  (3) Start the OSCAR Wizard and (4) Re-run the Test Cluster step
+  (all tests should show PASS)
+
 
 \end{itemize}
 
