@@ -9,8 +9,8 @@
   </info>
 
 
-  <dep parent='modulecmd-path.apt'  child='pvm-module-list.apt' />
-  <dep parent='pvm-module-list.apt'  child='pvm-module-show.apb' />
+  <dep parent='modulecmd-path-ls.apt'  child='pvm-module-list.apt' />
+  <dep parent='pvm-module-list.apt'    child='pvm-module-show.apb' />
 
 </testBatch>
 

@@ -15,13 +15,12 @@
      (not-necessarily in ENV yet)
   </info>
 
-  <test type="cmd">
+  <test type="script">
 
-    <command wdir='/tmp'>/opt/modules/3.1.6/bin/modulecmd</command> 
-
-    <input name="argument" format="literal">bash</input>
-    <input name="argument" format="literal">show</input> 
-    <input name="argument" format="literal">pvm</input> 
+    <!-- NOTE: Must use script form w/ bash to get ENV sourced/ready -->
+    <command interpreter='/bin/bash' wdir='/tmp'>
+    /opt/modules/3.1.6/bin/modulecmd bash show pvm
+    </command> 
 
 
     <!-- NOTE: output goes to STDERR not STDOUT ! -->

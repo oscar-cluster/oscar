@@ -15,11 +15,16 @@
      (not-necessarily in ENV yet)
   </info>
 
-  <test type="cmd">
-    <command wdir='/tmp'>/opt/modules/3.1.6/bin/modulecmd</command> 
+  <test type="script">
 
-    <input name="argument" format="literal">bash</input>
-    <input name="argument" format="literal">list</input> 
+    <!-- NOTE: I had to use script form in order to have a bash
+         shell that would source the appropriate ENV to get 
+         modules loaded and usable.
+      -->
+    <command interpreter='/bin/bash' wdir='/tmp'>
+     /opt/modules/3.1.6/bin/modulecmd bash list
+    </command> 
+
 
     <!-- NOTE: output goes to STDERR not STDOUT ! -->
     <output name="stderr" format="regexp">.*pvm.*</output> 

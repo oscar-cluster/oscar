@@ -14,9 +14,9 @@
 
 
   <!-- These tests check using default (parent's) ENV -->
+  <!-- They should only work if the ENV has been updated -->
   <test name="pvmd-path-which.apt"/>
   <test name="envvar.apb"/>
-
 
 </testBatch>
 

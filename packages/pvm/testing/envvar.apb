@@ -8,8 +8,8 @@
    for PVM are set.
   </info>
 
-  <test name="envvar-pvmroot.apt"/>
-  <test name="envvar-pvmarch.apt"/>
+  <test name="envvar-pvm_root.apt"/>
+  <test name="envvar-pvm_arch.apt"/>
 
 </testBatch>
 
