@@ -207,6 +207,21 @@ The following release notes apply to OSCAR version \oscarversion.
 \end{verbatim}
 \endchange
 
+
+\item \emph{FutureWarning} message during APItests on Python2.3 based systems.
+   The following is a warning message about the for the version of
+   TwistedMatrix used by the APItest tool.  It is only a warning and can be
+   ignored.
+   \begin{small}
+   \begin{verbatim}
+   Running Installation tests for pvm
+   /usr/lib/python2.3/site-packages/twisted/internet/defer.py:398:
+   FutureWarning: hex()/oct() of negative int will return
+   a signed string in Python 2.4 and up return "<%s at %s>" 
+   % (cname, hex(id(self)))
+   \end{verbatim}
+   \end{small}
+
 \item PVM Installation (APItest) tests showing {\tt FAIL}.  In some cases,
   namely the first pass through the OSCAR Wizard to install the system (from
   original shell without PVM installed) may show output similar to the
