@@ -8,6 +8,7 @@
   Author: Jason Brechin
   Copyright 2004 Revolution Linux
             Benoit des Ligneris <bdesligneris@revolutionlinux.com>
+  Copyright 2005 Bernard Li <bli@bcgsc.ca>
  
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
@@ -82,106 +83,8 @@
   </rpmlist>
   
   <rpmlist>
-    <filter distribution='mandrake' distribution_version='9.2' group='oscar_server' />
-	<rpm>xterm</rpm>
-        <rpm>apache</rpm>
-	<!-- <rpm>apache-common</rpm> -->
-        <rpm>apache-conf</rpm>
-        <rpm>apache-modules</rpm>
-        <rpm>dhcp-common</rpm>
-        <rpm>dhcp-server</rpm>
-        <rpm>expat</rpm>
-        <rpm>libpcap0</rpm>
-        <rpm>librrdtool0</rpm>
-        <rpm>locales</rpm>
-        <rpm>locales-en</rpm>
-        <rpm>lynx</rpm>
-        <rpm>mod_php</rpm>
-	<rpm>php-ini</rpm>
-	<rpm>libphp_common432</rpm>
-        <rpm>libmm1</rpm>
-        <rpm>openssh</rpm>
-        <rpm>openssh-clients</rpm>
-        <rpm>openssh-server</rpm>
-        <rpm>openssl</rpm>
-        <rpm>perl-devel</rpm>
-        <rpm>perl-CGI</rpm>
-        <rpm>perl-XML-Parser</rpm>
-	<!-- <rpm>pwlib1</rpm> -->
-	<rpm>libpwlib1</rpm>
-        <rpm>nfs-utils</rpm>
-        <rpm>nfs-utils-clients</rpm>
-	<!-- <rpm>php</rpm> -->
-	<!-- <rpm>php-common</rpm> -->
-        <rpm>php-xml</rpm>
-        <rpm>python</rpm>
-        <rpm>python2-compat</rpm>
-        <rpm>rrdtool</rpm>
-        <rpm>tcsh</rpm>
-        <rpm>tcpdump</rpm>
-        <rpm>xinetd</rpm>
-        <rpm>zlib1</rpm>
-        <rpm>zlib1-devel</rpm>
-        <rpm>postgresql</rpm>
-        <!-- <rpm>libpgsql2</rpm> -->
-        <!-- <rpm>libpgperl</rpm> -->
-        <rpm>libpgtcl2</rpm>
-        <rpm>libecpg3</rpm>
-        <!-- <rpm>libpgsqlodbc0</rpm> -->
-        <rpm>sfio</rpm>
-        <rpm>libgmp3</rpm>
-  </rpmlist>
-
-  <rpmlist>
-    <filter distribution='mandrake' distribution_version='9.0' group='oscar_server' />
-	<rpm>xterm</rpm>
-        <rpm>apache</rpm>
-        <rpm>apache-common</rpm>
-        <rpm>apache-conf</rpm>
-        <rpm>apache-modules</rpm>
-        <rpm>dhcp-common</rpm>
-        <rpm>dhcp-server</rpm>
-        <rpm>expat</rpm>
-        <rpm>libpcap0</rpm>
-        <rpm>librrdtool0</rpm>
-        <rpm>locales</rpm>
-        <rpm>locales-en</rpm>
-        <rpm>lynx</rpm>
-        <rpm>mod_php</rpm>
-        <rpm>libmm1</rpm>
-        <rpm>openssh</rpm>
-        <rpm>openssh-clients</rpm>
-        <rpm>openssh-server</rpm>
-        <rpm>openssl</rpm>
-        <rpm>perl-devel</rpm>
-        <rpm>perl-CGI</rpm>
-        <rpm>perl-XML-Parser</rpm>
-        <rpm>pwlib1</rpm>
-	<rpm>nfs-utils</rpm>
-	<rpm>nfs-utils-clients</rpm>
-        <rpm>php</rpm>
-        <rpm>php-common</rpm>
-        <rpm>php-xml</rpm>
-	<rpm>python</rpm>
-	<rpm>python2-compat</rpm>
-        <rpm>rrdtool</rpm>
-        <rpm>tcsh</rpm>
-        <rpm>tcpdump</rpm>
-        <rpm>xinetd</rpm>
-        <rpm>zlib1</rpm>
-	<rpm>zlib1-devel</rpm>
-	<rpm>postgresql</rpm>
-	<rpm>libpgsql2</rpm>
-	<rpm>libpgperl</rpm>
-	<rpm>libpgtcl2</rpm>
-	<rpm>libecpg3</rpm>
-	<rpm>libpgsqlodbc0</rpm>
-	<rpm>sfio</rpm>
-	<rpm>libgmp3</rpm>
-  </rpmlist>
-
-  <rpmlist>
     <filter distribution='fedora' distribution_version='2' group='oscar_server' />
+    <filter distribution='fedora' distribution_version='3' group='oscar_server' />
         <rpm>apr</rpm>
         <rpm>apr-util</rpm>
 	<rpm>dhcp</rpm>
@@ -206,50 +109,6 @@
   </rpmlist>
 
   <rpmlist>
-    <filter distribution='redhat' distribution_version='7.3' group='oscar_server' />
-    <filter distribution='whitebox' distribution_version='3.0' group='oscar_server' />
-        <rpm>dhcp</rpm>
-        <rpm>gd</rpm>
-        <rpm>mm</rpm>
-        <rpm>nfs-utils</rpm>
-        <rpm>openssh</rpm>
-        <rpm>openssh-clients</rpm>
-        <rpm>openssh-server</rpm>
-        <rpm>openssl</rpm>
-        <rpm>tcpdump</rpm>
-        <rpm>xinetd</rpm>
-        <rpm>apache</rpm>
-        <rpm>php</rpm>
-        <rpm>expat</rpm>
-        <rpm>python2</rpm>
-        <rpm>zlib</rpm>
-        <rpm>zlib-devel</rpm>
-        <rpm>shadow-utils</rpm>
-        <rpm>libcap</rpm>
-  </rpmlist>
-
-  <rpmlist>
-    <filter distribution='redhat' distribution_version='8.0' group='oscar_server' />
-        <rpm>dhcp</rpm>
-        <rpm>gd</rpm>
-        <rpm>nfs-utils</rpm>
-        <rpm>openssh</rpm>
-        <rpm>openssh-clients</rpm>
-        <rpm>openssh-server</rpm>
-        <rpm>openssl</rpm>
-        <rpm>tcpdump</rpm>
-        <rpm>xinetd</rpm>
-        <rpm>httpd</rpm>
-        <rpm>php</rpm>
-        <rpm>expat</rpm>
-        <rpm>python</rpm>
-        <rpm>zlib</rpm>
-        <rpm>zlib-devel</rpm>
-        <rpm>shadow-utils</rpm>
-        <rpm>libcap</rpm>
-  </rpmlist>
-
-  <rpmlist>
     <filter distribution='redhat' distribution_version='9' group='oscar_server' />
     <filter distribution='redhat' distribution_version='3as' group='oscar_server' />
         <rpm>dhcp</rpm>
@@ -270,47 +129,6 @@
         <rpm>shadow-utils</rpm>
         <rpm>libcap</rpm>
 	<rpm>ntp</rpm>
-  </rpmlist>
-
-  <rpmlist>
-    <filter distribution='suse' distribution_version='8.1' group='oscar_server' />
-        <rpm>dhcp-server</rpm>
-        <rpm>dhcp-base</rpm>
-        <rpm>python</rpm>
-        <rpm>gd</rpm>
-        <rpm>mm</rpm>
-        <rpm>nfs-utils</rpm>
-        <rpm>openssh</rpm>
-        <rpm>openssl</rpm>
-        <rpm>tcpdump</rpm>
-        <rpm>xinetd</rpm>
-        <rpm>apache</rpm>
-        <rpm>mod_php4</rpm>
-        <rpm>mod_php4-core</rpm>
-        <rpm>libmcrypt</rpm>
-        <rpm>gmp</rpm>
-        <rpm>t1lib</rpm>
-        <rpm>ucdsnmp</rpm>
-        <rpm>libiodbc</rpm>
-        <rpm>libmcal</rpm>
-        <rpm>sablot</rpm>
-        <rpm>perl-SNMP</rpm>
-        <rpm>imap-lib</rpm>
-        <rpm>postgresql-libs</rpm>
-        <rpm>expat</rpm>
-        <rpm>zlib</rpm>
-        <rpm>zlib-devel</rpm>
-        <rpm>shadow</rpm>
-        <rpm>libcap</rpm>
-        <rpm>python2-compat</rpm>
-        <rpm>perl-HTML-Tagset</rpm>
-        <rpm>perl-HTML-Parser</rpm>
-	<rpm>perl-libwww-perl</rpm>
-	<rpm>perl-URI</rpm>
-	<rpm>freetype2-devel</rpm>
-        <rpm>libmng-devel</rpm>
-        <rpm>mesaglut-devel</rpm>
-        <rpm>libpng-devel</rpm>
   </rpmlist>
 
 </oscar>

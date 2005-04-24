@@ -26,6 +26,7 @@ use OSCAR::PackageBest;
 # intelligence here to figure out what distro we're on and copythe
 # right RPM(s) to the packages/switcher/RPMS directory.
 
+my $pkg_name = "switcher";
 my $source_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro/";
 my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
 my ($name, $ver) = OSCAR::Distro::which_distro_server();
@@ -44,8 +45,15 @@ if ($name eq "redhat") {
 } elsif ($name eq "mandrake") {
   $source_dir .= "mdk10";
 } elsif ($name eq "fedora") {
-  	$source_dir .= $name;
-	$source_dir .= $ver;
+  $source_dir .= $name;
+  if ($ver eq "2") {
+    $source_dir .= "2";
+  } elsif ($ver eq "3") {
+    $source_dir .= "2";
+  } else {
+    print "Error - $pkg_name: no support for $name $ver\n";
+    exit(1);
+  }
 }
 
 print "Using modules RPMs from: $source_dir\n";

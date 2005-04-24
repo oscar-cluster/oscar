@@ -36,6 +36,7 @@
 
   <rpmlist>
       <filter group="oscar_server" distribution="fedora" distribution_version="2"/>
+      <filter group="oscar_server" distribution="fedora" distribution_version="3"/>
       <filter group="oscar_server" distribution="redhat"/>
       <filter group="oscar_server" distribution="mandrake" distribution_version="10.0"/>
       <rpm>ganglia-monitor-core-gmetad</rpm>
