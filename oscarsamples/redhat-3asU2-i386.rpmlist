@@ -56,6 +56,7 @@ gnuplot
 gpm
 grep
 groff
+grub
 gzip
 hdparm
 hotplug
@@ -81,7 +82,6 @@ libstdc++
 libstdc++-devel
 libtermcap
 libuser
-lilo
 logrotate
 losetup
 lsof
