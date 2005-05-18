@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
-# Copyright (c) 2002-2004 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -65,9 +65,14 @@ fi
 
 AC_PATH_PROG(PUIC, puic, no, [$PATH:/opt/perl-Qt/bin])
 if test "$PUIC" = "no"; then
-   AC_MSG_WARN([*** You will not be able to build the OSCAR wizard])
-   AC_MSG_WARN([*** You need to install Perl-Qt to be able to build the wizard])
-   PUIC="@echo puic"
+    AC_MSG_WARN([*** You will not be able to build the OSCAR wizard])
+    AC_MSG_WARN([*** You need to install Perl-Qt to be able to build the wizard])
+    PUIC="@echo puic"
+
+    if test -d .svn; then 
+        AC_MSG_WARN([*** Developer checkouts from Subversion *MUST* have puic])
+        AC_MSG_ERROR([Cannot continue])
+    fi
 fi
 AC_SUBST(PUIC)
 AC_SUBST(PERL)
