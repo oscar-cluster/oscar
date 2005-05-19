@@ -162,6 +162,8 @@ AC_CONFIG_FILES([
 
     lib/Makefile
     lib/OSCAR/Makefile
+    lib/OSCAR/OCA/Makefile
+    lib/OSCAR/OCA/OS_Detect/Makefile
     lib/Qt/Makefile
     lib/Tk/Makefile
     lib/Tk/HTML/Makefile
