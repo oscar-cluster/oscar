@@ -4,8 +4,9 @@
   <!--
       Copyright (c) 2003 NCSA
                          All rights reserved.
-     Copyright 2004 Revolution Linux
+      Copyright 2004 Revolution Linux
             Benoit des Ligneris <bdesligneris@revolutionlinux.com>
+      Copyright 2005 Bernard Li <bli@bcgsc.ca>
 
       This file is part of the OSCAR software package.  For license
       information, see the COPYING file in the top level directory of the
@@ -14,7 +15,6 @@
       $Id: config.xml,v 1.14 2003/12/04 05:19:26 ngorsuch Exp $
   -->
   <name>perl-Qt</name>
-
 
   <version>
     <major>3</major>
@@ -41,17 +41,9 @@
   </rpmlist>
 
   <rpmlist>
-<!-- For distros with Perl 5.8 -->
-    <filter distribution='fedora'   group='oscar_server'/>
-    <filter distribution='redhat'   group='oscar_server'/>
-    <filter distribution='whitebox' group='oscar_server' />
-    <filter distribution='suse' group='oscar_server'/>
+    <filter distribution='fedora' group='oscar_server'/>
+    <filter distribution='redhat' group='oscar_server'/>
       <rpm>perl-Qt</rpm>
-  </rpmlist>
-
-  <rpmlist>
-    <filter distribution='suse' group='oscar_server'/>
-      <rpm>perl-Qt-qt3-compat</rpm>
   </rpmlist>
 
 </oscar>
