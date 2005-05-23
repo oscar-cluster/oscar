@@ -82,6 +82,112 @@ visualized either at runtime or post-mortem.</description>
 
     
   <rpmlist>
+    <!-- Distributions that provide libaio -->
+
+    <!-- Do *NOT* remove these filter lines and libaio/libaio-devel!
+         These are necessary because of an oddity with RPM and how LAM
+         uses libaio.  In particular, the libaio RPM may include *a*
+         shared libaio library, such as libaio.so.1, but *not* include
+         libaio.so.  So if a user tries to mpicc an application, mpicc
+         is going to add -laio to the compile line, but the linker
+         won't find it because it only looks for .so files, not
+         .so[.*].  Hence, we need to ensure that the right RPMs are
+         installed -- and the easiest mechanism for this is to list
+         them here in config.xml.
+
+         You may be thinking: "Wait!  Isn't this something that
+         PackMan/DepMan should figure out automatically?"  
+
+         Yes, young Grasshopper, it is.  And despite initial
+         appearances, PackMan/DepMan are doing exactly the Right
+         Things -- it's just the odd RPM packaging on some systems
+         that cause the problems.
+
+         The automatic dependency generator in RPM will generate a
+         dependency for LAM for libaio.so.1 (or whatever) -- but *not*
+         for the plain vanilla libaio.so.  So PackMan/DepMan will pick
+         up a dependency for libaio.so.1, which -- at least in some
+         cases -- is in the libaio RPM.  But the plain vanilla
+         libaio.so file (or sym link or whatever) is -- at least in
+         some cases -- in libaio-devel.  And this plain vanilla .so is
+         the file that we need to be able to mpicc successfully.  So
+         PackMan/DepMan don't see a dependency for libaio.so (because
+         it doesn't exist), and it therefore doesn't pick up
+         libaio-devel.
+
+         You may be thinking: "Wait!  This is a no-brainer!  Add
+         'Require: libaio-devel' into the LAM spec file, and we're
+         done!"  
+
+         Not so, young Grasshopper.  AIO is an optional part of LAM,
+         and is used by the sub-package ROMIO (included in LAM) -- but
+         only *if* the system has AIO.  So LAM's configure determines
+         whether the system has AIO, and if so, uses it (e.g., adds it
+         to the mpicc command line).  But if the system does not have
+         AIO, then LAM doesn't use it.  Most Linux systems have AIO,
+         but some do not.  Some versions of Mandrake (Mandriva), for
+         example, do not.  So we can't simply put "Require:
+         libaio-devel" because that would fail on Mandrake systems.
+
+         You may be thinking: "Wait!  You can just put a specfile
+         conditional around that Require: statement!"
+
+         Yes, this is true, young Grasshopper, but then that violates
+         the Law of Least Astonishment -- when rebuilding the SRPM,
+         some users will need to do:
+
+         shell$ rpmbuild --rebuild lam-...src.rpm --define need_aio 1
+         or
+         shell$ rpmbuild --rebuild lam-...src.rpm --define need_aio 0
+
+         whereas most users will [rightfully] expect to only have to
+         do the following:
+
+         shell$ rpmbuild --rebuild lam-...src.rpm
+
+         Making them add the additional --define on the command line
+         just to get a function RPM seems like a Bad Idea.
+
+         You may be thinking: "Wait!  You can just have different
+         .spec files for different Linux distros!"
+
+         Yes, this is true, young Grasshopper, but we, the LAM
+         maintainers, are unwilling to do that.  We already have 2
+         different specfiles (one for OSCAR and one for normal LAM
+         distributions), and are unwilling to put in the extra effort
+         to maintain a 3rd (or 4th or 5th or ...) specfile just
+         because RPM sucks and can't handle this kind of situation
+         dynamically.
+
+         So, young Grasshopper, I close with a quote from the Tao of
+         Programming, by Master Geofray James, which seems
+         particularly appropriate here:
+
+         ------------------------------------------------------------
+         Thus spake the master programmer:
+
+         "Though a program be but three lines long, someday it will
+         have to be maintained."
+         ------------------------------------------------------------
+         -->
+    <filter distribution='fedora'   distribution_version='1'   />
+    <filter distribution='fedora'   distribution_version='2'   />
+    <filter distribution='fedora'   distribution_version='3'   />
+    <filter distribution='redhat'   distribution_version='8.0' />
+    <filter distribution='redhat'   distribution_version='9'   />
+    <filter distribution='redhat'   distribution_version='3as' />
+    <filter distribution='whitebox' />
+    <filter distribution='suse' />
+    <rpm>libaio</rpm>
+    <rpm>libaio-devel</rpm>
+    <rpm>lam-oscar</rpm>
+    <rpm>lam-oscar-modulefile</rpm>
+    <rpm>lam-switcher-modulefile</rpm>
+  </rpmlist>
+
+  <rpmlist>
+    <!-- Distributions that don't provide libaio -->
+    <filter distribution='mandrake' />
     <rpm>lam-oscar</rpm>
     <rpm>lam-oscar-modulefile</rpm>
     <rpm>lam-switcher-modulefile</rpm>
