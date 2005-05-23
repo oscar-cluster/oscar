@@ -23,8 +23,16 @@ use Config;
 
 my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
 
-my $redhat_release = `cat /etc/redhat-release`;
+my $redhat_release;
 my $fc_release;
+
+# If /etc/redhat-release exists, continue, otherwise, quit.
+
+if (-e "/etc/redhat-release") {
+	$redhat_release = `cat /etc/redhat-release`;
+} else {
+	return 0;
+}
 
 # We only support Fedora Core 2 and 3, otherwise quit.
 
