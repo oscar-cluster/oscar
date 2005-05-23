@@ -23,6 +23,10 @@ use Config;
 
 my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
 
+# We only support Linux -- if we're not Linux, then quit
+
+return 0 if ("Linux" ne $sysname);
+
 my $redhat_release;
 my $fc_release;
 
@@ -47,14 +51,16 @@ if ($redhat_release =~ 'Heidelberg') {
 # First set of data
 
 our $id = {
-    os => "fedora",
+    os => "linux",
     arch => $machine,
-    os_release => $fc_release,
+    os_release => $release,
+    linux_distro => "fedora",
+    linux_distro_version => $fc_release
 };
 
 # Make final string
 
-$id->{ident} = $id->{os} . "-" . $id->{arch} . "-" . $id->{os_release};
+$id->{ident} = "$id->{os}-$id->{arch}-$id->{os_release}-$id->{linux_distro}-$id->{linux_distro_version}";
 
 # Once all this has been setup, whenever someone invokes the "query"
 # method on this component, we just return the pre-setup data.
