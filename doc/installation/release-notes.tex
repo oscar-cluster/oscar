@@ -21,7 +21,7 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \begin{itemize}
 
-\item Red Hat Linux 9, Fedora Core 2 and Mandrakelinux 10.0 support on x86.
+\item Red Hat Linux 9, Fedora Core 2 and Mandriva Linux 10.0 support on x86.
 \item Red Hat Enterprise Linux (RHEL) 3 support on Itanium and x86.
 \item New RPM dependency finder helps build the server (DepMan/PackMan).
 \item Ganglia now included in the default package set.
@@ -478,12 +478,12 @@ For example,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Mandrakelinux 10.0 Notes}
+\subsection{Mandriva Linux 10.0 Notes}
 \label{subsec:mdk10notes}
 
 \begin{itemize}
 
-\item The version of Mandrakelinux supported is 10.0 Official which is a
+\item The version of Mandriva Linux supported is 10.0 Official which is a
 3CD set.  While it may be possible to install OSCAR with 10.0 Community,
 it is not officially supported.
 
@@ -491,11 +491,11 @@ it is not officially supported.
 \file{kernel-enterprise} will be selected to be installed on the headnode.
 As a result, this kernel will be used upon subsequent reboot.
 
-\item While Mandrakelinux 10.0 supports 2.4 kernel, OSCAR only supports
+\item While Mandriva Linux 10.0 supports 2.4 kernel, OSCAR only supports
 2.6 kernel - this is explicitly specified in
 \file{oscarsamples/mandrake-10.0-i386.rpmlist}.
 
-\item The \file{tftp-server} RPM which came with Mandrakelinux 10.0 expects the
+\item The \file{tftp-server} RPM which came with Mandriva Linux 10.0 expects the
 pxelinux boot files to reside in \file{/var/lib/tftpboot} but OSCAR puts
 them in \file{/tftpboot}.  To get around this issue a symbolic link is
 created from \file{/var/lib/tftpboot} to \file{/tftpboot}.
