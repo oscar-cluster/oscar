@@ -10,6 +10,7 @@
 include $(top_srcdir)/dist/Makefile.options
 
 oscar_SCRIPTS		= \
+			Fedora.pm
                         OSX.pm
 
 EXTRA_DIST		= $(oscar_SCRIPTS)
