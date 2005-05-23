@@ -37,7 +37,7 @@ sub open {
 
     # Did we find one and only one?
 
-    if (!$comps) {
+    if (scalar(@$comps == 0)) {
         print "Could not find an os-detect component for this system!\n";
         die "Cannot continue";
     } elsif (scalar(@$comps) > 1) {
