@@ -56,7 +56,7 @@ if (! open M, "machine|") {
 
 # Make final string
 
-$id->{ident} = "osx-" . $id->{arch} . "-" . $id->{os_release};
+$id->{ident} = "osx-$id->{arch}-$id->{os_release}";
 
 # Once all this has been setup, whenever someone invokes the "query"
 # method on this component, we just return the pre-setup data.
