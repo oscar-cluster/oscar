@@ -33,21 +33,34 @@ EOF
     fi
 }
 
+# Create tmp directory to put temporary files
+
+mpich_tmp="/tmp/mpich-test"
+if test ! -s $mpich_tmp; then
+    mkdir $mpich_tmp
+fi
+
 p=`pwd`
 banner="MPI C bindings test:"
-cmds="cp cpi.c /tmp && cd /tmp && mpicc cpi.c -o mpich-cpi && cp mpich-cpi $p && cd $p && mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cpi"
+cmds="cp cpi.c $mpich_tmp && cd $mpich_tmp && mpicc cpi.c -o mpich-cpi && cp mpich-cpi $p && cd $p && mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cpi"
 do_cmds
 
 banner="MPI C++ bindings test:"
-cmds="cp cxxhello.cc /tmp && cd /tmp && mpiCC cxxhello.cc -o mpich-cxxhello && cp mpich-cxxhello $p && cd $p && mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cxxhello"
+cmds="cp cxxhello.cc $mpich_tmp && cd $mpich_tmp && mpiCC cxxhello.cc -o mpich-cxxhello && cp mpich-cxxhello $p && cd $p && mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-cxxhello"
 do_cmds
 
 banner="MPI Fortran bindings test:"
-cmds="cp f77hello.f /tmp && cd /tmp && mpif77 f77hello.f -o mpich-f77hello && cp mpich-f77hello $p && cd $p && mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-f77hello"
+cmds="cp f77hello.f $mpich_tmp && cd $mpich_tmp && mpif77 f77hello.f -o mpich-f77hello && cp mpich-f77hello $p && cd $p && mpirun -machinefile $PBS_NODEFILE -np $NP ./mpich-f77hello"
 do_cmds
 
 echo "MPICH test complete"
 echo "Unless there are errors above, test completed successfully."
+
+# Cleanup
+
+if test -s $mpich_tmp; then
+    rm -rf $mpich_tmp
+fi
 
 echo
 exit 0

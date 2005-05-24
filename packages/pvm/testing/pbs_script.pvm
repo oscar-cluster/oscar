@@ -17,14 +17,21 @@ cd $PBS_O_WORKDIR
 echo "* ep=$PBS_O_WORKDIR wd=$PBS_O_WORKDIR" > pvm_nodes
 cat $PBS_NODEFILE >> pvm_nodes
 
+# Create tmp directory to put temporary files
+
+pvm_tmp="/tmp/pvm-test"
+if ! test -s $pvm_tmp; then
+    mkdir $pvm_tmp
+fi
+
 # start pvm daemon & wait for slave daemons to start up
 pvmd pvm_nodes &
 #sleep 10
 
 # run job
 p=`pwd`
-cp master1.c slave1.c /tmp
-cd /tmp
+cp master1.c slave1.c $pvm_tmp
+cd $pvm_tmp
 gcc -I$PVM_ROOT/include master1.c -L$PVM_ROOT/lib/$PVM_ARCH -lpvm3 -o master1
 gcc -I$PVM_ROOT/include slave1.c -L$PVM_ROOT/lib/$PVM_ARCH -lpvm3 -o slave1
 cp master1 slave1 $p
@@ -43,4 +50,11 @@ tail +2 $PBS_NODEFILE > pvm_nodes
 crm  pvm_nodes:/tmp/pvmd.$uid > /dev/null 2>&1
 crm  pvm_nodes:/tmp/pvml.$uid > /dev/null 2>&1
 /bin/rm -f pvm_nodes
+
+# Cleanup
+
+if test -s $pvm_tmp; then
+    rm -rf $pvm_tmp
+fi
+
 exit

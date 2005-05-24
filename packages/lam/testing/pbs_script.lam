@@ -48,6 +48,13 @@ EOF
     fi
 }
 
+# Create tmp directory to put temporary files
+
+lam_tmp="/tmp/lam-test"
+if ! -s $lam_tmp; then
+    mkdir $lam_tmp
+fi
+
 # Start a LAM universe
 
 lamboot
@@ -56,19 +63,19 @@ lamboot
 
 p=`pwd`
 banner="MPI C bindings test:"
-cmds="cp cpi.c /tmp && cd /tmp && mpicc cpi.c -o lam-cpi && cp lam-cpi $p && cd $p && mpirun C lam-cpi && lamclean"
+cmds="cp cpi.c $lam_tmp && cd $lam_tmp && mpicc cpi.c -o lam-cpi && cp lam-cpi $p && cd $p && mpirun C lam-cpi && lamclean"
 do_cmds
 
 # Compile cxxhello and try running it
 
 banner="MPI C++ bindings test:"
-cmds="cp cxxhello.cc /tmp && cd /tmp && mpiCC cxxhello.cc -o lam-cxxhello && cp lam-cxxhello $p && cd $p && mpirun C lam-cxxhello && lamclean"
+cmds="cp cxxhello.cc $lam_tmp && cd $lam_tmp && mpiCC cxxhello.cc -o lam-cxxhello && cp lam-cxxhello $p && cd $p && mpirun C lam-cxxhello && lamclean"
 do_cmds
 
 # Compile f77hello and try running it
 
 banner="MPI Fortran bindings test:"
-cmds="cp f77hello.f /tmp && cd /tmp && mpif77 f77hello.f -o lam-f77hello && cp lam-f77hello $p && cd $p && mpirun C lam-f77hello && lamclean"
+cmds="cp f77hello.f $lam_tmp && cd $lam_tmp && mpif77 f77hello.f -o lam-f77hello && cp lam-f77hello $p && cd $p && mpirun C lam-f77hello && lamclean"
 do_cmds
 
 # Shut down
@@ -79,6 +86,12 @@ lamhalt
 
 echo "LAM/MPI test complete"
 echo "Unless there are errors above, test completed successfully."
+
+# Cleanup
+
+if test -s $lam_tmp; then
+    rm -rf $lam_tmp
+fi
 
 echo
 exit 0
