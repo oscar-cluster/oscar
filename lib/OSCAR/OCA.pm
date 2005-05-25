@@ -19,6 +19,10 @@ use strict;
 sub find_components {
     my ($framework, $basedir) = @_;
 
+    # If framework is not specified, this is an error
+
+    return undef if (! $framework);
+
     # If basedir is not provided, use the default
 
     if (! $basedir) {
@@ -42,7 +46,7 @@ sub find_components {
 
     opendir(DIR, $basedir);
     my @comps = 
-        grep { ( /\.pm$/ || /\.pmc$/) && -f "$basedir/$_" } readdir(DIR);
+        grep { ( /\.pm[c]{0,1}$/ || /\.pmc$/) && -f "$basedir/$_" } readdir(DIR);
     closedir(DIR);
 
     # We need to augment @INC here so that we can do a simple
