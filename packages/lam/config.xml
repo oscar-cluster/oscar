@@ -92,7 +92,7 @@ visualized either at runtime or post-mortem.</description>
          is going to add -laio to the compile line, but the linker
          won't find it because it only looks for .so files, not
          .so[.*].  Hence, we need to ensure that the right RPMs are
-         installed -- and the easiest mechanism for this is to list
+         installed - and the easiest mechanism for this is to list
          them here in config.xml.
 
          You may be thinking: "Wait!  Isn't this something that
@@ -100,16 +100,16 @@ visualized either at runtime or post-mortem.</description>
 
          Yes, young Grasshopper, it is.  And despite initial
          appearances, PackMan/DepMan are doing exactly the Right
-         Things -- it's just the odd RPM packaging on some systems
+         Things - it's just the odd RPM packaging on some systems
          that cause the problems.
 
          The automatic dependency generator in RPM will generate a
-         dependency for LAM for libaio.so.1 (or whatever) -- but *not*
+         dependency for LAM for libaio.so.1 (or whatever) - but *not*
          for the plain vanilla libaio.so.  So PackMan/DepMan will pick
-         up a dependency for libaio.so.1, which -- at least in some
-         cases -- is in the libaio RPM.  But the plain vanilla
-         libaio.so file (or sym link or whatever) is -- at least in
-         some cases -- in libaio-devel.  And this plain vanilla .so is
+         up a dependency for libaio.so.1, which - at least in some
+         cases - is in the libaio RPM.  But the plain vanilla
+         libaio.so file (or sym link or whatever) is - at least in
+         some cases - in libaio-devel.  And this plain vanilla .so is
          the file that we need to be able to mpicc successfully.  So
          PackMan/DepMan don't see a dependency for libaio.so (because
          it doesn't exist), and it therefore doesn't pick up
@@ -120,7 +120,7 @@ visualized either at runtime or post-mortem.</description>
          done!"  
 
          Not so, young Grasshopper.  AIO is an optional part of LAM,
-         and is used by the sub-package ROMIO (included in LAM) -- but
+         and is used by the sub-package ROMIO (included in LAM) - but
          only *if* the system has AIO.  So LAM's configure determines
          whether the system has AIO, and if so, uses it (e.g., adds it
          to the mpicc command line).  But if the system does not have
@@ -133,19 +133,22 @@ visualized either at runtime or post-mortem.</description>
          conditional around that Require: statement!"
 
          Yes, this is true, young Grasshopper, but then that violates
-         the Law of Least Astonishment -- when rebuilding the SRPM,
+         the Law of Least Astonishment - when rebuilding the SRPM,
          some users will need to do:
 
-         shell$ rpmbuild --rebuild lam-...src.rpm --define need_aio 1
+         (can't use "double dash" in the example below, because
+         XML::Simple doesn't like that!)
+
+         shell$ rpmbuild -rebuild lam-...src.rpm -define need_aio 1
          or
-         shell$ rpmbuild --rebuild lam-...src.rpm --define need_aio 0
+         shell$ rpmbuild -rebuild lam-...src.rpm -define need_aio 0
 
          whereas most users will [rightfully] expect to only have to
          do the following:
 
-         shell$ rpmbuild --rebuild lam-...src.rpm
+         shell$ rpmbuild -rebuild lam-...src.rpm
 
-         Making them add the additional --define on the command line
+         Making them add the additional -define on the command line
          just to get a function RPM seems like a Bad Idea.
 
          You may be thinking: "Wait!  You can just have different
@@ -163,12 +166,12 @@ visualized either at runtime or post-mortem.</description>
          Programming, by Master Geofray James, which seems
          particularly appropriate here:
 
-         ------------------------------------------------------------
+         ============================================================
          Thus spake the master programmer:
 
          "Though a program be but three lines long, someday it will
          have to be maintained."
-         ------------------------------------------------------------
+         ============================================================
          -->
     <filter distribution='fedora'   distribution_version='1'   />
     <filter distribution='fedora'   distribution_version='2'   />
