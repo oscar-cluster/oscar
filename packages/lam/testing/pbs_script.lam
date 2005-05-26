@@ -51,8 +51,9 @@ EOF
 # Create tmp directory to put temporary files
 
 lam_tmp="/tmp/lam-test"
-if ! -s $lam_tmp; then
-    mkdir $lam_tmp
+if test ! -d "$lam_tmp"; then
+    rm -rf "$lam_tmp"
+    mkdir -p "$lam_tmp"
 fi
 
 # Start a LAM universe
@@ -89,7 +90,7 @@ echo "Unless there are errors above, test completed successfully."
 
 # Cleanup
 
-if test -s $lam_tmp; then
+if test -d $lam_tmp; then
     rm -rf $lam_tmp
 fi
 

@@ -20,8 +20,9 @@ cat $PBS_NODEFILE >> pvm_nodes
 # Create tmp directory to put temporary files
 
 pvm_tmp="/tmp/pvm-test"
-if ! test -s $pvm_tmp; then
-    mkdir $pvm_tmp
+if test ! -d $pvm_tmp; then
+    rm -rf $pvm_tmp
+    mkdir -p $pvm_tmp
 fi
 
 # start pvm daemon & wait for slave daemons to start up
@@ -53,7 +54,7 @@ crm  pvm_nodes:/tmp/pvml.$uid > /dev/null 2>&1
 
 # Cleanup
 
-if test -s $pvm_tmp; then
+if test -d $pvm_tmp; then
     rm -rf $pvm_tmp
 fi
 

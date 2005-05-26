@@ -36,8 +36,9 @@ EOF
 # Create tmp directory to put temporary files
 
 mpich_tmp="/tmp/mpich-test"
-if test ! -s $mpich_tmp; then
-    mkdir $mpich_tmp
+if test ! -d $mpich_tmp; then
+    rm -rf $mpich_tmp
+    mkdir -p $mpich_tmp
 fi
 
 p=`pwd`
@@ -58,7 +59,7 @@ echo "Unless there are errors above, test completed successfully."
 
 # Cleanup
 
-if test -s $mpich_tmp; then
+if test -d $mpich_tmp; then
     rm -rf $mpich_tmp
 fi
 
