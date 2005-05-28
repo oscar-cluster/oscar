@@ -46,8 +46,13 @@ if ($name eq "mandrake") {
   $source_dir .= "mdk10";
 }  elsif ($name eq "fedora") {
   $source_dir .= $name;
-} else {
-  $source_dir .= "rh90";
+}  elsif ($name eq "redhat") {
+  $source_dir .= "rh";
+  if ($ver eq "3as") {
+    $source_dir .= "3as";
+  } else {
+    $source_dir .= "90";
+  }
 } 
 
 print "Using LAM/MPI RPMs from: $source_dir\n";
