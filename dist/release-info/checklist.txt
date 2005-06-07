@@ -27,3 +27,4 @@ List of places that the OSCAR 1.1 press release was sent:
 - SourceForge
 
 - Freshmeat
+
