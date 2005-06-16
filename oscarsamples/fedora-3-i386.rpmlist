@@ -24,7 +24,6 @@ crontabs
 cyrus-sasl
 cyrus-sasl-md5
 db4
-#dev
 device-mapper
 dhclient
 diffutils
