@@ -37,6 +37,11 @@ open(FH, $deb_ver_file) or die "Error: unable to open '$deb_ver_file' $!\n";
 my @file = grep { ! /^\s*#/ } <FH>;
 close(FH);
 
+ # 
+ # Get version from one-line entry giving the version number in the
+ # file "/etc/debian_version".  c.f.,
+ # http://www.debian.org/doc/FAQ/ch-software.en.html#s-isitdebian
+ #
 my $deb_ver = $file[0];
 chomp($deb_ver);
 
