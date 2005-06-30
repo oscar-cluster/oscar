@@ -9,8 +9,10 @@
 #
 # $HEADER$
 #
+# $Id$
+#
 
-package OCA::OS_Detect::RHEL;
+package OCA::OS_Detect::RedHat;
 
 use strict;
 use POSIX;
