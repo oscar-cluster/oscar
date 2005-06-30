@@ -11,6 +11,6 @@ include $(top_srcdir)/dist/Makefile.options
 
 oscar_SCRIPTS		= \
 			Fedora.pm \
-                        RHEL.pm
+                        RedHat.pm
 
 EXTRA_DIST		= $(oscar_SCRIPTS)
