@@ -29,6 +29,7 @@ return 0 if ("Linux" ne $sysname);
 
 my $redhat_release;
 my $distro;
+my $update;
 
 # If /etc/redhat-release exists, continue, otherwise, quit.
 
@@ -38,15 +39,18 @@ if (-e "/etc/redhat-release") {
 	return 0;
 }
 
-# We only support RHEL AS|WS 3 now, otherwise quit.
+# We only support RHEL AS|WS 3 and Update [2, 3, 5] now, otherwise quit.
 
-if ( $redhat_release =~ 'release 3') {
-	if ( $redhat_release =~ /Red Hat Enterprise Linux AS/ ) {
-		$distro = "redhat-el-as";
-	}
-	if ( $redhat_release =~ /Red Hat Enterprise Linux WS/ ) {
-		$distro = "redhat-el-ws";
-	}
+if($redhat_release =~ 'release 3' 
+    && $redhat_release =~ m/Update [2 3 5]/ ) {
+    $update = $redhat_release;
+    $update =~ s/(.*)(Update )(\d)\)/update-$3/;
+    if ( $redhat_release =~ /Red Hat Enterprise Linux AS/ ) {
+        $distro = "redhat-el-as";
+    }
+    if ( $redhat_release =~ /Red Hat Enterprise Linux WS/ ) {
+        $distro = "redhat-el-ws";
+    }
 } else {
 	return 0;
 }
@@ -59,12 +63,13 @@ our $id = {
     arch => $machine,
     os_release => $release,
     linux_distro => $distro,
-    linux_distro_version => 3
+    linux_distro_version => 3,
+    distro_update => $update
 };
 
 # Make final string
 
-$id->{ident} = "$id->{os}-$id->{arch}-$id->{os_release}-$id->{linux_distro}-$id->{linux_distro_version}";
+$id->{ident} = "$id->{os}-$id->{arch}-$id->{os_release}-$id->{linux_distro}-$id->{linux_distro_version}-$id->{distro_update}";
 
 # Once all this has been setup, whenever someone invokes the "query"
 # method on this component, we just return the pre-setup data.
