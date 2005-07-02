@@ -35,14 +35,13 @@ my $oscar_rpm_pool = '/tftpboot/rpm';   # No env var, using name in Package.pm
 my ($name, $ver) = OSCAR::Distro::which_distro_server();
 if ($name eq "redhat") {
 	$source_dir .= "rh";
-	if ($ver eq "8.0") {
-		$source_dir .= "80";
-	} elsif ($ver eq "9") {
+	if ($ver eq "9") {
 		$source_dir .= "90";
-	} elsif ($ver eq "3as") {
+	} elsif ( ($ver eq "3as") || ($ver =~ "4") ) {
 		$source_dir .= "3as";
 	} else {
-		$source_dir .= "72";
+		print "Unsupported Linux Distribution version\n";
+		exit(1);
 	}
 } elsif ($name eq "fedora") {
 	$source_dir .= $name;
@@ -51,14 +50,11 @@ elsif ($name eq "suse") {
 	$source_dir .= "suse81";
 } elsif ($name eq "mandrake") {
 	$source_dir .= "mdk";
-	if ($ver eq "9.0") {
-		$source_dir .= "90";
-	} elsif ($ver eq "9.1") {
-		$source_dir .= "91";
-	} elsif ($ver eq "9.2") {
-		$source_dir .= "92";
-	} elsif ($ver eq "10.0") {
+	if ($ver eq "10.0") {
 		$source_dir .= "10";
+	} else {
+		print "Unsupported Linux Distribution version\n";
+		exit(1);
 	}
 }
 
