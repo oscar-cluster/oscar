@@ -36,12 +36,13 @@ use base qw(Exporter);
 $VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
-		   'fedora-release'   => 'fedora',
-                   'mandrake-release' => 'mandrake',
-                   'redhat-release'   => 'redhat',
-		   'aaa_version'      => 'suse',
-		   'aaa_base'	      => 'suse',
-                   'debian_version'   => 'debian',
+		   'fedora-release'        => 'fedora',
+                   'mandrake-release'      => 'mandrake',
+		   'mandrakelinux-release' => 'mandrake',
+                   'redhat-release'        => 'redhat',
+		   'aaa_version'           => 'suse',
+		   'aaa_base'	           => 'suse',
+                   'debian_version'        => 'debian',
                   };
 
 ############################################################

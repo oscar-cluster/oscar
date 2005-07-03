@@ -68,7 +68,18 @@ elsif ( $distro_name eq "suse") {
 }
 
 elsif ( $distro_name eq "mandrake") {
-    if ( `rpm -q --qf '%{VERSION}' mandrake-release` == 10.0 ) {
+    if ( `rpm -q --qf '%{VERSION}' mandrakelinux-release` == 10.1 ) {
+	@wanted_rpms = qw( MySQL
+			   MySQL-client
+			   perl-DBI
+			   perl-Mysql
+			   perl-Data-ShowTable
+			   oda
+			   MySQL-common
+			   libmysql12
+			   perl-CGI );
+    }
+    elsif ( `rpm -q --qf '%{VERSION}' mandrake-release` == 10.0 ) {
 	@wanted_rpms = qw( MySQL
 			   MySQL-client
 			   perl-DBI
