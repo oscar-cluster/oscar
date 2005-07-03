@@ -43,7 +43,7 @@ if ($name eq "redhat") {
 	if ($ver eq "2") {
 		$source_dir .= "2";
         } elsif ($ver eq "3") {
-		$source_dir .= "3";
+		$source_dir .= "2";
 	} else {
 		print "Error - $pkg_name: no support for $name $ver\n";
 		exit(1);
