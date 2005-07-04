@@ -50,7 +50,9 @@ elsif ($name eq "suse") {
 	$source_dir .= "suse81";
 } elsif ($name eq "mandrake") {
 	$source_dir .= "mdk";
-	if ($ver eq "10.0") {
+	if ($ver eq "10.1") {
+		$source_dir .= "10";
+	} elsif ($ver eq "10.0") {
 		$source_dir .= "10";
 	} else {
 		print "Unsupported Linux Distribution version\n";
