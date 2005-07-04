@@ -17,7 +17,7 @@
     <major>7</major>
     <minor>0</minor>
     <subversion>6</subversion>
-    <release>1</release>
+    <release>3</release>
     <epoch>1</epoch>
   </version>
 
@@ -173,14 +173,11 @@ visualized either at runtime or post-mortem.</description>
          have to be maintained."
          ============================================================
          -->
-    <filter distribution='fedora'   distribution_version='1'   />
     <filter distribution='fedora'   distribution_version='2'   />
     <filter distribution='fedora'   distribution_version='3'   />
-    <filter distribution='redhat'   distribution_version='8.0' />
     <filter distribution='redhat'   distribution_version='9'   />
     <filter distribution='redhat'   distribution_version='3as' />
-    <filter distribution='whitebox' />
-    <filter distribution='suse' />
+    <filter distribution='redhat'   distribution_version='el4' />
     <rpm>libaio</rpm>
     <rpm>libaio-devel</rpm>
     <rpm>lam-oscar</rpm>
