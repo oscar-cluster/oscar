@@ -18,6 +18,7 @@ oscar_SCRIPTS		= \
 			c3_conf_manager \
 			client_status \
 			create_and_populate_basic_node_info \
+			generic-setup \
 			get_num_proc \
 			install_server \
 			mac_collector \

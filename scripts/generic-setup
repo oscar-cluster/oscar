@@ -1,0 +1,221 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id:$
+#
+# Generic setup script for copying distro and arch specific RPMs/packages
+# from distro/*/ to RPMS/ . Can also be used for deleting RPMs from the
+# /tftpboot/rpm package pool.
+#
+# (c) 2005 Erich Focht, NEC HPCE
+# (inspired by the very similar package specific scripts)
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX;
+use Carp;
+use OSCAR::Distro;
+use OSCAR::PackageBest;
+use Getopt::Long;
+
+# Different distros require different RPMs. Different architectures, too.
+
+my $source_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro/";
+my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
+my $oscar_rpm_pool = '/tftpboot/rpm';   # No env var, using name in Package.pm
+
+# configure command line options parsing
+Getopt::Long::Configure("ignore_case"); # ignore case
+#Getopt::Long::Configure("bundling");    # allow -a -b or -ab
+Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
+
+my %options;
+GetOptions( \%options,
+	    'arch|a',
+            'dirname|d',
+	    'distro',
+            'erasepool|e',
+	    'help|h',
+	    'pool|p=s',
+	    'silent|s',
+            'test|t',
+            'verbose|v!'
+            ) || usage();
+
+# set package name
+my $pkg_name = $ENV{OSCAR_PACKAGE_HOME};
+$pkg_name =~ s:^.*\/::g;
+
+if ($options{dirname}) {
+    print distrodir() . "\n";
+    exit 0;
+}
+if ($options{distro}) {
+    print distroname() . "\n";
+    exit 0;
+}
+
+# force verbose output if --test was selected
+$options{verbose} = 1 if ($options{test});
+
+my @pkgs = @ARGV;
+usage() if (!scalar(@pkgs) || $options{help});
+vprint("Arch/distro specific packages for $pkg_name: ".join(" ",@pkgs)."\n");
+
+# pattern used for matching package names
+my $pattern = join("|",@pkgs);
+
+
+# Quick sanity check
+if (! -d $dest_dir) {
+    croak("$dest_dir does not exist");
+}
+
+if ($options{pool}) {
+    $oscar_rpm_pool = $options{pool};
+}
+
+#
+# Remove packages with similar name from OSCAR RPM pool
+#
+if ($options{erasepool}) {
+    # does the RPM pool exist?
+    if (! -d $oscar_rpm_pool) {
+	croak("Could not find OSCAR RPM pool directory $oscar_rpm_pool\n");
+    }
+    opendir(DIR, $oscar_rpm_pool) || croak("Could not read $oscar_rpm_pool\n");
+    my @bad_files = grep {/^($pattern)-/ && -f "$oscar_rpm_pool/$_" } readdir(DIR);
+    closedir(DIR);
+    if ($#bad_files > -1) {
+	vprint("Removing old files from $oscar_rpm_pool:\n");
+	foreach my $file (@bad_files) {
+	    vprint(" - $oscar_rpm_pool/$file\n");
+	    unlink("$oscar_rpm_pool/$file") if (!defined($options{test}));
+	}
+    }
+}    
+
+#
+# Remove old distro/arch specific packages from RPMS directory
+#
+opendir(DIR, $dest_dir);
+my @bad_files = grep {/^($pattern)-/ && -f "$dest_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#bad_files > -1) {
+    vprint("Removing old files from $dest_dir:\n");
+    foreach my $file (@bad_files) {
+	vprint(" - $dest_dir/$file\n");
+	unlink("$dest_dir/$file") if (!defined($options{test}));
+    }
+}
+
+#
+# Copy new distro/arch specific packages to RPMS directory
+#
+
+$source_dir .= distrodir();
+if (! -d $source_dir) {
+    if (!$options{silent}) {
+	croak("$source_dir does not exist");
+    } else {
+	exit 0;
+    }
+}
+
+opendir(DIR, $source_dir);
+my @good_files = grep {/^($pattern)-/ && -f "$source_dir/$_" } readdir(DIR);
+closedir(DIR);
+if ($#good_files > -1) {
+    my $cmd = "cp ";
+    vprint("Copying new files to $dest_dir:\n");
+    foreach my $file (@good_files) {
+	$cmd .= "$source_dir/$file ";
+	vprint(" - $source_dir/$file\n");
+    }
+    $cmd .= $dest_dir;
+    if (!defined($options{test})) {
+	if (!system($cmd)) {
+	    vprint("Copied $pkg_name RPMs to $dest_dir\n");
+	} else {
+	    croak("Error occured during copying RPMs for package $pkg_name\n");
+	}
+    }
+}
+exit 0;
+
+############################################################################
+######## only subroutines below
+############################################################################
+
+sub usage {
+    print <<END_USAGE;
+Usage: generic-setup [options] pkg1 pkg2 ...
+
+  Removes the named packages from the package RPMS directory and copies
+  in the packages corresponding to the current distribution and architecture.
+ Options:
+   --arch|-a      : override locally detected architecture
+   --dirname|-d   : only show distro-specific subdirectory name
+   --distro       : only show distribution short name
+   --erasepool|-e : erase packages with same name from RPM pool (tftpboot/rpm)
+   --help|-h      : display this help text
+   --pool|-p path : override setting of RPM pool path (default /tftpboot/rpm)
+   --silent|-s    : fail silently if distro-specific directory doesn't exist
+   --test|-t      : just test without copying or erasing files
+   --verbose|-v   : verbose printout
+END_USAGE
+   exit(1);
+}
+
+sub vprint {
+    print @_ if ($options{verbose});
+}
+
+#
+# Standardized distribution subdirectory name.
+# Currently based on the OSCAR::Distro.pm framework, should be migrated to
+# OSCAR::OCA::OS_Detect as soon as that framework is complete.
+#
+sub distroname {
+    my ($name, $ver) = OSCAR::Distro::which_distro_server();
+
+    # translate distro names
+    if ($name eq "redhat") {
+	if ($ver eq "3as") {
+	    $name = "rhel";
+	    $ver = "3";
+	} elsif ($ver eq "el4") {
+	    $name = "rhel";
+	    $ver = "4";
+	} else {
+	    $name = "rh";
+	}
+    } elsif ($name eq "fedora") {
+	$name = "fc";
+    } elsif ($name eq "mandrake") {
+	$name = "mdk";
+    }
+
+    # compress version names
+    $ver =~ tr/.//;
+
+    return $name . $ver;
+}
+
+
+sub distrodir {
+    my $arch;
+    if ($options{arch}) {
+	$arch = $options{arch};
+    } else {
+	$arch = `uname -i`;
+	chop $arch;
+    }
+    return distroname() . "-" . $arch;
+}
