@@ -535,7 +535,7 @@
 -
 +       # OS uses udev, add boel tag to use devfs
 +       # (triggers /dev to be mounted during node installation)
-+       if (-e $udev_dir) {
++       if (-d $udev_dir) {
 +               print AICONF "\t<boel devstyle=\"devfs\" />\n";
 +       }
  
