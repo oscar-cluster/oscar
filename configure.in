@@ -182,6 +182,9 @@ AC_CONFIG_FILES([
     share/prereqs/HTML-Tree/media/Makefile
     share/prereqs/HTML-Tree/scripts/Makefile
     share/prereqs/oda/Makefile
+    share/prereqs/oda/SRPMS/Makefile
+    share/prereqs/oda/distro/Makefile
+    share/prereqs/oda/distro/rhel3/Makefile
     share/prereqs/oda/scripts/Makefile
     share/prereqs/packman/Makefile
     share/prereqs/packman/RPMS/Makefile
