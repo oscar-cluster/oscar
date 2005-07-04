@@ -50,6 +50,8 @@ if ($name eq "mandrake") {
   $source_dir .= "rh";
   if ($ver eq "3as") {
     $source_dir .= "3as";
+  } elsif ($ver eq "el4") {
+    $source_dir .= "el4";
   } else {
     $source_dir .= "90";
   }

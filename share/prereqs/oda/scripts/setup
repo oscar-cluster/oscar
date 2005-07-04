@@ -38,13 +38,22 @@ my ($distro_name, $distro_version) = which_distro_server();
 my $mysqld;
 
 if ( $distro_name eq "redhat" ) {
-    @wanted_rpms = qw( mysql
-		       perl-DBD-MySQL
-		       perl-DBI
-		       perl-CGI
-		       mysql-server
-		       oda );
-    $mysqld      = 'mysqld';
+    if ( `rpm -q --qf '%{VERSION}' redhat-release` =~ 4 ) { 
+        @wanted_rpms = qw( mysql
+                           perl-DBD-MySQL
+                           perl-DBI
+                           mysql-server
+                           oda );
+        $mysqld      = 'mysqld';
+    } else {
+        @wanted_rpms = qw( mysql
+	    	           perl-DBD-MySQL
+		           perl-DBI
+		           perl-CGI
+		           mysql-server
+		           oda );
+        $mysqld      = 'mysqld';
+    }
 }
 
 elsif ( $distro_name eq "fedora" ) {

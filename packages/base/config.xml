@@ -111,6 +111,7 @@
   <rpmlist>
     <filter distribution='redhat' distribution_version='9' group='oscar_server' />
     <filter distribution='redhat' distribution_version='3as' group='oscar_server' />
+    <filter distribution='redhat' distribution_version='el4' group='oscar_server' />
         <rpm>dhcp</rpm>
         <rpm>gd</rpm>
         <rpm>nfs-utils</rpm>

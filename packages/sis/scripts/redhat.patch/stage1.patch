@@ -14,4 +14,19 @@
 +termcap
 +libgcc
 +tzdata
-
+--- /usr/share/systeminstaller/distinfo/Redhat.orig/el4/stages  1969-12-31 19:00:00.000000000 -0500
++++ /usr/share/systeminstaller/distinfo/Redhat/el4/stages       2005-05-28 22:16:47.000000000 -0400
+@@ -0,0 +1,13 @@
++# Default stage file for Red Hat Enterprise Linux 4
++# basesystem and its prereqs
++# Copyright (c) 2005, Bernard Li <bli@bcgsc.ca>
++SISstage
++filesystem
++setup
++basesystem
++glibc-common
++glibc
++libgcc
++libtermcap
++termcap
++tzdata

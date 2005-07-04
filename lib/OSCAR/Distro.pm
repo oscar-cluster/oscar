@@ -16,6 +16,8 @@ package OSCAR::Distro;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# Copyright 2005 Bernard Li <bli@bcgsc.ca>
+#
 # Copyright 2004 Revolution Linux
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
 #
@@ -37,12 +39,12 @@ $VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
 		   'fedora-release'        => 'fedora',
-                   'mandrake-release'      => 'mandrake',
+		   'mandrake-release'      => 'mandrake',
 		   'mandrakelinux-release' => 'mandrake',
-                   'redhat-release'        => 'redhat',
+		   'redhat-release'        => 'redhat',
 		   'aaa_version'           => 'suse',
 		   'aaa_base'	           => 'suse',
-                   'debian_version'        => 'debian',
+		   'debian_version'        => 'debian',
                   };
 
 ############################################################
@@ -74,6 +76,11 @@ sub which_distro {
     if ($name eq "redhat" && $version =~ m/^3(ES|AS|WS)/) {
         $version = "3as";
     }
+
+    if ($name eq "redhat" && $version =~ m/^4(ES|AS|WS)/) {
+	$version = "el4";
+    }
+  
     return (lc $name, lc $version);
 }
 
@@ -106,6 +113,9 @@ sub which_distro_server {
     # special treatment for RHEL and clones
     if ($name eq "redhat" && $version =~ m/^3(ES|AS|WS)/) {
         $version = "3as";
+    }
+    if ($name eq "redhat" && $version =~ m/^4(ES|AS|WS)/) {
+        $version = "el4";
     }
     return (lc $name, lc $version);
 }

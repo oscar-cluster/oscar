@@ -32,7 +32,7 @@ if ($name eq "redhat") {
 		$source_dir .= "9";
 	} elsif ($ver eq "3as") {
 		$source_dir .= "3as";
-	} elsif ($ver eq "4") {
+	} elsif ($ver eq "el4") {
 		$source_dir .= "el4";
 	} else {
 	    print "Error - $pkg_name: no support for $name $ver\n";
