@@ -26,13 +26,16 @@
  	                printf TMP "%-20.20s %s\t%s\n", $ADAPTERS{$name},$mach->hostname,$name;
 --- /usr/lib/systeminstaller/SystemInstaller/Image.pm.orig	2004-12-08 10:48:28.000000000 +0100
 +++ /usr/lib/systeminstaller/SystemInstaller/Image.pm	2004-12-08 10:50:23.000000000 +0100
-@@ -153,6 +153,10 @@
+@@ -153,6 +153,13 @@
                  # Now find the version
                  $relfiles[0]=~s/.*\///;
                  my ($j1,$j2,$version,$j3)=split(/-/,$relfiles[0]);
 +		#EF# treat 3WS, 3ES like 3AS
 +		if ($version =~ m/3(WS|ES)/) {
 +			$version = "3AS";
++		}
++		if ($version =~ m/4(WS|ES|AS)/) {
++			$version = "el4";
 +		}
                  return($distro,$version);
          }
@@ -503,3 +506,38 @@
                  if ($piprog) {
                          if (system("chroot $imgpath $piprog")) {
                                  carp("Post program for $pkg, failed.");
+--- /usr/lib/systeminstaller/SystemInstaller/Partition/IA.pm.orig   2002-10-31 12:08:50.000000000 -0800
++++ /usr/lib/systeminstaller/SystemInstaller/Partition/IA.pm  2005-07-03 00:11:41.000000000 -0700
+@@ -24,7 +24,7 @@
+ $VERSION = sprintf("%d.%02d", q$Revision: 1.17 $ =~ /(\d+)\.(\d+)/);
+ 
+ use strict;
+-use vars qw(@EXPORT @ISA $drive_prefix $systemimager_path);
++use vars qw(@EXPORT @ISA $drive_prefix $systemimager_path $udev_dir);
+ use Exporter;
+ use SystemInstaller::Log qw(verbose); 
+ use SystemInstaller::Image;
+@@ -32,6 +32,7 @@
+ use Carp;
+  
+ $systemimager_path = "/etc/systemimager";
++$udev_dir = "/etc/udev";
+ 
+ sub create_partition_file {
+ # Reads the partition_file and creates the necessary files needed for 
+@@ -194,10 +195,11 @@
+                 }        
+         }        
+ 
+-
+-
+-
+-
++       # OS uses udev, add boel tag to use devfs
++       # (triggers /dev to be mounted during node installation)
++       if (-e $udev_dir) {
++               print AICONF "\t<boel devstyle=\"devfs\" />\n";
++       }
+ 
+         print AICONF "</config>\n";
+         close AICONF;
