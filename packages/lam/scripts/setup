@@ -49,7 +49,7 @@ if ($name eq "mandrake") {
 }  elsif ($name eq "redhat") {
   $source_dir .= "rh";
   if ($ver eq "3as") {
-    $source_dir .= "3as";
+    $source_dir .= "el3";
   } elsif ($ver eq "el4") {
     $source_dir .= "el4";
   } else {
