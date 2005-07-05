@@ -38,7 +38,7 @@ if ($name eq "redhat") {
 	if ($ver eq "9") {
 		$source_dir .= "90";
 	} elsif ( ($ver eq "3as") || ($ver =~ "4") ) {
-		$source_dir .= "3as";
+		$source_dir .= "el3";
 	} else {
 		print "Unsupported Linux Distribution version\n";
 		exit(1);
