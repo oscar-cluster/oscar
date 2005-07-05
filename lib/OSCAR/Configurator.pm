@@ -80,7 +80,7 @@ sub Configurator_ui {
   our($configFrame) = $root->Frame (
 	-relief => 'groove',
 	-borderwidth => 2
-  )->pack( expand => 1, -fill => 'both' );
+  )->pack( -expand => 1, -fill => 'both' );
   $root->Button (
     -default => 'active',
     -text => 'Done',
