@@ -61,6 +61,11 @@
   </rpmlist>
 
   <rpmlist>
+      <filter group="oscar_server" architecture="x86_64"/>
+      <rpm>systemimager-x86_64boot-standard</rpm>
+  </rpmlist>
+
+  <rpmlist>
       <filter group="oscar_server" architecture="ia64"/>
       <rpm>systemimager-ia64boot-standard</rpm>
   </rpmlist>
