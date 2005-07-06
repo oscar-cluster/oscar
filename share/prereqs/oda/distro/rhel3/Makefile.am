@@ -11,6 +11,6 @@
 
 include $(top_srcdir)/dist/Makefile.options
 
-oscar_SCRIPTS		= mysql-server-3.23.58-1.x86_64.rpm
+oscar_SCRIPTS		= mysql-server-3.23.58-1.x86_64.rpm mysql-server-3.23.58-1.i386.rpm mysql-server-3.23.58-1.ia64.rpm
 
 EXTRA_DIST		= $(oscar_SCRIPTS)
