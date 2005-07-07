@@ -53,20 +53,23 @@
   </rpmlist>
 
   <rpmlist>
-      <filter group="oscar_server" architecture="i386"/>
-      <filter group="oscar_server" architecture="i486"/>
-      <filter group="oscar_server" architecture="i586"/>
-      <filter group="oscar_server" architecture="i686"/>
+      <filter group="oscar_server"/>
+      <filter architecture="i386"/>
+      <filter architecture="i486"/>
+      <filter architecture="i586"/>
+      <filter architecture="i686"/>
       <rpm>systemimager-i386boot-standard</rpm>
   </rpmlist>
 
   <rpmlist>
-      <filter group="oscar_server" architecture="x86_64"/>
+      <filter group="oscar_server"/>
+      <filter architecture="x86_64"/>
       <rpm>systemimager-x86_64boot-standard</rpm>
   </rpmlist>
 
   <rpmlist>
-      <filter group="oscar_server" architecture="ia64"/>
+      <filter group="oscar_server"/>
+      <filter architecture="ia64"/>
       <rpm>systemimager-ia64boot-standard</rpm>
   </rpmlist>
 </oscar>
