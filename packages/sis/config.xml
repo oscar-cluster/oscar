@@ -61,11 +61,13 @@
       <rpm>systemimager-i386boot-standard</rpm>
   </rpmlist>
 
+<!--
   <rpmlist>
       <filter group="oscar_server"/>
       <filter architecture="x86_64"/>
       <rpm>systemimager-x86_64boot-standard</rpm>
   </rpmlist>
+-->
 
   <rpmlist>
       <filter group="oscar_server"/>
