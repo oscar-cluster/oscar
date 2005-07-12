@@ -192,20 +192,10 @@ if (! -d "/tftpboot/rpm") {
 
 system("chmod 755 packages/*/scripts/*");
 
-# Check to see if rpms for tftp and/or tftp-server are installed.
-# If so, remove them because they conflict with the tftp-hpa rpm.
-foreach my $rpm ('tftp', 'tftp-server')
-  {
-    if ( !system("rpm -q $rpm >/dev/null 2>/dev/null") )
-      {
-        system("rpm -e $rpm");
-        oscar_log_subsection("Removing $rpm RPM");
-      }
-  }
 my $pqtv = `rpm -q --quiet --qf '%{VERSION}' perl-Qt 2>/dev/null`;
 if ( $pqtv && $pqtv < 3 ) {
   !system("rpm -e perl-Qt") or warn("Couldn't remove perl-Qt");
-  oscar_log_subsection("Removing perl-Qt RPM");
+  oscar_log_subsection("Removing installed perl-Qt RPM because version is < 3");
 }
 
 # Run the wizard_prep script
