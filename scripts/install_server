@@ -342,11 +342,13 @@ sub update_rsyncd_conf {
 
     my $MKRSYNCD="/usr/sbin/si_mkrsyncd_conf";
     #EF# for compatibility with SystemImager 3.3 and below
-    if ((! -x $MKRSYNCD) && (-x "/usr/sbin/mkrsyncd_conf")) {
-	$MKRSYNCD="/usr/sbin/mkrsyncd_conf";
-    } else {
-	verbose("Could not find [si_]mkrsyncd_conf script!");
-	return undef;
+    if (! -x $MKRSYNCD) {
+	if (-x "/usr/sbin/mkrsyncd_conf") {
+	    $MKRSYNCD="/usr/sbin/mkrsyncd_conf";
+	} else {
+	    verbose("Could not find [si_]mkrsyncd_conf script!");
+	    return undef;
+	}
     }
     !system($MKRSYNCD) or return undef;
     verbose("Updated rsyncd.conf file");
