@@ -5,7 +5,7 @@
 # copy in arch specific packages
 # (c) Erich Focht, NEC HPCE
 
-$OSCAR_HOME/scripts/generic-setup --silent udpcast
+$OSCAR_HOME/scripts/generic-setup --silent udpcast perl-TermReadKey
 
 DISTRO=`$OSCAR_HOME/scripts/generic-setup --distro`
 echo "Detected distro $DISTRO"
@@ -14,5 +14,6 @@ if [ "$DISTRO" = "rhel3" -o "$DISTRO" = "rhel4" ]; then
     if [ `ls -1 /tftpboot/rpm/tftp-server-*.rpm | grep -c rpm` -lt 1 ]; then
 	$OSCAR_HOME/scripts/generic-setup tftp-server
     fi
+    $OSCAR_HOME/scripts/generic-setup perl-TermReadKey
 fi
 
