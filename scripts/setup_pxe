@@ -102,7 +102,7 @@ unless (-d "/tftpboot/pxelinux.cfg") {
 
 my $archdir = "$ARCH-boot";
 
-if($ARCH eq "i386") {
+if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     verbose("Getting pxelinux.0.");
     copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
       croak("Unable to copy \"pxelinux.0\" file to /tftpboot.");
@@ -160,8 +160,8 @@ sub check_args {
 	if ($options->arch){
                 $ARCH=$options->arch;
         }
-        if (($ARCH ne "i386")&&($ARCH ne "ia64")) {
-                carp("i386 and ia64 are the only valid architectures.");
+        if (($ARCH ne "i386")&&($ARCH ne "ia64")&&($ARCH ne "x86_64")) {
+                carp("i386, x86_64 and ia64 are the only valid architectures.");
                 return 0;
         }
 	return 1;
