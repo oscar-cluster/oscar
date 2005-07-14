@@ -58,6 +58,7 @@
       <filter architecture="i486"/>
       <filter architecture="i586"/>
       <filter architecture="i686"/>
+      <rpm>syslinux</rpm>
       <rpm>systemimager-i386boot-standard</rpm>
   </rpmlist>
 
