@@ -46,6 +46,11 @@
       <rpm>systeminstaller</rpm>
       <rpm>systeminstaller-x11</rpm>
       <rpm>systemimager-server</rpm>
+      <!-- 
+        systemimager-client is needed on oscar_server as core package
+        but isn't resolved by dependencies. Has to stay here!
+      /-->
+      <rpm>systemimager-client</rpm>
       <rpm>systemimager-flamethrower</rpm>
       <rpm>flamethrower</rpm>
       <rpm>udpcast</rpm>
@@ -54,23 +59,27 @@
 
   <rpmlist>
       <filter group="oscar_server"/>
-      <filter architecture="i386"/>
-      <filter architecture="i486"/>
-      <filter architecture="i586"/>
-      <filter architecture="i686"/>
-      <rpm>syslinux</rpm>
+      <filter architecture="i386"/> <!-- this filter does not work! -->
+      <filter architecture="i486"/> <!-- this filter does not work! -->
+      <filter architecture="i586"/> <!-- this filter does not work! -->
+      <filter architecture="i686"/> <!-- this filter does not work! -->
+      <!-- rpm>syslinux</rpm -->
+      <!-- syslinux cannot be added here, it is handled in prereqs -->
+      <!--   - the architecture filter does not work here!         -->
+      <!--   - update-rpms won't select it on x86_64               -->
       <rpm>systemimager-i386boot-standard</rpm>
   </rpmlist>
 
   <rpmlist>
       <filter group="oscar_server"/>
-      <filter architecture="x86_64"/>
+      <filter architecture="x86_64"/> <!-- this filter does not work! -->
+      <!-- syslinux cannot be added here, it is handled in prereqs -->
       <rpm>systemimager-x86_64boot-standard</rpm>
   </rpmlist>
 
   <rpmlist>
       <filter group="oscar_server"/>
-      <filter architecture="ia64"/>
+      <filter architecture="ia64"/> <!-- this filter does not work! -->
       <rpm>systemimager-ia64boot-standard</rpm>
   </rpmlist>
 </oscar>
