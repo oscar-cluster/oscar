@@ -11,7 +11,7 @@ DISTRO=`$OSCAR_HOME/scripts/generic-setup --distro`
 echo "Detected distro $DISTRO"
 if [ "$DISTRO" = "rhel3" -o "$DISTRO" = "rhel4" ]; then
     echo "Distro is either rhel3 or rhel4"
-    if [ `ls -1 /tftpboot/rpm/tftp-server-*.rpm | grep -c rpm` -lt 1 ]; then
+    if [ `ls -1 /tftpboot/rpm/tftp-server-*.rpm 2> /dev/null | grep -c rpm` -lt 1 ]; then
 	$OSCAR_HOME/scripts/generic-setup tftp-server
     fi
     $OSCAR_HOME/scripts/generic-setup perl-TermReadKey
