@@ -14,8 +14,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# This script pushes a modified gmond.conf file from the server to the client 
-# nodes and restart the ganglia daemons
+# This script modifies the server's gmond.conf if necessary and then pushes 
+# it to the compute nodes and restart the ganglia daemons
 
 # (C)opyright Bernard Li <bli@bcgsc.ca>
 
@@ -24,45 +24,54 @@ use XML::Simple;
 
 my $gmond_conf = '/tmp/gmond.conf';
 my $confBuffer = "";
+
 # not useful currently, may be useful when define client supports changing of
 # default interface via the GUI, as per RFE #791658
 #my @result = split(/ = /,`grep 'DEVICE = eth' /var/lib/systemimager/scripts/*.master`);
-my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
 #my $iface = $result[1];
+
+my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
 
 # default interface for client nodes if package is not configured
 my $iface = "eth0";
 
-my $push_command = "cpush";
-my $exec_command = "cexec";
+my $push_command = "/opt/c3-4/cpush";
+my $exec_command = "/opt/c3-4/cexec";
 
 if (-e $xml_data) {
-    $ref = XMLin($xml_data);
-    $iface = $ref->{iface};
+	$ref = XMLin($xml_data);
+	$iface = $ref->{iface};
 }
 
-system("cp /etc/gmond.conf $gmond_conf");
+my $headnode_iface = `oda read_records oscar.interface`;
+chomp ($headnode_iface);
 
-open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
+if ( $headnode_iface eq $iface ) {
+	system("$push_command /etc/gmond.conf /etc/gmond.conf");
+} else {
+	system("cp /etc/gmond.conf $gmond_conf");
 
-while ($line = <CONF>) {
-    $confBuffer = $confBuffer.$line;
+	open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
+
+	while ($line = <CONF>) {
+    		$confBuffer = $confBuffer.$line;
+	}
+
+	close(CONF, $gmond_conf);
+
+	$confBuffer =~ s/mcast_if = eth[0-9]/mcast_if = $iface/g;
+
+	open(CONF, '>'.$gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
+
+	print CONF $confBuffer;
+
+	close(CONF);
+
+	# push the modified /etc/gmond.conf to the client nodes
+	system("$push_command $gmond_conf /etc/gmond.conf");
+
+	system("rm $gmond_conf");
 }
-
-close(CONF, $gmond_conf);
-
-$confBuffer =~ s/mcast_if  eth[0-9]/mcast_if  $iface/;
-
-open(CONF, '>'.$gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
-
-print CONF $confBuffer;
-
-close(CONF);
-
-# push the modified /etc/gmond.conf to the client nodes
-system("$push_command $gmond_conf /etc/gmond.conf");
-
-system("rm $gmond_conf");
 
 # stop all running daemons and restart them all (on headnode and clients)
 system("/etc/init.d/gmond stop");
