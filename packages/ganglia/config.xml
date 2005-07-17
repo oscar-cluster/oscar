@@ -4,10 +4,10 @@
   <name>Ganglia</name>
 
   <version>
-    <major>2</major>
-    <minor>5</minor>
-    <subversion>6</subversion>
-    <release>2</release>
+    <major>3</major>
+    <minor>0</minor>
+    <subversion>1</subversion>
+    <release>1</release>
     <epoch>1</epoch>
   </version>
 
@@ -31,17 +31,24 @@
   <description>Ganglia is a scalable distributed monitoring system for high-performance computing systems such as clusters and Grids.</description>
 
   <rpmlist>
-      <rpm>ganglia-oscar-monitor-core-gmond</rpm>
+      <rpm>ganglia-gmond</rpm>
   </rpmlist>  
 
   <rpmlist>
-      <filter group="oscar_server" distribution="fedora" distribution_version="2"/>
-      <filter group="oscar_server" distribution="fedora" distribution_version="3"/>
-      <filter group="oscar_server" distribution="redhat"/>
-      <filter group="oscar_server" distribution="mandrake" distribution_version="10.0"/>
-      <filter group="oscar_server" distribution="mandrake" distribution_version="10.1"/>
-      <rpm>ganglia-monitor-core-gmetad</rpm>
-      <rpm>ganglia-webfrontend</rpm>
+      <filter group="oscar_server" distribution="fedora" distribution_version="2" />
+      <filter group="oscar_server" distribution="fedora" distribution_version="3" />
+      <filter group="oscar_server" distribution="redhat" />
+      <filter group="oscar_server" distribution="mandrake" distribution_version="10.0" />
+      <filter group="oscar_server" distribution="mandrake" distribution_version="10.1" />
+      <rpm>ganglia-gmetad</rpm>
+      <rpm>ganglia-web</rpm>
+      <rpm>rrdtool</rpm>
+  </rpmlist>
+
+  <rpmlist>
+      <filter group="oscar_server" distribution="fedora" distribution_version="3" />
+      <filter group="oscar_server" distribution="redhat" distribution_version="el4" />
+      <rpm>php-gd</rpm>
   </rpmlist>
 
   <servicelist>
