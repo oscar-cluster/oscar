@@ -19,8 +19,10 @@
 
 # (C)opyright Bernard Li <bli@bcgsc.ca>
 
-my @rpms = qw(ganglia-oscar-monitor-core-gmond);
-remove_rpms(@rpms);
+#my @rpms = qw(ganglia-gmond);
+#remove_rpms(@rpms);
+
+exit 0;
 
 #-------------------------------------------------------------
 #  Input: Array of rpms to remove (short name no version)
