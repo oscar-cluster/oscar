@@ -26,7 +26,7 @@ SUBDIRS			= \
 			testing
 
 oscar_SCRIPTS		= install_cluster
-oscar_DATA		= COPYING README VERSION README.RHEL.txt
+oscar_DATA		= COPYING README VERSION
 
 EXTRA_DIST		= $(oscar_SCRIPTS) $(oscar_DATA)
 
