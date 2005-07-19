@@ -22,6 +22,7 @@ oscar_DATA		= \
 			redhat-3asU2-ia64.rpmlist \
 			redhat-el4-i386.rpmlist \
 			redhat-el4-ia64.rpmlist \
+			redhat-el4-x86_64.rpmlist \
 			redhat-9-i386.rpmlist \
 			sample.disk.ide \
 			sample.disk.scsi \
