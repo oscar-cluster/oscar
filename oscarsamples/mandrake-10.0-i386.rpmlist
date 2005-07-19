@@ -161,7 +161,6 @@ shadow-utils
 strace
 sudo
 sysklogd
-syslinux
 SysVinit
 tar
 tcl
