@@ -120,9 +120,6 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
       copy("/boot/efi/EFI/redhat/elilo.efi","/tftpboot") or
       croak("Unable to copy \"elilo.efi\" to /tftpboot");
 
-    verbose("Linking elilo.efi to pxelinux.0");
-    symlink("elilo.efi","/tftpboot/pxelinux.0");
-
     verbose("Writing out \"elilo.conf\" file");
     open(OUT,">/tftpboot/elilo.conf") or croak("Couldn't open /tftpboot/elilo.conf for writing");
     print OUT <<'END';
