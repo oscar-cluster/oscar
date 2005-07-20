@@ -12,10 +12,7 @@
 include $(top_srcdir)/dist/Makefile.options
 
 oscar_DATA		= \
-			depman-1.43-4.noarch.rpm \
-			depman-updaterpms-1.43-4.noarch.rpm \
-			packman-1.43-4.noarch.rpm \
-			packman-rpm-1.43-4.noarch.rpm
+			packman-depman-1.43-5.noarch.rpm packman-depman-rpms-1.43-5.noarch.rpm
 
 EXTRA_DIST		= $(oscar_DATA)
 

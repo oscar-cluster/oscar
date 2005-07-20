@@ -17,9 +17,7 @@
 # Install the relevant RPMs.  Easy enough to hard-code for now, since
 # we only handle Linux/RPM.  This script will likely get more complicated.
 
-rpms="packman packman-rpm depman depman-updaterpms"
-
-# Check for each RPM
+rpms="packman-depman packman-depman-rpms"
 
 echo "Checking for packman/depman RPMs..."
 need_to_install=
