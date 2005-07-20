@@ -203,13 +203,13 @@ AC_CONFIG_FILES([
     share/prereqs/perl-Tk/scripts/Makefile
     share/prereqs/syslinux/Makefile
     share/prereqs/syslinux/scripts/Makefile
-    share/prereqs/XML-Parser/Makefile
-    share/prereqs/XML-Parser/media/Makefile
-    share/prereqs/XML-Parser/scripts/Makefile
-    share/prereqs/XML-Simple/Makefile
-    share/prereqs/XML-Simple/media/Makefile
-    share/prereqs/XML-Simple/scripts/Makefile
-    share/prereqs/XML-Simple/RPMS/Makefile
+    share/prereqs/perl-XML-Parser/Makefile
+    share/prereqs/perl-XML-Parser/media/Makefile
+    share/prereqs/perl-XML-Parser/scripts/Makefile
+    share/prereqs/perl-XML-Simple/Makefile
+    share/prereqs/perl-XML-Simple/scripts/Makefile
+    share/prereqs/perl-XML-Simple/RPMS/Makefile
+    share/prereqs/perl-XML-Simple/SRPMS/Makefile
 
     src/Makefile
     src/Installer/Makefile

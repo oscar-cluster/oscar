@@ -18,7 +18,7 @@ use Carp;
 # Version included in media directory
 
 my $ver = "2.31";
-my $real_name = "XML-Parser";
+my $real_name = "perl-XML-Parser";
 my $module_name = "XML::Parser";
 
 # Helper subroutine

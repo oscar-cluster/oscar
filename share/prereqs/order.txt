@@ -3,6 +3,6 @@
 # ones listed here.
 packman
 update-rpms
-XML-Parser
-XML-Simple
+perl-XML-Parser
+perl-XML-Simple
 oda
