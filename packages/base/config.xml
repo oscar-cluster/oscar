@@ -38,6 +38,7 @@
 
   <rpmlist>
 	 <filter distribution='mandrake' distribution_version='10.0' group='oscar_server' />
+	 <filter distribution='mandrake' distribution_version='10.1' group='oscar_server' />
 	 <rpm>libapr0</rpm>
 	 <rpm>apache2-common</rpm>
 	 <rpm>apache-conf</rpm>
