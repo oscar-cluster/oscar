@@ -15,6 +15,7 @@ oscar_DATA		= \
             		fedora-2-i386.rpmlist \
 			fedora-3-i386.rpmlist \
 			mandrake-10.0-i386.rpmlist \
+			mandrake-10.1-i386.rpmlist \
 			redhat-3as-i386.rpmlist \
 			redhat-3as-x86_64.rpmlist \
 			redhat-3as-ia64.rpmlist \
