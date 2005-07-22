@@ -183,12 +183,13 @@ sub mac_window {
                                    );
 
     our $bootfloppy = $frame->Button(
-                                    -text => "Build Autoinstall Floppy...",
+                                    -text => "Build Autoinstall CD...",
                                     -command => sub {
-                                        my $cmd = "xterm -T 'Build Autoinstall Floppy' -e mkautoinstalldiskette";
-                                        oscar_log_subsection("Step $step_number: Building autoinstall floppy: $cmd");
+                                        my $cmd = "xterm -T 'Build Autoinstall CD' -e si_mkautoinstallcd --out-file /tmp/oscar.iso";
+                                        oscar_log_subsection("Step $step_number: Building autoinstall cd: $cmd");
                                         system($cmd);
-                                        oscar_log_subsection("Step $step_number: Successfully built autoinstallfloppy");
+                                        oscar_log_subsection("Step $step_number: Successfully built si_autoinstallcd");
+					done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar.iso'.");
                                     }
                                    );
     our $networkboot = $frame->Button(
