@@ -17,3 +17,9 @@ if [ "$DISTRO" = "rhel3" -o "$DISTRO" = "rhel4" ]; then
     $OSCAR_HOME/scripts/generic-setup perl-TermReadKey
 fi
 
+if [ "$DISTRO" = "mdk10.1" -o "$DISTRO" = "mdk10" ]; then
+    echo "Distro is either mdk10 or mdk10.1"
+    cp $OSCAR_HOME/packages/sis/distro/mdk10-i386/* /tftpboot/rpm
+fi
+
+
