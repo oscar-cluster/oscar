@@ -250,16 +250,16 @@ sub set_buttons {
     $state = (scalar keys %MAC) ? "normal" : "disabled";
     our $savebutton->configure( -state => $state );
 #
-#   Emabled iff at least one item selected in the listbox and the tree.
+#   Enabled iff at least one item selected in the listbox and the tree.
 #
     my $trs = defined $tree->infoSelection();
     $state = ($lbs && $trs) ? "normal" : "disabled";
     our $assignbutton->configure( -state => $state );
 #
-#   Enabled iff at least one item selected in listbox and elected item in tree has a MAC.
+#   Enabled iff at least one item selected in listbox and selected item in tree has a MAC.
 #
-    my $node = $tree->infoSelection();
-    if( $trs && $node =~ /^\|([^\|]+)/) {
+    my @node = $tree->infoSelection();
+    if( $trs && $node[0] =~ /^\|([^\|]+)/) {
         my $client = list_client(name=>$1);
         my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
         $state = $adapter->mac ? "normal" : "disabled";
