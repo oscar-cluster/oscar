@@ -60,8 +60,7 @@ gnuplot
 gpm
 grep
 groff
-#grub
-lilo
+grub
 gtk2
 gzip
 hdparm
