@@ -3,6 +3,8 @@
 # $Id: $
 #
 # copy in arch specific packages
+# (c) Erich Focht, NEC HPCE
+# (C)opyright Bernard Li <bli@bcgsc.ca>
 
 $OSCAR_HOME/scripts/generic-setup --silent udpcast perl-TermReadKey
 
