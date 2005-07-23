@@ -20,7 +20,13 @@ my $source_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro/";
 my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
 
 my ($name, $ver) = OSCAR::Distro::which_distro_server();
-if ( $name eq "mandrake" && $ver == 9.0 ) {
+
+if ($name eq "redhat") {
+  $source_dir .= "rh";
+    if ($ver eq "el4") {
+      $source_dir .= "el4";
+    }
+} elsif ( $name eq "mandrake" && $ver == 9.0 ) {
   $source_dir .= "mdk90";
 } else {
     $source_dir .= "rh80";
