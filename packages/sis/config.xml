@@ -55,6 +55,7 @@
       <rpm>flamethrower</rpm>
       <rpm>udpcast</rpm>
       <rpm>tftp-server</rpm>
+      <rpm>perl-TermReadKey</rpm>
   </rpmlist>
 
   <rpmlist>

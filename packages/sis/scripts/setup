@@ -3,11 +3,11 @@
 # $Id: $
 #
 # copy in arch specific packages
-# (c) Erich Focht, NEC HPCE
 
 $OSCAR_HOME/scripts/generic-setup --silent udpcast perl-TermReadKey
 
 DISTRO=`$OSCAR_HOME/scripts/generic-setup --distro`
+DIRNAME=`$OSCAR_HOME/scripts/generic-setup --dirname`
 echo "Detected distro $DISTRO"
 if [ "$DISTRO" = "rhel3" -o "$DISTRO" = "rhel4" ]; then
     echo "Distro is either rhel3 or rhel4"
@@ -17,9 +17,12 @@ if [ "$DISTRO" = "rhel3" -o "$DISTRO" = "rhel4" ]; then
     $OSCAR_HOME/scripts/generic-setup perl-TermReadKey
 fi
 
+if [ "$DIRNAME" = "rhel4-x86_64" ]; then
+    echo "The grub RPM which shipped with RHEL4 and RHEL4U1 has a bug on x86_64 systems, copying updated RPM (rebuilt from Fedora Core 3 SRPM) to /tftpboot/rpm"
+    $OSCAR_HOME/scripts/generic-setup grub
+fi
+
 if [ "$DISTRO" = "mdk10.1" -o "$DISTRO" = "mdk10" ]; then
     echo "Distro is either mdk10 or mdk10.1"
     cp $OSCAR_HOME/packages/sis/distro/mdk10-i386/* /tftpboot/rpm
 fi
-
-
