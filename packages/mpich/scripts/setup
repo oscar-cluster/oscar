@@ -25,7 +25,9 @@ if ($name eq "redhat") {
   $source_dir .= "rh";
     if ($ver eq "el4") {
       $source_dir .= "el4";
-    }
+    } else {
+      $source_dir .= "80";
+    } 
 } elsif ( $name eq "mandrake" && $ver == 9.0 ) {
   $source_dir .= "mdk90";
 } else {
