@@ -72,6 +72,9 @@ sub mac_window {
     my $parent = shift;
     $step_number = shift;
     our ($vars) = @_;
+
+    my ($ip, $broadcast, $netmask) = interface2ip($$vars{interface});
+
     $parent->Busy(-recurse => 1);
     # init this only once, as we don't add network cards during this process
     @SERVERMACS = set_servermacs();
@@ -182,14 +185,14 @@ sub mac_window {
                                     -state => "disabled",
                                    );
 
-    our $bootfloppy = $frame->Button(
+    our $bootcd = $frame->Button(
                                     -text => "Build Autoinstall CD...",
                                     -command => sub {
-                                        my $cmd = "xterm -T 'Build Autoinstall CD' -e si_mkautoinstallcd --out-file /tmp/oscar.iso";
-                                        oscar_log_subsection("Step $step_number: Building autoinstall cd: $cmd");
+                                        my $cmd = "xterm -T 'Build Autoinstall CD' -e si_mkautoinstallcd --append \"MONITOR_SERVER=$ip\" --out-file /tmp/oscar_bootcd.iso";
+                                        oscar_log_subsection("Step $step_number: Building autoinstall CD: $cmd");
                                         system($cmd);
                                         oscar_log_subsection("Step $step_number: Successfully built si_autoinstallcd");
-					done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar.iso'.");
+					done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.");
                                     }
                                    );
     our $networkboot = $frame->Button(
@@ -210,9 +213,9 @@ sub mac_window {
     $start->grid($assignall, $exitbutton, -sticky => "ew");
     $assignbutton->grid($deletebutton, $dhcpbutton, -sticky => "ew");
     $loadbutton->grid($savebutton, $selectmulticast, -sticky => "ew");
-    my $label2 = $frame->Label(-text => "Below are commands to create a boot environment.\nYou can either boot from floppy or network");
+    my $label2 = $frame->Label(-text => "Below are commands to create a boot environment.\nYou can either boot from CD or network");
     $label2->grid("-","-",-sticky => "ew");
-    $bootfloppy->grid($networkboot, $refreshdhcp, -sticky => "ew");
+    $bootcd->grid($networkboot, $refreshdhcp, -sticky => "ew");
 #    $clearallmacsfromnodes->grid( -sticky => 'ew');
     $window->bind('<Destroy>', sub {
                                     if ( defined($destroyed) ) {
@@ -567,7 +570,7 @@ sub end_collect_mac {
     our $starttext = $startcoll;
     $label->configure(-text => "Not Listening to Network. Click \"$starttext\" to start.");
 
-    our $bootfloppy->configure(-state => 'normal');
+    our $bootcd->configure(-state => 'normal');
     our $networkboot->configure(-state => 'normal');
     our $loadbutton->configure(-state => 'normal');
     our $exitbutton->configure(-state => 'normal');
@@ -596,7 +599,7 @@ sub begin_collect_mac {
     our $label;
     our $start;
 
-    our $bootfloppy->configure(-state => 'disabled');
+    our $bootcd->configure(-state => 'disabled');
     our $networkboot->configure(-state => 'disabled');
     our $savebutton->configure(-state => 'disabled');
     our $loadbutton->configure(-state => 'disabled');
