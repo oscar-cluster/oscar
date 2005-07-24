@@ -178,6 +178,10 @@ oscar_button($window, "Step $step_number:", "Setup Networking...",
 	     [\&mac_window, $window, $step_number,
 	      {interface => $interface}], 'netboot');
 
+# Monitor Cluster Deployment
+oscar_button($window, "", "Monitor Cluster Deployment",
+             \&monitor_deployment, 'monitor_deployment');
+
 my $boot=$window->Label (-text => 
 			 "Before continuing, network boot all of your nodes. 
 Once they have completed installation, reboot them from 
@@ -575,7 +579,7 @@ sub run_tests {
 
     oscar_log_section("Running step $step_number of the OSCAR wizard: Test cluster setup");
 
-    my $cmd = "cd $ENV{OSCAR_HOME}/testing && xterm -sl 500 -e ./test_cluster --wait";
+    my $cmd = "cd $ENV{OSCAR_HOME}/testing && xterm -geometry 80x47 -sl 500 -e ./test_cluster --wait";
     oscar_log_subsection("Step $step_number: Running tests: $cmd");
     !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
     oscar_log_subsection("Step $step_number: Not waiting for completion");
@@ -583,3 +587,10 @@ sub run_tests {
     return 1;
 }
 
+###########################################################################
+
+sub monitor_deployment {
+    my $cmd = "xterm -geometry 100x24 -sl 500 -e ./monitor_deployment --wait";
+    !system("$cmd &") or (carp($!), return undef);
+    return 1;
+}
