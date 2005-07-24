@@ -2,6 +2,8 @@
 
 #   $Header: /home/user5/oscar-cvsroot/oscar/scripts/setup_pxe,v 1.11 2004/07/12 16:45:23 dnl Exp $
 
+# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
+
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 
@@ -102,6 +104,19 @@ unless (-d "/tftpboot/pxelinux.cfg") {
 
 my $archdir = "$ARCH-boot";
 
+my $monitor_port = 8181;
+my $iface = `oda read_records oscar.interface`;
+my $ip = `oda node_nic_ip oscar_server $iface`;
+chomp($ip);
+
+# This is only necessary because the directory is not created by SystemImager's build system
+# Should be removed after it is incorporated in mainline code
+if ( !(-d "/var/lock/systemimager") ) {
+  verbose("Creating /var/lock/systemimager needed by si_monitor.");
+  mkpath("/var/lock/systemimager") or
+    croak("Unable to create /var/lock/systemimager.");
+}
+
 if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     verbose("Getting pxelinux.0.");
     copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
@@ -110,6 +125,19 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     verbose("Copying default pxelinux.cfg file");
     copy("/etc/systemimager/pxelinux.cfg/syslinux.cfg", "/tftpboot/pxelinux.cfg/default") or 
       croak("Unable to copy \"default\" file to /tftpboot/pxelinux.cfg.");
+
+    verbose("Updating /tftpboot/pxelinux.cfg/default file to support si_monitor.");
+    if ( system("sed 's/root=\\/dev\\/ram/root=\\/dev\\/ram MONITOR_SERVER=$ip/g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+      croak("Unable to update /tftpboot/pxelinux.cfg/default file to support si_monitor.");
+    }
+
+    # This is only necessary because the directory is not created by SystemImager's build system
+    # Should be removed after it is incorporated in mainline code
+    if ( !(-d "/var/lock/systemimager") ) {
+      verbose("Creating /var/lock/systemimager needed by si_monitor.");
+      mkpath("/var/lock/systemimager") or
+        croak("Unable to create /var/lock/systemimager.");
+    }
 
     verbose("Copying SystemImager kernel & ramdisk");
     copy("/etc/systemimager/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
@@ -120,20 +148,17 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
       copy("/boot/efi/EFI/redhat/elilo.efi","/tftpboot") or
       croak("Unable to copy \"elilo.efi\" to /tftpboot");
 
-    verbose("Writing out \"elilo.conf\" file");
+    verbose("Writing out \"elilo.conf\" file with si_monitor support");
     open(OUT,">/tftpboot/elilo.conf") or croak("Couldn't open /tftpboot/elilo.conf for writing");
-    print OUT <<'END';
-prompt
-timeout=50
-default=sisboot
-
-image=kernel
-        label=sisboot
-        initrd=initrd.img
-        read-only
-        root=/dev/ram
-
-END
+    print OUT "prompt\n";
+    print OUT "timeout=50\n";
+    print OUT "default=sisboot\n";
+    print OUT "\n";
+    print OUT "image=kernel\n";
+    print OUT "\tlabel=sisboot\n";
+    print OUT "\tinitrd=initrd.img\n";
+    print OUT "\tread-only\n";
+    print OUT "\troot=/dev/ram MONITOR_SERVER=$ip\n";
   
 } else {
     croak("$ARCH is not a known architecture");
