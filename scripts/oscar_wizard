@@ -81,7 +81,8 @@ $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 # Create the main window...
 my $window = MainWindow->new();
 $window->withdraw();
-$window->title("OSCAR Installation Wizard");
+chomp(my $shostname = `hostname -s`);
+$window->title("OSCAR Installation Wizard - $shostname");
 
 # Get the version
 #
