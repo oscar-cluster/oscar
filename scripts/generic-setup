@@ -64,12 +64,17 @@ if (! -d $oscar_pkg_pool) {
 }
 
 # Which architecture are we dealing with?
-my $arch;
+my ($iarch,$garch);
 if ($options{arch}) {
-    $arch = $options{arch};
+    $iarch = $options{arch};
 } else {
-    $arch = `uname -i`;
-    chop $arch;
+    $iarch = `uname -i`;
+    chop $iarch;
+}
+if ($iarch eq "i386") {
+    $garch = "i386,i486,i586,i686";
+} else {
+    $garch = $iarch;
 }
 
 #
@@ -108,7 +113,8 @@ if ($options{erase}) {
     if (@argpkgs) {
 	my $pattern = join("|",@argpkgs);
 	# trim package files list down to matching list
-	@pkgfiles = grep /\/($pattern)-[0-9].*\.($arch|noarch)\.rpm/, @pkgfiles;
+	my $march = join("|", split(/,/, $garch));
+	@pkgfiles = grep /\/($pattern)-[0-9].*\.($march|noarch)\.rpm/, @pkgfiles;
     }
     for my $f (@pkgfiles) {
 	my $sf = $oscar_pkg_pool . "/" . basename($f);
@@ -134,12 +140,14 @@ if (!scalar(@argpkgs)) {
 ###
 for my $pkg (@argpkgs) {
     my ($filename, $label, $msg);
-    if (defined($pkglist{"$pkg:$arch"})) {
-	$label = "$pkg:$arch";
-    } elsif (defined($pkglist{"$pkg:noarch"})) {
-	$label = "$pkg:noarch";
-    } else {
-	print STDERR "Package $pkg not found for ($arch,noarch)\n";
+    for my $march (split(/,/, $garch) , "noarch") {
+	if (defined($pkglist{"$pkg:$march"})) {
+	    $label = "$pkg:$march";
+	    last;
+	}
+    }
+    if (!$label) {
+	print STDERR "Package $pkg not found for ($garch,noarch)\n";
 	next;
     }
     $filename = $pkglist{$label}{file};
@@ -183,7 +191,7 @@ sub best_rpms {
 
     my %rpms;
     for my $dir (@src_dirs) {
-	push @pkgfiles, glob("$base_dir/$dir/*.{$arch,noarch}.rpm");
+	push @pkgfiles, glob("$base_dir/$dir/*.{$garch,noarch}.rpm");
     }
     #vprint("RPM files found: ".join(" ",@pkgfiles)."\n");
 
@@ -228,13 +236,13 @@ sub distro_compat {
     $ver2 =~ s/\..*$//g;
 
     # the order is important!
-    push @compatlist, $name . $ver  . "-" . $arch;
+    push @compatlist, $name . $ver  . "-" . $iarch;
     push @compatlist, $name . $ver               ;
-    push @compatlist, $name . $ver1 . "-" . $arch;
+    push @compatlist, $name . $ver1 . "-" . $iarch;
     push @compatlist, $name . $ver1              ;
-    push @compatlist, $name . $ver2 . "-" . $arch;
+    push @compatlist, $name . $ver2 . "-" . $iarch;
     push @compatlist, $name . $ver2              ;
-    push @compatlist, $name         . "-" . $arch;
+    push @compatlist, $name         . "-" . $iarch;
     push @compatlist, $name;
 
     vprint("Compatlist: ".join(" ",@compatlist)."\n");
