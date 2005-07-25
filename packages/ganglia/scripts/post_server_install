@@ -86,11 +86,24 @@ close(CONF);
 
 $gmondBuffer =~s/name = "unspecified"/name = "$ref->{datasource}"\n  owner = "$ref->{owner}"/;
 
-if ($gmondBuffer =~ "mcast_if") {
+my $num_iface = `ifconfig | grep eth | wc -l`;
+
+# If we have more than one ethernet interface, then set mcast_if for gmond.conf
+if ($num_iface > 1) {
+    if ($gmondBuffer =~ "mcast_if") {
 	$gmondBuffer =~ s/mcast_if = eth[0-9]/mcast_if = $iface/g;
-} else {
+    } else {
 	$gmondBuffer =~ s/mcast_join = 239.2.11.71/mcast_join = 239.2.11.71\n  mcast_if = $iface/g;
-} 
+    }
+
+    # Check to see if multicast route already exists
+    my $mcast_route = `route | grep 224.0.0.0 | grep $iface`;
+
+    if (!($mcast_route)) {
+	print("Adding default route for multicast to go through $iface.\n");
+	`route add -net 224.0.0.0 netmask 240.0.0.0 dev $iface`;
+    }
+}
 
 open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
     

@@ -39,38 +39,39 @@ my $push_command = "/opt/c3-4/cpush";
 my $exec_command = "/opt/c3-4/cexec";
 
 if (-e $xml_data) {
-	$ref = XMLin($xml_data);
-	$iface = $ref->{iface};
+    $ref = XMLin($xml_data);
+    $iface = $ref->{iface};
 }
 
 my $headnode_iface = `oda read_records oscar.interface`;
 chomp ($headnode_iface);
 
 if ( $headnode_iface eq $iface ) {
-	system("$push_command /etc/gmond.conf /etc/gmond.conf");
+    print("Pushing headnode's gmond.conf to compute nodes\n");
+    system("$push_command /etc/gmond.conf /etc/gmond.conf");
 } else {
-	system("cp /etc/gmond.conf $gmond_conf");
-
-	open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
-
-	while ($line = <CONF>) {
-    		$confBuffer = $confBuffer.$line;
-	}
-
-	close(CONF, $gmond_conf);
-
-	$confBuffer =~ s/mcast_if = eth[0-9]/mcast_if = $iface/g;
-
-	open(CONF, '>'.$gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
-
-	print CONF $confBuffer;
-
-	close(CONF);
-
-	# push the modified /etc/gmond.conf to the client nodes
-	system("$push_command $gmond_conf /etc/gmond.conf");
-
-	system("rm $gmond_conf");
+    system("cp /etc/gmond.conf $gmond_conf");
+    
+    open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
+    
+    while ($line = <CONF>) {
+	$confBuffer = $confBuffer.$line;
+    }
+    
+    close(CONF, $gmond_conf);
+    
+    $confBuffer =~ s/mcast_if = eth[0-9]/mcast_if = $iface/g;
+    
+    open(CONF, '>'.$gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
+    
+    print CONF $confBuffer;
+    
+    close(CONF);
+    
+    print("Pushing modified gmond.conf to compute nodes\n");
+    system("$push_command $gmond_conf /etc/gmond.conf");
+    
+    system("rm $gmond_conf");
 }
 
 # stop all running daemons and restart them all (on headnode and clients)
