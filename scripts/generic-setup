@@ -64,18 +64,23 @@ if (! -d $oscar_pkg_pool) {
 }
 
 # Which architecture are we dealing with?
-my ($iarch,$garch);
+my ($iarch,$march,@sysarch);
 if ($options{arch}) {
-    $iarch = $options{arch};
+    $march = $options{arch};
 } else {
-    $iarch = `uname -i`;
-    chop $iarch;
+    chop ($march = `uname -m`);
 }
-if ($iarch eq "i386") {
-    $garch = "i386,i486,i586,i686";
+# build compatibility list like in update-rpms
+if ($march =~ /i[3-6]86$/) {
+    push @sysarch, 'i686' if $march =~ /686/;
+    push @sysarch, 'i586' if $march =~ /[56]86/;
+    push @sysarch, 'i486' if $march =~ /[456]86/;
+    push @sysarch, 'i386';
 } else {
-    $garch = $iarch;
+    push @sysarch, $march;
 }
+$iarch = $sysarch[$#sysarch];
+push @sysarch, "noarch";
 
 #
 # Packages to which command applies. If empty, use all packages!
@@ -113,8 +118,8 @@ if ($options{erase}) {
     if (@argpkgs) {
 	my $pattern = join("|",@argpkgs);
 	# trim package files list down to matching list
-	my $march = join("|", split(/,/, $garch));
-	@pkgfiles = grep /\/($pattern)-[0-9].*\.($march|noarch)\.rpm/, @pkgfiles;
+	my $match = join("|", @sysarch);
+	@pkgfiles = grep /\/($pattern)-[0-9].*\.($match)\.rpm/, @pkgfiles;
     }
     for my $f (@pkgfiles) {
 	my $sf = $oscar_pkg_pool . "/" . basename($f);
@@ -131,7 +136,7 @@ if ($options{erase}) {
 #
 if (!scalar(@argpkgs)) {
     # all packages apply
-    @argpkgs = grep {s/:.*$//} keys(%pkglist);
+    @argpkgs = uniq(grep {s/:.*$//} keys(%pkglist));
 }
 
 ###
@@ -140,14 +145,14 @@ if (!scalar(@argpkgs)) {
 ###
 for my $pkg (@argpkgs) {
     my ($filename, $label, $msg);
-    for my $march (split(/,/, $garch) , "noarch") {
-	if (defined($pkglist{"$pkg:$march"})) {
-	    $label = "$pkg:$march";
+    for my $arch (@sysarch) {
+	if (defined($pkglist{"$pkg:$arch"})) {
+	    $label = "$pkg:$arch";
 	    last;
 	}
     }
     if (!$label) {
-	print STDERR "Package $pkg not found for ($garch,noarch)\n";
+	print STDERR "Package $pkg not found compatible architectures\n";
 	next;
     }
     $filename = $pkglist{$label}{file};
@@ -183,6 +188,13 @@ sub vprint {
     print @_ if ($options{verbose});
 }
 
+sub uniq {
+    my (@arr) = @_;
+    my %h;
+    map {$h{$_} = 1} @arr;
+    return sort(keys %h);
+}
+
 #
 # List of best packages in directories passed as argument
 #
@@ -191,14 +203,13 @@ sub best_rpms {
 
     my %rpms;
     for my $dir (@src_dirs) {
-	push @pkgfiles, glob("$base_dir/$dir/*.{$garch,noarch}.rpm");
+	my $garch = join(",",@sysarch);
+	push @pkgfiles, glob("$base_dir/$dir/*.{$garch}.rpm");
     }
-    #vprint("RPM files found: ".join(" ",@pkgfiles)."\n");
 
     for my $f (@pkgfiles) {
 	my ($name, $version, $release, $arch) = split " ",
 	`rpm -q --qf '%{NAME} %{VERSION} %{RELEASE} %{ARCH}' -p $f`;
-	#vprint("$f : $name $version $release $arch\n");
 
 	# create hash entry for this file
 	my $tmp = { 'file' => $f,
@@ -312,7 +323,7 @@ Usage: generic-setup [options] [pkg1 pkg2 ...]
   displayed in the STDOUT of the command as comment.
 
  Options:
-   --arch|-a      : override locally detected architecture
+   --arch|-a      : override locally detected architecture (uname -m !)
    --distro  D-V  : translated distro string (for testing only!)
    --erase|-e     : erase packages with same name from RPM pool (tftpboot/rpm)
    --help|-h      : display this help text
