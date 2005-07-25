@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_client_rpm_uninstall,v 1.2 2003/12/04 05:09:08 ngorsuch Exp $
+# $Id$
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -7,6 +7,8 @@
 #
 # client uninstall script
 # Must exit with 0 on success or non-zero for any failures.
+
+# $Id$
 
 my @rpms = qw(systemconfigurator
                 systemimager-common

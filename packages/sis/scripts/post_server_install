@@ -18,6 +18,8 @@
 #   Michael Chase-Salerno (mchasal@users.sf.net)
 # Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 
+# $Id$
+
 use strict;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";

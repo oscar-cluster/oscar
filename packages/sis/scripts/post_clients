@@ -19,6 +19,8 @@
 #   This script reads the SIS database and uses the information to update 
 #   the OSCAR database tables for nodes, NICS, and networks.
 
+# $Id$
+
 use strict;
 use Getopt::Long;
 use Carp;
