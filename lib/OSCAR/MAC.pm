@@ -261,8 +261,14 @@ sub set_buttons {
 #
 #   Enabled iff at least one item selected in listbox and selected item in tree has a MAC.
 #
-    my @node = $tree->infoSelection();
-    if( $trs && $node[0] =~ /^\|([^\|]+)/) {
+    my $node = $tree->infoSelection();
+
+    # hack to support both perl-Tk-800 and perl-Tk-804 
+    if ( ref($node) eq "ARRAY" ) {
+      $node = $$node[0];
+    }
+
+    if( $trs && $node =~ /^\|([^\|]+)/) {
         my $client = list_client(name=>$1);
         my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
         $state = $adapter->mac ? "normal" : "disabled";
@@ -372,11 +378,12 @@ sub assign2machine {
     unless ( $mac ) {
       my $sel = $listbox->curselection;
       if ( defined( $sel ) ) {
-        $mac = $listbox->get($listbox->curselection) or return undef; 
+        $mac = $listbox->get($listbox->curselection) or return undef;
       }
       else { return undef; }
     }
-    unless ( $node ) { 
+    
+    unless ( $node ) {
       if ( defined( $tree->infoSelection() ) ) {
         $node = $tree->infoSelection() or return undef; 
       }
@@ -385,6 +392,12 @@ sub assign2machine {
 
     my $client;
     clear_mac();
+
+    # hack to support both perl-Tk-800 and perl-Tk-804... 
+    if ( ref($node) eq "ARRAY" ) {
+      $node = $$node[0];
+    }
+  
     if($node =~ /^\|([^\|]+)/) {
         oscar_log_subsection("Step $step_number: Assigned $mac to $1");
         $client = list_client(name=>$1);
@@ -474,6 +487,12 @@ sub clear_mac {
     unless( $node ) { $node = $tree->infoSelection() or return undef; }
     unless( defined($noupdate) ) {$noupdate = 0;}
     my $client;
+
+    # hack to support both perl-Tk-800 and perl-Tk-804
+    if ( ref($node) eq "ARRAY" ) {
+      $node = $$node[0];
+    }
+
     if($node =~ /^\|([^\|]+)/) {
         $client = list_client(name=>$1);
     } else {
