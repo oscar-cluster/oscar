@@ -89,7 +89,6 @@ if ($os_rel !~ /^2\.6/) {
 	return 0; 
 }
 
-$arch = "foo";
 
  # Limit support to only x86 machines
 if ($arch !~ /^i686$|^i586$|^i386$/ )
