@@ -10,4 +10,4 @@
 #
 # setup script for the switcher package
 #
-$OSCAR_HOME/scripts/generic_setup
+$OSCAR_HOME/scripts/generic-setup
