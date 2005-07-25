@@ -21,6 +21,8 @@
 #   This script is designed to be run after the image is built.
 #   It will do all the fixups required.
 
+# $Id$
+
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;

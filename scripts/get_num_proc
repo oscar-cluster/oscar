@@ -17,6 +17,8 @@
 # this script depends on being able to ssh to the node without a password
 #
 # Author: Neil Gorsuch ngorsuch@ncsa.uiuc.edu
+#
+# $Id$
 
 # check for one argument
 if [ "`echo $* | wc -w`" -ne 1 ] ; then

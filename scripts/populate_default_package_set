@@ -21,6 +21,8 @@
 #   the installable package names, and only the installable
 #   package names.
 
+# $Id$
+
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;

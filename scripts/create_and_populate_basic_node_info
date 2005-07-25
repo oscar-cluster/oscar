@@ -21,6 +21,8 @@
 #   creates the oscar_server node record,
 #   creates the node attribute set oscar_server,
 #   creates the node attribute set oscar_clients.
+#
+# $Id$
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";

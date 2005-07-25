@@ -17,6 +17,8 @@
 #                       security installation to allow client 
 #                       access to this server machine
 #
+# $Id$
+#
 # Author: Neil Gorsuch
 
 use lib '/usr/lib/systeminstaller';

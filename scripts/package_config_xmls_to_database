@@ -19,7 +19,7 @@
 #                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 # Copyright 2004 Revolution Linux
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
-#
+# $Id$
 
 use strict;
 use Getopt::Long;

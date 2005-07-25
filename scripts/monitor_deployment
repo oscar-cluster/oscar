@@ -5,6 +5,7 @@
 # This script invokes si_monitor and monitors the cluster deployment in real time.
 # Stores the si_monitor database as /tmp/oscar_si_monitor_db.
 #
+# $Id$
 
 si_monitor --db /tmp/oscar_si_monitor_db
 

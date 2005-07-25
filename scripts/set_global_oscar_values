@@ -24,6 +24,8 @@
 #   This script initializes or re-initializes the values in the database
 #   table "oscar" which is for global values.
 
+# $Id$
+
 use Getopt::Long;
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";

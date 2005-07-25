@@ -17,6 +17,7 @@
 # Copyright © 2004, The Board of Trustees of the University of Illinois. All rights reserved.
 # Copyright 2004 NCSA
 #                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# $Id$
 
 use strict;
 use Getopt::Long;

@@ -19,6 +19,7 @@
 #
 # client_status - Takes client hostnames as arguments
 #		  and reports their install status
+# $Id$
 
 for node in $*; do
 
