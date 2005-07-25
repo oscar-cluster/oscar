@@ -18,6 +18,8 @@ package OSCAR::Distro;
 
 # Copyright 2005 Bernard Li <bli@bcgsc.ca>
 #
+# Copyright 2005 Erich Focht <efocht@hpce.nec.com>
+#
 # Copyright 2004 Revolution Linux
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
 #
@@ -121,12 +123,22 @@ sub which_distro_server {
 	}
         last;
     }
-    # special treatment for RHEL and clones
-    if ($name eq "redhat" && $version =~ m/^3(ES|AS|WS)/) {
-        $version = "3as";
+    # special treatment for RHEL
+    if ($name eq "redhat") {
+	if ($version =~ m/^3(ES|AS|WS)/) {
+	    $version = "3as";
+	} elsif ($version =~ m/^4(ES|AS|WS)/) {
+	    $version = "el4";
+	}
     }
-    if ($name eq "redhat" && $version =~ m/^4(ES|AS|WS)/) {
-        $version = "el4";
+    # RHEL clones look like RHEL
+    if ($name eq "sl" || $name eq "centos") {
+	$name = "redhat";
+	if ($version =~ /^3/) {
+	    $version = "3as";
+	} elsif ($version =~ /^4/) {
+	    $version = "el4";
+	}
     }
     return (lc $name, lc $version);
 }
