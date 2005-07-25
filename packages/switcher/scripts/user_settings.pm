@@ -7,7 +7,7 @@ package scripts::user_settings;
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: user_settings.pm,v 1.3 2003/01/28 19:42:04 brechin Exp $
+# $Id$
 #
 
 use strict;
@@ -18,7 +18,7 @@ use base qw(Exporter);
 use Data::Dumper;
 
 @EXPORT = qw(get);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 # Import some modules just for switcher
 

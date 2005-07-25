@@ -1,103 +1,13 @@
-#!/usr/bin/env perl
+#!/bin/sh
 #
-# Copyright (c) 2002-2003 The Trustees of Indiana University.  
-#                         All rights reserved.
-# Copyright 2004 Revolution Linux
-#           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
+# Copyright 2005 Erich Focht <efocht@hpce.nec.com>
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup,v 1.9 2003/11/26 00:18:04 jsquyres Exp $
+# $Id$
 #
-# post_clients script for the switcher package
+# setup script for the switcher package
 #
-
-use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
-use POSIX;
-use Carp;
-use OSCAR::Distro;
-use OSCAR::PackageBest;
-
-# Different distro's require different RPMs (mainly because libtcl appears
-# to be installed differently on different distros).  So put some
-# intelligence here to figure out what distro we're on and copythe
-# right RPM(s) to the packages/switcher/RPMS directory.
-
-my $pkg_name = "switcher";
-my $source_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro/";
-my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
-my ($name, $ver) = OSCAR::Distro::which_distro_server();
-
-if ($name eq "redhat") {
-  $source_dir .= "rh";
-  if ($ver eq "9") {
-    $source_dir .= "90";
-  } elsif ($ver eq "3as") {
-    $source_dir .= "el3";
-  } elsif ($ver eq "el4") {
-    $source_dir .= "el4";
-  } else {
-    print "Unsupported distro!\n";
-  }
-} elsif ($name eq "suse") {
-  $source_dir .= "suse81";
-} elsif ($name eq "mandrake") {
-  $source_dir .= "mdk10";
-} elsif ($name eq "fedora") {
-  $source_dir .= $name;
-  if ($ver eq "2") {
-    $source_dir .= "2";
-  } elsif ($ver eq "3") {
-    $source_dir .= "2";
-  } else {
-    print "Error - $pkg_name: no support for $name $ver\n";
-    exit(1);
-  }
-}
-
-print "Using modules RPMs from: $source_dir\n";
-
-# Quick sanity check
-
-if (! -d $dest_dir) {
-  croak("$dest_dir does not exist");
-} elsif (! -d $source_dir) {
-  croak("$source_dir does not exist");
-}
-
-# Remove any "modules-oscar" RPMs in the dest dir
-
-opendir(DIR, $dest_dir);
-my @bad_files = grep {/^modules-oscar/ && -f "$dest_dir/$_" } readdir(DIR);
-closedir(DIR);
-if ($#bad_files > -1) {
-  printf("Removing old files:\n");
-  foreach my $file (@bad_files) {
-    printf(" - $dest_dir/$file\n");
-    unlink("$dest_dir/$file");
-  }
-}
-
-# Make a list of the new files and copy them over
-
-opendir(DIR, $source_dir);
-my @good_files = grep {/^modules-oscar/ && -f "$source_dir/$_" } readdir(DIR);
-closedir(DIR);
-if ($#good_files > -1) {
-  my $cmd = "cp ";
-  printf("Copying new files:\n");
-  foreach my $file (@good_files) {
-    $cmd .= "$source_dir/$file ";
-    printf(" - $source_dir/$file\n");
-  }
-  $cmd .= $dest_dir;
-  system($cmd);
-  print "Copied modules-oscar RPMs to $dest_dir\n";
-}
-
-# All done
-
-exit 0
+$OSCAR_HOME/scripts/generic_setup

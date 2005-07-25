@@ -7,7 +7,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: post_configure,v 1.5 2003/01/21 21:55:49 jsquyres Exp $
+# $Id$
 #
 
 use strict;
