@@ -7,14 +7,13 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id:$
-#
 # Generic setup script for copying distro and arch specific RPMs/packages
-# from distro/*/ to RPMS/ . Can also be used for deleting RPMs from the
-# /tftpboot/rpm package pool.
+# from distro/*/ to /tftpboot/rpm. Can also be used for deleting RPMs from
+# the /tftpboot/rpm package pool.
 #
-# (c) 2005 Erich Focht, NEC HPCE
-# (inspired by the very similar package specific scripts)
+# $Id$
+#
+# (c) 2005 Erich Focht <efocht@hpce.nec.com>
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -23,27 +22,25 @@ use Carp;
 use OSCAR::Distro;
 use OSCAR::PackageBest;
 use Getopt::Long;
+use File::Basename;
+use File::Copy;
 
 # Different distros require different RPMs. Different architectures, too.
 
-my $source_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro/";
-my $dest_dir = $ENV{OSCAR_PACKAGE_HOME} . "/RPMS";
-my $oscar_rpm_pool = '/tftpboot/rpm';   # No env var, using name in Package.pm
+my $base_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro";
+my $oscar_pkg_pool = '/tftpboot/rpm';   # No env var, using name in Package.pm
 
 # configure command line options parsing
 Getopt::Long::Configure("ignore_case"); # ignore case
-#Getopt::Long::Configure("bundling");    # allow -a -b or -ab
 Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
 
 my %options;
 GetOptions( \%options,
 	    'arch|a',
-            'dirname|d',
-	    'distro',
-            'erasepool|e',
+	    'distro|d=s',
+            'erase|e',
 	    'help|h',
 	    'pool|p=s',
-	    'silent|s',
             'test|t',
             'verbose|v!'
             ) || usage();
@@ -52,129 +49,207 @@ GetOptions( \%options,
 my $pkg_name = $ENV{OSCAR_PACKAGE_HOME};
 $pkg_name =~ s:^.*\/::g;
 
-if ($options{dirname}) {
-    print distrodir() . "\n";
-    exit 0;
-}
-if ($options{distro}) {
-    print distroname() . "\n";
-    exit 0;
-}
-
 # force verbose output if --test was selected
 $options{verbose} = 1 if ($options{test});
 
-my @pkgs = @ARGV;
-usage() if (!scalar(@pkgs) || $options{help});
-vprint("Arch/distro specific packages for $pkg_name: ".join(" ",@pkgs)."\n");
+if ($options{pool}) {
+    $oscar_pkg_pool = $options{pool};
+}
 
-# pattern used for matching package names
-my $pattern = join("|",@pkgs);
-
+usage() if ($options{help});
 
 # Quick sanity check
-if (! -d $dest_dir) {
-    croak("$dest_dir does not exist");
+if (! -d $oscar_pkg_pool) {
+    croak("Directory $oscar_pkg_pool does not exist");
 }
 
-if ($options{pool}) {
-    $oscar_rpm_pool = $options{pool};
+# Which architecture are we dealing with?
+my $arch;
+if ($options{arch}) {
+    $arch = $options{arch};
+} else {
+    $arch = `uname -i`;
+    chop $arch;
 }
 
 #
-# Remove packages with similar name from OSCAR RPM pool
+# Packages to which command applies. If empty, use all packages!
 #
-if ($options{erasepool}) {
-    # does the RPM pool exist?
-    if (! -d $oscar_rpm_pool) {
-	croak("Could not find OSCAR RPM pool directory $oscar_rpm_pool\n");
+my @argpkgs = @ARGV;
+
+################################
+## Do the job
+################################
+
+# List of RPM files found in the distro-specific directories
+my @pkgfiles;
+
+# Find first compatible subdirectory
+my @src_dirs;
+for my $dir (distro_compat()) {
+    if (-d "$base_dir/$dir") {
+	push @src_dirs, $dir;
+	last;
     }
-    opendir(DIR, $oscar_rpm_pool) || croak("Could not read $oscar_rpm_pool\n");
-    my @bad_files = grep {/^($pattern)-/ && -f "$oscar_rpm_pool/$_" } readdir(DIR);
-    closedir(DIR);
-    if ($#bad_files > -1) {
-	vprint("Removing old files from $oscar_rpm_pool:\n");
-	foreach my $file (@bad_files) {
-	    vprint(" - $oscar_rpm_pool/$file\n");
-	    unlink("$oscar_rpm_pool/$file") if (!defined($options{test}));
+}
+push @src_dirs, "common-rpms" if (-d "$base_dir/common-rpms");
+push @src_dirs, "../RPMS" if (-d "$base_dir/../RPMS");
+print "Distro specific packages come from\n\t$base_dir/"
+       . join("\n\t$base_dir/",@src_dirs)."\n";
+
+# List packages and their "best" files
+my %pkglist = best_rpms(@src_dirs);
+
+###
+# Remove packages from OSCAR RPM pool
+###
+if ($options{erase}) {
+    print "Removing old files from $oscar_pkg_pool:\n";
+    if (@argpkgs) {
+	my $pattern = join("|",@argpkgs);
+	# trim package files list down to matching list
+	@pkgfiles = grep /\/($pattern)-[0-9].*\.($arch|noarch)\.rpm/, @pkgfiles;
+    }
+    for my $f (@pkgfiles) {
+	my $sf = $oscar_pkg_pool . "/" . basename($f);
+	if (-f $sf) {
+	    print(" - $sf\n");
+	    unlink("$sf") if (!defined($options{test}));
 	}
     }
-}    
-
-#
-# Remove old distro/arch specific packages from RPMS directory
-#
-opendir(DIR, $dest_dir);
-my @bad_files = grep {/^($pattern)-/ && -f "$dest_dir/$_" } readdir(DIR);
-closedir(DIR);
-if ($#bad_files > -1) {
-    vprint("Removing old files from $dest_dir:\n");
-    foreach my $file (@bad_files) {
-	vprint(" - $dest_dir/$file\n");
-	unlink("$dest_dir/$file") if (!defined($options{test}));
-    }
+    exit 0;
 }
 
 #
-# Copy new distro/arch specific packages to RPMS directory
+# No packages on the argument line? Then take all packages.
 #
+if (!scalar(@argpkgs)) {
+    # all packages apply
+    @argpkgs = grep {s/:.*$//} keys(%pkglist);
+}
 
-$source_dir .= distrodir();
-if (! -d $source_dir) {
-    if (!$options{silent}) {
-	croak("$source_dir does not exist");
+###
+# Copy best packages to the package pool.
+# arch specific files have priority over noarch packages.
+###
+for my $pkg (@argpkgs) {
+    my ($filename, $label, $msg);
+    if (defined($pkglist{"$pkg:$arch"})) {
+	$label = "$pkg:$arch";
+    } elsif (defined($pkglist{"$pkg:noarch"})) {
+	$label = "$pkg:noarch";
     } else {
-	exit 0;
+	print STDERR "Package $pkg not found for ($arch,noarch)\n";
+	next;
     }
-}
-
-opendir(DIR, $source_dir);
-my @good_files = grep {/^($pattern)-/ && -f "$source_dir/$_" } readdir(DIR);
-closedir(DIR);
-if ($#good_files > -1) {
-    my $cmd = "cp ";
-    vprint("Copying new files to $dest_dir:\n");
-    foreach my $file (@good_files) {
-	$cmd .= "$source_dir/$file ";
-	vprint(" - $source_dir/$file\n");
+    $filename = $pkglist{$label}{file};
+    $msg = dirname($filename)."/${pkg}.txt";
+    if (-f $msg) {
+	print STDOUT "\n::::::::::::::-------------------------\n";
+	open IN, "$msg" or croak("Couldn't open $msg");
+	my @lines = <IN>;
+	close IN;
+	print STDOUT map {": $_"} @lines;
+	print STDOUT "::::::::::::::-------------------------\n";
     }
-    $cmd .= $dest_dir;
-    if (!defined($options{test})) {
-	if (!system($cmd)) {
-	    vprint("Copied $pkg_name RPMs to $dest_dir\n");
-	} else {
-	    croak("Error occured during copying RPMs for package $pkg_name\n");
+    if (-f "$oscar_pkg_pool/".basename($filename)) {
+	# don't overwrite file if it already exists in the repository
+	print STDERR "WARNING: File ".basename($filename).
+	    " is already in $oscar_pkg_pool! Not overwriting!\n";
+    } else {
+	print " Copy $filename -> $oscar_pkg_pool\n";
+	if (!defined $options{test}) {
+	    copy($pkglist{$label}{file}, $oscar_pkg_pool) ||
+		croak("Error occured while copying: $!");
 	}
     }
 }
+
 exit 0;
 
 ############################################################################
 ######## only subroutines below
 ############################################################################
 
-sub usage {
-    print <<END_USAGE;
-Usage: generic-setup [options] pkg1 pkg2 ...
-
-  Removes the named packages from the package RPMS directory and copies
-  in the packages corresponding to the current distribution and architecture.
- Options:
-   --arch|-a      : override locally detected architecture
-   --dirname|-d   : only show distro-specific subdirectory name
-   --distro       : only show distribution short name
-   --erasepool|-e : erase packages with same name from RPM pool (tftpboot/rpm)
-   --help|-h      : display this help text
-   --pool|-p path : override setting of RPM pool path (default /tftpboot/rpm)
-   --silent|-s    : fail silently if distro-specific directory doesn't exist
-   --test|-t      : just test without copying or erasing files
-   --verbose|-v   : verbose printout
-END_USAGE
-   exit(1);
-}
-
 sub vprint {
     print @_ if ($options{verbose});
+}
+
+#
+# List of best packages in directories passed as argument
+#
+sub best_rpms {
+    my (@src_dirs) = @_;
+
+    my %rpms;
+    for my $dir (@src_dirs) {
+	push @pkgfiles, glob("$base_dir/$dir/*.{$arch,noarch}.rpm");
+    }
+    #vprint("RPM files found: ".join(" ",@pkgfiles)."\n");
+
+    for my $f (@pkgfiles) {
+	my ($name, $version, $release, $arch) = split " ",
+	`rpm -q --qf '%{NAME} %{VERSION} %{RELEASE} %{ARCH}' -p $f`;
+	#vprint("$f : $name $version $release $arch\n");
+
+	# create hash entry for this file
+	my $tmp = { 'file' => $f,
+		    'ver'  => $version,
+		    'rel'  => $release };
+	my $label = $name . ":" . $arch;
+	if (defined($rpms{$label})) {
+	    if (rpm_newer($tmp, $rpms{$label})) {
+		# replace old entry by new one
+		vprint("replacing " . $tmp->{file} . " as newest rpm\n");
+		$rpms{$label} = $tmp;
+	    }
+	} else {
+	    vprint("registered " . $tmp->{file} . "\n");
+	    $rpms{$label} = $tmp;
+	}
+    }
+    return %rpms;
+}
+
+#
+# Compatibility chain of distro-specific RPM sources
+#
+sub distro_compat {
+    my @compatlist;
+    # get standard distro name and version
+    my ($name, $ver) = distroname();
+
+    # remove "." from version name
+    my $ver1 = $ver;
+    $ver1 =~ s/\.//;
+
+    # remove part behind first dot in version name
+    my $ver2 = $ver;
+    $ver2 =~ s/\..*$//g;
+
+    # the order is important!
+    push @compatlist, $name . $ver  . "-" . $arch;
+    push @compatlist, $name . $ver               ;
+    push @compatlist, $name . $ver1 . "-" . $arch;
+    push @compatlist, $name . $ver1              ;
+    push @compatlist, $name . $ver2 . "-" . $arch;
+    push @compatlist, $name . $ver2              ;
+    push @compatlist, $name         . "-" . $arch;
+    push @compatlist, $name;
+
+    vprint("Compatlist: ".join(" ",@compatlist)."\n");
+    return @compatlist;
+}
+
+sub rpm_newer ($$) {
+    my ($a, $b) = @_;
+    my $vera = $a->{ver} . "-" . $a->{rel};
+    my $verb = $b->{ver} . "-" . $b->{rel};
+    if (OSCAR::PackageBest::compareversion($vera, $verb) == 1) {
+	return 1;
+    } else {
+	return 0;
+    }
 }
 
 #
@@ -183,39 +258,60 @@ sub vprint {
 # OSCAR::OCA::OS_Detect as soon as that framework is complete.
 #
 sub distroname {
-    my ($name, $ver) = OSCAR::Distro::which_distro_server();
+    my ($name, $ver);
 
-    # translate distro names
-    if ($name eq "redhat") {
-	if ($ver eq "3as") {
-	    $name = "rhel";
-	    $ver = "3";
-	} elsif ($ver eq "el4") {
-	    $name = "rhel";
-	    $ver = "4";
-	} else {
-	    $name = "rh";
-	}
-    } elsif ($name eq "fedora") {
-	$name = "fc";
-    } elsif ($name eq "mandrake") {
-	$name = "mdk";
-    }
-
-    # compress version names
-    $ver =~ tr/.//;
-
-    return $name . $ver;
-}
-
-
-sub distrodir {
-    my $arch;
-    if ($options{arch}) {
-	$arch = $options{arch};
+    # override distro detection
+    if ($options{distro}) {
+	($name, $ver) = split /-/, $options{distro};
     } else {
-	$arch = `uname -i`;
-	chop $arch;
+	($name, $ver) = OSCAR::Distro::which_distro_server();
+
+	# translate distro names
+	if ($name eq "redhat") {
+	    if ($ver eq "3as") {
+		$name = "rhel";
+		$ver = "3";
+	    } elsif ($ver eq "el4") {
+		$name = "rhel";
+		$ver = "4";
+	    } else {
+		$name = "rh";
+	    }
+	} elsif ($name eq "fedora") {
+	    $name = "fc";
+	} elsif ($name eq "mandrake") {
+	    $name = "mdk";
+	}
     }
-    return distroname() . "-" . $arch;
+    return ($name,$ver);
 }
+
+
+sub usage {
+    print <<END_USAGE;
+Usage: generic-setup [options] [pkg1 pkg2 ...]
+
+  Scan the distribution specific directories distro/\$distro\$version-\$arch
+  and the common directory (distro/common-rpms) for best packages for
+  current or specified architecture (or noarch). Either copy the package
+  files to the OSCAR package repository (/tftpboot/rpm) or delete them
+  from there.
+
+  If package names are passed as arguments, actions are limited to these
+  packages.
+
+  When copying in packages, if a file named \$pkg.txt exists, it will be
+  displayed in the STDOUT of the command as comment.
+
+ Options:
+   --arch|-a      : override locally detected architecture
+   --distro  D-V  : translated distro string (for testing only!)
+   --erase|-e     : erase packages with same name from RPM pool (tftpboot/rpm)
+   --help|-h      : display this help text
+   --pool|-p path : override setting of RPM pool path (default /tftpboot/rpm)
+   --test|-t      : just test without copying or erasing files
+   --verbose|-v   : verbose printout
+END_USAGE
+   exit(1);
+}
+
