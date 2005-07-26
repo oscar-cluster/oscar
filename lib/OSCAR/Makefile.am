@@ -8,6 +8,7 @@
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
 #
+# $Id$
 
 include $(top_srcdir)/dist/Makefile.options
 
