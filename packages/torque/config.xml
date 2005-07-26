@@ -3,6 +3,7 @@
 <!--
 Copyright (c) 2004, The Board of Trustees of the University of Illinois. All rights reserved.
 Author: Jeremy Enos jenos@ncsa.uiuc.edu
+$Id$
 -->
 <oscar>
   <name>TORQUE Resource Manager</name>
