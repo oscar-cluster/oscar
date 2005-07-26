@@ -1,6 +1,6 @@
 package OSCAR::Network;
 
-#   $Id: Network.pm,v 1.1 2002/02/17 04:44:54 sdague Exp $
+#   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(interface2ip);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 # package scoped regex for an ip address.  If we ever need to support
 # ipv6, we just need to change it here

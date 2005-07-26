@@ -5,7 +5,7 @@ package OSCAR::MAC;
 #                     	All rights reserved.
 #			Jason Brechin <brechin@ncsa.uiuc.edu>
 
-#   $Id: MAC.pm,v 1.47 2004/04/06 15:21:32 brechin Exp $
+#   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ use base qw(Exporter);
              );
 #REMOVE MAC_WINDOW FROM EXPORT WHEN NO LONGER NEEDED
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.47 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}

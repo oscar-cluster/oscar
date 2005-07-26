@@ -1,6 +1,6 @@
 package OSCAR::Help;
 
-#   $Id: Help.pm,v 1.10 2003/10/30 03:27:36 tfleury Exp $
+#   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ use OSCAR::Tk;
 
 @EXPORT = qw(open_help);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.10 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 # Help messages for the OSCAR GUI.
 

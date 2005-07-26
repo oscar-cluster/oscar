@@ -29,7 +29,7 @@ use LWP();
 
 
 use vars qw($VERSION);
-$VERSION = '$Id: Web.pm,v 1.3 2002/10/29 19:18:27 tfleury Exp $';
+$VERSION = '$Id$';
 
 @ISA = qw(LWP::UserAgent);
 use strict;
@@ -80,7 +80,7 @@ sub get_basic_credentials
 package Tk::Web;
 
 use vars qw($VERSION);
-$VERSION = '$Id: Web.pm,v 1.3 2002/10/29 19:18:27 tfleury Exp $';
+$VERSION = '$Id$';
 
 require Tk::HTML;
 

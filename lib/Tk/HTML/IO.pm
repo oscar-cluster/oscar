@@ -21,7 +21,7 @@
 
 package LWP::IO;
 
-# $Id: IO.pm,v 1.2 2002/10/29 19:16:30 tfleury Exp $
+# $Id$
 
 require Tk;
 require LWP::Debug;
@@ -36,7 +36,7 @@ LWP::TkIO - Tk I/O routines for the LWP library
 
 
 use vars qw($VERSION);
-$VERSION = '$Id: IO.pm,v 1.2 2002/10/29 19:16:30 tfleury Exp $';
+$VERSION = '$Id$';
 
  use Tk;
  require LWP::TkIO;

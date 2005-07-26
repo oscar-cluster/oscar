@@ -24,7 +24,7 @@ package Tk::HTML::Form;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '$Id: Form.pm,v 1.5 2002/12/02 20:29:27 tfleury Exp $';
+$VERSION = '$Id$';
 
 # @ISA = qw(AutoLoader HTML::Element);
 @ISA = qw(HTML::Element);

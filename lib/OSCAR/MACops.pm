@@ -4,7 +4,7 @@ package OSCAR::MACops;
 #                     	All rights reserved.
 #			Jason Brechin <brechin@ncsa.uiuc.edu>
 
-#   $Id: MACops.pm,v 1.1 2004/04/06 15:21:32 brechin Exp $
+#   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by

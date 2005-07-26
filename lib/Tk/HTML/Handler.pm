@@ -32,7 +32,7 @@ delete $HTML::Element::OVERLOAD{'""'};
 
 # use vars qw($VERSION $AUTOLOAD);
 use vars qw($VERSION);
-$VERSION = '$Id: Handler.pm,v 1.3 2002/10/29 21:04:52 tfleury Exp $';
+$VERSION = '$Id$';
 
 sub HTML::Element::enclosing
 {

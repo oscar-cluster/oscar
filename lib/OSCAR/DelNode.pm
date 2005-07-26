@@ -1,6 +1,6 @@
 package OSCAR::DelNode;
 
-#   $Id: DelNode.pm,v 1.7 2003/12/04 20:38:15 brechin Exp $
+#   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ use oda;
 
 @EXPORT = qw(delnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.7 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 sub delnode_window {
     my ($parent, $vars) = @_;

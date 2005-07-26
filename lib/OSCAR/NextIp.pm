@@ -1,6 +1,6 @@
 package NextIp;
 
-# $Id: NextIp.pm,v 1.1 2004/05/03 21:53:12 naughtont Exp $
+# $Id$
 # 
 # Descr: Search for next available IP to auto-assign to a node.
 #
@@ -27,7 +27,7 @@ use constant { E_MISSING_OCTET    => -1,
                E_MISC             => -4,
              };
 
-our $VERSION    = (q$Revision: 1.1 $ =~/\d+/g);
+our $VERSION    = (q$Revision$ =~/\d+/g);
 our $DEBUG      = FALSE;         # control debug printing (off by default)
 
 # Sub-rtn specific dbg prints (may not exist)

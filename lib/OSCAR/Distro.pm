@@ -1,6 +1,6 @@
 package OSCAR::Distro;
 
-#   $Id: Distro.pm,v 1.14 2004/03/16 00:37:31 tfleury Exp $
+#   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(which_distro which_distro_server which_mysql_name);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.14 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 my $DISTROFILES = {
 		   'fedora-release'        => 'fedora',

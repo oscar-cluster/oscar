@@ -1,6 +1,6 @@
 package OSCAR::Logger;
 
-#   $Id: Logger.pm,v 1.1 2002/08/17 04:39:21 jsquyres Exp $
+#   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ use base qw(Exporter);
 
 @EXPORT = qw(oscar_log_section oscar_log_subsection);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 
 #############################################################################

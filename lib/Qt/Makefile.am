@@ -3,7 +3,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.4 2003/11/01 01:25:42 naughtont Exp $
+# $Id$
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
