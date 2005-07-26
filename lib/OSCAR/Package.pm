@@ -82,6 +82,7 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
                                    'post_server_rpm_install'],
            post_rpm_install => ['post_client_rpm_install',
                                 'post_rpm_install'],
+	   post_rpm_nochroot => ['post_rpm_nochroot'],
            post_clients => ['post_clients'],
            post_install => ['post_install'],
            test_root    => ['test_root'],
