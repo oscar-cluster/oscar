@@ -9,7 +9,7 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# $Id: install_cluster,v 1.31 2003/10/15 18:03:11 giraldeau Exp $
+# $Id$
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -196,6 +196,13 @@ my $pqtv = `rpm -q --quiet --qf '%{VERSION}' perl-Qt 2>/dev/null`;
 if ( $pqtv && $pqtv < 3 ) {
   !system("rpm -e perl-Qt") or warn("Couldn't remove perl-Qt");
   oscar_log_subsection("Removing installed perl-Qt RPM because version is < 3");
+}
+
+# get rid of installed tftp-server, it conflicts with atftp
+# (there should be a check whether this is an RPM based distro here!)
+if (!system("rpm -q tftp-server >/dev/null 2>&1")) {
+  oscar_log_subsection("Removing installed tftp-server RPM, this conflicts with OSCAR atftp-server");
+  !system("rpm -e tftp-server") or warn("Couldn't remove tftp-server");
 }
 
 # Run the wizard_prep script
