@@ -109,14 +109,6 @@ my $iface = `oda read_records oscar.interface`;
 my $ip = `oda node_nic_ip oscar_server $iface`;
 chomp($ip);
 
-# This is only necessary because the directory is not created by SystemImager's build system
-# Should be removed after it is incorporated in mainline code
-if ( !(-d "/var/lock/systemimager") ) {
-  verbose("Creating /var/lock/systemimager needed by si_monitor.");
-  mkpath("/var/lock/systemimager") or
-    croak("Unable to create /var/lock/systemimager.");
-}
-
 if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     verbose("Getting pxelinux.0.");
     copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
