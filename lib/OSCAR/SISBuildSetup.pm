@@ -1,5 +1,5 @@
 package OSCAR::SISBuildSetup;
-#   $Id: SISBuildSetup.pm,v 1.2 2004/05/03 21:02:08 brechin Exp $
+#   $Id: SISBuildSetup.pm 1.2 2004/05/03 21:02:08 brechin Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by

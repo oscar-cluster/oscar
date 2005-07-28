@@ -2,7 +2,7 @@ package OSCAR::Tk;
 
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
-#   $Id: Tk.pm,v 1.6 2003/06/27 15:16:53 brechin Exp $
+#   $Id: Tk.pm 1.6 2003/06/27 15:16:53 brechin Exp $
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by

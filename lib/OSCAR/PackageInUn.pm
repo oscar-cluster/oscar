@@ -1,6 +1,6 @@
 package OSCAR::PackageInUn;
 # 
-#  $Id: PackageInUn.pm,v 1.20 2003/11/25 23:36:39 muglerj Exp $
+#  $Id: PackageInUn.pm 1.20 2003/11/25 23:36:39 muglerj Exp $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
