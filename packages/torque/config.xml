@@ -11,7 +11,7 @@ $Id$
   <version>
     <major>1</major>
     <minor>2</minor>
-    <subversion>0p4</subversion>
+    <subversion>0p5</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
@@ -26,23 +26,24 @@ $Id$
     <email>bli@bcgsc.ca</email>
   </packager>
 
-  <description>TORQUE (Tera-scale Open-source Resource and QUEue manager) is a resource manager providing control over batch jobs and distributed compute nodes.  Torque is based on OpenPBS version 2.3.12 and incorporates scalability, fault tolerance, and feature extension patches provided by NCSA, OSC, the U.S. Dept of Energy, Sandia, PNNL, U of Buffalo, TeraGrid, and many other leading edge HPC organizations.  This version may be freely modified and redistributed subject to the constraints of the included license.
-
+  <description>TORQUE (Tera-scale Open-source Resource and QUEue manager) is a resource manager providing control over batch jobs and distributed compute nodes.  TORQUE is based on OpenPBS version 2.3.12 and incorporates scalability, fault tolerance, and feature extension patches provided by NCSA, OSC, the U.S. Dept of Energy, Sandia, PNNL, U of Buffalo, TeraGrid, and many other leading edge HPC organizations.  This version may be freely modified and redistributed subject to the constraints of the included license.
 </description>
+
   <url>http://www.clusterresources.com/products/torque</url>
   <rpmlist>
       <rpm>torque</rpm>
       <rpm>torque-mom</rpm>
       <rpm>torque-client</rpm>
   </rpmlist>
+
   <rpmlist>
       <filter group="oscar_server"/>
       <rpm>torque-server</rpm>
       <rpm>torque-gui</rpm>
   </rpmlist>
+
 <conflicts>
   <name>pbs</name>
   <type>package</type>
 </conflicts>
 </oscar>
-
