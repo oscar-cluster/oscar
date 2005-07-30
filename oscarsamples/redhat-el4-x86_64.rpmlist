@@ -218,3 +218,18 @@ xorg-x11-xauth
 xorg-x11-twm
 xorg-x11-Mesa-libGL
 xorg-x11-libs
+
+# ia32 RPMs with same name as the x86_64 versions
+glibc:i686
+tcl:i386
+libstdc++:i386
+freetype:i386
+fontconfig:i386
+glibc-devel:i386
+xorg-x11-libs:i386
+expat:i386
+ncurses:i386
+xorg-x11-Mesa-libGL:i386
+zlib:i386
+gpm:i386
+libgcc:i386
