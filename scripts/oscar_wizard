@@ -51,8 +51,8 @@ use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
 use SystemInstaller::Tk::Common;
-use POSIX;
 use Carp;
+use FileHandle;
 use vars qw($config);
 
 # First of all, enforce that the user running this script is 'root'
@@ -109,7 +109,7 @@ my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
                          -background=>"white");
 my $GIF_t2=$window->Label(-image=> $window->Photo(-file=>$image),
                           -background=>"white");
-my $Title_l=$window->Label(-text=>"Welcome to the OSCAR wizard!\n\nOSCAR Version: $version",
+my $Title_l=$window->Label(-text=>"Welcome to the OSCAR Wizard!\n\nOSCAR Version: $version",
 			   -background=>"white");
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 
@@ -130,7 +130,7 @@ if ($browser ne "") {
 # Download packages using OPD
 my $step_number = 0;
 oscar_button($window, "Step $step_number:",
-	     "Download Additional OSCAR Packages...",
+	     "Download Additional OSCAR Packages",
 	     [sub { my $olddir = Cwd::cwd();
               chdir($ENV{OSCAR_HOME} . '/lib/Qt');
               system('/usr/bin/perl Opder.pl'); 
@@ -141,7 +141,7 @@ oscar_button($window, "Step $step_number:",
 # Select packages for installation
 $step_number++;
 oscar_button($window, "Step $step_number:", 
-	     "Select OSCAR Packages To Install...", 
+	     "Select OSCAR Packages To Install", 
 	     [sub { my $olddir = Cwd::cwd();
               chdir($ENV{OSCAR_HOME} . '/lib/Qt');
               system('/usr/bin/perl Selector.pl');
@@ -152,7 +152,7 @@ oscar_button($window, "Step $step_number:",
 # Configure selected packages
 $step_number++;
 oscar_button($window, "Step $step_number:", 
-	     "Configure Selected OSCAR Packages...", 
+	     "Configure Selected OSCAR Packages", 
 	     [\&displayPackageConfigurator, $window, $step_number],
 	     'configure_packages');
 
@@ -164,24 +164,24 @@ oscar_button($window, "Step $step_number:", "Install OSCAR Server Packages",
 
 # Build OSCAR Client Image
 $step_number++;
-oscar_button($window, "Step $step_number:", "Build OSCAR Client Image...", 
+oscar_button($window, "Step $step_number:", "Build OSCAR Client Image", 
 	     [\&build_oscar_image, $window, $step_number], 'build_image');
 
 # Add Clients to OSCAR Image
 $step_number++;
-oscar_button($window, "Step $step_number:", "Define OSCAR Clients...", 
+oscar_button($window, "Step $step_number:", "Define OSCAR Clients", 
 	     [\&build_oscar_clients, $window, $step_number, $interface], 
 	     'addclients');
 
 # Setup Network Booting
 $step_number++;
-oscar_button($window, "Step $step_number:", "Setup Networking...", 
+oscar_button($window, "Step $step_number:", "Setup Networking", 
 	     [\&mac_window, $window, $step_number,
 	      {interface => $interface}], 'netboot');
 
 # Monitor Cluster Deployment
-oscar_button($window, "", "Monitor Cluster Deployment",
-             \&monitor_deployment, 'monitor_deployment');
+my $monitor_button = oscar_button($window, "", "Monitor Cluster Deployment",
+             [\&monitor_deployment, $window], 'monitor_deployment');
 
 my $boot=$window->Label (-text => 
 			 "Before continuing, network boot all of your nodes. 
@@ -206,12 +206,12 @@ oscar_button($window, "Step $step_number:", "Test Cluster Setup",
 my $maint=$window->Label (-text=>"The following buttons are for managing 
 your node definitions after the initial install.",-relief=>"groove");
 $maint->grid("-","-",-sticky=>"nsew");
-oscar_button($window, "", "Add OSCAR Clients...", 
+oscar_button($window, "", "Add OSCAR Clients", 
 	     [\&addnode_window, $window, $interface], 'add_nodes');
-oscar_button($window, "", "Delete OSCAR Clients...", 
+oscar_button($window, "", "Delete OSCAR Clients", 
 	     [\&delnode_window, $window], 'delete_nodes');
 oscar_button($window, "", 
-	     "Install/Uninstall OSCAR Packages...", 
+	     "Install/Uninstall OSCAR Packages", 
        [\&install_uninstall_packages, $window], 'install_uninstall_packages');
 
 
@@ -254,10 +254,12 @@ sub oscar_button {
     my $button = $window->Button(-text => $buttontext, 
                                  -command => $buttoncmd, 
                                  -pady => 2);
-    my $help = $window->Button(-text=>"Help...",
+    my $help = $window->Button(-text=>"Help",
                                -command=> [\&open_help, $window, $helptext], 
                                -pady => 2);
     $label->grid($button, $help, -sticky => "nsew");
+
+    return $button;
 }
 
 ###########################################################################
@@ -594,7 +596,27 @@ sub run_tests {
 ###########################################################################
 
 sub monitor_deployment {
-    my $cmd = "xterm -geometry 100x24 -sl 500 -e ./monitor_deployment --wait";
-    !system("$cmd &") or (carp($!), return undef);
+    my ($window) = @_;
+
+    system("/etc/init.d/systemimager-server-monitord start");
+    my $cmd = "/usr/sbin/si_monitortk";
+    $monitor_button->configure(-state => 'disabled');
+
+    my $pipe = new FileHandle;
+    $pipe->open("$cmd |") or die "Cannot fork: $!";
+    $window->fileevent($pipe, 'readable', [\&stop_monitor_deployment, $window, $pipe]);
     return 1;
+}
+
+###########################################################################
+
+sub stop_monitor_deployment {
+    my ($window, $pipe) = @_;
+    my $cmd = "/usr/sbin/si_monitortk";
+    my $pid = `pidof -x $cmd`;
+
+    waitpid($pid, WNOHANG);
+    $monitor_button->configure(-state => 'normal');
+    $window->fileevent($pipe, 'readable', "");
+    system("/etc/init.d/systemimager-server-monitord stop");
 }

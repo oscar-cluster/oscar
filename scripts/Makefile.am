@@ -5,7 +5,7 @@
 # Copyright (c) 2002-2003 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
-# $Id: Makefile.am,v 1.14 2004/04/22 19:02:59 brechin Exp $
+# $Id$
 #
 # This file is part of the OSCAR distribution.  See license
 # information in the top-level directory.
@@ -24,7 +24,6 @@ oscar_SCRIPTS		= \
 			mac_collector \
 			macinfo2sis \
 			make_database_password \
-			monitor_deployment \
 			opd \
 			oscar_wizard \
 			package_config_xmls_to_database \
