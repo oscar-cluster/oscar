@@ -201,8 +201,6 @@ AC_CONFIG_FILES([
     share/prereqs/perl-Tk/media/RPMS/5.8/Makefile
     share/prereqs/perl-Tk/media/SRPMS/Makefile
     share/prereqs/perl-Tk/scripts/Makefile
-    share/prereqs/syslinux/Makefile
-    share/prereqs/syslinux/scripts/Makefile
     share/prereqs/perl-XML-Parser/Makefile
     share/prereqs/perl-XML-Parser/media/Makefile
     share/prereqs/perl-XML-Parser/scripts/Makefile

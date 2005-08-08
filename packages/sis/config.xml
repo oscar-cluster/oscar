@@ -51,13 +51,27 @@
         but isn't resolved by dependencies. Has to stay here!
       /-->
       <rpm>systemimager-client</rpm>
-      <rpm>systemimager-i386boot-standard</rpm>
-      <rpm>systemimager-ia64boot-standard</rpm>
-      <rpm>systemimager-x86_64boot-standard</rpm>
       <rpm>systemimager-flamethrower</rpm>
       <rpm>flamethrower</rpm>
       <rpm>udpcast</rpm>
       <rpm>atftp-server</rpm>
+  </rpmlist>
+
+  <rpmlist>
+      <filter group="oscar_server" architecture="ia32" />
+      <rpm>syslinux</rpm>
+      <rpm>systemimager-i386boot-standard</rpm>
+  </rpmlist>
+
+  <rpmlist>
+      <filter group="oscar_server" architecture="ia64" />
+      <rpm>systemimager-ia64boot-standard</rpm>
+  </rpmlist>
+
+  <rpmlist>
+      <filter group="oscar_server" architecture="x86_64" />
+      <rpm>syslinux</rpm>
+      <rpm>systemimager-x86_64boot-standard</rpm>      
   </rpmlist>
 
 </oscar>

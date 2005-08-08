@@ -15,6 +15,4 @@ include $(top_srcdir)/dist/Makefile.options
 oscar_DATA		= order.txt
 EXTRA_DIST		= $(oscar_DATA)
 
-SUBDIRS			= packman update-rpms HTML-Tree oda perl-XML-Parser perl-XML-Simple perl-Tk \
-			syslinux
-
+SUBDIRS			= packman update-rpms HTML-Tree oda perl-XML-Parser perl-XML-Simple perl-Tk
