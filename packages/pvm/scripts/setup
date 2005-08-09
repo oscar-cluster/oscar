@@ -36,7 +36,8 @@ my ($name, $ver) = OSCAR::Distro::which_distro_server();
 if ($name eq "redhat") {
 	$source_dir .= "rh";
 	if ($ver eq "9") {
-		$source_dir .= "90";
+		print "Unsupported Linux Distribution version\n";
+		#$source_dir .= "90";
 	} elsif ( ($ver eq "3as") || ($ver =~ "4") ) {
 		$source_dir .= "el3";
 	} else {
