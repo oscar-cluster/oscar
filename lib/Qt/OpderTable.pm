@@ -151,6 +151,27 @@ sub sortColumn
     }
 }
 
+# removeRowFromTable does the same thing as removeRow except it does not
+# crash on systems with newer glibc and perl-Qt 3.008+
+# This code is adapted from the following bug report:
+# http://sourceforge.net/tracker/index.php?func=detail&aid=924345&group_id=29255&atid=395685
+# Thanks Marc!
+
+sub removeRowFromTable
+{
+    my ($deadRow) = @_;
+
+    for my $col (0..numCols()-1) {
+	takeItem(item($deadRow, $col));
+	for my $row ($deadRow..numRows()-2) {
+	    my $item = item($row+1, $col);
+	    takeItem($item);
+	    setItem($row, $col, $item);
+	}
+    }
+    setNumRows(numRows()-1);
+}
+
 sub populateTable
 {
 #########################################################################
@@ -166,7 +187,8 @@ sub populateTable
     {
       for (my $row = numRows()-1; $row >= 0; $row--)
         {
-          removeRow($row);
+#          removeRow($row);
+	   removeRowFromTable($row);
         }
       emit downloadButtonDisable();
     }
