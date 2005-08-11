@@ -409,7 +409,7 @@ sub postimagebuild {
 
     # All done -- remove the temp file that held all the RPM filenames
     
-    unlink($save_text);
+    #unlink($save_text); # breaks createimage_window
 
     oscar_log_subsection("Step $step_number: Completed successfully");
 

@@ -67,6 +67,8 @@ our $destroyed = 0;
 our $startcoll = "Start Collecting MACs";
 our $stopcoll = "Stop Collecting MACs";
 
+our $window;
+
 sub mac_window {
     $destroyed = 1;
     my $parent = shift;
@@ -174,14 +176,13 @@ sub mac_window {
                                 -variable => \$multicast,
                                 );
 
-    my $fileselector = $frame->FileSelect(-directory => "$ENV{HOME}");
     our $loadbutton = $frame->Button(
                                    -text=>"Import MACs from file...",
-                                   -command=> [\&macfile_selector, "load", $fileselector],
+                                   -command=> [\&macfile_selector, "load", $frame],
                                   );
     our $savebutton = $frame->Button(
                                     -text => "Export MACs to file...",
-                                    -command => [\&macfile_selector, "save", $fileselector],
+                                    -command => [\&macfile_selector, "save", $frame],
                                     -state => "disabled",
                                    );
 
@@ -232,50 +233,56 @@ sub mac_window {
 }
 
 sub set_buttons {
-    our $listbox;
-    our $tree;
-    my $state;
+	our $listbox;
+	our $tree;
+	my $state;
+	my $lbs;
+	my $trs;
 #
-#   Enabled iff at least one item selected in the listbox.
+#	Enabled iff at least one item selected in the listbox.
 #
-    my $lbs = defined $listbox->curselection();
-    $state = $lbs ? "normal" : "disabled";
-    our $clear->configure( -state => $state );
+	$lbs = defined $listbox->curselection();
+	$state = $lbs ? "normal" : "disabled";
+	our $clear->configure( -state => $state );
 #
-#   Enabled iff at least one item is in the listbox.
+#	Enabled iff at least one item in listbox.
 #
-    $state = (defined $listbox->get( 0, 'end' )) ? "normal" : "disabled";
-    our $clearall->configure( -state => $state );
-    our $assignall->configure( -state => $state );
+	$lbs = defined $listbox->get( 0, 'end' );
+	$state = $lbs ? "normal" : "disabled";
+	our $clearall->configure( -state => $state );
+#
+#	Enabled iff at least one item in listbox and one item in tree.
+#
+	$trs = defined list_client();
+	$state = ($lbs && $trs) ? "normal" : "disabled";
+	our $assignall->configure( -state => $state );
 #
 #	Enabled iff at least one MAC exists.
 #
-    $state = (scalar keys %MAC) ? "normal" : "disabled";
-    our $savebutton->configure( -state => $state );
+	$state = (scalar keys %MAC) ? "normal" : "disabled";
+	our $savebutton->configure( -state => $state );
 #
-#   Enabled iff at least one item selected in the listbox and the tree.
+#	Emabled iff at least one item selected in the listbox and the tree.
 #
-    my $trs = defined $tree->infoSelection();
-    $state = ($lbs && $trs) ? "normal" : "disabled";
-    our $assignbutton->configure( -state => $state );
+	$trs = defined $tree->infoSelection();
+	$state = ($lbs && $trs) ? "normal" : "disabled";
+	our $assignbutton->configure( -state => $state );
 #
-#   Enabled iff at least one item selected in listbox and selected item in tree has a MAC.
+#	Enabled iff at least one item selected in listbox and selected item in tree has a MAC.
 #
-    my $node = $tree->infoSelection();
+	my $node = $tree->infoSelection();
 
-    # hack to support both perl-Tk-800 and perl-Tk-804 
-    if ( ref($node) eq "ARRAY" ) {
-      $node = $$node[0];
-    }
+	# hack to support both perl-Tk-800 and perl-Tk-804 
+	$node = $$node[0] if ref($node) eq "ARRAY";
 
-    if( $trs && $node =~ /^\|([^\|]+)/) {
-        my $client = list_client(name=>$1);
-        my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-        $state = $adapter->mac ? "normal" : "disabled";
-    } else {
-        $state = "disabled";
-    }
-    our $deletebutton->configure( -state => $state );
+	if( $trs && $node =~ /^\|([^\|]+)/) {
+		my $client = list_client(name=>$1);
+		my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
+		$state = $adapter->mac ? "normal" : "disabled";
+	} else {
+		$state = "disabled";
+	}
+	our $deletebutton->configure( -state => $state );
 }
 
 sub setup_dhcpd {
@@ -394,9 +401,7 @@ sub assign2machine {
     clear_mac();
 
     # hack to support both perl-Tk-800 and perl-Tk-804... 
-    if ( ref($node) eq "ARRAY" ) {
-      $node = $$node[0];
-    }
+    $node = $$node[0] if ref($node) eq "ARRAY";
   
     if($node =~ /^\|([^\|]+)/) {
         oscar_log_subsection("Step $step_number: Assigned $mac to $1");
@@ -429,16 +434,12 @@ sub assignallmacs {
     my $client;
     my $adapter;
     my $tempnode = '|';
-    MAC: while ( scalar(@macs)) {
-      unless ( $tempnode = $tree->infoNext($tempnode) ) {
-        last MAC;
-      }
+    while ( scalar(@macs)) {
+      last unless $tempnode = $tree->infoNext($tempnode);
       $tempnode =~ /^\|([^\|]+)/;
       $client = list_client(name=>$1);
       $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-      unless ( $adapter->mac ) {
-        assign2machine(pop @macs, $tempnode, 1);
-      }
+      assign2machine(pop @macs, $tempnode, 1) unless $adapter->mac;
     }
     $listbox->insert(0, @macs);
     regenerate_listbox();
@@ -489,9 +490,7 @@ sub clear_mac {
     my $client;
 
     # hack to support both perl-Tk-800 and perl-Tk-804
-    if ( ref($node) eq "ARRAY" ) {
-      $node = $$node[0];
-    }
+    $node = $$node[0] if ref($node) eq "ARRAY";
 
     if($node =~ /^\|([^\|]+)/) {
         $client = list_client(name=>$1);
@@ -662,30 +661,29 @@ sub begin_collect_mac {
 # 
 
 sub macfile_selector {
-    my ($op, $selector) = @_;
-    our $listbox;
+	my ($op, $widget) = @_;
 
-    # now we attempt to do some reasonable directory setting
-    my $dir = $ENV{HOME};
-    if(-d $dir) {
-        $selector->configure(-directory => $dir);
-    } else {
-        my $dir2 = dirname($dir);
-        if(-d $dir2) {
-            $selector->configure(-directory => $dir2);
-        }
-    }
-    my $file = $selector->Show();
-    if(!$file) {
-        return 1;
-    } 
-    if($op eq "load") {
-        load_from_file($file);
-    } elsif($op eq "save") {
-        save_to_file($file);
-    }
-    regenerate_listbox();
-    return 1;
+	# now we attempt to do some reasonable directory setting
+	my $dir = $ENV{HOME};
+	$dir = dirname( $dir ) unless -d $dir;
+	$dir = "/" unless -d $dir;
+
+	if( $op eq "load" ) {
+		my $file = $widget->getOpenFile(
+			-initialdir => $dir,
+		);
+		return 1 unless $file;
+		load_from_file( $file );
+	} else {
+		my $file = $widget->getSaveFile(
+			-initialdir => $dir,
+			-initialfile => "mac-addresses",
+		);
+		return 1 unless $file;
+		save_to_file( $file );
+	}
+	regenerate_listbox();
+	return 1;
 }
 
 sub save_to_file {
