@@ -613,8 +613,9 @@ sub monitor_deployment {
 sub stop_monitor_deployment {
     my ($window, $pipe) = @_;
     my $cmd = "/usr/sbin/si_monitortk";
-    my $pid = `pidof -x $cmd`;
+    my $pid = `pidof -sx $cmd`;
 
+    chomp($pid);
     waitpid($pid, WNOHANG);
     $monitor_button->configure(-state => 'normal');
     $window->fileevent($pipe, 'readable', "");
