@@ -96,12 +96,34 @@ if ($num_iface > 1) {
 	$gmondBuffer =~ s/mcast_join = 239.2.11.71/mcast_join = 239.2.11.71\n  mcast_if = $iface/g;
     }
 
+    my $route_string;
+    my $static_route_file;
+    my $reload_route;
+
+    # FIXME: OCA Framework
+    # There are two different ways to setup static routes, Mandriva uses the "old" style right now...
+    if ( (-e "/etc/mandrake-release") || (-e "/etc/mandrakelinux-release") ) {
+	$route_string = "any net 224.0.0.0 netmask 240.0.0.0 dev $iface"; 
+	$static_route_file = "/etc/sysconfig/static-routes";
+	$reload_route = "service network restart"; 
+    } else {
+	$route_string = "224.0.0.0/4 dev $iface";
+    	$static_route_file = "/etc/sysconfig/network-scripts/route-$iface";
+	$reload_route = "/etc/sysconfig/network-scripts/ifup-routes $iface";
+    }
+
     # Check to see if multicast route already exists
     my $mcast_route = `route | grep 224.0.0.0 | grep $iface`;
 
     if (!($mcast_route)) {
-	print("Adding default route for multicast to go through $iface.\n");
-	`route add -net 224.0.0.0 netmask 240.0.0.0 dev $iface`;
+        if (-e $static_route_file) {
+		$mcast_route = `grep 224.0.0.0 $static_route_file`;
+	}
+	if (!($mcast_route)) {
+		print("Adding default route for multicast to go through $iface.\n");
+		`echo $route_string >> $static_route_file`;
+	}
+	`$reload_route`;
     }
 }
 
