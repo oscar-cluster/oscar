@@ -225,17 +225,18 @@ sub update_hosts {
     while ($line=<IN>) {
       chomp $line; # mjc - 12/13/01
       if( $line =~ /^$ip/ ) { # mjc - 12/13/01
+        $line =~ /^([^#]+)(#.*)?$/;
+        my $body = $1;
+        my $comment = $2||"";
         # Same ip, grab all the items on the line and add the oscar 
         # aliases if they aren't already there.
         $found = 1;
-        my @items = split( /\s+/, $line ); # mjc - 12/13/01
+        my @items = split( /\s+/, $body );
         foreach my $alias (@aliases) {
-                unless (grep(/$alias/,@items)) {
-                        push (@items,$alias);
-                }
+                push @items, $alias unless grep {$alias eq $_} @items;
         }
         # print the modified line.
-        print OUT join( " ", @items )."\n";
+        print OUT join( " ", @items ), " $comment\n";
       } elsif( $line =~ /$hostname/ ) {  # mjc - 12/13/01
         # Not the same ip, but same hostname, save this line for now
         $hostlines[$#hostlines + 1] = $line;
