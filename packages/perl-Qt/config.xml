@@ -19,8 +19,8 @@
   <version>
     <major>3</major>
     <minor>0</minor>
-    <subversion>6</subversion>
-    <release>6</release>
+    <subversion>9b2</subversion>
+    <release>1</release>
   </version>
 
   <class>core</class>
@@ -28,8 +28,8 @@
   <summary>Qt bindings for Perl</summary>
   <license>GPL</license>
   <packager>
-    <name>Jason Brechin</name>
-    <email>brechin@ncsa.uiuc.edu</email>
+    <name>Bernard Li</name>
+    <email>bli@bcgsc.ca</email>
   </packager>
 
   <description>Perl-Qt allows for writing Qt programs in Perl</description>
