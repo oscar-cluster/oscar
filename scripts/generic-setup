@@ -20,10 +20,20 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use POSIX;
 use Carp;
 use OSCAR::Distro;
-use OSCAR::PackageBest;
 use Getopt::Long;
 use File::Basename;
 use File::Copy;
+
+sub vprint;
+
+# One must always protect oneself.
+#
+die "\$OSCAR_HOME: not defined.\n" unless exists $ENV{OSCAR_HOME};
+die "$ENV{OSCAR_HOME}: not a directory.\n" unless -d $ENV{OSCAR_HOME};
+die "$ENV{OSCAR_HOME}: not accessible.\n" unless -x $ENV{OSCAR_HOME};
+die "\$OSCAR_PACKAGE_HOME: not defined.\n" unless exists $ENV{OSCAR_PACKAGE_HOME};
+die "$ENV{OSCAR_PACKAGE_HOME}: not a directory.\n" unless -d $ENV{OSCAR_PACKAGE_HOME};
+die "$ENV{OSCAR_PACKAGE_HOME}: not accessible.\n" unless -x $ENV{OSCAR_PACKAGE_HOME};
 
 # Different distros require different RPMs. Different architectures, too.
 
@@ -50,7 +60,7 @@ my $pkg_name = $ENV{OSCAR_PACKAGE_HOME};
 $pkg_name =~ s:^.*\/::g;
 
 # force verbose output if --test was selected
-$options{verbose} = 1 if ($options{test});
+$options{verbose} = 1 if exists $ENV{DEBUG_OSCAR_SETUP} || $options{test};
 
 if ($options{pool}) {
     $oscar_pkg_pool = $options{pool};
@@ -64,23 +74,13 @@ if (! -d $oscar_pkg_pool) {
 }
 
 # Which architecture are we dealing with?
-my ($iarch,$march,@sysarch);
+my $march;
 if ($options{arch}) {
     $march = $options{arch};
 } else {
     chop ($march = `uname -m`);
+    $march = "i386" if $march =~ /^i[3456]86$/;
 }
-# build compatibility list like in update-rpms
-if ($march =~ /i[3-6]86$/) {
-    push @sysarch, 'i686' if $march =~ /686/;
-    push @sysarch, 'i586' if $march =~ /[56]86/;
-    push @sysarch, 'i486' if $march =~ /[456]86/;
-    push @sysarch, 'i386';
-} else {
-    push @sysarch, $march;
-}
-$iarch = $sysarch[$#sysarch];
-push @sysarch, "noarch";
 
 #
 # Packages to which command applies. If empty, use all packages!
@@ -95,84 +95,70 @@ my @argpkgs = @ARGV;
 my @pkgfiles;
 
 # Find first compatible subdirectory
+# Note ordering, later occurrence of identical filenames overwrite earlier.
+# ../RPMS, common-arch, and distro-compat dir.
+#
 my @src_dirs;
+push @src_dirs, "../RPMS" if (-d "$base_dir/../RPMS");
+push @src_dirs, "common-rpms" if (-d "$base_dir/common-rpms");
 for my $dir (distro_compat()) {
     if (-d "$base_dir/$dir") {
 	push @src_dirs, $dir;
 	last;
     }
 }
-push @src_dirs, "common-rpms" if (-d "$base_dir/common-rpms");
-push @src_dirs, "../RPMS" if (-d "$base_dir/../RPMS");
 print "Distro specific packages come from\n\t$base_dir/"
        . join("\n\t$base_dir/",@src_dirs)."\n";
 
-# List packages and their "best" files
-my %pkglist = best_rpms(@src_dirs);
-
-###
-# Remove packages from OSCAR RPM pool
-###
-if ($options{erase}) {
-    print "Removing old files from $oscar_pkg_pool:\n";
-    if (@argpkgs) {
-	my $pattern = join("|",@argpkgs);
-	# trim package files list down to matching list
-	my $match = join("|", @sysarch);
-	@pkgfiles = grep /\/($pattern)-[0-9].*\.($match)\.rpm/, @pkgfiles;
-    }
-    for my $f (@pkgfiles) {
-	my $sf = $oscar_pkg_pool . "/" . basename($f);
-	if (-f $sf) {
-	    print(" - $sf\n");
-	    unlink("$sf") if (!defined($options{test}));
-	}
-    }
-    exit 0;
-}
+# List packages.
+#
+my %pkglist = map { /([^\/]+)$/, $_ } map { glob("$base_dir/$_/*") } @src_dirs;
+vprint "Available Packages:\n\t".join( "\n\t", map {"$_: $pkglist{$_}"} keys %pkglist )."\n";
 
 #
 # No packages on the argument line? Then take all packages.
 #
-if (!scalar(@argpkgs)) {
-    # all packages apply
-    @argpkgs = uniq(grep {s/:.*$//} keys(%pkglist));
-}
+@argpkgs = keys %pkglist unless @argpkgs;
 
 ###
-# Copy best packages to the package pool.
-# arch specific files have priority over noarch packages.
+# Copy packages to the package pool.
 ###
 for my $pkg (@argpkgs) {
-    my ($filename, $label, $msg);
-    for my $arch (@sysarch) {
-	if (defined($pkglist{"$pkg:$arch"})) {
-	    $label = "$pkg:$arch";
-	    last;
-	}
-    }
-    if (!$label) {
-	print STDERR "Package $pkg not found compatible architectures\n";
+    
+    my $basename;
+
+    my @possibles = grep /^\Q$pkg\E[-\.]/, keys %pkglist;
+    push @possibles, ($pkg) if exists $pkglist{$pkg};  # above fails for complete match.
+    vprint "Matching packages:\n\t".join( "\n\t", @possibles )."\n" if @possibles > 1;
+    unless ( @possibles ) {
+	print STDERR "Package $pkg not found\n";
 	next;
     }
-    $filename = $pkglist{$label}{file};
-    $msg = dirname($filename)."/${pkg}.txt";
-    if (-f $msg) {
-	print STDOUT "\n::::::::::::::-------------------------\n";
-	open IN, "$msg" or croak("Couldn't open $msg");
-	my @lines = <IN>;
-	close IN;
-	print STDOUT map {": $_"} @lines;
-	print STDOUT "::::::::::::::-------------------------\n";
-    }
-    if (-f "$oscar_pkg_pool/".basename($filename)) {
-	# don't overwrite file if it already exists in the repository
-	print STDERR "WARNING: File ".basename($filename).
-	    " is already in $oscar_pkg_pool! Not overwriting!\n";
+    if( @possibles == 1 ) {
+	$basename = $possibles[0];
     } else {
+    	$basename = (sort {length($a) <=> length($b)} @possibles)[0];
+    }
+    if ($options{erase}) {
+	print " Delete $basename from $oscar_pkg_pool\n";
+	unless( -f "$oscar_pkg_pool/$basename" && $options{test} ) {
+	    unlink( "$oscar_pkg_pool/$basename" ) ||
+		croak("Error occured while deleting: $!");
+	}
+    } else {
+	my $filename = $pkglist{$basename};
+	my $msg = dirname($filename)."/${pkg}.txt";
+	if (-f $msg) {
+	    print STDOUT "\n::::::::::::::-------------------------\n";
+	    open IN, "< $msg" or croak("Couldn't open $msg");
+	    my @lines = <IN>;
+	    close IN;
+	    print STDOUT map {": $_"} @lines;
+	    print STDOUT "::::::::::::::-------------------------\n";
+	}
 	print " Copy $filename -> $oscar_pkg_pool\n";
 	if (!defined $options{test}) {
-	    copy($pkglist{$label}{file}, $oscar_pkg_pool) ||
+	    copy($filename, $oscar_pkg_pool) ||
 		croak("Error occured while copying: $!");
 	}
     }
@@ -186,48 +172,6 @@ exit 0;
 
 sub vprint {
     print @_ if ($options{verbose});
-}
-
-sub uniq {
-    my (@arr) = @_;
-    my %h;
-    map {$h{$_} = 1} @arr;
-    return sort(keys %h);
-}
-
-#
-# List of best packages in directories passed as argument
-#
-sub best_rpms {
-    my (@src_dirs) = @_;
-
-    my %rpms;
-    for my $dir (@src_dirs) {
-	my $garch = join(",",@sysarch);
-	push @pkgfiles, glob("$base_dir/$dir/*.{$garch}.rpm");
-    }
-
-    for my $f (@pkgfiles) {
-	my ($name, $version, $release, $arch) = split " ",
-	`rpm -q --qf '%{NAME} %{VERSION} %{RELEASE} %{ARCH}' -p $f`;
-
-	# create hash entry for this file
-	my $tmp = { 'file' => $f,
-		    'ver'  => $version,
-		    'rel'  => $release };
-	my $label = $name . ":" . $arch;
-	if (defined($rpms{$label})) {
-	    if (rpm_newer($tmp, $rpms{$label})) {
-		# replace old entry by new one
-		vprint("replacing " . $tmp->{file} . " as newest rpm\n");
-		$rpms{$label} = $tmp;
-	    }
-	} else {
-	    vprint("registered " . $tmp->{file} . "\n");
-	    $rpms{$label} = $tmp;
-	}
-    }
-    return %rpms;
 }
 
 #
@@ -247,28 +191,21 @@ sub distro_compat {
     $ver2 =~ s/\..*$//g;
 
     # the order is important!
-    push @compatlist, $name . $ver  . "-" . $iarch;
-    push @compatlist, $name . $ver               ;
-    push @compatlist, $name . $ver1 . "-" . $iarch;
-    push @compatlist, $name . $ver1              ;
-    push @compatlist, $name . $ver2 . "-" . $iarch;
-    push @compatlist, $name . $ver2              ;
-    push @compatlist, $name         . "-" . $iarch;
+    push @compatlist, $name . $ver  . "-" . $march;
+    push @compatlist, $name . $ver;
+    if( $ver1 ne $ver ) {
+	push @compatlist, $name . $ver1 . "-" . $march;
+	push @compatlist, $name . $ver1;
+    }
+    if( $ver2 ne $ver ) {
+	push @compatlist, $name . $ver2 . "-" . $march;
+	push @compatlist, $name . $ver2;
+    }
+    push @compatlist, $name         . "-" . $march;
     push @compatlist, $name;
 
     vprint("Compatlist: ".join(" ",@compatlist)."\n");
     return @compatlist;
-}
-
-sub rpm_newer ($$) {
-    my ($a, $b) = @_;
-    my $vera = $a->{ver} . "-" . $a->{rel};
-    my $verb = $b->{ver} . "-" . $b->{rel};
-    if (OSCAR::PackageBest::compareversion($vera, $verb) == 1) {
-	return 1;
-    } else {
-	return 0;
-    }
 }
 
 #
@@ -328,7 +265,7 @@ Usage: generic-setup [options] [pkg1 pkg2 ...]
    --erase|-e     : erase packages with same name from RPM pool (tftpboot/rpm)
    --help|-h      : display this help text
    --pool|-p path : override setting of RPM pool path (default /tftpboot/rpm)
-   --test|-t      : just test without copying or erasing files
+   --test|-t      : just test without copying files
    --verbose|-v   : verbose printout
 END_USAGE
    exit(1);
