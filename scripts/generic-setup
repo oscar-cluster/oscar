@@ -265,7 +265,7 @@ Usage: generic-setup [options] [pkg1 pkg2 ...]
    --erase|-e     : erase packages with same name from RPM pool (tftpboot/rpm)
    --help|-h      : display this help text
    --pool|-p path : override setting of RPM pool path (default /tftpboot/rpm)
-   --test|-t      : just test without copying files
+   --test|-t      : just test without copying or erasing files
    --verbose|-v   : verbose printout
 END_USAGE
    exit(1);
