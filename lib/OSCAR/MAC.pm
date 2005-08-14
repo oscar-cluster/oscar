@@ -253,7 +253,7 @@ sub set_buttons {
 #
 #	Enabled iff at least one item in listbox and one item in tree.
 #
-	$trs = defined list_client();
+	$trs = $tree->infoNext( "|" );
 	$state = ($lbs && $trs) ? "normal" : "disabled";
 	our $assignall->configure( -state => $state );
 #
