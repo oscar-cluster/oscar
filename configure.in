@@ -197,7 +197,6 @@ AC_CONFIG_FILES([
     share/prereqs/perl-Tk/Makefile
     share/prereqs/perl-Tk/media/Makefile
     share/prereqs/perl-Tk/media/RPMS/Makefile
-    share/prereqs/perl-Tk/media/RPMS/5.6/Makefile
     share/prereqs/perl-Tk/media/RPMS/5.8/Makefile
     share/prereqs/perl-Tk/media/SRPMS/Makefile
     share/prereqs/perl-Tk/scripts/Makefile

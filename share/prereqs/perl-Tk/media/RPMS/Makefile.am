@@ -11,5 +11,4 @@
 
 include $(top_srcdir)/dist/Makefile.options
 
-SUBDIRS                 = 5.6 5.8
-
+SUBDIRS                 = 5.8
