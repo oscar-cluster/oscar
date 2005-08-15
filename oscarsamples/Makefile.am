@@ -25,8 +25,8 @@ oscar_DATA		= \
 			redhat-el4-ia64.rpmlist \
 			redhat-el4-x86_64.rpmlist \
 			redhat-9-i386.rpmlist \
-			sample.disk.ide \
-			sample.disk.scsi \
-			sample.disk.scsi.ia64 
+			ide.disk \
+			scsi.disk \
+			scsi.ia64.disk 
 
 EXTRA_DIST		= $(oscar_DATA)

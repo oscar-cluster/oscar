@@ -357,11 +357,10 @@ sub build_oscar_image {
     close(OUTFILE);
     my $extraflags = " --filename=$outfile";
 
-    my $diskfile = "sample.disk.$disk_type";
+    my $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
     # ia64 needs special disk file because of /boot/efi
-    if ("$arch" eq "ia64") {
-	$diskfile .= ".$arch";
-    }
+    $diskfile .= ".$arch" if $arch eq "ia64";
+    $diskfile .= ".disk";
 
     my %vars = (
                 title => "Build OSCAR Client Image",
@@ -371,9 +370,9 @@ sub build_oscar_image {
                            imgpath => 1,
                            password => 1,
                           },
-                pkgfile => "$rpmlist",
+                pkgfile => $rpmlist,
                 pkgpath => "/tftpboot/rpm",
-                diskfile => "$ENV{OSCAR_HOME}/oscarsamples/$diskfile",
+                diskfile => $diskfile,
                 ipmeth => "static",
                 mcast  => "off",
                 piaction => "beep",
