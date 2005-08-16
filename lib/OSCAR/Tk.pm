@@ -2,7 +2,7 @@ package OSCAR::Tk;
 
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
-#   $Id: Tk.pm 1.6 2003/06/27 15:16:53 brechin Exp $
+#   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ require Tk::Dialog;
 use base qw(Exporter);
 @EXPORT = qw(yesno_window center_window done_window error_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 sub yesno_window {
     my $w = shift;

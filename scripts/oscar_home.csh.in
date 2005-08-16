@@ -5,7 +5,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: oscar_home.csh.in,v 1.1 2003/07/04 14:40:05 jsquyres Exp $
+# $Id$
 # 
 
 setenv OSCAR_HOME @OSCAR_HOME@
