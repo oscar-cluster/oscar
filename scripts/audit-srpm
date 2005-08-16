@@ -1,0 +1,118 @@
+#!/usr/bin/perl
+#
+# This script looks to ensure that every binary rpm provided by OSCAR
+# has its originating .src.rpm
+#
+$VERSION = "1.0";
+#	David N. Lombard
+#	Initial, nearly perfect version.
+$VERSION = "1.1";
+#	David N. Lombard
+#	OK, so now it's perfect. ;-)
+#
+($ToolName = $0) =~ s:.*/::;
+
+use Getopt::Long;
+Getopt::Long::Configure( "bundling", "require_order" );
+
+my $svn;
+my $usage;
+my $verbose = 0;
+my $version;
+
+my %opts = (
+		"svn" => \$svn,
+		"help|usage" => \$usage,
+		"verbose|v+" => \$verbose,
+		"version" => \$version,
+	);
+
+my $ok = GetOptions( %opts );
+print "$ToolName  Version: $VERSION\n" if $version;
+exit 0 if $version;
+if( $usage || !$ok || @ARGV != 1 ) {
+	print
+		"usage: $ToolName [options] directory\n",
+		"\n",
+		"Arguments:\n",
+		"\tdirectory to audit\n",
+		"\n",
+		"Options:\n",
+		"\t--svn      Display svn version of repository directory.\n",
+		"\t--verbose  List all valid RPMs and SRPMs;\n",
+		"\t           Otherwise, only missing and unreferenced SRPMs;\n",
+	;
+	exit ($ok||0);
+}
+#
+my %binrpms;
+my %srcrpms;
+#
+sub recurse($);
+#
+# First, let's scan for all RPMs in the current tree.
+#
+sub recurse($)
+{
+	my $dir = shift;
+
+	if( opendir DIR, $dir ) {
+		foreach (readdir DIR) {
+			next if /^\./;
+			if( -d "$dir/$_" ) {
+				recurse "$dir/$_";
+			} elsif( /\.src\.rpm$/ ) {
+				$srcrpms{$_}{path} = $dir;
+			} elsif( /\.rpm$/ ) {
+				$binrpms{$_} = $dir;
+			}
+		}
+		closedir DIR;
+	}
+}
+
+my $dir = shift || ".";
+
+if( $svn ) {
+	chomp( my $r = `svnversion $dir 2>/dev/null` );
+	print "SVN Version: r$r\n" if $r && $r ne "exported";
+}
+
+recurse $dir;
+
+if( $verbose ) {
+	print "", (scalar keys %srcrpms), " source RPMs found.\n";
+	print "", (scalar keys %binrpms), " binary RPMs found.\n";
+}
+
+foreach( sort keys %binrpms ) {
+	chomp( my $source = `rpm -q --qf "%{sourcerpm}\n" -p $binrpms{$_}/$_ 2>/dev/null` );
+	if( $srcrpms{$source}{path} ) {
+		print "$_: OK\n" if $verbose > 1;
+	} else {
+		print "$_: MISSING $source\n" if $verbose > 1;
+	}
+	push @{$srcrpms{$source}{refs}}, $_;
+}
+
+
+if( $verbose ) {
+	print "\nRPM cross-reference\n";
+	foreach (sort keys %srcrpms) {
+		print "  $_", ($srcrpms{$_}{path} ? "" : "  (MISSING)"),"\n";
+		if( $srcrpms{$_}{refs} ) {
+			print "    $_\n" foreach @{$srcrpms{$_}{refs}};
+		} else {
+			print "    UNREFERENCED\n";
+		}
+	}
+} else {
+	print "\nUnreferenced SRPMs\n";
+	foreach (sort keys %srcrpms) {
+		print "  $_\n" unless $srcrpms{$_}{refs};
+	}
+	print "\nMissing SRPMs\n";
+	foreach (sort keys %srcrpms) {
+		print "  $_\n" if $srcrpms{$_}{refs} && !$srcrpms{$_}{path};
+	}
+}
