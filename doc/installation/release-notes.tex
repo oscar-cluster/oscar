@@ -39,11 +39,36 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \begin{itemize}
 
-\item The OSCAR installer GUI provides little protection for user
-  mistakes.  If the user executes steps out of order, or provides
-  erroneous input, Bad Things may happen.  Users are strongly
-  encouraged to closely follow the instructions provided in this
-  document.
+\item There is currently a known issue with the Delete Nodes functionality.
+  You may notice error messages like the following when you delete the
+  last node of a cluster:
+
+  \begin{verbatim}
+    /opt/oscar/packages/sis/scripts/post_clients: illegal or
+    non-understood where string <nics.driver_module = >
+    /opt/oscar/packages/sis/scripts/post_clients: INTERNAL
+    ODA ERROR - failing to convert where expression
+    <nics.driver_module = > in oda::delete_records - at
+    least one record not deleted in table <nics> in database <oscar>
+    /opt/oscar/packages/sis/scripts/post_clients: illegal or
+    non-understood where string <nics.gateway = >
+    /opt/oscar/packages/sis/scripts/post_clients: INTERNAL
+    ODA ERROR - failing to convert where expression
+    <nics.gateway = > in oda::delete_records - at least one
+    record not deleted in table <nics> in database <oscar>
+    /opt/oscar/packages/sis/scripts/post_clients: illegal or
+    non-understood where string <nics.assignment_method = >
+  \end{verbatim}
+
+  This is not `harmful' but will leave the ODA database inconsistent
+  with the SIS database.  The information on network interfaces is
+  currently not used therefore it is not really damaging to your
+  installation.  This will be fixed in the next release.
+
+\item In Step 8 \button{Test Cluster Setup}, some tests may fail for the first
+  time but subsequent re-runs of this step will indicate that all the
+  tests succeeded.  This is a known issue and will be fixed for the next
+  release.
 
 \item Each package in OSCAR has its own installation and release
   notes.  \detailed{See Section~\ref{sec:pkg-specific-notes} for
@@ -68,6 +93,17 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \item A domain name must be specified for the client nodes when
   defining them.
+
+%TJN: KEEP THIS (if we keep the python2-compat rpms under c3?)
+\item Due to some distribution portability issues, OSCAR currently installs
+  a ``compatibility''  (\file{python2\--compat\--1.0-1}) RPM to resolve the
+  Python2 prerequisite that is slightly different across different Linux
+  distributions.  Also see the file \file{packages/c3/RPMS/NOTE.python2}.
+
+\item In some cases, the test window that is opened from the
+  OSCAR wizard may close suddenly when there is a test failure. If
+  this happens, run the test script, \file{testing/test\_cluster},
+  manually in a shell window to diagnose the problem.
 
 \item Although OSCAR can be installed on pre-existing server nodes, it
   is typically easiest to use a machine that has a new, fresh install
@@ -94,9 +130,17 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \item The OSCAR installer will install the MySQL package on the server
   node if it is not already installed.  A random password will be automatically
+\begchange
   generated for the oscar user to access the oscar database.  This
   password will be stored in the file \file{/etc/odapw}.  It should
   not be needed by other users.
+\endchange
+
+\item The OSCAR installer GUI provides little protection for user
+  mistakes.  If the user executes steps out of order, or provides
+  erroneous input, Bad Things may happen.  Users are strongly
+  encouraged to closely follow the instructions provided in this
+  document.
 
 \item The OSCAR installer GUI currently does not support deleting a
   node and adding the same node back {\em in the same session}.  If
@@ -135,24 +179,35 @@ The following release notes apply to OSCAR version \oscarversion.
   The warnings about \cmd{xauth} should no longer appear (and the
   \button{Install/Uninstall Packages} button should work properly).
 
+\item The \button{Cancel} button in the \button{Install/Uninstall
+    Package} step does not work properly; if any packages are selected
+  to be installed or uninstalled, clicking the \button{Cancel} button
+  still triggers the execution of the package installer/uninstaller.
+  This will be fixed in a future release.  The same behavior occurs if
+  you close the window via the window manager's ``close''
+  functionality.
+
+  Note that if you do not select any additional packages to
+  install/uninstall, nothing will run (as expected).
+
 \item The SIS multicast facility (Flamethrower) is ``experimentally''
   supported.  If you are having problems with multicast and would like
   to experiment please check the {\tt oscar-users} and/or
   {\tt sisuite-users} mailing lists for tips.
 
-%TJN: KEEP THIS (if we keep the python2-compat rpms under c3?)
-\item Due to some distribution portability issues, OSCAR currently installs
-  a ``compatibility''  (\file{python2\--compat\--1.0-1}) RPM to resolve the
-  Python2 prerequisite that is slightly different across different Linux
-  distributions.  Also see the file \file{packages/c3/RPMS/NOTE.python2}.
+\begchange
+\item In the \button{Setup Networking} step, MACs can
+  only be saved in /root which is the default directory.
 
 \item The man pages for the Torque package will not be available in
   a default installation because /opt/pbs/man is missing from
   MANPATH.  They should appear if this is added by hand eg:
 
 \begin{verbatim}
-  # export MANPATH=\$MANPATH:/opt/pbs/man
+  # export MANPATH=$MANPATH:/opt/pbs/man
 \end{verbatim}
+\endchange
+
 
 \item \emph{FutureWarning} message during APItests on Python2.3 based systems.
    The following is a warning message about the for the version of
@@ -167,11 +222,6 @@ The following release notes apply to OSCAR version \oscarversion.
    % (cname, hex(id(self)))
    \end{verbatim}
    \end{small}
-
-\item In some cases, the test window that is opened from the
-  OSCAR wizard may close suddenly when there is a test failure. If
-  this happens, run the test script, \file{testing/test\_cluster},
-  manually in a shell window to diagnose the problem.
 
 \item PVM Installation (APItest) tests showing {\tt FAIL}.  In some cases,
   namely the first pass through the OSCAR Wizard to install the system (from
@@ -210,32 +260,219 @@ The following release notes apply to OSCAR version \oscarversion.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Red Hat Enterprise Linux 4 Notes}
-\label{subsec:rhel4notes}
+\subsection{Red Hat Linux 9 Notes}
+\label{subsec:rh90notes}
+
+There are a few issues that may crop up when using OSCAR on Red Hat 9.
+The following items highlight these issues.
 
 \begin{itemize}
 
-\item Due to an issue with displaying graphs under Ganglia, SELinux should
-  be disabled before installing OSCAR.  Durring installation, it can be
-  deactivated on the same screen as the firewall.  If it is currently
-  active it can be turned off in /etc/selinux/config by setting SELINUX 
-  to ``disabled'' and rebooting.
+\item Deselecting Pfilter causes the image creation to fail.  This is
+  due to a dependency with IPtables and when Pfilter is not selected
+  the IPtables RPM is not listed in the node (image) rpmlist.   The simple
+  fix is to add ``iptables'' to the Red Hat 9 rpmlist if you are not
+  installing Pfilter on the compute nodes.
+
+\item The RPM system has been updated with this Red Hat release.  The
+ OSCAR install process will likely display several warnings due to unsigned
+ RPMS.  These warnings can be ignored.
+
+%TJN: These are the notes Jeff posted for the "Re: mksiimage hang problems"
+%  thread on oscar-devel (2003-07-23)
+\item In some OSCAR pre-release testing, RPM would hang during the
+  building of a client image (Section~\ref{det:build-client-image}).
+  This is a documented bug in the version of RPM that ships with
+  Redhat 9; it is not a problem with OSCAR.  The procedure
+  that was used to remedy this situation is outlined below (excerpts
+  taken from \url{http://www.rpm.org/hintskinks/repairdb-2003-06/}):
+        \begin{itemize}
+        \item If RPM hangs at any point (e.g., building the client
+          image) -- first ensure that it really has hung and just
+          isn't taking a long, long time to complete.  Typical
+          indications that it has genuinely hung include: the disk is
+          not running and load goes down to 0 (or nearly 0) and stays
+          there.
+
+        \item Then do a \cmd{ps} and find the PID of the \cmd{rpm}
+          process:
+\begin{verbatim}
+  # ps -eadf | grep rpm | grep -v grep
+  ...output...
+  # kill <PID_of_RPM>
+\end{verbatim}
+
+        \item This will probably not kill the process (it's likely to
+          be in a state where it is ignoring signals), but it should
+          be tried anyway -- this would allow \cmd{rpm} to exit
+          cleanly.  If \cmd{rpm} does exit cleanly, jump down to the
+          last step in this procedure.
+
+        \item If \cmd{rpm} does not exit within a short period of
+          time, \cmd{kill -9 <PID\_of\_RPM>}.  This guarantees that
+          \cmd{rpm} will not exit cleanly, but in this case, it's ok.
+          Now, do the following:
+                        \begin{enumerate}
+                        \item Save a copy of the RPM database (just to
+                          be safe):
+\begin{verbatim}
+  # cd /var/lib
+  # tar zcvf /tmp/rpmdb.tar.gz rpm
+\end{verbatim}
+
+                        \item Delete any existing RPM database locks:
+\begin{verbatim}
+  # cd /var/lib/rpm
+  # rm -f __db*
+\end{verbatim}
+
+                        \item Rebuild the RPM database:
+\begin{verbatim}
+  # rpm -vv --rebuilddb
+\end{verbatim}
+                        \end{enumerate}
+
+                      \item Now re-run the OSCAR step that hung.  If
+                        RPM hangs again, repeat these steps to un-hang
+                        it.  Testing has shown that it may be
+                        necessary to repeat these steps multiple times
+                        in order to get a successful RPM run.
+        \end{itemize}
 
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Fedora Core 3 Notes}
-\label{subsec:fc3notes}
+\subsection{Red Hat Enterprise Linux 3 Notes}
+\label{subsec:rhel3notes}
+
+Currently we only support Red Hat Enterprise Linux 3 Update 2 and Update
+3.  Gold and Update 4 are not supported.
+
+If you are installing a version of Red Hat Enterprise Linux 3 that does
+not provide a MySQL Server RPM (eg. WS), please refer to the first item 'mysql-server'.
+
+If you are installing on Red Hat Enterprise Linux 3 Update 2, please refer to
+the second item 'Red Hat Enterprise Linux 3 (Update 2) rpmlist'.
+
+The rest of the notes are only relevant if you are installing on ia64
+(Itanium) hardware.
 
 \begin{itemize}
 
-\item Due to an issue with displaying graphs under Ganglia, SELinux should
-  be disabled before installing OSCAR.  Durring installation, it can be
-  deactivated on the same screen as the firewall.  If it is currently
-  active it can be turned off in /etc/selinux/config by setting SELINUX 
-  to ``disabled'' and rebooting.
+\item mysql-server
+
+\emph{BEFORE YOU BEGIN}: you will need to obtain a mysql-server RPM and put it into
+
+  \file{/tftpboot/rpm}
+
+The easiest way is to get the SRPM and rebuild it (i386
+users should replace ia64 with i386),
+
+\begin{verbatim}
+  rpmbuild --rebuild mysql-3.23.58-1.src.rpm
+  cp /usr/src/redhat/RPMS/ia64/mysql-server-3.23.58-1.ia64.rpm /tftpboot/rpm
+\end{verbatim}
+
+MySQL v3.23.58-1 is the version that came with Red Hat Enterprise Linux 3, Update 3; if you cannot
+find that particular version, please make sure that you copy all the
+rebuilt MySQL RPMs (including the server RPM).  For example, if the
+version you found is v3.23.58-2.3:
+
+\begin{verbatim}
+  rpmbuild --rebuild mysql-3.23.58-2.3.src.rpm
+  cp /usr/src/redhat/RPMS/ia64/mysql*-3.23.58-2.3.ia64.rpm /tftpboot/rpm
+\end{verbatim}
+
+Note: The key here is to keep the MySQL versions consistent.
+
+\item Red Hat Enterprise Linux 3 (Update 2) rpmlist
+
+\emph{IN OSCAR WIZARD STEP 4}: if you're running Update 2, you will
+need to manually select the correct rpmlist before generating the client image.
+Select the appropriate file for your architecture
+
+  \file{/opt/oscar/oscarsample/redhat-3asU2-i386.rpmlist}
+  \ \\  % Force newline
+or
+  \ \\  % Force newline
+  \file{/opt/oscar/oscarsample/redhat-3asU2-ia64.rpmlist}
+
+
+\item \file{systemconfig.conf} on ia64
+
+\emph{AFTER OSCAR WIZARD STEP 4}: you will need to add an INITRD entry to the image
+file
+
+  \file{/var/lib/systemimager/images/oscarimage/etc/systemconfig/systemconfig.conf}
+
+After the modification, the kernel section should look like this:
+
+\begin{verbatim}
+  [KERNEL0]
+    PATH = /boot/efi//EFI/redhat/vmlinuz-2.4.21-20.EL
+    INITRD = /boot/efi//EFI/redhat/initrd-2.4.21-20.EL.img
+    LABEL = 2.4.21-20.EL
+\end{verbatim}
+
+where 2.4.21-20.EL is the kernel for Red Hat Enterprise Linux 3 (Update 3)
+you should substitute your kernel version if you're not running Update 3.
+
+{\bf Note: Note carefully the \emph{DOUBLE SLASH} in the PATH and INITRD lines!}
+
+
+\item SCSI and network on ia64
+
+\emph{AFTER OSCAR WIZARD STEP 4}: you may also need to add a Hardware section with
+SCSI and network drivers.  In the image file
+
+  \file{/var/lib/systemimager/images/oscarimage/etc/systemconfig/systemconfig.conf}
+
+For an Intel SR870BH2, the hardware section of this file would look like:
+
+\begin{verbatim}
+  [HARDWARE]
+    ORDER = e1000 e1000 mptscsih mptbase scsi_mod
+\end{verbatim}
+
+
+\item USB on ia64
+
+\emph{AFTER OSCAR WIZARD STEP 4}: if you need to use the keyboard on a USB-only
+system, like the Intel SR870BH2, you need to add the USB controller to the
+image file
+
+  \file{/var/lib/systemimager/images/oscarimage/etc/modules.conf}
+
+For example,
+
+\begin{verbatim}
+  echo alias usb-controller usb-uhci >> \
+    /var/lib/systemimager/images/oscarimage/etc/modules.conf
+\end{verbatim}
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fedora Core 2 Notes}
+\label{subsec:fc2notes}
+
+\begin{itemize}
+
+\item SIS currently does not fully support 2.6 kernel, the way we make it
+  work right now is to run a script which generate \file{/etc/modprobe.conf}
+  from \file{/etc/modules.conf} - this does not work 100\% of the time.  If
+  you can deploy an image to your client nodes but are having problems
+  booting, chances are this is the issue.  To get around this problem, copy a
+  working \file{modprobe.conf} for your client nodes to the image directory
+  \file{/var\-/lib\-/systemimager\-/images\-/oscarimage\-/etc/}.  Re-image the
+  nodes and it should work.  One quick way of getting the correct
+  \file{modprobe.conf} is to boot a node with the Fedora Core 2 CD 1
+  and run the Rescue mode.  You will then be able to find
+  \file{modprobe.conf} in \-/tmp.
 
 \end{itemize}
 
@@ -250,5 +487,24 @@ The following release notes apply to OSCAR version \oscarversion.
 \item The version of Mandriva Linux supported is 10.0 Official which is a
 3CD set.  While it may be possible to install OSCAR with 10.0 Community,
 it is not officially supported.
+
+\item During Step 3, \button{Install OSCAR Server Packages}, the RPM package
+\file{kernel-enterprise} will be selected to be installed on the headnode.
+As a result, this kernel will be used upon subsequent reboot.
+
+\item While Mandriva Linux 10.0 supports 2.4 kernel, OSCAR only supports
+2.6 kernel - this is explicitly specified in
+\file{oscarsamples/mandrake-10.0-i386.rpmlist}.
+
+\item The \file{tftp-server} RPM which came with Mandriva Linux 10.0 expects the
+pxelinux boot files to reside in \file{/var/lib/tftpboot} but OSCAR puts
+them in \file{/tftpboot}.  To get around this issue a symbolic link is
+created from \file{/var/lib/tftpboot} to \file{/tftpboot}.
+
+\item During Step 8, \button{Test Cluster Setup}, some APItests may fail due to
+the OSCAR Wizard not having the correct environment variables set.  If you
+encounter this problem, simply quit the Wizard, open another terminal,
+bring up the Wizard and then re-run the tests.  All tests should pass if
+the cluster has been configured correctly.
 
 \end{itemize}
