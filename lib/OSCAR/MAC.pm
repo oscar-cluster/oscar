@@ -177,17 +177,17 @@ sub mac_window {
                                 );
 
     our $loadbutton = $frame->Button(
-                                   -text=>"Import MACs from file",
+                                   -text=>"Import MACs from file...",
                                    -command=> [\&macfile_selector, "load", $frame],
                                   );
     our $savebutton = $frame->Button(
-                                    -text => "Export MACs to file",
+                                    -text => "Export MACs to file...",
                                     -command => [\&macfile_selector, "save", $frame],
                                     -state => "disabled",
                                    );
 
     our $bootcd = $frame->Button(
-                                    -text => "Build Autoinstall CD",
+                                    -text => "Build Autoinstall CD...",
                                     -command => sub {
                                         my $cmd = "xterm -T 'Build Autoinstall CD' -e si_mkautoinstallcd --append \"MONITOR_SERVER=$ip\" --out-file /tmp/oscar_bootcd.iso";
                                         oscar_log_subsection("Step $step_number: Building autoinstall CD: $cmd");

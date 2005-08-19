@@ -130,7 +130,7 @@ if ($browser ne "") {
 # Download packages using OPD
 my $step_number = 0;
 oscar_button($window, "Step $step_number:",
-	     "Download Additional OSCAR Packages",
+	     "Download Additional OSCAR Packages...",
 	     [sub { my $olddir = Cwd::cwd();
               chdir($ENV{OSCAR_HOME} . '/lib/Qt');
               system('/usr/bin/perl Opder.pl'); 
@@ -141,7 +141,7 @@ oscar_button($window, "Step $step_number:",
 # Select packages for installation
 $step_number++;
 oscar_button($window, "Step $step_number:", 
-	     "Select OSCAR Packages To Install", 
+	     "Select OSCAR Packages To Install...", 
 	     [sub { my $olddir = Cwd::cwd();
               chdir($ENV{OSCAR_HOME} . '/lib/Qt');
               system('/usr/bin/perl Selector.pl');
@@ -152,7 +152,7 @@ oscar_button($window, "Step $step_number:",
 # Configure selected packages
 $step_number++;
 oscar_button($window, "Step $step_number:", 
-	     "Configure Selected OSCAR Packages", 
+	     "Configure Selected OSCAR Packages...", 
 	     [\&displayPackageConfigurator, $window, $step_number],
 	     'configure_packages');
 
@@ -164,18 +164,18 @@ oscar_button($window, "Step $step_number:", "Install OSCAR Server Packages",
 
 # Build OSCAR Client Image
 $step_number++;
-oscar_button($window, "Step $step_number:", "Build OSCAR Client Image", 
+oscar_button($window, "Step $step_number:", "Build OSCAR Client Image...", 
 	     [\&build_oscar_image, $window, $step_number], 'build_image');
 
 # Add Clients to OSCAR Image
 $step_number++;
-oscar_button($window, "Step $step_number:", "Define OSCAR Clients", 
+oscar_button($window, "Step $step_number:", "Define OSCAR Clients...", 
 	     [\&build_oscar_clients, $window, $step_number, $interface], 
 	     'addclients');
 
 # Setup Network Booting
 $step_number++;
-oscar_button($window, "Step $step_number:", "Setup Networking", 
+oscar_button($window, "Step $step_number:", "Setup Networking...", 
 	     [\&mac_window, $window, $step_number,
 	      {interface => $interface}], 'netboot');
 
@@ -206,12 +206,12 @@ oscar_button($window, "Step $step_number:", "Test Cluster Setup",
 my $maint=$window->Label (-text=>"The following buttons are for managing 
 your node definitions after the initial install.",-relief=>"groove");
 $maint->grid("-","-",-sticky=>"nsew");
-oscar_button($window, "", "Add OSCAR Clients", 
+oscar_button($window, "", "Add OSCAR Clients...", 
 	     [\&addnode_window, $window, $interface], 'add_nodes');
-oscar_button($window, "", "Delete OSCAR Clients", 
+oscar_button($window, "", "Delete OSCAR Clients...", 
 	     [\&delnode_window, $window], 'delete_nodes');
 oscar_button($window, "", 
-	     "Install/Uninstall OSCAR Packages", 
+	     "Install/Uninstall OSCAR Packages...", 
        [\&install_uninstall_packages, $window], 'install_uninstall_packages');
 
 
