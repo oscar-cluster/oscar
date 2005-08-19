@@ -123,12 +123,13 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
       croak("Unable to update /tftpboot/pxelinux.cfg/default file to support si_monitor.");
     }
 
-    # This is only necessary because the directory is not created by SystemImager's build system
-    # Should be removed after it is incorporated in mainline code
-    if ( !(-d "/var/lock/systemimager") ) {
-      verbose("Creating /var/lock/systemimager needed by si_monitor.");
-      mkpath("/var/lock/systemimager") or
-        croak("Unable to create /var/lock/systemimager.");
+    # on x86_64 disable non-executable mappings
+    # (otherwise grubs older than FC4 will segfault)
+    if ($ARCH eq "x86_64") {
+	verbose("Disabling nonexec mappings on x86_64");
+	if ( system("sed 's/ram\ MONITOR/ram noexec=off MONITOR/g' /tftpboot/pxelinux.cfg/default >/tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+	    croak("Unable to modify /tftpboot/pxelinux.cfg/default.");
+	}
     }
 
     verbose("Copying SystemImager kernel & ramdisk");
