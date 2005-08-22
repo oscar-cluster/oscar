@@ -33,9 +33,7 @@ sub do_run {
 # See if we need to install the perl module
 
 oscar_log_subsection("Checking to see if we need to install $module_name");
-my $eval_str = "{ require $module_name }";
-eval $eval_str;
-if ($@) {
+if (system("rpm -q $real_name >/dev/null")) {
     oscar_log_subsection("$module_name is not yet installed");
 
     my $topdir = "$ENV{OSCAR_HOME}/share/prereqs/$real_name";
