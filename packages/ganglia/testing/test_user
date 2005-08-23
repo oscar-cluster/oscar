@@ -18,6 +18,9 @@
 # equals the number of hosts Ganglia sees by using gstat
 
 # (C)opyright Bernard Li <bli@bcgsc.ca>
+#             Erich Focht <efocht@hpce.nec.com>
+
+log=ganglia.err
 
 # Get number of args (nodes)
 clients=`echo $@ | wc -w`
@@ -26,12 +29,18 @@ clients=`echo $@ | wc -w`
 numhosts=`expr $clients + 1`
 
 # use gstat to determine number of hosts ganglia has detected 
-hosts=`gstat | grep 'Hosts' | head -n 1 | awk {'print $2'}`
+pattern=`hostname`"|"`perl -e "print join(\"|\",split(\" +\",\"$@\"));"`
+hosts=`gstat --all | egrep -c "^($pattern)$"`
 
 if [ $hosts -eq $numhosts ]
 then
   $OSCAR_TESTPRINT --label "Ganglia test" -p
 else
+  echo "Client nodes: $@" > $log
+  echo "Match pattern: $pattern" >> $log
+  echo "Number of hosts matched: $hosts" >> $log
+  echo "Gstat output:" >> $log
+  gstat --all >> $log
   $OSCAR_TESTPRINT --label "Ganglia test" -f
   exit 1
 fi
