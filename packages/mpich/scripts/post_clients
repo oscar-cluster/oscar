@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -35,7 +36,7 @@ sub sortnodes(@) {
 
 print "...updating mpich_server nodes file\n";
 
-my $nodes_file = "/opt/mpich-1.2.5.10-ch_p4-gcc/share/machines.LINUX";
+my $nodes_file = "/opt/mpich-ch_p4-gcc-1.2.7/share/machines.LINUX";
 
 open(NODES, ">$nodes_file") or croak("config_server: could not open mpich's nodes file\n");
 

@@ -10,16 +10,16 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.14 2004/07/12 16:45:23 dnl Exp $
+      $Id$
       -->
 
-  <name>MPICH-P4</name>
+  <name>MPICH-CH_P4 (tcp)</name>
 
   <version>
     <major>1</major>
     <minor>2</minor>
-    <subversion>5</subversion>
-    <release>10</release>
+    <subversion>7</subversion>
+    <release>1</release>
   </version>
 
   <class>included</class>
@@ -34,8 +34,8 @@
     <email>mpich-bugs@mcs.anl.gov</email>
   </maintainer>
   <packager>
-    <name>Jason Brechin</name>
-    <email>brechin@ncsa.uiuc.edu</email>
+    <name>Erich Focht</name>
+    <email>efocht@hpce.nec.com</email>
   </packager>
 
   <description>MPICH is a freely available, portable implementation of
@@ -44,7 +44,6 @@ libraries.</description>
 
   <rpmlist>
     <rpm>mpich-ch_p4-gcc-oscar</rpm>
-    <rpm>mpich-ch_p4-gcc-oscar-devel</rpm>
     <rpm>mpich-ch_p4-gcc-oscar-module</rpm>
   </rpmlist>
 
@@ -61,7 +60,7 @@ libraries.</description>
   <package>
     <switcher>
       <tag>mpi</tag>
-      <name>mpich-ch_p4-gcc-1.2.5.10</name>
+      <name>mpich-ch_p4-gcc-1.2.7</name>
     </switcher>
   </package>
 

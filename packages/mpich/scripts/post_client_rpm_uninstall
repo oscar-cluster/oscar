@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: post_client_rpm_uninstall,v 1.2 2003/12/04 05:09:07 ngorsuch Exp $
+# $Id$
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -9,7 +9,6 @@
 # Must exit with 0 on success or non-zero for any failures.
 
 my @rpms = qw(mpich-ch_p4-gcc-oscar
-        mpich-ch_p4-gcc-oscar-devel
         mpich-ch_p4-gcc-oscar-module
         );
 remove_rpms(@rpms);
