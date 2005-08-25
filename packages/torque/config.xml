@@ -34,6 +34,7 @@ $Id$
       <rpm>torque</rpm>
       <rpm>torque-mom</rpm>
       <rpm>torque-client</rpm>
+      <rpm>torque-modulefile</rpm>
   </rpmlist>
 
   <rpmlist>
