@@ -16,8 +16,11 @@ use OSCAR::Logger;
 use Carp;
 
 # Version included in media directory
-
 my $ver = "2.14-2.1.el3.rf";
+
+# Minimum version required
+my $minver = "2.08";
+
 my $real_name = "perl-XML-Simple";
 my $module_name = "XML::Simple";
 
@@ -33,7 +36,8 @@ sub do_run {
 # See if we need to install the perl module
 
 oscar_log_subsection("Checking to see if we need to install $module_name");
-if (system("rpm -q $real_name >/dev/null")) {
+eval "{ require $module_name; }";
+if ($@) {
     oscar_log_subsection("$module_name is not yet installed");
 
     my $topdir = "$ENV{OSCAR_HOME}/share/prereqs/$real_name";
@@ -65,12 +69,18 @@ if (system("rpm -q $real_name >/dev/null")) {
 
     chdir($pwd);
     system("rm -rf $tempdir");
-} 
-
-# It's already installed -- nothing to do
-
-else {
+} else {
+    # it's already installed
     oscar_log_subsection("$module_name appears to be installed already");
+    # check version!
+    my $modver;
+    eval "\$modver = \$".$module_name."::VERSION;";
+    # primitive version comparison
+    if ($modver lt $minver) {
+	oscar_log_subsection("Installed $module_name has version $modver, required version is $minver");
+	croak("Please remove old $module_name (could be from CPAN) and restart the installation.");
+	exit;
+    }
 }
 
 # All done
