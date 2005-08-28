@@ -11,6 +11,6 @@
 
 include $(top_srcdir)/dist/Makefile.options
 
-oscar_DATA		= update-rpms-1.1.21-31.noarch.rpm
+oscar_DATA		= update-rpms-1.1.22-32.noarch.rpm
 
 EXTRA_DIST		= $(oscar_DATA)
