@@ -43,6 +43,25 @@ use OSCAR::Database;
 
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
+# Validate the interface before we do too much...
+
+my %nics;
+open IN, "/sbin/ifconfig |" || die "ERROR: Unable to query NICs\n";
+while( <IN> ) {
+	next if /^\s/ || /^lo\W/;
+	chomp;
+	s/\s.*$//;
+	$nics{$_} = 1;
+}
+close IN;
+
+my $adapter = shift;
+die "
+ERROR: A valid NIC must be specified for the cluster private network.
+
+Valid NICs: ".join( ", ", sort keys %nics )."\n\n"
+	unless $adapter && exists $nics{$adapter};
+
 # If $OSCAR_HOME is not set, then set it with whatever came in from
 # configure's --prefix.
 
@@ -225,18 +244,7 @@ undef %incs;
 #print __FILE__,":",__LINE__,":INC:",join(", ",@INC),"\n";
 
 # Seed ODA
-
-my $adapter = shift;
-my @results;
-
-if ( !defined($adapter) || $adapter =~ /force/ ) {
-    my $force = ($adapter =~ /force/);
-    system("$ENV{OSCAR_HOME}/scripts/set_oscar_interface $force");
-} else { 
-#    print "DEBUG: Setting adapter to $adapter\n";
-    system("oda modify_records oscar.interface~$adapter");
-}
-
+system("oda modify_records oscar.interface~$adapter");
 $adapter = `oda read_records oscar.interface`;
 
 $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
