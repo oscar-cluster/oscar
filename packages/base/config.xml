@@ -80,7 +80,8 @@
          <rpm>xinetd</rpm>
          <rpm>zlib1</rpm>
          <rpm>perl-devel</rpm>
-	 <rpm>perl-CGI</rpm>	 
+	 <rpm>perl-CGI</rpm>
+	 <rpm>cdrecord</rpm> 
   </rpmlist>
   
   <rpmlist>
