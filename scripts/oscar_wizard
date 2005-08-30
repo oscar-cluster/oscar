@@ -597,7 +597,6 @@ sub run_tests {
 sub monitor_deployment {
     my ($window) = @_;
 
-    system("/etc/init.d/systemimager-server-monitord start");
     my $cmd = "/usr/sbin/si_monitortk";
     $monitor_button->configure(-state => 'disabled');
 
@@ -618,5 +617,4 @@ sub stop_monitor_deployment {
     waitpid($pid, WNOHANG);
     $monitor_button->configure(-state => 'normal');
     $window->fileevent($pipe, 'readable', "");
-    system("/etc/init.d/systemimager-server-monitord stop");
 }
