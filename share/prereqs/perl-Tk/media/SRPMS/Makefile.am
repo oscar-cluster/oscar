@@ -13,7 +13,8 @@ include $(top_srcdir)/dist/Makefile.options
 
 oscar_DATA		= \
 			perl-Tie-Watch-1.1-1mdk.src.rpm \
-			perl-Tk-804.026-1.oscar.src.rpm
+			perl-Tk-804.026-1.oscar.src.rpm \
+			perl-Tk-804.027-2mdk.src.rpm
 
 EXTRA_DIST		= $(oscar_DATA)
 
