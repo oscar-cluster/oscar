@@ -53,22 +53,8 @@ if ( system("rpm -q perl-Tk >/dev/null") != 0  ) {
       }
     }
     if ( $distn eq 'mandrake' ) {
-      if ( $distv eq '10.1' ) {
-	      #MDK10.1
-	@ptkrpms = qw( perl-Tk perl-PerlIO-gzip perl-Tie-Watch);
-      }elsif ( $distv eq '10.0' ) {
-	      #MDK10.0
-	@ptkrpms = qw( perl-Tk perl-PerlIO-gzip perl-Tie-Watch);
-      }elsif ( $distv eq '9.2' ) {
-	      #MDK9.2
-	@ptkrpms = qw( perl-Tk perl-PerlIO-gzip );
-      }elsif ( $distv eq '9.1' ) {
-	      #MDK9.1
-        @ptkrpms = qw( perl-Tk perl-PerlIO-gzip );
-      } else { 
-	      #MDK9.0
-        @ptkrpms = qw( perl-Tk pwlib1 );
-      }
+	      #MDK 10.0 and 10.1
+	@ptkrpms = qw( perl-Tk perl-Tie-Watch);
     } else {
 	      #RH
       @ptkrpms = qw( perl-Tk );
