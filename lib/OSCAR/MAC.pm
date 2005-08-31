@@ -298,9 +298,9 @@ sub setup_dhcpd {
         copy("/etc/dhcpd.conf", "/etc/dhcpd.conf.oscarbak") or (carp "Couldn't backup dhcpd.conf file", return undef);
     }
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
-    my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --bootfile=pxelinux.0 --gateway=$ip";
+    my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
     if(our $multicast){
-       $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --bootfile=pxelinux.0 --gateway=$ip --multicast=yes";
+       $cmd = $cmd . " --multicast=yes";
     }
     oscar_log_subsection("Step $step_number: Running command: $cmd");
     !system($cmd) or (carp "Couldn't mkdhcpconf", return undef);
