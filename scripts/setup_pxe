@@ -151,7 +151,7 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     print OUT "\tlabel=sisboot\n";
     print OUT "\tinitrd=initrd.img\n";
     print OUT "\tread-only\n";
-    print OUT "\troot=/dev/ram MONITOR_SERVER=$ip\n";
+    print OUT "\tappend=\"root=/dev/ram MONITOR_SERVER=$ip\"\n";
   
 } else {
     croak("$ARCH is not a known architecture");
