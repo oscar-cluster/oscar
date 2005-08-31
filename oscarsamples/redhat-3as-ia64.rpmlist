@@ -211,3 +211,4 @@ XFree86-libs-data
 tcp_wrappers
 ttmkfdir
 tzdata
+/etc/redhat-release
