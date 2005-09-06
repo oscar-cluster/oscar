@@ -67,22 +67,21 @@ sub sortclients(@) {
 sub get_numproc {
 	my @machines= sortclients list_client();
 	foreach my $mach (@machines) {
-		my $CMD="/usr/bin/ssh -n ".$mach->hostname." /bin/grep ^processor /proc/cpuinfo";
+		my $CMD="/usr/bin/ssh -n ".$mach->hostname." cat /proc/cpuinfo";
 		print "Gathering processor count from ".$mach->hostname.".\n";
 		open (CPIPE,"$CMD |") or (carp("Unable to query machine ".$mach->hostname),next);
 		my $count=0;
 		while (<CPIPE>) {
-			$count++;
+			++$count if (/^processor/);
 		}
 		close(CPIPE);
 		if (($count !~ /^[0-9]+$/) || ($count == 0)) {
 			carp("Improper count ($count) returned from machine ".$mach->hostname);
 		} else {
-			print "Updating database for machine ".$mach->hostname.".\n";
+			print "Updating database for machine ".$mach->hostname." cpus=$count.\n";
 			$mach->proccount($count);
 			set_client($mach);
 		}
 	}
-
 }
 
