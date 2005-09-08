@@ -47,6 +47,7 @@ use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::PackageInUn;
 use OSCAR::WizardEnv;
+use AppConfig;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
@@ -405,6 +406,24 @@ sub postimagebuild {
             croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
     }
     oscar_log_subsection("Done marking installed bits in ODA");
+
+    # /var/log/lastlog could be HUGE in some horked setup packages...
+    #
+    croak "image name not defined\n" unless $$vars{imgname};
+    my $lastlog = "/var/log/lastlog";
+    oscar_log_subsection( "Truncating ".$$vars{imgname}.":".$lastlog );
+
+    my $config = init_si_config();
+    my $imaged = $config->default_image_dir;
+    croak "default_image_dir not defined\n" unless $imaged;
+    croak "$imaged: not a directory\n" unless -d $imaged;
+    croak "$imaged: not accessible\n" unless -x $imaged;
+    my $imagelog = $imaged."/".$$vars{imgname};
+    croak "$imagelog: not a directory\n" unless -d $imagelog;
+    croak "$imagelog: not accessible\n" unless -x $imagelog;
+    $imagelog .= $lastlog;
+    truncate $imagelog, 0 if -s $imagelog;
+    oscar_log_subsection( "Truncated ".$$vars{imgname}.":".$lastlog );
 
     # All done -- remove the temp file that held all the RPM filenames
     
