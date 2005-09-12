@@ -30,4 +30,5 @@ use OSCAR::Distro;
 !system("/etc/init.d/systemimager-server-rsyncd restart") or croak("Couldn't restart systemimager-server-rsyncd");
 
 my $monitord = "systemimager-server-monitord";
+!system("chkconfig --add $monitord") or croak("Could not add $monitord to chkconfig");
 !system("/etc/init.d/$monitord restart") or croak("Could not restart $monitord");
