@@ -8,23 +8,11 @@ package WizardEnv;
 #                    All rights reserved.
 #
 #
-#--------------------------------------------------------------------
 #  Notes:
 #   N1) Ignore a few specific ENV Vars
 #   N2) Only add/replace ENV, don't remove anything from existing ENV.
 #   N3) Blindly update values for any existing ENV vars
-#   N4) Future/idea: add this to OPKG meta-data and auto gen via LibOPKG.
-#
-#  Comments:
-#   * In future an idea to better support such changes is to
-#     improve the "meta data" about an OPKG, listing: 
-#     (a) env vars and values, (b) services (start/stop runlevel), etc.
-#     This is not to say duplicate ENV setup, rather we could/would 
-#     automatically generate things for the OPKG author, in keeping
-#     with having them do less and the system do more with the advantage 
-#     that this information can help the system make better 
-#     decisions/additions/etc., e.g., LibOPKG.
-#     Discussed some of this with Jeff S., seemed reasonable.
+#   N4) Use '--login' to guarantee all system files are processed
 #
 #--------------------------------------------------------------------
 
@@ -38,6 +26,7 @@ use base qw(Exporter);
 
 
 my $bash_cmd = "/bin/bash";
+my $echo_cmd = "/bin/echo";
 my $env_cmd  = "/bin/env";
 my %ENV_IGNORE = (PWD=>1, OLDPWD=>1, SHLVL=>1, _=>1, USER=>1, USERNAME=>1,
                   LS_COLORS=>1);
@@ -48,13 +37,24 @@ my %ENV_IGNORE = (PWD=>1, OLDPWD=>1, SHLVL=>1, _=>1, USER=>1, USERNAME=>1,
 sub update_env
 {
 	my @modified_env = ();
+	my $magicstr = "___MaGiCsTrInG-OSCAR::WizardEnv___";
 
 	 # Sanity checks
 	croak "Error: '$bash_cmd' not executable.\n" if( ! -x $bash_cmd );
-	croak "Error: '$env_cmd' not executable.\n" if( ! -x $env_cmd );
+	croak "Error: '$echo_cmd' not executable.\n" if( ! -x $echo_cmd );
+	croak "Error: '$env_cmd' not executable.\n"  if( ! -x $env_cmd );
 
 	my ($rh, $wh);  # Handle autovivification 
-	my $pid = open2($rh, $wh, "$bash_cmd") or croak "Error: $!\n";
+
+    # Use '--login' to guarantee all system files are processed
+	my $pid = open2($rh, $wh, "$bash_cmd", "--login") or croak "Error: $!\n";
+
+
+	 # TODO: May need to trap SIGPIPE for child, see IPC::Open2(3pm)
+	 # Print our delimiter all output above this was from system,
+	 #  e.g., /etc/profile.d/ssh-oscar.sh gens *lots* of output :-|
+	print $wh "/bin/echo $magicstr\n";
+
 
 	 # TODO: May need to trap SIGPIPE for child, see IPC::Open2(3pm)
 	print $wh "$env_cmd";
@@ -65,6 +65,15 @@ sub update_env
 	chomp(@rslt);
 
 	waitpid($pid, 0); # reap child (if needed?)
+
+
+	# Remove any leading stuffo (prior to our sentinal)
+	while ( ($_ = shift(@rslt)) !~ /$magicstr/ ) {
+		print "WizardEnv: removed($_)\n" if( $ENV{DEBUG_OSCAR_WIZARD} );
+		next;
+	}
+	print "WizardEnv: removed($_)\n" if( $ENV{DEBUG_OSCAR_WIZARD} );
+
 
 	foreach my $r (@rslt) {
 		my ($key, $val) = split/=/, $r;
