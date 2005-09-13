@@ -199,7 +199,7 @@ if ($creturn) {
 # TODO deprecate old test fmt when existing have been converted to APItest
 #
 
-print "\nRun APItests...\n";
+my $run_apitest_label=0;
 my $areturn=0;
 
 #
@@ -213,6 +213,11 @@ foreach my $pkg (@pkgs) {
 	for my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
 		my $test = "$dir/$file";
 		if( -e $test ) {
+
+			# Print leading label only if have some tests to run :)
+			print "\nRun APItests...\n" if( $run_apitest_label == 0 );
+			$run_apitest_label=1;
+
 			print "\nRunning $test_type tests for $pkg\n";
 			$areturn++ if (!run_pkg_apitest_test($test, "root", 0));
 		}
@@ -231,6 +236,11 @@ foreach my $pkg (@pkgs) {
 	for my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
 		my $test = "$dir/$file";
 		if( -e $test ) {
+
+			# Print leading label only if have some tests to run :)
+			print "\nRun APItests...\n" if( $run_apitest_label == 0 );
+			$run_apitest_label=1;
+
 			print "\nRunning $test_type tests for $pkg\n";
 			$areturn++ if (!run_pkg_apitest_test($test, "root", 0));
 		}
