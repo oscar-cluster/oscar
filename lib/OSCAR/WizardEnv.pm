@@ -17,7 +17,12 @@ package WizardEnv;
 #       only interactive shells get the bashrc related contents and in some
 #       cases we'd remove things from the run-time ENV, e.g., PATH with
 #       changed via bashrc files.
+#   N5) I convert multi-line EnvVars to single-lines, e.g., TERMCAP,
+#       even if we ignore that EnvVar in order to properly remove/ignore.
 #
+#
+#   TODO: The update_env() rtn has grown quite a bit and should 
+#         probably be broken into smaller pieces.
 #--------------------------------------------------------------------
 
 use IPC::Open2;
@@ -35,7 +40,7 @@ my @PATHS= qw(/bin /usr/bin /sbin /usr/sbin);
 my @BASHRC = ("/etc/bash.bashrc", "/etc/bashrc", "$ENV{HOME}/.bashrc");
 
 my %ENV_IGNORE = (PWD=>1, OLDPWD=>1, SHLVL=>1, _=>1, USER=>1, USERNAME=>1,
-                  LS_COLORS=>1, PS1=>1);
+                  LS_COLORS=>1, PS1=>1, TERMCAP=>1);
 
 #   Input: n/a
 #  Output: %ENV
@@ -110,9 +115,15 @@ sub update_env
 	print "WizardEnv: removed($_)\n\n" if( $ENV{DEBUG_OSCAR_WIZARD_PARANOID} );
 
 
+	 # Convert multi-line EnvVars to single-line, noticed b/c of
+	 # TERMCAP when using screen.  We also ignore TERMCAP but need
+	 # all on one line to actually get it out of the way. ;)
+
+	@rslt = multi2singleline(@rslt);
+
 	foreach my $r (@rslt) {
-		my ($key, $val) = split/=/, $r;
-    
+		my ($key, $val) = split(/=/, $r, 2);   # Limit to 2 tokens!
+
 		if( ! $ENV_IGNORE{$key} ) {
 
 			next if( defined($ENV{$key}) && $ENV{$key} eq $val ); 
@@ -137,6 +148,40 @@ sub update_env
 	return @modified_env;
 }
 
+
+# 
+# TJN: (9/14/05) Fix/hack for multi-line EnvVars,
+#  Converts multi-line EnvVars into single-lines, e.g., TERMCAP
+#  Must use for() instead of more commond foreach() so we can pluck 
+#  items from middle of array/stack.
+#
+sub multi2singleline
+{
+	my @env = @_;
+	my (@keep, $tmp); 
+
+	for(my $i=0; $i < scalar(@env); $i++) {
+		push(@keep, $env[$i]);
+
+		if( $env[$i] =~ /\\$/ ) {
+			pop(@keep);
+
+			while( $env[$i] =~ /\\$/ ) {
+				chomp($env[$i]);
+				$tmp .= $env[$i];
+				$i++;
+			}
+
+			$tmp .= $env[$i];
+			print "WizardEnv: multi-line EnvVar converted to:\n  $tmp\n\n" 
+                                    if( $ENV{DEBUG_OSCAR_WIZARD_PARANOID} );
+
+			push(@keep, $tmp);
+		}
+	}
+
+	return(@keep);
+}
 
 sub find_cmd 
 {
