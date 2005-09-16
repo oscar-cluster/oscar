@@ -37,7 +37,7 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(which_distro which_distro_server which_mysql_name);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 my $DISTROFILES = {
 		   'fedora-release'        => 'fedora',

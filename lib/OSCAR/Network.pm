@@ -25,7 +25,7 @@ use Carp;
 use base qw(Exporter);
 @EXPORT = qw(interface2ip);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 # package scoped regex for an ip address.  If we ever need to support
 # ipv6, we just need to change it here

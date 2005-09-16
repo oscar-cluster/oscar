@@ -28,7 +28,7 @@ require Tk::Dialog;
 use base qw(Exporter);
 @EXPORT = qw(yesno_window center_window done_window error_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 sub yesno_window {
     my $w = shift;

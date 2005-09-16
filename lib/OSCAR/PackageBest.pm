@@ -42,7 +42,7 @@ use base qw(Exporter);
 @EXPORT = qw(find_files find_best);
 
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 sub find_files {
         # Finds the best version of files to use based on an rpm list

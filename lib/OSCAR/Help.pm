@@ -27,7 +27,7 @@ use OSCAR::Tk;
 
 @EXPORT = qw(open_help);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 # Help messages for the OSCAR GUI.
 

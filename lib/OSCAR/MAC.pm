@@ -47,7 +47,7 @@ use base qw(Exporter);
              );
 #REMOVE MAC_WINDOW FROM EXPORT WHEN NO LONGER NEEDED
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}

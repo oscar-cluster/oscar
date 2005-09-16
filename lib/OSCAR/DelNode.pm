@@ -35,7 +35,7 @@ use oda;
 
 @EXPORT = qw(delnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 sub delnode_window {
     my ($parent, $vars) = @_;

@@ -35,7 +35,7 @@ use base qw(Exporter);
 use SIS::Image;
 @EXPORT = qw(addnode_window);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 sub addnode_window {
     my ($parent, $interface) = @_;

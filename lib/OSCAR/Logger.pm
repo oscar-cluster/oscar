@@ -24,7 +24,7 @@ use base qw(Exporter);
 
 @EXPORT = qw(oscar_log_section oscar_log_subsection);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 
 #############################################################################
