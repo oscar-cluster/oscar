@@ -393,24 +393,6 @@ contains the RPMs.  In Fedora Core
 } % end detailed
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\subsubsection{Copy distribution update RPMs to \file{/tftpboot/rpm}}
-%\label{det:distro-updates}
-
-%Obtain all the relevant RPM updates for your distribution -- security
-%patches, bug fixes, etc.  Most distributions (including RedHat)
-%include a tool to automate this process (e.g., \cmd{up2date}) that
-%will automatically download and install all relevant updated RPMs.
-
-%Ensure that these updated RPMs are also copied to
-%\file{/tftpboot/rpm}.  It does not matter if two different versions of
-%the same RPM end up in \file{/tftpboot/rpm} (e.g.,
-%\file{foo-1.2.3-1.i386.rpm} from the installation CD and
-%\file{foo-1.2.4-1.i386.rpm} from the updates) -- OSCAR will
-%automatically use the latest version when it selects RPMs to install.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Launching the OSCAR Installer}
@@ -1094,6 +1076,27 @@ During this phase, you will network boot your client nodes and they
 will automatically be installed and configured.  \detailed{For a
   detailed explanation of what happens during client installation, see
   Appendix~\ref{app:client-install}.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Monitor Client Installations}
+\label{det:si_monitortk}
+
+\optional
+
+During the client installation phase it is possible to click on the 
+\button{Monitor Client Installation} button and activate the System Imager
+monitor.  This application will display nodes as they request images
+from the server machine and track their progress as they install.
+
+%  \begin{figure}[htbp]
+%    \begin{center}
+%      \includegraphics[scale=\imgscale]{figs/si_monitortk}
+%      \caption{Collect client MAC addresses.}
+%      \label{fig:detailed-collect-mac}
+%    \end{center}
+%  \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

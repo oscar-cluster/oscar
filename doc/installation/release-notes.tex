@@ -77,6 +77,9 @@ The following release notes apply to OSCAR version \oscarversion.
   install RedHat updates {\em after} the initial OSCAR installation has
   completed.
 
+\item The ``Development Tools'' packages for are not default packages in
+all distributions and are required for installation.
+
 \item The following benign warning messages will appear multiple times
   during the OSCAR installation process:
 
@@ -146,14 +149,6 @@ The following release notes apply to OSCAR version \oscarversion.
   Python2 prerequisite that is slightly different across different Linux
   distributions.  Also see the file \file{packages/c3/RPMS/NOTE.python2}.
 
-\item The man pages for the Torque package will not be available in
-  a default installation because /opt/pbs/man is missing from
-  MANPATH.  They should appear if this is added by hand eg:
-
-\begin{verbatim}
-  # export MANPATH=\$MANPATH:/opt/pbs/man
-\end{verbatim}
-
 \item \emph{FutureWarning} message during APItests on Python2.3 based systems.
    The following is a warning message about the for the version of
    TwistedMatrix used by the APItest tool.  It is only a warning and can be
@@ -173,76 +168,131 @@ The following release notes apply to OSCAR version \oscarversion.
   this happens, run the test script, \file{testing/test\_cluster},
   manually in a shell window to diagnose the problem.
 
-\item PVM Installation (APItest) tests showing {\tt FAIL}.  In some cases,
-  namely the first pass through the OSCAR Wizard to install the system (from
-  original shell without PVM installed) may show output similar to the
-  following:
-  \begin{small}
-  \begin{verbatim}
-     [PASS]       2005-04-08T15:57:32Z   pvmd-path-ls.apt
-     [FAIL]       2005-04-08T15:57:32Z   envvar-pvm_arch.apt
-     [FAIL]       2005-04-08T15:57:32Z   envvar-pvm_root.apt
-     [FAIL]       2005-04-08T15:57:32Z   pvmd-path-which.apt
-     [PASS]       2005-04-08T15:57:33Z   modulecmd-path-ls.apt
-     [PASS]       2005-04-08T15:57:33Z   pvm-module-list.apt
-     [PASS]       2005-04-08T15:57:33Z   pvm-module-show-pvm_rsh.apt
-     [PASS]       2005-04-08T15:57:33Z   pvm-module-show-pvm_arch.apt
-     [PASS]       2005-04-08T15:57:34Z   pvm-module-show-pvm_root.apt
-  \end{verbatim}
-  \end{small}
-
-  The three tests marked as {\tt FAIL} (with all others showing {\tt PASS})
-  can typically be ignored.  These three tests check PVM setting using the
-  same environment as the OSCAR Wizard.  If it the Wizard is being run from
-  the same shell that was used during the initial OSCAR install (i.e., the
-  shell used to install PVM via the Wizard) then the PVM setting are absent
-  from the environment and therefore will not appear in the child process
-  (APItests).  The fact that the other tests show {\tt PASS} indicates that
-  starting a new shell should update the environment and all tests should
-  pass.  To confirm this:
-  (1) Exit the OSCAR Wizard, (2) Start a new shell,
-  (3) Start the OSCAR Wizard and (4) Re-run the Test Cluster step
-  (all tests should show PASS)
-
-
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Red Hat Enterprise Linux 4 Notes}
+\subsection{Red Hat Enterprise Linux 4 Update 1 \& Fedora Core 3 Notes}
 \label{subsec:rhel4notes}
-
-  Due to an issue with displaying graphs under Ganglia, SELinux should
-  be disabled before installing OSCAR.  Durring installation, it can be
-  deactivated on the same screen as the firewall.  If it is currently
-  active it can be turned off in /etc/selinux/config by setting SELINUX 
-  to ``disabled'' and rebooting.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fedora Core 3 Notes}
-\label{subsec:fc3notes}
-
-  Due to an issue with displaying graphs under Ganglia, SELinux should
-  be disabled before installing OSCAR.  Durring installation, it can be
-  deactivated on the same screen as the firewall.  If it is currently
-  active it can be turned off in /etc/selinux/config by setting SELINUX 
-  to ``disabled'' and rebooting.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Mandriva Linux 10.0 Notes}
-\label{subsec:mdk10notes}
 
 \begin{itemize}
 
-\item The version of Mandriva Linux supported is 10.0 Official which is a
-3CD set.  While it may be possible to install OSCAR with 10.0 Community,
-it is not officially supported.
+\item Due to an issue with displaying graphs under Ganglia, SELinux should
+  be disabled before installing OSCAR.  Durring installation, it can be
+  deactivated on the same screen as the firewall.  If it is currently
+  active it can be turned off in /etc/selinux/config by setting SELINUX 
+  to ``disabled'' and rebooting.
+
 
 \end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Centos 4.1 ia64 Notes}
+\label{subsec:fc3notes}
+
+These items are specific to Centos 4.1.  The items listed above for RedHat
+Enterprise Linux 4 Update 1 also apply.
+
+\begin{itemize}
+
+\item The ia32el RPM is missing from Centos, which prevents the successful
+building of disk images on these systems.  To work around this, we suggest
+downloading the RPM from this site
+\begin{verbatim}
+ftp://ftp.scientificlinux.org/linux/scientific/41/ia64/SL/RPMS/ia32el-1.2-4.ia64.rpm
+\end{verbatim}
+and placing it in the /tftpboot/rpm directory.  This package contains the
+ia32 execution layer needed for running ia32 applications and is included
+in most other RedHat based distributions by default.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Mandriva Linux (previously known as "Mandrake Linux") Notes}
+\label{subsec:mdk10notes}
+
+The versions of Mandriva Linux officially supported in OSCAR 4.2 are
+Mandriva Linux 10.0 Official (3 cd set) and Mandriva Linux 10.1 Official, 
+PowerPack edition (6 cd set). While it is possible to install OSCAR 4.2 in 
+others editions of those versions of Mandriva Linux, the above mentioned are
+those officially supported by the OSCAR development team. Please read 
+carefully the sub-items bellow and follow the installation instructions
+carefully. 
+
+\begin{itemize}
+
+\item Common notes
+
+When openssh-server is installed in Mandriva systems (during Step 3)
+its config file is usually set to "not permit root login" by default.
+Since OSCAR needs to be able to login as root via ssh, you have to edit the
+file \file{/etc/ssh/sshd{\tt \_}config} whether by setting 
+'PermitRootLogin yes' or by commenting/deleting this entire line. This must 
+be done after Stage 4 because this configuration file will be copied to the 
+node's image and spread to all nodes during step 6. Remember to restart
+the openssh server in the host node after this change:
+\begin{verbatim}
+  service sshd reload
+\end{verbatim}
+
+During Step 8, \button{Test Cluster Setup}, some APItests may fail due to
+the OSCAR Wizard not having the correct environment variables set.  If you
+encounter this problem, simply quit the Wizard, open another terminal,
+bring up the Wizard and then re-run the tests.  All tests should pass if
+the cluster has been configured correctly.
+
+
+\item Mandriva 10.0 Official specific notes
+
+During Step 3, \button{Install OSCAR Server Packages}, the RPM package
+\file{kernel-enterprise} will be selected to be installed on the head node.
+As a result, this kernel will be used upon subsequent reboot.
+
+While Mandriva Linux 10.0 supports 2.4 kernel, OSCAR only supports
+2.6 kernel - this is explicitly specified in
+\file{oscarsamples/mandrake-10.0-i386.rpmlist}.
+
+The \file{tftp-server} RPM which came with Mandriva Linux 10.0 expects the
+pxelinux boot files to reside in \file{/var/lib/tftpboot} but OSCAR puts
+them in \file{/tftpboot}.  To get around this issue a symbolic link is
+created from \file{/var/lib/tftpboot} to \file{/tftpboot}.
+
+
+\item Mandriva 10.1 Official specific notes
+
+As mentioned above, the officially supported edition of Mandriva Linux 10.1
+is the PowerPack edition. However, the 3 cd set "Download Edition"
+should work if the following packages are added to the repository of 
+packages (/tftpboot/rpm):
+\begin{verbatim}
+  perl-PerlIO-gzip
+  libecpg3
+  perl-devel
+  php-xml
+  gcc-g77
+  libf2c0
+  zlib1-devel
+\end{verbatim} 
+Those packages are not present in the distribution cds and you will need to
+download them from a FTP mirror (see http://www1.mandrivalinux.com/fr/ftp.php
+for a list of mirrors).
+
+The OpenSSH packages that came with Mandriva Linux 10.1 Official (3.9p1-3mdk)
+has a bug concerning public keys under user's home directory shared by NFS. 
+That means OSCAR won't work if we install OpenSSH from this source 
+(3.9p1-3mdk).  For now, is necessary to delete the following three packages 
+from /tftpboot/rpm, get a copy of these same packages provided with Mandriva
+Linux 10.0 (3.6.1p2-12mdk) from a FTP miroir (see 
+\url{http://www1.mandrivalinux.com/fr/ftp.php} for a list of mirrors) and copy 
+them to /tftpboot/rpm:
+\begin{verbatim}
+  openssh
+  openssh-clients
+  openssh-server
+\end{verbatim}
+
+\end{itemize}
+
