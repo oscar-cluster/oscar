@@ -21,9 +21,9 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \begin{itemize}
 
-\item x86\_64 support for Fedora Core 3 and Red Hat Enterprise Linux 3 \& 4.
-\item Fedora Core 3, Red Hat Enterprise Linux 4, and 
-      Mandrivia Linux 10.1 support
+\item x86\_64 support for Fedora Core 3 and Red Hat Enterprise Linux 3 \& 4,
+\item Fedora Core 3, Red Hat Enterprise Linux 4 and 
+      Mandriva Linux 10.0 \& 10.1 support
 \item New feature! ``Monitor Cluster Deployment''
 \item Ganglia updated to v3.0.1
 \item PVM updated to v3.4.5+4
@@ -217,24 +217,24 @@ in most other RedHat based distributions by default.
 
 The versions of Mandriva Linux officially supported in OSCAR 4.2 are
 Mandriva Linux 10.0 Official (3 cd set) and Mandriva Linux 10.1 Official, 
-PowerPack edition (6 cd set). While it is possible to install OSCAR 4.2 in 
+PowerPack edition (6 cd set). While it is possible to install OSCAR 4.2 under 
 others editions of those versions of Mandriva Linux, the above mentioned are
 those officially supported by the OSCAR development team. Please read 
 carefully the sub-items bellow and follow the installation instructions
-carefully. 
+with attention. 
 
 \begin{itemize}
 
 \item Common notes
 
 When openssh-server is installed in Mandriva systems (during Step 3)
-its config file is usually set to "not permit root login" by default.
+its config file is usually set to "NOT permit root login" by default.
 Since OSCAR needs to be able to login as root via ssh, you have to edit the
 file \file{/etc/ssh/sshd{\tt \_}config} whether by setting 
 'PermitRootLogin yes' or by commenting/deleting this entire line. This must 
-be done after Stage 4 because this configuration file will be copied to the 
-node's image and spread to all nodes during step 6. Remember to restart
-the openssh server in the host node after this change:
+be done before Stage 4 because this configuration file will be copied to the 
+node's image and spread to all nodes during step 6. Remember to reload
+the openssh server in the master node after this change:
 \begin{verbatim}
   service sshd reload
 \end{verbatim}
@@ -278,16 +278,16 @@ packages (/tftpboot/rpm):
   zlib1-devel
 \end{verbatim} 
 Those packages are not present in the distribution cds and you will need to
-download them from a FTP mirror (see http://www1.mandrivalinux.com/fr/ftp.php
+download them from a FTP mirror (see \url{http://www1.mandrivalinux.com/en/ftp.php3}
 for a list of mirrors).
 
 The OpenSSH packages that came with Mandriva Linux 10.1 Official (3.9p1-3mdk)
-has a bug concerning public keys under user's home directory shared by NFS. 
+have a bug concerning public keys under user's home directory shared by NFS. 
 That means OSCAR won't work if we install OpenSSH from this source 
-(3.9p1-3mdk).  For now, is necessary to delete the following three packages 
+(3.9p1-3mdk). For now, is necessary to delete the following three packages 
 from /tftpboot/rpm, get a copy of these same packages provided with Mandriva
 Linux 10.0 (3.6.1p2-12mdk) from a FTP miroir (see 
-\url{http://www1.mandrivalinux.com/fr/ftp.php} for a list of mirrors) and copy 
+\url{http://www1.mandrivalinux.com/en/ftp.php3} for a list of mirrors) and copy 
 them to /tftpboot/rpm:
 \begin{verbatim}
   openssh
