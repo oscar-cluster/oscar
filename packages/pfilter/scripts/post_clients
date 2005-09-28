@@ -180,16 +180,16 @@ open    dhcp    $on_interface
 
 # open up rsync port, otherwise deployment might freeze
 
-open    rsync
+open    rsync   $on_interface
 
 # the server and every compute node trust each other
 
-trusted %oscar_server% %nodes%
+trusted %oscar_server% %nodes% $on_interface
 
 # for ganglia and multicast deployment
 # WARNING: flamethrower requires more ports to be open!
 
-open    multicast 
+open    multicast   $on_interface
 
 #
 # This is the end of the section added by OSCAR
