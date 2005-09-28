@@ -26,6 +26,10 @@ use strict;
 use Carp;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
+use File::Copy;
+use SIS::Image;
+use SIS::DB;
+
 
 # function to return a sorted, unique lines only version of a passed list
 
@@ -174,10 +178,18 @@ open    tcp     http https
 
 open    dhcp    $on_interface
 
+# open up rsync port, otherwise deployment might freeze
+
+open    rsync
+
 # the server and every compute node trust each other
 
 trusted %oscar_server% %nodes%
-open    multicast                        # for ganglia
+
+# for ganglia and multicast deployment
+# WARNING: flamethrower requires more ports to be open!
+
+open    multicast 
 
 #
 # This is the end of the section added by OSCAR
@@ -275,6 +287,17 @@ print "(re)starting the pfilter firewall service on this server\n";
 my $command = "/etc/init.d/pfilter restart";
 print "$command\n";
 system( $command );
+
+# copy client config to images
+print "Copying pfilter configuration to images:\n";
+my @images = list_image();
+foreach my $image (@images) {
+    my $dir = $image->location;
+    print " -> $dir\n";
+    copy($clients_file,"$dir/etc/pfilter.conf") or (carp "Can't copy $clients_file to $dir",
+						    return undef);
+}
+
 
 exit 0;
 
