@@ -224,6 +224,18 @@ if (!system("rpm -q tftp-server >/dev/null 2>&1")) {
   !system("rpm -e tftp-server") or warn("Couldn't remove tftp-server");
 }
 
+# TJN (10/4/2005): Note, a fairly evil, totally non-obvious issue 
+#    occurs if you have /tftpboot setup as a symlink,
+#    e.g., /tftpboot -> /var/tftpboot/,  and remove 'tftp-server'. 
+#    What happens is the '/tftpboot' dir (symlink) gets removed!  
+#    This is b/c '/tftpboot' is part of the RPM file manifest for 
+#    tftp-server (at least as of v0.33-3 it does). 
+#
+#    Adding a sanity check after the RPM removes to check for this case!
+
+croak "\nError: \'/tftpboot\' is gone!" if(! -d "/tftpboot" );
+
+
 # Run the wizard_prep script
 
 my $cmd = "cd $ENV{OSCAR_HOME}/scripts && ./wizard_prep";
