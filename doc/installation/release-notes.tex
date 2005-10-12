@@ -237,13 +237,6 @@ the openssh server in the master node after this change:
   service sshd reload
 \end{verbatim}
 
-During Step 8, \button{Test Cluster Setup}, some APItests may fail due to
-the OSCAR Wizard not having the correct environment variables set.  If you
-encounter this problem, simply quit the Wizard, open another terminal,
-bring up the Wizard and then re-run the tests.  All tests should pass if
-the cluster has been configured correctly.
-
-
 \item Mandriva 10.0 Official specific notes
 
 During Step 3, \button{Install OSCAR Server Packages}, the RPM package
@@ -279,14 +272,14 @@ Those packages are not present in the distribution cds and you will need to
 download them from a FTP mirror (see \url{http://www1.mandrivalinux.com/en/ftp.php3}
 for a list of mirrors).
 
-The OpenSSH packages that came with Mandriva Linux 10.1 Official (3.9p1-3mdk)
-have a bug concerning public keys under user's home directory shared by NFS. 
-That means OSCAR won't work if we install OpenSSH from this source 
-(3.9p1-3mdk). For now, is necessary to delete the following three packages 
-from /tftpboot/rpm, get a copy of these same packages provided with Mandriva
-Linux 10.0 (3.6.1p2-12mdk) from a FTP miroir (see 
-\url{http://www1.mandrivalinux.com/en/ftp.php3} for a list of mirrors) and copy 
-them to /tftpboot/rpm:
+The OpenSSH packages that came with Mandriva Linux 10.1 Official (version
+3.9p1-3mdk) have a bug concerning public keys under user's home directory
+shared by NFS. That means OSCAR won't work if we install OpenSSH from this
+source (version 3.9p1-3mdk). For now, it is necessary to delete the following
+three packages that were copied with the others under /tftpboot/rpm, get a copy
+of these same packages provided with Mandriva Linux 10.0 (version 3.6.1p2-12mdk)
+from a FTP miroir (see link for a list of mirroirs above) and copy them to
+/tftpboot/rpm, replacing the original packages:
 \begin{verbatim}
   openssh
   openssh-clients
