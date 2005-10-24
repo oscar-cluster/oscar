@@ -41,22 +41,28 @@ if (-e "/etc/redhat-release") {
 	return 0;
 }
 
-# We only support RHEL AS|WS 3 and Update [2, 3, 5] now, otherwise quit.
+# We only support RHEL AS|WS 3 Update [2, 3, 5] and RHEL AS|WS 4
+# Update 1, otherwise quit.
 
-if($redhat_release =~ 'release 3' 
-    && $redhat_release =~ m/Update [2 3 5]/ ) {
+if ($redhat_release =~ 'release 3' &&
+    $redhat_release =~ m/Update [2 3 5]/ ) {
     $update = $redhat_release;
     $update =~ s/(.*)(Update )(\d)\)/update-$3/;
-    if ( $redhat_release =~ /Red Hat Enterprise Linux AS/ ) {
-        $distro = "redhat-el-as";
-    }
-    if ( $redhat_release =~ /Red Hat Enterprise Linux WS/ ) {
-        $distro = "redhat-el-ws";
-    }
+} elsif ($redhat_release =~ 'release 4' &&
+         $redhat_release =~ m/Update 1/ ) {
+    $update = $redhat_release;
+    $update =~ s/(.*)(Update )(\d)\)/update-$3/;
 } else {
-	return 0;
+    return 0;
 }
 
+if ($redhat_release =~ /Red Hat Enterprise Linux AS/ ) {
+    $distro = "redhat-el-as";
+} elsif ( $redhat_release =~ /Red Hat Enterprise Linux WS/ ) {
+    $distro = "redhat-el-ws";
+} else {
+    return 0;
+}
 
 # First set of data
 
