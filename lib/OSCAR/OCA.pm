@@ -21,15 +21,26 @@ sub find_components {
 
     # If framework is not specified, this is an error
 
-    return undef if (! $framework);
+    if (!$framework) {
+        print "OCA::find_components invoked without a framework name\n";
+        return undef;
+    }
 
     # If basedir is not provided, use the default
 
     if (! $basedir) {
         if ($ENV{OSCAR_HOME}) {
-            $basedir = $ENV{OSCAR_HOME};
-        } else {
-            $basedir = "/opt/oscar";
+            if (-d $ENV{OSCAR_HOME}) {
+                $basedir = $ENV{OSCAR_HOME};
+            }
+        }
+        if (! $basedir) {
+            if (-d "/opt/oscar") {
+                $basedir = "/opt/oscar";
+            } else {
+                print "Unable to find an OSCAR directory to look for components (no \$OSCAR_HOME\nand no /opt/oscar)\n";
+                return undef;
+            }
         }
     }
 
@@ -39,7 +50,10 @@ sub find_components {
 
     # Return on bozo error
 
-    return undef if (! -d $basedir);
+    if (! -d $basedir) {
+        print "Unable to find framework directory\n($basedir)\n";
+        return undef;
+    }
 
     # Scan the framework directory for .pm and .pmc files of the form:
     # $basedir/$comp.pm[c].

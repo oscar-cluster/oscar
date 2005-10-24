@@ -37,11 +37,15 @@ sub open {
 
     # Did we find one and only one?
 
-    if (scalar(@$comps == 0)) {
-        print "Could not find an os-detect component for this system!\n";
+    if (undef == $comps) {
+        # If we get undef, then find_components() already printed an
+        # error, and we decide that we want to die
+        die "Cannot continue";
+    } elsif (scalar(@$comps == 0)) {
+        print "Could not find an OS_Detect component for this system!\n";
         die "Cannot continue";
     } elsif (scalar(@$comps) > 1) {
-        print "Found more than one os-detect component for this system!\n";
+        print "Found more than one OS_Detect component for this system!\n";
         die" Cannot continue";
     }
 
