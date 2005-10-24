@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 #
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
 # Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
 #                    All rights reserved.
 # 
@@ -40,7 +42,9 @@ if (-e "/etc/redhat-release") {
 
 # We only support Fedora Core 2 and 3, otherwise quit.
 
-if ($redhat_release =~ 'Heidelberg') {
+if ($redhat_release =~ 'Stentz') {
+	$fc_release = 4;
+} elsif ($redhat_release =~ 'Heidelberg') {
 	$fc_release = 3;
 } elsif ($redhat_release =~ 'Tettnang') {
 	$fc_release = 2;
