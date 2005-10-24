@@ -40,7 +40,7 @@ if (-e "/etc/redhat-release") {
 	return 0;
 }
 
-# We only support Fedora Core 2 and 3, otherwise quit.
+# We only support Fedora Core 2, 3, and 4 -- otherwise quit.
 
 if ($redhat_release =~ 'Stentz') {
 	$fc_release = 4;
