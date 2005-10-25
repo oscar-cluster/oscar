@@ -21,7 +21,7 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \begin{itemize}
 
-\item x86\_64 support for Fedora Core 3 and Red Hat Enterprise Linux 3 \& 4,
+\item x86\_64 support for Red Hat Enterprise Linux 3 \& 4,
 \item Fedora Core 3, Red Hat Enterprise Linux 4 and 
       Mandriva Linux 10.0 \& 10.1 support
 \item New feature! ``Monitor Cluster Deployment''
@@ -185,6 +185,12 @@ all distributions and are required for installation.
   active it can be turned off in /etc/selinux/config by setting SELINUX 
   to ``disabled'' and rebooting.
 
+\item On x86 systems using Red Hat Enterprise Linux 4, the pfilter package 
+  causes image deployment to freeze midway through, so it is necessary to
+  uncheck the pfilter package during Step 1 \button{Select OSCAR Packages 
+  To Install} or turn it off prior to network booting the nodes defined 
+  in Step 5 \button{Define OSCAR Clients}.
+
 
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,13 +278,13 @@ Those packages are not present in the distribution cds and you will need to
 download them from a FTP mirror (see \url{http://www1.mandrivalinux.com/en/ftp.php3}
 for a list of mirrors).
 
-The OpenSSH packages that came with Mandriva Linux 10.1 Official (version
-3.9p1-3mdk) have a bug concerning public keys under user's home directory
-shared by NFS. That means OSCAR won't work if we install OpenSSH from this
-source (version 3.9p1-3mdk). For now, it is necessary to delete the following
-three packages that were copied with the others under /tftpboot/rpm, get a copy
-of these same packages provided with Mandriva Linux 10.0 (version 3.6.1p2-12mdk)
-from a FTP miroir (see link for a list of mirroirs above) and copy them to
+The OpenSSH packages that came with Mandriva Linux 10.1 Official (version 
+3.9p1-3mdk) have a bug concerning public keys under user's home directory 
+shared by NFS. That means OSCAR won't work if we install OpenSSH from this 
+source (version 3.9p1-3mdk). For now, it is necessary to delete the following 
+three packages that were copied with the others under /tftpboot/rpm, get a copy 
+of these same packages provided with Mandriva Linux 10.0 (version 3.6.1p2-12mdk) 
+from a FTP miroir (see link for a list of mirroirs above) and copy them to 
 /tftpboot/rpm, replacing the original packages:
 \begin{verbatim}
   openssh
