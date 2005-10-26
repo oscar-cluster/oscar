@@ -75,7 +75,7 @@ The following release notes apply to OSCAR version \oscarversion.
   of a distribution listed in Table~\ref{tab:oscar-distro-support}
   {\em with no updates installed}.  If the updates are installed,
   there may be conflicts in RPM requirements.  It is recommended to
-  install RedHat updates {\em after} the initial OSCAR installation has
+  install Red Hat updates {\em after} the initial OSCAR installation has
   completed.
 
 \item The ``Development Tools'' packages for are not default packages in
@@ -174,13 +174,14 @@ all distributions and are required for installation.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Red Hat Enterprise Linux 4 Update 1 \& Fedora Core 3 Notes}
+\subsection{Red Hat Enterprise Linux 4 \& Fedora Core 3 Notes}
 \label{subsec:rhel4notes}
 
 \begin{itemize}
 
-\item Due to an issue with displaying graphs under Ganglia, SELinux should
-  be disabled before installing OSCAR.  Durring installation, it can be
+\item Due to issues with displaying graphs under Ganglia, and installing
+  RPMs in a chroot environment (needed to build OSCAR images), SELinux should
+  be disabled before installing OSCAR.  During installation, it can be
   deactivated on the same screen as the firewall.  If it is currently
   active it can be turned off in /etc/selinux/config by setting SELINUX 
   to ``disabled'' and rebooting.
@@ -196,21 +197,21 @@ all distributions and are required for installation.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Centos 4.1 ia64 Notes}
+\subsection{CentOS 4 ia64 Notes}
 \label{subsec:fc3notes}
 
-These items are specific to Centos 4.1.  The items listed above for RedHat
-Enterprise Linux 4 Update 1 also apply.
+These items are specific to CentOS 4.  The items listed above for Red Hat
+Enterprise Linux 4 also apply.
 
 \begin{itemize}
 
-\item The ia32el RPM is missing from Centos, which prevents the successful
+\item The ia32el RPM is missing from CentOS, which prevents the successful
 building of disk images on these systems.  To work around this, we suggest
 downloading the RPM from this site \url{ftp://ftp.scientificlinux.org/linux/scientific/41/ia64/SL/RPMS/ia32el-1.2-4.ia64.rpm}
 %\end{verbatim}
 and placing it in the /tftpboot/rpm directory.  This package contains the
 ia32 execution layer needed for running ia32 applications and is included
-in most other RedHat based distributions by default.
+in most other Red Hat based distributions by default.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1069,20 +1069,21 @@ default settings.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Monitor Client Installations}
+\subsection{Monitor Cluster Deployment}
 \label{det:si_monitortk}
 
 \optional
 
 During the client installation phase it is possible to click on the 
-\button{Monitor Client Installation} button and activate the System Imager
-monitor.  This application will display nodes as they request images
-from the server machine and track their progress as they install.
+\button{Monitor Cluster Deployment} button to bring up the SystemImager
+monitor GUI.  This window will display real-time status of nodes
+as they request images from the server machine and track their progress
+as they install.
 
   \begin{figure}[htbp]
     \begin{center}
       \includegraphics[scale=\imgscale]{figs/si_monitortk}
-      \caption{Monitor Client Installations.}
+      \caption{Monitor Cluster Deployment}
       \label{fig:detailed-si-monitortk}
     \end{center}
   \end{figure}
@@ -1116,7 +1117,8 @@ the server node.
 \label{det:client-finish}
 
 After several minutes, the clients should complete the installation.
-You can watch the client consoles to monitor the progress. Depending
+You can use the \button{Monitor Cluster Deployment} functionality to
+monitor the progress. Depending
 on the Post Installation Action you selected when building the image,
 the clients will either halt, reboot, or beep incessantly when the
 installation is completed.
