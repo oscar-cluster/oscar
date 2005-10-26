@@ -57,6 +57,12 @@ sync_user_files($targetdir) or croak("Couldn't sync user files");
 oscar_log_subsection("post_rpm_install: Running ssh setup");
 !system("./ssh_install $targetdir") or croak("Couldn't generate ssh keys");
 
+# unmount /proc from image, if needed
+if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
+    oscar_log_subsection("post_rpm_install: unmounting /proc from image $imagename");
+    !system("umount $targetdir/proc") or croak("Couldn't umount /proc from image!");
+}
+
 # Here we run all the post_rpm_install scripts
 
 my @pkgs = list_selected_packages();
