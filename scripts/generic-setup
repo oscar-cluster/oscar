@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -19,7 +19,7 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use POSIX;
 use Carp;
-use OSCAR::Distro;
+use OSCAR::OCA::OS_Detect;
 use Getopt::Long;
 use File::Basename;
 use File::Copy;
@@ -54,6 +54,9 @@ GetOptions( \%options,
             'test|t',
             'verbose|v!'
             ) || usage();
+die "Unable to determine operating system"
+    if (1 != OSCAR::OCA::OS_Detect::open());
+my $os = $OS_Detect->{query}();
 
 # set package name
 my $pkg_name = $ENV{OSCAR_PACKAGE_HOME};
@@ -78,7 +81,7 @@ my $march;
 if ($options{arch}) {
     $march = $options{arch};
 } else {
-    chop ($march = `uname -m`);
+    $march = $os->{arch};
     $march = "i386" if $march =~ /^i[3456]86$/;
 }
 
@@ -220,19 +223,12 @@ sub distroname {
     if ($options{distro}) {
 	($name, $ver) = split /-/, $options{distro};
     } else {
-	($name, $ver) = OSCAR::Distro::which_distro_server();
+        $name = $os->{linux_distro};
+        $ver = $os->{linx_distro_version};
 
 	# translate distro names
-	if ($name eq "redhat") {
-	    if ($ver eq "3as") {
-		$name = "rhel";
-		$ver = "3";
-	    } elsif ($ver eq "el4") {
-		$name = "rhel";
-		$ver = "4";
-	    } else {
-		$name = "rh";
-	    }
+	if ($name eq "redhat-el-as" || $name eq "redhat-el-ws") {
+            $name = "rhel";
 	} elsif ($name eq "fedora") {
 	    $name = "fc";
 	} elsif ($name eq "mandrake") {
@@ -260,7 +256,7 @@ Usage: generic-setup [options] [pkg1 pkg2 ...]
   displayed in the STDOUT of the command as comment.
 
  Options:
-   --arch|-a      : override locally detected architecture (uname -m !)
+   --arch|-a      : override locally detected architecture
    --distro  D-V  : translated distro string (for testing only!)
    --erase|-e     : erase packages with same name from RPM pool (tftpboot/rpm)
    --help|-h      : display this help text

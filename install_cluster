@@ -6,8 +6,8 @@
 #                     All rights reserved.
 # Copyright 2002 International Business Machines
 #                Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002 The Trustees of Indiana University.  
-#                    All rights reserved.
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
+#                         All rights reserved.
 #
 # $Id$
 # 
@@ -34,7 +34,7 @@ use Cwd qw(chdir cwd);
 use lib cwd() . "/lib";
 use vars qw($VERSION);
 use OSCAR::Logger;
-use OSCAR::Distro;
+use OSCAR::OCA::OS_Detect;
 use POSIX;
 use Carp;
 use OSCAR::Database;
@@ -193,6 +193,15 @@ $ENV{LC_MONETARY} = "C";
 $ENV{LC_NUMERIC} = "C";
 $ENV{LC_TIME} = "C";
 
+# Check to see if this is a supported platform
+
+oscar_log_subsection("Checking if this is a supported platform");
+if (1 != OSCAR::OCA::OS_Detect::open()) {
+    print("ERROR: This is an unsupported system.  Specifically, no module in OSCAR/OCA/OS_Detect positively identified this as a supported system.\n");
+    die("Cannot continue");
+}
+my $os = $OS_Detect->{query}();
+
 # add entries to path that we know we will need
 
 $ENV{PATH} = $ENV{PATH} .
@@ -273,10 +282,9 @@ oscar_log_subsection("Command line invocation: $0 $adapter " .
 oscar_log_subsection("Hostname: $shorthostname");
 oscar_log_subsection("Domainname: $domainname");
 oscar_log_subsection("Network interface: $adapter");
-my ($distro_name, $distro_version) = which_distro_server();
-oscar_log_subsection("Linux distribution: $distro_name $distro_version");
+oscar_log_subsection("Linux distribution: $os->{linux_distro} $os->{linux_distro_version}");
 oscar_log_subsection("Kernel version: " . (uname)[2]);
-oscar_log_subsection("Architecture: " . (uname)[4]);
+oscar_log_subsection("Architecture: $os->{arch}");
 oscar_log_subsection("Running in directory: " . cwd());
 oscar_log_subsection("PATH: " . $ENV{PATH});
 
@@ -294,12 +302,6 @@ if ($hostname eq "localhost.localdomain") {
 ERROR: Your hostname is \"localhost.localdomain\".
 OSCAR requires that you choose another hostname.
 Aborting the install.\n");
-}
-if ($distro_name eq "UnknownLinux") {
-    carp("
-##########################################################################
-   WARNING: Installing OSCAR on an unsupported distribution of Linux!
-##########################################################################\n");
 }
 if (!$ENV{DISPLAY}) {
     die("
