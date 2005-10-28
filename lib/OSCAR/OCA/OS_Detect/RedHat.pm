@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) Bernard Li <bli@bcgsc.ca>
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -31,6 +32,7 @@ return 0 if ("Linux" ne $sysname);
 
 my $redhat_release;
 my $distro;
+my $distro_ver;
 my $update;
 
 # If /etc/redhat-release exists, continue, otherwise, quit.
@@ -42,22 +44,26 @@ if (-e "/etc/redhat-release") {
 }
 
 # We only support RHEL AS|WS 3 Update [2, 3, 5] and RHEL AS|WS 4
-# Update 1, otherwise quit.
+# Update [1, 2] otherwise quit.
 
-if ($redhat_release =~ 'release 3' &&
+if ($redhat_release =~ 'Taroon' &&
     $redhat_release =~ m/Update [2 3 5]/ ) {
     $update = $redhat_release;
     $update =~ s/(.*)(Update )(\d)\)/update-$3/;
-} elsif ($redhat_release =~ 'release 4' &&
-         $redhat_release =~ m/Update 1/ ) {
+    $distro_ver = 3;
+} elsif ($redhat_release =~ 'Nahant' &&
+         $redhat_release =~ m/Update [1 2]/ ) {
     $update = $redhat_release;
     $update =~ s/(.*)(Update )(\d)\)/update-$3/;
+    $distro_ver = 4;
 } else {
     return 0;
 }
 
 if ($redhat_release =~ /Red Hat Enterprise Linux AS/ ) {
     $distro = "redhat-el-as";
+} elsif ( $redhat_release =~ /Red Hat Enterprise Linux ES/ ) {
+    $distro = "redhat-el-es";
 } elsif ( $redhat_release =~ /Red Hat Enterprise Linux WS/ ) {
     $distro = "redhat-el-ws";
 } else {
@@ -71,7 +77,7 @@ our $id = {
     arch => $machine,
     os_release => $release,
     linux_distro => $distro,
-    linux_distro_version => 3,
+    linux_distro_version => $distro_ver,
     distro_update => $update
 };
 

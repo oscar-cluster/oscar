@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                         All rights reserved.
+# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -224,10 +225,10 @@ sub distroname {
 	($name, $ver) = split /-/, $options{distro};
     } else {
         $name = $os->{linux_distro};
-        $ver = $os->{linx_distro_version};
+        $ver = $os->{linux_distro_version};
 
 	# translate distro names
-	if ($name eq "redhat-el-as" || $name eq "redhat-el-ws") {
+	if ($name eq "redhat-el-as" || $name eq "redhat-el-es" || $name eq "redhat-el-ws") {
             $name = "rhel";
 	} elsif ($name eq "fedora") {
 	    $name = "fc";
