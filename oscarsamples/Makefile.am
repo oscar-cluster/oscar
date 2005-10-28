@@ -27,6 +27,7 @@ oscar_DATA		= \
 			redhat-9-i386.rpmlist \
 			ide.disk \
 			scsi.disk \
-			scsi.ia64.disk 
+			scsi.ia64.disk \
+			swraid1-scsi.disk
 
 EXTRA_DIST		= $(oscar_DATA)
