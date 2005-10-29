@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <!--
       
       This file is part of the OSCAR software package.  For license
@@ -24,7 +27,7 @@
   <summary>OSCAR tool suite documentation (html) package</summary>
   <license>freely distributable</license>
   <group>Documentation</group>
-  <url>http://oscar.sf.net/</url>
+  <uri>http://oscar.sf.net/</uri>
 
   <packager>
       <name>Benoit des Ligneris</name>
@@ -33,9 +36,12 @@
 
   <description>The html versions of the OSCAR cluster tool suite documentation.</description>
 
-  <rpmlist>
-    <filter group="oscar_server" />
-      <rpm>oscar-install-docs-html</rpm>
-      <rpm>oscar-user-docs-html</rpm>
-  </rpmlist>
+  <binary-package-list>
+    <filter>
+      <group>oscar_server</group>
+    </filter>
+
+      <pkg>oscar-install-docs-html</pkg>
+      <pkg>oscar-user-docs-html</pkg>
+  </binary-package-list>
 </oscar>

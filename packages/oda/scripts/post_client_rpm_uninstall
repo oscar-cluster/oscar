@@ -10,8 +10,6 @@
 
 my ($distro, $ver) = which_distro_server();
 
-remove_rpms( "oda" );
-
 
 if( ($distro eq "fedora") && ($ver eq "1") ) {
 	my @rpms = qw(perl-CGI
@@ -38,7 +36,6 @@ elsif( ($distro eq "mandrake") && ($ver eq "9.0") ) {
 			perl-DBI
 			perl-Mysql
 			perl-ExtUtils-PerlPP
-			oda
 			MySQL
 			);
 	remove_rpms(@rpms);
@@ -52,7 +49,6 @@ elsif( ($distro eq "mandrake") && ($ver eq "9.1") ) {
 			perl-DBI
 			perl-Mysql
 			perl-ExtUtils-PerlPP
-			oda
 			MySQL-common
 			libmysql12
 			);
@@ -68,7 +64,6 @@ elsif( ($distro eq "mandrake") && ($ver eq "9.2") ) {
 			perl-Mysql
 			perl-Data-ShowTable
 			perl-ExtUtils-PerlPP
-			oda
 			MySQL-common
 			);
 	remove_rpms(@rpms);
@@ -81,7 +76,6 @@ elsif( ($distro eq "suse") ) {
 			perl-DBI
 			perl-Data-ShowTable
 			mysql-shared
-			oda
 			);
 	remove_rpms(@rpms);
 

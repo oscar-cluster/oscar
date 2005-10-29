@@ -6,6 +6,8 @@
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
 # Copyright 2005 Canada's Michael Smith Genome Sciences Centre
 #	    Bernard Li <bli@bcgsc.ca>
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,7 +35,7 @@ use OSCAR::Database;
 use OSCAR::Package;
 use OSCAR::Distro;
 use POSIX;
-use oda;
+use OSCAR::oda;
 
 my %options = ();
 
@@ -41,6 +43,7 @@ my %options = ();
 my %options = ( 'debug'       => 0,
                 'verbose'     => 0 );
 
+my %field_value_hash = ();
 # parse command line options
 GetOptions( \%options,
             'debug!',
@@ -81,7 +84,7 @@ if ( $uname_data eq "i386" ) {
 #database_connect() ||
 #die "$0: cannot connect to oda database";
 # START LOCKING FOR NEST && open the database
-my @tables = ("oscar", "oda_shortcuts");
+my @tables = ("Clusters", "Groups", "Status");
 my %options = ();
 my @errors = ();
 if(! locking("write", \%options, \@tables, \@errors)){
@@ -98,57 +101,44 @@ if ( -r "$ENV{OSCAR_HOME}/VERSION" ) {
 } else {
     $oscar_version = "CVS";
 }
-push @assigns, "oscar.oscar_version~$oscar_version";
-push @assigns, "oscar.oscar_server_architecture~$oscar_server_architecture";
-push @assigns, "oscar.oscar_server_distribution~$oscar_server_distribution"
-    if defined $oscar_server_distribution && $oscar_server_distribution ne "";
-push @assigns, "oscar.oscar_server_distribution_version~$oscar_server_distribution_version"
-    if defined $oscar_server_distribution_version && $oscar_server_distribution_version ne "";
 
-my $global_values_table = "oscar";
+my $global_values_table = "Clusters";
 
-my @table_fields = ( "$global_values_table" );
-my @read_results = ();
 my @error_strings = ();
-if ( ! oda::read_records( \%options,
-			  \@table_fields,
-			  undef,
-			  \@read_results,
-			  1,
-			  \@error_strings ) ) {
-    warn shift @error_strings while @error_strings;
+
+my $query_results = get_cluster_info_with_name("",\%options,\@error_strings);
+if ( !$query_results ){
+    %field_value_hash = ( "name" => "oscar",
+                            "oscar_version" => $oscar_version,
+                            "server_distribution" => $oscar_server_distribution,
+                            "server_distribution_version" => $oscar_server_distribution_version,
+                            "server_architecture" => $oscar_server_architecture,
+                            "installation_date" => "NOW()" );
+    insert_into_table (\%options,"Clusters", \%field_value_hash,\@error_strings);                
 } else {
-    if ( ! @read_results ) {
-	print "Creating the global oscar information record\n";
-	if ( ! oda::insert_record( \%options,
-				   "oscar",
-				   \@assigns,
-				   undef,
-				   \@error_strings ) ) {
-	    warn shift @error_strings while @error_strings;
-	}
-    } else {
-	print "$0: very strange, there are more than 2 records table <$global_values_table>\n"
-	    if scalar @read_results > 1;
+	print "$0: very strange, there are more than 1 records table <$global_values_table>\n"
+	    if scalar @$query_results > 1 ;
 	print "Modifying the global oscar information record\n";
-	if ( ! oda::modify_records( \%options,
-				    \@table_fields,
-				    \@assigns,
-				    undef,
-				    \@error_strings ) ) {
-	    warn shift @error_strings while @error_strings;
-	}
-    }
-}    
+    %field_value_hash = ("oscar_version" => $oscar_version,
+                            "server_distribution" => $oscar_server_distribution,
+                            "server_distribution_version" => $oscar_server_distribution_version,
+                            "server_architecture" => $oscar_server_architecture,
+                            "installation_date" => "NOW()" );
+    update_table(\%options,"Clusters", \%field_value_hash,undef,\@error_strings);                        
+}
+
+# Set up "Group" table with the global values.
+my @groups = ("oscar_server", "oscar_clients", "Default", "image", "core", "included");
+set_all_groups(\@groups,\%options,@error_strings);
+# The current group values are..
+# ("oscar_server", "oscar_clients", "Default", "image", "core", "included")
+
+# Set up "Status" table with the global values.
+set_status(\%options,\@error_strings);
+# The current status values are..
+# ("installable", "installed", "install_allowed","should_be_installed", "should_be_uninstalled")
 
 # UNLOCKING FOR NEST
 unlock(\%options, \@errors);
 
 exit 0;
-
-
-
-
-
-
-

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
 
 <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
@@ -28,7 +31,7 @@
   <license>Freely distributable</license>
   <copyright>2002</copyright>
   <group>Development/Libraries</group>
-  <url>http://www-unix.mcs.anl.gov/mpi/mpich/</url>
+  <uri>http://www-unix.mcs.anl.gov/mpi/mpich/</uri>
   <maintainer>
     <name>MPICH Team</name>
     <email>mpich-bugs@mcs.anl.gov</email>
@@ -42,10 +45,10 @@
 MPI (http://www.mpi-forum.org), the Standard for message-passing
 libraries.</description>
 
-  <rpmlist>
-    <rpm>mpich-ch_p4-gcc-oscar</rpm>
-    <rpm>mpich-ch_p4-gcc-oscar-module</rpm>
-  </rpmlist>
+  <binary-package-list>
+    <pkg>mpich-ch_p4-gcc-oscar</pkg>
+    <pkg>mpich-ch_p4-gcc-oscar-module</pkg>
+  </binary-package-list>
 
   <provides>
     <type>package</type>
@@ -57,11 +60,11 @@ libraries.</description>
     <name>switcher</name>
   </requires>
 
-  <package>
+  <package-specific-attributes>
     <switcher>
       <tag>mpi</tag>
       <name>mpich-ch_p4-gcc-1.2.7</name>
     </switcher>
-  </package>
+  </package-specific-attributes>
 
 </oscar>

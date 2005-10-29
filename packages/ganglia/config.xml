@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <name>Ganglia</name>
 
   <version>
@@ -16,7 +19,7 @@
   <summary>distributed monitoring and execution system</summary>
   <license>freely distributable</license>
   <group>Application/System</group>
-  <url>http://ganglia.sourceforge.net</url>
+  <uri>http://ganglia.sourceforge.net</uri>
 
   <maintainer>
     <name>Matt Massie</name>
@@ -30,33 +33,84 @@
 
   <description>Ganglia is a scalable distributed monitoring system for high-performance computing systems such as clusters and Grids.</description>
 
-  <rpmlist>
-      <rpm>ganglia-gmond</rpm>
-  </rpmlist>  
+  <binary-package-list>
+      <pkg>ganglia-gmond</pkg>
+  </binary-package-list>  
 
-  <rpmlist>
-      <filter group="oscar_server" distribution="fedora" distribution_version="2" />
-      <filter group="oscar_server" distribution="fedora" distribution_version="3" />
-      <filter group="oscar_server" distribution="redhat" />
-      <filter group="oscar_server" distribution="mandrake" distribution_version="10.0" />
-      <filter group="oscar_server" distribution="mandrake" distribution_version="10.1" />
-      <rpm>ganglia-gmetad</rpm>
-      <rpm>ganglia-web</rpm>
-      <rpm>rrdtool</rpm>
-  </rpmlist>
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>fedora</name>
+          <version>2</version>
+        </distribution>
+      </filter>
 
-  <rpmlist>
-      <filter group="oscar_server" distribution="fedora" distribution_version="3" />
-      <filter group="oscar_server" distribution="redhat" distribution_version="el4" />
-      <rpm>php-gd</rpm>
-  </rpmlist>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>fedora</name>
+          <version>3</version>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>redhat</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>mandrake</name>
+          <version>10.0</version>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>mandrake</name>
+          <version>10.1</version>
+        </distribution>
+      </filter>
+
+      <pkg>ganglia-gmetad</pkg>
+      <pkg>ganglia-web</pkg>
+      <pkg>rrdtool</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>fedora</name>
+          <version>3</version>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>redhat</name>
+          <version>el4</version>
+        </distribution>
+      </filter>
+
+      <pkg>php-gd</pkg>
+  </binary-package-list>
 
   <servicelist>
       <service>gmond</service>
   </servicelist>
 
   <servicelist>
-      <filter group="oscar_server"/>
+      <filter>
+        <group>oscar_server</group>
+      </filter>
+
       <service>gmetad</service>
   </servicelist>
 </oscar>

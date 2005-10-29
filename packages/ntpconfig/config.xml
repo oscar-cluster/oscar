@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
                          All rights reserved.
@@ -31,15 +34,35 @@
     <email>bli@bcgsc.ca</email>
   </packager>
   <description>OSCAR-specific NTP configurator.  If configured, sets up the OSCAR server to receive NTP from user-specified NTP server and act as a time server for the cluster nodes.  Otherwise, the server is simply set up to act as a time relay server for all the cluster nodes.</description>
-  <rpmlist>
-      <filter distribution='fedora' />
-      <filter distribution='mandrake' />
-      <filter distribution='redhat' />
-      <rpm>ntp</rpm>
-  </rpmlist>
-  <rpmlist>
-      <filter distribution='suse' />
-      <rpm>xntp</rpm>
-  </rpmlist>
+  <binary-package-list>
+      <filter>
+        <distribution>
+          <name>fedora</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <distribution>
+          <name>mandrake</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <distribution>
+          <name>redhat</name>
+        </distribution>
+      </filter>
+
+      <pkg>ntp</pkg>
+  </binary-package-list>
+  <binary-package-list>
+      <filter>
+        <distribution>
+          <name>suse</name>
+        </distribution>
+      </filter>
+
+      <pkg>xntp</pkg>
+  </binary-package-list>
 
 </oscar>

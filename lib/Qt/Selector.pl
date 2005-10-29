@@ -3,6 +3,12 @@
 # Created: Wed Oct 29 21:10:58 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
+#
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
+#
+# $Id$
+#########################################################################
 # WARNING! All changes made in this file will be lost!
 
 
@@ -451,15 +457,17 @@ sub exitButton_clicked
   # If the GUI is running as the 'Updater', then we need to go through
   # the list of all packages and find out which ones need to be installed
   # or uninstalled.  
+  my %options = ();
+  my @errors = ();
   if (installuninstall > 0)
     { 
       my $success;  # Return code for database commands
 
       # First, clear all install/uninstall flags
-      $success = OSCAR::Database::database_execute_command(
-        "packages_clear_all_should_be_installed");
-      $success = OSCAR::Database::database_execute_command(
-        "packages_clear_all_should_be_uninstalled");
+      #$success = OSCAR::Database::database_execute_command(
+      #  "packages_clear_all_should_be_installed");
+      #$success = OSCAR::Database::database_execute_command(
+      #  "packages_clear_all_should_be_uninstalled");
 
       # Then scan the table for packages to be installed/uninstalled
       my $allPackages = SelectorUtils::getAllPackages();
@@ -471,14 +479,16 @@ sub exitButton_clicked
 
           if (($packagesInstalled->{$package}) && (!$checked))
             { # Need to uninstall package
-              $success = OSCAR::Database::database_execute_command(
-                "package_mark_should_be_uninstalled $package");
+              my @packages = ($package);  
+              $success = OSCAR::Database::update_node_package_status(  
+                        \%options,"oscar_server",\@packages,0,\@errors);
             }
 
           if ((!($packagesInstalled->{$package})) && ($checked))
             { # Need to install package
-              $success = OSCAR::Database::database_execute_command(
-                "package_mark_should_be_installed $package");
+              my @packages = ($package);  
+              $success = OSCAR::Database::update_node_package_status(  
+                        \%options,"oscar_server",\@packages,1,\@errors);
             }
         }
     }

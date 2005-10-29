@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
 
 <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
@@ -37,9 +40,12 @@
 
   <description>loghost configures syslog settings.</description>
 
-  <rpmlist>
-    <filter group="oscar_server"/> 
-      <rpm>loghost</rpm>
-  </rpmlist>
+  <binary-package-list>
+    <filter>
+      <group>oscar_server</group>
+    </filter>
+ 
+      <pkg>loghost</pkg>
+  </binary-package-list>
 
 </oscar>

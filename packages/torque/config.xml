@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
 <!--
 Copyright (c) 2004, The Board of Trustees of the University of Illinois. All rights reserved.
 Author: Jeremy Enos jenos@ncsa.uiuc.edu
 $Id$
 -->
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <name>TORQUE Resource Manager</name>
 
   <version>
@@ -29,19 +32,22 @@ $Id$
   <description>TORQUE (Tera-scale Open-source Resource and QUEue manager) is a resource manager providing control over batch jobs and distributed compute nodes.  TORQUE is based on OpenPBS version 2.3.12 and incorporates scalability, fault tolerance, and feature extension patches provided by NCSA, OSC, the U.S. Dept of Energy, Sandia, PNNL, U of Buffalo, TeraGrid, and many other leading edge HPC organizations.  This version may be freely modified and redistributed subject to the constraints of the included license.
 </description>
 
-  <url>http://www.clusterresources.com/products/torque</url>
-  <rpmlist>
-      <rpm>torque</rpm>
-      <rpm>torque-mom</rpm>
-      <rpm>torque-client</rpm>
-      <rpm>torque-modulefile</rpm>
-  </rpmlist>
+  <uri>http://www.clusterresources.com/products/torque</uri>
+  <binary-package-list>
+      <pkg>torque</pkg>
+      <pkg>torque-mom</pkg>
+      <pkg>torque-client</pkg>
+      <pkg>torque-modulefile</pkg>
+  </binary-package-list>
 
-  <rpmlist>
-      <filter group="oscar_server"/>
-      <rpm>torque-server</rpm>
-      <rpm>torque-gui</rpm>
-  </rpmlist>
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+      </filter>
+
+      <pkg>torque-server</pkg>
+      <pkg>torque-gui</pkg>
+  </binary-package-list>
 
 <conflicts>
   <name>pbs</name>

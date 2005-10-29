@@ -4,7 +4,7 @@ package OSCAR::Package;
 #                     All rights reserved.
 # Copyright 2001-2002 International Business Machines
 #                     Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002-2004 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
 #   $Id$
@@ -28,6 +28,7 @@ use strict;
 use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL %PHASES
             @PKG_SOURCE_LOCATIONS $PKG_EXTENSION $PKG_DIRNAME $PKG_SEPARATOR);
 use base qw(Exporter);
+use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::PackageBest;
 use OSCAR::PackMan;
@@ -39,17 +40,19 @@ use File::Copy;
 use XML::Simple;
 use Carp;
 
+# Default package group.
+my $DEFAULT = "Default";
+
 @EXPORT = qw(list_installable_packages list_installable_package_dirs 
              run_pkg_script run_pkg_user_test copy_rpms remove_rpms
              run_pkg_script_chroot rpmlist install_packages copy_pkgs 
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues
              run_pkg_apitest_test);
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 # Trying to figure out the best way to set this.
 my ($distro_name, $distro_version) = which_distro_server();
-
 if ($distro_name ne 'debian') {
     $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
     $PKG_EXTENSION = ".rpm";
@@ -122,16 +125,17 @@ sub getOdaPackageDir # ($pkg) -> $pkgdir
   my $odaProblem = system('mysqlshow oscar >/dev/null 2>&1');
   if (!$odaProblem)
     {
-      my @tables = ("packages");
-      my $success = single_dec_locked("read_records " .
-                          "packages name=$pkg directory",
+      my @tables = ("Packages");
+      my $success = single_dec_locked("SELECT path FROM " .
+                          "Packages WHERE package='$pkg'",
                           "read",
                           \@tables,
                           \@list);
-      Carp::carp("Could not do oda command 'read_records packages name=$pkg " .
-                 " directory'") if (!$success);
+      Carp::carp("Could not do oda command 'SELECT path" .
+                 " FROM Packages WHERE package=$pkg '") if (!$success);
 
-      $retdir = $list[0] if (defined $list[0]);
+      my $dir_ref = $list[0] if (defined $list[0]);
+      $retdir = $$dir_ref{path};
     }
 
   # Couldn't find the directory via oda - resort to old method.  Search
@@ -407,12 +411,12 @@ sub run_pkg_apitest_test
 #
 
 sub rpmlist {
-  my ($pkg, $type) = @_;
+  my ($pkg,$ver,$type) = @_;
 
   # Apparently Neil DID write the code to get this info... too bad he
   # didn't TELL ANYBODY!!!
-  my @rpms_to_return = OSCAR::Database::database_rpmlist_for_package_and_group($pkg, $type, 0);
-  my @other_rpms = OSCAR::Database::database_rpmlist_for_package_and_group($pkg, undef, 0);
+  my @rpms_to_return = OSCAR::Database::database_rpmlist_for_package_and_group($pkg,$ver,$type, 0);
+  my @other_rpms = OSCAR::Database::database_rpmlist_for_package_and_group($pkg,$ver,undef, 0);
   if ( ( scalar(@rpms_to_return) == 0 ) && ( scalar(@other_rpms) == 0 ) ) {
   # Default to all RPMs in the directory
     my $prefix;
@@ -687,10 +691,10 @@ sub copy_rpms # ($pkgdir) -> 1|undef
 
   # Only selected packages should be copied to /tftpboot/rpm
   # Author : dikim@osl.iu.edu
-  my @selected_packages = list_selected_packages("all");
+  my @selected_packages = list_selected_packages("all", $DEFAULT);
   my %selected_pkg_hash = ();
-  foreach my $one_pkg (@selected_packages){
-      $selected_pkg_hash{$one_pkg} = 1;
+  foreach my $pkg_ref (@selected_packages){
+      $selected_pkg_hash{$$pkg_ref{package}} = 1;
   }
                                                                                 
   foreach my $dir (@packagedirs) 
@@ -738,8 +742,8 @@ sub remove_rpms # ($pkgdir) -> 1|undef
   # Author : dikim@osl.iu.edu
   my @selected_packages = list_selected_packages("all");
   my %selected_pkg_hash = ();
-  foreach my $one_pkg (@selected_packages){
-      $selected_pkg_hash{$one_pkg} = 1;
+  foreach my $pkg_ref (@selected_packages){
+      $selected_pkg_hash{$$pkg_ref{package}} = 1;
   }
                                                                                 
   foreach my $dir (@packagedirs) 
@@ -800,7 +804,7 @@ sub files_in_dir
 #########################################################################
 sub list_selected_packages # ($type) -> @selectedlist
 {
-    my $type = shift;
+    my ($type,$sel_group) = @_; #shift;
 
     # If no argument was specified, use "all"
 
@@ -808,22 +812,33 @@ sub list_selected_packages # ($type) -> @selectedlist
 
     # make the database command and do the database read
 
-    my $command_args;
-    if ( $type eq "all" ) {
-    $command_args = "packages_in_selected_package_set";
-    } elsif ( $type eq "core" ) {
-    $command_args = "packages_in_selected_package_set packages.class=core";
+    # get the selected group.
+    $sel_group = OSCAR::Database::get_selected_group if ! $sel_group;
+
+    my %options= ();
+    my @errors = ();
+    
+    my $command_args = "SELECT Packages.package, Packages.version " .
+             "FROM Packages, Group_Packages " .
+             "WHERE Packages.id=Group_Packages.package_id ".
+             "AND Group_Packages.group_name='$sel_group' ".
+             "AND Group_Packages.selected=1";
+    if ($type eq "all"){
+        $command_args = $command_args;
+    }elsif ($type eq "core"){
+        $command_args .= " AND Packages.__class='core' ";
     } else {
-    $command_args = "packages_in_selected_package_set packages.class!=core";
+        $command_args .= " AND Packages.__class!='core' ";
     }
+
     my @packages = ();
-    my @tables = ("packages", "package_sets", "package_sets_included_packages", "oscar", "oda_shortcuts", "packages_rpmlists", "packages_conflicts");
+    my @tables = ("Packages", "Group_Packages", "Nodes", "Node_Package_Status");
     if ( OSCAR::Database::single_dec_locked( $command_args,
                                                    "READ",
                                                    \@tables,
                                                    \@packages,
                                                    undef) ) {
-    return @packages;
+        return @packages;
     } else {
     warn "Cannot read selected packages list from the ODA database.";
     return undef;

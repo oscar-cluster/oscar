@@ -24,7 +24,6 @@ use File::Copy;
 
 my $ver = "0.90";
 my $package_dir = "oda";
-my $package_rpms_dir = "$ENV{OSCAR_HOME}/packages/$package_dir/RPMS";
 my $oscar_rpms_dir = "/tftpboot/rpm";
 
 oscar_log_subsection("Checking to see if we need to install ODA RPMs");
@@ -43,7 +42,7 @@ if ( $distro_name eq "redhat" ) {
                            perl-DBD-MySQL
                            perl-DBI
                            mysql-server
-                           oda );
+                            );
         $mysqld      = 'mysqld';
     } else {
         @wanted_rpms = qw( mysql
@@ -51,7 +50,7 @@ if ( $distro_name eq "redhat" ) {
 		           perl-DBI
 		           perl-CGI
 		           mysql-server
-		           oda );
+		            );
         $mysqld      = 'mysqld';
     }
 }
@@ -61,7 +60,7 @@ elsif ( $distro_name eq "fedora" ) {
 		       perl-DBD-MySQL
 		       perl-DBI
 		       mysql-server
-		       oda );
+		        );
     $mysqld      = 'mysqld';
 }
 
@@ -72,7 +71,7 @@ elsif ( $distro_name eq "suse") {
 		       perl-DBI
 		       perl-Data-ShowTable
 		       mysql-shared
-		       oda );
+		        );
     $mysqld      = 'mysql';
 }
 
@@ -83,7 +82,7 @@ elsif ( $distro_name eq "mandrake") {
 			   perl-DBI
 			   perl-Mysql
 			   perl-Data-ShowTable
-			   oda
+			   
 			   MySQL-common
 			   libmysql12
 			   perl-CGI );
@@ -94,7 +93,7 @@ elsif ( $distro_name eq "mandrake") {
 			   perl-DBI
 			   perl-Mysql
 			   perl-Data-ShowTable
-			   oda
+			   
 			   MySQL-common
 			   libmysql12
 			   perl-CGI );
@@ -106,7 +105,7 @@ elsif ( $distro_name eq "mandrake") {
 			   perl-Mysql
 			   perl-Data-ShowTable
 			   perl-ExtUtils-PerlPP
-			   oda
+			   
 			   MySQL-common
 			   libmysql12
 			   perl-CGI );
@@ -118,7 +117,7 @@ elsif ( $distro_name eq "mandrake") {
 			   perl-DBI
 			   perl-Mysql
 			   perl-ExtUtils-PerlPP
-			   oda
+			   
 			   MySQL-common
 			   libmysql12
 			   perl-CGI );
@@ -130,7 +129,7 @@ elsif ( $distro_name eq "mandrake") {
 			   perl-CGI
 			   perl-Mysql
 			   perl-ExtUtils-PerlPP
-			   oda );
+			    );
     }
     $mysqld      = 'mysql';
 }
@@ -140,23 +139,6 @@ else {
     exit 1;
 }
 
-# read in the file names in this package's RPMS directory
-
-opendir(DIR, "$package_rpms_dir" )
-    || croak("Cannot open directory $package_rpms_dir to find RPMs for ODA");
-my @package_rpm_files = grep(/\.rpm$/, readdir(DIR));
-chomp @package_rpm_files;
-closedir DIR;
-
-# Copy the ODA RPMs to the RPM pool (if they're not already there)
-
-foreach my $rpm_file (@package_rpm_files) {
-    if (! -e "$oscar_rpms_dir/$rpm_file") {
-	oscar_log_subsection("Copying $rpm_file to $oscar_rpms_dir\n");
-	copy("$package_rpms_dir/$rpm_file", "$oscar_rpms_dir/$rpm_file") ||
-	    croak("Unable to copy $rpm_file to $oscar_rpms_dir");
-    }
-}
 
 # RHEL3/4 WS are missing the mysql-server RPM in the distro. Use a rebuilt package
 # in this case. Coded for OSCAR::Distro recognition. Should be changed for OS_Detect
@@ -183,12 +165,13 @@ if ($distro_name eq "redhat") {
 }
 
 # Now install the "best" version of all the required RPMs if necessary
-if ( system("rpm -q oda >/dev/null 2>/dev/null") != 0 ) {
-  oscar_log_subsection("Installing ODA RPMs @wanted_rpms");
+#if ( system("rpm -q perl-DBI >/dev/null 2>/dev/null") != 0 ) {
+if ( ! -r "/etc/odapw" ) {
+  oscar_log_subsection("Installing ODA related RPMs @wanted_rpms");
   install_packages(@wanted_rpms) or 
       croak("ODA is giving up and will not be installed");
 } else {
-  oscar_log_subsection("ODA is already installed");
+  oscar_log_subsection("ODA related packages are already installed");
 }
 # Exit properly so that the exit status gets propogated
 

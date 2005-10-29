@@ -155,37 +155,42 @@ sub getSelectedConfigurablePackages
   # name in the <package> field for each package (we could do this with
   # a shortcut but this code is about to be replaced and want a special
   # output format).
-  my @resultref;
+  my @results;
   my %packages;
 
   # START LOCKING FOR NEST
-  my @tables = ("oscar", "packages", "package_sets", "package_sets_included_packages", "oda_shortcuts");
+  my @tables = ("Cluster", "Packages", "Group_Packages", "Node_Package_Status", "Groups");
   my @error_list = ();
   my %options = ();
-  locking("WRITE", \%options, \@tables, \@error_list);
-  OSCAR::Database::dec_already_locked(
-    "packages_in_selected_package_set packages.package", \@resultref, 1);
+  #locking("WRITE", \%options, \@tables, \@error_list);
+  #OSCAR::Database::dec_already_locked(
+  #  "packages_in_selected_package_set packages.package", \@results,1);
+  my $success = OSCAR::Database::get_selected_group_packages(\@results,\%options,\@error_list); 
 
   # Transform the list into a hash; keys=short pkg name, values=long pkg name
-  foreach my $pkg (@resultref) 
+  foreach my $pkg_ref (@results) 
     {
-      my ($pname, $ppackage) = split(' ', "$pkg", 2);
+      my $pname = $$pkg_ref{package};
+      my $ppackage = $$pkg_ref{name};
+      print "$pname, $ppackage\n" if $options{debug};
       $packages{$pname} = $ppackage;
     }
 
+  # Actually we don't need this any more in the new DB schema.
+  #
   # Add in any packages which "should_be_installed"
-  my @pkginstall = ();
-  OSCAR::Database::dec_already_locked(
-    "packages_that_should_be_installed", \@pkginstall);
-  foreach my $package (@pkginstall)
-    { # Get the long name and add the short name/long name to the hash
-      my @longname = ();
-      OSCAR::Database::dec_already_locked(
-        "read_records packages name=$package package",\@longname);
-      $packages{$package} = ((defined $longname[0]) ? $longname[0] : $package);
-    }
+  #my @pkginstall = ();
+  #OSCAR::Database::dec_already_locked(
+  #  "packages_that_should_be_installed", \@pkginstall);
+  #foreach my $package (@pkginstall)
+  #  { # Get the long name and add the short name/long name to the hash
+  #    my @longname = ();
+  #    OSCAR::Database::dec_already_locked(
+  #      "read_records packages name=$package package",\@longname);
+  #    $packages{$package} = ((defined $longname[0]) ? $longname[0] : $package);
+  #  }
   # UNLOCKING FOR NEST
-  unlock(\%options, \@error_list);
+  #unlock(\%options, \@error_list);
 
   return \%packages;
 }

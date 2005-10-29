@@ -2,6 +2,8 @@
 
 # Copyright 2003 NCSA
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,72 +35,91 @@ use oda;
 my $DEFAULT = "Default";
 
 sub do_it_or_die {
-    my ( $command, $results_ref, $error ) = @_;
-    return if dec_already_locked( $command, $results_ref );
+    my ( $command, $results_ref,$options_ref,$errors_ref ) = @_;
+    return if do_select( $command, $results_ref, $options_ref, $errors_ref );
     database_disconnect();
-    die "$0: $error";
+    die "$0: $errors_ref";
 }
 
 # START LOCKING FOR NEST && open the database
 
-my @tables =("oscar", "package_sets", "oda_shortcuts", "packages", "package_sets_included_packages");
+my @tables =("Cluster","Nodes", "Packages", "Node_Package_Status", "Node_Packages", "Group_Packages", "Groups");
 
 my %options = ();
 my @errors = ();
 if(! locking("write", \%options, \@tables, \@errors)){
     die "$0: cannot connect to oda database";
 }
+# Make a 'Default' group selected
+set_groups_selected($DEFAULT,\%options,\@errors);
 
 # get a list of all installable packages
 my @installable_packages = ();
-do_it_or_die( "packages_installable",
-	      \@installable_packages,
-	      "cannot read the list of installable packages" );
+get_selected_group_packages(\@installable_packages,\%options,\@errors);
 
 
 # get the list of package_sets
 print "Checking for existence of package set <$DEFAULT>\n";
 my @package_set_names = ();
-do_it_or_die( "package_sets",
-	      \@package_set_names,
-	      "cannot read the list of package_sets from the oda database" );
+@errors = ("cannot read the list of package_sets from the oda database");
+get_group_packages_with_groupname($DEFAULT,\@package_set_names,\%options,\@errors);
+
 # if we already have a package set named "Default", ...
 my $success = 1;
-if ( grep( /^$DEFAULT$/, @package_set_names ) ) {
-# if the package set exists, we should be doing NOTHING
 
+if ( @package_set_names )  {
+# If the default package set is already setup, do nothing.
 } else {
+    # create an empty default package set
+    print "Creating new empty package set <$DEFAULT>\n";
+    @errors = ("error creating package set <$DEFAULT>");
+    set_groups($DEFAULT,\%options,\@errors);
+    set_groups_selected($DEFAULT,\%options,\@errors);
 
-  # create an empty default package set
-  print "Creating new empty package set <$DEFAULT>\n";
-  do_it_or_die( "create_package_set $DEFAULT",
-                undef,
-		"error creating package set <$DEFAULT>" );
-
-  # populate the default package set with all installable packages
-  foreach my $package ( @installable_packages ) {
-    print "Adding package <$package> to package set <$DEFAULT>\n";
-    if ( ! dec_already_locked( 
-		"add_package_to_package_set $package $DEFAULT",
-		undef ) ) {
-      $success = 0;
-      warn "$0: error adding package <$package> to package set <$DEFAULT>";
+    # populate the default package set with all installable packages
+    foreach my $package_ref ( @installable_packages ) {
+        my $package_id = $$package_ref{id};
+        my $package_name = $$package_ref{package};
+        print "Adding package <$package_name> to package set <$DEFAULT>\n";
+        my %field_value_hash = ("package_id" => $package_id,
+                                "group_name" => $DEFAULT);
+        my $error_msg="error adding package <$package_name> to package set <$DEFAULT>";
+        @errors = ($error_msg);
+        if ( ! insert_into_table(\%options, "Group_Packages", \%field_value_hash,\@errors) ){
+            $success = 0;
+            warn "$0: $error_msg";
+        }
     }
-  }
 }
-# see if there is any selected package set
-my @selected_set = ();
-do_it_or_die( "selected_package_set",
-	      \@selected_set,
-	      "cannot read the name of the selectede package set" );
 
-# if not, set it to the default set
-if ( ! @selected_set ) {
-    print "Setting selected package set to <$DEFAULT>\n";
-    do_it_or_die( "set_selected_package_set $DEFAULT",
-		  undef,
-		  "cannot set the selected package set to $DEFAULT" );
+# Insert into "Node_Package_Status" table
+# If the data is already there, just update its status.
+foreach my $package_ref (@installable_packages){
+    my $package_id = $$package_ref{id};
+    my $package_name = $$package_ref{package};
+    my $node_ref = 
+        get_node_info_with_name("oscar_server",\%options,\@errors);
+    my $node_id = $$node_ref{id};
+    my %field_value_hash = ( "node_id"=>$node_id,
+                              "package_id"=>$package_id,
+                              "requested"=>1 );
+    my $table = "Node_Package_Status";
+    my @fields = ("*");
+    my $where = "WHERE package_id=$package_id AND node_id=$node_id";
+    # installable tag is kept on config.xml and this is an easier way
+    # to avoid tracing not-installable packages (e.g., networking).
+    my @results = ();
+    select_table(\%options,$table,\@fields,$where,\@results,\@errors);
+    if(! @results ){
+        if ($package_name ne "networking"){
+            insert_into_table (\%options,$table,\%field_value_hash,\@errors);
+        } else {
+            set_group_packages(
+                "Default","networking",0,\%options,\@errors);
+        }
+    }
 }
+
 # UNLOCKING FOR NEST
 unlock(\%options, \@errors);
 

@@ -64,7 +64,11 @@ if (@ARGV) {
         }
 }
 
-my @pkgs = list_selected_packages();
+my @pkgs_hash = list_selected_packages();
+my @pkgs = ();
+foreach my $pkg_ref (@pkgs_hash){
+    push @pkgs, $$pkg_ref{package};
+}
 
 my $return = 0;
 

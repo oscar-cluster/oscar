@@ -2,6 +2,8 @@
 
 # Copyright 2004 NCSA
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -125,6 +127,7 @@ sub find_nics {
     }
 
     my $ip;
+    my $mac;
     my $broadcast = "";
     my $netmask;
     my $name = "";
@@ -135,84 +138,89 @@ sub find_nics {
 
     foreach (@ifconfig_output) {
 
-	# if it's the first line of an interface section, save the name
 
-	$name = $1 if /^(\S+)/;
+        # if it's the first line of an interface section, save the name
 
-	# skip to next line if name is invalid
+        if (/^(\S+).*HWaddr (.*)$/) {
+            $name = $1;
+            $mac = trimwhitespace($2);
+        }
 
-	next unless $name =~ /^[a-z]+\d*$/;
+        # skip to next line if name is invalid
 
-	# skip to next line if name is for the loopback interface
+        next unless $name =~ /^[a-z]+\d*$/;
 
-	next if $name eq "lo";
+        # skip to next line if name is for the loopback interface
 
-	# skip to next line if we can't parse and save ip and netmask
+        next if $name eq "lo";
 
-	next unless ( ($ip, $broadcast, $netmask) =
-	    /^\s+inet addr:(\S+)\s+Bcast:(\S+)\s+Mask:(\S+)/ )
-	    ||
-	    ( ($ip, $ptp, $netmask) =
-	    /^\s+inet addr:(\S+)\s+P-t-P:(\S+)\s+Mask:(\S+)/ );
-	if ( ! valid_ip( $ip ) ) {
-	    push @$error_strings_ref, 
-	    "$0: invalid ip address $ip found for nic $name\n";
-	    next;
-	}
-	if ( ! valid_netmask( $netmask ) ) {
-	    push @$error_strings_ref, 
-	    "$0: invalid ip netmask $netmask found for nic $name\n";
-	    next;
-	}
+        # skip to next line if we can't parse and save ip and netmask
 
-	# if the network is of form 0 - 31, convert it to N.N.N.N
+        next unless ( ($ip, $broadcast, $netmask) =
+            /^\s+inet addr:(\S+)\s+Bcast:(\S+)\s+Mask:(\S+)/ )
+            ||
+            ( ($ip, $ptp, $netmask) =
+            /^\s+inet addr:(\S+)\s+P-t-P:(\S+)\s+Mask:(\S+)/ );
+        if ( ! valid_ip( $ip ) ) {
+            push @$error_strings_ref, 
+            "$0: invalid ip address $ip found for nic $name\n";
+            next;
+        }
+        if ( ! valid_netmask( $netmask ) ) {
+            push @$error_strings_ref, 
+            "$0: invalid ip netmask $netmask found for nic $name\n";
+            next;
+        }
 
-	if ( $netmask !~ /\./ ) {
-	    my @octets = ();
-	    my $netmask_bits_left = $netmask;
-	    while ( $netmask_bits_left >= 8 && scalar @octets < 6 ) {
-		push @octets, "255";
-		$netmask_bits_left -= 8;
-	    }
-	    push @octets, ( 255 << ( 7 - ( $netmask_bits_left % 8 ) ) ) & 255
-		if $netmask_bits_left > 0;
-	    push @octets, "0"
-		while scalar @octets < 4;
-	    $netmask = octets_to_ip( @octets );
-	}
+        # if the network is of form 0 - 31, convert it to N.N.N.N
 
-	# if we got the ip/netmask before the name, mistake
+        if ( $netmask !~ /\./ ) {
+            my @octets = ();
+            my $netmask_bits_left = $netmask;
+            while ( $netmask_bits_left >= 8 && scalar @octets < 6 ) {
+            push @octets, "255";
+            $netmask_bits_left -= 8;
+            }
+            push @octets, ( 255 << ( 7 - ( $netmask_bits_left % 8 ) ) ) & 255
+            if $netmask_bits_left > 0;
+            push @octets, "0"
+            while scalar @octets < 4;
+            $netmask = octets_to_ip( @octets );
+        }
 
-	if ( $name eq "" ) {
-	    push @$error_strings_ref,
-	    "$0: ifconfig output has valid address/netmask before any interface names";
-	    next;
-	}
+        # if we got the ip/netmask before the name, mistake
 
-	# find the base and highest ip addresses for the attached network
+        if ( $name eq "" ) {
+            push @$error_strings_ref,
+            "$0: ifconfig output has valid address/netmask before any interface names";
+            next;
+        }
 
-	my ( $base_ip, $high_ip ) = ip_netmask_to_base_high( $ip,
-							     $netmask );
-	# build up the nic information hash
+        # find the base and highest ip addresses for the attached network
 
-	my %nic = ( base_ip => $base_ip,
-		    high_ip => $high_ip,
-		    ip      => $ip,
-		    netmask => $netmask );
-	$nic{broadcast} = $broadcast if $broadcast ne "";
-	$nic{rfc1918} =
-	    valid_rfc1918_ip( $base_ip ) &&
-	    valid_rfc1918_ip( $ip ) &&
-	    valid_rfc1918_ip( $high_ip );
+        my ( $base_ip, $high_ip ) = ip_netmask_to_base_high( $ip,
+                                     $netmask );
+        # build up the nic information hash
 
-	# save this nic's information in our nics hash
+        my %nic = ( base_ip => $base_ip,
+                high_ip => $high_ip,
+                ip      => $ip,
+                mac     => $mac,
+                netmask => $netmask );
+        $nic{broadcast} = $broadcast if $broadcast ne "";
+        $nic{rfc1918} =
+            valid_rfc1918_ip( $base_ip ) &&
+            valid_rfc1918_ip( $ip ) &&
+            valid_rfc1918_ip( $high_ip );
 
-	$nics{$name} = \%nic;
+        # save this nic's information in our nics hash
 
-	# setup for parsing next nic out of remaining ifconfig lines
+        $nics{$name} = \%nic;
 
-	$broadcast = "";
-	$name = "";
+        # setup for parsing next nic out of remaining ifconfig lines
+
+        $broadcast = "";
+        $name = "";
 
     }
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
@@ -295,28 +303,6 @@ sub ip_or {
     return join( '.', @result_octets );
 }
 
-#=======================================================================
-#
-# links a node nic to a network in the database
-
-sub link_node_nic_to_network {
-
-    my ( $node_name, $nic_name, $network_name ) = @_;
-
-    my $command = 
-	"link_node_nic_to_network $node_name $nic_name $network_name";
-    print "$0: linking node $node_name nic $nic_name to network $network_name using command <$command>\n"
-	if $options{debug};
-    print "Linking node $node_name nic $nic_name to network $network_name.\n"
-	if $options{verbose} && ! $options{debug};
-    if ( ! dec_already_locked( $command,
-				     undef,
-				     1 ) ) {
-	warn "$0: failed to link node $node_name nic $nic_name to "
-	    . " network $network_name.\n";
-	$exit_status = 1;
-    }
-}
 
 #=======================================================================
 #
@@ -348,14 +334,18 @@ sub new_name {
 
 sub read_database_network_records {
 
-    $database_networks_ref = 
-	database_read_table_fields( "networks",
-				    undef,
-				    undef,
-				    undef,
-				    1 );
+    my @error_strings = ();
+    my @networks = ();
+    my $sql="SELECT * FROM Networks";
     die "$0: cannot read current database network records\n"
-	if ! defined $database_networks_ref;
+        if (! oda::do_query(\%options,
+                            $sql,
+                            \@networks,
+                            \@error_strings));
+    foreach my $network_ref (@networks){
+        my $net_name = $$network_ref{name};
+        $$database_networks_ref{$net_name} = $network_ref;
+    }
     oda::print_hash( "", "$0: database network records", $database_networks_ref ) 
 	if $options{debug};
 }
@@ -418,6 +408,14 @@ sub valid_rfc1918_ip {
 	|| 0;
 }
 
+sub trimwhitespace($)
+{
+    my $string = shift;
+    $string =~ s/^\s+//;
+    $string =~ s/\s+$//;
+    return $string;
+}
+
 #=======================================================================
 
 sub usage {
@@ -465,8 +463,8 @@ GetOptions( \%options,
             'help',
             'networks!',
             'nics!',
-	    'oda=s',
-	    'verbose!' )
+  	        'oda=s',
+	        'verbose!' )
     || usage( 1 );
 print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
 oda::print_hash( "", "$0: options after GetOptions", \%options) 
@@ -640,10 +638,10 @@ die "$0: cannot connect to oda database";
 
 my @error_strings = ();
 # START LOCKING FOR NEST && open the database
-my @tables =("oscar","nics", "oda_shortcuts", "networks",
-            "node_groups", "nodes");
+my @tables =("Clusters","Nics", "Networks",
+            "Group_Nodes", "Nodes");
 
-if(! locking("write", \%oda_options, \@tables, \@error_strings)){
+if(! locking("write", \%options, \@tables, \@error_strings)){
     die "$0: cannot connect to oda database";
 }
 
@@ -654,7 +652,7 @@ my $node_name = database_find_node_name( 1 );
 if ( ! defined $node_name ) {
     database_disconnect();
     # UNLOCKING FOR NEST && database disconnect
-    unlock(\%oda_options, \@error_strings);
+    unlock(\%options, \@error_strings);
     die "$0: cannot find node name of this machine";
 }
 
@@ -690,16 +688,16 @@ if ( $options{verbose} && ! $options{debug} ) {
 
 print "Searching for network interfaces for this machine in the database ...\n"
     if $options{verbose};
-my @nic_wheres = ( "nodes.name=$node_name",
-		   "nodes.id=nics.node_id" );
-my $database_nics_ref = 
-    database_read_table_fields( "nics",
-				undef,
-				\@nic_wheres,
-				undef,
-				1 );
-die "$0: cannot read current database nic records for node $node_name\n"
-    if ! defined $database_networks_ref;
+my $database_nics_ref;
+
+my @nics = ();
+get_nics_info_with_node($node_name,\@nics,\%options,\@error_strings);               
+foreach my $nic_ref (@nics){
+    my $nic = $$nic_ref{name};
+    $$database_nics_ref{$nic} = $nic_ref;
+}
+#die "$0: cannot read current database nic records for node $node_name\n"
+#    if ! defined $database_networks_ref;
 oda::print_hash( "", "$0: database nics for node $node_name", $database_nics_ref ) 
     if $options{debug};
 if ( $options{verbose} && ! $options{debug} ) {
@@ -793,13 +791,9 @@ if ( $options{ networks } ) {
 			print "    field $field to $assigns{field}\n";
 		    }
 		}
-		my @modified_tables = ( "networks" );
-		my @modify_wheres = ( "id=$record_id" );
-		if ( ! oda::modify_records( \%oda_options,
-					    \@modified_tables,
-					    \%assigns,
-					    \@modify_wheres,
-					    \@error_strings ) ) {
+
+        my $where = " WHERE n_id=$record_id ";
+        if (! update_table(\%options,"Networks",\%assigns,$where,\@error_strings) ){    
 		    warn "$0: failed to write out modified network " .
 			"$$database_network_record_ref{name} record\n";
 		    warn shift @error_strings while @error_strings;
@@ -833,11 +827,10 @@ if ( $options{ networks } ) {
 		" broadcast $$surmised_network_ref{broadcast}" : "" )
 	    . "\n";
 	    }
-	    if ( ! oda::insert_record( \%oda_options,
-				       "networks",
-				       $surmised_network_ref,
-				       undef,
-				       \@error_strings ) ) {
+        my $cluster_ref = get_cluster_info_with_name ("oscar",\%options, \@error_strings);
+        my $cluster_id = $$cluster_ref{id};
+        $$surmised_network_ref{cluster_id}= $cluster_id;
+        if (! insert_into_table (\%options,"Networks", $surmised_network_ref,\@error_strings) ){
 		warn "$0: failed to write out modified network " .
 		    "$$database_network_record_ref{name} record\n";
 		warn shift @error_strings while @error_strings;
@@ -916,9 +909,8 @@ foreach my $database_nic_name ( keys %$database_nics_ref ) {
 	print "Deleting database record for network interface $database_nic_name"
 	    . " on node $node_name.\n"
 	    if $options{verbose} && ! $options{debug};
-	if ( ! dec_already_locked( "delete_nic $database_nic_name",
-					 undef,
-					 1 ) ) {
+	if ( ! dec_already_locked( "DELETE FROM Nics WHERE $database_nic_name",
+					 undef ) ){
 	    warn "$0: failed to delete database record for network interface "
 		. $database_nic_name . " on node $node_name.\n";
 	    $exit_status = 1;
@@ -928,6 +920,7 @@ foreach my $database_nic_name ( keys %$database_nics_ref ) {
 }
 
 # for every machine network interface, ...
+
 
 foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
     my $ifconfig_nic_ref = $$ifconfig_nics_ref{$nic_name};
@@ -951,18 +944,12 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
     # database already, write out this record
 
     if  ( ! exists $$database_nics_ref{ $nic_name } ) {
-	my $command = "create_nic_on_node $nic_name $node_name";
-	foreach my $field ( qw( base_ip
-				broadcast
-				gateway
-				high_ip 
-				ip 
-				mac 
-				netmask 
-				rfc1918 ) ) {
-	    $command .= " $field\~$$ifconfig_nic_ref{$field}"
-		if exists $$ifconfig_nic_ref{ $field };
-	}
+    my $command = "INSERT INTO Nics (name, ip, mac,node_id) " .
+        " SELECT '$nic_name','$$ifconfig_nic_ref{ip}', " .
+        " '$$ifconfig_nic_ref{mac}', " .
+        " Nodes.id FROM Nodes WHERE Nodes.name='$node_name' ";
+    
+    
 	print "$0: creating database nic record using command <$command>\n"
 	    if $options{debug};
 	print "Creating database record for nic $nic_name on node $node_name.\n"
@@ -1009,13 +996,8 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 		    print "    field $field to $assigns{field}\n";
 		}
 	    }
-	    my @modified_tables = ( "nics" );
-	    my @modify_wheres = ( "id=$record_id" );
-	    if ( ! oda::modify_records( \%oda_options,
-					\@modified_tables,
-					\%assigns,
-					\@modify_wheres,
-					\@error_strings ) ) {
+        my $where = " WHERE id=$record_id ";
+        if (! update_table(\%options,"Nics",\%assigns,$where,\@error_strings) ){    
 		warn "$0: failed to modify node $node_name nic $nic_name record\n";
 		warn shift @error_strings while @error_strings;
 		$exit_status = 1;
@@ -1030,12 +1012,14 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
     # link this node nic to a network if we need to
     link_node_nic_to_network( $node_name,
 			      $nic_name,
-			      $network_name )
+			      $network_name,
+                  \%options,
+                  \@error_strings)
 	if defined $network_name;
 }
 
 # UNLOCKING FOR NEST
-unlock(\%oda_options, \@error_strings);
+unlock(\%options, \@error_strings);
 
 # done
 exit $exit_status;

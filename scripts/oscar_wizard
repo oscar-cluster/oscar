@@ -20,7 +20,7 @@
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 #
-# Copyright (c) 2002 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -67,12 +67,15 @@ if(!$ENV{OSCAR_HOME}) {
 
 my $save_text;
 my $interface = $ARGV[0];
+my %options = ();
+my @errors = ();
 
 if ( !defined($interface) || $interface eq '' ) {
-  my @tables = ("oscar");
-  my @result = ();
-  single_dec_locked("read_records oscar.interface", "READ", \@tables, \@result, undef);
-  $interface = pop @result;
+    my @result = ();
+    my $node = "oscar_server";
+    get_nics_info_with_node($node,\@result,\%options,\@errors);
+    my $result_ref = pop @result;
+    $interface = $$result_ref{name};
 }
 
 # Set some things in the environment
@@ -349,11 +352,12 @@ sub build_oscar_image {
     my $outfile = "/tmp/oscar-install-rpmlist.$$";
     $save_text = $outfile;
     open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
-    foreach my $pkg (@pkgs) {
-	my @rpms = rpmlist($pkg, "oscar_clients");
-	foreach my $rpm (@rpms) {
-	    print OUTFILE "$rpm\n";
-	}
+    foreach my $pkg_ref (@pkgs) {
+        my $pkg = $$pkg_ref{package};
+        my @rpms = rpmlist($pkg,undef,"oscar_clients");
+        foreach my $rpm (@rpms) {
+            print OUTFILE "$rpm\n";
+        }
     }
     close(OUTFILE);
     my $extraflags = " --filename=$outfile";
@@ -382,6 +386,10 @@ sub build_oscar_image {
                 step_number => $step_number,
                );
 
+    my %image_info = ( "name"=>$vars{imgname},
+                       "distro"=>"$distroname-$distroversion",
+                       "architecture"=>$arch );
+    set_images(\%image_info,\%options,\@errors);
     createimage_window($window, %vars);
 }
 
@@ -389,10 +397,12 @@ sub postimagebuild {
     my ($vars) = @_;
     my $step_number = $$vars{step_number};
 
+    my $img = $$vars{imgname};
     my $cmd = "./post_rpm_install $$vars{imgname} $interface";
     oscar_log_subsection("Step $step_number: Running: $cmd");
     !system($cmd) or (carp($!), return undef);
     oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
+
 
     # Have installed Client RPMs & did not croak, so mark 
     # packages.<pkg>installed # true. (best effort for now)
@@ -400,10 +410,10 @@ sub postimagebuild {
     oscar_log_subsection("Marking installed bit in ODA for client RPMS");
     
     my @pkgs = list_selected_packages("all");
-    foreach my $pkg (@pkgs) {
-            oscar_log_subsection("Set package: $pkg");
-            my $ok_rslt = database_execute_command("package_mark_installed $pkg");
-            croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
+    foreach my $pkg_ref (@pkgs) {
+        my $pkg = $$pkg_ref{package};
+        oscar_log_subsection("Set package: $pkg");
+        set_image_packages($img,$pkg,\%options,\@errors);
     }
     oscar_log_subsection("Done marking installed bits in ODA");
 
@@ -453,12 +463,16 @@ sub build_oscar_clients {
     my $gw;
     my @tables = qw( nodes nics networks );
     my @results;
-    my $cmd = "read_records nodes.name=oscar_server nics.node_id=nodes.id nics.name";
-    single_dec_locked( $cmd, "READ", \@tables, \@results, undef );
+    my $node = "oscar_server";
+    get_nics_info_with_node($node,\@results,\%options,\@errors);
+    my $ref = pop @results;
+    my $nic_name = $$ref{name};
+        print "GATEWAY : $nic_name\n";
     if( @results == 1 ) {
-      $cmd .= "=$interface nics.network_id=networks.id networks.gateway";
-      single_dec_locked( $cmd, "READ", \@tables, \@results, undef );
-      $gw = $results[-1] if @results;
+        get_gateway($node,$interface,\@results,\%options,\@errors);
+        my $gw_ref = pop @results if @results;
+        $gw = $$gw_ref{gateway};
+        print "GATEWAY : $gw\n";
     }
     $gw ||= $ip;
 
@@ -500,7 +514,7 @@ sub postaddclients {
     my $cmd = "./post_clients";
     oscar_log_subsection("Step $step_number: Running: $cmd");
     !system($cmd) or (carp($!), return undef);
-	&populate_client_config_opkgs;
+	&populate_client_group_nodes;
     oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
     oscar_log_subsection("Step $step_number: Completed successfully");
     return 1;
@@ -530,36 +544,26 @@ sub do_it_or_die {
     die "$0: $error";
 }
 
-sub populate_client_config_opkgs{
+sub populate_client_group_nodes{
 	my @pkgs = list_selected_packages();
-    my %options = ();
-    my @errors = ();
     my @tables = ("nodes", "configurations", "node_config_revs", "config_opkgs", "packages", "oda_shortcuts");
     locking("WRITE", \%options, \@tables, \@errors);
-	my @nodes_id = ();
-        dec_already_locked("read_records nodes id name!=oscar_server",\@nodes_id);
-	foreach my $node_id (@nodes_id){
-		my @configs_id = ();
-                dec_already_locked("read_records configurations.id configurations.name=nodes.name nodes.id=$node_id", \@configs_id);
-                my $config_id = pop @configs_id;
-		my @nodes_configs = ();
-                dec_already_locked("read_records node_config_revs.node_id node_id=$node_id configurations_id=$config_id", \@nodes_configs);
-		my $node_config = pop @nodes_configs;
-		if (! $node_config ){
-			do_it_or_die( "add_node_config_revs $node_id $config_id",
-						   undef,
-						  "can not create node_config_revs record for oscar_server");                                                                                 
-            my $syslog = "OK";
-			foreach my $opkg (@pkgs){
-				my @packages_id = ();
-                dec_already_locked("read_records packages id name=$opkg", \@packages_id);
-				my $package_id = pop @packages_id;
-				do_it_or_die( "add_config_opkgs $config_id $package_id $syslog",
-							   undef,
-							  "cannot create config_opkgs record for oscar_server" );
-                        }
-		}
-	}
+    my @client_nodes = ();
+    get_client_nodes(\@client_nodes,\%options,\@errors);
+    foreach my $client_ref (@client_nodes){
+        my $node_id = $$client_ref{id};
+        my $node_name = $$client_ref{name};
+        my $client_group = "oscar_clients";
+        #my @client_info = ();
+        #my $client_group_id;
+        #if(get_groups(\@client_info,\%options,\@errors,$client_group)){
+        #    my $client_ref = pop @client_info;
+        #    $client_group_id = $$client_ref{id};
+        #}
+        set_group_nodes($client_group,$node_name,\%options,\@errors);
+    }
+
+    
     unlock(\%options, \@errors);
 }
 

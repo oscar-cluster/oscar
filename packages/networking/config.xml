@@ -1,10 +1,23 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <name>Caching Nameserver</name>
 
-  <filter distribution='redhat' />
-  <filter distribution='mandrake' />
+  <filter>
+    <distribution>
+      <name>redhat</name>
+    </distribution>
+  </filter>
+
+  <filter>
+    <distribution>
+      <name>mandrake</name>
+    </distribution>
+  </filter>
+
 
   <version>
     <major>1</major>
@@ -27,9 +40,12 @@
   <description>This package contains everything needed to set up your
     distribution's caching nameserver on the OSCAR server.</description>
 
-  <rpmlist>
-    <filter group="oscar_server"/>
-      <rpm>caching-nameserver</rpm>
-  </rpmlist>
+  <binary-package-list>
+    <filter>
+      <group>oscar_server</group>
+    </filter>
+
+      <pkg>caching-nameserver</pkg>
+  </binary-package-list>
 
 </oscar>

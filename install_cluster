@@ -37,7 +37,6 @@ use OSCAR::Logger;
 use OSCAR::OCA::OS_Detect;
 use POSIX;
 use Carp;
-use OSCAR::Database;
 
 # First of all, enforce that the user running this script is 'root'
 
@@ -264,9 +263,6 @@ foreach ( `perl -e 'print "\$_\n" foreach \@INC'` ) {
 undef %incs;
 #print __FILE__,":",__LINE__,":INC:",join(", ",@INC),"\n";
 
-# Seed ODA
-system("oda modify_records oscar.interface~$adapter");
-$adapter = `oda read_records oscar.interface`;
 
 $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
 

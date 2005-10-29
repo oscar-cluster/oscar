@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
                          All rights reserved.
@@ -27,7 +30,7 @@
   <license>GPL</license>
   <copyright>2002</copyright>
   <group>Application/System</group>
-  <url>http://oscar.ncsa.uiuc.edu/</url>
+  <uri>http://oscar.ncsa.uiuc.edu/</uri>
   <packager>
     <name>Terry Fleury</name>
     <email>tfleury@ncsa.uiuc.edu</email>
@@ -42,9 +45,12 @@ non-interactive execution.  Any necessary information that you do not
 give via an option will cause the program to prompt you for that
 information.</description>
 
-  <rpmlist>
-    <filter group="oscar_server"/>
-      <rpm>kernel_picker</rpm>
-  </rpmlist>
+  <binary-package-list>
+    <filter>
+      <group>oscar_server</group>
+    </filter>
+
+      <pkg>kernel_picker</pkg>
+  </binary-package-list>
 
 </oscar>

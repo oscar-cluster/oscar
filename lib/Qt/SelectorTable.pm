@@ -22,6 +22,10 @@
 #
 #  Copyright (c) 2003 The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
+#  Copyright (c) 2005 The Trustees of Indiana University.  
+#                     All rights reserved.
+#
+# $Id$
 #########################################################################
 
 use strict;
@@ -40,7 +44,8 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Package;
 use Carp;
-
+my %options = ();
+my @errors = ();
 my $tablePopulated = 0;     # So we call populateTable only once
 my $currSet;                # The name of the currently selected Package Set
 my $packagesInstalled;      # Hash of packages with 'installed' bit set to 1
@@ -181,12 +186,14 @@ sub getPackagesInPackageSet
   # values are "1"s for those packages.
   my @packagesInSet;
   my $packagesInSet;
-  my $success = OSCAR::Database::database_execute_command(
-    "packages_in_package_set $packageSet",\@packagesInSet);
+  #my $success = OSCAR::Database::get_group_packages_with_groupname(
+  my $success = OSCAR::Database::get_selected_group_packages(
+    \@packagesInSet,\%options,\@errors,$packageSet);
   if ($success)
     { # Transform the array into a hash
-      foreach my $pack (@packagesInSet)
+      foreach my $pack_ref (@packagesInSet)
         {
+          my $pack = $$pack_ref{package};
           $packagesInSet->{$pack} = 1;
         }
     }
@@ -216,12 +223,13 @@ sub getPackagesInstalled
       # are the (short) names of the packages and the values are "1"s for 
       # those packages.
       my @packagesInstalled;
-      my $success = OSCAR::Database::database_execute_command(
-        "packages_installed",\@packagesInstalled);
+      my $success = OSCAR::Database::get_node_package_status_with_node(
+          "oscar_server",@packagesInstalled,\%options,\@errors, 7 );
       if ($success)
         { # Transform the array of installed packages into a hash
-          foreach my $pack (@packagesInstalled)
+          foreach my $pack_ref (@packagesInstalled)
             {
+              my $pack = $$pack_ref{package};
               $packagesInstalled->{$pack} = 1;
             }
         }
@@ -258,11 +266,22 @@ sub populateTable
       my $allPackages = SelectorUtils::getAllPackages();
 
       my $rownum = 0;
+
+      my %should_not_install = ();
+      my @results = ();
+      get_node_package_status_with_node(
+        "oscar_server",\@results, \%options,\@errors,0 );
+      foreach my $result_ref (@results){
+            my $pack = $$result_ref{package};
+            $should_not_install{$pack} = 1;
+      }      
+
+
       foreach my $pack (keys %{ $allPackages })
         {
           # Don't even bother to display non-installable packages
-          next if ($allPackages->{$pack}{installable} != 1);
-
+          # next if ($allPackages->{$pack}{installable} != 1);
+          #next if ( $should_not_install{$pack} );
           setNumRows($rownum+1); 
 
           # Column 0 contains "short" names of packages
@@ -281,7 +300,7 @@ sub populateTable
 
           # Column 3 contains the "class" of packages
           $item = SelectorTableItem(this,Qt::TableItem::Never(),
-                                    $allPackages->{$pack}{class});
+                                    $allPackages->{$pack}{__class});
           setItem($rownum,3,$item);
 
           # Column 4 contains the Location + Version
@@ -309,17 +328,19 @@ sub populateTable
       my $packagesToBeInstalled;    # Hash ref of transformed array
       my @packagesToBeUninstalled;  # Array
       my $packagesToBeUninstalled;  # Hash ref of transformed array
-      $success = OSCAR::Database::database_execute_command(
-        "packages_that_should_be_installed",\@packagesToBeInstalled);
-      $success = OSCAR::Database::database_execute_command(
-        "packages_that_should_be_uninstalled",\@packagesToBeUninstalled);
+      $success = OSCAR::Database::get_node_package_status_with_node(
+          "oscar_server",@packagesToBeInstalled,\%options,\@errors, 1 );
+      $success = OSCAR::Database::get_node_package_status_with_node(
+          "oscar_server",@packagesToBeUninstalled,\%options,\@errors, 0 );
       # Transform these lists into hashes
-      foreach my $pack (@packagesToBeInstalled)
+      foreach my $pack_ref (@packagesToBeInstalled)
         {
+          my $pack = $$pack_ref{package};
           $packagesToBeInstalled->{$pack} = 1;
         }
-      foreach my $pack (@packagesToBeUninstalled)
+      foreach my $pack_ref (@packagesToBeUninstalled)
         {
+          my $pack = $$pack_ref{package};
           $packagesToBeUninstalled->{$pack} = 1;
         }
 
@@ -342,12 +363,12 @@ sub populateTable
   else
     { # Running as the 'Selector'.  Check boxes according to package set.
       # Set the newly selected package set as the "selected" one in oda
-      $success = OSCAR::Database::database_execute_command(
-        "set_selected_package_set $currSet");
+      $success = OSCAR::Database::set_groups_selected(
+        $currSet,\%options, \@errors);
       if (!$success)
         {
           Carp::carp("Could not do oda command " .
-                     "'set_selected_package_set $currSet'");
+                     "'set_groups_selected $currSet'");
           return;
         }
 
@@ -503,8 +524,8 @@ sub checkboxChangedForSelector
           foreach my $pkg (keys %{ $allPackages })
             {
               $reqhash->{$pkg} = 1 if 
-                ((defined $allPackages->{$package}{class}) &&
-                 ($allPackages->{$package}{class} eq 'core'));
+                ((defined $allPackages->{$package}{__class}) &&
+                 ($allPackages->{$package}{__class} eq 'core'));
             }
 
           # Get a list of packages conflicting with the required ones.
@@ -531,10 +552,10 @@ sub checkboxChangedForSelector
                   if ((!(defined $packagesInSet->{$reqkey})) || 
                       ($packagesInSet->{$reqkey} != 1))
                     {
-                      $success = OSCAR::Database::database_execute_command(
-                        "add_package_to_package_set $reqkey $currSet");
+                      $success = OSCAR::Database::set_group_packages(
+                            $currSet,$reqkey,1,\%options,\@errors);
                       Carp::carp("Could not do oda command 
-                        'add_package_to_package_set $reqkey $currSet'") if 
+                        'set_group_packages $reqkey $currSet'") if 
                           (!$success);
                       $packagesInSet->{$reqkey} = 1;
                     }
@@ -547,10 +568,10 @@ sub checkboxChangedForSelector
                   if ((defined $packagesInSet->{$conkey}) &&
                       ($packagesInSet->{$conkey} == 1))
                     {
-                      $success = OSCAR::Database::database_execute_command(
-                        "remove_package_from_package_set $conkey $currSet");
-                      Carp::carp("Could not do oda command 'remove_".
-                        "package_from_package_set $conkey $currSet'") if 
+                      $success = OSCAR::Database::del_group_packages(
+                        $currSet,$conkey,\%options,\@errors);
+                      Carp::carp("Could not do oda command 'del_group_packages".
+                        " $conkey $currSet'") if 
                           (!$success);
                       undef $packagesInSet->{$conkey};
                     }
@@ -562,10 +583,10 @@ sub checkboxChangedForSelector
           if ((!(defined $packagesInSet->{$package})) || 
               ($packagesInSet->{$package} != 1))
             {
-              $success = OSCAR::Database::database_execute_command(
-                "add_package_to_package_set $package $currSet");
+              $success = OSCAR::Database::set_group_packages(
+                    $currSet,$package,1,\%options,\@errors);
               Carp::carp("Could not do oda command 
-                'add_package_to_package_set $package $currSet'") if(!$success);
+                'set_group_packages $package $currSet'") if(!$success);
             }
         }
       # Copy any RPMs for the selected package over to the /tftpboot/rpm directory
@@ -583,18 +604,17 @@ sub checkboxChangedForSelector
           $reqhash = SelectorUtils::getIsRequiredByList($reqhash,$package);
           foreach $reqkey (keys %{ $reqhash })
             {
-              if (!((defined $allPackages->{$reqkey}{class}) &&
-                    ($allPackages->{$reqkey}{class} eq 'core')))
+              if (!((defined $allPackages->{$reqkey}{__class}) &&
+                    ($allPackages->{$reqkey}{__class} eq 'core')))
                 {
                   setCheckBoxForPackage($reqkey,0);
                   if ((defined $packagesInSet->{$reqkey}) || 
                       ($packagesInSet->{$reqkey} == 1))
                     {
-                      $success = OSCAR::Database::database_execute_command(
-                        "remove_package_from_package_set " .
-                          "$reqkey $currSet");
+                      $success = OSCAR::Database::del_group_packages(
+                        $currSet,$reqkey,\%options,\@errors);
                       Carp::carp("Could not do oda command 
-                        'remove_package_from_package_set " .
+                        'del_group_packages " .
                           "$reqkey $currSet'") if (!$success);
                       undef $packagesInSet->{$reqkey};
                     }
@@ -605,10 +625,10 @@ sub checkboxChangedForSelector
           if ((defined $packagesInSet->{$package}) || 
               ($packagesInSet->{$package} == 1))
             {
-              $success = OSCAR::Database::database_execute_command(
-                "remove_package_from_package_set $package $currSet");
-              Carp::carp("Could not do oda command 
-                'remove_package_from_package_set $package $currSet'") if 
+              $success = OSCAR::Database::del_group_packages(
+                $currSet,$package,\%options,\@errors);
+              Carp::carp("Could not do oda command 'del_group_packages".
+                " $package $currSet'") if 
                   (!$success);
             }
         }
@@ -678,8 +698,8 @@ sub checkboxChangedForUpdater
       $reqhash = SelectorUtils::getIsRequiredByList($reqhash,$package);
       foreach $reqkey (keys %{ $reqhash })
         {
-          if (!((defined $allPackages->{$reqkey}{class}) &&
-                ($allPackages->{$reqkey}{class} eq 'core')))
+          if (!((defined $allPackages->{$reqkey}{__class}) &&
+                ($allPackages->{$reqkey}{__class} eq 'core')))
             {
               setCheckBoxForPackage($reqkey,0);
             }

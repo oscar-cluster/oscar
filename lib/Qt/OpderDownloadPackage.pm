@@ -3,8 +3,13 @@
 # Created: Wed Jul 30 10:12:49 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
+#
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
+#
+# $Id$
+#########################################################################
 # WARNING! All changes made in this file will be lost!
-
 
 use strict;
 use utf8;
@@ -397,6 +402,8 @@ sub updateOda
   my $tarball;
   my $tardir;
   my $package = $dlPackages[$dlPhase-1]->{package};
+  my %options = ();
+  my @errors = ();
   ($dlPackages[$dlPhase-1]->{downloadURI}[0] =~ /\/([^\/]*)$/) &&
     ($tarball = "/var/cache/oscar/downloads/$1");
 
@@ -414,7 +421,7 @@ sub updateOda
       if (-d $tardir)
         {
           my @args = (
-            "$ENV{OSCAR_HOME}/scripts/read_package_config_xml_into_database",
+            "$ENV{OSCAR_HOME}/scripts/package_config_xmls_to_database",
               $tardir);
           (system(@args) == 0) or
             Carp::carp("Failure updating oda for package $package: $?");
@@ -429,10 +436,10 @@ sub updateOda
           # The downloaded package is not selected to install yet.
           # It should not be in the package_sets_included_packages table.
           my $currSet = "Default";
-          my $success = OSCAR::Database::database_execute_command(
-            "remove_package_from_package_set $pkg $currSet");
-          Carp::carp("Could not do oda command 'remove_".
-            "package_from_package_set $pkg $currSet'") if 
+          my $success = OSCAR::Database::del_group_packages(
+            $currSet,$pkg,\%options,\@errors);
+          Carp::carp("Could not do oda command 'del_group_packages".
+            " $pkg $currSet'") if 
               (!$success);
           chdir($currdir);
         }

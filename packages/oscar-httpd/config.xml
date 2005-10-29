@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
 
 <!--
       Copyright (c) 2004 Revolution Linux
@@ -35,14 +38,32 @@
 
   <description>Configure an apache web server to export /tftpboot/rpm.</description>
 
-  <rpmlist>
-    <filter group="oscar_server" distribution="redhat"/> 
-    <filter group="oscar_server" distribution="fedora"/> 
-      <rpm>httpd</rpm>
-  </rpmlist>
-  <rpmlist>
-    <filter group="oscar_server" distribution="mandrake"/> 
-      <rpm>apache</rpm>
-  </rpmlist>
+  <binary-package-list>
+    <filter>
+      <group>oscar_server</group>
+      <distribution>
+        <name>redhat</name>
+      </distribution>
+    </filter>
+ 
+    <filter>
+      <group>oscar_server</group>
+      <distribution>
+        <name>fedora</name>
+      </distribution>
+    </filter>
+ 
+      <pkg>httpd</pkg>
+  </binary-package-list>
+  <binary-package-list>
+    <filter>
+      <group>oscar_server</group>
+      <distribution>
+        <name>mandrake</name>
+      </distribution>
+    </filter>
+ 
+      <pkg>apache</pkg>
+  </binary-package-list>
 
 </oscar>

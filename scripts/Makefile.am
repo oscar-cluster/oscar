@@ -32,7 +32,6 @@ oscar_SCRIPTS		= \
 			post_clients \
 			post_install \
 			post_rpm_install \
-			read_package_config_xml_into_database \
 			set_global_oscar_values \
 			set_node_nics \
 			set_oscar_interface \

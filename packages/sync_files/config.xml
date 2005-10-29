@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <!--
       
       This file is part of the OSCAR software package.  For license
@@ -32,17 +35,41 @@
     OSCAR compute nodes.
   </description>
 
-  <rpmlist>
-      <filter group="oscar_server" distribution='redhat' />
-      <filter group="oscar_server" distribution='fedora' />
-      <filter group="oscar_server" distribution='mandrake' />
-      <rpm>sync_files</rpm>
-      <rpm>crontabs</rpm>
-  </rpmlist>
-  <rpmlist>
-      <filter group='oscar_server' distribution='suse' />
-      <rpm>sync_files</rpm>
-      <rpm>cron</rpm>
-  </rpmlist>
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>redhat</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>fedora</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>mandrake</name>
+        </distribution>
+      </filter>
+
+      <pkg>sync_files</pkg>
+      <pkg>crontabs</pkg>
+  </binary-package-list>
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>suse</name>
+        </distribution>
+      </filter>
+
+      <pkg>sync_files</pkg>
+      <pkg>cron</pkg>
+  </binary-package-list>
 
 </oscar>

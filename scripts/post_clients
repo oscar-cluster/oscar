@@ -16,6 +16,9 @@
 
 #   This script is designed to be run after the image is built.
 #   It will do all the fixups required.
+#
+#   Copyright (c) 2005 The Trustees of Indiana University.  
+#                      All rights reserved.
 
 # $Id$
 
@@ -38,7 +41,8 @@ my @pkgs = list_selected_packages();
 
 my $return = 0;
 
-foreach my $pkg (@pkgs) {
+foreach my $pkg_ref (@pkgs) {
+    my $pkg = $$pkg_ref{package};
     if(!run_pkg_script($pkg,"post_clients",1)) {
         carp("Couldn't run post_clients script for $pkg");
         $return++;

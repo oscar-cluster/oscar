@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
                          All rights reserved.
@@ -26,7 +29,7 @@
   <summary>System Installation Suite</summary>
   <license>GPL</license>
   <group>Application/System</group>
-  <url>http://sisuite.org/</url>
+  <uri>http://sisuite.org/</uri>
 
   <packager>
     <name>Erich Focht</name>
@@ -35,43 +38,58 @@
 
   <description>The System Installation Suite</description>
 
-  <rpmlist>
-      <rpm>systemconfigurator</rpm>
-      <rpm>systemimager-common</rpm>
-      <rpm>systemimager-client</rpm>
-  </rpmlist>
+  <binary-package-list>
+      <pkg>systemconfigurator</pkg>
+      <pkg>systemimager-common</pkg>
+      <pkg>systemimager-client</pkg>
+  </binary-package-list>
 
-  <rpmlist>
-      <filter group="oscar_server"/>
-      <rpm>systeminstaller</rpm>
-      <rpm>systeminstaller-x11</rpm>
-      <rpm>systemimager-server</rpm>
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+      </filter>
+
+      <pkg>systeminstaller</pkg>
+      <pkg>systeminstaller-x11</pkg>
+      <pkg>systemimager-server</pkg>
       <!-- 
         systemimager-client is needed on oscar_server as core package
         but isn't resolved by dependencies. Has to stay here!
       /-->
-      <rpm>systemimager-client</rpm>
-      <rpm>systemimager-flamethrower</rpm>
-      <rpm>flamethrower</rpm>
-      <rpm>udpcast</rpm>
-      <rpm>atftp-server</rpm>
-  </rpmlist>
+      <pkg>systemimager-client</pkg>
+      <pkg>systemimager-flamethrower</pkg>
+      <pkg>flamethrower</pkg>
+      <pkg>udpcast</pkg>
+      <pkg>atftp-server</pkg>
+  </binary-package-list>
 
-  <rpmlist>
-      <filter group="oscar_server" architecture="ia32" />
-      <rpm>syslinux</rpm>
-      <rpm>systemimager-i386boot-standard</rpm>
-  </rpmlist>
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <architecture>ia32</architecture>
+      </filter>
 
-  <rpmlist>
-      <filter group="oscar_server" architecture="ia64" />
-      <rpm>systemimager-ia64boot-standard</rpm>
-  </rpmlist>
+      <pkg>syslinux</pkg>
+      <pkg>systemimager-i386boot-standard</pkg>
+  </binary-package-list>
 
-  <rpmlist>
-      <filter group="oscar_server" architecture="x86_64" />
-      <rpm>syslinux</rpm>
-      <rpm>systemimager-x86_64boot-standard</rpm>      
-  </rpmlist>
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <architecture>ia64</architecture>
+      </filter>
+
+      <pkg>systemimager-ia64boot-standard</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <architecture>x86_64</architecture>
+      </filter>
+
+      <pkg>syslinux</pkg>
+      <pkg>systemimager-x86_64boot-standard</pkg>      
+  </binary-package-list>
 
 </oscar>

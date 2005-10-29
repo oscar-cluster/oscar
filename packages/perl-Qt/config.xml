@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <!--
       Copyright (c) 2003 NCSA
                          All rights reserved.
@@ -34,16 +38,34 @@
 
   <description>Perl-Qt allows for writing Qt programs in Perl</description>
 
-  <rpmlist>
-    <filter distribution='mandrake' group='oscar_server'/>
-    <rpm>perl-Qt-mdk10</rpm>
-    <rpm>libsmokeqt1</rpm>
-  </rpmlist>
+  <binary-package-list>
+    <filter>
+      <group>oscar_server</group>
+      <distribution>
+        <name>mandrake</name>
+      </distribution>
+    </filter>
 
-  <rpmlist>
-    <filter distribution='fedora' group='oscar_server'/>
-    <filter distribution='redhat' group='oscar_server'/>
-      <rpm>perl-Qt</rpm>
-  </rpmlist>
+    <pkg>perl-Qt-mdk10</pkg>
+    <pkg>libsmokeqt1</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+    <filter>
+      <group>oscar_server</group>
+      <distribution>
+        <name>fedora</name>
+      </distribution>
+    </filter>
+
+    <filter>
+      <group>oscar_server</group>
+      <distribution>
+        <name>redhat</name>
+      </distribution>
+    </filter>
+
+      <pkg>perl-Qt</pkg>
+  </binary-package-list>
 
 </oscar>

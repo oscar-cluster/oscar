@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
                          All rights reserved.
@@ -26,7 +29,7 @@
   <summary>Cluster Command and Control (C3) - command line tool suite</summary>
   <license>freely distributable</license>
   <group>Application/System</group>
-  <url>http://www.csm.ornl.gov/torc/C3/</url>
+  <uri>http://www.csm.ornl.gov/torc/C3/</uri>
 
   <packager>
     <name>Thomas Naughton</name>
@@ -37,17 +40,23 @@
 offers a command line interface for system and user administration
 tasks on a cluster.</description>
 
-  <rpmlist>
-      <filter group="oscar_server"/>
-      <rpm>c3</rpm>
-      <rpm>c3-profiled</rpm>
-  </rpmlist>
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+      </filter>
 
-  <rpmlist>
-      <filter group="oscar_clients"/>
-      <rpm>c3-ckillnode</rpm>
-      <rpm>c3-c3cmd-filter</rpm>
-  </rpmlist>
+      <pkg>c3</pkg>
+      <pkg>c3-profiled</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_clients</group>
+      </filter>
+
+      <pkg>c3-ckillnode</pkg>
+      <pkg>c3-c3cmd-filter</pkg>
+  </binary-package-list>
  
  <!-- 
      Removing the following (comment out for now) b/c I believe
@@ -55,10 +64,16 @@ tasks on a cluster.</description>
      file/link in the RPM MANIFEST to satisfy the c3 'Requires:' line.
    -->
  <!--
-  <rpmlist>
-      <filter group="oscar_server" distribution='mandrake' />
-      <rpm>python2-compat</rpm>
-  </rpmlist>
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>mandrake</name>
+        </distribution>
+      </filter>
+
+      <pkg>python2-compat</pkg>
+  </binary-package-list>
    -->
 
 </oscar>

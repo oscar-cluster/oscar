@@ -2,7 +2,7 @@
 
 # Copyright 2001-2002 International Business Machines
 #                     Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                    All rights reserved.
 # $Id$
 # 
@@ -31,11 +31,11 @@ use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
 use File::Basename;
-use OSCAR::Package;
-use OSCAR::PackageBest;
 use OSCAR::Network;
 use OSCAR::Logger;
 use OSCAR::Database;
+use OSCAR::Package;
+use OSCAR::PackageBest;
 use Carp;
 use Data::Dumper;
 
@@ -55,16 +55,19 @@ my $RPMPOOL = $OSCAR::Package::RPM_POOL;
 my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
 
 # Get a list of all non-core packages
-
-my @packages = list_selected_packages("noncore");
-oscar_log_subsection("Identified non-core packages: " . join(' ', @packages));
-
-# Get list of RPMs from the non-core packages
-
+# and list of RPMs from the non-core packages
+my $sel_group = get_selected_group;
+my @packages = list_selected_packages("noncore",$sel_group);
+my @list_packages = ();
 my @rpms = ();
-foreach my $package (@packages) {
-    push @rpms, rpmlist($package,"oscar_server");
+foreach my $pkg_ref ( @packages ) {
+    my $opkg = $$pkg_ref{package};
+    my $ver = $$pkg_ref{version};
+    push @list_packages, $opkg;
+    push @rpms, rpmlist($opkg,$ver,"oscar_server");
 }
+oscar_log_subsection("Identified non-core packages: " . join(' ', @list_packages));
+
 
 # Now install the rpms that we found
 
@@ -76,7 +79,8 @@ oscar_log_subsection("Successfully installed server non-core RPMs");
 
 #
 # NEST
-#
+# 
+# Update the status of the non-core packages from installable to installed.
 # Unless node_config_revs already has the record of node_id and configurations_id,
 # do the following step. Otherwise, skip it.
 # 1. Insert core packages into config_opkgs table for oscar_server.
@@ -85,45 +89,21 @@ oscar_log_subsection("Successfully installed server non-core RPMs");
 #
 
 # START LOCKING FOR NEST
-my @tables = ("nodes", "configurations", "packages", "config_opkgs", "node_config_revs", "oda_shortcuts" );
+my @tables = ("Node_Package_Status", "Nodes", "Packages","Node_Packages");
 my %options = ();
 my @errors = ();
 locking("write", \%options, \@tables, \@errors);
-
-my @nodes_id = ();
-my @configs_id = ();
-dec_already_locked("read_records nodes id name=oscar_server", \@nodes_id);
-my $node_id = pop @nodes_id;
-dec_already_locked("read_records configurations id name=oscar_server", \@configs_id);
-my $config_id = pop @configs_id;
-print "Inserting NON-CORE oscar packages into config_opkgs table :\n";
-foreach my $pkg (@packages){
-    my $cmd = "delete_records config_opkgs config_opkgs.package_id=packages.id packages.name=$pkg config_opkgs.configurations_id=$config_id";
-    do_it_or_die( "$cmd",
-                  undef,
-                  "cannot delete config_opkgs record for $pkg" );
-} 
-my $syslog = "OK";
-foreach my $opkg (@packages){
-    my @packages_id = ();
-    dec_already_locked("read_records packages id name=$opkg", \@packages_id);
-    my $package_id = pop @packages_id;
-    do_it_or_die( "add_config_opkgs $config_id $package_id $syslog",
-                  undef,
-                  "cannot create config_opkgs record for oscar_server" );
-}
-
 
 # Have installed Server RPMs & did not croak, so mark packages.<pkg>installed 
 # true. If clients (image) fail they will set it to false. (best effort for now)
 
 oscar_log_subsection("Marking installed bit in ODA for server non-core RPMS");
 
-foreach my $pkg (@packages) {
-        oscar_log_subsection("Set package: $pkg");
-        my $ok_rslt = dec_already_locked("package_mark_installed $pkg", undef, \@errors);
-        croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
-}
+my $requested = 7; # "Installed" flag for the Node_Package_Status"
+die "$0:Failed to update the table Node_Package_Status"
+    if(!update_node_package_status(\%options,"oscar_server",\@packages,$requested,\@errors));
+
+
 # UNLOCKING FOR NEST
 unlock(\%options, \@errors);
 
@@ -134,9 +114,11 @@ oscar_log_subsection("Done marking installed bits in ODA");
 
 oscar_log_subsection("Running post_server_install scripts " .
 		     "for server non-core packages");
-foreach my $package (@packages) {
-    run_pkg_script($package,"post_server_install") 
-	or croak("Failed running post_server_install for $package");
+foreach my $package (@list_packages) {
+    if($package ne "networking"){
+        run_pkg_script($package,"post_server_install") 
+        or croak("Failed running post_server_install for $package");
+    }
 }
 oscar_log_subsection("Successfully ran server non-core package ".
 		     "post_server_install scripts");

@@ -21,6 +21,10 @@
 #
 #  Copyright (c) 2003 The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
+#  Copyright (c) 2005 The Trustees of Indiana University.  
+#                     All rights reserved.
+#
+# $Id$
 #########################################################################
 
 use strict;
@@ -33,6 +37,9 @@ use Qt;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use Carp;
+
+my %options = ();
+my @errors = ();
 
 my $allPackages;        # Cached hash reference of all available packages
 my $dependtree;         # Dependency tree for requires/conflicts
@@ -64,13 +71,14 @@ sub addTypeNameFieldToPackage
   my($field,$package) = @_;
   my $href;
   my @list = ();
-  my $success = OSCAR::Database::database_execute_command(
-    "read_records packages_$field package=$package type name", \@list);
-  Carp::carp("Could not do oda command 'read_records packages_$field ".
-       "package=$package type name'") if (!$success);
-  foreach my $item (@list)
+  my $success = OSCAR::Database::get_packages_related_with_package (
+        $field, $package, \@list, \%options, \@errors);
+  Carp::carp("Could not do oda command 'get_packages_related_with_package " .
+        "$field, $package'") if (!$success);
+  foreach my $item_ref (@list)
     {
-      my($type,$name) = split / /, $item, 2;
+      my $type = $$item_ref{type};
+      my $name = $$item_ref{p2_name};
       my $href;
       $href->{type} = $type;
       $href->{name} = $name;
@@ -114,14 +122,20 @@ sub getAllPackages # -> $allPackages
   return $allPackages if ($allPackages);
 
   # First, get information on all packages in the local OSCAR packages dir
-  my @requested = ("name","package","installable","class","description",
-                   "version","directory",
-                   "packager_name","packager_email",
+  my @requested = ("name","package","__class","description",
+                   "version","path",
+                   "packager_name","packager_email"
                    # "filter_architecture","filter_distribution",
                    # "filter_distribution_version"
                   );
-  $allPackages = OSCAR::Database::database_read_table_fields(
-    "packages",\@requested,undef);
+                  
+  my $allPackages_lists = OSCAR::Database::get_package_info(\%options,\@errors,\@requested);
+  foreach my $pack_ref (@$allPackages_lists){
+    my $pack = $$pack_ref{package};
+    foreach my $key (keys %$pack_ref){
+        $allPackages->{$pack}{$key} = $$pack_ref{$key};
+    }    
+  }
 
   my $version;
   my $href;
@@ -131,7 +145,7 @@ sub getAllPackages # -> $allPackages
       # For each of the OSCAR packages read in above, add a "location" field
       # to correspond to the Location column of the packagesTable.  
       $allPackages->{$pack}{location} = 
-        (($allPackages->{$pack}{directory} =~ /\/var\/lib\/oscar\/packages/) ?
+        (($allPackages->{$pack}{path} =~ /\/var\/lib\/oscar\/packages/) ?
          "OPD" : "OSCAR");
 
       # Next, get the provides, requires, and conflicts lists for each
@@ -340,22 +354,22 @@ sub createDefaultPackageSet # -> ($success)
 #########################################################################
 
   # First create a new package set name 'Default'
-  my $success = OSCAR::Database::database_execute_command(
-    "create_package_set Default");
+  my $success = OSCAR::Database::set_groups(
+        "Default",\%options,\@errors);
   if ($success)
     { 
       # Make Default the "selected" package set
-      $success = OSCAR::Database::database_execute_command(
-        "set_selected_package_set Default");
+      $success = OSCAR::Database::set_groups_selected(
+        "Default",\%options,\@errors);
 
       # Then, add all packages to this Default set
       getAllPackages();
       foreach my $pack (keys %{ $allPackages })
         {
-          $success = OSCAR::Database::database_execute_command(
-            "add_package_to_package_set $pack Default"); 
-          Carp::carp("Could not do oda command 'add_package_to_package_set " .
-            "$pack Default'") if (!$success);
+          $success = OSCAR::Database::set_group_packages(
+                "Default",$pack,1,\%options,\@errors);
+          Carp::carp("Could not do oda command 'set_group_packages " .
+            "$pack, Default'") if (!$success);
         }
     }
 
@@ -382,24 +396,42 @@ sub populatePackageSetList
   my @packageSets;           # List of package sets in oda
   my $createDefault = 0;     # Should we create a "Default" package set?
 
-  my $success = OSCAR::Database::database_execute_command(
-    "package_sets",\@packageSets);
+  my @groups_list = ();  
+  my $success = OSCAR::Database::get_groups_for_packages(
+        \@groups_list,\%options,\@errors);
+
+  foreach my $groups_ref (@groups_list){
+    push @packageSets, $$groups_ref{group_name};
+  }  
   if ($success)
     {
       if ((scalar @packageSets) > 0) # Make sure there's at least 1 package set
         {
           foreach my $pkg (sort { lc($a) cmp lc($b) } @packageSets)
             { # Insert Package Set names in alphabetical order - ignore case
-              $widget->insertItem($pkg,-1)
+              $widget->insertItem($pkg,-1);
             }
 
           # For the packageSetComboBox, set the "selected" package set
           if ($widget->className() eq "QComboBox")
             {
               my @selpack;
-              my $success = OSCAR::Database::database_execute_command(
-                "selected_package_set",\@selpack);
-              $widget->setCurrentText($selpack[0]) if (scalar @selpack > 0);
+              my @selected = ();
+              my $success = OSCAR::Database::get_selected_group_packages(
+                   \@selected, \%options, \@errors);
+              foreach my $sel_ref (@selected){
+                push @selpack, $$sel_ref{package};
+              }  
+              #
+              # I have no idea why selpack[0] was shown at the first element of
+              # the list of PackageSets
+              #$widget->setCurrentText($selpack[0]) if (scalar @selpack > 0);
+              #$widget->setCurrentText($packageSets[0]) if (scalar @packageSets > 0);
+              my $selected_group = OSCAR::Database::get_selected_group(\%options, \@errors);
+              if(!$selected_group){
+                  $selected_group = "Default";
+              }
+              $widget->setCurrentText($selected_group) if (scalar @packageSets > 0);
             }
         }
       else

@@ -19,6 +19,9 @@
 #   This script reads the SIS database and uses the information to update 
 #   the OSCAR database tables for nodes, NICS, and networks.
 
+#   Copyright (c) 2005 The Trustees of Indiana University.  
+#                      All rights reserved.
+
 # $Id$
 
 use strict;
@@ -37,14 +40,14 @@ use oda;
 # read and/or set in the oscar database, and the names that
 # they correspond to in the sis database
 my %nics_fields_translations = ( 'ip'      => "ip",
-				 'mac'     => "mac",
-				 'netmask' => "netmask" );
+				 'mac'     => "mac");
+#				 'netmask' => "netmask" );
 
 # list of oscar database nodes table fields that we want to
 # read and/or set in the oscar database, and the names that
 # they correspond to in the sis database
 my %nodes_fields_translations = ( 'cpu_num'   => "proccount",
-				  'domain'    => "domainname",
+				  'dns_domain'    => "domainname",
 				  'fqdn'      => "hostname",
 				  'hostname'  => "hostname",
 				  'installer' => undef ); 
@@ -54,106 +57,9 @@ my %oda_options = ( );
 
 # set default option values for this program
 my %options = ( 'changes'      => 1,
-		'debug'        => 0,
-		'verbose'      => 0 );
+                'debug'        => 0,
+                'verbose'      => 0 );
 
-#=================================================================
-# executes an oda database command/shortcut, returning the first
-# non-blank result field, or undefined if no result fields.
-# Prints out usage information and then exits the program if
-# an oda error occurred.
-
-sub do_it_first_or_usage {
-    my ( $command, $error ) = @_;
-    my @command_results = do_it_split_or_usage( $command,
-						$error );
-    return undef if !@command_results;
-    my $command_result_ref = shift @command_results;
-    return shift @$command_result_ref;
-}
-
-#=================================================================
-# executes an oda database command/shortcut, returning a list of
-# all of the non-blank result fields in the results returned by oda.
-# Prints out usage information and then exits the program if
-# an oda error occurred.
-
-sub do_it_list_or_usage {
-    my ( $command, $error ) = @_;
-    my @command_results = do_it_split_or_usage( $command,
-						$error );
-    my @list = ();
-    foreach my $command_result_ref ( @command_results ) {
-	push @list, @$command_result_ref;
-    }
-    return @list;
-}
-
-#=================================================================
-# executes an oda database command/shortcut, returning an array of
-# scalar results. Only scalar results that have at least one non-
-# blank field are included in the returned results.
-# Prints out usage information and then exits the program if
-# an oda error occurred.
-
-sub do_it_or_usage {
-    my ( $command, $error ) = @_;
-    my @error_strings = ();
-    my @command_results = ();
-    print "Executing ODA command: $command\n" if $options{ verbose };
-    if ( ! oda::execute_command( \%oda_options, 
-				 $command,
-				 \@command_results,
-				 \@error_strings ) ) {
-	oda::disconnect( \%oda_options );
-	usage( 1, "command <$command> failed", $error, 
-	       @error_strings );
-    }
-    chomp @command_results;
-    return grep( /[^\s]/, @command_results ); 
-}
-
-#=================================================================
-# executes an oda database command/shortcut, returning an array of
-# references to record arrays. Each record array is one oda command
-# returned value, split into non-blank fields. Only results that 
-# have at least one non-blank field are returned in the array.
-# Prints out usage information and then exits the program if
-# an oda error occurred.
-
-sub do_it_split_or_usage {
-    my ( $command, $error ) = @_;
-    my @command_results = do_it_or_usage( $command,
-					  $error );
-    my @returned = ();
-    foreach my $result ( @command_results ) {
-	my @fields = split( '\s+', $result );
-	push @returned, \@fields if @fields;
-    }
-    return @returned;
-}
-
-#=================================================================
-# executes an oda database command/shortcut that does not result
-# in any output. A flag is returned, non-zero for success.
-
-sub execute_it {
-    my ( $command, $error ) = @_;
-    my @error_strings = ();
-    my @command_results = ();
-    print "Executing ODA command: $command\n" if $options{ verbose };
-    my $status = oda::execute_command( \%oda_options, 
-				       $command,
-				       \@command_results,
-				       \@error_strings );
-    if ( @error_strings ) {
-	print STDERR "\n";
-	foreach my $error_string ( @error_strings ) {
-	    print STDERR "$0: $error_string\n";
-	}
-    }
-    return $status;
-}
 
 #=================================================================
 
@@ -178,28 +84,6 @@ sub print_hash {
     }
 }
 
-#=================================================================
-# executes an oda read_records command, returning an array of
-# references to hashes.
-
-sub read_records_or_usage {
-    my ( $tables_fields_ref, $wheres_ref, $error ) = @_;
-    my @error_strings = ();
-    my @command_results = ();
-    if ( ! oda::read_records( \%oda_options, 
-			      $tables_fields_ref,
-			      $wheres_ref,
-			      \@command_results,
-			      1,
-			      \@error_strings ) ) {
-	oda::disconnect( \%oda_options );
-	usage( 1, "command read_records tables_fields=(" . 
-	       join(',', @$tables_fields_ref ) . ") wheres=(" .
-	       join(',', @$wheres_ref ) . ") failed", $error, 
-	       @error_strings );
-    }
-    return @command_results; 
-}
 
 #=================================================================
 
@@ -271,7 +155,7 @@ if ( exists $options{oda} ) {
 # START LOCKING FOR NEST && open the oscar database
 my @error_strings = ();
 
-my @tables = ("nodes","packages","nics","oda_shortcuts", "configurations", "node_groups", "oscar", "node_groups_included_configurations", "package_configurations", "node_groups_included_node_groups");
+my @tables = ("Nodes","Packages","Nics","Group_Nodes","Networks","Clusters");
 if(! locking("write", \%oda_options, \@tables, \@error_strings)){
     warn shift @error_strings while @error_strings;
     usage( 1, "cannot lock the database and connect to the OSCAR database" );
@@ -284,11 +168,10 @@ if(! locking("write", \%oda_options, \@tables, \@error_strings)){
 # mess with since that cannot be a SIS installed node)
 
 print "using ODA to read the OSCAR database for node and adapters information ...\n";
-my @nodes_tables_fields = ( "nodes", "name", keys %nodes_fields_translations );
-my @nodes_wheres = ( "nodes.name!=oscar_server" );
-my @nodes_results = read_records_or_usage( \@nodes_tables_fields,
-					   \@nodes_wheres,
-					   "cannot read the node names and information" );
+my @nodes_results =(); 
+
+my $server = "oscar_wizard";
+get_client_nodes_info($server,\@nodes_results,\%oda_options,\@error_strings);
 
 # build up the oscar database nodes information hash
 
@@ -324,9 +207,12 @@ foreach my $node_result_ref ( @nodes_results ) {
         # get a list of the nic interface names for this node
 	# and make an reference in the node hash for it's nics
 
-	my @nic_names =  do_it_list_or_usage
-	    ( "list_nics_on_node $node_name",
-	      "cannot read the nics for node $node_name" );
+    my @nics_tmp = ();
+    get_nics_info_with_node($node_name,\@nics_tmp,\%oda_options,\@error_strings);
+	my @nic_names = ();
+    foreach my $nic_ref (@nics_tmp){
+        push @nic_names, $$nic_ref{name};
+    }    
 	print "$0: for node $node_name nics=(" . 
 	    join(',', @nic_names ) . ")\n" if $options{ debug };
 	my %nics = ();
@@ -346,14 +232,12 @@ foreach my $node_result_ref ( @nodes_results ) {
 	    foreach my $field ( keys %nics_fields_translations ) { 
 		push @nics_tables_fields, "nics.$field";
 	    }
-	    my @nics_wheres = ( "nodes.name=$node_name",
-				"nodes.id=nics.node_id",
-				"nics.name=$nic_name" );
+        my @nics_results = ();
+        get_nics_with_name_node($nic_name, $node_name,\@nics_results,\%oda_options,\@error_strings);
+
 	    my $nic_error = 
 		"cannot read the node $node_name nic $nic_name information";
-	    my @nics_results = read_records_or_usage( \@nics_tables_fields,
-						      \@nics_wheres,
-						      $nic_error );
+        
 	    if ( ! @nics_results ) { 
 		print "$nic_error\n";
 	    } else {
@@ -488,8 +372,7 @@ foreach my $node_name ( keys %oscar_nodes ) {
 		" DELETING node $node_name from the OSCAR database ...\n";
 	    if ( $options{ changes } ) {
 		print "Done deleting node $node_name from the OSCAR database.\n"
-		    if execute_it( "delete_node $node_name",
-				   "deleting node $node_name" );
+            if delete_node($node_name,\%oda_options,@error_strings);
 	    }
 	    delete $oscar_nodes{ $node_name };
 	}
@@ -509,9 +392,7 @@ foreach my $node_name ( keys %sis_nodes ) {
 	    " not in the OSCAR database, CREATING node $node_name ...\n";
 	if ( $options{ changes } ) {
 	    print "Done creating node $node_name in the OSCAR database.\n"
-		if $oscar_node_exists = execute_it
-		( "create_node $node_name",
-		  "creating node $node_name" );
+        if set_node($node_name,\%oda_options,@error_strings);
 	}
 	my %node = ();
 	$oscar_nodes{ $node_name } = \%node;
@@ -522,14 +403,14 @@ foreach my $node_name ( keys %sis_nodes ) {
 
     # if the node doesn't have it's installer field set to sis, do so
 
-    if ( ! exists $$oscar_node_ref{ installer } ||
-	 $$oscar_node_ref{ installer } ne "sis" ) {
+    if ( $node_name ne "oscar_server" &&
+         ! exists $$oscar_node_ref{ installer } ||
+	     $$oscar_node_ref{ installer } ne "sis" ) {
 	print "Setting node $node_name field installer to \"sis\" ...\n";
 	if ( $options{ changes } ) {
+        my %field_value = ("installer"=>"sis");
 	    print "Done setting node $node_name field installer to \"sis\"\n"
-		if execute_it
-		( "modify_records nodes name=$node_name installer~sis",
-		  "setting node $node_name field installer to sis" );
+        if update_node($node_name,\%field_value,\%oda_options,\@error_strings);
 	}
     }
 
@@ -548,11 +429,10 @@ foreach my $node_name ( keys %sis_nodes ) {
 		     $oscar_value ne $sis_value ) {
 		    print "Setting OSCAR database node $node_name" .
 			" field $field to \"$sis_value\" ...\n";
-		    if ( $options{ changes } ) {
-			print "Done setting field $field to \"$sis_value\".\n"
-			    if execute_it
-			    ( "modify_records nodes.name=$node_name nodes.$field~$sis_value",
-			      "setting field $field to \"$sis_value\"" );
+		    if ( $options{ changes } && $node_name ne "oscar_server" ) {
+                my %field_value = ( $field=>$sis_value );
+                print "Done setting field $field to \"$sis_value\".\n"
+                    if update_node($node_name,\%field_value,\%oda_options,\@error_strings);
 		    }
 		}
 	    }
@@ -577,9 +457,7 @@ foreach my $node_name ( keys %sis_nodes ) {
 		" but is not in the OSCAR database, CREATING nic $nic_name ...\n";
 	    if ( $options{ changes } ) {
 		print "Done creating nic $nic_name in the OSCAR database.\n"
-		    if $oscar_nic_exists = execute_it
-		    ( "create_nic_on_node $nic_name $node_name",
-		      "creating node $node_name" );
+            if set_nics_with_node($nic_name,$node_name,undef,\%oda_options,\@error_strings);
 	    }
 	    my %nic = ();
 	    $$oscar_nics_ref{ $nic_name } = \%nic;
@@ -602,10 +480,9 @@ foreach my $node_name ( keys %sis_nodes ) {
 		    print "Setting OSCAR database node $node_name nic $nic_name" .
 			" field $field to \"$sis_value\" ...\n";
 		    if ( $options{ changes } ) {
+                my %field_value = ($field=>$sis_value);
 			print "Done setting field $field to \"$sis_value\".\n"
-			    if execute_it
-			    ( "modify_records nodes.name=$node_name nodes.id=nics.node_id nics.name=$nic_name nics.$field~$sis_value",
-			      "setting field $field to \"$sis_value\"" );
+                if set_nics_with_node($nic_name,$node_name,\%field_value,\%oda_options,\@error_strings);
 		    }
 		}
 	    }

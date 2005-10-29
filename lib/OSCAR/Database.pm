@@ -17,8 +17,12 @@ package OSCAR::Database;
 
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
+#
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
 use strict;
-use lib "/usr/lib/perl5/site_perl";
+use lib "$ENV{OSCAR_HOME}/lib/OSCAR","/usr/lib/perl5/site_perl";
 use Carp;
 use vars qw(@EXPORT $VERSION @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
@@ -28,26 +32,79 @@ my $oda_available = 0;
 my %options = ();
 my $options_ref = \%options;
 my $database_connected = 0;
+my $CLUSTER_NAME = "oscar";
+my $DEFAULT = "Default";
 use Data::Dumper;
 
+# We can not use oda until perl DBI and DB related programs
+# are installed.
+if(-e '/etc/odapw'){
+    eval "use oda"; 
+} 
+
 @EXPORT = qw( database_calling_traceback
-	      database_connect 
-	      database_disconnect 
-	      database_execute_command 
-	      database_find_node_name
-	      database_hostname_to_node_name
-	      database_program_variable_get
-	      database_program_variables_get
-	      database_program_variable_put
-	      database_program_variables_put
-	      database_read_filtering_information
-	      database_read_table_fields 
-	      database_return_list
-	      database_rpmlist_for_package_and_group 
-	      dec_already_locked
-	      locking
-	      single_dec_locked
-	      unlock);
+              database_connect 
+              database_disconnect 
+              database_execute_command 
+              database_find_node_name
+              database_hostname_to_node_name
+              database_program_variable_get
+              database_program_variables_get
+              database_program_variable_put
+              database_program_variables_put
+              database_read_filtering_information
+              database_read_table_fields 
+              database_return_list
+              database_rpmlist_for_package_and_group 
+              create_table
+              insert_into_table
+              update_table
+              select_table
+              delete_table
+              get_client_nodes
+              get_packages_related_with_package
+              get_packages_switcher
+              get_packages_with_class
+              set_group_packages
+              del_group_packages
+              get_selected_group
+              get_selected_group_packages
+              get_group_packages_with_groupname
+              update_node_package_status
+              update_node_package_status_with_opkg
+              update_node
+              get_node_package_status_with_group_node
+              get_node_package_status_with_node
+              is_installed
+              get_package_info_with_name
+              get_client_nodes_info
+              get_node_info_with_name
+              get_nics_info_with_node
+              get_nics_with_name_node
+              set_nics_with_node
+              get_gateway
+              get_cluster_info_with_name
+              insert_packages
+              update_packages
+              insert_pkg_rpmlist
+              get_installable_packages
+              get_groups_for_packages
+              get_groups
+              set_groups
+              set_groups_selected
+              del_groups
+              set_group_nodes
+              set_all_groups
+              set_status
+              set_images
+              set_image_packages
+              set_node
+              link_node_nic_to_network
+              do_select
+              dec_already_locked
+              locking
+              single_dec_locked
+              unlock);
 
 #
 # prints a traceback of the call stack
@@ -58,11 +115,11 @@ sub calling_traceback {
     my ( $package, $filename, $line, $subroutine, $hasargs, 
     $wantarray, $evaltext, $is_require, $hints, $bitmask );
     do {
-	( $package, $filename, $line, $subroutine, $hasargs, $wantarray,
-	  $evaltext, $is_require, $hints, $bitmask ) = caller ( $level );
-	print "called from $filename\:$line $subroutine\(\)\n"
-	    if defined $filename;
-	$level++;;
+    ( $package, $filename, $line, $subroutine, $hasargs, $wantarray,
+      $evaltext, $is_require, $hints, $bitmask ) = caller ( $level );
+        print "called from $filename\:$line $subroutine\(\)\n"
+            if defined $filename;
+        $level++;;
     } while defined $filename;
 }
 
@@ -84,49 +141,49 @@ sub calling_traceback {
 
 sub database_connect {
     my ( $print_errors, 
-	 $passed_options_ref ) = @_;
+     $passed_options_ref ) = @_;
     $options_ref = $passed_options_ref
-	if defined $passed_options_ref &&
-	ref($passed_options_ref) eq "HASH";
+    if defined $passed_options_ref &&
+    ref($passed_options_ref) eq "HASH";
     if ( $$options_ref{debug} ) {
-	my ($package, $filename, $line) = caller;
-    	print "$0: in Database\:\:connect called from package=$package $filename\:$line\n";
+    my ($package, $filename, $line) = caller;
+        print "$0: in Database\:\:connect called from package=$package $filename\:$line\n";
     }
 
     # if the database is not already available, ...
     if ( ! $database_connected ) {
 
-	# if oda was not installed the last time that 
-	# this was called, try to load in the module again
-	if ( ! $oda_available ) {
-	    eval "use oda";
-	    $oda_available = ! $@;
-	    carp("in database_connect cannot use oda: $@") if ! $oda_available;
-	}
-	print "$0: database_connect now oda_available=$oda_available\n" 
-	    if $$options_ref{debug};
-	
-	# assuming oda is available now, ...
-	if ( $oda_available ) {
+    # if oda was not installed the last time that 
+    # this was called, try to load in the module again
+    if ( ! $oda_available ) {
+        eval "use oda";
+        $oda_available = ! $@;
+        carp("in database_connect cannot use oda: $@") if ! $oda_available;
+    }
+    print "$0: database_connect now oda_available=$oda_available\n" 
+        if $$options_ref{debug};
+    
+    # assuming oda is available now, ...
+    if ( $oda_available ) {
 
-	    # try to connect to the database
-	    my @error_strings = ();
-	    my $error_strings_ref = ( defined $print_errors && 
-				      ref($print_errors) eq "ARRAY" ) ?
-				      $print_errors : \@error_strings;
-	    if ( oda::connect( $options_ref,
-			       $error_strings_ref ) ) {
-		print "$0: database_connect connect worked\n" if $$options_ref{debug};
-		$database_connected = 1;
-	    }
-	    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-		warn shift @$error_strings_ref while @$error_strings_ref;
-	    }
-	}
+        # try to connect to the database
+        my @error_strings = ();
+        my $error_strings_ref = ( defined $print_errors && 
+                      ref($print_errors) eq "ARRAY" ) ?
+                      $print_errors : \@error_strings;
+        if ( oda::oda_connect( $options_ref,
+                   $error_strings_ref ) ) {
+        print "$0: database_connect connect worked\n" if $$options_ref{debug};
+        $database_connected = 1;
+        }
+        if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+        }
+    }
     }
 
     print "$0: database_connect returning database_connected=$database_connected\n" 
-	if $$options_ref{debug};
+    if $$options_ref{debug};
     return $database_connected;
 }
 
@@ -138,15 +195,15 @@ sub database_connect {
 sub database_disconnect {
 
     if ( $$options_ref{debug} ) {
-	my ($package, $filename, $line) = caller;
-    	print "$0: in Database\:\:disconnect called from package=$package $filename\:$line\n";
+    my ($package, $filename, $line) = caller;
+        print "$0: in Database\:\:disconnect called from package=$package $filename\:$line\n";
     }
 
     # if the database is not connected, done
     return 1 if ! $database_connected;
 
     # disconnect from the database
-    oda::disconnect( $options_ref, undef );
+    oda::oda_disconnect( $options_ref, undef );
     $database_connected = 0;
 
     return 1;
@@ -191,25 +248,25 @@ sub database_execute_command {
 
     my ( $command_args_ref,
          $results_ref,
-	 $print_errors ) = @_;
+     $print_errors ) = @_;
 
     # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	    return undef;
+    OSCAR::Database::database_connect( $print_errors ) ||
+        return undef;
 
     # execute the command
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
     my $success = oda::execute_command( $options_ref,
-					$command_args_ref,
-					$results_ref,
-					$error_strings_ref );
+                    $command_args_ref,
+                    $results_ref,
+                    $error_strings_ref );
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	warn shift @$error_strings_ref while @$error_strings_ref;
+    warn shift @$error_strings_ref while @$error_strings_ref;
     }
 
     # if we weren't connected to the database when called, disconnect
@@ -232,20 +289,24 @@ sub single_dec_locked {
          $type_of_lock,
          $tables_ref,
          $results_ref,
-	 $print_errors ) = @_;
+     $print_errors ) = @_;
 
     # execute the command
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
     my @tables = ();
     if ( (ref($tables_ref) eq "ARRAY")
         && (defined $tables_ref)
         && (scalar @$tables_ref != 0) ){
         @tables = @$tables_ref;
     } else {
-        chomp(@tables = `oda list_tables`);
+        #chomp(@tables = oda::list_tables);
+        my $all_tables_ref = oda::list_tables( $options_ref, $error_strings_ref );
+        foreach my $table (keys %$all_tables_ref){
+            push @tables, $table;
+        }    
     }
     my $lock_type = (defined $type_of_lock)? $type_of_lock : "READ";
     # START LOCKING FOR NEST && open the database
@@ -254,14 +315,14 @@ sub single_dec_locked {
         return 0;
         #die "$0: cannot connect to oda database";
     }
-    my $success = oda::execute_command( $options_ref,
-					$command_args_ref,
-					$results_ref,
-					$error_strings_ref );
+    my $success = oda::do_query( $options_ref,
+                    $command_args_ref,
+                    $results_ref,
+                    $error_strings_ref );
     # UNLOCKING FOR NEST
     unlock($options_ref, $error_strings_ref);
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	warn shift @$error_strings_ref while @$error_strings_ref;
+    warn shift @$error_strings_ref while @$error_strings_ref;
     }
     
     return $success;
@@ -276,27 +337,27 @@ sub single_dec_locked {
 #
 sub dec_already_locked {
 
-    my ( $command_args_ref,
-         $results_ref,
-	 $print_errors ) = @_;
+    my ( $sql_command,
+     $print_errors ) = @_;
 
     # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	    return undef;
+    OSCAR::Database::database_connect( $print_errors ) ||
+        return undef;
 
     # execute the command
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
-    my $success = oda::execute_command( $options_ref,
-					$command_args_ref,
-					$results_ref,
-					$error_strings_ref );
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
+    my $success =  oda::do_sql_command( $options_ref,
+                                $sql_command,
+                                undef,
+                                undef,
+                                $error_strings_ref );
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	warn shift @$error_strings_ref while @$error_strings_ref;
+    warn shift @$error_strings_ref while @$error_strings_ref;
     }
 
     # if we weren't connected to the database when called, disconnect
@@ -321,24 +382,24 @@ sub database_find_node_name {
     my ( $print_errors ) = @_;
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
 
     # find the hostname of this machine
     my $hostname = `hostname 2>/dev/null`;
     chomp $hostname;
     my @hostname_fields = split( ' ', $hostname );
     if ( scalar @hostname_fields != 1 ) {
-	push @$error_strings_ref,
-	"$0: in database_find_node_name hostname command returned unknown output <$hostname>";
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
-	return undef;
+    push @$error_strings_ref,
+    "$0: in database_find_node_name hostname command returned unknown output <$hostname>";
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    return undef;
     }
 
     return database_hostname_to_node_name( $hostname,
-					   $print_errors );
+                       $print_errors );
 }
 
 # Searches the database nodes table for a record matching
@@ -356,77 +417,84 @@ sub database_find_node_name {
 sub database_hostname_to_node_name {
     
     my ( $hostname, 
-	 $print_errors ) = @_;
+     $print_errors ) = @_;
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
 
     # find the name, domain, and hostname field values for all
     # of the nodes table records in the database
     my @requested_fields = qw( hostname domain );
-    my $node_records_ref = database_read_table_fields( "nodes",
-						       \@requested_fields,
-						       undef,
-						       undef,
-						       $print_errors );
+    my $sql = "SELECT * FROM Nodes";
+    my @node_records = ();
+    my $node_records_ref = \@node_records;
+    oda::do_query($options_ref,
+                $sql,
+                $node_records_ref,
+                $print_errors );
+#    my $node_records_ref = database_read_table_fields( "Nodes",
+#                               \@requested_fields,
+#                               undef,
+#                               undef,
+#                               $print_errors );
     return undef if ! defined $node_records_ref;
-    if ( ! keys %$node_records_ref ) {
-	push @$error_strings_ref,
-	"$0: in database_find_node_name cannot find any node names in database";
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
-	return undef;
+    if ( ! @$node_records_ref ) {
+    push @$error_strings_ref,
+    "$0: in database_find_node_name cannot find any node names in database";
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    return undef;
     }
 
     # loop through the node records ...
-    foreach my $node_name ( keys %$node_records_ref ) {
-	my $node_record_ref = $$node_records_ref{ $node_name };
-	# match the given hostname to the hostname field
-	return $node_name
-	    if defined $$node_record_ref{ hostname } &&
-	    $hostname eq $$node_record_ref{ hostname };
-	# match the given hostname to the name field
-	return $node_name
-	    if $hostname eq $node_name;
-	# if the given hostname includes a domain, ...
-	if ( $hostname =~ /\./ ) {
-	    # find the given hostname without the domain
-	    my @hostname_fields = split( '.', $hostname );
-	    my $hostname_without_domain = $hostname_fields[0];
-	    # match the domain-less given hostname to
-	    # the record hostname field
-	    return $node_name 
-		if exists $$node_record_ref{ hostname } &&
-		$hostname_without_domain eq 
-		$$node_record_ref{ hostname };
-	    # match the domain-less given hostname to
-	    # the record name field
-	    return $node_name 
-		if $hostname_without_domain eq $node_name;
-	}
-	# if the record hostname field includes a domain, ...
-	if ( exists $$node_record_ref{ hostname } &&
-	     $$node_record_ref{ hostname } =~ /\./ ) {
-	    # find the hostname field without the domain
-	    my @hostname_fields = 
-		split( '.', $$node_record_ref{ hostname } );
-	    my $hostname_without_domain = $hostname_fields[0];
-	    # match the hostname to the domain-less hostname field
-	    return $node_name 
-		if $hostname eq $hostname_without_domain;
-	}
-	# if the record name field includes a domain, ...
-	if ( $node_name =~ /\./ ) {
-	    # find the name field without the domain
-	    my @name_fields = split( '.', $node_name );
-	    my $name_without_domain = $name_fields[0];
-	    # match the given hostname to the domain-less
-	    # name field
-	    return $node_name 
-		if $hostname eq $name_without_domain;
-	}
+    foreach my $node_ref ( @$node_records_ref ) {
+    my $node_name = $$node_ref{name};
+    return $node_name;
+    return $node_name
+        if defined $$node_ref{ hostname } &&
+        $hostname eq $$node_ref{ hostname };
+    # match the given hostname to the name field
+    return $hostname
+        if $hostname eq $node_name;
+    # if the given hostname includes a domain, ...
+    if ( $hostname =~ /\./ ) {
+        # find the given hostname without the domain
+        my @hostname_fields = split( '.', $hostname );
+        my $hostname_without_domain = $hostname_fields[0];
+        # match the domain-less given hostname to
+        # the record hostname field
+        return $hostname_without_domain 
+        if exists $$node_ref{ hostname } &&
+        $hostname_without_domain eq 
+        $$node_ref{ hostname };
+        # match the domain-less given hostname to
+        # the record name field
+        return $hostname_without_domain 
+        if $hostname_without_domain eq $node_name;
+    }
+    # if the record hostname field includes a domain, ...
+    if ( exists $$node_ref{ hostname } &&
+         $$node_ref{ hostname } =~ /\./ ) {
+        # find the hostname field without the domain
+        my @hostname_fields = 
+        split( '.', $$node_ref{ hostname } );
+        my $hostname_without_domain = $hostname_fields[0];
+        # match the hostname to the domain-less hostname field
+        return $node_name 
+        if $hostname eq $hostname_without_domain;
+    }
+    # if the record name field includes a domain, ...
+    if ( $node_name =~ /\./ ) {
+        # find the name field without the domain
+        my @name_fields = split( '.', $node_name );
+        my $name_without_domain = $name_fields[0];
+        # match the given hostname to the domain-less
+        # name field
+        return $node_name 
+        if $hostname eq $name_without_domain;
+    }
     }
     
     return undef;
@@ -449,45 +517,45 @@ sub database_hostname_to_node_name {
 sub database_program_variable_get {
     
     my ( $program,
-	 $variable,
-	 $print_errors ) = @_;
+     $variable,
+     $print_errors ) = @_;
 
     # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	    return undef;
+    OSCAR::Database::database_connect( $print_errors ) ||
+        return undef;
 
     # do the database read for all of the variable values
     # for the specified program and variable, returning
     # undefined if any errors
     my @tables_fields = qw( program_variable_values
-			    program_variable_values.value );
+                program_variable_values.value );
     my @wheres = ( "program_variable_values.program=$program",
-		   "program_variable_values.variable=$variable" );
+           "program_variable_values.variable=$variable" );
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
     my @records = ();
     if ( ! oda::read_records( $options_ref,
-			      \@tables_fields,
-			      \@wheres,
-			      \@records,
-			      1,
-			      $error_strings_ref ) ) {
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
-	OSCAR::Database::database_disconnect() if ! $was_connected_flag;
-	return undef;
+                  \@tables_fields,
+                  \@wheres,
+                  \@records,
+                  1,
+                  $error_strings_ref ) ) {
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+    return undef;
     }
 
     # now put the values into a list
     my @values = ();
     foreach my $record_ref ( @records ) {
-	push @values, $$record_ref{value}
-	    if exists $$record_ref{value};
+    push @values, $$record_ref{value}
+        if exists $$record_ref{value};
     }
 
     # if we weren't connected to the database when called, disconnect
@@ -513,9 +581,9 @@ sub database_program_variable_get {
 sub database_program_variable_put {
     
     my ( $program,
-	 $variable,
-	 $values_ref,
-	 $print_errors ) = @_;
+     $variable,
+     $values_ref,
+     $print_errors ) = @_;
 
     # since we are going to do a number of database operations, we'll
     # try to be more effecient by connecting to the database first if
@@ -523,52 +591,52 @@ sub database_program_variable_put {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	return undef;
+    OSCAR::Database::database_connect( $print_errors ) ||
+    return undef;
     my $status = 1;
 
     # remove all the previous values for this variable
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
     my @command_results = ();
     if ( ! oda::execute_command( $options_ref,
-				 "remove_program_variable $program $variable",
-				 \@command_results,
-				 $error_strings_ref ) ) {
-	push @$error_strings_ref,
-	"cannot remove old values for program $program variable $variable from the ODA database";
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
-	$status = 0;
+                 "remove_program_variable $program $variable",
+                 \@command_results,
+                 $error_strings_ref ) ) {
+    push @$error_strings_ref,
+    "cannot remove old values for program $program variable $variable from the ODA database";
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    $status = 0;
     }
 
     # write out the new variable values ( do not bother using
     # the set_program_variable_value shortcut for single value
     # variables since we alread deleted all old values)
     if ( ! ref( $values_ref ) ) {
-	my @single_value_list = ( $values_ref );
-	$values_ref = \@single_value_list;
+    my @single_value_list = ( $values_ref );
+    $values_ref = \@single_value_list;
     }
     my %assigns = ( 'program'  => $program,
-		    'variable' => $variable );
+            'variable' => $variable );
     foreach my $value ( @$values_ref ) {
-	my @command_results = ();
-	$assigns{value} = $value;
-	if ( ! oda::insert_record( $options_ref,
-				   "program_variable_values",
-				   \%assigns,
-				   undef,
-				   $error_strings_ref ) ) {
-	    push @$error_strings_ref, 
-	    "cannot add value $value to variable $variable for program $program in the ODA database";
-	    $status = 0;
-	}
+    my @command_results = ();
+    $assigns{value} = $value;
+    if ( ! oda::insert_record( $options_ref,
+                   "program_variable_values",
+                   \%assigns,
+                   undef,
+                   $error_strings_ref ) ) {
+        push @$error_strings_ref, 
+        "cannot add value $value to variable $variable for program $program in the ODA database";
+        $status = 0;
+    }
     }
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	warn shift @$error_strings_ref while @$error_strings_ref;
+    warn shift @$error_strings_ref while @$error_strings_ref;
     }
 
     # if we weren't connected to the database when called, disconnect
@@ -596,37 +664,37 @@ sub database_program_variable_put {
 sub database_program_variables_get {
     
     my ( $program,
-	 $print_errors ) = @_;
+     $print_errors ) = @_;
 
     # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	    return undef;
+    OSCAR::Database::database_connect( $print_errors ) ||
+        return undef;
 
     # do the database read for all of the variable names
     # and values for the specified program, returning
     # undefined if any errors
     my @tables_fields = qw( program_variable_values
-			    program_variable_values.variable
-			    program_variable_values.value );
+                program_variable_values.variable
+                program_variable_values.value );
     my @wheres = ( "program_variable_values.program=$program" );
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
     my @records = ();
     if ( ! oda::read_records( $options_ref,
-			      \@tables_fields,
-			      \@wheres,
-			      \@records,
-			      1,
-			      $error_strings_ref ) ) {
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
-	OSCAR::Database::database_disconnect() if ! $was_connected_flag;
-	return undef;
+                  \@tables_fields,
+                  \@wheres,
+                  \@records,
+                  1,
+                  $error_strings_ref ) ) {
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+    return undef;
     }
 
     # now translate it to a hash, with each variable name
@@ -634,25 +702,25 @@ sub database_program_variables_get {
     # a referenced list
     my %results = ();
     foreach my $record_ref ( @records ) {
-	if ( exists $$record_ref{variable} &&
-	     exists $$record_ref{value} ) {
-	    my $variable = $$record_ref{variable};
-	    my $value = $$record_ref{value};
-	    if ( ! exists $results{$variable} ) {
-		my @values = ();
-		$results{$variable} = \@values;
-	    }
-	    my $values_ref = $results{$variable};
-	    push @$values_ref, $value;
-	}
+    if ( exists $$record_ref{variable} &&
+         exists $$record_ref{value} ) {
+        my $variable = $$record_ref{variable};
+        my $value = $$record_ref{value};
+        if ( ! exists $results{$variable} ) {
+        my @values = ();
+        $results{$variable} = \@values;
+        }
+        my $values_ref = $results{$variable};
+        push @$values_ref, $value;
+    }
     }
 
     # now change any variable that has exactly one value
     # from a referenced list, to a scalar value
     foreach my $variable ( keys %results ) {
-	my $values_ref = $results{$variable};
-	$results{$variable} = $$values_ref[0]
-	    if scalar @$values_ref == 1;
+    my $values_ref = $results{$variable};
+    $results{$variable} = $$values_ref[0]
+        if scalar @$values_ref == 1;
     }
 
     # if we weren't connected to the database when called, disconnect
@@ -679,8 +747,8 @@ sub database_program_variables_get {
 sub database_program_variables_put {
     
     my ( $program,
-	 $variables_ref,
-	 $print_errors ) = @_;
+     $variables_ref,
+     $print_errors ) = @_;
 
     # since we are going to do a number of database operations, we'll
     # try to be more effecient by connecting to the database first if
@@ -688,59 +756,59 @@ sub database_program_variables_put {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	    return ( undef, undef, undef );
+    OSCAR::Database::database_connect( $print_errors ) ||
+        return ( undef, undef, undef );
     my $status = 1;
 
     # remove all the previous variables for this program
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
     my @command_results = ();
     if ( ! oda::execute_command( $options_ref,
-				 "remove_program_variables $program",
-				 \@command_results,
-				 $error_strings_ref ) ) {
-	push @$error_strings_ref,
-	"cannot remove old variables for program $program from the ODA database";
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
-	$status = 0;
+                 "remove_program_variables $program",
+                 \@command_results,
+                 $error_strings_ref ) ) {
+    push @$error_strings_ref,
+    "cannot remove old variables for program $program from the ODA database";
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    $status = 0;
     }
 
     # write out the new variable values ( do not bother using
     # the set_program_variable_value shortcut for single value
     # variables since we alread delete all old values)
     foreach my $variable ( keys %$variables_ref ) {
-	my $values_ref = $$variables_ref{$variable};
-	if ( ! ref( $values_ref ) ) {
-	    my @single_value_list = ( $values_ref );
-	    $values_ref = \@single_value_list;
-	}
-	my %assigns = ( 'program'  => $program,
-			'variable' => $variable );
-	foreach my $value ( @$values_ref ) {
-	    my @command_results = ();
-	    $assigns{value} = $value;
-	    if ( ! oda::insert_record( $options_ref,
-				       "program_variable_values",
-				       \%assigns,
-				       undef,
-				       $error_strings_ref ) ) {
-		push @$error_strings_ref,
-		"cannot add value $value to variable $variable for program $program in the ODA database";
-		if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-		    warn shift @$error_strings_ref while @$error_strings_ref;
-		}
-		$status = 0;
-	    }
-	}
+    my $values_ref = $$variables_ref{$variable};
+    if ( ! ref( $values_ref ) ) {
+        my @single_value_list = ( $values_ref );
+        $values_ref = \@single_value_list;
+    }
+    my %assigns = ( 'program'  => $program,
+            'variable' => $variable );
+    foreach my $value ( @$values_ref ) {
+        my @command_results = ();
+        $assigns{value} = $value;
+        if ( ! oda::insert_record( $options_ref,
+                       "program_variable_values",
+                       \%assigns,
+                       undef,
+                       $error_strings_ref ) ) {
+        push @$error_strings_ref,
+        "cannot add value $value to variable $variable for program $program in the ODA database";
+        if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+            warn shift @$error_strings_ref while @$error_strings_ref;
+        }
+        $status = 0;
+        }
+    }
     }
 
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	warn shift @$error_strings_ref while @$error_strings_ref;
+    warn shift @$error_strings_ref while @$error_strings_ref;
     }
     
     # if we weren't connected to the database when called, disconnect
@@ -773,60 +841,43 @@ sub database_read_filtering_information {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	    return ( undef, undef, undef );
+    OSCAR::Database::database_connect( $print_errors ) ||
+        return ( undef, undef, undef );
 
     # read them all in
 
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
 
-    my @architecture_results = ();
     my $architecture = undef;
-    if ( ! database_execute_command( "oscar_server_architecture",
-				     \@architecture_results,
-				     $print_errors ) ) {
-	push @$error_strings_ref,
-	"Error reading the architecture from the database";
-    } elsif ( ! @architecture_results ) {
-	push @$error_strings_ref,
-	"No results returned reading the architecture from the database";
-    } else {
-	$architecture = $architecture_results[0];
-    }
-
-    my @distribution_results = ();
     my $distribution = undef;
-    if ( ! database_execute_command( "oscar_server_distribution",
-				     \@distribution_results,
-				     $print_errors ) ) {
-	push @$error_strings_ref,
-	"Error reading the distribution from the database";
-    } elsif ( ! @distribution_results ) {
-	push @$error_strings_ref,
-	"No results returned reading the distribution from the database";
+    my $distribution_version = undef;
+    my @fields = 
+        ("server_architecture", "server_distribution", "server_distribution_version");
+    my $where = " WHERE name='$CLUSTER_NAME' ";
+    my @results = ();
+    if ( ! select_table (\%options,"Clusters", \@fields, $where, \@results, \@error_strings ) ){
+        push @$error_strings_ref,
+            "Error reading the architecture, server distribution, ".
+            "and server distribution version from the database";
+    } elsif ( ! @results ) {
+        push @$error_strings_ref,
+        "No results returned reading the architecture, server distribution, " .
+        "and server distribution version from the database";
     } else {
-	$distribution = $distribution_results[0];
+        #my $results_ref = $results[0];
+        foreach my $results_ref (@results){ 
+            $architecture = $$results_ref{server_architecture};
+            $distribution = $$results_ref{server_distribution};
+            $distribution_version = $$results_ref{server_distribution_version};
+        }
     }
 
-    my @distribution_version_results = ();
-    my $distribution_version = undef;
-    if ( ! database_execute_command( "oscar_server_distribution_version",
-				     \@distribution_version_results,
-				     $print_errors ) ) {
-	push @$error_strings_ref,
-	"Error reading the distribution version from the database";
-    } elsif ( ! @distribution_version_results ) {
-	push @$error_strings_ref,
-	"No results returned reading the distribution version from the database";
-    } else {
-	$distribution_version = $distribution_version_results[0];
-    }
 
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	warn shift @$error_strings_ref while @$error_strings_ref;
+    warn shift @$error_strings_ref while @$error_strings_ref;
     }
     
     # if we weren't connected to the database when called, disconnect
@@ -834,8 +885,8 @@ sub database_read_filtering_information {
     OSCAR::Database::database_disconnect() if ! $was_connected_flag;
 
     return ( $architecture,
-	     $distribution,
-	     $distribution_version );
+         $distribution,
+         $distribution_version );
 }
 
 # reads specified fields from all the records in a specified database
@@ -857,13 +908,15 @@ sub database_read_filtering_information {
 #                               if defined and a non-zero scalar,
 #                               print out error messages on STDERR
 
+# DongInn Kim 
+# This subroutine can be deleted because it is not used any more.
 sub database_read_table_fields {
     
     my ( $table,
-	 $requested_fields_ref,
-	 $wheres_ref,
-	 $passed_key_name,
-	 $print_errors ) = @_;
+     $requested_fields_ref,
+     $wheres_ref,
+     $passed_key_name,
+     $print_errors ) = @_;
 
     # if they didn't specify an index field name, use "name"
     my $key_name = ( defined $passed_key_name ) ? $passed_key_name : "name";
@@ -874,57 +927,57 @@ sub database_read_table_fields {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	    return undef;
+    OSCAR::Database::database_connect( $print_errors ) ||
+        return undef;
     print "entering database_read_table_fields table=$table key=$key_name\n"
-	if $$options_ref{debug};
+    if $$options_ref{debug};
 
     # get a list of field names for this database table
 
     my %fields_in_table = ();
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
     if ( ! oda::list_fields( $options_ref,
-			     $table,
-			     \%fields_in_table,
-			     $error_strings_ref ) ) {
-	push @$error_strings_ref,
-	"cannot read the field names for database table <$table> from the ODA database";
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
-	OSCAR::Database::database_disconnect() if ! $was_connected_flag;
-	return undef;
+                 $table,
+                 \%fields_in_table,
+                 $error_strings_ref ) ) {
+    push @$error_strings_ref,
+    "cannot read the field names for database table <$table> from the ODA database";
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+    return undef;
     }
 
     # if there isn't a key_name field in this database table, we
     # have a serious problem
 
     if ( ! exists $fields_in_table{$key_name} ) {
-	push @$error_strings_ref, 
-	"there is no <$key_name> field in database table <$table>";
-	push @$error_strings_ref, 
-	"Database\:\:database_read_table_fields cannot supply the data as requested";
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
-	OSCAR::Database::database_disconnect() if ! $was_connected_flag;
-	return undef;
+    push @$error_strings_ref, 
+    "there is no <$key_name> field in database table <$table>";
+    push @$error_strings_ref, 
+    "Database\:\:database_read_table_fields cannot supply the data as requested";
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
     }
-	
+    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+    return undef;
+    }
+    
     # if the caller supplied an undef or empty fields list,
     # we'll supply all fields for this database. Also, make
     # sure that the field <$key_name> is included.
 
     my @fields = ();
     if ( defined($requested_fields_ref) && @$requested_fields_ref ) {
-	@fields = @$requested_fields_ref;
-	push @fields, "$key_name"
-	    if ! grep( /^$key_name$/, @fields );
+    @fields = @$requested_fields_ref;
+    push @fields, "$key_name"
+        if ! grep( /^$key_name$/, @fields );
     } else {
-	@fields = sort keys %fields_in_table;
+    @fields = sort keys %fields_in_table;
     }
 
     # now read all the records from the packages database table,
@@ -934,20 +987,20 @@ sub database_read_table_fields {
 
     my @table_fields = ( $table );
     foreach my $field ( @fields ) {
-	push @table_fields, "$table.$field";
+    push @table_fields, "$table.$field";
     }
     my @records = ();
     if ( ! oda::read_records( $options_ref,
-			      \@table_fields,
-			      $wheres_ref,
-			      \@records,
-			      1,
-			      $error_strings_ref ) ) {
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
-	OSCAR::Database::database_disconnect() if ! $was_connected_flag;
-	return undef;
+                  \@table_fields,
+                  $wheres_ref,
+                  \@records,
+                  1,
+                  $error_strings_ref ) ) {
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+    return undef;
     }
     # convert the array of hash pointers that read_records returned
     # into the hash of hashes format that the callers expect
@@ -956,32 +1009,32 @@ sub database_read_table_fields {
     my %duplicated_name_values = ();
     my $missing_name_fields = 0;
     foreach my $record_ref ( @records ) {
-	if ( exists $$record_ref{$key_name} && $$record_ref{$key_name} ne "" ) {
-	    my $key = $$record_ref{$key_name};
-	    if ( exists $results{$key} ) {
-		$duplicated_name_values{$key} = 1;
-	    } else {
-		$results{$key} = $record_ref;
-	    }
-	} else {
-	    $missing_name_fields++;
-	}
+    if ( exists $$record_ref{$key_name} && $$record_ref{$key_name} ne "" ) {
+        my $key = $$record_ref{$key_name};
+        if ( exists $results{$key} ) {
+        $duplicated_name_values{$key} = 1;
+        } else {
+        $results{$key} = $record_ref;
+        }
+    } else {
+        $missing_name_fields++;
+    }
     }
     foreach my $name ( sort keys %duplicated_name_values ) {
-	push @$error_strings_ref,
-	"There are duplicated records in database table <$table> that has the same <$key_name> field value of <$name>.";
+    push @$error_strings_ref,
+    "There are duplicated records in database table <$table> that has the same <$key_name> field value of <$name>.";
     }
     push @$error_strings_ref,
     "Database\:\:database_read_table_fields will only return the first of each."
-	if %duplicated_name_values;
+    if %duplicated_name_values;
     if ( $missing_name_fields ) {
-	push @$error_strings_ref,
-	"$missing_name_fields records from the database table <$table> are missing the <$key_name>";
-	push @$error_strings_ref,
-	"field and are not being returned by Database\:\:database_read_table_fields.";
+    push @$error_strings_ref,
+    "$missing_name_fields records from the database table <$table> are missing the <$key_name>";
+    push @$error_strings_ref,
+    "field and are not being returned by Database\:\:database_read_table_fields.";
     }
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	warn shift @$error_strings_ref while @$error_strings_ref;
+    warn shift @$error_strings_ref while @$error_strings_ref;
     }
 
     # if we weren't connected to the database when called, disconnect
@@ -1018,26 +1071,26 @@ sub database_read_table_fields {
 sub database_return_list {
 
     my ( $command_args_ref,
-	 $print_errors ) = @_;
+     $print_errors ) = @_;
 
     # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	    return undef;
+    OSCAR::Database::database_connect( $print_errors ) ||
+        return undef;
 
     # execute the command
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
     my @command_results = ();
     my $success = oda::execute_command( $options_ref,
-					$command_args_ref,
-					\@command_results,
-					$error_strings_ref );
+                    $command_args_ref,
+                    \@command_results,
+                    $error_strings_ref );
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	warn shift @$error_strings_ref while @$error_strings_ref;
+    warn shift @$error_strings_ref while @$error_strings_ref;
     }
 
     # if we weren't connected to the database when called, disconnect
@@ -1045,15 +1098,15 @@ sub database_return_list {
 
     # if the command failed, return failure
     return undef
-	if ! $success;
+    if ! $success;
 
     # otherwise, seperate out the result value words from
     # all the result records and return them as a list
     my @values = ();
     chomp @command_results;
     foreach my $result ( grep( /[^\s]/, @command_results ) ) {
-	my @fields = split( '\s+', $result );
-	push @values, @fields if @fields;
+    my @fields = split( '\s+', $result );
+    push @values, @fields if @fields;
     }
     return @values;
 }
@@ -1077,10 +1130,11 @@ sub database_return_list {
 sub database_rpmlist_for_package_and_group {
     
     my ( $package,
-	 $group,
-	 $print_errors ) = @_;
+     $package_ver,
+     $group,
+     $print_errors ) = @_;
 
-    my ($calling_package, $calling_filename, $line) = caller;
+    #my ($calling_package, $calling_filename, $line) = caller;
 
     # since we are going to do a number of database operations, we'll
     # try to be more effecient by connecting to the database first if
@@ -1088,76 +1142,75 @@ sub database_rpmlist_for_package_and_group {
     # then disconnect if we weren't connected when we were called.
 
     ( my $was_connected_flag = $database_connected ) ||
-	OSCAR::Database::database_connect( $print_errors ) ||
-	    return undef;
+    OSCAR::Database::database_connect( $print_errors ) ||
+        return undef;
 
     # read in all the packages_rpmlists records for this package
-    my @tables_fields = qw( packages_rpmlists
-			    packages_rpmlists.architecture
-			    packages_rpmlists.distribution
-			    packages_rpmlists.distribution_version
-			    packages_rpmlists.group
-			    packages_rpmlists.rpm );
-    my @wheres = ( "packages.name=$package", 
-		   "packages.id=packages_rpmlists.package_id" );
     my @packages_rpmlists_records = ();
     my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
-			      ref($print_errors) eq "ARRAY" ) ?
-			      $print_errors : \@error_strings;
+                  ref($print_errors) eq "ARRAY" ) ?
+                  $print_errors : \@error_strings;
     my $number_of_records = 0;
     # START LOCKING FOR NEST
     my %options = ();
-    my @tables = ("packages", "packages_rpmlists");
+    my @tables = ("Packages_rpmlists", "Packages");
     locking("read", \%options, \@tables, $error_strings_ref);
+    my $sql = "SELECT Packages_rpmlists.* FROM Packages_rpmlists, Packages " .
+              "WHERE Packages.id=Packages_rpmlists.package_id " .
+              "AND Packages.package='$package' " .
+              ($package_ver?"AND Packages.version='$package_ver'":"");
     my $success = 
-         oda::read_records( $options_ref,
-			      \@tables_fields,
-			      \@wheres,
-			      \@packages_rpmlists_records,
-			      1,
-			      $error_strings_ref,
-			      \$number_of_records ) ;
+        oda::do_query( $options_ref,
+                    $sql,
+                    \@packages_rpmlists_records,
+                    \$error_strings_ref);
     # UNLOCKING FOR NEST
     unlock(\%options, $error_strings_ref);
     if ( ! $success ) {
-	push @$error_strings_ref,
-	"Error reading packages_rpmlists records for package $package";
-	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-	    warn shift @$error_strings_ref while @$error_strings_ref;
-	}
+    push @$error_strings_ref,
+    "Error reading packages_rpmlists records for package $package";
+    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
         OSCAR::Database::database_disconnect() if ! $was_connected_flag;
-	 return undef;
+     return undef;
     }
 
     # read in the oscar global architecture, distribution, etc
     my ( $architecture,
-	 $distribution,
-	 $distribution_version ) =
-	     database_read_filtering_information( $print_errors );
-	
+     $distribution,
+     $distribution_version ) =
+         database_read_filtering_information( $print_errors );
+    
     # now build the matches list
     my @rpms = ();
     foreach my $record_ref ( @packages_rpmlists_records ) {
-	if (
-	    ( ! defined $$record_ref{architecture} ||
-	      ! defined $architecture ||
-	      $$record_ref{architecture} eq $architecture )
-	    &&
-	    ( ! defined $$record_ref{distribution} ||
-	      ! defined $distribution ||
-	      $$record_ref{distribution} eq $distribution )
-	    &&
-	    ( ! defined $$record_ref{distribution_version} ||
-	      ! defined $distribution_version ||
-	      $$record_ref{distribution_version} eq $distribution_version )
-	    &&
-	    ( ! defined $$record_ref{group} ||
-	      ! defined $group ||
-	      $$record_ref{group} eq $group )
-	    ) { push @rpms, $$record_ref{rpm}; }
+    #print "record_ref{group_name} : $$record_ref{group_name}\n";
+    #print "group : $group\n";
+        if (
+            ( ! defined $$record_ref{group_arch} ||
+              $$record_ref{group_arch} eq "" ||
+              ! defined $architecture ||
+              $$record_ref{group_arch} eq $architecture )
+            &&
+            ( ! defined $$record_ref{distro} ||
+              $$record_ref{distro} eq "" ||
+              ! defined $distribution ||
+              $$record_ref{distro} eq $distribution )
+            &&
+            ( ! defined $$record_ref{distro_version} ||
+              $$record_ref{distro_version} eq "" ||
+              ! defined $distribution_version ||
+              $$record_ref{distro_version} eq $distribution_version )
+            &&
+            ( ! defined $$record_ref{group_name} ||
+              $$record_ref{group_name} eq "" ||
+              ! defined $group ||
+              $$record_ref{group_name} eq $group )
+            ) { push @rpms, $$record_ref{rpm}; }
     }
-	    
+        
     OSCAR::Database::database_disconnect() if ! $was_connected_flag;
 
     return @rpms;
@@ -1183,30 +1236,29 @@ sub locking{
     my ( $type_of_lock,
          $options_ref,
          $passed_tables_ref,
-	 $error_strings_ref,
+     $error_strings_ref,
      ) = @_;
-
     my @empty_tables = ();
     my $tables_ref = ( defined $passed_tables_ref ) ? $passed_tables_ref : \@empty_tables;
 
     my $msg = "$0: in oda:";
         $type_of_lock =~ s/(.*)/\U$1/gi;
     if( $type_of_lock eq "WRITE" ){
-	    $msg .= "write_lock write_locked_tables=(";
+        $msg .= "write_lock write_locked_tables=(";
     } elsif ( $type_of_lock eq "READ" ) {
-	    $msg .= "read_lock read_locked_tables=(";
+        $msg .= "read_lock read_locked_tables=(";
     } else {
-	    return 0;
+        return 0;
     }
-	
+    
     print $msg.
-	join( ',', @$tables_ref ) . ")\n"
-	if $$options_ref{debug};
+    join( ',', @$tables_ref ) . ")\n"
+    if $$options_ref{debug};
 
     # connect to the database if not already connected
-   	$database_connected ||
-	    database_connect( $options_ref, $error_strings_ref ) ||
-	    return 0;
+       $database_connected ||
+        database_connect( $options_ref, $error_strings_ref ) ||
+        return 0;
     
     # find a list of all the table names, and all the fields in each table
     my $all_tables_ref = oda::list_tables( $options_ref, $error_strings_ref );
@@ -1233,20 +1285,20 @@ sub locking{
     # make the database command
     my $sql_command = "LOCK TABLES " .
         join( " $type_of_lock, ", @locked_tables ) . " $type_of_lock;" ;  
-	
+    
     my $success = 1;
 
     # now do the single command
     $success = 0 
     if ! oda::do_sql_command( $options_ref,
-			      $sql_command,
-			      "oda\:\:$type_of_lock"."_lock",
-			      "$type_of_lock lock in tables (" .
-			      join( ',', @locked_tables ) . ")",
-			      $error_strings_ref );
+                  $sql_command,
+                  "oda\:\:$type_of_lock"."_lock",
+                  "$type_of_lock lock in tables (" .
+                  join( ',', @locked_tables ) . ")",
+                  $error_strings_ref );
     # disconnect from the database if we were not connected at start
     database_disconnect( $options_ref,
-		     $error_strings_ref )
+             $error_strings_ref )
     if ! $database_connected;
 
     return $success;
@@ -1266,41 +1318,1198 @@ sub locking{
 
 sub unlock {
     my ( $options_ref,
-	 $error_strings_ref,
+     $error_strings_ref,
      ) = @_;
 
 
     print "$0: in oda:unlock \n"
-	if $$options_ref{debug};
+    if $$options_ref{debug};
 
     # connect to the database if not already connected
     $database_connected ||
-	database_connect( $options_ref,
-		      $error_strings_ref ) ||
-	return 0;
+    database_connect( $options_ref,
+              $error_strings_ref ) ||
+    return 0;
 
-	# make the database command
-	my $sql_command = "UNLOCK TABLES ;" ;
-	
+    # make the database command
+    my $sql_command = "UNLOCK TABLES ;" ;
+    
     my $success = 1;
 
-	# now do the single command
-	$success = 0 
-	    if ! oda::do_sql_command( $options_ref,
-				      $sql_command,
-				      "oda\:\:unlock",
-				      "unlock the tables locked in the database",
-				      $error_strings_ref );
+    # now do the single command
+    $success = 0 
+        if ! oda::do_sql_command( $options_ref,
+                      $sql_command,
+                      "oda\:\:unlock",
+                      "unlock the tables locked in the database",
+                      $error_strings_ref );
 
     # disconnect from the database if we were not connected at start
     database_disconnect( $options_ref,
-		     $error_strings_ref )
-	if ! $database_connected;
+             $error_strings_ref )
+    if ! $database_connected;
 
     oda::initialize_locked_tables();
 
     return $success;
 
 }
+
+
+sub insert_into_table {
+    my ($options_ref,$table,$field_value_ref,$error_strings_ref) = @_;
+    my $sql = "INSERT INTO $table ( ";
+    my $sql_values = " VALUES ( ";
+    
+    my $flag = 0;
+    my $comma = "";
+    while ( my($field, $value) = each %$field_value_ref ){
+        $comma = ", " if $flag;
+        $sql .= "$comma $field";
+        $flag = 1;
+        $value = ($value eq "NOW()"?$value:"'$value'");
+        $sql_values .= "$comma $value";
+    }    
+    $sql .= ") $sql_values )";
+    print "SQL : $sql\n" if $$options_ref{debug};
+    my $error_msg = "Failed to insert values to $table table";
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "INSERT Table into $table",
+            $error_msg,
+            $error_strings_ref);
+    return 1 if $success;
+    database_disconnect();
+    die "$0:$error_msg";
+}
+
+
+sub delete_table {
+    my ($options_ref,$table,$where,$error_strings_ref) = @_;
+    my $sql = "DELETE FROM $table ";
+    $where = $where?$where:"";
+    $sql .= " $where ";
+    print "SQL : $sql\n" if $$options_ref{debug};
+    my $error_msg = "Failed to delete values from $table table";
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "DELETE Table $table",
+            $error_msg,
+            $error_strings_ref);
+    return 1 if $success;
+    database_disconnect();
+    die "$0:$error_msg";
+}
+
+sub update_table {
+    my ($options_ref,$table,$field_value_ref,$where,$error_strings_ref) = @_;
+    my $sql = "UPDATE $table SET ";
+    my $flag = 0;
+    my $comma = "";
+    while ( my($field, $value) = each %$field_value_ref ){
+        $comma = ", " if $flag;
+        $value = ($value eq "NOW()"?$value:"'$value'");
+        $sql .= "$comma $field=$value";
+        $flag = 1;
+    }
+    $where = $where?$where:"";
+    $sql .= " $where ";
+    print "SQL : $sql\n" if $$options_ref{debug};
+    my $error_msg = "Failed to update values to $table table";
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "UPDATE Table $table",
+            $error_msg,
+            $error_strings_ref);
+    return 1 if $success;
+    database_disconnect();
+    die "$0:$error_msg";
+}
+
+sub select_table {
+    my ($options_ref,$table,$field_ref,$where,$result,$error_strings_ref) = @_;
+    my $sql = "SELECT ";
+    my $flag = 0;
+    my $comma = "";
+    foreach my $field (@$field_ref){
+        $comma = ", " if $flag;
+        $sql .= "$comma $field";
+        $flag = 1;
+    }
+    $where = $where?$where:"";
+    if(ref($where) eq "HASH"){
+        $flag = 0;
+        my $and = "";
+        my $where_str = " WHERE ";
+        while (my ($key, $value) = each %$where){
+            $and = "AND " if $flag;
+            $where_str .= "$and $key='$value' ";
+            $flag = 1;
+        }
+        $where = $where_str;
+    }
+    $sql .= " FROM $table $where ";
+    print "SQL : $sql\n" if $$options_ref{debug};
+    my $error_msg = "Failed to query values from $table table";
+    my $success = oda::do_query($options_ref,
+            $sql,
+            $result,
+            $error_strings_ref);
+    return 1 if $success;
+    database_disconnect();
+    die "$0:$error_msg";
+}
+
+sub do_select{
+    my ($sql,
+        $result_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $error_msg = "Failed to query for << $sql >>";
+    my $success = oda::do_query($options_ref,
+            $sql,
+            $result_ref,
+            $error_strings_ref);
+    return 1 if $success;
+    database_disconnect();
+    die "$0:$error_msg";
+}
+
+sub get_node_info_with_name{
+    my ($node_name,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    my $sql = "SELECT * FROM Nodes WHERE name='$node_name'";
+    if(do_select($sql,\@results, $options_ref, $error_strings_ref)){
+        my $node_ref = pop @results;
+        return $node_ref;
+    }else{
+        undef;
+    }
+}
+
+sub get_client_nodes{
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT Nodes.* FROM Nodes, Groups ".
+            "WHERE Groups.id=Nodes.group_id ".
+            "AND Groups.name='oscar_clients'";
+    die "$0:Failed to query values via << $sql >>"
+        if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+}
+
+sub get_node_info{
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Nodes";
+    die "$0:Failed to query values via << $sql >>"
+        if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+}
+
+sub delete_node{
+    my ($node_name,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "DELETE FROM Nodes ";
+    $sql .= ($node_name?"WHERE name='$node_name'":"");
+    die "$0:Failed to update values via << $sql >>"
+        if! do_update($sql,"Nodes", $options_ref, $error_strings_ref);
+}    
+
+sub get_client_nodes_info{
+    my ($server,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Nodes WHERE name!='$server'";
+    die "$0:Failed to query values via << $sql >>"
+        if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+}
+
+sub get_nodes{
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    get_node_info(\@results,$options_ref, $error_strings_ref);
+    my @list_of_nodes = ();
+    foreach my $results_ref (@results){
+        push @list_of_nodes, $$results_ref{name};
+    }
+    return @list_of_nodes;
+}
+
+sub get_nics_info_with_node{
+    my ($node,
+        $results,
+        $options_ref,
+        $error_strings_ref)= @_;
+    my $sql ="SELECT Nics.* FROM Nics, Nodes ".
+             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node'";
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_nics_with_name_node{
+    my ($nic,
+        $node,
+        $results,
+        $options_ref,
+        $error_strings_ref)= @_;
+    my $sql ="SELECT Nics.* FROM Nics, Nodes ".
+             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node' " .
+             "AND Nics.name='$nic'";
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_cluster_info_with_name{
+    my ($cluster_name,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    my $where = ($cluster_name?"WHERE name='$cluster_name'":"");
+    my $sql = "SELECT * FROM Clusters $where";
+    do_select($sql,\@results, $options_ref, $error_strings_ref);
+    if(@results){
+        return \@results;
+    }else{
+        undef;
+    }
+}
+
+sub get_package_info_with_name{
+    my ($package_name,
+        $options_ref,
+        $error_strings_ref,
+        $version) = @_;
+    my @results = ();
+    my $sql = "SELECT * FROM Packages WHERE package='$package_name' ";
+    if( $version ){
+        $sql .= "AND version='$version'";
+    }
+    if(do_select($sql,\@results, $options_ref, $error_strings_ref)){
+        my $package_ref = pop @results;
+        return $package_ref;
+    }else{
+        undef;
+    }
+}
+
+sub get_package_info{
+    my ($options_ref,
+        $error_strings_ref,
+        $field_ref) = @_;
+    my @results = ();
+    my $sql = "SELECT";
+    if(defined $field_ref){
+        my $flag = 0;
+        my $comma = "";
+        foreach my $field (@$field_ref){
+            $comma = "," if $flag;
+            $sql .= "$comma $field";
+            $flag = 1;
+        }    
+    } else {
+        $sql .= " * ";
+    }   
+    $sql .= " FROM Packages";
+    if(do_select($sql,\@results, $options_ref, $error_strings_ref)){
+        return \@results;
+    }else{
+        undef;
+    }
+}
+
+sub get_packages{
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my $results = get_package_info($options_ref, $error_strings_ref);
+    my @list_of_packages = ();
+    foreach my $results_ref (@$results){
+        push @list_of_packages, $$results_ref{package};
+    }
+    return @list_of_packages;
+}
+
+sub get_packages_with_class{
+    my ($class,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT id, package, version FROM Packages ".
+              "WHERE __class='$class' ";
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}
+
+sub is_installed{
+    my ($package_name,
+        $options_ref,
+        $error_strings_ref,
+        $version) = @_;
+    return get_package_info_with_name($package_name,$options_ref,$error_strings_ref,$version);
+}
+
+sub get_fields{
+    my ($options_ref,
+        $table,
+        $error_strings_ref) = @_;
+    my %fields = ();    
+    oda::list_fields($options_ref, $table, \%fields, $error_strings_ref);
+    my @list_of_fields = ();
+    foreach my $field (sort keys %fields){
+        push @list_of_fields, $field;
+    }
+    return @list_of_fields;
+}
+
+#####################################################
+#
+#   Wizard.pm
+#
+#####################################################
+
+# This takes care of 
+# Packages_conflicts, Packages_provides, and Packages_requires
+# tables.
+sub get_packages_related_with_package{
+    my ($part_name,
+        $package,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT P.package, P.id, S.p2_name, S.type " .
+              "FROM Packages P, Packages_$part_name S " .
+              "WHERE P.id=S.p1_id ".
+              "AND P.package='$package'";  
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}    
+
+
+sub get_packages_switcher{
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT P.package, S.switcher_tag, S.switcher_name " .
+              "FROM Packages P, Packages_switcher S " .
+              "WHERE P.id=S.package_id";
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}    
+
+sub set_group_nodes{
+    my ($group,
+        $node,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);    
+    my $node_id = $$node_ref{id};
+    my $sql = "SELECT * FROM Group_Nodes WHERE group_name='$group' ".
+              "AND node_id=$node_id";
+    my @results = ();
+    do_select($sql,\@results,$options_ref,$error_strings_ref);
+    if(!@results){
+        $sql = "INSERT INTO Group_Nodes VALUES('$group', $node_id )";
+        do_insert($sql,"Group_Nodes",$options_ref,$error_strings_ref);
+    }    
+    return 1;              
+}
+
+
+sub set_group_packages{
+    my ($group,
+        $package,
+        $selected,
+        $options_ref,
+        $error_strings_ref) = @_;
+    $group = get_selected_group($options_ref,$error_strings_ref)
+        if(!$group);
+    my @results = ();    
+    my $sql = "SELECT Packages.id, Packages.package " .
+              "From Packages, Group_Packages " .
+              "WHERE Packages.id=Group_Packages.package_id ".
+              "AND Group_Packages.group_name='$group' " .
+              "AND Packages.package='$package'";
+    do_select($sql,\@results,$options_ref,$error_strings_ref);
+    if (!@results){
+        $sql = "INSERT INTO Group_Packages (group_name, package_id, selected) ".
+               "SELECT '$group', id, $selected FROM Packages ".
+               "WHERE package='$package'";
+        die "$0:Failed to insert values via << $sql >>"
+            if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
+    }else{
+        my $result_ref = pop @results;
+        my $package_id = $$result_ref{id};
+        $sql = "UPDATE Group_Packages SET selected=$selected ".
+            "WHERE group_name='$group' ".
+            "AND package_id='$package_id'";
+        die "$0:Failed to update values via << $sql >>"
+            if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
+    }
+    update_node_package_status_with_opkg(
+          $options_ref,"oscar_server",$package,$selected,$error_strings_ref);
+    return 1;
+}
+
+sub del_group_packages{
+    my ($group,
+        $opkg,
+        $options_ref,
+        $error_strings_ref,
+        $ver) = @_;
+
+    my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+    my $package_id = $$package_ref{id};
+    if($package_id){
+        my $sql = "UPDATE Group_Packages SET selected=0 ".
+            "WHERE group_name='$group' AND package_id=$package_id";
+        die "$0:Failed to delete values via << $sql >>"
+            if! do_update($sql,"Group_Packages", $options_ref, $error_strings_ref);
+        update_node_package_status_with_opkg(
+              $options_ref,"oscar_server",$opkg,0,$error_strings_ref);
+    }      
+    return 1;    
+}
+
+sub get_selected_group{
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT id, name From Groups " .
+              "WHERE Groups.selected=1 ";
+    my @results = ();
+    my $success = do_select($sql,\@results,$options_ref,$error_strings_ref);
+    my $answer = undef;
+    if ($success){
+        my $ref = pop @results;
+        $answer = $$ref{name};
+    }
+    return $answer;
+}
+
+sub get_selected_group_packages{
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref,
+        $group) = @_;
+    $group = get_selected_group($options_ref,$error_strings_ref) if(!$group);    
+    my $sql = "SELECT Packages.id, Packages.package, Packages.name " .
+              "From Packages, Group_Packages, Groups " .
+              "WHERE Packages.id=Group_Packages.package_id ".
+              "AND Group_Packages.group_name=Groups.name ".
+              "AND Groups.name='$group' ".
+              "AND Groups.selected=1 ".
+              "AND Group_Packages.selected=1";
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}
+
+sub get_group_packages_with_groupname{
+    my ($group,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT Packages.id, Packages.package " .
+              "From Packages, Group_Packages " .
+              "WHERE Packages.id=Group_Packages.package_id ".
+              "AND Group_Packages.group_name='$group'";
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}
+
+# For normal oscar package installation, 
+# the value of  "requested" filed has the following.
+# 0 : should not be installed.
+# 1 : should be installed
+# 7 : installed
+sub update_node_package_status{
+    my ($options_ref,
+        $node,
+        $packages,
+        $requested,
+        $error_strings_ref) = @_;
+    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
+    my $node_id = $$node_ref{id};
+    foreach my $pkg_ref (@$packages){
+        my $opkg = $$pkg_ref{package};
+        my $ver = $$pkg_ref{version};
+        my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+        my $package_id = $$package_ref{id};
+        my %field_value_hash = ("requested" => $requested);
+        my $where = "WHERE package_id=$package_id AND node_id=$node_id";
+        if( $requested == 7 ){
+            print "Updating the status of $opkg to \"installed\".\n";
+        } elsif ( $requested == 1 ) {
+            print "Updating the status of $opkg to \"should be installed\".\n";
+        } elsif ( $requested == 0 ) {
+            print "Updating the status of $opkg to \"should not be installed\".\n";
+        }
+        die "$0:Failed to update the status of $opkg"
+            if(!update_table($options_ref,"Node_Package_Status",\%field_value_hash, $where, $error_strings_ref));
+
+        my $table = "Node_Packages";
+        delete_table($options_ref,$table,$where,$error_strings_ref);
+        %field_value_hash = ("node_id" => $node_id,
+                             "package_id"=>$package_id);
+        die "$0:Failed to insert values into table $table"
+            if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
+    }
+    return 1;
+}
+
+sub update_node_package_status_with_opkg{
+    my ($options_ref,
+        $node,
+        $opkg,
+        $requested,
+        $error_strings_ref,
+        $ver) = @_;
+    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
+    my $node_id = $$node_ref{id};
+    my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+    my $package_id = $$package_ref{id};
+    my %field_value_hash = ("requested" => $requested);
+    my $where = "WHERE package_id=$package_id AND node_id=$node_id";
+    if( $requested == 7 ){
+        print "Updating the status of $opkg to \"installed\".\n";
+    } elsif ( $requested == 1 ) {
+        print "Updating the status of $opkg to \"should be installed\".\n";
+    } elsif ( $requested == 0 ) {
+        print "Updating the status of $opkg to \"should not be installed\".\n";
+    }
+    die "$0:Failed to update the status of $opkg"
+        if(!update_table($options_ref,"Node_Package_Status",\%field_value_hash, $where, $error_strings_ref));
+
+    my $table = "Node_Packages";
+    delete_table($options_ref,$table,$where,$error_strings_ref);
+    %field_value_hash = ("node_id" => $node_id,
+                         "package_id"=>$package_id);
+    die "$0:Failed to insert values into table $table"
+        if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
+}
+
+sub update_node{
+    my ($node,
+        $field_value_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "UPDATE Nodes SET ";
+    my $flag = 0;
+    my $comma = "";
+    while ( my($field,$value) = each %$field_value_ref ){
+        $comma = "," if $flag;
+        $sql .= "$comma $field='$value'";
+        $flag = 1;
+    }    
+    $sql .= " WHERE name='$node' ";
+    die "$0:Failed to update values via << $sql >>"
+        if! do_update($sql,"Nodes", $options_ref, $error_strings_ref);
+    return 1;
+}
+    
+sub get_node_package_status_with_group_node{
+    my ($group,
+        $node,
+        $results,
+        $options_ref,
+        $error_strings_ref) = @_;
+        my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+                 "From Packages, Group_Packages, Node_Package_Status, Nodes ".
+                 "WHERE Packages.id=Group_Packages.package_id " .
+                 "AND Group_Packages.group_name='$group' ".
+                 "AND Node_Package_Status.package_id=Packages.id ".
+                 "AND Node_Package_Status.node_id=Nodes.id ".
+                 "AND Nodes.name='$node'";
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return 1;
+}
+
+sub get_node_package_status_with_node{
+    my ($node,
+        $results,
+        $options_ref,
+        $error_strings_ref,
+        $requested) = @_;
+        my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+                 "From Packages, Node_Package_Status, Nodes ".
+                 "WHERE Node_Package_Status.package_id=Packages.id ".
+                 "AND Node_Package_Status.node_id=Nodes.id ".
+                 "AND Nodes.name='$node'";
+        if(defined $requested){
+            $sql .= "AND Node_Package_Status.requested=$requested ";
+        }
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return 1;
+}
+
+sub insert_packages{
+    my ($passed_ref, $table,
+        $name,$path,$table_fields_ref,
+        $options_ref,$error_strings_ref) = @_;
+    my $sql = "INSERT INTO $table ( ";
+    my $sql_values = " VALUES ( ";
+    my $flag = 0;
+    my $comma = "";
+    $sql .= "path, package, ";
+    $sql_values .= "'$path', '$name', ";
+    foreach my $key (keys %$passed_ref){
+        # If a field name is "group", "__" should be added
+        # in front of $key to avoid the conflict of reserved keys
+
+        $key = ( $key eq "maintainer" || $key eq "packager"?$key . "_name":$key );
+        
+        if( $$table_fields_ref{$table}->{$key} && $key ne "package-specific-attribute"){
+            $key = ( $key eq "group"?"__$key":$key);
+            $key = ( $key eq "class"?"__$key":$key);
+            $comma = ", " if $flag;
+            $sql .= "$comma $key";
+            $flag = 1;
+            $key = ( $key eq "__group"?"group":$key);
+            $key = ( $key eq "__class"?"class":$key);
+            my $value;
+            if( $key eq "version" ){
+                my $ver_ref = $passed_ref->{$key};
+                $value = "$ver_ref->{major}.$ver_ref->{minor}" .
+                    ($ver_ref->{subversion}?".$ver_ref->{subversion}":"") .
+                    "-$ver_ref->{release}";
+                $value =~ s#'#\\'#g;    
+                my @pkg_versions=( "major","minor","subversion",
+                                    "release", "epoch" );
+                $value = "$value', "; 
+                foreach my $ver (@pkg_versions){
+                    my $tmp_value = $ver_ref->{$ver};
+                    if(! $tmp_value ){
+                        $tmp_value = "";
+                    }else{
+                        $tmp_value =~ s#'#\\'#g;
+                    }
+                    $value .=
+                        ( $ver ne "epoch"?"'$tmp_value', ":"'$tmp_value");
+                    $sql .= ", version_$ver";
+                }    
+            }elsif ( $key eq "maintainer_name" || $key eq "packager_name" ){
+                $key = ($key eq "maintainer_name"?"maintainer":"packager");
+                $sql .= ", $key" .  "_email";
+                $value = $passed_ref->{$key}->{name} . "', '"
+                        . $passed_ref->{$key}->{email}; 
+            }else{
+                $value = ($passed_ref->{$key}?trimwhitespace($passed_ref->{$key}):""); 
+                $value =~ s#'#\\'#g;
+            }
+            $sql_values .= "$comma '$value'";
+        }
+    }
+    $sql .= ") $sql_values )\n";
+    print "SQL : $sql\n" if $options{debug};
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "INSERT Table into $table",
+            "Failed to insert values into $table table",
+            $error_strings_ref);
+    return $success;
+}
+
+sub update_packages{
+    my ($passed_ref, $table,$package_id,
+        $name,$path,$table_fields_ref,
+        $options_ref,$error_strings_ref) = @_;
+    my $sql = "UPDATE $table SET ";
+    my $sql_values = " VALUES ( ";
+    my $flag = 0;
+    my $comma = "";
+    $sql .= "path='$path', package='$name', ";
+    foreach my $key (keys %$passed_ref){
+        # If a field name is "group", "__" should be added
+        # in front of $key to avoid the conflict of reserved keys
+
+        $key = ( $key eq "maintainer" || $key eq "packager"?$key . "_name":$key );
+        
+        if( $$table_fields_ref{$table}->{$key} && $key ne "package-specific-attribute"){
+            $comma = ", " if $flag;
+            $key = ( $key eq "group"?"__$key":$key);
+            $key = ( $key eq "class"?"__$key":$key);
+            $sql .= "$comma $key=";
+            $flag = 1;
+            $key = ( $key eq "__group"?"group":$key);
+            $key = ( $key eq "__class"?"class":$key);
+            my $value;
+            if( $key eq "version" ){
+                my $ver_ref = $passed_ref->{$key};
+                $value = "$ver_ref->{major}.$ver_ref->{minor}" .
+                    ($ver_ref->{subversion}?".$ver_ref->{subversion}":"") .
+                    "-$ver_ref->{release}";
+                $value =~ s#'#\\'#g;    
+                my @pkg_versions=( "major","minor","subversion",
+                                    "release", "epoch" );
+                $sql .="'$value', "; 
+                foreach my $ver (@pkg_versions){
+                    my $tmp_value = $ver_ref->{$ver};
+                    if(! $tmp_value ){
+                        $tmp_value = "";
+                    }else{
+                        $tmp_value =~ s#'#\\'#g;
+                    }
+                    $value =
+                        ( $ver ne "epoch"?"'$tmp_value', ":"'$tmp_value'");
+                    $sql .= " version_$ver=$value";
+                }    
+            }elsif ( $key eq "maintainer_name" || $key eq "packager_name" ){
+                $key = ($key eq "maintainer_name"?"maintainer":"packager");
+                $sql .= "'". $passed_ref->{$key}->{name}. "', $key" .
+                     "_email='". $passed_ref->{$key}->{email} . "'";
+            }else{
+                $value = ($passed_ref->{$key}?trimwhitespace($passed_ref->{$key}):""); 
+                $value =~ s#'#\\'#g;
+                $sql .= "'$value'";
+            }
+        }
+    }
+    $sql .= " WHERE id=$package_id\n";
+    print "SQL : $sql\n" if $options{debug};
+    my $success = oda::do_sql_command($options_ref,
+                    $sql,
+                    "UPDATE Table, $table",
+                    "Failed to update $table table",
+                    $error_strings_ref);
+    return $success;
+}
+
+sub create_table{
+    my ($passed_ref, $table,
+        $table_fields_ref,
+        $options_ref, $error_strings_ref) = @_;
+    my $fields_ref = $passed_ref->{fields};
+
+    my $sql = "CREATE TABLE IF NOT EXISTS " . $table . "( \n"; 
+    my $flag = 0;
+    my $comma = "";
+    foreach my $key (sort keys %$fields_ref){
+        $sql .= ", \n" if $flag ;
+        # If a field name is "group" or "class" , "__" should be
+        # put in front of $key to avoid the conflict of reserved keys
+        $sql .= ( $key eq "group" || $key eq "class"?"    __$key":"    $key");
+        
+        my $field_type = $fields_ref->{$key}->{type};
+        $sql .= ( $field_type?" $field_type":" VARCHAR(100)");
+
+        if($fields_ref->{$key}->{default}){
+            $sql .= " DEFAULT '". trimwhitespace($fields_ref->{$key}->{default}) . "'";
+        }
+        if ($fields_ref->{$key}->{parameters}){
+            $sql .= " $fields_ref->{$key}->{parameters}";
+        }
+        $flag = 1;
+    }
+    if ($passed_ref->{parameters}){
+        $sql .= ",\n    $passed_ref->{parameters}";
+    }
+    $sql .= "\n)\n" ;
+    print $sql if $options{debug};
+    my $success = oda::do_sql_command($options_ref,
+			$sql,
+			"Create $table table",
+			"Failed to create $table table",
+			$error_strings_ref);
+    print_hash("", "Print the fields of table ( $table ) ", $fields_ref)
+         if $$options_ref{debug} ;
+
+    $$table_fields_ref{$table} = $fields_ref;
+    return $success;
+}    
+
+sub do_update{
+    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
+    print "SQL : $sql\n" if $options{debug};
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "UDATE Table $table",
+            "Failed to update $table table",
+            $error_strings_ref);
+    return $success;
+}            
+
+sub do_insert{
+    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "INSERT Table into $table",
+            "Failed to insert values into $table table",
+            $error_strings_ref);
+    return $success;
+}            
+
+sub insert_pkg_rpmlist {
+    my ($passed_ref,$table,$package_id,$options_ref,$error_strings_ref) = @_;
+    my $sql = "INSERT INTO $table ( ";
+    my $sql_values = " VALUES ( ";
+    
+    my $group_name = "";
+    my $group_arch = "";
+    my $distro = "";
+    my $distro_version = "";
+    $sql .= "package_id";
+    $sql_values .= "'$package_id'";
+
+    my $filter;
+    if( ref($passed_ref) eq "ARRAY") {
+        foreach my $ref (@$passed_ref){
+            $filter = $ref->{filter};
+            if ( ref($ref->{filter}) eq "ARRAY" ){
+                foreach my $each_filter (@$filter){
+                    insert_pkg_rpmlist_helper($sql, $sql_values, $each_filter, $ref, $table);
+                }
+            }else{
+                insert_pkg_rpmlist_helper($sql, $sql_values, $filter, $ref, $table);
+            }
+        }
+    }else{
+        $filter = $passed_ref->{filter};
+        if ( ref($passed_ref->{filter}) eq "ARRAY" ){
+            foreach my $each_filter (@$filter){
+                insert_pkg_rpmlist_helper($sql, $sql_values, $each_filter, $passed_ref, $table);
+            }
+        }else{
+            insert_pkg_rpmlist_helper($sql, $sql_values, $filter, $passed_ref, $table,$options_ref,$error_strings_ref);
+        }
+    }   
+}
+
+sub insert_pkg_rpmlist_helper{
+    my ($sql, $sql_values, $filter, $passed_ref, $table,$options_ref,$error_strings_ref) = @_;
+    my $group_name = ($filter->{group}?$filter->{group}:"");
+    my $group_arch = ($filter->{architecture}?$filter->{architecture}:"");
+    my $distro = ($filter->{distribution}->{name}?$filter->{distribution}->{name}:"");
+    my $distro_version = ($filter->{distribution}->{version}?$filter->{distribution}->{version}:"");
+    my $inner_sql = "$sql, group_name, group_arch, distro, distro_version"; 
+    my $inner_sql_values = "$sql_values, '$group_name','$group_arch','$distro','$distro_version'"; 
+    insert_rpms( $inner_sql, $inner_sql_values, $passed_ref, $table,$options_ref,$error_strings_ref);
+}
+
+sub insert_rpms {
+    my ($sql, $sql_values, $passed_ref, $table, $options_ref, $error_strings_ref) = @_;
+    my $rpm;
+    if (ref($passed_ref) eq "ARRAY"){
+        foreach my $ref (@$passed_ref){
+            #$rpm = $ref->{rpm};
+            $rpm = $ref->{pkg};
+            if ( ref($rpm) eq "ARRAY" ){
+                foreach my $each_rpm (@$rpm){
+                    my $inner_sql_values = "$sql_values, '$each_rpm' ";
+                    my $inner_sql = "$sql, rpm ) $inner_sql_values)";
+                    print "SQL : $inner_sql\n" if $options{debug};
+                    do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
+                }
+            }else{
+                my $inner_sql_values = "$sql_values, '". trimwhitespace($rpm)."' ";
+                my $inner_sql .= "$sql, rpm ) $inner_sql_values )\n";
+                print "SQL : $inner_sql\n" if $options{debug};
+                do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
+            }
+        }    
+    }else{
+        #$rpm = $passed_ref->{rpm};
+        $rpm = $passed_ref->{pkg};
+        if ( ref($rpm) eq "ARRAY" ){
+            foreach my $each_rpm (@$rpm){
+                my $inner_sql_values = "$sql_values, '$each_rpm' ";
+                my $inner_sql = "$sql, rpm ) $inner_sql_values)";
+                print "SQL : $inner_sql\n" if $options{debug};
+                do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
+            }
+        }else{
+            my $inner_sql_values = "$sql_values, '". trimwhitespace($rpm)."' ";
+            my $inner_sql .= "$sql, rpm ) $inner_sql_values )\n";
+            print "SQL : $inner_sql\n" if $options{debug};
+            do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
+        }
+    }    
+}
+
+sub get_installable_packages{
+    my ($results,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT Packages.id, Packages.package " .
+              "FROM Packages, Group_Packages " .
+              "WHERE Packages.id=Group_Packages.package_id ".
+              "AND Group_Packages.group_name='Default'";
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_groups_for_packages{
+    my ($results,
+        $options_ref,
+        $error_strings_ref,
+        $group)= @_;
+    my $sql ="SELECT distinct group_name FROM Group_Packages ";
+    if(defined $group){ $sql .= "WHERE group_name='$group'"; }
+    print "SQL : $sql\n" if $$options_ref{debug};
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return 1;    
+}
+
+sub get_groups{
+    my ($results,
+        $options_ref,
+        $error_strings_ref,
+        $group)= @_;
+    my $sql ="SELECT * FROM Groups ";
+    if(defined $group){ $sql .= "WHERE name='$group'"; }
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return 1;    
+}
+
+sub set_groups{
+    my ($group,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    get_groups(\@results,$options_ref,$error_strings_ref,$group);
+    if(!@results){
+        my $sql = "INSERT INTO Groups (name) VALUES ('$group')";
+        die "$0:Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
+    }    
+    return 1;
+}
+
+sub set_groups_selected{
+    my ($group,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    get_groups(\@results,$options_ref,$error_strings_ref,$group);
+    if(@results){
+        # Initialize the "selected" flag (selected = 0)
+        my $sql = "UPDATE Groups SET selected=0";
+        die "$0:Failed to update values via << $sql >>"
+            if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
+
+        # Set the seleted group to have "selected" flag
+        # (selected = 1)
+        $sql = "UPDATE Groups SET selected=1 WHERE name='$group'";
+        die "$0:Failed to update values via << $sql >>"
+            if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
+    }    
+    return 1;
+}
+
+sub del_groups{
+    my ($group,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    get_groups(\@results,$options_ref,$error_strings_ref,$group);
+    if(!@results){
+        my $sql = "DELETE FROM Groups WHERE name='$group'";
+        die "$0:Failed to delete values via << $sql >>"
+            if! do_update($sql,"Groups", $options_ref, $error_strings_ref);
+    }    
+    return 1;
+}
+
+sub set_all_groups{
+    my ($groups_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Groups";
+    my @groups = ();
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,\@groups, $options_ref, $error_strings_ref);
+    if(!@groups){ 
+        foreach my $group (@$groups_ref){
+            set_groups($group,$options_ref,$error_strings_ref);
+        }
+    }
+}
+
+sub set_node{
+    my ($node,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT name FROM Nodes WHERE name='$node'";
+    my @nodes = ();
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,\@nodes, $options_ref, $error_strings_ref);
+    if(!@nodes){ 
+        $sql = "INSERT INTO Nodes (name) VALUES ('$node')";
+        die "$0:Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
+    }
+    return 1;
+}
+
+sub set_nics_with_node{
+    my ($nic,
+        $node,
+        $field_value_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT Nics.* FROM Nics, Nodes WHERE Nodes.id=Nics.node_id " .
+              "AND Nics.name='$nic' AND Nodes.name='$node'";
+    my @nics = ();
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,\@nics, $options_ref, $error_strings_ref);
+
+    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
+    my $node_id = $$node_ref{id};
+    if(!@nics){ 
+        $sql = "INSERT INTO Nics ( name, node_id ";
+        my $sql_value = " VALUES ('$nic', $node_id ";
+        if( $field_value_ref ){
+            while (my ($field, $value) = each %$field_value_ref){
+                $sql .= ", $field";
+                $sql_value .= ", '$value'";
+            }
+        }
+        $sql .= " ) $sql_value )";
+        die "$0:Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
+    }else{
+        $sql = "UPDATE Nics SET ";
+        my $flag = 0;
+        my $comma = "";
+        if( $field_value_ref ){
+            while (my ($field, $value) = each %$field_value_ref){
+                $comma = ", " if $flag;
+                $sql .= "$comma $field='$value'";
+                $flag = 1;
+            }
+            $sql .= " WHERE name='$nic' AND node_id=$node_id ";
+            die "$0:Failed to update values via << $sql >>"
+                if! do_update($sql,"Nics", $options_ref, $error_strings_ref);
+        }
+    }
+    return 1;
+}
+
+sub set_status{
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Status";
+    my @status = ();
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,\@status, $options_ref, $error_strings_ref);
+    if(!@status){ 
+        foreach my $status ("installable", "installed", "install_allowed","should_be_installed", "should_be_uninstalled"){
+            $sql = "INSERT INTO Status (name) VALUES ('$status')";
+            die "$0:Failed to insert values via << $sql >>"
+                if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
+        }
+    }
+    return 1;
+}
+
+sub get_image_info_with_name{
+    my ($image,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Images WHERE name='$image'";
+    my @images = ();
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,\@images, $options_ref, $error_strings_ref);
+    return (@images?pop @images:undef);
+}
+
+sub set_images{
+    my ($image_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $imgname = $$image_ref{name};
+    my $distro = $$image_ref{distro};
+    my $architecture = $$image_ref{architecture};
+    my $images = get_image_info_with_name($imgname,$options_ref,$error_strings_ref);
+    my $sql = "";
+    if(!$images){ 
+        $sql = "INSERT INTO Images (name,distro,architecture) VALUES ".
+            "('$imgname','$distro','$architecture')";
+        die "$0:Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Images", $options_ref, $error_strings_ref);
+    }else{
+        $sql = "UPDATE Images SET name='$imgname', distro='$distro', ". 
+               "architecture='$architecture'";
+        die "$0:Failed to update values via << $sql >>"
+            if! do_update($sql,"Images", $options_ref, $error_strings_ref);
+    }
+    return 1;
+}
+
+sub set_image_packages{
+    my ($image,
+        $package,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $image_ref = get_image_info_with_name($image,$options_ref,$error_strings_ref);
+    #my $img_ref = pop @$image_ref;
+    my $image_id = $$image_ref{id};
+    my $package_ref = get_package_info_with_name($package,$options_ref,$error_strings_ref);
+    my $package_id = $$package_ref{id};
+    my $sql = "SELECT * FROM Image_Packages WHERE image_id=$image_id AND package_id=$package_id";
+    my @images = ();
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,\@images, $options_ref, $error_strings_ref);
+    if(!@images){ 
+        $sql = "INSERT INTO Image_Packages (image_id,package_id) VALUES ".
+            "($image_id,$package_id)";
+        die "$0:Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Image_Packages", $options_ref, $error_strings_ref);
+    }
+    return 1;
+}    
+
+sub get_gateway{
+    my ($node,
+        $interface,
+        $results,
+        $options_ref,
+        $error_strings_ref)= @_;
+    my $sql ="SELECT Networks.gateway FROM Networks, Nics, Nodes ".
+             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node'".
+             "AND Networks.n_id=Nics.network_id AND Nics.name='$interface'";
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+#=======================================================================
+#
+# links a node nic to a network in the database
+
+sub link_node_nic_to_network {
+
+    my ( $node_name, $nic_name, $network_name, $options_ref, $error_strings_ref ) = @_;
+
+    my $sql = "SELECT Nodes.id, Networks.n_id FROM Nodes, Networks WHERE Nodes.name='$node_name' AND Networks.name='$network_name' ";
+    my @results = ();
+    my @error_strings = ();
+    oda::do_query(\%options,
+                $sql,
+                \@results,
+                \@error_strings);
+    my $res_ref = pop @results;
+    my $node_id = $$res_ref{"id"};
+    my $network_id = $$res_ref{"n_id"};
+    my $command =
+    "UPDATE Nics SET name='$nic_name', node_id=$node_id, network_id=$network_id ";
+    print "$0: linking node $node_name nic $nic_name to network $network_name using command <$command>\n"
+    if $options{debug};
+    print "Linking node $node_name nic $nic_name to network $network_name.\n"
+    if $options{verbose} && ! $options{debug};
+    warn "$0: failed to link node $node_name nic $nic_name to "
+        . " network $network_name.\n"
+        if !do_update($command,"Nics",$options_ref,$error_strings_ref);
+}
+
+
+sub trimwhitespace($)
+{
+    my $string = shift;
+    $string =~ s/^\s+//;
+    $string =~ s/\s+$//;
+    return $string;
+}
+
 
 1;

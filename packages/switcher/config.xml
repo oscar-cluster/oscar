@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
                          All rights reserved.
@@ -26,7 +29,7 @@
   <summary>Environment switcher</summary>
   <license>Freely distributable</license>
   <group>Application/Environment</group>
-  <url>http://env-switcher.sourceforge.net/</url>
+  <uri>http://env-switcher.sourceforge.net/</uri>
 
   <packager>
     <name>Jeff Squyres</name>
@@ -56,10 +59,10 @@ implementations is only used in this description as an example.  As
 such, it can be used in any environment for any "switching" kind of
 purpose.</description>
 
-  <rpmlist>
-    <rpm>env-switcher</rpm>
-    <rpm>modules-oscar</rpm>
-    <rpm>modules-default-manpath-oscar</rpm>
-  </rpmlist>
+  <binary-package-list>
+    <pkg>env-switcher</pkg>
+    <pkg>modules-oscar</pkg>
+    <pkg>modules-default-manpath-oscar</pkg>
+  </binary-package-list>
   
 </oscar>

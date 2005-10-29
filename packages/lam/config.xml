@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE package SYSTEM "../package.dtd">
-<oscar>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
   <!--
       Copyright (c) 2002 The Trustees of Indiana University.  
                          All rights reserved.
@@ -26,7 +29,7 @@
   <license>Freely distributable</license>
   <copyright>2002</copyright>
   <group>Development/Libraries</group>
-  <url>http://www.lam-mpi.org/</url>
+  <uri>http://www.lam-mpi.org/</uri>
   <maintainer>
     <name>LAM Team</name>
     <email>lam@lam-mpi.org</email>
@@ -81,7 +84,7 @@ visualized either at runtime or post-mortem.</description>
   </requires>
 
     
-  <rpmlist>
+  <binary-package-list>
     <!-- Distributions that provide libaio -->
 
     <!-- Do *NOT* remove these filter lines and libaio/libaio-devel!
@@ -173,31 +176,66 @@ visualized either at runtime or post-mortem.</description>
          have to be maintained."
          ============================================================
          -->
-    <filter distribution='fedora'   distribution_version='2'   />
-    <filter distribution='fedora'   distribution_version='3'   />
-    <filter distribution='redhat'   distribution_version='9'   />
-    <filter distribution='redhat'   distribution_version='3as' />
-    <filter distribution='redhat'   distribution_version='el4' />
-    <rpm>libaio</rpm>
-    <rpm>libaio-devel</rpm>
-    <rpm>lam-oscar</rpm>
-    <rpm>lam-oscar-modulefile</rpm>
-    <rpm>lam-switcher-modulefile</rpm>
-  </rpmlist>
+    <filter>
+      <distribution>
+        <name>fedora</name>
+        <version>2</version>
+      </distribution>
+    </filter>
 
-  <rpmlist>
+    <filter>
+      <distribution>
+        <name>fedora</name>
+        <version>3</version>
+      </distribution>
+    </filter>
+
+    <filter>
+      <distribution>
+        <name>redhat</name>
+        <version>9</version>
+      </distribution>
+    </filter>
+
+    <filter>
+      <distribution>
+        <name>redhat</name>
+        <version>3as</version>
+      </distribution>
+    </filter>
+
+    <filter>
+      <distribution>
+        <name>redhat</name>
+        <version>el4</version>
+      </distribution>
+    </filter>
+
+    <pkg>libaio</pkg>
+    <pkg>libaio-devel</pkg>
+    <pkg>lam-oscar</pkg>
+    <pkg>lam-oscar-modulefile</pkg>
+    <pkg>lam-switcher-modulefile</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
     <!-- Distributions that don't provide libaio -->
-    <filter distribution='mandrake' />
-    <rpm>lam-oscar</rpm>
-    <rpm>lam-oscar-modulefile</rpm>
-    <rpm>lam-switcher-modulefile</rpm>
-  </rpmlist>
+    <filter>
+      <distribution>
+        <name>mandrake</name>
+      </distribution>
+    </filter>
 
-  <package>
+    <pkg>lam-oscar</pkg>
+    <pkg>lam-oscar-modulefile</pkg>
+    <pkg>lam-switcher-modulefile</pkg>
+  </binary-package-list>
+
+  <package-specific-attributes>
     <switcher>
       <tag>mpi</tag>
       <name>lam-7.0.6</name>
     </switcher>
-  </package>
+  </package-specific-attributes>
 
 </oscar>

@@ -3,6 +3,12 @@
 # Created: Wed Oct 29 21:10:57 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
+#
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
+#
+# $Id$
+#########################################################################
 # WARNING! All changes made in this file will be lost!
 
 
@@ -38,6 +44,8 @@ use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::Database;
 use Qt::signals refreshPackageSets => [];
 use SelectorUtils;
 
+my %options = ();
+my @errors = ();
 sub uic_load_pixmap_SelectorManageSets
 {
     my $pix = Qt::Pixmap();
@@ -174,9 +182,8 @@ sub createNewPackageSet
     } while ($nameclash);
   
   # Add the new name to the database and to the ListBox
-  my $success = OSCAR::Database::database_execute_command(
-    "create_package_set $newSetName");
-  Carp::carp("Could not do oda command 'create_package_set $newSetName'") if 
+  my $success = OSCAR::Database::set_groups($newSetName, \%options, \@errors);  
+  Carp::carp("Could not do oda command 'set_groups $newSetName'") if 
     (!$success);
 
   return $newSetName;
@@ -204,15 +211,16 @@ sub duplicateButton_clicked
       # Copy all of the packages listed in the old package set
       # over to the newly created package set.
       my @packagesInSet;
-      my $success = OSCAR::Database::database_execute_command(
-        "packages_in_package_set $lastSet",\@packagesInSet);
-      Carp::carp("Could not do oda command 'packages_in_package_set " .
+      my @results = ();
+      my $success = OSCAR::Database::get_group_packages_with_groupname(
+            $lastSet,\@results,\%options,\@errors);
+      Carp::carp("Could not do oda command 'get_group_packages_with_groupname " .
         $lastSet . "'") if (!$success);
       foreach my $pack (@packagesInSet)
         {
-          $success = OSCAR::Database::database_execute_command(
-            "add_package_to_package_set $pack $currSet"); 
-          Carp::carp("Could not do oda command 'add_package_to_package_set " .
+          $success = OSCAR::Database::set_group_packages(
+                $lastSet,$pack,1,\%options,\@errors);
+          Carp::carp("Could not do oda command 'set_group_packages " .
             "$pack $currSet'") if (!$success);
         }
       
@@ -277,8 +285,8 @@ sub renameButton_clicked
               else
                 {
                   my $selected = packageSetsListBox->currentText();
-                  $success = OSCAR::Database::database_execute_command(
-                    "rename_package_set $selected $response");
+                  $success = OSCAR::Database::set_packages(
+                    $selected,\%options,\@errors);
                   if ($success)
                     {
                       refreshPackageSetsListBox();
@@ -319,8 +327,8 @@ sub deleteButton_clicked
       (packageSetsListBox->count() > 1))
     { 
       my $selected = packageSetsListBox->currentText();
-      my $success = OSCAR::Database::database_execute_command(
-        "delete_package_set $selected");
+      my $success = OSCAR::Database::del_groups(
+            $selected,\%options,\@errors);
       if ($success)
         {
           refreshPackageSetsListBox();
@@ -350,11 +358,11 @@ sub newCoreButton_clicked
   my $allPackages = SelectorUtils::getAllPackages();
   foreach my $pack (keys %{ $allPackages })
     {
-      if ($allPackages->{$pack}{class} eq "core")
+      if ($allPackages->{$pack}{__class} eq "core")
         {
-          my $success = OSCAR::Database::database_execute_command(
-            "add_package_to_package_set $pack $currSet"); 
-          Carp::carp("Could not do oda command 'add_package_to_package_set " .
+          my $success = OSCAR::Database::set_group_packages(
+                $currSet,$pack,1,\%options,\@errors);
+          Carp::carp("Could not do oda command 'set_group_packages " .
             "$pack $currSet'") if (!$success);
         }
     }
@@ -380,9 +388,9 @@ sub newAllButton_clicked
   my $allPackages = SelectorUtils::getAllPackages();
   foreach my $pack (keys %{ $allPackages })
     {
-      my $success = OSCAR::Database::database_execute_command(
-        "add_package_to_package_set $pack $currSet"); 
-      Carp::carp("Could not do oda command 'add_package_to_package_set " .
+      my $success = OSCAR::Database::set_group_packages(
+                $currSet,$pack,1,\%options,\@errors);
+      Carp::carp("Could not do oda command 'set_group_packages " .
         "$pack $currSet'") if (!$success);
     }
 

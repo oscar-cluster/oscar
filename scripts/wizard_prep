@@ -4,7 +4,7 @@
 #                     All rights reserved.
 # Copyright 2002 International Business Machines
 #                Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002-2004 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
 # $Id$
@@ -252,12 +252,12 @@ my $exit_status =
 croak("Couldn't initialize the global database values table") if $exit_status;
 
 my $exit_status =
-  system( "$ENV{OSCAR_HOME}/scripts/populate_default_package_set" ) / 256;
+  system( "$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info" ) / 256;
 croak("Couldn't set up a default package set") if $exit_status;
 
 my $exit_status =
-  system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info") / 256;
-croak("Couldn't set up basic node information") if $exit_status;
+  system( "$ENV{OSCAR_HOME}/scripts/populate_default_package_set" ) / 256;
+croak("Couldn't set up a default package set") if $exit_status;
 
 my $exit_status =
   system( "$ENV{OSCAR_HOME}/scripts/set_node_nics --network" ) / 256;
@@ -273,7 +273,7 @@ oscar_log_subsection("Identified core packages: " . join(' ', @packages));
 my @rpms = ();
 foreach my $package (@packages) 
   {
-    push @rpms, OSCAR::Package::rpmlist($package,"oscar_server");
+    push @rpms, OSCAR::Package::rpmlist($package,undef,"oscar_server");
   }
 
 # And now we add the extra rpms that are needed if
@@ -305,46 +305,27 @@ oscar_log_subsection("Successfully installed server core RPMs");
 #
 
 # START LOCKING FOR NEST && open the database
-my @tables = ("nodes", "configurations", "node_config_revs", "config_opkgs","packages","oda_shortcuts");
+my @tables = ("Nodes", "Group_Nodes", "Packages", "Group_Packages", "Node_Package_Status", "Node_Packages");
 my %options = ();
 my @errors = ();
 locking("write", \%options, \@tables, \@errors);
 
-my @nodes_id = ();
-my @configs_id = ();
-my @nodes_configs = ();
-my @packages_id = ();
-dec_already_locked("read_records nodes id name=oscar_server",\@nodes_id,\@errors);
-my $node_id = pop @nodes_id;
-dec_already_locked("read_records configurations id name=oscar_server", \@configs_id, \@errors);
-my $config_id = pop @configs_id;
-dec_already_locked("read_records node_config_revs.node_id node_id=$node_id configurations_id=$config_id", \@nodes_configs, \@errors);
-my $node_config = pop @nodes_configs;
-if (! $node_config ){
-    do_it_or_die( "add_node_config_revs $node_id $config_id",
-                   undef,
-                  "can not create node_config_revs record for oscar_server");
-   
-    print "Inserting CORE oscar packages into config_opkgs table :\n";
-    my $syslog = "OK";
-    foreach my $opkg (@packages){
-        dec_already_locked("read_records packages id name=$opkg", \@packages_id, \@errors);
-        my $package_id = pop @packages_id;
-        do_it_or_die( "add_config_opkgs $config_id $package_id $syslog",
-                      undef,
-                      "cannot create config_opkgs record for oscar_server" );
-    }
-}
+my $group_name = "oscar_server";
+my $node_name = "oscar_server";
+set_group_nodes($group_name,$node_name,\%options,\@errors);
 
 # Have installed Core Server Pkgs & did not croak, so mark 
 # packages.<pkg>installed true.  (best effort for now)
 
-oscar_log_subsection("Marking installed bit in ODA for server core Pkgs");
-foreach my $pkg (@packages) {
-        oscar_log_subsection("Set package: $pkg");
-        my $ok_rslt = dec_already_locked("package_mark_installed $pkg", undef, \@errors);
-        croak "Unable to mark packages.$pkg.installed\n" if (!$ok_rslt);
+print "Updating the status of core packages from installable to installed\n";
+my @package_results = ();
+my $requested = 7;
+my $group = "core";
+if ( get_packages_with_class($group,\@package_results,\%options,\@errors)){
+    die "$0:Failed to update the table Node_Package_Status"
+        if(!update_node_package_status(\%options,"oscar_server",\@package_results,$requested,\@errors));
 }
+
 # UNLOCKING FOR NEST
 unlock(\%options, \@errors);
 

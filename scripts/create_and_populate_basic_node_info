@@ -2,6 +2,8 @@
 
 # Copyright 2004 NCSA
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -31,12 +33,12 @@ use OSCAR::Package;
 use oda;
 
 my %options = ();
-
+my %field_value_hash = ();
 
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
     
-    return if dec_already_locked( $command, $results_ref, 1 );
+    return if oda::do_query(\%options, $command, $results_ref, $error );
     database_disconnect();
     die "$0: $error";
 }
@@ -52,78 +54,49 @@ print "Checking for database existance of node oscar_server ...\n";
 
 # START LOCKING FOR NEST and open the database.
 
-my @tables =("configurations", "oda_shortcuts", "node_groups", "nodes");
+my @tables =("Groups", "Group_Nodes", "Nodes");
 my @errors = ();
 locking("write", \%options, \@tables, \@errors);
 
-do_it_or_die( "nodes name=\"oscar_server\"",
-	      \@nodes,
-	      "cannot read nodes database table" );
-if ( ! @nodes ) {
-    print "Creating node, node group, configurations records for oscar_server ...\n";
-    do_it_or_die( "create_node oscar_server",
-		  undef,
-		  "cannot create node record for oscar_server" );
-}
+my $msg = "Creating node, node group, configurations records for oscar_server ...\n";
+@errors = ("cannot read nodes database table");
+set_node("oscar_server",\%options,\@errors);
+
 
 # update some of the fields in the node record for oscar_server
 
 my $hostname = `hostname`;
 chomp $hostname;
+%field_value_hash = ( "hostname" => $hostname );
+my $where = " WHERE name='oscar_server' ";
 print "Updating the hostname field in the oscar_server node to <$hostname> ...\n";
-do_it_or_die( "modify_records nodes name=oscar_server hostname~$hostname",
-	      undef,
-	      "cannot update the hostname field in the node record for oscar_server" );
+    update_table( \%options, "Nodes", \%field_value_hash, $where, \@errors);
 my $dns_domain = `dnsdomainname`;
 chomp $dns_domain;
 if ( defined $dns_domain && $dns_domain ne "" ) {
     print "Updating the dns_domain field in the oscar_server node to <$dns_domain>\n";
-    do_it_or_die( "modify_records nodes name=oscar_server dns_domain~$dns_domain",
-		  undef,
-		  "cannot update the dns_domain field in the node record for oscar_server" );
+    %field_value_hash = ( "dns_domain" => $dns_domain );
+    my $where = "WHERE name='oscar_server'";
+    update_table( \%options, "Nodes", \%field_value_hash, $where, \@errors );
 }    
 
 # make sure that certain node groups exist
 
-foreach my $node_group_name ( "oscar_clients", "all" ) {
+foreach my $node_group_name ( "oscar_clients", "all", "Default" ) {
+    
     print "Checking for existance of node group $node_group_name ...\n";
     my @node_groups = ();
-    do_it_or_die( "node_groups name=\"$node_group_name\"",
-		  \@node_groups,
-		  "cannot read node groups database table" );
+    get_groups(\@node_groups,\%options,\@errors,$node_group_name);
     if ( ! @node_groups ) {
-	print "Creating node group $node_group_name ...\n";
-	do_it_or_die( "create_node_group $node_group_name",
-		      undef,
-		      "cannot create node group record for $node_group_name" );
+        print "Creating node group $node_group_name ...\n";
+        set_groups($node_group_name,\%options,\@errors);
     }
 }
 
-# make sure that certain named configurations exist
-foreach my $configuration_name ( "default" ) {
-    print "Checking for existance of configuration $configuration_name ...\n";
-    my @configurations = ();
-    do_it_or_die( "configurations name=\"$configuration_name\"",
-		  \@configurations,
-		  "cannot read configurations database table" );
-    if ( ! @configurations ) {
-	print "Creating configuration $configuration_name ...\n";
-	do_it_or_die( "create_configuration $configuration_name",
-		      undef,
-		      "cannot create configuration record for $configuration_name" );
-    }
-}
 
 # UNLOCKING FOR NEST.
 unlock(\%options, \@errors);
 
 
-exit 0;
-
-
-
-
-
-
-
+#exit 0;
 
