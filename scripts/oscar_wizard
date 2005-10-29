@@ -467,12 +467,10 @@ sub build_oscar_clients {
     get_nics_info_with_node($node,\@results,\%options,\@errors);
     my $ref = pop @results;
     my $nic_name = $$ref{name};
-        print "GATEWAY : $nic_name\n";
     if( @results == 1 ) {
         get_gateway($node,$interface,\@results,\%options,\@errors);
         my $gw_ref = pop @results if @results;
         $gw = $$gw_ref{gateway};
-        print "GATEWAY : $gw\n";
     }
     $gw ||= $ip;
 
