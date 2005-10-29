@@ -34,6 +34,8 @@ use File::Copy;
 use File::Path;
 use AppConfig qw(:argcount);
 use POSIX;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Database;
 
 my $RPMPOOL = "/tftpboot/rpm";
 my $ARCH=(uname)[4]; # Default architecture
@@ -105,9 +107,17 @@ unless (-d "/tftpboot/pxelinux.cfg") {
 my $archdir = "$ARCH-boot";
 
 my $monitor_port = 8181;
-my $iface = `oda read_records oscar.interface`;
-my $ip = `oda node_nic_ip oscar_server $iface`;
-chomp($ip);
+
+# Need to get the IP address of headnode (oscar_server)
+my @result = ();
+my $node = "oscar_server";
+my %db_options = ();
+my @db_errors = ();
+
+get_nics_info_with_node($node, \@result, \%db_options, \@db_errors);
+
+my $node_ref = pop @result;
+my $ip = $$node_ref{ip};
 
 if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     verbose("Getting pxelinux.0.");
