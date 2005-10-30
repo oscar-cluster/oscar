@@ -16,8 +16,10 @@
 
 # $Id$
 
+use lib "$ENV{OSCAR_HOME}/lib/OSCAR";
 use strict;
 use Carp;
+use oda;
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
@@ -36,13 +38,12 @@ my @known_rpms = qw(
                     loghost
                     mpich-oscar-module
                     mpich-oscar
-		    mysql
-		    mysql-common
-		    mysql-server
+                    mysql
+                    mysql-common
+                    mysql-server
                     ntpconfig
                     pvm-modules-oscar
                     pvm
-                    oda
                     openpbs-oscar 
                     openpbs-oscar-mom
                     openpbs-oscar-server
@@ -54,7 +55,7 @@ my @known_rpms = qw(
                     maui-oscar
                     libdbdcsv-perl
                     libappconfig-perl
-		    perl-DBD-MySQL
+                    perl-DBD-MySQL
                     rrdtool
                     systeminstaller
                     systeminstaller-x11
@@ -75,7 +76,7 @@ my @known_services = qw(
                         gmond
                         httpd
                         maui
-			named
+                        named
                         ntpd
                         mysqld
                         pbs_server
@@ -140,7 +141,7 @@ print "found $paths_count rpm files.\n";
 # delete the oscar database
 
 print "Deleting oda database ...\n";
-system("oda drop_database");
+oda::drop_database;
 #print "Deleting oda database saved password file ...\n";
 #unlink "/etc/odapw";
 
