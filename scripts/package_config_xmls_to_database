@@ -154,7 +154,7 @@ sub get_xml_ref{
     if ( ! -f $config_file ) {
         print "Warning, no $config_file exists, supplying one for package $package_name\n";
     } else {
-        print "Processing $config_file for package $package_name ...\n" if $msg;
+        print "Processing $config_file for package $package_name ...\n$msg" if $msg;
         my $xs = new XML::Simple();
         $xml_ref = eval { $xs->XMLin( $config_file ); };
         if ($@) {
@@ -443,7 +443,6 @@ foreach my $directory ( @directories ) {
         print "$0: package=<$package>\n" if $options{debug};
         $msg = "";
         $xml_ref = get_xml_ref($directory, $package,$msg);
-        print $msg;
         if( is_installed($package,\%options,\@error_strings,$package_version) ){
             my @list_of_tables = ("Packages_rpmlists", "Group_Packages",
                                   "Packages_conflicts", "Packages_provides",
@@ -467,9 +466,9 @@ foreach my $directory ( @directories ) {
             }
             update_packages($xml_ref, "Packages", $package_id, $package, 
                             $directory, \%table_fields_hash, \%options, \@error_strings);
-            $msg = "Modifying existing $packages_table_name record for package $package\n";
+            $msg = "Modifying existing $packages_table_name record for package";
         }else{
-            $msg = "Writing a new $packages_table_name record for package $package version $package_version\n";
+            $msg = "Writing a new $packages_table_name record for package";
 
             print Dumper(\%table_fields_hash) if $options{debug};
             print_hash("", "Print the package config.xml", $xml_ref)
@@ -492,15 +491,13 @@ foreach my $directory ( @directories ) {
          $package ne ".svn" &&
          ! -e "$directory/.oscar_ignore" ) {
         print "$0: package=<$package>\n" if $options{debug};
-        $xml_ref = get_xml_ref($directory, $package,$msg);
-        print $msg;
+        my $each_msg = $msg . " $package ".($package_version?"$package_version\n":"\n");
+        $xml_ref = get_xml_ref($directory, $package,$each_msg);
         my $package_ref = 
             get_package_info_with_name($package,\%options,\@error_strings,$package_version);
         my $package_id = $$package_ref{id};
         
         # Insert into "Packages_rpmlists" table
-        #insert_pkg_rpmlist($xml_ref->{rpmlist}, "Packages_rpmlists", $package_id)
-        #    if $xml_ref->{rpmlist}; 
         insert_pkg_rpmlist($xml_ref->{"binary-package-list"}, "Packages_rpmlists", $package_id)
             if $xml_ref->{"binary-package-list"}; 
             
@@ -511,10 +508,6 @@ foreach my $directory ( @directories ) {
         # add to the selected "Group" (i.e., Default).
         my %field_value_hash = ();
         if ( ! $directory_argument ){
-#            %field_value_hash = ( "group_name"=>$xml_ref->{class},
-#                                     "package_id"=>"$package_id",
-#                                     "selected"=>1);
-#            insert_into_table (\%options,"Group_Packages",\%field_value_hash,\@error_strings);
             %field_value_hash = ( "group_name"=>$DEFAULT,
                                   "package_id"=>"$package_id",
                                   "selected" => 1);
@@ -523,11 +516,24 @@ foreach my $directory ( @directories ) {
 
         # Insert into "Packages_[conflicts|provides|requires]" table
         foreach my $tag ("conflicts", "provides", "requires"){
-            if ($xml_ref->{$tag}) {
-                %field_value_hash = ( "p1_id"=>"$package_id",
-                                      "p2_name"=>$xml_ref->{$tag}->{name},
-                                      "type"=>$xml_ref->{$tag}->{type} );
-                insert_into_table (\%options,"Packages_$tag",\%field_value_hash,\@error_strings);
+            if ( $xml_ref->{$tag} ){ 
+                my $tag_ref = $xml_ref->{$tag};
+                print Dumper($tag_ref);
+                foreach my $each_tag (keys %$tag_ref){
+                    if( $each_tag eq "name" || $each_tag eq "type" ){
+                        %field_value_hash = ( "p1_id"=>"$package_id",
+                                              "p2_name"=>$tag_reg->{name},
+                                              "type"=>$tag_ref->{type} );
+                        insert_into_table (\%options,"Packages_$tag",\%field_value_hash,\@error_strings);
+                        last;
+                    }else{    
+                        # Handling a case when the conflicts tag is used more than one time.
+                        %field_value_hash = ( "p1_id"=>"$package_id",
+                                              "p2_name"=>$each_tag,
+                                              "type"=>$tag_ref->{$each_tag}->{type} );
+                        insert_into_table (\%options,"Packages_$tag",\%field_value_hash,\@error_strings);
+                    }
+                }
             }
         }
 
