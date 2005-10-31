@@ -38,7 +38,7 @@ sub sortnodes(@) {
 
 print "...adding exec hosts' name as admin hosts to SGE Qmaster\n";
 
-# Setting the environment so that qcon -ah will correctly execute
+# Setting the environment so that qconf -ah will correctly execute
 $ENV{'SGE_ROOT'} = '/opt/sge';
 
 # Get the list of defined clients
@@ -76,12 +76,3 @@ foreach my $node (sortnodes( keys %nodes )) {
 # relevant configuration information. Once this is available, this can be
 # pushed (cpush) to the clients in the post_install step and do the final
 # config of clients to set themselves up as exec nodes (inst_sge -x)
-                                                                                                                             
-# To do that, make a tar file of the spool dir for sending to clients
-# chdir("opt/sge"); 
-# Thanks to Bernard; :-) Go into SGE_ROOT before doing tar
-system("cd /opt/sge; tar cvf default.tar default") == 0 or croak("Failed to tar default directory on SGE Qmaster");
-wait();
-
-# All that remains is to let the exec nodes untar this default.tar
-# into their $SGE_ROOT and execute a 'qconf -ae'

@@ -33,6 +33,12 @@ my $sge_conf_store = "/opt/sge/default.tar"; # Spool dir's tar file
 my $push_command = "/opt/c3-4/cpush";
 my $exec_command = "/opt/c3-4/cexec";
 
+# Make a tar file of the spool dir for sending to clients
+# Thanks to Bernard; :-) Go into SGE_ROOT before doing tar
+print "Creating $sge_conf_store\n";
+system("cd /opt/sge; tar --exclude=qmaster -cf default.tar default") == 0 or croak("Failed to tar default directory on SGE Qmaster");
+#wait();
+
 # push the spool dir's tar file to the client nodes
 print "SGE post_install: Pushing default.tar to clients...\n";
 system("$push_command $sge_conf_store /opt/sge/default.tar");
@@ -45,7 +51,10 @@ system("$push_command /etc/bashrc /etc");
 
 # Untar the spool dir on the clients
 print "SGE post_install: Untarring default.tar on clients...\n";
-system("$exec_command \"cd /opt/sge; tar xvf default.tar\"") == 0 or croak("Failed to untar default.tar on clients");
+system("$exec_command \"cd /opt/sge; tar -xf default.tar\"") == 0 or croak("Failed to untar default.tar on clients");
+
+print "Removing $sge_conf_store on clients\n";
+system("$exec_command rm -rf $sge_conf_store");
 
 # Then, the clients have enough information to proceed
 # with configuring themselves as exec nodes 
@@ -54,6 +63,9 @@ system("$exec_command \"cd /opt/sge; ./inst_sge -x\"") == 0 or croak("Problem wh
 
 # Now, the exec node config is complete on the clients
 print "SGE post_install: Configuration SUCCESS on clients\n";
+
+print "Deleting $sge_conf_store on headnode\n";
+system("rm -rf $sge_conf_store");
 
 # The master has a complete list of all exec nodes and 
 # is ready to accept and launch jobs. (Try qsub! :-) )
