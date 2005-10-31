@@ -544,7 +544,7 @@ sub do_it_or_die {
 
 sub populate_client_group_nodes{
 	my @pkgs = list_selected_packages();
-    my @tables = ("nodes", "configurations", "node_config_revs", "config_opkgs", "packages", "oda_shortcuts");
+    my @tables = ("Nodes", "Group_Nodes", "Groups");
     locking("WRITE", \%options, \@tables, \@errors);
     my @client_nodes = ();
     get_client_nodes(\@client_nodes,\%options,\@errors);
@@ -552,12 +552,6 @@ sub populate_client_group_nodes{
         my $node_id = $$client_ref{id};
         my $node_name = $$client_ref{name};
         my $client_group = "oscar_clients";
-        #my @client_info = ();
-        #my $client_group_id;
-        #if(get_groups(\@client_info,\%options,\@errors,$client_group)){
-        #    my $client_ref = pop @client_info;
-        #    $client_group_id = $$client_ref{id};
-        #}
         set_group_nodes($client_group,$node_name,\%options,\@errors);
     }
 
