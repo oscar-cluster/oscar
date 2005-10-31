@@ -16,10 +16,8 @@
 
 # $Id$
 
-use lib "$ENV{OSCAR_HOME}/lib/OSCAR";
 use strict;
 use Carp;
-use oda;
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
@@ -141,7 +139,11 @@ print "found $paths_count rpm files.\n";
 # delete the oscar database
 
 print "Deleting oda database ...\n";
-oda::drop_database;
+if(-e '/etc/odapw'){
+    eval "use lib \"$oscar_home/lib/OSCAR\"";
+    eval "use oda";
+    oda::drop_database(undef, undef);
+}    
 #print "Deleting oda database saved password file ...\n";
 #unlink "/etc/odapw";
 
@@ -222,13 +224,13 @@ sub cleanup_files {
               '/opt/opium',
               '/etc/systemimager',
               '/etc/dhcpd.conf',
-	      '/etc/odapw',
+    	      '/etc/odapw',
               '/etc/profile.d/00-modules.*',
               '/etc/profile.d/apitest.*',
               '/etc/profile.d/c3.*',
               '/etc/profile.d/pbs-oscar.*',
               '/etc/profile.d/ssh-oscar.*', 
-	      '/etc/systeminstaller',
+	          '/etc/systeminstaller',
               '/opt/autoupdate',
               '/opt/env-switcher*',
               '/opt/lam*',
@@ -236,20 +238,20 @@ sub cleanup_files {
               '/opt/modules',
               '/opt/mpich*',
               '/opt/pbs',
-	      '/opt/perl-Qt',
-	      '/opt/sync_files',
+	          '/opt/perl-Qt',
+              '/opt/sync_files',
               '/usr/lib/systemimager',
-	      '/usr/lib/systeminstaller',
+              '/usr/lib/systeminstaller',
               '/var/lib/clamdr',
-	      '/var/lib/ganglia',
-	      '/var/lib/mysql',
-	      '/var/lib/mysqld',
-	      '/var/lib/oscar',
+              '/var/lib/ganglia',
+              '/var/lib/mysql',
+              '/var/lib/mysqld',
+              '/var/lib/oscar',
               '/var/lib/systemimager',
               '/var/lib/systeminstaller',
               '/var/log/systemimager',
               '/var/spool/pbs',
-	      '/usr/share/systeminstaller/distinfo',
+              '/usr/share/systeminstaller/distinfo',
               "$oscar_home/.oscar",
              );
   foreach my $file (@dirs) {
@@ -272,23 +274,9 @@ sub do_command {
 }
 
 sub delete_from_pool {
-  my @rpm_files = @_;
   my $dir = "/tftpboot/rpm/";
+  my @files_to_delete = @_;
     
-  my @files = `cd $dir && ls -1`;
-  chomp @files;
-  my @files_to_delete = ();
-  foreach my $rpm_file (@rpm_files) {
-    my $expression = "^$rpm_file\$";
-    my @non_number_segments = split( /[0-9]+/, $expression );
-    $expression = join( '[0-9]+', @non_number_segments );
-#    print "rpm_file=<$rpm_file> expression=<$expression>\n";
-    eval {
-      foreach my $file ( grep( /$expression/, @files ) ) {
-        push @files_to_delete, $file;
-      }
-    }
-  }
   @files_to_delete = sort_uniq( @files_to_delete );
   foreach my $file ( @files_to_delete ) {
     do_command( "rm -f $dir$file" ) if -f "$dir$file";
