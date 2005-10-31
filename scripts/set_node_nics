@@ -41,6 +41,8 @@ my %options =     ( 'changes'  => 1,
 		    'nics'     => 1,
 		    'verbose'  => 0 );
 
+my @error_strings = ();
+
 #=======================================================================
 #
 # Find all gateway addresses and interface names in the routing tables.
@@ -59,7 +61,6 @@ my %options =     ( 'changes'  => 1,
 sub find_gateways {
 
     my ( $print_errors ) = @_;
-    my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
 			      ref($print_errors) eq "ARRAY" ) ?
 			      $print_errors : \@error_strings;
@@ -111,7 +112,6 @@ sub find_gateways {
 sub find_nics {
 
     my ( $print_errors ) = @_;
-    my @error_strings = ();
     my $error_strings_ref = ( defined $print_errors && 
 			      ref($print_errors) eq "ARRAY" ) ?
 			      $print_errors : \@error_strings;
@@ -334,14 +334,8 @@ sub new_name {
 
 sub read_database_network_records {
 
-    my @error_strings = ();
     my @networks = ();
-    my $sql="SELECT * FROM Networks";
-    die "$0: cannot read current database network records\n"
-        if (! oda::do_query(\%options,
-                            $sql,
-                            \@networks,
-                            \@error_strings));
+    get_networks(\@networks,\%options,\@error_strings);
     foreach my $network_ref (@networks){
         my $net_name = $$network_ref{name};
         $$database_networks_ref{$net_name} = $network_ref;
@@ -636,7 +630,6 @@ oda::print_hash( "", "$0: ifconfig surmised networks", \%surmised_networks )
 database_connect() ||
 die "$0: cannot connect to oda database";
 
-my @error_strings = ();
 # START LOCKING FOR NEST && open the database
 my @tables =("Clusters","Nics", "Networks",
             "Group_Nodes", "Nodes");

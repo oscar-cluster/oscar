@@ -62,6 +62,7 @@ if(-e '/etc/odapw'){
               select_table
               delete_table
               get_client_nodes
+              get_networks
               get_packages_related_with_package
               get_packages_switcher
               get_packages_with_class
@@ -1535,6 +1536,15 @@ sub get_nodes{
     return @list_of_nodes;
 }
 
+sub get_networks{
+    my ($results,
+        $options_ref,
+        $error_strings_ref)= @_;
+    my $sql ="SELECT * FROM Networks ";
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
 sub get_nics_info_with_node{
     my ($node,
         $results,
@@ -1564,11 +1574,11 @@ sub get_cluster_info_with_name{
         $options_ref,
         $error_strings_ref) = @_;
     my @results = ();
-    my $where = ($cluster_name?"WHERE name='$cluster_name'":"");
-    my $sql = "SELECT * FROM Clusters $where";
+    my $where = ($cluster_name?"'$cluster_name'":"'oscar'");
+    my $sql = "SELECT * FROM Clusters WHERE name=$where";
     do_select($sql,\@results, $options_ref, $error_strings_ref);
     if(@results){
-        return \@results;
+        return (pop @results);
     }else{
         undef;
     }
