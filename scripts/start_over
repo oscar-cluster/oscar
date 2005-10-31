@@ -64,7 +64,6 @@ my @known_rpms = qw(
                     systemimager-i386boot
                     systemimager-ia64boot
                     tftp-hpa
-                    ganglia-monitor-core
                     env-switcher
                     modules
                    );
