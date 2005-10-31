@@ -2,6 +2,8 @@
 
 # Copyright 2003 NCSA
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
+# Copyright 2005
+#           Bernard Li <bli@bcgsc.ca>
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
@@ -33,6 +35,11 @@ use oda;
 
 # name of default packages set
 my $DEFAULT = "Default";
+
+# packages to be excluded from the default packages set
+my @exclude_packages = qw(networking sge);
+my %is_excluded = ();
+for (@exclude_packages) { $is_excluded{$_} = 1 };
 
 sub do_it_or_die {
     my ( $command, $results_ref,$options_ref,$errors_ref ) = @_;
@@ -80,15 +87,18 @@ if ( @package_set_names )  {
     foreach my $package_ref ( @installable_packages ) {
         my $package_id = $$package_ref{id};
         my $package_name = $$package_ref{package};
-        print "Adding package <$package_name> to package set <$DEFAULT>\n";
-        my %field_value_hash = ("package_id" => $package_id,
-                                "group_name" => $DEFAULT);
-        my $error_msg="error adding package <$package_name> to package set <$DEFAULT>";
-        @errors = ($error_msg);
-        if ( ! insert_into_table(\%options, "Group_Packages", \%field_value_hash,\@errors) ){
-            $success = 0;
-            warn "$0: $error_msg";
-        }
+
+	unless ($is_excluded{$package_name} ) {
+          print "Adding package <$package_name> to package set <$DEFAULT>\n";
+          my %field_value_hash = ("package_id" => $package_id,
+                                  "group_name" => $DEFAULT);
+          my $error_msg="error adding package <$package_name> to package set <$DEFAULT>";
+          @errors = ($error_msg);
+          if ( ! insert_into_table(\%options, "Group_Packages", \%field_value_hash,\@errors) ){
+              $success = 0;
+              warn "$0: $error_msg";
+          }
+	}
     }
 }
 
@@ -111,11 +121,11 @@ foreach my $package_ref (@installable_packages){
     my @results = ();
     select_table(\%options,$table,\@fields,$where,\@results,\@errors);
     if(! @results ){
-        if ($package_name ne "networking"){
+	if ( !($is_excluded{$package_name}) ) {
             insert_into_table (\%options,$table,\%field_value_hash,\@errors);
         } else {
             set_group_packages(
-                "Default","networking",0,\%options,\@errors);
+                "Default","$package_name",0,\%options,\@errors);
         }
     }
 }
