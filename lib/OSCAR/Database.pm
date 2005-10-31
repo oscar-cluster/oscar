@@ -433,11 +433,6 @@ sub database_hostname_to_node_name {
                 $sql,
                 $node_records_ref,
                 $print_errors );
-#    my $node_records_ref = database_read_table_fields( "Nodes",
-#                               \@requested_fields,
-#                               undef,
-#                               undef,
-#                               $print_errors );
     return undef if ! defined $node_records_ref;
     if ( ! @$node_records_ref ) {
     push @$error_strings_ref,
@@ -867,7 +862,6 @@ sub database_read_filtering_information {
         "No results returned reading the architecture, server distribution, " .
         "and server distribution version from the database";
     } else {
-        #my $results_ref = $results[0];
         foreach my $results_ref (@results){ 
             $architecture = $$results_ref{server_architecture};
             $distribution = $$results_ref{server_distribution};
@@ -2190,7 +2184,6 @@ sub insert_rpms {
     my $rpm;
     if (ref($passed_ref) eq "ARRAY"){
         foreach my $ref (@$passed_ref){
-            #$rpm = $ref->{rpm};
             $rpm = $ref->{pkg};
             if ( ref($rpm) eq "ARRAY" ){
                 foreach my $each_rpm (@$rpm){
@@ -2207,7 +2200,6 @@ sub insert_rpms {
             }
         }    
     }else{
-        #$rpm = $passed_ref->{rpm};
         $rpm = $passed_ref->{pkg};
         if ( ref($rpm) eq "ARRAY" ){
             foreach my $each_rpm (@$rpm){
@@ -2443,7 +2435,6 @@ sub set_image_packages{
         $options_ref,
         $error_strings_ref) = @_;
     my $image_ref = get_image_info_with_name($image,$options_ref,$error_strings_ref);
-    #my $img_ref = pop @$image_ref;
     my $image_id = $$image_ref{id};
     my $package_ref = get_package_info_with_name($package,$options_ref,$error_strings_ref);
     my $package_id = $$package_ref{id};

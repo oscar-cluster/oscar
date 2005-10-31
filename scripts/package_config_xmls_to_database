@@ -518,7 +518,6 @@ foreach my $directory ( @directories ) {
         foreach my $tag ("conflicts", "provides", "requires"){
             if ( $xml_ref->{$tag} ){ 
                 my $tag_ref = $xml_ref->{$tag};
-                print Dumper($tag_ref);
                 foreach my $each_tag (keys %$tag_ref){
                     if( $each_tag eq "name" || $each_tag eq "type" ){
                         %field_value_hash = ( "p1_id"=>"$package_id",
