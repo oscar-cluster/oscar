@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>Sun Grid Engine</name>
+
+  <version>
+    <major>6</major>
+    <minor>0u4</minor>
+    <subversion>0</subversion>
+    <release>1</release>
+    <epoch>1</epoch>
+  </version>
+
+  <class>included</class>
+
+  <summary>Resource management and batch queueing software for clusters</summary>
+
+  <license>SISSL</license>
+  <group>Application/System</group>
+  <uri>http://gridengine.sunsource.net</uri>
+
+  <packager>
+    <name>Babu Sundaram</name>
+    <email>babu@cs.uh.edu</email>
+  </packager>
+
+  <description>Sun Grid Engine is a distributed resource management and batch job queueing software for wide ranging requirements from compute farms to grid computing.</description>
+
+  <binary-package-list>
+      <pkg>gridengine</pkg>
+  </binary-package-list>  
+  <binary-package-list>
+      <filter>
+        <distribution>
+          <name>fedora</name>
+          <version>2</version>
+        </distribution>
+      </filter>
+
+      <pkg>ksh</pkg>
+  </binary-package-list>  
+
+  <servicelist>
+      <service>sgeexecd</service>
+  </servicelist>
+
+  <servicelist>
+      <filter>
+        <group>oscar_server</group>
+      </filter>
+
+      <service>sgemaster</service>
+  </servicelist>
+
+<conflicts>
+  <name>torque</name>
+  <type>package</type>
+</conflicts>
+
+<conflicts>
+  <name>maui</name>
+  <type>package</type>
+</conflicts>
+</oscar>

@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# This script checks to see if the number of OSCAR clients (SGE exec hosts)
+# equals the sum of number of exec hosts as indicated by the SGE qconf 
+
+# (C)opyright Bernard Li <bli@bcgsc.ca>, Babu Sundaram <babu@cs.uh.edu>
+
+# Get number of args (nodes)
+oscar_clients=`echo $@ | wc -w`
+
+# use qconf to determine number of exec nodes seen by the qmaster
+sge_exec_hosts=`qconf -sel | wc -l`
+
+if [ $oscar_clients -eq $sge_exec_hosts ]
+then
+  $OSCAR_TESTPRINT --label "SGE test" -p
+else
+  $OSCAR_TESTPRINT --label "SGE test" -f
+  exit 1
+fi
+
+exit 0

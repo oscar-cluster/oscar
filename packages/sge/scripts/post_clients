@@ -1,0 +1,87 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   This script adds the executions host names as admin hosts 
+#   This is essential because the clients can add themselves as exec nodes
+#   only if they are known at the OSCAR head node as admin hosts
+
+# (C)opyright Bernard Li <bli@bcgsc.ca>, Babu Sundaram <babu@cs.uh.edu>
+
+use strict;
+use Carp;
+use lib '/usr/lib/systeminstaller';
+use SystemInstaller::Machine;
+
+# Use Schwartzian transform to sort node names alphabetically and numerically.
+# Names w/o numeric suffix preceed those with numeric suffix.
+sub sortnodes(@) {
+	return map { $_->[0] }
+	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+	       map { [$_, /^([\D]+)([\d]*)$/] }
+	       @_;
+}
+
+# Update the server's nodes file (optionally for only one image).
+
+print "...adding exec hosts' name as admin hosts to SGE Qmaster\n";
+
+# Setting the environment so that qcon -ah will correctly execute
+$ENV{'SGE_ROOT'} = '/opt/sge';
+
+# Get the list of defined clients
+my %nodes = get_machine_listing();
+
+my $hostname = "";
+
+foreach my $node (sortnodes( keys %nodes )) {
+    $hostname = $nodes{$node}{HOST};
+    # Add the hostname as a known admin host
+    # This is needed because exec hosts have to be known 
+    # at the Qmaster as an admin host prior to adding it as exec
+    system("/opt/sge/bin/lx26-x86/qconf -ah $hostname"); 
+	if ($? == -1) {
+        	# Something seriously wrong; Adding exec nodes as admins failed
+        	croak("Program failed: While doing qconf -ah on OSCAR head");
+	}
+	elsif($? == 0){
+        	# Everything OK; admin host installation success
+        	printf "qconf system function SUCCESS for $hostname\n";
+	}
+	elsif ($? & 127) {
+        	printf "child died with signal %d, %s coredump\n",
+            	($? & 127),  ($? & 128) ? 'with' : 'without';
+	}
+	else {
+        	# No problem here; Maybe, exec nodes' name already there in admin list
+        	printf "Looks like a rerun (return = %d) : No harm done, SUCCESS\n", $? >> 8;
+	}
+
+}
+
+# When this step completes, the default directory (which is the spool dir
+# for the qmaster) will have all the information about the clients and the
+# relevant configuration information. Once this is available, this can be
+# pushed (cpush) to the clients in the post_install step and do the final
+# config of clients to set themselves up as exec nodes (inst_sge -x)
+                                                                                                                             
+# To do that, make a tar file of the spool dir for sending to clients
+# chdir("opt/sge"); 
+# Thanks to Bernard; :-) Go into SGE_ROOT before doing tar
+system("cd /opt/sge; tar cvf default.tar default") == 0 or croak("Failed to tar default directory on SGE Qmaster");
+wait();
+
+# All that remains is to let the exec nodes untar this default.tar
+# into their $SGE_ROOT and execute a 'qconf -ae'
