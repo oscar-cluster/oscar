@@ -4,6 +4,7 @@
 #                    All rights reserved.
 # Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
 #                    All rights reserved.
+# Copyright (c) 2005, Revolution Linux
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the

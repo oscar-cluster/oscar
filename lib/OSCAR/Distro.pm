@@ -30,6 +30,7 @@ package OSCAR::Distro;
 #   Copyright 2002 International Business Machines
 #                  Sean Dague <japh@us.ibm.com>
 # Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
+# Copyright (c) 2005, Revolution Linux
 
 use strict;
 use vars qw($VERSION @EXPORT);
@@ -43,6 +44,7 @@ my $DISTROFILES = {
 		   'fedora-release'        => 'fedora',
 		   'mandrake-release'      => 'mandrake',
 		   'mandrakelinux-release' => 'mandrake',
+		   'mandriva-release'	   => 'mandriva',
 		   'redhat-release'        => 'redhat',
 		   'aaa_version'           => 'suse',
 		   'aaa_base'	           => 'suse',
@@ -169,6 +171,12 @@ CASE: {
 	      # mandrake
 	      ($name eq "mandrake") && do{
 		      return "mysql";
+		      last CASE;
+	      };
+
+	      # mandriva
+	      ($name eq "mandriva") && do{
+		      return "mysqld";
 		      last CASE;
 	      };
 

@@ -3,6 +3,7 @@
 # Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) 2005, Revolution Linux
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -96,31 +97,7 @@ elsif ( $distro_name eq "mandrake") {
 			   
 			   MySQL-common
 			   libmysql12
-			   perl-CGI );
-    }
-    elsif ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.2 ) {
-	@wanted_rpms = qw( MySQL
-			   MySQL-client
-			   perl-DBI
-			   perl-Mysql
-			   perl-Data-ShowTable
-			   perl-ExtUtils-PerlPP
-			   
-			   MySQL-common
-			   libmysql12
-			   perl-CGI );
-    }
-    elsif ( `rpm -q --qf '%{VERSION}' mandrake-release` == 9.1 ) {
-	@wanted_rpms = qw( MySQL
-			   MySQL-client
-			   libmysql10
-			   perl-DBI
-			   perl-Mysql
-			   perl-ExtUtils-PerlPP
-			   
-			   MySQL-common
-			   libmysql12
-			   perl-CGI );
+			   perl-CGI );    
     } else {
 	@wanted_rpms = qw( MySQL
 			   MySQL-client
@@ -132,6 +109,17 @@ elsif ( $distro_name eq "mandrake") {
 			    );
     }
     $mysqld      = 'mysql';
+}
+
+elsif ( $distro_name eq "mandriva" ) {
+    	@wanted_rpms = qw(MySQL
+                          MySQL-client
+			  perl-DBI
+			  perl-Data-ShowTable
+                          MySQL-common
+                          libmysql14
+                          perl-CGI );
+    	$mysqld      = 'mysqld';
 }
 
 else {
