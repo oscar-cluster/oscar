@@ -522,7 +522,7 @@ foreach my $directory ( @directories ) {
                 foreach my $each_tag (keys %$tag_ref){
                     if( $each_tag eq "name" || $each_tag eq "type" ){
                         %field_value_hash = ( "p1_id"=>"$package_id",
-                                              "p2_name"=>$tag_reg->{name},
+                                              "p2_name"=>$tag_ref->{name},
                                               "type"=>$tag_ref->{type} );
                         insert_into_table (\%options,"Packages_$tag",\%field_value_hash,\@error_strings);
                         last;
