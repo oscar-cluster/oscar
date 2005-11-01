@@ -161,5 +161,30 @@ print BASHRC "export LD_LIBRARY_PATH=/opt/sge/lib/lx26-x86:\$LD_LIBRARY_PATH\n";
 print BASHRC "export MANPATH=/opt/sge/man/:\$MANPATH\n";
 
 close BASHRC;
-                                                                                                                             
+
+$cluster_conf = "/opt/sge/default/common/configuration";
+$buffer = "";
+
+# update Cluster Configuration to use ssh for rlogin and rsh
+open(CONF, $cluster_conf) or croak("Error: unable to open ($cluster_conf)\n");
+
+while ($line = <CONF>) {
+    $buffer = $buffer.$line;
+}
+
+close(CONF, $cluster_conf);
+
+print "Updating $cluster_conf to use ssh for rsh/rlogin commands.\n";
+
+$cluster_conf = ">".$cluster_conf;
+
+$buffer =~ s/\/usr\/sbin\/in.rlogind/\/usr\/sbin\/sshd -i\nrsh_daemon\t\t  \/usr\/sbin\/sshd -i\nrlogin_command\t\t  \/usr\/bin\/ssh -x\nrsh_command\t\t  \/usr\/bin\/ssh -x/;
+
+open(CONF, $cluster_conf) or croak("Error: unable to open ($cluster_conf)\n");
+print CONF $buffer;
+close(CONF);
+
+system("/etc/init.d/sgemaster stop");
+system("/etc/init.d/sgemaster start");
+
 print("All qmaster-related setup complete.\n");
