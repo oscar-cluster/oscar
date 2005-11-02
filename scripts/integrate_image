@@ -1,0 +1,189 @@
+#!/usr/bin/perl
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#
+# Integrate an image into the HPCL/OSCAR/SIS database
+#
+# (c) Erich Focht, NEC HPCE, Stuttgart, 21.01.2004
+
+
+use lib "/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl";
+use SIS::DB;
+use SIS::Image;
+use SIS::Client;
+use SystemImager::Server;
+use SystemImager::Common;
+use SystemImager::Config;
+use SystemImager::Options;
+use vars qw($config $VERSION);
+use AppConfig qw(:argcount);
+
+my $autoinstall_script_dir = $config->autoinstall_script_dir();
+my $rsync_stub_dir = $config->rsync_stub_dir();
+my $rsyncd_conf = $config->rsyncd_conf();
+my $default_image_dir = $config->default_image_dir();
+my $config_dir = "/etc/systemimager";
+
+# be sure program is run by root
+SystemImager::Common->check_if_root();
+
+$config->define(
+        name=>{ARGCOUNT=> ARGCOUNT_ONE},
+        path=>{ARGCOUNT=> ARGCOUNT_ONE},
+        arch=>{ARGCOUNT=> ARGCOUNT_ONE},
+        disktab=>{ARGCOUNT=> ARGCOUNT_ONE},
+);
+unless ($config->getopt()){
+        &usage;
+        exit 1;
+}
+# error checking
+if (!defined($config->name)) {
+    print "ERROR: You must supply an image name!\n";
+    &usage();
+    exit 1;
+}
+
+
+my $image=$config->name;
+my $imagedir = "$default_image_dir/$image";
+
+if (! -d $imagedir) {
+    print "ERROR: The image directory $imagedir does not exist!\n";
+    &usage();
+    exit 1;
+}
+
+my $script_name=$image;
+
+print "Imagename   : ". $config->name . "\n";
+print "Image->arch : ". $config->arch . "\n";
+print "Image path  : ". $imagedir . "\n";
+
+# be sure $image doesn't start with a hyphen
+if($image){
+    if ($image =~ /^-/) {
+	die "\n$program_name: Image name can't start with a hyphen.\n$get_help\n\n";
+    }
+}
+
+# does the imagedir exist?
+if (! -d $imagedir) {
+    die "\nThe directory $imagedir does not exist!\n";
+}
+
+# Add image entry to flamethrower.conf file
+
+print "Adding image entry to flamethrower config file\n";
+
+my $flamethrower_conf = "/etc/systemimager/flamethrower.conf";
+my $entry_name = $image;
+my $new_entry_data = "[$image]\nDIR = $imagedir\n";
+SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
+    die "$program_name: Cannot add entry to $flamethrower_conf";
+
+# Add override entry to flamethrower.conf file
+$entry_name = "override_" . $image;
+$new_entry_data = "[override_$image]\nDIR = /var/lib/systemimager/overrides/$image\n";
+SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
+    die "$program_name: Cannot add entry to $flamethrower_conf";
+
+
+
+# integrate into database
+print "Integrating image into SIS database.\n";
+$nimage = new SIS::Image($config->name);
+$nimage->location($imagedir);
+$nimage->arch($config->arch) if ($config->arch);
+set_image($nimage);
+
+
+# add autoinstallscript.conf to image if disktable was passed
+if ($config->disktab && -e $config->disktab) {
+    print "Adding disk table $config->disktab to image $config->name.\n";
+    if(system("mksidisk --Add --name " . $config->name . " --file " .
+	      $config->disktab)) {
+	print "Disktable insertion has failed.\n";
+	exit 1;
+    }
+}
+
+
+# copy master ssh keys to image
+print "Copying local node's ssh keys to image.\n";
+if (system("cp -pf /etc/ssh/*key* $imagedir/etc/ssh")) {
+    print "Copying ssh keys to image failed.\n";
+}
+
+
+# copy root ssh keys from master to image
+print "Copying local node's root ssh keys to image.\n";
+if (system("cp -pf /root/.ssh/* $imagedir/root/.ssh/")) {
+    print "Copying root ssh keys to image failed.\n";
+}
+
+#
+print "!!!!!!\n";
+print "Remember to copy and/or adapt /etc/{passwd,group,shadow} from the\n";
+print "master node to the image! If the distributions are different, you\n";
+print "might need to edit the files manually, because the system accounts\n";
+print "could have different user IDs!\n";
+print "!!!!!!\n";
+
+
+# create autoinstallscript
+print "Creating autoinstall script for image.\n";
+my $auto_install_script_conf = "${imagedir}/etc/systemimager/autoinstallscript.conf";
+
+SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_conf );
+
+my $ip_assignment_method = "static";
+my $post_install = "reboot";
+my $no_listing = 1;
+SystemImager::Server->create_autoinstall_script(
+        $script_name,
+        $autoinstall_script_dir,
+        $config_dir,
+        $image,
+        $imagedir,
+        $ip_assignment_method,
+        $post_install,
+        $no_listing,
+	$auto_install_script_conf
+);
+
+
+# Add entry to image server's rsyncd.conf if necessary
+print "Adding rsync_stub and generating rsyncd.conf for image.\n";
+SystemImager::Server->create_image_stub($rsync_stub_dir, $image, $imagedir) or
+    die "$program_name: Cannot create rsync stub entry in $rsync_stub_dir";
+
+SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf) or
+    die "$program_name:  Cannot generate $rsyncd_conf";
+
+exit 0;
+
+sub usage {
+    print "Usage: $0 --name image_directory [--arch ARCH] [--disktab disktab_file]\n";
+    print "The image directory must contain a valid image and be located inside\n"
+    print "/var/lib/systemimager/images.\n";
+    print "The default architecture attributed to the image is that of the master node.\n";
+    print "A disktable file should be inserted into the image by using the --disktab\n";
+    print "command line option. This generates the /etc/systemimager/autoinstall.conf file\n";
+    print "inside the image.\n";
+    exit 1;
+}
+
