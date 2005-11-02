@@ -24,8 +24,9 @@
 use strict;
 use Carp;
 use XML::Simple;
-use lib '/usr/lib/systeminstaller';
+use lib "/usr/lib/systeminstaller","$ENV{OSCAR_HOME}/lib";
 use SystemInstaller::Machine;
+use OSCAR::Database;
 
 my %nodes = get_machine_listing();
 my $sge_conf_store = "/opt/sge/default.tar"; # Spool dir's tar file
@@ -66,6 +67,37 @@ print "SGE post_install: Configuration SUCCESS on clients\n";
 
 print "Deleting $sge_conf_store on headnode\n";
 system("rm -rf $sge_conf_store");
+
+my $lam_pe = "lam-mpi";
+
+# Set up Parallel Environment for LAM/MPI if the package is installed
+if ( is_installed("lam") ) {
+	# Check to see if we already have "lam-mpi" Parallel Environment defined
+	`qconf -sp $lam_pe 2>&1`; # or croak("Cannot run qconf -sp");
+
+	if ($? == 256) {
+        	# Parallel Environment does not exist, creating...
+        	print "Adding LAM/MPI Parallel Environment to SGE\n";
+        	system("qconf -Ap $lam_pe");
+	} elsif ($? == 0) {
+        	# LAM/MPI Parallel Environment already exists
+	} else {
+        	croak("Cannot run qconf -sp $lam_pe");
+	}
+} else {
+        # Check to see if we already have "lam-mpi" Parallel Environment defined
+        `qconf -sp $lam_pe 2>&1`; # or croak("Cannot run qconf -sp");
+
+        if ($? == 256) {
+                # Parallel Environment does not exist, do nothing
+        } elsif ($? == 0) {
+                # LAM/MPI Parallel Environment exists
+		print "Deleting LAM/MPI Parallel Environment since LAM/MPI package is not installed\n";
+		system("qconf -dp $lam_pe");
+        } else {
+                croak("Cannot run qconf -sp $lam_pe");
+        }
+}
 
 # The master has a complete list of all exec nodes and 
 # is ready to accept and launch jobs. (Try qsub! :-) )

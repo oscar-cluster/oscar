@@ -1,0 +1,10 @@
+pe_name           lam-mpi
+slots             999
+user_lists        NONE
+xuser_lists       NONE
+start_proc_args   /opt/sge/mpi/startlam.sh $pe_hostfile
+stop_proc_args    /opt/sge/mpi/stoplam.sh
+allocation_rule   $round_robin
+control_slaves    TRUE
+job_is_first_task TRUE
+urgency_slots     min
