@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<oscar>
+  <!--
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id$
+  -->
+  <name>Yume</name>
+
+  <version>
+    <major>0</major>
+    <minor>2</minor>
+    <release>4</release>
+  </version>
+
+  <class>core</class>
+
+  <summary>Yume wrapper tools for rpm repository control, image creation
+and maintenance</summary>
+  <license>GPL</license>
+  <group>System Environment/Base</group>
+  <packager>
+    <name>Erich Focht</name>
+    <email>efocht@hpce.nec.com</email>
+  </packager>
+
+  <description>
+  Tool for setting up, exporting yum repositories and executing
+yum commands for only these repositories. Use it as high level RPM
+replacement which resolves dependencies automatically. This tool
+is very useful for clusters. It can:
+- prepare an rpm repository
+- export it through apache
+- execute yum commands applying only to this repository (locally)
+- execute yum commands on the cluster nodes applying only to this repository.
+This makes installing packages, creating cluster node images, updating
+revisions much simpler than with rpm.
+  </description>
+
+  <rpmlist>
+      <filter group="oscar_server" />
+      <rpm>createrepo</rpm>
+  </rpmlist>
+  <rpmlist>
+      <rpm>yume</rpm>
+      <!--
+          The "yum" package should be installed automatically as dependency.
+	  If the distro comes with an own "yum", that one should be installed,
+          otherwise "yum-oscar" is taken.
+      -->
+  </rpmlist>
+
+</oscar>

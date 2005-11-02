@@ -1,0 +1,2 @@
+#!/bin/sh
+$OSCAR_HOME/scripts/generic-setup
