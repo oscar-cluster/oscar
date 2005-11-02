@@ -41,9 +41,8 @@ chomp($domainname);
 
 # Set the location for the config file with default settings 
 # that will guide the auto-install of qmaster and execd
-#my $templateFile = "/opt/sge/util/install_modules/inst_template.conf";
-my $templateFile = "/opt/sge/util/install_modules/my_configuration.conf";
-my $qmaster_conf = "/opt/sge/myInstall.conf";
+my $templateFile = "$sge_root/util/install_modules/oscar_cluster.conf";
+my $qmaster_conf = "$sge_root/myInstall.conf";
 copy($templateFile, $qmaster_conf) or croak("Error during copying install template file");
 
 # Obtain any custom configure values from the users
@@ -76,20 +75,13 @@ if (-e $xml_data) {
     $ref->{spooltype} = $spooltype_default;
 }
     
-#$qmasterBuffer =~ s/SGE_ROOT="Please enter path"/SGE_ROOT="\/opt\/sge"/;
-$qmasterBuffer =~ s/gridengine/sge/g;
 #$qmasterBuffer =~ s/SGE_QMASTER_PORT="Please enter port"/SGE_QMASTER_PORT="536"/;
 #$qmasterBuffer =~ s/SGE_EXECD_PORT="Please enter port"/SGE_EXECD_PORT="537"/;
 $qmasterBuffer =~ s/ADMIN_USER=""/ADMIN_USER="sge"/;
 #$qmasterBuffer =~ s/Please, enter spooldir/\/opt\/sge\/default\/spool\/qmaster/;
 #$qmasterBuffer =~ s/EXECD_SPOOL_DIR="Please, enter spooldir"/EXECD_SPOOL_DIR="\/opt\/sge\/default\/spool"/;
-$qmasterBuffer =~ s/EXECD_SPOOL_DIR_LOCAL="Please, enter spooldir"/EXECD_SPOOL_DIR_LOCAL=""/;
-#$qmasterBuffer =~ s/Please, enter GID range/$ref->{gidrange}/;
 $qmasterBuffer =~ s/20000-20100/$ref->{gidrange}/;
 #$qmasterBuffer =~ s/"berkeleydb"/"classic"/;
-#$qmasterBuffer =~ s/ADMIN_HOST_LIST="host1 host2 host3 host4"/ADMIN_HOST_LIST=""/;
-#$qmasterBuffer =~ s/SUBMIT_HOST_LIST="host1 host2 host3 host4"/SUBMIT_HOST_LIST=""/;
-#$qmasterBuffer =~ s/EXEC_HOST_LIST="host1 host2 host3 host4"/EXEC_HOST_LIST=""/;
 $qmasterBuffer =~ s/DEFAULT_DOMAIN="none"/DEFAULT_DOMAIN="$domainname"/;
 #$qmasterBuffer =~ s/ADD_TO_RC="false"/ADD_TO_RC="true"/;
 #$qmasterBuffer =~ s/SHADOW_HOST="hostname"/SHADOW_HOST=""/;
@@ -151,16 +143,16 @@ copy("/opt/sge/default/common/settings.csh","/etc/profile.d/sge.csh") or croak("
 
 # Also, to set environments correctly for non-interactive shells we can 
 # add the SGE_ROOT variable to the contents of bashrc in /etc
-my $bashrc_conf = ">> /etc/bashrc";
+#my $bashrc_conf = ">> /etc/bashrc";
 
-open(BASHRC, $bashrc_conf) or croak("Error: unable to open ($bashrc_conf)\n");
+#open(BASHRC, $bashrc_conf) or croak("Error: unable to open ($bashrc_conf)\n");
 
-print BASHRC "export SGE_ROOT=/opt/sge\n";
-print BASHRC "export PATH=/opt/sge/bin/lx26-x86:\$PATH\n";
-print BASHRC "export LD_LIBRARY_PATH=/opt/sge/lib/lx26-x86:\$LD_LIBRARY_PATH\n";
-print BASHRC "export MANPATH=/opt/sge/man/:\$MANPATH\n";
+#print BASHRC "export SGE_ROOT=/opt/sge\n";
+#print BASHRC "export PATH=/opt/sge/bin/lx26-x86:\$PATH\n";
+#print BASHRC "export LD_LIBRARY_PATH=/opt/sge/lib/lx26-x86:\$LD_LIBRARY_PATH\n";
+#print BASHRC "export MANPATH=/opt/sge/man/:\$MANPATH\n";
 
-close BASHRC;
+#close BASHRC;
 
 $cluster_conf = "/opt/sge/default/common/configuration";
 $buffer = "";

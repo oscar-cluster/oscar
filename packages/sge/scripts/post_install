@@ -69,6 +69,7 @@ print "Deleting $sge_conf_store on headnode\n";
 system("rm -rf $sge_conf_store");
 
 my $lam_pe = "lam-mpi";
+my $lam_pe_file = "$ENV{OSCAR_HOME}/packages/sge/scripts/$lam_pe";
 
 # Set up Parallel Environment for LAM/MPI if the package is installed
 if ( is_installed("lam") ) {
@@ -78,7 +79,7 @@ if ( is_installed("lam") ) {
 	if ($? == 256) {
         	# Parallel Environment does not exist, creating...
         	print "Adding LAM/MPI Parallel Environment to SGE\n";
-        	system("qconf -Ap $lam_pe");
+        	system("qconf -Ap $lam_pe_file");
 	} elsif ($? == 0) {
         	# LAM/MPI Parallel Environment already exists
 	} else {
