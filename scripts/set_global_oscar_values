@@ -117,7 +117,7 @@ if ( !$query_results ){
     insert_into_table (\%options,"Clusters", \%field_value_hash,\@error_strings);                
 } else {
 	print "$0: very strange, there are more than 1 records table <$global_values_table>\n"
-	    if scalar @$query_results > 1 ;
+	    if (ref($query_results) ne "HASH") && (scalar @$query_results > 1) ;
 	print "Modifying the global oscar information record\n";
     %field_value_hash = ("oscar_version" => $oscar_version,
                             "server_distribution" => $oscar_server_distribution,
@@ -128,15 +128,14 @@ if ( !$query_results ){
 }
 
 # Set up "Group" table with the global values.
+# The current group values are..
 my @groups = ("oscar_server", "oscar_clients", "Default", "image", "core", "included");
 set_all_groups(\@groups,\%options,@error_strings);
-# The current group values are..
-# ("oscar_server", "oscar_clients", "Default", "image", "core", "included")
 
 # Set up "Status" table with the global values.
-set_status(\%options,\@error_strings);
 # The current status values are..
 # ("installable", "installed", "install_allowed","should_be_installed", "should_be_uninstalled")
+set_status(\%options,\@error_strings);
 
 # UNLOCKING FOR NEST
 unlock(\%options, \@errors);

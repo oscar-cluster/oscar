@@ -64,12 +64,14 @@ if(-e '/etc/odapw'){
               get_client_nodes
               get_networks
               get_packages_related_with_package
+              get_packages_related_with_name
               get_packages_switcher
               get_packages_with_class
               set_group_packages
               del_group_packages
               get_selected_group
               get_selected_group_packages
+              get_unselected_group_packages
               get_group_packages_with_groupname
               update_node_package_status
               update_node_package_status_with_opkg
@@ -1578,7 +1580,7 @@ sub get_cluster_info_with_name{
     my $sql = "SELECT * FROM Clusters WHERE name=$where";
     do_select($sql,\@results, $options_ref, $error_strings_ref);
     if(@results){
-        return (pop @results);
+        return ((scalar @results)==1?(pop @results):@results);
     }else{
         undef;
     }
@@ -1652,8 +1654,13 @@ sub is_installed{
     my ($package_name,
         $options_ref,
         $error_strings_ref,
-        $version) = @_;
-    return get_package_info_with_name($package_name,$options_ref,$error_strings_ref,$version);
+        $version,
+        $requested) = @_;
+    $requested = 7 if (!$requested);    
+    my @result = ();    
+    my $success = get_node_package_status_with_node(
+        $package_name,\@result,$options_ref,$error_strings_ref,$requested,$version);
+    return (@result?1:0);    
 }
 
 sub get_fields{
@@ -1675,7 +1682,8 @@ sub get_fields{
 #
 #####################################################
 
-# This takes care of 
+# These two subroutines(get_packages_related_with_package and
+# get_packages_related_with_name) take care of 
 # Packages_conflicts, Packages_provides, and Packages_requires
 # tables.
 sub get_packages_related_with_package{
@@ -1688,6 +1696,19 @@ sub get_packages_related_with_package{
               "FROM Packages P, Packages_$part_name S " .
               "WHERE P.id=S.p1_id ".
               "AND P.package='$package'";  
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}    
+
+sub get_packages_related_with_name{
+    my ($part_name,
+        $name,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT P.package, P.id, S.p2_name, S.type " .
+              "FROM Packages P, Packages_$part_name S " .
+              "WHERE P.id=S.p1_id ".
+              "AND S.p2_name='$name'";  
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }    
 
@@ -1795,16 +1816,27 @@ sub get_selected_group_packages{
     my ($results_ref,
         $options_ref,
         $error_strings_ref,
-        $group) = @_;
+        $group,
+        $flag) = @_;
     $group = get_selected_group($options_ref,$error_strings_ref) if(!$group);    
-    my $sql = "SELECT Packages.id, Packages.package, Packages.name " .
+    $flag = 1 if(! $flag);
+    my $sql = "SELECT Packages.id, Packages.package, Packages.name, Packages.version " .
               "From Packages, Group_Packages, Groups " .
               "WHERE Packages.id=Group_Packages.package_id ".
               "AND Group_Packages.group_name=Groups.name ".
               "AND Groups.name='$group' ".
               "AND Groups.selected=1 ".
-              "AND Group_Packages.selected=1";
+              "AND Group_Packages.selected=$flag";
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}
+
+sub get_unselected_group_packages{
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref,
+        $group) = @_;
+    return get_selected_group_packages($results_ref,$options_ref,
+                                       $error_strings_ref,$group,0);
 }
 
 sub get_group_packages_with_groupname{
@@ -1932,14 +1964,18 @@ sub get_node_package_status_with_node{
         $results,
         $options_ref,
         $error_strings_ref,
-        $requested) = @_;
+        $requested,
+        $version) = @_;
         my $sql = "SELECT Packages.package, Node_Package_Status.* " .
                  "From Packages, Node_Package_Status, Nodes ".
                  "WHERE Node_Package_Status.package_id=Packages.id ".
                  "AND Node_Package_Status.node_id=Nodes.id ".
                  "AND Nodes.name='$node'";
         if(defined $requested){
-            $sql .= "AND Node_Package_Status.requested=$requested ";
+            $sql .= " AND Node_Package_Status.requested=$requested ";
+        }
+        if(defined $version && $version !=""){
+            $sql .= " AND Packages.version=$version ";
         }
     die "$0:Failed to query values via << $sql >>"
         if! do_select($sql,$results, $options_ref, $error_strings_ref);
