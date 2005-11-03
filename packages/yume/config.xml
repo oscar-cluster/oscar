@@ -45,7 +45,7 @@ revisions much simpler than with rpm.
   </description>
 
   <binary-package-list>
-      <--! Filter for RPM based distributions -->
+      <!-- Filter for RPM based distributions -->
       <filter>
         <group>oscar_server</group>
         <distribution>
