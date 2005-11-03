@@ -415,18 +415,6 @@ sub populatePackageSetList
           # For the packageSetComboBox, set the "selected" package set
           if ($widget->className() eq "QComboBox")
             {
-              my @selpack;
-              my @selected = ();
-              my $success = OSCAR::Database::get_selected_group_packages(
-                   \@selected, \%options, \@errors);
-              foreach my $sel_ref (@selected){
-                push @selpack, $$sel_ref{package};
-              }  
-              #
-              # I have no idea why selpack[0] was shown at the first element of
-              # the list of PackageSets
-              #$widget->setCurrentText($selpack[0]) if (scalar @selpack > 0);
-              #$widget->setCurrentText($packageSets[0]) if (scalar @packageSets > 0);
               my $selected_group = OSCAR::Database::get_selected_group(\%options, \@errors);
               if(!$selected_group){
                   $selected_group = "Default";

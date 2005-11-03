@@ -479,16 +479,14 @@ sub exitButton_clicked
 
           if (($packagesInstalled->{$package}) && (!$checked))
             { # Need to uninstall package
-              my @packages = ($package);  
-              $success = OSCAR::Database::update_node_package_status(  
-                        \%options,"oscar_server",\@packages,0,\@errors);
+              $success = OSCAR::Database::update_node_package_status_with_opkg(  
+                        \%options,"oscar_server",$package,0,\@errors);
             }
 
           if ((!($packagesInstalled->{$package})) && ($checked))
             { # Need to install package
-              my @packages = ($package);  
-              $success = OSCAR::Database::update_node_package_status(  
-                        \%options,"oscar_server",\@packages,1,\@errors);
+              $success = OSCAR::Database::update_node_package_status_with_opkg(  
+                        \%options,"oscar_server",$package,1,\@errors);
             }
         }
     }

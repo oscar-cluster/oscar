@@ -1971,10 +1971,10 @@ sub get_node_package_status_with_node{
                  "WHERE Node_Package_Status.package_id=Packages.id ".
                  "AND Node_Package_Status.node_id=Nodes.id ".
                  "AND Nodes.name='$node'";
-        if(defined $requested){
+        if(defined $requested && $requested ne ""){
             $sql .= " AND Node_Package_Status.requested=$requested ";
         }
-        if(defined $version && $version !=""){
+        if(defined $version && $version ne ""){
             $sql .= " AND Packages.version=$version ";
         }
     die "$0:Failed to query values via << $sql >>"

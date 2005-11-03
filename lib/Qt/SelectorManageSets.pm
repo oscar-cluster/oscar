@@ -285,7 +285,7 @@ sub renameButton_clicked
               else
                 {
                   my $selected = packageSetsListBox->currentText();
-                  $success = OSCAR::Database::set_packages(
+                  $success = OSCAR::Database::set_groups(
                     $selected,\%options,\@errors);
                   if ($success)
                     {

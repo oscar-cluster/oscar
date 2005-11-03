@@ -180,6 +180,14 @@ sub get_xml_ref{
     return $xml_ref;
 }
 
+sub is_installed {
+    my ($package,
+        $version) = @_;
+    my $result_ref = get_package_info_with_name($package,
+                        \%options,\@error_strings,$version);
+    return ($result_ref?1:0);                    
+}
+
 sub usage {
     my ( $exit_status, @error_strings ) = @_;
     my $progname = $0;
@@ -443,7 +451,7 @@ foreach my $directory ( @directories ) {
         print "$0: package=<$package>\n" if $options{debug};
         $msg = "";
         $xml_ref = get_xml_ref($directory, $package,$msg);
-        if( is_installed($package,\%options,\@error_strings,$package_version) ){
+        if( is_installed($package,$package_version) ){
             my @list_of_tables = ("Packages_rpmlists", "Group_Packages",
                                   "Packages_conflicts", "Packages_provides",
                                   "Packages_requires", "Packages_servicelists",

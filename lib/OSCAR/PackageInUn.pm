@@ -18,6 +18,8 @@ package OSCAR::PackageInUn;
 #
 # Copyright (c) 2003 Oak Ridge National Laboratory.
 #                    All rights reserved.
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
 
 use strict;
 
@@ -91,15 +93,21 @@ sub install_uninstall_packages
 
 
 	# START LOCKING FOR NEST
-	my @tables = ("packages", "oda_shortcuts");
+	my @tables = ("Packages", "Groups", "Group_Packages");
 	
 	locking("read", \%options, \@tables, \@error_list);
 	
 	# Get the lists of packages that need to be installed/uninstalled
-	$success = OSCAR::Database::dec_already_locked(
-		"packages_that_should_be_installed",\@packagesThatShouldBeInstalled);
-	$success = OSCAR::Database::dec_already_locked(
-		"packages_that_should_be_uninstalled",\@packagesThatShouldBeUninstalled);
+    my @selected = ();
+    my @unselected = ();
+    $success = OSCAR::Database::get_selected_group_packages(\@selected,\%options,\@error_list);
+    $success = OSCAR::Database::get_unselected_group_packages(\@selected,\%options,\@error_list,undef,0);
+    foreach my $selected_ref (@selected){
+        push @packagesThatShouldBeInstalled, $$selected_ref{package};
+    }    
+    foreach my $unselected_ref (@unselected){
+        push @packagesThatShouldBeUninstalled, $$unselected_ref{package};
+    }    
 	# UNLOCKING FOR NEST
 	unlock(\%options, \@error_list);
 
@@ -162,19 +170,8 @@ sub install_uninstall_packages
 		# flag for that package.
 		if (!$success)
 		{
-			#already done by underlying functions
-
-			my @tables = ("packages","oda_shortcuts");
-			
-			my @error_list = ();
-	
-			OSCAR::Database::single_dec_locked("package_clear_should_be_uninstalled $package","write",\@tables,undef,\@error_list);
-			&uninstall_package($package);
-
-			# new tables to lock for next query
-			@tables = ("package_sets_included_packages","packages","package_sets","oda_shortcuts");
 			# make sure the package we un-installed is un-selected in selector so scripts won't run
-			OSCAR::Database::single_dec_locked("remove_package_from_all_package_sets $package","write",\@tables,undef,\@error_list);
+            OSCAR::Database::set_group_packages(undef,$package,0,\%options,\@error_list);
 		}
 		else
 		{
@@ -194,21 +191,11 @@ sub install_uninstall_packages
 		# flag for that package.
 		if (!$success)
 		{
-			#this bit is already set by underlying code
 
-			my @tables = ("packages", "oda_shortcuts");
-			
-			my @error_list = ();
-	
-			OSCAR::Database::single_dec_locked("package_clear_should_be_installed $package","write",\@tables,undef,\@error_list);
-			&install_package($package);
-
-			# new tables to lock for next query
-                        @tables = ("package_sets_included_packages","packages","package_sets","oda_shortcuts");
-			# hardcoding package_set name to 'Default'
-			my $package_set = 'Default';
-			# make sure that package we installed is being selected so scripts will run
-                        OSCAR::Database::single_dec_locked("add_package_to_package_set $package $package_set","write",\@tables,undef,\@error_list);
+            # New database schema can trace what group has been selected.
+            # So if $group parameter is not set, Database.pm will find the selected group.
+            # At the below subroutine, undef is for $group parameter.
+            OSCAR::Database::set_group_packages(undef,$package,1,\%options,\@error_list);
 
 		}
 		else
@@ -246,13 +233,6 @@ sub install_uninstall_packages
 	print_errors();
                                                                                 
                                                                                 
-	# we'll give a shot at avoiding this for now
-	# OPTIONALLY clear all of the install/uninstall flags at the end
-	#OSCAR::Database::database_execute_command(
-	#  "packages_clear_all_should_be_installed");
-	#OSCAR::Database::database_execute_command(
-	#"packages_clear_all_should_be_uninstalled");
-
 	oscar_log_section("Finished running Install/Uninstall OSCAR Packages");
 	
 	return 0;
@@ -478,7 +458,6 @@ sub run_install_client
 			foreach $rpm (@newrpmlist)
 			{
 				@temp_list = split(/\//,$rpm);
-				#$all_rpms = "$all_rpms /tmp/tmpinstallrpm/$temp_list[$#temp_list]";
 				my $rpm_name = $temp_list[$#temp_list];
 				$all_rpms = "$all_rpms /tmp/tmpinstallrpm/$rpm_name";
 			}
@@ -1296,15 +1275,11 @@ sub package_uninstall
 sub is_package_a_package
 {
 	my ($package_name) = @_;
+	my @result_ref;
 
-	my $cmdstring = "read_records packages name name=\"$package_name\"";
-	my @tables = ("packages");
-	my @my_result;
-	my $error_code = 1;
+	my $result_ref=OSCAR::Database::get_package_info_with_name($package_name,\%options,\@error_list);
 
-	OSCAR::Database::single_dec_locked($cmdstring,"READ",\@tables, \@my_result, $error_code);
-
-	if ($my_result[0] =~ $package_name)
+	if ($result_ref)
 	{
 		return (0);
 	}
@@ -1319,19 +1294,7 @@ sub is_package_a_package
 sub set_installed
 {
 	my ($package_name) = @_;	
-	my @my_result;
-	#my $error_code = 1; #enable oda debug mode
-	my $error_code;
-
-	my $cmdstring = "modify_records packages name=\"$package_name\" installed~1";
-
-	my @tables = ("packages");
-	
-	my @error_list = ();
-	
-	OSCAR::Database::single_dec_locked($cmdstring,"WRITE",\@tables,\@my_result, $error_code);
-
-
+    OSCAR::Database::set_group_packages(undef,$package_name,7,\%options,\@error_list);
 }
 
 #this sets the installed field in table packages to 0
@@ -1341,19 +1304,7 @@ sub set_installed
 sub set_uninstalled
 {
 	my ($package_name) = @_;	
-
-	my @my_result;
-	#my $error_code = 1; #enable oda debug mode
-	my $error_code;
-
-	my $cmdstring = "modify_records packages name=\"$package_name\" installed~0";
-
-	my @tables = ("packages");
-	
-	my @error_list = ();
-	
-	OSCAR::Database::single_dec_locked($cmdstring,"WRITE",\@tables,\@my_result, $error_code);
-
+    OSCAR::Database::set_group_packages(undef,$package_name,1,\%options,\@error_list);
 }
 
 #queries oda to see if a package is installed
@@ -1366,16 +1317,7 @@ sub is_installed
 {
 	my ($package_name) = @_;	
 
-	my @my_result;
-	#my $error_code = 1; #enable oda debug mode
-	my $error_code; 
-
-	my $cmdstring = "read_records packages installed name=\"$package_name\"";
-	my @tables = ("packages");
-
-	OSCAR::Database::single_dec_locked($cmdstring,"READ",\@tables,\@my_result, $error_code);
-
-	return $my_result[0];
+	return OSCAR::Database::is_installed($package_name,\%options,\@error_list);
 }
 
 sub uninstall_rpms_patch
@@ -1513,17 +1455,6 @@ sub run_uninstall_server
 		oscar_log_subsection("Completed un-install on server");
 		return (0);
 	}
-	#else
-	#{
-	#	my $e_string = "Error $package_name has no un-install script\n";
-	#	oscar_log_subsection("Error $package_name has no un-install script\n");
-	#	add_error($e_string);
-	#}
-
-	#my $e_string = "Error on server un-install for $package_name \n";
-	#add_error($e_string);
-
-	#oscar_log_subsection("Error on server un-install for $package_name");
 	return (0);
 }
 
@@ -1610,16 +1541,6 @@ sub run_uninstall_client
 		oscar_log_subsection("Completed un-install on client");
 		return (0);
 	}
-#	else 
-#	{
-#		my $e_string = "Error $package_name has no un-install script\n";
-#		add_error($e_string);
-#		oscar_log_subsection("Error $package_name has no un-install script");
-#	}
-
-#	my $e_string = "Error on client un-install for $package_name \n";
-#	add_error($e_string);
-#	oscar_log_subsection("Error on client un-install for $package_name");
 	return 0;
 }
 
@@ -1687,16 +1608,6 @@ sub run_uninstall_image
 		oscar_log_subsection("Completed un-install on image");
 		return (0);
 	}
-	#else
-	#{
-	#	my $e_string = "Error $package_name has no un-install script\n";
-	#	add_error($e_string);
-	#	oscar_log_subsection("Error $package_name has no un-install script");
-	#}
-
-	#my $e_string = "Error on image un-install for $package_name \n";
-	#add_error($e_string);
-	#oscar_log_subsection("Error on image un-install for $package_name");
 
 	return (0);
 }
@@ -1803,16 +1714,15 @@ sub run_command_general
 sub check_package_dependancy 
 {
 	my ($package_name) = @_;
-	my $cmdstring = "read_records packages_requires name package=\"$package_name\"";
-	my @my_result;
+	my @results;
     my @tables = ("packages_requires");
-	my $error_code = 1;
 	my $record;
 
-	OSCAR::Database::single_dec_locked($cmdstring,"READ",\@tables,\@my_result, $error_code);
-
-	foreach $record (@my_result)
-	{
+    OSCAR::Database::get_packages_related_with_package(
+                "requires",$package_name,\@results,\%options,\@error_list);
+                
+    foreach my $result_ref (@results){
+        my $record = $$result_ref{p2_name};
 		if( !is_installed($record) )
 		{
 			print "Package $package_name needs $record to be installed first.\n";
@@ -1830,16 +1740,15 @@ sub check_package_dependancy
 sub check_dependant_package
 {
 	my ($package_name) = @_;
-	my $cmdstring = "read_records packages_requires package name=\"$package_name\"";
-	my @my_result;
+	my @results;
     my @tables = ("packages_requires");
-	my $error_code = 1;
 	my $record;
 
-	OSCAR::Database::single_dec_locked($cmdstring,"READ",\@tables,\@my_result, $error_code);
+    OSCAR::Database::get_packages_related_with_name(
+                "requires",$package_name,\@results,\%options,\@error_list);
 
-	foreach $record (@my_result)
-	{
+    foreach my $result_ref (@results){
+        my $record = $$result_ref{package};
 		if( is_installed($record) )
 		{
 			print "Package $package_name is needed by package $record.\n";
@@ -1958,7 +1867,6 @@ sub trim_cexec_pipe_output
 }
 
 #this function adds an error to the global list
-#@error_list...and thats it
 #returns nothing
 sub add_error
 {
@@ -1967,7 +1875,6 @@ sub add_error
 }
 
 #this method prints out the global list
-#@error_list
 #returns nothing
 sub print_errors
 {
@@ -1978,42 +1885,5 @@ sub print_errors
 	}
 }
 
-#
-# NEST SUBROUTINE BEGIN
-#
-
-# Uninstall an oscar package by deleting records from the config_opkgs table
-# with the package name.
-# The records corresponding to the selected package name will be deleted.
-
-sub uninstall_package{
-    my @tables = ("config_opkgs","packages", "node_config_revs", "oda_shortcuts");
-    my $opkg = shift;
-    if (! single_dec_locked("uninstall_opkg $opkg", "WRITE",\@tables,undef,\@error_list) ) {
-         carp("Failed to delete a record from config_opkgs");
-    }
-}
-
-# Install an oscar package by Inserting records from the config_opkgs table
-# with the package name.
-# The records corresponding to the selected package name will be inserted.
-sub install_package{
-    my $opkg = shift;
-    my @error_list = ();
-    my @configs_id =();
-    my @tables = ("configurations", "nodes","config_opkgs","packages","oda_shortcuts");
-    locking("WRITE",\%options, \@tables, \@error_list);
-    dec_already_locked("read_records configurations.id configurations.name=nodes.name", \@configs_id);
-    foreach my $config_id (@configs_id){
-        if (! dec_already_locked("install_opkg $config_id $opkg") ) {
-             carp("Failed to insert a record into config_opkgs");
-        }
-    }
-    unlock(\%options, \@error_list);
-}
-
-#
-# NEST SUBROUTINE END
-#
 
 1;

@@ -224,7 +224,7 @@ sub getPackagesInstalled
       # those packages.
       my @packagesInstalled;
       my $success = OSCAR::Database::get_node_package_status_with_node(
-          "oscar_server",@packagesInstalled,\%options,\@errors, 7 );
+          "oscar_server",\@packagesInstalled,\%options,\@errors, 7 );
       if ($success)
         { # Transform the array of installed packages into a hash
           foreach my $pack_ref (@packagesInstalled)
@@ -329,9 +329,9 @@ sub populateTable
       my @packagesToBeUninstalled;  # Array
       my $packagesToBeUninstalled;  # Hash ref of transformed array
       $success = OSCAR::Database::get_node_package_status_with_node(
-          "oscar_server",@packagesToBeInstalled,\%options,\@errors, 1 );
+          "oscar_server",\@packagesToBeInstalled,\%options,\@errors, 1 );
       $success = OSCAR::Database::get_node_package_status_with_node(
-          "oscar_server",@packagesToBeUninstalled,\%options,\@errors, 0 );
+          "oscar_server",\@packagesToBeUninstalled,\%options,\@errors, 0 );
       # Transform these lists into hashes
       foreach my $pack_ref (@packagesToBeInstalled)
         {
