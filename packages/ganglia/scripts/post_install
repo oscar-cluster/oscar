@@ -19,6 +19,8 @@
 
 # (C)opyright Bernard Li <bli@bcgsc.ca>
 
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Database;
 use Carp;
 use XML::Simple;
 
@@ -43,8 +45,11 @@ if (-e $xml_data) {
     $iface = $ref->{iface};
 }
 
-my $headnode_iface = `oda read_records oscar.interface`;
-chomp ($headnode_iface);
+# get interface of headnode
+my @results = ();
+get_nics_info_with_node("oscar_server", \@results);
+my $ref = pop @results;
+my $headnode_iface = $$ref{name};
 
 if ( $headnode_iface eq $iface ) {
     print("Pushing headnode's gmond.conf to compute nodes\n");
