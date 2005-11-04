@@ -21,6 +21,8 @@ package OSCAR::Database;
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
+# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
+
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib/OSCAR","/usr/lib/perl5/site_perl";
 use Carp;
@@ -1665,7 +1667,7 @@ sub is_installed_on_node{
              "AND Node_Package_Status.node_id=Nodes.id ".
              "AND Packages.package='$package_name' ".
              "AND Nodes.name=";
-    my $sql .= ($node_name?"'$node_name'":"'oscar_server'"); 
+    $sql .= ($node_name?"'$node_name'":"'oscar_server'"); 
     if(defined $requested && $requested ne ""){
         $sql .= " AND Node_Package_Status.requested=$requested ";
     }
