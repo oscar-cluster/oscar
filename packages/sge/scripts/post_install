@@ -71,7 +71,8 @@ my $lam_pe = "lam-mpi";
 my $lam_pe_file = "$ENV{OSCAR_HOME}/packages/sge/scripts/$lam_pe";
 
 # Set up Parallel Environment for LAM/MPI if the package is installed
-if ( is_installed("lam") ) {
+# FIXME: Right now it checks to see if LAM/MPI is installed on the headnode
+if ( is_installed_on_node("lam") ) {
 	# Check to see if we already have "lam-mpi" Parallel Environment defined
 	`qconf -sp $lam_pe 2>&1`; # or croak("Cannot run qconf -sp");
 
