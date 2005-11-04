@@ -78,7 +78,7 @@ if(-e '/etc/odapw'){
               update_node
               get_node_package_status_with_group_node
               get_node_package_status_with_node
-              is_installed
+              is_installed_on_node
               get_package_info_with_name
               get_client_nodes_info
               get_node_info_with_name
@@ -1664,7 +1664,8 @@ sub is_installed_on_node{
              "WHERE Node_Package_Status.package_id=Packages.id ".
              "AND Node_Package_Status.node_id=Nodes.id ".
              "AND Packages.package='$package_name' ".
-             "AND Nodes.name='$node_name'";
+             "AND Nodes.name=";
+    my $sql .= ($node_name?"'$node_name'":"'oscar_server'"); 
     if(defined $requested && $requested ne ""){
         $sql .= " AND Node_Package_Status.requested=$requested ";
     }
