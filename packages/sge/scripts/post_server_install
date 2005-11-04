@@ -141,19 +141,6 @@ copy("/opt/sge/default/common/settings.csh","/etc/profile.d/sge.csh") or croak("
 # But, we can uncomment this when we allow headnode as exec
 #system("/opt/sge/bin/lx26-x86/qconf -ae $hostname");
 
-# Also, to set environments correctly for non-interactive shells we can 
-# add the SGE_ROOT variable to the contents of bashrc in /etc
-#my $bashrc_conf = ">> /etc/bashrc";
-
-#open(BASHRC, $bashrc_conf) or croak("Error: unable to open ($bashrc_conf)\n");
-
-#print BASHRC "export SGE_ROOT=/opt/sge\n";
-#print BASHRC "export PATH=/opt/sge/bin/lx26-x86:\$PATH\n";
-#print BASHRC "export LD_LIBRARY_PATH=/opt/sge/lib/lx26-x86:\$LD_LIBRARY_PATH\n";
-#print BASHRC "export MANPATH=/opt/sge/man/:\$MANPATH\n";
-
-#close BASHRC;
-
 $cluster_conf = "/opt/sge/default/common/configuration";
 $buffer = "";
 

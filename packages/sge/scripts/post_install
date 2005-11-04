@@ -48,7 +48,6 @@ system("$push_command $sge_conf_store /opt/sge/default.tar");
 print "SGE post_install: Pushing all env-setting scripts to clients...\n";
 system("$push_command /etc/profile.d/sge.sh /etc/profile.d");
 system("$push_command /etc/profile.d/sge.csh /etc/profile.d");
-system("$push_command /etc/bashrc /etc");
 
 # Untar the spool dir on the clients
 print "SGE post_install: Untarring default.tar on clients...\n";

@@ -27,6 +27,7 @@
 
   <binary-package-list>
       <pkg>gridengine</pkg>
+      <pkg>gridengine-modulefile</pkg>
   </binary-package-list>  
   <binary-package-list>
       <filter>
