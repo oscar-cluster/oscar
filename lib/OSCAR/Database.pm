@@ -1650,16 +1650,29 @@ sub get_packages_with_class{
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }
 
-sub is_installed{
+sub is_installed_on_node{
     my ($package_name,
+        $node_name,
         $options_ref,
         $error_strings_ref,
         $version,
         $requested) = @_;
-    $requested = 7 if (!$requested);    
     my @result = ();    
-    my $success = get_node_package_status_with_node(
-        $package_name,\@result,$options_ref,$error_strings_ref,$requested,$version);
+    $requested = 7 if (!$requested);    
+    my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+             "From Packages, Node_Package_Status, Nodes ".
+             "WHERE Node_Package_Status.package_id=Packages.id ".
+             "AND Node_Package_Status.node_id=Nodes.id ".
+             "AND Packages.package='$package_name' ".
+             "AND Nodes.name='$node_name'";
+    if(defined $requested && $requested ne ""){
+        $sql .= " AND Node_Package_Status.requested=$requested ";
+    }
+    if(defined $version && $version ne ""){
+        $sql .= " AND Packages.version=$version ";
+    }
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,\@result, $options_ref, $error_strings_ref);
     return (@result?1:0);    
 }
 
