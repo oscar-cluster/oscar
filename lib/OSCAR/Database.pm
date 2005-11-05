@@ -88,6 +88,7 @@ if(-e '/etc/odapw'){
               get_nics_with_name_node
               set_nics_with_node
               get_gateway
+              get_headnode_iface
               get_cluster_info_with_name
               insert_packages
               update_packages
@@ -2524,6 +2525,18 @@ sub get_gateway{
              "AND Networks.n_id=Nics.network_id AND Nics.name='$interface'";
     die "$0:Failed to query values via << $sql >>"
         if! do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+# This function returns the interface on the headnode that is on the same
+# network as the compute nodes, typically = ./install_cluster <iface>
+
+sub get_headnode_iface {
+    my ($options_ref,
+	$error_strings_ref) = @_;
+    my @results = ();
+    get_nics_info_with_node("oscar_server", \@results, $options_ref, $error_strings_ref);
+    my $ref = pop @results;
+    return $$ref{name};
 }
 
 #=======================================================================

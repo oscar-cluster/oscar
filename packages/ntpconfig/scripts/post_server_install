@@ -22,6 +22,7 @@
 
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Network;
+use OSCAR::Database;
 use XML::Simple;
 use Carp;
 
@@ -31,8 +32,7 @@ my $step_tickers = "/etc/ntp/step-tickers";
 my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
 
 # get headnode's interface information from OSCAR database
-my $iface = `oda read_records oscar.interface`;
-chomp($iface);
+my $iface = get_headnode_iface();
 
 open(CONF, $ntp_conf) or croak("Error: unable to open ($ntp_conf)\n");
 

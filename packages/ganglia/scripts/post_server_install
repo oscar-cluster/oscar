@@ -21,6 +21,8 @@
 
 use XML::Simple;
 use Carp;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Database;
 
 my $gmondBuffer = "";
 my $gmetadBuffer = "";
@@ -39,8 +41,7 @@ my $gridname_default = "OSCAR";
 my $owner_default = "OSCAR";
 
 # get headnode's interface information from OSCAR database
-my $iface = `oda read_records oscar.interface`;
-chomp($iface);
+my $iface = get_headnode_iface();
 
 # need to modify gmond.conf file whether .configurator.values exists or not
 open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");

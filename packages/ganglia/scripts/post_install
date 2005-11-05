@@ -46,10 +46,7 @@ if (-e $xml_data) {
 }
 
 # get interface of headnode
-my @results = ();
-get_nics_info_with_node("oscar_server", \@results);
-my $ref = pop @results;
-my $headnode_iface = $$ref{name};
+my $headnode_iface = get_headnode_iface();
 
 if ( $headnode_iface eq $iface ) {
     print("Pushing headnode's gmond.conf to compute nodes\n");
