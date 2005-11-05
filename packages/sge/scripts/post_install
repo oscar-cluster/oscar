@@ -14,7 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# This script pushes the qmaster spool directory (named default) from the server
+# This script pushes the qmaster spool directory from the server
 # to the clients and then prompts them to configure themselves as exec nodes
 # The clients will understand the settings of qmaster and register themselves as
 # exec nodes at the qmaster. This will complete the SGE setup on client and server.
@@ -28,8 +28,9 @@ use lib "/usr/lib/systeminstaller","$ENV{OSCAR_HOME}/lib";
 use SystemInstaller::Machine;
 use OSCAR::Database;
 
+my $cell = "default";
 my %nodes = get_machine_listing();
-my $sge_conf_store = "/opt/sge/default.tar"; # Spool dir's tar file
+my $sge_conf_store = "$ENV{SGE_ROOT}/$cell.tar"; # Spool dir's tar file
 
 my $push_command = "/opt/c3-4/cpush";
 my $exec_command = "/opt/c3-4/cexec";
@@ -37,12 +38,12 @@ my $exec_command = "/opt/c3-4/cexec";
 # Make a tar file of the spool dir for sending to clients
 # Thanks to Bernard; :-) Go into SGE_ROOT before doing tar
 print "Creating $sge_conf_store\n";
-system("cd /opt/sge; tar --exclude=qmaster -cf default.tar default") == 0 or croak("Failed to tar default directory on SGE Qmaster");
+system("cd $ENV{SGE_ROOT}; tar --exclude=qmaster -cf $cell.tar $cell") == 0 or croak("Failed to tar $cell directory on SGE Qmaster");
 #wait();
 
 # push the spool dir's tar file to the client nodes
-print "SGE post_install: Pushing default.tar to clients...\n";
-system("$push_command $sge_conf_store /opt/sge/default.tar");
+print "SGE post_install: Pushing $cell.tar to clients...\n";
+system("$push_command $sge_conf_store $ENV{SGE_ROOT}/$cell.tar");
 
 # Copy all the environment-setting scripts to clients
 print "SGE post_install: Pushing all env-setting scripts to clients...\n";
@@ -50,8 +51,8 @@ system("$push_command /etc/profile.d/sge.sh /etc/profile.d");
 system("$push_command /etc/profile.d/sge.csh /etc/profile.d");
 
 # Untar the spool dir on the clients
-print "SGE post_install: Untarring default.tar on clients...\n";
-system("$exec_command \"cd /opt/sge; tar -xf default.tar\"") == 0 or croak("Failed to untar default.tar on clients");
+print "SGE post_install: Untarring $cell.tar on clients...\n";
+system("$exec_command \"cd $ENV{SGE_ROOT}; tar -xf $cell.tar\"") == 0 or croak("Failed to untar $cell.tar on clients");
 
 print "Removing $sge_conf_store on clients\n";
 system("$exec_command rm -rf $sge_conf_store");
@@ -59,7 +60,7 @@ system("$exec_command rm -rf $sge_conf_store");
 # Then, the clients have enough information to proceed
 # with configuring themselves as exec nodes 
 print "SGE post_install: Doing inst_sge on clients...\n";
-system("$exec_command \"cd /opt/sge; ./inst_sge -x\"") == 0 or croak("Problem while inst_sge on clients");
+system("$exec_command \"cd $ENV{SGE_ROOT}; ./inst_sge -x\"") == 0 or croak("Problem while inst_sge on clients");
 
 # Now, the exec node config is complete on the clients
 print "SGE post_install: Configuration SUCCESS on clients\n";
@@ -69,6 +70,30 @@ system("rm -rf $sge_conf_store");
 
 my $lam_pe = "lam-mpi";
 my $lam_pe_file = "$ENV{OSCAR_HOME}/packages/sge/scripts/$lam_pe";
+
+my $queue = "all";
+my $qfile = "$ENV{SGE_ROOT}/$cell/spool/qmaster/cqueues/$queue.q";
+
+my $line = "";
+my $buffer = "";
+my $theline = "";
+
+# Read queue file into memory
+open(QFILE, $qfile) or croak("Cannot open file $qfile\n");
+while ($line = <QFILE>) {
+        $buffer = $buffer.$line;
+        if ($line =~ /pe_list/) {
+                $theline = $line;
+        }
+}
+close(QFILE, $qfile);
+
+chomp($theline);
+my @pes = split(/ +/, $theline);
+shift(@pes);
+
+my %pe_exists  = ();
+for (@pes) { $pe_exists{$_} = 1 };
 
 # Set up Parallel Environment for LAM/MPI if the package is installed
 # FIXME: Right now it checks to see if LAM/MPI is installed on the headnode
@@ -85,7 +110,44 @@ if ( is_installed_on_node("lam") ) {
 	} else {
         	croak("Cannot run qconf -sp $lam_pe");
 	}
+
+	# Check to see if lam-mpi is already referenced in specified queue
+	if ($pe_exists{"$lam_pe"}) {
+        	# LAM/MPI Parallel Environment already set up
+	} else {
+       		print "Referencing LAM/MPI Parallel Environment in $queue.q\n";
+        	push(@pes, "$lam_pe");
+        	my $pe_line = join(" ", @pes);
+        	$buffer =~ s/pe_list.*\n/pe_list            $pe_line\n/;
+
+        	open(QFILE, '>'.$qfile) or croak("Cannot open file $qfile for writing\n");
+        	print QFILE $buffer;
+        	close(QFILE);
+
+                # restart qmaster
+                system("/etc/init.d/sgemaster stop");
+                system("/etc/init.d/sgemaster start");
+	}
 } else {
+        # Check to see if lam-mpi is already referenced in specified queue
+        if ($pe_exists{"$lam_pe"}) {
+                # LAM/MPI Parallel Environment is referenced, need to remove
+                print "Dereferencing LAM/MPI Parallel Environment in $queue.q\n";
+                @pes = delete @pes[$lam_pe];
+                my $pe_line = join(" ", @pes);
+                $buffer =~ s/pe_list.*\n/pe_list            $pe_line\n/;
+
+                open(QFILE, '>'.$qfile) or croak("Cannot open file $qfile for writing\n");
+                print QFILE $buffer;
+                close(QFILE);
+
+		# restart qmaster
+		system("/etc/init.d/sgemaster stop");
+		system("/etc/init.d/sgemaster start");
+        } else {
+                # LAM/MPI Parallel Environment not referenced in queue
+        }
+
         # Check to see if we already have "lam-mpi" Parallel Environment defined
         `qconf -sp $lam_pe 2>&1`; # or croak("Cannot run qconf -sp");
 
