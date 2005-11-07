@@ -38,6 +38,9 @@ use Data::Dumper;
 use vars qw($RPMTABLE);
 use Carp;
 
+my $OSCAR_SERVER_NODE = "oscar_server";
+my $OSCAR_SERVER_GROUP = "oscar_server";
+
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
     return if dec_already_locked( $command, $results_ref, 1 );
@@ -305,14 +308,14 @@ oscar_log_subsection("Successfully installed server core RPMs");
 #
 
 # START LOCKING FOR NEST && open the database
-my @tables = ("Nodes", "Group_Nodes", "Packages", "Group_Packages", "Node_Package_Status", "Node_Packages");
+my @tables = ("Nodes","Groups","Group_Nodes", "Packages", "Group_Packages", "Node_Package_Status", "Node_Packages");
 my %options = ();
 my @errors = ();
 locking("write", \%options, \@tables, \@errors);
 
-my $group_name = "oscar_server";
-my $node_name = "oscar_server";
-set_group_nodes($group_name,$node_name,\%options,\@errors);
+# Update Group_Nodes table with oscar_server group.
+my @nodes = ($OSCAR_SERVER_NODE);
+set_group_nodes($OSCAR_SERVER_GROUP,\@nodes,\%options,\@errors);
 
 # Have installed Core Server Pkgs & did not croak, so mark 
 # packages.<pkg>installed true.  (best effort for now)

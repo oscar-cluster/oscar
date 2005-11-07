@@ -34,6 +34,8 @@ use oda;
 
 my %options = ();
 my %field_value_hash = ();
+my $OSCAR_SERVER_NODE = "oscar_server";
+my $OSCAR_SERVER_GROUP = "oscar_server";
 
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
@@ -60,7 +62,7 @@ locking("write", \%options, \@tables, \@errors);
 
 my $msg = "Creating node, node group, configurations records for oscar_server ...\n";
 @errors = ("cannot read nodes database table");
-set_node("oscar_server",\%options,\@errors);
+set_node_with_group($OSCAR_SERVER_NODE,$OSCAR_SERVER_GROUP,\%options,\@errors);
 
 
 # update some of the fields in the node record for oscar_server
@@ -86,8 +88,8 @@ foreach my $node_group_name ( "oscar_clients", "all", "Default" ) {
     
     print "Checking for existance of node group $node_group_name ...\n";
     my @node_groups = ();
-    get_groups(\@node_groups,\%options,\@errors,$node_group_name);
-    if ( ! @node_groups ) {
+    my $group = get_groups(\@node_groups,\%options,\@errors,$node_group_name);
+    if ( ! $group ) {
         print "Creating node group $node_group_name ...\n";
         set_groups($node_group_name,\%options,\@errors);
     }

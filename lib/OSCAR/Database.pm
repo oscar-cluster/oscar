@@ -21,8 +21,6 @@ package OSCAR::Database;
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
-
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib/OSCAR","/usr/lib/perl5/site_perl";
 use Carp;
@@ -104,7 +102,7 @@ if(-e '/etc/odapw'){
               set_status
               set_images
               set_image_packages
-              set_node
+              set_node_with_group
               link_node_nic_to_network
               do_select
               dec_already_locked
@@ -1742,18 +1740,25 @@ sub get_packages_switcher{
 
 sub set_group_nodes{
     my ($group,
-        $node,
+        $nodes_ref,
         $options_ref,
         $error_strings_ref) = @_;
-    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);    
-    my $node_id = $$node_ref{id};
-    my $sql = "SELECT * FROM Group_Nodes WHERE group_name='$group' ".
-              "AND node_id=$node_id";
-    my @results = ();
-    do_select($sql,\@results,$options_ref,$error_strings_ref);
-    if(!@results){
-        $sql = "INSERT INTO Group_Nodes VALUES('$group', $node_id )";
-        do_insert($sql,"Group_Nodes",$options_ref,$error_strings_ref);
+    my @groups = ();
+    my $group_ref = get_groups(\@groups, $options_ref,$error_strings_ref,$group);
+    my $group_id = $$group_ref{id};
+    my %field_value_hash = ( "group_id" => $group_id );
+    foreach my $node (@$nodes_ref){
+        my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);    
+        my $node_id = $$node_ref{id};
+        my $sql = "SELECT * FROM Group_Nodes WHERE group_name='$group' ".
+                  "AND node_id=$node_id";
+        my @results = ();
+        do_select($sql,\@results,$options_ref,$error_strings_ref);
+        if(!@results){
+            $sql = "INSERT INTO Group_Nodes VALUES('$group', $node_id )";
+            do_insert($sql,"Group_Nodes",$options_ref,$error_strings_ref);
+            update_node($node,\%field_value_hash,$options_ref,$error_strings_ref);
+        }    
     }    
     return 1;              
 }
@@ -2314,6 +2319,7 @@ sub get_groups{
     if(defined $group){ $sql .= "WHERE name='$group'"; }
     die "$0:Failed to query values via << $sql >>"
         if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return $$results[0] if $group;    
     return 1;    
 }
 
@@ -2381,8 +2387,9 @@ sub set_all_groups{
     }
 }
 
-sub set_node{
+sub set_node_with_group{
     my ($node,
+        $group,
         $options_ref,
         $error_strings_ref) = @_;
     my $sql = "SELECT name FROM Nodes WHERE name='$node'";
@@ -2390,7 +2397,8 @@ sub set_node{
     die "$0:Failed to query values via << $sql >>"
         if! do_select($sql,\@nodes, $options_ref, $error_strings_ref);
     if(!@nodes){ 
-        $sql = "INSERT INTO Nodes (name) VALUES ('$node')";
+        $sql = "INSERT INTO Nodes (name,group_id) ".
+               "SELECT '$node', id FROM Groups WHERE name='$group'";
         die "$0:Failed to insert values via << $sql >>"
             if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
     }

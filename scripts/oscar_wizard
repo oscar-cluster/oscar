@@ -548,12 +548,14 @@ sub populate_client_group_nodes{
     locking("WRITE", \%options, \@tables, \@errors);
     my @client_nodes = ();
     get_client_nodes(\@client_nodes,\%options,\@errors);
+    my @nodes = ();
     foreach my $client_ref (@client_nodes){
         my $node_id = $$client_ref{id};
         my $node_name = $$client_ref{name};
-        my $client_group = "oscar_clients";
-        set_group_nodes($client_group,$node_name,\%options,\@errors);
+        push @nodes, $node_name;
     }
+    my $client_group = "oscar_clients";
+    set_group_nodes($client_group,\@nodes,\%options,\@errors);
 
     
     unlock(\%options, \@errors);

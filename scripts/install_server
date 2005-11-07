@@ -39,6 +39,9 @@ use OSCAR::PackageBest;
 use Carp;
 use Data::Dumper;
 
+my $OSCAR_SERVER_NODE = "oscar_server";
+my $OSCAR_SERVER_GROUP = "oscar_server";
+
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
     return if dec_already_locked( $command, $results_ref, 1 );
@@ -101,7 +104,7 @@ oscar_log_subsection("Marking installed bit in ODA for server non-core RPMS");
 
 my $requested = 7; # "Installed" flag for the Node_Package_Status"
 die "$0:Failed to update the table Node_Package_Status"
-    if(!update_node_package_status(\%options,"oscar_server",\@packages,$requested,\@errors));
+    if(!update_node_package_status(\%options,$OSCAR_SERVER_NODE,\@packages,$requested,\@errors));
 
 
 # UNLOCKING FOR NEST
