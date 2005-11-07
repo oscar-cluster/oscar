@@ -21,6 +21,8 @@ package OSCAR::Database;
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
+# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
+
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib/OSCAR","/usr/lib/perl5/site_perl";
 use Carp;
