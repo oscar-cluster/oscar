@@ -42,6 +42,14 @@ my @BASHRC = ("/etc/bash.bashrc", "/etc/bashrc", "$ENV{HOME}/.bashrc");
 my %ENV_IGNORE = (PWD=>1, OLDPWD=>1, SHLVL=>1, _=>1, USER=>1, USERNAME=>1,
                   LS_COLORS=>1, PS1=>1, TERMCAP=>1);
 
+# Debug Levels
+use constant DBG_OFF  => 0;
+use constant DBG_LOW  => 1;
+use constant DBG_MED  => 2;
+use constant DBG_HIGH => 3;
+my $DEBUG = DBG_OFF;
+
+
 #   Input: n/a
 #  Output: %ENV
 #  Return: list of modified env items [possibly empty]
@@ -59,6 +67,26 @@ sub update_env
 
 	croak "Error: 'env' not found " 
 	   if( not defined($env_cmd = find_cmd("env")) );
+
+
+	# Set the DEBUG flag based on the old & new (multi-level verbose)
+	# Keeping the previous flags around in case anyone actually used them.
+	# ORDER IS IMPORTANT HERE!!!
+	
+	if( defined($ENV{DEBUG_OSCAR_WIZARD}) ) {
+		$DEBUG = $ENV{DEBUG_OSCAR_WIZARD};
+	}		
+
+	if( defined($ENV{DEBUG_OSCAR_WIZARD_PARANOID}) 
+	    and     $ENV{DEBUG_OSCAR_WIZARD_PARANOID} ) {
+		$DEBUG = DBG_HIGH;
+	}
+
+	if( defined($ENV{QUIET_OSCAR_WIZARD}) 
+	    and     $ENV{QUIET_OSCAR_WIZARD} ) {
+		$DEBUG = DBG_OFF;   # Overrides all other flags
+	}
+
 
 
 	my ($rh, $wh);  # Handle autovivification 
@@ -108,11 +136,13 @@ sub update_env
 
 
 	 # Remove any leading stuffo (prior to our sentinal)
-	while ( ($_ = shift(@rslt)) !~ /$magicstr/ ) {
-		print "WizardEnv: removed($_)\n" if( $ENV{DEBUG_OSCAR_WIZARD_PARANOID});
+	while ( ($_ = shift(@rslt)) !~ /$magicstr/ ) 
+	{
+	
+		print "WizardEnv: removed($_)\n" if($DEBUG >= DBG_HIGH );
 		next;
 	}
-	print "WizardEnv: removed($_)\n\n" if( $ENV{DEBUG_OSCAR_WIZARD_PARANOID} );
+	print "WizardEnv: removed($_)\n" if( $DEBUG >= DBG_HIGH );
 
 
 	 # Convert multi-line EnvVars to single-line, noticed b/c of
@@ -127,13 +157,12 @@ sub update_env
 		if( ! $ENV_IGNORE{$key} ) {
 
 			next if( defined($ENV{$key}) && $ENV{$key} eq $val ); 
-   
-			print "Update environment: ENV{$key}\n" unless( $ENV{QUIET_OSCAR_WIZARD} );
-			print "  $key=$val\n\n" if( $ENV{DEBUG_OSCAR_WIZARD} 
-			                          && ! $ENV{QUIET_OSCAR_WIZARD} );
+ 
+			print "Update environment: ENV{$key}\n" if( $DEBUG >= DBG_LOW );
+			print "  $key=$val\n\n" if( $DEBUG >= DBG_MED );
 
 			# To see actual differential (for the paranoid among us)
-   			if($ENV{DEBUG_OSCAR_WIZARD_PARANOID} && ! $ENV{QUIET_OSCAR_WIZARD}) 
+			if( $DEBUG >= DBG_HIGH )
 			{
 				# To avoid unintialized warnings when not prev. exist
 				my $orig = (defined($ENV{$key}))? $ENV{$key} : ""; 
@@ -173,8 +202,9 @@ sub multi2singleline
 			}
 
 			$tmp .= $env[$i];
-			print "WizardEnv: multi-line EnvVar converted to:\n  $tmp\n\n" 
-                                    if( $ENV{DEBUG_OSCAR_WIZARD_PARANOID} );
+			if( $DEBUG >= DBG_HIGH ) {
+				print "WizardEnv: multi-line EnvVar converted to:\n  $tmp\n\n"; 
+			}
 
 			push(@keep, $tmp);
 		}
