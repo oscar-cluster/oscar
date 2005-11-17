@@ -128,7 +128,7 @@ else {
 # This will make a clean separation of activities that can be done on master
 # and exec hosts. That is, Master = admin + submit and all others are exec
 
-system("/opt/sge/bin/lx26-x86/qconf -as $hostname") == 0 or croak("Error: Problem with adding OSCAR head as sge admin host");
+system("qconf -as $hostname") == 0 or croak("Error: Problem with adding OSCAR head as sge admin host");
 
 # Copy the scripts that setup the environment so that its system-wide
 # All users logging in from now on will have the setup automated 
@@ -139,7 +139,7 @@ copy("/opt/sge/default/common/settings.csh","/etc/profile.d/sge.csh") or croak("
 
 # The following cannot happen since we decided not make headnode as exec
 # But, we can uncomment this when we allow headnode as exec
-#system("/opt/sge/bin/lx26-x86/qconf -ae $hostname");
+#system("qconf -ae $hostname");
 
 $cluster_conf = "/opt/sge/default/common/configuration";
 $buffer = "";
