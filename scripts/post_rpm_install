@@ -38,8 +38,8 @@ use OSCAR::Package;
 use OSCAR::Logger;
 use Cwd;
 
-my $imagename = shift or croak("No image name specified!"); 
-my $serverint = shift or croak("No server interface name specified!"); 
+my $imagename = shift or croak("No arguments passed - please pass <image name> and <headnode interface name>");
+my $serverint = shift or croak("Only one argument passed - please pass <image name> and <headnode interface name>"); 
 
 my $config = init_si_config();
 
