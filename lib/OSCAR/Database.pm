@@ -2508,6 +2508,7 @@ sub set_image_packages{
         $options_ref,
         $error_strings_ref) = @_;
     my $image_ref = get_image_info_with_name($image,$options_ref,$error_strings_ref);
+    croak("Image $image not found in OSCAR Database") unless ($image_ref);
     my $image_id = $$image_ref{id};
     my $package_ref = get_package_info_with_name($package,$options_ref,$error_strings_ref);
     my $package_id = $$package_ref{id};
