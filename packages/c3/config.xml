@@ -20,7 +20,7 @@
     <major>4</major>
     <minor>0</minor>
     <subversion>1</subversion>
-    <release>4</release>
+    <release>5</release>
     <epoch>1</epoch>
   </version>
 
@@ -41,10 +41,6 @@ offers a command line interface for system and user administration
 tasks on a cluster.</description>
 
   <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-      </filter>
-
       <pkg>c3</pkg>
       <pkg>c3-profiled</pkg>
   </binary-package-list>
