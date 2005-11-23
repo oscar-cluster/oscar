@@ -51,7 +51,7 @@ foreach my $node (sortnodes( keys %nodes )) {
     # Add the hostname as a known admin host
     # This is needed because exec hosts have to be known 
     # at the Qmaster as an admin host prior to adding it as exec
-    system("/opt/sge/bin/lx26-x86/qconf -ah $hostname"); 
+    system("bash -c -l 'qconf -ah $hostname'"); 
 	if ($? == -1) {
         	# Something seriously wrong; Adding exec nodes as admins failed
         	croak("Program failed: While doing qconf -ah on OSCAR head");

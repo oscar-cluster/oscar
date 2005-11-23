@@ -60,7 +60,7 @@ system("$exec_command rm -rf $sge_conf_store");
 # Then, the clients have enough information to proceed
 # with configuring themselves as exec nodes 
 print "SGE post_install: Doing inst_sge on clients...\n";
-system("$exec_command \"cd $ENV{SGE_ROOT}; ./inst_sge -x\"") == 0 or croak("Problem while inst_sge on clients");
+system("$exec_command 'cd $ENV{SGE_ROOT}; ./inst_sge -x'") == 0 or croak("Problem while inst_sge on clients");
 
 # Now, the exec node config is complete on the clients
 print "SGE post_install: Configuration SUCCESS on clients\n";
