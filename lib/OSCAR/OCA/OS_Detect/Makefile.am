@@ -15,6 +15,7 @@ oscar_SCRIPTS		= \
 			OSX.pm \
 			RedHat.pm \
 			Mandriva.pm \
+			ScientificLinux.pm \
 			Mandrake.pm
 
 EXTRA_DIST		= $(oscar_SCRIPTS)
