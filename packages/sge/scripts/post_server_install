@@ -128,7 +128,8 @@ else {
 # This will make a clean separation of activities that can be done on master
 # and exec hosts. That is, Master = admin + submit and all others are exec
 
-system("qconf -as $hostname") == 0 or croak("Error: Problem with adding OSCAR head as sge admin host");
+# Need to open a new shell to be able to locate the qconf binary
+system("bash -c -l 'qconf -as $hostname'") == 0 or croak("Error: Problem with adding OSCAR head as sge admin host");
 
 # Copy the scripts that setup the environment so that its system-wide
 # All users logging in from now on will have the setup automated 
