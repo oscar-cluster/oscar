@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# Set svn:ignore property to directory passed as argument and all
+# subdirectories
+#
+# (C)opyright Erich Focht <efocht@hpce.nec.com>
+
+if [ $# -ne 1 ]; then
+   echo "Usage: $0 <directory>"
+   exit 1
+fi
+
+DIR=$1
+
+if [ ! -d $DIR ]; then
+    echo "$DIR is not a directory! Exiting"
+    exit 1
+fi
+
+TMPFILE=`mktemp /tmp/svn_ignore.XXXXXXXXXX` || exit 1
+
+# here's what we want to ignore
+cat <<EOF >$TMPFILE
+Makefile
+Makefile.am
+Makefile.in
+.oscar_made_makefile_am
+EOF
+
+for d in `find $DIR -type d -and ! -wholename '*/.svn' ! -wholename '*/.svn/*'`; do
+    svn propset svn:ignore -F $TMPFILE $d
+done
+
+rm -f $TMPFILE
