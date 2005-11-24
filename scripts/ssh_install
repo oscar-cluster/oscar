@@ -137,6 +137,13 @@ done
 
 file=sshd_config
 echo ; echo checking configuration file $file ...
+SSHVER=` ssh -V 2>&1 | cut -f2 -d'p' | cut -f2 -d'_'`
+SSHMINORVER=`echo $SSHVER | cut -f2 -d'.'`
+SSHMAJORVER=`echo $SSHVER | cut -f1 -d'.'`
+
+SSHBADMAJORVER=3 
+SSHBADMINORVER=7
+
 
 for wantedyes in IgnoreRhosts X11Forwarding RhostsRSAAuthentication RSAAuthentication ; do
     if [ yes`grep "^[[:space:]]*$wantedyes[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "yesyes" ] ; then
@@ -157,8 +164,9 @@ for wantedyes in IgnoreRhosts X11Forwarding RhostsRSAAuthentication RSAAuthentic
         fi
     fi
 done
+
 for wantedno in RhostsAuthentication ; do
-    if [ no`grep "^[[:space:]]*$wantedno[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "nono" ] ; then
+    if [ no`grep "^[[:space:]]*$wantedno[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "nono" ] && [ "$SSHBADMAJORVER -ge $SSHMAJORVER" ] && [ "$SSHBADMAJOR -ge $SSHMINORVER" ]; then
 	echo turning off $wantedno parameter in configuration file $file ...
 	if [ ! -r $file.pre_ssh_install ] ; then
 	    if [ -r $file ] ; then
@@ -176,6 +184,8 @@ for wantedno in RhostsAuthentication ; do
         fi
     fi
 done
+
+unset SSHVER SSHMAJORVER SSHMINORVER SSHBADMAJORVER SSHBADMINORVER
 
 # set up root
 
