@@ -386,10 +386,6 @@ sub build_oscar_image {
                 step_number => $step_number,
                );
 
-    my %image_info = ( "name"=>$vars{imgname},
-                       "distro"=>"$distroname-$distroversion",
-                       "architecture"=>$arch );
-    set_images(\%image_info,\%options,\@errors);
     createimage_window($window, %vars);
 }
 
@@ -398,7 +394,28 @@ sub postimagebuild {
     my $step_number = $$vars{step_number};
 
     my $img = $$vars{imgname};
-    my $cmd = "./post_rpm_install $$vars{imgname} $interface";
+    # FIXME: Use OS_Detect Framework
+    my $arch = (uname)[4];
+    $arch =~ s/i.86/i386/;
+    my ($distroname, $distroversion) = which_distro('/tftpboot/rpm');
+
+    # Get the image path (typically /var/lib/systemimager/images/<imagename>)
+    my $config = init_si_config();
+    my $imaged = $config->default_image_dir;
+    croak "default_image_dir not defined\n" unless $imaged;
+    croak "$imaged: not a directory\n" unless -d $imaged;
+    croak "$imaged: not accessible\n" unless -x $imaged;
+    my $imagepath = $imaged."/".$img;
+    croak "$imagepath: not a directory\n" unless -d $imagepath;
+    croak "$imagepath: not accessible\n" unless -x $imagepath;
+
+    my %image_info = ( "name"=>$img,
+                       "distro"=>"$distroname-$distroversion",
+                       "architecture"=>$arch,
+                       "path"=>$imagepath );
+    set_images(\%image_info,\%options,\@errors);
+
+    my $cmd = "./post_rpm_install $img $interface";
     oscar_log_subsection("Step $step_number: Running: $cmd");
     !system($cmd) or (carp($!), return undef);
     oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
@@ -421,19 +438,11 @@ sub postimagebuild {
     #
     croak "image name not defined\n" unless $$vars{imgname};
     my $lastlog = "/var/log/lastlog";
-    oscar_log_subsection( "Truncating ".$$vars{imgname}.":".$lastlog );
+    oscar_log_subsection( "Truncating ".$img.":".$lastlog );
 
-    my $config = init_si_config();
-    my $imaged = $config->default_image_dir;
-    croak "default_image_dir not defined\n" unless $imaged;
-    croak "$imaged: not a directory\n" unless -d $imaged;
-    croak "$imaged: not accessible\n" unless -x $imaged;
-    my $imagelog = $imaged."/".$$vars{imgname};
-    croak "$imagelog: not a directory\n" unless -d $imagelog;
-    croak "$imagelog: not accessible\n" unless -x $imagelog;
-    $imagelog .= $lastlog;
+    my $imagelog = $imagepath.$lastlog;
     truncate $imagelog, 0 if -s $imagelog;
-    oscar_log_subsection( "Truncated ".$$vars{imgname}.":".$lastlog );
+    oscar_log_subsection( "Truncated ".$img.":".$lastlog );
 
     # All done -- remove the temp file that held all the RPM filenames
     
