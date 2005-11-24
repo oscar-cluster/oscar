@@ -2487,15 +2487,16 @@ sub set_images{
     my $distro = $$image_ref{distro};
     my $architecture = $$image_ref{architecture};
     my $images = get_image_info_with_name($imgname,$options_ref,$error_strings_ref);
+    my $imagepath = $$image_ref{path};
     my $sql = "";
     if(!$images){ 
-        $sql = "INSERT INTO Images (name,distro,architecture) VALUES ".
-            "('$imgname','$distro','$architecture')";
+        $sql = "INSERT INTO Images (name,distro,architecture,path) VALUES ".
+            "('$imgname','$distro','$architecture','$imagepath')";
         die "$0:Failed to insert values via << $sql >>"
             if! do_insert($sql,"Images", $options_ref, $error_strings_ref);
     }else{
         $sql = "UPDATE Images SET name='$imgname', distro='$distro', ". 
-               "architecture='$architecture'";
+               "architecture='$architecture', path='$imagepath' WHERE name='$imgname'";
         die "$0:Failed to update values via << $sql >>"
             if! do_update($sql,"Images", $options_ref, $error_strings_ref);
     }
