@@ -17,7 +17,7 @@
   <class>included</class>
 
   <summary>distributed monitoring and execution system</summary>
-  <license>freely distributable</license>
+  <license>BSD</license>
   <group>Application/System</group>
   <uri>http://ganglia.sourceforge.net</uri>
 
