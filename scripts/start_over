@@ -109,12 +109,21 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use lib "../lib"; 
 use Carp;
 
+my $opd_dir = "/var/lib/oscar";
+my @oscar_rpm_paths = ();
+
 # find a list of the full path names of all the non-source oscar rpm files,
 # a list of the file names of all the non-source oscar rpm files,
 # and a list of all the rpm names corresponding to the non-source rpm files.
 
-print "Searching for non-source rpm files in $oscar_home ... ";
-my @oscar_rpm_paths = `find $oscar_home/* /var/lib/oscar/* -name '*.rpm'`;
+if (-d "$opd_dir") {
+  print "Searching for non-source rpm files in $oscar_home and $opd_dir ... ";
+  @oscar_rpm_paths = `find $oscar_home/* $opd_dir/* -name '*.rpm'`;
+} else {
+  print "Searching for non-source rpm files in $oscar_home ... ";
+  @oscar_rpm_paths = `find $oscar_home/* -name '*.rpm'`;
+}
+
 chomp @oscar_rpm_paths;
 @oscar_rpm_paths = grep( !/\.src\.rpm$/, @oscar_rpm_paths );
 @oscar_rpm_paths = sort_uniq( @oscar_rpm_paths );
@@ -227,6 +236,7 @@ sub cleanup_files {
               '/etc/profile.d/00-modules.*',
               '/etc/profile.d/apitest.*',
               '/etc/profile.d/c3.*',
+              '/etc/profile.d/oscar_home.*',
               '/etc/profile.d/pbs-oscar.*',
               '/etc/profile.d/sge.*',
               '/etc/profile.d/ssh-oscar.*', 
