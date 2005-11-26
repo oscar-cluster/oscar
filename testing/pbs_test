@@ -26,7 +26,7 @@
 
 # Default timeout for PBS tests.  Increase this number if tests
 # are failing due to timeouts (not because of failing package tests)
-default_timeout=45
+default_timeout=60
 
 qsub='/opt/pbs/bin/qsub'
 qstat='/opt/pbs/bin/qstat'
