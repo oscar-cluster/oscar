@@ -28,18 +28,27 @@ use lib "/usr/lib/systeminstaller","$ENV{OSCAR_HOME}/lib";
 use SystemInstaller::Machine;
 use OSCAR::Database;
 
+my $admin_user = "sge";
 my $cell = "default";
 my %nodes = get_machine_listing();
+
+# Obtain any custom configure values from the user
+my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+
+# If user has configured the package, use the custom values, otherwise use the default
+if (-e $xml_data) {
+    my $ref = XMLin($xml_data);
+    $cell = $ref->{cellname};
+}
+
 my $sge_conf_store = "$ENV{SGE_ROOT}/$cell.tar"; # Spool dir's tar file
 
 my $push_command = "/opt/c3-4/cpush";
 my $exec_command = "/opt/c3-4/cexec";
 
 # Make a tar file of the spool dir for sending to clients
-# Thanks to Bernard; :-) Go into SGE_ROOT before doing tar
 print "Creating $sge_conf_store\n";
 system("cd $ENV{SGE_ROOT}; tar --exclude=qmaster -cf $cell.tar $cell") == 0 or croak("Failed to tar $cell directory on SGE Qmaster");
-#wait();
 
 # push the spool dir's tar file to the client nodes
 print "SGE post_install: Pushing $cell.tar to clients...\n";
@@ -52,7 +61,7 @@ system("$push_command /etc/profile.d/sge.csh /etc/profile.d");
 
 # Untar the spool dir on the clients
 print "SGE post_install: Untarring $cell.tar on clients...\n";
-system("$exec_command \"cd $ENV{SGE_ROOT}; tar -xf $cell.tar\"") == 0 or croak("Failed to untar $cell.tar on clients");
+system("$exec_command 'if ! [ -d $ENV{SGE_ROOT}/$cell ]; then cd $ENV{SGE_ROOT} && tar -xf $cell.tar; fi'") == 0 or croak("Failed to untar $cell.tar on clients");
 
 print "Removing $sge_conf_store on clients\n";
 system("$exec_command rm -rf $sge_conf_store");
@@ -69,7 +78,7 @@ print "Deleting $sge_conf_store on headnode\n";
 system("rm -rf $sge_conf_store");
 
 my $lam_pe = "lam-mpi";
-my $lam_pe_file = "$ENV{OSCAR_HOME}/packages/sge/scripts/$lam_pe";
+my $lam_pe_file = "$ENV{OSCAR_PACKAGE_HOME}/scripts/$lam_pe";
 
 my $queue = "all";
 my $qfile = "$ENV{SGE_ROOT}/$cell/spool/qmaster/cqueues/$queue.q";
@@ -125,7 +134,7 @@ if ( is_installed_on_node("lam") ) {
         	close(QFILE);
 
                 # restart qmaster
-                system("/etc/init.d/sgemaster stop");
+                system("/etc/init.d/sgemaster softstop");
                 system("/etc/init.d/sgemaster start");
 	}
 } else {
@@ -142,7 +151,7 @@ if ( is_installed_on_node("lam") ) {
                 close(QFILE);
 
 		# restart qmaster
-		system("/etc/init.d/sgemaster stop");
+		system("/etc/init.d/sgemaster softstop");
 		system("/etc/init.d/sgemaster start");
         } else {
                 # LAM/MPI Parallel Environment not referenced in queue
@@ -161,6 +170,9 @@ if ( is_installed_on_node("lam") ) {
                 croak("Cannot run qconf -sp $lam_pe");
         }
 }
+
+# Change ownership of SGE_ROOT so it is owned by the admin user
+system("chown $admin_user.$admin_user -R $ENV{SGE_ROOT}");
 
 # The master has a complete list of all exec nodes and 
 # is ready to accept and launch jobs. (Try qsub! :-) )
