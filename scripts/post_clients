@@ -19,6 +19,8 @@
 #
 #   Copyright (c) 2005 The Trustees of Indiana University.  
 #                      All rights reserved.
+#   Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
+#                      All rights reserved.
 
 # $Id$
 
@@ -37,7 +39,12 @@ use Data::Dumper;
 
 push_hosts() or croak("Couldn't push hosts file to images");
 
-my @pkgs = list_selected_packages();
+# This guarantees that post_clients is run for core packages first
+# Eg. SIS post_clients need to be executed before SGE or else compute node's hostnames
+# will not be entered into /etc/hosts in time
+my @core_pkgs = list_selected_packages("core");
+my @noncore_pkgs = list_selected_packages("noncore");
+my @pkgs = (@core_pkgs, @noncore_pkgs);
 
 my $return = 0;
 
