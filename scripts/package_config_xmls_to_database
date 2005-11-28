@@ -21,6 +21,8 @@
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>.
+#                    All rights reserved.
 #       
 # $Id$
 
@@ -149,7 +151,7 @@ sub get_xml_ref{
         $msg) = @_;
     # if a config.xml file does not exist for this package directory,
     # we'll fake a simple one, otherwise read it in
-    my $config_file = "$package_directory/config.xml";
+    my $config_file = "$package_directory/$xml_file_name";
     my $xml_ref = undef;
     if ( ! -f $config_file ) {
         print "Warning, no $config_file exists, supplying one for package $package_name\n";
@@ -195,12 +197,12 @@ sub usage {
 
 $progname [directory [ package_name [ package_version ] ] ]
 
-$progname reads a config.xml file for a single package
+$progname reads a $xml_file_name file for a single package
 from a specified directory.  It parses database information
 from that file, and stores it into the Oscar database.
 Any previously existing database information for that
 version of that package is removed from the database before 
-inserting information from the config.xml file.
+inserting information from the $xml_file_name file.
 The only database fields in the package records that are
 preserved are: installable.
 
@@ -410,9 +412,9 @@ if( $directory_argument ){
     }
     my @valid_oda_directories = ();
     foreach my $oda_directory ( @oda_directories ) {
-        if ( ! -f "$oda_directory/config.xml" ) {
+        if ( ! -f "$oda_directory/$xml_file_name" ) {
         warn "$0: ignoring the invalid oda package directory $oda_directory" .
-            " that does not contain a config.xml file";
+            " that does not contain a $xml_file_name file";
         } else {
         push @valid_oda_directories, $oda_directory;
         }
@@ -479,7 +481,7 @@ foreach my $directory ( @directories ) {
             $msg = "Writing a new $packages_table_name record for package";
 
             print Dumper(\%table_fields_hash) if $options{debug};
-            print_hash("", "Print the package config.xml", $xml_ref)
+            print_hash("", "Print the package $xml_file_name", $xml_ref)
                 if $options{debug};
                     
             # Insert into "Packages" table
