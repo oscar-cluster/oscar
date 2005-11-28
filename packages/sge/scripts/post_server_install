@@ -27,10 +27,10 @@ use Carp;
 $ENV{SGE_ROOT} = "/opt/sge";
 
 # default settings if user does not configure the package
-my $fullserver_default = "true";        # Indicates if the OSCAR server with qmaster is an exec host too
-my $cellname_default = "default";       # Should suffice for a single installation of SGE
-my $gidrange_default = "20000-20100";   # Allowing for upto 100 concurrently executing jobs
-my $spooltype_default = "classic";      # Other option would be to use berkeleydb
+my $fullserver = "true";        # Indicates if the OSCAR server with qmaster is an exec host too
+my $cellname = "default";       # Should suffice for a single installation of SGE
+my $gidrange = "20000-20100";   # Allowing for upto 100 concurrently executing jobs
+my $spooltype = "classic";      # Other option would be to use berkeleydb
 
 my $admin_user = "sge";
 
@@ -46,12 +46,11 @@ chomp($domainname);
 
 # If user has configured the package, use the custom values, otherwise use the default
 if (-e $xml_data) {
-    $ref = XMLin($xml_data);
-} else {
-    $ref->{fullserver} = $fullserver_default;
-    $ref->{cellname} = $cellname_default;
-    $ref->{gidrange} = $gidrange_default;
-    $ref->{spooltype} = $spooltype_default;
+    my $ref = XMLin($xml_data);
+    $fullserver = $ref->{fullserver};
+    $cellname = $ref->{cellname};
+    $gidrange = $ref->{gidrange};
+    $spooltype = $ref->{spooltype};
 }
 
 # Set the location for the config file with default settings 
@@ -71,10 +70,15 @@ close(CONF, $qmaster_conf);
 
 $qmaster_conf = ">".$qmaster_conf;
 
-$qmasterBuffer =~ s/ADMIN_USER=""/ADMIN_USER="$admin_user"/;
-$qmasterBuffer =~ s/20000-20100/$ref->{gidrange}/;
-$qmasterBuffer =~ s/"classic"/"$ref->{spooltype}"/;
-$qmasterBuffer =~ s/DEFAULT_DOMAIN="none"/DEFAULT_DOMAIN="$domainname"/;
+$qmasterBuffer =~ s/ADMIN_USER=".*"/ADMIN_USER="$admin_user"/;
+$qmasterBuffer =~ s/CELL_NAME=".*"/CELL_NAME="$cellname"/;
+$qmasterBuffer =~ s/GID_RANGE=".*"/GID_RANGE="$gidrange"/;
+$qmasterBuffer =~ s/SPOOLING_METHOD=".*"/SPOOLING_METHOD="$spooltype"/;
+$qmasterBuffer =~ s/DEFAULT_DOMAIN=".*"/DEFAULT_DOMAIN="$domainname"/;
+$qmasterBuffer =~ s/QMASTER_SPOOL_DIR=".*"/QMASTER_SPOOL_DIR="$ENV{SGE_ROOT}\/$cellname\/spool\/qmaster"/;
+$qmasterBuffer =~ s/EXECD_SPOOL_DIR=".*"/EXECD_SPOOL_DIR="$ENV{SGE_ROOT}\/$cellname\/spool"/;
+$qmasterBuffer =~ s/DB_SPOOLING_DIR=".*"/DB_SPOOLING_DIR="$ENV{SGE_ROOT}\/$cellname\/spooldb"/;
+$qmasterBuffer =~ s/EXECD_SPOOL_DIR_LOCAL=".*"/EXECD_SPOOL_DIR_LOCAL="$ENV{SGE_ROOT}\/$cellname\/spool"/;
 
 open(CONF, $qmaster_conf) or croak("Error: unable to open ($qmaster_conf)\n");
     
@@ -96,6 +100,8 @@ if ($? == -1) {
 	croak("Program failed: While doing ./inst_sge -x on OSCAR head");
 }
 elsif($? == 0){
+	# FIXME: Seems that inst_sge returns 0 even if it failed due to
+	# hostname resolving to 127.0.0.1
 	# Everything OK; qmaster installation success
 	printf "inst_sge system function SUCCESS\n";
 }
@@ -123,14 +129,14 @@ system("bash -l -c 'qconf -as $hostname'") == 0 or croak("Error: Problem with ad
 # All users logging in from now on will have the setup automated 
 # and can start using the SGE commands right away.
 
-copy("$ENV{SGE_ROOT}/$ref->{cellname}/common/settings.sh","/etc/profile.d/sge.sh") or croak("Error copying $ENV{SGE_ROOT}/$ref->{cellname}/common/settings.sh to /etc/profile.d/sge.sh");
-copy("$ENV{SGE_ROOT}/$ref->{cellname}/common/settings.csh","/etc/profile.d/sge.csh") or croak("Error copying $ENV{SGE_ROOT}/$ref->{cellname}/common/settings.csh to /etc/profile.d/sge.csh");
+copy("$ENV{SGE_ROOT}/$cellname/common/settings.sh","/etc/profile.d/sge.sh") or croak("Error copying $ENV{SGE_ROOT}/$cellname/common/settings.sh to /etc/profile.d/sge.sh");
+copy("$ENV{SGE_ROOT}/$cellname/common/settings.csh","/etc/profile.d/sge.csh") or croak("Error copying $ENV{SGE_ROOT}/$cellname/common/settings.csh to /etc/profile.d/sge.csh");
 
 # The following cannot happen since we decided not make headnode as exec
 # But, we can uncomment this when we allow headnode as exec
 #system("qconf -ae $hostname");
 
-$cluster_conf = "$ENV{SGE_ROOT}/$ref->{cellname}/common/configuration";
+$cluster_conf = "$ENV{SGE_ROOT}/$cellname/common/configuration";
 $buffer = "";
 
 # update Cluster Configuration to use ssh for rlogin and rsh
