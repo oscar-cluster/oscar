@@ -608,9 +608,11 @@ sub run_tests {
     my ($window, $step_number) = @_;
     $window->Busy(-recurse => 1);
 
+    my $title = "OSCAR Test Cluster Setup";
+
     oscar_log_section("Running step $step_number of the OSCAR wizard: Test cluster setup");
 
-    my $cmd = "cd $ENV{OSCAR_HOME}/testing && xterm -geometry 80x47 -sl 500 -e ./test_cluster --wait";
+    my $cmd = "cd $ENV{OSCAR_HOME}/testing && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
     oscar_log_subsection("Step $step_number: Running tests: $cmd");
     !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
     oscar_log_subsection("Step $step_number: Not waiting for completion");
