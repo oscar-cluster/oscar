@@ -77,7 +77,7 @@ print "SGE post_install: Configuration SUCCESS on clients\n";
 print "Deleting $sge_conf_store on headnode\n";
 system("rm -rf $sge_conf_store");
 
-my $lam_pe = "lam-mpi";
+my $lam_pe = "lam";
 my $lam_pe_file = "$ENV{OSCAR_PACKAGE_HOME}/scripts/$lam_pe";
 
 my $queue = "all";
@@ -107,7 +107,7 @@ for (@pes) { $pe_exists{$_} = 1 };
 # Set up Parallel Environment for LAM/MPI if the package is installed
 # FIXME: Right now it checks to see if LAM/MPI is installed on the headnode
 if ( is_installed_on_node("lam") ) {
-	# Check to see if we already have "lam-mpi" Parallel Environment defined
+	# Check to see if we already have "lam" Parallel Environment defined
 	`qconf -sp $lam_pe 2>&1`; # or croak("Cannot run qconf -sp");
 
 	if ($? == 256) {
@@ -120,7 +120,7 @@ if ( is_installed_on_node("lam") ) {
         	croak("Cannot run qconf -sp $lam_pe");
 	}
 
-	# Check to see if lam-mpi is already referenced in specified queue
+	# Check to see if lam is already referenced in specified queue
 	if ($pe_exists{"$lam_pe"}) {
         	# LAM/MPI Parallel Environment already set up
 	} else {
@@ -138,7 +138,7 @@ if ( is_installed_on_node("lam") ) {
                 system("/etc/init.d/sgemaster start");
 	}
 } else {
-        # Check to see if lam-mpi is already referenced in specified queue
+        # Check to see if lam is already referenced in specified queue
         if ($pe_exists{"$lam_pe"}) {
                 # LAM/MPI Parallel Environment is referenced, need to remove
                 print "Dereferencing LAM/MPI Parallel Environment in $queue.q\n";
@@ -157,7 +157,7 @@ if ( is_installed_on_node("lam") ) {
                 # LAM/MPI Parallel Environment not referenced in queue
         }
 
-        # Check to see if we already have "lam-mpi" Parallel Environment defined
+        # Check to see if we already have "lam" Parallel Environment defined
         `qconf -sp $lam_pe 2>&1`; # or croak("Cannot run qconf -sp");
 
         if ($? == 256) {

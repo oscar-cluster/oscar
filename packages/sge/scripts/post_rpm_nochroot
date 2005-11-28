@@ -1,0 +1,45 @@
+#!/usr/bin/env perl
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# This script copies the necessary SGE settings file to the image
+
+# (C)opyright Bernard Li <bli@bcgsc.ca>
+
+use strict;
+use Carp;
+use XML::Simple;
+
+my $imagedir = shift;
+
+# Default setting for cell
+my $cell = "default";
+
+# Obtain any custom configure values from the user
+my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+
+# If user has configured the package, use the custom values, otherwise use the default
+if (-e $xml_data) {
+    my $ref = XMLin($xml_data);
+    $cell = $ref->{cellname};
+}
+
+# Copy cell directory to image
+system("cp -a $ENV{SGE_ROOT}/$cell $imagedir/$ENV{SGE_ROOT}") or croak("Failed to copy directory $ENV{SGE_ROOT}/$cell to $imagedir/$ENV{SGE_ROOT}");
+system("rm -rf $imagedir/$ENV{SGE_ROOT}/$cell/spool/qmaster") or croak("Failed to delete directory $imagedir/$ENV{SGE_ROOT}/$cell/spool/qmaster");
+
+# Copy all the environment-setting scripts to image
+print "Copying all SGE env-setting scripts to image located at $imagedir\n";
+system("cp /etc/profile.d/sge.* $imagedir/etc/profile.d");

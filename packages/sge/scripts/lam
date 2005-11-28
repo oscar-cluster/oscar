@@ -1,4 +1,4 @@
-pe_name           lam-mpi
+pe_name           lam
 slots             999
 user_lists        NONE
 xuser_lists       NONE
