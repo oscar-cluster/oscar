@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-# $Id:
+
+# $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -17,8 +18,4 @@
 
 #   post_clients for maui
 
-
-# Call the update Maui config script
-print `../packages/pbs/scripts/update_maui_config`;
-
-print `/etc/init.d/maui restart`;
+system("/etc/init.d/maui restart");
