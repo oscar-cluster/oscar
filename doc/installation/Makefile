@@ -64,14 +64,13 @@ FIG_FILES	= \
 			 figs/package-configuration.png \
 			 figs/package-configuration-switcher.png \
 			 figs/4a_sbs-build-image1.png \
-			 figs/4b_sbs-build-image2.png \
+			 figs/4a_sbs-build-image2.png \
 			 figs/4c_sbs-build-image3.png \
 			 figs/5a_sbs-define-clients1.png \
 			 figs/5b_sbs-define-clients2.png \
 			 figs/6a_sbs-collect-mac1.png \
 			 figs/6ba_sbs-autoinstall-flpy1.png \
-			 figs/6bb_sbs-autoinstall-flpy2.png \
-			 figs/6bc_sbs-autoinstall-flpy3.png \
+			 figs/6ba_sbs-autoinstall-flpy2.png \
 			 figs/6ca_sbs-client-boot1.png \
 			 figs/6c_sbs-client-boot1.png \
 			 figs/6d_sbs-broadcast.png \

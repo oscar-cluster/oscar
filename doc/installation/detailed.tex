@@ -1003,8 +1003,7 @@ network:
     file...} button to save the MAC address list to a file.  If you
     need to re-run the OSCAR installation, you can later click on
     \button{Import MACs from file...} to import this file rather than
-    re-collecting all the MACs.  \begchange \emph{Currently, MACs
-    can only be saved in /root which is the default directory.} \endchange
+    re-collecting all the MACs.
 
 \item When you have collected all of the MAC addresses, click the
   \button{Stop Collecting MACs} button.  If you do not have
@@ -1022,12 +1021,20 @@ before leaving the menu:
 
 \begchange
 \begin{itemize}
-\item The \button{Build Autoinstall Floppy} button will build a boot floppy
-   for client nodes that do not support PXE booting.
+\item The \button{Build Autoinstall CD} button will build an iso image
+  for a bootable CD and gives a simple example for using the cdrecord
+  utility to burn the CD. This option is useful for client nodes that do
+  not support PXE booting.  In a terminal, execute the command
+  {\tt cdrecord -scanbus} to list the drives cdrecord is aware of
+  and their dev number.  Use this trio of numbers in place of
+  {\tt dev=1,0,0} when you execute the command
+  {\tt cdrecord -v speed=2 dev=1,0,0 /tmp/oscar\_bootcd.iso}.
+
 \item The \button{Setup Network Boot} button will configure the server
    to answer PXE boot requests if your client hardware supports it.
    \detailed{See Appendix~\ref{app:net-boot-client-nodes} for more
    details.}
+
 \end{itemize}
 \endchange
 

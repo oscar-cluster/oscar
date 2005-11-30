@@ -33,13 +33,13 @@ in every release.  In other words, continue at your own risk.
 PXE boot and installation only works correctly if the server running
 the tftpboot server is also running the DHCP server.  As this is
 obviously not the case if the OSCAR server node can not run a DHCP
-server, client nodes must be installed using a boot floppy.  Further,
-the boot floppies created with the ``Make Boot Floppy'' option in the
+server, client nodes must be installed using a boot CD.  Further,
+the boot floppies created with the ``Make Boot CD'' option in the
 OSCAR wizard assumes there is a DHCP server running on the server
-node, so we must use a special boot floppy.
+node, so we must use a special boot CD.
 
-Unfortunately, we have to make a boot floppy for every node (since the
-boot floppy will have IP information encoded in it)\footnote{This
+Unfortunately, we have to make a boot CD for every node (since the
+boot CD will have IP information encoded in it)\footnote{This
   process can obviously be automated, but we do not go into detail on
   that process here.}.  First, a configuration file that provides SIS
 with the needed boot information must be created.  The sample below is
@@ -62,7 +62,7 @@ GATEWAY=129.79.247.254
 IMAGESERVER=129.79.247.10
 \end{verbatim}
 
-The boot floppy can be created by running {\tt mkautoinstalldiskette}
+The boot CD can be created by running {\tt mkautoinstallCD}
 with the {\tt -config FILE} option specifying the location of the
 configuration file created above.
 
@@ -81,5 +81,5 @@ click on the ``Done'' option.
 The Add / Delete client node functionality has not been well tested in
 this configuration.  While there should not be any problems in adding
 a node to the cluster using boot floppies~\footnote{Just remember to
-create another boot floppy}, please be cautious when adding a new node
+create another boot CD}, please be cautious when adding a new node
 to the cluster.

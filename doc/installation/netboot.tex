@@ -11,8 +11,9 @@
 There are two methods available for network booting your client nodes.
 The first is to use the Preboot eXecution Environment (PXE) network
 boot option in the client's BIOS, if available. If the option is not
-available, you will need to create a network boot floppy disk using
-the SystemImager boot package. Each method is described below.
+available, you will need to create a network boot CD disk using
+the SystemImager boot package or use an Etherboot disk. Each method 
+is described below.
 
 \begin{enumerate}
 \item \msg{Network booting using PXE.} To use this method, the BIOS
@@ -39,19 +40,33 @@ the SystemImager boot package. Each method is described below.
     each client as it boots.
   \end{enumerate}
   
-\item \msg{Network booting using a SystemImager boot floppy.} The
+\item \msg{Network booting using a SystemImager boot CD.} The
   SystemImager boot package is provided with OSCAR just in case your
   machines do not have a BIOS network boot option.  You can create a
-  boot floppy through the OSCAR GUI installation wizard on the
+  boot CD through the OSCAR GUI installation wizard on the
   \button{Setup Networking} panel or by using the
-  \file{mkautoinstalldiskette} command.
+  \file{mkautoinstallCD} command.
   
-  Once you have created the SystemImager boot floppy, set your
-  client's BIOS to boot from the floppy drive. Insert the floppy and
+  Once you have created the SystemImager boot CD, set your
+  client's BIOS to boot from the CD drive. Insert the CD and
   boot the machine to start the network boot. Check the output for
-  errors to make sure your network boot floppy is working properly.
-  Remember to remove the floppy when you reboot the clients after
+  errors to make sure your network boot CD is working properly.
+  Remember to remove the CD when you reboot the clients after
   installation.
+
+\item \msg{Using an Etherboot disk} Etherboot is a software package
+  for creating ROM images.  This type of image is what drives the PXE
+  network boot process described above.  However, the Etherboot
+  package (\url{http://www.etherboot.org/}) can also be used to create
+  bootable flopy diskettes that mimic the PXE functionality of many
+  network cards.  This is useful for both older systems, and because
+  booting off a diskette is sometimes easier than fiddling around with
+  BIOS settings.
+
+  A users manual with installation instructions can be found on the
+  project's website (\url{http://www.etherboot.org/}). This tool is
+  not supported by the OSCAR team directly, but is very handy.
+
 \end{enumerate}
 
 % LocalWords:  Exp

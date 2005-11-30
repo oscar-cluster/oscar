@@ -23,13 +23,16 @@ The following release notes apply to OSCAR version \oscarversion.
 
 \item x86\_64 support for Red Hat Enterprise Linux 3 \& 4,
 \item Fedora Core 3, Red Hat Enterprise Linux 4 and 
-      Mandriva Linux 10.0 \& 10.1 support
-\item New feature! ``Monitor Cluster Deployment''
+      Mandriva Linux 10.1 support
+\item New feature! ``Monitor Cluster Deployment'' in Wizard
 \item Ganglia updated to v3.0.1
 \item PVM updated to v3.4.5+4
 \item Torque updated to v1.2.0p5
 \item SystemImager updated to v3.5.3
+\item MPICH updated to v1.2.7
 \item AutoInstallFloppy changed to AutoInstallCD due to large kernel images.
+\item Replaced tftp-server with atftp-server for better scalability
+\item Software RAIDs on cluster nodes are now supported
 
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -169,22 +172,38 @@ all distributions and are required for installation.
   this happens, run the test script, \file{testing/test\_cluster},
   manually in a shell window to diagnose the problem.
 
+\item Oscar uses the atftp-server package instead of the tftp-server
+  package which ships with many distributions.  The tftp-server rpm
+  should be uninstalled, along with any packages which depend on it
+  before the Oscar wizard is started.  Using the standard or
+  ``workstation'' installation should avoid this issue.
+
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Red Hat Enterprise Linux 4 \& Fedora Core 3 Notes}
-\label{subsec:rhel4notes}
+\subsection{Red Hat Enterprise Linux 4 \& Fedora Core 3 \& 4: SELinux Conflict }
+\label{subsec:SELinuxnotes}
 
 \begin{itemize}
 
 \item Due to issues with displaying graphs under Ganglia, and installing
-  RPMs in a chroot environment (needed to build OSCAR images), SELinux should
-  be disabled before installing OSCAR.  During installation, it can be
+  RPMs in a SIS chroot environment (needed to build OSCAR images), SELinux 
+  should be disabled before installing OSCAR.  During installation, it can be
   deactivated on the same screen as the firewall.  If it is currently
   active it can be turned off in /etc/selinux/config by setting SELINUX 
   to ``disabled'' and rebooting.
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Red Hat Enterprise Linux 4}
+\label{subsec:rhel4notes}
+
+\begin{itemize}
 
 \item On x86 systems using Red Hat Enterprise Linux 4, the pfilter package 
   causes image deployment to freeze midway through, so it is necessary to
@@ -192,13 +211,41 @@ all distributions and are required for installation.
   To Install} or turn it off prior to network booting the nodes defined 
   in Step 5 \button{Define OSCAR Clients}.
 
+\item On ia64 systems using Red Hat Enterprise Linux 4, it may be possible
+  that proc remains mounted
+  on the image after it has been built; this causes subsequent compute node
+  installations (rsync) to fail.  To get around this problem, you need to
+  umount the directory manually after image has been created and before
+  installing the compute nodes.
+ 
+  First, find out what is mounted by looking in {\tt /proc/mounts} with
+  \begin{verbatim}
+# cat /proc/mounts
+  \end{verbatim}
+  It should list something like the following:
+  \begin{verbatim}
+proc /var/lib/systemimager/images/oscarimage/proc proc rw,nodiratime 0 0
+none /var/lib/systemimager/images/oscarimage/proc/sys/fs/binfmt_misc
+binfmt_misc rw 0 0
+  \end{verbatim}
+  Then umount the two directories that are mounted, e.g.,
+  \begin{verbatim}
+# umount -f /var/lib/systemimager/images/oscarimage/proc/sys/fs/binfmt_misc
+# umount -f /var/lib/systemimager/images/oscarimage/proc"
+  \end{verbatim}
+  Note the ordering of the umount commands is important.
+
+\item On ia64 systems using Red Hat Enterprise Linux 4, the ia32el.rpm is
+  needed.  This rpm is located on the extra CDs.  Make sure you include
+  the rpms from these disks when you copy the rpms into /tftpboot/rpm.
 
 \end{itemize}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{CentOS 4 ia64 Notes}
-\label{subsec:fc3notes}
+\label{subsec:centos4notes}
 
 These items are specific to CentOS 4.  The items listed above for Red Hat
 Enterprise Linux 4 also apply.
@@ -212,6 +259,35 @@ downloading the RPM from this site \url{ftp://ftp.scientificlinux.org/linux/scie
 and placing it in the /tftpboot/rpm directory.  This package contains the
 ia32 execution layer needed for running ia32 applications and is included
 in most other Red Hat based distributions by default.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Red Hat Enterprise Linux 3}
+\label{subsec:rhel3notes}
+
+\begin{itemize}
+
+\item The efibootmgr (from package elilo) isn't able to deal with the 
+efi variables in /sys (as in the new installation kernel). It expects 
+to find them in /proc. This means that at the end of the installation 
+systemconfigurator isn't able to add the necessary entry to the efi 
+boot menu. The system will not boot and reinstall itself indefinitely.
+
+To fix this issue download the RPM \url{ftp://ftp.scientificlinux.org/linux/scientific/41/ia64/SL/RPMS/elilo-3.4-10.ia64.rpm}.
+
+Unpack its contents to some subdirectory:
+\begin{verbatim}
+ mkdir t
+ cd t
+ rpm2cpio ../elilo-3.4-10.ia64.rpm | cpio -i -d
+\end{verbatim}
+Replace \$IMAGEDIR/usr/sbin/efibootmgr with the file from the new elilo rpm:
+ cp usr/sbin/efibootmgr \$IMAGEDIR/usr/sbin
+
+Install the node.
+
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -295,3 +371,17 @@ from a FTP miroir (see link for a list of mirroirs above) and copy them to
 
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fedora Core 2}
+\label{subsec:fc2notes}
+
+\begin{itemize}
+\item In testing under Fedora Core 2, The below output may be ignored during 
+Step~8, \button{Test Cluster Setup}:
+\begin{verbatim}
+  Can't find string terminator '"' anywhere before EOF at -e line 1
+\end{verbatim}
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
