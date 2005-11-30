@@ -64,7 +64,21 @@ case "$service_name" in
             # Make a backup copy of the postfix config file before editing it.
             cp $file $file.bak
             
-            cat $postfix_conf > main.cf.server.$$
+            line_num=`cat $postfix_conf | wc -l`
+            added_line=8
+
+            # If the $postfix_conf is already configured with the mta-config 
+            # configuration, then remove the current configuration (8 lines)
+            # and then append the new configuration (8 lines).
+            # If not, just append the new configuration (8 lines).
+            grep "\# END OF ADDED CONFIGURATION OPTIONS FOR OSCAR" $postfix_conf > /dev/null 2>&1
+            if test "$?" = "0"; then
+                line_num=`expr $line_num - $added_line`q
+            else
+                line_num="$line_num"q
+            fi
+            
+            sed "$line_num" $postfix_conf > main.cf.server.$$
             nodes=$(echo `oda nodes` | sed 's/ /, /g')
             cat >> main.cf.server.$$ << EOF
 
