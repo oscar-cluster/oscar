@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+
+# post_server_install script for netbootmgr
+#
+# - turn on service systemimager-server-netbootmond
+# - make it switch to local boot mode after installation
+
+use Carp;
+use strict;
+
+!system("chkconfig --add systemimager-server-netbootmond") or
+	croak("Could not add service systemimager-server-netbootmond!");
+
+!system("chkconfig systemimager-server-netbootmond on") or
+	croak("Could not enable systemimager-server-netbootmond service!");
+
+open IN, "/etc/systemimager/systemimager.conf" or
+	croak("Could not open /etc/systemimager/systemimager.conf for reading!");
+my @sic = <IN>;
+close IN;
+
+print "Setting systemimager-server-netboodmond to NET_BOOT_DEFAULT=local\n";
+open OUT, "> /etc/systemimager/systemimager.conf" or
+	croak("Could not open /etc/systemimager/systemimager.conf for writing!");
+for my $line (@sic) {
+    if ($line =~ m/^\s*NET_BOOT_DEFAULT\s*=/) {
+	print OUT "NET_BOOT_DEFAULT = local\n";
+    } else {
+	print OUT $line;
+    }
+}
+close OUT;
+
+!system("/etc/init.d/systemimager-server-netbootmond restart") or
+	croak("Could not restart service systemimager-server-netbootmond!");
+
+exit 0;
+
