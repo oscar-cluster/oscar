@@ -178,6 +178,22 @@ all distributions and are required for installation.
   before the Oscar wizard is started.  Using the standard or
   ``workstation'' installation should avoid this issue.
 
+\item On x86 systems using Red Hat Enterprise Linux 4 or Fedora Core 4,
+  the pfilter package causes image deployment to freeze midway through,
+  so it is necessary to uncheck the pfilter package during Step 1 
+  \button{Select OSCAR Packages To Install} or turn it off prior to 
+  network booting the nodes defined in Step 5 \button{Define OSCAR Clients}.
+  To turn of pfilter, run the ``Services'' wiget found under the
+  ``System Tools'' menu, select pfilter from the list of services, and
+  click on stop.  Oscar will restart the service during a later step.
+
+\item In some distributions, when using cshell, the 
+  /etc/profile.d/less.csh script expects to find /etc/sysconfig/i18n. If 
+  it's missing, as it is on every OSCAR compute node, ssh or login
+  generates an error.  To correct the error, simply use 
+  ``cpush /etc/sysconfig/i18n'' after install and updating affected images.
+  Fedora Core 4 and RHEL4U2 should not be affected by this issue.
+
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -205,11 +221,17 @@ all distributions and are required for installation.
 
 \begin{itemize}
 
-\item On x86 systems using Red Hat Enterprise Linux 4, the pfilter package 
-  causes image deployment to freeze midway through, so it is necessary to
-  uncheck the pfilter package during Step 1 \button{Select OSCAR Packages 
-  To Install} or turn it off prior to network booting the nodes defined 
-  in Step 5 \button{Define OSCAR Clients}.
+% TJN: Adding in respose to Bug#1271143
+\item On Red Hat Enterprise Linux 4.2 (RHEL4) and CentOS 4.2 systems you 
+      must remove the `tog-pegasus' RPM from the server, if installed, to 
+      avoid file ownership conflicts with `pvm' on the compute nodes and SIS 
+      image.  This is due to an ordering issue with the RPM installs which 
+      both create system-level users which get out of ordering during OSCAR's 
+      image build process.  See also:
+      \begin{itemize}
+		\item OSCAR Bug\#1368604 ``/opt/pvm3 directory ownership on image''
+		\item OSCAR Bug\#1371143 ``docfix: tog-pegasus / pvm permission issues''
+      \end{itemize}
 
 \item On ia64 systems using Red Hat Enterprise Linux 4, it may be possible
   that proc remains mounted
@@ -369,6 +391,19 @@ from a FTP miroir (see link for a list of mirroirs above) and copy them to
   openssh-server
 \end{verbatim}
 
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fedora Core 4}
+\label{subsec:fc4notes}
+
+\begin{itemize}
+\item In testing under Fedora Core 2, The below output may be ignored during 
+Step~5, \button{Define OSCAR Clients}:
+\begin{verbatim}
+Argument "2.121_02" isn't numeric in subroutine entry at 
+/usr/lib/perl5/site_perl/MLDBM/Serializer/Data/Dumper.pm line 5
+\end{verbatim}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
