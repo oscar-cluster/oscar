@@ -178,7 +178,7 @@ exit 0;
 
 sub usage {
     print "Usage: $0 --name image_directory [--arch ARCH] [--disktab disktab_file]\n";
-    print "The image directory must contain a valid image and be located inside\n"
+    print "The image directory must contain a valid image and be located inside\n";
     print "/var/lib/systemimager/images.\n";
     print "The default architecture attributed to the image is that of the master node.\n";
     print "A disktable file should be inserted into the image by using the --disktab\n";
