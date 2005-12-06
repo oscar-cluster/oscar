@@ -21,6 +21,7 @@
 
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
+use OSCAR::Opkg;
 use Carp;
 use XML::Simple;
 
@@ -49,7 +50,7 @@ if (-e $xml_data) {
 my $headnode_iface = get_headnode_iface();
 
 if ( $headnode_iface eq $iface ) {
-    print("Pushing headnode's gmond.conf to compute nodes\n");
+    opkg_print("Pushing headnode's gmond.conf to compute nodes\n");
     system("$push_command /etc/gmond.conf /etc/gmond.conf");
 } else {
     system("cp /etc/gmond.conf $gmond_conf");
@@ -70,7 +71,7 @@ if ( $headnode_iface eq $iface ) {
     
     close(CONF);
     
-    print("Pushing modified gmond.conf to compute nodes\n");
+    opkg_print("Pushing modified gmond.conf to compute nodes\n");
     system("$push_command $gmond_conf /etc/gmond.conf");
     
     system("rm $gmond_conf");

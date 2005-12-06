@@ -23,6 +23,7 @@ use XML::Simple;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
+use OSCAR::Opkg;
 
 my $gmondBuffer = "";
 my $gmetadBuffer = "";
@@ -121,7 +122,7 @@ if ($num_iface > 1) {
 		$mcast_route = `grep 224.0.0.0 $static_route_file`;
 	}
 	if (!($mcast_route)) {
-		print("Adding default route for multicast to go through $iface.\n");
+		opkg_print("Adding default route for multicast to go through $iface.\n");
 		`echo $route_string >> $static_route_file`;
 	}
 	`$reload_route`;
@@ -134,16 +135,16 @@ print CONF $gmondBuffer;
 
 close(CONF);
 
-print("Ganglia configuration files modified, re-starting daemons...\n");
+opkg_print("Ganglia configuration files modified, re-starting daemons...\n");
 
 # restart gmond and gmetad
 system("/etc/init.d/gmond restart");
 system("/etc/init.d/gmetad restart");
 
-print("Starting up apache...\n");
+opkg_print("Starting up apache...\n");
 
 # autoload apache in levels 345 and start it up
 system("/sbin/chkconfig --levels 345 httpd on");
 system("/etc/init.d/httpd start");
 
-print("Ganglia page is located at http://localhost/ganglia\n");
+opkg_print("Ganglia page is located at http://localhost/ganglia\n");
