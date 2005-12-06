@@ -21,6 +21,7 @@ oscar_SCRIPTS		= \
 			generic-setup \
 			get_num_proc \
 			install_server \
+			integrate_image \
 			mac_collector \
 			macinfo2sis \
 			make_database_password \
