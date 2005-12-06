@@ -27,8 +27,9 @@ oscar_SCRIPTS		= \
 			MACops.pm \
 			Network.pm \
 			NextIp.pm \
-                        OCA.pm \
-                        oda.pm \
+			OCA.pm \
+			oda.pm \
+			Opkg.pm \
 			PackageBest.pm \
 			Package.pm \
 			PackageInUn.pm \
