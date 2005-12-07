@@ -34,7 +34,8 @@ use OSCAR::Logger;
 use OSCAR::Configurator;
 use Tk::Dialog;
 use English;
-use PackMan;
+use OSCAR::PackMan;
+use OSCAR::WizardEnv;
 
 #this doesn't seem to effect the namespace of the calling script
 use vars qw(@EXPORT);
