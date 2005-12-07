@@ -5,8 +5,8 @@
   xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
 >
   <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
+      Copyright (c) 2002-2005 The Trustees of Indiana University.  
+                              All rights reserved.
       
       This file is part of the OSCAR software package.  For license
       information, see the COPYING file in the top level directory of the
@@ -26,8 +26,8 @@
 
   <class>included</class>
   <summary>LAM/MPI specifically packaged for OSCAR clusters</summary>
-  <license>Freely distributable</license>
-  <copyright>2002</copyright>
+  <license>BSD</license>
+  <copyright>2002-2005</copyright>
   <group>Development/Libraries</group>
   <uri>http://www.lam-mpi.org/</uri>
   <maintainer>
@@ -36,7 +36,7 @@
   </maintainer>
   <packager>
     <name>Jeff Squyres</name>
-    <email>jsquyres@lam-mpi.org</email>
+    <email>jsquyres@open-mpi.org</email>
   </packager>
   <vendor>Open Systems Laboratory, Indiana University</vendor>
 
