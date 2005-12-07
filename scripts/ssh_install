@@ -165,8 +165,13 @@ for wantedyes in IgnoreRhosts X11Forwarding RhostsRSAAuthentication RSAAuthentic
     fi
 done
 
+if [ $SSHBADMAJORVER -lt $SSHMAJORVER ] && [ $SSHBADMAJOR -lt $SSHMINORVER ]; then
+	echo BAD
+fi
+
+
 for wantedno in RhostsAuthentication ; do
-    if [ no`grep "^[[:space:]]*$wantedno[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "nono" ] && [ "$SSHBADMAJORVER -lt $SSHMAJORVER" ] && [ "$SSHBADMAJOR -lt $SSHMINORVER" ]; then
+    if [ no`grep "^[[:space:]]*$wantedno[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "nono" ] && [ $SSHBADMAJORVER -lt $SSHMAJORVER ] && [ $SSHBADMAJOR -lt $SSHMINORVER ]; then
 	echo turning off $wantedno parameter in configuration file $file ...
 	if [ ! -r $file.pre_ssh_install ] ; then
 	    if [ -r $file ] ; then
