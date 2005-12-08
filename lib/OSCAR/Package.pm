@@ -49,7 +49,7 @@ my $DEFAULT = "Default";
              pkg_config_xml list_selected_packages getSelectionHash
              isPackageSelectedForInstallation getConfigurationValues
              run_pkg_apitest_test);
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 # Trying to figure out the best way to set this.
 my ($distro_name, $distro_version) = which_distro_server();
