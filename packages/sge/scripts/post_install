@@ -78,7 +78,10 @@ print "Deleting $sge_conf_store on headnode\n";
 system("rm -rf $sge_conf_store");
 
 my $lam_pe = "lam";
-my $lam_pe_file = "$ENV{OSCAR_PACKAGE_HOME}/scripts/$lam_pe";
+my $lam_pe_file = "/tmp/$lam_pe";
+
+my $pvm_pe = "pvm";
+my $pvm_pe_file = "/tmp/$pvm_pe";
 
 my $queue = "all";
 my $qfile = "$ENV{SGE_ROOT}/$cell/spool/qmaster/cqueues/$queue.q";
@@ -106,14 +109,27 @@ for (@pes) { $pe_exists{$_} = 1 };
 
 # Set up Parallel Environment for LAM/MPI if the package is installed
 # FIXME: Right now it checks to see if LAM/MPI is installed on the headnode
-if ( is_installed_on_node("lam") ) {
+if ( is_installed_on_node("$lam_pe") ) {
 	# Check to see if we already have "lam" Parallel Environment defined
 	`qconf -sp $lam_pe 2>&1`; # or croak("Cannot run qconf -sp");
 
 	if ($? == 256) {
         	# Parallel Environment does not exist, creating...
         	print "Adding LAM/MPI Parallel Environment to SGE\n";
-        	system("qconf -Ap $lam_pe_file");
+                open(LAM, '>'.$lam_pe_file) or croak("Cannot open file $lam_pe_file for writing");
+		print LAM "pe_name           lam\n";
+		print LAM "slots             999\n";
+		print LAM "user_lists        NONE\n";
+		print LAM "xuser_lists       NONE\n";
+		print LAM "start_proc_args   $ENV{SGE_ROOT}/pe/lam/startlam.sh -catch_rsh \$pe_hostfile\n";
+		print LAM "stop_proc_args    $ENV{SGE_ROOT}/pe/lam/stoplam.sh\n";
+		print LAM "allocation_rule   \$round_robin\n";
+		print LAM "control_slaves    TRUE\n";
+		print LAM "job_is_first_task TRUE\n";
+		print LAM "urgency_slots     min\n";
+                close(LAM);
+                system("qconf -Ap $lam_pe_file") == 0 or croak("Failed to add LAM/MPI to SGE's Parallel Environment");
+                unlink($lam_pe_file);
 	} elsif ($? == 0) {
         	# LAM/MPI Parallel Environment already exists
 	} else {
@@ -168,6 +184,86 @@ if ( is_installed_on_node("lam") ) {
 		system("qconf -dp $lam_pe");
         } else {
                 croak("Cannot run qconf -sp $lam_pe");
+        }
+}
+
+# Set up Parallel Environment for PVM if the package is installed
+# FIXME: Right now it checks to see if PVM is installed on the headnode
+if ( is_installed_on_node("$pvm_pe") ) {
+        # Check to see if we already have "pvm" Parallel Environment defined
+        `qconf -sp $pvm_pe 2>&1`; # or croak("Cannot run qconf -sp");
+
+        if ($? == 256) {
+                # Parallel Environment does not exist, creating...
+                print "Adding PVM Parallel Environment to SGE\n";
+		open(PVM, '>'.$pvm_pe_file) or croak("Cannot open file $pvm_pe_file for writing");
+		print PVM "pe_name           pvm\n";
+		print PVM "slots             999\n";
+		print PVM "user_lists        NONE\n";
+		print PVM "xuser_lists       NONE\n";
+		print PVM "start_proc_args   $ENV{SGE_ROOT}/pe/pvm/startpvm.sh -catch_rsh \$pe_hostfile \$host $ENV{PVM_ROOT}\n";
+		print PVM "stop_proc_args    $ENV{SGE_ROOT}/pe/pvm/stoppvm.sh -catch_rsh \$pe_hostfile \$host\n";
+		print PVM "allocation_rule   1\n";
+		print PVM "control_slaves    TRUE\n";
+		print PVM "job_is_first_task FALSE\n";
+		print PVM "urgency_slots     min\n";
+		close(PVM);
+                system("qconf -Ap $pvm_pe_file") == 0 or croak("Failed to add PVM to SGE's Parallel Environment");
+		unlink($pvm_pe_file);
+        } elsif ($? == 0) {
+                # LAM/MPI Parallel Environment already exists
+        } else {
+                croak("Cannot run qconf -sp $pvm_pe");
+        }
+
+        # Check to see if pvm is already referenced in specified queue
+        if ($pe_exists{"$pvm_pe"}) {
+                # PVM Parallel Environment already set up
+        } else {
+                print "Referencing PVM Parallel Environment in $queue.q\n";
+                push(@pes, "$pvm_pe");
+                my $pe_line = join(" ", @pes);
+                $buffer =~ s/pe_list.*\n/pe_list            $pe_line\n/;
+
+                open(QFILE, '>'.$qfile) or croak("Cannot open file $qfile for writing\n");
+                print QFILE $buffer;
+                close(QFILE);
+
+                # restart qmaster
+                system("/etc/init.d/sgemaster softstop");
+                system("/etc/init.d/sgemaster start");
+        }
+} else {
+        # Check to see if pvm is already referenced in specified queue
+        if ($pe_exists{"$pvm_pe"}) {
+                # PVM Parallel Environment is referenced, need to remove
+                print "Dereferencing PVM Parallel Environment in $queue.q\n";
+                @pes = delete @pes[$pvm_pe];
+                my $pe_line = join(" ", @pes);
+                $buffer =~ s/pe_list.*\n/pe_list            $pe_line\n/;
+
+                open(QFILE, '>'.$qfile) or croak("Cannot open file $qfile for writing\n");
+                print QFILE $buffer;
+                close(QFILE);
+
+                # restart qmaster
+                system("/etc/init.d/sgemaster softstop");
+                system("/etc/init.d/sgemaster start");
+        } else {
+                # PVM Parallel Environment not referenced in queue
+        }
+
+        # Check to see if we already have "pvm" Parallel Environment defined
+        `qconf -sp $pvm_pe 2>&1`; # or croak("Cannot run qconf -sp");
+
+        if ($? == 256) {
+                # Parallel Environment does not exist, do nothing
+        } elsif ($? == 0) {
+                # LAM/MPI Parallel Environment exists
+                print "Deleting PVM Parallel Environment since PVM package is not installed\n";
+                system("qconf -dp $pvm_pe");
+        } else {
+                croak("Cannot run qconf -sp $pvm_pe");
         }
 }
 
