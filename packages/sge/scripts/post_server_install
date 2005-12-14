@@ -158,6 +158,13 @@ open(CONF, $cluster_conf) or croak("Error: unable to open ($cluster_conf)\n");
 print CONF $buffer;
 close(CONF);
 
+# Make sure that by default, SGE error and output files are stored in the current working directory where the job is submitted from
+my $sge_request = "$ENV{SGE_ROOT}/$cellname/common/sge_request";
+
+if (! (`grep -e '-cwd' $sge_request`) ) {        
+	system("echo -cwd >> $sge_request") == 0 or croak("Failed to add -cwd to $sge_request");
+}
+
 # Change ownership of SGE_ROOT so it is owned by the admin user
 system("chown $admin_user.$admin_user -R $ENV{SGE_ROOT}");
 
