@@ -68,7 +68,7 @@ elsif ( $distro_name eq "fedora" ) {
 elsif ( $distro_name eq "suse") {
     @wanted_rpms = qw( mysql
 		       mysql-client
-		       perl-Msql-Mysql-modules
+		       perl-DBD-mysql
 		       perl-DBI
 		       perl-Data-ShowTable
 		       mysql-shared
