@@ -4,7 +4,7 @@
 
   <version>
     <major>6</major>
-    <minor>0u6</minor>
+    <minor>0u7</minor>
     <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
@@ -26,8 +26,8 @@
   <description>Sun Grid Engine is a distributed resource management and batch job queueing software for wide ranging requirements from compute farms to grid computing.</description>
 
   <binary-package-list>
-      <pkg>gridengine</pkg>
-      <pkg>gridengine-modulefile</pkg>
+      <pkg>sge</pkg>
+      <pkg>sge-modulefile</pkg>
   </binary-package-list>  
   <binary-package-list>
       <filter>
