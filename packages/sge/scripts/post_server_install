@@ -168,6 +168,8 @@ if (! (`grep -e '-cwd' $sge_request`) ) {
 # Set up tickets for share tree policy
 my $ssconf = "/tmp/ssconf";
 my $st_tickets = "10000";
+$line = "";
+$buffer ="";
 
 system("qconf -ssconf > $ssconf") == 0 or croak("Failed to execute qconf -ssconf");
 
