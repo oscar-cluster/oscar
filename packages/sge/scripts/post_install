@@ -68,8 +68,8 @@ system("$exec_command rm -rf $sge_conf_store");
 
 # Then, the clients have enough information to proceed
 # with configuring themselves as exec nodes 
-print "SGE post_install: Doing inst_sge on clients...\n";
-system("$exec_command 'cd $ENV{SGE_ROOT}; ./inst_sge -x'") == 0 or croak("Problem while inst_sge on clients");
+print "SGE post_install: Running inst_sge on clients...\n";
+system("$exec_command 'cd $ENV{SGE_ROOT} && ./inst_sge -x > /tmp/oscar_inst_sge.out 2>&1'") == 0 or croak("Failed to run inst_sge on clients, please take a look at /tmp/oscar_inst_sge.out on the client nodes for more information");
 
 # Now, the exec node config is complete on the clients
 print "SGE post_install: Configuration SUCCESS on clients\n";
