@@ -152,7 +152,7 @@ print "Updating $cluster_conf to use ssh for rsh/rlogin commands.\n";
 
 $cluster_conf = ">".$cluster_conf;
 
-$buffer =~ s/\/usr\/sbin\/in.rlogind/\/usr\/sbin\/sshd -i\nrsh_daemon\t\t  \/usr\/sbin\/sshd -i\nrlogin_command\t\t  \/usr\/bin\/ssh -x\nrsh_command\t\t  \/usr\/bin\/ssh -x/;
+$buffer =~ s|/usr/sbin/in.rlogind|/usr/sbin/sshd -i\nrsh_daemon\t\t  /usr/sbin/sshd -i\nrlogin_command\t\t  /usr/bin/ssh -x\nrsh_command\t\t  /usr/bin/ssh -x|;
 
 open(CONF, $cluster_conf) or croak("Error: unable to open ($cluster_conf)\n");
 print CONF $buffer;
@@ -163,6 +163,44 @@ my $sge_request = "$ENV{SGE_ROOT}/$cellname/common/sge_request";
 
 if (! (`grep -e '-cwd' $sge_request`) ) {        
 	system("echo -cwd >> $sge_request") == 0 or croak("Failed to add -cwd to $sge_request");
+}
+
+# Set up tickets for share tree policy
+my $ssconf = "/tmp/ssconf";
+my $st_tickets = "10000";
+
+system("qconf -ssconf > $ssconf") == 0 or croak("Failed to execute qconf -ssconf");
+
+open(SSCONF, $ssconf) or croak("Cannot open file $ssconf");
+while ($line = <SSCONF>) {
+        if ($line =~ /weight_tickets_share/) {
+                $line = "weight_tickets_share              $st_tickets\n";
+        }
+        $buffer = $buffer.$line;
+}
+close(SSCONF);
+
+open(SSCONF, ">".$ssconf) or croak("Cannot open file $ssconf for writing");
+print SSCONF $buffer;
+close(SSCONF);
+
+system("qconf -Msconf $ssconf") == 0 or croak("Failed to modify scheduler configuration using file $ssconf");
+unlink($ssconf) or croak("Failed to delete file $ssconf");
+
+# Set up default share tree policy
+my $stree = system("qconf -sstree > /dev/null 2>&1");
+my $stree_template = "/tmp/stree_template";
+
+if ($stree) {
+        open(STREE, '>'.$stree_template) or croak("Cannot open file $stree_template for writing");
+        print STREE "id=0\n";
+        print STREE "name=default\n";
+        print STREE "type=0\n";
+        print STREE "shares=1000\n";
+        print STREE "childnodes=NONE\n";
+        close (STREE);
+        system("qconf -Astree $stree_template") == 0 or croak("Failed to setup Share Tree Policy based on $stree_template");
+        unlink($stree_template) or croak("Failed to delete file $stree_template");
 }
 
 # Change ownership of SGE_ROOT so it is owned by the admin user
