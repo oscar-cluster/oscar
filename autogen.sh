@@ -358,7 +358,7 @@ EOF
 # Are we in the right directory?  We must be in the top-level OSCAR
 # directory.
 
-if test -f dist/VERSION -a -f configure.in -a -f lib/OSCAR/PackageBest.pm; then
+if test -f VERSION -a -f configure.in -a -f lib/OSCAR/PackageBest.pm; then
     bad=0
 else
     cat <<EOF

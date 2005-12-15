@@ -1,96 +1,118 @@
 #!/bin/sh
 #
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
 # $COPYRIGHT$
-#
-# $Id: get-oscar-version.sh,v 1.1 2001/08/20 23:08:07 jsquyres Exp $
-#
-# Since we do this in multiple places, it's worth putting in a
-# separate shell script.  Very primitive script to get the version
-# number of OSCAR into a coherent variable.  Can query for any of the
-# individual parts of the version number, too.
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
 #
 
-srcdir="$1"
+srcfile="$1"
 option="$2"
 
-if test "$srcdir" = ""; then
+case "$option" in
+    # svnversion can take a while to run.  If we don't need it, don't run it.
+    --major|--minor|--release|--greek|--base|--help)
+        OSCAR_NEED_SVN=0
+        ;;
+    *)
+        OSCAR_NEED_SVN=1
+esac
+
+
+if test "$srcfile" = ""; then
     option="--help"
 else
-    OSCAR_MAJOR_VERSION="`cat $srcdir/dist/VERSION | grep major | cut -d= -f2`"
-    OSCAR_MINOR_VERSION="`cat $srcdir/dist/VERSION | grep minor | cut -d= -f2`"
-    OSCAR_RELEASE_VERSION="`cat $srcdir/dist/VERSION | grep release | cut -d= -f2`"
-    OSCAR_ALPHA_VERSION="`cat $srcdir/dist/VERSION | grep alpha | cut -d= -f2`"
-    OSCAR_BETA_VERSION="`cat $srcdir/dist/VERSION | grep beta | cut -d= -f2`"
-    OSCAR_SVN_VERSION="`cat $srcdir/dist/VERSION | grep svn | cut -d= -f2`"
+    OSCAR_MAJOR_VERSION="`cat $srcfile | egrep '^major=' | cut -d= -f2`"
+    OSCAR_MINOR_VERSION="`cat $srcfile | egrep '^minor=' | cut -d= -f2`"
+    OSCAR_RELEASE_VERSION="`cat $srcfile | egrep '^release=' | cut -d= -f2`"
+    OSCAR_GREEK_VERSION="`cat $srcfile | egrep '^greek=' | cut -d= -f2`"
+    OSCAR_WANT_SVN="`cat $srcfile | egrep '^want_svn=' | cut -d= -f2`"
+    OSCAR_SVN_R="`cat $srcfile | egrep '^svn_r=' | cut -d= -f2`"
     if test "$OSCAR_RELEASE_VERSION" != "0" -a "$OSCAR_RELEASE_VERSION" != ""; then
-        OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION.$OSCAR_RELEASE_VERSION"
+	OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION.$OSCAR_RELEASE_VERSION"
     else
-        OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION"
+	OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION"
     fi
 
-    if test "`expr $OSCAR_ALPHA_VERSION \> 0`" = "1"; then
-        OSCAR_VERSION="${OSCAR_VERSION}a$OSCAR_ALPHA_VERSION"
-    elif test "`expr $OSCAR_BETA_VERSION \> 0`" = "1"; then
-        OSCAR_VERSION="${OSCAR_VERSION}b$OSCAR_BETA_VERSION"
-    fi
+    OSCAR_VERSION="${OSCAR_VERSION}${OSCAR_GREEK_VERSION}"
 
-    if test "$OSCAR_SVN_VERSION" = "1"; then
-        if test -d .svn; then
-            ver="r`svnversion .`"
-        elif test -f "$srcdir/VERSION.svn"; then
-            ver="`cat $srcdir/VERSION.svn`"
-        else
-            ver="svn`date '+%m%d%Y'`"
+    OSCAR_BASE_VERSION="$OSCAR_VERSION"
+
+    if test "$OSCAR_WANT_SVN" = "1" -a "$OSCAR_NEED_SVN" = "1" ; then
+        if test "$OSCAR_SVN_R" = "-1"; then
+            if test -d .svn; then
+                ver="r`svnversion .`"
+            else
+                ver="svn`date '+%m%d%Y'`"
+            fi
+            OSCAR_SVN_R="$ver"
         fi
-        OSCAR_SVN_VERSION="$ver"
-        OSCAR_VERSION="${OSCAR_VERSION}$ver"
-    else
-        OSCAR_SVN_VERSION=
+	OSCAR_VERSION="${OSCAR_VERSION}$OSCAR_SVN_R"
     fi
 
     if test "$option" = ""; then
-        option="--full"
+	option="--full"
     fi
 fi
 
 case "$option" in
     --full|-v|--version)
-        echo $OSCAR_VERSION
+	echo $OSCAR_VERSION
 	;;
     --major)
-        echo $OSCAR_MAJOR_VERSION
+	echo $OSCAR_MAJOR_VERSION
 	;;
     --minor)
-        echo $OSCAR_MINOR_VERSION
+	echo $OSCAR_MINOR_VERSION
 	;;
     --release)
-        echo $OSCAR_RELEASE_VERSION
+	echo $OSCAR_RELEASE_VERSION
 	;;
-    --alpha)
-        echo $OSCAR_ALPHA_VERSION
-	;;
-    --beta)
-        echo $OSCAR_BETA_VERSION
+    --greek)
+	echo $OSCAR_GREEK_VERSION
 	;;
     --svn)
-        echo $OSCAR_SVN_VERSION
+	echo $OSCAR_SVN_R
 	;;
-    *)
-        cat <<EOF
-$0 <srcdir> [<option>]
+    --base)
+        echo $OSCAR_BASE_VERSION
+        ;;
+    --all)
+        echo ${OSCAR_VERSION} ${OSCAR_MAJOR_VERSION} ${OSCAR_MINOR_VERSION} ${OSCAR_RELEASE_VERSION} ${OSCAR_GREEK_VERSION} ${OSCAR_SVN_R}
+        ;;
+    -h|--help)
+	cat <<EOF
+$0 <srcfile> [<option>]
 
-<srcdir>  - Top-level directory of the OSCAR source tree
+<srcfile> - Text version file
 <option>  - One of:
     --full    - Full version number
     --major   - Major version number
     --minor   - Minor version number
     --release - Release version number
-    --alpha   - Alpha version number
-    --beta    - Beta version nmumber
-    --svn     - SVN revision number
+    --greek   - Greek (alpha, beta, etc) version number
+    --svn     - Subversion repository number
+    --all     - Show all version numbers, separated by :
+    --base    - Show base version number (no svn number)
     --help    - This message
 EOF
         ;;
+    *)
+        echo "Unrecognized option $option.  Run $0 --help for options"
+        ;;
 esac
+
+# All done
 
 exit 0

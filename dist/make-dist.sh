@@ -13,6 +13,8 @@
 srcdir="`pwd`"
 distdir="$srcdir/$1"
 want_srpms="$2"
+OSCAR_VERSION="$3"
+OSCAR_SVN_R="$4"
 
 ############################################################################
 
@@ -30,27 +32,18 @@ fi
 
 ############################################################################
 
-OSCAR_VERSION="`sh dist/get-oscar-version.sh $srcdir --full`"
-OSCAR_MAJOR_VERSION="`sh dist/get-oscar-version.sh $srcdir --major`"
-OSCAR_MINOR_VERSION="`sh dist/get-oscar-version.sh $srcdir --minor`"
-OSCAR_RELEASE_VERSION="`sh dist/get-oscar-version.sh $srcdir --release`"
-OSCAR_ALPHA_VERSION="`sh dist/get-oscar-version.sh $srcdir --alpha`"
-OSCAR_BETA_VERSION="`sh dist/get-oscar-version.sh $srcdir --beta`"
-OSCAR_SVN_VERSION="`sh dist/get-oscar-version.sh $srcdir --svn`"
+# we can catch some hard (but possible) to do mistakes by looking at
+# our tree's revision number, but only if we are in the source tree.
+# Otherwise, use what configure told us, at the cost of allowing one
+# or two corner cases in (but otherwise VPATH builds won't work)
+svn_r=$OSCAR_SVN_R
+if test -d .svn; then
+    svn_r="r`svnversion .`"
+fi
 
 if test "$distdir" = ""; then
     echo "Must supply distdir as argv[1] -- aborting"
     exit 1
-fi
-
-MAKEFILE_OSCAR_VERSION="`egrep ^OSCAR_VERSION Makefile | awk '{ print $3 }'`"
-
-if ! test "$OSCAR_VERSION" = "$MAKEFILE_OSCAR_VERSION" ; then
-  echo "Version in Makefile and version in VERSION file do not match!"
-  echo "This means the VERSION file has changed since configure"
-  echo "was last run.  Please check VERSION file and rerun configure"
-  echo "Aborting!"
-  exit 1
 fi
 
 start=`date`
@@ -86,8 +79,8 @@ if ! test -f Makefile; then
 fi
 
 svn_r=
-if test "`echo $OSCAR_SVN_VERSION | cut -c1`" = "r"; then
-    svn_r="`svnversion .`"
+if test "`echo $OSCAR_SVN_R | cut -c1`" = "r"; then
+    svn_r="r`svnversion .`"
 fi
 
 #
@@ -162,24 +155,30 @@ EOF
     fi
 fi
 
+#
+# See if we need to update the version file with the current SVN
+# revision number.  Do this *before* entering the distribution tree to
+# solve a whole host of problems with VPATH (since srcdir may be
+# relative or absolute)
+#
+cur_svn_r="`grep '^svn_r' ${distdir}/VERSION | cut -d= -f2`"
+if test "$cur_svn_r" = "-1"; then
+    sed -e 's/^svn_r=.*/svn_r='$svn_r'/' "${distdir}/VERSION" > "${distdir}/version.new"
+    cp "${distdir}/version.new" "${distdir}/VERSION"
+    rm -f "${distdir}/version.new"
+    # need to reset the timestamp to not annoy AM dependencies
+    touch -r "${srcdir}/VERSION" "${distdir}/VERSION"
+    echo "*** Updated VERSION file with SVN r number"
+else
+    echo "*** Did NOT updated VERSION file with SVN r number"
+fi
+
 #########################################################
 # VERY IMPORTANT: Now go into the new distribution tree #
 #########################################################
 
 cd $distdir
 umask 022
-
-#
-# See if we need VERSION.svn
-#
-
-if test -n "$svn_r"; then
-    rm -f VERSION.svn
-    echo "*** Created VERSION.svn file"
-    echo $svn_r > VERSION.svn
-else
-    echo "*** Did NOT create VERSION.svn file"
-fi
 
 #
 # Put in those headers.  
@@ -206,8 +205,8 @@ find testing -type f -print >> $filelist
 # If this is a beta, prepend the beta notice to the license.  
 #
 
-if test "$OSCAR_BETA_VERSION" != "0" -o "$OSCAR_ALPHA_VERSION" != "0"; then
-    echo " - This is a BETA version"
+if test "$OSCAR_GREEK_VERSION" != ""; then
+    echo " - This is an unofficial release version"
     file=/tmp/oscar-license.$$
     rm -f $file
     cat dist/beta-notice.txt dist/copyright-notice.txt > $file
@@ -283,7 +282,7 @@ if test "$want_srpms" = "regular" -o -z "$want_srpms"; then
 elif test "$want_srpms" = "only"; then
     echo ONLY
     rm -rf *m4 autogen* autom4te* config* dist* doc* images* install_cluster
-    rm -rf lib Makefile* oscarsamples scripts share src testing VERSION.in
+    rm -rf lib Makefile* oscarsamples scripts share src testing
     cd packages
     rm Makefile.* package.dtd
     for dir in `/bin/ls`; do

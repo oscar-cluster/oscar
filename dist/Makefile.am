@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
 # $Id: Makefile.am,v 1.6 2003/08/05 19:10:55 jsquyres Exp $
@@ -13,7 +13,7 @@ include $(top_srcdir)/dist/Makefile.options
 
 noinst_SCRIPTS		= get-oscar-version.sh
 
-EXTRA_DIST		= beta-notice.txt copyright-notice.txt VERSION \
+EXTRA_DIST		= beta-notice.txt copyright-notice.txt \
 			  insert-license.csh make-dist.sh \
 			  Makefile.options $(noinst_SCRIPTS)
 

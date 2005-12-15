@@ -9,41 +9,41 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: configure.in,v 1.47 2004/05/19 20:28:29 tfleury Exp $
-#
 # $HEADER$
 #
 
 # Init autoconf
 
-AC_INIT(packages/Makefile.am)
+AC_INIT([OSCAR], 
+        [m4_normalize(esyscmd([dist/get-oscar-version.sh VERSION --base]))],
+        [http://www.oscar.openclustergroup.org/], [oscar])
 AC_CONFIG_AUX_DIR(dist)
-AC_PREREQ(2.52)
+AC_PREREQ(2.59)
 
-# Get the version of OSCAR that we are installing
+# Make configure depend on the VERSION file, since it's used in AC_INIT
+AC_SUBST([CONFIGURE_DEPENDENCIES], ['$(top_srcdir)/VERSION'])
 
-get_version="sh $srcdir/dist/get-oscar-version.sh $srcdir"
-OSCAR_VERSION="`eval $get_version --full`"
-OSCAR_MAJOR_VERSION="`eval $get_version --major`"
-OSCAR_MINOR_VERSION="`eval $get_version --minor`"
-OSCAR_RELEASE_VERSION="`eval $get_version --release`"
-OSCAR_ALPHA_VERSION="`eval $get_version --alpha`"
-OSCAR_BETA_VERSION="`eval $get_version --beta`"
-OSCAR_SVN_VERSION="`eval $get_version --svn`"
-
-AC_SUBST(OSCAR_MAJOR_VERSION)
-AC_SUBST(OSCAR_MINOR_VERSION)
-AC_SUBST(OSCAR_RELEASE_VERSION)
-AC_SUBST(OSCAR_ALPHA_VERSION)
-AC_SUBST(OSCAR_BETA_VERSION)
-AC_SUBST(OSCAR_SVN_VERSION)
-AC_SUBST(OSCAR_VERSION)
-
+OSCAR_VERSION="`$srcdir/dist/get-oscar-version.sh VERSION`"
+OSCAR_SVN_R="`$srcdir/dist/get-oscar-version.sh VERSION --svn`"
 echo "Configuring OSCAR version $OSCAR_VERSION"
+
+AC_SUBST(OSCAR_VERSION)
+AC_SUBST(OSCAR_SVN_R)
 
 # Intialize automake
 
-AM_INIT_AUTOMAKE(oscar, $OSCAR_VERSION, 'no')
+AM_INIT_AUTOMAKE([tar-ustar no-define])
+
+# override/fixup the version numbers set by AC_INIT, since on
+# developer builds, there's no good way to know what the version is
+# before running configure :(.  We only use the base version number
+# (ie, no svn r numbers) for the version set in AC_INIT.  This will
+# always match reality because we add the VERSION file (the only way
+# to change the major.minor.release{greek}) into the configure
+# dependencies.
+PACKAGE_VERSION="$OSCAR_VERSION"
+PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
+VERSION="${PACKAGE_VERSION}"
 
 # Just because we might as well... :-)
 
@@ -144,7 +144,7 @@ fi
 AC_SUBST(OSCAR_HOME)
 AC_MSG_RESULT([$OSCAR_HOME])
 
-# Is this a maintainer build?
+ # Is this a maintainer build?
 # AC_CONFIG_FILES doesn't seem to be able to handle variables; have to
 # do this all longhand.  :-(
 
@@ -152,7 +152,6 @@ AC_MSG_RESULT([$OSCAR_HOME])
 
 AC_CONFIG_FILES([
     Makefile
-    VERSION
 
     dist/Makefile
     dist/programs.sh

@@ -121,9 +121,9 @@ ifndef top_srcdir
 	top_builddir=../..
 endif
 
-version.tex: $(top_srcdir)/dist/VERSION
+version.tex: $(top_srcdir)/VERSION
 	rm -f version.tex
-	ver="`$(top_srcdir)/dist/get-oscar-version.sh $(top_srcdir)`"; \
+	ver="`$(top_srcdir)/dist/get-oscar-version.sh $(top_srcdir)/VERSION`"; \
 		sed -e s/@OSCAR_VERSION@/$$ver/ version.tex.in > version.tex
 
 notes.tex: notes.tex.in $(top_srcdir)/packages/*/doc/*.tex
