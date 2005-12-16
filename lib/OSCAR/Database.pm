@@ -2487,16 +2487,15 @@ sub set_images{
     my $distro = $$image_ref{distro};
     my $architecture = $$image_ref{architecture};
     my $images = get_image_info_with_name($imgname,$options_ref,$error_strings_ref);
-    my $imagepath = $$image_ref{path};
     my $sql = "";
     if(!$images){ 
-        $sql = "INSERT INTO Images (name,distro,architecture,path) VALUES ".
-            "('$imgname','$distro','$architecture','$imagepath')";
+        $sql = "INSERT INTO Images (name,distro,architecture) VALUES ".
+            "('$imgname','$distro','$architecture')";
         die "$0:Failed to insert values via << $sql >>"
             if! do_insert($sql,"Images", $options_ref, $error_strings_ref);
     }else{
         $sql = "UPDATE Images SET name='$imgname', distro='$distro', ". 
-               "architecture='$architecture', path='$imagepath' WHERE name='$imgname'";
+               "architecture='$architecture'";
         die "$0:Failed to update values via << $sql >>"
             if! do_update($sql,"Images", $options_ref, $error_strings_ref);
     }
@@ -2570,7 +2569,7 @@ sub link_node_nic_to_network {
     my $node_id = $$res_ref{"id"};
     my $network_id = $$res_ref{"n_id"};
     my $command =
-    "UPDATE Nics SET name='$nic_name', node_id=$node_id, network_id=$network_id ";
+    "UPDATE Nics SET network_id=$network_id WHERE name='$nic_name' AND node_id=$node_id ";
     print "$0: linking node $node_name nic $nic_name to network $network_name using command <$command>\n"
     if $options{debug};
     print "Linking node $node_name nic $nic_name to network $network_name.\n"

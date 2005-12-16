@@ -942,7 +942,6 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
         " '$$ifconfig_nic_ref{mac}', " .
         " Nodes.id FROM Nodes WHERE Nodes.name='$node_name' ";
     
-    
 	print "$0: creating database nic record using command <$command>\n"
 	    if $options{debug};
 	print "Creating database record for nic $nic_name on node $node_name.\n"
@@ -978,23 +977,23 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 		$assigns{ $field } = $$ifconfig_nic_ref{ $field };
 	    }
 	}
-	if ( %assigns ) {
-	    my $record_id = $$database_nic_ref{id};
-	    oda::print_hash( "", "$0: modifying node $node_name nic $nic_name",
-			     \%assigns )
-		if $options{debug};
-	    if ( $options{verbose} && ! $options{debug} ) {
-		print "Modifying database node $node_name nic $nic_name record:\n";
-		foreach my $field ( keys %assigns ) {
-		    print "    field $field to $assigns{field}\n";
-		}
-	    }
-        my $where = " WHERE id=$record_id ";
-        if (! update_table(\%options,"Nics",\%assigns,$where,\@error_strings) ){    
-		warn "$0: failed to modify node $node_name nic $nic_name record\n";
-		warn shift @error_strings while @error_strings;
-		$exit_status = 1;
-	    }
+    foreach my $field ( keys %assigns ) {
+        if($assigns{$field}){
+            my $record_id = $$database_nic_ref{id};
+            oda::print_hash( "", "$0: modifying node $node_name nic $nic_name",
+                     \%assigns )
+            if $options{debug};
+            if ( $options{verbose} && ! $options{debug} ) {
+            print "Modifying database node $node_name nic $nic_name record:\n";
+                print "    field $field to $assigns{field}\n";
+            }
+            my $where = " WHERE id=$record_id ";
+            if (! update_table(\%options,"Nics",\%assigns,$where,\@error_strings) ){    
+            warn "$0: failed to modify node $node_name nic $nic_name record\n";
+            warn shift @error_strings while @error_strings;
+            $exit_status = 1;
+            }
+        }
 	}
 	$network_name = undef
 	    if defined $network_id 
