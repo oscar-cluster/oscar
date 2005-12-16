@@ -1,0 +1,139 @@
+#!/usr/bin/env /usr/bin/perl
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#   This is a script which does everything that needs to be done for
+#   the server to work for oscar.  It is long, but hopefully well structured.
+#
+#
+# Update the SIS database with the current MAC addresses of the running nodes.
+# Use this tool after you have exchanged cluster nodes without reinstalling
+# them, i.e. you still use the old harddisks.
+#
+# $Id$
+# Copyright (c) 2004 Erich Focht, efocht@hpce.nec.com
+
+use strict;
+use lib "/usr/lib/systeminstaller";
+use SIS::Client;
+use SIS::Adapter;
+use SIS::Image;
+use SIS::DB;
+use SystemInstaller::Env;
+use SystemInstaller::Machine qw(synchosts linkscript);
+use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
+use Data::Dumper;
+
+
+sub collect_new_macs {
+    my @line;
+    my %macs;
+    open IN, "cexec -p \"env LC_ALL=C /sbin/ifconfig eth0 | grep HWaddr\" |"
+	or die "Could not cexec...";
+    while (<IN>) {
+	chomp;
+	@line = split /\s+/;
+	my $name = $line[1];
+	$name =~ s/:$//;
+	my $mac = $line[$#line];
+	$mac = lc($mac);
+	$macs{$name} = $mac;
+    }
+    close IN;
+    return %macs;
+}
+
+
+#my @machinelist = list_client();
+
+my %newmacs = collect_new_macs();
+
+my $changed = 0;
+foreach my $name (sort keys %newmacs) {
+    my @mach;
+
+    if ( $name =~ /\./ ) {
+	@mach = list_client(hostname=>$name);
+    } else {
+	@mach = list_client(name=>$name);
+    }
+    
+    if (scalar(@mach)) {
+
+	# get adapter info
+	my @adap=list_adapter(devname=>"eth0",client=>$mach[0]->name);
+
+	#print "name $name mac: db_mac: " . $adap[0]->mac .
+	#    " new_mac: " . $newmacs{$name} . "\n";
+	if ( $adap[0]->mac ne $newmacs{$name} ) {
+	    print "MAC changed!!! $name  old:" . $adap[0]->mac .
+		" new:" . $newmacs{$name} . "\n";
+
+	    $adap[0]->mac($newmacs{$name});
+	    set_adapter(@adap);
+	    $changed++;
+	}
+
+    } else {
+	carp("Machine ".$name." does not exist.\n");
+    }
+}
+
+if (!$changed) {
+    print "No MAC addresses changed.\n";
+    exit 0;
+}
+
+
+# rebuild dhcpd.conf if needed
+
+#   find default gateway in /etc/dhcpd.conf
+open IN, "/etc/dhcpd.conf" or die "Could not open /etc/dhcpd.conf!";
+my ($gwip, $netmask);
+while (<IN>) {
+    next if (/^\s*\#/);
+    if (/\s*option routers (\d+\.\d+\.\d+\.\d+);/) {
+	$gwip = $1;
+	last if ($netmask);
+    }
+    if (/\s*option subnet-mask (\d+\.\d+\.\d+\.\d+);/) {
+	$netmask = $1;
+	last if ($gwip);
+    }
+}
+close (IN);
+if (!defined($gwip) || !defined($netmask)) {
+    die "Could not determine gateway IP for dhcpd.conf and/or netmask!";
+}
+
+
+#   find network
+my ($a, $b, $c, $d) = split /\./, $gwip;
+my ($e, $f, $g, $h) = split /\./,$netmask;
+my $network = (int($a) & int($e)).".".(int($b) & int($f)).".".
+    (int($c) & int($g)).".".(int($d) & int($h));
+
+print "internal network = $network\n";
+
+#   find local interface which routes to this network
+my $l = `netstat -nr | grep ^$network`;
+chomp $l;
+my @line = split /\s+/, $l;
+my $interface = $line[$#line];
+print "internal interface = $interface\n";
+
+system("mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$gwip");
+system("/etc/init.d/dhcpd restart");
+
