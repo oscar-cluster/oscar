@@ -19,12 +19,20 @@
 
 # (C)opyright Bernard Li <bli@bcgsc.ca>, Babu Sundaram <babu@cs.uh.edu>
 
-use XML::Simple;
-use File::Copy;
 use Carp;
+use File::Copy;
+use XML::Simple;
+
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Opkg;
 
 # Manually setting SGE_ROOT
 $ENV{SGE_ROOT} = "/opt/sge";
+
+# Get fullpath of qconf binary.  The 'tail' command is necessary because 'bash -l' might trigger
+# SSH keys generation and thus we just grab the last line
+my $qconf = `bash -l -c 'which qconf' | tail -n 1`;
+chomp($qconf);
 
 # default settings if user does not configure the package
 my $fullserver = "true";        # Indicates if the OSCAR server with qmaster is an exec host too
@@ -86,7 +94,7 @@ print CONF $qmasterBuffer;
     
 close(CONF);
 
-print("SGE configuration options are set, proceeding with installation...\n");
+opkg_print("SGE configuration options are set, proceeding with installation...\n");
 
 # Setup the qmaster and optionally, the execd (if so chosen by the user)
 # Note: In this version, we completely eliminate the option of master 
@@ -123,7 +131,7 @@ else {
 # and exec hosts. That is, Master = admin + submit and all others are exec
 
 # Need to open a new shell to be able to locate the qconf binary
-system("bash -l -c 'qconf -as $hostname'") == 0 or croak("Error: Problem with adding OSCAR head as sge admin host");
+system("$qconf -as $hostname") == 0 or croak("Error: Problem with adding OSCAR head as sge admin host");
 
 # Copy the scripts that setup the environment so that its system-wide
 # All users logging in from now on will have the setup automated 
@@ -148,7 +156,7 @@ while ($line = <CONF>) {
 
 close(CONF, $cluster_conf);
 
-print "Updating $cluster_conf to use ssh for rsh/rlogin commands.\n";
+opkg_print("Updating $cluster_conf to use ssh for rsh/rlogin commands.\n");
 
 $cluster_conf = ">".$cluster_conf;
 
@@ -169,9 +177,9 @@ if (! (`grep -e '-cwd' $sge_request`) ) {
 my $ssconf = "/tmp/ssconf";
 my $st_tickets = "10000";
 $line = "";
-$buffer ="";
+$buffer = "";
 
-system("qconf -ssconf > $ssconf") == 0 or croak("Failed to execute qconf -ssconf");
+system("$qconf -ssconf > $ssconf") == 0 or croak("Failed to execute qconf -ssconf");
 
 open(SSCONF, $ssconf) or croak("Cannot open file $ssconf");
 while ($line = <SSCONF>) {
@@ -186,11 +194,11 @@ open(SSCONF, ">".$ssconf) or croak("Cannot open file $ssconf for writing");
 print SSCONF $buffer;
 close(SSCONF);
 
-system("qconf -Msconf $ssconf") == 0 or croak("Failed to modify scheduler configuration using file $ssconf");
+system("$qconf -Msconf $ssconf") == 0 or croak("Failed to modify scheduler configuration using file $ssconf");
 unlink($ssconf) or croak("Failed to delete file $ssconf");
 
 # Set up default share tree policy
-my $stree = system("qconf -sstree > /dev/null 2>&1");
+my $stree = system("$qconf -sstree > /dev/null 2>&1");
 my $stree_template = "/tmp/stree_template";
 
 if ($stree) {
@@ -201,7 +209,7 @@ if ($stree) {
         print STREE "shares=1000\n";
         print STREE "childnodes=NONE\n";
         close (STREE);
-        system("qconf -Astree $stree_template") == 0 or croak("Failed to setup Share Tree Policy based on $stree_template");
+        system("$qconf -Astree $stree_template") == 0 or croak("Failed to setup Share Tree Policy based on $stree_template");
         unlink($stree_template) or croak("Failed to delete file $stree_template");
 }
 
@@ -211,4 +219,4 @@ system("chown $admin_user.$admin_user -R $ENV{SGE_ROOT}");
 system("/etc/init.d/sgemaster softstop");
 system("/etc/init.d/sgemaster start");
 
-print("All qmaster-related setup complete.\n");
+opkg_print("All qmaster-related setup complete.\n");
