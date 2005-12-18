@@ -18,9 +18,9 @@
 
   <version>
     <major>3</major>
-    <minor>5</minor>
-    <subversion>3</subversion>
-    <release>3oscar</release>
+    <minor>6</minor>
+    <subversion>2</subversion>
+    <release>1</release>
     <epoch>1</epoch>
   </version>
 
@@ -52,11 +52,6 @@
       <pkg>systeminstaller</pkg>
       <pkg>systeminstaller-x11</pkg>
       <pkg>systemimager-server</pkg>
-      <!-- 
-        systemimager-client is needed on oscar_server as core package
-        but isn't resolved by dependencies. Has to stay here!
-      /-->
-      <pkg>systemimager-client</pkg>
       <pkg>systemimager-flamethrower</pkg>
       <pkg>flamethrower</pkg>
       <pkg>udpcast</pkg>
@@ -71,6 +66,7 @@
 
       <pkg>syslinux</pkg>
       <pkg>systemimager-i386boot-standard</pkg>
+      <pkg>systemimager-i386initrd_template</pkg>
   </binary-package-list>
 
   <binary-package-list>
@@ -80,6 +76,7 @@
       </filter>
 
       <pkg>systemimager-ia64boot-standard</pkg>
+      <pkg>systemimager-ia64initrd_template</pkg>
   </binary-package-list>
 
   <binary-package-list>
@@ -89,7 +86,7 @@
       </filter>
 
       <pkg>syslinux</pkg>
-      <pkg>systemimager-x86_64boot-standard</pkg>      
+      <pkg>systemimager-x86_64boot-standard</pkg>
+      <pkg>systemimager-x86_64initrd_template</pkg>
   </binary-package-list>
-
 </oscar>
