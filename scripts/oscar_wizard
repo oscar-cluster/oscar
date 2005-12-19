@@ -128,7 +128,7 @@ if ( !($browser = `which firefox 2> /dev/null`) ) {
 # Bring up OSCAR Website when OSCAR Logo is clicked
 if ($browser ne "") {
   chomp($browser);
-  $GIF_t->bind( "<Button-1>" => sub { system("$browser $url &") } );
+  $GIF_t->bind( "<Button-1>" => sub { system("$browser $url > /dev/null 2>&1 &") } );
 }
 
 # Download packages using OPD
