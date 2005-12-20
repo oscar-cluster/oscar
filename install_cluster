@@ -109,14 +109,24 @@ change into the directory that it points to ($ENV{OSCAR_HOME})!");
 # Get OSCAR's version
 
 my $oscar_version;
-if (!open (V, "VERSION")) {
-    die("ERROR: Unable to open OSCAR's VERSION file");
+my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "dist/get-oscar-version.sh";
+my $oscar_version_file = $ENV{OSCAR_HOME} . "/" . "VERSION";
+
+# Use the scripty-foo to get oscar version information.
+
+if ( -e "$oscar_version_file" ) {
+    my $cmd = "$oscar_version_script $oscar_version_file --full";
+
+    open(CMD, "$cmd|") or die "ERROR: failed to get oscar version '$cmd' - $!";
+    $oscar_version = <CMD>;
+    chomp($oscar_version);
+
+    close(CMD);
 }
-while (<V>) {
-    chomp;
-    $oscar_version = $_;
+else {
+    die("ERROR: OSCAR VERSION file missing '$oscar_version_file' - aborting!");
 }
-close(V);
+
 
 # Once here, we know that $ENV{OSCAR_HOME} is set, it exists, we can
 # get in it, and we have successfully read the VERSION file from it.
