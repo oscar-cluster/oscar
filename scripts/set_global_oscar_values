@@ -94,12 +94,26 @@ if(! locking("write", \%options, \@tables, \@errors)){
 
 # write out one global oscar record, or modify an existing one
 my @assigns = ();
+
+# Get OSCAR's version
+
 my $oscar_version;
-if ( -r "$ENV{OSCAR_HOME}/VERSION" ) {
-    $oscar_version = `cat $ENV{OSCAR_HOME}/VERSION`;
-    chomp $oscar_version;
-} else {
-    $oscar_version = "CVS";
+my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "dist/get-oscar-version.sh";
+my $oscar_version_file = $ENV{OSCAR_HOME} . "/" . "VERSION";
+
+# Use the scripty-foo to get oscar version information.
+
+if ( -e "$oscar_version_file" ) {
+    my $cmd = "$oscar_version_script $oscar_version_file --full";
+
+    open(CMD, "$cmd|") or die "ERROR: failed to get oscar version '$cmd' - $!";
+    $oscar_version = <CMD>;
+    chomp($oscar_version);
+
+    close(CMD);
+}
+else {
+    die("ERROR: OSCAR VERSION file missing '$oscar_version_file' - aborting!");
 }
 
 my $global_values_table = "Clusters";
