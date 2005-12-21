@@ -11,11 +11,11 @@
 
 include $(top_srcdir)/dist/Makefile.options
 
-noinst_SCRIPTS		= get-oscar-version.sh
+oscar_SCRIPTS		= get-oscar-version.sh
 
 EXTRA_DIST		= beta-notice.txt copyright-notice.txt \
 			  insert-license.csh make-dist.sh \
-			  Makefile.options $(noinst_SCRIPTS)
+			  Makefile.options $(oscar_SCRIPTS)
 
 # These will be used in future versions of OSCAR (until we move to
 # subversion! :-)
