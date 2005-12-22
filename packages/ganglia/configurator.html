@@ -1,3 +1,4 @@
+<!-- $Id$ -->
 <html>
 <head><title>Configuration for ganglia</title>
 </head>
@@ -7,19 +8,41 @@
 </center>
 Ganglia should work out of the box but will be using the default settings.
 Here you can configure a few settings (mostly names) for your ganglia setup
-so that it will display the correct information about your nodes and/or cluster grid upon startup.
+so that it will display the correct information about your nodes and/or
+cluster grid upon startup.
 <form>
-<p>Name of Cluster<br>
-<input name="datasource" value="OSCAR Cluster"><br>
+<p>Name of Cluster
+ <input name="cluster__name" value="OSCAR Cluster"><br>
 
-<p>Name of Grid<br>
-<input name="gridname" value="OSCAR"><br>
+<p>Name of Grid
+ <input name="gridname" value="OSCAR"><br>
 
 <p>Owner of Cluster (Department, Company, etc...)<br>
-<input name="owner" value="OSCAR"><br>
+ <input name="cluster__owner" value="OSCAR"><br>
+<br>
 
-<p>Network Interface for <b>***Client***</b> nodes<br>
-<input name="iface" value="eth0"><br>
+Client nodes can have multiple network interfaces. Specify which interface
+should be used for sending/receiving ganglia monitoring information:<br>
+<p>Sending Network Interface for <b>***Client***</b> nodes
+ <input name="udp_send_channel__mcast_if" value="eth0"><br>
+<p>Receiving Network Interface for <b>***Client***</b> nodes
+ <input name="udp_recv_channel__mcast_if" value="eth0"><br>
+
+<br>
+
+Enable per-image ganglia gmond configuration:
+<input type="checkbox" name="gmond_per_image" value="YES">
+<br>
+----
+<br>
+When multiple clusters are in use it might make sense to use different
+multicast ports for the client nodes such that the data from different
+clusters doesn't interfere. Specify which multicast port
+should be used for sending ganglia monitoring information:<br>
+<p>Sending Network Port for <b>***Client***</b> nodes
+ <input name="udp_send_channel__port" value="8649"><br>
+<p>Receiving Network Port for <b>***Client***</b> nodes
+ <input name="udp_recv_channel__port" value="8649"><br>
 
 <p>
 <input type=reset value='Reset Form'>

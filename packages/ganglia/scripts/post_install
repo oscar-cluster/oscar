@@ -1,5 +1,6 @@
-#!/usr/bin/env perl
-
+#!/bin/sh
+# $Id$
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -13,74 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# This script modifies the server's gmetad.conf and restarts it.
+# Finally it restarts all gmond daemons on all nodes.
+#
+# Copyright Erich Focht <efocht@hpce.nec.com> 2005
 
-# This script modifies the server's gmond.conf if necessary and then pushes 
-# it to the compute nodes and restart the ganglia daemons
-
-# (C)opyright Bernard Li <bli@bcgsc.ca>
-
-use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::Database;
-use OSCAR::Opkg;
-use Carp;
-use XML::Simple;
-
-my $gmond_conf = '/tmp/gmond.conf';
-my $confBuffer = "";
-
-# not useful currently, may be useful when define client supports changing of
-# default interface via the GUI, as per RFE #791658
-#my @result = split(/ = /,`grep 'DEVICE = eth' /var/lib/systemimager/scripts/*.master`);
-#my $iface = $result[1];
-
-my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
-
-# default interface for client nodes if package is not configured
-my $iface = "eth0";
-
-my $push_command = "/opt/c3-4/cpush";
-my $exec_command = "/opt/c3-4/cexec";
-
-if (-e $xml_data) {
-    $ref = XMLin($xml_data);
-    $iface = $ref->{iface};
-}
-
-# get interface of headnode
-my $headnode_iface = get_headnode_iface();
-
-if ( $headnode_iface eq $iface ) {
-    opkg_print("Pushing headnode's gmond.conf to compute nodes\n");
-    system("$push_command /etc/gmond.conf /etc/gmond.conf");
-} else {
-    system("cp /etc/gmond.conf $gmond_conf");
-    
-    open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
-    
-    while ($line = <CONF>) {
-	$confBuffer = $confBuffer.$line;
-    }
-    
-    close(CONF, $gmond_conf);
-    
-    $confBuffer =~ s/mcast_if = eth[0-9]/mcast_if = $iface/g;
-    
-    open(CONF, '>'.$gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
-    
-    print CONF $confBuffer;
-    
-    close(CONF);
-    
-    opkg_print("Pushing modified gmond.conf to compute nodes\n");
-    system("$push_command $gmond_conf /etc/gmond.conf");
-    
-    system("rm $gmond_conf");
-}
-
-# stop all running daemons and restart them all (on headnode and clients)
-system("/etc/init.d/gmond stop");
-system("/etc/init.d/gmetad stop");
-system("$exec_command /etc/init.d/gmond stop");
-system("/etc/init.d/gmond start");
-system("$exec_command /etc/init.d/gmond start");
-system("/etc/init.d/gmetad start");
+$OSCAR_PACKAGE_HOME/scripts/edit_ganglia_conf --gmetad --verbose
+/etc/init.d/gmond restart
+cexec /etc/init.d/gmond restart

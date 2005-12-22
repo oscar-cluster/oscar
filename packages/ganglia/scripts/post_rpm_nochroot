@@ -1,0 +1,97 @@
+#!/usr/bin/env /usr/bin/perl
+#########################################################################
+#  Script Name : post_rpm_nochroot
+#  Written by  : Erich Focht
+#  Date        : November 24, 2003
+#  Purpose     : This post_install script configures gmond for the
+#                nodes of a particular image.
+#  Copyright (c) Erich Focht 2003-2005
+#                All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#########################################################################
+# $Id$
+#########################################################################
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use Carp;
+use POSIX;
+use XML::Simple;
+use Tk;
+use OSCAR::Configbox;
+use lib '/usr/lib/systeminstaller';
+use SIS::DB;
+use SIS::Image;
+
+my $configdir = "$ENV{OSCAR_PACKAGE_HOME}/.configs";
+
+my $imagedir = shift @ARGV;
+$imagedir =~ s/\/$//;
+my $image = $imagedir;
+$image =~ s:^.*/::g;
+
+my $window;
+
+#####################
+# BEGIN MAIN SCRIPT #
+#####################
+
+if (! -d $configdir) {
+    !system("mkdir ".$configdir) || do {
+	print "Could not create directory $configdir\n";
+	exit 1;
+    };
+}
+
+my $imageconf = $configdir."/".$image;
+my $valuesfile = $imageconf."/.configurator.values";
+
+my $i = list_image(name=>$image);
+if (!$i) {
+    carp "Could not find image $image!";
+    exit 1;
+}
+
+print "configuring gmond for image=$image valuesfile=$valuesfile\n";
+
+if (! -d $imageconf) {
+    !system("mkdir ".$imageconf) || do {
+	print "Could not create directory $imageconf\n";
+	exit 1;
+    };
+    if (! -e $imageconf."/configurator.html") {
+	!system("sed -e \"s/\@IMAGENAME\@/$image/\" ".
+		"< $ENV{OSCAR_PACKAGE_HOME}/configurator_image.html ".
+		"> $imageconf/configurator.html") or
+		croak("Could not create $imageconf/configurator.html! $!\n");
+    }
+} else {
+    print "Found $imageconf\n";
+}
+
+if (!-f $valuesfile) {
+    OSCAR::Configbox::configurePackage(0, $imageconf);
+    MainLoop();
+}
+
+#
+# do the gmond configuration according to the values file
+#
+exec "$ENV{OSCAR_PACKAGE_HOME}/scripts/edit_ganglia_conf --gmond --image $image --verbose"
+    or carp("Could not run edir_ganglia_conf! $!");
+
+exit 0;

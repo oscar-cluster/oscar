@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/bin/bash
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,137 +14,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# This script reads the Configurator result and sets up the configuration
-# files gmond.conf and gmetad.conf for the server
+# This script modifies the server's gmond.conf according to the configurator values. 
 
-# (C)opyright Bernard Li <bli@bcgsc.ca>
+# Copyright Erich Focht 2005
 
-use XML::Simple;
-use Carp;
-use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::Database;
-use OSCAR::Opkg;
+/etc/init.d/gmond stop
+$OSCAR_PACKAGE_HOME/scripts/edit_ganglia_conf --gmond --verbose
+/etc/init.d/gmond start
 
-my $gmondBuffer = "";
-my $gmetadBuffer = "";
-
-my $hostname = `hostname`;
-chomp($hostname);
-
-my $gmetad_conf = "/etc/gmetad.conf";
-my $gmond_conf = "/etc/gmond.conf";
-
-my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
-
-# default settings if user does not configure the package
-my $data_source_default = "OSCAR Cluster";
-my $gridname_default = "OSCAR";
-my $owner_default = "OSCAR";
-
-# get headnode's interface information from OSCAR database
-my $iface = get_headnode_iface();
-
-# need to modify gmond.conf file whether .configurator.values exists or not
-open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
-
-while ($line = <CONF>) {
-    $gmondBuffer = $gmondBuffer.$line;
-}
-
-close(CONF, $gmond_conf);
-
-$gmond_conf = ">".$gmond_conf;
-
-if (-e $xml_data) {
-    $ref = XMLin($xml_data);
-} else {
-    $ref->{datasource} = $data_source_default;
-    $ref->{gridname} = $gridname_default;
-    $ref->{owner} = $owner_default;
-}
-    
-### gmetad ###
-
-open(CONF, $gmetad_conf) or croak("Error: unable to open ($gmetad_conf)\n");
-    
-while ($line = <CONF>) {
-    $gmetadBuffer = $gmetadBuffer.$line;
-}
-    
-close(CONF, $gmetad_conf);
-    
-$gmetad_conf = ">".$gmetad_conf;
-    
-$gmetadBuffer =~ s/data_source "my cluster" localhost/data_source "$ref->{datasource}" $hostname/;
-$gmetadBuffer =~ s/# gridname "MyGrid"/gridname "$ref->{gridname}"/;
-    
-open(CONF, $gmetad_conf) or croak("Error: unable to open ($gmetad_conf)\n");
-    
-print CONF $gmetadBuffer;    
-    
-close(CONF);
-
-### gmond ###
-
-$gmondBuffer =~s/name = "unspecified"/name = "$ref->{datasource}"\n  owner = "$ref->{owner}"/;
-
-my $num_iface = `ifconfig | grep eth | wc -l`;
-
-# If we have more than one ethernet interface, then set mcast_if for gmond.conf
-if ($num_iface > 1) {
-    if ($gmondBuffer =~ "mcast_if") {
-	$gmondBuffer =~ s/mcast_if = eth[0-9]/mcast_if = $iface/g;
-    } else {
-	$gmondBuffer =~ s/mcast_join = 239.2.11.71/mcast_join = 239.2.11.71\n  mcast_if = $iface/g;
-    }
-
-    my $route_string;
-    my $static_route_file;
-    my $reload_route;
-
-    # FIXME: OCA Framework
-    # There are two different ways to setup static routes, Mandriva uses the "old" style right now...
-    if ( (-e "/etc/mandrake-release") || (-e "/etc/mandrakelinux-release") ) {
-	$route_string = "any net 224.0.0.0 netmask 240.0.0.0 dev $iface"; 
-	$static_route_file = "/etc/sysconfig/static-routes";
-	$reload_route = "service network restart"; 
-    } else {
-	$route_string = "224.0.0.0/4 dev $iface";
-    	$static_route_file = "/etc/sysconfig/network-scripts/route-$iface";
-	$reload_route = "/etc/sysconfig/network-scripts/ifup-routes $iface";
-    }
-
-    # Check to see if multicast route already exists
-    my $mcast_route = `route | grep 224.0.0.0 | grep $iface`;
-
-    if (!($mcast_route)) {
-        if (-e $static_route_file) {
-		$mcast_route = `grep 224.0.0.0 $static_route_file`;
-	}
-	if (!($mcast_route)) {
-		opkg_print("Adding default route for multicast to go through $iface.\n");
-		`echo $route_string >> $static_route_file`;
-	}
-	`$reload_route`;
-    }
-}
-
-open(CONF, $gmond_conf) or croak("Error: unable to open ($gmond_conf)\n");
-    
-print CONF $gmondBuffer;    
-
-close(CONF);
-
-opkg_print("Ganglia configuration files modified, re-starting daemons...\n");
-
-# restart gmond and gmetad
-system("/etc/init.d/gmond restart");
-system("/etc/init.d/gmetad restart");
-
-opkg_print("Starting up apache...\n");
-
-# autoload apache in levels 345 and start it up
-system("/sbin/chkconfig --levels 345 httpd on");
-system("/etc/init.d/httpd start");
-
-opkg_print("Ganglia page is located at http://localhost/ganglia\n");
