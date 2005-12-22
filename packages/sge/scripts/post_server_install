@@ -323,6 +323,10 @@ if ( is_installed_on_node("$pvm_pe") ) {
         `$qconf -sp $pvm_pe 2>&1`; # or croak("Cannot run qconf -sp");
 
         if ($? == 256) {
+		my $pvm_root = `bash -l -c 'echo \$PVM_ROOT'`;
+		chomp($pvm_root);
+		$ENV{PVM_ROOT} = $pvm_root;
+
                 # Parallel Environment does not exist, creating...
                 opkg_print("Adding PVM Parallel Environment to SGE\n");
                 open(PVM, '>'.$pvm_pe_file) or croak("Cannot open file $pvm_pe_file for writing");
