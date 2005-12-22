@@ -251,7 +251,7 @@ croak("Couldn't set up oda database") if $exit_status;
 # More ODA setup
 
 my $exit_status =
-  system( "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values" ) / 256;
+  system( "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values --interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}" ) / 256;
 croak("Couldn't initialize the global database values table") if $exit_status;
 
 my $exit_status =

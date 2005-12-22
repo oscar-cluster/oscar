@@ -2545,10 +2545,8 @@ sub get_gateway{
 sub get_headnode_iface {
     my ($options_ref,
 	$error_strings_ref) = @_;
-    my @results = ();
-    get_nics_info_with_node("oscar_server", \@results, $options_ref, $error_strings_ref);
-    my $ref = pop @results;
-    return $$ref{name};
+    my $cluster_ref = get_cluster_info_with_name("oscar", $options_ref, $error_strings_ref);
+    return $$cluster_ref{headnode_interface};
 }
 
 #=======================================================================

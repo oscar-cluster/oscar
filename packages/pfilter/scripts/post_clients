@@ -24,12 +24,13 @@
 
 use strict;
 use Carp;
-use lib '/usr/lib/systeminstaller';
+use lib "/usr/lib/systeminstaller", "$ENV{OSCAR_HOME}/lib";
 use SystemInstaller::Machine;
 use File::Copy;
 use SIS::Image;
 use SIS::DB;
 
+use OSCAR::Database;
 
 # function to return a sorted, unique lines only version of a passed list
 
@@ -80,9 +81,9 @@ chomp $hostname;
 # in /etc/pfilter.conf
 
 my $on_interface = "";
-if ( exists $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} &&
-     $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} ne "" ) {
-    $on_interface = "on      $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}";
+my $interface = get_headnode_iface();
+if ( $interface && $interface ne "" ) {
+    $on_interface = "on      $interface";
 } else {
     print "Warning, $0 cannot determine the cluster interface name,\n";
     print "DHCP packets will be seen on this server from all network interfaces.\n";

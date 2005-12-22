@@ -253,6 +253,7 @@ if (!system("rpm -q tftp-server >/dev/null 2>&1")) {
 
 croak "\nError: \'/tftpboot\' is gone!" if(! -d "/tftpboot" );
 
+$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
 
 # Run the wizard_prep script
 
@@ -272,9 +273,6 @@ foreach ( `perl -e 'print "\$_\n" foreach \@INC'` ) {
 }
 undef %incs;
 #print __FILE__,":",__LINE__,":INC:",join(", ",@INC),"\n";
-
-
-$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
 
 oscar_log_section("Prerequisites installed");
 

@@ -120,6 +120,7 @@
             <installation_date>
                 <type> date </type>
             </installation_date>
+            <headnode_interface/>
         </fields>
     </Clusters>
 

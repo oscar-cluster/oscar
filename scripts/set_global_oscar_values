@@ -37,19 +37,48 @@ use OSCAR::Distro;
 use POSIX;
 use OSCAR::oda;
 
-my %options = ();
+my %cmd_options = ();
 
 # set default option values
-my %options = ( 'debug'       => 0,
-                'verbose'     => 0 );
+%cmd_options = ( 'debug'       => 0,
+                 'verbose'     => 0 );
+
+sub usage {
+
+    my ( $exit_status, @error_strings ) = @_;
+    my $progname = $0;
+    print <<USAGE;
+
+$progname
+
+$progname sets global OSCAR values and populate the OSCAR database.
+You must specify the headnode interface as an argument.
+
+Options:
+  --[no]debug       [do not] turn on debug output (default: no)
+  --help            print out usage information then exits
+  --interface       specifies the headnode interface to use (ethX)
+  --[no]verbose     [do not] turn on verbose output (default: no)
+
+Usage:
+$progname [options]
+
+USAGE
+    if ( @error_strings ) {
+        print "\n";
+        warn shift @error_strings while @error_strings;
+    }
+    exit $exit_status;
+}
 
 my %field_value_hash = ();
 # parse command line options
-GetOptions( \%options,
+GetOptions( \%cmd_options,
             'debug!',
             'database|d=s',
             'help',
             'host|h=s',
+            'interface|i=s',  
             'password=s',
             'port|p=i',
             'type|t=s',
@@ -57,8 +86,23 @@ GetOptions( \%options,
             'verbose!',
             'version' )
     || usage(1);
-print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
-oda::print_hash( "", "$0: options after GetOptions", \%options) if $options{debug};
+usage(0) if ! ( exists($cmd_options{interface}) );
+usage(0) if exists $cmd_options{help};
+
+print "$0: after GetOptions ARGV=<@ARGV>\n" if $cmd_options{debug};
+oda::print_hash( "", "$0: options after GetOptions", \%cmd_options) if $cmd_options{debug};
+
+if (! ($cmd_options{interface} =~ /^eth/) ) {
+    print "Interface specified not in the format of ethX.\n" if ! ($cmd_options{interface} =~ /^eth/);
+    exit(1);
+}
+
+`ifconfig $cmd_options{interface} > /dev/null 2>&1`;
+
+if ("$?") {
+    print "Interface specified does not exist.\n";
+    exit(1);
+}
 
 my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
 my $mysql_service_name = which_mysql_name($oscar_server_distribution,$oscar_server_distribution_version);
@@ -127,6 +171,7 @@ if ( !$query_results ){
                             "server_distribution" => $oscar_server_distribution,
                             "server_distribution_version" => $oscar_server_distribution_version,
                             "server_architecture" => $oscar_server_architecture,
+                            "headnode_interface" => "$cmd_options{interface}",
                             "installation_date" => "NOW()" );
     insert_into_table (\%options,"Clusters", \%field_value_hash,\@error_strings);                
 } else {
@@ -137,6 +182,7 @@ if ( !$query_results ){
                             "server_distribution" => $oscar_server_distribution,
                             "server_distribution_version" => $oscar_server_distribution_version,
                             "server_architecture" => $oscar_server_architecture,
+                            "headnode_interface" => "$cmd_options{interface}",
                             "installation_date" => "NOW()" );
     update_table(\%options,"Clusters", \%field_value_hash,undef,\@error_strings);                        
 }

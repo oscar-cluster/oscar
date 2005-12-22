@@ -70,24 +70,17 @@ my $interface = $ARGV[0];
 my %options = ();
 my @errors = ();
 
-if ( !defined($interface) || $interface eq '' ) {
-    my @result = ();
-    my $node = "oscar_server";
-    get_nics_info_with_node($node,\@result,\%options,\@errors);
-    my $result_ref = pop @result;
-    $interface = $$result_ref{name};
-}
+$interface = get_headnode_iface() if ( !defined($interface) || $interface eq '' );
 
 # Set some things in the environment
   
-$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$interface;
+#$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$interface;
 $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 # Create the main window...
 my $window = MainWindow->new();
 $window->withdraw();
 chomp(my $shostname = `hostname -s`);
 $window->title("OSCAR Installation Wizard - $shostname");
-
 
 # Get OSCAR's version
 
