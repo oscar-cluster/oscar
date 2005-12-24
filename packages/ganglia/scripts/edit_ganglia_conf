@@ -276,7 +276,7 @@ sub img_datasources {
 	    next;
 	}
 	my $imgport = $imgcfg{udp_send_channel__port};
-	if (master_port eq $imgport) {
+	if ($master_port eq $imgport) {
 	    print STDERR "Image $img nodes use same gmond port as master.\n";
 	    print STDERR "Skipping $img nodes as gmetad data_source\n";
 	    next;
