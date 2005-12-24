@@ -92,6 +92,6 @@ if (!-f $valuesfile) {
 # do the gmond configuration according to the values file
 #
 exec "$ENV{OSCAR_PACKAGE_HOME}/scripts/edit_ganglia_conf --gmond --image $image --verbose"
-    or carp("Could not run edir_ganglia_conf! $!");
+    or carp("Could not run edit_ganglia_conf! $!");
 
 exit 0;
