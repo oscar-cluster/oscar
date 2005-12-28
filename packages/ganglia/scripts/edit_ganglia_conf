@@ -189,11 +189,11 @@ sub edit_gmetad_conf {
     # gmetad configuration.
     #
     my %del_patterns = (
-	   gridname   => "gridname\\s*=.*",
+	   gridname   => "gridname\\s+.*",
 	   datasource => "data_source\\s+.*",
 			   );
     my %add_patterns = (
-	   gridname => "gridname = \"<gridname>\"",
+	   gridname => "gridname \"<gridname>\"",
 	   datasource => "data_source \"<cluster__name>\" $hostname",
 			   );
     
