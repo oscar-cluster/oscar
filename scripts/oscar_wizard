@@ -612,7 +612,7 @@ sub run_post_install {
 
 sub update_client_node_package_status {    
 	my @pkgs = list_selected_packages();
-    my @tables = ("Nodes", "Packages", "Node_Package_Status", "Node_Packages");
+    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status", "Node_Packages");
     locking("WRITE", \%options, \@tables, \@errors);
     my @client_nodes = ();
     get_client_nodes(\@client_nodes,\%options,\@errors);
