@@ -68,6 +68,7 @@ if(-e '/etc/odapw'){
               get_packages_related_with_package
               get_packages_related_with_name
               get_packages_switcher
+              get_packages_servicelists
               get_packages_with_class
               set_group_packages
               del_group_packages
@@ -1740,6 +1741,18 @@ sub get_packages_switcher{
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }    
 
+sub get_packages_servicelists{
+    my ($results_ref,
+        $name,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT P.package, S.service " .
+              "FROM Packages P, Packages_servicelists S " .
+              "WHERE P.id=S.package_id ";
+    $sql .= ($name?" AND P.package='$name'":"");          
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}    
+
 sub set_group_nodes{
     my ($group,
         $nodes_ref,
@@ -1902,10 +1915,20 @@ sub update_node_package_status{
         } elsif ( $requested == 0 ) {
             print "Updating the status of $opkg to \"should not be installed\".\n";
         }
-        die "$0:Failed to update the status of $opkg"
-            if(!update_table($options_ref,"Node_Package_Status",\%field_value_hash, $where, $error_strings_ref));
-
-        my $table = "Node_Packages";
+        my @results = ();
+        my $table = "Node_Package_Status";
+        get_node_package_status_with_node_package($node,$opkg,\@results,$options_ref,$error_strings_ref);
+        if(@results){
+            die "$0:Failed to update the status of $opkg"
+                if(!update_table($options_ref,$table,\%field_value_hash, $where, $error_strings_ref));
+        }else{
+            %field_value_hash = ("node_id" => $node_id,
+                                 "package_id"=>$package_id,
+                                 "requested" => $requested);
+            die "$0:Failed to insert values into table $table"
+                if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
+        }
+        $table = "Node_Packages";
         delete_table($options_ref,$table,$where,$error_strings_ref);
         %field_value_hash = ("node_id" => $node_id,
                              "package_id"=>$package_id);
@@ -1995,6 +2018,30 @@ sub get_node_package_status_with_node{
                  "WHERE Node_Package_Status.package_id=Packages.id ".
                  "AND Node_Package_Status.node_id=Nodes.id ".
                  "AND Nodes.name='$node'";
+        if(defined $requested && $requested ne ""){
+            $sql .= " AND Node_Package_Status.requested=$requested ";
+        }
+        if(defined $version && $version ne ""){
+            $sql .= " AND Packages.version=$version ";
+        }
+    die "$0:Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return 1;
+}
+
+sub get_node_package_status_with_node_package{
+    my ($node,
+        $package,
+        $results,
+        $options_ref,
+        $error_strings_ref,
+        $requested,
+        $version) = @_;
+        my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+                 "From Packages, Node_Package_Status, Nodes ".
+                 "WHERE Node_Package_Status.package_id=Packages.id ".
+                 "AND Node_Package_Status.node_id=Nodes.id ".
+                 "AND Nodes.name='$node' AND Packages.package='$package'";
         if(defined $requested && $requested ne ""){
             $sql .= " AND Node_Package_Status.requested=$requested ";
         }

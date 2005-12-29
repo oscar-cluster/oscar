@@ -555,7 +555,7 @@ sub do_it_or_die {
 
 sub populate_client_group_nodes{
 	my @pkgs = list_selected_packages();
-    my @tables = ("Nodes", "Group_Nodes", "Groups");
+    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status", "Node_Packages");
     locking("WRITE", \%options, \@tables, \@errors);
     my @client_nodes = ();
     get_client_nodes(\@client_nodes,\%options,\@errors);
@@ -568,6 +568,11 @@ sub populate_client_group_nodes{
     my $client_group = "oscar_clients";
     set_group_nodes($client_group,\@nodes,\%options,\@errors);
 
+    # We assume that all the selected packages should be installed
+    my $status = 1;
+    foreach my $node_name (@nodes){
+        update_node_package_status(\%options,$node_name,\@pkgs,$status,\@errors);
+    }     
     
     unlock(\%options, \@errors);
 }
@@ -600,8 +605,31 @@ sub run_post_install {
     };
     run_command($window, $step_number, $cmd_vars);
 
+    &update_client_node_package_status;
     oscar_log_subsection('Update Wizard Env (as needed)');
     @mod_env = WizardEnv::update_env();
+}
+
+sub update_client_node_package_status {    
+	my @pkgs = list_selected_packages();
+    my @tables = ("Nodes", "Packages", "Node_Package_Status", "Node_Packages");
+    locking("WRITE", \%options, \@tables, \@errors);
+    my @client_nodes = ();
+    get_client_nodes(\@client_nodes,\%options,\@errors);
+    my @nodes = ();
+    foreach my $client_ref (@client_nodes){
+        my $node_id = $$client_ref{id};
+        my $node_name = $$client_ref{name};
+        push @nodes, $node_name;
+    }
+
+    # We assume that all the selected packages should be installed
+    my $status = 7;
+    foreach my $node_name (@nodes){
+        update_node_package_status(\%options,$node_name,\@pkgs,$status,\@errors);
+    }     
+    
+    unlock(\%options, \@errors);
 }
 
 ###########################################################################
