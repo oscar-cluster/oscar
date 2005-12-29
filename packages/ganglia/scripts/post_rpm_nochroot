@@ -50,15 +50,26 @@ my $window;
 # BEGIN MAIN SCRIPT #
 #####################
 
+my $imageconf = $configdir."/".$image;
+my $valuesfile = $imageconf."/.configurator.values";
+my $mastervals = $ENV{OSCAR_PACKAGE_HOME}."/.configurator.values";
+
+my $master_conf;
+if (-e $mastervals) {
+    $master_conf = XMLin($mastervals);
+    # exit if no per-image config
+    exit 0 if ($master_conf->{gmond_per_image} ne "YES");
+} else {
+    # default values, so no per-image config!
+    exit 0;
+}
+
 if (! -d $configdir) {
     !system("mkdir ".$configdir) || do {
 	print "Could not create directory $configdir\n";
 	exit 1;
     };
 }
-
-my $imageconf = $configdir."/".$image;
-my $valuesfile = $imageconf."/.configurator.values";
 
 my $i = list_image(name=>$image);
 if (!$i) {
