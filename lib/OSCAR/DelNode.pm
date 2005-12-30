@@ -18,10 +18,12 @@ package OSCAR::DelNode;
 
 #   Copyright 2001-2002 International Business Machines
 #                       Sean Dague <japh@us.ibm.com>
+# Copyright (c) 2005 The Trustees of Indiana University.  
+#                    All rights reserved.
 
 use strict;
 use vars qw($VERSION @EXPORT);
-use lib "$ENV{OSCAR_HOME}/lib/OSCAR";
+use lib "$ENV{OSCAR_HOME}/lib";
 use Tk;
 use Carp;
 use SystemInstaller::Tk::Common;
@@ -104,92 +106,99 @@ sub fill_listbox {
 
 
 sub delnodes {
-        my $window=shift;
-        my $listbox=shift;
-        my @clients;
-        my @elements=$listbox->curselection;
-        foreach my $index (@elements) {
-                push @clients,$listbox->get($index);
+    my $window=shift;
+    my $listbox=shift;
+    my @clients;
+    my @elements=$listbox->curselection;
+    foreach my $index (@elements) {
+            push @clients,$listbox->get($index);
+    }
+    my $clientstring=join(",",@clients);
+    my $fail=0;
+
+    my @generic_services=();
+    my @server_services=();
+    my $print_error=1;
+
+    # get the list of generic services
+    get_packages_servicelists(\@generic_services,"");
+    
+    # get the list of services for servers
+    get_packages_servicelists(\@server_services,"oscar_server");
+    
+    print ">> Turning off generic services\n";
+    foreach my $services_ref (@generic_services) {
+        my $generic_service = $$services_ref{service};
+        if (system("/etc/init.d/$generic_service stop")) {
+            carp("generic_services phase failed.");
+            $fail++;
         }
-        my $clientstring=join(",",@clients);
-        my $fail=0;
-
-        my @generic_services=();
-        my @server_services=();
-        my $print_error=1;
-
-        # get the list of services for clients
-        database_execute_command("list_services NULL", \@generic_services, $print_error);
-
-        # get the list of services for servers
-        database_execute_command("list_services oscar_server", \@server_services, $print_error);
-        
-        print ">> Turning off client services\n";
         foreach my $client (@clients) {
-                foreach my $generic_service (@generic_services) {
-			print "[$client]\n";
-                        if (system("/usr/bin/ssh $client /etc/init.d/$generic_service stop")) {
-                                carp("client_services phase failed.");
-                                $fail++;
-                        }
-                }
+            print "[$client]\n";
+            if (system("/usr/bin/ssh $client /etc/init.d/$generic_service stop")) {
+                carp("client_services phase failed.");
+                $fail++;
+            }
         }
+    }
 
-        if (system("mksimachine --Delete --name $clientstring")) {
-          carp("Failed to delete machines $clientstring");
-          $fail++;
-	}
+    if (system("mksimachine --Delete --name $clientstring")) {
+      carp("Failed to delete machines $clientstring");
+      $fail++;
+    }
 
-        print ">> Executing post_clients phase\n";
-        if (system("./post_clients")) {
-          carp("post_clients phase failed.");
-          $fail++;
-        }
-        print ">> Executing post_install phase\n";
-        if (system("./post_install")) {
-          carp("post_install phase failed.");
-          $fail++;
-        }
+    print ">> Executing post_clients phase\n";
+    if (system("./post_clients")) {
+      carp("post_clients phase failed.");
+      $fail++;
+    }
+    print ">> Executing post_install phase\n";
+    if (system("./post_install")) {
+      carp("post_install phase failed.");
+      $fail++;
+    }
 
-        print ">> Re-starting server services\n";
-	foreach my $generic_service (@generic_services) {
-        	if (system("/etc/init.d/$generic_service restart")) {
-                	carp("server_services generic phase failed.");
-                        $fail++;
-                }
+    print ">> Re-starting generic services\n";
+    foreach my $services_ref (@generic_services) {
+        my $generic_service = $$services_ref{service};
+        if (system("/etc/init.d/$generic_service restart")) {
+            carp("server_services generic phase failed.");
+            $fail++;
         }
-        foreach my $server_service (@server_services) {
-                if (system("/etc/init.d/$server_service restart")) {
-			carp("server_services server phase failed.");
-			$fail++;
-		}
+    }
+    print ">> Re-starting server services\n";
+    foreach my $services_ref (@server_services) {
+        my $server_service = $$services_ref{service};
+        if (system("/etc/init.d/$server_service restart")) {
+            carp("server_services server phase failed.");
+            $fail++;
         }
-        
-        print ">> Updating C3 configuration file\n";
-        if (system("$ENV{OSCAR_HOME}/packages/c3/scripts/post_clients")) {
-                carp("C3 configuration file update phase failed.");
+    }
+    
+    print ">> Updating C3 configuration file\n";
+    if (system("$ENV{OSCAR_HOME}/packages/c3/scripts/post_clients")) {
+        carp("C3 configuration file update phase failed.");
+        $fail++;
+    }
+                                                                            
+    print ">> Re-starting client services on remaining nodes\n";
+    foreach my $services_ref (@generic_services) {
+        my $generic_service = $$services_ref{service};
+        if (system("/opt/c3-4/cexec /etc/init.d/$generic_service restart")) {
+                carp("client_services restart phase failed.");
                 $fail++;
         }
-                                                                                
-        print ">> Re-starting client services on remaining nodes\n";
-        foreach my $generic_service (@generic_services) {
-                if (system("/opt/c3-4/cexec /etc/init.d/$generic_service restart")) {
-                        carp("client_services restart phase failed.");
-                        $fail++;
-                }
-        }
+    }
 
-        fill_listbox($listbox);
-        if ($fail) {
-          error_window($window,"Clients deleted, but reconfiguration failed.");
-          return 0;
-        } else {
-	  &delete_client_config_opkgs(@clients);
-          done_window($window,"Clients deleted.");
-          return 1;
-        }
-  
-
+    fill_listbox($listbox);
+    if ($fail) {
+      error_window($window,"Clients deleted, but reconfiguration failed.");
+      return 0;
+    } else {
+        &delete_client_node_opkgs(@clients);
+        done_window($window,"Clients deleted.");
+        return 1;
+    }
 }
 
 
@@ -198,17 +207,18 @@ sub delnodes {
 #
 # NEST
 #
-# This script deletes the records from node_config_revs and config_opkgs
-# tables with a node name.
+# This script deletes the client node records from Group_Nodes
+# Nodes, Node_Packages, and Node_Package_Status tables with a
+# node name.
 #
-# del_node_config_opkgs is a shortcut to delete the record about node_config_revs
-# and config_opkgs.
+# delete_node is a subroutine to delete the record about client
+# nodes.
 #
 
-sub delete_client_config_opkgs {
+sub delete_client_node_opkgs {
     my @nodes = @_;
     foreach my $node (@nodes){
-       if (system("oda del_node_config_opkgs $node")) {
+       if (!delete_node($node)) {
           carp("Failed to delete the records for node_config_revs and config_opkgs");
        }
     }

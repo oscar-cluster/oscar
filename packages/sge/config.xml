@@ -41,6 +41,10 @@
   </binary-package-list>  
 
   <servicelist>
+      <filter>
+        <group>oscar_clients</group>
+      </filter>
+      
       <service>sgeexecd</service>
   </servicelist>
 

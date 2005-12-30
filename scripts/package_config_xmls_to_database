@@ -552,13 +552,17 @@ foreach my $directory ( @directories ) {
             if( ref($service_ref) eq "ARRAY") {
                 foreach my $ref (@$service_ref){
                     my $value = $ref->{service};
+                    my $group = ($ref->{filter}->{group}?$ref->{filter}->{group}:"all");
                     %field_value_hash = ( "package_id"=>"$package_id",
+                                          "group_name"=>$group,
                                           "service"=>$value);
                     insert_into_table (\%options,"Packages_servicelists",\%field_value_hash,\@error_strings);
                 }
             }else{
                 my $value = $service_ref->{service}; 
+                my $group = ($service_ref->{filter}->{group}?$service_ref->{filter}->{group}:"all");
                 %field_value_hash = ( "package_id"=>"$package_id",
+                                      "group_name"=>$group,
                                       "service"=>$value);
                 insert_into_table (\%options,"Packages_servicelists",\%field_value_hash,\@error_strings);
             }

@@ -413,6 +413,7 @@
             <package_id>
                 <type> integer </type>
             </package_id>    
+            <group_name/>
             <service/>
         </fields>
     </Packages_servicelists>

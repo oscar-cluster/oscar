@@ -63,6 +63,7 @@ if(-e '/etc/odapw'){
               update_table
               select_table
               delete_table
+              delete_node
               get_client_nodes
               get_networks
               get_packages_related_with_package
@@ -1514,11 +1515,39 @@ sub delete_node{
     my ($node_name,
         $options_ref,
         $error_strings_ref) = @_;
+    my $node_ref = get_node_info_with_name($node_name,$options_ref,$error_strings_ref);    
+    my $node_id = $$node_ref{id};
+    return 1 if !$node_id;
+
+    delete_group_node($node_id,$options_ref,$error_strings_ref);
+    delete_node_packages($node_id,$options_ref,$error_strings_ref);
     my $sql = "DELETE FROM Nodes ";
     $sql .= ($node_name?"WHERE name='$node_name'":"");
     die "$0:Failed to update values via << $sql >>"
         if! do_update($sql,"Nodes", $options_ref, $error_strings_ref);
 }    
+
+sub delete_group_node{
+    my ($node_id,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "DELETE FROM Group_Nodes WHERE node_id=$node_id";
+    die "$0:Failed to update values via << $sql >>"
+        if! do_update($sql,"Group_Nodes", $options_ref, $error_strings_ref);
+}
+
+sub delete_node_packages{
+    my ($node_id,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "DELETE FROM Node_Packages WHERE node_id=$node_id";
+    die "$0:Failed to update values via << $sql >>"
+        if! do_update($sql,"Node_Packages", $options_ref, $error_strings_ref);
+    $sql = "DELETE FROM Node_Package_Status WHERE node_id=$node_id";
+    die "$0:Failed to update values via << $sql >>"
+        if! do_update($sql,"Node_Package_Status", $options_ref, $error_strings_ref);
+}
+
 
 sub get_client_nodes_info{
     my ($server,
@@ -1743,13 +1772,15 @@ sub get_packages_switcher{
 
 sub get_packages_servicelists{
     my ($results_ref,
-        $name,
+        $group_name,
         $options_ref,
         $error_strings_ref) = @_;
-    my $sql = "SELECT P.package, S.service " .
-              "FROM Packages P, Packages_servicelists S " .
-              "WHERE P.id=S.package_id ";
-    $sql .= ($name?" AND P.package='$name'":"");          
+    my $sql = "SELECT distinct P.package, S.service " .
+              "FROM Packages P, Packages_servicelists S, Node_Package_Status N, " .
+              "Group_Nodes G " .
+              "WHERE P.id=S.package_id AND N.package_id=S.package_id ".
+              "AND G.node_id=N.node_id ";
+    $sql .= ($group_name?" AND G.group_name='$group_name' AND S.group_name='$group_name'":" AND S.group_name!='oscar_server'");          
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }    
 
