@@ -425,20 +425,28 @@ if( $directory_argument ){
     foreach my $skipped_oda_directory ( @valid_oda_directories ) {
         warn "$0: ignoring oda package directory $skipped_oda_directory";
     }
-
     # Create oscar tables through the config.xml which contains the table information
+    # If the table already exists, it will not be created again but
+    # %table_fields_hash is updated everytime package_config_xmls_to_database runs.
     $xml_ref = get_xml_ref($oda_directory, "oda", $msg);
     foreach my $table_name (keys (%{$xml_ref->{database_tables}})){
         my $tmp_hash =  $xml_ref->{database_tables}->{$table_name};
         die "$0: cannot create a table, $table_name"
             if ! create_table($tmp_hash,$table_name,\%table_fields_hash,\%options, \@error_strings);
     }
+
 }    
 
 my %fields = ();
 if ( (scalar keys %table_fields_hash) == 0 ){
     oda::list_fields(\%options,"Packages",\%fields,\@error_strings);
-    $table_fields_hash{"Packages"} = \%fields;
+    my %packages_hash = %fields;
+    foreach my $field (keys %packages_hash){
+        if($field == "__group"){ $field = "group"; }
+        if($field == "__class"){ $field = "class"; }
+        $packages_hash{$field} = 1;
+    }
+    $table_fields_hash{"Packages"} = \%packages_hash;
 }    
 
 foreach my $directory ( @directories ) {
