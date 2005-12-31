@@ -190,6 +190,33 @@ sub is_installed {
     return ($result_ref?1:0);                    
 }
 
+sub delete_packages_related_table {
+    my ($package,$options_ref,$error_ref,$package_version) = @_;
+    my $where = "";
+    my $package_ref = 
+        get_package_info_with_name($package,
+                                   $options_ref,
+                                   $error_ref,
+                                   $package_version);
+    my $package_id = $$package_ref{id};
+
+    my @list_of_tables = ("Packages_rpmlists", 
+                          "Packages_conflicts", "Packages_provides",
+                          "Packages_requires", "Packages_servicelists",
+                          "Packages_switcher");
+    foreach my $table_name (@list_of_tables){
+        if ($table_name eq "Packages_conflicts" ||
+            $table_name eq "Packages_provides" ||
+            $table_name eq "Packages_requires"){
+            $where = "WHERE p1_id='$package_id'";
+        }else{
+            $where = "WHERE package_id='$package_id'";
+        }
+        delete_table(\%options,$table_name, $where ,\@error_strings);
+    }
+    return $package_id;
+}    
+
 sub usage {
     my ( $exit_status, @error_strings ) = @_;
     my $progname = $0;
@@ -449,6 +476,12 @@ if ( (scalar keys %table_fields_hash) == 0 ){
     $table_fields_hash{"Packages"} = \%packages_hash;
 }    
 
+my @packages_in_db = get_packages(\%options,\@error_strings);
+my %opkg_to_be_deleted = ();
+foreach my $key_package (@packages_in_db){
+    $opkg_to_be_deleted{$key_package} = 1;
+}    
+
 foreach my $directory ( @directories ) {
     my $package = $directory;
     $package =~ s,^.*/,,;
@@ -458,30 +491,17 @@ foreach my $directory ( @directories ) {
          $package ne "CVS" &&
          $package ne ".svn" &&
          ! -e "$directory/.oscar_ignore" ) {
+
+        # Assign 1 to %opkg_to_be_deleted if $package is already in the DB
+        # ,which means it($package) should be kept.
+        # The rest of packages with 1 in %opkg_to_be_deleted will be removed
+        $opkg_to_be_deleted{$package} = 0 if $opkg_to_be_deleted{$package};
+         
         print "$0: package=<$package>\n" if $options{debug};
         $msg = "";
         $xml_ref = get_xml_ref($directory, $package,$msg);
         if( is_installed($package,$package_version) ){
-            my @list_of_tables = ("Packages_rpmlists", 
-                                  "Packages_conflicts", "Packages_provides",
-                                  "Packages_requires", "Packages_servicelists",
-                                  "Packages_switcher");
-            my $where = "";
-            my $package_ref = 
-                get_package_info_with_name($package,\%options,\@error_strings,$package_version);
-            my $package_id = $$package_ref{id};
-            foreach my $table_name (@list_of_tables){
-                if ($table_name eq "Packages"){
-                   $where = "WHERE id='$package_id'";
-                }elsif ($table_name eq "Packages_conflicts" ||
-                        $table_name eq "Packages_provides" ||
-                        $table_name eq "Packages_requires"){
-                   $where = "WHERE p1_id='$package_id'";
-                }else{
-                   $where = "WHERE package_id='$package_id'";
-                }
-                delete_table(\%options,$table_name, $where ,\@error_strings);
-            }
+            my $package_id = delete_packages_related_table($package,\%options,\@error_strings,$package_version);
             update_packages($xml_ref, "Packages", $package_id, $package, 
                             $directory, \%table_fields_hash, \%options, \@error_strings);
             $msg = "Modifying existing $packages_table_name record for package";
@@ -498,6 +518,7 @@ foreach my $directory ( @directories ) {
         }        
     }
 }
+
 my @nics_results = ();
 my $server_node = "oscar_server";
 
@@ -505,6 +526,18 @@ my $server_node = "oscar_server";
 # If nics table is already filled in, this is not first time installation
 # and skip the process of inserting into the Group_Packages table.
 get_nics_info_with_node($server_node,\@nics_results,\%options,\@error_strings);
+
+# Delete the packages to be deleted when there is no $directory_argument,
+# which means it is a call from normal installation but not from OPD.
+# This needs to clean the tables related to Packages too.
+if(!$directory_argument){
+    foreach my $pkg (keys %opkg_to_be_deleted){
+        if($opkg_to_be_deleted{$pkg} == 1){
+            delete_packages_related_table($pkg,\%options,\@error_strings,$package_version);
+            delete_package($pkg,\%options,\@error_strings);
+        }
+    }    
+}
 
 foreach my $directory ( @directories ) {
     my $package = $directory;

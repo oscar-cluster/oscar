@@ -63,7 +63,9 @@ if(-e '/etc/odapw'){
               update_table
               select_table
               delete_table
+              delete_package
               delete_node
+              get_packages
               get_client_nodes
               get_networks
               get_packages_related_with_package
@@ -1510,6 +1512,17 @@ sub get_node_info{
     die "$0:Failed to query values via << $sql >>"
         if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
+
+sub delete_package{
+    my ($package_name,
+        $options_ref,
+        $error_strings_ref,
+        $package_version) = @_;
+    my $sql = "DELETE FROM Packages WHERE package='$package_name' ";
+    $sql .= ($package_version?"AND version='$package_version'":"");
+    die "$0:Failed to update values via << $sql >>"
+        if! do_update($sql,"Packages", $options_ref, $error_strings_ref);
+}    
 
 sub delete_node{
     my ($node_name,
