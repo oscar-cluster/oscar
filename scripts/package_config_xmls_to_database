@@ -454,7 +454,7 @@ foreach my $directory ( @directories ) {
         $msg = "";
         $xml_ref = get_xml_ref($directory, $package,$msg);
         if( is_installed($package,$package_version) ){
-            my @list_of_tables = ("Packages_rpmlists", "Group_Packages",
+            my @list_of_tables = ("Packages_rpmlists", 
                                   "Packages_conflicts", "Packages_provides",
                                   "Packages_requires", "Packages_servicelists",
                                   "Packages_switcher");
@@ -490,6 +490,13 @@ foreach my $directory ( @directories ) {
         }        
     }
 }
+my @nics_results = ();
+my $server_node = "oscar_server";
+
+# Determine if it is the first time installation or not.
+# If nics table is already filled in, this is not first time installation
+# and skip the process of inserting into the Group_Packages table.
+get_nics_info_with_node($server_node,\@nics_results,\%options,\@error_strings);
 
 foreach my $directory ( @directories ) {
     my $package = $directory;
@@ -517,7 +524,7 @@ foreach my $directory ( @directories ) {
         # The newly downloaded packages is not determined to
         # add to the selected "Group" (i.e., Default).
         my %field_value_hash = ();
-        if ( ! $directory_argument ){
+        if ( ! $directory_argument && !@nics_results ){
             %field_value_hash = ( "group_name"=>$DEFAULT,
                                   "package_id"=>"$package_id",
                                   "selected" => 1);
