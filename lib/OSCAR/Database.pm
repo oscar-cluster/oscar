@@ -1952,11 +1952,14 @@ sub update_node_package_status{
         my $package_id = $$package_ref{id};
         my %field_value_hash = ("requested" => $requested);
         my $where = "WHERE package_id=$package_id AND node_id=$node_id";
-        if( $requested == 7 && $$options_ref{debug} ){
+        if( $requested == 7 && 
+            ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ){
             print "Updating the status of $opkg to \"installed\".\n";
-        } elsif ( $requested == 1 && $$options_ref{debug} ) {
+        } elsif ( $requested == 1 && 
+            ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
             print "Updating the status of $opkg to \"should be installed\".\n";
-        } elsif ( $requested == 0 && $$options_ref{debug} ) {
+        } elsif ( $requested == 0 && 
+            ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
             print "Updating the status of $opkg to \"should not be installed\".\n";
         }
         my @results = ();
@@ -1995,11 +1998,14 @@ sub update_node_package_status_with_opkg{
     my $package_id = $$package_ref{id};
     my %field_value_hash = ("requested" => $requested);
     my $where = "WHERE package_id=$package_id AND node_id=$node_id";
-    if( $requested == 7 && $$options_ref{debug} ){
+    if( $requested == 7 && 
+        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ){
         print "Updating the status of $opkg to \"installed\".\n";
-    } elsif ( $requested == 1 && $$options_ref{debug} ) {
+    } elsif ( $requested == 1 && 
+        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
         print "Updating the status of $opkg to \"should be installed\".\n";
-    } elsif ( $requested == 0 && $$options_ref{debug} ) {
+    } elsif ( $requested == 0 && 
+        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
         print "Updating the status of $opkg to \"should not be installed\".\n";
     }
     die "$0:Failed to update the status of $opkg"
