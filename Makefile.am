@@ -75,4 +75,4 @@ dist-nodocs:
 	$(MAKE) dist OSCAR_SKIP_DOCS=yes
 
 dist-hook:
-	sh ./dist/make-dist.sh $(DESTDIR)$(distdir) $(WANT_SRPMS)
+	sh ./dist/make-dist.sh "$(DESTDIR)$(distdir)" "$(WANT_SRPMS)" "$(OSCAR_VERSION)" "$(OSCAR_SVN_R)"
