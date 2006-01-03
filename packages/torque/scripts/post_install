@@ -64,7 +64,7 @@ sub parseCommandLine
 }
 
 #########################################################################
-#  Check to see if 'Torque Server' is running.  If not, then start it.  #
+#  Check to see if 'TORQUE Server' is running.  If not, then start it.  #
 #########################################################################
 sub startPBSserver
 {
@@ -116,7 +116,7 @@ if ($loglevel eq "") {
 
 #print "Compute on head node is set to $compute_on_head\n";
 
-# Call the update Torque mom config script
+# Call the update TORQUE mom config script
 print `../packages/torque/scripts/update_mom_config`;
 
 
@@ -310,9 +310,10 @@ foreach $line (@variable_params)
 # Run the qmgr command if necessary
 if ($cmd_input ne "")
   {
+    my $pbs_spool = "/var/spool/pbs";
     open (CMD,"|/opt/pbs/bin/qmgr -a -e ");
     print CMD $cmd_input;
-    close (CMD) or croak("Configuration of Torque queues failed");
+    close (CMD) or croak("Configuration of TORQUE queues failed, check the logs at $pbs_spool");
   }
 restartMaui();
 
