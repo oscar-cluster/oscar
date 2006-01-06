@@ -418,5 +418,13 @@
         </fields>
     </Packages_servicelists>
 
+    <OscarFileServer>
+        <fields>
+            <oscar_httpd_server_url/>
+            <oscar_httpd_pkg_files/>
+            <oscar_httpd_pkg_cache/>
+        </fields>
+    </OscarFileServer>
+
   </database_tables>
 </oscar>
