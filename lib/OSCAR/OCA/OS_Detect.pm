@@ -46,8 +46,8 @@ sub open {
         die "Cannot continue";
     } elsif (scalar(@$comps) > 1) {
         print "Found more than one OS_Detect component for this system!\n";
-        foreach my $comps (@$comps) {
-            print "\t$comps\n";
+        foreach my $comp (@$comps) {
+            print "\t$comp\n";
         }
         die" Cannot continue";
     }
