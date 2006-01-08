@@ -56,7 +56,7 @@ packages.  Please make sure you are using at least the following
 versions:
 
 GNU Autoconf 2.59
-GNU Automake 1.5
+GNU Automake 1.9
 
 EOF
 	exit 1
