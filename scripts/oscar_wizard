@@ -69,6 +69,7 @@ my $save_text;
 my $interface = $ARGV[0];
 my %options = ();
 my @errors = ();
+my $debug = $ENV{DEBUG_OSCAR_WIZARD};
 
 $interface = get_headnode_iface() if ( !defined($interface) || $interface eq '' );
 
@@ -115,7 +116,9 @@ my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
                          -background=>"white");
 my $GIF_t2=$window->Label(-image=> $window->Photo(-file=>$image),
                           -background=>"white");
-my $Title_l=$window->Label(-text=>"Welcome to the OSCAR Wizard!\n\nOSCAR Version: $oscar_version",
+my $wizard_text = "Welcome to the OSCAR Wizard!\n\nOSCAR Version: $oscar_version";
+$wizard_text .= "\n\n- DEBUG MODE -" if ($debug);
+my $Title_l=$window->Label(-text=>"$wizard_text",
 			   -background=>"white");
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
 
@@ -230,14 +233,14 @@ my $cl_b=$window->Button(-text=>"Quit",
 $window->bind("<Escape>",sub {$cl_b->invoke()});
 $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 
-if( $ENV{'DEBUG_OSCAR_WIZARD'} ) {
+if( $debug ) {
     my $cl_b=$window->Button(-text=>"Restart $0 $interface",
            -borderwidth=>"6", -relief=>"groove",
            -command=> sub {exec "$0 $interface"},-pady=>"2");
     $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 }
 
-if( $ENV{'DEBUG_OSCAR_WIZARD'} ) {
+if( $debug ) {
     my $cl_b=$window->Button(-text=>"Dump Wizard Environment",
            -borderwidth=>"6", -relief=>"groove",
            -command=> sub { use Data::Dumper; $Data::Dumper::Terse = 1; print "\nWizard Env: " . Dumper(\%ENV) . "\n\n"; }
@@ -643,7 +646,11 @@ sub run_tests {
     oscar_log_section("Running step $step_number of the OSCAR wizard: Test cluster setup");
 
     my $cmd = "cd $ENV{OSCAR_HOME}/testing && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
-    oscar_log_subsection("Step $step_number: Running tests: $cmd");
+    if ($debug) {
+        oscar_log_subsection("Step $step_number: Running tests: $cmd");
+    } else {
+        oscar_log_subsection("Step $step_number: Running tests");
+    }
     !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
     oscar_log_subsection("Step $step_number: Not waiting for completion");
     $window->Unbusy();
