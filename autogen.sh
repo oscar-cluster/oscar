@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
-# Copyright (c) 2002-2003 The Trustees of Indiana University.  
+# Copyright (c) 2002-2006 The Trustees of Indiana University.  
 #                         All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -55,7 +55,7 @@ This may be caused by an older version of one of the required
 packages.  Please make sure you are using at least the following
 versions:
 
-GNU Autoconf 2.52
+GNU Autoconf 2.59
 GNU Automake 1.5
 
 EOF
