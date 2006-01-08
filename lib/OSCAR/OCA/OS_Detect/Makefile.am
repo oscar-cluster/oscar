@@ -10,9 +10,7 @@
 include $(top_srcdir)/dist/Makefile.options
 
 oscar_SCRIPTS		= \
-			Debian.pm \
 			Fedora.pm \
-			OSX.pm \
 			RedHat.pm \
 			Mandriva.pm \
 			ScientificLinux.pm \
