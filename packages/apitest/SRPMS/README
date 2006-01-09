@@ -1,13 +1,19 @@
+
 NOTES:
+ * ZopeInterface is a prerequisite for the Twisted RPM.  
+   The source is available at http://www.zope.org/Products/ZopeInterface
+
  * The Twisted RPMS are also being packaged with APItest but are not
    part of APItest proper.
+   The sources are available at http://www.twistedmatrix.org
 
  * The ElementTree RPMS are also being packaged with APItest but are not
    part of APItest proper.
+   The sources are available at http://www.effbot.org
 
  * The ElementTree RPMS are being included here as well as in SSSLib 
-   in case APItest is installed but SSSLib is not. 
+   in case APItest is installed but SSSLib is not.
    (Applies to sss-oscar release only.)
 
 
-# $Id: README,v 1.1 2004/10/07 13:54:46 naughtont Exp $
+# $Id: README,v 1.2 2005/08/25 19:15:10 wcmclen Exp $
