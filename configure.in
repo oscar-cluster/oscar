@@ -65,11 +65,10 @@ fi
 
 AC_PATH_PROG(PUIC, puic, no, [$PATH:/opt/perl-Qt/bin])
 if test "$PUIC" = "no"; then
-    AC_MSG_WARN([*** You will not be able to build the OSCAR wizard])
-    AC_MSG_WARN([*** You need to install Perl-Qt to be able to build the wizard])
-    PUIC="@echo puic"
-
     if test -d .svn; then 
+    	AC_MSG_WARN([*** You will not be able to build the OSCAR wizard])
+    	AC_MSG_WARN([*** You need to install Perl-Qt to be able to build the wizard])
+    	PUIC="@echo puic"
         AC_MSG_WARN([*** Developer checkouts from Subversion *MUST* have puic])
         AC_MSG_ERROR([Cannot continue])
     fi
