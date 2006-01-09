@@ -84,8 +84,12 @@ sub mac_window {
     our $window = $parent->Toplevel;
     $window->withdraw;
     $window->title("Setup Networking");
-    
-    oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
+
+    if ($0 =~ /manage/) {
+        oscar_log_section("OSCAR Management Wizard: Setup networking");
+    } else {
+        oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
+    }
 
     my $instructions = $window->Message(-text => "MAC Address collection.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click \"Assign MAC to Node\".", -aspect => 800);
 

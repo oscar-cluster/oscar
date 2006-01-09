@@ -25,6 +25,7 @@ oscar_SCRIPTS		= \
 			mac_collector \
 			macinfo2sis \
 			make_database_password \
+		        manage_cluster \
 			opd \
 			oscar_wizard \
 			package_config_xmls_to_database \

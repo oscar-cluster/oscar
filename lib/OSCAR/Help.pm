@@ -60,9 +60,11 @@ sub open_help {
          delete_nodes => "This button deletes client nodes from your RUNNING OSCAR cluster.",
          select_packages => "This button lets you select the packages you want installed on your OSCAR client nodes.",
          configure_packages => "This button allows you to configure packages that you have selected for installation on your OSCAR client nodes.  If a package does not have any configuration options, it will not appear in the list.",
-	download_packages => "This button allows you to download packages not included in the main tarball or updated packages from well-known or user-specified OSCAR repositories.  This step is optional.",
+         download_packages => "This button allows you to download packages not included in the main tarball or updated packages from well-known or user-specified OSCAR repositories.  This step is optional.",
          install_uninstall_packages => "This button lets you update your cluster by selecting the OSCAR packages you want to install/uninstall from your current system.",
          monitor_deployment => "This button runs a daemon which monitors the progress of compute node installations in real-time.",
+         netbootmgr => "This button runs the Network Boot Manager which allows you to change the boot action for compute nodes managed by OSCAR.  Supported actions are \"Install\", \"Localboot\", \"Memtest\", etc.",
+         ganglia => "This button brings up the Ganglia status page via a web browser.",
         );
 1;
 

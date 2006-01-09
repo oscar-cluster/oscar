@@ -1,0 +1,576 @@
+#!/usr/bin/perl -w
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# Copyright (c) 2006, Bernard Li <bli@bcgsc.ca>.
+#                     All rights reserved.
+#
+# Copyright (c) 2003, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+#
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id$
+#
+
+use strict;
+use Tk;
+use Tk::ROText;
+use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
+use POSIX;
+use OSCAR::Help;
+use OSCAR::Network;
+use OSCAR::MAC;
+use OSCAR::Distro;
+use OSCAR::DelNode;
+use OSCAR::AddNode;
+use OSCAR::Logger;
+use OSCAR::Configurator;
+use OSCAR::Package;
+use OSCAR::Database;
+use OSCAR::PackageInUn;
+use OSCAR::WizardEnv;
+use AppConfig;
+use SystemInstaller::Tk::Image;
+use SystemInstaller::Tk::AddClients;
+use SystemInstaller::Env;
+use SystemInstaller::Tk::Common;
+use Carp;
+use FileHandle;
+use vars qw($config);
+
+# First of all, enforce that the user running this script is 'root'
+croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
+
+if(!$ENV{OSCAR_HOME}) {
+    croak "The environmental variable OSCAR_HOME is not set.  Please set it to the directory that OSCAR is untarred in, or run install_cluster again.";
+}
+
+# Some globals
+
+my $save_text;
+my $interface = $ARGV[0];
+my %options = ();
+my @errors = ();
+my $debug = $ENV{DEBUG_OSCAR_WIZARD};
+
+$interface = get_headnode_iface() if ( !defined($interface) || $interface eq '' );
+
+# Set some things in the environment
+  
+$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$interface;
+$ENV{PATH}= $config->binpath .":" . $ENV{PATH};
+# Create the main window...
+my $window = MainWindow->new();
+$window->withdraw();
+chomp(my $shostname = `hostname -s`);
+$window->title("OSCAR Management Wizard - $shostname");
+
+# Get OSCAR's version
+
+my $oscar_version;
+my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "dist/get-oscar-version.sh";
+my $oscar_version_file = $ENV{OSCAR_HOME} . "/" . "VERSION";
+
+# Use the scripty-foo to get oscar version information.
+
+if ( -e "$oscar_version_file" ) {
+    my $cmd = "$oscar_version_script $oscar_version_file --full";
+
+    open(CMD, "$cmd|") or die "ERROR: failed to get oscar version '$cmd' - $!";
+    $oscar_version = <CMD>;
+    chomp($oscar_version);
+
+    close(CMD);
+}
+else {
+    die("ERROR: OSCAR VERSION file missing '$oscar_version_file' - aborting!");
+}
+
+# Define the main buttons
+
+#
+# The title Group
+#
+my $image = "$ENV{OSCAR_HOME}/images/oscar.gif"; 
+
+my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
+                         -background=>"white");
+my $GIF_t2=$window->Label(-image=> $window->Photo(-file=>$image),
+                          -background=>"white");
+my $wizard_text = "Welcome to the OSCAR Management Wizard!\n\nOSCAR Version: $oscar_version";
+$wizard_text .= "\n\n- DEBUG MODE -" if ($debug);
+my $Title_l=$window->Label(-text=>"$wizard_text",
+			   -background=>"white");
+$GIF_t->grid($Title_l,"-",-sticky=>"nsew");
+
+my $browser;
+my $url = "http://oscar.openclustergroup.org";
+
+# Default Web Browser is Firefox, if not found, try Mozilla
+if ( !($browser = `which firefox 2> /dev/null`) ) {
+  $browser = `which mozilla 2> /dev/null`;
+}
+
+# Bring up OSCAR Website when OSCAR Logo is clicked
+if ($browser ne "") {
+  chomp($browser);
+  $GIF_t->bind( "<Button-1>" => sub { system("$browser $url &") } );
+}
+
+
+# Build OSCAR Client Image
+oscar_button($window, "", "Build OSCAR Client Image...",
+             [\&build_oscar_image, $window], 'build_image');
+oscar_button($window, "", "Add OSCAR Clients...", 
+	     [\&addnode_window, $window, $interface], 'add_nodes');
+oscar_button($window, "", "Delete OSCAR Clients...", 
+	     [\&delnode_window, $window], 'delete_nodes');
+
+# Monitor Cluster Deployment
+my $monitor_button = oscar_button($window, "", "Monitor Cluster Deployment",
+             [\&monitor_deployment, $window], 'monitor_deployment');
+
+# Test script
+oscar_button($window, "", "Test Cluster Setup",
+             [\&run_tests, $window], 'test_install');
+
+oscar_button($window, "", 
+	     "Install/Uninstall OSCAR Packages...", 
+       [\&install_uninstall_packages, $window], 'install_uninstall_packages');
+oscar_button($window, "", "Network Boot Manager", [\&netbootmgr, $window], 'netbootmgr');
+oscar_button($window, "", "Ganglia Monitoring System", [\&ganglia, $window], 'ganglia');
+
+#
+# The close button
+#
+my $cl_b=$window->Button(-text=>"Quit",
+       -borderwidth=>"6", -relief=>"groove",
+       -command=> sub {$window->destroy},-pady=>"2");
+$window->bind("<Escape>",sub {$cl_b->invoke()});
+$cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
+
+if( $debug ) {
+    my $cl_b=$window->Button(-text=>"Restart $0 $interface",
+           -borderwidth=>"6", -relief=>"groove",
+           -command=> sub {exec "$0 $interface"},-pady=>"2");
+    $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
+}
+
+if( $debug ) {
+    my $cl_b=$window->Button(-text=>"Dump Wizard Environment",
+           -borderwidth=>"6", -relief=>"groove",
+           -command=> sub { use Data::Dumper; $Data::Dumper::Terse = 1; print "\nWizard Env: " . Dumper(\%ENV) . "\n\n"; }
+           ,-pady=>"2");
+    $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
+}
+
+center_window( $window );
+#
+# Execution goes into an infinite Tcl/Tk loop here
+#
+
+MainLoop;
+
+###########################################################################
+
+sub oscar_button {
+    my ($window, $labeltxt, $buttontext, $buttoncmd, $helptext) = @_;
+    my $label = $window->Label(-text => $labeltxt);
+    my $button = $window->Button(-text => $buttontext, 
+                                 -command => $buttoncmd, 
+                                 -pady => 2);
+    my $help = $window->Button(-text=>"Help",
+                               -command=> [\&open_help, $window, $helptext], 
+                               -pady => 2);
+    $label->grid($button, $help, -sticky => "nsew");
+
+    return $button;
+}
+
+###########################################################################
+
+sub run_command {
+    my ($parent_window, $step_number, $vars) = @_;
+    my $result;
+    my $window_func;
+
+    oscar_log_subsection("Step $step_number: Running: $$vars{cmd}");
+
+    if (system($$vars{cmd})) {
+	$result = $$vars{failure};
+	$window_func = \&error_window;
+    } else {
+	$result = $$vars{success};
+	$window_func = \&done_window;
+    }
+
+    oscar_log_subsection("Step $step_number: " . $result->{message});
+    if ($result->{unbusy}) {
+	&$window_func($parent_window, $result->{message},
+		     sub { $parent_window->Unbusy(); });
+    } else {
+	&$window_func($parent_window, $result->{message});
+    }
+    $parent_window->Unbusy();
+    $result->{return_status};
+}
+
+###########################################################################
+
+sub build_oscar_image {
+    my ($window) = @_;
+    my @df_lines = `df /`;
+    my $disk_type = "ide";
+    $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
+
+    oscar_log_section("OSCAR Management Wizard: Running Build OSCAR client image");
+
+    # Get the distro list
+
+    my $arch = (uname)[4];
+    $arch =~ s/i.86/i386/;
+    my ($distroname, $distroversion) = which_distro('/tftpboot/rpm');
+    oscar_log_subsection("Identified distro of clients: $distroname $distroversion");
+    my $rpmlist = "$ENV{OSCAR_HOME}/oscarsamples/$distroname-$distroversion-$arch.rpmlist";
+    oscar_log_subsection("Using RPM list: $rpmlist");
+    
+    # Get a list of the client RPMs that we want to install.  Make a
+    # new file containing the names of all the RPMs to install.
+
+    my @pkgs = list_selected_packages("all");
+    my $outfile = "/tmp/oscar-install-rpmlist.$$";
+    $save_text = $outfile;
+    open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
+    foreach my $pkg_ref (@pkgs) {
+        my $pkg = $$pkg_ref{package};
+        my @rpms = rpmlist($pkg,undef,"oscar_clients");
+        foreach my $rpm (@rpms) {
+            print OUTFILE "$rpm\n";
+        }
+    }
+    close(OUTFILE);
+    my $extraflags = " --filename=$outfile";
+
+    my $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
+    # ia64 needs special disk file because of /boot/efi
+    $diskfile .= ".$arch" if $arch eq "ia64";
+    $diskfile .= ".disk";
+
+    my %vars = (
+                title => "Build OSCAR Client Image",
+                imgname => "oscarimage",
+                noshow => {
+                           arch => 1,
+                           imgpath => 1,
+                           password => 1,
+                          },
+                pkgfile => $rpmlist,
+                pkgpath => "/tftpboot/rpm",
+                diskfile => $diskfile,
+                ipmeth => "static",
+                mcast  => "off",
+                piaction => "beep",
+                extraflags => $extraflags,
+                postinstall => \&postimagebuild,
+               );
+
+    createimage_window($window, %vars);
+}
+
+sub postimagebuild {
+    my ($vars) = @_;
+
+    my $img = $$vars{imgname};
+    # FIXME: Use OS_Detect Framework
+    my $arch = (uname)[4];
+    $arch =~ s/i.86/i386/;
+    my ($distroname, $distroversion) = which_distro('/tftpboot/rpm');
+
+    # Get the image path (typically /var/lib/systemimager/images/<imagename>)
+    my $config = init_si_config();
+    my $imaged = $config->default_image_dir;
+    croak "default_image_dir not defined\n" unless $imaged;
+    croak "$imaged: not a directory\n" unless -d $imaged;
+    croak "$imaged: not accessible\n" unless -x $imaged;
+    my $imagepath = $imaged."/".$img;
+    croak "$imagepath: not a directory\n" unless -d $imagepath;
+    croak "$imagepath: not accessible\n" unless -x $imagepath;
+
+    my %image_info = ( "name"=>$img,
+                       "distro"=>"$distroname-$distroversion",
+                       "architecture"=>$arch,
+                       "path"=>$imagepath );
+    set_images(\%image_info,\%options,\@errors);
+
+    my $cmd = "./post_rpm_install $img $interface";
+    oscar_log_subsection("Running: $cmd");
+    !system($cmd) or (carp($!), return undef);
+    oscar_log_subsection("Successfully ran: $cmd");
+
+
+    # Have installed Client RPMs & did not croak, so mark 
+    # packages.<pkg>installed # true. (best effort for now)
+    
+    oscar_log_subsection("Marking installed bit in ODA for client RPMS");
+    
+    my @pkgs = list_selected_packages("all");
+    foreach my $pkg_ref (@pkgs) {
+        my $pkg = $$pkg_ref{package};
+        oscar_log_subsection("Set package: $pkg");
+        set_image_packages($img,$pkg,\%options,\@errors);
+    }
+    oscar_log_subsection("Done marking installed bits in ODA");
+
+    # /var/log/lastlog could be HUGE in some horked setup packages...
+    #
+    croak "image name not defined\n" unless $$vars{imgname};
+    my $lastlog = "/var/log/lastlog";
+    oscar_log_subsection( "Truncating ".$img.":".$lastlog );
+
+    my $imagelog = $imagepath.$lastlog;
+    truncate $imagelog, 0 if -s $imagelog;
+    oscar_log_subsection( "Truncated ".$img.":".$lastlog );
+
+    # All done -- remove the temp file that held all the RPM filenames
+    
+    #unlink($save_text); # breaks createimage_window
+
+    oscar_log_subsection("Completed successfully");
+
+    1;
+}
+
+###########################################################################
+
+sub build_oscar_clients {
+    my ($window, $step_number, $interface) = @_;
+
+    my ($ip, $broadcast, $netmask) = interface2ip($interface);
+    my ($a, $b, $c, $d) = split(/\./,$ip);
+    if ($d == 1) {
+      $d++;
+    } else {
+      $d = 1;
+    }
+    my $startip = "$a.$b.$c.$d";
+
+    # Select the right GW address: server-gw if one nic; interface-ip if multiple nics.
+
+    my $gw;
+    my @tables = qw( nodes nics networks );
+    my @results;
+    my $node = "oscar_server";
+    get_nics_info_with_node($node,\@results,\%options,\@errors);
+    my $ref = pop @results;
+    my $nic_name = $$ref{name};
+    if( @results == 1 ) {
+        get_gateway($node,$interface,\@results,\%options,\@errors);
+        my $gw_ref = pop @results if @results;
+        $gw = $$gw_ref{gateway};
+    }
+    $gw ||= $ip;
+
+    my $hostname = (uname)[1];
+    my ($shorthostname,$domainname)  = split(/\./,$hostname,2);
+
+    oscar_log_section("OSCAR Management Wizard: Define OSCAR clients");
+
+    # If the domainname is blank, stick in a default value
+
+    if (!$domainname) {
+	$domainname = "oscardomain";
+    }
+
+    my %vars = (
+                title => "Define OSCAR Clients",
+                imgname => "oscarimage",
+                basename => "oscarnode",
+                domainname => $domainname,
+                numhosts => "0",
+                startinghostnum => "1",
+                netmask => $netmask,
+                gateway => $gw,
+                startip => $startip,
+                postinstall => \&postaddclients,
+                noshow => {
+                           endip => 1,
+                           endinghostnum => 1,
+                          },
+		step_number => $step_number
+               );
+    addclients_window($window, %vars);
+}
+
+sub postaddclients {
+    my ($vars) = @_;
+
+    my $cmd = "./post_clients";
+    oscar_log_subsection("Running: $cmd");
+    !system($cmd) or (carp($!), return undef);
+	&populate_client_group_nodes;
+    oscar_log_subsection("Successfully ran: $cmd");
+    oscar_log_subsection("Completed successfully");
+    return 1;
+}
+
+#
+# NEST
+#
+# This script inserts the records into node_config_revs and config_opkgs
+# tables for client nodes.
+# Unless node_config_revs already has the record of node_id and configurations_id,
+# do the following two steps. Otherwise, skip them.
+# 1. Insert node_config data for client nodes.
+#    add_node_config_revs is a shortcut to insert a record of node_id, configurations_id, and version
+#    e.g) add_node_config_revs [$node_id] [$configurations_id] [$version]
+#         Where $version is optional (The default value of $version is 0).
+# 2. Insert core packages into config_opkgs table for client nodes.
+#    add_config_opkgs is a shortcut to insert a record of configurations_id and
+#    package_id
+#    e.g) add_config_opkgs [$configurations_id] [$package_id]
+#
+
+sub do_it_or_die {
+    my ( $command, $results_ref, $error ) = @_;
+    return if dec_already_locked( $command, $results_ref, 1 );
+    database_disconnect();
+    die "$0: $error";
+}
+
+sub populate_client_group_nodes{
+	my @pkgs = list_selected_packages();
+    my @tables = ("Nodes", "Group_Nodes", "Groups");
+    locking("WRITE", \%options, \@tables, \@errors);
+    my @client_nodes = ();
+    get_client_nodes(\@client_nodes,\%options,\@errors);
+    my @nodes = ();
+    foreach my $client_ref (@client_nodes){
+        my $node_id = $$client_ref{id};
+        my $node_name = $$client_ref{name};
+        push @nodes, $node_name;
+    }
+    my $client_group = "oscar_clients";
+    set_group_nodes($client_group,\@nodes,\%options,\@errors);
+
+    
+    unlock(\%options, \@errors);
+}
+
+###########################################################################
+
+sub run_post_install {
+    my ($window, $step_number) = @_;
+    my @mod_env = ();
+
+    $window->Busy(-recurse => 1);
+
+    oscar_log_section("OSCAR Management Wizard: Complete cluster setup");
+
+    oscar_log_subsection('Update Wizard Env (as needed)');
+    @mod_env = WizardEnv::update_env();
+
+    my $cmd_vars = { 
+	cmd => "./post_install",
+	success => {
+	    message => "Successfully completed the cluster install",
+	    unbusy => 1,
+	    return_status => 1,
+	},
+	failure => {
+	    message => "Failed to properly complete the cluster install; please check the logs",
+	    unbusy => 1,
+	    return_status => 0,
+	},
+    };
+    run_command($window, $step_number, $cmd_vars);
+
+    oscar_log_subsection('Update Wizard Env (as needed)');
+    @mod_env = WizardEnv::update_env();
+}
+
+###########################################################################
+
+sub run_tests {
+    my ($window, $step_number) = @_;
+    $window->Busy(-recurse => 1);
+
+    my $title = "OSCAR Test Cluster Setup";
+
+    oscar_log_section("OSCAR Management Wizard: Test cluster setup");
+
+    my $cmd = "cd $ENV{OSCAR_HOME}/testing && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
+    if ($debug) {
+        oscar_log_subsection("Running tests: $cmd");
+    } else {
+        oscar_log_subsection("Running tests");
+    }
+    !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
+    oscar_log_subsection("Not waiting for completion");
+    $window->Unbusy();
+    return 1;
+}
+
+###########################################################################
+
+sub monitor_deployment {
+    my ($window) = @_;
+
+    my $cmd = "/usr/sbin/si_monitortk";
+    $monitor_button->configure(-state => 'disabled');
+
+    my $pipe = new FileHandle;
+    $pipe->open("$cmd |") or die "Cannot fork: $!";
+    $window->fileevent($pipe, 'readable', [\&stop_monitor_deployment, $window, $pipe]);
+    return 1;
+}
+
+###########################################################################
+
+sub stop_monitor_deployment {
+    my ($window, $pipe) = @_;
+    my $cmd = "/usr/sbin/si_monitortk";
+    my $pid = `pidof -sx $cmd`;
+
+    chomp($pid);
+    waitpid($pid, WNOHANG);
+    $monitor_button->configure(-state => 'normal');
+    $window->fileevent($pipe, 'readable', "");
+}
+
+###########################################################################
+
+sub netbootmgr {
+    my ($window, $pipe) = @_;
+    my $cmd = "/usr/sbin/netbootmgr";
+    system("$cmd &");
+}
+
+###########################################################################
+
+sub ganglia {
+    my ($window, $pipe) = @_;
+    my $url = "http://localhost/ganglia";
+
+    if ($browser ne "") {
+      chomp($browser);
+      system("$browser $url > /dev/null 2>&1 &");
+    }
+}
