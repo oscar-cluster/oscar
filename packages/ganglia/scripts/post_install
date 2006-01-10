@@ -21,5 +21,3 @@
 # Copyright Erich Focht <efocht@hpce.nec.com> 2005
 
 $OSCAR_PACKAGE_HOME/scripts/edit_ganglia_conf --gmetad --verbose
-/etc/init.d/gmond restart
-cexec /etc/init.d/gmond restart

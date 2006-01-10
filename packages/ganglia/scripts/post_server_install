@@ -20,5 +20,4 @@
 
 /etc/init.d/gmond stop
 $OSCAR_PACKAGE_HOME/scripts/edit_ganglia_conf --gmond --verbose
-/etc/init.d/gmond start
-
+$OSCAR_PACKAGE_HOME/scripts/edit_ganglia_conf --gmetad --verbose
