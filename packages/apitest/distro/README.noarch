@@ -1,0 +1,9 @@
+
+NOTES:
+ * Note, even if the SRPMs are built as 'noarch' the resulting
+   RPMs have the build system's Python version embedded in the
+   library path.  
+
+ * See also: apitest/SRPMS/README
+
+# $Id$
