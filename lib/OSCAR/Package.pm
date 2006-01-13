@@ -359,7 +359,7 @@ sub run_pkg_apitest_test
 	use File::Spec;
 
 	my ($script, $user, $verbose) = @_;
-	my $apitest = "/usr/local/apitest/apitest";    # FIXME: hardcoded path
+	my $apitest = "apitest";
 	my $rc = 0;
 
 
