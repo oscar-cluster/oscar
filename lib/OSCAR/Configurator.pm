@@ -302,7 +302,7 @@ sub populateConfiguratorList
       # Make the pane large enough for up 10 packages.
       # vertical scrollbar will appear if more packages are configurable.
       my $nr = scalar keys %map;
-      $pane->configure( -height => 2*$h*($nr > 10 ? 10 : $nr) );
+      $pane->configure( -height => 5*$h*($nr > 10 ? 10 : $nr) );
     }
 }
 
