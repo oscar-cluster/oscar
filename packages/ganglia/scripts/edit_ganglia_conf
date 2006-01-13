@@ -33,6 +33,7 @@ use SIS::Image;
 use SIS::Client;
 use Data::Dumper;
 use OSCAR::Database;
+use OSCAR::Opkg;
 
 my ($do_gmond, $do_gmetad, $image, @options, $test, $verbose);
 GetOptions( 'gmond'   => \$do_gmond,
@@ -272,7 +273,7 @@ sub img_datasources {
 	if (-e $xml_img) {
 	    %imgcfg = %{XMLin($xml_img)};
 	} else {
-	    print "configurator values for image $img not found!\n";
+	    opkg_print "configurator values for image $img not found!\n";
 	    next;
 	}
 	my $imgport = $imgcfg{udp_send_channel__port};
@@ -353,7 +354,7 @@ sub edit_gmond_conf {
 		my $q;
 		$q = "\"" if ($value =~ /^\"/);
 		print OUT "$name = $q" . $config{$match} . "$q\n" if (!$test);
-		print "Changed line: $blank$name = $q" . $config{$match} . "$q\n";
+		opkg_print "Changed line: $blank$name = $q" . $config{$match} . "$q\n";
 		next;
 	    }
 	}
@@ -388,7 +389,7 @@ sub add_multicast_route {
 		$mcast_route = `grep 224.0.0.0 $static_route_file`;
 	}
 	if (!($mcast_route)) {
-		print("Adding default route for multicast to go through $iface.\n");
+		opkg_print("Adding default route for multicast to go through $iface.\n");
 		`echo $route_string >> $static_route_file`;
 	}
 	`$reload_route`;
@@ -396,18 +397,18 @@ sub add_multicast_route {
 }
 
 sub restart_gmond {
-    print("Ganglia gmond configuration file modified, re-starting daemon...\n");
+    opkg_print("Ganglia gmond configuration file modified, re-starting daemon...\n");
     # restart gmond and gmetad
     system("/etc/init.d/gmond restart");
 }
 
 sub restart_gmetad {
-    print("Ganglia gmetad configuration file modified, re-starting daemon...\n");
+    opkg_print("Ganglia gmetad configuration file modified, re-starting daemon...\n");
     # restart gmond and gmetad
     system("/etc/init.d/gmetad restart");
-    print("Starting up apache...\n");
+    opkg_print("Starting up apache...\n");
     # autoload apache in levels 345 and start it up
     system("/sbin/chkconfig --levels 345 httpd on");
     system("/etc/init.d/httpd start");
-    print(">>>> Ganglia page is located at http://$hostname/ganglia/\n");
+    opkg_print("Ganglia page is located at http://$hostname/ganglia/\n");
 }
