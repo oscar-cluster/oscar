@@ -5,4 +5,4 @@
 # copy in arch specific packages
 # (c) Erich Focht, NEC HPCE
 
-$OSCAR_HOME/scripts/generic-setup
+$OSCAR_HOME/scripts/generic-setup --erase
