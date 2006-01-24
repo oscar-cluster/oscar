@@ -193,13 +193,6 @@ visualized either at runtime or post-mortem.</description>
     <filter>
       <distribution>
         <name>redhat</name>
-        <version>9</version>
-      </distribution>
-    </filter>
-
-    <filter>
-      <distribution>
-        <name>redhat</name>
         <version>3as</version>
       </distribution>
     </filter>
