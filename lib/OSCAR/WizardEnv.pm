@@ -25,7 +25,7 @@ package WizardEnv;
 #         probably be broken into smaller pieces.
 #--------------------------------------------------------------------
 
-use IPC::Open2;
+use IPC::Open3;
 use Carp;
 use warnings;
 use strict;
@@ -95,11 +95,14 @@ sub update_env
 	 # 1) Use the '--login' option in order to have profile related file 
 	 #    sourced
 	
-	my $pid = open2($rh, $wh, "$bash_cmd", "--login") or croak "Error: $!\n";
+	my $pid = open3($wh, $rh, 0, "$bash_cmd", "--login") or croak "Error: $!\n";
 
 
-	 # TODO: May need to trap SIGPIPE for child, see IPC::Open2(3pm)
+	 # TODO: May need to trap SIGPIPE for child, see IPC::Open3(3)
 	 #       when writing to the pipe (write handle).
+	 #
+	 #       NOTE: Using open3() now to trap STDERR, arg order differs
+	 #       from open2()!
 	 #
 	 # 2) We set PS1 to fake out some scripts that check for interactive
 	 #    shells via this value being set, e.g., Debian's /etc/bash.bashrc
@@ -116,7 +119,10 @@ sub update_env
 	 # 4) Print our delimiter, all output above this is from system,
 	 #   e.g., /etc/profile.d/ssh-oscar.sh gens *lots* of output :-|
 	 #
-	 # TODO: May need to trap SIGPIPE for child, see IPC::Open2(3pm)
+	 # TODO: May need to trap SIGPIPE for child, see IPC::Open3(3)
+	 #
+	 #       NOTE: Using open3() now to trap STDERR, arg order differs
+	 #       from open2()!
 	 
 	print $wh "/bin/echo $magicstr\n";
 
