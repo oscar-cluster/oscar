@@ -144,7 +144,7 @@ for my $pkg (@argpkgs) {
     	$basename = (sort {length($a) <=> length($b)} @possibles)[0];
     }
     if ($options{erase}) {
-	print " Delete $basename from $oscar_pkg_pool\n";
+	print "Delete $basename from $oscar_pkg_pool\n";
 	unless( -f "$oscar_pkg_pool/$basename" && $options{test} ) {
 	    unlink( "$oscar_pkg_pool/$basename" ) ||
 		croak("Error occured while deleting: $!");
