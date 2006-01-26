@@ -166,21 +166,16 @@ sub findRunningKernelFiles # (@searchdirs) -> @kernelfiles
 }
 
 #########################################################################
-#  Subroutine: getKernelListFromRPMList                                 #
+#  Subroutine: getKernelList                                            #
 #  Parameters: None                                                     #
 #  Returns   : A list of RPMs with names starting with "kernel"         #
-#  This subroutine attempts to find which RPMs starting with the string #
-#  "kernel" (eg. kernel-smp, kernel-debug, etc.) are to be installed    #
-#  according to the default RPM list.  Usually this list contains just  #
-#  "kernel" and "kernel-smp".  The list of strings is returned.         #
+#  This subroutine uses update-rpms to query RPMs in /tftpboot/rpm      #
+#  and returns a list of RPMs which provide kernel                      #
 #########################################################################
-sub getKernelListFromRPMList # -> @kernellist
+sub getKernelList # -> @kernellist
 {
   my @kernellist = ();
 
-  # First, find out the default rpmlist for the currently running machine.
-  # This code is taken from the "build_oscar_image" subroutine located in
-  # the "oscar_wizard" script.
   my($distroname,$distrovers) = which_distro('/tftpboot/rpm');
   if ($distroname ne "UnknownLinux") {
       open(RPML,"update-rpms --quiet --list provides:kernel |");
@@ -192,7 +187,7 @@ sub getKernelListFromRPMList # -> @kernellist
       close RPML;
   }
 
-  return @kernellist;   # Return the list of matching "kernel*" lines
+  return @kernellist;   # Return the list kernel RPMs
 }
 
 #########################################################################
@@ -227,7 +222,7 @@ sub generateHTMLFile
   # (a) General package name (eg. "kernel-smp") is in the default RPM list.
   # (b) The corresponding file exists in /tftpboot/rpm (as determined
   #     by PackageBest.pm).
-  my @tftplist = getKernelListFromRPMList();
+  my @tftplist = getKernelList();
   chomp( @tftplist );
   # Set error if there weren't any good "kernel*" files in /tftpboot/rpm.
   # NOTE: This should never happen!!!
