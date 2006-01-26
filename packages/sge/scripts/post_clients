@@ -23,7 +23,10 @@
 use strict;
 use Carp;
 use lib '/usr/lib/systeminstaller';
+use lib "$ENV{OSCAR_HOME}/lib";
 use SystemInstaller::Machine;
+
+use OSCAR::Opkg;
 
 # Use Schwartzian transform to sort node names alphabetically and numerically.
 # Names w/o numeric suffix preceed those with numeric suffix.
@@ -36,7 +39,11 @@ sub sortnodes(@) {
 
 # Update the server's nodes file (optionally for only one image).
 
-print "...adding exec hosts' name as admin hosts to SGE Qmaster\n";
+opkg_print("...adding exec hosts' names as admin hosts to SGE Qmaster\n");
+
+# Get fullpath of qconf binary
+my $qconf = `bash -l -c 'which qconf'`;
+chomp($qconf);
 
 # Setting the environment so that qconf -ah will correctly execute
 $ENV{'SGE_ROOT'} = '/opt/sge';
@@ -51,14 +58,18 @@ foreach my $node (sortnodes( keys %nodes )) {
     # Add the hostname as a known admin host
     # This is needed because exec hosts have to be known 
     # at the Qmaster as an admin host prior to adding it as exec
-    system("bash -c -l 'qconf -ah $hostname'"); 
+    system("$qconf -ah $hostname"); 
 	if ($? == -1) {
         	# Something seriously wrong; Adding exec nodes as admins failed
         	croak("Program failed: While doing qconf -ah on OSCAR head");
 	}
-	elsif($? == 0){
+	elsif($? == 0) {
         	# Everything OK; admin host installation success
         	printf "qconf system function SUCCESS for $hostname\n";
+	}
+	elsif($? == 1) {
+		opkg_print("Failed to add host $hostname to admin hosts list");
+		exit $?;
 	}
 	elsif ($? & 127) {
         	printf "child died with signal %d, %s coredump\n",
