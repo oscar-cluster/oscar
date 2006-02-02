@@ -48,6 +48,7 @@ use Carp;
 sub distro_repo_url {
     my ($distro, $distro_version, $arch) = @_;
     my $path = "/tftpboot/distro/$distro-$distro_version-$arch";
+    my $url;
     if (-f "$path.url") {
 	local *IN;
 	if (open IN, "$path.url") {
