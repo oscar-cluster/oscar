@@ -1,8 +1,0 @@
-# Directories listed in this file are processed in order.  Any
-# directory not listed here will be processed alphabetically after the 
-# ones listed here.
-packman
-update-rpms
-perl-XML-Parser
-perl-XML-Simple
-oda
