@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+package OCA::OS_Detect::OSX;
 #
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
@@ -10,7 +10,10 @@
 # $HEADER$
 #
 
-package OCA::OS_Detect::OSX;
+#
+# This component does not comply to the new OS_Detect requirements.
+#
+
 
 use strict;
 use POSIX;
@@ -43,7 +46,6 @@ our $id = {
     os_release => $release,
 };
 
-my $machine;
 if (! open M, "machine|") {
     $machine = <M>;
     chomp($machine);
