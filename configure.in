@@ -174,38 +174,6 @@ AC_CONFIG_FILES([
     scripts/oscar_home.sh
     scripts/oscar_home.csh
 
-    share/Makefile
-    share/prereqs/Makefile
-    share/prereqs/HTML-Tree/Makefile
-    share/prereqs/HTML-Tree/media/Makefile
-    share/prereqs/HTML-Tree/scripts/Makefile
-    share/prereqs/oda/Makefile
-    share/prereqs/oda/SRPMS/Makefile
-    share/prereqs/oda/distro/Makefile
-    share/prereqs/oda/distro/rhel3/Makefile
-    share/prereqs/oda/scripts/Makefile
-    share/prereqs/packman/Makefile
-    share/prereqs/packman/RPMS/Makefile
-    share/prereqs/packman/SRPMS/Makefile
-    share/prereqs/packman/scripts/Makefile
-    share/prereqs/update-rpms/Makefile
-    share/prereqs/update-rpms/RPMS/Makefile
-    share/prereqs/update-rpms/SRPMS/Makefile
-    share/prereqs/update-rpms/scripts/Makefile
-    share/prereqs/perl-Tk/Makefile
-    share/prereqs/perl-Tk/media/Makefile
-    share/prereqs/perl-Tk/media/RPMS/Makefile
-    share/prereqs/perl-Tk/media/RPMS/5.8/Makefile
-    share/prereqs/perl-Tk/media/SRPMS/Makefile
-    share/prereqs/perl-Tk/scripts/Makefile
-    share/prereqs/perl-XML-Parser/Makefile
-    share/prereqs/perl-XML-Parser/media/Makefile
-    share/prereqs/perl-XML-Parser/scripts/Makefile
-    share/prereqs/perl-XML-Simple/Makefile
-    share/prereqs/perl-XML-Simple/scripts/Makefile
-    share/prereqs/perl-XML-Simple/RPMS/Makefile
-    share/prereqs/perl-XML-Simple/SRPMS/Makefile
-
     src/Makefile
     src/Installer/Makefile
     src/Installer/images/Makefile
