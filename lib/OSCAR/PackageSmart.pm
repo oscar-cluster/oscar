@@ -128,6 +128,7 @@ sub pool_needs_update {
 
 sub print_output {
     my ($line) = @_;
+    $| = 1;
     print "$line\n";
 }
 

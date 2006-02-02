@@ -317,6 +317,9 @@ sub isPackageSelectedForInstallation # ($package) -> $yesorno
 #         $myvalue = $configvalues->{'value'}[0];  # Only one value     #
 #         @myvalues = $configvalues->{'happy'};    # Multiple values    #
 #########################################################################
+#
+# EF: this should be moved out of Package.pm sooner or later...
+#
 sub getConfigurationValues # ($package) -> $valueshashref
 {
   my $package = shift;
