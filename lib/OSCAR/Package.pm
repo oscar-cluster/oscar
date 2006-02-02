@@ -66,6 +66,7 @@ if ($distro_name ne 'debian') {
     $PKG_SEPARATOR = '_';
 }
 
+
 # XML data from all the packages.
 
 my $PACKAGE_CACHE = undef;
@@ -113,47 +114,41 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
 #  iterate throught the directories in the PKG_SOURCE_LOCATIONS list    #
 #  and try to find the package directory.                               #
 #########################################################################
-sub getOdaPackageDir # ($pkg) -> $pkgdir
-{
-  my $pkg = shift;
-  my @list = (); 
-  my $retdir = undef;
+sub getOdaPackageDir { # ($pkg) -> $pkgdir
+    my $pkg = shift;
+    my @list = (); 
+    my $retdir = undef;
+    
+    # First, check to see if the oda database has been created.  If not, then
+    # don't bother to ask oda for the package's directory.
 
-  # First, check to see if the oda database has been created.  If not, then
-  # don't bother to ask oda for the package's directory.
+    my $odaProblem = system('mysqlshow oscar >/dev/null 2>&1');
+    if (!$odaProblem) {
+	my @tables = ("Packages");
+	my $success = single_dec_locked("SELECT path FROM " .
+					"Packages WHERE package='$pkg'",
+					"read",
+					\@tables,
+					\@list);
+	Carp::carp("Could not do oda command 'SELECT path" .
+		   " FROM Packages WHERE package=$pkg '") if (!$success);
 
-  my $odaProblem = system('mysqlshow oscar >/dev/null 2>&1');
-  if (!$odaProblem)
-    {
-      my @tables = ("Packages");
-      my $success = single_dec_locked("SELECT path FROM " .
-                          "Packages WHERE package='$pkg'",
-                          "read",
-                          \@tables,
-                          \@list);
-      Carp::carp("Could not do oda command 'SELECT path" .
-                 " FROM Packages WHERE package=$pkg '") if (!$success);
-
-      my $dir_ref = $list[0] if (defined $list[0]);
-      $retdir = $$dir_ref{path};
+	my $dir_ref = $list[0] if (defined $list[0]);
+	$retdir = $$dir_ref{path};
     }
 
-  # Couldn't find the directory via oda - resort to old method.  Search
-  # through the list of 'packages' directories and return the first one that
-  # has the passed-in package as a subdirectory.
-  if ((!defined $retdir) || (!-d $retdir))
-    {
-      foreach my $pkgdir (@PKG_SOURCE_LOCATIONS)
-        {
-          if (-d "$pkgdir/$pkg")
-            {
-              $retdir = "$pkgdir/$pkg";
-              last;
-            }
-        }
+    # Couldn't find the directory via oda - resort to old method.  Search
+    # through the list of 'packages' directories and return the first one that
+    # has the passed-in package as a subdirectory.
+    if ((!defined $retdir) || (!-d $retdir)) {
+	foreach my $pkgdir (@PKG_SOURCE_LOCATIONS) {
+	    if (-d "$pkgdir/$pkg") {
+		$retdir = "$pkgdir/$pkg";
+		last;
+	    }
+	}
     }
-
-  return $retdir;
+    return $retdir;
 }
 
 #
@@ -246,37 +241,32 @@ sub list_installable_package_dirs {
 # run_pkg_script - runs the package script for a specific package
 #
 
-sub run_pkg_script 
-{
-  my ($pkg, $phase, $verbose, $args) = @_;
-  my $scripts = $PHASES{$phase};
-  if (!$scripts) 
-    {
-      carp("No such phase '$phase' in OSCAR package API");
-      return undef;
+sub run_pkg_script {
+    my ($pkg, $phase, $verbose, $args) = @_;
+    my $scripts = $PHASES{$phase};
+    if (!$scripts) {
+	carp("No such phase '$phase' in OSCAR package API");
+	return undef;
     }
 
-  my $pkgdir = getOdaPackageDir($pkg);
-  return 0 unless ((defined $pkgdir) && (-d $pkgdir));
-  foreach my $scriptname (@$scripts) 
-    {
-      my $script = "$pkgdir/scripts/$scriptname";
-      if (-e $script) 
-        {
-          oscar_log_subsection("About to run $script for $pkg") if $verbose;
-          $ENV{OSCAR_PACKAGE_HOME} = $pkgdir;
-          my $rc = system("$script $args");
-          delete $ENV{OSCAR_PACKAGE_HOME};
-          if ($rc) 
-            {
-              my $realrc = $rc >> 8;
-              carp("Script $script exitted badly with exit code '$realrc'") if 
-                $verbose;
-              return 0;
-            }
-        } 
+    my $pkgdir = getOdaPackageDir($pkg);
+    return 0 unless ((defined $pkgdir) && (-d $pkgdir));
+    foreach my $scriptname (@$scripts) {
+	my $script = "$pkgdir/scripts/$scriptname";
+	if (-e $script) {
+	    oscar_log_subsection("About to run $script for $pkg") if $verbose;
+	    $ENV{OSCAR_PACKAGE_HOME} = $pkgdir;
+	    my $rc = system("$script $args");
+	    delete $ENV{OSCAR_PACKAGE_HOME};
+	    if ($rc) {
+		my $realrc = $rc >> 8;
+		carp("Script $script exitted badly with exit code '$realrc'") if 
+		    $verbose;
+		return 0;
+	    }
+	} 
     }
-  return 1;
+    return 1;
 }
 
 sub run_pkg_script_chroot {
@@ -643,6 +633,10 @@ sub read_all_pkg_config_xml_files {
 #  passed in 'packages' directory to the $RPM_POOL directory (which is  #
 #  typically /tftpboot/rpm).                                            #
 #########################################################################
+#
+# EF: This routine is obsolete since generic-setup does the copying.
+#     Should be deleted!
+#########################################################################
 sub copy_pkgs # ($pkgdir) -> 1|undef
 {
   my ($pkgdir) = @_;
@@ -681,6 +675,10 @@ sub copy_pkgs # ($pkgdir) -> 1|undef
 #  This subroutine copies all of the RPMs for all packages under the    #
 #  passed in 'packages' directory to the $RPM_POOL directory (which is  #
 #  typically /tftpboot/rpm) only if the packages are selected.          #
+#########################################################################
+#
+# EF: This routine is obsolete since generic-setup does the copying.
+#     Should be deleted!
 #########################################################################
 sub copy_rpms # ($pkgdir) -> 1|undef
 {
@@ -730,6 +728,11 @@ sub copy_rpms # ($pkgdir) -> 1|undef
 #  This subroutine removes all of the RPMs for all unselected packages  #
 #  passed in 'packages' directory from the $RPM_POOL directory(which is #
 #  typically /tftpboot/rpm).                                            #
+#########################################################################
+#
+# EF: This routine is obsolete since generic-setup can also take care of
+#     deleting the package files from the pool.
+#     Should be deleted!
 #########################################################################
 sub remove_rpms # ($pkgdir) -> 1|undef
 {

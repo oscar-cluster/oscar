@@ -762,31 +762,31 @@ sub do_query {
 
     my $statement_handle = $database_handle->prepare( $sql_command );
     if ( ! $statement_handle ) {    
-    push @$error_strings_ref,
-    "error preparing sql statement <$sql_command> on database <$$options_ref{database}>:\n$DBI::errstr";
-    oda_disconnect( $options_ref,
-             $error_strings_ref )
-        if ! $was_connected_flag;
-    return 0;
+	push @$error_strings_ref,
+	"error preparing sql statement <$sql_command> on database <$$options_ref{database}>:\n$DBI::errstr";
+	oda_disconnect( $options_ref,
+			$error_strings_ref )
+	    if ! $was_connected_flag;
+	return 0;
     }
     if ( ! $statement_handle->execute() ) {
-    push @$error_strings_ref,
-    "error executing sql statement <$sql_command> on database <$$options_ref{database}>:\n$DBI::errstr";
-    oda_disconnect( $options_ref,
-             $error_strings_ref )
-        if ! $was_connected_flag;
-    return 0;
+	push @$error_strings_ref,
+	"error executing sql statement <$sql_command> on database <$$options_ref{database}>:\n$DBI::errstr";
+	oda_disconnect( $options_ref,
+			$error_strings_ref )
+	    if ! $was_connected_flag;
+	return 0;
     }
     
     while ( my $result_hash_ref = 
-        $statement_handle->fetchrow_hashref( 'NAME_lc' ) ) {
+	    $statement_handle->fetchrow_hashref( 'NAME_lc' ) ) {
         $$number_of_records_ref++;
         foreach my $field_name ( sort keys %$result_hash_ref ) {
 
-        #TJN: hack to skip empty values in the data
-        # see Bug#1037823 'lots of warning msgs in log from oda.pm'
+	    #TJN: hack to skip empty values in the data
+	    # see Bug#1037823 'lots of warning msgs in log from oda.pm'
             if ( defined($$result_hash_ref{ $field_name })  
-             and $$result_hash_ref{ $field_name } =~ /^\'.*\'$/ ) 
+		 and $$result_hash_ref{ $field_name } =~ /^\'.*\'$/ ) 
             {
                 $$result_hash_ref{ $field_name } =~ s/^\'//;
                 $$result_hash_ref{ $field_name } =~ s/\'$//;
