@@ -72,12 +72,11 @@ sub detect {
 	my $os_update = $4;
 
 	# only support these two for now
-	if ($os_flavor =~ /^(Taroon|Nahant)$/) {
+	if ($os_family !~ /^(Taroon|Nahant)$/) {
 	    return undef;
 	}
 
-	$id->{distro} = "redhat-el";
-	$id->{distro_flavor} = lc($flavor);
+	$id->{distro} = "redhat-el-".lc($flavor);
 	$id->{distro_version} = $os_release;
 	$id->{distro_update} = $os_update;
 	$id->{compat_distro} = "rhel";
