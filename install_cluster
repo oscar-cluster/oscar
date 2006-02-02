@@ -304,38 +304,43 @@ oscar_log_subsection("Successfully ran OSCAR install_cluster script");
 # in the /etc/profile.d directory
 #
 sub oscar_home_env {
-    my $ohome = $cwd();
+    my $ohome = &cwd();
     if (dirname($0) ne ".") {
 	carp("You MUST execute the program from within the OSCAR top level directory!\n");
     }
     # do profile.d files already exist?
     my ($dir_csh, $dir_sh) = &profiled_files_read();
     if ($dir_csh ne $dir_sh) {
+	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 	print "The /etc/profile.d/oscar_home.{csh,sh} files point to\n";
 	print "different \$OSCAR_HOME environment variables!\n";
 	print "Fix or delete them and rerun this program!\n";
+	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 	exit 1;
     }
     # is there another OSCAR installation around?
-    if ($dir_sh ne $ohome) {
+    if ($dir_sh && ($dir_sh ne $ohome)) {
+	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 	print "The /etc/profile.d/oscar_home.{csh,sh} files already exist\n";
 	print "and point to a different OSCAR installation!\n";
-	print "If you want do DELETE the other OSCAR installation (!!!)\n";
+	print "If you want to DELETE the other OSCAR installation (!!!)\n";
 	print "you should do:\n";
 	print "   cd $dir_sh\n";
 	print "   scripts/start_over\n";
 	print "Then rerun this script.\n";
 	print "ATTENTION: The steps described above will remove all OSCAR\n";
 	print "packages and delete all defined cluster nodes!\n";
+	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 	exit 1;
     }
     # set environment variable OSCAR_HOME
     if ($ENV{OSCAR_HOME} ne $ohome) {
+	oscar_log_subsection("Setting env variable OSCAR_HOME to $ohome");
 	$ENV{OSCAR_HOME} = $ohome;
     }
     # write profile.d files
     if (!$dir_sh || !$dir_csh) {
-	#write new profile.d files
+	oscar_log_subsection("Generating /etc/profile.d/oscar_home.{sh,csh} files.");
 	&profiled_files_write($ohome);
     }
 }
@@ -375,10 +380,12 @@ sub profiled_files_write {
 	    carp("Could not write file $file: $!");
     print OUT "setenv OSCAR_HOME $dir\n";
     close OUT;
+    chmod 0755, $file;
     $file = "/etc/profile.d/oscar_home.sh";
     open OUT, "> $file" or
 	    carp("Could not write file $file: $!");
     print OUT "OSCAR_HOME=$dir\n";
     print OUT "export OSCAR_HOME\n";
     close OUT;
+    chmod 0755, $file;
 }
