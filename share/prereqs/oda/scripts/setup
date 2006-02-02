@@ -4,6 +4,8 @@
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
 # Copyright (c) 2005, Revolution Linux
+# Copyright (c) 2006, Erich Focht
+#                     All rights reserved
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -15,153 +17,23 @@
 #use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
-use Carp;
-use OSCAR::Distro;
-use OSCAR::Package;
-use XML::Simple;
-use File::Copy;
-
-# Version included in media directory
-
-my $ver = "0.90";
-my $package_dir = "oda";
-my $oscar_rpms_dir = "/tftpboot/rpm";
-
-oscar_log_subsection("Checking to see if we need to install ODA RPMs");
-
-# Definition of distro type and version
-
-my ($distro_name, $distro_version) = which_distro_server();
-
-# find a list of rpm names to check for and rpm files to install
 
 my $mysqld;
 
 if ( $distro_name eq "redhat" ) {
-    if ( ( `rpm -q --qf '%{VERSION}' redhat-release` =~ /^4/ ) || (`rpm -q --qf '%{VERSION}' centos-release` =~ /^4/ ) || ( `rpm -q --qf '%{VERSION}' sl-release` =~ /^4/ ) ) {
-        @wanted_rpms = qw( mysql
-                           perl-DBD-MySQL
-                           perl-DBI
-                           mysql-server
-                            );
-        $mysqld      = 'mysqld';
-    } else {
-        @wanted_rpms = qw( mysql
-	    	           perl-DBD-MySQL
-		           perl-DBI
-		           perl-CGI
-		           mysql-server
-		            );
-        $mysqld      = 'mysqld';
-    }
-}
-
-elsif ( $distro_name eq "fedora" ) {
-    @wanted_rpms = qw( mysql
-		       perl-DBD-MySQL
-		       perl-DBI
-		       mysql-server
-		        );
     $mysqld      = 'mysqld';
-}
-
-elsif ( $distro_name eq "suse") {
-    @wanted_rpms = qw( mysql
-		       mysql-client
-		       perl-DBD-mysql
-		       perl-DBI
-		       perl-Data-ShowTable
-		       mysql-shared
-		        );
+} elsif ( $distro_name eq "fedora" ) {
+    $mysqld      = 'mysqld';
+} elsif ( $distro_name eq "suse") {
     $mysqld      = 'mysql';
-}
-
-elsif ( $distro_name eq "mandrake") {
-    if ( `rpm -q --qf '%{VERSION}' mandrakelinux-release` == 10.1 ) {
-	@wanted_rpms = qw( MySQL
-			   MySQL-client
-			   perl-DBI
-			   perl-Mysql
-			   perl-Data-ShowTable
-			   
-			   MySQL-common
-			   libmysql12
-			   perl-CGI );
-    }
-    elsif ( `rpm -q --qf '%{VERSION}' mandrake-release` == 10.0 ) {
-	@wanted_rpms = qw( MySQL
-			   MySQL-client
-			   perl-DBI
-			   perl-Mysql
-			   perl-Data-ShowTable
-			   
-			   MySQL-common
-			   libmysql12
-			   perl-CGI );    
-    } else {
-	@wanted_rpms = qw( MySQL
-			   MySQL-client
-			   libmysql10
-			   perl-DBI
-			   perl-CGI
-			   perl-Mysql
-			   perl-ExtUtils-PerlPP
-			    );
-    }
+} elsif ( $distro_name eq "mandrake") {
     $mysqld      = 'mysql';
-}
-
-elsif ( $distro_name eq "mandriva" ) {
-    	@wanted_rpms = qw(MySQL
-                          MySQL-client
-			  perl-DBI
-			  perl-Data-ShowTable
-                          MySQL-common
-                          libmysql14
-                          perl-CGI );
+} elsif ( $distro_name eq "mandriva" ) {
     	$mysqld      = 'mysqld';
-}
-
-else {
+} else {
     print "\n\nCannot determine distribution and version!!!!\nCannot determine oda rpms to install!!!!\n\n";
     exit 1;
 }
-
-
-# RHEL3/4 WS are missing the mysql-server RPM in the distro. Use a rebuilt package
-# in this case. Coded for OSCAR::Distro recognition. Should be changed for OS_Detect
-# as soon as possible.
-
-if ($distro_name eq "redhat") {
-    my $arch = `uname -i`;
-    chomp $arch;
-    if ($distro_version eq "3as") {
-	if (!scalar(glob("$oscar_rpms_dir/mysql-server-*.$arch.rpm"))) {
-	    my $rebuilt_path = "$ENV{OSCAR_HOME}/share/prereqs/oda/distro/rhel3";
-	    oscar_log_subsection("Couldn't find mysql-server RPM in $oscar_rpms_dir\n");
-	    oscar_log_subsection("Trying rebuilt version from $rebuilt_path\n");
-	    my @rebuilt_rpms = glob("$rebuilt_path/mysql-server-*.$arch.rpm");
-	    if (scalar(@rebuilt_rpms) == 0) {
-		croak("No rebuilt RPM found!");
-	    } elsif (scalar(@rebuilt_rpms) > 1) {
-		oscar_log_subsection("Warning: multiple RPMs found. Using the first one...\n");
-	    }
-	    copy($rebuilt_rpms[0], "$oscar_rpms_dir/") ||
-		croak("Unable to copy $rebuilt_rpmsi[0] to $oscar_rpms_dir");
-	}
-    }
-}
-
-# Now install the "best" version of all the required RPMs if necessary
-#if ( system("rpm -q perl-DBI >/dev/null 2>/dev/null") != 0 ) {
-if ( ! -r "/etc/odapw" ) {
-  oscar_log_subsection("Installing ODA related RPMs @wanted_rpms");
-  install_packages(@wanted_rpms) or 
-      croak("ODA is giving up and will not be installed");
-} else {
-  oscar_log_subsection("ODA related packages are already installed");
-}
-# Exit properly so that the exit status gets propogated
 
 oscar_log_subsection("Checking status of MySQL server $mysqld");
 if ( !system("/etc/init.d/$mysqld status | grep -c stopped") ) {
