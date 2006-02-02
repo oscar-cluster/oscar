@@ -1,3 +1,4 @@
+package OSCAR::Configurator;
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation; either version 2 of the License, or
@@ -27,9 +28,6 @@
 # $Id$
 # 
 ##############################################################
-#  MOVE THE STUFF BELOW TO THE TOP OF THE PERL SOURCE FILE!  #
-##############################################################
-package OSCAR::Configurator;
 
 use strict;
 use vars qw(@EXPORT);
@@ -39,8 +37,9 @@ our @EXPORT = qw(populateConfiguratorList displayPackageConfigurator);
 use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use OSCAR::Configbox; # For the configuration HTML form display
-use OSCAR::Package;   # For list_installable_packages() and run_pkg_script()
-use OSCAR::Database;  # For locking() and unlock()
+use OSCAR::Package;   # For run_pkg_script()
+use OSCAR::PackagePath; # For PKG_SOURCE_LOCATIONS
+use OSCAR::Database;  # For list_installable_packages(), locking() and unlock()
 use OSCAR::Logger;    # For oscar_log_section()
 use OSCAR::Tk;
 #use OSCAR::Selector;
@@ -223,7 +222,7 @@ sub populateConfiguratorList
   foreach my $package ( sort keys %$packages_ref ) 
     {
       my $found = 0;
-      foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) 
+      foreach my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) 
         {
           (($found = 1) and last) if (-s "$dir/$package/configurator.html");
         }
