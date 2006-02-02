@@ -87,51 +87,49 @@ if ($smart) {
 }
 
 # now go with the processing
-my $cmd;
-for my $path (@prereqs) {
 
+# collect all config lines and build list of packages to be installed/removed
+my (@removes, @installs);
+for my $path (@prereqs) {
     # read in prereq.cfg file
     my $ref = &get_config($path, $distro, $distrover, $arch);
     if (!$ref) {
 	print "Couldn't match any config block in $path/prereq.cfg\n";
 	next;
     }
-    my @cfg = @{$ref};
-    next if (!scalar(@cfg));
-
-    if ($dumb) {
-	# go through config file line by line
-	for my $line (@cfg) {
-	    $line =~ s/^\s*//g;
-	    next if ($line =~ /^\#/ && $line =~ /^$/);
-	    my $remove = ($line =~ /^!/);
-	    if ($remove) {
-		$line = s/^!//g;
-	    }
-	    my ($pkg,$dummy) = split(/\s+/,$line);
-
-	    if ($suffix eq ".rpm") {
-		$pkg =~ s/\.rpm$//; 
-		dumb_rpm($remove,$pkg);
-	    } else {
-		croak "Support for dumb ".$suffix." install is not implemented.\n";
-	    }
+    for my $line (@{$ref}) {
+	$line =~ s/^\s*//g;
+	next if ($line =~ /^\#/ && $line =~ /^$/);
+	my $remove = ($line =~ /^!/);
+	if ($remove) {
+	    $line = s/^!//g;
 	}
-    } else {
-	#
-	# smart handling
-	#
-	for my $line (@cfg) {
-	    $line =~ s/^\s*//g;
-	    next if ($line =~ /^\#/ && $line =~ /^$/);
-	    my $remove = ($line =~ /^!/);
-	    if ($remove) {
-		$line = s/^!//g;
-	    }
-	    my ($pkg,$dummy) = split(/\s+/,$line);
-	    handle_smart_pkgs($path,$remove,$pkg);
+	my ($pkg,$dummy) = split(/\s+/,$line);
+	if ($remove) {
+	    push @removes, $line;
+	} else {
+	    push @installs, $line;
 	}
     }
+}
+
+vprint("Following packages will be removed:\n".
+       join("\n\t",@removes) . "\n");
+vprint("Following packages will be installed:\n".
+       join("\n\t",@installs) . "\n");
+
+if ($dumb) {
+    if ($suffix eq ".rpm") {
+	# do the removes before the installs
+	handle_dumb_rpms(1,@removes);
+	handle_dumb_rpms(0,@installs);
+    } else {
+	croak "Support for dumb ".$suffix." install is not implemented.\n";
+    }
+} else {
+    # do the removes before the installs
+    handle_smart_pkgs($path,1,@removes);
+    handle_smart_pkgs($path,0,@installs);
 }
 
 exit 0;
@@ -140,6 +138,7 @@ sub handle_smart_pkgs {
     my ($path, $remove, @pkgs) = @_;
     my ($err, @out);
 
+    return if (!scalar(@pkgs));
     if ($remove) {
 	print("\tsmartly removing: ".join(",",@pkgs)."\n");
 	($err, @out) = $pm->smart_remove(@pkgs);
@@ -163,28 +162,32 @@ sub handle_smart_pkgs {
 #
 # Simple implementation for dumb rpm handling
 #
-sub dumb_rpm {
-    my ($remove, $pkg) = @_;
+sub handle_dumb_rpms {
+    my ($remove, @pkgs) = @_;
     my $cmd;
-    return if (!$pkg);
-    if ($remove) {
-	# remove all instances of package
-	$cmd = "rpm -ev --all $pkg";
-	vprint("Executing: $cmd\n");
-	!system($cmd) or print "Warning: removal failed: $!\n";
-    } else {
-	# already installed?
-	$cmd = "rpm -q $pkg >/dev/null 2>&1";
-	vprint("Executing: $cmd\n");
-	if (system($cmd)) {
-	    # not installed, so do it now
-	    my $pkgpath = locate_pkg($pkg);
-	    if ($pkgpath) {
-		$cmd = "rpm -Uhv $pkgpath";
-		vprint("Executing: $cmd\n");
-		!system($cmd) or print "install failed: $!\n";
-	    } else {
-		print "WARNING: Could not locate package $pkg\n";
+    return if (!scalar(@pkgs));
+    for my $pkg (@pkgs) {
+	# make sure we deal with package names, not file names
+	my $pkgname = $pkg; $pkgname =~ s/\.rpm$//;
+	if ($remove) {
+	    # remove all instances of package
+	    $cmd = "rpm -ev --all $pkgname";
+	    vprint("Executing: $cmd\n");
+	    !system($cmd) or print "Warning: removal failed: $!\n";
+	} else {
+	    # already installed?
+	    $cmd = "rpm -q $pkgname >/dev/null 2>&1";
+	    vprint("Executing: $cmd\n");
+	    if (system($cmd)) {
+		# not installed, so do it now
+		my $pkgpath = locate_pkg($pkg);
+		if ($pkgpath) {
+		    $cmd = "rpm -Uhv $pkgpath";
+		    vprint("Executing: $cmd\n");
+		    !system($cmd) or print "install failed: $!\n";
+		} else {
+		    print "WARNING: Could not locate package $pkg\n";
+		}
 	    }
 	}
     }
