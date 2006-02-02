@@ -21,7 +21,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use POSIX;
 use Carp;
 use OSCAR::OCA::OS_Detect;
-use OSCAR::Package;
+use OSCAR::PackagePath;
 use Getopt::Long;
 use File::Basename;
 use File::Copy;
@@ -39,8 +39,8 @@ die "$ENV{OSCAR_PACKAGE_HOME}: not accessible.\n" unless -x $ENV{OSCAR_PACKAGE_H
 
 # Different distros require different RPMs. Different architectures, too.
 
-my $base_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro";
-my $oscar_pkg_pool = $OSCAR::Package::RPM_POOL;
+my $base_dir= $ENV{OSCAR_PACKAGE_HOME};
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
 
 # configure command line options parsing
 Getopt::Long::Configure("ignore_case"); # ignore case
@@ -50,6 +50,7 @@ my %options;
 GetOptions( \%options,
 	    'arch|a',
 	    'distro|d=s',
+	    'image|i=s',
             'erase|e',
 	    'help|h',
 	    'pool|p=s',
@@ -58,9 +59,8 @@ GetOptions( \%options,
             ) || usage();
 
 # Query distro/version of the master node
-!OSCAR::OCA::OS_Detect::open() or
-    die "Unable to determine operating system";
-my $os = $OS_Detect->{query};
+my $os = OSCAR::OCA::OS_Detect::open($options{image});
+die "Unable to determine operating system" if (!$os);
 
 # set package name
 my $pkg_name = $ENV{OSCAR_PACKAGE_HOME};
@@ -80,14 +80,20 @@ if (! -d $oscar_pkg_pool) {
     croak("Directory $oscar_pkg_pool does not exist");
 }
 
+# image option has priority over arch and distro options
+if ($options{image}) {
+    delete $options{arch};
+    delete $options{distro};
+}
+
 # Which architecture are we dealing with?
 my $march;
 if ($options{arch}) {
     $march = $options{arch};
 } else {
     $march = $os->{arch};
-    $march = "i386" if $march =~ /^i[3456]86$/;
 }
+$march = "i386" if $march =~ /^i[3456]86$/;
 
 #
 # Packages to which command applies. If empty, use all packages!
@@ -103,24 +109,35 @@ my @pkgfiles;
 
 # Find first compatible subdirectory
 # Note ordering, later occurrence of identical filenames overwrite earlier.
-# ../RPMS, common-arch, and distro-compat dir.
+# RPMS, common-arch, and distro-compat dir.
 #
 my @src_dirs;
-push @src_dirs, "../RPMS" if (-d "$base_dir/../RPMS");
-push @src_dirs, "common-rpms" if (-d "$base_dir/common-rpms");
+# EF: RPMS directory should go away and be replaced by common-rpms
+#     Still need to make this distro-dependent
+push @src_dirs, "RPMS" if (-d "$base_dir/RPMS");
+push @src_dirs, "distro/common-rpms" if (-d "$base_dir/distro/common-rpms");
 for my $dir (distro_compat()) {
-    if (-d "$base_dir/$dir") {
-	push @src_dirs, $dir;
+    if (-d "$base_dir/distro/$dir") {
+	push @src_dirs, "distro/$dir";
 	last;
     }
 }
-print "Distro specific packages come from\n\t$base_dir/"
-       . join("\n\t$base_dir/",@src_dirs)."\n";
+vprint("Distro specific packages come from\n\t$base_dir/"
+       . join("\n\t$base_dir/",@src_dirs)."\n");
 
 # List packages.
 #
-my %pkglist = map { /([^\/]+)$/, $_ } map { glob("$base_dir/$_/*") } @src_dirs;
-vprint "Available Packages:\n\t".join( "\n\t", map {"$_: $pkglist{$_}"} keys %pkglist )."\n";
+# EF: reduce inherent perl obfuscation factor
+#my %pkglist = map { /([^\/]+)$/, $_ } map { glob("$base_dir/$_/*") } @src_dirs;
+my %pkglist;
+for my $d (@src_dirs) {
+    for my $f (glob("$base_dir/$d/*")) {
+	my $k = basename($f);
+	$pkglist{$k} = $f;
+    }
+}
+vprint("Available Packages:\n\t" 
+       . join( "\n\t", map {"$pkglist{$_}"} keys %pkglist )."\n");
 
 #
 # No packages on the argument line? Then take all packages.
@@ -131,12 +148,13 @@ vprint "Available Packages:\n\t".join( "\n\t", map {"$_: $pkglist{$_}"} keys %pk
 # Copy packages to the package pool.
 ###
 for my $pkg (@argpkgs) {
-    
     my $basename;
 
     my @possibles = grep /^\Q$pkg\E[-\.]/, keys %pkglist;
-    push @possibles, ($pkg) if exists $pkglist{$pkg};  # above fails for complete match.
-    vprint "Matching packages:\n\t".join( "\n\t", @possibles )."\n" if @possibles > 1;
+    if (exists $pkglist{$pkg}) {
+	push @possibles, ($pkg);
+    }
+    vprint "Matching packages:\n\t".join("\n\t",@possibles)."\n" if @possibles > 1;
     unless ( @possibles ) {
 	print STDERR "Package $pkg not found\n";
 	next;
@@ -147,7 +165,7 @@ for my $pkg (@argpkgs) {
     	$basename = (sort {length($a) <=> length($b)} @possibles)[0];
     }
     if ($options{erase}) {
-	print "Delete $basename from $oscar_pkg_pool\n";
+	print "* Delete $basename from $oscar_pkg_pool\n";
 	unless( -f "$oscar_pkg_pool/$basename" && $options{test} ) {
 	    unlink( "$oscar_pkg_pool/$basename" ) ||
 		croak("Error occured while deleting: $!");
@@ -163,7 +181,7 @@ for my $pkg (@argpkgs) {
 	    print STDOUT map {": $_"} @lines;
 	    print STDOUT "::::::::::::::-------------------------\n";
 	}
-	print " Copy $filename -> $oscar_pkg_pool\n";
+	print "* Copy $filename to $oscar_pkg_pool\n";
 	if (!defined $options{test}) {
 	    copy($filename, $oscar_pkg_pool) ||
 		croak("Error occured while copying: $!");
@@ -217,8 +235,7 @@ sub distro_compat {
 
 #
 # Standardized distribution subdirectory name.
-# Currently based on the OSCAR::Distro.pm framework, should be migrated to
-# OSCAR::OCA::OS_Detect as soon as that framework is complete.
+# Uses the OSCAR::OCA::OS_Detect framework.
 #
 sub distroname {
     my ($name, $ver);
