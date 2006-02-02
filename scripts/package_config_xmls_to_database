@@ -61,23 +61,10 @@ if ( exists $ENV{OSCAR_HOME} ) {
     $oscar_home = $ENV{OSCAR_HOME};
     die "$0: bad OSCAR_HOME environmental variable value <$oscar_home>"
     if ( ! -d "$oscar_home");
-} 
-# or if that fails, try to figure out the directory we're running from
-else {
-    $oscar_home = $0;
-    my $cwd = `pwd`;
-    chomp $cwd;
-    $oscar_home = $cwd . '/' . $oscar_home
-    if $oscar_home !~ /^\//;   # prepend current dir if not abs
-    $oscar_home =~ s,/\.\./[^/][^/][^/]+/,/,g; # change /../???*/ to /
-    $oscar_home =~ s,/\.\./[^\./][^\./]/,/,g;  # change /../??/   to /
-    $oscar_home =~ s,/\./,/,g;                 # change /./       to /
-    $oscar_home =~ s,/packages/[^/]+/scripts/,/,g;
-    $oscar_home =~ s,/[^/]+$,,;  # Remove the name of the program
-    die "$0: bad calculated oscar base directory $oscar_home"
-    if ( ! -d "$oscar_home");
-    $ENV{OSCAR_HOME} = $oscar_home;
+} else {
+    die "\nEnvironment variable \$OSCAR_HOME is not set!\n";
 }
+
 print "$0: oscar_home=<$oscar_home>\n" if $options{debug};
 
 # configure command line options parsing
@@ -95,7 +82,8 @@ GetOptions( \%options,
             'version' )
     || usage(1);
 print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
-oda::print_hash( "", "$0: options after GetOptions", \%options) if $options{debug};
+oda::print_hash( "", "$0: options after GetOptions", \%options)
+    if $options{debug};
 
 # function to convert an options hash into a string of
 # appropriate oda command line options
@@ -250,59 +238,6 @@ USAGE
     }
     exit $exit_status;
 }
-
-# find the base directory of the oscar distribution,
-my $oscar_home;
-# first try the environmental variable
-if ( exists $ENV{OSCAR_HOME} ) {
-    $oscar_home = $ENV{OSCAR_HOME};
-    die "$0: bad OSCAR_HOME environmental variable value <$oscar_home>"
-    if ( ! -d "$oscar_home");
-} 
-# or if that fails, try to figure out the directory we're running from
-else {
-    $oscar_home = $0;
-    my $cwd = `pwd`;
-    chomp $cwd;
-    $oscar_home = $cwd . '/' . $oscar_home
-    if $oscar_home !~ /^\//;   # prepend current dir if not abs
-    $oscar_home =~ s,/\.\./[^/][^/][^/]+/,/,g; # change /../???*/ to /
-    $oscar_home =~ s,/\.\./[^\./][^\./]/,/,g;  # change /../??/   to /
-    $oscar_home =~ s,/\./,/,g;                 # change /./       to /
-    $oscar_home =~ s,/packages/[^/]+/scripts/,/,g;
-    $oscar_home =~ s,/[^/]+$,,;  # Remove the name of the program
-    die "$0: bad calculated oscar base directory <$oscar_home>"
-    if ( ! -d "$oscar_home");
-    $ENV{OSCAR_HOME} = $oscar_home;
-}
-print "$0: oscar_home=<$oscar_home>\n" if $options{debug};
-
-# configure command line options parsing
-Getopt::Long::Configure("ignore_case"); # ignore case
-Getopt::Long::Configure("bundling");    # allow -a -b or -ab
-Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
-
-# set default option values
-my %options = ( 'debug'       => 0,
-                'verbose'     => 0 );
-
-# parse command line options
-GetOptions( \%options,
-            'debug!',
-            'database|d=s',
-            'help',
-            'host|h=s',
-            'password=s',
-            'port|p=i',
-            'type|t=s',
-            'user|u=s',
-            'verbose!',
-            'version' )
-    || usage(1);
-print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
-oda::print_hash( "", "$0: options after GetOptions", \%options) if $options{debug};
-my $option_strings = options_to_string( \%options );
-print "$0: options_strings=<$option_strings>\n" if $options{debug};
 
 # --help flag just prints out usage information and exits
 if ( exists $options{help} ) {
