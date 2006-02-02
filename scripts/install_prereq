@@ -27,14 +27,14 @@ GetOptions(
 # check paths
 &usage(1) if (!scalar(@ARGV));
 
-my $oscarpath = $ENV{OSCAR_HOME};
+my $ohome = $ENV{OSCAR_HOME};
 my @prereqs;
 for my $p (@ARGV) {
-    if (! -d "$oscarpath/$p" || ! -f "$oscarpath/$p/prereq.cfg") {
+    if (! -d "$ohome/$p" || ! -f "$ohome/$p/prereq.cfg") {
 	print "Error: $p is not a directory or doesn't contain a prereq.cfg file!\n";
 	usage(1);
     } else {
-	push @prereqs, "$oscarpath/$p";
+	push @prereqs, "$ohome/$p";
     }
 }
 
@@ -62,7 +62,7 @@ vprint("Prereq paths: ".join(",",@prereqs))."\n";
 #
 # copy files to repository with generic-setup
 #
-my $gs = "$oscarpath/scripts/generic-setup";
+my $gs = "$ohome/scripts/generic-setup";
 die "ERROR: $gs is not executable!" if (! -x $gs);
 $gs .= " --verbose" if ($verbose);
 
@@ -79,31 +79,11 @@ for my $p (@prereqs) {
 my $pm;
 if ($smart) {
     require OSCAR::PackMan;
-    $pm = PackMan->new;
+    require OSCAR::PackageSmart;
+    $pm = OSCAR::PackageSmart::prepare_pools($verbose,$oscar_pkg_pool,$distro_pkg_pool);
     if (!$pm) {
 	croak "\nERROR: Could not create PackMan instance!\n";
     }
-    $pm->repo($oscar_pkg_pool);
-    print "Calling gencache...";
-    my ($err, @out) = $pm->gencache;
-    if ($err) {
-	print " success\n";
-    } else {
-	print " error. Output was:\n";
-	print join("\n",@out)."\n";
-	# exit here?
-    }
-    # prepare for smart installs
-    $pm->repo($oscar_pkg_pool,$distro_pkg_pool);
-    # follow output of smart installer
-    if ($verbose) {
-	$pm->output_callback(\&print_output);
-    }
-}
-
-sub print_output {
-    my ($line) = @_;
-    print "$line\n";
 }
 
 # now go with the processing
@@ -131,6 +111,7 @@ for my $path (@prereqs) {
 	    my ($pkg,$dummy) = split(/\s+/,$line);
 
 	    if ($suffix eq ".rpm") {
+		$pkg =~ s/\.rpm$//; 
 		dumb_rpm($remove,$pkg);
 	    } else {
 		croak "Support for dumb ".$suffix." install is not implemented.\n";
@@ -165,6 +146,11 @@ sub handle_smart_pkgs {
     } else {
 	print("\tsmartly installing: ".join(",",@pkgs)."\n");
 	($err, @out) = $pm->smart_install(@pkgs);
+    }
+    if (!$err) {
+	print "Error occured for prereq $path\n";
+	print join("\n",@out);
+	exit 1;
     }
     if (!$err) {
 	print "Error occured for prereq $path\n";
