@@ -43,20 +43,16 @@ use Carp;
 
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
-
-my $oscarhome = $ENV{OSCAR_HOME};
-
-sub do_it_or_die {
-    my ( $command, $results_ref, $error ) = @_;
-    return if dec_already_locked( $command, $results_ref, 1 );
-    database_disconnect();
-    die "$0: $error";
-}
-
-oscar_log_section("Running OSCAR wizard_prep script");
+my $ohome = $ENV{OSCAR_HOME};
 
 my $verbose;
 $verbose="--verbose" if ($ENV{OSCAR_WIZARD_VERBOSE});
+
+#
+# #####
+#
+
+oscar_log_section("Running OSCAR wizard_prep script");
 
 #
 # Locate package pools and create the directories if they don't exist, yet.
@@ -79,7 +75,7 @@ if ($distro_pkg_pool =~ /^\//) {   # is local path, no remote URL
     }
 }
 
-my $ipcmd = "$oscarhome/scripts/install_prereq $verbose";
+my $ipcmd = "$ohome/scripts/install_prereq $verbose";
 
 # Run the prerequisites.  Observe the order set in
 # share/prereqs/order.txt, and then run any that are not explicitly
@@ -95,7 +91,7 @@ my $cmd = "$ipcmd --dumb packages/yume share/prereqs/packman";
 
 oscar_log_subsection("Installing OSCAR wizard prerequisites");
 
-my $orderfile = "$oscarhome/share/prereqs/prereqs.order";
+my $orderfile = "$ohome/share/prereqs/prereqs.order";
 
 # Read in the share/prereqs/prereqs.order file
 # It should contain prerequisite paths relative to $OSCAR_HOME, one per line.
@@ -114,25 +110,28 @@ if (-f "$orderfile") {
 # This list must contain ALL prerequisites! This is little effort and
 # avoids running twice through the prereqs.
 
-# skip comments
-my @prereqs = grep !/^\s*\#/, @ordered_prereqs;
+# skip comments and empty lines
+@ordered_prereqs = grep !/^\s*(\#.*|\s*)$/, @ordered_prereqs;
 
-# and now go for them!
-$cmd = "$ipcmd --smart ".join(" ",@prereqs);
+
+$cmd = "$ipcmd --smart " . join(" ",@ordered_prereqs);
 print "\texecuting: $cmd\n" if ($verbose);
-!system($cmd) or die "ERROR: Prerequisite install failure!";
+!system($cmd) or die "ERROR: Prerequisites install failure!";
 
+# Install the prerequisites and
 # run setup for the prereqs which still need it
-foreach my $prereq (@prereqs) {
+foreach my $prereq (@ordered_prereqs) {
+    oscar_log_subsection("Installing wizard prereq $prereq");
     # there is no need for a prereq setup script any more,
     # this should really be an exception!
     # 
     # !! All setup scripts are run _before_ installation of prereqs !!
-    if (-x "$oscarhome/$prereq/scripts/setup") {
-	print "Running prereq setup script for $prereq\n";
-	!system("$oscarhome/$prereq/scripts/setup")
+    if (-x "$ohome/$prereq/scripts/setup") {
+	oscar_log_subsection("Running prereq setup script for $prereq");
+	!system("$ohome/$prereq/scripts/setup")
 	    or croak("ERROR: Prerequisite setup failure!");
     }
+    oscar_log_subsection("Successfully installed prereq $prereq");
 }
 
 
@@ -192,7 +191,7 @@ oscar_log_subsection("Successfully ran package setup scripts");
 
 
 oscar_log_subsection("Copying package files to $oscar_pkg_pool");
-my $gscmd = "$oscarhome/scripts/generic-setup $verbose";
+my $gscmd = "$ohome/scripts/generic-setup $verbose";
 my $err = 0;
 for my $pkg (sort keys(%pkgdirs)) {
     my $dir = $pkgdirs{$pkg};
@@ -210,6 +209,8 @@ for my $pkg (sort keys(%pkgdirs)) {
 	oscar_log_subsection("Successfully ran generic-setup for opkg $pkg");
     }
 }
+
+
 
 # Make sure there is a database password
 
@@ -245,31 +246,46 @@ croak("Couldn't initialize the nics and networks for the oscar server") if $exit
 
 # Get the list of just core packages
 
-# EF: do it through the database, directly
+my (@results, %options, @errors);
+get_packages_with_class("core",\@results,\%options,\@errors) or
+    die "$0:Failed to get core packages list";
+my @packages = map { $_->{package} } @results;
 
-
-my @packages = OSCAR::Package::list_installable_package_dirs("core");
 oscar_log_subsection("Identified core packages: " . join(' ', @packages));
 
-# Get list of RPMs from the core packages
 
+# Get list of RPMs from the core packages
 my @rpms = ();
 foreach my $package (@packages) {
-    push @rpms, OSCAR::Package::rpmlist($package,undef,"oscar_server");
+    push @rpms, database_rpmlist_for_package_and_group($package,undef,
+						       $OSCAR_SERVER_GROUP,
+						       \@errors);
 }
 
-# And now we add the extra rpms that are needed if
-# for each distribution
 
-# Deprecated by use of base package
-#my ($distname, $distver) = OSCAR::Distro::which_distro_server();
-#push @rpms, OSCAR::Package::distro_rpmlist($distname,$distver,$ARCH);
+oscar_log_subsection("Installing server core packages");
 
-# Now install them nicely (i.e. don't install packages that are already there)
+print "Packages: ".join(" ",@rpms) . "\n" if ($verbose);
+#
+# The code below should migrate into a package. It is used in install_prereq
+# in exactly the same way. Maybe to OSCAR::PackageSmart...? [EF]
+#
 
-oscar_log_subsection("Installing server core RPMs");
-OSCAR::Package::install_packages(@rpms) or 
-  croak("Couldn't install packages needed for OSCAR Wizard to run");
+eval("require OSCAR::PackMan");
+eval("require OSCAR::PackageSmart");
+my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
+					    $oscar_pkg_pool,$distro_pkg_pool);
+if (!$pm) {
+    croak "\nERROR: Could not create PackMan instance!\n";
+}
+
+my ($err, @out) = $pm->smart_install(@rpms);
+if (!$err) {
+    print "Error occured during smart_install:\n";
+    print join("\n",@out)."\n";
+    exit 1;
+}
+
 oscar_log_subsection("Successfully installed server core RPMs");
 
 #
@@ -329,14 +345,9 @@ oscar_log_subsection("Successfully ran server core package " .
 
 oscar_log_subsection("Successfully ran OSCAR wizard_prep script");
 
-sub prep_rpmpool 
-{
-  my $dir = shift;
-  if(!-d $dir) 
-    {
-      print "No $dir directory found.  Creating it now...\n";
-      mkpath($dir, 1, 0755) or return undef;
-    }
-  return 1;
-}
 
+
+sub print_output {
+    my ($line) = @_;
+    print "$line\n";
+}
