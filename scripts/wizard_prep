@@ -84,7 +84,7 @@ my $ipcmd = "$ohome/scripts/install_prereq $verbose";
 oscar_log_subsection("Bootstrapping OSCAR smart package manager");
 
 # need to add ifdef for other type of smart package manager
-my $cmd = "$ipcmd --dumb packages/yume share/prereqs/packman";
+my $cmd = "$ipcmd --dumb packages/yume share/prereqs/perl-IO-Tty share/prereqs/packman";
 !system($cmd) or
     die "Could not bootstrap smart package manager!\n";
 
