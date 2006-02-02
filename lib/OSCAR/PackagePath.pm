@@ -40,6 +40,8 @@ use Carp;
 # Argument: $img
 #           - if undefined, will detect distro of "/" on the current machine
 #           - if set, will detect distro of the image located in that path
+# Failure to detect the distro is a catastrophic event, so the program
+# deserves to die.
 #
 # This routine might move to OSCAR::Distro when things stabilize...
 #
@@ -116,11 +118,12 @@ sub oscar_repo_path {
 }
 
 #
-# returns the package extension for a particular package manager type
-# (as returned by OS_Detect->{query}->{pkg}).
+# returns the package extension used for the packages in an image (or "/")
 #
 sub pkg_extension {
-    my ($pkg) = @_;
+    my ($img) = @_;   # can be undefined, in which case we query "/"
+    my $os = distro_detect_or_die($img);
+    my $pkg = $os->{pkg};
     if ($pkg =~ /^rpm$/) {
 	return ".rpm";
     } elsif ($pkg =~ /^deb$/) {
@@ -131,11 +134,12 @@ sub pkg_extension {
 }
 
 #
-# returns the package separator string for a particular package manager type
-# (as returned by OS_Detect->{query}->{pkg}).
+# returns the package separator string used for packages in an image (or "/")
 #
 sub pkg_separator {
-    my ($pkg) = @_;
+    my ($img) = @_;   # can be undefined, in which case we query "/"
+    my $os = distro_detect_or_die($img);
+    my $pkg = $os->{pkg};
     if ($pkg =~ /^rpm$/) {
 	return "-";
     } elsif ($pkg =~ /^deb$/) {
@@ -144,6 +148,5 @@ sub pkg_separator {
 	return undef;
     }
 }
-
 
 1;
