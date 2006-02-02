@@ -47,11 +47,11 @@ sub open {
 
     # Did we find one and only one?
 
-    if (undef == $comps) {
+    if (!defined($comps)) {
         # If we get undef, then find_components() already printed an
         # error, and we decide that we want to die
-        die "Cannot continue";
-    } elsif (scalar(@$comps == 0)) {
+        die "Cannot continue, find_components returned undef";
+    } elsif (scalar(@$comps) == 0) {
         print "Could not find an OS_Detect component for this system!\n";
         die "Cannot continue";
     }
