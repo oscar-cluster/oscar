@@ -58,7 +58,7 @@ sub open {
 
     my $ret = 0;
     foreach my $comp (@$comps) {
-	my $str = "\$OS_Detect->{query} = \\&OCA::OS_Detect::@$comps[0]::query(\%opt)";
+	my $str = "\$OS_Detect->{query} = \\&OCA::OS_Detect::".$comp."::query(\%opt)";
 	eval $str;
 	if (ref($OS_Detect->{query}) eq "HASH") {
 	    print "Found component that fits: $comp\n";
