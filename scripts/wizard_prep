@@ -139,7 +139,7 @@ foreach my $prereq (@ordered_prereqs) {
 # This must be done after the prerequisites, because the prerequisites
 # may have installed some Perl modules that OSCAR requires.
 
-eval("require OSCAR::Package");
+require OSCAR::Package;
 
 my $topdir;
 chomp($topdir = `pwd`);
@@ -150,7 +150,7 @@ chomp($topdir = `pwd`);
 # of running all the package setup scripts, and the setup scripts 
 # must be run *before* reading the XML files in.
 
-my @PKG_SOURCE_LOCATIONS = @OSCAR::Package::PKG_SOURCE_LOCATIONS;
+my @PKG_SOURCE_LOCATIONS = @OSCAR::PackagePath::PKG_SOURCE_LOCATIONS;
 
 
 # Now that we have a good list of packages, run all the setup scripts.
@@ -182,7 +182,11 @@ for my $pkg (sort keys(%pkgdirs)) {
     # If it's a good package, run its setup script (if it has one) in
     # the scripts directory.
     chdir("$dir/scripts");
-    OSCAR::Package::run_pkg_script($pkg, "setup", 1) 
+    #
+    # EF: this needs to be eval'd because the OSCAR::Package namespace
+    # does not exist at perl compile time.
+    #
+    eval("OSCAR::Package::run_pkg_script(\$pkg, \"setup\", 1)") 
 	or croak("Failed running setup script for $pkg");
     chdir($topdir);
 }
