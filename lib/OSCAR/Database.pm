@@ -22,12 +22,16 @@ package OSCAR::Database;
 #                    All rights reserved.
 # 
 # Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
+#
+# Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
+#
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib/OSCAR","/usr/lib/perl5/site_perl";
 use Carp;
-use vars qw(@EXPORT $VERSION @PKG_SOURCE_LOCATIONS);
+use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
+use OSCAR::PackagePath;
 
 # oda may or may not be installed and initialized
 my $oda_available = 0;
@@ -110,11 +114,15 @@ if(-e '/etc/odapw'){
               set_image_packages
               set_node_with_group
               link_node_nic_to_network
+	      pkgs_of_opkg
               do_select
               dec_already_locked
               locking
               single_dec_locked
-              unlock);
+              unlock
+	      list_selected_packages
+	      list_installable_packages
+	      );
 
 #
 # prints a traceback of the call stack
@@ -263,7 +271,7 @@ sub database_execute_command {
     # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
-    OSCAR::Database::database_connect( $print_errors ) ||
+	database_connect( $print_errors ) ||
         return undef;
 
     # execute the command
@@ -280,7 +288,7 @@ sub database_execute_command {
     }
 
     # if we weren't connected to the database when called, disconnect
-    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+    database_disconnect() if ! $was_connected_flag;
 
     return $success;
 }
@@ -353,7 +361,7 @@ sub dec_already_locked {
     # sometimes this is called without a database_connected being 
     # called first, so we have to connect first if that is the case
     ( my $was_connected_flag = $database_connected ) ||
-    OSCAR::Database::database_connect( $print_errors ) ||
+	database_connect( $print_errors ) ||
         return undef;
 
     # execute the command
@@ -371,7 +379,7 @@ sub dec_already_locked {
     }
 
     # if we weren't connected to the database when called, disconnect
-    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+    database_disconnect() if ! $was_connected_flag;
 
     return $success;
 }
@@ -1220,6 +1228,183 @@ sub database_rpmlist_for_package_and_group {
     return @rpms;
 }
 
+#########################################################################
+#  Subroutine: list_selected_packages                                   #
+#  Parameters: The "type" of packages - "core", "noncore", or "all"     #
+#  Returns   : A list of packages selected for installation.            #
+#  If you do not specify the "type" of packages, "all" is assumed.      #
+#                                                                       #
+#  Usage: @packages_that_are_selected = list_selected_packages();       #
+#
+# EF: moved here from Package.pm                                        #
+#########################################################################
+sub list_selected_packages # ($type) -> @selectedlist
+{
+    my ($type,$sel_group) = @_; #shift;
+
+    # If no argument was specified, use "all"
+
+    $type = "all" if ((!(defined $type)) || (!$type));
+
+    # make the database command and do the database read
+
+    # get the selected group.
+    $sel_group = &get_selected_group() if ! $sel_group;
+
+    my %options= ();
+    my @errors = ();
+    
+    my $command_args = "SELECT Packages.package, Packages.version " .
+             "FROM Packages, Group_Packages " .
+             "WHERE Packages.id=Group_Packages.package_id ".
+             "AND Group_Packages.group_name='$sel_group' ".
+             "AND Group_Packages.selected=1";
+    if ($type eq "all"){
+        $command_args = $command_args;
+    }elsif ($type eq "core"){
+        $command_args .= " AND Packages.__class='core' ";
+    } else {
+        $command_args .= " AND Packages.__class!='core' ";
+    }
+
+    my @packages = ();
+    my @tables = ("Packages", "Group_Packages", "Nodes", "Node_Package_Status");
+    if ( OSCAR::Database::single_dec_locked( $command_args,
+                                                   "READ",
+                                                   \@tables,
+                                                   \@packages,
+                                                   undef) ) {
+        return @packages;
+    } else {
+    warn "Cannot read selected packages list from the ODA database.";
+    return undef;
+    }
+}
+
+
+
+#
+# Simplify database_rpmlist_for_package_and_group
+# Usage:
+#    pkgs_of_opkg($opkg, $opkg_ver, \@errors, 
+#                 chroot    => $image_path,
+#                 arch      => $architecture,
+#                 distro    => $compat_distro_name,
+#                 distro_ver=> $compat_distrover,
+#                 group     => $host_group,
+#                 os        => $os_detect_object );
+# The selection arguments "group", "chroot" and "os" can be omitted.
+# "os" should be a reference to a hash array returned by OS_Detect.
+# "chroot" is a path which will be OS_Detect-ed,
+# "arch", "distro", "distro_ver" specify the targetted architecture,
+#     distro, etc... For ia32 the "arch" should i386 (uname -i). The
+#     distro name corresponds to the compat_distro names in OS_Detect! So
+#     use rhel, fc, mdk, etc...
+# "group" is a host group name like oscar_server
+#
+
+sub pkgs_of_opkg {
+    
+    my ( $opkg,
+     $opkg_ver,
+     $print_errors,
+     %sel ) = @_;
+
+    #my ($calling_package, $calling_filename, $line) = caller;
+
+    my ($chroot,$group,$os);
+    my ($architecture, $distribution, $distribution_version);
+    if (exists($sel{arch}) && exists($sel{distro}) &&
+	     exists($sel{distro_ver})) {
+	$architecture = $sel{arch};
+	$distribution = $sel{distro};
+	$distribution_version = $sel{distro_ver};
+
+    } else {
+	if (!exists($sel{os})) {
+	    if (exists($sel{chroot})) {
+		$chroot = $sel{chroot};
+	    } else {
+		$chroot = "/";
+	    }
+	    $os = distro_detect_or_die($chroot);
+	}
+	$architecture = $os->{arch};
+	$distribution = $os->{compat_distro};
+	$distribution_version = $os->{compat_distrover};
+    }
+    if (exists($sel{group})) {
+	$group = $sel{group};
+    }
+
+
+    ( my $was_connected_flag = $database_connected ) ||
+	OSCAR::Database::database_connect( $print_errors ) ||
+        return undef;
+
+    # read in all the packages_rpmlists records for this opkg
+    my @packages_rpmlists_records = ();
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $print_errors && 
+			      ref($print_errors) eq "ARRAY" ) ?
+			      $print_errors : \@error_strings;
+    my $number_of_records = 0;
+    # START LOCKING FOR NEST
+    my %options = ();
+    my @tables = ("Packages_rpmlists", "Packages");
+    locking("read", \%options, \@tables, $error_strings_ref);
+    my $sql = "SELECT Packages_rpmlists.* FROM Packages_rpmlists, Packages " .
+              "WHERE Packages.id=Packages_rpmlists.package_id " .
+              "AND Packages.package='$opkg' " .
+              ($opkg_ver?"AND Packages.version='$opkg_ver'":"");
+    my $success = 
+        oda::do_query( $options_ref,
+                    $sql,
+                    \@packages_rpmlists_records,
+                    \$error_strings_ref);
+    # UNLOCKING FOR NEST
+    unlock(\%options, $error_strings_ref);
+    if ( ! $success ) {
+	push @$error_strings_ref,
+	"Error reading packages_rpmlists records for opkg $opkg";
+	if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+	    warn shift @$error_strings_ref while @$error_strings_ref;
+	}
+	OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+	return undef;
+    }
+
+    # now build the matches list
+    my @pkgs = ();
+    foreach my $record_ref ( @packages_rpmlists_records ) {
+        if (
+            ( ! defined $$record_ref{group_arch} ||
+              $$record_ref{group_arch} eq "" ||
+              ! defined $architecture ||
+              $$record_ref{group_arch} eq $architecture )
+            &&
+            ( ! defined $$record_ref{distro} ||
+              $$record_ref{distro} eq "" ||
+              ! defined $distribution ||
+              $$record_ref{distro} eq $distribution )
+            &&
+            ( ! defined $$record_ref{distro_version} ||
+              $$record_ref{distro_version} eq "" ||
+              ! defined $distribution_version ||
+              $$record_ref{distro_version} eq $distribution_version )
+            &&
+            ( ! defined $$record_ref{group_name} ||
+              $$record_ref{group_name} eq "" ||
+              ! defined $group ||
+              $$record_ref{group_name} eq $group )
+            ) { push @pkgs, $$record_ref{rpm}; }
+    }
+        
+    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
+
+    return @pkgs;
+}
+
 
 #********************************************************************#
 #********************************************************************#
@@ -1878,7 +2063,7 @@ sub del_group_packages{
     return 1;    
 }
 
-sub get_selected_group{
+sub get_selected_group {
     my ($options_ref,
         $error_strings_ref) = @_;
     my $sql = "SELECT id, name From Groups " .
@@ -1893,7 +2078,7 @@ sub get_selected_group{
     return $answer;
 }
 
-sub get_selected_group_packages{
+sub get_selected_group_packages {
     my ($results_ref,
         $options_ref,
         $error_strings_ref,
@@ -1911,7 +2096,7 @@ sub get_selected_group_packages{
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }
 
-sub get_unselected_group_packages{
+sub get_unselected_group_packages {
     my ($results_ref,
         $options_ref,
         $error_strings_ref,
@@ -1920,7 +2105,7 @@ sub get_unselected_group_packages{
                                        $error_strings_ref,$group,0);
 }
 
-sub get_group_packages_with_groupname{
+sub get_group_packages_with_groupname {
     my ($group,
         $results_ref,
         $options_ref,
@@ -1937,7 +2122,7 @@ sub get_group_packages_with_groupname{
 # 0 : should not be installed.
 # 1 : should be installed
 # 7 : installed
-sub update_node_package_status{
+sub update_node_package_status {
     my ($options_ref,
         $node,
         $packages,
@@ -1945,7 +2130,7 @@ sub update_node_package_status{
         $error_strings_ref) = @_;
     my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
     my $node_id = $$node_ref{id};
-    foreach my $pkg_ref (@$packages){
+    foreach my $pkg_ref (@$packages) {
         my $opkg = $$pkg_ref{package};
         my $ver = $$pkg_ref{version};
         my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
@@ -1965,10 +2150,10 @@ sub update_node_package_status{
         my @results = ();
         my $table = "Node_Package_Status";
         get_node_package_status_with_node_package($node,$opkg,\@results,$options_ref,$error_strings_ref);
-        if(@results){
+        if (@results) {
             die "$0:Failed to update the status of $opkg"
                 if(!update_table($options_ref,$table,\%field_value_hash, $where, $error_strings_ref));
-        }else{
+        } else {
             %field_value_hash = ("node_id" => $node_id,
                                  "package_id"=>$package_id,
                                  "requested" => $requested);
@@ -1985,7 +2170,7 @@ sub update_node_package_status{
     return 1;
 }
 
-sub update_node_package_status_with_opkg{
+sub update_node_package_status_with_opkg {
     my ($options_ref,
         $node,
         $opkg,
@@ -2019,7 +2204,7 @@ sub update_node_package_status_with_opkg{
         if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
 }
 
-sub update_node{
+sub update_node {
     my ($node,
         $field_value_ref,
         $options_ref,
@@ -2038,7 +2223,7 @@ sub update_node{
     return 1;
 }
     
-sub get_node_package_status_with_group_node{
+sub get_node_package_status_with_group_node {
     my ($group,
         $node,
         $results,
@@ -2056,7 +2241,7 @@ sub get_node_package_status_with_group_node{
     return 1;
 }
 
-sub get_node_package_status_with_node{
+sub get_node_package_status_with_node {
     my ($node,
         $results,
         $options_ref,
@@ -2068,10 +2253,10 @@ sub get_node_package_status_with_node{
                  "WHERE Node_Package_Status.package_id=Packages.id ".
                  "AND Node_Package_Status.node_id=Nodes.id ".
                  "AND Nodes.name='$node'";
-        if(defined $requested && $requested ne ""){
+        if (defined $requested && $requested ne "") {
             $sql .= " AND Node_Package_Status.requested=$requested ";
         }
-        if(defined $version && $version ne ""){
+        if (defined $version && $version ne "") {
             $sql .= " AND Packages.version=$version ";
         }
     die "$0:Failed to query values via << $sql >>"
@@ -2079,7 +2264,7 @@ sub get_node_package_status_with_node{
     return 1;
 }
 
-sub get_node_package_status_with_node_package{
+sub get_node_package_status_with_node_package {
     my ($node,
         $package,
         $results,
@@ -2395,6 +2580,47 @@ sub get_installable_packages{
     die "$0:Failed to query values via << $sql >>"
         if! do_select($sql,$results, $options_ref, $error_strings_ref);
 }
+
+#
+# list_installable_packages - this returns a list of installable packages.
+#
+# You may specify "core", "noncore", or "all" as the first argument to
+# get a list of core, noncore, or all packages (respectively).  If no
+# argument is given, "all" is implied.
+#
+# EF: Moved here from Package.pm
+
+sub list_installable_packages {
+    my $type = shift;
+
+    # If no argument was specified, use "all"
+
+    $type = "all" if ((!(defined $type)) || (!$type));
+
+    # make the database command and do the database read
+
+    my $command_args;
+    if ( $type eq "all" ) {
+      $command_args = "packages_installable";
+    } elsif ( $type eq "core" ) {
+      $command_args = "packages_installable packages.class=core";
+    } else {
+      $command_args = "packages_installable packages.class!=core";
+    }
+    my @packages = ();
+    my @tables = ("packages", "oda_shortcuts");
+    if ( OSCAR::Database::single_dec_locked( $command_args,
+                                                    "READ",
+                                                    \@tables,
+                                                    \@packages,
+                                                    undef) ) {
+      return @packages;
+    } else {
+      warn "Cannot read installable packages list from the ODA database.";
+      return undef;
+    }
+}
+
 
 sub get_groups_for_packages{
     my ($results,
