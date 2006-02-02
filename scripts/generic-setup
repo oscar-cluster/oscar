@@ -21,6 +21,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use POSIX;
 use Carp;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::Package;
 use Getopt::Long;
 use File::Basename;
 use File::Copy;
@@ -39,7 +40,7 @@ die "$ENV{OSCAR_PACKAGE_HOME}: not accessible.\n" unless -x $ENV{OSCAR_PACKAGE_H
 # Different distros require different RPMs. Different architectures, too.
 
 my $base_dir= $ENV{OSCAR_PACKAGE_HOME} . "/distro";
-my $oscar_pkg_pool = '/tftpboot/rpm';   # No env var, using name in Package.pm
+my $oscar_pkg_pool = $OSCAR::Package::RPM_POOL;
 
 # configure command line options parsing
 Getopt::Long::Configure("ignore_case"); # ignore case
@@ -55,9 +56,11 @@ GetOptions( \%options,
             'test|t',
             'verbose|v!'
             ) || usage();
-die "Unable to determine operating system"
-    if (1 != OSCAR::OCA::OS_Detect::open());
-my $os = $OS_Detect->{query}();
+
+# Query distro/version of the master node
+!OSCAR::OCA::OS_Detect::open() or
+    die "Unable to determine operating system";
+my $os = $OS_Detect->{query};
 
 # set package name
 my $pkg_name = $ENV{OSCAR_PACKAGE_HOME};
@@ -224,17 +227,8 @@ sub distroname {
     if ($options{distro}) {
 	($name, $ver) = split /-/, $options{distro};
     } else {
-        $name = $os->{linux_distro};
-        $ver = $os->{linux_distro_version};
-
-	# translate distro names
-	if ($name eq "redhat-el-as" || $name eq "redhat-el-es" || $name eq "redhat-el-ws") {
-            $name = "rhel";
-	} elsif ($name eq "fedora") {
-	    $name = "fc";
-	} elsif ($name eq "mandrake") {
-	    $name = "mdk";
-	}
+        $name = $os->{compat_distro};
+        $ver = $os->{compat_distrover};
     }
     return ($name,$ver);
 }
