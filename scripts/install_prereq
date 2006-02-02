@@ -28,13 +28,13 @@ GetOptions(
 &usage(1) if (!scalar(@ARGV));
 
 my $oscarpath = $ENV{OSCAR_HOME};
-my @prereq_paths;
+my @prereqs;
 for my $p (@ARGV) {
     if (! -d $p || ! -f "$oscarpath/$p/prereq.cfg") {
 	print "Error: $p is not a directory or doesn't contain a prereq.cfg file!\n";
 	usage(1);
     } else {
-	push @prereq_paths, "$oscarpath/$p";
+	push @prereqs, "$oscarpath/$p";
     }
 }
 
@@ -44,27 +44,20 @@ for my $p (@ARGV) {
 #
 # Own distro detection
 #
-
-OSCAR::OCA::OS_Detect::open() or
-    die "Unable to determine operating system";
-my $os = $OS_Detect->{query};
-
-print "OS: ".$os->{distro}."-".$os->{distro_version}."\n";
-my $pkgmgr    = $os->{pkg};
+my $os = &OSCAR::PackagePath::distro_detect_or_die();
 my $distro    = $os->{distro};
 my $distrover = $os->{distro_version};
-my $cdistro   = $os->{compat_distro};
-my $cdistrover= $os->{compat_distrover};
 my $arch      = $os->{arch};
 
-
 # locate destination path for prereq package files and repository url
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path($cdistro,$cdistrover,$arch);
-my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url($distro,$distrover,$arch);
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
+my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
+my $suffix = &OSCAR::PackagePath::pkg_extension();
+my $separator = &OSCAR::PackagePath::pkg_separator();
 
 vprint("OSCAR pkg path: $oscar_pkg_pool\n");
 vprint("Distro pkg path: $distro_pkg_pool\n");
-vprint("Prereq paths: ".join(",",@prereq_paths));
+vprint("Prereq paths: ".join(",",@prereqs));
 
 #
 # copy files to repository with generic-setup
@@ -74,7 +67,7 @@ if (! -x $gs) {
     die "ERROR: $gs is not executable!";
 }
 
-for my $p (@prereq_paths) {
+for my $p (@prereqs) {
     my $cmd = "env OSCAR_PACKAGE_HOME=$p $gs --pool $oscar_pkg_pool";
     vprint("Executing: $cmd\n");
     !system($cmd) or
@@ -116,7 +109,7 @@ sub print_output {
 
 # now go with the processing
 my $cmd;
-for my $path (@prereq_paths) {
+for my $path (@prereqs) {
 
     # read in prereq.cfg file
     my $ref = &get_config($path, $distro, $distrover, $arch);
@@ -138,10 +131,10 @@ for my $path (@prereq_paths) {
 	    }
 	    my ($pkg,$dummy) = split(/\s+/,$line);
 
-	    if ($os->{pkg} eq "rpm") {
+	    if ($suffix eq "rpm") {
 		dumb_rpm($remove,$pkg);
 	    } else {
-		croak "Support for dumb ".$os->{pkg}." install is not implemented.\n";
+		croak "Support for dumb ".$suffix." install is not implemented.\n";
 	    }
 	}
     } else {
@@ -270,12 +263,11 @@ sub dumb_rpm {
 sub locate_pkg {
     my ($pkg) = @_;
     my @pkgs;
-    my $suf = $os->{pkg};
-    if ($pkg =~ /\.$suf$/) {
+    if ($pkg =~ /$suffix$/) {
 	@pkgs = glob("$oscar_pkg_pool/$pkg $distro_pkg_pool/$pkg");
     } else {
-	@pkgs = glob("$oscar_pkg_pool/$pkg-[0-9]*.$suf ".
-                     "$distro_pkg_pool/$pkg-[0-9]*.$suf");
+	@pkgs = glob("$oscar_pkg_pool/$pkg$separator"."[0-9]*$suffix ".
+                     "$distro_pkg_pool/$pkg$separator"."[0-9]*$suffix");
     }
     # simply return the first one
     if (scalar @pkgs) {
@@ -338,7 +330,7 @@ sub get_config {
 	    $match = 0;
 	    if ($str =~ m/^$mstr$/) {
 		$match = 1;
-		vprint("found matching block [$d-$v-$a]\n");
+		vprint("found matching block [$d:$v:$a]\n");
 		last;
 	    }
 	}

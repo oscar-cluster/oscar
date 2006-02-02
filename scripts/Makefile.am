@@ -20,6 +20,7 @@ oscar_SCRIPTS		= \
 			create_and_populate_basic_node_info \
 			generic-setup \
 			get_num_proc \
+			install_prereq \
 			install_server \
 			integrate_image \
 			mac_collector \
