@@ -30,7 +30,7 @@ GetOptions(
 my $oscarpath = $ENV{OSCAR_HOME};
 my @prereqs;
 for my $p (@ARGV) {
-    if (! -d $p || ! -f "$oscarpath/$p/prereq.cfg") {
+    if (! -d "$oscarpath/$p" || ! -f "$oscarpath/$p/prereq.cfg") {
 	print "Error: $p is not a directory or doesn't contain a prereq.cfg file!\n";
 	usage(1);
     } else {
@@ -123,99 +123,47 @@ for my $path (@prereqs) {
 	# go through config file line by line
 	for my $line (@cfg) {
 	    $line =~ s/^\s*//g;
-	    next if ($line =~ /^\#/);
+	    next if ($line =~ /^\#/ && $line =~ /^$/);
 	    my $remove = ($line =~ /^!/);
 	    if ($remove) {
 		$line = s/^!//g;
 	    }
 	    my ($pkg,$dummy) = split(/\s+/,$line);
 
-	    if ($suffix eq "rpm") {
+	    if ($suffix eq ".rpm") {
 		dumb_rpm($remove,$pkg);
 	    } else {
 		croak "Support for dumb ".$suffix." install is not implemented.\n";
 	    }
 	}
     } else {
-
-	# smart install/remove:
-	# do installs/removes group-wise, in the order of appearance in the
-	# prereq.cfg file. This complicates the logic of the routine a lot.
-
-	my ($remove, $oremove) = (-1,-1); # flags for remove/install,
-	                                  # oremove remembers past iteration
-	my ($err, @out, @pkgs, $line);
-	while (scalar(@cfg) || scalar(@pkgs) || $line) {
-	    if (!$line) {             # there was no $remove change in past 
-		$line = shift @cfg;   # iteration, so read in new line
-		$line =~ s/^\s*//g;
-		next if ($line =~ /^\#/);
-	    }
-
+	#
+	# smart handling
+	#
+	for my $line (@cfg) {
+	    $line =~ s/^\s*//g;
+	    next if ($line =~ /^\#/ && $line =~ /^$/);
 	    my $remove = ($line =~ /^!/);
-	    $oremove = $remove if ($oremove == -1); # first pass is special
-
-	    if ($remove == $oremove) {   # no change in $remove
-		if ($remove) {
-		    $line =~ s/^!//g;
-		}
-		my ($pkg, $dummy) = split /\s+/, $line;
-		if ($pkg ne "") {
-		    push @pkgs, $pkg;
-		}
-		$line = undef;  # empty it here, won't be used next iteration
+	    if ($remove) {
+		$line = s/^!//g;
 	    }
-
-	    if ($remove != $oremove || (!scalar(@cfg) && scalar(@pkgs))) {
-
-		# process accumulated packages
-		vprint("processing accumulated packages: ".join(",",@pkgs)."\n");
-		@pkgs = smart_check($oremove, @pkgs);
-
-		if (scalar(@pkgs)) {
-		    handle_smart_pkgs($path,$oremove,@pkgs);
-		}
-		# empty processing list
-		undef @pkgs;
-		$oremove = $remove;
-	    }
+	    my ($pkg,$dummy) = split(/\s+/,$line);
+	    handle_smart_pkgs($path,$remove,$pkg);
 	}
     }
 }
 
 exit 0;
 
-#
-# remove packages which need no handling from list
-#
-sub smart_check {
-    my ($remove, @pkgs) = @_;
-    my ($inst, $ninst);
-
-    vprint("smart_check: ".join(",",@pkgs)."\n");
-    return undef if (!scalar(@pkgs));
-
-    ($inst, $ninst) = $pm->query_installed(@pkgs);
-    if ($remove) {
-	# only return the installed packages
-	vprint("removing: packages installed: ".join(",",@{$inst})."\n");
-	return @{$inst};
-    } else {
-	# install, so only return the not_installed packages
-	vprint("installing: packages not installed: ".join(",",@{$ninst})."\n");
-	return @{$ninst};
-    }
-}
-
 sub handle_smart_pkgs {
     my ($path, $remove, @pkgs) = @_;
     my ($err, @out);
 
     if ($remove) {
-	vprint("smartly removing: ".join(",",@pkgs)."\n");
+	print("\tsmartly removing: ".join(",",@pkgs)."\n");
 	($err, @out) = $pm->smart_remove(@pkgs);
     } else {
-	vprint("smartly installing: ".join(",",@pkgs)."\n");
+	print("\tsmartly installing: ".join(",",@pkgs)."\n");
 	($err, @out) = $pm->smart_install(@pkgs);
     }
     if (!$err) {
@@ -337,9 +285,10 @@ sub get_config {
     if ($match) {
 	while ($line = <IN>) {
 	    chomp $line;
-	    last if ($line =~ /^\[([^-]+)-([^-]+)-([^-]+)\]/);
+	    last if ($line =~ /^\[([^:]+):([^:]+):([^:]+)\]/);
 	    next if ($line =~ /^\s*\#/);
 	    $line =~ s/^ *//g;
+	    next if ($line =~ /^$/);
 	    push @config, $line;
 	}
     }

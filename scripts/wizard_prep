@@ -129,7 +129,7 @@ foreach my $prereq (@prereqs) {
     # 
     # !! All setup scripts are run _before_ installation of prereqs !!
     if (-x "$oscarhome/$prereq/scripts/setup") {
-	print "Running prereq setup script $ (in order)\n";
+	print "Running prereq setup script for $prereq\n";
 	!system("$oscarhome/$prereq/scripts/setup")
 	    or croak("ERROR: Prerequisite setup failure!");
     }

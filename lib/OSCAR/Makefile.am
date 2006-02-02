@@ -32,6 +32,7 @@ oscar_SCRIPTS		= \
 			Opkg.pm \
 			PackageBest.pm \
 			Package.pm \
+			PackagePath.pm \
 			PackageInUn.pm \
 			SISBuildSetup.pm \
 			Tk.pm \

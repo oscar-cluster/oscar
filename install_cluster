@@ -205,24 +205,17 @@ $ENV{LC_TIME} = "C";
 # Check to see if this is a supported platform
 
 oscar_log_subsection("Checking if this is a supported platform");
-if (1 != OSCAR::OCA::OS_Detect::open()) {
+my $os = OSCAR::OCA::OS_Detect::open();
+if (!$os) {
     print("ERROR: This is an unsupported system.  Specifically, no module in OSCAR/OCA/OS_Detect positively identified this as a supported system.\n");
     die("Cannot continue");
 }
-my $os = $OS_Detect->{query}();
 
 # add entries to path that we know we will need
 
 $ENV{PATH} = $ENV{PATH} .
     ':/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin';
 
-# Sanity check: ensure that /tftpboot/rpm exists
-
-oscar_log_subsection("Quick sanity check for /tftpboot/rpm");
-if (! -d "/tftpboot/rpm") {
-    print("ERROR: /tftpboot/rpm directory does not exist.  You must create this directory\nand copy all of your distro RPMs there before running install_cluster.\n");
-    die("Cannot continue");
-}
 
 # Ensure that the package scripts are executable (wizard_prep runs
 # some of them)
@@ -313,14 +306,6 @@ ERROR: Your \"DISPLAY\" environment variable is not set, probably
 indicating that you are not running in an X windows environment.
 OSCAR requires that you run the installer in an X windows environment.
 Aborting the install.\n");
-}
-
-# Check for 2 rpms 1 from each CD
-
-my @filesystem=glob("/tftpboot/rpm/filesystem*rpm");
-my @rsync=glob("/tftpboot/rpm/rsync*rpm");
-if ((scalar(@filesystem)==0) || (scalar(@rsync)==0)) {
-    die("RPMs missing in /tftpboot/rpm/ (did you copy all CDs?)");
 }
 
 # Now start the execution

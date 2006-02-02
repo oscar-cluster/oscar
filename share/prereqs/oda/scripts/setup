@@ -14,22 +14,18 @@
 # $Id: setup 2394 2004-03-16 00:42:31Z tfleury $
 #
 
-#use strict;
+use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
+use OSCAR::PackagePath;
 
+my $os = OSCAR::PackagePath::distro_detect_or_die();
 my $mysqld;
 
-if ( $distro_name eq "redhat" ) {
+if ($os->{distro} =~ /^(redhat|fedora|mandriva)/) {
     $mysqld      = 'mysqld';
-} elsif ( $distro_name eq "fedora" ) {
-    $mysqld      = 'mysqld';
-} elsif ( $distro_name eq "suse") {
+} elsif ($os->{distro} =~ /^(suse|mandrake)/) {
     $mysqld      = 'mysql';
-} elsif ( $distro_name eq "mandrake") {
-    $mysqld      = 'mysql';
-} elsif ( $distro_name eq "mandriva" ) {
-    	$mysqld      = 'mysqld';
 } else {
     print "\n\nCannot determine distribution and version!!!!\nCannot determine oda rpms to install!!!!\n\n";
     exit 1;
