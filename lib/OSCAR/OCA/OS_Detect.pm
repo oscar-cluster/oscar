@@ -59,13 +59,12 @@ sub open {
     # Yes, we found some components. Check which one returns a valid id
     # hash.
 
-    my $ret = 0;
+    my $ret = undef;
     foreach my $comp (@$comps) {
 	my $str = "\$OS_Detect->{query} = \&OCA::OS_Detect::".$comp."::detect(\$path)";
 	eval $str;
 	if (ref($OS_Detect->{query}) eq "HASH") {
-	    print "Found component that fits: $comp\n";
-	    $ret = 1;
+	    $ret = $OS_Detect->{query};
 	    last;
 	}
     }
