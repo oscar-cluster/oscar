@@ -6,6 +6,8 @@
 #                Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                         All rights reserved.
+# Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
+#                    All rights reserved.
 #
 # $Id$
 # 
@@ -30,6 +32,7 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::Database;
+use OSCAR::PackagePath;
 use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
@@ -41,6 +44,8 @@ use Carp;
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
 
+my $oscarhome = $ENV{OSCAR_HOME};
+
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
     return if dec_already_locked( $command, $results_ref, 1 );
@@ -50,95 +55,92 @@ sub do_it_or_die {
 
 oscar_log_section("Running OSCAR wizard_prep script");
 
+my $verbose;
+$verbose="--verbose" if ($ENV{OSCAR_WIZARD_VERBOSE});
+
+#
+# Locate package pools and create the directories if they don't exist, yet.
+#
+# Fails HERE if distro is not supported!
+#
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
+my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
+
+my $ARCH = `uname -i`;
+chomp($ARCH);
+
+# check if distro_pkg_pool contains packages or not
+if ($distro_pkg_pool =~ /^\//) {   # is local path, no remote URL
+    my @pkgs = glob("$distro_pkg_pool/bash* $distro_pkg_pool/gcc*");
+    if (scalar(@pkgs) < 2) {
+	print "ERROR: The distribution repository $distro_pkg_pool looks empty!\n";
+	print "!!!! Copy all your distro package files (rpms) to it and retry.\n";
+	exit 1;
+    }
+}
+
+my $ipcmd = "$oscarhome/scripts/install_prereq $verbose";
+
 # Run the prerequisites.  Observe the order set in
 # share/prereqs/order.txt, and then run any that are not explicitly
 # listed in there.
 
-oscar_log_subsection("Running OSCAR wizard prerequisites");
-my $prefix = "$ENV{OSCAR_HOME}/share/prereqs";
+oscar_log_subsection("Bootstrapping OSCAR smart package manager");
 
-# First get a listing of all subdirs
-
-opendir(PREREQDIR, $prefix) or 
-  croak("Couldn't open $prefix for reading");
-my @all_prereqs = grep { -d "$prefix/$_" && $_ ne "." && $_ ne ".." } sort(readdir(PREREQDIR));
-closedir PREREQDIR;
+# need to add ifdef for other type of smart package manager
+my $cmd = "$ipcmd --dumb packages/yume share/prereqs/packman";
+!system($cmd) or
+    die "Could not bootstrap smart package manager!\n";
 
 
-# Now read in the share/prereqs/order.txt file
+oscar_log_subsection("Installing OSCAR wizard prerequisites");
+
+my $orderfile = "$oscarhome/share/prereqs/prereqs.order";
+
+# Read in the share/prereqs/prereqs.order file
+# It should contain prerequisite paths relative to $OSCAR_HOME, one per line.
 
 my @ordered_prereqs;
-if (-f "$prefix/order.txt") {
-    open ORDER, "$prefix/order.txt" or
-        croak("Could't open $prefix/order.txt for reading");
+if (-f "$orderfile") {
+    local *ORDER;
+    open ORDER, "$orderfile" or
+        croak("Could't open $orderfile for reading");
     @ordered_prereqs = <ORDER>;
     chomp @ordered_prereqs;
     close(ORDER);
 }
 
-# Keep a list of which prereqs we've processed already
+# Traverse the @ordered_prereqs list and install them
+# This list must contain ALL prerequisites! This is little effort and
+# avoids running twice through the prereqs.
 
-my $processed_prereqs;
+# skip comments
+my @prereqs = grep !/^\s*\#/, @ordered_prereqs;
 
-# Traverse the @ordered_prereqs list, and save the name of each as we
-# go through it
+# and now go for them!
+$cmd = "$ipcmd --smart ".join(" ",@prereqs);
+print "\texecuting: $cmd\n" if ($verbose);
+!system($cmd) or die "ERROR: Prerequisite install failure!";
 
-foreach my $prereq (@ordered_prereqs) {
-
-    # Strip out comments
-
-    my $rel = $prereq;
-    $rel =~ s/(\#.+)$//;
-    if ($rel) {
-        my $abs = "$prefix/$rel";
-        if (-d "$abs/scripts" && -f "$abs/scripts/setup") {
-            print "Running prereq setup script $rel (in order)\n";
-            if (system("$abs/scripts/setup") != 0)  {
-                croak("ERROR: Prerequisite failure!");
-            }
-        }
-
-        # Save the fact that we've been there
-
-        $processed_prereqs->{$rel} = 1;
+# run setup for the prereqs which still need it
+foreach my $prereq (@prereqs) {
+    # there is no need for a prereq setup script any more,
+    # this should really be an exception!
+    # 
+    # !! All setup scripts are run _before_ installation of prereqs !!
+    if (-x "$oscarhome/$prereq/scripts/setup") {
+	print "Running prereq setup script $ (in order)\n";
+	!system("$oscarhome/$prereq/scripts/setup")
+	    or croak("ERROR: Prerequisite setup failure!");
     }
 }
 
-# Now go through all the directories (in sorted order, thankyouvery
-# much) and if we haven't already processed it above, process it now.
 
-foreach my $prereq (@all_prereqs) {
-
-    # Have we processed this directory already?
-
-    if (!defined($processed_prereqs->{$prereq})) {
-        my $abs = "$prefix/$prereq";
-        if (-d "$abs/scripts" && -f "$abs/scripts/setup") {
-            print "Running prereq setup script $prereq (after ordered)\n";
-            if (system("$abs/scripts/setup") != 0)  {
-                croak("ERROR: Prerequisite failure!");
-            }
-#
-#			HORRIBLE HACK ALERT -- FIXING MANDRAKE SNAFU
-#
-#print __FILE__,":",__LINE__,":INC:",join(", ",@INC),"\n";
-			my %incs = map { $_ => 1 } @INC;
-			foreach ( `perl -e 'print "\$_\n" foreach \@INC'` ) {
-				chomp;
-				eval "use lib \"$_\"" unless $incs{$_};
-			}
-			undef %incs;
-#print __FILE__,":",__LINE__,":INC:",join(", ",@INC),"\n";
-        }
-    }
-}
 
 # This must be done after the prerequisites, because the prerequisites
 # may have installed some Perl modules that OSCAR requires.
 
 eval("require OSCAR::Package");
-eval("require OSCAR::Distro");
-eval("require OSCAR::PackageBest");
 
 my $topdir;
 chomp($topdir = `pwd`);
@@ -150,91 +152,64 @@ chomp($topdir = `pwd`);
 # must be run *before* reading the XML files in.
 
 my @PKG_SOURCE_LOCATIONS = @OSCAR::Package::PKG_SOURCE_LOCATIONS;
-oscar_log_subsection("Finding available packages");
-my @packages = ();
-my @temp_array = ();
-foreach my $d (@PKG_SOURCE_LOCATIONS) 
-  {
-    if (-d $d) 
-      {
-        opendir(PACKAGE_DIR, $d);
-        foreach my $pkg_name (readdir(PACKAGE_DIR)) 
-          {
-            next if ($pkg_name eq "." || $pkg_name eq ".." ||
-                     $pkg_name eq "CVS" || ! -d "$d/$pkg_name" ||
-                     -e "$d/$pkg_name/.oscar_ignore");
-            push @temp_array, $pkg_name;
-          }
-        closedir PACKAGE_DIR;
-      }
-  }
-@packages = sort(@temp_array);
-oscar_log_subsection("Found packages: " . join(", ", @packages));
+
 
 # Now that we have a good list of packages, run all the setup scripts.
 
-oscar_log_subsection("Running package setup scripts");
-foreach my $pkg (@packages) 
-  {
-    my $dir = undef;
-    foreach my $d (@PKG_SOURCE_LOCATIONS) 
-      {
-        # NOTE: There is a possible problem here.  In the case of there
-        # being a package named "foo" (for example) in both the OSCAR
-        # packages tree AND the OPD packages tree (/var/lib/oscar/packages),
-        # the setup script for ONLY the OSCAR package gets run.  Not really
-        # sure how to fix this since it doesn't make sense to run both, and
-        # the config.xmls haven't been read into oda at this point, so we
-        # can't use the "directory" field to get the 'correct' location of a
-        # package.
-        if (-d "$d/$pkg") 
-          {
-            $dir = "$d/$pkg";
-            last;
-          }
-      }
-    croak("Unexpectedly can't find a package: $pkg") if (!defined($dir));
+oscar_log_subsection("Locating _all_ OSCAR packages");
+my %pkgdirs;
+foreach my $d (@PKG_SOURCE_LOCATIONS) {
+    # EF: a package is a package if it has a config.xml file
+    for my $cfg (glob("$d/*/config.xml")) {
+	my $dir = dirname($cfg);
+	my $pkg = basename($dir);
+
+	# [EF] When package exists in multiple placese we use the last occurence
+	#      (usually /var/lib/oscar/packages).
+	#      This makes it easier to override OSCAR builtin packages with
+	#      downloaded ones.
+	if (exists($pkgdirs{$pkg})) {
+	    print "WARNING: Package $pkg found in multiple places. Using $dir!\n";
+	}
+	$pkgdirs{$pkg} = $dir;
+    }
+}
+
+oscar_log_subsection("Running package setup scripts for ALL packages");
+for my $pkg (sort keys(%pkgdirs)) {
+    my $dir = $pkgdirs{$pkg};
+    next if (! -x "$dir/scripts/setup");
 
     # If it's a good package, run its setup script (if it has one) in
     # the scripts directory.
-
     chdir("$dir/scripts");
     OSCAR::Package::run_pkg_script($pkg, "setup", 1) 
-    or croak("Failed running setup script for $pkg");
+	or croak("Failed running setup script for $pkg");
     chdir($topdir);
-  }
+}
 oscar_log_subsection("Successfully ran package setup scripts");
 
-# Make sure /tftpboot/rpm exists, if not create it.  Then copy all the
-# rpms that we ship that need to be in the client into that directory
 
-my $RPMPOOL = $OSCAR::Package::RPM_POOL;
-my $ARCH = (uname)[4];
-$ARCH =~ s/i.86/i386/;
 
-prep_rpmpool($RPMPOOL) or croak("Couldn't prepare tftpboot directory");
+oscar_log_subsection("Copying package files to $oscar_pkg_pool");
+my $gscmd = "$oscarhome/scripts/generic-setup $verbose";
+my $err = 0;
+for my $pkg (sort keys(%pkgdirs)) {
+    my $dir = $pkgdirs{$pkg};
 
-oscar_log_subsection("Copying RPMs to $RPMPOOL");
-foreach my $d (@PKG_SOURCE_LOCATIONS) 
-  {
-    if (-d $d) 
-      {
-        oscar_log_subsection("Copying RPMs from $d to $RPMPOOL");
-        # Selected packages can be determined after oda is created.
-        # Since /etc/odapw is created when oda is installed, if it exists
-        # then run copy_rpm. Otherwise, run copy_pkgs.
-        # copy_rpms : copy rpms of selected packages to /tftpboot/rpm.
-        # copy_pkgs : copy rpms of packages whether or not they are selected.
-        if(-e '/etc/odapw'){
-          OSCAR::Package::copy_rpms($d) or 
-            croak("Couldn't copy rpms to $RPMPOOL");
-        } else {
-          OSCAR::Package::copy_pkgs($d) or 
-            croak("Couldn't copy rpms to $RPMPOOL");
-        }
-        oscar_log_subsection("Successfully copied RPMs from $d to $RPMPOOL");
-      }
-  }
+    oscar_log_subsection("Running generic-setup for opkg $pkg");
+    $cmd = "env OSCAR_PACKAGE_HOME=$dir $gscmd --pool $oscar_pkg_pool";
+    print "\texecuting: $cmd\n" if ($verbose);
+    my $ret = system($cmd);
+    if ($ret) {
+	oscar_log_subsection("Error $ret was returned for opkg $pkg");
+	if (!$err) {
+	    $err = $ret;
+	}
+    } else {
+	oscar_log_subsection("Successfully ran generic-setup for opkg $pkg");
+    }
+}
 
 # Make sure there is a database password
 
@@ -250,34 +225,38 @@ croak("Couldn't set up oda database") if $exit_status;
 
 # More ODA setup
 
-my $exit_status =
-  system( "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values --interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}" ) / 256;
+my $exit_status = system("$ENV{OSCAR_HOME}/scripts/set_global_oscar_values "
+			 ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}")/256;
 croak("Couldn't initialize the global database values table") if $exit_status;
 
 my $exit_status =
-  system( "$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info" ) / 256;
+    system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info")/256;
 croak("Couldn't set up a default package set") if $exit_status;
 
 my $exit_status =
-  system( "$ENV{OSCAR_HOME}/scripts/populate_default_package_set" ) / 256;
+  system("$ENV{OSCAR_HOME}/scripts/populate_default_package_set")/256;
 croak("Couldn't set up a default package set") if $exit_status;
 
 my $exit_status =
-  system( "$ENV{OSCAR_HOME}/scripts/set_node_nics --network" ) / 256;
+  system("$ENV{OSCAR_HOME}/scripts/set_node_nics --network")/256;
 croak("Couldn't initialize the nics and networks for the oscar server") if $exit_status;
+
+
 
 # Get the list of just core packages
 
-@packages = OSCAR::Package::list_installable_package_dirs("core");
+# EF: do it through the database, directly
+
+
+my @packages = OSCAR::Package::list_installable_package_dirs("core");
 oscar_log_subsection("Identified core packages: " . join(' ', @packages));
 
 # Get list of RPMs from the core packages
 
 my @rpms = ();
-foreach my $package (@packages) 
-  {
+foreach my $package (@packages) {
     push @rpms, OSCAR::Package::rpmlist($package,undef,"oscar_server");
-  }
+}
 
 # And now we add the extra rpms that are needed if
 # for each distribution
