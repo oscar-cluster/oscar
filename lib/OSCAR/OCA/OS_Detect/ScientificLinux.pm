@@ -11,7 +11,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: RedHat.pm 3865 2005-10-28 04:51:56Z bli $
+# $Id$
 #
 
 package OCA::OS_Detect::ScientificLinux;
@@ -34,11 +34,6 @@ sub query {
     }
 }
 
-# This is the logic that determines whether this component can be
-# loaded or not -- i.e., whether we're on a RHEL machine or not.
-# This routine is cheap and called very rarely, so don't care for
-# unnecessary buffering. Simply recalculate $id each time this is
-# called.
 sub detect {
     my ($root) = @_;
     my $release_string;
@@ -66,6 +61,7 @@ sub detect {
 	$id->{distro_update} = $os_update;
 	$id->{compat_distro} = "rhel";
 	$id->{compat_distrover} = $os_release;
+	$id->{pkg} = "rpm";
     } else {
 	return undef;
     }

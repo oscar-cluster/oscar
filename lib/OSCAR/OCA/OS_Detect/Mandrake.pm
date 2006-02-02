@@ -14,7 +14,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: RedHat.pm 3865 2005-10-28 04:51:56Z bli $
+# $Id$
 #
 
 package OCA::OS_Detect::Mandrake;
@@ -37,11 +37,6 @@ sub query {
     }
 }
 
-# This is the logic that determines whether this component can be
-# loaded or not -- i.e., whether we're on a RHEL machine or not.
-# This routine is cheap and called very rarely, so don't care for
-# unnecessary buffering. Simply recalculate $id each time this is
-# called.
 sub detect {
     my ($root) = @_;
     my $mandrake_release;
@@ -72,6 +67,7 @@ sub detect {
     $id->{distro_version} = $mandrake_release;
     $id->{compat_distro} = "mdk";
     $id->{compat_distrover} = $mandrake_release;
+    $id->{pkg} = "rpm";
 
     # determine architecture
     my $arch = detect_arch($root);

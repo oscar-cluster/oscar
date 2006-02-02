@@ -100,6 +100,7 @@ sub detect {
     $id->{distro_update} = $deb_update;
     $id->{compat_distro} = "debian";
     $id->{compat_distrover} = $deb_ver;
+    $id->{pkg} = "deb";
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";

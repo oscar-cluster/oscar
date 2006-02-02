@@ -34,8 +34,6 @@ sub query {
     }
 }
 
-# This is the logic that determines whether this component can be
-# loaded or not -- i.e., whether we're on a RHEL machine or not.
 # This routine is cheap and called very rarely, so don't care for
 # unnecessary buffering. Simply recalculate $id each time this is
 # called.
@@ -71,14 +69,13 @@ sub detect {
     $id->{distro_version} = $fc_release;
     $id->{compat_distro} = "fc";
     $id->{compat_distrover} = $fc_release;
+    $id->{pkg} = "rpm";
 
     # determine architecture
     my $arch = detect_arch($root);
     $id->{arch} = $arch;
 
     # Make final string
-    # [EF: does anybody care about this ugly string at all? The information
-    #      is redundant and can be construted anytime.]
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
 
     return $id;

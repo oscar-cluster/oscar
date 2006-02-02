@@ -82,6 +82,7 @@ sub detect {
 	$id->{distro_update} = $os_update;
 	$id->{compat_distro} = "rhel";
 	$id->{compat_distrover} = $os_release;
+	$id->{pkg} = "rpm";
 
     } else {
 	return undef;
