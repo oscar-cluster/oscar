@@ -184,12 +184,6 @@ visualized either at runtime or post-mortem.</description>
 
     <filter>
       <distribution>
-        <name>fc</name>
-      </distribution>
-    </filter>
-
-    <filter>
-      <distribution>
         <name>rhel</name>
       </distribution>
     </filter>
