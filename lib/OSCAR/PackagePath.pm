@@ -30,7 +30,8 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 
-@EXPORT = qw(distro_repo_path oscar_repo_path);
+@EXPORT = qw(distro_repo_path oscar_repo_path
+	     pkg_extension pkg_separator);
 
 #
 # The URL where distribution packages are stored. When the files are
@@ -86,5 +87,36 @@ sub oscar_repo_path {
     }
     return $path;
 }
+
+#
+# returns the package extension for a particular package manager type
+# (as returned by OS_Detect->{query}->{pkg}).
+#
+sub pkg_extension {
+    my ($pkg) = @_;
+    if ($pkg =~ /^rpm$/) {
+	return ".rpm";
+    } elsif ($pkg =~ /^deb$/) {
+	return ".deb";
+    } else {
+	return undef;
+    }
+}
+
+#
+# returns the package separator string for a particular package manager type
+# (as returned by OS_Detect->{query}->{pkg}).
+#
+sub pkg_separator {
+    my ($pkg) = @_;
+    if ($pkg =~ /^rpm$/) {
+	return "-";
+    } elsif ($pkg =~ /^deb$/) {
+	return "_";
+    } else {
+	return undef;
+    }
+}
+
 
 1;
