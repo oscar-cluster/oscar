@@ -28,10 +28,27 @@ package OSCAR::PackagePath;
 use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
+use OSCAR::OCA::OS_Detect;
 use Carp;
 
 @EXPORT = qw(distro_repo_path oscar_repo_path
-	     pkg_extension pkg_separator);
+	     pkg_extension pkg_separator
+	     distro_detect_or_die);
+
+#
+# Return an OS_Detect hash reference or die.
+# Argument: $img
+#           - if undefined, will detect distro of "/" on the current machine
+#           - if set, will detect distro of the image located in that path
+#
+# This routine might move to OSCAR::Distro when things stabilize...
+#
+sub distro_detect_or_die {
+    my ($img) = @_;
+    my $os = OSCAR::OCA::OS_Detect::open($img);
+    die "Unable to determine operating system for $img" if (!$os);
+    return $os;
+}
 
 #
 # The URL where distribution packages are stored. When the files are
@@ -47,8 +64,12 @@ use Carp;
 # /tftpboot/distro/$distro-$version-$arch.url
 #
 sub distro_repo_url {
-    my ($distro, $distro_version, $arch) = @_;
-    my $path = "/tftpboot/distro/$distro-$distro_version-$arch";
+    my ($img) = @_;   # can be undefined, in which case we query "/"
+    my $os = distro_detect_or_die($img);
+    my $distro    = $os->{distro};
+    my $distrover = $os->{distro_version};
+    my $arch      = $os->{arch};
+    my $path = "/tftpboot/distro/$distro-$distrover-$arch";
     my $url;
     if (-f "$path.url") {
 	local *IN;
@@ -61,6 +82,7 @@ sub distro_repo_url {
     } else {
 	$url = $path;
 	if (! -d $path) {
+	    print STDERR "Distro repository $path not found. Creating empty directory.\n";
 	    !system("mkdir -p $path") or
 		carp "Could not create directory $path!";
 	}
@@ -79,9 +101,14 @@ sub distro_repo_url {
 # uses the same packages eg. for rhel4, scientific linux 4 and centos 4.
 #
 sub oscar_repo_path {
-    my ($distro, $distro_version, $arch) = @_;
-    my $path = "/tftpboot/oscar/$distro-$distro_version-$arch";
+    my ($img) = @_;   # can be undefined, in which case we query "/"
+    my $os = distro_detect_or_die($img);
+    my $cdistro   = $os->{compat_distro};
+    my $cdistrover= $os->{compat_distrover};
+    my $arch      = $os->{arch};
+    my $path = "/tftpboot/oscar/$cdistro-$cdistrover-$arch";
     if (! -d $path) {
+	print STDERR "OSCAR repository $path not found. Creating empty directory.\n";
 	!system("mkdir -p $path") or
 	    carp "Could not create directory $path!";
     }
