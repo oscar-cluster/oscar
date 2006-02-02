@@ -33,6 +33,8 @@ our $OS_Detect;
 #
 
 sub open {
+    my %opt = @_;
+
     my $comps = OSCAR::OCA::find_components("OS_Detect");
 
     # Did we find one and only one?
@@ -49,18 +51,22 @@ sub open {
         foreach my $comp (@$comps) {
             print "\t$comp\n";
         }
-        die" Cannot continue";
     }
 
-    # Yes, we only found one.  Suck its function pointers into the
-    # global $OS_Detect hash reference.
+    # Yes, we found some components. Check which one returns a valid id
+    # hash.
 
-    my $str = "\$OS_Detect->{query} = \\&OCA::OS_Detect::@$comps[0]::query";
-    eval $str;
-
-    # Happiness -- tell the caller that all went well.
-
-    1;
+    my $ret = 0;
+    foreach my $comp (@$comps) {
+	my $str = "\$OS_Detect->{query} = \\&OCA::OS_Detect::@$comps[0]::query(\%opt)";
+	eval $str;
+	if (ref($OS_Detect->{query}) eq "HASH") {
+	    print "Found component that fits: $comp\n";
+	    $ret = 1;
+	    last;
+	}
+    }
+    return $ret;
 }
 
 1;

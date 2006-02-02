@@ -14,7 +14,7 @@
 # $Id: RedHat.pm 3865 2005-10-28 04:51:56Z bli $
 #
 
-package OCA::OS_Detect::ScientificLinux;
+package OCA::OS_Detect::CentOS;
 
 use strict;
 
@@ -57,11 +57,11 @@ sub detect {
     };
 
     # complex match strings for RHEL 3 and 4
-    if ($release_string =~ /Scientific Linux SL release (\d+)\.(\d+) \((\S+)\)/) {
+    if ($release_string =~ /CentOS release (\d+)\.(\d+) \((\S+)\)/) {
 	my $os_release = $1;
 	my $os_update = $2;
-	my $os_family = $3; # Beryllium, etc... don't care about this
-	$id->{distro} = "scientific_linux";
+	my $os_family = $3; # don't care about this
+	$id->{distro} = "centos";
 	$id->{distro_version} = $os_release;
 	$id->{distro_update} = $os_update;
 	$id->{compat_distro} = "rhel";

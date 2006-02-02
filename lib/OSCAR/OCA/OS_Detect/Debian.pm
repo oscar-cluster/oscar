@@ -1,133 +1,125 @@
-#/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Copyright (c) 2005 Oak Ridge National Laboratory.
 #                    All rights reserved.
 #
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $COPYRIGHT$
+# $Id$
 #
 
 package OCA::OS_Detect::Debian;
 
 use strict;
-use POSIX;
-use Config;
 
 my $DEBUG = 1 if( $ENV{DEBUG_OCA_OS_DETECT} );
 
-my $deb_ver_file = "/etc/debian_version";
 
- #
- # Bail out early if we're not on a Debian box.
- # Which is determined by having the deb version file.
- #
-return 0 if( ! -e $deb_ver_file );
-
-
- #
- # Gather lots of information about the system
- #
-open(FH, $deb_ver_file) or die "Error: unable to open '$deb_ver_file' $!\n";
-my @file = grep { ! /^\s*#/ } <FH>;
-close(FH);
-
- # 
- # Get version from one-line entry giving the version number in the
- # file "/etc/debian_version".  c.f.,
- # http://www.debian.org/doc/FAQ/ch-software.en.html#s-isitdebian
- #
-my $deb_ver = $file[0];
-chomp($deb_ver);
-
-my ($os_name, $jnk1, $os_rel, $jnk2, $arch) = POSIX::uname();
-
-
- # Print our raw data if in DEBUG mode
-if( $DEBUG ) {
-	print <<EOF
-
-  **DEBUG**  
-  OCA::OS_Detect::Debian
-                       os = $os_name
-                     arch = $arch
-               os_release = $os_rel
-             linux-distro = Debian 
-     linux-distro-version = $deb_ver 
-
-EOF
-}
-
-
- #
- # Now do some checks to make sure we're supported
- #
-
- # Limit support to only Debian v3.1 (sarge) 
-if ($deb_ver !~ /^3\.1/) {
-    print "OCA::OS_Detect::Debian-";
-	print "DEBUG: Failed Debian version support - ($deb_ver)\n\n" if( $DEBUG );
-	return 0 
-}
-
- # Limit suppor to Linux (sanity check)
-if ($os_name !~ /linux/i) {
-    print "OCA::OS_Detect::Debian-";
-	print "DEBUG: Failed OS support - ($os_name)\n\n" if( $DEBUG );
-	return 0;
-}
-
-# # Limit support to 2.6 kernels
-if ($os_rel !~ /^2\.6/) {
-    print "OCA::OS_Detect::Debian-";
-	print "DEBUG: Failed OS release support - ($os_rel)\n\n" if( $DEBUG );
-	return 0; 
-}
-
-
- # Limit support to only x86 machines
-if ($arch !~ /^i686$|^i586$|^i386$/ )
-{
-    print "OCA::OS_Detect::Debian-";
-	print "DEBUG: Failed Architecture support - ($arch)\n\n" if( $DEBUG );
-	return 0; 
-}
-
- #
- # Setup our information hash and identification string
- #
-
-our $id = {
-    os => lc($os_name),
-    arch => $arch,
-    os_release => $os_rel,
-    linux_distro => "debian",
-    linux_distro_version => $deb_ver,
-};
-
-
- # Example:  'linux-x86-2.6.11.7-debian-3.1'
- 
-$id->{ident}  = $id->{os}           . "-";
-$id->{ident} .= $id->{arch}         . "-";
-$id->{ident} .= $id->{os_release}   . "-";
-$id->{ident} .= $id->{linux_distro} . "-";
-$id->{ident} .= $id->{linux_distro_version};
-
-
-
-# Once all this has been setup, whenever someone invokes the "query"
-# method on this component, we just return the pre-setup data.
-
+# query returns a reference to the ID hash or undef if the current package
+# doesn't fit to the queried distribution
 sub query {
-    our $id;
+    my %opt = @_;
+    if (exists($opt{chroot})) {
+	if (-d $opt{chroot}) {
+	    return detect($opt{chroot});
+	} else {
+	    print STDERR "WARNING: Path $opt{chroot} does not exist!\n";
+	    return undef;
+	}
+    } else {
+	return detect("/");
+    }
+}
+
+# This routine is cheap and called very rarely, so don't care for
+# unnecessary buffering. Simply recalculate $id each time this is
+# called.
+sub detect {
+    my ($root) = @_;
+    my $release_string;
+
+    # If /etc/debian_version exists, continue, otherwise, quit.
+    if (-f "$root/etc/debian_version") {
+	local *FH;
+	open(FH, "$root/etc/debian_version") or
+	    die "Error: unable to open $root/etc/debian_version $!\n";
+	my @file = grep { ! /^\s*\#/ } <FH>;
+	close(FH);
+
+	# 
+	# Get version from one-line entry giving the version number in the
+	# file "/etc/debian_version".  c.f.,
+	# http://www.debian.org/doc/FAQ/ch-software.en.html#s-isitdebian
+	#
+	my $deb_ver = $file[0];
+	chomp($deb_ver);
+    } else {
+	return undef;
+    }
+
+    # this hash contains all info necessary for identifying the OS
+    my $id = {
+	os => "linux",
+	chroot => $root,
+    };
+
+    #
+    # Now do some checks to make sure we're supported
+    #
+
+    # Limit support to only Debian v3.1 (sarge)
+    my $deb_update;
+    $deb_ver =~ /^(\d+)\.(\d+)/;
+    $deb_ver = $1;
+    $deb_update = $2;
+    if ($deb_ver != 3) {
+	print "OCA::OS_Detect::Debian-";
+	print "DEBUG: Failed Debian version support - ($deb_ver)\n\n" if( $DEBUG );
+	return undef;
+    }
+
+    # determine architecture
+    my $arch = detect_arch($root);
+    $id->{arch} = $arch;
+
+    # Limit support to only x86 machines
+    if ($arch !~ /^i686$|^i586$|^i386$/ ) {
+	print "OCA::OS_Detect::Debian-";
+	print "DEBUG: Failed Architecture support - ($arch)\n\n" if( $DEBUG );
+	return 0;
+    }
+
+    $id->{distro} = "debian";
+    $id->{distro_flavor} = "sarge";
+    $id->{distro_version} = $deb_ver;
+    $id->{distro_update} = $deb_update;
+    $id->{compat_distro} = "debian";
+    $id->{compat_distrover} = $deb_ver;
+
+    # Make final string
+    $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
     return $id;
 }
 
+# Determine architecture by checking the executable type of a wellknown
+# program
+sub detect_arch {
+    my ($root) = @_;
+    my $arch="unknown";
+    my $q = `env LC_ALL=C file $root/bin/bash`;
+    if ($q =~ m/executable,\ \S+\ (\S+),\ version/) {
+	$arch = $1;
+	if ($arch =~ m/386$/) {
+	    $arch = "i386";
+	}
+    }
+    return $arch;
+}
 
+# If we got here, we're happy
 1;
