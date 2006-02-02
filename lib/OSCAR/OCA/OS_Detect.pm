@@ -46,11 +46,6 @@ sub open {
     } elsif (scalar(@$comps == 0)) {
         print "Could not find an OS_Detect component for this system!\n";
         die "Cannot continue";
-    } elsif (scalar(@$comps) > 1) {
-        print "Found more than one OS_Detect component for this system!\n";
-        foreach my $comp (@$comps) {
-            print "\t$comp\n";
-        }
     }
 
     # Yes, we found some components. Check which one returns a valid id
@@ -58,7 +53,7 @@ sub open {
 
     my $ret = 0;
     foreach my $comp (@$comps) {
-	my $str = "\$OS_Detect->{query} = \\&OCA::OS_Detect::".$comp."::query(\%opt)";
+	my $str = "\$OS_Detect->{query} = \&OCA::OS_Detect::".$comp."::query(\%opt)";
 	eval $str;
 	if (ref($OS_Detect->{query}) eq "HASH") {
 	    print "Found component that fits: $comp\n";
