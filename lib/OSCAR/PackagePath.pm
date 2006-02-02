@@ -26,7 +26,7 @@ package OSCAR::PackagePath;
 # Build repository paths depending on distro, version, etc...
 
 use strict;
-use vars qw(@EXPORT);
+use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use Carp;
@@ -34,6 +34,13 @@ use Carp;
 @EXPORT = qw(distro_repo_path oscar_repo_path
 	     pkg_extension pkg_separator
 	     distro_detect_or_die);
+
+# The possible places where packages may live.  
+
+@PKG_SOURCE_LOCATIONS = ( "$ENV{OSCAR_HOME}/packages", 
+                          "/var/lib/oscar/packages",
+                        );
+
 
 #
 # Return an OS_Detect hash reference or die.
