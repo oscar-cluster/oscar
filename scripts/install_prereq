@@ -57,15 +57,14 @@ my $separator = &OSCAR::PackagePath::pkg_separator();
 
 vprint("OSCAR pkg path: $oscar_pkg_pool\n");
 vprint("Distro pkg path: $distro_pkg_pool\n");
-vprint("Prereq paths: ".join(",",@prereqs));
+vprint("Prereq paths: ".join(",",@prereqs))."\n";
 
 #
 # copy files to repository with generic-setup
 #
 my $gs = "$oscarpath/scripts/generic-setup";
-if (! -x $gs) {
-    die "ERROR: $gs is not executable!";
-}
+die "ERROR: $gs is not executable!" if (! -x $gs);
+$gs .= " --verbose" if ($verbose);
 
 for my $p (@prereqs) {
     my $cmd = "env OSCAR_PACKAGE_HOME=$p $gs --pool $oscar_pkg_pool";
