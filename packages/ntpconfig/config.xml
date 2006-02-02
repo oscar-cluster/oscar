@@ -55,14 +55,5 @@
 
       <pkg>ntp</pkg>
   </binary-package-list>
-  <binary-package-list>
-      <filter>
-        <distribution>
-          <name>suse</name>
-        </distribution>
-      </filter>
-
-      <pkg>xntp</pkg>
-  </binary-package-list>
 
 </oscar>
