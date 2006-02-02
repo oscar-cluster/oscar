@@ -1,0 +1,15 @@
+# Directories listed in this file are processed in order. All prereqs
+# must be listed here. The directories must be relative to the $OSCAR_HOME
+# directory.
+#
+# dumb prereqs needed for bootstrapping the smart installer:
+# packages/yume
+# share/prereqs/packman
+#
+# smartly installed prereqs follow
+share/prereqs/update-rpms
+share/prereqs/perl-XML-Parser
+share/prereqs/perl-XML-Simple
+share/prereqs/oda
+share/prereqs/perl-HTML-Tree
+share/prereqs/perl-Tk
