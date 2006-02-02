@@ -24,7 +24,6 @@ use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
 use Getopt::Long;
 use File::Basename;
-use File::Copy;
 
 sub vprint;
 
@@ -41,6 +40,8 @@ die "$ENV{OSCAR_PACKAGE_HOME}: not accessible.\n" unless -x $ENV{OSCAR_PACKAGE_H
 
 my $base_dir= $ENV{OSCAR_PACKAGE_HOME};
 my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
+
+print "Copying to OSCAR package pool: $oscar_pkg_pool\n";
 
 # configure command line options parsing
 Getopt::Long::Configure("ignore_case"); # ignore case
@@ -165,7 +166,7 @@ for my $pkg (@argpkgs) {
     	$basename = (sort {length($a) <=> length($b)} @possibles)[0];
     }
     if ($options{erase}) {
-	print "* Delete $basename from $oscar_pkg_pool\n";
+	print "  * deleting $basename\n";
 	unless( -f "$oscar_pkg_pool/$basename" && $options{test} ) {
 	    unlink( "$oscar_pkg_pool/$basename" ) ||
 		croak("Error occured while deleting: $!");
@@ -181,9 +182,9 @@ for my $pkg (@argpkgs) {
 	    print STDOUT map {": $_"} @lines;
 	    print STDOUT "::::::::::::::-------------------------\n";
 	}
-	print "* Copy $filename to $oscar_pkg_pool\n";
+	print "  * copying $filename\n";
 	if (!defined $options{test}) {
-	    copy($filename, $oscar_pkg_pool) ||
+	    !systemp("cp -p $filename $oscar_pkg_pool") ||
 		croak("Error occured while copying: $!");
 	}
     }
