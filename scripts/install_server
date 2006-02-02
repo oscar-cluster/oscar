@@ -35,24 +35,20 @@ use OSCAR::Network;
 use OSCAR::Logger;
 use OSCAR::Database;
 use OSCAR::Package;
-use OSCAR::PackageBest;
+use OSCAR::PackMan;
+use OSCAR::PackageSmart;
 use Carp;
 use Data::Dumper;
 
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
 
-sub do_it_or_die {
-    my ( $command, $results_ref, $error ) = @_;
-    return if dec_already_locked( $command, $results_ref, 1 );
-    database_disconnect();
-    die "$0: $error";
-}
-
-
 my $INTERFACE = shift or croak("No interface specified");
 
-my $RPMPOOL = $OSCAR::Package::RPM_POOL;
+my $verbose = $ENV{OSCAR_DEBUG_WIZARD};
+
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
+my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 
 # List of root's .rc files (MDK PATH fixup)
 my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
@@ -60,24 +56,36 @@ my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
 # Get a list of all non-core packages
 # and list of RPMs from the non-core packages
 my $sel_group = get_selected_group;
-my @packages = list_selected_packages("noncore",$sel_group);
-my @list_packages = ();
-my @rpms = ();
-foreach my $pkg_ref ( @packages ) {
+my @opkgs = list_selected_packages("noncore",$sel_group);
+my @opkgs_list;
+my @pkgs;
+my @qerrors;
+foreach my $pkg_ref ( @opkgs ) {
     my $opkg = $$pkg_ref{package};
     my $ver = $$pkg_ref{version};
-    push @list_packages, $opkg;
-    push @rpms, rpmlist($opkg,$ver,"oscar_server");
+    push @opkgs_list, $opkg;
+    push @pkgs, pkgs_of_opkg($opkg, $ver, \@qerrors,
+			     group => $OSCAR_SERVER_GROUP,
+			     chroot => "/" );
 }
-oscar_log_subsection("Identified non-core packages: " . join(' ', @list_packages));
+oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs_list));
 
 
-# Now install the rpms that we found
+# Now install the pkgs that we found
 
-oscar_log_subsection("Installing server non-core RPMs " .
-		     "(core RPMs already installed)");
-install_packages(@rpms) 
-    or croak("Couldn't install the required packages needed for OSCAR");
+oscar_log_subsection("Installing server non-core packages " .
+		     "(core packages already installed)");
+
+my $pm = &OSCAR::PackageSmart::prepare_pools($verbose,$oscar_pkg_pool,$distro_pkg_pool);
+if (!$pm) {
+    croak "\nERROR: Could not create PackMan instance!\n";
+}
+oscar_log_subsection("Smart_install: ".join(",",@pkgs));
+my ($ret, @out) = $pm->smart_install(@pkgs);
+if (!$ret) {
+    print "Error occured during server pkgs install:\n".join("\n",@out)."\n";
+    croak("Couldn't install the required packages needed for OSCAR");
+}
 oscar_log_subsection("Successfully installed server non-core RPMs");
 
 #
@@ -104,7 +112,7 @@ oscar_log_subsection("Marking installed bit in ODA for server non-core RPMS");
 
 my $requested = 7; # "Installed" flag for the Node_Package_Status"
 die "$0:Failed to update the table Node_Package_Status"
-    if(!update_node_package_status(\%options,$OSCAR_SERVER_NODE,\@packages,$requested,\@errors));
+    if(!update_node_package_status(\%options,$OSCAR_SERVER_NODE,\@opkgs,$requested,\@errors));
 
 
 # UNLOCKING FOR NEST
@@ -117,11 +125,11 @@ oscar_log_subsection("Done marking installed bits in ODA");
 
 oscar_log_subsection("Running post_server_install scripts " .
 		     "for server non-core packages");
-foreach my $package (@list_packages) {
-    if($package ne "networking"){
-        run_pkg_script($package,"post_server_install") 
-        or croak("Failed running post_server_install for $package");
-    }
+foreach my $opkg (@opkgs_list) {
+    # if($opkg ne "networking"){   # EF: why was this here?
+                                   # if it doesn't work, fix it!  
+    run_pkg_script($opkg,"post_server_install") 
+        or croak("Failed running post_server_install for $opkg");
 }
 oscar_log_subsection("Successfully ran server non-core package ".
 		     "post_server_install scripts");
@@ -138,8 +146,8 @@ oscar_log_subsection("Got: [netmask $netmask]");
 oscar_log_subsection("Adding hosts to /etc/hosts");
 update_hosts($ip) or croak("Couldn't add required host entries to /etc/hosts");
 
-oscar_log_subsection("Updating /etc/profile");
-update_profile() or croak("Couldn't add path entries to /etc/profile");
+#oscar_log_subsection("Updating /etc/profile");
+#update_profile() or croak("Couldn't add path entries to /etc/profile");
 
 oscar_log_subsection("Updating /etc/exports");
 update_exports($ip,$netmask) 
@@ -244,26 +252,30 @@ sub update_hosts {
     close(IN);
 }
 
-sub update_profile {
-    verbose("Backing up /etc/profile");
-    copy("/etc/profile","/etc/profile.bak") or return undef;
-    open(IN,"</etc/profile.bak") or return undef;
-    open(OUT,">/etc/profile") or return undef;
-    verbose("Adding path entries to /etc/profile");
-    while(<IN>) {
-        if(/^PATH=/) {
-            if(!m{\b/usr/local/bin\b}) {
-                $_ =~ s{(=\".*)\"}{$1:/usr/local/bin\"};
-            }
-            if(!m{\b/usr/local/sbin\b}) {
-                $_ =~ s{(=\".*)\"}{$1:/usr/local/sbin\"};
-            }
-        }
-        print OUT $_;
-    }
-    close(OUT);
-    close(IN);
-}
+#
+# EF: it is a bad idea to add /usr/local/bin to root's path
+#     Why is this needed?
+#
+#sub update_profile {
+#    verbose("Backing up /etc/profile");
+#    copy("/etc/profile","/etc/profile.bak") or return undef;
+#    open(IN,"</etc/profile.bak") or return undef;
+#    open(OUT,">/etc/profile") or return undef;
+#    verbose("Adding path entries to /etc/profile");
+#    while(<IN>) {
+#        if(/^PATH=/) {
+#            if(!m{\b/usr/local/bin\b}) {
+#                $_ =~ s{(=\".*)\"}{$1:/usr/local/bin\"};
+#            }
+#            if(!m{\b/usr/local/sbin\b}) {
+#                $_ =~ s{(=\".*)\"}{$1:/usr/local/sbin\"};
+#            }
+#        }
+#        print OUT $_;
+#    }
+#    close(OUT);
+#    close(IN);
+#}
 
 sub update_exports {
     my $ip = shift;
