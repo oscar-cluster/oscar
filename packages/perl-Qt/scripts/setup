@@ -1,8 +1,0 @@
-#!/bin/sh
-#
-# $Id: setup 3374 2005-07-25 16:38:17Z efocht $
-#
-# copy in arch specific packages
-# (c) Erich Focht, NEC HPCE
-
-$OSCAR_HOME/scripts/generic-setup
