@@ -32,7 +32,7 @@
   <binary-package-list>
       <filter>
         <distribution>
-          <name>fedora</name>
+          <name>fc</name>
           <version>2</version>
         </distribution>
       </filter>

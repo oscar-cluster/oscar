@@ -44,16 +44,7 @@
 	 <filter>
 	   <group>oscar_server</group>
 	   <distribution>
-	     <name>mandrake</name>
-	     <version>10.0</version>
-	   </distribution>
-	 </filter>
-
-	 <filter>
-	   <group>oscar_server</group>
-	   <distribution>
-	     <name>mandrake</name>
-	     <version>10.1</version>
+	     <name>mdk</name>
 	   </distribution>
 	 </filter>
 
@@ -106,16 +97,7 @@
     <filter>
       <group>oscar_server</group>
       <distribution>
-        <name>fedora</name>
-        <version>2</version>
-      </distribution>
-    </filter>
-
-    <filter>
-      <group>oscar_server</group>
-      <distribution>
-        <name>fedora</name>
-        <version>3</version>
+        <name>fc</name>
       </distribution>
     </filter>
 
@@ -146,24 +128,7 @@
     <filter>
       <group>oscar_server</group>
       <distribution>
-        <name>redhat</name>
-        <version>9</version>
-      </distribution>
-    </filter>
-
-    <filter>
-      <group>oscar_server</group>
-      <distribution>
-        <name>redhat</name>
-        <version>3as</version>
-      </distribution>
-    </filter>
-
-    <filter>
-      <group>oscar_server</group>
-      <distribution>
-        <name>redhat</name>
-        <version>el4</version>
+        <name>rhel</name>
       </distribution>
     </filter>
 

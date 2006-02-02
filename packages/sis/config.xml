@@ -61,7 +61,7 @@
   <binary-package-list>
       <filter>
         <group>oscar_server</group>
-        <architecture>ia32</architecture>
+        <architecture>i386</architecture>
       </filter>
 
       <pkg>syslinux</pkg>
@@ -88,5 +88,7 @@
       <pkg>syslinux</pkg>
       <pkg>systemimager-x86_64boot-standard</pkg>
       <pkg>systemimager-x86_64initrd_template</pkg>
+      <pkg>systemimager-i386boot-standard</pkg>
+      <pkg>systemimager-i386initrd_template</pkg>
   </binary-package-list>
 </oscar>

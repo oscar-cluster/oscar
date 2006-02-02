@@ -37,19 +37,19 @@
   <binary-package-list>
       <filter>
         <distribution>
-          <name>fedora</name>
+          <name>fc</name>
         </distribution>
       </filter>
 
       <filter>
         <distribution>
-          <name>mandrake</name>
+          <name>mdk</name>
         </distribution>
       </filter>
 
       <filter>
         <distribution>
-          <name>redhat</name>
+          <name>rhel</name>
         </distribution>
       </filter>
 

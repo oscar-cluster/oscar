@@ -40,66 +40,11 @@
   <binary-package-list>
       <filter>
         <group>oscar_server</group>
-        <distribution>
-          <name>fedora</name>
-          <version>2</version>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>fedora</name>
-          <version>3</version>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>redhat</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>mandrake</name>
-          <version>10.0</version>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>mandrake</name>
-          <version>10.1</version>
-        </distribution>
       </filter>
 
       <pkg>ganglia-gmetad</pkg>
       <pkg>ganglia-web</pkg>
       <pkg>rrdtool</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>fedora</name>
-          <version>3</version>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>redhat</name>
-          <version>el4</version>
-        </distribution>
-      </filter>
-
-      <pkg>php-gd</pkg>
   </binary-package-list>
 
   <servicelist>

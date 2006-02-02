@@ -42,14 +42,14 @@
     <filter>
       <group>oscar_server</group>
       <distribution>
-        <name>redhat</name>
+        <name>rhel</name>
       </distribution>
     </filter>
  
     <filter>
       <group>oscar_server</group>
       <distribution>
-        <name>fedora</name>
+        <name>fc</name>
       </distribution>
     </filter>
  
@@ -59,7 +59,7 @@
     <filter>
       <group>oscar_server</group>
       <distribution>
-        <name>mandrake</name>
+        <name>mdk</name>
       </distribution>
     </filter>
  

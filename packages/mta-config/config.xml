@@ -42,7 +42,7 @@
     <filter>
       <group>oscar_clients</group>
       <distribution>
-        <name>fedora</name>
+        <name>fc</name>
       </distribution>
     </filter>
 

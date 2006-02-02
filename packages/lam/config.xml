@@ -178,29 +178,19 @@ visualized either at runtime or post-mortem.</description>
          -->
     <filter>
       <distribution>
-        <name>fedora</name>
-        <version>2</version>
+        <name>fc</name>
       </distribution>
     </filter>
 
     <filter>
       <distribution>
-        <name>fedora</name>
-        <version>3</version>
+        <name>fc</name>
       </distribution>
     </filter>
 
     <filter>
       <distribution>
-        <name>redhat</name>
-        <version>3as</version>
-      </distribution>
-    </filter>
-
-    <filter>
-      <distribution>
-        <name>redhat</name>
-        <version>el4</version>
+        <name>rhel</name>
       </distribution>
     </filter>
 
@@ -215,7 +205,7 @@ visualized either at runtime or post-mortem.</description>
     <!-- Distributions that don't provide libaio -->
     <filter>
       <distribution>
-        <name>mandrake</name>
+        <name>mdk</name>
       </distribution>
     </filter>
 

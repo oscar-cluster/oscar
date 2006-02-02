@@ -64,7 +64,7 @@ tasks on a cluster.</description>
       <filter>
         <group>oscar_server</group>
         <distribution>
-          <name>mandrake</name>
+          <name>mdk</name>
         </distribution>
       </filter>
 

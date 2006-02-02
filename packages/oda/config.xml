@@ -56,6 +56,7 @@
 
   <description>ODA provides a central database for OSCAR.</description>
 
+  <!-- the binary packages are installed as prereqs. not needed here any more
   <binary-package-list>
     <filter>
       <distribution>
@@ -85,6 +86,8 @@
     <!-- <pkg>perl-ExtUtils-PerlPP</pkg>-->
     <pkg>MySQL-common</pkg>
   </binary-package-list>
+
+  -->
   
 
 
