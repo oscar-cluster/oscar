@@ -1,0 +1,368 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) Erich Focht <efocht@hpce.nec.com>
+#               All rights reserved
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id$
+
+use strict;
+use Getopt::Long;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::OCA::OS_Detect;
+use OSCAR::PackagePath;
+use Data::Dumper;
+use Carp;
+
+
+my ($dumb, $smart, $verbose, $path);
+GetOptions(
+           "dumb"      => \$dumb,
+           "smart"     => \$smart,
+           "verbose"   => \$verbose,
+           ) || &usage(1);
+# check paths
+&usage(1) if (!scalar(@ARGV));
+
+my $oscarpath = $ENV{OSCAR_HOME};
+my @prereq_paths;
+for my $p (@ARGV) {
+    if (! -d $p || ! -f "$oscarpath/$p/prereq.cfg") {
+	print "Error: $p is not a directory or doesn't contain a prereq.cfg file!\n";
+	usage(1);
+    } else {
+	push @prereq_paths, "$oscarpath/$p";
+    }
+}
+
+# need one of the two
+&usage(1) if (!$smart && !$dumb);
+
+#
+# Own distro detection
+#
+
+OSCAR::OCA::OS_Detect::open() or
+    die "Unable to determine operating system";
+my $os = $OS_Detect->{query};
+
+print "OS: ".$os->{distro}."-".$os->{distro_version}."\n";
+my $pkgmgr    = $os->{pkg};
+my $distro    = $os->{distro};
+my $distrover = $os->{distro_version};
+my $cdistro   = $os->{compat_distro};
+my $cdistrover= $os->{compat_distrover};
+my $arch      = $os->{arch};
+
+
+# locate destination path for prereq package files and repository url
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path($cdistro,$cdistrover,$arch);
+my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url($distro,$distrover,$arch);
+
+vprint("OSCAR pkg path: $oscar_pkg_pool\n");
+vprint("Distro pkg path: $distro_pkg_pool\n");
+vprint("Prereq paths: ".join(",",@prereq_paths));
+
+#
+# copy files to repository with generic-setup
+#
+my $gs = "$oscarpath/scripts/generic-setup";
+if (! -x $gs) {
+    die "ERROR: $gs is not executable!";
+}
+
+for my $p (@prereq_paths) {
+    my $cmd = "env OSCAR_PACKAGE_HOME=$p $gs --pool $oscar_pkg_pool";
+    vprint("Executing: $cmd\n");
+    !system($cmd) or
+	die "\nERROR: prereq install for $p failed!\n";
+}
+
+#
+# Is this "smart mode"? Then load PackMan and regenerate the metadata cache
+#
+my $pm;
+if ($smart) {
+    require OSCAR::PackMan;
+    $pm = PackMan->new;
+    if (!$pm) {
+	croak "\nERROR: Could not create PackMan instance!\n";
+    }
+    $pm->repo($oscar_pkg_pool);
+    print "Calling gencache...";
+    my ($err, @out) = $pm->gencache;
+    if ($err) {
+	print " success\n";
+    } else {
+	print " error. Output was:\n";
+	print join("\n",@out)."\n";
+	# exit here?
+    }
+    # prepare for smart installs
+    $pm->repo($oscar_pkg_pool,$distro_pkg_pool);
+    # follow output of smart installer
+    if ($verbose) {
+	$pm->output_callback(\&print_output);
+    }
+}
+
+sub print_output {
+    my ($line) = @_;
+    print "$line\n";
+}
+
+# now go with the processing
+my $cmd;
+for my $path (@prereq_paths) {
+
+    # read in prereq.cfg file
+    my @cfg = @{&get_config($path, $cdistro, $cdistrover, $arch)};
+    next if (!scalar(@cfg));
+
+    if ($dumb) {
+	# go through config file line by line
+	for my $line (@cfg) {
+	    $line =~ s/^\s*//g;
+	    next if ($line =~ /^\#/);
+	    my $remove = ($line =~ /^!/);
+	    if ($remove) {
+		$line = s/^!//g;
+	    }
+	    my ($pkg,$dummy) = split(/\s+/,$line);
+
+	    if ($os->{pkg} eq "rpm") {
+		dumb_rpm($remove,$pkg);
+	    } else {
+		croak "Support for dumb ".$os->{pkg}." install is not implemented.\n";
+	    }
+	}
+    } else {
+
+	# smart install/remove:
+	# do installs/removes group-wise, in the order of appearance in the
+	# prereq.cfg file. This complicates the logic of the routine a lot.
+
+	my ($remove, $oremove) = (-1,-1); # flags for remove/install,
+	                                  # oremove remembers past iteration
+	my ($err, @out, @pkgs, $line);
+	while (scalar(@cfg) || scalar(@pkgs) || $line) {
+	    if (!$line) {             # there was no $remove change in past 
+		$line = shift @cfg;   # iteration, so read in new line
+		$line =~ s/^\s*//g;
+		next if ($line =~ /^\#/);
+	    }
+
+	    my $remove = ($line =~ /^!/);
+	    $oremove = $remove if ($oremove == -1); # first pass is special
+
+	    if ($remove == $oremove) {   # no change in $remove
+		if ($remove) {
+		    $line =~ s/^!//g;
+		}
+		my ($pkg, $dummy) = split /\s+/, $line;
+		if ($pkg ne "") {
+		    push @pkgs, $pkg;
+		}
+		$line = undef;  # empty it here, won't be used next iteration
+	    }
+
+	    if ($remove != $oremove || (!scalar(@cfg) && scalar(@pkgs))) {
+
+		# process accumulated packages
+		vprint("processing accumulated packages: ".join(",",@pkgs)."\n");
+		@pkgs = smart_check($oremove, @pkgs);
+
+		if (scalar(@pkgs)) {
+		    handle_smart_pkgs($path,$oremove,@pkgs);
+		}
+		# empty processing list
+		undef @pkgs;
+		$oremove = $remove;
+	    }
+	}
+    }
+}
+
+exit 0;
+
+#
+# remove packages which need no handling from list
+#
+sub smart_check {
+    my ($remove, @pkgs) = @_;
+    my ($inst, $ninst);
+
+    vprint("smart_check: ".join(",",@pkgs)."\n");
+    return undef if (!scalar(@pkgs));
+
+    ($inst, $ninst) = $pm->query_installed(@pkgs);
+    if ($remove) {
+	# only return the installed packages
+	vprint("removing: packages installed: ".join(",",@{$inst})."\n");
+	return @{$inst};
+    } else {
+	# install, so only return the not_installed packages
+	vprint("installing: packages not installed: ".join(",",@{$ninst})."\n");
+	return @{$ninst};
+    }
+}
+
+sub handle_smart_pkgs {
+    my ($path, $remove, @pkgs) = @_;
+    my ($err, @out);
+
+    if ($remove) {
+	vprint("smartly removing: ".join(",",@pkgs)."\n");
+	($err, @out) = $pm->smart_remove(@pkgs);
+    } else {
+	vprint("smartly installing: ".join(",",@pkgs)."\n");
+	($err, @out) = $pm->smart_install(@pkgs);
+    }
+    if (!$err) {
+	print "Error occured for prereq $path\n";
+	print join("\n",@out);
+	exit 1;
+    }
+
+}
+
+#
+# Simple implementation for dumb rpm handling
+#
+sub dumb_rpm {
+    my ($remove, $pkg) = @_;
+    my $cmd;
+    return if (!$pkg);
+    if ($remove) {
+	# remove all instances of package
+	$cmd = "rpm -ev --all $pkg";
+	vprint("Executing: $cmd\n");
+	!system($cmd) or print "Warning: removal failed: $!\n";
+    } else {
+	# already installed?
+	$cmd = "rpm -q $pkg >/dev/null 2>&1";
+	vprint("Executing: $cmd\n");
+	if (system($cmd)) {
+	    # not installed, so do it now
+	    my $pkgpath = locate_pkg($pkg);
+	    if ($pkgpath) {
+		$cmd = "rpm -Uhv $pkgpath";
+		vprint("Executing: $cmd\n");
+		!system($cmd) or print "install failed: $!\n";
+	    } else {
+		print "WARNING: Could not locate package $pkg\n";
+	    }
+	}
+    }
+}
+
+#
+# try to locate a package file in the repositories
+#
+sub locate_pkg {
+    my ($pkg) = @_;
+    my @pkgs;
+    my $suf = $os->{pkg};
+    if ($pkg =~ /\.$suf$/) {
+	@pkgs = glob("$oscar_pkg_pool/$pkg $distro_pkg_pool/$pkg");
+    } else {
+	@pkgs = glob("$oscar_pkg_pool/$pkg-[0-9]*.$suf ".
+                     "$distro_pkg_pool/$pkg-[0-9]*.$suf");
+    }
+    # simply return the first one
+    if (scalar @pkgs) {
+	return $pkgs[0];
+    }
+    return undef;
+}
+
+sub vprint {
+    print @_ if ($verbose);
+}
+
+
+############################################################################
+# Prerequisites config file. This is called prereq.cfg and should be located
+# in the top directory of the otherwise generic-setup compatible prerequisites
+# directory. Because prereqs are installed long before OSCAR is able to parse
+# config.xml files, prereq.cfg is much simpler. The format is:
+#
+# [distro-version-architecture]
+# package_name_or_rpm_file
+# ...
+# !package_name
+# ...
+# [distro2-version-architecture]
+# ...
+#
+# The distro name, version or arch info can be replaced by a "*". This adds
+# some simple patterns. Examples:
+# [rhel-3-*] matches all rhel3 architectures.
+# [fc-*-*]   matches all fedora core distros on all architectures
+# [*-*-*]    matches everything.
+#
+# The lines after a distro identifier are package names or package file names
+# (without the full path info). One package/filename per line is allowed!
+# Lines starting with "!" specify packages which should be deleted. The lines
+# are executed in the order of appearance.
+# Processing of the prereq.cfg file stops after the parsing of the first
+# matching block!
+############################################################################
+sub get_config {
+    my ($path, $distro, $distver, $arch) = @_;
+    local *IN;
+    my (@config, $line, $match);
+    
+    open IN, "$path/prereq.cfg" or die "Could not open $path/prereq.cfg $!";
+    while ($line = <IN>) {
+	chomp $line;
+	if ($line =~ /^\s*\[([^-]+)-([^-]+)-([^-]+)\]/) {
+	    my ($d,$v,$a) = ($1,$2,$3);
+	    $match = 0;
+	    if (($d eq "*" || $d eq $distro) &&
+		($v eq "*" || $v eq $distver) &&
+		($a eq "*" || $a eq $arch)) {
+		$match = 1;
+		print "found matching block [$d-$v-$a]\n";
+		last;
+	    }
+	}
+    }
+    if ($match) {
+	while ($line = <IN>) {
+	    chomp $line;
+	    last if ($line =~ /^\[([^-]+)-([^-]+)-([^-]+)\]/);
+	    next if ($line =~ /^\s*\#/);
+	    $line =~ s/^ *//g;
+	    push @config, $line;
+	}
+    }
+    close IN;
+    if (@config) {
+	return \@config;
+    } else {
+	return undef;
+    }
+}
+
+sub usage {
+    my $ret = shift;
+    print "Usage:\n";
+    print "\t$0 --dumb|--smart [--verbose] prereq_path\n\n";
+    print "Install prerequisites located in prereq_path. They should have\n";
+    print "the same directory structure like normal OSCAR packages but\n";
+    print "need to contain the configuration file prereq.cfg\n";
+    print "This file is required because prereqs are installed before\n";
+    print "config.xml files can be parsed.\n";
+    print "One of --smart|--dumb must be selected! --dumb installs packages\n";
+    print "listed in the prereq.cfg file with the base package manager and\n";
+    print "is unable to resolve dependencies. It should be used for\n";
+    print "bootstrapping a smart package manager. --smart installs prereqs\n";
+    print "with the help of a smart package manager like yum(e).\n";
+    print "The prereq_path arguments must be paths relative to the\n";
+    print "\$OSCAR_HOME environment variable's value!\n";
+    exit $ret if ($ret);
+}
