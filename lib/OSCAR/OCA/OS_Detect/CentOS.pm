@@ -14,22 +14,6 @@ package OCA::OS_Detect::CentOS;
 
 use strict;
 
-# query returns a reference to the ID hash or undef if the current package
-# doesn't fit to the queried distribution
-sub query {
-    my %opt = @_;
-    if (exists($opt{chroot})) {
-	if (-d $opt{chroot}) {
-	    return detect($opt{chroot});
-	} else {
-	    print STDERR "WARNING: Path $opt{chroot} does not exist!\n";
-	    return undef;
-	}
-    } else {
-	return detect("/");
-    }
-}
-
 sub detect {
     my ($root) = @_;
     my $release_string;

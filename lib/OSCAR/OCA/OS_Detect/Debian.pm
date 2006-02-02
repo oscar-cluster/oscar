@@ -19,23 +19,6 @@ use strict;
 
 my $DEBUG = 1 if( $ENV{DEBUG_OCA_OS_DETECT} );
 
-
-# query returns a reference to the ID hash or undef if the current package
-# doesn't fit to the queried distribution
-sub query {
-    my %opt = @_;
-    if (exists($opt{chroot})) {
-	if (-d $opt{chroot}) {
-	    return detect($opt{chroot});
-	} else {
-	    print STDERR "WARNING: Path $opt{chroot} does not exist!\n";
-	    return undef;
-	}
-    } else {
-	return detect("/");
-    }
-}
-
 # This routine is cheap and called very rarely, so don't care for
 # unnecessary buffering. Simply recalculate $id each time this is
 # called.

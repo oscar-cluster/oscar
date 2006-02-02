@@ -18,22 +18,6 @@ package OCA::OS_Detect::RedHat;
 
 use strict;
 
-# query returns a reference to the ID hash or undef if the current package
-# doesn't fit to the queried distribution
-sub query {
-    my %opt = @_;
-    if (exists($opt{chroot})) {
-	if (-d $opt{chroot}) {
-	    return detect($opt{chroot});
-	} else {
-	    print STDERR "WARNING: Path $opt{chroot} does not exist!\n";
-	    return undef;
-	}
-    } else {
-	return detect("/");
-    }
-}
-
 # This is the logic that determines whether this component can be
 # loaded or not -- i.e., whether we're on a RHEL machine or not.
 # This routine is cheap and called very rarely, so don't care for

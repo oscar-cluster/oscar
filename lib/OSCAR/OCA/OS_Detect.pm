@@ -33,7 +33,15 @@ our $OS_Detect;
 #
 
 sub open {
-    my %opt = @_;
+    my ($path) = @_;
+
+    # return immediately if path doesn't exist
+    if ($path) {
+	if (! -d $path) {
+	    print STDERR "ERROR: Path $path does not exist!\n";
+	    return undef;
+	}
+    }
 
     my $comps = OSCAR::OCA::find_components("OS_Detect");
 
@@ -53,7 +61,7 @@ sub open {
 
     my $ret = 0;
     foreach my $comp (@$comps) {
-	my $str = "\$OS_Detect->{query} = \&OCA::OS_Detect::".$comp."::query(\%opt)";
+	my $str = "\$OS_Detect->{query} = \&OCA::OS_Detect::".$comp."::detect(\$path)";
 	eval $str;
 	if (ref($OS_Detect->{query}) eq "HASH") {
 	    print "Found component that fits: $comp\n";
