@@ -32,6 +32,7 @@ use strict;
 use Getopt::Long;
 use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR","../../../lib","../../../lib/OSCAR";
 use OSCAR::Package;
+use OSCAR::PackagePath;
 use OSCAR::Network;
 use Data::Dumper;
 use XML::Simple;
@@ -62,7 +63,7 @@ my $oscar_home;
 if ( exists $ENV{OSCAR_HOME} ) {
     $oscar_home = $ENV{OSCAR_HOME};
     die "$0: bad OSCAR_HOME environmental variable value <$oscar_home>"
-    if ( ! -d "$oscar_home");
+	if ( ! -d "$oscar_home");
 } else {
     die "\nEnvironment variable \$OSCAR_HOME is not set!\n";
 }
@@ -288,7 +289,7 @@ if ( @ARGV ) {
 # any arguments left is an error
 usage( 1, "unknown argument(s) " . join( ' ', @ARGV ) ) if @ARGV;
 
-my @base_directories = @OSCAR::Package::PKG_SOURCE_LOCATIONS;
+my @base_directories = @OSCAR::PackagePath::PKG_SOURCE_LOCATIONS;
 if ( !($directory_argument && $package_name) ){
 
     # find the name of the mysql service and start the mysql server,

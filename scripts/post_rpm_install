@@ -35,6 +35,7 @@ use File::Basename;
 use AppConfig;
 use OSCAR::Network;
 use OSCAR::Package;
+use OSCAR::Database;
 use OSCAR::Logger;
 use Cwd;
 

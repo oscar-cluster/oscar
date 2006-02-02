@@ -32,6 +32,7 @@ use File::Copy;
 use File::Path;
 use File::Basename;
 use OSCAR::Package;
+use OSCAR::Database;
 use AppConfig;
 
 

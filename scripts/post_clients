@@ -33,6 +33,7 @@ use File::Basename;
 use SIS::Image;
 use SIS::DB;
 use OSCAR::Package;
+use OSCAR::Database;
 use Data::Dumper;
 
 !system("./allow_client_access") or croak("Couldn't run client access program");

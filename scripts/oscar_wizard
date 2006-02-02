@@ -14,13 +14,16 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-# Copyright (c) 2005, Bernard Li <bli@bcgsc.ca>
-#                     All rights reserved.
-#
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 #
 # Copyright (c) 2002-2005 The Trustees of Indiana University.  
+#                    All rights reserved.
+#
+# Copyright (c) 2005, Bernard Li <bli@bcgsc.ca>
+#                     All rights reserved.
+#
+# Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -44,6 +47,7 @@ use OSCAR::AddNode;
 use OSCAR::Logger;
 use OSCAR::Configurator;
 use OSCAR::Package;
+use OSCAR::PackagePath;
 use OSCAR::Database;
 use OSCAR::PackageInUn;
 use OSCAR::WizardEnv;
@@ -343,25 +347,44 @@ sub build_oscar_image {
 
     # Get the distro list
 
-    my $arch = (uname)[4];
-    $arch =~ s/i.86/i386/;
-    my ($distroname, $distroversion) = which_distro('/tftpboot/rpm');
-    oscar_log_subsection("Step $step_number: Identified distro of clients: $distroname $distroversion");
-    my $rpmlist = "$ENV{OSCAR_HOME}/oscarsamples/$distroname-$distroversion-$arch.rpmlist";
-    oscar_log_subsection("Step $step_number: Using RPM list: $rpmlist");
+    my $master_os = distro_detect_or_die("/");
+    my $arch = $master_os->{arch};
+
+    my $distro = $master_os->{compat_distro};
+    my $distro_ver = $master_os->{compat_distrover};
+
+    #my @available_distros = &list_available_distros();
+    #my @compat_architectures = @list_compat_archs($master_os->{arch});
+
+    # quick hack to get this running with own (master) distro
+    # adding foreign distros will need some more complicated hacking
+
+    my $distro_pool = &OSCAR::PackagePath::distro_repo_url("/");
+    my $oscar_pool = &OSCAR::PackagePath::oscar_repo_path("/");
+
+    oscar_log_subsection("Step $step_number: Identified distro of clients: $distro $distro_ver");
+
+    oscar_log_subsection("Step $step_number: distro repo: $distro_pool");
+    oscar_log_subsection("Step $step_number: oscar repo: $oscar_pool");
+
+    my $pkglist = "$ENV{OSCAR_HOME}/oscarsamples/$distro-$distro_ver-$arch.rpmlist";
+    oscar_log_subsection("Step $step_number: Using RPM list: $pkglist");
     
     # Get a list of the client RPMs that we want to install.  Make a
     # new file containing the names of all the RPMs to install.
 
-    my @pkgs = list_selected_packages("all");
+    my @opkgs = list_selected_packages("all");
     my $outfile = "/tmp/oscar-install-rpmlist.$$";
+    my @errors;
     $save_text = $outfile;
     open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
-    foreach my $pkg_ref (@pkgs) {
-        my $pkg = $$pkg_ref{package};
-        my @rpms = rpmlist($pkg,undef,"oscar_clients");
-        foreach my $rpm (@rpms) {
-            print OUTFILE "$rpm\n";
+    foreach my $opkg_ref (@opkgs) {
+        my $opkg = $$opkg_ref{package};
+        my @pkgs = pkgs_of_opkg($opkg, undef, \@errors,
+				group => "oscar_clients",
+				os    => $master_os );
+        foreach my $pkg (@pkgs) {
+            print OUTFILE "$pkg\n";
         }
     }
     close(OUTFILE);
@@ -380,8 +403,8 @@ sub build_oscar_image {
                            imgpath => 1,
                            password => 1,
                           },
-                pkgfile => $rpmlist,
-                pkgpath => "/tftpboot/rpm",
+                pkgfile => $pkglist,
+                pkgpath => "$oscar_pool,$distro_pool",
                 diskfile => $diskfile,
                 ipmeth => "static",
                 mcast  => "off",
@@ -399,10 +422,9 @@ sub postimagebuild {
     my $step_number = $$vars{step_number};
 
     my $img = $$vars{imgname};
-    # FIXME: Use OS_Detect Framework
-    my $arch = (uname)[4];
-    $arch =~ s/i.86/i386/;
-    my ($distroname, $distroversion) = which_distro('/tftpboot/rpm');
+
+    my $master_os = distro_detect_or_die("/");
+    my $arch = $master_os->{arch};
 
     # Get the image path (typically /var/lib/systemimager/images/<imagename>)
     my $config = init_si_config();
@@ -414,10 +436,18 @@ sub postimagebuild {
     croak "$imagepath: not a directory\n" unless -d $imagepath;
     croak "$imagepath: not accessible\n" unless -x $imagepath;
 
-    my %image_info = ( "name"=>$img,
-                       "distro"=>"$distroname-$distroversion",
-                       "architecture"=>$arch,
-                       "path"=>$imagepath );
+
+    #
+    # Image info lines should be deleted once systeminstaller
+    # talks directly to ODA
+    #
+    my %image_info = ( "name"         => $img,
+		       #
+		       # EF: OS_Detect detects images now, use that!
+		       #
+                       # "distro"=>"$distroname-$distroversion",
+                       "architecture" => $arch,
+                       "path"         => $imagepath );
     set_images(\%image_info,\%options,\@errors);
 
     my $cmd = "./post_rpm_install $img $interface";
@@ -431,11 +461,11 @@ sub postimagebuild {
     
     oscar_log_subsection("Marking installed bit in ODA for client RPMS");
     
-    my @pkgs = list_selected_packages("all");
-    foreach my $pkg_ref (@pkgs) {
-        my $pkg = $$pkg_ref{package};
-        oscar_log_subsection("Set package: $pkg");
-        set_image_packages($img,$pkg,\%options,\@errors);
+    my @opkgs = list_selected_packages("all");
+    foreach my $opkg_ref (@opkgs) {
+        my $opkg = $$opkg_ref{package};
+        oscar_log_subsection("Set package: $opkg");
+        set_image_packages($img,$opkg,\%options,\@errors);
     }
     oscar_log_subsection("Done marking installed bits in ODA");
 
@@ -526,7 +556,7 @@ sub postaddclients {
     my $cmd = "./post_clients";
     oscar_log_subsection("Step $step_number: Running: $cmd");
     !system($cmd) or (carp($!), return undef);
-	&populate_client_group_nodes;
+    &populate_client_group_nodes;
     oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
     oscar_log_subsection("Step $step_number: Completed successfully");
     return 1;
@@ -556,8 +586,8 @@ sub do_it_or_die {
     die "$0: $error";
 }
 
-sub populate_client_group_nodes{
-	my @pkgs = list_selected_packages();
+sub populate_client_group_nodes {
+    my @pkgs = list_selected_packages("all");
     my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status", "Node_Packages");
     locking("WRITE", \%options, \@tables, \@errors);
     my @client_nodes = ();
