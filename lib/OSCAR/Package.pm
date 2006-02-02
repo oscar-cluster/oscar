@@ -25,16 +25,13 @@ package OSCAR::Package;
 
 
 use strict;
-use vars qw(@EXPORT $VERSION $RPM_TABLE $RPM_POOL %PHASES
-            @PKG_SOURCE_LOCATIONS $PKG_EXTENSION $PKG_DIRNAME $PKG_SEPARATOR);
+use vars qw(@EXPORT $VERSION %PHASES);
 use base qw(Exporter);
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
-use OSCAR::PackageBest;
+use OSCAR::PackagePath;
 use OSCAR::PackMan;
-use OSCAR::DepMan;
 use OSCAR::Logger;
-use OSCAR::Distro;
 use File::Basename;
 use File::Copy;
 use XML::Simple;
@@ -43,37 +40,16 @@ use Carp;
 # Default package group.
 my $DEFAULT = "Default";
 
-@EXPORT = qw(list_installable_packages list_installable_package_dirs 
-             run_pkg_script run_pkg_user_test copy_rpms remove_rpms
-             run_pkg_script_chroot rpmlist install_packages copy_pkgs 
-             pkg_config_xml list_selected_packages getSelectionHash
-             isPackageSelectedForInstallation getConfigurationValues
-             run_pkg_apitest_test);
+@EXPORT = qw(
+             run_pkg_script
+	     run_pkg_user_test
+             run_pkg_script_chroot
+             run_pkg_apitest_test
+             isPackageSelectedForInstallation
+	     getConfigurationValues
+             run_pkg_apitest_test
+	     );
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
-
-# Trying to figure out the best way to set this.
-my ($distro_name, $distro_version) = which_distro_server();
-if ($distro_name ne 'debian') {
-    $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/rpm';
-    $PKG_EXTENSION = ".rpm";
-    $PKG_DIRNAME = "RPMS";
-    $PKG_SEPARATOR = '-';
-} else {
-    # debian
-    $RPM_POOL = $ENV{OSCAR_RPMPOOL} || '/tftpboot/deb';
-    $PKG_EXTENSION = ".deb";
-    $PKG_DIRNAME = "Debs";
-    $PKG_SEPARATOR = '_';
-}
-
-
-# XML data from all the packages.
-
-my $PACKAGE_CACHE = undef;
-my $xs = new XML::Simple(keyattr => {}, forcearray => 
-             [ "site", "uri", "rpm",
-               "shortcut", "fieldnames",
-               "requires", "conflicts", "provides" ]);
 
 # The list of phases that are valid for package install.  For more
 # info, please see the developement doc
@@ -93,11 +69,6 @@ my $xs = new XML::Simple(keyattr => {}, forcearray =>
            test_user    => ['test_user'],
           );
 
-# The possible places where packages may live.  
-
-@PKG_SOURCE_LOCATIONS = ( "$ENV{OSCAR_HOME}/packages", 
-                          "/var/lib/oscar/packages",
-                        );
 
 #########################################################################
 #  Subroutine: getOdaPackageDir                                         #
@@ -141,7 +112,7 @@ sub getOdaPackageDir { # ($pkg) -> $pkgdir
     # through the list of 'packages' directories and return the first one that
     # has the passed-in package as a subdirectory.
     if ((!defined $retdir) || (!-d $retdir)) {
-	foreach my $pkgdir (@PKG_SOURCE_LOCATIONS) {
+	foreach my $pkgdir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
 	    if (-d "$pkgdir/$pkg") {
 		$retdir = "$pkgdir/$pkg";
 		last;
@@ -149,92 +120,6 @@ sub getOdaPackageDir { # ($pkg) -> $pkgdir
 	}
     }
     return $retdir;
-}
-
-#
-# list_installable_packages - this returns a list of installable packages.
-#
-# You may specify "core", "noncore", or "all" as the first argument to
-# get a list of core, noncore, or all packages (respectively).  If no
-# argument is given, "all" is implied.
-#
-
-sub list_installable_packages {
-    my $type = shift;
-
-    # If no argument was specified, use "all"
-
-    $type = "all" if ((!(defined $type)) || (!$type));
-
-    # make the database command and do the database read
-
-    my $command_args;
-    if ( $type eq "all" ) {
-      $command_args = "packages_installable";
-    } elsif ( $type eq "core" ) {
-      $command_args = "packages_installable packages.class=core";
-    } else {
-      $command_args = "packages_installable packages.class!=core";
-    }
-    my @packages = ();
-    my @tables = ("packages", "oda_shortcuts");
-    if ( OSCAR::Database::single_dec_locked( $command_args,
-                                                    "READ",
-                                                    \@tables,
-                                                    \@packages,
-                                                    undef) ) {
-      return @packages;
-    } else {
-      warn "Cannot read installable packages list from the ODA database.";
-      return undef;
-    }
-}
-
-#
-# list_installable_package_dirs - this returns a list of installable 
-# packages without using the database.
-#
-# You may specify "core", "noncore", or "all" as the first argument to
-# get a list of core, noncore, or all packages (respectively).  If no
-# argument is given, "all" is implied.
-#
-
-sub list_installable_package_dirs {
-    my $type = shift;
-    my @packages_to_return = ();
-
-    # If no argument was specified, use "all"
-
-    $type = "all" if ((!(defined $type)) || (!$type));
-
-    # read in the database packages table configuration
-    
-    read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
-    
-    # Now do the work
-    
-    my @packages = keys %{$PACKAGE_CACHE};
-    foreach my $pkg (@packages) {
-      # First, check if the package has its installable attribute set to 1.
-      next if ($PACKAGE_CACHE->{$pkg}->{installable} ne 1);
-      
-      # If it's a valid package, see if it's the right kind or not
-      if ($type eq "all") {
-        push @packages_to_return, $pkg;
-      } elsif ($type eq "core") {
-        if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
-            ($PACKAGE_CACHE->{$pkg}->{class} eq "core")) {
-          push @packages_to_return, $pkg;
-        }
-      } else {
-        if ((defined $PACKAGE_CACHE->{$pkg}->{class}) and
-            ($PACKAGE_CACHE->{$pkg}->{class} ne "core")) {
-          push @packages_to_return, $pkg;
-        }
-      }
-    }
-
-    return @packages_to_return;
 }
 
 #
@@ -390,464 +275,6 @@ sub run_pkg_apitest_test
 }
 
 
-#
-# This returns the type of rpm list for a package file.  Use this
-# order of precedence in looking for the RPM list:
-#
-# 1. If XML RPM lists for client, server, or all exist, use them.
-
-# 2. Otherwise, get a listing of all the RPMs in package/[name]/RPMS,
-#    and use those.
-#
-
-sub rpmlist {
-  my ($pkg,$ver,$type) = @_;
-
-  # Apparently Neil DID write the code to get this info... too bad he
-  # didn't TELL ANYBODY!!!
-  my @rpms_to_return = OSCAR::Database::database_rpmlist_for_package_and_group($pkg,$ver,$type, 0);
-  my @other_rpms = OSCAR::Database::database_rpmlist_for_package_and_group($pkg,$ver,undef, 0);
-  if ( ( scalar(@rpms_to_return) == 0 ) && ( scalar(@other_rpms) == 0 ) ) {
-  # Default to all RPMs in the directory
-    my $prefix;
-    foreach my $pkg_dir (@PKG_SOURCE_LOCATIONS) {
-        if (-d "$pkg_dir/$pkg") {
-            $prefix = "$pkg_dir/$pkg";
-            last;
-        }
-    }
-    if (! $prefix) {
-        return ();
-    }
-
-    my $pkgdir = "$prefix/$PKG_DIRNAME";
-    
-    if (-d "$pkgdir") {
-      my @parts;
-      my %found;
-      my $base;
-      opendir(PKGDIR, "$pkgdir") ||
-      carp("Unable to open $pkgdir");
-        
-    # Remember that there may be multiple versions /
-    # architectures for each base RPM.  We don't try to
-    # determine which one is "best" here (that's for
-    # PackageBest) -- instead, we simply make a list of all
-    # the base RPM names and ignore the duplicates.
-        
-    # Crude hueristic: take each *.rpm filename, split it by
-    # the character "-" and drop the last 2 components.
-        
-      foreach my $file (grep { /\.${PKG_EXTENSION}$/ && -f "$pkgdir/$_" }
-              readdir(PKGDIR)) {
-        @parts = split(/$PKG_SEPARATOR/, $file);
-        pop @parts;
-        pop @parts;
-        $base = join($PKG_SEPARATOR, @parts);
-        $found{$base} = 1;
-      }
-      closedir(PKGDIR);
-      @rpms_to_return = keys(%found);
-    }
-  }
-
-    # That's all she wrote
-
-  oscar_log_subsection("Returning $type packages for $pkg: " . 
-             join(' ', @rpms_to_return));
-  @rpms_to_return;
-}
-
-#
-# distro_rpmlist - returns the rpms needed for a specific distro on
-# the server could be modified for client as well.
-#
-
-sub distro_rpmlist {
-    print "This function, OSCAR::Package::distro_rpmlist is deprecated.\n";
-    print "Please use the functionality provided in the base package.\n";
-    return undef;
-
-#    my ($distro, $version, $arch) = @_;
-#    my $listfile = "$distro-$version-$arch.rpmlist";
-#    my $file = "$ENV{OSCAR_HOME}/share/serverlists/$listfile";
-#    my @rpms = ();
-#    open(IN,"<$file") 
-#    or carp("Couldn't open package list file $file for reading!");
-#    while(<IN>) {
-#        # get rid of comments
-#        s/\#.*//;
-#        if(/(\S+)/) {
-#            push @rpms, $1;
-#        }
-#    }
-#    close(IN);
-#    return @rpms;
-}
-
-#
-# This is a routine to install the best rpms on the server, only if
-# they don't already exist at a high enough version
-#
-
-sub install_packages {
-
-    # Query Depman and see what we need to install.
-
-    my $dm = DepMan->new;
-    my @pkgs = $dm->query_required_by(@_);
-
-    # Only invoke Packman if we got some packages back from Depman (it's
-    # possible and legal to get nothing back from Depman).
-    #
-    if ($#pkgs >= 0) {
-        my $pm = PackMan->new;
-	if (! $pm->install (@pkgs)) {
-	    carp('$pm->install ($dm->query_required_by ()) failed');
-	    return 0;
-	}
-    }
-
-    # All done
-
-    return 1;
-}
-
-# FIXME OSCAR <= 4.1 doesn't use this; no idea why it's here FIXME
-sub server_version_goodenough {
-    my ($file) = @_;
-    my $output1 = `rpm -qp --qf '\%{NAME} \%{VERSION} \%{RELEASE}' $file`;
-    my ($n1, $v1, $r1) = split(/ /,$output1);
-    my $output2 = `rpm -q --qf '\%{NAME} \%{VERSION} \%{RELEASE}' $n1 2>/dev/null`;
-    if($?) {
-        # Then the package doesn't exist on the server at all
-        return 0;
-    }
-    my ($n2, $v2, $r2) = split(/ /,$output2);
-
-    if($v1 eq $v2) {
-        # are the versions the same?
-        if($r1 eq $r2) {
-            # if the versions are the same and the releases are as well, 
-            # we know we are good enough
-            return 1;
-        } elsif (find_best($r1, $r2) eq $r2) {
-            # the release on the server is better than the file
-            return 1;
-        } else {
-            # release in file is better than server
-            return 0;
-        }
-    } elsif (find_best($v1, $v2) eq $v2) {
-        # the version on server is better
-        return 1;
-    } else {
-        # the version in file is better
-        return 0;
-    }
-}
-
-sub pkg_config_xml {
-    # If we haven't read in all the package config.xml files, do so.
-
-    read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
-
-    # Return the reference to it
-
-    $PACKAGE_CACHE;
-}
-
-###########################################################################
-
-# Return an new, empty XML structure with most fields blank.  However,
-# give it a name of the package name, put it in the third-party class,
-# and mark it as installable.
-
-sub make_empty_xml {
-    my ($package_name) = @_;
-
-    return {
-    name => $package_name,
-    class => "third-party",
-    installable => 1,
-    summary => "Not provided",
-    description => "Not provided",
-    };
-}
-
-#
-# Returns a hash of *all* packages' config.xml files (or empty hashes
-# for the ones that don't have config.xml files), reading them directly
-# from each package's config.xml files. This should only be used if the
-# oda database has not been initialized. Once the oda database has been
-# initialized, the function read_all_pkg_config should be used instead.
-#
-
-sub read_all_pkg_config_xml_files {
-    foreach my $pkg_dir (@PKG_SOURCE_LOCATIONS) {
-    next if (! -d $pkg_dir);
-
-    opendir(PKGDIR, $pkg_dir) 
-        or (carp("Couldn't open $pkg_dir for reading"), 
-        return undef);
-
-    while (my $pkg = readdir(PKGDIR)) {
-        chomp($pkg);
-        my $dir = "$pkg_dir/$pkg";
-        my $config = "$dir/config.xml";
-        
-        # Check if it's a valid package: not ".", not "..", not "CVS"
-        # and doesn't contain a .oscar_ignore file
-        if (-d $dir && $pkg ne "." && $pkg ne ".." && $pkg ne "CVS" &&
-        ! -e "$dir/.oscar_ignore") {
-        if (-f $config) {
-#       oscar_log_subsection("Reading $config");
-            $PACKAGE_CACHE->{$pkg} = eval { $xs->XMLin($config); };
-            if ($@) {
-            oscar_log_subsection($@);
-            oscar_log_subsection("WARNING! The config.xml file for $pkg is invalid.  Creating an empty one...");
-            $PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
-            } else {
-            $PACKAGE_CACHE->{$pkg}->{installable} = 1 if 
-                (!defined($PACKAGE_CACHE->{$pkg}->{installable}));
-            }
-        } else {
-#       oscar_log_subsection("Got empty XML config for $pkg");
-            $PACKAGE_CACHE->{$pkg} = make_empty_xml($pkg);
-        }
-        }
-    }
-    
-    close(PKGDIR);
-    }
-
-    $PACKAGE_CACHE;
-}
-
-#########################################################################
-#  Subroutine: copy_pkgs                                                #
-#  Parameters: A 'packages' directory, usually $OSCAR_HOME/packages or  #
-#              /var/lib/oscar/packages/                                 #
-#  Returns   : 1 if successful, undef if failure                        #
-#  This subroutine copies all of the RPMs for all packages under the    #
-#  passed in 'packages' directory to the $RPM_POOL directory (which is  #
-#  typically /tftpboot/rpm).                                            #
-#########################################################################
-#
-# EF: This routine is obsolete since generic-setup does the copying.
-#     Should be deleted!
-#########################################################################
-sub copy_pkgs # ($pkgdir) -> 1|undef
-{
-  my ($pkgdir) = @_;
-                                                                                
-  # Get a list of all OSCAR/OPD packages
-  my @packagedirs = files_in_dir($pkgdir);
-
-  foreach my $dir (@packagedirs) 
-    {
-      # For each package, get a list of its RPMs
-      my @files = files_in_dir("$dir/$PKG_DIRNAME");
-      foreach my $file (@files) 
-        {
-          # NOTE: this is slightly broken... not anchored to end of string with $
-          if ($file =~ /$PKG_EXTENSION/)
-            {
-              my $filename = basename($file);
-              # Copy the file only if it isn't in the destination directory
-              if ( !-e "$RPM_POOL/$filename")
-                {
-                  print "Copying $file to $RPM_POOL\n";
-                  copy("$file", "$RPM_POOL/$filename") or return undef;
-                }
-            }
-        }
-    }
-  return 1; # Made it this far?  Success!
-}
-
-
-#########################################################################
-#  Subroutine: copy_rpms                                                #
-#  Parameters: A 'packages' directory, usually $OSCAR_HOME/packages or  #
-#              /var/lib/oscar/packages/                                 #
-#  Returns   : 1 if successful, undef if failure                        #
-#  This subroutine copies all of the RPMs for all packages under the    #
-#  passed in 'packages' directory to the $RPM_POOL directory (which is  #
-#  typically /tftpboot/rpm) only if the packages are selected.          #
-#########################################################################
-#
-# EF: This routine is obsolete since generic-setup does the copying.
-#     Should be deleted!
-#########################################################################
-sub copy_rpms # ($pkgdir) -> 1|undef
-{
-  my ($pkgdir) = @_;
-                                                                                
-  # Get a list of all OSCAR/OPD packages
-  my @packagedirs = files_in_dir($pkgdir);
-
-  # Only selected packages should be copied to /tftpboot/rpm
-  # Author : dikim@osl.iu.edu
-  my @selected_packages = list_selected_packages("all", $DEFAULT);
-  my %selected_pkg_hash = ();
-  foreach my $pkg_ref (@selected_packages){
-      $selected_pkg_hash{$$pkg_ref{package}} = 1;
-  }
-                                                                                
-  foreach my $dir (@packagedirs) 
-    {
-      my $one_pkg = basename($dir);
-      if ( $selected_pkg_hash{$one_pkg} == 1 ){
-      # For each package, get a list of its RPMs
-      my @files = files_in_dir("$dir/$PKG_DIRNAME");
-      foreach my $file (@files) 
-        {
-          # NOTE: this is slightly broken... not anchored to end of string with $
-          if ($file =~ /$PKG_EXTENSION/)
-            {
-              my $filename = basename($file);
-              # Copy the file only if it isn't in the destination directory
-              if ( !-e "$RPM_POOL/$filename")
-                {
-                  print "Copying $file to $RPM_POOL\n";
-                  copy("$file", "$RPM_POOL/$filename") or return undef;
-                }
-            }
-        }
-      }
-    }
-  return 1; # Made it this far?  Success!
-}
-
-#########################################################################
-#  Subroutine: remove_rpms                                              #
-#  Parameters: A 'packages' directory, usually $OSCAR_HOME/packages or  #
-#              /var/lib/oscar/packages/                                 #
-#  Returns   : 1 if successful, undef if failure                        #
-#  This subroutine removes all of the RPMs for all unselected packages  #
-#  passed in 'packages' directory from the $RPM_POOL directory(which is #
-#  typically /tftpboot/rpm).                                            #
-#########################################################################
-#
-# EF: This routine is obsolete since generic-setup can also take care of
-#     deleting the package files from the pool.
-#     Should be deleted!
-#########################################################################
-sub remove_rpms # ($pkgdir) -> 1|undef
-{
-  my ($pkgdir) = @_;
-                                                                                
-  # Get a list of all OSCAR/OPD packages
-  my @packagedirs = files_in_dir($pkgdir);
-
-  # Only unselected packages should be removed from /tftpboot/rpm
-  # Author : dikim@osl.iu.edu
-  my @selected_packages = list_selected_packages("all");
-  my %selected_pkg_hash = ();
-  foreach my $pkg_ref (@selected_packages){
-      $selected_pkg_hash{$$pkg_ref{package}} = 1;
-  }
-                                                                                
-  foreach my $dir (@packagedirs) 
-    {
-      my $one_pkg = basename($dir);
-      if ( $selected_pkg_hash{$one_pkg} != 1 ){
-      # For each package, get a list of its RPMs
-      my @files = files_in_dir("$dir/$PKG_DIRNAME");
-      foreach my $file (@files) 
-        {
-          # NOTE: this is slightly broken... not anchored to end of string with $
-          if ($file =~ /$PKG_EXTENSION/)
-            {
-              my $filename = basename($file);
-              # Remove the file only if it isn't in the destination directory
-              if ( -e "$RPM_POOL/$filename")
-                {
-                  print "Deleting $filename from $RPM_POOL\n";
-                  move("$RPM_POOL/$filename", "$dir/$PKG_DIRNAME") or return undef;
-                }
-            }
-        }
-      }
-    }
-  return 1; # Made it this far?  Success!
-}
-
-#########################################################################
-#  Subroutine: files_in_dir                                             #
-#  Parameters: A directory                                              #
-#  Returns   : A list of all files/directories (except for '.' and      #
-#              '..') under the passed-in directory.                     #
-#  This subroutine is called by copy_pkgs to get list of all files /    #
-#  directories under a given directory.  The list returned has the      #
-#  passed-in directory prepended to the file/directory name.            #
-#########################################################################
-sub files_in_dir
-{
-  my $dir = shift;
-  opendir(IN,$dir);
-  my @dirlist = readdir(IN);
-  closedir(IN);
-  my @files = ();
-  foreach my $file (@dirlist) 
-    {
-      push @files, $file if ($file !~ /^\./);
-    }
-  return map {"$dir/$_"} @files;
-}
-
-#########################################################################
-#  Subroutine: list_selected_packages                                   #
-#  Parameters: The "type" of packages - "core", "noncore", or "all"     #
-#  Returns   : A list of packages selected for installation.            #
-#  If you do not specify the "type" of packages, "all" is assumed.      #
-#                                                                       #
-#  Usage: @packages_that_are_selected = list_selected_packages();       #
-#########################################################################
-sub list_selected_packages # ($type) -> @selectedlist
-{
-    my ($type,$sel_group) = @_; #shift;
-
-    # If no argument was specified, use "all"
-
-    $type = "all" if ((!(defined $type)) || (!$type));
-
-    # make the database command and do the database read
-
-    # get the selected group.
-    $sel_group = OSCAR::Database::get_selected_group if ! $sel_group;
-
-    my %options= ();
-    my @errors = ();
-    
-    my $command_args = "SELECT Packages.package, Packages.version " .
-             "FROM Packages, Group_Packages " .
-             "WHERE Packages.id=Group_Packages.package_id ".
-             "AND Group_Packages.group_name='$sel_group' ".
-             "AND Group_Packages.selected=1";
-    if ($type eq "all"){
-        $command_args = $command_args;
-    }elsif ($type eq "core"){
-        $command_args .= " AND Packages.__class='core' ";
-    } else {
-        $command_args .= " AND Packages.__class!='core' ";
-    }
-
-    my @packages = ();
-    my @tables = ("Packages", "Group_Packages", "Nodes", "Node_Package_Status");
-    if ( OSCAR::Database::single_dec_locked( $command_args,
-                                                   "READ",
-                                                   \@tables,
-                                                   \@packages,
-                                                   undef) ) {
-        return @packages;
-    } else {
-    warn "Cannot read selected packages list from the ODA database.";
-    return undef;
-    }
-}
-
 #########################################################################
 #  Subroutine: isPackageSelectedForInstallation                         #
 #  Parameter : The name of an OSCAR package (directory)                 #
@@ -863,46 +290,12 @@ sub list_selected_packages # ($type) -> @selectedlist
 sub isPackageSelectedForInstallation # ($package) -> $yesorno
 {
   my($package) = @_;
-  my($selhash) = getSelectionHash();
-  return $selhash->{$package};
-}
-
-#########################################################################
-#  Subroutine: getSelectionHash                                         #
-#  Parameters: None                                                     #
-#  Returns   : A hash of packages selected (or not) for installation.   #
-#  This subroutine reads in a hidden XML file generated when the user   #
-#  selects some OSCAR packages for installation.  It then returns a     #
-#  hash of all the OSCAR packages and whether or not each package       #
-#  was selected for installation.  Note that this subroutine doesn't    #
-#  take into account core/noncore packages.  It only cares if a         #
-#  package was selected for installation or not.                        #
-#                                                                       #
-#  Usage: $install_packages = getSelectionHash();                       #
-#         if ($install_packages->{'mypackage'}) then { print "Cool!"; } #
-#########################################################################
-sub getSelectionHash # () -> $selectionhashref
-{
-  my($selection);
-  my($config) = "$ENV{OSCAR_HOME}/.oscar/.selection.config";
-
-  # If we haven't read in all the package config.xml files, do so.
-  read_all_pkg_config_xml_files() if (!$PACKAGE_CACHE);
-
-  if (-s $config)  # Make sure the file exists
-    { # Read in the hidden XML selection file
-      my($selconf) = eval { XMLin($config,suppressempty => ''); };
-      if ($@)
-        { # Whoops! Some problem with the file.
-          carp("Warning! The .selection.config file was invalid."); 
-        }
-      else
-        { # Get which configuration was selected
-          my $configname = $selconf->{selected};
-          $selection = $selconf->{configs}{$configname}{packages};
-        }
-    }
-  return $selection;
+  #
+  # Use the database for finding out about selected packages!
+  # This code is obsolete!
+  #
+  #my($selhash) = getSelectionHash();
+  #return $selhash->{$package};
 }
 
 #########################################################################
