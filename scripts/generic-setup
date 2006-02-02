@@ -184,7 +184,7 @@ for my $pkg (@argpkgs) {
 	}
 	print "  * copying $filename\n";
 	if (!defined $options{test}) {
-	    !systemp("cp -p $filename $oscar_pkg_pool") ||
+	    !system("cp -p $filename $oscar_pkg_pool") ||
 		croak("Error occured while copying: $!");
 	}
     }
