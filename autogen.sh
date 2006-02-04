@@ -335,7 +335,7 @@ AC_CONFIG_FILES([
 EOF
 
     rg_config_files=
-    for rg_dir in `find packages -type d`; do
+    for rg_dir in `find packages share -type d`; do
 	base="`basename $rg_dir`"
 	if test "$base" != ".svn" -a \
 	    ! -f "$rg_dir/$ignore_file" -a \
