@@ -2456,7 +2456,7 @@ sub create_table{
 			"Create $table table",
 			"Failed to create $table table",
 			$error_strings_ref);
-    print_hash("", "Print the fields of table ( $table ) ", $fields_ref)
+    oda::print_hash("", "Print the fields of table ( $table ) ", $fields_ref)
          if $$options_ref{debug} ;
 
     $$table_fields_ref{$table} = $fields_ref;
