@@ -43,16 +43,5 @@ oscar_SCRIPTS		= \
 			start_over \
 			wizard_prep
 
-# This is somewhat of a break in the abstraction; we have to install
-# to /etc/profile.d directly (i.e., not under the $prefix).  Note that
-# at least Automake will automatically handle $(DESTDIR) correctly.
-
-profile_ddir		= /etc/profile.d
-profile_d_SCRIPTS	= oscar_home.sh oscar_home.csh
-
 EXTRA_DIST		= $(oscar_SCRIPTS)
-
-uninstall-local:
-	rm -f $(profile_ddir)/oscar_home.sh
-	rm -f $(profile_ddir)/oscar_home.csh
 
