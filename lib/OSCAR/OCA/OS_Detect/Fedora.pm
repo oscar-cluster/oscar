@@ -24,10 +24,11 @@ use strict;
 sub detect {
     my ($root) = @_;
     my ($release_string, $fc_release);
+    my $dfile = "/etc/fedora-release";
 
-    # If /etc/redhat-release exists, continue, otherwise, quit.
-    if (-f "$root/etc/redhat-release") {
-	$release_string = `cat $root/etc/redhat-release`;
+    # If /etc/fedora-release exists, continue, otherwise, quit.
+    if (-f "$root$dfile") {
+	$release_string = `cat $root$dfile`;
     } else {
 	return undef;
     }
@@ -43,7 +44,7 @@ sub detect {
 	$fc_release = 4;
     } elsif ($release_string =~ 'Heidelberg') {
 	$fc_release = 3;
-    } elsif ($redhat_release =~ 'Tettnang') {
+    } elsif ($release_string =~ 'Tettnang') {
 	$fc_release = 2;
     } else {
 	return undef;
