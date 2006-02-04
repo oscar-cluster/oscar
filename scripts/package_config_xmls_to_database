@@ -38,6 +38,7 @@ use Data::Dumper;
 use XML::Simple;
 use OSCAR::Distro;
 use OSCAR::Database;
+use OSCAR::oda;
 
 my $folding_character = "_";
 my %list_of_multiple_value_folded_fields = ();
