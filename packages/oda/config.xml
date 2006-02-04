@@ -83,7 +83,6 @@
     <pkg>perl-DBI</pkg>
     <pkg>perl-Mysql</pkg>
     <pkg>perl-Data-ShowTable</pkg>
-    <!-- <pkg>perl-ExtUtils-PerlPP</pkg>-->
     <pkg>MySQL-common</pkg>
   </binary-package-list>
 
