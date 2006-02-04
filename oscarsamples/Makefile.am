@@ -12,19 +12,19 @@
 include $(top_srcdir)/dist/Makefile.options
 
 oscar_DATA		= \
-            		fedora-2-i386.rpmlist \
-			fedora-3-i386.rpmlist \
-			fedora-3-x86_64.rpmlist \
+            		fc-2-i386.rpmlist \
+			fc-3-i386.rpmlist \
+			fc-3-x86_64.rpmlist \
 			mandrake-10.0-i386.rpmlist \
 			mandrake-10.1-i386.rpmlist \
-			redhat-3as-i386.rpmlist \
-			redhat-3as-x86_64.rpmlist \
-			redhat-3as-ia64.rpmlist \
+			rhel-3as-i386.rpmlist \
+			rhel-3as-x86_64.rpmlist \
+			rhel-3as-ia64.rpmlist \
 			redhat-3asU2-i386.rpmlist \
 			redhat-3asU2-ia64.rpmlist \
-			redhat-el4-i386.rpmlist \
-			redhat-el4-ia64.rpmlist \
-			redhat-el4-x86_64.rpmlist \
+			rhel-4-i386.rpmlist \
+			rhel-4-ia64.rpmlist \
+			rhel-4-x86_64.rpmlist \
 			ide.disk \
 			scsi.disk \
 			scsi.ia64.disk \
