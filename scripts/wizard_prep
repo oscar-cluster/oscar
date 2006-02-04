@@ -88,6 +88,8 @@ my $cmd = "$ipcmd --dumb packages/yume share/prereqs/perl-IO-Tty share/prereqs/p
 !system($cmd) or
     die "Could not bootstrap smart package manager!\n";
 
+# hack... needs to be done yum independent
+system("yum clean all");
 
 oscar_log_subsection("Installing OSCAR wizard prerequisites");
 
