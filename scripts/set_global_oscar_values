@@ -8,6 +8,8 @@
 #	    Bernard Li <bli@bcgsc.ca>
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
+#                    All rights reserved
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,7 +35,7 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Package;
-use OSCAR::Distro;
+use OSCAR::PackagePath;
 use POSIX;
 use OSCAR::oda;
 
@@ -104,25 +106,10 @@ if ("$?") {
     exit(1);
 }
 
-my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
-my $mysql_service_name = which_mysql_name($oscar_server_distribution,$oscar_server_distribution_version);
-
-my $oscar_server_architecture;
-my $uname_data = (uname)[4];
-if ( $uname_data eq "i386" ) {
-    $oscar_server_architecture = "ia32";
-} elsif ( $uname_data eq "i586" ) {
-    $oscar_server_architecture = "ia32";
-} elsif ( $uname_data eq "i686" ) {
-    $oscar_server_architecture = "ia32";
-} elsif ( $uname_data eq "ia64" ) {
-    $oscar_server_architecture = "ia64";
-} elsif ( $uname_data eq "x86_64" ) {
-    $oscar_server_architecture = "x86_64";
-} else {
-    my $oscar_server_architecture = "Unknown";
-    warn "$0: Cannot determine architecture of oscar server machine";
-}
+my $master_os = distro_detect_or_die("/");
+my $oscar_server_architecture         = $master_os->{arch};
+my $oscar_server_distribution         = $master_os->{compat_distro};
+my $oscar_server_distribution_version = $master_os->{compat_distrover};
 
 # open the database
 #database_connect() ||
