@@ -55,6 +55,7 @@
  
       <pkg>httpd</pkg>
   </binary-package-list>
+
   <binary-package-list>
     <filter>
       <group>oscar_server</group>
@@ -62,7 +63,14 @@
         <name>mdk</name>
       </distribution>
     </filter>
- 
+
+    <filter>
+      <group>oscar_server</group>
+      <distribution>
+        <name>mdv</name>
+      </distribution>
+    </filter>
+
       <pkg>apache</pkg>
   </binary-package-list>
 

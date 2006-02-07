@@ -46,6 +46,12 @@
           <name>mdk</name>
         </distribution>
       </filter>
+  
+      <filter>
+        <distribution>
+          <name>mdv</name>
+        </distribution>
+      </filter>
 
       <filter>
         <distribution>

@@ -57,6 +57,13 @@
         </distribution>
       </filter>
 
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>mdv</name>
+        </distribution>
+      </filter>
+
       <pkg>sync_files</pkg>
       <pkg>crontabs</pkg>
   </binary-package-list>

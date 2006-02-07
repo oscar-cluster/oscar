@@ -44,6 +44,59 @@
 	 <filter>
 	   <group>oscar_server</group>
 	   <distribution>
+	     <name>mdv</name>
+	   </distribution>
+   	 </filter>
+   
+	 <pkg>libapr0</pkg>
+ <!--	 <pkg>apache2-common</pkg> -->
+	 <pkg>apache-conf</pkg>
+	 <pkg>apache-modules</pkg>
+	 <pkg>libtool</pkg>
+	 <pkg>apache-base</pkg>
+	 <pkg>xterm</pkg>
+	 <pkg>php-ini</pkg>
+	 <pkg>libphp5_common5</pkg>
+	 <pkg>apache-mod_php</pkg>
+	 <pkg>php-xml</pkg>
+	 <!--<pkg>openssh</pkg>
+	 <pkg>openssh-clients</pkg>
+	 <pkg>openssh-server</pkg>-->
+	 <pkg>openssl</pkg>
+	 <pkg>dhcp-common</pkg>
+	 <pkg>dhcp-server</pkg>
+	 <!-- <pkg>expat</pkg>-->
+	 <pkg>libpcap0</pkg>
+	 <pkg>librrdtool2</pkg>
+	 <pkg>locales</pkg>
+	 <pkg>locales-en</pkg>
+	 <pkg>lynx</pkg>
+	 <pkg>nfs-utils</pkg>
+	 <pkg>nfs-utils-clients</pkg>
+	 <pkg>perl-HTML-Tagset</pkg>
+	 <pkg>perl-HTML-Parser</pkg>
+	 <pkg>perl-libwww-perl</pkg>
+	 <pkg>perl-URI</pkg>
+	 <pkg>tcpdump</pkg>
+	 <pkg>sfio</pkg>
+	 <pkg>postgresql</pkg>
+         <pkg>libecpg5</pkg>
+ 	 <pkg>libgmp3</pkg>
+         <pkg>python</pkg>
+         <pkg>python2-compat</pkg>
+	 <!--<pkg>rrdtool</pkg>-->
+         <pkg>tcsh</pkg>
+         <pkg>xinetd</pkg>
+         <pkg>zlib1</pkg>
+         <pkg>perl-devel</pkg>
+	 <pkg>perl-CGI</pkg>
+	 <pkg>cdrecord</pkg> 
+  </binary-package-list>	 
+  
+  <binary-package-list>
+	 <filter>
+	   <group>oscar_server</group>
+	   <distribution>
 	     <name>mdk</name>
 	   </distribution>
 	 </filter>

@@ -208,6 +208,18 @@ visualized either at runtime or post-mortem.</description>
     <pkg>lam-switcher-modulefile</pkg>
   </binary-package-list>
 
+  <binary-package-list>
+    <filter>
+      <distribution>
+        <name>mdv</name>
+      </distribution>
+    </filter>
+
+    <pkg>lam-oscar</pkg>
+    <pkg>lam-oscar-modulefile</pkg>
+    <pkg>lam-switcher-modulefile</pkg>
+  </binary-package-list>
+
   <package-specific-attributes>
     <switcher>
       <tag>mpi</tag>

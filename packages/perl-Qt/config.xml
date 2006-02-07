@@ -54,6 +54,17 @@
     <filter>
       <group>oscar_server</group>
       <distribution>
+        <name>mandriva</name>
+      </distribution>
+    </filter>
+
+    <pkg>perl-Qt</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+    <filter>
+      <group>oscar_server</group>
+      <distribution>
         <name>fedora</name>
       </distribution>
     </filter>
