@@ -312,9 +312,10 @@ sub populateTable
           $rownum++;
         }
 
-      # Finally, sort the table on the second column and 
+      # Finally, sort the table by Package Name and then by Class and
       # set its size automatically
       sortColumn(2,1,1);
+      sortColumn(3,1,1);
       adjustColumn(1);
       adjustColumn(2);
     }
@@ -589,9 +590,6 @@ sub checkboxChangedForSelector
                 'set_group_packages $package $currSet'") if(!$success);
             }
         }
-      # Copy any RPMs for the selected package over to the /tftpboot/rpm directory
-      OSCAR::Package::copy_rpms('/var/lib/oscar/packages');
-
     }
   else # Checkbox is not checked
     {
@@ -632,9 +630,6 @@ sub checkboxChangedForSelector
                   (!$success);
             }
         }
-      # Remove any RPMs for the unselected package over from the /tftpboot/rpm directory
-      OSCAR::Package::remove_rpms('/var/lib/oscar/packages');
-
     }
 }
 
