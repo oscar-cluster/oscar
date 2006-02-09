@@ -16,9 +16,11 @@
 
 #   Copyright (c) 2003 The Trustees of Indiana University.  
 #                      All rights reserved.
+#   Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>
+#                      All rights reserved.
 
-#   This script is designed to be run after the image is built.
-#   It will do all the fixups required.
+#   This script performs tests on the cluster after it has been successfully
+#   installed - tests to be executed are: root tests, user tests, and APItests
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib",'/usr/lib/systeminstaller';
@@ -28,6 +30,7 @@ use File::Copy;
 use SIS::Client;
 use SIS::Image;
 use SIS::DB;
+use OSCAR::Database;
 use OSCAR::Package;
 use Data::Dumper;
 use Getopt::Long;
@@ -79,7 +82,7 @@ my $file;
 my $script;
 foreach my $pkg (@pkgs) {
     $file = "$pkg/testing/test_root";
-    for my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
+    for my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
 	$script = "$dir/$file";
 	if (-x $script) {
 	    if (!run_pkg_user_test($script, "root", 0,
@@ -149,7 +152,7 @@ foreach my $file (@ufiles) {
 
 # Copy the packages test files to the user home dir.
 foreach my $pkg (@pkgs) {
-    foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
+    foreach my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
 	if (-d "$dir/$pkg/testing") {
 	    mkdir("$test_user_homedir/$pkg/");
 	    # I know, shell badness, but so much easier than doing
@@ -214,7 +217,7 @@ my $test_type = "Installation";
 foreach my $pkg (@pkgs) {
 	my $file = "$pkg/testing/install_tests.apb";
 
-	for my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
+	for my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
 		my $test = "$dir/$file";
 		if( -e $test ) {
 
@@ -237,7 +240,7 @@ my $test_type = "Validation";
 foreach my $pkg (@pkgs) {
 	my $file = "$pkg/testing/validation_tests.apb";
 
-	for my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS) {
+	for my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
 		my $test = "$dir/$file";
 		if( -e $test ) {
 
