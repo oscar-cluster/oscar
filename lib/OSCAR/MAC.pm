@@ -1,9 +1,10 @@
 package OSCAR::MAC;
 
-
 # Copyright (c) 2004 	The Board of Trustees of the University of Illinois.
 #                     	All rights reserved.
 #			Jason Brechin <brechin@ncsa.uiuc.edu>
+# Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>
+#                    All rights reserved.
 
 #   $Id$
 
@@ -180,10 +181,19 @@ sub mac_window {
                                 -variable => \$multicast,
                                 );
 
-    our $loadbutton = $frame->Button(
-                                   -text=>"Import MACs from file...",
-                                   -command=> [\&macfile_selector, "load", $frame],
+    our $loadbutton = $frame->Menubutton(
+                                   -text => "Import MACs from",
+                                   -menuitems => [ [ 'command' => "file...",
+                                                     "-command" => [\&macfile_selector, "load", $frame] ],
+                                                   [ 'command' => "user input...",
+                                                     "-command" => \&macs_inputer ],
+                                                 ],
+                                   -tearoff => 0,
+                                   -direction => "right",
+                                   -relief => "raised",
+                                   -indicatoron => 1,
                                   );
+
     our $savebutton = $frame->Button(
                                     -text => "Export MACs to file...",
                                     -command => [\&macfile_selector, "save", $frame],
@@ -662,7 +672,60 @@ sub begin_collect_mac {
     end_ping();
 }
 
-# 
+# Import MACs via user input (entry widget)
+sub macs_inputer {
+	our $window;
+	$window->Busy(-recurse => 1);
+	my $widget = $window->Toplevel;
+	$widget->withdraw;
+	$widget->title("Input MAC address");
+
+	my $topframe = $widget->Frame();
+	my $bottomframe = $widget->Frame();
+
+	my $mac = "";
+	my $entry = $topframe->Entry(
+			-textvariable => \$mac,
+			-width => 31,
+	);
+
+	my $apply = sub {
+			load_macs($mac);
+			$entry->delete(0, 'end');
+	};
+
+	my $applyButton = $bottomframe->Button(
+		-text => "Apply",
+		-command => $apply,
+	);
+	my $clearButton = $bottomframe->Button(
+		-text => "Clear",
+		-command => sub {$entry->delete(0, 'end');},
+	);
+	my $closeButton = $bottomframe->Button(
+		-text => "Close",
+		-command => sub {
+				$window->Unbusy();
+				$widget->destroy;
+				},
+	);
+
+	$topframe->pack(-side => 'top');
+	$bottomframe->pack(-side => 'top');
+
+	$entry->pack();
+	$applyButton->pack(-side => 'left');
+	$clearButton->pack(-side => 'left');
+	$closeButton->pack(-side => 'left');
+
+	$entry->bind('<Return>' => $apply);
+	$entry->bind('<KP_Enter>' => $apply);
+
+	center_window($widget);
+
+	regenerate_listbox();
+	return 1;
+}
 
 sub macfile_selector {
 	my ($op, $widget) = @_;
@@ -694,10 +757,12 @@ sub macfile_selector {
 
 sub save_to_file {
     my $file = shift;
+
     open(OUT,">$file") or croak "Couldn't open file: $file for writing";
     print OUT "# Saved OSCAR MAC Addresses; ", scalar localtime, "\n";
     foreach my $mac (sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC) {
-        print OUT $mac, "\n";
+        my $client = $MAC{$mac}->{client};
+        print OUT $mac, "\t# $client\n";
     }
     close(OUT);
     return 1;
@@ -716,6 +781,25 @@ sub load_from_file {
         }
     }
     close(IN);
+    return 1;
+}
+
+# Subroutine that takes MAC address string as input and pass it to the add_mac_to_hash
+# subroutine if string is validated to be a sane MAC address
+# TODO: - merge with load_from_file subroutine as there seems to be code duplication
+#       - better MAC address validation
+sub load_macs {
+    my $string = shift;
+
+    my @macs = split("\n", $string);
+    foreach my $mac (@macs) {
+        my @elements = split(":", $mac);
+        my $num_elements = @elements;
+        if ( ($mac =~ /^\s*([a-fA-F0-9\:])/) && (length($mac) == 17) && ($num_elements > 1) ) {
+            add_mac_to_hash($mac);
+        }
+    }
+    regenerate_listbox();
     return 1;
 }
 
