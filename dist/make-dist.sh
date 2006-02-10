@@ -181,6 +181,13 @@ cd $distdir
 umask 022
 
 #
+# Remove unwanted files
+#
+
+find . -name Makefile.am -o -name Makefile.in | xargs rm -f
+rm -f acinclude.m4 aclocal.m4 configure configure.in
+
+#
 # Put in those headers.  
 # 
 

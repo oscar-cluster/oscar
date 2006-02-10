@@ -49,7 +49,7 @@ sub detect {
 
     $id->{distro} = "mandriva";
     $id->{distro_version} = $mandriva_release;
-    $id->{compat_distro} = "mdk";
+    $id->{compat_distro} = "mdv";
     $id->{compat_distrover} = $mandriva_release;
     $id->{pkg} = "rpm";
 
