@@ -21,7 +21,7 @@ OSCAR_SVN_R="$4"
 
 # We should only allow "make dist" from an SVN checkout
 
-if test ! -d .svn; then
+if test ! -f autogen.sh; then
     cat <<EOF
 ***************************************************************************
 You can only "make dist" from within a Subversion checkout.  "make dist"
