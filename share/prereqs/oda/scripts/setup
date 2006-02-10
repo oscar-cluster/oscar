@@ -11,7 +11,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: setup 2394 2004-03-16 00:42:31Z tfleury $
+# $Id$
 #
 
 use strict;
@@ -22,9 +22,9 @@ use OSCAR::PackagePath;
 my $os = OSCAR::PackagePath::distro_detect_or_die();
 my $mysqld;
 
-if ($os->{distro} =~ /^(redhat|fedora|mandriva)/) {
+if ($os->{compat_distro} =~ /^(rhel|fc|mdv)/) {
     $mysqld      = 'mysqld';
-} elsif ($os->{distro} =~ /^(suse|mandrake)/) {
+} elsif ($os->{compat_distro} =~ /^(suse|mdk)/) {
     $mysqld      = 'mysql';
 } else {
     print "\n\nCannot determine distribution and version!!!!\nCannot determine oda rpms to install!!!!\n\n";
