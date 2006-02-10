@@ -32,7 +32,7 @@ use SIS::Client;
 use SIS::DB;
 use OSCAR::Database;
 use OSCAR::Package;
-use oda;
+use OSCAR::oda;
 
 
 @EXPORT = qw(delnode_window);

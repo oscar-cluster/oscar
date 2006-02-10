@@ -27,11 +27,12 @@ package OSCAR::Database;
 #
 
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib/OSCAR","/usr/lib/perl5/site_perl";
+use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/perl5/site_perl";
 use Carp;
 use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
 use OSCAR::PackagePath;
+use OSCAR::oda;
 
 # oda may or may not be installed and initialized
 my $oda_available = 0;
@@ -41,12 +42,6 @@ my $database_connected = 0;
 my $CLUSTER_NAME = "oscar";
 my $DEFAULT = "Default";
 use Data::Dumper;
-
-# We can not use oda until perl DBI and DB related programs
-# are installed.
-if(-e '/etc/odapw'){
-    eval "use oda"; 
-} 
 
 @EXPORT = qw( database_calling_traceback
               database_connect 
@@ -174,7 +169,7 @@ sub database_connect {
     # if oda was not installed the last time that 
     # this was called, try to load in the module again
     if ( ! $oda_available ) {
-        eval "use oda";
+        eval "use OSCAR::oda";
         $oda_available = ! $@;
         carp("in database_connect cannot use oda: $@") if ! $oda_available;
     }

@@ -148,8 +148,8 @@ print "found $paths_count rpm files.\n";
 
 print "Deleting oda database ...\n";
 if(-e '/etc/odapw'){
-    eval "use lib \"$oscar_home/lib/OSCAR\"";
-    eval "use oda";
+    eval "use lib \"$oscar_home/lib\"";
+    eval "use OSCAR::oda";
     oda::drop_database(undef, undef);
 }    
 #print "Deleting oda database saved password file ...\n";

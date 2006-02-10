@@ -26,8 +26,8 @@
 
 use strict;
 use Getopt::Long;
-use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR","../../../lib","../../../lib/OSCAR";
-use oda;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::oda;
 use Data::Dumper;
 use OSCAR::Database;
 

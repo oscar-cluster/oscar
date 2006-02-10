@@ -25,7 +25,7 @@ use Tk::DialogBox;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Network;
-use oda;
+use OSCAR::oda;
 
 my $force = $#ARGV;
 $force++;

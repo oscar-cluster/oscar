@@ -31,7 +31,7 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Package;
-use oda;
+use OSCAR::oda;
 
 my %options = ();
 my @errors = ();

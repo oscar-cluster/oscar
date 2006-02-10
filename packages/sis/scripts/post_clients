@@ -33,7 +33,7 @@ use SIS::Adapter;
 use SIS::Image;
 use SIS::DB;
 use OSCAR::Database;
-use oda;
+use OSCAR::oda;
 
 my $OSCAR_CLIENT_GROUP = "oscar_clients";
 
