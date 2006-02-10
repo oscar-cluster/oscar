@@ -2,12 +2,13 @@
 #
 # Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                         All rights reserved.
+# Copyright (c) 2006 Erich Focht
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: make-dist.sh,v 1.24 2003/07/04 14:20:48 jsquyres Exp $
+# $Id$
 #
 
 srcdir="`pwd`"
