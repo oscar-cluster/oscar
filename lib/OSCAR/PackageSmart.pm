@@ -30,7 +30,6 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackMan;           # this only works when PackMan has arrived!
-use OSCAR::Database;
 use Cwd;
 use Carp;
 

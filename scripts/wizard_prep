@@ -31,7 +31,6 @@
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
-use OSCAR::Database;
 use OSCAR::PackagePath;
 use POSIX; # gives us uname function
 use File::Path;
@@ -222,6 +221,9 @@ for my $pkg (sort keys(%pkgdirs)) {
 
 oscar_log_subsection("Making sure there is an ODA database password");
 system( "$ENV{OSCAR_HOME}/scripts/make_database_password" );
+
+# Now we're ready to use the database
+eval "use OSCAR::Database";
 
 # Start the database and copy the package xml files into the database
 
