@@ -49,7 +49,6 @@
    	 </filter>
    
 	 <pkg>libapr0</pkg>
- <!--	 <pkg>apache2-common</pkg> -->
 	 <pkg>apache-conf</pkg>
 	 <pkg>apache-modules</pkg>
 	 <pkg>libtool</pkg>
@@ -59,13 +58,11 @@
 	 <pkg>libphp5_common5</pkg>
 	 <pkg>apache-mod_php</pkg>
 	 <pkg>php-xml</pkg>
-	 <!--<pkg>openssh</pkg>
 	 <pkg>openssh-clients</pkg>
 	 <pkg>openssh-server</pkg>-->
 	 <pkg>openssl</pkg>
 	 <pkg>dhcp-common</pkg>
 	 <pkg>dhcp-server</pkg>
-	 <!-- <pkg>expat</pkg>-->
 	 <pkg>libpcap0</pkg>
 	 <pkg>librrdtool2</pkg>
 	 <pkg>locales</pkg>
@@ -84,7 +81,6 @@
  	 <pkg>libgmp3</pkg>
          <pkg>python</pkg>
          <pkg>python2-compat</pkg>
-	 <!--<pkg>rrdtool</pkg>-->
          <pkg>tcsh</pkg>
          <pkg>xinetd</pkg>
          <pkg>zlib1</pkg>
@@ -118,7 +114,6 @@
 	 <pkg>openssl</pkg>
 	 <pkg>dhcp-common</pkg>
 	 <pkg>dhcp-server</pkg>
-	 <!-- <pkg>expat</pkg>-->
 	 <pkg>libpcap0</pkg>
 	 <pkg>librrdtool0</pkg>
 	 <pkg>locales</pkg>
@@ -137,7 +132,6 @@
  	 <pkg>libgmp3</pkg>
          <pkg>python</pkg>
          <pkg>python2-compat</pkg>
-	 <!--<pkg>rrdtool</pkg>-->
          <pkg>tcsh</pkg>
          <pkg>xinetd</pkg>
          <pkg>zlib1</pkg>
