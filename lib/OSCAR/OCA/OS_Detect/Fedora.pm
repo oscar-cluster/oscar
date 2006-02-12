@@ -61,7 +61,7 @@ sub detect {
     $id->{arch} = $arch;
 
     # Make final string
-    $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
+    $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}";
 
     return $id;
 }
