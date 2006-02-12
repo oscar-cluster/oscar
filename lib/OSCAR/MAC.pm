@@ -107,12 +107,14 @@ sub mac_window {
                                        -scrollbars => 'osoe',
                                       );
 
+    # the "All Clients" widget
     our $tree = $topframe->Scrolled("Tree",    
                                  -background => "white",
                                  -itemtype => 'imagetext',
                                  -separator => '|',
                                  -selectmode => 'single',
                                  -scrollbars => 'osoe',
+                                 -width => 40,
                                 );
 
     $listbox->bind( "<ButtonRelease>", \&set_buttons );
