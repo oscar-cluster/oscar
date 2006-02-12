@@ -409,6 +409,6 @@ sub restart_gmetad {
     opkg_print("Starting up apache...\n");
     # autoload apache in levels 345 and start it up
     !system("/sbin/chkconfig --levels 345 httpd on") or croak("Failed to turn on httpd for levels 345 using chkconfig");
-    !system("/etc/init.d/httpd start") or croak("Failed to restart httpd");
+    !system("/etc/init.d/httpd start") or croak("Failed to start httpd");
     opkg_print("Ganglia page is located at http://$hostname/ganglia/\n");
 }
