@@ -36,52 +36,128 @@ chomp($qconf);
 
 my $admin_user = "sge";
 my $cell = "default";
+my $queue = "all";
+my $hostgroup = "\@allhosts";
 my %nodes = get_machine_listing();
 
-# Obtain any custom configure values from the user
-my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
-
-# If user has configured the package, use the custom values, otherwise use the default
-if (-e $xml_data) {
-    my $ref = XMLin($xml_data);
-    $cell = $ref->{cellname};
+# Use Schwartzian transform to sort node names alphabetically and numerically.
+# Names w/o numeric suffix preceed those with numeric suffix.
+sub sortnodes(@) {
+        return map { $_->[0] }
+               sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
+               map { [$_, /^([\D]+)([\d]*)$/] }
+               @_;
 }
 
-my $sge_conf_store = "$ENV{SGE_ROOT}/$cell.tar"; # Spool dir's tar file
+# Read in the current nodes as shown by 'qconf -sh'
+open (CMD,"$qconf -sh |");
+my $host = "";
+my $hostname = "";
+my %adminhosts;
 
-my $push_command = "/opt/c3-4/cpush";
-my $exec_command = "/opt/c3-4/cexec";
+while ($host = <CMD>) {
+    chomp($host);
+    $adminhosts{$host} = 1;
+}
+close (CMD);
 
-# Make a tar file of the spool dir for sending to clients
-opkg_print("Creating $sge_conf_store\n");
-system("cd $ENV{SGE_ROOT}; tar --exclude=qmaster -cf $cell.tar $cell") == 0 or croak("Failed to tar $cell directory on SGE Qmaster");
+my $headnode = `hostname`;
+chomp($headnode);
 
-# push the spool dir's tar file to the client nodes
-opkg_print("SGE post_install: Pushing $cell.tar to clients...\n");
-system("$push_command $sge_conf_store $ENV{SGE_ROOT}/$cell.tar");
+# We do not need to deal with the headnode
+delete $adminhosts{$headnode};
 
-# Copy all the environment-setting scripts to clients
-opkg_print("SGE post_install: Pushing all env-setting scripts to clients...\n");
-system("$push_command /etc/profile.d/sge.sh /etc/profile.d");
-system("$push_command /etc/profile.d/sge.csh /etc/profile.d");
+foreach my $node (sortnodes( keys %nodes )) {
+    # Check each node against the output from 'qconf -sh'
+    $hostname = $nodes{$node}{HOST};
+    if ($adminhosts{$hostname}) {
+	# Host already exists in exec host, do nothing
+        delete $adminhosts{$nodes{$node}{HOST}};
+    } else {
+	# Didn't find a match -> ADD the node
+	system("$qconf -ah $hostname");
+        if ($? == -1) {
+                # Something seriously wrong; Adding exec nodes as admins failed
+                croak("Program failed: While doing qconf -ah on OSCAR head");
+        }
+        elsif($? == 0){
+                # Everything OK; admin host installation success
+                printf "qconf system function SUCCESS for $hostname\n";
+        }
+        elsif($? == 1) {
+                opkg_print("Failed to add host $hostname to admin hosts list");
+                exit $?;
+	}
+        elsif ($? & 127) {
+                printf "child died with signal %d, %s coredump\n",
+                ($? & 127),  ($? & 128) ? 'with' : 'without';
+        }
+        else {
+                # No problem here; Maybe, exec nodes' name already there in admin list
+                printf "Looks like a rerun (return = %d) : No harm done, SUCCESS\n", $? >> 8;
+        }
+    }
+}
 
-# Untar the spool dir on the clients
-opkg_print("SGE post_install: Untarring $cell.tar on clients...\n");
-system("$exec_command 'if ! [ -d $ENV{SGE_ROOT}/$cell ]; then cd $ENV{SGE_ROOT} && tar -xf $cell.tar; fi'") == 0 or croak("Failed to untar $cell.tar on clients");
+# Now go through the remaining adminhosts hash and delete these nodes
+foreach my $node (sortnodes( keys %adminhosts )) {
+    system("$qconf -dh $node"); # Delete node from admin hosts list
+    system("$qconf -dattr hostgroup hostlist $node $hostgroup"); # Delete node from hostgroup
+    system("$qconf -purge queue '*' \"$queue.q\@$node\""); # Delete node from cluster queue instance
+    system("$qconf -de $node"); # Delete node from exec hosts list
+}
 
-opkg_print("Removing $sge_conf_store on clients\n");
-system("$exec_command rm -rf $sge_conf_store");
+if (%nodes) {
+	# Obtain any custom configure values from the user
+	my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
 
-# Then, the clients have enough information to proceed
-# with configuring themselves as exec nodes 
-opkg_print("SGE post_install: Running inst_sge on clients...\n");
-system("$exec_command 'cd $ENV{SGE_ROOT} && ./inst_sge -x > /tmp/oscar_inst_sge.out 2>&1'") == 0 or croak("Failed to run inst_sge on clients, please take a look at /tmp/oscar_inst_sge.out on the client nodes for more information");
+	# If user has configured the package, use the custom values, otherwise use the default
+	if (-e $xml_data) {
+	    my $ref = XMLin($xml_data);
+	    $cell = $ref->{cellname};
+	}
 
-# Now, the exec node config is complete on the clients
-opkg_print("SGE post_install: Configuration SUCCESS on clients\n");
+	my $sge_conf_store = "$ENV{SGE_ROOT}/$cell.tar"; # Spool dir's tar file
+
+	my $push_command = "/opt/c3-4/cpush";
+	my $exec_command = "/opt/c3-4/cexec";
+
+	# Make a tar file of the spool dir for sending to clients
+	opkg_print("Creating $sge_conf_store\n");
+	system("cd $ENV{SGE_ROOT}; tar --exclude=qmaster -cf $cell.tar $cell") == 0 or croak("Failed to tar $cell directory on SGE Qmaster");
+
+	# push the spool dir's tar file to the client nodes
+	opkg_print("SGE post_install: Pushing $cell.tar to clients...\n");
+	system("$push_command $sge_conf_store $ENV{SGE_ROOT}/$cell.tar");
+
+	# Copy all the environment-setting scripts to clients
+	opkg_print("SGE post_install: Pushing all env-setting scripts to clients...\n");
+	system("$push_command /etc/profile.d/sge.sh /etc/profile.d");
+	system("$push_command /etc/profile.d/sge.csh /etc/profile.d");
+
+	# Untar the spool dir on the clients
+	opkg_print("SGE post_install: Untarring $cell.tar on clients...\n");
+	system("$exec_command 'if ! [ -d $ENV{SGE_ROOT}/$cell ]; then cd $ENV{SGE_ROOT} && tar -xf $cell.tar; fi'") == 0 or croak("Failed to untar $cell.tar on clients");
+
+	opkg_print("Removing $sge_conf_store on clients\n");
+	system("$exec_command rm -rf $sge_conf_store");
+
+	# Then, the clients have enough information to proceed
+	# with configuring themselves as exec nodes 
+	opkg_print("SGE post_install: Running inst_sge on clients...\n");
+	system("$exec_command 'cd $ENV{SGE_ROOT} && ./inst_sge -x > /tmp/oscar_inst_sge.out 2>&1'") == 0 or croak("Failed to run inst_sge on clients, please take a look at /tmp/oscar_inst_sge.out on the client nodes for more information");
+
+	# Now, the exec node config is complete on the clients
+	opkg_print("SGE post_install: Configuration SUCCESS on clients\n");
+} else {
+	# Nothing to do
+}
 
 # Change ownership of SGE_ROOT so it is owned by the admin user
 system("chown $admin_user.$admin_user -R $ENV{SGE_ROOT}");
+
+# Now, the exec node config is complete on the clients
+opkg_print("Post installation script executed successfully.\n");
 
 # The master has a complete list of all exec nodes and 
 # is ready to accept and launch jobs. (Try qsub! :-) )

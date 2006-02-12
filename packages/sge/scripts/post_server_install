@@ -399,3 +399,8 @@ system("/etc/init.d/sgemaster softstop");
 system("/etc/init.d/sgemaster start");
 
 opkg_print("All qmaster-related setup complete.\n");
+
+my $rm_detect_dir = "$ENV{OSCAR_HOME}/lib/OSCAR/OCA/RM_Detect";
+
+# Copy RM_Detect component for SGE to the right location
+system("cp -a $ENV{OSCAR_PACKAGE_HOME}/scripts/SGE.pm $rm_detect_dir") == 0 or croak("Failed to copy $ENV{OSCAR_PACKAGE_HOME}/scripts/SGE.pm to $rm_detect_dir");

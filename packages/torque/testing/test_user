@@ -25,10 +25,10 @@ done
 #                       --------------------
 
 if [ `/opt/pbs/bin/qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
-        $OSCAR_TESTPRINT --label "Torque default queue definition" -p
+        $OSCAR_TESTPRINT --label "TORQUE default queue definition" -p
 else
-        $OSCAR_TESTPRINT --label "Torque default queue definition" -f
+        $OSCAR_TESTPRINT --label "TORQUE default queue definition" -f
 fi
 
-~/pbs_test $clients 1 ~/torque/pbs_script.shell "Hello" ~/torque/shelltest 3 "Torque Shell Test"
+~/pbs_test $clients 1 ~/torque/pbs_script.shell "Hello" ~/torque/shelltest 3 "TORQUE Shell Test"
 

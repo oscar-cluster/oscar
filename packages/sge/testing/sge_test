@@ -2,34 +2,30 @@
 #
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>.
+#                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: pbs_test,v 1.6 2002/10/31 15:53:11 jsquyres Exp $
+# $Id$
 #
 # Command line arguments:
 #
 # $1: Number of clients
 # $2: Processors per node
-# $3: PBS script to qsub
+# $3: SGE script to qsub
 # $4: grep string for success
 # $5: output filename prefix
 # $6: timeout scaling factor
 # $7: testprint label
 #
 
-# JMS This seems to do harm -- not sure why it is here...?  The
-# relevant parts of /etc/profile should be run automatically.
-#. /etc/profile
-
-# Default timeout for PBS tests.  Increase this number if tests
+# Default timeout for SGE tests.  Increase this number if tests
 # are failing due to timeouts (not because of failing package tests)
 default_timeout=60
 
-qsub='/opt/pbs/bin/qsub'
-qstat='/opt/pbs/bin/qstat'
 exit_status=0
 
 # Check usage (since this can be run seperately)
@@ -43,36 +39,36 @@ if [ $# -eq 0 ]; then
   read ppn
   
   echo -n "Enter the full path to the script to be run: "
-  read pbs_script
+  read sge_script
   
   echo -n "Enter the string that we should search for: "
   read grep_string
   
   echo -n "Enter the name of the output file (defaults to the script name): "
   read output
-  opt=${output:=$pbs_script}
+  opt=${output:=$sge_script}
 
   echo -n "Enter a time scaling factor (Default is 3): "
   read scaling_factor
   opt=${scaling_factor:=3}
 
-  echo -n "Enter a test name (Default is \"PBS TEST\"): "
-  read pbs_test_type
-  opt=${pbs_test_type:="PBS TEST"}
+  echo -n "Enter a test name (Default is \"SGE TEST\"): "
+  read sge_test_type
+  opt=${sge_test_type:="SGE TEST"}
 elif [ $# -lt 4 ]; then
   echo "usage: $0 [<num clients> <num procs/client> <script> <searchstring> (outputfile) (time scale) (test name)]"
   exit 1
 else
   clients=$1
   ppn=$2
-  pbs_script=$3
+  sge_script=$3
   grep_string=$4
   opt=$5
-  output=${opt:=$pbs_script}
+  output=${opt:=$sge_script}
   opt=$6
   scaling_factor=${opt:=3}
   opt=$7
-  pbs_test_type=${opt:="PBS TEST"}
+  sge_test_type=${opt:="SGE TEST"}
 fi
 
 #echo "scalingfactor is $scaling_factor"
@@ -80,7 +76,8 @@ fi
 #exit
 
 numprocs=`expr $clients \* $ppn`
-script_name=`basename $pbs_script`
+script_name=`basename $sge_script`
+pe=`echo $script_name | awk -F . {'print $NF'}`
 
 function waitexit {
         # Function to wait for a key press before
@@ -106,7 +103,7 @@ function calc_timeout {
 }              
 
 function check_free_nodes () {
-  free=`/opt/pbs/bin/pbsnodes -a | grep -c 'state = free'`
+  free=`qstat -F | grep "0/" | wc -l`
   if [ $free -eq $clients ] || [ $free -gt $clients ]; then  
     # at least $clients free nodes
     echo -n ""
@@ -118,45 +115,46 @@ function check_free_nodes () {
   fi
 }
         
-#     PBS TEST ROUTINE
+#     SGE TEST ROUTINE
 #     ----------------
-# Generic routine to run any test through PBS depending on environment
-pbs_test_routine () {
+# Generic routine to run any test through SGE depending on environment
+sge_test_routine () {
   sleep 1
   calc_timeout
   check_free_nodes
-  $OSCAR_TESTPRINT --label "$pbs_test_type"
-  cd `dirname $pbs_script`
+  $OSCAR_TESTPRINT --label "$sge_test_type"
+  cd `dirname $sge_script`
   if [ -f $output.out ]; then /bin/rm -f $output.out; fi
   if [ -f $output.err ]; then /bin/rm -f $output.err; fi
-  job=`$qsub -l nodes=$clients:ppn=$ppn $pbs_script`
+  jobname=`basename $output`
+  job=`qsub -N $jobname -S /bin/bash -v PATH -pe $pe $clients -o $jobname.out -e $jobname.err $sge_script | awk {'print $3'}`
   # Check that job submitted properly
   if [ -z $job ]; then 
-    $OSCAR_TESTPRINT --label "$pbs_test_type" --fail
+    $OSCAR_TESTPRINT --label "$sge_test_type" --fail
   else
     timeleft=$timeout
     job_state=incomplete
     while [ $job_state = incomplete ]; do
       # Displays remaining seconds
-      $OSCAR_TESTPRINT --label "$pbs_test_type" --status "$timeleft"
+      $OSCAR_TESTPRINT --label "$sge_test_type" --status "$timeleft"
       sleep 1
       # Tests for success or timeout
-      if [ -f "$output.out" ]; then
+      if [ `qstat | grep -c $job` -eq 0 ]; then
         grep "$grep_string" "$output.out" > /dev/null
         string_test=$?
         if [ $string_test = 0 ]; then
           job_state=success
-          $OSCAR_TESTPRINT --label "$pbs_test_type" --pass
+          $OSCAR_TESTPRINT --label "$sge_test_type" --pass
         else
           timeleft=0
         fi
       fi
       if [ $timeleft -eq 0 ]; then  #more than timeout
-        $OSCAR_TESTPRINT --label "$pbs_test_type" --fail
+        $OSCAR_TESTPRINT --label "$sge_test_type" --fail
         job_state=fail
 	exit_status=1
-        if [ `/opt/pbs/bin/qstat | grep -c $job` -eq 1 ]; then
-          /opt/pbs/bin/qdel $job
+        if [ `qstat | grep -c $job` -eq 1 ]; then
+          qdel $job
           sleep 1 # Allows nodes to free up again
         fi
         if [ "$exit_on_fail" = yes ]; then waitexit ; fi
@@ -170,7 +168,13 @@ pbs_test_routine () {
 
 # Run the actual test
 
-pbs_test_routine
+if [ -f $sge_script ]; then
+  sge_test_routine
+else
+  $OSCAR_TESTPRINT --label "$sge_test_type" --skipped
+  job_state=skipped
+  exit_status=2
+fi
 
 # Return a meaningful exit status
 

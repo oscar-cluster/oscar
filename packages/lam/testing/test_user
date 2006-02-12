@@ -7,22 +7,31 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_user,v 1.2 2002/10/31 15:47:17 jsquyres Exp $
+# $Id$
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
 #	   Bernard Li
 #          Jeffrey M. Squyres
 
-if test -e /usr/share/doc/openpbs*; then
-   scheduler="PBS"
-else
-   scheduler="Torque"
+rm=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{rm}'`
+
+if [ $? -gt 0 ]; then
+   echo "Cannot determine resource manager for system, cannot continue."
+   exit
 fi
+
+if test $rm = "None"; then
+   exit
+fi
+
+rm_test=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{test}' | awk -F "/" {'print \$NF'}`
+#rm_jobscript=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{jobscript}'`
+rm_jobscript="rm_script"
 
 cd
 clients=`echo $@ | wc -w`
-testprint_label="LAM/MPI (via $scheduler)"
+testprint_label="LAM/MPI (via $rm)"
 
 # Sanity check (somewhat overkill, but safe = good): check to see that
 # there is a LAM installed.
@@ -78,7 +87,7 @@ done
 
 # Now run the test (results will be printed by the test itself)
 
-$HOME/pbs_test $clients 1 $HOME/lam/pbs_script.lam "Hello" \
+$HOME/$rm_test $clients 1 $HOME/lam/$rm_jobscript.lam "Hello" \
     $HOME/lam/lamtest 3 "$testprint_label"
 exit_status=$?
 

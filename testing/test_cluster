@@ -34,6 +34,7 @@ use OSCAR::Database;
 use OSCAR::Package;
 use Data::Dumper;
 use Getopt::Long;
+use OSCAR::OCA::RM_Detect;
 
 my %opts = ();
 unless (GetOptions(\%opts,"wait") ) {
@@ -42,9 +43,13 @@ unless (GetOptions(\%opts,"wait") ) {
 
 END{
 	if ($opts{wait}) {
-		print "\nERROR $? REPORTED ABOVE.\n" if $?;
-        print "\n...Hit <ENTER> key to exit...";
-        my $key=<STDIN>;
+		if ( $? == 1 ) {
+			print "\nThere is $? failed/skipped test (see above).\nPlease check your logs located in /home/oscartst.\n";
+		} else {
+			print "\nThere are $? failed/skipped tests (see above).\nPlease check your logs located in /home/oscartst.\n" if $?;
+		}
+	        print "\n...Hit <ENTER> key to exit...";
+	        my $key=<STDIN>;
 	}
 }
  
@@ -93,11 +98,6 @@ foreach my $pkg (@pkgs) {
     }
 }
 
-
-if ($return) {
-    print("\nThere were issues running some root test scripts.  Please check your logs\nlocated in /home/oscartst.\n");
-}
-
 # Setup the user environment
 #
 
@@ -138,16 +138,35 @@ unlink("$test_user_homedir/oscartestfile");
 
 # Now the user tests
 
+my @ufiles;
+
 print "\nPreparing user tests...\n";
 
 $ENV{OSCAR_TESTPRINT}="$test_user_homedir/testprint";
-my @ufiles = qw(testprint ssh_user_tests pbs_test test_cluster); 
+
+# Open Resource Manager Framework
+if (! OSCAR::OCA::RM_Detect::open()) {
+    die "Failed to open RM_Detect Framework\n";
+}
+
+my $ident = $RM_Detect->{query}();
+my $rm = $ident->{rm};
+
+@ufiles = qw(testprint ssh_user_tests test_cluster);
+
+# Cleanup before copying base files
+`rm -rf $test_user_homedir/*`;
 
 # Copy the base files
 foreach my $file (@ufiles) {
 	copy("$ENV{OSCAR_HOME}/testing/$file",$test_user_homedir);
         chmod(0755,"$test_user_homedir/$file");
-	chown($tid,$tgid,"$test_user_homedir/$file");
+}
+
+unless ($rm eq "None") {
+    # Copy Resource Manager specific test script
+    my $rm_test = $ident->{test};
+    system("cp -a $rm_test $test_user_homedir") == 0 or croak("Failed to copy $rm_test to $test_user_homedir for Resource Manager $rm");
 }
 
 # Copy the packages test files to the user home dir.
@@ -158,10 +177,12 @@ foreach my $pkg (@pkgs) {
 	    # I know, shell badness, but so much easier than doing
 	    # a recursive thing in perl.
 	    system("cp -af $dir/$pkg/testing/* $test_user_homedir/$pkg/");
-	    system("chown -R $tid:$tgid $test_user_homedir/$pkg/");
 	}
     }
 }
+
+# Make sure all files/directories are owned by $test_user
+system("chown -R $tid:$tgid $test_user_homedir");
 
 # First test ssh
 #
@@ -177,7 +198,6 @@ my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=
 
 my $creturn=0;
 
-
 foreach my $pkg (@pkgs) {
     $ENV{OSCAR_PACKAGE_TEST_HOME} = "$test_user_homedir/$pkg";
     if (-e "$ENV{OSCAR_PACKAGE_TEST_HOME}/test_user") {
@@ -189,11 +209,6 @@ foreach my $pkg (@pkgs) {
     }
     delete $ENV{OSCAR_PACKAGE_TEST_HOME};
 }
-
-if ($creturn) {
-    print("\nThere were issues running some user test scripts.  Please check your logs\nlocated in /home/oscartst.\n");
-}
-
 
 #
 # APItest Additions
@@ -231,7 +246,6 @@ foreach my $pkg (@pkgs) {
 	}
 }
 
-
 #
 # Run all the APItest - Validation Tests ('test_validate.apb')
 #
@@ -253,11 +267,6 @@ foreach my $pkg (@pkgs) {
 		}
 	}
 }
-
-if ($areturn) {
-    print("\nThere were issues running some user test scripts.  Please check your logs\nlocated in /home/oscartst.\n");
-}
-
 
 # Sum the (errors) return codes for root/user/apitest tests
 $return += $creturn + $areturn; 

@@ -2,31 +2,37 @@
 #
 # Copyright (c) 2002 The Trustees of Indiana University.  
 #                    All rights reserved.
-#		2005 Canada's Michael Smith Genome Sciences Centre
-#		     All rights reserved.
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_user,v 1.3 2002/10/31 21:18:52 brechin Exp $
+# $Id$
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
 #	   Bernard Li
 
+rm=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{rm}'`
 
-if test -e /usr/share/doc/openpbs*; then
-   scheduler="PBS"
-else
-   scheduler="Torque"
+if [ $? -gt 0 ]; then
+   echo "Cannot determine resource manager for system, cannot continue."
+   exit 
 fi
+
+if test $rm = "None"; then
+   exit
+fi
+
+rm_test=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{test}' | awk -F "/" {'print \$NF'}`
+#rm_jobscript=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{jobscript}'`
+rm_jobscript="rm_script"
 
 cd $HOME
 clients=`echo $@ | wc -w`
 
-$HOME/pbs_test $clients 1 $HOME/pvm/pbs_script.pvm "SUCCESSFUL" \
-    $HOME/pvm/pvmtest 3 "PVM (via $scheduler)"
+$HOME/$rm_test $clients 1 $HOME/pvm/$rm_jobscript.pvm "SUCCESSFUL" \
+    $HOME/pvm/pvmtest 3 "PVM (via $rm)"
 exit_status=$?
 
 # All done

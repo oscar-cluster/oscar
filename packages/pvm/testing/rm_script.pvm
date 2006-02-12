@@ -1,0 +1,64 @@
+#!/bin/sh
+
+### Script Commands
+cd ~/pvm
+
+need_pvmd=0
+
+pgrep pvmd3 > /dev/null 2>&1
+if test "$?" = 1; then
+    need_pvmd=1
+fi
+
+if test "$need_pvmd" = "1"; then
+    # generate pvm nodes file
+    echo "* ep=$PBS_O_WORKDIR wd=$PBS_O_WORKDIR" > pvm_nodes
+    cat $PBS_NODEFILE >> pvm_nodes
+fi
+
+# Create tmp directory to put temporary files
+
+pvm_tmp="/tmp/pvm-test"
+if test ! -d $pvm_tmp; then
+    rm -rf $pvm_tmp
+    mkdir -p $pvm_tmp
+fi
+
+if test "$need_pvmd" = "1"; then
+    # start pvm daemon & wait for slave daemons to start up
+    pvmd pvm_nodes &
+    #sleep 10
+fi
+
+# run job
+p=`pwd`
+cp master1.c slave1.c $pvm_tmp
+cd $pvm_tmp
+gcc -I$PVM_ROOT/include master1.c -L$PVM_ROOT/lib/$PVM_ARCH -lpvm3 -o master1
+gcc -I$PVM_ROOT/include slave1.c -L$PVM_ROOT/lib/$PVM_ARCH -lpvm3 -o slave1
+cp master1 slave1 $p
+cd $p
+./master1
+
+if test "$need_pvmd" = "1"; then
+    # wait again to make sure everyone's finished
+    # then kill master pvm daemon
+    #sleep 5
+    /usr/bin/killall -TERM pvmd3
+
+    # get rid of lock files & nodes file
+    uid=`id -u`
+    tail +2 $PBS_NODEFILE > pvm_nodes
+    /bin/rm -f /tmp/pvm?.$uid
+    crm  pvm_nodes:/tmp/pvmd.$uid > /dev/null 2>&1
+    crm  pvm_nodes:/tmp/pvml.$uid > /dev/null 2>&1
+    /bin/rm -f pvm_nodes
+fi
+
+# Cleanup
+
+if test -d $pvm_tmp; then
+    rm -rf $pvm_tmp
+fi
+
+exit

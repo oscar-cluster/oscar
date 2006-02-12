@@ -1,17 +1,7 @@
 #!/bin/sh
 
-### Job name
-#PBS -N lamtest
-
-### Output files
-#PBS -o lamtest.out
-#PBS -e lamtest.err
-
-### Queue name
-#PBS -q workq
-
 ### Script Commands
-cd $PBS_O_WORKDIR
+cd ~/lam
 echo "Running LAM/MPI test"
 
 # The LAM/MPI test itself
@@ -30,6 +20,8 @@ else
     echo "LAM/MPI appears to have TM suppport.  Yippee!"
 fi
 
+need_lamhalt=0
+
 # Helper subroutine
 
 do_cmds() {
@@ -43,7 +35,9 @@ EOF
     if test "$?" != "0"; then
 	echo "TEST FAILED!"
 	echo "Commands: $cmds"
-	lamhalt
+	if test "$need_lamhalt" = "1"; then
+          lamhalt
+	fi
 	exit 1
     fi
 }
@@ -58,7 +52,11 @@ fi
 
 # Start a LAM universe
 
-lamboot
+lamnodes > /dev/null 2>&1
+if test "$?" != 0; then
+    need_lamhalt=1
+    lamboot
+fi
 
 # Compile cpi and try running it
 
@@ -81,7 +79,9 @@ do_cmds
 
 # Shut down
 
-lamhalt 
+if test "$need_lamhalt" = "1"; then
+    lamhalt
+fi
 
 # All done!
 

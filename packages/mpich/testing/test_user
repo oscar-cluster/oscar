@@ -7,22 +7,30 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_user,v 1.3 2003/05/06 20:59:17 brechin Exp $
+# $Id$
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
-#	   Bernard Li
+#          Bernard Li
 #          Jeffrey M. Squyres
 
-if test -e /usr/share/doc/openpbs*; then
-   scheduler="PBS"
-else
-   scheduler="Torque"
+rm=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{rm}'`
+
+if [ $? -gt 0 ]; then
+   echo "Cannot determine resource manager for system, cannot continue."
+   exit
 fi
+
+if test $rm = "None"; then
+   exit
+fi
+
+rm_test=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{test}' | awk -F "/" {'print \$NF'}`
+rm_jobscript=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{jobscript}'`
 
 cd
 clients=`echo $@ | wc -w`
-testprint_label="MPICH (via $scheduler)"
+testprint_label="MPICH (via $rm)"
 
 # Sanity check (somewhat overkill, but safe = good): check to see that
 # there is a MPICH installed.
@@ -77,7 +85,7 @@ done
 ############################################################################
 # Now run the test (results will be printed by the test itself)
 
-$HOME/pbs_test $clients 1 $HOME/mpich/pbs_script.mpich "Hello" \
+$HOME/$rm_test $clients 1 $HOME/mpich/$rm_jobscript.mpich "Hello" \
     $HOME/mpich/mpichtest 3 "$testprint_label"
 exit_status=$?
 
