@@ -91,7 +91,7 @@ sub mark_pool {
     local *OUT;
     my $wd = cwd();
     chdir($pool);
-    my $out = `ls -Al -I "repocache" -I "repodata" -I "$poolmd5" | md5sum -`;
+    my $out = `ls -Al -I "repocache" -I "repodata" -I "$poolmd5" | grep -v ^total | md5sum -`;
     my ($md5sum,$junk) = split(" ",$out);
     open OUT, "> $poolmd5" or die "Could not open $poolmd5 $!";
     print OUT "$md5sum\n";
