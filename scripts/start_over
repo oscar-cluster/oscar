@@ -39,6 +39,7 @@ my @known_rpms = qw(
                     mysql
                     mysql-common
                     mysql-server
+                    netbootmgr
                     ntpconfig
                     pvm-modules-oscar
                     pvm
