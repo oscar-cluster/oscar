@@ -49,8 +49,8 @@
         <group>oscar_server</group>
       </filter>
 
-      <pkg>systeminstaller</pkg>
-      <pkg>systeminstaller-x11</pkg>
+      <pkg>systeminstaller-oscar</pkg>
+      <pkg>systeminstaller-oscar-x11</pkg>
       <pkg>systemimager-server</pkg>
       <pkg>systemimager-flamethrower</pkg>
       <pkg>flamethrower</pkg>
