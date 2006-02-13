@@ -91,7 +91,7 @@ sub mark_pool {
     local *OUT;
     my $wd = cwd();
     chdir($pool);
-    my $out = `ls -Al -I "repocache" -I "repodata" -I "$poolmd5" | grep -v ^total | md5sum -`;
+    my $out = `ls -Al -I "repocache" -I "repodata" -I "pool.md5" | grep -v ^total | md5sum -`;
     my ($md5sum,$junk) = split(" ",$out);
     open OUT, "> $poolmd5" or die "Could not open $poolmd5 $!";
     print OUT "$md5sum\n";
@@ -109,7 +109,7 @@ sub pool_needs_update {
     local *IN;
     my $wd = cwd();
     chdir($pool);
-    my $out = `ls -Al -I "repocache" -I "repodata" -I "pool.md5" | md5sum -`;
+    my $out = `ls -Al -I "repocache" -I "repodata" -I "pool.md5" | grep -v ^total | md5sum -`;
     my ($md5sum,$junk) = split(" ",$out);
     # need update if no pool.md5 file
     if (! -f $poolmd5) {
@@ -122,6 +122,9 @@ sub pool_needs_update {
     chomp $in;
     close IN;
     chdir $wd;
+    print "present md5sum: $md5sum\n";
+    print "loaded  md5sum: $in\n";
+
     return ($in ne $md5sum);
 }
 
