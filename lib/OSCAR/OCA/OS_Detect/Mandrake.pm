@@ -9,6 +9,7 @@
 # Copyright (c) Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
 #      - complete rewrite to enable use on top of images
+#      - enabled use on top of package pools
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -21,7 +22,13 @@ package OCA::OS_Detect::Mandrake;
 
 use strict;
 
-sub detect {
+my $distro = "mandrake";
+my $compat_distro = "mdk";
+my $pkg = "rpm";
+my $detect_package = "mandrake-release";
+my $detect_file = "/bin/bash";
+
+sub detect_dir {
     my ($root) = @_;
     my $mandrake_release;
 
@@ -47,18 +54,29 @@ sub detect {
 	chroot => $root,
     };
 
-    $id->{distro} = "mandrake";
+    $id->{distro} = $distro;
     $id->{distro_version} = $mandrake_release;
-    $id->{compat_distro} = "mdk";
+    $id->{compat_distro} = $compat_distro;
     $id->{compat_distrover} = $mandrake_release;
-    $id->{pkg} = "rpm";
+    $id->{pkg} = $pkg;
 
     # determine architecture
-    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch($root);
+    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root,$detect_file);
     $id->{arch} = $arch;
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
+
+    return $id;
+}
+
+sub detect_pool {
+    my ($pool) = @_;
+
+    my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
+							  $detect_package,
+							  $distro,
+							  $compat_distro);
 
     return $id;
 }

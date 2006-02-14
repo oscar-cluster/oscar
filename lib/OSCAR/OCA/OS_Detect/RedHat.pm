@@ -6,6 +6,7 @@
 # 
 # Copyright (c) Erich Focht <efocht@hpce.nec.com>
 #      - complete rewrite to enable use on top of images
+#      - enabled use on top of package pools
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -18,12 +19,18 @@ package OCA::OS_Detect::RedHat;
 
 use strict;
 
+my $distro = "redhat-el";
+my $compat_distro = "rhel";
+my $pkg = "rpm";
+my $detect_package = "redhat-release";
+my $detect_file = "/bin/bash";
+
 # This is the logic that determines whether this component can be
 # loaded or not -- i.e., whether we're on a RHEL machine or not.
 # This routine is cheap and called very rarely, so don't care for
 # unnecessary buffering. Simply recalculate $id each time this is
 # called.
-sub detect {
+sub detect_dir {
     my ($root) = @_;
     my $release_string;
 
@@ -60,25 +67,36 @@ sub detect {
 	    return undef;
 	}
 
-	$id->{distro} = "redhat-el-".lc($flavor);
+	$id->{distro} = $distro."-".lc($flavor);
 	$id->{distro_version} = $os_release;
 	$id->{distro_update} = $os_update;
-	$id->{compat_distro} = "rhel";
+	$id->{compat_distro} = $compat_distro;
 	$id->{compat_distrover} = $os_release;
-	$id->{pkg} = "rpm";
+	$id->{pkg} = $pkg;
 
     } else {
 	return undef;
     }
 
     # determine architecture
-    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch($root);
+    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root,$detect_file);
     $id->{arch} = $arch;
 
     # Make final string
     # [EF: does anybody care about this ugly string at all? The information
     #      is redundant and can be construted anytime.]
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
+
+    return $id;
+}
+
+sub detect_pool {
+    my ($pool) = @_;
+
+    my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
+							  $detect_package,
+							  $distro,
+							  $compat_distro);
 
     return $id;
 }

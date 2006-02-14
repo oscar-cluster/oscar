@@ -6,6 +6,7 @@
 # 
 # Copyright (c) Erich Focht <efocht@hpce.nec.com>
 #      - complete rewrite to enable use on top of images
+#      - enabled use on top of package pools
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -18,10 +19,16 @@ package OCA::OS_Detect::Fedora;
 
 use strict;
 
+my $distro = "fedora";
+my $compat_distro = "fc";
+my $pkg = "rpm";
+my $detect_package = "fedora-release";
+my $detect_file = "/bin/bash";
+
 # This routine is cheap and called very rarely, so don't care for
 # unnecessary buffering. Simply recalculate $id each time this is
 # called.
-sub detect {
+sub detect_dir {
     my ($root) = @_;
     my ($release_string, $fc_release);
     my $dfile = "/etc/fedora-release";
@@ -39,29 +46,35 @@ sub detect {
 	chroot => $root,
     };
 
-    # We only support Fedora Core 2, 3, and 4 -- otherwise quit.
-    if ($release_string =~ 'Stentz') {
-	$fc_release = 4;
-    } elsif ($release_string =~ 'Heidelberg') {
-	$fc_release = 3;
-    } elsif ($release_string =~ 'Tettnang') {
-	$fc_release = 2;
+    if ($release_string =~ /Fedora Core release (\d+) /) {
+	$fc_release = $1;
     } else {
 	return undef;
     }
 
-    $id->{distro} = "fedora";
+    $id->{distro} = $distro;
     $id->{distro_version} = $fc_release;
-    $id->{compat_distro} = "fc";
+    $id->{compat_distro} = $compat_distro;
     $id->{compat_distrover} = $fc_release;
-    $id->{pkg} = "rpm";
+    $id->{pkg} = $pkg;
 
     # determine architecture
-    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch($root);
+    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root,$detect_file);
     $id->{arch} = $arch;
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}";
+
+    return $id;
+}
+
+sub detect_pool {
+    my ($pool) = @_;
+
+    my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
+							  $detect_package,
+							  $distro,
+							  $compat_distro);
 
     return $id;
 }
