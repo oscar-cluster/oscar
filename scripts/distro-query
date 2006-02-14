@@ -1,0 +1,154 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
+#                         All rights reserved.
+# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+#
+# $Id$
+#
+# (c) 2005 Erich Focht <efocht@hpce.nec.com>
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX;
+use Carp;
+use OSCAR::OCA::OS_Detect;
+use OSCAR::PackagePath;
+use Getopt::Long;
+use Data::Dumper;
+
+sub vprint;
+
+die "\$OSCAR_HOME: not defined.\n" unless exists $ENV{OSCAR_HOME};
+die "$ENV{OSCAR_HOME}: not a directory.\n" unless -d $ENV{OSCAR_HOME};
+die "$ENV{OSCAR_HOME}: not accessible.\n" unless -x $ENV{OSCAR_HOME};
+
+# Different distros require different RPMs. Different architectures, too.
+
+# configure command line options parsing
+Getopt::Long::Configure("ignore_case"); # ignore case
+Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
+
+my %options;
+GetOptions( \%options,
+	    'arch|a',
+	    'distro|d=s',
+	    'image|i=s',
+	    'help|h',
+            'test|t',
+            ) || usage();
+
+# Query distro/version of the master node
+my $os = OSCAR::OCA::OS_Detect::open($options{image});
+die "Unable to determine operating system" if (!$os);
+
+usage() if ($options{help});
+
+if ($options{image}) {
+    delete $options{arch};
+    delete $options{distro};
+}
+
+# Which architecture are we dealing with?
+my $march;
+if ($options{arch}) {
+    $march = $options{arch};
+} else {
+    $march = $os->{arch};
+}
+$march = "i386" if $march =~ /^i[3456]86$/;
+
+################################
+## Do the job
+################################
+
+print "-------------------\n";
+print "Distro package url : ".&distro_repo_url($options{image})."\n";
+print "OSCAR package pool : ".&oscar_repo_path($options{image})."\n";
+print "generic-setup paths: ".join(" ",&distro_compat())."\n";
+print "-------------------\n";
+print "Detected os structure :\n".Dumper($os);
+
+exit 0;
+
+############################################################################
+######## only subroutines below
+############################################################################
+
+sub vprint {
+    print @_ if ($options{verbose});
+}
+
+#
+# Compatibility chain of distro-specific RPM sources
+#
+sub distro_compat {
+    my @compatlist;
+    # get standard distro name and version
+    my ($name, $ver) = distroname();
+
+    # remove "." from version name
+    my $ver1 = $ver;
+    $ver1 =~ s/\.//;
+
+    # remove part behind first dot in version name
+    my $ver2 = $ver;
+    $ver2 =~ s/\..*$//g;
+
+    # the order is important!
+    push @compatlist, $name . $ver  . "-" . $march;
+    push @compatlist, $name . $ver;
+    if( $ver1 ne $ver ) {
+	push @compatlist, $name . $ver1 . "-" . $march;
+	push @compatlist, $name . $ver1;
+    }
+    if( $ver2 ne $ver ) {
+	push @compatlist, $name . $ver2 . "-" . $march;
+	push @compatlist, $name . $ver2;
+    }
+    push @compatlist, $name         . "-" . $march;
+    push @compatlist, $name;
+
+    vprint("Compatlist: ".join(" ",@compatlist)."\n");
+    return @compatlist;
+}
+
+#
+# Standardized distribution subdirectory name.
+# Uses the OSCAR::OCA::OS_Detect framework.
+#
+sub distroname {
+    my ($name, $ver);
+
+    # override distro detection
+    if ($options{distro}) {
+	($name, $ver) = split /-/, $options{distro};
+    } else {
+        $name = $os->{compat_distro};
+        $ver = $os->{compat_distrover};
+    }
+    return ($name,$ver);
+}
+
+
+sub usage {
+    print <<END_USAGE;
+Usage: distro-query [options]
+
+ Print distribution and oscar package pool paths for the detected distro.
+ The argument "--image IMAGENAME" can direct the query to an image directory.
+
+ Options:
+   --arch|-a      : override locally detected architecture
+   --distro  D-V  : translated distro string (for testing only!)
+   --help|-h      : display this help text
+   --verbose|-v   : verbose printout
+END_USAGE
+   exit(1);
+}
+

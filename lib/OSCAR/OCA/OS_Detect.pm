@@ -71,4 +71,21 @@ sub open {
     return $ret;
 }
 
+# Determine architecture by checking the executable type of a wellknown
+# program
+sub detect_arch {
+    my ($root) = @_;
+    my $arch="unknown";
+    my $q = `env LC_ALL=C file $root/bin/bash`;
+    if ($q =~ m/executable,\ \S+\ (\S+),\ version/) {
+	$arch = $1;
+	if ($arch =~ m/386$/) {
+	    $arch = "i386";
+	} elsif ($arch =~ m/x86-64/) {
+	    $arch = "x86_64";
+	}
+    }
+    return $arch;
+}
+
 1;

@@ -72,7 +72,7 @@ sub detect {
     }
 
     # determine architecture
-    my $arch = detect_arch($root);
+    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch($root);
     $id->{arch} = $arch;
 
     # Make final string
@@ -81,21 +81,6 @@ sub detect {
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
 
     return $id;
-}
-
-# Determine architecture by checking the executable type of a wellknown
-# program
-sub detect_arch {
-    my ($root) = @_;
-    my $arch="unknown";
-    my $q = `env LC_ALL=C file $root/bin/bash`;
-    if ($q =~ m/executable,\ \S+\ (\S+),\ version/) {
-	$arch = $1;
-	if ($arch =~ m/386$/) {
-	    $arch = "i386";
-	}
-    }
-    return $arch;
 }
 
 # If we got here, we're happy
