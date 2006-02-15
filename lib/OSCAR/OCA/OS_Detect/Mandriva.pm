@@ -31,18 +31,10 @@ my $detect_file = "/bin/bash";
 sub detect_dir {
     my ($root) = @_;
     my $release_string;
-    my ($os_version,$os_version);
 
     # If /etc/mandriva-release exists, continue, otherwise, quit.
     if (-f "/etc/mandriva-release") {
 	$release_string = `cat /etc/mandriva-release`;
-    } else {
-	return undef;
-    }
-
-    if ($release_string =~ /Mandriva Linux release (\d+)\.(\d+) /) {
-	$os_version = $1;
-	$os_release = $2;
     } else {
 	return undef;
     }
@@ -52,12 +44,20 @@ sub detect_dir {
 	chroot => $root,
     };
 
-    $id->{distro} = $distro;
-    $id->{distro_version} = $os_version;
-    $id->{distro_release} = $os_release;
-    $id->{compat_distro} = $compat_distro;
-    $id->{compat_distrover} = $os_version;
-    $id->{pkg} = $pkg;
+    if ($release_string =~ /Mandriva Linux release (\d+)\.(\d+) /) {
+	my $os_version = $1;
+	my $os_release = $2;
+        $id->{distro} = $distro;
+        $id->{distro_version} = $os_version;
+        $id->{distro_release} = $os_release;
+        $id->{compat_distro} = $compat_distro;
+        $id->{compat_distrover} = $os_version;
+        $id->{pkg} = $pkg;
+	print "version $1, release$2\n";
+    } else {
+	print "Mandriva returning indef";
+	return undef;
+    }
 
     # this hash contains all info necessary for identifying the OS
 
