@@ -46,7 +46,6 @@ use Data::Dumper;
 @EXPORT = qw( database_calling_traceback
               database_connect 
               database_disconnect 
-              database_execute_command 
               database_find_node_name
               database_hostname_to_node_name
               database_program_variable_get
@@ -109,14 +108,14 @@ use Data::Dumper;
               set_image_packages
               set_node_with_group
               link_node_nic_to_network
-	      pkgs_of_opkg
+    	      pkgs_of_opkg
               do_select
               dec_already_locked
               locking
               single_dec_locked
               unlock
-	      list_selected_packages
-	      list_installable_packages
+    	      list_selected_packages
+	          list_installable_packages
 	      );
 
 #
@@ -222,71 +221,6 @@ sub database_disconnect {
     return 1;
 }
 
-# This function executes an oda database command, parsing
-# the command from one or more string arguments, expanding
-# any database shortcuts if needed. It calls oda::execute_command
-# to execute a database command or shortcut, this is only needed
-# to avoid having calling code have to do the conditional 
-# "use OSCAR::oda" in case they are executing at a point when
-# the oda has not been installed yet. For returning lists from
-# exexcuted commands, see the subroutine database_return_list.
-#
-# inputs: command_args  either a single scalar string that
-#                       includes the command/shortcut and any
-#                       arguments, or a reference to a list
-#                       strings that include the command/shortcut
-#                       and any arguments.
-#         results_ref   reference to a variable for the results,
-#                       commands that return one or more strings
-#                       will place a reference to the list of 
-#                       result strings in results_ref, commands
-#                       that do not return any result strings 
-#                       will place the integer number of records 
-#                       affected or modified in results_ref
-#         print_errors  if defined and a list reference,
-#                       put error messages into the list;
-#                       if defined and a non-zero scalar,
-#                       print out error messages on STDERR
-#
-# outputs: status       non-zero for success, note that success
-#                       just means that there are no database
-#                       query modification errors, the intended 
-#                       result could still be in error without
-#                       any database errors, the results pointed
-#                       to by the results_ref variable should
-#                       be checked for values, or for the correct
-#                       number of records being affected
-
-sub database_execute_command {
-
-    my ( $command_args_ref,
-         $results_ref,
-     $print_errors ) = @_;
-
-    # sometimes this is called without a database_connected being 
-    # called first, so we have to connect first if that is the case
-    ( my $was_connected_flag = $database_connected ) ||
-	database_connect( $print_errors ) ||
-        return undef;
-
-    # execute the command
-    my @error_strings = ();
-    my $error_strings_ref = ( defined $print_errors && 
-                  ref($print_errors) eq "ARRAY" ) ?
-                  $print_errors : \@error_strings;
-    my $success = oda::execute_command( $options_ref,
-                    $command_args_ref,
-                    $results_ref,
-                    $error_strings_ref );
-    if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-    warn shift @$error_strings_ref while @$error_strings_ref;
-    }
-
-    # if we weren't connected to the database when called, disconnect
-    database_disconnect() if ! $was_connected_flag;
-
-    return $success;
-}
 
 #
 # NEST
