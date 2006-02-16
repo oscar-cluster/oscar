@@ -61,11 +61,7 @@ if ($options{pool}) {
 
 } elsif (!$options{node}) {
 
-    $os = OSCAR::OCA::OS_Detect::open($options{image});
-    die "Unable to determine operating system" if (!$os);
-    print "Distro package url : ".&distro_repo_url($options{image})."\n";
-    print "OSCAR package pool : ".&oscar_repo_path($options{image})."\n";
-    print "Detected os structure :\n".Dumper($os);
+    &print_image_detect($options{image});
 
 } else {
 
@@ -82,11 +78,8 @@ if ($options{pool}) {
     my @images = list_image(name => $img);
     die "Image $img not found in SIS database" if (!@images);
     my $imagepath = $images[0]->location;
-    $os = OSCAR::OCA::OS_Detect::open($imagepath);
-    die "Unable to determine operating system" if (!$os);
-    print "Distro package url : http://oscar_server/repo".&distro_repo_url($imagepath)."\n";
-    print "OSCAR package pool : http://oscar_server/repo".&oscar_repo_path($imagepath)."\n";
-    print "Detected os structure :\n".Dumper($os);
+
+    &print_image_detect($imagepath);
 
 }
 exit 0;
@@ -98,6 +91,17 @@ exit 0;
 sub vprint {
     print @_ if ($options{verbose});
 }
+
+sub print_image_detect {
+    my ($img) = @_;
+
+    my $os = OSCAR::OCA::OS_Detect::open($img);
+    die "Unable to determine operating system" if (!$os);
+    print "Distro package url : ".&distro_repo_url($img)."\n";
+    print "OSCAR package pool : ".&oscar_repo_path($img)."\n";
+    print "Detected os structure :\n".Dumper($os) if ($verbose);
+}
+
 
 sub usage {
     print <<END_USAGE;
