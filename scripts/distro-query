@@ -1,17 +1,13 @@
 #!/usr/bin/env perl
 #
-# Copyright (c) 2002-2005 The Trustees of Indiana University.  
-#                         All rights reserved.
-# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
-# 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-#
 # $Id$
 #
-# (c) 2005 Erich Focht <efocht@hpce.nec.com>
+# Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
+#                    All rights reserved.
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -20,6 +16,10 @@ use Carp;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
 use Getopt::Long;
+use lib '/usr/lib/systeminstaller';
+use SIS::Client;
+use SIS::Image;
+use SIS::DB;
 use Data::Dumper;
 
 sub vprint;
@@ -39,8 +39,10 @@ Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
 my %options;
 GetOptions( \%options,
 	    'image|i=s',
+	    'node|n=s',
 	    'pool|p=s',
 	    'help|h',
+	    'verbose|v',
             ) || usage();
 
 usage() if ($options{help});
@@ -51,16 +53,41 @@ usage() if ($options{help});
 
 my $os;
 if ($options{pool}) {
+
     print "Detecting distro pool $options{pool}:\n";
     $os = OSCAR::OCA::OS_Detect::open(pool => $options{pool});
     die "Unable to determine operating system" if (!$os);
     print "Detected os structure :\n".Dumper($os);
-} else {
+
+} elsif (!$options{node}) {
+
     $os = OSCAR::OCA::OS_Detect::open($options{image});
     die "Unable to determine operating system" if (!$os);
     print "Distro package url : ".&distro_repo_url($options{image})."\n";
     print "OSCAR package pool : ".&oscar_repo_path($options{image})."\n";
     print "Detected os structure :\n".Dumper($os);
+
+} else {
+
+    my $node = $options{node};
+    my @clients;
+    @clients = list_client(hostname => $node);
+    if (!@clients) {
+	@clients = list_client(name => $node);
+    }
+    die "Unable to find node $node in SIS database.\n" if (!@clients);
+
+    my $img = $clients[0]->imagename;
+    die "No image name defined for client $img" if (!$img);
+    my @images = list_image(name => $img);
+    die "Image $img not found in SIS database" if (!@images);
+    my $imagepath = $images[0]->location;
+    $os = OSCAR::OCA::OS_Detect::open($imagepath);
+    die "Unable to determine operating system" if (!$os);
+    print "Distro package url : http://oscar_server/repo".&distro_repo_url($imagepath)."\n";
+    print "OSCAR package pool : http://oscar_server/repo".&oscar_repo_path($imagepath)."\n";
+    print "Detected os structure :\n".Dumper($os);
+
 }
 exit 0;
 
@@ -72,6 +99,7 @@ sub vprint {
     print @_ if ($options{verbose});
 }
 
+sub usage {
     print <<END_USAGE;
 Usage: distro-query [options]
 
@@ -80,6 +108,7 @@ Usage: distro-query [options]
  Options:
    --image|-i IMAGE_PATH : detect distro and architecture of an image directory
    --pool|-p path        : detect distro and architecture of a package pool
+   --node|-n node_name   : detect distro and architecture of a node
    --help|-h             : display this help text
 END_USAGE
    exit(1);
