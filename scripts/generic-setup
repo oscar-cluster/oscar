@@ -64,8 +64,8 @@ my $os = OSCAR::OCA::OS_Detect::open($options{image});
 die "Unable to determine operating system" if (!$os);
 
 # set package name
-my $pkg_name = $ENV{OSCAR_PACKAGE_HOME};
-$pkg_name =~ s:^.*\/::g;
+$ENV{OSCAR_PACKAGE_HOME} =~ s:/$::;
+my $pkg_name = basename($ENV{OSCAR_PACKAGE_HOME});
 
 # force verbose output if --test was selected
 $options{verbose} = 1 if exists $ENV{DEBUG_OSCAR_SETUP} || $options{test};
@@ -117,14 +117,36 @@ my @src_dirs;
 #     Still need to make this distro-dependent
 push @src_dirs, "RPMS" if (-d "$base_dir/RPMS");
 push @src_dirs, "distro/common-rpms" if (-d "$base_dir/distro/common-rpms");
+my ($non_common, $have_pkgs);
 for my $dir (distro_compat()) {
     if (-d "$base_dir/distro/$dir") {
 	push @src_dirs, "distro/$dir";
+	$non_common = 1;
+	# check for empty directories
+	my @my_pkgs = glob("$base_dir/distro/$dir/*");
+	$have_pkgs = 1 if (scalar(@my_pkgs) > 0);
 	last;
     }
 }
-vprint("Distro specific packages come from\n\t$base_dir/"
-       . join("\n\t$base_dir/",@src_dirs)."\n");
+# Are there any other package directories around?
+# This test makes no sense once we'll have distro-specific OSCAR tarballs
+my @any_dirs = glob("$base_dir/distro/{rhel,fc,mdk,mdv}*");
+# do we have any non-common dir in distro?
+if ((scalar(@any_dirs) > 0) && !$non_common) {
+    print "WARNING: No distro-specific dir found for package $pkg_name!\n";
+    print "   Continuing but distro-specific packages could be missing...\n";
+}
+my @any_pkgs = glob("$base_dir/distro/{rhel,fc,mdk,mdv}*/*");
+# is the directory empty while others have packages?
+# this test makes no sense once we'll have distro-specific OSCAR tarballs
+if ($non_common && (scalar(@any_pkgs) > 0) && !$have_pkgs) {
+    print "WARNING: Distro specific directory of package $pkg_name looks empty!\n";
+    print "   Continuing but distro-specific packages could be missing...\n";
+}
+if (@src_dirs) {
+    vprint("Distro specific packages come from\n\t$base_dir/"
+	   . join("\n\t$base_dir/",@src_dirs)."\n");
+}
 
 # List packages.
 #
