@@ -18,6 +18,7 @@ oscar_SCRIPTS		= \
 			c3_conf_manager \
 			client_status \
 			create_and_populate_basic_node_info \
+			distro-query \
 			generic-setup \
 			get_num_proc \
 			install_prereq \
