@@ -31,7 +31,7 @@ use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use Carp;
 
-@EXPORT = qw(distro_repo_path oscar_repo_path
+@EXPORT = qw(distro_repo_url oscar_repo_path
 	     pkg_extension pkg_separator
 	     distro_detect_or_die);
 
