@@ -53,7 +53,6 @@ sub detect_dir {
         $id->{compat_distro} = $compat_distro;
         $id->{compat_distrover} = $os_version;
         $id->{pkg} = $pkg;
-	print "version $1, release$2\n";
     } else {
 	print "Mandriva returning indef";
 	return undef;
