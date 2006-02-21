@@ -32,6 +32,9 @@ if ($os->{compat_distro} =~ /^(rhel|fc|mdv)/) {
 }
 
 oscar_log_subsection("Checking status of MySQL server $mysqld");
+if (! -x "/etc/init.d/$mysqld") {
+    croak("Couldn't find /etc/init.d/$mysqld. MySQL server not correctly installed?");
+}
 if ( !system("/etc/init.d/$mysqld status | grep -c stopped") ) {
   !system("/etc/init.d/$mysqld restart") or croak("Couldn't restart $mysqld");
 } else {
