@@ -45,7 +45,12 @@ my $OSCAR_SERVER_GROUP = "oscar_server";
 my $ohome = $ENV{OSCAR_HOME};
 
 my $verbose;
-$verbose="--verbose" if ($ENV{OSCAR_WIZARD_VERBOSE});
+if ($ENV{OSCAR_VERBOSE}) {
+    $verbose="--verbose";
+    if (!$ENV{YUME_VERBOSE}) {
+	$ENV{YUME_VERBOSE} = $ENV{OSCAR_VERBOSE};
+    }
+}
 
 #
 # #####
