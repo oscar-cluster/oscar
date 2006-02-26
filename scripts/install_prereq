@@ -102,13 +102,13 @@ for my $path (@prereqs) {
 	next if ($line =~ /^\#/ && $line =~ /^$/);
 	my $remove = ($line =~ /^!/);
 	if ($remove) {
-	    $line = s/^!//g;
+	    $line =~ s/^!//g;
 	}
 	my ($pkg,$dummy) = split(/\s+/,$line);
 	if ($remove) {
-	    push @removes, $line;
+	    push @removes, $pkg;
 	} else {
-	    push @installs, $line;
+	    push @installs, $pkg;
 	}
     }
 }
@@ -171,7 +171,7 @@ sub handle_dumb_rpms {
 	my $pkgname = $pkg; $pkgname =~ s/\.rpm$//;
 	if ($remove) {
 	    # remove all instances of package
-	    $cmd = "rpm -ev --all $pkgname";
+	    $cmd = "rpm -ev --all --nodeps $pkgname";
 	    vprint("Executing: $cmd\n");
 	    !system($cmd) or print "Warning: removal failed: $!\n";
 	} else {

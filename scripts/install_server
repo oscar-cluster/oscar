@@ -45,7 +45,10 @@ my $OSCAR_SERVER_GROUP = "oscar_server";
 
 my $INTERFACE = shift or croak("No interface specified");
 
-my $verbose = $ENV{OSCAR_DEBUG_WIZARD};
+my $verbose = $ENV{OSCAR_VERBOSE};
+if ($verbose && !$ENV{YUME_VERBOSE}) {
+    $ENV{YUME_VERBOSE} = $verbose;
+}
 
 my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
