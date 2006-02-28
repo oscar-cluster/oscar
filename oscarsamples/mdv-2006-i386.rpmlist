@@ -195,3 +195,4 @@ gcc-c++
 glibc-devel
 libstdc++5-devel
 gcc-gfortran
+ldconfig
