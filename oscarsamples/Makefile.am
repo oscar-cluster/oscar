@@ -18,7 +18,7 @@ oscar_DATA		= \
 			fc-4-i386.rpmlist \
 			mandrake-10.0-i386.rpmlist \
 			mandrake-10.1-i386.rpmlist \
-			mandriva-2006-i386.rpmlist \
+			mdv-2006-i386.rpmlist \
 			rhel-3-i386.rpmlist \
 			rhel-3-x86_64.rpmlist \
 			rhel-3-ia64.rpmlist \
