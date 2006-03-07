@@ -1,0 +1,147 @@
+#!/usr/bin/perl
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#
+# Copy OSCAR Packages (opkg) to the OSCAR Package Pool.
+#
+# $Id$
+#
+# Copyright (c) Erich Focht, NEC HPCE, Stuttgart, 2006
+
+use strict;
+use Getopt::Long;
+use File::Basename;
+
+my ($pool, $distro, $arch, $test, $verbose, $all);
+GetOptions( 
+	    "help|h"      => \&help,
+	    "all|a"       => \$all,
+	    "pool=s"      => \$pool,
+	    "distro=s"    => \$distro,
+	    "arch=s"      => \$arch,
+	    "test"        => \$test,
+	    "verbose|v"   => \$verbose,
+          )  || &help();
+
+my @PKGS = @ARGV;
+
+my $ohome = $ENV{OSCAR_HOME};
+
+die "\$OSCAR_HOME not set" unless ($ohome);
+
+eval "use lib \"$ENV{OSCAR_HOME}/lib\"";
+
+my ($oscar_pkg_pool,@PKG_SOURCE_LOCATIONS);
+
+eval "use OSCAR::PackagePath";
+if (!$?) {
+    print "\tusing old package paths...\n" if ($verbose);
+    @PKG_SOURCE_LOCATIONS = ( "$ohome/packages", "/var/lib/oscar/packages" );
+    $oscar_pkg_pool = "/tftpboot/rpm";
+} else {
+    # OSCAR 5 provides info on paths
+    print "\tusing new package paths...\n" if ($verbose);
+    eval "\$oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path()";
+    eval "\@PKG_SOURCE_LOCATIONS = \@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS";
+}
+
+if ($pool) {
+    if (-d $pool && -x $pool) {
+	print "\toverriding default package pool with: $pool\n";
+	$oscar_pkg_pool = $pool;
+    } else {
+	print "Pool $pool is either not existing, not a directory\n";
+	print "or has wrong permissions.\n";
+	exit 1;
+    }
+}
+
+print "Locating all OSCAR packages\n" ;
+my %pkgdirs;
+foreach my $d (@PKG_SOURCE_LOCATIONS) {
+    # EF: a package is a package if it has a config.xml file
+    for my $cfg (glob("$d/*/config.xml")) {
+	my $dir = dirname($cfg);
+	my $pkg = basename($dir);
+
+	# [EF] When package exists in multiple places we use the last occurence
+	#      (usually /var/lib/oscar/packages).
+	#      This makes it easier to override OSCAR builtin packages with
+	#      downloaded ones.
+	if (exists($pkgdirs{$pkg})) {
+	    print "WARNING: Package $pkg found in multiple places. Using $dir!\n";
+	}
+	$pkgdirs{$pkg} = $dir;
+    }
+}
+
+
+
+print "Copying package files to $oscar_pkg_pool\n";
+
+my $gscmd = "$ohome/scripts/generic-setup";
+$gscmd .= " --distro $distro" if ($distro);
+$gscmd .= " --arch $arch"     if ($arch);
+$gscmd .= " --verbose"        if ($verbose);
+$gscmd .= " --pool $oscar_pkg_pool";
+
+@PKGS = sort(keys(%pkgdirs)) if ($all);
+
+my $err = 0;
+for my $pkg (@PKGS) {
+    if (!exists($pkgdirs{$pkg})) {
+	print "OSCAR Package $pkg not found. Skipping.\n";
+	next;
+    }
+    my $dir = $pkgdirs{$pkg};
+
+    print "Running generic-setup for opkg $pkg\n";
+    my $cmd = "env OSCAR_PACKAGE_HOME=$dir $gscmd";
+    print "\texecuting: $cmd\n" if ($verbose);
+    if (!$test) {
+	my $ret = system($cmd);
+	if ($ret) {
+	    print "Error $ret was returned for opkg $pkg\n";
+	    if (!$err) {
+		$err = $ret;
+	    }
+	} else {
+	    print "Successfully ran generic-setup for opkg $pkg\n";
+	}
+    }
+}
+
+exit;
+
+sub help {
+    print "Usage:\n";
+    print "\t$0 [OPTIONS] [opkg ...]\n\n";
+    print "Copy OSCAR packages from the default package locations to the\n";
+    print "selected package repository. Package repositories depend on the\n";
+    print "targetted distribution and architecture.\n\n";
+    print "Options:\n";
+    print "--distro D-V : distribution-version string specifying which\n";
+    print "               opkgs should be copied to the package pool.\n";
+    print "               Examples for distro strings: rhel-4, fc-3, mdv-2006\n";
+    print "--arch ARCH  : architecture of OSCAR packages\n";
+    print "--pool DIR   : package pool where packages should be copied\n";
+    print "--all|-a     : copy all OSCAR packages, ignore packages specified\n";
+    print "               on the command line\n";
+    print "--test       : don't copy files, just print what would happen\n";
+    print "--verbose|-v : print verbose output\n\n";
+    exit;
+}
+
