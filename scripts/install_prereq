@@ -205,9 +205,10 @@ sub locate_pkg {
 	@pkgs = glob("$oscar_pkg_pool/$pkg$separator"."[0-9]*$suffix ".
                      "$distro_pkg_pool/$pkg$separator"."[0-9]*$suffix");
     }
-    # simply return the first one
+    # simply return the last one
+    # EF: actually we need some version comparison here
     if (scalar @pkgs) {
-	return $pkgs[0];
+	return $pkgs[$#pkgs];
     }
     return undef;
 }
