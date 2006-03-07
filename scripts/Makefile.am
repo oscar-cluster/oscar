@@ -29,6 +29,7 @@ oscar_SCRIPTS		= \
 			make_database_password \
 		        manage_cluster \
 			opd \
+			opkg-copy \
 			oscar_wizard \
 			package_config_xmls_to_database \
 			ping_clients \
