@@ -360,6 +360,7 @@ sub build_oscar_image {
     # adding foreign distros will need some more complicated hacking
 
     my $distro_pool = &OSCAR::PackagePath::distro_repo_url("/");
+    $distro_pool =~ s/\ /,/g;
     my $oscar_pool = &OSCAR::PackagePath::oscar_repo_path("/");
 
     oscar_log_subsection("Step $step_number: Identified distro of clients: $distro $distro_ver");
