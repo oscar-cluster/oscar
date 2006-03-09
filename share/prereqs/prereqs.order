@@ -3,7 +3,6 @@
 # directory.
 #
 # dumb prereqs needed for bootstrapping the smart installer:
-# share/prereqs/perl-IO-Tty
 # packages/yume
 # share/prereqs/packman
 #
