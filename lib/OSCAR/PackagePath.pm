@@ -81,12 +81,17 @@ sub distro_repo_url {
     my $path = "/tftpboot/distro/$distro-$distrover-$arch";
     my $url;
     if (-f "$path.url") {
+	my @remote;
 	local *IN;
 	if (open IN, "$path.url") {
-	    my $line = <IN>;
-	    chomp $line;
+	    while (my $line = <IN>) {
+		chomp $line;
+		next if ($line !~ /^(http|ftp)/);
+		next if ($line =~ /^\s*$/);
+		push @remote, $line;
+	    }
 	    close IN;
-	    $url = $line;
+	    $url = join(" ",@remote);
 	}
     } else {
 	$url = $path;

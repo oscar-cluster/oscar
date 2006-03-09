@@ -47,14 +47,20 @@ sub prepare_pools {
 
     # check if pool update is needed
     for my $pool ($oscar_pkg_pool,$distro_pkg_pool) {
-	if (&pool_needs_update($pool)) {
+	print "--- checking md5sum for $pool" if $verbose;
+	if ($pool =~ /^(http|ftp)/) {
+	    print " ... remote repo, no check needed.\n" if $verbose;
+	    next;
+	}
+	print "\n" if $verbose;
+	if (&pool_needs_update($verbose,$pool)) {
 	    &pool_gencache($pm,$pool);
 	    &mark_pool($pool);
 	}
     }
 
     # prepare for smart installs
-    $pm->repo($oscar_pkg_pool,$distro_pkg_pool);
+    $pm->repo($oscar_pkg_pool,split(" ",$distro_pkg_pool));
     # follow output of smart installer
     if ($verbose) {
 	$pm->output_callback(\&print_output);
@@ -104,7 +110,7 @@ sub mark_pool {
 # pool.md5 and used for detecting changes of the pool.
 # 
 sub pool_needs_update {
-    my ($pool) = @_;
+    my ($verbose,$pool) = @_;
 
     local *IN;
     my $wd = cwd();
@@ -122,8 +128,8 @@ sub pool_needs_update {
     chomp $in;
     close IN;
     chdir $wd;
-    print "present md5sum: $md5sum\n";
-    print "loaded  md5sum: $in\n";
+    print "present md5sum: $md5sum\n" if $verbose;
+    print "loaded  md5sum: $in\n" if $verbose;
 
     return ($in ne $md5sum);
 }
