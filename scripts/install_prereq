@@ -113,9 +113,9 @@ for my $path (@prereqs) {
     }
 }
 
-vprint("Following packages will be removed:\n".
+vprint("Following packages will be removed:\n\t".
        join("\n\t",@removes) . "\n");
-vprint("Following packages will be installed:\n".
+vprint("Following packages will be installed:\n\t".
        join("\n\t",@installs) . "\n");
 
 if ($dumb) {
