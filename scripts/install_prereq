@@ -198,13 +198,16 @@ sub handle_dumb_rpms {
 #
 sub locate_pkg {
     my ($pkg) = @_;
+    my $march = $arch;
+    $march = "i?86" if ($arch eq "i386");
     my @pkgs;
     if ($pkg =~ /$suffix$/) {
 	@pkgs = glob("$oscar_pkg_pool/$pkg $distro_pkg_pool/$pkg");
     } else {
-	@pkgs = glob("$oscar_pkg_pool/$pkg$separator"."[0-9]*$suffix ".
-                     "$distro_pkg_pool/$pkg$separator"."[0-9]*$suffix");
+	@pkgs = glob("$oscar_pkg_pool/$pkg$separator"."[0-9]*{$march,noarch}$suffix ".
+                     "$distro_pkg_pool/$pkg$separator"."[0-9]*{$march,noarch}$suffix");
     }
+    vprint("locate_pkg glob result: ".join(",",@pkgs)."\n");
     # simply return the last one
     # EF: actually we need some version comparison here
     if (scalar @pkgs) {
