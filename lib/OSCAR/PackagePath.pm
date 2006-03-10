@@ -91,7 +91,7 @@ sub distro_repo_url {
 		push @remote, $line;
 	    }
 	    close IN;
-	    $url = join(" ",@remote);
+	    $url = join(",",@remote);
 	}
     } else {
 	$url = $path;

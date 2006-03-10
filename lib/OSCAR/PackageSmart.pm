@@ -40,13 +40,18 @@ use Carp;
 my $poolmd5 = "pool.md5";
 
 sub prepare_pools {
-    my ($verbose,$oscar_pkg_pool,$distro_pkg_pool) = @_;
+    my ($verbose,@pargs) = @_;
 
     my $pm = PackMan->new;
     return undef if (!$pm);
 
+    # demultiplex pool arguments
+    my @pools;
+    for my $p (@pargs) {
+	push @pools, split(",",$p);
+    }
     # check if pool update is needed
-    for my $pool ($oscar_pkg_pool,$distro_pkg_pool) {
+    for my $pool (@pools) {
 	print "--- checking md5sum for $pool" if $verbose;
 	if ($pool =~ /^(http|ftp)/) {
 	    print " ... remote repo, no check needed.\n" if $verbose;
@@ -60,7 +65,7 @@ sub prepare_pools {
     }
 
     # prepare for smart installs
-    $pm->repo($oscar_pkg_pool,split(" ",$distro_pkg_pool));
+    $pm->repo(@pools);
     # follow output of smart installer
     if ($verbose) {
 	$pm->output_callback(\&print_output);
