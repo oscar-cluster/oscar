@@ -87,7 +87,7 @@ sub distro_repo_url {
 	    while (my $line = <IN>) {
 		chomp $line;
 		next if ($line !~ /^(http|ftp)/);
-		next if ($line =~ /^\s*$/);
+		next if (($line =~ /^\s*$/) || ($line =~ /^\s*#/));
 		push @remote, $line;
 	    }
 	    close IN;
