@@ -204,7 +204,6 @@ sub list_databases {
     if $$options_ref{verbose};
     my @databases = 
     $driver_handle->func ($$options_ref{host}, $$options_ref{port}, '_ListDBs');
-#    if (defined @databases) {
     if ( @databases ) {
     print( "$0: in oda::list_databases _ListDBs succeeded returned <@databases>\n")
         if $$options_ref{debug};
@@ -816,24 +815,6 @@ sub do_query {
     return 1;
 }
 
-# convert an escaped field name to an unescaped
-# field name
-
-sub unescape_field_name{
-    my ( $options_ref, $field_name ) = @_;
-    if ( exists $unescape_fields_hash{ $field_name } ) {
-        return $unescape_fields_hash{ $field_name };
-    }
-    if ( $field_name =~ /\./ ) {
-        my @field_parts = split( '\.', $field_name );
-        my $last_part = pop @field_parts;
-        if ( exists $unescape_fields_hash{ $last_part } ) {
-            my $unescaped_last_part = $unescape_fields_hash{ $last_part };
-            return join( '.', @field_parts ) . "." . $unescaped_last_part;
-        }
-    }
-    return $field_name;
-}
 
 
 #********************************************************************#
