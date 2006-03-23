@@ -51,6 +51,7 @@ sub prepare_pools {
 	push @pools, split(",",$p);
     }
     # check if pool update is needed
+    my $perr = 0;
     for my $pool (@pools) {
 	print "--- checking md5sum for $pool" if $verbose;
 	if ($pool =~ /^(http|ftp)/) {
@@ -59,9 +60,18 @@ sub prepare_pools {
 	}
 	print "\n" if $verbose;
 	if (&pool_needs_update($verbose,$pool)) {
-	    &pool_gencache($pm,$pool);
-	    &mark_pool($pool);
+	    my $err = &pool_gencache($pm,$pool);
+	    if ($err) {
+		$perr++;
+	    } else {
+		&mark_pool($pool);
+	    }
 	}
+    }
+    if ($perr) {
+	undefine $pm;
+	print "Error: could not setup or generate package pool metadata\n";
+	return undef;
     }
 
     # prepare for smart installs
@@ -84,10 +94,11 @@ sub pool_gencache {
     my ($err, @out) = $pm->gencache;
     if ($err) {
 	print " success\n";
+	return 0;
     } else {
 	print " error. Output was:\n";
 	print join("\n",@out)."\n";
-	# exit here?
+	return 1;
     }
 }
 
