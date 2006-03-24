@@ -202,7 +202,10 @@ sub locate_pkg {
     $march = "i?86" if ($arch eq "i386");
     my @pkgs;
     if ($pkg =~ /$suffix$/) {
-	@pkgs = glob("$oscar_pkg_pool/$pkg $distro_pkg_pool/$pkg");
+	my @tmp = glob("$oscar_pkg_pool/$pkg $distro_pkg_pool/$pkg");
+	for my $f (@tmp) {
+	    push @pkgs, $f if (-f $f);
+	}
     } else {
 	@pkgs = glob("$oscar_pkg_pool/$pkg$separator"."[0-9]*{$march,noarch}$suffix ".
                      "$distro_pkg_pool/$pkg$separator"."[0-9]*{$march,noarch}$suffix");
@@ -211,7 +214,7 @@ sub locate_pkg {
     # simply return the last one
     # EF: actually we need some version comparison here
     if (scalar @pkgs) {
-	return $pkgs[$#pkgs];
+	return (reverse(sort(@pkgs)))[0];
     }
     return undef;
 }
