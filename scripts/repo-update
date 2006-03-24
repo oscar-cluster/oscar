@@ -1,0 +1,381 @@
+#!/usr/bin/perl
+#
+# Copyright (c) 2006 Erich Focht efocht@hpce.nec.com>
+#                    All rights reserved.
+# 
+#   $Id$
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+use strict;
+#use lib "/usr/lib/perl5/vendor_perl/5.8.0/";
+use XML::Simple;
+use Data::Dumper;
+use Getopt::Long;
+
+my ($debug,$verbose,$url,$repo,$prim,$check,$rmdup);
+
+GetOptions( 
+	    'url=s'     => \$url,
+	    'repo=s'    => \$repo,
+	    'prim=s'    => \$prim,
+	    'debug'     => \$debug,
+	    'check'     => \$check,
+	    'rmdup'     => \$rmdup,
+	    'verbose|v' => \$verbose,
+	    ) || help();
+
+if (!$url && !$rmdup) {
+    print "None of --url and --rmdup was selected.\n\n";
+    &help();
+}
+
+if ($url) {    
+    $url =~ s:/$::g;
+}
+
+$verbose = 1 if ($debug);
+if (!$repo) {
+    $repo = $ENV{PWD};
+} else {
+    chdir $repo or die "Could not change to directory $repo: $!";
+}
+
+my %lpkgs;
+my @deletions;
+if ($rmdup) {
+    # try to load repo primary.xml
+    my $file = "repodata/primary.xml.gz";
+    if (-f $file) {
+
+	my $tfile = `mktemp`; chomp $tfile;
+	!system("gzip -dc $file > $tfile") or die "Could not unpack $file.";
+
+	my $xs = new XML::Simple(keyattr => [ ], forcearray => [ "package", ]);
+    
+	print STDERR "Starting to read local metadata...\n";
+	my $h = eval { $xs->XMLin($tfile); };
+	print "=== Local metadata:\n".Dumper($h) if ($debug);
+	print STDERR "Finished reading local metadata\n";
+	unlink $tfile;
+	
+	for my $p (@{$h->{package}}) {
+	    my $name = $p->{name};
+	    my $loc = $p->{location}->{href};
+	    my $ver = $p->{version}->{epoch} . "-" . $p->{version}->{ver} .
+		"-" . $p->{version}->{rel};
+	    my $arch = $p->{arch};
+	    next if ($name =~ /debuginfo/);
+	    next if (!$loc);
+	    next if (!-f "$loc");
+
+	    my $tmp = { 'loc' => $loc,
+			'ver'  => $ver };
+	    my $key = $name.".".$arch;
+
+	    if (defined($lpkgs{$key})) {
+		if (rpm_newer($tmp, $lpkgs{$key})) {
+		    # delete file of old entry
+		    # ...
+		    vprint("deleting " . $lpkgs{$key}->{loc} . "\n");
+		    push @deletions, $lpkgs{$key}->{loc};
+		    # replace old entry by new one
+		    vprint("replacing ".$tmp->{loc}." as newest package\n");
+		    $lpkgs{$key} = $tmp;
+		} else {
+		    # delete current file
+		    # ...
+		    vprint("deleting " . $tmp->{loc} . "\n");
+		    push @deletions, $tmp->{loc};
+		}
+	    } else {
+		dprint("registered " . $tmp->{loc} . "\n");
+		$lpkgs{$key} = $tmp;
+	    }
+	}
+
+    } else {
+	print "Could not find local repository's $file. Ignoring --rmdup.\n";
+    }
+}
+
+if ($url) {
+    my $file;
+    if (!$prim) {
+	# download primary.xml.gz
+	!system("wget $url/repodata/primary.xml.gz")
+	    or die "Downloading $url/repodata/primary.xml.gz failed.";
+	# unpack primary.xml
+	!system("gunzip primary.xml.gz")
+	    or die "Unpacking primary.xml failed: $!";
+	$file = "primary.xml";
+    } else {
+	if (-f $prim) {
+	    $file = $prim;
+	} else {
+	    die "File $prim not found!";
+	}
+    }
+
+    my $xs = new XML::Simple(keyattr => [ ], forcearray => [ "package", ]);
+    
+    print STDERR "Starting to read metadata...\n";
+    my $h = eval { $xs->XMLin($file); };
+    print "=== Metadata:\n".Dumper($h) if ($debug);
+    my $pkgs = $h->{package};
+    print STDERR "Finished reading metadata\n";
+    unlink $file if (!$prim);
+
+    # build list of rpms to download
+    my %download;
+    for my $p (@{$pkgs}) {
+	my $name = $p->{name};
+	my $loc = $p->{location}->{href};
+	my $ver = $p->{version}->{epoch} . "-" . $p->{version}->{ver} .
+	    "-" . $p->{version}->{rel};
+	my $arch = $p->{arch};
+	next if ($name =~ /debuginfo/);
+	next if (-f "$repo/$loc");
+	next if (!$loc);
+
+	my $key = $name.".".$arch;
+
+	if ($rmdup) {
+	    if (exists($lpkgs{$key})) {
+		if (cmp_version_strings($ver, $lpkgs{$key}->{ver}) == 1) {
+		    push @deletions, $lpkgs{$key}->{loc};
+		} else {
+		    # package in repository is newer, so don't download
+		    next;
+		}
+	    }
+	}
+
+	if (!exists($download{$key})) {
+	    print "new: $key $ver\n" if ($verbose);
+	    $download{$key}{ver} = $ver;
+	    $download{$key}{loc} = $loc;
+	} else {
+	    if (cmp_version_strings($ver, $download{$key}{ver}) == 1) {
+		print "rep: $key $ver\n" if ($verbose);
+		$download{$key}{loc} = $loc;
+		$download{$key}{ver} = $ver;
+	    }
+	}
+    }
+
+    my @dfiles = map { $download{$_}{loc} } keys(%download);
+
+    if ($verbose || $check) {
+	print "Files to download:\n\t".join("\n\t",sort(@dfiles))."\n";
+    }
+
+    if (!$check) {
+	my $tfile = `mktemp`;
+	chomp $tfile;
+	open OUT, ">$tfile" or die "Could not open $tfile";
+	map { print OUT $_."\n" } sort(@dfiles);
+	close OUT;
+	chdir($repo);
+	# start wget for download
+	my $cmd = "wget -B $url/ -i $tfile";
+	print "Downloading packages with wget:\n$cmd\n";
+	if (system($cmd)) {
+	    print STDERR "wget failed: $!";
+	    exit 1;
+	}
+	unlink($tfile);
+    }
+}
+
+if ($rmdup) {
+    if (!$check) {
+	print "\nDeleting older packages:\n";
+    } else {
+	print "\nOlder packages that would be deleted:\n";
+    }
+    for my $f (@deletions) {
+	print $f."\n";
+	if (!$check) {
+	    unlink($f);
+	}
+    }
+}
+
+exit 0;
+
+
+#########################################################
+
+sub help {
+    print <<EOI;
+Usage:
+    $0 [--url URL_TO_PACKAGES] [--repo LOCAL_PATH] [--prim PRIMARY.XML] \
+       [--check] [--rmdup] [--verbose|-v]
+
+ Download packages from an online repository to the local repository
+ LOCAL_PATH or the current directory. If the repodata/primary.xml file
+ from the remote repository has already been downloaded and unpacked, it
+ can be passed to the program with the --prim option.
+ --check only lists the files which would be downloaded but does not start
+ the wget transfer.
+
+ The --rmdup option leads to the removal of old versions of packages, keeping
+ only the latest version. If the --url option is not specified, i.e. no downloads
+ are required, the --rmdup option removes the duplicate packages (older versions)
+ in the repository specified by --repo. If the --check option is specified, the
+ packages which would be removed are listed.
+
+ Examples:
+   Check packages which would be downloaded from a FC4 updates mirror site:
+
+   $0 --url http://mirrors.dotsrc.org/fedora/updates/4/i386/ --check \
+          --repo /tftpboot/distro/fedora-4-i386
+
+
+   Download updates to current directory (which could be the repository) and remove
+   older packages:
+
+   $0 --url http://mirrors.dotsrc.org/fedora/updates/4/i386/ --rmdup
+
+   Remove duplicate rpms (old package versions) from the repository (usefull when
+   one has copied the packages over from /var/cache/yum/*/packages/):
+
+   $0 --rmdup --repo /tftpboot/distro/fedora-4-i386
+
+
+EOI
+    exit 1;
+}
+
+####################
+
+
+#
+# Compare rpm versions, return 1 if $a is newer than $b, 0 otherwise.
+#
+
+sub rpm_newer ($$) {
+    my ($a, $b) = @_;
+    my $vercmp = cmp_version_strings($a->{ver}, $b->{ver});
+    if ($vercmp == 1) {
+	return 1;
+    }
+    return 0;
+}
+
+sub vprint ($) {
+    if ($verbose) {
+	print @_;
+    }
+}
+sub dprint ($) {
+    if ($debug) {
+	print @_;
+    }
+}
+
+#########################################################
+#
+# Following two routines taken from David Lombard's update-rpms package.
+# (C)opyright by David Lombard, distributed under GPL 2.
+#
+
+#
+# Compare two version strings.
+#
+sub cmp_version_strings($$)
+{
+        my ($a, $b) = @_;
+
+        return 0 unless defined $a && defined $b && $a ne "" && $b ne "";
+#
+#       Split a & b into runs of numeric and non-numeric strings.
+#         2.4.0 => "2.4.0"
+#         2.0p15 => "2.0", "p", "15"
+#
+#       EF:
+#         22.EL  vs. 22.0.1.EF fails
+#
+        my @a;
+        # ($a =~ /([\d\.]+)([^\d\.]*)/gc) ## FAILS FOR SOME CIRCUMSTANCES
+        push @a, $1, ($2||"") while ($a =~ /([\d\.]+)([^0-9\.]*)/gc);
+        my @aa = @a;
+
+        my @b;
+        # ($b =~ /([\d\.]+)([^\d\.]*)/gc) ## FAILS FOR SOME CIRCUMSTANCES
+        push @b, $1, ($2||"") while ($b =~ /([\d\.]+)([^0-9\.]*)/gc);
+        my @bb = @b;
+#
+#       Compare the strings.
+#
+        my $ans;
+        while (@a && @b) {
+                last if $ans = cmp_version_strings_num( shift( @a ), shift( @b ) );
+                last if $ans = shift( @a ) cmp shift( @b );
+        }
+        unless( $ans ) {
+                my $ta = shift( @a ) || -1;
+                my $tb = shift( @b ) || -1;
+                $ans = cmp_version_strings_num( $ta, $tb );
+        }
+        if( $verbose > 7 ) {
+                my $word = $ans < 0 ? "<" : $ans ? ">" : "==";
+                print join( " ", @aa ), " $word ", join( " ", @bb ), "\n";
+        }
+        return $ans;
+}
+
+#
+# Compare two version numbers.
+#
+sub cmp_version_strings_num($$)
+{
+        my ($a, $b) = @_;
+
+# EF: version problems when trailing dot in version number
+# like "2.0.1." compared to "2.0."
+# If both strings end with the same non-digit, strip it off
+	if (($a =~ /\d\.$/) && ($b =~ /\d\.$/)) {
+	    $a =~ s/\.$//;
+	    $b =~ s/\.$//;
+	}
+#
+#       Split a & b into runs of numbers.
+#         21.42.08 => "21", "42", "08"
+#         2 => "2"
+#
+        my @a;
+        push @a, $1, ($2||"") while ($a =~ /(\d+)(\.*)/gc);
+
+        my @b;
+        push @b, $1, ($2||"") while ($b =~ /(\d+)(\.*)/gc);
+#
+#       Compare the runs.
+#
+        my $ans;
+        while (@a && @b) {
+                last if $ans = shift( @a ) <=> shift( @b );
+                last if $ans = shift( @a ) cmp shift( @b );
+        }
+        unless( $ans ) {
+                my $ta = shift( @a ) || -1;
+                my $tb = shift( @b ) || -1;
+                $ans = $ta <=> $tb;
+        }
+        return $ans;
+}
+####################
