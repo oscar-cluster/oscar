@@ -37,6 +37,7 @@ oscar_SCRIPTS		= \
 			post_clients \
 			post_install \
 			post_rpm_install \
+			repo-update \
 			set_global_oscar_values \
 			set_node_nics \
 			set_oscar_interface \
