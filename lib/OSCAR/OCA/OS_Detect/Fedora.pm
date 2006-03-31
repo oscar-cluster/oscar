@@ -46,7 +46,7 @@ sub detect_dir {
 	chroot => $root,
     };
 
-    if ($release_string =~ /Fedora Core release (\d+) /) {
+    if ($release_string =~ /Fedora Core release (\d+)/) {
 	$fc_release = $1;
     } else {
 	return undef;
