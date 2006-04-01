@@ -16,6 +16,7 @@ distdir="$srcdir/$1"
 want_srpms="$2"
 OSCAR_VERSION="$3"
 OSCAR_SVN_R="$4"
+WANT_CORE_ONLY="$5"
 
 ############################################################################
 
@@ -318,6 +319,48 @@ elif test "$want_srpms" = "only"; then
         fi
     done
     cd ..
+fi
+
+if test "$WANT_CORE_ONLY" = "yes"; then
+  # We remove packages which are not core packages.
+  # Four kinds of packages are available: core, base, included, third-party
+  # It should be better to not add them (same thing for SRPMS) but no time to do it right now
+
+  # We remove first third-party packages
+  echo "Removing third-party packages"
+  cd packages
+  for dir in `/bin/ls`; do
+    echo checking dir: $dir
+    if test -d "$dir" -a "$dir" != "." -a "$dir" != ".."; then
+      cd $dir
+      ret=`grep "third-party" config.xml`
+      echo $ret
+      cd ..
+      if test "$ret" != ""; then
+        echo "Deleting third-party package $dir"
+        rm -rf $dir
+      fi
+    fi
+  done
+  cd ..
+
+  # We remove then included packages 
+  echo "Removing included packages"
+  cd packages
+  for dir in `/bin/ls`; do
+    echo checking dir: $dir
+    if test -d "$dir" -a "$dir" != "." -a "$dir" != ".."; then
+      cd $dir
+      ret=`grep "included" config.xml`
+      echo $ret
+      cd ..
+      if test "$ret" != ""; then
+        echo "Deleting included package $dir"
+        rm -rf $dir
+      fi
+    fi
+  done
+  cd ..
 fi
 
 #

@@ -69,10 +69,13 @@ oscar-dist:
 	$(MAKE) dist WANT_SRPMS=including
 	mv oscar-$(OSCAR_VERSION).tar.gz \
 		oscar-including-srpms-$(OSCAR_VERSION).tar.gz
+	$(MAKE) dist WANT_CORE_ONLY=yes
+	mv oscar-$(OSCAR_VERSION).tar.gz \
+		oscar-core-$(OSCAR_VERSION).tar.gz
 	$(MAKE) dist WANT_SRPMS=
 
 dist-nodocs:
 	$(MAKE) dist OSCAR_SKIP_DOCS=yes
 
 dist-hook:
-	sh ./dist/make-dist.sh "$(DESTDIR)$(distdir)" "$(WANT_SRPMS)" "$(OSCAR_VERSION)" "$(OSCAR_SVN_R)"
+	sh ./dist/make-dist.sh "$(DESTDIR)$(distdir)" "$(WANT_SRPMS)" "$(OSCAR_VERSION)" "$(OSCAR_SVN_R)" "$(WANT_CORE_ONLY)"
