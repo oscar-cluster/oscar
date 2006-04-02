@@ -35,6 +35,11 @@ use OSCAR::OCA;
 # open($path)         : detects distro/arch in chroot directory $path
 # open(chroot=>$path) : detects distro/arch in chroot directory $path
 # open(pool=>$pool)   : detects distro/arch of package pool $pool
+# open(fake=>{ distro=>$distro, distro_version=>$version, arch=>$arch})
+#                     : build fake $id structure when distro is known but
+#                       distro files are not accessible (e.g. for pools
+#                       referenced by URLs). Main purpose: find compat distro
+#                       and packaging method.
 #
 
 sub open {
@@ -53,11 +58,13 @@ sub open {
 	$arg{chroot} = "/";
     }
 
-    my ($path,$pool);
+    my ($path,$pool,$fake);
     if (exists($arg{chroot})) {
 	$path = $arg{chroot};
     } elsif (exists($arg{pool})) {
 	$pool = $arg{pool};
+    } elsif (exists($arg{fake})) {
+	$fake = $arg{fake};
     } else {
 	print STDERR "ERROR: Unknown detection target in OS_Detect:".
 	    join(",",keys(%arg))."\n";
@@ -95,6 +102,8 @@ sub open {
 	    $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_dir(\$path)";
 	} elsif ($pool) {
 	    $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_pool(\$pool)";
+	} elsif ($fake) {
+	    $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_fake(\$fake)";
 	}
 	eval $str;
 	if (defined($ret) && (ref($ret) eq "HASH")) {
@@ -212,5 +221,22 @@ sub detect_pool_rpm {
     return $id;
 }
 
+#
+# For pools referenced by URL find compat distro name and generate
+# fake $id structure
+#
+sub detect_fake_common {
+    my ($id,$distro,$compat_distro,$pkg) = @_;
+    if (exists($id->{distro}) && exists($id->{distro_version}) &&
+	exists($id->{arch})) {
+	if ($id->{distro} =~ /^$distro/) {
+	    $id->{compat_distro} = $compat_distro;
+	    $id->{compat_distrover} = $id->{distro_version};
+	    $id->{pkg} = $pkg;
+	    return $id;
+	}
+    }
+    return undef;
+}
 
 1;

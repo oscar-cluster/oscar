@@ -79,5 +79,14 @@ sub detect_pool {
     return $id;
 }
 
+sub detect_fake {
+    my ($fake) = @_;
+    my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
+							     $distro,
+							     $compat_distro,
+							     $pkg);
+    return $id;
+}
+
 # If we got here, we're happy
 1;
