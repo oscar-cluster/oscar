@@ -170,10 +170,16 @@ sub handle_dumb_rpms {
 	# make sure we deal with package names, not file names
 	my $pkgname = $pkg; $pkgname =~ s/\.rpm$//;
 	if ($remove) {
-	    # remove all instances of package
-	    $cmd = "rpm -ev --all --nodeps $pkgname";
+	    $cmd = "rpm -q $pkgname >/dev/null 2>&1";
 	    vprint("Executing: $cmd\n");
-	    !system($cmd) or print "Warning: removal failed: $!\n";
+	    if (!system($cmd)) {
+		# remove all instances of package
+		$cmd = "rpm -ev --all --nodeps $pkgname";
+		vprint("Executing: $cmd\n");
+		!system($cmd) or print "Warning: removal failed: $!\n";
+	    } else {
+		vprint("Package $pkgname not installed.\n");
+	    }
 	} else {
 	    # already installed?
 	    $cmd = "rpm -q $pkgname >/dev/null 2>&1";
