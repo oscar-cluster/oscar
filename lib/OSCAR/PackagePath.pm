@@ -33,7 +33,7 @@ use Carp;
 
 @EXPORT = qw(distro_repo_url oscar_repo_path
 	     pkg_extension pkg_separator
-	     distro_detect_or_die);
+	     distro_detect_or_die list_distro_pools);
 
 # The possible places where packages may live.  
 
@@ -73,8 +73,15 @@ sub distro_detect_or_die {
 # /tftpboot/distro/$distro-$version-$arch.url
 #
 sub distro_repo_url {
-    my ($img) = @_;   # can be undefined, in which case we query "/"
-    my $os = distro_detect_or_die($img);
+    my ($img,$os);
+    if (scalar(@_) <= 1) {
+	($img) = @_;
+    } elsif ($_[0] eq "os") {
+	$os = $_[1];
+    }
+    if (!defined($os)) {
+	$os = distro_detect_or_die($img);
+    }
     my $distro    = $os->{distro};
     my $distrover = $os->{distro_version};
     my $arch      = $os->{arch};
@@ -114,9 +121,20 @@ sub distro_repo_url {
 # OSCAR doesn't care about the particular flavor of a rebuilt distro, it
 # uses the same packages eg. for rhel4, scientific linux 4 and centos 4.
 #
+# Usage:
+#    $path = oscar_repo_path();         # detect distro of master ("/")
+#    $path = oscar_repo_path($image);   # detect distro of image
+#    $path = oscar_repo_path(os => $os);  # use given $os structure
 sub oscar_repo_path {
-    my ($img) = @_;   # can be undefined, in which case we query "/"
-    my $os = distro_detect_or_die($img);
+    my ($img,$os);
+    if (scalar(@_) <= 1) {
+	($img) = @_;
+    } elsif ($_[0] eq "os") {
+	$os = $_[1];
+    }
+    if (!defined($os)) {
+	$os = distro_detect_or_die($img);
+    }
     my $cdistro   = $os->{compat_distro};
     my $cdistrover= $os->{compat_distrover};
     my $arch      = $os->{arch};
@@ -127,6 +145,43 @@ sub oscar_repo_path {
 	    carp "Could not create directory $path!";
     }
     return $path;
+}
+
+#
+# List all available distro pools or distro URL files
+#
+sub list_distro_pools {
+    my $ddir = "/tftpboot/distro";
+    # recognised architectures
+    my $arches = "i386|x86_64|ia64";
+    my %pools;
+    local *DIR;
+    opendir DIR, $ddir or carp "Could not read directory $ddir!";
+    for my $e (readdir DIR) {
+	if ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) {
+	    my $distro = "$1-$2-$3";
+	    my $os;
+	    if ($4) {
+		$os = OSCAR::OCA::OS_Detect::open(fake=>{distro=>$1,
+							 distro_version=>$2,
+							 arch=>$3, }
+						  );
+	    } else {
+		$os = OSCAR::OCA::OS_Detect::open(pool=>"$ddir/$e");
+	    }
+	    if (defined($os) && (ref($os) eq "HASH")) {
+		$pools{$distro}{os} = $os;
+		$pools{$distro}{oscar_repo} = &oscar_repo_path(os=>$os);
+		$pools{$distro}{distro_repo} = &distro_repo_url(os=>$os);
+		if ($4) {
+		    $pools{$distro}{url} = "$ddir/$e";
+		} else {
+		    $pools{$distro}{path} = "$ddir/$e";
+		}		    
+	    }
+	}
+    }
+    return %pools;
 }
 
 #
