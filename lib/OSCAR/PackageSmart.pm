@@ -30,6 +30,7 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackMan;           # this only works when PackMan has arrived!
+use File::Basename;
 use Cwd;
 use Carp;
 
@@ -37,13 +38,16 @@ use Carp;
 	     prepare_pools
 	     );
 
-my $poolmd5 = "pool.md5";
-
 sub prepare_pools {
     my ($verbose,@pargs) = @_;
 
     my $pm = PackMan->new;
     return undef if (!$pm);
+
+    # follow output of smart installer
+    if ($verbose) {
+	$pm->output_callback(\&print_output);
+    }
 
     # demultiplex pool arguments
     my @pools;
@@ -59,12 +63,16 @@ sub prepare_pools {
 	    next;
 	}
 	print "\n" if $verbose;
-	if (&pool_needs_update($verbose,$pool)) {
+
+	my $cfile = "$ENV{OSCAR_HOME}/tmp/pool_".basename(dirname($pool)).
+	    "_".basename($pool).".md5";
+	my $md5 = &checksum_needed($pool,$cfile,"*.rpm","*.deb");
+	if ($md5) {
 	    my $err = &pool_gencache($pm,$pool);
 	    if ($err) {
 		$perr++;
 	    } else {
-		&mark_pool($pool);
+		&checksum_write($cfile,$md5);
 	    }
 	}
     }
@@ -76,10 +84,6 @@ sub prepare_pools {
 
     # prepare for smart installs
     $pm->repo(@pools);
-    # follow output of smart installer
-    if ($verbose) {
-	$pm->output_callback(\&print_output);
-    }
     return $pm;
 }
 
@@ -102,52 +106,70 @@ sub pool_gencache {
     }
 }
 
-
 #
-# Create a md5sum of the pool directory listing. This is stored in the file
-# pool.md5 and used for detecting changes of the pool.
-# 
-sub mark_pool {
-    my ($pool) = @_;
-
-    local *OUT;
+# Find files matching the patterns and generate a md5 checksum
+# over its metadata. The file content is not considered, this would
+# take too long.
+#
+sub checksum_files {
+    my ($dir, @pattern) = @_;
     my $wd = cwd();
-    chdir($pool);
-    my $out = `ls -Al -I "repocache" -I "repodata" -I "pool.md5" | grep -v ^total | md5sum -`;
-    my ($md5sum,$junk) = split(" ",$out);
-    open OUT, "> $poolmd5" or die "Could not open $poolmd5 $!";
-    print OUT "$md5sum\n";
-    close OUT;
-    chdir $wd;
+    chdir($dir);
+    @pattern = map { "-name '".$_."'" } @pattern;
+    return 0 if (! -d $dir);
+    my $cmd = "find . -follow -type f ".join(" -o ",@pattern).
+	" -printf \"%p %i %s %u %g %m %t\n\" | sort | md5sum -";
+    local *CMD;
+    open CMD, "$cmd |" or croak "Could not run md5sum: $!";
+    my ($md5sum,$junk) = split(" ",<CMD>);
+    close CMD;
+    chdir($wd);
+    return $md5sum;
 }
 
 #
-# Create a md5sum of the pool directory listing. This is stored in the file
-# pool.md5 and used for detecting changes of the pool.
-# 
-sub pool_needs_update {
-    my ($verbose,$pool) = @_;
+# write checksum file
+#
+sub checksum_write {
+    my ($file,$checksum) = @_;
+    local *OUT;
+    open OUT, "> $file" or croak "Could not open $file: $!";
+    print OUT "$checksum\n";
+    close OUT;
+}
 
+#
+# read checksum file
+#
+sub checksum_read {
+    my ($file) = @_;
     local *IN;
-    my $wd = cwd();
-    chdir($pool);
-    my $out = `ls -Al -I "repocache" -I "repodata" -I "pool.md5" | grep -v ^total | md5sum -`;
-    my ($md5sum,$junk) = split(" ",$out);
-    # need update if no pool.md5 file
-    if (! -f $poolmd5) {
-	chdir $wd;
-	return 1;
-    }
-    # load stored checksum
-    open IN, "$poolmd5" or die "Could not open $poolmd5 $!";
+    open IN, "$file" or croak "Could not open $file: $!";
     my $in = <IN>;
     chomp $in;
     close IN;
-    chdir $wd;
-    print "present md5sum: $md5sum\n" if $verbose;
-    print "loaded  md5sum: $in\n" if $verbose;
+    return $in;
+}
 
-    return ($in ne $md5sum);
+#
+# Is a new checksum needed? Check current checksum for directory $dir and
+# and file patterns @pattern, compare with checksum stored in file $cfile.
+# Return current checksum if $cfile is missing or checksum is different from
+# the one stored. Return 0 otherwise, i.e. if no new checksum is needed.
+#
+sub checksum_needed {
+    my ($dir, $cfile, @pattern) = @_;
+
+    my $md5 = &checksum_files($dir,@pattern);
+    if (-f $cfile) {
+	my $omd5 = &checksum_read($cfile);
+	if ($md5 == $omd5) {
+	    return 0;
+	} else {
+	    print "CHECKSUM: $cfile new:$md5 old:$omd5\n";
+	}
+    }
+    return $md5;
 }
 
 sub print_output {
