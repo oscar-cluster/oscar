@@ -52,6 +52,8 @@ if ($ENV{OSCAR_VERBOSE}) {
     }
 }
 
+my $md5;
+
 #
 # #####
 #
@@ -79,6 +81,12 @@ if ($distro_pkg_pool =~ /^\//) {   # is local path, no remote URL
     }
 }
 
+#
+# locate _all_ available distro pools, prepare for heterogeneous setup
+#
+my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
+print "Available Distro Pools:\n".Dumper(%distro_pools) if ($verbose);
+
 my $ipcmd = "$ohome/scripts/install_prereq $verbose";
 
 # Run the prerequisites.  Observe the order set in
@@ -88,9 +96,18 @@ my $ipcmd = "$ohome/scripts/install_prereq $verbose";
 oscar_log_subsection("Bootstrapping OSCAR smart package manager");
 
 # need to add ifdef for other type of smart package manager
-my $cmd = "$ipcmd --dumb packages/yume share/prereqs/packman";
+my $cmd = "$ipcmd --dumb share/prereqs/base packages/yume".
+    " share/prereqs/packman";
 !system($cmd) or
     die "Could not bootstrap smart package manager!\n";
+
+# this is needed for the checksum computations which shorten startup times
+eval("require OSCAR::PackageSmart");
+my $md5dir = $ENV{OSCAR_HOME}."/tmp";
+if (! -d $md5dir) {
+    mkdir $md5dir or croak "Could not make directory $md5dir: $!";
+}
+
 
 # hack... needs to be done yum independent
 system("yum clean all");
@@ -120,6 +137,18 @@ if (-f "$orderfile") {
 @ordered_prereqs = grep !/^\s*(\#.*|\s*)$/, @ordered_prereqs;
 
 
+# compute checksums for each ordered prereq
+my $indx=0;
+my $do_prereqs=0;
+for my $prereq (@ordered_prereqs) {
+    my $cfile = "$md5dir/prereq_$indx.md5";
+    $md5 = OSCAR::PackageSmart::checksum_needed("$ENV{OSCAR_HOME}/$prereq",
+						"$cfile","*");
+    $do_prereqs = 1 if ($md5);
+    $indx++;
+}
+goto PREREQS_DONE if (!$do_prereqs);
+
 $cmd = "$ipcmd --smart " . join(" ",@ordered_prereqs);
 print "\texecuting: $cmd\n" if ($verbose);
 !system($cmd) or die "ERROR: Prerequisites install failure!";
@@ -139,8 +168,15 @@ foreach my $prereq (@ordered_prereqs) {
     }
     oscar_log_subsection("Successfully installed prereq $prereq");
 }
-
-
+$indx=0;
+for my $prereq (@ordered_prereqs) {
+    my $cfile = "$md5dir/prereq_$indx.md5";
+    $md5 = OSCAR::PackageSmart::checksum_needed("$ENV{OSCAR_HOME}/$prereq",
+						"$cfile","*");
+    OSCAR::PackageSmart::checksum_write($cfile,$md5);
+    $indx++;
+}
+ PREREQS_DONE:
 
 # This must be done after the prerequisites, because the prerequisites
 # may have installed some Perl modules that OSCAR requires.
@@ -180,6 +216,12 @@ foreach my $d (@PKG_SOURCE_LOCATIONS) {
     }
 }
 
+# checksum for package files
+$md5 = OSCAR::PackageSmart::checksum_needed("$ENV{OSCAR_HOME}/packages",
+					    "$md5dir/packages.md5",
+					    "*");
+goto PREP_DB if (!$md5);
+
 oscar_log_subsection("Running package setup scripts for ALL packages");
 for my $pkg (sort keys(%pkgdirs)) {
     my $dir = $pkgdirs{$pkg};
@@ -200,28 +242,41 @@ oscar_log_subsection("Successfully ran package setup scripts");
 
 
 
-oscar_log_subsection("Copying package files to $oscar_pkg_pool");
-my $gscmd = "$ohome/scripts/generic-setup $verbose";
+my %orepo_done;
 my $err = 0;
-for my $pkg (sort keys(%pkgdirs)) {
-    my $dir = $pkgdirs{$pkg};
-
-    oscar_log_subsection("Running generic-setup for opkg $pkg");
-    $cmd = "env OSCAR_PACKAGE_HOME=$dir $gscmd --pool $oscar_pkg_pool";
+for my $dist (keys %distro_pools) {
+    my %d = %{$distro_pools{$dist}};
+    my $oscar_repo = $d{oscar_repo};
+    next if (exists $orepo_done{"$oscar_repo"});
+    my $gs_distro = $d{os}->{compat_distro}."-".$d{os}->{compat_distrover};
+    my $gs_arch = $d{os}->{arch};
+    # 
+    oscar_log_subsection("Running opkg-copy for $gs_distro $gs_arch");
+    my $cmd = "$ohome/scripts/opkg-copy --distro=$gs_distro --arch=$gs_arch".
+	" --pool=$oscar_repo $verbose --all";
+    
     print "\texecuting: $cmd\n" if ($verbose);
     my $ret = system($cmd);
     if ($ret) {
-	oscar_log_subsection("Error $ret was returned for opkg $pkg");
+	oscar_log_subsection("Error $ret was returned for opkg-copy");
 	if (!$err) {
 	    $err = $ret;
 	}
     } else {
-	oscar_log_subsection("Successfully ran generic-setup for opkg $pkg");
+	oscar_log_subsection("Successfully ran opkg-copy for $gs_distro $gs_arch");
     }
 }
+if ($err) {
+    croak("Failure during opkg-copy!");
+}
+
+# recalculate checksum because "setup" might have changed something
+$md5 = OSCAR::PackageSmart::checksum_files("$ENV{OSCAR_HOME}/packages","*");
+OSCAR::PackageSmart::checksum_write("$md5dir/packages.md5",$md5);
 
 
 
+ PREP_DB:
 # Make sure there is a database password
 
 oscar_log_subsection("Making sure there is an ODA database password");
@@ -230,15 +285,25 @@ system( "$ENV{OSCAR_HOME}/scripts/make_database_password" );
 # Now we're ready to use the database
 eval "use OSCAR::Database";
 
-# Start the database and copy the package xml files into the database
 
+ PREP_CONFIG_XML:
+$md5 = OSCAR::PackageSmart::checksum_needed("$ENV{OSCAR_HOME}/packages",
+					    "$md5dir/config_xml.md5",
+					    "config.xml");
+goto PREP_MORE_ODA if (!$md5);
+
+
+# Start the database and copy the package xml files into the database
 oscar_log_subsection("Initializing ODA database from package config.xml files");
 my $exit_status =
   system( "$ENV{OSCAR_HOME}/scripts/package_config_xmls_to_database" ) / 256;
 croak("Couldn't set up oda database") if $exit_status;
 
-# More ODA setup
+OSCAR::PackageSmart::checksum_write("$md5dir/config_xml.md5",$md5);
 
+
+ PREP_MORE_ODA:
+# More ODA setup
 my $exit_status = system("$ENV{OSCAR_HOME}/scripts/set_global_oscar_values "
 			 ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}")/256;
 croak("Couldn't initialize the global database values table") if $exit_status;
@@ -256,6 +321,12 @@ my $exit_status =
 croak("Couldn't initialize the nics and networks for the oscar server") if $exit_status;
 
 
+
+ PREP_INSTALL_CORE:
+$md5 = OSCAR::PackageSmart::checksum_needed("$ENV{OSCAR_HOME}/packages",
+					    "$md5dir/packages_core.md5",
+					    "*");
+goto PREP_DONE if (!$md5);
 
 # Get the list of just core packages
 
@@ -285,7 +356,6 @@ print "Packages: ".join(" ",@rpms) . "\n" if ($verbose);
 #
 
 eval("require OSCAR::PackMan");
-eval("require OSCAR::PackageSmart");
 my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
 					    $oscar_pkg_pool,$distro_pkg_pool);
 if (!$pm) {
@@ -301,6 +371,7 @@ if (!$err) {
 
 oscar_log_subsection("Successfully installed server core RPMs");
 
+ PREP_CORE_NEST:
 #
 # NEST
 #
@@ -343,7 +414,7 @@ unlock(\%options, \@errors);
 oscar_log_subsection("Done marking installed bits in ODA");
 
 
-
+ PREP_POST_SERVER_CORE:
 # Run the post_server_rpm_install scripts
 
 oscar_log_subsection("Running post_server_install scripts for " .
@@ -355,6 +426,26 @@ foreach my $package (@packages)
   }
 oscar_log_subsection("Successfully ran server core package " .
                      "post_server_install scripts");
+OSCAR::PackageSmart::checksum_write("$md5dir/packages_core.md5",$md5);
+
+#
+# Prepare and export all repositories
+#
+
+# need generalized export routine in PackMan
+
+#for my $dist (keys %distro_pools) {
+#    my %d = %{$distro_pools{$dist}};
+#    my $oscar_repo = $d{oscar_repo};
+#    next if (exists $orepo_done{"$oscar_repo"});
+#    # 
+#    oscar_log_subsection("");
+#    
+#}
+
+
+
+ PREP_DONE:
 
 oscar_log_subsection("Successfully ran OSCAR wizard_prep script");
 
