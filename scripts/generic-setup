@@ -39,9 +39,6 @@ die "$ENV{OSCAR_PACKAGE_HOME}: not accessible.\n" unless -x $ENV{OSCAR_PACKAGE_H
 # Different distros require different RPMs. Different architectures, too.
 
 my $base_dir= $ENV{OSCAR_PACKAGE_HOME};
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
-
-print "Copying to OSCAR package pool: $oscar_pkg_pool\n";
 
 # configure command line options parsing
 Getopt::Long::Configure("ignore_case"); # ignore case
@@ -63,6 +60,8 @@ GetOptions( \%options,
 my $os = OSCAR::OCA::OS_Detect::open($options{image});
 die "Unable to determine operating system" if (!$os);
 
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path($options{image});
+
 # set package name
 $ENV{OSCAR_PACKAGE_HOME} =~ s:/$::;
 my $pkg_name = basename($ENV{OSCAR_PACKAGE_HOME});
@@ -80,6 +79,8 @@ usage() if ($options{help});
 if (! -d $oscar_pkg_pool) {
     croak("Directory $oscar_pkg_pool does not exist");
 }
+
+print "Copying to OSCAR package pool: $oscar_pkg_pool\n";
 
 # image option has priority over arch and distro options
 if ($options{image}) {
