@@ -18,32 +18,46 @@ package OCA::OS_Detect::Debian;
 use strict;
 
 my $DEBUG = 1 if( $ENV{DEBUG_OCA_OS_DETECT} );
+my ($deb_ver, $deb_update);
+
+my $detect_file = "/bin/bash";  # Common file used to determine arch
+
+
+my $detect_pkg  = "base-files"; # Deb pkg containing '/etc/debian_version'
+                                # therefore should always be available
+                                # and the Version: is always accurate!
+
+my $dpkg_bin = "/usr/bin/dpkg-query"; # Tool to query Deb package Database
+
+
+#
+#  End of all configuration/global variable setup
+# 
+#---------------------------------------------------------------------
+
+
 
 # This routine is cheap and called very rarely, so don't care for
 # unnecessary buffering. Simply recalculate $id each time this is
 # called.
-sub detect {
+sub detect_dir {
     my ($root) = @_;
     my $release_string;
 
     # If /etc/debian_version exists, continue, otherwise, quit.
     if (-f "$root/etc/debian_version") {
-	local *FH;
-	open(FH, "$root/etc/debian_version") or
-	    die "Error: unable to open $root/etc/debian_version $!\n";
-	my @file = grep { ! /^\s*\#/ } <FH>;
-	close(FH);
+    	my $cmd = "$dpkg_bin --show $detect_pkg 2>&1";
+    	open(CMD, "$cmd|") or die "Error: unable to open $cmd - $!\n";
+	my $rslt = <CMD>;
+	chomp($rslt);
+	close(CMD);
 
-	# 
-	# Get version from one-line entry giving the version number in the
-	# file "/etc/debian_version".  c.f.,
-	# http://www.debian.org/doc/FAQ/ch-software.en.html#s-isitdebian
-	#
-	my $deb_ver = $file[0];
-	chomp($deb_ver);
+	$deb_ver = (split(/\s+/, $rslt))[1];  # [0]=name,  [1]=version
+
     } else {
 	return undef;
     }
+
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
@@ -67,7 +81,7 @@ sub detect {
     }
 
     # determine architecture
-    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch($root);
+    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root, $detect_file);
     $id->{arch} = $arch;
 
     # Limit support to only x86 machines
@@ -89,6 +103,22 @@ sub detect {
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
     return $id;
 }
+
+
+
+# FIXME: This needs to be added, just putting function name here for now.
+sub detect_pool {
+	print STDERR "Warning-STUB: method 'detect_pool()' not available.\n";
+	return undef;
+}
+
+
+# FIXME: This needs to be added, just putting function name here for now.
+sub detect_fake {
+	print STDERR "Warning-STUB: method 'detect_fake()' not available.\n";
+	return undef;
+}
+
 
 # If we got here, we're happy
 1;
