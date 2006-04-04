@@ -46,7 +46,7 @@ Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
 
 my %options;
 GetOptions( \%options,
-	    'arch|a',
+	    'arch|a=s',
 	    'distro|d=s',
 	    'image|i=s',
             'erase|e',
