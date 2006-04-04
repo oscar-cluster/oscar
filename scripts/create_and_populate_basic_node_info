@@ -52,7 +52,7 @@ sub do_it_or_die {
 # and a special associated configuration named oscar_server
 
 my @nodes = ();
-print "Checking for database existance of node oscar_server ...\n";
+print "Checking for database existence of node oscar_server ...\n";
 
 # START LOCKING FOR NEST and open the database.
 
@@ -86,7 +86,7 @@ if ( defined $dns_domain && $dns_domain ne "" ) {
 
 foreach my $node_group_name ( "oscar_clients", "all", "Default" ) {
     
-    print "Checking for existance of node group $node_group_name ...\n";
+    print "Checking for existence of node group $node_group_name ...\n";
     my @node_groups = ();
     my $group = get_groups(\@node_groups,\%options,\@errors,$node_group_name);
     if ( ! $group ) {
