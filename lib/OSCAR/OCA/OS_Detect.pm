@@ -149,6 +149,7 @@ sub detect_arch_pool {
 		}
 	    }
 	}
+	$arch = "i386" if ($arch =~ /i.86/);
 	return $arch;
     } elsif ($pkg eq "deb") {
 	my $known = "i?86,amd64,ia64,ppc";
@@ -168,6 +169,7 @@ sub detect_arch_pool {
 	if ($arch eq "amd64") {
 	    $arch = "x86_64";
 	}
+	$arch = "i386" if ($arch =~ /i.86/);
 	return $arch;
     } else {
 	print "Don't know how to detect package pool architecture for $pkg.\n";
