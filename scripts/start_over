@@ -20,6 +20,7 @@ use strict;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackagePath;
+use File::Basename;
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
@@ -201,6 +202,13 @@ for my $dist (keys %distro_pools) {
     next if (exists $orepo_done{"$orepo"});
     print "Removing directory $orepo\n";
     system("rm -rf $orepo");
+}
+
+for my $f (glob("$oscar_home/tmp/*.md5")) {
+    my $file = basename($f);
+    next if ($file =~ /^pool_distro/);
+    print "Removing checksum file: $f\n";
+    system("rm -f $f");
 }
 
 cleanup_files();
