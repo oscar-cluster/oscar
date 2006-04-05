@@ -1,8 +1,122 @@
-$Id: README,v 1.1 2002/04/21 22:09:52 jsquyres Exp $
+The LAM RPM is a bit different than many other RPMS because we have
+taken the approach of having *one* specfile rather than customizing it
+for every different Linux distro.  As such, in some places, a simple
+"rpmbuild --rebuild lam...src.rpm" either will not work or will not do
+what you intend.
 
-In case you're wondering why there's only one SRPM in this directory when
-there's more than one RPM in the lam/RPMS directory, it's because this one
-SRPM generates all of the OSCAR-ized LAM RPM's.  Specifically, if you 
-need to --rebuild the SRPM, all the necessary RPM's will be created.
+1. You *must* have recent versions of the GNU Autotools installed
+   (Autoconf, Automake, Libtool).  As of this writing, this means
+   Autoconf 2.59, Automake 1.9.6, Libtool 1.5.22.
+
+   These are trivial tools to install; you can just FTP tarballs from
+   ftp://ftp.gnu.org/gnu/ and run "./configure --prefix=/tmp/bogus;
+   make all install" for each of them (you do *NOT* need to upgrade
+   your system's central installation of these tools; indeed, I
+   wouldn't recommend doing that).  Then add "/tmp/bogus/bin" to your
+   PATH and you should be good to go.
+
+   The Open MPI project has a similar requirements; their HACKING file
+   has many details about installing these three tools:
+
+       http://svn.open-mpi.org/svn/ompi/trunk/HACKING
+
+2. There are 2 LAM/MPI SRPMs in this directory:
+
+   - lam: the main LAM/MPI distribution, including a modulefile for
+     that specific version of LAM (i.e., it'll be tailored for that
+     instance of LAM that is installed)
+
+   - lam-switcher-modulefile: a "master" modulefile for all LAM/MPI
+     installations on this machine.  Hence, it is independent of the
+     LAM RPM itself, and, at run-time, proactively find all the
+     modulefiles from each of the installed LAM RPMs and dispatches to
+     the "right" one.  
+
+     Currently, this package understands the combinatorial of the
+     following: have/have not GM, have/have not BLCR.  It looks for
+     modulefiles in the following directories, respectively:
+
+     - /opt/modules/modulefiles/lam/lam-with-blcr-and-gm-oscar-<version>
+     - /opt/modules/modulefiles/lam/lam-with-gm-oscar-<version>
+     - /opt/modules/modulefiles/lam/lam-with-blcr-oscar-<version>
+     - /opt/modules/modulefiles/lam/lam-oscar-<version>
+
+     Note that you can control where the SRPM places the modulefile
+     from rebuilding the SRPM by using the following option to
+     rpmbuild:
+
+     shell$ rpmbuild --rebuild lam...src.rpm --define 
+         "lam_name lam-oscar-<version>"
+     or
+     shell$ rpmbuild --rebuild lam...src.rpm --define 
+         "lam_name lam-with-gm-oscar-<version>"
+
+     And so on.  You'll typically want to combine this with other
+     options to LAM's configure script; see #3, below, for how to do
+     this.  Note also that the LAM specfile offers a few more --define
+     options; see the specfile for details.
+
+3. If you want to change the compilers that LAM builds with, there is
+   no need to edit the specfile.  You can change options that are
+   passed in to LAM's "configure" script (as well as the RPM
+   dependencies) from the command line.  For example:
+
+   shell$ rpmbuild --rebuild lam...src.rpm \
+       --define "config_options CC=icc CXX=icpc FC=ifort" \
+       --define "requires " \
+       --define "buildrequires "
+
+   This tells the specfile to pass in "CC=icc CXX=icpc FC=ifort" to
+   LAM's configure option, and it zeros out the compiler-inspired RPM
+   "Requires" and "BuildRequires" lines (normally they depend on gcc,
+   gcc-c++, and gcc-g77).
+
+   NOTE: For OSCAR systems, you probably also always want to include
+   the following in the definition of config_options:
+
+       --with-tm=/opt/pbs
+
+   This will build LAM with PBS/Torque support as well, so the above
+   example should really be:
+
+   shell$ rpmbuild --rebuild lam...src.rpm \
+       --define "config_options CC=icc CXX=icpc FC=ifort --with-tm=/opt/pbs" \
+       --define "requires " \
+       --define "buildrequires "
+
+   Lots of other options are also available to LAM's configure script;
+   see the Installation Guide for more information:
+
+       http://www.lam-mpi.org/using/docs/
+
+   Additionaly, LAM's OSCAR specfile offers a few more --define
+   options for flexibility; see the specfile for more details.
+
+4. The GNU Autoconf AC_PROG_F77 unfortunately does not search for the
+   name "gfortran" (at least, it doesn't in AC 2.59).  Hence, if you
+   want to build with gfortran, you must do the following:
+
+   shell$ rpmbuild --rebuild --define "config_options FC=gfortran"
+
+   Keep in mind that LAM needs to be able to build binaries that will
+   compile, link, and execute -- so you need to use compilers that are
+   compatible.  This generally means using compilers of the same
+   vendor (although some vendor compiler suites take great pains to be
+   compatible with the GNU compilers) and/or same version.  For
+   example, on a RHEL 4 system, the GCC 3.x compilers are the default.
+   But gfortran is GCC 4.x, so the above rpmbuild command may not work
+   (or, even worse, may cause programs compiled with mpif77 to fail in
+   strange and mysterious ways because of unforeseen interactions
+   between gfortran [GCC 4.x] and the default GCC 3.x compilers that
+   the rest of LAM was compiled with).  Instead, use the following:
+
+   shell$ rpmbuild --rebuild \
+       --define "config_options FC=gfortran CC=gcc4 CXX=g++4"
+
+   This will use the entire GCC 4.x suite on RHEL 4.
+
+Hope this helps.
 
 --The LAM Team
+
+ LocalWords:  FC ifort tm buildrequires PROG gfortran config mpif CXX

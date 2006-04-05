@@ -18,11 +18,16 @@
 
   <version>
     <major>7</major>
-    <minor>0</minor>
-    <subversion>6</subversion>
-    <release>3</release>
+    <minor>1</minor>
+    <subversion>2</subversion>
+    <release>4</release>
     <epoch>1</epoch>
   </version>
+
+<!--
+When changing LAM/MPI version, don't forget to change the switcher tag at
+the bottom of this config.xml file.
+-->
 
   <class>included</class>
   <summary>LAM/MPI specifically packaged for OSCAR clusters</summary>
@@ -223,7 +228,7 @@ visualized either at runtime or post-mortem.</description>
   <package-specific-attributes>
     <switcher>
       <tag>mpi</tag>
-      <name>lam-7.0.6</name>
+      <name>lam-7.1.2</name>
     </switcher>
   </package-specific-attributes>
 
