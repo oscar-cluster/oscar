@@ -18,9 +18,16 @@
 
 use strict;
 use Carp;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::PackagePath;
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
+
+my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
+my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
+
 
 my @known_rpms = qw(
                     apache
@@ -64,7 +71,6 @@ my @known_rpms = qw(
                     systemimager-client
                     systemimager-i386boot
                     systemimager-ia64boot
-                    tftp-hpa
                     env-switcher
                     modules
                    );
@@ -187,7 +193,15 @@ do_command( "/usr/bin/mksimachine --Delete --all" )
 
 uninstall_rpms(@oscar_rpms);
 
-delete_from_pool(@oscar_rpm_files);
+my %orepo_done;
+my $err = 0;
+for my $dist (keys %distro_pools) {
+    my %d = %{$distro_pools{$dist}};
+    my $orepo = $d{oscar_repo};
+    next if (exists $orepo_done{"$orepo"});
+    print "Removing directory $orepo\n";
+    system("rm -rf $orepo");
+}
 
 cleanup_files();
 
@@ -287,16 +301,6 @@ sub do_command {
   my ( $command ) = ( @_ );
   print "$command\n";
   return system( "$command" );
-}
-
-sub delete_from_pool {
-  my $dir = "/tftpboot/rpm/";
-  my @files_to_delete = @_;
-    
-  @files_to_delete = sort_uniq( @files_to_delete );
-  foreach my $file ( @files_to_delete ) {
-    do_command( "rm -f $dir$file" ) if -f "$dir$file";
-  }
 }
 
 sub _is_installed {
