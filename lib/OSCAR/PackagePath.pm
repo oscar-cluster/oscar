@@ -102,7 +102,7 @@ sub distro_repo_url {
 	}
     } else {
 	$url = $path;
-	if ( (! -d $path) && (! -h $path) ) {
+	if ( (! -d $path) && (! -l $path) ) {
 	    print STDERR "Distro repository $path not found. Creating empty directory.\n";
 	    !system("mkdir -p $path") or
 		carp "Could not create directory $path!";
