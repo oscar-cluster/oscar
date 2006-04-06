@@ -43,7 +43,7 @@ sub addnode_window {
 
     my $window = $parent->Toplevel;
     $window->withdraw;
-    $window->title("Add Oscar Clients");
+    $window->title("Add OSCAR Clients");
     my $inst = $window->Label(-text => "Perform the following steps to add nodes to your OSCAR cluster",-relief=>"groove");
     $inst->grid("-","-",-sticky=>"nsew");
     &main::oscar_button($window, "Step $step_number:", "Define OSCAR Clients...", 
