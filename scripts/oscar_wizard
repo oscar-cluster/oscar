@@ -20,8 +20,8 @@
 # Copyright (c) 2002-2005 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
-# Copyright (c) 2005, Bernard Li <bli@bcgsc.ca>
-#                     All rights reserved.
+# Copyright (c) 2005-2006 Bernard Li <bli@bcgsc.ca>
+#                         All rights reserved.
 #
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
@@ -41,6 +41,7 @@ use POSIX;
 use OSCAR::Help;
 use OSCAR::Network;
 use OSCAR::MAC;
+use OSCAR::Database;
 use OSCAR::Distro;
 use OSCAR::DelNode;
 use OSCAR::AddNode;
@@ -70,12 +71,25 @@ if(!$ENV{OSCAR_HOME}) {
 # Some globals
 
 my $save_text;
-my $interface = $ARGV[0];
 my %options = ();
 my @errors = ();
 my $debug = $ENV{DEBUG_OSCAR_WIZARD};
+my $mode = "install"; # default mode is install
 
-$interface = get_headnode_iface() if ( !defined($interface) || $interface eq '' );
+if ( $ARGV[0] ) {
+   if ( $ARGV[0] eq "manage" ) {
+      $mode = "manage";
+   } elsif ( $ARGV[0] eq "install" ) {
+      $mode = "install";
+   } else {
+      print "Usage: oscar_wizard [install|manage]\n\n";
+      print "       install brings up the wizard in installation mode (default)\n";
+      print "       manage brings up the wizard in management mode\n";
+      exit 1;
+   }
+}
+
+my $interface = get_headnode_iface();
 
 # Set some things in the environment
   
@@ -85,7 +99,7 @@ $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 my $window = MainWindow->new();
 $window->withdraw();
 chomp(my $shostname = `hostname -s`);
-$window->title("OSCAR Installation Wizard - $shostname");
+$window->title("OSCAR Wizard - $shostname");
 
 # Get OSCAR's version
 
@@ -121,7 +135,13 @@ my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
 my $GIF_t2=$window->Label(-image=> $window->Photo(-file=>$image),
                           -background=>"white");
 my $wizard_text = "Welcome to the OSCAR Wizard!\n\nOSCAR Version: $oscar_version";
-$wizard_text .= "\n\n- DEBUG MODE -" if ($debug);
+$wizard_text .= "\n\n";
+if ( $mode eq "install" ) {
+   $wizard_text .= "- INSTALL MODE -";
+} else {
+   $wizard_text .= "- MANAGE MODE -";
+}
+$wizard_text .= "\n\n[DEBUG ON]" if ($debug);
 my $Title_l=$window->Label(-text=>"$wizard_text",
 			   -background=>"white");
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
@@ -140,93 +160,123 @@ if ($browser ne "") {
   $GIF_t->bind( "<Button-1>" => sub { system("$browser $url > /dev/null 2>&1 &") } );
 }
 
+my $step_number;
+my $step_string = "";
+
 # Download packages using OPD
-my $step_number = 0;
-oscar_button($window, "Step $step_number:",
-	     "Download Additional OSCAR Packages...",
-	     [sub { my $olddir = Cwd::cwd();
+if ( $mode eq "install" ) {
+   $step_number = 0;
+   $step_string = "Step $step_number:"
+} else {
+   $step_number = undef;
+   $step_string = "";
+}
+
+oscar_button($window, $step_string,
+             "Download Additional OSCAR Packages...",
+             [sub { my $olddir = Cwd::cwd();
               chdir($ENV{OSCAR_HOME} . '/lib/Qt');
               system('/usr/bin/perl Opder.pl'); 
               chdir($olddir);
             }],
-	     'download_packages');
+      'download_packages');
 
-# Select packages for installation
-$step_number++;
-oscar_button($window, "Step $step_number:", 
-	     "Select OSCAR Packages To Install...", 
-	     [sub { my $olddir = Cwd::cwd();
-              chdir($ENV{OSCAR_HOME} . '/lib/Qt');
-              system('/usr/bin/perl Selector.pl');
-              chdir($olddir);
-            }], 
-	     'select_packages');
+if ( $mode eq "install" ) {
+   # Select packages for installation
+   $step_number++;
+   oscar_button($window, "Step $step_number:", 
+	        "Select OSCAR Packages To Install...", 
+	        [sub { my $olddir = Cwd::cwd();
+                 chdir($ENV{OSCAR_HOME} . '/lib/Qt');
+                 system('/usr/bin/perl Selector.pl');
+                 chdir($olddir);
+               }], 
+	        'select_packages');
 
-# Configure selected packages
-$step_number++;
-oscar_button($window, "Step $step_number:", 
-	     "Configure Selected OSCAR Packages...", 
-	     [\&displayPackageConfigurator, $window, $step_number],
-	     'configure_packages');
+   # Configure selected packages
+   $step_number++;
+   oscar_button($window, "Step $step_number:", 
+	        "Configure Selected OSCAR Packages...", 
+	        [\&displayPackageConfigurator, $window, $step_number],
+	        'configure_packages');
 
-# Install OSCAR server packages
-$step_number++;
-oscar_button($window, "Step $step_number:", "Install OSCAR Server Packages",
-	     [\&run_server_install, $window, $step_number,
-	      {interface => $interface} ], 'install_server');
+   # Install OSCAR server packages
+   $step_number++;
+   oscar_button($window, "Step $step_number:", "Install OSCAR Server Packages",
+	        [\&run_server_install, $window, $step_number,
+	         {interface => $interface} ], 'install_server');
+}
 
 # Build OSCAR Client Image
-$step_number++;
-oscar_button($window, "Step $step_number:", "Build OSCAR Client Image...", 
-	     [\&build_oscar_image, $window, $step_number], 'build_image');
+if ( $mode eq "install" ) {
+   $step_number++;
+   $step_string = "Step $step_number:";
+} else {
+   $step_number = undef;
+   $step_string = "";
+}
 
-# Add Clients to OSCAR Image
-$step_number++;
-oscar_button($window, "Step $step_number:", "Define OSCAR Clients...", 
-	     [\&build_oscar_clients, $window, $step_number, $interface], 
-	     'addclients');
+oscar_button($window, $step_string, "Build OSCAR Client Image...", 
+      [\&build_oscar_image, $window, $step_number], 'build_image');
 
-# Setup Network Booting
-$step_number++;
-oscar_button($window, "Step $step_number:", "Setup Networking...", 
-	     [\&mac_window, $window, $step_number,
-	      {interface => $interface}], 'netboot');
+if ( $mode eq "manage" ) {
+   oscar_button($window, "", "Add OSCAR Clients...",
+                [\&addnode_window, $window, $interface], 'add_nodes');
+   oscar_button($window, "", "Delete OSCAR Clients...",
+                [\&delnode_window, $window], 'delete_nodes');
+   oscar_button($window, "",
+                "Install/Uninstall OSCAR Packages...",
+          [\&install_uninstall_packages, $window], 'install_uninstall_packages');
+}
+
+if ( $mode eq "install" ) {
+   # Add Clients to OSCAR Image
+   $step_number++;
+   oscar_button($window, "Step $step_number:", "Define OSCAR Clients...", 
+	        [\&build_oscar_clients, $window, $step_number, $interface], 
+	        'addclients');
+
+   # Setup Network Booting
+   $step_number++;
+   oscar_button($window, "Step $step_number:", "Setup Networking...", 
+	        [\&mac_window, $window, $step_number,
+	         {interface => $interface}], 'netboot');
+}
 
 # Monitor Cluster Deployment
 my $monitor_button = oscar_button($window, "", "Monitor Cluster Deployment",
              [\&monitor_deployment, $window], 'monitor_deployment');
 
-my $boot=$window->Label (-text => 
-			 "Before continuing, network boot all of your nodes. 
-Once they have completed installation, reboot them from 
-the hard drive. Once all the machines and their ethernet
-adaptors are up, move on to the next step.",-relief=>"groove");
-$boot->grid("-","-",-sticky=>"nsew");
+if ( $mode eq "install" ) {
+   my $boot=$window->Label (-text => 
+   			    "Before continuing, network boot all of your nodes.
+   Once they have completed installation, reboot them from 
+   the hard drive. Once all the machines and their ethernet
+   adaptors are up, move on to the next step.",-relief=>"groove");
+   $boot->grid("-","-",-sticky=>"nsew");
 
-# OSCAR post install script
-$step_number++;
-oscar_button($window, "Step $step_number:", "Complete Cluster Setup", 
-	     [\&run_post_install, $window, $step_number], 'post_install');
+   # OSCAR post install script
+   $step_number++;
+   oscar_button($window, "Step $step_number:", "Complete Cluster Setup", 
+	        [\&run_post_install, $window, $step_number], 'post_install');
+}
 
 # Test script
-$step_number++;
-oscar_button($window, "Step $step_number:", "Test Cluster Setup", 
+if ( $mode eq "install" ) {
+   $step_number++;
+   $step_string = "Step $step_number:"
+} else {
+   $step_number = undef;
+   $step_string = "";
+}
+
+oscar_button($window, $step_string, "Test Cluster Setup", 
 	     [\&run_tests, $window, $step_number], 'test_install');
 
-#
-# The buttons for node def maintenance
-#
-my $maint=$window->Label (-text=>"The following buttons are for managing 
-your node definitions after the initial install.",-relief=>"groove");
-$maint->grid("-","-",-sticky=>"nsew");
-oscar_button($window, "", "Add OSCAR Clients...", 
-	     [\&addnode_window, $window, $interface], 'add_nodes');
-oscar_button($window, "", "Delete OSCAR Clients...", 
-	     [\&delnode_window, $window], 'delete_nodes');
-oscar_button($window, "", 
-	     "Install/Uninstall OSCAR Packages...", 
-       [\&install_uninstall_packages, $window], 'install_uninstall_packages');
-
+if ( $mode eq "manage" ) {
+   oscar_button($window, "", "Network Boot Manager", [\&netbootmgr, $window], 'netbootmgr') if is_installed_on_node("netbootmgr");
+   oscar_button($window, "", "Ganglia Monitoring System", [\&ganglia, $window], 'ganglia') if is_installed_on_node("ganglia");
+}
 
 #
 # The close button
@@ -282,7 +332,11 @@ sub run_command {
     my $result;
     my $window_func;
 
-    oscar_log_subsection("Step $step_number: Running: $$vars{cmd}");
+    if ($mode eq "install") {
+       oscar_log_subsection("Step $step_number: Running: $$vars{cmd}");
+    } else {
+       oscar_log_subsection("OSCAR Manage Wizard: Running: $$vars{cmd}");
+    } 
 
     if (system($$vars{cmd})) {
 	$result = $$vars{failure};
@@ -292,7 +346,11 @@ sub run_command {
 	$window_func = \&done_window;
     }
 
-    oscar_log_subsection("Step $step_number: " . $result->{message});
+    if ($mode eq "install") {
+       oscar_log_subsection("Step $step_number: " . $result->{message});
+    } else {
+       oscar_log_subsection($result->{message});
+    }
     if ($result->{unbusy}) {
 	&$window_func($parent_window, $result->{message},
 		     sub { $parent_window->Unbusy(); });
@@ -343,7 +401,11 @@ sub build_oscar_image {
     my $disk_type = "ide";
     $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
 
-    oscar_log_section("Running step $step_number of the OSCAR wizard: Build OSCAR client image");
+    if ($mode eq "install") {
+       oscar_log_section("Running step $step_number of the OSCAR wizard: Build OSCAR client image");
+    } else {
+       oscar_log_section("OSCAR Manage Wizard: Build OSCAR client image");
+    } 
 
     # Get the distro list
 
@@ -363,13 +425,16 @@ sub build_oscar_image {
     $distro_pool =~ s/\ /,/g;
     my $oscar_pool = &OSCAR::PackagePath::oscar_repo_path("/");
 
-    oscar_log_subsection("Step $step_number: Identified distro of clients: $distro $distro_ver");
+    my $step_string = "";
+    $step_string = "Step $step_number: " if $mode eq "install";
 
-    oscar_log_subsection("Step $step_number: distro repo: $distro_pool");
-    oscar_log_subsection("Step $step_number: oscar repo: $oscar_pool");
+    oscar_log_subsection("$step_string"."Identified distro of clients: $distro $distro_ver");
+
+    oscar_log_subsection("$step_string"."distro repo: $distro_pool");
+    oscar_log_subsection("$step_string"."oscar repo: $oscar_pool");
 
     my $pkglist = "$ENV{OSCAR_HOME}/oscarsamples/$distro-$distro_ver-$arch.rpmlist";
-    oscar_log_subsection("Step $step_number: Using RPM list: $pkglist");
+    oscar_log_subsection("$step_string"."Using RPM list: $pkglist");
     
     # Get a list of the client RPMs that we want to install.  Make a
     # new file containing the names of all the RPMs to install.
@@ -437,7 +502,6 @@ sub postimagebuild {
     croak "$imagepath: not a directory\n" unless -d $imagepath;
     croak "$imagepath: not accessible\n" unless -x $imagepath;
 
-
     #
     # Image info lines should be deleted once systeminstaller
     # talks directly to ODA
@@ -452,9 +516,13 @@ sub postimagebuild {
     set_images(\%image_info,\%options,\@errors);
 
     my $cmd = "./post_rpm_install $img $interface";
-    oscar_log_subsection("Step $step_number: Running: $cmd");
+
+    my $step_string = "";
+    $step_string ="Step $step_number: " if $mode eq "install";
+
+    oscar_log_subsection("$step_string"."Running: $cmd");
     !system($cmd) or (carp($!), return undef);
-    oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
+    oscar_log_subsection("$step_string"."Successfully ran: $cmd");
 
 
     # Have installed Client RPMs & did not croak, so mark 
@@ -484,7 +552,7 @@ sub postimagebuild {
     
     #unlink($save_text); # breaks createimage_window
 
-    oscar_log_subsection("Step $step_number: Completed successfully");
+    oscar_log_subsection("$step_string"."Completed successfully");
 
     1;
 }
@@ -522,7 +590,11 @@ sub build_oscar_clients {
     my $hostname = (uname)[1];
     my ($shorthostname,$domainname)  = split(/\./,$hostname,2);
 
-    oscar_log_section("Running step $step_number of the OSCAR wizard: Define OSCAR clients");
+    if ($mode eq "install") {
+       oscar_log_section("Running step $step_number of the OSCAR wizard: Define OSCAR clients");
+    } else {
+       oscar_log_section("OSCAR Management Wizard: Define OSCAR clients");
+    }
 
     # If the domainname is blank, stick in a default value
 
@@ -555,11 +627,15 @@ sub postaddclients {
     my $step_number = $$vars{step_number};
 
     my $cmd = "./post_clients";
-    oscar_log_subsection("Step $step_number: Running: $cmd");
+    my $step_string = "";
+    $step_string = "Step $step_number: " if $mode eq "install";
+
+    oscar_log_subsection("$step_string"."Running: $cmd");
     !system($cmd) or (carp($!), return undef);
     &populate_client_group_nodes;
-    oscar_log_subsection("Step $step_number: Successfully ran: $cmd");
-    oscar_log_subsection("Step $step_number: Completed successfully");
+
+    oscar_log_subsection("$step_string"."Successfully ran: $cmd");
+    oscar_log_subsection("$step_string"."Completed successfully");
     return 1;
 }
 
@@ -619,7 +695,11 @@ sub run_post_install {
 
     $window->Busy(-recurse => 1);
 
-    oscar_log_section("Running step $step_number of the OSCAR wizard: Complete cluster setup");
+    if ($mode eq "install") {
+       oscar_log_section("Running step $step_number of the OSCAR wizard: Complete cluster setup");
+    } else {
+       oscar_log_section("OSCAR Management Wizard: Complete cluster setup");
+    }
 
     oscar_log_subsection('Update Wizard Env (as needed)');
     @mod_env = WizardEnv::update_env();
@@ -674,22 +754,39 @@ sub run_tests {
 
     my $title = "OSCAR Test Cluster Setup";
 
-    oscar_log_section("Running step $step_number of the OSCAR wizard: Test cluster setup");
+    if ($mode eq "install") {
+       oscar_log_section("Running step $step_number of the OSCAR wizard: Test cluster setup");
+    } else {
+       oscar_log_section("OSCAR Management Wizard: Test cluster setup");
+    }
 
     my $cmd = "cd $ENV{OSCAR_HOME}/testing && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
-    if ($debug) {
-        oscar_log_subsection("Step $step_number: Running tests: $cmd");
+    my $string = "";
+
+    if ($mode eq "install") {
+        $string = "Step $step_number: Running tests";
     } else {
-        oscar_log_subsection("Step $step_number: Running tests");
+        $string = "Running tests";
     }
+
+    if ($debug) {
+        $string .= ": $cmd";
+    }
+
+    oscar_log_subsection("$string");
     !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
-    oscar_log_subsection("Step $step_number: Not waiting for completion");
+  
+    if ($mode eq "install") {
+       oscar_log_subsection("Step $step_number: Not waiting for completion");
+    } else {
+       oscar_log_subsection("Not waiting for completion");
+    }
+ 
     $window->Unbusy();
     return 1;
 }
 
-###########################################################################
-
+# Pop up si_monitortk from SystemImager
 sub monitor_deployment {
     my ($window) = @_;
 
@@ -702,8 +799,7 @@ sub monitor_deployment {
     return 1;
 }
 
-###########################################################################
-
+# Unfreeze the "Monitor Cluster Deployment" button in the main OSCAR Wizard widget
 sub stop_monitor_deployment {
     my ($window, $pipe) = @_;
     my $cmd = "/usr/sbin/si_monitortk";
@@ -713,4 +809,22 @@ sub stop_monitor_deployment {
     waitpid($pid, WNOHANG);
     $monitor_button->configure(-state => 'normal');
     $window->fileevent($pipe, 'readable', "");
+}
+
+# Pop up Network Boot Manager widget
+sub netbootmgr {
+    my ($window, $pipe) = @_;
+    my $cmd = "/usr/sbin/netbootmgr";
+    system("$cmd &");
+}
+
+# Brings up Ganglia main page using your favourite browser
+sub ganglia {
+    my ($window, $pipe) = @_;
+    my $url = "http://localhost/ganglia";
+
+    if ($browser ne "") {
+      chomp($browser);
+      system("$browser $url > /dev/null 2>&1 &");
+    }
 }
