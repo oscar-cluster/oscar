@@ -26,8 +26,7 @@
     <email>dnl@speakeasy.net</email>
   </packager>
 
-  <description>
-Maui is an advanced job scheduler for use on clusters and supercomputers.
+  <description>Maui is an advanced job scheduler for use on clusters and supercomputers.
 It is a highly configurable tool capable of supporting a large array of
 fairness policies, dynamic priorities, extensive reservations, and fairshare.
 It is currently in use at many of the leading government and academic labs
