@@ -36,7 +36,12 @@ use Carp;
 
 @EXPORT = qw(
 	     prepare_pools
+	     checksum_write
+	     checksum_needed
+	     checksum_files
 	     );
+
+my $verbose = $ENV{OSCAR_VERBOSE};
 
 sub prepare_pools {
     my ($verbose,@pargs) = @_;
@@ -113,17 +118,21 @@ sub pool_gencache {
 #
 sub checksum_files {
     my ($dir, @pattern) = @_;
+    return 0 if (! -d $dir);
+    my $tee = $ENV{OSCAR_HOME}."/tmp/".basename($dir).".files";
     my $wd = cwd();
     chdir($dir);
+    print "Checksumming directory ".cwd()."\n" if ($verbose);
     @pattern = map { "-name '".$_."'" } @pattern;
-    return 0 if (! -d $dir);
-    my $cmd = "find . -follow -type f ".join(" -o ",@pattern).
-	" -printf \"%p %i %s %u %g %m %t\n\" | sort | md5sum -";
+    my $cmd = "find . -follow -type f \\( ".join(" -o ",@pattern).
+	" \\) -printf \"%p %i %s %u %g %m %t\\n\" |sort|tee $tee|md5sum -";
+    print "Executing: $cmd\n" if ($verbose);
     local *CMD;
     open CMD, "$cmd |" or croak "Could not run md5sum: $!";
     my ($md5sum,$junk) = split(" ",<CMD>);
     close CMD;
     chdir($wd);
+    print "Checksum was: $md5sum\n" if ($verbose);
     return $md5sum;
 }
 
@@ -136,6 +145,7 @@ sub checksum_write {
     open OUT, "> $file" or croak "Could not open $file: $!";
     print OUT "$checksum\n";
     close OUT;
+    print "Wrote checksum file $file: $checksum\n" if ($verbose);
 }
 
 #
@@ -148,6 +158,7 @@ sub checksum_read {
     my $in = <IN>;
     chomp $in;
     close IN;
+    print "Read checksum file $file: $in\n" if ($verbose);
     return $in;
 }
 
@@ -161,8 +172,10 @@ sub checksum_needed {
     my ($dir, $cfile, @pattern) = @_;
 
     my $md5 = &checksum_files($dir,@pattern);
+    print "Current checksum ($cfile): $md5\n" if ($verbose);
     if (-f $cfile) {
 	my $omd5 = &checksum_read($cfile);
+	print "Old checksum ($cfile): $omd5\n" if ($verbose);
 	if ($md5 == $omd5) {
 	    return 0;
 	} else {
