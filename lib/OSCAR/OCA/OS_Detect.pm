@@ -188,13 +188,16 @@ sub detect_pool_rpm {
 	return undef;
     }
     # these packages have simple version strings!
-    my $version;
+    my ($version,$flavor);
     for my $f (@files) {
 	my $v = `rpm -q --qf "%{VERSION}" -p $f 2>/dev/null`;
 	# don't care about release for pools, only version counts
 	$v =~ s/\.\d+$//;
 	# for redhat-el
-	$v =~ s/(AS|WS|ES)$//;
+	if ($v =~ /^(.*)(AS|WS|ES)$/) {
+	    $v = $1;
+	    $flavor = $2;
+	}
 	if (!$version) {
 	    $version = $v;
 	} else {
@@ -209,7 +212,7 @@ sub detect_pool_rpm {
     my $id = {
 	os               => "linux",
 	pool             => $pool,
-	distro           => $distro,
+	distro           => $flavor ? $distro."-".lc($flavor) : $distro,
 	distro_version   => $version,
 	compat_distro    => $compat,
 	compat_distrover => $version,
