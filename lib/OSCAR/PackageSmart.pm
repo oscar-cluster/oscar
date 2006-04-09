@@ -119,13 +119,18 @@ sub pool_gencache {
 sub checksum_files {
     my ($dir, @pattern) = @_;
     return 0 if (! -d $dir);
-    my $tee = $ENV{OSCAR_HOME}."/tmp/".basename($dir).".files";
     my $wd = cwd();
     chdir($dir);
     print "Checksumming directory ".cwd()."\n" if ($verbose);
     @pattern = map { "-name '".$_."'" } @pattern;
     my $cmd = "find . -follow -type f \\( ".join(" -o ",@pattern).
-	" \\) -printf \"%p %i %s %u %g %m %t\\n\" |sort|tee $tee|md5sum -";
+	" \\) -printf \"%p %i %s %u %g %m %t\\n\" | sort ";
+    if ($verbose > 7) {
+	my $tee = $ENV{OSCAR_HOME}."/tmp/".basename($dir).".files";
+	$cmd .= "| tee $tee | md5sum -";
+    } else {
+	$cmd .= "| md5sum -";
+    }
     print "Executing: $cmd\n" if ($verbose);
     local *CMD;
     open CMD, "$cmd |" or croak "Could not run md5sum: $!";
