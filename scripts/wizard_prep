@@ -431,18 +431,20 @@ OSCAR::PackageSmart::checksum_write("$md5dir/packages_core.md5",$md5);
 #
 # Prepare and export all repositories
 #
-
-# need generalized export routine in PackMan
-
-#for my $dist (keys %distro_pools) {
-#    my %d = %{$distro_pools{$dist}};
-#    my $oscar_repo = $d{oscar_repo};
-#    next if (exists $orepo_done{"$oscar_repo"});
-#    # 
-#    oscar_log_subsection("");
-#    
-#}
-
+for my $dist (keys %distro_pools) {
+    my %d = %{$distro_pools{$dist}};
+    my $oscar_repo = $d{oscar_repo};
+    my $distro_repo = $d{distro_repo};
+    # 
+    oscar_log_subsection("Preparing for httpd export: $distro_repo $oscar_repo");
+    my $pm = &OSCAR::PackageSmart::prepare_pools($verbose,
+						 $distro_repo,
+						 $oscar_repo);
+    if ($pm) {
+	$pm->repo_export();
+	undef $pm;
+    }
+}
 
 
  PREP_DONE:
