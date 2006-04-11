@@ -152,7 +152,6 @@
                 <parameters> not null unique </parameters>
             </name>
             <path/>
-            <distro/>
             <architecture/>
         </fields>
     </Images>
