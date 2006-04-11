@@ -1167,7 +1167,7 @@ sub database_rpmlist_for_package_and_group {
 #
 # EF: moved here from Package.pm                                        #
 #########################################################################
-sub list_selected_packages # ($type) -> @selectedlist
+sub list_selected_packages # ($type[,$sel_group]) -> @selectedlist
 {
     my ($type,$sel_group) = @_; #shift;
 
