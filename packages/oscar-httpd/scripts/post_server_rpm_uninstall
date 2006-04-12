@@ -1,9 +1,0 @@
-#!/usr/bin/perl
-use strict;
-# (c) 2004 Revolution Linux, Benoit des Ligneris
-# server uninstall script
-# Must exit with 0 on success or non-zero for any failures.
-
-my $configuration_file="/etc/httpd/conf.d/99-oscar-httpd.conf";
-
-return unlink($configuration_file);
