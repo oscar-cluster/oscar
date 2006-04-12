@@ -163,7 +163,6 @@ telnet
 telnet-server
 termcap
 coreutils
-tftp
 time
 tmpwatch
 traceroute

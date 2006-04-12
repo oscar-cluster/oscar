@@ -143,7 +143,6 @@ telnet
 telnet-server
 termcap
 coreutils
-tftp
 time
 redhat-config-date
 tk
