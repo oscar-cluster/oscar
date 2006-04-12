@@ -1350,7 +1350,7 @@ sub pkgs_of_opkg {
 # outputs: non-zero if success
 
 
-sub locking{
+sub locking {
     my ( $type_of_lock,
          $options_ref,
          $passed_tables_ref,
@@ -1578,7 +1578,7 @@ sub select_table {
     die "$0:$error_msg";
 }
 
-sub do_select{
+sub do_select {
     my ($sql,
         $result_ref,
         $options_ref,
@@ -1593,7 +1593,7 @@ sub do_select{
     die "$0:$error_msg";
 }
 
-sub get_node_info_with_name{
+sub get_node_info_with_name {
     my ($node_name,
         $options_ref,
         $error_strings_ref) = @_;
@@ -1607,7 +1607,7 @@ sub get_node_info_with_name{
     }
 }
 
-sub get_client_nodes{
+sub get_client_nodes {
     my ($results_ref,
         $options_ref,
         $error_strings_ref) = @_;
@@ -1618,7 +1618,7 @@ sub get_client_nodes{
         if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
 
-sub get_node_info{
+sub get_node_info {
     my ($results_ref,
         $options_ref,
         $error_strings_ref) = @_;
@@ -1627,7 +1627,7 @@ sub get_node_info{
         if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
 
-sub delete_package{
+sub delete_package {
     my ($package_name,
         $options_ref,
         $error_strings_ref,
@@ -1638,7 +1638,7 @@ sub delete_package{
         if! do_update($sql,"Packages", $options_ref, $error_strings_ref);
 }    
 
-sub delete_node{
+sub delete_node {
     my ($node_name,
         $options_ref,
         $error_strings_ref) = @_;
@@ -1654,7 +1654,7 @@ sub delete_node{
         if! do_update($sql,"Nodes", $options_ref, $error_strings_ref);
 }    
 
-sub delete_group_node{
+sub delete_group_node {
     my ($node_id,
         $options_ref,
         $error_strings_ref) = @_;
@@ -1663,7 +1663,7 @@ sub delete_group_node{
         if! do_update($sql,"Group_Nodes", $options_ref, $error_strings_ref);
 }
 
-sub delete_node_packages{
+sub delete_node_packages {
     my ($node_id,
         $options_ref,
         $error_strings_ref) = @_;
@@ -1676,7 +1676,7 @@ sub delete_node_packages{
 }
 
 
-sub get_client_nodes_info{
+sub get_client_nodes_info {
     my ($server,
         $results_ref,
         $options_ref,
@@ -1686,7 +1686,7 @@ sub get_client_nodes_info{
         if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
 
-sub get_nodes{
+sub get_nodes {
     my ($options_ref,
         $error_strings_ref) = @_;
     my @results = ();
@@ -1698,7 +1698,7 @@ sub get_nodes{
     return @list_of_nodes;
 }
 
-sub get_networks{
+sub get_networks {
     my ($results,
         $options_ref,
         $error_strings_ref)= @_;
@@ -1707,7 +1707,7 @@ sub get_networks{
         if! do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
-sub get_nics_info_with_node{
+sub get_nics_info_with_node {
     my ($node,
         $results,
         $options_ref,
@@ -1718,7 +1718,7 @@ sub get_nics_info_with_node{
         if! do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
-sub get_nics_with_name_node{
+sub get_nics_with_name_node {
     my ($nic,
         $node,
         $results,
@@ -1731,7 +1731,7 @@ sub get_nics_with_name_node{
         if! do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
-sub get_cluster_info_with_name{
+sub get_cluster_info_with_name {
     my ($cluster_name,
         $options_ref,
         $error_strings_ref) = @_;
@@ -1746,7 +1746,7 @@ sub get_cluster_info_with_name{
     }
 }
 
-sub get_package_info_with_name{
+sub get_package_info_with_name {
     my ($package_name,
         $options_ref,
         $error_strings_ref,
@@ -1764,7 +1764,7 @@ sub get_package_info_with_name{
     }
 }
 
-sub get_package_info{
+sub get_package_info {
     my ($options_ref,
         $error_strings_ref,
         $field_ref) = @_;
@@ -1789,7 +1789,7 @@ sub get_package_info{
     }
 }
 
-sub get_packages{
+sub get_packages {
     my ($options_ref,
         $error_strings_ref) = @_;
     my $results = get_package_info($options_ref, $error_strings_ref);
@@ -1800,7 +1800,7 @@ sub get_packages{
     return @list_of_packages;
 }
 
-sub get_packages_with_class{
+sub get_packages_with_class {
     my ($class,
         $results_ref,
         $options_ref,
@@ -1810,7 +1810,7 @@ sub get_packages_with_class{
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }
 
-sub is_installed_on_node{
+sub is_installed_on_node {
     my ($package_name,
         $node_name,
         $options_ref,
@@ -1837,7 +1837,7 @@ sub is_installed_on_node{
     return (@result?1:0);    
 }
 
-sub get_fields{
+sub get_fields {
     my ($options_ref,
         $table,
         $error_strings_ref) = @_;
@@ -1860,7 +1860,7 @@ sub get_fields{
 # get_packages_related_with_name) take care of 
 # Packages_conflicts, Packages_provides, and Packages_requires
 # tables.
-sub get_packages_related_with_package{
+sub get_packages_related_with_package {
     my ($part_name,
         $package,
         $results_ref,
@@ -1873,7 +1873,7 @@ sub get_packages_related_with_package{
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }    
 
-sub get_packages_related_with_name{
+sub get_packages_related_with_name {
     my ($part_name,
         $name,
         $results_ref,
@@ -1887,7 +1887,7 @@ sub get_packages_related_with_name{
 }    
 
 
-sub get_packages_switcher{
+sub get_packages_switcher {
     my ($results_ref,
         $options_ref,
         $error_strings_ref) = @_;
@@ -1897,7 +1897,7 @@ sub get_packages_switcher{
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }    
 
-sub get_packages_servicelists{
+sub get_packages_servicelists {
     my ($results_ref,
         $group_name,
         $options_ref,
@@ -1911,7 +1911,7 @@ sub get_packages_servicelists{
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }    
 
-sub set_group_nodes{
+sub set_group_nodes {
     my ($group,
         $nodes_ref,
         $options_ref,
@@ -1937,7 +1937,7 @@ sub set_group_nodes{
 }
 
 
-sub set_group_packages{
+sub set_group_packages {
     my ($group,
         $package,
         $selected,
@@ -1972,7 +1972,7 @@ sub set_group_packages{
     return 1;
 }
 
-sub del_group_packages{
+sub del_group_packages {
     my ($group,
         $opkg,
         $options_ref,
@@ -2217,7 +2217,7 @@ sub get_node_package_status_with_node_package {
     return 1;
 }
 
-sub insert_packages{
+sub insert_packages {
     my ($passed_ref, $table,
         $name,$path,$table_fields_ref,
         $options_ref,$error_strings_ref) = @_;
@@ -2284,7 +2284,7 @@ sub insert_packages{
     return $success;
 }
 
-sub update_packages{
+sub update_packages {
     my ($passed_ref, $table,$package_id,
         $name,$path,$table_fields_ref,
         $options_ref,$error_strings_ref) = @_;
@@ -2349,7 +2349,7 @@ sub update_packages{
     return $success;
 }
 
-sub create_table{
+sub create_table {
     my ($passed_ref, $table,
         $table_fields_ref,
         $options_ref, $error_strings_ref) = @_;
@@ -2392,7 +2392,7 @@ sub create_table{
     return $success;
 }    
 
-sub do_update{
+sub do_update {
     my ($sql, $table,$options_ref,$error_strings_ref) = @_;
     print "SQL : $sql\n" if $options{debug};
     my $success = oda::do_sql_command($options_ref,
@@ -2403,7 +2403,7 @@ sub do_update{
     return $success;
 }            
 
-sub do_insert{
+sub do_insert {
     my ($sql, $table,$options_ref,$error_strings_ref) = @_;
     my $success = oda::do_sql_command($options_ref,
             $sql,
@@ -2449,7 +2449,7 @@ sub insert_pkg_rpmlist {
     }   
 }
 
-sub insert_pkg_rpmlist_helper{
+sub insert_pkg_rpmlist_helper {
     my ($sql, $sql_values, $filter, $passed_ref, $table,$options_ref,$error_strings_ref) = @_;
     my $group_name = ($filter->{group}?$filter->{group}:"");
     my $group_arch = ($filter->{architecture}?$filter->{architecture}:"");
@@ -2498,7 +2498,7 @@ sub insert_rpms {
     }    
 }
 
-sub get_installable_packages{
+sub get_installable_packages {
     my ($results,
         $options_ref,
         $error_strings_ref) = @_;
@@ -2551,7 +2551,7 @@ sub list_installable_packages {
 }
 
 
-sub get_groups_for_packages{
+sub get_groups_for_packages {
     my ($results,
         $options_ref,
         $error_strings_ref,
@@ -2564,7 +2564,7 @@ sub get_groups_for_packages{
     return 1;    
 }
 
-sub get_groups{
+sub get_groups {
     my ($results,
         $options_ref,
         $error_strings_ref,
@@ -2577,7 +2577,7 @@ sub get_groups{
     return 1;    
 }
 
-sub set_groups{
+sub set_groups {
     my ($group,
         $options_ref,
         $error_strings_ref) = @_;
@@ -2591,7 +2591,7 @@ sub set_groups{
     return 1;
 }
 
-sub set_groups_selected{
+sub set_groups_selected {
     my ($group,
         $options_ref,
         $error_strings_ref) = @_;
@@ -2612,7 +2612,7 @@ sub set_groups_selected{
     return 1;
 }
 
-sub del_groups{
+sub del_groups {
     my ($group,
         $options_ref,
         $error_strings_ref) = @_;
@@ -2626,7 +2626,7 @@ sub del_groups{
     return 1;
 }
 
-sub set_all_groups{
+sub set_all_groups {
     my ($groups_ref,
         $options_ref,
         $error_strings_ref) = @_;
@@ -2641,7 +2641,7 @@ sub set_all_groups{
     }
 }
 
-sub set_node_with_group{
+sub set_node_with_group {
     my ($node,
         $group,
         $options_ref,
@@ -2659,7 +2659,7 @@ sub set_node_with_group{
     return 1;
 }
 
-sub set_nics_with_node{
+sub set_nics_with_node {
     my ($nic,
         $node,
         $field_value_ref,
@@ -2703,7 +2703,7 @@ sub set_nics_with_node{
     return 1;
 }
 
-sub set_status{
+sub set_status {
     my ($options_ref,
         $error_strings_ref) = @_;
     my $sql = "SELECT * FROM Status";
@@ -2720,7 +2720,7 @@ sub set_status{
     return 1;
 }
 
-sub get_image_info_with_name{
+sub get_image_info_with_name {
     my ($image,
         $options_ref,
         $error_strings_ref) = @_;
@@ -2736,18 +2736,17 @@ sub set_images{
         $options_ref,
         $error_strings_ref) = @_;
     my $imgname = $$image_ref{name};
-    my $distro = $$image_ref{distro};
     my $architecture = $$image_ref{architecture};
     my $images = get_image_info_with_name($imgname,$options_ref,$error_strings_ref);
     my $imagepath = $$image_ref{path};
     my $sql = "";
     if(!$images){ 
-        $sql = "INSERT INTO Images (name,distro,architecture,path) VALUES ".
-            "('$imgname','$distro','$architecture','$imagepath')";
+        $sql = "INSERT INTO Images (name,architecture,path) VALUES ".
+            "('$imgname','$architecture','$imagepath')";
         die "$0:Failed to insert values via << $sql >>"
             if! do_insert($sql,"Images", $options_ref, $error_strings_ref);
     }else{
-        $sql = "UPDATE Images SET name='$imgname', distro='$distro', ". 
+        $sql = "UPDATE Images SET name='$imgname', ". 
                "architecture='$architecture', path='$imagepath' WHERE name='$imgname'";
         die "$0:Failed to update values via << $sql >>"
             if! do_update($sql,"Images", $options_ref, $error_strings_ref);
@@ -2755,7 +2754,7 @@ sub set_images{
     return 1;
 }
 
-sub set_image_packages{
+sub set_image_packages {
     my ($image,
         $package,
         $options_ref,
@@ -2778,7 +2777,7 @@ sub set_image_packages{
     return 1;
 }    
 
-sub get_gateway{
+sub get_gateway {
     my ($node,
         $interface,
         $results,
