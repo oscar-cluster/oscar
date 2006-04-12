@@ -24,6 +24,8 @@ use XML::Simple;
 
 my $imagedir = shift;
 
+$ENV{SGE_ROOT} = "/opt/sge";
+
 # Default setting for cell
 my $cell = "default";
 
