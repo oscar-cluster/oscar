@@ -371,16 +371,17 @@ sub add_multicast_route {
     my $reload_route;
 
     # FIXME: OCA Framework
-    # There are two different ways to setup static routes, Mandriva uses the "old" style right now...
-    if ( (-e "/etc/mandrake-release") || (-e "/etc/mandrakelinux-release") ) {
-	$route_string = "any net 224.0.0.0 netmask 240.0.0.0 dev $iface"; 
-	$static_route_file = "/etc/sysconfig/static-routes";
-	$reload_route = "service network restart"; 
+    # Mandriva has a different approach to set and start static routes:
+    if (-e "/etc/mandriva-release") {
+	$route_string = "ADDRESS0=224.0.0.0 NETMASK0=240.0.0.0"; 
+	$static_route_file = "/etc/sysconfig/network-scripts/$iface.route";
     } else {
 	$route_string = "224.0.0.0/4 dev $iface";
     	$static_route_file = "/etc/sysconfig/network-scripts/route-$iface";
-	$reload_route = "/etc/sysconfig/network-scripts/ifup-routes $iface";
     }
+
+    #reload route command, common for both Mandriva and the others distros
+    $reload_route = "/etc/sysconfig/network-scripts/ifup-routes $iface";
 
     # Check to see if multicast route already exists
     my $mcast_route = `route | grep 224.0.0.0 | grep $iface`;

@@ -120,9 +120,18 @@ my $node_ref = pop @result;
 my $ip = $$node_ref{ip};
 
 if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
-    verbose("Getting pxelinux.0.");
-    copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
-      croak("Unable to copy \"pxelinux.0\" file to /tftpboot.");
+# Mandriva is now shipping the equivalent of pxelinux.0 as linux.0, installed
+# by the package pxelinux in a different path. We differenciate, here, the
+# first steps of this section for Mandriva distros and the others.
+    if (-e "/etc/mandriva-release") {
+	verbose("Getting linux.0.");
+	copy("/var/lib/tftpboot/X86PC/linux/linux.0", "/tftpboot/pxelinux.0") or
+	croak("Unable to copy \"linux.0\" file to /tftpboot.");
+    } else {
+    	verbose("Getting pxelinux.0.");
+        copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
+        croak("Unable to copy \"pxelinux.0\" file to /tftpboot.");
+    }
     
     verbose("Copying default pxelinux.cfg file");
     copy("/etc/systemimager/pxelinux.cfg/syslinux.cfg", "/tftpboot/pxelinux.cfg/default") or 

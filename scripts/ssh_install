@@ -185,6 +185,32 @@ for wantedno in RhostsAuthentication ; do
     fi
 done
 
+# Mandriva install openssh with "PermitRootLogin no" while the others installs
+# it with that line commented ("#PermitRootLogin no"), which is the same thing
+# as "yes". As we cannot use generic-setup here (once this is a bash script)
+# the following section will set "PermitRootLogin yes" to all distros, which 
+# should be transparent for RHEL and Fedora.
+for wantedyes in PermitRootLogin; do
+    if [ yes`grep "^[[:space:]]*$wantedyes[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "yesyes" ] ; then
+        echo turning on $wantedyes parameter in configuration file $file ...
+        if [ ! -r $file.pre_ssh_install ] ; then
+            if [ -r $file ] ; then
+                echo cp -fp $file $file.pre_ssh_install
+                cp -fp $file $file.pre_ssh_install || exit 1
+            fi
+        fi
+        if grep "^[[:space:]]*$wantedyes[[:space:]]" $file 2>/dev/null ; then
+            echo ... by modifying existing line\(s\)
+            sed "s,$wantedyes.*\$,$wantedyes yes,g" <$file >$file.tmp
+            mv $file.tmp $file || exit 1
+        else
+            echo ... by adding a line
+            echo "$wantedyes yes" >> $file || exit 1
+        fi
+    fi
+done
+
+
 unset SSHVER SSHMAJORVER SSHMINORVER SSHBADMAJORVER SSHBADMINORVER
 
 # set up root
