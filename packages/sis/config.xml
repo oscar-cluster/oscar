@@ -48,7 +48,6 @@
       <filter>
         <group>oscar_server</group>
       </filter>
-
       <pkg>systeminstaller-oscar</pkg>
       <pkg>systeminstaller-oscar-x11</pkg>
       <pkg>systemimager-server</pkg>
@@ -56,6 +55,7 @@
       <pkg>flamethrower</pkg>
       <pkg>udpcast</pkg>
       <pkg>atftp-server</pkg>
+      
   </binary-package-list>
 
   <binary-package-list>
@@ -69,6 +69,17 @@
       <pkg>systemimager-i386initrd_template</pkg>
   </binary-package-list>
 
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+	<distribution>
+             <name>mdv</name>
+        </distribution>
+      </filter>
+
+      <pkg>pxelinux</pkg>
+  </binary-package-list>      
+  
   <binary-package-list>
       <filter>
         <group>oscar_server</group>
