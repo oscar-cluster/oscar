@@ -288,9 +288,9 @@ $window->bind("<Escape>",sub {$cl_b->invoke()});
 $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 
 if( $debug ) {
-    my $cl_b=$window->Button(-text=>"Restart $0 $interface",
+    my $cl_b=$window->Button(-text=>"Restart $0",
            -borderwidth=>"6", -relief=>"groove",
-           -command=> sub {exec "$0 $interface"},-pady=>"2");
+           -command=> sub {exec "$0"},-pady=>"2");
     $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 }
 
