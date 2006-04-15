@@ -36,7 +36,7 @@
     <email>efocht@hpce.nec.com</email>
   </packager>
 
-  <description>The System Installation Suite</description>
+  <description>The System Installation Suite is composed of three major components - SystemInstaller, SystemImager and SystemConfigurator</description>
 
   <binary-package-list>
       <pkg>systemconfigurator</pkg>
@@ -48,12 +48,12 @@
       <filter>
         <group>oscar_server</group>
       </filter>
+
       <pkg>systeminstaller-oscar</pkg>
       <pkg>systeminstaller-oscar-x11</pkg>
       <pkg>systemimager-server</pkg>
       <pkg>systemimager-flamethrower</pkg>
       <pkg>atftp-server</pkg>
-      
   </binary-package-list>
 
   <binary-package-list>
