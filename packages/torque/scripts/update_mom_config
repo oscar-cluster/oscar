@@ -37,4 +37,3 @@ else
   echo "$mom_config not found."
   exit 1
 fi
-

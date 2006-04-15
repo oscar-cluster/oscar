@@ -118,4 +118,3 @@ sub which_distro_server {
     }
     return (lc $name, lc $version);
 }
-

@@ -25,4 +25,3 @@ use Carp;
 
 # Config Torque mom service to start
 system('/sbin/chkconfig --add pbs_mom');
-

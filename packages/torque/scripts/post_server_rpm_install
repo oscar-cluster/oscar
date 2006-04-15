@@ -24,6 +24,9 @@ use Carp;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Opkg;
+
 #######################################################
 #  Start up 'Torque Server' by restarting the daemon  #
 #######################################################
@@ -44,7 +47,7 @@ system('/sbin/chkconfig --del pbs_sched');
 # Config Torque server service to start
 system('/sbin/chkconfig --add pbs_server');
 
-print "...updating xpbsmonrc file\n";
+opkg_print("...updating xpbsmonrc file\n");
 my $xpbsmonrc = "/opt/pbs/lib/xpbsmon/xpbsmonrc";
 
 my @lines = `cat $xpbsmonrc`;

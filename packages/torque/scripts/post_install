@@ -24,6 +24,7 @@
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use lib "/usr/lib/systeminstaller";
+use OSCAR::Opkg;
 use OSCAR::Package;
 use Carp;
 use Data::Dumper;
@@ -127,7 +128,7 @@ parseCommandLine();
 # Update the server's nodes file (optionally for only one image).
 my $image = shift; # Optionally provide an image name.
 
-print "Updating pbs_server nodes\n";
+opkg_print("Updating pbs_server nodes\n");
 
 # Read in the current nodes as shown by 'pbsnodes -a'
 open (CMD,'/opt/pbs/bin/pbsnodes -a |');
@@ -226,7 +227,7 @@ foreach my $node (sortnodes( keys %pbsnodes ))
 restartPBSserver();
 
 # Next, use qmgr command to set up the values for workq
-print "Creating torque workq queue...\n";
+opkg_print("Creating TORQUE workq queue...\n");
  
 # These are default values set only when not present or when --default
 my @default_params = (
