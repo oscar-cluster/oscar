@@ -37,6 +37,7 @@ use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::Database;
+use OSCAR::OCA::OS_Detect;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 
@@ -304,6 +305,8 @@ sub set_buttons {
 sub setup_dhcpd {
     my $interface = shift;
     our $window;
+    my $os = OSCAR::OCA::OS_Detect::open();
+
     $window->Busy(-recurse => 1);
     oscar_log_subsection("Step $step_number: cleaning hostfile");
     clean_hostsfile() or (carp "Couldn't clean hosts file!",
@@ -321,8 +324,17 @@ sub setup_dhcpd {
     oscar_log_subsection("Step $step_number: Running command: $cmd");
     !system($cmd) or (carp "Couldn't mkdhcpconf", return undef);
     oscar_log_subsection("Step $step_number: Successfully ran command");
-    if(!-e "/var/lib/dhcp/dhcpd.leases") {
-        open(OUT,">/var/lib/dhcp/dhcpd.leases") or (carp "Couldn't create dhcpd.leases files", return undef);
+
+    my $dhcpd_leases = "/var/lib/dhcp/dhcpd.leases";
+
+    # Fedora Core 5's dhcpd.leases file is located in a slightly different
+    # directory
+    if ( ($os->{'distro'} eq "fedora") && ($os->{'distro_version'} == "5") ) {
+        $dhcpd_leases = "/var/lib/dhcpd/dhcpd.leases";
+    }
+
+    if(!-e "$dhcpd_leases") {
+        open(OUT,">$dhcpd_leases") or (carp "Couldn't create dhcpd.leases files", return undef);
         close(OUT);
     }
     oscar_log_subsection("Step $step_number: Restarting dhcpd service");
@@ -690,6 +702,9 @@ sub macs_inputer {
 			-textvariable => \$mac,
 			-width => 31,
 	);
+
+	# Put input cursor on the entry dialogbox
+	$entry->focus;
 
 	my $apply = sub {
 			load_macs($mac);
