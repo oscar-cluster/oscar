@@ -18,9 +18,9 @@
 
   <version>
     <major>3</major>
-    <minor>6</minor>
-    <subversion>2</subversion>
-    <release>4</release>
+    <minor>7</minor>
+    <subversion>3</subversion>
+    <release>1</release>
     <epoch>1</epoch>
   </version>
 
@@ -52,8 +52,6 @@
       <pkg>systeminstaller-oscar-x11</pkg>
       <pkg>systemimager-server</pkg>
       <pkg>systemimager-flamethrower</pkg>
-      <pkg>flamethrower</pkg>
-      <pkg>udpcast</pkg>
       <pkg>atftp-server</pkg>
       
   </binary-package-list>
