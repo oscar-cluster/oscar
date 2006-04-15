@@ -52,6 +52,14 @@
         <group>oscar_server</group>
         <distribution>
           <name>fc</name>
+          <version>5</version>
+        </distribution>
+      </filter>
+  
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>fc</name>
           <version>4</version>
         </distribution>
       </filter>

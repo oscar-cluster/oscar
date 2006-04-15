@@ -97,9 +97,19 @@ sub prepare_pools {
 # 
 sub pool_gencache {
     my ($pm, $pool) = @_;
+    my @words = split("/", $pool);
+    my $yum_cache_cookie = "/var/cache/yum/$words[-2]_$words[-1]/cachecookie";
+
+    # yum 2.6.0+ creates a file called cachecookie in /var/cache/yum/<repo> and
+    # inorder to refresh the yum cache, this file needs to be deleted
+    if (-f $yum_cache_cookie) {
+        print "Deleting file $yum_cache_cookie\n";
+        unlink($yum_cache_cookie) or croak("Failed to delete file $yum_cache_cookie");
+    }
 
     $pm->repo($pool);
     print "Calling gencache for $pool, this might take a minute ...";
+
     my ($err, @out) = $pm->gencache;
     if ($err) {
 	print " success\n";
