@@ -47,11 +47,6 @@ NON_DIST_SRC_FILES= \
 # .eps and .pdf figure files are required to be pre-generated
 
 FIG_FILES	= \
-		oscar-wizard.png \
-		collect-mac.png \
-		define-clients.png \
-		build-image.png \
-		setup-test.png \
 			 figs/0c_sbs-unpack.png \
 			 figs/1a_sbs-install-oscar.png \
 			 figs/1b_sbs-install-oscar2.png \
