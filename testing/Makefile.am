@@ -13,7 +13,7 @@
 
 include $(top_srcdir)/dist/Makefile.options
 
-oscar_SCRIPTS		= testprint test_cluster ssh_user_tests
+oscar_SCRIPTS		= testprint test_cluster ssh_user_tests test_oca.pl
 oscar_DATA		= 
 
 EXTRA_DIST		= $(oscar_SCRIPTS) $(oscar_DATA)
