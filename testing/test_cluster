@@ -105,9 +105,15 @@ my $test_user="oscartst";
 my ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) =
     getpwnam $test_user;
 unless ($test_user_homedir) {
+	  print $test_user;
           if (system("/usr/sbin/useradd -m $test_user")) {
                   croak("Unable to create test user: exiting.");
           }
+	  # Mandriva's openssh versions newer than 3.6 block ssh from users with
+	  # empty password. One solution for this is to unblock then manually:
+	  if (-e "/etc/mandriva-release") {
+		  system("/usr/bin/passwd -u $test_user -f");
+	  }
           if (system("/opt/sync_files/bin/confmgr --syncnow --force --add /etc/gshadow > /dev/null 2>&1")) {
                   croak("Unable to replicate user out to oscar nodes (confmgr failed): exiting.");
           }
