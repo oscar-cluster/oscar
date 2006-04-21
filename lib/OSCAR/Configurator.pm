@@ -224,7 +224,10 @@ sub populateConfiguratorList
       my $found = 0;
       foreach my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) 
         {
-          (($found = 1) and last) if (-s "$dir/$package/configurator.html");
+          if (-s "$dir/$package/configurator.html") {
+            $found = 1;
+            last;
+          }
         }
       delete $packages_ref->{$package} if (!$found);
     }
