@@ -207,11 +207,11 @@ tcp_wrappers
 ttmkfdir
 tzdata
 xorg-x11-xfs
+xorg-x11-Mesa-libGLU
 xorg-x11-xdm
 xorg-x11-font-utils
-xorg-x11-fonts-base
+xorg-x11-fonts
 xorg-x11-xauth
 xorg-x11-twm
-mesa-libGLU
-mesa-libGL
-libX11
+xorg-x11-Mesa-libGL
+xorg-x11-libs
