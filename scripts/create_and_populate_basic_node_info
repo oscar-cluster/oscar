@@ -2,7 +2,7 @@
 
 # Copyright 2004 NCSA
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) 2005-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
 #   This program is free software; you can redistribute it and/or modify
@@ -84,14 +84,14 @@ if ( defined $dns_domain && $dns_domain ne "" ) {
 
 # make sure that certain node groups exist
 
-foreach my $node_group_name ( "oscar_clients", "all", "Default" ) {
+foreach my $node_group_name ( "oscar_clients", "all", "Default_node" ) {
     
     print "Checking for existence of node group $node_group_name ...\n";
     my @node_groups = ();
     my $group = get_groups(\@node_groups,\%options,\@errors,$node_group_name);
     if ( ! $group ) {
         print "Creating node group $node_group_name ...\n";
-        set_groups($node_group_name,\%options,\@errors);
+        set_groups($node_group_name,\%options,\@errors,"node");
     }
 }
 

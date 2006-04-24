@@ -6,7 +6,7 @@
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
 # Copyright 2005 Canada's Michael Smith Genome Sciences Centre
 #	    Bernard Li <bli@bcgsc.ca>
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) 2005-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved
@@ -118,9 +118,9 @@ my $oscar_server_distribution_version = $master_os->{compat_distrover};
 my @tables = ("Clusters", "Groups", "Status");
 my %options = ();
 my @errors = ();
-if(! locking("write", \%options, \@tables, \@errors)){
-    die "$0: cannot connect to oda database";
-}
+#if(! locking("write", \%options, \@tables, \@errors)){
+#    die "$0: cannot connect to oda database";
+#}
 
 
 # write out one global oscar record, or modify an existing one
@@ -176,8 +176,14 @@ if ( !$query_results ){
 
 # Set up "Group" table with the global values.
 # The current group values are..
-my @groups = ("oscar_server", "oscar_clients", "Default", "image", "core", "included");
-set_all_groups(\@groups,\%options,@error_strings);
+#my @groups = ("oscar_server", "oscar_clients", "Default", "image", "core", "included");
+my %groups = ("oscar_server" => "node",
+              "oscar_clients"=> "node",
+              "Default" => "package",
+              "image" => "image", 
+              "core" => "package",
+              "included" => "package");
+set_all_groups(\%groups,\%options,@error_strings);
 
 # Set up "Status" table with the global values.
 # The current status values are..

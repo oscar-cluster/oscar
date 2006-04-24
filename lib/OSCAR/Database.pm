@@ -18,7 +18,7 @@ package OSCAR::Database;
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 #
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) 2005-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
 # Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
@@ -2580,11 +2580,13 @@ sub get_groups {
 sub set_groups {
     my ($group,
         $options_ref,
-        $error_strings_ref) = @_;
+        $error_strings_ref,
+        $type) = @_;
+    $type = "package" if ! $type;
     my @results = ();
     get_groups(\@results,$options_ref,$error_strings_ref,$group);
     if(!@results){
-        my $sql = "INSERT INTO Groups (name) VALUES ('$group')";
+        my $sql = "INSERT INTO Groups (name,type) VALUES ('$group','$type')";
         die "$0:Failed to insert values via << $sql >>"
             if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
     }    
@@ -2635,8 +2637,8 @@ sub set_all_groups {
     die "$0:Failed to query values via << $sql >>"
         if! do_select($sql,\@groups, $options_ref, $error_strings_ref);
     if(!@groups){ 
-        foreach my $group (@$groups_ref){
-            set_groups($group,$options_ref,$error_strings_ref);
+        foreach my $group (keys %$groups_ref){
+            set_groups($group,$options_ref,$error_strings_ref,$$groups_ref{$group});
         }
     }
 }
