@@ -6,7 +6,7 @@
     <major>6</major>
     <minor>0u7_1</minor>
     <subversion>0</subversion>
-    <release>1</release>
+    <release>2</release>
     <epoch>1</epoch>
   </version>
 
@@ -29,24 +29,14 @@
       <pkg>sge</pkg>
       <pkg>sge-modulefile</pkg>
   </binary-package-list>  
-  <binary-package-list>
-      <filter>
-        <distribution>
-          <name>fc</name>
-          <version>2</version>
-        </distribution>
-      </filter>
 
-      <pkg>ksh</pkg>
-  </binary-package-list>  
+  <conflicts>
+    <name>torque</name>
+    <type>package</type>
+  </conflicts>
 
-<conflicts>
-  <name>torque</name>
-  <type>package</type>
-</conflicts>
-
-<conflicts>
-  <name>maui</name>
-  <type>package</type>
-</conflicts>
+  <conflicts>
+    <name>maui</name>
+    <type>package</type>
+  </conflicts>
 </oscar>

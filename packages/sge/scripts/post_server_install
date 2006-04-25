@@ -134,13 +134,6 @@ else {
 # Need to open a new shell to be able to locate the qconf binary
 system("$qconf -as $hostname") == 0 or croak("Error: Problem with adding OSCAR head as sge admin host");
 
-# Copy the scripts that setup the environment so that its system-wide
-# All users logging in from now on will have the setup automated 
-# and can start using the SGE commands right away.
-
-copy("$ENV{SGE_ROOT}/$cellname/common/settings.sh","/etc/profile.d/sge.sh") or croak("Error copying $ENV{SGE_ROOT}/$cellname/common/settings.sh to /etc/profile.d/sge.sh");
-copy("$ENV{SGE_ROOT}/$cellname/common/settings.csh","/etc/profile.d/sge.csh") or croak("Error copying $ENV{SGE_ROOT}/$cellname/common/settings.csh to /etc/profile.d/sge.csh");
-
 # The following cannot happen since we decided not make headnode as exec
 # But, we can uncomment this when we allow headnode as exec
 #system("qconf -ae $hostname");

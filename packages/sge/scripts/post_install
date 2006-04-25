@@ -130,11 +130,6 @@ if (%nodes) {
 	opkg_print("SGE post_install: Pushing $cell.tar to clients...\n");
 	system("$push_command $sge_conf_store $ENV{SGE_ROOT}/$cell.tar");
 
-	# Copy all the environment-setting scripts to clients
-	opkg_print("SGE post_install: Pushing all env-setting scripts to clients...\n");
-	system("$push_command /etc/profile.d/sge.sh /etc/profile.d");
-	system("$push_command /etc/profile.d/sge.csh /etc/profile.d");
-
 	# Untar the spool dir on the clients
 	opkg_print("SGE post_install: Untarring $cell.tar on clients...\n");
 	system("$exec_command 'if ! [ -d $ENV{SGE_ROOT}/$cell ]; then cd $ENV{SGE_ROOT} && tar -xf $cell.tar; fi'") == 0 or croak("Failed to untar $cell.tar on clients");
