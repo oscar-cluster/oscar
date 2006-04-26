@@ -57,6 +57,7 @@ if ($options{pool}) {
     print "Detecting distro pool $options{pool}:\n";
     $os = OSCAR::OCA::OS_Detect::open(pool => $options{pool});
     die "Unable to determine operating system" if (!$os);
+    &print_os_info($os);
     print "Detected os structure :\n".Dumper($os);
 
 } elsif (!$options{node}) {
@@ -99,9 +100,18 @@ sub print_image_detect {
     die "Unable to determine operating system" if (!$os);
     print "Distro package url : ".&distro_repo_url($img)."\n";
     print "OSCAR package pool : ".&oscar_repo_path($img)."\n";
+    &print_os_info($os);
     vprint("Detected os structure :\n".Dumper($os));
 }
 
+sub print_os_info {
+    my ($os) = @_;
+    print "distribution: ".$os->{distro}."\n";
+    print "distribution version: ".$os->{distro_version}."\n";
+    print "compat distribution: ".$os->{compat_distro}."\n";
+    print "compat distrover: ".$os->{compat_distrover}."\n";
+    print "packaging method: ".$os->{pkg}."\n";
+}
 
 sub usage {
     print <<END_USAGE;
