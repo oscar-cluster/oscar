@@ -123,6 +123,10 @@ if ($dumb) {
 	# do the removes before the installs
 	handle_dumb_rpms(1,@removes);
 	handle_dumb_rpms(0,@installs);
+    } elsif ($suffix eq ".deb") {
+	# do the removes before the installs
+	handle_dumb_debs(1,@removes);
+	handle_dumb_debs(0,@installs);
     } else {
 	croak "Support for dumb ".$suffix." install is not implemented.\n";
     }
@@ -189,6 +193,48 @@ sub handle_dumb_rpms {
 		my $pkgpath = locate_pkg($pkg);
 		if ($pkgpath) {
 		    $cmd = "rpm -Uhv $pkgpath";
+		    vprint("Executing: $cmd\n");
+		    !system($cmd) or croak "install failed: $!\n";
+		} else {
+		    print "WARNING: Could not locate package $pkg\n";
+		}
+	    }
+	}
+    }
+}
+
+#
+# Simple implementation for dumb debian package handling
+# hacked by Erich Focht out of the dumb_rpms code, without much
+# knowledge of dpkg
+#
+sub handle_dumb_debs {
+    my ($remove, @pkgs) = @_;
+    my $cmd;
+    return if (!scalar(@pkgs));
+    for my $pkg (@pkgs) {
+	# make sure we deal with package names, not file names
+	my $pkgname = $pkg; $pkgname =~ s/\.deb$//;
+	if ($remove) {
+	    $cmd = "dpkg --status $pkgname >/dev/null 2>&1";
+	    vprint("Executing: $cmd\n");
+	    if (!system($cmd)) {
+		# remove all instances of package
+		$cmd = "dpkg --purge --force-depends $pkgname";
+		vprint("Executing: $cmd\n");
+		!system($cmd) or print "Warning: removal failed: $!\n";
+	    } else {
+		vprint("Package $pkgname not installed.\n");
+	    }
+	} else {
+	    # already installed?
+	    $cmd = "dpkg --status $pkgname >/dev/null 2>&1";
+	    vprint("Executing: $cmd\n");
+	    if (system($cmd)) {
+		# not installed, so do it now
+		my $pkgpath = locate_pkg($pkg);
+		if ($pkgpath) {
+		    $cmd = "dpkg --install $pkgpath";
 		    vprint("Executing: $cmd\n");
 		    !system($cmd) or croak "install failed: $!\n";
 		} else {
