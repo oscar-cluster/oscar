@@ -61,12 +61,17 @@ my $md5;
 oscar_log_section("Running OSCAR wizard_prep script");
 
 #
-# Locate package pools and create the directories if they don't exist, yet.
+# Detect OS of master node.
 #
 # Fails HERE if distro is not supported!
 #
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
-my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
+my $os = &OSCAR::PackagePath::distro_detect_or_die();
+
+#
+# Locate package pools and create the directories if they don't exist, yet.
+#
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path(os=>$os);
+my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
 
 my $ARCH = `uname -i`;
 chomp($ARCH);
@@ -95,9 +100,34 @@ my $ipcmd = "$ohome/scripts/install_prereq $verbose";
 
 oscar_log_subsection("Bootstrapping OSCAR smart package manager");
 
-# need to add ifdef for other type of smart package manager
-my $cmd = "$ipcmd --dumb share/prereqs/base packages/yume".
-    " share/prereqs/packman";
+
+# install_prereq is a very powerfull tool. It can install and remove
+# packages based on a simple configuration file which distinguishes
+# between distributions, thus making the addition of distributions
+# a piece of cake.
+#
+# install_prereq --dumb uses only the basic package manager which is
+# allways available on a system. The packages installed in this mode
+# need to contain all dependencies in the configuration file, as the
+# dumb package managers (rpm, dpkg) don't know how to resolve
+# dependencies.
+#
+# install_prereq --smart uses a packman instance specific to the current
+# distro and expects that to return "true" when the ->is_smart() method
+# is invoked. It is able to resolve dependencies automatically from the
+# repositories.
+
+my $cmd;
+if ($os->{pkg} eq "rpm") {
+    # rpm based distros use yume
+    $cmd = "$ipcmd --dumb share/prereqs/base packages/yume".
+	" share/prereqs/packman";
+} elsif($os->{pkg} eq "deb") {
+    # debian based distros already have apt...
+    $cmd = "$ipcmd --dumb share/prereqs/base share/prereqs/packman";
+} else {
+    die "Unsupported package manager: ".$os->{pkg};
+}
 !system($cmd) or
     die "Could not bootstrap smart package manager!\n";
 
