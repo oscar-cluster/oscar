@@ -226,6 +226,51 @@ sub detect_pool_rpm {
     return $id;
 }
 
+# common routine for pool detection of debian based distros
+sub detect_pool_deb {
+    my ($pool,$detect_package,$distro,$compat) = @_;
+
+    if (! -d "$pool") {
+	return undef;
+    }
+    my @files = glob("$pool/$detect_package"."_"."*.deb");
+    if (!scalar(@files)) {
+	return undef;
+    }
+
+    # version recognition must be fixed!
+    # debian's detect package is base-files, its version number
+    # is not the same as the debian distro version!
+    my ($version,$flavor);
+    for my $f (@files) {
+	my $v = `dpkg-query --queryformat %{VERSION} $f 2>/dev/null`;
+	# don't care about release for pools, only version counts
+	$v =~ s/\.\d+$//;
+	if (!$version) {
+	    $version = $v;
+	} else {
+	    if ($v > $version) {
+		$version = $v;
+	    }
+	}
+    }
+    return undef if (!$version);
+    # this hash contains all info necessary for identifying the OS
+    my $id = {
+	os               => "linux",
+	pool             => $pool,
+	distro           => $distro,
+	distro_version   => $version,
+	compat_distro    => $compat,
+	compat_distrover => $version,
+	pkg              => "deb",
+    };
+    # determine architecture
+    my $arch = detect_arch_pool($pool,"deb");
+    $id->{arch} = $arch;
+    return $id;
+}
+
 #
 # For pools referenced by URL find compat distro name and generate
 # fake $id structure

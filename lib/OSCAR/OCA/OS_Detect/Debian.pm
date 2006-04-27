@@ -20,14 +20,19 @@ use strict;
 my $DEBUG = 1 if( $ENV{DEBUG_OCA_OS_DETECT} );
 my ($deb_ver, $deb_update);
 
-my $detect_file = "/bin/bash";  # Common file used to determine arch
-
-
 my $detect_pkg  = "base-files"; # Deb pkg containing '/etc/debian_version'
                                 # therefore should always be available
                                 # and the Version: is always accurate!
 
 my $dpkg_bin = "/usr/bin/dpkg-query"; # Tool to query Deb package Database
+
+
+my $distro = "debian";
+my $compat_distro = "debian";
+my $pkg = "deb";
+my $detect_package = "base-files";
+my $detect_file = "/bin/bash";
+
 
 
 #
@@ -91,13 +96,13 @@ sub detect_dir {
 	return 0;
     }
 
-    $id->{distro} = "debian";
+    $id->{distro} = $distro;
     $id->{distro_flavor} = "sarge";
     $id->{distro_version} = $deb_ver;
     $id->{distro_update} = $deb_update;
-    $id->{compat_distro} = "debian";
+    $id->{compat_distro} = $compat_distro;
     $id->{compat_distrover} = $deb_ver;
-    $id->{pkg} = "deb";
+    $id->{pkg} = $pkg;
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
@@ -105,20 +110,28 @@ sub detect_dir {
 }
 
 
-
-# FIXME: This needs to be added, just putting function name here for now.
+# EF: simply copied the function from RedHat.pm, this is why we have common
+# routines in OS_Detect, in order to avoid code replication
 sub detect_pool {
-	print STDERR "Warning-STUB: method 'detect_pool()' not available.\n";
-	return undef;
+    my ($pool) = @_;
+
+    my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
+							  $detect_package,
+							  $distro,
+							  $compat_distro);
+
+    return $id;
 }
 
-
-# FIXME: This needs to be added, just putting function name here for now.
+# EF: simply copied the function from RedHat.pm
 sub detect_fake {
-	print STDERR "Warning-STUB: method 'detect_fake()' not available.\n";
-	return undef;
+    my ($fake) = @_;
+    my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
+							     $distro,
+							     $compat_distro,
+							     $pkg);
+    return $id;
 }
-
 
 # If we got here, we're happy
 1;
