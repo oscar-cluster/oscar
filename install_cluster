@@ -197,11 +197,14 @@ system("chmod 755 packages/*/scripts/*");
 # then edit the share/prereqs/base/prereq.cfg file accordingly
 # and remove the following 4 lines
 #
-my $pqtv = `rpm -q --quiet --qf '%{VERSION}' perl-Qt 2>/dev/null`;
-if ( $pqtv && $pqtv < 3 ) {
-  !system("rpm -e perl-Qt") or warn("Couldn't remove perl-Qt");
-  oscar_log_subsection("Removing installed perl-Qt RPM because version is < 3");
-}
+# [GVALLEE 25.04.2006]
+# this is not compliant at all with Debian and it seems to me it is not anymore usefull
+# If you uncomment this, debian will _not_ be supported
+#my $pqtv = `rpm -q --quiet --qf '%{VERSION}' perl-Qt 2>/dev/null`;
+#if ( $pqtv && $pqtv < 3 ) {
+#  !system("rpm -e perl-Qt") or warn("Couldn't remove perl-Qt");
+#  oscar_log_subsection("Removing installed perl-Qt RPM because version is < 3");
+#}
 
 # TJN (10/4/2005): Note, a fairly evil, totally non-obvious issue 
 #    occurs if you have /tftpboot setup as a symlink,
