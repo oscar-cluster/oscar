@@ -9,12 +9,16 @@
 # OSCAR source distribution.
 #
 # Generic setup script for copying distro and arch specific RPMs/packages
-# from distro/*/ to /tftpboot/rpm. Can also be used for deleting RPMs from
-# the /tftpboot/rpm package pool.
+# from distro/*/ to /tftpboot/oscar/.... Can also be used for deleting
+# packages from the /tftpboot/oscar/... package pool.
+#
+# This program is executed before the packman abstraction for package
+# managers is installed and available.
 #
 # $Id$
 #
-# (c) 2005 Erich Focht <efocht@hpce.nec.com>
+# Originally written by:
+# Copyright (c) 2005 Erich Focht <efocht@hpce.nec.com>
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -106,18 +110,23 @@ my @argpkgs = @ARGV;
 ## Do the job
 ################################
 
-# List of RPM files found in the distro-specific directories
+# List of package files found in the distro-specific directories
 my @pkgfiles;
 
 # Find first compatible subdirectory
 # Note ordering, later occurrence of identical filenames overwrite earlier.
-# RPMS, common-arch, and distro-compat dir.
+# packages, common-arch, and distro-compat dir.
 #
 my @src_dirs;
-# EF: RPMS directory should go away and be replaced by common-rpms
+# EF: packages directory should go away and be replaced by common-rpms
 #     Still need to make this distro-dependent
-push @src_dirs, "RPMS" if (-d "$base_dir/RPMS");
-push @src_dirs, "distro/common-rpms" if (-d "$base_dir/distro/common-rpms");
+if ($os->{pkg} eq "rpm") {
+    push @src_dirs, "RPMS" if (-d "$base_dir/RPMS");
+    push @src_dirs, "distro/common-rpms" if (-d "$base_dir/distro/common-rpms");
+} elsif ($os->{pkg} eq "deb") {
+    push @src_dirs, "DEBS" if (-d "$base_dir/DEBS");
+    push @src_dirs, "distro/common-debs" if (-d "$base_dir/distro/common-debs");
+}
 my ($non_common, $have_pkgs);
 for my $dir (distro_compat()) {
     if (-d "$base_dir/distro/$dir") {
@@ -131,13 +140,13 @@ for my $dir (distro_compat()) {
 }
 # Are there any other package directories around?
 # This test makes no sense once we'll have distro-specific OSCAR tarballs
-my @any_dirs = glob("$base_dir/distro/{rhel,fc,mdk,mdv}*");
+my @any_dirs = glob("$base_dir/distro/{rhel,fc,mdk,mdv,debian}*");
 # do we have any non-common dir in distro?
 if ((scalar(@any_dirs) > 0) && !$non_common) {
     print "WARNING: No distro-specific dir found for package $pkg_name!\n";
     print "   Continuing but distro-specific packages could be missing...\n";
 }
-my @any_pkgs = glob("$base_dir/distro/{rhel,fc,mdk,mdv}*/*");
+my @any_pkgs = glob("$base_dir/distro/{rhel,fc,mdk,mdv,debian}*/*");
 # is the directory empty while others have packages?
 # this test makes no sense once we'll have distro-specific OSCAR tarballs
 if ($non_common && (scalar(@any_pkgs) > 0) && !$have_pkgs) {
@@ -224,7 +233,7 @@ sub vprint {
 }
 
 #
-# Compatibility chain of distro-specific RPM sources
+# Compatibility chain of distro-specific package sources
 #
 sub distro_compat {
     my @compatlist;
@@ -282,8 +291,7 @@ Usage: generic-setup [options] [pkg1 pkg2 ...]
   Scan the distribution specific directories distro/\$distro\$version-\$arch
   and the common directory (distro/common-rpms) for best packages for
   current or specified architecture (or noarch). Either copy the package
-  files to the OSCAR package repository (/tftpboot/rpm) or delete them
-  from there.
+  files to the OSCAR package repository or delete them from there.
 
   If package names are passed as arguments, actions are limited to these
   packages.
@@ -294,9 +302,9 @@ Usage: generic-setup [options] [pkg1 pkg2 ...]
  Options:
    --arch|-a      : override locally detected architecture
    --distro  D-V  : translated distro string (for testing only!)
-   --erase|-e     : erase packages with same name from RPM pool (tftpboot/rpm)
+   --erase|-e     : erase packages with same name from pool
    --help|-h      : display this help text
-   --pool|-p path : override setting of RPM pool path (default /tftpboot/rpm)
+   --pool|-p path : override setting of pool path
    --test|-t      : just test without copying or erasing files
    --verbose|-v   : verbose printout
 END_USAGE
