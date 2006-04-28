@@ -337,7 +337,7 @@ if ( is_installed_on_node("$pvm_pe") ) {
                 system("$qconf -Ap $pvm_pe_file") == 0 or croak("Failed to add PVM to SGE's Parallel Environment");
                 unlink($pvm_pe_file);
         } elsif ($? == 0) {
-                # LAM/MPI Parallel Environment already exists
+                # PVM Parallel Environment already exists
         } else {
                 croak("Cannot run qconf -sp $pvm_pe");
         }
@@ -377,7 +377,7 @@ if ( is_installed_on_node("$pvm_pe") ) {
         if ($? == 256) {
                 # Parallel Environment does not exist, do nothing
         } elsif ($? == 0) {
-                # LAM/MPI Parallel Environment exists
+                # PVM Parallel Environment exists
                 print "Deleting PVM Parallel Environment since PVM package is not installed\n";
                 system("$qconf -dp $pvm_pe");
         } else {
