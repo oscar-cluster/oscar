@@ -127,7 +127,7 @@ sge_test_routine () {
   if [ -f $output.out ]; then /bin/rm -f $output.out; fi
   if [ -f $output.err ]; then /bin/rm -f $output.err; fi
   jobname=`basename $output`
-  job=`qsub -N $jobname -S /bin/bash -v PATH -pe $pe $clients -o $jobname.out -e $jobname.err $sge_script | awk {'print $3'}`
+  job=`qsub -N $jobname -S /bin/bash -v PATH -v LD_LIBRARY_PATH -pe $pe $numprocs -o $jobname.out -e $jobname.err $sge_script | awk {'print $3'}`
   # Check that job submitted properly
   if [ -z $job ]; then 
     $OSCAR_TESTPRINT --label "$sge_test_type" --fail
