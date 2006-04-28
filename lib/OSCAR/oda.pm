@@ -1,7 +1,7 @@
 package oda;
 #
 #
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) 2005-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -11,6 +11,9 @@ package oda;
 # $Id$
 #
 # This is a new version of ODA
+# The highest level of ODA hierarchy is oda.pm, which implements
+# the direct database connection and main database queries for the OSCAR
+# database.
 # 
 
 use strict;
@@ -21,6 +24,7 @@ use Data::Dumper;
 use IO::Select;
 use IPC::Open3;
 
+# Declare main variable to use on oda.pm
 my $cached_all_table_names_ref = undef;
 my $cached_all_tables_fields_ref = undef;
 my $temp_cached_all_tables_fields = undef;
@@ -64,10 +68,10 @@ sub oda_connect {
     ( $passed_options_ref, $passed_error_strings_ref );
 
     if ( $$options_ref{debug} ) {
-    my ($package, $filename, $line) = caller;
-    print_hash( "", "in oda::oda_connect called from package=$package $filename\:$line database_connected_flag=$database_connected_flag passed_options_ref=",
-            $passed_options_ref );
-    print_hash( "", "in oda::oda_connect options_ref=", $options_ref );
+        my ($package, $filename, $line) = caller;
+        print_hash( "", "in oda::oda_connect called from package=$package $filename\:$line database_connected_flag=$database_connected_flag passed_options_ref=",
+                $passed_options_ref );
+        print_hash( "", "in oda::oda_connect options_ref=", $options_ref );
     }
 
     # if we're connected to the wrong database, disconnect from it first
@@ -205,15 +209,15 @@ sub list_databases {
     my @databases = 
     $driver_handle->func ($$options_ref{host}, $$options_ref{port}, '_ListDBs');
     if ( @databases ) {
-    print( "$0: in oda::list_databases _ListDBs succeeded returned <@databases>\n")
-        if $$options_ref{debug};
-    if (ref($databases_ref) eq "HASH") {
-        foreach my $database ( @databases ) {
-        $$databases_ref{$database} = 1;
+        print( "$0: in oda::list_databases _ListDBs succeeded returned <@databases>\n")
+            if $$options_ref{debug};
+        if (ref($databases_ref) eq "HASH") {
+            foreach my $database ( @databases ) {
+            $$databases_ref{$database} = 1;
+            }
+        } else {
+            @$databases_ref = @databases;
         }
-    } else {
-        @$databases_ref = @databases;
-    }
     } else {
     push @$error_strings_ref,
     "$0: _ListDBs call to list databases failed:\n$DBI::errstr";
@@ -451,6 +455,8 @@ sub database_server_version {
 #                                                                    #
 #********************************************************************#
 #********************************************************************#
+# inputs:  options            optional reference to options hash
+#          error_strings_ref  optional reference to array for errors
 
 sub fake_missing_parameters {
     my (  $passed_options_ref,
@@ -616,6 +622,12 @@ $$options_ref{functions_dir}
 #                                                                    #
 #********************************************************************#
 #********************************************************************#
+# inputs:  $leading_spaces    some description(string) about the hash
+#          $name              name(string) for the hash
+#          $hashref           reference of the hash to print out
+#
+# outputs: prints out the hash contents
+
 
 sub print_hash {
     my( $leading_spaces, $name, $hashref ) = @_;
@@ -641,13 +653,15 @@ sub print_hash {
 #********************************************************************#
 #********************************************************************#
 #                                                                    #
-# internal function to do an sql command                             #
+# external function to do an sql command                             #
 #                                                                    #
 #********************************************************************#
 #********************************************************************#
 #
 # input:  options_ref        options hash pointer or undef for none passed
 #         sql_command        sql command to do
+#         caller_string      short description of the query
+#         failure_string     error message to transfer from caller to oda
 #         error_strings_ref  error strings list pointer or undef
 #
 # return: success            non-zero for success
@@ -657,8 +671,7 @@ sub do_sql_command {
      $sql_command,
      $passed_caller_string,
      $passed_failure_string,
-     $passed_error_strings_ref,
-     $passed_number_of_records_ref ) = @_;
+     $passed_error_strings_ref) = @_;
     
     # take care of faking any non-passed input parameters, and
     # set any options to their default values if not already set
@@ -668,9 +681,6 @@ sub do_sql_command {
     $passed_caller_string : "unspecified";
     my $failure_string = ( defined $passed_failure_string ) ?
     $passed_failure_string : "unspecified";
-    my $ignored_number_of_records;
-    my $number_of_records_ref = ( defined $passed_number_of_records_ref ) ? 
-    $passed_number_of_records_ref : \$ignored_number_of_records;
     
     my @entries_sql = split(/ /, $sql_command);
     %locked_tables = ();
@@ -703,12 +713,11 @@ sub do_sql_command {
     "\n"
     if $$options_ref{debug};
     
+    # Do the sql command via perl DBI
     print "$0: executing on database <$$options_ref{database}> command <$sql_command>\n"
     if $$options_ref{verbose};
-    $$number_of_records_ref = $database_handle->do( $sql_command );
-    $$number_of_records_ref = 0
-    if $$number_of_records_ref eq "0E0";
-    if ( $DBI::err ) {
+    my $row = $database_handle->do( $sql_command );
+    if ( $DBI::err and $row ) {
         push @$error_strings_ref,
         "Failed to $failure_string in database <$$options_ref{database}>: $DBI::errstr";
         push @$error_strings_ref, 
@@ -1007,6 +1016,11 @@ print "aaaarrrrrggghhhhhhhh\n";
 #                                                                    #
 #********************************************************************#
 #********************************************************************#
+# inputs:  options            reference to options hash
+#          error_strings_ref  optional reference to array for errors
+#
+# return: non-zero if success
+
 
 sub do_shell_command {
     my ( $options_ref, $command,
@@ -1032,6 +1046,10 @@ sub do_shell_command {
 #                                                                    #
 #********************************************************************#
 #********************************************************************#
+# initialize the locking process
+#  - empty the %locked_tables
+#  - copy $temp_cached_all_tables_fields to $cached_all_tables_fields_ref
+#  - and then set $temp_cached_all_tables_fields to be "undef"
 
 sub initialize_locked_tables{
     %locked_tables = ();
