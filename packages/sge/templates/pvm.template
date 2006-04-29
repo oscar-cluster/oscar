@@ -1,0 +1,10 @@
+pe_name           pvm
+slots             999
+user_lists        NONE
+xuser_lists       NONE
+start_proc_args   /opt/sge/pe/pvm/startpvm.sh -catch_rsh $pe_hostfile $host /opt/pvm3
+stop_proc_args    /opt/sge/pe/pvm/stoppvm.sh -catch_rsh $pe_hostfile $host
+allocation_rule   1
+control_slaves    TRUE
+job_is_first_task FALSE
+urgency_slots     min

@@ -292,7 +292,7 @@ run_global() {
     # and add it to the various lists of directories.
 
     echo "Generating Makefile.am's..."
-    rg_pkg_subdirs=". distro doc RPMS scripts SRPMS testing"
+    rg_pkg_subdirs=". distro doc RPMS scripts SRPMS templates testing"
     for rg_pkg in packages packages/* share share/prereqs share/prereqs/*; do
 	rg_base="`basename $rg_pkg`"
 	if test "$rg_pkg" != "packages/.svn" -a \
