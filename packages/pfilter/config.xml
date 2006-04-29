@@ -24,9 +24,9 @@
 
   <version>
     <major>1</major>
-    <minor>705</minor>
+    <minor>707</minor>
     <subversion>0</subversion>
-    <release>2</release>
+    <release>2oscar</release>
     <epoch>1</epoch>
   </version>
 
@@ -48,6 +48,7 @@ system package.</description>
 
   <binary-package-list>
       <pkg>pfilter</pkg>
+      <pkg>iptables</pkg>
   </binary-package-list>
 
 </oscar>
