@@ -105,7 +105,6 @@ my $test_user="oscartst";
 my ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) =
     getpwnam $test_user;
 unless ($test_user_homedir) {
-	  print $test_user;
           if (system("/usr/sbin/useradd -m $test_user")) {
                   croak("Unable to create test user: exiting.");
           }
