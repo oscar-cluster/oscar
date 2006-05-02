@@ -1,0 +1,113 @@
+#!/bin/sh
+#
+# Copyright (c) 2002-2005 The Trustees of Indiana University.  
+#                         All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+
+# $Id$
+#
+# Authors: Jason Brechin
+#          Jeremy Enos
+#	   Bernard Li
+#          Jeffrey M. Squyres
+
+. ${MODULESHOME}/init/sh
+
+# Function to immediately reload switcher setting, taken from the alias
+switcher_reload() {
+   cd /opt/env-switcher/share/env-switcher > /dev/null ; module unload */* ; module load switcher ; cd - > /dev/null
+}
+
+rm=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{rm}'`
+
+if [ $? -gt 0 ]; then
+   echo "Cannot determine resource manager for system, cannot continue."
+   exit
+fi
+
+if test $rm = "None"; then
+   exit
+fi
+
+rm_test=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{test}' | awk -F "/" {'print \$NF'}`
+#rm_jobscript=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{jobscript}'`
+rm_jobscript="rm_script"
+
+cd
+clients=`echo $@ | wc -w`
+testprint_label="Open MPI (via $rm)"
+
+# Sanity check (somewhat overkill, but safe = good): check to see that
+# there is a LAM installed.
+
+openmpi="`switcher mpi --list | grep openmpi | head -1`"
+if test -z "$openmpi"; then
+    $OSCAR_TESTPRINT --label "$testprint_label"
+    $OSCAR_TESTPRINT --label "$testprint_label" --skipped
+    exit 0
+fi
+
+# If the user has a default MPI set in switcher, save it.  Then set
+# Open MPI to be the default.
+
+user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
+switcher mpi --add-attr default $openmpi --force --silent
+switcher_reload
+
+############################################################################
+# Do horrid checking to see if this has NFS propagated out to all the
+# nodes yet (per several bugs on the SF bug tracker).  This has nothing
+# to do with the MPI test, but if the NFS propagation doesn't occur in
+# a timely fashion, the MPI test will fail (because PATHs will be set
+# wrong, etc.).  So we have to wait until the NFS dust settles before
+# we can run the test.
+
+check_nfs_prop() {
+    want_prompt=$1
+    nfs_goodness=no
+    if test "$want_prompt" = "yes"; then
+        echo -n "Checking for NFS propagation of MPI preferences... "
+    fi
+    foo="`cexec switcher mpi --show | egrep '^user:default=' | cut -d= -f 2 | sort | uniq`"
+    if test "$foo" = "$openmpi"; then
+        nfs_goodness=yes
+        if test "$want_prompt" = "yes"; then
+            echo "Good!"
+        fi
+    else
+        if test "$want_prompt" = "yes"; then
+            echo "Not yet"
+        fi
+    fi
+}
+
+check_nfs_prop no
+while test "$nfs_goodness" = "no"; do
+    sleep 1
+    check_nfs_prop yes
+done
+
+# End of horrid NFS checking
+############################################################################
+
+# Now run the test (results will be printed by the test itself)
+
+$HOME/$rm_test $clients 1 $HOME/openmpi/$rm_jobscript.openmpi "success" \
+    $HOME/openmpi/openmpitest 3 "$testprint_label"
+exit_status=$?
+
+# If there was a user default set in switcher, set it back
+# Otherwise, just remove the default that we set in this script.
+
+if test -n "$user_default_mpi"; then
+    switcher mpi --add-attr default $user_default_mpi --force --silent
+else
+    switcher mpi --rm-attr default --force --silent
+fi
+
+# All done
+
+exit $exit_status

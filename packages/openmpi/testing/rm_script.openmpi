@@ -1,0 +1,89 @@
+#!/bin/sh
+
+### Script Commands
+cd ~/openmpi
+echo "Running Open MPI test"
+
+# The Open MPI test itself
+
+# Double check that we've got a TM component
+
+if test -z "`ompi_info -parsable | grep mca:pls:tm`"; then
+    cat 1>&2 <<EOF
+
+ERROR: Open MPI does not appear to have the tm component!
+       This test script will now abort.
+
+EOF
+    exit 1
+else
+    echo "Open MPI appears to have TM suppport.  Yippee!"
+fi
+
+# Helper subroutine
+
+do_cmds() {
+    cat <<EOF
+
+--> $banner
+
+EOF
+
+    eval $cmds
+    if test "$?" != "0"; then
+	echo "TEST FAILED!"
+	echo "Commands: $cmds"
+	exit 1
+    fi
+}
+
+# SGE's machine file is stored in $TMPDIR/machines
+# TORQUE's machine file is stored in the $PBS_NODEFILE variable, also assign
+# the number of processors needed for the job to the $NSLOTS variable
+if test -z "$PBS_NODEFILE"; then
+    MACHINEFILE="$TMPDIR/machines"
+else
+    MACHINEFILE="$PBS_NODEFILE"
+    NSLOTS=`(wc -l < $PBS_NODEFILE) | awk '{print $1}'`
+fi
+
+# Create tmp directory to put temporary files
+
+openmpi_tmp="/tmp/openmpi-test"
+if test ! -d "$openmpi_tmp"; then
+    rm -rf "$openmpi_tmp"
+    mkdir -p "$openmpi_tmp"
+fi
+
+# Compile cpi and try running it
+
+p=`pwd`
+banner="MPI C bindings test:"
+cmds="cp cpi.c $openmpi_tmp && cd $openmpi_tmp && mpicc cpi.c -o openmpi-cpi && cp openmpi-cpi $p && cd $p && mpiexec -machinefile $MACHINEFILE -n $NSLOTS openmpi-cpi"
+do_cmds
+
+# Compile cxxhello and try running it
+
+banner="MPI C++ bindings test:"
+cmds="cp cxxhello.cc $openmpi_tmp && cd $openmpi_tmp && mpiCC cxxhello.cc -o openmpi-cxxhello && cp openmpi-cxxhello $p && cd $p && mpiexec -machinefile $MACHINEFILE -n $NSLOTS openmpi-cxxhello"
+do_cmds
+
+# Compile f77hello and try running it
+
+banner="MPI Fortran bindings test:"
+cmds="cp f77hello.f $openmpi_tmp && cd $openmpi_tmp && mpif77 f77hello.f -o openmpi-f77hello && cp openmpi-f77hello $p && cd $p && mpiexec -machinefile $MACHINEFILE -n $NSLOTS openmpi-f77hello"
+do_cmds
+
+# All done!
+
+echo "Open MPI test complete"
+echo "Unless there are errors above, test completed successfully."
+
+# Cleanup
+
+if test -d $openmpi_tmp; then
+    rm -rf $openmpi_tmp
+fi
+
+echo
+exit 0
