@@ -123,6 +123,7 @@
                 <type> date </type>
             </installation_date>
             <headnode_interface/>
+            <install_mode/>
         </fields>
     </Clusters>
 

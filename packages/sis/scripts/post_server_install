@@ -25,10 +25,19 @@ use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use POSIX;
 use Carp;
+use OSCAR::Database;
 use OSCAR::Distro;
+use OSCAR::Opkg;
 
-!system("/etc/init.d/systemimager-server-rsyncd restart") or croak("Couldn't restart systemimager-server-rsyncd");
+my $default_install_mode = "systemimager-rsync";
+my $install_mode = get_install_mode();
+
+if (!$install_mode) { 
+  opkg_print("Setting default installation mode to: $default_install_mode\n");
+  set_install_mode($default_install_mode);
+}
+
+!system("/etc/init.d/systemimager-server-rsyncd restart") or croak("Could not restart systemimager-server-rsyncd");
 
 my $monitord = "systemimager-server-monitord";
-!system("chkconfig --add $monitord") or croak("Could not add $monitord to chkconfig");
 !system("/etc/init.d/$monitord restart") or croak("Could not restart $monitord");

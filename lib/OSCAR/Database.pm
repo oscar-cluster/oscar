@@ -65,6 +65,8 @@ use Data::Dumper;
               delete_node
               get_packages
               get_client_nodes
+              get_install_mode
+	      get_image_info_with_name
               get_networks
               get_packages_related_with_package
               get_packages_related_with_name
@@ -106,6 +108,7 @@ use Data::Dumper;
               set_status
               set_images
               set_image_packages
+              set_install_mode
               set_node_with_group
               link_node_nic_to_network
     	      pkgs_of_opkg
@@ -2794,12 +2797,37 @@ sub get_gateway {
 
 # This function returns the interface on the headnode that is on the same
 # network as the compute nodes, typically = ./install_cluster <iface>
-
 sub get_headnode_iface {
     my ($options_ref,
 	$error_strings_ref) = @_;
     my $cluster_ref = get_cluster_info_with_name("oscar", $options_ref, $error_strings_ref);
     return $$cluster_ref{headnode_interface};
+}
+
+# Retrieve installation mode for cluster
+sub get_install_mode {
+    my ($options_ref,
+        $error_strings_ref) = @_;
+ 
+    my $cluster = "oscar";
+
+    my $cluster_ref = get_cluster_info_with_name($cluster, $options_ref, $error_strings_ref);
+    return $$cluster_ref{install_mode};
+}
+
+# Set installation mode for cluster
+sub set_install_mode {
+    my ($install_mode,
+        $options_ref,
+        $error_strings_ref) = @_;
+
+    my $cluster = "oscar";
+    my $sql = "UPDATE Clusters SET install_mode='$install_mode' WHERE name ='$cluster'";
+
+    die "$0:Failed to update values via << $sql >>"
+            if! do_update($sql, "Clusters", $options_ref, $error_strings_ref);
+
+    return 1;
 }
 
 #=======================================================================

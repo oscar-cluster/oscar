@@ -71,6 +71,8 @@ our $stopcoll = "Stop Collecting MACs";
 
 our $window;
 
+our $os = OSCAR::OCA::OS_Detect::open();
+
 sub mac_window {
     $destroyed = 1;
     my $parent = shift;
@@ -167,9 +169,10 @@ sub mac_window {
                                       -command => \&clear_mac,
                                       -state => "disabled",
                                      );
-    my $dhcpbutton = $frame->Button(
+    our $dhcpbutton = $frame->Button(
                                     -text => "Configure DHCP Server",
                                     -command => [\&setup_dhcpd, $$vars{interface}],
+                                    -state => "disabled",
                                    );
 
     our $dyndhcp = 1;
@@ -178,11 +181,22 @@ sub mac_window {
                                 -variable => \$dyndhcp,
                                 );
 
-    our $multicast = 0;
-    my $selectmulticast = $frame->Checkbutton(
-                                -text => "Enable Multicasting",
-                                -variable => \$multicast,
-                                );
+    our $install_mode;
+
+    # Retrive the installation mode from ODA
+    my $orig_install_mode = get_install_mode();
+
+    $install_mode = $orig_install_mode;
+ 
+    my $install_button = $frame->Optionmenu(
+					-options => [ qw(systemimager-rsync systemimager-multicast systemimager-bt) ],
+					-variable => \$install_mode
+					);
+
+    our $enable_install_button = $frame->Button(
+                                     -text => "Enable Install Mode",
+                                     -command => [\&enable_install_mode],
+                                    );
 
     our $loadbutton = $frame->Menubutton(
                                    -text => "Import MACs from",
@@ -204,12 +218,12 @@ sub mac_window {
                                    );
 
     our $bootcd = $frame->Button(
-                                    -text => "Build Autoinstall CD...",
+                                    -text => "Build AutoInstall CD...",
                                     -command => sub {
-                                        my $cmd = "xterm -T 'Build Autoinstall CD' -e si_mkautoinstallcd --append \"MONITOR_SERVER=$ip\" --out-file /tmp/oscar_bootcd.iso";
-                                        oscar_log_subsection("Step $step_number: Building autoinstall CD: $cmd");
+                                        my $cmd = "xterm -T 'Build AutoInstall CD' -e si_mkautoinstallcd --append \"MONITOR_SERVER=$ip MONITOR_CONSOLE=yes\" --out-file /tmp/oscar_bootcd.iso";
+                                        oscar_log_subsection("Step $step_number: Building AutoInstall CD: $cmd");
                                         system($cmd);
-                                        oscar_log_subsection("Step $step_number: Successfully built si_autoinstallcd");
+                                        oscar_log_subsection("Step $step_number: Successfully built AutoInstall CD");
 					done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.");
                                     }
                                    );
@@ -228,12 +242,31 @@ sub mac_window {
 #                                        -command => \&clearallmacsfromnodes,
 #                                        );
 
-    $start->grid($assignall, $exitbutton, -sticky => "ew");
-    $assignbutton->grid($deletebutton, $dhcpbutton, -sticky => "ew");
-    $loadbutton->grid($savebutton, $selectmulticast, -sticky => "ew");
-    my $label2 = $frame->Label(-text => "Below are commands to create a boot environment.\nYou can either boot from CD or network");
+# This is what the widget looks like:
+# |------------------------------------------- --------------------|
+# | Start Collecting MACs | Assign all MACs  | Assign MAC to Node  |
+# | ---------------------------------------------------------------|
+# | Delete MAC from Node  | Import MACs from | Export MACs to file |
+# |----------------------------------------------------------------|
+# | <Install Mode>        | Enable Install Mode   |                |
+# |----------------------------------------------------------------|
+# | Dynamic DHCP update   | Configure DHCP Server |                |
+# |-----------------------|-----------------------|----------------|
+# | Build AutoInstall CD  | Setup Network Boot    | Close          |
+# |----------------------------------------------------------------|
+
+    my $mac_label = $frame->Label(-text => "MAC Address Management", -relief => 'sunken');
+    $mac_label->grid("-", "-", -sticky => "ew");
+    $start->grid($assignall, $assignbutton, -sticky => "ew");
+    $deletebutton->grid($loadbutton, $savebutton, -sticky => "ew");
+    $loadbutton->grid($savebutton, -sticky => "ew");
+    my $install_label = $frame->Label(-text => "Installation Mode and DHCP Setup", -relief => 'sunken');
+    $install_label->grid("-", "-", -sticky => "ew");
+    $install_button->grid($enable_install_button, -sticky => "ew");
+    $refreshdhcp->grid($dhcpbutton, -sticky => "ew");
+    my $label2 = $frame->Label(-text => "Boot Environment (CD or PXE-boot) Setup", -relief => 'sunken');
     $label2->grid("-","-",-sticky => "ew");
-    $bootcd->grid($networkboot, $refreshdhcp, -sticky => "ew");
+    $bootcd->grid($networkboot, $exitbutton, -sticky => "ew");
 #    $clearallmacsfromnodes->grid( -sticky => 'ew');
     $window->bind('<Destroy>', sub {
                                     if ( defined($destroyed) ) {
@@ -279,7 +312,7 @@ sub set_buttons {
 	$state = (scalar keys %MAC) ? "normal" : "disabled";
 	our $savebutton->configure( -state => $state );
 #
-#	Emabled iff at least one item selected in the listbox and the tree.
+#	Enabled iff at least one item selected in the listbox and the tree.
 #
 	$trs = defined $tree->infoSelection();
 	$state = ($lbs && $trs) ? "normal" : "disabled";
@@ -305,7 +338,8 @@ sub set_buttons {
 sub setup_dhcpd {
     my $interface = shift;
     our $window;
-    my $os = OSCAR::OCA::OS_Detect::open();
+    our $install_mode;
+    our $os;
 
     $window->Busy(-recurse => 1);
     oscar_log_subsection("Step $step_number: cleaning hostfile");
@@ -318,9 +352,11 @@ sub setup_dhcpd {
     }
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
     my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
-    if(our $multicast){
+
+    if ($install_mode eq "systemimager-multicast"){
        $cmd = $cmd . " --multicast=yes";
     }
+
     oscar_log_subsection("Step $step_number: Running command: $cmd");
     !system($cmd) or (carp "Couldn't mkdhcpconf", return undef);
     oscar_log_subsection("Step $step_number: Successfully ran command");
@@ -341,6 +377,7 @@ sub setup_dhcpd {
     !system("/etc/init.d/dhcpd restart") or (carp "Couldn't restart dhcpd", 
                                          return undef);
     oscar_log_subsection("Step $step_number: Successfully restarted dhcpd service");
+    our $dhcpbutton->configure(-state => 'disabled');
     $window->Unbusy();
     return 1;
 }
@@ -405,7 +442,6 @@ sub regenerate_tree {
 }
 
 sub assign2machine {
-
     my ($mac, $node, $noupdate) = @_;
     our $listbox;
     our $tree;
@@ -496,7 +532,7 @@ sub clearmacaddy {
 }
 
 sub clearallmacs {
-	our $listbox;
+    our $listbox;
     our $window;
     $window->Busy(-recurse => 1);
     my @macs = $listbox->get(0, 'end');
@@ -883,5 +919,114 @@ sub run_setup_pxe {
     return 1;
 }
 
-1;
+# A simple subrountine for running a command
+sub run_cmd {
+    my $cmd = shift;
+    !system($cmd) or croak("Failed to run $cmd");
+}
 
+# Configure system to use selected installation mode
+sub enable_install_mode {
+    our $install_mode;
+    our $window;
+    $window->Busy(-recurse => 1);
+
+    our $os;
+    my $cmd;
+    my $interface = get_headnode_iface();
+
+    if ($install_mode eq "systemimager-rsync") {
+	# Stop systemimager-server-flamethrowerd
+	run_cmd("/etc/init.d/systemimager-server-flamethrowerd stop");
+
+	# Remove systemimager-server-flamethrowerd from chkconfig
+	run_cmd("chkconfig systemimager-server-flamethrowerd off");
+
+	# Stop systemimager-server-bittorrent
+	run_cmd("/etc/init.d/systemimager-server-bittorrent stop");
+
+	# Remove systemimager-server bittorrent from chkconfig
+	run_cmd("chkconfig systemimager-server-bittorrent off");
+
+	# Restart systemimager-server-rsyncd
+	run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
+    } elsif ($install_mode eq "systemimager-multicast") {
+	# Stop systemimager-server-bittorrent
+	run_cmd("/etc/init.d/systemimager-server-bittorrent stop");
+
+	# Remove systemimager-server-bittorrent from chkconfig
+	run_cmd("chkconfig systemimager-server-bittorrent off");
+
+	# Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
+	run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
+
+        # Backup original flamethrower.conf
+        run_cmd("/bin/mv -f /etc/systemimager/flamethrower.conf /etc/systemimager/flamethrower.conf.bak");
+
+        $cmd = "sed -e 's/START_FLAMETHROWER_DAEMON = no/START_FLAMETHROWER_DAEMON = yes/' -e 's/INTERFACE = eth[0-9][0-9]*/INTERFACE = $interface/' /etc/systemimager/flamethrower.conf.bak > /etc/systemimager/flamethrower.conf";
+        if( system( $cmd ) ) {
+            carp("Failed to update /etc/systemimager/flamethrower.conf");
+            return 0;
+        }
+
+        # add entry for boot-<arch>-standard module
+	my $march = $os->{'arch'};
+        $march =~ s/i.86/i386/;
+        $cmd = "/usr/lib/systemimager/perl/confedit --file /etc/systemimager/flamethrower.conf --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/$march/standard/\"";
+        if( system( $cmd ) ) {
+            carp("Couldn't run command $cmd");
+            return 1;
+        }
+
+        oscar_log_subsection("Step $step_number: Updated /etc/systemimager/flamethrower.conf");
+
+	# Restart systemimager-server-flamethrowerd
+        run_cmd("/etc/init.d/systemimager-server-flamethrowerd restart");
+
+	# Add systemimager-server-flamethrowerd to chkconfig
+	run_cmd("chkconfig systemimager-server-flamethrowerd on");
+    } elsif ($install_mode eq "systemimager-bt") {
+	# Stop systemimager-server-flamethrowerd
+	run_cmd("/etc/init.d/systemimager-server-flamethrowerd stop");
+
+	# Remove systemimager-server-flamethrower from chkconfig
+	run_cmd("chkconfig systemimager-server-flamethrowerd off");
+
+        # Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
+        run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
+
+        # Backup original bittorrent.conf
+        run_cmd("/bin/mv -f /etc/systemimager/bittorrent.conf /etc/systemimager/bittorrent.conf.bak");
+
+        $cmd = "sed -e 's/BT_INTERFACE=eth[0-9][0-9]*/BT_INTERFACE=$interface/' /etc/systemimager/bittorrent.conf.bak > /etc/systemimager/bittorrent.conf";
+        if( system( $cmd ) ) {
+            carp("Failed to update /etc/systemimager/bittorrent.conf");
+            return 0;
+        }
+
+        oscar_log_subsection("Step $step_number: Updated /etc/systemimager/bittorrent.conf");
+
+        # Restart systemimager-server-bittorrent
+        run_cmd("/etc/init.d/systemimager-server-bittorrent restart");
+
+        # Add systemimager-server-bittorrent to chkconfig
+        run_cmd("chkconfig systemimager-server-bittorrent on");
+
+	my @images = list_image();
+	my $images_list = join(",", map { $_->name } @images);
+
+	run_cmd("si_installbtimage --images $images_list --quiet");
+    }
+
+    oscar_log_subsection("Step $step_number: Successfully enabled installation mode: $install_mode");
+
+    # Store installation mode in ODA
+    set_install_mode($install_mode);
+
+    our $dhcpbutton->configure(-state => 'normal');
+
+    $window->Unbusy();
+    return 1;
+}
+
+1;

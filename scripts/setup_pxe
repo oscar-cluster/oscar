@@ -40,6 +40,7 @@ use OSCAR::Database;
 my $RPMPOOL = "/tftpboot/rpm";
 my $ARCH=(uname)[4]; # Default architecture
 $ARCH =~ s/i.86/i386/;
+my $install_mode = get_install_mode();
 
 my $options=AppConfig->new(
 		Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
@@ -138,8 +139,19 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
       croak("Unable to copy \"default\" file to /tftpboot/pxelinux.cfg.");
 
     verbose("Updating /tftpboot/pxelinux.cfg/default file to support si_monitor.");
-    if ( system("sed 's/root=\\/dev\\/ram/root=\\/dev\\/ram MONITOR_SERVER=$ip/g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+    if ( system("sed 's|root=/dev/ram|root=/dev/ram MONITOR_SERVER=$ip MONITOR_CONSOLE=yes|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
       croak("Unable to update /tftpboot/pxelinux.cfg/default file to support si_monitor.");
+    }
+
+    if ($install_mode eq "systemimager-bt") {
+      verbose("Updating /tftpboot/pxelinux.cfg/default to support $install_mode.");
+      if ( system("sed 's|root=/dev/ram|root=/dev/ram BITTORRENT_STAGING=/a/tmp|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+        croak("Unable to update /tftpboot/pxelinux.cfg/default to support $install_mode.");
+      } 
+    } else {
+      if ( system("sed 's| BITTORRENT_STAGING=/a/tmp||g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+        croak("Unable to remove BITTORRENT_STAGING kernel append from /tftpboot/pxelinux.cfg/default.");
+      }
     }
 
     # on x86_64 disable non-executable mappings
@@ -151,7 +163,7 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
 	}
     }
 
-    verbose("Copying SystemImager kernel & ramdisk");
+    verbose("Copying SystemImager's message.txt to /tftpboot/pxelinux.cfg");
     copy("/etc/systemimager/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
       croak("Unable to copy \"message.txt\" file to /tftpboot/pxelinux.cfg.");
 } elsif ($ARCH eq "ia64") {
@@ -170,12 +182,15 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     print OUT "\tlabel=sisboot\n";
     print OUT "\tinitrd=initrd.img\n";
     print OUT "\tread-only\n";
-    print OUT "\tappend=\"root=/dev/ram MONITOR_SERVER=$ip\"\n";
+    print OUT "\tappend=\"root=/dev/ram MONITOR_SERVER=$ip MONITOR_CONSOLE=yes\"\n";
+
+    # TODO: systemimager-bt support for IA64
   
 } else {
     croak("$ARCH is not a known architecture");
 }
 
+verbose("Copying SystemImager kernel & ramdisk to /tftpboot");
 copy("/usr/share/systemimager/boot/$ARCH/standard/kernel", "/tftpboot/") or 
   croak("Unable to copy kernel file to /tftpboot.");
     
