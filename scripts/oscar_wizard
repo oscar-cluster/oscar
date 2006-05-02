@@ -792,7 +792,7 @@ sub run_tests {
 sub monitor_deployment {
     my ($window) = @_;
 
-    my $cmd = "/usr/sbin/si_monitortk";
+    my $cmd = "/usr/sbin/si_monitortk --progress";
     $monitor_button->configure(-state => 'disabled');
 
     my $pipe = new FileHandle;
