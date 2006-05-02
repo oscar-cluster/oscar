@@ -16,6 +16,7 @@ oscar_SCRIPTS		= \
 			ScientificLinux.pm \
 			CentOS.pm \
 			Mandrake.pm \
-			Debian.pm
+			Debian.pm \
+			SuSE.pm
 
 EXTRA_DIST		= $(oscar_SCRIPTS)
