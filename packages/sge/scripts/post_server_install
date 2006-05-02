@@ -298,7 +298,7 @@ sub setup_pe {
 
 # FIXME: We need some interrelationships between packages, if lam, pvm and
 # openmpi are related to torque/sge, then this does not need to be hardcoded
-foreach my $pe qw(lam pvm openmpi) {
+foreach my $pe qw(lam pvm openmpi mpich) {
   setup_pe($pe);
 }
 
