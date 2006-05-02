@@ -14,6 +14,13 @@
 #	   Bernard Li
 #          Jeffrey M. Squyres
 
+. ${MODULESHOME}/init/sh 
+
+# Function to immediately reload switcher setting, taken from the alias
+switcher_reload() {
+   cd /opt/env-switcher/share/env-switcher > /dev/null ; module unload */* ; module load switcher ; cd - > /dev/null
+}
+
 rm=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{rm}'`
 
 if [ $? -gt 0 ]; then
@@ -48,6 +55,7 @@ fi
 
 user_default_mpi="`switcher mpi --show --user | grep default | cut -d= -f2`"
 switcher mpi --add-attr default $lam --force --silent
+switcher_reload
 
 ############################################################################
 # Do horrid checking to see if this has NFS propagated out to all the
@@ -87,7 +95,7 @@ done
 
 # Now run the test (results will be printed by the test itself)
 
-$HOME/$rm_test $clients 1 $HOME/lam/$rm_jobscript.lam "Hello" \
+$HOME/$rm_test $clients 1 $HOME/lam/$rm_jobscript.lam "success" \
     $HOME/lam/lamtest 3 "$testprint_label"
 exit_status=$?
 

@@ -1,0 +1,64 @@
+#!/bin/sh
+
+cd ~/mpich
+echo "Running MPICH test"
+
+# The MPICH test iteself
+
+do_cmds() {
+    cat <<EOF
+
+--> $banner
+
+EOF
+
+    eval $cmds
+    if test "$?" != "0"; then
+	echo "TEST FAILED!"
+	echo "Commands: $cmds"
+	exit 1
+    fi
+}
+
+# SGE's machine file is stored in $TMPDIR/machines
+# TORQUE's machine file is stored in the $PBS_NODEFILE variable, also assign
+# the number of processors needed for the job to the $NSLOTS variable
+if test -z "$PBS_NODEFILE"; then
+    MACHINEFILE="$TMPDIR/machines"
+else
+    MACHINEFILE="$PBS_NODEFILE"
+    NSLOTS=`(wc -l < $PBS_NODEFILE) | awk '{print $1}'`
+fi
+
+# Create tmp directory to put temporary files
+
+mpich_tmp="/tmp/mpich-test"
+if test ! -d $mpich_tmp; then
+    rm -rf $mpich_tmp
+    mkdir -p $mpich_tmp
+fi
+
+p=`pwd`
+banner="MPI C bindings test:"
+cmds="cp cpi.c $mpich_tmp && cd $mpich_tmp && mpicc cpi.c -o mpich-cpi && cp mpich-cpi $p && cd $p && mpirun -machinefile $MACHINEFILE -np $NSLOTS ./mpich-cpi"
+do_cmds
+
+banner="MPI C++ bindings test:"
+cmds="cp cxxhello.cc $mpich_tmp && cd $mpich_tmp && mpiCC cxxhello.cc -o mpich-cxxhello && cp mpich-cxxhello $p && cd $p && mpirun -machinefile $MACHINEFILE -np $NSLOTS ./mpich-cxxhello"
+do_cmds
+
+banner="MPI Fortran bindings test:"
+cmds="cp f77hello.f $mpich_tmp && cd $mpich_tmp && mpif77 f77hello.f -o mpich-f77hello && cp mpich-f77hello $p && cd $p && mpirun -machinefile $MACHINEFILE -np $NSLOTS ./mpich-f77hello"
+do_cmds
+
+echo "MPICH test complete"
+echo "Unless there are errors above, test completed successfully."
+
+# Cleanup
+
+if test -d $mpich_tmp; then
+    rm -rf $mpich_tmp
+fi
+
+echo
+exit 0
