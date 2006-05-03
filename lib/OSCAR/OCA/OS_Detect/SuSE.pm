@@ -44,7 +44,7 @@ sub detect_dir {
 	chroot => $root,
     };
 
-    if ($release_string =~ /SuSE Linux (\d+)\.(\d+) /) {
+    if ($release_string =~ /SUSE LINUX (\d+)\.(\d+) /) {
 	my $os_version = $1;
         $id->{distro} = $distro;
         $id->{distro_version} = $os_version;
