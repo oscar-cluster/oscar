@@ -229,7 +229,7 @@ EOF
 	echo "SUBDIRS = $mm_subdirs" >> $mm_outfile
     fi
     extra_dist=0
-    if test -n "$mm_extra_scripts" -o -n $"mm_extra_data"; then
+    if test -n "$mm_extra_scripts" -o -n "$mm_extra_data"; then
 	cat >> $mm_outfile <<EOF
 oscar_SCRIPTS = $mm_extra_scripts
 oscar_DATA = $mm_extra_data
