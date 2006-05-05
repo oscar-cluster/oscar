@@ -48,7 +48,7 @@ if (($ENV{LC_ALL} && $ENV{LC_ALL} ne "C") ||
 
 my $default_master_location = "SourceForge, USA";
 my $default_master_uri = 
-    "http://oscar.sourceforge.net/repository/";
+    "http://oscar.sourceforge.net/repository/5.0/";
 my $default_master_name = "Main OSCAR package repository";
 
 my $none_attribute = "<none>";
