@@ -4,10 +4,10 @@
 
   <version>
     <major>6</major>
-    <minor>0u7_1</minor>
+    <minor>0u8</minor>
     <subversion>0</subversion>
-    <release>3</release>
-    <epoch>1</epoch>
+    <release>1</release>
+    <epoch>0</epoch>
   </version>
 
   <class>included</class>
