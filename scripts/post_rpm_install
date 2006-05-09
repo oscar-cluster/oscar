@@ -139,9 +139,12 @@ sub init_si_config {
     my $config = new AppConfig(
                                AUTOINSTALL_SCRIPT_DIR => { ARGCOUNT => 1},
                                AUTOINSTALL_BOOT_DIR => { ARGCOUNT => 1},
+                               AUTOINSTALL_TARBALL_DIR => { ARGCOUNT => 1},
+                               AUTOINSTALL_TORRENT_DIR => { ARGCOUNT => 1},
                                RSYNCD_CONF => { ARGCOUNT => 1},
                                CONFIG_DIR => { ARGCOUNT => 1},
                                DEFAULT_IMAGE_DIR => { ARGCOUNT => 1},
+                               DEFAULT_OVERRIDE_DIR => { ARGCOUNT => 1},
                                RSYNC_STUB_DIR => { ARGCOUNT => 1},
                                TFTP_DIR => { ARGCOUNT => 1},
                                NET_BOOT_DEFAULT => { ARGCOUNT => 1}
