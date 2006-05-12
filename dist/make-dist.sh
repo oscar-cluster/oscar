@@ -363,6 +363,9 @@ if test "$WANT_CORE_ONLY" = "yes"; then
   cd ..
 fi
 
+cd $srcdir
+./dist/split-distro.sh `basename $distdir` $OSCAR_VERSION
+
 #
 # All done
 #
