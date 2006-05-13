@@ -51,13 +51,13 @@ commons=`mktemp`
 egrep -v "(packages|share/prereqs)/.*/SRPMS/" $allfiles | \
   egrep -v "(packages|share/prereqs)/.*/distro/($supported_mask)" \
   > $commons
-tar -czv --files-from $commons -f $ONAME-common-${OSCAR_VERSION}.tar.bz2
+tar -czv --files-from $commons -f $ONAME-common-${OSCAR_VERSION}.tar.gz
 rm -f $commons
 
 # build filelist for srpms
 srpmfiles=`mktemp`
 egrep "(packages|share/prereqs)/.*/SRPMS/" $allfiles >$srpmfiles
-tar -czv --files-from $srpmfiles -f $ONAME-srpms-${OSCAR_VERSION}.tar.bz2
+tar -czv --files-from $srpmfiles -f $ONAME-srpms-${OSCAR_VERSION}.tar.gz
 rm -f $srpmfiles
 
 distfiles=`mktemp`
@@ -75,8 +75,8 @@ for d in `get_distro_dirs`; do
     fi
     echo "================================================="
     echo "  distro-arch: $d  ($NFILES files)"
-    echo tar -czv --files-from $distfiles -f $ONAME-$d-${OSCAR_VERSION}.tar.bz2
+    echo tar -czv --files-from $distfiles -f $ONAME-$d-${OSCAR_VERSION}.tar.gz
     echo "================================================="
-    tar -czv --files-from $distfiles -f $ONAME-$d-${OSCAR_VERSION}.tar.bz2
+    tar -czv --files-from $distfiles -f $ONAME-$d-${OSCAR_VERSION}.tar.gz
 done
 rm -f $distfiles $allfiles
