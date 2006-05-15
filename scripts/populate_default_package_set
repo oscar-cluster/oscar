@@ -21,11 +21,15 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   This script forces the "Default" package set to include
-#   the installable package names, and only the installable
-#   package names.
-
 # $Id$
+
+#
+# This script forces the "Default" package set to include
+# the installable package names, and only the installable
+# package names.
+# This program updates the "Groups" table and populates the
+# "Group_Packages" and "Node_Package_Status" tables
+#
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -54,12 +58,12 @@ my @exclude_packages = qw(networking sge);
 my %is_excluded = ();
 for (@exclude_packages) { $is_excluded{$_} = 1 };
 
-sub do_it_or_die {
-    my ( $command, $results_ref,$options_ref,$errors_ref ) = @_;
-    return if do_select( $command, $results_ref, $options_ref, $errors_ref );
-    database_disconnect();
-    die "DB_DEBUG>$0:\n====> $errors_ref";
-}
+
+# dikim commented out the LOCKING codes here because he believes
+# that InnoDB type can handle the all the crossing locking issues.
+# He does not want to remove these codes because he easily forgets
+# what files have locking codes and where they are and he may need
+# them in case innodb works as we expected.
 
 # START LOCKING FOR NEST && open the database
 

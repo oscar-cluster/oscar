@@ -28,6 +28,33 @@
 #       
 # $Id$
 
+# This program creates the OSCAR database and all its tables on it.
+# The tables are created using the sql statements which are already defined
+# for type "InnoDB" at $ENV{OSCAR_HOME}/share/prereqs/oda/oscar_table.sql.
+# Creation of the tables only happens at the first time instllation and
+# once all the tables are created, the data in the config.xml of all the
+# OSCAR packages are stored to the database by parsing them to the sql strings.
+# Meanwhile, Population of packages data to the database is implemented
+# everytime this script runs.
+# This program requires to create/populate the tables in a specific order 
+# because of the property of InnoDB table type.
+# In sum,
+# At the first time installation
+# 1. Create a database (naming it "oscar") 
+# 2. Create tables according to share/prereqs/oda/oscar_table.sql
+# 3. Populate the OSCAR global data to the following tables:
+#    - Clusters, Groups, Nodes, and Status
+# 
+# At the next implementation including the first time installation
+# 4. Populate the Packages table
+# 5. Populate the Packages related tables:
+#    - Packages
+#    - Packages_rpmlists, Packages_servicelists, Packages_switcher
+#    - Packages_requires, Packages_provides, Packages_conflicts
+# The Packages and its related tables are updated from the second 
+# installation.
+#
+
 use strict;
 use Getopt::Long;
 use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR","../../../lib","../../../lib/OSCAR";
@@ -39,6 +66,7 @@ use XML::Simple;
 use OSCAR::Distro;
 use OSCAR::Database;
 use OSCAR::oda;
+use Carp;
 
 my $folding_character = "_";
 my %list_of_multiple_value_folded_fields = ();
@@ -369,12 +397,6 @@ if ( ! oda::oda_connect( \%options,
 # slurping in (or supplying default) package config.xml files
 # for all packages that were supplied in the oscar tarball/rpm
 # and that have been downloaded through opd before this.
-# The config.xml file for oda is a special case and is always 
-# read in first since it defines a number of database tables
-# and is critical for oscar operations.
-# First find the list of all the package directories,
-# keeping a seperate list of the oda package directories
-# (a newer version of the oda package might have been downloaded).
 my @directories = ();
 my @oda_directories = ();
 my $msg = "";
@@ -411,31 +433,47 @@ if( $directory_argument ){
     foreach my $skipped_oda_directory ( @valid_oda_directories ) {
         warn "DB_DEBUG>$0:\n====> ignoring oda package directory $skipped_oda_directory";
     }
-    # Create oscar tables through the config.xml which contains the table information
-    # If the table already exists, it will not be created again but
-    # %table_fields_hash is updated everytime package_config_xmls_to_database runs.
-    #$xml_ref = get_xml_ref($oda_directory, "oda", $msg);
-    #foreach my $table_name (keys (%{$xml_ref->{database_tables}})){
-    #    my $tmp_hash =  $xml_ref->{database_tables}->{$table_name};
-    #    die "DB_DEBUG>$0:\n====> cannot create a table, $table_name"
-    #        if ! create_table($tmp_hash,$table_name,\%table_fields_hash,\%options, \@error_strings);
-    #}
+
+    # Creation of OSCAR tables is not done through the config.xml of oda package any more
+    # The table information of all the OSCAR database tables is defined at
+    # $ENV{OSCAR_HOME}/share/prereqs/oda/oscar_table.sql.
+    # Database::create_table creates all the tables with the above sql file.
     die "DB_DEBUG>$0:\n====> cannot create OSCAR tables" 
         if ! create_table(\%options, \@error_strings);
     print "\nDB_DEBUG>$0:\n===========================((( All the OSCAR tables are created )))===========================\n"
         if $options{debug} || $options{verbose};
+
+    # The env variable $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} should be defined
+    # at wizard_prep. If not, we setup by default (to be eth0).
+    # This is necessary for the embeded script "set_global_oscar_values"
     $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} = "eth0"    
-        if ! exists $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};    
+        if ! exists $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};
+    
+    # The "set_global_oscar_values" scripts populates the following
+    # tables: Clusters, Groups, and Status
     my $exit_status = system("$ENV{OSCAR_HOME}/scripts/set_global_oscar_values "
                 ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}". ($options{debug}?" --debug":"") )/256;
     croak("Couldn't initialize the global database values table") if $exit_status;
     print "\nDB_DEBUG>$0:\n===========================((( All the OSCAR global values are set )))===========================\n"
         if $options{debug} || $options{verbose};
+    
+    # "create_and_populate_basic_node_info" is another embeded script
+    # to populate the "Nodes" table.
     my $exit_status =
         system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info". ($options{debug}?" --debug":"") )/256;
     croak("Couldn't set up a default package set") if $exit_status;
     print "\nDB_DEBUG>$0:\n===========================((( All the basic node infos are set  )))===========================\n"
         if $options{debug} || $options{verbose};
+
+    # The above two embeded scripts need to run before all the 
+    # data for Packages and Packages related table are populated
+    # because the above tables contain the primary keys which
+    # will be used at the Packages and its related tables.
+    # (i.e., The Packages table and Packages related tables are
+    # dependent on the above tables(Clusters, Groups, Status, and
+    # Nodes) and they can not really insert any data before the 
+    # above tables populate data and generate the primary key
+    # used by the Packages and its sub-tables.
         
 }    
 
@@ -458,7 +496,7 @@ foreach my $key_package (@packages_in_db){
     $opkg_to_be_deleted{$key_package} = 1;
 }    
 
-print "\nDB_DEBUG>$0:\n<<<<<=========================== Creation of Packages table is beginning\n"
+print "\nDB_DEBUG>$0:\n<<<<<=========================== Populating the Packages records starts\n"
     if $options{debug} || $options{verbose};
 foreach my $directory ( @directories ) {
     my $package = $directory;
@@ -498,7 +536,7 @@ foreach my $directory ( @directories ) {
     }
 }
 
-print "\nDB_DEBUG>$0:\n===========================>>>>> Creation of Packages table is finished\n"
+print "\nDB_DEBUG>$0:\n===========================>>>>> Populating the Packages records is finished\n"
     if $options{debug} || $options{verbose};
 my @nics_results = ();
 my $server_node = "oscar_server";

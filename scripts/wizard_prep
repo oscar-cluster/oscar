@@ -4,7 +4,7 @@
 #                     All rights reserved.
 # Copyright 2002 International Business Machines
 #                Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002-2005 The Trustees of Indiana University.  
+# Copyright (c) 2002-2006 The Trustees of Indiana University.  
 #                         All rights reserved.
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
@@ -334,14 +334,6 @@ OSCAR::PackageSmart::checksum_write("$md5dir/config_xml.md5",$md5);
 
  PREP_MORE_ODA:
 # More ODA setup
-#my $exit_status = system("$ENV{OSCAR_HOME}/scripts/set_global_oscar_values "
-#			 ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}")/256;
-#croak("Couldn't initialize the global database values table") if $exit_status;
-
-#my $exit_status =
-#    system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info")/256;
-#croak("Couldn't set up a default package set") if $exit_status;
-
 my $exit_status =
   system("$ENV{OSCAR_HOME}/scripts/populate_default_package_set")/256;
 croak("Couldn't set up a default package set") if $exit_status;
@@ -349,7 +341,6 @@ croak("Couldn't set up a default package set") if $exit_status;
 my $exit_status =
   system("$ENV{OSCAR_HOME}/scripts/set_node_nics --network")/256;
 croak("Couldn't initialize the nics and networks for the oscar server") if $exit_status;
-
 
 
  PREP_INSTALL_CORE:
@@ -403,24 +394,20 @@ oscar_log_subsection("Successfully installed server core RPMs");
 
  PREP_CORE_NEST:
 #
-# NEST
 #
-# Unless node_config_revs already has the record of node_id and configurations_id,
-# do the following two steps. Otherwise, skip them.
-# 1. Insert node_config data for oscar_server.
-#    add_node_config_revs is a shortcut to insert a record of node_id, configurations_id, and version
-#    e.g) add_node_config_revs [$node_id] [$configurations_id] [$version]
-#         Where $version is optional (The default value of $version is 0).
-# 2. Insert core packages into config_opkgs table for oscar_server.
-#    add_config_opkgs is a shortcut to insert a record of configurations_id and package_id
-#    e.g) add_config_opkgs [$configurations_id] [$package_id]
 #
+# 
+# dikim commented out the LOCKING codes here because he believes
+# that InnoDB type can handle the all the crossing locking issues.
+# He does not want to remove these codes because he easily forgets
+# what files have locking codes and where they are and he may need
+# them in case innodb works as we expected.
 
 # START LOCKING FOR NEST && open the database
 my @tables = ("Nodes","Groups","Group_Nodes", "Packages", "Group_Packages", "Node_Package_Status", "Node_Packages");
 my %options = ();
 my @errors = ();
-locking("write", \%options, \@tables, \@errors);
+#locking("write", \%options, \@tables, \@errors);
 
 # Update Group_Nodes table with oscar_server group.
 my @nodes = ($OSCAR_SERVER_NODE);
@@ -439,7 +426,7 @@ if ( get_packages_with_class($group,\@package_results,\%options,\@errors)){
 }
 
 # UNLOCKING FOR NEST
-unlock(\%options, \@errors);
+#unlock(\%options, \@errors);
 
 oscar_log_subsection("Done marking installed bits in ODA");
 
