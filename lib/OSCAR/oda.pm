@@ -35,15 +35,18 @@ my $database_handle;
 my $database_name;
 my $database_server_version = undef;
 
-my $default_field_type = "VARCHAR\(255\)";
-
+my @error_strings = ();
 my %options = ( 'debug'         => 0,
-        'field_names'   => 0,
-        'functions_dir' => "",
-        'raw'           => 0,
-        'verbose'       => 0 );
+                'field_names'   => 0,
+                'functions_dir' => "",
+                'raw'           => 0,
+                'verbose'       => 0 );
 
 my %unescape_fields_hash = ();
+
+$options{debug} = 1
+    if (exists $ENV{OSCAR_VERBOSE} && $ENV{OSCAR_VERBOSE} == 10) ||
+        $ENV{OSCAR_DB_DEBUG};
 
 #********************************************************************#
 #********************************************************************#
@@ -77,9 +80,9 @@ sub oda_connect {
     # if we're connected to the wrong database, disconnect from it first
     if ( $database_connected_flag &&
      $database_name ne $$options_ref{database} ) {
-        print( "$0: in oda::oda_connect disconnecting from database $database_name\n")
+        print( "DB_DEBUG>$0:\n====> in oda::oda_connect disconnecting from database $database_name\n")
             if $$options_ref{debug};
-        print( "$0: executing on database <$database_name> command <DISCONNECT>\n")
+        print( "DB_DEBUG>$0:\n====> executing on database <$database_name> command <DISCONNECT>\n")
             if $$options_ref{verbose};
         oda::oda_disconnect( $options_ref,
                  $error_strings_ref );
@@ -92,9 +95,9 @@ sub oda_connect {
             exists $$options_ref{host} && 
             defined $$options_ref{host} &&
             $$options_ref{host} ne "localhost";
-        print "$0: in oda\:\:oda_connect connnecting to database <$$options_ref{database}> as user <$$options_ref{user}> using connect argument <$connect_string>\n"
+        print "DB_DEBUG>$0:\n====> in oda\:\:oda_connect connnecting to database <$$options_ref{database}> as user <$$options_ref{user}> using connect argument <$connect_string>\n"
             if $$options_ref{debug};
-        print "$0: executing on database <$$options_ref{database}> command <CONNECT> as user <$$options_ref{user}>\n"
+        print "DB_DEBUG>$0:\n====> executing on database <$$options_ref{database}> command <CONNECT> as user <$$options_ref{user}>\n"
             if $$options_ref{verbose};
         if ( $database_handle = 
              DBI->connect($connect_string,    
@@ -103,7 +106,7 @@ sub oda_connect {
                   { RaiseError => 0, PrintError => 1 }) ) {
             $database_connected_flag = 1;
             $database_name = $$options_ref{database};
-            print( "$0: in oda::oda_connect connected to database <$$options_ref{database}>\n")
+            print( "DB_DEBUG>$0:\n====> in oda::oda_connect connected to database <$$options_ref{database}>\n")
             if $$options_ref{debug};
             $database_server_version = database_server_version( $options_ref );
             $cached_all_table_names_ref = undef;
@@ -141,7 +144,7 @@ sub oda_disconnect {
 
     if ( $$options_ref{debug} ) {
     my ($package, $filename, $line) = caller;
-        print "$0: in oda\:\:oda_disconnect called from package=$package $filename\:$line\n";
+        print "DB_DEBUG>$0:\n====> in oda\:\:oda_disconnect called from package=$package $filename\:$line\n";
     }
 
     # reset any caches
@@ -154,9 +157,9 @@ sub oda_disconnect {
     return 0;
     }
 
-    print "$0: in oda\:\:oda_disconnect disconnnecting\n"
+    print "DB_DEBUG>$0:\n====> in oda\:\:oda_disconnect disconnnecting\n"
     if $$options_ref{debug};
-    print "$0: executing on database <$$options_ref{database}> command <DISCONNECT>\n"
+    print "DB_DEBUG>$0:\n====> executing on database <$$options_ref{database}> command <DISCONNECT>\n"
     if $$options_ref{verbose};
     $database_handle->disconnect();
     $database_connected_flag = 0;
@@ -198,18 +201,18 @@ sub list_databases {
     my $driver_handle;
     if ( ! ( $driver_handle = DBI->install_driver($$options_ref{type}) ) ) {
     push @$error_strings_ref,
-    "$0: server administration connect failed for driver $$options_ref{type}:\n$DBI::errstr";
+    "DB_DEBUG>$0:\n====> server administration connect failed for driver $$options_ref{type}:\n$DBI::errstr";
         return 0;
     }
-    print( "$0: in oda::list_databases install_driver succeeded for driver $$options_ref{type}\n")
+    print( "DB_DEBUG>$0:\n====> in oda::list_databases install_driver succeeded for driver $$options_ref{type}\n")
     if $$options_ref{debug};
 
-    print "$0: executing function _ListDBs on database <$$options_ref{database}>\n"
+    print "DB_DEBUG>$0:\n====> executing function _ListDBs on database <$$options_ref{database}>\n"
     if $$options_ref{verbose};
     my @databases = 
     $driver_handle->func ($$options_ref{host}, $$options_ref{port}, '_ListDBs');
     if ( @databases ) {
-        print( "$0: in oda::list_databases _ListDBs succeeded returned <@databases>\n")
+        print( "DB_DEBUG>$0:\n====> in oda::list_databases _ListDBs succeeded returned <@databases>\n")
             if $$options_ref{debug};
         if (ref($databases_ref) eq "HASH") {
             foreach my $database ( @databases ) {
@@ -220,7 +223,7 @@ sub list_databases {
         }
     } else {
     push @$error_strings_ref,
-    "$0: _ListDBs call to list databases failed:\n$DBI::errstr";
+    "DB_DEBUG>$0:\n====> _ListDBs call to list databases failed:\n$DBI::errstr";
         return 0;
     }
 
@@ -261,8 +264,8 @@ sub list_tables {
     return undef;
 
     # get the list of tables
-    print "$0: executing on database <$$options_ref{database}> command <SHOW TABLES>\n"
-    if $$options_ref{verbose};
+    print "DB_DEBUG>$0:\n====> executing on database <$$options_ref{database}> command <SHOW TABLES>\n"
+        if $$options_ref{verbose};
     my $array_ref = $database_handle->selectcol_arrayref
     ( qq{ SHOW TABLES } );
 
@@ -286,7 +289,7 @@ sub list_tables {
     return $cached_all_table_names_ref;
     } else {
     push @$error_strings_ref,
-    "$0: retrieving list of tables in database <$$options_ref{database}> failed:\n$DBI::errstr";
+    "DB_DEBUG>$0:\n====> retrieving list of tables in database <$$options_ref{database}> failed:\n$DBI::errstr";
     return undef;
     }
 }
@@ -315,16 +318,17 @@ sub list_fields{
     my ( $options_ref, $error_strings_ref ) = fake_missing_parameters
     ( $passed_options_ref, $passed_error_strings_ref );
 
-    oda_connect($options_ref,$error_strings_ref);
+    #oda_connect($options_ref,$error_strings_ref);
 
     my @query_results = ();
     my $sql_command = "SHOW COLUMNS from $table";
+    print "DB_DEBUG>$0:\n====> in oda::list_fields SQL:$sql_command\n" if $$options_ref{debug};
     do_query ( $options_ref,
          $sql_command,
          \@query_results,
          $error_strings_ref);
 
-    oda_disconnect($options_ref,$error_strings_ref);
+    #oda_disconnect($options_ref,$error_strings_ref);
 
     foreach my $ref (@query_results){
         $$fields_ref{$ref->{field}} = "Not assigned";
@@ -333,6 +337,8 @@ sub list_fields{
     # if fields_ref is defineds, copy the results
     # into the cached list and return the list pointer,
     # otherwise output an error message and return failure
+    print "DB_DEBUG>$0:\n====> oda::list_fields: making a list of fields of the table($table)\n"
+        if $$options_ref{verbose};
     if ( defined $fields_ref ) {
         $$cached_all_tables_fields_ref{$table} = $fields_ref;
         print_hash( "", "in oda::list_tables new cached_all_tables_fields_ref",
@@ -341,7 +347,7 @@ sub list_fields{
         return $cached_all_tables_fields_ref;
     } else {
         push @$error_strings_ref,
-        "$0: retrieving list of tables in database <$$options_ref{database}> failed:\n$DBI::errstr";
+        "DB_DEBUG>$0:\n====> retrieving list of tables in database <$$options_ref{database}> failed:\n$DBI::errstr";
         return undef;
     }
     return 1;
@@ -372,7 +378,7 @@ sub database_server_version {
     # the saved value
     if ( $database_connected_flag && 
      defined $database_server_version ) {
-    print "$0: in oda\:\:database_server_version returning saved <$database_server_version>\n"
+    print "DB_DEBUG>$0:\n====> in oda\:\:database_server_version returning saved <$database_server_version>\n"
         if $$options_ref{debug};
     return $database_server_version;
     }
@@ -389,9 +395,9 @@ sub database_server_version {
 
     # get the version from the database server
     my $sql_command = "SELECT version\(\);";
-    print "$0: in oda\:\:database_server_version sql_command=<$sql_command>\n"
+    print "DB_DEBUG>$0:\n====> in oda\:\:database_server_version sql_command=<$sql_command>\n"
         if $$options_ref{debug};
-    print "$0: executing on database <$$options_ref{database}> command <$sql_command>\n"
+    print "DB_DEBUG>$0:\n====> executing on database <$$options_ref{database}> command <$sql_command>\n"
         if $$options_ref{verbose};
     my $statement_handle = $database_handle->prepare( $sql_command );
     if ( ! $statement_handle ) {    
@@ -412,9 +418,9 @@ sub database_server_version {
     }
     my $results_array_ref = $statement_handle->fetchall_arrayref;
     if ( $$options_ref{debug} ) {
-    print "$0: in oda\:\:database_server_version fetchall_arrayref returned: (\n";
+    print "DB_DEBUG>$0:\n====> in oda\:\:database_server_version fetchall_arrayref returned: (\n";
     foreach my $list_ref ( @$results_array_ref ) {
-        print "$0: in oda\:\:database_server_version     (" .
+        print "DB_DEBUG>$0:\n====> in oda\:\:database_server_version     (" .
         join( ',', @$list_ref ) . 
             ")\n";
     }
@@ -438,11 +444,11 @@ sub database_server_version {
     if ( defined $results_array_ref && @$results_array_ref ) {
     my $record_0_ref = $$results_array_ref[0];
     $database_server_version = $$record_0_ref[0];
-    print "$0: in oda\:\:database_server_version returning saved <$database_server_version>\n"
+    print "DB_DEBUG>$0:\n====> in oda\:\:database_server_version returning saved <$database_server_version>\n"
         if $$options_ref{debug};
     } else {
     push @$error_strings_ref,
-    "$0: retrieving database server version failed: unknown return format";
+    "DB_DEBUG>$0:\n====> retrieving database server version failed: unknown return format";
     }
     return $database_server_version;
 }
@@ -505,17 +511,17 @@ sub set_option_defaults {
     if ( ! exists $$options_ref{host} ) {
     if ( -r "/etc/odaserver" ) {
         if ( ! open( SERVERFILE, "/etc/odaserver" ) ) {
-        print "$0: failed to oda server file /etc/odaserver\n";
+        print "DB_DEBUG>$0:\n====> failed to oda server file /etc/odaserver\n";
         } else {
         my @lines = <SERVERFILE>;
         close(SERVERFILE);
         chomp @lines;
         if ( scalar @lines != 1 ) {
-            print "$0: oda server file /etc/odaserver needs only one line\n";
+            print "DB_DEBUG>$0:\n====> oda server file /etc/odaserver needs only one line\n";
         } else {
             my @fields = split( /\s+/, $lines[0] );
             if ( scalar @fields != 1 ) {
-            print "$0: oda server file /etc/odaserver needs only one word\n";
+            print "DB_DEBUG>$0:\n====> oda server file /etc/odaserver needs only one word\n";
             } else {
             $$options_ref{host} = $fields[0];
             }
@@ -524,14 +530,14 @@ sub set_option_defaults {
     }
     $$options_ref{host} = "localhost" 
         if ! exists $$options_ref{host};
-    print "$0: in set_option_defaults setting host = $$options_ref{host}\n"
+    print "DB_DEBUG>$0:\n====> in set_option_defaults setting host = $$options_ref{host}\n"
         if $$options_ref{debug};
     }
 
     # if the caller didn't specify a port, set to 3306
     if ( ! exists $$options_ref{port} ) {
     $$options_ref{port} = 3306;
-    print "$0: in set_option_defaults setting port = $$options_ref{port}\n"
+    print "DB_DEBUG>$0:\n====> in set_option_defaults setting port = $$options_ref{port}\n"
         if $$options_ref{debug};
     }
 
@@ -539,7 +545,7 @@ sub set_option_defaults {
     # set it to oscar
     if ( ! exists $$options_ref{database} ) {
     $$options_ref{database} = "oscar";
-    print "$0: in set_option_defaults setting database = $$options_ref{database}\n"
+    print "DB_DEBUG>$0:\n====> in set_option_defaults setting database = $$options_ref{database}\n"
         if $$options_ref{debug};
     }
 
@@ -547,7 +553,7 @@ sub set_option_defaults {
     # set it to mysql
     if ( ! exists $$options_ref{type} ) {
     $$options_ref{type} = "mysql";
-    print "$0: in set_option_defaults setting type = $$options_ref{type}\n"
+    print "DB_DEBUG>$0:\n====> in set_option_defaults setting type = $$options_ref{type}\n"
         if $$options_ref{debug};
     }
 
@@ -563,9 +569,9 @@ sub set_option_defaults {
     } else {
         $$options_ref{user} = "anonymous";
     }
-    print "$0: in set_option_defaults setting user = $$options_ref{user}\n"
+    print "DB_DEBUG>$0:\n====> in set_option_defaults setting user = $$options_ref{user}\n"
         if $$options_ref{debug};
-    print "$0: in set_option_defaults setting password = $$options_ref{password}\n"
+    print "DB_DEBUG>$0:\n====> in set_option_defaults setting password = $$options_ref{password}\n"
         if $$options_ref{debug};
     }
 
@@ -579,39 +585,26 @@ sub set_option_defaults {
     if ( ! $> ) {
         if ( -r "/etc/odapw" ) {
             if ( ! open( PWFILE, "/etc/odapw" ) ) {
-                print "$0: failed to open password file /etc/odapw\n";
+                print "DB_DEBUG>$0:\n====> failed to open password file /etc/odapw\n";
                 } else {
                 my @lines = <PWFILE>;
                 close(PWFILE);
                 chomp @lines;
                 if ( scalar @lines != 1 ) {
-                    print "$0: password file /etc/odapw needs only one line\n";
+                    print "DB_DEBUG>$0:\n====> password file /etc/odapw needs only one line\n";
                 } else {
                     my @fields = split( /\s+/, $lines[0] );
                     if ( scalar @fields != 1 ) {
-                        print "$0: password file /etc/odapw needs only one word\n";
+                        print "DB_DEBUG>$0:\n====> password file /etc/odapw needs only one word\n";
                     } else {
                         $$options_ref{password} = $fields[0];
-                        print "$0: in set_option_defaults setting password = $$options_ref{password}\n" if $$options_ref{debug};
+                        print "DB_DEBUG>$0:\n====> in set_option_defaults setting password = $$options_ref{password}\n" if $$options_ref{debug};
                     }
                 }
             }
         }
     }
     }
-
-    # if the caller didn't specify the functions directory,
-    # set it to oscar
-    if ( ! exists $$options_ref{functions_dir} ) {
-    $$options_ref{functions_dir} = "/etc/odafunctions";
-    print "$0: in set_option_defaults setting functions_dir = $$options_ref{functions_dir}\n"
-        if $$options_ref{debug};
-    }
-
-    # mark this options hash as being defaulted
-    $$options_ref{ defaulted } = 1;
-
-$$options_ref{functions_dir}
 
 }
 
@@ -631,21 +624,21 @@ $$options_ref{functions_dir}
 
 sub print_hash {
     my( $leading_spaces, $name, $hashref ) = @_;
-    print "$0: $leading_spaces$name ->\n";
+    print "DB_DEBUG>$0:\n====> in oda::print_hash\n-- $leading_spaces$name ->\n";
     foreach my $key ( sort keys %$hashref ) {
         my $value = $$hashref{$key};
         if (ref($value) eq "HASH") {
             print_hash(  "$leading_spaces    ", $key, $value );
         } elsif (ref($value) eq "ARRAY") {
-            print "$0: $leading_spaces    $key => (";
+            print "-- $leading_spaces    $key => (";
             print join(',', @$value);
             print ")\n";
         } elsif (ref($value) eq "SCALAR") {
-            print "$0: $leading_spaces    $key is a scalar ref\n";
-            print "$0: $leading_spaces    $key => $$value\n";
+            print "-- $leading_spaces    $key is a scalar ref\n";
+            print "-- $leading_spaces    $key => $$value\n";
         } else {
             $value = "undef" unless defined $value;
-            print "$0: $leading_spaces    $key => <$value>\n";
+            print "-- $leading_spaces    $key => <$value>\n";
         }
     }
 }
@@ -705,25 +698,28 @@ sub do_sql_command {
     oda_connect( $options_ref,
               $error_strings_ref ) ||
     return 0;
-    
-    print "$0: in oda\:\:do_sql_command" .
+    print "DB_DEBUG>$0:\n====> in oda\:\:do_sql_command" .
     " sql_command=<$sql_command>" .
     " caller=<$caller_string>" .
     " failure=<$failure_string>" .
     "\n"
-    if $$options_ref{debug};
+    if $$options_ref{verbose} || $$options_ref{debug};
     
     # Do the sql command via perl DBI
-    print "$0: executing on database <$$options_ref{database}> command <$sql_command>\n"
-    if $$options_ref{verbose};
     my $row = $database_handle->do( $sql_command );
-    if ( $DBI::err and $row ) {
+    if ( $DBI::errstr ) {
         push @$error_strings_ref,
-        "Failed to $failure_string in database <$$options_ref{database}>: $DBI::errstr";
+        "Error message: $failure_string in database <$$options_ref{database}>: $DBI::errstr";
         push @$error_strings_ref, 
         "SQL command that failed was: <$sql_command>";
+        warn shift @$error_strings_ref while @$error_strings_ref;
+
+        oda_disconnect( $options_ref,
+                 $error_strings_ref )
+        if ! $was_connected_flag;
         return 0;
     } else {
+        shift @$error_strings_ref while @$error_strings_ref;
         return 1;
     }
 }
@@ -767,7 +763,8 @@ sub do_query {
               $error_strings_ref ) ||
     return 0;
 
-
+    print "DB_DEBUG>$0:\n====> in oda\:\:do_query: executing on database <$$options_ref{database}> command <$sql_command>\n"
+        if $$options_ref{verbose};
     my $statement_handle = $database_handle->prepare( $sql_command );
     if ( ! $statement_handle ) {    
 	push @$error_strings_ref,
@@ -805,20 +802,32 @@ sub do_query {
 
     if ( $DBI::err ) {
         push @$error_strings_ref,
-        "error retrieving data with <$sql_command> on database <$$options_ref{database}>:\n$DBI::errstr";
+        "Error message: in database <$$options_ref{database}>: $DBI::errstr";
+        push @$error_strings_ref, 
+        "SQL command that failed was: <$sql_command>";
+        warn shift @$error_strings_ref while @$error_strings_ref;
         oda_disconnect( $options_ref,
                  $error_strings_ref )
         if ! $was_connected_flag;
         return 0;
-    }
+    } 
 
+    if ( ref($error_strings_ref) eq "ARRAY" ){
+        my $num = scalar @$error_strings_ref;
+        if( $num != 0 ){
+            shift @$error_strings_ref while @$error_strings_ref;
+        }
+    }
     # disconnect from the database if we were not connected at start
     oda_disconnect( $options_ref,
              $error_strings_ref )
     if ! $was_connected_flag;
 
-    if ( $$options_ref{debug} ) {
-        print( "$0: in oda::do_query returning:\n" );
+    if ( $$options_ref{debug} || $$options_ref{verbose} ) {
+        print "DB_DEBUG>$0:\n====> in oda\:\:do_query" .
+        " sql_command=<$sql_command>" .
+        "\n";
+        print( "DB_DEBUG>$0:\n====> in oda\:\:do_query returning:\n" );
         print Dumper( $results_ref );
     }
     return 1;
@@ -866,10 +875,10 @@ sub create_database {
     my $driver_handle;
     if ( ! ( $driver_handle = DBI->install_driver($$options_ref{type}) ) ) {
     push @$error_strings_ref,
-    "$0: server administration connect failed:\n$DBI::errstr";
+    "DB_DEBUG>$0:\n====> server administration connect failed:\n$DBI::errstr";
         return 0;
     }
-    print( "$0: in oda::create_database install_driver succeeded\n")
+    print( "DB_DEBUG>$0:\n====> in oda\:\:create_database install_driver succeeded\n")
     if $$options_ref{debug};
 
     return 0 if 
@@ -909,11 +918,11 @@ sub create_database {
                 $$options_ref{password},
                 'admin' ) ) {
     push @$error_strings_ref,
-    "$0: failed to create database for user " .
+    "DB_DEBUG>$0:\n====> failed to create database for user " .
     "$$options_ref{user}:\n$DBI::errstr";
     return 0;
     }
-    print( "$0: in oda::create_database createdb " . 
+    print( "DB_DEBUG>$0:\n====> in oda\:\:create_database createdb " . 
        "<$$options_ref{database}> with master user " .
        "<$$options_ref{user}> succeeded\n" )
     if $$options_ref{debug};
@@ -960,13 +969,13 @@ sub drop_database {
     my $driver_handle;
     if ( ! ( $driver_handle = DBI->install_driver($$options_ref{type}) ) ) {
     push @$error_strings_ref,
-    "$0: erver administration connect failed: $DBI::errstr";
+    "DB_DEBUG>$0:\n====> erver administration connect failed: $DBI::errstr";
         return 0;
     }
 
     if ( $$options_ref{debug} ) {
-    print "$0: in oda::drop_database install_driver succeeded\n";
-    print "$0: in oda::drop_database about to dropdb(" .
+    print "DB_DEBUG>$0:\n====> in oda::drop_database install_driver succeeded\n";
+    print "DB_DEBUG>$0:\n====> in oda::drop_database about to dropdb(" .
     ( ( exists $$options_ref{database} ) ? 
     $$options_ref{database} : "" ) .
     "," .
@@ -989,11 +998,11 @@ sub drop_database {
                 'admin' ) ) {
 print "aaaarrrrrggghhhhhhhh\n";
     push @$error_strings_ref,
-    "$0: failed to drop database for user $$options_ref{user}:\n$DBI::errstr";
+    "DB_DEBUG>$0:\n====> failed to drop database for user $$options_ref{user}:\n$DBI::errstr";
     return 0;
     }
-    print( "$0: in oda::drop_database dropdb succeeded\n")
-    if $$options_ref{debug} || $$options_ref{verbose};
+    print( "DB_DEBUG>$0:\n====> in oda::drop_database dropdb succeeded\n")
+        if $$options_ref{debug} || $$options_ref{verbose};
 
     return 0 if 
     ! do_shell_command( $options_ref, 
@@ -1025,14 +1034,14 @@ print "aaaarrrrrggghhhhhhhh\n";
 sub do_shell_command {
     my ( $options_ref, $command,
      $error_strings_ref ) = @_;
-    print "$0: executing shell command <$command>\n"
-    if $$options_ref{verbose};
+    print "DB_DEBUG>$0:\n====> executing shell command <$command>\n"
+        if $$options_ref{verbose};
     if ( system ( $command ) == 0 ) {
-    print "$0: <$command> succeeded\n" 
+    print "DB_DEBUG>$0:\n====> <$command> succeeded\n" 
         if $$options_ref{debug};
     return 1;
     } else {
-    print "$0: <$command> failed\n" 
+    print "DB_DEBUG>$0:\n====> <$command> failed\n" 
         if $$options_ref{debug};
     return 0;
     }

@@ -320,7 +320,7 @@ eval "use OSCAR::Database";
 $md5 = OSCAR::PackageSmart::checksum_needed("$ENV{OSCAR_HOME}/packages",
 					    "$md5dir/config_xml.md5",
 					    "config.xml");
-goto PREP_MORE_ODA if (!$md5);
+#goto PREP_MORE_ODA if (!$md5);
 
 
 # Start the database and copy the package xml files into the database
@@ -334,13 +334,13 @@ OSCAR::PackageSmart::checksum_write("$md5dir/config_xml.md5",$md5);
 
  PREP_MORE_ODA:
 # More ODA setup
-my $exit_status = system("$ENV{OSCAR_HOME}/scripts/set_global_oscar_values "
-			 ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}")/256;
-croak("Couldn't initialize the global database values table") if $exit_status;
+#my $exit_status = system("$ENV{OSCAR_HOME}/scripts/set_global_oscar_values "
+#			 ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}")/256;
+#croak("Couldn't initialize the global database values table") if $exit_status;
 
-my $exit_status =
-    system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info")/256;
-croak("Couldn't set up a default package set") if $exit_status;
+#my $exit_status =
+#    system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info")/256;
+#croak("Couldn't set up a default package set") if $exit_status;
 
 my $exit_status =
   system("$ENV{OSCAR_HOME}/scripts/populate_default_package_set")/256;

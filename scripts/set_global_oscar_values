@@ -45,6 +45,10 @@ my %cmd_options = ();
 %cmd_options = ( 'debug'       => 0,
                  'verbose'     => 0 );
 
+
+$cmd_options{debug} = 1 if $ENV{OSCAR_DB_DEBUG};
+$cmd_options{verbose} = 1 if $ENV{OSCAR_DB_VERBOSE};
+
 sub usage {
 
     my ( $exit_status, @error_strings ) = @_;
@@ -91,8 +95,8 @@ GetOptions( \%cmd_options,
 usage(0) if ! ( exists($cmd_options{interface}) );
 usage(0) if exists $cmd_options{help};
 
-print "$0: after GetOptions ARGV=<@ARGV>\n" if $cmd_options{debug};
-oda::print_hash( "", "$0: options after GetOptions", \%cmd_options) if $cmd_options{debug};
+print "DB_DEBUG>$0:\n====> after GetOptions ARGV=<@ARGV>\n" if $cmd_options{debug};
+oda::print_hash( "", "DB_DEBUG>$0:\n====> options after GetOptions", \%cmd_options) if $cmd_options{debug};
 
 if (! ($cmd_options{interface} =~ /^eth/) ) {
     print "Interface specified not in the format of ethX.\n" if ! ($cmd_options{interface} =~ /^eth/);
@@ -113,13 +117,13 @@ my $oscar_server_distribution_version = $master_os->{compat_distrover};
 
 # open the database
 #database_connect() ||
-#die "$0: cannot connect to oda database";
+#die "DB_DEBUG>$0:\n====> cannot connect to oda database";
 # START LOCKING FOR NEST && open the database
 my @tables = ("Clusters", "Groups", "Status");
 my %options = ();
 my @errors = ();
 #if(! locking("write", \%options, \@tables, \@errors)){
-#    die "$0: cannot connect to oda database";
+#    die "DB_DEBUG>$0:\n====> cannot connect to oda database";
 #}
 
 
@@ -162,7 +166,7 @@ if ( !$query_results ){
                             "installation_date" => "NOW()" );
     insert_into_table (\%options,"Clusters", \%field_value_hash,\@error_strings);                
 } else {
-	print "$0: very strange, there are more than 1 records table <$global_values_table>\n"
+	print "DB_DEBUG>$0:\n====> very strange, there are more than 1 records table <$global_values_table>\n"
 	    if (ref($query_results) ne "HASH") && (scalar @$query_results > 1) ;
 	print "Modifying the global oscar information record\n";
     %field_value_hash = ("oscar_version" => $oscar_version,
@@ -191,6 +195,6 @@ set_all_groups(\%groups,\%options,@error_strings);
 set_status(\%options,\@error_strings);
 
 # UNLOCKING FOR NEST
-unlock(\%options, \@errors);
+#unlock(\%options, \@errors);
 
 exit 0;

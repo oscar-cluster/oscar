@@ -58,16 +58,17 @@ sub do_it_or_die {
     my ( $command, $results_ref,$options_ref,$errors_ref ) = @_;
     return if do_select( $command, $results_ref, $options_ref, $errors_ref );
     database_disconnect();
-    die "$0: $errors_ref";
+    die "DB_DEBUG>$0:\n====> $errors_ref";
 }
 
 # START LOCKING FOR NEST && open the database
 
 my @tables =("Cluster","Nodes", "Packages", "Node_Package_Status", "Node_Packages", "Group_Packages", "Groups");
 
-if(! locking("write", \%options, \@tables, \@errors)){
-    die "$0: cannot connect to oda database";
-}
+#if(! locking("write", \%options, \@tables, \@errors)){
+#    die "DB_DEBUG>$0:\n====> cannot connect to oda database";
+#}
+
 # Make a 'Default' group selected
 set_groups_selected($DEFAULT,\%options,\@errors);
 
@@ -107,7 +108,7 @@ if ( @package_set_names )  {
           @errors = ($error_msg);
           if ( ! insert_into_table(\%options, "Group_Packages", \%field_value_hash,\@errors) ){
               $success = 0;
-              warn "$0: $error_msg";
+              warn "DB_DEBUG>$0:\n====> $error_msg";
           }
 	}
     }
@@ -142,10 +143,10 @@ foreach my $package_ref (@installable_packages){
 }
 
 # UNLOCKING FOR NEST
-unlock(\%options, \@errors);
+#unlock(\%options, \@errors);
 
 if ( $success ) {
     exit 0;
 } else {
-    die "$0: error setting up default values for package set <$DEFAULT>";
+    die "DB_DEBUG>$0:\n====> error setting up default values for package set <$DEFAULT>";
 }

@@ -20,6 +20,7 @@ use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::PackagePath;
+use File::Copy;
 
 my $os = OSCAR::PackagePath::distro_detect_or_die();
 my $mysqld;
@@ -32,6 +33,50 @@ if ($os->{compat_distro} =~ /^(rhel|fc|mdv)/) {
     print "\n\nCannot determine distribution and version!!!!\nCannot determine oda rpms to install!!!!\n\n";
     exit 1;
 }
+
+# Set up the InnoDB type to the oscar database tables.
+# 
+# This script needs to run for MySQL 3.28 ( < 4.0 ).
+my $mysql_conf = "/etc/my.cnf";
+my $innodb_conf = "innodb_data_file_path=ibdata1:500M";
+my $innodb_flag = 0;
+
+# Check to see if the my.conf is already setup for InnoDB
+open DB_CONF, "$mysql_conf" or die "Can not open $mysql_conf file";
+while(my $line = <DB_CONF>){
+    chomp($line);
+    if( $line =~ m/$innodb_conf/ ){
+        print "This mysql has been already setup InnoDB table type\n";
+        $innodb_flag = 1;
+        last;
+    }
+}
+close DB_CONF;
+
+# If my.cnf is not setup for InnoDB, configure it so
+if(! $innodb_flag ){
+    open BACKUP, ">$mysql_conf.bak"
+        or die "Can not create a copy file $mysql_conf.bak";
+    open DB_CONF, "$mysql_conf";
+    my $flag = 0;
+    while(my $line = <DB_CONF>){
+        chomp($line);
+        $flag = 1 if $line =~ /\[mysqld\]/;
+        if ($line =~ /^(\s*)$/ && $flag) {
+            $line =~ s/$1/$innodb_conf\n/g;
+            $flag = 0;
+        }    
+        print BACKUP "$line\n";
+    }
+    close DB_CONF;
+    close BACKUP;
+
+    # COPY BACK TO THE ORIGINAL
+    copy("$mysql_conf.bak", $mysql_conf);
+    # REMOVE BACKUP
+    unlink "$mysql_conf.bak";
+}    
+
 
 oscar_log_subsection("Checking status of MySQL server $mysqld");
 if (! -x "/etc/init.d/$mysqld") {

@@ -37,12 +37,15 @@ my %field_value_hash = ();
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
 
+$options{debug} = 1 if $ENV{OSCAR_DB_DEBUG}; 
+$options{verbose} = 1 if $ENV{OSCAR_DB_VERBOSE}; 
+
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
     
     return if oda::do_query(\%options, $command, $results_ref, $error );
     database_disconnect();
-    die "$0: $error";
+    die "DB_DEBUG>$0:\n====> $error";
 }
 
 
@@ -56,7 +59,7 @@ print "Checking for database existence of node oscar_server ...\n";
 
 # START LOCKING FOR NEST and open the database.
 
-my @tables =("Groups", "Group_Nodes", "Nodes");
+my @tables =("Groups", "Group_Nodes", "Nodes", "Clusters");
 my @errors = ();
 locking("write", \%options, \@tables, \@errors);
 
