@@ -1,5 +1,4 @@
 package OSCAR::Database;
-# $Id$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -26,6 +25,25 @@ package OSCAR::Database;
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #
 
+#
+# $Id$
+#
+
+# This is a new version of ODA
+
+# Database.pm, located at the next level of the ODA hierarchy, is an
+# abstract Perl module to handle directly all the database operations
+# under the control of oda.pm. Many Perl subroutines defined at
+# Database.pm are exported so that non-database codes of OSCAR can use
+# its subroutines as if they are defined by importing Database.pm
+
+
+# Internal subroutines
+
+
+# External subroutines
+
+
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/perl5/site_perl";
 use Carp;
@@ -48,8 +66,7 @@ $options{debug} = 1
     if (exists $ENV{OSCAR_VERBOSE} && $ENV{OSCAR_VERBOSE} == 10)
         || $ENV{OSCAR_DB_DEBUG};
 
-@EXPORT = qw( database_calling_traceback
-              database_connect 
+@EXPORT = qw( database_connect 
               database_disconnect 
               database_find_node_name
               database_hostname_to_node_name
@@ -126,22 +143,6 @@ $options{debug} = 1
 	          list_installable_packages
 	      );
 
-#
-# prints a traceback of the call stack
-#
-
-sub calling_traceback {
-    my $level = 1;
-    my ( $package, $filename, $line, $subroutine, $hasargs, 
-    $wantarray, $evaltext, $is_require, $hints, $bitmask );
-    do {
-    ( $package, $filename, $line, $subroutine, $hasargs, $wantarray,
-      $evaltext, $is_require, $hints, $bitmask ) = caller ( $level );
-        print "called from $filename\:$line $subroutine\(\)\n"
-            if defined $filename;
-        $level++;;
-    } while defined $filename;
-}
 
 #
 # Connect to the oscar database if the oda package has been
@@ -206,9 +207,15 @@ sub database_connect {
 }
 
 #
-# connect to the oscar database if the oda package has been
-# installed and the oscar database has been initialized
+# Disconnect database connection. This is done through the
+# oda_disconnect in OSCAR::oda.pm
 #
+# inputs:   errors_ref   if defined and a list reference,
+#                          put error messages into the list;
+#                          if defined and a non-zero scalar,
+#                          print out error messages on STDERR
+#           options        options reference to oda options hash
+# outputs:  status         non-zero if success
 
 sub database_disconnect {
     my ( $passed_options_ref, 
@@ -623,12 +630,6 @@ sub database_program_variables_get {
     my ( $program,
      $passed_errors_ref ) = @_;
 
-    # sometimes this is called without a database_connected being 
-    # called first, so we have to connect first if that is the case
-    ( my $was_connected_flag = $database_connected ) ||
-    OSCAR::Database::database_connect( undef, $passed_errors_ref ) ||
-        return undef;
-
     # do the database read for all of the variable names
     # and values for the specified program, returning
     # undefined if any errors
@@ -650,8 +651,6 @@ sub database_program_variables_get {
     if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
         warn shift @$error_strings_ref while @$error_strings_ref;
     }
-    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
-    return undef;
     }
 
     # now translate it to a hash, with each variable name
@@ -679,9 +678,6 @@ sub database_program_variables_get {
     $results{$variable} = $$values_ref[0]
         if scalar @$values_ref == 1;
     }
-
-    # if we weren't connected to the database when called, disconnect
-    OSCAR::Database::database_disconnect() if ! $was_connected_flag;
 
     return \%results;
 }
@@ -1511,18 +1507,12 @@ sub insert_into_table {
     my $error_msg = "Failed to insert values to $table table";
     my $success = oda::do_sql_command($options_ref,
             $sql,
-            "INSERT Table into $table",
+            "Insert Table $table",
             $error_msg,
             $error_strings_ref);
-
     $error_strings_ref = \@error_strings;
     return  $success;
-    
-    database_disconnect();
-    #print_error_strings($error_strings_ref);
-    die "DB_DEBUG>$0:\n====>$error_msg";
 }
-
 
 sub delete_table {
     my ($options_ref,$table,$where,$error_strings_ref) = @_;
@@ -1542,10 +1532,9 @@ sub delete_table {
             $error_strings_ref);
     $error_strings_ref = \@error_strings;
     return  $success;
-    
-    database_disconnect();
-    die "DB_DEBUG>$0:\n====>$error_msg";
 }
+
+
 
 sub update_table {
     my ($options_ref,$table,$field_value_ref,$where,$error_strings_ref) = @_;
@@ -1571,9 +1560,6 @@ sub update_table {
             $error_strings_ref);
     $error_strings_ref = \@error_strings;
     return  $success;
-
-    database_disconnect();
-    die "DB_DEBUG>$0:\n====>$error_msg";
 }
 
 sub select_table {
@@ -1611,9 +1597,6 @@ sub select_table {
             $error_strings_ref);
     $error_strings_ref = \@error_strings;
     return  $success;
-
-    database_disconnect();
-    die "DB_DEBUG>$0:\n====>$error_msg";
 }
 
 sub create_table {
@@ -1678,16 +1661,6 @@ sub do_insert {
     return  $success;
 }            
 
-sub add_messages {
-    my ($array_ref, $msg) = @_;
-    my @container = ();
-    while (@$array_ref){
-        push @container, $_;
-    }
-    push @container, $msg;
-    $array_ref = \@container;
-}
-
 sub do_select {
     my ($sql,
         $result_ref,
@@ -1707,9 +1680,6 @@ sub do_select {
     
     $error_strings_ref = \@error_strings;
     return  $success;
-
-    database_disconnect();
-    die "DB_DEBUG>$0:\n====>$error_msg";
 }
 
 sub get_node_info_with_name {
@@ -1735,8 +1705,7 @@ sub get_client_nodes {
             "WHERE Groups.id=Nodes.group_id ".
             "AND Groups.name='oscar_clients'";
     print "DB_DEBUG>$0:\n====> in Database::get_client_nodes SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
 
 sub get_node_info {
@@ -1745,8 +1714,7 @@ sub get_node_info {
         $error_strings_ref) = @_;
     my $sql = "SELECT * FROM Nodes";
     print "DB_DEBUG>$0:\n====> in Database::get_node_info SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
 
 sub delete_package {
@@ -1757,8 +1725,7 @@ sub delete_package {
     my $sql = "DELETE FROM Packages WHERE package='$package_name' ";
     print "DB_DEBUG>$0:\n====> in Database::delete_package SQL : $sql\n" if $$options_ref{debug};
     $sql .= ($package_version?"AND version='$package_version'":"");
-    die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-        if! do_update($sql,"Packages", $options_ref, $error_strings_ref);
+    return do_update($sql,"Packages", $options_ref, $error_strings_ref);
 }    
 
 sub delete_node {
@@ -1774,8 +1741,7 @@ sub delete_node {
     my $sql = "DELETE FROM Nodes ";
     print "DB_DEBUG>$0:\n====> in Database::delete_node SQL : $sql\n" if $$options_ref{debug};
     $sql .= ($node_name?"WHERE name='$node_name'":"");
-    die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-        if! do_update($sql,"Nodes", $options_ref, $error_strings_ref);
+    return do_update($sql,"Nodes", $options_ref, $error_strings_ref);
 }    
 
 sub delete_group_node {
@@ -1784,8 +1750,7 @@ sub delete_group_node {
         $error_strings_ref) = @_;
     my $sql = "DELETE FROM Group_Nodes WHERE node_id=$node_id";
     print "DB_DEBUG>$0:\n====> in Database::delete_group_node SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-        if! do_update($sql,"Group_Nodes", $options_ref, $error_strings_ref);
+    return do_update($sql,"Group_Nodes", $options_ref, $error_strings_ref);
 }
 
 sub delete_node_packages {
@@ -1798,8 +1763,7 @@ sub delete_node_packages {
         if! do_update($sql,"Node_Packages", $options_ref, $error_strings_ref);
     $sql = "DELETE FROM Node_Package_Status WHERE node_id=$node_id";
     print "DB_DEBUG>$0:\n====> in Database::delete_node_packages SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-        if! do_update($sql,"Node_Package_Status", $options_ref, $error_strings_ref);
+    return do_update($sql,"Node_Package_Status", $options_ref, $error_strings_ref);
 }
 
 
@@ -1810,8 +1774,7 @@ sub get_client_nodes_info {
         $error_strings_ref) = @_;
     my $sql = "SELECT * FROM Nodes WHERE name!='$server'";
     print "DB_DEBUG>$0:\n====> in Database::get_client_nodes_info SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if !do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
 
 sub get_nodes {
@@ -1832,8 +1795,7 @@ sub get_networks {
         $error_strings_ref)= @_;
     my $sql ="SELECT * FROM Networks ";
     print "DB_DEBUG>$0:\n====> in Database::get_networks SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 sub get_nics_info_with_node {
@@ -1844,8 +1806,7 @@ sub get_nics_info_with_node {
     my $sql ="SELECT Nics.* FROM Nics, Nodes ".
              "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node'";
     print "DB_DEBUG>$0:\n====> in Database::get_nics_info_with_node SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 sub get_nics_with_name_node {
@@ -1858,8 +1819,7 @@ sub get_nics_with_name_node {
              "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node' " .
              "AND Nics.name='$nic'";
     print "DB_DEBUG>$0:\n====> in Database::get_nics_with_name_node SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 sub get_cluster_info_with_name {
@@ -2060,6 +2020,7 @@ sub set_group_nodes {
     my $group_ref = get_groups(\@groups, $options_ref,$error_strings_ref,$group);
     my $group_id = $$group_ref{id};
     my %field_value_hash = ( "group_id" => $group_id );
+    my $success = 0;
     foreach my $node (@$nodes_ref){
         my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);    
         my $node_id = $$node_ref{id};
@@ -2071,11 +2032,12 @@ sub set_group_nodes {
         if(!@results){
             $sql = "INSERT INTO Group_Nodes VALUES('$group', $node_id )";
             print "DB_DEBUG>$0:\n====> in Database::set_group_nodes SQL : $sql\n" if $$options_ref{debug};
-            do_insert($sql,"Group_Nodes",$options_ref,$error_strings_ref);
-            update_node($node,\%field_value_hash,$options_ref,$error_strings_ref);
+            $success = do_insert($sql,"Group_Nodes",$options_ref,$error_strings_ref);
+            $success = update_node($node,\%field_value_hash,$options_ref,$error_strings_ref);
+            last if ! $success;
         }    
     }    
-    return 1;              
+    return $success;              
 }
 
 
@@ -2297,9 +2259,7 @@ sub update_node {
     }    
     $sql .= " WHERE name='$node' ";
     print "DB_DEBUG>$0:\n====> in Database::update_node SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-        if! do_update($sql,"Nodes", $options_ref, $error_strings_ref);
-    return 1;
+    return  do_update($sql,"Nodes", $options_ref, $error_strings_ref);
 }
     
 sub get_node_package_status_with_group_node {
@@ -2316,9 +2276,7 @@ sub get_node_package_status_with_group_node {
                  "AND Node_Package_Status.node_id=Nodes.id ".
                  "AND Nodes.name='$node'";
     print "DB_DEBUG>$0:\n====> in Database::get_node_package_status_with_group_node SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
-    return 1;
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 sub get_node_package_status_with_node {
@@ -2340,9 +2298,7 @@ sub get_node_package_status_with_node {
             $sql .= " AND Packages.version=$version ";
         }
     print "DB_DEBUG>$0:\n====> in Database::get_node_package_status_with_node SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
-    return 1;
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 sub get_node_package_status_with_node_package {
@@ -2365,9 +2321,7 @@ sub get_node_package_status_with_node_package {
             $sql .= " AND Packages.version=$version ";
         }
     print "DB_DEBUG>$0:\n====> in Database::get_node_package_status_with_node_package SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
-    return 1;
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 sub insert_packages {
@@ -2615,8 +2569,7 @@ sub get_installable_packages {
               "WHERE Packages.id=Group_Packages.package_id ".
               "AND Group_Packages.group_name='Default'";
     print "DB_DEBUG>$0:\n====> in Database::get_installable_packages SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 #
@@ -2669,9 +2622,7 @@ sub get_groups_for_packages {
     my $sql ="SELECT distinct group_name FROM Group_Packages ";
     if(defined $group){ $sql .= "WHERE group_name='$group'"; }
     print "DB_DEBUG>$0:\n====> in Database::get_groups_for_packages SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
-    return 1;    
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 sub get_groups {
@@ -2685,7 +2636,7 @@ sub get_groups {
     die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
         if! do_select($sql,$results, $options_ref, $error_strings_ref);
     return $$results[0] if $group;    
-    return 1;    
+    return 0;
 }
 
 sub set_groups {
@@ -2757,6 +2708,7 @@ sub set_all_groups {
             set_groups($group,$options_ref,$error_strings_ref,$$groups_ref{$group});
         }
     }
+    return 1;
 }
 
 sub set_node_with_group {
@@ -2924,8 +2876,7 @@ sub get_gateway {
              "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node'".
              "AND Networks.n_id=Nics.network_id AND Nics.name='$interface'";
     print "DB_DEBUG>$0:\n====> in Database::get_gateway SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 # This function returns the interface on the headnode that is on the same
@@ -2958,10 +2909,7 @@ sub set_install_mode {
     my $sql = "UPDATE Clusters SET install_mode='$install_mode' WHERE name ='$cluster'";
 
     print "DB_DEBUG>$0:\n====> in Database::set_install_mode SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-            if! do_update($sql, "Clusters", $options_ref, $error_strings_ref);
-
-    return 1;
+    return do_update($sql, "Clusters", $options_ref, $error_strings_ref);
 }
 
 #=======================================================================
@@ -2987,10 +2935,9 @@ sub link_node_nic_to_network {
     print "DB_DEBUG>$0:\n====> in Database::link_node_nic_to_network linking node $node_name nic $nic_name to network $network_name using command <$command>\n"
     if $$options_ref{debug};
     print "DB_DEBUG>$0:\n====> in Database::link_node_nic_to_network Linking node $node_name nic $nic_name to network $network_name.\n"
-    if $$options_ref{verbose} && ! $$options_ref{debug};
-    warn "DB_DEBUG>$0:\n====> failed to link node $node_name nic $nic_name to "
-        . " network $network_name.\n"
-        if !do_update($command,"Nics",$options_ref,$error_strings_ref);
+        if $$options_ref{verbose} && ! $$options_ref{debug};
+    
+    return do_update($command,"Nics",$options_ref,$error_strings_ref);
 }
 
 

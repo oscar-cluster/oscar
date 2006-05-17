@@ -28,14 +28,16 @@
 #       
 # $Id$
 
-# This program creates the OSCAR database and all its tables on it.
-# The tables are created using the sql statements which are already defined
-# for type "InnoDB" at $ENV{OSCAR_HOME}/share/prereqs/oda/oscar_table.sql.
-# Creation of the tables only happens at the first time instllation and
-# once all the tables are created, the data in the config.xml of all the
-# OSCAR packages are stored to the database by parsing them to the sql strings.
-# Meanwhile, Population of packages data to the database is implemented
-# everytime this script runs.
+# This program creates the OSCAR database and then generates all the
+# OSCAR database tables.  The tables are created using the sql
+# statements which are already defined for "InnoDB" type at
+# $ENV{OSCAR_HOME}/share/prereqs/oda/oscar_table.sql.  Creation of the
+# tables only happens at the first time instllation and once all the
+# tables are created, the data in the config.xml of all the OSCAR
+# packages are stored to the database by parsing them to the sql
+# strings.  Meanwhile, Population of packages data to the database is
+# implemented everytime this script runs.
+
 # This program requires to create/populate the tables in a specific order 
 # because of the property of InnoDB table type.
 # In sum,
@@ -45,7 +47,7 @@
 # 3. Populate the OSCAR global data to the following tables:
 #    - Clusters, Groups, Nodes, and Status
 # 
-# At the next implementation including the first time installation
+# At the next implementation plus the first time installation
 # 4. Populate the Packages table
 # 5. Populate the Packages related tables:
 #    - Packages

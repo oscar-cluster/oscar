@@ -111,6 +111,11 @@ sub oda_connect {
             $database_server_version = database_server_version( $options_ref );
             $cached_all_table_names_ref = undef;
             $cached_all_tables_fields_ref = undef;
+
+            # Set AUTOCOMMIT = 1
+            # This protects auto lock-release when there is anther lock
+            # to release a previous lock unexpectedly.
+            $database_handle->{AutoCommit} = 1;
         } else {
             push @$error_strings_ref,
             "Cannot connect to database <$$options_ref{database}> as user <$$options_ref{user}>";
@@ -719,6 +724,7 @@ sub do_sql_command {
         if ! $was_connected_flag;
         return 0;
     } else {
+        # Clear off the error strings in the error array.
         shift @$error_strings_ref while @$error_strings_ref;
         return 1;
     }

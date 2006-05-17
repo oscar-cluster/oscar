@@ -19,10 +19,6 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   This script creates or fixes the following:
-#   creates the oscar_server node record,
-#   creates the node attribute set oscar_server,
-#   creates the node attribute set oscar_clients.
 #
 # $Id$
 

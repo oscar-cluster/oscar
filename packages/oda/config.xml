@@ -26,7 +26,7 @@
       information, see the COPYING file in the top level directory of the
       OSCAR source distribution.
      
-      $Id: config.xml,v 1.82 2004/05/04 22:54:31 ngorsuch Exp $
+      $Id$
   -->
   <name>ODA</name>
 
