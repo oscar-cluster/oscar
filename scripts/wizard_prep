@@ -118,13 +118,16 @@ oscar_log_subsection("Bootstrapping OSCAR smart package manager");
 # repositories.
 
 my $cmd;
+# EF: need to take care of mixed installs (debian + rpm-based)!
+#     those require installing both rapt and yume
 if ($os->{pkg} eq "rpm") {
     # rpm based distros use yume
     $cmd = "$ipcmd --dumb share/prereqs/base packages/yume".
 	" share/prereqs/packman";
 } elsif($os->{pkg} eq "deb") {
-    # debian based distros already have apt...
-    $cmd = "$ipcmd --dumb share/prereqs/base share/prereqs/packman";
+    # debian based distros use rapt
+    $cmd = "$ipcmd --dumb share/prereqs/base packages/rapt".
+	" share/prereqs/packman";
 } else {
     die "Unsupported package manager: ".$os->{pkg};
 }
@@ -139,8 +142,10 @@ if (! -d $md5dir) {
 }
 
 
-# hack... needs to be done yum independent
-system("yum clean all");
+# hack...
+if ($os->{pkg} eq "rpm") {
+    system("yum clean all");
+}
 
 oscar_log_subsection("Installing OSCAR wizard prerequisites");
 
