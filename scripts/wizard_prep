@@ -325,7 +325,7 @@ eval "use OSCAR::Database";
 $md5 = OSCAR::PackageSmart::checksum_needed("$ENV{OSCAR_HOME}/packages",
 					    "$md5dir/config_xml.md5",
 					    "config.xml");
-#goto PREP_MORE_ODA if (!$md5);
+goto PREP_MORE_ODA if (!$md5);
 
 
 # Start the database and copy the package xml files into the database

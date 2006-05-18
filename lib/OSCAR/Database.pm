@@ -38,7 +38,10 @@ package OSCAR::Database;
 # its subroutines as if they are defined by importing Database.pm
 
 
-# Internal subroutines
+# Most frequently used internal subroutines
+# - do_select
+# - do_update
+# - do_insert
 
 
 # External subroutines
@@ -60,7 +63,6 @@ my $options_ref = \%options;
 my $database_connected = 0;
 my $CLUSTER_NAME = "oscar";
 my $DEFAULT = "Default";
-use Data::Dumper;
 
 $options{debug} = 1 
     if (exists $ENV{OSCAR_VERBOSE} && $ENV{OSCAR_VERBOSE} == 10)
@@ -83,66 +85,73 @@ $options{debug} = 1
               update_table
               select_table
               delete_table
+
               delete_package
               delete_node
-              get_packages
+              delete_group_packages
+              delete_groups
+              do_select
               get_client_nodes
-              get_install_mode
+              get_client_nodes_info
+              get_cluster_info_with_name
+              get_gateway
+              get_group_packages_with_groupname
+              get_groups
+              get_groups_for_packages
+              get_headnode_iface
               get_image_info_with_name
+              get_install_mode
+              get_installable_packages
               get_networks
+              get_nics_info_with_node
+              get_nics_with_name_node
+              get_node_info_with_name
+              get_node_package_status_with_group_node
+              get_node_package_status_with_node
+              get_package_info_with_name
+              get_packages
               get_packages_related_with_package
               get_packages_related_with_name
               get_packages_switcher
               get_packages_servicelists
               get_packages_with_class
-              set_group_packages
-              del_group_packages
               get_selected_group
               get_selected_group_packages
               get_unselected_group_packages
-              get_group_packages_with_groupname
-              update_node_package_status
-              update_node_package_status_with_opkg
-              update_node
-              get_node_package_status_with_group_node
-              get_node_package_status_with_node
-              is_installed_on_node
-              get_package_info_with_name
-              get_client_nodes_info
-              get_node_info_with_name
-              get_nics_info_with_node
-              get_nics_with_name_node
-              set_nics_with_node
-              get_gateway
-              get_headnode_iface
-              get_cluster_info_with_name
               insert_packages
-              update_packages
               insert_pkg_rpmlist
-              get_installable_packages
-              get_groups_for_packages
-              get_groups
+              is_installed_on_node
+	          list_installable_packages
+              link_node_nic_to_network
+    	      list_selected_packages
+    	      pkgs_of_opkg
+              set_all_groups
+              set_group_packages
+              set_group_nodes
               set_groups
               set_groups_selected
-              del_groups
-              set_group_nodes
-              set_all_groups
-              set_status
               set_images
               set_image_packages
               set_install_mode
+              set_nics_with_node
               set_node_with_group
-              link_node_nic_to_network
-    	      pkgs_of_opkg
-              do_select
+              set_status
+              update_node
+              update_node_package_status
+              update_node_package_status_with_opkg
+              update_packages
+
               dec_already_locked
               locking
-              single_dec_locked
               unlock
-    	      list_selected_packages
-	          list_installable_packages
+              single_dec_locked
 	      );
 
+#########################################################################
+#
+#       Database Connection subroutines
+#
+#########################################################################
 
 #
 # Connect to the oscar database if the oda package has been
@@ -243,97 +252,220 @@ sub database_disconnect {
     return 1;
 }
 
-
+#########################################################################
 #
-# NEST
-# This is locking a single database_execute_command with some argurments
-# Basically Lock -> 1 oda::execute_command -> unlock
-# $type_of_lock is optional, if it is omitted, the default type of lock is "READ".
-# The required argument is $tables_ref, which is the reference of the list of tables.
-# The other arguments are the same as the database_execute_command.
+#           Most frequently used
+#       Internal database subroutines
 #
-sub single_dec_locked {
+#########################################################################
 
-    my ( $command_args_ref,
-         $type_of_lock,
-         $tables_ref,
-         $results_ref,
-     $passed_errors_ref ) = @_;
+######################################################
+# Three main query subroutines
+#
+#   - do_select
+#   - do_insert
+#   - do_update
+#
+# These subroutines directly call the oda query command
+# if query succeeds, return 1. Otherwise, return 0
+########################################################## 
 
-    # execute the command
-    my @error_strings = ();
-    my $error_strings_ref = ( defined $passed_errors_ref && 
-                  ref($passed_errors_ref) eq "ARRAY" ) ?
-                  $passed_errors_ref : \@error_strings;
-    my @tables = ();
-    if ( (ref($tables_ref) eq "ARRAY")
-        && (defined $tables_ref)
-        && (scalar @$tables_ref != 0) ){
-        @tables = @$tables_ref;
-    } else {
-        #chomp(@tables = oda::list_tables);
-        my $all_tables_ref = oda::list_tables( $options_ref, $error_strings_ref );
-        foreach my $table (keys %$all_tables_ref){
-            push @tables, $table;
-        }    
-    }
-    my $lock_type = (defined $type_of_lock)? $type_of_lock : "READ";
-    # START LOCKING FOR NEST && open the database
-    my %options = ();
-    if(! locking($lock_type, $options_ref, \@tables, $error_strings_ref)){
-        return 0;
-        #die "DB_DEBUG>$0:\n====> cannot connect to oda database";
-    }
-    my $success = oda::do_query( $options_ref,
-                    $command_args_ref,
-                    $results_ref,
-                    $error_strings_ref );
-    # UNLOCKING FOR NEST
-    unlock($options_ref, $error_strings_ref);
-    if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
-    warn shift @$error_strings_ref while @$error_strings_ref;
-    }
+sub do_select {
+    my ($sql,
+        $result_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_select SQL : $sql\n";
+    print "$debug_msg" if $$options_ref{debug} || $$options_ref{verbose};
+    push @$error_strings_ref, $debug_msg;
+
+    my $error_msg = "Failed to query for << $sql >>";
+    push @$error_strings_ref, $error_msg;
+    my $success = oda::do_query($options_ref,
+            $sql,
+            $result_ref,
+            $error_strings_ref);
     
-    return $success;
+    $error_strings_ref = \@error_strings;
+    return  $success;
 }
 
+sub do_insert {
+    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
+
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_insert SQL : $sql\n";
+    print "$debug_msg" if $$options_ref{debug};
+    push @$error_strings_ref, $debug_msg;
+
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "INSERT Table into $table",
+            "Failed to insert values into $table table",
+            $error_strings_ref);
+    $error_strings_ref = \@error_strings;
+    return  $success;
+}            
+
+sub do_update {
+    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
+
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_update SQL : $sql\n";
+    print "$debug_msg" if $$options_ref{debug};
+    push @$error_strings_ref, $debug_msg;
+
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "UDATE Table $table",
+            "Failed to update $table table",
+            $error_strings_ref);
+    $error_strings_ref = \@error_strings;
+    return  $success;
+}            
+
+#########################################################################
 #
-# NEST
-# This subroutine is renamed from database_execute_command and represents
-# the $command_args_ref in the subroutine is already locked in the outer lock block.
-# Basically this subroutine is the exactly same as database_execute_command
-# except for its name.
+#           Most frequently used 
+#       External database subroutines
 #
-sub dec_already_locked {
+#########################################################################
 
-    my ( $sql_command,
-     $passed_errors_ref ) = @_;
 
-    # sometimes this is called without a database_connected being 
-    # called first, so we have to connect first if that is the case
-    ( my $was_connected_flag = $database_connected ) ||
-	database_connect( undef, $passed_errors_ref ) ||
-        return undef;
+sub insert_into_table {
+    my ($options_ref,$table,$field_value_ref,$error_strings_ref) = @_;
+    my $sql = "INSERT INTO $table ( ";
+    my $sql_values = " VALUES ( ";
+    
+    my $flag = 0;
+    my $comma = "";
+    while ( my($field, $value) = each %$field_value_ref ){
+        $comma = ", " if $flag;
+        $sql .= "$comma $field";
+        $flag = 1;
+        $value = ($value eq "NOW()"?$value:"'$value'");
+        $sql_values .= "$comma $value";
+    }    
+    $sql .= ") $sql_values )";
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::insert_into_table SQL : $sql\n";
+    print "$debug_msg" if $$options_ref{debug};
+    push @$error_strings_ref, $debug_msg;
 
-    # execute the command
-    my @error_strings = ();
-    my $error_strings_ref = ( defined $passed_errors_ref && 
-                  ref($passed_errors_ref) eq "ARRAY" ) ?
-                  $passed_errors_ref : \@error_strings;
-    my $success =  oda::do_sql_command( $options_ref,
-                                $sql_command,
-                                undef,
-                                undef,
-                                $error_strings_ref );
-    if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
-    warn shift @$error_strings_ref while @$error_strings_ref;
+    my $error_msg = "Failed to insert values to $table table";
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "Insert Table $table",
+            $error_msg,
+            $error_strings_ref);
+    $error_strings_ref = \@error_strings;
+    return  $success;
+}
+
+sub delete_table {
+    my ($options_ref,$table,$where,$error_strings_ref) = @_;
+    my $sql = "DELETE FROM $table ";
+    $where = $where?$where:"";
+    $sql .= " $where ";
+
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::delete_table SQL : $sql\n";
+    print "$debug_msg" if $$options_ref{debug};
+    push @$error_strings_ref, $debug_msg;
+
+    my $error_msg = "Failed to delete values from $table table";
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "DELETE Table $table",
+            $error_msg,
+            $error_strings_ref);
+    $error_strings_ref = \@error_strings;
+    return  $success;
+}
+
+
+
+sub update_table {
+    my ($options_ref,$table,$field_value_ref,$where,$error_strings_ref) = @_;
+    my $sql = "UPDATE $table SET ";
+    my $flag = 0;
+    my $comma = "";
+    while ( my($field, $value) = each %$field_value_ref ){
+        $comma = ", " if $flag;
+        $value = ($value eq "NOW()"?$value:"'$value'");
+        $sql .= "$comma $field=$value";
+        $flag = 1;
     }
-
-    # if we weren't connected to the database when called, disconnect
-    database_disconnect() if ! $was_connected_flag;
-
-    return $success;
+    $where = $where?$where:"";
+    $sql .= " $where ";
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::update_table SQL : $sql\n";
+    print "$debug_msg" if $$options_ref{debug};
+    push @$error_strings_ref, $debug_msg;
+    my $error_msg = "Failed to update values to $table table";
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "UPDATE Table $table",
+            $error_msg,
+            $error_strings_ref);
+    $error_strings_ref = \@error_strings;
+    return  $success;
 }
+
+sub select_table {
+    my ($options_ref,$table,$field_ref,$where,$result,$error_strings_ref) = @_;
+    my $sql = "SELECT ";
+    my $flag = 0;
+    my $comma = "";
+    foreach my $field (@$field_ref){
+        $comma = ", " if $flag;
+        $sql .= "$comma $field";
+        $flag = 1;
+    }
+    $where = $where?$where:"";
+    if(ref($where) eq "HASH"){
+        $flag = 0;
+        my $and = "";
+        my $where_str = " WHERE ";
+        while (my ($key, $value) = each %$where){
+            $and = "AND " if $flag;
+            $where_str .= "$and $key='$value' ";
+            $flag = 1;
+        }
+        $where = $where_str;
+    }
+    $sql .= " FROM $table $where ";
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::select_table SQL : $sql\n";
+    print "$debug_msg" if $$options_ref{debug};
+    push @$error_strings_ref, $debug_msg;
+
+    my $error_msg = "Failed to query values from $table table";
+    push @$error_strings_ref, $error_msg;
+    my $success = oda::do_query($options_ref,
+            $sql,
+            $result,
+            $error_strings_ref);
+    $error_strings_ref = \@error_strings;
+    return  $success;
+}
+
+sub create_table {
+     my ($options_ref, $error_strings_ref) = @_;
+        
+    my $sql_dir = "$ENV{OSCAR_HOME}/share/prereqs/oda";
+    my $sql_file = "$sql_dir/oscar_table.sql";
+    
+    print "DB_DEBUG>$0:\n====> in Database::create_table uses the SQL statement which are already defined at $sql_file" if $$options_ref{verbose};
+    my $cmd = "mysql -u root oscar < $sql_file";
+
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::create_table runs the command : $cmd\n";
+    print "$debug_msg" if $$options_ref{debug};
+    push @$error_strings_ref, $debug_msg;
+
+    my $success = oda::do_shell_command($options_ref, "$cmd", $error_strings_ref);
+
+    $error_strings_ref = \@error_strings;
+    return  $success;
+}    
+
+
+
 
 # Uses the hostname command to match against the node names in the
 # database, returning the matching name. Takes into account domain
@@ -1107,7 +1239,7 @@ sub database_rpmlist_for_package_and_group {
     # START LOCKING FOR NEST
     my %options = ();
     my @tables = ("Packages_rpmlists", "Packages");
-    locking("read", \%options, \@tables, $error_strings_ref);
+#    locking("read", \%options, \@tables, $error_strings_ref);
     my $sql = "SELECT Packages_rpmlists.* FROM Packages_rpmlists, Packages " .
               "WHERE Packages.id=Packages_rpmlists.package_id " .
               "AND Packages.package='$package' " .
@@ -1118,7 +1250,7 @@ sub database_rpmlist_for_package_and_group {
                     \@packages_rpmlists_records,
                     \$error_strings_ref);
     # UNLOCKING FOR NEST
-    unlock(\%options, $error_strings_ref);
+#    unlock(\%options, $error_strings_ref);
     if ( ! $success ) {
     push @$error_strings_ref,
     "Error reading packages_rpmlists records for package $package";
@@ -1292,7 +1424,7 @@ sub pkgs_of_opkg {
     # START LOCKING FOR NEST
     my %options = ();
     my @tables = ("Packages_rpmlists", "Packages");
-    locking("read", \%options, \@tables, $error_strings_ref);
+#    locking("read", \%options, \@tables, $error_strings_ref);
     my $sql = "SELECT Packages_rpmlists.* FROM Packages_rpmlists, Packages " .
               "WHERE Packages.id=Packages_rpmlists.package_id " .
               "AND Packages.package='$opkg' " .
@@ -1303,7 +1435,7 @@ sub pkgs_of_opkg {
                     \@packages_rpmlists_records,
                     \$error_strings_ref);
     # UNLOCKING FOR NEST
-    unlock(\%options, $error_strings_ref);
+#    unlock(\%options, $error_strings_ref);
     if ( ! $success ) {
 	push @$error_strings_ref,
 	"Error reading packages_rpmlists records for opkg $opkg";
@@ -1345,6 +1477,1397 @@ sub pkgs_of_opkg {
     return @pkgs;
 }
 
+#########################################################################
+#
+#       Select SQL query: database subroutines
+#
+#########################################################################
+
+
+sub get_node_info_with_name {
+    my ($node_name,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    my $sql = "SELECT * FROM Nodes WHERE name='$node_name'";
+    print "DB_DEBUG>$0:\n====> in Database::get_node_info_with_name SQL : $sql\n" if $$options_ref{debug};
+    if(do_select($sql,\@results, $options_ref, $error_strings_ref)){
+        my $node_ref = pop @results;
+        return $node_ref;
+    }else{
+        undef;
+    }
+}
+
+sub get_client_nodes {
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT Nodes.* FROM Nodes, Groups ".
+            "WHERE Groups.id=Nodes.group_id ".
+            "AND Groups.name='oscar_clients'";
+    print "DB_DEBUG>$0:\n====> in Database::get_client_nodes SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+}
+
+sub get_node_info {
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Nodes";
+    print "DB_DEBUG>$0:\n====> in Database::get_node_info SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+}
+
+sub get_client_nodes_info {
+    my ($server,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Nodes WHERE name!='$server'";
+    print "DB_DEBUG>$0:\n====> in Database::get_client_nodes_info SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+}
+
+sub get_nodes {
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    get_node_info(\@results,$options_ref, $error_strings_ref);
+    my @list_of_nodes = ();
+    foreach my $results_ref (@results){
+        push @list_of_nodes, $$results_ref{name};
+    }
+    return @list_of_nodes;
+}
+
+sub get_networks {
+    my ($results,
+        $options_ref,
+        $error_strings_ref)= @_;
+    my $sql ="SELECT * FROM Networks ";
+    print "DB_DEBUG>$0:\n====> in Database::get_networks SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_nics_info_with_node {
+    my ($node,
+        $results,
+        $options_ref,
+        $error_strings_ref)= @_;
+    my $sql ="SELECT Nics.* FROM Nics, Nodes ".
+             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node'";
+    print "DB_DEBUG>$0:\n====> in Database::get_nics_info_with_node SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_nics_with_name_node {
+    my ($nic,
+        $node,
+        $results,
+        $options_ref,
+        $error_strings_ref)= @_;
+    my $sql ="SELECT Nics.* FROM Nics, Nodes ".
+             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node' " .
+             "AND Nics.name='$nic'";
+    print "DB_DEBUG>$0:\n====> in Database::get_nics_with_name_node SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_cluster_info_with_name {
+    my ($cluster_name,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    my $where = ($cluster_name?"'$cluster_name'":"'oscar'");
+    my $sql = "SELECT * FROM Clusters WHERE name=$where";
+    print "DB_DEBUG>$0:\n====> in Database::get_cluster_info_with_name SQL : $sql\n" if $$options_ref{debug};
+    do_select($sql,\@results, $options_ref, $error_strings_ref);
+    if(@results){
+        return ((scalar @results)==1?(pop @results):@results);
+    }else{
+        undef;
+    }
+}
+
+sub get_package_info_with_name {
+    my ($package_name,
+        $options_ref,
+        $error_strings_ref,
+        $version) = @_;
+    my @results = ();
+    my $sql = "SELECT * FROM Packages WHERE package='$package_name' ";
+    if( $version ){
+        $sql .= "AND version='$version'";
+    }
+    print "DB_DEBUG>$0:\n====> in Database::get_package_info_with_name SQL : $sql\n" if $$options_ref{debug};
+    if(do_select($sql,\@results, $options_ref, $error_strings_ref)){
+        my $package_ref = pop @results;
+        return $package_ref;
+    }else{
+        undef;
+    }
+}
+
+sub get_package_info {
+    my ($options_ref,
+        $error_strings_ref,
+        $field_ref) = @_;
+    my @results = ();
+    my $sql = "SELECT";
+    if(defined $field_ref){
+        my $flag = 0;
+        my $comma = "";
+        foreach my $field (@$field_ref){
+            $comma = "," if $flag;
+            $sql .= "$comma $field";
+            $flag = 1;
+        }    
+    } else {
+        $sql .= " * ";
+    }   
+    $sql .= " FROM Packages";
+    print "DB_DEBUG>$0:\n====> in Database::get_package_info SQL : $sql\n" if $$options_ref{debug};
+    if(do_select($sql,\@results, $options_ref, $error_strings_ref)){
+        return \@results;
+    }else{
+        undef;
+    }
+}
+
+sub get_packages {
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my $results = get_package_info($options_ref, $error_strings_ref);
+    my @list_of_packages = ();
+    foreach my $results_ref (@$results){
+        push @list_of_packages, $$results_ref{package};
+    }
+    return @list_of_packages;
+}
+
+sub get_packages_with_class {
+    my ($class,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT id, package, version FROM Packages ".
+              "WHERE __class='$class' ";
+    print "DB_DEBUG>$0:\n====> in Database::get_packages_with_class SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}
+
+sub get_fields {
+    my ($options_ref,
+        $table,
+        $error_strings_ref) = @_;
+    my %fields = ();    
+    oda::list_fields($options_ref, $table, \%fields, $error_strings_ref);
+    my @list_of_fields = ();
+    foreach my $field (sort keys %fields){
+        push @list_of_fields, $field;
+    }
+    return @list_of_fields;
+}
+
+#####################################################
+#
+#   Wizard.pm
+#
+#####################################################
+
+# These two subroutines(get_packages_related_with_package and
+# get_packages_related_with_name) take care of 
+# Packages_conflicts, Packages_provides, and Packages_requires
+# tables.
+sub get_packages_related_with_package {
+    my ($part_name,
+        $package,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT P.package, P.id, S.p2_name, S.type " .
+              "FROM Packages P, Packages_$part_name S " .
+              "WHERE P.id=S.p1_id ".
+              "AND P.package='$package'";  
+    print "DB_DEBUG>$0:\n====> in Database::get_packages_related_with_package SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}    
+
+sub get_packages_related_with_name {
+    my ($part_name,
+        $name,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT P.package, P.id, S.p2_name, S.type " .
+              "FROM Packages P, Packages_$part_name S " .
+              "WHERE P.id=S.p1_id ".
+              "AND S.p2_name='$name'";  
+    print "DB_DEBUG>$0:\n====> in Database::get_packages_related_with_name SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}    
+
+
+sub get_packages_switcher {
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT P.package, S.switcher_tag, S.switcher_name " .
+              "FROM Packages P, Packages_switcher S " .
+              "WHERE P.id=S.package_id";
+    print "DB_DEBUG>$0:\n====> in Database::get_packages_switcher SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}    
+
+sub get_packages_servicelists {
+    my ($results_ref,
+        $group_name,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT distinct P.package, S.service " .
+              "FROM Packages P, Packages_servicelists S, Node_Package_Status N, " .
+              "Group_Nodes G " .
+              "WHERE P.id=S.package_id AND N.package_id=S.package_id ".
+              "AND G.node_id=N.node_id ";
+    $sql .= ($group_name?" AND G.group_name='$group_name' AND S.group_name='$group_name'":" AND S.group_name!='oscar_server'");          
+    print "DB_DEBUG>$0:\n====> in Database::get_packages_servicelists SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}    
+
+sub get_selected_group {
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT id, name From Groups " .
+              "WHERE Groups.selected=1 ";
+    my @results = ();
+    print "DB_DEBUG>$0:\n====> in Database::get_selected_group SQL : $sql\n" if $$options_ref{debug};
+    my $success = do_select($sql,\@results,$options_ref,$error_strings_ref);
+    my $answer = undef;
+    if ($success){
+        my $ref = pop @results;
+        $answer = $$ref{name};
+    }
+    return $answer;
+}
+
+sub get_selected_group_packages {
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref,
+        $group,
+        $flag) = @_;
+    $group = get_selected_group($options_ref,$error_strings_ref) if(!$group);    
+    $flag = 1 if(! $flag);
+    my $sql = "SELECT Packages.id, Packages.package, Packages.name, Packages.version " .
+              "From Packages, Group_Packages, Groups " .
+              "WHERE Packages.id=Group_Packages.package_id ".
+              "AND Group_Packages.group_name=Groups.name ".
+              "AND Groups.name='$group' ".
+              "AND Groups.selected=1 ".
+              "AND Group_Packages.selected=$flag";
+    print "DB_DEBUG>$0:\n====> in Database::get_selected_group_packages SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}
+
+sub get_unselected_group_packages {
+    my ($results_ref,
+        $options_ref,
+        $error_strings_ref,
+        $group) = @_;
+    return get_selected_group_packages($results_ref,$options_ref,
+                                       $error_strings_ref,$group,0);
+}
+
+sub get_group_packages_with_groupname {
+    my ($group,
+        $results_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT Packages.id, Packages.package " .
+              "From Packages, Group_Packages " .
+              "WHERE Packages.id=Group_Packages.package_id ".
+              "AND Group_Packages.group_name='$group'";
+    print "DB_DEBUG>$0:\n====> in Database::get_group_packages_with_groupname SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+}
+    
+sub get_node_package_status_with_group_node {
+    my ($group,
+        $node,
+        $results,
+        $options_ref,
+        $error_strings_ref) = @_;
+        my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+                 "From Packages, Group_Packages, Node_Package_Status, Nodes ".
+                 "WHERE Packages.id=Group_Packages.package_id " .
+                 "AND Group_Packages.group_name='$group' ".
+                 "AND Node_Package_Status.package_id=Packages.id ".
+                 "AND Node_Package_Status.node_id=Nodes.id ".
+                 "AND Nodes.name='$node'";
+    print "DB_DEBUG>$0:\n====> in Database::get_node_package_status_with_group_node SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_node_package_status_with_node {
+    my ($node,
+        $results,
+        $options_ref,
+        $error_strings_ref,
+        $requested,
+        $version) = @_;
+        my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+                 "From Packages, Node_Package_Status, Nodes ".
+                 "WHERE Node_Package_Status.package_id=Packages.id ".
+                 "AND Node_Package_Status.node_id=Nodes.id ".
+                 "AND Nodes.name='$node'";
+        if (defined $requested && $requested ne "") {
+            $sql .= " AND Node_Package_Status.requested=$requested ";
+        }
+        if (defined $version && $version ne "") {
+            $sql .= " AND Packages.version=$version ";
+        }
+    print "DB_DEBUG>$0:\n====> in Database::get_node_package_status_with_node SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_node_package_status_with_node_package {
+    my ($node,
+        $package,
+        $results,
+        $options_ref,
+        $error_strings_ref,
+        $requested,
+        $version) = @_;
+        my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+                 "From Packages, Node_Package_Status, Nodes ".
+                 "WHERE Node_Package_Status.package_id=Packages.id ".
+                 "AND Node_Package_Status.node_id=Nodes.id ".
+                 "AND Nodes.name='$node' AND Packages.package='$package'";
+        if(defined $requested && $requested ne ""){
+            $sql .= " AND Node_Package_Status.requested=$requested ";
+        }
+        if(defined $version && $version ne ""){
+            $sql .= " AND Packages.version=$version ";
+        }
+    print "DB_DEBUG>$0:\n====> in Database::get_node_package_status_with_node_package SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_installable_packages {
+    my ($results,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT Packages.id, Packages.package " .
+              "FROM Packages, Group_Packages " .
+              "WHERE Packages.id=Group_Packages.package_id ".
+              "AND Group_Packages.group_name='Default'";
+    print "DB_DEBUG>$0:\n====> in Database::get_installable_packages SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+
+sub get_groups_for_packages {
+    my ($results,
+        $options_ref,
+        $error_strings_ref,
+        $group)= @_;
+    my $sql ="SELECT distinct group_name FROM Group_Packages ";
+    if(defined $group){ $sql .= "WHERE group_name='$group'"; }
+    print "DB_DEBUG>$0:\n====> in Database::get_groups_for_packages SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_groups {
+    my ($results,
+        $options_ref,
+        $error_strings_ref,
+        $group)= @_;
+    my $sql ="SELECT * FROM Groups ";
+    if(defined $group){ $sql .= "WHERE name='$group'"; }
+    print "DB_DEBUG>$0:\n====> in Database::get_groups SQL : $sql\n" if $$options_ref{debug};
+    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
+        if! do_select($sql,$results, $options_ref, $error_strings_ref);
+    return $$results[0] if $group;    
+    return 0;
+}
+
+sub get_image_info_with_name {
+    my ($image,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Images WHERE name='$image'";
+    print "DB_DEBUG>$0:\n====> in Database::get_image_info_with_name SQL : $sql\n" if $$options_ref{debug};
+    my @images = ();
+    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
+        if! do_select($sql,\@images, $options_ref, $error_strings_ref);
+    return (@images?pop @images:undef);
+}
+
+sub get_gateway {
+    my ($node,
+        $interface,
+        $results,
+        $options_ref,
+        $error_strings_ref)= @_;
+    my $sql ="SELECT Networks.gateway FROM Networks, Nics, Nodes ".
+             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node'".
+             "AND Networks.n_id=Nics.network_id AND Nics.name='$interface'";
+    print "DB_DEBUG>$0:\n====> in Database::get_gateway SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+# This function returns the interface on the headnode that is on the same
+# network as the compute nodes, typically = ./install_cluster <iface>
+sub get_headnode_iface {
+    my ($options_ref,
+	$error_strings_ref) = @_;
+    my $cluster_ref = get_cluster_info_with_name("oscar", $options_ref, $error_strings_ref);
+    return $$cluster_ref{headnode_interface};
+}
+
+# Retrieve installation mode for cluster
+sub get_install_mode {
+    my ($options_ref,
+        $error_strings_ref) = @_;
+ 
+    my $cluster = "oscar";
+
+    my $cluster_ref = get_cluster_info_with_name($cluster, $options_ref, $error_strings_ref);
+    return $$cluster_ref{install_mode};
+}
+
+
+sub is_installed_on_node {
+    my ($package_name,
+        $node_name,
+        $options_ref,
+        $error_strings_ref,
+        $version,
+        $requested) = @_;
+    my @result = ();    
+    $requested = 7 if (!$requested);    
+    my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+             "From Packages, Node_Package_Status, Nodes ".
+             "WHERE Node_Package_Status.package_id=Packages.id ".
+             "AND Node_Package_Status.node_id=Nodes.id ".
+             "AND Packages.package='$package_name' ".
+             "AND Nodes.name=";
+    $sql .= ($node_name?"'$node_name'":"'oscar_server'"); 
+    if(defined $requested && $requested ne ""){
+        $sql .= " AND Node_Package_Status.requested=$requested ";
+    }
+    if(defined $version && $version ne ""){
+        $sql .= " AND Packages.version=$version ";
+    }
+    print "DB_DEBUG>$0:\n====> in Database::is_installed_on_node SQL : $sql\n" if $$options_ref{debug};
+    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
+        if! do_select($sql,\@result, $options_ref, $error_strings_ref);
+    return (@result?1:0);    
+}
+
+
+#
+# list_installable_packages - this returns a list of installable packages.
+#
+# You may specify "core", "noncore", or "all" as the first argument to
+# get a list of core, noncore, or all packages (respectively).  If no
+# argument is given, "all" is implied.
+#
+# EF: Moved here from Package.pm
+
+sub list_installable_packages {
+    my $type = shift;
+
+    # If no argument was specified, use "all"
+
+    $type = "all" if ((!(defined $type)) || (!$type));
+
+    # make the database command and do the database read
+
+    my $command_args;
+    if ( $type eq "all" ) {
+      $command_args = "packages_installable";
+    } elsif ( $type eq "core" ) {
+      $command_args = "packages_installable packages.class=core";
+    } else {
+      $command_args = "packages_installable packages.class!=core";
+    }
+    my @packages = ();
+    my @tables = ("packages", "oda_shortcuts");
+    print "DB_DEBUG>$0:\n====> in Database::list_installable_packages SQL : $command_args\n" if $$options_ref{debug};
+    if ( OSCAR::Database::single_dec_locked( $command_args,
+                                                    "READ",
+                                                    \@tables,
+                                                    \@packages,
+                                                    undef) ) {
+      return @packages;
+    } else {
+      warn "Cannot read installable packages list from the ODA database.";
+      return undef;
+    }
+}
+
+
+#########################################################################
+#
+#       Delete/Insert/Update SQL query: database subroutines
+#
+#########################################################################
+
+sub delete_group_node {
+    my ($node_id,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "DELETE FROM Group_Nodes WHERE node_id=$node_id";
+    print "DB_DEBUG>$0:\n====> in Database::delete_group_node SQL : $sql\n" if $$options_ref{debug};
+    return do_update($sql,"Group_Nodes", $options_ref, $error_strings_ref);
+}
+
+sub delete_group_packages {
+    my ($group,
+        $opkg,
+        $options_ref,
+        $error_strings_ref,
+        $ver) = @_;
+
+    my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+    my $package_id = $$package_ref{id};
+    if($package_id){
+        my $sql = "UPDATE Group_Packages SET selected=0 ".
+            "WHERE group_name='$group' AND package_id=$package_id";
+        print "DB_DEBUG>$0:\n====> in Database::delete_group_packages SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to delete values via << $sql >>"
+            if! do_update($sql,"Group_Packages", $options_ref, $error_strings_ref);
+        update_node_package_status_with_opkg(
+              $options_ref,"oscar_server",$opkg,0,$error_strings_ref);
+    }      
+    return 1;    
+}
+
+sub delete_groups {
+    my ($group,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    get_groups(\@results,$options_ref,$error_strings_ref,$group);
+    if(!@results){
+        my $sql = "DELETE FROM Groups WHERE name='$group'";
+        print "DB_DEBUG>$0:\n====> in Database::delete_groups SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to delete values via << $sql >>"
+            if! do_update($sql,"Groups", $options_ref, $error_strings_ref);
+    }    
+    return 1;
+}
+sub delete_package {
+    my ($package_name,
+        $options_ref,
+        $error_strings_ref,
+        $package_version) = @_;
+    my $sql = "DELETE FROM Packages WHERE package='$package_name' ";
+    print "DB_DEBUG>$0:\n====> in Database::delete_package SQL : $sql\n" if $$options_ref{debug};
+    $sql .= ($package_version?"AND version='$package_version'":"");
+    return do_update($sql,"Packages", $options_ref, $error_strings_ref);
+}    
+
+sub delete_node {
+    my ($node_name,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $node_ref = get_node_info_with_name($node_name,$options_ref,$error_strings_ref);    
+    my $node_id = $$node_ref{id};
+    return 1 if !$node_id;
+
+    delete_group_node($node_id,$options_ref,$error_strings_ref);
+    delete_node_packages($node_id,$options_ref,$error_strings_ref);
+    my $sql = "DELETE FROM Nodes ";
+    print "DB_DEBUG>$0:\n====> in Database::delete_node SQL : $sql\n" if $$options_ref{debug};
+    $sql .= ($node_name?"WHERE name='$node_name'":"");
+    return do_update($sql,"Nodes", $options_ref, $error_strings_ref);
+}    
+
+sub delete_node_packages {
+    my ($node_id,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "DELETE FROM Node_Packages WHERE node_id=$node_id";
+    print "DB_DEBUG>$0:\n====> in Database::delete_node_packages SQL : $sql\n" if $$options_ref{debug};
+    die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
+        if! do_update($sql,"Node_Packages", $options_ref, $error_strings_ref);
+    $sql = "DELETE FROM Node_Package_Status WHERE node_id=$node_id";
+    print "DB_DEBUG>$0:\n====> in Database::delete_node_packages SQL : $sql\n" if $$options_ref{debug};
+    return do_update($sql,"Node_Package_Status", $options_ref, $error_strings_ref);
+}
+
+
+sub insert_packages {
+    my ($passed_ref, $table,
+        $name,$path,$table_fields_ref,
+        $passed_options_ref,$passed_error_strings_ref) = @_;
+
+    # take care of faking any non-passed input parameters, and
+    # set any options to their default values if not already set
+    my ( $options_ref, $error_strings_ref ) = fake_missing_parameters
+    ( $passed_options_ref, $passed_error_strings_ref );        
+    my $sql = "INSERT INTO $table ( ";
+    my $sql_values = " VALUES ( ";
+    my $flag = 0;
+    my $comma = "";
+    $sql .= "path, package, ";
+    $sql_values .= "'$path', '$name', ";
+    foreach my $key (keys %$passed_ref){
+        # If a field name is "group", "__" should be added
+        # in front of $key to avoid the conflict of reserved keys
+
+        $key = ( $key eq "maintainer" || $key eq "packager"?$key . "_name":$key );
+        
+        if( $$table_fields_ref{$table}->{$key} && $key ne "package-specific-attribute"){
+            $key = ( $key eq "group"?"__$key":$key);
+            $key = ( $key eq "class"?"__$key":$key);
+            $comma = ", " if $flag;
+            $sql .= "$comma $key";
+            $flag = 1;
+            $key = ( $key eq "__group"?"group":$key);
+            $key = ( $key eq "__class"?"class":$key);
+            my $value;
+            if( $key eq "version" ){
+                my $ver_ref = $passed_ref->{$key};
+                $value = "$ver_ref->{major}.$ver_ref->{minor}" .
+                    ($ver_ref->{subversion}?".$ver_ref->{subversion}":"") .
+                    "-$ver_ref->{release}";
+                $value =~ s#'#\\'#g;    
+                my @pkg_versions=( "major","minor","subversion",
+                                    "release", "epoch" );
+                $value = "$value', "; 
+                foreach my $ver (@pkg_versions){
+                    my $tmp_value = $ver_ref->{$ver};
+                    if(! $tmp_value ){
+                        $tmp_value = "";
+                    }else{
+                        $tmp_value =~ s#'#\\'#g;
+                    }
+                    $value .=
+                        ( $ver ne "epoch"?"'$tmp_value', ":"'$tmp_value");
+                    $sql .= ", version_$ver";
+                }    
+            }elsif ( $key eq "maintainer_name" || $key eq "packager_name" ){
+                $key = ($key eq "maintainer_name"?"maintainer":"packager");
+                $sql .= ", $key" .  "_email";
+                $value = $passed_ref->{$key}->{name} . "', '"
+                        . $passed_ref->{$key}->{email}; 
+            }else{
+                $value = ($passed_ref->{$key}?trimwhitespace($passed_ref->{$key}):""); 
+                $value =~ s#'#\\'#g;
+            }
+            $sql_values .= "$comma '$value'";
+        }
+    }
+    $sql .= ") $sql_values )\n";
+
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::insert_packages SQL : $sql\n";
+    print "$debug_msg" if $$options_ref{debug};
+    push @$error_strings_ref, $debug_msg;
+
+    print "DB_DEBUG>$0:\n====> in Database::insert_packages: Inserting package($name) into Packages\n" if $$options_ref{verbose};
+    my $success = oda::do_sql_command($options_ref,
+            $sql,
+            "INSERT Table into $table",
+            "Failed to insert values into $table table",
+            $error_strings_ref);
+    $error_strings_ref = \@error_strings;
+    return  $success;
+}
+
+sub insert_pkg_rpmlist {
+    my ($passed_ref,$table,$package_id,$options_ref,$error_strings_ref) = @_;
+    my $sql = "INSERT INTO $table ( ";
+    my $sql_values = " VALUES ( ";
+    
+    my $group_name = "";
+    my $group_arch = "";
+    my $distro = "";
+    my $distro_version = "";
+    $sql .= "package_id";
+    $sql_values .= "'$package_id'";
+
+    my $filter;
+    if( ref($passed_ref) eq "ARRAY") {
+        foreach my $ref (@$passed_ref){
+            $filter = $ref->{filter};
+            if ( ref($ref->{filter}) eq "ARRAY" ){
+                foreach my $each_filter (@$filter){
+                    insert_pkg_rpmlist_helper($sql, $sql_values, $each_filter, $ref, $table);
+                }
+            }else{
+                insert_pkg_rpmlist_helper($sql, $sql_values, $filter, $ref, $table);
+            }
+        }
+    }else{
+        $filter = $passed_ref->{filter};
+        if ( ref($passed_ref->{filter}) eq "ARRAY" ){
+            foreach my $each_filter (@$filter){
+                insert_pkg_rpmlist_helper($sql, $sql_values, $each_filter, $passed_ref, $table);
+            }
+        }else{
+            insert_pkg_rpmlist_helper($sql, $sql_values, $filter, $passed_ref, $table,$options_ref,$error_strings_ref);
+        }
+    }   
+}
+
+sub insert_pkg_rpmlist_helper {
+    my ($sql, $sql_values, $filter, $passed_ref, $table,$options_ref,$error_strings_ref) = @_;
+    my $group_name = ($filter->{group}?$filter->{group}:"all");
+    my $group_arch = ($filter->{architecture}?$filter->{architecture}:"all");
+    my $distro = ($filter->{distribution}->{name}?$filter->{distribution}->{name}:"all");
+    my $distro_version = ($filter->{distribution}->{version}?$filter->{distribution}->{version}:"all");
+    my $inner_sql = "$sql, group_name, group_arch, distro, distro_version"; 
+    my $inner_sql_values = "$sql_values, '$group_name','$group_arch','$distro','$distro_version'"; 
+    insert_rpms( $inner_sql, $inner_sql_values, $passed_ref, $table,$options_ref,$error_strings_ref);
+}
+
+sub insert_rpms {
+    my ($sql, $sql_values, $passed_ref, $table, $options_ref, $error_strings_ref) = @_;
+    my $rpm;
+    print "DB_DEBUG>$0:\n====> in Database::insert_rpms : Inserting the entries of Packages_rpmlists\n"
+        if $$options_ref{verbose};
+    if (ref($passed_ref) eq "ARRAY"){
+        foreach my $ref (@$passed_ref){
+            $rpm = $ref->{pkg};
+            if ( ref($rpm) eq "ARRAY" ){
+                foreach my $each_rpm (@$rpm){
+                    my $inner_sql_values = "$sql_values, '$each_rpm' ";
+                    my $inner_sql = "$sql, rpm ) $inner_sql_values)";
+                    print "DB_DEBUG>$0:\n====> in Database::insert_rpms SQL : $inner_sql\n" if $$options_ref{debug};
+                    do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
+                }
+            }else{
+                my $inner_sql_values = "$sql_values, '". trimwhitespace($rpm)."' ";
+                my $inner_sql .= "$sql, rpm ) $inner_sql_values )\n";
+                print "DB_DEBUG>$0:\n====> in Database::insert_rpms SQL : $inner_sql\n" if $$options_ref{debug};
+                do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
+            }
+        }    
+    }else{
+        $rpm = $passed_ref->{pkg};
+        if ( ref($rpm) eq "ARRAY" ){
+            foreach my $each_rpm (@$rpm){
+                my $inner_sql_values = "$sql_values, '$each_rpm' ";
+                my $inner_sql = "$sql, rpm ) $inner_sql_values)";
+                print "DB_DEBUG>$0:\n====> in Database::insert_rpms SQL : $inner_sql\n" if $$options_ref{debug};
+                do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
+            }
+        }else{
+            my $inner_sql_values = "$sql_values, '". trimwhitespace($rpm)."' ";
+            my $inner_sql .= "$sql, rpm ) $inner_sql_values )\n";
+            print "DB_DEBUG>$0:\n====> in Database::insert_rpms SQL : $inner_sql\n" if $$options_ref{debug};
+            do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
+        }
+    }    
+}
+
+
+#=======================================================================
+#
+# links a node nic to a network in the database
+
+sub link_node_nic_to_network {
+
+    my ( $node_name, $nic_name, $network_name, $options_ref, $error_strings_ref ) = @_;
+
+    my $sql = "SELECT Nodes.id, Networks.n_id FROM Nodes, Networks WHERE Nodes.name='$node_name' AND Networks.name='$network_name' ";
+    my @results = ();
+    my @error_strings = ();
+    oda::do_query(\%options,
+                $sql,
+                \@results,
+                \@error_strings);
+    my $res_ref = pop @results;
+    my $node_id = $$res_ref{"id"};
+    my $network_id = $$res_ref{"n_id"};
+    my $command =
+    "UPDATE Nics SET network_id=$network_id WHERE name='$nic_name' AND node_id=$node_id ";
+    print "DB_DEBUG>$0:\n====> in Database::link_node_nic_to_network linking node $node_name nic $nic_name to network $network_name using command <$command>\n"
+    if $$options_ref{debug};
+    print "DB_DEBUG>$0:\n====> in Database::link_node_nic_to_network Linking node $node_name nic $nic_name to network $network_name.\n"
+        if $$options_ref{verbose} && ! $$options_ref{debug};
+    
+    return do_update($command,"Nics",$options_ref,$error_strings_ref);
+}
+
+
+
+sub update_node {
+    my ($node,
+        $field_value_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "UPDATE Nodes SET ";
+    my $flag = 0;
+    my $comma = "";
+    while ( my($field,$value) = each %$field_value_ref ){
+        $comma = "," if $flag;
+        $sql .= "$comma $field='$value'";
+        $flag = 1;
+    }    
+    $sql .= " WHERE name='$node' ";
+    print "DB_DEBUG>$0:\n====> in Database::update_node SQL : $sql\n" if $$options_ref{debug};
+    return  do_update($sql,"Nodes", $options_ref, $error_strings_ref);
+}
+
+# For normal oscar package installation, 
+# the value of  "requested" filed has the following.
+# 0 : should not be installed.
+# 1 : should be installed
+# 7 : finished
+sub update_node_package_status {
+    my ($options_ref,
+        $node,
+        $packages,
+        $requested,
+        $error_strings_ref) = @_;
+    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
+    my $node_id = $$node_ref{id};
+    foreach my $pkg_ref (@$packages) {
+        my $opkg = $$pkg_ref{package};
+        my $ver = $$pkg_ref{version};
+        my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+        my $package_id = $$package_ref{id};
+        my %field_value_hash = ("requested" => $requested);
+        my $where = "WHERE package_id=$package_id AND node_id=$node_id";
+        if( $requested == 7 && 
+            ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ){
+            print "DB_DEBUG>$0:\n====> in Database::update_node_package_status Updating the status of $opkg to \"installed\".\n";
+        } elsif ( $requested == 1 && 
+            ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
+            print "DB_DEBUG>$0:\n====> in Database::update_node_package_status Updating the status of $opkg to \"should be installed\".\n";
+        } elsif ( $requested == 0 && 
+            ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
+            print "DB_DEBUG>$0:\n====> in Database::update_node_package_status Updating the status of $opkg to \"should not be installed\".\n";
+        }
+        my @results = ();
+        my $table = "Node_Package_Status";
+        get_node_package_status_with_node_package($node,$opkg,\@results,$options_ref,$error_strings_ref);
+        if (@results) {
+            die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
+                if(!update_table($options_ref,$table,\%field_value_hash, $where, $error_strings_ref));
+        } else {
+            %field_value_hash = ("node_id" => $node_id,
+                                 "package_id"=>$package_id,
+                                 "requested" => $requested);
+            die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
+                if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
+        }
+        $table = "Node_Packages";
+        delete_table($options_ref,$table,$where,$error_strings_ref);
+        %field_value_hash = ("node_id" => $node_id,
+                             "package_id"=>$package_id);
+        die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
+            if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
+    }
+    return 1;
+}
+
+sub update_node_package_status_with_opkg {
+    my ($options_ref,
+        $node,
+        $opkg,
+        $requested,
+        $error_strings_ref,
+        $ver) = @_;
+    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
+    my $node_id = $$node_ref{id};
+    my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+    my $package_id = $$package_ref{id};
+    my %field_value_hash = ("requested" => $requested);
+    my $where = "WHERE package_id=$package_id AND node_id=$node_id";
+    if( $requested == 7 && 
+        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ){
+        print "DB_DEBUG>$0:\n====> in Database::update_node_package_status_with_opkg Updating the status of $opkg to \"installed\".\n";
+    } elsif ( $requested == 1 && 
+        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
+        print "DB_DEBUG>$0:\n====> in Database::update_node_package_status_with_opkg Updating the status of $opkg to \"should be installed\".\n";
+    } elsif ( $requested == 0 && 
+        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
+        print "DB_DEBUG>$0:\n====> in Database::update_node_package_status_with_opkg Updating the status of $opkg to \"should not be installed\".\n";
+    }
+    die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
+        if(!update_table($options_ref,"Node_Package_Status",\%field_value_hash, $where, $error_strings_ref));
+
+    my $table = "Node_Packages";
+    delete_table($options_ref,$table,$where,$error_strings_ref);
+    %field_value_hash = ("node_id" => $node_id,
+                         "package_id"=>$package_id);
+    die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
+        if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
+}
+
+sub update_packages {
+    my ($passed_ref, $table,$package_id,
+        $name,$path,$table_fields_ref,
+        $options_ref,$error_strings_ref) = @_;
+    my $sql = "UPDATE $table SET ";
+    my $sql_values = " VALUES ( ";
+    my $flag = 0;
+    my $comma = "";
+    $sql .= "path='$path', package='$name', ";
+    foreach my $key (keys %$passed_ref){
+        # If a field name is "group", "__" should be added
+        # in front of $key to avoid the conflict of reserved keys
+
+        $key = ( $key eq "maintainer" || $key eq "packager"?$key . "_name":$key );
+        
+        if( $$table_fields_ref{$table}->{$key} && $key ne "package-specific-attribute"){
+            $comma = ", " if $flag;
+            $key = ( $key eq "group"?"__$key":$key);
+            $key = ( $key eq "class"?"__$key":$key);
+            $sql .= "$comma $key=";
+            $flag = 1;
+            $key = ( $key eq "__group"?"group":$key);
+            $key = ( $key eq "__class"?"class":$key);
+            my $value;
+            if( $key eq "version" ){
+                my $ver_ref = $passed_ref->{$key};
+                $value = "$ver_ref->{major}.$ver_ref->{minor}" .
+                    ($ver_ref->{subversion}?".$ver_ref->{subversion}":"") .
+                    "-$ver_ref->{release}";
+                $value =~ s#'#\\'#g;    
+                my @pkg_versions=( "major","minor","subversion",
+                                    "release", "epoch" );
+                $sql .="'$value', "; 
+                foreach my $ver (@pkg_versions){
+                    my $tmp_value = $ver_ref->{$ver};
+                    if(! $tmp_value ){
+                        $tmp_value = "";
+                    }else{
+                        $tmp_value =~ s#'#\\'#g;
+                    }
+                    $value =
+                        ( $ver ne "epoch"?"'$tmp_value', ":"'$tmp_value'");
+                    $sql .= " version_$ver=$value";
+                }    
+            }elsif ( $key eq "maintainer_name" || $key eq "packager_name" ){
+                $key = ($key eq "maintainer_name"?"maintainer":"packager");
+                $sql .= "'". $passed_ref->{$key}->{name}. "', $key" .
+                     "_email='". $passed_ref->{$key}->{email} . "'";
+            }else{
+                $value = ($passed_ref->{$key}?trimwhitespace($passed_ref->{$key}):""); 
+                $value =~ s#'#\\'#g;
+                $sql .= "'$value'";
+            }
+        }
+    }
+    $sql .= " WHERE id=$package_id\n";
+
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::update_packages SQL : $sql\n";
+    print "$debug_msg" if $$options_ref{debug};
+    push @$error_strings_ref, $debug_msg;
+
+    my $success = oda::do_sql_command($options_ref,
+                    $sql,
+                    "UPDATE Table, $table",
+                    "Failed to update $table table",
+                    $error_strings_ref);
+    $error_strings_ref = \@error_strings;
+    return $success;
+}
+
+sub set_all_groups {
+    my ($groups_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Groups";
+    print "DB_DEBUG>$0:\n====> in Database::set_all_groups SQL : $sql\n" if $$options_ref{debug};
+    my @groups = ();
+    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
+        if! do_select($sql,\@groups, $options_ref, $error_strings_ref);
+    if(!@groups){ 
+        foreach my $group (keys %$groups_ref){
+            set_groups($group,$options_ref,$error_strings_ref,$$groups_ref{$group});
+        }
+    }
+    return 1;
+}
+
+sub set_group_nodes {
+    my ($group,
+        $nodes_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @groups = ();
+    my $group_ref = get_groups(\@groups, $options_ref,$error_strings_ref,$group);
+    my $group_id = $$group_ref{id};
+    my %field_value_hash = ( "group_id" => $group_id );
+    my $success = 0;
+    foreach my $node (@$nodes_ref){
+        my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);    
+        my $node_id = $$node_ref{id};
+        my $sql = "SELECT * FROM Group_Nodes WHERE group_name='$group' ".
+                  "AND node_id=$node_id";
+        my @results = ();
+        print "DB_DEBUG>$0:\n====> in Database::set_group_nodes SQL : $sql\n" if $$options_ref{debug};
+        do_select($sql,\@results,$options_ref,$error_strings_ref);
+        if(!@results){
+            $sql = "INSERT INTO Group_Nodes VALUES('$group', $node_id )";
+            print "DB_DEBUG>$0:\n====> in Database::set_group_nodes SQL : $sql\n" if $$options_ref{debug};
+            $success = do_insert($sql,"Group_Nodes",$options_ref,$error_strings_ref);
+            $success = update_node($node,\%field_value_hash,$options_ref,$error_strings_ref);
+            last if ! $success;
+        }    
+    }    
+    return $success;              
+}
+
+sub set_group_packages {
+    my ($group,
+        $package,
+        $selected,
+        $options_ref,
+        $error_strings_ref) = @_;
+    $group = get_selected_group($options_ref,$error_strings_ref)
+        if(!$group);
+    my @results = ();    
+    my $sql = "SELECT Packages.id, Packages.package " .
+              "From Packages, Group_Packages " .
+              "WHERE Packages.id=Group_Packages.package_id ".
+              "AND Group_Packages.group_name='$group' " .
+              "AND Packages.package='$package'";
+    print "DB_DEBUG>$0:\n====> in Database::set_group_packages SQL : $sql\n" if $$options_ref{debug};
+    do_select($sql,\@results,$options_ref,$error_strings_ref);
+    if (!@results){
+        $sql = "INSERT INTO Group_Packages (group_name, package_id, selected) ".
+               "SELECT '$group', id, $selected FROM Packages ".
+               "WHERE package='$package'";
+        print "DB_DEBUG>$0:\n====> in Database::set_group_packages SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
+            if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
+    }else{
+        my $result_ref = pop @results;
+        my $package_id = $$result_ref{id};
+        $sql = "UPDATE Group_Packages SET selected=$selected ".
+            "WHERE group_name='$group' ".
+            "AND package_id='$package_id'";
+        print "DB_DEBUG>$0:\n====> in Database::set_group_packages SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
+            if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
+    }
+    update_node_package_status_with_opkg(
+          $options_ref,"oscar_server",$package,$selected,$error_strings_ref);
+    return 1;
+}
+
+sub set_groups {
+    my ($group,
+        $options_ref,
+        $error_strings_ref,
+        $type) = @_;
+    $type = "package" if ! $type;
+    my @results = ();
+    get_groups(\@results,$options_ref,$error_strings_ref,$group);
+    if(!@results){
+        my $sql = "INSERT INTO Groups (name,type) VALUES ('$group','$type')";
+        print "DB_DEBUG>$0:\n====> in Database::set_groups SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
+    }    
+    return 1;
+}
+
+sub set_groups_selected {
+    my ($group,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my @results = ();
+    get_groups(\@results,$options_ref,$error_strings_ref,$group);
+    if(@results){
+        # Initialize the "selected" flag (selected = 0)
+        my $sql = "UPDATE Groups SET selected=0";
+        print "DB_DEBUG>$0:\n====> in Database::set_groups_selected SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
+            if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
+
+        # Set the seleted group to have "selected" flag
+        # (selected = 1)
+        $sql = "UPDATE Groups SET selected=1 WHERE name='$group'";
+        print "DB_DEBUG>$0:\n====> in Database::set_groups_selected SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
+            if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
+    }    
+    return 1;
+}
+
+sub set_image_packages {
+    my ($image,
+        $package,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $image_ref = get_image_info_with_name($image,$options_ref,$error_strings_ref);
+    croak("Image $image not found in OSCAR Database") unless ($image_ref);
+    my $image_id = $$image_ref{id};
+    my $package_ref = get_package_info_with_name($package,$options_ref,$error_strings_ref);
+    my $package_id = $$package_ref{id};
+    my $sql = "SELECT * FROM Image_Packages WHERE image_id=$image_id AND package_id=$package_id";
+    print "DB_DEBUG>$0:\n====> in Database::set_image_packages SQL : $sql\n" if $$options_ref{debug};
+    my @images = ();
+    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
+        if! do_select($sql,\@images, $options_ref, $error_strings_ref);
+    if(!@images){ 
+        $sql = "INSERT INTO Image_Packages (image_id,package_id) VALUES ".
+            "($image_id,$package_id)";
+        print "DB_DEBUG>$0:\n====> in Database::set_image_packages SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Image_Packages", $options_ref, $error_strings_ref);
+    }
+    return 1;
+}    
+
+sub set_images{
+    my ($image_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $imgname = $$image_ref{name};
+    my $architecture = $$image_ref{architecture};
+    my $images = get_image_info_with_name($imgname,$options_ref,$error_strings_ref);
+    my $imagepath = $$image_ref{path};
+    my $sql = "";
+    if(!$images){ 
+        $sql = "INSERT INTO Images (name,architecture,path) VALUES ".
+            "('$imgname','$architecture','$imagepath')";
+        print "DB_DEBUG>$0:\n====> in Database::set_images SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Images", $options_ref, $error_strings_ref);
+    }else{
+        $sql = "UPDATE Images SET name='$imgname', ". 
+               "architecture='$architecture', path='$imagepath' WHERE name='$imgname'";
+        print "DB_DEBUG>$0:\n====> in Database::set_images SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
+            if! do_update($sql,"Images", $options_ref, $error_strings_ref);
+    }
+    return 1;
+}
+
+# Set installation mode for cluster
+sub set_install_mode {
+    my ($install_mode,
+        $options_ref,
+        $error_strings_ref) = @_;
+
+    my $cluster = "oscar";
+    my $sql = "UPDATE Clusters SET install_mode='$install_mode' WHERE name ='$cluster'";
+
+    print "DB_DEBUG>$0:\n====> in Database::set_install_mode SQL : $sql\n" if $$options_ref{debug};
+    return do_update($sql, "Clusters", $options_ref, $error_strings_ref);
+}
+
+
+sub set_node_with_group {
+    my ($node,
+        $group,
+        $options_ref,
+        $error_strings_ref,
+        $cluster_name) = @_;
+    my $sql = "SELECT name FROM Nodes WHERE name='$node'";
+    my @nodes = ();
+    print "DB_DEBUG>$0:\n====> in Database::set_node_with_group SQL : $sql\n" if $$options_ref{debug};
+    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
+        if! do_select($sql,\@nodes, $options_ref, $error_strings_ref);
+    if(!@nodes){ 
+        $cluster_name = $CLUSTER_NAME if !$cluster_name;
+        my $cluster_ref = get_cluster_info_with_name($cluster_name,$options_ref, $error_strings_ref);
+        my $cluster_id = $$cluster_ref{id} if $cluster_ref;
+        $sql = "INSERT INTO Nodes (cluster_id, name, group_id) ".
+               "SELECT $cluster_id, '$node', id FROM Groups WHERE name='$group'";
+        print "DB_DEBUG>$0:\n====> in Database::set_node_with_group SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
+    }
+    return 1;
+}
+
+sub set_nics_with_node {
+    my ($nic,
+        $node,
+        $field_value_ref,
+        $options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT Nics.* FROM Nics, Nodes WHERE Nodes.id=Nics.node_id " .
+              "AND Nics.name='$nic' AND Nodes.name='$node'";
+    print "DB_DEBUG>$0:\n====> in Database::set_nics_with_node SQL : $sql\n" if $$options_ref{debug};
+    my @nics = ();
+    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
+        if! do_select($sql,\@nics, $options_ref, $error_strings_ref);
+
+    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
+    my $node_id = $$node_ref{id};
+    if(!@nics){ 
+        $sql = "INSERT INTO Nics ( name, node_id ";
+        my $sql_value = " VALUES ('$nic', $node_id ";
+        if( $field_value_ref ){
+            while (my ($field, $value) = each %$field_value_ref){
+                $sql .= ", $field";
+                $sql_value .= ", '$value'";
+            }
+        }
+        $sql .= " ) $sql_value )";
+        print "DB_DEBUG>$0:\n====> in Database::set_nics_with_node SQL : $sql\n" if $$options_ref{debug};
+        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
+    }else{
+        $sql = "UPDATE Nics SET ";
+        my $flag = 0;
+        my $comma = "";
+        if( $field_value_ref ){
+            while (my ($field, $value) = each %$field_value_ref){
+                $comma = ", " if $flag;
+                $sql .= "$comma $field='$value'";
+                $flag = 1;
+            }
+            $sql .= " WHERE name='$nic' AND node_id=$node_id ";
+            print "DB_DEBUG>$0:\n====> in Database::set_nics_with_node SQL : $sql\n" if $$options_ref{debug};
+            die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
+                if! do_update($sql,"Nics", $options_ref, $error_strings_ref);
+        }
+    }
+    return 1;
+}
+
+sub set_status {
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Status";
+    print "DB_DEBUG>$0:\n====> in Database::set_status SQL : $sql\n" if $$options_ref{debug};
+    my @status = ();
+    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
+        if! do_select($sql,\@status, $options_ref, $error_strings_ref);
+    if(!@status){ 
+        foreach my $status ("installable", "installed",
+                            "install_allowed","should_be_installed", 
+                            "should_be_uninstalled","uninstalled",
+                            "finished"){
+            $sql = "INSERT INTO Status (name) VALUES ('$status')";
+            print "DB_DEBUG>$0:\n====> in Database::set_status SQL : $sql\n" if $$options_ref{debug};
+            die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
+                if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
+        }
+    }
+    return 1;
+}
+
+
+
+#########################################################################
+#
+#       Miscellaneous database subroutines
+#
+#########################################################################
+
+
+
+#********************************************************************#
+#********************************************************************#
+#                                                                    #
+# internal function to fill in any missing function parameters       #
+#                                                                    #
+#********************************************************************#
+#********************************************************************#
+# inputs:  options            optional reference to options hash
+#          error_strings_ref  optional reference to array for errors
+
+sub fake_missing_parameters {
+    my (  $passed_options_ref,
+          $passed_error_strings_ref ) = @_;
+
+    my %options = ( 'debug'         => 0,
+                    'raw'           => 0,
+                    'verbose'       => 0 );
+    # take care of faking any non-passed input parameters, and
+    # set any options to their default values if not already set
+    my @ignored_error_strings;
+    my $error_strings_ref = ( defined $passed_error_strings_ref ) ?
+    $passed_error_strings_ref : \@ignored_error_strings;
+
+    my $options_ref;
+    if (ref($passed_options_ref) eq "HASH" && defined $passed_options_ref){
+        $options_ref = $passed_options_ref;
+    } else {
+        $options_ref = \%options;
+    }
+
+    print "DB_DEBUG>$0:\n====> in Database.pm::fake_missing_parameters handling"
+        . " the missing parameters"
+        if $$options_ref{verbose};
+
+    return ( $options_ref,
+         $error_strings_ref );
+}
+
+
+sub print_error_strings {
+    my $passed_errors_ref = shift;
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $passed_errors_ref && 
+                  ref($passed_errors_ref) eq "ARRAY" ) ?
+                  $passed_errors_ref : \@error_strings;
+
+    if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    $error_strings_ref = \@error_strings;
+}
+
+
+sub trimwhitespace($)
+{
+    my $string = shift;
+    $string =~ s/^\s+//;
+    $string =~ s/\s+$//;
+    return $string;
+}
+
+
+
+#########################################################################
+#
+#       LOCK / UNLOCK database subroutines
+#
+#########################################################################
+
+#
+# NEST
+# This subroutine is renamed from database_execute_command and represents
+# the $command_args_ref in the subroutine is already locked in the outer lock block.
+# Basically this subroutine is the exactly same as database_execute_command
+# except for its name.
+#
+sub dec_already_locked {
+
+    my ( $sql_command,
+     $passed_errors_ref ) = @_;
+
+    # sometimes this is called without a database_connected being 
+    # called first, so we have to connect first if that is the case
+    ( my $was_connected_flag = $database_connected ) ||
+	database_connect( undef, $passed_errors_ref ) ||
+        return undef;
+
+    # execute the command
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $passed_errors_ref && 
+                  ref($passed_errors_ref) eq "ARRAY" ) ?
+                  $passed_errors_ref : \@error_strings;
+    my $success =  oda::do_sql_command( $options_ref,
+                                $sql_command,
+                                undef,
+                                undef,
+                                $error_strings_ref );
+    if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
+    warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+
+    # if we weren't connected to the database when called, disconnect
+    database_disconnect() if ! $was_connected_flag;
+
+    return $success;
+}
 
 #********************************************************************#
 #********************************************************************#
@@ -1485,1520 +3008,57 @@ sub unlock {
 }
 
 
-sub insert_into_table {
-    my ($options_ref,$table,$field_value_ref,$error_strings_ref) = @_;
-    my $sql = "INSERT INTO $table ( ";
-    my $sql_values = " VALUES ( ";
-    
-    my $flag = 0;
-    my $comma = "";
-    while ( my($field, $value) = each %$field_value_ref ){
-        $comma = ", " if $flag;
-        $sql .= "$comma $field";
-        $flag = 1;
-        $value = ($value eq "NOW()"?$value:"'$value'");
-        $sql_values .= "$comma $value";
-    }    
-    $sql .= ") $sql_values )";
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::insert_into_table SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $error_msg = "Failed to insert values to $table table";
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "Insert Table $table",
-            $error_msg,
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-sub delete_table {
-    my ($options_ref,$table,$where,$error_strings_ref) = @_;
-    my $sql = "DELETE FROM $table ";
-    $where = $where?$where:"";
-    $sql .= " $where ";
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::delete_table SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $error_msg = "Failed to delete values from $table table";
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "DELETE Table $table",
-            $error_msg,
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-
-
-sub update_table {
-    my ($options_ref,$table,$field_value_ref,$where,$error_strings_ref) = @_;
-    my $sql = "UPDATE $table SET ";
-    my $flag = 0;
-    my $comma = "";
-    while ( my($field, $value) = each %$field_value_ref ){
-        $comma = ", " if $flag;
-        $value = ($value eq "NOW()"?$value:"'$value'");
-        $sql .= "$comma $field=$value";
-        $flag = 1;
-    }
-    $where = $where?$where:"";
-    $sql .= " $where ";
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::update_table SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-    my $error_msg = "Failed to update values to $table table";
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "UPDATE Table $table",
-            $error_msg,
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-sub select_table {
-    my ($options_ref,$table,$field_ref,$where,$result,$error_strings_ref) = @_;
-    my $sql = "SELECT ";
-    my $flag = 0;
-    my $comma = "";
-    foreach my $field (@$field_ref){
-        $comma = ", " if $flag;
-        $sql .= "$comma $field";
-        $flag = 1;
-    }
-    $where = $where?$where:"";
-    if(ref($where) eq "HASH"){
-        $flag = 0;
-        my $and = "";
-        my $where_str = " WHERE ";
-        while (my ($key, $value) = each %$where){
-            $and = "AND " if $flag;
-            $where_str .= "$and $key='$value' ";
-            $flag = 1;
-        }
-        $where = $where_str;
-    }
-    $sql .= " FROM $table $where ";
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::select_table SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $error_msg = "Failed to query values from $table table";
-    push @$error_strings_ref, $error_msg;
-    my $success = oda::do_query($options_ref,
-            $sql,
-            $result,
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-sub create_table {
-     my ($options_ref, $error_strings_ref) = @_;
-        
-    my $sql_dir = "$ENV{OSCAR_HOME}/share/prereqs/oda";
-    my $sql_file = "$sql_dir/oscar_table.sql";
-    
-    print "DB_DEBUG>$0:\n====> in Database::create_table uses the SQL statement which are already defined at $sql_file" if $$options_ref{verbose};
-    my $cmd = "mysql -u root oscar < $sql_file";
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::create_table runs the command : $cmd\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $success = oda::do_shell_command($options_ref, "$cmd", $error_strings_ref);
-
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}    
-
-######################################################
-# Three main query subroutines
 #
-#   - do_select
-#   - do_insert
-#   - do_update
+# NEST
+# This is locking a single database_execute_command with some argurments
+# Basically Lock -> 1 oda::execute_command -> unlock
+# $type_of_lock is optional, if it is omitted, the default type of lock is "READ".
+# The required argument is $tables_ref, which is the reference of the list of tables.
+# The other arguments are the same as the database_execute_command.
 #
-# These subroutines directly call the oda query command
-# if query succeeds, return 1. Otherwise, return 0
-########################################################## 
-
-sub do_update {
-    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_update SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "UDATE Table $table",
-            "Failed to update $table table",
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}            
-
-sub do_insert {
-    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_insert SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "INSERT Table into $table",
-            "Failed to insert values into $table table",
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}            
-
-sub do_select {
-    my ($sql,
-        $result_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_select SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug} || $$options_ref{verbose};
-    push @$error_strings_ref, $debug_msg;
-
-    my $error_msg = "Failed to query for << $sql >>";
-    push @$error_strings_ref, $error_msg;
-    my $success = oda::do_query($options_ref,
-            $sql,
-            $result_ref,
-            $error_strings_ref);
-    
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-sub get_node_info_with_name {
-    my ($node_name,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my @results = ();
-    my $sql = "SELECT * FROM Nodes WHERE name='$node_name'";
-    print "DB_DEBUG>$0:\n====> in Database::get_node_info_with_name SQL : $sql\n" if $$options_ref{debug};
-    if(do_select($sql,\@results, $options_ref, $error_strings_ref)){
-        my $node_ref = pop @results;
-        return $node_ref;
-    }else{
-        undef;
-    }
-}
-
-sub get_client_nodes {
-    my ($results_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT Nodes.* FROM Nodes, Groups ".
-            "WHERE Groups.id=Nodes.group_id ".
-            "AND Groups.name='oscar_clients'";
-    print "DB_DEBUG>$0:\n====> in Database::get_client_nodes SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
-}
-
-sub get_node_info {
-    my ($results_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT * FROM Nodes";
-    print "DB_DEBUG>$0:\n====> in Database::get_node_info SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
-}
-
-sub delete_package {
-    my ($package_name,
-        $options_ref,
-        $error_strings_ref,
-        $package_version) = @_;
-    my $sql = "DELETE FROM Packages WHERE package='$package_name' ";
-    print "DB_DEBUG>$0:\n====> in Database::delete_package SQL : $sql\n" if $$options_ref{debug};
-    $sql .= ($package_version?"AND version='$package_version'":"");
-    return do_update($sql,"Packages", $options_ref, $error_strings_ref);
-}    
-
-sub delete_node {
-    my ($node_name,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $node_ref = get_node_info_with_name($node_name,$options_ref,$error_strings_ref);    
-    my $node_id = $$node_ref{id};
-    return 1 if !$node_id;
-
-    delete_group_node($node_id,$options_ref,$error_strings_ref);
-    delete_node_packages($node_id,$options_ref,$error_strings_ref);
-    my $sql = "DELETE FROM Nodes ";
-    print "DB_DEBUG>$0:\n====> in Database::delete_node SQL : $sql\n" if $$options_ref{debug};
-    $sql .= ($node_name?"WHERE name='$node_name'":"");
-    return do_update($sql,"Nodes", $options_ref, $error_strings_ref);
-}    
-
-sub delete_group_node {
-    my ($node_id,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "DELETE FROM Group_Nodes WHERE node_id=$node_id";
-    print "DB_DEBUG>$0:\n====> in Database::delete_group_node SQL : $sql\n" if $$options_ref{debug};
-    return do_update($sql,"Group_Nodes", $options_ref, $error_strings_ref);
-}
-
-sub delete_node_packages {
-    my ($node_id,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "DELETE FROM Node_Packages WHERE node_id=$node_id";
-    print "DB_DEBUG>$0:\n====> in Database::delete_node_packages SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-        if! do_update($sql,"Node_Packages", $options_ref, $error_strings_ref);
-    $sql = "DELETE FROM Node_Package_Status WHERE node_id=$node_id";
-    print "DB_DEBUG>$0:\n====> in Database::delete_node_packages SQL : $sql\n" if $$options_ref{debug};
-    return do_update($sql,"Node_Package_Status", $options_ref, $error_strings_ref);
-}
-
-
-sub get_client_nodes_info {
-    my ($server,
-        $results_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT * FROM Nodes WHERE name!='$server'";
-    print "DB_DEBUG>$0:\n====> in Database::get_client_nodes_info SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
-}
-
-sub get_nodes {
-    my ($options_ref,
-        $error_strings_ref) = @_;
-    my @results = ();
-    get_node_info(\@results,$options_ref, $error_strings_ref);
-    my @list_of_nodes = ();
-    foreach my $results_ref (@results){
-        push @list_of_nodes, $$results_ref{name};
-    }
-    return @list_of_nodes;
-}
-
-sub get_networks {
-    my ($results,
-        $options_ref,
-        $error_strings_ref)= @_;
-    my $sql ="SELECT * FROM Networks ";
-    print "DB_DEBUG>$0:\n====> in Database::get_networks SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
-}
-
-sub get_nics_info_with_node {
-    my ($node,
-        $results,
-        $options_ref,
-        $error_strings_ref)= @_;
-    my $sql ="SELECT Nics.* FROM Nics, Nodes ".
-             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node'";
-    print "DB_DEBUG>$0:\n====> in Database::get_nics_info_with_node SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
-}
-
-sub get_nics_with_name_node {
-    my ($nic,
-        $node,
-        $results,
-        $options_ref,
-        $error_strings_ref)= @_;
-    my $sql ="SELECT Nics.* FROM Nics, Nodes ".
-             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node' " .
-             "AND Nics.name='$nic'";
-    print "DB_DEBUG>$0:\n====> in Database::get_nics_with_name_node SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
-}
-
-sub get_cluster_info_with_name {
-    my ($cluster_name,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my @results = ();
-    my $where = ($cluster_name?"'$cluster_name'":"'oscar'");
-    my $sql = "SELECT * FROM Clusters WHERE name=$where";
-    print "DB_DEBUG>$0:\n====> in Database::get_cluster_info_with_name SQL : $sql\n" if $$options_ref{debug};
-    do_select($sql,\@results, $options_ref, $error_strings_ref);
-    if(@results){
-        return ((scalar @results)==1?(pop @results):@results);
-    }else{
-        undef;
-    }
-}
-
-sub get_package_info_with_name {
-    my ($package_name,
-        $options_ref,
-        $error_strings_ref,
-        $version) = @_;
-    my @results = ();
-    my $sql = "SELECT * FROM Packages WHERE package='$package_name' ";
-    if( $version ){
-        $sql .= "AND version='$version'";
-    }
-    print "DB_DEBUG>$0:\n====> in Database::get_package_info_with_name SQL : $sql\n" if $$options_ref{debug};
-    if(do_select($sql,\@results, $options_ref, $error_strings_ref)){
-        my $package_ref = pop @results;
-        return $package_ref;
-    }else{
-        undef;
-    }
-}
-
-sub get_package_info {
-    my ($options_ref,
-        $error_strings_ref,
-        $field_ref) = @_;
-    my @results = ();
-    my $sql = "SELECT";
-    if(defined $field_ref){
-        my $flag = 0;
-        my $comma = "";
-        foreach my $field (@$field_ref){
-            $comma = "," if $flag;
-            $sql .= "$comma $field";
-            $flag = 1;
-        }    
-    } else {
-        $sql .= " * ";
-    }   
-    $sql .= " FROM Packages";
-    print "DB_DEBUG>$0:\n====> in Database::get_package_info SQL : $sql\n" if $$options_ref{debug};
-    if(do_select($sql,\@results, $options_ref, $error_strings_ref)){
-        return \@results;
-    }else{
-        undef;
-    }
-}
-
-sub get_packages {
-    my ($options_ref,
-        $error_strings_ref) = @_;
-    my $results = get_package_info($options_ref, $error_strings_ref);
-    my @list_of_packages = ();
-    foreach my $results_ref (@$results){
-        push @list_of_packages, $$results_ref{package};
-    }
-    return @list_of_packages;
-}
-
-sub get_packages_with_class {
-    my ($class,
-        $results_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT id, package, version FROM Packages ".
-              "WHERE __class='$class' ";
-    print "DB_DEBUG>$0:\n====> in Database::get_packages_with_class SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
-}
-
-sub is_installed_on_node {
-    my ($package_name,
-        $node_name,
-        $options_ref,
-        $error_strings_ref,
-        $version,
-        $requested) = @_;
-    my @result = ();    
-    $requested = 7 if (!$requested);    
-    my $sql = "SELECT Packages.package, Node_Package_Status.* " .
-             "From Packages, Node_Package_Status, Nodes ".
-             "WHERE Node_Package_Status.package_id=Packages.id ".
-             "AND Node_Package_Status.node_id=Nodes.id ".
-             "AND Packages.package='$package_name' ".
-             "AND Nodes.name=";
-    $sql .= ($node_name?"'$node_name'":"'oscar_server'"); 
-    if(defined $requested && $requested ne ""){
-        $sql .= " AND Node_Package_Status.requested=$requested ";
-    }
-    if(defined $version && $version ne ""){
-        $sql .= " AND Packages.version=$version ";
-    }
-    print "DB_DEBUG>$0:\n====> in Database::is_installed_on_node SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,\@result, $options_ref, $error_strings_ref);
-    return (@result?1:0);    
-}
-
-sub get_fields {
-    my ($options_ref,
-        $table,
-        $error_strings_ref) = @_;
-    my %fields = ();    
-    oda::list_fields($options_ref, $table, \%fields, $error_strings_ref);
-    my @list_of_fields = ();
-    foreach my $field (sort keys %fields){
-        push @list_of_fields, $field;
-    }
-    return @list_of_fields;
-}
-
-#####################################################
-#
-#   Wizard.pm
-#
-#####################################################
-
-# These two subroutines(get_packages_related_with_package and
-# get_packages_related_with_name) take care of 
-# Packages_conflicts, Packages_provides, and Packages_requires
-# tables.
-sub get_packages_related_with_package {
-    my ($part_name,
-        $package,
-        $results_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT P.package, P.id, S.p2_name, S.type " .
-              "FROM Packages P, Packages_$part_name S " .
-              "WHERE P.id=S.p1_id ".
-              "AND P.package='$package'";  
-    print "DB_DEBUG>$0:\n====> in Database::get_packages_related_with_package SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
-}    
-
-sub get_packages_related_with_name {
-    my ($part_name,
-        $name,
-        $results_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT P.package, P.id, S.p2_name, S.type " .
-              "FROM Packages P, Packages_$part_name S " .
-              "WHERE P.id=S.p1_id ".
-              "AND S.p2_name='$name'";  
-    print "DB_DEBUG>$0:\n====> in Database::get_packages_related_with_name SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
-}    
-
-
-sub get_packages_switcher {
-    my ($results_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT P.package, S.switcher_tag, S.switcher_name " .
-              "FROM Packages P, Packages_switcher S " .
-              "WHERE P.id=S.package_id";
-    print "DB_DEBUG>$0:\n====> in Database::get_packages_switcher SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
-}    
-
-sub get_packages_servicelists {
-    my ($results_ref,
-        $group_name,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT distinct P.package, S.service " .
-              "FROM Packages P, Packages_servicelists S, Node_Package_Status N, " .
-              "Group_Nodes G " .
-              "WHERE P.id=S.package_id AND N.package_id=S.package_id ".
-              "AND G.node_id=N.node_id ";
-    $sql .= ($group_name?" AND G.group_name='$group_name' AND S.group_name='$group_name'":" AND S.group_name!='oscar_server'");          
-    print "DB_DEBUG>$0:\n====> in Database::get_packages_servicelists SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
-}    
-
-sub set_group_nodes {
-    my ($group,
-        $nodes_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my @groups = ();
-    my $group_ref = get_groups(\@groups, $options_ref,$error_strings_ref,$group);
-    my $group_id = $$group_ref{id};
-    my %field_value_hash = ( "group_id" => $group_id );
-    my $success = 0;
-    foreach my $node (@$nodes_ref){
-        my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);    
-        my $node_id = $$node_ref{id};
-        my $sql = "SELECT * FROM Group_Nodes WHERE group_name='$group' ".
-                  "AND node_id=$node_id";
-        my @results = ();
-        print "DB_DEBUG>$0:\n====> in Database::set_group_nodes SQL : $sql\n" if $$options_ref{debug};
-        do_select($sql,\@results,$options_ref,$error_strings_ref);
-        if(!@results){
-            $sql = "INSERT INTO Group_Nodes VALUES('$group', $node_id )";
-            print "DB_DEBUG>$0:\n====> in Database::set_group_nodes SQL : $sql\n" if $$options_ref{debug};
-            $success = do_insert($sql,"Group_Nodes",$options_ref,$error_strings_ref);
-            $success = update_node($node,\%field_value_hash,$options_ref,$error_strings_ref);
-            last if ! $success;
-        }    
-    }    
-    return $success;              
-}
-
-
-sub set_group_packages {
-    my ($group,
-        $package,
-        $selected,
-        $options_ref,
-        $error_strings_ref) = @_;
-    $group = get_selected_group($options_ref,$error_strings_ref)
-        if(!$group);
-    my @results = ();    
-    my $sql = "SELECT Packages.id, Packages.package " .
-              "From Packages, Group_Packages " .
-              "WHERE Packages.id=Group_Packages.package_id ".
-              "AND Group_Packages.group_name='$group' " .
-              "AND Packages.package='$package'";
-    print "DB_DEBUG>$0:\n====> in Database::set_group_packages SQL : $sql\n" if $$options_ref{debug};
-    do_select($sql,\@results,$options_ref,$error_strings_ref);
-    if (!@results){
-        $sql = "INSERT INTO Group_Packages (group_name, package_id, selected) ".
-               "SELECT '$group', id, $selected FROM Packages ".
-               "WHERE package='$package'";
-        print "DB_DEBUG>$0:\n====> in Database::set_group_packages SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
-            if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
-    }else{
-        my $result_ref = pop @results;
-        my $package_id = $$result_ref{id};
-        $sql = "UPDATE Group_Packages SET selected=$selected ".
-            "WHERE group_name='$group' ".
-            "AND package_id='$package_id'";
-        print "DB_DEBUG>$0:\n====> in Database::set_group_packages SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-            if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
-    }
-    update_node_package_status_with_opkg(
-          $options_ref,"oscar_server",$package,$selected,$error_strings_ref);
-    return 1;
-}
-
-sub del_group_packages {
-    my ($group,
-        $opkg,
-        $options_ref,
-        $error_strings_ref,
-        $ver) = @_;
-
-    my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
-    my $package_id = $$package_ref{id};
-    if($package_id){
-        my $sql = "UPDATE Group_Packages SET selected=0 ".
-            "WHERE group_name='$group' AND package_id=$package_id";
-        print "DB_DEBUG>$0:\n====> in Database::del_group_packages SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to delete values via << $sql >>"
-            if! do_update($sql,"Group_Packages", $options_ref, $error_strings_ref);
-        update_node_package_status_with_opkg(
-              $options_ref,"oscar_server",$opkg,0,$error_strings_ref);
-    }      
-    return 1;    
-}
-
-sub get_selected_group {
-    my ($options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT id, name From Groups " .
-              "WHERE Groups.selected=1 ";
-    my @results = ();
-    print "DB_DEBUG>$0:\n====> in Database::get_selected_group SQL : $sql\n" if $$options_ref{debug};
-    my $success = do_select($sql,\@results,$options_ref,$error_strings_ref);
-    my $answer = undef;
-    if ($success){
-        my $ref = pop @results;
-        $answer = $$ref{name};
-    }
-    return $answer;
-}
-
-sub get_selected_group_packages {
-    my ($results_ref,
-        $options_ref,
-        $error_strings_ref,
-        $group,
-        $flag) = @_;
-    $group = get_selected_group($options_ref,$error_strings_ref) if(!$group);    
-    $flag = 1 if(! $flag);
-    my $sql = "SELECT Packages.id, Packages.package, Packages.name, Packages.version " .
-              "From Packages, Group_Packages, Groups " .
-              "WHERE Packages.id=Group_Packages.package_id ".
-              "AND Group_Packages.group_name=Groups.name ".
-              "AND Groups.name='$group' ".
-              "AND Groups.selected=1 ".
-              "AND Group_Packages.selected=$flag";
-    print "DB_DEBUG>$0:\n====> in Database::get_selected_group_packages SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
-}
-
-sub get_unselected_group_packages {
-    my ($results_ref,
-        $options_ref,
-        $error_strings_ref,
-        $group) = @_;
-    return get_selected_group_packages($results_ref,$options_ref,
-                                       $error_strings_ref,$group,0);
-}
-
-sub get_group_packages_with_groupname {
-    my ($group,
-        $results_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT Packages.id, Packages.package " .
-              "From Packages, Group_Packages " .
-              "WHERE Packages.id=Group_Packages.package_id ".
-              "AND Group_Packages.group_name='$group'";
-    print "DB_DEBUG>$0:\n====> in Database::get_group_packages_with_groupname SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
-}
-
-# For normal oscar package installation, 
-# the value of  "requested" filed has the following.
-# 0 : should not be installed.
-# 1 : should be installed
-# 7 : installed
-sub update_node_package_status {
-    my ($options_ref,
-        $node,
-        $packages,
-        $requested,
-        $error_strings_ref) = @_;
-    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
-    my $node_id = $$node_ref{id};
-    foreach my $pkg_ref (@$packages) {
-        my $opkg = $$pkg_ref{package};
-        my $ver = $$pkg_ref{version};
-        my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
-        my $package_id = $$package_ref{id};
-        my %field_value_hash = ("requested" => $requested);
-        my $where = "WHERE package_id=$package_id AND node_id=$node_id";
-        if( $requested == 7 && 
-            ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ){
-            print "DB_DEBUG>$0:\n====> in Database::update_node_package_status Updating the status of $opkg to \"installed\".\n";
-        } elsif ( $requested == 1 && 
-            ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
-            print "DB_DEBUG>$0:\n====> in Database::update_node_package_status Updating the status of $opkg to \"should be installed\".\n";
-        } elsif ( $requested == 0 && 
-            ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
-            print "DB_DEBUG>$0:\n====> in Database::update_node_package_status Updating the status of $opkg to \"should not be installed\".\n";
-        }
-        my @results = ();
-        my $table = "Node_Package_Status";
-        get_node_package_status_with_node_package($node,$opkg,\@results,$options_ref,$error_strings_ref);
-        if (@results) {
-            die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
-                if(!update_table($options_ref,$table,\%field_value_hash, $where, $error_strings_ref));
-        } else {
-            %field_value_hash = ("node_id" => $node_id,
-                                 "package_id"=>$package_id,
-                                 "requested" => $requested);
-            die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
-                if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
-        }
-        $table = "Node_Packages";
-        delete_table($options_ref,$table,$where,$error_strings_ref);
-        %field_value_hash = ("node_id" => $node_id,
-                             "package_id"=>$package_id);
-        die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
-            if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
-    }
-    return 1;
-}
-
-sub update_node_package_status_with_opkg {
-    my ($options_ref,
-        $node,
-        $opkg,
-        $requested,
-        $error_strings_ref,
-        $ver) = @_;
-    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
-    my $node_id = $$node_ref{id};
-    my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
-    my $package_id = $$package_ref{id};
-    my %field_value_hash = ("requested" => $requested);
-    my $where = "WHERE package_id=$package_id AND node_id=$node_id";
-    if( $requested == 7 && 
-        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ){
-        print "DB_DEBUG>$0:\n====> in Database::update_node_package_status_with_opkg Updating the status of $opkg to \"installed\".\n";
-    } elsif ( $requested == 1 && 
-        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
-        print "DB_DEBUG>$0:\n====> in Database::update_node_package_status_with_opkg Updating the status of $opkg to \"should be installed\".\n";
-    } elsif ( $requested == 0 && 
-        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
-        print "DB_DEBUG>$0:\n====> in Database::update_node_package_status_with_opkg Updating the status of $opkg to \"should not be installed\".\n";
-    }
-    die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
-        if(!update_table($options_ref,"Node_Package_Status",\%field_value_hash, $where, $error_strings_ref));
-
-    my $table = "Node_Packages";
-    delete_table($options_ref,$table,$where,$error_strings_ref);
-    %field_value_hash = ("node_id" => $node_id,
-                         "package_id"=>$package_id);
-    die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
-        if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
-}
-
-sub update_node {
-    my ($node,
-        $field_value_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "UPDATE Nodes SET ";
-    my $flag = 0;
-    my $comma = "";
-    while ( my($field,$value) = each %$field_value_ref ){
-        $comma = "," if $flag;
-        $sql .= "$comma $field='$value'";
-        $flag = 1;
-    }    
-    $sql .= " WHERE name='$node' ";
-    print "DB_DEBUG>$0:\n====> in Database::update_node SQL : $sql\n" if $$options_ref{debug};
-    return  do_update($sql,"Nodes", $options_ref, $error_strings_ref);
-}
-    
-sub get_node_package_status_with_group_node {
-    my ($group,
-        $node,
-        $results,
-        $options_ref,
-        $error_strings_ref) = @_;
-        my $sql = "SELECT Packages.package, Node_Package_Status.* " .
-                 "From Packages, Group_Packages, Node_Package_Status, Nodes ".
-                 "WHERE Packages.id=Group_Packages.package_id " .
-                 "AND Group_Packages.group_name='$group' ".
-                 "AND Node_Package_Status.package_id=Packages.id ".
-                 "AND Node_Package_Status.node_id=Nodes.id ".
-                 "AND Nodes.name='$node'";
-    print "DB_DEBUG>$0:\n====> in Database::get_node_package_status_with_group_node SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
-}
-
-sub get_node_package_status_with_node {
-    my ($node,
-        $results,
-        $options_ref,
-        $error_strings_ref,
-        $requested,
-        $version) = @_;
-        my $sql = "SELECT Packages.package, Node_Package_Status.* " .
-                 "From Packages, Node_Package_Status, Nodes ".
-                 "WHERE Node_Package_Status.package_id=Packages.id ".
-                 "AND Node_Package_Status.node_id=Nodes.id ".
-                 "AND Nodes.name='$node'";
-        if (defined $requested && $requested ne "") {
-            $sql .= " AND Node_Package_Status.requested=$requested ";
-        }
-        if (defined $version && $version ne "") {
-            $sql .= " AND Packages.version=$version ";
-        }
-    print "DB_DEBUG>$0:\n====> in Database::get_node_package_status_with_node SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
-}
-
-sub get_node_package_status_with_node_package {
-    my ($node,
-        $package,
-        $results,
-        $options_ref,
-        $error_strings_ref,
-        $requested,
-        $version) = @_;
-        my $sql = "SELECT Packages.package, Node_Package_Status.* " .
-                 "From Packages, Node_Package_Status, Nodes ".
-                 "WHERE Node_Package_Status.package_id=Packages.id ".
-                 "AND Node_Package_Status.node_id=Nodes.id ".
-                 "AND Nodes.name='$node' AND Packages.package='$package'";
-        if(defined $requested && $requested ne ""){
-            $sql .= " AND Node_Package_Status.requested=$requested ";
-        }
-        if(defined $version && $version ne ""){
-            $sql .= " AND Packages.version=$version ";
-        }
-    print "DB_DEBUG>$0:\n====> in Database::get_node_package_status_with_node_package SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
-}
-
-sub insert_packages {
-    my ($passed_ref, $table,
-        $name,$path,$table_fields_ref,
-        $passed_options_ref,$passed_error_strings_ref) = @_;
-
-    # take care of faking any non-passed input parameters, and
-    # set any options to their default values if not already set
-    my ( $options_ref, $error_strings_ref ) = fake_missing_parameters
-    ( $passed_options_ref, $passed_error_strings_ref );        
-    my $sql = "INSERT INTO $table ( ";
-    my $sql_values = " VALUES ( ";
-    my $flag = 0;
-    my $comma = "";
-    $sql .= "path, package, ";
-    $sql_values .= "'$path', '$name', ";
-    foreach my $key (keys %$passed_ref){
-        # If a field name is "group", "__" should be added
-        # in front of $key to avoid the conflict of reserved keys
-
-        $key = ( $key eq "maintainer" || $key eq "packager"?$key . "_name":$key );
-        
-        if( $$table_fields_ref{$table}->{$key} && $key ne "package-specific-attribute"){
-            $key = ( $key eq "group"?"__$key":$key);
-            $key = ( $key eq "class"?"__$key":$key);
-            $comma = ", " if $flag;
-            $sql .= "$comma $key";
-            $flag = 1;
-            $key = ( $key eq "__group"?"group":$key);
-            $key = ( $key eq "__class"?"class":$key);
-            my $value;
-            if( $key eq "version" ){
-                my $ver_ref = $passed_ref->{$key};
-                $value = "$ver_ref->{major}.$ver_ref->{minor}" .
-                    ($ver_ref->{subversion}?".$ver_ref->{subversion}":"") .
-                    "-$ver_ref->{release}";
-                $value =~ s#'#\\'#g;    
-                my @pkg_versions=( "major","minor","subversion",
-                                    "release", "epoch" );
-                $value = "$value', "; 
-                foreach my $ver (@pkg_versions){
-                    my $tmp_value = $ver_ref->{$ver};
-                    if(! $tmp_value ){
-                        $tmp_value = "";
-                    }else{
-                        $tmp_value =~ s#'#\\'#g;
-                    }
-                    $value .=
-                        ( $ver ne "epoch"?"'$tmp_value', ":"'$tmp_value");
-                    $sql .= ", version_$ver";
-                }    
-            }elsif ( $key eq "maintainer_name" || $key eq "packager_name" ){
-                $key = ($key eq "maintainer_name"?"maintainer":"packager");
-                $sql .= ", $key" .  "_email";
-                $value = $passed_ref->{$key}->{name} . "', '"
-                        . $passed_ref->{$key}->{email}; 
-            }else{
-                $value = ($passed_ref->{$key}?trimwhitespace($passed_ref->{$key}):""); 
-                $value =~ s#'#\\'#g;
-            }
-            $sql_values .= "$comma '$value'";
-        }
-    }
-    $sql .= ") $sql_values )\n";
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::insert_packages SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    print "DB_DEBUG>$0:\n====> in Database::insert_packages: Inserting package($name) into Packages\n" if $$options_ref{verbose};
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "INSERT Table into $table",
-            "Failed to insert values into $table table",
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-sub update_packages {
-    my ($passed_ref, $table,$package_id,
-        $name,$path,$table_fields_ref,
-        $options_ref,$error_strings_ref) = @_;
-    my $sql = "UPDATE $table SET ";
-    my $sql_values = " VALUES ( ";
-    my $flag = 0;
-    my $comma = "";
-    $sql .= "path='$path', package='$name', ";
-    foreach my $key (keys %$passed_ref){
-        # If a field name is "group", "__" should be added
-        # in front of $key to avoid the conflict of reserved keys
-
-        $key = ( $key eq "maintainer" || $key eq "packager"?$key . "_name":$key );
-        
-        if( $$table_fields_ref{$table}->{$key} && $key ne "package-specific-attribute"){
-            $comma = ", " if $flag;
-            $key = ( $key eq "group"?"__$key":$key);
-            $key = ( $key eq "class"?"__$key":$key);
-            $sql .= "$comma $key=";
-            $flag = 1;
-            $key = ( $key eq "__group"?"group":$key);
-            $key = ( $key eq "__class"?"class":$key);
-            my $value;
-            if( $key eq "version" ){
-                my $ver_ref = $passed_ref->{$key};
-                $value = "$ver_ref->{major}.$ver_ref->{minor}" .
-                    ($ver_ref->{subversion}?".$ver_ref->{subversion}":"") .
-                    "-$ver_ref->{release}";
-                $value =~ s#'#\\'#g;    
-                my @pkg_versions=( "major","minor","subversion",
-                                    "release", "epoch" );
-                $sql .="'$value', "; 
-                foreach my $ver (@pkg_versions){
-                    my $tmp_value = $ver_ref->{$ver};
-                    if(! $tmp_value ){
-                        $tmp_value = "";
-                    }else{
-                        $tmp_value =~ s#'#\\'#g;
-                    }
-                    $value =
-                        ( $ver ne "epoch"?"'$tmp_value', ":"'$tmp_value'");
-                    $sql .= " version_$ver=$value";
-                }    
-            }elsif ( $key eq "maintainer_name" || $key eq "packager_name" ){
-                $key = ($key eq "maintainer_name"?"maintainer":"packager");
-                $sql .= "'". $passed_ref->{$key}->{name}. "', $key" .
-                     "_email='". $passed_ref->{$key}->{email} . "'";
-            }else{
-                $value = ($passed_ref->{$key}?trimwhitespace($passed_ref->{$key}):""); 
-                $value =~ s#'#\\'#g;
-                $sql .= "'$value'";
-            }
-        }
-    }
-    $sql .= " WHERE id=$package_id\n";
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::update_packages SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $success = oda::do_sql_command($options_ref,
-                    $sql,
-                    "UPDATE Table, $table",
-                    "Failed to update $table table",
-                    $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return $success;
-}
-
-
-sub insert_pkg_rpmlist {
-    my ($passed_ref,$table,$package_id,$options_ref,$error_strings_ref) = @_;
-    my $sql = "INSERT INTO $table ( ";
-    my $sql_values = " VALUES ( ";
-    
-    my $group_name = "";
-    my $group_arch = "";
-    my $distro = "";
-    my $distro_version = "";
-    $sql .= "package_id";
-    $sql_values .= "'$package_id'";
-
-    my $filter;
-    if( ref($passed_ref) eq "ARRAY") {
-        foreach my $ref (@$passed_ref){
-            $filter = $ref->{filter};
-            if ( ref($ref->{filter}) eq "ARRAY" ){
-                foreach my $each_filter (@$filter){
-                    insert_pkg_rpmlist_helper($sql, $sql_values, $each_filter, $ref, $table);
-                }
-            }else{
-                insert_pkg_rpmlist_helper($sql, $sql_values, $filter, $ref, $table);
-            }
-        }
-    }else{
-        $filter = $passed_ref->{filter};
-        if ( ref($passed_ref->{filter}) eq "ARRAY" ){
-            foreach my $each_filter (@$filter){
-                insert_pkg_rpmlist_helper($sql, $sql_values, $each_filter, $passed_ref, $table);
-            }
-        }else{
-            insert_pkg_rpmlist_helper($sql, $sql_values, $filter, $passed_ref, $table,$options_ref,$error_strings_ref);
-        }
-    }   
-}
-
-sub insert_pkg_rpmlist_helper {
-    my ($sql, $sql_values, $filter, $passed_ref, $table,$options_ref,$error_strings_ref) = @_;
-    my $group_name = ($filter->{group}?$filter->{group}:"all");
-    my $group_arch = ($filter->{architecture}?$filter->{architecture}:"all");
-    my $distro = ($filter->{distribution}->{name}?$filter->{distribution}->{name}:"all");
-    my $distro_version = ($filter->{distribution}->{version}?$filter->{distribution}->{version}:"all");
-    my $inner_sql = "$sql, group_name, group_arch, distro, distro_version"; 
-    my $inner_sql_values = "$sql_values, '$group_name','$group_arch','$distro','$distro_version'"; 
-    insert_rpms( $inner_sql, $inner_sql_values, $passed_ref, $table,$options_ref,$error_strings_ref);
-}
-
-sub insert_rpms {
-    my ($sql, $sql_values, $passed_ref, $table, $options_ref, $error_strings_ref) = @_;
-    my $rpm;
-    print "DB_DEBUG>$0:\n====> in Database::insert_rpms : Inserting the entries of Packages_rpmlists\n"
-        if $$options_ref{verbose};
-    if (ref($passed_ref) eq "ARRAY"){
-        foreach my $ref (@$passed_ref){
-            $rpm = $ref->{pkg};
-            if ( ref($rpm) eq "ARRAY" ){
-                foreach my $each_rpm (@$rpm){
-                    my $inner_sql_values = "$sql_values, '$each_rpm' ";
-                    my $inner_sql = "$sql, rpm ) $inner_sql_values)";
-                    print "DB_DEBUG>$0:\n====> in Database::insert_rpms SQL : $inner_sql\n" if $$options_ref{debug};
-                    do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
-                }
-            }else{
-                my $inner_sql_values = "$sql_values, '". trimwhitespace($rpm)."' ";
-                my $inner_sql .= "$sql, rpm ) $inner_sql_values )\n";
-                print "DB_DEBUG>$0:\n====> in Database::insert_rpms SQL : $inner_sql\n" if $$options_ref{debug};
-                do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
-            }
-        }    
-    }else{
-        $rpm = $passed_ref->{pkg};
-        if ( ref($rpm) eq "ARRAY" ){
-            foreach my $each_rpm (@$rpm){
-                my $inner_sql_values = "$sql_values, '$each_rpm' ";
-                my $inner_sql = "$sql, rpm ) $inner_sql_values)";
-                print "DB_DEBUG>$0:\n====> in Database::insert_rpms SQL : $inner_sql\n" if $$options_ref{debug};
-                do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
-            }
-        }else{
-            my $inner_sql_values = "$sql_values, '". trimwhitespace($rpm)."' ";
-            my $inner_sql .= "$sql, rpm ) $inner_sql_values )\n";
-            print "DB_DEBUG>$0:\n====> in Database::insert_rpms SQL : $inner_sql\n" if $$options_ref{debug};
-            do_insert($inner_sql, $table,$options_ref,$error_strings_ref);
-        }
-    }    
-}
-
-sub get_installable_packages {
-    my ($results,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT Packages.id, Packages.package " .
-              "FROM Packages, Group_Packages " .
-              "WHERE Packages.id=Group_Packages.package_id ".
-              "AND Group_Packages.group_name='Default'";
-    print "DB_DEBUG>$0:\n====> in Database::get_installable_packages SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
-}
-
-#
-# list_installable_packages - this returns a list of installable packages.
-#
-# You may specify "core", "noncore", or "all" as the first argument to
-# get a list of core, noncore, or all packages (respectively).  If no
-# argument is given, "all" is implied.
-#
-# EF: Moved here from Package.pm
-
-sub list_installable_packages {
-    my $type = shift;
-
-    # If no argument was specified, use "all"
-
-    $type = "all" if ((!(defined $type)) || (!$type));
-
-    # make the database command and do the database read
-
-    my $command_args;
-    if ( $type eq "all" ) {
-      $command_args = "packages_installable";
-    } elsif ( $type eq "core" ) {
-      $command_args = "packages_installable packages.class=core";
-    } else {
-      $command_args = "packages_installable packages.class!=core";
-    }
-    my @packages = ();
-    my @tables = ("packages", "oda_shortcuts");
-    print "DB_DEBUG>$0:\n====> in Database::list_installable_packages SQL : $command_args\n" if $$options_ref{debug};
-    if ( OSCAR::Database::single_dec_locked( $command_args,
-                                                    "READ",
-                                                    \@tables,
-                                                    \@packages,
-                                                    undef) ) {
-      return @packages;
-    } else {
-      warn "Cannot read installable packages list from the ODA database.";
-      return undef;
-    }
-}
-
-
-sub get_groups_for_packages {
-    my ($results,
-        $options_ref,
-        $error_strings_ref,
-        $group)= @_;
-    my $sql ="SELECT distinct group_name FROM Group_Packages ";
-    if(defined $group){ $sql .= "WHERE group_name='$group'"; }
-    print "DB_DEBUG>$0:\n====> in Database::get_groups_for_packages SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
-}
-
-sub get_groups {
-    my ($results,
-        $options_ref,
-        $error_strings_ref,
-        $group)= @_;
-    my $sql ="SELECT * FROM Groups ";
-    if(defined $group){ $sql .= "WHERE name='$group'"; }
-    print "DB_DEBUG>$0:\n====> in Database::get_groups SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,$results, $options_ref, $error_strings_ref);
-    return $$results[0] if $group;    
-    return 0;
-}
-
-sub set_groups {
-    my ($group,
-        $options_ref,
-        $error_strings_ref,
-        $type) = @_;
-    $type = "package" if ! $type;
-    my @results = ();
-    get_groups(\@results,$options_ref,$error_strings_ref,$group);
-    if(!@results){
-        my $sql = "INSERT INTO Groups (name,type) VALUES ('$group','$type')";
-        print "DB_DEBUG>$0:\n====> in Database::set_groups SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
-            if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
-    }    
-    return 1;
-}
-
-sub set_groups_selected {
-    my ($group,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my @results = ();
-    get_groups(\@results,$options_ref,$error_strings_ref,$group);
-    if(@results){
-        # Initialize the "selected" flag (selected = 0)
-        my $sql = "UPDATE Groups SET selected=0";
-        print "DB_DEBUG>$0:\n====> in Database::set_groups_selected SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-            if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
-
-        # Set the seleted group to have "selected" flag
-        # (selected = 1)
-        $sql = "UPDATE Groups SET selected=1 WHERE name='$group'";
-        print "DB_DEBUG>$0:\n====> in Database::set_groups_selected SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-            if! do_insert($sql,"Groups", $options_ref, $error_strings_ref);
-    }    
-    return 1;
-}
-
-sub del_groups {
-    my ($group,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my @results = ();
-    get_groups(\@results,$options_ref,$error_strings_ref,$group);
-    if(!@results){
-        my $sql = "DELETE FROM Groups WHERE name='$group'";
-        print "DB_DEBUG>$0:\n====> in Database::del_groups SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to delete values via << $sql >>"
-            if! do_update($sql,"Groups", $options_ref, $error_strings_ref);
-    }    
-    return 1;
-}
-
-sub set_all_groups {
-    my ($groups_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT * FROM Groups";
-    print "DB_DEBUG>$0:\n====> in Database::set_all_groups SQL : $sql\n" if $$options_ref{debug};
-    my @groups = ();
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,\@groups, $options_ref, $error_strings_ref);
-    if(!@groups){ 
-        foreach my $group (keys %$groups_ref){
-            set_groups($group,$options_ref,$error_strings_ref,$$groups_ref{$group});
-        }
-    }
-    return 1;
-}
-
-sub set_node_with_group {
-    my ($node,
-        $group,
-        $options_ref,
-        $error_strings_ref,
-        $cluster_name) = @_;
-    my $sql = "SELECT name FROM Nodes WHERE name='$node'";
-    my @nodes = ();
-    print "DB_DEBUG>$0:\n====> in Database::set_node_with_group SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,\@nodes, $options_ref, $error_strings_ref);
-    if(!@nodes){ 
-        $cluster_name = $CLUSTER_NAME if !$cluster_name;
-        my $cluster_ref = get_cluster_info_with_name($cluster_name,$options_ref, $error_strings_ref);
-        my $cluster_id = $$cluster_ref{id} if $cluster_ref;
-        $sql = "INSERT INTO Nodes (cluster_id, name, group_id) ".
-               "SELECT $cluster_id, '$node', id FROM Groups WHERE name='$group'";
-        print "DB_DEBUG>$0:\n====> in Database::set_node_with_group SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
-            if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
-    }
-    return 1;
-}
-
-sub set_nics_with_node {
-    my ($nic,
-        $node,
-        $field_value_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT Nics.* FROM Nics, Nodes WHERE Nodes.id=Nics.node_id " .
-              "AND Nics.name='$nic' AND Nodes.name='$node'";
-    print "DB_DEBUG>$0:\n====> in Database::set_nics_with_node SQL : $sql\n" if $$options_ref{debug};
-    my @nics = ();
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,\@nics, $options_ref, $error_strings_ref);
-
-    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
-    my $node_id = $$node_ref{id};
-    if(!@nics){ 
-        $sql = "INSERT INTO Nics ( name, node_id ";
-        my $sql_value = " VALUES ('$nic', $node_id ";
-        if( $field_value_ref ){
-            while (my ($field, $value) = each %$field_value_ref){
-                $sql .= ", $field";
-                $sql_value .= ", '$value'";
-            }
-        }
-        $sql .= " ) $sql_value )";
-        print "DB_DEBUG>$0:\n====> in Database::set_nics_with_node SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
-            if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
-    }else{
-        $sql = "UPDATE Nics SET ";
-        my $flag = 0;
-        my $comma = "";
-        if( $field_value_ref ){
-            while (my ($field, $value) = each %$field_value_ref){
-                $comma = ", " if $flag;
-                $sql .= "$comma $field='$value'";
-                $flag = 1;
-            }
-            $sql .= " WHERE name='$nic' AND node_id=$node_id ";
-            print "DB_DEBUG>$0:\n====> in Database::set_nics_with_node SQL : $sql\n" if $$options_ref{debug};
-            die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-                if! do_update($sql,"Nics", $options_ref, $error_strings_ref);
-        }
-    }
-    return 1;
-}
-
-sub set_status {
-    my ($options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT * FROM Status";
-    print "DB_DEBUG>$0:\n====> in Database::set_status SQL : $sql\n" if $$options_ref{debug};
-    my @status = ();
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,\@status, $options_ref, $error_strings_ref);
-    if(!@status){ 
-        foreach my $status ("installable", "installed",
-                            "install_allowed","should_be_installed", 
-                            "should_be_uninstalled","uninstalled",
-                            "finished"){
-            $sql = "INSERT INTO Status (name) VALUES ('$status')";
-            print "DB_DEBUG>$0:\n====> in Database::set_status SQL : $sql\n" if $$options_ref{debug};
-            die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
-                if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
-        }
-    }
-    return 1;
-}
-
-sub get_image_info_with_name {
-    my ($image,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $sql = "SELECT * FROM Images WHERE name='$image'";
-    print "DB_DEBUG>$0:\n====> in Database::get_image_info_with_name SQL : $sql\n" if $$options_ref{debug};
-    my @images = ();
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,\@images, $options_ref, $error_strings_ref);
-    return (@images?pop @images:undef);
-}
-
-sub set_images{
-    my ($image_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $imgname = $$image_ref{name};
-    my $architecture = $$image_ref{architecture};
-    my $images = get_image_info_with_name($imgname,$options_ref,$error_strings_ref);
-    my $imagepath = $$image_ref{path};
-    my $sql = "";
-    if(!$images){ 
-        $sql = "INSERT INTO Images (name,architecture,path) VALUES ".
-            "('$imgname','$architecture','$imagepath')";
-        print "DB_DEBUG>$0:\n====> in Database::set_images SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
-            if! do_insert($sql,"Images", $options_ref, $error_strings_ref);
-    }else{
-        $sql = "UPDATE Images SET name='$imgname', ". 
-               "architecture='$architecture', path='$imagepath' WHERE name='$imgname'";
-        print "DB_DEBUG>$0:\n====> in Database::set_images SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-            if! do_update($sql,"Images", $options_ref, $error_strings_ref);
-    }
-    return 1;
-}
-
-sub set_image_packages {
-    my ($image,
-        $package,
-        $options_ref,
-        $error_strings_ref) = @_;
-    my $image_ref = get_image_info_with_name($image,$options_ref,$error_strings_ref);
-    croak("Image $image not found in OSCAR Database") unless ($image_ref);
-    my $image_id = $$image_ref{id};
-    my $package_ref = get_package_info_with_name($package,$options_ref,$error_strings_ref);
-    my $package_id = $$package_ref{id};
-    my $sql = "SELECT * FROM Image_Packages WHERE image_id=$image_id AND package_id=$package_id";
-    print "DB_DEBUG>$0:\n====> in Database::set_image_packages SQL : $sql\n" if $$options_ref{debug};
-    my @images = ();
-    die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
-        if! do_select($sql,\@images, $options_ref, $error_strings_ref);
-    if(!@images){ 
-        $sql = "INSERT INTO Image_Packages (image_id,package_id) VALUES ".
-            "($image_id,$package_id)";
-        print "DB_DEBUG>$0:\n====> in Database::set_image_packages SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
-            if! do_insert($sql,"Image_Packages", $options_ref, $error_strings_ref);
-    }
-    return 1;
-}    
-
-sub get_gateway {
-    my ($node,
-        $interface,
-        $results,
-        $options_ref,
-        $error_strings_ref)= @_;
-    my $sql ="SELECT Networks.gateway FROM Networks, Nics, Nodes ".
-             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node'".
-             "AND Networks.n_id=Nics.network_id AND Nics.name='$interface'";
-    print "DB_DEBUG>$0:\n====> in Database::get_gateway SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
-}
-
-# This function returns the interface on the headnode that is on the same
-# network as the compute nodes, typically = ./install_cluster <iface>
-sub get_headnode_iface {
-    my ($options_ref,
-	$error_strings_ref) = @_;
-    my $cluster_ref = get_cluster_info_with_name("oscar", $options_ref, $error_strings_ref);
-    return $$cluster_ref{headnode_interface};
-}
-
-# Retrieve installation mode for cluster
-sub get_install_mode {
-    my ($options_ref,
-        $error_strings_ref) = @_;
- 
-    my $cluster = "oscar";
-
-    my $cluster_ref = get_cluster_info_with_name($cluster, $options_ref, $error_strings_ref);
-    return $$cluster_ref{install_mode};
-}
-
-# Set installation mode for cluster
-sub set_install_mode {
-    my ($install_mode,
-        $options_ref,
-        $error_strings_ref) = @_;
-
-    my $cluster = "oscar";
-    my $sql = "UPDATE Clusters SET install_mode='$install_mode' WHERE name ='$cluster'";
-
-    print "DB_DEBUG>$0:\n====> in Database::set_install_mode SQL : $sql\n" if $$options_ref{debug};
-    return do_update($sql, "Clusters", $options_ref, $error_strings_ref);
-}
-
-#=======================================================================
-#
-# links a node nic to a network in the database
-
-sub link_node_nic_to_network {
-
-    my ( $node_name, $nic_name, $network_name, $options_ref, $error_strings_ref ) = @_;
-
-    my $sql = "SELECT Nodes.id, Networks.n_id FROM Nodes, Networks WHERE Nodes.name='$node_name' AND Networks.name='$network_name' ";
-    my @results = ();
-    my @error_strings = ();
-    oda::do_query(\%options,
-                $sql,
-                \@results,
-                \@error_strings);
-    my $res_ref = pop @results;
-    my $node_id = $$res_ref{"id"};
-    my $network_id = $$res_ref{"n_id"};
-    my $command =
-    "UPDATE Nics SET network_id=$network_id WHERE name='$nic_name' AND node_id=$node_id ";
-    print "DB_DEBUG>$0:\n====> in Database::link_node_nic_to_network linking node $node_name nic $nic_name to network $network_name using command <$command>\n"
-    if $$options_ref{debug};
-    print "DB_DEBUG>$0:\n====> in Database::link_node_nic_to_network Linking node $node_name nic $nic_name to network $network_name.\n"
-        if $$options_ref{verbose} && ! $$options_ref{debug};
-    
-    return do_update($command,"Nics",$options_ref,$error_strings_ref);
-}
-
-
-sub trimwhitespace($)
-{
-    my $string = shift;
-    $string =~ s/^\s+//;
-    $string =~ s/\s+$//;
-    return $string;
-}
-
-#********************************************************************#
-#********************************************************************#
-#                                                                    #
-# internal function to fill in any missing function parameters       #
-#                                                                    #
-#********************************************************************#
-#********************************************************************#
-# inputs:  options            optional reference to options hash
-#          error_strings_ref  optional reference to array for errors
-
-sub fake_missing_parameters {
-    my (  $passed_options_ref,
-          $passed_error_strings_ref ) = @_;
-
-    my %options = ( 'debug'         => 0,
-                    'raw'           => 0,
-                    'verbose'       => 0 );
-    # take care of faking any non-passed input parameters, and
-    # set any options to their default values if not already set
-    my @ignored_error_strings;
-    my $error_strings_ref = ( defined $passed_error_strings_ref ) ?
-    $passed_error_strings_ref : \@ignored_error_strings;
-
-    my $options_ref;
-    if (ref($passed_options_ref) eq "HASH" && defined $passed_options_ref){
-        $options_ref = $passed_options_ref;
-    } else {
-        $options_ref = \%options;
-    }
-
-    print "DB_DEBUG>$0:\n====> in Database.pm::fake_missing_parameters handling"
-        . " the missing parameters"
-        if $$options_ref{verbose};
-
-    return ( $options_ref,
-         $error_strings_ref );
-}
-
-
-sub print_error_strings {
-    my $passed_errors_ref = shift;
+sub single_dec_locked {
+
+    my ( $command_args_ref,
+         $type_of_lock,
+         $tables_ref,
+         $results_ref,
+     $passed_errors_ref ) = @_;
+
+    # execute the command
     my @error_strings = ();
     my $error_strings_ref = ( defined $passed_errors_ref && 
                   ref($passed_errors_ref) eq "ARRAY" ) ?
                   $passed_errors_ref : \@error_strings;
-
-    if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
-        warn shift @$error_strings_ref while @$error_strings_ref;
+    my @tables = ();
+    if ( (ref($tables_ref) eq "ARRAY")
+        && (defined $tables_ref)
+        && (scalar @$tables_ref != 0) ){
+        @tables = @$tables_ref;
+    } else {
+        #chomp(@tables = oda::list_tables);
+        my $all_tables_ref = oda::list_tables( $options_ref, $error_strings_ref );
+        foreach my $table (keys %$all_tables_ref){
+            push @tables, $table;
+        }    
     }
-    $error_strings_ref = \@error_strings;
+    my $lock_type = (defined $type_of_lock)? $type_of_lock : "READ";
+    # START LOCKING FOR NEST && open the database
+    my %options = ();
+#    if(! locking($lock_type, $options_ref, \@tables, $error_strings_ref)){
+#        return 0;
+        #die "DB_DEBUG>$0:\n====> cannot connect to oda database";
+#    }
+    my $success = oda::do_query( $options_ref,
+                    $command_args_ref,
+                    $results_ref,
+                    $error_strings_ref );
+    # UNLOCKING FOR NEST
+    unlock($options_ref, $error_strings_ref);
+    if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
+    warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    
+    return $success;
 }
 
 1;

@@ -436,9 +436,9 @@ sub updateOda
           # The downloaded package is not selected to install yet.
           # It should not be in the package_sets_included_packages table.
           my $currSet = "Default";
-          my $success = OSCAR::Database::del_group_packages(
+          my $success = OSCAR::Database::delete_group_packages(
             $currSet,$pkg,\%options,\@errors);
-          Carp::carp("Could not do oda command 'del_group_packages".
+          Carp::carp("Could not do oda command 'delete_group_packages".
             " $pkg $currSet'") if 
               (!$success);
           chdir($currdir);

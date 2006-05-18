@@ -569,9 +569,9 @@ sub checkboxChangedForSelector
                   if ((defined $packagesInSet->{$conkey}) &&
                       ($packagesInSet->{$conkey} == 1))
                     {
-                      $success = OSCAR::Database::del_group_packages(
+                      $success = OSCAR::Database::delete_group_packages(
                         $currSet,$conkey,\%options,\@errors);
-                      Carp::carp("Could not do oda command 'del_group_packages".
+                      Carp::carp("Could not do oda command 'delete_group_packages".
                         " $conkey $currSet'") if 
                           (!$success);
                       undef $packagesInSet->{$conkey};
@@ -609,10 +609,10 @@ sub checkboxChangedForSelector
                   if ((defined $packagesInSet->{$reqkey}) || 
                       ($packagesInSet->{$reqkey} == 1))
                     {
-                      $success = OSCAR::Database::del_group_packages(
+                      $success = OSCAR::Database::delete_group_packages(
                         $currSet,$reqkey,\%options,\@errors);
                       Carp::carp("Could not do oda command 
-                        'del_group_packages " .
+                        'delete_group_packages " .
                           "$reqkey $currSet'") if (!$success);
                       undef $packagesInSet->{$reqkey};
                     }
@@ -623,9 +623,9 @@ sub checkboxChangedForSelector
           if ((defined $packagesInSet->{$package}) || 
               ($packagesInSet->{$package} == 1))
             {
-              $success = OSCAR::Database::del_group_packages(
+              $success = OSCAR::Database::delete_group_packages(
                 $currSet,$package,\%options,\@errors);
-              Carp::carp("Could not do oda command 'del_group_packages".
+              Carp::carp("Could not do oda command 'delete_group_packages".
                 " $package $currSet'") if 
                   (!$success);
             }

@@ -327,7 +327,7 @@ sub deleteButton_clicked
       (packageSetsListBox->count() > 1))
     { 
       my $selected = packageSetsListBox->currentText();
-      my $success = OSCAR::Database::del_groups(
+      my $success = OSCAR::Database::delete_groups(
             $selected,\%options,\@errors);
       if ($success)
         {
