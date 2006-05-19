@@ -1,0 +1,162 @@
+#!/bin/bash
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id$
+#
+# Copyright (c) Erich Focht 2006 <efocht@hpce.nec.com>
+#               All rights reserved
+
+usage () {
+    echo "Usage:"
+    echo "   $0 --distro|-d DISTRO-VERSION-ARCH --target|-t TARGETDIR"
+    echo
+    exit 1
+}
+
+# make sure we don't get into language specific trouble
+export LC_ALL=C
+
+# expect that we're running from OSCAR_HOME/scripts
+PRG=`basename $0`
+CWD=`pwd`
+if [ `basename $CWD` != "scripts" -o ! -x "./$PRG" ]; then
+    echo "!!!!!!"
+    echo "Are you running from inside the scripts directory of an OSCAR tree?"
+    echo "You better should..."
+    echo
+    exit 2
+fi
+
+export OHOME=`dirname $CWD`
+echo "Building repositories with binary packages from the OSCAR tree $OHOME"
+
+
+while [ -n "$1" ]; do
+   case "$1" in
+       --distro|-d)
+	   shift
+	   [ -z "$1" ] && usage
+	   DISTRO=$1
+	   shift
+	   ;;
+       --target|-t)
+	   shift
+	   [ -z "$1" ] && usage
+	   TDIR=$1
+	   shift
+	   ;;
+       --remove|-r)
+	   shift
+	   REMOVE="1"
+	   ;;
+       --help|-h)
+	   usage
+	   ;;
+       *) # ignores other options
+	   shift
+	   ;;
+   esac
+done
+
+# are we aiming at one of the commons dirs?
+if [ "$DISTRO" = "common-rpms" ]; then
+    PKG="rpm"
+    SOURCE=$DISTRO
+elif [ "$DISTRO" = "common-debs" ]; then
+    PKG="deb"
+    SOURCE=$DISTRO
+fi
+
+# check if source directory is there, i.e. distro is supported
+
+if [ -z "$SOURCE" ]; then
+    # parse distro string
+    OIFS=$IFS
+    IFS="-"
+    set - $DISTRO
+    DIST=$1
+    VER=$2
+    ARCH=$3
+    IFS=$OIFS
+    if [ -z "$DIST" -o -z "$VER" -o -z "$ARCH" ]; then
+	echo "You MUST specify the distro string in the format:"
+	echo "   DISTRO-VERSION-ARCH"
+	echo "now: DIST=$DIST VER=$VER ARCH=$ARCH"
+	usage
+    else
+	case "$DIST" in
+	    debian|ubuntu)
+		PKG="deb"
+		;;
+	    *)
+		PKG="rpm"
+		;;
+	esac
+	SOURCE="$DIST$VER-$ARCH"
+    fi
+fi
+
+if [ ! -d "$OHOME/packages/sis/distro/$SOURCE" ]; then
+    echo "Could not find directory $OHOME/packages/sis/distro/$SOURCE"
+    echo "Are you sure the distro $DISTRO is supported???"
+    exit 10
+fi
+
+
+#---
+
+
+TARGET="$TDIR/$DISTRO"
+# check for existence of target directory
+if [ ! -e "$TARGET" ]; then
+    echo "Creating directory $TARGET"
+    mkdir -p $TARGET || {
+	echo "Could not create target directory $TARGET"
+	exit 3
+    }
+else
+    if [ -d "$TARGET" ]; then
+	if [ -n "$REMOVE" ]; then
+	    echo "--remove was selected, removing already existing target directory $TARGET"
+	    rm -rf "$TARGET" || {
+		echo "Could remove target directory $TARGET"
+		exit 4
+	    }
+	else
+	    echo "Directory $TARGET already exists, overwriting contents"
+	fi
+    fi
+fi
+if [ ! -d "$TARGET" -a ! -L "$TARGET" ]; then
+    echo "$TARGET is not a directory!"
+    exit 5
+fi
+
+SEARCHDIRS="share/prereqs packages"
+
+cd $OHOME
+echo "Copying packages ..."
+for dir in $SEARCHDIRS; do
+    echo "  from $dir"
+    cp -pf $dir/*/distro/$SOURCE/*.$PKG $TARGET
+done
+
+echo "Creating repository metadata"
+case "$PKG" in
+    rpm)
+	yume --repo $TARGET --prepare
+	;;
+    deb)
+	rapt --repo $TARGET --prepare
+	;;
+    *)
+	echo "Unknown packaging system $PKG"
+	exit 11
+	;;
+esac
+
+exit 0
+
