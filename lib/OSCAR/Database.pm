@@ -2718,7 +2718,6 @@ sub set_status {
                             "undefined_3",
                             "undefined_4",
                             "undefined_5",
-                            "undefined_6",
                             "finished"
                             ){
 #   OLD Status values                            
