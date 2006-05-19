@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 # Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
-# Copyright (c) 2002 The Trustees of Indiana University.  
+# Copyright (c) 2002-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 # Copyright (c) 2005, Revolution Linux
 # Copyright (c) 2006, Erich Focht
@@ -57,7 +57,8 @@ close DB_CONF;
 if(! $innodb_flag ){
     open BACKUP, ">$mysql_conf.bak"
         or die "Can not create a copy file $mysql_conf.bak";
-    open DB_CONF, "$mysql_conf";
+    open DB_CONF, "$mysql_conf"
+        or die "Can not open $mysql_conf file";
     my $flag = 0;
     while(my $line = <DB_CONF>){
         chomp($line);

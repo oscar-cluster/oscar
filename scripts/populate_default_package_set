@@ -67,7 +67,7 @@ for (@exclude_packages) { $is_excluded{$_} = 1 };
 
 # START LOCKING FOR NEST && open the database
 
-my @tables =("Cluster","Nodes", "Packages", "Node_Package_Status", "Node_Packages", "Group_Packages", "Groups");
+my @tables =("Cluster","Nodes", "Packages", "Node_Package_Status", "Group_Packages", "Groups");
 
 #if(! locking("write", \%options, \@tables, \@errors)){
 #    die "DB_DEBUG>$0:\n====> cannot connect to oda database";
@@ -128,7 +128,7 @@ foreach my $package_ref (@installable_packages){
     my $node_id = $$node_ref{id};
     my %field_value_hash = ( "node_id"=>$node_id,
                               "package_id"=>$package_id,
-                              "requested"=>1 );
+                              "requested"=>2 );
     my $table = "Node_Package_Status";
     my @fields = ("*");
     my $where = "WHERE package_id=$package_id AND node_id=$node_id";

@@ -409,7 +409,7 @@ oscar_log_subsection("Successfully installed server core RPMs");
 # them in case innodb works as we expected.
 
 # START LOCKING FOR NEST && open the database
-my @tables = ("Nodes","Groups","Group_Nodes", "Packages", "Group_Packages", "Node_Package_Status", "Node_Packages");
+my @tables = ("Nodes","Groups","Group_Nodes", "Packages", "Group_Packages", "Node_Package_Status");
 my %options = ();
 my @errors = ();
 #locking("write", \%options, \@tables, \@errors);
@@ -423,7 +423,7 @@ set_group_nodes($OSCAR_SERVER_GROUP,\@nodes,\%options,\@errors);
 
 print "Updating the status of core packages from installable to installed\n";
 my @package_results = ();
-my $requested = 7;
+my $requested = 8;
 my $group = "core";
 if ( get_packages_with_class($group,\@package_results,\%options,\@errors)){
     die "$0:Failed to update the table Node_Package_Status"

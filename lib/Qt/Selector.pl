@@ -70,6 +70,11 @@ use SelectorAbout;
 use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::Database;
 use Getopt::Long;
 
+my %options = ();
+my @errors = ();
+
+$options{debug} = 1 if $ENV{OSCAR_DB_DEBUG};
+
 sub uic_load_pixmap_Selector
 {
     my $pix = Qt::Pixmap();
@@ -457,10 +462,9 @@ sub exitButton_clicked
   # If the GUI is running as the 'Updater', then we need to go through
   # the list of all packages and find out which ones need to be installed
   # or uninstalled.  
-  my %options = ();
-  my @errors = ();
-  if (installuninstall > 0)
-    { 
+
+#  if (installuninstall > 0)
+#    { 
       my $success;  # Return code for database commands
 
       # First, clear all install/uninstall flags
@@ -479,19 +483,24 @@ sub exitButton_clicked
 
           if (($packagesInstalled->{$package}) && (!$checked))
             { # Need to uninstall package
-              $success = OSCAR::Database::update_node_package_status_with_opkg(  
-                        \%options,"oscar_server",$package,0,\@errors);
+              # status : 1 == should_not_be_installed
+              print "Updating Node_Package_Status to should_not_be_installed\n"
+                  if $options{debug};
+              $success = OSCAR::Database::update_node_package_status(  
+                        \%options,"oscar_server",$package,1,\@errors);
             }
 
           if ((!($packagesInstalled->{$package})) && ($checked))
             { # Need to install package
-              $success = OSCAR::Database::update_node_package_status_with_opkg(  
-                        \%options,"oscar_server",$package,1,\@errors);
+              # status : 2 == should_be_installed
+              print "Updating Node_Package_Status to should_be_installed\n"
+                  if $options{debug};
+              $success = OSCAR::Database::update_node_package_status(  
+                        \%options,"oscar_server",$package,2,\@errors);
             }
         }
-    }
+ #   }
 
-  OSCAR::Database::database_disconnect();
   Qt::Application::exit();
 
 }
@@ -505,7 +514,6 @@ sub cancelButton_clicked
 #  Returns   : Nothing                                                  #
 #########################################################################
 
-  OSCAR::Database::database_disconnect();
   Qt::Application::exit();
 
 }

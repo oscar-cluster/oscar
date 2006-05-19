@@ -142,7 +142,6 @@ $options{debug} = 1
               set_status
               update_node
               update_node_package_status
-              update_node_package_status_with_opkg
               update_packages
 
               dec_already_locked
@@ -1945,7 +1944,7 @@ sub is_installed_on_node {
         $version,
         $requested) = @_;
     my @result = ();    
-    $requested = 7 if (!$requested);    
+    $requested = 8 if (!$requested);    
     my $sql = "SELECT Packages.package, Node_Package_Status.* " .
              "From Packages, Node_Package_Status, Nodes ".
              "WHERE Node_Package_Status.package_id=Packages.id ".
@@ -2038,8 +2037,8 @@ sub delete_group_packages {
         print "DB_DEBUG>$0:\n====> in Database::delete_group_packages SQL : $sql\n" if $$options_ref{debug};
         die "DB_DEBUG>$0:\n====>Failed to delete values via << $sql >>"
             if! do_update($sql,"Group_Packages", $options_ref, $error_strings_ref);
-        update_node_package_status_with_opkg(
-              $options_ref,"oscar_server",$opkg,0,$error_strings_ref);
+        update_node_package_status(
+              $options_ref,"oscar_server",$opkg,1,$error_strings_ref);
     }      
     return 1;    
 }
@@ -2089,12 +2088,8 @@ sub delete_node_packages {
     my ($node_id,
         $options_ref,
         $error_strings_ref) = @_;
-    my $sql = "DELETE FROM Node_Packages WHERE node_id=$node_id";
-    print "DB_DEBUG>$0:\n====> in Database::delete_node_packages SQL : $sql\n" if $$options_ref{debug};
-    die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-        if! do_update($sql,"Node_Packages", $options_ref, $error_strings_ref);
-    $sql = "DELETE FROM Node_Package_Status WHERE node_id=$node_id";
-    print "DB_DEBUG>$0:\n====> in Database::delete_node_packages SQL : $sql\n" if $$options_ref{debug};
+    my $sql = "DELETE FROM Node_Package_Status WHERE node_id=$node_id";
+    print "DB_DEBUG>$0:\n====> in Database::delete_node_package_status SQL : $sql\n" if $$options_ref{debug};
     return do_update($sql,"Node_Package_Status", $options_ref, $error_strings_ref);
 }
 
@@ -2313,15 +2308,28 @@ sub update_node {
 
 # For normal oscar package installation, 
 # the value of  "requested" filed has the following.
-# 0 : should not be installed.
-# 1 : should be installed
-# 7 : finished
+# 1 : should_not_be_installed.
+# 2 : should_be_installed
+# 8 : finished
 sub update_node_package_status {
     my ($options_ref,
         $node,
-        $packages,
+        $passed_pkg,
         $requested,
-        $error_strings_ref) = @_;
+        $error_strings_ref,
+        $passed_ver) = @_;
+    $requested = 1 if ! $requested;    
+    my $packages;
+    if (ref($passed_pkg) eq "ARRAY"){
+        $packages = $passed_pkg;
+    }else{
+        my %opkg = ();
+        my @temp_packages = ();
+        $opkg{package} = $passed_pkg;
+        $opkg{version} = $passed_ver;
+        push @temp_packages, \%opkg;
+        $packages = \@temp_packages;
+    }    
     my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
     my $node_id = $$node_ref{id};
     foreach my $pkg_ref (@$packages) {
@@ -2331,13 +2339,13 @@ sub update_node_package_status {
         my $package_id = $$package_ref{id};
         my %field_value_hash = ("requested" => $requested);
         my $where = "WHERE package_id=$package_id AND node_id=$node_id";
-        if( $requested == 7 && 
+        if( $requested == 8 && 
             ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ){
             print "DB_DEBUG>$0:\n====> in Database::update_node_package_status Updating the status of $opkg to \"installed\".\n";
-        } elsif ( $requested == 1 && 
+        } elsif ( $requested == 2 && 
             ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
             print "DB_DEBUG>$0:\n====> in Database::update_node_package_status Updating the status of $opkg to \"should be installed\".\n";
-        } elsif ( $requested == 0 && 
+        } elsif ( $requested == 1 && 
             ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
             print "DB_DEBUG>$0:\n====> in Database::update_node_package_status Updating the status of $opkg to \"should not be installed\".\n";
         }
@@ -2354,48 +2362,14 @@ sub update_node_package_status {
             die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
                 if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
         }
-        $table = "Node_Packages";
-        delete_table($options_ref,$table,$where,$error_strings_ref);
-        %field_value_hash = ("node_id" => $node_id,
-                             "package_id"=>$package_id);
-        die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
-            if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
+#        $table = "Node_Packages";
+#        delete_table($options_ref,$table,$where,$error_strings_ref);
+#        %field_value_hash = ("node_id" => $node_id,
+#                             "package_id"=>$package_id);
+#        die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
+#            if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
     }
     return 1;
-}
-
-sub update_node_package_status_with_opkg {
-    my ($options_ref,
-        $node,
-        $opkg,
-        $requested,
-        $error_strings_ref,
-        $ver) = @_;
-    my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
-    my $node_id = $$node_ref{id};
-    my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
-    my $package_id = $$package_ref{id};
-    my %field_value_hash = ("requested" => $requested);
-    my $where = "WHERE package_id=$package_id AND node_id=$node_id";
-    if( $requested == 7 && 
-        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ){
-        print "DB_DEBUG>$0:\n====> in Database::update_node_package_status_with_opkg Updating the status of $opkg to \"installed\".\n";
-    } elsif ( $requested == 1 && 
-        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
-        print "DB_DEBUG>$0:\n====> in Database::update_node_package_status_with_opkg Updating the status of $opkg to \"should be installed\".\n";
-    } elsif ( $requested == 0 && 
-        ( $$options_ref{debug} || defined($ENV{DEBUG_OSCAR_WIZARD}) ) ) {
-        print "DB_DEBUG>$0:\n====> in Database::update_node_package_status_with_opkg Updating the status of $opkg to \"should not be installed\".\n";
-    }
-    die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
-        if(!update_table($options_ref,"Node_Package_Status",\%field_value_hash, $where, $error_strings_ref));
-
-    my $table = "Node_Packages";
-    delete_table($options_ref,$table,$where,$error_strings_ref);
-    %field_value_hash = ("node_id" => $node_id,
-                         "package_id"=>$package_id);
-    die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
-        if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
 }
 
 sub update_packages {
@@ -2547,7 +2521,7 @@ sub set_group_packages {
         die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
             if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
     }
-    update_node_package_status_with_opkg(
+    update_node_package_status(
           $options_ref,"oscar_server",$package,$selected,$error_strings_ref);
     return 1;
 }
@@ -2736,10 +2710,23 @@ sub set_status {
     die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
         if! do_select($sql,\@status, $options_ref, $error_strings_ref);
     if(!@status){ 
-        foreach my $status ("installable", "installed",
-                            "install_allowed","should_be_installed", 
-                            "should_be_uninstalled","uninstalled",
-                            "finished"){
+        foreach my $status (
+                            "should_not_be_installed",
+                            "should_be_installed",
+                            "undefined_1",
+                            "undefined_2",
+                            "undefined_3",
+                            "undefined_4",
+                            "undefined_5",
+                            "undefined_6",
+                            "finished"
+                            ){
+#   OLD Status values                            
+#                          ( "installable", "installed",
+#                            "install_allowed","should_be_installed", 
+#                            "should_be_uninstalled","uninstalled",
+#                            "finished")
+                            
             $sql = "INSERT INTO Status (name) VALUES ('$status')";
             print "DB_DEBUG>$0:\n====> in Database::set_status SQL : $sql\n" if $$options_ref{debug};
             die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"

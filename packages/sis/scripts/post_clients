@@ -156,11 +156,11 @@ if ( exists $options{oda} ) {
 # START LOCKING FOR NEST && open the oscar database
 my @error_strings = ();
 
-my @tables = ("Nodes","Packages","Node_Packages","Node_Package_Status","Nics","Groups","Group_Nodes","Networks","Clusters");
-if(! locking("write", \%oda_options, \@tables, \@error_strings)){
-    warn shift @error_strings while @error_strings;
-    usage( 1, "cannot lock the database and connect to the OSCAR database" );
-}
+my @tables = ("Nodes","Packages","Node_Package_Status","Nics","Groups","Group_Nodes","Networks","Clusters");
+#if(! locking("write", \%oda_options, \@tables, \@error_strings)){
+#    warn shift @error_strings while @error_strings;
+#    usage( 1, "cannot lock the database and connect to the OSCAR database" );
+#}
 
 #=================================================================
 
@@ -496,7 +496,7 @@ foreach my $node_name ( keys %sis_nodes ) {
 
 
 # UNLOCKING FOR NEST && disconnect from the OSCAR database;
-unlock(\%oda_options, \@error_strings);
+#unlock(\%oda_options, \@error_strings);
 
 
 exit 0;

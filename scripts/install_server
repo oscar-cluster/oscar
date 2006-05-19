@@ -103,7 +103,7 @@ oscar_log_subsection("Successfully installed server non-core RPMs");
 #
 
 # START LOCKING FOR NEST
-my @tables = ("Node_Package_Status", "Nodes", "Packages","Node_Packages");
+my @tables = ("Node_Package_Status", "Nodes", "Packages");
 my %options = ();
 my @errors = ();
 locking("write", \%options, \@tables, \@errors);
@@ -113,7 +113,7 @@ locking("write", \%options, \@tables, \@errors);
 
 oscar_log_subsection("Marking installed bit in ODA for server non-core RPMS");
 
-my $requested = 7; # "Installed" flag for the Node_Package_Status"
+my $requested = 8; # "Installed" flag for the Node_Package_Status"
 die "$0:Failed to update the table Node_Package_Status"
     if(!update_node_package_status(\%options,$OSCAR_SERVER_NODE,\@opkgs,$requested,\@errors));
 

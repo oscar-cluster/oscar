@@ -716,7 +716,7 @@ sub do_sql_command {
         push @$error_strings_ref,
         "Error message: $failure_string in database <$$options_ref{database}>: $DBI::errstr";
         push @$error_strings_ref, 
-        "SQL command that failed was: <$sql_command>";
+        "$0: SQL command that failed was: <$sql_command>";
         warn shift @$error_strings_ref while @$error_strings_ref;
 
         oda_disconnect( $options_ref,

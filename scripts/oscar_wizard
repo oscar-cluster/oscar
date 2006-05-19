@@ -667,8 +667,8 @@ sub do_it_or_die {
 
 sub populate_client_group_nodes {
     my @pkgs = list_selected_packages("all");
-    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status", "Node_Packages");
-    locking("WRITE", \%options, \@tables, \@errors);
+    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status");
+#    locking("WRITE", \%options, \@tables, \@errors);
     my @client_nodes = ();
     get_client_nodes(\@client_nodes,\%options,\@errors);
     my @nodes = ();
@@ -681,12 +681,12 @@ sub populate_client_group_nodes {
     set_group_nodes($client_group,\@nodes,\%options,\@errors);
 
     # We assume that all the selected packages should be installed
-    my $status = 1;
+    my $status = 2;
     foreach my $node_name (@nodes){
         update_node_package_status(\%options,$node_name,\@pkgs,$status,\@errors);
     }     
     
-    unlock(\%options, \@errors);
+#    unlock(\%options, \@errors);
 }
 
 ###########################################################################
@@ -728,8 +728,8 @@ sub run_post_install {
 
 sub update_client_node_package_status {    
 	my @pkgs = list_selected_packages();
-    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status", "Node_Packages");
-    locking("WRITE", \%options, \@tables, \@errors);
+    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status");
+#    locking("WRITE", \%options, \@tables, \@errors);
     my @client_nodes = ();
     get_client_nodes(\@client_nodes,\%options,\@errors);
     my @nodes = ();
@@ -740,12 +740,12 @@ sub update_client_node_package_status {
     }
 
     # We assume that all the selected packages should be installed
-    my $status = 7;
+    my $status = 8;
     foreach my $node_name (@nodes){
         update_node_package_status(\%options,$node_name,\@pkgs,$status,\@errors);
     }     
     
-    unlock(\%options, \@errors);
+#    unlock(\%options, \@errors);
 }
 
 ###########################################################################

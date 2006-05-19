@@ -1,30 +1,3 @@
---  This program is free software; you can redistribute it and/or modify
---  it under the terms of the GNU General Public License as published by
---  the Free Software Foundation; either version 2 of the License, or
---  (at your option) any later version.
-
---  This program is distributed in the hope that it will be useful,
---  but WITHOUT ANY WARRANTY; without even the implied warranty of
---  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
---  GNU General Public License for more details.
-
---  You should have received a copy of the GNU General Public License
---  along with this program; if not, write to the Free Software
---  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
---  USA
-
---
--- Copyright (c) 2006 The Trustees of Indiana University.
---                    All rights reserved.
---
--- $Id$
---
-
---
--- All the OSCAR database tables are defined here and any changes on
--- this file will directly affect the OSCAR database implementation.
---
-
 -- Clusters
 CREATE TABLE IF NOT EXISTS Clusters(
     headnode_interface VARCHAR(100),
@@ -224,7 +197,7 @@ CREATE TABLE IF NOT EXISTS Node_Package_Status(
     error  text,
     node_id  integer not null,
     package_id  integer not null,
-    requested  integer not null,
+    requested  integer not null default 1,
     status  integer not null,
     PRIMARY KEY (node_id, package_id, requested),
     KEY node_id ( node_id ),
@@ -256,17 +229,6 @@ CREATE TABLE IF NOT EXISTS Group_Packages(
     KEY group_name ( group_name ),
     CONSTRAINT Group_Packages_ibfk_1 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
     CONSTRAINT Group_Packages_ibfk_2 FOREIGN KEY (group_name) REFERENCES Groups (name) ON DELETE CASCADE ON UPDATE CASCADE
-)TYPE=INNODB;
-
--- Node_Packages
-CREATE TABLE IF NOT EXISTS Node_Packages(
-    node_id  integer not null,
-    package_id  integer not null,
-    PRIMARY KEY (node_id, package_id),
-    KEY node_id ( node_id ),
-    KEY package_id ( package_id ),
-    CONSTRAINT Node_Packages_ibfk_1 FOREIGN KEY (node_id) REFERENCES Nodes (id) ON DELETE CASCADE,
-    CONSTRAINT Node_Packages_ibfk_2 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE
 )TYPE=INNODB;
 
 -- Image_Packages
