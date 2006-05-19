@@ -11,7 +11,7 @@
 share/prereqs/update-rpms
 share/prereqs/perl-XML-Parser
 share/prereqs/perl-XML-Simple
-share/prereqs/oda
+packages/oda
 share/prereqs/perl-HTML-Tree
 share/prereqs/perl-Tk
 share/prereqs/perl-Qt

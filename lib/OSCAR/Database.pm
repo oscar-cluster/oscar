@@ -451,7 +451,7 @@ sub select_table {
 sub create_table {
      my ($options_ref, $error_strings_ref) = @_;
         
-    my $sql_dir = "$ENV{OSCAR_HOME}/share/prereqs/oda";
+    my $sql_dir = "$ENV{OSCAR_HOME}/packages/oda/scripts";
     my $sql_file = "$sql_dir/oscar_table.sql";
     
     print "DB_DEBUG>$0:\n====> in Database::create_table uses the SQL statement which are already defined at $sql_file" if $$options_ref{verbose};
