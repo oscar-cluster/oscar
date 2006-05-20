@@ -31,9 +31,9 @@ use base qw(Exporter);
 use SIS::Client;
 use SIS::DB;
 use OSCAR::Database;
+use OSCAR::Network;
 use OSCAR::Package;
 use OSCAR::oda;
-
 
 @EXPORT = qw(delnode_window);
 
@@ -120,6 +120,9 @@ sub delnodes {
     my @server_services=();
     my $print_error=1;
 
+    my $interface = get_headnode_iface();
+    my $install_mode = get_install_mode();
+
     # get the list of generic services
     get_packages_servicelists(\@generic_services,"");
     
@@ -190,6 +193,20 @@ sub delnodes {
         }
     }
 
+    my ($ip, $broadcast, $netmask) = interface2ip($interface);
+    my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
+
+    if ($install_mode eq "systemimager-multicast"){
+       $cmd = $cmd . " --multicast=yes";
+    }
+
+    print("Running mkdhcpconf\n");
+    !system($cmd) or croak("Failed to run $cmd");
+
+    $cmd = "/etc/init.d/dhcpd restart";
+    print("Restarting dhcpd\n");
+    !system($cmd) or croak("Failed to run $cmd");
+
     fill_listbox($listbox);
     if ($fail) {
       error_window($window,"Clients deleted, but reconfiguration failed.");
@@ -200,9 +217,6 @@ sub delnodes {
         return 1;
     }
 }
-
-
-
 
 #
 # NEST
