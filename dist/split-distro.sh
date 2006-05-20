@@ -38,7 +38,7 @@ get_distro_dirs () {
     
 cd $srcdir
 
-supported_mask="fc|rhel|suse|debian|mdv|mdk"
+supported_mask="fc|rhel|suse|debian|mdv"
 
 distbase=`basename $distdir`
 
