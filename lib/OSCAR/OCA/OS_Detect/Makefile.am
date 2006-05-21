@@ -15,7 +15,6 @@ oscar_SCRIPTS		= \
 			Mandriva.pm \
 			ScientificLinux.pm \
 			CentOS.pm \
-			Mandrake.pm \
 			Debian.pm \
 			SuSE.pm
 
