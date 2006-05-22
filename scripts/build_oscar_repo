@@ -135,7 +135,7 @@ if [ ! -d "$TARGET" -a ! -L "$TARGET" ]; then
     exit 5
 fi
 
-SEARCHDIRS="share/prereqs packages"
+SEARCHDIRS="$OHOME/share/prereqs $OHOME/packages /var/lib/oscar/packages"
 
 cd $OHOME
 echo "Copying packages ..."

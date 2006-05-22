@@ -53,7 +53,6 @@ GetOptions( \%options,
 	    'arch|a=s',
 	    'distro|d=s',
 	    'image|i=s',
-            'erase|e',
 	    'help|h',
 	    'pool|p=s',
             'test|t',
@@ -64,7 +63,7 @@ GetOptions( \%options,
 my $os = OSCAR::OCA::OS_Detect::open($options{image});
 die "Unable to determine operating system" if (!$os);
 
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path($options{image});
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url($options{image});
 
 # set package name
 $ENV{OSCAR_PACKAGE_HOME} =~ s:/$::;
@@ -128,16 +127,16 @@ if ($os->{pkg} eq "rpm") {
     push @src_dirs, "distro/common-debs" if (-d "$base_dir/distro/common-debs");
 }
 my ($non_common, $have_pkgs);
-for my $dir (distro_compat()) {
-    if (-d "$base_dir/distro/$dir") {
-	push @src_dirs, "distro/$dir";
-	$non_common = 1;
-	# check for empty directories
-	my @my_pkgs = glob("$base_dir/distro/$dir/*");
-	$have_pkgs = 1 if (scalar(@my_pkgs) > 0);
-	last;
-    }
+my ($name, $ver) = distroname();
+my $dir = $name. $ver . "-" . $march;
+if (-d "$base_dir/distro/$dir") {
+    push @src_dirs, "distro/$dir";
+    $non_common = 1;
+    # check for empty directories
+    my @my_pkgs = glob("$base_dir/distro/$dir/*");
+    $have_pkgs = 1 if (scalar(@my_pkgs) > 0);
 }
+
 # Are there any other package directories around?
 # This test makes no sense once we'll have distro-specific OSCAR tarballs
 my @any_dirs = glob("$base_dir/distro/{rhel,fc,mdk,mdv,debian}*");
@@ -197,28 +196,20 @@ for my $pkg (@argpkgs) {
     } else {
     	$basename = (sort {length($a) <=> length($b)} @possibles)[0];
     }
-    if ($options{erase}) {
-	print "  * deleting $basename\n";
-	unless( -f "$oscar_pkg_pool/$basename" && $options{test} ) {
-	    unlink( "$oscar_pkg_pool/$basename" ) ||
-		croak("Error occured while deleting: $!");
-	}
-    } else {
-	my $filename = $pkglist{$basename};
-	my $msg = dirname($filename)."/${pkg}.txt";
-	if (-f $msg) {
-	    print STDOUT "\n::::::::::::::-------------------------\n";
-	    open IN, "< $msg" or croak("Couldn't open $msg");
-	    my @lines = <IN>;
-	    close IN;
-	    print STDOUT map {": $_"} @lines;
-	    print STDOUT "::::::::::::::-------------------------\n";
-	}
-	print "  * copying $filename\n";
-	if (!defined $options{test}) {
-	    !system("cp -p $filename $oscar_pkg_pool") ||
-		croak("Error occured while copying: $!");
-	}
+    my $filename = $pkglist{$basename};
+    my $msg = dirname($filename)."/${pkg}.txt";
+    if (-f $msg) {
+	print STDOUT "\n::::::::::::::-------------------------\n";
+	open IN, "< $msg" or croak("Couldn't open $msg");
+	my @lines = <IN>;
+	close IN;
+	print STDOUT map {": $_"} @lines;
+	print STDOUT "::::::::::::::-------------------------\n";
+    }
+    print "  * copying $filename\n";
+    if (!defined $options{test}) {
+	!system("cp -p $filename $oscar_pkg_pool") ||
+	    croak("Error occured while copying: $!");
     }
 }
 
@@ -230,40 +221,6 @@ exit 0;
 
 sub vprint {
     print @_ if ($options{verbose});
-}
-
-#
-# Compatibility chain of distro-specific package sources
-#
-sub distro_compat {
-    my @compatlist;
-    # get standard distro name and version
-    my ($name, $ver) = distroname();
-
-    # remove "." from version name
-    my $ver1 = $ver;
-    $ver1 =~ s/\.//;
-
-    # remove part behind first dot in version name
-    my $ver2 = $ver;
-    $ver2 =~ s/\..*$//g;
-
-    # the order is important!
-    push @compatlist, $name . $ver  . "-" . $march;
-    push @compatlist, $name . $ver;
-    if( $ver1 ne $ver ) {
-	push @compatlist, $name . $ver1 . "-" . $march;
-	push @compatlist, $name . $ver1;
-    }
-    if( $ver2 ne $ver ) {
-	push @compatlist, $name . $ver2 . "-" . $march;
-	push @compatlist, $name . $ver2;
-    }
-    push @compatlist, $name         . "-" . $march;
-    push @compatlist, $name;
-
-    vprint("Compatlist: ".join(" ",@compatlist)."\n");
-    return @compatlist;
 }
 
 #
@@ -302,7 +259,6 @@ Usage: generic-setup [options] [pkg1 pkg2 ...]
  Options:
    --arch|-a      : override locally detected architecture
    --distro  D-V  : translated distro string (for testing only!)
-   --erase|-e     : erase packages with same name from pool
    --help|-h      : display this help text
    --pool|-p path : override setting of pool path
    --test|-t      : just test without copying or erasing files

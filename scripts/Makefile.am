@@ -15,6 +15,7 @@ include $(top_srcdir)/dist/Makefile.options
 
 oscar_SCRIPTS		= \
 			allow_client_access \
+			build_oscar_repo \
 			c3_conf_manager \
 			client_status \
 			create_and_populate_basic_node_info \
@@ -28,7 +29,6 @@ oscar_SCRIPTS		= \
 			macinfo2sis \
 			make_database_password \
 			opd \
-			opkg-copy \
 			oscar_wizard \
 			package_config_xmls_to_database \
 			ping_clients \
@@ -36,6 +36,7 @@ oscar_SCRIPTS		= \
 			post_clients \
 			post_install \
 			post_rpm_install \
+			prep_oscar_repos \
 			repo-update \
 			set_global_oscar_values \
 			set_node_nics \

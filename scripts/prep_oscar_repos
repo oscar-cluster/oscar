@@ -13,13 +13,13 @@ use strict;
 use Getopt::Long;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackagePath;
-use Path::Basename;
+use File::Basename;
 use Carp;
 
 
 my ($all, $verbose);
 GetOptions(
-	   "all"       => \$all,
+	   #"all"       => \$all,
            "verbose"   => \$verbose,
            ) || &usage(1);
 
@@ -42,17 +42,20 @@ print "Available Distro Pools:\n".Dumper(%pools) if ($verbose);
 my %oscar_pools;
 
 for my $distro (keys(%pools)) {
+    my $os = $pools{$distro}{os};
     my @oscar_repos = split(",",$pools{$distro}{oscar_repo});
     for my $or (@oscar_repos) {
 	# skip if this comes from an .url config file
 	next if ($or !~ /^\//);
-	# skip if we already prepared it
+
 	my $base = basename($or);
+	# skip if we already prepared it
 	next if (exists($oscar_pools{$base}));
 	my $dir = dirname($or);
-	my $cmd = "$ohome/scripts/build_oscar_repo -d $distro -t $dir";
+	my $cmd = "$ohome/scripts/build_oscar_repo -d $base -t $dir";
 	print "Executing: $cmd" if $verbose;
 	!system($cmd) or carp("Error occured while executing: $cmd");
+	$oscar_pools{$base} = 1;
     }
 }
 
