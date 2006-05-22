@@ -1109,12 +1109,23 @@ sub check_root_password{
         if ($options{user} eq "root" && $options{password} eq ""){
             print "\n================================================================\n";
             print "Your $database has already setup the root password.\n";
-            print "To proceed, please enter your root password of $database: ";
-            $| = 1;
-            system("stty -echo");
-            chomp(my $password = <STDIN>);
-            print "\n";
-            system("stty echo");
+            my $password = "";
+            while(1){
+                print "To proceed, please enter your root password of $database: ";
+                $| = 1;
+                system("stty -echo");
+                chomp($password = <STDIN>);
+                print "\n";
+                system("stty echo");
+                @databases = 
+                    $driver_handle->func($options{host},
+                                         $options{port},
+                                         "root",
+                                         $password,
+                                         '_ListDBs');
+                last if @databases;
+                print "\nThe password is not correct!!! Please try it again.\n";
+            }
 
             $options{password} = $password;
             print "================================================================\n\n";
