@@ -70,7 +70,7 @@ my $os = &OSCAR::PackagePath::distro_detect_or_die();
 #
 # Locate package pools and create the directories if they don't exist, yet.
 #
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path(os=>$os);
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
 
 my $ARCH = `uname -i`;
@@ -94,12 +94,10 @@ print "Available Distro Pools:\n".Dumper(%distro_pools) if ($verbose);
 
 my $ipcmd = "$ohome/scripts/install_prereq $verbose";
 
-# Run the prerequisites.  Observe the order set in
-# share/prereqs/order.txt, and then run any that are not explicitly
-# listed in there.
+
+
 
 oscar_log_subsection("Bootstrapping OSCAR smart package manager");
-
 
 # install_prereq is a very powerfull tool. It can install and remove
 # packages based on a simple configuration file which distinguishes
@@ -122,27 +120,89 @@ my $cmd;
 #     those require installing both rapt and yume
 if ($os->{pkg} eq "rpm") {
     # rpm based distros use yume
-    $cmd = "$ipcmd --dumb share/prereqs/base packages/yume".
-	" share/prereqs/packman";
+    $cmd = "$ipcmd --dumb packages/yume share/prereqs/packman";
 } elsif($os->{pkg} eq "deb") {
     # debian based distros use rapt
-    $cmd = "$ipcmd --dumb share/prereqs/base packages/rapt".
-	" share/prereqs/packman";
+    $cmd = "$ipcmd --dumb packages/rapt share/prereqs/packman";
 } else {
     die "Unsupported package manager: ".$os->{pkg};
 }
 !system($cmd) or
     die "Could not bootstrap smart package manager!\n";
 
+#
 # this is needed for the checksum computations which shorten startup times
+#
 eval("require OSCAR::PackageSmart");
+if ($!) {
+    print "eval require PackageSmart returned $!\n";
+}
 my $md5dir = $ENV{OSCAR_HOME}."/tmp";
 if (! -d $md5dir) {
     mkdir $md5dir or croak "Could not make directory $md5dir: $!";
 }
 
 
+##
+## Get repositories up (if in developer mode. Otherwise just test if repos
+## are already around.)
+##
+#if (exists($ENV{OSCAR_DEVELOPER_MODE})) {
+    oscar_log_subsection("Setting up OSCAR repositories.");
+    $cmd = $ENV{OSCAR_HOME}."/scripts/prep_oscar_repos";
+    !system($cmd) or
+	die "Could not set up OSCAR repositories, command $cmd returned $? $!\n";
+#} else {
+#    # check if repos already around...
+#    oscar_log_subsection("Checking OSCAR repositories existence.");
+#
+#    my %orepo_done;
+#    for my $dist (keys %distro_pools) {
+#	my %d = %{$distro_pools{$dist}};
+#
+#
+#	for my $distro_repo (split(",",$d{distro_repo})) {
+#	    next if ($distro_repo =~ /^(http|ftp|mirror):/);
+#	    (my $lrepo = $distro_repo) =~ s/^file://;
+#
+#	    # repo checksum in tmp or in the repo?
+#	    # this is checked implicitely by prepare_pools
+#	    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
+#							$lrepo);
+#	    if (!$pm) {
+#		croak "\nERROR: Could not prepare pool $lrepo!\n";
+#	    }
+#	    undef $pm;
+#	}
+#
+#	for my $oscar_repo (split(",",$d{oscar_repo})) {
+#	    next if (exists $orepo_done{"$oscar_repo"});
+#	    next if ($oscar_repo =~ /^(http|ftp|mirror):/);
+#	    (my $lrepo = $oscar_repo) =~ s/^file://;
+#
+#	    # repo checksum in tmp or in the repo?
+#	    # this is checked implicitely by prepare_pools
+#	    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
+#							$lrepo);
+#	    if (!$pm) {
+#		croak "\nERROR: Could not prepare pool $lrepo!\n";
+#	    }
+#	    undef $pm;
+#	}
+#    }
+#}
+
+#
+# base prereqs install start before the others, they're done smartly
+#
+$cmd = "$ipcmd share/prereqs/base";
+!system($cmd) or
+    die "Could not install base prereqs!\n";
+
+
+
 # hack...
+# EF: will move to install_prereqs [shell]
 if ($os->{pkg} eq "rpm") {
     system("yum clean all");
 }
@@ -277,33 +337,6 @@ oscar_log_subsection("Successfully ran package setup scripts");
 
 
 
-my %orepo_done;
-my $err = 0;
-for my $dist (keys %distro_pools) {
-    my %d = %{$distro_pools{$dist}};
-    my $oscar_repo = $d{oscar_repo};
-    next if (exists $orepo_done{"$oscar_repo"});
-    my $gs_distro = $d{os}->{compat_distro}."-".$d{os}->{compat_distrover};
-    my $gs_arch = $d{os}->{arch};
-    # 
-    oscar_log_subsection("Running opkg-copy for $gs_distro $gs_arch");
-    my $cmd = "$ohome/scripts/opkg-copy --distro=$gs_distro --arch=$gs_arch".
-	" --pool=$oscar_repo $verbose --all";
-    
-    print "\texecuting: $cmd\n" if ($verbose);
-    my $ret = system($cmd);
-    if ($ret) {
-	oscar_log_subsection("Error $ret was returned for opkg-copy");
-	if (!$err) {
-	    $err = $ret;
-	}
-    } else {
-	oscar_log_subsection("Successfully ran opkg-copy for $gs_distro $gs_arch");
-    }
-}
-if ($err) {
-    croak("Failure during opkg-copy!");
-}
 
 # recalculate checksum because "setup" might have changed something
 $md5 = OSCAR::PackageSmart::checksum_files("$ENV{OSCAR_HOME}/packages","*");
@@ -453,6 +486,7 @@ OSCAR::PackageSmart::checksum_write("$md5dir/packages_core.md5",$md5);
 #
 # Prepare and export all repositories
 #
+# !!EF!! not caring about remote repositories, yet
 for my $dist (keys %distro_pools) {
     my %d = %{$distro_pools{$dist}};
     my $oscar_repo = $d{oscar_repo};
