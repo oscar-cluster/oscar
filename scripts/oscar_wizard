@@ -175,11 +175,13 @@ if ( $mode eq "install" ) {
 oscar_button($window, $step_string,
              "Download Additional OSCAR Packages...",
              [sub { my $olddir = Cwd::cwd();
-              chdir($ENV{OSCAR_HOME} . '/lib/Qt');
-              system('/usr/bin/perl Opder.pl'); 
-              chdir($olddir);
-            }],
-      'download_packages');
+		    chdir($ENV{OSCAR_HOME} . '/lib/Qt');
+		    system('/usr/bin/perl Opder.pl');
+		    chdir($ENV{OSCAR_HOME} . '/scripts');
+		    system("./prep_oscar_repos");
+		    chdir($olddir);
+		}],
+	     'download_packages');
 
 if ( $mode eq "install" ) {
    # Select packages for installation
@@ -423,7 +425,7 @@ sub build_oscar_image {
 
     my $distro_pool = &OSCAR::PackagePath::distro_repo_url("/");
     $distro_pool =~ s/\ /,/g;
-    my $oscar_pool = &OSCAR::PackagePath::oscar_repo_path("/");
+    my $oscar_pool = &OSCAR::PackagePath::oscar_repo_url("/");
 
     my $step_string = "";
     $step_string = "Step $step_number: " if $mode eq "install";
