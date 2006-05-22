@@ -63,7 +63,7 @@ sub prepare_pools {
     my $perr = 0;
     for my $pool (@pools) {
 	print "--- checking md5sum for $pool" if $verbose;
-	if ($pool =~ /^(http|ftp)/) {
+	if ($pool =~ /^(http|ftp|mirror)/) {
 	    print " ... remote repo, no check needed.\n" if $verbose;
 	    next;
 	}
@@ -134,7 +134,7 @@ sub checksum_files {
     print "Checksumming directory ".cwd()."\n" if ($verbose);
     @pattern = map { "-name '".$_."'" } @pattern;
     my $cmd = "find . -follow -type f \\( ".join(" -o ",@pattern).
-	" \\) -printf \"%p %i %s %u %g %m %t\\n\" | sort ";
+	" \\) -printf \"%p %s %u %g %m %t\\n\" | sort ";
     if ($verbose > 7) {
 	my $tee = $ENV{OSCAR_HOME}."/tmp/".basename($dir).".files";
 	$cmd .= "| tee $tee | md5sum -";
@@ -188,6 +188,7 @@ sub checksum_needed {
 
     my $md5 = &checksum_files($dir,@pattern);
     print "Current checksum ($cfile): $md5\n" if ($verbose);
+    my $ifile = $dir . "/" . basename($cfile);
     if (-f $cfile) {
 	my $omd5 = &checksum_read($cfile);
 	print "Old checksum ($cfile): $omd5\n" if ($verbose);
@@ -195,6 +196,22 @@ sub checksum_needed {
 	    return 0;
 	} else {
 	    print "CHECKSUM: $cfile new:$md5 old:$omd5\n";
+	}
+    } elsif (-f $ifile) {
+	#
+	# repo-internal checksum for repositories delivered as tarballs
+	# they should contain the metadata cache already, therefore
+	# simply copy the internal checksum to the expected checksum file
+	#
+	my $imd5 = &checksum_read($ifile);
+	print "Repo-internal checksum ($ifile): $imd5\n" if ($verbose);
+	if ($md5 == $imd5) {
+	    # [EF: is the failure handling appropriate?]
+	    !system("cp $ifile $cfile")
+		or carp("Could not copy internal checksum file to $cfile");
+	    return 0;
+	} else {
+	    print "CHECKSUM: $cfile new:$md5 internal:$imd5\n";
 	}
     }
     return $md5;
