@@ -1111,7 +1111,11 @@ sub check_root_password{
             print "Your $database has already setup the root password.\n";
             print "To proceed, please enter your root password of $database: ";
             $| = 1;
+            system("stty -echo");
             chomp(my $password = <STDIN>);
+            print "\n";
+            system("stty echo");
+
             $options{password} = $password;
             print "================================================================\n\n";
         }    
