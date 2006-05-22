@@ -38,8 +38,8 @@ for my $p (@ARGV) {
     }
 }
 
-# need one of the two
-&usage(1) if (!$smart && !$dumb);
+# enforce smart mode if dumb isn't set
+$smart = 1 if (!$dumb);
 
 #
 # Own distro detection
@@ -48,30 +48,19 @@ my $os = &OSCAR::PackagePath::distro_detect_or_die();
 my $distro    = $os->{distro};
 my $distrover = $os->{distro_version};
 my $arch      = $os->{arch};
+my $suffix    = $os->{pkg};
+my $dstring   = $os->{compat_distro}.$os->{compat_distrover}.
+    "-".$os->{arch};
+my $cstring   = "common-".$suffix."s";
 
 # locate destination path for prereq package files and repository url
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
-my $suffix = &OSCAR::PackagePath::pkg_extension();
 my $separator = &OSCAR::PackagePath::pkg_separator();
 
 vprint("OSCAR pkg path: $oscar_pkg_pool\n");
 vprint("Distro pkg path: $distro_pkg_pool\n");
 vprint("Prereq paths: ".join(",",@prereqs))."\n";
-
-#
-# copy files to repository with generic-setup
-#
-my $gs = "$ohome/scripts/generic-setup";
-die "ERROR: $gs is not executable!" if (! -x $gs);
-$gs .= " --verbose" if ($verbose);
-
-for my $p (@prereqs) {
-    my $cmd = "env OSCAR_PACKAGE_HOME=$p $gs --pool $oscar_pkg_pool";
-    vprint("Executing: $cmd\n");
-    !system($cmd) or
-	die "\nERROR: prereq install for $p failed!\n";
-}
 
 #
 # Is this "smart mode"? Then load PackMan and regenerate the metadata cache
@@ -89,7 +78,10 @@ if ($smart) {
 # now go with the processing
 
 # collect all config lines and build list of packages to be installed/removed
-my (@removes, @installs);
+# collect all shell commands to be executed
+# ...
+
+my (@removes, @installs, @shellcmds, %files);
 for my $path (@prereqs) {
     # read in prereq.cfg file
     my $ref = &get_config($path, $distro, $distrover, $arch);
@@ -100,15 +92,25 @@ for my $path (@prereqs) {
     for my $line (@{$ref}) {
 	$line =~ s/^\s*//g;
 	next if ($line =~ /^\#/ && $line =~ /^$/);
-	my $remove = ($line =~ /^!/);
-	if ($remove) {
-	    $line =~ s/^!//g;
-	}
-	my ($pkg,$dummy) = split(/\s+/,$line);
-	if ($remove) {
-	    push @removes, $pkg;
+
+	if ($line =~ /^sh:(.*)$/) {
+	    # shell script execution
+	    my $cmd = $1;
+	    $cmd =~ s/^\s*//;
+	    next if (!$cmd);
+	    push @shellcmds, $cmd;
 	} else {
-	    push @installs, $pkg;
+
+	    my $remove = ($line =~ /^!/);
+	    if ($remove) {
+		$line =~ s/^!//g;
+	    }
+	    my ($pkg,$dummy) = split(/\s+/,$line);
+	    if ($remove) {
+		push @removes, $pkg;
+	    } else {
+		push @installs, $pkg;
+	    }
 	}
     }
 }
@@ -117,13 +119,15 @@ vprint("Following packages will be removed:\n\t".
        join("\n\t",@removes) . "\n");
 vprint("Following packages will be installed:\n\t".
        join("\n\t",@installs) . "\n");
+vprint("Following shell commands will be executed:\n\t".
+       join("\n\t",@shellcmds) . "\n");
 
 if ($dumb) {
-    if ($suffix eq ".rpm") {
+    if ($suffix eq "rpm") {
 	# do the removes before the installs
 	handle_dumb_rpms(1,@removes);
 	handle_dumb_rpms(0,@installs);
-    } elsif ($suffix eq ".deb") {
+    } elsif ($suffix eq "deb") {
 	# do the removes before the installs
 	handle_dumb_debs(1,@removes);
 	handle_dumb_debs(0,@installs);
@@ -134,6 +138,19 @@ if ($dumb) {
     # do the removes before the installs
     handle_smart_pkgs($path,1,@removes);
     handle_smart_pkgs($path,0,@installs);
+}
+
+# check whether rpms were really installed!!!
+# ...
+
+if (scalar(@installs) && &check_installed(@installs)) {
+    print "!!! Some packages were NOT installed !!!\n";
+    exit 1;
+}
+
+for my $cmd (@shellcmds) {
+    vprint("Executing: $cmd\n");
+    !system("$cmd") or print "Command \"$cmd\" returned $?\n";
 }
 
 exit 0;
@@ -248,27 +265,89 @@ sub handle_dumb_debs {
 #
 # try to locate a package file in the repositories
 #
+# !!EF!! Need to deal with the case that the oscar repos are on the web!
+# - try to locate first within package or prereq distro directory
+#   (should we always deliver bootstrap packages, even when all other
+#   packages are stripped away?)
+#
+
 sub locate_pkg {
     my ($pkg) = @_;
     my $march = $arch;
     $march = "i?86" if ($arch eq "i386");
+    my $found = 0;
     my @pkgs;
-    if ($pkg =~ /$suffix$/) {
-	my @tmp = glob("$oscar_pkg_pool/$pkg $distro_pkg_pool/$pkg");
-	for my $f (@tmp) {
-	    push @pkgs, $f if (-f $f);
-	}
+    my @globstr;
+    my $pkgmatch;
+    if ($pkg =~ /\.$suffix$/) {
+	$pkgmatch = $pkg;
+	$pkgmatch =~ s/$suffix$/*$suffix/;
     } else {
-	@pkgs = glob("$oscar_pkg_pool/$pkg$separator"."[0-9]*{$march,noarch}$suffix ".
-                     "$distro_pkg_pool/$pkg$separator"."[0-9]*{$march,noarch}$suffix");
+	$pkgmatch = "$pkg$separator"."[0-9]*{$march,noarch}.$suffix";
     }
-    vprint("locate_pkg glob result: ".join(",",@pkgs)."\n");
-    # simply return the last one
-    # EF: actually we need some version comparison here
-    if (scalar @pkgs) {
-	return (reverse(sort(@pkgs)))[0];
+
+    # 
+    my @lrepos;
+    for my $repo ( split(",",$oscar_pkg_pool), split(",",$distro_pkg_pool) ) {
+	if (($repo =~ /^\//) || ($repo =~ /^(file):/)) {
+	    $repo =~ s/^file://;
+	    push @lrepos, $repo;
+	}
     }
+
+    push @globstr, $ENV{OSCAR_HOME}."/packages/*/distro/$cstring/$pkgmatch";
+    push @globstr, $ENV{OSCAR_HOME}."/packages/*/distro/$dstring/$pkgmatch";
+    push @globstr, $ENV{OSCAR_HOME}."/share/prereqs/*/distro/$cstring/$pkgmatch";
+    push @globstr, $ENV{OSCAR_HOME}."/share/prereqs/*/distro/$dstring/$pkgmatch";
+
+    push @globstr, map { "$_/$pkgmatch" } @lrepos;
+
+    vprint("globstring: ".join(" ",@globstr)."\n");
+    my @tmp = glob(join(" ",@globstr));
+    vprint("locate_pkg glob result: ".join(",",@tmp)."\n");
+    if (scalar(@tmp)) {
+	if (-f $tmp[$#tmp]) {
+	    return $tmp[$#tmp];
+	}
+    }
+
+    #
+    # Try downloading from remote repositories?
+    #
+    # ...
+
     return undef;
+}
+
+#
+# Check whether packages were really installed or not
+#
+sub check_installed {
+    my (@pkgs) = @_;
+    my ($cmd, $err);
+    $err = 0;
+    for my $p (@pkgs) {
+	# strip suffix is argument is a complete package name
+	if ($p =~ /\.$suffix$/) {
+	    $p =~ s/\.$suffix$//;
+	}
+	if ($suffix eq "rpm") {
+	    $cmd = "rpm -q $p >/dev/null 2>&1";
+	    vprint("Executing: $cmd\n");
+	    if (system($cmd)) {
+		$err++;
+		print "WARNING: Package $p was not installed!\n";
+	    }
+	} elsif ($suffix eq "deb") {
+	    $cmd = "dpkg --status $p >/dev/null 2>&1";
+	    vprint("Executing: $cmd\n");
+	    if (system($cmd)) {
+		$err++;
+		print "WARNING: Package $p was not installed!\n";
+	    }
+	}
+    }
+    return $err;
 }
 
 sub vprint {
