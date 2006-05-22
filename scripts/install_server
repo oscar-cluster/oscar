@@ -50,7 +50,7 @@ if ($verbose && !$ENV{YUME_VERBOSE}) {
     $ENV{YUME_VERBOSE} = $verbose;
 }
 
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 
 # List of root's .rc files (MDK PATH fixup)
