@@ -54,7 +54,7 @@ if (!$?) {
 } else {
     # OSCAR 5 provides info on paths
     print "\tusing new package paths...\n" if ($verbose);
-    eval "\$oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path()";
+    eval "\$oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url()";
     eval "\@PKG_SOURCE_LOCATIONS = \@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS";
 }
 
