@@ -372,7 +372,7 @@ if ( !($directory_argument && $package_name) ){
         
     # create the database if not already there and leave us connected to it
     my %databases = ();
-    oda::list_databases( \%options, \%databases );
+    oda::list_databases( \%options, \%databases, \@error_strings );
     if ( ! $databases{ oscar } ) {
         print "Creating the OSCAR database ...\n";
         my @error_strings = ();

@@ -35,6 +35,7 @@ my $database_handle;
 my $database_name;
 my $database_server_version = undef;
 
+my $database = "MySQL";
 my @error_strings = ();
 my %options = ( 'debug'         => 0,
                 'field_names'   => 0,
@@ -86,18 +87,19 @@ sub oda_connect {
             if $$options_ref{verbose};
         oda::oda_disconnect( $options_ref,
                  $error_strings_ref );
-        }
+    }
 
         # if we need to connect, do so
-        if ( ! $database_connected_flag ) {
+    if ( ! $database_connected_flag ) {
+
         my $connect_string = "DBI\:$$options_ref{type}\:$$options_ref{database}";
         $connect_string = $connect_string . ";host=$$options_ref{host}" if
             exists $$options_ref{host} && 
             defined $$options_ref{host} &&
             $$options_ref{host} ne "localhost";
-        print "DB_DEBUG>$0:\n====> in oda\:\:oda_connect connnecting to database <$$options_ref{database}> as user <$$options_ref{user}> using connect argument <$connect_string>\n"
+        print "DB_DEBUG>$0:\n====> in oda\:\:oda_connect connnecting to database <$$options_ref{database}> as user <$$options_ref{user}>, password <$$options_ref{password}> using connect argument <$connect_string>\n"
             if $$options_ref{debug};
-        print "DB_DEBUG>$0:\n====> executing on database <$$options_ref{database}> command <CONNECT> as user <$$options_ref{user}>\n"
+        print "DB_DEBUG>$0:\n====> executing on database <$$options_ref{database}> command <CONNECT> as user <$$options_ref{user}>, password <$$options_ref{password}>\n"
             if $$options_ref{verbose};
         if ( $database_handle = 
              DBI->connect($connect_string,    
@@ -212,24 +214,26 @@ sub list_databases {
     print( "DB_DEBUG>$0:\n====> in oda::list_databases install_driver succeeded for driver $$options_ref{type}\n")
     if $$options_ref{debug};
 
-    print "DB_DEBUG>$0:\n====> executing function _ListDBs on database <$$options_ref{database}>\n"
-    if $$options_ref{verbose};
+    print "DB_DEBUG>$0:\n====> executing function _ListDBs on database <$$options_ref{database}>: $$options_ref{host}, $$options_ref{port}\n"
+    if $$options_ref{debug} || $$options_ref{verbose};
+    my $root_pass = $options{password} if &check_root_password; 
     my @databases = 
-    $driver_handle->func ($$options_ref{host}, $$options_ref{port}, '_ListDBs');
+        $driver_handle->func($$options_ref{host},$$options_ref{port},
+                             "root",$root_pass, '_ListDBs');
     if ( @databases ) {
         print( "DB_DEBUG>$0:\n====> in oda::list_databases _ListDBs succeeded returned <@databases>\n")
             if $$options_ref{debug};
         if (ref($databases_ref) eq "HASH") {
             foreach my $database ( @databases ) {
-            $$databases_ref{$database} = 1;
+                $$databases_ref{$database} = 1;
             }
         } else {
             @$databases_ref = @databases;
         }
     } else {
-    push @$error_strings_ref,
-    "DB_DEBUG>$0:\n====> _ListDBs call to list databases failed:\n$DBI::errstr";
-        return 0;
+        push @$error_strings_ref,
+        "DB_DEBUG>$0:\n====> _ListDBs call to list databases failed:\n$DBI::errstr";
+            return 0;
     }
 
     return 1;
@@ -887,9 +891,13 @@ sub create_database {
     print( "DB_DEBUG>$0:\n====> in oda\:\:create_database install_driver succeeded\n")
     if $$options_ref{debug};
 
+    my $root_pass = $options{password} if &check_root_password; 
+
+    my $cmd_string = "mysql -uroot ";
+    $cmd_string .= "-p$root_pass" if $root_pass;
     return 0 if 
     ! do_shell_command( $options_ref, 
-                'mysql -uroot -e "GRANT ALL ON ' . 
+                "$cmd_string -e \"GRANT ALL ON " . 
                 $$options_ref{database} . '.* TO ' . 
                 $$options_ref{user} . '@localhost' .
                 ( ( exists $$options_ref{password} &&
@@ -903,7 +911,7 @@ sub create_database {
      $$options_ref{password} ne "" ) {
     return 0 if 
         ! do_shell_command( $options_ref, 
-                'mysql -uroot -e ' .
+                "$cmd_string -e " .
                 '"GRANT SELECT,INSERT,UPDATE,DELETE' . 
                 ' ON ' . $$options_ref{database} . '.*' .
                 ' TO ' . $$options_ref{user} . 
@@ -913,7 +921,7 @@ sub create_database {
 
     return 0 if 
     ! do_shell_command( $options_ref, 
-                'mysql -uroot -e "GRANT SELECT ON ' . 
+                "$cmd_string -e \"GRANT SELECT ON " . 
                 $$options_ref{database} . '.* TO ' . 
                 "anonymous" . '"' );
     
@@ -1072,5 +1080,44 @@ sub initialize_locked_tables{
     $temp_cached_all_tables_fields = undef;
 }
     
+
+#********************************************************************#
+#********************************************************************#
+#                                                                    #
+# internal function to check to see if root password is setup        #
+#                                                                    #
+#********************************************************************#
+#********************************************************************#
+# Use the global variable %options.
+#
+# return: non-zero if success
+
+sub check_root_password{
+    $options{user} = "root";
+    $options{database} = "mysql";
+    $options{host} = "localhost";
+    my $driver_handle;
+    if ( ! ( $driver_handle = DBI->install_driver('mysql') ) ) {
+        die "DB_DEBUG>$0:\n====> server administration connect failed for driver $options{type}:\n$DBI::errstr";
+        return 0;
+    }    
+    my @databases = $driver_handle->func($options{host},$options{port}, '_ListDBs');
+    if(@databases){
+        print "DB_DEBUG>$):\n====> $database root password is not set.\n"
+            if $options{debug};
+    }else{    
+        if ($options{user} eq "root" && $options{password} eq ""){
+            print "\n================================================================\n";
+            print "Your $database has already setup the root password.\n";
+            print "To proceed, please enter your root password of $database: ";
+            $| = 1;
+            chomp(my $password = <STDIN>);
+            $options{password} = $password;
+            print "================================================================\n\n";
+        }    
+    }
+    print "The root password : $options{password}\n" if $options{debug};
+    return 1; 
+}
 
 1;

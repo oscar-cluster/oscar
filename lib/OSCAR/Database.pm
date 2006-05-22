@@ -455,7 +455,7 @@ sub create_table {
     my $sql_file = "$sql_dir/oscar_table.sql";
     
     print "DB_DEBUG>$0:\n====> in Database::create_table uses the SQL statement which are already defined at $sql_file" if $$options_ref{verbose};
-    my $cmd = "mysql -u root oscar < $sql_file";
+    my $cmd = "mysql -u $$options_ref{user} -p$$options_ref{password} oscar < $sql_file";
 
     my $debug_msg = "DB_DEBUG>$0:\n====> in Database::create_table runs the command : $cmd\n";
     print "$debug_msg" if $$options_ref{debug};
