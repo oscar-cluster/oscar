@@ -26,7 +26,7 @@ use File::Basename;
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
 my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_path();
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 
 
