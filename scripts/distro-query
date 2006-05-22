@@ -99,7 +99,7 @@ sub print_image_detect {
     my $os = OSCAR::OCA::OS_Detect::open($img);
     die "Unable to determine operating system" if (!$os);
     print "Distro package url : ".&distro_repo_url($img)."\n";
-    print "OSCAR package pool : ".&oscar_repo_path($img)."\n";
+    print "OSCAR package pool : ".&oscar_repo_url($img)."\n";
     &print_os_info($os);
     vprint("Detected os structure :\n".Dumper($os));
 }
