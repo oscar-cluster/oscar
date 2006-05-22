@@ -29,9 +29,10 @@ use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
+use File::Basename;
 use Carp;
 
-@EXPORT = qw(distro_repo_url oscar_repo_path
+@EXPORT = qw(distro_repo_url oscar_repo_url repo_empty
 	     pkg_extension pkg_separator
 	     distro_detect_or_die list_distro_pools);
 
@@ -93,7 +94,7 @@ sub distro_repo_url {
 	if (open IN, "$path.url") {
 	    while (my $line = <IN>) {
 		chomp $line;
-		next if ($line !~ /^(http|ftp)/);
+		next if ($line !~ /^(http|ftp|file|mirror)/);
 		next if (($line =~ /^\s*$/) || ($line =~ /^\s*#/));
 		push @remote, $line;
 	    }
@@ -103,6 +104,26 @@ sub distro_repo_url {
     } else {
 	$url = $path;
 	if ( (! -d $path) && (! -l $path) ) {
+	    # check if /tftpboot/rpm exists and has the distro we expect
+	    my $oldpool = "/tftpboot/rpm";
+	    if ( -d $oldpool || -l $oldpool) {
+		my $ros = OSCAR::OCA::OS_Detect::open(pool => $oldpool);
+		if (defined($ros) && (ref($ros) eq "HASH") &&
+		    ($ros->{distro} eq $os->{distro}) &&
+		    ($ros->{distro_version} eq $os->{distro_version}) &&
+		    ($ros->{arch} eq $os->{arch}) ) {
+		    print "Discovered correct distro repository in $oldpool!\n";
+		    print "Linking it symbolically to $path.\n";
+		    my $pdir = dirname($path);
+		    if (! -d $pdir) {
+			!system("mkdir -p $pdir") or
+			    croak "Could not make directory $pdir $!";
+		    }
+		    !system("ln -s $oldpool $path") or
+			croak "Could not link $oldpool to $path: $!";
+		    return $url;
+		}
+	    }
 	    print STDERR "Distro repository $path not found. Creating empty directory.\n";
 	    !system("mkdir -p $path") or
 		carp "Could not create directory $path!";
@@ -116,16 +137,27 @@ sub distro_repo_url {
 # combination are stored. This path is defined as:
 # /tftpboot/oscar/$distro-$version-$arch
 #
+# Similar to the distro url, one can use a file called 
+# /tftpboot/oscar/$distro-$version-$arch.url
+# containing a list of URLs pointing at the repositories to be scanned for
+# OSCAR packages. This allows having repositories located on the internet.
+#
 # The distro and version names used are those detected as "compat_distro"
 # and "compat_distrover" in the OCA::OS_Detect framework. The reason is that
 # OSCAR doesn't care about the particular flavor of a rebuilt distro, it
 # uses the same packages eg. for rhel4, scientific linux 4 and centos 4.
 #
 # Usage:
-#    $path = oscar_repo_path();         # detect distro of master ("/")
-#    $path = oscar_repo_path($image);   # detect distro of image
-#    $path = oscar_repo_path(os => $os);  # use given $os structure
-sub oscar_repo_path {
+#    $path = oscar_repo_url();         # detect distro of master ("/")
+#    $path = oscar_repo_url($image);   # detect distro of image
+#    $path = oscar_repo_url(os => $os);  # use given $os structure
+#
+# Usage logic:
+# If a .url file exists, use the URLs listed inside.
+# Otherwise expect local repositories to exist in the standard place. If the
+# local repositories don't exist, create their directories.
+#
+sub oscar_repo_url {
     my ($img,$os);
     if (scalar(@_) <= 1) {
 	($img) = @_;
@@ -139,12 +171,49 @@ sub oscar_repo_path {
     my $cdistrover= $os->{compat_distrover};
     my $arch      = $os->{arch};
     my $path = "/tftpboot/oscar/$cdistro-$cdistrover-$arch";
-    if (! -d $path) {
-	print STDERR "OSCAR repository $path not found. Creating empty directory.\n";
-	!system("mkdir -p $path") or
-	    carp "Could not create directory $path!";
+    my $commons = "/tftpboot/oscar/common-" . $os->{pkg} . "s";
+    my $url = $commons . "," . $path;
+    if (-f "$path.url") {
+	my @remote;
+	local *IN;
+	if (open IN, "$path.url") {
+	    while (my $line = <IN>) {
+		chomp $line;
+		next if ($line !~ /^(http|ftp|file|mirror):/);
+		push @remote, $line;
+	    }
+	    close IN;
+	    return join(",",@remote);
+	}
+    } else {
+	if (! -d $path) {
+	    print STDERR "Distro repository $path not found. Creating empty directory.\n";
+	    !system("mkdir -p $path") or
+		carp "Could not create directory $path!";
+	}
+	if (! -d $commons) {
+	    print STDERR "Commons repository $commons not found. Creating empty directory.\n";
+	    !system("mkdir -p $commons") or
+		carp "Could not create directory $commons!";
+	}
     }
-    return $path;
+    return $url;
+}
+
+#
+# Check if local repo directory is empty.
+# Returns 1 (true) if directory is empty.
+#
+sub repo_empty {
+    my ($path) = @_;
+    my $entries = 0;
+    local *DIR;
+    opendir DIR, $path or carp "Could not read directory $path!";
+    for my $d (readdir DIR) {
+	next if ($d eq "." || $d eq "..");
+	$entries++ if (-f $d || -d $d);
+    }
+    return ($entries ? 0 : 1);
 }
 
 #
@@ -171,7 +240,7 @@ sub list_distro_pools {
 	    }
 	    if (defined($os) && (ref($os) eq "HASH")) {
 		$pools{$distro}{os} = $os;
-		$pools{$distro}{oscar_repo} = &oscar_repo_path(os=>$os);
+		$pools{$distro}{oscar_repo} = &oscar_repo_url(os=>$os);
 		$pools{$distro}{distro_repo} = &distro_repo_url(os=>$os);
 		if ($4) {
 		    $pools{$distro}{url} = "$ddir/$e";
