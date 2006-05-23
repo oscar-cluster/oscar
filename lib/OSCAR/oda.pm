@@ -987,6 +987,7 @@ sub drop_database {
         return 0;
     }
 
+    
     if ( $$options_ref{debug} ) {
     print "DB_DEBUG>$0:\n====> in oda::drop_database install_driver succeeded\n";
     print "DB_DEBUG>$0:\n====> in oda::drop_database about to dropdb(" .
@@ -1018,9 +1019,13 @@ print "aaaarrrrrggghhhhhhhh\n";
     print( "DB_DEBUG>$0:\n====> in oda::drop_database dropdb succeeded\n")
         if $$options_ref{debug} || $$options_ref{verbose};
 
+    my $root_pass =  &check_root_password?$options{password}:""; 
+
+    my $cmd_string = 'mysql -u root -p' . $root_pass . ' -e "REVOKE ALL ON '
+                    . 'oscar.* FROM oscar@localhost;"';
+       
     return 0 if 
-    ! do_shell_command( $options_ref, 
-              'mysql -e "REVOKE ALL ON ' . $$options_ref{database} . '.* FROM ' . $$options_ref{user} . '@localhost;"' );
+    ! do_shell_command( $options_ref, $cmd_string );
 
     # since we successfully dropped the entire database,
     # reset the cache of table names and 
@@ -1049,14 +1054,14 @@ sub do_shell_command {
     my ( $options_ref, $command,
      $error_strings_ref ) = @_;
     print "DB_DEBUG>$0:\n====> executing shell command <$command>\n"
-        if $$options_ref{verbose};
+;#        if $$options_ref{verbose};
     if ( system ( $command ) == 0 ) {
     print "DB_DEBUG>$0:\n====> <$command> succeeded\n" 
-        if $$options_ref{debug};
+;#        if $$options_ref{debug};
     return 1;
     } else {
     print "DB_DEBUG>$0:\n====> <$command> failed\n" 
-        if $$options_ref{debug};
+;#        if $$options_ref{debug};
     return 0;
     }
 }
@@ -1091,9 +1096,9 @@ sub initialize_locked_tables{
 # Use the global variable %options.
 #
 # return: non-zero if success
+#         nothing of %options is changed returning 0 if fails.
 
 sub check_root_password{
-    $options{user} = "root";
     $options{database} = "mysql";
     $options{host} = "localhost";
     my $driver_handle;
@@ -1105,8 +1110,9 @@ sub check_root_password{
     if(@databases){
         print "DB_DEBUG>$):\n====> $database root password is not set.\n"
             if $options{debug};
+        return 0;
     }else{    
-        if ($options{user} eq "root" && $options{password} eq ""){
+        if ($options{password} eq "" || $options{user} eq "oscar" ){
             print "\n================================================================\n";
             print "Your $database has already setup the root password.\n";
             my $password = "";
@@ -1127,9 +1133,11 @@ sub check_root_password{
                 print "\nThe password is not correct!!! Please try it again.\n";
             }
 
+            # Set "root" to the user and the user's input to the password of %options
+            $options{user} = "root";
             $options{password} = $password;
             print "================================================================\n\n";
-        }    
+        }
     }
     print "The root password : $options{password}\n" if $options{debug};
     return 1; 
