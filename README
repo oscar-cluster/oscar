@@ -14,28 +14,26 @@ document in doc/quick_install.pdf.
 User instructions for utilizing the software installed on OSCAR
 clusters can be found in doc/user.pdf.
 
-Note that there are actually three flavors of distribution packages
-for OSCAR, depending on your bandwidth and installation/development
-needs:
+The OSCAR distibution comes in two OSCAR tarballs and a set of repository
+tarballs:
+  oscar-base-OSCARVERSION.tar.gz  : the base OSCAR tarball stripped of
+				    almost every binary packages (rpms)
+  oscar-srpms-OSCARVERSION.tar.gz : the SRPMS, you only need this if you
+				    want to rebuild rpms
+  oscar-repo-common-rpms-OSCARVERSION.tar.gz : 
+				    repository of noarch rpms used on all
+				    supported distributions
+  oscar-repo-DISTRO-VER-ARCH-OSCARVERSION.tar.gz :
+				    repository of distro and architecture
+				    specific rpms.
 
-1. "Regular": All the OSCAR installation stuff that most users need to
-   install and operate an OSCAR cluster.
+For an OSCAR installation:
+ - Download the oscar-repo-common-rpms and the oscar-repo-DISTRO-VER-ARCH
+ tarballls suitable for the distribution(s). Unpack them in /tftpboot/oscar.
+ - Download the oscar-base tarball. Unpack it in an appropriate directory.
+ Rename the unpacked directory, if you want (e.g. /opt/oscar)
+ - In the unpacked directory (e.g. /opt/oscar) execute:
+ ./install_cluster ETH_INTERFACE
 
-2. "Extra Crispy": Same as Regular, except that the SRPMs for most of
-   the OSCAR-specific RPMs are also included.  This distribution
-   package is significantly larger than Regular, and is not necessary
-   for most users -- only those who are interested in source RPMs need
-   the Extra Crispy distribution.  The SRPMs can be found under
-   packages/*/SRPMS/ directories.
-
-3. "Secret Sauce": This distribution contains *only* the SRPMs for
-   OSCAR-specific RPMs in the Regular and Extra Crispy distributions
-   (it's essentially (Extra Crispy - Regular)).  It is intended only
-   for those who initially downloaded the Regular distribution and
-   later decided that they wanted the SRPMs as well.  The Secret Sauce
-   distribution is intended to be expanded over your Regular
-   installation -- it will create packages/*/SRPMS/ directories and
-   populate them with the relevant .src.rpm files.
-
-All three distributions can be downloaded from the main OSCAR web
-page.
+ (ETH_INTERFACE is the cluster internal interface on the head node,
+ e.g. eth0).

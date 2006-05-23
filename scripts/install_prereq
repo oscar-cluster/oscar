@@ -332,7 +332,7 @@ sub check_installed {
 	    $p =~ s/\.$suffix$//;
 	}
 	if ($suffix eq "rpm") {
-	    $cmd = "rpm -q $p >/dev/null 2>&1";
+	    $cmd = "rpm -q --whatprovides $p >/dev/null 2>&1";
 	    vprint("Executing: $cmd\n");
 	    if (system($cmd)) {
 		$err++;

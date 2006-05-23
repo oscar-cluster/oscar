@@ -143,54 +143,54 @@ if (! -d $md5dir) {
 }
 
 
-##
-## Get repositories up (if in developer mode. Otherwise just test if repos
-## are already around.)
-##
-#if (exists($ENV{OSCAR_DEVELOPER_MODE})) {
+#
+# Get repositories up (if in developer mode. Otherwise just test if repos
+# are already around.)
+#
+if (exists($ENV{OSCAR_DEVELOPER_MODE})) {
     oscar_log_subsection("Setting up OSCAR repositories.");
     $cmd = $ENV{OSCAR_HOME}."/scripts/prep_oscar_repos";
     !system($cmd) or
 	die "Could not set up OSCAR repositories, command $cmd returned $? $!\n";
-#} else {
-#    # check if repos already around...
-#    oscar_log_subsection("Checking OSCAR repositories existence.");
-#
-#    my %orepo_done;
-#    for my $dist (keys %distro_pools) {
-#	my %d = %{$distro_pools{$dist}};
-#
-#
-#	for my $distro_repo (split(",",$d{distro_repo})) {
-#	    next if ($distro_repo =~ /^(http|ftp|mirror):/);
-#	    (my $lrepo = $distro_repo) =~ s/^file://;
-#
-#	    # repo checksum in tmp or in the repo?
-#	    # this is checked implicitely by prepare_pools
-#	    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
-#							$lrepo);
-#	    if (!$pm) {
-#		croak "\nERROR: Could not prepare pool $lrepo!\n";
-#	    }
-#	    undef $pm;
-#	}
-#
-#	for my $oscar_repo (split(",",$d{oscar_repo})) {
-#	    next if (exists $orepo_done{"$oscar_repo"});
-#	    next if ($oscar_repo =~ /^(http|ftp|mirror):/);
-#	    (my $lrepo = $oscar_repo) =~ s/^file://;
-#
-#	    # repo checksum in tmp or in the repo?
-#	    # this is checked implicitely by prepare_pools
-#	    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
-#							$lrepo);
-#	    if (!$pm) {
-#		croak "\nERROR: Could not prepare pool $lrepo!\n";
-#	    }
-#	    undef $pm;
-#	}
-#    }
-#}
+} else {
+    # check if repos already around...
+    oscar_log_subsection("Checking OSCAR repositories existence.");
+
+    my %orepo_done;
+    for my $dist (keys %distro_pools) {
+	my %d = %{$distro_pools{$dist}};
+
+
+	for my $distro_repo (split(",",$d{distro_repo})) {
+	    next if ($distro_repo =~ /^(http|ftp|mirror):/);
+	    (my $lrepo = $distro_repo) =~ s/^file://;
+
+	    # repo checksum in tmp or in the repo?
+	    # this is checked implicitely by prepare_pools
+	    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
+							$lrepo);
+	    if (!$pm) {
+		croak "\nERROR: Could not prepare pool $lrepo!\n";
+	    }
+	    undef $pm;
+	}
+
+	for my $oscar_repo (split(",",$d{oscar_repo})) {
+	    next if (exists $orepo_done{"$oscar_repo"});
+	    next if ($oscar_repo =~ /^(http|ftp|mirror):/);
+	    (my $lrepo = $oscar_repo) =~ s/^file://;
+
+	    # repo checksum in tmp or in the repo?
+	    # this is checked implicitely by prepare_pools
+	    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
+							$lrepo);
+	    if (!$pm) {
+		croak "\nERROR: Could not prepare pool $lrepo!\n";
+	    }
+	    undef $pm;
+	}
+    }
+}
 
 #
 # base prereqs install start before the others, they're done smartly

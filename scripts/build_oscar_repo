@@ -158,5 +158,16 @@ case "$PKG" in
 	;;
 esac
 
+
+# compute checksum for repository
+perl -e "
+    use lib \"$OHOME/lib\";
+    use OSCAR::PackageSmart;
+    \$pool=\"$TARGET\";
+    \$cfile=\"$TARGET/pool_oscar_$DISTRO.md5\";
+    \$md5=checksum_files(\$pool,\"*.rpm\",\"*.deb\");
+    checksum_write(\$cfile,\$md5); "
+
+
 exit 0
 

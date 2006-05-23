@@ -9,7 +9,7 @@
 # information in the top-level directory.
 #
 
-include $(top_srcdir)/dist/Makefile.options
+include ../dist/Makefile.options
 
 oscar_DATA		= README
 EXTRA_DIST		= $(oscar_DATA)
@@ -33,7 +33,7 @@ docs:
 	  if test -d $$subdir; then \
 	    echo "Making $$target in $$subdir"; \
 	    (cd $$subdir && \
-		$(MAKE) $(AM_MAKEFLAGS) top_srcdir="$$mytop_srcdir" top_builddir="$$mytop_builddir" docs) \
+		$(MAKE) docs) \
 	     || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
 	  fi; \
 	done; 
@@ -47,7 +47,7 @@ docs:
 # files are actually present.
 #
 
-install-data-local:
+install-data:
 	@if test "$(oscar_DATA)" = "README"; then \
 	  for file in install.pdf user.pdf; do \
 	    if test -f $$file; then \
@@ -56,7 +56,7 @@ install-data-local:
 	  done; \
 	fi
 
-uninstall-local:
+uninstall:
 	@if test "$(oscar_DATA)" = "README"; then \
 	  for file in install.pdf user.pdf; do \
 	    if test -f $$file; then \
@@ -65,7 +65,7 @@ uninstall-local:
 	  done; \
 	fi
 
-clean-local:
+clean:
 	set fnord $(MAKEFLAGS); amf=$$2; \
 	mypwd="`pwd`"; \
 	cd "$(top_srcdir)"; mytop_srcdir="`pwd`"; \
@@ -76,7 +76,7 @@ clean-local:
 	  if test -d $$subdir; then \
 	    echo "Making $$target in $$subdir"; \
 	    (cd $$subdir && \
-		$(MAKE) $(AM_MAKEFLAGS) top_srcdir="$$mytop_srcdir" top_builddir="$$mytop_builddir" clean) \
+		$(MAKE) clean) \
 	     || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
 	  fi; \
 	done; 

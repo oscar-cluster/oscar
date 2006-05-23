@@ -1,6 +1,6 @@
 # List the binaries needed by the Makefile
-PUIC		=	@PUIC@
-PERL_CW		=	@PERL@ -cw
+PUIC		=	/opt/perl-Qt/bin/puic
+PERL_CW		=	/usr/bin/perl -cw
 RM		=	/bin/rm -f
 
 # Enter the filename of the Perl script to be run
@@ -35,11 +35,14 @@ inst_DATA		=	GUI.xml
 # Enter any extra make rules for files which don't have a default make rule
 
 # May need to add extra stuff here, such as creating symbolic links
-all-local:	$(COMPILEDTARGET)
+all:	$(COMPILEDTARGET)
 		ln -sf ../Installer/images; \
 		cd ../Installer; ln -sf ../NodeMgmt
 		@ echo "Fixing QWidgetStack problem"   
 		perl -pi -e 's/QWidgetStack/Qt::WidgetStack/' *.p* 
+
+.SUFFIXES:
+.SUFFIXES: .pl .pm .ui
 
 ### SHOULDN'T NEED TO CHANGE ANYTHING BELOW HERE!
 
@@ -52,11 +55,11 @@ all-local:	$(COMPILEDTARGET)
 	@ $(PUIC) -x -o $@ $<
 
 # Hook target that Automake runs at the end of its own internal "clean" target.
-clean-local:	
+clean:	
 	$(RM) $(COMPILEDTARGET)
 
 # Checks to see if the Perl modules and scripts pass a syntax check
-check-local:	$(ALLTARGET)
+check:	$(ALLTARGET)
 		@err=0; \
 		for myfile in $(ALLTARGET); do \
 		  $(PERL_CW) $$myfile; \

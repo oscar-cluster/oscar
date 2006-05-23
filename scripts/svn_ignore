@@ -21,7 +21,6 @@ TMPFILE=`mktemp /tmp/svn_ignore.XXXXXXXXXX` || exit 1
 
 # here's what we want to ignore
 cat <<EOF >$TMPFILE
-Makefile
 Makefile.am
 Makefile.in
 .oscar_made_makefile_am
