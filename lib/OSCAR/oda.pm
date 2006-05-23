@@ -1054,14 +1054,14 @@ sub do_shell_command {
     my ( $options_ref, $command,
      $error_strings_ref ) = @_;
     print "DB_DEBUG>$0:\n====> executing shell command <$command>\n"
-;#        if $$options_ref{verbose};
+        if $$options_ref{verbose};
     if ( system ( $command ) == 0 ) {
     print "DB_DEBUG>$0:\n====> <$command> succeeded\n" 
-;#        if $$options_ref{debug};
+        if $$options_ref{debug};
     return 1;
     } else {
     print "DB_DEBUG>$0:\n====> <$command> failed\n" 
-;#        if $$options_ref{debug};
+        if $$options_ref{debug};
     return 0;
     }
 }
