@@ -22,7 +22,6 @@ package OSCAR::MAC;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-use Net::Netmask;
 use Tk;
 use Tk::Tree;
 use SystemImager::Client;
@@ -623,7 +622,6 @@ sub start_ping {
     my $interface = shift;
     end_ping();
     my ($ip, $broad, $nm) = interface2ip($interface);
-    my $network = new Net::Netmask($ip, $nm);
     my $pid = fork();
 
     if($pid) {
@@ -631,7 +629,7 @@ sub start_ping {
     } else {
         oscar_log_subsection("Step $step_number: Launching background ping");
         open(STDOUT,">/dev/null");
-        system("ping -b " . $network->base);
+        system("ping -b $broad");
         oscar_log_subsection("Step $step_number: Background ping stopped");
         exit 0;
     }
