@@ -19,6 +19,10 @@ package OSCAR::OCA::OS_Detect;
 use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
+use File::Glob qw(:globally :nocase); # disabling case sensitivity so it
+                                      # works under openSUSE: /etc/SuSE-release
+                                      # vs suse-release-oss RPM
+
 use OSCAR::OCA;
 
 #
@@ -191,8 +195,8 @@ sub detect_pool_rpm {
     my ($version,$flavor);
     for my $f (@files) {
 	my $v = `rpm -q --qf "%{VERSION}" -p $f 2>/dev/null`;
-	# don't care about release for pools, only version counts
-	$v =~ s/\.\d+$//;
+	# don't care about release for pools, only version counts (except for openSUSE)
+	$v =~ s/\.\d+$// if ($distro ne "suse");
 	# for redhat-el
 	if ($v =~ /^(.*)(AS|WS|ES)$/) {
 	    $v = $1;

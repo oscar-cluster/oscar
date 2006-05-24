@@ -227,7 +227,7 @@ sub list_distro_pools {
     local *DIR;
     opendir DIR, $ddir or carp "Could not read directory $ddir!";
     for my $e (readdir DIR) {
-	if ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) {
+	if ( ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) || ($e =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
 	    my $distro = "$1-$2-$3";
 	    my $os;
 	    if ($4) {
