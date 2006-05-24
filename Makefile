@@ -41,8 +41,8 @@ test: install-packman
 	@echo "========================================================="
 	(cd src; make)
 	@echo "== building oscar repositories =="
-	(export OSCAR_HOME=`pwd`)
-	(cd scripts; ./prep_oscar_repos)
+	(export OSCAR_HOME=`pwd`; \
+	cd scripts; ./prep_oscar_repos)
 	@echo "==============================================="
 	@echo "== you can now run from the svn repository:  =="
 	@echo "== ./install_cluster INTERFACE               =="
@@ -57,7 +57,7 @@ clean:
 	rm -rf tmp
 
 install-packman:
-	export OSCAR_HOME=`pwd`
+	export OSCAR_HOME=`pwd`; \
 	scripts/install_prereq --dumb share/prereqs/packman
 
 .PHONY : test dist clean install-packman
