@@ -10,12 +10,41 @@
 #
 
 
+cleanup () {
+    # remove temporary files
+    for n in "$TFILES"; do
+	[ -f $n ] && rm -f $n
+    done
+}
+
+bail_out () {
+    local ERR=$1
+    cleanup
+    exit $ERR
+}
+
 usage () {
     echo "Usage:"
-    echo "  $0 [--base] [--srpms] [--docs] [--no-repos] [--distro D-V-A]"
-    echo "     [--distro D2-V2-A2] [--all]"
-    exit 1
+    echo "  $0 [--base] [--srpms] [--docs] [--all-repos] [--distro D-V-A] \ "
+    echo "     [--distro D2-V2-A2] [--all] [--repo-target DIR] \ "
+    echo "     [--install-target DIR]"
+    bail_out 1
 }
+
+get_tfile () {
+    local name=`mktemp`
+    TFILES="$TFILES $name"
+    echo $name
+}
+
+message () {
+    local string="$*"
+    echo "====================================================="
+    echo $string
+    echo "====================================================="
+}
+
+trap bail_out INT HUP QUIT
 
 while [ -n "$1" ]; do
    case $1 in
@@ -31,9 +60,9 @@ while [ -n "$1" ]; do
 	   shift
 	   BUILD_DOCS=1
 	   ;;
-       --no-repos)
+       --all-repos)
 	   shift
-	   NO_REPOS=1
+	   ALL_REPOS=1
 	   ;;
        --distro)
 	   shift
@@ -41,11 +70,24 @@ while [ -n "$1" ]; do
 	   DISTROS="$DISTROS $1"
 	   shift
 	   ;;
+       --install-target)
+	   shift
+	   [ -z "$1" ] && usage
+	   INSTALL_TARGET="$1"
+	   shift
+	   ;;
+       --repo-target)
+	   shift
+	   [ -z "$1" ] && usage
+	   REPO_TARGET="$1"
+	   shift
+	   ;;
        --all)
 	   shift
 	   BUILD_BASE=1
 	   BUILD_SRPMS=1
 	   BUILD_DOCS=1
+	   ALL_REPOS=1
 	   ;;
        *)
 	   usage
@@ -57,7 +99,7 @@ done
 RUNDIR=`pwd`
 if [ `basename $RUNDIR` != "dist" ]; then
     echo "***  You should be running this program from within the dist directory! ***"
-    exit 1
+    bail_out 1
 fi
 
 # set srcdir to parent directory
@@ -66,9 +108,11 @@ srcdir=`dirname $RUNDIR`
 svn info $srcdir
 if [ $? -ne 0 ]; then
     echo "svn info returned an error. This is maybe not a SVN tree!"
-    exit 1
+    bail_out 1
 fi
-OSCAR_VERSION=`$RUNDIR/get-oscar-version.sh $srcdir/VERSION`
+umask 022
+cd $srcdir
+OSCAR_VERSION=`dist/get-oscar-version.sh VERSION`
 
 ############################################################################
 
@@ -84,8 +128,10 @@ Started: $start
  
 EOF
 
-umask 022
-cd $srcdir/..
+#
+# We operate mainly one directory level above the checkout
+#
+cd ..
 distbase=oscar-$OSCAR_VERSION
 distdir=`pwd`"/$distbase"
 
@@ -96,13 +142,16 @@ distdir=`pwd`"/$distbase"
 
 if [ -d "$distdir" ]; then
     echo "!!! $distdir already exists !!!"
-    exit 1
+    bail_out 1
 fi
 cp -rl $srcdir $distdir
-# remove .svn directories
-(cd $distdir; find . -name .svn | xargs rm -rf)
-
-
+#
+# Remove unwanted files
+# Don't remove Makefiles, yet, as we still need them.
+#
+( cd $distdir; find . -name .svn -type d | xargs rm -rf;
+    find . -name '*~' | xargs rm -f;
+    [ -d tmp ] && rm -rf tmp )
 
 #
 # Switch into the distribution directory in order to protect the source
@@ -124,30 +173,19 @@ distro_pkg () {
 if [ -n "$BUILD_BASE" ]; then
     # Build Qt tools and docs
 
-    cat <<EOF
-==========================================================
-         Building Qt related programs in src/
-==========================================================
-EOF
-    cat <<EOF
-=============================================================
- Installing perl-Qt, will need it for repository preparation
-=============================================================
-EOF
+    message "Building Qt related programs in src/"
+    message "Installing perl-Qt, will need it for repository preparation"
+
     scripts/install_prereq --verbose --dumb share/prereqs/perl-Qt
     cd src
-    make || exit 1
+    make || bail_out 1
     cd ..
 fi
 
 
 if [ -n "$BUILD_DOCS" ]; then
 
-    cat <<EOF
-==========================================================
-         Building docs ...
-==========================================================
-EOF
+    message "  Building docs ..."
     cd doc
 
     #
@@ -158,12 +196,8 @@ EOF
     cd installation
     make clean pdf
     if test "$?" != "0"; then
-	cat <<EOF
-
-WARNING: It seems like install.pdf didn't build properly.  Aborting...
-
-EOF
-	exit 1
+	message "WARNING: It seems like install.pdf didn't build properly.  Aborting..."
+	bail_out 1
     fi
     make mostlyclean
 
@@ -175,12 +209,8 @@ EOF
     cd ../user
     make clean pdf
     if test "$?" != "0"; then
-	cat <<EOF
-
-WARNING: It seems like user.pdf didn't build properly.  Aborting...
-
-EOF
-	exit 1
+	message "WARNING: It seems like user.pdf didn't build properly.  Aborting..."
+	bail_out 1
     fi
     make mostlyclean
     ls -l
@@ -197,43 +227,27 @@ EOF
     if test ! -f $distdir/doc/install.pdf -o \
 	    ! -f $distdir/doc/quick_install.pdf -o \
 	    ! -f $distdir/doc/user.pdf; then
-	cat <<EOF
-
-WARNING: doc/user.pdf, doc/install.pdf, and/or doc/quick_install.pdf 
-WANRING: don't seem to exist.  Aborting...
-
-EOF
-	exit 1
+	message "WARNING: doc/user.pdf, doc/install.pdf, and/or doc/quick_install.pdf don't seem to exist.  Aborting..."
+	bail_out 1
     fi
 
     #
     # actually this one should build the docs, but some of them fail
     # 
-    #make || exit 1
+    #make || bail_out 1
     cd ..
 fi
-
-#
-# Remove unwanted files
-#
-
-find . -name Makefile.am -o -name Makefile.in -o -name Makefile \
-       -o -name .oscar_made_makefile_am -o -name '*~' | xargs rm -f
-rm -f acinclude.m4 aclocal.m4 configure configure.in
 
 
 if [ -n "$BUILD_BASE" ]; then
     #
     # Put in those headers.
     #
-    echo "************************************"
-    echo "*** Inserting license headers... ***"
-    echo "************************************"
+    message "*** Inserting license headers... ***"
 
-    filelist=`mktemp`
-    cat > $filelist <<EOF
-README
-EOF
+    filelist=`get_tfile`
+    echo README > $filelist
+
     find dist -type f -print >> $filelist
     find doc -type f -print | egrep -v '.png$' >> $filelist
     find images -type f -print | egrep -v '.gif$' >> $filelist
@@ -243,15 +257,10 @@ EOF
     find scripts -type f -print >> $filelist
     find testing -type f -print >> $filelist
 
-    newlist=`mktemp`
+    newlist=`get_tfile`
     grep -l '\$COPYRIGHT\$' `cat $filelist` > $newlist
 
-    cat <<EOF
-==================================================
-Replacing COPYRIGHT in files:
-`cat $newlist`
-==================================================
-EOF
+    message "Replacing COPYRIGHT in files:"`cat $newlist`
 
     # the insert license routine is not smart enough with hardlinks
     # so re-create these files with new inodes
@@ -282,9 +291,8 @@ EOF
     # files
     #
 
-    cat > $filelist <<EOF
-README
-EOF
+    echo README > $filelist
+
     for file in `cat $filelist`; do
 	sed -e s/OSCARVERSION/$OSCAR_VERSION/g $file > $file.out
 	mv $file.out $file
@@ -296,13 +304,9 @@ EOF
     rm -f dist/beta-notice.txt
 fi
 
-if [ -z "$NO_REPOS" ]; then
+if [ -n "$DISTROS" -o -n "$ALL_REPOS" ]; then
 
-    cat <<EOF
-==========================================================
- Installing yume, will need it for repository preparation
-==========================================================
-EOF
+    message "Installing yume, will need it for repository preparation"
 
     PKGMGR=`distro_pkg`
     if [ "$PKGMGR" = "rpm" ]; then
@@ -313,102 +317,99 @@ EOF
 	    share/prereqs/packman packages/rapt
     else
 	echo "Unsupported package manager $PKGMGR"
-	exit 1
+	bail_out 1
     fi
 
     # build repositories
-    TGTDIR="$distdir/repo"
-    mkdir -p $TGTDIR
-    if [ -z "$DISTROS" ]; then
-	DISTROS="
-common-rpms
-fc-3-i386
-fc-3-x86_64
-fc-4-i386
-fc-5-i386
-fc-5-x86_64
-mdv-2006-i386
-rhel-3-i386
-rhel-3-ia64
-rhel-3-x86_64
-rhel-4-i386
-rhel-4-ia64
-rhel-4-x86_64
-"
+    if [ -n "$REPO_TARGET" ]; then
+	# repository will be built directly in the given directory
+	# no tar will be built!
+	TGTDIR=$REPO_TARGET
+    else
+	# build repositories in temporary directory
+	# build tars!
+	TGTDIR="$distdir/repo"
+	mkdir -p $TGTDIR
+    fi
+    if [ -n "$ALL_REPOS" ]; then
+	DISTROS="common-rpms fc-3-i386 fc-3-x86_64 fc-4-i386 fc-5-i386 fc-5-x86_64 mdv-2006-i386 rhel-3-i386 rhel-3-ia64 rhel-3-x86_64 rhel-4-i386 rhel-4-ia64 rhel-4-x86_64"
     fi
 
-    cat <<EOF
-==========================================================
-         Building OSCAR package repositories
-==========================================================
-EOF
+    message ">>  Building OSCAR package repositories <<"
 
     cd scripts
     for distro in $DISTROS; do
 	echo " - building package repository for $distro"
-	./build_oscar_repo --distro $distro --target $TGTDIR
-	# compress repository and delete it
-	echo " - compressing repository $distro"
-	(cd $TGTDIR; \
-	    tar czf ../../oscar-repo-$distro-$OSCAR_VERSION.tar.gz $distro; \
-	    rm -rf $distro)
+	./build_oscar_repo --distro $distro --target $TGTDIR --remove
+	if [ -z "$REPO_TARGET" ]; then
+	    # compress repository and delete it
+	    echo " - compressing repository $distro"
+	    (cd $TGTDIR; \
+	     tar czf ../../oscar-repo-$distro-$OSCAR_VERSION.tar.gz $distro; \
+	     rm -rf $distro)
+	fi
     done
-    rm -rf $TGTDIR
+    [ -z "$REPO_TARGET" ] && rm -rf $TGTDIR
 
 fi
 
 cd $distdir/..
 
-if [ -n "$BUILD_SRPMS" ]; then
-    cat <<EOF
-==========================================================
-         Building OSCAR SRPMs tarball
-==========================================================
-EOF
-    # build filelist for srpms
-    srpms=`mktemp`
-    find $distbase -type d -a -name SRPMS > $srpms
-    tar -cz --files-from $srpms -f oscar-srpms-$OSCAR_VERSION.tar.gz
-
-fi
 
 if [ -n "$BUILD_BASE" ]; then
-    cat <<EOF
-==========================================================
-         Building OSCAR base tarball
-==========================================================
-EOF
-    #
-    # remove all distro directories except those of yume, rapt and packman
-    #
-    distrodirs=`mktemp`
-    find $distbase -type d -a -name distro | \
-	egrep -v "/(yume|rapt|packman)/distro" > $distrodirs
-    #
-    # remove the distro directories (files are in the repository)
-    #
-    rm -rf `cat $distrodirs`
-
-    #
-    # remove SRPMs
-    #
-    if [ -z "$srpms" ]; then
-	srpms=`mktemp`
-	find $distbase -type d -a -name SRPMS > $srpms
+    if [ -z "$INSTALL_TARGET" ]; then
+	message ">> Building OSCAR base tarball in "`pwd`
+    else
+	message ">> Installing OSCAR base into $INSTALL_TARGET"
     fi
-    rm -rf `cat $srpms`
+
+    afiles=`get_tfile`
+    find $distbase -type f > $afiles
+
+    bfiles=`get_tfile`
+    # filter out all distro directories except for yume, rapt, packman
+    egrep -v  "(share/prereqs|packages)/.*/(distro|SRPMS)/" <$afiles >$bfiles
+    egrep "/(yume|rapt|packman)/distro/" <$afiles >>$bfiles
+    egrep -v "/Makefile" <$bfiles | sort >$afiles
 
     #
     # What is left over is the OSCAR base distribution
     #
-    tar -czf oscar-base-$OSCAR_VERSION.tar.gz $distbase
+    if [ -n "$INSTALL_TARGET" ]; then
+	if [ ! -d "$INSTALL_TARGET" ]; then
+	    echo "Target directory $INSTALL_TARGET does not exist."
+	    echo "Trying to create it..."
+	    mkdir -p $TARGET_DIR || bail_out 1
+	fi
+	tar -c --files-from $afiles -f - | tar xfC - $INSTALL_TARGET
+    else
+	tar -cz --files-from $afiles -f oscar-base-$OSCAR_VERSION.tar.gz
+    fi
+fi
+
+if [ -n "$BUILD_SRPMS" ]; then
+    if [ -z "$INSTALL_TARGET" ]; then
+	message ">> Building OSCAR SRPMS tarball in "`pwd`
+    else
+	message ">> Installing OSCAR SRPMS into $INSTALL_TARGET"
+    fi
+
+    # build filelist for srpms
+    srpms=`get_tfile`
+    find $distbase -type d -a -name SRPMS > $srpms
+    if [ -n "$INSTALL_TARGET" ]; then
+	if [ ! -d "$INSTALL_TARGET" ]; then
+	    echo "Target directory $INSTALL_TARGET does not exist."
+	    echo "Trying to create it..."
+	    mkdir -p $TARGET_DIR || bail_out 1
+	fi
+	tar -c --files-from $srpms -f - | tar xfC - $INSTALL_TARGET
+    else
+	tar -cz --files-from $srpms -f oscar-srpms-$OSCAR_VERSION.tar.gz
+    fi
 fi
 
 rm -rf $distbase
-
-[ -n "$srpms" ] && rm -f $srpms
-[ -n "$distrodirs" ] && rm -f $distrodirs
-
 
 #
 # All done
@@ -418,7 +419,12 @@ cat <<EOF
 
 ============================================================================== 
 OSCAR version $OSCAR_VERSION distribution created
-Documentation: $doc_mode
+Documentation: $BUILD_DOCS
+Base         : $BUILD_BASE
+Install tgt  : $INSTALL_TARGET
+SRPMS        : $BUILD_SRPMS
+Distros      : $DISTROS
+Repo tgt     : $REPO_TARGET
  
 Started: $start
 Ended:   `date`
@@ -426,4 +432,5 @@ Ended:   `date`
  
 EOF
 
+cleanup
 exit 0
