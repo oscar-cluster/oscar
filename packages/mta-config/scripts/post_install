@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2004 The Trustees of Indiana University.  
+# Copyright (c) 2004-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -107,7 +107,7 @@ EOF
 		;;
 	sendmail)
     echo "WARNING: OSCAR does not know how to configure sendmail yet."
-    echo "WARNING: Please bug the OSCAR developers to finish the disable-servics package!"
+    echo "WARNING: Please bug the OSCAR developers to finish the mta-config package!"
     echo "WARNING: There will be no mail service running on the client nodes!"
 		;;
 	exim)
