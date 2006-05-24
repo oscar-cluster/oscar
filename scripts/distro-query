@@ -16,10 +16,6 @@ use Carp;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
 use Getopt::Long;
-use lib '/usr/lib/systeminstaller';
-use SIS::Client;
-use SIS::Image;
-use SIS::DB;
 use Data::Dumper;
 
 sub vprint;
@@ -66,11 +62,23 @@ if ($options{pool}) {
 
 } else {
 
+    # this must be "node" detection, so:
+    # - find image corresponding to this node
+    # - detect its OS
+
+    eval "use lib '/usr/lib/systeminstaller'";
+    eval "require SIS::Client; require SIS::Image; require SIS::DB;";
+    if ($@) {
+	print "You probably don't have SystemInstaller on your system!\n";
+	print "Cannot access SIS database.\n";
+	exit 1;
+    }
+
     my $node = $options{node};
     my @clients;
-    @clients = list_client(hostname => $node);
+    eval "\@clients = list_client(hostname => \$node)";
     if (!@clients) {
-	@clients = list_client(name => $node);
+	eval "\@clients = list_client(name => \$node)";
     }
     die "Unable to find node $node in SIS database.\n" if (!@clients);
 
