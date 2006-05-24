@@ -41,13 +41,7 @@ DIST_VER   = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
 		    END{print DIST"-"VER}')
 
 
-test: install-perlQt bootstrap-smart localrepos
-	@if [ -n "$$OSCAR_HOME" -a "$$OSCAR_HOME" != `pwd` ]; then \
-		echo "*** OSCAR_HOME env variable is already defined ***"; \
-		echo "*** and pointing to $$OSCAR_HOME               ***"; \
-		echo "*** CANNOT CONTINUE! IT IS SAFER TO STOP HERE  ***"; \
-		exit 1; \
-	fi
+test: checkenv install-perlQt bootstrap-smart localrepos
 	@echo "========================================================="
 	@echo "!!! This is the tesing mode for the SVN repository    !!!"
 	@echo "!!! Use it only if you know exactly what you are doing!!!"
@@ -97,7 +91,7 @@ localrepo-%:
 # This is not containing package RPMs or SRPMS!!! It's for testing, only!
 # Rebuild RPMs from the SVN checkout.
 #
-localbase:
+localbase: install-perlQt
 	@if [ -d /opt/oscar-$(OSCAR_VERSION) ]; then \
 		echo "Directory /opt/oscar-$(OSCAR_VERSION) already exists!";\
 		echo "Refusing to continue.";\
@@ -128,5 +122,14 @@ install-perlQt:
 	@echo "== installing perl-Qt from share/prereqs =="
 	@export OSCAR_HOME=`pwd`; \
 	scripts/install_prereq --dumb share/prereqs/perl-Qt
+
+checkenv:
+	@if [ -n "$$OSCAR_HOME" -a "$$OSCAR_HOME" != `pwd` ]; then \
+		echo "*** OSCAR_HOME env variable is already defined ***"; \
+		echo "*** and pointing to $$OSCAR_HOME               ***"; \
+		echo "*** CANNOT CONTINUE! IT IS SAFER TO STOP HERE  ***"; \
+		exit 1; \
+	fi
+
 
 .PHONY : test dist clean install
