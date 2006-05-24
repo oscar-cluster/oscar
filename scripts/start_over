@@ -29,52 +29,18 @@ my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
 my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 
+my @repos = split(",","$distro_pkg_pool,$oscar_pkg_pool");
+@repos = map { "--repo $_" } @repos;
 
-my @known_rpms = qw(
-                    apache
-                    autoupdate
-                    autoupdate-cfg-redhat
-                    autoupdate-oscar
-                    c3-profiled
-                    c3
-                    hdf5-oscar
-                    hdf5-oscar-module
-                    lam-module
-                    lam
-                    loghost
-                    mpich-oscar-module
-                    mpich-oscar
-                    mysql
-                    mysql-common
-                    mysql-server
-                    netbootmgr
-                    ntpconfig
-                    pvm-modules-oscar
-                    pvm
-                    openpbs-oscar 
-                    openpbs-oscar-mom
-                    openpbs-oscar-server
-                    openpbs-oscar-gui
-                    openpbs-oscar-commands
-                    openpbs-oscar-client
-                    sync_users-oscar
-                    ssh-oscar
-                    maui-oscar
-                    libdbdcsv-perl
-                    libappconfig-perl
-                    perl-DBD-MySQL
-                    rrdtool
-                    systeminstaller
-                    systeminstaller-x11
-                    systemconfigurator
-                    systemimager-server
-                    systemimager-common
-                    systemimager-client
-                    systemimager-i386boot
-                    systemimager-ia64boot
-                    env-switcher
-                    modules
-                   );
+print "##### deleting all OSCAR packages and their dependencies #####\n";
+my @opkgs = `yume-opkg --list --all`;
+@opkgs = map { chomp $_ } @opkgs;
+
+# Try doing this smartly: with yume-opkg
+
+my $cmd = "yume-opkg ".join(" ",@repos)." --remove ".join(" ",@opkgs);
+print "Executing: $cmd\n";
+system($cmd);
 
 my @known_services = qw(
                         dhcpd
@@ -87,10 +53,6 @@ my @known_services = qw(
                         pbs_server
                         systemimager
                        );
-
-my @leave_rpms = qw(
-                    libpng
-                   );
 
 # find oscar home directory
 my $oscar_home = "";
@@ -116,41 +78,6 @@ print "Using $oscar_home as OSCAR base directory\n";
 use lib "$ENV{OSCAR_HOME}/lib";
 use lib "../lib"; 
 use Carp;
-
-my $opd_dir = "/var/lib/oscar";
-my @oscar_rpm_paths = ();
-
-# find a list of the full path names of all the non-source oscar rpm files,
-# a list of the file names of all the non-source oscar rpm files,
-# and a list of all the rpm names corresponding to the non-source rpm files.
-
-if (-d "$opd_dir") {
-  print "Searching for non-source rpm files in $oscar_home and $opd_dir ... ";
-  @oscar_rpm_paths = `find $oscar_home/* $opd_dir/* -name '*.rpm'`;
-} else {
-  print "Searching for non-source rpm files in $oscar_home ... ";
-  @oscar_rpm_paths = `find $oscar_home/* -name '*.rpm'`;
-}
-
-chomp @oscar_rpm_paths;
-@oscar_rpm_paths = grep( !/\.src\.rpm$/, @oscar_rpm_paths );
-@oscar_rpm_paths = sort_uniq( @oscar_rpm_paths );
-#print "oscar_rpm_paths=\n";foreach my $rpm_file (@oscar_rpm_paths){print "$rpm_file\n";}
-my @oscar_rpm_files = @oscar_rpm_paths;
-foreach ( @oscar_rpm_files ) {
-  $_ =~ s,^.*/,,g;
-}
-@oscar_rpm_files = sort_uniq( @oscar_rpm_files );
-#print "oscar_rpm_files=\n";foreach my $rpm_file (@oscar_rpm_files){print "$rpm_file\n";}
-my @oscar_rpms = @oscar_rpm_files;
-foreach ( @oscar_rpms ) {
-#  $_ =~ s,\.[^\.]+\.rpm$,,g;
-  $_ =~ s,\-[0-9]+.*$,,g;
-}
-@oscar_rpms = sort_uniq( @oscar_rpms );
-#print "oscar_rpms=\n";foreach my $rpm (@oscar_rpms){print "$rpm\n";}
-my $paths_count = scalar @oscar_rpm_paths;
-print "found $paths_count rpm files.\n";
 
 # delete the oscar database
 
@@ -191,8 +118,6 @@ stop_services( @oscar_services );
 # Delete the clients first so /etc/hosts gets cleaned
 do_command( "/usr/bin/mksimachine --Delete --all" )
   if -x "/usr/bin/mksimachine";
-
-uninstall_rpms(@oscar_rpms);
 
 my %orepo_done;
 my $err = 0;
