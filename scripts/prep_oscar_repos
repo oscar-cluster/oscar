@@ -17,10 +17,12 @@ use File::Basename;
 use Carp;
 
 
-my ($all, $verbose);
+my ($all, $verbose, $target, @include, $addonly);
 GetOptions(
-	   #"all"       => \$all,
-           "verbose"   => \$verbose,
+           "verbose"     => \$verbose,
+           "target|t=s"  => \$target,
+           "include|i=s" => \@include,
+           "add"    => \$addonly,
            ) || &usage(1);
 
 my $ohome = $ENV{OSCAR_HOME};
@@ -41,6 +43,10 @@ print "Available Distro Pools:\n".Dumper(%pools) if ($verbose);
 
 my %oscar_pools;
 
+if (@include) {
+    @include = map { "-i $_" } @include;
+}
+
 for my $distro (keys(%pools)) {
     my $os = $pools{$distro}{os};
     my @oscar_repos = split(",",$pools{$distro}{oscar_repo});
@@ -52,7 +58,14 @@ for my $distro (keys(%pools)) {
 	# skip if we already prepared it
 	next if (exists($oscar_pools{$base}));
 	my $dir = dirname($or);
+	# pass and override --target argument, if it exists
+	if ($target) {
+	    $dir = $target;
+	}
 	my $cmd = "$ohome/scripts/build_oscar_repo -d $base -t $dir";
+	$cmd .= " ".join(" ",@include) if (@include);
+	$cmd .= " --add" if ($addonly);
+
 	print "Executing: $cmd" if $verbose;
 	!system($cmd) or carp("Error occured while executing: $cmd");
 	$oscar_pools{$base} = 1;

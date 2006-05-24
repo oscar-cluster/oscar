@@ -11,7 +11,8 @@
 
 usage () {
     echo "Usage:"
-    echo "   $0 --distro|-d DISTRO-VERSION-ARCH --target|-t TARGETDIR"
+    echo "   $0 --distro|-d DISTRO-VERSION-ARCH --target|-t TARGETDIR \ "
+    echo "      [--include SEARCHDIR]"
     echo
     exit 1
 }
@@ -51,6 +52,16 @@ while [ -n "$1" ]; do
        --remove|-r)
 	   shift
 	   REMOVE="1"
+	   ;;
+       --include|-i)          # additional search paths for package RPMs
+	   shift
+	   [ -z "$1" ] && usage
+	   INCLUDE="$INCLUDE $1"
+	   shift
+	   ;;
+       --add|-a)              # only add packages, don't rebuild
+	   shift
+	   ADD_ONLY=1
 	   ;;
        --help|-h)
 	   usage
@@ -99,9 +110,14 @@ if [ -z "$SOURCE" ]; then
     fi
 fi
 
-if [ ! -d "$OHOME/packages/sis/distro/$SOURCE" ]; then
-    echo "Could not find directory $OHOME/packages/sis/distro/$SOURCE"
-    echo "Are you sure the distro $DISTRO is supported???"
+if [ ! -d "$OHOME/packages/sis/distro/$SOURCE" -a -z "$ADD_ONLY" ]; then
+    if [ ! -d "$OHOME/packages/sis/distro" ]; then
+	echo "Could not find directory $OHOME/packages/sis/distro"
+	echo "This should be only run inside a developer checkout!"
+    else
+	echo "Could not find directory $OHOME/packages/sis/distro/$SOURCE"
+	echo "Are you sure the distro $DISTRO is supported???"
+    fi
     exit 10
 fi
 
@@ -111,14 +127,8 @@ fi
 
 TARGET="$TDIR/$DISTRO"
 # check for existence of target directory
-if [ ! -e "$TARGET" ]; then
-    echo "Creating directory $TARGET"
-    mkdir -p $TARGET || {
-	echo "Could not create target directory $TARGET"
-	exit 3
-    }
-else
-    if [ -d "$TARGET" ]; then
+if [ -d "$TARGET" ]; then
+    if [ -z "$ADD_ONLY" ]; then
 	if [ -n "$REMOVE" ]; then
 	    echo "--remove was selected, removing already existing target directory $TARGET"
 	    rm -rf "$TARGET" || {
@@ -130,12 +140,22 @@ else
 	fi
     fi
 fi
+if [ ! -e "$TARGET" ]; then
+    echo "Creating directory $TARGET"
+    mkdir -p $TARGET || {
+	echo "Could not create target directory $TARGET"
+	exit 3
+    }
+fi
 if [ ! -d "$TARGET" -a ! -L "$TARGET" ]; then
     echo "$TARGET is not a directory!"
     exit 5
 fi
 
-SEARCHDIRS="$OHOME/share/prereqs $OHOME/packages /var/lib/oscar/packages"
+SEARCHDIRS="$OHOME/share/prereqs $OHOME/packages"
+if [ -n "$INCLUDE" ]; then
+    SEARCHDIRS="$SEARCHDIRS $INCLUDE"
+fi
 
 cd $OHOME
 echo "Copying packages ..."
