@@ -56,6 +56,18 @@ my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 # List of root's .rc files (MDK PATH fixup)
 my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
 
+# Sanity checking for /etc/hosts
+oscar_log_subsection("Getting internal IP address");
+my ($ip,$bcast,$netmask) = interface2ip($INTERFACE) 
+    or croak("Couldn't determine internal ip address");
+oscar_log_subsection("Got: [IP $ip]");
+oscar_log_subsection("Got: [broadcast $bcast]");
+oscar_log_subsection("Got: [netmask $netmask]");
+
+oscar_log_subsection("Adding hosts to /etc/hosts");
+update_hosts($ip) or croak("Couldn't add required host entries to /etc/hosts");
+
+
 # Get a list of all non-core packages
 # and list of RPMs from the non-core packages
 my $sel_group = get_selected_group;
@@ -106,7 +118,7 @@ oscar_log_subsection("Successfully installed server non-core RPMs");
 my @tables = ("Node_Package_Status", "Nodes", "Packages");
 my %options = ();
 my @errors = ();
-locking("write", \%options, \@tables, \@errors);
+#locking("write", \%options, \@tables, \@errors);
 
 # Have installed Server RPMs & did not croak, so mark packages.<pkg>installed 
 # true. If clients (image) fail they will set it to false. (best effort for now)
@@ -119,7 +131,7 @@ die "$0:Failed to update the table Node_Package_Status"
 
 
 # UNLOCKING FOR NEST
-unlock(\%options, \@errors);
+#unlock(\%options, \@errors);
 
 oscar_log_subsection("Done marking installed bits in ODA");
 
@@ -138,16 +150,6 @@ oscar_log_subsection("Successfully ran server non-core package ".
 		     "post_server_install scripts");
 
 # Additional housekeeping
-
-oscar_log_subsection("Getting internal IP address");
-my ($ip,$bcast,$netmask) = interface2ip($INTERFACE) 
-    or croak("Couldn't determine internal ip address");
-oscar_log_subsection("Got: [IP $ip]");
-oscar_log_subsection("Got: [broadcast $bcast]");
-oscar_log_subsection("Got: [netmask $netmask]");
-
-oscar_log_subsection("Adding hosts to /etc/hosts");
-update_hosts($ip) or croak("Couldn't add required host entries to /etc/hosts");
 
 #oscar_log_subsection("Updating /etc/profile");
 #update_profile() or croak("Couldn't add path entries to /etc/profile");
