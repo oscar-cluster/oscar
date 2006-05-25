@@ -119,17 +119,22 @@ print "$services_string\n";
 
 stop_services( @oscar_services );
 
-# Delet all opkgs smartly: with yume-opkg
+# Delete the clients first so /etc/hosts gets cleaned
+do_command( "/usr/bin/mksimachine --Delete --all" )
+  if -x "/usr/bin/mksimachine";
+
+
+# Delete all opkgs smartly: with yume-opkg
 
 my $cmd = "yume-opkg ".join(" ",@repos)." --remove ".join(" ",@opkgs);
 print "Executing: $cmd\n";
 system($cmd);
 
+# remove prereqs (hardcoded right now)
+$cmd = "yum remove perl-HTML-Tree perl-Tk perl-Qt perl-XML-Parser perl-XML-Simple packman-depman packman-depman-rpms yume"
+system($cmd);
 
 
-# Delete the clients first so /etc/hosts gets cleaned
-do_command( "/usr/bin/mksimachine --Delete --all" )
-  if -x "/usr/bin/mksimachine";
 
 my %orepo_done;
 my $err = 0;
@@ -186,7 +191,12 @@ sub stop_services {
   }
 }
 
+
 sub cleanup_files {
+    #
+    # This is a bad and messy routine as it can leave you with RPMs registered
+    # in the database but with all files missing. Very very ugly!!! [EF]
+    #
   my @dirs = (
               '/opt/kernel_picker',
               '/opt/opium',
