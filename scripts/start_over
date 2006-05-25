@@ -131,10 +131,8 @@ print "Executing: $cmd\n";
 system($cmd);
 
 # remove prereqs (hardcoded right now)
-$cmd = "yum remove perl-HTML-Tree perl-Tk perl-Qt perl-XML-Parser perl-XML-Simple packman-depman packman-depman-rpms yume"
+$cmd = "yum remove perl-HTML-Tree perl-Tk perl-Qt perl-XML-Parser perl-XML-Simple packman-depman packman-depman-rpms yume";
 system($cmd);
-
-
 
 my %orepo_done;
 my $err = 0;
@@ -274,35 +272,3 @@ sub sort_uniq {
   my @result = sort ( keys %seen );
   return @result;
 }
-
-sub uninstall_rpms {
-  my @found_rpms = @_;
-  my @all_rpms = ( @found_rpms, @known_rpms );
-  @all_rpms = sort_uniq( @all_rpms );
-  my @deleteme = ();
-  foreach my $rpm (@all_rpms) {
-    if(_is_installed($rpm)) {
-      if ( ! grep( /^$rpm$/, @leave_rpms ) ) {
-        push @deleteme, $rpm;
-      }
-    }
-  }
-  if (scalar(@deleteme)) {
-    my $rpmcmd = 'rpm -e --allmatches --nodeps ' . (join ' ', @deleteme);
-    if ( do_command($rpmcmd) ) {
-      print "couldn't uninstall the rpms, trying again with --noscripts\n";
-      @deleteme = ();
-      foreach my $rpm (@all_rpms) {
-        if(_is_installed($rpm)) {
-          if ( ! grep( /^$rpm$/, @leave_rpms ) ) {
-            push @deleteme, $rpm;
-          }
-        }
-        my $rpmcmd = 'rpm -e --allmatches --nodeps --noscripts ' . (join ' ', @deleteme);
-        !do_command($rpmcmd) or croak "couldn't uninstall the rpms";
-      }
-    }
-  }
-  return 1;
-}
-
