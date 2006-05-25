@@ -1019,13 +1019,16 @@ print "aaaarrrrrggghhhhhhhh\n";
     print( "DB_DEBUG>$0:\n====> in oda::drop_database dropdb succeeded\n")
         if $$options_ref{debug} || $$options_ref{verbose};
 
-    my $root_pass =  &check_root_password?$options{password}:""; 
+    my $root_pass =  &check_root_password?" -p$options{password}":""; 
 
-    my $cmd_string = 'mysql -u root -p' . $root_pass . ' -e "REVOKE ALL ON '
+    my $cmd_string = 'mysql -u root ' . $root_pass . ' -e "REVOKE ALL ON '
                     . 'oscar.* FROM oscar@localhost;"';
        
     return 0 if 
     ! do_shell_command( $options_ref, $cmd_string );
+    
+    print( "DB_DEBUG>$0:\n====> in oda::drop_database revoking oscar user's privileges is succeeded\n")
+        if $$options_ref{debug} || $$options_ref{verbose};
 
     # since we successfully dropped the entire database,
     # reset the cache of table names and 
