@@ -36,11 +36,15 @@ print "##### deleting all OSCAR packages and their dependencies #####\n";
 my @opkgs = `yume-opkg --list --all`;
 @opkgs = map { chomp $_ } @opkgs;
 
-# Try doing this smartly: with yume-opkg
+# skip oda package (and keep mysql around)
+@opkgs = grep !/^oda$/ @opkgs;
 
-my $cmd = "yume-opkg ".join(" ",@repos)." --remove ".join(" ",@opkgs);
-print "Executing: $cmd\n";
-system($cmd);
+my @orpms;
+for my $opkg (@opkgs) {
+    my @rpms = `yume-opkg --list --rpms $opkg`;
+    @rpms = map { chomp $_ } @rpms;
+    push @orpms, @rpms;
+}
 
 my @known_services = qw(
                         dhcpd
@@ -94,8 +98,8 @@ if(-e '/etc/odapw'){
 
 print "Searching for services in the oscar rpm files ... ";
 my @oscar_services = ();
-foreach my $oscar_rpm_path ( @oscar_rpm_paths ) {
-  my @files = `rpm -qpl $oscar_rpm_path`;
+foreach my $rpm ( @orpms ) {
+  my @files = `rpm -ql $rpm`;
   chomp @files;
   my @service_files = grep( /^\/etc\/(rc\.d\/|)init\.d\/[^\/]/, @files );
   foreach ( @service_files ) {
@@ -114,6 +118,14 @@ print "$services_string\n";
 # stop all oscar services
 
 stop_services( @oscar_services );
+
+# Delet all opkgs smartly: with yume-opkg
+
+my $cmd = "yume-opkg ".join(" ",@repos)." --remove ".join(" ",@opkgs);
+print "Executing: $cmd\n";
+system($cmd);
+
+
 
 # Delete the clients first so /etc/hosts gets cleaned
 do_command( "/usr/bin/mksimachine --Delete --all" )
