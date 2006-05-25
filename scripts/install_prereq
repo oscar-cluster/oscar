@@ -149,6 +149,7 @@ if (scalar(@installs) && &check_installed(@installs)) {
 }
 
 for my $cmd (@shellcmds) {
+    $cmd =~ s/\$OSCAR_HOME/$ohome/g;
     vprint("Executing: $cmd\n");
     !system("$cmd") or print "Command \"$cmd\" returned $?\n";
 }
