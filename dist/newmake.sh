@@ -113,6 +113,7 @@ fi
 umask 022
 cd $srcdir
 OSCAR_VERSION=`dist/get-oscar-version.sh VERSION`
+OSCAR_GREEK_VERSION=`dist/get-oscar-version.sh VERSION --greek`
 
 ############################################################################
 
