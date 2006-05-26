@@ -21,9 +21,34 @@ use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackagePath;
 use File::Basename;
+use Getopt::Long;
+
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
+
+# Only continue if we're on a configured OSCAR system
+my $oscar_home;
+if ( exists $ENV{OSCAR_HOME} && -d $ENV{OSCAR_HOME} ) {
+    $oscar_home = $ENV{OSCAR_HOME};
+} else {
+    croak "The environment variable \$OSCAR_HOME isn't set!\n".
+	"Refusing to continue!!!\n";
+}
+print "Using $oscar_home as OSCAR base directory\n";
+use lib "$ENV{OSCAR_HOME}/lib";
+
+my ($yes, @keep);
+GetOptions(
+	   "yes|y"       => \$yes,
+	   "keep|k=s"    => \@keep;
+	   );
+
+if ($yes) {
+    $yes = "-y";
+} else {
+    $yes = "";
+}
 
 my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
 my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
@@ -37,7 +62,8 @@ my @opkgs = `yume-opkg --list --all`;
 @opkgs = map { chomp $_ } @opkgs;
 
 # skip oda package (and keep mysql around)
-@opkgs = grep !/^oda$/ @opkgs;
+@opkgs = grep !/^oda$/, @opkgs;
+
 
 my @orpms;
 for my $opkg (@opkgs) {
@@ -45,6 +71,12 @@ for my $opkg (@opkgs) {
     @rpms = map { chomp $_ } @rpms;
     push @orpms, @rpms;
 }
+
+# skip rpms which were passed on the command line as worthy to stay
+my $match = join("|",@keep);
+@orpms = grep !/^($match)$/, @orpms;
+
+
 
 my @known_services = qw(
                         dhcpd
@@ -58,30 +90,7 @@ my @known_services = qw(
                         systemimager
                        );
 
-# find oscar home directory
-my $oscar_home = "";
-if ( exists $ENV{OSCAR_HOME} && -d $ENV{OSCAR_HOME} ) {
-  $oscar_home = $ENV{OSCAR_HOME};
-} else {
-  chomp(my $prog = $0);
-  chomp(my $cwd = `pwd`);
-  my $path = ( $prog =~ /^\// ) ? $prog : "$cwd/$prog";
-  $path =~ s/\/[^\/]+\/\.\.\//\//g while $path =~ /\/[^\/]+\/\.\.\//;
-  $path =~ s/\/\.\//\//g while $path =~ /\/\.\//;
-  if ( $path =~ /\/scripts\/[^\/]+$/ ) {
-    $oscar_home = $path;
-    $oscar_home =~ s/\/scripts\/[^\/]+$//g;
-  }
-}
-if ( ! -d $oscar_home ) {
-  print "Cannot find OSCAR base directory from env var OSCAR_HOME or execution path\n";
-  exit 1;
-}
-print "Using $oscar_home as OSCAR base directory\n";
 
-use lib "$ENV{OSCAR_HOME}/lib";
-use lib "../lib"; 
-use Carp;
 
 # delete the oscar database
 
@@ -109,7 +118,6 @@ foreach my $rpm ( @orpms ) {
   push @oscar_services, @service_files;
 }
 @oscar_services = sort_uniq( @oscar_services );
-#print "oscar_services=\n";foreach my $service (@oscar_services){print "$service\n";}
 my $services_count = scalar @oscar_services;
 print "found these $services_count services:\n";
 my $services_string = join ' ', @oscar_services;
@@ -120,19 +128,22 @@ print "$services_string\n";
 stop_services( @oscar_services );
 
 # Delete the clients first so /etc/hosts gets cleaned
+print "Deleting all OSCAR images.\n";
 do_command( "/usr/bin/mksimachine --Delete --all" )
   if -x "/usr/bin/mksimachine";
 
 
 # Delete all opkgs smartly: with yume-opkg
 
-my $cmd = "yume-opkg ".join(" ",@repos)." --remove ".join(" ",@opkgs);
-print "Executing: $cmd\n";
-system($cmd);
+my $cmd = "yume-opkg "$yes." ".join(" ",@repos)." --remove ".join(" ",@opkgs);
+do_command($cmd);
 
 # remove prereqs (hardcoded right now)
-$cmd = "yum remove perl-HTML-Tree perl-Tk perl-Qt perl-XML-Parser perl-XML-Simple packman-depman packman-depman-rpms yume";
-system($cmd);
+# (leaving the perl stuff in place, otherwise it might delete more things
+#  than expected)
+$cmd = "yum ".$yes." remove packman-depman packman-depman-rpms yume";
+do_command($cmd);
+
 
 my %orepo_done;
 my $err = 0;
@@ -238,8 +249,18 @@ sub cleanup_files {
               "$oscar_home/.oscar",
              );
   foreach my $file (@dirs) {
-    print "rm -rf $file \n";
-    system("rm -rf $file");
+
+      # trying to make this safer: skip files belonging to installed packages
+
+      my $err = system("rpm -qf $file >/dev/null 2>&1");
+      if ($err) {
+	  # file belongs to no package
+	  print "Executing: rm -rf $file\n";
+	  system("rm -rf $file");
+      } else {
+	  # file belongs to some package
+	  print "File/dir $file belongs to some package. Not removing!\n";
+      }	  
   }
 
   # Remove the .configurator.values files from each package directory
@@ -254,11 +275,6 @@ sub do_command {
   my ( $command ) = ( @_ );
   print "$command\n";
   return system( "$command" );
-}
-
-sub _is_installed {
-  my $rpm = shift;
-  return !system("rpm -q $rpm >/dev/null");
 }
 
 # return a sorted, unique lines only version of a passed list
