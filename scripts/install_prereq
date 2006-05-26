@@ -53,6 +53,10 @@ my $dstring   = $os->{compat_distro}.$os->{compat_distrover}.
     "-".$os->{arch};
 my $cstring   = "common-".$suffix."s";
 
+my $march = $arch;
+$march = "i?86" if ($march eq "i386");
+
+
 # locate destination path for prereq package files and repository url
 my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
@@ -100,7 +104,11 @@ for my $path (@prereqs) {
 	    next if (!$cmd);
 	    push @shellcmds, $cmd;
 	} else {
-
+	    # replace $arch with architecture in package config lines
+	    # this prevents packages to be interpreted as capabilities
+	    if ($line =~ /\$arch/) {
+		$line =~ s:\$arch:$march:g;
+	    }
 	    my $remove = ($line =~ /^!/);
 	    if ($remove) {
 		$line =~ s/^!//g;
