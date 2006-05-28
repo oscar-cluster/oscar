@@ -118,7 +118,7 @@ EOF
     *)
     echo "************************************ WARNING ************************************"
     echo "OSCAR could not set up the configuration for any mailing service on the server."
-    echo "The current version of the mta-config packages in OSCAR only supports the Postfix\n mail transfer agent (MTA)."
+    echo "The current version of the mta-config package in OSCAR only supports the Postfix mail transfer agent (MTA)."
     echo "It looks like you have another MTA installed (e.g, sendmail or exim); as such,"
     echo "please be aware that OSCAR will not automatically configure it."
     echo "************************************ WARNING ************************************"
