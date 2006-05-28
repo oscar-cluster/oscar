@@ -54,6 +54,7 @@ our @EXPORT = qw(install_uninstall_packages
 my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
 my @error_list = ();
 my %options = ();
+my $OSCAR_SERVER_NODE = "oscar_server";
 
 #########################################################################
 #  Subroutine: install_uninstall_packages                               #
@@ -220,7 +221,7 @@ sub install_uninstall_packages
 	@all_packages = OSCAR::Package::list_installable_packages("all"); 
 	foreach $package (@all_packages)
 	{
-		if(is_installed($package) == 1)
+		if(is_installed($package))
 		{
 			if (OSCAR::Package::run_pkg_script($package, 'post_install', 1, '0'))
 			{
@@ -299,8 +300,6 @@ sub package_install
 		$range,
 		$testmode) = @_;
 
-	my $test_value;
-
 	oscar_log_section("Running OSCAR package install");
 
 	#add check to see if package exists
@@ -312,9 +311,9 @@ sub package_install
 		return 6;
 	} 
 
-	$test_value = is_installed($package_name);	
+	 ;	
 
-	if ($test_value =~ "1")
+	if (is_installed($package_name))
 	{
 		my $e_string = "Error: package ($package_name) is installed already, aborting...\n";
 		print $e_string;
@@ -1194,8 +1193,6 @@ sub package_uninstall
 		$range,
 		$testmode) = @_;
 
-	my $test_value;
-	
 	oscar_log_section("Running OSCAR package un-install");
 
 	if ((is_package_a_package($package_name)) =~ 1)
@@ -1206,9 +1203,7 @@ sub package_uninstall
 		return 6;
 	} 
 
-	$test_value = is_installed($package_name);	
-
-	if ($test_value =~ "0")
+	if (! is_installed($package_name))
 	{
 		my $e_string = "Error: package ($package_name) is not installed, aborting...\n";
 		print $e_string;
@@ -1324,7 +1319,8 @@ sub is_installed
 {
 	my ($package_name) = @_;	
 
-	return OSCAR::Database::is_installed($package_name,\%options,\@error_list);
+	return OSCAR::Database::is_installed_on_node($package_name,
+                    $OSCAR_SERVER_NODE,\%options,\@error_list);
 }
 
 sub uninstall_rpms_patch
