@@ -1758,12 +1758,16 @@ sub get_selected_group_packages {
     $group = get_selected_group($options_ref,$error_strings_ref) if(!$group);    
     $flag = 1 if(! $flag);
     my $sql = "SELECT Packages.id, Packages.package, Packages.name, Packages.version " .
-              "From Packages, Group_Packages, Groups " .
+              "From Packages, Group_Packages, Groups, Node_Package_Status, Nodes " .
               "WHERE Packages.id=Group_Packages.package_id ".
               "AND Group_Packages.group_name=Groups.name ".
               "AND Groups.name='$group' ".
               "AND Groups.selected=1 ".
-              "AND Group_Packages.selected=$flag";
+              "AND Group_Packages.selected=$flag ";#.
+#              "AND Nodes.id=Node_Package_Status.node_id ".
+#              "AND Nodes.name='oscar_server' ".
+#              "AND Node_Package_Status.package_id=Packages.id ".
+#              "AND Node_Package_Status.requested!=8";
     print "DB_DEBUG>$0:\n====> in Database::get_selected_group_packages SQL : $sql\n" if $$options_ref{debug};
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }
@@ -2353,6 +2357,10 @@ sub update_node_package_status {
         my $table = "Node_Package_Status";
         get_node_package_status_with_node_package($node,$opkg,\@results,$options_ref,$error_strings_ref);
         if (@results) {
+            my $pstatus_ref = pop @results;
+            my $ex_status = $$pstatus_ref{ex_status};
+            $field_value_hash{requested} = $ex_status if($ex_status == 8 && $requested == 2);
+            $field_value_hash{ex_status} = $$pstatus_ref{requested};
             die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
                 if(!update_table($options_ref,$table,\%field_value_hash, $where, $error_strings_ref));
         } else {
@@ -2362,12 +2370,6 @@ sub update_node_package_status {
             die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
                 if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
         }
-#        $table = "Node_Packages";
-#        delete_table($options_ref,$table,$where,$error_strings_ref);
-#        %field_value_hash = ("node_id" => $node_id,
-#                             "package_id"=>$package_id);
-#        die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
-#            if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
     }
     return 1;
 }
@@ -2521,8 +2523,10 @@ sub set_group_packages {
         die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
             if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
     }
+
+    # Update Node_Package_Status to set requested to "should_be_installed"
     update_node_package_status(
-          $options_ref,"oscar_server",$package,$selected,$error_strings_ref);
+          $options_ref,"oscar_server",$package,2,$error_strings_ref);
     return 1;
 }
 

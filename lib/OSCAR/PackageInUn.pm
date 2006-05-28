@@ -18,7 +18,7 @@ package OSCAR::PackageInUn;
 #
 # Copyright (c) 2003 Oak Ridge National Laboratory.
 #                    All rights reserved.
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) 2005-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 
 use strict;
@@ -93,10 +93,16 @@ sub install_uninstall_packages
   chdir($olddir);
 
 
+    # 
+    # dikim commented out the LOCKING codes here because he believes
+    # that InnoDB type can handle the all the crossing locking issues.
+    # He does not want to remove these codes because he easily forgets
+    # what files have locking codes and where they are and he may need
+    # them in case innodb works as we expected.
 	# START LOCKING FOR NEST
 	my @tables = ("Packages", "Groups", "Group_Packages");
 	
-	locking("read", \%options, \@tables, \@error_list);
+	#locking("read", \%options, \@tables, \@error_list);
 	
 	# Get the lists of packages that need to be installed/uninstalled
     my @selected = ();
@@ -110,7 +116,7 @@ sub install_uninstall_packages
         push @packagesThatShouldBeUninstalled, $$unselected_ref{package};
     }    
 	# UNLOCKING FOR NEST
-	unlock(\%options, \@error_list);
+	#unlock(\%options, \@error_list);
 
 
   # If the user selected any packages for installation, prompt to see if he

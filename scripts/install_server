@@ -2,7 +2,7 @@
 
 # Copyright 2001-2002 International Business Machines
 #                     Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002-2005 The Trustees of Indiana University.  
+# Copyright (c) 2002-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 # $Id$
 # 
@@ -114,6 +114,12 @@ oscar_log_subsection("Successfully installed server non-core RPMs");
 #    e.g) add_config_opkgs [$configurations_id] [$package_id]
 #
 
+# 
+# dikim commented out the LOCKING codes here because he believes
+# that InnoDB type can handle the all the crossing locking issues.
+# He does not want to remove these codes because he easily forgets
+# what files have locking codes and where they are and he may need
+# them in case innodb works as we expected.
 # START LOCKING FOR NEST
 my @tables = ("Node_Package_Status", "Nodes", "Packages");
 my %options = ();

@@ -4,7 +4,7 @@
 #      by: The PerlQt User Interface Compiler (puic)
 #
 #
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) 2005-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
 # $Id$
@@ -307,56 +307,47 @@ sub init
   # Scan the command line for options
   parseCommandLine();
 
-  # Make sure the database is up and running
-  my $success = OSCAR::Database::database_connect();
-  if ($success)
+  # Create the form windows for SelectorAbout and SelectorManageSets
+  aboutForm = SelectorAbout(this,"aboutForm");
+  manageSetsForm = SelectorManageSets(this,"manageSetsForm");
+
+  # Set up the SIGNALS / SLOTS connections
+  Qt::Object::connect(manageSetsForm, SIGNAL 'refreshPackageSets()', 
+                      this, SLOT 'refreshPackageSetComboBox()');
+  Qt::Object::connect(packageSetComboBox, 
+                      SIGNAL 'activated(const QString&)',
+                      packageTable,
+                      SLOT 'populateTable(const QString&)');
+  Qt::Object::connect(packageTable, SIGNAL 'selectionChanged()',
+                      this, SLOT 'rowSelectionChanged()');
+
+  # For now, hide the previous/next buttons, until they are needed
+  previousButton->hide();
+  nextButton->hide();
+
+  # Modify the GUI depending on whether we are running this script
+  # as the "OSCAR Selector" or "Install/Uninstall Packages".
+  if (installuninstall > 0)
     {
-      # Create the form windows for SelectorAbout and SelectorManageSets
-      aboutForm = SelectorAbout(this,"aboutForm");
-      manageSetsForm = SelectorManageSets(this,"manageSetsForm");
-
-      # Set up the SIGNALS / SLOTS connections
-      Qt::Object::connect(manageSetsForm, SIGNAL 'refreshPackageSets()', 
-                          this, SLOT 'refreshPackageSetComboBox()');
-      Qt::Object::connect(packageSetComboBox, 
-                          SIGNAL 'activated(const QString&)',
-                          packageTable,
-                          SLOT 'populateTable(const QString&)');
-      Qt::Object::connect(packageTable, SIGNAL 'selectionChanged()',
-                          this, SLOT 'rowSelectionChanged()');
-
-      # For now, hide the previous/next buttons, until they are needed
-      previousButton->hide();
-      nextButton->hide();
-
-      # Modify the GUI depending on whether we are running this script
-      # as the "OSCAR Selector" or "Install/Uninstall Packages".
-      if (installuninstall > 0)
-        {
-          this->setCaption("Install/Uninstall OSCAR Packages");
-          titleLabel->setText("Install/Uninstall Packages");
-          packLabel->hide();
-          packageSetComboBox->hide();
-          manageSetsButton->hide();
-          exitButton->setText('E&xecute');
-          Qt::ToolTip::add(packageTable, 
-            trUtf8("Green = Will Be Installed, Red = Will Be Uninstalled"));
-          Qt::ToolTip::remove(exitButton);
-          Qt::ToolTip::add(exitButton,
-            "Exit and execute install/uninstall of packages");
-        }
-      else
-        {
-          cancelButton->hide();
-        }
-
-      # Populate the Package Set ComboBox / packageTable
-      refreshPackageSetComboBox();
+      this->setCaption("Install/Uninstall OSCAR Packages");
+      titleLabel->setText("Install/Uninstall Packages");
+      packLabel->hide();
+      packageSetComboBox->hide();
+      manageSetsButton->hide();
+      exitButton->setText('E&xecute');
+      Qt::ToolTip::add(packageTable, 
+        trUtf8("Green = Will Be Installed, Red = Will Be Uninstalled"));
+      Qt::ToolTip::remove(exitButton);
+      Qt::ToolTip::add(exitButton,
+        "Exit and execute install/uninstall of packages");
     }
   else
     {
-      Carp::croak("The oda database isn't running.  Quitting"); 
+      cancelButton->hide();
     }
+
+  # Populate the Package Set ComboBox / packageTable
+  refreshPackageSetComboBox();
 
 }
 
@@ -463,45 +454,52 @@ sub exitButton_clicked
   # the list of all packages and find out which ones need to be installed
   # or uninstalled.  
 
-#  if (installuninstall > 0)
-#    { 
-      my $success;  # Return code for database commands
+    my $success;  # Return code for database commands
 
-      # First, clear all install/uninstall flags
-      #$success = OSCAR::Database::database_execute_command(
-      #  "packages_clear_all_should_be_installed");
-      #$success = OSCAR::Database::database_execute_command(
-      #  "packages_clear_all_should_be_uninstalled");
+    # Then scan the table for packages to be installed/uninstalled
+    my $allPackages = SelectorUtils::getAllPackages();
+    my $packagesInstalled = packageTable->getPackagesInstalled();
+    for (my $row = 0; $row < packageTable->numRows(); $row++)
+    {
+        my $package = packageTable->item($row,0)->text();
+        my $checked = packageTable->item($row,1)->isChecked();
+  
+        my @pstatus = ();
+        my $check = OSCAR::Database::get_node_package_status_with_node_package(
+        "oscar_server",$package,\@pstatus, \%options,\@errors);
+        my $pstatus_ref = pop @pstatus if $check;
+          
 
-      # Then scan the table for packages to be installed/uninstalled
-      my $allPackages = SelectorUtils::getAllPackages();
-      my $packagesInstalled = packageTable->getPackagesInstalled();
-      for (my $row = 0; $row < packageTable->numRows(); $row++)
-        {
-          my $package = packageTable->item($row,0)->text();
-          my $checked = packageTable->item($row,1)->isChecked();
-
-          if (($packagesInstalled->{$package}) && (!$checked))
-            { # Need to uninstall package
-              # status : 1 == should_not_be_installed
-              print "Updating Node_Package_Status to should_not_be_installed\n"
-                  if $options{debug};
-              $success = OSCAR::Database::update_node_package_status(  
-                        \%options,"oscar_server",$package,1,\@errors);
-            }
-
-          if ((!($packagesInstalled->{$package})) && ($checked))
-            { # Need to install package
-              # status : 2 == should_be_installed
-              print "Updating Node_Package_Status to should_be_installed\n"
-                  if $options{debug};
-              $success = OSCAR::Database::update_node_package_status(  
-                        \%options,"oscar_server",$package,2,\@errors);
-            }
+        if (($packagesInstalled->{$package}) && (!$checked))
+        { # Need to uninstall package
+          # status : 1 == should_not_be_installed
+          print "Updating Node_Package_Status to should_not_be_installed\n"
+              if $options{debug};
+          $success = OSCAR::Database::update_node_package_status(  
+                    \%options,"oscar_server",$package,1,\@errors);
         }
- #   }
 
-  Qt::Application::exit();
+        if ((!($packagesInstalled->{$package})) && ($checked))
+        { 
+            if (installuninstall > 0){
+                # Need to complete installation of a package
+                # status : 8 == finished
+                print "Updating Node_Package_Status to finished\n"
+                  if $options{debug};
+                $success = OSCAR::Database::update_node_package_status(  
+                        \%options,"oscar_server",$package,8,\@errors);
+            }else{
+                # Need to install package
+                # status : 2 == should_be_installed
+                print "Updating Node_Package_Status to should_be_installed\n"
+                  if $options{debug};
+                $success = OSCAR::Database::update_node_package_status(  
+                        \%options,"oscar_server",$package,2,\@errors);
+            }          
+        }
+    }
+
+    Qt::Application::exit();
 
 }
 
@@ -512,7 +510,7 @@ sub cancelButton_clicked
 #  Subroutine: cancelButton_clicked                                     #
 #  Parameters: None                                                     #
 #  Returns   : Nothing                                                  #
-#########################################################################
+########################################################################
 
   Qt::Application::exit();
 

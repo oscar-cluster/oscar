@@ -2,6 +2,8 @@
 
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
+# Copyright (c) 2005-2006 The Trustees of Indiana University.  
+#                    All rights reserved.
 # Author: Jason Brechin
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -113,7 +115,14 @@ my $done = 0;
 my @tables = ("oscar", "network", "oda_shortcuts");
 my %options = ();
 my @errors = ();
-locking("write", \%options, \@tables, \@errors);
+
+# 
+# dikim commented out the LOCKING codes here because he believes
+# that InnoDB type can handle the all the crossing locking issues.
+# He does not want to remove these codes because he easily forgets
+# what files have locking codes and where they are and he may need
+# them in case innodb works as we expected.
+#locking("write", \%options, \@tables, \@errors);
 
 unless ( dec_already_locked("read_records oscar.interface", \@results, 0) && defined(@results) ) {
   dec_already_locked("add_fields oscar interface=text", undef, 1);
@@ -145,6 +154,6 @@ while ( !$done ) {
   }
 }
 # UNLOCKING FOR NEST
-unlock(\%options, \@errors);
+#unlock(\%options, \@errors);
 
 exit 0;
