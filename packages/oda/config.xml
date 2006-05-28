@@ -7,16 +7,6 @@
 >
 
   <!--
-  =====================================================
-  =====================================================
-  ==                                                 ==
-  ==    oda data for oda record in packages table    ==
-  ==                                                 ==
-  =====================================================
-  =====================================================
-  -->
-
-  <!--
       Copyright (c) 2004 NCSA 
                          All rights reserved.
       Copyright (c) 2005-2006 The Trustees of Indiana University.  
@@ -55,38 +45,4 @@
   </maintainer>
 
   <description>ODA provides a central database for OSCAR.</description>
-
-  <!-- the binary packages are installed as prereqs. not needed here any more
-  <binary-package-list>
-    <filter>
-      <distribution>
-        <name>redhat</name>
-      </distribution>
-    </filter>
-
-    <pkg>mysql</pkg>
-    <pkg>perl-DBD-MySQL</pkg>
-    <pkg>perl-DBI</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-    <filter>
-      <distribution>
-        <name>mandrake</name>
-      </distribution>
-    </filter>
-
-    <pkg>MySQL</pkg>
-    <pkg>MySQL-client</pkg>
-    <pkg>libmysql12</pkg>
-    <pkg>perl-CGI</pkg>
-    <pkg>perl-DBI</pkg>
-    <pkg>perl-Mysql</pkg>
-    <pkg>perl-Data-ShowTable</pkg>
-    <pkg>MySQL-common</pkg>
-  </binary-package-list>
-
-  -->
-  
-
 </oscar>
