@@ -112,13 +112,13 @@ EOF
 		;;
 	exim)
     echo "WARNING: OSCAR does not know how to configure exim yet."
-    echo "WARNING: Please bug the OSCAR developers to finish the disable-servics package!"
+    echo "WARNING: Please bug the OSCAR developers to finish the mta-config package!"
     echo "WARNING: There will be no mail service running on the client nodes!"
 		;;
     *)
     echo "************************************ WARNING ************************************"
     echo "OSCAR could not set up the configuration for any mailing service on the server."
-    echo "The current version of the disable-services packages in OSCAR only supports the Postfix mail transfer agent (MTA)."
+    echo "The current version of the mta-config packages in OSCAR only supports the Postfix\n mail transfer agent (MTA)."
     echo "It looks like you have another MTA installed (e.g, sendmail or exim); as such,"
     echo "please be aware that OSCAR will not automatically configure it."
     echo "************************************ WARNING ************************************"
