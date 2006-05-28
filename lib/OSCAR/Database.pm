@@ -2357,6 +2357,12 @@ sub update_node_package_status {
             my $ex_status = $$pstatus_ref{ex_status};
             $field_value_hash{requested} = $ex_status if($ex_status == 8 && $requested == 2);
             $field_value_hash{ex_status} = $$pstatus_ref{requested};
+
+            # If $requested is 8(finished), set the "ex_status" to 8
+            # because setting "finished" to the "ex_status" prevents
+            # package status from being updated incorrectly when a 
+            # package is selected/unselected on Seletor.
+            $field_value_hash{ex_status} = $requested if($requested == 8 && $ex_status != 2);
             die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
                 if(!update_table($options_ref,$table,\%field_value_hash, $where, $error_strings_ref));
         } else {
@@ -2520,9 +2526,12 @@ sub set_group_packages {
             if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
     }
 
-    # Update Node_Package_Status to set requested to "should_be_installed"
+    # Update Node_Package_Status to set requested according to the "selected"
+    # value:
+    # (e.g., if "selected" then should_be_installed elee should_not_be_installed")
+    my $requested = ($selected?2:1);
     update_node_package_status(
-          $options_ref,"oscar_server",$package,2,$error_strings_ref);
+          $options_ref,"oscar_server",$package,$requested,$error_strings_ref);
     return 1;
 }
 

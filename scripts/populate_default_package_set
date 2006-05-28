@@ -4,7 +4,7 @@
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 # Copyright 2005
 #           Bernard Li <bli@bcgsc.ca>
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) 2005-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
 #   This program is free software; you can redistribute it and/or modify
@@ -41,12 +41,12 @@ my %options = ();
 my @errors = ();
 
 my @nics_results = ();
-my $server_node = "oscar_server";
+my $OSCAR_SERVER_NODE = "oscar_server";
 
 # Determine if it is the first time installation or not.
 # If nics table is already filled in, this is not first time installation.
 # and skip the whole process of this script (populate_default_package_set).
-get_nics_info_with_node($server_node,\@nics_results,\%options,\@errors);
+get_nics_info_with_node($OSCAR_SERVER_NODE,\@nics_results,\%options,\@errors);
 exit 0 if(@nics_results);
 
 
@@ -123,26 +123,21 @@ if ( @package_set_names )  {
 foreach my $package_ref (@installable_packages){
     my $package_id = $$package_ref{id};
     my $package_name = $$package_ref{package};
-    my $node_ref = 
-        get_node_info_with_name("oscar_server",\%options,\@errors);
-    my $node_id = $$node_ref{id};
-    my %field_value_hash = ( "node_id"=>$node_id,
-                              "package_id"=>$package_id,
-                              "requested"=>2 );
-    my $table = "Node_Package_Status";
-    my @fields = ("*");
-    my $where = "WHERE package_id=$package_id AND node_id=$node_id";
+                    
     # installable tag is kept on config.xml and this is an easier way
     # to avoid tracing not-installable packages (e.g., networking).
-    my @results = ();
-    select_table(\%options,$table,\@fields,$where,\@results,\@errors);
-    if(! @results ){
-        if ( !($is_excluded{$package_name}) ) {
-            insert_into_table (\%options,$table,\%field_value_hash,\@errors);
-        } else {
-            set_group_packages(
+    my $requested = 2;
+    if ( !($is_excluded{$package_name}) ) {
+        $success = update_node_package_status(
+                    \%options,
+                    $OSCAR_SERVER_NODE,
+                    $package_name,
+                    $requested,
+                    \@errors);
+                    
+    } else {
+        $success = set_group_packages(
                 "Default","$package_name",0,\%options,\@errors);
-        }
     }
 }
 
