@@ -1758,16 +1758,12 @@ sub get_selected_group_packages {
     $group = get_selected_group($options_ref,$error_strings_ref) if(!$group);    
     $flag = 1 if(! $flag);
     my $sql = "SELECT Packages.id, Packages.package, Packages.name, Packages.version " .
-              "From Packages, Group_Packages, Groups, Node_Package_Status, Nodes " .
+              "From Packages, Group_Packages, Groups " .
               "WHERE Packages.id=Group_Packages.package_id ".
               "AND Group_Packages.group_name=Groups.name ".
               "AND Groups.name='$group' ".
               "AND Groups.selected=1 ".
-              "AND Group_Packages.selected=$flag ";#.
-#              "AND Nodes.id=Node_Package_Status.node_id ".
-#              "AND Nodes.name='oscar_server' ".
-#              "AND Node_Package_Status.package_id=Packages.id ".
-#              "AND Node_Package_Status.requested!=8";
+              "AND Group_Packages.selected=$flag";
     print "DB_DEBUG>$0:\n====> in Database::get_selected_group_packages SQL : $sql\n" if $$options_ref{debug};
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }
