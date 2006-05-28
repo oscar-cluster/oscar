@@ -227,6 +227,7 @@ CREATE TABLE IF NOT EXISTS Node_Package_Status(
     package_id  integer not null,
     requested  integer not null default 1,
     status  integer not null,
+    ex_status  integer not null,
     PRIMARY KEY (node_id, package_id, requested),
     KEY node_id ( node_id ),
     KEY package_id ( package_id ),
