@@ -203,7 +203,6 @@ sub cleanup_files {
               '/opt/opium',
               '/etc/systemimager',
               '/etc/dhcpd.conf',
-    	      '/etc/odapw',
               '/etc/profile.d/00-modules.*',
               '/etc/profile.d/apitest.*',
               '/etc/profile.d/c3.*',
@@ -286,7 +285,7 @@ sub drop_db {
     oda::drop_database(undef, undef);
   }
   #print "Deleting oda database saved password file ...\n";
-  #unlink "/etc/odapw";
+  unlink "/etc/odapw";
 
   !system("/etc/init.d/mysqld stop") or croak("Failed to stop mysqld");
 }
