@@ -25,7 +25,7 @@ case "$option" in
     --major|--minor|--release|--greek|--base|--help)
         OSCAR_NEED_SVN=0
         ;;
-    *)
+    --nightly|*)
         OSCAR_NEED_SVN=1
 esac
 
@@ -48,6 +48,8 @@ else
     OSCAR_VERSION="${OSCAR_VERSION}${OSCAR_GREEK_VERSION}"
 
     OSCAR_BASE_VERSION="$OSCAR_VERSION"
+
+    OSCAR_DATE=`date '+%Y%m%d'`
 
     if test "$OSCAR_WANT_SVN" = "1" -a "$OSCAR_NEED_SVN" = "1" ; then
         if test "$OSCAR_SVN_R" = "-1"; then
@@ -91,6 +93,9 @@ case "$option" in
     --all)
         echo ${OSCAR_VERSION} ${OSCAR_MAJOR_VERSION} ${OSCAR_MINOR_VERSION} ${OSCAR_RELEASE_VERSION} ${OSCAR_GREEK_VERSION} ${OSCAR_SVN_R}
         ;;
+    --nightly)
+	echo ${OSCAR_VERSION}-${OSCAR_DATE}
+	;;
     -h|--help)
 	cat <<EOF
 $0 <srcfile> [<option>]
@@ -105,6 +110,7 @@ $0 <srcfile> [<option>]
     --svn     - Subversion repository number
     --all     - Show all version numbers, separated by :
     --base    - Show base version number (no svn number)
+    --nightly - Return the version number for nightly tarballs
     --help    - This message
 EOF
         ;;

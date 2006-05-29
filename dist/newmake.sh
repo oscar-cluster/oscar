@@ -64,6 +64,10 @@ while [ -n "$1" ]; do
 	   shift
 	   ALL_REPOS=1
 	   ;;
+       --nightly)
+	   shift
+       NIGHTLY=1
+	   ;;
        --distro)
 	   shift
 	   [ -z "$1" ] && usage
@@ -113,6 +117,9 @@ fi
 umask 022
 cd $srcdir
 OSCAR_VERSION=`dist/get-oscar-version.sh VERSION`
+if [ -n "$NIGHTLY" ]; then
+    OSCAR_VERSION=`dist/get-oscar-version.sh VERSION --nightly`
+fi
 OSCAR_GREEK_VERSION=`dist/get-oscar-version.sh VERSION --greek`
 
 ############################################################################

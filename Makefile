@@ -65,6 +65,9 @@ test: checkenv install-perlQt bootstrap-smart localrepos
 dist:
 	cd dist; ./newmake.sh --base --srpms --all-repos
 
+nightly:
+	cd dist; ./newmake.sh --base --srpms --all-repos --nightly
+
 #
 # Install the repositories needed on the local machine to /tftpboot/oscar,
 # Install the base OSCAR (without RPMS/DEBs) in /opt.
