@@ -121,6 +121,7 @@ if [ -n "$NIGHTLY" ]; then
     OSCAR_VERSION=`dist/get-oscar-version.sh VERSION --nightly`
 fi
 OSCAR_GREEK_VERSION=`dist/get-oscar-version.sh VERSION --greek`
+OSCAR_SVN_VERSION=`dist/get-oscar-version.sh VERSION --svn`
 
 ############################################################################
 
@@ -289,6 +290,15 @@ if [ -n "$BUILD_BASE" ]; then
 	cat dist/beta-notice.txt dist/copyright-notice.txt > $file
 	mv -f $file dist/copyright-notice.txt
 	echo " - Ammended license notice ready"
+    fi
+
+    #
+    # Fill in SVN revision in VERSION file
+    #
+
+    if test "$OSCAR_SVN_VERSION" != ""; then
+	sed -e s/^svn_r=.*/svn_r=$OSCAR_SVN_VERSION/g VERSION > VERSION.new
+	mv VERSION.new VERSION
     fi
 
     csh -f ./dist/insert-license.csh $newlist
