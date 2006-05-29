@@ -109,11 +109,6 @@ fi
 # set srcdir to parent directory
 srcdir=`dirname $RUNDIR`
 
-svn info $srcdir
-if [ $? -ne 0 ]; then
-    echo "svn info returned an error. This is maybe not a SVN tree!"
-    bail_out 1
-fi
 umask 022
 cd $srcdir
 OSCAR_VERSION=`dist/get-oscar-version.sh VERSION`
