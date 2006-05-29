@@ -25,7 +25,7 @@ bail_out () {
 
 usage () {
     echo "Usage:"
-    echo "  $0 [--base] [--srpms] [--docs] [--all-repos] [--distro D-V-A] \ "
+    echo "  $0 [--base] [--srpms] [--docs] [--all-repos] [--nightly] [--distro D-V-A] \ "
     echo "     [--distro D2-V2-A2] [--all] [--repo-target DIR] \ "
     echo "     [--install-target DIR]"
     bail_out 1
