@@ -14,6 +14,9 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
+# Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>
+#               All rights reserved
+
 # $Id$
 
 use strict;
@@ -22,7 +25,6 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackagePath;
 use File::Basename;
 use Getopt::Long;
-
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
@@ -41,11 +43,11 @@ use lib "$ENV{OSCAR_HOME}/lib";
 my ($yes, @keep);
 GetOptions(
 	   "yes|y"       => \$yes,
-	   "keep|k=s"    => \@keep;
+	   "keep|k=s"    => \@keep,
 	   );
 
 if ($yes) {
-    $yes = "-y";
+    $yes = " -y";
 } else {
     $yes = "";
 }
@@ -59,24 +61,21 @@ my @repos = split(",","$distro_pkg_pool,$oscar_pkg_pool");
 
 print "##### deleting all OSCAR packages and their dependencies #####\n";
 my @opkgs = `yume-opkg --list --all`;
-@opkgs = map { chomp $_ } @opkgs;
+@opkgs = map { chomp; $_ } @opkgs;
 
 # skip oda package (and keep mysql around)
 @opkgs = grep !/^oda$/, @opkgs;
 
-
 my @orpms;
 for my $opkg (@opkgs) {
     my @rpms = `yume-opkg --list --rpms $opkg`;
-    @rpms = map { chomp $_ } @rpms;
+    @rpms = map { chomp; $_ } @rpms;
     push @orpms, @rpms;
 }
 
 # skip rpms which were passed on the command line as worthy to stay
 my $match = join("|",@keep);
 @orpms = grep !/^($match)$/, @orpms;
-
-
 
 my @known_services = qw(
                         dhcpd
@@ -85,27 +84,13 @@ my @known_services = qw(
                         maui
                         named
                         ntpd
-                        mysqld
                         pbs_server
                         systemimager
                        );
 
+# find a list of all the services installed by oscar rpms
 
-
-# delete the oscar database
-
-print "Deleting oda database ...\n";
-if(-e '/etc/odapw'){
-    eval "use lib \"$oscar_home/lib\"";
-    eval "use OSCAR::oda";
-    oda::drop_database(undef, undef);
-}    
-#print "Deleting oda database saved password file ...\n";
-#unlink "/etc/odapw";
-
-# find a list of all the services installed by the oscar rpms
-
-print "Searching for services in the oscar rpm files ... ";
+print "Searching for services in OSCAR-related RPMs... ";
 my @oscar_services = ();
 foreach my $rpm ( @orpms ) {
   my @files = `rpm -ql $rpm`;
@@ -132,18 +117,16 @@ print "Deleting all OSCAR images.\n";
 do_command( "/usr/bin/mksimachine --Delete --all" )
   if -x "/usr/bin/mksimachine";
 
-
 # Delete all opkgs smartly: with yume-opkg
 
-my $cmd = "yume-opkg "$yes." ".join(" ",@repos)." --remove ".join(" ",@opkgs);
+my $cmd = "yume-opkg$yes ".join(" ",@repos)." --remove ".join(" ",@opkgs);
 do_command($cmd);
 
 # remove prereqs (hardcoded right now)
 # (leaving the perl stuff in place, otherwise it might delete more things
 #  than expected)
-$cmd = "yum ".$yes." remove packman-depman packman-depman-rpms yume";
+$cmd = "yum$yes remove packman-depman packman-depman-rpms yume";
 do_command($cmd);
-
 
 my %orepo_done;
 my $err = 0;
@@ -166,6 +149,8 @@ cleanup_files();
 
 delete_oscar_users();
 
+drop_db();
+
 print "
 ##########################################################################
 The OSCAR installation process modifies the environment of both the
@@ -180,6 +165,8 @@ It is therefore **HIGHLY** recomended that you logout and log back in
 before attempting most actions (including re-installing OSCAR).
 ##########################################################################
 ";
+
+# Subroutines below here
 
 sub delete_oscar_users {
   my @oscar_users = qw(
@@ -199,7 +186,6 @@ sub stop_services {
     do_command( "/etc/init.d/$service stop" ) if -r "/etc/rc.d/init.d/$service";
   }
 }
-
 
 sub cleanup_files {
     #
@@ -236,16 +222,12 @@ sub cleanup_files {
               '/tftpboot/pxelinux.cfg',
               '/usr/lib/systemimager',
               '/usr/lib/systeminstaller',
-              '/var/lib/clamdr',
               '/var/lib/ganglia',
               '/var/lib/mysql',
-              '/var/lib/mysqld',
               '/var/lib/oscar',
               '/var/lib/systemimager',
-              '/var/lib/systeminstaller',
               '/var/log/systemimager',
               '/var/spool/pbs',
-              '/usr/share/systeminstaller/distinfo',
               "$oscar_home/.oscar",
              );
   foreach my $file (@dirs) {
@@ -287,4 +269,18 @@ sub sort_uniq {
   }
   my @result = sort ( keys %seen );
   return @result;
+}
+
+# delete the oscar database and stop mysqld
+sub drop_db {
+  print "Deleting oda database ...\n";
+  if (-e '/etc/odapw') {
+    eval "use lib \"$oscar_home/lib\"";
+    eval "use OSCAR::oda";
+    oda::drop_database(undef, undef);
+  }
+  #print "Deleting oda database saved password file ...\n";
+  #unlink "/etc/odapw";
+
+  !system("/etc/init.d/mysqld stop") or croak("Failed to stop mysqld");
 }
