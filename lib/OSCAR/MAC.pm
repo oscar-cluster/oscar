@@ -996,7 +996,10 @@ sub enable_install_mode {
         # Backup original bittorrent.conf
         run_cmd("/bin/mv -f /etc/systemimager/bittorrent.conf /etc/systemimager/bittorrent.conf.bak");
 
-        $cmd = "sed -e 's/BT_INTERFACE=eth[0-9][0-9]*/BT_INTERFACE=$interface/' /etc/systemimager/bittorrent.conf.bak > /etc/systemimager/bittorrent.conf";
+	my @images = list_image();
+	my $images_list = join(",", map { $_->name } @images);
+
+        $cmd = "sed -e 's/BT_INTERFACE=eth[0-9][0-9]*/BT_INTERFACE=$interface/' -e 's/BT_IMAGES=.*/BT_IMAGES=$images_list/' -e 's/BT_OVERRIDES=.*/BT_OVERRIDES=$images_list/' /etc/systemimager/bittorrent.conf.bak > /etc/systemimager/bittorrent.conf";
         if( system( $cmd ) ) {
             carp("Failed to update /etc/systemimager/bittorrent.conf");
             return 0;
@@ -1009,11 +1012,6 @@ sub enable_install_mode {
 
         # Add systemimager-server-bittorrent to chkconfig
         run_cmd("chkconfig systemimager-server-bittorrent on");
-
-	my @images = list_image();
-	my $images_list = join(",", map { $_->name } @images);
-
-	run_cmd("si_installbtimage --images $images_list --quiet");
     }
 
     oscar_log_subsection("Step $step_number: Successfully enabled installation mode: $install_mode");
