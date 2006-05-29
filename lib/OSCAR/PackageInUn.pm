@@ -179,7 +179,7 @@ sub install_uninstall_packages
 		if (!$success)
 		{
 			# make sure the package we un-installed is un-selected in selector so scripts won't run
-            OSCAR::Database::set_group_packages(undef,$package,0,\%options,\@error_list);
+            OSCAR::Database::delete_group_packages(undef,$package,\%options,\@error_list);
 		}
 		else
 		{
@@ -203,7 +203,7 @@ sub install_uninstall_packages
             # New database schema can trace what group has been selected.
             # So if $group parameter is not set, Database.pm will find the selected group.
             # At the below subroutine, undef is for $group parameter.
-            OSCAR::Database::set_group_packages(undef,$package,1,\%options,\@error_list);
+            OSCAR::Database::delete_group_packages(undef,$package,\%options,\@error_list);
 
 		}
 		else
@@ -1296,7 +1296,7 @@ sub is_package_a_package
 sub set_installed
 {
 	my ($package_name) = @_;	
-    OSCAR::Database::set_group_packages(undef,$package_name,7,\%options,\@error_list);
+    OSCAR::Database::set_group_packages(undef,$package_name,8,\%options,\@error_list);
 }
 
 #this sets the installed field in table packages to 0
@@ -1306,7 +1306,7 @@ sub set_installed
 sub set_uninstalled
 {
 	my ($package_name) = @_;	
-    OSCAR::Database::set_group_packages(undef,$package_name,1,\%options,\@error_list);
+    OSCAR::Database::delete_group_packages(undef,$package_name,\%options,\@error_list);
 }
 
 #queries oda to see if a package is installed

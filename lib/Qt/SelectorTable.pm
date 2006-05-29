@@ -554,7 +554,7 @@ sub checkboxChangedForSelector
                       ($packagesInSet->{$reqkey} != 1))
                     {
                       $success = OSCAR::Database::set_group_packages(
-                            $currSet,$reqkey,1,\%options,\@errors);
+                            $currSet,$reqkey,2,\%options,\@errors);
                       Carp::carp("Could not do oda command 
                         'set_group_packages $reqkey $currSet'") if 
                           (!$success);
@@ -585,7 +585,7 @@ sub checkboxChangedForSelector
               ($packagesInSet->{$package} != 1))
             {
               $success = OSCAR::Database::set_group_packages(
-                    $currSet,$package,1,\%options,\@errors);
+                    $currSet,$package,2,\%options,\@errors);
               Carp::carp("Could not do oda command 
                 'set_group_packages $package $currSet'") if(!$success);
             }

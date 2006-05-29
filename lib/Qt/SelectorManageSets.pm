@@ -219,7 +219,7 @@ sub duplicateButton_clicked
       foreach my $pack (@packagesInSet)
         {
           $success = OSCAR::Database::set_group_packages(
-                $lastSet,$pack,1,\%options,\@errors);
+                $lastSet,$pack,2,\%options,\@errors);
           Carp::carp("Could not do oda command 'set_group_packages " .
             "$pack $currSet'") if (!$success);
         }
@@ -361,7 +361,7 @@ sub newCoreButton_clicked
       if ($allPackages->{$pack}{__class} eq "core")
         {
           my $success = OSCAR::Database::set_group_packages(
-                $currSet,$pack,1,\%options,\@errors);
+                $currSet,$pack,2,\%options,\@errors);
           Carp::carp("Could not do oda command 'set_group_packages " .
             "$pack $currSet'") if (!$success);
         }
@@ -389,7 +389,7 @@ sub newAllButton_clicked
   foreach my $pack (keys %{ $allPackages })
     {
       my $success = OSCAR::Database::set_group_packages(
-                $currSet,$pack,1,\%options,\@errors);
+                $currSet,$pack,2,\%options,\@errors);
       Carp::carp("Could not do oda command 'set_group_packages " .
         "$pack $currSet'") if (!$success);
     }

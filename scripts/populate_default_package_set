@@ -136,8 +136,8 @@ foreach my $package_ref (@installable_packages){
                     \@errors);
                     
     } else {
-        $success = set_group_packages(
-                "Default","$package_name",0,\%options,\@errors);
+        $success = delete_group_packages(
+                "Default","$package_name",\%options,\@errors);
     }
 }
 

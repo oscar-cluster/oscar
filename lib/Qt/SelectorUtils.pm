@@ -367,7 +367,7 @@ sub createDefaultPackageSet # -> ($success)
       foreach my $pack (keys %{ $allPackages })
         {
           $success = OSCAR::Database::set_group_packages(
-                "Default",$pack,1,\%options,\@errors);
+                "Default",$pack,2,\%options,\@errors);
           Carp::carp("Could not do oda command 'set_group_packages " .
             "$pack, Default'") if (!$success);
         }

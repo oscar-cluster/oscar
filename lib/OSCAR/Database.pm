@@ -2037,6 +2037,8 @@ sub delete_group_packages {
         print "DB_DEBUG>$0:\n====> in Database::delete_group_packages SQL : $sql\n" if $$options_ref{debug};
         die "DB_DEBUG>$0:\n====>Failed to delete values via << $sql >>"
             if! do_update($sql,"Group_Packages", $options_ref, $error_strings_ref);
+
+        # Set "should_not_be_installed" to the package status    
         update_node_package_status(
               $options_ref,"oscar_server",$opkg,1,$error_strings_ref);
     }      
@@ -2495,12 +2497,13 @@ sub set_group_nodes {
 sub set_group_packages {
     my ($group,
         $package,
-        $selected,
+        $requested,
         $options_ref,
         $error_strings_ref) = @_;
     $group = get_selected_group($options_ref,$error_strings_ref)
         if(!$group);
     my @results = ();    
+    my $selected = 1;
     my $sql = "SELECT Packages.id, Packages.package " .
               "From Packages, Group_Packages " .
               "WHERE Packages.id=Group_Packages.package_id ".
@@ -2529,7 +2532,7 @@ sub set_group_packages {
     # Update Node_Package_Status to set requested according to the "selected"
     # value:
     # (e.g., if "selected" then should_be_installed elee should_not_be_installed")
-    my $requested = ($selected?2:1);
+    $requested = 1 if !$requested;
     update_node_package_status(
           $options_ref,"oscar_server",$package,$requested,$error_strings_ref);
     return 1;
