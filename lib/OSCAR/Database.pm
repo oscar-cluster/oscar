@@ -125,7 +125,6 @@ $options{debug} = 1
               insert_packages
               insert_pkg_rpmlist
               is_installed_on_node
-	          list_installable_packages
               link_node_nic_to_network
     	      list_selected_packages
     	      pkgs_of_opkg
@@ -1965,47 +1964,6 @@ sub is_installed_on_node {
 }
 
 
-#
-# list_installable_packages - this returns a list of installable packages.
-#
-# You may specify "core", "noncore", or "all" as the first argument to
-# get a list of core, noncore, or all packages (respectively).  If no
-# argument is given, "all" is implied.
-#
-# EF: Moved here from Package.pm
-
-sub list_installable_packages {
-    my $type = shift;
-
-    # If no argument was specified, use "all"
-
-    $type = "all" if ((!(defined $type)) || (!$type));
-
-    # make the database command and do the database read
-
-    my $command_args;
-    if ( $type eq "all" ) {
-      $command_args = "packages_installable";
-    } elsif ( $type eq "core" ) {
-      $command_args = "packages_installable packages.class=core";
-    } else {
-      $command_args = "packages_installable packages.class!=core";
-    }
-    my @packages = ();
-    my @tables = ("packages", "oda_shortcuts");
-    print "DB_DEBUG>$0:\n====> in Database::list_installable_packages SQL : $command_args\n" if $$options_ref{debug};
-    if ( OSCAR::Database::single_dec_locked( $command_args,
-                                                    "READ",
-                                                    \@tables,
-                                                    \@packages,
-                                                    undef) ) {
-      return @packages;
-    } else {
-      warn "Cannot read installable packages list from the ODA database.";
-      return undef;
-    }
-}
-
 
 ######################################################################
 #
@@ -3048,7 +3006,7 @@ sub single_dec_locked {
                     $results_ref,
                     $error_strings_ref );
     # UNLOCKING FOR NEST
-    unlock($options_ref, $error_strings_ref);
+#    unlock($options_ref, $error_strings_ref);
     if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
     warn shift @$error_strings_ref while @$error_strings_ref;
     }
