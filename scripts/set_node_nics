@@ -1017,7 +1017,7 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 }
 
 # UNLOCKING FOR NEST
-unlock(\%options, \@error_strings);
+#unlock(\%options, \@error_strings);
 
 # done
 exit $exit_status;
