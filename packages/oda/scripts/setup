@@ -34,6 +34,12 @@ if ($os->{compat_distro} =~ /^(rhel|fc|mdv)/) {
     exit 1;
 }
 
+# MySQL on Mandriva 2006 should not have the following
+# innodb conf on /etc/my.cnf
+# So, we skip the innodb.conf when distro is mandriva.
+goto SKIP_FOR_MANDRIVA
+    if($os->{'distro'} eq "mandriva");
+
 # Set up the InnoDB type to the oscar database tables.
 # 
 # This script needs to run for MySQL 3.28 ( < 4.0 ).
@@ -78,6 +84,7 @@ if(! $innodb_flag ){
     unlink "$mysql_conf.bak";
 }    
 
+ SKIP_FOR_MANDRIVA:
 
 oscar_log_subsection("Checking status of MySQL server $mysqld");
 if (! -x "/etc/init.d/$mysqld") {
