@@ -218,9 +218,10 @@ sub install_uninstall_packages
 	print_errors();
 
 	#now run every packages post_install phase if it is installed
-	@all_packages = OSCAR::Package::list_installable_packages("all"); 
-	foreach $package (@all_packages)
+	@all_packages = OSCAR::Package::list_selected_packages("all"); 
+	foreach $package_ref (@all_packages)
 	{
+        my $package = $$package_ref{package};
 		if(is_installed($package))
 		{
 			if (OSCAR::Package::run_pkg_script($package, 'post_install', 1, '0'))
