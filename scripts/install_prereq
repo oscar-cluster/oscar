@@ -38,9 +38,6 @@ for my $p (@ARGV) {
     }
 }
 
-# enforce smart mode if dumb isn't set
-$smart = 1 if (!$dumb);
-
 #
 # Own distro detection
 #
@@ -55,6 +52,18 @@ my $cstring   = "common-".$suffix."s";
 
 my $march = $arch;
 $march = "i?86" if ($march eq "i386");
+
+# try to detect smart installer, fall-back to dumb installer if not found
+eval "require OSCAR::PackMan";
+if ($@) {
+    $dumb = 1;
+    $smart = 0;
+    vprint("Could not detect OSCAR::PackMan, falling back to dumb mode\n");
+} else {
+    $smart = 1;
+    $dumb = 0;
+    vprint("Detected OSCAR::PackMan, using smart mode\n");
+}
 
 
 # locate destination path for prereq package files and repository url
