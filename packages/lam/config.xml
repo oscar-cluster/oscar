@@ -193,6 +193,12 @@ visualized either at runtime or post-mortem.</description>
       </distribution>
     </filter>
 
+    <filter>
+      <distribution>
+        <name>suse</name>
+      </distribution>
+    </filter>
+
     <pkg>libaio</pkg>
     <pkg>libaio-devel</pkg>
     <pkg>lam-oscar</pkg>
@@ -202,12 +208,6 @@ visualized either at runtime or post-mortem.</description>
 
   <binary-package-list>
     <!-- Distributions that don't provide libaio -->
-    <filter>
-      <distribution>
-        <name>mdk</name>
-      </distribution>
-    </filter>
-
     <filter>
       <distribution>
         <name>mdv</name>

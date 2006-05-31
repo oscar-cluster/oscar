@@ -10,7 +10,7 @@
     <major>3</major>
     <minor>0</minor>
     <subversion>3</subversion>
-    <release>1</release>
+    <release>2</release>
     <epoch>1</epoch>
   </version>
 
@@ -64,6 +64,17 @@
       </filter>
 
       <pkg>php-gd</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>suse</name>
+        </distribution>
+      </filter>
+
+      <pkg>php4-gd</pkg>
   </binary-package-list>
 
   <servicelist>

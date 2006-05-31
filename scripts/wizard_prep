@@ -94,7 +94,16 @@ print "Available Distro Pools:\n".Dumper(%distro_pools) if ($verbose);
 
 my $ipcmd = "$ohome/scripts/install_prereq $verbose";
 
+# the md5dir directory will hold md5 checksum files
+my $md5dir = $ENV{OSCAR_HOME}."/tmp";
+if (! -d $md5dir) {
+    mkdir $md5dir or croak "Could not make directory $md5dir: $!";
+}
 
+#
+# remember all packages which were on the system before OSCAR installation
+#
+# ... no code yet ...
 
 
 oscar_log_subsection("Bootstrapping OSCAR smart package manager");
@@ -136,10 +145,6 @@ if ($os->{pkg} eq "rpm") {
 eval("require OSCAR::PackageSmart");
 if ($!) {
     print "eval require PackageSmart returned $!\n";
-}
-my $md5dir = $ENV{OSCAR_HOME}."/tmp";
-if (! -d $md5dir) {
-    mkdir $md5dir or croak "Could not make directory $md5dir: $!";
 }
 
 

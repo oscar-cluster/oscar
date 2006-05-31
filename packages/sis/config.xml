@@ -71,6 +71,16 @@
   <binary-package-list>
       <filter>
         <group>oscar_server</group>
+        <distribution>
+             <name>suse</name>
+        </distribution>
+      </filter>
+      <pkg>bittorrent-compat-suse</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
         <architecture>i386</architecture>
       </filter>
 

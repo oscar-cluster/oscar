@@ -410,7 +410,44 @@ sub restart_gmetad {
     !system("/etc/init.d/gmetad restart") or croak("Failed to restart gmetad");
     opkg_print("Starting up apache...\n");
     # autoload apache in levels 345 and start it up
-    !system("/sbin/chkconfig --levels 345 httpd on") or croak("Failed to turn on httpd for levels 345 using chkconfig");
-    !system("/etc/init.d/httpd restart") or croak("Failed to restart httpd");
+    my $HTTPD;
+    for my $srv ("httpd", "apache2", "apache") {
+	if (-x "/etc/init.d/$srv") {
+	    $HTTPD=$srv;
+	    last;
+	}
+    }
+    if (!$HTTPD) {
+	croak("Could not find any init script for httpd!");
+    }
+    &add_httpd_conf;
+    !system("/sbin/chkconfig $HTTPD on") or croak("Failed to turn on $HTTPD with chkconfig");
+    !system("/etc/init.d/$HTTPD restart") or croak("Failed to restart $HTTPD");
     opkg_print("Ganglia page is located at http://$hostname/ganglia/\n");
+}
+
+sub add_httpd_conf {
+    my $confdir;
+    for my $d ("httpd", "apache2", "apache") {
+	if (-d "/etc/$d/conf.d") {
+	    $confdir="/etc/$d/conf.d";
+	    last;
+	}
+    }
+    if (!$confdir) {
+	croak("Could not find apache configuration directory!");
+    }
+    if (! -f "$confdir/ganglia.conf") {
+	open C, "> $confdir/ganglia.conf" or croak "Could not open ganglia.conf: $!";
+	print C <<EOI;
+Alias /ganglia/ /var/www/html/ganglia/
+<Directory /var/www/html/ganglia/>
+   Options None
+   order deny,allow
+   deny from all
+   allow from all
+</Directory>
+EOI
+	close C;
+    }
 }
