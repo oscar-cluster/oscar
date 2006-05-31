@@ -26,8 +26,7 @@ use Carp;
 use POSIX;
 use Cwd 'chdir';
 use File::Find;
-use OSCAR::Distro;
-use OSCAR::PackageBest;
+use OSCAR::OCA::OS_Detect;
 
 my $runningversion;    # Version of currently running kernel
 my $runningrelease;    # Release of currently running kernel
@@ -165,29 +164,30 @@ sub findRunningKernelFiles # (@searchdirs) -> @kernelfiles
   return @kernelfiles;   # Return the list of matching kernel files
 }
 
-#########################################################################
-#  Subroutine: getKernelList                                            #
-#  Parameters: None                                                     #
-#  Returns   : A list of RPMs with names starting with "kernel"         #
-#  This subroutine uses update-rpms to query RPMs in /tftpboot/rpm      #
-#  and returns a list of RPMs which provide kernel                      #
-#########################################################################
+##########################################################################
+#  Subroutine: getKernelList                                             #
+#  Parameters: None                                                      #
+#  Returns   : A list of URLs for binary packages providing the "kernel" #
+#              capability.                                               #
+##########################################################################
 sub getKernelList # -> @kernellist
 {
-  my @kernellist = ();
+  my @kernelurls;
 
-  my($distroname,$distrovers) = which_distro('/tftpboot/rpm');
-  if ($distroname ne "UnknownLinux") {
-      open(RPML,"update-rpms --quiet --list provides:kernel |");
-      while (<RPML>) {
-          chomp;
-          my @items = split /\t/;
-          push @kernellist, $items[2];
-      }
-      close RPML;
+  my $os = OSCAR::OCA::OS_Detect::open();
+
+  if ($os->{pkg} eq "rpm") {
+      # hardcoded for RPMs right now
+      my @kernels = `yume --repoquery --whatprovides kernel`;
+      chomp @kernels;
+      my $k = join(" ",@kernels);
+      @kernelurls = `yume --repoquery --location $k`;
+      chomp @kernelurls;
+  } elsif ($os->{pkg} eq "deb") {
+      #...
   }
 
-  return @kernellist;   # Return the list kernel RPMs
+  return @kernelurls;
 }
 
 #########################################################################
@@ -219,9 +219,6 @@ sub generateHTMLFile
   $noboot = 1 unless @runlist;
 
   # Generate a list of all files that meet these conditions:
-  # (a) General package name (eg. "kernel-smp") is in the default RPM list.
-  # (b) The corresponding file exists in /tftpboot/rpm (as determined
-  #     by PackageBest.pm).
   my @tftplist = getKernelList();
   chomp( @tftplist );
   # Set error if there weren't any good "kernel*" files in /tftpboot/rpm.
