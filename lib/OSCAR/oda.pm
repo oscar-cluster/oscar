@@ -217,9 +217,20 @@ sub list_databases {
     print "DB_DEBUG>$0:\n====> executing function _ListDBs on database <$$options_ref{database}>: $$options_ref{host}, $$options_ref{port}\n"
     if $$options_ref{debug} || $$options_ref{verbose};
     my $root_pass = $options{password} if &check_root_password; 
-    my @databases = 
-        $driver_handle->func($$options_ref{host},$$options_ref{port},
-                             "root",$root_pass, '_ListDBs');
+
+    my @databases; 
+    if($root_pass){
+        # I just found that this format of call for _ListDBs is not working
+        # on the MySQL-3.23.58 of RHEL3-U6 when root password is not set
+        # So, I divided the cases and it seems to work fine.
+        @databases = 
+            $driver_handle->func($$options_ref{host},$$options_ref{port},
+                                 "root",$root_pass, '_ListDBs');
+    }else{
+        @databases = 
+            $driver_handle->func($$options_ref{host},$$options_ref{port},'_ListDBs');
+    }
+    
     if ( @databases ) {
         print( "DB_DEBUG>$0:\n====> in oda::list_databases _ListDBs succeeded returned <@databases>\n")
             if $$options_ref{debug};
