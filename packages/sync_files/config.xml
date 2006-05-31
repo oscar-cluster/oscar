@@ -15,8 +15,8 @@
   <name>File Synchronization</name>
 
   <version>
-    <major>1</major>
-    <minor>7</minor>
+    <major>2</major>
+    <minor>3</minor>
     <release>1</release>
   </version>
 
@@ -26,8 +26,8 @@
   <license>GPL</license>
   <group>System Environment/Base</group>
   <packager>
-    <name>Jason Brechin</name>
-    <email>brechin@ncsa.uiuc.edu</email>
+    <name>Erich Focht</name>
+    <email>efocht@hpce.nec.com</email>
   </packager>
 
   <description>The OSCAR File Synchronization System keeps any list of files
@@ -47,13 +47,6 @@
         <group>oscar_server</group>
         <distribution>
           <name>fc</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>mdk</name>
         </distribution>
       </filter>
 
