@@ -234,6 +234,8 @@ sub cleanup_files {
               '/var/log/systemimager',
               '/var/spool/pbs',
               "$oscar_home/.oscar",
+	      '/etc/apache2/conf.d/ganglia.conf',
+	      '/etc/httpd/conf.d/ganglia.conf',
              );
   foreach my $file (@dirs) {
 
