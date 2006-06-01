@@ -84,9 +84,14 @@ my $match = join("|",@keep);
 @orpms = grep !/^($match)$/, @orpms;
 
 # add prerequisites to deletions
-my @deleterpms = qw( perl-Qt perl-Tk perl-HTML-Tree perl-XML-Simple
-		     perl-XML-Parser update-rpms );
+my @orpms = qw( perl-Qt
+		perl-Tk
+		perl-HTML-Tree
+		perl-XML-Simple
+		perl-XML-Parser
+		update-rpms );
 
+my @deleterpms;
 # do we have a pre-oscar rpmlist
 if (-f "$oscar_home/tmp/pre-oscar.rpmlist") {
     print "= = checking whether deleting any opkg would remove pre-oscar rpms\n";
