@@ -53,7 +53,7 @@ GetOptions(
 	   );
 
 if ($yes) {
-    $yes = " -y";
+    $yes = "-y";
 } else {
     $yes = "";
 }
@@ -82,6 +82,38 @@ for my $opkg (@opkgs) {
 # skip rpms which were passed on the command line as worthy to stay
 my $match = join("|",@keep);
 @orpms = grep !/^($match)$/, @orpms;
+
+# add prerequisites to deletions
+my @deleterpms = qw( perl-Qt perl-Tk perl-HTML-Tree perl-XML-Simple
+		     perl-XML-Parser update-rpms );
+
+# do we have a pre-oscar rpmlist
+if (-f "$oscar_home/tmp/pre-oscar.rpmlist") {
+    print "= = checking whether deleting any opkg would remove pre-oscar rpms\n";
+    my @preoscar;
+    open IN, "$oscar_home/tmp/pre-oscar.rpmlist" or
+	die "Could not open $oscar_home/tmp/pre-oscar.rpmlist : $!";
+    @preoscar = <IN>;
+    close IN;
+    chomp(@preoscar);
+    @preoscar = grep !/^\s*\#/, @preoscar;  # ignore commented lines
+    @preoscar = grep !/^\s*$/, @preoscar;   # ignore empty lines
+
+    for my $r (@orpms) {
+	my $remove = `$oscar_home/scripts/rpms_require $r`;
+	my $match = $remove;
+	$match =~ s/\s+/|/;
+	# will any of the pre-oscar rpms be deleted?
+	my @m = grep /^($match)$/, @preoscar;
+	if (!scalar(@m)) {
+	    push @deleterpms, $r  if (!scalar(@m));
+	} else {
+	    print "  = deletion of $r would trigger deletion of pre-oscar rpms. skipping\n";
+	}
+    }
+}
+
+
 
 my @known_services = qw(
                         dhcpd
@@ -125,13 +157,13 @@ do_command( "/usr/bin/mksimachine --Delete --all" )
 
 # Delete all opkgs smartly: with yume-opkg
 
-my $cmd = "yume-opkg$yes ".join(" ",@repos)." --remove ".join(" ",@opkgs);
+my $cmd = "yum $yes remove ".join(" ",@deleterpms);
 do_command($cmd);
 
 # remove prereqs (hardcoded right now)
 # (leaving the perl stuff in place, otherwise it might delete more things
 #  than expected)
-$cmd = "yum$yes remove packman-depman packman-depman-rpms yume";
+$cmd = "yum $yes remove packman-depman packman-depman-rpms yume";
 do_command($cmd);
 
 my %orepo_done;
