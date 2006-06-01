@@ -160,12 +160,6 @@ do_command( "/usr/bin/mksimachine --Delete --all" )
 my $cmd = "yum $yes remove ".join(" ",@deleterpms);
 do_command($cmd);
 
-# remove prereqs (hardcoded right now)
-# (leaving the perl stuff in place, otherwise it might delete more things
-#  than expected)
-$cmd = "yum $yes remove packman-depman packman-depman-rpms yume";
-do_command($cmd);
-
 my %orepo_done;
 my $err = 0;
 for my $dist (keys %distro_pools) {
