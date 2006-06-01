@@ -100,10 +100,16 @@ if (! -d $md5dir) {
     mkdir $md5dir or croak "Could not make directory $md5dir: $!";
 }
 
-#
 # remember all packages which were on the system before OSCAR installation
-#
-# ... no code yet ...
+# (used by start_over to protect system files)
+# (only code for rpms here right now)
+if ($os->{pkg} eq "rpm") {
+    my $preoscar = "$md5dir/pre-oscar.rpmlist";
+    if (! -f $preoscar) {
+	oscar_log_subsection("Writing pre-oscar rpmlist...");
+	system("rpm -q --qf '%{NAME}\n' --all | sort | uniq > $preoscar");
+    }
+}
 
 
 oscar_log_subsection("Bootstrapping OSCAR smart package manager");
