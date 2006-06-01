@@ -1,0 +1,77 @@
+#!/usr/bin/perl
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#
+# List RPM package names (no versions) which depend on the packages passed
+# on the argument line. The result includes the packages on the argument line!
+#
+# $Id$
+#
+# Copyright (c) Erich Focht, NEC HPCE, Stuttgart, 2006
+
+use strict;
+
+$ENV{LC_ALL}="C";
+
+my @pkgs = @ARGV;
+
+my %requires;
+my %done;
+
+&rpm_reqd_by(\%requires,@pkgs);
+map { $requires{$_} = 1; $done{$_} = 1; } @pkgs;
+#print "requires has ".scalar(keys(%requires))." entries\n";
+
+my $oldreqs = 0;
+while ($oldreqs < scalar(keys(%requires))) {
+    $oldreqs = scalar(keys(%requires));
+    my @mypkgs;
+    for my $p (keys(%requires)) {
+	next if exists($done{$p});
+	push @mypkgs, $p;
+    }
+    &rpm_reqd_by(\%requires,@mypkgs);
+    map { $done{$_} = 1 } @mypkgs;
+    #print "oldreqs=$oldreqs , newreqs=".scalar(keys(%requires))."\n";
+    #print "  ".join(" ",keys(%requires))."\n";
+}
+
+print join(" ",sort(keys(%requires)))."\n";
+
+sub rpm_reqd_by {
+    my ($rp,@pkgs) = @_;
+
+    my $pkgstr = join(" ",@pkgs);
+    my @provides = `rpm -q --provides $pkgstr 2>/dev/null`;
+    my @files = `rpm -ql $pkgstr 2>/dev/null`;
+    push @provides, @files;
+    my %provs;
+    map { chomp;
+	  s/\s+$//; 
+	  my ($f,$r) = split(/\s+/); # ignore versions
+	  $provs{$f} = 1; 
+      } @provides;
+    my @provstr = keys(%provs);
+    my $ps = join("\" \"",@provstr);
+    my @req = `rpm -q --qf '%{NAME}\n' --whatrequires "$ps" 2>/dev/null`;
+    foreach (@req) {
+	next if (/^no package/);
+	chomp;
+	$rp->{$_} = 1;
+    }
+}
+
+
+
