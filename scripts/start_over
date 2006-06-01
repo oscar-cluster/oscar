@@ -84,12 +84,12 @@ my $match = join("|",@keep);
 @orpms = grep !/^($match)$/, @orpms;
 
 # add prerequisites to deletions
-my @orpms = qw( perl-Qt
-		perl-Tk
-		perl-HTML-Tree
-		perl-XML-Simple
-		perl-XML-Parser
-		update-rpms );
+push @orpms, qw( perl-Qt
+		 perl-Tk
+		 perl-HTML-Tree
+		 perl-XML-Simple
+		 perl-XML-Parser
+		 update-rpms );
 
 my @deleterpms;
 # do we have a pre-oscar rpmlist
