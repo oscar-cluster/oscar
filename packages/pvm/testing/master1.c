@@ -34,6 +34,7 @@ static char rcsid[] =
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "pvm3.h"
 #define SLAVENAME "slave1"
 
@@ -104,5 +105,6 @@ main()
       printf("SUCCESSFUL\n");
     /* Program Finished exit PVM before stopping */
     pvm_exit();
+    exit(0);
 }
 

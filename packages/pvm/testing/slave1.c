@@ -31,6 +31,7 @@ static char rcsid[] =
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "pvm3.h"
 
 main()
@@ -69,6 +70,7 @@ main()
 
     /* Program finished. Exit PVM before stopping */
     pvm_exit();
+    exit(0);
 }
 
 float

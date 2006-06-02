@@ -48,7 +48,7 @@ if test "$need_pvmd" = "1"; then
 
     # get rid of lock files & nodes file
     uid=`id -u`
-    tail +2 $PBS_NODEFILE > pvm_nodes
+    tail -2 $PBS_NODEFILE > pvm_nodes
     /bin/rm -f /tmp/pvm?.$uid
     crm  pvm_nodes:/tmp/pvmd.$uid > /dev/null 2>&1
     crm  pvm_nodes:/tmp/pvml.$uid > /dev/null 2>&1
