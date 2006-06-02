@@ -304,7 +304,8 @@ sub locate_pkg {
 	$pkgmatch = $pkg;
 	$pkgmatch =~ s/$suffix$/*$suffix/;
     } else {
-	if ($pkg =~ /$separator/) {
+	my $mmatch = $separator."[0-9]";
+	if ($pkg =~ /$mmatch/) {
 	    $pkgmatch = "$pkg"."*{$march,noarch}.$suffix";
 	} else {
 	    $pkgmatch = "$pkg$separator"."[0-9]*{$march,noarch}.$suffix";
