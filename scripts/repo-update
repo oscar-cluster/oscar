@@ -21,10 +21,12 @@
 #
 
 use strict;
-#use lib "/usr/lib/perl5/vendor_perl/5.8.0/";
+use lib "$ENV{OSCAR_HOME}/lib";
 use XML::Simple;
 use Data::Dumper;
 use Getopt::Long;
+use OSCAR::CmpVersions;
+
 
 my ($debug,$verbose,$url,$repo,$prim,$check,$rmdup);
 
@@ -287,95 +289,3 @@ sub dprint ($) {
 	print @_;
     }
 }
-
-#########################################################
-#
-# Following two routines taken from David Lombard's update-rpms package.
-# (C)opyright by David Lombard, distributed under GPL 2.
-#
-
-#
-# Compare two version strings.
-#
-sub cmp_version_strings($$)
-{
-        my ($a, $b) = @_;
-
-        return 0 unless defined $a && defined $b && $a ne "" && $b ne "";
-#
-#       Split a & b into runs of numeric and non-numeric strings.
-#         2.4.0 => "2.4.0"
-#         2.0p15 => "2.0", "p", "15"
-#
-#       EF:
-#         22.EL  vs. 22.0.1.EF fails
-#
-        my @a;
-        # ($a =~ /([\d\.]+)([^\d\.]*)/gc) ## FAILS FOR SOME CIRCUMSTANCES
-        push @a, $1, ($2||"") while ($a =~ /([\d\.]+)([^0-9\.]*)/gc);
-        my @aa = @a;
-
-        my @b;
-        # ($b =~ /([\d\.]+)([^\d\.]*)/gc) ## FAILS FOR SOME CIRCUMSTANCES
-        push @b, $1, ($2||"") while ($b =~ /([\d\.]+)([^0-9\.]*)/gc);
-        my @bb = @b;
-#
-#       Compare the strings.
-#
-        my $ans;
-        while (@a && @b) {
-                last if $ans = cmp_version_strings_num( shift( @a ), shift( @b ) );
-                last if $ans = shift( @a ) cmp shift( @b );
-        }
-        unless( $ans ) {
-                my $ta = shift( @a ) || -1;
-                my $tb = shift( @b ) || -1;
-                $ans = cmp_version_strings_num( $ta, $tb );
-        }
-        if( $verbose > 7 ) {
-                my $word = $ans < 0 ? "<" : $ans ? ">" : "==";
-                print join( " ", @aa ), " $word ", join( " ", @bb ), "\n";
-        }
-        return $ans;
-}
-
-#
-# Compare two version numbers.
-#
-sub cmp_version_strings_num($$)
-{
-        my ($a, $b) = @_;
-
-# EF: version problems when trailing dot in version number
-# like "2.0.1." compared to "2.0."
-# If both strings end with the same non-digit, strip it off
-	if (($a =~ /\d\.$/) && ($b =~ /\d\.$/)) {
-	    $a =~ s/\.$//;
-	    $b =~ s/\.$//;
-	}
-#
-#       Split a & b into runs of numbers.
-#         21.42.08 => "21", "42", "08"
-#         2 => "2"
-#
-        my @a;
-        push @a, $1, ($2||"") while ($a =~ /(\d+)(\.*)/gc);
-
-        my @b;
-        push @b, $1, ($2||"") while ($b =~ /(\d+)(\.*)/gc);
-#
-#       Compare the runs.
-#
-        my $ans;
-        while (@a && @b) {
-                last if $ans = shift( @a ) <=> shift( @b );
-                last if $ans = shift( @a ) cmp shift( @b );
-        }
-        unless( $ans ) {
-                my $ta = shift( @a ) || -1;
-                my $tb = shift( @b ) || -1;
-                $ans = $ta <=> $tb;
-        }
-        return $ans;
-}
-####################
