@@ -17,6 +17,13 @@
 # Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>
 #               All rights reserved
 
+# Completely rewritten:
+#  - new package deletion selection
+#  - pre-oscar package protection
+#  - file removal: protection of non-orphan files
+# Copyright (C) 2006 Erich Focht <efocht@hpce.nec.com>
+#               All rights reserved
+
 # Execute this script as root to "uninstall" OSCAR from your headnode.
 # It will uninstall all binary packages and other files installed on your
 # system as part of the OSCAR installation.
@@ -91,9 +98,15 @@ push @orpms, qw( perl-Qt
 		 perl-XML-Parser
 		 update-rpms );
 
-my @deleterpms;
-# do we have a pre-oscar rpmlist
+my %deleterpms;
+#
+# EF: Do we have a pre-oscar rpmlist? Only then we can safely uninstall.
+#
 if (-f "$oscar_home/tmp/pre-oscar.rpmlist") {
+    print "========================================================\n";
+    print "      first pass on detecting opkg removal impact\n";
+    print "========================================================\n";
+
     print "= = checking whether deleting any opkg would remove pre-oscar rpms\n";
     my @preoscar;
     open IN, "$oscar_home/tmp/pre-oscar.rpmlist" or
@@ -104,16 +117,58 @@ if (-f "$oscar_home/tmp/pre-oscar.rpmlist") {
     @preoscar = grep !/^\s*\#/, @preoscar;  # ignore commented lines
     @preoscar = grep !/^\s*$/, @preoscar;   # ignore empty lines
 
+    @preoscar = map { quotemeta } @preoscar;
+    my $preomatch = join("|",@preoscar);
+
     for my $r (@orpms) {
-	my $remove = `$oscar_home/scripts/rpms_require $r`;
-	my $match = $remove;
-	$match =~ s/\s+/|/;
+	chomp(my $remove = `$oscar_home/scripts/rpms_require $r`);
+	my @removes = split(" ",$remove);
 	# will any of the pre-oscar rpms be deleted?
-	my @m = grep /^($match)$/, @preoscar;
+	my @m = grep /^($preomatch)$/, @removes;
 	if (!scalar(@m)) {
-	    push @deleterpms, $r  if (!scalar(@m));
+	    $deleterpms{$r} = 1 if (!scalar(@m));
 	} else {
-	    print "  = deletion of $r would trigger deletion of pre-oscar rpms. skipping\n";
+	    print "  = skipping $r : triggers deletion of ".
+		join(",",@m)."\n";
+	}
+    }
+
+    my $delmatch = join("|",keys(%deleterpms));
+
+    # EF: second pass: add dependencies of current deletions
+    # and add those to the list which don't trigger the deletion of
+    # pre-oscar packages
+
+    print "========================================================\n";
+    print "      second pass (might take longer...)\n";
+    print "========================================================\n";
+
+    for my $r (keys(%deleterpms)) {
+	chomp(my $depends = `$oscar_home/scripts/rpm_depends $r`);
+	my @deps = split(" ",$depends);
+
+	
+	# delete those dependencies from list which are on pre-oscar list
+	my @m = grep !/^($preomatch)$/, @deps;
+
+	# which dependencies would trigger pre-oscar deletions?
+	for my $d (@m) {
+
+	    # already on deletes list
+	    next if (exists($deleterpms{$d}));
+
+	    chomp(my $remove = `$oscar_home/scripts/rpms_require $d`);
+	    my @removes = split(" ",$remove);
+
+	    # will any of the pre-oscar rpms be deleted?
+	    my @m = grep /^($preomatch)$/, @removes;
+	    if (!scalar(@m)) {
+		print "  = adding $d\n";
+		$deleterpms{$d} = 1  if (!scalar(@m));
+	    } else {
+		print "  = skipping $d : triggers deletion of ".
+		    join(",",@m)."\n";
+	    }
 	}
     }
 }
@@ -160,13 +215,21 @@ print "Deleting all OSCAR images.\n";
 do_command( "/usr/bin/mksimachine --Delete --all" )
   if -x "/usr/bin/mksimachine";
 
-# Delete all opkgs smartly: with yume-opkg
+#
+# EF: Use yum directly for deletion, run from cache as deps don't need to be
+# constructed from repository info (I hope)...
+#
+#my $cmd = "yum $yes -C remove ".join(" ",keys(%deleterpms));
+my $cmd = "yum $yes remove ".join(" ",keys(%deleterpms));
+my $err = &do_command($cmd);
 
-my $cmd = "yum $yes remove ".join(" ",@deleterpms);
-do_command($cmd);
+if ($err) {
+    print "yum returned an error, exiting.\n";
+    exit 1;
+}
 
 my %orepo_done;
-my $err = 0;
+$err = 0;
 for my $dist (keys %distro_pools) {
     my %d = %{$distro_pools{$dist}};
     my $orepo = $d{oscar_repo};
@@ -269,19 +332,21 @@ sub cleanup_files {
 	      '/etc/apache2/conf.d/ganglia.conf',
 	      '/etc/httpd/conf.d/ganglia.conf',
              );
-  foreach my $file (@dirs) {
-
-      # trying to make this safer: skip files belonging to installed packages
-
-      my $err = system("rpm -qf $file >/dev/null 2>&1");
-      if ($err) {
-	  # file belongs to no package
-	  print "Executing: rm -rf $file\n";
-	  system("rm -rf $file");
-      } else {
-	  # file belongs to some package
-	  print "File/dir $file belongs to some package. Not removing!\n";
-      }	  
+  foreach my $pattern (@dirs) {
+      # treat each match separately (good for /opt/lam* and alike)
+      foreach my $file (glob($pattern)) {
+	  # EF: trying to make this safer:
+	  # skip files belonging to installed packages
+	  my $err = system("rpm -qf $file >/dev/null 2>&1");
+	  if ($err) {
+	      # file belongs to no package
+	      print "Executing: rm -rf $file\n";
+	      system("rm -rf $file");
+	  } else {
+	      # file belongs to some package
+	      print "File/dir $file belongs to some package. Not removing!\n";
+	  }
+      }
   }
 
   # Remove the .configurator.values files from each package directory
