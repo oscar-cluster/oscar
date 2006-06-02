@@ -372,6 +372,19 @@ sub setup_dhcpd {
         open(OUT,">$dhcpd_leases") or (carp "Couldn't create dhcpd.leases files", return undef);
         close(OUT);
     }
+
+    # Need to setup /etc/sysconfig/dhcpd on SUSE Linux prior to restarting dhcpd
+    if ($os->{'distro'} eq "suse") {
+        my $dhcpd_file = "/etc/sysconfig/dhcpd";
+        run_cmd("/bin/mv -f $dhcpd_file $dhcpd_file.oscarbak");
+
+        $cmd = "sed -e 's/^DHCPD_INTERFACE=\".*\"/DHCPD_INTERFACE=\"$interface\"/g' $dhcpd_file.oscarbak > $dhcpd_file";     
+        if (system($cmd)) {
+            carp("Failed to update $dhcpd_file");
+            return 1;
+        }
+    }
+
     oscar_log_subsection("Step $step_number: Restarting dhcpd service");
     !system("/etc/init.d/dhcpd restart") or (carp "Couldn't restart dhcpd", 
                                          return undef);
