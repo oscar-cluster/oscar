@@ -1,0 +1,24 @@
+#!/usr/bin/perl -w
+
+# $Id $
+#
+# Copyright (c) 2006 Oak Ridge National Laboratory.
+#                  All rights reserved.
+#
+# This is the main script for the Command Line Installer
+# The CLI mirrors the GUI installer by using the same steps only in
+# a more scriptable command line version.  This script should not do
+# any installation on its own, but should call other scripts to run
+# each step.  Doing this will keep the installation process much more
+# modular and easier to maintain.
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Logger;
+
+oscar_log_section("Running OSCAR CLI Installer");
+
+#Steps 0 and 1 should be taken care of with the opd command line utility
+
+#Step 2 - Select Packages
+!system("./selector_cli");

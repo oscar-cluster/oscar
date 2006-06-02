@@ -1,0 +1,225 @@
+#!/usr/bin/perl -w
+
+# $Id $
+#
+# Copyright (c) 2006 Oak Ridge National Laboratory.
+#                  All rights reserved.
+#
+# This file is a very simple selector that will select
+# or unselect packages to be installed in OSCAR.  You can also
+# print out the packages or a subset of packages to see which
+# are currently selected.  By running this script with a filename
+# as an arguement, the script will not require user input, but
+# follow your instructions as you specify.
+#
+# TODO
+# Check dependencies/conflicts
+# Create a help command
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Logger;
+use OSCAR::Database;
+use Qt::SelectorUtils qw(getAllPackages);
+
+my %options = ();
+my @errors = ();
+
+my ($printStatus, $printPackage, $printClass, $printVersion);
+
+format STDOUT=
+@|||||||||||@|||||||||||||||||@|||||||||||@||||||||||||||
+$printStatus,  $printPackage,  $printClass, $printVersion
+.
+
+$options{debug} = 1 if $ENV{OSCAR_DB_DEBUG};
+
+OSCAR::Logger::oscar_log_section("Beginning the OSCAR Package Selector");
+
+#Populate the list of packages
+OSCAR::Logger::oscar_log_subsection("Populating list of packages");
+
+#Get a list of all the packages
+#print @INC;
+my $allPackages = SelectorUtils::getAllPackages();
+#Get the status of each package (Installed (8), Selected(2), Unselected(1))
+my @packagesUnselected;
+my @packagesSelected;
+my @packagesInstalled;
+
+#Get the unselected packages
+my $success = OSCAR::Database::get_node_package_status_with_node("oscar_server",\@packagesUnselected,\%options,\@errors, 1 );
+
+#Get the seleceted packages
+$success = OSCAR::Database::get_node_package_status_with_node("oscar_server",\@packagesSelected,\%options,\@errors, 2 );
+
+#Get the installed packages
+$success = OSCAR::Database::get_node_package_status_with_node("oscar_server",\@packagesInstalled,\%options,\@errors, 8 );
+
+#Put a new key in the all packages hash with the current status of the package
+foreach my $pack_ref (@packagesUnselected)
+{
+	my $pack = $$pack_ref{package};
+	$$allPackages{$pack}{status} = "Unselected";
+}
+foreach my $pack_ref (@packagesSelected)
+{
+	my $pack = $$pack_ref{package};
+	$$allPackages{$pack}{status} = "Selected";
+}
+foreach my $pack_ref (@packagesInstalled)
+{
+	my $pack = $$pack_ref{package};
+	$$allPackages{$pack}{status} = "Installed";
+}
+
+#If there is a filename as the first arguement, don't get user input
+if(defined $ARGV[0])
+{
+	processInput("file " . $ARGV[0]);
+	processInput("quit");
+}
+#Otherwise, list the files and start getting input
+else
+{
+	#Print the packages before giving a prompt
+	printPackages("all");
+	
+	#Start the prompt section
+	#This will exit by the user typing 'quit'
+	while(1)
+	{
+		print "selector>  ";
+		my $response = <STDIN>;
+		chomp $response;
+		processInput($response);
+	}
+}
+
+# Print the packages that match the specified class (core, included, third party, all)
+# with their <status> <short package name> <class> <version>
+sub printPackages
+{
+	my $class = shift;
+	OSCAR::Logger::oscar_log_subsection("List of packages");
+	if(defined $class && $class eq "core")
+	{
+		print "   Status          Name          Class        Version\n";
+		foreach my $package (keys %{$allPackages})
+		{
+			if($$allPackages{$package}{__class} eq "core")
+			{
+				$printStatus = $$allPackages{$package}{status};
+				$printPackage = $package;
+				$printClass = $$allPackages{$package}{__class};
+				$printVersion = $$allPackages{$package}{version};
+				
+				write;
+			}
+		}
+		return;
+	}
+	elsif(defined $class && $class eq "included")
+	{
+		print "   Status          Name          Class        Version\n";
+		foreach my $package (keys %{$allPackages})
+		{
+			if($$allPackages{$package}{__class} eq "included")
+			{
+				$printStatus = $$allPackages{$package}{status};
+				$printPackage = $package;
+				$printClass = $$allPackages{$package}{__class};
+				$printVersion = $$allPackages{$package}{version};
+				
+				write;
+			}
+		}
+		return;
+	}
+	elsif(defined $class && $class eq "third")
+	{
+		print "   Status          Name          Class        Version\n";
+		foreach my $package (keys %{$allPackages})
+		{
+			if($$allPackages{$package}{__class} eq "third party")
+			{
+				$printStatus = $$allPackages{$package}{status};
+				$printPackage = $package;
+				$printClass = $$allPackages{$package}{__class};
+				$printVersion = $$allPackages{$package}{version};
+				
+				write;
+			}
+		}
+		return;
+	}
+	else
+	{
+		print "   Status          Name          Class        Version\n";
+		foreach my $package (keys %{$allPackages})
+		{
+			$printStatus = $$allPackages{$package}{status};
+			$printPackage = $package;
+			$printClass = $$allPackages{$package}{__class};
+			$printVersion = $$allPackages{$package}{version};
+			
+			write;
+		}
+		return;
+	}
+}
+
+#Process the user's response from the prompt
+sub processInput 
+{
+	#Change the response from a scalar to an array
+	my @response = split(' ', shift);
+	
+	#If the user is trying to select a package
+	if($response[0] eq "select")
+	{
+		if(defined $$allPackages{$response[1]} && $$allPackages{$response[1]}{status} ne "Installed")
+		{
+			$$allPackages{$response[1]}{status} = "Selected";
+			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$response[1],2,\@errors);
+		}
+	}
+	#If the user is trying unselect a package
+	elsif($response[0] eq "unselect")
+	{
+		if(defined $$allPackages{$response[1]})
+		{
+			$$allPackages{$response[1]}{status} = "Unselected";
+			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$response[1],1,\@errors);
+		}
+	}
+	#If the user is trying to list the packages again
+	elsif($response[0] eq "list")
+	{
+		if(!defined $response[1])
+		{
+			printPackages("all");
+		}
+		else
+		{
+			printPackages($response[1]);
+		}
+	}
+	#If the user is trying to quit the program
+	elsif($response[0] eq "quit")
+	{
+		exit;
+	}
+	#If the user wants to read in responses from a file
+	elsif($response[0] eq "file")
+	{
+		#This will probably only work for files with one word names
+		my $FILE = $response[1];
+		open(FILE, $FILE);
+		while(<FILE>)
+		{
+			chomp $_;
+			processInput($_);
+		}
+	}
+}
