@@ -14,6 +14,7 @@ use Getopt::Long;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
+use OSCAR::CmpVersions;
 use Data::Dumper;
 use Carp;
 
@@ -51,7 +52,11 @@ my $dstring   = $os->{compat_distro}.$os->{compat_distrover}.
 my $cstring   = "common-".$suffix."s";
 
 my $march = $arch;
-$march = "i?86" if ($march eq "i386");
+my $rarch = $arch;
+if ($arch eq "i386") {
+    $march = "i?86";  # used for shell-like globbing
+    $rarch = "i.86";  # used for regular expressions
+}
 
 # try to detect smart installer, fall-back to dumb installer if not found
 my $tmpp;
@@ -294,24 +299,20 @@ sub handle_dumb_debs {
 
 sub locate_pkg {
     my ($pkg) = @_;
-    my $march = $arch;
-    $march = "i?86" if ($arch eq "i386");
     my $found = 0;
     my @pkgs;
     my @globstr;
     my $pkgmatch;
+    my $sepmatch = $separator."[0-9]";
+    $pkgmatch = $pkg;
     if ($pkg =~ /\.$suffix$/) {
-	$pkgmatch = $pkg;
-	$pkgmatch =~ s/$suffix$/*$suffix/;
+	$pkgmatch =~ s/\.$suffix$/*.$suffix/;
+    } elsif ($pkg =~ /\.($rarch|noarch)$/) {
+	my $parch = $1;
+	$pkgmatch =~ s/\.$parch$/*.$parch.$suffix/;
     } else {
-	my $mmatch = $separator."[0-9]";
-	if ($pkg =~ /$mmatch/) {
-	    $pkgmatch = "$pkg"."*{$march,noarch}.$suffix";
-	} else {
-	    $pkgmatch = "$pkg$separator"."[0-9]*{$march,noarch}.$suffix";
-	}
+	$pkgmatch .= "*{$march,noarch}.$suffix";
     }
-
     # 
     my @lrepos;
     for my $repo ( split(",",$oscar_pkg_pool), split(",",$distro_pkg_pool) ) {
@@ -321,28 +322,62 @@ sub locate_pkg {
 	}
     }
 
-    push @globstr, $ENV{OSCAR_HOME}."/packages/*/distro/$cstring/$pkgmatch";
-    push @globstr, $ENV{OSCAR_HOME}."/packages/*/distro/$dstring/$pkgmatch";
-    push @globstr, $ENV{OSCAR_HOME}."/share/prereqs/*/distro/$cstring/$pkgmatch";
-    push @globstr, $ENV{OSCAR_HOME}."/share/prereqs/*/distro/$dstring/$pkgmatch";
+    push @globstr, $ENV{OSCAR_HOME}."/packages/*/distro/{$cstring,$dstring}/$pkgmatch";
+    push @globstr, $ENV{OSCAR_HOME}."/share/prereqs/*/distro/{$cstring,$dstring}/$pkgmatch";
 
     push @globstr, map { "$_/$pkgmatch" } @lrepos;
 
     vprint("globstring: ".join(" ",@globstr)."\n");
     my @tmp = glob(join(" ",@globstr));
     vprint("locate_pkg glob result: ".join(",",@tmp)."\n");
-    if (scalar(@tmp)) {
-	if (-f $tmp[$#tmp]) {
-	    return $tmp[$#tmp];
-	}
-    }
+
+    # detect best version
+    return &best_version($pkg,@tmp);
 
     #
     # Try downloading from remote repositories?
     #
-    # ...
+}
 
-    return undef;
+sub best_version {
+    my ($pkg, @candidates) = @_;
+    my ($best, $bestversion);
+    for my $p (@candidates) {
+	my ($name, $ver, $parch);
+	if ($suffix eq "rpm") {
+	    my $info = `rpm -q --qf "%{NAME} %{VERSION}-%{RELEASE} %{ARCH}" -p $p`;
+	    my $err = $?;
+	    if (!$err) {
+		($name,$ver,$parch) = split(" ",$info);
+	    } else {
+		vprint(" ? rpm query returned $err\n");
+	    }
+	} elsif ($suffix eq "deb") {
+	    local *IN;
+	    open IN, "dpkg --info $p |" or croak("Could not open $p");
+	    while (<IN>) {
+		chomp;
+		if (/^ Package: (.*)$/) {
+		    $name = $1;
+		} elsif (/^ Version: (.*)$/) {
+		    $ver = $1;
+		} elsif (/^ Architecture: (.*)$/) {
+		    $parch = $1;
+		}
+	    }
+	    close IN;
+	}
+	vprint(":: $p :: $name $ver $parch<\n");
+	next if (!$name || !$ver);
+	next if ($pkg !~ /^$name/);
+	next if ($parch !~ /^($rarch|noarch)$/);
+	if (!$best || (cmp_version_strings($ver, $bestversion) == 1)) {
+	    vprint("   - $p selected\n");
+	    $best = $p;
+	    $bestversion = $ver;
+	}
+    }		
+    return $best;
 }
 
 #
@@ -356,6 +391,9 @@ sub check_installed {
 	# strip suffix is argument is a complete package name
 	if ($p =~ /\.$suffix$/) {
 	    $p =~ s/\.$suffix$//;
+	}
+	if ($p =~ /\.($rarch|noarch)$/) {
+	    $p =~ s/\.($rarch|noarch)$//;
 	}
 	if ($suffix eq "rpm") {
 	    $cmd = "rpm -q $p >/dev/null 2>&1";
