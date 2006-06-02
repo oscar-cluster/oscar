@@ -1,0 +1,76 @@
+#!/usr/bin/perl
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#
+# List all dependencies (RPM names) of the RPMs passed on the argument line.
+# The resulting list includes the arguments!
+#
+# $Id$
+#
+# Copyright (c) Erich Focht, NEC HPCE, Stuttgart, 2006
+
+use strict;
+
+$ENV{LC_ALL}="C";
+
+my @pkgs = @ARGV;
+
+my %provides;
+my %done;
+
+&rpm_prov_by(\%provides,@pkgs);
+map { $provides{$_} = 1; $done{$_} = 1; } @pkgs;
+#print "provides has ".scalar(keys(%provides))." entries\n";
+
+my $oldprov = 0;
+while ($oldprov < scalar(keys(%provides))) {
+    $oldprov = scalar(keys(%provides));
+    my @mypkgs;
+    for my $p (keys(%provides)) {
+	next if exists($done{$p});
+	push @mypkgs, $p;
+    }
+    &rpm_prov_by(\%provides,@mypkgs);
+    map { $done{$_} = 1 } @mypkgs;
+    #print "oldprov=$oldprov , newprov=".scalar(keys(%provides))."\n";
+    #print "  ".join(" ",keys(%provides))."\n";
+}
+
+print join(" ",sort(keys(%provides)))."\n";
+
+sub rpm_prov_by {
+    my ($rp,@pkgs) = @_;
+
+    my $pkgstr = join(" ",@pkgs);
+    my @requires = `rpm -q --requires $pkgstr 2>/dev/null`;
+    @requires = grep !/^rpmlib/, @requires;
+    my %reqs;
+    map { chomp;
+	  s/\s+$//; 
+	  my ($f,$r) = split(/\s+/); # ignore versions
+	  $reqs{$f} = 1; 
+      } @requires;
+    my @reqstr = keys(%reqs);
+    my $ps = join("\" \"",@reqstr);
+    my @prov = `rpm -q --qf '%{NAME}\n' --whatprovides "$ps" 2>/dev/null`;
+    foreach (@prov) {
+	next if (/^no package/);
+	chomp;
+	$rp->{$_} = 1;
+    }
+}
+
+
+
