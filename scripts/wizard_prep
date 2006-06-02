@@ -135,10 +135,10 @@ my $cmd;
 #     those require installing both rapt and yume
 if ($os->{pkg} eq "rpm") {
     # rpm based distros use yume
-    $cmd = "$ipcmd --dumb packages/yume share/prereqs/packman";
+    $cmd = "$ipcmd packages/yume share/prereqs/packman";
 } elsif($os->{pkg} eq "deb") {
     # debian based distros use rapt
-    $cmd = "$ipcmd --dumb packages/rapt share/prereqs/packman";
+    $cmd = "$ipcmd packages/rapt share/prereqs/packman";
 } else {
     die "Unsupported package manager: ".$os->{pkg};
 }
