@@ -35,12 +35,16 @@ use File::Path;
 use AppConfig qw(:argcount);
 use POSIX;
 use lib "$ENV{OSCAR_HOME}/lib";
+
 use OSCAR::Database;
+use OSCAR::OCA::OS_Detect;
 
 my $RPMPOOL = "/tftpboot/rpm";
 my $ARCH=(uname)[4]; # Default architecture
 $ARCH =~ s/i.86/i386/;
 my $install_mode = get_install_mode();
+my $os = OSCAR::OCA::OS_Detect::open();
+my $is_suse = 1 if ($os->{'distro'} eq "suse");
 
 my $options=AppConfig->new(
 		Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
@@ -94,10 +98,18 @@ if (-e "/etc/mandrake-release") {
 
 }
 
-verbose("Restarting xinetd");
-!system("/etc/init.d/xinetd restart") or croak("Couldn't restart xinetd");
-verbose("Enabling tftp");
-!system("chkconfig tftp on") or croak("Couldn't enable tftp");
+# SUSE's atftpd is not part of xinetd
+if ($is_suse) {
+    verbose("Restarting atftpd");
+    !system("/etc/init.d/atftpd restart") or croak("Failed to restart atftpd");
+    verbose("Enabling atftpd");
+    !system("chkconfig atftpd on") or croak("Failed to enable atftpd");
+} else {
+    verbose("Restarting xinetd");
+    !system("/etc/init.d/xinetd restart") or croak("Couldn't restart xinetd");
+    verbose("Enabling tftp");
+    !system("chkconfig tftp on") or croak("Couldn't enable tftp");
+}
 
 verbose("Creating directories.");
 mkpath("/tftpboot/pxelinux.cfg");
@@ -119,6 +131,7 @@ get_nics_info_with_node($node, \@result, \%db_options, \@db_errors);
 
 my $node_ref = pop @result;
 my $ip = $$node_ref{ip};
+my $pxelinux_dir = "/usr/lib/syslinux"; # default directory containing pxelinux.0
 
 if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
 # Mandriva is now shipping the equivalent of pxelinux.0 as linux.0, installed
@@ -129,8 +142,9 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
 	copy("/var/lib/tftpboot/X86PC/linux/linux.0", "/tftpboot/pxelinux.0") or
 	croak("Unable to copy \"linux.0\" file to /tftpboot.");
     } else {
-    	verbose("Getting pxelinux.0.");
-        copy("/usr/lib/syslinux/pxelinux.0", "/tftpboot/pxelinux.0") or 
+	$pxelinux_dir = "/usr/share/syslinux" if ($is_suse);
+	verbose("Getting pxelinux.0.");
+        copy("$pxelinux_dir/pxelinux.0", "/tftpboot/pxelinux.0") or 
         croak("Unable to copy \"pxelinux.0\" file to /tftpboot.");
     }
     
