@@ -182,13 +182,13 @@ sub printPackages
 		}
 		return;
 	}
-	elsif(defined $class && $class eq "third")
+	elsif(defined $class && $class eq "third-party")
 	{
 		print "   Status           Name          Class        Version\n---------------------------------------------------------\n";
 		foreach my $package (keys %{$allPackages})
 		{
 			#Need to set up these variables to be printed out
-			if($$allPackages{$package}{__class} eq "third party")
+			if($$allPackages{$package}{__class} eq "third-party")
 			{
 				$printStatus = $$allPackages{$package}{status};
 				$printPackage = $package;
