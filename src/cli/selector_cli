@@ -11,27 +11,27 @@
 # are currently selected.  By running this script with a filename
 # as an arguement, the script will not require user input, but
 # follow your instructions as you specify.
-#
-# TODO
-# Check dependencies/conflicts
-# Create a help command
+
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::Database;
-use Qt::SelectorUtils qw(getAllPackages);
+use Qt::SelectorUtils;
 
 my %options = ();
 my @errors = ();
+my $inun = 0;
 
 my ($printStatus, $printPackage, $printClass, $printVersion);
 
+#Format to print out the package information
 format STDOUT=
 @|||||||||||@|||||||||||||||||@|||||||||||@||||||||||||||
 $printStatus,  $printPackage,  $printClass, $printVersion
 .
 
+#If the debug option is set, we should use it
 $options{debug} = 1 if $ENV{OSCAR_DB_DEBUG};
 
 OSCAR::Logger::oscar_log_section("Beginning the OSCAR Package Selector");
@@ -40,7 +40,6 @@ OSCAR::Logger::oscar_log_section("Beginning the OSCAR Package Selector");
 OSCAR::Logger::oscar_log_subsection("Populating list of packages");
 
 #Get a list of all the packages
-#print @INC;
 my $allPackages = SelectorUtils::getAllPackages();
 #Get the status of each package (Installed (8), Selected(2), Unselected(1))
 my @packagesUnselected;
@@ -73,47 +72,92 @@ foreach my $pack_ref (@packagesInstalled)
 	$$allPackages{$pack}{status} = "Installed";
 }
 
-#If there is a filename as the first arguement, don't get user input
-if(defined $ARGV[0])
+#If there is a filename as an arguement, don't get user input
+foreach my $arg (@ARGV)
 {
-	processInput("file " . $ARGV[0]);
-	processInput("quit");
-}
-#Otherwise, list the files and start getting input
-else
-{
-	#Print the packages before giving a prompt
-	printPackages("all");
-	
-	#Start the prompt section
-	#This will exit by the user typing 'quit'
-	while(1)
+	if($arg eq "-m")
 	{
-		print "selector>  ";
-		my $response = <STDIN>;
-		chomp $response;
-		processInput($response);
+		$inun = 1;
 	}
+	elsif($arg !~ /^-/)
+	{
+		#If the user doesn't want to maintain the package state,
+		#reset all core and included packages to selected and others to unselected
+		if($inun == 0)
+		{
+			foreach my $pack (keys %{$allPackages})
+			{
+				if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included")
+				{
+					$$allPackages{$pack}{status} = "Selected";
+					$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,2,\@errors);
+				}
+				else
+				{
+					$$allPackages{$pack}{status} = "Unselected";
+					$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,1,\@errors);
+				}
+			}
+		}
+
+		processInput("file " . $arg);
+		processInput("quit");
+	}
+}
+
+#If the user doesn't want to maintain the package state,
+#reset all core and included packages to selected and others to unselected
+if($inun == 0)
+{
+	foreach my $pack (keys %{$allPackages})
+	{
+		if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included")
+		{
+			$$allPackages{$pack}{status} = "Selected";
+			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,2,\@errors);
+		}
+		else
+		{
+			$$allPackages{$pack}{status} = "Unselected";
+			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,1,\@errors);
+		}
+	}
+}
+
+#Otherwise, list the packages and start getting input
+#Print the packages before giving a prompt
+printPackages("all");
+
+#Start the prompt section
+#This will exit by the user typing 'quit'
+while(1)
+{
+	print "selector>  ";
+	my $response = <STDIN>;
+	chomp $response;
+	processInput($response);
 }
 
 # Print the packages that match the specified class (core, included, third party, all)
 # with their <status> <short package name> <class> <version>
 sub printPackages
 {
-	my $class = shift;
+	my $class = shift; #The class name should be the only arguement
 	OSCAR::Logger::oscar_log_subsection("List of packages");
 	if(defined $class && $class eq "core")
 	{
-		print "   Status          Name          Class        Version\n";
+		print "   Status           Name          Class        Version\n---------------------------------------------------------\n";
 		foreach my $package (keys %{$allPackages})
 		{
 			if($$allPackages{$package}{__class} eq "core")
 			{
+				#Need to set up these variables to be printed out
 				$printStatus = $$allPackages{$package}{status};
 				$printPackage = $package;
 				$printClass = $$allPackages{$package}{__class};
 				$printVersion = $$allPackages{$package}{version};
 				
+				#Print out the information
 				write;
 			}
 		}
@@ -121,16 +165,18 @@ sub printPackages
 	}
 	elsif(defined $class && $class eq "included")
 	{
-		print "   Status          Name          Class        Version\n";
+		print "   Status           Name          Class        Version\n---------------------------------------------------------\n";
 		foreach my $package (keys %{$allPackages})
 		{
 			if($$allPackages{$package}{__class} eq "included")
 			{
+				#Need to set up these variables to be printed out
 				$printStatus = $$allPackages{$package}{status};
 				$printPackage = $package;
 				$printClass = $$allPackages{$package}{__class};
 				$printVersion = $$allPackages{$package}{version};
 				
+				#Print out the information
 				write;
 			}
 		}
@@ -138,9 +184,10 @@ sub printPackages
 	}
 	elsif(defined $class && $class eq "third")
 	{
-		print "   Status          Name          Class        Version\n";
+		print "   Status           Name          Class        Version\n---------------------------------------------------------\n";
 		foreach my $package (keys %{$allPackages})
 		{
+			#Need to set up these variables to be printed out
 			if($$allPackages{$package}{__class} eq "third party")
 			{
 				$printStatus = $$allPackages{$package}{status};
@@ -148,6 +195,7 @@ sub printPackages
 				$printClass = $$allPackages{$package}{__class};
 				$printVersion = $$allPackages{$package}{version};
 				
+				#Print out the information
 				write;
 			}
 		}
@@ -155,14 +203,16 @@ sub printPackages
 	}
 	else
 	{
-		print "   Status          Name          Class        Version\n";
+		print "   Status           Name          Class        Version\n---------------------------------------------------------\n";
 		foreach my $package (keys %{$allPackages})
 		{
+			#Need to set up these variables to be printed out
 			$printStatus = $$allPackages{$package}{status};
 			$printPackage = $package;
 			$printClass = $$allPackages{$package}{__class};
 			$printVersion = $$allPackages{$package}{version};
 			
+			#Print out the information
 			write;
 		}
 		return;
@@ -175,27 +225,94 @@ sub processInput
 	#Change the response from a scalar to an array
 	my @response = split(' ', shift);
 	
+	#By default, ask for help
+	if(!defined $response[0])
+	{
+		$response[0] = "help";
+	}
+	
 	#If the user is trying to select a package
 	if($response[0] eq "select")
 	{
+		#Make sure the package exists and is not already installed
 		if(defined $$allPackages{$response[1]} && $$allPackages{$response[1]}{status} ne "Installed")
 		{
 			$$allPackages{$response[1]}{status} = "Selected";
 			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$response[1],2,\@errors);
+			
+			#Check for dependencies
+			print "Checking dependencies\n";
+			my $dependencies;
+			$dependencies = SelectorUtils::getRequiresList($dependencies,$response[1]);
+			delete $$dependencies{""}; #Delete the empty key
+			#If there is a dependency, select it
+			foreach my $packageName (keys %{$dependencies})
+			{
+				if ($packageName eq $response[1]) {next;}
+				print "Package dependant on " . $packageName . "\n";
+				$$allPackages{$packageName}{status} = "Selected";
+				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packageName,2,\@errors);
+			}
+			
+			#Check for conflicts
+			print "Checking conflicts\n";
+			my $conflict;
+			$conflict = SelectorUtils::getConflictsList($dependencies);
+			#If there is a conflict, unselect the conflicting package
+			delete $$conflict{""}; #Delete the empty key
+			foreach my $packageName (keys %{$conflict})
+			{
+				if ($packageName eq $response[1]) {next;}
+				print "Conflicting package " . $packageName . "\n";
+				$$allPackages{$packageName}{status} = "Unselected";
+				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packageName,1,\@errors);
+			}
+		}
+		elsif(!defined $$allPackages{$response[1]})
+		{
+			print "Package name " . $response[1] . " not recognized\n";
+		}
+		elsif($$allPackages{$response[1]}{status} eq "Installed")
+		{
+			print "Package " . $response[1] . " already installed\n";
 		}
 	}
 	#If the user is trying unselect a package
 	elsif($response[0] eq "unselect")
 	{
-		if(defined $$allPackages{$response[1]})
+		#Make sure the package exists
+		if(defined $$allPackages{$response[1]} && $$allPackages{$response[1]}{__class} ne "core")
 		{
 			$$allPackages{$response[1]}{status} = "Unselected";
 			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$response[1],1,\@errors);
+			
+			#Check to see if anything depends on this
+			print "Checking dependencies\n";
+			my $reqby;
+			$reqby = SelectorUtils::getIsRequiredByList($reqby,$response[1]);
+			delete $$reqby{""}; #Delete the empty key
+			#If something depended on this package, unselect it
+			foreach my $package (keys %{$reqby})
+			{
+				if ($package eq $response[1]) {next;}
+				print "Package " . $package . " depends on " . $response[1] . "\n";
+				$$allPackages{$package}{status} = "Unselected";
+				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$package,1,\@errors);
+			}
+		}
+		elsif(!defined $$allPackages{$response[1]})
+		{
+			print "Package name " . $response[1] . " not recognized\n";
+		}
+		elsif($$allPackages{$response[1]}{__class} eq "core")
+		{
+			print "Cannot unselect core packages\n";
 		}
 	}
 	#If the user is trying to list the packages again
 	elsif($response[0] eq "list")
 	{
+		#The default action if the selected class does not exist is to print all of the packages
 		if(!defined $response[1])
 		{
 			printPackages("all");
@@ -208,6 +325,7 @@ sub processInput
 	#If the user is trying to quit the program
 	elsif($response[0] eq "quit")
 	{
+		#Everything should already have been taken care of so go ahead and move on
 		exit;
 	}
 	#If the user wants to read in responses from a file
@@ -216,10 +334,21 @@ sub processInput
 		#This will probably only work for files with one word names
 		my $FILE = $response[1];
 		open(FILE, $FILE);
+		#Read the file just like it is normal input from the keyboard
+		#The file is not required to have a quit command in it
 		while(<FILE>)
 		{
 			chomp $_;
 			processInput($_);
 		}
+	}
+	#Default response is to print out the list of commands and their use
+	else
+	{
+		print "select <packageName> - Select a package to be installed
+unselect <packageName> - Unselect a package to prevent it from being installed
+list <class> - Lists the packages and their installation status, class, and version number
+file <filename> - Reads in commands from a file
+help - Prints this message\n";
 	}
 }

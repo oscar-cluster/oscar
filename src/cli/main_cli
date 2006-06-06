@@ -18,7 +18,7 @@ use OSCAR::Logger;
 
 oscar_log_section("Running OSCAR CLI Installer");
 
-#Steps 0 and 1 should be taken care of with the opd command line utility
+#Step 0 should be taken care of with the opd command line utility
 
-#Step 2 - Select Packages
-!system("./selector_cli");
+#Step 1 - Select Packages
+system("./selector_cli");
