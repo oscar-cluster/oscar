@@ -89,13 +89,15 @@ foreach my $arg (@ARGV)
 			{
 				if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included")
 				{
-					$$allPackages{$pack}{status} = "Selected";
-					$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,2,\@errors);
+					processInput("select -q $pack");
+					#$$allPackages{$pack}{status} = "Selected";
+					#$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,2,\@errors);
 				}
 				else
 				{
-					$$allPackages{$pack}{status} = "Unselected";
-					$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,1,\@errors);
+					processInput"unselect -q $pack");
+					#$$allPackages{$pack}{status} = "Unselected";
+					#$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,1,\@errors);
 				}
 			}
 		}
@@ -113,13 +115,15 @@ if($inun == 0)
 	{
 		if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included")
 		{
-			$$allPackages{$pack}{status} = "Selected";
-			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,2,\@errors);
+			processInput("select -q $pack");
+			#$$allPackages{$pack}{status} = "Selected";
+			#$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,2,\@errors);
 		}
 		else
 		{
-			$$allPackages{$pack}{status} = "Unselected";
-			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,1,\@errors);
+			processInput("unselect -q $pack");
+			#$$allPackages{$pack}{status} = "Unselected";
+			#$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,1,\@errors);
 		}
 	}
 }
@@ -234,6 +238,15 @@ sub processInput
 	#If the user is trying to select a package
 	if($response[0] eq "select")
 	{
+		#If the user adds a -q flag, don't print out the verbose dialog
+		my $quiet = 0;
+		if($response[1] eq "-q")
+		{
+			$quiet = 1;
+			#Move the next arguement over to make parsing the command line easy
+			$response[1] = $response[2];
+		}
+
 		#Make sure the package exists and is not already installed
 		if(defined $$allPackages{$response[1]} && $$allPackages{$response[1]}{status} ne "Installed")
 		{
@@ -241,7 +254,7 @@ sub processInput
 			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$response[1],2,\@errors);
 			
 			#Check for dependencies
-			print "Checking dependencies\n";
+			print "Checking dependencies\n" unless $quiet;
 			my $dependencies;
 			$dependencies = SelectorUtils::getRequiresList($dependencies,$response[1]);
 			delete $$dependencies{""}; #Delete the empty key
@@ -249,13 +262,13 @@ sub processInput
 			foreach my $packageName (keys %{$dependencies})
 			{
 				if ($packageName eq $response[1]) {next;}
-				print "Package dependant on " . $packageName . "\n";
+				print "Package dependant on " . $packageName . "\n" unless $quiet;
 				$$allPackages{$packageName}{status} = "Selected";
 				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packageName,2,\@errors);
 			}
 			
 			#Check for conflicts
-			print "Checking conflicts\n";
+			print "Checking conflicts\n" unless $quiet;
 			my $conflict;
 			$conflict = SelectorUtils::getConflictsList($dependencies);
 			#If there is a conflict, unselect the conflicting package
@@ -263,23 +276,32 @@ sub processInput
 			foreach my $packageName (keys %{$conflict})
 			{
 				if ($packageName eq $response[1]) {next;}
-				print "Conflicting package " . $packageName . "\n";
+				print "Conflicting package " . $packageName . "\n" unless $quiet;
 				$$allPackages{$packageName}{status} = "Unselected";
 				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packageName,1,\@errors);
 			}
 		}
 		elsif(!defined $$allPackages{$response[1]})
 		{
-			print "Package name " . $response[1] . " not recognized\n";
+			print "Package name " . $response[1] . " not recognized\n" unless $quiet;
 		}
 		elsif($$allPackages{$response[1]}{status} eq "Installed")
 		{
-			print "Package " . $response[1] . " already installed\n";
+			print "Package " . $response[1] . " already installed\n" unless $quiet;
 		}
 	}
 	#If the user is trying unselect a package
 	elsif($response[0] eq "unselect")
 	{
+		#If the user adds a -q flag, don't print out the verbose dialog
+		my $quiet = 0;
+		if($response[1] eq "-q")
+		{
+			$quiet = 1;
+			#Move the next arguement over to make parsing the command line easy
+			$response[1] = $response[2];
+		}
+
 		#Make sure the package exists
 		if(defined $$allPackages{$response[1]} && $$allPackages{$response[1]}{__class} ne "core")
 		{
@@ -287,7 +309,7 @@ sub processInput
 			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$response[1],1,\@errors);
 			
 			#Check to see if anything depends on this
-			print "Checking dependencies\n";
+			print "Checking dependencies\n" unless $quiet;
 			my $reqby;
 			$reqby = SelectorUtils::getIsRequiredByList($reqby,$response[1]);
 			delete $$reqby{""}; #Delete the empty key
@@ -295,18 +317,18 @@ sub processInput
 			foreach my $package (keys %{$reqby})
 			{
 				if ($package eq $response[1]) {next;}
-				print "Package " . $package . " depends on " . $response[1] . "\n";
+				print "Package " . $package . " depends on " . $response[1] . "\n" unless $quiet;
 				$$allPackages{$package}{status} = "Unselected";
 				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$package,1,\@errors);
 			}
 		}
 		elsif(!defined $$allPackages{$response[1]})
 		{
-			print "Package name " . $response[1] . " not recognized\n";
+			print "Package name " . $response[1] . " not recognized\n" unless $quiet;
 		}
 		elsif($$allPackages{$response[1]}{__class} eq "core")
 		{
-			print "Cannot unselect core packages\n";
+			print "Cannot unselect core packages\n" unless $quiet;
 		}
 	}
 	#If the user is trying to list the packages again
@@ -346,7 +368,9 @@ sub processInput
 	else
 	{
 		print "select <packageName> - Select a package to be installed
+	-q - Quiet mode:  Don't print out verbose dialog
 unselect <packageName> - Unselect a package to prevent it from being installed
+	-q - Quiet mode:  Don't print out verbose dialog
 list <class> - Lists the packages and their installation status, class, and version number
 file <filename> - Reads in commands from a file
 help - Prints this message\n";
