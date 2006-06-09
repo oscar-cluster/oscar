@@ -325,7 +325,7 @@ if [ -n "$DISTROS" -o -n "$ALL_REPOS" ]; then
     if [ "$PKGMGR" = "rpm" ]; then
 	scripts/install_prereq --verbose --dumb \
 	    share/prereqs/packman packages/yume
-    elif [ "$PKGMGR" = "rpm" ]; then
+    elif [ "$PKGMGR" = "deb" ]; then
 	scripts/install_prereq --verbose --dumb \
 	    share/prereqs/packman packages/rapt
     else
