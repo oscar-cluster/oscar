@@ -329,6 +329,7 @@ sub cleanup_files {
               '/var/log/systemimager',
               '/var/spool/pbs',
               "$oscar_home/.oscar",
+	      '/etc/apache/conf.d/ganglia.conf',
 	      '/etc/apache2/conf.d/ganglia.conf',
 	      '/etc/httpd/conf.d/ganglia.conf',
              );
