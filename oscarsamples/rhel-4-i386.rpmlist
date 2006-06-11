@@ -102,6 +102,7 @@ mkinitrd
 mktemp
 module-init-tools
 mtools
+nc
 ncurses
 ntp
 net-tools

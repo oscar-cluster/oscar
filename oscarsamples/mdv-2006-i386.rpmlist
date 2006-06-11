@@ -112,6 +112,7 @@ mkinitrd
 mktemp
 modutils
 mount
+nc
 ncurses
 net-tools
 nfs-utils-clients
