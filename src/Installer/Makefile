@@ -6,7 +6,7 @@
 #
 
 # List the binaries needed by the Makefile
-PUIC		=	/opt/perl-Qt/bin/puic
+PUIC		=	puic
 PERL_CW		=	/usr/bin/perl -cw
 RM		=	/bin/rm -f
 

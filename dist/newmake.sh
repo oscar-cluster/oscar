@@ -181,6 +181,22 @@ if [ -n "$BUILD_BASE" ]; then
     message "Installing perl-Qt, will need it for repository preparation"
 
     scripts/install_prereq --verbose --dumb share/prereqs/perl-Qt
+    which puic >/dev/null 2>&1
+    if [ $? != 0 ]; then
+	OPUICPATH=""
+	# add path to puic (select from known possible paths)
+	for p in /opt/kde3/bin /opt/perl-Qt/bin ; do
+	    if [ -e "$p/puic" ]; then
+		OPUICPATH=$PATH
+		export PATH=$p:$PATH
+		break
+	    fi
+	done
+	if [ -z "$OPUICPATH" ]; then
+	    echo "!! Could not locate puic (from perl-Qt package) !!"
+	    exit 1
+	fi
+    fi
     cd src
     make || bail_out 1
     cd ..
