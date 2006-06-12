@@ -101,7 +101,7 @@ EOF
 set num=25
 set num1="`expr $num + 1`"
 set cur="`head -$num $filelist`"
-tail +$num1 $filelist > $filelist.2
+tail -n +$num1 $filelist > $filelist.2
 mv -f $filelist.2 $filelist
 
 while ("$cur" != "")
@@ -145,7 +145,7 @@ while ("$cur" != "")
     # Get the next $num files
 
     set cur="`head -$num $filelist`"
-    tail +$num1 $filelist > $filelist.2
+    tail -n +$num1 $filelist > $filelist.2
     mv -f $filelist.2 $filelist
 end
 
