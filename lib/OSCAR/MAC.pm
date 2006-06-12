@@ -1027,10 +1027,10 @@ sub enable_install_mode {
         run_cmd("chkconfig systemimager-server-bittorrent on");
     }
 
-    oscar_log_subsection("Step $step_number: Successfully enabled installation mode: $install_mode");
-
     # Store installation mode in ODA
     set_install_mode($install_mode);
+
+    oscar_log_subsection("Step $step_number: Successfully enabled installation mode: $install_mode");
 
     our $dhcpbutton->configure(-state => 'normal');
 
