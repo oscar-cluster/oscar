@@ -119,12 +119,12 @@ bootstrap-smart:
 	elif [ "$(PKG)" = "rpm" ]; then \
 		SMARTINST=packages/rapt; \
 	fi; \
-	scripts/install_prereq --dumb share/prereqs/packman $$SMARTINST
+	scripts/install_prereq share/prereqs/packman $$SMARTINST
 
 install-perlQt:
 	@echo "== installing perl-Qt from share/prereqs =="
 	@export OSCAR_HOME=`pwd`; \
-	scripts/install_prereq --dumb share/prereqs/perl-Qt
+	scripts/install_prereq share/prereqs/perl-Qt
 
 checkenv:
 	@if [ -n "$$OSCAR_HOME" -a "$$OSCAR_HOME" != `pwd` ]; then \
