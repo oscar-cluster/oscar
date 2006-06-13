@@ -11,6 +11,9 @@
 # any installation on its own, but should call other scripts to run
 # each step.  Doing this will keep the installation process much more
 # modular and easier to maintain.
+#
+# To start the installation process, type the name of this script and
+# the network interface to use for OSCAR.
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -22,3 +25,21 @@ oscar_log_section("Running OSCAR CLI Installer");
 
 #Step 1 - Select Packages
 system("./selector_cli");
+
+#Step 2 - Configure Packages
+#system("./configurator_cli");
+
+#Step 3 - Install Packages
+oscar_log_section("Installing Packages");
+if(system(!"$ENV{OSCAR_HOME}/scripts/install_server $ARGV[0]"))
+{
+	oscar_log_section("Packages Successfully Installed");
+}
+else
+{
+	oscar_log_section("Packages not Installed!");
+	exit 1;
+}
+
+#Step 4 - Build OSCAR Client Image
+

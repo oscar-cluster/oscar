@@ -95,7 +95,7 @@ foreach my $arg (@ARGV)
 				}
 				else
 				{
-					processInput"unselect -q $pack");
+					processInput("unselect -q $pack");
 					#$$allPackages{$pack}{status} = "Unselected";
 					#$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,1,\@errors);
 				}
