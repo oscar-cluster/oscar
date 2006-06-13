@@ -103,7 +103,6 @@ mkinitrd
 mktemp
 module-init-tools
 mtools
-nc
 ncftp
 ncurses
 ntp

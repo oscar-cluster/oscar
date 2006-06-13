@@ -85,7 +85,6 @@ mktemp
 module-init-tools
 ncurses
 net-tools
-netcat
 netcfg
 ntfsprogs
 openldap2-client

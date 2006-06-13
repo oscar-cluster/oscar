@@ -100,7 +100,6 @@ modutils
 mount
 mtools
 redhat-config-mouse
-nc
 ncurses
 net-tools
 newt

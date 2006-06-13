@@ -44,6 +44,38 @@
       <pkg>systemimager-client</pkg>
   </binary-package-list>
 
+  <!--
+      OSCAR clients need the "netcat" package to be able to display
+      the "rebooted" status via si_monitortk
+  -->
+  <!-- begin netcat package -->
+  <binary-package-list>
+      <filter>
+        <group>oscar_clients</group>
+        <distribution>
+             <name>rhel</name>
+        </distribution>
+        <distribution>
+             <name>fc</name>
+        </distribution>
+        <distribution>
+             <name>mdv</name>
+        </distribution>
+      </filter>
+      <pkg>nc</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_clients</group>
+        <distribution>
+             <name>suse</name>
+        </distribution>
+      </filter>
+      <pkg>netcat</pkg>
+  </binary-package-list>
+  <!-- end netcat package -->
+
   <binary-package-list>
       <filter>
         <group>oscar_server</group>
