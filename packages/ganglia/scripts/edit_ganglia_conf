@@ -34,9 +34,7 @@ use SIS::Client;
 use Data::Dumper;
 use OSCAR::Database;
 use OSCAR::Opkg;
-use OSCAR::OCA::OS_Detect;
 
-my $os = OSCAR::OCA::OS_Detect::open();
 my ($do_gmond, $do_gmetad, $image, @options, $test, $verbose);
 GetOptions( 'gmond'   => \$do_gmond,
 	    'gmetad'  => \$do_gmetad,
@@ -430,9 +428,6 @@ sub restart_gmetad {
 
 sub add_httpd_conf {
     my $confdir;
-    my $webroot = "/var/www/html";
-    $webroot = "/srv/www/htdocs" if ($os->{'distro'} eq "suse");
-
     for my $d ("httpd", "apache2", "apache") {
 	if (-d "/etc/$d/conf.d") {
 	    $confdir="/etc/$d/conf.d";
@@ -445,8 +440,8 @@ sub add_httpd_conf {
     if (! -f "$confdir/ganglia.conf") {
 	open C, "> $confdir/ganglia.conf" or croak "Could not open ganglia.conf: $!";
 	print C <<EOI;
-Alias /ganglia/ $webroot/ganglia/
-<Directory $webroot/ganglia/>
+Alias /ganglia /var/www/html/ganglia/
+<Directory /var/www/html/ganglia/>
    Options None
    order deny,allow
    deny from all
