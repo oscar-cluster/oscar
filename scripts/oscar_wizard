@@ -243,6 +243,10 @@ if ( $mode eq "install" ) {
    oscar_button($window, "Step $step_number:", "Setup Networking...", 
 	        [\&mac_window, $window, $step_number,
 	         {interface => $interface}], 'netboot');
+
+   # Delete Clients returns due to popular demand!
+   oscar_button($window, "", "Delete OSCAR Clients...",
+                [\&delnode_window, $window], 'delete_nodes');
 }
 
 # Monitor Cluster Deployment
