@@ -250,7 +250,7 @@ oscar_log_subsection("Command line invocation: $0 $adapter " .
 oscar_log_subsection("Hostname: $shorthostname");
 oscar_log_subsection("Domainname: $domainname");
 oscar_log_subsection("Network interface: $adapter");
-oscar_log_subsection("Linux distribution: $os->{linux_distro} $os->{linux_distro_version}");
+oscar_log_subsection("Linux distribution: $os->{distro} $os->{distro_version}");
 oscar_log_subsection("Kernel version: " . (uname)[2]);
 oscar_log_subsection("Architecture: $os->{arch}");
 oscar_log_subsection("Running in directory: " . cwd());
