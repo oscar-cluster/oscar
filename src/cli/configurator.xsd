@@ -2,30 +2,36 @@
 
  <xsd:simpleType name="Text"/>
 
+ <xsd:simpleType name="boolean">
+   <xsd:restriction base='xsd:string'>
+     <xsd:pattern value="yes|no"/>
+   </xsd:restriction>
+ </xsd:simpleType>
+
  <xsd:complexType name="Textbox">
-   <!--The name of the textbox (same as the database key)-->
    <xsd:attribute name="name" type="xsd:string" use="required"/>
-   <!--The text of the label should be here-->
+   <xsd:attribute name="value" type="xsd:string" use="optional"/>
+   <!--The label should go in here-->
  </xsd:complexType>
 
  <xsd:complexType name="ButtonChoice">
-   <!--The value of the choice that will be put in the database if selected-->
    <xsd:attribute name="value" type="xsd:string" use="required"/>
+   <xsd:attribute name="selected" type="boolean" use="required"/>
+   <!--The label should go in here-->
  </xsd:complexType>
 
  <xsd:complexType name="Radio">
    <xsd:choice minOccurs='1' maxOccurs='unbounded'>
      <xsd:element name="radio-button" type="ButtonChoice"/>
    </xsd:choice>
-   <!--The name of the radio button set (same as the database key)-->
    <xsd:attribute name="name" type="xsd:string" use="required"/>
-   <!--The text of the label should be here-->
  </xsd:complexType>
 
  <xsd:complexType name="Check">
-   <!--The name of the check box (same as the databse key)-->
+   <xsd:choice minOccurs='1' maxOccurs='unbounded'>
+     <xsd:element name="check-button" type="ButtonChoice"/>
+   </xsd:choice>
    <xsd:attribute name="name" type="xsd:string" use="required"/>
-   <!--The text of the label should be here-->
  </xsd:complexType>
 
  <xsd:complexType name="Input">
@@ -39,7 +45,7 @@
  <xsd:complexType name="Configurator">
    <xsd:choice minOccurs='1' maxOccurs='unbounded'>
      <xsd:element name="input" type="Input"/>
-     <xsd:element name="text" type="Text"/>
+     <xsd:element name="test" type="Text"/>
    </xsd:choice>
    <xsd:attribute name="title" type="xsd:string"/>
  </xsd:complexType>
