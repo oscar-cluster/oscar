@@ -20,7 +20,4 @@
 
 use Carp;
 
-system("/etc/init.d/maui restart");
-
-# service maui status will return 0 if running, 3 if not
-!system("/etc/init.d/maui status") or croak("Failed to restart MAUI");
+!system("/etc/init.d/maui restart") or croak("Failed to restart Maui Scheduler");
