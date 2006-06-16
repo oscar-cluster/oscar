@@ -447,10 +447,16 @@ sub print_repository_listing {
 
 #
 # Make the user select a repository
+# For repository may be specified via the command line (opd 
+#   --repository <repository_url> or via the interactive mode (opd> r
+#   <repository_url>
+# TODO: remove code duplication for the specification of a repository
+#       in interactive mode and by a command line parameter
 #
 sub select_default_repository {
     my $selection = -1;
     my $num_repos = $#{$repository_listing->{site}} + 1;
+    my $repo = shift;
 
     # If the user specified a repository URI on the command line, look
     # for that in the listing
@@ -488,6 +494,40 @@ sub select_default_repository {
     # for it for the available list.
 
     else {
+        # If the user specified a repository URI in interactive mode 
+	# (from the prompt, look for that in the listing)
+
+	$repository_selected = -1;
+        if ($repo) {
+            if (! $repo =~ /\/$/) {
+                $repo .= "/";
+            }
+            foreach my $i (0 .. ($num_repos - 1)) {
+                my $uri = $repository_listing->{site}[$i]->{uri}[0];
+                if (! $uri =~ /\/$/) {
+                    $uri .= "/";
+                }
+                if ($uri eq $repo) {
+                    $repository_selected = $i;
+                    last;
+                }
+            }
+
+            # If we didn't find the URI in the list that we already had,
+            # then give the user the benefit of the doubt :-) and make an
+            # entry with this URI.
+
+            if ($repository_selected == -1) {
+                my $i = $num_repos;
+                $repository_listing->{site}[$i]->{name} =
+                    "Interactive mode specified repository";
+                $repository_listing->{site}[$i]->{location} = "Unknown";
+                $repository_listing->{site}[$i]->{uri}[0] = $repo;
+                $repository_selected = $i;
+		$num_repos++;
+            }
+        }
+
         while (1) {
             print("Please select a default repository:\n\n");
             
@@ -1317,6 +1357,10 @@ sub download_package {
 	    $path = $downloaddir;
 	    $src = "$dest.opd";
 	}
+	if(!$uri) {
+		print("ERROR, the URI for OPKG" . $pkg->name . " is empty");
+		next;
+	}
 	($happy, $content) = download_from_uri($uri, "$path/$src");
 
 	if ($happy) {
@@ -1483,7 +1527,12 @@ sub main_menu {
 	# Change repository
 
 	if (/^r/i || /^repos/i || /^repository/i) {
-	    select_default_repository();
+	    my $rep = shift(@options);
+	    if (!$rep) {
+	        print ("ERROR: no repository has been specified\n");
+		next;
+	    }
+	    select_default_repository($rep);
 	    download_packages_file();
 	} 
 
