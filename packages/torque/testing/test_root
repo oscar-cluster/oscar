@@ -31,10 +31,10 @@ else
 fi
 
 for serv in pbs_server ; do
-  if [ `/etc/init.d/$serv status | grep -c "is running"` -eq 0 ]; then
+  if [ `/etc/init.d/$serv status | grep -c "running"` -eq 0 ]; then
     # Let's try to start the service
     /etc/init.d/$serv start
-    if [ `/etc/init.d/$serv status | grep -c "is running"` -eq 0 ]; then
+    if [ `/etc/init.d/$serv status | grep -c "running"` -eq 0 ]; then
       echo "Could not start $serv, please check configuration and rerun tests"
         $OSCAR_TESTPRINT --label "TORQUE service check:$serv" -f
         exit 1
