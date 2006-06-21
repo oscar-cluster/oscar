@@ -193,12 +193,12 @@ EOF
 		;;
 	sendmail)
     echo "WARNING: OSCAR does not know how to configure sendmail yet."
-    echo "WARNING: Please bug the OSCAR developers to finish the disable-servics package!"
+    echo "WARNING: Please bug the OSCAR developers to finish the mta-config package!"
     echo "WARNING: There will be no mail service running on the client nodes!"
 		;;
 	exim)
     echo "WARNING: OSCAR does not know how to configure exim yet."
-    echo "WARNING: Please bug the OSCAR developers to finish the disable-servics package!"
+    echo "WARNING: Please bug the OSCAR developers to finish the mta-config package!"
     echo "WARNING: There will be no mail service running on the client nodes!"
 		;;
     *) echo "WARNING: OSCAR did not found any mailing service"
