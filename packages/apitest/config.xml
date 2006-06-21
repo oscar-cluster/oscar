@@ -41,4 +41,16 @@
 		<pkg>apitest</pkg>
 	</binary-package-list>
 
+	<!-- FIXME: This should be a RPM dependency... -->
+	<binary-package-list>
+		<filter>
+		  <group>oscar_server</group>
+		  <distribution>
+			<name>suse</name>
+		  </distribution>
+		</filter>
+
+		<pkg>python-twisted-web</pkg>
+	</binary-package-list>
+
 </oscar>
