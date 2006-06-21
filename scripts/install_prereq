@@ -60,16 +60,21 @@ if ($arch eq "i386") {
 
 # try to detect smart installer, fall-back to dumb installer if not found
 if (!$dumb) {
+    $dumb = 1;
+    $smart = 0;
     eval "require OSCAR::PackMan";
-    if (!$@ and eval("PackMan->new()")) {
+    if (!$@ and eval("PackMan->new()") ) {
+	my $tp;
+	eval "\$tp = PackMan->new()";
+	if ($tp->is_smart()) {
 	#(system("which yume >/dev/null 2>&1") && ($suffix eq "rpm")) or
 	#(system("which rapt >/dev/null 2>&1") && ($suffix eq "deb"))) {
-	$smart = 1;
-	$dumb = 0;
-	vprint("Detected OSCAR::PackMan, using smart mode\n");
-    } else {
-	$dumb = 1;
-	$smart = 0;
+	    $smart = 1;
+	    $dumb = 0;
+	    vprint("Detected OSCAR::PackMan, using smart mode\n");
+	}
+    }
+    if ($dumb) {
 	vprint("Could not detect OSCAR::PackMan, falling back to dumb mode\n");
     }
 }
