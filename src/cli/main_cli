@@ -31,7 +31,7 @@ system("./selector_cli");
 
 #Step 3 - Install Packages
 oscar_log_section("Installing Packages");
-if(system(!"$ENV{OSCAR_HOME}/scripts/install_server $ARGV[0]"))
+if(!system("$ENV{OSCAR_HOME}/scripts/install_server $ARGV[0]"))
 {
 	oscar_log_section("Packages Successfully Installed");
 }
@@ -42,4 +42,4 @@ else
 }
 
 #Step 4 - Build OSCAR Client Image
-
+system("./build_oscar_image_cli $ARGV[0]");
