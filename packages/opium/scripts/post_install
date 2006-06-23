@@ -2,4 +2,7 @@
 
 perl -pi -e "s/.*getent off.*/getent on/" /opt/sync_files/etc/sync_files.conf
 perl -pi -e "s/.*usec3 off.*/usec3 on/" /opt/sync_files/etc/sync_files.conf
-/opt/sync_files/bin/confmgr --syncnow --force --add /etc/gshadow
+
+if (test -e /etc/gshadow); then
+  /opt/sync_files/bin/confmgr --syncnow --force --add /etc/gshadow
+fi

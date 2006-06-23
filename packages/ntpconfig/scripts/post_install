@@ -1,9 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env perl
+
+# Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>
+#                    All rights reserved
+
 # Post install action to restart ntpds.  This is necessary because when the
 # node is booting for the first time, other nodes are sometimes building,
 # causing network saturation.  This causes the ntpd to give up and try later.
 
-. /etc/profile
-/etc/init.d/ntpd restart
-cexec /etc/init.d/ntpd restart
+use Carp;
 
+my $ntpd = "ntpd";
+
+# SUSE Linux's ntpd initscript name is "ntp"
+$ntpd = "ntp" if -x "/etc/init.d/ntp";
+
+!system("/etc/init.d/$ntpd restart") or croak ("Failed to restart $ntpd");
+system("cexec /etc/init.d/$ntpd restart");

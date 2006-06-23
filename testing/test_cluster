@@ -113,7 +113,9 @@ unless ($test_user_homedir) {
 	  if (-e "/etc/mandriva-release") {
 		  system("/usr/bin/passwd -u $test_user -f");
 	  }
-          if (system("/opt/sync_files/bin/confmgr --syncnow --force --add /etc/gshadow > /dev/null 2>&1")) {
+	  my $opts = "";
+	  $opts = "--add /etc/gshadow" if (-e "/etc/gshadow");
+          if (system("/opt/sync_files/bin/confmgr --syncnow --force $opts > /dev/null 2>&1")) {
                   croak("Unable to replicate user out to oscar nodes (confmgr failed): exiting.");
           }
           ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) = 

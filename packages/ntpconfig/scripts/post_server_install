@@ -30,6 +30,10 @@ my $ntpBuffer = "";
 my $ntp_conf = "/etc/ntp.conf";
 my $step_tickers = "/etc/ntp/step-tickers";
 my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+my $ntpd = "ntpd";
+
+# SUSE Linux's ntpd initscript name is "ntp"
+$ntpd = "ntp" if -x "/etc/init.d/ntp";
 
 # get headnode's interface information from OSCAR database
 my $iface = get_headnode_iface();
@@ -91,7 +95,7 @@ open(CONF, $ntp_conf) or croak("Error: unable to open ($ntp_conf)\n");
 print CONF $ntpBuffer;
 close(CONF);
 
-`chkconfig --levels 2345 ntpd on`;
-`service ntpd restart`;
+!system("chkconfig $ntpd on") or croak("Failed to enable $ntpd");
+!system("/etc/init.d/$ntpd restart") or croak("Failed to restart $ntpd");
 
 exit(0);
