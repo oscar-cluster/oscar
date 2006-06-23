@@ -119,7 +119,7 @@ bootstrap-smart:
 	elif [ "$(PKG)" = "rpm" ]; then \
 		SMARTINST=packages/rapt; \
 	fi; \
-	scripts/install_prereq share/prereqs/packman $$SMARTINST
+	scripts/install_prereq --dumb share/prereqs/packman $$SMARTINST
 
 install-perlQt:
 	@echo "== installing perl-Qt from share/prereqs =="
