@@ -1,0 +1,583 @@
+#!/usr/bin/perl -w
+
+# $Id $
+#
+# Copyright (c) 2006 Oak Ridge National Laboratory.
+#                  All rights reserved.
+#
+# This section builds the OSCAR image for the clients
+#
+# Some code in this section was borrowed from:
+#   SystemInstaller::Tk::Image
+#   trunk/scripts/oscar_wizard
+
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
+use OSCAR::Logger;
+use OSCAR::PackagePath;
+use OSCAR::Database;
+use SystemInstaller::Tk::Common;
+use SystemImager::Server;
+use Carp;
+use POSIX;
+
+oscar_log_section("Building OSCAR Client Image");
+
+my @df_lines = `df /`;
+my $disk_type = "ide";
+$disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
+
+#Get the distro list
+my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
+my $arch = $master_os->{arch};
+
+my $distro = $master_os->{compat_distro};
+my $distro_ver = $master_os->{compat_distrover};
+
+my $distro_pool = OSCAR::PackagePath::distro_repo_url("/");
+$distro_pool =~ s/\ /,/g;
+my $oscar_pool = OSCAR::PackagePath::oscar_repo_url("/");
+
+oscar_log_subsection("Identified distro of clients: $distro $distro_ver");
+oscar_log_subsection("Distro repo: $distro_pool");
+oscar_log_subsection("OSCAR repo: $oscar_pool");
+
+my $pkglist = "$ENV{OSCAR_HOME}/oscarsamples/$distro-$distro_ver-$arch.rpmlist";
+oscar_log_subsection("Using RPM list: $pkglist");
+
+#Get a list of client RPMs that we want to install.
+#Make a new file containing the names of all the RPMs to install
+
+my @opkgs = OSCAR::Database::list_selected_packages("all");
+my $outfile = "/tmp/oscar-install-rpmlist.$$";
+my @errors;
+my $save_text = $outfile;
+open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
+foreach my $opkg_ref (@opkgs)
+{
+	my $opkg = $$opkg_ref{package};
+	my @pkgs = OSCAR::Database::pkgs_of_opkg($opkg, undef, \@errors, 
+			group =>"oscar_clients", 
+			os => $master_os);
+	foreach my $pkg (@pkgs)
+	{
+		print OUTFILE "pkg\n";
+	}
+}
+close(OUTFILE);
+my $extraflags = "--filename=$outfile";
+if (exists $ENV{OSCAR_VERBOSE}) {$extraflags .= " --verbose";}
+
+my $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
+#ia64 needs special disk file because of /boot/efi
+$diskfile .= ".$arch" if $arch eq "ia64";
+$diskfile .= ".disk";
+
+my $config = init_si_config();
+
+my %vars = (
+	    imgpath => $config->DEFAULT_IMAGE_DIR,
+	    imgname => "oscarimage",
+	    arch => (uname)[4],
+	    pkgfile => $pkglist,
+	    pkgpath => "$oscar_pool,$distro_pool",
+	    diskfile => $diskfile,
+	    ipmeth => "static",
+	    piaction => "beep",
+	    postinstall => \&postimagebuild,
+	    distro => ""
+	    );
+
+#
+#Validate image name.
+#
+my @images = listimages("etc/systemimager/rsyncd.conf");
+if( grep {$vars{imgname} eq $_} @images )
+{
+	my $last = 0;
+	foreach (@images)
+	{
+		if( /^\Q$vars{imgname}\E(\d+)$/ )
+		{
+			$last = $1 if $1 > $last;
+		}
+	}
+	$vars{imgname} .= $last + 1;
+}
+
+#Backup the old settings in case the user changes his mind
+my %defaults = %vars;
+
+#Locate all available distro pools
+my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
+our @distros = sort(keys(%distro_pools));
+
+#Set up the default distro
+if($vars{distro} eq "")
+{
+	$vars{distro} = $distros[0];
+}
+
+oscar_log_subsection("Get configuration choices from user");
+my $result = 0;
+while(!$result)
+{
+	menu(%vars);
+	$result = add_image(%vars);
+}
+
+our $progress_status;
+
+#This will print out a progress bar.
+#This subroutine takes one arguement that represents the current position
+#of the progress bar.
+sub progress
+{
+	my $value = shift;
+	
+	#Insert code for progress bar
+	#This is a temp fix
+	print "$value % [";
+	for(my $i = 0; $i < $value/10; $i++)
+	{
+		print "=";
+	}
+	for(my $i = 0; $i < 10 - $value/10; $i++)
+	{
+		print " ";
+	}
+	print "]\n";
+}
+
+sub add_image
+{
+	my $vars = shift;
+
+	my $config = init_si_config();
+	my $rsyncd_conf = $config->rsyncd_conf();
+	my $rsync_stub_dir = $config->rsync_stub_dir();
+
+	if( imageexists("/etc/systemimager/rsyncd.conf", $vars{imgname}) )
+	{
+		print "\"$vars{imgname}\" exists.  Do you want to replace it?\n(y/n):";
+		my $response = <STDIN>;
+		chomp $response;
+		if($response eq "n" || $response eq "no")
+		{
+			return undef;
+		}
+		
+		system("mksiimage -D --name $vars{imgname}");
+		SystemImager::Server->remove_image_stub($rsync_stub_dir, $vars{imgname});
+		SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+	}
+	oscar_log_subsection("Building Image...");
+	my $result = add_image_build(%vars);
+	
+	if(!$result)
+	{
+		oscar_log_subsection("Successfully created image \"$vars{imgname}\"");
+		if( $vars{imgname} =~ /(.*?)(\d+)$/ )
+		{
+			$vars{imgname} = $1.($2 + 1);
+		} else {
+			$vars{imgname} .= 1;
+		}
+	} else {
+		oscar_log_subsection("Failed building image \"$vars{imgname}\"");
+		system("mksiimage -D --name $vars{imgname}");
+		SystemImager::Server->remove_image_stub($rsync_stub_dir, $vars{imgname});
+		SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+	}
+	return $result;
+}
+
+sub add_image_build
+{
+	my $vars = shift;
+
+	my $cmd = "mksiimage -A --name $vars{imgname} " .
+		"--location $vars{pkgpath} " .
+		"--filename $vars{pkgfile} " .
+		"--arch $vars{arch} " .
+		"--path $vars{imgpath}/$vars{imgname}";
+	
+	print "Executing command: $cmd\n";
+	
+	my $value = 0;
+	$SIG{PIPE} = 'IGNORE';
+	my $pid = open(OUTPUT, "$cmd |");
+	unless($pid)
+	{
+		carp("Couldn't run command $cmd");
+		return 1;
+	}
+	
+	progress($value);
+	while(my $line = <OUTPUT>)
+	{
+		print "$line" if (exists $ENV{OSCAR_VERBOSE});
+		my $ovalue = $value;
+		if($line =~ /\[progress: (\d+)\]/)
+		{
+			#Progress is scaled to 90%
+			$value = $1 * 0.9;
+		}
+		progress($value) unless $ovalue == $value;
+	}
+	close(OUTPUT);
+	
+	progress($value);
+
+	print "CODE: $?\n";
+	system("si_lsimage");
+
+	print "Image build finished\n";
+
+	progress(92);
+
+	$cmd = "mksidisk -A --name $vars{imgname} --file $vars{diskfile}";
+	if( system($cmd) )
+	{
+		carp("Couldn't run command $cmd");
+		return 1;
+	}
+	progress(94);
+	system("si_lsimage");
+
+	print "Added Disk Table for $vars{imgname} based on $vars{diskfile}\n";
+
+	#Default command options
+	$cmd = "si_mkautoinstallscript -quiet --autodetect-disks -image $vars{imgname} -force -ip-assignment $vars{ipmeth} -post-install $vars{piaction}";
+
+	if( system($cmd) )
+	{
+		carp("Couldn't run $cmd");
+		return 1;
+	}
+	progress(96);
+	system("si_lsimage");
+
+	print "Ran si_mkautoinstallscript\n";
+
+	#This allows for an arbitrary callback to be registered.
+	#It will get a reference to all the variables that have been defined
+	#for the image
+	if(ref($vars{postinstall}) eq "CODE")
+	{
+               { #HACK TESTING THE strict refs stuffo...
+                no strict 'refs';
+		
+		unless( &{$vars{postinstall}}(%{$vars}) )
+		{
+			carp("Couldn't run postinstall");
+			return 1;
+		}
+               }
+	}
+
+	progress(99);
+	
+	if(ref($vars{postinstall}) eq "ARRAY")
+	{
+        	my $sub = shift(@{$vars{postinstall}});
+        	unless( &$sub(%{$vars}, @{$vars{postinstall}}) )
+		{
+            		carp("Couldn't run postinstall");
+            		return 1;
+        	}
+    	}
+
+	progress(100);
+	
+	return 0;
+}
+
+sub postimagebuild
+{
+	system("si_lsimage");
+	my $vars = shift;
+	my $img = $vars{imgname};
+
+	my $master_os = distro_detect_or_die("/");
+	my $arch = $master_os->{arch};
+
+	#Get the image path
+	system("si_lsimage");
+	my $config = init_si_config();
+	my $imaged = $config->default_image_dir;
+	croak "default_image_dir not defined\n" unless $imaged;
+	croak "$imaged: not a directory\n" unless -d $imaged;
+	croak "$imaged: not accessible\n" unless -x $imaged;
+	my $imagepath = $imaged."/".$img;
+	print "PATH:  $imagepath\n";
+	croak "$imagepath: not a directory\n" unless -d $imagepath;
+	croak "$imagepath: not accessible\n" unless -x $imagepath;
+
+	#Image info lines should be deleted once systeminstaller
+	#talks directly to ODA
+	my %image_info = ( "name"        => $img,
+			  "architecture" => $arch,
+			  "path"         => $imagepath);
+	my %options;
+	system("si_lsimage");
+	set_images(\%image_info, \%options, \@errors);
+	system("si_lsimage");
+	
+	my $cwd = `pwd`;
+	chdir "$ENV{OSCAR_HOME}/scripts/";
+	my $cmd = "$ENV{OSCAR_HOME}/scripts/post_rpm_install $img $ARGV[0]";
+
+	oscar_log_subsection("Running: $cmd");
+	!system($cmd) or (carp($!), return undef);
+	oscar_log_subsection("Successfully ran: $cmd");
+
+	chdir "$cwd";
+
+	#Have installed Client RPMs and did not croak, so mark
+	#packages. <pkg>installed # true.
+
+	oscar_log_subsection("Marking installed bit in ODA for client RPMS");
+
+	my @opkgs = list_selected_packages("all");
+	foreach my $opkg_ref (@opkgs)
+	{
+		my $opkg = $$opkg_ref{package};
+		oscar_log_subsection("Set package: $opkg");
+		set_image_packages($img,$opkg,\%options,\@errors);
+	}
+	oscar_log_subsection("Done marking installed bits in ODA");
+
+	#/var/log/lastlog could be huge
+	croak "Image name not defined\n" unless $vars{imgname};
+	my $lastlog = "/var/log/lastlog";
+	oscar_log_subsection("Truncating ".$img.":".$lastlog);
+	
+	my $imagelog = $imagepath.$lastlog;
+	truncate $imagelog, 0 if -s $imagelog;
+	oscar_log_subsection("Truncated ".$img.":".$lastlog);
+
+	oscar_log_subsection("Image build successfully");
+}
+
+#Prints out the menu for the user to choose which section to edit
+#The user will type in a line number which will be parsed and
+#control will be sent to the appropriate subroutine
+sub menu
+{
+	my $vars = shift;
+
+	my $selection;
+	do #Keep looping until the user picks quit
+	{
+		do #Keep looping as long as the user picks an invalid response
+		{
+			#Put a couple of spacer lines in there
+			print "\n\n";
+			
+			print "Select one\n" .
+			      "-----------------------------------------\n" .
+			      "1) Image name: $vars{imgname}\n" .
+			      "2) Package file: $vars{pkgfile}\n" .
+			      "3) Distro: $vars{distro}\n" .
+			      "4) Packages Directory: $vars{pkgpath}\n" .
+			      "5) Disk Partition File: $vars{diskfile}\n" .
+			      "6) IP Assignment Method: $vars{ipmeth}\n" .
+			      "7) Post install action: $vars{piaction}\n" .
+			      "8) Build Image\n" .
+			      "9) Quit\n" . 
+			      ">  ";
+			$selection = <STDIN>;
+			chomp $selection;
+		}
+		while($selection < 1 || $selection > 9);
+	
+		#Go to the appropriate subroutine based on what the user picked
+		if($selection == 1) {imageName();}
+		elsif($selection == 2) {packageFile();}
+		elsif($selection == 3) {distro();}
+		elsif($selection == 4) {packageDir();}
+		elsif($selection == 5) {diskPart();}
+		elsif($selection == 6) {ipAssign();}
+		elsif($selection == 7) {postInstall();}
+		elsif($selection == 9) {exit 0;}
+		
+	} while($selection != 8);
+}
+
+#Pick the image name
+sub imageName
+{
+	print "Image Name\n";
+	print "-----------------------\n";
+	print "Currently: $vars{imgname}\n";
+	print "New:  ";
+	my $temp = <STDIN>;
+	chomp $temp;
+	
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return;}
+	
+	$vars{imgname} = $temp;
+}
+
+#Where is your package file?
+sub packageFile
+{
+	print "Package File\n";
+	print "-----------------------\n";
+	print "Currently: $vars{pkgfile}\n";
+	print "New:  ";
+	my $temp = <STDIN>;
+	chomp $temp;
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return;}
+	
+	$vars{pkgfile} = $temp;
+}
+
+#What is your distro?
+sub distro
+{
+	our @distros;
+	my $found = 0;
+
+	while(!$found)
+	{
+		print "Distro\n";
+		print "-----------------------\n";
+		print "Currently: $vars{distro}\n";
+		print "Choices: " . join(" ", sort(@distros)) . "\n";
+		print "New:  ";
+		my $temp = <STDIN>;
+		chomp $temp;
+		
+		#If the user leaves it blank, don't change anything
+		if($temp eq "") {return;}
+
+		#Make sure the user gave valid input
+		foreach my $item (@distros)
+		{
+			if($item eq $temp)
+			{
+				$found = 1;
+				$vars{distro} = $temp;
+				last;
+			}
+		}
+	}
+}
+
+#Where are your packages?
+sub packageDir{
+	print "Packages Directory:\n";
+	print "-----------------------\n";
+	print "Currently: $vars{pkgpath}\n";
+	print "New:  ";
+	my $temp = <STDIN>;
+	chomp $temp;
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return;}
+	
+	$vars{pkgpath} = $temp;
+}
+
+#Where is your disk partition file?
+sub diskPart
+{
+	print "Disk Partition File:\n";
+	print "-----------------------\n";
+	print "Currently: $vars{diskfile}\n";
+	print "New:  ";
+	my $temp = <STDIN>;
+	chomp $temp;
+	
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return;}
+	
+	$vars{diskfile} = $temp;
+}
+
+#What is your IP assignment method?
+sub ipAssign
+{
+	my $found = 0;
+	my @ipoptions = qw( dhcp replicant static );
+	
+	while(!$found)
+	{
+		print "IP Assignment Method\n";
+		print "-----------------------\n";
+		print "Currently: $vars{ipmeth}\n";
+		print "Choices: " . join(" ", sort(@ipoptions)) . "\n";
+		print "New:  ";
+		my $temp = <STDIN>;
+		chomp $temp;
+
+		#If the user leaves it blank, don't change anything
+		if($temp eq "") {return;}
+
+		#Make sure the user gave valid input
+		foreach my $item (@ipoptions)
+		{
+			if($item eq $temp)
+			{
+				$found = 1;
+				$vars{ipmeth} = $temp;
+				last;
+			}
+		}
+	}
+}
+
+#What is the post install action?
+sub postInstall
+{
+	my $found = 0;
+	my @postinstall = qw(beep reboot shutdown);
+	
+	while(!$found)
+	{
+		print "Post Install Action\n";
+		print "-----------------------\n";
+		print "Currently: $vars{piaction}\n";
+		print "Choices: " . join(" ", sort(@postinstall)) . "\n";
+		print "New:  ";
+		my $temp = <STDIN>;
+		chomp $temp;
+		
+		#If the user leaves it blank, don't change anything
+		if($temp eq "") {return;}
+
+		#Make sure the user gave valid input
+		foreach my $item (@postinstall)
+		{
+			if($item eq $temp)
+			{
+				$found = 1;
+				$vars{piaction} = $temp;
+				last;
+			}
+		}
+	}
+}
+
+sub listimages
+{
+	my @list;
+	if(open IN, "mksiimage --list |")
+	{
+		while(<IN>)
+		{
+			next if $. <= 2;
+			chomp;
+			my @items = split;
+			push @list, $items[1] if $items[1];
+		}
+		close IN;
+	}
+	return @list;
+}
