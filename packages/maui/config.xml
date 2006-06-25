@@ -13,7 +13,7 @@
     <major>3</major>
     <minor>2</minor>
     <subversion>6p14</subversion>
-    <release>2</release>
+    <release>4</release>
   </version>
 
   <class>included</class>
@@ -22,8 +22,8 @@
   <license>Maui license</license>
   <group>Applications/batch</group>
   <packager>
-    <name>David N. Lombard</name>
-    <email>dnl@speakeasy.net</email>
+    <name>Bernard Li</name>
+    <email>bli@bcgsc.ca</email>
   </packager>
 
   <description>Maui is an advanced job scheduler for use on clusters and supercomputers.
