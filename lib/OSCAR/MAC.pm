@@ -642,8 +642,8 @@ sub start_ping {
     } else {
         oscar_log_subsection("Step $step_number: Launching background ping");
         open(STDOUT,">/dev/null");
-        system("ping -b $broad");
-        oscar_log_subsection("Step $step_number: Background ping stopped");
+        my $cmd = "ping -b $broad";
+        exec("$cmd") or die("Failed to exec: $cmd");
         exit 0;
     }
 }
@@ -653,6 +653,8 @@ sub end_ping {
         print "Attempting to kill $PINGPID\n";
         kill 15, $PINGPID;
         $PINGPID = undef;
+        wait();
+        oscar_log_subsection("Step $step_number: Background ping stopped");
     }
 }
 
