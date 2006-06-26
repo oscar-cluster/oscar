@@ -14,17 +14,38 @@
 #
 # To start the installation process, type the name of this script and
 # the network interface to use for OSCAR.
+#
+# By adding additional flags, this script can be automated:
+#
+# -selector <filename> : Passes the filename to the selector script
+# -build <filename> : Passes the filename to the build script
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
+
+if ($#ARGV < 0 || $ARGV[0] =~ /^-/)
+{
+	print "Usage: main_cli interface [FLAGS]
+Flags (Provide automation):
+	-selector <filename> : Passes the filename to the selector script
+	-build <filename> : Passes the filename to the build script\n";
+	exit 1;
+}
+
+my ($selectorfile, $buildfile);
+for(my $i = 1; $i <= $#ARGV; $i++)
+{
+	if($ARGV[$i] eq "-selector") {$selectorfile = $ARGV[++$i];}
+	elsif($ARGV[$i] eq "-build") {$buildfile = $ARGV[++$i];}
+}
 
 oscar_log_section("Running OSCAR CLI Installer");
 
 #Step 0 should be taken care of with the opd command line utility
 
 #Step 1 - Select Packages
-system("./selector_cli");
+system("./selector_cli $selectorfile");
 
 #Step 2 - Configure Packages
 #system("./configurator_cli");
@@ -42,4 +63,4 @@ else
 }
 
 #Step 4 - Build OSCAR Client Image
-system("./build_oscar_image_cli $ARGV[0]");
+system("./build_oscar_image_cli $ARGV[0] $buildfile");
