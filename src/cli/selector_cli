@@ -134,13 +134,16 @@ printPackages("all");
 
 #Start the prompt section
 #This will exit by the user typing 'quit'
+open(LOG, ">selector.log") || die "Can't open the log to write to.\n";
 while(1)
 {
 	print "selector>  ";
 	my $response = <STDIN>;
+	print LOG $response;
 	chomp $response;
 	processInput($response);
 }
+close LOG;
 
 # Print the packages that match the specified class (core, included, third party, all)
 # with their <status> <short package name> <class> <version>
@@ -345,7 +348,7 @@ sub processInput
 		}
 	}
 	#If the user is trying to quit the program
-	elsif($response[0] eq "quit")
+	elsif($response[0] eq "quit" || $response[0] eq "exit")
 	{
 		#Everything should already have been taken care of so go ahead and move on
 		exit;
@@ -373,6 +376,7 @@ unselect <packageName> - Unselect a package to prevent it from being installed
 	-q - Quiet mode:  Don't print out verbose dialog
 list <class> - Lists the packages and their installation status, class, and version number
 file <filename> - Reads in commands from a file
-help - Prints this message\n";
+help - Prints this message
+quit/exit - Quits the selector\n";
 	}
 }
