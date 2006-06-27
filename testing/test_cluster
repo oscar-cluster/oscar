@@ -45,6 +45,8 @@ END{
 	if ($opts{wait}) {
 		if ( $? == 1 ) {
 			print "\nThere is $? failed/skipped test (see above).\nPlease check your logs located in /home/oscartst.\n";
+		} elsif ( $? == 255 ) {
+			print "\nThere are failed/skipped tests (see above).\nPlease check your logs located in /home/oscartst.\n";
 		} else {
 			print "\nThere are $? failed/skipped tests (see above).\nPlease check your logs located in /home/oscartst.\n" if $?;
 		}
