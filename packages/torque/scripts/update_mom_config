@@ -6,7 +6,7 @@
 # Author:	Jeremy Enos jenos@ncsa.uiuc.edu
 #		Bernard Li <bli@bcgsc.ca>
 
-# Updates mom config file with real Torque server hostname and pushes it out.
+# Updates mom config file with real TORQUE server hostname and pushes it out.
 # 
 
 . /etc/profile
@@ -17,7 +17,7 @@ if [ -f $mom_config ] ; then
   cat $mom_config |sed s/pbs_oscar/$HOSTNAME/g > $sed_tmp
   /bin/cp -f $sed_tmp $mom_config
   /bin/rm -f $sed_tmp
-  echo "Torque mom config file updated with clienthost: $HOSTNAME"
+  echo "TORQUE mom config file updated with clienthost: $HOSTNAME"
   echo "Pushing config file to clients..."
   if [ -x `which cpush` ] ; then
     cpush $mom_config $mom_config
@@ -33,7 +33,7 @@ if [ -f $mom_config ] ; then
     exit 1
   fi
 else
-  echo "Error:  Not updating Torque mom config file."
+  echo "Error:  Not updating TORQUE mom config file."
   echo "$mom_config not found."
   exit 1
 fi
