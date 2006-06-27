@@ -60,6 +60,15 @@ libraries.</description>
     <name>switcher</name>
   </requires>
 
+  <binary-package-list>
+    <filter>
+      <distribution>
+        <name>suse</name>
+      </distribution>
+    </filter>
+    <pkg>gcc-fortran</pkg>
+  </binary-package-list>
+
   <package-specific-attributes>
     <switcher>
       <tag>mpi</tag>
