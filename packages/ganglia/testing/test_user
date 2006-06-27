@@ -37,7 +37,7 @@ clients=`echo $@ | wc -w`
 numhosts=`expr $clients + 1`
 
 # use gstat to determine number of hosts ganglia has detected 
-pattern=`hostname`"|"`perl -e "print join('|',split(/ +/,\"$*\"))"`
+pattern=`hostname -f`"|"`perl -e "print join('|',split(/ +/,\"$*\"))"`
 
 # simple test which counts the number of detected nodes (via gstat) with
 # the number of expected nodes (from argument)
