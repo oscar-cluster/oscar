@@ -596,7 +596,9 @@ sub build_oscar_clients {
     $gw ||= $ip;
 
     my $hostname = (uname)[1];
-    my ($shorthostname,$domainname)  = split(/\./,$hostname,2);
+    my ($shorthostname)  = split(/\./,$hostname,2);
+    my $dnsdomainname = `dnsdomainname`;
+    chomp($dnsdomainname);
 
     if ($mode eq "install") {
        oscar_log_section("Running step $step_number of the OSCAR wizard: Define OSCAR clients");
@@ -606,15 +608,15 @@ sub build_oscar_clients {
 
     # If the domainname is blank, stick in a default value
 
-    if (!$domainname) {
-	$domainname = "oscardomain";
+    if (!$dnsdomainname) {
+	$dnsdomainname = "oscardomain";
     }
 
     my %vars = (
                 title => "Define OSCAR Clients",
                 imgname => "oscarimage",
                 basename => "oscarnode",
-                domainname => $domainname,
+                domainname => $dnsdomainname,
                 numhosts => "0",
                 startinghostnum => "1",
                 netmask => $netmask,
