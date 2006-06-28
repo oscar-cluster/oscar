@@ -2,6 +2,7 @@ SuSEfirewall2
 aaa_base
 aaa_skel
 acl
+acpid
 alsa
 ash
 at
