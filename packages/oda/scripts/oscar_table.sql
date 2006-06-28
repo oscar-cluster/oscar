@@ -219,6 +219,18 @@ CREATE TABLE IF NOT EXISTS Packages_provides(
     CONSTRAINT Packages_provides_ibfk_1 FOREIGN KEY (p1_id) REFERENCES Packages (id) ON DELETE CASCADE
 )TYPE=INNODB;
 
+-- Packages_provides
+CREATE TABLE IF NOT EXISTS Packages_config(
+    config_id  integer auto_increment not null unique,
+    package_id integer not null,
+    name VARCHAR(100) not null,
+    value VARCHAR(256),
+    context VARCHAR(100),
+    PRIMARY KEY (config_id, package_id),
+    KEY package_id ( package_id ),
+    CONSTRAINT Packages_config_ibfk_1 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE
+)TYPE=INNODB;
+
 -- Node_Package_Status
 CREATE TABLE IF NOT EXISTS Node_Package_Status(
     current  integer,

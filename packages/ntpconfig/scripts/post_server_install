@@ -23,13 +23,13 @@
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Network;
 use OSCAR::Database;
-use XML::Simple;
+use OSCAR::Configbox;
 use Carp;
 
 my $ntpBuffer = "";
 my $ntp_conf = "/etc/ntp.conf";
 my $step_tickers = "/etc/ntp/step-tickers";
-my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 my $ntpd = "ntpd";
 
 # SUSE Linux's ntpd initscript name is "ntp"
@@ -53,8 +53,8 @@ $results[3]=0;
 $network = join(".", @results);
 
 # User has configured ntpconfig package with a NTP server
-if (-e $xml_data) {
-    $ref = XMLin($xml_data);
+if (-e $configurator) {
+    $ref = readInConfigValues($configurator,"ntpconfig","",noarray=>1);
     # If ntpconfig package has configured NTP server before, replace
     if ($ntpBuffer =~ /User selected NTP Server/) {
 	$ntpBuffer =~ s/^server.*\nrestrict.*\n/server  $ref->{ntpserver}\nrestrict $ref->{ntpserver} mask 255.255.255.255\n/m;

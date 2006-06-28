@@ -94,6 +94,7 @@ $options{debug} = 1
               delete_node
               delete_group_packages
               delete_groups
+	      del_pkgconfig_vars
               do_select
               get_client_nodes
               get_client_nodes_info
@@ -119,6 +120,7 @@ $options{debug} = 1
               get_packages_switcher
               get_packages_servicelists
               get_packages_with_class
+	      get_pkgconfig_vars
               get_selected_group
               get_selected_group_packages
               get_unselected_group_packages
@@ -128,6 +130,7 @@ $options{debug} = 1
               link_node_nic_to_network
     	      list_selected_packages
     	      pkgs_of_opkg
+	      pkgconfig_values
               set_all_groups
               set_group_packages
               set_group_nodes
@@ -138,6 +141,7 @@ $options{debug} = 1
               set_install_mode
               set_nics_with_node
               set_node_with_group
+	      set_pkgconfig_var
               set_status
               update_node
               update_node_package_status
@@ -2599,6 +2603,126 @@ sub set_install_mode {
     return do_update($sql, "Clusters", $options_ref, $error_strings_ref);
 }
 
+# set package configuration name/value pair
+# Usage example:
+#   set_pkgconfig_var(opkg => "ganglia" , context => "",
+#                     name => "gmond_if", value => [ "eth0" ]);
+#
+# "value" needs to point to an anonymous array reference!
+# The arguments "name" and "context" are optional.
+sub set_pkgconfig_var {
+    my (%val) = @_;
+    if (!exists($val{opkg}) || !exists($val{name}) || !exists($val{value})) {
+	croak("missing one of opkg/name/value : ".Dumper(%val));
+    }
+    if (!exists($val{context}) || $val{context} eq "") {
+	$val{context} = "global";
+    }
+    my (%options, @errors);
+    my %sel = %val;
+    delete $sel{value};
+    my $sql;
+    # delete all existing records
+    &del_pkgconfig_vars(%sel);
+
+    # get opkg_id first
+    my $opkg = $val{opkg};
+    delete $val{opkg};
+
+    my $pref = get_package_info_with_name($opkg,\%options,\@errors);
+    croak("No package $opkg found!") if (!$pref);
+    my $opkg_id = $pref->{id};
+    $val{package_id} = $opkg_id;
+    my @values = @{$val{value}};
+    delete $val{value};
+
+    for my $v (@values) {
+	$val{value} = $v;
+	$sql = "INSERT INTO Packages_config (".join(", ",(keys(%val))).") " .
+	    "VALUES ('" . join("', '",values(%val)) . "')";;
+	croak("$0:Failed to insert values via << $sql >>")
+	    if !do_insert($sql, "Packages_config", \%options, \@errors);
+    }
+    return 1;
+}
+
+# get package configuration values
+# Usage example:
+#   get_pkgconfig_vars(opkg => "ganglia", context => "",
+#                      name => "gmond_if");
+# The arguments "name" and "context" are optional.
+#
+sub get_pkgconfig_vars {
+    my (%sel) = @_;
+    croak("opkg not specified!")	if (!exists($sel{opkg}));
+    if (!exists($sel{context}) || $sel{context} eq "") {
+	$sel{context} = "global";
+    }
+    my (%options, @errors);
+    my $opkg = $sel{opkg};
+    delete $sel{opkg};
+    my $sql = "SELECT Packages.package AS opkg, " .
+       	"Packages_config.config_id AS config_id, " .
+       	"Packages_config.package_id AS package_id, " .
+	"Packages_config.name AS name, " .
+	"Packages_config.value AS value, " .
+	"Packages_config.context AS context ".
+	"FROM Packages_config, Packages " .
+	"WHERE Packages_config.package_id=Packages.id AND ".
+	"Packages.package='$opkg' AND ";
+    my @where = map { "Packages_config.$_='".$sel{$_}."'" } keys(%sel);
+    $sql .= join(" AND ", @where);
+    my @result;
+    die "$0:Failed to query values via << $sql >>"
+        if (!do_select($sql,\@result, \%options, \@errors));
+
+    return @result;
+}
+
+# convert pkgconfig vars query result into a values hash tree
+# good to be used with the configurator routines
+sub pkgconfig_values {
+    my (@result) = @_;
+    my %values;
+    for my $r (@result) {
+	my $name = $r->{name};
+	my $val  = $r->{value};
+	if (!exists($values{$name})) {
+	    $values{"$name"} = [ "$val" ];
+	} else {
+	    push @{$values{"$name"}}, "$val";
+	}
+    }
+    return %values;
+}
+
+# delete package configuration values
+# Usage example:
+#   del_pkgconfig_vars(opkg => "ganglia", context => "",
+#                      name => "gmond_if");
+# At least the "opkg" selection must be specified!
+# The arguments "name" and "context" are optional.
+sub del_pkgconfig_vars {
+    my (%sel) = @_;
+    croak("opkg not specified!")	if (!exists($sel{opkg}));
+    if (!exists($sel{context}) || $sel{context} eq "") {
+	$sel{context} = "global";
+    }
+    my (%options, @errors);
+
+    my @exists = &get_pkgconfig_vars(%sel);
+    return 1 if (!scalar(@exists));
+
+    for my $e (@exists) {
+	my $id = $e->{config_id};
+
+	my $sql = "DELETE FROM Packages_config WHERE config_id='$id'";
+	my @result;
+	die "$0:Failed to delete values via << $sql >>"
+	    if (!do_update($sql,\@result, \%options, \@errors));
+    }
+    return 1;
+}
 
 sub set_node_with_group {
     my ($node,

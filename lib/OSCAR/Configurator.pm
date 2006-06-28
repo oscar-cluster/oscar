@@ -271,6 +271,7 @@ sub populateConfiguratorList
             -command => [ \&OSCAR::Configbox::configurePackage,
                           $root,
                           $packagedir,
+			  $package,
                         ],
             -padx => 4,
             );

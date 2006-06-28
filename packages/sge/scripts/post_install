@@ -23,9 +23,9 @@
 
 use strict;
 use Carp;
-use XML::Simple;
 
 use lib "/usr/lib/systeminstaller","$ENV{OSCAR_HOME}/lib";
+use OSCAR::Configbox;
 use OSCAR::Database;
 use OSCAR::Opkg;
 use SystemInstaller::Machine;
@@ -109,11 +109,11 @@ foreach my $node (sortnodes( keys %adminhosts )) {
 
 if (%nodes) {
 	# Obtain any custom configure values from the user
-	my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+	my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
 	# If user has configured the package, use the custom values, otherwise use the default
 	if (-e $xml_data) {
-	    my $ref = XMLin($xml_data);
+	    my $ref = readInConfigValues($xml_data,"sge","",noarray=>1);
 	    $cell = $ref->{cellname};
 	}
 

@@ -36,11 +36,10 @@ sub get {
 
     # Read in the data from the results of the configurator step
 
-    my $infile = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
-    my $xs = new XML::Simple(keyattr => {});
+    my $infile = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
     my $results;
     if (-e $infile) {
-	$results = $xs->XMLin($infile);
+	$results = readInConfigValues($infile,"switcher","",noarray=>1);
     }
 
     # Read in all the <switcher> blocks from the package

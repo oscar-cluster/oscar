@@ -20,7 +20,8 @@
 
 use strict;
 use Carp;
-use XML::Simple;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Configbox;
 
 my $imagedir = shift;
 
@@ -30,11 +31,11 @@ $ENV{SGE_ROOT} = "/opt/sge";
 my $cell = "default";
 
 # Obtain any custom configure values from the user
-my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
 # If user has configured the package, use the custom values, otherwise use the default
 if (-e $xml_data) {
-    my $ref = XMLin($xml_data);
+    my $ref = readInConfigValues($xml_data,"sge","",noarray=>1);
     $cell = $ref->{cellname};
 }
 

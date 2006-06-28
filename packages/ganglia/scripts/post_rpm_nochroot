@@ -33,6 +33,7 @@ use POSIX;
 use XML::Simple;
 use Tk;
 use OSCAR::Configbox;
+use OSCAR::Database;
 use lib '/usr/lib/systeminstaller';
 use SIS::DB;
 use SIS::Image;
@@ -51,12 +52,11 @@ my $window;
 #####################
 
 my $imageconf = $configdir."/".$image;
-my $valuesfile = $imageconf."/.configurator.values";
-my $mastervals = $ENV{OSCAR_PACKAGE_HOME}."/.configurator.values";
+my $masterconf = $ENV{OSCAR_PACKAGE_HOME}."/configurator.html";
 
 my $master_conf;
-if (-e $mastervals) {
-    $master_conf = XMLin($mastervals);
+if (-e $masterconf) {
+    $master_conf = readInConfigValues($masterconf,"ganglia","",noarray=>1);
     # exit if no per-image config
     exit 0 if ($master_conf->{gmond_per_image} ne "YES");
 } else {
@@ -77,7 +77,7 @@ if (!$i) {
     exit 1;
 }
 
-print "configuring gmond for image=$image valuesfile=$valuesfile\n";
+print "configuring gmond for image=$image\n";
 
 if (! -d $imageconf) {
     !system("mkdir ".$imageconf) || do {
@@ -94,8 +94,10 @@ if (! -d $imageconf) {
     print "Found $imageconf\n";
 }
 
-if (!-f $valuesfile) {
-    OSCAR::Configbox::configurePackage(0, $imageconf);
+# configure this only if no config values found in database
+my @res = get_pkgconfig_vars(opkg => "ganglia", context => "image:$image");
+if (!@res) {
+    OSCAR::Configbox::configurePackage(0, $imageconf,"ganglia","image:$image");
     MainLoop();
 }
 

@@ -22,7 +22,6 @@
 # Copyright 2005 Erich Focht <efocht@hpce.nec.com>
 #
 
-use XML::Simple;
 use Carp;
 use strict;
 use Getopt::Long;
@@ -32,6 +31,7 @@ use SIS::DB;
 use SIS::Image;
 use SIS::Client;
 use Data::Dumper;
+use OSCAR::Configbox;
 use OSCAR::Database;
 use OSCAR::Opkg;
 
@@ -52,8 +52,8 @@ if ($test) {
     $gmond_conf = "gmond.conf";
     $ENV{OSCAR_PACKAGE_HOME} = ".";
 }
-my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
-my $xml_imgd = "$ENV{OSCAR_PACKAGE_HOME}/.configs";
+my $masterconf = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+my $imgconfd = "$ENV{OSCAR_PACKAGE_HOME}/.configs";
 
 my $hostname = `hostname`;
 chomp($hostname);
@@ -101,8 +101,8 @@ my %default = (
 
 
 my $master_conf;
-if (-e $xml_data) {
-    $master_conf = XMLin($xml_data);
+if (-e $masterconf) {
+    $master_conf = readInConfigValues($masterconf, "ganglia", "", noarray=>1);
 } else {
     $master_conf = \%default;
 }
@@ -114,13 +114,13 @@ if ($image) {
 	    #
 	    # per image configuration
 	    #
-	    my $xml_img = "$xml_imgd/$image/.configurator.values";
+	    my $imgconf = "$imgconfd/$image/configurator.html";
 	    #
 	    # read in per image configurator data, if it exists
 	    #
-	    if (-e $xml_img) {
-		vprint("using per image values file $xml_img\n");
- 		my $img_conf = XMLin($xml_img);
+	    if (-e $imgconf) {
+		vprint("using per image config $imgconf\n");
+ 		my $img_conf = readInConfigValues($imgconf, "ganglia", "image:$image", noarray=>1);
 		vprint(Dumper(%{$img_conf}));
 		add_missing_keys($master_conf, $img_conf);
 		&edit_gmond_conf($gmond_img, $img_conf);
@@ -261,7 +261,7 @@ sub img_datasources {
     my $master_port = $config{udp_recv_channel__port};
     my $master_iface = $config{udp_recv_channel__mcast_if};
     # images configured
-    my @imgs = glob("$xml_imgd/*");
+    my @imgs = glob("$imgconfd/*");
     vprint("img_datasources: images: ".join(" ",@imgs)."\n");
     foreach (@imgs) {
 	s/.*\///g;  # basename
@@ -270,9 +270,9 @@ sub img_datasources {
 	vprint("finding gmetad config for image $img\n");
 	# get cluster name and port from per image config
 	# if same port as master, skip
-	my $xml_img = "$xml_imgd/$img/.configurator.values";
-	if (-e $xml_img) {
-	    %imgcfg = %{XMLin($xml_img)};
+	my $imgconf = "$imgconfd/$img/configurator.html";
+	if (-e $imgconf) {
+	    %imgcfg = %{readInConfigValues($imgconf,"ganglia","image:$img",noarray=>1)};
 	} else {
 	    opkg_print "configurator values for image $img not found!\n";
 	    next;

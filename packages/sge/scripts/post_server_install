@@ -23,9 +23,9 @@
 
 use Carp;
 use File::Copy;
-use XML::Simple;
 
 use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Configbox;
 use OSCAR::Database;
 use OSCAR::Opkg;
 
@@ -46,7 +46,7 @@ my $spooltype = "classic";      # Other option would be to use berkeleydb
 my $admin_user = "sge";
 
 # Obtain any custom configure values from the user
-my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
 my $qmasterBuffer = "";
 
@@ -57,7 +57,7 @@ chomp($domainname);
 
 # If user has configured the package, use the custom values, otherwise use the default
 if (-e $xml_data) {
-    my $ref = XMLin($xml_data);
+    my $ref = readInConfigValues($xml_data,"sge","",noarray=>1);
     $fullserver = $ref->{fullserver};
     $cellname = $ref->{cellname};
     $gidrange = $ref->{gidrange};

@@ -20,11 +20,10 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use POSIX;
-use XML::Simple;
 use OSCAR::Configbox;
 
 my $VERSION = '$Id';
-my($valuesfile) = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
+my $valuesfile = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
 #####################
 # BEGIN MAIN SCRIPT #
@@ -32,7 +31,7 @@ my($valuesfile) = "$ENV{OSCAR_PACKAGE_HOME}/.configurator.values";
 
 if (-e $valuesfile)
   {
-    my($values) = OSCAR::Configbox::readInConfigValues($valuesfile);
+    my $values = readInConfigValues($valuesfile,"kernel_picker","");
 
     # First, get any optional values
     my $bootkernel = "";
