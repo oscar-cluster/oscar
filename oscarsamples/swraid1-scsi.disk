@@ -5,5 +5,5 @@ raid1 /dev/md2 /dev/sda3 /dev/sdb3
 /dev/md0       100        ext3      /boot    defaults bootable
 /dev/md1       2048       swap
 /dev/md2       *          ext3      /        defaults
+/dev/shm       -          tmpfs     /dev/shm defaults
 nfs_oscar:/home -         nfs       /home    rw,rsize=8192,wsize=8192,timeo=14,retrans=32,intr,bg
-
