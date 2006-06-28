@@ -39,6 +39,25 @@ use POSIX;
 use Carp;
 use File::Basename;
 
+my $cli = 0;
+my $adapter;
+
+#Flag to use the CLI instead of the GUI
+foreach my $arg (@ARGV)
+{
+	if ($arg =~ /--/)
+	{
+		if ($arg eq "--cli")
+		{
+			$cli = 1;
+		}
+	}
+	else
+	{
+		$adapter = $arg;
+	}
+}
+
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0 || $ENV{'USER'} ne 'root');
 
@@ -56,7 +75,7 @@ while( <IN> ) {
 }
 close IN;
 
-my $adapter = shift;
+#my $adapter = shift; #MOVED THIS UP TO THE TOP
 die "
 ERROR: A valid NIC must be specified for the cluster private network.
 
@@ -283,14 +302,15 @@ Aborting the install.\n");
 }
 
 # Now start the execution
-
-chdir("scripts") or die("Couldn't chdir to scripts");
+chdir("scripts") or die("Couldn't chdir to scripts") unless $cli;
+chdir("src/cli") or die("Couldn't chdir to src/cli") if $cli;
 
 # Only setup what we have to get to the OSCAR wizard.  All the rest of
 # server prep is going to be driven after the first panel of
 # questions.
 
-$cmd = "./oscar_wizard";
+$cmd = "./oscar_wizard" unless $cli;
+$cmd = "./main_cli $adapter" if $cli;
 oscar_log_subsection("Running: \"$cmd\"");
 !system("$cmd 2>&1") 
     or die("Oscar Wizard failed to run successfully");
