@@ -40,7 +40,7 @@ use Carp;
 use File::Basename;
 
 # First of all, enforce that the user running this script is 'root'
-croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
+croak "You must be 'root' to run this script.  Aborting" if ($< != 0 || $ENV{'USER'} ne 'root');
 
 # Validate OSCAR_HOME environment variable and write /etc/profile.d files
 &oscar_home_env();
