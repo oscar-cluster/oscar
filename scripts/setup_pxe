@@ -2,7 +2,7 @@
 
 #   $Id$
 
-# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
+# Copyright (c) 2005,2006 Bernard Li <bli@bcgsc.ca>
 
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
@@ -51,6 +51,8 @@ my $options=AppConfig->new(
 			ALIAS => "h"},
 		arch=>{ ARGCOUNT=> ARGCOUNT_ONE,
                         ALIAS => "a"},
+		uyok=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                        ALIAS => "u"},
 		verbose=> {ARGCOUNT=> ARGCOUNT_NONE,
 			ALIAS => "v"},
 		);
@@ -204,12 +206,37 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     croak("$ARCH is not a known architecture");
 }
 
-verbose("Copying SystemImager kernel & ramdisk to /tftpboot");
-copy("/usr/share/systemimager/boot/$ARCH/standard/kernel", "/tftpboot/") or 
-  croak("Unable to copy kernel file to /tftpboot.");
-    
-copy("/usr/share/systemimager/boot/$ARCH/standard/initrd.img", "/tftpboot/") or 
-  croak("Unable to copy ramdisk file to /tftpboot.");
+my $bootpackage = "standard";
+my $kernel = "/usr/share/systemimager/boot/$ARCH/$bootpackage/kernel";
+my $ramdisk = "/usr/share/systemimager/boot/$ARCH/$bootpackage/initrd.img";
+my $tftp_kernel = "install-kernel-$ARCH";
+my $tftp_ramdisk = "install-initrd-$ARCH.img";
+
+if ($options->uyok) {
+  $bootpackage ="UYOK";
+  $kernel = "/etc/systemimager/boot/kernel";
+  $ramdisk = "/etc/systemimager/boot/initrd.img";
+  $tftp_kernel = "install-kernel-$os->{'compat_distro'}-$os->{'compat_distrover'}-$ARCH";
+  $tftp_ramdisk = "install-initrd-$os->{'compat_distro'}-$os->{'compat_distrover'}-$ARCH.img";
+
+  verbose("Updating /tftpboot/pxelinux.cfg/default file to support UYOK ramdisk size.");
+  if ( system("sed 's|root=/dev/ram|root=/dev/ram ramdisk_size=80000|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+    croak("Unable to update /tftpboot/pxelinux.cfg/default file to support UYOK ramdisk size.");
+  }
+}
+
+verbose("Copying SystemImager $bootpackage boot kernel and initrd.img to /tftpboot");
+unlink "/tftpboot/kernel", "/tftpboot/initrd.img";
+copy("$kernel", "/tftpboot/$tftp_kernel") or 
+  croak("Unable to copy $bootpackage boot kernel file to /tftpboot.");
+copy("$ramdisk", "/tftpboot/$tftp_ramdisk") or
+  croak("Unable to copy $bootpackage initrd.img file to /tftpboot.");
+
+verbose("Symlinking SystemImager $bootpackage boot kernel and initrd.img to /tftpboot/kernel and /tftpboot/initrd.img respectively");
+symlink("/tftpboot/$tftp_kernel", "/tftpboot/kernel") or
+  croak("Unable to symlink $bootpackage boot kernel file to /tftpboot.");
+symlink("/tftpboot/$tftp_ramdisk", "/tftpboot/initrd.img") or 
+  croak("Unable to symlink $bootpackage initrd.img file to /tftpboot.");
 
 exit 0; 
 
@@ -240,7 +267,9 @@ sub usage {
 usage: $progname <options>
 
   options
-    --arch <architecture>        the filename to write the output to
+    --arch <architecture>   the filename to write the output to
+    -u, --uyok              use SystemImager's UYOK kernel/ramdisk instead
+                            of the standard kernel/ramdisk
     -v, --verbose           massive verbose output
 
 
@@ -276,6 +305,15 @@ Recognized options include:
 
 The architecture to setup kernel. The default is the 
 current machine's architecture.
+
+=item --uyok
+
+Since SystemImager 3.6.x, there is a new functionality called
+UseYourOwnKernel (UYOK) which allows the usage of the running
+OS' kernel and a ramdisk generated on the fly to boot client
+nodes to be imaged using SystemImager.  With this option, a
+UYOK kernel and ramdisk will be used to setup PXE boot on your
+headnode.
 
 =item -v, --verbose
 

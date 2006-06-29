@@ -69,6 +69,11 @@ our $startcoll = "Start Collecting MACs";
 our $stopcoll = "Stop Collecting MACs";
 
 our $window;
+our $kernel;
+our $ramdisk;
+#our $uyok_generated = 0;
+
+# Subroutines below here...
 
 our $os = OSCAR::OCA::OS_Detect::open();
 
@@ -149,6 +154,8 @@ sub mac_window {
                                    );
     our $exitbutton = $frame->Button(
                                      -text => "Close",
+                                     -borderwidth => "6",
+                                     -relief => "groove",
                                      -command => sub {
                                          undef $destroyed;
                                          end_ping(); 
@@ -216,16 +223,17 @@ sub mac_window {
                                     -state => "disabled",
                                    );
 
+    our $uyok = 0;
+    my $uyok_radio = $frame->Checkbutton(
+                                -text => "Enable UYOK",
+                                -variable => \$uyok,
+                                );
+
     our $bootcd = $frame->Button(
                                     -text => "Build AutoInstall CD...",
-                                    -command => sub {
-                                        my $cmd = "xterm -T 'Build AutoInstall CD' -e si_mkautoinstallcd --append \"MONITOR_SERVER=$ip MONITOR_CONSOLE=yes\" --out-file /tmp/oscar_bootcd.iso";
-                                        oscar_log_subsection("Step $step_number: Building AutoInstall CD: $cmd");
-                                        system($cmd);
-                                        oscar_log_subsection("Step $step_number: Successfully built AutoInstall CD");
-					done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.");
-                                    }
+                                    -command => [\&build_autoinstall_cd, $ip],
                                    );
+
     our $networkboot = $frame->Button(
                                      -text => "Setup Network Boot",
                                      -command => [\&run_setup_pxe],
@@ -242,18 +250,26 @@ sub mac_window {
 #                                        );
 
 # This is what the widget looks like:
+# |----------------------------------------------------------------|
+# |                        MAC Address Management                  |
 # |------------------------------------------- --------------------|
 # | Start Collecting MACs | Assign all MACs  | Assign MAC to Node  |
 # | ---------------------------------------------------------------|
 # | Delete MAC from Node  | Import MACs from | Export MACs to file |
 # |----------------------------------------------------------------|
+# |                 Installation Mode and DHCP Setup               |
+# |----------------------------------------------------------------|
 # | <Install Mode>        | Enable Install Mode   |                |
+# |------------------------------------------------                |
+# | o Dynamic DHCP update | Configure DHCP Server |                |
 # |----------------------------------------------------------------|
-# | Dynamic DHCP update   | Configure DHCP Server |                |
-# |-----------------------|-----------------------|----------------|
-# | Build AutoInstall CD  | Setup Network Boot    | Close          |
+# |             Boot Environment (CD or PXE-boot) Setup            |
 # |----------------------------------------------------------------|
-
+# | o Enable UYOK      | Build AutoInstall CD | Setup Network Boot |
+# |----------------------------------------------------------------|
+# |                             Close                              |
+# |----------------------------------------------------------------|
+#
     my $mac_label = $frame->Label(-text => "MAC Address Management", -relief => 'sunken');
     $mac_label->grid("-", "-", -sticky => "ew");
     $start->grid($assignall, $assignbutton, -sticky => "ew");
@@ -265,7 +281,8 @@ sub mac_window {
     $refreshdhcp->grid($dhcpbutton, -sticky => "ew");
     my $label2 = $frame->Label(-text => "Boot Environment (CD or PXE-boot) Setup", -relief => 'sunken');
     $label2->grid("-","-",-sticky => "ew");
-    $bootcd->grid($networkboot, $exitbutton, -sticky => "ew");
+    $uyok_radio->grid($bootcd, $networkboot, -sticky => "ew");
+    $exitbutton->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 #    $clearallmacsfromnodes->grid( -sticky => 'ew');
     $window->bind('<Destroy>', sub {
                                     if ( defined($destroyed) ) {
@@ -915,8 +932,18 @@ sub mactransform {
 sub run_setup_pxe {
     our $window;
     $window->Busy(-recurse => 1);
+ 
+    our $uyok;
+    #our $uyok_generated;
 
     my $cmd = "./setup_pxe -v";
+
+    if ($uyok) {
+      $cmd = "$cmd --uyok";
+      #generate_uyok() if !($uyok_generated);
+      generate_uyok();
+    }
+
     oscar_log_subsection("Step $step_number: Setup network boot: $cmd");
     !system($cmd) or (carp($!), $window->Unbusy(), return undef);
 
@@ -936,6 +963,48 @@ sub run_setup_pxe {
 sub run_cmd {
     my $cmd = shift;
     !system($cmd) or croak("Failed to run $cmd");
+}
+
+# Build AutoInstall CD
+sub build_autoinstall_cd {
+    my $ip = shift;
+    our $uyok;
+    our $kernel;
+    our $ramdisk;
+    #our $uyok_generated;
+
+    #generate_uyok() if ( $uyok && !($uyok_generated) );    
+    generate_uyok();
+
+    my $append = "MONITOR_SERVER=$ip MONITOR_CONSOLE=yes";
+    $append = "$append ramdisk_size=80000" if $uyok;
+    my $cmd = "si_mkautoinstallcd --append \"$append\" --out-file /tmp/oscar_bootcd.iso --flavor standard";
+    $cmd = "$cmd --kernel $kernel --initrd $ramdisk" if $uyok;
+
+    oscar_log_subsection("Step $step_number: Building AutoInstall CD: $cmd");
+    !system($cmd) or croak("Failed to run $cmd");
+    oscar_log_subsection("Step $step_number: Successfully built AutoInstall CD");
+    done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.");
+}
+
+# Run SystemImager's si_prepareclient on the headnode to generate the UYOK
+# boot kernel and ramdisk (initrd.img).  These will be stored in
+# /etc/systemimager/boot
+sub generate_uyok {
+    our $kernel;
+    our $ramdisk;
+    #our $uyok_generated;
+
+    $kernel = "/etc/systemimager/boot/kernel";
+    $ramdisk = "/etc/systemimager/boot/initrd.img";
+
+    oscar_log_subsection("Step $step_number: Running si_prepareclient on headnode to generate UYOK kernel and ramdisk");
+    my $cmd = "si_prepareclient --server $ENV{HOSTNAME} --no-rsyncd --yes";
+    $cmd = "$cmd --quiet" unless $ENV{OSCAR_VERBOSE};
+
+    !system("$cmd") or croak("Failed to run: $cmd");
+    #$uyok_generated = 1;
+    oscar_log_subsection("Step $step_number: Successfully enabled UYOK");
 }
 
 # Configure system to use selected installation mode
