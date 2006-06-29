@@ -12,7 +12,6 @@
 # as an arguement, the script will not require user input, but
 # follow your instructions as you specify.
 
-
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
@@ -22,6 +21,7 @@ use Qt::SelectorUtils;
 my %options = ();
 my @errors = ();
 my $inun = 0;
+$| = 1;
 
 my ($printStatus, $printPackage, $printClass, $printVersion);
 

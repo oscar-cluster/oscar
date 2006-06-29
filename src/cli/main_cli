@@ -24,6 +24,8 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 
+$| = 1;
+
 if ($#ARGV < 0 || $ARGV[0] =~ /^-/)
 {
 	print "Usage: main_cli interface [FLAGS]
@@ -33,7 +35,8 @@ Flags (Provide automation):
 	exit 1;
 }
 
-my ($selectorfile, $buildfile);
+my $selectorfile = " ";
+my $buildfile = " ";
 for(my $i = 1; $i <= $#ARGV; $i++)
 {
 	if($ARGV[$i] eq "-selector") {$selectorfile = $ARGV[++$i];}

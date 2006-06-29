@@ -11,7 +11,6 @@
 #   SystemInstaller::Tk::Image
 #   trunk/scripts/oscar_wizard
 
-
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl","$ENV{OSCAR_HOME}/src/cli";
 use OSCAR::Logger;
@@ -21,6 +20,8 @@ use SystemInstaller::Tk::Common;
 use SystemImager::Server;
 use Carp;
 use POSIX;
+
+$| = 1;
 
 oscar_log_section("Building OSCAR Client Image");
 
