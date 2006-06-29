@@ -259,6 +259,7 @@ sub readInConfigValues # ($filename) -> $values
 {
   my ($conffile, $opkg, $context, %sel) = @_;
 
+  $context = "" if ! $context;
   my @res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
   if (!@res) {
       &defaultConfigToDB($conffile, $opkg, $context);
@@ -269,7 +270,7 @@ sub readInConfigValues # ($filename) -> $values
 
   if (exists($sel{noarray})) {
       for my $k (keys(%values)) {
-	  if (scalar(@$values{$k}) <= 1) {
+	  if (scalar(@{$values{$k}}) <= 1) {
 	      $values{$k} = $values{$k}[0];
 	  }
       }
@@ -677,6 +678,7 @@ sub configurePackage
   $packagedir = shift;
   my $opkg = shift;
   my $context = shift;
+  $context = "" if ! $context;
 
   $my_opkg = $opkg;
   $my_context = $context;
