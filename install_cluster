@@ -38,25 +38,12 @@ use OSCAR::OCA::OS_Detect;
 use POSIX;
 use Carp;
 use File::Basename;
+use Getopt::Long;
 
-my $cli = 0;
+my $cli = '';
 my $adapter;
 
-#Flag to use the CLI instead of the GUI
-foreach my $arg (@ARGV)
-{
-	if ($arg =~ /--/)
-	{
-		if ($arg eq "--cli")
-		{
-			$cli = 1;
-		}
-	}
-	else
-	{
-		$adapter = $arg;
-	}
-}
+GetOptions('cli' => \$cli);
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0 || $ENV{'USER'} ne 'root');
@@ -75,7 +62,7 @@ while( <IN> ) {
 }
 close IN;
 
-#my $adapter = shift; #MOVED THIS UP TO THE TOP
+my $adapter = shift;
 die "
 ERROR: A valid NIC must be specified for the cluster private network.
 
