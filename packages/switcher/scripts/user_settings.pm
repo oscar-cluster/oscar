@@ -24,6 +24,8 @@ $VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 use lib "$ENV{OSCAR_PACKAGE_HOME}";
 use scripts::package_config;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Configbox;
 
 
 #
