@@ -17,10 +17,15 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::Database;
 use Qt::SelectorUtils;
+use Getopt::Long;
+
+my $file = '';
+my $inun = 0;
+
+GetOptions('m' => \$inun, 'filename=s' => \$file, 'f=s' => \$file);
 
 my %options = ();
 my @errors = ();
-my $inun = 0;
 $| = 1;
 
 my ($printStatus, $printPackage, $printClass, $printVersion);
@@ -73,57 +78,41 @@ foreach my $pack_ref (@packagesInstalled)
 }
 
 #If there is a filename as an arguement, don't get user input
-foreach my $arg (@ARGV)
+if($file ne '')
 {
-	if($arg eq "-m")
+	#If the user doesn't want to maintain the package state,
+	#reset all core and included packages to selected and others to unselected
+	if($inun == 1)
 	{
-		$inun = 1;
-	}
-	elsif($arg !~ /^-/)
-	{
-		#If the user doesn't want to maintain the package state,
-		#reset all core and included packages to selected and others to unselected
-		if($inun == 0)
+		foreach my $pack (keys %{$allPackages})
 		{
-			foreach my $pack (keys %{$allPackages})
+			if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included")
 			{
-				if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included")
-				{
-					processInput("select -q $pack");
-					#$$allPackages{$pack}{status} = "Selected";
-					#$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,2,\@errors);
-				}
-				else
-				{
-					processInput("unselect -q $pack");
-					#$$allPackages{$pack}{status} = "Unselected";
-					#$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,1,\@errors);
-				}
+				processInput("select -q $pack");
+			}
+			else
+			{
+				processInput("unselect -q $pack");
 			}
 		}
-
-		processInput("file " . $arg);
-		processInput("quit");
 	}
+	processInput("file " . $file);
+	processInput("quit");
 }
 
 #If the user doesn't want to maintain the package state,
 #reset all core and included packages to selected and others to unselected
-if($inun == 0)
+if($inun == 1)
 {
 	foreach my $pack (keys %{$allPackages})
 	{
 		if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included")
 		{
 			processInput("select -q $pack");
-			#$$allPackages{$pack}{status} = "Selected";
-			#$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,2,\@errors);
 		}
 		else
 		{
 			processInput("unselect -q $pack");
-			#$$allPackages{$pack}{status} = "Unselected";
-			#$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$pack,1,\@errors);
 		}
 	}
 }

@@ -20,21 +20,15 @@ use SystemInstaller::Tk::Common;
 use SystemImager::Server;
 use Carp;
 use POSIX;
+use Getopt::Long;
 
 $| = 1;
 
 oscar_log_section("Building OSCAR Client Image");
 
-our $file;
+our $file = " ";
 
-if (defined $ARGV[1])
-{
-	$file = $ARGV[1];
-}
-else
-{
-	$file = " ";
-}
+GetOptions('filename=s' => \$file, 'f=s' => \$file);
 
 my @df_lines = `df /`;
 my $disk_type = "ide";

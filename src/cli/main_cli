@@ -23,24 +23,24 @@
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
+use Getopt::Long;
 
 $| = 1;
 
-if ($#ARGV < 0 || $ARGV[0] =~ /^-/)
-{
-	print "Usage: main_cli interface [FLAGS]
-Flags (Provide automation):
-	-selector <filename> : Passes the filename to the selector script
-	-build <filename> : Passes the filename to the build script\n";
-	exit 1;
-}
-
 my $selectorfile = " ";
 my $buildfile = " ";
-for(my $i = 1; $i <= $#ARGV; $i++)
+
+GetOptions('selector=s' => \$selectorfile, 'build=s' => \$buildfile);
+
+my $adapter = shift;
+
+if ($#ARGV >= 0)
 {
-	if($ARGV[$i] eq "-selector") {$selectorfile = $ARGV[++$i];}
-	elsif($ARGV[$i] eq "-build") {$buildfile = $ARGV[++$i];}
+	print "Usage: main_cli [FLAGS] interface 
+Flags (Provide automation):
+	--selector <filename> : Passes the filename to the selector script
+	--build <filename> : Passes the filename to the build script\n";
+	exit 1;
 }
 
 oscar_log_section("Running OSCAR CLI Installer");
@@ -48,14 +48,19 @@ oscar_log_section("Running OSCAR CLI Installer");
 #Step 0 should be taken care of with the opd command line utility
 
 #Step 1 - Select Packages
-system("./selector_cli $selectorfile");
+my $cmd = "./selector_cli";
+$cmd = $cmd . " --file $selectorfile" if ($selectorfile ne " ");
+oscar_log_subsection("Running command: $cmd");
+system($cmd);
 
 #Step 2 - Configure Packages
 #system("./configurator_cli");
 
 #Step 3 - Install Packages
 oscar_log_section("Installing Packages");
-if(!system("$ENV{OSCAR_HOME}/scripts/install_server $ARGV[0]"))
+$cmd = "$ENV{OSCAR_HOME}/scripts/install_server $adapter";
+oscar_log_subsection("Running command: $cmd");
+if(!system($cmd))
 {
 	oscar_log_section("Packages Successfully Installed");
 }
@@ -66,4 +71,8 @@ else
 }
 
 #Step 4 - Build OSCAR Client Image
-system("./build_oscar_image_cli $ARGV[0] $buildfile");
+$cmd = "./build_oscar_image_cli";
+$cmd = $cmd . " --file $buildfile" if ($buildfile ne " ");
+$cmd = $cmd . " $adapter";
+oscar_log_subsection("Running command: $cmd");
+system($cmd);

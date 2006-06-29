@@ -41,9 +41,16 @@ use File::Basename;
 use Getopt::Long;
 
 my $cli = '';
+my $selector = '';
+my $build = '';
 my $adapter;
 
-GetOptions('cli' => \$cli);
+GetOptions('cli' => \$cli, 'selector=s' => \$selector, 'build=s' => \$build);
+
+#Put the full pathname on there since this will change directories
+my $cwd = cwd();
+$selector = $cwd . "/$selector" if($selector !~ /$cwd/ && $selector ne '');
+$build = $cwd . "/$build" if ($build !~ /$cwd/ && $build ne '');
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0 || $ENV{'USER'} ne 'root');
@@ -296,8 +303,18 @@ chdir("src/cli") or die("Couldn't chdir to src/cli") if $cli;
 # server prep is going to be driven after the first panel of
 # questions.
 
-$cmd = "./oscar_wizard" unless $cli;
-$cmd = "./main_cli $adapter" if $cli;
+if ($cli)
+{
+    $cmd = "./main_cli";
+    $cmd = $cmd . " --selector $selector" if $selector;
+    $cmd = $cmd . " --build $build" if $build;
+    $cmd = $cmd . " $adapter";
+}
+else
+{
+    $cmd = "./oscar_wizard";
+}
+
 oscar_log_subsection("Running: \"$cmd\"");
 !system("$cmd 2>&1") 
     or die("Oscar Wizard failed to run successfully");
