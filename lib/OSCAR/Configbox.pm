@@ -146,58 +146,53 @@ sub Configbox_ui {
 #########################################################################
 #  Called when the "Default Configuration" button is pressed.           #
 #########################################################################
-sub defaultConfiguration
-{
-  # Read in the non-modified HTML config file.  We do this instead of simply
-  # copying the configurator.html file to .configurator.temp.html because the
-  # readInDefaultConfig subroutine removes some offensive HTML tags for us.
-  my($tree) = readInDefaultConfig("$packagedir/configurator.html");
-  # Delete the .configurator.values modification file.
-  # system("rm -f $packagedir/.configurator.values");
-  # Write out the temporary .configurator.temp.html file.
-  writeOutTempConfig($tree);
-  $tree->delete;  # Always delete the tree when you are done with it.
+sub defaultConfiguration {
+    # Read in the non-modified HTML config file.  We do this instead of simply
+    # copying the configurator.html file to .configurator.temp.html because the
+    # readInDefaultConfig subroutine removes some offensive HTML tags for us.
+    my $tree = readInDefaultConfig("$packagedir/configurator.html");
+    # Delete the .configurator.values modification file.
+    # system("rm -f $packagedir/.configurator.values");
+    # Write out the temporary .configurator.temp.html file.
+    writeOutTempConfig($tree);
+    $tree->delete;  # Always delete the tree when you are done with it.
 
-  # Hide the window so that selection boxes draw correctly
-  $web->UnmapWindow;
-  # Set the 'Save' button to active
-  $saveButton->configure(-state => 'active');
-  loadHTMLFile("$packagedir/.configurator.temp.html");
-  # loadHTMLFile("$packagedir/test.html");
+    # Hide the window so that selection boxes draw correctly
+    $web->UnmapWindow;
+    # Set the 'Save' button to active
+    $saveButton->configure(-state => 'active');
+    loadHTMLFile("$packagedir/.configurator.temp.html");
+    # loadHTMLFile("$packagedir/test.html");
 }
 
 #########################################################################
 #  Called when the "Cancel" button is pressed.                          #
 #########################################################################
-sub exitWithoutSaving
-{
-  if ($root)
-    {
-      # If there are any children, make sure they are destroyed.
-      my (@kids) = $root->children;
-      foreach my $kid (@kids)
-        {
-          $kid->destroy;
+sub exitWithoutSaving {
+    if ($root) {
+	# If there are any children, make sure they are destroyed.
+	my (@kids) = $root->children;
+	foreach my $kid (@kids) {
+	    $kid->destroy;
         }
 
-      # Then, destroy the root window.
-      $root->destroy;
+	# Then, destroy the root window.
+	$root->destroy;
 
-      # Undefine a bunch of Tk widget variables for re-creation later.
-      undef $root;
-      undef $top;
-      undef $web;
+	# Undefine a bunch of Tk widget variables for re-creation later.
+	undef $root;
+	undef $top;
+	undef $web;
     }
 }
 
 #########################################################################
 #  Called when the "Save" button is pressed.                            #
 #########################################################################
-sub saveAndExit
-{
-  # Save the current configuration to the .configurator.values file.
-  writeOutConfigValues();
-  exitWithoutSaving();
+sub saveAndExit {
+    # Save the current configuration to the .configurator.values file.
+    writeOutConfigValues();
+    exitWithoutSaving();
 }
 
 #########################################################################
@@ -208,42 +203,36 @@ sub saveAndExit
 #  gets returned.  Along the way, it removes a few offensive HTML tags  #
 #  which the current renderer doesn't handle well.                      #
 #########################################################################
-sub readInDefaultConfig # ($filename) -> $tree
-{
-  my($filename) = @_;
+sub readInDefaultConfig { # ($filename) -> $tree
+    my($filename) = @_;
 
-  my($tree) = HTML::TreeBuilder->new;
-  $tree->ignore_ignorable_whitespace(0);  # Keep all whitespace intact
-  $tree->no_space_compacting(0);          # Allow multiple contiguous spaces
-  $tree->store_comments(1);               # Keep comments in tree
-  my($success) = $tree->parse_file($filename);
+    my $tree = HTML::TreeBuilder->new;
+    $tree->ignore_ignorable_whitespace(0);  # Keep all whitespace intact
+    $tree->no_space_compacting(0);          # Allow multiple contiguous spaces
+    $tree->store_comments(1);               # Keep comments in tree
+    my $success = $tree->parse_file($filename);
 
-  if ($success)
-    { # Remove several offending HTML tags.
-      foreach my $d ($tree->look_down(
-        sub 
-          {
+    if ($success) { # Remove several offending HTML tags.
+	foreach my $d ($tree->look_down(
+				      sub {
             return 1 if ($_[0]->tag eq 'isindex');  # No searchable indicies
             return 1 if ($_[0]->tag eq 'a');        # Don't allow hyperlinks
-            if ($_[0]->tag eq 'input')              # Not these 4 INPUT tags
-              {
+            if ($_[0]->tag eq 'input') {            # Not these 4 INPUT tags
                 my $type = $_[0]->attr('type');
                 return 1 if ((defined $type) && 
                              (($type eq 'button') || ($type eq 'file') ||
                               ($type eq 'image') || ($type eq 'submit')));
-              }
+	    }
             return 0;
-          } ))
-        {
-          $d->delete;
-        }
-    }
-  else
-    {
-      undef $tree;
+	}
+				      )) {
+	    $d->delete;
+	}
+    } else {
+	undef $tree;
     }
  
-  return $tree;
+    return $tree;
 }
 
 #########################################################################
@@ -255,27 +244,27 @@ sub readInDefaultConfig # ($filename) -> $tree
 #  Returns   : A HASH reference with all related variable names (as     #
 #              keys) and their values (as anonymous array references)   #
 #########################################################################
-sub readInConfigValues # ($filename) -> $values
-{
-  my ($conffile, $opkg, $context, %sel) = @_;
+sub readInConfigValues { # ($filename) -> $values
 
-  $context = "" if ! $context;
-  my @res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
-  if (!@res) {
-      &defaultConfigToDB($conffile, $opkg, $context);
-      @res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
-  }
+    my ($conffile, $opkg, $context, %sel) = @_;
 
-  my %values = &pkgconfig_values(@res);
+    $context = "" if ! $context;
+    my @res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
+    if (!@res) {
+	&defaultConfigToDB($conffile, $opkg, $context);
+	@res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
+    }
 
-  if (exists($sel{noarray})) {
-      for my $k (keys(%values)) {
-	  if (scalar(@{$values{$k}}) <= 1) {
-	      $values{$k} = $values{$k}[0];
-	  }
-      }
-  }
-  return \%values;
+    my %values = &pkgconfig_values(@res);
+
+    if (exists($sel{noarray})) {
+	for my $k (keys(%values)) {
+	    if (scalar(@{$values{$k}}) <= 1) {
+		$values{$k} = $values{$k}[0];
+	    }
+	}
+    }
+    return \%values;
 }
 
 #########################################################################
@@ -292,98 +281,91 @@ sub readInConfigValues # ($filename) -> $values
 #  reflect the information in the $values.  There's several steps       #
 #  involved, so please see the comments in the subroutine.              #
 #########################################################################
-sub preprocessConfig # ($tree,$values)
-{
-  my($tree,$values) = @_;
+sub preprocessConfig  { # ($tree,$values)
+    my($tree,$values) = @_;
 
-  # Step 1: Scan through all "input" tags which are "checked" and see 
-  #         if that name exists in $values.  If not, then clear the
-  #         "checked" status.  
-  foreach my $d ($tree->look_down(
-    sub 
-      {
-        return 1 if (($_[0]->tag eq 'input') && ($_[0]->attr('checked')));
-        return 0;
-      } ))
-    {
-      $d->attr('checked',undef) if 
-        ($d->attr('value') ne $values->{$d->attr('name')}[0]);
+    # Step 1: Scan through all "input" tags which are "checked" and see 
+    #         if that name exists in $values.  If not, then clear the
+    #         "checked" status.  
+    foreach my $d ($tree->look_down(
+				    sub {
+					return 1 if (($_[0]->tag eq 'input') &&
+						     ($_[0]->attr('checked')));
+					return 0;
+				    }
+				    )) {
+	$d->attr('checked',undef) if
+	    (! $values->{$d->attr('name')}[0] ||
+	     $d->attr('value') ne $values->{$d->attr('name')}[0]);
     }
 
-  # Step 2: Search for "select" tags and make all of their subtree "option"
-  #         tags not 'selected'.  We will reselect them in Step 3(c).
-  foreach my $d ($tree->look_down(
-    sub 
-      {
-        return 1 if ($_[0]->tag() eq 'select');
-        return 0;
-      } ))
-    {
-      # SELECT tag has OPTION tags as its children.
-      my @kids = $d->content_list();
-      foreach my $kid (@kids)
-        {
-          next if (!ref $kid);  # Ignore any text elements
-          $kid->attr('selected',undef) if ($kid->tag() eq 'option');
-        }
+    # Step 2: Search for "select" tags and make all of their subtree "option"
+    #         tags not 'selected'.  We will reselect them in Step 3(c).
+    foreach my $d ($tree->look_down(
+				    sub {
+					return 1 if ($_[0]->tag() eq 'select');
+					return 0;
+				    }
+				    )) {
+	# SELECT tag has OPTION tags as its children.
+	my @kids = $d->content_list();
+	foreach my $kid (@kids) {
+	    next if (!ref $kid);  # Ignore any text elements
+	    $kid->attr('selected',undef) if ($kid->tag() eq 'option');
+	}
     }
 
 
-  # Step 3: Scan through all the values and search the tree for a node with
-  #         the same name.  Then make sure that value agrees with the node 
-  #         in the tree.  We have four things to worry about:
-  #         (a) if "type" is "checkbox", then set the "checked" status.
-  #         (b) if "type" is "radio", check for a node in the tree named
-  #             that value and set its "checked" status.
-  #         (c) if tag is "select", get the subtree of that node.  They 
-  #             should be "option" tags.  Scan through the "option" tags
-  #             and compare either the "value" or the text of the node
-  #             against each element of the array and set the "selected"
-  #             status for those elements.
-  #         (d) if tag is "textarea", set its text appropriately.
-  #         (e) for everything else, set the "value" attribute appropriately.
-  foreach my $name (sort keys (%$values))
-    {
-      my (@nodes) = $tree->find_by_attribute('name',$name);
-      if ((scalar (@nodes)) > 0)
-        {
-          foreach my $node (@nodes)
-            {
-              my($tag) = $node->tag();
-              my($type) = $node->attr('type');
-              my($value) = $node->attr('value');
+    # Step 3: Scan through all the values and search the tree for a node with
+    #         the same name.  Then make sure that value agrees with the node 
+    #         in the tree.  We have four things to worry about:
+    #         (a) if "type" is "checkbox", then set the "checked" status.
+    #         (b) if "type" is "radio", check for a node in the tree named
+    #             that value and set its "checked" status.
+    #         (c) if tag is "select", get the subtree of that node.  They 
+    #             should be "option" tags.  Scan through the "option" tags
+    #             and compare either the "value" or the text of the node
+    #             against each element of the array and set the "selected"
+    #             status for those elements.
+    #         (d) if tag is "textarea", set its text appropriately.
+    #         (e) for everything else, set the "value" attribute appropriately.
+    foreach my $name (sort keys (%$values)) {
+	my (@nodes) = $tree->find_by_attribute('name',$name);
+	if ((scalar (@nodes)) > 0) {
+	    foreach my $node (@nodes) {
+		my $tag = $node->tag();
+		my $type = $node->attr('type');
+		my $value = $node->attr('value');
 
-              if ((defined $type) && 
-                  (($type eq 'checkbox') || ($type eq 'radio')))
-                { # Steps (a) & (b)
-                  $node->attr('checked',1) if ($value eq $values->{$name}[0]);
-                }
-              elsif ((defined $tag) && ($tag eq 'select'))
-                { # Step (c)
-                  my(@kids) = $node->content_list();
-                  foreach my $kid (@kids)
-                    { # Tricky! We want only the OPTION tag elements.
-                      next if (!ref $kid);
-                      if ($kid->tag() eq 'option')
-                        { # Can have multiple selections!
-                          foreach my $optval (@{ $values->{$name} })
-                            {
-                              $kid->attr('selected','1') if 
-                                ((defined $kid->attr('value')) && 
-                                 (($kid->attr('value') eq $optval) || 
-                                  ($kid->as_text() =~  /^\s*$optval\s*$/)));
+		if ((defined $type) && 
+		    (($type eq 'checkbox') || ($type eq 'radio'))) { # Steps (a) & (b)
+		    next if ! $values->{$name}[0];
+		    $node->attr('checked',1) if ($value eq $values->{$name}[0]);
+
+		} elsif ((defined $tag) && ($tag eq 'select')) { # Step (c)
+
+		    my(@kids) = $node->content_list();
+		    foreach my $kid (@kids) { # Tricky! We want only the OPTION tag elements.
+			next if (!ref $kid);
+			if ($kid->tag() eq 'option') { # Can have multiple selections!
+			    foreach my $optval (@{ $values->{$name} }) {
+				$kid->attr('selected','1') if 
+				    ((defined $kid->attr('value')) && 
+				     (($kid->attr('value') eq $optval) || 
+				      ($kid->as_text() =~  /^\s*$optval\s*$/)));
                             }
                         }
                     }
-                }
-              elsif ($tag eq 'textarea')
-                { # Step (d)
-                  $node->delete_content();
-                  $node->push_content($values->{$name}[0]);
-                }
-              else
-                { # Step (e)
-                  $node->attr('value',$values->{$name}[0]);
+
+                } elsif ($tag eq 'textarea') { # Step (d)
+
+		    $node->delete_content();
+		    $node->push_content($values->{$name}[0]);
+
+                } else { # Step (e)
+
+		    $node->attr('value',$values->{$name}[0]);
+
                 }
             }
         }
@@ -400,9 +382,8 @@ sub preprocessConfig # ($tree,$values)
 #  accordingly. Used for filling the database with default              #
 #  config values.                                                       #
 #########################################################################
-sub extractDefaultConfig # ($tree)
-{
-    my($tree) = @_;
+sub extractDefaultConfig { # ($tree)
+    my ($tree) = @_;
 
     my %values;
 
@@ -484,19 +465,15 @@ sub extractDefaultConfig # ($tree)
 #  setttings.  It then writes out the tree to the file                  #
 #  .configurator.temp.html, which is later read in and rendered.        #
 #########################################################################
-sub writeOutTempConfig # ($tree)
-{
-  my($tree) = @_;
+sub writeOutTempConfig { # ($tree)
+    my ($tree) = @_;
 
-  if (open(TREE,">$packagedir/.configurator.temp.html"))
-    {
-      print TREE $tree->as_HTML('<>&',"  ");
-      close TREE;
-    }
-  else
-    {
-      carp("Couldn't write temporary HTML configuration file!");
-      exitWithoutSaving();
+    if (open(TREE,">$packagedir/.configurator.temp.html")) {
+	print TREE $tree->as_HTML('<>&',"  ");
+	close TREE;
+    } else {
+	carp("Couldn't write temporary HTML configuration file!");
+	exitWithoutSaving();
     }
 }
 
@@ -508,58 +485,52 @@ sub writeOutTempConfig # ($tree)
 #  the form.  This subroutine takes those values and writes them out    #
 #  to the .configurator.values file using XML::Simple.                  #
 #########################################################################
-sub writeOutConfigValues
-{
-  my $what;
-  my %result;
-  my $i = -1;
-  my $foundit = 0;
+sub writeOutConfigValues {
+    my $what;
+    my %result;
+    my $i = -1;
+    my $foundit = 0;
 
-  # Okay, I know this is a HUGE hack, but I couldn't really find an elegant
-  # way to do what I needed to do.  Basically, I look through the horrible
-  # "web" data structure (which is a Tk::Web object) for a bunch of 'Values'
-  # (which are the values the user has set in the HTML Form).  I know that
-  # this 'Values' array lives somewhere under the
-  # {Configure}{-html}{_body}{_content} hash, but it changes depending on
-  # the HTML file read in.  So, I increment through this array searching for
-  # a defined hash named 'Values'. 
-  do 
-    {
-      $i++;
-      $foundit = ref $web->{'Configure'}{'-html'}{'_body'}{'_content'}[$i] &&
-        defined ${$web->{'Configure'}{'-html'}{'_body'}{'_content'}[$i]}{'Values'};
+    # Okay, I know this is a HUGE hack, but I couldn't really find an elegant
+    # way to do what I needed to do.  Basically, I look through the horrible
+    # "web" data structure (which is a Tk::Web object) for a bunch of 'Values'
+    # (which are the values the user has set in the HTML Form).  I know that
+    # this 'Values' array lives somewhere under the
+    # {Configure}{-html}{_body}{_content} hash, but it changes depending on
+    # the HTML file read in.  So, I increment through this array searching for
+    # a defined hash named 'Values'. 
+    do {
+	$i++;
+	$foundit = ref $web->{'Configure'}{'-html'}{'_body'}{'_content'}[$i] &&
+	    defined ${$web->{'Configure'}{'-html'}{'_body'}{'_content'}[$i]}{'Values'};
     } until ($foundit) || ($i > 1000);
 
-  return if ($i > 1000);  # Couldn't find it apparently. This shouldn't happen!
+    return if ($i > 1000);  # Couldn't find it apparently. This shouldn't happen!
 
-  # Okay, so now that I have found the array position, we treat this
-  # horrible data structure as an array, loop through the values getting
-  # name/value pairs which we can eventually write out to file.
-  foreach $what 
-    (@{${$web->{'Configure'}{'-html'}{'_body'}{'_content'}[$i]}{'Values'}})
-    {
-      my($name,$value) = @$what;
-      my @val = (ref $value) ? $value->Call : $value;
-      foreach $value (@val)
-        {
-          push(@{ $result{$name} },$value) if (defined $value);
+    # Okay, so now that I have found the array position, we treat this
+    # horrible data structure as an array, loop through the values getting
+    # name/value pairs which we can eventually write out to file.
+    foreach $what (@{${$web->{'Configure'}{'-html'}{'_body'}{'_content'}[$i]}{'Values'}}) {
+	my($name,$value) = @$what;
+	my @val = (ref $value) ? $value->Call : $value;
+	foreach $value (@val) {
+	    push(@{ $result{$name} },$value) if (defined $value);
         }
     }
 
-  # now write config variables to the database
-  for my $name (keys(%result)) {
-      &set_pkgconfig_var(opkg => "$my_opkg", context => "$my_context",
-			 name => "$name", value => $result{$name});
-  }
+    # now write config variables to the database
+    for my $name (keys(%result)) {
+	&set_pkgconfig_var(opkg => "$my_opkg", context => "$my_context",
+			   name => "$name", value => $result{$name});
+    }
 }
 
 #########################################################################
 #  A convenience function called by loadHTMLFile to set the "Save"      #
 #  button's state to 'active'.                                          #
 #########################################################################
-sub enableSaveButton
-{
-  $saveButton->configure(-state => 'active');
+sub enableSaveButton {
+    $saveButton->configure(-state => 'active');
 }
 
 #########################################################################
@@ -569,36 +540,29 @@ sub enableSaveButton
 #  Call this subroutine to read in an HTML file and render it in the    #
 #  main "web" window.                                                   #
 #########################################################################
-sub loadHTMLFile # ($file)
-{
-  my ($file) = @_;
+sub loadHTMLFile { # ($file)
+    my ($file) = @_;
 
-  if (($file) && (-s $file))
-    {
-      $web->url($file);   # Read in and render the file.
-      # Set the title of the window
-      if (ref $web->{Configure}{-html}{_head}{_content}[0])
-        {
-          $configLabel->configure(-text => 
-            $web->{Configure}{-html}{_head}{_content}[0]{_content}[0]);
+    if (($file) && (-s $file)) {
+	$web->url($file);   # Read in and render the file.
+	# Set the title of the window
+	if (ref $web->{Configure}{-html}{_head}{_content}[0]) {
+	    $configLabel->configure(-text => 
+				    $web->{Configure}{-html}{_head}{_content}[0]{_content}[0]);
+        } else {
+	    $configLabel->configure(-text => "Configuration");
         }
-      else
-        {
-          $configLabel->configure(-text => "Configuration");
-        }
-      $web->pack();
+	$web->pack();
 
-      # At program start, the 'Save' button is inactive.  When the
-      # user clicks ANYTHING in the main "web" window, set it active.
-      if (($web->configure(-state))[4] ne 'active')
-        {
-          # A click in the "web" window activates the button.
-          $web->bind('<ButtonRelease-1>' => \&enableSaveButton);
-          my (@kids) = $web->children;
-          foreach my $kid (@kids)
-            {
-              # Argh! Every kid also needs to have an event tied to it!
-              $kid->bind('<ButtonRelease-1>' => \&enableSaveButton);
+	# At program start, the 'Save' button is inactive.  When the
+	# user clicks ANYTHING in the main "web" window, set it active.
+	if (($web->configure(-state))[4] ne 'active') {
+	    # A click in the "web" window activates the button.
+	    $web->bind('<ButtonRelease-1>' => \&enableSaveButton);
+	    my @kids = $web->children;
+	    foreach my $kid (@kids) {
+		# Argh! Every kid also needs to have an event tied to it!
+		$kid->bind('<ButtonRelease-1>' => \&enableSaveButton);
             }
         }
     }
@@ -613,52 +577,46 @@ sub loadHTMLFile # ($file)
 #  first starts up.  This then calls loadHTMLFile to read in the        #
 #  actual file and render it.                                           #
 #########################################################################
-sub displayWebPage # ($parent,$file)
-{
-  my ($parent,$file) = @_;
+sub displayWebPage { # ($parent,$file)
+    my ($parent,$file) = @_;
 
-  # Check to see if our toplevel config window has been created yet.
-  if (!$top)
-    { # Create the toplevel window just once.
-      if ($parent)
-        {
-          $top = $parent->Toplevel(-title => 'Configuration');
+    # Check to see if our toplevel config window has been created yet.
+    if (!$top) { # Create the toplevel window just once.
+	if ($parent) {
+	    $top = $parent->Toplevel(-title => 'Configuration');
+        } else { # If no parent, then create a MainWindow at the top.
+	    $top = MainWindow->new();
+	    $top->title("Configuration");
         }
-      else
-        { # If no parent, then create a MainWindow at the top.
-          $top = MainWindow->new();
-          $top->title("Configuration");
-        }
-      $top->withdraw;
-      OSCAR::Configbox::Configbox_ui $top;  # Call the specPerl window creator
+	$top->withdraw;
+	OSCAR::Configbox::Configbox_ui $top;  # Call the specPerl window creator
     }
 
-  # The Save button should be disabled upon first display
-  $saveButton->configure(-state => 'disabled');
+    # The Save button should be disabled upon first display
+    $saveButton->configure(-state => 'disabled');
 
-  # Check to see if the "web" window frame has been created yet.
-  if (!$web)
-    { # Then create the web box
-      $web = Tk::Web->new($configFrame);
-      # What kind of files will this "web" window render?
-      $web->{'-header'} = {'Accept' => join(',','text/html','text/plain',
-                                                'image/gif','image/x-xbitmap',
-                                                'image/x-pixmap','*/*'
-                                           ),
-                           };
-      $web->pack(-expand => '1', -fill => 'both');
-      $web->configure(-height => '15',
-                      -width => '60',
-                      -cursor => 'left_ptr',
-                     );
-      # Add optional scrollbars to the bottom and right sides.
-      $root->AddScrollbars($web);
-      $root->configure(-scrollbars => 'osoe');
+    # Check to see if the "web" window frame has been created yet.
+    if (!$web) { # Then create the web box
+	$web = Tk::Web->new($configFrame);
+	# What kind of files will this "web" window render?
+	$web->{'-header'} = {'Accept' => join(',','text/html','text/plain',
+					      'image/gif','image/x-xbitmap',
+					      'image/x-pixmap','*/*'
+					      ),
+					      };
+	$web->pack(-expand => '1', -fill => 'both');
+	$web->configure(-height => '15',
+			-width => '60',
+			-cursor => 'left_ptr',
+			);
+	# Add optional scrollbars to the bottom and right sides.
+	$root->AddScrollbars($web);
+	$root->configure(-scrollbars => 'osoe');
     }
 
-  # Load in and render the HTML file.
-  loadHTMLFile($file);
-  center_window( $top );  # Put the window on the screen.
+    # Load in and render the HTML file.
+    loadHTMLFile($file);
+    center_window( $top );  # Put the window on the screen.
 }
 
 #########################################################################
@@ -672,39 +630,37 @@ sub displayWebPage # ($parent,$file)
 #  OSCAR "packages" directory and attempts to render the configuration  #
 #  HTML file to allow for package configuration.                        #
 #########################################################################
-sub configurePackage 
-{
-  my $parent = shift;
-  $packagedir = shift;
-  my $opkg = shift;
-  my $context = shift;
-  $context = "" if ! $context;
+sub configurePackage {
+    my $parent = shift;
+    $packagedir = shift;
+    my $opkg = shift;
+    my $context = shift;
+    $context = "" if ! $context;
 
-  $my_opkg = $opkg;
-  $my_context = $context;
+    $my_opkg = $opkg;
+    $my_context = $context;
 
-  # Check for the configuration HTML file
-  return if ((-s "$packagedir/.selection.ignore") ||
-    (!(-s "$packagedir/configurator.html")));
+    # Check for the configuration HTML file
+    return if ((-s "$packagedir/.selection.ignore") ||
+	       (!(-s "$packagedir/configurator.html")));
 
-  my $tree = readInDefaultConfig("$packagedir/configurator.html");
-  return if (!$tree);
+    my $tree = readInDefaultConfig("$packagedir/configurator.html");
+    return if (!$tree);
 
-  my $values = &readInConfigValues("$packagedir/configurator.html",
-				   $opkg, $context);
-  &preprocessConfig($tree,$values) if $values;
-  &writeOutTempConfig($tree);
-  $tree->delete;    # Always delete the tree when you are done with it.
+    my $values = &readInConfigValues("$packagedir/configurator.html",
+				     $opkg, $context);
+    &preprocessConfig($tree,$values) if $values;
+    &writeOutTempConfig($tree);
+    $tree->delete;    # Always delete the tree when you are done with it.
 
-  displayWebPage($parent,"$packagedir/.configurator.temp.html");
+    displayWebPage($parent,"$packagedir/.configurator.temp.html");
 }
 
 #
 # Read default config from configurator.html file and store results in
 # the OSCAR database.
 #
-sub defaultConfigToDB
-{
+sub defaultConfigToDB {
     my ($conffile, $opkg, $context) = @_;
     return if (-s "$conffile");
 
