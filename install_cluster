@@ -280,7 +280,7 @@ ERROR: Your hostname is \"localhost.localdomain\".
 OSCAR requires that you choose another hostname.
 Aborting the install.\n");
 }
-if (!$ENV{DISPLAY}) {
+if (!$ENV{DISPLAY} && !$cli) {
     die("
 ERROR: Your \"DISPLAY\" environment variable is not set, probably
 indicating that you are not running in an X windows environment.
