@@ -1,0 +1,402 @@
+#!/usr/bin/perl -w
+
+# $Id$
+#
+# Copyright (c) 2006 Oak Ridge National Laboratory.
+#                  All rights reserved.
+#
+# This section defines the OSCAR clients
+#
+# Some code in this section was borrowed from:
+#   trunk/scripts/osacr_wizard
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Logger;
+use Getopt::Long;
+use POSIX;
+
+$| = 1;
+
+oscar_log_section("Define OSCAR Clients");
+
+my $interface = "";
+our $file = "";
+my $help = "";
+
+GetOptions('help' => \$help, 'filename=s' => \$file, 'f=s' => \$file);
+
+if ($help)
+{
+	print "INSERT HELP MESSAGE HERE\n";
+	exit 0;
+}
+
+$interface = shift;
+
+my ($ip, $broadcast, $netmask) = interface2ip($interface);
+my ($a, $b, $c, $d) = split(/\./, $ip);
+if ($d == 1)
+{
+	$d++;
+}
+else
+{
+	$d = 1;
+}
+my $startip = "$a.$b.$c.$d";
+
+my $gw;
+my @tables = qw( nodes nics networks );
+my @results;
+my $node = "oscar_server";
+my (%options, @errors);
+get_nics_info_with_node($node, \@results, \%options, \@errors);
+my $ref = pop @results;
+my $nic_name = $$ref{name};
+if (@results == 1)
+{
+	get_gateway($node, $interface, \@results, \%options, \@errors);
+	my $gw_ref = pop @results if @results;
+	$gw = $$gw_ref{gateway};
+}
+$gw ||= $ip;
+
+my $hostname = (uname)[1];
+my ($shorthostname) = split(/\./,$hostname, 2);
+my $dnsdomainname = `dnsdomainname`;
+chomp($dnsdomainname);
+
+#If the domainname is blank, stick in a default value
+
+if(!$dnsdomainname)
+{
+	$dnsdomainname = "oscardomain";
+}
+
+my %vars = (
+		imgname => "oscarimage",
+		basename => "oscarnode",
+		domainname => $dnsdomainname,
+		numhosts => "1",
+		startinghostnum => "1",
+		netmask => $netmask,
+		gateway => $gw,
+		startip => $startip,
+		postinstall => \&postaddclients
+	  );
+
+addclients(%vars);
+
+sub addclients
+{
+	my %vars = ( 
+		imgname => "",
+		basename => "",
+		domainname => "",
+		startinghostnum => "",
+		startip => "",
+		netmask => "",
+		gateway => "",
+		padding => "0",
+		numhosts => "",
+		@_,
+		);
+	my $config = init_si_config();
+	my @allimages = list_image();
+	my @mostimages;
+	my $defimage;
+	my $img;
+	foreach $img (@allimages)
+	{
+		if($img->name eq $vars{imgname})
+		{
+			$defimage = $vars{imgname};
+		}
+		else
+		{
+			push(@mostimages, $img->name);
+		}
+	}
+
+	#If the default selection wasn't found, just use the first one
+	$defimage = shift(@mostimages) unless $defimage;
+
+	unless ($defimage )
+	{
+		print "******************************\nYou must build at least one image!\n******************************\n";
+		return 1;
+	}
+
+	my %defaults = %vars;
+
+	open (LOG, ">define.log");
+	my $selection;
+	do #Loop until the user picks quit
+	{
+		do #Loop until the user picks a valid response
+		{
+			#Put a couple of spacer lines in
+			print "\n\n";
+
+			print "Select one\n" .
+			"-----------------------------------------\n" .
+			"1)  Image Name: $defimage\n" .
+			"2)  Domain Name: $vars{domainname}\n" .
+			"3)  Base Name: $vars{basename}\n" .
+			"4)  Number of Hosts: $vars{numhosts}\n" . 
+			"5)  Starting Number: $vars{startinghostnum}\n" .
+			"6)  Padding: $vars{padding}\n" .
+			"7)  Starting IP: $vars{startip}\n" .
+			"8)  Subnet Mask: $vars{netmask}\n" .
+			"9)  Default Gateway: $vars{gateway}\n" .
+			"10) Add Clients\n";
+			$selection = <STDIN>;
+			print LOG $selection;
+			chomp $selection;
+		} while ($selection < 1 || $selection > 10);
+
+		#Go to the appropriate subroutine
+		if($selection == 1) {$defimage = image_name($defimage, @mostimages);}
+		elsif($selection == 2) {$vars{domainname} = domain_name($vars{domainname});}
+		elsif($selection == 3) {$vars{basename} = base_name($vars{basename});}
+		elsif($selection == 4) {$vars{numhosts} = num_hosts($vars{numhosts});}
+		elsif($selection == 5) {$vars{startinghostnum} = start_host($vars{startinghostnum});}
+		elsif($selection == 6) {$vars{padding} = padding($vars{padding});}
+		elsif($selection == 7) {$vars{startip} = start_ip($vars{startip});}
+		elsif($selection == 8) {$vars{netmask} = netmask($vars{netmask});}
+		elsif($selection == 9) {$vars{gateway} = gateway($vars{gateway});}
+	} while ($selection != 10);
+	close LOG;
+
+	if($vars{numhosts} < 1) {print "You must add at least one host!\n"; exit 1;}
+
+	my %hashkeys = (
+			numhosts => 'count',
+			basename => 'basename',
+			startinghostnum => 'start',
+			startip => 'ipstart',
+			gateway => 'gateway',
+			netmask => 'netmask',
+			domainname => 'domain',
+			padding => 'pad',
+		       );
+
+	my $cmd = "mksirange --image $defimage ";
+	foreach my $key (keys %hashkeys)
+	{
+		if($vars{$key}) {$cmd .= " --$hashkeys{$key}=$vars{$key}";}
+	}
+
+	!system($cmd) or carp("Couldn't run mksirange: $!");
+
+	&{$vars{postinstall}} or carp("Couldn't run postinstall");
+
+	oscar_log_subsection("Successfully created clients for image \"$defimage\"");
+
+	return 1;
+}
+
+sub postaddclients
+{
+	my $cmd = "./post_clients";
+	oscar_log_subsection("Running: $cmd");
+	!system($cmd) or (carp($!), return undef);
+	&populate_client_group_nodes;
+
+	oscar_log_subsection("Successfully ran: $cmd");
+	oscar_log_subsection("Completed successfully");
+	return 1;
+}
+
+sub populate_client_group_nodes 
+{
+    my @pkgs = list_selected_packages("all");
+    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status");
+#    locking("WRITE", \%options, \@tables, \@errors);
+    my @client_nodes = ();
+    get_client_nodes(\@client_nodes,\%options,\@errors);
+    my @nodes = ();
+    foreach my $client_ref (@client_nodes)
+    {
+    	my $node_id = $$client_ref{id};
+	my $node_name = $$client_ref{name};
+	push @nodes, $node_name;
+    }
+    my $client_group = "oscar_clients";
+    set_group_nodes($client_group,\@nodes,\%options,\@errors);
+
+    # We assume that all the selected packages should be installed
+    my $status = 2;
+    foreach my $node_name (@nodes)
+    {
+        update_node_package_status(\%options,$node_name,\@pkgs,$status,\@errors);
+    }
+    #    unlock(\%options, \@errors);
+}
+
+sub image_name
+{
+	my $defimage = shift;
+
+	my $found = 0;
+	my $temp;
+	while (!$found)
+	{
+		print "Image Name\n" .
+		"--------------------\n" .
+		"Currently: $defimage\n" .
+		"Choices: " . join(" ", @_) . "\n" .
+		"New:  ";
+		$temp = <STDIN>;
+		print LOG $temp;
+		chomp $temp;
+	
+		foreach my $image (@_)
+		{
+			if($image eq $temp)
+			{
+				$found = 1;
+				last;
+			}
+		}
+	}
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return $defimage;}
+	else {return $temp;}
+}
+
+sub domain_name
+{
+	my $domain = shift;
+
+	print "Domain Name\n" . 
+	"--------------------\n" .
+	"Currently: $domain\n" .
+	"New:  ";
+	my $temp = <STDIN>;
+	print LOG $temp;
+	chomp $temp;
+
+
+}
+
+sub base_name
+{
+	my $base = shift;
+
+	print "Base Name\n" . 
+	"--------------------\n" .
+	"Currently: $base\n" .
+	"New:  ";
+	my $temp = <STDIN>;
+	print LOG $temp;
+	chomp $temp;
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return $base;}
+	else {return $temp;}
+}
+
+sub num_hosts
+{
+	my $num = shift;
+
+	print "Number of Hosts\n" . 
+	"--------------------\n" .
+	"Currently: $num\n" .
+	"New:  ";
+	my $temp = <STDIN>;
+	print LOG $temp;
+	chomp $temp;
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return $num;}
+	else {return $temp;}
+}
+
+sub start_host
+{
+	my $start = shift;
+
+	print "Starting Number\n" . 
+	"--------------------\n" .
+	"Currently: $start\n" .
+	"New:  ";
+	my $temp = <STDIN>;
+	print LOG $temp;
+	chomp $temp;
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return $start;}
+	else {return $temp;}
+}
+
+sub padding
+{
+	my $pad = shift;
+
+	print "Padding\n" . 
+	"--------------------\n" .
+	"Currently: $pad\n" .
+	"New:  ";
+	my $temp = <STDIN>;
+	print LOG $temp;
+	chomp $temp;
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return $pad;}
+	else {return $temp;}
+}
+
+sub start_ip
+{
+	my $start = shift;
+
+	print "Starting IP\n" . 
+	"--------------------\n" .
+	"Currently: $start\n" .
+	"New:  ";
+	my $temp = <STDIN>;
+	print LOG $temp;
+	chomp $temp;
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return $start;}
+	else {return $temp;}
+}
+
+sub netmask
+{
+	my $netmask = shift;
+
+	print "Subnet Mask\n" . 
+	"--------------------\n" .
+	"Currently: $netmask\n" .
+	"New:  ";
+	my $temp = <STDIN>;
+	print LOG $temp;
+	chomp $temp;
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return $netmask;}
+	else {return $temp;}
+}
+
+sub gateway
+{
+	my $gateway = shift;
+
+	print "Default Gateway\n" . 
+	"--------------------\n" .
+	"Currently: $gateway\n" .
+	"New:  ";
+	my $temp = <STDIN>;
+	print LOG $temp;
+	chomp $temp;
+
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return $gateway;}
+	else {return $temp;}
+}
