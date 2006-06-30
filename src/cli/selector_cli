@@ -21,8 +21,17 @@ use Getopt::Long;
 
 my $file = '';
 my $inun = 0;
+my $help = '';
 
-GetOptions('m' => \$inun, 'filename=s' => \$file, 'f=s' => \$file);
+GetOptions('help' => \$help, 'm' => \$inun, 'filename=s' => \$file, 'f=s' => \$file);
+
+if ($help)
+{
+	print "Usage: selector_cli [FLAGS]
+
+  -m			  Maintain current package state
+  --filename -f filename  File to be read in to automate this step\n";			exit 0;
+}
 
 my %options = ();
 my @errors = ();

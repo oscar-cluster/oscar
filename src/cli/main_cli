@@ -29,12 +29,13 @@ $| = 1;
 
 my $selectorfile = " ";
 my $buildfile = " ";
+my $help = '';
 
-GetOptions('selector=s' => \$selectorfile, 'build=s' => \$buildfile);
+GetOptions('help' => \$help, 'selector=s' => \$selectorfile, 'build=s' => \$buildfile);
 
 my $adapter = shift;
 
-if ($#ARGV >= 0)
+if ($#ARGV >= 0 || $help)
 {
 	print "Usage: main_cli [FLAGS] interface 
 Flags (Provide automation):

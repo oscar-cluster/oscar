@@ -27,8 +27,17 @@ $| = 1;
 oscar_log_section("Building OSCAR Client Image");
 
 our $file = " ";
+my $help = '';
 
-GetOptions('filename=s' => \$file, 'f=s' => \$file);
+GetOptions('help' => \$help, 'filename=s' => \$file, 'f=s' => \$file);
+
+if ($help)
+{
+	print "Usage: build_oscar_image_cli [FLAGS] adapter
+
+  --filename, -f	The file to be read in to automate this step.\n";
+	exit 0;
+}
 
 my @df_lines = `df /`;
 my $disk_type = "ide";
