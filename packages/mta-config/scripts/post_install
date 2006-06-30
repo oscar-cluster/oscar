@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/perl -w
+
 #
 # Copyright (c) 2004-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
@@ -10,6 +11,15 @@
 # $Id$
 #
 
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+
+use OSCAR::Database;
+use File::Copy;
+
+my %options = ('debug' => 0,
+               'verbose' => 0);
+my @error_strings = ();
 
 #
 # Configure the list of all nodes for *mynetworks* in the server file system
@@ -22,107 +32,115 @@
 # Otherwise, it throws an error.
 
 # The list of the mailing service rpms
-services="postfix sendmail exim"
-for service in $services; do
+my @services = ("postfix", "sendmail", "exim");
+my $service_name = "";
+foreach my $service (@services){
 
     # See if this is supposed to run when computer boots up.
-    chkconfig --list $service > /dev/null 2>&1
-    if test "$?" = "0"; then
-	service_name=$service
+    system("chkconfig --list $service > /dev/null 2>&1");
+    if(! $? ){
 
-	# If any above rpm is running,
-	# assign the name of the rpm found to the variable $service_name
-	# and then break out the 'for' loop 
-
-	break
-    fi
-done
-
+        # If any above rpm is running,
+        # assign the name of the rpm found to the variable $service_name
+        # and then break out the 'for' loop 
+        $service_name = $service;
+        last;
+    }    
+}
 
 	# If $service_name contains the "postfix, sendmail, or exim",
     # each case handles the configuration corresponding to
 	# the installed rpm for the localhost only.
     # Otherwise, the error will be thrown.
 
-case "$service_name" in
-	postfix) echo "POSTFIX is running"
-
+if($service_name eq "postfix"){
+    print "POSTFIX is running\n";
         # The list of configuration files possible for the Postfix
         # in the current linux distro. 
+    my @configure_files = ("/etc/postfix/main.cf", "/etc/main.cf",
+                           "/usr/lib/postfix/main.cf");
+    my $found = 0;
 
-        configure_files="/etc/postfix/main.cf /etc/main.cf /usr/lib/postfix/main.cf"
-        found=0
-        for file in $configure_files; do
-            if test -n "$found" -a -f $file -a -n "`grep postfix $file`"; then
-                found=1
-                break
-            fi
-        done
+    my $postfix_conf;
+    foreach my $file (@configure_files){
+        if ( !$found && -e $file ){
+            system("grep postfix $file");
+            if (! $? ){
+                $postfix_conf = $file;
+                $found = 1;
+                last;
+            }
+        }
+    }
 
-        if test $found = "1"; then
-            postfix_conf=$file
-            # Make a backup copy of the postfix config file before editing it.
-            cp $file $file.bak
-            
-            line_num=`cat $postfix_conf | wc -l`
-            added_line=8
+    if( $found ){
+        # Make a backup copy of the postfix config file before editing it.
+        copy "$postfix_conf", "$postfix_conf.bak";
+        
+        my $line_num = `cat $postfix_conf | wc -l`;
+        my $added_line = 8;
 
-            # If the $postfix_conf is already configured with the mta-config 
-            # configuration, then remove the current configuration (8 lines)
-            # and then append the new configuration (8 lines).
-            # If not, just append the new configuration (8 lines).
-            grep "\# END OF ADDED CONFIGURATION OPTIONS FOR OSCAR" $postfix_conf > /dev/null 2>&1
-            if test "$?" = "0"; then
-                line_num=`expr $line_num - $added_line`q
-            else
-                line_num="$line_num"q
-            fi
-            
-            sed "$line_num" $postfix_conf > main.cf.server.$$
-            nodes=$(echo `oda nodes` | sed 's/ /, /g')
-            cat >> main.cf.server.$$ << EOF
+        # If the $postfix_conf is already configured with the mta-config 
+        # configuration, then remove the current configuration (8 lines)
+        # and then append the new configuration (8 lines).
+        # If not, just append the new configuration (8 lines).
+        chomp($line_num);
+        system("grep \"\# END OF ADDED CONFIGURATION OPTIONS FOR OSCAR\" $postfix_conf > /dev/null 2>&1");
+        if(! $?){
+            $line_num = $line_num - $added_line;
+        }
+        $line_num .= "q";
+        system("sed $line_num $postfix_conf > main.cf.server.$$");
+        my $nodes = join ", ", OSCAR::Database::get_nodes(\%options, \@error_strings);
+        open CONF, ">> main.cf.server.$$"
+            or die "Can not open the config file: $!";
+        
+        print CONF "\n";
+        print CONF "# Allow the mail to access to only the following list of nodes by setting the 'mynetworks'\n";
+        print CONF "mynetworks = $nodes\n";
+        print CONF "\n";
+        print CONF "#\n";
+        print CONF "# END OF ADDED CONFIGURATION OPTIONS FOR OSCAR\n";
+        print CONF "#\n";
+        print CONF "\n";
 
-# Allow the mail to access to only the following list of nodes by setting the 'mynetworks'
-mynetworks = $nodes
+        close CONF;
 
-#
-# END OF ADDED CONFIGURATION OPTIONS FOR OSCAR
-#
+        copy "main.cf.server.$$", "$postfix_conf";
+        
+        unlink "main.cf.server.$$";
+        print "Postfix is succesfully configured. : SERVER NODE\n";
+        
+        # Restart postfix.
+        system("/etc/init.d/postfix stop");
+        system("/etc/init.d/postfix start");
 
-EOF
+        print "- finished configuring postfix\n";
+    }else{
+        print "WARNING: I could not find postfix's configuration file!\n";
+        print "WARNING: There will be no mail service running on the client nodes!\n";
+    }
+}
 
-            cp main.cf.server.$$ $postfix_conf
-    	    rm -rf main.cf.server.$$
-            echo "Postfix is succesfully configured. : SERVER NODE";
-            
-            # Restart postfix.
-            /etc/init.d/postfix stop
-            /etc/init.d/postfix start
+if($service_name eq "sendmail"){
+    print "WARNING: OSCAR does not know how to configure sendmail yet.\n";
+    print "WARNING: Please bug the OSCAR developers to finish the mta-config package!\n";
+    print "WARNING: There will be no mail service running on the client nodes!\n";
+}    
 
-            echo "- finished configuring postfix"
-        else
-            echo "WARNING: I could not find postfix's configuration file!"
-            echo "WARNING: There will be no mail service running on the client nodes!"
-        fi
-		;;
-	sendmail)
-    echo "WARNING: OSCAR does not know how to configure sendmail yet."
-    echo "WARNING: Please bug the OSCAR developers to finish the mta-config package!"
-    echo "WARNING: There will be no mail service running on the client nodes!"
-		;;
-	exim)
-    echo "WARNING: OSCAR does not know how to configure exim yet."
-    echo "WARNING: Please bug the OSCAR developers to finish the mta-config package!"
-    echo "WARNING: There will be no mail service running on the client nodes!"
-		;;
-    *)
-    echo "************************************ WARNING ************************************"
-    echo "OSCAR could not set up the configuration for any mailing service on the server."
-    echo "The current version of the mta-config package in OSCAR only supports the Postfix mail transfer agent (MTA)."
-    echo "It looks like you have another MTA installed (e.g, sendmail or exim); as such,"
-    echo "please be aware that OSCAR will not automatically configure it."
-    echo "************************************ WARNING ************************************"
-        ;;
-esac
+if($service_name eq "exim"){
+    print "WARNING: OSCAR does not know how to configure exim yet.\n";
+    print "WARNING: Please bug the OSCAR developers to finish the mta-config package!\n";
+    print "WARNING: There will be no mail service running on the client nodes!\n"
+}
+
+if(!$service_name){
+    print "************************************ WARNING ************************************\n";
+    print "OSCAR could not set up the configuration for any mailing service on the server.\n";
+    print "The current version of the mta-config package in OSCAR only supports the Postfix mail transfer agent (MTA).\n";
+    print "It looks like you have another MTA installed (e.g, sendmail or exim); as such,\n";
+    print "please be aware that OSCAR will not automatically configure it.\n";
+    print "************************************ WARNING ************************************\n";
+}
 
 exit 0;
