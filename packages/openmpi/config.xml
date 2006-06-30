@@ -18,8 +18,8 @@
 
   <version>
     <major>1</major>
-    <minor>0</minor>
-    <subversion>2</subversion>
+    <minor>1</minor>
+    <subversion>0</subversion>
     <release>1</release>
     <epoch>1</epoch>
   </version>
@@ -73,7 +73,7 @@ the bottom of this config.xml file.
   <package-specific-attributes>
     <switcher>
       <tag>mpi</tag>
-      <name>openmpi-1.0.2</name>
+      <name>openmpi-1.1</name>
     </switcher>
   </package-specific-attributes>
 
