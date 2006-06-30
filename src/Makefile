@@ -10,9 +10,9 @@ ifeq "$(shell which puic 2>/dev/null)" ""
     dirs := /opt/kde3/bin /opt/perl-Qt/bin
     puicdir := $(dir $(firstword $(foreach dir,$(dirs),$(find_puic))))
     ifndef puicdir
-	$(error "!! Could not locate puic (from perl-Qt package) !!")
+        $(error "!! Could not locate puic (from perl-Qt package) !!")
     else
-	export PATH := $(puicdir):$(PATH)
+        export PATH := $(puicdir):$(PATH)
     endif
 endif
 
