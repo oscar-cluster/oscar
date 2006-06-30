@@ -100,12 +100,8 @@ my %default = (
 );
 
 
-my $master_conf;
-if (-e $masterconf) {
-    $master_conf = readInConfigValues($masterconf, "ganglia", "", noarray=>1);
-} else {
-    $master_conf = \%default;
-}
+my $master_conf = &readInConfigValues($masterconf, "ganglia", "", noarray=>1);
+&add_missing_keys($master_conf,\%default);
 
 if ($image) {
     if ($do_gmond) {
@@ -120,9 +116,9 @@ if ($image) {
 	    #
 	    if (-e $imgconf) {
 		vprint("using per image config $imgconf\n");
- 		my $img_conf = readInConfigValues($imgconf, "ganglia", "image:$image", noarray=>1);
+ 		my $img_conf = &readInConfigValues($imgconf, "ganglia", "image:$image", noarray=>1);
 		vprint(Dumper(%{$img_conf}));
-		add_missing_keys($master_conf, $img_conf);
+		&add_missing_keys($master_conf, $img_conf);
 		&edit_gmond_conf($gmond_img, $img_conf);
 	    } else {
 		croak("Per image configuration expected, but no values file found for $image!\n");
