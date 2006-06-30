@@ -44,8 +44,25 @@ my $cli = '';
 my $selector = '';
 my $build = '';
 my $adapter;
+my $help = '';
 
-GetOptions('cli' => \$cli, 'selector=s' => \$selector, 'build=s' => \$build);
+GetOptions('help' => \$help, 'cli' => \$cli, 'selector=s' => \$selector, 'build=s' => \$build);
+
+#If we get a --help flag
+if($help)
+{
+    print "Usage: install_cluster [OPTION] adapter
+Starts the OSCAR install process.
+By default, install_cluster uses the Graphical mode.
+
+  --cli			Runs the program in command line mode.
+    --selector file	Passes the file into the selector stage of the install.
+			That stage will not ask for user input.
+    --build		Passes the file into the build stage of the install.
+			That stage will not ask for user input.
+  --help		Display this help and exit.\n";
+    exit 0;
+}
 
 #Put the full pathname on there since this will change directories
 my $cwd = cwd();
