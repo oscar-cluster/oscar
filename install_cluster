@@ -58,7 +58,7 @@ By default, install_cluster uses the Graphical mode.
   --cli			Runs the program in command line mode.
     --selector file	Passes the file into the selector stage of the install.
 			That stage will not ask for user input.
-    --build		Passes the file into the build stage of the install.
+    --build file	Passes the file into the build stage of the install.
 			That stage will not ask for user input.
   --help		Display this help and exit.\n";
     exit 0;
