@@ -1,4 +1,4 @@
-/dev/sda1        24   ext3  /boot      defaults
+/dev/sda1        100  ext3  /boot      defaults bootable
 /dev/sda5        512  swap
 /dev/sda6        *    ext3  /          defaults
 /dev/shm         -    tmpfs /dev/shm   defaults
