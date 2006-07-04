@@ -66,11 +66,9 @@ sub Configbox_ui {
 	our($configFrame) = $root->Frame (
 	);
 	our($configLabel) = $root->Label (
-		-font => '-*-Helvetica-Bold-R-Normal-*-*-120-*-*-*-*-*-*',
 		-text => 'Configuration',
 	);
 	my($defaultConfigurationButton) = $root->Button (
-		-font => '-*-Helvetica-Bold-R-Normal-*-*-120-*-*-*-*-*-*',
 		-text => 'Default Configuration',
 	);
 	my($cancelButton) = $root->Button (
