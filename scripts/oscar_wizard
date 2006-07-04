@@ -76,6 +76,8 @@ my @errors = ();
 my $debug = $ENV{DEBUG_OSCAR_WIZARD};
 my $mode = "install"; # default mode is install
 
+our $pid;
+
 if ( $ARGV[0] ) {
    if ( $ARGV[0] eq "manage" ) {
       $mode = "manage";
@@ -247,13 +249,11 @@ if ( $mode eq "install" ) {
    # Delete Clients returns due to popular demand!
    oscar_button($window, "", "Delete OSCAR Clients...",
                 [\&delnode_window, $window], 'delete_nodes');
-}
 
-# Monitor Cluster Deployment
-my $monitor_button = oscar_button($window, "", "Monitor Cluster Deployment",
-             [\&monitor_deployment, $window], 'monitor_deployment');
+   # Monitor Cluster Deployment
+   our $monitor_button = oscar_button($window, "", "Monitor Cluster Deployment",
+                [\&monitor_deployment, $window], 'monitor_deployment');
 
-if ( $mode eq "install" ) {
    my $boot=$window->Label (-text => 
    			    "Before continuing, network boot all of your nodes.
    Once they have completed installation, reboot them from 
@@ -289,7 +289,7 @@ if ( $mode eq "manage" ) {
 #
 my $cl_b=$window->Button(-text=>"Quit",
        -borderwidth=>"6", -relief=>"groove",
-       -command=> sub {$window->destroy},-pady=>"2");
+       -command=> sub {kill "HUP" => $pid if $pid; $window->destroy},-pady=>"2");
 $window->bind("<Escape>",sub {$cl_b->invoke()});
 $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 
@@ -799,12 +799,13 @@ sub run_tests {
 # Pop up si_monitortk from SystemImager
 sub monitor_deployment {
     my ($window) = @_;
+    our $monitor_button;
 
     my $cmd = "/usr/sbin/si_monitortk --progress";
     $monitor_button->configure(-state => 'disabled');
 
     my $pipe = new FileHandle;
-    $pipe->open("$cmd |") or die "Cannot fork: $!";
+    our $pid = $pipe->open("$cmd |") or die "Cannot fork: $!";
     $window->fileevent($pipe, 'readable', [\&stop_monitor_deployment, $window, $pipe]);
     return 1;
 }
@@ -812,12 +813,11 @@ sub monitor_deployment {
 # Unfreeze the "Monitor Cluster Deployment" button in the main OSCAR Wizard widget
 sub stop_monitor_deployment {
     my ($window, $pipe) = @_;
-    my $cmd = "/usr/sbin/si_monitortk";
-    my $pid = `pidof -sx $cmd`;
+    our $pid;
+    our $monitor_button;
 
-    chomp($pid);
     waitpid($pid, WNOHANG);
-    $monitor_button->configure(-state => 'normal');
+    $monitor_button->configure(-state => 'normal') if Tk::Exists($monitor_button);;
     $window->fileevent($pipe, 'readable', "");
 }
 
