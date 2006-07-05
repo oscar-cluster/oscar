@@ -396,13 +396,13 @@ sub add_multicast_route {
 
 sub restart_gmond {
     opkg_print("Ganglia gmond configuration file modified, re-starting daemon...\n");
-    # restart gmond and gmetad
+    # restart gmond
     !system("/etc/init.d/gmond restart") or croak("Failed to restart gmond");
 }
 
 sub restart_gmetad {
     opkg_print("Ganglia gmetad configuration file modified, re-starting daemon...\n");
-    # restart gmond and gmetad
+    # restart gmetad
     !system("/etc/init.d/gmetad restart") or croak("Failed to restart gmetad");
     opkg_print("Starting up apache...\n");
     # autoload apache in levels 345 and start it up
