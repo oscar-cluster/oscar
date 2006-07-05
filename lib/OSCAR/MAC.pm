@@ -1032,6 +1032,9 @@ sub enable_install_mode {
 
 	# Restart systemimager-server-rsyncd
 	run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
+
+	# Enable systemimager-server-rsyncd
+	run_cmd("chkconfig systemimager-server-rsyncd on");
     } elsif ($install_mode eq "systemimager-multicast") {
 	# Stop systemimager-server-bittorrent
 	run_cmd("/etc/init.d/systemimager-server-bittorrent stop");
