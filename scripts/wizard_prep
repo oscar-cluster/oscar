@@ -47,6 +47,9 @@ my $ohome = $ENV{OSCAR_HOME};
 my $verbose;
 if ($ENV{OSCAR_VERBOSE}) {
     $verbose="--verbose";
+    if ($ENV{OSCAR_VERBOSE} =~ m/^(yY)/) {
+	$ENV{OSCAR_VERBOSE} = 5;
+    }
     if (!$ENV{YUME_VERBOSE}) {
 	$ENV{YUME_VERBOSE} = $ENV{OSCAR_VERBOSE};
     }
