@@ -387,6 +387,17 @@ my $exit_status =
   system("$ENV{OSCAR_HOME}/scripts/populate_default_package_set")/256;
 croak("Couldn't set up a default package set") if $exit_status;
 
+
+# add default configurator settings
+eval ("require OSCAR::Configbox");
+croak("Could not load OSCAR::Configbox") if ($@);
+for my $pkg (sort keys(%pkgdirs)) {
+    my $dir = $pkgdirs{$pkg};
+    my $cfile = "$dir/configurator.html";
+    next if (! -e $cfile);
+    OSCAR::Configbox::readInConfigValues($cfile,$pkg,"");
+}
+
 my $exit_status =
   system("$ENV{OSCAR_HOME}/scripts/set_node_nics --network")/256;
 croak("Couldn't initialize the nics and networks for the oscar server") if $exit_status;

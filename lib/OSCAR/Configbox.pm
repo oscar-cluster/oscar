@@ -660,9 +660,9 @@ sub configurePackage {
 #
 sub defaultConfigToDB {
     my ($conffile, $opkg, $context) = @_;
-    return if (-s "$conffile");
+    return if (! -e "$conffile");
 
-    my($tree) = readInDefaultConfig("$conffile");
+    my $tree = &readInDefaultConfig("$conffile");
     return if (!$tree);
     my %values = &extractDefaultConfig($tree);
     for my $name (keys(%values)) {
