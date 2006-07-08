@@ -76,7 +76,45 @@ my @errors = ();
 my $debug = $ENV{DEBUG_OSCAR_WIZARD};
 my $mode = "install"; # default mode is install
 
-our $pid;
+our $monitortk_pid;
+
+my $lockfile = "$ENV{OSCAR_HOME}/.oscar_wizard_lockfile";
+
+# END processing to remove the lockfile when we die(), exit, or otherwise
+# cease to exist.
+END {
+    unlink $lockfile if $lockfile && -f $lockfile;
+}
+
+# Check for the lockfile (this is certainly not foolproof -- it's just
+# "good enough")
+
+if (-f $lockfile) {
+    open(LOCKFILE, $lockfile);
+    my $pid = <LOCKFILE>;
+    close(LOCKFILE);
+    chomp $pid;
+    print "There is an OSCAR Wizard lockfile that says a process\n";
+    print "is still running with process id $pid. Checking if that is true ...\n";
+    if( kill 0, $pid ) {
+        print "There is a process running with that process id.\n";
+        print "If this is not an OSCAR Wizard process, remove\n";
+        print "the following file and run $0 again:\n";
+        print "$lockfile\n";
+        undef $lockfile; # Prevent END processing from deleting lockfile.
+        exit(1);
+    } else {
+        print "There is no process running with process id $pid.\n";
+        print "Removing lockfile $lockfile and continuing.\n";
+        unlink $lockfile;
+    }
+}
+
+# Write our PID to the lockfile
+
+open(LOCKFILE, ">$lockfile");
+print LOCKFILE $$;
+close(LOCKFILE);
 
 if ( $ARGV[0] ) {
    if ( $ARGV[0] eq "manage" ) {
@@ -94,8 +132,7 @@ if ( $ARGV[0] ) {
 my $interface = get_headnode_iface();
 
 # Set some things in the environment
-  
-#$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$interface;
+
 $ENV{PATH}= $config->binpath .":" . $ENV{PATH};
 # Create the main window...
 my $window = MainWindow->new();
@@ -123,7 +160,6 @@ if ( -e "$oscar_version_file" ) {
 else {
     die("ERROR: OSCAR VERSION file missing '$oscar_version_file' - aborting!");
 }
-
 
 # Define the main buttons
 
@@ -289,7 +325,7 @@ if ( $mode eq "manage" ) {
 #
 my $cl_b=$window->Button(-text=>"Quit",
        -borderwidth=>"6", -relief=>"groove",
-       -command=> sub {kill "HUP" => $pid if $pid; $window->destroy},-pady=>"2");
+       -command=> sub {kill "HUP" => $monitortk_pid if $monitortk_pid; $window->destroy},-pady=>"2");
 $window->bind("<Escape>",sub {$cl_b->invoke()});
 $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 
@@ -805,7 +841,7 @@ sub monitor_deployment {
     $monitor_button->configure(-state => 'disabled');
 
     my $pipe = new FileHandle;
-    our $pid = $pipe->open("$cmd |") or die "Cannot fork: $!";
+    our $monitortk_pid = $pipe->open("$cmd |") or die "Cannot fork: $!";
     $window->fileevent($pipe, 'readable', [\&stop_monitor_deployment, $window, $pipe]);
     return 1;
 }
@@ -813,10 +849,10 @@ sub monitor_deployment {
 # Unfreeze the "Monitor Cluster Deployment" button in the main OSCAR Wizard widget
 sub stop_monitor_deployment {
     my ($window, $pipe) = @_;
-    our $pid;
+    our $monitortk_pid;
     our $monitor_button;
 
-    waitpid($pid, WNOHANG);
+    waitpid($monitortk_pid, WNOHANG);
     $monitor_button->configure(-state => 'normal') if Tk::Exists($monitor_button);;
     $window->fileevent($pipe, 'readable', "");
 }

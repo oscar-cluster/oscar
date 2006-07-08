@@ -93,7 +93,6 @@ ERROR: A valid NIC must be specified for the cluster private network.
 Valid NICs: ".join( ", ", sort keys %nics )."\n\n"
 	unless $adapter && exists $nics{$adapter};
 
-
 # Now check to see if there is an $ENV{OSCAR_HOME} directory, and if
 # so, if we're in it.
 
@@ -127,55 +126,13 @@ else {
     die("ERROR: OSCAR VERSION file missing '$oscar_version_file' - aborting!");
 }
 
-
 # Once here, we know that $ENV{OSCAR_HOME} is set, it exists, we can
 # get in it, and we have successfully read the VERSION file from it.
 # So we should be good to go for the rest of the installation.
 
-# Setup the lockfile
-
-my $lockfile = "$ENV{OSCAR_HOME}/.install_cluster_lockfile";
-
 # Set perl to autoflush all output
 
 $| = 1;
-
-# END processing to remove the lockfile when we die(), exit, or otherwise
-# cease to exist.
-END {
-    unlink $lockfile if $lockfile && -f $lockfile;
-}
-
-# Check for the lockfile (this is certainly not foolproof -- it's just
-# "good enough")
-
-if (-f $lockfile) {
-    open(LOCKFILE, $lockfile);
-    my $pid = <LOCKFILE>;
-    close(LOCKFILE);
-    # chmod($pid);  DNL ASKS: WHO THINKS THIS DOES ANYTHING CORRECT?
-    chomp $pid;  #  DNL: Perhaps this was meant?
-    print "There is an OSCAR installer lockfile that says an installer process\n";
-    print "is still running with process id $pid. Checking if that is true ...\n";
-    if( kill 0, $pid ) {
-	print "There is a process running with that process id.\n";
-	print "If this is no an OSCAR installer process, remove\n";
-	print "the following file and run $0 again:\n";
-	print "$lockfile\n";
-	undef $lockfile; # Prevent END processing from deleting lockfile.
-	exit(0);
-    } else {
-	print "There is no process running with process id $pid.\n";
-	print "Removing lockfile $lockfile and continuing.\n";
-	unlink $lockfile;
-    }
-}
-
-# Write our PID to the lockfile
-
-open(LOCKFILE, ">$lockfile");
-print LOCKFILE $$;
-close(LOCKFILE);
 
 # Setup to capture all stdout/stderr
 
