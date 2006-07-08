@@ -314,7 +314,6 @@ sub oscar_home_env {
 
     # Two situations now: we are using an RPM based distro therefore we need to update /etc/profile.d/, or we are using a Debian-like distro and therefore, we do not have a /etc/profile.d/ folder (see Debian policies for more information), and we update /root/.bashrc
     # First case: Debian-like distro
-    print "geof: $os->{distro}\n";
     if ($os->{distro} eq "debian") {
     	print "Setup environment variables\n";
 	my $ret = `grep OSCAR /root/.bashrc`;
