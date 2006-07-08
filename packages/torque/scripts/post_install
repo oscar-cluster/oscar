@@ -120,7 +120,6 @@ if ($loglevel eq "") {
 # Call the update TORQUE mom config script
 print `../packages/torque/scripts/update_mom_config`;
 
-
 startPBSserver();
 
 parseCommandLine();
@@ -337,4 +336,3 @@ else {
     system('/etc/init.d/pbs_mom stop');
   }
 }
-
