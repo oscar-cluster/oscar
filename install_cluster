@@ -72,6 +72,8 @@ $build = $cwd . "/$build" if ($build !~ /$cwd/ && $build ne '');
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0 || $ENV{'USER'} ne 'root');
 
+my $os = OSCAR::OCA::OS_Detect::open();
+
 # Validate OSCAR_HOME environment variable and write /etc/profile.d files
 &oscar_home_env();
 
@@ -162,7 +164,6 @@ $ENV{LC_TIME} = "C";
 # Check to see if this is a supported platform
 
 oscar_log_subsection("Checking if this is a supported platform");
-my $os = OSCAR::OCA::OS_Detect::open();
 if (!$os) {
     print("ERROR: This is an unsupported system.  Specifically, no module in OSCAR/OCA/OS_Detect positively identified this as a supported system.\n");
     die("Cannot continue");
@@ -310,40 +311,58 @@ sub oscar_home_env {
     if (dirname($0) ne ".") {
 	carp("You MUST execute the program from within the OSCAR top level directory!\n");
     }
-    # do profile.d files already exist?
-    my ($dir_csh, $dir_sh) = &profiled_files_read();
-    if ($dir_csh ne $dir_sh) {
-	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
-	print "The /etc/profile.d/oscar_home.{csh,sh} files point to\n";
-	print "different \$OSCAR_HOME environment variables!\n";
-	print "Fix or delete them and rerun this program!\n";
-	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
-	exit 1;
+
+    # Two situations now: we are using an RPM based distro therefore we need to update /etc/profile.d/, or we are using a Debian-like distro and therefore, we do not have a /etc/profile.d/ folder (see Debian policies for more information), and we update /root/.bashrc
+    # First case: Debian-like distro
+    print "geof: $os->{distro}\n";
+    if ($os->{distro} eq "debian") {
+    	print "Setup environment variables\n";
+	my $ret = `grep OSCAR /root/.bashrc`;
+	# We update /etc/.bashrc only if we did not do it before
+	if ($ret eq "") {
+		my $cmd4deb = "echo \"OSCAR_HOME=/root/oscar\nexport OSCAR_HOME\n\" >> /root/.bashrc";
+		system ($cmd4deb);
+		$cmd4deb = "source /root/.bashrc";
+		system ($cmd4deb);
+	}
     }
-    # is there another OSCAR installation around?
-    if ($dir_sh && ($dir_sh ne $ohome)) {
-	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
-	print "The /etc/profile.d/oscar_home.{csh,sh} files already exist\n";
-	print "and point to a different OSCAR installation!\n";
-	print "If you want to DELETE the other OSCAR installation (!!!)\n";
-	print "you should do:\n";
-	print "   cd $dir_sh\n";
-	print "   scripts/start_over\n";
-	print "Then rerun this script.\n";
-	print "ATTENTION: The steps described above will remove all OSCAR\n";
-	print "packages and delete all defined cluster nodes!\n";
-	print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
-	exit 1;
-    }
-    # set environment variable OSCAR_HOME
-    if ($ENV{OSCAR_HOME} ne $ohome) {
-	oscar_log_subsection("Setting env variable OSCAR_HOME to $ohome");
-	$ENV{OSCAR_HOME} = $ohome;
-    }
-    # write profile.d files
-    if (!$dir_sh || !$dir_csh) {
-	oscar_log_subsection("Generating /etc/profile.d/oscar_home.{sh,csh} files.");
-	&profiled_files_write($ohome);
+    # Second case RPM based distros
+    else {
+        # do profile.d files already exist?
+        my ($dir_csh, $dir_sh) = &profiled_files_read();
+        if ($dir_csh ne $dir_sh) {
+	    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+	    print "The /etc/profile.d/oscar_home.{csh,sh} files point to\n";
+	    print "different \$OSCAR_HOME environment variables!\n";
+	    print "Fix or delete them and rerun this program!\n";
+	    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+	    exit 1;
+       }
+       # is there another OSCAR installation around?
+       if ($dir_sh && ($dir_sh ne $ohome)) {
+ 	    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+	    print "The /etc/profile.d/oscar_home.{csh,sh} files already exist\n";
+	    print "and point to a different OSCAR installation!\n";
+	    print "If you want to DELETE the other OSCAR installation (!!!)\n";
+	    print "you should do:\n";
+	    print "   cd $dir_sh\n";
+	    print "   scripts/start_over\n";
+	    print "Then rerun this script.\n";
+	    print "ATTENTION: The steps described above will remove all OSCAR\n";
+	    print "packages and delete all defined cluster nodes!\n";
+	    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+	    exit 1;
+       }
+       # set environment variable OSCAR_HOME
+       if ($ENV{OSCAR_HOME} ne $ohome) {
+ 	    oscar_log_subsection("Setting env variable OSCAR_HOME to $ohome");
+	    $ENV{OSCAR_HOME} = $ohome;
+       }
+       # write profile.d files
+       if (!$dir_sh || !$dir_csh) {
+	    oscar_log_subsection("Generating /etc/profile.d/oscar_home.{sh,csh} files.");
+	    &profiled_files_write($ohome);
+       }
     }
 }
 
