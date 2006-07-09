@@ -47,7 +47,6 @@ compat-libgcc-296
 gcc
 gcc-c++
 gcc-gfortran
-libgcc
 gd
 gdb
 gdbm

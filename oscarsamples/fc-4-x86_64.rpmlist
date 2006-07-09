@@ -1,3 +1,4 @@
+4Suite
 anacron
 arpwatch
 at
@@ -66,6 +67,7 @@ grub
 gtk2
 gzip
 hdparm
+hotplug
 hwdata
 info
 initscripts
@@ -191,6 +193,7 @@ libacl
 compat-libf2c-32
 libattr
 elfutils-libelf
+perl-Filter
 libgcj
 fontconfig
 hesiod
@@ -204,12 +207,32 @@ synaptics
 tcp_wrappers
 ttmkfdir
 tzdata
+xinitrc
 xorg-x11-xfs
+xorg-x11-tools
+xorg-x11-Mesa-libGL
+xorg-x11-Mesa-libGLU
+xorg-x11-libs
+xorg-x11-Mesa-libGLU
+fonts-xorg-base
 xorg-x11-xdm
 xorg-x11-font-utils
-xorg-x11-fonts-base
 xorg-x11-xauth
 xorg-x11-twm
-mesa-libGLU
-mesa-libGL
-libX11
+xorg-x11-Mesa-libGL
+xorg-x11-libs
+
+# ia32 RPMs with same name as the x86_64 versions
+glibc.i686
+tcl.i386
+libstdc++.i386
+freetype.i386
+fontconfig.i386
+glibc-devel.i386
+xorg-x11-libs.i386
+expat.i386
+ncurses.i386
+xorg-x11-Mesa-libGL.i386
+zlib.i386
+gpm.i386
+libgcc.i386
