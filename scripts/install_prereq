@@ -150,6 +150,8 @@ vprint("Following packages will be removed:\n\t".
        join("\n\t",@removes) . "\n");
 vprint("Following packages will be installed:\n\t".
        join("\n\t",@installs) . "\n");
+print("Following packages will be installed:\n\t".
+       join("\n\t",@installs) . "\n");
 vprint("Following shell commands will be executed:\n\t".
        join("\n\t",@shellcmds) . "\n");
 
@@ -260,36 +262,48 @@ sub handle_dumb_rpms {
 sub handle_dumb_debs {
     my ($remove, @pkgs) = @_;
     my $cmd;
+    my $ret;
     return if (!scalar(@pkgs));
+    print "Debian packages to install @pkgs\n";
     for my $pkg (@pkgs) {
 	# make sure we deal with package names, not file names
 	my $pkgname = $pkg; $pkgname =~ s/\.deb$//;
 	if ($remove) {
-	    $cmd = "dpkg --status $pkgname >/dev/null 2>&1";
+	    # we test first if the package is installed
+	    $cmd = "dpkg -l | grep $pkgname";
 	    vprint("Executing: $cmd\n");
-	    if (!system($cmd)) {
-		# remove all instances of package
-		$cmd = "dpkg --purge --force-depends $pkgname";
-		vprint("Executing: $cmd\n");
-		!system($cmd) or print "Warning: removal failed: $!\n";
+	    $ret = `$cmd`;
+	    if (!$ret)) {
+	      vprint("Package not installed, we do not try to remove it\n");
 	    } else {
-		vprint("Package $pkgname not installed.\n");
+	      # remove all instances of package
+	      $cmd = "apt-get remove $pkgname --assume-yes";
+	      vprint("Executing: $cmd\n");
+	      system($cmd);
 	    }
 	} else {
-	    # already installed?
-	    $cmd = "dpkg --status $pkgname >/dev/null 2>&1";
-	    vprint("Executing: $cmd\n");
-	    if (system($cmd)) {
-		# not installed, so do it now
-		my $pkgpath = locate_pkg($pkg);
-		if ($pkgpath) {
-		    $cmd = "dpkg --install $pkgpath";
-		    vprint("Executing: $cmd\n");
-		    !system($cmd) or croak "install failed: $!\n";
-		} else {
-		    print "WARNING: Could not locate package $pkg\n";
-		}
+	  # we first check if the package is already installed or not
+	  $cmd = "dpkg -l | grep $pkgname";
+	  vprint("Executing: $cmd\n");
+	  $ret = `$cmd`;
+	  if (!$ret) {
+	    vprint("Package $pkgname already installed\n");
+	  } else {
+	    # we try first to find the package locally
+	    my $pkgpath = locate_pkg($pkg);
+	    if ($pkgpath) {
+	      # if we find a package locally we use it
+	      vprint("Package $pkgname locally found $pkgpath\n");
+	      $cmd = "dpkg -i $pkgpath";
+	      vprint("Executing: $cmd\n");
+	      !system($cmd) or croak "install failed: $!\n";
+	    } else {
+	      # if we do not find a package locally, we try to find one online
+	      $cmd = "apt-get install $pkgname --assume-yes";
+	      vprint("Executing: $cmd\n");
+	      system($cmd);
 	    }
+	  }
 	}
     }
 }
@@ -313,11 +327,11 @@ sub locate_pkg {
     $pkgmatch = $pkg;
     if ($pkg =~ /\.$suffix$/) {
 	$pkgmatch =~ s/\.$suffix$/*.$suffix/;
-    } elsif ($pkg =~ /\.($rarch|noarch)$/) {
+    } elsif ($pkg =~ /\.($rarch|noarch|all)$/) {
 	my $parch = $1;
 	$pkgmatch =~ s/\.$parch$/*.$parch.$suffix/;
     } else {
-	$pkgmatch .= "*{$march,noarch}.$suffix";
+	$pkgmatch .= "*{$march,noarch,all}.$suffix";
     }
     # 
     my @lrepos;
@@ -376,7 +390,7 @@ sub best_version {
 	vprint(":: $p :: $name $ver $parch<\n");
 	next if (!$name || !$ver);
 	next if ($pkg !~ /^$name/);
-	next if ($parch !~ /^($rarch|noarch)$/);
+	next if ($parch !~ /^($rarch|noarch|all)$/);
 	if (!$best || (cmp_version_strings($ver, $bestversion) == 1)) {
 	    vprint("   - $p selected\n");
 	    $best = $p;
@@ -409,9 +423,10 @@ sub check_installed {
 		print "WARNING: Package $p was not installed!\n";
 	    }
 	} elsif ($suffix eq "deb") {
-	    $cmd = "dpkg --status $p >/dev/null 2>&1";
+	    $cmd = "dpkg -l | grep $p";
 	    vprint("Executing: $cmd\n");
-	    if (system($cmd)) {
+	    my $ret=`$cmd`;
+	    if (!$ret) {
 		$err++;
 		print "WARNING: Package $p was not installed!\n";
 	    }
@@ -515,3 +530,4 @@ sub usage {
     print "\$OSCAR_HOME environment variable's value!\n";
     exit $ret if ($ret);
 }
+
