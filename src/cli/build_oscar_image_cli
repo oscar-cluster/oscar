@@ -92,17 +92,17 @@ $diskfile .= ".disk";
 my $config = init_si_config();
 
 my %vars = (
-	    imgpath => $config->DEFAULT_IMAGE_DIR,
-	    imgname => "oscarimage",
-	    arch => (uname)[4],
-	    pkgfile => $pkglist,
-	    pkgpath => "$oscar_pool,$distro_pool",
-	    diskfile => $diskfile,
-	    ipmeth => "static",
-	    piaction => "beep",
-	    postinstall => \&postimagebuild,
-	    distro => ""
-	    );
+           imgpath => $config->DEFAULT_IMAGE_DIR,
+           imgname => "oscarimage",
+           arch => (uname)[4],
+           pkgfile => $pkglist,
+           pkgpath => "$oscar_pool,$distro_pool",
+           diskfile => $diskfile,
+           ipmeth => "static",
+           piaction => "beep",
+           postinstall => \&postimagebuild,
+           distro => ""
+           );
 
 #
 #Validate image name.
@@ -289,28 +289,28 @@ sub add_image_build
 	#for the image
 	if(ref($vars{postinstall}) eq "CODE")
 	{
-               { #HACK TESTING THE strict refs stuffo...
-                no strict 'refs';
+		{ #HACK TESTING THE strict refs stuffo...
+			no strict 'refs';
 		
-		unless( &{$vars{postinstall}}(%{$vars}) )
-		{
-			carp("Couldn't run postinstall");
-			return 1;
+			unless( &{$vars{postinstall}}(%{$vars}) )
+			{
+				carp("Couldn't run postinstall");
+				return 1;
+			}
 		}
-               }
 	}
 
 	progress(99);
 	
 	if(ref($vars{postinstall}) eq "ARRAY")
 	{
-        	my $sub = shift(@{$vars{postinstall}});
-        	unless( &$sub(%{$vars}, @{$vars{postinstall}}) )
+		my $sub = shift(@{$vars{postinstall}});
+		unless( &$sub(%{$vars}, @{$vars{postinstall}}) )
 		{
-            		carp("Couldn't run postinstall");
-            		return 1;
-        	}
-    	}
+			carp("Couldn't run postinstall");
+			return 1;
+		}
+	}
 
 	progress(100);
 	

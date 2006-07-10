@@ -29,9 +29,10 @@ $| = 1;
 
 my $selectorfile = " ";
 my $buildfile = " ";
+my $definefile = " ";
 my $help = '';
 
-GetOptions('help' => \$help, 'selector=s' => \$selectorfile, 'build=s' => \$buildfile);
+GetOptions('help' => \$help, 'selector=s' => \$selectorfile, 'build=s' => \$buildfile, 'define=s' => \$definefile);
 
 my $adapter = shift;
 
@@ -40,7 +41,8 @@ if ($#ARGV >= 0 || $help)
 	print "Usage: main_cli [FLAGS] interface 
 Flags (Provide automation):
 	--selector <filename> : Passes the filename to the selector script
-	--build <filename> : Passes the filename to the build script\n";
+	--build <filename> : Passes the filename to the build script
+	--define <filename> : Passes the filename to the define script\n";
 	exit 1;
 }
 
@@ -74,6 +76,13 @@ else
 #Step 4 - Build OSCAR Client Image
 $cmd = "./build_oscar_image_cli";
 $cmd = $cmd . " --file $buildfile" if ($buildfile ne " ");
+$cmd = $cmd . " $adapter";
+oscar_log_subsection("Running command: $cmd");
+system($cmd);
+
+#Step 5 - Define OSCAR Clients
+$cmd = "./define_oscar_clients_cli";
+$cmd = $cmd . " --file $definefile" if ($buildfile ne " ");
 $cmd = $cmd . " $adapter";
 oscar_log_subsection("Running command: $cmd");
 system($cmd);
