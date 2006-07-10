@@ -72,8 +72,6 @@ $build = $cwd . "/$build" if ($build !~ /$cwd/ && $build ne '');
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0 || $ENV{'USER'} ne 'root');
 
-my $os = OSCAR::OCA::OS_Detect::open();
-
 # Validate OSCAR_HOME environment variable and write /etc/profile.d files
 &oscar_home_env();
 
@@ -164,6 +162,7 @@ $ENV{LC_TIME} = "C";
 # Check to see if this is a supported platform
 
 oscar_log_subsection("Checking if this is a supported platform");
+my $os = OSCAR::OCA::OS_Detect::open();
 if (!$os) {
     print("ERROR: This is an unsupported system.  Specifically, no module in OSCAR/OCA/OS_Detect positively identified this as a supported system.\n");
     die("Cannot continue");
@@ -314,16 +313,16 @@ sub oscar_home_env {
 
     # Two situations now: we are using an RPM based distro therefore we need to update /etc/profile.d/, or we are using a Debian-like distro and therefore, we do not have a /etc/profile.d/ folder (see Debian policies for more information), and we update /root/.bashrc
     # First case: Debian-like distro
-    if ($os->{distro} eq "debian") {
-    	print "Setup environment variables\n";
-	my $ret = `grep OSCAR /root/.bashrc`;
-	# We update /etc/.bashrc only if we did not do it before
-	if ($ret eq "") {
-		my $cmd4deb = "echo \"OSCAR_HOME=/root/oscar\nexport OSCAR_HOME\n\" >> /root/.bashrc";
-		system ($cmd4deb);
-		$cmd4deb = "source /root/.bashrc";
-		system ($cmd4deb);
-	}
+    my $dir = "/etc/profile.d/";
+    if (!-d $dir) {
+        my $ret = `grep OSCAR /root/.bashrc`;
+        # We update /etc/.bashrc only if we did not do it before
+        my $cmd4deb;
+        if ($ret eq "") {
+             $cmd4deb = "echo \"OSCAR_HOME=$ohome\nexport OSCAR_HOME\n\" >> /root/.bashrc";
+             system ($cmd4deb);
+        }
+	$ENV{OSCAR_HOME} = $ohome;
     }
     # Second case RPM based distros
     else {
