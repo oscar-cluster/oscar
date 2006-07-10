@@ -286,7 +286,7 @@ sub handle_dumb_debs {
 	  $cmd = "dpkg -l | grep $pkgname";
 	  vprint("Executing: $cmd\n");
 	  $ret = `$cmd`;
-	  if (!$ret) {
+	  if ($ret) {
 	    vprint("Package $pkgname already installed\n");
 	  } else {
 	    # we try first to find the package locally
