@@ -8,31 +8,41 @@
 # This section defines the OSCAR clients
 #
 # Some code in this section was borrowed from:
-#   trunk/scripts/osacr_wizard
+#   trunk/scripts/oscar_wizard
 
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
+use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller";
 use OSCAR::Logger;
+use OSCAR::Network;
+use OSCAR::Database;
+use SystemInstaller::Tk::Common;
+use SIS::Image;
+use SIS::DB;
 use Getopt::Long;
 use POSIX;
 
 $| = 1;
 
-oscar_log_section("Define OSCAR Clients");
-
 my $interface = "";
-our $file = "";
+our $file = " ";
 my $help = "";
 
 GetOptions('help' => \$help, 'filename=s' => \$file, 'f=s' => \$file);
 
+$interface = shift;
+
+if($interface eq "") {$help = 1;}
+
 if ($help)
 {
-	print "INSERT HELP MESSAGE HERE\n";
+	print "Usage: define_oscar_clients_cli [FLAGS] adapter
+	
+  --filename, -f	The file to be read in to automate this step.\n";
+  
 	exit 0;
 }
 
-$interface = shift;
+oscar_log_section("Define OSCAR Clients");
 
 my ($ip, $broadcast, $netmask) = interface2ip($interface);
 my ($a, $b, $c, $d) = split(/\./, $ip);
@@ -75,21 +85,22 @@ if(!$dnsdomainname)
 }
 
 my %vars = (
-		imgname => "oscarimage",
-		basename => "oscarnode",
-		domainname => $dnsdomainname,
-		numhosts => "1",
-		startinghostnum => "1",
-		netmask => $netmask,
-		gateway => $gw,
-		startip => $startip,
-		postinstall => \&postaddclients
-	  );
+           imgname => "oscarimage",
+           basename => "oscarnode",
+           domainname => $dnsdomainname,
+           numhosts => "1",
+           startinghostnum => "1",
+           netmask => $netmask,
+           gateway => $gw,
+           startip => $startip,
+           postinstall => \&postaddclients
+           );
 
 addclients(%vars);
 
 sub addclients
 {
+	our $file;
 	my %vars = ( 
 		imgname => "",
 		basename => "",
@@ -104,7 +115,7 @@ sub addclients
 		);
 	my $config = init_si_config();
 	my @allimages = list_image();
-	my @mostimages;
+	my @imagenames;
 	my $defimage;
 	my $img;
 	foreach $img (@allimages)
@@ -112,15 +123,16 @@ sub addclients
 		if($img->name eq $vars{imgname})
 		{
 			$defimage = $vars{imgname};
+			push(@imagenames, $img->name);
 		}
 		else
 		{
-			push(@mostimages, $img->name);
+			push(@imagenames, $img->name);
 		}
 	}
 
 	#If the default selection wasn't found, just use the first one
-	$defimage = shift(@mostimages) unless $defimage;
+	$defimage = $imagenames[0] unless $defimage;
 
 	unless ($defimage )
 	{
@@ -130,47 +142,99 @@ sub addclients
 
 	my %defaults = %vars;
 
-	open (LOG, ">define.log");
-	my $selection;
-	do #Loop until the user picks quit
+	if($file ne " ")
 	{
-		do #Loop until the user picks a valid response
+		oscar_log_subsection("Running in automated mode from $file");
+		open(FILE, $file) || die "Can't open $file\n";
+		my @file = <FILE>;
+		chomp @file;
+		for(my $i = 0; $i < $#file; $i++)
 		{
-			#Put a couple of spacer lines in
-			print "\n\n";
-
-			print "Select one\n" .
-			"-----------------------------------------\n" .
-			"1)  Image Name: $defimage\n" .
-			"2)  Domain Name: $vars{domainname}\n" .
-			"3)  Base Name: $vars{basename}\n" .
-			"4)  Number of Hosts: $vars{numhosts}\n" . 
-			"5)  Starting Number: $vars{startinghostnum}\n" .
-			"6)  Padding: $vars{padding}\n" .
-			"7)  Starting IP: $vars{startip}\n" .
-			"8)  Subnet Mask: $vars{netmask}\n" .
-			"9)  Default Gateway: $vars{gateway}\n" .
-			"10) Add Clients\n";
-			$selection = <STDIN>;
-			print LOG $selection;
-			chomp $selection;
-		} while ($selection < 1 || $selection > 10);
-
-		#Go to the appropriate subroutine
-		if($selection == 1) {$defimage = image_name($defimage, @mostimages);}
-		elsif($selection == 2) {$vars{domainname} = domain_name($vars{domainname});}
-		elsif($selection == 3) {$vars{basename} = base_name($vars{basename});}
-		elsif($selection == 4) {$vars{numhosts} = num_hosts($vars{numhosts});}
-		elsif($selection == 5) {$vars{startinghostnum} = start_host($vars{startinghostnum});}
-		elsif($selection == 6) {$vars{padding} = padding($vars{padding});}
-		elsif($selection == 7) {$vars{startip} = start_ip($vars{startip});}
-		elsif($selection == 8) {$vars{netmask} = netmask($vars{netmask});}
-		elsif($selection == 9) {$vars{gateway} = gateway($vars{gateway});}
-	} while ($selection != 10);
-	close LOG;
-
+			if($file[$i] == 1) {
+				$defimage = image_name($file[++$i], @imagenames);
+				oscar_log_subsection("Image Name: $defimage");
+			}
+			elsif($file[$i] == 2) {
+				$vars{domainname} = $file[++$i];
+				oscar_log_subsection("Domain Name: " . $vars{domainname});
+			}
+			elsif($file[$i] == 3) {
+				$vars{basename} = $file[++$i];
+				oscar_log_subsection("Base Name: " . $vars{basename});
+			}
+			elsif($file[$i] == 4) {
+				$vars{numhosts} = $file[++$i];
+				oscar_log_subsection("Number of Hosts: " . $vars{numhosts});
+			}
+			elsif($file[$i] == 5) {
+				$vars{startinghostnum} = $file[++$i];
+				oscar_log_subsection("Starting Host Number: " . $vars{startinghostnum});
+			}
+			elsif($file[$i] == 6) {
+				$vars{padding} = $file[++$i];
+				oscar_log_subsection("Padding: " . $vars{padding});
+			}
+			elsif($file[$i] == 7) {
+				$vars{startip} = $file[++$i];
+				oscar_log_subsection("Starting IP: " . $vars{startip});
+			}
+			elsif($file[$i] == 8) {
+				$vars{netmask} = $file[++$i];
+				oscar_log_subsection("Netmask: " . $vars{netmask});
+			}
+			elsif($file[$i] == 9) {
+				$vars{gateway} = $file[++$i];
+				oscar_log_subsection("Gateway: " . $vars{gateway});
+			}
+			elsif($file[$i] == 10) {last;}
+		}
+	}
+	else
+	{
+		open (LOG, ">define.log");
+		my $selection;
+		do #Loop until the user picks quit
+		{
+			do #Loop until the user picks a valid response
+			{
+				#Put a couple of spacer lines in
+				print "\n\n";
+	
+				print "Select one\n" .
+				"-----------------------------------------\n" .
+				"1)  Image Name: $defimage\n" .
+				"2)  Domain Name: $vars{domainname}\n" .
+				"3)  Base Name: $vars{basename}\n" .
+				"4)  Number of Hosts: $vars{numhosts}\n" . 
+				"5)  Starting Number: $vars{startinghostnum}\n" .
+				"6)  Padding: $vars{padding}\n" .
+				"7)  Starting IP: $vars{startip}\n" .
+				"8)  Subnet Mask: $vars{netmask}\n" .
+				"9)  Default Gateway: $vars{gateway}\n" .
+				"10) Add Clients\n" .
+				"11) Quit\n" .
+				">  ";
+				$selection = <STDIN>;
+				print LOG $selection;
+				chomp $selection;
+			} while ($selection < 1 || $selection > 11);
+	
+			#Go to the appropriate subroutine
+			if($selection == 1) {$defimage = image_name($defimage, @imagenames);}
+			elsif($selection == 2) {$vars{domainname} = domain_name($vars{domainname});}
+			elsif($selection == 3) {$vars{basename} = base_name($vars{basename});}
+			elsif($selection == 4) {$vars{numhosts} = num_hosts($vars{numhosts});}
+			elsif($selection == 5) {$vars{startinghostnum} = start_host($vars{startinghostnum});}
+			elsif($selection == 6) {$vars{padding} = padding($vars{padding});}
+			elsif($selection == 7) {$vars{startip} = start_ip($vars{startip});}
+			elsif($selection == 8) {$vars{netmask} = netmask($vars{netmask});}
+			elsif($selection == 9) {$vars{gateway} = gateway($vars{gateway});}
+			elsif($selection == 11) {return 0;}
+		} while ($selection != 10);
+		close LOG;
+	}	
 	if($vars{numhosts} < 1) {print "You must add at least one host!\n"; exit 1;}
-
+	
 	my %hashkeys = (
 			numhosts => 'count',
 			basename => 'basename',
@@ -199,6 +263,7 @@ sub addclients
 
 sub postaddclients
 {
+	chdir("$ENV{OSCAR_HOME}/scripts");
 	my $cmd = "./post_clients";
 	oscar_log_subsection("Running: $cmd");
 	!system($cmd) or (carp($!), return undef);
@@ -237,20 +302,24 @@ sub populate_client_group_nodes
 
 sub image_name
 {
+	our $file;
 	my $defimage = shift;
 
 	my $found = 0;
 	my $temp;
-	while (!$found)
+	do
 	{
-		print "Image Name\n" .
-		"--------------------\n" .
-		"Currently: $defimage\n" .
-		"Choices: " . join(" ", @_) . "\n" .
-		"New:  ";
-		$temp = <STDIN>;
-		print LOG $temp;
-		chomp $temp;
+		if($file eq " ")
+		{
+			print "Image Name\n" .
+			"--------------------\n" .
+			"Currently: $defimage\n" .
+			"Choices: " . join(" ", @_) . "\n" .
+			"New:  ";
+			$temp = <STDIN>;
+			print LOG $temp;
+			chomp $temp;
+		}
 	
 		foreach my $image (@_)
 		{
@@ -260,6 +329,12 @@ sub image_name
 				last;
 			}
 		}
+	} while (!$found && $file ne " ");
+
+	if(!$found && $file ne " ")
+	{
+		oscar_log_subsection("$defimage is not an image.  Defaulting to " . $_[0] . "\n");
+		return $_[0];
 	}
 
 	#If the user leaves it blank, don't change anything
@@ -279,7 +354,9 @@ sub domain_name
 	print LOG $temp;
 	chomp $temp;
 
-
+	#If the user leaves it blank, don't change anything
+	if ($temp eq "") {return $domain;}
+	else {return $temp;}
 }
 
 sub base_name
