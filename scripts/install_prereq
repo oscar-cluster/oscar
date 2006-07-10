@@ -267,7 +267,7 @@ sub handle_dumb_debs {
 	my $pkgname = $pkg; $pkgname =~ s/\.deb$//;
 	if ($remove) {
 	    # we test first if the package is installed
-	    $cmd = "dpkg -l | grep $pkgname";
+	    $cmd = "dpkg -l | grep \"ii  $pkgname \"";
 	    vprint("Executing: $cmd\n");
 	    $ret = `$cmd`;
 	    if (!$ret) {
@@ -280,7 +280,7 @@ sub handle_dumb_debs {
 	    }
 	} else {
 	    # we first check if the package is already installed or not
-	    $cmd = "dpkg -l | grep $pkgname";
+	    $cmd = "dpkg -l | grep \"ii  $pkgname \"";
 	    vprint("Executing: $cmd\n");
 	    $ret = `$cmd`;
 	    if ($ret) {
@@ -420,7 +420,7 @@ sub check_installed {
 		print "WARNING: Package $p was not installed!\n";
 	    }
 	} elsif ($suffix eq "deb") {
-	    $cmd = "dpkg -l | grep $p";
+	    $cmd = "dpkg -l | grep \"ii  $p \"";
 	    vprint("Executing: $cmd\n");
 	    my $ret=`$cmd`;
 	    if (!$ret) {
