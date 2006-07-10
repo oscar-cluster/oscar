@@ -273,7 +273,7 @@ sub handle_dumb_debs {
 	    $cmd = "dpkg -l | grep $pkgname";
 	    vprint("Executing: $cmd\n");
 	    $ret = `$cmd`;
-	    if (!$ret)) {
+	    if (!$ret) {
 	      vprint("Package not installed, we do not try to remove it\n");
 	    } else {
 	      # remove all instances of package
