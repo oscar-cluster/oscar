@@ -61,7 +61,7 @@ By default, install_cluster uses the Graphical mode.
 			That stage will not ask for user input.
     --build file	Passes the file into the build stage of the install.
 			That stage will not ask for user input.
-	--define file	Passes the file into the define stage of the install.
+    --define file	Passes the file into the define stage of the install.
 			That stage will not ask for user input.
     --help		Display this help and exit.\n";
     exit 0;
@@ -289,7 +289,7 @@ if ($cli)
 }
 else
 {
-    $cmd = "./oscar_wizard";
+    $cmd = "./oscar_wizard install";
 }
 
 oscar_log_subsection("Running: \"$cmd\"");

@@ -65,7 +65,7 @@ use vars qw($config);
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
 if(!$ENV{OSCAR_HOME}) {
-    croak "The environmental variable OSCAR_HOME is not set.  Please set it to the directory that OSCAR is untarred in, or run install_cluster again.";
+    croak "The environmental variable OSCAR_HOME is not set.  Please set it to the directory that OSCAR is untarred in, or run oscar_wizard again.";
 }
 
 # Some globals
@@ -74,7 +74,7 @@ my $save_text;
 my %options = ();
 my @errors = ();
 my $debug = $ENV{DEBUG_OSCAR_WIZARD};
-my $mode = "install"; # default mode is install
+my $mode = "manage"; # default mode is manage
 
 our $monitortk_pid;
 
@@ -123,8 +123,8 @@ if ( $ARGV[0] ) {
       $mode = "install";
    } else {
       print "Usage: oscar_wizard [install|manage]\n\n";
-      print "       install brings up the wizard in installation mode (default)\n";
-      print "       manage brings up the wizard in management mode\n";
+      print "       install brings up the wizard in installation mode\n";
+      print "       manage brings up the wizard in management mode (default)\n";
       exit 1;
    }
 }
