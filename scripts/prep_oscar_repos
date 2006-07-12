@@ -19,7 +19,7 @@ use Carp;
 
 my ($all, $verbose, $target, @include, $addonly);
 GetOptions(
-           "verbose"     => \$verbose,
+           "verbose|v"     => \$verbose,
            "target|t=s"  => \$target,
            "include|i=s" => \@include,
            "add"    => \$addonly,
@@ -76,6 +76,11 @@ for my $distro (keys(%pools)) {
 sub usage {
     my $ret = shift;
     print "Usage:\n";
-    print "\t$0 [--all]\n\n";
+    print "\t$0 [-v] [--add] [-i dir] [-t dir]\n\n";
+    print " --add\t\t\tadd packages to existing repositories instead of replacing them\n";
+    print " --all\t\tall targets (not implemented yet)\n";
+    print " -i --include dir\tinclude specified search directories\n";
+    print " -t --target target\ttarget location to copy to\n";
+    print " -v --verbose\t\tturn on verbosity\n";
     exit $ret if ($ret);
 }
