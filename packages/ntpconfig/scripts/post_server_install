@@ -28,7 +28,8 @@ use Carp;
 
 my $ntpBuffer = "";
 my $ntp_conf = "/etc/ntp.conf";
-my $step_tickers = "/etc/ntp/step-tickers";
+my $ntp_dir = "/etc/ntp";
+my $step_tickers = "$ntp_dir/step-tickers";
 my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 my $ntpd = "ntpd";
 
@@ -38,7 +39,7 @@ $ntpd = "ntp" if -x "/etc/init.d/ntp";
 # get headnode's interface information from OSCAR database
 my $iface = get_headnode_iface();
 
-open(CONF, $ntp_conf) or croak("Error: unable to open ($ntp_conf)\n");
+open(CONF, $ntp_conf) or croak("Failed to open $ntp_conf");
 
 while ($line = <CONF>) {
     $ntpBuffer = $ntpBuffer.$line;
@@ -51,6 +52,9 @@ my @results=split('\.', $ip);
                                                                                 
 $results[3]=0;
 $network = join(".", @results);
+
+# SUSE Linux's xntp package does not create /etc/ntp, create it here
+!system("mkdir $ntp_dir") or croak("Failed to mkdir $ntp_dir") if !(-d $ntp_dir);
 
 # User has configured ntpconfig package with a NTP server
 if (-e $configurator) {
@@ -67,10 +71,8 @@ if (-e $configurator) {
     	$ntpBuffer = "# Added by OSCAR package ntpconfig\n# User selected NTP Server\nserver  $ref->{ntpserver}\nrestrict $ref->{ntpserver} mask 255.255.255.255\nrestrict $network mask $netmask\n\n".$ntpBuffer;
     }
 
-    $step_tickers = ">".$step_tickers;
-                                                                                                                             
     # populate the step-tickers file with ntp server specified
-    open(STEP, $step_tickers) or croak("Error: unable to open ($step_tickers)\n");
+    open(STEP, ">$step_tickers") or croak("Failed to open $step_tickers");
     close (STEP);
 
 # User has not configured ntpconfig package, sets up NTP server for local use only
@@ -89,9 +91,7 @@ if (-e $configurator) {
 
 $ntpBuffer =~ s/^authenticate/# authenticate/m;
 
-$ntp_conf = ">".$ntp_conf;
-
-open(CONF, $ntp_conf) or croak("Error: unable to open ($ntp_conf)\n");
+open(CONF, ">$ntp_conf") or croak("Failed to open $ntp_conf");
 print CONF $ntpBuffer;
 close(CONF);
 
