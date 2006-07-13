@@ -34,7 +34,8 @@ all:
 OSCAR_VERSION = $(shell dist/get-oscar-version.sh VERSION)
 PKG        = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
 	       awk '/packaging method/{print $$NF}')
-ARCH       = $(shell uname -i)
+ARCH       = $(shell scripts/get_arch)
+
 DIST_VER   = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
 	       awk '/compat distribution/{DIST=$$NF} \
 	            /compat distrover/{VER=$$NF} \
