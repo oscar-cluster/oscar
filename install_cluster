@@ -284,8 +284,8 @@ Aborting the install.\n");
 }
 
 # Now start the execution
-chdir("scripts") or die("Couldn't chdir to scripts") unless $ENV{OSCAR_UI};
-chdir("src/cli") or die("Couldn't chdir to src/cli") if $ENV{OSCAR_UI};
+chdir("scripts") or die("Couldn't chdir to scripts") if ($ENV{OSCAR_UI} eq "gui");
+chdir("src/cli") or die("Couldn't chdir to src/cli") if ($ENV{OSCAR_UI} eq "cli");
 
 # Only setup what we have to get to the OSCAR wizard.  All the rest of
 # server prep is going to be driven after the first panel of
