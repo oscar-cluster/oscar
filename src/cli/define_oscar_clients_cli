@@ -191,7 +191,7 @@ sub addclients
 	}
 	else
 	{
-		open (LOG, ">define.log");
+		open (LOG, ">$ENV{OSCAR_HOME}/tmp/define.log");
 		my $selection;
 		do #Loop until the user picks quit
 		{
@@ -300,17 +300,14 @@ sub populate_client_group_nodes
     #    unlock(\%options, \@errors);
 }
 
-sub image_name
-{
+sub image_name {
 	our $file;
 	my $defimage = shift;
 
 	my $found = 0;
 	my $temp;
-	do
-	{
-		if($file eq " ")
-		{
+	do {
+		if($file eq " ") {
 			print "Image Name\n" .
 			"--------------------\n" .
 			"Currently: $defimage\n" .
@@ -320,19 +317,19 @@ sub image_name
 			print LOG $temp;
 			chomp $temp;
 		}
+        else {
+            $temp = $defimage;
+        }
 	
-		foreach my $image (@_)
-		{
-			if($image eq $temp)
-			{
+		foreach my $image (@_) {
+			if($image eq $temp) {
 				$found = 1;
 				last;
 			}
 		}
 	} while (!$found && $file ne " ");
 
-	if(!$found && $file ne " ")
-	{
+	if(!$found && $file ne " ") {
 		oscar_log_subsection("$defimage is not an image.  Defaulting to " . $_[0] . "\n");
 		return $_[0];
 	}
