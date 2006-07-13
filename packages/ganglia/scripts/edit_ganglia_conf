@@ -34,6 +34,7 @@ use Data::Dumper;
 use OSCAR::Configbox;
 use OSCAR::Database;
 use OSCAR::Opkg;
+use OSCAR::OCA::OS_Detect;
 
 my ($do_gmond, $do_gmetad, $image, @options, $test, $verbose);
 GetOptions( 'gmond'   => \$do_gmond,
@@ -366,21 +367,33 @@ sub add_multicast_route {
     my $static_route_file;
     my $reload_route;
 
-    # FIXME: OCA Framework
-    # Mandriva has a different approach to set and start static routes:
-    if (-e "/etc/mandriva-release") {
+    # use OCA framework to detect the os release.
+    my $os = OSCAR::OCA::OS_Detect::open();
+    my $release = $os->{'compat_distro'};
+
+    # Mandriva and SuSE have a different approach to set and start
+    # static routes:
+    if ($release eq 'mdv') {
 	$route_string = "ADDRESS0=224.0.0.0 NETMASK0=240.0.0.0"; 
 	$static_route_file = "/etc/sysconfig/network-scripts/$iface.route";
+    } elsif ($release eq 'suse') {
+	$route_string = "224.0.0.0/4 0.0.0.0 - $iface"; 
+	$static_route_file = "/etc/sysconfig/network/routes";
     } else {
 	$route_string = "224.0.0.0/4 dev $iface";
     	$static_route_file = "/etc/sysconfig/network-scripts/route-$iface";
     }
 
-    #reload route command, common for both Mandriva and the others distros
-    $reload_route = "/etc/sysconfig/network-scripts/ifup-routes $iface";
+    if ($release eq 'suse') {
+        # SuSE script to reload routes
+        $reload_route = "/etc/sysconfig/network/scripts/ifup-route $iface";
+    } else {
+        #reload route command, common for both Mandriva and the others distros
+        $reload_route = "/etc/sysconfig/network-scripts/ifup-routes $iface";
+    }
 
     # Check to see if multicast route already exists
-    my $mcast_route = `route | grep 224.0.0.0 | grep $iface`;
+    my $mcast_route = `route -n | grep 224.0.0.0 | grep $iface`;
 
     if (!($mcast_route)) {
         if (-e $static_route_file) {
