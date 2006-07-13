@@ -1,16 +1,30 @@
 #!/bin/bash
 #
+# Copyright (c) 2006 Oak Ridge National Laboratory,
+#                    Geoffroy Vallee <valleegr@ornl.gov>
+#                    All rights reserved
+#
+# Some Linux distributions, e.g. Debian Sarge, do not support the command
+# "uname -i" but only "uname -m". Unfortunately "uname -m" returns the 
+# processor architecutre and not "the compatible architecture". Therefore 
+# this script translate a processor architecture into the "compatible 
+# architecture" if the "uname -i" command is not supported.
+# Currently the conversions are:
+#       i586->i386
+#       i686->i386
+# If the command "uname -i" is supported, the commond is directly used.
 
-ret=`uname -i 2>/dev/null`
-if [ -n $ret ]; then
-	ret=`uname -m`
+
+arch=`uname -i 2>/dev/null`
+if [ -n $arch ]; then
+        arch=`uname -m`
 fi
-case "$ret" in
-	"i686")
-		ret="i386"
-		;;
-	"i586")
-		ret="i386"
-		;;
+case "$arch" in
+        "i686")
+                arch="i386"
+                ;;
+        "i586")
+                arch="i386"
+                ;;
 esac
-echo "$ret"
+echo "$arch"
