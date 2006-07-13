@@ -50,8 +50,7 @@ my $help = '';
 GetOptions('help' => \$help, 'cli' => \$cli, 'selector=s' => \$selector, 'build=s' => \$build, 'define=s' => \$define);
 
 #If we get a --help flag
-if($help)
-{
+if($help) {
     print "Usage: install_cluster [OPTION] adapter
 Starts the OSCAR install process.
 By default, install_cluster uses the Graphical mode.
@@ -67,10 +66,22 @@ By default, install_cluster uses the Graphical mode.
     exit 0;
 }
 
+#Create and environment variable to let everyone know what kind of interface
+#we are going to use
+if($cli) {
+    $ENV{OSCAR_UI} = "cli";
+    oscar_log_subsection("Setting env variable OSCAR_UI to cli");
+}
+else {
+    $ENV{OSCAR_UI} = "gui";
+    oscar_log_subsection("Setting env variable OSCAR_UI to gui");
+}
+
 #Put the full pathname on there since this will change directories
 my $cwd = cwd();
 $selector = $cwd . "/$selector" if($selector !~ /$cwd/ && $selector ne '');
 $build = $cwd . "/$build" if ($build !~ /$cwd/ && $build ne '');
+$define = $cwd . "/$define" if ($define !~ /$cwd/ && $define ne '');
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0 || $ENV{'USER'} ne 'root');
@@ -264,7 +275,7 @@ ERROR: Your hostname is \"localhost.localdomain\".
 OSCAR requires that you choose another hostname.
 Aborting the install.\n");
 }
-if (!$ENV{DISPLAY} && !$cli) {
+if (!$ENV{DISPLAY} && ($ENV{OSCAR_UI} eq "gui")) {
     die("
 ERROR: Your \"DISPLAY\" environment variable is not set, probably
 indicating that you are not running in an X windows environment.
@@ -273,18 +284,19 @@ Aborting the install.\n");
 }
 
 # Now start the execution
-chdir("scripts") or die("Couldn't chdir to scripts") unless $cli;
-chdir("src/cli") or die("Couldn't chdir to src/cli") if $cli;
+chdir("scripts") or die("Couldn't chdir to scripts") unless $ENV{OSCAR_UI};
+chdir("src/cli") or die("Couldn't chdir to src/cli") if $ENV{OSCAR_UI};
 
 # Only setup what we have to get to the OSCAR wizard.  All the rest of
 # server prep is going to be driven after the first panel of
 # questions.
 
-if ($cli)
+if ($ENV{OSCAR_UI} eq "cli")
 {
     $cmd = "./main_cli";
     $cmd = $cmd . " --selector $selector" if $selector;
     $cmd = $cmd . " --build $build" if $build;
+    $cmd = $cmd . " --define $define" if $define;
     $cmd = $cmd . " $adapter";
 }
 else
