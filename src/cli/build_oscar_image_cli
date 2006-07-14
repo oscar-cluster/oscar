@@ -99,7 +99,7 @@ my %vars = (
            pkgpath => "$oscar_pool,$distro_pool",
            diskfile => $diskfile,
            ipmeth => "static",
-           piaction => "beep",
+           piaction => "reboot",
            postinstall => \&postimagebuild,
            distro => ""
            );
