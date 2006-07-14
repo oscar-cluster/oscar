@@ -518,7 +518,7 @@ sub build_oscar_image {
                 diskfile => $diskfile,
                 ipmeth => "static",
                 mcast  => "off",
-                piaction => "beep",
+                piaction => "reboot",
                 extraflags => $extraflags,
                 postinstall => \&postimagebuild,
                 step_number => $step_number,
