@@ -79,7 +79,6 @@ if (!$dumb) {
     }
 }
 
-
 # locate destination path for prereq package files and repository url
 my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
@@ -252,6 +251,16 @@ sub handle_dumb_rpms {
     }
 }
 
+# Function to verify if a debian package is installed
+# @param: package name
+# @return: 0 if installed
+sub is_deb_pkg_installed {
+        my $pkg = shift;
+        vprint ("Executing: dpkg-query --status $pkg > /dev/null 2>&1\n");
+        my $ret2 = system("dpkg-query --status $pkg > /dev/null 2>&1");
+        return $ret2;
+}
+
 #
 # Simple implementation for dumb debian package handling
 # hacked by Erich Focht out of the dumb_rpms code, without much
@@ -270,9 +279,7 @@ sub handle_dumb_debs {
 	    $cmd = "dpkg -l | grep \"ii  $pkgname \"";
 	    vprint("Executing: $cmd\n");
 	    $ret = `$cmd`;
-	    if (!$ret) {
-		vprint("Package not installed, we do not try to remove it\n");
-	    } else {
+	    if (!is_deb_pkg_installed($pkgname)) {
 		# remove all instances of package
 		$cmd = "apt-get remove $pkgname --assume-yes";
 		vprint("Executing: $cmd\n");
@@ -280,10 +287,7 @@ sub handle_dumb_debs {
 	    }
 	} else {
 	    # we first check if the package is already installed or not
-	    $cmd = "dpkg -l | grep \"ii  $pkgname \"";
-	    vprint("Executing: $cmd\n");
-	    $ret = `$cmd`;
-	    if ($ret) {
+	    if (!is_deb_pkg_installed($pkgname)) {
 		vprint("Package $pkgname already installed\n");
 	    } else {
 		# we try first to find the package locally
@@ -312,6 +316,7 @@ sub handle_dumb_debs {
 # - try to locate first within package or prereq distro directory
 #   (should we always deliver bootstrap packages, even when all other
 #   packages are stripped away?)
+# !!GV!! It should be ok now since the dumb mode uses apt.
 #
 
 sub locate_pkg {
@@ -420,10 +425,7 @@ sub check_installed {
 		print "WARNING: Package $p was not installed!\n";
 	    }
 	} elsif ($suffix eq "deb") {
-	    $cmd = "dpkg -l | grep \"ii  $p \"";
-	    vprint("Executing: $cmd\n");
-	    my $ret=`$cmd`;
-	    if (!$ret) {
+            if (is_deb_pkg_installed ($p)) {
 		$err++;
 		print "WARNING: Package $p was not installed!\n";
 	    }
