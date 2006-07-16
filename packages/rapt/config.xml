@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
+  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
+>
+  <!--
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id: config.xml 4936 2006-06-01 14:02:45Z efocht $
+  -->
+  <name>Rapt</name>
+
+  <version>
+    <major>1</major>
+    <minor>0</minor>
+    <release>0</release>
+  </version>
+
+  <class>core</class>
+
+  <summary>Rapt wrapper tools for deb repository control, image creation
+and maintenance</summary>
+  <license>GPL</license>
+  <group>System Environment/Base</group>
+  <packager>
+    <name>Erich Focht</name>
+    <email>efocht@hpce.nec.com</email>
+  </packager>
+
+  <description>
+  Tool for setting up, exporting apt repositories and executing
+apt commands for only these repositories. Use it as high level DEB
+replacement which resolves dependencies automatically. This tool
+is very useful for clusters. It can:
+- prepare an debian repository
+- export it through apache
+- execute apt commands applying only to this repository (locally)
+- execute apt commands on the cluster nodes applying only to this repository.
+This makes installing packages, creating cluster node images, updating
+revisions much simpler than with rpm.
+  </description>
+
+  <binary-package-list>
+    <filter>
+    <group>oscar_server</group>
+<!--    <distribution>
+      <name>debian</name>
+    </distribution>-->
+    <pkg>rapt</pkg>
+  </binary-package-list>
+
+</oscar>
