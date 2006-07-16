@@ -256,8 +256,8 @@ sub handle_dumb_rpms {
 # @return: 0 if installed
 sub is_deb_pkg_installed {
         my $pkg = shift;
-        vprint ("Executing: dpkg-query --status $pkg > /dev/null 2>&1\n");
-        my $ret2 = system("dpkg-query --status $pkg > /dev/null 2>&1");
+        vprint ("Executing: apt-get install $pkg --no-act > /dev/null 2>&1\n");
+        my $ret2 = system("apt-get install $pkg --no-act > /dev/null 2>&1");
         return $ret2;
 }
 
