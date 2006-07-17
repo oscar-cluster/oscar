@@ -43,14 +43,19 @@ unless (GetOptions(\%opts,"wait") ) {
 
 END{
 	if ($opts{wait}) {
+		print "\n";
 		if ( $? == 1 ) {
-			print "\nThere is $? failed/skipped test (see above).\nPlease check your logs located in /home/oscartst.\n";
+			print "There is $? failed/skipped test (see above).\nPlease check your logs located in /home/oscartst.\n";
 		} elsif ( $? == 255 ) {
-			print "\nThere are failed/skipped tests (see above).\nPlease check your logs located in /home/oscartst.\n";
+			print "There are failed/skipped tests (see above).\nPlease check your logs located in /home/oscartst.\n";
+		} elsif ( $? == 0 ) {
+			print "All tests passed, your OSCAR cluster is now ready to compute!\n\n";
+			print "Please consider registering your OSCAR cluster at:\n";
+			print "http://oscar.openclustergroup.org/register\n";
 		} else {
-			print "\nThere are $? failed/skipped tests (see above).\nPlease check your logs located in /home/oscartst.\n" if $?;
+			print "There are $? failed/skipped tests (see above).\nPlease check your logs located in /home/oscartst.\n" if $?;
 		}
-	        print "\n...Hit <ENTER> key to exit...";
+	        print "\n...Hit <ENTER> to close this window...";
 	        my $key=<STDIN>;
 	}
 }
