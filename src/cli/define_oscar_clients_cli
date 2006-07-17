@@ -20,6 +20,7 @@ use SIS::Image;
 use SIS::DB;
 use Getopt::Long;
 use POSIX;
+use Carp;
 
 $| = 1;
 
