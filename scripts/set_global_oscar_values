@@ -4,8 +4,7 @@
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 # Copyright 2004 Revolution Linux
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
-# Copyright 2005 Canada's Michael Smith Genome Sciences Centre
-#	    Bernard Li <bli@bcgsc.ca>
+# Copyright (C) 2005, 2006 Bernard Li <bli@bcgsc.ca>. All Rights Reserved. 
 # Copyright (c) 2005-2006 The Trustees of Indiana University.  
 #                    All rights reserved.
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
@@ -52,7 +51,6 @@ my %cmd_options = ();
 %cmd_options = ( 'debug'       => 0,
                  'verbose'     => 0 );
 
-
 $cmd_options{debug} = 1 if $ENV{OSCAR_DB_DEBUG};
 $cmd_options{verbose} = 1 if $ENV{OSCAR_DB_VERBOSE};
 
@@ -70,7 +68,7 @@ You must specify the headnode interface as an argument.
 Options:
   --[no]debug       [do not] turn on debug output (default: no)
   --help            print out usage information then exits
-  --interface       specifies the headnode interface to use (ethX)
+  --interface       specifies the headnode interface to use (eg. eth1)
   --[no]verbose     [do not] turn on verbose output (default: no)
 
 Usage:
@@ -104,11 +102,6 @@ usage(0) if exists $cmd_options{help};
 
 print "DB_DEBUG>$0:\n====> after GetOptions ARGV=<@ARGV>\n" if $cmd_options{debug};
 oda::print_hash( "", "DB_DEBUG>$0:\n====> options after GetOptions", \%cmd_options) if $cmd_options{debug};
-
-if (! ($cmd_options{interface} =~ /^eth/) ) {
-    print "Interface specified not in the format of ethX.\n" if ! ($cmd_options{interface} =~ /^eth/);
-    exit(1);
-}
 
 `ifconfig $cmd_options{interface} > /dev/null 2>&1`;
 
