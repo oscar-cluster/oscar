@@ -1,19 +1,18 @@
 #!/bin/sh
+
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
-#               2005, Canada's Michael Smith Genome Sciences Centre.
-#                     All rights reserved.
+# Copyright (C) 2005 Bernard Li <bli@bcgsc.ca>. All Rights Reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_root,v 1.2 2004/03/12 19:47:25 jenos Exp $
+# $Id$
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
 #          Bernard Li
-
 
 # Stop TORQUE Server if any nodes exhibit "state-unknown" status.
 # This condition could be due to the 5 minute polling interval to the moms
@@ -47,4 +46,3 @@ for serv in pbs_server ; do
 done
 
 exit 0
-

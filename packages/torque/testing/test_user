@@ -1,14 +1,14 @@
 #!/bin/sh
+
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
-#               2005, Canada's Michael Smith Genome Sciences Centre.
-#                     All rights reserved.
+# Copyright (C) 2005 Bernard Li <bli@bcgsc.ca>. All Rights Reserved.
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 
-# $Id: test_user,v 1.2 2004/03/12 19:47:25 jenos Exp $
+# $Id$
 #
 # Authors: Jason Brechin
 #          Jeremy Enos
@@ -31,4 +31,3 @@ else
 fi
 
 ~/pbs_test $clients 1 ~/torque/pbs_script.shell "Hello" ~/torque/shelltest 3 "TORQUE Shell Test"
-
