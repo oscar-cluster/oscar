@@ -425,7 +425,7 @@ sub menu
 				      "1) Image name: $vars{imgname}\n" .
 				      "2) Package file: $vars{pkgfile}\n" .
 				      "3) Distro: $vars{distro}\n" .
-				      "4) Packages Directory: $vars{pkgpath}\n" .
+				      "4) Package Repositories: $vars{pkgpath}\n" .
 				      "5) Disk Partition File: $vars{diskfile}\n" .
 				      "6) IP Assignment Method: $vars{ipmeth}\n" .
 				      "7) Post install action: $vars{piaction}\n" .
@@ -565,12 +565,12 @@ sub packageDir
 	if (defined $input)
 	{
 		$vars{pkgpath} = $input;
-		oscar_log_subsection("Packages Directory: $input");
+		oscar_log_subsection("Package Repositories: $input");
 	}
 	#Interactive
 	else
 	{
-		print "Packages Directory:\n";
+		print "Package Repositories:\n";
 		print "-----------------------\n";
 		print "Currently: $vars{pkgpath}\n";
 		print "New:  ";
