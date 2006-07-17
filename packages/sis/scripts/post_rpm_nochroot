@@ -1,0 +1,127 @@
+#!/usr/bin/env /usr/bin/perl
+#########################################################################
+#  Script Name : post_rpm_nochroot
+#  Written by  : Erich Focht
+#  Date        : July 2006
+#  Purpose     : This post_install script configures sis for the
+#                a particular image. It prepares configurator html
+#                files offering the selection of the default boot kernel
+#                and global append options for the 
+#  Copyright (c) Erich Focht 2006
+#                All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#########################################################################
+# $Id$
+#########################################################################
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use Carp;
+use POSIX;
+use Tk;
+use OSCAR::Configbox;
+use OSCAR::Database;
+use lib '/usr/lib/systeminstaller';
+use SIS::DB;
+use SIS::Image;
+
+my $configdir = "$ENV{OSCAR_PACKAGE_HOME}/.configs";
+
+my $imagedir = shift @ARGV;
+$imagedir =~ s/\/$//;
+my $image = $imagedir;
+$image =~ s:^.*/::g;
+
+my $window;
+
+#####################
+# BEGIN MAIN SCRIPT #
+#####################
+
+my $imageconf = $configdir."/".$image;
+my $scconf = "$imagedir/etc/systemconfig/systemconfig.conf";
+my $masterconf = $ENV{OSCAR_PACKAGE_HOME}."/configurator.html";
+
+my $master_conf;
+if (-e $masterconf) {
+    $master_conf = readInConfigValues($masterconf,"sis","",noarray=>1);
+    # exit if no per-image config
+    if ($master_conf->{sis_per_image} ne "YES") {
+	# set global APPEND config value, if any
+	if ($master_conf->{kernel_append}) {
+	    my $cmd = "scconf_tool --block BOOT --set --var APPEND".
+		" --val \"".$master_conf->{kernel_append}."\" $scconf";
+	    open CMD, "$cmd | " or croak "Could not run: $cmd";
+	    my @out = <CMD>;
+	    close CMD;
+	    open OUT, "> $scconf" or croak "Could not open: $scconf";
+	    print OUT @out;
+	    close OUT;
+	}
+	exit 0;
+    }
+} else {
+    # no per-image config!
+    exit 0;
+}
+
+if (! -d $configdir) {
+    !system("mkdir ".$configdir) || do {
+	print "Could not create directory $configdir\n";
+	exit 1;
+    };
+}
+
+my $i = list_image(name=>$image);
+if (!$i) {
+    carp "Could not find image $image!";
+    exit 1;
+}
+
+print "configuring sis for image=$image\n";
+
+if (! -d $imageconf) {
+    !system("mkdir ".$imageconf) || do {
+	print "Could not create directory $imageconf\n";
+	exit 1;
+    };
+    if (! -e $imageconf."/configurator.html") {
+
+	print "Per image SIS configuration is not implemented yet!\n";
+	
+    }
+} else {
+    print "Found $imageconf\n";
+}
+
+###### remove this after implementing configurator.html generation !!!!
+exit 0;
+###### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# configure this only if no config values found in database
+my @res = get_pkgconfig_vars(opkg => "sis", context => "image:$image");
+if (!@res) {
+    OSCAR::Configbox::configurePackage(0, $imageconf,"sis","image:$image");
+    MainLoop();
+}
+
+#
+# do the SIS configuration according to the values in database
+#
+.....
+
+exit 0;
