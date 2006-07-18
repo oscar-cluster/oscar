@@ -1,0 +1,104 @@
+#!/usr/bin/perl -w
+# $Id$
+#
+# Copyright (c) 2006 Oak Ridge National Laboratory.
+#                    All rights reserved.
+#
+#
+# Descr: "System Sanity", check various system related known issues
+#        that preceeds the OSCAR specific checks, i.e., must be root,
+#        must have SELinux disabled, etc.
+#                        
+# Semantics: The tool reads a directory of check scripts, which either
+#            succeed, fail, or warn printing this status info and a 
+#            provided message.  (see also: OSCAR::SystemCheck for details),  
+#
+
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::SystemSanity;  # Enumeration for constants
+use Carp;
+
+my $system_check_dir = $ENV{OSCAR_HOME} . "/scripts/system-sanity.d";
+
+if (! -d $system_check_dir ) {
+	croak "Error: Missing system-check.d/ directory - \'$system_check_dir\'"; 
+}
+
+my @files = get_check_files( $system_check_dir );
+
+foreach my $file (@files) {
+	my $script = $system_check_dir . "/" . $file;
+
+	if (! -x $script) {
+		print_rslt(FAILURE, "not executable \'$file\'"); 
+
+	} else {
+		my $rc = system($script);
+		$rc = $rc >> 8;  # Shift to get actual return code
+		print_rslt($rc, $file);
+	}
+
+}
+
+exit(0);
+
+
+##########################################################################
+# Sub-rtns
+
+
+
+#  Descr: uniform display of status info & msg from system-sanity check(s).
+# Return: success (1) / error (undef)
+sub print_rslt
+{
+	my $rc  = shift;
+	my $msg = shift;
+
+	if ( !defined($rc) ) {
+		print "Error: undefined rc value passed to " . (caller(0))[3] ."\n";
+		return(undef);
+	}
+
+	if ($rc == FAILURE) {
+		print "Failure: $msg\n";
+
+	} elsif ($rc == SUCCESS) {
+		print "Success: $msg\n";
+
+	} elsif ($rc >= WARNING && $rc < FAILURE) {  
+		 # XXX: Keep at end b/c warnings are 1..254 
+		print "Warning: $msg\n";
+	
+	} else {
+		# Crazy catch all case?
+		print "Crazy case -- should never see this...!\n - $msg\n";
+	}
+
+	return(1);
+}
+
+
+#  Descr: read all system-sanity check file(s) from provided directory
+# Return: list of system-sanity check filenames 
+#
+#   NOTE: Not fully qualify path in returned file list so caller can 
+#         easily get at check filenames. 
+#
+sub get_check_files 
+{
+	my $dir = shift;
+
+	opendir(DIR, "$dir") or die "Error: $! - \'$dir\'";
+
+	 # RegEx: ignore all files starting with a dot, 
+	 #        e.g., ".", "..", ".foobar"
+	my @files = grep { !/^\./ } readdir(DIR);
+
+	closedir(DIR);
+
+	return(@files);
+}
+
+
+# vim:tabstop=4:shiftwidth=4:syntax=perl:textwidth=76
