@@ -973,8 +973,10 @@ sub build_autoinstall_cd {
     our $ramdisk;
     #our $uyok_generated;
 
-    #generate_uyok() if ( $uyok && !($uyok_generated) );    
-    generate_uyok();
+    if ($uyok) {
+      #generate_uyok() if ( $uyok && !($uyok_generated) );    
+      generate_uyok();
+    }
 
     my $append = "MONITOR_SERVER=$ip MONITOR_CONSOLE=yes";
     $append = "$append ramdisk_size=80000" if $uyok;
