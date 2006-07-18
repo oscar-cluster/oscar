@@ -67,6 +67,7 @@ setuptool
 strace
 switchdesk
 synaptics
+tcl
 tcpdump
 telnet
 telnet-server
