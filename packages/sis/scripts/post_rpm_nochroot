@@ -122,6 +122,5 @@ if (!@res) {
 #
 # do the SIS configuration according to the values in database
 #
-.....
 
 exit 0;
