@@ -101,7 +101,8 @@ my %vars = (
            ipmeth => "static",
            piaction => "reboot",
            postinstall => \&postimagebuild,
-           distro => ""
+           distro => "",
+           extraflags => $extraflags
            );
 
 #
@@ -229,7 +230,8 @@ sub add_image_build
 		"--location $vars{pkgpath} " .
 		"--filename $vars{pkgfile} " .
 		"--arch $vars{arch} " .
-		"--path $vars{imgpath}/$vars{imgname}";
+		"--path $vars{imgpath}/$vars{imgname}" .
+        " $vars{extraflags}";
 	
 	print "Executing command: $cmd\n";
 	
