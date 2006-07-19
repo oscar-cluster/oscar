@@ -22,18 +22,21 @@ package OSCAR::MAC;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use lib "/usr/lib/systeminstaller";
 use Tk;
 use Tk::Tree;
 use SystemImager::Client;
 use File::Copy;
 use SIS::Adapter;
+use SIS::Client;
 use SIS::DB;
+use SIS::Image;
 use OSCAR::Network;
 use OSCAR::Tk;
 
-use strict;
 use Carp;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::Database;
 use OSCAR::OCA::OS_Detect;
@@ -73,9 +76,12 @@ our $kernel;
 our $ramdisk;
 #our $uyok_generated = 0;
 
+my @install_mode_options = qw(systemimager-rsync systemimager-multicast systemimager-bt);
+
 # Subroutines below here...
 
 our $os = OSCAR::OCA::OS_Detect::open();
+sub sortclients;
 
 sub mac_window {
     $destroyed = 1;
@@ -195,7 +201,7 @@ sub mac_window {
     $install_mode = $orig_install_mode;
  
     my $install_button = $frame->Optionmenu(
-					-options => [ qw(systemimager-rsync systemimager-multicast systemimager-bt) ],
+					-options => [ @install_mode_options ],
 					-variable => \$install_mode
 					);
 
@@ -357,7 +363,7 @@ sub setup_dhcpd {
     our $install_mode;
     our $os;
 
-    $window->Busy(-recurse => 1);
+    $window->Busy(-recurse => 1) if ($ENV{OSCAR_UI} eq "gui");
     oscar_log_subsection("Step $step_number: cleaning hostfile");
     clean_hostsfile() or (carp "Couldn't clean hosts file!",
                           return undef);
@@ -406,8 +412,8 @@ sub setup_dhcpd {
     !system("/etc/init.d/dhcpd restart") or (carp "Couldn't restart dhcpd", 
                                          return undef);
     oscar_log_subsection("Step $step_number: Successfully restarted dhcpd service");
-    our $dhcpbutton->configure(-state => 'disabled');
-    $window->Unbusy();
+    our $dhcpbutton->configure(-state => 'disabled') if ($ENV{OSCAR_UI} eq "gui");
+    $window->Unbusy() if ($ENV{OSCAR_UI} eq "gui");
     return 1;
 }
 
@@ -931,7 +937,7 @@ sub mactransform {
 # Sub to initiate the setup_pxe script
 sub run_setup_pxe {
     our $window;
-    $window->Busy(-recurse => 1);
+    $window->Busy(-recurse => 1) if ($ENV{OSCAR_UI} eq "gui");
  
     our $uyok;
     #our $uyok_generated;
@@ -945,17 +951,21 @@ sub run_setup_pxe {
     }
 
     oscar_log_subsection("Step $step_number: Setup network boot: $cmd");
-    !system($cmd) or (carp($!), $window->Unbusy(), return undef);
+    if ($ENV{OSCAR_UI} eq "gui") {
+        !system($cmd) or (carp($!), $window->Unbusy(), return undef);
+    } else {
+        !system($cmd) or (carp($!), return undef);
+    }
 
     $cmd = "../packages/kernel/scripts/fix_network_boot";
     if ( -x $cmd) {
         oscar_log_subsection("Step $step_number: Finishing network boot: $cmd");
-        system($cmd);
+        !system($cmd) or carp "ERROR COMMAND FAILED ($!): $cmd";
         oscar_log_subsection("Step $step_number: Successfully finished network boot");
     }
 
     oscar_log_subsection("Step $step_number: Successfully setup network boot");
-    $window->Unbusy();
+    $window->Unbusy() if ($ENV{OSCAR_UI} eq "gui");
     return 1;
 }
 
@@ -986,7 +996,8 @@ sub build_autoinstall_cd {
     oscar_log_subsection("Step $step_number: Building AutoInstall CD: $cmd");
     !system($cmd) or croak("Failed to run $cmd");
     oscar_log_subsection("Step $step_number: Successfully built AutoInstall CD");
-    done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.");
+    done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.") if ($ENV{OSCAR_UI} eq "gui");
+    print "You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.\n\n" if ($ENV{OSCAR_UI} eq "cli");
 }
 
 # Run SystemImager's si_prepareclient on the headnode to generate the UYOK
@@ -1013,7 +1024,7 @@ sub generate_uyok {
 sub enable_install_mode {
     our $install_mode;
     our $window;
-    $window->Busy(-recurse => 1);
+    $window->Busy(-recurse => 1) if ($ENV{OSCAR_UI} eq "gui");
 
     our $os;
     my $cmd;
@@ -1108,10 +1119,190 @@ sub enable_install_mode {
 
     oscar_log_subsection("Step $step_number: Successfully enabled installation mode: $install_mode");
 
-    our $dhcpbutton->configure(-state => 'normal');
+    our $dhcpbutton->configure(-state => 'normal') if ($ENV{OSCAR_UI} eq "gui");
+    our $dhcpbtn = 1 if ($ENV{OSCAR_UI} eq "cli");
 
-    $window->Unbusy();
+    $window->Unbusy() if ($ENV{OSCAR_UI} eq "gui");
     return 1;
+}
+
+#Setup the cli
+sub mac_cli {
+    # If there is a filename here, it will be used to automate the 
+    our $autofile = shift;
+    $step_number = shift;
+    our ($vars) = @_;
+
+    chdir("$ENV{OSCAR_HOME}/scripts");
+
+    # init this only once as we don't add network cards during this process
+    @SERVERMACS = set_servermacs();
+
+    oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
+
+    our $install_mode;
+    
+    #Retrive the installation mode from ODA
+    my $orig_install_mode = get_install_mode();
+    
+    $install_mode = $orig_install_mode;
+
+    # The data structure to hold the clients and their information was VERY
+    # tailor made for the GUI and impossible to use for the cli version
+    # so I have to create a new one.  Here's the structure for this one
+    # (so that people after me can actually use it):
+    #
+    # Hash of hashes
+    # 
+    # cli_clients => name => hostname
+    #                     => mac
+    #                     => ip
+    #             => name => hostname ...
+    our %cli_clients;
+    
+    #Get a list of clients
+    my @clients;
+    #{
+        #use base qw(SIS::Component);
+        @clients = sortclients list_client();
+    #}
+    foreach my $client (@clients) {
+        my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
+        $cli_clients{$client->name} = {
+                                       hostname => $client->hostname,
+                                       mac => "",
+                                       ip => $adapter->ip
+                                      };
+    }
+
+    #Start printing the menu
+    cli_menu($autofile);
+}
+
+#The interface for the cli version of the MAC setup
+sub cli_menu {
+    my $done = 0;
+    my $file = shift;
+    our $install_mode;
+    our $dyndhcp = 1;
+    our $uyok = 0;
+    our $dhcpbtn = 0;
+    our $vars;
+
+    open(LOG, ">$ENV{OSCAR_HOME}/tmp/mac.log") || die "Can't open the log to write to.\n";
+    
+    if($file ne " ") {open(FILE, "$file") || die "Can't open the input file\n";}
+    
+    while (!$done) {
+        print "1)  Import MACs from file:  $file\n" . 
+              "2)  Installation Mode:  $install_mode\n" .
+              "3)  Enable Install Mode\n" .
+              "4)  Dynamic DHCP update:  $dyndhcp\n" .
+              "5)  Configure DHCP Server\n" .  
+              "6)  Enable UYOK:  $uyok\n" .
+              "7)  Build AutoInstall CD\n" .
+              "8)  Setup Network Boot\n" .
+              "9)  Finish\n" .
+              ">  ";
+        my $response;
+        if ($file eq " ") {
+            $response = <STDIN>;
+            print LOG $response;
+        }
+        else {
+            $response = <FILE>;
+        }
+        chomp $response;
+        if($response == 1) {
+            my $result = 0;
+            while (!$result) {
+                print "Enter filename:  ";
+                if($file eq " ") {
+                    $response = <STDIN>;
+                    print LOG $response;
+                }
+                chomp $response;
+                $result = load_from_file($response);
+                assign_macs_cli();
+            }
+        }
+        elsif($response == 2) {
+            $install_mode = cli_installmode();
+            print "INSTALL MODE: $install_mode\n";
+        }
+        elsif($response == 3) {
+            enable_install_mode();
+        }
+        elsif($response == 4) {
+            $dyndhcp = ++$dyndhcp%2; #Jump between 1 and 0
+        }
+        elsif($response == 5) {
+            if($dhcpbtn) {
+                setup_dhcpd($$vars{interface});
+            }
+            else {
+                print "Need to Enable Install Mode first\n";
+            }
+        }
+        elsif($response == 6) {
+            $uyok = ++$uyok%2; #Jump between 1 and 0
+        }
+        elsif($response == 7) {
+            my ($ip, $broadcast, $netmask) = interface2ip($$vars{interface});
+            build_autoinstall_cd($ip);
+        }
+        elsif($response == 8) {
+            run_setup_pxe();
+        }
+        elsif($response == 9) {
+            $done = 1;
+            oscar_log_subsection("Step $step_number: Completed successfully");
+        }
+    }
+
+    close LOG;
+}
+
+# This will assign the MAC addresses that were read in from a file to the
+# clients that have been defined.  Right now this is done only in a random
+# mode.  In the future, a way to assign a specific MAC to a specific node
+# will be developed.
+# TODO - Develop a way to assign a specific MAC to a specific node.
+sub assign_macs_cli {
+    our %cli_clients;
+    
+    my @mac_keys = keys %MAC;
+    foreach my $client (keys %cli_clients) {
+        if(my $mac = shift @mac_keys) {
+            my $adapter = list_adapter(client=>$client,devname=>"eth0");
+            $MAC{$mac}->{client} = $adapter->{ip};
+            $adapter->mac($mac);
+            set_adapter($adapter);
+            $cli_clients{$client}->{mac} = $mac;
+            oscar_log_subsection("Assigning MAC: $mac to client: " . 
+                    $cli_clients{$client}->{hostname});
+        } else {
+            return 0;
+        }
+    }
+}
+
+sub cli_installmode {
+    our $install_mode;
+    my $done = 0;
+    while(!$done) {
+        print "Currently:  $install_mode\n" .
+              "Options:  " . join(" ",@install_mode_options) . "\n" .
+              "New:  ";
+        my $line = <STDIN>;
+        chomp $line;
+        foreach my $choice (@install_mode_options) {
+            if($choice eq $line) {
+                $done = 1;
+                return $choice;
+            }
+        }
+    }
 }
 
 1;
