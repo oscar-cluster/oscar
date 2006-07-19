@@ -83,11 +83,14 @@ $selector = $cwd . "/$selector" if($selector !~ /$cwd/ && $selector ne '');
 $build = $cwd . "/$build" if ($build !~ /$cwd/ && $build ne '');
 $define = $cwd . "/$define" if ($define !~ /$cwd/ && $define ne '');
 
-# First of all, we do some system checking
-system("./scripts/system-sanity");
-
 # Validate OSCAR_HOME environment variable and write /etc/profile.d files
 &oscar_home_env();
+
+# First of all, we do some system checking
+if ( system("./scripts/system-sanity") ) {
+	die "ERROR: There are basic system configuration issues (see log).\n";
+}
+
 
 # Validate the interface before we do too much...
 my %nics;

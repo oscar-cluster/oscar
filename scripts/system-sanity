@@ -12,6 +12,10 @@
 # Semantics: The tool reads a directory of check scripts, which either
 #            succeed, fail, or warn printing this status info and a 
 #            provided message.  (see also: OSCAR::SystemCheck for details),  
+# 
+#  Return: In order to work as a standard UNIX tool, the return code
+#          from this tool is as follows: failures (1) / no failures (0)
+#          !system("./scripts/system-sanity") or die "Error: Failed sanity\n";
 #
 
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -28,6 +32,8 @@ if (! -d $system_check_dir ) {
 
 my @files = get_check_files( $system_check_dir );
 
+my $failure_flag = 0;
+
 foreach my $file (@files) {
 	my $script = $system_check_dir . "/" . $file;
 
@@ -38,11 +44,12 @@ foreach my $file (@files) {
 		my $rc = system($script);
 		$rc = $rc >> 8;  # Shift to get actual return code
 		print_rslt($rc, $file);
+		$failure_flag++ if ($rc == FAILURE)
 	}
-
 }
 
-exit(0);
+ # Return: failures (1) / no failures (0)
+exit( ($failure_flag)? 1 : 0 );
 
 
 ##########################################################################
