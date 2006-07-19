@@ -32,7 +32,7 @@ GetOptions('help' => \$help, 'filename=s' => \$file, 'f=s' => \$file);
 
 $interface = shift;
 
-if($interface eq "") {$help = 1;}
+if(!$interface) {$help = 1;}
 
 if ($help)
 {
