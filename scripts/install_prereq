@@ -162,7 +162,7 @@ if ($dumb) {
 	handle_dumb_debs(1,@removes);
 	handle_dumb_debs(0,@installs);
     } else {
-	croak "Support for dumb ".$suffix." install is not implemented.\n";
+	croak "Support for dumb $suffix install is not implemented.\n";
     }
 } else {
     # do the removes before the installs
@@ -181,7 +181,11 @@ if (scalar(@installs) && &check_installed(@installs)) {
 for my $cmd (@shellcmds) {
     $cmd =~ s/\$OSCAR_HOME/$ohome/g;
     vprint("Executing: $cmd\n");
-    !system("$cmd") or print "Command \"$cmd\" returned $?\n";
+    my $ret = system("$cmd");
+    if ($ret) {
+	print "Command \"$cmd\" returned $?\n";
+	exit $ret;
+    }
 }
 
 exit 0;
