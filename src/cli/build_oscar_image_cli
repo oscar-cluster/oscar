@@ -77,7 +77,7 @@ foreach my $opkg_ref (@opkgs)
 			os => $master_os);
 	foreach my $pkg (@pkgs)
 	{
-		print OUTFILE "pkg\n";
+		print OUTFILE "$pkg\n";
 	}
 }
 close(OUTFILE);
