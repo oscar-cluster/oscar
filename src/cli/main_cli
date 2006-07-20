@@ -92,3 +92,28 @@ system($cmd);
 
 #Step 6 Setup networking
 OSCAR::MAC::mac_cli($netfile, 6, {interface => $interface}, 'netboot');
+
+#Step 7 Complete Cluster Setup
+my $trash = " ";
+while ($trash ne "continue") {
+    print "*************************************************************\n" .
+    "* Before continuing, network boot all of your nodes.        *\n" .
+    "* Once they have completed installation, reboot them from   *\n" .
+    "* the hard drive. Once all the machines and their ethernet  *\n" .
+    "* adaptors are up, type \'continue\' and press Enter.         *\n" .
+    "*************************************************************\n";
+    $trash = <STDIN>;
+    chomp $trash;
+}
+oscar_log_section("Complete Cluster Setup");
+$cmd = $ENV{OSCAR_HOME} . "/scripts/post_install";
+if(!system($cmd)) {
+    oscar_log_subsection("Successfully completed the cluster install");
+} else {
+    oscar_log_subsection("Failed to properly complete the cluter install; please check the logs");
+}
+
+#Step 8 Test Cluster Setup
+oscar_log_section("Test Cluster Setup");
+$cmd = $ENV{OSCAR_HOME} . "/testing/test_cluster";
+system($cmd);
