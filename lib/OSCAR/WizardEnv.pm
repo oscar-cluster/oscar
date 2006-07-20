@@ -87,7 +87,9 @@ sub update_env
 		$DEBUG = DBG_OFF;   # Overrides all other flags
 	}
 
-
+	# this hack is needed for SuSE, otherwise it won't source the
+	# scripts in /etc/profile.d/ [EF, 20.07.2006]
+	delete $ENV{PROFILEREAD} if exists($ENV{PROFILEREAD});
 
 	my ($rh, $wh);  # Handle autovivification 
 
