@@ -44,7 +44,7 @@ foreach my $file (@files) {
 		my $rc = system($script);
 		$rc = $rc >> 8;  # Shift to get actual return code
 		print_rslt($rc, $file);
-		$failure_flag++ if ($rc == FAILURE)
+		$failure_flag++ if ($rc == FAILURE);
 	}
 }
 
