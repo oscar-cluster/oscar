@@ -131,15 +131,24 @@ sub checksum_files {
     return 0 if (! -d $dir);
     my $wd = cwd();
     chdir($dir);
+    my $md5sum_cmd;
+    # Since some distros does not support "md5sum -" to get the std input
+    # we check first what md5sum we have to use. Not that currently only
+    # Debian Sarge seems to not support "md5sum -"
+    if (system ("echo \"toto\" | md5sum - > /dev/null 2>&1")) {
+        $md5sum_cmd = "md5sum ";
+    } else {
+        $md5sum_cmd = "md5sum - ";
+    }
     print "Checksumming directory ".cwd()."\n" if ($verbose);
     @pattern = map { "-name '".$_."'" } @pattern;
     my $cmd = "find . -follow -type f \\( ".join(" -o ",@pattern).
 	" \\) -printf \"%p %s %u %g %m %t\\n\" | sort ";
     if ($verbose > 7) {
 	my $tee = $ENV{OSCAR_HOME}."/tmp/".basename($dir).".files";
-	$cmd .= "| tee $tee | md5sum -";
+	$cmd .= "| tee $tee | $md5sum_cmd ";
     } else {
-	$cmd .= "| md5sum -";
+	$cmd .= "| $md5sum_cmd ";
     }
     print "Executing: $cmd\n" if ($verbose);
     local *CMD;
