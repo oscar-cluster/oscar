@@ -27,7 +27,7 @@ my $mysqld;
 
 if ($os->{compat_distro} =~ /^(rhel|fc|mdv)/) {
     $mysqld      = 'mysqld';
-} elsif ($os->{compat_distro} =~ /^(suse|mdk)/) {
+} elsif ($os->{compat_distro} =~ /^(suse|mdk|debian)/) {
     $mysqld      = 'mysql';
 } else {
     print "\n\nCannot determine distribution and version!!!!\nCannot determine oda rpms to install!!!!\n\n";
@@ -43,7 +43,12 @@ goto SKIP_FOR_MANDRIVA
 # Set up the InnoDB type to the oscar database tables.
 # 
 # This script needs to run for MySQL 3.28 ( < 4.0 ).
-my $mysql_conf = "/etc/my.cnf";
+my $mysql_conf;
+if ($os->{compat_distro} =~ /^(debian)/) {
+        $mysql_conf = "/etc/mysql/my.cnf";
+} else {
+        $mysql_conf = "/etc/my.cnf";
+}
 my $innodb_conf = "innodb_data_file_path=ibdata1:500M";
 my $innodb_flag = 0;
 
