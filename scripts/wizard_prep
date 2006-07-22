@@ -76,7 +76,7 @@ my $os = &OSCAR::PackagePath::distro_detect_or_die();
 my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
 
-my $ARCH = `uname -i`;
+my $ARCH = `./get_arch`;
 chomp($ARCH);
 
 # check if distro_pkg_pool contains packages or not
