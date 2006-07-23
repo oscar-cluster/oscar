@@ -7,25 +7,35 @@
 use warnings;
 use English '-no_match_vars';
 use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX;
 
 # NOTE: Use the predefined constants for consistency!
 use OSCAR::SystemSanity;
 
-my $rc = FAILURE;
+my $rc = SUCCESS;
 
-my $hostname = `hostname`;
-chomp ($hostname);
-print "Hostname = $hostname\n";
-
-if ( $hostname ne "localhost" && $hostname ne "" && $hostname ne "localhost.localdomain" ) {
-    $rc = SUCCESS;
+my $hostname = (uname)[1];
+if ($hostname eq "") {
+    $rc = FAILURE;
 } else {
+    my ($shorthostname) = split(/\./,$hostname,2);
+    my $dnsdomainname = `dnsdomainname`;
+    chomp($dnsdomainname);
+    chomp ($hostname);
+
+    if ($shorthostname eq "localhost") {
+        $rc = FAILURE;
+    }
+    if ($hostname eq "localhost.localdomain") {
+        $rc = FAILURE;
+    }
+}
+
+if ( $rc eq FAILURE ) {
     print " ----------------------------------------------\n";
     print "  $0 \n";
     print "  Hostname not correct \n";
     print " ----------------------------------------------\n";
-
-    $rc = FAILURE;
 }
 
 exit($rc);
