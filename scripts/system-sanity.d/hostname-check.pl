@@ -17,7 +17,7 @@ my $hostname = `hostname`;
 chomp ($hostname);
 print "Hostname = $hostname\n";
 
-if ( $hostname ne "localhost" && $hostname ne "") {
+if ( $hostname ne "localhost" && $hostname ne "" && $hostname ne "localhost.localdomain" ) {
     $rc = SUCCESS;
 } else {
     print " ----------------------------------------------\n";
