@@ -106,8 +106,22 @@ sub print_image_detect {
 
     my $os = OSCAR::OCA::OS_Detect::open($img);
     die "Unable to determine operating system" if (!$os);
-    print "Distro package url : ".&distro_repo_url($img)."\n";
-    print "OSCAR package pool : ".&oscar_repo_url($img)."\n";
+    my @distro_repos = split(",",&distro_repo_url($img));
+    my @oscar_repos = split(",",&oscar_repo_url($img));
+    if ($options{node}) {
+	# for repos local to master prepend http://.../repo
+	# in the expectation that they are exported
+	for (@distro_repos, @oscar_repos) {
+	    if (!/^(http|ftp):/ && /^\//) {
+		$_ = "http://oscar_server/repo".$_;
+	    } elsif (/^file:/) {
+		s,^file:,http://oscar_server/repo,;
+	    }
+	}
+    }
+    print "Distro package url : ".join(",",@distro_repos)."\n";
+    print "OSCAR package pool : ".join(",",@oscar_repos)."\n";
+
     &print_os_info($os);
     vprint("Detected os structure :\n".Dumper($os));
 }
