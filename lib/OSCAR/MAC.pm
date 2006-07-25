@@ -1271,18 +1271,76 @@ sub cli_menu {
 sub assign_macs_cli {
     our %cli_clients;
     
+    print "=====MAC Assignment Method=====\n" .
+          "1)  Automatically assign MACs\n" .
+          "2)  Manually assign MACs\n" .
+          ">  ";
+    my $response = <STDIN>;
+    chomp $response;
     my @mac_keys = keys %MAC;
-    foreach my $client (keys %cli_clients) {
-        if(my $mac = shift @mac_keys) {
-            my $adapter = list_adapter(client=>$client,devname=>"eth0");
-            $MAC{$mac}->{client} = $adapter->{ip};
-            $adapter->mac($mac);
-            set_adapter($adapter);
-            $cli_clients{$client}->{mac} = $mac;
-            oscar_log_subsection("Assigning MAC: $mac to client: " . 
-                    $cli_clients{$client}->{hostname});
-        } else {
-            return 0;
+    
+    if ($response == 1) {
+        foreach my $client (keys %cli_clients) {
+            if(my $mac = shift @mac_keys) {
+                my $adapter = list_adapter(client=>$client,devname=>"eth0");
+                $MAC{$mac}->{client} = $adapter->{ip};
+                $adapter->mac($mac);
+                set_adapter($adapter);
+                $cli_clients{$client}->{mac} = $mac;
+                oscar_log_subsection("Assigning MAC: $mac to client: " . 
+                        $cli_clients{$client}->{hostname});
+            } else {
+                return 0;
+            }
+        }
+    } else {
+        my @client_keys = keys %cli_clients;
+        my $quit = 0;
+        while (!$quit) {
+            my $valid = 0;
+            my $mac_selection;
+            while (!$valid && !$quit) {
+                print "-----MAC Addresses-----\n".join("\n",@mac_keys)."\n";
+                print "---------Clients-------\n".join("\n",@client_keys)."\n";
+                print "Pick a MAC Adress (Type quit to stop assigning)\n>  ";
+                $mac_selection = <STDIN>;
+                chomp $mac_selection;
+                if ($mac_selection eq "quit") {
+                    $quit = 1;
+                    $valid = 1;
+                } else {
+                    foreach my $item (@mac_keys) {
+                        if ($item eq $mac_selection) {
+                            $valid = 1;
+                            last;
+                        }
+                    }
+                }
+            }
+            my $ip_selection;
+            $valid = 0;
+            while (!$valid && !$quit) {
+                print "Pick a client (Type quit to stop assigning)\n>  ";
+                my $client_selection = <STDIN>;
+                chomp $client_selection;
+                if ($client_selection eq "quit") {
+                    $quit = 1;
+                    $valid = 1;
+                } else {
+                    foreach my $item (@client_keys) {
+                        if ($item eq $client_selection) {
+                            $valid = 1;
+                            last;
+                        }
+                    }
+                    my $adapter = list_adapter(client=>$client_selection,devname=>"eth0");
+                    $MAC{$mac_selection}->{client} = $adapter->{ip};
+                    $adapter->mac($mac_selection);
+                    set_adapter($adapter);
+                    $cli_clients{$client_selection}->{mac} = $mac_selection;
+                    oscar_log_subsection("Assigning MAC: $mac_selection to client: " . $cli_clients{$client_selection}->{hostname});
+                }
+            }
         }
     }
 }
