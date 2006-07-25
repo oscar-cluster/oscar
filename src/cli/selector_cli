@@ -8,9 +8,7 @@
 # This file is a very simple selector that will select
 # or unselect packages to be installed in OSCAR.  You can also
 # print out the packages or a subset of packages to see which
-# are currently selected.  By running this script with a filename
-# as an arguement, the script will not require user input, but
-# follow your instructions as you specify.
+# are currently selected.
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -19,18 +17,21 @@ use OSCAR::Database;
 use Qt::SelectorUtils;
 use Getopt::Long;
 
+# Command line arguement variables
 my $file = '';
 my $inun = 0;
 my $help = '';
 
+# Parses the command line args
 GetOptions('help' => \$help, 'm' => \$inun, 'filename=s' => \$file, 'f=s' => \$file);
 
+# The help text
 if ($help)
 {
 	print "Usage: selector_cli [FLAGS]
 
-  -m			  Maintain current package state
-  --filename -f filename  File to be read in to automate this step\n";			exit 0;
+    -m                        maintain current package state
+    --filename -f filename    File to be read in to automate this step\n";			exit 0;
 }
 
 my %options = ();
@@ -133,13 +134,14 @@ printPackages("all");
 #Start the prompt section
 #This will exit by the user typing 'quit'
 open(LOG, ">$ENV{OSCAR_HOME}/tmp/selector.log") || die "Can't open the log to write to.\n";
-while(1)
+my $continue = 1;
+while($continue)
 {
 	print "selector>  ";
 	my $response = <STDIN>;
 	print LOG $response;
 	chomp $response;
-	processInput($response);
+	$continue = processInput($response);
 }
 close LOG;
 
@@ -229,30 +231,44 @@ sub processInput
 {
 	#Change the response from a scalar to an array
 	my @response = split(' ', shift);
+
+    my $command = shift(@response);
 	
 	#By default, ask for help
-	if(!defined $response[0])
+	if(!defined $command)
 	{
-		$response[0] = "help";
+		$command = "help";
 	}
 	
 	#If the user is trying to select a package
-	if($response[0] eq "select")
+	if($command eq "select")
 	{
+        my $packagename = shift(@response);
+
+        if(!$packagename) {
+            print "Format: select [-q] package_name\n";
+            return 1;
+        }
+
 		#If the user adds a -q flag, don't print out the verbose dialog
 		my $quiet = 0;
-		if($response[1] eq "-q")
+		if($packagename eq "-q")
 		{
 			$quiet = 1;
 			#Move the next arguement over to make parsing the command line easy
-			$response[1] = $response[2];
+			$packagename = shift(@response);
+            
+            if(!$packagename) {
+                print "Format: select [-q] package_name\n";
+                return 1;
+            }
 		}
 
 		#Make sure the package exists and is not already installed
-		if(defined $$allPackages{$response[1]} && $$allPackages{$response[1]}{status} ne "Installed")
+		if(defined $$allPackages{$packagename} && $$allPackages{$packagename}{status} ne "Installed")
 		{
-			$$allPackages{$response[1]}{status} = "Selected";
-			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$response[1],2,\@errors);
+			$$allPackages{$packagename}{status} = "Selected";
+			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packagename,2,\@errors);
 			
 			#Check for dependencies
 			print "Checking dependencies\n" unless $quiet;
@@ -260,12 +276,12 @@ sub processInput
 			$dependencies = SelectorUtils::getRequiresList($dependencies,$response[1]);
 			delete $$dependencies{""}; #Delete the empty key
 			#If there is a dependency, select it
-			foreach my $packageName (keys %{$dependencies})
+			foreach my $name (keys %{$dependencies})
 			{
-				if ($packageName eq $response[1]) {next;}
-				print "Package dependant on " . $packageName . "\n" unless $quiet;
-				$$allPackages{$packageName}{status} = "Selected";
-				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packageName,2,\@errors);
+				if ($name eq $packagename) {next;}
+				print "Package dependant on " . $name . "\n" unless $quiet;
+				$$allPackages{$name}{status} = "Selected";
+				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$name,2,\@errors);
 			}
 			
 			#Check for conflicts
@@ -274,89 +290,108 @@ sub processInput
 			$conflict = SelectorUtils::getConflictsList($dependencies);
 			#If there is a conflict, unselect the conflicting package
 			delete $$conflict{""}; #Delete the empty key
-			foreach my $packageName (keys %{$conflict})
+			foreach my $name (keys %{$conflict})
 			{
-				if ($packageName eq $response[1]) {next;}
-				print "Conflicting package " . $packageName . "\n" unless $quiet;
-				$$allPackages{$packageName}{status} = "Unselected";
-				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packageName,1,\@errors);
+				if ($name eq $packagename) {next;}
+				print "Conflicting package " . $name . "\n" unless $quiet;
+				$$allPackages{$name}{status} = "Unselected";
+				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$name,1,\@errors);
 			}
 		}
-		elsif(!defined $$allPackages{$response[1]})
+		elsif(!defined $$allPackages{$packagename})
 		{
-			print "Package name " . $response[1] . " not recognized\n" unless $quiet;
+			print "Package name " . $packagename . " not recognized\n" unless $quiet;
 		}
-		elsif($$allPackages{$response[1]}{status} eq "Installed")
+		elsif($$allPackages{$packagename}{status} eq "Installed")
 		{
-			print "Package " . $response[1] . " already installed\n" unless $quiet;
+			print "Package " . $packagename . " already installed\n" unless $quiet;
 		}
 	}
 	#If the user is trying unselect a package
-	elsif($response[0] eq "unselect")
+	elsif($command eq "unselect")
 	{
+        my $packagename = shift(@response);
+
+        if(!$packagename) {
+            print "Format: select [-q] package_name\n";
+            return 1;
+        }
+
 		#If the user adds a -q flag, don't print out the verbose dialog
 		my $quiet = 0;
-		if($response[1] eq "-q")
+		if($packagename eq "-q")
 		{
 			$quiet = 1;
 			#Move the next arguement over to make parsing the command line easy
-			$response[1] = $response[2];
+			$packagename = shift(@response);
+
+            if(!$packagename) {
+                print "Format: select [-q] package_name\n";
+                return 1;
+            }
 		}
 
 		#Make sure the package exists
-		if(defined $$allPackages{$response[1]} && $$allPackages{$response[1]}{__class} ne "core")
+		if(defined $$allPackages{$packagename} && $$allPackages{$packagename}{__class} ne "core")
 		{
-			$$allPackages{$response[1]}{status} = "Unselected";
-			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$response[1],1,\@errors);
+			$$allPackages{$packagename}{status} = "Unselected";
+			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packagename,1,\@errors);
 			
 			#Check to see if anything depends on this
 			print "Checking dependencies\n" unless $quiet;
 			my $reqby;
-			$reqby = SelectorUtils::getIsRequiredByList($reqby,$response[1]);
+			$reqby = SelectorUtils::getIsRequiredByList($reqby,$packagename);
 			delete $$reqby{""}; #Delete the empty key
 			#If something depended on this package, unselect it
 			foreach my $package (keys %{$reqby})
 			{
-				if ($package eq $response[1]) {next;}
-				print "Package " . $package . " depends on " . $response[1] . "\n" unless $quiet;
+				if ($package eq $packagename) {next;}
+				print "Package " . $package . " depends on " . $packagename . "\n" unless $quiet;
 				$$allPackages{$package}{status} = "Unselected";
 				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$package,1,\@errors);
 			}
 		}
-		elsif(!defined $$allPackages{$response[1]})
+		elsif(!defined $$allPackages{$packagename})
 		{
-			print "Package name " . $response[1] . " not recognized\n" unless $quiet;
+			print "Package name " . $packagename . " not recognized\n" unless $quiet;
 		}
-		elsif($$allPackages{$response[1]}{__class} eq "core")
+		elsif($$allPackages{$packagename}{__class} eq "core")
 		{
 			print "Cannot unselect core packages\n" unless $quiet;
 		}
 	}
 	#If the user is trying to list the packages again
-	elsif($response[0] eq "list")
+	elsif($command eq "list")
 	{
+        my $class = shift(@response);
+        
 		#The default action if the selected class does not exist is to print all of the packages
-		if(!defined $response[1])
+		if(!defined $class)
 		{
 			printPackages("all");
 		}
 		else
 		{
-			printPackages($response[1]);
+			printPackages($class);
 		}
 	}
 	#If the user is trying to quit the program
-	elsif($response[0] eq "quit" || $response[0] eq "exit")
+	elsif($command eq "quit" || $command eq "exit")
 	{
 		#Everything should already have been taken care of so go ahead and move on
-		exit;
+		return 0;
 	}
 	#If the user wants to read in responses from a file
-	elsif($response[0] eq "file")
+	elsif($command eq "file")
 	{
-		#This will probably only work for files with one word names
-		my $FILE = $response[1];
-		open(FILE, $FILE);
+        my $filename = shift(@response);
+
+        if(!$filename) {
+            print "Format: file file_name\n";
+            return 1;
+        }
+
+		open(FILE, $filename);
 		#Read the file just like it is normal input from the keyboard
 		#The file is not required to have a quit command in it
 		while(<FILE>)
@@ -364,6 +399,7 @@ sub processInput
 			chomp $_;
 			processInput($_);
 		}
+        exit 0;
 	}
 	#Default response is to print out the list of commands and their use
 	else
@@ -377,4 +413,6 @@ file <filename> - Reads in commands from a file
 help - Prints this message
 quit/exit - Quits the selector\n";
 	}
+
+    return 1;
 }
