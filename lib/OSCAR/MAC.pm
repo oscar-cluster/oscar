@@ -1132,6 +1132,9 @@ sub mac_cli {
     our $autofile = shift;
     $step_number = shift;
     our ($vars) = @_;
+    our $auto; #True if we're going to run automatically
+    
+    if ($autofile ne " ") {$auto = 1;}
 
     chdir("$ENV{OSCAR_HOME}/scripts");
 
@@ -1182,19 +1185,22 @@ sub mac_cli {
 #The interface for the cli version of the MAC setup
 sub cli_menu {
     my $done = 0;
-    my $file = shift;
+    my $infile = shift;
+    our $auto;
     our $install_mode;
     our $dyndhcp = 1;
     our $uyok = 0;
     our $dhcpbtn = 0;
     our $vars;
 
-    open(LOG, ">$ENV{OSCAR_HOME}/tmp/mac.log") || die "Can't open the log to write to.\n";
+    #Open the log file
+    open(LOG, ">$ENV{OSCAR_HOME}/tmp/mac.log") || print "Can't open the log for writing.\n";
     
-    if($file ne " ") {open(FILE, "$file") || die "Can't open the input file\n";}
+    #Open the file passed in for the automated version
+    if($auto) {open(FILE, "$infile") || die "Can't open the input file\n";}
     
     while (!$done) {
-        print "1)  Import MACs from file:  $file\n" . 
+        print "1)  Import MACs from file\n" . 
               "2)  Installation Mode:  $install_mode\n" .
               "3)  Enable Install Mode\n" .
               "4)  Dynamic DHCP update:  $dyndhcp\n" .
@@ -1203,9 +1209,9 @@ sub cli_menu {
               "7)  Build AutoInstall CD\n" .
               "8)  Setup Network Boot\n" .
               "9)  Finish\n" .
-              ">  ";
+              ">  " unless ($auto);
         my $response;
-        if ($file eq " ") {
+        if (!$auto) {
             $response = <STDIN>;
             print LOG $response;
         }
@@ -1216,10 +1222,12 @@ sub cli_menu {
         if($response == 1) {
             my $result = 0;
             while (!$result) {
-                print "Enter filename:  ";
-                if($file eq " ") {
+                print "Enter filename:  " unless ($auto);
+                if(!$auto) {
                     $response = <STDIN>;
                     print LOG $response;
+                } else {
+                    $response = <FILE>;
                 }
                 chomp $response;
                 $result = load_from_file($response);
@@ -1267,15 +1275,16 @@ sub cli_menu {
 # clients that have been defined.  Right now this is done only in a random
 # mode.  In the future, a way to assign a specific MAC to a specific node
 # will be developed.
-# TODO - Develop a way to assign a specific MAC to a specific node.
 sub assign_macs_cli {
     our %cli_clients;
+    our $auto;
     
     print "=====MAC Assignment Method=====\n" .
           "1)  Automatically assign MACs\n" .
           "2)  Manually assign MACs\n" .
-          ">  ";
-    my $response = <STDIN>;
+          ">  " unless ($auto);
+    my $response = <STDIN> if (!$auto);
+    $response = <FILE> if ($auto);
     chomp $response;
     my @mac_keys = keys %MAC;
     
@@ -1300,10 +1309,10 @@ sub assign_macs_cli {
             my $valid = 0;
             my $mac_selection;
             while (!$valid && !$quit) {
-                print "-----MAC Addresses-----\n".join("\n",@mac_keys)."\n";
-                print "---------Clients-------\n".join("\n",@client_keys)."\n";
-                print "Pick a MAC Adress (Type quit to stop assigning)\n>  ";
-                $mac_selection = <STDIN>;
+                print "-----MAC Addresses-----\n" . join("\n",@mac_keys)."\n" .
+                "Pick a MAC Address (Type quit to stop assigning)\n>  " unless ($auto);
+                $mac_selection = <STDIN> if (!$auto);
+                $mac_selection = <FILE> if ($auto);
                 chomp $mac_selection;
                 if ($mac_selection eq "quit") {
                     $quit = 1;
@@ -1320,8 +1329,10 @@ sub assign_macs_cli {
             my $ip_selection;
             $valid = 0;
             while (!$valid && !$quit) {
-                print "Pick a client (Type quit to stop assigning)\n>  ";
-                my $client_selection = <STDIN>;
+                print "---------Clients-------\n" . join("\n",@client_keys) .
+                "\nPick a client (Type quit to stop assigning)\n>  " unless ($auto);
+                my $client_selection = <STDIN> if (!$auto);
+                $client_selection = <FILE> if ($auto);
                 chomp $client_selection;
                 if ($client_selection eq "quit") {
                     $quit = 1;
@@ -1347,12 +1358,15 @@ sub assign_macs_cli {
 
 sub cli_installmode {
     our $install_mode;
+    our $auto;
+    
     my $done = 0;
     while(!$done) {
         print "Currently:  $install_mode\n" .
               "Options:  " . join(" ",@install_mode_options) . "\n" .
-              "New:  ";
-        my $line = <STDIN>;
+              "New:  " unless ($auto);
+        my $line = <STDIN> if (!$auto);
+        $line = <FILE> if ($auto);
         chomp $line;
         foreach my $choice (@install_mode_options) {
             if($choice eq $line) {

@@ -44,10 +44,11 @@ my $cli = '';
 my $selector = '';
 my $build = '';
 my $define = '';
+my $network = '';
 my $adapter;
 my $help = '';
 
-GetOptions('help' => \$help, 'cli' => \$cli, 'selector=s' => \$selector, 'build=s' => \$build, 'define=s' => \$define);
+GetOptions('help' => \$help, 'cli' => \$cli, 'selector=s' => \$selector, 'build=s' => \$build, 'define=s' => \$define, 'network=s' => \$network);
 
 #If we get a --help flag
 if($help) {
@@ -55,14 +56,16 @@ if($help) {
 Starts the OSCAR install process.
 By default, install_cluster uses the Graphical mode.
 
-    --cli		Runs the program in command line mode.
-    --selector file	Passes the file into the selector stage of the install.
-			That stage will not ask for user input.
-    --build file	Passes the file into the build stage of the install.
-			That stage will not ask for user input.
-    --define file	Passes the file into the define stage of the install.
-			That stage will not ask for user input.
-    --help		Display this help and exit.\n";
+    --cli           Runs the program in command line mode.
+    --selector file Passes the file into the selector stage of the install.
+                    That stage will not ask for user input.
+    --build file    Passes the file into the build stage of the install.
+                    That stage will not ask for user input.
+    --define file   Passes the file into the define clients stage of the install.
+                    That stage will not ask for user input.
+    --network file  Passes the file into the setup network stage of the install
+                    That stage will not ask for user input.
+    --help          Display this help and exit.\n";
     exit 0;
 }
 
@@ -82,6 +85,7 @@ my $cwd = cwd();
 $selector = $cwd . "/$selector" if($selector !~ /$cwd/ && $selector ne '');
 $build = $cwd . "/$build" if ($build !~ /$cwd/ && $build ne '');
 $define = $cwd . "/$define" if ($define !~ /$cwd/ && $define ne '');
+$network = $cwd . "/$network" if ($network !~/$cwd/ && $network ne '');
 
 # Validate OSCAR_HOME environment variable and write /etc/profile.d files
 &oscar_home_env();
@@ -300,6 +304,7 @@ if ($ENV{OSCAR_UI} eq "cli")
     $cmd = $cmd . " --selector $selector" if $selector;
     $cmd = $cmd . " --build $build" if $build;
     $cmd = $cmd . " --define $define" if $define;
+    $cmd = $cmd . " --network $network" if $network;
     $cmd = $cmd . " $adapter";
 }
 else
