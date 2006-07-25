@@ -24,6 +24,7 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::MAC;
+use OSCAR::WizardEnv;
 use Getopt::Long;
 
 $| = 1;
@@ -34,7 +35,7 @@ my $definefile = " ";
 my $netfile = " ";
 my $help = '';
 
-GetOptions('help' => \$help, 'selector=s' => \$selectorfile, 'build=s' => \$buildfile, 'define=s' => \$definefile, 'netfile=s' => \$netfile);
+GetOptions('help' => \$help, 'selector=s' => \$selectorfile, 'build=s' => \$buildfile, 'define=s' => \$definefile, 'network=s' => \$netfile);
 
 my $interface = shift;
 
@@ -112,6 +113,8 @@ if(!system($cmd)) {
 } else {
     oscar_log_subsection("Failed to properly complete the cluter install; please check the logs");
 }
+
+WizardEnv::update_env();
 
 #Step 8 Test Cluster Setup
 oscar_log_section("Test Cluster Setup");
