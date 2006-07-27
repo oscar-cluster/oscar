@@ -138,7 +138,7 @@ unless ($skipcomplete) {
         "* Before continuing, network boot all of your nodes.        *\n" .
         "* Once they have completed installation, reboot them from   *\n" .
         "* the hard drive. Once all the machines and their ethernet  *\n" .
-        "* adaptors are up, type \'continue\' and press Enter.         *\n" .
+        "* adaptors are up, type \'continue\' and press Enter.       *\n" .
         "*************************************************************\n";
         $trash = <STDIN>;
         chomp $trash;
