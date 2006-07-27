@@ -109,7 +109,13 @@ my %vars = (
 my $code = 1;
 while ($code) {
     $code = addclients(%vars);
+
+    if($code != 0 && $file ne " ") {
+        last;
+    }
 }
+
+exit $code;
 
 # This function acts as the menu for the user that gets most of the input
 sub addclients
