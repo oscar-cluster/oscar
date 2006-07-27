@@ -46,10 +46,11 @@ revisions much simpler than with rpm.
 
   <binary-package-list>
     <filter>
-    <group>oscar_server</group>
-<!--    <distribution>
-      <name>debian</name>
-    </distribution>-->
+   	 <group>oscar_server</group>
+	 <distribution>
+	     <name>debian</name>
+	  </distribution>
+    </filter>
     <pkg>rapt</pkg>
   </binary-package-list>
 
