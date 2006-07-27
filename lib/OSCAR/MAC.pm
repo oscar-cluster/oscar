@@ -1180,6 +1180,8 @@ sub mac_cli {
 
     #Start printing the menu
     cli_menu($autofile);
+
+    return 0;
 }
 
 #The interface for the cli version of the MAC setup
@@ -1200,12 +1202,26 @@ sub cli_menu {
     if($auto) {open(FILE, "$infile") || die "Can't open the input file\n";}
     
     while (!$done) {
+        # Make text representations of the true/false for #4 & #6
+        my $dyndhcptxt;
+        my $uyoktxt;
+        if($dyndhcp) {
+            $dyndhcptxt = "true";
+        } else {
+            $dyndhcptxt = "false";
+        }
+        if($uyok) {
+            $uyoktxt = "true";
+        } else {
+            $uyoktxt = "false";
+        }
+        
         print "1)  Import MACs from file\n" . 
               "2)  Installation Mode:  $install_mode\n" .
               "3)  Enable Install Mode\n" .
-              "4)  Dynamic DHCP update:  $dyndhcp\n" .
+              "4)  Dynamic DHCP update:  $dyndhcptxt\n" .
               "5)  Configure DHCP Server\n" .  
-              "6)  Enable UYOK:  $uyok\n" .
+              "6)  Enable UYOK:  $uyoktxt\n" .
               "7)  Build AutoInstall CD\n" .
               "8)  Setup Network Boot\n" .
               "9)  Finish\n" .
