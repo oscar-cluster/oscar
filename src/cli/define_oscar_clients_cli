@@ -277,7 +277,7 @@ sub addclients
 
 	!system($cmd) or (carp("Couldn't run mksirange: $!"), return 1);
 
-	my $code = &{$vars{postinstall}} or carp("Couldn't run postinstall");
+	my $code = &{$vars{postinstall}};
 
 	if($code) {oscar_log_subsection("Successfully created clients for image \"$defimage\"");}
 
