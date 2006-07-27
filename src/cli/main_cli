@@ -77,7 +77,7 @@ unless ($skipselector) {
     my $cmd = "./selector_cli";
     $cmd = $cmd . " --file $selectorfile" if ($selectorfile ne " ");
     oscar_log_subsection("Running command: $cmd");
-    system($cmd);
+    !system($cmd) or die "Failed on Step 1 - Select Packages";
 }
 
 # Step 2 - Configure Packages
@@ -113,7 +113,7 @@ unless ($skipbuild) {
     $cmd = $cmd . " --file $buildfile" if ($buildfile ne " ");
     $cmd = $cmd . " $interface";
     oscar_log_subsection("Running command: $cmd");
-    system($cmd);
+    !system($cmd) or (die "Failed on Step 4 - Build OSCAR Client Image");
 }
 
 # Step 5 - Define OSCAR Clients
@@ -122,12 +122,12 @@ unless ($skipdefine) {
     $cmd = $cmd . " --file $definefile" if ($definefile ne " ");
     $cmd = $cmd . " $interface";
     oscar_log_subsection("Running command: $cmd");
-    system($cmd);
+    !system($cmd) or die "Failed on Step 5 - Define OSCAR Clients";
 }
 
 # Step 6 Setup networking
 unless ($skipnet) {
-    OSCAR::MAC::mac_cli($netfile, 6, {interface => $interface}, 'netboot');
+    !OSCAR::MAC::mac_cli($netfile, 6, {interface => $interface}, 'netboot') or die "Failed on Step 6 - Setup Networking";
 }
 
 # Step 7 Complete Cluster Setup
@@ -149,6 +149,7 @@ unless ($skipcomplete) {
         oscar_log_subsection("Successfully completed the cluster install");
     } else {
         oscar_log_subsection("Failed to properly complete the cluter install; please check the logs");
+        exit 1;
     }
 }
 
