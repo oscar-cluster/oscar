@@ -21,6 +21,7 @@ gdb
 gettext
 glib
 glibc-common
+glibc-devel
 gnuplot
 gpm
 grub
