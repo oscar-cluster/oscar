@@ -61,7 +61,7 @@ while ($host = <CMD>) {
 }
 close (CMD);
 
-my $headnode = `hostname`;
+my $headnode = `hostname --long`;
 chomp($headnode);
 
 # We do not need to deal with the headnode
