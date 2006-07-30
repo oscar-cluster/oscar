@@ -41,7 +41,7 @@ GetOptions( \%options,
 	    'verbose|v',
             ) || usage();
 
-usage() if ($options{help});
+usage() if ($options{help} || scalar(@ARGV));
 
 ################################
 ## Do the job
