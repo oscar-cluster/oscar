@@ -48,7 +48,7 @@ my $network = '';
 my $adapter;
 my $help = '';
 
-GetOptions('help' => \$help, 'cli' => \$cli, 'selector=s' => \$selector, 'build=s' => \$build, 'define=s' => \$define, 'network=s' => \$network);
+GetOptions('help' => \$help, 'cli' => \$cli, 'opkgselector=s' => \$selector, 'buildimage=s' => \$build, 'defineclients=s' => \$define, 'networkclients=s' => \$network);
 
 #If we get a --help flag
 if($help) {
@@ -56,16 +56,19 @@ if($help) {
 Starts the OSCAR install process.
 By default, install_cluster uses the Graphical mode.
 
-    --cli           Runs the program in command line mode.
-    --selector file Passes the file into the selector stage of the install.
-                    That stage will not ask for user input.
-    --build file    Passes the file into the build stage of the install.
-                    That stage will not ask for user input.
-    --define file   Passes the file into the define clients stage of the install.
-                    That stage will not ask for user input.
-    --network file  Passes the file into the setup network stage of the install
-                    That stage will not ask for user input.
-    --help          Display this help and exit.\n";
+    --cli                   Runs the program in command line mode.
+    --opkgselector file     Passes the file into the selector stage of the 
+                            install.  That stage will not ask for
+                            user input.
+    --buildimage file       Passes the file into the build stage of the install.
+                            That stage will not ask for user input.
+    --defineclients file    Passes the file into the define clients stage of
+                            the install.  That stage will not ask for
+                            user input.
+    --networkclients file   Passes the file into the setup network stage
+                            of the install.  That stage will not ask for
+                            user input.
+    --help                  Display this help and exit.\n";
     exit 0;
 }
 
@@ -301,10 +304,10 @@ chdir("src/cli") or die("Couldn't chdir to src/cli") if ($ENV{OSCAR_UI} eq "cli"
 if ($ENV{OSCAR_UI} eq "cli")
 {
     $cmd = "./main_cli";
-    $cmd = $cmd . " --selector $selector" if $selector;
-    $cmd = $cmd . " --build $build" if $build;
-    $cmd = $cmd . " --define $define" if $define;
-    $cmd = $cmd . " --network $network" if $network;
+    $cmd = $cmd . " --opkgselector $selector" if $selector;
+    $cmd = $cmd . " --buildimage $build" if $build;
+    $cmd = $cmd . " --defineclients $define" if $define;
+    $cmd = $cmd . " --networkclients $network" if $network;
     $cmd = $cmd . " $adapter";
 }
 else

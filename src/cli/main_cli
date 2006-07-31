@@ -42,7 +42,7 @@ my $skiptest = '';
 my $help = '';
 
 # Parses the command line and sets the varaibles
-GetOptions('help' => \$help, 'skipselector' => \$skipselector, 'skipbuild' => \$skipbuild, 'skipinstall' => \$skipinstall, 'skipdefine' => \$skipdefine, 'skipnet' => \$skipnet, 'skipcomplete' => \$skipcomplete, 'skiptest' => \$skiptest, 'selector=s' => \$selectorfile, 'build=s' => \$buildfile, 'define=s' => \$definefile, 'network=s' => \$netfile);
+GetOptions('help' => \$help, 'skipselector' => \$skipselector, 'skipbuild' => \$skipbuild, 'skipinstall' => \$skipinstall, 'skipdefine' => \$skipdefine, 'skipnet' => \$skipnet, 'skipcomplete' => \$skipcomplete, 'skiptest' => \$skiptest, 'opkgselector=s' => \$selectorfile, 'buildimage=s' => \$buildfile, 'defineclients=s' => \$definefile, 'networkclients=s' => \$netfile);
 
 # The last arguement should be the ethernet adapter used for the installation
 my $interface = shift;
@@ -53,18 +53,18 @@ if ($#ARGV >= 0 || $help)
 {
     print "Usage: main_cli [FLAGS] interface 
 Flags (Provide automation):
-    --selector <filename>   Passes the filename to the selector script
-    --build <filename>      Passes the filename to the build script
-    --define <filename>     Passes the filename to the define script
-    --network <filename>    Passes the filename to the networking script
-    --skipselector          Skips the Select Packages step
-    --skipinstall           Skips the Install Packages step
-    --skipbuild             Skips the Build OSCAR Image step
-    --skipdefine            Skips the Define OSCAR Clients step
-    --skipnet               Skips the Setup Networking step
-    --skipcomplete          Skips the Complete Cluster Setup step
-    --skiptest              Skips the Test Cluster Setup step
-    --help                  Prints this text\n";
+    --opkgselector    <filename>  Passes the filename to the selector script
+    --buildimage      <filename>  Passes the filename to the build script
+    --defineclients   <filename>  Passes the filename to the define script
+    --networkclients  <filename>  Passes the filename to the networking script
+    --skipselector                Skips the Select Packages step
+    --skipinstall                 Skips the Install Packages step
+    --skipbuild                   Skips the Build OSCAR Image step
+    --skipdefine                  Skips the Define OSCAR Clients step
+    --skipnet                     Skips the Setup Networking step
+    --skipcomplete                Skips the Complete Cluster Setup step
+    --skiptest                    Skips the Test Cluster Setup step
+    --help                        Prints this text\n";
     exit 1;
 }
 
@@ -138,7 +138,7 @@ unless ($skipcomplete) {
         "* Before continuing, network boot all of your nodes.        *\n" .
         "* Once they have completed installation, reboot them from   *\n" .
         "* the hard drive. Once all the machines and their ethernet  *\n" .
-        "* adaptors are up, type \'continue\' and press Enter.       *\n" .
+        "* adaptors are up, type \'continue\' and press Enter.         *\n" .
         "*************************************************************\n";
         $trash = <STDIN>;
         chomp $trash;
