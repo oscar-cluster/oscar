@@ -11,10 +11,11 @@
 # are currently selected.
 
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
+use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/Qt";
 use OSCAR::Logger;
 use OSCAR::Database;
 use Qt::SelectorUtils;
+use Qt::SelectorTable;
 use Getopt::Long;
 
 # Command line arguement variables
@@ -54,80 +55,42 @@ OSCAR::Logger::oscar_log_section("Beginning the OSCAR Package Selector");
 #Populate the list of packages
 OSCAR::Logger::oscar_log_subsection("Populating list of packages");
 
+my @groups_list;
+my @package_sets;
+my $selected_group;
+
+my $success = OSCAR::Database::get_groups_for_packages(\@groups_list);
+
+foreach my $groups_ref (@groups_list) {
+    push @package_sets, $$groups_ref{group_name};
+}
+
+if($success) {
+    if ((scalar @package_sets) > 0) {
+        $selected_group = OSCAR::Database::get_selected_group(\%options, \@errors);
+        if(!$selected_group) {$selected_group = "Default";}
+    } else {
+        SelectorUtils::createDefaultPackageSet();
+    }
+}
+
+#Get all the selected packages
+my $selected_packages = SelectorTable::getPackagesInPackageSet($selected_group);
+
+#Get installed packages
+my $installed_packages = SelectorTable::getPackagesInstalled();
+
 #Get a list of all the packages
 my $allPackages = SelectorUtils::getAllPackages();
-#Get the status of each package (Installed (8), Selected(2), Unselected(1))
-my @packagesUnselected;
-my @packagesSelected;
-my @packagesInstalled;
 
-#Get the unselected packages
-my $success = OSCAR::Database::get_node_package_status_with_node("oscar_server",\@packagesUnselected,\%options,\@errors, 1 );
-
-#Get the seleceted packages
-$success = OSCAR::Database::get_node_package_status_with_node("oscar_server",\@packagesSelected,\%options,\@errors, 2 );
-
-#Get the installed packages
-$success = OSCAR::Database::get_node_package_status_with_node("oscar_server",\@packagesInstalled,\%options,\@errors, 8 );
-
-#Put a new key in the all packages hash with the current status of the package
-foreach my $pack_ref (@packagesUnselected)
-{
-	my $pack = $$pack_ref{package};
-	$$allPackages{$pack}{status} = "Unselected";
-}
-foreach my $pack_ref (@packagesSelected)
-{
-	my $pack = $$pack_ref{package};
-	$$allPackages{$pack}{status} = "Selected";
-}
-foreach my $pack_ref (@packagesInstalled)
-{
-	my $pack = $$pack_ref{package};
-	$$allPackages{$pack}{status} = "Installed";
+#Set the package status
+foreach my $package_ref (keys %{$allPackages}) {
+    $$allPackages{$package_ref}{status} = "Unselected";
+    $$allPackages{$package_ref}{status} = "Selected" if $$selected_packages{$package_ref};
+    $$allPackages{$package_ref}{status} = "Installed" if $$installed_packages{$package_ref};
 }
 
-#If there is a filename as an arguement, don't get user input
-if($file ne '')
-{
-	#If the user doesn't want to maintain the package state,
-	#reset all core and included packages to selected and others to unselected
-	if($inun == 1)
-	{
-		foreach my $pack (keys %{$allPackages})
-		{
-			if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included")
-			{
-				processInput("select -q $pack");
-			}
-			else
-			{
-				processInput("unselect -q $pack");
-			}
-		}
-	}
-	processInput("file " . $file);
-	processInput("quit");
-}
-
-#If the user doesn't want to maintain the package state,
-#reset all core and included packages to selected and others to unselected
-if($inun == 1)
-{
-	foreach my $pack (keys %{$allPackages})
-	{
-		if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included")
-		{
-			processInput("select -q $pack");
-		}
-		else
-		{
-			processInput("unselect -q $pack");
-		}
-	}
-}
-
-#Otherwise, list the packages and start getting input
+#List the packages and start getting input
 #Print the packages before giving a prompt
 printPackages("all");
 
@@ -273,7 +236,7 @@ sub processInput
 			#Check for dependencies
 			print "Checking dependencies\n" unless $quiet;
 			my $dependencies;
-			$dependencies = SelectorUtils::getRequiresList($dependencies,$response[1]);
+			$dependencies = SelectorUtils::getRequiresList($dependencies,$packagename);
 			delete $$dependencies{""}; #Delete the empty key
 			#If there is a dependency, select it
 			foreach my $name (keys %{$dependencies})
