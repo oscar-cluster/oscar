@@ -496,9 +496,9 @@ sub build_oscar_image {
         }
     }
     close(OUTFILE);
-    my $extraflags = " --filename=$outfile";
+    my $extraflags = "--filename=$outfile ";
     if (exists $ENV{OSCAR_VERBOSE}) {
-	$extraflags .= " --verbose";
+	$extraflags .= "--verbose ";
     }
     my $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
     # ia64 needs special disk file because of /boot/efi
