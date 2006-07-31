@@ -171,7 +171,7 @@ sub addclients
 		open(FILE, $file) || die "Can't open $file\n";
 		my @file = <FILE>;
 		chomp @file;
-		for(my $i = 0; $i < $#file; $i++)
+		for(my $i = 0; $i <= $#file; $i++)
 		{
 			if($file[$i] == 1) {
 				$defimage = image_name($file[++$i], @imagenames);
