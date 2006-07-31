@@ -224,7 +224,7 @@ CREATE TABLE IF NOT EXISTS Packages_config(
     config_id  integer auto_increment not null unique,
     package_id integer not null,
     name VARCHAR(100) not null,
-    value VARCHAR(256),
+    value VARCHAR(255),
     context VARCHAR(100),
     PRIMARY KEY (config_id, package_id),
     KEY package_id ( package_id ),
