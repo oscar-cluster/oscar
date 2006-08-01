@@ -103,7 +103,7 @@ unless ($skipinstall) {
     else
     {
         oscar_log_section("Packages not Installed!");
-        exit 1;
+        die ("Failed Step 3 - Install OSCAR Packages");
     }
 }
 
@@ -149,7 +149,7 @@ unless ($skipcomplete) {
         oscar_log_subsection("Successfully completed the cluster install");
     } else {
         oscar_log_subsection("Failed to properly complete the cluter install; please check the logs");
-        exit 1;
+        die ("Failed on Step 7 - Complete Cluster Setup");
     }
 }
 
