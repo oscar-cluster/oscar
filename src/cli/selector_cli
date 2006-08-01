@@ -91,7 +91,7 @@ foreach my $package_ref (keys %{$allPackages}) {
 }
 
 #If there is a filename as an arguement, don't get user input 
-if($ile ne '') { 
+if($file ne '') { 
     #If the user doesn't want to maintain the package state, 
     #reset all core and included packages to selected and others to unselected 
     if($inun == 1) { 
@@ -113,7 +113,8 @@ printPackages("all");
 
 #Start the prompt section
 #This will exit by the user typing 'quit'
-open(LOG, ">$ENV{OSCAR_HOME}/tmp/selector.log") || die "Can't open the log to write to.\n";
+my $ppid = getppid();
+open(LOG, ">$ENV{OSCAR_HOME}/tmp/selector.$ppid.clilog") || die "Can't open the log to write to.\n";
 my $continue = 1;
 while($continue)
 {

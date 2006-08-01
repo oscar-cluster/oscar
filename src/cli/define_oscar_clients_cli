@@ -213,8 +213,9 @@ sub addclients
             elsif($file[$i] == 11) {return 0;}
 		}
 	} else {
-    # Interactive mode
-		open (LOG, ">$ENV{OSCAR_HOME}/tmp/define.log");
+        # Interactive mode
+		my $ppid = getppid();
+        open (LOG, ">$ENV{OSCAR_HOME}/tmp/define.$ppid.clilog");
 		my $selection;
 		do #Loop until the user picks quit
 		{

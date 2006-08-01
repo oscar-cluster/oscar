@@ -1196,7 +1196,8 @@ sub cli_menu {
     our $vars;
 
     #Open the log file
-    open(LOG, ">$ENV{OSCAR_HOME}/tmp/mac.log") || print "Can't open the log for writing.\n";
+    my $ppid = getppid();
+    open(LOG, ">$ENV{OSCAR_HOME}/tmp/mac.$ppid.clilog") || print "Can't open the log for writing.\n";
     
     #Open the file passed in for the automated version
     if($auto) {open(FILE, "$infile") || die "Can't open the input file\n";}

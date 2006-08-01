@@ -406,7 +406,8 @@ sub menu
 	#Otherwise get input from the user
 	else
 	{
-		open (LOG, ">$ENV{OSCAR_HOME}/tmp/build.log");
+		my $ppid = getppid();
+        open (LOG, ">$ENV{OSCAR_HOME}/tmp/build.$ppid.clilog");
 		do #Keep looping until the user picks quit
 		{
 			do #Keep looping as long as the user picks an invalid response
