@@ -139,8 +139,7 @@ oscar_log_subsection("Get configuration choices from user");
 my $result = 1;
 while($result)
 {
-	menu(%vars);
-	$result = add_image(%vars);
+    $result = menu();
 	#If we are running in automated mode, we don't want to keep 
         #looping if we fail
 	if($file ne " ") {last;}
@@ -178,7 +177,6 @@ sub progress
 sub add_image
 {
 	our $file;
-	my $vars = shift;
 
 	my $config = init_si_config();
 	my $rsyncd_conf = $config->rsyncd_conf();
@@ -202,7 +200,7 @@ sub add_image
 		SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
 	}
 	oscar_log_subsection("Building Image...");
-	my $result = add_image_build(%vars);
+	my $result = add_image_build();
 	
 	if(!$result)
 	{
@@ -224,8 +222,6 @@ sub add_image
 
 sub add_image_build
 {
-	my $vars = shift;
-
 	my $cmd = "mksiimage -A --name $vars{imgname} " .
 		"--location $vars{pkgpath} " .
 		"--filename $vars{pkgfile} " .
@@ -291,10 +287,8 @@ sub add_image_build
 	#for the image
 	if(ref($vars{postinstall}) eq "CODE")
 	{
-		{ #HACK TESTING THE strict refs stuffo...
-			no strict 'refs';
-		
-			unless( &{$vars{postinstall}}(%{$vars}) )
+		{ 
+			unless( &{$vars{postinstall}}() )
 			{
 				carp("Couldn't run postinstall");
 				return 1;
@@ -307,7 +301,7 @@ sub add_image_build
 	if(ref($vars{postinstall}) eq "ARRAY")
 	{
 		my $sub = shift(@{$vars{postinstall}});
-		unless( &$sub(%{$vars}, @{$vars{postinstall}}) )
+		unless( &$sub(@{$vars{postinstall}}) )
 		{
 			carp("Couldn't run postinstall");
 			return 1;
@@ -321,7 +315,6 @@ sub add_image_build
 
 sub postimagebuild
 {
-	my $vars = shift;
 	my $img = $vars{imgname};
 
 	my $master_os = distro_detect_or_die("/");
@@ -387,7 +380,6 @@ sub postimagebuild
 sub menu
 {
 	our $file;
-	my $vars = shift;
 
 	my $selection;
 
@@ -398,7 +390,7 @@ sub menu
 		open(FILE, $file) || die "Can't open $file\n";
 		my @file = <FILE>;
 		chomp @file;
-		for(my $i = 0; $i < $#file; $i++)
+		for(my $i = 0; $i <= $#file; $i++)
 		{
 			if($file[$i] == 1) {imageName($file[++$i]);}
 			elsif($file[$i] == 2) {packageFile($file[++$i]);}
@@ -407,8 +399,8 @@ sub menu
 			elsif($file[$i] == 5) {diskPart($file[++$i]);}
 			elsif($file[$i] == 6) {ipAssign($file[++$i]);}
 			elsif($file[$i] == 7) {postInstall($file[++$i]);}
-			elsif($file[$i] == 8) {last;}
-			elsif($file[$i] == 9) {exit 0;}
+			elsif($file[$i] == 8) {return add_image();}
+			elsif($file[$i] == 9) {return 0;}
 		}
 	}
 	#Otherwise get input from the user
@@ -448,9 +440,10 @@ sub menu
 			elsif($selection == 5) {diskPart();}
 			elsif($selection == 6) {ipAssign();}
 			elsif($selection == 7) {postInstall();}
-			elsif($selection == 9) {exit 0;}
+            elsif($selection == 8) {return add_image();}
+			elsif($selection == 9) {return 0;}
 				
-		} while($selection != 8);
+		} while(1);
 		close LOG;
 	}
 }
