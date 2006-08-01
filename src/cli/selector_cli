@@ -90,6 +90,23 @@ foreach my $package_ref (keys %{$allPackages}) {
     $$allPackages{$package_ref}{status} = "Installed" if $$installed_packages{$package_ref};
 }
 
+#If there is a filename as an arguement, don't get user input 
+if($ile ne '') { 
+    #If the user doesn't want to maintain the package state, 
+    #reset all core and included packages to selected and others to unselected 
+    if($inun == 1) { 
+        foreach my $pack (keys %{$allPackages}) { 
+            if($$allPackages{$pack}{__class} eq "core" || $$allPackages{$pack}{__class} eq "included") { 
+                processInput("select -q $pack"); 
+            } else { 
+                processInput("unselect -q $pack"); 
+            } 
+        } 
+    } 
+    processInput("file " . $file); 
+    processInput("quit"); 
+} 
+
 #List the packages and start getting input
 #Print the packages before giving a prompt
 printPackages("all");
