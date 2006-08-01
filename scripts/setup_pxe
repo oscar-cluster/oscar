@@ -126,10 +126,11 @@ my $monitor_port = 8181;
 # Need to get the IP address of headnode (oscar_server)
 my @result = ();
 my $node = "oscar_server";
+my $iface = get_headnode_iface();
 my %db_options = ();
 my @db_errors = ();
 
-get_nics_info_with_node($node, \@result, \%db_options, \@db_errors);
+get_nics_with_name_node($iface, $node, \@result, \%db_options, \@db_errors);
 
 my $node_ref = pop @result;
 my $ip = $$node_ref{ip};
