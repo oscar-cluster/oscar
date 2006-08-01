@@ -173,6 +173,12 @@ sub addclients
 		chomp @file;
 		for(my $i = 0; $i <= $#file; $i++)
 		{
+            #Comment
+            if($file[$i] =~ /^#/) {next;}
+
+            #Empty line
+            elsif(!$file[$i]) {next;}
+            
 			if($file[$i] == 1) {
 				$defimage = image_name($file[++$i], @imagenames);
 				oscar_log_subsection("Image Name: $defimage");
@@ -216,6 +222,22 @@ sub addclients
         # Interactive mode
 		my $ppid = getppid();
         open (LOG, ">$ENV{OSCAR_HOME}/tmp/define.$ppid.clilog");
+        print LOG "##########################################\n" .
+                  "#Select one\n" .
+			      "#-----------------------------------------\n" .
+				  "#1)  Image Name: $defimage\n" .
+				  "#2)  Domain Name: $vars{domainname}\n" .
+				  "#3)  Base Name: $vars{basename}\n" .
+				  "#4)  Number of Hosts: $vars{numhosts}\n" . 
+				  "#5)  Starting Number: $vars{startinghostnum}\n" .
+				  "#6)  Padding: $vars{padding}\n" .
+				  "#7)  Starting IP: $vars{startip}\n" .
+				  "#8)  Subnet Mask: $vars{netmask}\n" .
+				  "#9)  Default Gateway: $vars{gateway}\n" .
+				  "#10) Add Clients\n" .
+				  "#11) Quit\n" .
+                  "##########################################\n";
+
 		my $selection;
 		do #Loop until the user picks quit
 		{

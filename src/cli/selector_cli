@@ -115,6 +115,17 @@ printPackages("all");
 #This will exit by the user typing 'quit'
 my $ppid = getppid();
 open(LOG, ">$ENV{OSCAR_HOME}/tmp/selector.$ppid.clilog") || die "Can't open the log to write to.\n";
+print LOG "################################################################################\n" .
+          "#select <packageName> - Select a package to be installed\n" .
+          "#    -q - Quiet mode:  Don't print out verbose dialog\n" .
+          "#unselect <packageName> - Unselect a package to prevent it from being installed\n" .
+          "#    -q - Quiet mode:  Don't print out verbose dialog\n" .
+          "#list <class> - Lists the packages and their installation status\n" .
+          "#        class, and version number\n" .
+          "#file <filename> - Reads in commands from a file\n" .
+          "#help - Prints this message\n" .
+          "#quit/exit - Quits the selector\n" .
+          "################################################################################\n";
 my $continue = 1;
 while($continue)
 {
@@ -378,6 +389,13 @@ sub processInput
 		while(<FILE>)
 		{
 			chomp $_;
+            
+            #Comment
+            if(/^#/) {next;}
+
+            #Empty line
+            elsif(!$_) {next;}
+            
 			processInput($_);
 		}
         exit 0;

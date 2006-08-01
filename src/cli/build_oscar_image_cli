@@ -380,6 +380,12 @@ sub menu
 		chomp @file;
 		for(my $i = 0; $i <= $#file; $i++)
 		{
+            #If the line starts with a '#' it's a comment
+            if($file[$i] =~ /^#/) {next;}
+
+            #Empty line
+            elsif(!$file[$i]) {next;}
+            
 			if($file[$i] == 1) {imageName($file[++$i]);}
 			elsif($file[$i] == 2) {packageFile($file[++$i]);}
 			elsif($file[$i] == 3) {distro($file[++$i]);}
@@ -396,6 +402,19 @@ sub menu
 	{
 		my $ppid = getppid();
         open (LOG, ">$ENV{OSCAR_HOME}/tmp/build.$ppid.clilog");
+        print LOG "##########################################\n" .
+                  "#Select one\n" .
+				  "#-----------------------------------------\n" .
+				  "#1) Image name: $vars{imgname}\n" .
+				  "#2) Package file: $vars{pkgfile}\n" .
+				  "#3) Distro: $vars{distro}\n" .
+				  "#4) Package Repositories: $vars{pkgpath}\n" .
+				  "#5) Disk Partition File: $vars{diskfile}\n" .
+				  "#6) IP Assignment Method: $vars{ipmeth}\n" .
+				  "#7) Post install action: $vars{piaction}\n" .
+				  "#8) Build Image\n" .
+				  "#9) Quit\n" .
+                  "##########################################\n";
 		do #Keep looping until the user picks quit
 		{
 			do #Keep looping as long as the user picks an invalid response

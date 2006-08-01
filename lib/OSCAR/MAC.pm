@@ -1197,7 +1197,7 @@ sub cli_menu {
 
     #Open the log file
     my $ppid = getppid();
-    open(LOG, ">$ENV{OSCAR_HOME}/tmp/mac.$ppid.clilog") || print "Can't open the log for writing.\n";
+    if (!$auto) {open(LOG, ">$ENV{OSCAR_HOME}/tmp/mac.$ppid.clilog") || print "Can't open the log for writing.\n";}
     
     #Open the file passed in for the automated version
     if($auto) {open(FILE, "$infile") || die "Can't open the input file\n";}
@@ -1215,22 +1215,35 @@ sub cli_menu {
               ">  " unless ($auto);
         my $response;
         if (!$auto) {
+            print LOG "######################################\n" .
+              "#1)  Import MACs from file\n" . 
+              "#2)  Installation Mode:  $install_mode\n" .
+              "#3)  Enable Install Mode\n" .
+              "#4)  Dynamic DHCP update:  " . numtostring($dyndhcp) . "\n" .
+              "#5)  Configure DHCP Server\n" .  
+              "#6)  Enable UYOK:  " . numtostring($uyok) . "\n" .
+              "#7)  Build AutoInstall CD\n" .
+              "#8)  Setup Network Boot\n" .
+              "#9)  Finish\n" .
+              "######################################\n";
             $response = <STDIN>;
             print LOG $response;
         }
         else {
             $response = <FILE>;
+            next if (response_filter($response));
         }
         chomp $response;
         if($response == 1) {
             my $result = 0;
             while (!$result) {
-                print "Enter filename:  " unless ($auto);
                 if(!$auto) {
+                    print "Enter filename:  ";
                     $response = <STDIN>;
                     print LOG $response;
                 } else {
                     $response = <FILE>;
+                    next if (response_filter($response));
                 }
                 chomp $response;
                 $result = load_from_file($response);
@@ -1239,7 +1252,7 @@ sub cli_menu {
         }
         elsif($response == 2) {
             $install_mode = cli_installmode();
-            print "INSTALL MODE: $install_mode\n";
+            oscar_log_subsection("Install mode: $install_mode");
         }
         elsif($response == 3) {
             enable_install_mode();
@@ -1282,12 +1295,17 @@ sub assign_macs_cli {
     our %cli_clients;
     our $auto;
     
-    print "=====MAC Assignment Method=====\n" .
-          "1)  Automatically assign MACs\n" .
-          "2)  Manually assign MACs\n" .
-          ">  " unless ($auto);
-    my $response = <STDIN> if (!$auto);
-    $response = <FILE> if ($auto);
+    my $notdone = 1;
+    my $response;
+    while ($notdone) {
+        print "=====MAC Assignment Method=====\n" .
+            "1)  Automatically assign MACs\n" .
+            "2)  Manually assign MACs\n" .
+            ">  " unless ($auto);
+        $response = <STDIN> if (!$auto);
+        $response = <FILE> if ($auto);
+        $notdone = response_filter($response);
+    }
     chomp $response;
     my @mac_keys = keys %MAC;
     
@@ -1316,6 +1334,7 @@ sub assign_macs_cli {
                 "Pick a MAC Address (Type quit to stop assigning)\n>  " unless ($auto);
                 $mac_selection = <STDIN> if (!$auto);
                 $mac_selection = <FILE> if ($auto);
+                next if (response_filter($mac_selection));
                 chomp $mac_selection;
                 if ($mac_selection eq "quit") {
                     $quit = 1;
@@ -1336,6 +1355,7 @@ sub assign_macs_cli {
                 "\nPick a client (Type quit to stop assigning)\n>  " unless ($auto);
                 my $client_selection = <STDIN> if (!$auto);
                 $client_selection = <FILE> if ($auto);
+                next if (response_filter($client_selection));
                 chomp $client_selection;
                 if ($client_selection eq "quit") {
                     $quit = 1;
@@ -1370,6 +1390,7 @@ sub cli_installmode {
               "New:  " unless ($auto);
         my $line = <STDIN> if (!$auto);
         $line = <FILE> if ($auto);
+        next if (response_filter($line));
         chomp $line;
         foreach my $choice (@install_mode_options) {
             if($choice eq $line) {
@@ -1387,6 +1408,24 @@ sub numtostring {
     } else {
         return "true";
     }
+}
+
+sub response_filter {
+    $_ = shift;
+
+#print "LINE (PRECHOMP): $_";
+
+    if ($_) {chomp ($_);}
+
+#print "LINE (POSTCHOMP): $_";
+
+    #Blank line
+    if(!$_) {return 1;}
+
+    #Comment
+    elsif(/^#/) {return 1;}
+
+    return 0;
 }
 
 1;
