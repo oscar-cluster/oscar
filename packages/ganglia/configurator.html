@@ -28,13 +28,15 @@ should be used for sending/receiving ganglia monitoring information:<br>
 <p>Receiving Network Interface for <b>***Client***</b> nodes
  <input name="udp_recv_channel__mcast_if" value="eth0"><br>
 
-<br>
-
+<br><p>
+----
+<br><p>
 Enable per-image ganglia gmond configuration:
 <input type="checkbox" name="gmond_per_image" value="YES">
-<br>
+<br><p>
 ----
-<br>
+<br><p>
+
 When multiple clusters are in use it might make sense to use different
 multicast ports for the client nodes such that the data from different
 clusters doesn't interfere. Specify which multicast port
