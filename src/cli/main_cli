@@ -40,9 +40,10 @@ my $skipnet = '';
 my $skipcomplete = '';
 my $skiptest = '';
 my $help = '';
+my $bootscript = "$ENV{OSCAR_HOME}/src/cli/simple_complete.pl";
 
 # Parses the command line and sets the varaibles
-GetOptions('help' => \$help, 'skipselector' => \$skipselector, 'skipbuild' => \$skipbuild, 'skipinstall' => \$skipinstall, 'skipdefine' => \$skipdefine, 'skipnet' => \$skipnet, 'skipcomplete' => \$skipcomplete, 'skiptest' => \$skiptest, 'opkgselector=s' => \$selectorfile, 'buildimage=s' => \$buildfile, 'defineclients=s' => \$definefile, 'networkclients=s' => \$netfile);
+GetOptions('help' => \$help, 'skipselector' => \$skipselector, 'skipbuild' => \$skipbuild, 'skipinstall' => \$skipinstall, 'skipdefine' => \$skipdefine, 'skipnet' => \$skipnet, 'skipcomplete' => \$skipcomplete, 'skiptest' => \$skiptest, 'opkgselector=s' => \$selectorfile, 'buildimage=s' => \$buildfile, 'defineclients=s' => \$definefile, 'networkclients=s' => \$netfile, 'bootscript=s' => \$bootscript);
 
 # The last arguement should be the ethernet adapter used for the installation
 my $interface = shift;
@@ -64,6 +65,8 @@ Flags (Provide automation):
     --skipnet                     Skips the Setup Networking step
     --skipcomplete                Skips the Complete Cluster Setup step
     --skiptest                    Skips the Test Cluster Setup step
+    --bootscript                  The script that will be used to confirm the
+                                  nodes have booted and loaded their images
     --help                        Prints this text\n";
     exit 1;
 }
@@ -132,17 +135,20 @@ unless ($skipnet) {
 
 # Step 7 Complete Cluster Setup
 unless ($skipcomplete) {
-    my $trash = " ";
-    while ($trash ne "continue") {
-        print "*************************************************************\n" .
-        "* Before continuing, network boot all of your nodes.        *\n" .
-        "* Once they have completed installation, reboot them from   *\n" .
-        "* the hard drive. Once all the machines and their ethernet  *\n" .
-        "* adaptors are up, type \'continue\' and press Enter.         *\n" .
-        "*************************************************************\n";
-        $trash = <STDIN>;
-        chomp $trash;
+    # This script should confirm that the client nodes have
+    # booted and loaded their images.  The default will be
+    # to use a script that waits for the user to type
+    # 'continue'.  Other scripts can be run by passing in
+    # the flag --bootscript with another script's filename.
+    oscar_log_subsection("Running script \"$bootscript\"");    
+    
+    if(!system($bootscript)) {
+        oscar_log_subsection("Script successful.  Continuing...");
+    } else {
+        oscar_log_subsection("Script failed.  Exiting");
+        die ("Failed to confirm client node boot before Step 7 - Complete Cluster Setup");
     }
+    
     oscar_log_section("Complete Cluster Setup");
     my $cmd = $ENV{OSCAR_HOME} . "/scripts/post_install";
     if(!system($cmd)) {

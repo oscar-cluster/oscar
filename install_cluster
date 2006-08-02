@@ -47,8 +47,9 @@ my $define = '';
 my $network = '';
 my $adapter;
 my $help = '';
+my $bootscript = '';
 
-GetOptions('help' => \$help, 'cli' => \$cli, 'opkgselector=s' => \$selector, 'buildimage=s' => \$build, 'defineclients=s' => \$define, 'networkclients=s' => \$network);
+GetOptions('help' => \$help, 'cli' => \$cli, 'opkgselector=s' => \$selector, 'buildimage=s' => \$build, 'defineclients=s' => \$define, 'networkclients=s' => \$network, 'bootscript=s' => \$bootscript);
 
 #If we get a --help flag
 if($help) {
@@ -68,6 +69,8 @@ By default, install_cluster uses the Graphical mode.
     --networkclients file   Passes the file into the setup network stage
                             of the install.  That stage will not ask for
                             user input.
+    --bootscript file       Passes the file to confirm the client nodes have
+                            booted with their new images into the main cli.
     --help                  Display this help and exit.\n";
     exit 0;
 }
@@ -89,6 +92,7 @@ $selector = $cwd . "/$selector" if($selector !~ /$cwd/ && $selector ne '');
 $build = $cwd . "/$build" if ($build !~ /$cwd/ && $build ne '');
 $define = $cwd . "/$define" if ($define !~ /$cwd/ && $define ne '');
 $network = $cwd . "/$network" if ($network !~/$cwd/ && $network ne '');
+$bootscript = $cwd . "/$bootscript" if ($bootscript !~/$cwd/ && $bootscript ne '');
 
 # Validate OSCAR_HOME environment variable and write /etc/profile.d files
 &oscar_home_env();
@@ -308,6 +312,7 @@ if ($ENV{OSCAR_UI} eq "cli")
     $cmd = $cmd . " --buildimage $build" if $build;
     $cmd = $cmd . " --defineclients $define" if $define;
     $cmd = $cmd . " --networkclients $network" if $network;
+    $cmd = $cmd . " --bootscript $bootscript" if $bootscript;
     $cmd = $cmd . " $adapter";
 }
 else
