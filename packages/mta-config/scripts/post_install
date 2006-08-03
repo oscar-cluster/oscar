@@ -64,7 +64,7 @@ if($service_name eq "postfix"){
     my $postfix_conf;
     foreach my $file (@configure_files){
         if ( !$found && -e $file ){
-            system("grep postfix $file");
+            system("grep postfix $file > /dev/null  2>&1");
             if (! $? ){
                 $postfix_conf = $file;
                 $found = 1;
