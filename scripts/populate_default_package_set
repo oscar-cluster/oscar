@@ -54,7 +54,7 @@ exit 0 if(@nics_results);
 my $DEFAULT = "Default";
 
 # packages to be excluded from the default packages set
-my @exclude_packages = qw(networking sge);
+my @exclude_packages = qw(networking pfilter sge);
 my %is_excluded = ();
 for (@exclude_packages) { $is_excluded{$_} = 1 };
 
