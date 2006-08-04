@@ -165,15 +165,33 @@ $| = 1;
 # Setup to capture all stdout/stderr
 
 my $oscar_logfile = $ENV{OSCAR_HOME} . "/oscarinstall.log";
+
+# EF: Fix for bug #244: multiple oscarinstall.log files
+# The current (and latest) log file is oscarinstall.log. Old log files
+# get a number appended (eg. oscarinstall.log_27), starting with _1
+# and increasing with each new invocation of install_cluster.
+# Date stamp added to output.
+if (-e $oscar_logfile) {
+    my $indx = 1;
+    # more old logs around?
+    my @ologs = glob("$oscar_logfile"."_*");
+    @ologs = map { if (/_(\d+)$/) { $1 } } @ologs;
+    @ologs = sort { $a <=> $b; } @ologs;
+    if (@ologs) {
+	$indx = $ologs[$#ologs] + 1;
+    }
+    !system("mv $oscar_logfile $oscar_logfile"."_$indx")
+	or die "Could not rename $oscar_logfile : $!";
+}
+
 if (!open (STDOUT,"| tee $oscar_logfile") || !open(STDERR,">&STDOUT")) {
-    die("ERROR: Cannot tee stdout/stderr into the OSCAR logfile:
-   $oscar_logfile
-Aborting the install.\n");
+    die("ERROR: Cannot tee stdout/stderr into the OSCAR logfile: ".
+	"$oscar_logfile\n\nAborting the install.\n\n");
 }
 
 # First output banner
 
-oscar_log_section("Running OSCAR install_cluster script");
+oscar_log_section("Running OSCAR install_cluster script    ".`date`);
 
 # Fix to make multi lingualness work
 
