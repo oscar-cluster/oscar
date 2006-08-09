@@ -113,6 +113,7 @@ $options{debug} = 1
               get_node_info_with_name
               get_node_package_status_with_group_node
               get_node_package_status_with_node
+              get_node_package_status_with_node_package
               get_package_info_with_name
               get_packages
               get_packages_related_with_package
