@@ -110,6 +110,9 @@ unless ($skipinstall) {
     }
 }
 
+# Update the env for any newly installed software (oscar opkgs, etc.) 
+WizardEnv::update_env();
+
 # Step 4 - Build OSCAR Client Image
 unless ($skipbuild) {
     my $cmd = "./build_oscar_image_cli";
