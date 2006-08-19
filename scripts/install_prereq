@@ -276,40 +276,35 @@ sub handle_dumb_debs {
     my $ret;
     return if (!scalar(@pkgs));
     for my $pkg (@pkgs) {
-	# make sure we deal with package names, not file names
-	my $pkgname = $pkg; $pkgname =~ s/\.deb$//;
-	if ($remove) {
-	    # we test first if the package is installed
-	    $cmd = "dpkg -l | grep \"ii  $pkgname \"";
-	    vprint("Executing: $cmd\n");
-	    $ret = `$cmd`;
-	    if (!is_deb_pkg_installed($pkgname)) {
-		# remove all instances of package
-		$cmd = "apt-get remove $pkgname --assume-yes";
-		vprint("Executing: $cmd\n");
-		system($cmd);
-	    }
-	} else {
-	    # we first check if the package is already installed or not
-	    if (!is_deb_pkg_installed($pkgname)) {
-		vprint("Package $pkgname already installed\n");
+    	# make sure we deal with package names, not file names
+	    my $pkgname = $pkg; $pkgname =~ s/\.deb$//;
+    	if ($remove) {
+	        # we test first if the package is installed
+	        $cmd = "dpkg -l | grep \"ii  $pkgname \"";
+    	    vprint("Executing: $cmd\n");
+	        $ret = `$cmd`;
+	        if (!is_deb_pkg_installed($pkgname)) {
+        		# remove all instances of package
+	        	$cmd = "apt-get remove $pkgname --assume-yes";
+		        vprint("Executing: $cmd\n");
+    		    system($cmd);
+    	    }
 	    } else {
-		# we try first to find the package locally
-		my $pkgpath = locate_pkg($pkg);
-		if ($pkgpath) {
-		    # if we find a package locally we use it
-		    vprint("Package $pkgname locally found $pkgpath\n");
-		    $cmd = "dpkg -i $pkgpath";
-		    vprint("Executing: $cmd\n");
-		    !system($cmd) or croak "install failed: $!\n";
-		} else {
-		    # if we do not find a package locally, we try to find one online
-		    $cmd = "apt-get install $pkgname --assume-yes";
-		    vprint("Executing: $cmd\n");
-		    system($cmd);
-		}
+    		# we try first to find the package locally
+	    	my $pkgpath = locate_pkg($pkg);
+		    if ($pkgpath) {
+    		    # if we find a package locally we use it
+	    	    vprint("Package $pkgname locally found $pkgpath\n");
+		        $cmd = "dpkg -i $pkgpath";
+		        vprint("Executing: $cmd\n");
+    		    !system($cmd) or croak "install failed: $!\n";
+	    	} else {
+		        # if we do not find a package locally, we try to find one online
+		        $cmd = "apt-get install $pkgname --assume-yes";
+    		    vprint("Executing: $cmd\n");
+	    	    system($cmd);
+		    }
 	    }
-	}
     }
 }
 
