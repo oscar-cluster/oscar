@@ -117,7 +117,7 @@ bootstrap-smart:
 	@export OSCAR_HOME=`pwd`; \
 	if [ "$(PKG)" = "rpm" ]; then \
 		SMARTINST=packages/yume; \
-	elif [ "$(PKG)" = "rpm" ]; then \
+	elif [ "$(PKG)" = "deb" ]; then \
 		SMARTINST=packages/rapt; \
 	fi; \
 	scripts/install_prereq --dumb share/prereqs/packman $$SMARTINST
