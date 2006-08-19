@@ -74,18 +74,20 @@ if [ ! -d $dir ] ; then
 fi
 
 # make the server host keys if required
+# first step: generation of the RSA key
 file=$SSHCFGDIR/ssh_host_key
 echo ; echo checking for host key file $file ...
 if [ ! -r $file ] ; then
     echo making host key file $file ...
-    echo ssh-keygen -b 1024 -f $file -N ""
-    ssh-keygen -b 1024 -f $file -N "" || exit 1
+    echo ssh-keygen -t rsa -b 1024 -f $file -N ""
+    `ssh-keygen -t rsa -b 1024 -f $file -N ""` || exit 1
 fi
+# second step generation of the DSA key
 file=$SSHCFGDIR/ssh_host_dsa_key
 echo checking for host key file $file ...
 if [ ! -r $file ] ; then
-    echo ssh-keygen -d -f $file -N ""
-    ssh-keygen -d -f $file -N "" || exit 1
+    echo ssh-keygen -t dsa -d -f $file -N ""
+    ssh-keygen -t dsa -d -f $file -N "" || exit 1
 fi
 
 # make sure that the server sshd configuration file has
