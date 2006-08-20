@@ -94,6 +94,9 @@ $define = $cwd . "/$define" if ($define !~ /$cwd/ && $define ne '');
 $network = $cwd . "/$network" if ($network !~/$cwd/ && $network ne '');
 $bootscript = $cwd . "/$bootscript" if ($bootscript !~/$cwd/ && $bootscript ne '');
 
+my $adapter = shift;
+$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
+
 # Validate OSCAR_HOME environment variable and write /etc/profile.d files
 &oscar_home_env();
 
@@ -101,25 +104,7 @@ $bootscript = $cwd . "/$bootscript" if ($bootscript !~/$cwd/ && $bootscript ne '
 if ( system("./scripts/system-sanity") ) {
 	die "ERROR: There are basic system configuration issues (see log).\n";
 }
-
-
-# Validate the interface before we do too much...
-my %nics;
-open IN, "/sbin/ifconfig |" || die "ERROR: Unable to query NICs\n";
-while( <IN> ) {
-	next if /^\s/ || /^lo\W/;
-	chomp;
-	s/\s.*$//;
-	$nics{$_} = 1;
-}
-close IN;
-
-my $adapter = shift;
-die "
-ERROR: A valid NIC must be specified for the cluster private network.
-
-Valid NICs: ".join( ", ", sort keys %nics )."\n\n"
-	unless $adapter && exists $nics{$adapter};
+print "System checked\n";
 
 # Now check to see if there is an $ENV{OSCAR_HOME} directory, and if
 # so, if we're in it.
@@ -225,20 +210,6 @@ $ENV{PATH} = $ENV{PATH} .
 
 system("chmod 755 packages/*/scripts/*");
 
-# [EF 14.3.2006]
-# find out on which distro perl-Qt comes in an obsolete version
-# then edit the share/prereqs/base/prereq.cfg file accordingly
-# and remove the following 4 lines
-#
-# [GVALLEE 25.04.2006]
-# this is not compliant at all with Debian and it seems to me it is not anymore usefull
-# If you uncomment this, debian will _not_ be supported
-#my $pqtv = `rpm -q --quiet --qf '%{VERSION}' perl-Qt 2>/dev/null`;
-#if ( $pqtv && $pqtv < 3 ) {
-#  !system("rpm -e perl-Qt") or warn("Couldn't remove perl-Qt");
-#  oscar_log_subsection("Removing installed perl-Qt RPM because version is < 3");
-#}
-
 # TJN (10/4/2005): Note, a fairly evil, totally non-obvious issue 
 #    occurs if you have /tftpboot setup as a symlink,
 #    e.g., /tftpboot -> /var/tftpboot/,  and remove 'tftp-server'. 
@@ -249,8 +220,6 @@ system("chmod 755 packages/*/scripts/*");
 #    Adding a sanity check after the RPM removes to check for this case!
 
 croak "\nError: \'/tftpboot\' is gone!" if(! -d "/tftpboot" );
-
-$ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
 
 # Run the wizard_prep script
 
@@ -292,21 +261,6 @@ oscar_log_subsection("Architecture: $os->{arch}");
 oscar_log_subsection("Running in directory: " . cwd());
 oscar_log_subsection("PATH: " . $ENV{PATH});
 
-# Do some basic sanity checks -- fail immediately if we can tell right
-# now that this install won't [eventually] succeed.
-
-if ($shorthostname eq "localhost") {
-    die("
-ERROR: Your hostname is \"localhost\".
-OSCAR requires that you choose another hostname.
-Aborting the install.\n");
-}
-if ($hostname eq "localhost.localdomain") {
-    die("
-ERROR: Your hostname is \"localhost.localdomain\".
-OSCAR requires that you choose another hostname.
-Aborting the install.\n");
-}
 if (!$ENV{DISPLAY} && ($ENV{OSCAR_UI} eq "gui")) {
     die("
 ERROR: Your \"DISPLAY\" environment variable is not set, probably
