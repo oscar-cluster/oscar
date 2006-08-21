@@ -36,6 +36,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Package;
 use OSCAR::oda;
+use OSCAR::OCA::OS_Detect;
 
 my %options = ();
 my @errors = ();
@@ -54,7 +55,48 @@ exit 0 if(@nics_results);
 my $DEFAULT = "Default";
 
 # packages to be excluded from the default packages set
-my @exclude_packages = qw(networking pfilter sge);
+my @exclude_packages_by_default = qw(networking pfilter sge sc3);
+
+# we also load excluded packages for the distribution if we find
+# a file associated to the current distro within share/package_set
+# We first identify the current OS in order to be able to find the
+# list of packages that have to be excluded. Remember, files in
+# share/package_set follow the following pattern distro-version-archi
+my $os = OSCAR::OCA::OS_Detect::open();
+exit -1 if(!$os);
+my $filename = $ENV{OSCAR_HOME} . "/share/package_set/";
+$filename .= $os->{distro} . "-" . $os->{distro_version} . "-" . $os->{arch} . ".txt";
+print "We check if file " . $filename . " exists\n";
+my @exclude_packages = qw();
+if ( -f $filename ) {
+    print "File exists, excluding packages...\n";
+    open (FILE, $filename);
+    my $package;
+    while ($package = <FILE>) {
+        chomp ($package);
+        if ($package ne "") {
+            push(@exclude_packages, $package);
+        }
+    }
+    close (FILE);
+}
+# We merge now excluded packages for the distro and those excluded 
+# by default. The list should not have a package twice.
+for (@exclude_packages_by_default) {
+    my $pkg1 = $_;
+    my $pkg_found = 0;
+    for (@exclude_packages) {
+        my $pkg2 = $_;
+        if ($pkg1 eq $pkg2) {
+            $pkg_found = 1;
+        }
+    }
+    if ($pkg_found eq 0) {
+        push(@exclude_packages, $pkg1);
+    }
+}
+print "Packages excluded: @exclude_packages.\n";
+
 my %is_excluded = ();
 for (@exclude_packages) { $is_excluded{$_} = 1 };
 
