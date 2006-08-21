@@ -1,0 +1,16 @@
+disable-services
+ganglia
+kernel_picker
+lam
+loghost
+maui
+mpich
+mta-config
+networking
+ntpconfig
+openmpi
+pfilter
+pvm
+sge
+torque
+
