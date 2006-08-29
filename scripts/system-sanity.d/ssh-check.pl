@@ -12,7 +12,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::SystemSanity;
 
 my $rc = FAILURE;
-my $ssh_config = `grep \"PermitRootLogin\" /etc/ssh/sshd_config | awk ' { print \$2} '`;
+my $ssh_config = `grep \"PermitRootLogin\" /etc/ssh/sshd_config | grep -v \"^\\s\*\#\" | awk ' { print \$2} '`;
 chomp ($ssh_config);
 if ( $ssh_config eq "yes" ) {
 	$rc = SUCCESS;

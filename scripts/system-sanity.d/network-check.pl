@@ -86,7 +86,7 @@ sub check_oscar_interface {
     # we check now the IP assgned to the interface used by OSCAR
     my $oscar_ip = `grep oscar_server /etc/hosts | awk ' { print \$1 } '`;
     chomp ($oscar_ip);
-    my $oscar_if_ip = `ifconfig $oscar_if | grep "addr:" | awk '{ print \$2 }' | sed -e 's/addr://'`;
+    my $oscar_if_ip = `ifconfig $oscar_if | grep "inet addr:" | awk '{ print \$2 }' | sed -e 's/addr://'`;
     chomp ($oscar_if_ip);
     # the first time we execute OSCAR, /etc/hosts is not updated, it is 
     # normal
