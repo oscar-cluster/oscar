@@ -34,6 +34,7 @@ use SIS::Image;
 use SIS::DB;
 use OSCAR::Database;
 use OSCAR::oda;
+use OSCAR::Opkg;
 
 my $OSCAR_CLIENT_GROUP = "oscar_clients";
 
@@ -168,7 +169,7 @@ my @tables = ("Nodes","Packages","Node_Package_Status","Nics","Groups","Group_No
 # node records that aren't for node oscar_server (which we don't 
 # mess with since that cannot be a SIS installed node)
 
-print "using ODA to read the OSCAR database for node and adapters information ...\n";
+opkg_print("using ODA to read the OSCAR database for node and adapters information ...\n");
 my @nodes_results =(); 
 
 my $server = "oscar_wizard";
@@ -189,7 +190,7 @@ foreach my $node_result_ref ( @nodes_results ) {
 	 $$node_result_ref{ name } ne "" &&
 	 $$node_result_ref{ name } ne "oscar_server" ) {
 	my $node_name = $$node_result_ref{ name };
-	print "found node $node_name\n" if $options{ verbose };
+	opkg_print("found node $node_name\n") if $options{ verbose };
 
 	# make a node information hash, filling in the wanted node fields,
 	# and store the node hash in the nodes information hash
@@ -200,7 +201,7 @@ foreach my $node_result_ref ( @nodes_results ) {
 	    if ( exists $$node_result_ref{ $field } &&
 		 $$node_result_ref{ $field } ne "" ) {
 		$node{ $field } = $$node_result_ref{ $field };
-		print "found node $node_name $field=$node{$field}\n"
+		opkg_print("found node $node_name $field=$node{$field}\n")
 		    if $options{ verbose };
 	    }
 	}
@@ -214,15 +215,15 @@ foreach my $node_result_ref ( @nodes_results ) {
     foreach my $nic_ref (@nics_tmp){
         push @nic_names, $$nic_ref{name};
     }    
-	print "$0: for node $node_name nics=(" . 
-	    join(',', @nic_names ) . ")\n" if $options{ debug };
+	opkg_print("$0: for node $node_name nics=(" . 
+	    join(',', @nic_names ) . ")\n") if $options{ debug };
 	my %nics = ();
 	$node{ nics } = \%nics if @nic_names;
 
 	# for each found nic for this node, ...
 
 	foreach my $nic_name ( @nic_names ) {
-	    print "found node $node_name nic $nic_name\n" 
+	    opkg_print("found node $node_name nic $nic_name\n") 
 		if $options{ verbose };
 
 	    # make a nic information hash, filling in the wanted nic fields
@@ -240,19 +241,19 @@ foreach my $node_result_ref ( @nodes_results ) {
 		"cannot read the node $node_name nic $nic_name information";
         
 	    if ( ! @nics_results ) { 
-		print "$nic_error\n";
+		opkg_print("$nic_error\n");
 	    } else {
-		print "Too many nic records match node=$node_name nic=$nic_name, using first one\n"
+		opkg_print("Too many nic records match node=$node_name nic=$nic_name, using first one\n")
 		    if scalar @nics_results > 1;
 		my $nic_result_ref = shift @nics_results;
 		print_hash( "", "$0: nic_result_ref", $nic_result_ref )
 		    if $options{debug};
 		foreach my $field ( keys %nics_fields_translations ) {
-		    print "$0: field=<$field>\n" if $options{ debug };
+		    opkg_print("$0: field=<$field>\n") if $options{ debug };
 		    if ( exists $$nic_result_ref{ $field } &&
 			 $$nic_result_ref{ $field } ne "" ) {
 			$nic{ $field } = $$nic_result_ref{ $field };
-			print "found node $node_name nic $nic_name $field=$nic{$field}\n"
+			opkg_print("found node $node_name nic $nic_name $field=$nic{$field}\n")
 			    if $options{ verbose };
 		    }
 		}
@@ -266,7 +267,7 @@ foreach my $node_result_ref ( @nodes_results ) {
 
 # read the pertinant SIS database information.
 
-print "reading SIS database for node and adapters information ...\n";
+opkg_print("reading SIS database for node and adapters information ...\n");
  
 # Use Schwartzian transform to sort clients by node names alphabetically and numerically.
 # Names w/o numeric suffix precede those with numeric suffix.
@@ -296,18 +297,18 @@ foreach my $client ( @sis_clients ) {
 	my %node = ();
 	my $node_name = $client->name();
 	$sis_nodes{ $node_name } = \%node;
-	print "found node $node_name\n" if $options{ verbose };
+	opkg_print("found node $node_name\n") if $options{ verbose };
 	my %nics = ();
 	$node{ nics } = \%nics;
 	foreach my $field ( keys %nodes_fields_translations ) {
 	    my $translated = $nodes_fields_translations{$field};
 	    if ( defined $translated && $translated  ne "" ) {
-		print "$0: node=$node_name sis field <$translated> setting oda field <$field>\n"
+		opkg_print("$0: node=$node_name sis field <$translated> setting oda field <$field>\n")
 		    if $options{debug};
 		my $value = $client->$translated();
 		if ( defined $value && $value ne "" ) {
 		    $node{ $field } = $value;
-		    print "found node $node_name $field=$value\n"
+		    opkg_print("found node $node_name $field=$value\n")
 			if $options{ verbose };
 		}
 	    }
@@ -329,17 +330,17 @@ foreach my $client ( @sis_clients ) {
 	    my %nic = ();
 	    my $nic_name = $adapter->devname();
 	    $nics{ $nic_name } = \%nic;
-	    print "found node $node_name nic $nic_name\n" 
+	    opkg_print("found node $node_name nic $nic_name\n") 
 		if $options{ verbose };
 	    foreach my $field ( keys %nics_fields_translations ) {
 		my $translated = $nics_fields_translations{$field};
 		if ( defined $translated && $translated  ne "" ) {
-		    print "$0: node=$node_name sis field <$translated> setting oda field <$field>\n"
+		    opkg_print("$0: node=$node_name sis field <$translated> setting oda field <$field>\n")
 			if $options{debug};
 		    my $value = $adapter->$translated();
 		    if ( defined $value && $value ne "" ) {
 			$nic{ $field } = $value;
-			print "found node $node_name nic $nic_name $field=$value\n"
+			opkg_print("found node $node_name nic $nic_name $field=$value\n")
 			    if $options{ verbose };
 		    }
 		}
@@ -358,21 +359,21 @@ print_hash( "", "oscar_nodes", \%oscar_nodes ) if $options{debug};
 # first get rid of any OSCAR database nodes that are marked as being 
 # installed by sis, and that sis doesn't know about
 
-print "Looking for nodes in the OSCAR database that are marked as having" .
-    " SIS as their installer, that are not in the SIS database ...\n"
+opkg_print("Looking for nodes in the OSCAR database that are marked as having" .
+    " SIS as their installer, that are not in the SIS database ...\n")
     if $options{ verbose };
 foreach my $node_name ( keys %oscar_nodes ) {
     my $oscar_node_ref = $oscar_nodes{ $node_name };
     if ( exists $$oscar_node_ref{ installer } &&
 	 $$oscar_node_ref{ installer } eq "sis" ) {
-	print "$0: node $node_name is listed in OSCAR as using SIS\n"
+	opkg_print("$0: node $node_name is listed in OSCAR as using SIS\n")
 	    if $options{ debug };
 	if ( ! exists $sis_nodes{ $node_name } ) {
-	    print "Node $node_name is listed in the OSCAR database as using sis as" .
+	    opkg_print("Node $node_name is listed in the OSCAR database as using sis as" .
 		" the installer, but node $node_name is NOT in the SIS database," .
-		" DELETING node $node_name from the OSCAR database ...\n";
+		" DELETING node $node_name from the OSCAR database ...\n");
 	    if ( $options{ changes } ) {
-		print "Done deleting node $node_name from the OSCAR database.\n"
+		opkg_print("Done deleting node $node_name from the OSCAR database.\n")
             if delete_node($node_name,\%oda_options,@error_strings);
 	    }
 	    delete $oscar_nodes{ $node_name };
@@ -389,10 +390,10 @@ foreach my $node_name ( keys %sis_nodes ) {
 
     my $oscar_node_exists = 1;
     if ( ! exists $oscar_nodes{ $node_name } ) {
-	print "Node $node_name is listed in the SIS database, but is" .
-	    " not in the OSCAR database, CREATING node $node_name ...\n";
+	opkg_print("Node $node_name is listed in the SIS database, but is" .
+	    " not in the OSCAR database, CREATING node $node_name ...\n");
 	if ( $options{ changes } ) {
-	    print "Done creating node $node_name in the OSCAR database.\n"
+	    opkg_print("Done creating node $node_name in the OSCAR database.\n")
         if set_node_with_group($node_name,$OSCAR_CLIENT_GROUP,\%oda_options,@error_strings);
 	}
 	my %node = ();
@@ -407,10 +408,11 @@ foreach my $node_name ( keys %sis_nodes ) {
     if ( $node_name ne "oscar_server" &&
          ! exists $$oscar_node_ref{ installer } ||
 	     $$oscar_node_ref{ installer } ne "sis" ) {
-	print "Setting node $node_name field installer to \"sis\" ...\n";
+	opkg_print("Setting node $node_name field installer to \"sis\" ...\n");
 	if ( $options{ changes } ) {
         my %field_value = ("installer"=>"sis");
-	    print "Done setting node $node_name field installer to \"sis\"\n"
+	    opkg_print("Done setting node $node_name field installer to \"sis\"\n")
+
         if update_node($node_name,\%field_value,\%oda_options,\@error_strings);
 	}
     }
@@ -424,15 +426,15 @@ foreach my $node_name ( keys %sis_nodes ) {
 	if ( $field ne "nics" ) {
 	    my $sis_value = $$sis_node_ref{ $field };
 	    my $oscar_value = $$oscar_node_ref{ $field };
-	    print "$0: node=$node_name field=$field sis=$sis_value oscar=$oscar_value\n" if $options{ debug };
+	    opkg_print("$0: node=$node_name field=$field sis=$sis_value oscar=$oscar_value\n") if $options{ debug };
 	    if ( defined $sis_value && $sis_value ne "" ) {
 		if ( ! defined $oscar_value ||
 		     $oscar_value ne $sis_value ) {
-		    print "Setting OSCAR database node $node_name" .
-			" field $field to \"$sis_value\" ...\n";
+		    opkg_print("Setting OSCAR database node $node_name" .
+			" field $field to \"$sis_value\" ...\n");
 		    if ( $options{ changes } && $node_name ne "oscar_server" ) {
                 my %field_value = ( $field=>$sis_value );
-                print "Done setting field $field to \"$sis_value\".\n"
+                opkg_print("Done setting field $field to \"$sis_value\".\n")
                     if update_node($node_name,\%field_value,\%oda_options,\@error_strings);
 		    }
 		}
@@ -454,10 +456,10 @@ foreach my $node_name ( keys %sis_nodes ) {
 
 	my $oscar_nic_exists = 1;
 	if ( ! exists $$oscar_nics_ref{ $nic_name } ) {
-	    print "Node $node_name nic $nic_name is listed in the SIS database," .
-		" but is not in the OSCAR database, CREATING nic $nic_name ...\n";
+	    opkg_print("Node $node_name nic $nic_name is listed in the SIS database," .
+		" but is not in the OSCAR database, CREATING nic $nic_name ...\n");
 	    if ( $options{ changes } ) {
-		print "Done creating nic $nic_name in the OSCAR database.\n"
+		opkg_print("Done creating nic $nic_name in the OSCAR database.\n")
             if set_nics_with_node($nic_name,$node_name,undef,\%oda_options,\@error_strings);
 	    }
 	    my %nic = ();
@@ -474,15 +476,15 @@ foreach my $node_name ( keys %sis_nodes ) {
 	foreach my $field ( keys %$sis_nic_ref ) {
 	    my $sis_value = $$sis_nic_ref{ $field };
 	    my $oscar_value = $$oscar_nic_ref{ $field };
-	    print "$0: node=$node_name nic=$nic_name field=$field sis=$sis_value oscar=$oscar_value\n" if $options{ debug };
+	    opkg_print("$0: node=$node_name nic=$nic_name field=$field sis=$sis_value oscar=$oscar_value\n") if $options{ debug };
 	    if ( defined $sis_value && $sis_value ne "" ) {
 		if ( ! defined $oscar_value ||
 		     $oscar_value ne $sis_value ) {
-		    print "Setting OSCAR database node $node_name nic $nic_name" .
-			" field $field to \"$sis_value\" ...\n";
+		    opkg_print("Setting OSCAR database node $node_name nic $nic_name" .
+			" field $field to \"$sis_value\" ...\n");
 		    if ( $options{ changes } ) {
                 my %field_value = ($field=>$sis_value);
-			print "Done setting field $field to \"$sis_value\".\n"
+			opkg_print("Done setting field $field to \"$sis_value\".\n")
                 if set_nics_with_node($nic_name,$node_name,\%field_value,\%oda_options,\@error_strings);
 		    }
 		}
