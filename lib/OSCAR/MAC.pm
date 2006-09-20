@@ -981,6 +981,7 @@ sub build_autoinstall_cd {
     our $uyok;
     our $kernel;
     our $ramdisk;
+    our $install_mode;
     #our $uyok_generated;
 
     if ($uyok) {
@@ -990,6 +991,10 @@ sub build_autoinstall_cd {
 
     my $append = "MONITOR_SERVER=$ip MONITOR_CONSOLE=yes";
     $append = "$append ramdisk_size=80000" if $uyok;
+    if ($install_mode eq "systemimager-bt") {
+      $append = "$append BITTORRENT=y";
+    }
+
     my $cmd = "si_mkautoinstallcd --append \"$append\" --out-file /tmp/oscar_bootcd.iso --flavor standard";
     $cmd = "$cmd --kernel $kernel --initrd $ramdisk" if $uyok;
 

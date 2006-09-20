@@ -37,7 +37,10 @@ if (!$install_mode) {
   set_install_mode($default_install_mode);
 }
 
-!system("/etc/init.d/systemimager-server-rsyncd restart") or croak("Could not restart systemimager-server-rsyncd");
+my @services = qw(systemimager-server-rsyncd systemimager-server-monitord);
 
-my $monitord = "systemimager-server-monitord";
-!system("/etc/init.d/$monitord restart") or croak("Could not restart $monitord");
+foreach my $service (@services) {
+  !system("/etc/init.d/$service restart") or croak("Could not restart $service");
+  opkg_print("Enabling $service\n");
+  !system("chkconfig --add $service") or croak("Failed to enable $service");
+}

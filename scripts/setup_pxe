@@ -162,12 +162,12 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
 
     if ($install_mode eq "systemimager-bt") {
       verbose("Updating /tftpboot/pxelinux.cfg/default to support $install_mode.");
-      if ( system("sed 's|root=/dev/ram|root=/dev/ram BITTORRENT_STAGING=/a/tmp|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+      if ( system("sed 's|root=/dev/ram|root=/dev/ram BITTORRENT=y|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
         croak("Unable to update /tftpboot/pxelinux.cfg/default to support $install_mode.");
       } 
     } else {
-      if ( system("sed 's| BITTORRENT_STAGING=/a/tmp||g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
-        croak("Unable to remove BITTORRENT_STAGING kernel append from /tftpboot/pxelinux.cfg/default.");
+      if ( system("sed 's| BITTORRENT=y||g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+        croak("Unable to remove BITTORRENT kernel append from /tftpboot/pxelinux.cfg/default.");
       }
     }
 
