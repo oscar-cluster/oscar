@@ -200,6 +200,11 @@ my $stree_template = "/tmp/stree_template";
 if ($stree) {
         open(STREE, '>'.$stree_template) or croak("Cannot open file $stree_template for writing");
         print STREE "id=0\n";
+        print STREE "name=Root\n";
+        print STREE "type=0\n";
+        print STREE "shares=1000\n";
+        print STREE "childnodes=1\n";
+        print STREE "id=1\n";
         print STREE "name=default\n";
         print STREE "type=0\n";
         print STREE "shares=1000\n";
