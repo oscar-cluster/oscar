@@ -26,7 +26,7 @@ fi
 # create directory inside image
 mkdir -p $IMAGEDIR/$OSCAR_HOME
 # copy libs and scripts
-cp -pr $OSCAR_HOME/{libs,scripts} $IMAGEDIR/$OSCAR_HOME
+cp -pr $OSCAR_HOME/{lib,scripts} $IMAGEDIR/$OSCAR_HOME
 
 # and finally copy profiles
 [ ! -d $IMAGEDIR/etc/profile.d ] || mkdir -p $IMAGEDIR/etc/profile.d
