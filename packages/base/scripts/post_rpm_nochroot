@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# Copy libs and scripts from OSCAR_HOME to the image which was just created.
+# This is required in order to give client nodes access to OSCAR functionality
+# and the OSCAR database.
+#
+# $Id$
+# Copyright (c) Erich Focht 2006
+
+IMAGEDIR=$1
+if [ -z "$IMAGEDIR" -o ! -d "$IMAGEDIR" ]; then
+    echo "Image directory doesn't exist!"
+    exit 1
+fi
+
+if [ -z "$OSCAR_HOME" ]; then
+    echo "The OSCAR_HOME environment variable is not defined!"
+    exit 1
+fi
+
+if [ ! -d "$OSCAR_HOME" ]; then
+   echo "OSCAR_HOME does not point to a sane path: $OSCAR_HOME"
+   exit 1
+fi
+
+# create directory inside image
+mkdir -p $IMAGEDIR/$OSCAR_HOME
+# copy libs and scripts
+cp -pr $OSCAR_HOME/{libs,scripts} $IMAGEDIR/$OSCAR_HOME
+
+# and finally copy profiles
+[ ! -d $IMAGEDIR/etc/profile.d ] || mkdir -p $IMAGEDIR/etc/profile.d
+cp -p /etc/profile.d/oscar_home.{sh,csh} $IMAGEDIR/etc/profile.d
+
