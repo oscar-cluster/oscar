@@ -28,6 +28,9 @@ use lib "$ENV{OSCAR_HOME}/lib/Qt";
 use lib "/usr/lib/perl5/site_perl/OSCAR";
 use Carp;
 use Cwd;
+
+use SIS::DB;
+
 use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::Logger;
@@ -93,7 +96,6 @@ sub install_uninstall_packages
   system('/usr/bin/perl Selector.pl -i');
   chdir($olddir);
 
-
     # 
     # dikim commented out the LOCKING codes here because he believes
     # that InnoDB type can handle the all the crossing locking issues.
@@ -108,8 +110,9 @@ sub install_uninstall_packages
 	# Get the lists of packages that need to be installed/uninstalled
     my @selected = ();
     my @unselected = ();
-    $success = OSCAR::Database::get_selected_group_packages(\@selected,\%options,\@error_list);
-    $success = OSCAR::Database::get_unselected_group_packages(\@selected,\%options,\@error_list,undef,0);
+    
+    $success = OSCAR::Database::get_selected_packages(\@selected,\%options,\@error_list);
+    $success = OSCAR::Database::get_unselected_packages(\@unselected,\%options,\@error_list);
     foreach my $selected_ref (@selected){
         push @packagesThatShouldBeInstalled, $$selected_ref{package};
     }    
@@ -183,12 +186,22 @@ sub install_uninstall_packages
 		}
 		else
 		{
+            # If PackageInUn fails to uninstall the package,
+            # roll the Node_Package_Status back to the previous status.
+            my $node = $OSCAR_SERVER_NODE;
+            my @results = ();
+            OSCAR::Database::get_node_package_status_with_node_package($node,$package,\@results,\%options,\@error_list);
+            if (@results) {
+                my $pstatus_ref = pop @results;
+                my $ex_status = $$pstatus_ref{ex_status};
+                update_node_package_status(
+                    \%options,$node,$package,$ex_status,\@error_list);
+            }
 			my $e_string = "Error: package ($package) failed to uninstall.\n";
 			print $e_string;
 			add_error($e_string);
 		}
 	}
-
 
 	# Loop through the list of packages to be INSTALLED and do the right thing
 	foreach $package (@packagesThatShouldBeInstalled)
@@ -208,6 +221,17 @@ sub install_uninstall_packages
 		}
 		else
 		{
+            # If PackageInUn fails to install the package,
+            # roll the Node_Package_Status back to the previous status.
+            my $node = $OSCAR_SERVER_NODE;
+            my @results = ();
+            OSCAR::Database::get_node_package_status_with_node_package($node,$package,\@results,\%options,\@error_list);
+            if (@results) {
+                my $pstatus_ref = pop @results;
+                my $ex_status = $$pstatus_ref{ex_status};
+                update_node_package_status(
+                    \%options,$node,$package,$ex_status,\@error_list);
+            }
 			my $e_string = "Error: package ($package) failed to install.\n";
 			print $e_string;
 			add_error($e_string);
@@ -241,7 +265,7 @@ sub install_uninstall_packages
 	#included the stuff from the post_installs
 	print_errors();
                                                                                 
-                                                                                
+    OSCAR::Database::initialize_selected_flag(\%options,\@error_list);
 	oscar_log_section("Finished running Install/Uninstall OSCAR Packages");
 	
 	return 0;
@@ -314,7 +338,7 @@ sub package_install
 
 	 ;	
 
-	if (is_installed($package_name))
+	if (is_installed($package_name,1))
 	{
 		my $e_string = "Error: package ($package_name) is installed already, aborting...\n";
 		print $e_string;
@@ -1204,7 +1228,7 @@ sub package_uninstall
 		return 6;
 	} 
 
-	if (! is_installed($package_name))
+	if (! is_installed($package_name,1))
 	{
 		my $e_string = "Error: package ($package_name) is not installed, aborting...\n";
 		print $e_string;
@@ -1316,12 +1340,11 @@ sub set_uninstalled
 #does set oda's error code to verbose
 #
 #note: actually returns the value of the installed field
-sub is_installed
-{
-	my ($package_name) = @_;	
+sub is_installed{
+    my ($package_name, $selector) = @_;	
 
-	return OSCAR::Database::is_installed_on_node($package_name,
-                    $OSCAR_SERVER_NODE,\%options,\@error_list);
+    return OSCAR::Database::is_installed_on_node($package_name,
+            $OSCAR_SERVER_NODE,\%options,\@error_list,$selector);
 }
 
 sub uninstall_rpms_patch
@@ -1339,16 +1362,17 @@ sub uninstall_rpms_patch
 	my @rpm_list;
 	my $cmd_string;
 	my $rpm;
+	my $rpms = "";
 	my $pm;
 	my $retval = 0;
 	my @rslts;
 	
-	@rpm_list = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, $type, 1);
+	@rpm_list = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, "", $type);
 
 	if ($type =~ "oscar_client")
 	{
 		#handle clients
-		$cmd_string = "$C3_HOME/cexec rpm -e";
+		$cmd_string = "$C3_HOME/cexec yume -y remove ";
 		print "client\n";
 
 	} 
@@ -1360,14 +1384,16 @@ sub uninstall_rpms_patch
 
 	foreach $rpm (@rpm_list)
 	{
-		$cmd_string = $cmd_string." ".$rpm;
+		$rpms = $rpms." ".$rpm;
 	}
+	$cmd_string = $cmd_string.$rpms;
 	#print $cmd_string;
 	#exit (0);
 
 	if ($type =~ "oscar_client")
 	{
-		#$retval = cexec_open($cmd_string, \@rslts); 
+		print("Uninstalling package $package_name on client nodes\n");
+		$retval = cexec_open($cmd_string, \@rslts); 
 		if( $retval != 0 )
 		{ 
 			oscar_log_subsection("Error on client rpm un-install for $package_name \n");
@@ -1377,27 +1403,40 @@ sub uninstall_rpms_patch
 		}
 
 		#handle image
-		$pm = PackMan::RPM->new;
-		$pm->chroot("/var/lib/systemimager/images/oscarimage");
-		if($pm->remove( @rpm_list ))
-		{
+		#$pm = PackMan::RPM->new;
+		#$pm->chroot("/var/lib/systemimager/images/oscarimage");
+		#if($pm->remove( @rpm_list ))
+		#{
+		#	return 0;
+		#}
+		my @images = list_image();
+		my $imagepath = "/var/lib/systemimager/images";
+		my $image;
+
+		foreach (@images) {
+		  $image = $_->name;
+		  print("Uninstalling package $package_name from image $image\n");
+		  if (!system("yume --installroot $imagepath/$image -y remove $rpms")) {
 			return 0;
-		}
-		else
-		{
-			oscar_log_subsection("Error on image rpm un-install for $package_name \n");
-			my $e_string = "Error on image rpm un-install for $package_name \n";
+		  } else {
+			oscar_log_subsection("Error on image [$image] RPM un-install for $package_name \n");
+			my $e_string = "Error on image [$image] RPM un-install for $package_name \n";
 			add_error($e_string);
 			return 1;
+		  }
 		}
 		
 	}
 	elsif($type =~ "oscar_server")
 	{
-		$pm = PackMan::RPM->new;
-		$pm->chroot(undef);
-		if($pm->remove( @rpm_list ))
-		{
+		#$pm = PackMan::RPM->new;
+		#$pm->chroot(undef);
+		#if($pm->remove( @rpm_list ))
+		#{
+		#	return 0;
+		#}
+		print ("Uninstalling package $package_name from headnode\n");
+		if (!system("yume -y remove $rpms")) {
 			return 0;
 		}
 		else
@@ -1486,7 +1525,6 @@ sub run_uninstall_client
 	my @rslts;
 
 	oscar_log_subsection("Running client un-install");
-
 
 	if (uninstall_rpms_patch($package_name, "oscar_client") != 0)
 	{
