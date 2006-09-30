@@ -67,6 +67,7 @@ my $options_ref = \%options;
 my $database_connected = 0;
 my $CLUSTER_NAME = "oscar";
 my $DEFAULT = "Default";
+my $OSCAR_SERVER = "oscar_server";
 
 $options{debug} = 1 
     if (exists $ENV{OSCAR_VERBOSE} && $ENV{OSCAR_VERBOSE} == 10)
@@ -94,7 +95,7 @@ $options{debug} = 1
               delete_node
               delete_group_packages
               delete_groups
-	      del_pkgconfig_vars
+              del_pkgconfig_vars
               do_select
               get_client_nodes
               get_client_nodes_info
@@ -113,7 +114,6 @@ $options{debug} = 1
               get_node_info_with_name
               get_node_package_status_with_group_node
               get_node_package_status_with_node
-              get_node_package_status_with_node_package
               get_package_info_with_name
               get_packages
               get_packages_related_with_package
@@ -121,17 +121,19 @@ $options{debug} = 1
               get_packages_switcher
               get_packages_servicelists
               get_packages_with_class
-	      get_pkgconfig_vars
+              get_pkgconfig_vars
               get_selected_group
               get_selected_group_packages
+              get_selected_packages
               get_unselected_group_packages
+              get_unselected_packages
               insert_packages
               insert_pkg_rpmlist
               is_installed_on_node
               link_node_nic_to_network
     	      list_selected_packages
     	      pkgs_of_opkg
-	      pkgconfig_values
+              pkgconfig_values
               set_all_groups
               set_group_packages
               set_group_nodes
@@ -142,7 +144,7 @@ $options{debug} = 1
               set_install_mode
               set_nics_with_node
               set_node_with_group
-	      set_pkgconfig_var
+              set_pkgconfig_var
               set_status
               update_node
               update_node_package_status
@@ -1732,7 +1734,7 @@ sub get_packages_servicelists {
               "Group_Nodes G " .
               "WHERE P.id=S.package_id AND N.package_id=S.package_id ".
               "AND G.node_id=N.node_id ";
-    $sql .= ($group_name?" AND G.group_name='$group_name' AND S.group_name='$group_name'":" AND S.group_name!='oscar_server'");          
+    $sql .= ($group_name?" AND G.group_name='$group_name' AND S.group_name='$group_name'":" AND S.group_name!='$OSCAR_SERVER'");          
     print "DB_DEBUG>$0:\n====> in Database::get_packages_servicelists SQL : $sql\n" if $$options_ref{debug};
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }    
@@ -1779,6 +1781,60 @@ sub get_unselected_group_packages {
         $group) = @_;
     return get_selected_group_packages($results_ref,$options_ref,
                                        $error_strings_ref,$group,0);
+}
+
+# Get the list of packages to install at the step "PackageInUn".
+# This subroutine checks the flag "selected" and get the list of
+# packages from the table "Node_Package_Status" where the "selected"
+# flag is 2.
+
+# Flag : selected
+# 0 -> default (Selector has not touched the field)
+# 1 -> unselected
+# 2 -> selected
+sub get_selected_packages {
+    my ($results,
+        $options_ref,
+        $error_strings_ref,
+        $node_name) = @_;
+
+    $node_name = $OSCAR_SERVER if (!$node_name);
+
+    my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+             "From Packages, Node_Package_Status, Nodes ".
+             "WHERE Node_Package_Status.package_id=Packages.id ".
+             "AND Node_Package_Status.node_id=Nodes.id ".
+             "AND Node_Package_Status.selected=2 ".
+             "AND Nodes.name='$node_name'";
+    print "DB_DEBUG>$0:\n====> in Database::is_installed_on_node SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+# Get the list of packages to uninstall at the step "PackageInUn".
+# This subroutine checks the flag "selected" and get the list of
+# packages from the table "Node_Package_Status" where the "selected"
+# flag is 1.
+
+# Flag : selected
+# 0 -> default (Selector has not touched the field)
+# 1 -> unselected
+# 2 -> selected
+sub get_unselected_packages {
+    my ($results,
+        $options_ref,
+        $error_strings_ref,
+        $node_name) = @_;
+
+    $node_name = $OSCAR_SERVER if (!$node_name);
+
+    my $sql = "SELECT Packages.package, Node_Package_Status.* " .
+             "From Packages, Node_Package_Status, Nodes ".
+             "WHERE Node_Package_Status.package_id=Packages.id ".
+             "AND Node_Package_Status.node_id=Nodes.id ".
+             "AND Node_Package_Status.selected=1 ".
+             "AND Nodes.name='$node_name'";
+    print "DB_DEBUG>$0:\n====> in Database::is_installed_on_node SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
 sub get_group_packages_with_groupname {
@@ -1939,12 +1995,25 @@ sub get_install_mode {
     return $$cluster_ref{install_mode};
 }
 
+# Initialize the "selected" field in the table "Node_Package_Status"
+# to get the table "Node_Package_Status" ready for another "PackageInUn"
+# process
+sub initialize_selected_flag{
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my $table = "Node_Package_Status";
+    my %field_value_hash = ("selected" => 0);
+    my $where = "";
+    die "DB_DEBUG>$0:\n====>Failed to update the flag of selected"
+        if(!update_table($options_ref,$table,\%field_value_hash, $where, $error_strings_ref));
+}        
 
 sub is_installed_on_node {
     my ($package_name,
         $node_name,
         $options_ref,
         $error_strings_ref,
+        $selector,
         $version,
         $requested) = @_;
     my @result = ();    
@@ -1955,9 +2024,13 @@ sub is_installed_on_node {
              "AND Node_Package_Status.node_id=Nodes.id ".
              "AND Packages.package='$package_name' ".
              "AND Nodes.name=";
-    $sql .= ($node_name?"'$node_name'":"'oscar_server'"); 
+    $sql .= ($node_name?"'$node_name'":"'$OSCAR_SERVER'"); 
     if(defined $requested && $requested ne ""){
-        $sql .= " AND Node_Package_Status.requested=$requested ";
+        if($selector){
+            $sql .= " AND Node_Package_Status.ex_status=$requested ";
+        }else{
+            $sql .= " AND Node_Package_Status.requested=$requested ";
+        }    
     }
     if(defined $version && $version ne ""){
         $sql .= " AND Packages.version=$version ";
@@ -1967,8 +2040,6 @@ sub is_installed_on_node {
         if! do_select($sql,\@result, $options_ref, $error_strings_ref);
     return (@result?1:0);    
 }
-
-
 
 ######################################################################
 #
@@ -2003,7 +2074,7 @@ sub delete_group_packages {
 
         # Set "should_not_be_installed" to the package status    
         update_node_package_status(
-              $options_ref,"oscar_server",$opkg,1,$error_strings_ref);
+              $options_ref,$OSCAR_SERVER,$opkg,1,$error_strings_ref);
     }      
     return 1;    
 }
@@ -2282,6 +2353,7 @@ sub update_node_package_status {
         $passed_pkg,
         $requested,
         $error_strings_ref,
+        $selected,
         $passed_ver) = @_;
     $requested = 1 if ! $requested;    
     my $packages;
@@ -2328,6 +2400,7 @@ sub update_node_package_status {
             # package status from being updated incorrectly when a 
             # package is selected/unselected on Seletor.
             $field_value_hash{ex_status} = $requested if($requested == 8 && $ex_status != 2);
+            $field_value_hash{selected} = $selected if ($selected);
             die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
                 if(!update_table($options_ref,$table,\%field_value_hash, $where, $error_strings_ref));
         } else {
@@ -2497,7 +2570,7 @@ sub set_group_packages {
     # (e.g., if "selected" then should_be_installed elee should_not_be_installed")
     $requested = 1 if !$requested;
     update_node_package_status(
-          $options_ref,"oscar_server",$package,$requested,$error_strings_ref);
+          $options_ref,$OSCAR_SERVER,$package,$requested,$error_strings_ref);
     return 1;
 }
 

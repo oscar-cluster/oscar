@@ -336,7 +336,6 @@ sub package_install
 		return 6;
 	} 
 
-	 ;	
 
 	if (is_installed($package_name,1))
 	{

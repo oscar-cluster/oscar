@@ -440,8 +440,7 @@ sub manageSetsButton_clicked
 
 }
 
-sub exitButton_clicked
-{
+sub exitButton_clicked {
 
 #########################################################################
 #  Subroutine: exitButton_clicked                                       #
@@ -450,43 +449,50 @@ sub exitButton_clicked
 #  When the exitButton is clicked, quit the application.                #
 #########################################################################
 
-  # If the GUI is running as the 'Updater', then we need to go through
-  # the list of all packages and find out which ones need to be installed
-  # or uninstalled.  
+    # If the GUI is running as the 'Updater', then we need to go through
+    # the list of all packages and find out which ones need to be installed
+    # or uninstalled.  
 
     my $success;  # Return code for database commands
 
     # Then scan the table for packages to be installed/uninstalled
     my $allPackages = SelectorUtils::getAllPackages();
     my $packagesInstalled = packageTable->getPackagesInstalled();
-    for (my $row = 0; $row < packageTable->numRows(); $row++)
-    {
+    # Flag : selected
+    # 0 -> default (Selector has not touched the field)
+    # 1 -> unselected
+    # 2 -> selected
+    my $selected = 0;
+    for (my $row = 0; $row < packageTable->numRows(); $row++){
         my $package = packageTable->item($row,0)->text();
         my $checked = packageTable->item($row,1)->isChecked();
         my @pstatus = ();
         my $check = OSCAR::Database::get_node_package_status_with_node_package(
         "oscar_server",$package,\@pstatus, \%options,\@errors);
-         my $pstatus_ref = pop @pstatus if $check;
+        my $pstatus_ref = pop @pstatus if $check;
            
- 
-         if (($packagesInstalled->{$package}) && (!$checked))
-         { # Need to uninstall package
-           # status : 1 == should_not_be_installed
-           print "Updating Node_Package_Status to should_not_be_installed\n"
+
+        if (($packagesInstalled->{$package}) && (!$checked)){
+            # Need to uninstall package
+            # status : 1 == should_not_be_installed
+           
+            $selected  = 1;
+            print "Updating Node_Package_Status to should_not_be_installed\n"
                if $options{debug};
-           $success = OSCAR::Database::update_node_package_status(  
-                     \%options,"oscar_server",$package,1,\@errors);
-         }
- 
-         if ((!($packagesInstalled->{$package})) && ($checked))
-         { 
-             # Need to install package
-             # status : 2 == should_be_installed
-             print "Updating Node_Package_Status to should_be_installed\n"
-               if $options{debug};
-             $success = OSCAR::Database::update_node_package_status(  
-                     \%options,"oscar_server",$package,2,\@errors);
-         }
+            $success = OSCAR::Database::update_node_package_status(  
+                     \%options,"oscar_server",$package,1,\@errors,$selected);
+        }
+
+        if ((!($packagesInstalled->{$package})) && ($checked)){
+            # Need to install package
+            # status : 2 == should_be_installed
+
+            $selected  = 2;
+            print "Updating Node_Package_Status to should_be_installed\n"
+                if $options{debug};
+            $success = OSCAR::Database::update_node_package_status(  
+                     \%options,"oscar_server",$package,2,\@errors,$selected);
+        }
     }
 
     Qt::Application::exit();
