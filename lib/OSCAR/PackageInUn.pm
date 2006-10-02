@@ -50,8 +50,8 @@ our @EXPORT = qw(install_uninstall_packages
                  set_uninstalled
                  is_selected
                  is_package_a_package
-                 check_package_dependancy
-                 check_dependant_package
+                 check_package_dependency
+                 check_dependent_package
                  uninstall_rpms_patch);
 
 my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
@@ -309,7 +309,7 @@ sub sanity_check
 #   4 attempted install on image, choked
 #   5 package is installed already, taking no actions
 #   6 package is not a package
-#   7 package is dependant on another package
+#   7 package is dependent on another package
 #
 #   Important Note:
 #   also sets "installed" field in table packages 
@@ -345,10 +345,10 @@ sub package_install
 		return (5);
 	}
 
-	#check to see if package is dependant on anything
-	if( check_package_dependancy($package_name))
+	#check to see if package is dependent on anything
+	if( check_package_dependency($package_name))
 	{
-		my $e_string = "Error: package has dependancies\n";
+		my $e_string = "Error: package has dependencies\n";
 		print $e_string;
 		add_error($e_string);
 		return (7);
@@ -1243,7 +1243,7 @@ sub package_uninstall
 		return (1);
 	} 
 	#check to see if other packages need it
-	if( check_dependant_package($package_name))
+	if( check_dependent_package($package_name))
 	{
 		my $e_string = "Error: other packages depend on this package\n";
 		print $e_string;
@@ -1746,13 +1746,13 @@ sub run_command_general
 	}
 }
 
-#checks to see if a package is dependant on another
+#checks to see if a package is dependent on another
 #	$package_name --> a valid package name
 #returns 1 if
 #if it is and that package is already installed
-#if it is not dependant on anything
+#if it is not dependent on anything
 #returns 0 otherwise
-sub check_package_dependancy 
+sub check_package_dependency 
 {
 	my ($package_name) = @_;
 	my @results;
@@ -1778,7 +1778,7 @@ sub check_package_dependancy
 #	$package_name --> a valid package name
 #returns 1 if other packages depend on it
 #returns 0 otherwise
-sub check_dependant_package
+sub check_dependent_package
 {
 	my ($package_name) = @_;
 	my @results;
