@@ -25,7 +25,7 @@ use strict;
 my $distro = "suse";
 my $compat_distro = "suse";
 my $pkg = "rpm";
-my $detect_package = "SuSE-release";
+my $detect_package = "suse-release";
 my $detect_file = "/bin/bash";
 
 sub detect_dir {
@@ -33,8 +33,8 @@ sub detect_dir {
     my $release_string;
 
     # If /etc/SuSE-release exists, continue, otherwise, quit.
-    if (-f "/etc/$detect_package") {
-	$release_string = `cat /etc/$detect_package`;
+    if (-f "$root/etc/SuSE-release") {
+	$release_string = `cat $root/etc/SuSE-release`;
     } else {
 	return undef;
     }
