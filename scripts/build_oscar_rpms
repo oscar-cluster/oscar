@@ -354,7 +354,14 @@ sub srpm_name_ver {
 
     # @names are actually glob patterns
     for my $g (keys(%c)) {
-	my @SRPM = glob("$pdir/SRPMS/$g-[0-9]*");
+	my $add;
+	if ($g !~ m/\-\d/) {
+	    $add = "-[0-9]";
+	}
+	if ($verbose) {
+	    print "srpm glob: $pdir/SRPMS/$g$add*\n";
+	}
+	my @SRPM = glob("$pdir/SRPMS/$g$add*");
 	if (scalar(@SRPM) == 0) {
 	    die "Pattern $g matched no srpm! Edit your build.cfg file!";
 	} elsif(scalar(@SRPM) > 1) {
@@ -363,9 +370,9 @@ sub srpm_name_ver {
 	my $srpm = $SRPM[0];
 	my ($name,$ver) = split(" ",`rpm -q --qf '%{NAME} %{VERSION}-%{RELEASE}' -p $srpm`);
 
-	$c{"$g"}{srpm} = $srpm;
-	$c{"$g"}{name} = $name;
-	$c{"$g"}{ver}  = $ver;
+	$conf->{"$g"}{srpm} = $srpm;
+	$conf->{"$g"}{name} = $name;
+	$conf->{"$g"}{ver}  = $ver;
     }
 }
 
