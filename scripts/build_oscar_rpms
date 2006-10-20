@@ -354,7 +354,7 @@ sub srpm_name_ver {
 
     # @names are actually glob patterns
     for my $g (keys(%c)) {
-	my @SRPM = glob("$pdir/SRPMS/$g*");
+	my @SRPM = glob("$pdir/SRPMS/$g-[0-9]*");
 	if (scalar(@SRPM) == 0) {
 	    die "Pattern $g matched no srpm! Edit your build.cfg file!";
 	} elsif(scalar(@SRPM) > 1) {
