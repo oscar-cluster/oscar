@@ -20,6 +20,8 @@ package OSCAR::DelNode;
 #                       Sean Dague <japh@us.ibm.com>
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
+#                    All rights reserved.
 
 use strict;
 use vars qw($VERSION @EXPORT);
@@ -29,6 +31,7 @@ use Carp;
 use SystemInstaller::Tk::Common;
 use base qw(Exporter);
 use SIS::Client;
+use SIS::Adapter;
 use SIS::DB;
 use OSCAR::Database;
 use OSCAR::Network;
@@ -104,6 +107,24 @@ sub fill_listbox {
         return 1;
 }
 
+sub ip_to_hex {
+    my ($ip) = @_;
+    my @hex = split /\./, $ip;
+    return sprintf("%2.2X%2.2X%2.2X%2.2X",@hex);
+}
+
+sub del_ip_node {
+    my ($node) = @_;
+    for my $adapter (list_adapter(client=>$node)) {
+	my $ip = $adapter->ip;
+	my $hex = &ip_to_hex($ip);
+	# delete ELILO and PXE config files
+	for my $file ("/tftpboot/".$hex.".conf",
+		      "/tftpboot/pxelinux.cfg/$hex") {
+	    unlink($file) if (-l $file || -f $file);
+	}
+    }
+}
 
 sub delnodes {
     my $window=shift;
@@ -143,6 +164,11 @@ sub delnodes {
                 $fail++;
             }
         }
+    }
+
+    # delete node PXE/ELILO configs
+    foreach my $client (@clients) {
+	&del_ip_node($client);
     }
 
     if (system("mksimachine --Delete --name $clientstring")) {
