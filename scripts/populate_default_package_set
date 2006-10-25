@@ -55,7 +55,7 @@ exit 0 if(@nics_results);
 my $DEFAULT = "Default";
 
 # packages to be excluded from the default packages set
-my @exclude_packages_by_default = qw(networking pfilter sge sc3);
+my @exclude_packages_by_default = qw(networking pfilter sge);
 
 # we also load excluded packages for the distribution if we find
 # a file associated to the current distro within share/package_set
