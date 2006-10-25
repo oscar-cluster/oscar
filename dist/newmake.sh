@@ -186,6 +186,9 @@ if [ -n "$BUILD_BASE" ]; then
     cd ..
 fi
 
+# docs building is switched off now
+# docs will be built out of the docuwiki repository, only
+BUILD_DOCS=""
 
 if [ -n "$BUILD_DOCS" ]; then
 
