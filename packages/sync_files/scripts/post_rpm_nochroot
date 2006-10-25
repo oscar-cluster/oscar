@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Copy /etc/{passwd,group,shadow} to /opt/sync_files/templates/image.
+# This is required in order to deal with uid/gid mismatches between
+# different distros and bug #166.
+#
+# $Id$
+# Copyright (c) Erich Focht 2006
+
+IMAGEDIR=$1
+if [ -z "$IMAGEDIR" -o ! -d "$IMAGEDIR" ]; then
+    echo "Image directory doesn't exist!"
+    exit 1
+fi
+
+IBASE=`basename $IMAGEDIR`
+
+DIR=/opt/sync_files/templates/image/$IBASE
+if [ ! -d $DIR ]; then
+    mkdir -p $DIR
+fi
+cp $IMAGEDIR/etc/passwd $IMAGEDIR/etc/group $DIR
+egrep -v '^root:' $IMAGEDIR/etc/shadow > $DIR/shadow
+
+echo "Created templates for image $IBASE in $DIR"
+echo "Make sure these files do not contain any user accounts."
+echo "Only system account IDs should be included!"
