@@ -58,15 +58,14 @@ my $DEFAULT = "Default";
 my @exclude_packages_by_default = qw(networking pfilter sge);
 
 # we also load excluded packages for the distribution if we find
-# a file associated to the current distro within share/package_set
+# a file associated to the current distro within share/exclude_pkg_set
 # We first identify the current OS in order to be able to find the
 # list of packages that have to be excluded. Remember, files in
 # share/package_set follow the following pattern distro-version-archi
 my $os = OSCAR::OCA::OS_Detect::open();
 exit -1 if(!$os);
-my $filename = $ENV{OSCAR_HOME} . "/share/package_set/";
-$filename .= $os->{distro} . "-" . $os->{distro_version} . "-" . $os->{arch} . ".txt";
-print "We check if file " . $filename . " exists\n";
+my $filename = $ENV{OSCAR_HOME} . "/share/exclude_pkg_set/";
+$filename .= $os->{compat_distro} . "-" . $os->{compat_distrover} . "-" . $os->{arch} . ".txt";
 my @exclude_packages = qw();
 if ( -f $filename ) {
     print "File exists, excluding packages...\n";
