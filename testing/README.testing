@@ -1,0 +1,30 @@
+# $Id$
+
+
+MANUAL TESTS
+------------
+ * Fill out the 'oscar-testing.txt' file, running as many commands
+   as possible from the "OPTIONAL" area and all the tests in the "REQUIRED"
+   area.  Then send the results to <oscar-devel@lists.sourceforge.net>.
+
+
+
+AUTOMATED TESTS
+---------------
+ 1) (pre-exiting) Basic tests for OCA
+     
+     cd $OSCAR_HOME/testing/ 
+         # NOTE: if OSCAR_HOME isn't set try using this,
+	     # env OSCAR_HOME=/home/tjn/projects/oscar/oscar-trunk ./test_oca.pl 
+     ./test_oca.pl
+
+
+ 2) 
+
+
+
+NOTES 
+-----
+ - See also the OSCAR Developer Wiki page on OscarReleaseTesting,
+   http://svn.oscar.openclustergroup.org/trac/oscar/wiki/OscarReleaseTesting
+
