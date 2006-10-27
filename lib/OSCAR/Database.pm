@@ -2624,17 +2624,17 @@ sub set_image_packages {
     my $image_id = $$image_ref{id};
     my $package_ref = get_package_info_with_name($package,$options_ref,$error_strings_ref);
     my $package_id = $$package_ref{id};
-    my $sql = "SELECT * FROM Image_Packages WHERE image_id=$image_id AND package_id=$package_id";
+    my $sql = "SELECT * FROM Image_Package_Status WHERE image_id=$image_id AND package_id=$package_id";
     print "DB_DEBUG>$0:\n====> in Database::set_image_packages SQL : $sql\n" if $$options_ref{debug};
     my @images = ();
     die "DB_DEBUG>$0:\n====>Failed to query values via << $sql >>"
         if! do_select($sql,\@images, $options_ref, $error_strings_ref);
     if(!@images){ 
-        $sql = "INSERT INTO Image_Packages (image_id,package_id) VALUES ".
+        $sql = "INSERT INTO Image_Package_Status (image_id,package_id) VALUES ".
             "($image_id,$package_id)";
         print "DB_DEBUG>$0:\n====> in Database::set_image_packages SQL : $sql\n" if $$options_ref{debug};
         die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
-            if! do_insert($sql,"Image_Packages", $options_ref, $error_strings_ref);
+            if! do_insert($sql,"Image_Package_Status", $options_ref, $error_strings_ref);
     }
     return 1;
 }    
