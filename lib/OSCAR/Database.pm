@@ -2881,11 +2881,11 @@ sub set_status {
         foreach my $status (
                             "should_not_be_installed",
                             "should_be_installed",
-                            "undefined_1",
-                            "undefined_2",
-                            "undefined_3",
-                            "undefined_4",
-                            "undefined_5",
+                            "run-configurator",
+                            "install-bin-pkgs",
+                            "run-script-post-rpm-install",
+                            "run-script-post-clients",
+                            "run-script-post-install",
                             "finished"
                             ){
 #   OLD Status values                            

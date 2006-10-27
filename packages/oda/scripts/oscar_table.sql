@@ -274,13 +274,21 @@ CREATE TABLE IF NOT EXISTS Group_Packages(
 )TYPE=INNODB;
 
 -- Image_Packages
-CREATE TABLE IF NOT EXISTS Image_Packages(
+CREATE TABLE IF NOT EXISTS Image_Package_Status(
+    current  integer,
+    error  text,
     image_id  integer not null,
     package_id  integer not null,
-    PRIMARY KEY (image_id, package_id),
+    requested  integer not null default 1,
+    status  integer not null,
+    ex_status  integer not null,
+    selected  integer not null default 0,
+    PRIMARY KEY (image_id, package_id, requested),
     KEY image_id ( image_id ),
     KEY package_id ( package_id ),
-    CONSTRAINT Image_Packages_ibfk_1 FOREIGN KEY (image_id) REFERENCES Images (id) ON DELETE CASCADE,
-    CONSTRAINT Image_Packages_ibfk_2 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE
+    KEY requested ( requested ),
+    CONSTRAINT Image_Package_Status_ibfk_1 FOREIGN KEY (image_id) REFERENCES Images (id) ON DELETE CASCADE,
+    CONSTRAINT Image_Package_Status_ibfk_2 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
+    CONSTRAINT Image_Package_Status_ibfk_3 FOREIGN KEY (requested) REFERENCES Status (id) ON DELETE CASCADE
 )TYPE=INNODB;
 
