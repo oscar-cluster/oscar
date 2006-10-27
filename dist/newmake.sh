@@ -348,7 +348,7 @@ if [ -n "$DISTROS" -o -n "$ALL_REPOS" ]; then
 	mkdir -p $TGTDIR
     fi
     if [ -n "$ALL_REPOS" ]; then
-	DISTROS="common-rpms fc-4-i386 fc-4-x86_64 fc-5-i386 fc-5-x86_64 mdv-2006-i386 rhel-3-i386 rhel-3-ia64 rhel-3-x86_64 rhel-4-i386 rhel-4-ia64 rhel-4-x86_64 suse-10.0-i386"
+	DISTROS="common-rpms fc-4-i386 fc-4-x86_64 fc-5-i386 fc-5-x86_64 mdv-2006-i386 rhel-4-i386 rhel-4-x86_64 suse-10.0-i386"
     fi
 
     message ">> Building OSCAR package repositories <<"
