@@ -5,13 +5,13 @@ wonderful web site:
 
 	http://oscar.openclustergroup.org/
 
-Full installation instructions and release notes for OSCAR can be
-found in doc/install.pdf.  If you're brave, well familiar with Linux
-system administration and cluster concepts, and feel that you can skip
-all the details, you can jump into the OSCAR quick installation
-document in doc/quick_install.pdf.
+The most up to date information on installing and using OSCAR is available
+on our wiki
 
-User instructions for utilizing the software installed on OSCAR
+http://svn.oscar.openclustergroup.org/wiki/
+
+Instructions for installing this release can be found in doc/install.pdf 
+and user instructions for utilizing the software installed on OSCAR
 clusters can be found in doc/user.pdf.
 
 The OSCAR distibution comes in two OSCAR tarballs and a set of repository
