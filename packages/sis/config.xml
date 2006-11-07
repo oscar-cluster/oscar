@@ -20,7 +20,7 @@
     <major>3</major>
     <minor>7</minor>
     <subversion>5</subversion>
-    <release>3</release>
+    <release>4</release>
     <epoch>1</epoch>
   </version>
 
@@ -105,6 +105,8 @@
       </filter>
       <pkg>pxelinux</pkg>
       <pkg>atftp-server</pkg>
+      <pkg>perl-forks</pkg>
+      <pkg>perl-reaper</pkg>
   </binary-package-list>
 
   <binary-package-list>

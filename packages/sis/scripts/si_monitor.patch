@@ -1,0 +1,27 @@
+--- /etc/init.d/systemimager-server-monitord     (revision 3797)
++++ /etc/init.d/systemimager-server-monitord     (working copy)
+@@ -36,6 +36,11 @@
+ # default: warning.
+ LOGLEVEL=2
+
++# Check if ithreads are supported.
++perl -e 'use Config; exit ($Config{useithreads} ne "define");' && \
++        PERL="`which perl 2>/dev/null`" || \
++        PERL="`which perl 2>/dev/null` -Mforks -Mforks::shared"
++
+ case "$1" in
+   start)
+     echo -n "Starting SystemImager's installation monitoring: si_monitor... "
+@@ -44,9 +49,9 @@
+         exit 1
+     fi
+     if [ ! -z $LOGFILE ]; then
+-        si_monitor --log $LOGFILE --log_level $LOGLEVEL
++        $PERL /usr/sbin/si_monitor --log $LOGFILE --log_level $LOGLEVEL
+     else
+-        si_monitor
++        $PERL /usr/sbin/si_monitor
+     fi
+     if [ $? -ne 0 ]; then
+
+
