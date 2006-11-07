@@ -1,0 +1,438 @@
+#!/usr/bin/perl -w
+#
+#  "SystemImager"
+#
+#  Copyright (C) 2005 Andrea Righi <a.righi@cineca.it>
+#  Copyright (C) 2005-2006 Bernard Li <bli@bcgsc.ca>
+
+use lib "USR_PREFIX/lib/systemimager/perl";
+use strict;
+use Fcntl ':flock';
+use POSIX qw(setsid);
+use Socket;
+use XML::Simple;
+use Getopt::Long;
+use SystemImager::Options;
+use SystemImager::Config;
+use vars qw($config $VERSION);
+use constant DEFAULT_PORT => 8181;
+
+my $VERSION = "SYSTEMIMAGER_VERSION_STRING";
+my $program_name = "si_monitor";
+my $version_info = << "EOF";
+$program_name (part of SystemImager) v$VERSION
+
+Copyright (C) 1999-2001 Andrea Righi <a.righi\@cineca.it>
+Copyright (C) 2005-2006 Bernard Li <bli\@bcgsc.ca>
+
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+EOF
+
+my $get_help = "\n       Try \"--help\" for more options.";
+
+my $help_info = $version_info . <<"EOF";
+
+Usage: $program_name [OPTION]...
+
+Options: (options can be presented in any order and may be abbreviated)
+ --help                 Display this output.
+
+ --version              Display version and copyright information.
+
+ --db DATABASENAME      Where DATABASENAME is the name of the file
+                        where clients informations will be stored.
+                        (All the data in this file will be stored in
+                        XML format).
+
+ --port PORT            The port used by $program_name for listening
+                        client connections (the default port is 8181).
+
+ --log LOGFILE          If specified every log information will be
+                        reported in the file LOGFILE.
+
+ --log_level 1|2|3      Define the verbosity of the logging:
+                            1 = errors only (low verbosity);
+                            2 = errors and warnings;
+                            3 = errors, warnings and all the debug
+                                messages (high verbosity).
+
+Download, report bugs, and make suggestions at:
+http://systemimager.org/
+EOF
+
+my $CONFDIR = '/etc/systemimager';
+
+# load resources
+my %conf;
+my $conffile = "$CONFDIR/$program_name";
+if (-r $conffile) {
+    Config::Simple->import_from($conffile, \%conf);
+}
+
+# Only lock directory is needed.
+$conf{'lock_dir'} ||= "/var/lock/systemimager";
+die "No such lock directory '$conf{'lock_dir'}'\n"
+    if (! -d $conf{'lock_dir'});
+
+# Get the database file.
+$conf{'monitor_db'} ||= "/var/lib/systemimager/clients.xml";
+
+my ($help, $version, $quiet, $port, $database, $log_file, $log_level);
+GetOptions(
+	"help"		=> \$help,
+	"version"	=> \$version,
+	"quiet"		=> \$quiet,
+	"port=s"	=> \$port,
+	"db=s"		=> \$database,
+	"log=s"		=> \$log_file,
+	"log_level=i"	=> \$log_level,
+) or die "$help_info";
+
+### BEGIN evaluate commad line options ###
+if ($help) {
+	print "$help_info";
+	exit(0);
+}
+
+if ($version) {
+	print "$version_info";
+	exit(0);
+}
+
+# Create the database if it doesn't exist.
+$database = $conf{'monitor_db'};
+unless (-f $database) {
+	open(DB, '>', "$database") or 
+	die "error: cannot open file \"$database\" for writing!\n";
+	close(DB);
+}
+
+# Get the port to listen. 
+unless ($port) {
+	$port = DEFAULT_PORT;
+}
+
+# Evaluate the logging level.
+if (defined($log_level)) {
+	if (($log_level < 1) or ($log_level > 3)) {
+		print "$program_name: $log_level: not a valid log level!\n";
+		print "$help_info";
+		exit(1);
+	}
+} else {
+	# Use the default log level.
+	$log_level = 2;
+}
+
+# Get monitor log file.
+unless ($log_file) {
+	# Do not log anything.
+	$log_file = '/dev/null';
+	if ($log_level) {
+		print "warning: log file was not specified: ignoring log level: $log_level.\n";
+		$log_level = '';
+	}
+}
+### END evaluate command line options ###
+
+# Daemon stuff.
+my $pid_file = "/var/run/si_monitor.pid";
+chdir '/' or die "error: can't chdir to /: $!\n";
+open(STDIN, '/dev/null') or die "error: can't read from /dev/null: $!\n";
+open(STDOUT, '>>' . $log_file) or die "error: can't write to $log_file: $!\n";
+open(STDERR, '>>' . $log_file) or die "error: can't write to $log_file: $!\n";
+umask(0);
+
+# Reaping zombie child processes.
+$SIG{CHLD} = 'IGNORE';
+
+# Start daemon.
+my $daemon_pid;
+if ($daemon_pid = fork()) {
+	# Run in background.
+	exit(0);
+} elsif (defined($daemon_pid)) {
+	setsid or die gmtime() . ": error: can't start a new session: $!\n";
+	# Create the pid file.
+	local *FILE;
+	open(FILE, ">$pid_file") or
+		die gmtime() . ": error: cannot open file: $pid_file\n";
+	print FILE "$$\n";
+	close(FILE);
+} else {
+	die gmtime() . ": error: cannot fork daemon process!\n";
+}
+
+# Define lock files.
+my $lock_file = $conf{'lock_dir'} . "/db.si_monitor.lock";
+
+# Remove old locks.
+unlink("$lock_file");
+
+# Open a TCP socket.
+socket(IN, PF_INET, SOCK_STREAM, getprotobyname('tcp')) or 
+	die gmtime() . ": error: could not create the socket: $!\n";
+setsockopt(IN, SOL_SOCKET, SO_REUSEADDR, 1);
+my $client_addr = sockaddr_in($port, INADDR_ANY);
+bind(IN, $client_addr) or 
+	die gmtime() . ": error: could not bind to port $port : $!\n";
+listen(IN, SOMAXCONN) or 
+	die gmtime() . ": error: could not listen on port $port : $!\n";
+
+# Monitor daemon initialized.
+print gmtime() . ": $program_name daemon is listening on port $port\n"
+	if ($log_level > 2);
+
+# Begin to accept client connections.
+while (accept(CLIENT, IN)) {
+	my $pid = fork();
+	if ($pid) {
+		close(CLIENT);
+		next;
+	}
+	defined($pid) or die gmtime() . ": error: cannot fork: $!\n";
+
+	# Child closes unused server handle.
+	close(IN);
+
+	# Get other end identity.
+	my $other_end = getpeername(CLIENT);
+	if ($other_end) {
+		# Get client informations.
+		# TODO allow only authorized hosts... -AR-
+		my ($other_port, $other_iaddr) = unpack_sockaddr_in($other_end);
+		my $other_ip_address = inet_ntoa($other_iaddr);
+		my $other_host = gethostbyaddr($other_iaddr, AF_INET);
+		
+		# Report info in the log.
+		print gmtime() .
+			": connection accepted for ${other_host}:${other_port}\n"
+			if ($log_level > 2);
+	
+		# Get the client request.
+		$_ = <CLIENT>; chomp;
+
+		# Report the request in the log.
+		print gmtime() . ": ${other_host} request -> $_\n"
+			if ($log_level > 2);
+
+		# Update the database.
+		update_db($other_host, $_);
+
+		# Close client connection.
+		close(CLIENT);
+	} else {
+		# Refuse the client connection.
+		close(CLIENT);
+		print gmtime() . 
+			": warning: could not identify other end of a client request, ignoring.\n"
+			if ($log_level > 1);
+	}
+	exit(0);
+}
+
+# Error accepting client connections (quit).
+die gmtime() . ": error: cannot accept clients connections!\n";
+
+# Usage:
+# update_db($hostname, $client_request);
+# Description:
+#	Update the database according to the client request.
+sub update_db
+{
+	my ($host, $request) = @_;
+	my ($client, $mac, $timestamp);
+
+	# Parse the client request.
+	my @args = split(/:/, $request);
+	foreach (@args) {
+		if (s/^mac=//) {
+			$mac = $_;
+		} elsif (s/^ip=//) {
+			$client->{'ip'} = $_;
+		} elsif (s/^host=//) {
+			$client->{'host'} = $_;
+		} elsif (s/^cpu=//) {
+			$client->{'cpu'} = $_;
+		} elsif (s/^ncpus=//) {
+			$client->{'ncpus'} = int($_);
+		} elsif (s/^kernel=//) {
+			$client->{'kernel'} = $_;
+		} elsif (s/^mem=//) {
+			$client->{'mem'} = int($_ / 1024);
+		} elsif (s/^os=//) {
+			$client->{'os'} = $_;
+		} elsif (s/^tmpfs=//) {
+			$client->{'tmpfs'} = $_;
+		} elsif (s/^time=//) {
+			$client->{'time'} = int($_ / 60);
+		} elsif (s/^status=//) {
+			$client->{'status'} = $_;
+		} elsif (s/^speed=//) {
+			$client->{'speed'} = int($_);
+		} elsif (s/^first_timestamp=//) {
+			$client->{'first_timestamp'} = $_;
+                # XXX: depreacted, to be removed in future releases.
+		} elsif (s/^log=//) {
+			$client->{'log'} = $_;
+		}
+	}
+        $timestamp = time();
+
+	# Check if mac address has been specified.
+	unless(defined($mac)) {
+		print gmtime() . ": warning: bad request from $host (mac address not specified)!\n"
+			if ($log_level > 1);
+		return;
+	}
+	
+	open(LOCK, ">", "$lock_file") or 
+		die gmtime() . ":error: cannot open lock file \"$lock_file\"!\n";
+	flock(LOCK, LOCK_EX);
+	
+	# Open database in mutual exclusion.
+	open(DB, '<', $database) or 
+		die gmtime() . ": error: cannot open \"$database\" for reading!\n";
+	
+	# Parse XML database.
+	my $xml;
+	if (-s $database) {
+		$xml = XMLin($database, KeyAttr => {client => 'name'}, ForceArray => 1);
+	}
+	close(DB);
+	
+	# Update the clients table.
+	$xml->{'client'}->{$mac}->{'ip'} = $client->{'ip'}
+		if $client->{'ip'};
+	$xml->{'client'}->{$mac}->{'host'} = $client->{'host'}
+		if $client->{'host'};
+	$xml->{'client'}->{$mac}->{'cpu'} = $client->{'cpu'}
+		if $client->{'cpu'};
+	$xml->{'client'}->{$mac}->{'ncpus'} = $client->{'ncpus'}
+		if $client->{'ncpus'};
+	$xml->{'client'}->{$mac}->{'kernel'} = $client->{'kernel'}
+		if $client->{'kernel'};
+	$xml->{'client'}->{$mac}->{'mem'} = $client->{'mem'}
+		if defined($client->{'mem'});
+	$xml->{'client'}->{$mac}->{'os'} = $client->{'os'}
+		if $client->{'os'};
+	$xml->{'client'}->{$mac}->{'tmpfs'} = $client->{'tmpfs'}
+		if $client->{'tmpfs'};
+	$xml->{'client'}->{$mac}->{'time'} = $client->{'time'}
+		if defined($client->{'time'});
+	$xml->{'client'}->{$mac}->{'status'} = $client->{'status'}
+		if defined($client->{'status'});
+	$xml->{'client'}->{$mac}->{'speed'} = $client->{'speed'}
+		if defined($client->{'speed'});
+	$xml->{'client'}->{$mac}->{'log'} = $client->{'log'}
+		if $client->{'log'};
+
+	# Add the server timestamps.
+	$xml->{'client'}->{$mac}->{'timestamp'} = $timestamp;
+	$xml->{'client'}->{$mac}->{'first_timestamp'} = $timestamp
+		if $client->{'first_timestamp'};
+	
+	open(DB, '>', $database) or
+		die gmtime() . ": error: cannot open \"$database\" for writing!\n";
+	
+	# Sync the database.
+	print DB XMLout($xml); 
+
+	# Close and unlock database.
+	close(DB);
+	flock(LOCK, LOCK_UN);
+	close(LOCK);
+}
+
+__END__
+
+=head1 NAME
+
+si_monitor - systemimager real time monitoring daemon
+
+=head1 SYNOPSIS
+
+si_monitor [OPTIONS]...
+
+=head1 DESCRIPTION
+
+B<si_monitor> is a tool to perform real-time monitoring
+of the clients installation status.
+It listen to a specific port and collects informations
+periodically sent by clients using plain TCP/IP connections.
+
+Clients must have defined the MONITOR_SERVER (and optional
+MONITOR_PORT) as boot parameters to enable the monitoring feature.
+
+All these informations are stored in a XML database. The database
+can be defined with the options B<--db DATABASENAME>.
+
+For default the file B</var/lib/systemimager/clients.xml> is taken.
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--help>
+
+Display a short help.
+
+=item B<--version>
+
+Display version and copyright information.
+
+=item B<--db DATABASENAME>
+
+An XML file to store all the informations collected by the
+si_monitor daemon. If you run this command for the first time
+the file will be initialized to an empty file.
+
+=item B<--port PORT>
+
+The port used by the si_monitor daemon for listening clients
+connections.
+
+The default port is 8181.
+
+=item B<--log LOGFILE>
+
+If this option is used every kind of information will be
+reported in the file LOGFILE.
+This option can be useful to debug clients connections.
+
+=item B<--log_level 1|2|3>
+
+There are 3 levels of logging. In order of verbosity they are:
+  B<1>) Error:    serious problem. Execution cannot or should
+               not continue;
+  B<2>) Warining: there is an unexpected condition. Processing
+               can continue usually correctly, but may result
+               in other problems during the future execution;
+  B<3>) Debug:    verbose output. May be used to trace execution
+               or get hints about precursors to problems.
+
+=head1 SEE ALSO
+
+systemimager(8), si_monitortk(1)
+
+=head1 AUTHOR
+
+Andrea Righi <a.righi@cineca.it>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2003 by Andrea Righi <a.righi@cineca.it>.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+=cut
+
