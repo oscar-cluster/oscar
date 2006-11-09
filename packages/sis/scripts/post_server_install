@@ -40,7 +40,7 @@ if (!$install_mode) {
 #EF# hack for fixing problem of si_monitor with nothreads perl
 #    in Mandriva 2006. Workaround for bug #280
 use Config;
-if ($Config{useithreads} !~ /define/) {
+unless ($Config{useithreads}) {
     print "Detected that perl doesn't support threads!!!\n";
     my $patch = $ENV{OSCAR_PACKAGE_HOME}."/scripts/si_monitor.patch";
     # was the patch already applied?
