@@ -42,42 +42,61 @@ use SystemInstaller::Image;
 use File::Basename;
 use Getopt::Long;
 
-my $configdir = "$ENV{OSCAR_PACKAGE_HOME}/.configs";
+my $base = "$ENV{OSCAR_HOME}/packages/sis";
 
-my ($force);
+my $configdir = $base."/.configs";
+
+my ($force, $update, $verbose);
 GetOptions(
            "force|f"   => \$force,
+	   "update|u"  => \$update,
+	   "verbose|v" => \$verbose,
            );
 
 my $imagedir = shift @ARGV;
 if (!$imagedir) {
-    print "\nUsage: $0 [--force|-f] path_to_image\n\n";
+    print "\nUsage: $0 [--force|-f] [--update|-u] [-v] path_to_image\n\n";
+    print "\t--update : change IMGDIR/etc/systemconfig/systemconfig.conf,\n";
+    print "\t           push changed config to corresponding nodes\n";
+    print "\t           and run systemconfigurator to activate config.\n";
+    print "\t--force  : force opening the per image selector menu.\n";
     exit 1;
 }
 $imagedir =~ s/\/$//;
 my $image = $imagedir;
 $image =~ s:^.*/::g;
 
+$force = 1 if ($update);
+
 my $window;
 
 #####################
 # BEGIN MAIN SCRIPT #
 #####################
+my $i = list_image(name=>$image);
+if (!$i) {
+    carp "Could not find image $image!";
+    exit 1;
+}
 
 my $imageconf = $configdir."/".$image;
 my $scconf = "$imagedir/etc/systemconfig/systemconfig.conf";
-my $masterconf = $ENV{OSCAR_PACKAGE_HOME}."/configurator.html";
+my $masterconf = $base."/configurator.html";
 
 my $master_conf;
 if (-e $masterconf) {
     $master_conf = readInConfigValues($masterconf,"sis","",noarray=>1);
     # exit if no per-image config
     if ($master_conf->{sis_per_image} ne "YES") {
+	# if in forced mode: re-generate scconf file
+	if ($force) {
+	    &mk_new_scconf($imagedir);
+	}
 	# set global APPEND config value, if any
 	if ($master_conf->{kernel_append}) {
 	    &set_scconf($scconf, "APPEND", $master_conf->{kernel_append}); 
 	}
-	exit 0;
+	goto DO_UPDATE;
     }
 } else {
     # no per-image config!
@@ -90,12 +109,6 @@ if (! -d $configdir) {
 	print "Could not create directory $configdir\n";
 	exit 1;
     };
-}
-
-my $i = list_image(name=>$image);
-if (!$i) {
-    carp "Could not find image $image!";
-    exit 1;
 }
 
 print "configuring sis for image=$image\n";
@@ -137,6 +150,11 @@ if ($iconf->{kernel_append}) {
 if ($iconf->{default_boot}) {
     &set_scconf($scconf, "DEFAULTBOOT", $iconf->{default_boot});
 }
+
+ DO_UPDATE:
+    if ($update) {
+	&update_cluster($image);
+    }
 
 exit 0;
 
@@ -228,4 +246,18 @@ sub mk_new_scconf {
     $root = &get_scconf($scconf, "ROOTDEV");
     $boot = &get_scconf($scconf, "BOOTDEV");
     &write_scconf($imgdir, $root, $boot);
+}
+
+#
+# run scpush and scexec to update all nodes with new boot configuration
+#
+sub update_cluster {
+    my ($image) = @_;
+    my $v;
+    $v = "--verbose" if ($verbose);
+    my $scconf = $imagedir . "/etc/systemconfig/systemconfig.conf";
+    print "Pushing $scconf to corresponding hosts.\n";
+    system("scpush --image $image $v $scconf /etc/systemconfig/");
+    print "Running systemconfigurator to enable new config.\n";
+    system("scexec --image $image -- systemconfigurator $v --runboot");
 }
