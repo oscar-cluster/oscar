@@ -61,5 +61,6 @@ my @services = qw(systemimager-server-rsyncd systemimager-server-monitord);
 foreach my $service (@services) {
   !system("/etc/init.d/$service restart") or croak("Could not restart $service");
   opkg_print("Enabling $service\n");
-  !system("chkconfig --add $service") or croak("Failed to enable $service");
+  !system("chkconfig --add $service") or croak("Failed to add $service");
+  !system("chkconfig $service on") or croak("Failed to enable $service");
 }
