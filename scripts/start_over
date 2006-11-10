@@ -378,21 +378,32 @@ sub sort_uniq {
   return @result;
 }
 
+sub delete_oscar_dbuser {
+    local *DB;
+    open DB, "| mysql mysql" or die "Could not run mysql";
+    print DB "DELETE FROM db WHERE Db = 'oscar';\n";
+    print DB "DELETE FROM user WHERE User = 'oscar';\n";
+    close DB;
+}
+
+
 # delete the oscar database and stop mysqld
 sub drop_db {
-  print "Deleting oda database ...\n";
-  if (-e '/etc/odapw') {
-    eval "use lib \"$oscar_home/lib\"";
-    eval "use OSCAR::oda";
-    oda::drop_database(undef, undef);
-  }
-  print "Deleting oda database saved password file ...\n";
-  unlink "/etc/odapw";
-
-  for my $s qw( mysql mysqld ) {
-      if (-x "/etc/init.d/$s") {
-	  !system("/etc/init.d/$s stop") or croak("Failed to stop $s");
-	  last;
-      }
-  }
+    print "Deleting oscar user from mysql database\n";
+    &delete_oscar_dbuser;
+    print "Deleting oda database ...\n";
+    if (-e '/etc/odapw') {
+	!system("mysqladmin --force drop oscar")
+	    or print "WARNING: Failed to drop oscar database!";
+    }
+    print "Deleting oda database saved password file ...\n";
+    unlink "/etc/odapw";
+    # not stopping mysql service, in case it was running before
+    # if it gets deleted (the mysql package), it will be stopped anyway
+    #for my $s qw( mysql mysqld ) {
+    #	if (-x "/etc/init.d/$s") {
+    #	    !system("/etc/init.d/$s stop") or croak("Failed to stop $s");
+    #	    last;
+    #	}
+    #}
 }
