@@ -38,6 +38,7 @@ use OSCAR::Database;
 use lib '/usr/lib/systeminstaller';
 use SIS::DB;
 use SIS::Image;
+use SystemInstaller::Image;
 use File::Basename;
 use Getopt::Long;
 
@@ -107,6 +108,11 @@ if (! -d $imageconf) {
 } else {
     print "Found $imageconf\n";
 }
+if ($force && -e "$imageconf/configurator.html") {
+    &mk_new_scconf($imagedir);
+    unlink "$imageconf/configurator.html";
+}
+
 if (! -e "$imageconf/configurator.html") {
     &write_img_cfg($imagedir, "$imageconf/configurator.html");
 }
@@ -146,6 +152,21 @@ sub set_scconf {
     open OUT, "> $scconf" or croak "Could not open: $scconf";
     print OUT @out;
     close OUT;
+}
+
+sub get_scconf {
+    my ($scconf, $var) = @_;
+    my $res;
+    my $cmd = "scconf_tool --block BOOT --var $var $scconf";
+    open CMD, "$cmd | " or croak "Could not run: $cmd";
+    while (<CMD>) {
+	chomp;
+	if (/\s*($var)\s*=\s*(.*)\s*$/) {
+	    $res = $2;
+	}
+    }
+    close CMD;
+    return $res;
 }
 
 sub write_img_cfg {
@@ -198,4 +219,13 @@ sub get_img_kernels {
     }
     close CMD;
     return ($defaultboot, %kernels);
+}
+
+sub mk_new_scconf {
+    my ($imgdir) = @_;
+    my ($root, $boot);
+    my $scconf = $imgdir."/etc/systemconfig/systemconfig.conf";
+    $root = &get_scconf($scconf, "ROOTDEV");
+    $boot = &get_scconf($scconf, "BOOTDEV");
+    &write_scconf($imgdir, $root, $boot);
 }
