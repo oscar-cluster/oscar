@@ -168,9 +168,20 @@ echo "Creating repository metadata"
 case "$PKG" in
     rpm)
 	yume --repo $TARGET --prepare
+	if [ $? -ne 0 ]; then
+	    echo "ERROR: yume execution failed!"
+	    echo "Check for yume, yum, createrepo existence!"
+	    echo "Repository metadata probably wasn't created!"
+	    exit 1
+	fi
 	;;
     deb)
 	rapt --repo $TARGET --prepare
+	if [ $? -ne 0 ]; then
+	    echo "ERROR: rapt execution failed!"
+	    echo "Repository metadata probably wasn't created!"
+	    exit 1
+	fi
 	;;
     *)
 	echo "Unknown packaging system $PKG"

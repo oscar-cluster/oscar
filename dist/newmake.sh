@@ -357,6 +357,11 @@ if [ -n "$DISTROS" -o -n "$ALL_REPOS" ]; then
     for distro in $DISTROS; do
 	echo " - building package repository for $distro"
 	./build_oscar_repo --distro $distro --target $TGTDIR --remove
+	if [ $? -ne 0 ]; then
+	    echo "ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR"
+	    echo "OSCAR repository build failed! Please check the output!"
+	    exit 11
+	fi
 	if [ -z "$REPO_TARGET" ]; then
 	    # compress repository and delete it
 	    echo " - compressing repository $distro"
