@@ -1,0 +1,54 @@
+# NOTE: Any postings to "neutral" sites, e.g., oscar.sf.net, should
+#  not contain the org specific head/footers.  
+#  No org specific head/footers were included for 5.0 release
+#
+
+List of places that the OSCAR 5.0 press release was sent:
+
+- The OSCAR web site. (erich/donginn)
+  (HTML format)
+
++ A OSCAR/sf.net "News" item. (erich/donginn)
+  (text/abbreviated info)
+
+- Post to oscar-users, oscar-announce, oscar-devel (erich/donginn)
+  (Plain text [email])
+
+- HPCWire (mike)
+  Submission deadline: 10am PST for the following week's edition
+  Send plain text of releases to: editor@hpcwire.com
+  (Plain text [email])
+
+# Bernard made this project entry and needs to post or make someone else a project admin
+#- Freshmeat
+#  Sent to: sldague@us.ibm.com  (OSCAR FM contact)
+#  (Plain text)
+
++ Infoworld
+  Sent to: Neil_McAllister@infoworld.com
+  E-mail address obtained from their "Contact us" web page (open source editor at large)
+  (Plain text)
+
+- LinuxPR.com
+  Free registration required to submit press releases 
+  (HTML format)
+
+- LinuxHPC.org
+  http://www.linuxhpc.org/contrib.php
+  (HTML format)
+
+- LinuxJournal
+  Free Subscription, email to: newprod@ssc.com 
+  (Plain Text)
+
+- HPC.devchannel.org (foundry stuffo)
+  http://hpc.devchannel.org/submit.pl?section=hpcchannels
+  (HTML format)
+
+- SupercomputingOnline.com 
+  Free subscription, "Submit News" / Topic="Product News"
+  http://www.supercomputingonline.com/submit.php
+
+- ClusterMonkey.net
+  Project Jeff Squires is involved in, sent email to him via "Contact" form
+  (Plain Text)
