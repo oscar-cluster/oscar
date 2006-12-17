@@ -28,7 +28,10 @@ mkdir -p $IMAGEDIR/$OSCAR_HOME
 # copy libs
 cp -pr $OSCAR_HOME/lib $IMAGEDIR/$OSCAR_HOME
 
-# and finally copy profiles
-[ ! -d $IMAGEDIR/etc/profile.d ] || mkdir -p $IMAGEDIR/etc/profile.d
-cp -p /etc/profile.d/oscar_home.{sh,csh} $IMAGEDIR/etc/profile.d
-
+# and finally copy profiles, only on RPM based Linux distributions
+# Note: Maybe we should rewrite that script in Perl and use OS_Detect
+if [ ! -f /etc/debian_version ] 
+then 
+    [ ! -d $IMAGEDIR/etc/profile.d ] || mkdir -p $IMAGEDIR/etc/profile.d
+    cp -p /etc/profile.d/oscar_home.{sh,csh} $IMAGEDIR/etc/profile.d
+fi
