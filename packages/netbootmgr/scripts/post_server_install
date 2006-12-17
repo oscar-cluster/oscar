@@ -7,12 +7,21 @@
 
 use Carp;
 use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::OCA::OS_Detect;
 
-!system("chkconfig --add systemimager-server-netbootmond") or
-	croak("Could not add service systemimager-server-netbootmond!");
+my $os = OSCAR::OCA::OS_Detect::open();
+my $binary_format = $os->{'pkg'};
 
-!system("chkconfig systemimager-server-netbootmond on") or
-	croak("Could not enable systemimager-server-netbootmond service!");
+# chkconfig is a RPM specific command, so we do not use it on Debian-like
+# systems. Moreover, services are automatically added into rc2.d on Debian
+if ($binary_format ne "deb") {
+    !system("chkconfig --add systemimager-server-netbootmond") or
+	    croak("Could not add service systemimager-server-netbootmond!");
+
+    !system("chkconfig systemimager-server-netbootmond on") or
+	    croak("Could not enable systemimager-server-netbootmond service!");
+}
 
 open IN, "/etc/systemimager/systemimager.conf" or
 	croak("Could not open /etc/systemimager/systemimager.conf for reading!");
