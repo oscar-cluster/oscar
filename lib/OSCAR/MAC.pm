@@ -368,12 +368,15 @@ sub setup_dhcpd {
     clean_hostsfile() or (carp "Couldn't clean hosts file!",
                           return undef);
     
+    my $dhcpd_configfile = "/etc/dhcpd.conf";
+    # Under Debian the dhcpd config file is in /etc/dhcp3
+    $dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
     carp "About to run setup_dhcpd";
-    if(-e "/etc/dhcpd.conf") {
-        copy("/etc/dhcpd.conf", "/etc/dhcpd.conf.oscarbak") or (carp "Couldn't backup dhcpd.conf file", return undef);
+    if(-e $dhcpd_configfile) {
+        copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak") or (carp "Couldn't backup dhcpd.conf file", return undef);
     }
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
-    my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
+    my $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$ip";
 
     if ($install_mode eq "systemimager-multicast"){
        $cmd = $cmd . " --multicast=yes";
@@ -408,8 +411,11 @@ sub setup_dhcpd {
         }
     }
 
+    my $dhcpd = "dhcpd";
+    # Under Debian the init script for dhcp is "dhcp3-server"
+    $dhcpd = "dhcp3-server" if -x "/etc/init.d/dhcp3-server";
     oscar_log_subsection("Step $step_number: Restarting dhcpd service");
-    !system("/etc/init.d/dhcpd restart") or (carp "Couldn't restart dhcpd", 
+    !system("/etc/init.d/$dhcpd restart") or (carp "Couldn't restart $dhcpd", 
                                          return undef);
     oscar_log_subsection("Step $step_number: Successfully restarted dhcpd service");
     our $dhcpbutton->configure(-state => 'disabled') if ($ENV{OSCAR_UI} eq "gui");
@@ -1035,33 +1041,52 @@ sub enable_install_mode {
     my $cmd;
     my $interface = get_headnode_iface();
 
+    my $os_detect = OSCAR::OCA::OS_Detect::open();
+    my $binary_format = $os_detect->{'pkg'};
+
     if ($install_mode eq "systemimager-rsync") {
-	# Stop systemimager-server-flamethrowerd
-	run_cmd("/etc/init.d/systemimager-server-flamethrowerd stop");
+	    # Stop systemimager-server-flamethrowerd
+	    run_cmd("/etc/init.d/systemimager-server-flamethrowerd stop");
 
-	# Remove systemimager-server-flamethrowerd from chkconfig
-	run_cmd("chkconfig systemimager-server-flamethrowerd off");
+	    # Remove systemimager-server-flamethrowerd from chkconfig
+        if ($binary_format ne "deb") {
+        	run_cmd("chkconfig systemimager-server-flamethrowerd off");
+        } else {
+            run_cmd("update-rc.d -f systemimager-server-flamethrowerd remove");
+        }
 
-	# Stop systemimager-server-bittorrent
-	run_cmd("/etc/init.d/systemimager-server-bittorrent stop");
+	    # Stop systemimager-server-bittorrent
+	    run_cmd("/etc/init.d/systemimager-server-bittorrent stop");
 
-	# Remove systemimager-server bittorrent from chkconfig
-	run_cmd("chkconfig systemimager-server-bittorrent off");
+	    # Remove systemimager-server bittorrent from chkconfig
+        if ($binary_format ne "deb") {
+        	run_cmd("chkconfig systemimager-server-bittorrent off");
+        } else {
+            run_cmd("update-rc.d -f systemimager-server-bittorrent remove");
+        }
 
-	# Restart systemimager-server-rsyncd
-	run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
+	    # Restart systemimager-server-rsyncd
+	    run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
 
-	# Enable systemimager-server-rsyncd
-	run_cmd("chkconfig systemimager-server-rsyncd on");
+	    # Enable systemimager-server-rsyncd
+        if ($binary_format ne "deb") {
+        	run_cmd("chkconfig systemimager-server-rsyncd on");
+        } else {
+            run_cmd("update-rc.d -f systemimager-server-rsyncd start 20 2 .");
+        }
     } elsif ($install_mode eq "systemimager-multicast") {
-	# Stop systemimager-server-bittorrent
-	run_cmd("/etc/init.d/systemimager-server-bittorrent stop");
+	    # Stop systemimager-server-bittorrent
+	    run_cmd("/etc/init.d/systemimager-server-bittorrent stop");
 
-	# Remove systemimager-server-bittorrent from chkconfig
-	run_cmd("chkconfig systemimager-server-bittorrent off");
+	    # Remove systemimager-server-bittorrent from chkconfig
+        if ($binary_format ne "deb") {
+    	    run_cmd("chkconfig systemimager-server-bittorrent off");
+        } else {
+            run_cmd("update-rc.d -f systemimager-server-bittorrent remove");
+        }
 
-	# Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
-	run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
+	    # Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
+	    run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
 
         # Backup original flamethrower.conf
         run_cmd("/bin/mv -f /etc/systemimager/flamethrower.conf /etc/systemimager/flamethrower.conf.bak");
@@ -1073,7 +1098,7 @@ sub enable_install_mode {
         }
 
         # add entry for boot-<arch>-standard module
-	my $march = $os->{'arch'};
+    	my $march = $os->{'arch'};
         $march =~ s/i.86/i386/;
         $cmd = "/usr/lib/systemimager/perl/confedit --file /etc/systemimager/flamethrower.conf --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/$march/standard/\"";
         if( system( $cmd ) ) {
@@ -1083,17 +1108,25 @@ sub enable_install_mode {
 
         oscar_log_subsection("Step $step_number: Updated /etc/systemimager/flamethrower.conf");
 
-	# Restart systemimager-server-flamethrowerd
+    	# Restart systemimager-server-flamethrowerd
         run_cmd("/etc/init.d/systemimager-server-flamethrowerd restart");
 
-	# Add systemimager-server-flamethrowerd to chkconfig
-	run_cmd("chkconfig systemimager-server-flamethrowerd on");
+	    # Add systemimager-server-flamethrowerd to chkconfig
+        if ($binary_format ne "deb") {
+    	    run_cmd("chkconfig systemimager-server-flamethrowerd on");
+        } else {
+            run_cmd("update-rc.d -f systemimager-server-flamethrowerd start 20 2 .");
+        }
     } elsif ($install_mode eq "systemimager-bt") {
-	# Stop systemimager-server-flamethrowerd
-	run_cmd("/etc/init.d/systemimager-server-flamethrowerd stop");
+	    # Stop systemimager-server-flamethrowerd
+	    run_cmd("/etc/init.d/systemimager-server-flamethrowerd stop");
 
-	# Remove systemimager-server-flamethrower from chkconfig
-	run_cmd("chkconfig systemimager-server-flamethrowerd off");
+	    # Remove systemimager-server-flamethrower from chkconfig
+        if ($binary_format ne "deb") {
+    	    run_cmd("chkconfig systemimager-server-flamethrowerd off");
+        } else {
+            run_cmd("update-rc.d -f systemimager-server-flamethrowerd remove");
+        }
 
         # Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
         run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
@@ -1116,7 +1149,11 @@ sub enable_install_mode {
         run_cmd("/etc/init.d/systemimager-server-bittorrent restart");
 
         # Add systemimager-server-bittorrent to chkconfig
-        run_cmd("chkconfig systemimager-server-bittorrent on");
+        if ($binary_format ne "deb") {
+            run_cmd("chkconfig systemimager-server-bittorrent on");
+        } else {
+            run_cmd("update-rc.d -f systemimager-server-bittorrent start 20 2 .");
+        }
     }
 
     # Store installation mode in ODA
