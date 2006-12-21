@@ -78,7 +78,7 @@ sub check_oscar_interface {
         print " ERROR: A valid NIC must be specified for the cluster\n";
         print " private network.\n";
         print " Valid NICs: ".join( ", ", sort keys %nics )."\n\n";
-        print " You tru to use: " . $oscar_if . ".\n";
+        print " You tried to use: " . $oscar_if . ".\n";
         print " ----------------------------------------------------\n";
         return FAILURE;
     }
