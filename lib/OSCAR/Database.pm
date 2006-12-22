@@ -1395,29 +1395,29 @@ sub pkgs_of_opkg {
 
     my ($chroot,$group,$os);
     my ($architecture, $distribution, $distribution_version);
-    if (exists($sel{'arch'}) && exists($sel{'distro'}) &&
-	     exists($sel{'distro_ver'})) {
-        $architecture = $sel{'arch'};
-        $distribution = $sel{'distro'};
-        $distribution_version = $sel{'distro_ver'};
+    if (exists($sel{"arch"}) && exists($sel{"distro"}) &&
+	     exists($sel{"distro_ver"})) {
+        $architecture = $sel{"arch"};
+        $distribution = $sel{"distro"};
+        $distribution_version = $sel{"distro_ver"};
 
     } else {
-        if (!exists($sel{'os'})) {
-            if (exists($sel{'chroot'})) {
-                $chroot = $sel{'chroot'};
+        if (!exists($sel{"os"})) {
+            if (exists($sel{"chroot"})) {
+                $chroot = $sel{"chroot"};
             } else {
                 $chroot = "/";
             }
 	        $os = distro_detect_or_die($chroot);
         } else {
-            $os = $sel{'os'};
+            $os = $sel{"os"};
         }
-        $architecture = $os->{'arch'};
-        $distribution = $os->{'compat_distro'};
-        $distribution_version = $os->{'compat_distrover'};
+        $architecture = $os->{"arch"};
+        $distribution = $os->{"compat_distro"};
+        $distribution_version = $os->{"compat_distrover"};
     }
-    if (exists($sel{group})) {
-    	$group = $sel{'group'};
+    if (exists($sel{"group"})) {
+    	$group = $sel{"group"};
     }
 
 
