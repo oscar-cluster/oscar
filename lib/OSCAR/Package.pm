@@ -30,7 +30,6 @@ use base qw(Exporter);
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::PackagePath;
-use OSCAR::PackMan;
 use OSCAR::Logger;
 use File::Basename;
 use File::Copy;
