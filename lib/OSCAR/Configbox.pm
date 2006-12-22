@@ -247,20 +247,34 @@ sub readInConfigValues { # ($filename) -> $values
     my ($conffile, $opkg, $context, %sel) = @_;
 
     $context = "" if ! $context;
+    # If the OPKG is not in the database (e.g. excluded packages for a specific
+    # distribution), we stop here.
+    my (%options, @errors);
+    my @result = ();
+    my $sql = "SELECT Packages.package FROM Packages WHERE Packages.package='$opkg'";
+    print ("Checking if the OPKG has to be excluded...\n");
+    do_select($sql,\@result, \%options, \@errors);
+    if (!@result) {
+        print ("OPKG $opkg excluded from that type of system\n");
+        return 0;
+    } else {
+        print ("OPKG $opkg: Analysing default values \n");
+    }
+
     my @res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
     if (!@res) {
-	&defaultConfigToDB($conffile, $opkg, $context);
-	@res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
+        &defaultConfigToDB($conffile, $opkg, $context);
+        @res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
     }
 
     my %values = &pkgconfig_values(@res);
 
     if (exists($sel{noarray})) {
-	for my $k (keys(%values)) {
-	    if (scalar(@{$values{$k}}) <= 1) {
-		$values{$k} = $values{$k}[0];
-	    }
-	}
+        for my $k (keys(%values)) {
+            if (scalar(@{$values{$k}}) <= 1) {
+                $values{$k} = $values{$k}[0];
+            }
+        }
     }
     return \%values;
 }
@@ -666,6 +680,7 @@ sub defaultConfigToDB {
     return if (!$tree);
     my %values = &extractDefaultConfig($tree);
     for my $name (keys(%values)) {
+    print ("Analysing configurator.html for $opkg\n");
 	&set_pkgconfig_var(opkg => "$opkg", context => "$context",
 			   name => "$name", value => $values{$name});
     }
