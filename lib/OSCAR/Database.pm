@@ -1395,27 +1395,29 @@ sub pkgs_of_opkg {
 
     my ($chroot,$group,$os);
     my ($architecture, $distribution, $distribution_version);
-    if (exists($sel{arch}) && exists($sel{distro}) &&
-	     exists($sel{distro_ver})) {
-	$architecture = $sel{arch};
-	$distribution = $sel{distro};
-	$distribution_version = $sel{distro_ver};
+    if (exists($sel{'arch'}) && exists($sel{'distro'}) &&
+	     exists($sel{'distro_ver'})) {
+        $architecture = $sel{'arch'};
+        $distribution = $sel{'distro'};
+        $distribution_version = $sel{'distro_ver'};
 
     } else {
-	if (!exists($sel{os})) {
-	    if (exists($sel{chroot})) {
-		$chroot = $sel{chroot};
-	    } else {
-		$chroot = "/";
-	    }
-	    $os = distro_detect_or_die($chroot);
-	}
-	$architecture = $os->{arch};
-	$distribution = $os->{compat_distro};
-	$distribution_version = $os->{compat_distrover};
+        if (!exists($sel{'os'})) {
+            if (exists($sel{'chroot'})) {
+                $chroot = $sel{'chroot'};
+            } else {
+                $chroot = "/";
+            }
+	        $os = distro_detect_or_die($chroot);
+        } else {
+            $os = $sel{'os'};
+        }
+        $architecture = $os->{'arch'};
+        $distribution = $os->{'compat_distro'};
+        $distribution_version = $os->{'compat_distrover'};
     }
     if (exists($sel{group})) {
-	$group = $sel{group};
+    	$group = $sel{'group'};
     }
 
 
@@ -2746,7 +2748,7 @@ sub get_pkgconfig_vars {
 	"Packages.package='$opkg' AND ";
     my @where = map { "Packages_config.$_='".$sel{$_}."'" } keys(%sel);
     $sql .= join(" AND ", @where);
-    my @result;
+    my @result = ();
     die "$0:Failed to query values via << $sql >>"
         if (!do_select($sql,\@result, \%options, \@errors));
 
