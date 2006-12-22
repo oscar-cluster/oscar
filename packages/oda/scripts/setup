@@ -49,7 +49,7 @@ if ($os->{compat_distro} =~ /^(debian)/) {
 } else {
         $mysql_conf = "/etc/my.cnf";
 }
-my $innodb_conf = "innodb_data_file_path=ibdata1:500M";
+my $innodb_conf = "innodb_data_file_path=ibdata1:10M:autoextend";
 my $innodb_flag = 0;
 
 # Check to see if the my.conf is already setup for InnoDB
