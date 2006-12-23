@@ -495,6 +495,8 @@ sub exitButton_clicked {
         }
     }
 
+    OSCAR::Database::initialize_selected_flag(\%options,\@errors) 
+        if (installuninstall <= 0);
     Qt::Application::exit();
 
 }

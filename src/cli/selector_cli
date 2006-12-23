@@ -58,6 +58,7 @@ OSCAR::Logger::oscar_log_subsection("Populating list of packages");
 my @groups_list;
 my @package_sets;
 my $selected_group;
+my $allPackages;
 
 my $success = OSCAR::Database::get_groups_for_packages(\@groups_list);
 
@@ -74,21 +75,10 @@ if($success) {
     }
 }
 
-#Get all the selected packages
-my $selected_packages = SelectorTable::getPackagesInPackageSet($selected_group);
+#List the packages and start getting input
+#Print the packages before giving a prompt
+printPackages("all");
 
-#Get installed packages
-my $installed_packages = SelectorTable::getPackagesInstalled();
-
-#Get a list of all the packages
-my $allPackages = SelectorUtils::getAllPackages();
-
-#Set the package status
-foreach my $package_ref (keys %{$allPackages}) {
-    $$allPackages{$package_ref}{status} = "Unselected";
-    $$allPackages{$package_ref}{status} = "Selected" if $$selected_packages{$package_ref};
-    $$allPackages{$package_ref}{status} = "Installed" if $$installed_packages{$package_ref};
-}
 
 #If there is a filename as an arguement, don't get user input 
 if($file ne '') { 
@@ -106,10 +96,6 @@ if($file ne '') {
     processInput("file " . $file); 
     processInput("quit"); 
 } 
-
-#List the packages and start getting input
-#Print the packages before giving a prompt
-printPackages("all");
 
 #Start the prompt section
 #This will exit by the user typing 'quit'
@@ -142,6 +128,23 @@ close LOG;
 sub printPackages
 {
 	my $class = shift; #The class name should be the only arguement
+    
+    #Get all the selected packages
+    my $selected_packages = SelectorTable::getPackagesInPackageSet($selected_group);
+
+    #Get installed packages
+    my $installed_packages = SelectorTable::getPackagesInstalled();
+
+    #Get a list of all the packages
+    my $allPackages = SelectorUtils::getAllPackages();
+
+    #Set the package status
+    foreach my $package_ref (keys %{$allPackages}) {
+        $$allPackages{$package_ref}{status} = "Unselected";
+        $$allPackages{$package_ref}{status} = "Selected" if $$selected_packages{$package_ref};
+        $$allPackages{$package_ref}{status} = "Installed" if $$installed_packages{$package_ref};
+    }
+
 	OSCAR::Logger::oscar_log_subsection("List of packages");
 	if(defined $class && $class eq "core")
 	{
@@ -257,10 +260,18 @@ sub processInput
 		}
 
 		#Make sure the package exists and is not already installed
+        # If the package is "Selected", the "requested" value for the
+        # table "Node_Package_Status" is set to 2, otherwise 1.
+        # (i.e.,
+        #  if package selected, requested = 2: should_be_installed
+        #  if package unselected, requested = 1: should_not_be_installed )
+        my $requested = 1;
 		if(defined $$allPackages{$packagename} && $$allPackages{$packagename}{status} ne "Installed")
 		{
 			$$allPackages{$packagename}{status} = "Selected";
-			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packagename,2,\@errors);
+            $requested = 2;
+			$success = OSCAR::Database::set_group_packages
+                ($selected_group,$packagename,$requested,\%options,\@errors);
 			
 			#Check for dependencies
 			print "Checking dependencies\n" unless $quiet;
@@ -273,7 +284,9 @@ sub processInput
 				if ($name eq $packagename) {next;}
 				print "Package dependant on " . $name . "\n" unless $quiet;
 				$$allPackages{$name}{status} = "Selected";
-				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$name,2,\@errors);
+                # requested = 2
+				$success = OSCAR::Database::set_group_packages
+                    ($selected_group,$name,$requested,\%options,\@errors);
 			}
 			
 			#Check for conflicts
@@ -287,7 +300,9 @@ sub processInput
 				if ($name eq $packagename) {next;}
 				print "Conflicting package " . $name . "\n" unless $quiet;
 				$$allPackages{$name}{status} = "Unselected";
-				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$name,1,\@errors);
+                # requested = 1
+				$success = OSCAR::Database::set_group_packages
+                    ($selected_group,$name,$requested,\%options,\@errors);
 			}
 		}
 		elsif(!defined $$allPackages{$packagename})
@@ -327,7 +342,7 @@ sub processInput
 		if(defined $$allPackages{$packagename} && $$allPackages{$packagename}{__class} ne "core")
 		{
 			$$allPackages{$packagename}{status} = "Unselected";
-			$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$packagename,1,\@errors);
+			$success = OSCAR::Database::set_group_packages($selected_group,$packagename,1,\%options,\@errors);
 			
 			#Check to see if anything depends on this
 			print "Checking dependencies\n" unless $quiet;
@@ -340,7 +355,7 @@ sub processInput
 				if ($package eq $packagename) {next;}
 				print "Package " . $package . " depends on " . $packagename . "\n" unless $quiet;
 				$$allPackages{$package}{status} = "Unselected";
-				$success = OSCAR::Database::update_node_package_status(\%options,"oscar_server",$package,1,\@errors);
+				$success = OSCAR::Database::set_group_packages($selected_group,$package,1,\%options,\@errors);
 			}
 		}
 		elsif(!defined $$allPackages{$packagename})

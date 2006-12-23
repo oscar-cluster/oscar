@@ -2401,6 +2401,9 @@ sub update_node_package_status {
             # because setting "finished" to the "ex_status" prevents
             # package status from being updated incorrectly when a 
             # package is selected/unselected on Seletor.
+            #
+            # NOTE : the "selected" field is only for PackageInUn
+            #
             $field_value_hash{ex_status} = $requested if($requested == 8 && $ex_status != 2);
             $field_value_hash{selected} = $selected if ($selected);
             die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
@@ -2541,7 +2544,11 @@ sub set_group_packages {
     $group = get_selected_group($options_ref,$error_strings_ref)
         if(!$group);
     my @results = ();    
-    my $selected = 1;
+    # Update Node_Package_Status to set the "selected" value according to the
+    # "requested" value:
+    # if requested = 1 then selected = 0
+    # if requested >= 2 then selected = 1
+    my $selected = 0;
     my $sql = "SELECT Packages.id, Packages.package " .
               "From Packages, Group_Packages " .
               "WHERE Packages.id=Group_Packages.package_id ".
@@ -2550,6 +2557,7 @@ sub set_group_packages {
     print "DB_DEBUG>$0:\n====> in Database::set_group_packages SQL : $sql\n" if $$options_ref{debug};
     do_select($sql,\@results,$options_ref,$error_strings_ref);
     if (!@results){
+        $selected = 1;
         $sql = "INSERT INTO Group_Packages (group_name, package_id, selected) ".
                "SELECT '$group', id, $selected FROM Packages ".
                "WHERE package='$package'";
@@ -2557,6 +2565,7 @@ sub set_group_packages {
         die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
             if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
     }else{
+        $selected = 1 if ($requested && $requested >= 2);
         my $result_ref = pop @results;
         my $package_id = $$result_ref{id};
         $sql = "UPDATE Group_Packages SET selected=$selected ".
@@ -2567,9 +2576,6 @@ sub set_group_packages {
             if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
     }
 
-    # Update Node_Package_Status to set requested according to the "selected"
-    # value:
-    # (e.g., if "selected" then should_be_installed elee should_not_be_installed")
     $requested = 1 if !$requested;
     update_node_package_status(
           $options_ref,$OSCAR_SERVER,$package,$requested,$error_strings_ref);
