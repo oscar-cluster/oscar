@@ -41,18 +41,87 @@ offers a command line interface for system and user administration
 tasks on a cluster.</description>
 
   <binary-package-list>
+      <filter>
+        <distribution>
+            <name>rhel</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <distribution>
+            <name>mdv</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <distribution>
+            <name>suse</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <distribution>
+            <name>fc</name>
+        </distribution>
+      </filter>
+
       <pkg>c3</pkg>
       <pkg>c3-profiled</pkg>
   </binary-package-list>
 
   <binary-package-list>
       <filter>
+        <distribution>
+            <name>debian</name>
+        </distribution>
+      </filter>
+      <pkg>c3</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+      <filter>
         <group>oscar_clients</group>
+        <distribution>
+            <name>rhel</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_clients</group>
+        <distribution>
+            <name>mdv</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_clients</group>
+        <distribution>
+            <name>suse</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_clients</group>
+        <distribution>
+            <name>fc</name>
+        </distribution>
       </filter>
 
       <pkg>c3-ckillnode</pkg>
       <pkg>c3-c3cmd-filter</pkg>
   </binary-package-list>
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_clients</group>
+        <distribution>
+            <name>debian</name>
+        </distribution>
+      </filter>
+
+      <pkg>c3-ckillnode</pkg>
+  </binary-package-list>
+
  
  <!-- 
      Removing the following (comment out for now) b/c I believe
