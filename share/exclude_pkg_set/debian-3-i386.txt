@@ -9,8 +9,10 @@ mta-config
 networking
 ntpconfig
 openmpi
+opium
 pfilter
 pvm
 sge
+switcher
 torque
-
+yume
