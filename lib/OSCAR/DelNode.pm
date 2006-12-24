@@ -229,7 +229,10 @@ sub delnodes {
     print("Running mkdhcpconf\n");
     !system($cmd) or croak("Failed to run $cmd");
 
-    $cmd = "/etc/init.d/dhcpd restart";
+    my $dhcpd = "/etc/init.d/dhcpd";
+    # Under Debian the dhcp deamon is /etc/init.d/dhcp3-server
+    $dhcpd = "/etc/init.d/dhcp3-server" if -x "/etc/init.d/dhcp3-server";
+    $cmd = $dhcpd . " restart";
     print("Restarting dhcpd\n");
     !system($cmd) or croak("Failed to run $cmd");
 
