@@ -5,3 +5,4 @@ grub
 lilo
 initrd-tools
 kernel-image-2.6-686-smp
+ssh
