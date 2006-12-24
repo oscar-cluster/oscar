@@ -303,7 +303,7 @@ sub processInput
                 if ($name eq $packagename) {next;}
                 print "Conflicting package " . $name . "\n" unless $quiet;
                 $$allPackages{$name}{status} = "Unselected";
-                # requested = 1
+                $requested = 1;
                 $success = OSCAR::Database::set_group_packages
                     ($selected_group,$name,$requested,\%options,\@errors);
             }
