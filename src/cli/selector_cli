@@ -58,7 +58,9 @@ OSCAR::Logger::oscar_log_subsection("Populating list of packages");
 my @groups_list;
 my @package_sets;
 my $selected_group;
-my $allPackages;
+
+#Get a list of all the packages
+my $allPackages = SelectorUtils::getAllPackages();
 
 my $success = OSCAR::Database::get_groups_for_packages(\@groups_list);
 
