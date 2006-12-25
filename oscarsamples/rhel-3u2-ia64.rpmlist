@@ -207,3 +207,6 @@ tcp_wrappers
 ttmkfdir
 tzdata
 /etc/redhat-release
+mysql
+perl-DBD-MySQL
+perl-DBI

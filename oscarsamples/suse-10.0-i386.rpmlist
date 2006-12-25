@@ -156,3 +156,6 @@ gcc-fortran
 libcap
 glibc-devel
 libstdc++-devel
+mysql
+perl-DBD-mysql
+perl-DBI

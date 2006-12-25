@@ -86,6 +86,9 @@ xorg-x11-filesystem
 xorg-x11-twm
 xorg-x11-xauth
 zlib-devel
+mysql
+perl-DBD-MySQL
+perl-DBI
 
 # ia32 RPMs with same name as the x86_64 versions
 glibc.i686

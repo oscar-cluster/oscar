@@ -215,3 +215,6 @@ xorg-x11-xauth
 xorg-x11-twm
 xorg-x11-Mesa-libGL
 xorg-x11-libs
+mysql
+perl-DBD-MySQL
+perl-DBI

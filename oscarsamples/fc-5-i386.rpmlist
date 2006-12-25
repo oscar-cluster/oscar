@@ -212,3 +212,6 @@ xorg-x11-twm
 mesa-libGLU
 mesa-libGL
 libX11
+mysql
+perl-DBD-MySQL
+perl-DBI

@@ -215,6 +215,9 @@ xorg-x11-xauth
 xorg-x11-twm
 xorg-x11-Mesa-libGL
 xorg-x11-libs
+mysql
+perl-DBD-MySQL
+perl-DBI
 
 # ia32 RPMs with same name as the x86_64 versions
 glibc.i686

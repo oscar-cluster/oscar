@@ -197,3 +197,6 @@ glibc-devel
 libstdc++5-devel
 gcc-gfortran
 ldconfig
+MySQL-client
+perl-DBI
+perl-DBD-mysql
