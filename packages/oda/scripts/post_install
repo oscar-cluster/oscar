@@ -22,8 +22,6 @@ my $command = ". /etc/profile.d/c3.sh && cexec \'echo oscar_server > $file\'";
 print "$command\n";
 system( $command ) && croak("oda server location file $file push failed.");
 
-exit 0;
-
 
 
 #####################################################################
