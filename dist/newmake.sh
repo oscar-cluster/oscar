@@ -295,7 +295,10 @@ if [ -n "$BUILD_BASE" ]; then
     #
 
     if test "$OSCAR_SVN_VERSION" != ""; then
-	sed -e s/^svn_r=.*/svn_r=$OSCAR_SVN_VERSION/g VERSION > VERSION.new
+        sed -e s/^svn_r=.*/svn_r=$OSCAR_SVN_VERSION/g VERSION > VERSION.new
+        if [ -n "$NIGHTLY" ]; then
+            sed -e s/^svn_r=.*/svn_r="$OSCAR_SVN_VERSION"nightly/g VERSION > VERSION.new
+        fi
 	mv VERSION.new VERSION
     fi
 

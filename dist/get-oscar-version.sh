@@ -94,7 +94,7 @@ case "$option" in
         echo ${OSCAR_VERSION} ${OSCAR_MAJOR_VERSION} ${OSCAR_MINOR_VERSION} ${OSCAR_RELEASE_VERSION} ${OSCAR_GREEK_VERSION} ${OSCAR_SVN_R}
         ;;
     --nightly)
-	echo ${OSCAR_VERSION}-${OSCAR_DATE}
+	echo ${OSCAR_VERSION}nightly-${OSCAR_DATE}
 	;;
     -h|--help)
 	cat <<EOF
