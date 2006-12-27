@@ -406,23 +406,7 @@ my $msg = "";
 my $xml_ref = undef;
 
 # We build first the list of packages that have to be excluded
-my $os = OSCAR::OCA::OS_Detect::open();
-exit -1 if(!$os);
-my $filename = $ENV{OSCAR_HOME} . "/share/exclude_pkg_set/";
-$filename .= $os->{compat_distro} . "-" . $os->{compat_distrover} . "-" 
-    . $os->{arch} . ".txt";
-my @excluded_packages = qw();
-if ( -f $filename ) {
-    open (FILE, $filename);
-    my $p;
-    while ($p = <FILE>) {
-        chomp ($p);
-        if ($p ne "") {
-            push(@excluded_packages, $p);
-        }
-    }
-    close (FILE);
-}
+my @excluded_packages = get_excluded_opkg ();
 
 if( $directory_argument ){
     push @directories, $package_directory;

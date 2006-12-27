@@ -34,6 +34,7 @@ use OSCAR::Logger;
 use File::Basename;
 use File::Copy;
 use XML::Simple;
+use OSCAR::OCA::OS_Detect;
 use Carp;
 
 # Default package group.
@@ -47,6 +48,7 @@ my $DEFAULT = "Default";
              isPackageSelectedForInstallation
 	     getConfigurationValues
              run_pkg_apitest_test
+             get_excluded_opkg
 	     );
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
@@ -271,6 +273,42 @@ sub run_pkg_apitest_test
 	}
 
 	return 1;
+}
+
+
+#########################################################################
+# Subroutine: get_excluded_opkg
+# Parameter : None
+# Returns   : The list of OSCAR packages excluded for the current Linux
+#             distribution, i.e., for the end node
+#
+# TODO: - extend to any systems, not only the headnode (warning for that
+#         dependences with the headnode has to be managed, we currently 
+#         have nothing for that.
+#       - currently the list of excluded opkg for Linux distributions is
+#         done via files in oscar/share/exclude_pkg_set. It should be 
+#         nice to be able to do that via config.xml files.
+sub get_excluded_opkg
+{
+    my $os = OSCAR::OCA::OS_Detect::open();
+    exit -1 if(!$os);
+    my $filename = $ENV{OSCAR_HOME} . "/share/exclude_pkg_set/";
+    $filename .= $os->{compat_distro} . "-" . $os->{compat_distrover} . "-" . $os->{arch} . ".txt";
+    my @exclude_packages = qw();
+    if ( -f $filename ) {
+        print "File exists, excluding packages...\n";
+        open (FILE, $filename);
+        my $package;
+        while ($package = <FILE>) {
+            chomp ($package);
+            if ($package ne "") {
+                push(@exclude_packages, $package);
+            }
+        }
+        close (FILE);
+    }
+
+    return @exclude_packages;
 }
 
 
