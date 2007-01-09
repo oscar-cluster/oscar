@@ -155,9 +155,12 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     copy("/etc/systemimager/pxelinux.cfg/syslinux.cfg", "/tftpboot/pxelinux.cfg/default") or 
       croak("Unable to copy \"default\" file to /tftpboot/pxelinux.cfg.");
 
-    verbose("Updating /tftpboot/pxelinux.cfg/default file to support si_monitor.");
-    if ( system("sed 's|root=/dev/ram|root=/dev/ram MONITOR_SERVER=$ip MONITOR_CONSOLE=yes|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
-      croak("Unable to update /tftpboot/pxelinux.cfg/default file to support si_monitor.");
+    # SystemImager supports putting local configuration in floppy disk, however, OSCAR does not
+    # support this and when installing on systems without floppy disk drives, it would try forever to
+    # probe for the drive.  The SKIP_LOCAL_CFG prevents this from happening.
+    verbose("Updating /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");
+    if ( system("sed 's|root=/dev/ram|root=/dev/ram SKIP_LOCAL_CFG=y MONITOR_SERVER=$ip MONITOR_CONSOLE=yes|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+      croak("Unable to update /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");
     }
 
     if ($install_mode eq "systemimager-bt") {
