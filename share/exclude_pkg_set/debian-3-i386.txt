@@ -1,3 +1,4 @@
+apitest
 disable-services
 ganglia
 kernel_picker
