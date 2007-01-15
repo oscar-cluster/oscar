@@ -169,5 +169,10 @@ WizardEnv::update_env();
 unless ($skiptest) {
     oscar_log_section("Test Cluster Setup");
     my $cmd = $ENV{OSCAR_HOME} . "/testing/test_cluster";
-    system($cmd);
+    if (!system($cmd)) {
+        oscar_log_subsection("Step 8 - Successfully tested the cluster setup");
+    } else {
+        oscar_log_subsection("Failed to properly test the cluster setup");
+        die ("Failed on Step 8 - Test Cluster Setup");
+    }
 }
