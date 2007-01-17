@@ -87,6 +87,7 @@ sub detect_dir {
     # Make final string
     # [EF: does anybody care about this ugly string at all? The information
     #      is redundant and can be construted anytime.]
+    $id->{distro_update} = ""  if !$id->{distro_update};
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
 
     return $id;
