@@ -74,6 +74,9 @@ sub check_oscar_interface {
     close IN;
 
     if (! ($oscar_if && exists $nics{$oscar_if}) ) {
+	if ($oscar_if eq "") {
+            $oscar_if = "<None>";
+        }
         print " ----------------------------------------------------\n";
         print " ERROR: A valid NIC must be specified for the cluster\n";
         print " private network.\n";
