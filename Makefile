@@ -21,15 +21,9 @@
 #               All rights reserved
 #
 
-#
-# Get some info about the current system
-#
-
 all:
 	@echo "... there is no default target ..."
 	@echo "Use one of: dist test install clean"
-
-
 
 OSCAR_VERSION = $(shell dist/get-oscar-version.sh VERSION)
 PKG        = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
@@ -41,7 +35,7 @@ DIST_VER   = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
 	            /compat distrover/{VER=$$NF} \
 		    END{print DIST"-"VER}')
 
-
+# Use "make test" to install OSCAR to your system via SVN checkout
 test: checkenv install-perlQt bootstrap-smart localrepos
 	@echo "========================================================="
 	@echo "!!! This is the tesing mode for the SVN repository    !!!"
