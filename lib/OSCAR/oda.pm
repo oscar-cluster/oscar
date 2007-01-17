@@ -990,6 +990,7 @@ sub drop_database {
     }
 
     # get a server administration connection
+    
     my $driver_handle;
     if (!($driver_handle = DBI->install_driver($$options_ref{type}))) {
 	push @$error_strings_ref,
@@ -997,6 +998,12 @@ sub drop_database {
         return 0;
     }
 
+    my $root_pass = $options{password} if &check_root_password; 
+    if ( $root_pass ){
+        $$options_ref{user} = "root";
+        $$options_ref{password} = $root_pass;
+        $root_pass = "-p$root_pass";
+    }
     
     if ( $$options_ref{debug} ) {
 	print "DB_DEBUG>$0:\n====> in oda::drop_database install_driver succeeded\n";
@@ -1029,11 +1036,15 @@ sub drop_database {
     print( "DB_DEBUG>$0:\n====> in oda::drop_database dropdb succeeded\n")
         if $$options_ref{debug} || $$options_ref{verbose};
 
-    my $root_pass =  &check_root_password?" -p$options{password}":""; 
 
-    my $cmd_string = 'mysql -u root ' . $root_pass . ' -e "REVOKE ALL ON '
+    # Revoke all the privileges of oscar user
+    my $auth_string = 'mysql -u root ' . $root_pass;
+    my $cmd_string = $auth_string . ' -e "REVOKE ALL ON '
                     . 'oscar.* FROM oscar@localhost;"';
-       
+    return 0 if !do_shell_command($options_ref, $cmd_string);
+    
+    # Delete oscar user from mysql database
+    $cmd_string = $auth_string . " -e \"DELETE FROM mysql.user WHERE User = 'oscar';\"";
     return 0 if !do_shell_command($options_ref, $cmd_string);
     
     print( "DB_DEBUG>$0:\n====> in oda::drop_database revoking oscar user's privileges is succeeded\n")

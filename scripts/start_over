@@ -36,6 +36,7 @@ use strict;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackagePath;
+use OSCAR::oda;
 use File::Basename;
 use Getopt::Long;
 
@@ -378,24 +379,22 @@ sub sort_uniq {
   return @result;
 }
 
-sub delete_oscar_dbuser {
-    local *DB;
-    open DB, "| mysql mysql" or die "Could not run mysql";
-    print DB "DELETE FROM db WHERE Db = 'oscar';\n";
-    print DB "DELETE FROM user WHERE User = 'oscar';\n";
-    close DB;
-}
+#sub delete_oscar_dbuser {
+#    local *DB;
+#    open DB, "| mysql mysql" or die "Could not run mysql";
+#    print DB "DELETE FROM db WHERE Db = 'oscar';\n";
+#    print DB "DELETE FROM user WHERE User = 'oscar';\n";
+#    close DB;
+#}
 
 
 # delete the oscar database and stop mysqld
 sub drop_db {
     print "Deleting oscar user from mysql database\n";
-    &delete_oscar_dbuser;
+    my %options = ();
+    my @errors = ();
     print "Deleting oda database ...\n";
-    if (-e '/etc/odapw') {
-	!system("mysqladmin --force drop oscar")
-	    or print "WARNING: Failed to drop oscar database!";
-    }
+    oda::drop_database(\%options, \@errors);
     print "Deleting oda database saved password file ...\n";
     unlink "/etc/odapw";
     # not stopping mysql service, in case it was running before
