@@ -1123,6 +1123,7 @@ sub initialize_locked_tables{
 sub check_root_password{
     $options{database} = "mysql";
     $options{host} = "localhost";
+    $options{port} = 3306 if ! $options{port};
     my $driver_handle;
     if (!($driver_handle = DBI->install_driver('mysql'))) {
         die "DB_DEBUG>$0:\n====> server administration connect failed for driver $options{type}:\n$DBI::errstr";
@@ -1134,7 +1135,7 @@ sub check_root_password{
             if $options{debug};
         return 0;
     } else {    
-        if ($options{password} eq "" || $options{user} eq "oscar"){
+        if ( !( defined $options{password} || defined $options{user} ) ){
             print "\n================================================================\n";
             print "Your $database has already setup the root password.\n";
             my $password = "";

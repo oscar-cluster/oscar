@@ -390,12 +390,16 @@ sub sort_uniq {
 
 # delete the oscar database and stop mysqld
 sub drop_db {
-    print "Deleting oscar user from mysql database\n";
+    my %databases = ();
     my %options = ();
     my @errors = ();
-    print "Deleting oda database ...\n";
-    oda::drop_database(\%options, \@errors);
-    print "Deleting oda database saved password file ...\n";
+    oda::list_databases( \%options, \%databases, \@errors);
+    if ( $databases{ oscar } ){
+        print "Deleting oscar user from mysql database\n";
+        print "Deleting oda database ...\n";
+        oda::drop_database(\%options, \@errors);
+    }
+    print "Deleting the saved oda password file ...\n";
     unlink "/etc/odapw";
     # not stopping mysql service, in case it was running before
     # if it gets deleted (the mysql package), it will be stopped anyway
