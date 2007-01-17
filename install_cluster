@@ -88,11 +88,11 @@ else {
 
 #Put the full pathname on there since this will change directories
 my $cwd = cwd();
-$selector = $cwd . "/$selector" if($selector !~ /$cwd/ && $selector ne '');
-$build = $cwd . "/$build" if ($build !~ /$cwd/ && $build ne '');
-$define = $cwd . "/$define" if ($define !~ /$cwd/ && $define ne '');
-$network = $cwd . "/$network" if ($network !~/$cwd/ && $network ne '');
-$bootscript = $cwd . "/$bootscript" if ($bootscript !~/$cwd/ && $bootscript ne '');
+$selector = $cwd . "/$selector" if($selector !~ /^\// && $selector ne '');
+$build = $cwd . "/$build" if ($build !~ /^\// && $build ne '');
+$define = $cwd . "/$define" if ($define !~ /^\// && $define ne '');
+$network = $cwd . "/$network" if ($network !~/^\// && $network ne '');
+$bootscript = $cwd . "/$bootscript" if ($bootscript !~/^\// && $bootscript ne '');
 
 my $adapter = shift;
 $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
