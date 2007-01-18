@@ -34,9 +34,10 @@
 
 use strict;
 use Carp;
-use lib "$ENV{OSCAR_HOME}/lib";
+use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::PackagePath;
 use OSCAR::oda;
+use SystemInstaller::Tk::Image;
 use File::Basename;
 use Getopt::Long;
 
@@ -214,7 +215,14 @@ my @known_services = qw(
 # Delete the clients first so /etc/hosts gets cleaned
 print "Deleting all OSCAR images.\n";
 do_command( "/usr/bin/mksimachine --Delete --all" )
-  if -x "/usr/bin/mksimachine";
+    if -x "/usr/bin/mksimachine";
+
+my $rsyncd_conf = "/etc/systemimager/rsyncd.conf";
+my @images = &list_images;
+foreach my $image (@images){
+    SystemInstaller::Tk::Image::delfromrsyncd($rsyncd_conf,$image);
+}
+
 
 #
 # EF: Use yum directly for deletion, run from cache as deps don't need to be
@@ -410,3 +418,19 @@ sub drop_db {
     #	}
     #}
 }
+
+# get the list of OSCAR images
+sub list_images {
+    my @list;
+    if( open IN, "mksiimage --list |" ) {
+        while (<IN>) {
+            next if $. <= 2;
+            chomp;
+            my @items = split;
+            push @list, $items[0] if $items[0];
+        }
+        close IN;
+    }
+    return @list;
+}
+
