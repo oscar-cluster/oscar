@@ -176,7 +176,9 @@ if (!open (STDOUT,"| tee $oscar_logfile") || !open(STDERR,">&STDOUT")) {
 
 # First output banner
 
-oscar_log_section("Running OSCAR install_cluster script    ".`date`);
+my $date=`date`;
+chomp($date);
+oscar_log_section("Running OSCAR install_cluster script    $date");
 
 # Fix to make multi lingualness work
 
