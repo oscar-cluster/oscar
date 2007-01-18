@@ -45,13 +45,14 @@ my $config_dir = "/etc/systemimager";
 # be sure program is run by root
 SystemImager::Common->check_if_root();
 
-my ($image, $imagedir, $arch, $disktab, $verb);
+my ($image, $imagedir, $arch, $disktab, $nokeys, $verb);
 GetOptions(
 	   "help"      => sub { &usage(0); },
 	   "name=s"    => \$image,
 	   "path=s"    => \$imagedir,
 	   "arch=s"    => \$arch,
 	   "disktab=s" => \$disktab,
+	   "nokeys"    => \$nokeys,
 	   "verbose"   => \$verb,
 	   ) || &usage(1);
 
@@ -141,24 +142,25 @@ if ($disktab) {
     }
 }
 
+# If --nokeys is specified, do not copy SSH keys to image
+if (!($nokeys)) {
+    # copy master ssh keys to image
+    print ":> Copying local node's ssh keys to image.\n";
+    if (! -d "$imagedir/etc/ssh") {
+        mkdir("$imagedir/etc/ssh");
+    }
+    if (system("cp -pf /etc/ssh/*key* $imagedir/etc/ssh")) {
+        print "WARNING: Copying ssh keys to image failed.\n";
+    }
 
-# copy master ssh keys to image
-print ":> Copying local node's ssh keys to image.\n";
-if (! -d "$imagedir/etc/ssh") {
-    mkdir("$imagedir/etc/ssh");
-}
-if (system("cp -pf /etc/ssh/*key* $imagedir/etc/ssh")) {
-    print "WARNING: Copying ssh keys to image failed.\n";
-}
-
-
-# copy root ssh keys from master to image
-print ":> Copying local node's root ssh keys to image.\n";
-if (! -d "$imagedir/root/.ssh") {
-    mkdir("$imagedir/root/.ssh");
-}
-if (system("cp -pf /root/.ssh/* $imagedir/root/.ssh/")) {
-    print "WARNING: Copying root ssh keys to image failed.\n";
+    # copy root ssh keys from master to image
+    print ":> Copying local node's root ssh keys to image.\n";
+    if (! -d "$imagedir/root/.ssh") {
+        mkdir("$imagedir/root/.ssh");
+    }
+    if (system("cp -pf /root/.ssh/* $imagedir/root/.ssh/")) {
+        print "WARNING: Copying root ssh keys to image failed.\n";
+    }
 }
 
 # copy /etc/hosts file from master to image
@@ -214,14 +216,15 @@ sub usage {
     my $ret = shift;
     print "Usage:\n";
     print "\t".basename($0)." --name image_name | --path image_path \\\n";
-    print "\t\t[--disktab disktab_file] [--arch ARCH]\n\n";
+    print "\t\t[--disktab disktab_file] [--arch ARCH] [--nokeys]\n\n";
     print "The image should preferably be located inside\n";
     print "/var/lib/systemimager/images.\n";
     print "The default architecture attributed to the image is that of the master node.\n";
     print "A disktable file should be inserted into the image by using the --disktab\n";
     print "command line option. This generates the /etc/systemimager/autoinstall.conf file\n";
     print "inside the image. It also triggers the generation of the file\n";
-    print "/etc/systemconfig/systemconfig.conf\n\n";
+    print "/etc/systemconfig/systemconfig.conf\n";
+    print "If you do not want to copy SSH keys from the server to the image, specify --nokeys\n\n";
     exit $ret if ($ret);
 }
 
