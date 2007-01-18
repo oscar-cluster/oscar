@@ -24,7 +24,7 @@ use Getopt::Long;
 
 $| = 1;
 
-oscar_log_section("Building OSCAR Client Image");
+oscar_log_section("Build OSCAR Client Image");
 
 our $file = " ";
 my $help = '';
