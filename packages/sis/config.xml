@@ -115,6 +115,7 @@
       <pkg>atftp-server</pkg>
       <pkg>perl-forks</pkg>
       <pkg>perl-reaper</pkg>
+      <pkg>bittorrent</pkg>
   </binary-package-list>
 
   <binary-package-list>
@@ -142,6 +143,7 @@
         </distribution>
       </filter>
       <pkg>atftp-server</pkg>
+      <pkg>bittorrent</pkg>
   </binary-package-list>
 
   <binary-package-list>
