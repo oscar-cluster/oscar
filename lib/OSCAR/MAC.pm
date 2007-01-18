@@ -1288,6 +1288,16 @@ sub cli_menu {
                     next if (response_filter($response));
                 }
                 chomp $response;
+
+                if (!$response) {
+                    $result = "You did not specify a filename\n";
+                    print $result;
+                    next;
+                } elsif (!( -e $response)) {
+                    $result = "File $response does not exist\n";
+                    print $result;
+                    next;
+                }
                 $result = load_from_file($response);
                 assign_macs_cli();
             }
