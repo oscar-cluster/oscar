@@ -190,29 +190,6 @@ my @known_services = qw(
                         systemimager
                        );
 
-## find a list of all the services installed by oscar rpms
-#
-#print "Searching for services in OSCAR-related RPMs... ";
-#my @oscar_services = ();
-#foreach my $rpm ( @deleterpms ) {
-#  my @files = `rpm -ql $rpm`;
-#  chomp @files;
-#  my @service_files = grep( /^\/etc\/(rc\.d\/|)init\.d\/[^\/]/, @files );
-#  foreach ( @service_files ) {
-#    $_ =~ s,^.*/,,g;
-#    #print "found service $_ in rpm $oscar_rpm_path\n";
-#  }
-#  push @oscar_services, @service_files;
-#}
-#@oscar_services = sort_uniq( @oscar_services );
-#my $services_count = scalar @oscar_services;
-#print "found these $services_count services:\n";
-#my $services_string = join ' ', @oscar_services;
-#print "$services_string\n";
-#
-## stop all oscar services
-#
-#stop_services( @oscar_services );
 
 # Update rsyncd.conf file before removing all the OSCAR images
 my $rsyncd_conf = "/etc/systemimager/rsyncd.conf";
@@ -233,7 +210,6 @@ do_command( "/usr/bin/mksimachine --Delete --all" )
 # EF: Use yum directly for deletion, run from cache as deps don't need to be
 # constructed from repository info (I hope)...
 #
-#my $cmd = "yum $yes -C remove ".join(" ",keys(%deleterpms));
 my $cmd = "yum $yes remove ".join(" ",keys(%deleterpms));
 my $err = &do_command($cmd);
 
@@ -291,16 +267,6 @@ sub delete_oscar_users {
     do_command("userdel -r $oscar_user");
   }
 }
-
-#sub stop_services {
-#  my @found_services = @_;
-#  my @all_services = ( @found_services, @known_services );
-#  @all_services = sort_uniq( @all_services );
-#  foreach my $service (@all_services) {
-#      next if (! -x "/etc/init.d/$service");
-#      do_command( "/etc/init.d/$service stop" );
-#  }
-#}
 
 sub cleanup_files {
     #
@@ -391,14 +357,6 @@ sub sort_uniq {
   my @result = sort ( keys %seen );
   return @result;
 }
-
-#sub delete_oscar_dbuser {
-#    local *DB;
-#    open DB, "| mysql mysql" or die "Could not run mysql";
-#    print DB "DELETE FROM db WHERE Db = 'oscar';\n";
-#    print DB "DELETE FROM user WHERE User = 'oscar';\n";
-#    close DB;
-#}
 
 
 # delete the oscar database and stop mysqld
