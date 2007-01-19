@@ -23,6 +23,8 @@
 #  - file removal: protection of non-orphan files
 # Copyright (C) 2006 Erich Focht <efocht@hpce.nec.com>
 #               All rights reserved
+# Copyright (c) 2007 The Trustees of Indiana University.  
+#                    All rights reserved.
 
 # Execute this script as root to "uninstall" OSCAR from your headnode.
 # It will uninstall all binary packages and other files installed on your
@@ -212,16 +214,19 @@ my @known_services = qw(
 #
 #stop_services( @oscar_services );
 
-# Delete the clients first so /etc/hosts gets cleaned
-print "Deleting all OSCAR images.\n";
-do_command( "/usr/bin/mksimachine --Delete --all" )
-    if -x "/usr/bin/mksimachine";
-
+# Update rsyncd.conf file before removing all the OSCAR images
 my $rsyncd_conf = "/etc/systemimager/rsyncd.conf";
+my $rsync_stubs = "/etc/systemimager/rsync_stubs";
 my @images = &list_images;
 foreach my $image (@images){
     SystemInstaller::Tk::Image::delfromrsyncd($rsyncd_conf,$image);
 }
+unlink glob "$rsync_stubs/40*";
+
+# Delete the clients first so /etc/hosts gets cleaned
+print "Deleting all OSCAR images.\n";
+do_command( "/usr/bin/mksimachine --Delete --all" )
+    if -x "/usr/bin/mksimachine";
 
 
 #
@@ -409,14 +414,14 @@ sub drop_db {
     }
     print "Deleting the saved oda password file ...\n";
     unlink "/etc/odapw";
-    # not stopping mysql service, in case it was running before
+    # stopping mysql service, in case it was running before
     # if it gets deleted (the mysql package), it will be stopped anyway
-    #for my $s qw( mysql mysqld ) {
-    #	if (-x "/etc/init.d/$s") {
-    #	    !system("/etc/init.d/$s stop") or croak("Failed to stop $s");
-    #	    last;
-    #	}
-    #}
+    for my $s qw( mysql mysqld ) {
+    	if (-x "/etc/init.d/$s") {
+    	    !system("/etc/init.d/$s stop") or croak("Failed to stop $s");
+    	    last;
+    	}
+    }
 }
 
 # get the list of OSCAR images
