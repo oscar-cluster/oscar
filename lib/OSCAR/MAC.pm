@@ -1363,7 +1363,7 @@ sub assign_macs_cli {
     
     if ($response == 1) {
         foreach my $client (keys %cli_clients) {
-            if(my $mac = shift @mac_keys) {
+            if(my $mac = pop @mac_keys) {
                 my $adapter = list_adapter(client=>$client,devname=>"eth0");
                 $MAC{$mac}->{client} = $adapter->{ip};
                 $adapter->mac($mac);
