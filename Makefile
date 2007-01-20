@@ -19,7 +19,11 @@
 #
 # Copyright (c) Erich Focht, NEC HPCE, Stuttgart, 2006
 #               All rights reserved
-#
+# Copyright (c) Oak Ridge National Laboratory, 2007
+# 				Geoffroy Vallee <valleegr@ornl.gov>
+# 				All irghts reserved
+
+DESTDIR=
 
 all:
 	@echo "... there is no default target ..."
@@ -70,7 +74,7 @@ nightly:
 install: localbase localrepos
 	@echo "This machine is running: $(DIST_VER)-$(ARCH)"
 	@echo "Native package manager: $(PKG)"
-	@echo "== Installed OSCAR into /opt/oscar-$(OSCAR_VERSION) =="
+	@echo "== Installed OSCAR into $(DESTDIR)/opt/oscar-$(OSCAR_VERSION) =="
 
 localrepos: localrepo-common-$(PKG)s localrepo-$(DIST_VER)-$(ARCH)
 
@@ -78,11 +82,11 @@ localrepos: localrepo-common-$(PKG)s localrepo-$(DIST_VER)-$(ARCH)
 # Install repository directly to /tftpboot/oscar
 #
 localrepo-%:
-	[ -d /tftpboot/oscar ] || mkdir -p /tftpboot/oscar
+	[ -d $(DESTDIR)/tftpboot/oscar ] || mkdir -p $(DESTDIR)/tftpboot/oscar
 	DISTRO=$(subst localrepo-,,$@); \
-	echo "== Installing repository $$DISTRO into /tftpboot/oscar =="; \
+	echo "== Installing repository $$DISTRO into $(DESTDIR)/tftpboot/oscar =="; \
 	cd dist; ./newmake.sh --distro $$DISTRO \
-			      --repo-target /tftpboot/oscar
+			      --repo-target $(DESTDIR)/tftpboot/oscar
 
 #
 # Install base OSCAR directly to /opt/oscar-$(OSCAR_VERSION)
@@ -90,12 +94,12 @@ localrepo-%:
 # Rebuild RPMs from the SVN checkout.
 #
 localbase: install-perlQt
-	@if [ -d /opt/oscar-$(OSCAR_VERSION) ]; then \
-		echo "Directory /opt/oscar-$(OSCAR_VERSION) already exists!";\
+	@if [ -d $(DESTDIR)/opt/oscar-$(OSCAR_VERSION) ]; then \
+		echo "Directory $(DESTDIR)/opt/oscar-$(OSCAR_VERSION) already exists!";\
 		echo "Refusing to continue.";\
 		exit 1;\
 	fi
-	cd dist; ./newmake.sh --base --install-target /opt
+	cd dist; ./newmake.sh --base --install-target $(DESTDIR)/opt
 
 
 #
