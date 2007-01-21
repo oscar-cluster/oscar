@@ -46,7 +46,18 @@ my $bootscript = "$ENV{OSCAR_HOME}/src/cli/simple_complete.pl";
 GetOptions('help' => \$help, 'skipselector' => \$skipselector, 'skipbuild' => \$skipbuild, 'skipinstall' => \$skipinstall, 'skipdefine' => \$skipdefine, 'skipnet' => \$skipnet, 'skipcomplete' => \$skipcomplete, 'skiptest' => \$skiptest, 'opkgselector=s' => \$selectorfile, 'buildimage=s' => \$buildfile, 'defineclients=s' => \$definefile, 'networkclients=s' => \$netfile, 'bootscript=s' => \$bootscript);
 
 # The last arguement should be the ethernet adapter used for the installation
+my $return;
 my $interface = shift;
+if (!$interface) {
+    $interface = "<none>";
+    $return = 1;
+} else {
+    $return = system("ifconfig $interface > /dev/null 2>&1");
+}
+if ($return && !$help) {
+    print "The interface $interface specified is invalid.\n";
+    exit $return
+}
 
 # The help text
 # Prints if there are extra arguements left or the --help flag is activated
