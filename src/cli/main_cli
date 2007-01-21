@@ -46,7 +46,7 @@ my $bootscript = "$ENV{OSCAR_HOME}/src/cli/simple_complete.pl";
 GetOptions('help' => \$help, 'skipselector' => \$skipselector, 'skipbuild' => \$skipbuild, 'skipinstall' => \$skipinstall, 'skipdefine' => \$skipdefine, 'skipnet' => \$skipnet, 'skipcomplete' => \$skipcomplete, 'skiptest' => \$skiptest, 'opkgselector=s' => \$selectorfile, 'buildimage=s' => \$buildfile, 'defineclients=s' => \$definefile, 'networkclients=s' => \$netfile, 'bootscript=s' => \$bootscript);
 
 # The last arguement should be the ethernet adapter used for the installation
-my $return;
+my $return = 0;
 my $interface = shift;
 if (!$interface) {
     $interface = "<none>";
@@ -56,12 +56,11 @@ if (!$interface) {
 }
 if ($return && !$help) {
     print "The interface $interface specified is invalid.\n";
-    exit $return
 }
 
 # The help text
 # Prints if there are extra arguements left or the --help flag is activated
-if ($#ARGV >= 0 || $help)
+if ($#ARGV >= 0 || $help || $return)
 {
     print "Usage: main_cli [FLAGS] interface 
 Flags (Provide automation):
