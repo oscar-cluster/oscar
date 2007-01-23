@@ -5,6 +5,9 @@ package OSCAR::MAC;
 #			Jason Brechin <brechin@ncsa.uiuc.edu>
 # Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>
 #                    All rights reserved.
+# Copyright (C) 2006 Oak Ridge National Laboratory
+#                    Geoffroy Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
 
 #   $Id$
 

@@ -1,5 +1,10 @@
 package OSCAR::GUI_MAC;
 
+# Copyright (c) 2004    The Board of Trustees of the University of Illinois.
+#                       All rights reserved.
+#           Jason Brechin <brechin@ncsa.uiuc.edu>
+# Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>
+#                    All rights reserved.
 # Copyright (C) 2006    Oak Ridge National Laboratory
 #                       Geoffroy Vallee <valleegr@ornl.gov>
 #
