@@ -24,7 +24,7 @@
 use strict;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::MAC;
+use OSCAR::GUI_MAC;
 use OSCAR::Logger;
 use OSCAR::Database;
 use sigtrap qw(handler sighandle normal-signals);

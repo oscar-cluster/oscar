@@ -40,7 +40,7 @@ use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systemconfig","/usr/lib/systeminstaller
 use POSIX;
 use OSCAR::Help;
 use OSCAR::Network;
-use OSCAR::MAC;
+use OSCAR::GUI_MAC;
 use OSCAR::Database;
 use OSCAR::Distro;
 use OSCAR::DelNode;
