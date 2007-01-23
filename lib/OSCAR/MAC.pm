@@ -413,34 +413,6 @@ sub mac_cli {
     
     $install_mode = $orig_install_mode;
 
-    # The data structure to hold the clients and their information was VERY
-    # tailor made for the GUI and impossible to use for the cli version
-    # so I have to create a new one.  Here's the structure for this one
-    # (so that people after me can actually use it):
-    #
-    # Hash of hashes
-    # 
-    # cli_clients => name => hostname
-    #                     => mac
-    #                     => ip
-    #             => name => hostname ...
-    our %cli_clients;
-    
-    #Get a list of clients
-    my @clients;
-    #{
-        #use base qw(SIS::Component);
-        @clients = sortclients list_client();
-    #}
-    foreach my $client (@clients) {
-        my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-        $cli_clients{$client->name} = {
-                                       hostname => $client->hostname,
-                                       mac => "",
-                                       ip => $adapter->ip
-                                      };
-    }
-
     #Start printing the menu
     cli_menu($autofile);
 
@@ -465,29 +437,49 @@ sub cli_menu {
     #Open the file passed in for the automated version
     if($auto) {open(FILE, "$infile") || die "Can't open the input file\n";}
     
-    while (!$done) {        
+    while (!$done) {
+        # For now, default interface is eth0
+        my $iface = "eth0";
+        populate_MACS();
+        my @clients = sortclients list_client();
+        print "Current client assignments:\n";
+        if (@clients) {
+            foreach my $client (@clients) {
+                my $nodename = $client->name;
+                my $adapter = list_adapter(client=>$nodename, devname=>"$iface");
+                my $mac = $adapter->mac || "  :  :  :  :  :  ";
+                my $ip = $adapter->ip;
+                print "\t$nodename ($iface) [$ip] <$mac>\n";
+            }
+        } else {
+            print "\tNo clients defined.\n";
+        }
+        print "\n";
+
         print "1)  Import MACs from file\n" . 
-              "2)  Installation Mode:  $install_mode\n" .
-              "3)  Enable Install Mode\n" .
-              "4)  Dynamic DHCP update:  " . numtostring($dyndhcp) . "\n" .
-              "5)  Configure DHCP Server\n" .  
-              "6)  Enable UYOK:  " . numtostring($uyok) . "\n" .
-              "7)  Build AutoInstall CD\n" .
-              "8)  Setup Network Boot\n" .
-              "9)  Finish\n" .
+              "2)  Delete MACs\n" .
+              "3)  Installation Mode:  $install_mode\n" .
+              "4)  Enable Install Mode\n" .
+              "5)  Dynamic DHCP update:  " . numtostring($dyndhcp) . "\n" .
+              "6)  Configure DHCP Server\n" .  
+              "7)  Enable UYOK:  " . numtostring($uyok) . "\n" .
+              "8)  Build AutoInstall CD\n" .
+              "9)  Setup Network Boot\n" .
+              "10) Finish\n" .
               ">  " unless ($auto);
         my $response;
         if (!$auto) {
             print LOG "######################################\n" .
               "#1)  Import MACs from file\n" . 
-              "#2)  Installation Mode:  $install_mode\n" .
-              "#3)  Enable Install Mode\n" .
-              "#4)  Dynamic DHCP update:  " . numtostring($dyndhcp) . "\n" .
-              "#5)  Configure DHCP Server\n" .  
-              "#6)  Enable UYOK:  " . numtostring($uyok) . "\n" .
-              "#7)  Build AutoInstall CD\n" .
-              "#8)  Setup Network Boot\n" .
-              "#9)  Finish\n" .
+              "#2)  Delete MACs\n" .
+              "#3)  Installation Mode:  $install_mode\n" .
+              "#4)  Enable Install Mode\n" .
+              "#5)  Dynamic DHCP update:  " . numtostring($dyndhcp) . "\n" .
+              "#6)  Configure DHCP Server\n" .  
+              "#7)  Enable UYOK:  " . numtostring($uyok) . "\n" .
+              "#8)  Build AutoInstall CD\n" .
+              "#9)  Setup Network Boot\n" .
+              "#10) Finish\n" .
               "######################################\n";
             $response = <STDIN>;
             print LOG $response;
@@ -496,6 +488,12 @@ sub cli_menu {
             $response = <FILE>;
             next if (response_filter($response));
         }
+
+        # If response is "return", loop
+        if ($response eq "\n") {
+            next;
+        }
+
         chomp $response;
         if($response == 1) {
             my $result = 0;
@@ -524,16 +522,19 @@ sub cli_menu {
             }
         }
         elsif($response == 2) {
+            delete_macs_cli();
+        }
+        elsif($response == 3) {
             $install_mode = cli_installmode();
             oscar_log_subsection("Install mode: $install_mode");
         }
-        elsif($response == 3) {
+        elsif($response == 4) {
             enable_install_mode();
         }
-        elsif($response == 4) {
+        elsif($response == 5) {
             $dyndhcp = ++$dyndhcp%2; #Jump between 1 and 0
         }
-        elsif($response == 5) {
+        elsif($response == 6) {
             if($dhcpbtn) {
                 setup_dhcpd($$vars{interface});
             }
@@ -541,17 +542,17 @@ sub cli_menu {
                 print "Need to Enable Install Mode first\n";
             }
         }
-        elsif($response == 6) {
+        elsif($response == 7) {
             $uyok = ++$uyok%2; #Jump between 1 and 0
         }
-        elsif($response == 7) {
+        elsif($response == 8) {
             my ($ip, $broadcast, $netmask) = interface2ip($$vars{interface});
             build_autoinstall_cd($ip);
         }
-        elsif($response == 8) {
+        elsif($response == 9) {
             run_setup_pxe();
         }
-        elsif($response == 9) {
+        elsif($response == 10) {
             $done = 1;
             oscar_log_subsection("Step $step_number: Completed successfully");
         }
@@ -561,15 +562,28 @@ sub cli_menu {
 }
 
 # This will assign the MAC addresses that were read in from a file to the
-# clients that have been defined.  Right now this is done only in a random
-# mode.  In the future, a way to assign a specific MAC to a specific node
-# will be developed.
+# clients that have been defined.  This is done sequentially (top to bottom)
+# according to the file.
 sub assign_macs_cli {
-    our %cli_clients;
+    my @clients = sortclients list_client();
     our $auto;
     
     my $notdone = 1;
     my $response;
+
+    # If MAC is already assigned to a client, remove it from the hash
+    foreach my $mac (keys %MAC) {
+        if ($MAC{$mac}->{client}) {
+            delete $MAC{$mac};
+        }   
+    }
+
+    if (!%MAC) {
+        print "There are no unassigned MACs.\n";
+        $notdone = 0;
+        return;
+    }
+
     while ($notdone) {
         print "=====MAC Assignment Method=====\n" .
             "1)  Automatically assign MACs\n" .
@@ -580,24 +594,25 @@ sub assign_macs_cli {
         $notdone = response_filter($response);
     }
     chomp $response;
-    my @mac_keys = keys %MAC;
-    
+    my @mac_keys = sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC;
+    my $iface = "eth0";
+
     if ($response == 1) {
-        foreach my $client (keys %cli_clients) {
-            if(my $mac = pop @mac_keys) {
-                my $adapter = list_adapter(client=>$client,devname=>"eth0");
-                $MAC{$mac}->{client} = $adapter->{ip};
-                $adapter->mac($mac);
-                set_adapter($adapter);
-                $cli_clients{$client}->{mac} = $mac;
-                oscar_log_subsection("Assigning MAC: $mac to client: " . 
-                        $cli_clients{$client}->{hostname});
-            } else {
-                return 0;
+        while (my $mac = shift @mac_keys) {
+            foreach my $client (@clients) {
+                my $adapter = list_adapter(client=>$client->name,devname=>"$iface");
+                # Assign only if client has no assignment
+                if (!$adapter->mac && !$MAC{$mac}->{client}) {
+                    oscar_log_subsection("Assigning MAC: $mac to client: " . 
+                        $client->name);
+                    $adapter->mac($mac);
+                    set_adapter($adapter);
+                    $MAC{$mac}->{client}=$client->name;
+                    add_mac_to_hash($mac, $client->name);
+                }
             }
         }
-    } else {
-        my @client_keys = keys %cli_clients;
+    } elsif ($response == 2) {
         my $quit = 0;
         while (!$quit) {
             my $valid = 0;
@@ -624,7 +639,7 @@ sub assign_macs_cli {
             my $ip_selection;
             $valid = 0;
             while (!$valid && !$quit) {
-                print "---------Clients-------\n" . join("\n",@client_keys) .
+                print "---------Clients-------\n" . join("\n", map { $_->name } @clients) .
                 "\nPick a client (Type quit to stop assigning)\n>  " unless ($auto);
                 my $client_selection = <STDIN> if (!$auto);
                 $client_selection = <FILE> if ($auto);
@@ -634,22 +649,25 @@ sub assign_macs_cli {
                     $quit = 1;
                     $valid = 1;
                 } else {
-                    foreach my $item (@client_keys) {
-                        if ($item eq $client_selection) {
+                    foreach my $item (@clients) {
+                        if ($item->name eq $client_selection) {
                             $valid = 1;
                             last;
                         }
                     }
+                    oscar_log_subsection("Assigning MAC: $mac_selection to client: " . $client_selection);
                     my $adapter = list_adapter(client=>$client_selection,devname=>"eth0");
                     $MAC{$mac_selection}->{client} = $adapter->{ip};
                     $adapter->mac($mac_selection);
                     set_adapter($adapter);
-                    $cli_clients{$client_selection}->{mac} = $mac_selection;
-                    oscar_log_subsection("Assigning MAC: $mac_selection to client: " . $cli_clients{$client_selection}->{hostname});
                 }
             }
         }
     }
+}
+
+sub delete_macs_cli {
+    print "Not implemented yet.\n";
 }
 
 sub cli_installmode {
