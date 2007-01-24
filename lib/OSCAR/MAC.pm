@@ -618,6 +618,7 @@ sub assign_macs_cli {
             my $valid = 0;
             my $mac_selection;
             while (!$valid && !$quit) {
+                @mac_keys = sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC;
                 print "-----MAC Addresses-----\n" . join("\n",@mac_keys)."\n" .
                 "Pick a MAC Address (Type quit to stop assigning)\n>  " unless ($auto);
                 $mac_selection = <STDIN> if (!$auto);
@@ -657,9 +658,14 @@ sub assign_macs_cli {
                     }
                     oscar_log_subsection("Assigning MAC: $mac_selection to client: " . $client_selection);
                     my $adapter = list_adapter(client=>$client_selection,devname=>"eth0");
-                    $MAC{$mac_selection}->{client} = $adapter->{ip};
+                    # If client selection has a MAC address assigned, bump it back out to the
+                    # global hash
+                    if ($adapter->mac) {
+                        add_mac_to_hash($adapter->mac);
+                    }
                     $adapter->mac($mac_selection);
                     set_adapter($adapter);
+                    delete $MAC{$mac_selection};
                 }
             }
         }
