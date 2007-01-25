@@ -54,6 +54,7 @@ use OSCAR::MAC qw(save_to_file
                   __load_macs
                   __build_autoinstall_cd
                   __enable_install_mode
+                  __run_setup_pxe
                   %MAC 
                   $COLLECT 
                   @SERVERMACS
@@ -359,11 +360,10 @@ sub setup_dhcpd {
     my $interface = shift;
     our $window;
 
-    $window->Busy(-recurse => 1) if ($ENV{OSCAR_UI} eq "gui");
+    $window->Busy(-recurse => 1);
     __setup_dhcpd($interface);
-    our $dhcpbutton->configure(-state => 'disabled') 
-        if ($ENV{OSCAR_UI} eq "gui");
-    $window->Unbusy() if ($ENV{OSCAR_UI} eq "gui");
+    our $dhcpbutton->configure(-state => 'disabled'); 
+    $window->Unbusy();
 }
 
 sub regenerate_tree {
@@ -732,38 +732,15 @@ sub load_macs {
     return 1;
 }
 
-# Sub to initiate the setup_pxe script
+# Call library to execute setup_pxe script
 sub run_setup_pxe {
     our $window;
-    $window->Busy(-recurse => 1) if ($ENV{OSCAR_UI} eq "gui");
-
     our $uyok;
-    #our $uyok_generated;
+    $window->Busy(-recurse => 1);
 
-    my $cmd = "./setup_pxe -v";
+    __run_setup_pxe($uyok);
 
-    if ($uyok) {
-      $cmd = "$cmd --uyok";
-      #generate_uyok() if !($uyok_generated);
-      generate_uyok();
-    }
-
-    oscar_log_subsection("Step $step_number: Setup network boot: $cmd");
-    if ($ENV{OSCAR_UI} eq "gui") {
-        !system($cmd) or (carp($!), $window->Unbusy(), return undef);
-    } else {
-        !system($cmd) or (carp($!), return undef);
-    }
-
-    $cmd = "../packages/kernel/scripts/fix_network_boot";
-    if ( -x $cmd) {
-        oscar_log_subsection("Step $step_number: Finishing network boot: $cmd");
-        !system($cmd) or carp "ERROR COMMAND FAILED ($!): $cmd";
-        oscar_log_subsection("Step $step_number: Successfully finished network boot");
-    }
-
-    oscar_log_subsection("Step $step_number: Successfully setup network boot");
-    $window->Unbusy() if ($ENV{OSCAR_UI} eq "gui");
+    $window->Unbusy();
     return 1;
 }
 
@@ -772,7 +749,7 @@ sub build_autoinstall_cd {
     my $ip = shift;
 
     __build_autoinstall_cd($ip);
-    done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.") if ($ENV{OSCAR_UI} eq "gui");
+    done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.");
 }
 
 # Call the library function to enable selected install mode

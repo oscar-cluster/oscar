@@ -64,7 +64,7 @@ our $stopcoll = "Stop Collecting MACs";
 our $kernel;
 our $ramdisk;
 our $install_mode;
-#our $uyok_generated = 0;
+our $uyok = 0; # UYOK not enabled by default
 
 our @install_mode_options = qw(systemimager-rsync
                               systemimager-multicast 
@@ -87,6 +87,7 @@ our @install_mode_options = qw(systemimager-rsync
                 __load_macs
                 __build_autoinstall_cd
                 __enable_install_mode
+                __run_setup_pxe
                 %MAC
                 $COLLECT
                 @SERVERMACS
@@ -344,10 +345,8 @@ sub __build_autoinstall_cd {
     our $kernel;
     our $ramdisk;
     our $install_mode;
-    #our $uyok_generated;
 
     if ($uyok) {
-      #generate_uyok() if ( $uyok && !($uyok_generated) );    
       generate_uyok();
     }
 
@@ -372,7 +371,6 @@ sub __build_autoinstall_cd {
 sub generate_uyok {
     our $kernel;
     our $ramdisk;
-    #our $uyok_generated;
 
     $kernel = "/etc/systemimager/boot/kernel";
     $ramdisk = "/etc/systemimager/boot/initrd.img";
@@ -382,7 +380,6 @@ sub generate_uyok {
     $cmd = "$cmd --quiet" unless $ENV{OSCAR_VERBOSE};
 
     !system("$cmd") or croak("Failed to run: $cmd");
-    #$uyok_generated = 1;
     oscar_log_subsection("Step $step_number: Successfully enabled UYOK");
 }
 
@@ -518,6 +515,31 @@ sub __enable_install_mode {
     oscar_log_subsection("Step $step_number: Successfully enabled installation mode: $install_mode");
 
     our $dhcpbtn = 1 if ($ENV{OSCAR_UI} eq "cli");
+    return 1;
+}
+
+# Execute the setup_pxe script
+sub __run_setup_pxe {
+    my $uyok = shift;
+
+    my $cmd = "./setup_pxe -v";
+
+    if ($uyok) {
+      $cmd = "$cmd --uyok";
+      generate_uyok();
+    }
+
+    oscar_log_subsection("Step $step_number: Setup network boot: $cmd");
+    !system($cmd) or (carp($!), return undef);
+
+    $cmd = "../packages/kernel/scripts/fix_network_boot";
+    if ( -x $cmd) {
+        oscar_log_subsection("Step $step_number: Finishing network boot: $cmd");
+        !system($cmd) or carp "ERROR COMMAND FAILED ($!): $cmd";
+        oscar_log_subsection("Step $step_number: Successfully finished network boot");
+    }
+
+    oscar_log_subsection("Step $step_number: Successfully setup network boot");
     return 1;
 }
 
@@ -672,7 +694,7 @@ sub cli_menu {
         }
         elsif($response == 6) {
             if($dhcpbtn) {
-                setup_dhcpd($$vars{interface});
+                __setup_dhcpd($$vars{interface});
             }
             else {
                 print "Need to Enable Install Mode first\n";
@@ -686,7 +708,7 @@ sub cli_menu {
             build_autoinstall_cd($ip);
         }
         elsif($response == 9) {
-            run_setup_pxe();
+            __run_setup_pxe($uyok);
         }
         elsif($response == 10) {
             $done = 1;
