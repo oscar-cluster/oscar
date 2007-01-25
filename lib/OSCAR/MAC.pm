@@ -3,7 +3,7 @@ package OSCAR::MAC;
 # Copyright (c) 2004 	The Board of Trustees of the University of Illinois.
 #                     	All rights reserved.
 #			Jason Brechin <brechin@ncsa.uiuc.edu>
-# Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>
+# Copyright (C) 2006,2007 Bernard Li <bernard@vanhpc.org>
 #                    All rights reserved.
 # Copyright (C) 2006 Oak Ridge National Laboratory
 #                    Geoffroy Vallee <valleegr@ornl.gov>
@@ -39,8 +39,7 @@ use OSCAR::Logger;
 use OSCAR::Database;
 use OSCAR::OCA::OS_Detect;
 use vars qw($VERSION @EXPORT);
-#use base qw(Exporter);
-require Exporter;
+use base qw(Exporter);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
