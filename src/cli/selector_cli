@@ -404,6 +404,11 @@ sub processInput
             return 1;
         }
 
+        if (! -f $filename) {
+            print "File $filename not found!\n";
+            return 1;
+        }
+
         open(FILE, $filename);
         #Read the file just like it is normal input from the keyboard
         #The file is not required to have a quit command in it
