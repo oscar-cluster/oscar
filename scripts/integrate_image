@@ -187,6 +187,7 @@ SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_co
 my $ip_assignment_method = "static";
 my $post_install = "reboot";
 my $no_listing = 0;
+my $autodetect_disks = 1;
 SystemImager::Server->create_autoinstall_script(
         $script_name,
         $autoinstall_script_dir,
@@ -196,7 +197,8 @@ SystemImager::Server->create_autoinstall_script(
         $ip_assignment_method,
         $post_install,
         $no_listing,
-	$auto_install_script_conf
+	$auto_install_script_conf,
+	$autodetect_disks
 );
 
 
