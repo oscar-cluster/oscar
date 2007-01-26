@@ -253,7 +253,7 @@ sub update_hosts {
 
     while ($line=<IN>) {
       chomp $line; # mjc - 12/13/01
-      if( $line =~ /^$ip/ ) { # mjc - 12/13/01
+      if( $line =~ /^$ip\s+/ ) {
         $line =~ /^([^#]+)(#.*)?$/;
         my $body = $1;
         my $comment = $2||"";
