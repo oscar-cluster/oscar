@@ -21,6 +21,7 @@ while ($input ne "continue") {
     "* Once they have completed installation, reboot them from   *\n" .
     "* the hard drive. Once all the machines and their ethernet  *\n" .
     "* adaptors are up, type \'continue\' and press Enter.         *\n" .
+    "* If you are not ready to continue yet, hit Ctrl-C to exit. *\n" .
     "*************************************************************\n";
     $input = <STDIN>;
 chomp $input;
