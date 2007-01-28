@@ -20,7 +20,7 @@
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
-use OSCAR::MAC;
+use OSCAR::CLI_MAC;
 use OSCAR::WizardEnv;
 use Getopt::Long;
 
@@ -143,7 +143,7 @@ unless ($skipdefine) {
 
 # Step 6 Setup networking
 unless ($skipnet) {
-    !OSCAR::MAC::mac_cli($netfile, 6, {interface => $interface}, 'netboot') or die "Failed on Step 6 - Setup Networking";
+    !OSCAR::CLI_MAC::mac_cli($netfile, 6, {interface => $interface}, 'netboot') or die "Failed on Step 6 - Setup Networking";
 }
 
 # Step 7 Complete Cluster Setup
