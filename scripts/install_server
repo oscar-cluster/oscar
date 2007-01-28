@@ -111,13 +111,16 @@ my $pm = &OSCAR::PackageSmart::prepare_pools($verbose,$oscar_pkg_pool,$distro_pk
 if (!$pm) {
     croak "\nERROR: Could not create PackMan instance!\n";
 }
-oscar_log_subsection("Smart_install: ".join(",",@pkgs));
-my ($ret, @out) = $pm->smart_install(@pkgs);
-if (!$ret) {
-    print "Error occured during server pkgs install:\n".join("\n",@out)."\n";
-    croak("Couldn't install the required packages needed for OSCAR");
+# If the list of packages we have to install is empty, we do nothing
+if (@pkgs > 0) {
+    oscar_log_subsection("Smart_install: ".join(",",@pkgs));
+    my ($ret, @out) = $pm->smart_install(@pkgs);
+    if (!$ret) {
+        print "Error occured during server pkgs install:\n".join("\n",@out)."\n";
+        croak("Couldn't install the required packages needed for OSCAR");
+    }
 }
-oscar_log_subsection("Successfully installed server non-core RPMs");
+oscar_log_subsection("Successfully installed server non-core binary packages");
 
 #
 # NEST
