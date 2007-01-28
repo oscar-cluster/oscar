@@ -7,6 +7,7 @@ loghost
 maui
 mpich
 mta-config
+netbootmgr
 networking
 ntpconfig
 openmpi
