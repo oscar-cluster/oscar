@@ -114,7 +114,7 @@ sub __setup_dhcpd {
     my $dhcpd_configfile = "/etc/dhcpd.conf";
     # Under Debian the dhcpd config file is in /etc/dhcp3
     $dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
-    carp "About to run setup_dhcpd";
+    print "About to run setup_dhcpd...\n";
     if(-e $dhcpd_configfile) {
         copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak") or (carp "Couldn't backup dhcpd.conf file", return undef);
     }
@@ -512,7 +512,6 @@ sub __enable_install_mode {
 
     oscar_log_subsection("Step $step_number: Successfully enabled installation mode: $install_mode");
 
-    our $dhcpbtn = 1 if ($ENV{OSCAR_UI} eq "cli");
     return 1;
 }
 

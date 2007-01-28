@@ -100,10 +100,10 @@ sub mac_cli {
 sub cli_menu {
     my $done = 0;
     my $infile = shift;
+    my $dhcpbtn = 0;
     our $auto;
     our $dyndhcp = 1;
     our $uyok = 0;
-    our $dhcpbtn = 0;
     our $vars;
 
     #Open the log file
@@ -208,6 +208,7 @@ log for writing.\n";}
         }
         elsif($response == 4) {
             __enable_install_mode();
+            $dhcpbtn = 1;
         }
         elsif($response == 5) {
             $dyndhcp = ++$dyndhcp%2; #Jump between 1 and 0
