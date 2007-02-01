@@ -1,0 +1,612 @@
+#!/usr/bin/perl
+
+# oda - OSCAR database
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# Copyright (c) 2007 The Trustees of Indiana University.  
+#                    All rights reserved.
+
+#
+# $Id$
+#
+use strict;
+
+# use the oda library module from the current directory if there, 
+# because we might be debugging, or use the installed directory
+
+
+use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR";
+use oda;
+
+use strict;
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+
+#********************************************************************#
+#                                                                    #
+# list of built-in commands that can be abbreviated                  #
+#                                                                    #
+my @simple_commands = ( "dump",                                      #
+                        "restore",                                   #
+                        "create_database",                           #
+                        "drop_database",                             #
+                        "list_databases",                            #
+                        "list_fields",                               #
+                        "list_tables"                                #
+                      );                                             #
+#                                                                    #
+#********************************************************************#
+
+
+# set default option values
+my %options = ( 'debug'        => 0,
+                'scripts_dir'  => "SCRIPTS_DIR",
+                'raw'          => 0,
+                'verbose'      => 0 );
+
+my $DUMP_DIR = "$ENV{OSCAR_HOME}/tmp";
+
+
+#=============================================================
+# function to print program usage message and then a quick
+# help message and then exit with error
+
+sub errexit {
+    my ( $exit_status, @error_strings ) = @_;
+    my $progname = $0;
+    print STDERR <<ERREXIT;
+
+For more usage information, try:
+
+$0 --help
+
+ERREXIT
+    print STDERR "\n" if @error_strings;
+    foreach my $error_string ( @error_strings ) {
+    print STDERR "$0 - ERROR - $error_string\n";
+    }
+    exit $exit_status;
+}
+
+
+#********************************************************************#
+#********************************************************************#
+#                                                                    #
+# function to separate the arguments from a command line             #
+#                                                                    #
+#********************************************************************#
+#********************************************************************#
+#
+# inputs:  options        reference to options hash
+#          command        command line string
+# outputs: cmd_args   reference to array of separated cmd and args
+#          any error messages are written to stderr,
+
+sub separate_command_arguments {
+    my ( $options_ref,
+     $command_arguments ) = @_;
+
+    my @separated_command_arguments =
+    split( '\s+', $command_arguments );
+
+    return \@separated_command_arguments;
+}
+
+
+#********************************************************************#
+#********************************************************************#
+#                                                                    #
+# function to check to see if the oscar database exists              #
+#                                                                    #
+#********************************************************************#
+#********************************************************************#
+#
+# inputs:  options        reference to options hash
+#          error_string   reference to contain any error messages
+# outputs: staus          1 if exist, otherwise 0
+#
+
+sub exist_oscar_database {
+    my ( $options_ref,
+     $error_strings_ref ) = @_;
+    my %databases = ();
+    my $status = oda::list_databases( $options_ref,
+                       \%databases,
+                       $error_strings_ref );
+    my $status = 0;
+    $status = 1 if $databases{oscar};
+
+    return $status;
+}
+
+
+#********************************************************************#
+#********************************************************************#
+#                                                                    #
+# function to check to see if a user inputs "Y" or "N"               #
+#                                                                    #
+#********************************************************************#
+#********************************************************************#
+#
+# inputs:  messages       string of messages to show in the question.
+# outputs: answer         "Y" or "N"
+#
+
+sub check_yes_or_no {
+    my $messages = shift;
+    my $answer = "";
+    while(!($answer eq "Y" || $answer eq "N")){
+        print "\n";
+        print "Do you really  want to drop your database(oscar) (y/n)? ";
+        chomp($answer = <STDIN>);
+        $answer =~ s/([a-z])/\u$1/ig;
+    }
+    return $answer;
+}
+
+
+#=============================================================
+# function to execute a simple command and arguments, expanding
+# leading simple command argument into an exact command match
+#
+# input:  options_ref    pointer to options hash
+#         cmd_args_ref   pointer to command and arguments lines
+#
+# output: error_strings  error strings array (empty if no errors)
+
+sub execute_simple_command{
+    my ( $passed_options_ref,
+     $command_and_arguments_ref ) = @_;
+
+    my @error_strings = ();
+    my $passed_error_strings_ref = \@error_strings;
+    # take care of faking any non-passed input parameters, and
+    # set any options to their default values if not already set
+    my ( $options_ref, $error_strings_ref ) = oda::fake_missing_parameters
+    ( $passed_options_ref, $passed_error_strings_ref );
+
+
+    print "$0: execute_simple_command(" . 
+    join( ',', @$command_and_arguments_ref ) . ")\n"
+        if $$options_ref{debug};
+
+    my $disconnect_flag = 0;
+
+    # if the command is an exact simple oda commands match, ...
+    
+    my $command;
+    if ( grep( /^$$command_and_arguments_ref[0]$/, 
+           @simple_commands ) ) {
+        $command = shift @$command_and_arguments_ref;
+    } else {
+        $command = shift @$command_and_arguments_ref;
+        print "There is no such a command($command)\n";
+        print "Please try to type in \"help\" to see what command lines are available (e.g., oda> help)\n";
+    }
+    
+    # read in the function commands hash, if it fails, too bad,
+    # this might not be an error at this time, but save the 
+    # error strings
+    
+    my $success = 0;
+    my @result_strings = ();
+    my @arguments = @$command_and_arguments_ref;
+
+    print "$command\n" if $$options_ref{debug};
+    if ( $command eq "list_databases" ){
+        if ( @arguments ) {
+            push @error_strings,
+            "No other arguments allowed with $command";
+        } else {
+            my @databases;
+            $success = oda::list_databases( $options_ref,
+                           \@databases,
+                           \@error_strings );
+            @result_strings = sort @databases if $success;
+        }
+    }elsif ( $command eq "create_database" ){
+        if(@arguments){
+            push @error_strings,
+            "No other arguments allowed with $command";
+        } else {
+            my $status = exist_oscar_database( $options_ref,
+                                       \@error_strings );
+            if( $status ){
+                    print "The database($$options_ref{database}) already exist!!!\n";
+                    print "You can not create a database with the same name($$options_ref{database})\n";
+            }else{
+                oda::oda_disconnect( $options_ref );
+                $success = oda::create_database( $options_ref,
+                                   \@error_strings );
+                oda::oda_disconnect( $options_ref );
+            }
+        }
+    }elsif ( $command eq "drop_database" ){
+        if(@arguments){
+            push @error_strings,
+            "No other arguments allowed with $command";
+        } else {
+            my $status = exist_oscar_database( $options_ref,
+                                       \@error_strings );
+            print "Warning: once your oscar database is dropped, you will get out of this console\n";
+            print "Warning: ODA will be ready to create a new oscar database\n";
+
+            my $msg = "Do you really  want to drop your database(oscar) (y/n)? ";
+            my $answer = check_yes_or_no($msg);
+            if( $status ){
+                if ( $answer eq "Y" ){
+                    oda::oda_disconnect( $options_ref );
+                    $success = oda::drop_database( $options_ref,
+                                       \@error_strings );
+                    print "DONE!\n";
+                    exit 0;
+                }
+            }else{
+                print "The database($$options_ref{database}) does not exist!!!\n";
+                print "You can not drop a database($$options_ref{database}) not existing\n";
+            }
+        }
+    }elsif ( $command eq "list_tables" ){
+        if(@arguments){
+            push @error_strings,
+            "No other arguments allowed with $command";
+        } else {
+            my $status = exist_oscar_database( $options_ref,
+                                       \@error_strings );
+            if( $status ){
+                my $all_table_names_ref = oda::list_tables( $options_ref,
+                                   \@error_strings );
+                if ( defined $all_table_names_ref ) {
+                    @result_strings = sort keys %$all_table_names_ref;
+                    $success = 1;
+                }
+            }else{
+                print "The OSCAR database does not exist\n";
+                print "Please restore a dump file or create a new oscar database\n";
+            }
+        }
+    }elsif ( $command eq "list_fields" ){
+        if ( ! @arguments ) {
+            push @error_strings,
+            "Missing table name for $command";
+        } else {
+            my $status = exist_oscar_database( $options_ref,
+                                       \@error_strings );
+            if( $status ){
+                my $table_name = shift @arguments;
+                if ( @arguments ) {
+                    push @error_strings,
+                    "No other arguments besides table name allowed with $command";
+                } else {
+                    my %fields;
+                    $success = oda::list_fields( $options_ref,
+                                $table_name,
+                                \%fields,
+                                @error_strings );
+                    @result_strings = sort keys %fields if $success;
+                }
+            }else{
+                print "The OSCAR database does not exist\n";
+                print "Please restore a dump file or create a new oscar database\n";
+            }
+        }
+    }elsif ( $command eq "dump" ){
+        if(@arguments){
+            push @error_strings,
+            "No other arguments allowed with $command";
+        } else {
+            my $status = exist_oscar_database( $options_ref,
+                                       \@error_strings );
+            if( $status ){
+                chomp(my $today = `date +%Y-%m-%d`);
+                my $sh_cmd = 
+                    "mysqldump -u oscar -p$$options_ref{password} --databases oscar > $DUMP_DIR/oscar.$today.$$";
+                $success = oda::do_shell_command( $options_ref,
+                                    $sh_cmd,
+                                   \@error_strings );
+            }else{
+                print "The OSCAR database does not exist\n";
+                print "Please restore a dump file or create a new oscar database\n";
+            }
+        }
+    }elsif ( $command eq "restore" ){
+        my $dump_file = "";
+        if(@arguments){
+            $dump_file = shift @arguments;
+            if(@arguments){
+                push @error_strings,
+                "No other arguments allowed with $command";
+            }elsif( !-e $DUMP_DIR/$dump_file ){
+                push @error_strings,
+                "There is no such a dump file($dump_file) to restore";
+            }else{
+                goto DO_IT;
+            }
+        } else {
+            chdir "$DUMP_DIR" or die "Can not chdir to $DUMP_DIR: $!";
+            my @dump_files = glob "oscar.*";
+            my $list_dump_file = "";
+            my @cmd_args = ();
+            if(@dump_files){
+                $list_dump_file = join( ', ', @dump_files ); 
+            }else{
+                my $msg = "You have never dumped your OSCAR database\n" .
+                          "Do you want to dump your oda now (y/n)? ";
+                my $answer = check_yes_or_no($msg);
+                @cmd_args = ("dump");
+                execute_simple_command($options_ref, \@cmd_args) 
+                    if $answer eq "Y";
+                @dump_files = glob "oscar.*";
+                $list_dump_file = join( ', ', @dump_files ); 
+            } 
+            print "List of dump files: $list_dump_file\n";
+            print "Enter the name of the dump file to restore: ";
+            chomp($dump_file = <STDIN>);
+            DO_IT:
+            my $sh_cmd = 
+                "mysql -u oscar -p$$options_ref{password} oscar < $DUMP_DIR/$dump_file";
+            if (-e "$DUMP_DIR/$dump_file"){
+                my $status = exist_oscar_database( $options_ref,
+                                           \@error_strings );
+                my $answer = "Y";
+                if( $status ){
+                    print "The database($$options_ref{database}) already exist!!!\n";
+                    print "For the clean restore, please remove the database($$options_ref{database}) or recreate it\n";
+                    my $msg = "Do you want to proceed (y/n)? ";
+                    $answer = check_yes_or_no($msg);
+                }else{
+                    $success = oda::create_database( $options_ref,
+                                         \@error_strings);
+                }
+                $success = oda::do_shell_command( $options_ref,
+                                    $sh_cmd,
+                                   \@error_strings )
+                    if $answer eq "Y";
+            }else{
+                print "Errr.. there is no such a dump file($dump_file)\n";
+                print "oda>\n";
+                @cmd_args = ("restore");
+                execute_simple_command($options_ref, \@cmd_args);
+            }
+        }
+    }
+
+    if ( ! @error_strings ) {
+        foreach my $result_string ( @result_strings ) {
+            print "$result_string\n";
+        }
+    }
+    oda::oda_disconnect( $options_ref ) if $disconnect_flag; 
+
+    return ( @error_strings);
+}
+
+
+#=============================================================
+# function to print program usage message and possibly exit
+#
+# input:  interactive     non-zero means in interactive mode
+#         exit_status     exit status, no exit if undefined
+#         error_strings   array of error lines to output
+
+sub usage {
+    my ( $interactive, $exit_status, @error_strings ) = @_;
+    errexit( $exit_status, @error_strings ) 
+    if defined($exit_status) && $options{debug};
+    my $progname = $0;
+    print STDERR <<USAGE1;
+
+The database resides in a single directory,
+and consists of any number of "tables". 
+Each table has any number of "records".
+Each record consists of "fields", with each field
+having a field name and type, and a value for that field.
+Every record within the same table has the same field names
+and types, with only the values changing between records.
+
+Values:
+  DATABASE is the name of the database, default is DATABASE_NAME
+  DEFAULT is the default valyue for a field(column).
+  FIELD is the name of a field(column).
+  HOST is the network name of the database server
+  PORT is a network port number for the database server
+  TABLE is the name of a database table.
+  TYPE is the type of field(column) using standard mysql types.
+USAGE1
+    print STDERR <<USAGE2 if ! $interactive;
+
+Options:
+  --commands=FILE     commands file, default none, - means stdin
+  --debug             turns on debug output
+  --database=DATABASE database name, default is oscar
+  --host=HOST         database host, default localhost
+  --scripts_dir=DIR   database scripts directory, default SCRIPTS_DIR
+  --nodebug           turns off debug output
+  --password=PASSWORD database password
+  --port=PORT         database port number, default 3306
+  --noverbose         turns off verbose output
+  --type=DATABASETYPE set the database type, default is mysql
+  --user USER         database user id, default anonymous if non-root
+  --verbose           turns on verbose output
+  --version           prints version number and exits program
+USAGE2
+    print STDERR <<USAGE5;
+
+Raw commands:
+ $0 [options] dump 
+ $0 [options] restore [DUMP FILE] 
+ $0 [options] create_database
+ $0 [options] drop_database
+ $0 [options] list_databases
+ $0 [options] list_fields TABLE
+ $0 [options] list_tables
+
+
+USAGE5
+    if ( @error_strings ) {
+    print STDERR "\n";
+    foreach my $error_string ( @error_strings ) {
+        print STDERR "$0: $error_string\n";
+    }
+    }
+    exit $exit_status if defined $exit_status;
+}
+
+#=============================================================
+
+# configure command line options parsing
+Getopt::Long::Configure("ignore_case"); # ignore case
+Getopt::Long::Configure("bundling");    # allow -a -b or -ab
+Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
+
+# parse command line options
+GetOptions( \%options,
+        'commands|c=s',
+        'debug!',
+        'database|d=s',
+        'scripts_dir|f=s',
+        'help',
+        'host|h=s',
+        'opset=s',
+        'output|o=s',
+        'password=s',
+        'port|p=i',
+        'raw!',
+        'table_parameters=s',
+        'type|t=s',
+        'user|u=s',
+        'verbose!',
+        'version' )
+    || usage(0, 1);
+print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
+oda::print_hash( "", "$0: options after GetOptions", \%options) if $options{debug};
+
+# --help flag just prints out usage information and exits
+if ( exists $options{help} ) {
+    usage(0, 0);
+}
+
+# --version flag just prints out version numbers and exits
+if ( exists $options{version} ) {
+    my $server_version = oda::database_server_version( \%options, undef );
+    print "oda version: ODA_VERSION" . 
+    ( ( defined $server_version ) ? 
+      " database server version: $server_version" : "" ) .
+    "\n";
+    exit 0;
+}
+
+
+# else if no commands file was specified, and we have one
+# or more aguments, use them as a single command, first
+# expanding any simple/abbreviated command/shortcuts/functions
+elsif ( @ARGV ) {
+    print "$0: executing <(" . join( ',', @ARGV ) . ")>\n"
+    if $options{debug};
+    my @error_strings =
+    execute_simple_command( \%options,
+                          \@ARGV );
+    errexit( 1, @error_strings ) if @error_strings;
+    exit 0;
+}
+
+# else if no commands file was specified, and we have
+# no arguments, go into interactive mode
+
+else {
+    print "oda> ";
+    my $partial_interactive_line = "";
+    my $interactive_line;
+    my $last_status = 0;
+    while ( defined ( $interactive_line = <STDIN> ) ) {
+        if ( $partial_interactive_line ne "" ) {
+            $interactive_line = $partial_interactive_line . $interactive_line;
+            $partial_interactive_line = "";
+        }
+        if ( $interactive_line =~ /\\$/ ) {
+            $interactive_line =~ s/\\$//;
+            $partial_interactive_line = $interactive_line;
+            print "> ";
+        } else {
+            my $separated_cmd_args_ref =
+            separate_command_arguments( \%options,
+                             $interactive_line );
+            print "$0: executing <(" . 
+            join( ',', @$separated_cmd_args_ref ) . ")>\n"
+            if $options{debug};
+            if ( @$separated_cmd_args_ref ) {
+                if ( $$separated_cmd_args_ref[0] eq "help" ) {
+                    usage( 1 );
+                } elsif ( $$separated_cmd_args_ref[0] eq "quit"
+                      || 
+                      $$separated_cmd_args_ref[0] eq "exit" 
+                      ||
+                      $$separated_cmd_args_ref[0] eq "\\q" ) {
+                    exit $last_status;
+                } elsif ( $$separated_cmd_args_ref[0] eq "version" ) {
+                    my $server_version = 
+                    oda::database_server_version( \%options, undef );
+                    print "oda version: ODA_VERSION" . 
+                    ( ( defined $server_version ) ? 
+                      " database server version: $server_version" : "" ) .
+                      "\n";
+                } else {
+                    my @error_strings =
+                    execute_simple_command( \%options,
+                                          $separated_cmd_args_ref );
+                    $last_status = ( @error_strings ) ? 0 : 1;
+                    print STDERR ( shift @error_strings ) . "\n" while @error_strings;
+                }
+            }
+            print "oda> ";
+        }
+    }
+    print "\n";
+    if ( $partial_interactive_line ne "" ) {
+        my $separated_cmd_args_ref =
+            separate_command_arguments( \%options,
+                             $partial_interactive_line );
+        print "$0: executing <(" . 
+            join( ',', @$separated_cmd_args_ref ) . ")>\n"
+            if $options{debug};
+        if ( @$separated_cmd_args_ref ) {
+            if ( $$separated_cmd_args_ref[0] eq "help" ) {
+            usage( 1 );
+            } elsif ( $$separated_cmd_args_ref[0] eq "quit"
+                  || 
+                  $$separated_cmd_args_ref[0] eq "exit" 
+                  ||
+                  $$separated_cmd_args_ref[0] eq "\\q" ) {
+            exit $last_status;
+            } elsif ( $$separated_cmd_args_ref[0] eq "version" ) {
+            my $server_version = 
+                oda::database_server_version( \%options, undef );
+            print "oda version: ODA_VERSION" . 
+                ( ( defined $server_version ) ? 
+                  " database server version: $server_version" : "" ) .
+                  "\n";
+            } else {
+            my @error_strings =
+                execute_simple_command( \%options,
+                                  $separated_cmd_args_ref );
+            $last_status = ( @error_strings ) ? 0 : 1;
+            print STDERR ( shift @error_strings ) . "\n" while @error_strings;
+            }
+        }
+    }
+    exit $last_status;
+}

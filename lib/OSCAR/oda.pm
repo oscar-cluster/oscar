@@ -998,8 +998,7 @@ sub drop_database {
         return 0;
     }
 
-    my $root_pass = "";
-    $root_pass = $options{password} if &check_root_password; 
+    my $root_pass = $options{password} if &check_root_password; 
     if ( $root_pass ){
         $$options_ref{user} = "root";
         $$options_ref{password} = $root_pass;
@@ -1166,5 +1165,6 @@ sub check_root_password{
     print "The root password : $options{password}\n" if $options{debug};
     return 1; 
 }
+
 
 1;
