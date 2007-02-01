@@ -58,7 +58,7 @@ my %options = ( 'debug'        => 0,
                 'raw'          => 0,
                 'verbose'      => 0 );
 
-my $DUMP_DIR = "$ENV{OSCAR_HOME}/tmp";
+my $DUMP_DIR = "$ENV{OSCAR_HOME}/tmp/oda_dump";
 
 
 #=============================================================
@@ -186,6 +186,8 @@ sub execute_simple_command{
 
     my $disconnect_flag = 0;
 
+    mkdir $DUMP_DIR if !-e $DUMP_DIR;
+
     # if the command is an exact simple oda commands match, ...
     
     my $command;
@@ -305,20 +307,29 @@ sub execute_simple_command{
             }
         }
     }elsif ( $command eq "dump" ){
+        my $dump_file = "";
         if(@arguments){
-            push @error_strings,
-            "No other arguments allowed with $command";
+            $dump_file = shift @arguments;
+            $dump_file = "$DUMP_DIR/$dump_file";
+            if(@arguments){
+                push @error_strings,
+                "No other arguments allowed with $command";
+            } else {
+                goto DO_DUMP;
+            }
         } else {
+            DO_DUMP:
             my $status = exist_oscar_database( $options_ref,
                                        \@error_strings );
             if( $status ){
                 chomp(my $today = `date +%Y-%m-%d`);
+                $dump_file = "$DUMP_DIR/oscar.$today.$$" if !$dump_file;
                 my $sh_cmd = 
-                    "mysqldump -u oscar -p$$options_ref{password} --databases oscar > $DUMP_DIR/oscar.$today.$$";
+                    "mysqldump -u oscar -p$$options_ref{password} --databases oscar > $dump_file";
                 $success = oda::do_shell_command( $options_ref,
                                     $sh_cmd,
                                    \@error_strings );
-                print "The OSCAR database is successfully backed up to $DUMP_DIR/oscar.$today.$$\n";
+                print "The OSCAR database is successfully backed up to $dump_file\n";
             }else{
                 print "The OSCAR database does not exist\n";
                 print "Please restore a dump file or create a new oscar database\n";
@@ -335,11 +346,11 @@ sub execute_simple_command{
                 push @error_strings,
                 "There is no such a dump file($dump_file) to restore";
             }else{
-                goto DO_IT;
+                goto DO_RESTORE;
             }
         } else {
             chdir "$DUMP_DIR" or die "Can not chdir to $DUMP_DIR: $!";
-            my @dump_files = glob "oscar.*";
+            my @dump_files = glob "*";
             my $list_dump_file = "";
             my @cmd_args = ();
             if(@dump_files){
@@ -358,7 +369,7 @@ sub execute_simple_command{
             print "List of dump files: $list_dump_file\n";
             print "Enter the name of the dump file to restore: ";
             chomp($dump_file = <STDIN>);
-            DO_IT:
+            DO_RESTORE:
             my $sh_cmd = 
                 "mysql -u oscar -p$$options_ref{password} oscar < $DUMP_DIR/$dump_file";
             if (-e "$DUMP_DIR/$dump_file"){
@@ -379,7 +390,7 @@ sub execute_simple_command{
                                    \@error_strings )
                     if $answer eq "Y";
             }else{
-                print "Errr.. there is no such a dump file($dump_file)\n";
+                print "\nErrr.. there is no such a dump file($dump_file)\n";
                 print "oda>\n";
                 @cmd_args = ("restore");
                 execute_simple_command($options_ref, \@cmd_args);
@@ -449,7 +460,7 @@ USAGE2
     print STDERR <<USAGE5;
 
 Raw commands:
- $0 [options] dump 
+ $0 [options] dump [DUMP FILE]
  $0 [options] restore [DUMP FILE] 
  $0 [options] create_database
  $0 [options] drop_database
