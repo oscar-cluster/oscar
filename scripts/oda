@@ -151,7 +151,7 @@ sub check_yes_or_no {
     my $answer = "";
     while(!($answer eq "Y" || $answer eq "N")){
         print "\n";
-        print "Do you really  want to drop your database(oscar) (y/n)? ";
+        print "$messages";
         chomp($answer = <STDIN>);
         $answer =~ s/([a-z])/\u$1/ig;
     }
@@ -318,6 +318,7 @@ sub execute_simple_command{
                 $success = oda::do_shell_command( $options_ref,
                                     $sh_cmd,
                                    \@error_strings );
+                print "The OSCAR database is successfully backed up to $DUMP_DIR/oscar.$today.$$\n";
             }else{
                 print "The OSCAR database does not exist\n";
                 print "Please restore a dump file or create a new oscar database\n";
@@ -344,6 +345,7 @@ sub execute_simple_command{
             if(@dump_files){
                 $list_dump_file = join( ', ', @dump_files ); 
             }else{
+                print "DUMP Files exist in \"$DUMP_DIR\"\n\n";
                 my $msg = "You have never dumped your OSCAR database\n" .
                           "Do you want to dump your oda now (y/n)? ";
                 my $answer = check_yes_or_no($msg);
