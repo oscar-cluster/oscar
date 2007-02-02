@@ -1,7 +1,7 @@
 package oda;
 #
 #
-# Copyright (c) 2005-2006 The Trustees of Indiana University.  
+# Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -904,6 +904,48 @@ sub create_database {
     print "DB_DEBUG>$0:\n====> in oda\:\:create_database install_driver succeeded\n"
 	if $$options_ref{debug};
 
+    my $status = reset_password($options_ref, $error_strings_ref);
+
+    return $status if !$status;
+
+    if (!$driver_handle->func('createdb',
+			      $$options_ref{database},
+			      $$options_ref{host},
+			      $$options_ref{user},
+			      $$options_ref{password},
+			      'admin' ) ) {
+	push @$error_strings_ref,
+	"DB_DEBUG>$0:\n====> failed to create database for user " .
+	    "$$options_ref{user}:\n$DBI::errstr";
+	return 0;
+    }
+    print( "DB_DEBUG>$0:\n====> in oda\:\:create_database createdb " . 
+	   "<$$options_ref{database}> with master user " .
+	   "<$$options_ref{user}> succeeded\n" )
+	if $$options_ref{debug};
+
+    return 1;
+}
+
+#********************************************************************#
+#********************************************************************#
+#                                                                    #
+# exported function to reset a database password                     #
+#                                                                    #
+#********************************************************************#
+#********************************************************************#
+#
+# input:  options_ref          optional reference to options hash
+#         error_strings_ref    optional reference to array for errors
+#
+# return: non-zero if success
+
+sub reset_password{
+    my ($options_ref, $error_strings_ref) = @_;
+
+    chomp(my $pw =  `cat /etc/odapw`);
+    $$options_ref{password} = $pw if $$options_ref{password} ne $pw;
+
     my $root_pass = $options{password} if &check_root_password; 
 
     my $cmd_string = "mysql -uroot ";
@@ -934,26 +976,8 @@ sub create_database {
 				  "$cmd_string -e \"GRANT SELECT ON " . 
 				  $$options_ref{database} . '.* TO ' . 
 				  "anonymous" . '"' );
-    
-    if (!$driver_handle->func('createdb',
-			      $$options_ref{database},
-			      $$options_ref{host},
-			      $$options_ref{user},
-			      $$options_ref{password},
-			      'admin' ) ) {
-	push @$error_strings_ref,
-	"DB_DEBUG>$0:\n====> failed to create database for user " .
-	    "$$options_ref{user}:\n$DBI::errstr";
-	return 0;
-    }
-    print( "DB_DEBUG>$0:\n====> in oda\:\:create_database createdb " . 
-	   "<$$options_ref{database}> with master user " .
-	   "<$$options_ref{user}> succeeded\n" )
-	if $$options_ref{debug};
-
     return 1;
 }
-
 
 #********************************************************************#
 #********************************************************************#
