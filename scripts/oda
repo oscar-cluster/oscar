@@ -601,8 +601,9 @@ else {
     my $partial_interactive_line = "";
     my $interactive_line;
     my $last_status = 0;
-    $interactive_line = Complete('', \@simple_commands);
+
     while ( 1 ) {
+        $interactive_line = Complete('', \@simple_commands);
         if ( $partial_interactive_line ne "" ) {
             $interactive_line = $partial_interactive_line . $interactive_line;
             $partial_interactive_line = "";
@@ -644,7 +645,6 @@ else {
             }
             print "oda> ";
         }
-        $interactive_line = Complete('', \@simple_commands);
     }
     print "\n";
     if ( $partial_interactive_line ne "" ) {
