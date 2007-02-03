@@ -602,7 +602,7 @@ else {
     my $interactive_line;
     my $last_status = 0;
     $interactive_line = Complete('', \@simple_commands);
-    while ( defined ( $interactive_line ) ) {
+    while ( 1 ) {
         if ( $partial_interactive_line ne "" ) {
             $interactive_line = $partial_interactive_line . $interactive_line;
             $partial_interactive_line = "";
