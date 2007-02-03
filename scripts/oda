@@ -35,6 +35,7 @@ use strict;
 use Getopt::Long;
 use Pod::Usage;
 use Data::Dumper;
+use Term::Complete;
 
 #********************************************************************#
 #                                                                    #
@@ -403,8 +404,8 @@ sub execute_simple_command{
         my $answer = "";
         system("cp -p /etc/odapw{,.bak}");
         if ( -e $odapw_file ){
-            my $msg = "Note: OSCAR create a random password for your convenience\n"
-                   . "Do you want to use your own password (y/n)? ";
+            my $msg = "Note: OSCAR creates a random password for your convenience\n"
+                   . "Do you want to make your own password (y/n)? ";
             $answer = check_yes_or_no($msg);
             if($answer eq "Y"){
                 print "\nEnter a new password: ";
@@ -600,7 +601,8 @@ else {
     my $partial_interactive_line = "";
     my $interactive_line;
     my $last_status = 0;
-    while ( defined ( $interactive_line = <STDIN> ) ) {
+    $interactive_line = Complete('', \@simple_commands);
+    while ( defined ( $interactive_line ) ) {
         if ( $partial_interactive_line ne "" ) {
             $interactive_line = $partial_interactive_line . $interactive_line;
             $partial_interactive_line = "";
@@ -642,6 +644,7 @@ else {
             }
             print "oda> ";
         }
+        $interactive_line = Complete('', \@simple_commands);
     }
     print "\n";
     if ( $partial_interactive_line ne "" ) {
