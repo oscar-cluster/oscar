@@ -162,7 +162,7 @@ sub progress
 	
 	#Insert code for progress bar
 	#This is a temp fix
-	print "$value % [";
+	print "\n$value % [";
 	for(my $i = 0; $i < $value/10; $i++)
 	{
 		print "=";
