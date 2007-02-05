@@ -258,7 +258,7 @@ if [ -n "$BUILD_BASE" ]; then
     find dist -type f -print >> $filelist
     find doc -type f -print | egrep -v '.png$' >> $filelist
     find images -type f -print | egrep -v '.gif$' >> $filelist
-    find lib -type f -print >> $filelist
+    find lib -type f -o -type l -print >> $filelist
     find oscarsamples -type f -print >> $filelist
     find packages -type f -print | egrep -v '.rpm$' >> $filelist
     find scripts -type f -print >> $filelist
