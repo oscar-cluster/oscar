@@ -284,29 +284,35 @@ sub execute_simple_command{
             }
         }
     }elsif ( $command eq "list_fields" ){
-        if ( ! @arguments ) {
-            push @error_strings,
-            "Missing table name for $command";
-        } else {
-            my $status = exist_oscar_database( $options_ref,
-                                       \@error_strings );
-            if( $status ){
-                my $table_name = shift @arguments;
-                if ( @arguments ) {
-                    push @error_strings,
-                    "No other arguments besides table name allowed with $command";
-                } else {
-                    my %fields;
-                    $success = oda::list_fields( $options_ref,
-                                $table_name,
-                                \%fields,
-                                @error_strings );
-                    @result_strings = sort keys %fields if $success;
-                }
-            }else{
-                print "The OSCAR database does not exist\n";
-                print "Please restore a dump file or create a new oscar database\n";
+        my $status = exist_oscar_database( $options_ref,
+                                   \@error_strings );
+        if( $status ){
+            if ( ! @arguments ) {
+                print "Warning: Missing table name for $command!!!\n";
+                print "Here is the list of the OSCAR tables:\n";
+                print "====================================\n";
+                my @cmd_args = ("list_tables");
+                my @tables = execute_simple_command(\%options,\@cmd_args);
+                print "====================================\n";
+                print "Please enter a table name for $command: ";
+                my $interactive_fields = Complete('', \@tables);
+                push @arguments, $interactive_fields;
             }
+            my $table_name = shift @arguments;
+            if ( @arguments ) {
+                push @error_strings,
+                "No other arguments besides table name allowed with $command";
+            } else {
+                my %fields;
+                $success = oda::list_fields( $options_ref,
+                            $table_name,
+                            \%fields,
+                            @error_strings );
+                @result_strings = sort keys %fields if $success;
+            }
+        }else{
+            print "The OSCAR database does not exist\n";
+            print "Please restore a dump file or create a new oscar database\n";
         }
     }elsif ( $command eq "dump" ){
         my $dump_file = "";
@@ -374,7 +380,7 @@ sub execute_simple_command{
             DO_RESTORE:
             my $sh_cmd = 
                 "mysql -u oscar -p$$options_ref{password} oscar < $DUMP_DIR/$dump_file";
-            if (-e "$DUMP_DIR/$dump_file"){
+            if ( $dump_file ne "" && -e "$DUMP_DIR/$dump_file"){
                 my $status = exist_oscar_database( $options_ref,
                                            \@error_strings );
                 my $answer = "Y";
