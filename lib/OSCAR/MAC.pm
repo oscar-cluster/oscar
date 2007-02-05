@@ -131,9 +131,9 @@ sub __setup_dhcpd {
 
     my $dhcpd_leases = "/var/lib/dhcp/dhcpd.leases";
 
-    # Fedora Core 5's dhcpd.leases file is located in a slightly different
+    # Fedora Core 5+'s dhcpd.leases file is located in a slightly different
     # directory
-    if ( ($os->{'distro'} eq "fedora") && ($os->{'distro_version'} == "5") ) {
+    if ( ($os->{'distro'} eq "fedora") && ($os->{'distro_version'} >= "5") ) {
         $dhcpd_leases = "/var/lib/dhcpd/dhcpd.leases";
     }
 
