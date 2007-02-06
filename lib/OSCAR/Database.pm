@@ -38,18 +38,6 @@ package OSCAR::Database;
 # its subroutines as if they are defined by importing Database.pm
 
 
-# Most frequently used internal subroutines
-# - do_select
-# - do_update
-# - do_insert
-
-
-# Frequently used External subroutines
-# - insert_into_table
-# - delete_table
-# - update_table
-# - select_table
-
 ####  OSCAR TABLES  ####
 #
 # Clusters
@@ -81,6 +69,7 @@ use Carp;
 use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
 use OSCAR::PackagePath;
+use OSCAR::Database_generic;
 use OSCAR::oda;
 
 # oda may or may not be installed and initialized
@@ -109,18 +98,12 @@ $options{debug} = 1
               database_read_table_fields 
               database_return_list
               database_rpmlist_for_package_and_group 
-              create_table
-              insert_into_table
-              update_table
-              select_table
-              delete_table
 
               delete_package
               delete_node
               delete_group_packages
               delete_groups
               del_pkgconfig_vars
-              do_select
               get_client_nodes
               get_client_nodes_info
               get_cluster_info_with_name
@@ -135,6 +118,7 @@ $options{debug} = 1
               get_networks
               get_nics_info_with_node
               get_nics_with_name_node
+              get_nodes
               get_node_info_with_name
               get_node_package_status_with_group_node
               get_node_package_status_with_node
@@ -284,219 +268,6 @@ sub database_disconnect {
 
     return 1;
 }
-
-######################################################################
-#
-#           Most frequently used
-#       Internal database subroutines
-#
-######################################################################
-
-######################################################
-# Three main query subroutines
-#
-#   - do_select
-#   - do_insert
-#   - do_update
-#
-# These subroutines directly call the oda query command
-# if query succeeds, return 1. Otherwise, return 0
-########################################################## 
-
-sub do_select {
-    my ($sql,
-        $result_ref,
-        $options_ref,
-        $error_strings_ref) = @_;
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_select SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug} || $$options_ref{verbose};
-    push @$error_strings_ref, $debug_msg;
-
-    my $error_msg = "Failed to query for << $sql >>";
-    push @$error_strings_ref, $error_msg;
-    my $success = oda::do_query($options_ref,
-            $sql,
-            $result_ref,
-            $error_strings_ref);
-    
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-sub do_insert {
-    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_insert SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "INSERT Table into $table",
-            "Failed to insert values into $table table",
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}            
-
-sub do_update {
-    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_update SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "UDATE Table $table",
-            "Failed to update $table table",
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}            
-
-######################################################################
-#
-#           Most frequently used 
-#       External database subroutines
-#
-######################################################################
-
-
-sub insert_into_table {
-    my ($options_ref,$table,$field_value_ref,$error_strings_ref) = @_;
-    my $sql = "INSERT INTO $table ( ";
-    my $sql_values = " VALUES ( ";
-    
-    my $flag = 0;
-    my $comma = "";
-    while ( my($field, $value) = each %$field_value_ref ){
-        $comma = ", " if $flag;
-        $sql .= "$comma $field";
-        $flag = 1;
-        $value = ($value eq "NOW()"?$value:"'$value'");
-        $sql_values .= "$comma $value";
-    }    
-    $sql .= ") $sql_values )";
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::insert_into_table SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $error_msg = "Failed to insert values to $table table";
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "Insert Table $table",
-            $error_msg,
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-sub delete_table {
-    my ($options_ref,$table,$where,$error_strings_ref) = @_;
-    my $sql = "DELETE FROM $table ";
-    $where = $where?$where:"";
-    $sql .= " $where ";
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::delete_table SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $error_msg = "Failed to delete values from $table table";
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "DELETE Table $table",
-            $error_msg,
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-
-
-sub update_table {
-    my ($options_ref,$table,$field_value_ref,$where,$error_strings_ref) = @_;
-    my $sql = "UPDATE $table SET ";
-    my $flag = 0;
-    my $comma = "";
-    while ( my($field, $value) = each %$field_value_ref ){
-        $comma = ", " if $flag;
-        $value = ($value eq "NOW()"?$value:"'$value'");
-        $sql .= "$comma $field=$value";
-        $flag = 1;
-    }
-    $where = $where?$where:"";
-    $sql .= " $where ";
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::update_table SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-    my $error_msg = "Failed to update values to $table table";
-    my $success = oda::do_sql_command($options_ref,
-            $sql,
-            "UPDATE Table $table",
-            $error_msg,
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-sub select_table {
-    my ($options_ref,$table,$field_ref,$where,$result,$error_strings_ref) = @_;
-    my $sql = "SELECT ";
-    my $flag = 0;
-    my $comma = "";
-    foreach my $field (@$field_ref){
-        $comma = ", " if $flag;
-        $sql .= "$comma $field";
-        $flag = 1;
-    }
-    $where = $where?$where:"";
-    if(ref($where) eq "HASH"){
-        $flag = 0;
-        my $and = "";
-        my $where_str = " WHERE ";
-        while (my ($key, $value) = each %$where){
-            $and = "AND " if $flag;
-            $where_str .= "$and $key='$value' ";
-            $flag = 1;
-        }
-        $where = $where_str;
-    }
-    $sql .= " FROM $table $where ";
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::select_table SQL : $sql\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $error_msg = "Failed to query values from $table table";
-    push @$error_strings_ref, $error_msg;
-    my $success = oda::do_query($options_ref,
-            $sql,
-            $result,
-            $error_strings_ref);
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}
-
-sub create_table {
-     my ($options_ref, $error_strings_ref) = @_;
-        
-    my $sql_dir = "$ENV{OSCAR_HOME}/packages/oda/scripts";
-    my $sql_file = "$sql_dir/oscar_table.sql";
-    
-    print "DB_DEBUG>$0:\n====> in Database::create_table uses the SQL statement which are already defined at $sql_file" if $$options_ref{verbose};
-    my $cmd = "mysql -u $$options_ref{user} -p$$options_ref{password} oscar < $sql_file";
-
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::create_table runs the command : $cmd\n";
-    print "$debug_msg" if $$options_ref{debug};
-    push @$error_strings_ref, $debug_msg;
-
-    my $success = oda::do_shell_command($options_ref, "$cmd", $error_strings_ref);
-
-    $error_strings_ref = \@error_strings;
-    return  $success;
-}    
-
 
 
 

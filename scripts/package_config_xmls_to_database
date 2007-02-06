@@ -19,7 +19,7 @@
 #                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 # Copyright 2004 Revolution Linux
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
-# Copyright (c) 2005-2006 The Trustees of Indiana University.  
+# Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                    All rights reserved.
 # Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>.
 #                    All rights reserved.
@@ -67,6 +67,7 @@ use Data::Dumper;
 use XML::Simple;
 use OSCAR::Distro;
 use OSCAR::Database;
+use OSCAR::Database_generic;
 use OSCAR::oda;
 use OSCAR::OCA::OS_Detect;
 use Carp;

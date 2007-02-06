@@ -5,7 +5,7 @@
 # Copyright 2004 Revolution Linux
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
 # Copyright (C) 2005, 2006 Bernard Li <bli@bcgsc.ca>. All Rights Reserved. 
-# Copyright (c) 2005-2006 The Trustees of Indiana University.  
+# Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                    All rights reserved.
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved
@@ -40,6 +40,7 @@ use Getopt::Long;
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
+use OSCAR::Database_generic;
 use OSCAR::Package;
 use OSCAR::PackagePath;
 use POSIX;
