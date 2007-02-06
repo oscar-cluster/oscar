@@ -188,11 +188,13 @@ my $ip_assignment_method = "static";
 my $post_install = "reboot";
 my $no_listing = 0;
 my $autodetect_disks = 1;
+my $overrides = "$image,";
 SystemImager::Server->create_autoinstall_script(
         $script_name,
         $autoinstall_script_dir,
         $config_dir,
         $image,
+        $overrides,
         $imagedir,
         $ip_assignment_method,
         $post_install,
