@@ -1020,4 +1020,26 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 #unlock(\%options, \@error_strings);
 
 # done
+
+sub database_find_node_name {
+    
+    # find the hostname of this machine
+    my $hostname = `hostname 2>/dev/null`;
+    chomp $hostname;
+    my @hostname_fields = split( ' ', $hostname );
+    die "hostname is not properly setup on this machine"
+        if ( scalar @hostname_fields != 1 ); 
+
+    my @nodes = ();
+    my $success = get_nodes(\@nodes, \%options, \@error_strings);
+    my $node = "";
+    foreach my $node_ref (@nodes){
+        if ($hostname == $$node_ref{hostname}){
+            $node =  $$node_ref{name};
+            last;
+        }
+    }
+    return $node;
+}
+
 exit $exit_status;

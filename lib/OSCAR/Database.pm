@@ -17,7 +17,7 @@ package OSCAR::Database;
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 #
-# Copyright (c) 2005-2006 The Trustees of Indiana University.  
+# Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
 # Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
@@ -50,6 +50,30 @@ package OSCAR::Database;
 # - update_table
 # - select_table
 
+####  OSCAR TABLES  ####
+#
+# Clusters
+# Groups
+# Status
+# Packages
+# Images
+# Nodes
+# OscarFileServer
+# Networks
+# Nics
+# Packages_rpmlists
+# Packages_servicelists
+# Packages_switcher
+# Packages_conflicts
+# Packages_requires
+# Packages_provides
+# Packages_config
+# Node_Package_Status
+# Group_Nodes
+# Group_Packages
+# Image_Package_Status
+#
+########################
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/perl5/site_perl";
@@ -1521,12 +1545,12 @@ sub get_client_nodes {
     return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
 
-sub get_node_info {
+sub get_nodes {
     my ($results_ref,
         $options_ref,
         $error_strings_ref) = @_;
     my $sql = "SELECT * FROM Nodes";
-    print "DB_DEBUG>$0:\n====> in Database::get_node_info SQL : $sql\n" if $$options_ref{debug};
+    print "DB_DEBUG>$0:\n====> in Database::get_nodes SQL : $sql\n" if $$options_ref{debug};
     return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
 
@@ -1540,17 +1564,6 @@ sub get_client_nodes_info {
     return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
 }
 
-sub get_nodes {
-    my ($options_ref,
-        $error_strings_ref) = @_;
-    my @results = ();
-    get_node_info(\@results,$options_ref, $error_strings_ref);
-    my @list_of_nodes = ();
-    foreach my $results_ref (@results){
-        push @list_of_nodes, $$results_ref{name};
-    }
-    return @list_of_nodes;
-}
 
 sub get_networks {
     my ($results,
