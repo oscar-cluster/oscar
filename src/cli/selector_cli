@@ -17,6 +17,7 @@ use OSCAR::Database;
 use Qt::SelectorUtils;
 use Qt::SelectorTable;
 use Getopt::Long;
+use Term::Complete;
 
 # Command line arguement variables
 my $file = '';
@@ -112,14 +113,17 @@ print LOG "#####################################################################
           "#        class, and version number\n" .
           "#file <filename> - Reads in commands from a file\n" .
           "#help - Prints this message\n" .
-          "#quit/exit - Quits the selector\n" .
+          "#quit/exit - Quits the selector and continue with the next step\n" .
+          "#\\q - Force quit (as in ctrl-c)\n" .
           "################################################################################\n";
 my $continue = 1;
+my @completion_list = qw ( select unselect list file help quit exit );
+my $prompt = "\nselector> ";
+
 while($continue)
 {
-    print "selector>  ";
-    my $response = <STDIN>;
-    print LOG $response;
+    my $response = Complete($prompt, @completion_list);
+    print LOG "$response\n";
     chomp $response;
     $continue = processInput($response);
 }
@@ -426,6 +430,10 @@ sub processInput
         }
         exit 0;
     }
+    elsif ( $command eq "\\q" ) {
+        print "Force quit\n";
+        exit 1;
+    }
     #Default response is to print out the list of commands and their use
     else
     {
@@ -436,7 +444,8 @@ unselect <packageName> - Unselect a package to prevent it from being installed
 list <class> - Lists the packages and their installation status, class, and version number
 file <filename> - Reads in commands from a file
 help - Prints this message
-quit/exit - Quits the selector\n";
+quit/exit - Quits the selector and continue with the next step
+\\q - Force quit (as in ctrl-c)\n";
     }
 
     return 1;
