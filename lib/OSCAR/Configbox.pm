@@ -17,6 +17,8 @@ package OSCAR::Configbox;
 #
 # Copyright (c) 2002 National Center for Supercomputing Applications (NCSA)
 #                    All rights reserved.
+# Copyright (c) 2007 The Trustees of Indiana University.  
+#                    All rights reserved.
 #
 # Written by Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
 #
@@ -39,6 +41,7 @@ no warnings qw(closure);
 use OSCAR::Tk;
 use File::Basename;
 use OSCAR::Database;
+use OSCAR::Database_generic;
 
 my($top);            # The Toplevel widget for the config box.
 my($web);            # The Tk::Web widget for displaying HTML file.
