@@ -18,8 +18,7 @@
 # Integrate an image into the HPCL/OSCAR/SIS database
 #
 # (c) Erich Focht, NEC HPCE, Stuttgart, 21.01.2004
-#
-# TODO: Add info to Images table in ODA
+
 
 use lib "/usr/lib/systeminstaller", "/usr/lib/systemimager/perl";
 use SIS::DB;
@@ -68,16 +67,16 @@ if ($image && $imagedir) {
     croak("\nERROR: You must supply only one of image name or path!\n");
 }
 
-if ($imagedir) {
-    if (-d $imagedir) {
-	$imagedir =~ s/\/$//g;
-	$image = basename($imagedir);
-    } else {
-	croak("ERROR: Image path $imagedir is not a directory!");
-    }
-} else {
+if (!$imagedir) {
     # image name must exist here!
     $imagedir = "$default_image_dir/$image";
+}
+
+if (-d $imagedir) {
+    $imagedir =~ s/\/$//g;
+    $image = basename($imagedir);
+} else {
+    croak("ERROR: Image path $imagedir is not a directory!");
 }
 
 # be sure $image doesn't start with a hyphen
