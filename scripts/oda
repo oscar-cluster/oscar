@@ -125,6 +125,11 @@ sub separate_command_arguments {
 sub exist_oscar_database {
     my ( $options_ref,
      $error_strings_ref ) = @_;
+
+    chomp(my $pw =  `cat /etc/odapw`);
+    return 1 if ($pw && $$options_ref{password} eq $pw);
+
+
     my %databases = ();
     my $status = oda::list_databases( $options_ref,
                        \%databases,
