@@ -396,10 +396,12 @@ sub execute_simple_command{
             my $sh_cmd = 
                 "mysql -u oscar -p$$options_ref{password} oscar < $DUMP_DIR/$dump_file";
             if ( $dump_file ne "" && -e "$DUMP_DIR/$dump_file"){
-                my $status = exist_oscar_database( $options_ref,
-                                           \@error_strings );
+                my %databases;
+                $success = oda::list_databases( $options_ref,
+                               \%databases,
+                               \@error_strings );
                 my $answer = "Y";
-                if( $status ){
+                if( $databases{oscar} ){
                     print "The database($$options_ref{database}) already exist!!!\n";
                     print "For the clean restore, please remove the database($$options_ref{database}) or recreate it\n";
                     my $msg = "Do you want to proceed (y/n)? ";
