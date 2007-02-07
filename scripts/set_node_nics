@@ -627,9 +627,6 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
 oda::print_hash( "", "$0: ifconfig surmised networks", \%surmised_networks )
     if $options{debug};
 
-# connect to the database
-database_connect() ||
-die "$0: cannot connect to oda database";
 
 # START LOCKING FOR NEST && open the database
 my @tables =("Clusters","Nics", "Networks",
