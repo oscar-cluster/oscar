@@ -508,7 +508,13 @@ if ( (scalar keys %table_fields_hash) == 0 ){
 }    
 
 
-my @packages_in_db = get_packages(\%options,\@error_strings);
+my @packages_in_db = ();
+my @opkgs = ();
+get_packages(\@opkgs,\%options,\@error_strings);
+foreach my $opkg_ref (@opkgs){
+    push @packages_in_db, $$opkg_ref{package};
+}
+
 my %opkg_to_be_deleted = ();
 foreach my $key_package (@packages_in_db){
     $opkg_to_be_deleted{$key_package} = 1;

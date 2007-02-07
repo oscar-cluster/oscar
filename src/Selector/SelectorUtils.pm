@@ -97,11 +97,16 @@ simply call this subroutine again.
 #########################################################################
 
   # Clear out the global $allPackages hash reference
-  $allPackages = "";
+  my %opkgs = ();
+  $allPackages = \%opkgs;
   $allPackagesReadIn = 1;
 
   # First, get information on all packages in the oda database
-  $allPackages = OSCAR::Database::database_read_table_fields("packages");
+  my @packages = ();
+  OSCAR::Database::get_packages(\@packages);
+  foreach my $package_ref (@packages){
+    $opkgs{$$package_ref{package}} = $package_ref;
+  }
 
   my $version;
   my $href;
