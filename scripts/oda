@@ -291,11 +291,21 @@ sub execute_simple_command{
                 print "Warning: Missing table name for $command!!!\n";
                 print "Here is the list of the OSCAR tables:\n";
                 print "====================================\n";
-                my @cmd_args = ("list_tables");
-                my @tables = execute_simple_command(\%options,\@cmd_args);
+                my @tables = ();
+                my $all_table_names_ref = oda::list_tables( $options_ref,
+                                   \@error_strings );
+                @tables = sort keys %$all_table_names_ref
+                    if ( defined $all_table_names_ref );
+                foreach my $table (@tables){
+                    print "$table\n";
+                }
                 print "====================================\n";
-                print "Please enter a table name for $command: ";
-                my $interactive_fields = Complete('', \@tables);
+                my $interactive_fields = "";
+                while( !$$all_table_names_ref{$interactive_fields} ){
+                    print "Please enter a table name for $command: ";
+                    $interactive_fields = Complete('', \@tables);
+                    chomp($interactive_fields);
+                }
                 push @arguments, $interactive_fields;
             }
             my $table_name = shift @arguments;
