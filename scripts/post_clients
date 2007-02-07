@@ -14,13 +14,13 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   This script is designed to be run after the image is built.
+#   This script is designed to be run after clients are defined for an image.
 #   It will do all the fixups required.
 #
 #   Copyright (c) 2005 The Trustees of Indiana University.  
 #                      All rights reserved.
-#   Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>
-#                      All rights reserved.
+#   Copyright (c) 2005, 2007 Bernard Li <bernard@vanhpc.org>
+#                            All rights reserved.
 
 # $Id$
 
@@ -34,11 +34,15 @@ use SIS::Image;
 use SIS::DB;
 use OSCAR::Package;
 use OSCAR::Database;
+use OSCAR::MAC qw(sortclients);
 use Data::Dumper;
 
-!system("./allow_client_access") or croak("Couldn't run client access program");
+# [BL] 02.06.07 No system should need this - every distro we support should use
+# iptables (not ipchains)
+#!system("./allow_client_access") or croak("Couldn't run client access program");
 
 push_hosts() or croak("Couldn't push hosts file to images");
+populate_known_hosts() or croak ("Could not populate known_hosts file");
 
 # This guarantees that post_clients is run for core packages first
 # Eg. SIS post_clients need to be executed before SGE or else compute node's hostnames
@@ -73,3 +77,31 @@ sub push_hosts {
     return 1;
 }
 
+# Populate root's known_hosts file with client entries - each client should have the
+# same host_key as the headnode.
+# This will be handy if we would like to enhance security for the cluster by not
+# enabling StrictHostKeyChecking for ssh client.
+sub populate_known_hosts {
+    my $known_hosts = "/root/.ssh/known_hosts";
+    my $host_key = "/etc/ssh/ssh_host_rsa_key.pub";
+    my @sis_clients = sortclients list_client();
+    my $iface = "eth0";
+  
+    if ( ! -f $known_hosts ) {
+        !system("touch $known_hosts") or carp "Could not touch $known_hosts";
+    }
+
+    print "Populating $known_hosts with defined clients' host keys\n"; 
+    foreach my $client ( @sis_clients ) {
+        my $nodename = $client->name();
+        my $adapter = list_adapter(client=>$nodename, devname=>"$iface");
+        my $ip = $adapter->ip;
+        `grep $nodename $known_hosts`;
+        if ( $? ) {
+            my $entry = "$nodename,$ip ";
+            `echo -n "$entry" >> $known_hosts`;
+            `cat $host_key >> $known_hosts`;
+        }
+    }
+    return 1;
+} # populate_known_hosts
