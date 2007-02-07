@@ -18,7 +18,8 @@
 # Integrate an image into the HPCL/OSCAR/SIS database
 #
 # (c) Erich Focht, NEC HPCE, Stuttgart, 21.01.2004
-
+#
+# TODO: Add info to Images table in ODA
 
 use lib "/usr/lib/systeminstaller", "/usr/lib/systemimager/perl";
 use SIS::DB;
