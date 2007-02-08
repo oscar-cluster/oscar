@@ -61,6 +61,7 @@ my %options = ( 'debug'        => 0,
                 'verbose'      => 0 );
 
 my $DUMP_DIR = "$ENV{OSCAR_HOME}/tmp/oda_dump";
+my $ODAPW = "/etc/odapw";
 
 
 #=============================================================
@@ -125,11 +126,6 @@ sub separate_command_arguments {
 sub exist_oscar_database {
     my ( $options_ref,
      $error_strings_ref ) = @_;
-
-    chomp(my $pw =  `cat /etc/odapw`);
-    return 1 if ($pw && $$options_ref{password} eq $pw);
-
-
     my %databases = ();
     my $status = oda::list_databases( $options_ref,
                        \%databases,
@@ -238,10 +234,10 @@ sub execute_simple_command{
                     print "The database($$options_ref{database}) already exist!!!\n";
                     print "You can not create a database with the same name($$options_ref{database})\n";
             }else{
-                oda::oda_disconnect( $options_ref );
+                #oda::oda_disconnect( $options_ref );
                 $success = oda::create_database( $options_ref,
                                    \@error_strings );
-                oda::oda_disconnect( $options_ref );
+                #oda::oda_disconnect( $options_ref );
             }
         }
     }elsif ( $command eq "drop_database" ){
@@ -251,12 +247,12 @@ sub execute_simple_command{
         } else {
             my $status = exist_oscar_database( $options_ref,
                                        \@error_strings );
-            print "Warning: once your oscar database is dropped, you will get out of this console\n";
-            print "Warning: ODA will be ready to create a new oscar database\n";
-
-            my $msg = "Do you really  want to drop your database(oscar) (y/n)? ";
-            my $answer = check_yes_or_no($msg);
             if( $status ){
+                print "Warning: once your oscar database is dropped, you will get out of this console\n";
+                print "Warning: ODA will be ready to create a new oscar database\n";
+
+                my $msg = "Do you really  want to drop your database(oscar) (y/n)? ";
+                my $answer = check_yes_or_no($msg);
                 if ( $answer eq "Y" ){
                     oda::oda_disconnect( $options_ref );
                     $success = oda::drop_database( $options_ref,
@@ -396,12 +392,10 @@ sub execute_simple_command{
             my $sh_cmd = 
                 "mysql -u oscar -p$$options_ref{password} oscar < $DUMP_DIR/$dump_file";
             if ( $dump_file ne "" && -e "$DUMP_DIR/$dump_file"){
-                my %databases;
-                $success = oda::list_databases( $options_ref,
-                               \%databases,
-                               \@error_strings );
+                my $status = exist_oscar_database( $options_ref,
+                                           \@error_strings );
                 my $answer = "Y";
-                if( $databases{oscar} ){
+                if( $status ){
                     print "The database($$options_ref{database}) already exist!!!\n";
                     print "For the clean restore, please remove the database($$options_ref{database}) or recreate it\n";
                     my $msg = "Do you want to proceed (y/n)? ";
@@ -422,7 +416,7 @@ sub execute_simple_command{
             }
         }
     }elsif ( $command eq "reset_password" ){
-        my $odapw_file = "/etc/odapw";
+        my $odapw_file = "$ODAPW";
         my $odapw_script = "$ENV{OSCAR_HOME}/scripts/make_database_password";
         my $answer = "";
         system("cp -p /etc/odapw{,.bak}");
@@ -448,7 +442,7 @@ sub execute_simple_command{
                     $b .= $a;
                     syswrite STDOUT, "*", 1; # print asterisk
                 }
-                open PW, "> /etc/odapw";
+                open PW, "> $ODAPW";
                 print PW "$b\n";
                 close PW;
 
@@ -465,13 +459,13 @@ sub execute_simple_command{
             if ($answer eq "Y"){
                 my $status = 
                     oda::reset_password($options_ref, \@error_strings);
-                unlink "/etc/odapw.bak";
+                unlink "$ODAPW.bak";
 
                 # We need to disconnect database to flush the password
                 # information
                 oda::oda_disconnect( $options_ref );
             }else{
-                rename "/etc/odapw.bak", "/etc/odapw";
+                rename "$ODAPW.bak", "$ODAPW";
             }
         }
     }
