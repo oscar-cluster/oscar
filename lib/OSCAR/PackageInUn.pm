@@ -18,7 +18,7 @@ package OSCAR::PackageInUn;
 #
 # Copyright (c) 2003 Oak Ridge National Laboratory.
 #                    All rights reserved.
-# Copyright (c) 2005-2006 The Trustees of Indiana University.  
+# Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                    All rights reserved.
 
 use strict;
@@ -1033,7 +1033,9 @@ sub get_rpm_list
 	my @tftprpmlist;
 
 	my $package_dir = OSCAR::Package::getOdaPackageDir($package_name);
-	@rpm_list_database = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, $type, 1);
+    my %sel = ( "group" => $type );
+	@rpm_list_database =
+        OSCAR::Database::pkgs_of_opkg($package_name,"",\@error_list, %sel);
 
 	$cmd_string = "$package_dir/RPMS/";
 	if (-d $cmd_string)
@@ -1068,7 +1070,9 @@ sub get_rpm_list
 	{
 		#add logic here to deal with the null case
 		print "Warning: No rpms listed for $type in database.\n";
-		@rpm_list_database = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, "both", 1);
+        my %sel = ( "group" => "all" );
+        @rpm_list_database =
+            OSCAR::Database::pkgs_of_opkg($package_name,"",\@error_list, %sel);
 		if (scalar(@rpm_list_database) == 0)
 		{
 			print "Warning: No rpms listed for both in database.\n";
@@ -1366,7 +1370,9 @@ sub uninstall_rpms_patch
 	my $retval = 0;
 	my @rslts;
 	
-	@rpm_list = OSCAR::Database::database_rpmlist_for_package_and_group($package_name, "", $type);
+    my %sel = ( "group" => $type );
+	@rpm_list =
+        OSCAR::Database::pkgs_of_opkg($package_name,"",\@error_list, %sel);
 
 	if ($type =~ "oscar_client")
 	{
