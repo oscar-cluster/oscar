@@ -3,8 +3,8 @@ package OSCAR::CLI_MAC;
 # Copyright (c) 2004    The Board of Trustees of the University of Illinois.
 #                       All rights reserved.
 #           Jason Brechin <brechin@ncsa.uiuc.edu>
-# Copyright (C) 2006,2007 Bernard Li <bernard@vanhpc.org>
-#                    All rights reserved.
+# Copyright (c) 2006, 2007 Bernard Li <bernard@vanhpc.org>
+#                          All rights reserved.
 # Copyright (C) 2006    Oak Ridge National Laboratory
 #                       Geoffroy Vallee <valleegr@ornl.gov>
 #
@@ -22,7 +22,7 @@ package OSCAR::CLI_MAC;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# Description: this is the GUI code for network stuff, especially stuff
+# Description: this is the CLI code for setup networking, especially
 # related to MAC addresses. The library code is in lib/OSCAR/MAC.pm
 
 use strict;
@@ -173,7 +173,7 @@ log for writing.\n";}
         }
 
         chomp $response;
-        if($response == 1) {
+        if($response eq "1") {
             my $result = 0;
             while (!$result) {
                 if(!$auto) {
@@ -196,24 +196,24 @@ log for writing.\n";}
                     next;
                 }
                 $result = load_from_file($response);
-                assign_macs_cli();
+                assign_macs_cli($dyndhcp);
             }
         }
-        elsif($response == 2) {
+        elsif($response eq "2") {
             delete_macs_cli();
         }
-        elsif($response == 3) {
+        elsif($response eq "3") {
             $install_mode = cli_installmode();
             oscar_log_subsection("Install mode: $install_mode");
         }
-        elsif($response == 4) {
+        elsif($response eq "4") {
             __enable_install_mode();
             $dhcpbtn = 1;
         }
-        elsif($response == 5) {
+        elsif($response eq "5") {
             $dyndhcp = ++$dyndhcp%2; #Jump between 1 and 0
         }
-        elsif($response == 6) {
+        elsif($response eq "6") {
             if($dhcpbtn) {
                 __setup_dhcpd($$vars{interface});
             }
@@ -221,17 +221,17 @@ log for writing.\n";}
                 print "Need to Enable Install Mode first\n";
             }
         }
-        elsif($response == 7) {
+        elsif($response eq "7") {
             $uyok = ++$uyok%2; #Jump between 1 and 0
          }
-        elsif($response == 8) {
+        elsif($response eq "8") {
             my ($ip, $broadcast, $netmask) = interface2ip($$vars{interface});
             __build_autoinstall_cd($ip);
         }
-        elsif($response == 9) {
+        elsif($response eq "9") {
             __run_setup_pxe($uyok);
         }
-        elsif($response == 10) {
+        elsif($response eq "10") {
             $done = 1;
             oscar_log_subsection("Step $step_number: Completed successfully");
         }
@@ -247,7 +247,7 @@ log for writing.\n";}
 sub assign_macs_cli {
     my @clients = sortclients list_client();
     our $auto;
-
+    my $dyndhcp = shift;
     my $notdone = 1;
     my $response;
 
@@ -264,10 +264,12 @@ sub assign_macs_cli {
         return;
     }
 
+    LOOP:
     while ($notdone) {
         print "=====MAC Assignment Method=====\n" .
             "1)  Automatically assign MACs\n" .
             "2)  Manually assign MACs\n" .
+            "3)  Return to previous menu\n" .
             ">  " unless ($auto);
         $response = <STDIN> if (!$auto);
         $response = <FILE> if ($auto);
@@ -277,7 +279,7 @@ sub assign_macs_cli {
     my @mac_keys = sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC;
     my $iface = "eth0";
 
-    if ($response == 1) {
+    if ($response eq "1") {
         while (my $mac = shift @mac_keys) {
             foreach my $client (@clients) {
                 my $adapter = list_adapter(client=>$client->name,devname=>"$iface");
@@ -292,7 +294,7 @@ sub assign_macs_cli {
                 }
             }
         }
-    } elsif ($response == 2) {
+    } elsif ($response eq "2") {
         my $quit = 0;
         while (!$quit) {
             my $valid = 0;
@@ -349,7 +351,18 @@ sub assign_macs_cli {
                 }
             }
         }
+    } elsif ($response eq "3") {
+        return 0;
+    } else {
+       goto LOOP;
     }
+
+    # Rebuild dhcpd.conf
+    if ($dyndhcp) {
+      our $vars;
+      __setup_dhcpd($$vars{interface});
+    }
+
 }
 
 sub delete_macs_cli {
