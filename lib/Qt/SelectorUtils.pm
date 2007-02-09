@@ -130,12 +130,15 @@ sub getAllPackages # -> $allPackages
                   );
                   
   my %opkgs = ();
-  my $allPackages_lists = \%opkgs;
+  $allPackages = \%opkgs;
   
   my @packages = ();
   OSCAR::Database::get_packages(\@packages);
-  foreach my $package_ref (@packages){
-    $opkgs{$$package_ref{package}} = $package_ref;
+  foreach my $pack_ref (@packages){
+    my $pack = $$pack_ref{package};
+    foreach my $key (keys %$pack_ref){
+        $allPackages->{$pack}{$key} = $$pack_ref{$key};
+    }    
   }
 
   my $version;
