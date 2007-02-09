@@ -21,7 +21,7 @@
 #
 #  Copyright (c) 2003 The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
-#  Copyright (c) 2005 The Trustees of Indiana University.  
+#  Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                     All rights reserved.
 #
 # $Id$
@@ -129,12 +129,13 @@ sub getAllPackages # -> $allPackages
                    # "filter_distribution_version"
                   );
                   
-  my $allPackages_lists = OSCAR::Database::get_package_info(\%options,\@errors,\@requested);
-  foreach my $pack_ref (@$allPackages_lists){
-    my $pack = $$pack_ref{package};
-    foreach my $key (keys %$pack_ref){
-        $allPackages->{$pack}{$key} = $$pack_ref{$key};
-    }    
+  my %opkgs = ();
+  my $allPackages_lists = \%opkgs;
+  
+  my @packages = ();
+  OSCAR::Database::get_packages(\@packages);
+  foreach my $package_ref (@packages){
+    $opkgs{$$package_ref{package}} = $package_ref;
   }
 
   my $version;
