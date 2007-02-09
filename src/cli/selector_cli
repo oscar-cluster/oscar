@@ -124,7 +124,6 @@ while($continue)
 {
     my $response = Complete($prompt, @completion_list);
     print LOG "$response\n";
-    chomp $response;
     $continue = processInput($response);
 }
 close LOG;
@@ -437,15 +436,17 @@ sub processInput
     #Default response is to print out the list of commands and their use
     else
     {
-        print "select <packageName> - Select a package to be installed
-    -q - Quiet mode:  Don't print out verbose dialog
+        print <<EOF
+select <packageName> - Select a package to be installed
+\t-q - Quiet mode:  Don't print out verbose dialog
 unselect <packageName> - Unselect a package to prevent it from being installed
-    -q - Quiet mode:  Don't print out verbose dialog
+\t-q - Quiet mode:  Don't print out verbose dialog
 list <class> - Lists the packages and their installation status, class, and version number
 file <filename> - Reads in commands from a file
 help - Prints this message
 quit/exit - Quits the selector and continue with the next step
-\\q - Force quit (as in ctrl-c)\n";
+\\q - Force quit (as in ctrl-c)
+EOF
     }
 
     return 1;

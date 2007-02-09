@@ -24,6 +24,8 @@ use OSCAR::CLI_MAC;
 use OSCAR::WizardEnv;
 use Getopt::Long;
 
+$ENV{OSCAR_UI}="cli";
+
 # Need the output immediately
 $| = 1;
 
