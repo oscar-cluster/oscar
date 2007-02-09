@@ -88,16 +88,6 @@ $options{debug} = 1
 
 @EXPORT = qw( database_connect 
               database_disconnect 
-              database_find_node_name
-              database_hostname_to_node_name
-              database_program_variable_get
-              database_program_variables_get
-              database_program_variable_put
-              database_program_variables_put
-              database_read_filtering_information
-              database_read_table_fields 
-              database_return_list
-              database_rpmlist_for_package_and_group 
 
               delete_package
               delete_node
