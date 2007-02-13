@@ -70,6 +70,7 @@ build_rpms () {
 	echo "== Full output of rpmbuild is in the corresponding .err file =="
 	local CMD="mv $TMPO "`basename $SRPM .src.rpm`".err"
 	run_cmd "$CMD"
+	cleanup
 	exit 1
     fi
     for f in `grep ^Wrote: $TMPO | awk '{print $2}'`; do
@@ -158,6 +159,12 @@ archive_type () {
     ARCHIVE_NAME=`basename $name .$ARCHIVE_SUFFIX`
 }
 
+cleanup () {
+    local f
+    for f in $FILES_TO_RM; do
+	rm -rf $f
+    done
+}
 
 #
 # MAIN code
@@ -213,7 +220,36 @@ for PKG in $PKGS; do
 	   if [ ! -z "$SPECF" -a -f "$SPECF" ]; then
 	       build_all $SPECF
 	   else
-	       echo "Could not find a spec file inside $PKG"
+
+	       # now try to copy the directory to a temporary one
+	       # and run autogen.sh
+	       if [ -f $PKG/autogen.sh ]; then
+		   TDIR=`mktemp -d $PKG.XXXXX`
+		   FILES_TO_RM="$FILES_TO_RM $TDIR"
+		   cp -pr $PKG/* $TDIR
+		   cd $TDIR
+		   ./autogen.sh
+		   ./configure
+		   cd ..
+		   SPECF=`ls -1 $TDIR/*.spec | head -1`
+		   if [ ! -z "$SPECF" -a -f "$SPECF" ]; then
+		       build_all $SPECF
+		   fi
+	       elif [ -f $PKG/Makefile.PL ]; then
+		   TDIR=`mktemp -d $PKG.XXXXX`
+		   FILES_TO_RM="$FILES_TO_RM $TDIR"
+		   cp -pr $PKG/* $TDIR
+		   cd $TDIR
+		   perl Makefile.PL
+		   make manifest
+		   SRPM=`make srpm | grep ^Wrote: | awk '{print $2}'`
+		   cd ..
+		   mv $SRPM .
+		   SRPM=`basename $SRPM`
+		   build_rpms $SRPM
+	       else
+		   echo "Could not find a spec file inside $PKG"
+	       fi
 	   fi
        else
 	   echo "Unknown package $PKG !"
@@ -221,6 +257,6 @@ for PKG in $PKGS; do
    fi
 done
 
-for f in $FILES_TO_RM; do
-   rm -rf $f
-done
+cleanup
+exit
+
