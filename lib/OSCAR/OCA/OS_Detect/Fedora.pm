@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2005 The Trustees of Indiana University.  
 #                    All rights reserved.
-# Copyright (c) Bernard Li <bli@bcgsc.ca>
+# Copyright (c) 2006, 2007 Bernard Li <bernard@vanhpc.org>
 # 
 # Copyright (c) Erich Focht <efocht@hpce.nec.com>
 #      - complete rewrite to enable use on top of images
@@ -48,6 +48,8 @@ sub detect_dir {
 
     if ($release_string =~ /Fedora Core release (\d+)/) {
 	$fc_release = $1;
+    } elsif ($release_string =~ /Fedora release (\d+)\.9\d \(Rawhide\)/) { # Fedora Core test releases
+	$fc_release = $1+1;
     } else {
 	return undef;
     }
