@@ -24,6 +24,7 @@ $Id$
   <summary>TORQUE Resource Manager</summary>
   <license>PBS license (see PBS_License.txt)</license>
   <group>Applications/batch</group>
+  <uri>http://www.clusterresources.com/products/torque</uri>
   <packager>
     <name>Bernard Li</name>
     <email>bli@bcgsc.ca</email>
@@ -32,7 +33,6 @@ $Id$
   <description>TORQUE (Tera-scale Open-source Resource and QUEue manager) is a resource manager providing control over batch jobs and distributed compute nodes.  TORQUE is based on OpenPBS version 2.3.12 and incorporates scalability, fault tolerance, and feature extension patches provided by NCSA, OSC, the U.S. Dept of Energy, Sandia, PNNL, U of Buffalo, TeraGrid, and many other leading edge HPC organizations.  This version may be freely modified and redistributed subject to the constraints of the included license.
 </description>
 
-  <uri>http://www.clusterresources.com/products/torque</uri>
   <binary-package-list>
       <pkg>torque</pkg>
       <pkg>torque-mom</pkg>
@@ -49,8 +49,8 @@ $Id$
       <pkg>torque-gui</pkg>
   </binary-package-list>
 
-<conflicts>
-  <name>pbs</name>
-  <type>package</type>
+<conflicts> 
+ <type>package</type>
+ <name>pbs</name>
 </conflicts>
 </oscar>

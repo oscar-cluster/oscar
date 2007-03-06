@@ -45,11 +45,6 @@
 MPI (http://www.mpi-forum.org), the Standard for message-passing
 libraries.</description>
 
-  <binary-package-list>
-    <pkg>mpich-ch_p4-gcc-oscar</pkg>
-    <pkg>mpich-ch_p4-gcc-oscar-module</pkg>
-  </binary-package-list>
-
   <provides>
     <type>package</type>
     <name>mpi</name>
@@ -59,6 +54,11 @@ libraries.</description>
     <type>package</type>
     <name>switcher</name>
   </requires>
+
+  <binary-package-list>
+    <pkg>mpich-ch_p4-gcc-oscar</pkg>
+    <pkg>mpich-ch_p4-gcc-oscar-module</pkg>
+  </binary-package-list>
 
   <binary-package-list>
     <filter>

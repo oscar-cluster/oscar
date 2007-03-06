@@ -31,12 +31,12 @@
   </binary-package-list>  
 
   <conflicts>
-    <name>torque</name>
     <type>package</type>
+    <name>torque</name>
   </conflicts>
 
   <conflicts>
-    <name>maui</name>
     <type>package</type>
+    <name>maui</name>
   </conflicts>
 </oscar>

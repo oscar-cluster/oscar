@@ -34,15 +34,15 @@
   <license>Freely distributable</license>
   <group>Application/Environment</group>
 
-  <packager>
-    <name>Neil Gorsuch</name>
-    <email>ngorsuch@ncsa.uiuc.edu</email>
-  </packager>
-
   <maintainer>
     <name>DongInn Kim</name>
     <email>dikim@osl.iu.edu</email>
   </maintainer>
+
+  <packager>
+    <name>Neil Gorsuch</name>
+    <email>ngorsuch@ncsa.uiuc.edu</email>
+  </packager>
 
   <description>ODA provides a central database for OSCAR.</description>
 </oscar>

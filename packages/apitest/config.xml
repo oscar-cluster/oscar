@@ -21,15 +21,15 @@
 
 	<group>Applications/System</group>
 
-	<packager>
-		<name>William McLendon</name>
-		<email>wcmclen@sandia.gov</email>
-	</packager>
-
 	<maintainer>
 		<name>William McLendon</name>
 		<email>wcmclen@sandia.gov</email>
 	</maintainer>
+
+	<packager>
+		<name>William McLendon</name>
+		<email>wcmclen@sandia.gov</email>
+	</packager>
 
 	<description>A testing framework.</description>
 
