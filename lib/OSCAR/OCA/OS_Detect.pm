@@ -123,7 +123,7 @@ sub detect_arch_file {
     my ($root,$file) = @_;
     my $arch="unknown";
     my $q = `env LC_ALL=C file $root/$file`;
-    if ($q =~ m/executable,\ \S+\ (\S+),\ version/) {
+    if ( ($q =~ m/executable,\ \S+\ (\S+),\ version/) || ($q =~ m/executable,\ (\S+),\ version/) ) {
 	$arch = $1;
 	if ($arch =~ m/386$/) {
 	    $arch = "i386";
