@@ -36,6 +36,7 @@ use Getopt::Long;
 use Pod::Usage;
 use Data::Dumper;
 use Term::Complete;
+use Database_generic;
 
 #********************************************************************#
 #                                                                    #
@@ -127,7 +128,9 @@ sub exist_oscar_database {
     my ( $options_ref,
      $error_strings_ref ) = @_;
     my %databases = ();
-    my $status = oda::list_databases( $options_ref,
+    $$options_ref{user} = "oscar";
+    chomp($$options_ref{password} = `cat /etc/odapw`);
+    oda::list_databases( $options_ref,
                        \%databases,
                        $error_strings_ref );
     my $status = 0;
@@ -460,6 +463,12 @@ sub execute_simple_command{
                 my $status = 
                     oda::reset_password($options_ref, \@error_strings);
                 unlink "$ODAPW.bak";
+
+                # synchronize /etc/odapw across a cluster
+                chomp(my $CPUSH = `which cpush`);
+                if (-e $CPUSH){
+                    system("$CPUSH /etc/odapw");
+                }
 
                 # We need to disconnect database to flush the password
                 # information
