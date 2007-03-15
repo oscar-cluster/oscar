@@ -34,6 +34,9 @@ else {
     	print "  $0 \n";
     	print "  Option PermitRootLogin in /etc/ssh/sshd_config should be \'yes\'\n";
     	print "  Current value is \'$ssh_config\'\n";
+        print "  For users that compiled their own version of ssh, please be sure \
+the configuration file matches the ssh configuration. The configuration file is \
+our only way to check the ssh configuration\n";
     	print " ----------------------------------------------\n";
 
     	$rc = FAILURE;  
