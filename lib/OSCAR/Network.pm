@@ -40,7 +40,7 @@ sub interface2ip {
     my ($ip, $broadcast, $net);
 
     # open pipes are better for controlling output than backticks
-    open(IFCONFIG,"ifconfig $interface |") or (carp("Couldn't run 'ifconfig $interface'"), return undef);
+    open(IFCONFIG,"/sbin/ifconfig $interface |") or (carp("Couldn't run 'ifconfig $interface'"), return undef);
     while(<IFCONFIG>) {
         if(/^.*:($ipregex).*:($ipregex).*:($ipregex)\s*$/o) {
             ($ip, $broadcast, $net) = ($1,$2,$3);

@@ -54,7 +54,7 @@ if (!$interface) {
     $interface = "<none>";
     $return = 1;
 } else {
-    $return = system("ifconfig $interface > /dev/null 2>&1");
+    $return = system("/sbin/ifconfig $interface > /dev/null 2>&1");
 }
 if ($return && !$help) {
     print "The interface $interface specified is invalid.\n";

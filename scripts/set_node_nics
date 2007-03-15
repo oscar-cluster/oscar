@@ -117,7 +117,7 @@ sub find_nics {
 			      ref($print_errors) eq "ARRAY" ) ?
 			      $print_errors : \@error_strings;
 
-    my @ifconfig_output = `ifconfig 2>/dev/null`;
+    my @ifconfig_output = `/sbin/ifconfig 2>/dev/null`;
     if ( ! @ifconfig_output ) {
 	push @$error_strings_ref,
 	"$0: cannot find nics with ifconfig command command";
