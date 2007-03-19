@@ -41,19 +41,21 @@ my $rsync_stub_dir = $config->rsync_stub_dir();
 my $rsyncd_conf = $config->rsyncd_conf();
 my $default_image_dir = $config->default_image_dir();
 my $config_dir = "/etc/systemimager";
+my $post_install;
 
 # be sure program is run by root
 SystemImager::Common->check_if_root();
 
 my ($image, $imagedir, $arch, $disktab, $nokeys, $verb);
 GetOptions(
-	   "help"      => sub { &usage(0); },
-	   "name=s"    => \$image,
-	   "path=s"    => \$imagedir,
-	   "arch=s"    => \$arch,
-	   "disktab=s" => \$disktab,
-	   "nokeys"    => \$nokeys,
-	   "verbose"   => \$verb,
+	   "help"          => sub { &usage(0); },
+	   "name=s"        => \$image,
+	   "path=s"        => \$imagedir,
+	   "arch=s"        => \$arch,
+	   "disktab=s"     => \$disktab,
+	   "nokeys"        => \$nokeys,
+	   "postinstall=s" => \$post_install,
+	   "verbose"       => \$verb,
 	   ) || &usage(1);
 
 # error checking
@@ -185,7 +187,7 @@ my $auto_install_script_conf = "${imagedir}/etc/systemimager/autoinstallscript.c
 SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_conf );
 
 my $ip_assignment_method = "static";
-my $post_install = "reboot";
+$post_install = "reboot" if !($post_install);
 my $no_listing = 0;
 my $autodetect_disks = 1;
 my $overrides = "$image,";
@@ -203,6 +205,7 @@ SystemImager::Server->create_autoinstall_script(
 	$autodetect_disks
 );
 
+print ":> Setting postinstall action to: $post_install\n";
 
 # Add entry to image server's rsyncd.conf if necessary
 print ":> Adding rsync_stub and generating rsyncd.conf for image.\n";
@@ -220,7 +223,7 @@ sub usage {
     my $ret = shift;
     print "Usage:\n";
     print "\t".basename($0)." --name image_name | --path image_path \\\n";
-    print "\t\t[--disktab disktab_file] [--arch ARCH] [--nokeys]\n\n";
+    print "\t\t[--disktab disktab_file] [--arch ARCH] [--nokeys] [--postinstall ACTION]\n\n";
     print "The image should preferably be located inside\n";
     print "/var/lib/systemimager/images.\n";
     print "The default architecture attributed to the image is that of the master node.\n";
@@ -228,7 +231,8 @@ sub usage {
     print "command line option. This generates the /etc/systemimager/autoinstall.conf file\n";
     print "inside the image. It also triggers the generation of the file\n";
     print "/etc/systemconfig/systemconfig.conf\n";
-    print "If you do not want to copy SSH keys from the server to the image, specify --nokeys\n\n";
+    print "If you do not want to copy SSH keys from the server to the image, specify --nokeys\n";
+    print "Specify the postinstall action with --postinstall (one of beep, reboot, shutdown)\n";
+    print "\n";
     exit $ret if ($ret);
 }
-
