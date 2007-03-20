@@ -1,0 +1,20 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml:lang="en">
+  
+  <xsd:simpleType name="Compare">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="equal|greater|less"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  
+  <xsd:complexType name="Package">
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="version" type="xsd:string" use="required"/>
+    <xsd:attribute name="version-compare" type="Compare" use="required"/>
+  </xsd:complexType>
+  
+  <xsd:complexType name="Package-Set">
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="package" type="Package"/>
+  </xsd:complexType>
+  
+</xsd:schema>
