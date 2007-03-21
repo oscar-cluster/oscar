@@ -3,6 +3,7 @@ disable-services
 ganglia
 kernel_picker
 lam
+linux-ha
 loghost
 maui
 mpich
