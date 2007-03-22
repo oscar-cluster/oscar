@@ -40,7 +40,7 @@ use Database_generic;
 
 #********************************************************************#
 #                                                                    #
-# list of built-in commands that can be abbreviated                  #
+# list of simple built-in commands                                   #
 #                                                                    #
 my @simple_commands = ( "dump",                                      #
                         "restore",                                   #
@@ -364,9 +364,6 @@ sub execute_simple_command{
             if(@arguments){
                 push @error_strings,
                 "No other arguments allowed with $command";
-            }elsif( !-e $DUMP_DIR/$dump_file ){
-                push @error_strings,
-                "There is no such a dump file($dump_file) to restore";
             }else{
                 goto DO_RESTORE;
             }
@@ -392,15 +389,21 @@ sub execute_simple_command{
             print "Enter the name of the dump file to restore: ";
             chomp($dump_file = <STDIN>);
             DO_RESTORE:
+            if( -e "$DUMP_DIR/$dump_file" ){
+                $dump_file = "$DUMP_DIR/$dump_file";
+            }
+            die "The dump file($dump_file) does not exist!!!"
+                if ! -e $dump_file;
             my $sh_cmd = 
-                "mysql -u oscar -p$$options_ref{password} oscar < $DUMP_DIR/$dump_file";
-            if ( $dump_file ne "" && -e "$DUMP_DIR/$dump_file"){
+                "mysql -u oscar -p$$options_ref{password} oscar < $dump_file";
+            if ( $dump_file ne "" && -e "$dump_file"){
                 my $status = exist_oscar_database( $options_ref,
                                            \@error_strings );
                 my $answer = "Y";
                 if( $status ){
                     print "The database($$options_ref{database}) already exist!!!\n";
-                    print "For the clean restore, please remove the database($$options_ref{database}) or recreate it\n";
+                    print "If your existing oscar database has any data,your selected dump file will overwrite all the data while restoring.\n";
+                    print "For the clean restore, please remove the database($$options_ref{database}) or recreate an empty oscar database.\n";
                     my $msg = "Do you want to proceed (y/n)? ";
                     $answer = check_yes_or_no($msg);
                 }else{
