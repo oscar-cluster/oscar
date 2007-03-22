@@ -49,7 +49,8 @@ my @simple_commands = ( "dump",                                      #
                         "list_databases",                            #
                         "list_fields",                               #
                         "list_tables",                               #
-                        "reset_password"                             #
+                        "reset_password",                            #
+                        "remove_oda"                                 #
                       );                                             #
 #                                                                    #
 #********************************************************************#
@@ -128,8 +129,6 @@ sub exist_oscar_database {
     my ( $options_ref,
      $error_strings_ref ) = @_;
     my %databases = ();
-    $$options_ref{user} = "oscar";
-    chomp($$options_ref{password} = `cat /etc/odapw`);
     oda::list_databases( $options_ref,
                        \%databases,
                        $error_strings_ref );
@@ -231,16 +230,34 @@ sub execute_simple_command{
             push @error_strings,
             "No other arguments allowed with $command";
         } else {
+            $success = oda::create_database( $options_ref,
+                                             \@error_strings );
+        }
+    }elsif ( $command eq "remove_oda" ){
+        if(@arguments){
+            push @error_strings,
+            "No other arguments allowed with $command";
+        } else {
             my $status = exist_oscar_database( $options_ref,
                                        \@error_strings );
             if( $status ){
-                    print "The database($$options_ref{database}) already exist!!!\n";
-                    print "You can not create a database with the same name($$options_ref{database})\n";
+                print "Warning: This operation removes the $$options_ref{database} database, user, and its all permissions\n";
+                print "Warning: once your oscar database is dropped, you will get out of this console\n";
+                print "Warning: ODA will be ready to create a new oscar database\n";
+
+                my $msg = "Do you really  want to remove oda (y/n)? ";
+                my $answer = check_yes_or_no($msg);
+                if ( $answer eq "Y" ){
+                    oda::oda_disconnect( $options_ref );
+                    $success = oda::drop_database( $options_ref,
+                                       \@error_strings );
+                    rename "$ODAPW", "$ODAPW.bak";
+                    print "DONE!\n";
+                    exit 0;
+                }
             }else{
-                #oda::oda_disconnect( $options_ref );
-                $success = oda::create_database( $options_ref,
-                                   \@error_strings );
-                #oda::oda_disconnect( $options_ref );
+                print "The database($$options_ref{database}) does not exist!!!\n";
+                print "You can not drop a database($$options_ref{database}) not existing\n";
             }
         }
     }elsif ( $command eq "drop_database" ){
@@ -252,14 +269,14 @@ sub execute_simple_command{
                                        \@error_strings );
             if( $status ){
                 print "Warning: once your oscar database is dropped, you will get out of this console\n";
-                print "Warning: ODA will be ready to create a new oscar database\n";
+                print "Warning: ODA will be ready to create a new oscar database\n\n";
 
-                my $msg = "Do you really  want to drop your database(oscar) (y/n)? ";
-                my $answer = check_yes_or_no($msg);
-                if ( $answer eq "Y" ){
-                    oda::oda_disconnect( $options_ref );
-                    $success = oda::drop_database( $options_ref,
-                                       \@error_strings );
+                my $sh_cmd = 
+                    "mysqladmin -u oscar -p$$options_ref{password} drop oscar";
+                $success = oda::do_shell_command( $options_ref,
+                                    $sh_cmd,
+                                   \@error_strings );
+                if($success){
                     print "DONE!\n";
                     exit 0;
                 }
@@ -402,8 +419,7 @@ sub execute_simple_command{
                 my $answer = "Y";
                 if( $status ){
                     print "The database($$options_ref{database}) already exist!!!\n";
-                    print "If your existing oscar database has any data,your selected dump file will overwrite all the data while restoring.\n";
-                    print "For the clean restore, please remove the database($$options_ref{database}) or recreate an empty oscar database.\n";
+                    print "This operation will drop all your old tables on the database($$options_ref{database})\nif they exists and restore your oscar database with the ones from the dump.\n";
                     my $msg = "Do you want to proceed (y/n)? ";
                     $answer = check_yes_or_no($msg);
                 }else{
@@ -425,60 +441,59 @@ sub execute_simple_command{
         my $odapw_file = "$ODAPW";
         my $odapw_script = "$ENV{OSCAR_HOME}/scripts/make_database_password";
         my $answer = "";
+        system("touch $odapw_file") if ! -e $odapw_file;
         system("cp -p /etc/odapw{,.bak}");
-        if ( -e $odapw_file ){
-            my $msg = "Note: OSCAR creates a random password for your convenience\n"
-                   . "Do you want to make your own password (y/n)? ";
-            $answer = check_yes_or_no($msg);
-            if($answer eq "Y"){
-                print "\nEnter a new password: ";
-                # stty plays with the terminal characteristics.
-                # After disabling echo, anything the user types will no
-                # longer show up on screen.
-                # Disabling icanon disables buffering. If buffering is
-                # enabled, you'll get stdin strings only after the user
-                # presses enter.
+        my $msg = "Note: OSCAR creates a random password for your convenience\n"
+               . "Do you want to make your own password (y/n)? ";
+        $answer = check_yes_or_no($msg);
+        if($answer eq "Y"){
+            print "\nEnter a new password: ";
+            # stty plays with the terminal characteristics.
+            # After disabling echo, anything the user types will no
+            # longer show up on screen.
+            # Disabling icanon disables buffering. If buffering is
+            # enabled, you'll get stdin strings only after the user
+            # presses enter.
 
-                system "stty -echo -icanon";
+            system "stty -echo -icanon";
 
-                # use sysread() and syswrite() for unbuffered read/write
-                my $b = "";
-                while (sysread STDIN, $a, 1) {
-                    if (ord($a) < 32) { last; }
-                    $b .= $a;
-                    syswrite STDOUT, "*", 1; # print asterisk
-                }
-                open PW, "> $ODAPW";
-                print PW "$b\n";
-                close PW;
-
-                # Return terminal back to standard mode
-
-                system "stty echo icanon"; 
-            }else{
-                unlink $odapw_file;
-                print "The old password is removed!!!\n";
-                system($odapw_script);
+            # use sysread() and syswrite() for unbuffered read/write
+            my $b = "";
+            while (sysread STDIN, $a, 1) {
+                if (ord($a) < 32) { last; }
+                $b .= $a;
+                syswrite STDOUT, "*", 1; # print asterisk
             }
-            $msg = "Do you really want to reset your ODA password (y/n)? ";
-            $answer = check_yes_or_no($msg);
-            if ($answer eq "Y"){
-                my $status = 
-                    oda::reset_password($options_ref, \@error_strings);
-                unlink "$ODAPW.bak";
+            open PW, "> $ODAPW";
+            print PW "$b\n";
+            close PW;
 
-                # synchronize /etc/odapw across a cluster
-                chomp(my $CPUSH = `which cpush`);
-                if (-e $CPUSH){
-                    system("$CPUSH /etc/odapw");
-                }
+            # Return terminal back to standard mode
 
-                # We need to disconnect database to flush the password
-                # information
-                oda::oda_disconnect( $options_ref );
-            }else{
-                rename "$ODAPW.bak", "$ODAPW";
+            system "stty echo icanon"; 
+        }else{
+            unlink $odapw_file;
+            print "The old password is removed!!!\n";
+            system($odapw_script);
+        }
+        $msg = "Do you really want to reset your ODA password (y/n)? ";
+        $answer = check_yes_or_no($msg);
+        if ($answer eq "Y"){
+            my $status = 
+                oda::reset_password($options_ref, \@error_strings);
+            unlink "$ODAPW.bak";
+
+            # synchronize /etc/odapw across a cluster
+            chomp(my $CPUSH = `which cpush`);
+            if (-e $CPUSH){
+                system("$CPUSH /etc/odapw");
             }
+
+            # We need to disconnect database to flush the password
+            # information
+            oda::oda_disconnect( $options_ref );
+        }else{
+            rename "$ODAPW.bak", "$ODAPW";
         }
     }
 
