@@ -628,6 +628,12 @@ sub get_packages_switcher {
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
 }    
 
+# This is called only by "DelNode.pm" and if group_name is not specified,
+# it will assume that you are querying for all the client nodes because we
+# can not remove oscar_server node here.
+# As Bernard suggested, this should query from installed packages.
+# The extra condition to check to see if a package is installed or not
+# is added.
 sub get_packages_servicelists {
     my ($results_ref,
         $group_name,
@@ -637,7 +643,7 @@ sub get_packages_servicelists {
               "FROM Packages P, Packages_servicelists S, Node_Package_Status N, " .
               "Group_Nodes G " .
               "WHERE P.id=S.package_id AND N.package_id=S.package_id ".
-              "AND G.node_id=N.node_id ";
+              "AND G.node_id=N.node_id AND N.requested=8 ";
     $sql .= ($group_name?" AND G.group_name='$group_name' AND S.group_name='$group_name'":" AND S.group_name!='$OSCAR_SERVER'");          
     print "DB_DEBUG>$0:\n====> in Database::get_packages_servicelists SQL : $sql\n" if $$options_ref{debug};
     return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
