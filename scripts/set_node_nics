@@ -243,7 +243,9 @@ my @tables =("Clusters","Nics", "Networks",
 
 # find out our database node name for this machine
 
-my $node_name = database_find_node_name( 1 );
+my $node_ref = database_find_node_name( 1 );
+my $node_name = $$node_ref{name};
+my $node_id = $$node_ref{id};
 #if ( ! defined $node_name ) {
 #    database_disconnect();
     # UNLOCKING FOR NEST && database disconnect
@@ -507,7 +509,7 @@ foreach my $database_nic_name ( keys %$database_nics_ref ) {
         print "Deleting database record for network interface $database_nic_name"
             . " on node $node_name.\n"
             if $options{verbose} && ! $options{debug};
-        if ( ! dec_already_locked( "DELETE FROM Nics WHERE $database_nic_name",
+        if ( ! dec_already_locked( "DELETE FROM Nics WHERE name='$database_nic_name' AND node_id=$node_id",
                          undef ) ){
             warn "$0: failed to delete database record for network interface "
             . $database_nic_name . " on node $node_name.\n";
@@ -734,7 +736,7 @@ sub find_nics {
 
         # skip to next line if name is invalid
 
-        next unless $name =~ /^[a-z]+\d*$/;
+        next unless $name =~ /^[a-z]+(\d+|\d+:\d+)$/;
 
         # skip to next line if name is for the loopback interface
 
@@ -1043,10 +1045,11 @@ sub database_find_node_name {
 
     my @nodes = ();
     my $success = get_nodes(\@nodes, \%options, \@error_strings);
-    my $node = "";
+    my $node ;
+    
     foreach my $node_ref (@nodes){
         if ($hostname == $$node_ref{hostname}){
-            $node =  $$node_ref{name};
+            $node =  $node_ref;
             last;
         }
     }
