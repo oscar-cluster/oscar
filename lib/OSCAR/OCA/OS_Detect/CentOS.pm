@@ -43,6 +43,13 @@ sub detect_dir {
 	my $os_release = $1;
 	my $os_update = $2;
 	my $os_family = $3; # don't care about this
+
+        # Support CentOS Beta releases
+        if ($os_update =~ 9) {
+            $os_release++;
+            $os_update = 0;
+        }
+
 	$id->{distro} = $distro;
 	$id->{distro_version} = $os_release;
 	$id->{distro_update} = $os_update;
