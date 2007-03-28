@@ -675,7 +675,7 @@ sub postInstall
 	my $input = shift;
 	
 	my $found = 0;
-	my @postinstall = qw(beep reboot shutdown);
+	my @postinstall = qw(beep reboot shutdown kexec);
 	
 	#Automated
 	if (defined $input)
