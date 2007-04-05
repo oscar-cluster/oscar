@@ -58,7 +58,7 @@ oscar_log_subsection("post_rpm_install: Syncing user files");
 sync_user_files($targetdir) or croak("Couldn't sync user files");
 
 oscar_log_subsection("post_rpm_install: Running ssh setup");
-!system("./ssh_install $targetdir") or croak("Couldn't generate ssh keys");
+!system("$ENV{OSCAR_HOME}/scripts/ssh_install $targetdir") or croak("Couldn't generate ssh keys");
 
 # unmount /proc from image, if needed
 if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
