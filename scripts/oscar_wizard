@@ -76,9 +76,12 @@ my @errors = ();
 my $debug = $ENV{DEBUG_OSCAR_WIZARD};
 my $mode = "manage"; # default mode is manage
 
+my %buttons = ();
+
 our $monitortk_pid;
 
 my $lockfile = "$ENV{OSCAR_HOME}/.oscar_wizard_lockfile";
+
 
 # END processing to remove the lockfile when we die(), exit, or otherwise
 # cease to exist.
@@ -209,6 +212,9 @@ if ( $mode eq "install" ) {
    $step_number = undef;
    $step_string = "";
 }
+
+my $step_status = get_wizard_status(\%options,\@errors);
+my $manage_status = get_manage_status(\%options,\@errors);
 
 oscar_button($window, $step_string,
              "Download Additional OSCAR Packages...",
@@ -353,17 +359,30 @@ MainLoop;
 
 ###########################################################################
 
+
 sub oscar_button {
     my ($window, $labeltxt, $buttontext, $buttoncmd, $helptext) = @_;
+    
+    if ( $helptext eq "delete_nodes" ){
+        $helptext = ($mode eq "install"?"delete_nodes5":"delete_nodes8");
+    } 
+    my $status = $$step_status{$helptext};
+    $status = $$manage_status{$helptext} if ! $status;
+    $status = "normal" if ! $status;
+    
     my $label = $window->Label(-text => $labeltxt);
     my $button = $window->Button(-text => $buttontext, 
                                  -command => $buttoncmd, 
                                  -pady => 2);
+    $button->configure(-state => $status);
     my $help = $window->Button(-text=>"Help",
                                -command=> [\&open_help, $window, $helptext], 
                                -pady => 2);
     $label->grid($button, $help, -sticky => "nsew");
 
+    #put each step button into the %buttons hash
+    $buttons{$helptext} = $button;
+    
     return $button;
 }
 
@@ -381,11 +400,11 @@ sub run_command {
     } 
 
     if (system($$vars{cmd})) {
-	$result = $$vars{failure};
-	$window_func = \&error_window;
+        $result = $$vars{failure};
+        $window_func = \&error_window;
     } else {
-	$result = $$vars{success};
-	$window_func = \&done_window;
+        $result = $$vars{success};
+        $window_func = \&done_window;
     }
 
     if ($mode eq "install") {
@@ -394,13 +413,13 @@ sub run_command {
        oscar_log_subsection($result->{message});
     }
     if ($result->{unbusy}) {
-	&$window_func($parent_window, $result->{message},
+        &$window_func($parent_window, $result->{message},
 		     sub { $parent_window->Unbusy(); });
     } else {
-	&$window_func($parent_window, $result->{message});
+        &$window_func($parent_window, $result->{message});
     }
     $parent_window->Unbusy();
-    $result->{return_status};
+    return $result->{return_status};
 }
 
 ###########################################################################
@@ -417,19 +436,25 @@ sub run_server_install {
     oscar_log_section("Running step $step_number of the OSCAR wizard: Install OSCAR server packages");
 
     my $cmd_vars = { 
-	cmd => "./install_server $$vars{interface}",
-	success => {
-	    message => "Successfully installed OSCAR server",
-	    unbusy => 1,
-	    return_status => 0,
-	},
-	failure => {
-	    message => "Failed to properly install OSCAR server; please check the logs",
-	    unbusy => 1,
-	    return_status => 1,
-	},
+        cmd => "./install_server $$vars{interface}",
+        success => {
+            message => "Successfully installed OSCAR server",
+            unbusy => 1,
+            return_status => 0,
+        },
+        failure => {
+            message => "Failed to properly install OSCAR server; please check the logs",
+            unbusy => 1,
+            return_status => 1,
+        },
     };
-    run_command($window, $step_number, $cmd_vars);
+    my $check = run_command($window, $step_number, $cmd_vars);
+
+    if ($check == 0) {
+        my $next_step_button = $buttons{build_image};
+        $next_step_button->configure(-state => "normal");
+        set_wizard_status("build_image",\%options,\@errors);
+    }
 
     oscar_log_subsection('Update Wizard Env (as needed)');
     @mod_env = WizardEnv::update_env();
@@ -595,6 +620,12 @@ sub postimagebuild {
     
     #unlink($save_text); # breaks createimage_window
 
+    # Set the next button "Define OSCAR Clients..." available
+    my $next_step_button = $buttons{addclients};
+    $next_step_button->configure(-state => "normal");
+    set_wizard_status("addclients",\%options,\@errors);
+
+
     oscar_log_subsection("$step_string"."Completed successfully");
 
     1;
@@ -678,6 +709,25 @@ sub postaddclients {
     oscar_log_subsection("$step_string"."Running: $cmd");
     !system($cmd) or (carp($!), return undef);
     &populate_client_group_nodes;
+    
+    # Set the following next buttons available
+    my @tmp_next_steps = ("netboot", 
+                          "delete_nodes5",
+                          "monitor_deployment",
+                          "netbootmgr",
+                          "ganglia",
+                          "post_install");
+    foreach my $next_step (@tmp_next_steps){                          
+        my $next_step_button = $buttons{$next_step};
+        if ($next_step ne "netbootmgr" && $next_step ne "ganglia" ){
+            $next_step_button->configure(-state => "normal");
+        }
+        if ($next_step eq "netboot" || $next_step eq "post_install" ){
+            set_wizard_status($next_step,\%options,\@errors);
+        } else {
+            set_manage_status($next_step,\%options,\@errors);
+        } 
+    }
 
     oscar_log_subsection("$step_string"."Successfully ran: $cmd");
     oscar_log_subsection("$step_string"."Completed successfully");
@@ -765,6 +815,11 @@ sub run_post_install {
     run_command($window, $step_number, $cmd_vars);
 
     &update_client_node_package_status;
+    # Set the next button "Test Cluster Setup" available
+    my $next_step_button = $buttons{test_install};
+    $next_step_button->configure(-state => "normal");
+    set_wizard_status("test_install",\%options,\@errors);
+
     oscar_log_subsection('Update Wizard Env (as needed)');
     @mod_env = WizardEnv::update_env();
 }
@@ -828,6 +883,15 @@ sub run_tests {
     }
  
     $window->Unbusy();
+
+    # Set the following next buttons available for manage mode
+    my @tmp_next_steps = ("add_nodes", 
+                          "delete_nodes8",
+                          "install_uninstall_packages");
+    foreach my $next_step (@tmp_next_steps){                          
+        set_manage_status($next_step,\%options,\@errors);
+    }
+
     return 1;
 }
 

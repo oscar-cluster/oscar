@@ -273,7 +273,7 @@ CREATE TABLE IF NOT EXISTS Group_Packages(
     CONSTRAINT Group_Packages_ibfk_2 FOREIGN KEY (group_name) REFERENCES Groups (name) ON DELETE CASCADE ON UPDATE CASCADE
 )TYPE=INNODB;
 
--- Image_Packages
+-- Image_Package_Status
 CREATE TABLE IF NOT EXISTS Image_Package_Status(
     current  integer,
     error  text,
@@ -292,3 +292,35 @@ CREATE TABLE IF NOT EXISTS Image_Package_Status(
     CONSTRAINT Image_Package_Status_ibfk_3 FOREIGN KEY (requested) REFERENCES Status (id) ON DELETE CASCADE
 )TYPE=INNODB;
 
+-- Wizard_status
+CREATE TABLE IF NOT EXISTS Wizard_status(
+    id  integer   not null unique primary key,
+    step_name   char(50),
+    status      char(10)
+);
+
+-- Manage_status
+CREATE TABLE IF NOT EXISTS Manage_status(
+    id  integer   not null unique primary key,
+    wizard_id   integer not null,
+    step_name   char(50),
+    status      char(10)
+);
+
+INSERT INTO Wizard_status VALUES(0,'download_packages','');
+INSERT INTO Wizard_status VALUES(1,'select_packages','');
+INSERT INTO Wizard_status VALUES(2,'configure_packages','');
+INSERT INTO Wizard_status VALUES(3,'install_server','normal');
+INSERT INTO Wizard_status VALUES(4,'build_image','disabled');
+INSERT INTO Wizard_status VALUES(5,'addclients','disabled');
+INSERT INTO Wizard_status VALUES(6,'netboot','disabled');
+INSERT INTO Wizard_status VALUES(7,'post_install','disabled');
+INSERT INTO Wizard_status VALUES(8,'test_install','disabled');
+
+INSERT INTO Manage_status VALUES(1,5,'delete_nodes5','disabled');
+INSERT INTO Manage_status VALUES(2,5,'monitor_deployment','disabled');
+INSERT INTO Manage_status VALUES(3,5,'netbootmgr','disabled');
+INSERT INTO Manage_status VALUES(4,5,'ganglia','disabled');
+INSERT INTO Manage_status VALUES(5,8,'add_nodes','disabled');
+INSERT INTO Manage_status VALUES(6,8,'delete_nodes8','disabled');
+INSERT INTO Manage_status VALUES(7,8,'install_uninstall_packages','disabled');

@@ -105,6 +105,7 @@ $options{debug} = 1
               get_image_info_with_name
               get_install_mode
               get_installable_packages
+              get_manage_status
               get_networks
               get_nics_info_with_node
               get_nics_with_name_node
@@ -125,6 +126,7 @@ $options{debug} = 1
               get_selected_packages
               get_unselected_group_packages
               get_unselected_packages
+              get_wizard_status
               insert_packages
               insert_pkg_rpmlist
               is_installed_on_node
@@ -140,10 +142,12 @@ $options{debug} = 1
               set_images
               set_image_packages
               set_install_mode
+              set_manage_status
               set_nics_with_node
               set_node_with_group
               set_pkgconfig_var
               set_status
+              set_wizard_status
               update_node
               update_node_package_status
               update_packages
@@ -905,6 +909,39 @@ sub get_install_mode {
     return $$cluster_ref{install_mode};
 }
 
+
+# Return the wizard step status
+sub get_wizard_status {
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Wizard_status";
+    my @results = ();
+    my $success = do_select($sql,\@results,$options_ref,$error_strings_ref);
+    my %wizard_status = ();
+    if ($success){
+        foreach my $ref (@results){
+            $wizard_status{$$ref{step_name}} = $$ref{status};
+        }
+    }
+    return \%wizard_status;
+}
+
+# Return the manage step status
+sub get_manage_status {
+    my ($options_ref,
+        $error_strings_ref) = @_;
+    my $sql = "SELECT * FROM Manage_status";
+    my @results = ();
+    my $success = do_select($sql,\@results,$options_ref,$error_strings_ref);
+    my %manage_status = ();
+    if ($success){
+        foreach my $ref (@results){
+            $manage_status{$$ref{step_name}} = $$ref{status};
+        }
+    }
+    return \%manage_status;
+}
+
 # Initialize the "selected" field in the table "Node_Package_Status"
 # to get the table "Node_Package_Status" ready for another "PackageInUn"
 # process
@@ -1594,6 +1631,14 @@ sub set_install_mode {
     return do_update($sql, "Clusters", $options_ref, $error_strings_ref);
 }
 
+# Set the Manage status with a new value
+sub set_manage_status{
+    my ($step_name, $options_ref, $error_strings_ref) = @_;
+    my $sql = "UPDATE Manage_status SET status='normal' WHERE
+    step_name='$step_name'";
+    return do_update($sql,"Manage_status",$options_ref,$error_strings_ref);
+}    
+
 # set package configuration name/value pair
 # Usage example:
 #   set_pkgconfig_var(opkg => "ganglia" , context => "",
@@ -1820,6 +1865,13 @@ sub set_status {
     return 1;
 }
 
+# Set the Wizard status with a new value
+sub set_wizard_status {
+    my ($step_name, $options_ref, $error_strings_ref) = @_;
+    my $sql = "UPDATE Wizard_status SET status='normal' WHERE
+    step_name='$step_name'";
+    return do_update($sql,"Wizard_status",$options_ref,$error_strings_ref);
+}    
 
 
 ######################################################################
