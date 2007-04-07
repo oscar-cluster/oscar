@@ -91,13 +91,17 @@ if($service_name eq "postfix"){
         }
         $line_num .= "q";
         system("sed $line_num $postfix_conf > main.cf.server.$$");
-        my $nodes = join ", ", OSCAR::Database::get_nodes(\%options, \@error_strings);
+        my @nodes = (); my $nodelist;
+        OSCAR::Database::get_nodes(\@nodes, \%options,\@error_strings)
+            or die "Can't get node list from database";
+        for (my $i=0; $i<@nodes; $i++) {$nodes[$i] = $nodes[$i]{hostname};}
+        $nodelist = join ", ", @nodes;
         open CONF, ">> main.cf.server.$$"
             or die "Can not open the config file: $!";
         
         print CONF "\n";
         print CONF "# Allow the mail to access to only the following list of nodes by setting the 'mynetworks'\n";
-        print CONF "mynetworks = $nodes\n";
+        print CONF "mynetworks = $nodelist\n";
         print CONF "\n";
         print CONF "#\n";
         print CONF "# END OF ADDED CONFIGURATION OPTIONS FOR OSCAR\n";
