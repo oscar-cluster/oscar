@@ -450,7 +450,7 @@ sub run_server_install {
     };
     my $check = run_command($window, $step_number, $cmd_vars);
 
-    if ($check == 0) {
+    if ($check == 0 && $$step_status{build_image} eq "disabled") {
         my $next_step_button = $buttons{build_image};
         $next_step_button->configure(-state => "normal");
         set_wizard_status("build_image",\%options,\@errors);
@@ -621,9 +621,11 @@ sub postimagebuild {
     #unlink($save_text); # breaks createimage_window
 
     # Set the next button "Define OSCAR Clients..." available
-    my $next_step_button = $buttons{addclients};
-    $next_step_button->configure(-state => "normal");
-    set_wizard_status("addclients",\%options,\@errors);
+    if ( $$step_status{addclients} eq "disabled" ) {
+        my $next_step_button = $buttons{addclients};
+        $next_step_button->configure(-state => "normal");
+        set_wizard_status("addclients",\%options,\@errors);
+    }
 
 
     oscar_log_subsection("$step_string"."Completed successfully");
@@ -711,22 +713,24 @@ sub postaddclients {
     &populate_client_group_nodes;
     
     # Set the following next buttons available
-    my @tmp_next_steps = ("netboot", 
-                          "delete_nodes5",
-                          "monitor_deployment",
-                          "netbootmgr",
-                          "ganglia",
-                          "post_install");
-    foreach my $next_step (@tmp_next_steps){                          
-        my $next_step_button = $buttons{$next_step};
-        if ($next_step ne "netbootmgr" && $next_step ne "ganglia" ){
-            $next_step_button->configure(-state => "normal");
+    if( $$step_status{netboot} eq "disabled" ){
+        my @tmp_next_steps = ("netboot", 
+                              "delete_nodes5",
+                              "monitor_deployment",
+                              "netbootmgr",
+                              "ganglia",
+                              "post_install");
+        foreach my $next_step (@tmp_next_steps){                          
+            my $next_step_button = $buttons{$next_step};
+            if ($next_step ne "netbootmgr" && $next_step ne "ganglia" ){
+                $next_step_button->configure(-state => "normal");
+            }
+            if ($next_step eq "netboot" || $next_step eq "post_install" ){
+                set_wizard_status($next_step,\%options,\@errors);
+            } else {
+                set_manage_status($next_step,\%options,\@errors);
+            } 
         }
-        if ($next_step eq "netboot" || $next_step eq "post_install" ){
-            set_wizard_status($next_step,\%options,\@errors);
-        } else {
-            set_manage_status($next_step,\%options,\@errors);
-        } 
     }
 
     oscar_log_subsection("$step_string"."Successfully ran: $cmd");
@@ -816,9 +820,11 @@ sub run_post_install {
 
     &update_client_node_package_status;
     # Set the next button "Test Cluster Setup" available
-    my $next_step_button = $buttons{test_install};
-    $next_step_button->configure(-state => "normal");
-    set_wizard_status("test_install",\%options,\@errors);
+    if( $$step_status{test_install} eq "disabled" ){
+        my $next_step_button = $buttons{test_install};
+        $next_step_button->configure(-state => "normal");
+        set_wizard_status("test_install",\%options,\@errors);
+    }
 
     oscar_log_subsection('Update Wizard Env (as needed)');
     @mod_env = WizardEnv::update_env();
@@ -885,11 +891,13 @@ sub run_tests {
     $window->Unbusy();
 
     # Set the following next buttons available for manage mode
-    my @tmp_next_steps = ("add_nodes", 
-                          "delete_nodes8",
-                          "install_uninstall_packages");
-    foreach my $next_step (@tmp_next_steps){                          
-        set_manage_status($next_step,\%options,\@errors);
+    if ( $$manage_status{delete_nodes8} eq "disabled" ) {
+        my @tmp_next_steps = ("add_nodes", 
+                              "delete_nodes8",
+                              "install_uninstall_packages");
+        foreach my $next_step (@tmp_next_steps){                          
+            set_manage_status($next_step,\%options,\@errors);
+        }
     }
 
     return 1;
