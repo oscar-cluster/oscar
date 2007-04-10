@@ -22,6 +22,9 @@ package OSCAR::DelNode;
 #                    All rights reserved.
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
+# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.
 
 use strict;
 use vars qw($VERSION @EXPORT);
@@ -62,6 +65,11 @@ you want to delete and press the
     $listbox->grid("-",-sticky=>"nsew");
     fill_listbox($listbox);
 
+    my $selectallbutton = $window->Button(
+                                      -text => "Select All Clients",
+                                      -command => [\&selectallnodes, $window, $listbox],
+                                      -state => "active",
+                                     );
     
     my $deletebutton = $window->Button(
                                       -text => "Delete Selected Clients",
@@ -73,11 +81,18 @@ you want to delete and press the
                                      -command => sub {$window->destroy},
                                     );
 
+    $selectallbutton->grid("-","-",-sticky=>"nsew",-ipady=>"4");
     $deletebutton->grid($exitbutton,-sticky => "ew");
 
     $listbox->bind( "<ButtonRelease>",
             [ sub { my ($lb,$b) = @_;
                     $b->configure( -state => ( defined $lb->curselection ) ? "normal" : "disabled" );
+                  }, $deletebutton
+            ]
+        );
+    $selectallbutton->bind( "<ButtonRelease>",
+            [ sub { my ($lb,$b) = @_;
+                    $b->configure( -state => "active" );
                   }, $deletebutton
             ]
         );
@@ -245,6 +260,16 @@ sub delnodes {
         done_window($window,"Clients deleted.");
         return 1;
     }
+}
+
+sub selectallnodes {
+    my $window = shift;
+    my $listbox = shift;
+
+    my $size = $listbox->size;
+    $listbox->selectionSet(0, $size);
+    
+    return 1;
 }
 
 #
