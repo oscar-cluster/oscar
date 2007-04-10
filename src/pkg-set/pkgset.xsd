@@ -1,20 +1,36 @@
+<!-- $Id$ -->
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml:lang="en">
-  
-  <xsd:simpleType name="Compare">
-    <xsd:restriction base="xsd:string">
-      <xsd:pattern value="equal|greater|less"/>
-    </xsd:restriction>
-  </xsd:simpleType>
-  
-  <xsd:complexType name="Package">
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
-    <xsd:attribute name="version" type="xsd:string" use="required"/>
-    <xsd:attribute name="version-compare" type="Compare" use="required"/>
-  </xsd:complexType>
-  
-  <xsd:complexType name="Package-Set">
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
-    <xsd:attribute name="package" type="Package"/>
-  </xsd:complexType>
-  
+
+	<xsd:complexType name="versionType">
+		<xsd:attribute name="compare" type="xsd:string" use="required"/>
+		<xsd:sequence>
+			<xsd:element name="major" type="xsd:string" minOccurs="1" maxOccurs="1" />
+			<xsd:element name="minor" type="xsd:string" minOccurs="0" maxOccurs="1" />
+			<xsd:element name="subversion" type="xsd:string" minOccurs="0" maxOccurs="1" />
+			<xsd:element name="release" type="xsd:string" minOccurs="1" maxOccurs="1" />
+			<xsd:element name="epoch" type="xsd:string" minOccurs="0" maxOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:simpleType name="compare">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="equal|greater|less"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:complexType name="package">
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:element name="version" type="versionType" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="packageSet">
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:element name="package" type="Package"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="packageSets">
+		<xsd:element name="packageSet" type="packageSet" />
+	</xsd:complexType>
+
 </xsd:schema>
