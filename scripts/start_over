@@ -364,21 +364,27 @@ sub drop_db {
     my %databases = ();
     my %options = ();
     my @errors = ();
+    my $db_type = "";
     oda::list_databases( \%options, \%databases, \@errors);
     if ( $databases{ oscar } ){
         print "Deleting oscar user from mysql database\n";
         print "Deleting oda database ...\n";
-        oda::drop_database(\%options, \@errors);
+        $db_type = oda::remove_oda(\%options, \@errors);
     }
     print "Deleting the saved oda password file ...\n";
     unlink "/etc/odapw";
-    # stopping mysql service, in case it was running before
-    # if it gets deleted (the mysql package), it will be stopped anyway
-    for my $s qw( mysql mysqld ) {
-    	if (-x "/etc/init.d/$s") {
-    	    !system("/etc/init.d/$s stop") or croak("Failed to stop $s");
-    	    last;
-    	}
+    # stopping database service, in case it was running before
+    # if it gets deleted (the database package), it will be stopped anyway
+    if ( $db_type eq "Pg"){
+        ! system("/etc/init.d/postgresql stop")
+            or croak("Failed to stop postgresql");
+    }elsif ( $db_type eq "mysql"){
+        for my $s qw( mysql mysqld ) {
+            if (-x "/etc/init.d/$s") {
+                !system("/etc/init.d/$s stop") or croak("Failed to stop $s");
+                last;
+            }
+        }
     }
 }
 

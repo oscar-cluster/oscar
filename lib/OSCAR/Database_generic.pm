@@ -78,6 +78,7 @@ use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
 use OSCAR::PackagePath;
 use OSCAR::oda;
+use File::Basename;
 
 # oda may or may not be installed and initialized
 my $oda_available = 0;
@@ -103,6 +104,7 @@ $options{debug} = 1
               do_insert
               do_select
               do_update
+              my2pg
 	      );
 
 
@@ -306,7 +308,15 @@ sub create_table {
     my $sql_file = "$sql_dir/oscar_table.sql";
     
     print "DB_DEBUG>$0:\n====> in Database::create_table uses the SQL statement which are already defined at $sql_file" if $$options_ref{verbose};
-    my $cmd = "mysql -u $$options_ref{user} -p$$options_ref{password} oscar < $sql_file";
+    
+    my $cmd = "";
+    $cmd = "mysql -u $$options_ref{user} -p$$options_ref{password} oscar < $sql_file"
+        if $$options_ref{type} eq "mysql";
+
+    if ( $$options_ref{type} eq "Pg"){
+        $sql_file = my2pg($sql_file);
+        $cmd = "PGPASSWORD='$$options_ref{password}' psql -U $$options_ref{user} oscar < $sql_file";
+    }
 
     my $debug_msg = "DB_DEBUG>$0:\n====> in Database::create_table runs the command : $cmd\n";
     print "$debug_msg" if $$options_ref{debug};
@@ -318,5 +328,24 @@ sub create_table {
     return  $success;
 }    
 
+sub my2pg{
+    my $dump_file = shift;
+    my $dump_dir = dirname($dump_file);
+    my $new_file = "$dump_dir/oscar_table.pgsql";
+    open DUMP, "<$dump_file";
+    open TEMP, ">$new_file";
+
+    while(my $line = <DUMP>){
+        next if $line =~ m/^\s*KEY/;
+        $line =~ s/^(CREATE TABLE )IF NOT EXISTS(.*)$/$1$2/g;
+        $line =~ s/integer\s*auto_increment not null/serial/g;
+        $line =~ s/\)TYPE=INNODB;/\);/g;
+        $line =~ s/ CHAR/ VARCHAR/g;
+        print TEMP $line;
+    }
+    close TEMP;
+    close DUMP;
+    return $new_file;
+}
 
 1;

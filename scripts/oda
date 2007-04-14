@@ -178,11 +178,22 @@ sub execute_simple_command{
      $command_and_arguments_ref ) = @_;
 
     my @error_strings = ();
+    my $dump_dir = "";
     my $passed_error_strings_ref = \@error_strings;
     # take care of faking any non-passed input parameters, and
     # set any options to their default values if not already set
     my ( $options_ref, $error_strings_ref ) = oda::fake_missing_parameters
     ( $passed_options_ref, $passed_error_strings_ref );
+
+    mkdir $DUMP_DIR if !-e $DUMP_DIR;
+    
+    if($$options_ref{type} eq "Pg"){
+        $dump_dir = "$DUMP_DIR/PGSQL";
+    }
+
+    if($$options_ref{type} eq "mysql"){
+        $dump_dir = "$DUMP_DIR/MySQL";
+    }
 
 
     print "$0: execute_simple_command(" . 
@@ -191,7 +202,6 @@ sub execute_simple_command{
 
     my $disconnect_flag = 0;
 
-    mkdir $DUMP_DIR if !-e $DUMP_DIR;
 
     # if the command is an exact simple oda commands match, ...
     
@@ -249,11 +259,12 @@ sub execute_simple_command{
                 my $answer = check_yes_or_no($msg);
                 if ( $answer eq "Y" ){
                     oda::oda_disconnect( $options_ref );
-                    $success = oda::drop_database( $options_ref,
+                    $success = oda::remove_oda( $options_ref,
                                        \@error_strings );
-                    rename "$ODAPW", "$ODAPW.bak";
-                    print "DONE!\n";
-                    exit 0;
+                    if($success){
+                        print "DONE!\n";
+                        exit 0;
+                    }
                 }
             }else{
                 print "The database($$options_ref{database}) does not exist!!!\n";
@@ -270,15 +281,16 @@ sub execute_simple_command{
             if( $status ){
                 print "Warning: once your oscar database is dropped, you will get out of this console\n";
                 print "Warning: ODA will be ready to create a new oscar database\n\n";
-
-                my $sh_cmd = 
-                    "mysqladmin -u oscar -p$$options_ref{password} drop oscar";
-                $success = oda::do_shell_command( $options_ref,
-                                    $sh_cmd,
-                                   \@error_strings );
-                if($success){
-                    print "DONE!\n";
-                    exit 0;
+                
+                my $msg = "Do you really  want to remove oda (y/n)? ";
+                my $answer = check_yes_or_no($msg);
+                if ( $answer eq "Y" ){
+                    $success = oda::drop_database( $options_ref,
+                                       \@error_strings );
+                    if($success){
+                        print "DONE!\n";
+                        exit 0;
+                    }
                 }
             }else{
                 print "The database($$options_ref{database}) does not exist!!!\n";
@@ -347,9 +359,12 @@ sub execute_simple_command{
         }
     }elsif ( $command eq "dump" ){
         my $dump_file = "";
+        mkdir $dump_dir if ! -e $dump_dir;
         if(@arguments){
             $dump_file = shift @arguments;
-            $dump_file = "$DUMP_DIR/$dump_file";
+            my $usr_dump_dir = dirname($dump_file);
+            $dump_file = "$dump_dir/$dump_file" 
+                if ! -d $usr_dump_dir || $usr_dump_dir eq "";
             if(@arguments){
                 push @error_strings,
                 "No other arguments allowed with $command";
@@ -362,9 +377,19 @@ sub execute_simple_command{
                                        \@error_strings );
             if( $status ){
                 chomp(my $today = `date +%Y-%m-%d`);
-                $dump_file = "$DUMP_DIR/oscar.$today.$$" if !$dump_file;
-                my $sh_cmd = 
-                    "mysqldump -u oscar -p$$options_ref{password} --databases oscar > $dump_file";
+                my $sh_cmd = "";
+                $dump_file = "$dump_dir/oscar.$today.$$" if !$dump_file;
+                if( $$options_ref{type} eq "Pg" ){
+                    $sh_cmd =
+                        "PGPASSWORD='$$options_ref{password}' pg_dump "
+                        . "-U $$options_ref{user} $$options_ref{database}"
+                        . " > $dump_file";
+                }
+                if( $$options_ref{type} eq "mysql" ){
+                    $sh_cmd =
+                        "mysqldump -u oscar -p$$options_ref{password} "
+                        . " --databases $$options_ref{database} > $dump_file";
+                }
                 $success = oda::do_shell_command( $options_ref,
                                     $sh_cmd,
                                    \@error_strings );
@@ -392,7 +417,7 @@ sub execute_simple_command{
             if(@dump_files){
                 $list_dump_file = join( ', ', @dump_files ); 
             }else{
-                print "DUMP Files exist in \"$DUMP_DIR\"\n\n";
+                print "DUMP Files exist in \"$dump_dir\"\n\n";
                 my $msg = "You have never dumped your OSCAR database\n" .
                           "Do you want to dump your oda now (y/n)? ";
                 my $answer = check_yes_or_no($msg);
@@ -406,20 +431,28 @@ sub execute_simple_command{
             print "Enter the name of the dump file to restore: ";
             chomp($dump_file = <STDIN>);
             DO_RESTORE:
-            if( -e "$DUMP_DIR/$dump_file" ){
-                $dump_file = "$DUMP_DIR/$dump_file";
+            if( -e "$dump_dir/$dump_file" ){
+                $dump_file = "$dump_dir/$dump_file";
             }
             die "The dump file($dump_file) does not exist!!!"
                 if ! -e $dump_file;
-            my $sh_cmd = 
-                "mysql -u oscar -p$$options_ref{password} oscar < $dump_file";
+            my $sh_cmd = "";
+            $sh_cmd = "PGPASSWORD='$$options_ref{password}' pgsql -U "
+                    . "$$options_ref{user} $$options_ref{database} < "
+                    . "$dump_file"
+                if $$options_ref{type} eq "Pg";
+            $sh_cmd = "mysql -u oscar -p$$options_ref{password} oscar < $dump_file"
+                if $$options_ref{type} eq "mysql";
             if ( $dump_file ne "" && -e "$dump_file"){
                 my $status = exist_oscar_database( $options_ref,
                                            \@error_strings );
                 my $answer = "Y";
                 if( $status ){
                     print "The database($$options_ref{database}) already exist!!!\n";
-                    print "This operation will drop all your old tables on the database($$options_ref{database})\nif they exists and restore your oscar database with the ones from the dump.\n";
+                    print "This operation will drop all your old tables on the "
+                         . "database($$options_ref{database})\nif they exists "
+                         . "and restore your oscar database with the ones from "
+                         . "the dump.\n";
                     my $msg = "Do you want to proceed (y/n)? ";
                     $answer = check_yes_or_no($msg);
                 }else{

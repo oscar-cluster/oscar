@@ -1,4 +1,5 @@
--- Clusters
+--  OSCAR Database Tables
+--
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
 --  the Free Software Foundation; either version 2 of the License, or
@@ -15,7 +16,7 @@
 --  USA
 
 --
--- Copyright (c) 2006 The Trustees of Indiana University.
+-- Copyright (c) 2006-2007 The Trustees of Indiana University.
 --                    All rights reserved.
 --
 -- $Id$
@@ -75,10 +76,10 @@ CREATE TABLE IF NOT EXISTS Packages(
     summary VARCHAR(100),
     url VARCHAR(100),
     vendor VARCHAR(100),
-    version  varchar(250)   not null,
+    version  VARCHAR(250)   not null,
     version_epoch VARCHAR(100),
-    version_major  integer,
-    version_minor  integer,
+    version_major  CHAR(3),
+    version_minor  CHAR(3),
     version_release VARCHAR(100),
     version_subversion VARCHAR(100)
 )TYPE=INNODB;
@@ -238,8 +239,8 @@ CREATE TABLE IF NOT EXISTS Node_Package_Status(
     node_id  integer not null,
     package_id  integer not null,
     requested  integer not null default 1,
-    status  integer not null,
-    ex_status  integer not null,
+    status  integer not null default 0,
+    ex_status  integer not null default 0,
     selected  integer not null default 0,
     PRIMARY KEY (node_id, package_id, requested),
     KEY node_id ( node_id ),
@@ -295,16 +296,16 @@ CREATE TABLE IF NOT EXISTS Image_Package_Status(
 -- Wizard_status
 CREATE TABLE IF NOT EXISTS Wizard_status(
     id  integer   not null unique primary key,
-    step_name   char(50),
-    status      char(10)
+    step_name   CHAR(50),
+    status      CHAR(10)
 );
 
 -- Manage_status
 CREATE TABLE IF NOT EXISTS Manage_status(
     id  integer   not null unique primary key,
     wizard_id   integer not null,
-    step_name   char(50),
-    status      char(10)
+    step_name   CHAR(50),
+    status      CHAR(10)
 );
 
 INSERT INTO Wizard_status VALUES(0,'download_packages','');

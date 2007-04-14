@@ -345,31 +345,37 @@ if( @ARGV ){
 my @base_directories = @OSCAR::PackagePath::PKG_SOURCE_LOCATIONS;
 if ( !($directory_argument && $package_name) ){
 
-    # find the name of the mysql service and start the mysql server,
-    # and make sure it is run on every system reboot
-    my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
-    my $mysql_service_name=which_mysql_name($oscar_server_distribution,$oscar_server_distribution_version);
+    my $db_service_name = "";
+    if($ENV{OSCAR_DB} eq "mysql"){
+        # find the name of the mysql service and start the mysql server,
+        # and make sure it is run on every system reboot
+        my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
+        my $mysql_service_name=which_mysql_name($oscar_server_distribution,$oscar_server_distribution_version);
+        $db_service_name = $mysql_service_name;
+    }elsif( $ENV{OSCAR_DB} eq "pgsql" ){
+        $db_service_name = "postgresql";
+    }
 
-    my $command="/etc/init.d/$mysql_service_name status";
+    my $command="/etc/init.d/$db_service_name status";
     my @command_output = `$command`;
     my $status = $?;
     chomp @command_output;
     if ( ! grep( /is\ running/, @command_output ) || ! $status ) {
-        print "Starting the mysql database server ...\n";
-        my $command = "/etc/init.d/$mysql_service_name start";
+        print "Starting the $db_service_name database server ...\n";
+        my $command = "/etc/init.d/$db_service_name start";
         print "$command\n";
         if ( system( $command ) ) {
         my @error_strings = ();
         oda::oda_disconnect( \%options );
         warn shift @error_strings while @error_strings;
-        die "DB_DEBUG>$0:\n====> cannot start the mysql database server!";
+        die "DB_DEBUG>$0:\n====> cannot start the $db_service_name database server!";
         }
         sleep 2;
     }
-    print "Making sure that the mysql database server starts on subsequent boots ...\n";
-    my $command = "chkconfig $mysql_service_name on";
+    print "Making sure that the $db_service_name database server starts on subsequent boots ...\n";
+    my $command = "chkconfig $db_service_name on";
     print "$command\n";
-    warn "DB_DEBUG>$0:\n====> WARNING: the mysql database service may not start on subsequent reboots"
+    warn "DB_DEBUG>$0:\n====> WARNING: the $db_service_name database service may not start on subsequent reboots"
         if system( $command );
         
     # create the database if not already there and leave us connected to it

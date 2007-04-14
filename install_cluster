@@ -6,7 +6,7 @@
 #                     All rights reserved.
 # Copyright 2002 International Business Machines
 #                Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002-2005 The Trustees of Indiana University.  
+# Copyright (c) 2002-2007 The Trustees of Indiana University.  
 #                         All rights reserved.
 #
 # $Id$
@@ -45,11 +45,19 @@ my $selector = '';
 my $build = '';
 my $define = '';
 my $network = '';
+my $db = '';
 my $adapter;
 my $help = '';
 my $bootscript = '';
 
-GetOptions('help' => \$help, 'cli' => \$cli, 'opkgselector=s' => \$selector, 'buildimage=s' => \$build, 'defineclients=s' => \$define, 'networkclients=s' => \$network, 'bootscript=s' => \$bootscript);
+GetOptions ('help' => \$help,
+            'cli' => \$cli, 
+            'opkgselector=s' => \$selector,
+            'buildimage=s' => \$build, 
+            'defineclients=s' => \$define, 
+            'networkclients=s' => \$network, 
+            'database|d=s' => \$db,
+            'bootscript=s' => \$bootscript);
 
 #If we get a --help flag
 if($help) {
@@ -69,6 +77,9 @@ By default, install_cluster uses the Graphical mode.
     --networkclients file   Passes the file into the setup network stage
                             of the install.  That stage will not ask for
                             user input.
+    --database file         Passes the database type to determine what database
+                            is used for the OSCAR installation.
+                            (e.g., --database mysql, --database pgsql)
     --bootscript file       Passes the file to confirm the client nodes have
                             booted with their new images into the main cli.
     --help                  Display this help and exit.\n";
@@ -84,6 +95,23 @@ if($cli) {
 else {
     $ENV{OSCAR_UI} = "gui";
     oscar_log_subsection("Setting env variable OSCAR_UI to gui");
+}
+
+# Default database type is mysql if --database( or -d) option is given
+$ENV{OSCAR_DB} = "mysql";
+if($db) {
+    $ENV{OSCAR_DB} = $db;
+}
+
+my $lib_dir = "$ENV{OSCAR_HOME}/lib/OSCAR";
+unlink "$lib_dir/oda.pm";
+if( $ENV{OSCAR_DB} eq "pg" ||
+    $ENV{OSCAR_DB} eq "pgsql" ||
+    $ENV{OSCAR_DB} eq "postgresql" ){
+    $ENV{OSCAR_DB} = "pgsql";
+    system("ln -s $lib_dir/ODA/pgsql.pm $lib_dir/oda.pm");    
+}else{
+    system("ln -s $lib_dir/ODA/mysql.pm $lib_dir/oda.pm");    
 }
 
 #Put the full pathname on there since this will change directories

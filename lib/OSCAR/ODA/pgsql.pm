@@ -1,7 +1,7 @@
 package oda;
 #
 #
-# Copyright (c) 2005-2007 The Trustees of Indiana University.  
+# Copyright (c) 2007 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -15,13 +15,13 @@ package oda;
 # the direct database connection and main database queries for the OSCAR
 # database.
 # 
-# ODA for MySQL
+# ODA for PostgreSQL
 #
 
 use strict;
 use Carp;
 use DBI;
-use DBD::mysql;
+use DBD::Pg;
 use Data::Dumper;
 use IO::Select;
 use IPC::Open3;
@@ -37,7 +37,7 @@ my $database_handle;
 my $database_name;
 my $database_server_version = undef;
 
-my $database = "MySQL";
+my $database = "PostgreSQL";
 my @error_strings = ();
 my %options = ( 'debug'         => 0,
                 'field_names'   => 0,
@@ -46,7 +46,8 @@ my %options = ( 'debug'         => 0,
                 'verbose'       => 0 );
 
 my %unescape_fields_hash = ();
-my $ODAPW = "/etc/odapw";
+
+my $AUTH = 0;
 
 $options{debug} = 1
     if (exists $ENV{OSCAR_VERBOSE} && $ENV{OSCAR_VERBOSE} == 10) ||
@@ -95,7 +96,7 @@ sub oda_connect {
         # if we need to connect, do so
     if ( ! $database_connected_flag ) {
 
-        my $connect_string = "DBI\:$$options_ref{type}\:$$options_ref{database}";
+        my $connect_string = "DBI\:$$options_ref{type}\:dbname=$$options_ref{database}";
         $connect_string = $connect_string . ";host=$$options_ref{host}" if
             exists $$options_ref{host} && 
             defined $$options_ref{host} &&
@@ -204,47 +205,45 @@ sub list_databases {
 
     # clear out the passed by reference result list/hash
     if (ref($databases_ref) eq "HASH") {
-	%$databases_ref = ();
+        %$databases_ref = ();
     } else {
-	@$databases_ref = ();
+        @$databases_ref = ();
     }
 
-    # get a server administration connection
-    my $driver_handle;
-    if (!($driver_handle = DBI->install_driver($$options_ref{type}))) {
-	push @$error_strings_ref,
-	"DB_DEBUG>$0:\n====> server administration connect failed for driver $$options_ref{type}:\n$DBI::errstr";
-        return 0;
-    }
-    print( "DB_DEBUG>$0:\n====> in oda::list_databases install_driver succeeded for driver $$options_ref{type}\n")
-	if $$options_ref{debug};
+    my $root_pass = $options{password} if $AUTH || &check_root_password;
 
-    print "DB_DEBUG>$0:\n====> executing function _ListDBs on database <$$options_ref{database}>: $$options_ref{host}, $$options_ref{port}\n"
-	if $$options_ref{debug} || $$options_ref{verbose};
-    my $root_pass = $options{password} if &check_root_password; 
-
-    my @databases; 
-    if($root_pass){
-        # I just found that this format of call for _ListDBs is not working
-        # on the MySQL-3.23.58 of RHEL3-U6 when root password is not set
-        # So, I divided the cases and it seems to work fine.
-        @databases = 
-            $driver_handle->func($$options_ref{host},$$options_ref{port},
-                                 "root",$root_pass, '_ListDBs');
-    }else{
-        @databases = 
-            $driver_handle->func($$options_ref{host},$$options_ref{port},'_ListDBs');
-    }
-    
-    if ( @databases ) {
-        print( "DB_DEBUG>$0:\n====> in oda::list_databases _ListDBs succeeded returned <@databases>\n")
+    chomp(my @dbs = `PGPASSWORD='$root_pass' psql -U postgres -t -l | awk '{print \$1}'`);
+    if ( @dbs ) {
+        print( "DB_DEBUG>$0:\n====> in oda::list_databases succeeded returned <@dbs>\n")
             if $$options_ref{debug};
-        if (ref($databases_ref) eq "HASH") {
-            foreach my $database ( @databases ) {
-                $$databases_ref{$database} = 1;
+        foreach my $db (@dbs){
+            if ( !( $db =~ /^$/) ){
+                if ( ref($databases_ref) eq "HASH" ){
+                    $$databases_ref{$db} = 1;
+                }else{
+                    push @$databases_ref, $db;
+                }
             }
-        } else {
-            @$databases_ref = @databases;
+        }
+        # PostgreSQL uses its default database postgres if a database is
+        # not specified.
+        # This is added for just convenience 
+        if (ref($databases_ref) eq "HASH" && !$$databases_ref{postgres}){
+            my $createdb_cmd;
+            if ( !($createdb_cmd = `which createdb 2> /dev/null`) ) {
+                push @$error_strings_ref,
+                    "DB_DEBUG>$0:\n====> Looks like pgsql is not installed:\n$DBI::errstr";
+                return 0;
+            }
+            chomp($createdb_cmd);
+            my $cmd = "PGPASSWORD='$root_pass' $createdb_cmd -U postgres postgres";
+            system($cmd);
+            if ( $? ){
+                push @$error_strings_ref,
+                    "DB_DEBUG>$0:\n====> failed to create database for user " .
+                    "$$options_ref{user}:\n$DBI::errstr";
+                return 0;
+            }
         }
     } else {
         push @$error_strings_ref,
@@ -291,8 +290,8 @@ sub list_tables {
     # get the list of tables
     print "DB_DEBUG>$0:\n====> executing on database <$$options_ref{database}> command <SHOW TABLES>\n"
         if $$options_ref{verbose};
-    my $array_ref = $database_handle->selectcol_arrayref
-    ( qq{ SHOW TABLES } );
+    my $cmd ="PGPASSWORD='$$options_ref{password}' psql -U $$options_ref{user} -d $$options_ref{database} -t -c '\\d'";
+    chomp(@table_names = `$cmd | awk '{print \$3}'`);
 
     # disconnect from the database if we were not connected at start
     oda::oda_disconnect( $options_ref,
@@ -302,10 +301,10 @@ sub list_tables {
     # if the tables list retrieval worked, copy the results
     # into the cached list and return the list pointer,
     # otherwise output an error message and return failure
-    if ( defined $array_ref ) {
+    if ( @table_names ) {
     my %tables = ();
-    foreach my $table_name ( @{$array_ref} ) {
-        $tables{$table_name} = 1;
+    foreach my $table_name ( @table_names ) {
+        $tables{$table_name} = 1 if  !$table_name =~ /^$/;
     }
     $cached_all_table_names_ref = \%tables;
     print_hash( "", "in oda::list_tables new cached_all_table_names_ref",
@@ -345,18 +344,14 @@ sub list_fields{
 
     #oda_connect($options_ref,$error_strings_ref);
 
-    my @query_results = ();
-    my $sql_command = "SHOW COLUMNS from $table";
-    print "DB_DEBUG>$0:\n====> in oda::list_fields SQL:$sql_command\n" if $$options_ref{debug};
-    do_query ( $options_ref,
-         $sql_command,
-         \@query_results,
-         $error_strings_ref);
+    my $cmd ="PGPASSWORD='$$options_ref{password}' psql -U $$options_ref{user} -d $$options_ref{database} -t -c '\\d $table'";
+    chomp(my @field_names = `$cmd | awk '{print \$1}'`);
+    print "DB_DEBUG>$0:\n====> in oda::list_fields SQL:$cmd\n" if $$options_ref{debug};
 
     #oda_disconnect($options_ref,$error_strings_ref);
 
-    foreach my $ref (@query_results){
-        $$fields_ref{$ref->{field}} = "Not assigned";
+    foreach my $field (@field_names){
+        $$fields_ref{$field} = "Not assigned";
     }
 
     # if fields_ref is defineds, copy the results
@@ -557,9 +552,9 @@ sub set_option_defaults {
 	    if $$options_ref{debug};
     }
 
-    # if the caller didn't specify a port, set to 3306
+    # if the caller didn't specify a port, set to 5432
     if (!exists $$options_ref{port}) {
-	$$options_ref{port} = 3306;
+	$$options_ref{port} = 5432;
 	print "DB_DEBUG>$0:\n====> in set_option_defaults setting port = $$options_ref{port}\n"
 	    if $$options_ref{debug};
     }
@@ -575,7 +570,7 @@ sub set_option_defaults {
     # if the caller didn't specify the database type,
     # set it to mysql
     if (!exists $$options_ref{type}) {
-	$$options_ref{type} = "mysql";
+	$$options_ref{type} = "Pg";
 	print "DB_DEBUG>$0:\n====> in set_option_defaults setting type = $$options_ref{type}\n"
 	    if $$options_ref{debug};
     }
@@ -601,33 +596,38 @@ sub set_option_defaults {
     # if the caller didn't specify a database user password, ...
     if (!exists $$options_ref{password}) {
 
-	# if we are root accessing the database server,
-	# use the password defined in the /etc/odapw 
-	# file if there, otherwise, set the password to undef
-	$$options_ref{password} = undef;
-	if (! $>) {
-	    if ( -r "$ODAPW" ) {
-		if (!open( PWFILE, "$ODAPW")) {
-		    print "DB_DEBUG>$0:\n====> failed to open password file $ODAPW\n";
+        # if we are root accessing the database server,
+        # use the password defined in the /etc/odapw 
+        # file if there, otherwise, set the password to undef
+        $$options_ref{password} = undef;
+        if (! $>) {
+            if ( -r "/etc/odapw" ) {
+                if (!open( PWFILE, "/etc/odapw")) {
+                    print "DB_DEBUG>$0:\n====> failed to open "
+                     . "password file /etc/odapw\n";
                 } else {
-		    my @lines = <PWFILE>;
-		    close(PWFILE);
-		    chomp @lines;
-		    if (scalar @lines != 1) {
-			print "DB_DEBUG>$0:\n====> password file $ODAPW needs only one line\n";
-		    } else {
-			my @fields = split( /\s+/, $lines[0] );
-			if (scalar @fields != 1) {
-			    print "DB_DEBUG>$0:\n====> password file $ODAPW needs only one word\n";
-			} else {
-			    $$options_ref{password} = $fields[0];
-			    print "DB_DEBUG>$0:\n====> in set_option_defaults setting password = $$options_ref{password}\n"
-				if $$options_ref{debug};
-			}
-		    }
-		}
-	    }
-	}
+                    my @lines = <PWFILE>;
+                    close(PWFILE);
+                    chomp @lines;
+                    if (scalar @lines != 1) {
+                        print "DB_DEBUG>$0:\n====> password file "
+                        . "/etc/odapw needs only one line\n";
+                    } else {
+                        my @fields = split( /\s+/, $lines[0] );
+                        if (scalar @fields != 1) {
+                            print "DB_DEBUG>$0:\n====> password file "
+                          . "/etc/odapw needs only one word\n";
+                        } else {
+                            $$options_ref{password} = $fields[0];
+                            print "DB_DEBUG>$0:\n====> in "
+                          . "set_option_defaults setting password "
+                          . "= $$options_ref{password}\n"
+                                if $$options_ref{debug};
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -789,23 +789,25 @@ sub do_query {
 		     $error_strings_ref ) ||
 		     return 0;
 
-    print "DB_DEBUG>$0:\n====> in oda\:\:do_query: executing on database <$$options_ref{database}> command <$sql_command>\n"
+    print "DB_DEBUG>$0:\n====> in oda\:\:do_query: executing on database"
+        . " <$$options_ref{database}> command <$sql_command>\n"
         if $$options_ref{verbose};
     my $statement_handle = $database_handle->prepare($sql_command);
     if (!$statement_handle) {    
-	push @$error_strings_ref,
-	"error preparing sql statement <$sql_command> on database <$$options_ref{database}>:\n$DBI::errstr";
-	oda_disconnect($options_ref, $error_strings_ref)
-	    if !$was_connected_flag;
-	return 0;
+        push @$error_strings_ref,
+            "error preparing sql statement <$sql_command> on database "
+            . "<$$options_ref{database}>:\n$DBI::errstr";
+        oda_disconnect($options_ref, $error_strings_ref)
+            if !$was_connected_flag;
+        return 0;
     }
     if (!$statement_handle->execute()) {
-	push @$error_strings_ref,
-	"error executing sql statement <$sql_command> on database <$$options_ref{database}>:\n$DBI::errstr";
-	oda_disconnect( $options_ref,
-			$error_strings_ref )
-	    if !$was_connected_flag;
-	return 0;
+        push @$error_strings_ref,
+            "error executing sql statement <$sql_command> on database "
+            . "<$$options_ref{database}>:\n$DBI::errstr";
+        oda_disconnect( $options_ref, $error_strings_ref )
+            if !$was_connected_flag;
+        return 0;
     }
     
     while (my $result_hash_ref = 
@@ -826,13 +828,13 @@ sub do_query {
 
     if ($DBI::err) {
         push @$error_strings_ref,
-        "Error message: in database <$$options_ref{database}>: $DBI::errstr";
+            "Error message: in database <$$options_ref{database}>: "
+            . "$DBI::errstr";
         push @$error_strings_ref, 
-        "SQL command that failed was: <$sql_command>";
+            "SQL command that failed was: <$sql_command>";
         warn shift @$error_strings_ref while @$error_strings_ref;
-        oda_disconnect( $options_ref,
-                 $error_strings_ref )
-        if ! $was_connected_flag;
+        oda_disconnect( $options_ref, $error_strings_ref )
+            if ! $was_connected_flag;
         return 0;
     } 
 
@@ -881,46 +883,41 @@ sub create_database {
     # set any options to their default values if not already set
     my ($options_ref, $error_strings_ref) =
 	fake_missing_parameters($passed_options_ref,
-				$passed_error_strings_ref);
+			            	$passed_error_strings_ref);
 
     if ($database_connected_flag) {
-	push @$error_strings_ref,
-	"This program is already connected to the database";
-	return 0;
+        push @$error_strings_ref,
+        "This program is already connected to the database";
+        return 0;
     }
 
     # even though the user/password may be all right, we require
     # database creation to be done only by root
     if ( $> ) {
-	push @$error_strings_ref,
-        "You need to be root to create the database.\n";
+        push @$error_strings_ref,
+            "You need to be root to create the database.\n";
         return 0;
     }
-
-    # get a server administration connection
-    my $driver_handle;
-    if (!($driver_handle = DBI->install_driver($$options_ref{type}))) {
-	push @$error_strings_ref,
-	"DB_DEBUG>$0:\n====> server administration connect failed:\n$DBI::errstr";
-        return 0;
-    }
-    print "DB_DEBUG>$0:\n====> in oda\:\:create_database install_driver succeeded\n"
-	if $$options_ref{debug};
 
     my $status = reset_password($options_ref, $error_strings_ref);
 
     return $status if !$status;
 
-    if (!$driver_handle->func('createdb',
-			      $$options_ref{database},
-			      $$options_ref{host},
-			      $$options_ref{user},
-			      $$options_ref{password},
-			      'admin' ) ) {
-	push @$error_strings_ref,
-	"DB_DEBUG>$0:\n====> failed to create database for user " .
-	    "$$options_ref{user}:\n$DBI::errstr";
-	return 0;
+    my $createdb_cmd;
+    if ( !($createdb_cmd = `which createdb 2> /dev/null`) ) {
+        push @$error_strings_ref,
+	        "DB_DEBUG>$0:\n====> Looks like pgsql is not installed:\n$DBI::errstr";
+        return 0;
+    }
+    chomp($createdb_cmd);
+    my $cmd = "$createdb_cmd -U $$options_ref{user} $$options_ref{database}";
+    $cmd = "PGPASSWORD='$$options_ref{password}' " . $cmd if $AUTH;
+    system($cmd);
+    if ( $? ){
+        push @$error_strings_ref,
+            "DB_DEBUG>$0:\n====> failed to create database for user " .
+            "$$options_ref{user}:\n$DBI::errstr";
+        return 0;
     }
     print( "DB_DEBUG>$0:\n====> in oda\:\:create_database createdb " . 
 	   "<$$options_ref{database}> with master user " .
@@ -946,39 +943,38 @@ sub create_database {
 sub reset_password{
     my ($options_ref, $error_strings_ref) = @_;
 
-    chomp(my $pw =  `cat $ODAPW`);
+    chomp(my $pw =  `cat /etc/odapw`);
     $$options_ref{password} = $pw if $$options_ref{password} ne $pw;
 
-    my $root_pass = $options{password} if &check_root_password; 
+    my $root_pass = $options{password} 
+        if $AUTH || &check_root_password; 
 
-    my $cmd_string = "mysql -uroot ";
-    $cmd_string .= "-p$root_pass" if $root_pass;
-    return 0 if !do_shell_command( $options_ref, 
-				   "$cmd_string -e \"GRANT ALL ON " . 
-				   $$options_ref{database} . '.* TO ' . 
-				   $$options_ref{user} . '@localhost' .
-				   ((exists $$options_ref{password} &&
-				     $$options_ref{password} ne "" ) ?
-				    (' identified by \"' . 
-				     $$options_ref{password} . '\";"' ) :
-				    ';"')
-				   );
-    
-    if (exists $$options_ref{password} && 
-	$$options_ref{password} ne "" ) {
-	return 0 if !do_shell_command($options_ref, 
-				      "$cmd_string -e " .
-				      '"GRANT SELECT,INSERT,UPDATE,DELETE' . 
-				      ' ON ' . $$options_ref{database} . '.*' .
-				      ' TO ' . $$options_ref{user} .
-				      ' identified by \"' .
-				      $$options_ref{password} . '\";"');
+    my $cmd_string = "psql -U postgres -d postgres";
+    $cmd_string = "PGPASSWORD='$root_pass' " . $cmd_string if $root_pass;
+    my $create_cmd = " -c \"CREATE USER $$options_ref{user} PASSWORD "
+        . "'$$options_ref{password}' CREATEDB NOCREATEUSER\" ";
+    my $alter_cmd = " -c \"ALTER USER $$options_ref{user} PASSWORD "
+        . "'$$options_ref{password}' CREATEDB NOCREATEUSER\" ";
+
+    # Create an oscar pgsql user first. If it already exists, alter the
+    # user properties
+    $create_cmd = $cmd_string . $create_cmd;
+    system($create_cmd);
+    if ( $? ){
+        $alter_cmd = $cmd_string . $alter_cmd;
+        system($alter_cmd);
+        if ( $? ){
+            push @$error_strings_ref,
+                "DB_DEBUG>$0:\n====> failed to reset password for user " .
+                "$$options_ref{user}:\n$DBI::errstr";
+            return 0;
+        }
     }
 
-    return 0 if !do_shell_command($options_ref,
-				  "$cmd_string -e \"GRANT SELECT ON " . 
-				  $$options_ref{database} . '.* TO ' . 
-				  "anonymous" . '"' );
+    #
+    # I will put the code to create anonymous user account here  if necessary.
+    #
+        
     return 1;
 }
 
@@ -993,7 +989,7 @@ sub reset_password{
 # inputs:  options            reference to options hash
 #          error_strings_ref  optional reference to array for errors
 #
-# return: database type(mysql) if success
+# return: database type(Pg) if success
 
 sub remove_oda {
     my ($passed_options_ref, $passed_error_strings_ref) = @_;
@@ -1002,12 +998,12 @@ sub remove_oda {
     # set any options to their default values if not already set
     my ($options_ref, $error_strings_ref) =
 	fake_missing_parameters($passed_options_ref,
-				$passed_error_strings_ref);
+                            $passed_error_strings_ref);
 
     if ($database_connected_flag) {
-	push @$error_strings_ref,
-	"This program is still connected to a database";
-	return 0;
+        push @$error_strings_ref,
+            "This program is still connected to a database";
+        return 0;
     }
 
     # even though the user/password may be all right, we require
@@ -1017,36 +1013,25 @@ sub remove_oda {
         return 0;
     }
 
-    # get a server administration connection
-    
-    my $driver_handle;
-    if (!($driver_handle = DBI->install_driver($$options_ref{type}))) {
-	push @$error_strings_ref,
-	"DB_DEBUG>$0:\n====> erver administration connect failed: $DBI::errstr";
-        return 0;
-    }
 
     my $root_pass = "";
-    $root_pass = $options{password} if &check_root_password; 
+    $root_pass = $options{password} if $AUTH || &check_root_password; 
     if ( $root_pass ){
-        $$options_ref{user} = "root";
-        $$options_ref{password} = $root_pass;
-        $root_pass = "-p$root_pass";
+        $root_pass = "PGPASSWORD='$root_pass' ";
     }
     
-    drop_database($options_ref,$error_strings_ref);
 
-    # Revoke all the privileges of oscar user
-    my $auth_string = 'mysql -u root ' . $root_pass;
-    my $cmd_string = $auth_string . ' -e "REVOKE ALL ON '
-                    . 'oscar.* FROM oscar@localhost;"';
+    drop_database($options_ref, $error_strings_ref);
+
+    # Revoke all the privileges of oscar user and remove oscar user from
+    # pgsql database
+    my $cmd_string = "dropuser -U postgres $$options_ref{user}";
+    $cmd_string = $root_pass . $cmd_string if $root_pass;
+
     return 0 if !do_shell_command($options_ref, $cmd_string);
     
-    # Delete oscar user from mysql database
-    $cmd_string = $auth_string . " -e \"DELETE FROM mysql.user WHERE User = 'oscar';\"";
-    return 0 if !do_shell_command($options_ref, $cmd_string);
-    
-    print( "DB_DEBUG>$0:\n====> in oda::drop_database revoking oscar user's privileges is succeeded\n")
+    print "DB_DEBUG>$0:\n====> in oda::drop_database revoking oscar "
+         ."user's privileges is succeeded\n"
         if $$options_ref{debug} || $$options_ref{verbose};
 
     # since we successfully dropped the entire database,
@@ -1054,9 +1039,6 @@ sub remove_oda {
     # reset the cache of table/field names
     $cached_all_table_names_ref = undef;
     $cached_all_tables_fields_ref = undef;
-
-    # BACKUP  odapw and then remove it
-    rename "$ODAPW", "$ODAPW.bak";
 
     return $$options_ref{type};
 }
@@ -1080,12 +1062,12 @@ sub drop_database {
     # set any options to their default values if not already set
     my ($options_ref, $error_strings_ref) =
 	fake_missing_parameters($passed_options_ref,
-				$passed_error_strings_ref);
+                            $passed_error_strings_ref);
 
     if ($database_connected_flag) {
-	push @$error_strings_ref,
-	"This program is still connected to a database";
-	return 0;
+        push @$error_strings_ref,
+            "This program is still connected to a database";
+        return 0;
     }
 
     # even though the user/password may be all right, we require
@@ -1095,54 +1077,38 @@ sub drop_database {
         return 0;
     }
 
-    # get a server administration connection
-    
-    my $driver_handle;
-    if (!($driver_handle = DBI->install_driver($$options_ref{type}))) {
-	push @$error_strings_ref,
-	"DB_DEBUG>$0:\n====> erver administration connect failed: $DBI::errstr";
-        return 0;
-    }
 
     my $root_pass = "";
-    $root_pass = $options{password} if &check_root_password; 
+    $root_pass = $options{password} if $AUTH || &check_root_password; 
     if ( $root_pass ){
-        $$options_ref{user} = "root";
-        $$options_ref{password} = $root_pass;
-        $root_pass = "-p$root_pass";
+        $root_pass = "PGPASSWORD='$root_pass' ";
     }
     
+    my $dropdb_cmd;
+    if ( !($dropdb_cmd = `which dropdb 2> /dev/null`) ) {
+        push @$error_strings_ref,
+	        "DB_DEBUG>$0:\n====> Looks like pgsql is not installed:\n"
+            . "$DBI::errstr";
+        return 0;
+    }
+    chomp($dropdb_cmd);
+    my $cmd = "$dropdb_cmd -U $options{user} $$options_ref{database}";
+    $cmd = $root_pass . $cmd if $root_pass;
     if ( $$options_ref{debug} ) {
-	print "DB_DEBUG>$0:\n====> in oda::drop_database install_driver succeeded\n";
-	print "DB_DEBUG>$0:\n====> in oda::drop_database about to dropdb(" .
-	    ((exists $$options_ref{database}) ? 
-	     $$options_ref{database} : "") .
-	     "," .
-	     ((exists $$options_ref{host}) ? 
-	      $$options_ref{host} : "") .
-	      "," .
-	      ((exists $$options_ref{user}) ?
-	       $$options_ref{user} : "" ) .
-	       "," .
-	       ((exists $$options_ref{password}) ?
-		$$options_ref{password} : "") .
-		",admin)\n";
+        print "DB_DEBUG>$0:\n====> in oda::drop_database install_driver"
+            . " succeeded\n";
+        print "DB_DEBUG>$0:\n====> in oda::drop_database about to run $cmd";
     }
 
-    if (!$driver_handle->func('dropdb',
-			      $$options_ref{database},
-			      $$options_ref{host},
-			      $$options_ref{user},
-			      $$options_ref{password},
-			      'admin')) {
-	print "aaaarrrrrggghhhhhhhh\n";
-	push @$error_strings_ref,
-	"DB_DEBUG>$0:\n====> failed to drop database for user $$options_ref{user}:\n$DBI::errstr";
-	return 0;
+    if (! do_shell_command ($options_ref, $cmd, $error_strings_ref) ){
+        print "aaaarrrrrggghhhhhhhh\n";
+        push @$error_strings_ref,
+            "DB_DEBUG>$0:\n====> failed to drop database for user "
+            . "oscar:\n$DBI::errstr";
+        return 0;
     }
     print( "DB_DEBUG>$0:\n====> in oda::drop_database dropdb succeeded\n")
         if $$options_ref{debug} || $$options_ref{verbose};
-
 
     # since we successfully dropped the entire database,
     # reset the cache of table names and 
@@ -1172,13 +1138,13 @@ sub do_shell_command {
     print "DB_DEBUG>$0:\n====> executing shell command <$command>\n"
         if $$options_ref{verbose};
     if (!system($command)) {
-	print "DB_DEBUG>$0:\n====> <$command> succeeded\n" 
-	    if $$options_ref{debug};
-	return 1;
+        print "DB_DEBUG>$0:\n====> <$command> succeeded\n" 
+            if $$options_ref{debug};
+        return 1;
     } else {
-	print "DB_DEBUG>$0:\n====> <$command> failed\n" 
-	    if $$options_ref{debug};
-	return 0;
+        print "DB_DEBUG>$0:\n====> <$command> failed\n" 
+            if $$options_ref{debug};
+        return 0;
     }
 }
 
@@ -1215,48 +1181,49 @@ sub initialize_locked_tables{
 #         nothing of %options is changed returning 0 if fails.
 
 sub check_root_password{
-    $options{database} = "mysql";
-    $options{host} = "localhost";
-    $options{port} = 3306 if ! $options{port};
-    my $driver_handle;
-    if (!($driver_handle = DBI->install_driver('mysql'))) {
-        die "DB_DEBUG>$0:\n====> server administration connect failed for driver $options{type}:\n$DBI::errstr";
-        return 0;
-    }    
-    my @databases = $driver_handle->func($options{host},$options{port}, '_ListDBs');
-    if (@databases){
-        print "DB_DEBUG>$):\n====> $database root password is not set.\n"
+
+    my @fake_root_passwords = ("foo","bogus");
+    my $root_pass = "";
+    my $simple_check_cmd = "";
+    foreach $root_pass (@fake_root_passwords){
+        $simple_check_cmd = "PGPASSWORD='$root_pass' psql -U postgres -l";
+        system("$simple_check_cmd > /dev/null 2>&1");
+        if ($?){
+            $AUTH = 1;
+            last;
+        }
+    }
+
+    if (!$AUTH){
+        print "DB_DEBUG>$):\n====> $database admin(postgres) password is not set.\n"
             if $options{debug};
         return 0;
     } else {    
-        if ( !( defined $options{password} || defined $options{user} ) ){
-            print "\n================================================================\n";
-            print "Your $database has already setup the root password.\n";
-            my $password = "";
-            while (1) {
-                print "To proceed, please enter your root password of $database: ";
-                $| = 1;
-                system("stty -echo");
-                chomp($password = <STDIN>);
-                print "\n";
-                system("stty echo");
-                @databases = 
-                    $driver_handle->func($options{host},
-                                         $options{port},
-                                         "root",
-                                         $password,
-                                         '_ListDBs');
-                last if @databases;
-                print "\nThe password is not correct!!! Please try it again.\n";
-            }
+        $options{password} = "";
+        $options{user} = "";
+        print "\n================================================================\n";
+        print "Your $database has already setup the admin(postgres) password.\n";
+        my $password = "";
+        while (1) {
+            print "To proceed, please enter your admin(postgres) password of $database: ";
+            $| = 1;
+            system("stty -echo");
+            chomp($password = <STDIN>);
+            print "\n";
+            system("stty echo");
+            $simple_check_cmd = "PGPASSWORD='$password' psql -U postgres -l";
+            system("$simple_check_cmd > /dev/null 2>&1");
+            last if( !$? );
 
-            # Set "root" to the user and the user's input to the password of %options
-            $options{user} = "root";
-            $options{password} = $password;
-            print "================================================================\n\n";
+            print "\nThe password is not correct!!! Please try it again.\n";
         }
+
+        # Set "postgres" to the user and the user's input to the password of %options
+        $options{user} = "postgres";
+        $options{password} = $password;
+        print "================================================================\n\n";
     }
-    print "The root password : $options{password}\n" if $options{debug};
+    print "The postgres password : $options{password}\n" if $options{debug};
     return 1; 
 }
 
