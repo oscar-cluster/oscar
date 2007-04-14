@@ -11,7 +11,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $HEADER$
+# $Id$
 #
 
 package OSCAR::OCA::OS_Detect;
