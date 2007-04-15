@@ -285,8 +285,8 @@ if ( $mode eq "install" ) {
    # Setup Network Booting
    $step_number++;
    oscar_button($window, "Step $step_number:", "Setup Networking...", 
-	        [\&mac_window, $window, $step_number,
-	         {interface => $interface}], 'netboot');
+	        [\&setup_network, $window, $step_number,
+	         $interface], 'netboot');
 
    # Delete Clients returns due to popular demand!
    oscar_button($window, "", "Delete OSCAR Clients...",
@@ -365,7 +365,7 @@ sub oscar_button {
     
     if ( $helptext eq "delete_nodes" ){
         $helptext = ($mode eq "install"?"delete_nodes5":"delete_nodes8");
-    } 
+    }
     my $status = $$step_status{$helptext};
     $status = $$manage_status{$helptext} if ! $status;
     $status = "normal" if ! $status;
@@ -718,8 +718,7 @@ sub postaddclients {
                               "delete_nodes5",
                               "monitor_deployment",
                               "netbootmgr",
-                              "ganglia",
-                              "post_install");
+                              "ganglia");
         foreach my $next_step (@tmp_next_steps){                          
             my $next_step_button = $buttons{$next_step};
             if ($next_step ne "netbootmgr" && $next_step ne "ganglia" ){
@@ -787,6 +786,16 @@ sub populate_client_group_nodes {
 }
 
 ###########################################################################
+
+sub setup_network {
+    my ($window, $step_number, $interface) = @_;
+    mac_window($window, $step_number, {interface=> $interface});
+    if ( $$step_status{post_install} eq "disabled" ) {
+        my $next_step_button = $buttons{post_install};
+        $next_step_button->configure(-state => "normal");
+        set_wizard_status("post_install",\%options,\@errors);
+    }
+}
 
 sub run_post_install {
     my ($window, $step_number) = @_;
