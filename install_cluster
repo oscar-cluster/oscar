@@ -105,13 +105,17 @@ if($db) {
 
 my $lib_dir = "$ENV{OSCAR_HOME}/lib/OSCAR";
 unlink "$lib_dir/oda.pm";
+my $oda_dir = "$ENV{OSCAR_HOME}/packages/oda";
+unlink "$oda_dir/prereq.cfg";
 if( $ENV{OSCAR_DB} eq "pg" ||
     $ENV{OSCAR_DB} eq "pgsql" ||
     $ENV{OSCAR_DB} eq "postgresql" ){
     $ENV{OSCAR_DB} = "pgsql";
     system("ln -s $lib_dir/ODA/pgsql.pm $lib_dir/oda.pm");    
+    system("ln -s $oda_dir/prereqs/pgsql.cfg $oda_dir/prereq.cfg");    
 }else{
     system("ln -s $lib_dir/ODA/mysql.pm $lib_dir/oda.pm");    
+    system("ln -s $oda_dir/prereqs/mysql.cfg $oda_dir/prereq.cfg");    
 }
 
 #Put the full pathname on there since this will change directories
