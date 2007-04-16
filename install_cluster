@@ -100,7 +100,8 @@ else {
 # Default database type is mysql if --database( or -d) option is given
 $ENV{OSCAR_DB} = "mysql";
 if($db) {
-    $ENV{OSCAR_DB} = $db;
+    # convert all the inputs to the lowercase characters
+    $ENV{OSCAR_DB} = lc($db);
 }
 
 my $lib_dir = "$ENV{OSCAR_HOME}/lib/OSCAR";
