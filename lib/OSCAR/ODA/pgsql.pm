@@ -100,8 +100,7 @@ sub oda_connect {
         my $connect_string = "DBI\:$$options_ref{type}\:dbname=$$options_ref{database}";
         $connect_string = $connect_string . ";host=$$options_ref{host}" if
             exists $$options_ref{host} && 
-            defined $$options_ref{host} &&
-            $$options_ref{host} ne "localhost";
+            defined $$options_ref{host};
         print "DB_DEBUG>$0:\n====> in oda\:\:oda_connect connnecting to database <$$options_ref{database}> as user <$$options_ref{user}>, password <$$options_ref{password}> using connect argument <$connect_string>\n"
             if $$options_ref{debug};
         print "DB_DEBUG>$0:\n====> executing on database <$$options_ref{database}> command <CONNECT> as user <$$options_ref{user}>, password <$$options_ref{password}>\n"
@@ -213,7 +212,7 @@ sub list_databases {
 
     my $root_pass = $options{password} if $AUTH || &check_root_password;
 
-    chomp(my @dbs = `PGPASSWORD='$root_pass' psql -U postgres -t -l | awk '{print \$1}'`);
+    chomp(my @dbs = `PGPASSWORD='$root_pass' psql -h $$options_ref{host} -U postgres -t -l | awk '{print \$1}'`);
     if ( @dbs ) {
         print( "DB_DEBUG>$0:\n====> in oda::list_databases succeeded returned <@dbs>\n")
             if $$options_ref{debug};
@@ -237,6 +236,7 @@ sub list_databases {
                 return 0;
             }
             chomp($createdb_cmd);
+            $createdb_cmd .= " -h $$options_ref{host}";
             my $cmd = "PGPASSWORD='$root_pass' $createdb_cmd -U postgres postgres";
             system($cmd);
             if ( $? ){
@@ -291,7 +291,7 @@ sub list_tables {
     # get the list of tables
     print "DB_DEBUG>$0:\n====> executing on database <$$options_ref{database}> command <SHOW TABLES>\n"
         if $$options_ref{verbose};
-    my $cmd ="PGPASSWORD='$$options_ref{password}' psql -U $$options_ref{user} -d $$options_ref{database} -t -c '\\d'";
+    my $cmd ="PGPASSWORD='$$options_ref{password}' psql -h $$options_ref{host} -U $$options_ref{user} -d $$options_ref{database} -t -c '\\d'";
     chomp(@table_names = `$cmd | awk '{print \$3}'`);
 
     # disconnect from the database if we were not connected at start
@@ -345,7 +345,7 @@ sub list_fields{
 
     #oda_connect($options_ref,$error_strings_ref);
 
-    my $cmd ="PGPASSWORD='$$options_ref{password}' psql -U $$options_ref{user} -d $$options_ref{database} -t -c '\\d $table'";
+    my $cmd ="PGPASSWORD='$$options_ref{password}' psql -h $$options_ref{host} -U $$options_ref{user} -d $$options_ref{database} -t -c '\\d $table'";
     chomp(my @field_names = `$cmd | awk '{print \$1}'`);
     print "DB_DEBUG>$0:\n====> in oda::list_fields SQL:$cmd\n" if $$options_ref{debug};
 
@@ -911,6 +911,7 @@ sub create_database {
         return 0;
     }
     chomp($createdb_cmd);
+    $createdb_cmd .= " -h $$options_ref{host}";
     my $cmd = "$createdb_cmd -U $$options_ref{user} $$options_ref{database}";
     $cmd = "PGPASSWORD='$$options_ref{password}' " . $cmd if $AUTH;
     system($cmd);
@@ -950,7 +951,7 @@ sub reset_password{
     my $root_pass = $options{password} 
         if $AUTH || &check_root_password; 
 
-    my $cmd_string = "psql -U postgres -d postgres";
+    my $cmd_string = "psql -h $$options_ref{host} -U postgres -d postgres";
     $cmd_string = "PGPASSWORD='$root_pass' " . $cmd_string if $root_pass;
     my $create_cmd = " -c \"CREATE USER $$options_ref{user} PASSWORD "
         . "'$$options_ref{password}' CREATEDB NOCREATEUSER\" ";
@@ -1026,7 +1027,7 @@ sub remove_oda {
 
     # Revoke all the privileges of oscar user and remove oscar user from
     # pgsql database
-    my $cmd_string = "dropuser -U postgres $$options_ref{user}";
+    my $cmd_string = "dropuser -h $$options_ref{host} -U postgres $$options_ref{user}";
     $cmd_string = $root_pass . $cmd_string if $root_pass;
 
     return 0 if !do_shell_command($options_ref, $cmd_string);
@@ -1096,6 +1097,7 @@ sub drop_database {
         return 0;
     }
     chomp($dropdb_cmd);
+    $dropdb_cmd .= " -h $$options_ref{host}";
     my $cmd = "$dropdb_cmd -U $options{user} $$options_ref{database}";
     $cmd = $root_pass . $cmd if $root_pass;
     if ( $$options_ref{debug} ) {
@@ -1190,7 +1192,7 @@ sub check_root_password{
     my $root_pass = "";
     my $simple_check_cmd = "";
     foreach $root_pass (@fake_root_passwords){
-        $simple_check_cmd = "PGPASSWORD='$root_pass' psql -U postgres -l";
+        $simple_check_cmd = "PGPASSWORD='$root_pass' psql -h localhost -U postgres -l";
         system("$simple_check_cmd > /dev/null 2>&1");
         if ($?){
             $AUTH = 1;
@@ -1217,7 +1219,7 @@ sub check_root_password{
             chomp($password = <STDIN>);
             print "\n";
             system("stty echo");
-            $simple_check_cmd = "PGPASSWORD='$password' psql -U postgres -l";
+            $simple_check_cmd = "PGPASSWORD='$password' psql -h localhost -U postgres -l";
             system("$simple_check_cmd > /dev/null 2>&1");
             last if( !$? );
 

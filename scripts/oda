@@ -382,6 +382,7 @@ sub execute_simple_command{
                 if( $$options_ref{type} eq "Pg" ){
                     $sh_cmd =
                         "PGPASSWORD='$$options_ref{password}' pg_dump "
+                        . "-h $$options_ref{host} "
                         . "-U $$options_ref{user} $$options_ref{database}"
                         . " > $dump_file";
                 }
@@ -438,8 +439,8 @@ sub execute_simple_command{
                 if ! -e $dump_file;
             my $sh_cmd = "";
             $sh_cmd = "PGPASSWORD='$$options_ref{password}' pgsql -U "
-                    . "$$options_ref{user} $$options_ref{database} < "
-                    . "$dump_file"
+                    . "$$options_ref{user} -h $$options_ref{host} "
+                    . "$$options_ref{database} < $dump_file"
                 if $$options_ref{type} eq "Pg";
             $sh_cmd = "mysql -u oscar -p$$options_ref{password} oscar < $dump_file"
                 if $$options_ref{type} eq "mysql";

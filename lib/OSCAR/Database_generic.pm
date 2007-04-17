@@ -315,7 +315,7 @@ sub create_table {
 
     if ( $$options_ref{type} eq "Pg"){
         $sql_file = my2pg($sql_file);
-        $cmd = "PGPASSWORD='$$options_ref{password}' psql -U $$options_ref{user} oscar < $sql_file";
+        $cmd = "PGPASSWORD='$$options_ref{password}' psql -h $$options_ref{host} -U $$options_ref{user} oscar < $sql_file";
     }
 
     my $debug_msg = "DB_DEBUG>$0:\n====> in Database::create_table runs the command : $cmd\n";

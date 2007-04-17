@@ -333,6 +333,7 @@ goto PREP_DB if (!$md5);
 
 oscar_log_subsection("Running package setup scripts for ALL packages");
 for my $pkg (sort keys(%pkgdirs)) {
+    next if $pkg eq "oda";
     my $dir = $pkgdirs{$pkg};
     next if (! -x "$dir/scripts/setup");
 

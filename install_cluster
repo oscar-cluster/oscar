@@ -97,13 +97,17 @@ else {
     oscar_log_subsection("Setting env variable OSCAR_UI to gui");
 }
 
-# Default database type is mysql if --database( or -d) option is given
-$ENV{OSCAR_DB} = "mysql";
+# Default database type is mysql if --database( or -d) option is not
+# given
+$ENV{OSCAR_DB} = "mysql:";
 if($db) {
     # convert all the inputs to the lowercase characters
     $ENV{OSCAR_DB} = lc($db);
 }
 
+# Switch to have symlink(oda.pm) point to the right database
+# module(mysql.pm, pgsql.pm, or anything else) according to the given
+# --database option.
 my $lib_dir = "$ENV{OSCAR_HOME}/lib/OSCAR";
 unlink "$lib_dir/oda.pm";
 my $oda_dir = "$ENV{OSCAR_HOME}/packages/oda";
@@ -111,9 +115,14 @@ unlink "$oda_dir/prereq.cfg";
 if( $ENV{OSCAR_DB} eq "pg" ||
     $ENV{OSCAR_DB} eq "pgsql" ||
     $ENV{OSCAR_DB} eq "postgresql" ){
-    $ENV{OSCAR_DB} = "pgsql";
+    $ENV{OSCAR_DB} = "pgsql:";
     system("ln -s $lib_dir/ODA/pgsql.pm $lib_dir/oda.pm");    
-    system("ln -s $oda_dir/prereqs/pgsql.cfg $oda_dir/prereq.cfg");    
+    system("ln -s $oda_dir/prereqs/pgsql.cfg $oda_dir/prereq.cfg");
+    # If postmaster is not running and pgsql rpm is not installed,
+    # we assume that pgsql is not installed yet.
+    $ENV{OSCAR_DB} .= "new"
+        if !system("ps -ef | grep postmaster > /dev/null 2>&1")
+            && !system("rpm -qa | grep postgresql > /dev/null 2>&1");
 }else{
     system("ln -s $lib_dir/ODA/mysql.pm $lib_dir/oda.pm");    
     system("ln -s $oda_dir/prereqs/mysql.cfg $oda_dir/prereq.cfg");    

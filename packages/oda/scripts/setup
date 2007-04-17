@@ -22,8 +22,53 @@ use OSCAR::Logger;
 use OSCAR::PackagePath;
 use File::Copy;
 
-my $os = OSCAR::PackagePath::distro_detect_or_die();
+my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
 my $mysqld;
+my $pgsqld = "postgresql";
+my $database_daemon = $pgsqld if $db_type eq "pgsql";
+
+# Reconfigure PostgreSQL
+if ($db_type eq "pgsql"){
+    my $PG_DATA_DIR = "/var/lib/pgsql/data";
+    my $pg_conf = "$PG_DATA_DIR/pg_hba.conf";
+    my $postgresql_conf = "$PG_DATA_DIR/postgresql.conf";
+    if ($chk eq "new"){
+        if ( !system("/etc/init.d/$database_daemon status | grep -c stopped") ) {
+          !system("/etc/init.d/$database_daemon start") or croak("Couldn't restart $database_daemon");
+        }
+        open OLD_CFG, "<$pg_conf"
+            or croak("Can not open $pg_conf file");
+        open NEW_CFG, ">$pg_conf.$$";
+        while(chomp(my $line = <OLD_CFG>)){
+            $line =~ s/^local(\s*all\s*all).*/host$1 127.0.0.1 255.255.255.0  trust/g;
+            print NEW_CFG "$line\n";
+        }
+        close NEW_CFG; close OLD_CFG;
+        rename $pg_conf, "$pg_conf.bak";
+        rename "$pg_conf.$$", $pg_conf;
+
+        open PG_CFG, "<$postgresql_conf"
+            or croak("Can not open $postgresql_conf file");
+        open PG_BAK, ">$postgresql_conf.$$";
+        while(chomp(my $line = <PG_CFG>)){
+            $line =~ s/^#(tcpip_socket).*/$1 = true/g;
+            print PG_BAK "$line\n";
+        }
+        close PG_BAK; close PG_CFG;
+        rename $postgresql_conf, "$postgresql_conf.bak";
+        rename "$postgresql_conf.$$", $postgresql_conf;
+        system("chmod 600 $pg_conf $postgresql_conf");
+        system("chown postgres:postgres $pg_conf $postgresql_conf");
+        
+
+    }
+
+    goto RESTART_DATABASE;
+}
+
+
+# Reconfigure MySQL
+my $os = OSCAR::PackagePath::distro_detect_or_die();
 
 if ($os->{compat_distro} =~ /^(rhel|fc|mdv)/) {
     $mysqld      = 'mysqld';
@@ -33,11 +78,12 @@ if ($os->{compat_distro} =~ /^(rhel|fc|mdv)/) {
     print "\n\nCannot determine distribution and version!!!!\nCannot determine oda rpms to install!!!!\n\n";
     exit 1;
 }
+$database_daemon = $mysqld if $db_type eq "mysql";
 
 # MySQL on Mandriva 2006 should not have the following
 # innodb conf on /etc/my.cnf
 # So, we skip the innodb.conf when distro is mandriva.
-goto SKIP_FOR_MANDRIVA
+goto RESTART_DATABASE
     if($os->{'distro'} eq "mandriva");
 
 # Set up the InnoDB type to the oscar database tables.
@@ -89,16 +135,20 @@ if(! $innodb_flag ){
     unlink "$mysql_conf.bak";
 }    
 
- SKIP_FOR_MANDRIVA:
+ RESTART_DATABASE:
 
-oscar_log_subsection("Checking status of MySQL server $mysqld");
-if (! -x "/etc/init.d/$mysqld") {
-    croak("Couldn't find /etc/init.d/$mysqld. MySQL server not correctly installed?");
+oscar_log_subsection("Checking status of $db_type server $database_daemon");
+if (! -x "/etc/init.d/$database_daemon") {
+    croak("Couldn't find /etc/init.d/$database_daemon. $db_type server not correctly installed?");
 }
-if ( !system("/etc/init.d/$mysqld status | grep -c stopped") ) {
-  !system("/etc/init.d/$mysqld restart") or croak("Couldn't restart $mysqld");
+# Restart the database if it is running. Otherwise, just start it.
+if ( system("/etc/init.d/$database_daemon status | grep -c stopped") ){
+  !system("/etc/init.d/$database_daemon restart") or croak("Couldn't restart $database_daemon");
+  $chk = "old";
+  $ENV{OSCAR_DB} = "$db_type:$chk";
 } else {
-  oscar_log_subsection("$mysqld already running");
+  oscar_log_subsection("$database_daemon was not running and will start");
+  !system("/etc/init.d/$database_daemon start") or croak("Couldn't start $database_daemon");
 }
 
 exit(0);
