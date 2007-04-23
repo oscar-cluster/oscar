@@ -1042,7 +1042,8 @@ sub remove_oda {
     $cached_all_table_names_ref = undef;
     $cached_all_tables_fields_ref = undef;
 
-    # BACKUP  odapw and then remove it
+    # BACKUP  odapw and then remove it 
+    print "Deleting the saved oda password file ...\n";
     rename "$ODAPW", "$ODAPW.bak";
 
     return $$options_ref{type};
