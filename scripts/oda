@@ -36,7 +36,7 @@ use Getopt::Long;
 use Pod::Usage;
 use Data::Dumper;
 use Term::Complete;
-use Database_generic;
+use OSCAR::Database_generic;
 
 #********************************************************************#
 #                                                                    #
@@ -55,8 +55,21 @@ my @simple_commands = ( "dump",                                      #
 #                                                                    #
 #********************************************************************#
 
-
-# set default option values
+#********************************************************************#
+# list of simple shortcut commands                                   #
+#                                                                    #
+my %shortcuts = ( "nodes"       => "name",                           #
+                  "packages"    => "package",                        #
+                  "images"      => "name",                           #
+                  "nics"        => "ip",                             #
+                  "networks"    => "name",                           #
+                  "groups"      => "name",                           #
+                  "clusters"    => "name",                           #
+                );                                                   #
+#                                                                    #
+#********************************************************************#
+                                                                     
+# set default option values                                           
 my %options = ( 'debug'        => 0,
                 'scripts_dir'  => "SCRIPTS_DIR",
                 'raw'          => 0,
@@ -103,7 +116,7 @@ ERREXIT
 
 sub separate_command_arguments {
     my ( $options_ref,
-     $command_arguments ) = @_;
+         $command_arguments ) = @_;
 
     my @separated_command_arguments =
     split( '\s+', $command_arguments );
@@ -127,11 +140,11 @@ sub separate_command_arguments {
 
 sub exist_oscar_database {
     my ( $options_ref,
-     $error_strings_ref ) = @_;
+         $error_strings_ref ) = @_;
     my %databases = ();
     oda::list_databases( $options_ref,
-                       \%databases,
-                       $error_strings_ref );
+                         \%databases,
+                         $error_strings_ref );
     my $status = 0;
     $status = 1 if $databases{oscar};
 
@@ -207,7 +220,11 @@ sub execute_simple_command{
     
     my $command;
     if ( grep( /^$$command_and_arguments_ref[0]$/, 
-           @simple_commands ) ) {
+           @simple_commands ) ||
+         grep( /^$$command_and_arguments_ref[0]$/, 
+           keys %shortcuts )  ||
+         $$command_and_arguments_ref[0] eq "shortcuts" 
+       ) {
         $command = shift @$command_and_arguments_ref;
     } else {
         $command = shift @$command_and_arguments_ref;
@@ -231,8 +248,8 @@ sub execute_simple_command{
         } else {
             my @databases;
             $success = oda::list_databases( $options_ref,
-                           \@databases,
-                           \@error_strings );
+                                           \@databases,
+                                           \@error_strings );
             @result_strings = sort @databases if $success;
         }
     }elsif ( $command eq "create_database" ){
@@ -249,7 +266,7 @@ sub execute_simple_command{
             "No other arguments allowed with $command";
         } else {
             my $status = exist_oscar_database( $options_ref,
-                                       \@error_strings );
+                                               \@error_strings );
             if( $status ){
                 print "Warning: This operation removes the $$options_ref{database} database, user, and its all permissions\n";
                 print "Warning: once your oscar database is dropped, you will get out of this console\n";
@@ -260,7 +277,7 @@ sub execute_simple_command{
                 if ( $answer eq "Y" ){
                     oda::oda_disconnect( $options_ref );
                     $success = oda::remove_oda( $options_ref,
-                                       \@error_strings );
+                                                \@error_strings );
                     if($success){
                         print "DONE!\n";
                         exit 0;
@@ -277,7 +294,7 @@ sub execute_simple_command{
             "No other arguments allowed with $command";
         } else {
             my $status = exist_oscar_database( $options_ref,
-                                       \@error_strings );
+                                               \@error_strings );
             if( $status ){
                 print "Warning: once your oscar database is dropped, you will get out of this console\n";
                 print "Warning: ODA will be ready to create a new oscar database\n\n";
@@ -286,7 +303,7 @@ sub execute_simple_command{
                 my $answer = check_yes_or_no($msg);
                 if ( $answer eq "Y" ){
                     $success = oda::drop_database( $options_ref,
-                                       \@error_strings );
+                                                  \@error_strings );
                     if($success){
                         print "DONE!\n";
                         exit 0;
@@ -303,7 +320,7 @@ sub execute_simple_command{
             "No other arguments allowed with $command";
         } else {
             my $status = exist_oscar_database( $options_ref,
-                                       \@error_strings );
+                                               \@error_strings );
             if( $status ){
                 my $all_table_names_ref = oda::list_tables( $options_ref,
                                    \@error_strings );
@@ -342,6 +359,7 @@ sub execute_simple_command{
                 push @arguments, $interactive_fields;
             }
             my $table_name = shift @arguments;
+            $table_name = ucfirst($table_name);
             if ( @arguments ) {
                 push @error_strings,
                 "No other arguments besides table name allowed with $command";
@@ -529,6 +547,46 @@ sub execute_simple_command{
         }else{
             rename "$ODAPW.bak", "$ODAPW";
         }
+    }elsif ( $command eq "shortcuts" ){
+        foreach my $list (keys %shortcuts){
+            print "$list\n";
+        }
+    }else{
+        if ( ! $shortcuts{$command} ){
+            print "There is no such a shortcut($command)\n";
+            print "Please check the list of shortcuts and then run it again\n";
+            usage();
+            exit 0;
+        }
+        my $field = undef;
+        if (@arguments){
+            $field = shift @arguments;
+            if(@arguments){
+                push @error_strings,
+                "No other arguments allowed with $command";
+            }
+        }
+        my $status = exist_oscar_database( $options_ref,
+                                           \@error_strings );
+
+        my %table_fields = ();
+        foreach my $table (keys %shortcuts){
+            my %fields = ();
+             oda::list_fields($options_ref,$table,\%fields,\@error_strings);
+            $table_fields{$table} = \%fields;
+        }
+
+        my $db_table = $command;
+        my @results = ();
+        select_table($options_ref,ucfirst($db_table),undef,undef,\@results,\@error_strings);
+        $field = $shortcuts{$db_table} if ! $field;
+        if ( $table_fields{$db_table}{$field} ){
+            print "List of the field($field) in ".ucfirst($db_table);
+            print "\n=================================\n";
+            foreach my $ref (@results){
+                print "$$ref{$field}\n";
+            }
+        }
     }
 
     if ( ! @error_strings ) {
@@ -601,6 +659,9 @@ Raw commands:
  $0 [options] list_fields TABLE
  $0 [options] list_tables
  $0 [options] reset_password
+ $0 [options] shortcuts
+ $0 [options] <SHORTCUTS>
+
 
 
 USAGE5
@@ -664,9 +725,13 @@ if ( exists $options{version} ) {
 elsif ( @ARGV ) {
     print "$0: executing <(" . join( ',', @ARGV ) . ")>\n"
     if $options{debug};
+    my @args = ();
+    foreach my $arg (@ARGV){
+        push @args, lc($arg); 
+    }
     my @error_strings =
-    execute_simple_command( \%options,
-                          \@ARGV );
+        execute_simple_command( \%options,
+                              \@args );
     errexit( 1, @error_strings ) if @error_strings;
     exit 0;
 }
@@ -716,7 +781,7 @@ else {
                 } else {
                     my @error_strings =
                     execute_simple_command( \%options,
-                                          $separated_cmd_args_ref );
+                                            $separated_cmd_args_ref );
                     $last_status = ( @error_strings ) ? 0 : 1;
                     print STDERR ( shift @error_strings ) . "\n" while @error_strings;
                 }
@@ -744,14 +809,13 @@ else {
             } elsif ( $$separated_cmd_args_ref[0] eq "version" ) {
             my $server_version = 
                 oda::database_server_version( \%options, undef );
-            print "oda version: ODA_VERSION" . 
                 ( ( defined $server_version ) ? 
                   " database server version: $server_version" : "" ) .
                   "\n";
             } else {
             my @error_strings =
                 execute_simple_command( \%options,
-                                  $separated_cmd_args_ref );
+                                        $separated_cmd_args_ref );
             $last_status = ( @error_strings ) ? 0 : 1;
             print STDERR ( shift @error_strings ) . "\n" while @error_strings;
             }

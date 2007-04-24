@@ -269,6 +269,7 @@ sub select_table {
     my $sql = "SELECT ";
     my $flag = 0;
     my $comma = "";
+    $sql .= " * " if ! $field_ref;
     foreach my $field (@$field_ref){
         $comma = ", " if $flag;
         $sql .= "$comma $field";

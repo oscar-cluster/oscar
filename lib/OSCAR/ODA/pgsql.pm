@@ -352,6 +352,7 @@ sub list_fields{
     #oda_disconnect($options_ref,$error_strings_ref);
 
     foreach my $field (@field_names){
+        next if !$field;
         $$fields_ref{$field} = "Not assigned";
     }
 
