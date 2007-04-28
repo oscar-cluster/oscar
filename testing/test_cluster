@@ -14,11 +14,12 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   Copyright (c) 2003 The Trustees of Indiana University.  
+#   Copyright (c) 2003,2007 The Trustees of Indiana University.  
 #                      All rights reserved.
 #   Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>
 #                      All rights reserved.
 
+# $Id$
 #   This script performs tests on the cluster after it has been successfully
 #   installed - tests to be executed are: root tests, user tests, and APItests
 
@@ -35,6 +36,22 @@ use OSCAR::Package;
 use Data::Dumper;
 use Getopt::Long;
 use OSCAR::OCA::RM_Detect;
+
+# We usually test the following packages and if there is more to test
+# please add it with proper priority number(the hash value of the
+# corresponding package name).
+# The smller the number is, the higer its prority is.
+# e.g.,) maui has the highest priority and ganglia has the lowest.
+my %sample_pkgs = ( 
+                   "maui"    => 0,
+                   "torque"  => 1,
+                   "sge"     => 1,
+                   "openmpi" => 2,
+                   "lam"     => 2,
+                   "mpich"   => 2,
+                   "pvm"     => 3,
+                   "ganglia" => 3,
+                  );
 
 my %opts = ();
 unless (GetOptions(\%opts,"wait") ) {
@@ -70,6 +87,12 @@ sub sortclients(@) {
 	       @_;
 }
 
+sub advanced_sort {
+    $sample_pkgs{$a} <=> $sample_pkgs{$b}
+    or
+    $a cmp $b
+}
+
 my @clientlist;
 if (@ARGV) {
         @clientlist=@ARGV;
@@ -80,10 +103,18 @@ if (@ARGV) {
         }
 }
 
+# Generate the list of packages sorted by their priority
+my @sorted_pkgs = sort advanced_sort keys %sample_pkgs;
+
 my @pkgs_hash = list_selected_packages();
 my @pkgs = ();
+my $pkg_name = undef;
 foreach my $pkg_ref (@pkgs_hash){
-    push @pkgs, $$pkg_ref{package};
+    $pkg_name = $$pkg_ref{package};
+    push @sorted_pkgs, $pkg_name
+        if !$sample_pkgs{$pkg_name};
+    $sample_pkgs{$pkg_name} = "on";
+    push @pkgs, $pkg_name;
 }
 
 my $return = 0;
@@ -213,7 +244,9 @@ my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=
 
 my $creturn=0;
 
-foreach my $pkg (@pkgs) {
+# Test packages with the sorted list
+foreach my $pkg (@sorted_pkgs) {
+    next if $sample_pkgs{$pkg} ne "on";
     $ENV{OSCAR_PACKAGE_TEST_HOME} = "$test_user_homedir/$pkg";
     if (-e "$ENV{OSCAR_PACKAGE_TEST_HOME}/test_user") {
 
