@@ -17,7 +17,7 @@
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 #
-# Copyright (c) 2002-2005 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005,2007 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
 # Copyright (c) 2005-2006 Bernard Li <bli@bcgsc.ca>
@@ -49,7 +49,6 @@ use OSCAR::Logger;
 use OSCAR::Configurator;
 use OSCAR::Package;
 use OSCAR::PackagePath;
-use OSCAR::Database;
 use OSCAR::PackageInUn;
 use OSCAR::WizardEnv;
 use AppConfig;
@@ -73,6 +72,7 @@ if(!$ENV{OSCAR_HOME}) {
 my $save_text;
 my %options = ();
 my @errors = ();
+my @client_nodes = ();
 my $debug = $ENV{DEBUG_OSCAR_WIZARD};
 my $mode = "manage"; # default mode is manage
 
@@ -679,11 +679,25 @@ sub build_oscar_clients {
     if (!$dnsdomainname) {
 	$dnsdomainname = "oscardomain";
     }
+    get_client_nodes(\@client_nodes,\%options,\@errors)
+        if $#client_nodes == -1; # If @client_nodes is empty
+    my $client_basename = "oscarnode";
+    if ($#client_nodes != -1){
+        my $first_node = "";
+        foreach my $node_ref (@client_nodes){
+            $first_node = $$node_ref{name};
+            last;
+        }
+        print "BEFORE : $first_node\n";
+        $first_node =~ s/^([^\d]+)(\d+)$/$1/g ;
+        print "AFTER : $first_node\n";
+        $client_basename = $first_node;
+    }
 
     my %vars = (
                 title => "Define OSCAR Clients",
                 imgname => "oscarimage",
-                basename => "oscarnode",
+                basename => $client_basename,
                 domainname => $dnsdomainname,
                 numhosts => "0",
                 startinghostnum => "1",
@@ -765,8 +779,8 @@ sub populate_client_group_nodes {
     my @pkgs = list_selected_packages("all");
     my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status");
 #    locking("WRITE", \%options, \@tables, \@errors);
-    my @client_nodes = ();
-    get_client_nodes(\@client_nodes,\%options,\@errors);
+    get_client_nodes(\@client_nodes,\%options,\@errors)
+        if $#client_nodes == -1;  # If @client_nodes is empty
     my @nodes = ();
     foreach my $client_ref (@client_nodes){
         my $node_id = $$client_ref{id};
@@ -843,7 +857,7 @@ sub update_client_node_package_status {
 	my @pkgs = list_selected_packages();
     my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status");
 #    locking("WRITE", \%options, \@tables, \@errors);
-    my @client_nodes = ();
+    @client_nodes = ();
     get_client_nodes(\@client_nodes,\%options,\@errors);
     my @nodes = ();
     foreach my $client_ref (@client_nodes){
