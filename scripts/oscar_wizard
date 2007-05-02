@@ -839,11 +839,11 @@ sub run_post_install {
 	    return_status => 0,
 	},
     };
-    run_command($window, $step_number, $cmd_vars);
+    my $status = run_command($window, $step_number, $cmd_vars);
 
     &update_client_node_package_status;
     # Set the next button "Test Cluster Setup" available
-    if( $$step_status{test_install} eq "disabled" ){
+    if( $status && $$step_status{test_install} eq "disabled" ){
         my $next_step_button = $buttons{test_install};
         $next_step_button->configure(-state => "normal");
         set_wizard_status("test_install",\%options,\@errors);
