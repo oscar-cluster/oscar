@@ -200,3 +200,6 @@ ldconfig
 MySQL-client
 perl-DBI
 perl-DBD-mysql
+perl-DBD-pg
+postgresql
+postgresql-libs

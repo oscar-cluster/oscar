@@ -215,4 +215,7 @@ xorg-x11-libs
 ia32el
 mysql
 perl-DBD-MySQL
+perl-DBD-Pg
 perl-DBI
+postgresql
+postgresql-libs

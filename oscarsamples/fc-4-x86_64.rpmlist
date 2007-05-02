@@ -222,7 +222,10 @@ xorg-x11-Mesa-libGL
 xorg-x11-libs
 mysql
 perl-DBD-MySQL
+perl-DBD-Pg
 perl-DBI
+postgresql
+postgresql-libs
 
 # ia32 RPMs with same name as the x86_64 versions
 glibc.i686

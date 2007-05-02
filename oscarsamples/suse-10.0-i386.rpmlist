@@ -102,7 +102,6 @@ perl
 perl-Config-Crontab
 perl-Digest-SHA1
 perl-gettext
-perl-DBD-mysql
 permissions
 popt
 portmap
@@ -158,4 +157,7 @@ glibc-devel
 libstdc++-devel
 mysql
 perl-DBD-mysql
+perl-DBD-Pg
 perl-DBI
+postgresql
+postgresql-libs

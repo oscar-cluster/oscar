@@ -222,4 +222,7 @@ xorg-x11-Mesa-libGL
 xorg-x11-libs
 mysql
 perl-DBD-MySQL
+perl-DBD-Pg
 perl-DBI
+postgresql
+postgresql-libs

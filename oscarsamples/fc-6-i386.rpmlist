@@ -213,4 +213,7 @@ mesa-libGL
 libX11
 mysql
 perl-DBD-MySQL
+perl-DBD-Pg
 perl-DBI
+postgresql
+postgresql-libs
