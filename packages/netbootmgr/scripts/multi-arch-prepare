@@ -1,0 +1,79 @@
+#!/usr/bin/perl
+#
+# Copy kernel and initrd for available architectures from systemimager's
+# installation place to /tftpboot. Create pxe config files for them and
+# edit /etc/netbootmgr.cfg to include them.
+#
+#
+# $Id$
+#
+# Copyright (c) 2007 Erich Focht <efocht@hpce.nec.com>
+
+use strict;
+
+#
+# Check if system is ready for multi-arch boot
+#
+my $tftp="/tftpboot";
+my $si_boot="/usr/share/systemimager/boot";
+my @nbm;
+for my $arch (`ls -1 $si_boot`) {
+
+    my $cmd="cp -p $si_boot/$arch/standard/kernel $tftp/kernel-inst-std.$arch";
+    print STDERR "Executing: $cmd\n";
+    system($cmd);
+
+    $cmd="cp -p $si_boot/$arch/standard/initrd.img $tftp/initrd-inst-std.$arch";
+    print STDERR "Executing: $cmd\n";
+    system($cmd);
+
+    push @nbm, "MENU Install_$arch:install_std_$arch";
+
+
+    # write boot config files
+
+    local *IN, *OUT;
+    open IN, "$tftp/pxelinux.cfg/default" or
+	die "Could not open pxelinux.cfg/default";
+    open OUT, "> $tftp/install_std_$arch" or
+	die "Could not open $tftp/install_std_$arch";
+    my $line;
+    while ($line = <IN>) {
+	chomp $line;
+	if ($line =~ /^KERNEL /) {
+	    print OUT "KERNEL kernel-inst-std.$arch\n";
+	} elsif ($line =~ /^(.*) initrd=\S+ (.*)$/) {
+	    print OUT "$1 initrd=initrd-inst-std.$arch $2\n";
+	} else {
+	    print OUT "$line\n";
+	}
+    }
+    close OUT;
+    close IN;
+}
+
+#
+# Update /etc/netbootmgr.conf
+#
+open IN, "/etc/netbootmgr.conf" or die "Could not open /etc/netbootmgr.conf";
+my @onbm = <IN>;
+close IN;
+
+open OUT, ">/etc/netbootmgr.conf" or die "Could not open /etc/netbootmgr.conf";
+my $nbm_done = 0;
+for my $line (@onbm) {
+    chomp $line;
+    if (/^MENU\s+([^:]+):([^:]+)$/) {
+	my $label = $1;
+	my $cfg = $2;
+
+	if (!$nbm_done) {
+	    for my $l (@nbm) {
+		print OUT "$l\n";
+	    }
+	    $nbm_done = 1;
+	}
+	next if ($label =~ /^Install/);
+    }
+    print OUT "$line\n";
+}
