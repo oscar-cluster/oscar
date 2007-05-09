@@ -1,0 +1,48 @@
+<html>
+<head><title>Configuration for Job Monarch</title>
+</head>
+<body>
+<center>
+<h1>Configuring Job Monarch Options</h1>
+</center>
+On this page, you can customize your Job Monarch settings. You can choose the DRM that you want Monarch to interface with, whether to enable archiving facilities and such.
+
+<form>
+
+<p>Name of Cluster
+<input name="clustername" value="OSCAR Cluster"><br>
+
+<p>Your Cluster's batch queueing system<br>
+<input type="radio" name="drm" value="sge"> Sun Gridengine<br>
+<input type="radio" name="drm" value="pbs" checked>PBS<br>
+<br>
+
+<p>Do you want to enable Job Monarch's archiving daemon (check box for yes)?
+<input type="checkbox" name="archived" value="yes"><br>
+
+<br><br>
+<!-- 
+<p>Root dir for Ganglia's web-frontend files
+<input name="gangliawww" value="/var/www/html/ganglia"><br>
+
+The following config options are needed only if you are enabling jobarchived
+
+<p>Path to Ganglia's rrd archive files
+<input name="gangliarrd" value="/var/lib/ganglia/rrds"><br>
+
+<p>Set Path to JobMonarch's rrd archive files
+<input name="monarchrrd" value="/data/jobarch/rrds"><br>
+
+<p>PREFIX to mysql installation (Enter /usr if the binaries (mysqladmin, mysql and such) are under /usr/bin)<br>
+<input name="mysqlpath" value="/usr"><br>
+//-->
+
+<p>
+<input type=reset value='Reset Form'>
+<p>
+
+</form>
+<hr>
+</body>
+</html>
+

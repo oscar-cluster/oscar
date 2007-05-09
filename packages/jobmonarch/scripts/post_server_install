@@ -1,0 +1,309 @@
+#!/usr/bin/perl
+
+use strict;
+use Carp;
+use File::Copy;
+use File::Path;
+
+use DBI;
+use DBD::mysql;
+
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Configbox;
+use OSCAR::Database;
+use OSCAR::Opkg;
+use OSCAR::Distro;
+
+our ($distro);
+
+
+sub get_config {
+    my $conf;
+    my $config_data = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+
+    if (-e $config_data) {
+	my $ref = readInConfigValues($config_data,"jobmonarch","",noarray=>1);
+	$conf->{'clustername'} = $ref->{clustername};
+	$conf->{'drm'} = $ref->{drm};
+	$conf->{'archived'} = $ref->{archived};
+    }
+
+    $conf->{'http_user'}     = http_info();
+
+    $conf->{'gangliawww'}    = "/var/www/html/ganglia";
+    $conf->{'ganglia_conf'}  = $conf->{'gangliawww'}."/conf.php";
+
+    $conf->{'monarchrrd'}    = "/data/jobarch/rrds";
+    $conf->{'jobarchive_db'} = "jobarchive";
+
+    return $conf;
+}
+
+
+sub http_info {
+
+    my $http_uid_conf;
+    my $http_user;
+
+    my $pipe_cmd = "$ENV{OSCAR_HOME}/scripts/distro-query";
+    $pipe_cmd = $pipe_cmd." | "." grep \"compat distribution\"";
+    $pipe_cmd = $pipe_cmd." | "."awk '{ print \$NF }'";
+
+    $distro = `$pipe_cmd`;
+    chomp($distro);
+
+    print "Distribution: '$distro'\n";
+
+    if($distro eq "sles" || $distro eq "suse") {
+	$http_uid_conf = "/etc/apache2/uid.conf";
+    } elsif($distro eq "rhel" || $distro eq "fc") {
+	$http_uid_conf = "/etc/httpd/conf/httpd.conf";
+    }
+
+    $http_user = `egrep "^User " $http_uid_conf`;
+    chomp($http_user);
+
+    $http_user = (split(/\s+/,$http_user))[1];
+
+    print "Http user: $http_user\n";
+
+    return $http_user;
+}
+
+
+sub create_dbase_entries {
+
+    my ($conf) = @_;
+    my $http_user = $conf->{'http_user'};
+    my $jobarchive_db = $conf->{'jobarchive_db'};
+
+
+    # Establish connection to MySQL database on localhost
+
+    my $db_user = "root";
+    my $dsn = "DBI:mysql:host=localhost:database=mysql";
+    my $dbh = DBI->connect($dsn, $db_user, undef, {'RaiseError' => 1, 'AutoCommit' => 1});
+    my $res;
+
+    my $have_http_user = 0;
+
+
+    if ($dbh != undef) {
+	print "Connection to database successful\n";
+    } else {
+	print "No connection to database: Giving up.\n";
+    }
+
+
+    # No go and check if the web user already exists,
+    # create it otherwise.
+
+    my $sth = $dbh->prepare("SELECT \* FROM user WHERE User='$http_user' AND Host = 'localhost'");
+    if($sth) {
+	if($sth->execute) {
+	    while($res = $sth->fetchrow_hashref()) {
+		if($res->{'User'} eq $http_user && $res->{'Host'} eq "localhost") {
+		    $have_http_user = 1;
+		}
+	    }
+	}
+    }
+
+    # The old mysql version 4 does not have 'CREATE USER'...
+
+    # if($have_http_user == 0) {
+	# print "Http user not found in database.\n";
+	# my $cmd_str = "CREATE USER $http_user\@localhost";
+	# my $cmd_str = "GRANT ALL ON jobarchiveUSER $http_user\@localhost";
+	# print "Command: $cmd_str\n";
+	# $dbh->do($cmd_str);
+    # }
+
+    
+    # Now continue with creating the database. We drop it first,
+    # because any exsisting database with the name 'jobarchive'
+    # is of no use to us.
+
+    $dbh->do("DROP DATABASE IF exists $jobarchive_db");
+    $dbh->do("CREATE DATABASE $jobarchive_db");
+
+    
+    # And create tables for the jobarchive database
+
+    $dbh->do("USE $jobarchive_db");
+
+    $dbh->do("
+CREATE TABLE jobs (
+        job_id                  INT NOT NULL UNIQUE PRIMARY KEY,
+        job_name                VARCHAR(100),
+        job_queue               VARCHAR(50),
+        job_owner               VARCHAR(30),
+        job_requested_time      VARCHAR(12),
+        job_requested_memory    VARCHAR(10),
+        job_ppn                 INT,
+        job_status              VARCHAR(2),
+        job_start_timestamp     VARCHAR(10),
+        job_stop_timestamp      VARCHAR(10)
+)
+");
+
+    $dbh->do("
+CREATE TABLE nodes (
+        node_id                 SERIAL NOT NULL UNIQUE PRIMARY KEY,
+        node_hostname           VARCHAR(100),
+        node_location           VARCHAR(10)
+)
+");
+
+    $dbh->do("
+CREATE TABLE job_nodes (
+        job_id                  INT NOT NULL REFERENCES jobs ON DELETE CASCADE,
+        node_id                 INT NOT NULL REFERENCES nodes ON DELETE RESTRICT,
+        PRIMARY KEY ( job_id, node_id )
+)
+");
+    
+
+    # And, finally, grant all rights to root and $http_user
+
+    $dbh->do("GRANT ALL ON $jobarchive_db.jobs TO root,$http_user\@localhost");
+    $dbh->do("GRANT ALL ON $jobarchive_db.nodes TO root,$http_user\@localhost");
+    $dbh->do("GRANT ALL ON $jobarchive_db.job_nodes TO root,$http_user\@localhost");
+
+    $dbh->disconnect();
+}
+
+
+
+sub create_config_files {
+
+    my ($conf) = @_;
+    my $line;
+    my @parts;
+
+    if($conf->{'archived'} eq "yes" || 1) {
+	print "Creating config for jobarchived.\n";
+
+	open JOBARCHD_CONF, "/etc/jobarchived.conf";
+	open(TMP_CONF, '>', "/tmp/jobarchived.conf");
+
+	while(<JOBARCHD_CONF>) {
+	    $line = $_;
+	    chomp($line);
+	    if($line =~ /^ARCHIVE_DATASOURCES/) {
+		@parts = split(/:/, $line);
+		print TMP_CONF "$parts[0]: \"$conf->{'clustername'}\"\n";
+	    } elsif($line =~ /^ARCHIVE_PATH/) {
+		@parts = split(/:/, $line);
+		print TMP_CONF "$parts[0]: $conf->{'monarchrrd'}\n";
+	    } elsif($line =~ /JOB_SQL_DBASE/) {
+	        @parts = split(/:/, $line);
+		print TMP_CONF "$parts[0]: localhost/$conf->{'jobarchive_db'}\n";
+	    } else {
+		print TMP_CONF "$line\n";
+	    }
+	}
+
+	close TMP_CONF;
+	close JOBARCHD_CONF;
+
+	if (! -e "/etc/jobarchived.conf.save") {
+	    rename "/etc/jobarchived.conf", "/etc/jobarchived.conf.save";
+	}
+	rename "/tmp/jobarchived.conf", "/etc/jobarchived.conf";
+
+    }
+
+    
+    # Create jobmond configuration
+
+    open JOBMOND_CONF, "/etc/jobmond.conf";
+    open(TMP_CONF, '>', "/tmp/jobmond.conf");
+    
+    while(<JOBMOND_CONF>) {
+	$line = $_;
+	chomp($line);
+	if($line =~ /^BATCH_SERVER/) {
+	    print "Found batch server entry\n";
+	    @parts = split(/:/, $line);
+	    print TMP_CONF  "$parts[0]: pbs_oscar\n";
+	}
+	elsif($line =~ /^BATCH_API/) {
+	    @parts = split(/:/, $line);
+	    print TMP_CONF  "$parts[0]: $conf->{'drm'}\n";
+	} else {
+	    print TMP_CONF  "$line\n";
+	}
+    }
+    close TMP_CONF;
+    close JOBMOND_CONF;
+
+    if (! -e "/etc/jobmond.conf.save") {
+	rename "/etc/jobmond.conf", "/etc/jobmond.conf.save";
+    }
+    rename "/tmp/jobmond.conf", "/etc/jobmond.conf";
+
+}
+
+
+sub change_ganglia_conf {
+    my ($conf) = @_;
+    my $buffer;
+    my $ganglia_conf = $conf->{'ganglia_conf'};
+    my $line;
+
+    open CONF, $ganglia_conf;
+    while($line = <CONF>) {
+	$buffer = $buffer.$line;
+    }
+    close CONF;
+
+    print "Updating $ganglia_conf to use Job Monarch's templates and www files.\n";
+
+    $buffer =~ s|"default"|"job_monarch"|;
+    
+    open(CONF, '>', $ganglia_conf);
+    print CONF $buffer;
+    close CONF;
+}
+
+
+sub start_services {
+    my ($conf) = @_;
+
+    if($conf->{'archived'} eq "yes") {
+
+	# Now, make sure the path (/data/jobarch/rrds) to Monarch's archives exist
+	eval { mkpath($conf->{'monarchrrd'}) };
+	if ($@){
+	    print "Cannot create archive dir for jobarchived";
+	}
+
+	if($distro eq "suse" || $distro eq "sles") {
+	    system("chkconfig jobarchived on");
+	} else {
+	    system("chkconfig --level 345 jobarchived on");
+	}
+    }
+
+    if($distro eq "suse" || $distro eq "sles") {
+	system("chkconfig jobmond on");
+    } else {
+	system("chkconfig --level 345 jobmond on");
+    }
+}
+
+
+#
+# Start of the actual program
+#
+
+my $jobmonarch_conf;
+
+$jobmonarch_conf = get_config();
+
+create_dbase_entries($jobmonarch_conf);
+create_config_files($jobmonarch_conf);
+change_ganglia_conf($jobmonarch_conf);
+
+start_services($jobmonarch_conf);

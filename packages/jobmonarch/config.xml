@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>Ganglia Job Monarch</name>
+
+  <version>
+    <major>0</major>
+    <minor>1</minor>
+    <subversion>2</subversion>
+    <release>9</release>
+  </version>
+
+  <class>included</class>
+
+  <summary>Tools and addons to Ganglia to monitor and optionally archive batch job information</summary>
+
+  <license>GPL</license>
+  <group>Application/System</group>
+  <uri>https://subtrac.sara.nl/oss/jobmonarch</uri>
+
+  <packager>
+    <name>Babu Sundaram</name>
+    <email>babu@cs.uh.edu</email>
+  </packager>
+
+  <description>Job Monarch is a addon for the Ganglia monitoring system and plugs into an existing Ganglia setup. jobmond is the job monitoring daemon that gathers PBS/Torque/SGE batch statistics on jobs/nodes and submits them into Ganglia's XML stream. jobarchived is the Job Archiving Daemon. It listens to Ganglia's XML stream and archives the job and node statistics. It stores the job statistics in a Postgres SQL database and the node statistics in RRD files.</description>
+
+  <binary-package-list>
+      <filter>
+	<group>oscar_server</group>
+      </filter>
+      <pkg>jobmonarch</pkg>
+      <pkg>pbs_python</pkg>
+      <pkg>DRMAA-python</pkg>
+  </binary-package-list>  
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>suse</name>
+        </distribution>
+      </filter>
+      <pkg>mysql-client</pkg>
+      <pkg>python-mysql</pkg>
+      <pkg>php4-gd</pkg>
+      <pkg>php4-mbstring</pkg>
+      <pkg>DRMAA-python</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>sles</name>
+        </distribution>
+      </filter>
+      <pkg>mysql-client</pkg>
+      <pkg>python-mysql</pkg>
+      <pkg>php5-gd</pkg>
+      <pkg>php5-mbstring</pkg>
+      <pkg>php5-mysql</pkg>
+      <pkg>DRMAA-python</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>fc</name>
+        </distribution>
+      </filter>
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>rhel</name>
+        </distribution>
+      </filter>
+      <pkg>mysql</pkg>
+      <pkg>MySQL-python</pkg>
+      <pkg>php-gd</pkg>
+      <pkg>php-mbstring</pkg>
+      <pkg>php-mysql</pkg>
+  </binary-package-list>
+
+</oscar>
