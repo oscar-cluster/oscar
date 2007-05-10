@@ -4,6 +4,5 @@ linux-ha
 maui
 mpich
 openmpi
-pvm
 sge
 torque
