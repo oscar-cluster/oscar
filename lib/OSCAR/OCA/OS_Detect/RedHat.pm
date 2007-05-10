@@ -47,14 +47,7 @@ sub detect_dir {
 	chroot => $root,
     };
 
-    # We only support RHEL AS|WS 3 Update [2, 3, 5] and RHEL AS|WS 4
-    # Update [1, 2] otherwise quit.
-    # [EF: Aaargh, this is sooo ugly! The decision whether we support
-    #      this or not should be somewhere else, where one can clearly
-    #      recognize it, not hidden in a hard to read ifdef! Dropped a
-    #      huge pile of ifdefs in favor of a single match.]
-
-    # complex match strings for RHEL 3 and 4
+    # complex match strings
     if ($release_string =~
         /Red Hat Enterprise Linux (\S+) release (\d+) \((\S+) Update (\d+)\)/ 
 	or $release_string =~
@@ -65,7 +58,7 @@ sub detect_dir {
 	my $os_update = $4;
 
 	# only support these two for now
-	if ($os_family !~ /^(Taroon|Nahant)$/) {
+	if ($os_family !~ /^(Taroon|Nahant|Tikanga)$/) {
 	    return undef;
 	}
 
