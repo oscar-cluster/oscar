@@ -501,10 +501,10 @@ sub build_oscar_image {
     oscar_log_subsection("$step_string"."oscar repo: $oscar_pool");
 
     my $pkglist = "$ENV{OSCAR_HOME}/oscarsamples/$distro-$distro_ver-$arch.rpmlist";
-    oscar_log_subsection("$step_string"."Using RPM list: $pkglist");
+    oscar_log_subsection("$step_string"."Using binary package list: $pkglist");
     
-    # Get a list of the client RPMs that we want to install.  Make a
-    # new file containing the names of all the RPMs to install.
+    # Get a list of the client binary packages that we want to install.  Make a
+    # new file containing the names of all the binary packages to install.
 
     my @opkgs = list_selected_packages("all");
     my $outfile = "/tmp/oscar-install-rpmlist.$$";
@@ -593,10 +593,11 @@ sub postimagebuild {
     oscar_log_subsection("$step_string"."Successfully ran: $cmd");
 
 
-    # Have installed Client RPMs & did not croak, so mark 
+    # Have installed Client binary packeges & did not croak, so mark 
     # packages.<pkg>installed # true. (best effort for now)
     
-    oscar_log_subsection("Marking installed bit in ODA for client RPMS");
+    oscar_log_subsection("Marking installed bit in ODA for client binary ".
+                         "packages");
     
     my @opkgs = list_selected_packages("all");
     foreach my $opkg_ref (@opkgs) {
@@ -616,7 +617,8 @@ sub postimagebuild {
     truncate $imagelog, 0 if -s $imagelog;
     oscar_log_subsection( "Truncated ".$img.":".$lastlog );
 
-    # All done -- remove the temp file that held all the RPM filenames
+    # All done -- remove the temp file that held all the binary packages
+    # filenames
     
     #unlink($save_text); # breaks createimage_window
 
