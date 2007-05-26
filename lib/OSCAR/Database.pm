@@ -915,6 +915,7 @@ sub get_wizard_status {
     my ($options_ref,
         $error_strings_ref) = @_;
     my $sql = "SELECT * FROM Wizard_status";
+    my $sql_2 = "SELECT * FROM Images";
     my @results = ();
     my $success = do_select($sql,\@results,$options_ref,$error_strings_ref);
     my %wizard_status = ();
@@ -922,6 +923,12 @@ sub get_wizard_status {
         foreach my $ref (@results){
             $wizard_status{$$ref{step_name}} = $$ref{status};
         }
+    }
+    my @res = ();
+    my $success_2 = do_select($sql_2,\@res,$options_ref,$error_strings_ref);
+    if ($success_2 && @res){
+        $wizard_status{"addclients"} = "normal";
+        set_wizard_status("addclients",$options_ref,$error_strings_ref);
     }
     return \%wizard_status;
 }

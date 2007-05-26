@@ -455,6 +455,11 @@ sub run_server_install {
         $next_step_button->configure(-state => "normal");
         set_wizard_status("build_image",\%options,\@errors);
     }
+    $step_status = get_wizard_status(\%options,\@errors);
+    if($$step_status{addclients} eq "normal"){
+        my $next_step_button2 = $buttons{addclients};
+        $next_step_button2->configure(-state=> "normal");
+    }
 
     oscar_log_subsection('Update Wizard Env (as needed)');
     @mod_env = WizardEnv::update_env();
