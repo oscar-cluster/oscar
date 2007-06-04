@@ -1,0 +1,157 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2007, Oak Ridge National Laboratory.
+#                     Geoffroy R. Vallee <valleegr@ornl.gov>
+#                     All rights reserved.
+# Copyright (c) 2003, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+# Copyright (c) 2002-2003 The Trustees of Indiana University.
+#                     All rights reserved.
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: opd2 5017 2006-06-16 15:00:26Z valleegr $
+#
+
+use strict;
+use Carp;
+use lib "$ENV{OSCAR_HOME}/lib";
+use Term::ReadLine;
+use OSCAR::opd2 qw(
+                scan_repository
+                list_available_opkgs
+                list_available_repositories
+                  );
+
+my $repository_listing;
+my $repository_selected = -1;
+
+my $package_listing;
+
+my $opd_term = new Term::ReadLine 'OPD';
+
+#
+# Loop over the main menu
+#
+sub main_menu {
+    my $selection;
+
+#    my $name = $repository_listing->{site}[$repository_selected]->{name};
+#    my $uri = $repository_listing->{site}[$repository_selected]->{uri}[0];
+
+#    my $num_pkgs = $#{$package_listing->{package}} + 1;
+    my $name = "";
+    my $uri = "";
+    my $num_pkgs = "";
+    my $packages = ($num_pkgs == 1) ?
+    "1 package available" :
+    "$num_pkgs packages available";
+
+    my $show_info = 1;
+    my $cmd;
+    my @options;
+
+    # Setup tab completion
+
+    my $attribs = $opd_term->Attribs;
+    $attribs->{completion_entry_function} =
+    $attribs->{list_completion_function};
+    $attribs->{completion_word} =
+    [qw(download help info list print quit exit repository update)];
+
+    # Main prompt loop
+
+    while (1) {
+
+#    if ($show_info) {
+#        print("
+#==> $name
+#==> $uri
+#==> $packages\n\n");
+#        $show_info = 0;
+#    }
+
+    # Use GNU Readline to prompt and get input.  Readline rocks.
+
+    last if (!defined($_ = $opd_term->readline("opd>")));
+    next if (!$_);
+
+    # Analyze what we got back
+
+    @options = split(/[ \t]/);
+    $cmd = "";
+    while (!$cmd && $#options >= 0) {
+        $cmd = lc($options[0]);
+        shift(@options);
+    }
+    next if (!$cmd);
+
+    # Change repository
+
+    if (/^r/i || /^repos/i || /^repository/i) {
+        my $url = $opd_term->readline("Enter repository URL>");
+        if (!$url) {
+            print ("ERROR: no repository has been specified\n");
+        next;
+        }
+        scan_repository ($url);
+    }
+
+    # List the packages that are available
+
+    elsif (/^l/i || /^li/i || /^list/i || /^ls/i ) {
+        print("\n");
+        list_available_opkgs();
+        print("\n");
+    }
+
+    # Print the help message
+
+    elsif (/^\?/ || /^h/i || /^help/i) {
+        print("
+[h] help       - This message
+[i] info       - Display repository information
+[l] list       - List available packages
+[q] quit       - Quit
+[r] repository - Add an OPD repository
+R              - Select the specified package(s)
+
+N has an integer value
+
+R can be a single integer value, a range or an enumeration of all that :
+
+  1,2,5-6         - select packages 1,2,5,6\n\n");
+    }
+
+    # Show repository info
+
+    elsif (/^i/i || /^in/i || /^info/i) {
+        print "\n";
+        list_available_repositories ();
+        print "\n";
+    }
+
+    # Exit
+
+    elsif (/^q/i || /^quit/i ||
+         /^e/i || /^exit/i) {
+        last;
+    }
+
+    # Have no idea -- issue a warning
+
+    else {
+        print("\nIllegal command -- ignored\n\n");
+    }
+    }
+}
+
+# First of all, enforce that the user running this script is 'root'
+# This is necessary for access to /var/cache/oscar/downloads
+croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
+
+main_menu();
+
+1;
