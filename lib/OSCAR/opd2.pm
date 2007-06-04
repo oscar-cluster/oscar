@@ -30,6 +30,7 @@ use base qw(Exporter);
             scan_repository
             list_available_opkgs
             list_available_repositories
+            flush_cache
              );
 
 my $cachedir = "/var/cache/oscar/";
@@ -126,6 +127,7 @@ sub opd2_unlock {
     }
 }
 
+# Check if a given OPKG is cached or not
 sub find_opkg_in_cache {
     my $pkg_name = shift;
     print "Searching OPKG $pkg_name in cache...\n" if $verbose > 0;
@@ -143,10 +145,11 @@ sub find_opkg_in_cache {
         $pos += 1;
     }
     close (FILE);
-    print "OPKG ($pkg_name) not found\n" if $verbose > 0;
+    print "OPKG ($pkg_name) not in cache\n" if $verbose > 0;
     return -1;
 }
 
+# Check if a given repository is cached or not
 sub find_repo_in_cache {
     print "Searching repo $url in cache...\n" if $verbose > 0;
     open (FILE, $opkg_repo_cache)
@@ -163,8 +166,38 @@ sub find_repo_in_cache {
         $pos += 1;
     }
     close (FILE);
-    print "Repo ($url) not found\n" if $verbose > 0;
+    print "Repo ($url) not in cache\n" if $verbose > 0;
     return -1;
+}
+
+# Add an entry in the list of available APT repositories
+# @param: the repository entry to add (note that it _must_ be valid line
+#         for /etc/apt/sources.list
+# @return: 0 if success, -1 else.
+sub add_apt_repo {
+    my $repo_entry = shift;
+    print "Updating the list of APT repositories..." if $verbose > 0;
+    my $cmd = "/usr/bin/rapt --repo $repo_entry";
+    if (!system ($cmd)) {
+        carp ("Impossible to add the repository $repo_entry");
+        return -1;
+    }
+    return 0;
+}
+
+# Add an entry in the list of available Yum repositories
+# @param: the repository entry to add (note that it _must_ be valid line
+#         for the yum configuration file.
+# @return: 0 if success, -1 else.
+sub add_yum_repo {
+    my $repo_entry = shift;
+    print "Updating the list of YUM repositories..." if $verbose > 0;
+    my $cmd = "/usr/bin/yume --repo $repo_entry";
+    if (!system ($cmd)) {
+        carp ("Impossible to add the repository $repo_entry");
+        return -1;
+    }
+    return 0;
 }
 
 # Add an OPKG to the list in cache
@@ -182,6 +215,16 @@ sub add_opkg_to_cache {
             print "Adding $name in cache...\n";
             print CACHEFILE $name;
             print CACHEFILE "\n";
+            my $repo_uri = 
+                $xml_data->{package}->[$i]->{download}->{repo}->{uri};
+            my $repo_type = 
+                $xml_data->{package}->[$i]->{download}->{repo}->{type};
+            if ($repo_type eq "apt" && -f "/etc/apt/sources.list") {
+                add_apt_repo ($repo_uri);
+            }
+            if ($repo_type eq "yum" && -f "/etc/yum.conf") {
+                add_yum_repo ($repo_uri);
+            }
         }
     }
     close (CACHEFILE);
@@ -213,12 +256,13 @@ sub parse_repo_description {
 
     my $simple = XML::Simple->new(KeyAttr => "package, name");
     $xml_data = $simple->XMLin($data_file) or return -1;
-    
+
     print Dumper($xml_data) if $verbose >= 5;
 
     add_repo_to_cache ();
     add_opkg_to_cache ();
 }
+
 
 ####################
 # PUBLIC FUNCTIONS #
@@ -283,6 +327,13 @@ sub list_available_repositories {
         print $pkg;
     }
     close (FILE);
+}
+
+sub flush_cache {
+    print "Flushing cache...\n";
+    unlink ("$opkg_repo_cache");
+    unlink ("$opkg_list_cache");
+    print "Cache cleaned\n";
 }
 
 1;

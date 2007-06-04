@@ -23,6 +23,7 @@ use OSCAR::opd2 qw(
                 scan_repository
                 list_available_opkgs
                 list_available_repositories
+                flush_cache
                   );
 
 my $repository_listing;
@@ -99,6 +100,10 @@ sub main_menu {
         scan_repository ($url);
     }
 
+    if (/^f/i || /^flush/i) {
+        flush_cache ();
+    }
+
     # List the packages that are available
 
     elsif (/^l/i || /^li/i || /^list/i || /^ls/i ) {
@@ -112,6 +117,7 @@ sub main_menu {
     elsif (/^\?/ || /^h/i || /^help/i) {
         print("
 [h] help       - This message
+[f] flush      - Flush the OPD cache
 [i] info       - Display repository information
 [l] list       - List available packages
 [q] quit       - Quit
