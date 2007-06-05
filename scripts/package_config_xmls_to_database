@@ -347,7 +347,7 @@ if ( !($directory_argument && $package_name) ){
 
     my $db_service_name = "";
     my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
-    if( $db_type eq "mysql"){
+    if( $db_type eq "mysql" || $db_type eq "" ){
         # find the name of the mysql service and start the mysql server,
         # and make sure it is run on every system reboot
         my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
