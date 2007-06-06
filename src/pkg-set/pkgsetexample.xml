@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--
+	This is an example of an XML file to describe an OSCAR Package-Set.
+-->
+
+<packageSets>
+	<packageSet name="Example">
+		<package name="c3">
+			<version compare="equal">
+				<major>4</major>
+				<minor>0</minor>
+				<subversion>1</subversion>
+				<release>5</release>
+				<epoch>1</epoch>
+			</version>
+		</package>
+
+		<package name="base">
+			<version compare="greater">
+				<major>1</major>
+				<release>0</release>
+			</version>
+		</package>
+
+		<package name="pvm">
+			<version compare="equal">
+				<major>3</major>
+				<minor>4</minor>
+				<subversion>5+6</subversion>
+				<release>2</release>
+				<epoch>1</epoch>
+			</version>
+		</package>
+	</packageSet>
+
+	<packageSet name="Example2">
+		<package name="mpich">
+			<version compare="less">
+				<major>1</major>
+				<minor>2</minor>
+				<subversion>7</subversion>
+				<release>8</release>
+			</version>
+		</package>
+	</packageSet>
+</packageSets>
