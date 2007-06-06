@@ -74,12 +74,18 @@ sub detect_dir {
     # Now do some checks to make sure we're supported
     #
 
-    # Limit support to only Debian v3.1 (sarge)
+    # Limit support to only Debian v4 (etch)
     my $deb_update;
-    $deb_ver =~ /^(\d+)\.(\d+)/;
-    $deb_ver = $1;
-    $deb_update = $2;
-    if ($deb_ver != 3) {
+    # two cases: the version number is "x" or "x.<something>"
+    $deb_ver = 4;
+    if ($deb_ver =~ /^(\d+)\.(\d+)/) {
+#	    $deb_ver =~ /^(\d+)\.(\d+)/;
+	$deb_ver = $1;
+	$deb_update = $2;
+    } else {
+    	$deb_update = 0;
+    }
+    if ($deb_ver != 4) {
 	print "OCA::OS_Detect::Debian-";
 	print "DEBUG: Failed Debian version support - ($deb_ver)\n\n" if( $DEBUG );
 	return undef;
@@ -89,8 +95,9 @@ sub detect_dir {
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root, $detect_file);
     $id->{arch} = $arch;
 
-    # Limit support to only x86 machines
-    if ($arch !~ /^i686$|^i586$|^i386$/ ) {
+    # Limit support to only x86_64 machines
+#    if ($arch !~ /^i686$|^i586$|^i386$/ ) {
+    if ($arch !~ /^x86_64$/ ) {
 	print "OCA::OS_Detect::Debian-";
 	print "DEBUG: Failed Architecture support - ($arch)\n\n" if( $DEBUG );
 	return 0;
