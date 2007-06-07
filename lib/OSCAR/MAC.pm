@@ -8,8 +8,6 @@ package OSCAR::MAC;
 # Copyright (C) 2006 Oak Ridge National Laboratory
 #                    Geoffroy Vallee <valleegr@ornl.gov>
 #                    All rights reserved.
-# Copyright (c) 2007 The Trustees of Indiana University.  
-#                    All rights reserved.
 
 #   $Id$
 
@@ -68,14 +66,7 @@ our $uyok = 0; # UYOK not enabled by default
 our @install_mode_options = qw(systemimager-rsync
                               systemimager-multicast 
                               systemimager-bt);
-my $saved_install_mode = get_install_mode();
-
-our $install_mode = "";
-if ($saved_install_mode){
-    $install_mode = $saved_install_mode;
-}else{
-    $install_mode = $install_mode_options[0];
-}
+our $install_mode = $install_mode_options[0];
 
 @EXPORT = qw (  save_to_file
                 load_from_file
