@@ -73,7 +73,7 @@ if ($db_type eq "pgsql"){
 # Reconfigure MySQL
 my $os = OSCAR::PackagePath::distro_detect_or_die();
 
-if ($os->{compat_distro} =~ /^(rhel|fc|mdv)/) {
+if ($os->{compat_distro} =~ /^(rhel|fc|mdv|ydl)/) {
     $mysqld      = 'mysqld';
 } elsif ($os->{compat_distro} =~ /^(suse|mdk|debian)/) {
     $mysqld      = 'mysql';

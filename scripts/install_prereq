@@ -2,6 +2,8 @@
 #
 # Copyright (c) Erich Focht <efocht@hpce.nec.com>
 #               All rights reserved
+# Copyright (c) 2007 The Trustees of Indiana University.  
+#                    All rights reserved.
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -56,6 +58,9 @@ my $rarch = $arch;
 if ($arch eq "i386") {
     $march = "i?86";  # used for shell-like globbing
     $rarch = "i.86";  # used for regular expressions
+}elsif($arch eq "ppc64"){ # DIKIM added for supporting YDL-ppc64
+    $march = "ppc64,ppc";
+    $rarch = "ppc64|ppc";
 }
 
 # try to detect smart installer, fall-back to dumb installer if not found
@@ -391,6 +396,7 @@ sub best_version {
 	vprint(":: $p :: $name $ver $parch<\n");
 	next if (!$name || !$ver);
 	next if ($pkg !~ /^$name/);
+    #$rarch = "ppc64|pcc" if $rarch eq "ppc64"; # DIKIM added it for YDL
 	next if ($parch !~ /^($rarch|noarch|all)$/);
 	if (!$best || (cmp_version_strings($ver, $bestversion) == 1)) {
 	    vprint("   - $p selected\n");

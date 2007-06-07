@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) 2005, 2007 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
@@ -11,7 +11,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id$
+# $HEADER$
 #
 
 package OSCAR::OCA::OS_Detect;
@@ -123,15 +123,21 @@ sub detect_arch_file {
     my ($root,$file) = @_;
     my $arch="unknown";
     my $q = `env LC_ALL=C file $root/$file`;
-    if ( ($q =~ m/executable,\ \S+\ (\S+),\ version/) ||
-	 ($q =~ m/executable,\ (\S+),\ version/) ||
-	 ($q =~ m/object,\ \S+ (\S+),\ version/) ) {
+    if ($q =~ m/executable,\ \S+\ (\S+),\ version/) {
 	$arch = $1;
 	if ($arch =~ m/386$/) {
 	    $arch = "i386";
 	} elsif ($arch =~ m/x86-64/) {
 	    $arch = "x86_64";
 	}
+    }
+    # DIKIM added this for YDL5
+    if ($q =~ m/executable,\ (\S+)\ \S+\ \S+\ \S+,\ version/) {
+        $arch = $1;
+        if ($arch =~ m/PowerPC/){
+            chomp(my $q2 = `uname -p`);
+            $arch = $q2;
+        }
     }
     return $arch;
 }
@@ -141,7 +147,7 @@ sub detect_arch_pool {
     my ($pool,$pkg) = @_;
 
     if ($pkg eq "rpm") {
-	my $known = "i?86,x86_64,ia64,ppc";
+	my $known = "i?86,x86_64,ia64,ppc,ppc64";
 	my @files = glob("$pool/bash-*{$known}.rpm");
 	my $arch;
 	for my $f (@files) {
@@ -158,7 +164,7 @@ sub detect_arch_pool {
 	$arch = "i386" if ($arch =~ /i.86/);
 	return $arch;
     } elsif ($pkg eq "deb") {
-	my $known = "i?86,amd64,ia64,ppc";
+	my $known = "i?86,amd64,ia64,ppc,ppc64";
 	my @files = glob("$pool/bash_*_{$known}.deb");
 	my $arch;
 	for my $f (@files) {
