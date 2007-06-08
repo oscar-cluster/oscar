@@ -123,6 +123,7 @@ bootstrap-smart:
 install-perlQt:
 	@echo "== installing perl-Qt from share/prereqs =="
 	@export OSCAR_HOME=`pwd`; \
+	mkdir -p $$OSCAR_HOME/tmp; \
 	scripts/install_prereq share/prereqs/perl-Qt
 
 checkenv:
