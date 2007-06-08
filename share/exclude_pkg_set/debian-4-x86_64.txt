@@ -1,6 +1,7 @@
 apitest
 disable-services
 ganglia
+jobmonarch
 kernel_picker
 lam
 linux-ha
