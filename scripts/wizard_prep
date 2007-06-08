@@ -425,7 +425,9 @@ oscar_log_subsection("Identified core packages: " . join(' ', @packages));
 
 # Get list of RPMs from the core packages
 my @rpms = ();
-my %sel = ("group" => $OSCAR_SERVER_GROUP);
+my %sel = ("group" => $OSCAR_SERVER_GROUP, 
+           "arch" => $ARCH, 
+           "distro" => $os->{distro});
 foreach my $package (@packages) {
     push @rpms, pkgs_of_opkg($package,undef,
                                 \@errors,
