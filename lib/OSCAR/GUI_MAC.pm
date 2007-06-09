@@ -101,13 +101,19 @@ sub mac_window {
     if ($0 =~ /manage/) {
         oscar_log_section("OSCAR Management Wizard: Setup networking");
     } else {
-        oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
+        oscar_log_section("Running step $step_number of the OSCAR wizard:".
+	"Setup networking");
     }
 
-    my $instructions = $window->Message(-text => "MAC Address collection.  When a new MAC address is received on the network, it will appear in the left column.  To assign that MAC address to a machine highlight the address and the machine and click \"Assign MAC to Node\".", -aspect => 800);
+    my $instructions = $window->Message(-text => "MAC Address collection. ".
+        "When a new MAC address is received on the network, it will appear in".
+	" the left column.  To assign that MAC address to a machine highlight".
+	" the address and the machine and click \"Assign MAC to Node\".",
+	-aspect => 800);
 
     our $starttext = $startcoll;
-    our $label = $window->Label(-text => "Not Listening to Network. Click \"$starttext\" to start.", -relief => 'sunken');
+    our $label = $window->Label(-text => "Not Listening to Network. Click".
+    " \"$starttext\" to start.", -relief => 'sunken');
 
 
     my $frame = $window->Frame();
@@ -155,7 +161,8 @@ sub mac_window {
 
     our $start = $frame->Button(
                                    -textvariable => \$starttext,
-                                   -command => [\&begin_collect_mac, $$vars{interface} ],
+                                   -command => [\&begin_collect_mac, 
+				                $$vars{interface} ],
                                    );
     our $exitbutton = $frame->Button(
                                      -text => "Close",
@@ -165,14 +172,18 @@ sub mac_window {
                                          undef $destroyed;
                                          end_ping();
                                          end_collect_mac($label);
-                                         oscar_log_subsection("Step $step_number: Completed successfully");
+                                         oscar_log_subsection(
+					   "Step $step_number: ".
+					   "Completed successfully");
                                          $parent->Unbusy();
                                          $window->destroy;
                                      },
                                     );
     our $assignbutton = $frame->Button(
                                       -text => "Assign MAC to Node",
-                                      -command => [\&assign2machine, undef, undef],
+                                      -command => [\&assign2machine, 
+				                   undef, 
+						   undef],
                                       -state => "disabled",
                                      );
     our $deletebutton = $frame->Button(
@@ -182,7 +193,8 @@ sub mac_window {
                                      );
     our $dhcpbutton = $frame->Button(
                                     -text => "Configure DHCP Server",
-                                    -command => [\&setup_dhcpd, $$vars{interface}],
+                                    -command => [\&setup_dhcpd, 
+				                 $$vars{interface}],
                                     -state => "disabled",
                                    );
 
@@ -212,9 +224,14 @@ sub mac_window {
     our $loadbutton = $frame->Menubutton(
                                    -text => "Import MACs from",
                                    -menuitems => [ [ 'command' => "file...",
-                                                     "-command" => [\&macfile_selector, "load", $frame] ],
-                                                   [ 'command' => "user input...",
-                                                     "-command" => \&macs_inputer ],
+                                                     "-command" => [
+						       \&macfile_selector, 
+						       "load", 
+						       $frame] ],
+                                                   [ 'command' => 
+						       "user input...",
+                                                     "-command" => 
+						       \&macs_inputer ],
                                                  ],
                                    -tearoff => 0,
                                    -direction => "right",
@@ -224,7 +241,9 @@ sub mac_window {
 
     our $savebutton = $frame->Button(
                                     -text => "Export MACs to file...",
-                                    -command => [\&macfile_selector, "save", $frame],
+                                    -command => [\&macfile_selector, 
+				                 "save", 
+						 $frame],
                                     -state => "disabled",
                                    );
 
@@ -275,16 +294,20 @@ sub mac_window {
 # |                             Close                              |
 # |----------------------------------------------------------------|
 #
-    my $mac_label = $frame->Label(-text => "MAC Address Management", -relief => 'sunken');
+    my $mac_label = $frame->Label(-text => "MAC Address Management", 
+                                  -relief => 'sunken');
     $mac_label->grid("-", "-", -sticky => "ew");
     $start->grid($assignall, $assignbutton, -sticky => "ew");
     $deletebutton->grid($loadbutton, $savebutton, -sticky => "ew");
     $loadbutton->grid($savebutton, -sticky => "ew");
-    my $install_label = $frame->Label(-text => "Installation Mode and DHCP Setup", -relief => 'sunken');
+    my $install_label = $frame->Label(-text => 
+        "Installation Mode and DHCP Setup", -relief => 'sunken');
     $install_label->grid("-", "-", -sticky => "ew");
     $install_button->grid($enable_install_button, -sticky => "ew");
     $refreshdhcp->grid($dhcpbutton, -sticky => "ew");
-    my $label2 = $frame->Label(-text => "Boot Environment (CD or PXE-boot) Setup", -relief => 'sunken');
+    my $label2 = $frame->Label(-text => 
+        "Boot Environment (CD or PXE-boot) Setup",
+	-relief => 'sunken');
     $label2->grid("-","-",-sticky => "ew");
     $uyok_radio->grid($bootcd, $networkboot, -sticky => "ew");
     $exitbutton->grid("-","-",-sticky=>"nsew",-ipady=>"4");
@@ -339,7 +362,8 @@ sub set_buttons {
     $state = ($lbs && $trs) ? "normal" : "disabled";
     our $assignbutton->configure( -state => $state );
 #
-#   Enabled iff at least one item selected in listbox and selected item in tree has a MAC.
+#   Enabled iff at least one item selected in listbox and selected item in tree
+#   has a MAC.
 #
     my $node = $tree->infoSelection();
 
@@ -373,12 +397,16 @@ sub regenerate_tree {
     my @clients = sortclients list_client();
     foreach my $client (@clients) {
         my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-        $tree->add("|".$client->name, -text => $client->hostname, -itemtype => "text");
+        $tree->add("|".$client->name, 
+	           -text => $client->hostname, 
+		   -itemtype => "text");
         my $mac=$adapter->mac || "" ;
         $tree->add("|".$client->name . "|mac",
-                   -text => $adapter->devname . " mac = " . $mac, -itemtype => "text");
+                   -text => $adapter->devname . " mac = " . $mac, 
+		   -itemtype => "text");
         $tree->add("|".$client->name . "|ip" . $adapter->devname,
-           -text => $adapter->devname . " ip = " . $adapter->ip, -itemtype => "text");
+                   -text => $adapter->devname . " ip = " . $adapter->ip, 
+		   -itemtype => "text");
     }
     $tree->autosetmode;
     set_buttons();
@@ -548,7 +576,7 @@ sub clearallmacsfromnodes {
 sub regenerate_listbox {
     our $listbox;
     $listbox->delete(0,"end");
-    foreach my $key (sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC) {
+    foreach my $key (sort {$MAC{$a}->{order} <=> $MAC{$b}->{order}} keys %MAC){
         if(!$MAC{$key}->{client}) {
             $listbox->insert("end",$key);
         }
@@ -562,7 +590,8 @@ sub end_collect_mac {
     our $listbox;
     our $label;
     our $starttext = $startcoll;
-    $label->configure(-text => "Not Listening to Network. Click \"$starttext\" to start.");
+    $label->configure(-text => 
+        "Not Listening to Network. Click \"$starttext\" to start.");
 
     our $bootcd->configure(-state => 'normal');
     our $networkboot->configure(-state => 'normal');
@@ -602,9 +631,11 @@ sub begin_collect_mac {
     $start->configure(-command => [\&end_collect_mac, $interface]);
     start_ping($interface);
     my $cmd = "/usr/sbin/tcpdump -i $interface -n -e -l";
-    oscar_log_subsection("Step $step_number: Starting to listen to network: $cmd");
+    oscar_log_subsection("Step $step_number: Starting to listen to network: ".
+                         "$cmd");
     open(TCPDUMP,"$cmd |") or (carp("Could not run $cmd"), return undef);
-    $label->configure(-text => "Currently Scanning Network... Click \"$starttext\" to stop.");
+    $label->configure(-text => 
+        "Currently Scanning Network... Click \"$starttext\" to stop.");
     while($COLLECT and $_ = <TCPDUMP>) {
         # print $_ unless $_ =~ /echo/;
         # This is for tcpdump version 3.8 (MDK 10.0)
@@ -720,9 +751,10 @@ sub macfile_selector {
     return 1;
 }
 
-# Subroutine that takes MAC address string as input and pass it to the add_mac_to_hash
-# subroutine if string is validated to be a sane MAC address
-# TODO: - merge with load_from_file subroutine as there seems to be code duplication
+# Subroutine that takes MAC address string as input and pass it to the 
+# add_mac_to_hash subroutine if string is validated to be a sane MAC address
+# TODO: - merge with load_from_file subroutine as there seems to be code 
+#         duplication
 #       - better MAC address validation
 sub load_macs {
     my $string = shift;
@@ -749,7 +781,9 @@ sub build_autoinstall_cd {
     my $ip = shift;
 
     __build_autoinstall_cd($ip);
-    done_window($window,"You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.");
+    done_window($window,"You can now burn your ISO image to a CDROM with a ".
+                "command such as:\n'cdrecord -v speed=2 dev=1,0,0 ".
+		"/tmp/oscar_bootcd.iso'.");
 }
 
 # Call the library function to enable selected install mode
