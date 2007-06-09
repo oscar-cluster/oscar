@@ -4,5 +4,5 @@ libappconfig-perl
 grub
 lilo
 initrd-tools
-kernel-image-2.6-686-smp
+linux-image-2.6-amd64
 ssh

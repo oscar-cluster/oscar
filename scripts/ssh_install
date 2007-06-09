@@ -80,14 +80,14 @@ echo ; echo checking for host key file $file ...
 if [ ! -r $file ] ; then
     echo making host key file $file ...
     echo ssh-keygen -t rsa -b 1024 -f $file -N ""
-    `ssh-keygen -t rsa -b 1024 -f $file -N ""` || exit 1
+    `/usr/bin/ssh-keygen -t rsa -b 1024 -f $file -N ""` || exit 1
 fi
 # second step generation of the DSA key
 file=$SSHCFGDIR/ssh_host_dsa_key
 echo checking for host key file $file ...
 if [ ! -r $file ] ; then
     echo ssh-keygen -t dsa -d -f $file -N ""
-    ssh-keygen -t dsa -d -f $file -N "" || exit 1
+    /usr/bin/ssh-keygen -t dsa -d -f $file -N "" || exit 1
 fi
 
 # make sure that the server sshd configuration file has
@@ -233,7 +233,7 @@ else
         type=rsa
         if [ ! -e $file ] ; then
             echo ssh-keygen -t $type -N \'\' -f $file
-            ssh-keygen -t $type -N '' -f $file
+            /usr/bin/ssh-keygen -t $type -N '' -f $file
             pub="`cat $home/.ssh/id_rsa.pub`"
             keys=$home/.ssh/authorized_keys2
             echo echo $pub \>\> $keys
@@ -244,7 +244,7 @@ else
         type=dsa
         if [ ! -e $file ] ; then
             echo ssh-keygen -t $type -N \'\' -f $file
-            ssh-keygen -t $type -N '' -f $file
+            /usr/bin/ssh-keygen -t $type -N '' -f $file
 	    pub="`cat $home/.ssh/id_dsa.pub`"
 	    keys=$home/.ssh/authorized_keys2
             echo echo $pub \>\> $keys
@@ -255,7 +255,7 @@ else
         type=rsa1
         if [ ! -e $file ] ; then
             echo ssh-keygen -t $type -N \'\' -f $file
-            ssh-keygen -t $type -N '' -f $file
+            /usr/bin/ssh-keygen -t $type -N '' -f $file
 	    pub="`cat $home/.ssh/identity.pub`"
 	    keys=$home/.ssh/authorized_keys
             echo echo $pub \>\> $keys
