@@ -27,18 +27,19 @@ use XML::Simple;	# Read the XML package set files
 use Data::Dumper;
 
 our $xml = new XML::Simple;  # XML parser object
-our $filename = "pkgsets.xml";
+our $filename;
 
 our $data;
 
 #########################################################################
 # Subroutine : read_file                                                #
 # Opens the file and reads in the package list and version information  #
-# Parameters : None                                                     #
+# Parameters : Filename where the package set description is            #
 # Returns    : None                                                     #
 #########################################################################
 sub read_file {
 	our $data;
+	$filename = shift;
 
 	$data = $xml->XMLin($filename, ForceArray => 1);
 }
@@ -51,8 +52,6 @@ sub read_file {
 #########################################################################
 sub get_package_sets {
 	our $data;
-
-	read_file();
 
 	my @sets = keys(%{$data->{packageSet}});
 
