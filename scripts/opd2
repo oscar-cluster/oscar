@@ -100,7 +100,7 @@ sub main_menu {
         scan_repository ($url);
     }
 
-    if (/^f/i || /^flush/i) {
+    elsif (/^f/i || /^flush/i) {
         flush_cache ();
     }
 

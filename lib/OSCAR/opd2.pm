@@ -215,16 +215,19 @@ sub add_opkg_to_cache {
             print "Adding $name in cache...\n";
             print CACHEFILE $name;
             print CACHEFILE "\n";
-            my $repo_uri = 
-                $xml_data->{package}->[$i]->{download}->{repo}->{uri};
-            my $repo_type = 
-                $xml_data->{package}->[$i]->{download}->{repo}->{type};
-            if ($repo_type eq "apt" && -f "/etc/apt/sources.list") {
-                add_apt_repo ($repo_uri);
-            }
-            if ($repo_type eq "yum" && -f "/etc/yum.conf") {
-                add_yum_repo ($repo_uri);
-            }
+            
+            for(my $j=0; $j < $#{$xml_data->{package}->[$i]->{download}->{repo}}; $j++) {
+	            my $repo_uri = 
+	                $xml_data->{package}->[$i]->{download}->{repo}->[$j]->{uri};
+	            my $repo_type = 
+	                $xml_data->{package}->[$i]->{download}->{repo}->[$j]->{type};
+	            if ($repo_type eq "apt" && -f "/etc/apt/sources.list") {
+	                add_apt_repo ($repo_uri);
+	            }
+	            if ($repo_type eq "yum" && -f "/etc/yum.conf") {
+	                add_yum_repo ($repo_uri);
+	            }
+			}
         }
     }
     close (CACHEFILE);
