@@ -1,0 +1,36 @@
+$Id$
+
+This document outlines some rules for the creation of a package set as well as
+explains some other parts of the package set.
+
+== Filenames ==
+
+The filename should be a short descriptive name for your package set.  Try not
+to make it too general as there will be other package sets as well.
+For example, don't call your file packageSet.xml when there will be many others
+and there is no way to differentiate.
+
+== Package Set Names ==
+
+The name of your package set should follow this simple rule:
+
+filename (- the extention) + '-' + distro + '-' + arch
+
+This is the name that will be used to identify your set among many others so
+it should be unique.
+
+== Version Number ==
+
+This is used so if a package set is updated there will be a way to keep two 
+similar package sets apart.  For example, if someone makes a Xen package set
+and then someone else changes a version for a single package, there is a
+simple way to note that the set has been changed.  The version number will use
+the same scheme as the OSCAR packages (the standard Debian way of versioning).
+
+== Repositories ==
+
+Each package can have a repository specified in the XML along with it.  This
+repository is not necessarily the one that will be the source of the package,
+but it is one that is guaranteed to have the package if none of the other ones
+do.  If the package should come from a specific repository, that package should
+be renamed or have a specific version attached to it to identify it.

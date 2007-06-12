@@ -5,11 +5,11 @@
 	<xsd:complexType name="versionType">
 		<xsd:element name="compare" type="xsd:string" />
 		<xsd:sequence>
-			<xsd:element name="major" type="xsd:string" minOccurs="1" maxOccurs="1" />
-			<xsd:element name="minor" type="xsd:string" minOccurs="0" maxOccurs="1" />
-			<xsd:element name="subversion" type="xsd:string" minOccurs="0" maxOccurs="1" />
-			<xsd:element name="release" type="xsd:string" minOccurs="1" maxOccurs="1" />
-			<xsd:element name="epoch" type="xsd:string" minOccurs="0" maxOccurs="1" />
+			<xsd:element name="major" type="xsd:string" use="required" />
+			<xsd:element name="minor" type="xsd:string" maxOccurs="1" />
+			<xsd:element name="subversion" type="xsd:string" maxOccurs="1" />
+			<xsd:element name="release" type="xsd:string" maxOccurs="1" />
+			<xsd:element name="epoch" type="xsd:string" maxOccurs="1" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -21,7 +21,7 @@
 
 	<xsd:complexType name="package">
 		<xsd:attribute name="name" type="xsd:string" use="required" />
-		<xsd:element name="version" type="versionType" use="required" />
+		<xsd:element name="version" type="versionType" use="required" maxOccurs="1"/>
 		<xsd:element name="repo" type="xsd:string" minOccurs="0" maxOccurs="1" />
 	</xsd:complexType>
 
