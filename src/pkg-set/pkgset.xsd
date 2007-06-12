@@ -3,7 +3,7 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml:lang="en">
 
 	<xsd:complexType name="versionType">
-		<xsd:attribute name="compare" type="xsd:string" use="required"/>
+		<xsd:element name="compare" type="xsd:string" />
 		<xsd:sequence>
 			<xsd:element name="major" type="xsd:string" minOccurs="1" maxOccurs="1" />
 			<xsd:element name="minor" type="xsd:string" minOccurs="0" maxOccurs="1" />
@@ -15,22 +15,22 @@
 
 	<xsd:simpleType name="compare">
 		<xsd:restriction base="xsd:string">
-			<xsd:pattern value="equal|greater|less"/>
+			<xsd:pattern value="equal|greater|less" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
 	<xsd:complexType name="package">
-		<xsd:attribute name="name" type="xsd:string" use="required"/>
-		<xsd:element name="version" type="versionType" use="required"/>
+		<xsd:attribute name="name" type="xsd:string" use="required" />
+		<xsd:element name="version" type="versionType" use="required" />
+		<xsd:element name="repo" type="xsd:string" minOccurs="0" maxOccurs="1" />
 	</xsd:complexType>
 
 	<xsd:complexType name="packageSet">
-		<xsd:attribute name="name" type="xsd:string" use="required"/>
-		<xsd:element name="package" type="Package"/>
-	</xsd:complexType>
-
-	<xsd:complexType name="packageSets">
-		<xsd:element name="packageSet" type="packageSet" />
+		<xsd:element name="name" type="xsd:string" use="required" />
+		<xsd:element name="version" type="versionType" use="required" />
+		<xsd:element name="distro" type="xsd:string" use="required" />
+		<xsd:element name="arch" type="xsd:string" use="required" />
+		<xsd:element name="package" type="package" />
 	</xsd:complexType>
 
 </xsd:schema>
