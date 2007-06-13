@@ -71,7 +71,7 @@ Flags (Provide automation):
     --defineclients   <filename>  Passes the filename to the define script
     --networkclients  <filename>  Passes the filename to the networking script
     --skipselector                Skips the Select Packages step
-    --skipinstall                 Skips the Install Packages step
+    --skipinstall                 Skips the Install OSCAR Server Packages step
     --skipbuild                   Skips the Build OSCAR Image step
     --skipdefine                  Skips the Define OSCAR Clients step
     --skipnet                     Skips the Setup Networking step
@@ -105,10 +105,10 @@ unless ($skipselector) {
 # problems when displaying the data.  For now this step is skipped.
 #system("./configurator_cli");
 
-# Step 3 - Install Packages
+# Step 3 - Install OSCAR Server Packages
 # This step doesn't need a seperate cli script as it already has one
 unless ($skipinstall) {
-    oscar_log_section("Installing Packages");
+    oscar_log_section("Installing OSCAR Server Packages");
     my $cmd = "$ENV{OSCAR_HOME}/scripts/install_server $interface";
     oscar_log_subsection("Running command: $cmd");
     if(!system($cmd))
@@ -118,7 +118,7 @@ unless ($skipinstall) {
     else
     {
         oscar_log_section("Packages not Installed!");
-        die ("Failed Step 3 - Install OSCAR Packages");
+        die ("Failed Step 3 - Install OSCAR Server Packages");
     }
 }
 
