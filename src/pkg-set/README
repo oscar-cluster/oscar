@@ -5,24 +5,24 @@ explains some other parts of the package set.
 
 == Filenames ==
 
-The filename should be a short descriptive name for your package set.  Try not
-to make it too general as there will be other package sets as well.
-For example, don't call your file packageSet.xml when there will be many others
-and there is no way to differentiate.
+The filename should be a short descriptive name for your package set that
+includes some other identifying information.  Use this rule to name your
+package set:
+
+short_description + '-' + distro + '-' + arch + '.xml'
+
+This makes it easy to find the exact package set desired and matches well with
+the name of the package set (described below).
 
 == Package Set Names ==
 
-The name of your package set should follow this simple rule:
-
-filename (- the extention) + '-' + distro + '-' + arch
-
-This is the name that will be used to identify your set among many others so
-it should be unique.
+The name of your package set should be the same as the name of the file
+excluding the xml extension.
 
 == Version Number ==
 
-This is used so if a package set is updated there will be a way to keep two 
-similar package sets apart.  For example, if someone makes a Xen package set
+This is used so that when a package set is updated there will be a way to keep
+two similar package sets apart.  For example, if someone makes a Xen package set
 and then someone else changes a version for a single package, there is a
 simple way to note that the set has been changed.  The version number will use
 the same scheme as the OSCAR packages (the standard Debian way of versioning).
