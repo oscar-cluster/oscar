@@ -1,8 +1,0 @@
-ganglia
-lam
-linux-ha
-maui
-mpich
-openmpi
-sge
-torque

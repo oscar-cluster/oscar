@@ -53,37 +53,6 @@ exit 0 if(@nics_results);
 # name of default packages set
 my $DEFAULT = "Default";
 
-# packages to be excluded from the default packages set
-my @exclude_packages_by_default = qw(networking pfilter sge);
-
-# we also load excluded packages for the distribution if we find
-# a file associated to the current distro within share/exclude_pkg_set
-# We first identify the current OS in order to be able to find the
-# list of packages that have to be excluded. Remember, files in
-# share/package_set follow the following pattern distro-version-archi
-my @exclude_packages = get_excluded_opkg();
-
-# We merge now excluded packages for the distro and those excluded 
-# by default. The list should not have a package twice.
-for (@exclude_packages_by_default) {
-    my $pkg1 = $_;
-    my $pkg_found = 0;
-    for (@exclude_packages) {
-        my $pkg2 = $_;
-        if ($pkg1 eq $pkg2) {
-            $pkg_found = 1;
-        }
-    }
-    if ($pkg_found eq 0) {
-        push(@exclude_packages, $pkg1);
-    }
-}
-print "Packages excluded: @exclude_packages.\n";
-
-my %is_excluded = ();
-for (@exclude_packages) { $is_excluded{$_} = 1 };
-
-
 # dikim commented out the LOCKING codes here because he believes
 # that InnoDB type can handle the all the crossing locking issues.
 # He does not want to remove these codes because he easily forgets
@@ -129,18 +98,19 @@ if ( @package_set_names )  {
         my $package_id = $$package_ref{id};
         my $package_name = $$package_ref{package};
 
-	unless ($is_excluded{$package_name} ) {
-          print "Adding package <$package_name> to package set <$DEFAULT>\n";
-          my %field_value_hash = ("package_id" => $package_id,
+        print "Adding package <$package_name> to package set <$DEFAULT>\n";
+        my %field_value_hash = ("package_id" => $package_id,
                                   "group_name" => $DEFAULT);
-          my $error_msg="error adding package <$package_name> to package set <$DEFAULT>";
-          @errors = ($error_msg);
-          if ( ! insert_into_table(\%options, "Group_Packages", \%field_value_hash,\@errors) ){
-              $success = 0;
-              warn "DB_DEBUG>$0:\n====> $error_msg";
-          }
+        my $error_msg="error adding package <$package_name> to package set ".
+                      "<$DEFAULT>";
+        @errors = ($error_msg);
+        if ( ! insert_into_table(\%options, 
+                                 "Group_Packages", 
+                                 \%field_value_hash,\@errors) ){
+            $success = 0;
+            warn "DB_DEBUG>$0:\n====> $error_msg";
+        }
 	}
-    }
 }
 
 # Insert into "Node_Package_Status" table
@@ -152,18 +122,12 @@ foreach my $package_ref (@installable_packages){
     # installable tag is kept on config.xml and this is an easier way
     # to avoid tracing not-installable packages (e.g., networking).
     my $requested = 2;
-    if ( !($is_excluded{$package_name}) ) {
-        $success = update_node_package_status(
+    $success = update_node_package_status(
                     \%options,
                     $OSCAR_SERVER_NODE,
                     $package_name,
                     $requested,
                     \@errors);
-                    
-    } else {
-        $success = delete_group_packages(
-                "Default","$package_name",\%options,\@errors);
-    }
 }
 
 # UNLOCKING FOR NEST

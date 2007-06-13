@@ -25,6 +25,9 @@
 #                    All rights reserved.
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
+# Copyright (c) 2007 Oak Ridge National Laboratory
+#                    Geoffroy Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
 #       
 # $Id$
 
@@ -159,6 +162,11 @@ sub print_hash {
     }
 }
 
+# Parse the config.xml file for a specific OPKG
+# Parameters: package directory, package_name, message.
+# Return:     representation of the config.xml file (XMLSimple) is success, 
+#             undef else
+# Message is an extra string that is printed during debugging.
 sub get_xml_ref{
     my ($package_directory,
         $package_name,
@@ -414,11 +422,57 @@ my $msg = "";
 my $xml_ref = undef;
 
 # We build first the list of packages that have to be excluded
-my @excluded_packages = get_excluded_opkg ();
+# With the notion of package set, we do not need to exclude packages
+my @excluded_packages = ();
 
 if( $directory_argument ){
     push @directories, $package_directory;
 }else{    
+    my $package_set_id = "Default";
+
+    # We first parse the Default package set the know what are the installable 
+    # OPKGs.
+    # Note that the list of installable OPKGs depends directly on the list of 
+    # OPKGs for the distro on the headnode. This is normal, we must support all
+    # services related to OPKGs on the headnode.
+
+    # We get first the ID of the local distro (headnode)
+    my $os = OSCAR::OCA::OS_Detect::open();
+
+    # Then we try to open the file defining the package set
+    my $file_path = $ENV{OSCAR_HOME}."/share/package_sets/".$package_set_id.
+                    "/$os->{distro}-$os->{distro_version}-$os->{arch}.xml";
+    print "Trying to open the package set \"$package_set_id\" ".
+          "specification...\n";
+    if ( ! -f $file_path) {
+        die ("Impossible to open the $package_set_id package set file ".
+             $file_path);
+    }
+    
+    # We parse the file defining the default package set
+    open (FILE, "$file_path");
+    my $simple= XML::Simple->new (ForceArray => 1);
+    my $xml_data = $simple->XMLin($file_path);
+    my $base = $xml_data->{packages}->[0]->{opkg};
+    print Dumper($xml_data);
+    print "Number of OPKG in the $package_set_id package set: ".
+          scalar(@{$base})."\n";
+    # When we have the list of OPKG, we check that the directories exist
+    print "Validating package set $package_set_id...\n";
+    my $opkg_directory = $ENV{OSCAR_HOME}."/packages/";
+    for (my $i=0; $i < scalar(@{$base}); $i++) {
+        my $opkg_name = $xml_data->{packages}->[0]->{opkg}->[$i];
+        my $dir = $opkg_directory . $opkg_name;
+        if ( -d $dir) {
+            print "Package $opkg_name valid...\n";
+            push (@directories, $dir);
+        } else {
+            print "Package $opkg_name is not valid, we exclude it ($dir)\n";
+        }
+    }
+
+    # We add then packages from OPD
+    @base_directories = ("/var/lib/oscar/packages");
     foreach my $packages_base_directory ( @base_directories ) {
         opendir(PACKAGES, $packages_base_directory)
         || next;
