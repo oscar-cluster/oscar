@@ -441,7 +441,7 @@ if( $directory_argument ){
 
     # Then we try to open the file defining the package set
     my $file_path = $ENV{OSCAR_HOME}."/share/package_sets/".$package_set_id.
-                    "/$os->{distro}-$os->{distro_version}-$os->{arch}.xml";
+                    "/$os->{compat_distro}-$os->{distro_version}-$os->{arch}.xml";
     print "Trying to open the package set \"$package_set_id\" ".
           "specification...\n";
     if ( ! -f $file_path) {
