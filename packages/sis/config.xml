@@ -212,7 +212,27 @@
     </filter>
     <pkg>syslinux</pkg>
     <pkg>systemimager-boot-amd64-standard</pkg>
+    <pkg>systemimager-boot-i386-standard</pkg>
     <pkg>systemimager-initrd-template-amd64</pkg>
+    <pkg>systemimager-initrd-template-i386</pkg>
+    <pkg>systeminstaller-oscar</pkg>
+    <pkg>systeminstaller-oscar-x11</pkg>
+    <pkg>systemimager-server</pkg>
+    <pkg>systemimager-server-flamethrowerd</pkg>
+    <pkg>systemimager-bittorrent</pkg>
+  </binary-package-list>
+
+  <binary-package-list>
+    <filter>
+        <group>oscar_server</group>
+        <architecture>i386</architecture>
+        <distribution>
+            <name>debian</name>
+        </distribution>
+    </filter>
+    <pkg>syslinux</pkg>
+    <pkg>systemimager-boot-i386-standard</pkg>
+    <pkg>systemimager-initrd-template-i386</pkg>
     <pkg>systeminstaller-oscar</pkg>
     <pkg>systeminstaller-oscar-x11</pkg>
     <pkg>systemimager-server</pkg>
