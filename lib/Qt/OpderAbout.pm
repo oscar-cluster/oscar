@@ -3,7 +3,9 @@
 # Created: Wed Jul 30 10:12:48 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
-# WARNING! All changes made in this file will be lost!
+# Note that we do not use puic anymore to modify this file. This capability has
+# been lost, therefore we directly modify this file.
+#
 
 
 use strict;

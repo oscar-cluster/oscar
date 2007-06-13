@@ -12,7 +12,8 @@
 # Created: Wed Oct 29 20:08:47 2003
 #      by: The PerlQt User Interface Compiler (puic)
 #
-# WARNING! All changes made in this file will be lost!
+# Note that we do not use puic anymore to modify this file. This capability has
+# been lost, therefore we directly modify this file.
 
 use strict;
 use utf8;
