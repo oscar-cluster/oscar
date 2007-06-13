@@ -41,6 +41,29 @@ use Carp;
 use Data::Dumper;
 use OSCAR::OCA::OS_Detect;
 
+## Begin distribution specific stuff ##
+
+# Defaults
+my $nfs = "nfs";
+my $sshd = "sshd";
+my $portmap = "portmap";
+
+# Under SUSE Linux, the init script for NFS Server is "nfsserver"
+$nfs = "nfsserver" if -x "/etc/init.d/nfsserver";
+
+# Under Debian, the init script for NFS Server is "nfs-kernel-server"
+# Actually the server may also be nfs-user-server but we currently assume that
+# OSCAR is using the kernel levevl server
+$nfs = "nfs-kernel-server" if -x "/etc/init.d/nfs-kernel-server";
+
+# Under Debian, the init script for ssh is "ssh"
+$sshd = "ssh" if -x "/etc/init.d/ssh";
+
+# Under Fedora 7, portmap is deprecated, it is replaced by rpcbind
+$portmap = "rpcbind" if -x "/etc/init.d/rpcbind";
+
+## End distribution specific stuff ##
+
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
 
@@ -56,21 +79,6 @@ my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 
 # List of root's .rc files (MDK PATH fixup)
 my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
-
-my $nfs = "nfs";
-
-# Under SUSE Linux, the init script for NFS Server is "nfsserver"
-$nfs = "nfsserver" if -x "/etc/init.d/nfsserver";
-
-# Under Debian, the init script for NFS Server is "nfs-kernel-server"
-# Actually the server may also be nfs-user-server but we currently assume that
-# OSCAR is using the kernel levevl server
-$nfs = "nfs-kernel-server" if -x "/etc/init.d/nfs-kernel-server";
-
-my $sshd = "sshd";
-
-# Under Debian, the init script for ssh is "ssh"
-$sshd = "ssh" if -x "/etc/init.d/ssh";
 
 # Sanity checking for /etc/hosts
 oscar_log_subsection("Getting internal IP address");
@@ -198,10 +206,12 @@ my $binary_format = $os->{'pkg'};
 # chkconfig is a RPM specific command, so we do not use it on Debian-like
 # systems. Moreover, services are automatically added into rc2.d on Debian
 if ($binary_format ne "deb") {
-    !system("chkconfig sshd on") or croak("Failed to enable sshd");
-    !system("chkconfig dhcpd on") or croak("Failed to enable dhcpd");
-    !system("chkconfig portmap on") or croak("Failed to enable portmap");
-    !system("chkconfig $nfs on") or croak("Failed to enable $nfs");
+    my @services = ("$sshd", "dhcpd", "$portmap", "$nfs");
+    foreach my $service (@services) {
+       print("Enabling service $service... ");
+       !system("chkconfig $service on") or croak("Failed to enable $service");
+       print("done\n");
+    }
 }
 
 # Mandrake fixup: comment out hard-coded PATH line
