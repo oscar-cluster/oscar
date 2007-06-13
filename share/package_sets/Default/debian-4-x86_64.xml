@@ -2,6 +2,7 @@
 <package_set>
     <name>Default</name>
     <packages>
+        <opkg>apitest</opkg>
         <opkg>base</opkg>
         <opkg>c3</opkg>
         <opkg>oda</opkg>
