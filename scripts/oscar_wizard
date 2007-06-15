@@ -487,9 +487,6 @@ sub build_oscar_image {
     my $distro = $master_os->{compat_distro};
     my $distro_ver = $master_os->{compat_distrover};
 
-    #my @available_distros = &list_available_distros();
-    #my @compat_architectures = @list_compat_archs($master_os->{arch});
-
     # quick hack to get this running with own (master) distro
     # adding foreign distros will need some more complicated hacking
 

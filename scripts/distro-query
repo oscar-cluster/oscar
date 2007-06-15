@@ -26,7 +26,8 @@ die "\$OSCAR_HOME: not defined.\n" unless exists $ENV{OSCAR_HOME};
 die "$ENV{OSCAR_HOME}: not a directory.\n" unless -d $ENV{OSCAR_HOME};
 die "$ENV{OSCAR_HOME}: not accessible.\n" unless -x $ENV{OSCAR_HOME};
 
-# Different distros require different RPMs. Different architectures, too.
+# Different distros require different binary packages. 
+# Different architectures, too.
 
 # configure command line options parsing
 Getopt::Long::Configure("ignore_case"); # ignore case
@@ -52,7 +53,8 @@ if ($options{pool}) {
 
     print "Detecting distro pool $options{pool}:\n";
     $os = OSCAR::OCA::OS_Detect::open(pool => $options{pool});
-    die "Unable to determine operating system" if (!$os);
+    die "Unable to determine operating system (pool: $options{pool})" 
+        if (!$os);
     &print_os_info($os);
     print "Detected os structure :\n".Dumper($os);
 
