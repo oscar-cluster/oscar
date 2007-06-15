@@ -65,6 +65,7 @@ use Getopt::Long;
 use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR","../../../lib","../../../lib/OSCAR";
 use OSCAR::Package;
 use OSCAR::PackagePath;
+use OSCAR::PackageSet qw (get_opkgs_path_from_package_set);
 use OSCAR::Network;
 use Data::Dumper;
 use XML::Simple;
@@ -435,41 +436,8 @@ if( $directory_argument ){
     # Note that the list of installable OPKGs depends directly on the list of 
     # OPKGs for the distro on the headnode. This is normal, we must support all
     # services related to OPKGs on the headnode.
-
-    # We get first the ID of the local distro (headnode)
-    my $os = OSCAR::OCA::OS_Detect::open();
-
-    # Then we try to open the file defining the package set
-    my $file_path = $ENV{OSCAR_HOME}."/share/package_sets/".$package_set_id.
-                    "/$os->{distro}-$os->{distro_version}-$os->{arch}.xml";
-    print "Trying to open the package set \"$package_set_id\" ".
-          "specification...\n";
-    if ( ! -f $file_path) {
-        die ("Impossible to open the $package_set_id package set file ".
-             $file_path);
-    }
-    
-    # We parse the file defining the default package set
-    open (FILE, "$file_path");
-    my $simple= XML::Simple->new (ForceArray => 1);
-    my $xml_data = $simple->XMLin($file_path);
-    my $base = $xml_data->{packages}->[0]->{opkg};
-    print Dumper($xml_data);
-    print "Number of OPKG in the $package_set_id package set: ".
-          scalar(@{$base})."\n";
-    # When we have the list of OPKG, we check that the directories exist
-    print "Validating package set $package_set_id...\n";
-    my $opkg_directory = $ENV{OSCAR_HOME}."/packages/";
-    for (my $i=0; $i < scalar(@{$base}); $i++) {
-        my $opkg_name = $xml_data->{packages}->[0]->{opkg}->[$i];
-        my $dir = $opkg_directory . $opkg_name;
-        if ( -d $dir) {
-            print "Package $opkg_name valid...\n";
-            push (@directories, $dir);
-        } else {
-            print "Package $opkg_name is not valid, we exclude it ($dir)\n";
-        }
-    }
+    my @opkgs = get_opkgs_path_from_package_set ($package_set_id);
+    @directories = (@directories, @opkgs);
 
     # We add then packages from OPD
     @base_directories = ("/var/lib/oscar/packages");
@@ -503,7 +471,7 @@ if( $directory_argument ){
         warn "DB_DEBUG>$0:\n====> ignoring the invalid oda package directory $oda_directory" .
             " that does not contain a $xml_file_name file";
         } else {
-        push @valid_oda_directories, $oda_directory;
+            push @valid_oda_directories, $oda_directory;
         }
     }
     die "DB_DEBUG>$0:\n====> cannot find any valid oda packages in these directories: @base_directories"
@@ -513,7 +481,8 @@ if( $directory_argument ){
         warn "DB_DEBUG>$0:\n====> ignoring oda package directory $skipped_oda_directory";
     }
 
-    # Creation of OSCAR tables is not done through the config.xml of oda package any more
+    # Creation of OSCAR tables is not done through the config.xml of oda 
+    # package any more.
     # The table information of all the OSCAR database tables is defined at
     # $ENV{OSCAR_HOME}/share/prereqs/oda/oscar_table.sql.
     # Database::create_table creates all the tables with the above sql file.
@@ -586,6 +555,7 @@ print "\nDB_DEBUG>$0:\n<<<<<=========================== Populating the Packages 
 foreach my $directory ( @directories ) {
     my $package = $directory;
     $package =~ s,^.*/,,;
+    print "Analyzing $package, $directory\n" if $options{debug};
     if ( -d $directory &&
          $package ne "." &&
          $package ne ".." &&
@@ -593,8 +563,8 @@ foreach my $directory ( @directories ) {
          $package ne ".svn" &&
          ! -e "$directory/.oscar_ignore" ) {
 
-        # Assign 1 to %opkg_to_be_deleted if $package is already in the DB
-        # ,which means it($package) should be kept.
+        # Assign 1 to %opkg_to_be_deleted if $package is already in the DB,
+        # which means it($package) should be kept.
         # The rest of packages with 1 in %opkg_to_be_deleted will be removed
         $opkg_to_be_deleted{$package} = 0 if $opkg_to_be_deleted{$package};
          

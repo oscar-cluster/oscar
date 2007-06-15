@@ -149,10 +149,11 @@ sub NEW
     Qt::ToolTip::add(packageSetComboBox, trUtf8("Display the packages in this package set"));
     $Layout13->addWidget(packageSetComboBox);
 
-    manageSetsButton = Qt::PushButton(centralWidget(), "manageSetsButton");
-    manageSetsButton->setText(trUtf8("&Manage Sets"));
-    Qt::ToolTip::add(manageSetsButton, trUtf8("Add, delete, and rename package sets"));
-    $Layout13->addWidget(manageSetsButton);
+# The button for package set management is not yet functional so we do not display it
+#    manageSetsButton = Qt::PushButton(centralWidget(), "manageSetsButton");
+#    manageSetsButton->setText(trUtf8("&Manage Sets"));
+#    Qt::ToolTip::add(manageSetsButton, trUtf8("Add, delete, and rename package sets"));
+#    $Layout13->addWidget(manageSetsButton);
     $Layout14->addLayout($Layout13);
     $Layout19->addLayout($Layout14);
 
@@ -277,7 +278,7 @@ sub NEW
 
     Qt::Object::connect(exitButton, SIGNAL "clicked()", this, SLOT "exitButton_clicked()");
     Qt::Object::connect(aboutButton, SIGNAL "clicked()", this, SLOT "aboutButton_clicked()");
-    Qt::Object::connect(manageSetsButton, SIGNAL "clicked()", this, SLOT "manageSetsButton_clicked()");
+#    Qt::Object::connect(manageSetsButton, SIGNAL "clicked()", this, SLOT "manageSetsButton_clicked()");
     Qt::Object::connect(cancelButton, SIGNAL "clicked()", this, SLOT "cancelButton_clicked()");
 
     setTabOrder(aboutButton, packageSetComboBox);

@@ -88,7 +88,7 @@ if ( @package_set_names )  {
     # If the default package set is already setup, do nothing.
 } else {
     # create an empty default package set
-    print "Creating new empty package set <$DEFAULT>\n";
+    print "Initializing package set <$DEFAULT>\n";
     @errors = ("error creating package set <$DEFAULT>");
     set_groups($DEFAULT,\%options,\@errors);
     set_groups_selected($DEFAULT,\%options,\@errors);

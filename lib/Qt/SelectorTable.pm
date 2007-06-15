@@ -24,6 +24,9 @@
 #                     All rights reserved.
 #  Copyright (c) 2005 The Trustees of Indiana University.  
 #                     All rights reserved.
+#  Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
+#                     Oak Ridge National Laboratory
+#                     All rights reserved.
 #
 # $Id$
 #########################################################################
@@ -43,6 +46,11 @@ use Qt::slots
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Package;
+use OSCAR::PackageSet qw (get_list_opkgs_in_package_set);
+use OSCAR::Utils qw (
+                    is_element_in_array
+                    print_array
+                    );
 use Carp;
 my %options = ();
 my @errors = ();
@@ -178,27 +186,27 @@ sub getPackagesInPackageSet
 #  need to do a "if (defined $href->{$package})" to find out if the     #
 #  $package is in the package set.                                      #
 #########################################################################
+# !!WARNING!! This is not the final code. Currently we do not use the
+# database which is only a temporary solution.
+#########################################################################
   
-  my $packageSet = shift;
+    my $packageSet = shift;
 
-  # Get the list of packages in the given package set and create a
-  # hash where the keys are the (short) names of the packages and the
-  # values are "1"s for those packages.
-  my @packagesInSet;
-  my $packagesInSet;
-  #my $success = OSCAR::Database::get_group_packages_with_groupname(
-  my $success = OSCAR::Database::get_selected_group_packages(
-    \@packagesInSet,\%options,\@errors,$packageSet);
-  if ($success)
-    { # Transform the array into a hash
-      foreach my $pack_ref (@packagesInSet)
-        {
-          my $pack = $$pack_ref{package};
-          $packagesInSet->{$pack} = 1;
-        }
+    # Get the list of packages in the given package set and create a
+    # hash where the keys are the (short) names of the packages and the
+    # values are "1"s for those packages.
+    my @packagesInSet;
+    my $packagesInSet;
+#  my $success = OSCAR::Database::get_selected_group_packages(
+#    \@packagesInSet1,\%options,\@errors,$packageSet);
+    @packagesInSet = get_list_opkgs_in_package_set($packageSet);
+#  print "OPKGs in the set $packageSet: ";
+#  print_array (@packagesInSet);
+    foreach my $pack_ref (@packagesInSet) {
+        $packagesInSet->{$pack_ref} = 1;
     }
 
-  return $packagesInSet;
+    return $packagesInSet;
 }
 
 sub getPackagesInstalled
@@ -352,6 +360,7 @@ sub populateTable
       for (my $rownum = 0; $rownum < numRows(); $rownum++)
         {
           my $packname = text($rownum,0);
+
           item($rownum,1)->setChecked(1) if
             (((defined $packagesToBeInstalled->{$packname}) &&
               ($packagesToBeInstalled->{$packname} == 1))

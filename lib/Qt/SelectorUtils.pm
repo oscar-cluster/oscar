@@ -23,6 +23,9 @@
 #                     All rights reserved.
 #  Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                     All rights reserved.
+#  Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
+#                     Oak Ridge National Laboratory
+#                     All rigths reserved.
 #
 # $Id$
 #########################################################################
@@ -36,6 +39,11 @@ use Qt;
 
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
+use OSCAR::OCA::OS_Detect;
+use OSCAR::PackageSet qw (
+                         get_local_package_set_list
+                         );
+use Data::Dumper;
 use Carp;
 
 my %options = ();
@@ -345,6 +353,8 @@ sub getConflictsList
   return $conhash;
 }
 
+# GV: this function should not be used anymore, the Default package set should be
+# defined from share/package_sets/Default/{distro}-{version}-{arch}
 sub createDefaultPackageSet # -> ($success)
 {
 #########################################################################
@@ -398,12 +408,18 @@ sub populatePackageSetList
 
   $widget->clear();
   my @packageSets;           # List of package sets in oda
-  my $createDefault = 0;     # Should we create a "Default" package set?
+#  my $createDefault = 0;     # Should we create a "Default" package set?
 
   my @groups_list = ();  
   my $success = OSCAR::Database::get_groups_for_packages(
         \@groups_list,\%options,\@errors);
 
+  # We also scan package sets defined in share/package_sets
+  my @local_package_sets = get_local_package_set_list ();
+  @packageSets = (@packageSets, @local_package_sets);
+
+  # !!!WARNING!!! Currently we treat package sets in share/package_sets and those 
+  # defined in the database in different ways. That may create duplicate entries
   foreach my $groups_ref (@groups_list){
     push @packageSets, $$groups_ref{group_name};
   }  
@@ -420,29 +436,11 @@ sub populatePackageSetList
           if ($widget->className() eq "QComboBox")
             {
               my $selected_group = OSCAR::Database::get_selected_group(\%options, \@errors);
-              if(!$selected_group){
-                  $selected_group = "Default";
-              }
               $widget->setCurrentText($selected_group) if (scalar @packageSets > 0);
             }
         }
-      else
-        {
-          $createDefault = 1;
-        }
     }
-  else
-    {
-      $createDefault = 1;
-    }
-  
-  if ($createDefault)  # Need to have at least 1 package set
-    {
-      $success = createDefaultPackageSet();
-      $widget->insertItem("Default",-1) if ($success);
-      # Update the ComboBox and Table to reflect newly created package set
-      emit SelectorManageSets::refreshPackageSets();
-    }
+  emit SelectorManageSets::refreshPackageSets();
 }
 
 sub compactSpaces
