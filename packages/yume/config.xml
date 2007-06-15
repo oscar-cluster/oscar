@@ -73,6 +73,13 @@ revisions much simpler than with rpm.
         </distribution>
       </filter>
 
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>debian</name>
+        </distribution>
+      </filter>
+
       <pkg>createrepo</pkg>
   </binary-package-list>
   
@@ -99,6 +106,13 @@ revisions much simpler than with rpm.
       <filter>
         <distribution>
           <name>suse</name>
+        </distribution>
+      </filter>
+
+      <filter>
+        <group>oscar_server</group>
+        <distribution>
+          <name>debian</name>
         </distribution>
       </filter>
 

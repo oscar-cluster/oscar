@@ -1,0 +1,81 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) Oak Ridge National Laboratory
+#               Geoffroy Vallee <efocht@hpce.nec.com>
+#               All rights reserved
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id: get_available_distros 5134 2006-07-12 05:51:29Z bli $
+#
+# This script set up the local repositories. For that, we scan /tftpboot/distro
+# to get the list of distributions we want to use for image creation. Based on
+# this list we install:
+#   - the common binary packages (e.g. /tftpboot/oscar/common-debs),
+#   - OSCAR binary packages related to all available distros (e.g. 
+#     /tftpboot/oscar/debian-4-x86_64
+# For instance, this allows us to create RPM based images on a Debian headnode.
+
+use strict;
+use lib "$ENV{PWD}/lib";
+use OSCAR::PackagePath;
+use Data::Dumper;
+use Carp;
+
+my $verbose = $ENV{OSCAR_VERBOSE};
+
+my $destdir = shift;
+# Have we created the pool for common binary package for a specific binary
+# package format (e.g. common-rpms, common-debs)?
+my %binary_repo_status = ( 'rpm', '0', 'deb', '0' );
+
+# This script may be executed in two cases: when OSCAR is already installed
+# or not. So if we see a environment variable OSCAR_HOME, we save it to restore
+# it later. We need to do that because when executing this script, we must use
+# everything from the sources, not the install
+my $ohome = "";
+$ohome = $ENV{OSCAR_HOME} if ($ENV{OSCAR_HOME});
+$ENV{OSCAR_HOME}=$ENV{PWD};
+
+my %pools = OSCAR::PackagePath::list_distro_pools();
+print "Available Distro Pools:\n".Dumper(%pools) if ($verbose);
+
+my @distro_list;
+my $pkg_format;
+my $cmd;
+
+foreach my $d (keys %pools) {
+    my $dist = "$pools{$d}{os}{compat_distro}-".
+               "$pools{$d}{os}{compat_distrover}-".
+               "$pools{$d}{os}{arch}";
+    prepare_repo ($dist);
+
+    $pkg_format = "$pools{$d}{os}{pkg}";
+    # This avoid to create the common-rpms and common-debs several times
+    # when several pools for a single binary package format exist
+    if ($binary_repo_status{$pkg_format} eq '0') {
+        $dist = "common-$pkg_format"."s";
+        prepare_repo ($dist);
+        $binary_repo_status{$pkg_format} = '1';
+    }
+}
+
+if ($ohome) {
+    $ENV{OSCAR_HOME} = $ohome;
+}
+
+sub prepare_repo {
+    my $dist = shift;
+    if ( -d "$destdir/tftpboot/oscar" || mkdir -p "$destdir/tftpboot/oscar" ) {
+        print "== Installing repository $dist into $destdir/tftpboot/oscar ==\n"; 
+        $cmd = "cd dist; ./newmake.sh --distro $dist ".
+               "--repo-target $destdir/tftpboot/oscar";
+        print "Executing: $cmd\n";
+        !system ($cmd) or die ("ERROR: impossible to execute $cmd\n");
+
+    }
+}
+
+exit (0);

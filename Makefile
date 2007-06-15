@@ -20,8 +20,8 @@
 # Copyright (c) Erich Focht, NEC HPCE, Stuttgart, 2006
 #               All rights reserved
 # Copyright (c) Oak Ridge National Laboratory, 2007
-# 				Geoffroy Vallee <valleegr@ornl.gov>
-# 				All irghts reserved
+#               Geoffroy Vallee <valleegr@ornl.gov>
+#               All rights reserved
 
 DESTDIR=
 
@@ -76,17 +76,9 @@ install: localbase localrepos
 	@echo "Native package manager: $(PKG)"
 	@echo "== Installed OSCAR into $(DESTDIR)/opt/oscar-$(OSCAR_VERSION) =="
 
-localrepos: localrepo-common-$(PKG)s localrepo-$(DIST_VER)-$(ARCH)
-
-#
-# Install repository directly to /tftpboot/oscar
-#
-localrepo-%:
-	[ -d $(DESTDIR)/tftpboot/oscar ] || mkdir -p $(DESTDIR)/tftpboot/oscar
-	DISTRO=$(subst localrepo-,,$@); \
-	echo "== Installing repository $$DISTRO into $(DESTDIR)/tftpboot/oscar =="; \
-	cd dist; ./newmake.sh --distro $$DISTRO \
-			      --repo-target $(DESTDIR)/tftpboot/oscar
+localrepos:
+	@echo "Creating local repositories"; \
+	./scripts/prepare_repos $(DESTDIR);
 
 #
 # Install base OSCAR directly to /opt/oscar-$(OSCAR_VERSION)
@@ -134,5 +126,11 @@ checkenv:
 		exit 1; \
 	fi
 
+uninstall: clean
+	@echo "Deleting directory $(DESTDIR)/opt/oscar-$(OSCAR_VERSION)"
+	rm -rf $(DESTDIR)/opt/oscar-$(OSCAR_VERSION)
+	@echo "Deleting directory $(DESTDIR)/tftpboot/oscar"
+	rm -rf $(DESTDIR)/tftpboot/oscar
+	rm -rf ~/tmp
 
 .PHONY : test dist clean install

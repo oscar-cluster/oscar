@@ -2,6 +2,9 @@ package OSCAR::PackageSmart;
 #
 # Copyright (c) 2006 Erich Focht efocht@hpce.nec.com>
 #                    All rights reserved.
+# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.
 # 
 #   $Id: PackagePath.pm 4178 2006-01-26 11:07:13Z efocht $
 #
@@ -43,48 +46,103 @@ use Carp;
 
 my $verbose = $ENV{OSCAR_VERBOSE};
 
+# The situation may be tricky: on Debian is possible to create images for
+# Debian based systems but also for RPM based systems. Therefore, when we have
+# to prepare pools, we check first what is the binary package format of the
+# distro. 
+# That also allow us to instantiate Packman according to the binary format
+# used by the pools.
 sub prepare_pools {
     my ($verbose,@pargs) = @_;
 
-    my $pm = PackMan->new;
+    $verbose = 1;
+    # demultiplex pool arguments
+    my @pools;
+    print "Preparing pools: " if $verbose;
+    for my $p (@pargs) {
+        print "$p " if $verbose;
+        push @pools, split(",",$p);
+    }
+    print "\n" if $verbose;
+
+    my $prev_format = "";
+    my $binaries = "rpms|debs";
+    my $archs = "i386|x86_64|ia64";
+    my $format = "";
+    # Before to prepare a pool, we try to detect the binary package format associated
+    # Not that for a specific pool or set of pools, it is not possible to mix deb and 
+    # rpm based pools.
+    for my $pool (@pools) {
+        $format = "";
+        print "Analysing $pool\n" if $verbose;
+        if ( ($pool =~ /(.*)\-($binaries)$/) ) {
+            if ($prev_format ne "" && $prev_format ne $2) {
+                carp ("ERROR: Mix of RPM and Deb pools ($prev_format vs. $2),".
+                      " we do not know how to deal with that!");
+            }
+            $format = $2;
+            print "Pool format: $format\n" if $verbose;
+        }
+        else {
+            my @files = glob("$pool/*.rpm");
+            if (scalar(@files) > 0) {
+                $format = "rpms";
+            } else { 
+                $format = "debs";
+            }
+            print "Pool format: $format\n";
+            if ($prev_format ne "" && $prev_format ne $format) {
+                carp ("ERROR: Mix of RPM and Deb pools ($prev_format vs. $2),".
+                      " we do not know how to deal with that!");
+            }
+        }
+        $prev_format = $format;
+    }
+    print "Binary package format for the image: $format\n" if $verbose;
+
+    # check if pool update is needed
+    my $perr = 0;
+    my $pm;
+    if ($format eq "rpms") {
+        $pm = PackMan::RPM->new;
+    } elsif ($format eq "debs") {
+        $pm = PackMan::DEB->new;
+    } else {
+        # if the binary package format of the pool was not previously detected,
+        # we fall back to the PackMan mode by default.
+        $pm = PackMan->new;
+    }
     return undef if (!$pm);
 
     # follow output of smart installer
     if ($verbose) {
-	$pm->output_callback(\&print_output);
+        $pm->output_callback(\&print_output);
     }
 
-    # demultiplex pool arguments
-    my @pools;
-    for my $p (@pargs) {
-	push @pools, split(",",$p);
-    }
-    # check if pool update is needed
-    my $perr = 0;
     for my $pool (@pools) {
-	print "--- checking md5sum for $pool" if $verbose;
-	if ($pool =~ /^(http|ftp|mirror)/) {
-	    print " ... remote repo, no check needed.\n" if $verbose;
-	    next;
-	}
-	print "\n" if $verbose;
+        print "--- checking md5sum for $pool" if $verbose;
+        if ($pool =~ /^(http|ftp|mirror)/) {
+           print " ... remote repo, no check needed.\n" if $verbose;
+            next;
+        }
+        print "\n" if $verbose;
 
-	my $cfile = "$ENV{OSCAR_HOME}/tmp/pool_".basename(dirname($pool)).
-	    "_".basename($pool).".md5";
-	my $md5 = &checksum_needed($pool,$cfile,"*.rpm","*.deb");
-	if ($md5) {
-	    my $err = &pool_gencache($pm,$pool);
-	    if ($err) {
-		$perr++;
-	    } else {
-		&checksum_write($cfile,$md5);
-	    }
-	}
+        my $cfile = "$ENV{OSCAR_HOME}/tmp/pool_".basename(dirname($pool)).
+                    "_".basename($pool).".md5";
+        my $md5 = &checksum_needed($pool,$cfile,"*.rpm","*.deb");
+        if ($md5) {
+            my $err = &pool_gencache($pm,$pool);
+            if ($err) {
+               $perr++;
+            } else {
+                &checksum_write($cfile,$md5);
+            }
+        }
     }
     if ($perr) {
-	undefine $pm;
-	print "Error: could not setup or generate package pool metadata\n";
-	return undef;
+        undefine $pm;
+        print "Error: could not setup or generate package pool metadata\n";
+        return undef;
     }
 
     # prepare for smart installs
