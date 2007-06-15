@@ -4,12 +4,7 @@
 
 	<xsd:complexType name="versionType">
 		<xsd:element name="compare" type="xsd:string" />
-		<xsd:sequence>
-			<xsd:element name="major" type="xsd:string" use="required" />
-			<xsd:element name="minor" type="xsd:string" maxOccurs="1" />
-			<xsd:element name="subversion" type="xsd:string" maxOccurs="1" />
-			<xsd:element name="release" type="xsd:string" maxOccurs="1" />
-		</xsd:sequence>
+		<xsd:element name="number" type="xsd:string" />
 	</xsd:complexType>
 
 	<xsd:simpleType name="compare">
