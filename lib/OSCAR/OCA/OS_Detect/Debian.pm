@@ -101,7 +101,7 @@ sub detect_dir {
     }
 
     $id->{distro} = $distro;
-    $id->{distro_flavor} = "sarge";
+    $id->{distro_flavor} = "etch";
     $id->{distro_version} = $deb_ver;
     $id->{distro_update} = $deb_update;
     $id->{compat_distro} = $compat_distro;
