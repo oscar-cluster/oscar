@@ -13,6 +13,11 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
+	<xsd:simpleType name="distType">
+		<xsd:element name="name" type="xsd:string" use="required" />
+		<xsd:element name="version" type="xsd:string" use="required" />
+	</xsd:simpleType>
+
 	<xsd:complexType name="package">
 		<xsd:attribute name="name" type="xsd:string" use="required" />
 		<xsd:element name="version" type="versionType" use="required" maxOccurs="1"/>
@@ -21,8 +26,8 @@
 
 	<xsd:complexType name="packageSet">
 		<xsd:element name="name" type="xsd:string" use="required" />
-		<xsd:element name="version" type="versionType" use="required" />
-		<xsd:element name="distro" type="xsd:string" use="required" />
+		<xsd:element name="version" type="xsd:string" use="required" />
+		<xsd:element name="distro" type="distType" use="required" />
 		<xsd:element name="arch" type="xsd:string" use="required" />
 		<xsd:element name="package" type="package" />
 	</xsd:complexType>
