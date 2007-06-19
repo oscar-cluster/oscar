@@ -28,10 +28,13 @@
 package main;
 
 use Qt;
-use InstallerMainWindow;
+use lib $ENV{OSCAR_HOME}."/src/Installer";
+use InstallerMainWindow qw ( InstallerMainWindow );
 
+print "Intializing the Qt runtime...\n";
 my $appl = Qt::Application(\@ARGV);
-my $main = InstallerMainWindow;
+print "Creating the main window...\n";
+my $main = InstallerMainWindow; 
 $appl->setMainWidget($main);
 $main->show;
 exit $appl->exec;

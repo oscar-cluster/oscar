@@ -109,6 +109,7 @@ my @windowList;
 
 sub NEW
 {
+    print "Creating a new MainWindow object\n";
 #########################################################################
 
 =item C<NEW($parent, $name, $flags)>
@@ -148,6 +149,7 @@ like C<classname->>C<NEW(args...)>.
   setCaption(trUtf8("OSCAR Wizard Installer") );
 
   # Set up the grid layout for the central widget and InstallerWorkspace
+  print "Setting up the grid layout\n";
   centralWidget = Qt::Widget(this,"InstallerCentralWidget");
   setCentralWidget(centralWidget);
   gridLayout = Qt::GridLayout(centralWidget,1,1,1);
@@ -155,9 +157,11 @@ like C<classname->>C<NEW(args...)>.
   gridLayout->addWidget(installerWorkspace,0,0);
 
   # Create the status bar
+  print "Creating the status bar\n";
   statusBar();
 
   # Create pulldown menus.  First: File menu
+  print "Creating the pulldown menus\n";
   fileMenu = Qt::PopupMenu(this);
   menuBar()->insertItem("",fileMenu,1);
   menuBar()->findItem(1)->setText(trUtf8("&File"));
@@ -212,21 +216,25 @@ like C<classname->>C<NEW(args...)>.
   fileExitAction->addTo(fileMenu);
 
   # Read in all of the XML file configuration information for Tasks/Tools
+  print "Reading the XML configuration file...\n";
   readInstallerXMLFile();
 
   # Second: Tasks menu 
+  print "Creating tasks menu...\n";
   tasksMenu = Qt::PopupMenu(this);
   menuBar()->insertItem("",tasksMenu,2);
   menuBar()->findItem(2)->setText(trUtf8("&Tasks"));
   populateTasksMenu();
 
   # Third: Tools menu
+  print "Creating tools menu...\n";
   toolsMenu = Qt::PopupMenu(this);
   menuBar()->insertItem("",toolsMenu,3);
   menuBar()->findItem(3)->setText(trUtf8("T&ools"));
   populateToolsMenu();
 
   # Fourth: Window menu - updated when Tools/Tasks are created/destroyed
+  print "Creating the window menu...\n";
   windowMenu = Qt::PopupMenu(this,"windowMenu");
   menuBar()->insertItem("",windowMenu,4);
   menuBar()->findItem(4)->setText(trUtf8("&Window"));
@@ -244,6 +252,7 @@ like C<classname->>C<NEW(args...)>.
   windowMenu->insertSeparator();
 
   # Fifth: Help menu - Not sure about how much help there will be...
+  print "Creating the help menu...\n";
   helpMenu = Qt::PopupMenu(this);
   menuBar()->insertItem("",helpMenu,5);
   menuBar()->findItem( 5 )->setText( trUtf8("&Help") );
@@ -271,6 +280,7 @@ like C<classname->>C<NEW(args...)>.
   clearWState(&Qt::WState_Polished);
 
   # Then, connect the signals for the pulldown menus to appropriate slots
+  print "Connecting the signals...\n";
   Qt::Object::connect(fileNewAction,      SIGNAL "activated()", 
                       this,               SLOT "fileNew()");
   Qt::Object::connect(fileOpenAction,     SIGNAL "activated()", 
@@ -459,6 +469,7 @@ are built into Qt so we don't have to do any extra work.)
 
 sub windowMenuActivated
 {
+    print "1\n";
 #########################################################################
 
 =item C<windowMenuActivated($windowNum)>
@@ -475,7 +486,9 @@ gives it the focus.
 
 #########################################################################
 
+  print "toto\n";
   my $windowNum = shift;
+  print "Window num = $windowNum\n";
 
   my $wid = $windowList[$windowNum];
   if ($wid)
