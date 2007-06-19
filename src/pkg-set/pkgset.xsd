@@ -9,7 +9,7 @@
 
 	<xsd:simpleType name="compare">
 		<xsd:restriction base="xsd:string">
-			<xsd:pattern value="equal|greater|less" />
+			<xsd:pattern value="gt|gte|lt|lte|eq" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -26,7 +26,7 @@
 
 	<xsd:complexType name="packageSet">
 		<xsd:element name="name" type="xsd:string" use="required" />
-		<xsd:element name="version" type="xsd:string" use="required" />
+		<xsd:element name="version" type="xsd:string" />
 		<xsd:element name="distro" type="distType" use="required" />
 		<xsd:element name="arch" type="xsd:string" use="required" />
 		<xsd:element name="package" type="package" />

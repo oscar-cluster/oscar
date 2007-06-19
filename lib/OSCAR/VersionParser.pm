@@ -27,12 +27,21 @@ use strict;
 
 use vars qw(@EXPORT);
 use base qw(Exporter);
-our @EXPORT = qw( version_satisfied parse_version);
+our @EXPORT = qw( version_satisfied parse_version version_compare );
 
 our $debug;
 	
 use Data::Dumper;
 
+#################################################################
+# Parses a string into the version and release parts            #
+# Parameters:                                                   #
+# version_string - A string representation of the version       #
+#                                                               #
+# Returns:                                                      #
+#   An array where the first position is the version and the    #
+#   second is the revision                                      #
+#################################################################
 sub parse_version {
 	my $version_string = shift;
 	
