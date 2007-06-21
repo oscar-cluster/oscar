@@ -9,10 +9,14 @@ The filename should be a short descriptive name for your package set that
 includes some other identifying information.  Use this rule to name your
 package set:
 
-short_description + '-' + distro + '-' + arch + '.xml'
+short_description + '-' + distro + '-' + distro-version + '-' + arch + '.xml'
+
+Ex. xen-fedora-6-i386.xml
 
 This makes it easy to find the exact package set desired and matches well with
 the name of the package set (described below).
+
+The arch name should match the system used by OS_Detect.
 
 == Package Set Names ==
 

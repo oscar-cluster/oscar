@@ -5,13 +5,13 @@
 -->
 
 <packageSet>
-	<name> pkgsetexample-fedora-6-x86 </name>
+	<name> pkgsetexample-fedora-6-i386 </name>
 	<version> 2 </version>
 	<distro> 
 		<name> fedora </name>
 		<version> 6 </version>
 	</distro>
-	<arch> x86 </arch>
+	<arch> i386 </arch>
 
 	<package name="c3">
 		<repo> http://www.myrepo.org/oscar </repo>
