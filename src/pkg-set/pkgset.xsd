@@ -1,35 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <!-- $Id$ -->
 
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml:lang="en">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
-	<xsd:complexType name="versionType">
-		<xsd:element name="compare" type="xsd:string" />
-		<xsd:element name="number" type="xsd:string" />
+    <xsd:complexType name="versionType">
+        <xsd:sequence>
+            <xsd:element name="compare">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="gt"/>
+                        <xsd:enumeration value="lt"/>
+                        <xsd:enumeration value="gte"/>
+                        <xsd:enumeration value="lte"/>
+                        <xsd:enumeration value="eq"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="number" type="xsd:string"/>
+        </xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:simpleType name="compare">
-		<xsd:restriction base="xsd:string">
-			<xsd:pattern value="gt|gte|lt|lte|eq" />
-		</xsd:restriction>
+    <xsd:complexType name="distType">
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="version" type="xsd:string"/>
+        </xsd:sequence>
+	</xsd:complexType>
+
+    <xsd:complexType name="packageType">
+        <xsd:sequence>
+            <xsd:element name="version" type="versionType" minOccurs="0"/>
+            <xsd:element name="repo" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+	</xsd:complexType>
+
+    <xsd:simpleType name="compareType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="gt"/>
+            <xsd:enumeration value="lt"/>
+            <xsd:enumeration value="gte"/>
+            <xsd:enumeration value="lte"/>
+            <xsd:enumeration value="eq"/>
+        </xsd:restriction>
 	</xsd:simpleType>
 
-	<xsd:simpleType name="distType">
-		<xsd:element name="name" type="xsd:string" use="required" />
-		<xsd:element name="version" type="xsd:string" use="required" />
-	</xsd:simpleType>
-
-	<xsd:complexType name="package">
-		<xsd:attribute name="name" type="xsd:string" use="required" />
-		<xsd:element name="version" type="versionType" use="required" maxOccurs="1"/>
-		<xsd:element name="repo" type="xsd:string" minOccurs="0" maxOccurs="1" />
-	</xsd:complexType>
-
-	<xsd:complexType name="packageSet">
-		<xsd:element name="name" type="xsd:string" use="required" />
-		<xsd:element name="version" type="xsd:string" />
-		<xsd:element name="distro" type="distType" use="required" />
-		<xsd:element name="arch" type="xsd:string" use="required" />
-		<xsd:element name="package" type="package" minOccurs="1" />
-	</xsd:complexType>
+    <xsd:element name="packageSet">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="name" type="xsd:string"/>
+                <xsd:element name="version" type="xsd:string"/>
+                <xsd:element name="distro" type="distType"/>
+                <xsd:element name="arch" type="xsd:string"/>
+                <xsd:element name="package" type="packageType" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+	</xsd:element>
 
 </xsd:schema>
+
