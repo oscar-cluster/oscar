@@ -50,6 +50,7 @@ it defaults to the output of C<getDefaultErrorString()>.
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
+use OSCAR::OCA::OS_Detect;
 use Exporter;
 use Carp;
 use Qt;
@@ -381,15 +382,22 @@ Perl-Qt needed a MimeSourceFactory.)
 
 #########################################################################
 
-  my $imageName = shift;
-  my $image;
+    my $imageName = shift;
+    my $image;
 
-  # Get the perl-Qt version.  Can't use Qt::VERSION since it's not reliable.
-  if (!defined($perlQtVersion))
-    {
-      open(CMD,"rpm -q --queryformat %{VERSION} perl-Qt |");
-      $perlQtVersion = <CMD>;
-      close CMD;
+    # Get the perl-Qt version.  Can't use Qt::VERSION since it's not reliable.
+    if (!defined($perlQtVersion)) {
+        my $os = OSCAR::OCA::OS_Detect::open();
+        if ($os->{pkg} eq "rpm") {
+            open(CMD,"rpm -q --queryformat %{VERSION} perl-Qt |");
+            $perlQtVersion = <CMD>;
+            close CMD;
+        } elsif ($os->{pkg} eq "deb") {
+            my $cmd = "dpkg-query -W -f=\'\${Version}\' libqt-perl";
+            $perlQtVersion = `$cmd`;
+        } else {
+            die ("ERROR: Unknown binary format ($os->{pkg})");
+        }
     }
 
   if ($perlQtVersion >= 3.008)
@@ -451,5 +459,7 @@ Last Modified on April 9, 2004
 #                          MODIFICATION HISTORY                         #
 # Mo/Da/Yr                        Change                                #
 # -------- ------------------------------------------------------------ #
+# 06/20/07  Restart the GUI work. Note that now OSCAR supports several  #
+#           binary package formats (i.e. RPM and Debs).                 #
 #########################################################################
 

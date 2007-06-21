@@ -1,6 +1,10 @@
 package InstallerWorkspace;
 
 #########################################################################
+# Note from GV: It seems that QWorkspaces are not any more supported.
+# I replaced them by QWidgetStack. The documentation and comments must be
+# updated when the code will be more stable.
+#########################################################################
 
 =head1 NAME
 
@@ -46,7 +50,7 @@ use utf8;
 use InstallerUtils;
                                                                                 
 use Qt;
-use Qt::isa qw(Qt::Workspace);
+use Qt::isa qw(Qt::WidgetStack);
 use Qt::signals
     signalButtonShown => ['char*','char*','bool'],
     odaWasUpdated => ['char*'],
@@ -80,17 +84,20 @@ like C<classname->>C<NEW(args...)>.
 #########################################################################
 sub NEW
 {
-  shift->SUPER::NEW(@_[0..1]);
+    shift->SUPER::NEW(@_[0..1]);
 
-  setName("InstallerWorkspace") if (name() eq "unnamed");
-  setPaletteBackgroundPixmap(InstallerUtils::getPixmap("oscarbg.png"));
+    setName("InstallerWorkspace") if (name() eq "unnamed");
+    setPaletteBackgroundPixmap(InstallerUtils::getPixmap("oscarbg.png"));
 
-  setScrollBarsEnabled(1);
+# GV: Scroll bars are not supported by WidgetStack (remainder: the initial code
+# was based on WorkSpaces which is now a deprecated widget, i replaced it by 
+# WidgetStack
+#    setScrollBarsEnabled(1);
 
-  my $parent = parent();
-  my $grandparent = $parent->parent();
+    my $parent = parent();
+    my $grandparent = $parent->parent();
 
-  show();
+    show();
 }
 
 
@@ -131,7 +138,7 @@ Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
 
 First Created on February 2, 2004
 
-Last Modified on February 23, 2004
+Last Modified on June 20, 2007 by Geoffroy Vallee (valleegr@ornl.gov)
 
 =cut
 
@@ -139,5 +146,8 @@ Last Modified on February 23, 2004
 #                          MODIFICATION HISTORY                         #
 # Mo/Da/Yr                        Change                                #
 # -------- ------------------------------------------------------------ #
+# 06/20/07  Restart the GUI work. Note that now OSCAR supports several  #
+#           binary package formats (i.e. RPM and Debs). By Geoffroy     #
+#           Vallee <valleegr@ornl.gov>.
 #########################################################################
 

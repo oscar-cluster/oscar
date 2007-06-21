@@ -39,6 +39,7 @@ use utf8;
 
 use Qt;
 use Qt::isa qw(Qt::MainWindow);
+use lib $ENV{OSCAR_HOME}."/src/Installer";
 use InstallerWorkspace;
 use InstallerImages;
 use InstallerParseXML;
@@ -150,9 +151,11 @@ like C<classname->>C<NEW(args...)>.
 
   # Set up the grid layout for the central widget and InstallerWorkspace
   print "Setting up the grid layout\n";
+  print "Setting the central widget...\n";
   centralWidget = Qt::Widget(this,"InstallerCentralWidget");
   setCentralWidget(centralWidget);
   gridLayout = Qt::GridLayout(centralWidget,1,1,1);
+  print "Setting the Installer Workspace widget...\n";
   installerWorkspace = InstallerWorkspace(centralWidget,"InstallerWorkspace");
   gridLayout->addWidget(installerWorkspace,0,0);
 
@@ -1219,7 +1222,7 @@ Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
 
 First Created on February 2, 2004
 
-Last Modified on April 28, 2004
+Last Modified on June 20, 2007 by Geoffroy Vallee (valleegr@ornl,gov).
 
 =cut
 
@@ -1227,4 +1230,6 @@ Last Modified on April 28, 2004
 #                          MODIFICATION HISTORY                         #
 # Mo/Da/Yr                        Change                                #
 # -------- ------------------------------------------------------------ #
+# 06/20/07  Restart the effort on the Qt GUI. Add debugging info. By    #
+#           Geoffroy Vallee <valleegr@ornl.gov>                         #
 #########################################################################
