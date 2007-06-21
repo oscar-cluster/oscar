@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testDef>
+
+	<info> 
+		Tests the select_set function on a single set.
+	</info>
+	
+	<test type="script">
+	
+		<command interpreter="perl">
+#!/usr/bin/perl -w
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib/OSCAR";
+use psm;
+use Data::Dumper;
+
+print psm::select_set("files/test-none.xml");
+my @array = psm::show_list();
+
+my $total = 0;
+foreach (@array) {
+	if($_ eq 'temp') {$total = $total + 1;}
+	elsif($_ eq 'temp2') {$total = $total + 2;}
+	elsif($_ eq 'temp3') {$total = $total + 4;}
+	elsif($_ eq 'temp4') {$total = $total + 8;}
+	elsif($_ eq 'temp5') {$total = $total + 16;}
+}
+
+print $total;
+		</command>
+		
+		<output name="stdout" format="literal">OK31</output>
+		<output name="stderr" format="literal"></output>
+		<output name="status" format="literal">0</output>
+	</test>
+</testDef>

@@ -1,0 +1,44 @@
+<packageSet>
+	<name> test </name>
+	<version> 2 </version>
+	<distro>
+		<name> debian </name>
+		<version> 4 </version>
+	</distro>
+	<arch> x86 </arch>
+
+	<package name="temp">
+		<version>
+			<compare> eq </compare>
+			<number> 1.0 </number>
+		</version>
+	</package>
+	
+	<package name="temp2">
+		<version>
+			<compare> gt </compare>
+			<number> 1.2.4 </number>
+		</version>
+	</package>
+	
+	<package name="temp3">
+		<version>
+			<compare> gte </compare>
+			<number> 5.0 </number>
+		</version>
+	</package>
+	
+	<package name="temp4">
+		<version>
+			<compare> lt </compare>
+			<number> 2.4.7-b6 </number>
+		</version>
+	</package>
+	
+	<package name="temp5">
+		<version>
+			<compare> lte </compare>
+			<number> 2.5.1 </number>
+		</version>
+	</package>
+</packageSet>

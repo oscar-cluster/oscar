@@ -1,0 +1,11 @@
+<packageSet>
+	<name> test </name>
+	<version> 1 </version>
+	<distro>
+		<name> debian </name>
+		<version> 4 </version>
+	</distro>
+	<arch> x86 </arch>
+
+	<package name="temp" />
+</packageSet>

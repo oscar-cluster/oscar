@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testBatch>
+
+	<info>Run the test suite for PSM</info>
+	
+	<test name="psm_1.apt"/>
+	<test name="psm_2.apt"/>
+	<test name="psm_3.apt"/>
+	<test name="psm_4.apt"/>
+	<test name="psm_5.apt"/>
+	<test name="psm_6.apt"/>
+	<test name="psm_7.apt"/>
+	<test name="psm_8.apt"/>
+	<test name="psm_9.apt"/>
+	<test name="psm_10.apt"/>
+	
+</testBatch>

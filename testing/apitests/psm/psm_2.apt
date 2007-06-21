@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testDef>
+
+	<info> 
+		Tests the select_opkg function when the package being selected is 
+		already present.
+	</info>
+	
+	<test type="script">
+	
+		<command interpreter="perl">
+#!/usr/bin/perl -w
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib/OSCAR";
+use psm;
+use Data::Dumper;
+
+print psm::select_set("files/test2.xml");
+print psm::select_opkg("temp");
+print Dumper(psm::show_list());
+		</command>
+		
+		<output name="stdout" format="literal">OKOK - Already selected$VAR1 = 'temp';
+</output>
+		<output name="stderr" format="literal"></output>
+		<output name="status" format="literal">0</output>
+	</test>
+</testDef>

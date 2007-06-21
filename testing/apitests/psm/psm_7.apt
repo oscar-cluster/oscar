@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testDef>
+
+	<info> 
+		Tests the select_set function on two sets where the first set has all lt
+		restrictions placed on the packages and the second set tries all cases.
+		Also tests the describe_package_selection function.
+	</info>
+	
+	<test type="script">
+	
+		<command interpreter="perl">
+#!/usr/bin/perl -w
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib/OSCAR";
+use psm;
+use Data::Dumper;
+
+print psm::select_set("files/test-lt-good.xml");
+print psm::select_set("files/test-all.xml");
+my %temp = psm::describe_package_selection('temp');
+my %temp2 = psm::describe_package_selection('temp2');
+my %temp3 = psm::describe_package_selection('temp3');
+my %temp4 = psm::describe_package_selection('temp4');
+my %temp5 = psm::describe_package_selection('temp5');
+
+if ($temp{compare} eq 'eq' &amp;&amp; $temp{number} eq '1.0' &amp;&amp; 
+	$temp2{compare} eq 'gt' &amp;&amp; $temp2{number} eq '1.2.4' &amp;&amp; 
+	$temp3{compare} eq 'gte' &amp;&amp; $temp3{number} eq '5.0' &amp;&amp; 
+	$temp4{compare} eq 'lt' &amp;&amp; $temp4{number} eq '2.4.7-b6' &amp;&amp; 
+	$temp5{compare} eq 'lte' &amp;&amp; $temp5{number} eq '2.5.1') {print "OK";}
+	
+psm::clear_list();
+
+print psm::select_set("files/test-lt-bad.xml");
+print "\n";
+print psm::select_set("files/test-all.xml");
+		</command>
+		
+		<output name="stdout" format="regexp">OKOKOKOK.*temp.*temp.*temp</output>
+		<output name="stderr" format="literal"></output>
+		<output name="status" format="literal">0</output>
+	</test>
+</testDef>

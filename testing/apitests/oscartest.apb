@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testBatch>
+
+	<info>Run the test suite for OSCAR</info>
+	
+	<test name="psm/psmtest.apb"/>
+	
+</testBatch>

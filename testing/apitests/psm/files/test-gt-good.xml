@@ -1,0 +1,30 @@
+<packageSet>
+	<name> test </name>
+	<version> 2 </version>
+	<distro>
+		<name> debian </name>
+		<version> 4 </version>
+	</distro>
+	<arch> x86 </arch>
+
+	<package name="temp">
+		<version>
+			<compare> gt </compare>
+			<number> 0.8 </number>
+		</version>
+	</package>
+	
+	<package name="temp2">
+		<version>
+			<compare> gt </compare>
+			<number> 1.2.3 </number>
+		</version>
+	</package>
+	
+	<package name="temp3">
+		<version>
+			<compare> gt </compare>
+			<number> 4.9 </number>
+		</version>
+	</package>
+</packageSet>
