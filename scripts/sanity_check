@@ -1,0 +1,22 @@
+#!/usr/bin/perl -w
+# $Id$
+#
+# Copyright (c) 2007 Oak Ridge National Laboratory.
+#                    Geoffroy Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
+#
+
+use lib "$ENV{OSCAR_HOME}/lib";
+use Data::Dumper;
+use OSCAR::OCA::Sanity_Check;
+use Carp;
+
+my $sanity = OSCAR::OCA::Sanity_Check::open();
+
+print "Sanity check of the system...\n";
+if( not defined($sanity) ) {
+    carp ("Error: Sanity_Check open failed.");
+} else {
+    print( " Dump...\n" . Dumper($sanity) );
+}
+
