@@ -25,7 +25,11 @@ use OSCAR::OCA;
 #
 # Globals
 #
-my $verbose = 1 if $ENV{OCA_DEBUG} eq "y";
+my $verbose = 0;
+
+if (defined $ENV{OCA_DEBUG} && $ENV{OCA_DEBUG} eq "y") {
+    $verbose = 1;
+}
 
 #
 # Subroutine to open the Check_Repository framework
