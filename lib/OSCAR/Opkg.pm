@@ -17,6 +17,10 @@ package OSCAR::Opkg;
 # (C)opyright Bernard Li <bli@bcgsc.ca>.
 #             All Rights Reserved.
 #
+# (C)opyright Oak Ridge National Laboratory
+#             Geoffroy Vallee <valleegr@ornl.gov>
+#             All rights reserved
+#
 # $Id$
 #
 # OSCAR Package module
@@ -27,15 +31,42 @@ package OSCAR::Opkg;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
-@EXPORT = qw(opkg_print );
+@EXPORT = qw(
+            get_list_opkg_dirs
+            opkg_print
+            );
 
 # name of OSCAR Package
-my $opkg = basename($ENV{OSCAR_PACKAGE_HOME});
+my $opkg = basename($ENV{OSCAR_PACKAGE_HOME}) if defined ($ENV{OSCAR_PACKAGE_HOME});
+
+# location of OPKGs shipped with OSCAR
+my $opkg_dir = $ENV{OSCAR_HOME} . "/packages";
 
 # Prefix print statements with "[package name]" 
 sub opkg_print {
 	my $string = shift;
 	print("[$opkg] $string");
+}
+
+###############################################################################
+# Get the list of OPKG available in $(OSCAR_HOME)/packages                    #
+# Parameter: None.                                                            #
+# Return:    Array of OPKG names.                                             #
+###############################################################################
+sub get_list_opkg_dirs {
+    my @opkgs = ();
+    die ("ERROR: The OPKG directory does not exist ".
+        "($opkg_dir)") if ( ! -d $opkg_dir );
+
+    opendir (DIRHANDLER, "$opkg_dir")
+        or die ("ERROR: Impossible to open $package_set_dir");
+    foreach my $dir (sort readdir(DIRHANDLER)) {
+        if ($dir ne "." && $dir ne ".." && $dir ne ".svn" 
+            && $dir ne "package.dtd") {
+            push (@opkgs, $dir);
+        }
+    }
+    return @opkgs;
 }
 
 1;
