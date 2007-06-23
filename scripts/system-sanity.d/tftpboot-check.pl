@@ -22,9 +22,9 @@ my $distro_id = $os->{distro} . "-" . $os->{distro_version} . "-" .
 # We first do some very basic tests
 if ( ! -d "/tftpboot" && 
      ! -d "/tftpboot/distro") {
-     print " -------------------------------------\n";
-     print " Directories for tftpboot do not exist\n";
-     print " -------------------------------------\n";
+     print " --------------------------------------------\n";
+     print " ERROR: Directories for tftpboot do not exist\n";
+     print " --------------------------------------------\n";
      exit ($rc);
 }
  
@@ -32,10 +32,10 @@ if ( ! -d "/tftpboot" &&
 my $file = "/tftpboot/distro/" . $distro_id . ".url";
 my $dir = "/tftpboot/distro/" . $distro_id;
 if ( ! -f $file || ! -d $dir ) {
-    print " ------------------------------------------------------------\n";
-    print " Impossible to find a local or online repository in /tftpboot\n".
-          " for the distro $distro_id\n";
-    print " ------------------------------------------------------------\n";
+    print " ---------------------------------------------------------\n";
+    print " ERROR: Impossible to find a local or online repository in\n";
+    print " /tftpboot for the distro $distro_id\n";
+    print " ---------------------------------------------------------\n";
     exit ($rc);
 }
 
