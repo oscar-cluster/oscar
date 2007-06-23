@@ -30,7 +30,7 @@ use base qw(Exporter);
 
 sub oca_debug_section {
   my $debug_text = shift;
-  if ( $ENV{OCA_DEBUG} eq "y" ) {
+  if ( defined $ENV{OCA_DEBUG} && $ENV{OCA_DEBUG} eq "y" ) {
     oscar_log_section ($debug_text);
   }
 }
@@ -38,7 +38,7 @@ sub oca_debug_section {
 
 sub oca_debug_subsection {
   my $debug_text = shift;
-  if ( $ENV{OCA_DEBUG} eq "y" ) {
+  if ( defined $ENV{OCA_DEBUG} && $ENV{OCA_DEBUG} eq "y" ) {
     oscar_log_subsection ($debug_text);
   }
 }

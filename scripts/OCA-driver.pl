@@ -52,27 +52,23 @@ if( not defined($rmgr) ) {
 }
 
 
-#
-# TJN: (4/19/06) The Sanity_Check framework is not complete
-#    as it exists in SVN so I'm commenting this section for now.
-#
-#  ############################################################
-#  #
-#  # (Check#3)
-#  # Framework: Sanity_Check
-#  #
-#  ############################################################
-# oscar_log_section("Sanity_Check");
-#
-# use OSCAR::OCA::Sanity_Check;
-# my $sanity = OSCAR::OCA::Sanity_Check::open();
-# 
-# if( not defined($sanity) ) {
-# 	"Error: Sanity_Check open failed.";
-# } else {
-# 	oscar_log_subsection( " Dump...\n" . Dumper($sanity) );
-# }
-# 
+  ############################################################
+  #
+  # (Check#3)
+  # Framework: Sanity_Check
+  #
+  ############################################################
+oscar_log_section("Sanity_Check");
+
+use OSCAR::OCA::Sanity_Check;
+my $sanity = OSCAR::OCA::Sanity_Check::open();
+
+if( not defined($sanity) ) {
+	carp "Error: Sanity_Check open failed.";
+} else {
+	oscar_log_subsection( " Dump...\n" . Dumper($sanity) );
+}
+ 
 
 # 
 # TJN: (4/19/06) Until I commit the Cluster_Ops framework, I'm
