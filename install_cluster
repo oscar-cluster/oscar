@@ -308,14 +308,6 @@ oscar_log_subsection("Architecture: $os->{arch}");
 oscar_log_subsection("Running in directory: " . cwd());
 oscar_log_subsection("PATH: " . $ENV{PATH});
 
-if (!$ENV{DISPLAY} && ($ENV{OSCAR_UI} eq "gui")) {
-    die("
-ERROR: Your \"DISPLAY\" environment variable is not set, probably
-indicating that you are not running in an X windows environment.
-OSCAR requires that you run the installer in an X windows environment.
-Aborting the install.\n");
-}
-
 # Now start the execution
 chdir("scripts") or die("Couldn't chdir to scripts") if ($ENV{OSCAR_UI} eq "gui");
 chdir("src/cli") or die("Couldn't chdir to src/cli") if ($ENV{OSCAR_UI} eq "cli");
