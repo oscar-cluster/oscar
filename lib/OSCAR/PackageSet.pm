@@ -26,6 +26,7 @@ use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Utils qw ( print_array );
+use XML::Simple;
 use Data::Dumper;
 use Carp;
 
@@ -39,7 +40,9 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 my $package_set_dir = $ENV{OSCAR_HOME}."/share/package_sets";
 
 ###############################################################################
-# Scan package sets defined in share/package_sets
+# Scan package sets defined in share/package_sets based on the local
+# distribution id. For instance, on debian 4 i386, we will look into the file
+# share/package_sets/<pkg_set>/debian-4-i386.xml.
 # Parameter: none.
 # Return:    list of package sets. Note that we skip Default which is used by
 #            default.
@@ -98,7 +101,7 @@ sub get_list_opkgs_in_package_set {
     my @opkgs = ();
 
     # If the package set file exist, we parse the file
-    open (FILE, "$file_path");
+    open (FILE, "$file_path") or die ("ERROR: impossible to open $file_path");
     my $simple= XML::Simple->new (ForceArray => 1);
     my $xml_data = $simple->XMLin($file_path);
     my $base = $xml_data->{packages}->[0]->{opkg};
@@ -120,8 +123,10 @@ sub get_list_opkgs_in_package_set {
         }
     }
     
-    print "List of available OPKGs: ";
-    print_array (@opkgs);
+    if ($verbose) {
+        print "List of available OPKGs: ";
+        print_array (@opkgs);
+    }
     return @opkgs;
 }
 
