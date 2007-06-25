@@ -1,144 +1,45 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.13 2003/11/12 20:57:02 naughtont Exp $
-  -->
+<oscar>
   <name>C3</name>
-
-  <version>
-    <major>4</major>
-    <minor>0</minor>
-    <subversion>1</subversion>
-    <release>5</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>core</class>
-
   <summary>Cluster Command and Control (C3) - command line tool suite</summary>
-  <license>Freely distributable</license>
-  <group>Application/System</group>
-  <uri>http://www.csm.ornl.gov/torc/C3/</uri>
-
-  <packager>
-    <name>Thomas Naughton</name>
-    <email>naughtont@ornl.gov</email>
-  </packager>
-
   <description>The Cluster Command and Control (C3) tool suite
 offers a command line interface for system and user administration
 tasks on a cluster.</description>
-
-  <binary-package-list>
-      <filter>
-        <distribution>
-            <name>rhel</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <distribution>
-            <name>mdv</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <distribution>
-            <name>suse</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <distribution>
-            <name>fc</name>
-        </distribution>
-      </filter>
-
+  <license>Freely distributable</license>
+  <group>Application/System</group>
+  <uri>http://www.csm.ornl.gov/torc/C3/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Thomas Naughton</name>
+      <email>naughtont@ornl.gov</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps>
+    <requires>
+      <filters>
+        <dist>rhel</dist>
+        <dist>mdv</dist>
+        <dist>suse</dist>
+        <dist>fc</dist>
+      </filters>
       <pkg>c3</pkg>
       <pkg>c3-profiled</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <distribution>
-            <name>debian</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
       <pkg>c3</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-            <name>rhel</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-            <name>mdv</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-            <name>suse</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-            <name>fc</name>
-        </distribution>
-      </filter>
-
-      <pkg>c3-ckillnode</pkg>
-      <pkg>c3-c3cmd-filter</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-            <name>debian</name>
-        </distribution>
-      </filter>
-
-      <pkg>c3-ckillnode</pkg>
-  </binary-package-list>
-
- 
- <!-- 
-     Removing the following (comment out for now) b/c I believe
-     all currently supported version of MDK have the '/usr/bin/python2'
-     file/link in the RPM MANIFEST to satisfy the c3 'Requires:' line.
-   -->
- <!--
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>mdk</name>
-        </distribution>
-      </filter>
-
-      <pkg>python2-compat</pkg>
-  </binary-package-list>
-   -->
-
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1:4.0.1-5">
+      <changelogEntry authorName="Thomas Naughton" date="2007-06-25T10:34:08-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
