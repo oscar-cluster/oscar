@@ -158,8 +158,8 @@ sub addclients
 
 	unless ($defimage )
 	{
-		print "*************************\nYou must build at least one image!*************************\n\n";
-		return 1;
+		print "**********************************\nYou must build at least one image!\n**********************************\n\n";
+		exit 1;
 	}
 
 	my %defaults = %vars;
