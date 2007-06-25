@@ -1,56 +1,40 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-
-	<name>APItest</name>
-	<version>
-		<major>1</major>
-		<minor>0</minor>
-		<subversion>0</subversion>
-		<release>12</release>
-		<epoch>0</epoch>
-	</version>
-
-	<class>core</class>
-
-	<summary>A test driver application.</summary>
-	<license>LGPL</license>
-
-	<group>Applications/System</group>
-
-	<maintainer>
-		<name>William McLendon</name>
-		<email>wcmclen@sandia.gov</email>
-	</maintainer>
-
-	<packager>
-		<name>William McLendon</name>
-		<email>wcmclen@sandia.gov</email>
-	</packager>
-
-	<description>A testing framework.</description>
-
-	<binary-package-list>
-		<filter>
-		  <group>oscar_server</group>
-		</filter>
-
-		<pkg>apitest</pkg>
-	</binary-package-list>
-
-	<!-- FIXME: This should be a RPM dependency... -->
-	<binary-package-list>
-		<filter>
-		  <group>oscar_server</group>
-		  <distribution>
-			<name>suse</name>
-		  </distribution>
-		</filter>
-
-		<pkg>python-twisted-web</pkg>
-	</binary-package-list>
-
+<oscar>
+  <name>APItest</name>
+  <class>core</class>
+  <summary>A test driver application.</summary>
+  <description>A testing framework.</description>
+  <license>LGPL</license>
+  <group>Applications/System</group>
+  <authors>
+    <author cat="upstream">
+      <name>William McLendon</name>
+      <email>wcmclen@sandia.gov</email>
+    </author>
+    <author cat="maintainer">
+      <name>William McLendon</name>
+      <email>wcmclen@sandia.gov</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <filters/>
+      <pkg>apitest</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
+      <pkg>python-twisted-web</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="0:1.0.0-12">
+      <changelogEntry authorName="William McLendon" date="2007-06-25T10:37:53-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
