@@ -22,7 +22,7 @@
 #   Copyright (c) 2005 The Trustees of Indiana University.  
 #                      All rights reserved.
 
-# $Id$
+# $Id: post_clients 5330 2006-08-31 23:20:52Z bli $
 
 use strict;
 use Getopt::Long;

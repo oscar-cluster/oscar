@@ -1,105 +1,23 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id$
-  -->
+<oscar>
   <name>System Installation Suite</name>
-
-  <version>
-    <major>3</major>
-    <minor>8</minor>
-    <subversion>0</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>core</class>
-
   <summary>System Installation Suite</summary>
+  <description>The System Installation Suite is composed of three major components - SystemInstaller, SystemImager and SystemConfigurator</description>
   <license>GPL</license>
   <group>Application/System</group>
   <uri>http://sisuite.org/</uri>
-
-  <packager>
-    <name>Erich Focht</name>
-    <email>efocht@hpce.nec.com</email>
-  </packager>
-
-  <description>The System Installation Suite is composed of three major components - SystemInstaller, SystemImager and SystemConfigurator</description>
-
-  <binary-package-list>
-      <pkg>systemconfigurator</pkg>
-      <pkg>systemimager-common</pkg>
-      <pkg>systemimager-client</pkg>
-  </binary-package-list>
-
-  <!--
-      OSCAR clients need the "netcat" package to be able to display
-      the "rebooted" status via si_monitortk
-  -->
-  <!-- begin netcat package -->
-  <binary-package-list>
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-          <name>rhel</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-          <name>fc</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-          <name>mdv</name>
-        </distribution>
-      </filter>
-
-      <pkg>nc</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-             <name>suse</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <group>oscar_clients</group>
-        <distribution>
-            <name>debian</name>
-        </distribution>
-      </filter>
-
-      <pkg>netcat</pkg>
-  </binary-package-list>
-  <!-- end netcat package -->
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-             <name>mdv</name>
-        </distribution>
-      </filter>
+  <authors>
+    <author cat="maintainer">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <filters>
+        <dist>mdv</dist>
+      </filters>
       <pkg>pxelinux</pkg>
       <pkg>atftp-server</pkg>
       <pkg>perl-forks</pkg>
@@ -110,15 +28,11 @@
       <pkg>systemimager-server</pkg>
       <pkg>systemimager-flamethrower</pkg>
       <pkg>systemimager-bittorrent</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-             <name>suse</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
       <pkg>bittorrent-compat-suse</pkg>
       <pkg>atftp</pkg>
       <pkg>systeminstaller-oscar</pkg>
@@ -126,21 +40,12 @@
       <pkg>systemimager-server</pkg>
       <pkg>systemimager-flamethrower</pkg>
       <pkg>systemimager-bittorrent</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-             <name>rhel</name>
-        </distribution>
-      </filter>
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-             <name>fc</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>rhel</dist>
+        <dist>fc</dist>
+      </filters>
       <pkg>atftp-server</pkg>
       <pkg>bittorrent</pkg>
       <pkg>systeminstaller-oscar</pkg>
@@ -148,164 +53,138 @@
       <pkg>systemimager-server</pkg>
       <pkg>systemimager-flamethrower</pkg>
       <pkg>systemimager-bittorrent</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <architecture>i386</architecture>
-	<distribution>
-            <name>rhel</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>rhel</dist>
+        <arch>i386</arch>
+      </filters>
       <pkg>syslinux</pkg>
       <pkg>systemimager-i386boot-standard</pkg>
       <pkg>systemimager-i386initrd_template</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <architecture>i386</architecture>
-	<distribution>
-            <name>fc</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <arch>i386</arch>
+      </filters>
       <pkg>syslinux</pkg>
       <pkg>systemimager-i386boot-standard</pkg>
       <pkg>systemimager-i386initrd_template</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <architecture>i386</architecture>
-	<distribution>
-            <name>mdv</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>mdv</dist>
+        <arch>i386</arch>
+      </filters>
       <pkg>syslinux</pkg>
       <pkg>systemimager-i386boot-standard</pkg>
       <pkg>systemimager-i386initrd_template</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <architecture>i386</architecture>
-	<distribution>
-            <name>suse</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+        <arch>i386</arch>
+      </filters>
       <pkg>syslinux</pkg>
       <pkg>systemimager-i386boot-standard</pkg>
       <pkg>systemimager-i386initrd_template</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-    <filter>
-        <group>oscar_server</group>
-        <architecture>x86_64</architecture>
-        <distribution>
-            <name>debian</name>
-        </distribution>
-    </filter>
-    <pkg>syslinux</pkg>
-    <pkg>systemimager-boot-amd64-standard</pkg>
-    <pkg>systemimager-boot-i386-standard</pkg>
-    <pkg>systemimager-initrd-template-amd64</pkg>
-    <pkg>systemimager-initrd-template-i386</pkg>
-    <pkg>systeminstaller-oscar</pkg>
-    <pkg>systeminstaller-oscar-x11</pkg>
-    <pkg>systemimager-server</pkg>
-    <pkg>systemimager-server-flamethrowerd</pkg>
-    <pkg>systemimager-bittorrent</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-    <filter>
-        <group>oscar_server</group>
-        <architecture>i386</architecture>
-        <distribution>
-            <name>debian</name>
-        </distribution>
-    </filter>
-    <pkg>syslinux</pkg>
-    <pkg>systemimager-boot-i386-standard</pkg>
-    <pkg>systemimager-initrd-template-i386</pkg>
-    <pkg>systeminstaller-oscar</pkg>
-    <pkg>systeminstaller-oscar-x11</pkg>
-    <pkg>systemimager-server</pkg>
-    <pkg>systemimager-server-flamethrowerd</pkg>
-    <pkg>systemimager-bittorrent</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <architecture>ia64</architecture>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+        <arch>x86_64</arch>
+      </filters>
+      <pkg>syslinux</pkg>
+      <pkg>systemimager-boot-amd64-standard</pkg>
+      <pkg>systemimager-boot-i386-standard</pkg>
+      <pkg>systemimager-initrd-template-amd64</pkg>
+      <pkg>systemimager-initrd-template-i386</pkg>
+      <pkg>systeminstaller-oscar</pkg>
+      <pkg>systeminstaller-oscar-x11</pkg>
+      <pkg>systemimager-server</pkg>
+      <pkg>systemimager-server-flamethrowerd</pkg>
+      <pkg>systemimager-bittorrent</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+        <arch>i386</arch>
+      </filters>
+      <pkg>syslinux</pkg>
+      <pkg>systemimager-boot-i386-standard</pkg>
+      <pkg>systemimager-initrd-template-i386</pkg>
+      <pkg>systeminstaller-oscar</pkg>
+      <pkg>systeminstaller-oscar-x11</pkg>
+      <pkg>systemimager-server</pkg>
+      <pkg>systemimager-server-flamethrowerd</pkg>
+      <pkg>systemimager-bittorrent</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <arch>ia64</arch>
+      </filters>
       <pkg>systemimager-ia64boot-standard</pkg>
       <pkg>systemimager-ia64initrd_template</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <architecture>x86_64</architecture>
-        <distribution>
-            <name>rhel</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>rhel</dist>
+        <arch>x86_64</arch>
+      </filters>
       <pkg>syslinux</pkg>
       <pkg>systemimager-x86_64boot-standard</pkg>
       <pkg>systemimager-x86_64initrd_template</pkg>
       <pkg>systemimager-i386boot-standard</pkg>
       <pkg>systemimager-i386initrd_template</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <architecture>x86_64</architecture>
-        <distribution>
-            <name>fc</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <arch>x86_64</arch>
+      </filters>
       <pkg>syslinux</pkg>
       <pkg>systemimager-x86_64boot-standard</pkg>
       <pkg>systemimager-x86_64initrd_template</pkg>
       <pkg>systemimager-i386boot-standard</pkg>
       <pkg>systemimager-i386initrd_template</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <architecture>x86_64</architecture>
-        <distribution>
-            <name>mdv</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>mdv</dist>
+        <arch>x86_64</arch>
+      </filters>
       <pkg>syslinux</pkg>
       <pkg>systemimager-x86_64boot-standard</pkg>
       <pkg>systemimager-x86_64initrd_template</pkg>
       <pkg>systemimager-i386boot-standard</pkg>
       <pkg>systemimager-i386initrd_template</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <architecture>x86_64</architecture>
-        <distribution>
-            <name>suse</name>
-        </distribution>
-      </filter>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+        <arch>x86_64</arch>
+      </filters>
       <pkg>syslinux</pkg>
       <pkg>systemimager-x86_64boot-standard</pkg>
       <pkg>systemimager-x86_64initrd_template</pkg>
       <pkg>systemimager-i386boot-standard</pkg>
       <pkg>systemimager-i386initrd_template</pkg>
-  </binary-package-list>
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+  <apiDeps>
+    <requires>
+      <pkg>systemconfigurator</pkg>
+      <pkg>systemimager-common</pkg>
+      <pkg>systemimager-client</pkg>
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1:3.8.0-1">
+      <changelogEntry authorName="Erich Focht" date="2007-06-25T10:12:12-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
