@@ -1,49 +1,33 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (c) 2005 Erich Focht
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id$
-  -->
+<oscar>
   <name>sc3</name>
-
-  <version>
-    <major>1</major>
-    <minor>1</minor>
-    <release>5</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>core</class>
-
   <summary>SubCluster Command and Control (SC3) - command line tool suite</summary>
-  <license>Freely distributable</license>
-  <group>Application/System</group>
-
-  <packager>
-    <name>Erich Focht</name>
-    <email>efocht@hpce.nec.com</email>
-  </packager>
-
   <description>The SubCluster Command and Control (SC3) tool suite
 offers a command line interface for system and user administration
 tasks subclusters. It replies on the C3 toolkit's existence and
 extends its scope to heterogeneous setups.</description>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-      </filter>
-
+  <license>Freely distributable</license>
+  <group>Application/System</group>
+  <authors>
+    <author cat="maintainer">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <filters/>
       <pkg>sc3</pkg>
-  </binary-package-list>
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1:1.1-5">
+      <changelogEntry authorName="Erich Focht" date="2007-06-25T10:45:11-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
