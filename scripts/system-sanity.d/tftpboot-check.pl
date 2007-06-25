@@ -31,7 +31,7 @@ if ( ! -d "/tftpboot" &&
 # Then we check if /tftpboot have all we need for the local distro
 my $file = "/tftpboot/distro/" . $distro_id . ".url";
 my $dir = "/tftpboot/distro/" . $distro_id;
-if ( ! -f $file || ! -d $dir ) {
+if ( ! -f $file && ! -d $dir ) {
     print " ---------------------------------------------------------\n";
     print " ERROR: Impossible to find a local or online repository in\n";
     print " /tftpboot for the distro $distro_id\n";
