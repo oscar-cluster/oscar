@@ -17,7 +17,7 @@
 # Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                    All rights reserved.
 
-#$Id$
+#$Id: post_install 5840 2007-05-02 17:13:51Z dikim $
 
 #client make the /etc/odaserver file on all oscar s
 

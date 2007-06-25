@@ -1,48 +1,29 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-
-  <!--
-      Copyright (c) 2004 NCSA 
-                         All rights reserved.
-      Copyright (c) 2005-2006 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id$
-  -->
+<oscar>
   <name>ODA</name>
-
-  <version>
-    <major>1</major>
-    <minor>31</minor>
-    <subversion>0</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>core</class>
-
   <summary>Oscar DAtabase</summary>
+  <description>ODA provides a central database for OSCAR.</description>
   <license>Freely distributable</license>
   <group>Application/Environment</group>
-
-  <maintainer>
-    <name>DongInn Kim</name>
-    <email>dikim@osl.iu.edu</email>
-  </maintainer>
-
-  <packager>
-    <name>Neil Gorsuch</name>
-    <email>ngorsuch@ncsa.uiuc.edu</email>
-  </packager>
-
-  <description>ODA provides a central database for OSCAR.</description>
+  <authors>
+    <author cat="upstream">
+      <name>DongInn Kim</name>
+      <email>dikim@osl.iu.edu</email>
+    </author>
+    <author cat="maintainer">
+      <name>Neil Gorsuch</name>
+      <email>ngorsuch@ncsa.uiuc.edu</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1:1.31.0-1">
+      <changelogEntry authorName="Neil Gorsuch" date="2007-06-25T10:40:48-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
