@@ -1,36 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id$
-  -->
+<oscar>
   <name>Rapt</name>
-
-  <version>
-    <major>1</major>
-    <minor>0</minor>
-    <release>0</release>
-  </version>
-
   <class>core</class>
-
   <summary>Rapt wrapper tools for deb repository control, image creation
 and maintenance</summary>
-  <license>GPL</license>
-  <group>System Environment/Base</group>
-  <packager>
-    <name>Erich Focht</name>
-    <email>efocht@hpce.nec.com</email>
-  </packager>
-
   <description>
   Tool for setting up, exporting apt repositories and executing
 apt commands for only these repositories. Use it as high level DEB
@@ -43,15 +16,29 @@ is very useful for clusters. It can:
 This makes installing packages, creating cluster node images, updating
 revisions much simpler than with rpm.
   </description>
-
-  <binary-package-list>
-    <filter>
-   	 <group>oscar_server</group>
-	 <distribution>
-	     <name>debian</name>
-	  </distribution>
-    </filter>
-    <pkg>rapt</pkg>
-  </binary-package-list>
-
+  <license>GPL</license>
+  <group>System Environment/Base</group>
+  <authors>
+    <author cat="maintainer">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>rapt</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1.0-0">
+      <changelogEntry authorName="Erich Focht" date="2007-06-25T10:08:47-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
