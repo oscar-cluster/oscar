@@ -1,31 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      $Id: 
-  -->
+<oscar>
   <name>Maui Scheduler</name>
-
-  <version>
-    <major>3</major>
-    <minor>2</minor>
-    <subversion>6p14</subversion>
-    <release>4</release>
-  </version>
-
   <class>included</class>
-
   <summary>Maui Scheduler</summary>
-  <license>Maui license</license>
-  <group>Applications/batch</group>
-  <packager>
-    <name>Bernard Li</name>
-    <email>bli@bcgsc.ca</email>
-  </packager>
-
   <description>Maui is an advanced job scheduler for use on clusters and supercomputers.
 It is a highly configurable tool capable of supporting a large array of
 fairness policies, dynamic priorities, extensive reservations, and fairshare.
@@ -35,13 +12,28 @@ from clusters of a few processors to multi-teraflop supercomputers.
 
 This version of Maui has been modified slightly to be usable under the
 OSCAR cluster software system.</description>
-
-  <binary-package-list>
-    <filter>
-      <group>oscar_server</group>
-    </filter>
-
+  <license>Maui license</license>
+  <group>Applications/batch</group>
+  <authors>
+    <author cat="maintainer">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <filters/>
       <pkg>maui-oscar</pkg>
-  </binary-package-list>
-
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="3.2.6p19-8">
+      <changelogEntry authorName="Erich Focht" date="2007-06-26T11:42:33+02:00">
+        <item>Converted to new opkg format</item>
+        <item>Updated to version 3.2.6p19</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
