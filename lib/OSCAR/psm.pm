@@ -54,9 +54,13 @@ our %list = clear_list(); # The hash that holds all the information about the OP
 sub select_set {
 	my $filename = shift;
 
-	my $rc = system("xmlstarlet val -s $ENV{OSCAR_HOME}/src/pkg-set/pkgset.xsd $filename >/dev/null");
-	if($rc != 0) {
-		return "XML does not validate against schema\n";
+	if(system("xmlstarlet --version >/dev/null 2>&1") == 0) {
+		my $rc = system("xmlstarlet val -s $ENV{OSCAR_HOME}/share/schemas/pkgset.xsd $filename >/dev/null");
+		if($rc != 0) {
+			return "XML does not validate against schema\n";
+		}
+	} else {
+		print "XML not validated: xmlstarlet not installed.\n";
 	}
 	
 	return parse_xml(read_file($filename));
