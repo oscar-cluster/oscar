@@ -14,6 +14,8 @@ use OSCAR::SystemSanity;
 
 my $rc = SUCCESS;
 
+$ENV{LANG}="C";
+
 # We check if the hostname is valid, i.e. does not return localhost or
 # something similar. We also check if the host name is assigned to the
 # loopback interface or not.
