@@ -1,4 +1,4 @@
-package psm;
+package OSCAR::psm;
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ package psm;
 #
 #   $Id$
 
-#use strict;
+use strict;
 
 use vars qw(@EXPORT);
 use base qw(Exporter);
@@ -53,6 +53,11 @@ our %list = clear_list(); # The hash that holds all the information about the OP
 #########################################################################
 sub select_set {
 	my $filename = shift;
+
+	my $rc = system("xmlstarlet val -s $ENV{OSCAR_HOME}/src/pkg-set/pkgset.xsd $filename >/dev/null");
+	if($rc != 0) {
+		return "XML does not validate against schema\n";
+	}
 	
 	return parse_xml(read_file($filename));
 }
@@ -147,7 +152,7 @@ sub export_list {
 		print OUTFILE "\t<distro>\n";
 		print OUTFILE "\t\t<name> $list{distro}{name} </name>\n";
 		print OUTFILE "\t\t<version> $list{distro}{version} </version>\n";
-		print OUTFILE "\t<\distro>\n";
+		print OUTFILE "\t</distro>\n";
 	}
 	
 	# If the user supplied an arch use that one
