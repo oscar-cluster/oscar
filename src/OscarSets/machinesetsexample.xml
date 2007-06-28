@@ -15,52 +15,52 @@
 	
 	<machine>
 		<hostname>oscarnode1</hostname>
-		<nodeType>client</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machine>
 		<hostname>oscarnode2</hostname>
-		<nodeType>client</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machine>
 		<hostname>oscarnode3</hostname>
-		<nodeType>client</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machine>
 		<hostname>oscarnode4</hostname>
-		<nodeType>client</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machine>
 		<hostname>oscarnode5</hostname>
-		<nodeType>client</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machine>
 		<hostname>oscarnode6</hostname>
-		<nodeType>client</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machine>
-		<hostname>oscarnode7</hostname>
-		<nodeType>client</hostname>
+		<hostname>oscanodeTypernode7</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machine>
 		<hostname>oscarnode8</hostname>
-		<nodeType>client</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machine>
 		<hostname>oscarnode9</hostname>
-		<nodeType>client</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machine>
 		<hostname>oscarnode10</hostname>
-		<nodeType>client</hostname>
+		<nodeType>client</nodeType>
 	</machine>
 	
 	<machineSet name="A">
