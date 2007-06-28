@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<setsFile>
+	<machine>
+		<hostname>headnode1</hostname>
+		<nodeType>server</nodeType>
+	</machine>
+	
+	<machine>
+		<hostname>headnode2</hostname>
+		<nodeType>server</nodeType>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode1</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode2</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode3</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode4</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode5</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode6</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode7</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode8</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode9</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machine>
+		<hostname>oscarnode10</hostname>
+		<nodeType>client</hostname>
+	</machine>
+	
+	<machineSet name="A">
+		<hostname>headnode1</hostname>
+		<hostname>oscarnode1</hostname>
+		<hostname>oscarnode2</hostname>
+		<hostname>oscarnode3</hostname>
+		<hostname>oscarnode4</hostname>
+		<hostname>oscarnode5</hostname>
+	</machineSet>
+	
+	<machineSet name="B">
+		<hostname>headnode2</hostname>
+		<hostname>oscarnode6</hostname>
+		<hostname>oscarnode7</hostname>
+		<hostname>oscarnode8</hostname>
+		<hostname>oscarnode9</hostname>
+		<hostname>oscarnode10</hostname>
+	</machineSet>
+	
+	<machineSet name="C">
+		<hostname>headnode1</hostname>
+		<hostname>headnode2</hostname>
+		<hostname>oscarnode1</hostname>
+		<hostname>oscarnode2</hostname>
+		<hostname>oscarnode6</hostname>
+		<hostname>oscarnode7</hostname>
+	</machineSet>
+	
+	<machineSet name="D">
+		<hostname>headnode1</hostname>
+		<hostname>oscarnode2</hostname>
+		<hostname>oscarnode4</hostname>
+		<hostname>oscarnode6</hostname>
+		<hostname>oscarnode8</hostname>
+		<hostname>oscarnode10</hostname>
+	</machineSet>
+	
+</setsFile>
