@@ -2,8 +2,7 @@
 <oscar>
   <name>Yume</name>
   <class>core</class>
-  <summary>Yume wrapper tools for rpm repository control, image creation
-and maintenance</summary>
+  <summary>Yume wrapper tools for rpm repository control, image creation and maintenance</summary>
   <description>
   Tool for setting up, exporting yum repositories and executing
 yum commands for only these repositories. Use it as high level RPM
