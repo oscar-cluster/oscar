@@ -47,15 +47,22 @@ our %list = clear_list(); # The hash that holds all the information about the OP
 # Reads a file for the OPKG set (the file should have the same name as  #
 # the OPKG set) and selects all the packages in the set.  If any        #
 # packages could not be selected, none are selected.                    #
-# Parameters : Filename where the package set description is            #
+# Parameters : Filename where the package set description is relative to#
+#              trunk/share/package_sets (i.e. Default/debian-4-i386.xml)#
 # Returns    : A string saying either OK or giving a list of packages   #
 #              that could not be sucessfully selected.                  #
 #########################################################################
 sub select_set {
 	my $filename = shift;
+	
+	# Make sure the file is there
+	
+	unless (-f "$ENV{OSCAR_HOME}/share/package_sets/$filename") {
+		return "File $ENV{OSCAR_HOME}/share/package_sets/$filename not found";
+	}
 
 	if(system("xmlstarlet --version >/dev/null 2>&1") == 0) {
-		my $rc = system("xmlstarlet val -s $ENV{OSCAR_HOME}/share/schemas/pkgset.xsd $filename >/dev/null");
+		my $rc = system("xmlstarlet val -s $ENV{OSCAR_HOME}/share/schemas/pkgset.xsd $ENV{OSCAR_HOME}/share/package_sets/$filename >/dev/null");
 		if($rc != 0) {
 			return "XML does not validate against schema\n";
 		}
@@ -63,7 +70,7 @@ sub select_set {
 		print "XML not validated: xmlstarlet not installed.\n";
 	}
 	
-	return parse_xml(read_file($filename));
+	return parse_xml(read_file("$ENV{OSCAR_HOME}/share/package_sets/$filename"));
 }
 
 #########################################################################

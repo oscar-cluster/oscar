@@ -24,28 +24,50 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use lib ".", "$ENV{OSCAR_HOME}/lib";
-our @EXPORT = qw( describe_set list_sets machine_type );
+our @EXPORT = qw( 
+	describe_set
+	list_sets
+	machine_type
+	list_machines
+	use_file);
 
 use XML::Simple;	# Read the XML package set files
 use Data::Dumper;
 
 our $xml = new XML::Simple;  # XML parser object
-our $filename = "$ENV{OSCAR_HOME}/share/machinesets.xml";
-
 our %list;
 
-# Check to see if the xml validates against the schema
+use_file("defaultms.xml");
 
-if(system("xmlstarlet --version >/dev/null 2>&1") == 0) {
-	my $rc = system("xmlstarlet val -s $ENV{OSCAR_HOME}/share/schemas/machineset.xsd $filename >/dev/null");
-	if($rc != 0) {
-		return "XML does not validate against schema\n";
+#########################################################################
+# Subroutine : use_file                                                 #
+# Use a different file for the machine sets than the default file       #
+# Parameters : The name of a machine set file                           #
+# Returns    : An error message if the file does not exist              #
+#########################################################################
+sub use_file {
+	our %list;
+	my $filename = shift;
+	
+	# Make sure the file is there
+	
+	unless (-f "$ENV{OSCAR_HOME}/share/machine_sets/$filename") {
+		return "File $ENV{OSCAR_HOME}/share/machine_sets/$filename not found";
 	}
-} else {
-	print "XML not validated: xmlstarlet not installed.\n";
-}
+	
+	# Check to see if the xml validates against the schema
 
-%list = %{$xml->XMLin($filename, ForceArray => ['machine', 'machineSet'])};
+	if(system("xmlstarlet --version >/dev/null 2>&1") == 0) {
+		my $rc = system("xmlstarlet val -s $ENV{OSCAR_HOME}/share/schemas/machineset.xsd $ENV{OSCAR_HOME}/share/machine_sets/$filename >/dev/null");
+		if($rc != 0) {
+			return "XML does not validate against schema\n";
+		}
+	} else {
+		print "XML not validated: xmlstarlet not installed.\n";
+	}
+	
+	%list = %{$xml->XMLin("$ENV{OSCAR_HOME}/share/machine_sets/$filename", ForceArray => ['machine', 'machineSet'])};
+}
 
 #########################################################################
 # Subroutine : describe_set                                             #
@@ -87,4 +109,21 @@ sub machine_type {
 			return $$h{nodeType};
 		}
 	}
+}
+
+#########################################################################
+# Subroutine : list_machines                                            #
+# Lists the names of all the machine in the machine sets file           #
+# Parameters : None                                                     #
+# Returns    : A list of the machine names                              #
+#########################################################################
+sub list_machines {
+	our %list;
+	
+	my @hostnames;
+	for my $h (@{$list{machine}}) {
+		push (@hostnames, $$h{hostname});
+	}
+	
+	return @hostnames;
 }
