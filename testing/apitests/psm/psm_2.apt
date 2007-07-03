@@ -12,13 +12,13 @@
 #!/usr/bin/perl -w
 
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib/OSCAR";
-use psm;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::psm;
 use Data::Dumper;
 
-print psm::select_set("files/test2.xml");
-print psm::select_opkg("temp");
-print Dumper(psm::show_list());
+print select_set("testing/test2.xml");
+print select_opkg("temp");
+print Dumper(show_list());
 		</command>
 		
 		<output name="stdout" format="literal">OKOK - Already selected$VAR1 = 'temp';
