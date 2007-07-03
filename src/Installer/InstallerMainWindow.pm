@@ -46,12 +46,13 @@ use InstallerParseXML;
 use InstallerUtils;
 use InstallerErrorDialog;
 use Qt::slots
-    fileNew => [],
-    fileOpen => [],
-    fileSave => [],
-    fileSaveAs => [],
-    filePrint => [],
-    fileExit => [],
+#### currently non-functional
+#    fileNew => [],
+#    fileOpen => [],
+#    fileSave => [],
+#    fileSaveAs => [],
+#    filePrint => [],
+#    fileExit => [],
     helpIndex => [],
     helpContents => [],
     helpAbout => [],
@@ -67,17 +68,17 @@ use Qt::attributes qw(
     installerWorkspace
     centralWidget
     gridLayout
-    fileMenu
+#    fileMenu
     tasksMenu
     toolsMenu
     windowMenu
     helpMenu
-    fileNewAction
-    fileOpenAction
-    fileSaveAction
-    fileSaveAsAction
-    filePrintAction
-    fileExitAction
+#    fileNewAction
+#    fileOpenAction
+#    fileSaveAction
+#    fileSaveAsAction
+#    filePrintAction
+#    fileExitAction
     windowCascadeAction
     windowTileAction
     helpContentsAction
@@ -163,60 +164,63 @@ like C<classname->>C<NEW(args...)>.
   print "Creating the status bar\n";
   statusBar();
 
-  # Create pulldown menus.  First: File menu
-  print "Creating the pulldown menus\n";
-  fileMenu = Qt::PopupMenu(this);
-  menuBar()->insertItem("",fileMenu,1);
-  menuBar()->findItem(1)->setText(trUtf8("&File"));
-
-  fileNewAction = Qt::Action(this,"fileNewAction");
-  fileNewAction->setIconSet(
-    Qt::IconSet(InstallerUtils::getPixmap("filenew.png")));
-  fileNewAction->setText(trUtf8("New"));
-  fileNewAction->setMenuText(trUtf8("&New"));
-  fileNewAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+N")));
-  fileNewAction->addTo(fileMenu);
-
-  fileOpenAction = Qt::Action(this,"fileOpenAction");
-  fileOpenAction->setIconSet(
-    Qt::IconSet(InstallerUtils::getPixmap("fileopen.png")));
-  fileOpenAction->setText(trUtf8("Open"));
-  fileOpenAction->setMenuText(trUtf8("&Open..."));
-  fileOpenAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+O")));
-  fileOpenAction->addTo(fileMenu);
-
-  fileSaveAction = Qt::Action(this,"fileSaveAction");
-  fileSaveAction->setIconSet(
-    Qt::IconSet(InstallerUtils::getPixmap("filesave.png")));
-  fileSaveAction->setText(trUtf8("Save"));
-  fileSaveAction->setMenuText(trUtf8("&Save"));
-  fileSaveAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+S")));
-  fileSaveAction->addTo(fileMenu);
-
-  fileSaveAsAction = Qt::Action(this,"fileSaveAsAction");
-  fileSaveAsAction->setText(trUtf8("Save As"));
-  fileSaveAsAction->setMenuText(trUtf8("Save &As..."));
-  fileSaveAsAction->addTo(fileMenu);
-
-  fileMenu->insertSeparator();
-
-  filePrintAction = Qt::Action(this,"filePrintAction");
-  filePrintAction->setIconSet(
-    Qt::IconSet(InstallerUtils::getPixmap("print.png")));
-  filePrintAction->setText(trUtf8("Print"));
-  filePrintAction->setMenuText(trUtf8("&Print..."));
-  filePrintAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+P")));
-  filePrintAction->addTo(fileMenu);
-
-  fileMenu->insertSeparator();
-
-  fileExitAction = Qt::Action(this,"fileExitAction");
-  fileExitAction->setIconSet(
-    Qt::IconSet(InstallerUtils::getPixmap("close.png")));
-  fileExitAction->setText(trUtf8("Exit"));
-  fileExitAction->setMenuText(trUtf8("E&xit"));
-  fileExitAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+Q")));
-  fileExitAction->addTo(fileMenu);
+##################################################
+#  File menu for OSCAR GUI.
+##################################################
+#  # Create pulldown menus.  First: File menu
+#  print "Creating the pulldown menus\n";
+#  fileMenu = Qt::PopupMenu(this);
+#  menuBar()->insertItem("",fileMenu,1);
+#  menuBar()->findItem(1)->setText(trUtf8("&File"));
+#
+#  fileNewAction = Qt::Action(this,"fileNewAction");
+#  fileNewAction->setIconSet(
+#    Qt::IconSet(InstallerUtils::getPixmap("filenew.png")));
+#  fileNewAction->setText(trUtf8("New"));
+#  fileNewAction->setMenuText(trUtf8("&New"));
+#  fileNewAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+N")));
+#  fileNewAction->addTo(fileMenu);
+#
+#  fileOpenAction = Qt::Action(this,"fileOpenAction");
+#  fileOpenAction->setIconSet(
+#    Qt::IconSet(InstallerUtils::getPixmap("fileopen.png")));
+#  fileOpenAction->setText(trUtf8("Open"));
+#  fileOpenAction->setMenuText(trUtf8("&Open..."));
+#  fileOpenAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+O")));
+#  fileOpenAction->addTo(fileMenu);
+#
+#  fileSaveAction = Qt::Action(this,"fileSaveAction");
+#  fileSaveAction->setIconSet(
+#    Qt::IconSet(InstallerUtils::getPixmap("filesave.png")));
+#  fileSaveAction->setText(trUtf8("Save"));
+#  fileSaveAction->setMenuText(trUtf8("&Save"));
+#  fileSaveAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+S")));
+#  fileSaveAction->addTo(fileMenu);
+#
+#  fileSaveAsAction = Qt::Action(this,"fileSaveAsAction");
+#  fileSaveAsAction->setText(trUtf8("Save As"));
+#  fileSaveAsAction->setMenuText(trUtf8("Save &As..."));
+#  fileSaveAsAction->addTo(fileMenu);
+#
+#  fileMenu->insertSeparator();
+#
+#  filePrintAction = Qt::Action(this,"filePrintAction");
+#  filePrintAction->setIconSet(
+#    Qt::IconSet(InstallerUtils::getPixmap("print.png")));
+#  filePrintAction->setText(trUtf8("Print"));
+#  filePrintAction->setMenuText(trUtf8("&Print..."));
+#  filePrintAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+P")));
+#  filePrintAction->addTo(fileMenu);
+#
+#  fileMenu->insertSeparator();
+#
+#  fileExitAction = Qt::Action(this,"fileExitAction");
+#  fileExitAction->setIconSet(
+#    Qt::IconSet(InstallerUtils::getPixmap("close.png")));
+#  fileExitAction->setText(trUtf8("Exit"));
+#  fileExitAction->setMenuText(trUtf8("E&xit"));
+#  fileExitAction->setAccel(Qt::KeySequence(trUtf8("Ctrl+Q")));
+#  fileExitAction->addTo(fileMenu);
 
   # Read in all of the XML file configuration information for Tasks/Tools
   print "Reading the XML configuration file...\n";
@@ -284,18 +288,20 @@ like C<classname->>C<NEW(args...)>.
 
   # Then, connect the signals for the pulldown menus to appropriate slots
   print "Connecting the signals...\n";
-  Qt::Object::connect(fileNewAction,      SIGNAL "activated()", 
-                      this,               SLOT "fileNew()");
-  Qt::Object::connect(fileOpenAction,     SIGNAL "activated()", 
-                      this,               SLOT "fileOpen()");
-  Qt::Object::connect(fileSaveAction,     SIGNAL "activated()", 
-                      this,               SLOT "fileSave()");
-  Qt::Object::connect(fileSaveAsAction,   SIGNAL "activated()", 
-                      this,               SLOT "fileSaveAs()");
-  Qt::Object::connect(filePrintAction,    SIGNAL "activated()", 
-                      this,               SLOT "filePrint()");
-  Qt::Object::connect(fileExitAction,     SIGNAL "activated()", 
-                      this,               SLOT "fileExit()");
+
+##### More file code.
+#  Qt::Object::connect(fileNewAction,      SIGNAL "activated()", 
+#                      this,               SLOT "fileNew()");
+#  Qt::Object::connect(fileOpenAction,     SIGNAL "activated()", 
+#                      this,               SLOT "fileOpen()");
+#  Qt::Object::connect(fileSaveAction,     SIGNAL "activated()", 
+#                      this,               SLOT "fileSave()");
+#  Qt::Object::connect(fileSaveAsAction,   SIGNAL "activated()", 
+#                      this,               SLOT "fileSaveAs()");
+#  Qt::Object::connect(filePrintAction,    SIGNAL "activated()", 
+#                      this,               SLOT "filePrint()");
+#  Qt::Object::connect(fileExitAction,     SIGNAL "activated()", 
+#                      this,               SLOT "fileExit()");
   Qt::Object::connect(windowCascadeAction,SIGNAL "activated()", 
                       installerWorkspace, SLOT "cascade()");
   Qt::Object::connect(windowTileAction,   SIGNAL "activated()", 
@@ -381,50 +387,50 @@ $installerTasksAndTools hash) before calling this subroutine.
       toolsMenu->setItemParameter($id,$arraynum++);
     }
 }
-
-sub fileNew
-{
-  print "fileNew(): Not implemented yet.\n";
-}
-
-sub fileOpen
-{
-  print "fileOpen(): Not implemented yet.\n";
-}
-
-sub fileSave
-{
-  print "fileSave(): Not implemented yet.\n";
-}
-
-sub fileSaveAs
-{
-  print "fileSaveAs(): Not implemented yet.\n";
-}
-
-sub filePrint
-{
-  print "filePrint(): Not implemented yet.\n";
-}
-
-sub fileExit
-{
-  Qt::Application::exit();
-}
-
+#####  File Code
+#sub fileNew
+#{
+#  print "fileNew(): A shadow robed figure appears before you.  He waves his hand at you and sais \"You do not want to do that.\"  Suddenly you find you do not want to do that.\n";
+#}
+#
+#sub fileOpen
+#{
+#  print "fileOpen():  A shadow robed figure appears before you.  He waves his hand at you and sais \"You do not want to do that.\"  Suddenly you find you do not want to do that.\n";
+#}
+#
+#sub fileSave
+#{
+#  print "fileSave():  A shadow robed figure appears before you.  He waves his hand at you and sais \"You do not want to do that.\"  Suddenly you find you do not want to do that.\n";
+#}
+#
+#sub fileSaveAs
+#{
+#  print "fileSaveAs():  A shadow robed figure appears before you.  He waves his hand at you and sais \"You do not want to do that.\"  Suddenly you find you do not want to do that.\n";
+#}
+#
+#sub filePrint
+#{
+#  print "filePrint():  A shadow robed figure appears before you.  He waves his hand at you and sais \"You do not want to do that.\"  Suddenly you find you do not want to do that.\n";
+#}
+#
+#sub fileExit
+#{
+#  Qt::Application::exit();
+#}
+#
 sub helpIndex
 {
-  print "helpIndex(): Not implemented yet.\n";
+  print "helpIndex():  A shadow robed figure appears before you.  He waves his hand at you and sais \"You do not want to do that.\"  Suddenly you find you do not want to do that.\n";
 }
 
 sub helpContents
 {
-  print "helpContents(): Not implemented yet.\n";
+  print "helpContents():  A shadow robed figure appears before you.  He waves his hand at you and sais \"You do not want to do that.\"  Suddenly you find you do not want to do that.\n";
 }
 
 sub helpAbout
 {
-  print "helpAbout(): Not implemented yet.\n";
+  print "helpAbout():  A shadow robed figure appears before you.  He waves his hand at you and sais \"You do not want to do that.\"  Suddenly you find you do not want to do that.\n";
 }
 
 sub windowMenuAboutToShow

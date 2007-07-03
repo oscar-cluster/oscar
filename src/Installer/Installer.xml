@@ -24,6 +24,9 @@
       <stepnum>1</stepnum>
     </task>
 
+<!--
+Node Management#############################
+-->
     <task>
       <dirname>NodeMgmt</dirname>
       <stepnum>2</stepnum>
@@ -37,7 +40,9 @@
   </tasks>
 
   <tools>
-
+<!--
+######## Display Node Group Under Tools#########
+-->
     <tool>
       <dirname>NodeGroupLister</dirname>
     </tool>
