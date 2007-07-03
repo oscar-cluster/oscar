@@ -15,7 +15,7 @@
     <property name="minimumSize">
         <size>
             <width>576</width>
-            <height>562</height>
+            <height>554</height>
         </size>
     </property>
     <property name="maximumSize">
@@ -142,7 +142,6 @@
                     </property>
                     <property name="font">
                         <font>
-                            <family>Helvetica</family>
                         </font>
                     </property>
                     <property name="text">
@@ -178,7 +177,6 @@
                     </property>
                     <property name="font">
                         <font>
-                            <family>Helvetica</family>
                         </font>
                     </property>
                     <property name="text">
@@ -442,7 +440,6 @@
                                                                             </property>
                                                                             <property name="font">
                                                                                 <font>
-                                                                                    <family>Helvetica</family>
                                                                                 </font>
                                                                             </property>
                                                                             <property name="text">
@@ -478,7 +475,6 @@
                                                                             </property>
                                                                             <property name="font">
                                                                                 <font>
-                                                                                    <family>Helvetica</family>
                                                                                 </font>
                                                                             </property>
                                                                             <property name="text">
@@ -514,7 +510,6 @@
                                                                             </property>
                                                                             <property name="font">
                                                                                 <font>
-                                                                                    <family>Helvetica</family>
                                                                                 </font>
                                                                             </property>
                                                                             <property name="text">
@@ -604,7 +599,6 @@
                                                                             </property>
                                                                             <property name="font">
                                                                                 <font>
-                                                                                    <family>Helvetica</family>
                                                                                 </font>
                                                                             </property>
                                                                         </widget>
@@ -626,7 +620,6 @@
                                                     </property>
                                                     <property name="font">
                                                         <font>
-                                                            <family>Helvetica</family>
                                                         </font>
                                                     </property>
                                                     <property name="text">
@@ -961,7 +954,6 @@
                                                                                         </property>
                                                                                         <property name="font">
                                                                                             <font>
-                                                                                                <family>Helvetica</family>
                                                                                             </font>
                                                                                         </property>
                                                                                         <property name="text">
@@ -991,7 +983,6 @@
                                                                                         </property>
                                                                                         <property name="font">
                                                                                             <font>
-                                                                                                <family>Helvetica</family>
                                                                                             </font>
                                                                                         </property>
                                                                                     </widget>
@@ -1248,7 +1239,6 @@
                                                                                 </property>
                                                                                 <property name="font">
                                                                                     <font>
-                                                                                        <family>Helvetica</family>
                                                                                     </font>
                                                                                 </property>
                                                                                 <property name="text">
@@ -1493,7 +1483,6 @@
                             </property>
                             <property name="font">
                                 <font>
-                                    <family>Helvetica</family>
                                 </font>
                             </property>
                             <property name="text">
@@ -1540,7 +1529,6 @@
                                     </property>
                                     <property name="font">
                                         <font>
-                                            <family>Helvetica</family>
                                         </font>
                                     </property>
                                     <property name="text">
@@ -1671,7 +1659,6 @@
                             </property>
                             <property name="font">
                                 <font>
-                                    <family>Helvetica</family>
                                 </font>
                             </property>
                             <property name="text">
@@ -1716,9 +1703,6 @@
                             <property name="text">
                                 <string>&amp;Back</string>
                             </property>
-                            <property name="iconSet">
-                                <iconset>backarrow.png</iconset>
-                            </property>
                             <property name="toolTip" stdset="0">
                                 <string>Go to the previous step of the installer</string>
                             </property>
@@ -1743,14 +1727,10 @@
                             </property>
                             <property name="font">
                                 <font>
-                                    <family>Helvetica</family>
                                 </font>
                             </property>
                             <property name="text">
                                 <string>&amp;Close</string>
-                            </property>
-                            <property name="iconSet">
-                                <iconset>close.png</iconset>
                             </property>
                         </widget>
                         <widget class="QPushButton">
@@ -1774,9 +1754,6 @@
                             </property>
                             <property name="text">
                                 <string>&amp;Next</string>
-                            </property>
-                            <property name="iconSet">
-                                <iconset>nextarrow.png</iconset>
                             </property>
                             <property name="toolTip" stdset="0">
                                 <string>Go to the next step of the installer</string>
@@ -1810,7 +1787,7 @@
 </customwidgets>
 <images>
     <image name="image0">
-        <data format="XPM.GZ" length="45">789cd3d7528808f055d0d2e72a2e492cc94c5648ce482c52d04a29cdcdad8c8eb5ade6523250004143a55a6b2e0026630c4f</data>
+        <data format="XBM.GZ" length="79">789c534e494dcbcc4b554829cdcdad8c2fcf4c29c95030e0524611cd48cd4ccf28010a1797249664262b2467241641a592324b8aa363156c15aab914146aadb90067111b1f</data>
     </image>
 </images>
 <connections>
@@ -1958,6 +1935,12 @@
         <receiver>NodeMgmtDialog</receiver>
         <slot>nextButton_clicked()</slot>
     </connection>
+    <connection>
+        <sender>NodeMgmtDialog</sender>
+        <signal>toolBarPositionChanged(QToolBar*)</signal>
+        <receiver>NodeMgmtDialog</receiver>
+        <slot>NodeMgmtDialog_toolBarPositionChanged(QToolBar*)</slot>
+    </connection>
 </connections>
 <tabstops>
     <tabstop>othermacs</tabstop>
@@ -2018,10 +2001,11 @@
     <slot>nextButton_clicked()</slot>
     <slot>setButtonShown( char *, char *, bool )</slot>
     <slot>reReadOda( char * )</slot>
+    <slot>NodeMgmtDialog_toolBarPositionChanged( QToolBar * )</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
 <includehints>
-    <includehint>nodemgmttable.h</includehint>
+    <includehint>NodeMgmtTable.pm</includehint>
 </includehints>
 </UI>

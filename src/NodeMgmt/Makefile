@@ -41,6 +41,8 @@ all:	$(COMPILEDTARGET)
 		@ echo "Fixing QWidgetStack problem"   
 		perl -pi -e 's/QWidgetStack/Qt::WidgetStack/' *.p* 
 
+install:
+
 .SUFFIXES:
 .SUFFIXES: .pl .pm .ui
 

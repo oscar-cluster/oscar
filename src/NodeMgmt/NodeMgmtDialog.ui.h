@@ -9,7 +9,7 @@
 
 void NodeMgmtDialog::init()
 {    
-    $nodes = OSCAR::Database::database_execute_command("read_records nodes id!=1");
+#   $nodes = OSCAR::Database::database_execute_command("read_records nodes id!=1");
     @macs = ();
 # set up advanced widget group as an extension
     advancedBox->hide();
@@ -555,4 +555,10 @@ void NodeMgmtDialog::reReadOda( char * )
 
     # Reread the oda database and update the GUI as necessary
     # ...
+}
+
+
+void NodeMgmtDialog::NodeMgmtDialog_toolBarPositionChanged( QToolBar * )
+{
+
 }
