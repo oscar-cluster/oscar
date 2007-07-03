@@ -39,6 +39,8 @@ all:	$(COMPILEDTARGET)
 		ln -sf ../Installer/images; \
 		cd ../Installer; ln -sf ../Selector
 
+install:
+
 .SUFFIXES:
 .SUFFIXES: .pl .pm .ui
 
