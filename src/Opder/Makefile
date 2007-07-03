@@ -42,6 +42,8 @@ all:	$(COMPILEDTARGET)
 		ln -sf ../Installer/images; \
 		cd ../Installer; ln -sf ../Opder
 
+install:
+
 .SUFFIXES:
 .SUFFIXES: .pl .pm .ui
 
