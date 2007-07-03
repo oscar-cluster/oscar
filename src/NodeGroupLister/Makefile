@@ -38,6 +38,8 @@ all:	$(COMPILEDTARGET)
 		ln -sf ../Installer/images; \
 		cd ../Installer; ln -sf ../NodeGroupLister
 
+install:
+
 .SUFFIXES:
 .SUFFIXES: .pl .pm .ui
 

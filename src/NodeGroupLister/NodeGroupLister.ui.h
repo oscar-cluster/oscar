@@ -150,7 +150,7 @@ void NodeGroupLister::closeEvent( QCloseEvent * )
 
   # Send a signal to the parent workspace letting it know we are closing.
   emit taskToolClosing(className());
-  SUPER->closeEvent(@_);   # Call the parent's closeEvent
+  SUPER->closeEvent(@_);   # Call the parents closeEvent
 }
 
 
@@ -165,7 +165,8 @@ void NodeGroupLister::showEvent()
 void NodeGroupLister::refreshNodeGroupListBox()
 {
   nodeGroupListBox->clear();
-  my @nodeGroups = OSCAR::Database::database_return_list("node_groups");
+  my @nodeGroups = ();
+#  my @nodeGroups = OSCAR::Database::database_return_list("node_groups# ");
   foreach my $group (sort @nodeGroups)
     {
       nodeGroupListBox->insertItem($group);
@@ -187,9 +188,9 @@ void NodeGroupLister::nodeGroupIsSpecial( char * )
 
   # Check to see if the nodeGroup is one of the special groups that contains
   # only the single node with the same name as the node group.
-  $retval = (OSCAR::Database::database_return_list(
-    "read_records node_groups name =$nodeGroup special"))[0] if
-      (!$retval);
+#  $retval = (OSCAR::Database::database_return_list(
+#    "read_records node_groups name =$nodeGroup special"))[0] if
+#     (!$retval);
 
   return $retval;
 }
