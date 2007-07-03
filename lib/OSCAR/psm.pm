@@ -307,6 +307,7 @@ sub parse_xml {
 			my $xmlinfo_comp = rw($$xmlinfo{package}{$name}{version}{compare});
 			my $xmlinfo_number = rw($$xmlinfo{package}{$name}{version}{number});
 			my $comparison = version_compare(parse_version($xmlinfo_number), parse_version($list_number));
+			
 			# Check to see if the version comparisons are compatible
 			
 			# If list is gt or gte
@@ -331,6 +332,12 @@ sub parse_xml {
 				} elsif ($xmlinfo_comp eq 'eq') {
 					# AND xmlnum is gt
 					if ($comparison > 0) {
+						# Take action later
+						push(@goodpackages, $name);
+						next;
+					
+					# AND list is gte AND xmlnum is eq
+					} elsif ($comparison == 0 && $list_comp eq 'gte') {
 						# Take action later
 						push(@goodpackages, $name);
 						next;
@@ -359,6 +366,11 @@ sub parse_xml {
 				} elsif ($xmlinfo_comp eq 'eq') {
 					# AND xmlnum is lt
 					if ($comparison < 0) {
+						# Take action later
+						push(@goodpackages, $name);
+						next;
+					# AND list is lte AND xmlnum is eq
+					} elsif ($comparison == 0 && $list_comp eq 'lte') {
 						# Take action later
 						push(@goodpackages, $name);
 						next;
