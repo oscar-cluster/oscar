@@ -19,7 +19,7 @@ my $os = OSCAR::OCA::OS_Detect::open();
 my $distro_id = $os->{distro} . "-" . $os->{distro_version} . "-" . 
                 $os->{arch};
 
-# We first do some very basic tests
+# Step 1: we do some very basic tests
 if ( ! -d "/tftpboot" && 
      ! -d "/tftpboot/distro") {
      print " --------------------------------------------\n";
@@ -28,7 +28,7 @@ if ( ! -d "/tftpboot" &&
      exit ($rc);
 }
  
-# Then we check if /tftpboot have all we need for the local distro
+# Step 2: we check if /tftpboot have all we need for the local distro
 my $file = "/tftpboot/distro/" . $distro_id . ".url";
 my $dir = "/tftpboot/distro/" . $distro_id;
 if ( ! -f $file && ! -d $dir ) {
@@ -37,6 +37,33 @@ if ( ! -f $file && ! -d $dir ) {
     print " /tftpboot for the distro $distro_id\n";
     print " ---------------------------------------------------------\n";
     exit ($rc);
+}
+
+# Step 3: we check if there are empty local pools
+$dir = "/tftpboot/distro/";
+opendir(DIR, "$dir") or die "Error: $! - \'$dir\'";
+my @subdirs = readdir (DIR);
+closedir(DIR);
+
+foreach my $subdir (@subdirs) {
+    if ($subdir eq "." || $subdir eq "..") {
+        next;
+    }
+    $subdir = $dir . $subdir;
+    # Do we have rpms in that directory?
+    my @files = glob("$subdir/*.rpm");
+    if (scalar(@files) == 0) {
+        # If no do we have debian packages?
+        @files = glob("$subdir/*.deb");
+        if (scalar(@files) == 0) {
+            print " -------------------------------------------------------\n";
+            print " ERROR: it seems you have empty local repositories, \n";
+            print " i.e., a local repository does not have any binary \n";
+            print " package. The empty local repository is: $subdir.\n";
+            print " -------------------------------------------------------\n";
+            exit ($rc);
+        }
+    }
 }
 
 $rc = SUCCESS;
