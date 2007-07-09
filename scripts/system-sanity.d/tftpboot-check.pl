@@ -29,6 +29,7 @@ if ( ! -d "/tftpboot" &&
 }
  
 # Step 2: we check if /tftpboot have all we need for the local distro
+# Two cases: we use a local pool or an online pool
 my $file = "/tftpboot/distro/" . $distro_id . ".url";
 my $dir = "/tftpboot/distro/" . $distro_id;
 if ( ! -f $file && ! -d $dir ) {
@@ -50,6 +51,10 @@ foreach my $subdir (@subdirs) {
         next;
     }
     $subdir = $dir . $subdir;
+    # We skip local files
+    if (-f "$subdir") {
+        next;
+    }
     # Do we have rpms in that directory?
     my @files = glob("$subdir/*.rpm");
     if (scalar(@files) == 0) {
@@ -60,6 +65,7 @@ foreach my $subdir (@subdirs) {
             print " ERROR: it seems you have empty local repositories, \n";
             print " i.e., a local repository does not have any binary \n";
             print " package. The empty local repository is: $subdir.\n";
+            print " Please populate the local pool or delete the directory.\n";
             print " -------------------------------------------------------\n";
             exit ($rc);
         }
