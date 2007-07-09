@@ -33,7 +33,34 @@ use Carp;
 @EXPORT = qw(
             is_element_in_array
             print_array
+            print_hash
             );
+
+###############################################################################
+# function to do a debug print of a hash
+# inputs: leading_spaces  string to put in front of lines
+#         name            string to print as the hash name
+#         hash_ref        pointer to the hash to print
+###############################################################################
+sub print_hash {
+    my( $leading_spaces, $name, $hashref ) = @_;
+    print "DB_DEBUG>$0:\n====> $leading_spaces$name ->\n";
+    foreach my $key ( sort keys %$hashref ) {
+    my $value = $$hashref{$key};
+    if (ref($value) eq "HASH") {
+        print_hash(  "$leading_spaces    ", $key, $value );
+    } elsif (ref($value) eq "ARRAY") {
+        my $string = join(',', @$value);
+        print "DB_DEBUG>$0:\n====> $leading_spaces    $key => ($string)\n";
+    } elsif (ref($value) eq "SCALAR") {
+        print "DB_DEBUG>$0:\n====> $leading_spaces    $key is a scalar ref\n";
+        print "DB_DEBUG>$0:\n====> $leading_spaces    $key => $$value\n";
+    } else {
+        $value = "undef" unless defined $value;
+        print "DB_DEBUG>$0:\n====> $leading_spaces    $key => <$value>\n";
+    }
+    }
+}
 
 ###############################################################################
 # Check if an element is in an array
