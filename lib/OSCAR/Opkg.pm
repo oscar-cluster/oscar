@@ -21,20 +21,27 @@ package OSCAR::Opkg;
 #             Geoffroy Vallee <valleegr@ornl.gov>
 #             All rights reserved
 #
-# $Id$
+# $Id: Opkg.pm 5884 2007-06-08 07:35:50Z valleegr $
 #
 # OSCAR Package module
 #
 # This package contains subroutines for common operations related to
 # the handling of OSCAR Packages (opkg)
 
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
+use Carp;
+
 @EXPORT = qw(
             get_list_opkg_dirs
             opkg_print
+            opkgs_install_server
             );
+
+my $verbose = $ENV{OSCAR_VERBOSE};
 
 # name of OSCAR Package
 my $opkg = basename($ENV{OSCAR_PACKAGE_HOME}) if defined ($ENV{OSCAR_PACKAGE_HOME});
@@ -59,7 +66,7 @@ sub get_list_opkg_dirs {
         "($opkg_dir)") if ( ! -d $opkg_dir );
 
     opendir (DIRHANDLER, "$opkg_dir")
-        or die ("ERROR: Impossible to open $package_set_dir");
+        or die ("ERROR: Impossible to open $opkg_dir");
     foreach my $dir (sort readdir(DIRHANDLER)) {
         if ($dir ne "." && $dir ne ".." && $dir ne ".svn" 
             && $dir ne "package.dtd") {
@@ -67,6 +74,63 @@ sub get_list_opkg_dirs {
         }
     }
     return @opkgs;
+}
+
+###############################################################################
+# Install the server part of a given OPKG on the local system                 #
+# Parameter: list of OPKGs.                                                   #
+# Return:    none.                                                            #
+###############################################################################
+sub opkg_install_server {
+    my ($opkg) = @_;
+
+    if ($opkg eq "") {
+        print "ERROR: no OPKG name, OPKG install abort";
+        exit 1;
+    }
+
+    #
+    # Detect OS of master node.
+    #
+    # Fails HERE if distro is not supported!
+    #
+    my $os = &OSCAR::PackagePath::distro_detect_or_die();
+
+    #
+    # Locate package pools and create the directories if they don't exist, yet.
+    #
+    my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
+    my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
+
+    # The code below should migrate into a package. It is used in
+    # install_prereq in exactly the same way. Maybe to OSCAR::PackageSmart...?
+    # [EF]
+    eval("require OSCAR::PackMan");
+    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
+                        $oscar_pkg_pool,$distro_pkg_pool);
+    if (!$pm) {
+        croak "\nERROR: Could not create PackMan instance!\n";
+    }
+    my $pkg = "opkg-" . $opkg . "-server";
+    my ($err, @out) = $pm->smart_install($pkg);
+    if (!$err) {
+        print "Error occured during smart_install:\n";
+        print join("\n",@out)."\n";
+        exit 1;
+    }
+}
+
+###############################################################################
+# Install the server part of a list of OPKGs on the local system              #
+# Parameter: list of OPKGs.                                                   #
+# Return:    none.                                                            #
+###############################################################################
+sub opkgs_install_server {
+    my (@opkgs) = @_;
+
+    foreach my $opkg (@opkgs) {
+        opkg_install_server ($opkg);
+    }
 }
 
 1;

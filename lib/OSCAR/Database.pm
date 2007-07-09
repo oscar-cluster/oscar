@@ -1084,7 +1084,9 @@ sub delete_node_packages {
     return do_update($sql,"Node_Package_Status", $options_ref, $error_strings_ref);
 }
 
-
+################################################################################
+# This function includes given OSCAR Packages into the database                #
+################################################################################
 sub insert_packages {
     my ($passed_ref, $table,
         $name,$path,$table_fields_ref,

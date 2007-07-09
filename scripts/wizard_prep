@@ -32,6 +32,7 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::PackagePath;
+use OSCAR::Opkg qw (opkgs_install_server);
 use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
@@ -73,7 +74,6 @@ my $os = &OSCAR::PackagePath::distro_detect_or_die();
 #
 # Locate package pools and create the directories if they don't exist, yet.
 #
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
 
 my $ARCH = `./get_arch`;
@@ -422,41 +422,8 @@ my @packages = map { $_->{package} } @results;
 
 oscar_log_subsection("Identified core packages: " . join(' ', @packages));
 
-
-# Get list of RPMs from the core packages
-my @rpms = ();
-my %sel = ("group" => $OSCAR_SERVER_GROUP, 
-           "arch" => $ARCH, 
-           "distro" => $os->{distro});
-foreach my $package (@packages) {
-    push @rpms, pkgs_of_opkg($package,undef,
-                                \@errors,
-                                %sel);
-}
-
-
 oscar_log_subsection("Installing server core packages");
-
-print "Packages: ".join(" ",@rpms) . "\n" if ($verbose);
-#
-# The code below should migrate into a package. It is used in install_prereq
-# in exactly the same way. Maybe to OSCAR::PackageSmart...? [EF]
-#
-
-eval("require OSCAR::PackMan");
-my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
-					    $oscar_pkg_pool,$distro_pkg_pool);
-if (!$pm) {
-    croak "\nERROR: Could not create PackMan instance!\n";
-}
-
-my ($err, @out) = $pm->smart_install(@rpms);
-if (!$err) {
-    print "Error occured during smart_install:\n";
-    print join("\n",@out)."\n";
-    exit 1;
-}
-
+opkgs_install_server (@packages);
 oscar_log_subsection("Successfully installed server core RPMs");
 
  PREP_CORE_NEST:
