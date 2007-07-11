@@ -252,7 +252,7 @@ sub populateConfiguratorList
 
           # Figure out where the package directory is located on the disk.
           $packagedir =  "$oscarbasedir/packages/$package";  # Fallback
-          foreach my $dir (@OSCAR::Package::PKG_SOURCE_LOCATIONS)
+          foreach my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS)
             {
               (($packagedir = "$dir/$package") and last) if
                 (-d "$dir/$package");
