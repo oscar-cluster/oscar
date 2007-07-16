@@ -1,79 +1,51 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-
-<!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id$
-      -->
-
+<oscar>
   <name>MPICH-CH_P4 (tcp)</name>
-
-  <version>
-    <major>1</major>
-    <minor>2</minor>
-    <subversion>7</subversion>
-    <release>8</release>
-  </version>
-
   <class>included</class>
-
   <summary>MPICH specifically packaged for OSCAR clusters</summary>
-  <license>Freely distributable</license>
-  <copyright>2002</copyright>
-  <group>Development/Libraries</group>
-  <uri>http://www-unix.mcs.anl.gov/mpi/mpich/</uri>
-  <maintainer>
-    <name>MPICH Team</name>
-    <email>mpich-bugs@mcs.anl.gov</email>
-  </maintainer>
-  <packager>
-    <name>Erich Focht</name>
-    <email>efocht@hpce.nec.com</email>
-  </packager>
-
   <description>MPICH is a freely available, portable implementation of
 MPI (http://www.mpi-forum.org), the Standard for message-passing
 libraries.</description>
-
-  <provides>
-    <type>package</type>
-    <name>mpi</name>
-  </provides>
-
-  <requires>
-    <type>package</type>
-    <name>switcher</name>
-  </requires>
-
-  <binary-package-list>
-    <pkg>mpich-ch_p4-gcc-oscar</pkg>
-    <pkg>mpich-ch_p4-gcc-oscar-module</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-    <filter>
-      <distribution>
-        <name>suse</name>
-      </distribution>
-    </filter>
-    <pkg>gcc-fortran</pkg>
-  </binary-package-list>
-
-  <package-specific-attributes>
-    <switcher>
-      <tag>mpi</tag>
-      <name>mpich-ch_p4-gcc-1.2.7</name>
-    </switcher>
-  </package-specific-attributes>
-
+  <license>Freely distributable</license>
+  <group>Development/Libraries</group>
+  <uri>http://www-unix.mcs.anl.gov/mpi/mpich/</uri>
+  <authors>
+    <author cat="upstream">
+      <name>MPICH Team</name>
+      <email>mpich-bugs@mcs.anl.gov</email>
+    </author>
+    <author cat="maintainer">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps>
+    <provides/>
+    <requires/>
+    <requires>
+      <pkg>mpich-ch_p4-gcc-oscar</pkg>
+      <pkg>mpich-ch_p4-gcc-oscar-module</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
+      <pkg>gcc-fortran</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>sles</dist>
+      </filters>
+      <pkg>gcc-fortran</pkg>
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1.2.7-8">
+      <changelogEntry authorName="Erich Focht" date="2007-07-13T11:22:53+02:00">
+        <item>converted to new opkg format</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
