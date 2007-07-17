@@ -1,35 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id$
-  -->
+<oscar>
   <name>NetBootMgr</name>
-
-  <version>
-    <major>1</major>
-    <minor>7</minor>
-    <release>1</release>
-  </version>
-
   <class>base</class>
-
   <summary>Manage next network boot for a cluster</summary>
-  <license>GPL</license>
-  <group>System Environment/Base</group>
-  <packager>
-    <name>Erich Focht</name>
-    <email>efocht@hpce.nec.com</email>
-  </packager>
-
   <description>
 Netbootmgr provides a GUI interface for managing the next boot action for
 network booted hosts. It does so by using pxelinux' or elilo.efi's capability
@@ -37,13 +10,27 @@ to load an IP specific configuration file from the network. Netbootmgr
 creates/deletes symbolic links pointing to predefined pxelinux/elilo config
 files.
   </description>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-      </filter>
-
+  <license>GPL</license>
+  <group>System Environment/Base</group>
+  <authors>
+    <author cat="maintainer">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <filters/>
       <pkg>netbootmgr</pkg>
-  </binary-package-list>
-
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1.7-1">
+      <changelogEntry authorName="Erich Focht" date="2007-07-17T17:19:47+02:00">
+        <item>converted to new opkg format</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
