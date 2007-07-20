@@ -193,8 +193,12 @@ else {
 $| = 1;
 
 # Setup to capture all stdout/stderr
-
-my $oscar_logfile = $ENV{OSCAR_HOME} . "/oscarinstall.log";
+my $oscar_log_dir = "/var/log/oscar";
+if (! -d $oscar_log_dir ) {
+    print "$oscar_log_dir does not exist, we create it\n";
+    mkdir ($oscar_log_dir);
+}
+my $oscar_logfile = $oscar_log_dir . "/oscarinstall.log";
 
 # EF: Fix for bug #244: multiple oscarinstall.log files
 # The current (and latest) log file is oscarinstall.log. Old log files
