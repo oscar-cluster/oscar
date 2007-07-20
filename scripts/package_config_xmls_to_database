@@ -14,7 +14,7 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
+# Copyright ï¿½ 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 # Copyright 2003 NCSA
 #                Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 # Copyright 2004 Revolution Linux
@@ -67,7 +67,7 @@ use OSCAR::Package;
 use OSCAR::PackagePath;
 use OSCAR::PackageSet qw (get_opkgs_path_from_package_set);
 use OSCAR::Network;
-use Data::Dumper;
+use OSCAR::Utils qw ( print_hash );
 use XML::Simple;
 use OSCAR::Distro;
 use OSCAR::Database;
@@ -105,7 +105,7 @@ if ($ENV{OSCAR_DB_DEBUG}) {
     $options{debug} = 1;
 }
 
-my $DEFAULT = "Default";                 
+my $DEFAULT = "Default";
 # find the base directory of the oscar distribution,
 my $oscar_home;
 # first try the environmental variable
@@ -136,32 +136,6 @@ GetOptions( \%options,
 print "DB_DEBUG>$0:\n====> after GetOptions ARGV=<@ARGV>\n" if $options{debug};
 oda::print_hash( "", "DB_DEBUG>$0:\n====> options after GetOptions", \%options)
     if $oda_options{debug};
-
-
-# function to do a debug print of a hash
-# inputs: leading_spaces  string to put in front of lines
-#         name            string to print as the hash name
-#         hash_ref        pointer to the hash to print       
-
-sub print_hash {
-    my( $leading_spaces, $name, $hashref ) = @_;
-    print "DB_DEBUG>$0:\n====> $leading_spaces$name ->\n";
-    foreach my $key ( sort keys %$hashref ) {
-    my $value = $$hashref{$key};
-    if (ref($value) eq "HASH") {
-        print_hash(  "$leading_spaces    ", $key, $value );
-    } elsif (ref($value) eq "ARRAY") {
-        my $string = join(',', @$value);
-        print "DB_DEBUG>$0:\n====> $leading_spaces    $key => ($string)\n";
-    } elsif (ref($value) eq "SCALAR") {
-        print "DB_DEBUG>$0:\n====> $leading_spaces    $key is a scalar ref\n";
-        print "DB_DEBUG>$0:\n====> $leading_spaces    $key => $$value\n";
-    } else {
-        $value = "undef" unless defined $value;
-        print "DB_DEBUG>$0:\n====> $leading_spaces    $key => <$value>\n";
-    }
-    }
-}
 
 # Parse the config.xml file for a specific OPKG
 # Parameters: package directory, package_name, message.
