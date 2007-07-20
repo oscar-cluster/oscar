@@ -33,6 +33,8 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
+use XML::Simple;
+use Data::Dumper;
 use Carp;
 
 @EXPORT = qw(
@@ -77,6 +79,33 @@ sub get_list_opkg_dirs {
 }
 
 ###############################################################################
+# This function, based on a OPKG id, find the location on the disk where is   #
+# stored the package, parses the associated config.xml file, gets the name of #
+# the OPKG and converts it to match the name used by OPKGC                    #
+# Parameter: OPKG id (e.g. the id used in $(OSCAR_HOME)/packages)             #
+# Return:    the OPKG name used by opkgc                                      #
+###############################################################################
+sub get_opkg_name {
+    my ($opkg) = @_;
+
+    foreach my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
+        if ( -d "$dir/$opkg" ) {
+            print "OPKG found in $dir/$opkg\n" if $verbose;
+            my $config_file = "$dir/$opkg/config.xml";
+            # We open the config.xml file
+            my $xs = new XML::Simple();
+            my $xml_ref = eval { $xs->XMLin( $config_file ); };
+             my $name = lc ($xml_ref->{name});
+            $name =~ s/ /-/g;
+            print "OPKG name: $name\n" if $verbose;
+            return $name;
+        } else {
+            die "Impossible to find the OPKG $opkg\n";
+        }
+    }
+}
+
+###############################################################################
 # Install the server part of a given OPKG on the local system                 #
 # Parameter: list of OPKGs.                                                   #
 # Return:    none.                                                            #
@@ -111,7 +140,9 @@ sub opkg_install_server {
     if (!$pm) {
         croak "\nERROR: Could not create PackMan instance!\n";
     }
-    my $pkg = "opkg-" . $opkg . "-server";
+
+    my $opkg_name = get_opkg_name ($opkg);
+    my $pkg = "opkg-" . $opkg_name . "-server";
     my ($err, @out) = $pm->smart_install($pkg);
     if (!$err) {
         print "Error occured during smart_install:\n";

@@ -16,7 +16,7 @@
 
 #   SIS Server Preparation script
 #   Michael Chase-Salerno (mchasal@users.sf.net)
-# Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
+# Copyright ï¿½ 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 
 # $Id$
 
@@ -58,12 +58,7 @@ unless ($Config{useithreads}) {
 
 my $os = OSCAR::OCA::OS_Detect::open();
 my $binary_format = $os->{'pkg'};
-my @services;
-if ($binary_format eq "deb") {
-    @services = qw(systemimager-server netbootmond);
-} else {
-    @services = qw(systemimager-server-rsyncd systemimager-server-monitord);
-}
+my @services = qw(systemimager-server-rsyncd systemimager-server-monitord);
 foreach my $service (@services) {
   !system("/etc/init.d/$service restart") or croak("Could not restart $service");
   opkg_print("Enabling $service\n");

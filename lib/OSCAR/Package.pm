@@ -42,30 +42,39 @@ my $DEFAULT = "Default";
 
 @EXPORT = qw(
              run_pkg_script
-	     run_pkg_user_test
+             run_pkg_user_test
              run_pkg_script_chroot
              run_pkg_apitest_test
              isPackageSelectedForInstallation
-	     getConfigurationValues
+             getConfigurationValues
              run_pkg_apitest_test
              get_excluded_opkg
-	     );
+             );
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 # The list of phases that are valid for package install.  For more
 # info, please see the developement doc
-
+# Note that we still list old scripts' name to ease the transition.
+# Mid-term they should be removed
 %PHASES = (
-           setup => ['setup'],
-           pre_configure => ['pre_configure'],
-           post_configure => ['post_configure'],
-           post_server_install => ['post_server_install',
-                                   'post_server_rpm_install'],
-           post_rpm_install => ['post_client_rpm_install',
-                                'post_rpm_install'],
-	   post_rpm_nochroot => ['post_rpm_nochroot'],
-           post_clients => ['post_clients'],
-           post_install => ['post_install'],
+           setup => ['api-pre-install',
+                     'setup'], # deprecated
+           pre_configure => ['api-pre-configure',
+                             'pre_configure'], # deprecated
+           post_configure => ['api-post-configure',
+                              'post_configure'], # deprecated
+           post_server_install => ['server-post-install',
+                                   'post_server_install', # deprecated
+                                   'post_server_rpm_install'], # deprecated
+           post_rpm_install => ['client-post-install',
+                                'post_client_rpm_install', # deprecated
+                                'post_rpm_install'], # deprecated
+           post_rpm_nochroot => ['api-post-image',
+                                 'post_rpm_nochroot'], # deprecated
+           post_clients => ['api-post-clientdef',
+                            'post_clients'], # deprecated
+           post_install => ['api-post-deploy',
+                            'post_install'], # deprecated
            test_root    => ['test_root'],
            test_user    => ['test_user'],
           );

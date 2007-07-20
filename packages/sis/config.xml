@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>System Installation Suite</name>
+  <name>sis</name>
   <class>core</class>
   <summary>System Installation Suite</summary>
   <description>The System Installation Suite is composed of three major components - SystemInstaller, SystemImager and SystemConfigurator</description>
@@ -12,8 +12,15 @@
       <name>Erich Focht</name>
       <email>efocht@hpce.nec.com</email>
     </author>
+    <author cat="maintainer">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
   </authors>
   <serverDeps>
+    <requires>
+      <pkg>systemimager-client</pkg>
+    </requires>
     <requires>
       <filters>
         <dist>mdv</dist>
@@ -122,6 +129,10 @@
     </requires>
     <requires>
       <filters>
+        <dist>rhel</dist>
+	<dist>fc</dist>
+	<dist>mdv</dist>
+	<dist>suse</dist>
         <arch>ia64</arch>
       </filters>
       <pkg>systemimager-ia64boot-standard</pkg>
@@ -181,8 +192,13 @@
     </requires>
   </apiDeps>
   <changelog>
+    <versionEntry version="1:3.8.0-2">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-06-25T10:12:12-04:00">
+        <item>Fixes the dependence with systemimager-client</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1:3.8.0-1">
-      <changelogEntry authorName="Erich Focht" date="2007-06-25T10:12:12-04:00">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-06-25T10:12:12-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
       </changelogEntry>
     </versionEntry>
