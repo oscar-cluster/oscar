@@ -46,7 +46,7 @@ use InstallerParseXML;
 use InstallerUtils;
 use InstallerErrorDialog;
 use Qt::slots
-#### currently non-functional
+#### Taken out because we did not want it in the GUI.
 #    fileNew => [],
 #    fileOpen => [],
 #    fileSave => [],
@@ -335,6 +335,8 @@ $installerTasksAndTools hash) before calling this subroutine.
 
 #########################################################################
 
+  print "Populating the task menu...\n";
+  print "Number of tasks: ".scalar (@installerTasksSorted)."\n";
   my $arraynum = 0;
   foreach my $task (@installerTasksSorted)
     {

@@ -20,19 +20,19 @@ void OpderAddRepository::init()
 #  values are persistent across executions of the program.              #
 #########################################################################
                                                                                 
-  if (OSCAR::Database::database_connect())
-    {
-      my @urlText = OSCAR::Database::database_program_variable_get(
-        "Opder","urlText");
-      urlText = $urlText[0];
-      urlTextBox->setText(urlText);
-                                                                                
-      my @useRepositoriesExclusively = 
-        OSCAR::Database::database_program_variable_get(
-          "Opder","useRepositoriesExclusively");
-      useRepositoriesExclusively = $useRepositoriesExclusively[0];
-      exclusiveCheckBox->setChecked(useRepositoriesExclusively);
-    }
+#  if (OSCAR::Database::database_connect())
+#   {
+#      my @urlText = OSCAR::Database::database_program_variable_get(
+#        "Opder","urlText");
+#     urlText = $urlText[0];
+#     urlTextBox->setText(urlText);
+#                                                                                
+#     my @useRepositoriesExclusively = 
+#       OSCAR::Database::database_program_variable_get(
+#         "Opder","useRepositoriesExclusively");
+#     useRepositoriesExclusively = $useRepositoriesExclusively[0];
+#     exclusiveCheckBox->setChecked(useRepositoriesExclusively);
+#   }
 }
 
 void OpderAddRepository::doneButton_clicked()

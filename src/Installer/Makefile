@@ -9,7 +9,8 @@ DESTDIR=
 BINDIR=$(DESTDIR)/usr/lib/perl/5.8
 
 # List the binaries needed by the Makefile
-PUIC		=	puic
+# Note that on some Linux distros, puic is NOT in PATH
+PUIC		=	`whereis puic | awk ' { print \$$2 } '`
 PERL_CW		=	/usr/bin/perl -cw
 RM		=	/bin/rm -f
 

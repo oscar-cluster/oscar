@@ -13,8 +13,10 @@ Author: Jason Brechin <brechin@ncsa.uiuc.edu>
   <classname>NodeMgmtDialog</classname>
   <fullname>Node Management</fullname>
 
+<!--
   <oda>
     <command>read_records oscar.interface</command>
   </oda>
+-->
 
 </oscar>

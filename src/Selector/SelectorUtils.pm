@@ -172,10 +172,10 @@ So a sample usage code fragment would be:
   my($package,$field) = @_;
   my $href;
   my @list = ();
-  my $success = OSCAR::Database::database_execute_command(
-    "read_records packages_$field package=$package type name", \@list);
-  Carp::carp("Could not do oda command 'read_records packages_$field ".
-       "package=$package type name'") if (!$success);
+#  my $success = OSCAR::Database::database_execute_command(
+#    "read_records packages_$field package=$package type name", \@list);
+#  Carp::carp("Could not do oda command 'read_records packages_$field ".
+#       "package=$package type name'") if (!$success);
   foreach my $item (@list)
     {
       my($type,$name) = split / /, $item, 2;
