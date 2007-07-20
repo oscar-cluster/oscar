@@ -51,6 +51,7 @@ use OSCAR::Package;
 use OSCAR::PackagePath;
 use OSCAR::PackageInUn;
 use OSCAR::WizardEnv;
+use OSCAR::Tk qw ( center_window );
 use AppConfig;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
