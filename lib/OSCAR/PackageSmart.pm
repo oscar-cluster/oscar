@@ -34,6 +34,7 @@ use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackMan;           # this only works when PackMan has arrived!
 use File::Basename;
+use Switch;
 use Cwd;
 use Carp;
 
@@ -68,35 +69,67 @@ sub prepare_pools {
     my $prev_format = "";
     my $binaries = "rpms|debs";
     my $archs = "i386|x86_64|ia64";
+    # List of all supported distros. May be nice if we can get this list 
+    # from OS_Detect.
+    my $distros =
+        "debian|centos|fedora|mandriva|redhat-el|scientific_linux|sles|suse";
     my $format = "";
-    # Before to prepare a pool, we try to detect the binary package format associated
-    # Not that for a specific pool or set of pools, it is not possible to mix deb and 
-    # rpm based pools.
+    # Before to prepare a pool, we try to detect the binary package format
+    # associated Not that for a specific pool or set of pools, it is not
+    # possible to mix deb and rpm based pools.
     for my $pool (@pools) {
         $format = "";
         print "Analysing $pool\n" if $verbose;
-        if ( ($pool =~ /(.*)\-($binaries)$/) ) {
-            if ($prev_format ne "" && $prev_format ne $2) {
-                carp ("ERROR: Mix of RPM and Deb pools ($prev_format vs. $2),".
-                      " we do not know how to deal with that!");
-            }
-            $format = $2;
-            print "Pool format: $format\n" if $verbose;
-        }
-        else {
-            my @files = glob("$pool/*.rpm");
-            if (scalar(@files) > 0) {
+        # Online repo
+        if ( index($pool, "http", 0) >= 0) {
+            print "This is an online repository ($pool)\n" if $verbose;
+            my $url = $pool . "repodata/repomd.xml";
+            if (!system("wget -S --delete-after -q $url")) {
+                print "This is a Yum repository\n" if $verbose;
                 $format = "rpms";
-            } else { 
+            } else {
+                # if the repository is not a yum repository, we assume this is
+                # a Debian repo. Therefore we assume that all specified repo
+                # are valid.
                 $format = "debs";
             }
-            print "Pool format: $format\n";
             if ($prev_format ne "" && $prev_format ne $format) {
-                carp ("ERROR: Mix of RPM and Deb pools ($prev_format vs. $2),".
+                die ("ERROR: Mix of RPM and Deb pools ($prev_format vs. $2),".
                       " we do not know how to deal with that!");
             }
+        } elsif (index($pool, "/tftpboot/", 0) == 0) {
+            # Local pools
+            print "$pool is a local pool\n" if $verbose;
+            # we then check pools for common RPMs and common debs
+            if ( ($pool =~ /(.*)\-($binaries)$/) ) {
+                if ($prev_format ne "" && $prev_format ne $2) {
+                    die ("ERROR: Mix of RPM and Deb pools ($prev_format vs. ".
+                          "$2), we do not know how to deal with that!");
+                }
+                $format = $2;
+                print "Pool format: $format\n" if $verbose;
+            } else {
+                # Finally we check pools in tftpboot for specific distros
+                if ( ($pool =~ /($distros)/) ) {
+                    print ("Pool associated to distro $1\n") if $verbose;
+                    switch ($1) {
+                        case "debian" { $format = "debs" }
+                        else { $format = "rpms" }
+                    }
+                } else {
+                    die ("ERROR: Impossible to detect the distro ".
+                         "associated to the pool $pool");
+                }
+                print "Pool format: $format\n";
+                if ($prev_format ne "" && $prev_format ne $format) {
+                    die ("ERROR: Mix of RPM and Deb pools ($prev_format vs. ".
+                          "$1), we do not know how to deal with that!");
+                }
+            }
+            $prev_format = $format;
+        } else {
+            die "ERROR: Impossible to recognize pool $pool";
         }
-        $prev_format = $format;
     }
     print "Binary package format for the image: $format\n" if $verbose;
 
