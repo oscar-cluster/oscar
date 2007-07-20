@@ -515,11 +515,8 @@ sub build_oscar_image {
     open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
     foreach my $opkg_ref (@opkgs) {
         my $opkg = $$opkg_ref{package};
-        my %sel = ("group" => "oscar_clients", "os" => $master_os);
-        my @pkgs = pkgs_of_opkg($opkg, undef, \@errors, %sel );
-        foreach my $pkg (@pkgs) {
-            print OUTFILE "$pkg\n";
-        }
+        my $pkg = "opkg-".$opkg."-client";
+        print OUTFILE "$pkg\n";
     }
     close(OUTFILE);
     my $extraflags = "--filename=$outfile ";
