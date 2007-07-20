@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>File Synchronization</name>
+  <name>sync-files</name>
   <class>core</class>
   <summary>OSCARized File Synchronization System</summary>
   <description>The OSCAR File Synchronization System keeps any list of files
