@@ -19,18 +19,20 @@ package OSCAR::opd2;
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  US
 
 use strict;
-use Carp;
 use XML::Simple;
 use Data::Dumper;
+use OSCAR::Utils qw (print_array);
+use Carp;
 
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 
 @EXPORT = qw (
-            scan_repository
+            flush_cache
+            get_available_repositories
             list_available_opkgs
             list_available_repositories
-            flush_cache
+            scan_repository
              );
 
 my $cachedir = "/var/cache/oscar/";
@@ -322,14 +324,30 @@ sub list_available_opkgs {
     close (FILE);
 }
 
-sub list_available_repositories {
+##########################################
+# Get the list of available repositories #
+# Parameter: none.                       #
+# Return:    array of repositories URL.  #
+##########################################
+sub get_available_repositories {
+    my @list = ();
     # We go through the cache and display the list of OPKG
     open (FILE, $opkg_repo_cache)
         or die "Impossible to add the list of repos to the cache";
     foreach my $pkg (<FILE>) {
-        print $pkg;
+        push (@list, $pkg);
     }
-    close (FILE);
+    return @list;
+}
+
+#####################################################
+# Print the list of repositories available via OPD2 #
+# Parameter: None.                                  #
+# Return:    None.                                  #
+#####################################################
+sub list_available_repositories {
+    my @list = get_available_repositories();
+    print_array (@ist);
 }
 
 sub flush_cache {
