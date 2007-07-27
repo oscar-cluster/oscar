@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2005 The Trustees of Indiana University.  
+# Copyright (c) 2005 The Trustees of Indiana University.
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -13,9 +13,10 @@ package OSCAR::OCA;
 
 use strict;
 
-#
-# Subroutine to find components in a given framework.
-#
+#######################################################
+# Subroutine to find components in a given framework. #
+# Return: Array with the list of components.          #
+#######################################################
 sub find_components {
     my ($framework, $basedir) = @_;
 
