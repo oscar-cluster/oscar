@@ -51,7 +51,7 @@ use OSCAR::Package;
 use OSCAR::PackagePath;
 use OSCAR::PackageInUn;
 use OSCAR::WizardEnv;
-use OSCAR::Tk qw ( center_window );
+use OSCAR::Tk;
 use AppConfig;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
@@ -351,7 +351,7 @@ if( $debug ) {
     $cl_b->grid("-","-",-sticky=>"nsew",-ipady=>"4");
 }
 
-center_window( $window );
+OSCAR::Tk::center_window( $window );
 #
 # Execution goes into an infinite Tcl/Tk loop here
 #
@@ -402,10 +402,10 @@ sub run_command {
 
     if (system($$vars{cmd})) {
         $result = $$vars{failure};
-        $window_func = \&error_window;
+        $window_func = \&OSCAR::Tk::error_window;
     } else {
         $result = $$vars{success};
-        $window_func = \&done_window;
+        $window_func = \&OSCAR::Tk::done_window;
     }
 
     if ($mode eq "install") {

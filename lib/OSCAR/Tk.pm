@@ -26,7 +26,7 @@ use vars qw($VERSION @EXPORT);
 use Tk;
 require Tk::Dialog;
 use base qw(Exporter);
-@EXPORT = qw(yesno_window center_window done_window error_window);
+@EXPORT = qw(yesno_window);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
@@ -51,6 +51,8 @@ sub yesno_window {
 
 }
 
+# WARNING: Do not export this function, the name conflicts with other 
+# functions exported by some Perl modules
 sub center_window {
     my $w = shift;
     my $p = $w->parent();
@@ -72,7 +74,8 @@ sub center_window {
 #
 # These subs REPLACE SystemImager/Tk/Common.pm because, well,
 # they need replacement...
-#
+# WARNING: Do not export this function, the name conflicts with other 
+# functions exported by some Perl modules
 sub done_window {
     my ($w, $message, $onclose, @args) = @_;
 
@@ -90,6 +93,8 @@ sub done_window {
     1;
 }
 
+# WARNING: Do not export this function, the name conflicts with other 
+# functions exported by some Perl modules
 sub error_window {
     my ($w, $message, $onclose, @args) = @_;
 
