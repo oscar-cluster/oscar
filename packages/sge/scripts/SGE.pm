@@ -30,7 +30,7 @@ my $jobscript = "sge_script";
 # First set of data
 
 our $id = {
-    rm => $displayname,
+    name => $displayname,
     pkg => $pkg,
     major => $xml_ref->{version}->{major},
     minor => $xml_ref->{version}->{minor},

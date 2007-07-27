@@ -29,50 +29,67 @@ use Data::Dumper;
 
 our $RM_Detect;
 
-#
-# Subroutine to open the RM_Detect framework
-#
-
+###############################################################################
+# Subroutine to open the RM_Detect framework.                                 #
+# Input:  None.                                                               #
+# Return: Return the id the resource manager. A "None" resource manager is    #
+#         available and used if no real resource manager is found.            #
+#         Note that the id is a hash and that the usefull string is in the    #
+#         "rm" key.                                                           #
+###############################################################################
 sub open {
     my $comps = OSCAR::OCA::find_components("RM_Detect");
 
     # Did we find one and only one?
+    my $comp;
 
-    if (scalar(@$comps == 0)) {
-        # Should never get here because it should default to None.pm if nothing is found
-        print "Could not find an rm-detect component for this system!\n";
-        die "Cannot continue";
-    } elsif (scalar(@$comps) > 1) {
-        # We don't want None.pm to be selected
-	if (grep($comps, "None")) {
-	    my $count = 0;
-	    for (@$comps) {
-	        if ($_ eq "None") {
-		    splice (@$comps, $count, 1);
+    # No framework components found or only the None one has been found
+    if (scalar(@$comps) == 0) {
+        die "ERROR: Could not find any component for this RM_Detect ".
+            "framework!\n";
+    } else {
+        # We should have found at least 1 component: the None component
+        # So: - if we have one component only and it is not the None one, this
+        #       is an error
+        #     - if we have two components, we skip the None one.
+        #     - if we have more than two components, this is not normal, we 
+        #       should not have more than 1 resource manager.
+        if (scalar(@$comps) == 1) {
+            if (@$comps[0] ne "None") {
+                die ("ERROR: Only one resource manager has been found and it ".
+                     "is not the \"None\" one which should be available by ".
+                     "default");
+            } else {
+                $comp = @$comps[0];
+            }
+        } elsif (scalar(@$comps) == 2) {
+            if (@$comps[0] eq "None" && @$comps[1] eq "None") {
+                die "ERROR: We detected two resource managers but they are ".
+                    "both the \"None\" one";
+            } else {
+                if (@$comps[0] eq "None") {
+                    $comp = @$comps[1];
+                } else {
+                    $comp = @$comps[0];
                 }
-	        $count++;
             }
-	    # If even after None.pm has been removed, we still have more than one, we have
-            # a problem
-	    if (scalar(@$comps) > 1) {
-	        print "Found more than one rm-detect component for this system!\n";
-		die "Cannot continue";
-            }
-	} else {
-            print "Found more than one rm-detect component for this system!\n";
-            die "Cannot continue";
-	}
+        } else {
+            die "ERROR: we found more than one resource manager this is not
+                 normal!";
+        }
     }
 
     # Yes, we only found one.  Suck its function pointers into the
     # global $RM_Detect hash reference.
 
-    my $str = "\$RM_Detect->{query} = \\&OCA::RM_Detect::@$comps[0]::query";
+    my $ret = undef;
+    my $str = "\$ret = \&OCA::RM_Detect::".$comp."::query()";
     eval $str;
+    die "ERROR: unable to query the module $comp" if (!defined($ret));
 
     # Happiness -- tell the caller that all went well.
 
-    1;
+    return $ret;
 }
 
 1;

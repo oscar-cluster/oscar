@@ -13,7 +13,7 @@
 #          Jeremy Enos
 #	   Bernard Li
 
-rm=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{rm}'`
+rm=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; my $rm = OSCAR::OCA::RM_Detect::open(); print $rm->{name}'`
 
 if [ $? -gt 0 ]; then
    echo "Cannot determine resource manager for system, cannot continue."
@@ -24,7 +24,7 @@ if test $rm = "None"; then
    exit
 fi
 
-rm_test=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{test}' | awk -F "/" {'print \$NF'}`
+rm_test=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; my $rm = OSCAR::OCA::RM_Detect::open(); print $rm->{test}' | awk -F "/" {'print \$NF'}`
 #rm_jobscript=`perl -e 'use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::OCA::RM_Detect; OSCAR::OCA::RM_Detect::open(); my $ident = $RM_Detect->{query}(); print $ident->{jobscript}'`
 rm_jobscript="rm_script"
 

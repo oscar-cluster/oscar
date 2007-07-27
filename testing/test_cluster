@@ -40,7 +40,7 @@ use OSCAR::OCA::RM_Detect;
 # We usually test the following packages and if there is more to test
 # please add it with proper priority number(the hash value of the
 # corresponding package name).
-# The smller the number is, the higer its prority is.
+# The smaller the number is, the higer its prority is.
 # e.g.,) maui has the highest priority and ganglia has the lowest.
 my %sample_pkgs = ( 
                    "maui"    => 0,
@@ -191,12 +191,7 @@ print "\nPreparing user tests...\n";
 $ENV{OSCAR_TESTPRINT}="$test_user_homedir/testprint";
 
 # Open Resource Manager Framework
-if (! OSCAR::OCA::RM_Detect::open()) {
-    die "Failed to open RM_Detect Framework\n";
-}
-
-my $ident = $RM_Detect->{query}();
-my $rm = $ident->{rm};
+my $rm = OSCAR::OCA::RM_Detect::open();
 
 @ufiles = qw(testprint ssh_user_tests test_cluster);
 
@@ -209,10 +204,12 @@ foreach my $file (@ufiles) {
         chmod(0755,"$test_user_homedir/$file");
 }
 
-unless ($rm eq "None") {
+unless ($rm->{name} eq "None") {
     # Copy Resource Manager specific test script
-    my $rm_test = $ident->{test};
-    system("cp -a $rm_test $test_user_homedir") == 0 or croak("Failed to copy $rm_test to $test_user_homedir for Resource Manager $rm");
+    my $rm_test = $rm->{test};
+    system("cp -a $rm_test $test_user_homedir") == 0 
+        or croak("Failed to copy $rm_test to $test_user_homedir ".
+                 "for Resource Manager $rm->{name}");
 }
 
 # Copy the packages test files to the user home dir.

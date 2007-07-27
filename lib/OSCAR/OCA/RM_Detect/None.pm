@@ -20,12 +20,12 @@ use Data::Dumper;
 # First set of data
 
 our $id = {
-    rm => "None",
+    name => "None",
 };
 
 # Make final string
 
-$id->{ident} = "$id->{rm}";
+$id->{ident} = "$id->{name}";
 
 # Once all this has been setup, whenever someone invokes the "query"
 # method on this component, we just return the pre-setup data.
