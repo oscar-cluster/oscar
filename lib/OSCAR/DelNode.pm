@@ -97,7 +97,7 @@ you want to delete and press the
             ]
         );
 
-    center_window( $window );
+    OSCAR::Tk::center_window( $window );
 }
  
 # Use Schwartzian transform to sort clients by node names alphabetically and numerically.
@@ -253,11 +253,12 @@ sub delnodes {
 
     fill_listbox($listbox);
     if ($fail) {
-      error_window($window,"Clients deleted, but reconfiguration failed.");
+      OSCAR::Tk::error_window($window,"Clients deleted, but reconfiguration ".
+                              "failed.");
       return 0;
     } else {
         &delete_client_node_opkgs(@clients);
-        done_window($window,"Clients deleted.");
+        OSCAR::Tk::done_window($window,"Clients deleted.");
         return 1;
     }
 }

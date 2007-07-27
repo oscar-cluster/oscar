@@ -80,7 +80,7 @@ sub addnode_window {
                                     );
 
     $exitbutton->grid("-","-",-sticky => "ew");
-    center_window( $window );
+    OSCAR::Tk::center_window( $window );
 
 }
 

@@ -323,7 +323,7 @@ sub mac_window {
     populate_MACS();
 
     regenerate_tree();
-    center_window( $window );
+    OSCAR::Tk::center_window( $window );
 }
 
 sub set_buttons {
@@ -717,7 +717,7 @@ sub macs_inputer {
     $entry->bind('<Return>' => $apply);
     $entry->bind('<KP_Enter>' => $apply);
 
-    center_window($widget);
+    OSCAR::Tk::center_window($widget);
 
     regenerate_listbox();
     return 1;
@@ -781,9 +781,9 @@ sub build_autoinstall_cd {
     my $ip = shift;
 
     __build_autoinstall_cd($ip);
-    done_window($window,"You can now burn your ISO image to a CDROM with a ".
-                "command such as:\n'cdrecord -v speed=2 dev=1,0,0 ".
-		"/tmp/oscar_bootcd.iso'.");
+    OSCAR::Tk::done_window($window,"You can now burn your ISO image to a " .
+                           "CDROM with a command such as:\n'cdrecord -v " .
+                           "speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.");
 }
 
 # Call the library function to enable selected install mode

@@ -43,7 +43,7 @@ use OSCAR::Database;  # For list_installable_packages(), locking() and unlock()
 use OSCAR::Logger;    # For oscar_log_section()
 use OSCAR::Tk;
 #use OSCAR::Selector;
-use XML::Simple;      # Read/write the .selection config files
+#use XML::Simple;      # Read/write the .selection config files
 use Tk::Pane; 
 no warnings qw(closure);
 
@@ -366,7 +366,7 @@ sub displayPackageConfigurator # ($parent)
   # Then create the scrollable package listing and place it in the grid.
   populateConfiguratorList();
 
-  center_window( $root );
+  OSCAR::Tk::center_window( $root );
   
   return $root;       # Return pointer to new window to calling function
 }

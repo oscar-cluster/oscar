@@ -631,7 +631,7 @@ sub displayWebPage { # ($parent,$file)
 
     # Load in and render the HTML file.
     loadHTMLFile($file);
-    center_window( $top );  # Put the window on the screen.
+    OSCAR::Tk::center_window( $top );  # Put the window on the screen.
 }
 
 #########################################################################

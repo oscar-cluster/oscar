@@ -46,7 +46,7 @@ sub open_help {
     $helpp->delete("1.0","end");
     $helpp->insert("end",$Help{$section});
 
-    center_window( $helpwin );
+    OSCAR::Tk::center_window( $helpwin );
 }
 
 %Help = (
