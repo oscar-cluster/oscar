@@ -347,7 +347,7 @@ sub get_available_repositories {
 #####################################################
 sub list_available_repositories {
     my @list = get_available_repositories();
-    print_array (@ist);
+    print_array (@list);
 }
 
 sub flush_cache {
