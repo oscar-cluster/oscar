@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>ODA</name>
+  <name>oda</name>
   <class>core</class>
   <summary>Oscar DAtabase</summary>
   <description>ODA provides a central database for OSCAR.</description>
   <license>Freely distributable</license>
   <group>Application/Environment</group>
+  <uri>http://oscar.openclustergroup.org/</uri>
   <authors>
     <author cat="upstream">
       <name>DongInn Kim</name>
