@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>APItest</name>
+  <name>apitest</name>
   <class>core</class>
   <summary>A test driver application.</summary>
   <description>A testing framework.</description>
   <license>LGPL</license>
   <group>Applications/System</group>
+  <uri>http://gaston.sandia.gov/cfupload/ccim_pubs_prod/APItest_User_Guide_v1_0.pdf</uri>
   <authors>
     <author cat="upstream">
       <name>William McLendon</name>
