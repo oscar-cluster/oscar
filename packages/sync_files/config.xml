@@ -9,6 +9,7 @@
   </description>
   <license>GPL</license>
   <group>System Environment/Base</group>
+  <uri>http://oscar.openclustergroup.org/</uri>
   <authors>
     <author cat="maintainer">
       <name>Erich Focht</name>
