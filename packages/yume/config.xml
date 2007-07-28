@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>Yume</name>
+  <name>yume</name>
   <class>core</class>
   <summary>Yume wrapper tools for rpm repository control, image creation and maintenance</summary>
   <description>
@@ -17,6 +17,7 @@ revisions much simpler than with rpm.
   </description>
   <license>GPL</license>
   <group>System Environment/Base</group>
+  <uri>http://oscar.openclustergroup.org/</uri>
   <authors>
     <author cat="maintainer">
       <name>Erich Focht</name>
