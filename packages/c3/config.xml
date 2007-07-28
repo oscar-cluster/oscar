@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>C3</name>
+  <name>c3</name>
   <class>core</class>
   <summary>Cluster Command and Control (C3) - command line tool suite</summary>
   <description>The Cluster Command and Control (C3) tool suite
