@@ -9,6 +9,7 @@ tasks subclusters. It replies on the C3 toolkit's existence and
 extends its scope to heterogeneous setups.</description>
   <license>Freely distributable</license>
   <group>Application/System</group>
+  <uri>http://oscar.openclustergroup.org/</uri>
   <authors>
     <author cat="maintainer">
       <name>Erich Focht</name>
