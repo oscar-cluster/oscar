@@ -121,7 +121,7 @@ if ($is_suse) {
         # not really investigate the problem
         # The command i initially wanted to use was: 
         #   !system("update-rc.d atftpd defaults") 
-        !system("sudo /usr/sbin/atftpd --daemon /tftpboot/");
+        !system("sudo /usr/sbin/atftpd --daemon /tftpboot/")
             or croak("Couldn't enable tftp");
     }
 }
