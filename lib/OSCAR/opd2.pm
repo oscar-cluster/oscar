@@ -332,10 +332,10 @@ sub list_available_opkgs {
 sub get_available_repositories {
     my @list = ();
     # We go through the cache and display the list of OPKG
-    open (FILE, $opkg_repo_cache)
-        or die "Impossible to add the list of repos to the cache";
-    foreach my $pkg (<FILE>) {
-        push (@list, $pkg);
+    if(open (FILE, $opkg_repo_cache)) {
+	    foreach my $pkg (<FILE>) {
+        	push (@list, $pkg);
+        }
     }
     return @list;
 }
