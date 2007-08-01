@@ -71,6 +71,7 @@ use base qw(Exporter);
 use OSCAR::PackagePath;
 use OSCAR::Database_generic;
 use OSCAR::oda;
+use Data::Dumper;
 
 # oda may or may not be installed and initialized
 my $oda_available = 0;
@@ -103,6 +104,8 @@ $options{debug} = 1
               get_groups_for_packages
               get_headnode_iface
               get_image_info_with_name
+              get_image_package_status_with_image
+              get_image_package_status_with_image_package
               get_install_mode
               get_installable_packages
               get_manage_status
@@ -113,6 +116,7 @@ $options{debug} = 1
               get_node_info_with_name
               get_node_package_status_with_group_node
               get_node_package_status_with_node
+              get_node_package_status_with_node_package
               get_package_info_with_name
               get_packages
               get_packages_related_with_package
@@ -124,6 +128,9 @@ $options{debug} = 1
               get_selected_group
               get_selected_group_packages
               get_selected_packages
+              get_status_name
+              get_status_num
+              get_pkg_status_num
               get_unselected_group_packages
               get_unselected_packages
               get_wizard_status
@@ -148,7 +155,9 @@ $options{debug} = 1
               set_pkgconfig_var
               set_status
               set_wizard_status
+              update_image_package_status_hash
               update_node
+              update_node_package_status_hash
               update_node_package_status
               update_packages
 
@@ -826,6 +835,51 @@ sub get_node_package_status_with_node_package {
     return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
+sub get_image_package_status_with_image {
+    my ($image,
+        $results,
+        $options_ref,
+        $error_strings_ref,
+        $requested,
+        $version) = @_;
+        my $sql = "SELECT Packages.package, Image_Package_Status.* " .
+                 "From Packages, Image_Package_Status, Images ".
+                 "WHERE Node_Package_Status.package_id=Packages.id ".
+                 "AND Image_Package_Status.image_id=Images.id ".
+                 "AND Images.name='$image'";
+        if (defined $requested && $requested ne "") {
+            $sql .= " AND Image_Package_Status.requested=$requested ";
+        }
+        if (defined $version && $version ne "") {
+            $sql .= " AND Packages.version=$version ";
+        }
+    print "DB_DEBUG>$0:\n====> in Database::get_image_package_status_with_image SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
+sub get_image_package_status_with_image_package {
+    my ($image,
+        $package,
+        $results,
+        $options_ref,
+        $error_strings_ref,
+        $requested,
+        $version) = @_;
+        my $sql = "SELECT Packages.package, Images_Package_Status.* " .
+                 "From Packages, Image_Package_Status, Images ".
+                 "WHERE Image_Package_Status.package_id=Packages.id ".
+                 "AND Image_Package_Status.image_id=Images.id ".
+                 "AND Imagse.name='$image' AND Packages.package='$package'";
+        if(defined $requested && $requested ne ""){
+            $sql .= " AND Image_Package_Status.requested=$requested ";
+        }
+        if(defined $version && $version ne ""){
+            $sql .= " AND Packages.version=$version ";
+        }
+    print "DB_DEBUG>$0:\n====> in Database::get_image_package_status_with_image_package SQL : $sql\n" if $$options_ref{debug};
+    return do_select($sql,$results, $options_ref, $error_strings_ref);
+}
+
 sub get_installable_packages {
     my ($results,
         $options_ref,
@@ -1324,6 +1378,11 @@ sub update_node_package_status {
         push @temp_packages, \%opkg;
         $packages = \@temp_packages;
     }    
+    # If requested is one of the names of the fields being passed in, convert it
+	# to the enum version instead of the string
+	if($requested) {
+		$requested = get_status_num($options_ref, $requested, $error_strings_ref);
+	}
     my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
     my $node_id = $$node_ref{id};
     foreach my $pkg_ref (@$packages) {
@@ -1372,6 +1431,183 @@ sub update_node_package_status {
         }
     }
     return 1;
+}
+
+# Translates the string representation of a status to the enumerated numeric
+# version stored in the database
+sub get_status_num {
+	my ($options_ref,
+		$status,
+		$error_strings_ref) = @_;
+	
+	# Get the internal id for a requested value from the status table
+	my @field = ("id");
+	my $where = "WHERE name=\'$status\'";
+	my @result;
+	select_table($options_ref, "Status", \@field, $where, \@result, $error_strings_ref);
+	my $status_id = $result[0]->{id};
+	
+	return $status_id;
+}
+
+# Translates the enumerated numeric representation of a status stored in the
+# database to a string
+sub get_status_name {
+	my ($options_ref,
+		$status,
+		$error_strings_ref) = @_;
+	
+	# Get the internal id for a requested value from the status table
+	my @field = ("name");
+	my $where = "WHERE id=\'$status\'";
+	my @result;
+	select_table($options_ref, "Status", \@field, $where, \@result, $error_strings_ref);
+	my $status_name = $result[0]->{name};
+	
+	return $status_name;
+}
+
+# Translates the string representation of a package status to the enumerated
+# numeric version stored in the database
+sub get_pkg_status_num {
+	my ($options_ref,
+		$status,
+		$error_strings_ref) = @_;
+	
+	# Get the internal id for a value from the package status table
+	my @field = ("id");
+	my $where = "WHERE status=\'$status\'";
+	my @result;
+	select_table($options_ref, "Package_status", \@field, $where, \@result, $error_strings_ref);
+	my $status_num = $result[0]->{id};
+	
+	return $status_num;
+}
+
+# Updates the status information for a package by passing in a hash
+# The keys in the hash are the names of the database fields (requested, current,
+# status, etc.).  The values are the values that should be put
+# into the database.
+sub update_node_package_status_hash {
+	my ($options_ref,
+		$node,
+		$passed_pkg,
+		$field_value_hash,
+		$error_strings_ref,
+		$passed_ver) = @_;
+	my $packages;
+	
+	# Get the information passed in about a package
+	if(ref($passed_pkg) eq "ARRAY") {
+		$packages = $passed_pkg;
+	} else {
+		my %opkg = ();
+		my @temp_packages = ();
+		$opkg{package} = $passed_pkg;
+		$opkg{version} = $passed_ver;
+		push @temp_packages, \%opkg;
+		$packages = \@temp_packages;
+	}
+	
+	# If requested is one of the names of the fields being passed in, convert it
+	# to the enum version instead of the string
+	if(exists $$field_value_hash{requested}) {
+		$$field_value_hash{requested} = get_status_num($options_ref, $$field_value_hash{requested}, $error_strings_ref);
+	}
+	
+	# If current is one of the names of the fields being passed in, convert it
+	# to the enum version instead of the string
+	if(exists $$field_value_hash{curr}) {
+		$$field_value_hash{curr} = get_status_num($options_ref, $$field_value_hash{curr}, $error_strings_ref);
+	}
+	
+	# If status is one of the names of the fields being passed in, convert it
+	# to the enum version instead of the string
+	if(exists $$field_value_hash{status}) {
+		$$field_value_hash{status} = get_pkg_status_num($options_ref, $$field_value_hash{status}, $error_strings_ref);
+	}
+	
+	# Get the internal id for the node
+	my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
+	my $node_id = $$node_ref{id};
+	
+	# Get more information about the package
+	foreach my $pkg_ref (@$packages) {
+		my $opkg = $$pkg_ref{package};
+		my $ver = $$pkg_ref{version};
+		my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+		my $package_id = $$package_ref{id};
+		my $where = "WHERE package_id=$package_id AND node_id=$node_id";
+		
+		# Check to see if there is an entry in the table already
+		my @field = ("package_id");
+		my @result;
+		select_table($options_ref, "Node_Package_Status", \@field, $where, \@result, $error_strings_ref);
+		if($result[0]->{package_id} && $result[0]->{package_id} == $package_id) {
+			die "DB_DEBUG>$0:\n====>Failed to update the request for $opkg" 
+        		if(!update_table($options_ref,"Node_Package_Status",$field_value_hash, $where, $error_strings_ref));
+        } else {
+        	$$field_value_hash{package_id} = $package_id;
+        	$$field_value_hash{node_id} = $node_id;
+        	die "DB_DEBUG>$0:\n====>Failed to insert the request for $opkg" 
+        		if(!insert_into_table($options_ref,"Node_Package_Status",$field_value_hash, $error_strings_ref));
+        }
+	}
+	return 1;
+}
+
+# Updates the status information for a package by passing in a hash
+# The keys in the hash are the names of the database fields (requested, current,
+# status, etc.).  The values are the values that should be put
+# into the database.
+sub update_image_package_status_hash {
+	my ($options_ref,
+		$image,
+		$passed_pkg,
+		$field_value_hash,
+		$error_strings_ref,
+		$passed_ver) = @_;
+	my $packages;
+	
+	# Get the information passed in about a package
+	if(ref($passed_pkg) eq "ARRAY") {
+		$packages = $passed_pkg;
+	} else {
+		my %opkg = ();
+		my @temp_packages = ();
+		$opkg{package} = $passed_pkg;
+		$opkg{version} = $passed_ver;
+		push @temp_packages, \%opkg;
+		$packages = \@temp_packages;
+	}
+	
+	# If requested is one of the names of the fields being passed in, convert it
+	# to the enum version instead of the string
+	if(exists $$field_value_hash{requested}) {
+		$$field_value_hash{requested} = get_status_num($options_ref, $$field_value_hash{requested}, $error_strings_ref);
+	}
+	
+	# If current is one of the names of the fields being passed in, convert it
+	# to the enum version instead of the string
+	if(exists $$field_value_hash{current}) {
+		$$field_value_hash{current} = get_status_num($options_ref, $$field_value_hash{current}, $error_strings_ref);
+	}
+	
+	# Get the internal id for the node
+	my $image_ref = get_iamge_info_with_name($image,$options_ref,$error_strings_ref);
+	my $image_id = $$image_ref{id};
+	
+	# Get more information about the package
+	foreach my $pkg_ref (@$packages) {
+		my $opkg = $$pkg_ref{package};
+		my $ver = $$pkg_ref{version};
+		my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+		my $package_id = $$package_ref{id};
+		my $where = "WHERE package_id=$package_id AND image_id=$image_id";
+		die "DB_DEBUG>$0:\n====>Failed to update the request for $opkg" 
+        	if(!update_table($options_ref,"Image_Package_Status",$field_value_hash, $where, $error_strings_ref));
+	}
+	return 1;
 }
 
 sub update_packages {
@@ -1854,7 +2090,7 @@ sub set_status {
                             "should_be_installed",
                             "run-configurator",
                             "install-bin-pkgs",
-                            "run-script-post-rpm-install",
+                            "run-script-post-image",
                             "run-script-post-clients",
                             "run-script-post-install",
                             "finished"

@@ -54,8 +54,15 @@ CREATE TABLE IF NOT EXISTS Groups(
 
 -- Status
 CREATE TABLE IF NOT EXISTS Status(
-    id  integer   auto_increment not null unique,
-    name VARCHAR(100)  not null unique primary key
+    id  integer auto_increment not null unique primary key,
+    name VARCHAR(100)  not null unique
+)TYPE=INNODB;
+
+-- Package_status
+
+CREATE TABLE IF NOT EXISTS Package_status(
+	id integer auto_increment not null unique primary key,
+	status VARCHAR(50)
 )TYPE=INNODB;
 
 -- Packages
@@ -239,16 +246,23 @@ CREATE TABLE IF NOT EXISTS Node_Package_Status(
     node_id  integer not null,
     package_id  integer not null,
     requested  integer not null default 1,
-    status  integer not null default 0,
+    curr integer,
+    status integer,
     ex_status  integer not null default 0,
     selected  integer not null default 0,
+    errorMsg VARCHAR(100),
+	client_nodes VARCHAR(500),
     PRIMARY KEY (node_id, package_id, requested),
     KEY node_id ( node_id ),
     KEY package_id ( package_id ),
     KEY requested ( requested ),
+    KEY curr ( curr ),
+    KEY status ( status ),
     CONSTRAINT Node_Package_Status_ibfk_1 FOREIGN KEY (node_id) REFERENCES Nodes (id) ON DELETE CASCADE,
     CONSTRAINT Node_Package_Status_ibfk_2 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
-    CONSTRAINT Node_Package_Status_ibfk_3 FOREIGN KEY (requested) REFERENCES Status (id) ON DELETE CASCADE
+    CONSTRAINT Node_Package_Status_ibfk_3 FOREIGN KEY (requested) REFERENCES Status (id) ON DELETE CASCADE,
+    CONSTRAINT Node_Package_Status_ibfk_4 FOREIGN KEY (curr) REFERENCES Status (id) ON DELETE CASCADE,
+    CONSTRAINT Node_Package_Status_ibfk_5 FOREIGN KEY (status) REFERENCES Package_status (id) ON DELETE CASCADE
 )TYPE=INNODB;
 
 -- Group_Nodes
@@ -281,16 +295,23 @@ CREATE TABLE IF NOT EXISTS Image_Package_Status(
     image_id  integer not null,
     package_id  integer not null,
     requested  integer not null default 1,
-    status  integer not null default 0,
+    curr integer,
+    status integer,
     ex_status  integer not null default 0,
     selected  integer not null default 0,
+    errorMsg VARCHAR(100),
+	client_nodes VARCHAR(500),
     PRIMARY KEY (image_id, package_id, requested),
     KEY image_id ( image_id ),
     KEY package_id ( package_id ),
     KEY requested ( requested ),
+    KEY curr ( curr ),
+    KEY status ( status ),
     CONSTRAINT Image_Package_Status_ibfk_1 FOREIGN KEY (image_id) REFERENCES Images (id) ON DELETE CASCADE,
     CONSTRAINT Image_Package_Status_ibfk_2 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
-    CONSTRAINT Image_Package_Status_ibfk_3 FOREIGN KEY (requested) REFERENCES Status (id) ON DELETE CASCADE
+    CONSTRAINT Image_Package_Status_ibfk_3 FOREIGN KEY (requested) REFERENCES Status (id) ON DELETE CASCADE,
+    CONSTRAINT Image_Package_Status_ibfk_4 FOREIGN KEY (curr) REFERENCES Status (id) ON DELETE CASCADE,
+    CONSTRAINT Image_Package_Status_ibfk_5 FOREIGN KEY (status) REFERENCES Package_status (id) ON DELETE CASCADE
 )TYPE=INNODB;
 
 -- Wizard_status
@@ -325,3 +346,12 @@ INSERT INTO Manage_status VALUES(4,5,'ganglia','disabled');
 INSERT INTO Manage_status VALUES(5,8,'add_nodes','disabled');
 INSERT INTO Manage_status VALUES(6,8,'delete_nodes8','disabled');
 INSERT INTO Manage_status VALUES(7,8,'install_uninstall_packages','disabled');
+
+INSERT INTO Package_status VALUES(1, 'should-be-installed_phase_done');
+INSERT INTO Package_status VALUES(2, 'run-configurator_phase_done');
+INSERT INTO Package_status VALUES(3, 'install-bpkg_phase_done');
+INSERT INTO Package_status VALUES(4, 'post-image_phase_done');
+INSERT INTO Package_status VALUES(5, 'post-clients_phase_done');
+INSERT INTO Package_status VALUES(6, 'post-install_phase_done');
+INSERT INTO Package_status VALUES(7, 'installed');
+INSERT INTO Package_status VALUES(8, 'error');
