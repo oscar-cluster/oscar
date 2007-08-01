@@ -17,6 +17,12 @@
 #   - OSCAR binary packages related to all available distros (e.g. 
 #     /tftpboot/oscar/debian-4-x86_64
 # For instance, this allows us to create RPM based images on a Debian headnode.
+#
+# !!WARNINGS!!
+#   * the script _must_ be executed from $(OSCAR_HOME)
+#   * all existing repositories will be deleted and recreated from scratch
+#     using binary packages from OPKGs.
+#
 
 use strict;
 use lib "$ENV{PWD}/lib";
