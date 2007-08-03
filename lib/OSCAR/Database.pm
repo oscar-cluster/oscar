@@ -1380,7 +1380,7 @@ sub update_node_package_status {
     }    
     # If requested is one of the names of the fields being passed in, convert it
 	# to the enum version instead of the string
-	if($requested) {
+	if($requested && $requested !~ /\d/) {
 		$requested = get_status_num($options_ref, $requested, $error_strings_ref);
 	}
     my $node_ref = get_node_info_with_name($node,$options_ref,$error_strings_ref);
