@@ -32,7 +32,6 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::PackagePath;
-use OSCAR::Opkg qw (opkgs_install_server);
 use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
@@ -422,8 +421,12 @@ my @packages = map { $_->{package} } @results;
 
 oscar_log_subsection("Identified core packages: " . join(' ', @packages));
 
+# OSCAR::Opkg requires XML::Simple which is not available initially but after
+# prereq installation
+require OSCAR::Opkg;
+
 oscar_log_subsection("Installing server core packages");
-opkgs_install_server (@packages);
+OSCAR::Opkg::opkgs_install_server (@packages);
 oscar_log_subsection("Successfully installed server core RPMs");
 
  PREP_CORE_NEST:
