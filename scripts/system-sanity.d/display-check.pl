@@ -15,8 +15,12 @@ use OSCAR::SystemSanity;
 
 my $rc = SUCCESS;
 
-if ( not defined $ENV{DISPLAY} || 
-     (!$ENV{DISPLAY} && ($ENV{OSCAR_UI} eq "gui"))) {
+# No need to check DISPLAY env variable if we're not using the GUI
+if ($ENV{OSCAR_UI} ne "gui") {
+    exit ($rc);
+}
+
+if ( not defined $ENV{DISPLAY} ) {
     print " ------------------------------------------------------------\n";
     print " ERROR: Your \"DISPLAY\" environment variable is not set,\n";
     print " probably indicating that you are not running in an X windows\n";
