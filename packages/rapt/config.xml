@@ -2,8 +2,8 @@
 <oscar>
   <name>rapt</name>
   <class>core</class>
-  <summary>Rapt wrapper tools for deb repository control, image creation
-and maintenance</summary>
+  <summary>apt repos control for clusters, image creation and
+  maintenance</summary>
   <description>
   Tool for setting up, exporting apt repositories and executing
 apt commands for only these repositories. Use it as high level DEB
