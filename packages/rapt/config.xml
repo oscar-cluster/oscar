@@ -24,6 +24,10 @@ revisions much simpler than with rpm.
       <name>Erich Focht</name>
       <email>efocht@hpce.nec.com</email>
     </author>
+    <author cat="uploader">
+      <name>Jean Parpaillon</name>
+      <email>jean.parpaillon@irisa.fr</email>
+    </author>
   </authors>
   <serverDeps>
     <requires>
@@ -37,6 +41,9 @@ revisions much simpler than with rpm.
   <apiDeps/>
   <changelog>
     <versionEntry version="1.0-0">
+      <changelogEntry authorName="Jean Parpaillon" date="2007-08-06T18:30:00-01:00">
+        <item>Restrict summary tag to 67 chars</item>
+      </changelogEntry>
       <changelogEntry authorName="Erich Focht" date="2007-06-25T10:08:47-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
       </changelogEntry>
