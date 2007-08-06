@@ -349,7 +349,7 @@ INSERT INTO Manage_status VALUES(7,8,'install_uninstall_packages','disabled');
 
 INSERT INTO Package_status VALUES(1, 'should-be-installed_phase_done');
 INSERT INTO Package_status VALUES(2, 'run-configurator_phase_done');
-INSERT INTO Package_status VALUES(3, 'install-bpkg_phase_done');
+INSERT INTO Package_status VALUES(3, 'install-bin-pkgs_phase_done');
 INSERT INTO Package_status VALUES(4, 'post-image_phase_done');
 INSERT INTO Package_status VALUES(5, 'post-clients_phase_done');
 INSERT INTO Package_status VALUES(6, 'post-install_phase_done');
