@@ -1,49 +1,33 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id$
-  -->
+<oscar>
   <name>base</name>
-
-  <version>
-    <major>1</major>
-    <minor>0</minor>
-    <subversion>0</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>core</class>
-
   <summary>OSCAR base setup packages and scripts</summary>
-  <license>Freely distributable</license>
-  <group>Application/System</group>
-  <uri>http://oscar.openclustergroup.org/</uri>
-
-  <packager>
-    <name>Erich Focht</name>
-    <email>efocht@hpce.nec.com</email>
-  </packager>
-
   <description>The base package should actually contain only dependencies,
 packages and scripts aimed at client nodes (actually their images). The master
 node base requirements are covered by the base prereqs.
 </description>
-
- <!-- 
-  <binary-package-list>
-      <filter>
-        <group>oscar_clients</group>
-      </filter>
-      <pkg></pkg>
-  </binary-package-list>
-   -->
+  <license>Freely distributable</license>
+  <group>Application/System</group>
+  <uri>http://oscar.openclustergroup.org/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
+    <author cat="maintainer">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1:1.0.0-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-08-06T11:59:01-04:00">
+        <item>Convertion to the new format</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
