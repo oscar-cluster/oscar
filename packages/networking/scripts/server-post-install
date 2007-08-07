@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# After server is installed
+# Restart the name service daemon
+
+debian() {
+    true
+}
+
+rpm() {
+    /sbin/chkconfig named on
+    /etc/init.d/named stop 
+    sleep 2
+    /etc/init.d/named start
+}
+
+scriptname=$0
+case $scriptname in
+    *postinst) debian $*;;
+    *rpm-tmp.*) rpm $*;;
+esac
