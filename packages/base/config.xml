@@ -19,11 +19,20 @@ node base requirements are covered by the base prereqs.
       <name>Geoffroy Vallee</name>
       <email>valleegr@ornl.gov</email>
     </author>
+    <author cat="uploader">
+      <name>Jean Parpaillon</name>
+      <email>jean.parpaillon@irisa.fr</email>
+    </author>
   </authors>
   <serverDeps/>
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1:1.0.0-2">
+      <changelogEntry authorName="Jean Parpaillon" date="2007-08-07T14:19:00+01:00">
+        <item>Rename script post_rpm_nochroot</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1:1.0.0-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-08-06T11:59:01-04:00">
         <item>Convertion to the new format</item>
