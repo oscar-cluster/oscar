@@ -1,8 +1,12 @@
 #!/usr/bin/perl
 # $Id$
 #
-# Copyright (c) 2006 Oak Ridge National Laboratory.
-#                    All rights reserved.
+# Copyright (c) 2006-2007 Oak Ridge National Laboratory.
+#                         All rights reserved.
+#
+# This script checks if the network configuration on the headnode satifies OSCAR
+# requirements.
+#
 
 use warnings;
 use English '-no_match_vars';
@@ -16,10 +20,13 @@ my $rc = SUCCESS;
 
 $ENV{LANG}="C";
 
-# We check if the hostname is valid, i.e. does not return localhost or
-# something similar. We also check if the host name is assigned to the
-# loopback interface or not.
-# @return: FAILURE if a problem is detected, SUCCESS else.
+################################################################################
+# We check if the hostname is valid, i.e. does not return localhost or         #
+# something similar. We also check if the host name is assigned to the         #
+# loopback interface or not.                                                   #
+# Parameter: None.                                                             #
+# Return:    FAILURE if a problem is detected, SUCCESS else.                   #
+################################################################################
 sub check_hostname {
     my $hostname = (uname)[1];
     if ($hostname eq "") {
@@ -46,8 +53,13 @@ sub check_hostname {
 
     # the value of hostname should not to be assigned to the loopback
     # interface
-    my $hostname_ip = `grep $shorthostname /etc/hosts | awk ' { print \$1 } '`;
-    chomp ($hostname_ip);
+    my $hostname_ip = get_host_ip ($hostname);
+    if ($hostname_ip eq "" || $hostname_ip eq FAILURE) {
+        print " ----------------------------------------------\n";
+        print " ERROR: Impossible get the IP for the hostname \n";
+        print " ----------------------------------------------\n";
+        return FAILURE;
+    }
     if ($hostname_ip eq "127.0.0.1") {
         print " -------------------------------------------------\n";
         print " ERROR: your hostname is assigned to the loopback \n";
@@ -61,8 +73,11 @@ sub check_hostname {
     return SUCCESS;
 }
 
-# Check the configuration of the interface used by OSCAR
-# @return: FAILURE if a problem is detected, SUCCESS else.
+################################################################################
+# Check the configuration of the interface used by OSCAR                       #
+# Parameter: None.                                                             #
+# Return:    FAILURE if a problem is detected, SUCCESS else.                   #
+################################################################################
 sub check_oscar_interface {
     my $oscar_if = $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};
     my %nics;
@@ -89,8 +104,8 @@ sub check_oscar_interface {
     }
 
     # we check now the IP assgned to the interface used by OSCAR
-    my $oscar_ip = `grep oscar_server /etc/hosts | awk ' { print \$1 } '`;
-    chomp ($oscar_ip);
+    my $oscar_ip = get_host_ip ("oscar_server");
+    return FAILURE if ($oscar_ip eq FAILURE);
     my $oscar_if_ip = `env LC_ALL=C /sbin/ifconfig $oscar_if | grep "inet addr:" | awk '{ print \$2 }' | sed -e 's/addr://'`;
     chomp ($oscar_if_ip);
     # the first time we execute OSCAR, /etc/hosts is not updated, it is 
@@ -104,6 +119,36 @@ sub check_oscar_interface {
     }
 
     return SUCCESS;
+}
+
+################################################################################
+# This function check if a specific hostname is defined in /etc/hosts.         #
+# Comments are ignored and only one entry should exist. If not, this is an     #
+# error.                                                                       #
+# Parameter: hostname                                                          #
+# Return:    hostname IP if success                                            #
+################################################################################
+sub get_host_ip {
+    my $id = shift;
+
+    my $my_ip = `grep $id /etc/hosts | awk ' { print \$1 } '`;
+    # We check that we have only one result, ignoring comments
+    my @res = split('\n', $my_ip);
+    $my_ip = "";
+    foreach my $n (@res) {
+        chomp ($n);
+        if ($n ne "#" && $my_ip ne "") {
+            print " ---------------------------------------------------\n";
+            print " ERROR: the hostname $id is used more than one time \n";
+            print " in /etc/hosts                                      \n";
+            print " ---------------------------------------------------\n";
+            return FAILURE;
+        }
+        if ($n ne "#" && $my_ip eq "") {
+            $my_ip = $n;
+        }
+    }
+    return $my_ip;
 }
 
 if (check_hostname () eq FAILURE || check_oscar_interface () eq FAILURE) { 
