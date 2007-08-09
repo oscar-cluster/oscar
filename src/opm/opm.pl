@@ -27,6 +27,7 @@ use OSCAR::Database;
 use Data::Dumper;
 use PackMan;
 use OSCAR::opd2;
+use OSCAR::PackagePath;
 
 my %options;
 my @error_strings;
@@ -41,6 +42,11 @@ print "===Setting up package repositories===\n" if $ENV{OSCAR_DEBUG};
 
 $pm = PackMan->new;
 $pm->repo(OSCAR::opd2::get_available_repositories());
+
+### TEMP FIX UNTIL OPD2 HANDLES LOCAL REPOSITORIES ###
+$pm->repo(OSCAR::PackagePath::distro_repo_url());
+$pm->repo(OSCAR::PackagePath::oscar_repo_url());
+
 $pm->gencache;
 
 # Get the status code for an error
@@ -86,36 +92,38 @@ print "===Looking at each package to determine work===\n" if $ENV{OSCAR_DEBUG};
 # an error, we need to do work
 
 for my $package (@packages) {
-	my $package_name = $$package{package};
-	if($type eq 'server' || $type eq 'client' ) {
-		my @results;
-		get_node_package_status_with_node_package($name, $package_name, \@results, \%options, \@error_strings);
-		my $pstatus_ref = pop @results;
-		
-#		print "$package_name\tREQUESTED: $$pstatus_ref{requested}\tCURR: $$pstatus_ref{curr}\tSTATUS: $$pstatus_ref{status}\n";
-		
-		if($$pstatus_ref{requested} ne $$pstatus_ref{curr} && $$pstatus_ref{status} ne $error_status_code) {
-		
-			print "===$package_name needs to do work on $name===\n" if $ENV{OSCAR_DEBUG};
+	my $do_work = 1;
+	
+	while($do_work) {
+		my $package_name = $$package{package};
+		if($type eq 'server' || $type eq 'client' ) {
+			my @results;
+			get_node_package_status_with_node_package($name, $package_name, \@results, \%options, \@error_strings);
+			my $pstatus_ref = pop @results;
 			
-			# Requested and curr are different and status does not equal error
-			if($type eq 'server') {
-				while(do_work_server($$pstatus_ref{requested}, $$pstatus_ref{curr}, \%wizard_status, $package_name)) {}
-			} elsif($type eq 'client') {
-				while(do_work_node($$pstatus_ref{requested}, $$pstatus_ref{curr}, \%wizard_status, $package_name)) {}
+			if($$pstatus_ref{requested} ne $$pstatus_ref{curr} && $$pstatus_ref{status} ne $error_status_code) {
+			
+				print "===$package_name needs to do work on $name===\n" if $ENV{OSCAR_DEBUG};
+				
+				# Requested and curr are different and status does not equal error
+				if($type eq 'server') {
+					$do_work = do_work_server($$pstatus_ref{requested}, $$pstatus_ref{curr}, \%wizard_status, $package_name);
+				} elsif($type eq 'client') {
+					$do_work = do_work_node($$pstatus_ref{requested}, $$pstatus_ref{curr}, \%wizard_status, $package_name);
+				}
 			}
+		} elsif($type eq 'image') {
+			my @results;
+			get_image_package_status_with_image_package($name, $package, \@results, \%options, \@error_strings);
+			my $pstatus_ref = pop @results;
+			if($$pstatus_ref{requested} ne $$pstatus_ref{curr} && $$pstatus_ref{status} ne $error_status_code) {
+			
+				print "===$package_name needs to do work on $name===\n" if $ENV{OSCAR_DEBUG};
+			
+				# Requested and curr are different and status does not equal error
+				$do_work = do_work_image($$pstatus_ref{requested}, $$pstatus_ref{curr}, \%wizard_status, $package_name);
+			}			
 		}
-	} elsif($type eq 'image') {
-		my @results;
-		get_image_package_status_with_image_package($name, $package, \@results, \%options, \@error_strings);
-		my $pstatus_ref = pop @results;
-		if($$pstatus_ref{requested} ne $$pstatus_ref{curr} && $$pstatus_ref{status} ne $error_status_code) {
-		
-			print "===$package_name needs to do work on $name===\n" if $ENV{OSCAR_DEBUG};
-		
-			# Requested and curr are different and status does not equal error
-			while(do_work_image($$pstatus_ref{requested}, $$pstatus_ref{curr}, \%wizard_status, $package_name)) {}
-		}			
 	}
 }
 
@@ -161,27 +169,30 @@ sub do_work_server {
 	if($next_stage_string eq "should_be_installed") {
 		# Install the binary package (opkg-<package>)
 		my ($err, $outref) = $pm->smart_install("opkg-$package");
-		
 		# If there is an error, copy it to the database and note it
-		if($err) {
+		if(!$err) {
+			print "===$package had an error===\n$err\t$outref\n===============\n" if $ENV{OSCAR_DEBUG};
 			my %status_vars;
 			$status_vars{curr} = "should_be_installed";
 			$status_vars{status} = "error";
-			$status_vars{errorMsg} = $err;
+			$status_vars{errorMsg} = "Install opkg-$package failed";
 			update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 			return 0;
 		} else { # Otherwise mark it as done and move on
+			print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 			my %status_vars;
 			$status_vars{status} = "should-be-installed_phase_done";
 			$status_vars{errorMsg} = "";
-			$status_vars{curr} = "should-be-installed";
+			$status_vars{curr} = "should_be_installed";
 			update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 		}	
 	} elsif($next_stage_string eq "run-configurator") {
 		# Check to see if there is a pre-configure script
-		if(-f "/var/lib/packages/$package/api-pre-configure") {
-			my $rc = system("/var/lib/packages/$package/api-pre-configure");
+		if(-e "/var/lib/oscar/packages/$package/api-pre-configure") {
+			print "===$package/Running api-pre-configure===\n" if $ENV{OSCAR_DEBUG};
+			my $rc = system("/var/lib/oscar/packages/$package/api-pre-configure");
 			if($rc) {
+				print "===$package had an error===\n" if $ENV{OSCAR_DEBUG};
 				my %status_vars;
 				$status_vars{curr} = "run-configurator";
 				$status_vars{status} = "error";
@@ -195,9 +206,11 @@ sub do_work_server {
 		#####################################
 		
 		# Check to see if there is a post-configure script
-		if(-f "/var/lib/packages/$package/api-post-configure") {
-			my $rc = system("/var/lib/packages/$package/api-post-configure");
+		if(-e "/var/lib/oscar/packages/$package/api-post-configure") {
+			print "===$package/Running api-post-configure===\n" if $ENV{OSCAR_DEBUG};
+			my $rc = system("/var/lib/oscar/packages/$package/api-post-configure");
 			if($rc) {
+				print "===$package had an error===\n" if $ENV{OSCAR_DEBUG};
 				my %status_vars;
 				$status_vars{curr} = "run-configurator";
 				$status_vars{status} = "error";
@@ -207,6 +220,7 @@ sub do_work_server {
 			}
 		}
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
 		$status_vars{status} = "run-configurator_phase_done";
 		$status_vars{errorMsg} = "";
@@ -214,18 +228,20 @@ sub do_work_server {
 		update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 					
 	} elsif($next_stage_string eq "install-bin-pkgs") {
-		# Install the binary package (opkg-server-<package>)
-		my ($err, $outref) = $pm->smart_install("opkg-server-$package");
+		# Install the binary package (opkg-<package>-server)
+		my ($err, $outref) = $pm->smart_install("opkg-$package-server");
 		
 		# If there is an error, copy it to the database and note it
-		if($err) {
+		if(!$err) {
+			print "===$package had an error===\n$err\t$outref\n===============\n" if $ENV{OSCAR_DEBUG};
 			my %status_vars;
 			$status_vars{curr} = "install-bin-pkgs";
 			$status_vars{status} = "error";
-			$status_vars{errorMsg} = $err;
+			$status_vars{errorMsg} = "Install opkg-$package-server failed";
 			update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 			return 0;
 		} else { # Otherwise mark it as done and move on
+			print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 			my %status_vars;
 			$status_vars{status} = "install-bin-pkgs_phase_done";
 			$status_vars{errorMsg} = "";
@@ -234,41 +250,47 @@ sub do_work_server {
 		}	
 	} elsif($next_stage_string eq "run-script-post-image") {
 		# Check to see if there is an api-post-image script
-		if(-f "/var/lib/packages/$package/api-post-image") {
-			my $rc = system("/var/lib/packages/$package/api-post-image");
+		if(-e "/var/lib/oscar/packages/$package/api-post-image") {
+			print "===$package/Running api-post-image===\n" if $ENV{OSCAR_DEBUG};
+			my $rc = system("/var/lib/oscar/packages/$package/api-post-image");
 			if($rc) {
+				print "===$package had an error===\n" if $ENV{OSCAR_DEBUG};
 				my %status_vars;
 				$status_vars{curr} = "run-script-post-image";
 				$status_vars{status} = "error";
 				$status_vars{errorMsg} = 'Script failed';
 				update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 				return 0;
-			} else {
-				my %status_vars;
-				$status_vars{curr} = "run-script-post-image";
-				$status_vars{status} = "run-script-post-image_phase_done";
-				$status_vars{errorMsg} = "";
-				update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 			}
+		} else {
+			print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
+			my %status_vars;
+			$status_vars{curr} = "run-script-post-image";
+			$status_vars{status} = "post-image_phase_done";
+			$status_vars{errorMsg} = "";
+			update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 		}
 	} elsif($next_stage_string eq "run-script-post-clients") {
 		# Check to see if there is an api-post-clients script
-		if(-f "/var/lib/packages/$package/api-post-clients") {
-			my $rc = system("/var/lib/packages/$package/api-post-clients");
+		if(-e "/var/lib/oscar/packages/$package/api-post-clients") {
+			print "===$package/Running api-post-clients===\n" if $ENV{OSCAR_DEBUG};
+			my $rc = system("/var/lib/oscar/packages/$package/api-post-clients");
 			if($rc) {
+				print "===$package had an error===\n" if $ENV{OSCAR_DEBUG};
 				my %status_vars;
 				$status_vars{curr} = "run-script-post-clients";
 				$status_vars{status} = "error";
 				$status_vars{errorMsg} = 'Script failed';
 				update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 				return 0;
-			} else {
-				my %status_vars;
-				$status_vars{curr} = "run-script-post-clients";
-				$status_vars{status} = "run-script-post-image_clients_done";
-				$status_vars{errorMsg} = "";
-				update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 			}
+		} else {
+			print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
+			my %status_vars;
+			$status_vars{curr} = "run-script-post-clients";
+			$status_vars{status} = "post-clients_phase_done";
+			$status_vars{errorMsg} = "";
+			update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 		}
 		# Get the list of nodes that should be started now that the server is done
 		my @results;
@@ -284,22 +306,25 @@ sub do_work_server {
 		}
 	} elsif($next_stage_string eq "run-script-post-install") {
 		# Check to see if there is an api-post-install script
-		if(-f "/var/lib/packages/$package/api-post-install") {
-			my $rc = system("/var/lib/packages/$package/api-post-install");
+		if(-e "/var/lib/oscar/packages/$package/api-post-install") {
+			print "===$package/Running api-post-configure===\n" if $ENV{OSCAR_DEBUG};
+			my $rc = system("/var/lib/oscar/packages/$package/api-post-install");
 			if($rc) {
+				print "===$package had an error===\n" if $ENV{OSCAR_DEBUG};
 				my %status_vars;
 				$status_vars{curr} = "run-script-post-install";
 				$status_vars{status} = "error";
 				$status_vars{errorMsg} = 'Script failed';
 				update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 				return 0;
-			} else {
-				my %status_vars;
-				$status_vars{curr} = "run-script-post-install";
-				$status_vars{status} = "installed";
-				$status_vars{errorMsg} = "";
-				update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);		
 			}
+		} else {
+			print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
+			my %status_vars;
+			$status_vars{curr} = "finished";
+			$status_vars{status} = "installed";
+			$status_vars{errorMsg} = "";
+			update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);		
 		}
 	}
 		
@@ -350,6 +375,7 @@ sub do_work_node {
 	if($next_stage_string eq "should-be-installed") {
 		# Nothing to do for this stage
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
 		$status_vars{status} = "should-be-installed_phase_done";
 		$status_vars{errorMsg} = "";
@@ -359,6 +385,7 @@ sub do_work_node {
 	} elsif($next_stage_string eq "run-configurator") {
 		# Nothing to do for this stage
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
 		$status_vars{status} = "run-configurator_phase_done";
 		$status_vars{errorMsg} = "";
@@ -366,18 +393,20 @@ sub do_work_node {
 		update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 					
 	} elsif($next_stage_string eq "install-bin-pkgs") {
-		# Install the binary package (opkg-server-<package>)
-		my ($err, $outref) = $pm->smart_install("opkg-client-$package");
+		# Install the binary package (opkg-<package>-client)
+		my ($err, $outref) = $pm->smart_install("opkg-$package-client");
 		
 		# If there is an error, copy it to the database and note it
-		if($err) {
+		if(!$err) {
+			print "===$package had an error===\n$err\t$outref\n===============\n" if $ENV{OSCAR_DEBUG};
 			my %status_vars;
 			$status_vars{curr} = "install-bin-pkgs";
 			$status_vars{status} = "error";
-			$status_vars{errorMsg} = $err;
+			$status_vars{errorMsg} = "Install opkg-$package-client failed";
 			update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 			return 0;
 		} else { # Otherwise mark it as done and move on
+			print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 			my %status_vars;
 			$status_vars{status} = "install-bin-pkgs_phase_done";
 			$status_vars{errorMsg} = "";
@@ -388,18 +417,20 @@ sub do_work_node {
 	} elsif($next_stage_string eq "run-script-post-image") {
 		# Nothing to do for this stage
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
 		$status_vars{curr} = "run-script-post-image";
-		$status_vars{status} = "run-script-post-image_phase_done";
+		$status_vars{status} = "post-image_phase_done";
 		$status_vars{errorMsg} = "";
 		update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 		
 	} elsif($next_stage_string eq "run-script-post-clients") {
 		# Nothing to do for this stage
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
 		$status_vars{curr} = "run-script-post-clients";
-		$status_vars{status} = "run-script-post-image_clients_done";
+		$status_vars{status} = "post-clients_phase_done";
 		$status_vars{errorMsg} = "";
 		update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 		
@@ -407,7 +438,7 @@ sub do_work_node {
 		# Nothing to do for this stage
 		
 		my %status_vars;
-		$status_vars{curr} = "run-script-post-install";
+		$status_vars{curr} = "finished";
 		$status_vars{status} = "installed";
 		$status_vars{errorMsg} = "";
 		update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
@@ -459,6 +490,7 @@ sub do_work_image {
 	if($next_stage_string eq "should-be-installed") {
 		# Nothing to do for this stage
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
 		$status_vars{status} = "should-be-installed_phase_done";
 		$status_vars{errorMsg} = "";
@@ -468,6 +500,7 @@ sub do_work_image {
 	} elsif($next_stage_string eq "run-configurator") {
 		# Nothing to do for this stage
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
 		$status_vars{status} = "run-configurator_phase_done";
 		$status_vars{errorMsg} = "";
@@ -475,18 +508,20 @@ sub do_work_image {
 		update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 					
 	} elsif($next_stage_string eq "install-bin-pkgs") {
-		# Install the binary package (opkg-server-<package>)
-		my ($err, $outref) = $pm->smart_install("opkg-client-$package");
+		# Install the binary package (opkg-<package>-client)
+		my ($err, $outref) = $pm->smart_install("opkg-$package-client");
 		
 		# If there is an error, copy it to the database and note it
-		if($err) {
+		if(!$err) {
+			print "===$package had an error===\n$err\t$outref\n===============\n" if $ENV{OSCAR_DEBUG};
 			my %status_vars;
 			$status_vars{curr} = "install-bin-pkgs";
 			$status_vars{status} = "error";
-			$status_vars{errorMsg} = $err;
+			$status_vars{errorMsg} = "Install opkg-$package-client failed";
 			update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 			return 0;
 		} else { # Otherwise mark it as done and move on
+			print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 			my %status_vars;
 			$status_vars{status} = "install-bin-pkgs_phase_done";
 			$status_vars{errorMsg} = "";
@@ -497,26 +532,29 @@ sub do_work_image {
 	} elsif($next_stage_string eq "run-script-post-image") {
 		# Nothing to do for this stage
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
 		$status_vars{curr} = "run-script-post-image";
-		$status_vars{status} = "run-script-post-image_phase_done";
+		$status_vars{status} = "post-image_phase_done";
 		$status_vars{errorMsg} = "";
 		update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 		
 	} elsif($next_stage_string eq "run-script-post-clients") {
 		# Nothing to do for this stage
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
 		$status_vars{curr} = "run-script-post-clients";
-		$status_vars{status} = "run-script-post-image_clients_done";
+		$status_vars{status} = "post-clients_phase_done";
 		$status_vars{errorMsg} = "";
 		update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
 		
 	} elsif($next_stage_string eq "run-script-post-install") {
 		# Nothing to do for this stage
 		
+		print "===$package finished running $next_stage_string===\n" if $ENV{OSCAR_DEBUG};
 		my %status_vars;
-		$status_vars{curr} = "run-script-post-install";
+		$status_vars{curr} = "finished";
 		$status_vars{status} = "installed";
 		$status_vars{errorMsg} = "";
 		update_node_package_status_hash(\%options, $name, $package, \%status_vars, \@error_strings);
