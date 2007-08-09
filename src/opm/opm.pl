@@ -180,7 +180,7 @@ sub do_work_server {
 	} elsif($next_stage_string eq "run-configurator") {
 		# Check to see if there is a pre-configure script
 		if(-f "/var/lib/packages/$package/api-pre-configure") {
-			my $rc = system("/bin/sh /var/lib/packages/$package/api-pre-configure");
+			my $rc = system("/var/lib/packages/$package/api-pre-configure");
 			if($rc) {
 				my %status_vars;
 				$status_vars{curr} = "run-configurator";
@@ -196,7 +196,7 @@ sub do_work_server {
 		
 		# Check to see if there is a post-configure script
 		if(-f "/var/lib/packages/$package/api-post-configure") {
-			my $rc = system("/bin/sh /var/lib/packages/$package/api-post-configure");
+			my $rc = system("/var/lib/packages/$package/api-post-configure");
 			if($rc) {
 				my %status_vars;
 				$status_vars{curr} = "run-configurator";
@@ -235,7 +235,7 @@ sub do_work_server {
 	} elsif($next_stage_string eq "run-script-post-image") {
 		# Check to see if there is an api-post-image script
 		if(-f "/var/lib/packages/$package/api-post-image") {
-			my $rc = system("/bin/sh /var/lib/packages/$package/api-post-image");
+			my $rc = system("/var/lib/packages/$package/api-post-image");
 			if($rc) {
 				my %status_vars;
 				$status_vars{curr} = "run-script-post-image";
@@ -254,7 +254,7 @@ sub do_work_server {
 	} elsif($next_stage_string eq "run-script-post-clients") {
 		# Check to see if there is an api-post-clients script
 		if(-f "/var/lib/packages/$package/api-post-clients") {
-			my $rc = system("/bin/sh /var/lib/packages/$package/api-post-clients");
+			my $rc = system("/var/lib/packages/$package/api-post-clients");
 			if($rc) {
 				my %status_vars;
 				$status_vars{curr} = "run-script-post-clients";
@@ -285,7 +285,7 @@ sub do_work_server {
 	} elsif($next_stage_string eq "run-script-post-install") {
 		# Check to see if there is an api-post-install script
 		if(-f "/var/lib/packages/$package/api-post-install") {
-			my $rc = system("/bin/sh /var/lib/packages/$package/api-post-install");
+			my $rc = system("/var/lib/packages/$package/api-post-install");
 			if($rc) {
 				my %status_vars;
 				$status_vars{curr} = "run-script-post-install";
