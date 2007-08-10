@@ -92,9 +92,9 @@ print "===Looking at each package to determine work===\n" if $ENV{OSCAR_DEBUG};
 # an error, we need to do work
 
 for my $package (@packages) {
-	my $do_work = 1;
+	my $do_work = 0;
 	
-	while($do_work) {
+	do {
 		my $package_name = $$package{package};
 		if($type eq 'server' || $type eq 'client' ) {
 			my @results;
@@ -124,7 +124,7 @@ for my $package (@packages) {
 				$do_work = do_work_image($$pstatus_ref{requested}, $$pstatus_ref{curr}, \%wizard_status, $package_name);
 			}			
 		}
-	}
+	} while($do_work);
 }
 
 # Takes the 'requested' and 'curr' values and the status of the cluster as a
