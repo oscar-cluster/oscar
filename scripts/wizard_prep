@@ -43,6 +43,8 @@ use Carp;
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
 my $ohome = $ENV{OSCAR_HOME};
+my $prereqs_dir = "share/prereqs";
+my $orderfile = "$ohome/share/prereqs/prereqs.order";
 
 my $verbose;
 if ($ENV{OSCAR_VERBOSE}) {
@@ -137,10 +139,10 @@ my $cmd;
 #     those require installing both rapt and yume
 if ($os->{pkg} eq "rpm") {
     # rpm based distros use yume
-    $cmd = "$ipcmd --dumb packages/yume share/prereqs/packman";
+    $cmd = "$ipcmd --dumb packages/yume $prereqs_dir/packman";
 } elsif($os->{pkg} eq "deb") {
     # debian based distros use rapt
-    $cmd = "$ipcmd --dumb packages/rapt share/prereqs/packman";
+    $cmd = "$ipcmd --dumb packages/rapt $prereqs_dir/packman";
 } else {
     die "Unsupported package manager: ".$os->{pkg};
 }
@@ -208,7 +210,7 @@ if (exists($ENV{OSCAR_DEVELOPER_MODE})) {
 #
 # base prereqs install start before the others, they're done smartly
 #
-$cmd = "$ipcmd share/prereqs/base";
+$cmd = "$ipcmd $prereqs_dir/base";
 !system($cmd) or
     die "Could not install base prereqs!\n";
 
@@ -221,8 +223,6 @@ if ($os->{pkg} eq "rpm") {
 }
 
 oscar_log_subsection("Installing OSCAR wizard prerequisites");
-
-my $orderfile = "$ohome/share/prereqs/prereqs.order";
 
 # Read in the share/prereqs/prereqs.order file
 # It should contain prerequisite paths relative to $OSCAR_HOME, one per line.
