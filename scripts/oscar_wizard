@@ -83,6 +83,8 @@ our $monitortk_pid;
 
 my $lockfile = "$ENV{OSCAR_HOME}/.oscar_wizard_lockfile";
 
+my $oscarsamples_dir = "$ENV{OSCAR_HOME)/oscarsamples";
+
 
 # END processing to remove the lockfile when we die(), exit, or otherwise
 # cease to exist.
@@ -503,7 +505,7 @@ sub build_oscar_image {
     oscar_log_subsection("$step_string"."distro repo: $distro_pool");
     oscar_log_subsection("$step_string"."oscar repo: $oscar_pool");
 
-    my $pkglist = "$ENV{OSCAR_HOME}/oscarsamples/$distro-$distro_ver-$arch.rpmlist";
+    my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.rpmlist";
     oscar_log_subsection("$step_string"."Using binary package list: $pkglist");
     
     # Get a list of the client binary packages that we want to install.  Make a
@@ -524,7 +526,7 @@ sub build_oscar_image {
     if (exists $ENV{OSCAR_VERBOSE}) {
 	$extraflags .= "--verbose ";
     }
-    my $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
+    my $diskfile = "$oscarsamples_dir/$disk_type";
     # ia64 needs special disk file because of /boot/efi
     $diskfile .= ".$arch" if $arch eq "ia64";
     $diskfile .= ".disk";
