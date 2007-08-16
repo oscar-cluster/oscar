@@ -54,15 +54,17 @@ our %list = clear_list(); # The hash that holds all the information about the OP
 #########################################################################
 sub select_set {
 	my $filename = shift;
-	
+	my $package_set_dir = "$ENV{OSCAR_HOME}/share/package_sets/";
+    my $schema_dir = "$ENV{OSCAR_HOME}/share/schemas";
+
 	# Make sure the file is there
 	
-	unless (-f "$ENV{OSCAR_HOME}/share/package_sets/$filename") {
-		return "File $ENV{OSCAR_HOME}/share/package_sets/$filename not found";
+	unless (-f "$package_set_dir/$filename") {
+		return "File $package_set_dir/$filename not found";
 	}
 
 	if(system("xmlstarlet --version >/dev/null 2>&1") == 0) {
-		my $rc = system("xmlstarlet val -s $ENV{OSCAR_HOME}/share/schemas/pkgset.xsd $ENV{OSCAR_HOME}/share/package_sets/$filename >/dev/null");
+		my $rc = system("xmlstarlet val -s $schema_dir/pkgset.xsd $package_set_dir/$filename >/dev/null");
 		if($rc != 0) {
 			return "XML does not validate against schema\n";
 		}
@@ -70,7 +72,7 @@ sub select_set {
 		print "XML not validated: xmlstarlet not installed.\n";
 	}
 	
-	return parse_xml(read_file("$ENV{OSCAR_HOME}/share/package_sets/$filename"));
+	return parse_xml(read_file("$package_set_dir/$filename"));
 }
 
 #########################################################################
