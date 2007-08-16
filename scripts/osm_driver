@@ -1,0 +1,53 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2007 Oak Ridge National Laboratory
+#               Geoffroy Vallee <valleegr@ornl.gov>
+#               All rights reserved
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# This script is a simple CLI for OSM.
+#
+# Input: XML file that describes the package set for the image creation.
+# Return: 1 if success, 0 or die else.
+#
+# Based on the package set describes, this script creates a basic image and
+# also populates the database in order to store all needed actions.
+#
+# $Id: osm_driver 5134 2006-07-12 05:51:29Z valleegr $
+#
+
+use strict;
+use lib "$ENV{PWD}/lib";
+use OSCAR::osm;
+use Carp;
+
+my $xml_file_path = shift;
+
+my $verbose = $ENV{OSCAR_VERBOSE};
+
+# Step 1: We use OSM to parse the XML file and get a hash
+print "Parsing the package set..." if $verbose;
+my %config = OSCAR::osm::add_set ($xml_file_path);
+
+# Step 2: We create a basic image.
+# We currently use the script 'build_oscar_image_cli'. This is a limitation
+# because it only creates an image based on the local Linux distribution.
+print "Creating the basic golden image..." if $verbose;
+my $cmd = "build_oscar_image";
+die ("ERROR: Impossible to execute $cmd") if (system ($cmd));
+
+# Maybe we have to update the file /etc/opm.conf for the image.
+
+# Step 3: We use the hash from OSM to update the database.
+print "Updating the database..." if $verbose;
+OSCAR::osm::convert_hash_to_oda (%config);
+
+# Step 4: We call opm to update the image.
+print "Executing OPM..." if $verbose;
+$cmd = $ENV{OSCAR_HOME}."/src/opm/opm.pm";
+die ("ERROR: Impossible to execute $cmd") if (system ($cmd));
+
+1;
