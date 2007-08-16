@@ -48,17 +48,19 @@ use_file("defaultms.xml");
 sub use_file {
 	our %list;
 	my $filename = shift;
+    my $schema_dir = "$ENV{OSCAR_HOME}/share/schemas";
+    my $machine_set_dir = "$ENV{OSCAR_HOME}/share/machine_sets";
 	
 	# Make sure the file is there
 	
-	unless (-f "$ENV{OSCAR_HOME}/share/machine_sets/$filename") {
-		return "File $ENV{OSCAR_HOME}/share/machine_sets/$filename not found";
+	unless (-f "$machine_set_dir/$filename") {
+		return "File $machine_set_dir/$filename not found";
 	}
 	
 	# Check to see if the xml validates against the schema
 
 	if(system("xmlstarlet --version >/dev/null 2>&1") == 0) {
-		my $rc = system("xmlstarlet val -s $ENV{OSCAR_HOME}/share/schemas/machineset.xsd $ENV{OSCAR_HOME}/share/machine_sets/$filename >/dev/null");
+		my $rc = system("xmlstarlet val -s $schema_dir/machineset.xsd $machine_set_dir/$filename >/dev/null");
 		if($rc != 0) {
 			return "XML does not validate against schema\n";
 		}
@@ -66,7 +68,7 @@ sub use_file {
 		print "XML not validated: xmlstarlet not installed.\n";
 	}
 	
-	%list = %{$xml->XMLin("$ENV{OSCAR_HOME}/share/machine_sets/$filename", ForceArray => ['machine', 'machineSet'])};
+	%list = %{$xml->XMLin("$machine_set_dir/$filename", ForceArray => ['machine', 'machineSet'])};
 }
 
 #########################################################################
