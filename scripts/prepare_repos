@@ -1,14 +1,14 @@
 #!/usr/bin/env perl
 #
 # Copyright (c) Oak Ridge National Laboratory
-#               Geoffroy Vallee <efocht@hpce.nec.com>
+#               Geoffroy Vallee <valleegr@ornl.gov>
 #               All rights reserved
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: get_available_distros 5134 2006-07-12 05:51:29Z bli $
+# $Id: prepare_repos 5134 2006-07-12 05:51:29Z bli $
 #
 # This script set up the local repositories. For that, we scan /tftpboot/distro
 # to get the list of distributions we want to use for image creation. Based on
