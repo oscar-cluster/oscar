@@ -83,7 +83,7 @@ our $monitortk_pid;
 
 my $lockfile = "$ENV{OSCAR_HOME}/.oscar_wizard_lockfile";
 
-my $oscarsamples_dir = "$ENV{OSCAR_HOME)/oscarsamples";
+my $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";
 
 
 # END processing to remove the lockfile when we die(), exit, or otherwise
