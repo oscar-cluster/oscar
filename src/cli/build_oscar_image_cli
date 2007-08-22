@@ -18,6 +18,12 @@ use OSCAR::PackagePath;
 use OSCAR::Database;
 use SystemInstaller::Tk::Common;
 use SystemImager::Server;
+use OSCAR::ImageMgt qw (
+                        do_setimage 
+                        do_post_binary_package_install 
+                        do_oda_post_install
+                       );
+use OSCAR::Opkg qw ( create_list_selected_opkgs );
 use Carp;
 use POSIX;
 use Getopt::Long;
@@ -64,23 +70,10 @@ oscar_log_subsection("Using RPM list: $pkglist");
 #Get a list of client RPMs that we want to install.
 #Make a new file containing the names of all the RPMs to install
 
-my @opkgs = OSCAR::Database::list_selected_packages("all");
 my $outfile = "/tmp/oscar-install-rpmlist.$$";
+create_list_selected_opkgs ($outfile);
 my @errors;
 my $save_text = $outfile;
-open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
-foreach my $opkg_ref (@opkgs)
-{
-	my $opkg = $$opkg_ref{package};
-	my @pkgs = OSCAR::Database::pkgs_of_opkg($opkg, undef, \@errors, 
-			group =>"oscar_clients", 
-			os => $master_os);
-	foreach my $pkg (@pkgs)
-	{
-		print OUTFILE "$pkg\n";
-	}
-}
-close(OUTFILE);
 my $extraflags = "--filename=$outfile";
 if (exists $ENV{OSCAR_VERBOSE}) {$extraflags .= " --verbose";}
 
@@ -91,6 +84,7 @@ $diskfile .= ".disk";
 
 my $config = init_si_config();
 
+# Default settings
 my %vars = (
            imgpath => $config->DEFAULT_IMAGE_DIR,
            imgname => "oscarimage",
@@ -106,7 +100,8 @@ my %vars = (
            );
 
 #
-#Validate image name.
+# Validate image name (code from systeminstaller-oscar, 
+# lib/SystemInstaller/Tk/Image.pm).
 #
 my @images = listimages("etc/systemimager/rsyncd.conf");
 if( grep {$vars{imgname} eq $_} @images )
@@ -122,14 +117,16 @@ if( grep {$vars{imgname} eq $_} @images )
 	$vars{imgname} .= $last + 1;
 }
 
-#Backup the old settings in case the user changes his mind
+# Backup the old settings in case the user changes his mind
 my %defaults = %vars;
 
-#Locate all available distro pools
+# Locate all available distro pools
 my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
 our @distros = sort(keys(%distro_pools));
 
-#Set up the default distro
+# Set up the default distro
+# GV: Is the first distro in the 'distros' array the local distro? Or are
+# distros sorted?
 if($vars{distro} eq "")
 {
 	$vars{distro} = $distros[0];
@@ -139,7 +136,7 @@ oscar_log_subsection("Get configuration choices from user");
 my $result = 1;
 while($result)
 {
-    $result = menu();
+	$result = menu();
 	#If we are running in automated mode, we don't want to keep 
         #looping if we fail
 	if($file ne " ") {last;}
@@ -220,6 +217,9 @@ sub add_image
 	return $result;
 }
 
+# Code based on add_image_build from systeminstaller-oscar
+# (lib/SystemInstaller/Tk/Image.pm).
+# Retrun : 0 if success, 1 else.
 sub add_image_build
 {
 	my $cmd = "mksiimage -A --name $vars{imgname} " .
@@ -301,65 +301,19 @@ sub add_image_build
 	return 0;
 }
 
+###############################################################################
+# Similar to the function in scripts/oscar_wizard: execute post actions after #
+# the image creation.                                                         #
+# Input: none.                                                                #
+# Return: none.                                                               #
+###############################################################################
 sub postimagebuild
 {
-	my $img = $vars{imgname};
-
-	my $master_os = distro_detect_or_die("/");
-	my $arch = $master_os->{arch};
-
-	#Get the image path
-	my $config = init_si_config();
-	my $imaged = $config->default_image_dir;
-	croak "default_image_dir not defined\n" unless $imaged;
-	croak "$imaged: not a directory\n" unless -d $imaged;
-	croak "$imaged: not accessible\n" unless -x $imaged;
-	my $imagepath = $imaged."/".$img;
-	croak "$imagepath: not a directory\n" unless -d $imagepath;
-	croak "$imagepath: not accessible\n" unless -x $imagepath;
-
-	#Image info lines should be deleted once systeminstaller
-	#talks directly to ODA
-	my %image_info = ( "name"        => $img,
-			  "architecture" => $arch,
-			  "path"         => $imagepath);
-	my %options;
-	set_images(\%image_info, \%options, \@errors);
-	
-	my $cwd = `pwd`;
-	chdir "$ENV{OSCAR_HOME}/scripts/";
-	my $cmd = "$ENV{OSCAR_HOME}/scripts/post_rpm_install $img $ARGV[0]";
-
-	oscar_log_subsection("Running: $cmd");
-	!system($cmd) or (carp($!), return undef);
-	oscar_log_subsection("Successfully ran: $cmd");
-
-	chdir "$cwd";
-
-	#Have installed Client RPMs and did not croak, so mark
-	#packages. <pkg>installed # true.
-
-	oscar_log_subsection("Marking installed bit in ODA for client RPMS");
-
-	my @opkgs = list_selected_packages("all");
-	foreach my $opkg_ref (@opkgs)
-	{
-		my $opkg = $$opkg_ref{package};
-		oscar_log_subsection("Set package: $opkg");
-		set_image_packages($img,$opkg,\%options,\@errors);
-	}
-	oscar_log_subsection("Done marking installed bits in ODA");
-
-	#/var/log/lastlog could be huge
-	croak "Image name not defined\n" unless $vars{imgname};
-	my $lastlog = "/var/log/lastlog";
-	oscar_log_subsection("Truncating ".$img.":".$lastlog);
-	
-	my $imagelog = $imagepath.$lastlog;
-	truncate $imagelog, 0 if -s $imagelog;
-	oscar_log_subsection("Truncated ".$img.":".$lastlog);
-
-	oscar_log_subsection("Image build successfully");
+    my $img = $vars{imgname};
+    my %options;
+    do_setimage ($img, \%options);
+    do_post_binary_package_install ($img, $ARGV[0]);
+    do_oda_post_install (%vars, \%options);
 }
 
 #Prints out the menu for the user to choose which section to edit

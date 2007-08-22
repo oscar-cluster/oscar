@@ -35,12 +35,14 @@ use base qw(Exporter);
 use File::Basename;
 use XML::Simple;
 use Data::Dumper;
+use OSCAR::Database;
 use Carp;
 
 @EXPORT = qw(
             get_list_opkg_dirs
             opkg_print
             opkgs_install_server
+            create_list_selected_opkgs
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -162,6 +164,27 @@ sub opkgs_install_server {
     foreach my $opkg (@opkgs) {
         opkg_install_server ($opkg);
     }
+}
+
+###############################################################################
+# Get a list of the client binary packages that we want to install.  Make a   #
+# new file containing the names of all the binary packages to install.        #
+# This is used for the creation of a temporary file when we build a new       #
+# image.                                                                      #
+# Input: file where the list has to be written.                               #
+# Return: none.
+###############################################################################
+sub create_list_selected_opkgs {
+    my $outfile = shift;
+
+    my @opkgs = list_selected_packages("all");
+    open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
+    foreach my $opkg_ref (@opkgs) {
+        my $opkg = $$opkg_ref{package};
+        my $pkg = "opkg-".$opkg."-client";
+        print OUTFILE "$pkg\n";
+    }
+    close(OUTFILE);
 }
 
 1;

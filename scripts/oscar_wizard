@@ -52,6 +52,12 @@ use OSCAR::PackagePath;
 use OSCAR::PackageInUn;
 use OSCAR::WizardEnv;
 use OSCAR::Tk;
+use OSCAR::ImageMgt qw (
+                        do_setimage 
+                        do_post_binary_package_install 
+                        do_oda_post_install
+                       );
+use OSCAR::Opkg qw ( create_list_selected_opkgs );
 use AppConfig;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
@@ -511,17 +517,10 @@ sub build_oscar_image {
     # Get a list of the client binary packages that we want to install.  Make a
     # new file containing the names of all the binary packages to install.
 
-    my @opkgs = list_selected_packages("all");
     my $outfile = "/tmp/oscar-install-rpmlist.$$";
+    create_list_selected_opkgs ($outfile);
     my @errors;
     $save_text = $outfile;
-    open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
-    foreach my $opkg_ref (@opkgs) {
-        my $opkg = $$opkg_ref{package};
-        my $pkg = "opkg-".$opkg."-client";
-        print OUTFILE "$pkg\n";
-    }
-    close(OUTFILE);
     my $extraflags = "--filename=$outfile ";
     if (exists $ENV{OSCAR_VERBOSE}) {
 	$extraflags .= "--verbose ";
@@ -556,72 +555,22 @@ sub build_oscar_image {
 sub postimagebuild {
     my ($vars) = @_;
     my $step_number = $$vars{step_number};
-
     my $img = $$vars{imgname};
 
-    my $master_os = distro_detect_or_die("/");
-    my $arch = $master_os->{arch};
+    print ("Setting up image in the database\n");
+    do_setimage ($img, \%options);
 
-    # Get the image path (typically /var/lib/systemimager/images/<imagename>)
-    my $config = init_si_config();
-    my $imaged = $config->default_image_dir;
-    croak "default_image_dir not defined\n" unless $imaged;
-    croak "$imaged: not a directory\n" unless -d $imaged;
-    croak "$imaged: not accessible\n" unless -x $imaged;
-    my $imagepath = $imaged."/".$img;
-    croak "$imagepath: not a directory\n" unless -d $imagepath;
-    croak "$imagepath: not accessible\n" unless -x $imagepath;
-
-    #
-    # Image info lines should be deleted once systeminstaller
-    # talks directly to ODA
-    #
-    my %image_info = ( "name"         => $img,
-		       #
-		       # EF: OS_Detect detects images now, use that!
-		       #
-                       # "distro"=>"$distroname-$distroversion",
-                       "architecture" => $arch,
-                       "path"         => $imagepath );
-    set_images(\%image_info,\%options,\@errors);
-
-    my $cmd = "./post_rpm_install $img $interface";
-
+    my $cmd = "post_binary_package_install ($img, $interface)";
     my $step_string = "";
     $step_string ="Step $step_number: " if $mode eq "install";
-
     oscar_log_subsection("$step_string"."Running: $cmd");
-    !system($cmd) or (carp($!), return undef);
-    oscar_log_subsection("$step_string"."Successfully ran: $cmd");
+    do_post_binary_package_install ($img, $interface);
 
-
-    # Have installed Client binary packeges & did not croak, so mark 
-    # packages.<pkg>installed # true. (best effort for now)
-    
-    oscar_log_subsection("Marking installed bit in ODA for client binary ".
-                         "packages");
-    
-    my @opkgs = list_selected_packages("all");
-    foreach my $opkg_ref (@opkgs) {
-        my $opkg = $$opkg_ref{package};
-        oscar_log_subsection("Set package: $opkg");
-        set_image_packages($img,$opkg,\%options,\@errors);
-    }
-    oscar_log_subsection("Done marking installed bits in ODA");
-
-    # /var/log/lastlog could be HUGE in some horked setup packages...
-    #
-    croak "image name not defined\n" unless $$vars{imgname};
-    my $lastlog = "/var/log/lastlog";
-    oscar_log_subsection( "Truncating ".$img.":".$lastlog );
-
-    my $imagelog = $imagepath.$lastlog;
-    truncate $imagelog, 0 if -s $imagelog;
-    oscar_log_subsection( "Truncated ".$img.":".$lastlog );
+    do_oda_post_install (%$vars, \%options);
 
     # All done -- remove the temp file that held all the binary packages
     # filenames
-    
+
     #unlink($save_text); # breaks createimage_window
 
     # Set the next button "Define OSCAR Clients..." available
