@@ -76,6 +76,8 @@ sub open
         return -1;
     }
 
+    oca_debug_section ("Sanity_Check::OPKG, Done!\n");
+
     return 1;
 }
 

@@ -48,7 +48,6 @@ use OSCAR::Database;
 use OSCAR::Package;
 use OSCAR::PackageSet qw (get_list_opkgs_in_package_set);
 use OSCAR::Utils qw (
-                    is_element_in_array
                     print_array
                     );
 use Carp;

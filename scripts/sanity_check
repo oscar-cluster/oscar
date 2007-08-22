@@ -11,12 +11,13 @@ use Data::Dumper;
 use OSCAR::OCA::Sanity_Check;
 use Carp;
 
+print "Sanity check of the system...\n";
+
 my $sanity = OSCAR::OCA::Sanity_Check::open();
 
-print "Sanity check of the system...\n";
 if( not defined($sanity) ) {
     carp ("Error: Sanity_Check open failed.");
-} else {
-    print( " Dump...\n" . Dumper($sanity) );
-}
+} # else {
+#    print( " Dump...\n" . Dumper($sanity) );
+#}
 
