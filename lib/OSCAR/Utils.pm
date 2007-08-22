@@ -64,16 +64,17 @@ sub print_hash {
 
 ###############################################################################
 # Check if an element is in an array
-# Parameter: 1: an array
-#            2: the element to look for
+# Parameter: 1: the element to look for
+#            2: an array
 # return:    1 if the element is in the array,
 #            0 else.
 ###############################################################################
 sub is_element_in_array {
-    my (@array, $element) = @_;
+    my ($element, @array) = @_;
+    die ("ERROR: undefined element") if !defined ($element);
 
     foreach my $i (@array) {
-        if ($i eq $element) {
+        if (defined ($i) && ($i eq $element)) {
             return 1;
         }
     }
