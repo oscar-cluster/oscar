@@ -84,7 +84,7 @@ sub get_local_package_set_list {
 ###############################################################################
 # Give the set of OPKGs present in a specific package set
 # Parameter: Package set name.
-# Return:    List of OPKGs
+# Return:    List of OPKGs (array)
 ###############################################################################
 sub get_list_opkgs_in_package_set {
     my ($packageSetName) = @_;

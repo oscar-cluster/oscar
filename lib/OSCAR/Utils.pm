@@ -93,5 +93,5 @@ sub print_array {
         print $i." ";
     }
     print "]\n";
-    print "Array: ".scalar(@my_array)." elements\n";
+    print "Array: ".scalar(@my_array)." element(s)\n";
 }
