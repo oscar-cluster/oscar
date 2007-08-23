@@ -27,14 +27,14 @@
         <dist>fc</dist>
         <dist>mdv</dist>
       </filters>
-      <pkg>sync_files</pkg>
+      <pkg>sync-files</pkg>
       <pkg>crontabs</pkg>
     </requires>
     <requires>
       <filters>
         <dist>suse</dist>
       </filters>
-      <pkg>sync_files</pkg>
+      <pkg>sync-files</pkg>
       <pkg>cron</pkg>
     </requires>
   </serverDeps>
