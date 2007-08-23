@@ -27,18 +27,23 @@ package OSCAR::ImageMgt;
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller";
+use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::PackagePath;
 use OSCAR::Database;
+use SystemImager::Server;
+use OSCAR::Opkg qw ( create_list_selected_opkgs );
 use SystemInstaller::Tk::Common;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 
 @EXPORT = qw(
+            delete_image
             do_setimage
             do_post_binary_package_install
             do_oda_post_install
+            get_image_default_settings
             );
 
 ################################################################################
@@ -139,4 +144,99 @@ sub do_oda_post_install {
     oscar_log_subsection("Truncated ".$img.":".$lastlog);
 
     oscar_log_subsection("Image build successfully");
+}
+
+###############################################################################
+# Get the fstab stuff based on the architecture and the type of disk          #
+# Input: arch, target architecture.                                           #
+#        disk_type, target disk type (e.g. IDE, SCSI).                        #
+# Return: file path the fstab stuff.                                          #
+###############################################################################
+sub get_disk_file {
+    my ($arch, $disk_type) = @_;
+
+    my $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
+    #ia64 needs special disk file because of /boot/efi
+    $diskfile .= ".$arch" if $arch eq "ia64";
+    $diskfile .= ".disk";
+
+    return $diskfile;
+}
+
+###############################################################################
+# Get the default settings for the creation of new images.                    #
+# !!WARNNING!! We do not set postinstall and title. The distro is also by     #
+# default the local distro.                                                   #
+# Input: none.                                                                #
+# Output: default settings (via a hash).                                      #
+###############################################################################
+sub get_image_default_settings {
+    my @df_lines = `df /`;
+    my $disk_type = "ide";
+    $disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
+
+    #Get the distro list
+    my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
+    my $arch = $master_os->{arch};
+
+    my $distro = $master_os->{compat_distro};
+    my $distro_ver = $master_os->{compat_distrover};
+
+    my $distro_pool = OSCAR::PackagePath::distro_repo_url("/");
+    $distro_pool =~ s/\ /,/g;
+    my $oscar_pool = OSCAR::PackagePath::oscar_repo_url("/");
+
+    oscar_log_subsection("Identified distro of clients: $distro $distro_ver");
+    oscar_log_subsection("Distro repo: $distro_pool");
+    oscar_log_subsection("OSCAR repo: $oscar_pool");
+
+    my $pkglist = "$ENV{OSCAR_HOME}/oscarsamples/$distro-$distro_ver-$arch.rpmlist";
+    oscar_log_subsection("Using binary list: $pkglist");
+
+    #Get a list of client RPMs that we want to install.
+    #Make a new file containing the names of all the RPMs to install
+
+    my $outfile = "/tmp/oscar-install-rpmlist.$$";
+    create_list_selected_opkgs ($outfile);
+    my @errors;
+    my $save_text = $outfile;
+    my $extraflags = "--filename=$outfile";
+    if (exists $ENV{OSCAR_VERBOSE}) {$extraflags .= " --verbose";}
+
+    my $diskfile = get_disk_file($arch, $disk_type);
+
+    my $config = init_si_config();
+
+    # Default settings
+    my %vars = (
+           imgpath => "/var/lib/systemimager/images",
+           imgname => "oscarimage",
+           arch => $arch,
+           pkgfile => $pkglist,
+           pkgpath => "$oscar_pool,$distro_pool",
+           diskfile => $diskfile,
+           ipmeth => "static",
+           piaction => "reboot",
+           distro => $distro,
+           extraflags => $extraflags
+           );
+
+    return %vars;
+}
+
+###############################################################################
+# Delete an existing image.                                                   #
+# Input: imgname, image name.                                                 #
+# Output: none.                                                               #
+###############################################################################
+sub delete_image {
+    my $imgname = shift;
+
+    my $config = init_si_config();
+    my $rsyncd_conf = $config->rsyncd_conf();
+    my $rsync_stub_dir = $config->rsync_stub_dir();
+
+    system("mksiimage -D --name $imgname");
+    SystemImager::Server->remove_image_stub($rsync_stub_dir, $imgname);
+    SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
 }

@@ -56,6 +56,7 @@ use OSCAR::ImageMgt qw (
                         do_setimage 
                         do_post_binary_package_install 
                         do_oda_post_install
+                        get_image_default_settings
                        );
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
 use AppConfig;
@@ -478,9 +479,6 @@ sub run_server_install {
 
 sub build_oscar_image {
     my ($window, $step_number) = @_;
-    my @df_lines = `df /`;
-    my $disk_type = "ide";
-    $disk_type = "scsi" if ( grep ( /\/dev\/sd/, ( @df_lines ) ) );
 
     if ($mode eq "install") {
        oscar_log_section("Running step $step_number of the OSCAR wizard: Build OSCAR client image");
@@ -488,66 +486,22 @@ sub build_oscar_image {
        oscar_log_section("OSCAR Manage Wizard: Build OSCAR client image");
     } 
 
-    # Get the distro list
-
-    my $master_os = distro_detect_or_die("/");
-    my $arch = $master_os->{arch};
-
-    my $distro = $master_os->{compat_distro};
-    my $distro_ver = $master_os->{compat_distrover};
-
-    # quick hack to get this running with own (master) distro
-    # adding foreign distros will need some more complicated hacking
-
-    my $distro_pool = &OSCAR::PackagePath::distro_repo_url("/");
-    $distro_pool =~ s/\ /,/g;
-    my $oscar_pool = &OSCAR::PackagePath::oscar_repo_url("/");
-
     my $step_string = "";
     $step_string = "Step $step_number: " if $mode eq "install";
 
-    oscar_log_subsection("$step_string"."Identified distro of clients: $distro $distro_ver");
+    # We get the default settings for images.
+    my %vars = get_image_default_settings ();
 
-    oscar_log_subsection("$step_string"."distro repo: $distro_pool");
-    oscar_log_subsection("$step_string"."oscar repo: $oscar_pool");
-
-    my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.rpmlist";
-    oscar_log_subsection("$step_string"."Using binary package list: $pkglist");
-    
-    # Get a list of the client binary packages that we want to install.  Make a
-    # new file containing the names of all the binary packages to install.
-
-    my $outfile = "/tmp/oscar-install-rpmlist.$$";
-    create_list_selected_opkgs ($outfile);
-    my @errors;
-    $save_text = $outfile;
-    my $extraflags = "--filename=$outfile ";
-    if (exists $ENV{OSCAR_VERBOSE}) {
-	$extraflags .= "--verbose ";
-    }
-    my $diskfile = "$oscarsamples_dir/$disk_type";
-    # ia64 needs special disk file because of /boot/efi
-    $diskfile .= ".$arch" if $arch eq "ia64";
-    $diskfile .= ".disk";
-
-    my %vars = (
-                title => "Build OSCAR Client Image",
-                imgname => "oscarimage",
-                noshow => {
-                           arch => 1,
-                           imgpath => 1,
-                           password => 1,
-                          },
-                pkgfile => $pkglist,
-                pkgpath => "$oscar_pool,$distro_pool",
-                diskfile => $diskfile,
-                ipmeth => "static",
-                mcast  => "off",
-                piaction => "reboot",
-                extraflags => $extraflags,
-                postinstall => \&postimagebuild,
-                step_number => $step_number,
-               );
+    # Update settings: ee set the last few points specific to the current
+    # situation.
+    $vars{title} = "Build OSCAR Client Image";
+    $vars{noshow} = {
+                     arch => 1,
+                     imgpath => 1,
+                     password => 1,
+                    };
+    $vars{postinstall} = \&postimagebuild;
+    $vars{step_number} = $step_number;
 
     createimage_window($window, %vars);
 }

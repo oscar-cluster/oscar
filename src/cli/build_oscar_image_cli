@@ -19,9 +19,11 @@ use OSCAR::Database;
 use SystemInstaller::Tk::Common;
 use SystemImager::Server;
 use OSCAR::ImageMgt qw (
+                        delete_image
                         do_setimage 
                         do_post_binary_package_install 
                         do_oda_post_install
+                        get_image_default_settings
                        );
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
 use Carp;
@@ -45,59 +47,12 @@ if ($help)
 	exit 0;
 }
 
-my @df_lines = `df /`;
-my $disk_type = "ide";
-$disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
+# We get the default settings for images.
+my %vars = get_image_default_settings ();
 
-#Get the distro list
-my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
-my $arch = $master_os->{arch};
-
-my $distro = $master_os->{compat_distro};
-my $distro_ver = $master_os->{compat_distrover};
-
-my $distro_pool = OSCAR::PackagePath::distro_repo_url("/");
-$distro_pool =~ s/\ /,/g;
-my $oscar_pool = OSCAR::PackagePath::oscar_repo_url("/");
-
-oscar_log_subsection("Identified distro of clients: $distro $distro_ver");
-oscar_log_subsection("Distro repo: $distro_pool");
-oscar_log_subsection("OSCAR repo: $oscar_pool");
-
-my $pkglist = "$ENV{OSCAR_HOME}/oscarsamples/$distro-$distro_ver-$arch.rpmlist";
-oscar_log_subsection("Using RPM list: $pkglist");
-
-#Get a list of client RPMs that we want to install.
-#Make a new file containing the names of all the RPMs to install
-
-my $outfile = "/tmp/oscar-install-rpmlist.$$";
-create_list_selected_opkgs ($outfile);
-my @errors;
-my $save_text = $outfile;
-my $extraflags = "--filename=$outfile";
-if (exists $ENV{OSCAR_VERBOSE}) {$extraflags .= " --verbose";}
-
-my $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
-#ia64 needs special disk file because of /boot/efi
-$diskfile .= ".$arch" if $arch eq "ia64";
-$diskfile .= ".disk";
-
-my $config = init_si_config();
-
-# Default settings
-my %vars = (
-           imgpath => $config->DEFAULT_IMAGE_DIR,
-           imgname => "oscarimage",
-           arch => (uname)[4],
-           pkgfile => $pkglist,
-           pkgpath => "$oscar_pool,$distro_pool",
-           diskfile => $diskfile,
-           ipmeth => "static",
-           piaction => "reboot",
-           postinstall => \&postimagebuild,
-           distro => "",
-           extraflags => $extraflags
-           );
+# Update settings: ee set the last few points specific to the current
+# situation.
+$vars{postinstall} = \&postimagebuild;
 
 #
 # Validate image name (code from systeminstaller-oscar, 
@@ -175,10 +130,6 @@ sub add_image
 {
 	our $file;
 
-	my $config = init_si_config();
-	my $rsyncd_conf = $config->rsyncd_conf();
-	my $rsync_stub_dir = $config->rsync_stub_dir();
-
 	if( imageexists("/etc/systemimager/rsyncd.conf", $vars{imgname}) )
 	{
 		if($file eq " ")
@@ -191,10 +142,7 @@ sub add_image
 				return undef;
 			}
 		}
-		
-		system("mksiimage -D --name $vars{imgname}");
-		SystemImager::Server->remove_image_stub($rsync_stub_dir, $vars{imgname});
-		SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+		delete_image ($vars{imgname});
 	}
 	oscar_log_subsection("Building Image...");
 	my $result = add_image_build();
@@ -210,9 +158,7 @@ sub add_image
 		}
 	} else {
 		oscar_log_subsection("Failed building image \"$vars{imgname}\"");
-		system("mksiimage -D --name $vars{imgname}");
-		SystemImager::Server->remove_image_stub($rsync_stub_dir, $vars{imgname});
-		SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+        delete_image ($vars{imgname});
 	}
 	return $result;
 }
