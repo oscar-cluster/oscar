@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/env perl 
 #
 # Copyright (c) 2007 Oak Ridge National Laboratory
 #               Geoffroy Vallee <valleegr@ornl.gov>
@@ -20,34 +20,82 @@
 #
 
 use strict;
-use lib "$ENV{PWD}/lib";
+use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::osm;
+use Data::Dumper;
+use OSCAR::Utils qw (print_array);
+use OSCAR::ImageMgt qw (
+                        delete_image
+                        get_image_default_settings
+                       );
+use SystemInstaller::Tk::Common;
 use Carp;
 
 my $xml_file_path = shift;
 
 my $verbose = $ENV{OSCAR_VERBOSE};
+# We currently force the verbose mode
+$verbose = 1;
+
+# Need the output immediately
+$| = 1;
 
 # Step 1: We use OSM to parse the XML file and get a hash
-print "Parsing the package set..." if $verbose;
-my %config = OSCAR::osm::add_set ($xml_file_path);
+print "Parsing the package set...\n" if $verbose;
+my $res = OSCAR::psm::select_set ($xml_file_path);
+
+my %config = OSCAR::psm::package_hash();
+print Dumper %config;
+my @opkg_to_install = OSCAR::psm::show_list();
+print "The package sets includes: ";
+print_array (@opkg_to_install);
 
 # Step 2: We create a basic image.
 # We currently use the script 'build_oscar_image_cli'. This is a limitation
 # because it only creates an image based on the local Linux distribution.
-print "Creating the basic golden image..." if $verbose;
-my $cmd = "build_oscar_image";
-die ("ERROR: Impossible to execute $cmd") if (system ($cmd));
+print "Creating the basic golden image...\n" if $verbose;
+# We get the default settings for images.
+my %vars = get_image_default_settings ();
+$vars{imgname} = "test_osm3";
+$vars{postinstall} = \&postimagebuild;
+if ( imageexists("/etc/systemimager/rsyncd.conf", $vars{imgname}) ) {
+    print "\"$vars{imgname}\" exists. We delete the previous image\n";
+    delete_image ($vars{imgname});
+}
+
+my $cmd = "mksiimage -A --name $vars{imgname} " .
+        "--location $vars{pkgpath} " .
+        "--filename $vars{pkgfile} " .
+        "--arch $vars{arch} " .
+        "--path $vars{imgpath}/$vars{imgname}" .
+        " $vars{extraflags} --verbose";
+
+print "Executing command: $cmd\n";
+#system ($cmd);
 
 # Maybe we have to update the file /etc/opm.conf for the image.
-
 # Step 3: We use the hash from OSM to update the database.
-print "Updating the database..." if $verbose;
+print "Updating the database...\n" if $verbose;
 OSCAR::osm::convert_hash_to_oda (%config);
 
 # Step 4: We call opm to update the image.
-print "Executing OPM..." if $verbose;
-$cmd = $ENV{OSCAR_HOME}."/src/opm/opm.pm";
-die ("ERROR: Impossible to execute $cmd") if (system ($cmd));
+print "Executing OPM...\n" if $verbose;
+my $cmd = $ENV{OSCAR_HOME}."/src/opm/opm.pm";
+die ("ERROR: Impossible to execute $cmd") if (!system ($cmd));
 
-1;
+sub postimagebuild {
+    my ($vars) = @_;
+    my $img = $$vars{imgname};
+    my $interface = "eth0";
+    my %options;
+
+    print ("Setting up image in the database\n");
+    do_setimage ($img, \%options);
+
+    my $cmd = "post_binary_package_install ($img, $interface)";
+    print ("Running: $cmd");
+    do_post_binary_package_install ($img, $interface);
+
+    do_oda_post_install (%$vars, \%options);
+}
+

@@ -25,15 +25,20 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use lib ".", "$ENV{OSCAR_HOME}/lib";
 our @EXPORT = qw(
-	add_set
-	add_opkg
-	result);
+    add_set
+    add_opkg
+    convert_hash_to_oda
+    result);
 
 use OSCAR::psm;
 use OSCAR::msm;
+use OSCAR::Database qw (update_node_package_status_hash);
+use OSCAR::Utils qw (print_array);
 use Data::Dumper;
 
 our %data;
+
+my $verbose = $ENV{OSCAR_VERBOSE};
 
 #########################################################################
 # Subroutine : add_set                                                  #
@@ -65,6 +70,10 @@ sub add_set {
 		push(@{$data{$machine}{sets}}, $pkgset);
 	}
 	
+    if ($verbose) {
+        print "Number of elements in the hash: " . scalar (%data) . "\n";
+        Dump (%data);
+    }
 	return 'OK';
 }
 
@@ -166,6 +175,43 @@ sub setup_hash {
 		$data{$machine} = (sets => [], packages => []);
 	}
 
+}
+
+################################################################################
+# Subroutine: convert_hash_to_oda                                              #
+# This module is for converting the hash that comes out of OSM into database   #
+# form for OPM.                                                                #
+# TODO -  Use version restrictions stored in the hash                          #
+#           There are also other pieces of info not used (distro, arch, lists  #
+#               of packages and sets selected). These can be saved or          #
+#               discarded.                                                     #
+# Parameter: hash representing the mackage/machine set.                        #
+# Return   : None.                                                             #
+################################################################################
+sub convert_hash_to_oda {
+#    my %data = %{$_[0]};
+    my %data = shift;
+    my @opkg_to_install = OSCAR::psm::show_list();
+    print "The package sets includes: ";
+    print_array (@opkg_to_install);
+
+    # Go through each node in the hash
+    for my $nodename (keys(%data)) {
+
+        # Go through each package for the node
+         foreach my $package ($data{$nodename}{package}) {
+             print "Node name = $nodename\n";
+            print "Package name = $package\n";
+ 
+             # Set the package's requested values to 'finished'
+             my %options;
+             my @errors;
+             my %field_values;
+             $field_values{requested} = 'finished';
+             update_node_package_status_hash(\%options, $nodename, $package, 
+                     \%field_values, \@errors);
+         }
+    }
 }
 
 1;
