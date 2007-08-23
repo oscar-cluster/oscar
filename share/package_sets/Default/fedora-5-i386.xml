@@ -21,7 +21,7 @@
         <opkg>sc3</opkg>
         <opkg>sis</opkg>
         <opkg>switcher</opkg>
-        <opkg>sync_files</opkg>
+        <opkg>sync-files</opkg>
         <opkg>yume</opkg>
     </packages>
 </package_set>

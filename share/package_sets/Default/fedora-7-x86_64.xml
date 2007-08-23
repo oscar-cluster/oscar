@@ -27,7 +27,7 @@
         <opkg>sge</opkg>
         <opkg>sis</opkg>
         <opkg>switcher</opkg>
-        <opkg>sync_files</opkg>
+        <opkg>sync-files</opkg>
         <opkg>torque</opkg>
         <opkg>yume</opkg>
     </packages>
