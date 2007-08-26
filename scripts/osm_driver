@@ -64,10 +64,22 @@ print_array (@opkgs_to_install);
 # Note that we need to have the packages because we need to get info for each
 # of them in order to update the database.
 OSCAR::opd2::init_cache ();
-my @opd2_list_opkgs = OSCAR::opd2::get_available_opkgs ();
-# We check if the OPKGs are available or not.
-my @unavailable_opkgs = ();
+# We check first if the OPKGs are included into OSCAR
+my @included_opkgs = OSCAR::opd2::get_included_opkgs ();
+my @notincluded_opkgs = ();
 foreach my $opkg (@opkgs_to_install) {
+    if (!is_element_in_array ($opkg, @included_opkgs) ) {
+        push (@notincluded_opkgs, $opkg);
+    }
+}
+if ($verbose && scalar (@notincluded_opkgs)) {
+    print "The following OPKGs are not directly shipped by OSCAR:\n";
+    print_array (@notincluded_opkgs);
+}
+my @opd2_list_opkgs = OSCAR::opd2::get_available_opkgs ();
+# We check now if the OPKGs are available from an OPD repo.
+my @unavailable_opkgs = ();
+foreach my $opkg (@notincluded_opkgs) {
     if (!is_element_in_array ($opkg, @opd2_list_opkgs) ) {
         push (@unavailable_opkgs, $opkg);
     }
