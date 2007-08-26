@@ -21,6 +21,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use Term::ReadLine;
 use OSCAR::opd2 qw(
                 scan_repository
+                init_cache
                 list_available_opkgs
                 list_available_repositories
                 flush_cache
@@ -157,6 +158,8 @@ R can be a single integer value, a range or an enumeration of all that :
 # First of all, enforce that the user running this script is 'root'
 # This is necessary for access to /var/cache/oscar/downloads
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
+
+init_cache();
 
 main_menu();
 

@@ -30,6 +30,7 @@ use base qw(Exporter);
 @EXPORT = qw (
             flush_cache
             get_available_repositories
+            init_cache
             list_available_opkgs
             list_available_repositories
             scan_repository
@@ -80,8 +81,8 @@ sub init_cachedir {
         print "The cache directory is not ready, ".
             "please wait for its initialization...\n"
             if $verbose > 0;
-    mkdir ($cachedir, 0644);
-    print "Initialization done." if $verbose > 0;
+        mkdir ($cachedir, 0644);
+        print "Cache directory created.\n" if $verbose > 0;
     }
 }
 
@@ -99,6 +100,7 @@ sub init_cachefiles {
             carp ("Impossible to initialize cache ($opkg_repo_cache)");
         }
     }
+    print "Initialization done.\n" if $verbose > 0;
     return 0;
 }
 
@@ -272,6 +274,17 @@ sub parse_repo_description {
 ####################
 # PUBLIC FUNCTIONS #
 ####################
+
+###############################################################################
+# Initialize the OPD2 cache. Note that if the cache already has been          #
+# initialized and if you call again the function, the cache is NOT erased.    #
+# Input: None.                                                                #
+# Return: None.                                                               #
+###############################################################################
+sub init_cache {
+    init_cachedir ();
+    init_cachefiles ();
+}
 
 # This function scans a specific repository to get the list of available OPKGs
 # @param: repository URL
