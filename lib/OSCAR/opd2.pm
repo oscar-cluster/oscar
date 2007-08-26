@@ -31,9 +31,11 @@ use base qw(Exporter);
             flush_cache
             get_available_repositories
             get_available_opkgs
+            get_included_opkgs
             init_cache
             list_available_opkgs
             list_available_repositories
+            list_included_opkgs
             scan_repository
              );
 
@@ -43,6 +45,9 @@ my $opkg_list_cache = $cachedir . "opkgs.txt";
 our @opkg_list;
 
 my $opd2_lockfile = "/tmp/opd2.pid";
+my $repo_url = "http://oscar.gforge.inria.fr/";
+my $debian_url = $repo_url . "debian/dists/stable/oscar/binary-amd64/Packages";
+
 
 my $verbose = 1;
 our $xml_data;
@@ -254,9 +259,11 @@ sub add_repo_to_cache {
     return 0;
 }
 
-# Parse a opd_repo.xml file
-# @param: none
-# @return: none
+###############################################################################
+# Parse a opd_repo.xml file.                                                  #
+# @param: none.                                                               #
+# @return: none.                                                              #
+###############################################################################
 sub parse_repo_description {
     my $data_file = "/tmp/opd_repo.xml";
 
@@ -271,6 +278,45 @@ sub parse_repo_description {
     add_opkg_to_cache ();
 }
 
+sub download_debian_package_list {
+    my $file = "$cachedir/Packages";
+    # If the file has been downloaded before, we delete it.
+    if (-f "$file") {
+        unlink ("$file");
+    }
+    my $cmd = "cd $cachedir && wget $debian_url";
+    print "Executing: $cmd\n" if $verbose;
+    if (system($cmd)) {
+        die "ERROR: Impossible to get the list of available packages " .
+            "from OSCAR repository $repo_url";
+    }
+}
+
+
+###############################################################################
+# Parse the Package file downloaded from a Debian OSCAR repo in order to get  #
+# the list of available OPKGs.                                                #
+###############################################################################
+sub parse_debian_package_file {
+    my @list = ();
+    my $file = "$cachedir/Packages";
+
+    if (!-f "$file") {
+        download_debian_package_list ();
+    }
+
+    open (FILE, "$file") or die "ERROR: Impossible to open $file";
+    my @file_content = <FILE>;
+    close (FILE);
+
+    foreach my $line (@file_content) {
+        if ($line =~ /^Package: opkg-(.*)-server/) {
+            push (@list, $1);
+        }
+    }
+
+    return (@list);
+}
 
 ####################
 # PUBLIC FUNCTIONS #
@@ -382,6 +428,48 @@ sub list_available_repositories {
     print_array (@list);
 }
 
+###############################################################################
+# Get the list of OPKGs available from the official OSCAR repository (e.g.    #
+# via the INRIA forge).                                                       #
+# Input: distro, identifier of the Linux distro for which we want the list of #
+#                of available OPKGs. This should be the compat_distro id from #
+#                OS_Detect.                                                   #
+# Return: array with the list of available OPKGs.                             #
+###############################################################################
+sub get_included_opkgs {
+    my $distro = shift;
+    my @list = ();
+    
+    if ($distro eq "debian") {
+        @list = parse_debian_package_file ();
+    } else {
+        carp ("Sorry, we cannot yet get the list of available OPKGs from the ".
+              "official OSCAR repository for the Linux distribution $distro.".
+              "\nThis is most certainly because this distribution is not yet ".
+              "supported.\n");
+    }
+
+    return @list;
+}
+
+###############################################################################
+# Display the list of available OPKGs from the official OSCAR repository      #
+# (e.g. via the INRIA forge).                                                 #
+# Input: distro, identifier of the Linux distro for which we want the list of #
+#                of available OPKGs. This should be the compat_distro id from #
+#                OS_Detect.                                                   #
+# Return: None.                                                               #
+###############################################################################
+sub list_included_opkgs {
+    my $distro = shift;
+    my @list = get_included_opkgs ($distro);
+    print_array (@list);
+}
+
+###############################################################################
+# Flush the OPD2 cache. All files and directories related to the OPD2 cache   #
+# are deleted.                                                                #
+###############################################################################
 sub flush_cache {
     print "Flushing cache...\n";
     unlink ("$opkg_repo_cache");

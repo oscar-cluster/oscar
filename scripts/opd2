@@ -20,11 +20,13 @@ use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use Term::ReadLine;
 use OSCAR::opd2 qw(
-                scan_repository
-                init_cache
-                list_available_opkgs
-                list_available_repositories
-                flush_cache
+                    flush_cache
+                    get_included_opkgs
+                    init_cache
+                    list_available_opkgs
+                    list_available_repositories
+                    list_included_opkgs
+                    scan_repository
                   );
 
 my $repository_listing;
@@ -110,6 +112,10 @@ sub main_menu {
     elsif (/^l/i || /^li/i || /^list/i || /^ls/i ) {
         print("\n");
         list_available_opkgs();
+        print("\n");
+        print "OPKGs available from the official OSCAR repository:\n";
+        print "... for debian:\n";
+        list_included_opkgs ("debian");
         print("\n");
     }
 
