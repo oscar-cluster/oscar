@@ -21,11 +21,17 @@
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::osm;
+use OSCAR::osm qw (
+                    osm_array2hash
+                    osm_update_oda
+                  );
 use Data::Dumper;
 use OSCAR::Utils qw (print_array);
 use OSCAR::ImageMgt qw (
                         delete_image
+                        do_oda_post_install
+                        do_post_binary_package_install
+                        do_setimage
                         get_image_default_settings
                        );
 use SystemInstaller::Tk::Common;
@@ -46,9 +52,10 @@ my $res = OSCAR::psm::select_set ($xml_file_path);
 
 my %config = OSCAR::psm::package_hash();
 print Dumper %config;
-my @opkg_to_install = OSCAR::psm::show_list();
+my @opkgs_to_install = OSCAR::psm::show_list();
 print "The package sets includes: ";
-print_array (@opkg_to_install);
+print_array (@opkgs_to_install);
+
 
 # Step 2: We create a basic image.
 # We currently use the script 'build_oscar_image_cli'. This is a limitation
@@ -57,7 +64,6 @@ print "Creating the basic golden image...\n" if $verbose;
 # We get the default settings for images.
 my %vars = get_image_default_settings ();
 $vars{imgname} = "test_osm3";
-$vars{postinstall} = \&postimagebuild;
 if ( imageexists("/etc/systemimager/rsyncd.conf", $vars{imgname}) ) {
     print "\"$vars{imgname}\" exists. We delete the previous image\n";
     delete_image ($vars{imgname});
@@ -71,12 +77,17 @@ my $cmd = "mksiimage -A --name $vars{imgname} " .
         " $vars{extraflags} --verbose";
 
 print "Executing command: $cmd\n";
-#system ($cmd);
+system ($cmd);
+
+postimagebuild (\%vars);
 
 # Maybe we have to update the file /etc/opm.conf for the image.
+
 # Step 3: We use the hash from OSM to update the database.
 print "Updating the database...\n" if $verbose;
-OSCAR::osm::convert_hash_to_oda (%config);
+my %oda_data = osm_array2hash ("INSTALL", @opkgs_to_install);
+osm_update_oda ("Image_Package_Status", %oda_data);
+die ("We stop here.");
 
 # Step 4: We call opm to update the image.
 print "Executing OPM...\n" if $verbose;
