@@ -30,6 +30,7 @@ use base qw(Exporter);
 @EXPORT = qw (
             flush_cache
             get_available_repositories
+            get_available_opkgs
             init_cache
             list_available_opkgs
             list_available_repositories
@@ -326,22 +327,40 @@ sub scan_repository {
     opd2_unlock ();
 }
 
-# List the list of available OPKG (using the cache)
-sub list_available_opkgs {
-    # We go through the cache and display the list of OPKG
+###############################################################################
+# List the list of available OPKG (using the cache).                          #
+# Input: None.                                                                #
+# Return: array with the list of available OPKGs.                             #
+###############################################################################
+sub get_available_opkgs {
+    my @list = ();
+
+    # We go through the cache and get the list of OPKG
     open (FILE, $opkg_list_cache)
-        or die "Impossible to add the list of OPKGs to the cache";
+        or die "Impossible to open the OPKGs cache";
     foreach my $pkg (<FILE>) {
-        print $pkg;
+        push (@list, $pkg);
     }
     close (FILE);
+
+    return (@list);
 }
 
-##########################################
-# Get the list of available repositories #
-# Parameter: none.                       #
-# Return:    array of repositories URL.  #
-##########################################
+###############################################################################
+# Display the list of available OPKGs.                                        #
+# Input: None.                                                                #
+# Return: None.                                                               #
+###############################################################################
+sub list_available_opkgs {
+    my @list = get_available_opkgs ();
+    print_array (@list);
+}
+
+###############################################################################
+# Get the list of available repositories.                                     #
+# Parameter: none.                                                            #
+# Return:    array of repositories URL.                                       #
+###############################################################################
 sub get_available_repositories {
     my @list = ();
     # We go through the cache and display the list of OPKG
@@ -353,11 +372,11 @@ sub get_available_repositories {
     return @list;
 }
 
-#####################################################
-# Print the list of repositories available via OPD2 #
-# Parameter: None.                                  #
-# Return:    None.                                  #
-#####################################################
+###############################################################################
+# Print the list of repositories available via OPD2.                          #
+# Parameter: None.                                                            #
+# Return:    None.                                                            #
+###############################################################################
 sub list_available_repositories {
     my @list = get_available_repositories();
     print_array (@list);
