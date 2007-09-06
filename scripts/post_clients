@@ -67,12 +67,24 @@ if($return) {
 
 exit($return);
 
+################################################################################
+# Copy the /etc/hosts file into _all_ images. Note that we check if the image  #
+# is actually valid.
+# Input: None.                                                                 #
+# Ouput: 1 if success, undef else.                                             #
+################################################################################
 sub push_hosts {
     my @images = list_image();
     foreach my $image (@images) {
         my $dir = $image->location;
-        copy("/etc/hosts","$dir/etc/hosts") or (carp "Can't copy /etc/hosts to $dir",
-                                                return undef);
+        if (! -d $dir) {
+            carp ("WARNING!! It seems that the image directory does not exist.".
+                  "The SIS database and the file system may be desynchronized.".
+                  "We may run the Sanity Check framework for more details.\n");
+        } else {
+            copy("/etc/hosts","$dir/etc/hosts") 
+                or (carp "Can't copy /etc/hosts to $dir", return undef);
+        }
     }
     return 1;
 }
