@@ -31,9 +31,14 @@ use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::PackagePath;
 use OSCAR::Database;
+use OSCAR::Utils qw (
+                    is_element_in_array
+                    print_array 
+                    );
 use SystemImager::Server;
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
 use SystemInstaller::Tk::Common;
+use Data::Dumper;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
@@ -44,6 +49,7 @@ use Carp;
             do_post_binary_package_install
             do_oda_post_install
             get_image_default_settings
+            get_list_corrupted_images
             );
 
 ################################################################################
@@ -163,14 +169,16 @@ sub get_disk_file {
     return $diskfile;
 }
 
-###############################################################################
-# Get the default settings for the creation of new images.                    #
-# !!WARNNING!! We do not set postinstall and title. The distro is also by     #
-# default the local distro.                                                   #
-# Input: none.                                                                #
-# Output: default settings (via a hash).                                      #
-###############################################################################
+################################################################################
+# Get the default settings for the creation of new images.                     #
+# !!WARNNING!! We do not set postinstall and title. The distro is also by      #
+# default the local distro.                                                    #
+# Input: none.                                                                 #
+# Output: default settings (via a hash).                                       #
+# TODO: fix the problem with the distro parameter.                             #
+################################################################################
 sub get_image_default_settings {
+    my $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";
     my @df_lines = `df /`;
     my $disk_type = "ide";
     $disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
@@ -190,17 +198,19 @@ sub get_image_default_settings {
     oscar_log_subsection("Distro repo: $distro_pool");
     oscar_log_subsection("OSCAR repo: $oscar_pool");
 
-    my $pkglist = "$ENV{OSCAR_HOME}/oscarsamples/$distro-$distro_ver-$arch.rpmlist";
+    my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.rpmlist";
     oscar_log_subsection("Using binary list: $pkglist");
 
-    #Get a list of client RPMs that we want to install.
-    #Make a new file containing the names of all the RPMs to install
+    # Get a list of client RPMs that we want to install.
+    # Make a new file containing the names of all the RPMs to install
 
     my $outfile = "/tmp/oscar-install-rpmlist.$$";
     create_list_selected_opkgs ($outfile);
     my @errors;
     my $save_text = $outfile;
     my $extraflags = "--filename=$outfile";
+    # WARNING!! We deactivate the OPKG management via SystemInstaller
+    $extraflags = "";
     if (exists $ENV{OSCAR_VERBOSE}) {$extraflags .= " --verbose";}
 
     my $diskfile = get_disk_file($arch, $disk_type);
@@ -217,18 +227,19 @@ sub get_image_default_settings {
            diskfile => $diskfile,
            ipmeth => "static",
            piaction => "reboot",
-           distro => $distro,
+#           distro => $distro,
            extraflags => $extraflags
            );
 
     return %vars;
 }
 
-###############################################################################
-# Delete an existing image.                                                   #
-# Input: imgname, image name.                                                 #
-# Output: none.                                                               #
-###############################################################################
+################################################################################
+# Delete an existing image.                                                    #
+# Input: imgname, image name.                                                  #
+# Output: none.                                                                #
+# TODO: We need to update the OSCAR database when deleting an image.           #
+################################################################################
 sub delete_image {
     my $imgname = shift;
 
@@ -239,4 +250,127 @@ sub delete_image {
     system("mksiimage -D --name $imgname");
     SystemImager::Server->remove_image_stub($rsync_stub_dir, $imgname);
     SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+}
+
+################################################################################
+# Get the list of corrupted images. An image is concidered corrupted when info #
+# from the OSCAR database, the SIS database and the file system are not        #
+# synchronized.                                                                #
+# Input: None.                                                                 #
+# Output: an array of hash; each element of the array (hash) has the following #
+#         format ( 'name' => <image_name>,                                     #
+#                  'oda' => "ok"|"missing",                                    #
+#                  'sis' => "ok"|"missing",                                    #
+#                  'fs' => "ok"|"missing" ).                                   #
+################################################################################
+sub get_list_corrupted_images {
+    my $sis_cmd = "/usr/bin/si_lsimage";
+    my @sis_images = `$sis_cmd`;
+    my @result;
+
+    #We do some cleaning...
+    # We remove the three useless lines of the result
+    for (my $i=0; $i<3; $i++) {
+        shift (@sis_images);
+    }
+    # We also remove the last line which is an empty line
+    pop (@sis_images);
+    # Then we remove the return code at the end of each array element
+    # We also remove the 2 spaces before each element
+    foreach my $i (@sis_images) {
+        chomp $i;
+        $i = substr ($i, 2, length ($i));
+    }
+
+    # The array is now clean, we can print it
+    print "List of images in the SIS database: ";
+    print_array (@sis_images);
+
+    my @tables = ("Images");
+    my @oda_images = ();
+    my @res = ();
+    my $cmd = "SELECT Images.name FROM Images";
+    if ( OSCAR::Database::single_dec_locked( $cmd,
+                                             "READ",
+                                             \@tables,
+                                             \@res,
+                                             undef) ) {
+    # The ODA query returns a hash which is very unconvenient
+    # We transform the hash into a simple array
+    foreach my $elt (@res) {
+        # It seems that we always have an empty entry, is it normal?
+        if ($elt->{name} ne "") {
+            push (@oda_images, $elt->{name});
+        }
+    }
+    print "List of images in ODA: ";
+    print_array (@oda_images);
+    } else {
+        die ("ERROR: Cannot query ODA\n");
+    }
+
+    # We get the list of images from the file system
+    my $sis_image_dir = "/var/lib/systemimager/images";
+    my @fs_images = ();
+    die ("ERROR: The image directory does not exist ".
+         "($sis_image_dir)") if ( ! -d $sis_image_dir );
+    opendir (DIRHANDLER, "$sis_image_dir")
+        or die ("ERROR: Impossible to open $sis_image_dir");
+    foreach my $dir (sort readdir(DIRHANDLER)) {
+        if ($dir ne "."
+            && $dir ne ".."
+            && $dir ne "ACHTUNG"
+            && $dir ne "DO_NOT_TOUCH_THESE_DIRECTORIES"
+            && $dir ne "CUIDADO"
+            && $dir ne "README") {
+            push (@fs_images, $dir);
+        }
+    }
+    print "List of images in file system: ";
+    print_array (@fs_images);
+
+    # We now compare the lists of images
+    foreach my $image_name (@sis_images) {
+        my %entry = ('name' => $image_name,
+                     'sis' => "ok",
+                     'oda' => "ok",
+                     'fs' => "ok");
+        if (!is_element_in_array($image_name, @oda_images)) {
+            $entry{'oda'} = "missing";
+        }
+        if (!is_element_in_array($image_name, @fs_images)) {
+            $entry{'fs'} = "missing";
+        }
+        push (@result, \%entry);
+    }
+
+    foreach my $image_name (@oda_images) {
+        my %entry = ('name' => $image_name,
+                     'sis' => "ok",
+                     'oda' => "ok",
+                     'fs' => "ok");
+        if (!is_element_in_array($image_name, @sis_images)) {
+            $entry{'sis'} = "missing";
+        }
+        if (!is_element_in_array($image_name, @fs_images)) {
+            $entry{'fs'} = "missing";
+        }
+        push (@result, \%entry);
+    }
+
+    foreach my $image_name (@fs_images) {
+        my %entry = ('name' => $image_name,
+                     'sis' => "ok",
+                     'oda' => "ok",
+                     'fs' => "ok");
+        if (!is_element_in_array($image_name, @sis_images)) {
+            $entry{'sis'} = "missing";
+        }
+        if (!is_element_in_array($image_name, @oda_images)) {
+            $entry{'oda'} = "missing";
+        }
+        push (@result, \%entry);
+    }
+
+    return (@result);
 }

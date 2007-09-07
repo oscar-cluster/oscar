@@ -1,0 +1,50 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2007 Oak Ridge National Laboratory
+#               Geoffroy Vallee <valleegr@ornl.gov>
+#               All rights reserved
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# This script tries to clean-up the OSCAR database, the SIS database and the 
+# file system when those have non synchronnized images.
+#
+# Input: None.
+# Return: 1 if success, 0 or die else.
+#
+# $Id: oscar_image_cleanup 5134 2006-07-12 05:51:29Z valleegr $
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+
+use OSCAR::ImageMgt qw (
+                        delete_image
+                        get_list_corrupted_images 
+                       );
+
+my @corrupted_images = get_list_corrupted_images();
+
+foreach my $corrupted_image (@corrupted_images) {
+    print "=== Image cleanup ===\n";
+    print "Image name: $corrupted_image->{'name'}\n";
+    print "ODA Status: $corrupted_image->{'oda'}\n";
+    print "SIS Status: $corrupted_image->{'sis'}\n";
+    print "FS Status: $corrupted_image->{'fs'}\n";
+    if ($corrupted_image->{'oda'} eq "missing" &&
+        $corrupted_image->{'sis'} eq "ok" &&
+        $corrupted_image->{'fs'} eq "ok") {
+        print ("Deleting the SIS image...\n");
+        delete_image ($corrupted_image->{'name'});
+        print ("Image Deleted.\n");
+    } elsif ($corrupted_image->{'oda'} eq "missing" &&
+             $corrupted_image->{'sis'} eq "ok" &&
+             $corrupted_image->{'fs'} eq "missing") {
+        system("si_rmimage -force $corrupted_image->{'name'}");    
+    }else {
+        print "Sorry we do not know yet how to deal with this situation\n";
+    }
+    print "=====================\n\n";
+}
