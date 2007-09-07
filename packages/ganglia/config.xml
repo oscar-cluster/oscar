@@ -1,91 +1,54 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
+<oscar>
   <name>Ganglia</name>
-
-  <version>
-    <major>3</major>
-    <minor>0</minor>
-    <subversion>3</subversion>
-    <release>4</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>included</class>
-
   <summary>distributed monitoring and execution system</summary>
+  <description>Ganglia is a scalable distributed monitoring system for high-performance computing systems such as clusters and Grids.</description>
   <license>BSD</license>
   <group>Application/System</group>
   <uri>http://ganglia.sourceforge.net</uri>
-
-  <maintainer>
-    <name>Matt Massie</name>
-    <email>massie@cs.berkeley.edu</email>
-  </maintainer>
-
-  <packager>
-    <name>Bernard Li</name>
-    <email>bli@bcgsc.ca</email>
-  </packager>
-
-  <description>Ganglia is a scalable distributed monitoring system for high-performance computing systems such as clusters and Grids.</description>
-
-  <binary-package-list>
-      <pkg>ganglia-gmond</pkg>
-  </binary-package-list>  
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-      </filter>
-
+  <authors>
+    <author cat="upstream">
+      <name>Matt Massie</name>
+      <email>massie@cs.berkeley.edu</email>
+    </author>
+    <author cat="maintainer">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <filters/>
       <pkg>ganglia-gmetad</pkg>
       <pkg>ganglia-web</pkg>
       <pkg>rrdtool</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>fc</name>
-        </distribution>
-      </filter>
-  
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>rhel</name>
-          <version>4</version>
-        </distribution>
-      </filter>
-
+    </requires>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>rhel</dist>
+      </filters>
       <pkg>php-gd</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-      <filter>
-        <group>oscar_server</group>
-        <distribution>
-          <name>suse</name>
-        </distribution>
-      </filter>
-
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
       <pkg>php4-gd</pkg>
-  </binary-package-list>
-
-  <servicelist>
-      <service>gmond</service>
-  </servicelist>
-
-  <servicelist>
-      <filter>
-        <group>oscar_server</group>
-      </filter>
-
-      <service>gmetad</service>
-  </servicelist>
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+  <apiDeps>
+    <requires>
+      <pkg>ganglia-gmond</pkg>
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1:3.0.4-1">
+      <changelogEntry authorName="Erich Focht" date="2007-09-07T15:02:13+02:00">
+        <item>converted package to opkgc format</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
