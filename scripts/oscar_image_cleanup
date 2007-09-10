@@ -16,6 +16,9 @@
 #
 # $Id: oscar_image_cleanup 5134 2006-07-12 05:51:29Z valleegr $
 #
+# TODO: automatically get the path for image from the SIS configuration and not
+# use the hardcoded path.
+#
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -42,7 +45,13 @@ foreach my $corrupted_image (@corrupted_images) {
     } elsif ($corrupted_image->{'oda'} eq "missing" &&
              $corrupted_image->{'sis'} eq "ok" &&
              $corrupted_image->{'fs'} eq "missing") {
-        system("si_rmimage -force $corrupted_image->{'name'}");    
+        system("si_rmimage -force $corrupted_image->{'name'}");
+    } elsif ($corrupted_image->{'oda'} eq "missing" &&
+             $corrupted_image->{'sis'} eq "missing" &&
+             $corrupted_image->{'fs'} eq "ok") {
+        my $image_path = "/var/lib/systemimager/images/" .
+                         $corrupted_image->{'name'};
+        system("rm -rf $image_path");
     }else {
         print "Sorry we do not know yet how to deal with this situation\n";
     }
