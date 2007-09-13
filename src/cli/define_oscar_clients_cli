@@ -15,6 +15,10 @@ use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller";
 use OSCAR::Logger;
 use OSCAR::Network;
 use OSCAR::Database;
+use OSCAR::Network qw (
+                       get_network_config
+                      );
+use OSCAR::ClientMgt;
 use SystemInstaller::Tk::Common;
 use SIS::Image;
 use SIS::DB;
@@ -48,45 +52,13 @@ if ($help)
 }
 
 oscar_log_section("Define OSCAR Clients");
-
-# Parse the IP address
-my ($ip, $broadcast, $netmask) = interface2ip($interface);
-my ($a, $b, $c, $d) = split(/\./, $ip);
-if ($d == 1)
-{
-	$d++;
-}
-else
-{
-	$d = 1;
-}
-my $startip = "$a.$b.$c.$d";
-
-# Most of this code is borrowed from scripts/oscar_wizard
-# It has been changed slightly for the command line
-
-my $gw;
-my @tables = qw( nodes nics networks );
-my @results;
-my $node = "oscar_server";
 my (%options, @errors);
-get_nics_info_with_node($node, \@results, \%options, \@errors);
-my $ref = pop @results;
-my $nic_name = $$ref{name};
 
-
-if (@results == 1)
-{
-	get_gateway($node, $interface, \@results, \%options, \@errors);
-	my $gw_ref = pop @results if @results;
-	$gw = $$gw_ref{gateway};
-}
-$gw ||= $ip;
-
-my $hostname = (uname)[1];
-my ($shorthostname) = split(/\./,$hostname, 2);
-my $dnsdomainname = `dnsdomainname`;
-chomp($dnsdomainname);
+my @network_config = get_network_config ($interface, \%options, \@errors);
+my $netmask = $network_config[0];
+my $dnsdomainname = $network_config[1];
+my $gw = $network_config[2];
+my $startip = $network_config[3];
 
 # If the domainname is blank, stick in a default value
 
@@ -309,41 +281,15 @@ sub addclients
 
 sub postaddclients
 {
-	chdir("$ENV{OSCAR_HOME}/scripts");
-	my $cmd = "./post_clients";
-	oscar_log_subsection("Running: $cmd");
-	!system($cmd) or (carp($!), return 1);
-	&populate_client_group_nodes;
+    chdir("$ENV{OSCAR_HOME}/scripts");
+    my $cmd = "./post_clients";
+    oscar_log_subsection("Running: $cmd");
+    !system($cmd) or (carp($!), return 1);
+    OSCAR::ClientMgt::update_client_node_package_status (\%options, \@errors);
 
-	oscar_log_subsection("Successfully ran: $cmd");
-	oscar_log_subsection("Completed successfully");
-	return 0;
-}
-
-sub populate_client_group_nodes 
-{
-    my @pkgs = list_selected_packages("all");
-    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status");
-#    locking("WRITE", \%options, \@tables, \@errors);
-    my @client_nodes = ();
-    get_client_nodes(\@client_nodes,\%options,\@errors);
-    my @nodes = ();
-    foreach my $client_ref (@client_nodes)
-    {
-    	my $node_id = $$client_ref{id};
-	my $node_name = $$client_ref{name};
-	push @nodes, $node_name;
-    }
-    my $client_group = "oscar_clients";
-    set_group_nodes($client_group,\@nodes,\%options,\@errors);
-
-    # We assume that all the selected packages should be installed
-    my $status = 2;
-    foreach my $node_name (@nodes)
-    {
-        update_node_package_status(\%options,$node_name,\@pkgs,$status,\@errors);
-    }
-    #    unlock(\%options, \@errors);
+    oscar_log_subsection("Successfully ran: $cmd");
+    oscar_log_subsection("Completed successfully");
+    return 0;
 }
 
 sub image_name {

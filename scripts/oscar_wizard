@@ -59,6 +59,8 @@ use OSCAR::ImageMgt qw (
                         get_image_default_settings
                        );
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
+use OSCAR::Network qw ( get_network_config );
+use OSCAR::ClientMgt;
 use AppConfig;
 use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
@@ -545,47 +547,19 @@ sub postimagebuild {
 sub build_oscar_clients {
     my ($window, $step_number, $interface) = @_;
 
-    my ($ip, $broadcast, $netmask) = interface2ip($interface);
-    my ($a, $b, $c, $d) = split(/\./,$ip);
-    if ($d == 1) {
-      $d++;
-    } else {
-      $d = 1;
-    }
-    my $startip = "$a.$b.$c.$d";
-
-    # Select the right GW address: server-gw if one nic; interface-ip if multiple nics.
-
-    my $gw;
-    my @tables = qw( nodes nics networks );
-    my @results;
-    my $node = "oscar_server";
-    get_nics_info_with_node($node,\@results,\%options,\@errors);
-    my $ref = pop @results;
-    my $nic_name = $$ref{name};
-    if( @results == 1 ) {
-        get_gateway($node,$interface,\@results,\%options,\@errors);
-        my $gw_ref = pop @results if @results;
-        $gw = $$gw_ref{gateway};
-    }
-    $gw ||= $ip;
-
-    my $hostname = (uname)[1];
-    my ($shorthostname)  = split(/\./,$hostname,2);
-    my $dnsdomainname = `dnsdomainname`;
-    chomp($dnsdomainname);
+    my @network_config = get_network_config ($interface, \%options, \@errors);
+    my $netmask = $network_config[0];
+    my $dnsdomainname = $network_config[1];
+    my $gw = $network_config[2];
+    my $startip = $network_config[3];
 
     if ($mode eq "install") {
-       oscar_log_section("Running step $step_number of the OSCAR wizard: Define OSCAR clients");
+       oscar_log_section("Running step $step_number of the OSCAR wizard: ".
+                         "Define OSCAR clients");
     } else {
        oscar_log_section("OSCAR Management Wizard: Define OSCAR clients");
     }
 
-    # If the domainname is blank, stick in a default value
-
-    if (!$dnsdomainname) {
-	$dnsdomainname = "oscardomain";
-    }
     get_client_nodes(\@client_nodes,\%options,\@errors)
         if $#client_nodes == -1; # If @client_nodes is empty
     my $client_basename = "oscarnode";
@@ -684,7 +658,8 @@ sub do_it_or_die {
 
 sub populate_client_group_nodes {
     my @pkgs = list_selected_packages("all");
-    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status");
+    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages",
+                  "Node_Package_Status", "Image_Package_Status");
 #    locking("WRITE", \%options, \@tables, \@errors);
     get_client_nodes(\@client_nodes,\%options,\@errors)
         if $#client_nodes == -1;  # If @client_nodes is empty
@@ -700,9 +675,13 @@ sub populate_client_group_nodes {
     # We assume that all the selected packages should be installed
     my $status = 2;
     foreach my $node_name (@nodes){
-        update_node_package_status(\%options,$node_name,\@pkgs,$status,\@errors);
-    }     
-    
+        update_node_package_status(\%options,
+                                   $node_name,
+                                   \@pkgs,
+                                   $status,
+                                   \@errors);
+    }
+
 #    unlock(\%options, \@errors);
 }
 
@@ -748,7 +727,7 @@ sub run_post_install {
     };
     my $status = run_command($window, $step_number, $cmd_vars);
 
-    &update_client_node_package_status;
+    OSCAR::ClientMgt::update_client_node_package_status (\%options, \$errors);
     # Set the next button "Test Cluster Setup" available
     if( $status && $$step_status{test_install} eq "disabled" ){
         my $next_step_button = $buttons{test_install};
@@ -760,27 +739,6 @@ sub run_post_install {
     @mod_env = WizardEnv::update_env();
 }
 
-sub update_client_node_package_status {    
-	my @pkgs = list_selected_packages();
-    my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages", "Node_Package_Status");
-#    locking("WRITE", \%options, \@tables, \@errors);
-    @client_nodes = ();
-    get_client_nodes(\@client_nodes,\%options,\@errors);
-    my @nodes = ();
-    foreach my $client_ref (@client_nodes){
-        my $node_id = $$client_ref{id};
-        my $node_name = $$client_ref{name};
-        push @nodes, $node_name;
-    }
-
-    # We assume that all the selected packages should be installed
-    my $status = 8;
-    foreach my $node_name (@nodes){
-        update_node_package_status(\%options,$node_name,\@pkgs,$status,\@errors);
-    }     
-    
-#    unlock(\%options, \@errors);
-}
 
 ###########################################################################
 

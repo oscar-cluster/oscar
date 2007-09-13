@@ -20,10 +20,19 @@ package OSCAR::Network;
 #                  Sean Dague <japh@us.ibm.com>
 
 use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
 use vars qw($VERSION @EXPORT);
+use OSCAR::Database qw (
+                        get_gateway
+                        get_nics_info_with_node
+                       );
+use POSIX;
 use Carp;
 use base qw(Exporter);
-@EXPORT = qw(interface2ip);
+@EXPORT = qw(
+            get_network_config
+            interface2ip
+            );
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
@@ -40,7 +49,8 @@ sub interface2ip {
     my ($ip, $broadcast, $net);
 
     # open pipes are better for controlling output than backticks
-    open(IFCONFIG,"/sbin/ifconfig $interface |") or (carp("Couldn't run 'ifconfig $interface'"), return undef);
+    open(IFCONFIG,"/sbin/ifconfig $interface |") 
+        or (carp("Couldn't run 'ifconfig $interface'"), return undef);
     while(<IFCONFIG>) {
         if(/^.*:($ipregex).*:($ipregex).*:($ipregex)\s*$/o) {
             ($ip, $broadcast, $net) = ($1,$2,$3);
@@ -49,6 +59,70 @@ sub interface2ip {
     }
     close(IFCONFIG);
     return ($ip, $broadcast, $net);
+}
+
+################################################################################
+# Get the network configuration.                                               #
+# Input: - interface, network interface id used by OSCAR (e.g. eth0),          #
+#        - options, hash reference for options (GV: i have no clue of what the #
+#                   hash should looks like).                                   #
+#        - errors, array references for errors.                                #
+# Output: an array with the following pattern                                  #
+#           * result[0] is netmask,                                            #
+#           * result[1] is dnsdomainname,                                      #
+#           * result[2] is the gateway IP,                                     #
+#           * result[3] is startip.                                            #
+################################################################################
+sub get_network_config ($$$) {
+    my ($interface, $options, $errors) = @_;
+
+    # Parse the IP address
+    my ($ip, $broadcast, $netmask) = interface2ip($interface);
+    my ($a, $b, $c, $d) = split(/\./, $ip);
+    if ($d == 1) {
+        $d++;
+    } else {
+        $d = 1;
+    }
+    my $startip = "$a.$b.$c.$d";
+
+    # Most of this code is borrowed from scripts/oscar_wizard
+    # It has been changed slightly for the command line
+
+    my $gw;
+    my @tables = qw( nodes nics networks );
+    my @results;
+    my $node = "oscar_server";
+    get_nics_info_with_node($node, \@results, $options, $errors);
+    my $ref = pop @results;
+    my $nic_name = $$ref{name};
+    if (@results == 1)
+    {
+        get_gateway($node, $interface, \@results, $options, $errors);
+        my $gw_ref = pop @results if @results;
+        $gw = $$gw_ref{gateway};
+    }
+    $gw ||= $ip;
+
+    my $hostname = (uname)[1];
+    my ($shorthostname) = split(/\./,$hostname, 2);
+    my $dnsdomainname = `dnsdomainname`;
+    chomp($dnsdomainname);
+
+    # If the domainname is blank, stick in a default value
+    if (!$dnsdomainname) {
+        $dnsdomainname = "oscardomain";
+    }
+
+    my @result;
+    # If you want to return more info, add that at the end of the array, doing
+    # so the existing code will continue to work.
+    push (@result, $netmask);
+    push (@result, $dnsdomainname);
+    push (@result, $gw);
+    push (@result, $startip);
+
+    return (@result);
 }
 
 1;
