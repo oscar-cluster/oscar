@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>selinux</name>
+  <class>core</class>
+  <summary>SELinux Configuration Package</summary>
+  <description>Package for the automatic configuration of SELinux</description>
+  <license>GPL</license>
+  <group>Application/System</group>
+  <uri>http://fedoraproject.org/wiki/Docs/SELinux</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
+  </authors>
+  <changelog>
+    <versionEntry version="1:1.0.0-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-13T10:57:12-05:00">
+        <item>Initial package.</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
+</oscar>

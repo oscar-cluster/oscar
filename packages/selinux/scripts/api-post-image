@@ -1,0 +1,43 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2007 Oak Ridge National Laboratory
+#               Geoffroy Vallee <valleegr@ornl.gov>
+#               All rights reserved
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# This script install a selinux script into an image.
+#
+# Input: image name.
+# Return: 1 if success, 0 or die else.
+#
+
+use POSIX;
+use File::Copy;
+use Carp;
+
+my $image_name = shift;
+
+my $image_basedir = "/var/lib/systemimager/images";
+my $config_file = "selinx_config_template";
+
+# We first verify that we can find the image
+if (! -d "$image_basedir/$image_name") {
+    die ("ERROR: impossible to find the image location ".
+         "(image_basedir/$image_name)");
+}
+
+# Then we check if the selinux directory exists. If not we create it.
+if (! -d "$image_basedir/$image_name/etc/selinux") {
+    print "Creating $image_basedir/$image_name/etc/selinux...\n";
+    mkdir ("$image_basedir/$image_name/etc/selinux") 
+        or die ("ERROR: Impossible to create ".
+                "$image_basedir/$image_name/etc/selinux");
+}
+
+copy ($config_file, "$image_basedir/$image_name/etc/selinux/config");
+
+1;
+

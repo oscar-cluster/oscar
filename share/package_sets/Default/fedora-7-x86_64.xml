@@ -24,6 +24,7 @@
         <opkg>pvm</opkg>
         <opkg>rapt</opkg>
         <opkg>sc3</opkg>
+        <opkg>selinux</opkg>
         <opkg>sge</opkg>
         <opkg>sis</opkg>
         <opkg>switcher</opkg>
