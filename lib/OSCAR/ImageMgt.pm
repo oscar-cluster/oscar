@@ -5,7 +5,7 @@ package OSCAR::ImageMgt;
 #                    Oak Ridge National Laboratory
 #                    All rights reserved.
 #
-#   $Id: PackageSet.pm 4833 2006-05-24 08:22:59Z bli $
+#   $Id: ImageMgt.pm 4833 2006-05-24 08:22:59Z bli $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -227,7 +227,7 @@ sub get_image_default_settings {
            diskfile => $diskfile,
            ipmeth => "static",
            piaction => "reboot",
-#           distro => $distro,
+           distro => "$distro",
            extraflags => $extraflags
            );
 
