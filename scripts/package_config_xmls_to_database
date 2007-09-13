@@ -460,10 +460,20 @@ if( $directory_argument ){
     # The table information of all the OSCAR database tables is defined at
     # $ENV{OSCAR_HOME}/share/prereqs/oda/oscar_table.sql.
     # Database::create_table creates all the tables with the above sql file.
-    die "DB_DEBUG>$0:\n====> cannot create OSCAR tables" 
-        if ! create_table(\%options, \@error_strings);
-    print "\nDB_DEBUG>$0:\n===========================((( All the OSCAR tables are created )))===========================\n"
-        if $options{debug} || $options{verbose};
+    # If oda tables already exist, just skip the creation of tables.
+    my $tables_are_created = 0;
+    my $all_table_names_ref = list_tables( $options_ref,
+                       \@error_strings );
+    if ( defined $all_table_names_ref ) {
+        @result_strings = sort keys %$all_table_names_ref;
+        $tables_are_created = 1 if @result_strings;
+    }
+    if (! $tables_are_created) {
+        die "DB_DEBUG>$0:\n====> cannot create OSCAR tables" 
+            if ! create_table(\%options, \@error_strings);
+        print "\nDB_DEBUG>$0:\n===========================((( All the OSCAR tables are created )))===========================\n"
+            if $options{debug} || $options{verbose};
+    }
 
     # The env variable $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} should be defined
     # at wizard_prep. If not, we setup by default (to be eth0).
