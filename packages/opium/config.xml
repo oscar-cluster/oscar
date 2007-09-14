@@ -1,34 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.17 2004/02/16 16:42:29 brechin Exp $
-  -->
-  <name>Opium</name>
-
-  <version>
-    <major>1</major>
-    <minor>6</minor>
-    <release>1</release>
-  </version>
-
+<oscar>
+  <name>opium</name>
   <class>included</class>
-
   <summary>OSCARified User File Synchronization System</summary>
-  <license>GPL</license>
-  <group>System Environment/Base</group>
-  <packager>
-    <name>Jason Brechin</name>
-    <email>brechin@ncsa.uiuc.edu</email>
-  </packager>
-
   <description>The OSCAR User Synchronization System keeps the users
 and groups synchronized from the the central OSCAR server out to the
 OSCAR compute nodes. OPIUM is compatible with the Pluggable Authentification
@@ -37,13 +11,31 @@ the OSCAR server are checked and synchronized (if necessary) periodically
 (configurable).  The opium package now uses the sync_files package to do all 
 synchronization.
   </description>
-
-  <requires>
-    <type>package</type>
-    <name>sync_files</name>
-  </requires>
-
-  <binary-package-list>
+  <license>GPL</license>
+  <group>System Environment/Base</group>
+  <uri>http://oscar.openclustergroup.org/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Jason Brechin</name>
+      <email>brechin@ncsa.uiuc.edu</email>
+    </author>
+    <author cat="uploader">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps>
+    <requires>
       <pkg>ssh-oscar</pkg>
-  </binary-package-list>
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1:1.6-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T00:19:54-04:00">
+        <item>Migrate the new OPKG API (OPKGC).</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
