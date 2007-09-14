@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
+<oscar>
   <!--
       Copyright (c) 2002-2005 The Trustees of Indiana University.  
                               All rights reserved.
@@ -14,37 +10,9 @@
      
       $Id$
   -->
-  <name>LAM/MPI</name>
-
-  <version>
-    <major>7</major>
-    <minor>1</minor>
-    <subversion>2</subversion>
-    <release>5</release>
-    <epoch>1</epoch>
-  </version>
-
-<!--
-When changing LAM/MPI version, don't forget to change the switcher tag at
-the bottom of this config.xml file.
--->
-
+  <name>lam</name>
   <class>included</class>
   <summary>LAM/MPI specifically packaged for OSCAR clusters</summary>
-  <license>BSD</license>
-  <copyright>2002-2005</copyright>
-  <group>Development/Libraries</group>
-  <uri>http://www.lam-mpi.org/</uri>
-  <maintainer>
-    <name>LAM Team</name>
-    <email>lam@lam-mpi.org</email>
-  </maintainer>
-  <packager>
-    <name>Jeff Squyres</name>
-    <email>jsquyres@open-mpi.org</email>
-  </packager>
-  <vendor>Open Systems Laboratory, Indiana University</vendor>
-
   <description>This RPM is created specifically for the OSCAR
 distribution.  The main difference between this RPM and the official
 LAM RPMs distributed by the LAM Team is that it will be installed into
@@ -77,19 +45,26 @@ membership, and message contents (see the XMPI application on the main
 LAM web site).  On the second level, the MPI library is instrumented
 to produce a cummulative record of communication, which can be
 visualized either at runtime or post-mortem.</description>
-
-  <provides>
-    <type>package</type>
-    <name>mpi</name>
-  </provides>
-
-  <requires>
-    <type>package</type>
-    <name>switcher</name>
-  </requires>
-
-    
-  <binary-package-list>
+  <license>BSD</license>
+  <group>Development/Libraries</group>
+  <uri>http://www.lam-mpi.org/</uri>
+  <authors>
+    <author cat="upstream">
+      <name>LAM Team</name>
+      <email>lam@lam-mpi.org</email>
+    </author>
+    <author cat="maintainer">
+      <name>Jeff Squyres</name>
+      <email>jsquyres@open-mpi.org</email>
+    </author>
+    <author cat="uploader">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps>
     <!-- Distributions that provide libaio -->
 
     <!-- Do *NOT* remove these filter lines and libaio/libaio-devel!
@@ -181,58 +156,45 @@ visualized either at runtime or post-mortem.</description>
          have to be maintained."
          ============================================================
          -->
-    <filter>
-      <distribution>
-        <name>fc</name>
-      </distribution>
-    </filter>
-
-    <filter>
-      <distribution>
-        <name>rhel</name>
-      </distribution>
-    </filter>
-
-    <filter>
-      <distribution>
-        <name>suse</name>
-      </distribution>
-    </filter>
-
-    <pkg>libaio</pkg>
-    <pkg>libaio-devel</pkg>
-    <pkg>lam-oscar</pkg>
-    <pkg>lam-oscar-modulefile</pkg>
-    <pkg>lam-switcher-modulefile</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-    <!-- Distributions that don't provide libaio -->
-    <filter>
-      <distribution>
-        <name>mdv</name>
-      </distribution>
-    </filter>
-
-    <pkg>lam-oscar</pkg>
-    <pkg>lam-oscar-modulefile</pkg>
-    <pkg>lam-switcher-modulefile</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-    <filter>
-      <distribution>
-        <name>suse</name>
-      </distribution>
-    </filter>
-    <pkg>gcc-fortran</pkg>
-  </binary-package-list>
-
-  <package-specific-attributes>
-    <switcher>
-      <tag>mpi</tag>
-      <name>lam-7.1.2</name>
-    </switcher>
-  </package-specific-attributes>
-
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>rhel</dist>
+        <dist>suse</dist>
+      </filters>
+      <pkg>libaio</pkg>
+      <pkg>libaio-devel</pkg>
+      <pkg>lam-oscar</pkg>
+      <pkg>lam-oscar-modulefile</pkg>
+      <pkg>lam-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>mdv</dist>
+      </filters>
+      <pkg>lam-oscar</pkg>
+      <pkg>lam-oscar-modulefile</pkg>
+      <pkg>lam-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
+      <pkg>gcc-fortran</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>lam-runtime</pkg>
+      <pkg>lam4c2</pkg>
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1:7.1.2-5">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-13T12:07:15-04:00">
+        <item>Port to the new OPKG format (OPKGC).</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
