@@ -32,12 +32,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
-    <versionEntry version="0:1.0.0-12">
+    <versionEntry version="0:1.0.0-12.1">
       <changelogEntry authorName="William McLendon" date="2007-06-25T10:37:53-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
       </changelogEntry>
-    <versionEntry version="0:1.0.0-12.1">
-      <changelogEntry authorName="Erich Focht" date="2007-09-12">
+      <changelogEntry authorName="Erich Focht" date="2007-09-12T15:23:23+01:00">
         <item>Updated such that apitest compiles under OpenSUSE 10.2.</item>
         <item>Modified SRPMS/build.cfg to reflect the fact that opensuse has python-twisted</item>
       </changelogEntry>
