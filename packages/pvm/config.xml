@@ -1,39 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.10 2003/07/25 21:39:38 naughtont Exp $
-  -->
-  <name>PVM</name>
-
-  <version>
-    <major>3</major>
-    <minor>4</minor>
-    <subversion>5+6</subversion>
-    <release>2</release>
-    <epoch>1</epoch>
-  </version>
-
+<oscar>
+  <name>pvm</name>
   <class>included</class>
-
   <summary>Parallel Virtual Machine - Libraries for distributed computing.</summary>
-  <license>Freely distributable</license>
-  <group>Development/Libraries</group>
-  <packager>
-    <name>Thomas Naughton</name>
-    <email>naughtont@ornl.gov</email>
-  </packager>
-
   <description>PVM is a software system that enables a collection of
 heterogeneous computers to be used as a coherent and flexible
 concurrent computational resource.
@@ -45,14 +14,32 @@ networks, such as Ethernet, FDDI.
 
 User programs written in C, C++ or Fortran access PVM through library
 routines.</description>
-
-  <requires>
-    <type>package</type>
-    <name>switcher</name>
-  </requires>
-
-  <binary-package-list>
-    <pkg>pvm</pkg>
-    <pkg>pvm-modules-oscar</pkg>
-  </binary-package-list>
+  <license>Freely distributable</license>
+  <group>Development/Libraries</group>
+  <uri>http://www.csm.ornl.gov/pvm/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Thomas Naughton</name>
+      <email>naughtont@ornl.gov</email>
+    </author>
+    <author cat="uploader">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps>
+    <requires>
+      <pkg>pvm</pkg>
+      <pkg>pvm-modules-oscar</pkg>
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1:3.4.5+6-2">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T17:11:56-04:00">
+        <item>Migration to the new OPKG format (OPKGC).</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
