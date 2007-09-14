@@ -1,41 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.16 2004/02/10 17:49:19 ngorsuch Exp $
-  -->
-  <name>Environment Switcher</name>
-
-  <version>
-    <major>1</major>
-    <minor>0</minor>
-    <subversion>7</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
+<oscar>
+  <name>switcher</name>
   <class>core</class>
-
   <summary>Environment switcher</summary>
-  <license>Freely distributable</license>
-  <group>Application/Environment</group>
-  <uri>http://env-switcher.sourceforge.net/</uri>
-
-  <packager>
-    <name>Jeff Squyres</name>
-    <email>jsquyres@lam-mpi.org</email>
-  </packager>
-
   <description>The env-switcher package provides an convenient method
 for users to switch between "similar" packages.  System- and
 user-level defaults are maintained in data files and are examined at
@@ -58,11 +25,29 @@ either OSCAR or MPI in env-switcher -- switching between mulitple MPI
 implementations is only used in this description as an example.  As
 such, it can be used in any environment for any "switching" kind of
 purpose.</description>
-
-  <binary-package-list>
-    <pkg>env-switcher</pkg>
-    <pkg>modules-oscar</pkg>
-    <pkg>modules-default-manpath-oscar</pkg>
-  </binary-package-list>
-  
+  <license>Freely distributable</license>
+  <group>Application/Environment</group>
+  <uri>http://env-switcher.sourceforge.net/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>DongInn Kim</name>
+      <email>dikim@osl.iu.edu</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps>
+    <requires>
+      <pkg>env-switcher</pkg>
+      <pkg>modules-oscar</pkg>
+      <pkg>modules-default-manpath-oscar</pkg>
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1:1.0.7-1">
+      <changelogEntry authorName="DongInn Kim" date="2007-08-21T16:02:43-04:00">
+        <item>Converted to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
