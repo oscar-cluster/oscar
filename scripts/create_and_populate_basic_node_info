@@ -80,15 +80,16 @@ chomp $hostname;
 %field_value_hash = ( "hostname" => $hostname );
 my $where = " WHERE name='oscar_server' ";
 print "Updating the hostname field in the oscar_server node to <$hostname> ...\n";
-    update_table( \%options, "Nodes", \%field_value_hash, $where, \@errors);
+update_table( \%options, "Nodes", \%field_value_hash, $where, \@errors );
 my $dns_domain = `dnsdomainname`;
 chomp $dns_domain;
 if ( defined $dns_domain && $dns_domain ne "" ) {
-    print "Updating the dns_domain field in the oscar_server node to <$dns_domain>\n";
+    print "Updating the dns_domain field in the oscar_server node to ".
+          "<$dns_domain>\n";
     %field_value_hash = ( "dns_domain" => $dns_domain );
     my $where = "WHERE name='oscar_server'";
     update_table( \%options, "Nodes", \%field_value_hash, $where, \@errors );
-}    
+}
 
 # make sure that certain node groups exist
 
