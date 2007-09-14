@@ -1,53 +1,30 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.0 2004/11/23 dikim Exp $
-  -->
-  <name>Configure Mailing Services for localhost</name>
-
-  <version>
-    <major>1</major>
-    <minor>1</minor>
-    <subversion>0</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
+<oscar>
+  <name>mtaconfig</name>
   <class>included</class>
-
   <summary>Configure Mailing services for localhost on client nodes</summary>
-  <license>Freely distributable</license>
-  <copyright>2004</copyright>
-  <group>System Environment/Base</group>
-  <packager>
-    <name>DongInn Kim</name>
-    <email>dikim@osl.iu.edu</email>
-  </packager>
-  <vendor>Indiana University</vendor>
   <description>OSCAR-specific scripts to configure mailing services for localhost on client nodes.</description>
-
-  <binary-package-list>
-    <!-- Distributions that do not have the rpms dependent on postfix -->
-    <filter>
-      <group>oscar_clients</group>
-      <distribution>
-        <name>fc</name>
-      </distribution>
-    </filter>
-
-    <pkg>postfix-pflogsumm</pkg>
-    <pkg>perl-Date-Calc</pkg>
-    <pkg>perl-Bit-Vector</pkg>
-  </binary-package-list>
+  <license>Freely distributable</license>
+  <group>System Environment/Base</group>
+  <uri>http://oscar.openclustergroup.org/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>DongInn Kim</name>
+      <email>dikim@osl.iu.edu</email>
+    </author>
+    <author cat="uploader">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1:1.1.0-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T17:02:47-04:00">
+        <item>Migrate to the new OPKG format (OPKGC).</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
