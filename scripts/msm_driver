@@ -1,0 +1,272 @@
+#!/usr/bin/env perl 
+#
+# Copyright (c) 2007 Oak Ridge National Laboratory
+#               Geoffroy Vallee <valleegr@ornl.gov>
+#               All rights reserved
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# This script is a simple CLI for OSM.
+#
+# Input: XML file that describes machine set(s).
+# Return: 1 if success, 0 or die else.
+#
+# Based on the machine set described, this script populates the database in 
+# order to store all needed actions.
+#
+# $Id: msm_driver 5134 2006-07-12 05:51:29Z valleegr $
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::osm qw (
+                    osm_array2hash
+                    osm_update_oda
+                  );
+use OSCAR::msm;
+use Data::Dumper;
+use OSCAR::Utils qw (
+                    is_element_in_array
+                    print_array
+                    );
+use OSCAR::Database qw ( 
+                        oda_query_single_result
+                        set_node_with_group
+                        simple_oda_query 
+                       );
+use OSCAR::Database_generic qw (
+                                do_insert
+                                do_select
+                               );
+use Data::Dumper;
+use Carp;
+
+my $xml_file_path = shift;
+
+my $verbose = $ENV{OSCAR_VERBOSE};
+# We currently force the verbose mode
+$verbose = 1;
+
+# Need the output immediately
+$| = 1;
+
+# Step 1: We use OSM to parse the XML file
+print "Parsing the machine set...\n" if $verbose;
+my $res = OSCAR::msm::use_file ($xml_file_path);
+die $res if defined $res;
+
+# Step 2: We get the list of machine sets
+my @list_sets = OSCAR::msm::list_sets();
+print "Machine set(s): ";
+print_array @list_sets;
+
+# Step 3: for each set we get the list of servers and compute nodes and we 
+# populate the database accordingly.
+
+foreach my $group (@list_sets) {
+    # We get the list of servers for the current group of nodes
+    my @group_servers = list_servers_in_group ($group);
+    print "List of servers in group $group: " if $verbose;
+    print_array (@group_servers) if $verbose;
+
+    # We get the list of clients for the current group of nodes
+    my @group_clients = list_clients_in_group ($group);
+    print "List of clients in group $group: " if $verbose;
+    print_array (@group_clients) if $verbose;
+
+    # Now we populate the database: each machine group is a partition.
+    my @partition_config = ( @group_servers, @group_clients );
+    oda_create_new_partition ("oscar", 
+                              $group, 
+                              \@group_servers, 
+                              \@group_clients);
+}
+
+################################################################################
+# Populate the database about a new partition based on information about a set #
+# of nodes.                                                                    #
+# Input: - cluster_id,  Cluster identifier (integer).                          #
+#        - group,       Name of the group of node.                             #
+#        - server,      Reference to the array with the list of servers' name  #
+#                       within the group.                                      #
+#        - client,      Reference to the array with the list of clients' name  #
+#                       within the group.                                      #
+# Output: None.                                                                #
+################################################################################
+sub oda_create_new_partition {
+    my ($cluster_name, $group, $servers, $clients) = @_;
+
+    # TODO: we should deal with the cluster ID here!!!
+    my $cluster_id = 1;
+
+    if ($verbose) {
+        print "\n\n++++++++++++ ODA: Creating a new partition ++++++++++++\n";
+        print "Group: $group\n";
+        print "List of servers: ";
+        print_array (@$servers);
+        print "List of clients: ";
+        print_array (@$clients);
+    }
+    # We first check if the partition already exists
+    my @config;
+    die ("ERROR: Impossible to query ODA") 
+        if (get_partition_info ($cluster_id, $group, \@config) == 0);
+    if (scalar (@config)) {
+        print "The partition already exist...\n";
+        print "\tdeleting the previous record...\n";
+        delete_partition_info ($cluster_id, $group, $servers, $clients);
+    }
+    print "Adding the partition record...\n";
+    set_partition_info ($cluster_id, $group, $servers, $clients);
+    print "++++++++++++ ODA: New partition created +++++++++++++++\n\n" 
+        if $verbose;
+}
+
+sub get_partition_info {
+    my ($cluster_id, $group, $result_ref) = @_;
+    my $sql = "SELECT * FROM Partitions WHERE name='$group'";
+    my $options_ref;
+    my $error_strings_ref;
+    return do_select($sql, $result_ref, $options_ref, $error_strings_ref);
+}
+
+sub set_partition_info {
+    my ($cluster_id, $group_name, $servers, $clients) = @_;
+    my $sql;
+    my $options_ref;
+    my $error_strings_ref;
+    our $server_id;
+    our $client_id;
+
+    # Step 1: we populate the partition info with basic info.
+    # TODO: we should use here insert_into_table.
+    $sql = "INSERT INTO Partitions(name) VALUES ('$group_name')";
+    die "ERROR: Failed to insert values via << $sql >>"
+            if! do_insert($sql,"Partitions", $options_ref, $error_strings_ref);
+
+    # Step 2: we populate the table Cluster_Partitions (relation between 
+    # partitions and clusters).
+    # TODO: we should use here insert_into_table.
+    # First we get the partition_id
+    $sql = "SELECT partition_id FROM Partitions WHERE ".
+           "Partitions.name = '$group_name'";
+    my $partition_id = oda_query_single_result ($sql, "partition_id");
+
+    $sql = "INSERT INTO Cluster_Partitions (cluster_id, partition_id) VALUES ".
+           "('$cluster_id', '$partition_id')";
+    die "ERROR: Failed to insert values via << $sql >>"
+            if! do_insert($sql,
+                          "Cluster_Partitions", 
+                          $options_ref, 
+                          $error_strings_ref);
+
+    # Step 3: we populate the table Partition_nodes (relation between modes and
+    # partitions).
+    # WARNING: remember that a node can current have only one type: server or
+    # client. It is NOT possible to define different types between group of 
+    # nodes for a single node
+
+    # We get the ODA id for servers (need in order to populate the database)
+    my $sql = "SELECT id FROM Groups WHERE name='oscar_server'";
+    my $server_id = oda_query_single_result ($sql, "id");
+    print "ODA Server Id: $server_id\n" if $verbose;
+
+    # We get the ODA id for clients (need in order to populate the database)
+    $sql = "SELECT id FROM Groups WHERE name='oscar_clients'";
+    my $client_id = oda_query_single_result ($sql, "id");
+    print "ODA client Id: $client_id\n" if $verbose;
+
+    foreach my $server (@$servers) {
+        set_node_to_partition ($partition_id, $server, $server_id);
+    }
+
+    foreach my $client (@$clients) {
+        set_node_to_partition ($partition_id, $client, $client_id);
+    }
+}
+
+sub set_node_to_partition {
+    my ($partition_id, $node_name, $node_type) = @_;
+
+    my $options_ref;
+    my $error_strings_ref;
+
+    # First we check that the node is already in the database.
+    # If not, we inlcude it with basic info. Note that OPM is supposed to check
+    # that all needed information are available for the installation of OPKGs.
+    my $sql = "SELECT id FROM Nodes WHERE name='$node_name'";
+    my @node_ids = simple_oda_query ($sql, "id");
+    my $node_id;
+    if ( !scalar(@node_ids) ) {
+        print "The node is not in the database, we add it...\n" if $verbose;
+        my %node_info = ('name' => $node_name, 'type' => $node_type);
+        my @list_nodes = ();
+        push (@list_nodes, \%node_info);
+        oda_add_node (@list_nodes);
+        $node_id = oda_query_single_result ($sql, "id");
+    } elsif (scalar(@node_ids) != 1) {
+        die "ERROR: We have more than one record (".scalar(@node_ids).
+            ") about node $node_name in the database";
+    } else {
+        $node_id = $node_ids[0];
+    }
+    # Then we have all information to populate the database.
+    $sql = "INSERT INTO Partition_Nodes (partition_id, node_id, node_type) ".
+           "VALUES ('$partition_id', '$node_id', '$node_type')";
+    die "ERROR: Failed to insert values via << $sql >>"
+        if! do_insert($sql,
+                      "Partition_Nodes",
+                      $options_ref,
+                      $error_strings_ref);
+}
+
+# TODO: the cluster name is still hardcoded.
+sub oda_add_node (@) {
+    my @node_list = @_;
+
+    print "\n+++++ Adding nodes to the database +++++\n" if $verbose;
+    foreach my $node (@node_list) {
+        print "\tNode name: $node->{'name'}\n" if $verbose;
+        print "\tNode type: $node->{'type'}\n" if $verbose;
+        # We need at list the name of the node and its type
+        if (!defined ($node->{'name'}) || !defined ($node->{'type'})) {
+            die "ERROR: Impossible to get enough information about the node. ".
+                "We cannot add it into the database.";
+        }
+        my %options;
+        my @error_string = ();
+
+        my $sql = "SELECT name FROM Groups WHERE id='$node->{'type'}'";
+        my $type = oda_query_single_result ($sql, "name");
+        set_node_with_group ($node->{'name'},
+                             $type,
+                             \%options,
+                             \@error_string,
+                             "oscar");
+    }
+    print "+++++ Nodes added to the database +++++\n\n" if $verbose;
+}
+
+# TODO: finish the code!!!!
+sub delete_partition_info {
+    my ($cluster_id, $group_name, $servers, $clients) = @_;
+    my $sql;
+    my $options_ref;
+    my $error_strings_ref;
+
+    # Step 1: we populate the table Partition_nodes (relation between modes and
+    # partitions).
+
+
+    # Step 2: we populate the table Cluster_Partitions (relation between 
+    # partitions and clusters).
+
+
+    # Step 3: we populate the partition info with basic info.
+    $sql = "DELETE FROM Partitions WHERE name = '$group_name'";
+    die "ERROR: Failed to delete partition info via << $sql >>"
+            if! oda::do_sql_command($options_ref, $sql,"DELETE Table Partitions", "", $error_strings_ref);
+
+}

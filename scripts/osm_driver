@@ -37,6 +37,9 @@ use OSCAR::ImageMgt qw (
                         do_setimage
                         get_image_default_settings
                        );
+use OSCAR::PackageInUn qw (
+                            install_opkg
+                          );
 use OSCAR::opd2; 
 use SystemInstaller::Tk::Common;
 use Carp;
@@ -65,7 +68,7 @@ print_array (@opkgs_to_install);
 # of them in order to update the database.
 OSCAR::opd2::init_cache ();
 # We check first if the OPKGs are included into OSCAR
-my @included_opkgs = OSCAR::opd2::get_included_opkgs ();
+my @included_opkgs = OSCAR::opd2::get_included_opkgs ("debian");
 my @notincluded_opkgs = ();
 foreach my $opkg (@opkgs_to_install) {
     if (!is_element_in_array ($opkg, @included_opkgs) ) {
@@ -111,16 +114,27 @@ my $cmd = "mksiimage -A --name $vars{imgname} " .
 
 print "Executing command: $cmd\n";
 system ($cmd);
-
 postimagebuild (\%vars);
 
 # Maybe we have to update the file /etc/opm.conf for the image.
+my $cmd = "echo \"image\" >> $vars{imgpath}/$vars{imgname}/etc/opm.conf";
+system $cmd;
+
+#print "Updating apt configuration of the image...\n";
+#my $cmd = "echo \"deb http://oscar.gforge.inria.fr/debian/ stable main oscar\" >> $vars{imgpath}/$vars{imgname}/etc/apt/sources.list";
+#system $cmd;
+
+
+# OPM should do that.
+# foreach my $opkg (@opkgs_to_install) {
+#     install_opkg ($opkg, $vars{imgname});
+# }
+# die "Check if the OPKGs have been installed in the image".
 
 # Step 4: We use the hash from OSM to update the database.
 print "Updating the database...\n" if $verbose;
 my %oda_data = osm_array2hash ("INSTALL", @opkgs_to_install);
 osm_update_oda ("Image_Package_Status", %oda_data);
-die ("We stop here.");
 
 # Step 5: We call opm to update the image.
 print "Executing OPM...\n" if $verbose;
