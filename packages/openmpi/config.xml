@@ -1,80 +1,41 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (C) 2006 Bernard Li <bli@bcgsc.ca>.
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id$
-  -->
-  <name>Open MPI</name>
-
-  <version>
-    <major>1</major>
-    <minor>1</minor>
-    <subversion>1</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
-<!--
-When changing Open MPI version, don't forget to change the switcher tag at
-the bottom of this config.xml file.
--->
-
+<oscar>
+  <name>openmpi</name>
   <class>included</class>
   <summary>Open MPI for OSCAR Clusters</summary>
+  <description>Open MPI is a project combining technologies and resources from several other projects (FT-MPI, LA-MPI, LAM/MPI, and PACX-MPI) in order to build the best MPI library available. A completely new MPI-2 compliant implementation, Open MPI offers advantages for system and software vendors, application developers and computer science researchers.</description>
   <license>BSD</license>
-  <copyright>2004-2006</copyright>
   <group>Development/Libraries</group>
   <uri>http://www.open-mpi.org/</uri>
-  <maintainer>
-    <name>Open MPI Team</name>
-    <email>users@open-mpi.org</email>
-  </maintainer>
-  <packager>
-    <name>Bernard Li</name>
-    <email>bli@bcgsc.ca</email>
-  </packager>
-
-  <description>Open MPI is a project combining technologies and resources from several other projects (FT-MPI, LA-MPI, LAM/MPI, and PACX-MPI) in order to build the best MPI library available. A completely new MPI-2 compliant implementation, Open MPI offers advantages for system and software vendors, application developers and computer science researchers.</description>
-
-  <provides>
-    <type>package</type>
-    <name>mpi</name>
-  </provides>
-
-  <requires>
-    <type>package</type>
-    <name>switcher</name>
-  </requires>
-
-  <binary-package-list>
-    <pkg>openmpi</pkg>
-    <pkg>openmpi-switcher-modulefile</pkg>
-  </binary-package-list>
-
-  <binary-package-list>
-    <filter>
-      <distribution>
-        <name>suse</name>
-      </distribution>
-    </filter>
-    <pkg>gcc-fortran</pkg>
-  </binary-package-list>
-
-  <package-specific-attributes>
-    <switcher>
-      <tag>mpi</tag>
-      <name>openmpi-1.1</name>
-    </switcher>
-  </package-specific-attributes>
-
+  <authors>
+    <author cat="upstream">
+      <name>Open MPI Team</name>
+      <email>users@open-mpi.org</email>
+    </author>
+    <author cat="maintainer">
+      <name>Bernard Li</name>
+      <email>bli@bcgsc.ca</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps>
+    <requires>
+      <pkg>openmpi</pkg>
+      <pkg>openmpi-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
+      <pkg>gcc-fortran</pkg>
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1:1.2.3-1">
+      <changelogEntry authorName="Bernard Li" date="2007-08-21T12:06:14-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
