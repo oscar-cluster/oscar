@@ -329,6 +329,35 @@ CREATE TABLE IF NOT EXISTS Manage_status(
     status      CHAR(10)
 );
 
+-- Partitions
+CREATE TABLE IF NOT EXISTS Partitions(
+    partition_id      integer   auto_increment not null unique primary key,
+    name              CHAR(50)
+)TYPE=INNODB;
+
+-- Cluster_Partitions
+CREATE TABLE IF NOT EXISTS Cluster_Partitions(
+    cluster_id      integer         not null,
+    partition_id    integer         not null,
+    PRIMARY KEY     ( cluster_id, partition_id ),
+    KEY             cluster_id      ( cluster_id ),
+    KEY             partition_id    ( partition_id ),
+    CONSTRAINT      Cluster_Partitions_ibfk_1 FOREIGN KEY (cluster_id) REFERENCES Clusters (id) ON DELETE CASCADE,
+    CONSTRAINT      Cluster_Partitions_ibfk_2 FOREIGN KEY (partition_id) REFERENCES Partitions (partition_id) ON DELETE CASCADE
+)TYPE=INNODB;
+
+-- Partition_Nodes
+CREATE TABLE IF NOT EXISTS Partition_Nodes(
+    partition_id    integer         not null,
+    node_id         integer         not null,
+    node_type       integer         not null,
+    PRIMARY KEY     ( partition_id, node_id ),
+    KEY             partition_id    ( partition_id ),
+    KEY             node_id         ( node_id ),
+    CONSTRAINT      Partition_Nodes_ibfk_1 FOREIGN KEY (partition_id) REFERENCES Partitions (partition_id) ON DELETE CASCADE,
+    CONSTRAINT      Partition_Nodes_ibfk_2 FOREIGN KEY (node_id) REFERENCES Nodes (id) ON DELETE CASCADE
+)TYPE=INNODB;
+
 INSERT INTO Wizard_status VALUES(0,'download_packages','');
 INSERT INTO Wizard_status VALUES(1,'select_packages','');
 INSERT INTO Wizard_status VALUES(2,'configure_packages','');

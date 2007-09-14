@@ -28,7 +28,7 @@
 # the installable package names, and only the installable
 # package names.
 # This program updates the "Groups" table and populates the
-# "Group_Packages" and "Node_Package_Status" tables
+# "Group_Packages", "Image_Package_Status" and "Node_Package_Status" tables.
 #
 
 use strict;
@@ -61,7 +61,7 @@ my $DEFAULT = "Default";
 
 # START LOCKING FOR NEST && open the database
 
-my @tables =("Cluster","Nodes", "Packages", "Node_Package_Status", "Group_Packages", "Groups");
+my @tables =("Cluster","Nodes", "Packages", "Node_Package_Status", "Image_Package_Status", "Group_Packages", "Groups");
 
 #if(! locking("write", \%options, \@tables, \@errors)){
 #    die "DB_DEBUG>$0:\n====> cannot connect to oda database";
@@ -118,7 +118,7 @@ if ( @package_set_names )  {
 foreach my $package_ref (@installable_packages){
     my $package_id = $$package_ref{id};
     my $package_name = $$package_ref{package};
-                    
+ 
     # installable tag is kept on config.xml and this is an easier way
     # to avoid tracing not-installable packages (e.g., networking).
     my $requested = 2;
@@ -129,6 +129,7 @@ foreach my $package_ref (@installable_packages){
                     $requested,
                     \@errors);
 }
+
 
 # UNLOCKING FOR NEST
 #unlock(\%options, \@errors);
