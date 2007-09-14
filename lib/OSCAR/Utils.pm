@@ -69,7 +69,7 @@ sub print_hash {
 # return:    1 if the element is in the array,
 #            0 else.
 ###############################################################################
-sub is_element_in_array {
+sub is_element_in_array ($@) {
     my ($element, @array) = @_;
     die ("ERROR: undefined element") if !defined ($element);
 
@@ -86,7 +86,7 @@ sub is_element_in_array {
 # Parameter: array to display.
 # Return:    none.
 ###############################################################################
-sub print_array {
+sub print_array (@) {
     my @my_array = @_;
 
     print "[ ";

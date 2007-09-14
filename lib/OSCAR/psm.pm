@@ -25,14 +25,15 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use lib ".", "$ENV{OSCAR_HOME}/lib";
 our @EXPORT = qw(
-	select_set
-	select_opkg
-	unselect_opkg
-	clear_list
-	export_list
-	show_list
-	describe_package_selection
-	package_hash);
+                select_set
+                select_opkg
+                unselect_opkg
+                clear_list
+                export_list
+                show_list
+                describe_package_selection
+                package_hash
+                );
 
 use XML::Simple;	# Read the XML package set files
 use Data::Dumper;
@@ -246,7 +247,7 @@ sub package_hash {
 sub read_file {
 	my $filename = shift;
 
-	my %data = %{$xml->XMLin($filename, ForceArray => ['package'])};
+ 	my %data = %{$xml->XMLin($filename, ForceArray => ['package'])};
 
 	return \%data;
 }
@@ -524,5 +525,6 @@ sub rw {
 	
 	return $variable;
 }
+
 
 1;
