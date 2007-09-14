@@ -20,6 +20,7 @@
   <serverDeps>
     <requires>
       <pkg>systemimager-client</pkg>
+      <pkg>systemconfigurator</pkg>
     </requires>
     <requires>
       <filters>
@@ -103,6 +104,7 @@
         <arch>x86_64</arch>
       </filters>
       <pkg>syslinux</pkg>
+      <pkg>atftpd</pkg>
       <pkg>systemimager-boot-amd64-standard</pkg>
       <pkg>systemimager-boot-i386-standard</pkg>
       <pkg>systemimager-initrd-template-amd64</pkg>
@@ -119,6 +121,7 @@
         <arch>i386</arch>
       </filters>
       <pkg>syslinux</pkg>
+      <pkg>atftpd</pkg>
       <pkg>systemimager-boot-i386-standard</pkg>
       <pkg>systemimager-initrd-template-i386</pkg>
       <pkg>systeminstaller-oscar</pkg>
@@ -192,6 +195,11 @@
     </requires>
   </apiDeps>
   <changelog>
+    <versionEntry version="1:3.8.0-3">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-07-27T10:47:22-05:00">
+        <item>Fixes the dependence with atftp on Debian for the server package</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1:3.8.0-2">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-06-25T10:12:12-04:00">
         <item>Fixes the dependence with systemimager-client</item>
