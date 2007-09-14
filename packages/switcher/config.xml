@@ -33,6 +33,10 @@ purpose.</description>
       <name>DongInn Kim</name>
       <email>dikim@osl.iu.edu</email>
     </author>
+    <author cat="uploader">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
   </authors>
   <serverDeps/>
   <clientDeps/>
@@ -45,8 +49,8 @@ purpose.</description>
   </apiDeps>
   <changelog>
     <versionEntry version="1:1.0.7-1">
-      <changelogEntry authorName="DongInn Kim" date="2007-08-21T16:02:43-04:00">
-        <item>Converted to the new OPKG API (for OPKGC)</item>
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T17:15:33-04:00">
+        <item>Migration to the new OPKG format (OPKGC).</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
