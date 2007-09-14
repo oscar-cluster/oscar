@@ -462,10 +462,10 @@ if( $directory_argument ){
     # Database::create_table creates all the tables with the above sql file.
     # If oda tables already exist, just skip the creation of tables.
     my $tables_are_created = 0;
-    my $all_table_names_ref = list_tables( $options_ref,
+    my $all_table_names_ref = oda::list_tables( \%options,
                        \@error_strings );
     if ( defined $all_table_names_ref ) {
-        @result_strings = sort keys %$all_table_names_ref;
+        my @result_strings = sort keys %$all_table_names_ref;
         $tables_are_created = 1 if @result_strings;
     }
     if (! $tables_are_created) {
