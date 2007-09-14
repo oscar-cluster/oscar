@@ -25,14 +25,20 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use lib ".", "$ENV{OSCAR_HOME}/lib";
 our @EXPORT = qw(
-    add_set
-    add_opkg
-    convert_hash_to_oda
-    result);
+                add_set
+                add_opkg
+                convert_hash_to_oda
+                osm_array2hash
+                osm_update_oda
+                result
+                );
 
 use OSCAR::psm;
 use OSCAR::msm;
-use OSCAR::Database qw (update_node_package_status_hash);
+use OSCAR::Database qw (
+                        update_node_package_status_hash
+                        update_image_package_status
+                       );
 use OSCAR::Utils qw (print_array);
 use Data::Dumper;
 
@@ -213,5 +219,76 @@ sub convert_hash_to_oda {
          }
     }
 }
+
+################################################################################
+# This function only translates a simple array with the list of OPKG to        #
+# install into a has with more information, information needed by ODA.         #
+# Input: list, array with the OPKGs to install.                                #
+# Output: data, hash with the OPKG to install and the associated status. This  #
+#               hash can then be used to update the database.                  #
+################################################################################
+sub osm_array2hash {
+    my ($value, @opkgs) = @_;
+    my %data;
+
+    foreach my $opkg (@opkgs) {
+        # We find the Package id based on the package name
+#         my $pkg_id = find_package_id_from_name ($opkg);
+        $data{$opkg} = $value;
+    }
+
+    return %data;
+}
+
+################################################################################
+# This function update information about a given image. For instance it is     #
+# used to store information about OPKGs that have to be installed.             #
+# Input: hash, information about OPKGs (name + value of OPKG's satutus to      #
+#              store.                                                          #
+# Return: None.                                                                #
+################################################################################
+sub update_image_data {
+    my %data;
+    my %options = ();
+    my @errors = ();
+    my $OSCAR_SERVER_NODE = "oscar_server";
+    my $success;
+
+    while ((my $package_name, my $value) = each(%data)) {
+        # installable tag is kept on config.xml and this is an easier way
+        # to avoid tracing not-installable packages (e.g., networking).
+        $success = update_image_package_status(
+                        \%options,
+                        $OSCAR_SERVER_NODE,
+                        $package_name,
+                        $value,
+                        \@errors);
+    }
+}
+
+################################################################################
+# Update ODA based on a table ID. This function is typically used to update    #
+# information about OPKG for images and compute nodes.                         #
+# Input: table_id, the table identifier in ODA that needs to be update         #
+#                  (e.g. Image_Package_Status).                                #
+#        data, hash grabbing all the information to update, i.e., db table     #
+#              entry / new value.                                              #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub osm_update_oda {
+    my ($table_id, %data) = @_;
+
+    if ($verbose) {
+        print "Data to update: \n";
+        while ((my $key, my $value) = each(%data)) {
+            print $key.", ".$value."\n";
+        }
+    }
+
+    if ($table_id eq "Image_Package_Status") {
+        update_image_data (%data);
+    }
+}
+
 
 1;
