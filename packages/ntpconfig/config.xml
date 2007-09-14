@@ -1,65 +1,40 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.9 2003/12/04 05:17:11 ngorsuch Exp $
-  -->
-  <name>NTP Configurator</name>
-
-  <version>
-    <major>2</major>
-    <minor>0</minor>
-    <subversion>1</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
+<oscar>
+  <name>ntpconfig</name>
   <class>included</class>
-
   <summary>NTP Configurator</summary>
+  <description>OSCAR-specific NTP configurator.  If configured, sets up the OSCAR server to receive NTP from user-specified NTP server and act as a time server for the cluster nodes.  Otherwise, the server is simply set up to act as a time relay server for all the cluster nodes.</description>
   <license>Freely distributable</license>
   <group>System Environment/Base</group>
-  <packager>
-    <name>Bernard Li</name>
-    <email>bli@bcgsc.ca</email>
-  </packager>
-  <description>OSCAR-specific NTP configurator.  If configured, sets up the OSCAR server to receive NTP from user-specified NTP server and act as a time server for the cluster nodes.  Otherwise, the server is simply set up to act as a time relay server for all the cluster nodes.</description>
-  <binary-package-list>
-      <filter>
-        <distribution>
-          <name>fc</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <distribution>
-          <name>mdk</name>
-        </distribution>
-      </filter>
-  
-      <filter>
-        <distribution>
-          <name>mdv</name>
-        </distribution>
-      </filter>
-
-      <filter>
-        <distribution>
-          <name>rhel</name>
-        </distribution>
-      </filter>
-
+  <uri>http://oscar.openclustergroup.org/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Bernard Li</name>
+      <email>bli@bcgsc.ca</email>
+    </author>
+    <author cat="uploader">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>mdk</dist>
+        <dist>mdv</dist>
+        <dist>rhel</dist>
+      </filters>
       <pkg>ntp</pkg>
-  </binary-package-list>
-
+    </requires>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="1:2.0.1-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T16:54:15-04:00">
+        <item>Migration to the new OPKG format (OPKGC).</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
