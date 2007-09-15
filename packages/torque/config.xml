@@ -32,9 +32,12 @@
     <conflicts/>
   </apiDeps>
   <changelog>
-    <versionEntry version="1:2.0.0p8-3">
+    <versionEntry version="1:2.1.8-1">
       <changelogEntry authorName="Erich Focht" date="2007-07-17T17:09:49+02:00">
         <item>Converted to new opkg format.</item>
+      </changelogEntry>
+      <changelogEntry authorName="Erich Focht" date="2007-09-15T17:09:49+02:00">
+        <item>Updated torque to v2.1.8</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
