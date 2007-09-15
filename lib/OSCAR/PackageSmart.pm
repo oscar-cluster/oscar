@@ -71,7 +71,7 @@ sub prepare_pools {
     my $archs = "i386|x86_64|ia64";
     # List of all supported distros. May be nice if we can get this list 
     # from OS_Detect.
-    my $distros = "debian|fc|mdv|rhel|suse";
+    my $distros = "debian|fc|mdv|rhel|suse|redhat";
     my $format = "";
     # Before to prepare a pool, we try to detect the binary package format
     # associated Not that for a specific pool or set of pools, it is not
@@ -98,7 +98,7 @@ sub prepare_pools {
             }
         } elsif (index($pool, "/tftpboot/", 0) == 0) {
             # Local pools
-            print "$pool is a local pool\n" if $verbose;
+            print "$pool is a local pool ($distros, $binaries)\n" if $verbose;
             # we then check pools for common RPMs and common debs
             if ( ($pool =~ /(.*)\-($binaries)$/) ) {
                 if ($prev_format ne "" && $prev_format ne $2) {
