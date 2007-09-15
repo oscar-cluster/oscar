@@ -211,7 +211,9 @@ sub detect_pool_rpm {
 	if ($v =~ /^(.*)(AS|WS|ES)$/) {
 	    $v = $1;
 	    $flavor = $2;
-	}
+	}elsif ( $v =~ /^(\d*)[A-Za-z]*/){ # DI, Added to take care of RHEL-5
+        $v = $1;
+    }
 	if (!$version) {
 	    $version = $v;
 	} else {
