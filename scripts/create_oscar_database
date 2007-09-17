@@ -1,0 +1,36 @@
+#!/usr/bin/env perl 
+#
+# Copyright (c) 2007 Oak Ridge National Laboratory
+#               Geoffroy Vallee <valleegr@ornl.gov>
+#               All rights reserved
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# This script creates the OSCAR databases.
+#
+# Input: None.
+# Return: 1 if success, 0 or die else.
+#
+# Based on the machine set described, this script populates the database in 
+# order to store all needed actions.
+#
+# $Id: create_oscar_database 5134 2006-07-12 05:51:29Z valleegr $
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Database;
+use Carp;
+
+my %options;
+my @error_strings = ();
+
+# Step 1: we initilialize the database.
+create_database (\%options, \@error_strings);
+
+# Step 2: we create the tables in the database.
+create_database_tables (\%options, \@error_strings);
+
+1;
