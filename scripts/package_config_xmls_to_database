@@ -74,6 +74,7 @@ use OSCAR::Database;
 use OSCAR::Database_generic;
 use OSCAR::oda;
 use OSCAR::OCA::OS_Detect;
+use Data::Dumper;
 use Carp;
 
 my $folding_character = "_";
@@ -214,7 +215,7 @@ sub delete_packages_related_table {
         delete_table($options_ref,$table_name, $where ,$error_ref);
     }
     return $package_id;
-}    
+}
 
 sub usage {
     my ( $exit_status, @error_strings ) = @_;
@@ -292,7 +293,8 @@ if( @ARGV ){
     $package_directory =~ s,/\.\./[^\./][^\./]/,/,g;  # change /../??/   to /
     $package_directory =~ s,/\./,/,g;                 # change /./       to /
     $package_directory =~ s,/$,,;       # take / off the end
-    print "DB_DEBUG>$0:\n====> package_directory=<$package_directory>\n" if $options{debug};
+    print "DB_DEBUG>$0:\n====> package_directory=<$package_directory>\n" 
+        if $options{debug};
 
     # there might be a package short name argument, if not,
     # take the last portion of the directory path,
@@ -307,12 +309,15 @@ if( @ARGV ){
         $package_name =~ s,/$,,;       # take / off the end
         $package_name =~ s,^.*/,,;     # take */ off the beginning
     }
-    print "DB_DEBUG>$0:\n====> package_name=<$package_name>\n" if $options{debug};
+    print "DB_DEBUG>$0:\n====> package_name=<$package_name>\n" 
+        if $options{debug};
     usage(1,
-          "Package name $package_name from directory $package_directory has to start with a letter" )
+          "Package name $package_name from directory $package_directory has ".
+          "to start with a letter" )
         if $package_name !~ /^[a-zA-Z]/;
     usage(1,
-          "Package name $package_name from directory $package_directory has illegal characters" )
+          "Package name $package_name from directory $package_directory has ".
+          "illegal characters" )
         if $package_name !~ /^[a-zA-Z0-9][a-zA-Z0-9\.\_\-]*$/;
 
     # and if there is another argument, there
@@ -328,61 +333,18 @@ if( @ARGV ){
 my @base_directories = @OSCAR::PackagePath::PKG_SOURCE_LOCATIONS;
 if ( !($directory_argument && $package_name) ){
 
-    my $db_service_name = "";
-    my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
-    if( $db_type eq "mysql" || $db_type eq "" ){
-        # find the name of the mysql service and start the mysql server,
-        # and make sure it is run on every system reboot
-        my ($oscar_server_distribution,$oscar_server_distribution_version) = which_distro_server();
-        my $mysql_service_name=which_mysql_name($oscar_server_distribution,$oscar_server_distribution_version);
-        $db_service_name = $mysql_service_name;
-    }elsif( $db_type eq "pgsql" ){
-        $db_service_name = "postgresql";
-    }
+    OSCAR::Database::start_database_service ();
 
-    my $command="/etc/init.d/$db_service_name status";
-    my @command_output = `$command`;
-    my $status = $?;
-    chomp @command_output;
-    if ( ! grep( /is\ running/, @command_output ) || ! $status ) {
-        print "Starting the $db_service_name database server ...\n";
-        my $command = "/etc/init.d/$db_service_name start";
-        print "$command\n";
-        if ( system( $command ) ) {
-        my @error_strings = ();
-        oda::oda_disconnect( \%options );
-        warn shift @error_strings while @error_strings;
-        die "DB_DEBUG>$0:\n====> cannot start the $db_service_name database server!";
-        }
-        sleep 2;
-    }
-    print "Making sure that the $db_service_name database server starts on subsequent boots ...\n";
-    my $command = "chkconfig $db_service_name on";
-    print "$command\n";
-    warn "DB_DEBUG>$0:\n====> WARNING: the $db_service_name database service may not start on subsequent reboots"
-        if system( $command );
-        
     # create the database if not already there and leave us connected to it
-    my %databases = ();
-    oda::list_databases( \%options, \%databases, \@error_strings );
-    if ( ! $databases{ oscar } ) {
-        print "Creating the OSCAR database ...\n";
-        my @error_strings = ();
-        if ( ! oda::create_database( \%options,
-                     \@error_strings ) ) {
-        warn shift @error_strings while @error_strings;
-        die "DB_DEBUG>$0:\n====> cannot create the OSCAR database";
-        }
-        print "... OSCAR database successfully created.\n";
-    }
+    OSCAR::Database::create_database(\%options, \@error_strings);
+
     print "Searching these directories for packages:\n";
     foreach my $base_directory ( @base_directories ) {
         print "    $base_directory\n";
     }
 }
 
-if ( ! oda::oda_connect( \%options,
-             \@error_strings ) ) {
+if ( ! oda::oda_connect( \%options, \@error_strings ) ) {
     warn shift @error_strings while @error_strings;
     die "DB_DEBUG>$0:\n====> cannot connect to the OSCAR database";
 }
@@ -402,7 +364,7 @@ my @excluded_packages = ();
 
 if( $directory_argument ){
     push @directories, $package_directory;
-}else{    
+} else {
     my $package_set_id = "Default";
 
     # We first parse the Default package set the know what are the installable 
@@ -455,44 +417,29 @@ if( $directory_argument ){
         warn "DB_DEBUG>$0:\n====> ignoring oda package directory $skipped_oda_directory";
     }
 
-    # Creation of OSCAR tables is not done through the config.xml of oda 
-    # package any more.
-    # The table information of all the OSCAR database tables is defined at
-    # $ENV{OSCAR_HOME}/share/prereqs/oda/oscar_table.sql.
-    # Database::create_table creates all the tables with the above sql file.
-    # If oda tables already exist, just skip the creation of tables.
-    my $tables_are_created = 0;
-    my $all_table_names_ref = oda::list_tables( \%options,
-                       \@error_strings );
-    if ( defined $all_table_names_ref ) {
-        my @result_strings = sort keys %$all_table_names_ref;
-        $tables_are_created = 1 if @result_strings;
-    }
-    if (! $tables_are_created) {
-        die "DB_DEBUG>$0:\n====> cannot create OSCAR tables" 
-            if ! create_table(\%options, \@error_strings);
-        print "\nDB_DEBUG>$0:\n===========================((( All the OSCAR tables are created )))===========================\n"
-            if $options{debug} || $options{verbose};
-    }
+    OSCAR::Database::create_database_tables (\%options, \@error_strings);
 
     # The env variable $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} should be defined
     # at wizard_prep. If not, we setup by default (to be eth0).
     # This is necessary for the embeded script "set_global_oscar_values"
     $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} = "eth0"    
         if ! exists $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};
-    
+
     # The "set_global_oscar_values" scripts populates the following
     # tables: Clusters, Groups, and Status
     my $exit_status = system("$ENV{OSCAR_HOME}/scripts/set_global_oscar_values "
-                ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}". ($options{debug}?" --debug":"") )/256;
-    croak("Couldn't initialize the global database values table") if $exit_status;
+                ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}".
+                ($options{debug}?" --debug":"") )/256;
+    croak("Couldn't initialize the global database values table")
+        if $exit_status;
     print "\nDB_DEBUG>$0:\n===========================((( All the OSCAR global values are set )))===========================\n"
         if $options{debug} || $options{verbose};
-    
+
     # "create_and_populate_basic_node_info" is another embeded script
     # to populate the "Nodes" table.
     my $exit_status =
-        system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info". ($options{debug}?" --debug":"") )/256;
+        system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info".
+               ($options{debug}?" --debug":"") )/256;
     croak("Couldn't set up a default package set") if $exit_status;
     print "\nDB_DEBUG>$0:\n===========================((( All the basic node infos are set  )))===========================\n"
         if $options{debug} || $options{verbose};
@@ -506,8 +453,7 @@ if( $directory_argument ){
     # Nodes) and they can not really insert any data before the 
     # above tables populate data and generate the primary key
     # used by the Packages and its sub-tables.
-        
-}    
+}
 
 my %fields = ();
 if ( (scalar keys %table_fields_hash) == 0 ){
@@ -519,7 +465,7 @@ if ( (scalar keys %table_fields_hash) == 0 ){
         $packages_hash{$field} = 1;
     }
     $table_fields_hash{"Packages"} = \%packages_hash;
-}    
+}
 
 
 my @packages_in_db = ();
@@ -532,7 +478,7 @@ foreach my $opkg_ref (@opkgs){
 my %opkg_to_be_deleted = ();
 foreach my $key_package (@packages_in_db){
     $opkg_to_be_deleted{$key_package} = 1;
-}    
+}
 
 print "\nDB_DEBUG>$0:\n<<<<<=========================== Populating the Packages records starts\n"
     if $options{debug} || $options{verbose};
@@ -551,27 +497,38 @@ foreach my $directory ( @directories ) {
         # which means it($package) should be kept.
         # The rest of packages with 1 in %opkg_to_be_deleted will be removed
         $opkg_to_be_deleted{$package} = 0 if $opkg_to_be_deleted{$package};
-         
+
         print "\nDB_DEBUG>$0:\nPACKAGE : <<<<<<<<<<<<< $package >>>>>>>>>>>>> : Packages Table\n"
             if $options{debug};
         $msg = "";
         $xml_ref = get_xml_ref($directory, $package,$msg);
         if( is_installed($package,$package_version) ){
-            my $package_id = delete_packages_related_table($package,\%options,\@error_strings,$package_version);
-            update_packages($xml_ref, "Packages", $package_id, $package, 
-                            $directory, \%table_fields_hash, \%options, \@error_strings);
+            my $package_id = delete_packages_related_table($package,
+                                                           \%options,
+                                                           \@error_strings,
+                                                           $package_version);
+            update_packages($xml_ref,
+                            "Packages",
+                            $package_id,
+                            $package,
+                            $directory,
+                            \%table_fields_hash,
+                            \%options,
+                            \@error_strings);
             $msg = "Modifying existing $packages_table_name record for package";
         }else{
             $msg = "Writing a new $packages_table_name record for package";
 
             print Dumper(\%table_fields_hash) if $oda_options{debug};
-            print_hash("", "Print the package $package/$xml_file_name", $xml_ref)
+            print_hash("",
+                       "Print the package $package/$xml_file_name",
+                       $xml_ref)
                 if $oda_options{debug};
-                    
+
             # Insert into "Packages" table
             insert_packages($xml_ref, "Packages", $package, $directory,
                             \%table_fields_hash, \%options, \@error_strings);
-        }        
+        }
     }
 }
 
@@ -584,9 +541,10 @@ my $server_node = "oscar_server";
 # If nics table is already filled in, this is not first time installation
 # and skip the process of inserting into the Group_Packages table.
 get_nics_info_with_node($server_node,\@nics_results,\%options,\@error_strings);
-print "DB_DEBUG>$0:\n====> If get_nics_info_with_node returns nothing, just go to next step: handling Packages related tables.\n"
-      . "Otherwise, initialize the Packages related tables\n"
-      if $options{debug} || $options{verbose};
+print "DB_DEBUG>$0:\n====> If get_nics_info_with_node returns nothing, just ".
+      "go to next step: handling Packages related tables.\n". 
+      "Otherwise, initialize the Packages related tables\n"
+    if $options{debug} || $options{verbose};
 
 # Delete the packages to be deleted when there is no $directory_argument,
 # which means it is a call from normal installation but not from OPD.
@@ -594,10 +552,13 @@ print "DB_DEBUG>$0:\n====> If get_nics_info_with_node returns nothing, just go t
 if(!$directory_argument){
     foreach my $pkg (keys %opkg_to_be_deleted){
         if($opkg_to_be_deleted{$pkg} == 1){
-            delete_packages_related_table($pkg,\%options,\@error_strings,$package_version);
+            delete_packages_related_table($pkg,
+                                          \%options,
+                                          \@error_strings,
+                                          $package_version);
             delete_package($pkg,\%options,\@error_strings);
         }
-    }    
+    }
 }
 
 print "\nDB_DEBUG>$0:\n<<<<<=========================== Adding/Modifying entries of Packages related tables is beginning\n"
@@ -613,22 +574,26 @@ foreach my $directory ( @directories ) {
          ! -e "$directory/.oscar_ignore" ) {
         print "\nDB_DEBUG>$0:\nPACKAGE : <<<<<<<<<<<<< $package >>>>>>>>>>>>> : Packages_related Table\n"
             if $options{debug};
-        my $each_msg = $msg . " $package ".($package_version?"$package_version\n":"\n");
+        my $each_msg = $msg . " $package ".
+                       ($package_version?"$package_version\n":"\n");
         $xml_ref = get_xml_ref($directory, $package,$each_msg);
         print_hash("", "Print the package $package/$xml_file_name", $xml_ref)
             if $oda_options{debug};
-                    
+
         my $package_ref = 
-            get_package_info_with_name($package,\%options,\@error_strings,$package_version);
+            get_package_info_with_name($package,
+                                       \%options,
+                                       \@error_strings,
+                                       $package_version);
         my $package_id = $$package_ref{id};
-        
+
         # Insert into "Packages_rpmlists" table
-        insert_pkg_rpmlist($xml_ref->{"binary-package-list"}, 
+        insert_pkg_rpmlist($xml_ref->{"binary-package-list"},
                             "Packages_rpmlists",
                             $package_id,
                             \%options,\@error_strings)
-            if $xml_ref->{"binary-package-list"}; 
-            
+            if $xml_ref->{"binary-package-list"};
+
         # Insert into "Group_Packages" table at the initial process.
         # If a packaged is added with the arguments to this script, 
         # then initial process of oscar database is finished.
@@ -655,14 +620,21 @@ foreach my $directory ( @directories ) {
                         %field_value_hash = ( "p1_id"=>"$package_id",
                                               "p2_name"=>$tag_ref->{name},
                                               "type"=>$tag_ref->{type} );
-                        insert_into_table (\%options,"Packages_$tag",\%field_value_hash,\@error_strings);
+                        insert_into_table (\%options,
+                                           "Packages_$tag",
+                                           \%field_value_hash,
+                                           \@error_strings);
                         last;
-                    }else{    
-                        # Handling a case when the conflicts tag is used more than one time.
+                    } else {
+                        # Handling a case when the conflicts tag is used more 
+                        # than one time.
                         %field_value_hash = ( "p1_id"=>"$package_id",
                                               "p2_name"=>$each_tag,
                                               "type"=>$tag_ref->{$each_tag}->{type} );
-                        insert_into_table (\%options,"Packages_$tag",\%field_value_hash,\@error_strings);
+                        insert_into_table (\%options,
+                                           "Packages_$tag",
+                                           \%field_value_hash,
+                                           \@error_strings);
                     }
                 }
             }
@@ -680,16 +652,19 @@ foreach my $directory ( @directories ) {
                                           "service"=>$value);
                     insert_into_table (\%options,"Packages_servicelists",\%field_value_hash,\@error_strings);
                 }
-            }else{
+            } else {
                 my $value = $service_ref->{service}; 
                 my $group = ($service_ref->{filter}->{group}?$service_ref->{filter}->{group}:"all");
                 %field_value_hash = ( "package_id"=>"$package_id",
                                       "group_name"=>$group,
                                       "service"=>$value);
-                insert_into_table (\%options,"Packages_servicelists",\%field_value_hash,\@error_strings);
+                insert_into_table (\%options,
+                                   "Packages_servicelists",
+                                   \%field_value_hash,
+                                   \@error_strings);
             }
-        }    
-            
+        }
+
         # Insert into "Packages_switcher" table
         if ($xml_ref->{"package-specific-attributes"}->{switcher}){
             my $switcher_name = $xml_ref->{"package-specific-attributes"}->{switcher}->{name};
@@ -697,7 +672,10 @@ foreach my $directory ( @directories ) {
                 %field_value_hash = ( "package_id"=>"$package_id",
                                       "switcher_name"=>$switcher_name,
                                       "switcher_tag"=>$switcher_tag );
-            insert_into_table (\%options,"Packages_switcher",\%field_value_hash,\@error_strings);
+            insert_into_table (\%options,
+                               "Packages_switcher",
+                               \%field_value_hash,
+                               \@error_strings);
         }
     }
 }

@@ -71,6 +71,7 @@ use base qw(Exporter);
 use OSCAR::PackagePath;
 use OSCAR::Database_generic;
 use OSCAR::oda;
+use OSCAR::Distro;
 use OSCAR::Utils qw (print_array);
 use Data::Dumper;
 
@@ -90,8 +91,12 @@ $options{debug} = 1
     if (exists $ENV{OSCAR_VERBOSE} && $ENV{OSCAR_VERBOSE} == 10)
         || $ENV{OSCAR_DB_DEBUG};
 
-@EXPORT = qw( database_connect 
-              database_disconnect 
+@EXPORT = qw(
+              create_database
+              create_database_tables
+              database_connect
+              database_disconnect
+              start_database_service
 
               delete_package
               delete_node
@@ -1701,14 +1706,21 @@ sub update_image_package_status {
     # If requested is one of the names of the fields being passed in, convert it
     # to the enum version instead of the string
     if($requested && $requested !~ /\d/) {
-        $requested = get_status_num($options_ref, $requested, $error_strings_ref);
+        $requested = get_status_num($options_ref,
+                                    $requested,
+                                    $error_strings_ref);
     }
-    my $image_ref = get_image_info_with_name($image,$options_ref,$error_strings_ref);
+    my $image_ref = get_image_info_with_name($image,
+                                             $options_ref,
+                                             $error_strings_ref);
     my $image_id = $$image_ref{id};
     foreach my $pkg_ref (@$packages) {
         my $opkg = $$pkg_ref{package};
         my $ver = $$pkg_ref{version};
-        my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+        my $package_ref = get_package_info_with_name($opkg,
+                                                     $options_ref,
+                                                     $error_strings_ref,
+                                                     $ver);
         die ("ERROR: Impossible to get information about the OPKG $opkg")
             if (!defined ($package_ref));
         my $package_id = $$package_ref{id};
@@ -1736,7 +1748,8 @@ sub update_image_package_status {
             print "The OPKG status information is already in ODA\n";
             my $pstatus_ref = pop @results;
             my $ex_status = $$pstatus_ref{ex_status};
-            $field_value_hash{requested} = $ex_status if($ex_status == 8 && $requested == 2);
+            $field_value_hash{requested} = $ex_status
+                if($ex_status == 8 && $requested == 2);
             $field_value_hash{ex_status} = $$pstatus_ref{requested};
 
             # If $requested is 8(finished), set the "ex_status" to 8
@@ -1746,17 +1759,25 @@ sub update_image_package_status {
             #
             # NOTE : the "selected" field is only for PackageInUn
             #
-            $field_value_hash{ex_status} = $requested if($requested == 8 && $ex_status != 2);
+            $field_value_hash{ex_status} = $requested 
+                if($requested == 8 && $ex_status != 2);
             $field_value_hash{selected} = $selected if ($selected);
             die "DB_DEBUG>$0:\n====>Failed to update the status of $opkg"
-                if(!update_table($options_ref,$table,\%field_value_hash, $where, $error_strings_ref));
+                if(!update_table($options_ref,
+                                 $table,
+                                 \%field_value_hash,
+                                 $where,
+                                 $error_strings_ref));
         } else {
             print "The OPKG status information is not in ODA, we create an entry\n";
             %field_value_hash = ("image_id" => $image_id,
                                  "package_id"=>$package_id,
                                  "requested" => $requested);
             die "DB_DEBUG>$0:\n====>Failed to insert values into table $table"
-                if(!insert_into_table ($options_ref,$table,\%field_value_hash,$error_strings_ref));
+                if(!insert_into_table ($options_ref,
+                                       $table,
+                                       \%field_value_hash,
+                                       $error_strings_ref));
         }
     }
     return 1;
@@ -2662,6 +2683,111 @@ sub oda_query_single_result {
             "query $sql";
     }
     return ($list[0]);
+}
+
+################################################################################
+# Create the database if not already there and leave us connected to it.       #
+# WARNING the created database is empty!                                       #
+#                                                                              #
+# Input: - options: reference to a hash representing the options.              #
+#        - error_strings: reference to an array representing the error strings #
+#                         (???).                                               #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub create_database ($$) {
+    my ($options, $error_strings) = @_;
+    my %databases = ();
+
+    oda::list_databases($options, \%databases, $error_strings );
+    if ( ! $databases{ oscar } ) {
+        print "Creating the OSCAR database ...\n";
+        my @error_strings = ();
+        if ( ! oda::create_database( \%options, \@error_strings ) ) {
+            warn shift @error_strings while @error_strings;
+            die "DB_DEBUG>$0:\n====> cannot create the OSCAR database";
+        }
+        print "... OSCAR database successfully created.\n";
+    }
+}
+
+
+################################################################################
+# Starts the appropriate database service.                                     #
+#                                                                              #
+# Input: None.                                                                 #
+# Return: None.                                                                #
+################################################################################
+sub start_database_service {
+    my $db_service_name = "";
+    my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
+    if( $db_type eq "mysql" || $db_type eq "" ){
+        # find the name of the mysql service and start the mysql server,
+        # and make sure it is run on every system reboot
+        my ($server_distrib, $server_distrib_version) = which_distro_server();
+        $db_service_name = which_mysql_name($server_distrib,
+                                                  $server_distrib_version);
+    }elsif( $db_type eq "pgsql" ){
+        $db_service_name = "postgresql";
+    }
+
+    my $command="/etc/init.d/$db_service_name status";
+    my @command_output = `$command`;
+    my $status = $?;
+    chomp @command_output;
+    if ( ! grep( /is\ running/, @command_output ) || ! $status ) {
+        print "Starting the $db_service_name database server ...\n";
+        my $command = "/etc/init.d/$db_service_name start";
+        print "$command\n";
+        if ( system( $command ) ) {
+        my @error_strings = ();
+        oda::oda_disconnect( \%options );
+        warn shift @error_strings while @error_strings;
+        die "DB_DEBUG>$0:\n====> cannot start the $db_service_name database ".
+            "server!";
+        }
+        sleep 2;
+    }
+    print "Making sure that the $db_service_name database server starts on ".   
+          "subsequent boots ...\n";
+    my $command = "chkconfig $db_service_name on";
+    print "$command\n";
+    warn "DB_DEBUG>$0:\n====> WARNING: the $db_service_name database service ".
+         "may not start on subsequent reboots"
+        if system( $command );
+}
+
+################################################################################
+# Create database tables.                                                      #
+# Creation of OSCAR tables is not done through the config.xml of oda package   #
+# any more. The table information of all the OSCAR database tables is defined  #
+# at $ENV{OSCAR_HOME}/share/prereqs/oda/oscar_table.sql.                       #
+# Database_generic::create_table creates all the tables with the above sql     #
+# file. If oda tables already exist, just skip the creation of tables.         #
+#                                                                              #
+# Input: - options: reference to a hash representing the options.              #
+#        - error_strings: reference to an array representing the error strings #
+#                         (???).                                               #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub create_database_tables {
+    my ($options, $error_strings) = @_;
+
+    # 
+    my $tables_are_created = 0;
+    my $all_table_names_ref = oda::list_tables( $options,
+                                                $error_strings );
+    if ( defined $all_table_names_ref ) {
+        my @result_strings = sort keys %$all_table_names_ref;
+        $tables_are_created = 1 if @result_strings;
+    }
+    if (! $tables_are_created) {
+        die "DB_DEBUG>$0:\n====> cannot create OSCAR tables" 
+            if ! create_table(\%options, \@error_strings);
+        print "\nDB_DEBUG>$0:\n===========================".
+              "((( All the OSCAR tables are created )))".
+              "===========================\n"
+            if $options{debug} || $options{verbose};
+    }
 }
 
 1;
