@@ -63,11 +63,12 @@ my @opkgs_to_install = OSCAR::psm::show_list();
 print "The package sets includes: ";
 print_array (@opkgs_to_install);
 
-# Step 2: we download the OPKGs using OPD2 is needed.
+# Step 2: we download the OPKGs using OPD2 if needed.
 # Note that we need to have the packages because we need to get info for each
 # of them in order to update the database.
 OSCAR::opd2::init_cache ();
 # We check first if the OPKGs are included into OSCAR
+# TODO: find a way to get the distro.
 my @included_opkgs = OSCAR::opd2::get_included_opkgs ("debian");
 my @notincluded_opkgs = ();
 foreach my $opkg (@opkgs_to_install) {
@@ -93,7 +94,8 @@ if (scalar (@unavailable_opkgs)) {
     exit (-1);
 }
 
-# Step 3: We create a basic image.
+# Step 3: We create a basic image for clients. Note that by default we do not
+# create a basic image for servers since the server may already be deployed.
 # We currently use the script 'build_oscar_image_cli'. This is a limitation
 # because it only creates an image based on the local Linux distribution.
 print "Creating the basic golden image...\n" if $verbose;
