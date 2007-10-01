@@ -38,11 +38,16 @@ sub detect_dir {
 	chroot => $root,
     };
 
-    # complex match strings for RHEL 3 and 4
-    if ($release_string =~ /CentOS release (\d+)\.(\d+) \((\S+)\)/) {
+    if ( $release_string =~ /CentOS release (\d+)\.(\d+) \((\S+)\)/ || $release_string =~ /CentOS release (\d+) \((\S+)\)/ ) {
 	my $os_release = $1;
-	my $os_update = $2;
-	my $os_family = $3; # don't care about this
+	my $os_update;
+
+	# CentOS's major number release does not have a minor number (eg. 5 vs 5.0), set $os_update to 0 by default
+	if ($2 == 0) {
+		$os_update = 0;
+	} else {
+		$os_update = $2;
+	}
 
         # Support CentOS Beta releases
         if ($os_update =~ 9) {
