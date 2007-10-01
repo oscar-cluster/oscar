@@ -45,10 +45,10 @@ sub check_hostname {
     my $dnsdomainname = `dnsdomainname`;
     chomp ($dnsdomainname);
     if ($shorthostname eq "localhost") {
-       return FAILURE;
-    }
-    if ($hostname eq "localhost.localdomain") {
-       return FAILURE;
+        print " -----------------------------------\n";
+        print " ERROR: hostname cannot be localhost\n";
+        print " -----------------------------------\n";
+        return FAILURE;
     }
 
     # the value of hostname should not to be assigned to the loopback
