@@ -6,7 +6,7 @@
   <description>The System Installation Suite is composed of three major components - SystemInstaller, SystemImager and SystemConfigurator</description>
   <license>GPL</license>
   <group>Application/System</group>
-  <uri>http://sisuite.org/</uri>
+  <uri>http://systemimager.org/</uri>
   <authors>
     <author cat="maintainer">
       <name>Erich Focht</name>
