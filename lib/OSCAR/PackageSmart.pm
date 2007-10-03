@@ -82,14 +82,22 @@ sub prepare_pools {
         # Online repo
         if ( index($pool, "http", 0) >= 0) {
             print "This is an online repository ($pool)\n" if $verbose;
-            my $url = $pool . "repodata/repomd.xml";
+            my $url;
+            if ( $pool =~ /\/$/ ) {
+                $url = $pool . "repodata/repomd.xml";
+            } else {
+                $url = $pool . "/repodata/repomd.xml";
+            }
+            my $cmd = "wget -S --delete-after -q $url";
+            print "Testing remote repository type by using command: $cmd... " if $verbose;
             if (!system("wget -S --delete-after -q $url")) {
-                print "This is a Yum repository\n" if $verbose;
+                print "[yum]\n" if $verbose;
                 $format = "rpms";
             } else {
                 # if the repository is not a yum repository, we assume this is
                 # a Debian repo. Therefore we assume that all specified repo
                 # are valid.
+                print "[deb]\n" if $verbose;
                 $format = "debs";
             }
             if ($prev_format ne "" && $prev_format ne $format) {
