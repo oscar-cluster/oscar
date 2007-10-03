@@ -43,10 +43,11 @@ sub detect_dir {
 	my $os_update;
 
 	# CentOS's major number release does not have a minor number (eg. 5 vs 5.0), set $os_update to 0 by default
-	if ($2 == 0) {
-		$os_update = 0;
+	my $b = $2;
+	if ( $b =~ /^[0-9]$/ ) {
+		$os_update = $b;
 	} else {
-		$os_update = $2;
+		$os_update = 0;
 	}
 
         # Support CentOS Beta releases
