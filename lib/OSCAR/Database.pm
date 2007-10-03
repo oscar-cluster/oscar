@@ -2749,7 +2749,7 @@ sub start_database_service {
     }
     print "Making sure that the $db_service_name database server starts on ".   
           "subsequent boots ...\n";
-    my $command = "chkconfig $db_service_name on";
+    $command = "chkconfig $db_service_name on";
     print "$command\n";
     warn "DB_DEBUG>$0:\n====> WARNING: the $db_service_name database service ".
          "may not start on subsequent reboots"
