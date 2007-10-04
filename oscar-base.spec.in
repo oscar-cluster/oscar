@@ -22,7 +22,15 @@ AutoReqProv: no
 
 %description
 Base OSCAR package.
-More text and explanations to come...
+OSCAR allows users, regardless of their experience level with a *nix
+environment, to install a Beowulf type high performance computing cluster. It
+also contains everything needed to administer and program this type of HPC
+cluster. OSCAR's flexible package management system has a rich set of
+pre-packaged applications and utilities which means you can get up and running
+without laboriously installing and configuring complex cluster administration
+and communication packages. It also lets administrators create customized
+packages for any kind of distributed application or utility, and to distribute
+those packages from an online package repository, either on or off site.
 
 %prep
 %setup -n %{name}-%{version}
