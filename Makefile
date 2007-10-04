@@ -29,7 +29,7 @@ all:
 	@echo "... there is no default target ..."
 	@echo "Use one of: dist test install clean"
 
-OSCAR_VERSION = $(shell dist/get-oscar-version.sh VERSION)
+OSCAR_VERSION ?= $(shell dist/get-oscar-version.sh VERSION)
 PKG        = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
 	       awk '/packaging method/{print $$NF}')
 ARCH       = $(shell scripts/get_arch)
@@ -132,5 +132,19 @@ uninstall: clean
 	@echo "Deleting directory $(DESTDIR)/tftpboot/oscar"
 	rm -rf $(DESTDIR)/tftpboot/oscar
 	rm -rf ~/tmp
+
+baserpms:
+	@echo "Building OSCAR base rpms"
+	sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar-base.spec.in \
+		> oscar-base.spec
+	mkdir oscar-base-$(OSCAR_VERSION)
+	cp -rl `ls -1 | grep -v oscar-base-$(OSCAR_VERSION)` oscar-base-$(OSCAR_VERSION)
+	tar czvf oscar-base-$(OSCAR_VERSION).tar.gz --exclude packages \
+		--exclude dist --exclude .svn --exclude \*.tar.gz \
+		--exclude \*.spec.in --exclude src --exclude \*~ \
+		--exclude share/prereqs/\*/distro \
+		--exclude share/prereqs/\*/SRPMS oscar-base-$(OSCAR_VERSION)
+	rm -rf oscar-base-$(OSCAR_VERSION)
+	rpmbuild -tb oscar-base-$(OSCAR_VERSION).tar.gz
 
 .PHONY : test dist clean install

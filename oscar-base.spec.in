@@ -1,0 +1,79 @@
+%define basedir /opt/oscar
+%define _unpackaged_files_terminate_build 0
+
+Summary: Base OSCAR package
+Name: oscar-base
+Version: OSCARVERSION
+Release: 1
+License: GPL
+URL: http://oscar.openclustergroup.org
+Group: Applications/System
+Source: %{name}-%{version}.tar.gz
+Requires: %{name}-libs
+Requires: %{name}-scripts
+Requires: yum, createrepo, yume
+Vendor: OSCAR
+Distribution: OSCAR
+Packager: Erich Focht
+
+Buildroot: %{_tmppath}/%{name}-%{version}-root
+BuildArch: noarch
+AutoReqProv: no
+
+%description
+Base OSCAR package.
+More text and explanations to come...
+
+%prep
+%setup -n %{name}-%{version}
+
+%build
+rm -rf %{buildroot}
+mkdir -p %{buildroot}%{basedir}
+cp -prd * %{buildroot}%{basedir}/
+
+%clean
+rm -rf %{_tmppath}/%{name}-%{version}-root
+
+
+%package libs
+Group: Applications/System
+Summary: Libraries for OSCAR clustering package.
+%description libs
+Libraries for OSCAR clustering base package.
+
+
+%package scripts
+Group: Applications/System
+Summary: Libraries for OSCAR clustering package.
+Requires: %{name}-libs == %{version}-%{release}
+%description scripts
+Scripts for OSCAR clustering base package.
+
+
+
+%files
+%defattr(-,root,root)
+%{basedir}/COPYING
+%{basedir}/CREDITS
+%{basedir}/README
+%{basedir}/VERSION
+%{basedir}/doc/*
+%{basedir}/images/*
+%{basedir}/install_cluster
+%{basedir}/oscarsamples/*
+%{basedir}/share/*
+%{basedir}/testing/*
+%{basedir}/tmp/
+
+%files libs
+%defattr(-,root,root)
+%{basedir}/lib/*
+
+%files scripts
+%defattr(-,root,root)
+%{basedir}/scripts/*
+
+%changelog
+* Thu Oct 4 2007 Erich Focht
+- Initial package.
