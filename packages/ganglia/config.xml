@@ -19,7 +19,6 @@
   </authors>
   <serverDeps>
     <requires>
-      <filters/>
       <pkg>ganglia-gmetad</pkg>
       <pkg>ganglia-web</pkg>
       <pkg>rrdtool</pkg>
@@ -38,16 +37,19 @@
       <pkg>php4-gd</pkg>
     </requires>
   </serverDeps>
-  <clientDeps/>
-  <apiDeps>
+  <clientDeps>
     <requires>
       <pkg>ganglia-gmond</pkg>
     </requires>
-  </apiDeps>
+  <clientDeps>
+  <apiDeps/>
   <changelog>
-    <versionEntry version="1:3.0.4-1">
+    <versionEntry version="1:3.0.4-2">
       <changelogEntry authorName="Erich Focht" date="2007-09-07T15:02:13+02:00">
         <item>converted package to opkgc format</item>
+      </changelogEntry>
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T15:02:13+02:00">
+        <item>fixed dependencies for client</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
