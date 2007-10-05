@@ -1,47 +1,31 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.4 2003/07/18 21:23:38 ngorsuch Exp $ 
-  -->
+<oscar>
   <name>OSCAR Documentation</name>
-
-  <version>
-    <major>2</major>
-    <minor>0</minor>
-    <subversion>b1</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>third-party</class>
-
   <summary>OSCAR tool suite documentation (html) package</summary>
+  <description>The html versions of the OSCAR cluster tool suite documentation.</description>
   <license>Freely distributable</license>
   <group>Documentation</group>
   <uri>http://oscar.sf.net/</uri>
-
-  <packager>
+  <authors>
+    <author cat="maintainer">
       <name>Benoit des Ligneris</name>
       <email>benoit@des.ligneris.net</email>
-  </packager>
-
-  <description>The html versions of the OSCAR cluster tool suite documentation.</description>
-
-  <binary-package-list>
-    <filter>
-      <group>oscar_server</group>
-    </filter>
-
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
       <pkg>oscar-install-docs-html</pkg>
       <pkg>oscar-user-docs-html</pkg>
-  </binary-package-list>
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1:2.0.b1-1">
+      <changelogEntry authorName="Erich Focht" date="2007-10-05T17:26:54+02:00">
+        <item>Converted to opkgc format. Unfortunately this packages seems to be outdated and not maintained.</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
