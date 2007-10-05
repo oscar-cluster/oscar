@@ -29,7 +29,7 @@
       <pkg>sge-modulefile</pkg>
     </requires>
     <conflicts>
-      <pkg>opkg-torque-clients</pkg>
+      <pkg>opkg-torque-client</pkg>
     </conflicts>
   </clientDeps>
   <apiDeps/>
