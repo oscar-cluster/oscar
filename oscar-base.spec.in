@@ -1,3 +1,5 @@
+# $Id$
+
 %define basedir /opt/oscar
 %define _unpackaged_files_terminate_build 0
 
@@ -44,6 +46,22 @@ cp -prd * %{buildroot}%{basedir}/
 rm -rf %{_tmppath}/%{name}-%{version}-root
 
 
+%package client
+Group: Applications/System
+Summary: Libraries for OSCAR clustering package.
+%description client
+Requires: %{name}-scripts == %{version}-%{release}
+Dummy package for oscar-base-client install.
+
+
+%package server
+Group: Applications/System
+Summary: Libraries for OSCAR clustering package.
+%description server
+Requires: %{name} == %{version}-%{release}
+Dummy package for oscar-base-server install.
+
+
 %package libs
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
@@ -59,7 +77,6 @@ Requires: %{name}-libs == %{version}-%{release}
 Scripts for OSCAR clustering base package.
 
 
-
 %files
 %defattr(-,root,root)
 %{basedir}/COPYING
@@ -73,6 +90,12 @@ Scripts for OSCAR clustering base package.
 %{basedir}/share/*
 %{basedir}/testing/*
 %{basedir}/tmp/
+
+%files client
+%defattr(-,root,root)
+
+%files server
+%defattr(-,root,root)
 
 %files libs
 %defattr(-,root,root)
