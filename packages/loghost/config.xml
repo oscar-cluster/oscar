@@ -1,51 +1,29 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-
-<!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.6 2003/07/18 21:23:38 ngorsuch Exp $
-      -->
-
+<oscar>
   <name>Loghost</name>
-
-  <version>
-    <major>1</major>
-    <minor>0</minor>
-    <subversion>0</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>included</class>
-
   <summary>Configures server to accept remote syslog entries</summary>
-  <license>GPL</license>
-  <copyright>2002</copyright>
-  <group>Applications/System</group>
-  <packager>
-    <name>Jeremy Enos</name>
-    <email>jenos@ncsa.uiuc.edu</email>
-  </packager>
-  <vendor>NCSA</vendor>
-
   <description>loghost configures syslog settings.</description>
-
-  <binary-package-list>
-    <filter>
-      <group>oscar_server</group>
-    </filter>
- 
+  <license>GPL</license>
+  <group>Applications/System</group>
+  <authors>
+    <author cat="maintainer">
+      <name>Jeremy Enos</name>
+      <email>jenos@ncsa.uiuc.edu</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
       <pkg>loghost</pkg>
-  </binary-package-list>
-
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1:1.0.0-1">
+      <changelogEntry authorName="Erich Focht" date="2007-10-05T16:47:55+02:00">
+        <item>converted to new opkgc format.</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
