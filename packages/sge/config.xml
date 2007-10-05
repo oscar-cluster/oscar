@@ -1,42 +1,43 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
   <name>Sun Grid Engine</name>
-
-  <version>
-    <major>6</major>
-    <minor>0u8</minor>
-    <subversion>0</subversion>
-    <release>6</release>
-    <epoch>0</epoch>
-  </version>
-
   <class>included</class>
-
   <summary>Resource management and batch queueing software for clusters</summary>
-
+  <description>Sun Grid Engine is a distributed resource management and batch job queueing software for wide ranging requirements from compute farms to grid computing.</description>
   <license>SISSL</license>
   <group>Application/System</group>
   <uri>http://gridengine.sunsource.net</uri>
-
-  <packager>
-    <name>Babu Sundaram</name>
-    <email>babu@cs.uh.edu</email>
-  </packager>
-
-  <description>Sun Grid Engine is a distributed resource management and batch job queueing software for wide ranging requirements from compute farms to grid computing.</description>
-
-  <binary-package-list>
+  <authors>
+    <author cat="maintainer">
+      <name>Babu Sundaram</name>
+      <email>babu@cs.uh.edu</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
       <pkg>sge</pkg>
       <pkg>sge-modulefile</pkg>
-  </binary-package-list>  
-
-  <conflicts>
-    <type>package</type>
-    <name>torque</name>
-  </conflicts>
-
-  <conflicts>
-    <type>package</type>
-    <name>maui</name>
-  </conflicts>
+    </requires>
+    <conflicts>
+      <pkg>opkg-torque-server</pkg>
+      <pkg>opkg-maui-server</pkg>
+    </conflicts>
+  </serverDeps>
+  <clientDeps/>
+    <requires>
+      <pkg>sge</pkg>
+      <pkg>sge-modulefile</pkg>
+    </requires>
+    <conflicts>
+      <pkg>opkg-torque-clients</pkg>
+    </conflicts>
+  </clientDeps>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="0:6.0u8.0-6">
+      <changelogEntry authorName="Erich Focht" date="2007-10-05T16:54:39+02:00">
+        <item>converted to new opkgc format</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
