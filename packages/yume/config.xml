@@ -26,35 +26,23 @@ revisions much simpler than with rpm.
   </authors>
   <serverDeps>
     <requires>
-      <filters>
-        <dist>mdv</dist>
-        <dist>rhel</dist>
-        <dist>fc</dist>
-        <dist>suse</dist>
-        <dist>debian</dist>
-      </filters>
       <pkg>createrepo</pkg>
     </requires>
     <requires>
-      <filters>
-        <dist>mdv</dist>
-        <dist>rhel</dist>
-        <dist>fc</dist>
-        <dist>suse</dist>
-        <dist>debian</dist>
-      </filters>
       <pkg>yume</pkg>
     </requires>
   </serverDeps>
-  <clientDeps/>
+  <clientDeps>
+    <requires>
+      <pkg>yume</pkg>
+    </requires>
+  </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="2.4-1">
+    <versionEntry version="2.5-1">
       <changelogEntry authorName="Erich Focht" date="2007-06-25T10:48:34-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
       </changelogEntry>
-    </versionEntry>
-    <versionEntry version="2.5-1">
       <changelogEntry authorName="Erich Focht" date="2007-09-14T00:56:00+01:00">
         <item>Update to version 2.5-1, fixed ioctl bug and repoquery issue with newer yum.</item>
       </changelogEntry>
