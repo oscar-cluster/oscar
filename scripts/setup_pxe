@@ -2,6 +2,8 @@
 
 #   $Id$
 
+# Copyright (c) 2007 Erich Focht <efocht@hpce.nec.com>
+
 # Copyright (c) 2005,2006 Bernard Li <bli@bcgsc.ca>
 
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
@@ -254,6 +256,10 @@ symlink("/tftpboot/$tftp_kernel", "/tftpboot/kernel") or
   croak("Unable to symlink $bootpackage boot kernel file to /tftpboot.");
 symlink("/tftpboot/$tftp_ramdisk", "/tftpboot/initrd.img") or 
   croak("Unable to symlink $bootpackage initrd.img file to /tftpboot.");
+
+# setup netbootmgr for multi-arch boot
+
+#...
 
 exit 0; 
 
