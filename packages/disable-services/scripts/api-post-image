@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2002-2004 The Trustees of Indiana University.  
 #                         All rights reserved.
+# Copyright (c) 2007 Erich Focht <efocht@hpce.nec.com>
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -10,19 +11,21 @@
 # $Id: setup 2587 2004-08-17 21:24:46Z dikim $
 #
 
+imagedir=$1
+imagedir=`echo $imagedir | sed -e 's/\/$//'`
+image=`echo $imagedir | sed -e 's:^.*/::g'`
+
+# where do we look for the scripts
 dir="$OSCAR_PACKAGE_HOME/scripts"
 
-
 #
-# Create a post_client_rpm_install script that consists of all the
-# disable.* scripts in this directory.
-# This is necessary because post_client_rpm_install runs in the client
-# filesystem, and the disable.* scripts will not be there. So paste them all together
-# into a single post_client_rpm_install script to run later.
+# Create a script in the systemimager post-install/ directory
+# that disables the services according to what is found in the scripts/
+# directory.
 #
 
-client_output="post_client_rpm_install"
-
+client_output="80${image}.disable_services"
+client_output="/var/lib/systemimager/scripts/post-install/${client_output}"
 rm -f $client_output
 
 # Create a script that will exist on the client nodes.  Since we do
@@ -32,7 +35,7 @@ rm -f $client_output
 
 # Create a script to disable a bunch of stuff on the clients.
 
-client_files="`ls disable.*`"
+client_files=`ls -1 $dir/disable.*`
 for file in $client_files
 do
   echo "# Contents of $file script:" >> $client_output
@@ -43,7 +46,7 @@ done
 
 chmod +x $client_output
 
-echo Created: $dir/$client_output
+echo Created: $client_output
 
 
 #

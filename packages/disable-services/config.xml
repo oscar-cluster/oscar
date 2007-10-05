@@ -1,41 +1,26 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (c) 2002 The Trustees of Indiana University.  
-                         All rights reserved.
-      
-      This file is part of the OSCAR software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR source distribution.
-     
-      $Id: config.xml,v 1.7 2003/07/18 21:23:37 ngorsuch Exp $
-  -->
+<oscar>
   <name>Disable Uncommon Client Node Services</name>
-
-  <version>
-    <major>1</major>
-    <minor>1</minor>
-    <subversion>0</subversion>
-    <release>1</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>included</class>
-
   <summary>Disable services on client nodes</summary>
-  <license>Freely distributable</license>
-  <copyright>2002</copyright>
-  <group>System Environment/Base</group>
-  <packager>
-    <name>Jeff Squyres</name>
-    <email>jsquyres@lam-mpi.org</email>
-  </packager>
-  <vendor>Indiana University</vendor>
   <description>OSCAR-specific scripts to disable some services on
 client nodes: kudzu, sendmail, slocate.</description>
-
+  <license>Freely distributable</license>
+  <group>System Environment/Base</group>
+  <authors>
+    <author cat="maintainer">
+      <name>Jeff Squyres</name>
+      <email>jsquyres@lam-mpi.org</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1:1.1.0-1">
+      <changelogEntry authorName="Erich Focht" date="2007-10-05T16:21:32+02:00">
+        <item>opkgc version</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
