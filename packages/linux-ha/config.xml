@@ -1,48 +1,40 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<oscar 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:oscar-config="http://sf.net/oscar/2005/config.xml"
-  xsi:schemaLocation="http://sf.net/oscar/2005/config.xml oscar-config.xsd"
->
-  <!--
-      Copyright (c) 2003 NEC High Performance Computing Europe GmbH
-                         All rights reserved.
-      
-      This file is part of the HPC Linux software package.  For license
-      information, see the COPYING file in the top level directory of the
-      OSCAR and HPC Linux source distribution.
-     
-  -->
+<oscar>
   <name>linux-ha</name>
-
-  <version>
-    <major>2</major>
-    <minor>0</minor>
-    <subversion>7</subversion>
-    <release>2</release>
-    <epoch>1</epoch>
-  </version>
-
   <class>third-party</class>
-
   <summary>High availability base setup</summary>
-  <license>GPL license</license>
-  <group>System</group>
-  <packager>
-    <name>Erich Focht</name>
-    <email>efocht@hpce.nec.com</email>
-  </packager>
-
   <description>
 This package installs the heartbeat RPMs and provides scripts for
 installing the high availability feature for OSCAR masters.
 </description>
-
-  <binary-package-list>
+  <license>GPL license</license>
+  <group>System</group>
+  <authors>
+    <author cat="maintainer">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
       <pkg>heartbeat</pkg>
       <pkg>heartbeat-pils</pkg>
       <pkg>heartbeat-stonith</pkg>
-      <!-- heartbeat-ldirectord is not yet included! -->
-  </binary-package-list>
-
+    </requires>
+  </serverDeps>
+  <clientDeps/>
+    <requires>
+      <pkg>heartbeat</pkg>
+      <pkg>heartbeat-pils</pkg>
+      <pkg>heartbeat-stonith</pkg>
+    </requires>
+  </clientDeps/>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1:2.0.7-2">
+      <changelogEntry authorName="Erich Focht" date="2007-10-05T16:44:53+02:00">
+        <item>converted to new opkgc format</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
 </oscar>
