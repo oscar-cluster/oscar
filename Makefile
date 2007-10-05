@@ -135,9 +135,9 @@ uninstall: clean
 
 baserpms:
 	@echo "Building OSCAR base rpms"
-	if [ `echo $(OSCAR_VERSION) | grep -c ':'` -gt 0 ]; then \
-		echo "OSCAR_VERSION is $(OSCAR_VERSION) and contains ':'"; \
-		echo "Please clean up your svn tree and try again!"; \
+	@if [ `echo $(OSCAR_VERSION) | grep -c ':'` -gt 0 ]; then \
+		echo "OSCAR_VERSION is $(OSCAR_VERSION) and contains a ':'"; \
+		echo "Please clean up (svn update) your svn tree and try again!"; \
 		exit 1; \
 	fi
 	sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar-base.spec.in \
