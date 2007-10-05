@@ -145,6 +145,8 @@ baserpms:
 		--exclude share/prereqs/\*/distro \
 		--exclude share/prereqs/\*/SRPMS oscar-base-$(OSCAR_VERSION)
 	rm -rf oscar-base-$(OSCAR_VERSION)
-	rpmbuild -tb oscar-base-$(OSCAR_VERSION).tar.gz
+	rpmbuild -tb oscar-base-$(OSCAR_VERSION).tar.gz && \
+	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar-base-*$(OSCAR_VERSION)-*.noarch.rpm . && \
+	rm -f oscar-base-$(OSCAR_VERSION).tar.gz
 
 .PHONY : test dist clean install
