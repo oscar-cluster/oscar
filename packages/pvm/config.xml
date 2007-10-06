@@ -27,18 +27,26 @@ routines.</description>
       <email>valleegr@ornl.gov</email>
     </author>
   </authors>
-  <serverDeps/>
-  <clientDeps/>
-  <apiDeps>
+  <serverDeps>
     <requires>
       <pkg>pvm</pkg>
       <pkg>pvm-modules-oscar</pkg>
     </requires>
-  </apiDeps>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <pkg>pvm</pkg>
+      <pkg>pvm-modules-oscar</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps/>
   <changelog>
-    <versionEntry version="1:3.4.5+6-2">
+    <versionEntry version="1:3.4.5+6-3">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T17:11:56-04:00">
         <item>Migration to the new OPKG format (OPKGC).</item>
+      </changelogEntry>
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T17:11:56-04:00">
+        <item>Fixed wrong dependencies.</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
