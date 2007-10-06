@@ -17,9 +17,7 @@
       <email>valleegr@ornl.gov</email>
     </author>
   </authors>
-  <serverDeps/>
-  <clientDeps/>
-  <apiDeps>
+  <serverDeps>
     <requires>
       <filters>
         <dist>fc</dist>
@@ -29,7 +27,33 @@
       </filters>
       <pkg>ntp</pkg>
     </requires>
-  </apiDeps>
+    <requires>
+      <filters>
+        <dist>sles</dist>
+        <dist>suse</dist>
+      </filters>
+      <pkg>xntp</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>mdk</dist>
+        <dist>mdv</dist>
+        <dist>rhel</dist>
+      </filters>
+      <pkg>ntp</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>sles</dist>
+        <dist>suse</dist>
+      </filters>
+      <pkg>xntp</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps/>
   <changelog>
     <versionEntry version="1:2.0.1-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T16:54:15-04:00">
