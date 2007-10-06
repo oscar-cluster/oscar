@@ -19,11 +19,7 @@ libraries.</description>
       <email>efocht@hpce.nec.com</email>
     </author>
   </authors>
-  <serverDeps/>
-  <clientDeps/>
-  <apiDeps>
-    <provides/>
-    <requires/>
+  <serverDeps>
     <requires>
       <pkg>mpich-ch_p4-gcc-oscar</pkg>
       <pkg>mpich-ch_p4-gcc-oscar-module</pkg>
@@ -31,20 +27,33 @@ libraries.</description>
     <requires>
       <filters>
         <dist>suse</dist>
-      </filters>
-      <pkg>gcc-fortran</pkg>
-    </requires>
-    <requires>
-      <filters>
         <dist>sles</dist>
       </filters>
       <pkg>gcc-fortran</pkg>
     </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <pkg>mpich-ch_p4-gcc-oscar</pkg>
+      <pkg>mpich-ch_p4-gcc-oscar-module</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+        <dist>sles</dist>
+      </filters>
+      <pkg>gcc-fortran</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps>
   </apiDeps>
   <changelog>
     <versionEntry version="1.2.7-8">
       <changelogEntry authorName="Erich Focht" date="2007-07-13T11:22:53+02:00">
         <item>converted to new opkg format</item>
+      </changelogEntry>
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T11:22:53+02:00">
+        <item>Fixed wrong dependencies from autoconversion.</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
