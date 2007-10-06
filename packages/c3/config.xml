@@ -15,9 +15,7 @@ tasks on a cluster.</description>
       <email>naughtont@ornl.gov</email>
     </author>
   </authors>
-  <serverDeps/>
-  <clientDeps/>
-  <apiDeps>
+  <serverDeps>
     <requires>
       <filters>
         <dist>rhel</dist>
@@ -34,11 +32,34 @@ tasks on a cluster.</description>
       </filters>
       <pkg>c3</pkg>
     </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <filters>
+        <dist>rhel</dist>
+        <dist>mdv</dist>
+        <dist>suse</dist>
+        <dist>fc</dist>
+      </filters>
+      <pkg>c3</pkg>
+      <pkg>c3-profiled</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>c3</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps>
   </apiDeps>
   <changelog>
-    <versionEntry version="1:4.0.1-5">
+    <versionEntry version="1:4.0.1-6">
       <changelogEntry authorName="Thomas Naughton" date="2007-06-25T10:34:08-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T10:34:08-04:00">
+        <item>Fixed wrong dependecies.</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
