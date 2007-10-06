@@ -17,9 +17,7 @@
       <email>dikim@osl.iu.edu</email>
     </author>
   </authors>
-  <serverDeps/>
-  <clientDeps/>
-  <apiDeps>
+  <serverDeps>
     <requires>
       <pkg>openmpi</pkg>
       <pkg>openmpi-switcher-modulefile</pkg>
@@ -27,14 +25,32 @@
     <requires>
       <filters>
         <dist>suse</dist>
+        <dist>sles</dist>
       </filters>
       <pkg>gcc-fortran</pkg>
     </requires>
-  </apiDeps>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <pkg>openmpi</pkg>
+      <pkg>openmpi-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+        <dist>sles</dist>
+      </filters>
+      <pkg>gcc-fortran</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps/>
   <changelog>
     <versionEntry version="1:1.2.3-1">
       <changelogEntry authorName="Bernard Li" date="2007-08-21T12:06:14-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T12:06:14-04:00">
+        <item>Fixed completely wrong dependencies.</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
