@@ -27,8 +27,6 @@ revisions much simpler than with rpm.
   <serverDeps>
     <requires>
       <pkg>createrepo</pkg>
-    </requires>
-    <requires>
       <pkg>yume</pkg>
     </requires>
   </serverDeps>
@@ -39,6 +37,11 @@ revisions much simpler than with rpm.
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.5-2">
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T10:48:34-04:00">
+        <item>Minor compression of dependencies.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.5-1">
       <changelogEntry authorName="Erich Focht" date="2007-06-25T10:48:34-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
