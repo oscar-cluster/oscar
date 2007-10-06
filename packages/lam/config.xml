@@ -62,9 +62,7 @@ visualized either at runtime or post-mortem.</description>
       <email>valleegr@ornl.gov</email>
     </author>
   </authors>
-  <serverDeps/>
-  <clientDeps/>
-  <apiDeps>
+  <serverDeps>
     <!-- Distributions that provide libaio -->
 
     <!-- Do *NOT* remove these filter lines and libaio/libaio-devel!
@@ -189,11 +187,51 @@ visualized either at runtime or post-mortem.</description>
       <pkg>lam-runtime</pkg>
       <pkg>lam4c2</pkg>
     </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>rhel</dist>
+        <dist>suse</dist>
+      </filters>
+      <pkg>libaio</pkg>
+      <pkg>libaio-devel</pkg>
+      <pkg>lam-oscar</pkg>
+      <pkg>lam-oscar-modulefile</pkg>
+      <pkg>lam-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>mdv</dist>
+      </filters>
+      <pkg>lam-oscar</pkg>
+      <pkg>lam-oscar-modulefile</pkg>
+      <pkg>lam-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
+      <pkg>gcc-fortran</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>lam-runtime</pkg>
+      <pkg>lam4c2</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps>
   </apiDeps>
   <changelog>
-    <versionEntry version="1:7.1.2-5">
+    <versionEntry version="1:7.1.2-6">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-09-13T12:07:15-04:00">
         <item>Port to the new OPKG format (OPKGC).</item>
+      </changelogEntry>
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T12:07:15-04:00">
+        <item>Fixed bogus requires of server and client deps.</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
