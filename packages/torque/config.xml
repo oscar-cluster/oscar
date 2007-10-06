@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>TORQUE Resource Manager</name>
+  <name>torque</name>
   <class>included</class>
   <summary>TORQUE Resource Manager</summary>
   <description>TORQUE (Tera-scale Open-source Resource and QUEue manager) is a resource manager providing control over batch jobs and distributed compute nodes.  TORQUE is based on OpenPBS version 2.3.12 and incorporates scalability, fault tolerance, and feature extension patches provided by NCSA, OSC, the U.S. Dept of Energy, Sandia, PNNL, U of Buffalo, TeraGrid, and many other leading edge HPC organizations.  This version may be freely modified and redistributed subject to the constraints of the included license.

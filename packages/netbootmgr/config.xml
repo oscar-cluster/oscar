@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>NetBootMgr</name>
+  <name>netbootmgr</name>
   <class>base</class>
   <summary>Manage next network boot for a cluster</summary>
   <description>

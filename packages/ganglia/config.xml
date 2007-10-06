@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>Ganglia</name>
+  <name>ganglia</name>
   <class>included</class>
   <summary>distributed monitoring and execution system</summary>
   <description>Ganglia is a scalable distributed monitoring system for high-performance computing systems such as clusters and Grids.</description>
