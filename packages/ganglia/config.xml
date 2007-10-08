@@ -20,6 +20,7 @@
   <serverDeps>
     <requires>
       <pkg>ganglia-gmetad</pkg>
+      <pkg>ganglia-gmond</pkg>
       <pkg>ganglia-web</pkg>
       <pkg>rrdtool</pkg>
     </requires>
@@ -33,6 +34,7 @@
     <requires>
       <filters>
         <dist>suse</dist>
+        <dist>sles</dist>
       </filters>
       <pkg>php4-gd</pkg>
     </requires>
@@ -44,12 +46,19 @@
   <clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1:3.0.4-2">
-      <changelogEntry authorName="Erich Focht" date="2007-09-07T15:02:13+02:00">
-        <item>converted package to opkgc format</item>
+    <versionEntry version="1:3.0.4-3">
+      <changelogEntry authorName="Erich Focht" date="2007-10-08T15:02:13+02:00">
+        <item>Dependency of -server was missing gmond. Added.</item>
       </changelogEntry>
+    </versionEntry>
+    <versionEntry version="1:3.0.4-2">
       <changelogEntry authorName="Erich Focht" date="2007-10-06T15:02:13+02:00">
         <item>fixed dependencies for client</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="1:3.0.4-1">
+      <changelogEntry authorName="Erich Focht" date="2007-09-07T15:02:13+02:00">
+        <item>converted package to opkgc format</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
