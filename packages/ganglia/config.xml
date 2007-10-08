@@ -30,6 +30,7 @@
         <dist>rhel</dist>
       </filters>
       <pkg>php-gd</pkg>
+      <pkg>php-common</pkg>
     </requires>
     <requires>
       <filters>
@@ -43,9 +44,15 @@
     <requires>
       <pkg>ganglia-gmond</pkg>
     </requires>
-  <clientDeps>
+  </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1:3.0.4-4">
+      <changelogEntry authorName="DongInn Kim" date="2007-10-08T15:02:13+02:00">
+        <item>Add another dependency: php-common for RHEL of server</item>
+        <item>and clientDeps tag was not closed. I added the closing tag.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1:3.0.4-3">
       <changelogEntry authorName="Erich Focht" date="2007-10-08T15:02:13+02:00">
         <item>Dependency of -server was missing gmond. Added.</item>
