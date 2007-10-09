@@ -49,6 +49,7 @@ rm -rf %{_tmppath}/%{name}-%{version}-root
 %package client
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
+AutoReqProv: no
 %description client
 Requires: %{name}-scripts == %{version}-%{release}
 Dummy package for oscar-base-client install.
@@ -57,6 +58,7 @@ Dummy package for oscar-base-client install.
 %package server
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
+AutoReqProv: no
 %description server
 Requires: %{name} == %{version}-%{release}
 Dummy package for oscar-base-server install.
@@ -65,6 +67,7 @@ Dummy package for oscar-base-server install.
 %package libs
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
+AutoReqProv: no
 %description libs
 Libraries for OSCAR clustering base package.
 
@@ -73,6 +76,7 @@ Libraries for OSCAR clustering base package.
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
 Requires: %{name}-libs == %{version}-%{release}
+AutoReqProv: no
 %description scripts
 Scripts for OSCAR clustering base package.
 
