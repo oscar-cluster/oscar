@@ -38,16 +38,27 @@ purpose.</description>
       <email>valleegr@ornl.gov</email>
     </author>
   </authors>
-  <serverDeps/>
-  <clientDeps/>
-  <apiDeps>
+  <serverDeps>
     <requires>
       <pkg>env-switcher</pkg>
       <pkg>modules-oscar</pkg>
       <pkg>modules-default-manpath-oscar</pkg>
     </requires>
-  </apiDeps>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <pkg>env-switcher</pkg>
+      <pkg>modules-oscar</pkg>
+      <pkg>modules-default-manpath-oscar</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps/>
   <changelog>
+    <versionEntry version="1:1.0.7-2">
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T17:15:33-04:00">
+        <item>Fixed bogus dependencies.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1:1.0.7-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T17:15:33-04:00">
         <item>Migration to the new OPKG format (OPKGC).</item>
