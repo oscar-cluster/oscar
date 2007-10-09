@@ -48,7 +48,7 @@
   <apiDeps/>
   <changelog>
     <versionEntry version="1:3.0.5-1">
-      <changelogEntry authorName="Bernard Li" date="2007-10-08T20:03:56-0400">
+      <changelogEntry authorName="Bernard Li" date="2007-10-08T20:03:56-04:00">
         <item>Update to version 3.0.5</item>
       </changelogEntry>
     </versionEntry>
