@@ -67,9 +67,10 @@ build_rpms () {
     if [ $? -ne 0 ]; then
 	echo "EEEE: Building RPMs from $SRPM failed."
 	tail -10 $TMPO
-	echo "== Full output of rpmbuild is in the corresponding .err file =="
-	local CMD="mv $TMPO "`basename $SRPM .src.rpm`".err"
+	local ERRFILE=`basename $SRPM .src.rpm`".err"
+	local CMD="mv $TMPO $ERRFILE"
 	run_cmd "$CMD"
+	echo "== Full output of rpmbuild is in `pwd`/$ERRFILE file =="
 	cleanup
 	exit 1
     fi

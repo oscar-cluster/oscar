@@ -148,6 +148,8 @@ my $bindir = "distro/".$os->{compat_distro}.$os->{compat_distrover}.
 my $arch = $os->{arch};
 my $march = $arch;
 $march =~ s/^i.86$/i?86/;
+my $build_arch = $arch;
+$build_arch =~ s/^i.86$/i686/;
 
 my $err;
 for my $pkg (@pkgs) {
@@ -326,12 +328,21 @@ sub build_if_needed {
 
 	    for my $s (@sbuild) {
 		my $opt = shift @buildopts;
+		if ($sel eq "common") {
+		    if ($opt !~ m,--target,) {
+			$opt .= " --target noarch";
+		    }
+		} else {
+		    if ($opt !~ m,--target,) {
+			$opt .= " --target ".$build_arch;
+		    }
+		}
 		$ENV{RPMBUILDOPTS} = $opt;
 		if ($opt) {
 		    print "setting \$RPMBUILDOPTS=$opt\n";
 		}
 		my $cmd = "$OHOME/scripts/build_rpms --only-rpm $s";
-		print "Executing: $cmd\n";
+		print "**** Executing: $cmd\n";
 		if (!$test) {
 		    my $ret = system($cmd);
 		    if ($ret) {
