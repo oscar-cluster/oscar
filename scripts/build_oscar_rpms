@@ -240,7 +240,7 @@ sub install_requires {
 		push @install_stack, @rpms;
 	    }
 	} else {
-	    push @install_stack, $r;
+	    push @install_stack, $r.".{".$build_arch.",noarch}";
 	}
     }
     if (!$test) {
