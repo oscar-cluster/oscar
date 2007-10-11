@@ -246,7 +246,7 @@ sub install_requires {
     if (!$test) {
 	# remember RPMs which were installed before
 	my %before = map { $_ => 1 } split("\n",`rpm -qa`);
-	my $cmd = "yume --repo $pool -y install ".join(" ",@install_stack);
+	my $cmd = "yume -y install ".join(" ",@install_stack);
 	print "Executing: $cmd\n" if $verbose;
 	if (system($cmd)) {
 	    print "Warning: failed to install requires: ".join(" ",@reqs)."\n";
@@ -279,7 +279,7 @@ sub remove_installed_reqs {
 	}
 	print "Removing requires: ".join(" ",@pre_pkgs)."\n";
 	if (!$test) {
-	    !system("yume --repo $pool -y remove ".join(" ",@pre_pkgs));
+	    !system("yume -y remove ".join(" ",@pre_pkgs));
 	}
 	@installed_reqs = ();
     }	    
