@@ -1,0 +1,6 @@
+error: Failed build dependencies:
+	libtermcap-devel is needed by atftp-0.7-7oscar.x86_64
+	pcre-devel is needed by atftp-0.7-7oscar.x86_64
+Installing /home/focht/Projects/Cluster/oscar-svn/trunk/packages/sis/SRPMS/atftp-0.7-7oscar.src.rpm
+Building target platforms: x86_64
+Building for target x86_64
