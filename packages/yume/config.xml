@@ -37,6 +37,11 @@ revisions much simpler than with rpm.
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.5-3">
+      <changelogEntry authorName="Erich Focht" date="2007-10-11T10:48:34+01:00">
+        <item>Updates for perl-IO-Tty such that it compiles on SLES10, Suse10.2 and RHEL5.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.5-2">
       <changelogEntry authorName="Erich Focht" date="2007-10-06T10:48:34-04:00">
         <item>Minor compression of dependencies.</item>
