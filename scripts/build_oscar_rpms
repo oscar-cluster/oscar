@@ -462,11 +462,11 @@ sub get_config {
 	    $v =~ s/\*/\.*/g;
 	    $a =~ s/\*/\.*/g;
 	    my $str = "$distro:$distver:$arch";
-	    my $mstr = "$d:$v:$a";
+	    my $mstr = "($d):($v):($a)";
 	    $match = 0;
 	    if ($str =~ m/^$mstr$/) {
 		$match = 1;
-		print "found matching block [$d:$v:$a]\n" if $verbose;
+		print "found matching block [$d:$v:$a] for $distro:$distver:$arch\n" if $verbose;
 		last;
 	    }
 	}
