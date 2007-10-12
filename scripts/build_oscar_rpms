@@ -346,7 +346,8 @@ sub build_if_needed {
 		if (!$test) {
 		    my $ret = system($cmd);
 		    if ($ret) {
-			die "Command execution failed: $!";
+			print "Command execution failed: $!";
+			return $ret;
 		    }
 		}
 	    }
