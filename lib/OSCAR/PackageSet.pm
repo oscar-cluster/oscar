@@ -68,7 +68,7 @@ sub get_local_package_set_list {
             # OPKGs, even if users wants to create images based on other distro.
             # This is normal, we must be sure the headnode provides all necessary
             # services (provided via OPKGs).
-            my $distro_id = $os->{distro} . "-" . $os->{distro_version} . "-" .
+            my $distro_id = $os->{compat_distro}."-".$os->{compat_distrover}."-" .
                             $os->{arch} . ".xml";
             if ( -f "$package_set_dir/$dir/$distro_id") {
                 print "Package set found: $dir\n" if $verbose;
@@ -92,7 +92,7 @@ sub get_list_opkgs_in_package_set {
     die ("ERROR: The package set directory does not exist ".
         "($package_set_dir)") if ( ! -d $package_set_dir );
     my $os = OSCAR::OCA::OS_Detect::open();
-    my $distro_id = $os->{distro} . "-" . $os->{distro_version} . "-" .
+    my $distro_id = $os->{compat_distro}."-".$os->{compat_distrover}."-".
                     $os->{arch} . ".xml";
     my $file_path = "$package_set_dir/$packageSetName/$distro_id";
     die ("ERROR: Impossible to read the package set ($file_path)") 
@@ -144,7 +144,7 @@ sub get_opkgs_path_from_package_set {
     die ("ERROR: The package set directory does not exist ".
         "($package_set_dir)") if ( ! -d $package_set_dir );
     my $os = OSCAR::OCA::OS_Detect::open();
-    my $distro_id = $os->{distro} . "-" . $os->{distro_version} . "-" .
+    my $distro_id = $os->{compat_distro}."-".$os->{compat_distrover}."-".
                     $os->{arch} . ".xml";
     my $file_path = "$package_set_dir/$packageSetName/$distro_id";
     die ("ERROR: Impossible to read the package set ($file_path)")
