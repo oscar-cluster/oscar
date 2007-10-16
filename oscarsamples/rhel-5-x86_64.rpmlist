@@ -43,7 +43,7 @@ ftp
 gawk
 gcc
 gcc-c++
-gcc-g77
+gcc-gfortran
 gd
 gdb
 gdbm
@@ -220,3 +220,19 @@ perl-DBD-Pg
 perl-DBI
 postgresql
 postgresql-libs
+
+# ia32 RPMs with same name as the x86_64 versions
+glibc.i686
+tcl.i386
+libstdc++.i386
+freetype.i386
+fontconfig.i386
+glibc-devel.i386
+xorg-x11-libs.i386
+expat.i386
+ncurses.i386
+xorg-x11-Mesa-libGL.i386
+zlib.i386
+gpm.i386
+libgcc.i386
+
