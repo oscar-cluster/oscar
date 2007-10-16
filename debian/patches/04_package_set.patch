@@ -1,0 +1,11 @@
+--- oscar/lib/OSCAR/PackageSet.pm	2007-08-16 14:26:48.000000000 -0400
++++ oscar/lib/OSCAR/PackageSet.pm.new	2007-08-16 14:30:24.000000000 -0400
+@@ -37,7 +37,7 @@
+             );
+ 
+ my $verbose = $ENV{OSCAR_VERBOSE};
+-my $package_set_dir = $ENV{OSCAR_HOME}."/share/package_sets";
++my $package_set_dir = "/usr/share/oscar/package_sets";
+ 
+ ###############################################################################
+ # Scan package sets defined in share/package_sets based on the local

@@ -154,4 +154,21 @@ baserpms:
 	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar-base-*$(OSCAR_VERSION)-*.noarch.rpm . && \
 	rm -f oscar-base-$(OSCAR_VERSION).tar.gz oscar-base.spec
 
+basedebs:
+	@echo "Building OSCAR base Debian packages"
+	@if [ `echo $(OSCAR_VERSION) | grep -c ':'` -gt 0 ]; then \
+		echo "OSCAR_VERSION is $(OSCAR_VERSION) and contains a ':'"; \
+		echo "Please clean up (svn update) your svn tree and try again!"; \
+		exit 1; \
+	fi
+	rm -rf /tmp/oscar-debian; mkdir -p /tmp/oscar-debian
+	tar czvf /tmp/oscar-debian/oscar-base-$(OSCAR_VERSION).tar.gz --exclude packages \
+        --exclude dist --exclude .svn --exclude \*.tar.gz \
+        --exclude \*.spec.in --exclude src --exclude \*~ \
+        --exclude share/prereqs/\*/distro \
+        --exclude share/prereqs/\*/SRPMS .
+	cd /tmp/oscar-debian && tar xzf oscar-base-$(OSCAR_VERSION).tar.gz && \
+		dpkg-buildpackage -rfakeroot
+	cp /tmp/oscar*deb /tmp/liboscar* $(OSCAR_HOME)
+
 .PHONY : test dist clean install

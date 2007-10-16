@@ -1,0 +1,165 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+BUILD_DIR = $(CURDIR)
+PATCHES=$(sort $(shell find $(CURDIR)/debian/patches -name "*.patch"))
+
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+        CFLAGS += -O0
+else
+        CFLAGS += -O2
+endif
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	# Add here commands to configure the package.
+	@echo -n "Applying patches..."
+	@cd $(BUILD_DIR) && \
+		$(foreach patch, $(PATCHES), \
+				echo -n Applying `basename $(patch)`... && cat $(patch) | \
+		patch -s -p1 && echo done. &&) /bin/true
+	touch configure-stamp
+
+
+build: build-stamp
+
+build-stamp: configure-stamp
+	dh_testdir
+
+    # Add here commands to compile the package.
+    #docbook-to-man debian/oscar.sgml > oscar.1
+
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+
+    # Add here commands to clean up after the build process.
+	# Yes this is pretty ugly but i want to be able to build the packages
+	# for a svn check-out
+	#$(MAKE) clean DESTDIR=$(CURDIR)/debian/oscar-tmp
+	rm -rf $(CURDIR)/debian/oscar $(CURDIR)/debian/oscar-tmp
+	# We delete all the binaries here to be sure they will not be included 
+	# into the tarball generated with the Debian packages (they are not 
+	# needed!).
+	rm -f `find $(CURDIR) -name "*.deb"`
+	rm -f `find $(CURDIR) -name "*.rpm"`
+
+	dh_clean
+
+install: build 
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+        # Add here commands to install the package into debian/oscar.
+
+#	$(MAKE) install DESTDIR=$(CURDIR)/debian/oscar
+	# The oscar installation procedure sucks, it is very monolithic,
+	# we have to do everything manually
+	
+	# Prepare the "oscar" package
+	mkdir -p $(CURDIR)/debian/oscar/usr/bin
+	mkdir -p $(CURDIR)/debian/oscar/usr/share/doc/oscar
+	mkdir -p $(CURDIR)/debian/oscar/usr/share/oscar/images
+#	mkdir -p $(CURDIR)/debian/oscar/opt/oscar
+	rm -f `find $(CURDIR) -name "*.deb"`
+	rm -f `find $(CURDIR) -name "*.rpm"`
+	mv $(CURDIR)/COPYING \
+		$(CURDIR)/debian/oscar/usr/share/doc/oscar
+	mv $(CURDIR)/README \
+		$(CURDIR)/debian/oscar/usr/share/doc/oscar
+	mv $(CURDIR)/VERSION \
+		$(CURDIR)/debian/oscar/usr/share/doc/oscar
+	# It seems that dist is not needed in a binary package
+	# mv $(CURDIR)/dist \
+	#	$(CURDIR)/debian/oscar/opt/oscar
+	mv $(CURDIR)/images/oscar.gif \
+		$(CURDIR)/debian/oscar/usr/share/oscar/images
+	# We do not currently know how to deal with oscarsamples
+#	mv $(CURDIR)/oscarsamples \
+		$(CURDIR)/debian/oscar/opt/oscar
+	mv $(CURDIR)/share/* \
+		$(CURDIR)/debian/oscar/usr/share/oscar
+	# We remove stuff we do not yet know how to deal with
+	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/Makefile.am
+	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/Makefile.in
+	# We currently do not include what is in 'src'. This directory
+	# needs its proper installation mechanism (e.g. some parts need
+	# to be compiled).
+	# mv $(CURDIR)/src \
+	#	$(CURDIR)/debian/oscar/opt/oscar
+
+	# Prepare the liboscar package
+	mkdir -p $(CURDIR)/debian/liboscar/usr/lib/perl5
+	mv $(CURDIR)/lib/* \
+	    $(CURDIR)/debian/liboscar/usr/lib/perl5
+
+	# Prepare the oscar-bin package
+	mkdir -p $(CURDIR)/debian/oscar-bin/usr/bin
+	mv $(CURDIR)/scripts/* \
+		$(CURDIR)/debian/oscar-bin/usr/bin
+	mv $(CURDIR)/install_cluster \
+		$(CURDIR)/debian/oscar-bin/usr/bin
+
+	# Prepare the "oscar-base" package
+	mkdir -p $(CURDIR)/debian/oscar-base
+
+	# Prepare the "oscar-base-server" package
+	mkdir -p $(CURDIR)/debian/oscar-base-server
+
+	# Prepare the "oscar-base-client" package
+	mkdir -p $(CURDIR)/debian/oscar-base-client
+	
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installexamples
+#       dh_install
+#       dh_installmenu
+#       dh_installdebconf
+#       dh_installlogrotate
+#       dh_installemacsen
+#       dh_installpam
+#       dh_installmime
+#       dh_installinit
+#       dh_installcron
+#       dh_installinfo
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+#       dh_perl
+#       dh_python
+#       dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure
+

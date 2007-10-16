@@ -1,0 +1,48 @@
+Source: oscar
+Section: oscar
+Priority: optional
+Maintainer: Geoffroy Vallee <valleegr@ornl.gov>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.7.2.2
+
+Package: oscar
+Architecture: all
+Depends: c-shell | tcsh, liboscar, libqt-perl, oscar-bin, perl
+Description: Open Source Cluster Application Resources
+ OSCAR (Open Source Cluster Application Resources) is a snapshot of the best 
+ known methods for building, programming, and using High Performance Computing
+ (HPC) clusters. It consists of a fully integrated and easy to install software
+ bundle designed for high performance cluster computing. Everything needed to
+ install, build, maintain, program, and use a Linux cluster is included in the
+ suite, making it unnecessary to download or even install any individual 
+ software packages on your cluster.
+
+Package: oscar-bin
+Architecture: all
+Depends: perl
+Description: Binaries for OSCAR
+ Set of binaries for OSCAR
+
+Package: liboscar
+Architecture: all
+Depends: perl
+Description: Libraries for OSCAR 
+ Set of libraries for OSCAR
+
+Package: oscar-base-server
+Architecture: all
+Depends: perl, libqt-perl
+Description: Transitional package for OSCAR (server side)
+ This is a transitional package for OSCAR (server side).
+
+Package: oscar-base
+Architecture: all
+Depends: perl, libqt-perl
+Description: Transitional package for OSCAR (API side)
+ This is a transitional package for OSCAR (API side).
+
+Package: oscar-base-client
+Architecture: all
+Depends: perl, libqt-perl
+Description: Transitional package for OSCAR (client side)
+ This is a transitional package for OSCAR (client side).

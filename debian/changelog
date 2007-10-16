@@ -1,0 +1,24 @@
+oscar (5.1~svn20070822-0gv1) stable; urgency=low
+
+  * New upstream development release 
+  * Include few new packages needed my OPKGC, currently empty: oscar-base,
+    oscae-base-client, oscar-base-server.
+  * Remove all binary packages when creating the Debian packages (they are
+    not needed).
+  * Install OSCAR libs into /usr/lib/perl5/OSCAR/ instead of /opt/oscar/libs.
+  * Split up OSCAR into different Debian packages: liboscar, oscar-bin, and
+    oscar.
+  * Add a dependency to c-shell | tcsh for the oscar Debian package.
+  * Relocate the OSCAR logo into /usr/share/oscar/images. A patch has been
+    created to update the OSCAR code for that.
+  * Relocate part of the code in the share directory into /usr/share/oscar.
+    Right now, package_sets, schemas, and machine_sets have been relocated.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Tue, 14 Aug 2007 14:48:05 -0400
+
+oscar (5.1~svn20070120-0gv1) stable; urgency=low
+
+  * New upstream development release
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Sat, 20 Jan 2007 14:56:58 -0500
+

@@ -1,0 +1,13 @@
+--- oscar/lib/OSCAR/psm.pm	2007-08-16 14:19:00.000000000 -0400
++++ oscar/lib/OSCAR/psm.pm.new	2007-08-16 14:23:11.000000000 -0400
+@@ -54,8 +54,8 @@
+ #########################################################################
+ sub select_set {
+ 	my $filename = shift;
+-	my $package_set_dir = "$ENV{OSCAR_HOME}/share/package_sets/";
+-    my $schema_dir = "$ENV{OSCAR_HOME}/share/schemas";
++	my $package_set_dir = "/usr/share/oscar/package_sets";
++    my $schema_dir = "/usr/share/oscar/schemas";
+ 
+ 	# Make sure the file is there
+ 	
