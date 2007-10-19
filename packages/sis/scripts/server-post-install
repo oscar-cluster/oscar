@@ -38,6 +38,10 @@ if (!$install_mode) {
   set_install_mode($default_install_mode);
 }
 
+# set TFTP_DIR to point to /tftpboot (needed with systemimager > 3.9.4
+!system("sed -i -e 's,^TFTP_DIR =.*,TFTP_DIR = /tftpboot,' /etc/systemimager/systemimager.conf")
+  or print "Could not patch systemimager.conf. Please chaeck that TFTP_DIR points to /tftpboot!\n";
+
 #EF# hack for fixing problem of si_monitor with nothreads perl
 #    in Mandriva 2006. Workaround for bug #280
 use Config;
