@@ -39,6 +39,8 @@ use Carp;
 	     opkg_hash_installed
 	     );
 
+my $verbose = 0;
+
 ####
 # List all opkgs which are available in the accessible repositories.
 #
@@ -130,22 +132,20 @@ sub opkg_hash_available {
 		$isdesc = 0;
 		$ver = $rel = $summary = $packager = $desc = $group = "";
 		$conflicts = "";
-	    } else if (/^Version\s*:\s*(.*)\s*$/) {
+	    } elsif (/^Version\s*:\s*(.*)\s*$/) {
 		$ver = $1;
-	    } else if (/^Release\s*:\s*(.*)\s*$/) {
+	    } elsif (/^Release\s*:\s*(.*)\s*$/) {
 		$rel = $1;
-	    } else if (/^Packager\s*:\s*(.*)\s*$/) {
+	    } elsif (/^Packager\s*:\s*(.*)\s*$/) {
 		$packager = $1;
-	    } else if (/^Group\s*:\s*(.*)\s*$/) {
+	    } elsif (/^Group\s*:\s*(.*)\s*$/) {
 		$group = $1;
-	    } else if (/^Summary\s*:\s*(.*), server part\s*$/) {
+	    } elsif (/^Summary\s*:\s*(.*), server part\s*$/) {
 		$summary = $1;
-	    } else if (/^Description\s*:/) {
+	    } elsif (/^Description\s*:/) {
 		$isdesc = 1;
-	    } else {
-		if ($isdesc) {
+	    } elsif ($isdesc) {
 		    $desc .= "$_\n";
-		}
 	    }
 	}
 	close CMD;
@@ -173,18 +173,18 @@ sub opkg_hash_available {
 		$isdesc = 0;
 		$ver = $rel = $summary = $packager = $desc = $group = "";
 		$conflicts = "";
-	    } else if (/^Version: (.*)$/) {
+	    } elsif (/^Version: (.*)$/) {
 		$ver = $1;
-	    } else if (/^Section: (.*)$/) {
+	    } elsif (/^Section: (.*)$/) {
 		$group = $1;
-	    } else if (/^Maintainer: (.*)$/) {
+	    } elsif (/^Maintainer: (.*)$/) {
 		$packager = $1;
-	    } else if (/^Conflicts: (.*)$/) {
+	    } elsif (/^Conflicts: (.*)$/) {
 		$conflicts = $1;
-	    } else if (/^Description: (.*), server part$/) {
+	    } elsif (/^Description: (.*), server part$/) {
 		$isdesc = 1;
 		$summary = $1;
-	    } else if (/^Bugs:/) {
+	    } elsif (/^Bugs:/) {
 		if ($name) {
 		    $o{$name} = {
 			name => $name,
