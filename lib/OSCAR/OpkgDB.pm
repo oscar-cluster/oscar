@@ -39,7 +39,7 @@ use Carp;
 	     opkg_hash_installed
 	     );
 
-my $verbose = 0;
+my $verbose = $ENV{OSCAR_VERBOSE};
 
 ####
 # List all opkgs which are available in the accessible repositories.
@@ -66,7 +66,7 @@ sub opkg_list_available {
 	print "Running $cmd" if $verbose;
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
-	    if (m/^opkg-(.*)-server-(.*).noarch.rpm/) {
+	    if (m/^opkg-(.*)-server-(.*).noarch/) {
 		$opkgs{$1} = $2;
 	    }
 	}
@@ -260,7 +260,8 @@ sub opkg_list_installed {
 
     my $pkg = $os->{pkg};
     if ($pkg eq "rpm") {
-	my $cmd="/usr/bin/rpm -qa --qf='%{NAME} %{VERSION}-%{RELEASE}\n'";
+        chomp(my $rpm_cmd = `which rpm`);
+	my $cmd="$rpm_cmd -qa --qf='%{NAME} %{VERSION}-%{RELEASE}\n'";
 	print "Running $cmd" if $verbose;
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
