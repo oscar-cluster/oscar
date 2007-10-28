@@ -30,11 +30,19 @@ use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use File::Basename;
+use Data::Dumper;
 use Carp;
 
-@EXPORT = qw(distro_repo_url oscar_repo_url repo_empty
-	     pkg_extension pkg_separator
-	     distro_detect_or_die list_distro_pools);
+@EXPORT = qw(distro_repo_url
+	     oscar_repo_url
+	     repo_empty
+	     repos_list_urlfile
+	     repos_add_urlfile
+	     repos_del_urlfile
+	     pkg_extension
+	     pkg_separator
+	     distro_detect_or_die
+	     list_distro_pools);
 
 # The possible places where packages may live.  
 
@@ -61,6 +69,177 @@ sub distro_detect_or_die {
 }
 
 #
+# Return list of repositories present in the URL file passed as argument.
+#
+sub repos_list_urlfile {
+    my ($path) = @_;
+
+    my @remote;
+    if (-f "$path") {
+	local *IN;
+	if (open IN, "$path") {
+	    while (my $line = <IN>) {
+		chomp $line;
+		next if ($line !~ /^(http|ftp|file|mirror)/);
+		next if (($line =~ /^\s*$/) || ($line =~ /^\s*\#/));
+		push @remote, $line;
+	    }
+	    close IN;
+	}
+    }
+    return @remote;
+}
+
+#
+# Add repositories to a .url file. Create file if it doesn't exist.
+#
+sub repos_add_urlfile {
+    my ($path, @repos) = (@_);
+
+    # make sure local paths have "file:" prefix
+    my %rhash;
+    my @n;
+    for (@repos) {
+	s,^/,file:/,;
+	if (!m,^(file|http|ftp|https|mirror):,) {
+	    print STDERR "ERROR: Repository must either be a URL or an absolute path\n";
+	    return;
+	}
+	push @n, $_;
+	$rhash{$_} = 1;
+    }
+    @repos = @n;
+
+    local *OUT;
+    if (! -f "$path") {
+	print STDERR "Creating new .url file: $path with repositories\n  ".
+	    join("\n  ",@repos)."\n";
+	my $dir = dirname($path);
+	if (! -d $dir) {
+	    print STDERR "Creating directory $dir\n";
+	    !system("mkdir -p $dir")
+		or croak("Could not create directory $dir! $!");
+	}
+	open OUT, "> $path" or croak("Could not open $path for writing. $!");
+	for (@repos) {
+	    print OUT "$_\n";
+	}
+	close OUT;
+	return;
+    }
+    #
+    # if file exists, add at the end, but only if entry wasn't there.
+    #
+    local *IN;
+    open IN, "$path" or croak("Could not open $path for reading. $!");
+    my @orepos = <IN>;
+    close IN;
+    for (@orepos) {
+	chomp;
+	if (defined($rhash{$_})) {
+	    delete $rhash{$_};
+	}
+    }
+    return if (!scalar(keys(%rhash)));
+
+    #
+    # write output file
+    #
+    open OUT, "> $path" or croak("Could not open $path for writing. $!");
+    for (@orepos) {
+	chomp;
+	print OUT "$_\n";
+    }
+    # append the repos which need to be added
+    for (sort(keys(%rhash))) {
+	print OUT "$_\n";
+    }
+    close OUT;
+}
+
+#
+# Delete repositories from a .url file.
+#
+sub repos_del_urlfile {
+    my ($path, @repos) = (@_);
+
+    if (! -f "$path") {
+	croak("URL file $path does not exist!!!");
+    }
+    # build hash of repos to be deleted
+    my %rhash;
+    for (@repos) {
+	s,^/,file:/,;
+	if (!m,^(file|http|ftp|https|mirror):,) {
+	    print STDERR "ERROR: Repository must either be a URL or an absolute path\n";
+	    return;
+	}
+	$rhash{$_} = 1;
+    }
+    local *IN;
+    open IN, "$path" or croak("Could not open $path for reading. $!");
+    my @orepos = <IN>;
+    close IN;
+
+    local *OUT;
+    open OUT, "> $path" or croak("Could not open $path for writing. $!");
+    for (@orepos) {
+	chomp;
+	if (!defined($rhash{$_})) {
+	    print OUT "$_\n";
+	} else {
+	    delete $rhash{$_};
+	}
+    }
+    close OUT;
+    if (scalar(keys(%rhash))) {
+	print STDERR "WARNING: Following repositories were not found in $path:\n  ".
+	    join("\  ",sort(keys(%rhash)))."\n";
+    }
+}
+
+#
+# Detect os for passed arguments.
+# Common code for several subroutines.
+#
+sub query_os {
+    my ($img, $os);
+    if (scalar(@_) <= 1) {
+	($img) = (@_);
+    } elsif ($_[0] eq "os") {
+	$os = $_[1];
+    }
+    if (!defined($os)) {
+	$os = distro_detect_or_die($img);
+    }
+    return $os;
+}
+
+#
+# Return distro .url file path for selected image or distro
+#
+sub distro_urlfile {
+    my $os = &query_os(@_);
+    my $distro    = $os->{distro};
+    my $distrover = $os->{distro_version};
+    my $arch      = $os->{arch};
+    return "/tftpboot/distro/$distro-$distrover-$arch.url";
+}
+
+#
+# Return OSCAR .url file path for selected image or distro
+# and packaging method.
+#
+sub oscar_urlfile {
+    my $os = &query_os(@_);
+    my $cdistro   = $os->{compat_distro};
+    my $cdistrover= $os->{compat_distrover};
+    my $arch      = $os->{arch};
+    my $path = "/tftpboot/oscar/$cdistro-$cdistrover-$arch.url";
+    return ($path, $os->{pkg});
+}
+
+#
 # The URL where distribution packages are stored. When the files are
 # stored locally they should go to:
 # /tftpboot/distro/$distro-$version-$arch
@@ -74,37 +253,18 @@ sub distro_detect_or_die {
 # /tftpboot/distro/$distro-$version-$arch.url
 #
 sub distro_repo_url {
-    my ($img,$os);
-    if (scalar(@_) <= 1) {
-	($img) = @_;
-    } elsif ($_[0] eq "os") {
-	$os = $_[1];
-    }
-    if (!defined($os)) {
-	$os = distro_detect_or_die($img);
-    }
-    my $distro    = $os->{distro};
-    my $distrover = $os->{distro_version};
-    my $arch      = $os->{arch};
-    my $path = "/tftpboot/distro/$distro-$distrover-$arch";
-    my $url;
-    if (-f "$path.url") {
-	my @remote;
-	local *IN;
-	if (open IN, "$path.url") {
-	    while (my $line = <IN>) {
-		chomp $line;
-		next if ($line !~ /^(http|ftp|file|mirror)/);
-		next if (($line =~ /^\s*$/) || ($line =~ /^\s*#/));
-		push @remote, $line;
-	    }
-	    close IN;
-	    $url = join(",",@remote);
-	}
-    } else {
-	$url = $path;
+    my $url = &distro_urlfile(@_);
+    my $os = &query_os(@_);
+    my $path = dirname($url)."/".basename($url, ".url");
+
+    if (!-f "$url") {
+	# create .url file and add local path as first entry
+	&repos_add_urlfile("$url", "file:$path");
+
 	if ( (! -d $path) && (! -l $path) ) {
+	    #
 	    # check if /tftpboot/rpm exists and has the distro we expect
+	    #
 	    my $oldpool = "/tftpboot/rpm";
 	    if ( -d $oldpool || -l $oldpool) {
 		my $ros = OSCAR::OCA::OS_Detect::open(pool => $oldpool);
@@ -112,8 +272,8 @@ sub distro_repo_url {
 		    ($ros->{distro} eq $os->{distro}) &&
 		    ($ros->{distro_version} eq $os->{distro_version}) &&
 		    ($ros->{arch} eq $os->{arch}) ) {
-		    print "Discovered correct distro repository in $oldpool!\n";
-		    print "Linking it symbolically to $path.\n";
+		    print STDERR "Discovered correct distro repository in $oldpool!\n";
+		    print STDERR "Linking it symbolically to $path.\n";
 		    my $pdir = dirname($path);
 		    if (! -d $pdir) {
 			!system("mkdir -p $pdir") or
@@ -124,12 +284,14 @@ sub distro_repo_url {
 		    return $url;
 		}
 	    }
-	    print STDERR "Distro repository $path not found. Creating empty directory.\n";
+	    print STDERR "Distro repository $path not found. "
+		. "Creating empty directory.\n";
 	    !system("mkdir -p $path") or
-		carp "Could not create directory $path!";
+		croak "Could not create directory $path! $!";
 	}
     }
-    return $url;
+    my @repos = &repos_list_urlfile("$url");
+    return join(",", @repos);
 }
 
 #
@@ -158,46 +320,29 @@ sub distro_repo_url {
 # local repositories don't exist, create their directories.
 #
 sub oscar_repo_url {
-    my ($img,$os);
-    if (scalar(@_) <= 1) {
-	($img) = @_;
-    } elsif ($_[0] eq "os") {
-	$os = $_[1];
+    my ($url, $pkg) = &oscar_urlfile(@_);
+    my $path = dirname($url)."/".basename($url, ".url");
+    my $comm = "/tftpboot/oscar/common-" . $pkg . "s";
+
+    #
+    # Add local paths to .url file, if not already there
+    #
+    &repos_add_urlfile("$url", "file:$path", "file:$comm");
+
+    if (! -d $path && ! -l $path) {
+	print STDERR "Distro repository $path not found. ".
+	    "Creating empty directory.\n";
+	!system("mkdir -p $path") or
+	    croak "Could not create directory $path!";
     }
-    if (!defined($os)) {
-	$os = distro_detect_or_die($img);
+    if (! -d $comm && ! -l $comm) {
+	print STDERR "Commons repository $comm not found. ".
+	    "Creating empty directory.\n";
+	!system("mkdir -p $comm") or
+	    croak "Could not create directory $comm!";
     }
-    my $cdistro   = $os->{compat_distro};
-    my $cdistrover= $os->{compat_distrover};
-    my $arch      = $os->{arch};
-    my $path = "/tftpboot/oscar/$cdistro-$cdistrover-$arch";
-    my $commons = "/tftpboot/oscar/common-" . $os->{pkg} . "s";
-    my $url = $commons . "," . $path;
-    if (-f "$path.url") {
-	my @remote;
-	local *IN;
-	if (open IN, "$path.url") {
-	    while (my $line = <IN>) {
-		chomp $line;
-		next if ($line !~ /^(http|ftp|file|mirror):/);
-		push @remote, $line;
-	    }
-	    close IN;
-	    return join(",",@remote);
-	}
-    } else {
-	if (! -d $path) {
-	    print STDERR "Distro repository $path not found. Creating empty directory.\n";
-	    !system("mkdir -p $path") or
-		carp "Could not create directory $path!";
-	}
-	if (! -d $commons) {
-	    print STDERR "Commons repository $commons not found. Creating empty directory.\n";
-	    !system("mkdir -p $commons") or
-		carp "Could not create directory $commons!";
-	}
-    }
-    return $url;
+    my @repos = &repos_list_urlfile("$url");
+    return join(",", @repos);
 }
 
 #
@@ -205,7 +350,7 @@ sub oscar_repo_url {
 # Returns 1 (true) if directory is empty.
 #
 sub repo_empty {
-    my ($path) = @_;
+    my ($path) = (@_);
     my $entries = 0;
     local *DIR;
     opendir DIR, $path or carp "Could not read directory $path!";
@@ -222,12 +367,13 @@ sub repo_empty {
 sub list_distro_pools {
     my $ddir = "/tftpboot/distro";
     # recognised architectures
-    my $arches = "i386|x86_64|ia64";
+    my $arches = "i386|x86_64|ia64|ppc64";
     my %pools;
     local *DIR;
     opendir DIR, $ddir or carp "Could not read directory $ddir!";
     for my $e (readdir DIR) {
-	if ( ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) || ($e =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
+	if ( ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
+	     ($e =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
 	    my $distro = "$1-$2-$3";
 	    my $os;
 	    if ($4) {
@@ -246,7 +392,7 @@ sub list_distro_pools {
 		    $pools{$distro}{url} = "$ddir/$e";
 		} else {
 		    $pools{$distro}{path} = "$ddir/$e";
-		}		    
+		}
 	    }
 	}
     }
