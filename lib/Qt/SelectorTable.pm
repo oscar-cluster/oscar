@@ -46,6 +46,7 @@ use Qt::slots
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Package;
+use OSCAR::OpkgDB;
 use OSCAR::PackageSet qw (get_list_opkgs_in_package_set);
 use OSCAR::Utils qw (
                     print_array
@@ -57,6 +58,7 @@ my $tablePopulated = 0;     # So we call populateTable only once
 my $currSet;                # The name of the currently selected Package Set
 my $packagesInstalled;      # Hash of packages with 'installed' bit set to 1
 my $foundPackagesInstalled; # Has the above hash been calculated once?
+my %scope = ();
 
 sub NEW
 {
@@ -199,8 +201,8 @@ sub getPackagesInPackageSet
 #  my $success = OSCAR::Database::get_selected_group_packages(
 #    \@packagesInSet1,\%options,\@errors,$packageSet);
     @packagesInSet = get_list_opkgs_in_package_set($packageSet);
-#  print "OPKGs in the set $packageSet: ";
-#  print_array (@packagesInSet);
+
+
     foreach my $pack_ref (@packagesInSet) {
         $packagesInSet->{$pack_ref} = 1;
     }
@@ -284,15 +286,16 @@ sub populateTable
       }      
 
 
-      foreach my $pack (keys %{ $allPackages })
+      foreach my $pack (sort keys %{ $allPackages })
         {
+          my $pkg = $$allPackages{$pack}->{package};
           # Don't even bother to display non-installable packages
           # next if ($allPackages->{$pack}{installable} != 1);
           #next if ( $should_not_install{$pack} );
           setNumRows($rownum+1); 
 
           # Column 0 contains "short" names of packages
-          my $item = SelectorTableItem(this,Qt::TableItem::Never(),$pack);
+          my $item = SelectorTableItem(this,Qt::TableItem::Never(),$pkg);
           setItem($rownum,0,$item);
 
           # Column 1 contains checkboxes
@@ -306,8 +309,17 @@ sub populateTable
           setItem($rownum,2,$item);
 
           # Column 3 contains the "class" of packages
+          my $opkg_class;
+          if ($allPackages->{$pack}{group}){
+              $opkg_class = $allPackages->{$pack}{group};
+              if ($allPackages->{$pack}{__class}) {
+                  $opkg_class .= ":" . $allPackages->{$pack}{__class};
+              }
+          }elsif($allPackages->{$pack}{__class}){
+              $opkg_class = $allPackages->{$pack}{__class};
+          }
           $item = SelectorTableItem(this,Qt::TableItem::Never(),
-                                    $allPackages->{$pack}{__class});
+                                    $opkg_class);
           setItem($rownum,3,$item);
 
           # Column 4 contains the Location + Version
@@ -511,6 +523,7 @@ sub checkboxChangedForSelector
   my $success;  # Value returned by database commands
 
   my $allPackages = SelectorUtils::getAllPackages();
+#  my @opkgs = OSCAR::OpkgDB::opkg_list_available(%scope);
   my $donothing = 0;
   my($reqhash,$conhash,$reqkey,$conkey);
 
@@ -531,6 +544,7 @@ sub checkboxChangedForSelector
           # always required and should never have any conflicts (i.e.
           # become unselected).
           foreach my $pkg (keys %{ $allPackages })
+#          foreach my $pkg (@opkgs)
             {
               $reqhash->{$pkg} = 1 if 
                 ((defined $allPackages->{$package}{__class}) &&

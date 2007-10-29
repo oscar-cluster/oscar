@@ -39,6 +39,7 @@ use Qt;
 
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
+use OSCAR::OpkgDB;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackageSet qw (
                          get_local_package_set_list
@@ -138,12 +139,15 @@ sub getAllPackages # -> $allPackages
                   );
                   
   my %opkgs = ();
-  $allPackages = \%opkgs;
   
+  my %scope = ();
+  %opkgs  = OSCAR::OpkgDB::opkg_hash_available(%scope);
+  $allPackages = \%opkgs;
+
   my @packages = ();
   OSCAR::Database::get_packages(\@packages);
   foreach my $pack_ref (@packages){
-    my $pack = $$pack_ref{package};
+    my $pack = "opkg-$$pack_ref{package}-server";
     foreach my $key (keys %$pack_ref){
         $allPackages->{$pack}{$key} = $$pack_ref{$key};
     }    
@@ -156,6 +160,9 @@ sub getAllPackages # -> $allPackages
       undef $href;
       # For each of the OSCAR packages read in above, add a "location" field
       # to correspond to the Location column of the packagesTable.  
+      if( ! $allPackages->{$pack}{path} ){
+          $allPackages->{$pack}{path} = "/var/lib/oscar/packages/$pack";
+      }
       $allPackages->{$pack}{location} = 
         (($allPackages->{$pack}{path} =~ /\/var\/lib\/oscar\/packages/) ?
          "OPD" : "OSCAR");
