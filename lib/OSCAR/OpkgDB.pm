@@ -63,7 +63,7 @@ sub opkg_list_available {
     my $pkg = $os->{pkg};
     if ($pkg eq "rpm") {
 	my $cmd="/usr/bin/yume $repo --repoquery --nevra opkg-*-server";
-	print "Running $cmd" if $verbose;
+	print STDERR "Running $cmd" if $verbose;
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
 	    if (m/^opkg-(.*)-server-(.*).noarch/) {
@@ -97,12 +97,34 @@ sub opkg_list_available {
 #            chroot => image_path : detect distro of specific image
 #            fake=>{distro=>distroname, version=>distrover, arch=>arch}
 #                don't detect distro, use passsed values
-# 
-# Returns hash of API opkgs
+#
+#            For only returning opkgs of a certain class pass (in addition
+#            to the normal scope selectors):
+#            class => value
+# Example:
+#       %h = opkg_hash_available(class => "core");
+#
+# Returns hash of API opkgs.
+#   key: opkg name
+#   value: reference to subhash
+#          subhash:
+#              {name}        : short package name
+#              {version}     : package version (and release)
+#              {package}     : long package name (Summary)
+#              {packager}    : packager info
+#              {description} : package description
+#              {class}       : class info (multiplexed into group info)
 ####
 sub opkg_hash_available {
     my %scope = @_;
     my %o;
+
+    # filter class?
+    my $class_filter;
+    if (defined($scope{class})) {
+	$class_filter = $scope{class};
+	delete $scope{class};
+    }
 
     my $os = OSCAR::OCA::OS_Detect::open(%scope);
     return () if !$os;
@@ -110,7 +132,7 @@ sub opkg_hash_available {
     my $repo = make_repostring($os);
     my $pkg = $os->{pkg};
     my $isdesc = 1;
-    my ($name, $rel, $ver, $packager, $summary, $desc, $group, $conflicts);
+    my ($name, $rel, $ver, $packager, $summary, $desc, $class, $conflicts);
     if ($pkg eq "rpm") {
 	my $cmd="/usr/bin/yume $repo --repoquery --info opkg-*-server";
 	print "Running $cmd" if $verbose;
@@ -125,12 +147,13 @@ sub opkg_hash_available {
 			summary => $summary,
 			packager => $packager,
 			description => $desc,
-			group => $group,
+			class => $class,
 		    };
 		}
+		$1 =~ /^opkg-(.*)-server$/;
 		$name = $1;
 		$isdesc = 0;
-		$ver = $rel = $summary = $packager = $desc = $group = "";
+		$ver = $rel = $summary = $packager = $desc = $class = "";
 		$conflicts = "";
 	    } elsif (/^Version\s*:\s*(.*)\s*$/) {
 		$ver = $1;
@@ -139,7 +162,8 @@ sub opkg_hash_available {
 	    } elsif (/^Packager\s*:\s*(.*)\s*$/) {
 		$packager = $1;
 	    } elsif (/^Group\s*:\s*(.*)\s*$/) {
-		$group = $1;
+		$class = $1;
+		$class =~ s/^[^:]*://g;
 	    } elsif (/^Summary\s*:\s*(.*), server part\s*$/) {
 		$summary = $1;
 	    } elsif (/^Description\s*:/) {
@@ -156,7 +180,7 @@ sub opkg_hash_available {
 		summary => $summary,
 		packager => $packager,
 		description => $desc,
-		group => $group,
+		class => $class,
 	    };
 	}
     } elsif ($pkg eq "deb") {
@@ -171,12 +195,13 @@ sub opkg_hash_available {
 	    if (/^Package: (.*)$/) {
 		$name = $1;
 		$isdesc = 0;
-		$ver = $rel = $summary = $packager = $desc = $group = "";
+		$ver = $rel = $summary = $packager = $desc = $class = "";
 		$conflicts = "";
 	    } elsif (/^Version: (.*)$/) {
 		$ver = $1;
 	    } elsif (/^Section: (.*)$/) {
-		$group = $1;
+		$class = $1;
+		$class =~ s/^[^:]*://g;
 	    } elsif (/^Maintainer: (.*)$/) {
 		$packager = $1;
 	    } elsif (/^Conflicts: (.*)$/) {
@@ -192,7 +217,7 @@ sub opkg_hash_available {
 			summary => $summary,
 			packager => $packager,
 			description => $desc,
-			group => $group,
+			class => $class,
 			conflicts => $conflicts,
 		    };
 		}
@@ -212,12 +237,26 @@ sub opkg_hash_available {
 		summary => $summary,
 		packager => $packager,
 		description => $desc,
-		group => $group,
+		class => $class,
 		conflicts => $conflicts,
 	    };
 	}
     } else {
 	return undef;
+    }
+
+    # go through result and apply the class filter, if needed
+    if ($class_filter) {
+	print "Filtering for class = \"$class_filter\"\n" if $verbose;
+	for my $p (keys(%o)) {
+	    my %h = %{$o{$p}};
+	    print "$p -> class: $h{class}" if $verbose;
+	    if ($h{class} ne $class_filter) {
+		delete $o{p};
+		print " ... deleted" if $verbose;
+	    }
+	    print "\n" if $verbose;
+	}
     }
     return %o;
 }
@@ -308,6 +347,12 @@ sub opkg_list_installed {
 ####
 # opkg_hash_installed
 #
+#            For only returning opkgs of a certain class pass (in addition
+#            to the normal scope selectors):
+#            class => value
+# Example:
+#       %h = opkg_hash_installed(class => "core");
+#
 # Returns:
 #   hash with info on all opkgs installed
 #   key: opkg name
@@ -318,12 +363,19 @@ sub opkg_list_installed {
 #              {package}     : long package name (Summary)
 #              {packager}    : packager info
 #              {description} : package description
-#              {group}       : group info (replaces class info?)
+#              {class}       : class info (multiplexed into group info)
 #              
 ####
 sub opkg_hash_installed {
     my %olist = &opkg_list_installed("api");
     my %opkgs;
+
+    # filter class?
+    my $class_filter;
+    if (defined($scope{class})) {
+	$class_filter = $scope{class};
+	delete $scope{class};
+    }
 
     my $os = OSCAR::OCA::OS_Detect::open();
     return () if !$os;
@@ -334,6 +386,19 @@ sub opkg_hash_installed {
 	    $opkgs{$name} = &opkg_localrpm_info($name);
 	} elsif ($pkg eq "deb") {
 	    $opkgs{$name} = &opkg_localdeb_info($name);
+	}
+    }
+    # go through result and apply the class filter, if needed
+    if ($class_filter) {
+	print "Filtering for class = \"$class_filter\"\n" if $verbose;
+	for my $p (keys(%o)) {
+	    my %h = %{$o{$p}};
+	    print "$p -> class: $h{class}" if $verbose;
+	    if ($h{class} ne $class_filter) {
+		delete $o{p};
+		print " ... deleted" if $verbose;
+	    }
+	    print "\n" if $verbose;
 	}
     }
     return %opkgs;
@@ -349,7 +414,9 @@ sub opkg_localrpm_info {
     $h{package} = `rpm -q --qf '%{SUMMARY}' $p`;
     $h{packager} = `rpm -q --qf '%{PACKAGER}' $p`;
     $h{description} = `rpm -q --qf '%{DESCRIPTION}' $p`;
-    $h{group} = `rpm -q --qf '%{GROUP}' $p`;
+    my $class = `rpm -q --qf '%{GROUP}' $p`;
+    $class =~ s/^[^:]*://g;
+    $h{class} = $class;
 
     return \%h;
 }
