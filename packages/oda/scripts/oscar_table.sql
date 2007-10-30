@@ -67,8 +67,28 @@ CREATE TABLE IF NOT EXISTS Package_status(
 
 -- Packages
 CREATE TABLE IF NOT EXISTS Packages(
+    __class VARCHAR(100),
+    copyright VARCHAR(100),
+    description  text,
+    __group VARCHAR(100),
     id  integer   auto_increment not null unique primary key,
+    license VARCHAR(100),
+    maintainer_email VARCHAR(100),
+    maintainer_name VARCHAR(100),
     name VARCHAR(100),
+    package VARCHAR(100)  not null unique,
+    packager_email VARCHAR(100),
+    packager_name VARCHAR(100),
+    path VARCHAR(100),
+    summary VARCHAR(100),
+    url VARCHAR(100),
+    vendor VARCHAR(100),
+    version  VARCHAR(250)   not null,
+    version_epoch VARCHAR(100),
+    version_major  CHAR(3),
+    version_minor  CHAR(3),
+    version_release VARCHAR(100),
+    version_subversion VARCHAR(100)
 )TYPE=INNODB;
 
 -- Images
@@ -138,6 +158,21 @@ CREATE TABLE IF NOT EXISTS Nics(
     CONSTRAINT Nics_ibfk_2 FOREIGN KEY (network_id) REFERENCES Networks (n_id) ON DELETE CASCADE
 )TYPE=INNODB;
 
+-- Packages_rpmlists
+CREATE TABLE IF NOT EXISTS Packages_rpmlists(
+    distro VARCHAR(20) not null,
+    distro_version VARCHAR(10) not null,
+    group_arch VARCHAR(100) not null,
+    group_name VARCHAR(100) not null,
+    package_id  integer not null,
+    rpm VARCHAR(100) not null,
+    PRIMARY KEY (package_id, rpm, group_name, group_arch, distro, distro_version),
+    KEY package_id ( package_id ),
+    KEY group_name ( group_name ),
+    CONSTRAINT Packages_rpmlists_ibfk_1 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
+    CONSTRAINT Packages_rpmlists_ibfk_2 FOREIGN KEY (group_name) REFERENCES Groups (name) ON DELETE CASCADE ON UPDATE CASCADE
+)TYPE=INNODB;
+
 -- Pakcages_servicelists
 CREATE TABLE IF NOT EXISTS Packages_servicelists(
     group_name VARCHAR(100),
@@ -160,7 +195,7 @@ CREATE TABLE IF NOT EXISTS Packages_switcher(
     CONSTRAINT Packages_switcher_ibfk_1 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE
 )TYPE=INNODB;
 
--- Packages_config      #EF# what is this supposed to hold?
+-- Packages_conflicts
 CREATE TABLE IF NOT EXISTS Packages_conflicts(
     p1_id  integer not null,
     p2_name VARCHAR(100) not null,
@@ -168,6 +203,28 @@ CREATE TABLE IF NOT EXISTS Packages_conflicts(
     PRIMARY KEY (p1_id,p2_name),
     KEY p1_id ( p1_id ),
     CONSTRAINT Packages_conflicts_ibfk_1 FOREIGN KEY (p1_id) REFERENCES Packages (id) ON DELETE CASCADE
+)TYPE=INNODB;
+
+-- Packages_requires
+CREATE TABLE IF NOT EXISTS Packages_requires(
+    p1_id  integer not null,
+    p2_name VARCHAR(100) not null,
+    type VARCHAR(100),
+    PRIMARY KEY (p1_id, p2_name),
+    KEY p1_id ( p1_id ),
+    KEY p2_name ( p2_name ),
+    CONSTRAINT Packages_requires_ibfk_1 FOREIGN KEY (p1_id) REFERENCES Packages (id) ON DELETE CASCADE,
+    CONSTRAINT Packages_requires_ibfk_2 FOREIGN KEY (p2_name) REFERENCES Packages (package) ON DELETE CASCADE ON UPDATE CASCADE
+)TYPE=INNODB;
+
+-- Packages_provides
+CREATE TABLE IF NOT EXISTS Packages_provides(
+    p1_id  integer not null,
+    p2_name VARCHAR(100) not null,
+    type VARCHAR(100),
+    PRIMARY KEY (p1_id, p2_name),
+    KEY p1_id ( p1_id ),
+    CONSTRAINT Packages_provides_ibfk_1 FOREIGN KEY (p1_id) REFERENCES Packages (id) ON DELETE CASCADE
 )TYPE=INNODB;
 
 -- Packages_provides
