@@ -1,0 +1,63 @@
+#!/usr/bin/perl
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use File::Basename;
+use OSCAR::OCA::OS_Detect;
+
+$ENV{LC_ALL}="C";
+
+my @odir = @ARGV;
+
+if (!scalar(@odir)) {
+    print "Usage: $0 <OPKG_PATH> ...\n";
+    exit 1;
+}
+
+my $os = OSCAR::OCA::OS_Detect::open();
+my $dist = $os->{compat_distro};
+my $ver  = $os->{compat_distrover};
+my $arch = $os->{arch};
+
+for my $d (@odir) {
+    &opkgc_rpms($d);
+}
+exit 0;
+
+
+
+sub opkgc_rpms {
+    my ($dir) = @_;
+
+    my $tdir = $dir."/distro/".$dist.$ver."-".$arch;
+    chomp(my $tmpo = `mktemp /tmp/bld_opkg_XXXXXXX`);
+
+    my $cmd = "opkgc -v --dist $dist --input $dir > $tmpo 2>&1";
+    print "Executing: $cmd...\n";
+    my $err = system($cmd);
+    #system("cat $tmpo");
+    if ($err) {
+	print "EEEE: Building opkg RPMs for $dir failed.\n";
+        my $efile = "$dir.err";
+	!system("mv $tmpo $efile")
+	    or die "Could not move $tmpo to $efile: $!";
+	print "=EE= Full output is in $efile =EE=\n";
+	exit 1;
+    } else {
+	local *IN;
+	open IN, "$tmpo" or die "Could not open file $tmpo";
+	while (<IN>) {
+	    chomp;
+	    if (/^\[DEBUG\] Wrote: (.*)$/) {
+		my $file = $1;
+		if ($file =~ /.noarch.rpm$/) {
+		    !system("mv $file $tdir")
+			or die "Could not move $file to $tdir";
+		    print "Created ".$tdir."/".basename($file)."\n";
+		}
+	    }
+	}
+	close IN;
+	!system("rm $tmpo") or die "Could not remove $tmpo : $!";
+    }
+}
