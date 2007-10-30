@@ -22,7 +22,7 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1:2.0.b1-1">
+    <versionEntry version="2.0.b1-1">
       <changelogEntry authorName="Erich Focht" date="2007-10-05T17:26:54+02:00">
         <item>Converted to opkgc format. Unfortunately this packages seems to be outdated and not maintained.</item>
       </changelogEntry>

@@ -226,7 +226,12 @@ visualized either at runtime or post-mortem.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
-    <versionEntry version="1:7.1.2-6">
+    <versionEntry version="7.1.4-6">
+      <changelogEntry authorName="Erich Focht" date="2007-10-13T12:07:15-04:00">
+        <item>Updated to upstream version 7.1.4</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="7.1.2-6">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-09-13T12:07:15-04:00">
         <item>Port to the new OPKG format (OPKGC).</item>
       </changelogEntry>

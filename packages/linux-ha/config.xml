@@ -31,12 +31,12 @@ installing the high availability feature for OSCAR masters.
   </clientDeps/>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1:2.0.8-2">
+    <versionEntry version="2.0.8-2">
       <changelogEntry authorName="Erich Focht" date="2007-10-06T16:44:53+02:00">
         <item>Fixed dependenicy for heartbeat-gui when on RHEL4/5.</item>
       </changelogEntry>
     </versionEntry>
-    <versionEntry version="1:2.0.7-2">
+    <versionEntry version="2.0.7-2">
       <changelogEntry authorName="Erich Focht" date="2007-10-05T16:44:53+02:00">
         <item>converted to new opkgc format</item>
       </changelogEntry>

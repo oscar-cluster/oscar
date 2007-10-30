@@ -54,7 +54,7 @@ purpose.</description>
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1:1.0.7-2">
+    <versionEntry version="1.0.7-2">
       <changelogEntry authorName="Erich Focht" date="2007-10-06T17:15:33-04:00">
         <item>Fixed bogus dependencies.</item>
       </changelogEntry>

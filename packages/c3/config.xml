@@ -54,7 +54,7 @@ tasks on a cluster.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
-    <versionEntry version="1:4.0.1-6">
+    <versionEntry version="4.0.1-6">
       <changelogEntry authorName="Thomas Naughton" date="2007-06-25T10:34:08-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
       </changelogEntry>

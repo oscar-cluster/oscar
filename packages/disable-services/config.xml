@@ -17,7 +17,7 @@ client nodes: kudzu, sendmail, slocate.</description>
   <clientDeps/>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1:1.1.0-1">
+    <versionEntry version="1.1.0-1">
       <changelogEntry authorName="Erich Focht" date="2007-10-05T16:21:32+02:00">
         <item>opkgc version</item>
       </changelogEntry>

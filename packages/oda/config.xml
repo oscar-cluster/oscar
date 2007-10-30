@@ -21,7 +21,7 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1:1.31.0-1">
+    <versionEntry version="1.31.0-1">
       <changelogEntry authorName="Neil Gorsuch" date="2007-06-25T10:40:48-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
       </changelogEntry>

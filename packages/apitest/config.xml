@@ -32,7 +32,7 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
-    <versionEntry version="0:1.0.0-12.1">
+    <versionEntry version="1.0.0-12.1">
       <changelogEntry authorName="William McLendon" date="2007-06-25T10:37:53-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
       </changelogEntry>

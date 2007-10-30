@@ -34,7 +34,7 @@ system package.</description>
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1:1.707.0-4oscar">
+    <versionEntry version="1.707.0-4oscar">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T17:07:52-04:00">
         <item>Migration to the new OPKG format (OPKGC).</item>
       </changelogEntry>

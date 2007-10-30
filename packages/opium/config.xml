@@ -36,7 +36,7 @@ synchronization.
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1:1.6-2">
+    <versionEntry version="1.6-2">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T00:19:54-04:00">
         <item>Migrate the new OPKG API (OPKGC).</item>
       </changelogEntry>

@@ -25,7 +25,7 @@ extends its scope to heterogeneous setups.</description>
   <clientDeps/>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1:1.2-5">
+    <versionEntry version="1.2-5">
       <changelogEntry authorName="Erich Focht" date="2007-19-26T17:55:15+01:00">
         <item>Updated to latest upstream version, with tiny bugfixes.</item>
       </changelogEntry>
