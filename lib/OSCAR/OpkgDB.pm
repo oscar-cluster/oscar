@@ -404,6 +404,13 @@ sub opkg_hash_installed {
     return %opkgs;
 }
 
+####
+# Get information from a RPM package.
+#
+# Argument: package name.
+#
+# Return: hash with package related info.
+####
 sub opkg_localrpm_info {
     my ($name) = @_;
     my %h;
@@ -421,17 +428,30 @@ sub opkg_localrpm_info {
     return \%h;
 }
 
+####
+# Get information from a Debian package.
+#
+# Argument: package name.
+#
+# Return: hash with package related info.
+####
 sub opkg_localdeb_info {
     my ($name) = @_;
     my %h;
 
     my $p = "opkg-$name";
     $h{name} = $name;
-    #$h{version} = `rpm -q --qf '%{VERSION}-%{RELEASE}' $p`;
-    #$h{package} = `rpm -q --qf '%{SUMMARY}' $p`;
-    #$h{packager} = `rpm -q --qf '%{PACKAGER}' $p`;
-    #$h{description} = `rpm -q --qf '%{DESCRIPTION}' $p`;
-    #$h{group} = `rpm -q --qf '%{GROUP}' $p`;
+    # Remember with Debian package we do not have two different entries for
+    # summary and description, the two are in "Description": the first line
+    # is the summary and the other lines are the full description.
+    my $description = `dpkg-query -W -f='\${Description}' $p`;
+    my $summary = split("\n", $description);
+    $h{version} = `dpkg-query -W -f='\${VERSION}' $p`;
+    $h{package} = $summary[0];
+    $h{packager} = `dpkg-query -W -f='\${Maintainer}' $p`;
+    $description =~ s/$summary[0]//;
+    $h{description} = $description;
+    $h{group} = `dpkg-query -W -f='\${Section}' $p`;
 
     return \%h;
 }
