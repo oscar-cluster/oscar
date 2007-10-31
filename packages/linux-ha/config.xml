@@ -28,7 +28,7 @@ installing the high availability feature for OSCAR masters.
       <pkg>heartbeat-pils</pkg>
       <pkg>heartbeat-stonith</pkg>
     </requires>
-  </clientDeps/>
+  </clientDeps>
   <apiDeps/>
   <changelog>
     <versionEntry version="2.0.8-2">
