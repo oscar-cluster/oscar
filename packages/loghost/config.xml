@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>Loghost</name>
+  <name>loghost</name>
   <class>included</class>
   <summary>Configures server to accept remote syslog entries</summary>
   <description>loghost configures syslog settings.</description>

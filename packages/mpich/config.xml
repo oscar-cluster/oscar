@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>MPICH-CH_P4 (tcp)</name>
+  <name>mpich</name>
   <class>included</class>
   <summary>MPICH specifically packaged for OSCAR clusters</summary>
   <description>MPICH is a freely available, portable implementation of

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>Disable Uncommon Client Node Services</name>
+  <name>disable-services</name>
   <class>included</class>
   <summary>Disable services on client nodes</summary>
   <description>OSCAR-specific scripts to disable some services on

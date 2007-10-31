@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>Maui Scheduler</name>
+  <name>maui</name>
   <class>included</class>
   <summary>Maui Scheduler</summary>
   <description>Maui is an advanced job scheduler for use on clusters and supercomputers.
