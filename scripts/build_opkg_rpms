@@ -51,6 +51,10 @@ sub opkgc_rpms {
 	    if (/^\[DEBUG\] Wrote: (.*)$/) {
 		my $file = $1;
 		if ($file =~ /.noarch.rpm$/) {
+		    if (! -d $tdir) {
+			!system("mkdir -p $tdir")
+			    or die "Could not create $tdir: $!";
+		    }
 		    !system("mv $file $tdir")
 			or die "Could not move $file to $tdir";
 		    print "Created ".$tdir."/".basename($file)."\n";
