@@ -7,7 +7,7 @@
 This package installs the heartbeat RPMs and provides scripts for
 installing the high availability feature for OSCAR masters.
 </description>
-  <license>GPL license</license>
+  <license>GPL</license>
   <group>System</group>
   <authors>
     <author cat="maintainer">
@@ -22,7 +22,7 @@ installing the high availability feature for OSCAR masters.
       <pkg>heartbeat-stonith</pkg>
     </requires>
   </serverDeps>
-  <clientDeps/>
+  <clientDeps>
     <requires>
       <pkg>heartbeat</pkg>
       <pkg>heartbeat-pils</pkg>
