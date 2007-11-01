@@ -81,43 +81,15 @@ sub get_list_opkg_dirs {
 }
 
 ###############################################################################
-# This function, based on a OPKG id, find the location on the disk where is   #
-# stored the package, parses the associated config.xml file, gets the name of #
-# the OPKG and converts it to match the name used by OPKGC                    #
-# Parameter: OPKG id (e.g. the id used in $(OSCAR_HOME)/packages)             #
-# Return:    the OPKG name used by opkgc                                      #
-###############################################################################
-sub get_opkg_name {
-    my ($opkg) = @_;
-
-    foreach my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
-        if ( -d "$dir/$opkg" ) {
-            print "OPKG found in $dir/$opkg\n" if $verbose;
-            my $config_file = "$dir/$opkg/config.xml";
-            # We open the config.xml file
-            my $xs = new XML::Simple();
-            my $xml_ref = eval { $xs->XMLin( $config_file ); };
-             my $name = lc ($xml_ref->{name});
-            $name =~ s/ /-/g;
-            print "OPKG name: $name\n" if $verbose;
-            return $name;
-        } else {
-            die "Impossible to find the OPKG $opkg\n";
-        }
-    }
-}
-
-###############################################################################
-# Install the server part of a given OPKG on the local system                 #
+# Install the server part of the passed OPKGs on the local system             #
 # Parameter: list of OPKGs.                                                   #
 # Return:    none.                                                            #
 ###############################################################################
-sub opkg_install_server {
-    my ($opkg) = @_;
+sub opkgs_install_server {
+    my (@opkgs) = (@_);
 
-    if ($opkg eq "") {
-        print "ERROR: no OPKG name, OPKG install abort";
-        exit 1;
+    if (!scalar(@opkgs)) {
+	croak("No opkgs passed!");
     }
 
     #
@@ -138,31 +110,17 @@ sub opkg_install_server {
     # [EF]
     eval("require OSCAR::PackMan");
     my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
-                        $oscar_pkg_pool,$distro_pkg_pool);
+                        $oscar_pkg_pool, $distro_pkg_pool);
     if (!$pm) {
         croak "\nERROR: Could not create PackMan instance!\n";
     }
 
-    my $opkg_name = get_opkg_name ($opkg);
-    my $pkg = "opkg-" . $opkg_name . "-server";
-    my ($err, @out) = $pm->smart_install($pkg);
+    my @olist = map { "opkg-".$_."-server" } @opkgs;
+    my ($err, @out) = $pm->smart_install(@olist);
     if (!$err) {
         print "Error occured during smart_install:\n";
         print join("\n",@out)."\n";
         exit 1;
-    }
-}
-
-###############################################################################
-# Install the server part of a list of OPKGs on the local system              #
-# Parameter: list of OPKGs.                                                   #
-# Return:    none.                                                            #
-###############################################################################
-sub opkgs_install_server {
-    my (@opkgs) = @_;
-
-    foreach my $opkg (@opkgs) {
-        opkg_install_server ($opkg);
     }
 }
 

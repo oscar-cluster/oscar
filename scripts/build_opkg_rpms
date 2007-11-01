@@ -20,6 +20,7 @@ my $ver  = $os->{compat_distrover};
 my $arch = $os->{arch};
 
 for my $d (@odir) {
+    $d =~ s,/$,,g;
     &opkgc_rpms($d);
 }
 exit 0;
@@ -32,7 +33,7 @@ sub opkgc_rpms {
     my $tdir = $dir."/distro/".$dist.$ver."-".$arch;
     chomp(my $tmpo = `mktemp /tmp/bld_opkg_XXXXXXX`);
 
-    my $cmd = "opkgc -v --dist $dist --input $dir > $tmpo 2>&1";
+    my $cmd = "opkgc -v -v -v --dist $dist --input $dir > $tmpo 2>&1";
     print "Executing: $cmd...\n";
     my $err = system($cmd);
     #system("cat $tmpo");

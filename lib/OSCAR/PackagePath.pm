@@ -39,6 +39,8 @@ use Carp;
 	     repos_list_urlfile
 	     repos_add_urlfile
 	     repos_del_urlfile
+	     os_distro_string
+	     os_cdistro_string
 	     pkg_extension
 	     pkg_separator
 	     distro_detect_or_die
@@ -429,6 +431,18 @@ sub pkg_separator {
     } else {
 	return undef;
     }
+}
+
+sub os_distro_string {
+    my ($os) = @_;
+    return $os->{distro}."-".$os->{distro_version}.
+	"-".$os->{arch};
+}
+
+sub os_cdistro_string {
+    my ($os) = @_;
+    return $os->{compat_distro}."-".$os->{compat_distrover}.
+	"-".$os->{arch};
 }
 
 1;
