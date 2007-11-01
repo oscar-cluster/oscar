@@ -187,38 +187,38 @@ sub opkg_hash_available {
 	my @opkgs = &opkg_list_available(%scope);
 	@opkgs = map { "opkg-$_" } @opkgs;
 	#TODO# add show option to rapt
-	my $cmd="/usr/bin/rapt $repo show ".join(" ", @opkgs);
+	my $cmd="/usr/bin/rapt --repo $repo show ".join(" ", @opkgs);
 	print "Running $cmd" if $verbose;
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
 	    chomp;
-	    if (/^Package: (.*)$/) {
-		$name = $1;
-		$isdesc = 0;
-		$ver = $rel = $summary = $packager = $desc = $class = "";
-		$conflicts = "";
+        if (/^Package: (.*)$/) {
+            $name = $1;
+            $isdesc = 0;
+            $ver = $rel = $summary = $packager = $desc = $class = "";
+            $conflicts = "";
 	    } elsif (/^Version: (.*)$/) {
-		$ver = $1;
+            $ver = $1;
 	    } elsif (/^Section: (.*)$/) {
-		$class = $1;
-		$class =~ s/^[^:]*://g;
+            $class = $1;
+            $class =~ s/^[^:]*://g;
 	    } elsif (/^Maintainer: (.*)$/) {
-		$packager = $1;
+            $packager = $1;
 	    } elsif (/^Conflicts: (.*)$/) {
-		$conflicts = $1;
+            $conflicts = $1;
 	    } elsif (/^Description: (.*), server part$/) {
-		$isdesc = 1;
-		$summary = $1;
-	    } elsif (/^Bugs:/) {
-		if ($name) {
-		    $o{$name} = {
-			name => $name,
-			version => $ver,
-			summary => $summary,
-			packager => $packager,
-			description => $desc,
-			class => $class,
-			conflicts => $conflicts,
+            $isdesc = 1;
+            $summary = $1;
+	    } elsif (/^Bugs:/) { # GV: What is bug?
+            if ($name) {
+                $o{$name} = {
+    			name => $name,
+    			version => $ver,
+    			summary => $summary,
+    			packager => $packager,
+    			description => $desc,
+    			class => $class,
+    			conflicts => $conflicts,
 		    };
 		}
 		$isdesc = 0;
