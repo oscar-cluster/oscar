@@ -31,12 +31,13 @@ use base qw(Exporter);
             flush_cache
             get_available_repositories
             get_available_opkgs
+            get_default_repositories
             get_included_opkgs
             init_cache
+            init_opd
             list_available_opkgs
             list_available_repositories
             list_included_opkgs
-            scan_repository
              );
 
 my $cachedir = "/var/cache/oscar/";
@@ -45,13 +46,13 @@ my $opkg_list_cache = $cachedir . "opkgs.txt";
 our @opkg_list;
 
 my $opd2_lockfile = "/tmp/opd2.pid";
-my $repo_url = "http://oscar.gforge.inria.fr/";
-my $debian_url = $repo_url . "debian/dists/stable/oscar/binary-amd64/Packages";
 
+# List of OSCAR repositories used by default, using the yume or rapt syntax
+my @default_oscar_repos = ("http://oscar.gforge.inria.fr/debian/+stable+oscar");
 
 my $verbose = 1;
 our $xml_data;
-our $url;
+#our $url;
 
 #####################
 # PRIVATE FUNCTIONS #
@@ -160,7 +161,8 @@ sub find_opkg_in_cache {
 }
 
 # Check if a given repository is cached or not
-sub find_repo_in_cache {
+sub find_repo_in_cache ($) {
+    my $url = shift;
     print "Searching repo $url in cache...\n" if $verbose > 0;
     open (FILE, $opkg_repo_cache)
         or die "Impossible to add the repo to the cache";
@@ -248,8 +250,9 @@ sub add_opkg_to_cache {
 # parse the opd_repo.xml file before
 # @param: none
 # @return: 0 if success
-sub add_repo_to_cache {
-    if (find_repo_in_cache() == -1) {
+sub add_repo_to_cache ($) {
+    my $url = shift;
+    if (find_repo_in_cache($url) == -1) {
         open (FILE, ">>$opkg_repo_cache") 
             or die "Impossible to add the repo to the cache";
         print FILE $url;
@@ -260,37 +263,38 @@ sub add_repo_to_cache {
 }
 
 ###############################################################################
-# Parse a opd_repo.xml file.                                                  #
+# Parse a opd_repo.xml file. DEPRACTED.                                       #
 # @param: none.                                                               #
 # @return: none.                                                              #
 ###############################################################################
-sub parse_repo_description {
-    my $data_file = "/tmp/opd_repo.xml";
+# sub parse_repo_description {
+#     my $data_file = "/tmp/opd_repo.xml";
+# 
+#     print "Parsing repository info...\n";
+# 
+#     my $simple = XML::Simple->new(KeyAttr => "package, name");
+#     $xml_data = $simple->XMLin($data_file) or return -1;
+# 
+#     print Dumper($xml_data) if $verbose >= 5;
+# 
+#     add_repo_to_cache ();
+#     add_opkg_to_cache ();
+# }
 
-    print "Parsing repository info...\n";
-
-    my $simple = XML::Simple->new(KeyAttr => "package, name");
-    $xml_data = $simple->XMLin($data_file) or return -1;
-
-    print Dumper($xml_data) if $verbose >= 5;
-
-    add_repo_to_cache ();
-    add_opkg_to_cache ();
-}
-
-sub download_debian_package_list {
-    my $file = "$cachedir/Packages";
-    # If the file has been downloaded before, we delete it.
-    if (-f "$file") {
-        unlink ("$file");
-    }
-    my $cmd = "cd $cachedir && wget $debian_url";
-    print "Executing: $cmd\n" if $verbose;
-    if (system($cmd)) {
-        die "ERROR: Impossible to get the list of available packages " .
-            "from OSCAR repository $repo_url";
-    }
-}
+# DEPRACTED
+# sub download_debian_package_list {
+#     my $file = "$cachedir/Packages";
+#     # If the file has been downloaded before, we delete it.
+#     if (-f "$file") {
+#         unlink ("$file");
+#     }
+#     my $cmd = "cd $cachedir && wget $debian_url";
+#     print "Executing: $cmd\n" if $verbose;
+#     if (system($cmd)) {
+#         die "ERROR: Impossible to get the list of available packages " .
+#             "from OSCAR repository $repo_url";
+#     }
+# }
 
 
 ###############################################################################
@@ -318,9 +322,24 @@ sub parse_debian_package_file {
     return (@list);
 }
 
+
+sub init_repos {
+    foreach my $repo (@default_oscar_repos) {
+        print "Adding the default repository $repo...\n" if $verbose;
+        add_repo_to_cache ($repo);
+    }
+}
+
+
+
+
 ####################
 # PUBLIC FUNCTIONS #
 ####################
+
+
+
+
 
 ###############################################################################
 # Initialize the OPD2 cache. Note that if the cache already has been          #
@@ -333,72 +352,120 @@ sub init_cache {
     init_cachefiles ();
 }
 
-# This function scans a specific repository to get the list of available OPKGs
-# @param: repository URL
-# @return: array of OPKGs, -1 if error
-sub scan_repository {
-    ($url) = @_;
-    my $cmd;
-
-    chomp($url);
-    print "Scanning repository $url...\n" if $verbose > 1;
-
-    if (opd2_lock () != 0) {
-        print "Exiting...\n";
-        return -1;
-    }
-
-    init_cachedir ();
-    init_cachefiles ();
-
-    # We first download the repository description
-    if (-f "/tmp/opd_repo.xml") {
-        print "A dowloaded OPD repo description is already there, ".
-              "we delete it...\n";
-        unlink ("/tmp/opd_repo.xml");
-    }
-    $cmd = "cd /tmp; wget " . $url;
-    if (system($cmd)) {
-        carp "Impossible to get OPD repository description (URL: $url)";
-        opd2_unlock ();
-        exit -1;
-    } 
-
-    if (parse_repo_description () != 0) {
-        opd2_unlock();
-        exit -1;
-    }
-
-    unlink ("/tmp/opd_repo.xml");
-    opd2_unlock ();
+sub init_opd {
+    init_cache ();
+    init_repos ();
 }
 
+# This function scans a specific repository to get the list of available OPKGs
+# DEPRECATED
+# @param: repository URL
+# @return: array of OPKGs, -1 if error
+# sub scan_repository {
+#     my ($url) = @_;
+#     my $cmd;
+# 
+#     chomp($url);
+#     print "Scanning repository $url...\n" if $verbose > 1;
+# 
+#     if (opd2_lock () != 0) {
+#         print "Exiting...\n";
+#         return -1;
+#     }
+# 
+#     init_cachedir ();
+#     init_cachefiles ();
+# 
+#     # We first download the repository description
+#     if (-f "/tmp/opd_repo.xml") {
+#         print "A dowloaded OPD repo description is already there, ".
+#               "we delete it...\n";
+#         unlink ("/tmp/opd_repo.xml");
+#     }
+#     $cmd = "cd /tmp; wget " . $url;
+#     if (system($cmd)) {
+#         carp "Impossible to get OPD repository description (URL: $url)";
+#         opd2_unlock ();
+#         exit -1;
+#     } 
+# 
+#     if (parse_repo_description () != 0) {
+#         opd2_unlock();
+#         exit -1;
+#     }
+# 
+#     unlink ("/tmp/opd_repo.xml");
+#     opd2_unlock ();
+# }
+
 ###############################################################################
-# List the list of available OPKG (using the cache).                          #
+# List the list of available OPKG (using the cache if not repo is specified,  #
+# query the specifies repo else).                                             #
 # Input: None.                                                                #
 # Return: array with the list of available OPKGs.                             #
 ###############################################################################
-sub get_available_opkgs {
+sub get_available_opkgs ($) {
+    my $repo_url = shift;
     my @list = ();
 
-    # We go through the cache and get the list of OPKG
-    open (FILE, $opkg_list_cache)
-        or die "Impossible to open the OPKGs cache";
-    foreach my $pkg (<FILE>) {
-        push (@list, $pkg);
+    print $repo_url;
+
+    if ($repo_url eq "") {
+        # We want the list of all OPKGs available via all the OSCAR repos
+        my @repos = get_available_repositories ();
+        # We query all the repositories
+        foreach my $repo (@repos) {
+            my @opkgs = ();
+            @opkgs = get_available_opkgs ($repo);
+            # We merge the list of OPKGs from the current repo to the global
+            # list of OPKGs
+            foreach my $opkg (@opkgs) {
+                push (@list, $opkg);
+            }
+        }
+
+#         # We go through the cache and get the list of OPKG
+#         open (FILE, $opkg_list_cache)
+#             or die "Impossible to open the OPKGs cache";
+#         foreach my $pkg (<FILE>) {
+#             push (@list, $pkg);
+#         }
+#         close (FILE);
+    } else {
+
+        # TODO: We should have here a Packman interface for repo query!!!!!
+
+        # We determine the type of the repository
+        my $cmd = "/usr/bin/rapt --repo $repo_url update";
+        if (!system($cmd)) {
+            # This is a Debian repository
+            $cmd="/usr/bin/rapt --repo $repo_url search 'opkg-.*-server' --names-only ";
+        } else {
+            $cmd="/usr/bin/yume $repo_url --repoquery --nevra opkg-*-server";
+        }
+        print "Executing: $cmd\n";
+        open CMD, "$cmd |" or die "Error: $!";
+        while (<CMD>) {
+            my $opkg = $_;
+            chomp ($opkg);
+            if ($opkg =~ m/^opkg-(.*)-server\s*$/) {
+                push (@list, $1);
+                print $1;
+            }
+        }
     }
-    close (FILE);
 
     return (@list);
 }
 
 ###############################################################################
 # Display the list of available OPKGs.                                        #
-# Input: None.                                                                #
+# Input: Repo URL, empty string for all the repositories.                     #
 # Return: None.                                                               #
 ###############################################################################
-sub list_available_opkgs {
-    my @list = get_available_opkgs ();
+sub list_available_opkgs ($) {
+    my $repo_url = shift;
+    my @list = get_available_opkgs ($repo_url);
     print_array (@list);
 }
 
@@ -411,8 +478,9 @@ sub get_available_repositories {
     my @list = ();
     # We go through the cache and display the list of OPKG
     if(open (FILE, $opkg_repo_cache)) {
-	    foreach my $pkg (<FILE>) {
-        	push (@list, $pkg);
+        foreach my $repo (<FILE>) {
+            chomp ($repo);
+            push (@list, $repo);
         }
     }
     return @list;
@@ -439,7 +507,7 @@ sub list_available_repositories {
 sub get_included_opkgs {
     my $distro = shift;
     my @list = ();
-    
+
     if ($distro eq "debian") {
         @list = parse_debian_package_file ();
     } else {
@@ -475,6 +543,11 @@ sub flush_cache {
     unlink ("$opkg_repo_cache");
     unlink ("$opkg_list_cache");
     print "Cache cleaned\n";
+}
+
+
+sub get_default_repositories {
+    return @default_oscar_repos;
 }
 
 1;

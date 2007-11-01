@@ -21,16 +21,19 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use Term::ReadLine;
 use OSCAR::opd2 qw(
                     flush_cache
+                    get_available_repositories
                     get_included_opkgs
+                    get_default_repositories
                     init_cache
+                    init_opd
                     list_available_opkgs
                     list_available_repositories
                     list_included_opkgs
-                    scan_repository
                   );
 
 my $repository_listing;
 my $repository_selected = -1;
+our $selected_repo = "";
 
 my $package_listing;
 
@@ -79,7 +82,7 @@ sub main_menu {
 
     # Use GNU Readline to prompt and get input.  Readline rocks.
 
-    last if (!defined($_ = $opd_term->readline("opd>")));
+    last if (!defined($_ = $opd_term->readline("opd> ")));
     next if (!$_);
 
     # Analyze what we got back
@@ -94,29 +97,60 @@ sub main_menu {
 
     # Change repository
 
-    if (/^r/i || /^repos/i || /^repository/i) {
+    if (/^a/i || /^add/i) {
         my $url = $opd_term->readline("Enter repository URL>");
         if (!$url) {
             print ("ERROR: no repository has been specified\n");
         next;
         }
-        scan_repository ($url);
+#        scan_repository ($url);
     }
 
     elsif (/^f/i || /^flush/i) {
         flush_cache ();
     }
 
+    # List available OSCAR repositories
+
+    elsif (/^r/i || /^repo/i || /^repos/i || /^repository/i) {
+        print("\n");
+        print "Available repository:\n";
+        list_available_repositories ();
+        print("\n");
+    }
+
     # List the packages that are available
 
     elsif (/^l/i || /^li/i || /^list/i || /^ls/i ) {
         print("\n");
-        list_available_opkgs();
+        list_available_opkgs($selected_repo);
         print("\n");
-        print "OPKGs available from the official OSCAR repository:\n";
-        print "... for debian:\n";
-        list_included_opkgs ("debian");
-        print("\n");
+#         print "OPKGs available from the official OSCAR repository:\n";
+#         list_included_opkgs ("debian");
+#         print("\n");
+    }
+
+    # Select a repository
+
+    elsif (/^s/i || /^select/i ) {
+        print ("\n");
+        print "Select one the following OSCAR repositories:\n";
+        my @repos = get_available_repositories ();
+        print "\t0: all\n";
+        my $i = 1;
+        foreach my $repo (@repos) {
+            print "\t$i: $repo\n";
+        }
+        my $valid_selection = 0;
+        while ($valid_selection == 0) {
+            my $selection = $opd_term->readline("Your selection> ");
+            if (defined @repos[$selection-1]) {
+                $valid_selection = 1;
+                $selected_repo = @repos[$selection-1];
+            } else {
+                print "ERROR: Invalid selection.\n";
+            }
+        }
     }
 
     # Print the help message
@@ -124,11 +158,13 @@ sub main_menu {
     elsif (/^\?/ || /^h/i || /^help/i) {
         print("
 [h] help       - This message
+[a] add        - Add an OSCAR repository
+[s] select     - Select a repository
+[i] info       - Display information about the selected repository
+[r] repository - Display the list of available OSCAR repositories
+[l] list       - Display the list of available OSCAR packages
 [f] flush      - Flush the OPD cache
-[i] info       - Display repository information
-[l] list       - List available packages
 [q] quit       - Quit
-[r] repository - Add an OPD repository
 R              - Select the specified package(s)
 
 N has an integer value
@@ -165,7 +201,7 @@ R can be a single integer value, a range or an enumeration of all that :
 # This is necessary for access to /var/cache/oscar/downloads
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
-init_cache();
+init_opd();
 
 main_menu();
 
