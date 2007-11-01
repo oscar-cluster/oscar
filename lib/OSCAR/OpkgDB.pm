@@ -67,13 +67,12 @@ sub opkg_list_available {
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
 	    if (m/^opkg-(.*)-server-(.*).noarch/) {
-		$opkgs{$1} = $2;
+		    $opkgs{$1} = $2;
 	    }
 	}
 	close CMD;
     } elsif ($pkg eq "deb") {
-	#TODO# add search option to rapt
-	my $cmd="/usr/bin/rapt $repo --names-only search 'opkg-.*-server'";
+	my $cmd="/usr/bin/rapt --repo $repo --names-only search 'opkg-.*-server'";
 	print "Running $cmd" if $verbose;
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
