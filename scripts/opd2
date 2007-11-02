@@ -40,12 +40,13 @@ our $selected_repo = "";
 
 my $package_listing;
 
-my ($interactive, @repos, $default_repo);
+my ($interactive, @repos, $default_repo, $list_default_repos);
 
 Getopt::Long::Configure("pass_through");
 GetOptions(
         "non-interactive"   => \$interactive, 
-        "default_repos" => \$default_repo,
+        "default-repos" => \$default_repo,
+        "list-default-repos" => \$list_default_repos,
         "repo=s"        => \@repos,
         "help"          => \&help,
         );
@@ -216,10 +217,12 @@ croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
 init_opd();
 
-if (!$interactive) {
-    main_menu();
-} else {
+if ($interactive || $list_default_repos) {
     print "Non interactive mode\n";
+    if ($list_default_repos) {
+        print_array (get_default_repositories ());
+        exit (0);
+    }
     if ($default_repo) {
         @repos = get_default_repositories ();
     }
@@ -229,7 +232,6 @@ if (!$interactive) {
     } else {
         my @list = ();
         foreach my $repo (@repos) {
-            print "Scanning $repo\n";
             my @opkgs = get_available_opkgs($repo);
             foreach my $opkg (@opkgs) {
                 push (@list, $opkg);
@@ -237,6 +239,8 @@ if (!$interactive) {
         }
         print_array (@list);
     }
+} else {
+    main_menu();
 }
 
 sub help {
@@ -256,9 +260,9 @@ sub help {
     print " --default-repos   : gives the list of OPKGs available via the\n";
     print "                     default OSCAR repositories. If this option\n";
     print "                     is used, the option --repo is deactivated.\n";
+    print " --list-default-repos : gives the list of default OSCAR repos\n";
     print "\n";
     exit;
 }
-
 
 1;
