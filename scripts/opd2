@@ -41,15 +41,16 @@ our $selected_repo = "";
 my $package_listing;
 my $verbose = $ENV{OPD_VERBOSE};
 
-my ($interactive, @repos, $default_repo, $list_default_repos);
+my ($interactive, @repos, $default_repo, $list_default_repos, $list_repos);
 
 Getopt::Long::Configure("pass_through");
 GetOptions(
-        "non-interactive"   => \$interactive, 
-        "default-repos" => \$default_repo,
-        "list-default-repos" => \$list_default_repos,
-        "repo=s"        => \@repos,
-        "help"          => \&help,
+        "non-interactive"       => \$interactive, 
+        "default-opkgs"         => \$default_repo,
+        "list-default-repos"    => \$list_default_repos,
+        "repo=s"                => \@repos,
+        "list-repos"            => \$list_repos,
+        "help"                  => \&help,
         );
 
 my $opd_term = new Term::ReadLine 'OPD';
@@ -233,6 +234,16 @@ if ($interactive || $list_default_repos) {
         print "\n";
         exit (0);
     }
+    if ($list_repos) {
+        my @list = get_available_repositories ();
+        # Then we print the result. Remember that the output is used by
+        # other application, only print the strict necessary
+        foreach my $item (@list){
+            print "$item ";
+        }
+        print "\n";
+        exit (0);
+    }
     if ($default_repo) {
         @repos = get_default_repositories ();
     }
@@ -273,10 +284,12 @@ sub help {
     print " --repo URL        : repository which should be used for queries \n";
     print "                     (multiple --repo options are possible).\n";
     print " --help            : this help information.\n";
-    print " --default-repos   : gives the list of OPKGs available via the\n";
+    print " --default-opkgs   : gives the list of OPKGs available via the\n";
     print "                     default OSCAR repositories. If this option\n";
-    print "                     is used, the option --repo is deactivated.\n";
-    print " --list-default-repos : gives the list of default OSCAR repos\n";
+    print "                     deactivates the --repo option.\n";
+    print " --list-default-repos : gives the list of default OSCAR repos.\n";
+    print " --list-repos      : gives the list of available repositories.\n";
+    print "                     This option deactivate other options.\n";
     print "\n";
     exit;
 }
