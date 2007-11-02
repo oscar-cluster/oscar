@@ -28,6 +28,7 @@ use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 
 @EXPORT = qw (
+            add_repo_to_cache
             flush_cache
             get_available_repositories
             get_available_opkgs
@@ -112,7 +113,7 @@ sub init_cachefiles {
 }
 
 # Create the OPD2 lock
-# @return" 0 if success
+# @return: 0 if success
 sub opd2_lock {
     print "Locking OPD2\n" if $verbose > 0;
     if (-f $opd2_lockfile) {
@@ -246,21 +247,6 @@ sub add_opkg_to_cache {
     return 0;
 }
 
-# Add the repository into the cache. Note that this is done only if we can
-# parse the opd_repo.xml file before
-# @param: none
-# @return: 0 if success
-sub add_repo_to_cache ($) {
-    my $url = shift;
-    if (find_repo_in_cache($url) == -1) {
-        open (FILE, ">>$opkg_repo_cache") 
-            or die "Impossible to add the repo to the cache";
-        print FILE $url;
-        print FILE "\n";
-        close (FILE);
-    }
-    return 0;
-}
 
 ###############################################################################
 # Parse a opd_repo.xml file. DEPRACTED.                                       #
@@ -338,8 +324,21 @@ sub init_repos {
 ####################
 
 
-
-
+# Add the repository into the cache. Note that this is done only if we can
+# parse the opd_repo.xml file before
+# @param: none
+# @return: 0 if success
+sub add_repo_to_cache ($) {
+    my $url = shift;
+    if (find_repo_in_cache($url) == -1) {
+        open (FILE, ">>$opkg_repo_cache") 
+            or die "Impossible to add the repo to the cache";
+        print FILE $url;
+        print FILE "\n";
+        close (FILE);
+    }
+    return 0;
+}
 
 ###############################################################################
 # Initialize the OPD2 cache. Note that if the cache already has been          #

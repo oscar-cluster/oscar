@@ -21,6 +21,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use Term::ReadLine;
 use Getopt::Long;
 use OSCAR::opd2 qw(
+                    add_repo_to_cache
                     flush_cache
                     get_available_opkgs
                     get_available_repositories
@@ -241,6 +242,7 @@ if ($interactive || $list_default_repos) {
     } else {
         my @list = ();
         foreach my $repo (@repos) {
+            add_repo_to_cache ($repo);
             my @opkgs = get_available_opkgs($repo);
             foreach my $opkg (@opkgs) {
                 push (@list, $opkg);
