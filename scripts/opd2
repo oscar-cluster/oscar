@@ -19,8 +19,10 @@ use strict;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use Term::ReadLine;
+use Getopt::Long;
 use OSCAR::opd2 qw(
                     flush_cache
+                    get_available_opkgs
                     get_available_repositories
                     get_included_opkgs
                     get_default_repositories
@@ -30,12 +32,23 @@ use OSCAR::opd2 qw(
                     list_available_repositories
                     list_included_opkgs
                   );
+use OSCAR::Utils qw (print_array);
 
 my $repository_listing;
 my $repository_selected = -1;
 our $selected_repo = "";
 
 my $package_listing;
+
+my ($interactive, @repos, $default_repo);
+
+Getopt::Long::Configure("pass_through");
+GetOptions(
+        "non-interactive"   => \$interactive, 
+        "default_repos" => \$default_repo,
+        "repo=s"        => \@repos,
+        "help"          => \&help,
+        );
 
 my $opd_term = new Term::ReadLine 'OPD';
 
@@ -203,6 +216,49 @@ croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
 init_opd();
 
-main_menu();
+if (!$interactive) {
+    main_menu();
+} else {
+    print "Non interactive mode\n";
+    if ($default_repo) {
+        @repos = get_default_repositories ();
+    }
+    if (!defined @repos) {
+        print "Error: you must specify a repository\n";
+        exit -1;
+    } else {
+        my @list = ();
+        foreach my $repo (@repos) {
+            print "Scanning $repo\n";
+            my @opkgs = get_available_opkgs($repo);
+            foreach my $opkg (@opkgs) {
+                push (@list, $opkg);
+            }
+        }
+        print_array (@list);
+    }
+}
+
+sub help {
+    print "Usage: $0 OPTIONS\n";
+    print "\n";
+    print "Call the OPD2 command line, both a interactive and a non-interactive".
+          " are available.\n";
+    print "OPTIONS can be:\n";
+    print " --non-interactive : use OPD2 in non-interactive mode;\n";
+    print "                     this option enables options --repo and\n";
+    print "                     --default-repos\n";
+    print "                     In non-interactive mode, each command gives\n";
+    print "                     the list of available OSCAR packages.\n";
+    print " --repo URL        : repository which should be used for queries \n";
+    print "                     (multiple --repo options are possible).\n";
+    print " --help            : this help information.\n";
+    print " --default-repos   : gives the list of OPKGs available via the\n";
+    print "                     default OSCAR repositories. If this option\n";
+    print "                     is used, the option --repo is deactivated.\n";
+    print "\n";
+    exit;
+}
+
 
 1;
