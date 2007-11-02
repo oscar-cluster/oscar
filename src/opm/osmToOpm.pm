@@ -20,9 +20,10 @@
 #	This module is for converting the hash that comes out of OSM into database
 #	form for OPM.
 #
-#	TODO - 	Use version restrictions stored in the hash
-#			There are also other pieces of info not used (distro, arch, lists
-#				of packages and sets selected). These can be saved or discarded.
+#	TODO - Use version restrictions stored in the hash
+#		There are also other pieces of info not used (distro, arch, lists
+#		of packages and sets selected). These can be saved or discarded.
+#        - This should be a library. 
 #
 #   $Id$
 
