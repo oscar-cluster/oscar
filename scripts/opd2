@@ -37,8 +37,8 @@ use OSCAR::Utils qw (print_array);
 my $repository_listing;
 my $repository_selected = -1;
 our $selected_repo = "";
-
 my $package_listing;
+my $verbose = $ENV{OPD_VERBOSE};
 
 my ($interactive, @repos, $default_repo, $list_default_repos);
 
@@ -215,12 +215,21 @@ R can be a single integer value, a range or an enumeration of all that :
 # This is necessary for access to /var/cache/oscar/downloads
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
+if ($interactive) {
+    $verbose = 0;
+}
+
 init_opd();
 
 if ($interactive || $list_default_repos) {
-    print "Non interactive mode\n";
     if ($list_default_repos) {
-        print_array (get_default_repositories ());
+        my @list = get_default_repositories ();
+        # Then we print the result. Remember that the output is used by
+        # other application, only print the strict necessary
+        foreach my $item (@list){
+            print "$item ";
+        }
+        print "\n";
         exit (0);
     }
     if ($default_repo) {
@@ -237,7 +246,12 @@ if ($interactive || $list_default_repos) {
                 push (@list, $opkg);
             }
         }
-        print_array (@list);
+        # Then we print the result. Remember that the output is used by
+        # other application, only print the strict necessary
+        foreach my $item (@list){
+            print "$item ";
+        }
+        print "\n";
     }
 } else {
     main_menu();

@@ -50,7 +50,7 @@ my $opd2_lockfile = "/tmp/opd2.pid";
 # List of OSCAR repositories used by default, using the yume or rapt syntax
 my @default_oscar_repos = ("http://oscar.gforge.inria.fr/debian/+stable+oscar");
 
-my $verbose = 1;
+my $verbose = $ENV{OPD_VERBOSE};
 our $xml_data;
 #our $url;
 
@@ -117,7 +117,7 @@ sub opd2_lock {
     print "Locking OPD2\n" if $verbose > 0;
     if (-f $opd2_lockfile) {
         carp ("The OPD2 lock already exists ($opd2_lockfile), " .
-            "check if another instance is running");
+            "check if another instance is running") if $verbose;
         return -1;
     }
     open (FILE, ">$opd2_lockfile") or die "can't open $opd2_lockfile";
@@ -150,7 +150,7 @@ sub find_opkg_in_cache {
         chomp($pkg);
         print $pkg if $verbose > 2;
         if ($pkg eq $pkg_name) {
-            print "The OPKG ($pkg_name) is already cached\n";
+            print "The OPKG ($pkg_name) is already cached\n" if $verbose;
             return $pos;
         }
         $pos += 1;
@@ -172,7 +172,7 @@ sub find_repo_in_cache ($) {
         chomp($repo);
         print $repo if $verbose > 2;
         if ($repo eq $url) {
-            print "The repo ($repo) is already cached\n";
+            print "The repo ($repo) is already cached\n" if $verbose;
             return $pos;
         } 
         $pos += 1;
@@ -224,7 +224,7 @@ sub add_opkg_to_cache {
         my $name = $xml_data->{package}->[$i]->{name};
         chomp($name);
         if (find_opkg_in_cache($name) == -1) {
-            print "Adding $name in cache...\n";
+            print "Adding $name in cache...\n" if $verbose;
             print CACHEFILE $name;
             print CACHEFILE "\n";
             
@@ -408,8 +408,6 @@ sub get_available_opkgs ($) {
     my $repo_url = shift;
     my @list = ();
 
-    print $repo_url;
-
     if ($repo_url eq "") {
         # We want the list of all OPKGs available via all the OSCAR repos
         my @repos = get_available_repositories ();
@@ -435,22 +433,22 @@ sub get_available_opkgs ($) {
 
         # TODO: We should have here a Packman interface for repo query!!!!!
 
-        # We determine the type of the repository
-        my $cmd = "/usr/bin/rapt --repo $repo_url update";
+        # We determine the type of the repository. Note that we do not care
+        # about the output, we only care about the return code.
+        my $cmd = "/usr/bin/rapt --repo $repo_url update 2>/dev/null 1>/dev/null";
         if (!system($cmd)) {
             # This is a Debian repository
             $cmd="/usr/bin/rapt --repo $repo_url search 'opkg-.*-server' --names-only ";
         } else {
             $cmd="/usr/bin/yume $repo_url --repoquery --nevra opkg-*-server";
         }
-        print "Executing: $cmd\n";
+        print "Executing: $cmd\n" if $verbose;
         open CMD, "$cmd |" or die "Error: $!";
         while (<CMD>) {
             my $opkg = $_;
             chomp ($opkg);
             if ($opkg =~ m/^opkg-(.*)-server\s*$/) {
                 push (@list, $1);
-                print $1;
             }
         }
     }
@@ -539,10 +537,10 @@ sub list_included_opkgs {
 # are deleted.                                                                #
 ###############################################################################
 sub flush_cache {
-    print "Flushing cache...\n";
+    print "Flushing cache...\n" if $verbose;
     unlink ("$opkg_repo_cache");
     unlink ("$opkg_list_cache");
-    print "Cache cleaned\n";
+    print "Cache cleaned\n" if $verbose;
 }
 
 
