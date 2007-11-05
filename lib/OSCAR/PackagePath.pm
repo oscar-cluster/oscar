@@ -26,7 +26,7 @@ package OSCAR::PackagePath;
 # Build repository paths depending on distro, version, etc...
 
 use strict;
-use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
+use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS $PGROUP_PATH);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use File::Basename;
@@ -36,6 +36,8 @@ use Carp;
 @EXPORT = qw(distro_repo_url
 	     oscar_repo_url
 	     repo_empty
+	     oscar_urlfile
+	     distro_urlfile
 	     repos_list_urlfile
 	     repos_add_urlfile
 	     repos_del_urlfile
@@ -44,14 +46,18 @@ use Carp;
 	     pkg_extension
 	     pkg_separator
 	     distro_detect_or_die
-	     list_distro_pools);
+	     list_distro_pools
+	     @PKG_SOURCE_LOCATIONS
+	     $PGROUP_PATH
+	     );
 
 # The possible places where packages may live.  
-
 @PKG_SOURCE_LOCATIONS = ( "$ENV{OSCAR_HOME}/packages", 
                           "/var/lib/oscar/packages",
                         );
 
+# Path of package group files used for client image generations
+$PGROUP_PATH = "$ENV{OSCAR_HOME}/tmp";
 
 #
 # Return an OS_Detect hash reference or die.
