@@ -145,4 +145,29 @@ sub create_list_selected_opkgs {
     close(OUTFILE);
 }
 
+#
+# Write group files which are ready to be used by SystemInstaller as
+# additional package files.
+#
+sub write_pgroup_files {
+    my (@pgroups, @groups_list, @errors);
+    OSCAR::Database::get_groups_for_packages(\@groups_list, {}, \@errors);
+    foreach my $groups_ref (@groups_list){
+	push @pgroups, $$groups_ref{group_name};
+    }
+    foreach my $pset (@pgroups) {
+	my (@res, @errs);
+	&get_group_packages($pset, \@res, {}, \@errs);
+	my $file = $OSCAR::PackagePath::PGROUP_PATH."/$pset.pgroup";
+	print "Writing package group file for client installation: $file\n";
+	local *OUT;
+	open OUT, "> $file" or die "Could not write $file : $!";
+	for my $p (@res) {
+	    print OUT "opkg-".$p->{package}."-client\n";
+	}
+	close OUT;
+    }
+}
+
+
 1;
