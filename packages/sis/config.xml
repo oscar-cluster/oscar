@@ -134,6 +134,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.0-1">
+      <changelogEntry authorName="Erich Focht" date="2007-11-05T00:31:22+01:00">
+        <item>Updated systemimager to 4.0.0-1.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.9.6-1">
       <changelogEntry authorName="Erich Focht" date="2007-10-19T16:23:22+02:00">
         <item>Updated systeminstaller to 2.3.3-1.</item>
