@@ -131,22 +131,34 @@ sub check_oscar_interface {
 sub get_host_ip {
     my $id = shift;
 
-    my $my_ip = `grep $id /etc/hosts | awk ' { print \$1 } '`;
-    # We check that we have only one result, ignoring comments
-    my @res = split('\n', $my_ip);
-    $my_ip = "";
-    foreach my $n (@res) {
-        chomp ($n);
-        if ($n ne "#" && $my_ip ne "") {
-            print " ---------------------------------------------------\n";
-            print " ERROR: the hostname $id is used more than one time \n";
-            print " in /etc/hosts                                      \n";
-            print " ---------------------------------------------------\n";
-            return FAILURE;
-        }
-        if ($n ne "#" && $my_ip eq "") {
-            $my_ip = $n;
-        }
+    my $count = 0;
+    my $my_ip;
+    local *IN;
+    open IN, "/etc/hosts" or die "$!";
+    while (<IN>) {
+	chomp;
+	next if /^\s*\#/;
+	if (/\s+$id(\s|$|\.)/) {
+	    $count++;
+	    if (/^(\d+\.\d+\.\d+\.\d+)\s+/) {
+		$my_ip = $1;
+	    }
+	}
+    }
+    close IN;
+    if ($count > 1 && $my_ip ne "") {
+	print " ---------------------------------------------------\n";
+	print " ERROR: the hostname $id is used more than one time \n";
+	print " in /etc/hosts                                      \n";
+	print " ---------------------------------------------------\n";
+	return FAILURE;
+    }
+    if ($count == 0) {
+	print " ---------------------------------------------------\n";
+	print " ERROR: the hostname $id could not be found         \n";
+	print " in /etc/hosts                                      \n";
+	print " ---------------------------------------------------\n";
+	return FAILURE;
     }
     return $my_ip;
 }
