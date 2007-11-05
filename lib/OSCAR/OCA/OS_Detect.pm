@@ -17,11 +17,12 @@
 package OSCAR::OCA::OS_Detect;
 
 use strict;
-use vars qw(@EXPORT);
+use vars qw(@EXPORT $LOCAL_NODE_OS);
 use base qw(Exporter);
 use File::Glob qw(:globally :nocase); # disabling case sensitivity so it
                                       # works under openSUSE: /etc/SuSE-release
                                       # vs suse-release-oss RPM
+use Carp;
 
 use OSCAR::OCA;
 
@@ -75,11 +76,15 @@ sub open {
 	return undef;
     }
 
-    # return immediately if path doesn't exist
     if ($path) {
+	# return immediately if path doesn't exist
 	if (! -d $path) {
 	    print STDERR "ERROR: Path $path does not exist!\n";
 	    return undef;
+	}
+	# return cached value if detecting local OS
+	if (($path eq "/") && $LOCAL_NODE_OS) {
+	    return $LOCAL_NODE_OS;
 	}
     }
 
@@ -114,8 +119,12 @@ sub open {
 	    last;
 	}
     }
+    if ($path && ($path eq "/") && !$LOCAL_NODE_OS) {
+	$LOCAL_NODE_OS = $ret;
+    }
     return $ret;
 }
+
 
 # Determine architecture by checking the executable type of a wellknown
 # program
