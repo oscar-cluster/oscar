@@ -20,27 +20,35 @@
 #include "pstream.h"
 #include "ui_ORM.h"
 #include "ORM_AddRepoGUI.h"
+#include "CommandExecutionThread.h"
+#include "ORM_WaitDialog.h"
 
 using namespace Ui; 
 using namespace std;
 using namespace redi;
 
-class ORMMainWindow : public QMainWindow
+class ORMMainWindow : public QDialog, public MainWindow
 {
 Q_OBJECT
 
 public:
-    ORMMainWindow(QWidget *parent = 0);
+    ORMMainWindow(QDialog *parent = 0);
     ~ORMMainWindow();
 
 public slots:
     void create_add_repo_window ();
     void add_repo_to_list ();
     void display_opkgs_from_repo ();
+    void kill_popup (QString, QString);
 
 private:
-    Ui::MainWindow ui;
-    ORMAddRepoDialog* add_widget;
+    void Tokenize(const string& str,
+        vector<string>& tokens,
+        const string& delimiters);
+
+    ORMAddRepoDialog add_widget;
+    ORMWaitDialog*  wait_popup;
+    CommandExecutionThread opd_thread;
 };
 
 #endif //ORM_MAINGUI_H

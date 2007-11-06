@@ -1,0 +1,57 @@
+<ui version="4.0" >
+ <class>WaitDialog</class>
+ <widget class="QDialog" name="WaitDialog" >
+  <property name="windowModality" >
+   <enum>Qt::WindowModal</enum>
+  </property>
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>406</width>
+    <height>141</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QLabel" name="label" >
+   <property name="geometry" >
+    <rect>
+     <x>30</x>
+     <y>30</y>
+     <width>351</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="text" >
+    <string>Please wait while we are quering the repository:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="repoURLLabel" >
+   <property name="geometry" >
+    <rect>
+     <x>26</x>
+     <y>80</y>
+     <width>361</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="text" >
+    <string>TextLabel</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

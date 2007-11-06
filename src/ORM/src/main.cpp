@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    QMainWindow w;
+//    QMainWindow w;
     ORMMainWindow dialog;
-    dialog.show();    
+    return dialog.exec();
 
-    return app.exec();
+//    return app.exec();
 } 

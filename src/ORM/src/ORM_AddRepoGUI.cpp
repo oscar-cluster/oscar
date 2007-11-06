@@ -3,7 +3,7 @@
 ORMAddRepoDialog::ORMAddRepoDialog(QDialog *parent) 
     : QDialog (parent) 
 {
-    ui.setupUi(this);
+    setupUi(this);
 }
 
 ORMAddRepoDialog::~ORMAddRepoDialog ()

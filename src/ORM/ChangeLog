@@ -1,0 +1,8 @@
+06 Nov 2007 (Geoffroy Vallee):
+- Include a widget for asking user to be patient when querying repositories.
+- Cleanup the code (more in the OO spirit).
+
+02 Nov 2007 (Geoffroy Vallee):
+- Implementation of the first Qt GUI for OPD2:
+    - support the addition of OSCAR repositories,
+    - support the query of a OSCAR repository.

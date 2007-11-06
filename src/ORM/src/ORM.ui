@@ -1,115 +1,116 @@
 <ui version="4.0" >
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
+ <widget class="QDialog" name="MainWindow" >
+  <property name="windowModality" >
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>823</width>
+    <height>595</height>
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>ORM - OSCAR Repository Manager</string>
+   <string>OSCAR Repository Manager</string>
   </property>
-  <widget class="QWidget" name="centralwidget" >
-   <widget class="QWidget" name="horizontalLayout" >
-    <property name="geometry" >
-     <rect>
-      <x>10</x>
-      <y>490</y>
-      <width>388</width>
-      <height>80</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" >
-     <item>
-      <widget class="QPushButton" name="AddButton" >
-       <property name="text" >
-        <string>Add OSCAR Repository</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_3" >
-       <property name="enabled" >
-        <bool>false</bool>
-       </property>
-       <property name="text" >
-        <string>Save Repository Data</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="CloseButton" >
-       <property name="text" >
-        <string>Close</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="horizontalLayout_2" >
-    <property name="geometry" >
-     <rect>
-      <x>9</x>
-      <y>20</y>
-      <width>781</width>
-      <height>471</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" >
-     <item>
-      <widget class="QListWidget" name="listReposWidget" />
-     </item>
-     <item>
-      <widget class="QListWidget" name="listOPKGsWidget" />
-     </item>
-    </layout>
-   </widget>
-   <widget class="QLabel" name="label" >
-    <property name="geometry" >
-     <rect>
-      <x>20</x>
-      <y>0</y>
-      <width>181</width>
-      <height>18</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>Available OSCAR Repositories</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2" >
-    <property name="geometry" >
-     <rect>
-      <x>410</x>
-      <y>0</y>
-      <width>318</width>
-      <height>18</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>Available OSCAR Packages in Selected Repositories</string>
-    </property>
-   </widget>
+  <widget class="QWidget" name="horizontalLayout_2" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>40</y>
+     <width>781</width>
+     <height>471</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" >
+    <item>
+     <widget class="QListWidget" name="listReposWidget" />
+    </item>
+    <item>
+     <widget class="QListWidget" name="listOPKGsWidget" />
+    </item>
+   </layout>
+  </widget>
+  <widget class="QLabel" name="label_2" >
+   <property name="geometry" >
+    <rect>
+     <x>421</x>
+     <y>20</y>
+     <width>318</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Available OSCAR Packages in Selected Repositories</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="horizontalLayout" >
+   <property name="geometry" >
+    <rect>
+     <x>21</x>
+     <y>510</y>
+     <width>388</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" >
+    <item>
+     <widget class="QPushButton" name="AddButton" >
+      <property name="text" >
+       <string>Add OSCAR Repository</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_3" >
+      <property name="enabled" >
+       <bool>false</bool>
+      </property>
+      <property name="text" >
+       <string>Save Repository Data</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="CloseButton" >
+      <property name="text" >
+       <string>Close</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QLabel" name="label" >
+   <property name="geometry" >
+    <rect>
+     <x>31</x>
+     <y>20</y>
+     <width>181</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Available OSCAR Repositories</string>
+   </property>
   </widget>
  </widget>
  <resources/>
  <connections>
   <connection>
    <sender>CloseButton</sender>
-   <signal>clicked()</signal>
+   <signal>clicked(bool)</signal>
    <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>359</x>
-     <y>529</y>
+     <x>370</x>
+     <y>549</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>399</x>
-     <y>299</y>
+     <x>411</x>
+     <y>297</y>
     </hint>
    </hints>
   </connection>

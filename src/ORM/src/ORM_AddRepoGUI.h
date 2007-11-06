@@ -5,7 +5,7 @@
 
 using namespace std;
 
-class ORMAddRepoDialog : public QDialog
+class ORMAddRepoDialog : public QDialog, public Ui_AddRepoDialog
 {
 Q_OBJECT
 
@@ -13,7 +13,7 @@ public:
     ORMAddRepoDialog(QDialog *parent = 0);
     ~ORMAddRepoDialog();
 
-    Ui::AddRepoDialog ui;
+//    Ui::AddRepoDialog ui;
 
 };
 
