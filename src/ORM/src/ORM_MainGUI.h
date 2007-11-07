@@ -1,3 +1,23 @@
+/*
+ *  Copyright (c) 2007 Oak Ridge National Laboratory, 
+ *                     Geoffroy Vallee <valleegr@ornl.gov>
+ *                     All rights reserved
+ *  This file is part of the xorm software, part of the OSCAR software.
+ *  For license information, see the COPYING file in the top level directory
+ *  of the OSCAR source.
+ */
+
+/**
+ * @file ORM_MainGUI.h
+ * @brief Defines the class ORMMainWindow that implements the main xorm widget.
+ * @author Geoffroy Vallee
+ *
+ * The file defines the main widget of xorm. For that it inherents from the 
+ * class generated from the .ui file created with QtDesigner. This widget 
+ * "drives" all other widgets.
+ */
+
+
 #ifndef ORM_MAINGUI_H
 #define ORM_MAINGUI_H
 
@@ -50,5 +70,14 @@ private:
     ORMWaitDialog*  wait_popup;
     CommandExecutionThread opd_thread;
 };
+
+/**
+ * @namespace xorm
+ * @author Geoffroy Vallee.
+ * @brief The xorm namespace gathers all classes needed for XORM.
+ */
+namespace xorm {
+    class XORM_MainWindow: public ORMMainWindow {};
+} // namespace xorm
 
 #endif //ORM_MAINGUI_H

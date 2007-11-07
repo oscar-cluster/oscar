@@ -1,6 +1,9 @@
 06 Nov 2007 (Geoffroy Vallee):
 - Include a widget for asking user to be patient when querying repositories.
 - Cleanup the code (more in the OO spirit).
+- Include the doxygen documentation (to generate it, go in the src directory and
+  execute 'doxygen ./doxygen_config'.
+- Create a xorm namespace for all the classes defined in the framework of XORM.
 
 02 Nov 2007 (Geoffroy Vallee):
 - Implementation of the first Qt GUI for OPD2:

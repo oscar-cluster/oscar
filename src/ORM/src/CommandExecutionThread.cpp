@@ -1,4 +1,17 @@
+/*
+ *  Copyright (c) 2007 Oak Ridge National Laboratory, 
+ *                     Geoffroy Vallee <valleegr@ornl.gov>
+ *                     All rights reserved
+ *  This file is part of the xorm software, part of the OSCAR software.
+ *  For license information, see the COPYING file in the top level directory
+ *  of the OSCAR source.
+ */
 
+/**
+ * @file CommandExecutionThread.cpp
+ * @brief Actual implementation of the CommandExecutionThread class.
+ * @author Geoffroy Vallee
+ */
 
 #include "CommandExecutionThread.h"
 
@@ -11,6 +24,17 @@ CommandExecutionThread::~CommandExecutionThread()
 {
 }
 
+/**
+  * @author Geoffroy Vallee.
+  *
+  * Thread initialization function. Used to set data used later on by the
+  * thread when running.
+  *
+  * @param url Repository URL that has to be used by the thread when running.
+  * @param m Query mode. For instance, get the list of repositories or 
+  *          the list of OSCAR packages for the specified repository. The 
+  *          different modes are defined in CommandExecutionThread.h
+  */
 void CommandExecutionThread::init (QString url, int m)
 {
     repo_url = url;
@@ -18,6 +42,9 @@ void CommandExecutionThread::init (QString url, int m)
     start(QThread::TimeCriticalPriority);
 }
 
+/**
+  * @author Geoffroy Vallee.
+  */
 void CommandExecutionThread::run()
 {
     char *ohome = getenv ("OSCAR_HOME");
