@@ -17,5 +17,4 @@ SOURCES +=  src/main.cpp \
 HEADERS +=  src/ORM_MainGUI.h \
             src/ORM_AddRepoGUI.h \
             src/ORM_WaitDialog.h \
-            src/CommandExecutionThread.h \
-            src/xorm/h
+            src/CommandExecutionThread.h 

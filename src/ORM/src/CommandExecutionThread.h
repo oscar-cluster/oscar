@@ -12,7 +12,7 @@
  * @brief Defines a class used to execute OPD2 commands in a separate thread.
  * @author Geoffroy Vallee
  *
- * Using Qt4, the main thread, i.e., the application process is used to
+ * Using Qt4, the main thread, i.e., the application process, is used to
  * display widgets and as a runtime for the GUI. Therefore is the "main
  * thread" is used to do important tasks, the GUI becomes very difficult
  * to use for users (slow refresh for instance).
