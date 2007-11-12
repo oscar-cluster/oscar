@@ -61,6 +61,10 @@ visualized either at runtime or post-mortem.</description>
       <name>Geoffroy Vallee</name>
       <email>valleegr@ornl.gov</email>
     </author>
+    <author cat="uploader">
+      <name>Erich Focht</name>
+      <email>efocht@hpce.nec.com</email>
+    </author>
   </authors>
   <serverDeps>
     <!-- Distributions that provide libaio -->
