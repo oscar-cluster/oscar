@@ -29,11 +29,14 @@ use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS $PGROUP_PATH);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
+use OSCAR::Utils qw ( is_a_valid_string );
+use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
 use File::Basename;
 use Data::Dumper;
 use Carp;
 
-@EXPORT = qw(distro_repo_url
+@EXPORT = qw(
+            distro_repo_url
 	     oscar_repo_url
 	     repo_empty
 	     oscar_urlfile
@@ -47,9 +50,20 @@ use Carp;
 	     pkg_separator
 	     distro_detect_or_die
 	     list_distro_pools
+            mirror_repo
+            get_default_distro_repo
+            get_default_oscar_repo
+            get_repo_type
+            get_list_setup_distros
+            use_distro_repo
+            use_oscar_repo
+            use_default_distro_repo
+            use_default_oscar_repo
 	     @PKG_SOURCE_LOCATIONS
 	     $PGROUP_PATH
 	     );
+
+my $tftpdir = "/tftpboot/";
 
 # The possible places where packages may live.  
 @PKG_SOURCE_LOCATIONS = ( "$ENV{OSCAR_HOME}/packages", 
@@ -167,6 +181,9 @@ sub repos_add_urlfile {
 
 #
 # Delete repositories from a .url file.
+#
+# Input: - the .url file path,
+#        - the list of repositories to remove (array).
 #
 sub repos_del_urlfile {
     my ($path, @repos) = (@_);
@@ -355,7 +372,7 @@ sub oscar_repo_url {
 
 #
 # Check if local repo directory is empty.
-# Returns 1 (true) if directory is empty.
+# Returns 1 (true) if directory is empty, 0 else.
 #
 sub repo_empty {
     my ($path) = (@_);
@@ -370,8 +387,13 @@ sub repo_empty {
 }
 
 #
-# List all available distro pools or distro URL files
-#
+# List all available distro pools or distro URL files.
+# Return: a hash, each key is composed by the distro id (e.g. 'debian-4-x86_64)
+#         returned by OS_Detect; the value is composed of data from OS_Detect.
+# Note that we assume here that /tftpboot/distro and /tftpboot/oscar are fully
+# populated. If the directory /tftpboot/oscar and is not completely populated, 
+# this function will create by defaults directories/files to have local 
+# repositories.
 sub list_distro_pools {
     my $ddir = "/tftpboot/distro";
     # recognised architectures
@@ -380,29 +402,29 @@ sub list_distro_pools {
     local *DIR;
     opendir DIR, $ddir or carp "Could not read directory $ddir!";
     for my $e (readdir DIR) {
-	if ( ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
-	     ($e =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
-	    my $distro = "$1-$2-$3";
-	    my $os;
-	    if ($4) {
-		$os = OSCAR::OCA::OS_Detect::open(fake=>{distro=>$1,
-							 distro_version=>$2,
-							 arch=>$3, }
-						  );
-	    } else {
-		$os = OSCAR::OCA::OS_Detect::open(pool=>"$ddir/$e");
-	    }
-	    if (defined($os) && (ref($os) eq "HASH")) {
-		$pools{$distro}{os} = $os;
-		$pools{$distro}{oscar_repo} = &oscar_repo_url(os=>$os);
-		$pools{$distro}{distro_repo} = &distro_repo_url(os=>$os);
-		if ($4) {
-		    $pools{$distro}{url} = "$ddir/$e";
-		} else {
-		    $pools{$distro}{path} = "$ddir/$e";
-		}
-	    }
-	}
+        if ( ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
+            ($e =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
+            my $distro = "$1-$2-$3";
+            my $os;
+            if ($4) {
+                $os = OSCAR::OCA::OS_Detect::open(fake=>{distro=>$1,
+                                                distro_version=>$2,
+                                                arch=>$3, }
+                                                );
+            } else {
+                $os = OSCAR::OCA::OS_Detect::open(pool=>"$ddir/$e");
+            }
+            if (defined($os) && (ref($os) eq "HASH")) {
+                $pools{$distro}{os} = $os;
+                $pools{$distro}{oscar_repo} = &oscar_repo_url(os=>$os);
+                $pools{$distro}{distro_repo} = &distro_repo_url(os=>$os);
+                if ($4) {
+                    $pools{$distro}{url} = "$ddir/$e";
+                } else {
+                    $pools{$distro}{path} = "$ddir/$e";
+                }
+            }
+        }
     }
     return %pools;
 }
@@ -449,6 +471,241 @@ sub os_cdistro_string {
     my ($os) = @_;
     return $os->{compat_distro}."-".$os->{compat_distrover}.
 	"-".$os->{arch};
+}
+
+################################################################################
+# Get the repository type (yum or apt).                                        #
+#                                                                              #
+# Input: repo_url, repository URL we want to check.                            #
+# Return: apt if the repository is a debian repository, yum if it is a yum     #
+#         repository.                                                          #
+#                                                                              #
+# TODO: check if the yume command does really work or not!                     #
+################################################################################
+sub get_repo_type ($) {
+    my $repo_url = shift;
+
+    # We determine the type of the repository. Note that we do not care
+    # about the output, we only care about the return code.
+    my $rapt_cmd = 
+        "/usr/bin/rapt --repo $repo_url update 2>/dev/null 1>/dev/null";
+    my $yume_cmd = "/usr/bin/yume $repo_url --repoquery";
+    if (!system($rapt_cmd)) {
+        return ("apt");
+    } elsif (!system ($yume_cmd)) {
+        return ("yum");
+    } else {
+        return undef;
+    }
+}
+
+################################################################################
+# Mirror the repo for which we have the URL. For that we first determine that  #
+# kind of repo it is (e.g. apt repo versus yum repo) and than, we mirror it.   #
+#                                                                              #
+# Input: url, the repository URL we have to mirror.                            #
+#        distro, the distribution ID (following the OS_Detect syntax) the      #
+#                mirror is designed for.                                       #
+#        destination, mirror path.                                             #
+# Return: None.                                                                #
+################################################################################
+sub mirror_repo ($$$) {
+    my ($url, $distro, $destination) = @_;
+    my $repo_type = get_repo_type ($url);
+
+    die "ERROR: Impossible to determine the repository type of $url ".
+        "($repo_type)\n" if (!defined $repo_type);
+
+    if ($repo_type eq "apt") {
+        print "We need to put here the code to mirror an APT repo\n";
+    } elsif ($repo_type eq "yum") {
+        print "We need to put here the code to mirror a YUM repo\n";
+    } else {
+        carp "WARNING: we do not know how to mirror $repo_type repos\n";
+    }
+}
+
+################################################################################
+# Setup the default distro repository for a given Linux distribution. Note     #
+# that this default repository is specified in                                 #
+# $OSCAR_HOME/share/supported_distros.xml                                      #
+#                                                                              #
+# Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
+#                syntax, e.g., rhel-5-x86_64).                                 #
+# Return: None.                                                                #
+################################################################################
+sub use_default_distro_repo ($) {
+    my ($distro) = @_;
+    my $distro_repo_url = get_default_distro_repo ($distro);
+    use_distro_repo ($distro, $distro_repo_url);
+}
+
+################################################################################
+# Setup the default OSCAR repository for a given Linux distribution. Note that #
+# this default repository is specified in                                      #
+# $OSCAR_HOME/share/supported_distros.xml                                      #
+#                                                                              #
+# Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
+#                syntax, e.g., rhel-5-x86_64).                                 #
+# Return: None.                                                                #
+################################################################################
+sub use_default_oscar_repo ($) {
+    my ($distro) = @_;
+    my $oscar_repo_url = get_default_oscar_repo ($distro);
+    use_oscar_repo ($distro, $oscar_repo_url);
+}
+
+################################################################################
+# Specify a new distro repository for a given Linux distribution.              #
+#                                                                              #
+# Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
+#                syntax, e.g., rhel-5-x86_64.                                  #
+# Return: None.                                                                #
+################################################################################
+sub use_distro_repo ($$) {
+    my ($distro, $repo) = @_;
+
+    if (!is_a_valid_string ($distro) || !is_a_valid_string ($repo)) {
+        die "ERROR: the distro or the repo URL are invalid ($distro, $repo)\n";
+    }
+
+    my $cmd = "mkdir -p " . $tftpdir . "distro/";
+    die "ERROR: impossible to execute \"$cmd\"\n" if (system ($cmd));
+
+    my $file_path = $tftpdir . "distro/" . $distro . ".url";
+    add_line_to_file_without_duplication ($repo, $file_path);
+}
+
+################################################################################
+# Specify a new OSCAR repository for a given Linux distribution.               #
+#                                                                              #
+# Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
+#                syntax, e.g., rhel-5-x86_64.                                  #
+# Return: None.                                                                #
+################################################################################
+sub use_oscar_repo ($$) {
+    my ($distro, $repo) = @_;
+
+    if (!is_a_valid_string ($distro) || !is_a_valid_string ($repo)) {
+        die "ERROR: the distro or the repo URL are invalid ($distro, $repo)\n";
+    }
+
+    my $cmd = "mkdir -p " . $tftpdir . "oscar/";
+    die "ERROR: impossible to execute \"$cmd\"\n" if (system ($cmd));
+
+    my $file_path = $tftpdir . "oscar/" . $distro . ".url";
+    add_line_to_file_without_duplication ($repo, $file_path);
+}
+
+################################################################################
+# Chech a specific repository (is it a valid repository or not). Currently we  #
+# only check if the repository exists.                                         #
+#                                                                              #
+# Input: repository path (string).                                             #
+# Return: 1 if the repository exists, 0 else.                                  #
+################################################################################
+sub check_repo_configuration ($) {
+    my $path = shift;
+
+    if (-f $path && !repo_empty ($path)) {
+        return 1;
+    } else {
+        # is there a .url file?
+        $path = $path . ".url";
+        if (-f $path) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+################################################################################
+# Check if the distro repository exists for a given Linux distribution.        #
+#                                                                              #
+# Input: distribution ID, following the OS_Detect syntax (e.g. rhel-5-x86_64). #
+# Return: 1 if the repository exists, 0 else.                                  #
+################################################################################
+sub distro_repo_exists ($) {
+    my $d = shift;
+    my $path = $tftpdir . "distro/" . $d;
+    return check_repo_configuration ($path);
+}
+
+################################################################################
+# Check if the OSCAR repository exists for a given Linux distribution.         #
+#                                                                              #
+# Input: distribution ID, following the OS_Detect syntax (e.g. rhel-5-x86_64). #
+# Return: 1 if the repository exists, 0 else.                                  #
+################################################################################
+sub oscar_repo_exists {
+    my $d = shift;
+    my $path = $tftpdir . "oscar/" . $d;
+    return check_repo_configuration ($path);
+}
+
+################################################################################
+# Gives the list of distros for which a repository is setup (both repositories #
+# for the distro itself and repositories for OSCAR). For that we check what is #
+# in /tftpboot.                                                                #
+#                                                                              #
+# Input: none.                                                                 #
+# Return: an array witht the list of setup distros (e.g. debian-4-x86_64).     #
+################################################################################
+sub get_list_setup_distros {
+    my @setup_distros = ();
+
+    # We get the list of supported distros
+    my @supported_distros = OSCAR::Distro::get_list_of_supported_distros ();
+
+    foreach my $d (@supported_distros) {
+        if (distro_repo_exists($d) || oscar_repo_exists ($d)) {
+            push (@setup_distros, $d);
+        }
+    }
+
+    return (@setup_distros);
+}
+
+################################################################################
+# Return the default repository for a given distribution.                      #
+#                                                                              #
+# Input: the distro ID (with the OS_Detect syntax).                            #
+# Return: the default distro repository (string), empty string if no default   #
+#         repo is defined.                                                     #
+################################################################################
+sub get_default_distro_repo ($) {
+    my $distro = shift;
+
+    my $d = OSCAR::Distro::find_distro ($distro);
+
+    my $t =  %$d->{'default_distro_repo'}->[0];
+    # if we do not have a default repo, we return an empty string
+    if (ref($t) eq "HASH") {
+        return "";
+    } else {
+        return $t;
+    }
+}
+
+################################################################################
+# Return the default OSCAR repository for a given distribution.                #
+#                                                                              #
+# Input: the distro ID (with the OS_Detect syntax).                            #
+# Return: the default OSCAR repository (string), empty string if no default    #
+#         repo is defined.                                                     #
+################################################################################
+sub get_default_oscar_repo ($) {
+    my $distro = shift;
+
+    my $d = OSCAR::Distro::find_distro ($distro);
+
+    my $t = %$d->{'default_oscar_repo'}->[0];
+    # if we do not have a default repo, we return an empty string
+    if (ref($t) eq "HASH") {
+        return "";
+    } else {
+        return $t;
+    }
 }
 
 1;

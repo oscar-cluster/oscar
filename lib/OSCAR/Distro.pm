@@ -29,18 +29,37 @@ package OSCAR::Distro;
 
 #   Copyright 2002 International Business Machines
 #                  Sean Dague <japh@us.ibm.com>
-# Copyright © 2003, The Board of Trustees of the University of Illinois. All rights reserved.
+# Copyright ï¿½ 2003, The Board of Trustees of the University of Illinois. All rights reserved.
 # Copyright (c) 2005, Revolution Linux
 # Copyright (c) 2007 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) 2007, Oak Ridge National Laboratory.
+#                     Geoffroy R. Vallee <valleegr@ornl.gov>
+#                     All rights reserved.
 
 use strict;
 use vars qw($VERSION @EXPORT);
 use Carp;
+use OSCAR::Utils qw ( 
+                    get_oscar_version
+                    is_a_valid_string
+                    );
+use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
+use OSCAR::PackagePath qw ( repo_empty );
+use XML::Simple;
+use Data::Dumper;
 use base qw(Exporter);
-@EXPORT = qw(which_distro which_distro_server which_mysql_name);
+@EXPORT = qw(
+            get_list_of_supported_distros
+            get_list_setup_distros
+            which_distro
+            which_distro_server
+            which_mysql_name
+            );
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+my $tftpdir = "/tftpboot/";
+my $supported_distro_file = "$ENV{OSCAR_HOME}/share/supported_distros.xml";
 
 my $DISTROFILES = {
 		   'fedora-release'        => 'fedora',
@@ -204,6 +223,80 @@ CASE: {
 
       }
 
+}
+
+################################################################################
+# Open the list that gives the list of supported Linux distributions for given #
+# version of OSCAR.                                                            #
+#                                                                              #
+# Input: none.                                                                 #
+# Return: a hash composed of XML data from the file.                           #
+################################################################################
+sub open_supported_distros_file {
+    # we open the file ${OSCAR_HOME}/share/supported_distros.xml
+    open (FILE, "$supported_distro_file") 
+        or die ("ERROR: impossible to open $supported_distro_file");
+    my $simple= XML::Simple->new (keyattr => ["version"], ForceArray => 1);
+    my $xml_data = $simple->XMLin($supported_distro_file);
+    close (FILE);
+
+    return $xml_data;
+}
+
+################################################################################
+# Return an array with the list of distros that OSCAR supports. Each element   #
+# in the array is like: debian-4-x86_64 or rhel-5.1-x86_64.                    #
+################################################################################
+sub get_list_of_supported_distros {
+    my @list;
+
+    # we open the file ${OSCAR_HOME}/share/supported_distros.xml
+    my $xml_data = open_supported_distros_file ();
+
+    # we get the OSCAR version
+    my $version = get_oscar_version();
+
+    # we try to find a match
+    my $test = $xml_data->{'release'}->{$version}->{'distro'};
+    foreach my $d (@$test) {
+        push (@list, %$d->{'name'}->[0]);
+    }
+
+    return @list;
+
+}
+
+################################################################################
+# Find information about a given Linux distribution in the                     #
+# ${OSCAR_HOME}/share/supported_distros.xml. This is a basic function to get   #
+# for instance the default repositories (distribution and OSCAR repositories). #
+#                                                                              #
+# Input: distro, the distro id you are looking for (with the OS_Detect syntax).#
+# Return: hash which has the following format                                  #
+# {                                                                            #
+# 'default_distro_repo' => ['http://ftp.us.debian.org/debian/+etch+main'],     #
+# 'name' => ['debian-4-x86_64'],                                               #
+# 'default_oscar_repo' => ['http://oscar.gforge.inria.fr/debian/+stable+oscar']#
+# }                                                                            #
+################################################################################
+sub find_distro ($) {
+    my $distro = shift;
+
+    # we open the file ${OSCAR_HOME}/share/supported_distros.xml
+    my $xml_data = open_supported_distros_file ();
+
+    # we get the OSCAR version
+    my $version = get_oscar_version();
+
+    my $i;
+
+    my $test = $xml_data->{'release'}->{$version}->{'distro'};
+    foreach my $d (@$test) {
+        if (%$d->{'name'}->[0] eq $distro) {
+            return $d;
+        }
+    }
+    return undef;
 }
 
 1;

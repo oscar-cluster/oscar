@@ -127,6 +127,8 @@ sub get_list_opkgs_in_package_set {
         print "List of available OPKGs: ";
         print_array (@opkgs);
     }
+    close (FILE);
+
     return @opkgs;
 }
 

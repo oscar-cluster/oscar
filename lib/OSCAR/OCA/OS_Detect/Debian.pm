@@ -51,23 +51,21 @@ sub detect_dir {
 
     # If /etc/debian_version exists, continue, otherwise, quit.
     if (-f "$root/etc/debian_version") {
-    	my $cmd = "$dpkg_bin --show $detect_pkg 2>&1";
-    	open(CMD, "$cmd|") or die "Error: unable to open $cmd - $!\n";
-	my $rslt = <CMD>;
-	chomp($rslt);
-	close(CMD);
+        my $cmd = "$dpkg_bin --show $detect_pkg 2>&1";
+        open(CMD, "$cmd|") or die "Error: unable to open $cmd - $!\n";
+        my $rslt = <CMD>;
+        chomp($rslt);
+        close(CMD);
 
-	$deb_ver = (split(/\s+/, $rslt))[1];  # [0]=name,  [1]=version
-
+        $deb_ver = (split(/\s+/, $rslt))[1];  # [0]=name,  [1]=version
     } else {
-	return undef;
+        return undef;
     }
-
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
-	os => "linux",
-	chroot => $root,
+        os => "linux",
+        chroot => $root,
     };
 
     #
@@ -78,8 +76,8 @@ sub detect_dir {
     my $deb_update;
     # two cases: the version number is "x" or "x.<something>"
     if ($deb_ver =~ /^(\d+)\.(\d+)/) {
-	$deb_ver = $1;
-	$deb_update = $2;
+        $deb_ver = $1;
+        $deb_update = $2;
     } else {
     	$deb_update = 0;
     }
@@ -95,9 +93,9 @@ sub detect_dir {
 
     # Limit support to only x86 and x86_64 machines
     if ($arch !~ /^x86_64$|^i686$|^i586$|^i386$/ ) {
-	print "OCA::OS_Detect::Debian-";
-	print "DEBUG: Failed Architecture support - ($arch)\n\n" if( $DEBUG );
-	return 0;
+        print "OCA::OS_Detect::Debian-";
+        print "DEBUG: Failed Architecture support - ($arch)\n\n" if( $DEBUG );
+        return 0;
     }
 
     $id->{distro} = $distro;

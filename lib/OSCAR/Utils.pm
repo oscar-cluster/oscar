@@ -5,7 +5,7 @@ package OSCAR::Utils;
 #                    Oak Ridge National Laboratory
 #                    All rights reserved.
 #
-#   $Id: PackageSet.pm 4833 2006-05-24 08:22:59Z bli $
+#   $Id: Utils.pm 4833 2006-05-24 08:22:59Z bli $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -31,6 +31,8 @@ use OSCAR::OCA::OS_Detect;
 use Carp;
 
 @EXPORT = qw(
+            get_oscar_version
+            is_a_valid_string
             is_element_in_array
             print_array
             print_hash
@@ -81,11 +83,12 @@ sub is_element_in_array ($@) {
     return 0;
 }
 
-###############################################################################
-# Print the content of an array
-# Parameter: array to display.
-# Return:    none.
-###############################################################################
+################################################################################
+# Print the content of an array.                                               #
+#                                                                              #
+# Parameter: array to display.                                                 #
+# Return:    none.                                                             #
+################################################################################
 sub print_array (@) {
     my @my_array = @_;
 
@@ -95,4 +98,47 @@ sub print_array (@) {
     }
     print "]\n";
     print "Array: ".scalar(@my_array)." element(s)\n";
+}
+
+################################################################################
+# Return the OSCAR version, for that we parse the $OSCAR_HOME/VERSION.         #
+#                                                                              #
+# Input: None.                                                                 #
+# Return: the OSCAR version (string), note that if this is the SVN version, it #
+#         returns "unstable".                                                  #
+################################################################################
+sub get_oscar_version {
+    my $version;
+    my $cmd = "less $ENV{OSCAR_HOME}/VERSION | grep want_svn=0";
+    my $result = `$cmd`;
+
+    if ($result eq "") {
+        $version = "unstable";
+    } else {
+        my $major = `less $ENV{OSCAR_HOME}/VERSION | grep major=`;
+        my $minor = `less $ENV{OSCAR_HOME}/VERSION | grep minor=`;
+        chomp ($major);
+        chomp ($minor);
+        $major =~ s/^major=//;
+        $minor =~ s/^minor=//;
+        $version=$major.".".$minor;
+    }
+    return $version;
+}
+
+################################################################################
+# Check if a string is valid. An unvalid string is an empty or undefined       #
+# string.                                                                      #
+#                                                                              #
+# Input: string to abalyze.                                                    #
+# Return: 1 if the string is valid, 0 else.                                    #
+################################################################################
+sub is_a_valid_string ($) {
+    my $str = shift;
+
+    if (!defined ($str) || $str eq "") {
+        return 0;
+    } else {
+        return 1;
+    }
 }

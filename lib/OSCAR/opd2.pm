@@ -22,6 +22,10 @@ use strict;
 use XML::Simple;
 use Data::Dumper;
 use OSCAR::Utils qw (print_array);
+use OSCAR::PackagePath qw (
+                            get_repo_type
+                            list_distro_pools
+                          );
 use Carp;
 
 use vars qw($VERSION @EXPORT);
@@ -248,65 +252,31 @@ sub add_opkg_to_cache {
 }
 
 
-###############################################################################
-# Parse a opd_repo.xml file. DEPRACTED.                                       #
-# @param: none.                                                               #
-# @return: none.                                                              #
-###############################################################################
-# sub parse_repo_description {
-#     my $data_file = "/tmp/opd_repo.xml";
-# 
-#     print "Parsing repository info...\n";
-# 
-#     my $simple = XML::Simple->new(KeyAttr => "package, name");
-#     $xml_data = $simple->XMLin($data_file) or return -1;
-# 
-#     print Dumper($xml_data) if $verbose >= 5;
-# 
-#     add_repo_to_cache ();
-#     add_opkg_to_cache ();
-# }
-
-# DEPRACTED
-# sub download_debian_package_list {
-#     my $file = "$cachedir/Packages";
-#     # If the file has been downloaded before, we delete it.
-#     if (-f "$file") {
-#         unlink ("$file");
-#     }
-#     my $cmd = "cd $cachedir && wget $debian_url";
-#     print "Executing: $cmd\n" if $verbose;
-#     if (system($cmd)) {
-#         die "ERROR: Impossible to get the list of available packages " .
-#             "from OSCAR repository $repo_url";
-#     }
-# }
-
 
 ###############################################################################
 # Parse the Package file downloaded from a Debian OSCAR repo in order to get  #
 # the list of available OPKGs.                                                #
 ###############################################################################
-sub parse_debian_package_file {
-    my @list = ();
-    my $file = "$cachedir/Packages";
-
-    if (!-f "$file") {
-        download_debian_package_list ();
-    }
-
-    open (FILE, "$file") or die "ERROR: Impossible to open $file";
-    my @file_content = <FILE>;
-    close (FILE);
-
-    foreach my $line (@file_content) {
-        if ($line =~ /^Package: opkg-(.*)-server/) {
-            push (@list, $1);
-        }
-    }
-
-    return (@list);
-}
+# sub parse_debian_package_file {
+#     my @list = ();
+#     my $file = "$cachedir/Packages";
+# 
+#     if (!-f "$file") {
+#         download_debian_package_list ();
+#     }
+# 
+#     open (FILE, "$file") or die "ERROR: Impossible to open $file";
+#     my @file_content = <FILE>;
+#     close (FILE);
+# 
+#     foreach my $line (@file_content) {
+#         if ($line =~ /^Package: opkg-(.*)-server/) {
+#             push (@list, $1);
+#         }
+#     }
+# 
+#     return (@list);
+# }
 
 
 sub init_repos {
@@ -432,14 +402,15 @@ sub get_available_opkgs ($) {
 
         # TODO: We should have here a Packman interface for repo query!!!!!
 
-        # We determine the type of the repository. Note that we do not care
-        # about the output, we only care about the return code.
-        my $cmd = "/usr/bin/rapt --repo $repo_url update 2>/dev/null 1>/dev/null";
-        if (!system($cmd)) {
+        my $repo_type = get_repo_type($repo_url);
+        my $cmd;
+        if ($repo_type eq "apt") {
             # This is a Debian repository
             $cmd="/usr/bin/rapt --repo $repo_url search 'opkg-.*-server' --names-only ";
-        } else {
+        } elsif ($repo_type eq "yum") {
             $cmd="/usr/bin/yume $repo_url --repoquery --nevra opkg-*-server";
+        } else {
+            die "ERROR: unknown repository type ($repo_type)\n";
         }
         print "Executing: $cmd\n" if $verbose;
         open CMD, "$cmd |" or die "Error: $!";
@@ -473,13 +444,12 @@ sub list_available_opkgs ($) {
 ###############################################################################
 sub get_available_repositories {
     my @list = ();
-    # We go through the cache and display the list of OPKG
-    if(open (FILE, $opkg_repo_cache)) {
-        foreach my $repo (<FILE>) {
-            chomp ($repo);
-            push (@list, $repo);
-        }
-    }
+
+    # We check in /tftpboot/distro which are the supported distros.
+    # Note that means that the user should populate manually this directory.
+    my %distros = list_distro_pools ();
+    print Dumper %distros;
+
     return @list;
 }
 
