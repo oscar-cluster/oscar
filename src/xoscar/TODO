@@ -1,0 +1,6 @@
+* Enable the cluster management. It depends on OPM which is not yet available.
+* Change the default size, the current one is too big for the normal display 
+  configuration.
+* Implement a transparent remote OSCAR command execution mechanism that will 
+  allow users to use the GUI on their laptop and to give remotely OSCAR.
+
