@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1220</width>
+    <width>1214</width>
     <height>820</height>
    </rect>
   </property>
@@ -245,16 +245,6 @@
        <attribute name="title" >
         <string>Sanity Check</string>
        </attribute>
-       <widget class="QTextBrowser" name="sanityCheckTextWidget" >
-        <property name="geometry" >
-         <rect>
-          <x>235</x>
-          <y>11</y>
-          <width>911</width>
-          <height>651</height>
-         </rect>
-        </property>
-       </widget>
        <widget class="QWidget" name="verticalLayout_4" >
         <property name="geometry" >
          <rect>
@@ -301,6 +291,16 @@
         </property>
         <property name="text" >
          <string>Save Logs...</string>
+        </property>
+       </widget>
+       <widget class="QTextBrowser" name="sanityCheckTextWidget" >
+        <property name="geometry" >
+         <rect>
+          <x>235</x>
+          <y>11</y>
+          <width>761</width>
+          <height>651</height>
+         </rect>
         </property>
        </widget>
       </widget>
@@ -1594,7 +1594,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1220</width>
+     <width>1214</width>
      <height>26</height>
     </rect>
    </property>
