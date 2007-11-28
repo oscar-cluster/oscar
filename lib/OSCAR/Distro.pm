@@ -48,6 +48,7 @@ use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
 use OSCAR::PackagePath qw ( repo_empty );
 use XML::Simple;
 use Data::Dumper;
+use warnings "all";
 use base qw(Exporter);
 @EXPORT = qw(
             get_list_of_supported_distros
@@ -259,7 +260,7 @@ sub get_list_of_supported_distros {
     # we try to find a match
     my $test = $xml_data->{'release'}->{$version}->{'distro'};
     foreach my $d (@$test) {
-        push (@list, %$d->{'name'}->[0]);
+        push (@list, $d->{'name'}->[0]);
     }
 
     return @list;
@@ -292,7 +293,7 @@ sub find_distro ($) {
 
     my $test = $xml_data->{'release'}->{$version}->{'distro'};
     foreach my $d (@$test) {
-        if (%$d->{'name'}->[0] eq $distro) {
+        if ($d->{'name'}->[0] eq $distro) {
             return $d;
         }
     }

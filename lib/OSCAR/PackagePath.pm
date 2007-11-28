@@ -33,6 +33,7 @@ use OSCAR::Utils qw ( is_a_valid_string );
 use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
 use File::Basename;
 use Data::Dumper;
+use warnings "all";
 use Carp;
 
 @EXPORT = qw(
@@ -678,7 +679,7 @@ sub get_default_distro_repo ($) {
 
     my $d = OSCAR::Distro::find_distro ($distro);
 
-    my $t =  %$d->{'default_distro_repo'}->[0];
+    my $t = $d->{'default_distro_repo'}->[0];
     # if we do not have a default repo, we return an empty string
     if (ref($t) eq "HASH") {
         return "";
@@ -699,7 +700,7 @@ sub get_default_oscar_repo ($) {
 
     my $d = OSCAR::Distro::find_distro ($distro);
 
-    my $t = %$d->{'default_oscar_repo'}->[0];
+    my $t = $d->{'default_oscar_repo'}->[0];
     # if we do not have a default repo, we return an empty string
     if (ref($t) eq "HASH") {
         return "";
