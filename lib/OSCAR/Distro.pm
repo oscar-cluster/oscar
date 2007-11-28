@@ -52,7 +52,6 @@ use warnings "all";
 use base qw(Exporter);
 @EXPORT = qw(
             get_list_of_supported_distros
-            get_list_setup_distros
             which_distro
             which_distro_server
             which_mysql_name
