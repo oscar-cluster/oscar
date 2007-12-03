@@ -36,6 +36,8 @@ XOSCAR_MainWindow::XOSCAR_MainWindow(QMainWindow *parent)
                     this, SLOT(display_opkgs_from_repo()));
     connect(listOscarClustersWidget, SIGNAL(itemSelectionChanged ()),
                     this, SLOT(refresh_list_partitions()));
+    connect(listClusterPartitionsWidget, SIGNAL(itemSelectionChanged ()),
+                    this, SLOT(refresh_partition_info()));
     connect(refreshListOPKGsButton, SIGNAL(clicked()),
                     this, SLOT(refresh_display_opkgs_from_repo()));
     connect(refreshListSetupDistrosButton, SIGNAL(clicked()),
@@ -373,3 +375,10 @@ void XOSCAR_MainWindow::refresh_list_partitions ()
     }
 //    cout << "result: " << tmp << endl;
 }
+
+void XOSCAR_MainWindow::refresh_partition_info ()
+{
+    QListWidgetItem *item = listClusterPartitionsWidget->currentItem();
+    partitonNameEditWidget->setText (item->text());
+}
+

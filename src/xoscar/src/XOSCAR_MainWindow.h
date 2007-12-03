@@ -54,6 +54,7 @@ public slots:
     void handle_about_authors_action();
     void handle_about_oscar_action();
     void refresh_list_partitions();
+    void refresh_partition_info();
 
 private:
     void Tokenize(const string& str,
