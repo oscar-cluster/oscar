@@ -42,11 +42,44 @@ use base qw(Exporter);
 use Carp;
 
 @EXPORT = qw(
-             get_list_partitions
-             oda_create_new_partition
+            get_list_nodes_partition
+            get_list_partitions
+            oda_create_new_partition
+            get_list_nodes_partition
             );
 
 my $verbose = 1;
+
+################################################################################
+# Return the list of nodes (their names) that compose a cluster partition.     #
+#                                                                              #
+# Input: partition name, note that we assume the partition name is unique.     #
+# Return: array of string, each element is a node name of a partition node.    #
+#                                                                              #
+# TODO: check if we really assume a partition name is unique or not.           #
+################################################################################
+sub get_list_nodes_partition ($) {
+    my $partition_name = shift;
+
+    # First we get the partition ID
+    my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
+    my $partition_id = oda_query_single_result ($sql, "partition_id");
+
+    # Then based on the partition ID, we can get the list of nodes associated
+    # to this partition (node ids).
+    $sql = "SELECT * From Partition_Nodes WHERE partition_id='$partition_id'";
+    my @nodes_id = simple_oda_query ($sql, "node_id");
+
+    # Finally for each node ID we find the node name
+    my @nodes;
+    foreach my $id (@nodes_id) {
+        $sql = "SELECT * From Nodes WHERE id='$id'";
+        my $n = oda_query_single_result ($sql, "name");
+        push (@nodes, $n);
+    }
+
+    return @nodes;
+}
 
 ################################################################################
 # Get the list of partitions for a given cluster.                              #

@@ -28,7 +28,7 @@ my $verbose = 1;
 Getopt::Long::Configure("pass_through");
 GetOptions(
         "display-partitions"            => \$list_partitions,
-        "display-partition-nodes"       => \$list_partition_nodes,
+        "display-partition-nodes=s"     => \$list_partition_nodes,
         "add-partition=s"               => \$new_partition,
         "client=s"                      => \@clients,
         "help"                          => \&help,
@@ -46,17 +46,26 @@ if ($new_partition) {
     OSCAR::msm::add_partition ($new_partition, \@clients);
 }
 
-# The user wants to see the list of partitions
+# The user wants to see the list of partitions.
 if ($list_partitions) {
     # TODO: Pretty ugly to do the SQL query here, we have to change that
     my $sql = "SELECT * FROM Clusters WHERE name='oscar'";
     my $cluster_id = OSCAR::Database::oda_query_single_result ($sql, "id");
     my @partitions = OSCAR::PartitionMgt::get_list_partitions ($cluster_id);
-    print "@partitions\n";
+    foreach my $p (@partitions) {
+        print "$p ";
+    }
+    print "\n";
 }
 
+# The user wants to see the list of nodes within a partition.
 if ($list_partition_nodes) {
-    die "Not yet implemented\n";
+    my @nodes =
+        OSCAR::PartitionMgt::get_list_nodes_partition ($list_partition_nodes);
+    foreach my $n (@nodes) {
+        print "$n ";
+    }
+    print "\n";
 }
 
 1;
