@@ -336,11 +336,23 @@ void XOSCAR_MainWindow::destroy()
     about_oscar_widget.close();
 }
 
+/**
+ * @author Geoffroy Vallee
+ *
+ * Slot called when the menu item to have information of authors is clicked.
+ * The widget displaying authors is then shown.
+ */
 void XOSCAR_MainWindow::handle_about_authors_action()
 {
     about_authors_widget.show();
 }
 
+/**
+ * @author Geoffroy Vallee
+ *
+ * Slot called when the menu item to have OSCAR information is clicked.
+ * The widget displaying OSCAR info is then shown.
+ */
 void XOSCAR_MainWindow::handle_about_oscar_action()
 {
     about_oscar_widget.show();

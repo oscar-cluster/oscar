@@ -31,3 +31,5 @@ HEADERS +=  src/XOSCAR_MainWindow.h \
             src/CommandExecutionThread.h \
             src/XOSCAR_AboutAuthorsDialog.h \
             src/XOSCAR_AboutOscarDialog.h
+
+RESOURCES += xoscar_resource.qrc
