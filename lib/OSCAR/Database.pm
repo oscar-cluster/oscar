@@ -2648,7 +2648,7 @@ sub single_dec_locked {
 #        - elt, hash key based on which we will create the result array.       #
 # Output: array of results.                                                    #
 ################################################################################
-sub simple_oda_query {
+sub simple_oda_query ($$) {
     (my $sql, my $elt) = @_;
     my @list;
 

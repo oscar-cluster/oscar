@@ -1,0 +1,62 @@
+#!/usr/bin/env perl 
+#
+# Copyright (c) 2007 Oak Ridge National Laboratory
+#               Geoffroy Vallee <valleegr@ornl.gov>
+#               All rights reserved
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# This script is a simple CLI for the management of OSCAR clusters.
+#
+# $Id: oscar_cluster 5134 2006-07-12 05:51:29Z valleegr $
+#
+
+use strict;
+use warnings "all";
+use Carp;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::msm;
+use OSCAR::PartitionMgt;
+use OSCAR::Database;
+use Getopt::Long;
+
+my ($new_partition, @clients, $list_partitions, $list_partition_nodes);
+my $verbose = 1;
+
+Getopt::Long::Configure("pass_through");
+GetOptions(
+        "display-partitions"            => \$list_partitions,
+        "display-partition-nodes"       => \$list_partition_nodes,
+        "add-partition=s"               => \$new_partition,
+        "client=s"                      => \@clients,
+        "help"                          => \&help,
+        );
+
+# The user wants to add a new partition
+if ($new_partition) {
+    # If the user did not define clients at the same time, this is an error
+    if (scalar(@clients) == 0) {
+        crap ("ERROR: new clients are associated to the partition, ".
+              "impossible to create the partition.\n");
+        return 0;
+    }
+    print "New partition: name=$new_partition, clients=@clients\n" if $verbose;
+    OSCAR::msm::add_partition ($new_partition, \@clients);
+}
+
+# The user wants to see the list of partitions
+if ($list_partitions) {
+    # TODO: Pretty ugly to do the SQL query here, we have to change that
+    my $sql = "SELECT * FROM Clusters WHERE name='oscar'";
+    my $cluster_id = OSCAR::Database::oda_query_single_result ($sql, "id");
+    my @partitions = OSCAR::PartitionMgt::get_list_partitions ($cluster_id);
+    print "@partitions\n";
+}
+
+if ($list_partition_nodes) {
+    die "Not yet implemented\n";
+}
+
+1;

@@ -28,17 +28,25 @@ use base qw(Exporter);
 use lib ".", "$ENV{OSCAR_HOME}/lib";
 use XML::Simple;	# Read the XML package set files
 use Data::Dumper;
-use OSCAR::Utils qw ( is_element_in_array );
+use OSCAR::Utils qw ( 
+                    print_array
+                    is_element_in_array 
+                    );
+use OSCAR::PartitionMgt qw  (
+                            oda_create_new_partition 
+                            );
 
 our @EXPORT = qw( 
-    describe_set
-    machine_type
-    list_clients_in_group
-    list_machines
-    list_machines_in_group
-    list_servers_in_group
-    list_sets
-    use_file);
+                add_partition
+                describe_set
+                list_clients_in_group
+                list_machines
+                list_machines_in_group
+                list_servers_in_group
+                list_sets
+                machine_type
+                parse_machine_set
+                use_file);
 
 our $xml = new XML::Simple;  # XML parser object
 our %list;
@@ -53,7 +61,29 @@ use_file("defaultms.xml");
 #                                                                              #
 ################################################################################
 
-
+################################################################################
+# Populate the database for the creation of a new cluster.                     #
+# Note that we currently support only one cluster with multiple partitions.    #
+#                                                                              #
+# Inpt: partition_name, name of the partition to add;                          #
+#       clients, reference to an array representing the list of clients name   #
+#                (for instance [oscarnode1, oscarnode2, oscarnode3]).          #
+# Return: returns ODA error code.                                              #
+#                                                                              #
+# TODO: - support multiple clusters, we currently assume we have a single      #
+#         cluster, named "oscar".                                              #
+#       - support multiple servers, we currently assume we have a single       #
+#         headnode (beowulf architecture).                                     #
+################################################################################
+sub add_partition ($$) {
+    my ($partition_name, $list_clients) = @_;
+    my @servers = ("localhost");
+    my $ret = oda_create_new_partition ("oscar", 
+                                        $partition_name,
+                                        \@servers,
+                                        $list_clients);
+    return $ret;
+}
 
 ################################################################################
 # Get the list of servers for a given group of nodes. For that we get first    #
@@ -63,7 +93,7 @@ use_file("defaultms.xml");
 # Input: group, name of group for which we want the list of servers.           #
 # Ouput: array with the list of servers' name.                                 #
 ################################################################################
-sub list_servers_in_group {
+sub list_servers_in_group ($) {
     my $group = shift;
     my @group_servers = ();
 
@@ -265,3 +295,50 @@ sub list_clients {
     return @list_clients;
 }
 
+################################################################################
+# Parse the XML file describing machine set(s). Based on the XML file the      #
+# database is populated, with will then be used by OPM.                        #
+#                                                                              #
+# Input: path of the XML file (relative to $OSCAR_HOME/share/machine_sets).    #
+# Return: None.                                                                #
+#                                                                              #
+# TODO: currently we support only one cluster, named "oscar". We should extend #
+#       the cluster management to multiple clusters.                           #
+################################################################################
+sub parse_machine_set ($) {
+    my $xml_file_path = shift;
+
+    # Step 1: We use OSM to parse the XML file
+    print "Parsing the machine set...\n" if $verbose;
+    my $res = OSCAR::msm::use_file ($xml_file_path);
+    die $res if defined $res;
+
+    # Step 2: We get the list of machine sets
+    my @list_sets = OSCAR::msm::list_sets();
+    print "Machine set(s): ";
+    print_array @list_sets;
+
+    # Step 3: for each set we get the list of servers and compute nodes and we 
+    # populate the database accordingly.
+
+    foreach my $group (@list_sets) {
+        # We get the list of servers for the current group of nodes
+        my @group_servers = list_servers_in_group ($group);
+        print "List of servers in group $group: " if $verbose;
+        print_array (@group_servers) if $verbose;
+
+        # We get the list of clients for the current group of nodes
+        my @group_clients = list_clients_in_group ($group);
+        print "List of clients in group $group: " if $verbose;
+        print_array (@group_clients) if $verbose;
+
+        # Now we populate the database: each machine group is a partition.
+        my @partition_config = ( @group_servers, @group_clients );
+        oda_create_new_partition ("oscar", 
+                                $group, 
+                                \@group_servers, 
+                                \@group_clients);
+    }
+    
+    return (@list_sets);
+}
