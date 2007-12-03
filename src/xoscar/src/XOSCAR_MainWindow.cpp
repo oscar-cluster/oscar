@@ -90,6 +90,14 @@ XOSCAR_MainWindow::~XOSCAR_MainWindow()
 {
 }
 
+/**
+ * @author Geoffroy Vallee.
+ *
+ * Trigger the selection of the different OSCAR options (options on the 
+ * left-hand side of the main GUI). The selection will activate the proper
+ * widget page, giving the impression of using a standard "configuration 
+ * widget".
+ */
 void XOSCAR_MainWindow::newOscarOptionSelected() 
 {
     QString option;
@@ -98,9 +106,7 @@ void XOSCAR_MainWindow::newOscarOptionSelected()
        currently a unique selection. */
     QList<QListWidgetItem *> list = listOscarOptionsWidget->selectedItems();
     QListIterator<QListWidgetItem *> i(list);
-    while (i.hasNext()) {
-        option = i.next()->text();
-    }
+    option = i.next()->text();
 
     if (option == "OSCAR Configuration") {
         stackedOptionsWidget->setCurrentIndex (0);
@@ -243,9 +249,7 @@ void XOSCAR_MainWindow::display_opkgs_from_repo()
        currently a unique selection. */
     QList<QListWidgetItem *> list = listReposWidget->selectedItems();
     QListIterator<QListWidgetItem *> i(list);
-    while (i.hasNext()) {
-        repo = i.next()->text();
-    }
+    repo = i.next()->text();
     wait_popup = new ORMWaitDialog(0, repo);
     wait_popup->show();
     update();
