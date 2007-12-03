@@ -34,6 +34,8 @@ XOSCAR_MainWindow::XOSCAR_MainWindow(QMainWindow *parent)
                     this, SLOT(create_add_distro_window()));
     connect(listReposWidget, SIGNAL(itemSelectionChanged ()),
                     this, SLOT(display_opkgs_from_repo()));
+    connect(listOscarClustersWidget, SIGNAL(itemSelectionChanged ()),
+                    this, SLOT(refresh_list_partitions()));
     connect(refreshListOPKGsButton, SIGNAL(clicked()),
                     this, SLOT(refresh_display_opkgs_from_repo()));
     connect(refreshListSetupDistrosButton, SIGNAL(clicked()),
@@ -344,3 +346,18 @@ void XOSCAR_MainWindow::handle_about_oscar_action()
     about_oscar_widget.show();
 }
 
+void XOSCAR_MainWindow::refresh_list_partitions ()
+{
+    char *ohome = getenv ("OSCAR_HOME");
+    const string cmd = (string) ohome 
+                      + "/scripts/oscar-cluster --display-partitions";
+    pstream command(cmd, pstreambuf::pstdout);
+    std::string s, tmp;
+    while (std::getline(command, s)) {
+//        tmp += s;
+        QString partition_name = s.c_str();
+        listClusterPartitionsWidget->addItem (partition_name);
+//        tmp += "\n";
+    }
+//    cout << "result: " << tmp << endl;
+}

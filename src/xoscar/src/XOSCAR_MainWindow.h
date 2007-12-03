@@ -53,6 +53,7 @@ public slots:
     void destroy();
     void handle_about_authors_action();
     void handle_about_oscar_action();
+    void refresh_list_partitions();
 
 private:
     void Tokenize(const string& str,
