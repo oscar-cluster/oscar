@@ -372,17 +372,36 @@ void XOSCAR_MainWindow::refresh_list_partitions ()
     pstream command(cmd, pstreambuf::pstdout);
     std::string s, tmp;
     while (std::getline(command, s)) {
-//        tmp += s;
         QString partition_name = s.c_str();
         listClusterPartitionsWidget->addItem (partition_name);
-//        tmp += "\n";
     }
-//    cout << "result: " << tmp << endl;
+
 }
 
 void XOSCAR_MainWindow::refresh_partition_info ()
 {
     QListWidgetItem *item = listClusterPartitionsWidget->currentItem();
     partitonNameEditWidget->setText (item->text());
+
+    char *ohome = getenv ("OSCAR_HOME");
+    const string cmd = (string) ohome 
+                        + "/scripts/oscar-cluster --display-partition-nodes "
+                        + item->text().toStdString();
+    cout << "executing: " << cmd << endl;
+    pstream command(cmd, pstreambuf::pstdout);
+    std::string s, tmp;
+    while (std::getline(command, tmp)) {
+        s += tmp;
+    }
+    int i = 0;
+    if (s.compare ("") != 0) {
+        vector<string> nodes;
+        Tokenize(s, nodes, " ");
+        vector<string>::iterator item;
+        for(item = nodes.begin(); item != nodes.end(); item++) {
+            i++;
+        }
+    }
+    PartitionNumberNodesSpinBox->setMinimum(i);
 }
 

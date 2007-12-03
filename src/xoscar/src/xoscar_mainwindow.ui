@@ -503,16 +503,6 @@
          </property>
         </item>
        </widget>
-       <widget class="QListWidget" name="listClusterPartitionsWidget" >
-        <property name="geometry" >
-         <rect>
-          <x>200</x>
-          <y>30</y>
-          <width>181</width>
-          <height>611</height>
-         </rect>
-        </property>
-       </widget>
        <widget class="QGroupBox" name="groupBox" >
         <property name="geometry" >
          <rect>
@@ -597,7 +587,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox" />
+             <widget class="QSpinBox" name="PartitionNumberNodesSpinBox" />
             </item>
            </layout>
           </item>
@@ -650,6 +640,16 @@
           </item>
          </layout>
         </widget>
+       </widget>
+       <widget class="QListWidget" name="listClusterPartitionsWidget" >
+        <property name="geometry" >
+         <rect>
+          <x>200</x>
+          <y>30</y>
+          <width>181</width>
+          <height>611</height>
+         </rect>
+        </property>
        </widget>
       </widget>
       <widget class="QWidget" name="tab_5" >

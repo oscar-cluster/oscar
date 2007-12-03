@@ -1,7 +1,6 @@
 * Enable the cluster management. It depends on OPM which is not yet available.
   Sub-tasks:
-    - When clicking on the partition name, display partition name and number 
-      of nodes in the appropriate widgets.
+    - When clicking on the partition name, display the distribution used for the partition. 
     - Enable the "+" and "-" icons for partition management.
 * Change the default size, the current one is too big for the normal display 
   configuration.
