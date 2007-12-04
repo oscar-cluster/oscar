@@ -383,11 +383,11 @@ void XOSCAR_MainWindow::refresh_partition_info ()
     QListWidgetItem *item = listClusterPartitionsWidget->currentItem();
     partitonNameEditWidget->setText (item->text());
 
+    /* We display the number of nodes composing the partition */
     char *ohome = getenv ("OSCAR_HOME");
     const string cmd = (string) ohome 
                         + "/scripts/oscar-cluster --display-partition-nodes "
                         + item->text().toStdString();
-    cout << "executing: " << cmd << endl;
     pstream command(cmd, pstreambuf::pstdout);
     std::string s, tmp;
     while (std::getline(command, tmp)) {
@@ -403,5 +403,36 @@ void XOSCAR_MainWindow::refresh_partition_info ()
         }
     }
     PartitionNumberNodesSpinBox->setMinimum(i);
+
+    /* We get the list of supported distros */
+    const string cmd2 = (string) ohome 
+        + "/scripts/oscar-config --list-setup-distros";
+    ipstream proc2(cmd2);
+    string buf, tmp_list;
+    while (proc2 >> buf) {
+        tmp_list += buf;
+        tmp_list += " ";
+    }
+    if (tmp_list.compare ("") != 0) {
+        vector<string> distros;
+        Tokenize(tmp_list, distros, " ");
+        vector<string>::iterator item;
+        for(item = distros.begin(); item != distros.end(); item++) {
+            string strD = *(item);
+            partitionDistroComboBox->addItem (strD.c_str());
+        }
+    }
+
+    /* We get the Linux distribution on which the partition is based */
+    const string cmd3 = (string) ohome 
+            + "/scripts/oscar-cluster --display-partition-distro "
+            + item->text().toStdString();
+    pstream command3(cmd3, pstreambuf::pstdout);
+    std::string s2;
+    while (std::getline(command3, tmp)) {
+        s2 += tmp;
+    }
+    QString distro_name = s2.c_str();
+    partitionDistroComboBox->currentText();
 }
 
