@@ -22,13 +22,15 @@ use OSCAR::PartitionMgt;
 use OSCAR::Database;
 use Getopt::Long;
 
-my ($new_partition, @clients, $list_partitions, $list_partition_nodes, $distro);
+my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
+    $distro, $list_partition_distro);
 my $verbose = 1;
 
 Getopt::Long::Configure("pass_through");
 GetOptions(
         "display-partitions"            => \$list_partitions,
         "display-partition-nodes=s"     => \$list_partition_nodes,
+        "display-partition-distro=s"    => \$list_partition_distro,
         "add-partition=s"               => \$new_partition,
         "client=s"                      => \@clients,
         "distro=s"                      => \$distro,
@@ -71,6 +73,13 @@ if ($list_partition_nodes) {
     foreach my $n (@nodes) {
         print "$n ";
     }
+    print "\n";
+}
+
+# The user wants to see the Linux distribution id associated to a give 
+# partition.
+if ($list_partition_distro) {
+    print OSCAR::PartitionMgt::get_partition_distro ($list_partition_distro);
     print "\n";
 }
 

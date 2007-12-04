@@ -44,11 +44,25 @@ use Carp;
 @EXPORT = qw(
             get_list_nodes_partition
             get_list_partitions
+            get_partition_distro
             oda_create_new_partition
-            get_list_nodes_partition
             );
 
 my $verbose = 1;
+
+################################################################################
+# Return the Linux distribution ID (OS_Detect syntax) associated to the        #
+# partitions.                                                                  #
+#                                                                              #
+# Input: partition name, note that we assume the partition name is unique.     #
+# Return: string representing the distro ID (OS_Detect syntax).                #
+################################################################################
+sub get_partition_distro ($) {
+    my $partition_name = shift;
+    my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
+    my $distro = oda_query_single_result ($sql, "distro");
+    return $distro;
+}
 
 ################################################################################
 # Return the list of nodes (their names) that compose a cluster partition.     #
