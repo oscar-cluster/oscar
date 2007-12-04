@@ -79,8 +79,12 @@ if ($list_partition_nodes) {
 # The user wants to see the Linux distribution id associated to a give 
 # partition.
 if ($list_partition_distro) {
-    print OSCAR::PartitionMgt::get_partition_distro ($list_partition_distro);
-    print "\n";
+    my $distro = 
+        OSCAR::PartitionMgt::get_partition_distro ($list_partition_distro);
+    if (defined($distro)) {
+        print "$distro";
+        print "\n";
+    }
 }
 
 1;
