@@ -159,7 +159,7 @@ void ORMAddDistroDialog::refresh_repos_url()
     QList<QListWidgetItem *> list = listNonSetupDistrosWidget->selectedItems();
     QListIterator<QListWidgetItem *> i(list);
     while (i.hasNext()) {
-        distro= i.next()->text();
+        distro = i.next()->text();
     }
 
     string cmd = (string) ohome 

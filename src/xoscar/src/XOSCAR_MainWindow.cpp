@@ -48,6 +48,12 @@ XOSCAR_MainWindow::XOSCAR_MainWindow(QMainWindow *parent)
                     this, SLOT(do_oscar_sanity_check()));
     connect(QuitButton, SIGNAL(clicked()),
                     this, SLOT(destroy()));
+    connect(addPartitionButton, SIGNAL(clicked()),
+                    this, SLOT(add_partition_handler()));
+    connect(saveClusterInfoButton, SIGNAL(clicked()),
+                    this, SLOT(save_cluster_info_handler()));
+    connect(saveClusterInfoButton, SIGNAL(clicked()),
+                    this, SLOT(refresh_list_partitions()));
     connect(actionAboutXOSCAR, SIGNAL(triggered()),
                     this, SLOT(handle_about_authors_action()));
     connect(actionAbout_OSCAR, SIGNAL(triggered()),
@@ -364,45 +370,72 @@ void XOSCAR_MainWindow::handle_about_oscar_action()
     about_oscar_widget.show();
 }
 
+/**
+ * @author Geoffroy Vallee.
+ *
+ * This function handles the update of OSCAR cluster information when a new 
+ * cluster is selected in the "General Information" widget. It displays the list
+ * of partitions within the cluster.
+ */
 void XOSCAR_MainWindow::refresh_list_partitions ()
 {
+    if(listOscarClustersWidget->currentRow() == -1) {
+        return;
+    }
+
     char *ohome = getenv ("OSCAR_HOME");
     const string cmd = (string) ohome 
                       + "/scripts/oscar-cluster --display-partitions";
-    pstream command(cmd, pstreambuf::pstdout);
-    std::string s, tmp;
-    while (std::getline(command, s)) {
-        QString partition_name = s.c_str();
+
+    listClusterPartitionsWidget->clear();
+    ipstream proc(cmd);
+    string buf, tmp_list;
+    while (proc >> buf) {
+        QString partition_name = buf.c_str();
         listClusterPartitionsWidget->addItem (partition_name);
     }
-
+    listClusterPartitionsWidget->update();
 }
 
+/**
+ * @author Geoffroy Vallee.
+ *
+ * This function handles the update of partition information when a new 
+ * partition is selected in the "General Information" widget.
+ */
 void XOSCAR_MainWindow::refresh_partition_info ()
 {
-    QListWidgetItem *item = listClusterPartitionsWidget->currentItem();
-    partitonNameEditWidget->setText (item->text());
+    if(listClusterPartitionsWidget->currentRow() == -1) {
+        return;
+    }
+
+    QList<QListWidgetItem *> list =
+        listClusterPartitionsWidget->selectedItems();
+    QListIterator<QListWidgetItem *> i(list);
+    QString current_partition = i.next()->text();
+    partitonNameEditWidget->setText(current_partition);
 
     /* We display the number of nodes composing the partition */
     char *ohome = getenv ("OSCAR_HOME");
     const string cmd = (string) ohome 
                         + "/scripts/oscar-cluster --display-partition-nodes "
-                        + item->text().toStdString();
+                        + current_partition.toStdString();
     pstream command(cmd, pstreambuf::pstdout);
     std::string s, tmp;
     while (std::getline(command, tmp)) {
         s += tmp;
     }
-    int i = 0;
+    int n = 0;
     if (s.compare ("") != 0) {
         vector<string> nodes;
         Tokenize(s, nodes, " ");
-        vector<string>::iterator item;
-        for(item = nodes.begin(); item != nodes.end(); item++) {
-            i++;
+        vector<string>::iterator v_item;
+        for(v_item = nodes.begin(); v_item != nodes.end(); v_item++) {
+            n++;
         }
     }
-    PartitionNumberNodesSpinBox->setMinimum(i);
+    PartitionNumberNodesSpinBox->setMinimum(n);
+    PartitionNumberNodesSpinBox->setValue(n);
 
     /* We get the list of supported distros */
     const string cmd2 = (string) ohome 
@@ -416,9 +449,9 @@ void XOSCAR_MainWindow::refresh_partition_info ()
     if (tmp_list.compare ("") != 0) {
         vector<string> distros;
         Tokenize(tmp_list, distros, " ");
-        vector<string>::iterator item;
-        for(item = distros.begin(); item != distros.end(); item++) {
-            string strD = *(item);
+        vector<string>::iterator v_item;
+        for(v_item = distros.begin(); v_item != distros.end(); v_item++) {
+            string strD = *(v_item);
             partitionDistroComboBox->addItem (strD.c_str());
         }
     }
@@ -426,13 +459,86 @@ void XOSCAR_MainWindow::refresh_partition_info ()
     /* We get the Linux distribution on which the partition is based */
     const string cmd3 = (string) ohome 
             + "/scripts/oscar-cluster --display-partition-distro "
-            + item->text().toStdString();
+            + current_partition.toStdString();
     pstream command3(cmd3, pstreambuf::pstdout);
     std::string s2;
     while (std::getline(command3, tmp)) {
         s2 += tmp;
     }
     QString distro_name = s2.c_str();
-    partitionDistroComboBox->currentText();
+    int index = partitionDistroComboBox->findText(distro_name);
+    partitionDistroComboBox->setCurrentIndex(index);
+}
+
+/**
+ * @author Geoffroy Vallee.
+ *
+ * Slot that handles the click on the "add partition" button.
+ *
+ * @todo Find a good name by default that avoids conflicts if the user does not
+ * change it.
+ * @todo Check if a cluster is selected.
+ */
+void XOSCAR_MainWindow::add_partition_handler()
+{
+    listClusterPartitionsWidget->addItem ("New_Partition");
+    listClusterPartitionsWidget->update ();
+}
+
+/**
+ * @author Geoffroy Vallee.
+ *
+ * Slot that handles the click on the "Save Cluster Configuration" button.
+ *
+ * @todo Check if the partition name already exists or not.
+ * @todo Display a dialog is partition information are not valid.
+ * @todo Check the return value of the command to add partition information
+ *       in the database.
+ */
+void XOSCAR_MainWindow::save_cluster_info_handler()
+{
+    int nb_nodes = PartitionNumberNodesSpinBox->value();
+    QString partition_name = partitonNameEditWidget->text();
+    QString partition_distro = partitionDistroComboBox->currentText();
+
+    if (partition_name.compare("") == 0 || nb_nodes == 0 
+        || partition_distro.compare("") == 0) {
+        cerr << "ERROR: invalid partition information" << endl;
+    } else {
+        char *ohome = getenv ("OSCAR_HOME");
+        string cmd = (string) ohome 
+                        + "/scripts/oscar-cluster"
+                        + " --add-partition " + partition_name.toStdString()
+                        + " --distro " + partition_distro.toStdString();
+        /* We had now the compute nodes, giving them a default name */
+        for (int i=0; i < nb_nodes; i++) {
+            cmd += " --client ";
+            cmd += partition_name.toStdString() + "_node" + intToStdString(i);
+        }
+        if (system (cmd.c_str())) {
+            cerr << "ERROR executing: " << cmd << endl;
+        }
+    }
+    /* We unset the selection of the partition is order to be able to update
+       the widget. If we do not do that, a NULL pointer is used and the app
+       crashes. */
+    listClusterPartitionsWidget->setCurrentRow(-1);
+}
+
+/**
+ * @author Geoffroy Vallee.
+ *
+ * Utility function: convert an integer to a standard string.
+ *
+ * @param i Integer to convert in string.
+ * @return Standard string representing the integer.
+ */
+string XOSCAR_MainWindow::intToStdString (int i)
+{
+    std::stringstream ss;
+    std::string str;
+    ss << i;
+    ss >> str;
+    return str;
 }
 

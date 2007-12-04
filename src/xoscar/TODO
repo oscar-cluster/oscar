@@ -1,11 +1,6 @@
 * Enable the cluster management. It depends on OPM which is not yet available.
   Sub-tasks:
-    - When clicking on the partition name, display the distribution used for the partition. 
-    - Enable the "+" and "-" icons for partition management.
-* Change the default size, the current one is too big for the normal display 
-  configuration.
-  Status: basic implementation done; needs testing (does it fit most of the
-  display resolutions?).
+    - Enable the "-" icons for partition management.
 * Implement a transparent remote OSCAR command execution mechanism that will 
   allow users to use the GUI on their laptop and to give remotely OSCAR.
 

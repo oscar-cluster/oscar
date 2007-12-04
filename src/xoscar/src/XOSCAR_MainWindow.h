@@ -55,11 +55,14 @@ public slots:
     void handle_about_oscar_action();
     void refresh_list_partitions();
     void refresh_partition_info();
+    void add_partition_handler();
+    void save_cluster_info_handler();
 
 private:
     void Tokenize(const string& str,
         vector<string>& tokens,
         const string& delimiters);
+    string intToStdString (int i);
 
     XOSCAR_AboutAuthorsDialog about_authors_widget;
     XOSCAR_AboutOscarDialog about_oscar_widget;
