@@ -332,7 +332,8 @@ CREATE TABLE IF NOT EXISTS Manage_status(
 -- Partitions
 CREATE TABLE IF NOT EXISTS Partitions(
     partition_id      integer   auto_increment not null unique primary key,
-    name              CHAR(50)
+    name              CHAR(50),
+    distro            CHAR(50)
 )TYPE=INNODB;
 
 -- Cluster_Partitions

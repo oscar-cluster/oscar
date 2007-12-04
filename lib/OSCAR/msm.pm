@@ -66,6 +66,8 @@ use_file("defaultms.xml");
 # Note that we currently support only one cluster with multiple partitions.    #
 #                                                                              #
 # Inpt: partition_name, name of the partition to add;                          #
+#       distro, Linux distribution ID (OS_Detect syntax) that has to be used   #
+#               on the partition.                                              #s
 #       clients, reference to an array representing the list of clients name   #
 #                (for instance [oscarnode1, oscarnode2, oscarnode3]).          #
 # Return: returns ODA error code.                                              #
@@ -75,11 +77,12 @@ use_file("defaultms.xml");
 #       - support multiple servers, we currently assume we have a single       #
 #         headnode (beowulf architecture).                                     #
 ################################################################################
-sub add_partition ($$) {
-    my ($partition_name, $list_clients) = @_;
+sub add_partition ($$$) {
+    my ($partition_name, $distro, $list_clients) = @_;
     my @servers = ("localhost");
     my $ret = oda_create_new_partition ("oscar", 
                                         $partition_name,
+                                        $distro,
                                         \@servers,
                                         $list_clients);
     return $ret;
@@ -334,8 +337,9 @@ sub parse_machine_set ($) {
 
         # Now we populate the database: each machine group is a partition.
         my @partition_config = ( @group_servers, @group_clients );
-        oda_create_new_partition ("oscar", 
-                                $group, 
+        oda_create_new_partition ("oscar",
+                                $group,
+                                "",
                                 \@group_servers, 
                                 \@group_clients);
     }

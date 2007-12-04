@@ -22,7 +22,7 @@ use OSCAR::PartitionMgt;
 use OSCAR::Database;
 use Getopt::Long;
 
-my ($new_partition, @clients, $list_partitions, $list_partition_nodes);
+my ($new_partition, @clients, $list_partitions, $list_partition_nodes, $distro);
 my $verbose = 1;
 
 Getopt::Long::Configure("pass_through");
@@ -31,6 +31,7 @@ GetOptions(
         "display-partition-nodes=s"     => \$list_partition_nodes,
         "add-partition=s"               => \$new_partition,
         "client=s"                      => \@clients,
+        "distro=s"                      => \$distro,
         "help"                          => \&help,
         );
 
@@ -38,12 +39,17 @@ GetOptions(
 if ($new_partition) {
     # If the user did not define clients at the same time, this is an error
     if (scalar(@clients) == 0) {
-        crap ("ERROR: new clients are associated to the partition, ".
+        die ("ERROR: no client is associated to the partition, ".
               "impossible to create the partition.\n");
-        return 0;
     }
-    print "New partition: name=$new_partition, clients=@clients\n" if $verbose;
-    OSCAR::msm::add_partition ($new_partition, \@clients);
+    if (!defined($distro) || $distro eq "") {
+        die ("ERROR: no linux distribution is associated to the partition. ".
+              "To know which distributions are supported, please use ".
+              "the oscar-config command\n");
+    }
+    print "New partition: name=$new_partition, ".
+          "distro=$distro, clients=@clients\n" if $verbose;
+    OSCAR::msm::add_partition ($new_partition, $distro, \@clients);
 }
 
 # The user wants to see the list of partitions.

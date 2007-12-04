@@ -119,8 +119,8 @@ sub get_list_partitions ($) {
 #                       within the group.                                      #
 # Output: None.                                                                #
 ################################################################################
-sub oda_create_new_partition {
-    my ($cluster_name, $group, $servers, $clients) = @_;
+sub oda_create_new_partition ($$$$$) {
+    my ($cluster_name, $group, $distro, $servers, $clients) = @_;
 
     # TODO: we should deal with the cluster ID here!!!
     my $cluster_id = 1;
@@ -140,10 +140,11 @@ sub oda_create_new_partition {
     if (scalar (@config)) {
         print "The partition already exist...\n";
         print "\tdeleting the previous record...\n";
-        delete_partition_info ($cluster_id, $group, $servers, $clients);
+        delete_partition_info ($cluster_id, $group, $distro, 
+                               $servers, $clients);
     }
     print "Adding the partition record...\n";
-    set_partition_info ($cluster_id, $group, $servers, $clients);
+    set_partition_info ($cluster_id, $group, $distro, $servers, $clients);
     print "++++++++++++ ODA: New partition created +++++++++++++++\n\n" 
         if $verbose;
 }
@@ -174,7 +175,7 @@ sub get_partition_info {
 #        cients, list of clients for the partition.                            #
 ################################################################################
 sub set_partition_info {
-    my ($cluster_id, $group_name, $servers, $clients) = @_;
+    my ($cluster_id, $group_name, $distro, $servers, $clients) = @_;
     my $sql;
     my $options_ref;
     my $error_strings_ref;
@@ -183,7 +184,8 @@ sub set_partition_info {
 
     # Step 1: we populate the partition info with basic info.
     # TODO: we should use here insert_into_table.
-    $sql = "INSERT INTO Partitions(name) VALUES ('$group_name')";
+    $sql = "INSERT INTO Partitions(name, distro) VALUES ".
+           "('$group_name', '$distro')";
     die "ERROR: Failed to insert values via << $sql >>"
             if! do_insert($sql,"Partitions", $options_ref, $error_strings_ref);
 
@@ -316,7 +318,7 @@ sub oda_add_node (@) {
 #        clients, list of clients name (array).                                #
 ################################################################################
 sub delete_partition_info {
-    my ($cluster_id, $group_name, $servers, $clients) = @_;
+    my ($cluster_id, $group_name, $distro, $servers, $clients) = @_;
     my $sql;
     my $options_ref;
     my $error_strings_ref;
