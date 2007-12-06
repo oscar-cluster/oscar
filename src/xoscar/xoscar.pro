@@ -13,7 +13,8 @@ FORMS +=    src/xoscar_mainwindow.ui \
             src/AddDistroWidget.ui \
             src/WaitDialog.ui \
             src/AboutAuthorsDialog.ui \
-            src/AboutOscarDialog.ui
+            src/AboutOscarDialog.ui \
+            src/FileBrowser.ui
 
 SOURCES +=  src/main.cpp \
             src/XOSCAR_MainWindow.cpp \
@@ -22,7 +23,8 @@ SOURCES +=  src/main.cpp \
             src/ORM_WaitDialog.cpp \
             src/CommandExecutionThread.cpp \
             src/XOSCAR_AboutAuthorsDialog.cpp \
-            src/XOSCAR_AboutOscarDialog.cpp
+            src/XOSCAR_AboutOscarDialog.cpp \
+            src/XOSCAR_FileBrowser.cpp
 
 HEADERS +=  src/XOSCAR_MainWindow.h \
             src/ORM_AddRepoGUI.h \
@@ -30,6 +32,7 @@ HEADERS +=  src/XOSCAR_MainWindow.h \
             src/ORM_WaitDialog.h \
             src/CommandExecutionThread.h \
             src/XOSCAR_AboutAuthorsDialog.h \
-            src/XOSCAR_AboutOscarDialog.h
+            src/XOSCAR_AboutOscarDialog.h \
+            src/XOSCAR_FileBrowser.h
 
 RESOURCES += xoscar_resource.qrc

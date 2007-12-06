@@ -14,7 +14,6 @@
  */
 
 #include "XOSCAR_MainWindow.h"
-//#include "ORM_AddRepoGUI.h"
 
 /**
  * @author Geoffroy Vallee.
@@ -46,6 +45,8 @@ XOSCAR_MainWindow::XOSCAR_MainWindow(QMainWindow *parent)
                     this, SLOT(do_system_sanity_check()));
     connect(oscarSanityCheckButton, SIGNAL(clicked()),
                     this, SLOT(do_oscar_sanity_check()));
+
+    /* Connect button sinals */
     connect(QuitButton, SIGNAL(clicked()),
                     this, SLOT(destroy()));
     connect(addPartitionButton, SIGNAL(clicked()),
@@ -54,6 +55,9 @@ XOSCAR_MainWindow::XOSCAR_MainWindow(QMainWindow *parent)
                     this, SLOT(save_cluster_info_handler()));
     connect(saveClusterInfoButton, SIGNAL(clicked()),
                     this, SLOT(refresh_list_partitions()));
+    connect(importfilebrowse, SIGNAL(clicked()),
+                    this, SLOT(open_file()));
+
     connect(actionAboutXOSCAR, SIGNAL(triggered()),
                     this, SLOT(handle_about_authors_action()));
     connect(actionAbout_OSCAR, SIGNAL(triggered()),
@@ -608,5 +612,16 @@ void XOSCAR_MainWindow::network_configuration_tab_activated()
     oscarNodesTreeWidget->update();
 }
 
+void XOSCAR_MainWindow::open_file()
+{
+    cout << "File selection" << endl;
+    XOSCAR_FileBrowser *file_browser = new XOSCAR_FileBrowser("");
+    connect(file_browser, SIGNAL(fileSelected(const QString)),
+            this, SLOT(open_mac_file(const QString)));
+    file_browser->show();
+}
 
-
+void XOSCAR_MainWindow::open_mac_file(const QString file_path)
+{
+    cout << "We need to open: " << file_path.toStdString() << endl;
+}

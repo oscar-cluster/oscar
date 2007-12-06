@@ -24,6 +24,7 @@
 #include "ORM_WaitDialog.h"
 #include "XOSCAR_AboutAuthorsDialog.h"
 #include "XOSCAR_AboutOscarDialog.h"
+#include "XOSCAR_FileBrowser.h"
 
 using namespace Ui; 
 using namespace std;
@@ -58,6 +59,8 @@ public slots:
     void add_partition_handler();
     void save_cluster_info_handler();
     void tab_activated(int);
+    void open_file();
+    void open_mac_file(const QString);
 
 private:
     void Tokenize(const string& str,
@@ -75,13 +78,18 @@ private:
 };
 
 /**
- * @namespace xorm
+ * @namespace xoscar
  * @author Geoffroy Vallee.
- * @brief The xorm namespace gathers all classes needed for XORM.
+ * @brief The xoscar namespace gathers all classes needed for XOSCAR.
  */
 namespace xoscar {
     class XOSCAR_MainWindow: public Ui_MainWindow {};
-} // namespace xorm
+} // namespace xoscar
+
+/**
+ * @mainpage XOSCAR Reference
+ * @htmlinclude mainpage.html
+ */
 
 
 #endif // XOSCAR_MAINWINDOW_H
