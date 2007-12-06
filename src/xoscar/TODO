@@ -1,6 +1,17 @@
 * Enable the cluster management. It depends on OPM which is not yet available.
   Sub-tasks:
     - Enable the "-" icons for partition management.
+    - Finish the implementation of the "Network Configuration" tab. For a first
+      version, we have to:
+        * MAC address collection: disable the "Network" and "Manual" options.
+        * query the database to get already defined MAC and IP addresses
+    - When selected a file with MAC addresses:
+        * display them in the "Unassigned MAC Addresses" widget,
+        * allow one to assign a MAC address from the "Unassigned MAC Addresses" 
+          widget to a node.
+    - Find a way to assign IPs (do not know how to do that right now, current it
+      is not possible to let users specify them want to use IPs from x.x.x.x to
+      x.x.x.x+number_of_nodes).
 * Implement a transparent remote OSCAR command execution mechanism that will 
   allow users to use the GUI on their laptop and to give remotely OSCAR.
 
