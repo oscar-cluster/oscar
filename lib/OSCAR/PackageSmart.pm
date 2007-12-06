@@ -69,9 +69,11 @@ sub prepare_pools {
     my $prev_format = "";
     my $binaries = "rpms|debs";
     my $archs = "i386|x86_64|ia64";
-    # List of all supported distros. May be nice if we can get this list 
-    # from OS_Detect.
-    my $distros = "debian|fc|mdv|rhel|suse|redhat";
+    # List of all supported distros. 
+    # TODO: May be nice if we can get this list from OS_Detect. We can use for
+    # that the file $OSCAR_HOME/share/supported_distros.xml and implement the
+    # API in OS_Detect or somewhere else.
+    my $distros = "debian|fc|mdv|rhel|suse|redhat|centos";
     my $format = "";
     # Before to prepare a pool, we try to detect the binary package format
     # associated Not that for a specific pool or set of pools, it is not
