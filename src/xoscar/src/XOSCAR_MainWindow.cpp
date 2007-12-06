@@ -59,6 +59,10 @@ XOSCAR_MainWindow::XOSCAR_MainWindow(QMainWindow *parent)
     connect(actionAbout_OSCAR, SIGNAL(triggered()),
                     this, SLOT(handle_about_oscar_action()));
 
+    /* signals related to tabs */
+    connect(networkConfigurationTabWidget, SIGNAL(currentChanged (int)),
+                    this, SLOT(tab_activated(int)));
+
     /* Add the default OSCAR repositories */
     char *ohome = getenv ("OSCAR_HOME");
     const string cmd = (string) ohome + "/scripts/opd2  --non-interactive --list-default-repos";
@@ -541,4 +545,68 @@ string XOSCAR_MainWindow::intToStdString (int i)
     ss >> str;
     return str;
 }
+
+/**
+ * @author Geoffroy Vallee.
+ *
+ * Slot called when a tab from "Cluster Management" is activated. This function
+ * then called specific functions for each tab.
+ *
+ * @param tab_num Index of the activated tab.
+ */
+void XOSCAR_MainWindow::tab_activated(int tab_num) 
+{
+    switch (tab_num) {
+        case (1) : network_configuration_tab_activated();
+    }
+}
+
+/**
+ * @author Geoffroy Vallee.
+ *
+ * Slot called when the "Network Configuration" tab is activated.
+ * This function grabs the name of the selected cluster and the selected 
+ * partition and populate the list of nodes based on that. If no cluster and no
+ * partition is selected in the "General Information" tab, we do nothing.
+ *
+ * @param tab_num Index of the activated tab.
+ */
+void XOSCAR_MainWindow::network_configuration_tab_activated() 
+{
+    if(listOscarClustersWidget->currentRow() == -1
+        || listClusterPartitionsWidget->currentRow() == -1) {
+        cout << "No specific partition selected, nothing to do\n" << endl;
+        return;
+    }
+    QString partition_name = partitonNameEditWidget->text();
+    cout << "Display nodes info of the partition: " 
+         << partition_name.toStdString() << endl;
+
+    // We clean up the list of nodes
+    oscarNodesTreeWidget->clear();
+
+    // First we get the list of node names
+    char *ohome = getenv ("OSCAR_HOME");
+    const string cmd = (string) ohome 
+                        + "/scripts/oscar-cluster --display-partition-nodes "
+                        + partition_name.toStdString();
+    ipstream proc (cmd);
+    string buf;
+    while (proc >> buf) {
+        QString nodeName = buf.c_str();
+        oscarNodesTreeWidget->setColumnCount(1);
+        QTreeWidgetItem *item = new QTreeWidgetItem(oscarNodesTreeWidget);
+        item->setText(0, nodeName);
+        oscarNodesTreeWidget->expandItem (item);
+
+        QTreeWidgetItem *subitem_mac = new QTreeWidgetItem(item);
+        subitem_mac->setText(0, "MAC @");
+
+        QTreeWidgetItem *subitem_ip = new QTreeWidgetItem(item);
+        subitem_ip->setText(0, "IP @");
+    }
+    oscarNodesTreeWidget->update();
+}
+
+
 

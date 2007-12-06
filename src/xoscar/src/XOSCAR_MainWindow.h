@@ -57,12 +57,14 @@ public slots:
     void refresh_partition_info();
     void add_partition_handler();
     void save_cluster_info_handler();
+    void tab_activated(int);
 
 private:
     void Tokenize(const string& str,
         vector<string>& tokens,
         const string& delimiters);
     string intToStdString (int i);
+    void network_configuration_tab_activated();
 
     XOSCAR_AboutAuthorsDialog about_authors_widget;
     XOSCAR_AboutOscarDialog about_oscar_widget;

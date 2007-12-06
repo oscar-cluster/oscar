@@ -310,7 +310,7 @@
      </widget>
     </widget>
     <widget class="QWidget" name="page_3" >
-     <widget class="QTabWidget" name="tabWidget" >
+     <widget class="QTabWidget" name="networkConfigurationTabWidget" >
       <property name="enabled" >
        <bool>true</bool>
       </property>
@@ -656,21 +656,6 @@
        <attribute name="title" >
         <string>Network Configuration</string>
        </attribute>
-       <widget class="QTreeWidget" name="treeWidget" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>10</y>
-          <width>281</width>
-          <height>341</height>
-         </rect>
-        </property>
-        <column>
-         <property name="text" >
-          <string>OSCAR Nodes</string>
-         </property>
-        </column>
-       </widget>
        <widget class="QWidget" name="layoutWidget" >
         <property name="geometry" >
          <rect>
@@ -1363,6 +1348,21 @@
           </widget>
          </widget>
         </widget>
+       </widget>
+       <widget class="QTreeWidget" name="oscarNodesTreeWidget" >
+        <property name="geometry" >
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>281</width>
+          <height>341</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text" >
+          <string>OSCAR Nodes</string>
+         </property>
+        </column>
        </widget>
       </widget>
       <widget class="QWidget" name="tab_6" >
