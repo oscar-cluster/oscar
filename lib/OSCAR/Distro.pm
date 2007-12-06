@@ -52,6 +52,7 @@ use warnings "all";
 use base qw(Exporter);
 @EXPORT = qw(
             get_list_of_supported_distros
+            get_list_of_supported_distros_id
             which_distro
             which_distro_server
             which_mysql_name
@@ -263,7 +264,22 @@ sub get_list_of_supported_distros {
     }
 
     return @list;
+}
 
+################################################################################
+# Return an array with the list of distro IDs that OSCAR supports. Each        #
+# element in the array is like: debian, centos or rhel.                        #
+################################################################################
+sub get_list_of_supported_distros_id {
+    my @distros = get_list_of_supported_distros();
+    my @distros_id;
+    foreach my $d (@distros) {
+        my ($id, $rest) = split (/-/, $d);
+        if ($id ne "" && !OSCAR::Utils::is_element_in_array($id, @distros_id)) {
+            push (@distros_id, $id);
+        }
+    }
+    return @distros_id;
 }
 
 ################################################################################
