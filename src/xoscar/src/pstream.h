@@ -2000,11 +2000,6 @@ namespace redi
 
 } // namespace redi
 
-/**
- * @mainpage PStreams Reference
- * @htmlinclude mainpage.html
- */
-
 #endif  // REDI_PSTREAM_H_SEEN
 
 // vim: ts=2 sw=2 expandtab
