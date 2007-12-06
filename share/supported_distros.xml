@@ -16,5 +16,15 @@
             <default_oscar_repo>/tftpboot/oscar/rhel-5-i386</default_oscar_repo>
             <default_distro_repo>/tftpboot/distro/rhel-5-i386</default_distro_repo>
         </distro>
+        <distro>
+            <name>centos-5-x86_64</name>
+            <default_oscar_repo>/tftpboot/oscar/centos-5-x86_64</default_oscar_repo>
+            <default_distro_repo>/tftpboot/distro/centos-5-x86_64</default_distro_repo>
+        </distro>
+        <distro>
+            <name>centos-5-i386</name>
+            <default_oscar_repo>/tftpboot/oscar/centos-5-i386</default_oscar_repo>
+            <default_distro_repo>/tftpboot/distro/centos-5-i386</default_distro_repo>
+        </distro>
     </release>
 </oscar>
