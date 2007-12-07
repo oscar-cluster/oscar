@@ -33,6 +33,7 @@ if (! -d $system_check_dir ) {
 my @files = get_check_files( $system_check_dir );
 
 my $failure_flag = 0;
+my $warning_flag = 0;
 
 foreach my $file (@files) {
 	my $script = $system_check_dir . "/" . $file;
@@ -45,12 +46,18 @@ foreach my $file (@files) {
 		$rc = $rc >> 8;  # Shift to get actual return code
 		print_rslt($rc, $file);
 		$failure_flag++ if ($rc == FAILURE);
+        $warning_flag++ if ($rc == WARNING);
 	}
 }
 
- # Return: failures (1) / no failures (0)
-exit( ($failure_flag)? 1 : 0 );
-
+# Return: failures (1) / warnings (2) / no failures/warnings (0) / 
+if ($failure_flag) {
+    exit (1);
+} elsif ($warning_flag) {
+    exit (2);
+} else {
+    exit (0);
+}
 
 ##########################################################################
 # Sub-rtns

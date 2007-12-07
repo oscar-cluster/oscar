@@ -74,7 +74,9 @@ sub check_hostname {
 }
 
 ################################################################################
-# Check the configuration of the interface used by OSCAR                       #
+# Check the configuration of the interface used by OSCAR. Note that if we find #
+# problems, we only report warnings since this problem may exist only because  #
+# it is the first time the user executes OSCAR.
 # Parameter: None.                                                             #
 # Return:    FAILURE if a problem is detected, SUCCESS else.                   #
 ################################################################################
@@ -94,28 +96,39 @@ sub check_oscar_interface {
 	if ($oscar_if eq "") {
             $oscar_if = "<None>";
         }
-        print " ----------------------------------------------------\n";
-        print " ERROR: A valid NIC must be specified for the cluster\n";
+        print " ------------------------------------------------------\n";
+        print " WARNING: A valid NIC must be specified for the cluster\n";
         print " private network.\n";
         print " Valid NICs: ".join( ", ", sort keys %nics )."\n\n";
         print " You tried to use: " . $oscar_if . ".\n";
-        print " ----------------------------------------------------\n";
-        return FAILURE;
+        print " This may be normal if this is the first time you \n";
+        print " execute OSCAR.\n";
+        print " ------------------------------------------------------\n";
+        return WARNING;
     }
 
     # we check now the IP assgned to the interface used by OSCAR
     my $oscar_ip = get_host_ip ("oscar_server");
-    return FAILURE if ($oscar_ip eq FAILURE);
+    if ($oscar_ip eq FAILURE) {
+        print " ----------------------------------------------------\n";
+        print " WARNING: oscar_server is not defined in /etc/host. \n";
+        print " This may be normal if this is the first time you \n";
+        print " execute OSCAR.\n";
+        print " ----------------------------------------------------\n";
+        return WARNING;
+    }
     my $oscar_if_ip = `env LC_ALL=C /sbin/ifconfig $oscar_if | grep "inet addr:" | awk '{ print \$2 }' | sed -e 's/addr://'`;
     chomp ($oscar_if_ip);
     # the first time we execute OSCAR, /etc/hosts is not updated, it is 
     # normal
     if ($oscar_ip ne "" && ($oscar_ip ne $oscar_if_ip)) {
-        print " --------------------------------------------------\n";
-        print " ERROR: it seems the interface used is not the one \n";
-        print " assigned to OSCAR in /etc/hosts \n";
-        print " --------------------------------------------------\n";
-        return FAILURE;
+        print " ----------------------------------------------------\n";
+        print " WARNING: it seems the interface used is not the one \n";
+        print " assigned to OSCAR in /etc/hosts. \n";
+        print " This may be normal if this is the first time you \n";
+        print " execute OSCAR.\n";
+        print " ----------------------------------------------------\n";
+        return WARNING;
     }
 
     return SUCCESS;
@@ -147,28 +160,32 @@ sub get_host_ip {
     }
     close IN;
     if ($count > 1 && $my_ip ne "") {
-	print " ---------------------------------------------------\n";
-	print " ERROR: the hostname $id is used more than one time \n";
-	print " in /etc/hosts                                      \n";
-	print " ---------------------------------------------------\n";
-	return FAILURE;
+#         print " ---------------------------------------------------\n";
+#         print " ERROR: the hostname $id is used more than one time \n";
+#         print " in /etc/hosts                                      \n";
+#         print " ---------------------------------------------------\n";
+        return FAILURE;
     }
     if ($count == 0) {
-	print " ---------------------------------------------------\n";
-	print " ERROR: the hostname $id could not be found         \n";
-	print " in /etc/hosts                                      \n";
-	print " ---------------------------------------------------\n";
-	return FAILURE;
+# 	print " ---------------------------------------------------\n";
+# 	print " ERROR: the hostname $id could not be found         \n";
+# 	print " in /etc/hosts                                      \n";
+# 	print " ---------------------------------------------------\n";
+        return FAILURE;
     }
     return $my_ip;
 }
 
-if (check_hostname () eq FAILURE || check_oscar_interface () eq FAILURE) { 
+my $res1 = check_hostname();
+my $res2 = check_oscar_interface ();
+if ($res1 eq FAILURE || $res2 eq FAILURE) { 
     $rc = FAILURE;
     print " -----------------------------------\n";
     print "  $0 \n";
     print "  Network configuration not correct \n";
     print " -----------------------------------\n";
+} elsif ($res2 eq WARNING) {
+    $rc = WARNING;
 }
 
 exit($rc);
