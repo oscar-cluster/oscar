@@ -79,7 +79,7 @@ use_file("defaultms.xml");
 ################################################################################
 sub add_partition ($$$) {
     my ($partition_name, $distro, $list_clients) = @_;
-    my @servers = ("localhost");
+    my @servers = "";
     my $ret = oda_create_new_partition ("oscar", 
                                         $partition_name,
                                         $distro,
