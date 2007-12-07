@@ -61,7 +61,9 @@ if ($list_partitions) {
     my $cluster_id = OSCAR::Database::oda_query_single_result ($sql, "id");
     my @partitions = OSCAR::PartitionMgt::get_list_partitions ($cluster_id);
     foreach my $p (@partitions) {
-        print "$p ";
+        if (defined ($p)) {
+            print "$p ";
+        }
     }
     print "\n";
 }
