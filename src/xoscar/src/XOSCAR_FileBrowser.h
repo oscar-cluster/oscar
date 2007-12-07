@@ -49,7 +49,7 @@ private:
  * @brief The xoscar namespace gathers all classes needed for XOSCAR.
  */
 namespace xoscar {
-    class XOSCAR_FileBrowser: public Ui_FileBrowser {};
+    class XOSCAR_FileBrowser: public Ui_FileBrowserDialog {};
 } // namespace xoscar
 
 #endif // XOSCAR_FILE_BROWSER_H
