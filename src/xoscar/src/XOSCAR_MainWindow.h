@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QString>
 #include <QMainWindow>
+#include <QTextStream>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,6 +62,7 @@ public slots:
     void tab_activated(int);
     void open_file();
     void open_mac_file(const QString);
+    void import_macs_from_file ();
 
 private:
     void Tokenize(const string& str,
