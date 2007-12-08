@@ -22,6 +22,7 @@ package OSCAR::Network;
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use vars qw($VERSION @EXPORT);
+use File::Copy;
 use OSCAR::Database qw (
                         get_gateway
                         get_nics_info_with_node
