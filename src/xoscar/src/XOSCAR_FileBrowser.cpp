@@ -27,6 +27,7 @@ XOSCAR_FileBrowser::XOSCAR_FileBrowser(const QString &filter,
     setupUi(this);
     nameFilter = filter;
     setDir(QDir::currentPath());
+    this->setWindowTitle (QDir::currentPath());
     connect(fileListingWidget, SIGNAL(itemClicked(QListWidgetItem *)),
             this, SLOT(selectionChanged(QListWidgetItem *)));
     connect(selectFileBrowserButton, SIGNAL(clicked()),
@@ -59,6 +60,7 @@ void XOSCAR_FileBrowser::setDir(const QString &path)
         ++it;
     }
     basePath = dir.canonicalPath();
+    this->setWindowTitle (basePath);
 }
 
 /**
