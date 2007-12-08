@@ -22,7 +22,7 @@ use strict;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 
-@EXPORT = qw(oscar_log_section oscar_log_subsection);
+@EXPORT = qw(oscar_log_section oscar_log_subsection verbose);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
@@ -57,5 +57,10 @@ sub oscar_log_subsection {
     print "--> $title\n"
 }
 
+
+sub verbose {
+    print join " ", @_;
+    print "\n";
+}
 
 1;

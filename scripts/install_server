@@ -227,12 +227,6 @@ foreach my $f (@rcfiles) {
 oscar_log_subsection("Finished server_prep script");
 
 
-sub verbose {
-    print join " ", @_;
-    print "\n";
-}
-
-
 #
 # EF: it is a bad idea to add /usr/local/bin to root's path
 #     Why is this needed?
