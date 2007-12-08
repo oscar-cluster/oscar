@@ -35,6 +35,7 @@ use lib cwd() . "/lib";
 use vars qw($VERSION);
 use OSCAR::Logger;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::SystemSanity;
 use POSIX;
 use Carp;
 use File::Basename;
@@ -115,7 +116,7 @@ $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}=$adapter;
 &oscar_home_env();
 
 # First of all, we do some system checking
-if ( system("./scripts/system-sanity") ) {
+if ( system("./scripts/system-sanity") == 1 ) {
 	die "ERROR: There are basic system configuration issues (see log).\n";
 }
 print "System checked\n";
