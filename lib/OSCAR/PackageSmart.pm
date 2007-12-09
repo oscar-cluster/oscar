@@ -285,7 +285,6 @@ sub prepare_pool ($$) {
     }
 
     my $perr = generate_pool_checksum ($pool);
-    }
     if ($perr) {
         undefine $pm;
         print "Error: could not setup or generate package pool metadata\n";
