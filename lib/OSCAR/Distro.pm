@@ -46,7 +46,7 @@ use OSCAR::Utils qw (
                     );
 use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
 use OSCAR::PackagePath qw ( repo_empty );
-use XML::Simple;
+use OSCAR::OCA::OS_Detect;
 use Data::Dumper;
 use warnings "all";
 use base qw(Exporter);
@@ -60,7 +60,7 @@ use base qw(Exporter);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 my $tftpdir = "/tftpboot/";
-my $supported_distro_file = "$ENV{OSCAR_HOME}/share/supported_distros.xml";
+my $supported_distro_file = "$ENV{OSCAR_HOME}/share/supported_distros.txt";
 
 my $DISTROFILES = {
 		   'fedora-release'        => 'fedora',
@@ -226,22 +226,117 @@ CASE: {
 
 }
 
+sub get_position_of_next_release_entry ($@) {
+    my ($current_pos, @array) = @_;
+    my $i = $current_pos;
+    while (($i < scalar(@array))) {
+        my $str = $array[$i];
+        if ($str =~ /^\[(.*)\]$/) {
+            last;
+        }
+        $i++;
+    }
+    if ($i == scalar(@array)) {
+        return -1;
+    } else {
+        return $i;
+    }
+}
+
 ################################################################################
 # Open the list that gives the list of supported Linux distributions for given #
 # version of OSCAR.                                                            #
 #                                                                              #
 # Input: none.                                                                 #
 # Return: a hash composed of XML data from the file.                           #
+# The format of the hash is:
+# $VAR1 = {
+#     'distros' => [
+#                     {
+#                     'default_distro_repo' => '/tftpboot/distro/rhel-5-x86_64',
+#                     'name' => 'rhel-5-x86_64',
+#                     'default_oscar_repo' => '/tftpboot/oscar/rhel-5-x86_64'
+#                     },
+#                     {
+#                     'default_distro_repo' => '/tftpboot/distro/rhel-5-i386',
+#                     'name' => 'rhel-5-i386',
+#                     'default_oscar_repo' => '/tftpboot/oscar/rhel-5-i386'
+#                     },
+#                     {
+#                     'default_distro_repo' => '/tftpboot/distro/centos-5-i386',
+#                     'name' => 'centos-5-i386',
+#                     'default_oscar_repo' => '/tftpboot/oscar/centos-5-i386'
+#                     }
+#                 ],
+#     'release' => 'unstable'
+# };
+# 
 ################################################################################
 sub open_supported_distros_file {
-    # we open the file ${OSCAR_HOME}/share/supported_distros.xml
     open (FILE, "$supported_distro_file") 
         or die ("ERROR: impossible to open $supported_distro_file");
-    my $simple= XML::Simple->new (keyattr => ["version"], ForceArray => 1);
-    my $xml_data = $simple->XMLin($supported_distro_file);
+    my @file_content = <FILE>;
     close (FILE);
 
-    return $xml_data;
+    my $current_version;
+    my @releases;
+
+    my $n = -1;
+    my $m = 0;
+    while ($m != -1) {
+        $m = get_position_of_next_release_entry($n+1, @file_content);
+        my $max;
+        if ($m == -1) {
+            $max = scalar (@file_content);
+        } else {
+            $max = $m;
+        }
+        my @distros;
+        for (my $i=$n+1; $i<$max; $i++) {
+            my $line = $file_content[$i];
+            chomp ($line);
+            next if ($line eq "");
+            my ($distro_id, $distro_repo, $oscar_repo) = split (" ", $line);
+            next if (!defined $distro_id 
+                    || !defined $distro_repo 
+                    || !defined $oscar_repo
+                    || $distro_id eq ""
+                    || $distro_repo eq ""
+                    || $oscar_repo eq "");
+            my $arches = "i386|x86_64|ia64|ppc64";
+            my ($distro, $version, $arch);
+            if ( ($distro_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
+                ($distro_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
+                $distro = $1;
+                $version = $2;
+                $arch = $3;
+            }
+            next if (!defined $distro
+                    || !defined $version
+                    || !defined $arch);
+            # few tests to see if the entry we get makes sense or not.
+            my $os = OSCAR::OCA::OS_Detect::open(fake=>{distro=>$distro,
+                                distro_version=>$version,
+                                arch=>$arch, }
+                                );
+            next if (!defined($os) || (ref($os) ne "HASH"));
+            my %entry = ('name', $distro_id,
+                        'default_distro_repo', $distro_repo,
+                        'default_oscar_repo', $oscar_repo);
+            push (@distros, \%entry);
+        }
+        if (scalar(@distros) > 0) {
+            my $release_name = $file_content[$n];
+            chomp ($release_name);
+            $release_name =~ /^\[(.*)\]$/;
+            my %release_entry;
+            $release_entry{'release'} = $1;
+            $release_entry{'distros'} = \@distros;
+            push (@releases, \%release_entry);
+        }
+        $n = $m;
+    }
+    return \@releases;
 }
 
 ################################################################################
@@ -252,15 +347,21 @@ sub get_list_of_supported_distros {
     my @list;
 
     # we open the file ${OSCAR_HOME}/share/supported_distros.xml
-    my $xml_data = open_supported_distros_file ();
+    my $data = open_supported_distros_file ();
 
     # we get the OSCAR version
     my $version = get_oscar_version();
 
     # we try to find a match
-    my $test = $xml_data->{'release'}->{$version}->{'distro'};
-    foreach my $d (@$test) {
-        push (@list, $d->{'name'}->[0]);
+    foreach my $d (@$data) {
+        if ($d->{release} eq $version){
+            my @distros_data = $d->{distros};
+            foreach my $distro (@distros_data) {
+                foreach my $p (@$distro) {
+                    push (@list, $p->{'name'});
+                }
+            }
+        }
     }
 
     return @list;
@@ -296,20 +397,25 @@ sub get_list_of_supported_distros_id {
 # }                                                                            #
 ################################################################################
 sub find_distro ($) {
-    my $distro = shift;
+    my $distro_name = shift;
 
     # we open the file ${OSCAR_HOME}/share/supported_distros.xml
-    my $xml_data = open_supported_distros_file ();
+    my $data = open_supported_distros_file ();
 
     # we get the OSCAR version
     my $version = get_oscar_version();
 
-    my $i;
-
-    my $test = $xml_data->{'release'}->{$version}->{'distro'};
-    foreach my $d (@$test) {
-        if ($d->{'name'}->[0] eq $distro) {
-            return $d;
+    # we try to find a match
+    foreach my $d (@$data) {
+        if ($d->{release} eq $version){
+            my @distros_data = $d->{distros};
+            foreach my $distro (@distros_data) {
+                foreach my $p (@$distro) {
+                    if ($p->{'name'} eq $distro_name) {
+                        return $p;
+                    }
+                }
+            }
         }
     }
     return undef;

@@ -679,7 +679,7 @@ sub get_default_distro_repo ($) {
 
     my $d = OSCAR::Distro::find_distro ($distro);
 
-    my $t = $d->{'default_distro_repo'}->[0];
+    my $t = $d->{'default_distro_repo'};
     # if we do not have a default repo, we return an empty string
     if (ref($t) eq "HASH") {
         return "";
@@ -700,7 +700,7 @@ sub get_default_oscar_repo ($) {
 
     my $d = OSCAR::Distro::find_distro ($distro);
 
-    my $t = $d->{'default_oscar_repo'}->[0];
+    my $t = $d->{'default_oscar_repo'};
     # if we do not have a default repo, we return an empty string
     if (ref($t) eq "HASH") {
         return "";
