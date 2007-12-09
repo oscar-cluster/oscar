@@ -5,7 +5,7 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackageSmart;
 
-print "Checkpoint the detection of repositories formats. This detection is " .
+print "Test the detection of repositories formats. This detection is " .
       "based on the repository URL. We submit few cases and check the result\n";
 
 my $format = 
