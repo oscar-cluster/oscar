@@ -96,13 +96,23 @@ vprint("Prereq paths: ".join(",",@prereqs))."\n";
 #
 # Is this "smart mode"? Then load PackMan and regenerate the metadata cache
 #
-my $pm;
+my $pm, $pm2;
 if ($smart) {
     require OSCAR::PackMan;
     require OSCAR::PackageSmart;
-    $pm = OSCAR::PackageSmart::prepare_pools($verbose,$oscar_pkg_pool,$distro_pkg_pool);
+    my $type1 = OSCAR::PackageSmart::detect_pool_format ($oscar_pkg_pool);
+    my $type2 = OSCAR::PackageSmart::detect_pool_format ($distro_pkg_pool);
+    if ($type1 ne $type2) {
+        croak "ERROR: the two pools for the local distro are not of the same ".
+              "type ($type1, $type2)\n";
+    }
+    $pm = OSCAR::PackageSmart::prepare_pool($verbose,$oscar_pkg_pool);
     if (!$pm) {
-	croak "\nERROR: Could not create PackMan instance!\n";
+        croak "\nERROR: Could not create PackMan instance!\n";
+    }
+    $pm2 = OSCAR::PackageSmart::prepare_pool($verbose,$distro_pkg_pool);
+    if (!$pm2) {
+        croak "\nERROR: Could not create PackMan instance!\n";
     }
 }
 

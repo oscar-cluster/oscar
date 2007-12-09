@@ -22,10 +22,6 @@ package OSCAR::PackageSmart;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# Had to split this out of Package because it is needed during the prereqs
-# install which happens such early that we cannot guarantee that XML::Simple
-# (required by OSCAR::Package) is already available.
-#
 # Build repository paths depending on distro, version, etc...
 
 use strict;
@@ -40,20 +36,151 @@ use Cwd;
 use Carp;
 
 @EXPORT = qw(
-	     prepare_pools
-	     checksum_write
-	     checksum_needed
-	     checksum_files
-	     );
+            detect_pool_format
+            prepare_pools
+            checksum_write
+            checksum_needed
+            checksum_files
+            );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
 
-# The situation may be tricky: on Debian is possible to create images for
-# Debian based systems but also for RPM based systems. Therefore, when we have
-# to prepare pools, we check first what is the binary package format of the
-# distro. 
-# That also allow us to instantiate Packman according to the binary format
-# used by the pools.
+
+################################################################################
+# Detect the format of a given repository, i.e., "deb" or "rpm".               #
+#                                                                              #
+# Input: pool, pool URL we have to analyse (for instance                       #
+#              /tftpboot/oscar/debian-4-x86_640.                               #
+# Return: "deb" if it is a Debian pool, "rpm" if it is a RPM pool.             #
+################################################################################
+sub detect_pool_format ($) {
+    my $pool = shift;
+    my $format = "";
+    my $binaries = "rpm|deb";
+    print "Analysing $pool\n" if $verbose;
+    # Online repo
+    if ( index($pool, "http", 0) >= 0) {
+        print "This is an online repository ($pool)\n" if $verbose;
+        my $url;
+        if ( $pool =~ /\/$/ ) {
+            $url = $pool . "repodata/repomd.xml";
+        } else {
+            $url = $pool . "/repodata/repomd.xml";
+        }
+        my $cmd = "wget -S --delete-after -q $url";
+        print "Testing remote repository type by using command: $cmd... " if $verbose;
+        if (!system("wget -S --delete-after -q $url")) {
+            print "[yum]\n" if $verbose;
+            $format = "rpm";
+        } else {
+            # if the repository is not a yum repository, we assume this is
+            # a Debian repo. Therefore we assume that all specified repo
+            # are valid.
+            print "[deb]\n" if $verbose;
+            $format = "deb";
+        }
+    } elsif (index($pool, "/tftpboot/", 0) == 0) {
+        # Local pools
+        # we check pools for common RPMs and common debs
+        my $pool_id = basename ($pool);
+        print "Pool id: $pool_id.\n" if $verbose;
+        if ( ($pool_id =~ /common\-($binaries)s$/) ) {
+            $format = $1;
+            print "Pool format: $format\n" if $verbose;
+        } else {
+            # Finally we check pools in tftpboot for specific distros
+            # TODO: we should have a unique function that allows us to validate
+            # a distro ID.
+            my ($distro, $arch, $version);
+            my $arches = "i386|x86_64|ia64|ppc64";
+            if ( ($pool_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
+                ($pool_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
+                $distro = $1;
+                $version = $2;
+                $arch = $3;
+            }
+            print "Distro id (OS_Detect syntax distro-version-arch: ".
+                  "$distro-$version-$arch\n" if $verbose;
+            my $os = OSCAR::OCA::OS_Detect::open(fake=>{distro=>$distro,
+                                distro_version=>$version,
+                                arch=>$arch, }
+                                );
+            if (!defined($os) || (ref($os) ne "HASH")) {
+                print "ERROR: OSCAR does not support to distro for the pool ".
+                      $pool." ($distro, $arch, $version)\n";
+                return undef;
+            }
+            $format = $os->{pkg};
+            print "Pool format: $format\n\n\n" if $verbose;
+        }
+    } else {
+        print "ERROR: Impossible to recognize pool $pool\n";
+        return undef;
+    }
+    return $format;
+}
+
+################################################################################
+# Generate the checksum for a given pool.                                      #
+#                                                                              #
+# Input: pool, pool URL for which we want to generate the checksum.            #
+# Return: return the error code from pool_gencahe().                           #
+################################################################################
+sub generate_pool_checksum ($) {
+    my $pool = @_;
+    my $err;
+
+    print "--- checking md5sum for $pool" if $verbose;
+    if ($pool =~ /^(http|ftp|mirror)/) {
+        print " ... remote repo, no check needed.\n" if $verbose;
+        next;
+    }
+    print "\n" if $verbose;
+
+    my $cfile = "$ENV{OSCAR_HOME}/tmp/pool_".basename(dirname($pool)).
+                "_".basename($pool).".md5";
+    my $md5 = &checksum_needed($pool,$cfile,"*.rpm","*.deb");
+    if ($md5) {
+        my $pm;
+        my $pool_type = detect_pool_format ($pool);
+        if ($pool_type eq "rpms") {
+            $pm = PackMan::RPM->new;
+        } elsif ($pool_type eq "debs") {
+            $pm = PackMan::DEB->new;
+        } else {
+            # if the binary package format of the pool was not previously 
+            # detected, we fall back to the PackMan mode by default.
+            $pm = PackMan->new;
+        }
+        $err = &pool_gencache($pm,$pool);
+        if (!$err) {
+            &checksum_write($cfile,$md5);
+        }
+    }
+    return $err;
+}
+
+################################################################################
+#                        !!!!!!!! DEPRECATED !!!!!!!!                          #
+# Prepare a serie of pools:                                                    #
+#   - detect the pool format and returns a Packman handler for the specific    #
+#     pool,                                                                    #
+# The situation may be tricky: on Debian is possible to create images for      #
+# Debian based systems but also for RPM based systems. Therefore, when we have #
+# to prepare pools, we check first what is the binary package format of the    #
+# distro. That also allow us to instantiate Packman according to the binary    #
+# format used by the pools.                                                    #
+#                                                                              #
+# THIS FUNCTION IS TYPICALLY DEPRECATED BECAUSE IMPLEMENT SEVERAL LOOPS BASED  #
+# ON THE LIST OF REPOSITORIES WE CAN POSSIBLY HAVE, INSTANCIATE PACKMAN AND    #
+# TRY THEN TO USE PACKMAN. UNFORTUNATELY WE CURRENTLY SUPPORT DIFFERENT LINUX  #
+# DISTRIBUTION THAT CAN HAVE DIFFERENT BINARY FORMAT (RPM VERSUS DEBIAN) IT IS #
+# THEREFORE IMPOSSIBLE TO USE THE CURRENT IMPLEMENTATION OF THIS FUNCTION      #
+# WHICH ASSUMES THAT ONE PACKMAN INSTANCIATION CAN BE USED FOR _ALL_ POOLS.    #
+#                                                                              #
+# Input: ???                                                                   #
+# Return: an instance of Packman adapted to the pool prepared.                 #
+################################################################################
 sub prepare_pools {
     my ($verbose,@pargs) = @_;
 
@@ -67,7 +194,6 @@ sub prepare_pools {
     }
     print "\n" if $verbose;
 
-    my $prev_format = "";
     my $binaries = "rpms|debs";
     my $archs = "i386|x86_64|ia64";
     # List of all supported distros. 
@@ -82,71 +208,11 @@ sub prepare_pools {
     # associated Not that for a specific pool or set of pools, it is not
     # possible to mix deb and rpm based pools.
     for my $pool (@pools) {
-        $format = "";
-        print "Analysing $pool\n" if $verbose;
-        # Online repo
-        if ( index($pool, "http", 0) >= 0) {
-            print "This is an online repository ($pool)\n" if $verbose;
-            my $url;
-            if ( $pool =~ /\/$/ ) {
-                $url = $pool . "repodata/repomd.xml";
-            } else {
-                $url = $pool . "/repodata/repomd.xml";
-            }
-            my $cmd = "wget -S --delete-after -q $url";
-            print "Testing remote repository type by using command: $cmd... " if $verbose;
-            if (!system("wget -S --delete-after -q $url")) {
-                print "[yum]\n" if $verbose;
-                $format = "rpms";
-            } else {
-                # if the repository is not a yum repository, we assume this is
-                # a Debian repo. Therefore we assume that all specified repo
-                # are valid.
-                print "[deb]\n" if $verbose;
-                $format = "debs";
-            }
-            if ($prev_format ne "" && $prev_format ne $format) {
-                die ("ERROR: Mix of RPM and Deb pools ($prev_format vs. $2),".
-                      " we do not know how to deal with that!");
-            }
-        } elsif (index($pool, "/tftpboot/", 0) == 0) {
-            # Local pools
-            print "$pool is a local pool ($distros, $binaries)\n" if $verbose;
-            # we then check pools for common RPMs and common debs
-            if ( ($pool =~ /(.*)\-($binaries)$/) ) {
-                if ($prev_format ne "" && $prev_format ne $2) {
-                    die ("ERROR: Mix of RPM and Deb pools ($prev_format vs. ".
-                          "$2), we do not know how to deal with that!");
-                }
-                $format = $2;
-                print "Pool format: $format\n" if $verbose;
-            } else {
-                # Finally we check pools in tftpboot for specific distros
-                if ( ($pool =~ /($distros)/) ) {
-                    print ("Pool associated to distro $1\n") if $verbose;
-                    switch ($1) {
-                        case "debian" { $format = "debs" }
-                        else { $format = "rpms" }
-                    }
-                } else {
-                    die ("ERROR: Impossible to detect the distro ".
-                         "associated to the pool $pool");
-                }
-                print "Pool format: $format\n";
-                if ($prev_format ne "" && $prev_format ne $format) {
-                    die ("ERROR: Mix of RPM and Deb pools ($prev_format vs. ".
-                          "$1), we do not know how to deal with that!");
-                }
-            }
-            $prev_format = $format;
-        } else {
-            die "ERROR: Impossible to recognize pool $pool";
-        }
+        $format = detect_pool_format ($pool);
     }
     print "Binary package format for the image: $format\n" if $verbose;
 
     # check if pool update is needed
-    my $perr = 0;
     my $pm;
     if ($format eq "rpms") {
         $pm = PackMan::RPM->new;
@@ -164,25 +230,10 @@ sub prepare_pools {
         $pm->output_callback(\&print_output);
     }
 
+    my $perr;
     for my $pool (@pools) {
-        print "--- checking md5sum for $pool" if $verbose;
-        if ($pool =~ /^(http|ftp|mirror)/) {
-           print " ... remote repo, no check needed.\n" if $verbose;
-            next;
-        }
-        print "\n" if $verbose;
-
-        my $cfile = "$ENV{OSCAR_HOME}/tmp/pool_".basename(dirname($pool)).
-                    "_".basename($pool).".md5";
-        my $md5 = &checksum_needed($pool,$cfile,"*.rpm","*.deb");
-        if ($md5) {
-            my $err = &pool_gencache($pm,$pool);
-            if ($err) {
-               $perr++;
-            } else {
-                &checksum_write($cfile,$md5);
-            }
-        }
+        # Check pool checksum
+        $perr = generate_pool_checksum ($pool);
     }
     if ($perr) {
         undefine $pm;
@@ -195,10 +246,69 @@ sub prepare_pools {
     return $pm;
 }
 
-#
-# Generate metadata cache for package pool
-# 
-sub pool_gencache {
+################################################################################
+# Prepare a given pool, i.e., generation of the checksum and create a Packman  #
+# object for future pool handling.                                             #
+#                                                                              #
+# Input: verbose, do you want logs or not (0 = no, anything else = yes)?       #
+#        pool, pool URL we need to prepare.                                    #
+# Return: Packman object that can handle the pool.                             #
+################################################################################
+sub prepare_pool ($$) {
+    my ($verbose,$pool) = @_;
+
+    $verbose = 1;
+    # demultiplex pool arguments
+    my @pools;
+    print "Preparing pools: $pool\n" if $verbose;
+
+    # Before to prepare a pool, we try to detect the associated binary package
+    # format.
+    my $format = detect_pool_format ($pool);
+    print "Binary package format for the pool: $format\n" if $verbose;
+
+    # check if pool update is needed
+    my $pm;
+    if ($format eq "rpms") {
+        $pm = PackMan::RPM->new;
+    } elsif ($format eq "debs") {
+        $pm = PackMan::DEB->new;
+    } else {
+        # if the binary package format of the pool was not previously detected,
+        # we fall back to the PackMan mode by default.
+        $pm = PackMan->new;
+    }
+    return undef if (!$pm);
+
+    # follow output of smart installer
+    if ($verbose) {
+        $pm->output_callback(\&print_output);
+    }
+
+    my $perr;
+    for my $pool (@pools) {
+        # Check pool checksum
+        $perr = generate_pool_checksum ($pool);
+    }
+    if ($perr) {
+        undefine $pm;
+        print "Error: could not setup or generate package pool metadata\n";
+        return undef;
+    }
+
+    # prepare for smart installs
+    $pm->repo(@pools);
+    return $pm;
+}
+
+################################################################################
+# Generate metadata cache for package pool.                                    #
+#                                                                              #
+# Input: pm, PackMan object associated to a specific pool.                     #
+#        pool, pool URL that we have to deal with.                             #
+# Return: 1 for success, 0 else.                                               #
+################################################################################
+sub pool_gencache ($$) {
     my ($pm, $pool) = @_;
     my @words = split("/", $pool);
     my $yum_cache_cookie = "/var/cache/yum/$words[-2]_$words[-1]/cachecookie";
@@ -215,20 +325,22 @@ sub pool_gencache {
 
     my ($err, @out) = $pm->gencache;
     if ($err) {
-	print " success\n";
-	return 0;
+        print " success\n";
+        return 0;
     } else {
-	print " error. Output was:\n";
-	print join("\n",@out)."\n";
-	return 1;
+        print " error. Output was:\n";
+        print join("\n",@out)."\n";
+        return 1;
     }
 }
 
-#
-# Find files matching the patterns and generate a md5 checksum
-# over its metadata. The file content is not considered, this would
-# take too long.
-#
+################################################################################
+# Find files matching the patterns and generate a md5 checksum over its        #
+# metadata. The file content is not considered, this would take too long.      #
+#                                                                              #
+# Input: ???                                                                   #
+# Return: ???                                                                  #
+################################################################################
 sub checksum_files {
     my ($dir, @pattern) = @_;
     return 0 if (! -d $dir);
@@ -263,9 +375,12 @@ sub checksum_files {
     return $md5sum;
 }
 
-#
-# write checksum file
-#
+################################################################################
+# Write checksum file.                                                         #
+#                                                                              #
+# Input: file, file path we have to use to save the checksum.                  #
+#        checksum, checksum to save.                                           #
+################################################################################
 sub checksum_write {
     my ($file,$checksum) = @_;
     local *OUT;
@@ -276,7 +391,7 @@ sub checksum_write {
 }
 
 #
-# read checksum file
+# Read a checksum file
 #
 sub checksum_read {
     my ($file) = @_;
