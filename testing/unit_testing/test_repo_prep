@@ -1,0 +1,29 @@
+#!/usr/bin/perl
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::PackageSmart;
+
+print "Test the preparation of pools.\n";
+
+my $fake_pool = "/tftpboot/oscar/centos-4-x86_64";
+if (! -d  $fake_pool) {
+    print "For testing we need a \"fake\" pool which is $fake_pool. This pool ".
+          "can be empty or not, this test should not impact the status of the ".
+          "pool. Please create this directory.\n";
+    goto ERROR_EXIT;
+}
+
+my $pm = 
+    OSCAR::PackageSmart::prepare_pool (1, $fake_pool);
+goto ERROR_EXIT if (!defined($pm));
+
+
+print "\n\nSUCCESS: the test of repository preparation succeed\n";
+
+exit 0;
+
+ERROR_EXIT:
+    print "ERROR: the test of repository preparation failed\n";
+    exit -1;
