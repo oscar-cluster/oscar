@@ -87,8 +87,6 @@ if (!$dumb) {
 # locate destination path for prereq package files and repository url
 my $separator = &OSCAR::PackagePath::pkg_separator();
 
-vprint("OSCAR pkg path: $oscar_pkg_pool\n");
-vprint("Distro pkg path: $distro_pkg_pool\n");
 vprint("Prereq paths: ".join(",",@prereqs))."\n";
 
 #

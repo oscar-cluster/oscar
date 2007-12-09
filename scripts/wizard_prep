@@ -113,8 +113,10 @@ if ($os->{pkg} eq "rpm") {
 	oscar_log_subsection("Writing pre-oscar rpmlist...");
 	system("rpm -q --qf '%{NAME}\n' --all | sort | uniq > $preoscar");
     }
+} elsif ($os->{pkg} eq "deb") {
+    print "Saving of the list of package before the usage of OSCAR.";
+    print "Not yet implemented\n";
 }
-
 
 oscar_log_subsection("Bootstrapping OSCAR smart package manager");
 
@@ -181,9 +183,8 @@ if (exists($ENV{OSCAR_DEVELOPER_MODE})) {
 	    (my $lrepo = $distro_repo) =~ s/^file://;
 
 	    # repo checksum in tmp or in the repo?
-	    # this is checked implicitely by prepare_pools
-	    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
-							$lrepo);
+	    # this is checked implicitely by prepare_pool
+	    my $pm = OSCAR::PackageSmart::prepare_pool(($verbose?1:0), $lrepo);
 	    if (!$pm) {
 		croak "\nERROR: Could not prepare pool $lrepo!\n";
 	    }
@@ -196,9 +197,8 @@ if (exists($ENV{OSCAR_DEVELOPER_MODE})) {
 	    (my $lrepo = $oscar_repo) =~ s/^file://;
 
 	    # repo checksum in tmp or in the repo?
-	    # this is checked implicitely by prepare_pools
-	    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
-							$lrepo);
+	    # this is checked implicitely by prepare_pool
+	    my $pm = OSCAR::PackageSmart::prepare_pool(($verbose?1:0), $lrepo);
 	    if (!$pm) {
 		croak "\nERROR: Could not prepare pool $lrepo!\n";
 	    }
@@ -488,13 +488,13 @@ OSCAR::PackageSmart::checksum_write("$md5dir/packages_core.md5",$md5);
 # !!EF!! not caring about remote repositories, yet
 for my $dist (keys %distro_pools) {
     my %d = %{$distro_pools{$dist}};
+
+    # We do some logging.
     my $oscar_repo = $d{oscar_repo};
     my $distro_repo = $d{distro_repo};
-    # 
     oscar_log_subsection("Preparing for httpd export: $distro_repo $oscar_repo");
-    my $pm = &OSCAR::PackageSmart::prepare_pools($verbose,
-						 $distro_repo,
-						 $oscar_repo);
+
+    my $pm = &OSCAR::PackageSmart::prepare_distro_pools($verbose, $d{os});
     if ($pm) {
 	$pm->repo_export();
 	undef $pm;

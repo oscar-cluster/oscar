@@ -36,10 +36,12 @@ use Cwd;
 use Carp;
 
 @EXPORT = qw(
-            detect_pool_format
             checksum_write
             checksum_needed
             checksum_files
+            detect_pool_format
+            prepare_distro_pools
+            prepare_pool
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -126,7 +128,7 @@ sub detect_pool_format ($) {
 # Return: return the error code from pool_gencahe().                           #
 ################################################################################
 sub generate_pool_checksum ($) {
-    my $pool = @_;
+    my $pool = shift;
     my $err;
 
     print "--- checking md5sum for $pool" if $verbose;
@@ -142,14 +144,13 @@ sub generate_pool_checksum ($) {
     if ($md5) {
         my $pm;
         my $pool_type = detect_pool_format ($pool);
-        if ($pool_type eq "rpms") {
+        print "Pool type: $pool_type\n";
+        if ($pool_type eq "rpm") {
             $pm = PackMan::RPM->new;
-        } elsif ($pool_type eq "debs") {
+        } elsif ($pool_type eq "deb") {
             $pm = PackMan::DEB->new;
         } else {
-            # if the binary package format of the pool was not previously 
-            # detected, we fall back to the PackMan mode by default.
-            $pm = PackMan->new;
+            die "ERROR: Unknown pool type\n";
         }
         $err = &pool_gencache($pm,$pool);
         if (!$err) {
@@ -159,91 +160,6 @@ sub generate_pool_checksum ($) {
     return $err;
 }
 
-################################################################################
-#                        !!!!!!!! DEPRECATED !!!!!!!!                          #
-# Prepare a serie of pools:                                                    #
-#   - detect the pool format and returns a Packman handler for the specific    #
-#     pool,                                                                    #
-# The situation may be tricky: on Debian is possible to create images for      #
-# Debian based systems but also for RPM based systems. Therefore, when we have #
-# to prepare pools, we check first what is the binary package format of the    #
-# distro. That also allow us to instantiate Packman according to the binary    #
-# format used by the pools.                                                    #
-#                                                                              #
-# THIS FUNCTION IS TYPICALLY DEPRECATED BECAUSE IMPLEMENT SEVERAL LOOPS BASED  #
-# ON THE LIST OF REPOSITORIES WE CAN POSSIBLY HAVE, INSTANCIATE PACKMAN AND    #
-# TRY THEN TO USE PACKMAN. UNFORTUNATELY WE CURRENTLY SUPPORT DIFFERENT LINUX  #
-# DISTRIBUTION THAT CAN HAVE DIFFERENT BINARY FORMAT (RPM VERSUS DEBIAN) IT IS #
-# THEREFORE IMPOSSIBLE TO USE THE CURRENT IMPLEMENTATION OF THIS FUNCTION      #
-# WHICH ASSUMES THAT ONE PACKMAN INSTANCIATION CAN BE USED FOR _ALL_ POOLS.    #
-#                                                                              #
-# Input: ???                                                                   #
-# Return: an instance of Packman adapted to the pool prepared.                 #
-################################################################################
-sub prepare_pools {
-    my ($verbose,@pargs) = @_;
-
-    $verbose = 1;
-    # demultiplex pool arguments
-    my @pools;
-    print "Preparing pools: " if $verbose;
-    for my $p (@pargs) {
-        print "$p " if $verbose;
-        push @pools, split(",",$p);
-    }
-    print "\n" if $verbose;
-
-    my $binaries = "rpms|debs";
-    my $archs = "i386|x86_64|ia64";
-    # List of all supported distros. 
-    my @distros_list = OSCAR::Distro::get_list_of_supported_distros_id();
-    my $distros = "";
-    for (my $i=0; $i<scalar(@distros_list)-1; $i++) {
-        $distros .= @distros_list[$i] . "|";
-    }
-    $distros .= $distros_list[scalar(@distros_list)-1];
-    my $format = "";
-    # Before to prepare a pool, we try to detect the binary package format
-    # associated Not that for a specific pool or set of pools, it is not
-    # possible to mix deb and rpm based pools.
-    for my $pool (@pools) {
-        $format = detect_pool_format ($pool);
-    }
-    print "Binary package format for the image: $format\n" if $verbose;
-
-    # check if pool update is needed
-    my $pm;
-    if ($format eq "rpms") {
-        $pm = PackMan::RPM->new;
-    } elsif ($format eq "debs") {
-        $pm = PackMan::DEB->new;
-    } else {
-        # if the binary package format of the pool was not previously detected,
-        # we fall back to the PackMan mode by default.
-        $pm = PackMan->new;
-    }
-    return undef if (!$pm);
-
-    # follow output of smart installer
-    if ($verbose) {
-        $pm->output_callback(\&print_output);
-    }
-
-    my $perr;
-    for my $pool (@pools) {
-        # Check pool checksum
-        $perr = generate_pool_checksum ($pool);
-    }
-    if ($perr) {
-        undefine $pm;
-        print "Error: could not setup or generate package pool metadata\n";
-        return undef;
-    }
-
-    # prepare for smart installs
-    $pm->repo(@pools);
-    return $pm;
-}
 
 ################################################################################
 # Prepare a given pool, i.e., generation of the checksum and create a Packman  #
@@ -259,7 +175,7 @@ sub prepare_pool ($$) {
     $verbose = 1;
     # demultiplex pool arguments
     my @pools;
-    print "Preparing pools: $pool\n" if $verbose;
+    print "Preparing pool: $pool\n" if $verbose;
 
     # Before to prepare a pool, we try to detect the associated binary package
     # format.

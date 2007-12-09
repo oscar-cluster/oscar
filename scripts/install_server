@@ -74,9 +74,6 @@ if ($verbose && !$ENV{YUME_VERBOSE}) {
     $ENV{YUME_VERBOSE} = $verbose;
 }
 
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
-my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
-
 # List of root's .rc files (MDK PATH fixup)
 my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
 
@@ -116,7 +113,8 @@ oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs_list));
 oscar_log_subsection("Installing server non-core packages " .
 		     "(core packages already installed)");
 
-my $pm = &OSCAR::PackageSmart::prepare_pools($verbose,$oscar_pkg_pool,$distro_pkg_pool);
+my $os = &OSCAR::PackagePath::distro_detect_or_die();
+my $pm = &OSCAR::PackageSmart::prepare_distro_pools($verbose,$os);
 if (!$pm) {
     croak "\nERROR: Could not create PackMan instance!\n";
 }

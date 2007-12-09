@@ -17,8 +17,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Package;
 use OSCAR::PackageSmart;
 
-my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
-my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
+my $os = &OSCAR::PackagePath::distro_detect_or_die();
 
 my $verbose = $ENV{OSCAR_VERBOSE};
 if ($verbose && !$ENV{YUME_VERBOSE}) {
@@ -31,12 +30,12 @@ if ($verbose && !$ENV{YUME_VERBOSE}) {
 #
 #-------------------------------------------------------------------------
 
-    my $pm = &OSCAR::PackageSmart::prepare_pools($verbose,$oscar_pkg_pool,$distro_pkg_pool);
-    my @rpm_lists = ("postfix");
-    my ($ret, @out) = $pm->smart_install(@rpm_lists);
-    if (!$ret) {
-        print "Error occured during postfix install:\n".join("\n",@out)."\n";
-        croak("Couldn't install postfix needed for mta-config package");
-    }
-    
+my $pm = OSCAR::PackageSmart::prepare_distro_pools($os);
+my @rpm_lists = ("postfix");
+my ($ret, @out) = $pm->smart_install(@rpm_lists);
+if (!$ret) {
+    print "Error occured during postfix install:\n".join("\n",@out)."\n";
+    croak("Couldn't install postfix needed for mta-config package");
+}
+ 
 #-------------------------------------------------------------------------
