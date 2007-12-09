@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+#
+# Copyright (c) 2007 Oak Ridge National Laboratory.
+#                    Geoffroy R. Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
+
+use strict;
+
+print "Test few oscar-config capabilities.\n";
+
+my $script = "$ENV{OSCAR_HOME}/scripts/oscar-config";
+
+my $cmd = $script . " --help";
+if (system ($cmd)) {
+    goto ERROR_EXIT;
+}
+
+my $cmd = $script . " --supported-distros";
+goto ERROR_EXIT if (system ($cmd));
+
+my $list_distros = `$cmd`;
+goto ERROR_EXIT if ($list_distros eq "");
+
+
+print "\n\nSUCCESS: the test of oscar-config succeed\n";
+
+exit 0;
+
+ERROR_EXIT:
+    print "ERROR: the test of oscar-config failed\n";
+    exit -1;
