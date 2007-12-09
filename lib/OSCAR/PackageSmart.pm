@@ -37,7 +37,6 @@ use Carp;
 
 @EXPORT = qw(
             detect_pool_format
-            prepare_pools
             checksum_write
             checksum_needed
             checksum_files
@@ -285,10 +284,7 @@ sub prepare_pool ($$) {
         $pm->output_callback(\&print_output);
     }
 
-    my $perr;
-    for my $pool (@pools) {
-        # Check pool checksum
-        $perr = generate_pool_checksum ($pool);
+    my $perr = generate_pool_checksum ($pool);
     }
     if ($perr) {
         undefine $pm;
@@ -297,7 +293,51 @@ sub prepare_pool ($$) {
     }
 
     # prepare for smart installs
-    $pm->repo(@pools);
+    $pm->repo($pool);
+    return $pm;
+}
+
+################################################################################
+# Setup the pools associated to a specifc distro.                              #
+#                                                                              #
+# Input: os, hash representing OS data, hash returned by OS_Detect.            #
+# Return: a packman object that handles the distro specifiec pools.            #
+################################################################################
+sub prepare_distro_pools ($) {
+    my ($os) = shift;
+
+    #
+    # Locate package pools and create the directories if they don't exist, yet.
+    #
+    my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
+    my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
+
+    # We check that the two repos have the same format, it is a basic assert
+    my $type1 = OSCAR::PackageSmart::detect_pool_format ($oscar_pkg_pool);
+    my $type2 = OSCAR::PackageSmart::detect_pool_format ($distro_pkg_pool);
+    if ($type1 ne $type2) {
+        croak "ERROR: the two pools for the local distro are not of the same ".
+              "type ($type1, $type2)\n";
+    }
+
+#     eval("require OSCAR::PackMan");
+    my $pm = OSCAR::PackageSmart::prepare_pool($verbose,$oscar_pkg_pool);
+    if (!$pm) {
+        croak "\nERROR: Could not create PackMan instance!\n";
+    }
+    # gv: do we really need to create a pm2 object?
+    my $pm2 = OSCAR::PackageSmart::prepare_pool($verbose,$distro_pkg_pool);
+    if (!$pm2) {
+        croak "\nERROR: Could not create PackMan instance!\n";
+    }
+    # we do not need anymore pm2, we used it only to prepare the repo and check
+    # if everything was fine
+    undefine $pm2;
+
+    # To be able to manage the two repos with a single Packman object, we add
+    # the second repo to the list of repos the first Packman can manage.
+    $pm->repo($distro_pkg_pool);
+
     return $pm;
 }
 

@@ -36,13 +36,15 @@ use File::Basename;
 use XML::Simple;
 use Data::Dumper;
 use OSCAR::Database;
+use OSCAR::PackageSmart;
 use Carp;
 
 @EXPORT = qw(
+            create_list_selected_opkgs
             get_list_opkg_dirs
             opkg_print
             opkgs_install_server
-            create_list_selected_opkgs
+            prepare_distro_pools
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -98,22 +100,7 @@ sub opkgs_install_server {
     # Fails HERE if distro is not supported!
     #
     my $os = &OSCAR::PackagePath::distro_detect_or_die();
-
-    #
-    # Locate package pools and create the directories if they don't exist, yet.
-    #
-    my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
-    my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
-
-    # The code below should migrate into a package. It is used in
-    # install_prereq in exactly the same way. Maybe to OSCAR::PackageSmart...?
-    # [EF]
-    eval("require OSCAR::PackMan");
-    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
-                        $oscar_pkg_pool, $distro_pkg_pool);
-    if (!$pm) {
-        croak "\nERROR: Could not create PackMan instance!\n";
-    }
+    my $pm = OSCAR::PackageSmart::prepare_distro_pools ($os);
 
     my @olist = map { "opkg-".$_."-server" } @opkgs;
     my ($err, @out) = $pm->smart_install(@olist);
