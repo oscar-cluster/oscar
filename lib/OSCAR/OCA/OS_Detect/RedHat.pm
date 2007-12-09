@@ -51,7 +51,7 @@ sub detect_dir {
     if ($release_string =~
         /Red Hat Enterprise Linux (\S+) release (\d+) \((\S+) Update (\d+)\)/ 
 	or $release_string =~
-        /Red Hat Enterprise Linux (\S+) release (\d+) \((\S+)\)/) {
+        /Red Hat Enterprise Linux (\S+) release (\d+|\d+\.\d+) \((\S+)\)/) {
 	my $flavor = $1; # AS, WS, ES? This information is irrelevant for OSCAR
 	my $os_release = $2;
 	my $os_family = $3; # Nahant, blah...
