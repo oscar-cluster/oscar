@@ -1,0 +1,56 @@
+#!/usr/bin/perl
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::PackageSmart;
+
+print "Checkpoint the detection of repositories formats. This detection is " .
+      "based on the repository URL. We submit few cases and check the result\n";
+
+my $format = 
+    OSCAR::PackageSmart::detect_pool_format ("/tftpboot/oscar/debian-4-x86_64");
+goto ERROR_EXIT if ($format ne "deb");
+
+my $format = 
+    OSCAR::PackageSmart::detect_pool_format ("/tftpboot/oscar/common-rpms");
+goto ERROR_EXIT if ($format ne "rpm");
+
+my $format = 
+    OSCAR::PackageSmart::detect_pool_format ("/tftpboot/oscar/common-debs");
+goto ERROR_EXIT if ($format ne "deb");
+
+my $format = 
+    OSCAR::PackageSmart::detect_pool_format ("/tftpboot/oscar/centos-5-x86_64");
+goto ERROR_EXIT if ($format ne "rpm");
+
+my $format = 
+    OSCAR::PackageSmart::detect_pool_format ("/tftpboot/oscar/centos-5-x86_64.url");
+goto ERROR_EXIT if ($format ne "rpm");
+
+my $format = 
+    OSCAR::PackageSmart::detect_pool_format ("/tftpboot/distro/redhat-el-ws-4-i386");
+goto ERROR_EXIT if ($format ne "rpm");
+
+print "The following test should generate an error...\n";
+my $format = 
+    OSCAR::PackageSmart::detect_pool_format ("/tftpboot/oscar/toutou-5-x86_64");
+goto ERROR_EXIT if (defined ($format));
+
+print "The following test should generate an error...\n";
+my $format = 
+    OSCAR::PackageSmart::detect_pool_format ("/tftpboot/oscar/centos-x86_64");
+goto ERROR_EXIT if (defined ($format));
+
+print "The following test should generate an error...\n";
+my $format = 
+    OSCAR::PackageSmart::detect_pool_format ("/tftpboot/oscar/toutou-5-titi");
+goto ERROR_EXIT if (defined ($format));
+
+print "\n\nSUCCESS: the test of repository pool format detection succeed\n";
+
+exit 0;
+
+ERROR_EXIT:
+    print "ERROR: the test of repository pool format detection failed\n";
+    exit -1;
