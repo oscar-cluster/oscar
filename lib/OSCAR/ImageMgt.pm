@@ -227,7 +227,7 @@ sub get_image_default_settings {
            diskfile => $diskfile,
            ipmeth => "static",
            piaction => "reboot",
-           distro => "$distro",
+#           distro => "$distro",
            extraflags => $extraflags
            );
 
