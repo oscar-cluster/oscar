@@ -366,6 +366,8 @@ sub opkg_list_installed {
 #              
 ####
 sub opkg_hash_installed {
+    my ($type, %scope) = @_;
+
     my %olist = &opkg_list_installed("api");
     my %opkgs;
 
@@ -377,28 +379,41 @@ sub opkg_hash_installed {
     }
 
     my $os = OSCAR::OCA::OS_Detect::open();
-    return () if !$os;
+    my $dist = &os_cdistro_string($os);
 
     my $pkg = $os->{pkg};
-    for my $name (keys(%olist)) {
-	if ($pkg eq "rpm") {
-	    $opkgs{$name} = &opkg_localrpm_info($name);
-	} elsif ($pkg eq "deb") {
-	    $opkgs{$name} = &opkg_localdeb_info($name);
-	}
+    if ($pkg eq "rpm") {
+        my $qf = 
+            "Name: %{NAME}\\n".
+            "Version: %{VERSION}\\n".
+            "Release: %{RELEASE}\\n".
+            "Group: %{GROUP}\\n".
+            "Packager: %{PACKAGER}\\n".
+            "Summary: %{SUMMARY}\\n".
+            "Description:\\n%{DESCRIPTION}\\n";
+
+        my $cmd = "rpm -q --qf '".$qf."' ";
+        map { $cmd .= "opkg-$_ " } (keys(%olist));
+        %opkgs = &hash_from_cmd_rpm($cmd, $dist);
+
+    } elsif ($pkg eq "deb") {
+        for my $name (keys(%olist)) {
+            $opkgs{$name} = &opkg_localdeb_info($name);
+        }
     }
+
     # go through result and apply the class filter, if needed
     if ($class_filter) {
-	print "Filtering for class = \"$class_filter\"\n" if $verbose;
-	for my $p (keys(%o)) {
-	    my %h = %{$o{$p}};
-	    print "$p -> class: $h{class}" if $verbose;
-	    if ($h{class} ne $class_filter) {
-		delete $o{p};
-		print " ... deleted" if $verbose;
-	    }
-	    print "\n" if $verbose;
-	}
+        print "Filtering for class = \"$class_filter\"\n" if $verbose;
+        for my $p (keys(%opkgs)) {
+            my %h = %{$opkgs{$p}};
+            print "$p -> class: $h{class}" if $verbose;
+            if ($h{class} ne $class_filter) {
+                delete $opkgs{$p};
+                print " ... deleted" if $verbose;
+            }
+            print "\n" if $verbose;
+        }
     }
     return %opkgs;
 }
@@ -444,7 +459,7 @@ sub opkg_localdeb_info {
     # summary and description, the two are in "Description": the first line
     # is the summary and the other lines are the full description.
     my $description = `dpkg-query -W -f='\${Description}' $p`;
-    my $summary = split("\n", $description);
+    my @summary = split("\n", $description);
     $h{version} = `dpkg-query -W -f='\${VERSION}' $p`;
     $h{package} = $summary[0];
     $h{packager} = `dpkg-query -W -f='\${Maintainer}' $p`;
