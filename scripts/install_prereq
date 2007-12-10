@@ -4,6 +4,9 @@
 #               All rights reserved
 # Copyright (c) 2007 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) 2007, Oak Ridge National Laboratory.
+#                     Geoffroy R. Vallee <valleegr@ornl.gov>
+#                     All rights reserved.
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -85,6 +88,8 @@ if (!$dumb) {
 }
 
 # locate destination path for prereq package files and repository url
+my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
+my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 my $separator = &OSCAR::PackagePath::pkg_separator();
 
 vprint("Prereq paths: ".join(",",@prereqs))."\n";
