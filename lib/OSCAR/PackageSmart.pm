@@ -219,6 +219,7 @@ sub prepare_pool ($$) {
 ################################################################################
 sub prepare_distro_pools ($) {
     my ($os) = shift;
+    my @repos;
 
     #
     # Locate package pools and create the directories if they don't exist, yet.
@@ -243,9 +244,11 @@ sub prepare_distro_pools ($) {
 
 #     eval("require OSCAR::PackMan");
     my $pm = OSCAR::PackageSmart::prepare_pool($verbose,$distro_pkg_pool);
+    push (@repos, $distro_pkg_pool);
     if (!$pm) {
         croak "\nERROR: Could not create PackMan instance!\n";
     }
+    $pm->repo($distro_pkg_pool);
     foreach my $p (@oscar_pools) {
         print "About to prepare pool $p\n";
         next if ($p eq "");
@@ -257,9 +260,10 @@ sub prepare_distro_pools ($) {
             # To be able to manage all repos with a single Packman object,
             # we add the second repo to the list of repos the first Packman can
             # manage.
-            $pm->repo($p);
+            push (@repos, $p);
         }
     }
+    $pm->repo(@repos);
 
     return $pm;
 }
