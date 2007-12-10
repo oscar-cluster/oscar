@@ -47,9 +47,95 @@ use Carp;
 
 my $verbose = $ENV{OSCAR_VERBOSE};
 
+################################################################################
+# The detection of the format associated to oscar pools is not trivial first of#
+# all because these pools name are based on the compat_distro and _not_ the    #
+# distro name. As a result, and since OS_Detect does not work only with a      #
+# compat_distro, a distro name is actually mandatory, we cannot use OS_Detect  #
+# to detect the pool format (which is very bad BTW! it removes a big interest  #
+# of OS_Detect).                                                               #
+# So we do the detection manually. :-(                                         #
+# BTW remember that an OSCAR pool CAN be empty, you cannot assume the repo has #
+# any kind of packages.                                                        #
+################################################################################
+sub detect_oscar_pool_format ($) {
+    my $pool_id = shift;
+    my $binaries = "rpm|deb";
+    my $format;
+    my ($compat_distro, $arch, $version);
+    print "Detecting the OSCAR pool $pool_id\n" if $verbose;
+    # Pools for common rpms and debs are fairly simple to deal with
+    if ( ($pool_id =~ /common\-($binaries)s$/) ) {
+        $format = $1;
+        print "Pool format: $format\n" if $verbose;
+    } else {
+        # Other pools are more difficult to deal with, OS_Detect cannot be 
+        # with compat query for specific distros
+        # TODO: we should have a unique function that allows us to validate
+        # a distro ID.
+        my $arches = "i386|x86_64|ia64|ppc64";
+        if ( ($pool_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
+            ($pool_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
+            $compat_distro = $1;
+            $version = $2;
+            $arch = $3;
+        }
+        print "Distro id (OS_Detect syntax distro-version-arch: ".
+                "$compat_distro-$version-$arch)\n" if $verbose;
+        my $os = OSCAR::OCA::OS_Detect::open(oscar_pool=>"$compat_distro-$version-$arch");
+        if (!defined($os) || (ref($os) ne "HASH")) {
+            print "ERROR: OSCAR does not support the OSCAR pool ".
+                   $pool_id." ($compat_distro, $arch, $version)\n";
+            return undef;
+        }
+        $format = $os->{pkg};
+    }
+    return $format;
+}
+
+################################################################################
+# The format detection for the distro pools is faily simple, the pool name     #
+# strictly follow the OS_Detect syntax for distro names.                       #
+################################################################################
+sub detect_distro_pool_format ($) {
+    my $pool_id = shift;
+    my $format;
+
+    print "Detecting the distro pool $pool_id\n" if $verbose;
+    # TODO: we should have a unique function that allows us to validate
+    # a distro ID.
+    my ($distro, $arch, $version);
+    my $arches = "i386|x86_64|ia64|ppc64";
+    if ( ($pool_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
+        ($pool_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
+        $distro = $1;
+        $version = $2;
+        $arch = $3;
+    }
+    # Note that directories in /tftpboot/dist and /tftpboot/oscar do not
+    # follow the same naming rules. In /tftpboot/dist the distro name is
+    # used, in /tftpboot/oscar the compat distro name is used.
+    print "Distro id (OS_Detect syntax distro-version-arch: ".
+            "$distro-$version-$arch\n" if $verbose;
+    my $os = OSCAR::OCA::OS_Detect::open(fake=>{distro=>$distro,
+                        distro_version=>$version,
+                        arch=>$arch, }
+                        );
+    if (!defined($os) || (ref($os) ne "HASH")) {
+        print "ERROR: OSCAR does not support the distro for the pool ".
+                $pool_id." ($distro, $arch, $version)\n";
+        return undef;
+    }
+    $format = $os->{pkg};
+    print "Pool format: $format\n\n\n" if $verbose;
+    return $format;
+}
 
 ################################################################################
 # Detect the format of a given repository, i.e., "deb" or "rpm".               #
+# Note that OS_Detect can currently only be used to detect the format of pools #
+# in /tftpboot/distro since there are the only one to be based on the distro   #
+# name, the only mode supported by OSCAR.                                      #
 #                                                                              #
 # Input: pool, pool URL we have to analyse (for instance                       #
 #              /tftpboot/oscar/debian-4-x86_640.                               #
@@ -81,40 +167,17 @@ sub detect_pool_format ($) {
             print "[deb]\n" if $verbose;
             $format = "deb";
         }
-    } elsif (index($pool, "/tftpboot/", 0) == 0 || index($pool, "file:", 0) == 0) {
-        # Local pools
-        # we check pools for common RPMs and common debs
+    } elsif (index($pool, "/tftpboot/distro", 0) == 0 
+            || index($pool, "file:/tftpboot/distro", 0) == 0) {
+        # Local pools for distros
         my $pool_id = basename ($pool);
         print "Pool id: $pool_id.\n" if $verbose;
-        if ( ($pool_id =~ /common\-($binaries)s$/) ) {
-            $format = $1;
-            print "Pool format: $format\n" if $verbose;
-        } else {
-            # Finally we check pools in tftpboot for specific distros
-            # TODO: we should have a unique function that allows us to validate
-            # a distro ID.
-            my ($distro, $arch, $version);
-            my $arches = "i386|x86_64|ia64|ppc64";
-            if ( ($pool_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
-                ($pool_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
-                $distro = $1;
-                $version = $2;
-                $arch = $3;
-            }
-            print "Distro id (OS_Detect syntax distro-version-arch: ".
-                  "$distro-$version-$arch\n" if $verbose;
-            my $os = OSCAR::OCA::OS_Detect::open(fake=>{distro=>$distro,
-                                distro_version=>$version,
-                                arch=>$arch, }
-                                );
-            if (!defined($os) || (ref($os) ne "HASH")) {
-                print "ERROR: OSCAR does not support to distro for the pool ".
-                      $pool." ($distro, $arch, $version)\n";
-                return undef;
-            }
-            $format = $os->{pkg};
-            print "Pool format: $format\n\n\n" if $verbose;
-        }
+        $format = detect_distro_pool_format ($pool_id);
+    } elsif (index($pool, "/tftpboot/oscar", 0) == 0 
+            || index($pool, "file:/tftpboot/oscar", 0) == 0) {
+        my $pool_id = basename ($pool);
+        print "Pool id: $pool_id.\n" if $verbose;
+        $format = detect_oscar_pool_format ($pool_id);
     } else {
         print "ERROR: Impossible to recognize pool $pool\n";
         return undef;
