@@ -1,3 +1,14 @@
+# The syntax of this file is very simple:
+# - the file is composed of blocks, representing different OSCAR release (for
+#   instance unstable for trunk, 5.0 for OSCAR-5.0). The version number has to
+#   match the version specified in the VERSION file.
+# - for each supported distros for a specific OSCAR release, an entry has to 
+#   exist in the associated block
+# - each distro entry is as following:
+#   DISTRO-ID default-distro-repo default-oscar-repo
+#   where: DISTRO-ID is the distribution id using the OS_Detect syntax
+#          default repository URLs have to follow the rapt/yume syntax
+
 [unstable]
 debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://oscar.gforge.inria.fr/debian/+stable+oscar 
 redhat-el-5-x86_64 /tftpboot/distro/rhel-5-x86_64 /tftpboot/oscar/rhel-5-x86_64
