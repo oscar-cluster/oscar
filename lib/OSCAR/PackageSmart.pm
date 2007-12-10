@@ -30,6 +30,7 @@ use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackMan;           # this only works when PackMan has arrived!
 use OSCAR::Distro;
+use OSCAR::Utils;
 use File::Basename;
 use Switch;
 use Cwd;
@@ -134,7 +135,6 @@ sub generate_pool_checksum ($) {
     print "--- checking md5sum for $pool" if $verbose;
     if ($pool =~ /^(http|ftp|mirror)/) {
         print " ... remote repo, no check needed.\n" if $verbose;
-        next;
     }
     print "\n" if $verbose;
 
@@ -174,7 +174,6 @@ sub prepare_pool ($$) {
 
     $verbose = 1;
     # demultiplex pool arguments
-    my @pools;
     print "Preparing pool: $pool\n" if $verbose;
 
     # Before to prepare a pool, we try to detect the associated binary package
@@ -184,14 +183,13 @@ sub prepare_pool ($$) {
 
     # check if pool update is needed
     my $pm;
-    if ($format eq "rpms") {
+    if ($format eq "rpm") {
         $pm = PackMan::RPM->new;
-    } elsif ($format eq "debs") {
+    } elsif ($format eq "deb") {
         $pm = PackMan::DEB->new;
     } else {
-        # if the binary package format of the pool was not previously detected,
-        # we fall back to the PackMan mode by default.
-        $pm = PackMan->new;
+        print "ERROR: Impossible to detect the pool format ($pool)\n";
+        return undef;
     }
     return undef if (!$pm);
 
@@ -209,6 +207,7 @@ sub prepare_pool ($$) {
 
     # prepare for smart installs
     $pm->repo($pool);
+    print "Pool $pool ready\n" if $verbose;
     return $pm;
 }
 
@@ -226,32 +225,41 @@ sub prepare_distro_pools ($) {
     #
     my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
     my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
+    # OSCAR pools may be composed of two different parts: common binary package
+    # and binary package specific to the distro
+    my @oscar_pools = split(",", $oscar_pkg_pool);
+    OSCAR::Utils::print_array (@oscar_pools);
 
-    # We check that the two repos have the same format, it is a basic assert
-    my $type1 = OSCAR::PackageSmart::detect_pool_format ($oscar_pkg_pool);
-    my $type2 = OSCAR::PackageSmart::detect_pool_format ($distro_pkg_pool);
-    if ($type1 ne $type2) {
-        croak "ERROR: the two pools for the local distro are not of the same ".
-              "type ($type1, $type2)\n";
+    # We check that all repos have the same format, it is a basic assert
+    my $type1 = OSCAR::PackageSmart::detect_pool_format ($distro_pkg_pool);
+    foreach my $p (@oscar_pools) {
+        next if ($p eq "");
+        my $type = OSCAR::PackageSmart::detect_pool_format ($p);
+        if ($type1 ne $type) {
+            croak "ERROR: the two pools for the local distro are not of the ".
+                  "same type ($type1, $type)\n";
+        }
     }
 
 #     eval("require OSCAR::PackMan");
-    my $pm = OSCAR::PackageSmart::prepare_pool($verbose,$oscar_pkg_pool);
+    my $pm = OSCAR::PackageSmart::prepare_pool($verbose,$distro_pkg_pool);
     if (!$pm) {
         croak "\nERROR: Could not create PackMan instance!\n";
     }
-    # gv: do we really need to create a pm2 object?
-    my $pm2 = OSCAR::PackageSmart::prepare_pool($verbose,$distro_pkg_pool);
-    if (!$pm2) {
-        croak "\nERROR: Could not create PackMan instance!\n";
+    foreach my $p (@oscar_pools) {
+        print "About to prepare pool $p\n";
+        next if ($p eq "");
+        my $pm2 = OSCAR::PackageSmart::prepare_pool($verbose,$p);
+        if (!$pm2) {
+            undefine $pm2;
+            croak "\nERROR: Could not create PackMan instance!\n";
+        } else {
+            # To be able to manage all repos with a single Packman object,
+            # we add the second repo to the list of repos the first Packman can
+            # manage.
+            $pm->repo($p);
+        }
     }
-    # we do not need anymore pm2, we used it only to prepare the repo and check
-    # if everything was fine
-    undefine $pm2;
-
-    # To be able to manage the two repos with a single Packman object, we add
-    # the second repo to the list of repos the first Packman can manage.
-    $pm->repo($distro_pkg_pool);
 
     return $pm;
 }

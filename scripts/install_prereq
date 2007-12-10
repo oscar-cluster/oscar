@@ -92,7 +92,7 @@ my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 my $separator = &OSCAR::PackagePath::pkg_separator();
 
-vprint("Prereq paths: ".join(",",@prereqs))."\n";
+vprint("Prereq paths: ".join(",",@prereqs)."\n");
 
 #
 # Is this "smart mode"? Then load PackMan and regenerate the metadata cache
