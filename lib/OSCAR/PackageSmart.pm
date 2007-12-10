@@ -80,7 +80,7 @@ sub detect_pool_format ($) {
             print "[deb]\n" if $verbose;
             $format = "deb";
         }
-    } elsif (index($pool, "/tftpboot/", 0) == 0) {
+    } elsif (index($pool, "/tftpboot/", 0) == 0 || index($pool, "file:", 0) == 0) {
         # Local pools
         # we check pools for common RPMs and common debs
         my $pool_id = basename ($pool);
