@@ -63,17 +63,19 @@ sub open {
 	$arg{chroot} = "/";
     }
 
-    my ($path,$pool,$fake);
+    my ($path,$pool,$oscar_pool,$fake);
     if (exists($arg{chroot})) {
-	$path = $arg{chroot};
+        $path = $arg{chroot};
     } elsif (exists($arg{pool})) {
-	$pool = $arg{pool};
+        $pool = $arg{pool};
+    } elsif (exists($arg{oscar_pool})) {
+        $oscar_pool = $arg{oscar_pool};
     } elsif (exists($arg{fake})) {
-	$fake = $arg{fake};
+        $fake = $arg{fake};
     } else {
-	print STDERR "ERROR: Unknown detection target in OS_Detect:".
-	    join(",",keys(%arg))."\n";
-	return undef;
+        print STDERR "ERROR: Unknown detection target in OS_Detect:".
+            join(",",keys(%arg))."\n";
+        return undef;
     }
 
     if ($path) {
@@ -106,18 +108,21 @@ sub open {
 
     my $ret = undef;
     foreach my $comp (@$comps) {
-	my $str;
-	if ($path) {
-	    $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_dir(\$path)";
-	} elsif ($pool) {
-	    $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_pool(\$pool)";
-	} elsif ($fake) {
-	    $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_fake(\$fake)";
-	}
-	eval $str;
-	if (defined($ret) && (ref($ret) eq "HASH")) {
-	    last;
-	}
+        my $str;
+#         print "Comp $comp\n";
+        if ($path) {
+            $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_dir(\$path)";
+        } elsif ($pool) {
+            $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_pool(\$pool)";
+        } elsif ($oscar_pool) {
+            $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_oscar_pool(\$oscar_pool)";
+        } elsif ($fake) {
+            $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_fake(\$fake)";
+        }
+        my $res = eval $str;
+        if (defined($ret) && (ref($ret) eq "HASH")) {
+            last;
+        }
     }
     if ($path && ($path eq "/") && !$LOCAL_NODE_OS) {
 	$LOCAL_NODE_OS = $ret;
@@ -153,7 +158,7 @@ sub detect_arch_file {
     return $arch;
 }
 
-# common routine for arch detection of a package pool
+# common routine for arch detection of a distro package pool
 sub detect_arch_pool {
     my ($pool,$pkg) = @_;
 
@@ -312,6 +317,25 @@ sub detect_fake_common {
 	}
     }
     return undef;
+}
+
+sub detect_oscar_pool_common ($$) {
+    my ($pool, $compat) = @_;
+
+    my ($compat_distro, $arch, $version);
+    my $arches = "i386|x86_64|ia64|ppc64";
+    if ( ($pool =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
+        ($pool =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
+        $compat_distro = $1;
+        $version = $2;
+        $arch = $3;
+    }
+
+    if ($compat eq $compat_distro) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 1;

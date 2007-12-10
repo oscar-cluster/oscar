@@ -135,5 +135,24 @@ sub detect_fake {
     return $id;
 }
 
+sub detect_oscar_pool ($) {
+    my $pool = shift;
+    my $ret = main::OSCAR::OCA::OS_Detect::detect_oscar_pool_common($pool,
+        $compat_distro);
+
+    if ($ret) {
+        # The component can use the OSCAR pool
+        my $id = {
+            os => "linux",
+        };
+        $id->{distro} = $distro;
+        $id->{pkg} = $pkg;
+        return $id;
+    } else {
+        return undef;
+    }
+}
+
+
 # If we got here, we're happy
 1;
