@@ -106,7 +106,6 @@ if (! -d $md5dir) {
 
 # remember all packages which were on the system before OSCAR installation
 # (used by start_over to protect system files)
-# (only code for rpms here right now)
 if ($os->{pkg} eq "rpm") {
     my $preoscar = "$md5dir/pre-oscar.rpmlist";
     if (! -f $preoscar) {
@@ -114,8 +113,13 @@ if ($os->{pkg} eq "rpm") {
 	system("rpm -q --qf '%{NAME}\n' --all | sort | uniq > $preoscar");
     }
 } elsif ($os->{pkg} eq "deb") {
-    print "Saving of the list of package before the usage of OSCAR.";
-    print "Not yet implemented\n";
+    my $preoscar = "$md5dir/pre-oscar.deblist";
+    if (! -f $preoscar) {
+        my $cmd =  
+            "dpkg -l | grep '^ii' | awk ' { print $2 } ' | sort | uniq > $preoscar";
+        oscar_log_subsection("Writing pre-oscar deblist ($preoscar)...");
+        system($cmd);
+    }
 }
 
 oscar_log_subsection("Bootstrapping OSCAR smart package manager");
