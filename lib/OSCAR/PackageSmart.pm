@@ -43,6 +43,7 @@ use Carp;
             detect_pool_format
             prepare_distro_pools
             prepare_pool
+            prepare_pools
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -271,6 +272,35 @@ sub prepare_pool ($$) {
     # prepare for smart installs
     $pm->repo($pool);
     print "Pool $pool ready\n" if $verbose;
+    return $pm;
+}
+
+################################################################################
+# This function prepares a set of repositories.                                #
+# !!!WARNING!!! All the repositories have to be based on the same binary       #
+# packahe format (for instance RPM or Deb). If not, it will not work!!!        #
+# We currently do NOT check the "format" of the repositories, that's why we    #
+# strongly encourage developers to use the function prepare_distro_repos() if  #
+# they want to prepare repos assiocated to a specific distribution.            #
+#                                                                              #
+# Input: verbose, do you want verbose or not? 0 = no, anything else = yes      #
+#        pools, array with the list of repos to prepare.                       #
+# Return: the package object that can use these repos.                         #
+#                                                                              #
+# TODO: check the format of all repos and check they are the same.             #
+################################################################################
+sub prepare_pools ($@) {
+    my ($verbose, @pools) = @_;
+
+    my $pm;
+    foreach my $p (@pools) {
+        $pm = prepare_pool($verbose, $p);
+        if (!$pm) {
+            croak "\nERROR: Could not create PackMan instance!\n";
+        }
+    }
+    $pm->repo(@pools);
+
     return $pm;
 }
 
