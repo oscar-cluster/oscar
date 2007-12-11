@@ -368,7 +368,7 @@ sub opkg_list_installed {
 sub opkg_hash_installed {
     my ($type, %scope) = @_;
 
-    my %olist = &opkg_list_installed("api");
+    my %olist = &opkg_list_installed($type);
     my %opkgs;
 
     # filter class?
