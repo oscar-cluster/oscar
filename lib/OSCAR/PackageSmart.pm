@@ -278,20 +278,35 @@ sub prepare_pool ($$) {
 ################################################################################
 # This function prepares a set of repositories.                                #
 # !!!WARNING!!! All the repositories have to be based on the same binary       #
-# packahe format (for instance RPM or Deb). If not, it will not work!!!        #
-# We currently do NOT check the "format" of the repositories, that's why we    #
-# strongly encourage developers to use the function prepare_distro_repos() if  #
-# they want to prepare repos assiocated to a specific distribution.            #
+# package format (for instance RPM or Deb).                                    #
+# We strongly encourage developers to use the function prepare_distro_repos()  #
+# if they want to prepare repos assiocated to a specific distribution.         #
 #                                                                              #
 # Input: verbose, do you want verbose or not? 0 = no, anything else = yes      #
 #        pools, array with the list of repos to prepare.                       #
-# Return: the package object that can use these repos.                         #
-#                                                                              #
-# TODO: check the format of all repos and check they are the same.             #
+# Return: the packman object that can handle these repos.                      #
 ################################################################################
 sub prepare_pools ($@) {
     my ($verbose, @pools) = @_;
+    my $format;
 
+    # First we check pools all support the same format (rpm vs. deb).
+    foreach my $p (@pools) {
+        next if ($p eq "");
+        my $type = OSCAR::PackageSmart::detect_pool_format ($p);
+        if ($format eq "") {
+            # This is the first pool we analyze, we keep its format for later
+            # comparison
+            $format = $type;
+        } else{
+            if ($type ne $type) {
+                croak "ERROR: the two pools for the local distro are not of the ".
+                    "same type ($format, $type)\n";
+            }
+        }
+    }
+
+    # Then we actually prepare the pools
     my $pm;
     foreach my $p (@pools) {
         $pm = prepare_pool($verbose, $p);
@@ -321,42 +336,16 @@ sub prepare_distro_pools ($) {
     my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
     # OSCAR pools may be composed of two different parts: common binary package
     # and binary package specific to the distro
-    my @oscar_pools = split(",", $oscar_pkg_pool);
-    OSCAR::Utils::print_array (@oscar_pools);
+    my @pools = split(",", $oscar_pkg_pool);
+    my @distro_pools = split(",", $distro_pkg_pool);
+    foreach my $repo (@distro_pools) {
+        next if $repo eq "";
+        push (@pools, $repo);
+    }
+    print "Pools to prepare:";
+    OSCAR::Utils::print_array (@pools);
 
-    # We check that all repos have the same format, it is a basic assert
-    my $type1 = OSCAR::PackageSmart::detect_pool_format ($distro_pkg_pool);
-    foreach my $p (@oscar_pools) {
-        next if ($p eq "");
-        my $type = OSCAR::PackageSmart::detect_pool_format ($p);
-        if ($type1 ne $type) {
-            croak "ERROR: the two pools for the local distro are not of the ".
-                  "same type ($type1, $type)\n";
-        }
-    }
-
-#     eval("require OSCAR::PackMan");
-    my $pm = OSCAR::PackageSmart::prepare_pool($verbose,$distro_pkg_pool);
-    push (@repos, $distro_pkg_pool);
-    if (!$pm) {
-        croak "\nERROR: Could not create PackMan instance!\n";
-    }
-    $pm->repo($distro_pkg_pool);
-    foreach my $p (@oscar_pools) {
-        print "About to prepare pool $p\n";
-        next if ($p eq "");
-        my $pm2 = OSCAR::PackageSmart::prepare_pool($verbose,$p);
-        if (!$pm2) {
-            undefine $pm2;
-            croak "\nERROR: Could not create PackMan instance!\n";
-        } else {
-            # To be able to manage all repos with a single Packman object,
-            # we add the second repo to the list of repos the first Packman can
-            # manage.
-            push (@repos, $p);
-        }
-    }
-    $pm->repo(@repos);
+    my $pm = OSCAR::PackageSmart::prepare_pools (@pools);
 
     return $pm;
 }
