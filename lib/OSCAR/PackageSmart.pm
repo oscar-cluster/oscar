@@ -294,6 +294,9 @@ sub prepare_pools ($@) {
     foreach my $p (@pools) {
         next if ($p eq "");
         my $type = OSCAR::PackageSmart::detect_pool_format ($p);
+        if ($type eq undef) {
+            croak "ERROR: Impossible to prepare pool $p, unknown format\n";
+        }
         if ($format eq "") {
             # This is the first pool we analyze, we keep its format for later
             # comparison
