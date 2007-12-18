@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 #
+# Copyright (c) 2007 Oak Ridge National Laboratory.
+#                    Geoffroy R. Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";

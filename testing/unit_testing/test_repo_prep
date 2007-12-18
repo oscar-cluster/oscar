@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 #
+# Copyright (c) 2007 Oak Ridge National Laboratory.
+#                    Geoffroy R. Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -7,7 +10,13 @@ use OSCAR::PackageSmart;
 
 print "Test the preparation of pools.\n";
 
-my $fake_pool = "/tftpboot/oscar/centos-4-x86_64";
+my $fake_pool = "/tftpboot/oscar/rhel-4-x86_64";
+my $yume_cmd = "/usr/bin/yume";
+if (! -f $yume_cmd) {
+    print "For testing we need to use yume\n";
+    goto ERROR_EXIT;
+}
+
 if (! -d  $fake_pool) {
     print "For testing we need a \"fake\" pool which is $fake_pool. This pool ".
           "can be empty or not, this test should not impact the status of the ".
