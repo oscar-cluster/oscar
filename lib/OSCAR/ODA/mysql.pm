@@ -1262,4 +1262,26 @@ sub check_root_password{
 }
 
 
+#********************************************************************#
+#********************************************************************#
+#                                                                    #
+# internal function to check to see if OSCAR database exists.        #
+#                                                                    #
+#********************************************************************#
+#********************************************************************#
+# inputs:  options            reference to options hash
+#          error_strings_ref  optional reference to array for errors
+#
+# return: 1 if the OSCAR database exists
+#         0 if not
+
+sub check_oscar_database{
+    my ($options_ref, $error_strings_ref) = @_;
+    my $ret_val = 0;
+    my %databases = ();
+    my $success = &list_databases($options_ref,\%databases,$error_strings_ref);
+    $ret_val = 1 if $success && $databases{oscar};
+    return $ret_val
+}
+
 1;
