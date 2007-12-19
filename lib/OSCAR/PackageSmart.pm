@@ -317,7 +317,7 @@ sub prepare_pools ($@) {
             croak "\nERROR: Could not create PackMan instance!\n";
         }
     }
-    $pm->repo(@pools);
+    $pm->repo(@pools) if defined($pm);
 
     return $pm;
 }
