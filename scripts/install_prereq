@@ -231,7 +231,6 @@ sub handle_dumb_rpms {
     }
 }
 
-
 #
 # Simple implementation for dumb debian package handling
 # hacked by Erich Focht out of the dumb_rpms code, without much
@@ -369,7 +368,6 @@ sub best_version {
     return $best;
 }
 
-
 sub usage {
     my $ret = shift;
     print "Usage:\n";
@@ -393,3 +391,60 @@ sub usage {
     exit $ret if ($ret);
 }
 
+__END__
+
+=head1 NAME
+
+install_prereq, a command line tool for OSCAR for the management of
+prerequriments.
+
+=head1 SYNOPSIS
+
+install_prereq OPTIONS <prereq_path>
+
+=head1 DESCRIPTION
+
+install_prereq is a command line tool for OSCAR for the management of
+prerequirements. Prereqs may be binary packages to install or remove, as well as
+scripts to execute. The prereqs are mandatory for the usage of OSCAR.
+Install prerequisites located in prereq_path. They should have the same
+directory structure like normal OSCAR packages but need to contain the
+configuration file prereq.cfg. This file is required because prereqs are 
+installed before config.xml files can be parsed.
+For more information about this configuration file and prereqs functionnalities,
+please refer to the OSCAR documentation. For more information about OSCAR, please 
+visit http://oscar.openclustergroup.org/.
+
+=head2 Syntax
+
+install_prereq [options] <prereq_path>
+
+=over 1
+
+=item prereq_path
+
+The path of the configuration file for a given prereq.
+
+=head2 Options
+
+Recognized options include: --dumb|--smart|--status [--verbose]
+
+=over 4
+
+=item --dumb
+
+Installs packages listed in the prereq.cfg file with the base package manager 
+and is unable to resolve dependencies. It should be used for bootstrapping a 
+smart package manager.
+
+=item --smart
+
+Installs prereqs with the help of a smart package manager like yum(e).
+
+=item --status
+
+Give the current status of a given prereq.
+
+=item --verbose
+
+Display debugging information.
