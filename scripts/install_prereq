@@ -20,14 +20,17 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
 use OSCAR::CmpVersions;
+use OSCAR::Prereqs;
+use OSCAR::Logger;
 use Data::Dumper;
 use Carp;
 
 
-my ($dumb, $smart, $verbose, $path);
+my ($dumb, $smart, $verbose, $path, $status);
 GetOptions(
            "dumb"      => \$dumb,
            "smart"     => \$smart,
+           "status"    => \$status,
            "verbose"   => \$verbose,
            ) || &usage(1);
 # check paths
@@ -64,6 +67,11 @@ if ($arch eq "i386") {
 }elsif($arch eq "ppc64"){ # DIKIM added for supporting YDL-ppc64
     $march = "ppc64,ppc";
     $rarch = "ppc64|ppc";
+}
+
+if ($status) {
+    show_prereqs_status ($distro, $distrover, $arch, @prereqs);
+    exit 0;
 }
 
 # try to detect smart installer, fall-back to dumb installer if not found
@@ -110,44 +118,8 @@ if ($smart) {
 # collect all config lines and build list of packages to be installed/removed
 # collect all shell commands to be executed
 # ...
-
-my (@removes, @installs, @shellcmds, %files);
-for my $path (@prereqs) {
-    # read in prereq.cfg file
-    my $ref = &get_config($path, $distro, $distrover, $arch);
-    if (!$ref) {
-	print "Couldn't match any config block in $path/prereq.cfg\n";
-	next;
-    }
-    for my $line (@{$ref}) {
-	$line =~ s/^\s*//g;
-	next if ($line =~ /^\#/ && $line =~ /^$/);
-
-	if ($line =~ /^sh:(.*)$/) {
-	    # shell script execution
-	    my $cmd = $1;
-	    $cmd =~ s/^\s*//;
-	    next if (!$cmd);
-	    push @shellcmds, $cmd;
-	} else {
-	    # replace $arch with architecture in package config lines
-	    # this prevents packages to be interpreted as capabilities
-	    if ($line =~ /\$arch/) {
-		$line =~ s:\$arch:$march:g;
-	    }
-	    my $remove = ($line =~ /^!/);
-	    if ($remove) {
-		$line =~ s/^!//g;
-	    }
-	    my ($pkg,$dummy) = split(/\s+/,$line);
-	    if ($remove) {
-		push @removes, $pkg;
-	    } else {
-		push @installs, $pkg;
-	    }
-	}
-    }
-}
+my (@installs, @removes, @shellcmds) = 
+    OSCAR::Prereqs::get_prereqs($distro, $distrover, $arch, @prereqs);
 
 vprint("Following packages will be removed:\n\t".
        join("\n\t",@removes) . "\n");
@@ -259,15 +231,6 @@ sub handle_dumb_rpms {
     }
 }
 
-# Function to verify if a debian package is installed
-# @param: package name
-# @return: 0 if installed
-sub is_deb_pkg_installed {
-        my $pkg = shift;
-        vprint ("Executing: apt-get install $pkg --no-act > /dev/null 2>&1\n");
-        my $ret2 = system("apt-get install $pkg --no-act > /dev/null 2>&1");
-        return $ret2;
-}
 
 #
 # Simple implementation for dumb debian package handling
@@ -406,129 +369,25 @@ sub best_version {
     return $best;
 }
 
-#
-# Check whether packages were really installed or not
-#
-sub check_installed {
-    my (@pkgs) = @_;
-    my ($cmd, $err);
-    $err = 0;
-    for my $p (@pkgs) {
-	# strip suffix is argument is a complete package name
-	if ($p =~ /\.$suffix$/) {
-	    $p =~ s/\.$suffix$//;
-	}
-	if ($p =~ /\.($rarch|noarch)$/) {
-	    $p =~ s/\.($rarch|noarch)$//;
-	}
-	if ($suffix eq "rpm") {
-	    $cmd = "rpm -q $p >/dev/null 2>&1";
-	    vprint("Executing: $cmd\n");
-	    if (system($cmd)) {
-		$err++;
-		print "WARNING: Package $p was not installed!\n";
-	    }
-	} elsif ($suffix eq "deb") {
-            if (is_deb_pkg_installed ($p)) {
-		$err++;
-		print "WARNING: Package $p was not installed!\n";
-	    }
-	}
-    }
-    return $err;
-}
-
-sub vprint {
-    print @_ if ($verbose);
-}
-
-
-############################################################################
-# Prerequisites config file. This is called prereq.cfg and should be located
-# in the top directory of the otherwise generic-setup compatible prerequisites
-# directory. Because prereqs are installed long before OSCAR is able to parse
-# config.xml files, prereq.cfg is much simpler. The format is:
-#
-# [distro:version:architecture]
-# package_name_or_rpm_file
-# ...
-# !package_name
-# ...
-# [distro2:version:architecture]
-# ...
-#
-# The distro name, version or arch info can contain a "*". This matches
-# like a .* regexp.
-# Examples:
-# [redhat-el*:3:*] matches all rhel3 architectures.
-# [fedora:*:*]     matches all fedora core distros on all architectures
-# [mandr*:*:*]     matches both mandrake and mandriva
-# [*:*:*]          matches everything.
-#
-# Attention! The real distro names are used here, not the compat names!
-#
-# The lines after a distro identifier are package names or package file names
-# (without the full path info). One package/filename per line is allowed!
-# Lines starting with "!" specify packages which should be deleted. The lines
-# are executed in the order of appearance.
-# Processing of the prereq.cfg file stops after the parsing of the first
-# matching block!
-############################################################################
-sub get_config {
-    my ($path, $distro, $distver, $arch) = @_;
-    local *IN;
-    my (@config, $line, $match);
-    
-    open IN, "$path/prereq.cfg" or die "Could not open $path/prereq.cfg $!";
-    while ($line = <IN>) {
-	chomp $line;
-	if ($line =~ /^\s*\[([^:]+):([^:]+):([^:]+)\]/) {
-	    my ($d,$v,$a) = ($1,$2,$3);
-	    $d =~ s/\*/\.*/g;
-	    $v =~ s/\*/\.*/g;
-	    $a =~ s/\*/\.*/g;
-	    my $str = "$distro:$distrover:$arch";
-	    my $mstr = "$d:$v:$a";
-	    $match = 0;
-	    if ($str =~ m/^$mstr$/) {
-		$match = 1;
-		vprint("found matching block [$d:$v:$a]\n");
-		last;
-	    }
-	}
-    }
-    if ($match) {
-	while ($line = <IN>) {
-	    chomp $line;
-	    last if ($line =~ /^\[([^:]+):([^:]+):([^:]+)\]/);
-	    next if ($line =~ /^\s*\#/);
-	    $line =~ s/^ *//g;
-	    next if ($line =~ /^$/);
-	    push @config, $line;
-	}
-    }
-    close IN;
-    if (@config) {
-	return \@config;
-    } else {
-	return undef;
-    }
-}
 
 sub usage {
     my $ret = shift;
     print "Usage:\n";
-    print "\t$0 --dumb|--smart [--verbose] prereq_path\n\n";
+    print "\t$0 --dumb|--smart|--status [--verbose] prereq_path\n\n";
     print "Install prerequisites located in prereq_path. They should have\n";
     print "the same directory structure like normal OSCAR packages but\n";
     print "need to contain the configuration file prereq.cfg\n";
     print "This file is required because prereqs are installed before\n";
     print "config.xml files can be parsed.\n";
-    print "One of --smart|--dumb must be selected! --dumb installs packages\n";
-    print "listed in the prereq.cfg file with the base package manager and\n";
-    print "is unable to resolve dependencies. It should be used for\n";
-    print "bootstrapping a smart package manager. --smart installs prereqs\n";
-    print "with the help of a smart package manager like yum(e).\n";
+    print "The option --status only displays the current prereqs status.\n";
+    print "Typically it shows if prereqs packages are already installed or\n";
+    print "removed.\n";
+    print "If --status is not used, one of --smart|--dumb must be selected!\n";
+    print "--dumb installs packages listed in the prereq.cfg file with the\n";
+    print "base package manager and is unable to resolve dependencies. It \n";
+    print "should be used for bootstrapping a smart package manager.\n";
+    print "--smart installs prereqs with the help of a smart package manager\n";
+    print " like yum(e).\n";
     print "The prereq_path arguments must be paths relative to the\n";
     print "\$OSCAR_HOME environment variable's value!\n";
     exit $ret if ($ret);

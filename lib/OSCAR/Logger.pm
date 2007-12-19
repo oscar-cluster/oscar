@@ -22,10 +22,11 @@ use strict;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 
-@EXPORT = qw(oscar_log_section oscar_log_subsection verbose);
+@EXPORT = qw(oscar_log_section oscar_log_subsection verbose vprint);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
+my $verbose = $ENV{OSCAR_VERBOSE};
 
 #############################################################################
 #
@@ -62,5 +63,11 @@ sub verbose {
     print join " ", @_;
     print "\n";
 }
+
+sub vprint {
+    print @_ if ($verbose);
+}
+
+
 
 1;
