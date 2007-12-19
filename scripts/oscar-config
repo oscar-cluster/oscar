@@ -41,7 +41,6 @@ my ($distro_to_setup,
     $distro_repo_to_mirror,
     $oscar_repo_to_mirror);
 
-Getopt::Long::Configure("pass_through");
 GetOptions(
         "list-setup-distros"            => \&display_list_setup_distros,
         "supported-distros"             => \&display_list_supported_distros,
@@ -53,7 +52,7 @@ GetOptions(
         "mirror-distro-repo=s"          => \$distro_repo_to_mirror,
         "mirror-oscar-repo=s"           => \$oscar_repo_to_mirror,
         "help"                          => \&help,
-        );
+        ) || help();
 
 sub display_list_supported_distros {
     # We get the list of supported distros
@@ -88,15 +87,27 @@ sub help {
     print "\n";
     print "Setup OSCAR for Cluster management.\n";
     print "OPTION can be:\n";
-    print " --setup-distro DISTRO_ID: Setup the Linux distribution DISTRO_ID (which is one the distribution ids displayed by the --supported-distros option). The repositories used are those specified in the 'supported-distros.xml' file if no --mirror-<distro|oscar>-from option is used.\n";
-    print " --list-setup-distros: List the Linux distributions that are already setup for OSCAR.\n";
-    print " --supported-distros: List the Linux distributions supported by OSCAR.\n";
-    print " --display-defaut-distro-repo DISTRO_ID: display the default distribution repository.\n";
-    print " --display-defaut-oscar-repo DISTRO_ID: display the default OSCAR repository.\n";
-    print " --use-distro-repo REPO_URL.\n";
-    print " --use-oscar-repo REPO_URL.\n";
-    print " --mirror-distro-repo REPO_URL.\n";
-    print " --mirror-oscar-repo REPO_URL.\n";
+    print " --setup-distro DISTRO_ID: Setup the Linux distribution DISTRO_ID\n"; 
+    print "\t(which is one the distribution ids displayed by the\n";
+    print "\t--supported-distros option). The repositories used are those\n"; 
+    print "\tspecified in the 'supported-distros.xml' file if no\n"; 
+    print "\t--mirror-<distro|oscar>-from option is used.\n";
+    print " --list-setup-distros: List the Linux distributions that are \n";
+    print "\talready setup for OSCAR.\n";
+    print " --supported-distros: List the Linux distributions supported by\n";
+    print "\tOSCAR.\n";
+    print " --display-defaut-distro-repo DISTRO_ID: display the default\n";
+    print "\tdistribution repository.\n";
+    print " --display-defaut-oscar-repo DISTRO_ID: display the default OSCAR\n";
+    print "\trepository.\n";
+    print " --use-distro-repo REPO_URL: Use a given repository for OSCAR \n";
+    print "\tinstead of the default repository..\n";
+    print " --use-oscar-repo REPO_URL: Use a given repository instead of the\n";
+    print "\tdefault repository for a given Linux distribution.\n";
+    print " --mirror-distro-repo REPO_URL: Mirror a given online repository\n";
+    print "\tfor a given Linux distribution.\n";
+    print " --mirror-oscar-repo REPO_URL: Mirror a given online OSCAR\n";
+    print "\trepository for a given Linux distribution.\n";
     print " --help: this help information.\n";
     print "\n";
     exit;
@@ -151,3 +162,85 @@ if ($distro_to_setup) {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+oscar-config, a command line tool for OSCAR configuration.
+
+=head1 SYNOPSIS
+
+oscar-config OPTIONS
+
+=head1 DESCRIPTION
+
+oscar-config is a command line tool for OSCAR configuration, from OSCAR
+bootstrapping to repository configuration. It also allow users to get 
+information about the current OSCAR configuration.
+
+=head2 Syntax
+
+setup_pxe [options]
+
+=head2 Options
+
+Recognized options include:
+
+=over 10
+
+=item --setup-distro <DISTRO_ID>
+
+Setup the Linux distribution DISTRO_ID (which is one the distribution ids
+displayed by the --supported-distros option). The repositories used are those
+specified in the 'supported-distros.xml' file if no --mirror-<distro|oscar>-from
+option is used.
+
+=item --list-setup-distros
+
+List the Linux distributions that are already setup for OSCAR.
+
+=item --supported-distros
+
+List the Linux distributions supported by OSCAR.
+
+=item --display-defaut-distro-repo <DISTRO_ID>
+
+Display the default distribution repository.
+
+=item --display-defaut-oscar-repo <DISTRO_ID>
+
+Display the default OSCAR repository.
+
+=item --use-distro-repo <REPO_URL>
+
+Use a given repository instead of the default repository for a given Linux
+distribution.
+
+=item --use-oscar-repo <REPO_URL>
+
+Use a given repository for OSCAR instead of the default repository.
+
+=item --mirror-distro-repo <REPO_URL>
+
+Mirror a given online repository for a given Linux distribution.
+
+=item --mirror-oscar-repo <REPO_URL>
+
+Mirror a given online OSCAR repository for a given Linux distribution.
+
+=item --help
+
+This help information.
+
+=back
+
+=head1 AUTHOR
+
+Geoffroy Vallee, valleegr@ornl.gov
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
