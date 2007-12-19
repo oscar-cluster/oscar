@@ -40,7 +40,7 @@ DIST_VER   = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
 		    END{print DIST"-"VER}')
 
 # Use "make test" to install OSCAR to your system via SVN checkout
-test: checkenv install-perlQt bootstrap-smart localrepos
+test: checkenv bootstrap-smart install-perlQt localrepos
 	@echo "========================================================="
 	@echo "!!! This is the tesing mode for the SVN repository    !!!"
 	@echo "!!! Use it only if you know exactly what you are doing!!!"
