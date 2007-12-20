@@ -16,7 +16,7 @@ use OSCAR::SystemSanity;
 my $rc = SUCCESS;
 
 # No need to check DISPLAY env variable if we're not using the GUI
-if ($ENV{OSCAR_UI} ne "gui") {
+if (!defined$ENV{OSCAR_UI} || $ENV{OSCAR_UI} ne "gui") {
     exit ($rc);
 }
 
