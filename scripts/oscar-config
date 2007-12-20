@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #
-# Copyright (c) 2007, Oak Ridge National Laboratory.
-#                     Geoffroy R. Vallee <valleegr@ornl.gov>
-#                     All rights reserved.
+# Copyright (c) 2007 Oak Ridge National Laboratory.
+#                    Geoffroy R. Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -11,26 +11,8 @@
 # $Id: oscar-config 5017 2006-06-16 15:00:26Z valleegr $
 #
 
-if (!defined $ENV{OSCAR_HOME}) {
-    die ("ERROR: OSCAR_HOME not found");
-}
-
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::Distro qw (
-                        get_list_of_supported_distros
-                     );
-use OSCAR::Utils qw ( print_array );
-use OSCAR::PackagePath qw ( 
-                            get_default_distro_repo 
-                            get_default_oscar_repo 
-                            get_list_setup_distros
-                            use_distro_repo
-                            use_oscar_repo
-                            use_default_distro_repo
-                            use_default_oscar_repo
-                            mirror_repo 
-                          );
+use Cwd qw(chdir cwd);
 use Getopt::Long;
 
 my ($distro_to_setup,
@@ -39,7 +21,8 @@ my ($distro_to_setup,
     $oscar_repo,
     $oscar_repo_to_use,
     $distro_repo_to_mirror,
-    $oscar_repo_to_mirror);
+    $oscar_repo_to_mirror,
+    $bootstrap);
 
 GetOptions(
         "list-setup-distros"            => \&display_list_setup_distros,
@@ -51,13 +34,115 @@ GetOptions(
         "use-oscar-repo=s"              => \$oscar_repo_to_use,
         "mirror-distro-repo=s"          => \$distro_repo_to_mirror,
         "mirror-oscar-repo=s"           => \$oscar_repo_to_mirror,
+        "bootstrap"                     => \&bootstrap,
         "help"                          => \&help,
         ) || help();
 
+
+if (!defined $ENV{OSCAR_HOME}) {
+    die ("ERROR: OSCAR_HOME not found");
+} else {
+    use lib "$ENV{OSCAR_HOME}/lib";
+}
+
+if ($distro_repo_to_mirror) {
+    if (!defined $distro_to_setup || $distro_to_setup eq "") {
+        die "If you want to mirror a repository, you have to tell us for which".
+            " distro the repository is made for (for that use the ".
+            "--setup-distro option\n";
+    }
+    require OSCAR::PackagePath;
+    require OSCAR::Distro;
+    OSCAR::PackagePath::mirror_repo ($distro_repo_to_mirror,
+                                     $distro_to_setup,
+                                     "/tftpboot/distro");
+    OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
+                                    "file:///tftpboot/distro/$distro_to_setup");
+}
+
+if ($oscar_repo_to_mirror) {
+    if (!defined $distro_to_setup || $distro_to_setup eq "") {
+        die "If you want to mirror a repository, you have to tell us for which".
+            " distro the repository is made for (for that use the ".
+            "--setup-distro option\n";
+    }
+    require OSCAR::PackagePath;
+    require OSCAR::Distro;
+    OSCAR::PackagePath::mirror_repo ($oscar_repo_to_mirror,
+                                     $distro_to_setup,
+                                     "/tftpboot/oscar");
+    OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
+                     "file:///tftpboot/oscar/$distro_to_setup");
+}
+
+if ($distro_repo) {
+    require OSCAR::PackagePath;
+    require OSCAR::Distro;
+    # We display the distro repo that is used with the distro
+    my $url = OSCAR::PackagePath::get_default_distro_repo ($distro_repo);
+    print "$url\n";
+}
+
+if ($oscar_repo) {
+    require OSCAR::Distro;
+    require OSCAR::PackagePath;
+    # We display the OSCAR repo that is used with the distro
+    my $url = OSCAR::PackagePath::get_default_oscar_repo ($oscar_repo);
+    print "$url\n";
+}
+
+if ($distro_to_setup) {
+    require OSCAR::PackagePath;
+    require OSCAR::Distro;
+    if ($oscar_repo_to_use eq "") {
+        OSCAR::PackagePath::use_default_oscar_repo ($distro_to_setup);
+    } else {
+        OSCAR::PackagePath::use_oscar_repo ($distro_to_setup,
+                                            $oscar_repo_to_use);
+    }
+
+    if ($distro_repo_to_use eq "") {
+        OSCAR::PackagePath::use_default_distro_repo ($distro_to_setup);
+    } else {
+        OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
+                                             $distro_repo_to_use);
+    }
+}
+
+exit 0;
+
+sub bootstrap () {
+    print "OSCAR bootstrap\n";
+    # First of all we check if the OSCAR_HOME environment variable is set or not
+    # This variable is currently mandatory for the usage of OSCAR.
+    if ($ENV{OSCAR_HOME} eq "") {
+        use lib cwd() . "/lib"; # case where the script is used from the actual
+                                # OSCAR_HOME
+        require OSCAR::Env;
+        OSCAR::Env::oscar_home_env();
+        if ($ENV{OSCAR_HOME} eq "") {
+            print "ERROR: Impossible to set OSCAR_HOME.\n";
+            return -1;
+        }
+    }
+
+    # From now we should be able to use some OSCAR modules! :-)
+
+    require OSCAR::Bootstrap;
+    my $configurator = OSCAR::Bootstrap::bootstrap_stage0();
+    if (!defined $configurator) {
+        print "ERROR: Impossible to complete stage 0 of the bootstrap.\n";
+        return -1;
+    }
+
+    OSCAR::Bootstrap::oscar_bootstrap ($configurator);
+}
+
 sub display_list_supported_distros {
+    require OSCAR::Distro;
     # We get the list of supported distros
     my $verbose = 1;
-    my @distros = get_list_of_supported_distros ();
+    my @distros = OSCAR::Distro::get_list_of_supported_distros ();
     # The command line output is used by other tools so we are careful about
     # displaying only usefull information.
     foreach my $d (@distros) {
@@ -67,9 +152,10 @@ sub display_list_supported_distros {
 }
 
 sub display_list_setup_distros {
+    require OSCAR::PackagePath;
     # We check if one of these distros is setup (i.e. if /tftpboot is correctly
     # populated.
-    my @list = get_list_setup_distros ();
+    my @list = OSCAR::PackagePath::get_list_setup_distros ();
     if (!scalar (@list)) {
         print "No distribution is setup for OSCAR\n";
     } else {
@@ -112,56 +198,6 @@ sub help {
     print "\n";
     exit;
 }
-
-if ($distro_repo_to_mirror) {
-    if (!defined $distro_to_setup || $distro_to_setup eq "") {
-        die "If you want to mirror a repository, you have to tell us for which".
-            " distro the repository is made for (for that use the ".
-            "--setup-distro option\n";
-    }
-    mirror_repo ($distro_repo_to_mirror, $distro_to_setup, "/tftpboot/distro");
-    use_distro_repo ($distro_to_setup, 
-                     "file:///tftpboot/distro/$distro_to_setup");
-}
-
-if ($oscar_repo_to_mirror) {
-    if (!defined $distro_to_setup || $distro_to_setup eq "") {
-        die "If you want to mirror a repository, you have to tell us for which".
-            " distro the repository is made for (for that use the ".
-            "--setup-distro option\n";
-    }
-    mirror_repo ($oscar_repo_to_mirror, $distro_to_setup, "/tftpboot/oscar");
-    use_distro_repo ($distro_to_setup, 
-                     "file:///tftpboot/oscar/$distro_to_setup");
-}
-
-if ($distro_repo) {
-    # We display the distro repo that is used with the distro
-    my $url = get_default_distro_repo ($distro_repo);
-    print "$url\n";
-}
-
-if ($oscar_repo) {
-    # We display the OSCAR repo that is used with the distro
-    my $url = get_default_oscar_repo ($oscar_repo);
-    print "$url\n";
-}
-
-if ($distro_to_setup) {
-    if ($oscar_repo_to_use eq "") {
-        use_default_oscar_repo ($distro_to_setup);
-    } else {
-        use_oscar_repo ($distro_to_setup, $oscar_repo_to_use);
-    }
-
-    if ($distro_repo_to_use eq "") {
-        use_default_distro_repo ($distro_to_setup);
-    } else {
-        use_distro_repo ($distro_to_setup, $distro_repo_to_use);
-    }
-}
-
-1;
 
 __END__
 

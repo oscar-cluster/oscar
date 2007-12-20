@@ -70,8 +70,9 @@ if ($arch eq "i386") {
 }
 
 if ($status) {
-    show_prereqs_status ($distro, $distrover, $arch, @prereqs);
-    exit 0;
+    print "Prereq status for $distro, $distrover, $arch\n";
+    my $ret = show_prereqs_status ($distro, $distrover, $arch, @prereqs);
+    exit $ret;
 }
 
 # try to detect smart installer, fall-back to dumb installer if not found
@@ -111,6 +112,7 @@ if ($smart) {
     require OSCAR::PackageSmart;
 
     $pm = OSCAR::PackageSmart::prepare_distro_pools ($os);
+    die "ERROR: invalid Packman object\n" if (!defined $pm);
 }
 
 # now go with the processing
@@ -118,43 +120,43 @@ if ($smart) {
 # collect all config lines and build list of packages to be installed/removed
 # collect all shell commands to be executed
 # ...
-my (@installs, @removes, @shellcmds) = 
+my ($installs, $removes, $shellcmds) = 
     OSCAR::Prereqs::get_prereqs($distro, $distrover, $arch, @prereqs);
 
 vprint("Following packages will be removed:\n\t".
-       join("\n\t",@removes) . "\n");
+       join("\n\t",@$removes) . "\n");
 vprint("Following packages will be installed:\n\t".
-       join("\n\t",@installs) . "\n");
+       join("\n\t",@$installs) . "\n");
 vprint("Following shell commands will be executed:\n\t".
-       join("\n\t",@shellcmds) . "\n");
+       join("\n\t",@$shellcmds) . "\n");
 
 if ($dumb) {
     if ($suffix eq "rpm") {
 	# do the removes before the installs
-	handle_dumb_rpms(1,@removes);
-	handle_dumb_rpms(0,@installs);
+	handle_dumb_rpms(1,@$removes);
+	handle_dumb_rpms(0,@$installs);
     } elsif ($suffix eq "deb") {
 	# do the removes before the installs
-	handle_dumb_debs(1,@removes);
-	handle_dumb_debs(0,@installs);
+	handle_dumb_debs(1,@$removes);
+	handle_dumb_debs(0,@$installs);
     } else {
 	croak "Support for dumb $suffix install is not implemented.\n";
     }
 } else {
     # do the removes before the installs
-    handle_smart_pkgs($path,1,@removes);
-    handle_smart_pkgs($path,0,@installs);
+    handle_smart_pkgs($path,1,@$removes);
+    handle_smart_pkgs($path,0,@$installs);
 }
 
 # check whether rpms were really installed!!!
 # ...
 
-if (scalar(@installs) && &check_installed(@installs)) {
+if (scalar(@$installs) && &check_installed(@$installs)) {
     print "!!! Some packages were NOT installed !!!\n";
     exit 1;
 }
 
-for my $cmd (@shellcmds) {
+for my $cmd (@$shellcmds) {
     $cmd =~ s/\$OSCAR_HOME/$ohome/g;
     vprint("Executing: $cmd\n");
     my $ret = system("$cmd");
@@ -242,6 +244,7 @@ sub handle_dumb_debs {
     my $ret;
     return if (!scalar(@pkgs));
     for my $pkg (@pkgs) {
+        print "Dealing with $pkg\n";
     	# make sure we deal with package names, not file names
 	    my $pkgname = $pkg; $pkgname =~ s/\.deb$//;
     	if ($remove) {
@@ -412,8 +415,8 @@ directory structure like normal OSCAR packages but need to contain the
 configuration file prereq.cfg. This file is required because prereqs are 
 installed before config.xml files can be parsed.
 For more information about this configuration file and prereqs functionnalities,
-please refer to the OSCAR documentation. For more information about OSCAR, please 
-visit http://oscar.openclustergroup.org/.
+please refer to the OSCAR documentation. For more information about OSCAR, 
+please visit http://oscar.openclustergroup.org/.
 
 =head2 Syntax
 

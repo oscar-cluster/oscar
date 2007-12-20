@@ -287,9 +287,10 @@ sub prepare_pool ($$) {
 # Return: the packman object that can handle these repos.                      #
 ################################################################################
 sub prepare_pools ($@) {
-    my ($verbose, @pools) = @_;
+    my ($v, @pools) = @_;
     my $format;
 
+    print "Preparing pools: @pools\n";
     # First we check pools all support the same format (rpm vs. deb).
     foreach my $p (@pools) {
         next if ($p eq "");
@@ -303,8 +304,8 @@ sub prepare_pools ($@) {
             $format = $type;
         } else{
             if ($type ne $type) {
-                croak "ERROR: the two pools for the local distro are not of the ".
-                    "same type ($format, $type)\n";
+                croak "ERROR: the two pools for the local distro are not of".
+                      "the same type ($format, $type)\n";
             }
         }
     }
@@ -312,7 +313,8 @@ sub prepare_pools ($@) {
     # Then we actually prepare the pools
     my $pm;
     foreach my $p (@pools) {
-        $pm = prepare_pool($verbose, $p);
+        print "Pool: $p\n";
+        $pm = prepare_pool($v, $p);
         if (!$pm) {
             croak "\nERROR: Could not create PackMan instance!\n";
         }
@@ -348,7 +350,7 @@ sub prepare_distro_pools ($) {
     print "Pools to prepare:";
     OSCAR::Utils::print_array (@pools);
 
-    my $pm = OSCAR::PackageSmart::prepare_pools (@pools);
+    my $pm = OSCAR::PackageSmart::prepare_pools ($verbose, @pools);
 
     return $pm;
 }

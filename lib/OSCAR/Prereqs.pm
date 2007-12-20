@@ -85,7 +85,7 @@ sub get_config ($$$$) {
             $v =~ s/\*/\.*/g;
             $a =~ s/\*/\.*/g;
             my $str = "$distro:$distver:$arch";
-            my $mstr = "$d:$v:$a";
+            my $mstr = "($d):($v):($a)";
             $match = 0;
             if ($str =~ m/^$mstr$/) {
                 $match = 1;
@@ -305,6 +305,7 @@ sub is_rpm_pkg_installed ($) {
 
 sub show_prereqs_status {
     my ($distro, $distver, $arch, @paths) = @_;
+    my $needed_actions = 0;
     my ($installs, $removes, $cmds) = 
         OSCAR::Prereqs::get_rawlist_prereqs($distro,
                                         $distver,
@@ -314,6 +315,7 @@ sub show_prereqs_status {
     foreach my $p (@$installs) {
         if (!is_package_installed ($p)) {
             print "\t$p: \t\t\tneeds to be installed\n";
+            $needed_actions++;
         } else {
             print "\t$p: \t\t\talready installed\n"
         }
@@ -321,11 +323,13 @@ sub show_prereqs_status {
     foreach my $p (@$removes) {
         if (is_package_installed ($p)) {
             print "\t$p: \t\t\tneeds to be removed\n";
+            $needed_actions++;
         } else {
             print "\t$p: \t\t\talready removed\n"
         }
     }
     print "\n\n";
+    return $needed_actions;
 }
 
 1;

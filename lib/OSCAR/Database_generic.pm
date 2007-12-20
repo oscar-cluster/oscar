@@ -304,13 +304,13 @@ sub select_table {
 }
 
 sub create_table {
-     my ($options_ref, $error_strings_ref) = @_;
-        
+    my ($options_ref, $error_strings_ref) = @_;
+
     my $sql_dir = "$ENV{OSCAR_HOME}/packages/oda/scripts";
     my $sql_file = "$sql_dir/oscar_table.sql";
-    
+
     print "DB_DEBUG>$0:\n====> in Database::create_table uses the SQL statement which are already defined at $sql_file" if $$options_ref{verbose};
-    
+
     my $cmd = "";
     $cmd = "mysql -u $$options_ref{user} -p$$options_ref{password} oscar < $sql_file"
         if $$options_ref{type} eq "mysql";
@@ -348,6 +348,18 @@ sub my2pg{
     close TEMP;
     close DUMP;
     return $new_file;
+}
+
+sub init_database_passwd ($) {
+    my $configurator = shift;
+    my $oscarbinaries_path = $configurator->get_scripts_path();
+
+    # Make sure there is a database password
+    print "Binary path = $oscarbinaries_path\n";
+    return -1;
+
+    oscar_log_subsection("Making sure there is an ODA database password");
+    system( "$ENV{OSCAR_HOME}/scripts/make_database_password" );
 }
 
 1;

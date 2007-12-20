@@ -26,6 +26,7 @@ use OSCAR::Logger;
 use File::Basename;
 use vars qw(@EXPORT);
 use base qw(Exporter);
+use Carp;
 
 @EXPORT = qw(
             oscar_home_env

@@ -2673,14 +2673,13 @@ sub simple_oda_query ($$) {
 # Input: - sql, string representing the SQL query.                             #
 #        - id, the table element we want to query against. For instance the    #
 #              cluster_id element of the Cluster table.                        #
-# Return: - the query result or die,                                           #
+# Return: - the query result or undef,                                         #
 ################################################################################
-sub oda_query_single_result {
+sub oda_query_single_result ($$) {
     my ($sql, $id) = @_;
     my @list = simple_oda_query ($sql, $id);
     if (scalar (@list) != 1) {
-        die "ERROR: we have ".scalar (@list)." results with ".
-            "query $sql";
+        return undef;
     }
     return ($list[0]);
 }

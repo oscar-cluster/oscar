@@ -85,13 +85,13 @@ sub get_list_opkg_dirs {
 ###############################################################################
 # Install the server part of the passed OPKGs on the local system             #
 # Parameter: list of OPKGs.                                                   #
-# Return:    none.                                                            #
+# Return:    0 if success, -1 else.                                           #
 ###############################################################################
 sub opkgs_install_server {
     my (@opkgs) = (@_);
 
     if (!scalar(@opkgs)) {
-	croak("No opkgs passed!");
+        croak("No opkgs passed!");
     }
 
     #
@@ -107,8 +107,9 @@ sub opkgs_install_server {
     if (!$err) {
         print "Error occured during smart_install:\n";
         print join("\n",@out)."\n";
-        exit 1;
+        return -1;
     }
+    return 0;
 }
 
 ###############################################################################
