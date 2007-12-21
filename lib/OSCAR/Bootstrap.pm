@@ -21,7 +21,7 @@ package OSCAR::Bootstrap;
 #
 # This package provides a set of functions for the OSCAR bootstrap.
 #
-# $Id: Bootstrap.pm 4833 2006-05-24 08:22:59Z bli $
+# $Id: Bootstrap.pm 6694 2007-12-10 20:43:40Z valleegr $
 #
 
 use strict;
