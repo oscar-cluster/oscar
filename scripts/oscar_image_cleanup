@@ -57,3 +57,41 @@ foreach my $corrupted_image (@corrupted_images) {
     }
     print "=====================\n\n";
 }
+
+__END__
+
+=head1 NAME
+
+oscar_image_cleanup, a command line tool that checks the status of OSCAR images
+(used to deploy clusters) and detect & fix corrupted images.
+
+=head1 SYNOPSIS
+
+oscar_image_cleanup
+
+=head1 DESCRIPTION
+
+oscar_image_cleanup is a command line tool that checks the status of OSCAR 
+images (used to deploy clusters) and detect & fix corrupted images. It 
+typically checks if SIS images, the file system and information from the OSCAR
+database are synchronized. If they are not synchronized, the tool tries to 
+delete corrupted images and all associated data.
+
+=head1 OPTIONS
+
+None.
+
+=head1 KNOWN BUGS
+
+When the OSCAR database still contains information about a specific image, the
+image is deleted instead of rebuilding the image and updating system data.
+
+=head1 AUTHOR
+
+Geoffroy Vallee <valleegr@ornl.gov>
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
