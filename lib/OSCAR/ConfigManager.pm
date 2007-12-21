@@ -24,7 +24,7 @@ package OSCAR::ConfigManager;
 #
 
 #
-# $Id: ConfigManager 5017 2006-06-16 15:00:26Z valleegr $
+# $Id$
 #
 
 use strict;
