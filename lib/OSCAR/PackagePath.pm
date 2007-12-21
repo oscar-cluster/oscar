@@ -2,6 +2,9 @@ package OSCAR::PackagePath;
 #
 # Copyright (c) 2006 Erich Focht efocht@hpce.nec.com>
 #                    All rights reserved.
+# Copyright (c) 2007 Oak Ridge National Laboratory.
+#                     Geoffroy R. Vallee <valleegr@ornl.gov>
+#                     All rights reserved.
 # 
 #   $Id$
 #
