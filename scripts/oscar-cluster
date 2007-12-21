@@ -10,7 +10,7 @@
 #
 # This script is a simple CLI for the management of OSCAR clusters.
 #
-# $Id: oscar_cluster 5134 2006-07-12 05:51:29Z valleegr $
+# $Id$
 #
 
 use strict;
@@ -20,6 +20,7 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::msm;
 use OSCAR::PartitionMgt;
 use OSCAR::Database;
+use OSCAR::Network;
 use Getopt::Long;
 
 my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
@@ -88,5 +89,10 @@ if ($list_partition_distro) {
         print "\n";
     }
 }
+
+sub help () {
+    print "Not yet implemented\n";
+}
+
 
 1;
