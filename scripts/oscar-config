@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 #
+
+#
 # Copyright (c) 2007 Oak Ridge National Laboratory.
 #                    Geoffroy R. Vallee <valleegr@ornl.gov>
 #                    All rights reserved.
@@ -7,6 +9,8 @@
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
+#
+
 #
 # $Id: oscar-config 5017 2006-06-16 15:00:26Z valleegr $
 #
@@ -22,6 +26,7 @@ my ($distro_to_setup,
     $oscar_repo_to_use,
     $distro_repo_to_mirror,
     $oscar_repo_to_mirror,
+    $network
     $bootstrap);
 
 GetOptions(
@@ -34,6 +39,7 @@ GetOptions(
         "use-oscar-repo=s"              => \$oscar_repo_to_use,
         "mirror-distro-repo=s"          => \$distro_repo_to_mirror,
         "mirror-oscar-repo=s"           => \$oscar_repo_to_mirror,
+#         "network"                       => \$network,
         "bootstrap"                     => \&bootstrap,
         "help"                          => \&help,
         ) || help();
@@ -108,6 +114,14 @@ if ($distro_to_setup) {
                                              $distro_repo_to_use);
     }
 }
+
+# if ($network) {
+#     my $cmd = "$ENV{OSCAR_HOME}/scripts/system-sanity.d/network-check.pl";
+#     my $net_config = system($cmd);
+#     if ($net_config != 0) {
+#         print "Configuration issues detected, configuring the network...\n"
+#     }
+# }
 
 exit 0;
 
@@ -194,6 +208,10 @@ sub help {
     print "\tfor a given Linux distribution.\n";
     print " --mirror-oscar-repo REPO_URL: Mirror a given online OSCAR\n";
     print "\trepository for a given Linux distribution.\n";
+#     print " --network.\n";
+    print "--bootstrap: Bootstrap OSCAR, i.e., install all the OSCAR\n";
+    print "\tprereqs, setup the database, and install and setup everything\n";
+    print "\tfor the creation of a OSCAR headnode.\n";
     print " --help: this help information.\n";
     print "\n";
     exit;
@@ -215,15 +233,15 @@ oscar-config is a command line tool for OSCAR configuration, from OSCAR
 bootstrapping to repository configuration. It also allow users to get 
 information about the current OSCAR configuration.
 
-=head2 Syntax
+=head1 SYNTAX
 
 setup_pxe [options]
 
-=head2 Options
+=head1 OPTIONS
 
 Recognized options include:
 
-=over 10
+=over 11
 
 =item --setup-distro <DISTRO_ID>
 
@@ -265,6 +283,11 @@ Mirror a given online repository for a given Linux distribution.
 
 Mirror a given online OSCAR repository for a given Linux distribution.
 
+=item --bootstrap
+
+Bootstrap OSCAR, i.e., install all the OSCAR prereqs, setup the database, and
+install and setup everything for the creation of a OSCAR headnode.
+
 =item --help
 
 This help information.
@@ -273,7 +296,7 @@ This help information.
 
 =head1 AUTHOR
 
-Geoffroy Vallee, valleegr@ornl.gov
+Geoffroy Vallee <valleegr@ornl.gov>
 
 =head1 SEE ALSO
 
