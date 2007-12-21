@@ -9,7 +9,22 @@ package OSCAR::ConfigManager;
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: Configurator 5017 2006-06-16 15:00:26Z valleegr $
+
+#
+# The file is the implementation of the ConfigManager class. This class allows
+# the creation of object that represents the content of the OSCAR configuration
+# file
+#
+
+#
+# TODO: the current implementation only grabs few information from the 
+# configuration file and therefore we do not have a generic API to access each
+# different values. That could be improved in order to avoid an uncontroled
+# growing the list of functions in the API.
+#
+
+#
+# $Id: ConfigManager 5017 2006-06-16 15:00:26Z valleegr $
 #
 
 use strict;
