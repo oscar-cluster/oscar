@@ -8,6 +8,7 @@ WriteMakefile(
 			'oscar-config' => '$(INST_MAN1DIR)/oscar-config.$(MAN1EXT)',
 			'install_prereq' => '$(INST_MAN1DIR)/install_prereq.$(MAN1EXT)',
 			'oscar_sanity_check' => '$(INST_MAN1DIR)/oscar_sanity_check.$(MAN1EXT)',
+			'opd2' => '$(INST_MAN1DIR)/opd2.$(MAN1EXT)',
 		},
 		'macro' => {
 			'MAN1EXT' => '1',

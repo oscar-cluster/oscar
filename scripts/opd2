@@ -278,7 +278,7 @@ sub help {
     print "OPTIONS can be:\n";
     print " --non-interactive : use OPD2 in non-interactive mode;\n";
     print "                     this option enables options --repo and\n";
-    print "                     --default-repos\n";
+    print "                     --default-repos.\n";
     print "                     In non-interactive mode, each command gives\n";
     print "                     the list of available OSCAR packages.\n";
     print " --repo URL        : repository which should be used for queries \n";
@@ -289,9 +289,80 @@ sub help {
     print "                     deactivates the --repo option.\n";
     print " --list-default-repos : gives the list of default OSCAR repos.\n";
     print " --list-repos      : gives the list of available repositories.\n";
-    print "                     This option deactivate other options.\n";
+    print "                     This option deactivates other options.\n";
     print "\n";
     exit;
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+opd2, a tool for OSCAR package management (OSCAR Package Downloader). It enables
+the management OSCAR packages via repositories when managing clusters.
+
+=head1 SYNOPSIS
+
+opd2 [--non-interactive] [--default-opkgs] [--list-default-repos] [--repo <URL>] 
+     [--list-repos] [--help]
+
+=head1 DESCRIPTION
+
+OPD2 (OSCAR Package Downloader 2) is a tool for the management of OSCAR 
+packages. Since OPD2 is designed to work with OPKGC (the OSCAR Package
+Downloader), OPD2 does not actually download packages; packages are managed
+via repositories (Yum or APT repositories).
+OPD2 can work in two different modes: (i) the interactive mode and (ii) the
+non-interactive mode. In non-interactive mode, users have to specify options 
+when using the command line. In interactive mode, OPD2 gives a prompt to the
+user how can then use ODP2 commands (for more information, type the help
+command).
+
+=head1 OPTIONS
+
+Supported options include:
+
+=over 6
+
+=item --non-interactive
+
+Use OPD2 in non-interactive mode this option enables options --repo and
+--default-repos. In non-interactive mode, each command gives the list of
+available OSCAR packages.
+
+=item --default-opkgs
+
+Gives the list of OPKGs available via the default OSCAR repositories. If this
+option deactivates the --repo option.
+
+=item --list-default-repos
+
+Gives the list of default OSCAR repos.
+
+=item --repo <URL>
+
+Repository which should be used for queries (multiple --repo options are 
+possible).
+
+=item --list-repos
+
+Gives the list of available repositories. This option deactivates other options.
+
+=item --help
+
+Some help information.
+
+=back
+
+=head1 AUTHOR
+
+Geoffroy Vallee, valleegr@ornl.gov
+Jeff Squyres
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
