@@ -5,7 +5,7 @@ package OSCAR::Bootstrap;
 #                    Oak Ridge National Laboratory
 #                    All rights reserved.
 #
-#   $Id: ImageMgt.pm 4833 2006-05-24 08:22:59Z bli $
+#   $Id: Bootstrap.pm 4833 2006-05-24 08:22:59Z bli $
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -75,6 +75,15 @@ sub oscar_bootstrap ($) {
     return 0;
 }
 
+################################################################################
+# Function that installs a given prereq (i.e., binary packages that compose a  #
+# prereq) in smart mode. For that we first check the status of the prereq and  #
+# if we need to do something, we install the prereq calling the install_prereq #
+# script.                                                                      #
+#                                                                              #
+# Input: prereq path (i.e., the path of the prereq configuration file.         #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
 sub install_prereq ($) {
     my $prereq_path = shift;
     my $cmd;
@@ -104,7 +113,17 @@ sub install_prereq ($) {
     return 0;
 }
 
-
+################################################################################
+# Function that installs a given prereq (i.e., binary packages that compose a  #
+# prereq) in dumb mode. For that we first check the status of the prereq and   #
+# if we need to do something, we install the prereq calling the install_prereq #
+# script.                                                                      #
+#                                                                              #
+# Input: prereq path (i.e., the path of the prereq configuration file.         #
+# Return: 0 if success, -1 else.                                               #
+#                                                                              #
+# TODO: some code duplication with the install_prereq function.                #
+################################################################################
 sub bootstrap_prereqs ($) {
     my $prereq_path = shift;
     my $cmd;
@@ -134,8 +153,19 @@ sub bootstrap_prereqs ($) {
     return 0;
 }
 
-
-# Code duplication with wizard_prep
+################################################################################
+# After the basic bootstrapping, we install everything needed for the OSCAR    #
+# headnode, typically initialize the database and install server side core     #
+# OSCAR packages.                                                              #
+#                                                                              #
+# Input: configurator, ConfigManager object that gives the values of the OSCAR #
+#                      configuration file.                                     #
+# Return: 0 if success, -1 else.                                               #
+#                                                                              #
+# TODO: Code duplication with wizard_prep. The code in wizard_prep should be   #
+#       removed when we will integrate this bootstrapping mechanism directly   #
+#       into the current OSCAR code.                                           #
+################################################################################
 sub init_server ($) {
     my $configurator = shift;
 
@@ -204,6 +234,19 @@ sub init_server ($) {
     return 0;
 }
 
+################################################################################
+# Stage 0 of the bootstrap: install AppConfig, needed for the parsing of the   #
+# OSCAR configuration file. Note that to install this prereq, we need to know  #
+# were are the prereqs, information included in the configuration file. In     #
+# other terms, we have there a chicken/egg issue. To address the issue, we     #
+# implement a simple parsing mechanism that is only looking for few variables  #
+# in the configuration file in order to be able to locate and install the      #
+# AppConfig prereq. Then we parse the configuration creating a ConfigManager   #
+# object.                                                                      #
+#                                                                              #
+# Input: None.                                                                 #
+# Return: a ConfigManager object if success, undef else.                       #
+################################################################################
 sub bootstrap_stage0 () {
     my $configfile_path;
 
@@ -253,6 +296,20 @@ sub bootstrap_stage0 () {
     return $oscar_configurator;
 }
 
+################################################################################
+# Stage 1 of the bootstrap: install everything we need to be able to install   #
+# binary packages "smartly". For that we install packman, yume and rapt (rapt  #
+# is installed only on Debian based systems). We also save of binary packages  #
+# installed on the system before the installation of OSCAR (except for         #
+# AppConfig); this is useful for developers to start over.                     #
+#                                                                              #
+# Input: configurator, a ConfigManager object representing the content of the  #
+#                      OSCAR configuration file.                               #
+# Return: 0 if success, -1 else.                                               #
+#                                                                              #
+# TODO: the list of pre-oscar binary packages is currently saved in            #
+# /etc/oscar, this is not the path were such a file was previously created.    #
+################################################################################
 sub bootstrap_stage1 ($) {
     my $configurator = shift;
     if (!defined $configurator) {
@@ -280,6 +337,7 @@ sub bootstrap_stage1 ($) {
     # TODO the location of the file we save is hardcoded, this is bad, We should
     # be able to specify that path via the OSCAR configuration file
     my $path = "/etc/oscar";
+    mkdir $path if (! -d $path);
     if (save_preoscar_binary_list ($os, $path)) {
         print "ERROR: Impossible to save the list of preoscar binary packages.\n";
         return -1;
@@ -304,6 +362,18 @@ sub bootstrap_stage1 ($) {
     return 0;
 }
 
+################################################################################
+# Stage 2 of the bootstrap: installs base prereqs and the prereqs based on the #
+# prereqs.order file, then install the OSCAR headnode (database initialization #
+# and so on).                                                                  #
+#                                                                              #
+# Input: configurator, a ConfigManager object which represents values of the   #
+#        OSCAR configuration file.                                             #
+# Return: o if success, -1 else.                                               #
+#                                                                              #
+# TODO: the prereqs.order isntalls also GUI related prereqs which are not used #
+# when using only the CLI. The GUI prereqs should be installed separately.     #
+################################################################################
 sub bootstrap_stage2 ($) {
     my $configurator = shift;
     if (!defined $configurator) {
@@ -358,6 +428,21 @@ sub bootstrap_stage2 ($) {
     }
 }
 
+################################################################################
+# Function that saves the list of currently installed binary packages. Works   #
+# for both RPM and Debian based systems. This is used to get the list of       #
+# pre-oscar binary packages, used to start over when doing OSCAR testing. If   #
+# the file already exists, we skip this phase.                                 #
+#                                                                              #
+# Input: os, an OS_Detect hash representing the current Linux distribution.    #
+#        tmpdir, the path where the file has to be created.                    #
+# Return: 0 if success, -1 else.                                               #
+#                                                                              #
+# TODO: we create two different files for RPM and Debian based systems. It     #
+# does make much sense. We should only create one with a generic name and      #
+# check the existence of this file at the very beginning of the function (if   #
+# the function exists, just exist).                                            #
+################################################################################
 sub save_preoscar_binary_list ($$) {
     my ($os, $tmpdir) = @_;
 
