@@ -34,3 +34,33 @@ create_database (\%options, \@error_strings);
 create_database_tables (\%options, \@error_strings);
 
 1;
+
+__END__
+
+=head1 NAME
+
+create_oscar_database, a command line tool that allows one to create the OSCAR
+database.
+
+=head1 SYNOPSIS
+
+create_oscar_database
+
+=head1 DESCRIPTION
+
+create_oscar_database is a command line tool that allows one to create the 
+OSCAR database.
+
+=head1 OPTIONS
+
+None.
+
+=head1 AUHTOR
+
+Geoffroy Vallee <valleegr@ornl.gov>
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
