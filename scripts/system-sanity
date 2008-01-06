@@ -8,7 +8,7 @@
 # Descr: "System Sanity", check various system related known issues
 #        that preceeds the OSCAR specific checks, i.e., must be root,
 #        must have SELinux disabled, etc.
-#                        
+#
 # Semantics: The tool reads a directory of check scripts, which either
 #            succeed, fail, or warn printing this status info and a 
 #            provided message.  (see also: OSCAR::SystemCheck for details),  
@@ -116,5 +116,43 @@ sub get_check_files
 	return(@files);
 }
 
-
 # vim:tabstop=4:shiftwidth=4:syntax=perl:textwidth=76
+
+__END__
+
+=head1 NAME
+
+system-sanity, a tool for OSCAR system sanity checking. It allows one to check
+if the system is correctly setup for OSCAR.
+
+=head1 SYNOPSIS
+
+system-sanity
+
+=head1 DESCRIPTION
+
+system-sanity is a tool for OSCAR system sanity checking. It allows one to check
+if the system is correctly setup for OSCAR. For instance it checks various
+system related known issues that preceeds the OSCAR specific checks, i.e., must
+be root, must have SELinux disabled, etc.
+The tool reads a directory of check scripts, which either succeed, fail, or warn
+printing this status info and a provided message.  (see also:
+OSCAR::SystemCheck for details), 
+In order to work as a standard UNIX tool, the return code from this
+tool is as follows: failures (1) / no failures (0)
+!system("./scripts/system-sanity") or die "Error: Failed sanity\n";
+
+=head1 OPTIONS
+
+None.
+
+=head1 AUTHOR
+
+Thomas Naughton, Oak Ridge National Laboratory
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
+
