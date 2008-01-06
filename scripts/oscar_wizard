@@ -833,3 +833,51 @@ sub ganglia {
       system("$browser $url > /dev/null 2>&1 &");
     }
 }
+
+__END__
+
+=head1 NAME
+
+oscar_wizard, a script which creates the main GUI for OSCAR.
+
+=head1 SYNOPSIS
+
+oscar_wizard [install|manage]
+
+=head1 DESCRIPTION
+
+oscar_wizard, a script which creates the main GUI for OSCAR. It must be
+executed as root.
+
+=head1 OPTIONS
+
+Supported options include:
+
+=over 2
+
+=item install 
+
+Brings up the wizard in installation mode.
+
+=item manage
+
+Brings up the wizard in management mode (default).
+
+=back
+
+=head1 AUTHORS
+
+=item The Board of Trustees of the University of Illinois.
+
+=item The Trustees of Indiana University.
+
+=item Bernard Li <bli@bcgsc.ca>
+
+=item Erich Focht <efocht@hpce.nec.com>
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
+
