@@ -6,6 +6,7 @@ WriteMakefile(
 		'MAN1PODS' => {
 			'create_oscar_database' => '$(INST_MAN1DIR)/create_oscar_database.$(MAN1EXT)',
 			'install_prereq' => '$(INST_MAN1DIR)/install_prereq.$(MAN1EXT)',
+			'install_server' => '$(INST_MAN1DIR)/install_server.$(MAN1EXT)',
 			'opd2' => '$(INST_MAN1DIR)/opd2.$(MAN1EXT)',
 			'oscar-config' => '$(INST_MAN1DIR)/oscar-config.$(MAN1EXT)',
 			'oscar_image_cleanup' => '$(INST_MAN1DIR)/oscar_image_cleanup.$(MAN1EXT)',

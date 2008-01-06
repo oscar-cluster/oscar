@@ -379,3 +379,34 @@ sub unmunge_pathenv
 }
 
 0;
+
+__END__
+
+=head1 NAME
+
+install_server, a script which does everything that needs to be done for the
+server to work for OSCAR.
+
+=head1 SYNOPSIS
+
+install_server
+
+=head1 DESCRIPTION
+
+install_server is a script which does everything that needs to be done for the
+server to work for OSCAR.
+
+=head1 OPTIONS
+
+None.
+
+=head1 AUTHOR
+
+Sean Dague, International Business Machines <japh@us.ibm.com>
+The Trustees of Indiana University
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
