@@ -39,11 +39,11 @@ GetOptions(
 my $ohome = $ENV{OSCAR_HOME};
 my @prereqs;
 for my $p (@ARGV) {
-    if (! -d "$ohome/$p" || ! -f "$ohome/$p/prereq.cfg") {
+    if (! -d "$p" || ! -f "$p/prereq.cfg") {
 	print "Error: $p is not a directory or doesn't contain a prereq.cfg file!\n";
 	usage(1);
     } else {
-	push @prereqs, "$ohome/$p";
+	push @prereqs, "$p";
     }
 }
 
