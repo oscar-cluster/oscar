@@ -54,11 +54,12 @@ use Carp;
 	     pkg_separator
 	     distro_detect_or_die
 	     list_distro_pools
-            mirror_repo
+            decompose_distro_id
             get_default_distro_repo
             get_default_oscar_repo
             get_repo_type
             get_list_setup_distros
+            mirror_repo
             use_distro_repo
             use_oscar_repo
             use_default_distro_repo
@@ -247,8 +248,12 @@ sub query_os {
 #
 # Return distro .url file path for selected image or distro
 #
-sub distro_urlfile {
+sub distro_urlfile (%) {
     my $os = &query_os(@_);
+    if (!defined($os) || ref($os) ne "HASH") {
+        print "ERROR: impossible to query the OS\n";
+        return undef;
+    }
     my $distro    = $os->{distro};
     my $distrover = $os->{distro_version};
     my $arch      = $os->{arch};
@@ -259,8 +264,12 @@ sub distro_urlfile {
 # Return OSCAR .url file path for selected image or distro
 # and packaging method.
 #
-sub oscar_urlfile {
+sub oscar_urlfile (%) {
     my $os = &query_os(@_);
+    if (!defined($os) || ref($os) ne "HASH") {
+        print "ERROR: impossible to query the OS\n";
+        return undef;
+    }
     my $cdistro   = $os->{compat_distro};
     my $cdistrover= $os->{compat_distrover};
     my $arch      = $os->{arch};
@@ -281,9 +290,13 @@ sub oscar_urlfile {
 # repository (yum or apt) into the file
 # /tftpboot/distro/$distro-$version-$arch.url
 #
-sub distro_repo_url {
+sub distro_repo_url (%) {
     my $url = &distro_urlfile(@_);
     my $os = &query_os(@_);
+    if (!defined ($url) || $url eq "") {
+        print "ERROR: impossible to get a URL from OSCAR repo config file\n";
+        return undef;
+    }
     my $path = dirname($url)."/".basename($url, ".url");
 
     if (!-f "$url") {
@@ -348,8 +361,12 @@ sub distro_repo_url {
 # Otherwise expect local repositories to exist in the standard place. If the
 # local repositories don't exist, create their directories.
 #
-sub oscar_repo_url {
+sub oscar_repo_url (%) {
     my ($url, $pkg) = &oscar_urlfile(@_);
+    if (!defined ($url) || $url eq "") {
+        print "ERROR: impossible to get a URL from OSCAR repo config file\n";
+        return undef;
+    }
     my $path = dirname($url)."/".basename($url, ".url");
     my $comm = "/tftpboot/oscar/common-" . $pkg . "s";
 
@@ -359,16 +376,16 @@ sub oscar_repo_url {
     &repos_add_urlfile("$url", "file:$path", "file:$comm");
 
     if (! -d $path && ! -l $path) {
-	print STDERR "Distro repository $path not found. ".
-	    "Creating empty directory.\n";
-	!system("mkdir -p $path") or
-	    croak "Could not create directory $path!";
+        print STDERR "Distro repository $path not found. ".
+            "Creating empty directory.\n";
+        !system("mkdir -p $path") or
+            croak "Could not create directory $path!";
     }
     if (! -d $comm && ! -l $comm) {
-	print STDERR "Commons repository $comm not found. ".
-	    "Creating empty directory.\n";
-	!system("mkdir -p $comm") or
-	    croak "Could not create directory $comm!";
+        print STDERR "Commons repository $comm not found. ".
+            "Creating empty directory.\n";
+        !system("mkdir -p $comm") or
+            croak "Could not create directory $comm!";
     }
     my @repos = &repos_list_urlfile("$url");
     return join(",", @repos);
@@ -378,7 +395,7 @@ sub oscar_repo_url {
 # Check if local repo directory is empty.
 # Returns 1 (true) if directory is empty, 0 else.
 #
-sub repo_empty {
+sub repo_empty ($) {
     my ($path) = (@_);
     my $entries = 0;
     local *DIR;
@@ -398,7 +415,7 @@ sub repo_empty {
 # populated. If the directory /tftpboot/oscar and is not completely populated, 
 # this function will create by defaults directories/files to have local 
 # repositories.
-sub list_distro_pools {
+sub list_distro_pools () {
     my $ddir = "/tftpboot/distro";
     # recognised architectures
     my $arches = "i386|x86_64|ia64|ppc64";
@@ -556,7 +573,54 @@ sub use_default_distro_repo ($) {
 sub use_default_oscar_repo ($) {
     my ($distro) = @_;
     my $oscar_repo_url = get_default_oscar_repo ($distro);
+    my $compat_distro = get_compat_distro ($distro);
     use_oscar_repo ($distro, $oscar_repo_url);
+}
+
+################################################################################
+# Decompose a distro ID (OS_Detect syntax) into distro, version, arch.         #
+#                                                                              #
+# Input: distro_id, the Linux distribution ID we want to deal with (OS_Detect  #
+#                   syntax, e.g., rhel-5-x86_64).                              #
+# Return: the distro id (e.g., rhel), the distro version, and the arch.        #
+################################################################################
+sub decompose_distro_id ($) {
+    my $distro_id= shift;
+    my $arches = "i386|x86_64|ia64|ppc64";
+    my ($distro,$version,$arch);
+    if ( ($distro_id =~ /(.*)\-(\d+)\-($arches)$/) ||
+        ($distro_id =~ /(.*)\-(\d+.\d+)\-($arches)$/) ) {
+        $distro = $1;
+        $version = $2;
+        $arch = $3;
+    }
+    return ($distro, $version, $arch);
+}
+
+################################################################################
+# Gives the compatible distro based on a distro ID (OS_Detect syntax).         #
+#                                                                              #
+# Input: the distro ID we need to analyze (e.g., centos-5-x86_64).             #
+# Return: the compat distro ID (e.g., rhel-5-x86_64).                          #
+################################################################################
+sub get_compat_distro ($) {
+    my $distro_id = shift;
+    my ($distro, $ver, $arch) = decompose_distro_id ($distro_id);
+    my $os = OSCAR::OCA::OS_Detect::open (fake=>{ distro=>$distro, distro_version=>$ver, arch=>$arch});
+    return (os_cdistro_string ($os));
+}
+
+################################################################################
+# Gives the compatible distro based on a distro ID (OS_Detect syntax).         #
+#                                                                              #
+# Input: the distro ID we need to analyze (e.g., centos-5-x86_64).             #
+# Return: the compat distro ID (e.g., rhel-5-x86_64).                          #
+################################################################################
+sub get_common_pool_id ($) {
+    my $distro_id = shift;
+    my ($distro, $ver, $arch) = decompose_distro_id ($distro_id);
+    my $os = OSCAR::OCA::OS_Detect::open (fake=>{ distro=>$distro, distro_version=>$ver, arch=>$arch});
+    return ("/tftpboot/oscar/common-$os->{pkg}s");
 }
 
 ################################################################################
@@ -594,11 +658,12 @@ sub use_oscar_repo ($$) {
         die "ERROR: the distro or the repo URL are invalid ($distro, $repo)\n";
     }
 
-    my $cmd = "mkdir -p " . $tftpdir . "oscar/";
-    die "ERROR: impossible to execute \"$cmd\"\n" if (system ($cmd));
-
-    my $file_path = $tftpdir . "oscar/" . $distro . ".url";
-    add_line_to_file_without_duplication ($repo, $file_path);
+    my @pools;
+    my $compat = get_compat_distro ($distro);
+    push (@pools, "/tftpboot/oscar/$compat");
+    push (@pools, get_common_pool_id ($distro));
+    OSCAR::PackagePath::repos_add_urlfile ("/tftpboot/oscar/".$compat.".url",
+                                           @pools);
 }
 
 ################################################################################

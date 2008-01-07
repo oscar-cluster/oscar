@@ -303,14 +303,8 @@ sub open_supported_distros_file {
                     || $distro_id eq ""
                     || $distro_repo eq ""
                     || $oscar_repo eq "");
-            my $arches = "i386|x86_64|ia64|ppc64";
-            my ($distro, $version, $arch);
-            if ( ($distro_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
-                ($distro_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
-                $distro = $1;
-                $version = $2;
-                $arch = $3;
-            }
+            my ($distro, $version, $arch)
+                = OSCAR::PackagePath::decompose_distro_id ($distro_id);
             next if (!defined $distro
                     || !defined $version
                     || !defined $arch);
