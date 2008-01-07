@@ -210,7 +210,7 @@ sub handle_dumb_rpms {
 		# remove all instances of package
 		$cmd = "rpm -ev --all --nodeps $pkgname";
 		vprint("Executing: $cmd\n");
-		!system($cmd) or print "Warning: removal failed: $!\n";
+		system($cmd) or print "Warning: removal failed: $!\n";
 	    } else {
 		vprint("Package $pkgname not installed.\n");
 	    }
@@ -224,7 +224,7 @@ sub handle_dumb_rpms {
 		if ($pkgpath) {
 		    $cmd = "rpm -Uhv $pkgpath";
 		    vprint("Executing: $cmd\n");
-		    !system($cmd) or croak "install failed: $!\n";
+		    croak "install failed: $!\n" if (system($cmd));
 		} else {
 		    print "WARNING: Could not locate package $pkg\n";
 		}

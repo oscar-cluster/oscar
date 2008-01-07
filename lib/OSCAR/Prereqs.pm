@@ -281,7 +281,7 @@ sub check_removed (@) {
 
 # Function to verify if a debian package is installed
 # @param: package name
-# @return: 0 if installed
+# @return: 1 if installed
 sub is_deb_pkg_installed ($) {
     my $pkg = shift;
     my $cmd = "dpkg-query -W -f='\${Status}\n' $pkg";
@@ -296,11 +296,15 @@ sub is_deb_pkg_installed ($) {
 
 # Function to verify if a RPM package is installed
 # @param: package name
-# @return: 0 if installed
+# @return: 1 if installed
 sub is_rpm_pkg_installed ($) {
     my $p = shift;
     my $cmd = "rpm -q $p >/dev/null 2>&1";
-    return (system($cmd));
+    if (!system($cmd)) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 sub show_prereqs_status {
