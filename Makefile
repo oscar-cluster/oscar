@@ -106,11 +106,11 @@ bootstrap-smart:
 	@echo "== bootstrapping smart installer =="
 	@export OSCAR_HOME=`pwd`; \
 	if [ "$(PKG)" = "rpm" ]; then \
-		SMARTINST=packages/yume; \
+		SMARTINST=${PWD}/packages/yume; \
 	elif [ "$(PKG)" = "deb" ]; then \
-		SMARTINST=packages/rapt; \
+		SMARTINST=${PWD}/packages/rapt; \
 	fi; \
-	scripts/install_prereq --dumb share/prereqs/packman $$SMARTINST
+	scripts/install_prereq --dumb ${PWD}/share/prereqs/packman $$SMARTINST
 
 install-perlQt:
 	@echo "== installing perl-Qt from share/prereqs =="
