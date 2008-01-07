@@ -640,8 +640,10 @@ sub use_distro_repo ($$) {
     my $cmd = "mkdir -p " . $tftpdir . "distro/";
     die "ERROR: impossible to execute \"$cmd\"\n" if (system ($cmd));
 
-    my $file_path = $tftpdir . "distro/" . $distro . ".url";
-    add_line_to_file_without_duplication ($repo, $file_path);
+    OSCAR::PackagePath::repos_add_urlfile ("/tftpboot/distro/".$distro.".url",
+                                           $repo);
+#     my $file_path = $tftpdir . "distro/" . $distro . ".url";
+#     add_line_to_file_without_duplication ($repo, $file_path);
 }
 
 ################################################################################
