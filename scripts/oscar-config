@@ -26,10 +26,11 @@ my ($distro_to_setup,
     $oscar_repo_to_use,
     $distro_repo_to_mirror,
     $oscar_repo_to_mirror,
-    $network
+    $network,
     $bootstrap);
 
 GetOptions(
+        "generate-config-file"          => \&generate_config_file,
         "list-setup-distros"            => \&display_list_setup_distros,
         "supported-distros"             => \&display_list_supported_distros,
         "setup-distro=s"                => \$distro_to_setup,
@@ -182,11 +183,32 @@ sub display_list_setup_distros {
     }
 }
 
+sub generate_config_file {
+    if (! -d "/etc/oscar/") {
+        mkdir "/etc/oscar";
+    }
+    if (! -f "/etc/oscar/oscar.conf" && $ENV{OSCAR_HOME}) {
+        my $cmd1 = "echo $ENV{OSCAR_HOME} | sed 's/\\//\\\\\\\//g'";
+        my $pwd = `$cmd1`;
+        chomp($pwd);
+        my $cmd = "sed 's/PATH = /PATH = $pwd\\//g' ./share/oscar.conf > /etc/oscar/oscar.conf";
+        `$cmd`;
+    } else {
+        print "Not yet implemented\n";
+        exit 1;
+    }
+    exit 0;
+}
+
 sub help {
     print "Usage: $0 OPTION\n";
     print "\n";
     print "Setup OSCAR for Cluster management.\n";
     print "OPTION can be:\n";
+    print " --generate-config-file: generate the appropriate configuration\n";
+    print "\tfile based on the OSCAR_HOME environment variable. The\n";
+    print "\tconfiguration file is /etc/oscar/oscar.conf, the file is\n";
+    print "\tgenerated only if it does not already exist.\n";
     print " --setup-distro DISTRO_ID: Setup the Linux distribution DISTRO_ID\n"; 
     print "\t(which is one the distribution ids displayed by the\n";
     print "\t--supported-distros option). The repositories used are those\n"; 
@@ -235,13 +257,20 @@ information about the current OSCAR configuration.
 
 =head1 SYNTAX
 
-setup_pxe [options]
+oscar-config [options]
 
 =head1 OPTIONS
 
 Recognized options include:
 
-=over 11
+=over 12
+
+=item --generate-config-file
+
+Generate the appropriate configuration file based on the OSCAR_HOME environment
+variable. The configuration file is /etc/oscar/oscar.conf, the file is generated
+only if it does not already exist.
+
 
 =item --setup-distro <DISTRO_ID>
 

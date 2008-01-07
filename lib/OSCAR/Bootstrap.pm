@@ -21,6 +21,8 @@ package OSCAR::Bootstrap;
 #
 # This package provides a set of functions for the OSCAR bootstrap.
 #
+
+#
 # $Id: Bootstrap.pm 6694 2007-12-10 20:43:40Z valleegr $
 #
 
@@ -248,19 +250,14 @@ sub init_server ($) {
 # Return: a ConfigManager object if success, undef else.                       #
 ################################################################################
 sub bootstrap_stage0 () {
-    my $configfile_path;
+    my $configfile_path = "/etc/oscar/oscar.conf";
 
     # Tricky situation: the software to parse the configuration file may not be
     # installed and the location of the information to install it is in the 
-    # config file. We try to guess where is the config file (not that difficult)
-    # and then we try to get the info we need
-    if (defined($ENV{OSCAR_HOME}) 
-        && $ENV{OSCAR_HOME} ne "" 
-        && -f "$ENV{OSCAR_HOME}/share/oscar.conf") {
-        $configfile_path = "$ENV{OSCAR_HOME}/share/oscar.conf";
-    } elsif ( -f "/etc/oscar/oscar.conf") {
-        $configfile_path = "$ENV{OSCAR_HOME}/share/oscar.conf";
-    } else {
+    # config file. Hopefully we know that the configuration file is 
+    # /etc/oscar/oscar.conf (it can be generated setting OSCAR_HOME and then
+    # executing $OSCAR_HOME/scripts/oscar-config --generate-config-file.
+    if ( ! -f "$configfile_path") {
         print "ERROR: impossible to find the oscar configuration file";
         return undef;
     }
