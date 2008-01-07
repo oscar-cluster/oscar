@@ -61,7 +61,7 @@ sub oscar_bootstrap ($) {
     my $configurator = shift;
 
     if (!defined ($configurator)) {
-        print "ERROR: invalid cofnigurator object\n";
+        print "ERROR: invalid configurator object\n";
         return -1;
     }
 
@@ -328,6 +328,11 @@ sub bootstrap_stage1 ($) {
         print "ERROR: Impossible to detect the local Linux distribution\n";
         return -1;
     }
+    # hack...
+    # EF: will move to install_prereqs [shell]
+    if ($os->{pkg} eq "rpm") {
+        system("yum clean all");
+    }
 
     # We save the list of binary packages before to really install stuff
     # This is useful for developers when they want to start over
@@ -354,6 +359,15 @@ sub bootstrap_stage1 ($) {
             print "ERROR: Impossible to install RAPT\n";
             return -1;
         }
+    }
+
+    # Finally, since everything is installed to manage packages in the "smart
+    # mode", we prepare all the pools for the local distro.
+    require OSCAR::PackageSmart;
+    my $pm = OSCAR::PackageSmart::prepare_distro_pools($os);
+    if (!defined ($pm)) {
+        print "ERROR: Impossible to prepare pools for the local distro\n";
+        return -1;
     }
 
     return 0;
