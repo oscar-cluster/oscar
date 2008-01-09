@@ -72,15 +72,8 @@ sub detect_oscar_pool_format ($) {
     } else {
         # Other pools are more difficult to deal with, OS_Detect cannot be 
         # with compat query for specific distros
-        # TODO: we should have a unique function that allows us to validate
-        # a distro ID.
-        my $arches = "i386|x86_64|ia64|ppc64";
-        if ( ($pool_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
-            ($pool_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
-            $compat_distro = $1;
-            $version = $2;
-            $arch = $3;
-        }
+        ($compat_distro, $version, $arch) =
+            OSCAR::PackagePath::decompose_distro_id($pool_id);
         print "Distro id (OS_Detect syntax distro-version-arch: ".
                 "$compat_distro-$version-$arch)\n" if $verbose;
         my $os = OSCAR::OCA::OS_Detect::open(oscar_pool=>"$compat_distro-$version-$arch");
@@ -183,6 +176,7 @@ sub detect_pool_format ($) {
         print "ERROR: Impossible to recognize pool $pool\n";
         return undef;
     }
+    print "Detected format for pool $pool: $format\n";
     return $format;
 }
 

@@ -588,12 +588,13 @@ sub decompose_distro_id ($) {
     my $distro_id= shift;
     my $arches = "i386|x86_64|ia64|ppc64";
     my ($distro,$version,$arch);
-    if ( ($distro_id =~ /(.*)\-(\d+)\-($arches)$/) ||
-        ($distro_id =~ /(.*)\-(\d+.\d+)\-($arches)$/) ) {
+    if ( ($distro_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
+        ($distro_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
         $distro = $1;
         $version = $2;
         $arch = $3;
-    }
+    } 
+
     return ($distro, $version, $arch);
 }
 
