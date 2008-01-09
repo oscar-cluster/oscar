@@ -7,6 +7,7 @@
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackageSmart;
+use OSCAR::PackagePath;
 
 print "Test the detection of repositories formats. This detection is " .
       "based on the repository URL. We submit few cases and check the result\n";
@@ -14,91 +15,107 @@ print "Test the detection of repositories formats. This detection is " .
 my $pool;
 
 $pool = "/tftpboot/distro/debian-4-x86_64";
-print "Testing $pool\n";
+print "\nTesting $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "deb");
 
 $pool = "/tftpboot/oscar/debian-4-x86_64";
-print "Testing $pool\n";
+print "\nTesting $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "deb");
 
 $pool = "/tftpboot/oscar/common-rpms";
-print "Testing $pool\n";
+print "\nTesting $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "rpm");
 
 $pool = "file:/tftpboot/oscar/common-debs";
-print "Testing $pool\n";
+print "\nTesting $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "deb");
 
 $pool = "/tftpboot/oscar/common-debs";
-print "Testing $pool\n";
+print "\nTesting $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "deb");
 
 $pool = "/tftpboot/distro/redhat-el-ws-4-i386";
-print "Testing $pool\n";
+print "\nTesting $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "rpm");
 
 $pool = "/tftpboot/distro/redhat-el-ws-4-i386.url";
-print "Testing $pool\n";
+print "\nTesting $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "rpm");
 
 $pool = "/tftpboot/oscar/rhel-4-i386";
-print "Testing $pool\n";
+print "\nTesting $pool\n";
 my $format =
     OSCAR::PackageSmart::detect_pool_format ($pool);
     print "Format: $format\n";
     goto ERROR_EXIT if ($format ne "rpm");
 
 $pool = "/tftpboot/oscar/debian-4-i386";
-print "Testing $pool\n";
+print "\nTesting $pool\n";
 my $format =
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "deb");
 
-print "The following test should generate an error...\n";
-
+print "\nThe following test should generate an error...\n";
+print "Testing $pool\n";
 $pool = "/tftpboot/oscar/toutou-5-x86_64";
 print "Testing $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if (defined ($format));
 
-print "The following test should generate an error...\n";
+print "\nThe following test should generate an error...\n";
 print "Testing $pool\n";
 $pool = "/tftpboot/oscar/centos-x86_64";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if (defined ($format));
 
-print "The following test should generate an error...\n";
+print "\nThe following test should generate an error...\n";
 print "Testing $pool\n";
 $pool = "/tftpboot/oscar/toutou-5-titi";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if (defined ($format));
 
-print "The following test should generate an error...\n";
+print "\nThe following test should generate an error...\n";
 $pool = "/tftpboot/oscar/centos-5-x86_64.url";
 print "Testing $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if (defined ($format));
 
+print "TESTING DISTRO ID DECOMPOSITION\n";
+my ($distro, $ver, $arch);
 
+my $distroid;
+$distroid = "centos-5-x86_64";
+print "\nDecomposing: $distroid\n";
+($distro, $ver, $arch) = OSCAR::PackagePath::decompose_distro_id($distroid);
+print "Result: $distro, $ver, $arch\n";
+goto ERROR_EXIT if ($distro ne "centos" || $ver ne "5" || $arch ne "x86_64");
 print "\n\nSUCCESS: the test of repository pool format detection succeed\n";
+
+print "TESTING DISTRO COMPAT DETERMINATIOn\n";
+
+$distroid = "centos-5-x86_64";
+print "\nGetting the compat distro of $distroid\n";
+my $compat = OSCAR::PackagePath::get_compat_distro ($distroid);
+print "Result: $compat\n";
+goto ERROR_EXIT if ($compat ne "rhel-5-x86_64");
 
 exit 0;
 
