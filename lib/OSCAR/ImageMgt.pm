@@ -95,19 +95,23 @@ sub do_setimage {
 # script.                                                                      #
 # Input: img, image name.                                                      #
 #        interface, network interface id used by OSCAR.                        #
-# Return: none.                                                                #
+# Return: 1 if success, 0 else.                                                #
 ################################################################################
-sub do_post_binary_package_install{
+sub do_post_binary_package_install ($$) {
     my $img = shift;
     my $interface = shift;
     my $cwd = `pwd`;
     chdir "$ENV{OSCAR_HOME}/scripts/";
     my $cmd = "$ENV{OSCAR_HOME}/scripts/post_rpm_install $img $interface";
 
-    !system($cmd) or (carp($!), return undef);
+    if (system($cmd)) {
+        delete_image($img);
+        return 0;
+    }
     oscar_log_subsection("Successfully ran: $cmd");
 
     chdir "$cwd";
+    return 1;
 }
 
 ################################################################################
@@ -211,7 +215,7 @@ sub get_image_default_settings {
     my $extraflags = "--filename=$outfile";
     # WARNING!! We deactivate the OPKG management via SystemInstaller
     $extraflags = "";
-    if (exists $ENV{OSCAR_VERBOSE}) {$extraflags .= " --verbose";}
+    if (exists $ENV{OSCAR_VERBOSE}) {$extraflags .= " --verbose ";}
 
     my $diskfile = get_disk_file($arch, $disk_type);
 
@@ -240,7 +244,7 @@ sub get_image_default_settings {
 # Output: none.                                                                #
 # TODO: We need to update the OSCAR database when deleting an image.           #
 ################################################################################
-sub delete_image {
+sub delete_image ($) {
     my $imgname = shift;
 
     my $config = init_si_config();

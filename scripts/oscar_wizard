@@ -520,7 +520,10 @@ sub postimagebuild {
     my $step_string = "";
     $step_string ="Step $step_number: " if $mode eq "install";
     oscar_log_subsection("$step_string"."Running: $cmd");
-    do_post_binary_package_install ($img, $interface);
+    if (!do_post_binary_package_install ($img, $interface)) {
+        print ("ERROR: Impossible to run post_binary_package_install ($img)\n");
+        return 0;
+    }
 
     do_oda_post_install (%$vars, \%options);
 
@@ -539,7 +542,7 @@ sub postimagebuild {
 
     oscar_log_subsection("$step_string"."Completed successfully");
 
-    1;
+    return 1;
 }
 
 ###########################################################################
