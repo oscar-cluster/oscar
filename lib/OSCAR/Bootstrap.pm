@@ -217,6 +217,10 @@ sub init_server ($) {
         return -1;
     }
     my @packages = map { $_->{package} } @results;
+    if (scalar(@packages) == 0) {
+        print "ERROR: The list of core packages is empty\n";
+        return -1;
+    }
 
     OSCAR::Logger::oscar_log_subsection("Identified core packages: " . 
         join(' ', @packages));
