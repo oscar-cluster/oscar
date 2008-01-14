@@ -339,7 +339,6 @@ sub prepare_distro_pools ($) {
     #
     my $oscar_pkg_pool = OSCAR::PackagePath::oscar_repo_url(os=>$os);
     my $distro_id = "$os->{distro}-$os->{distro_version}-$os->{arch}";
-    my $common_pkg_pool = OSCAR::PackagePath::get_common_pool_id($distro_id);
     my $distro_pkg_pool = OSCAR::PackagePath::distro_repo_url(os=>$os);
     # OSCAR pools may be composed of two different parts: common binary package
     # and binary package specific to the distro
@@ -349,7 +348,7 @@ sub prepare_distro_pools ($) {
         next if $repo eq "";
         push (@pools, $repo);
     }
-    print "Pools to prepare:";
+    print "Pools to prepare for distro $distro_id:\n";
     OSCAR::Utils::print_array (@pools);
 
     my $pm = OSCAR::PackageSmart::prepare_pools ($verbose, @pools);

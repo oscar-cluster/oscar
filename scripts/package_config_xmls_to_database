@@ -530,7 +530,7 @@ foreach my $directory ( @directories ) {
             if (!insert_packages($xml_ref, "Packages", $package, $directory,
                                  \%table_fields_hash, \%options,
                                  \@error_strings)) {
-                print "ERROR: Impossible to insert package $packages\n";
+                print "ERROR: Impossible to insert package $package\n";
                 exit -1;
             }
         }

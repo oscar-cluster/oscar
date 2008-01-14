@@ -97,7 +97,7 @@ sub install_prereq ($) {
     if (system ($cmd)) {
         print "$prereq_name is not installed.\n";
 
-        # We try to install Packman
+        # We try to install the prereq
         $cmd = $ipcmd . " --smart " . $prereq_path;
         if (system ($cmd)) {
             print "ERROR: impossible to install $prereq_name ($cmd).\n";
@@ -105,7 +105,7 @@ sub install_prereq ($) {
         }
 
         # Packman should be installed now
-        $cmd = $ipcmd . " --smart " . $prereq_path;
+        $cmd = $ipcmd . " --status " . $prereq_path;
         if (system ($cmd)) {
             print "ERROR: $prereq_name is still not installed\n";
             return -1;
@@ -175,19 +175,26 @@ sub init_server ($) {
     require OSCAR::oda; # WARNING: it seems this is working only w/ 
                                # mysql.
                                # TODO: do something more generic.
+    print "Database Initialization\n";
     my (%options, %errors);
     my $database_status = oda::check_oscar_database(
         \%options,
         \%errors);
+    print "Database_status: $database_status\n";
     if (!$database_status) {
-        print "We need to initialize the database\n";
+        print "\tWe need to initialize the database\n";
         my $scripts_path = $configurator->get_scripts_path();
-        my $cmd =  "$scripts_path/create_oscar_database";
+	my $cmd = "$scripts_path/make_database_password";
+	if (system ($cmd)) {
+            print "ERROR: Impossible to set database password ($cmd)\n";
+            return -1;
+	}
+        $cmd =  "$scripts_path/create_oscar_database";
         if (system ($cmd)) {
             print "ERROR: Impossible to create the database ($cmd)\n";
             return -1;
         }
-        print "Database created, now populating the database\n";
+        print "\tDatabase created, now populating the database\n";
         $cmd = "$scripts_path/package_config_xmls_to_database";
         if (system ($cmd)) {
             print "ERROR: Impossible to populate the database ($cmd)\n";
@@ -399,7 +406,7 @@ sub bootstrap_stage2 ($) {
     # First we install the basic prereqs
     my $baseprereqs_path = $configurator->get_prereqs_path() . "/base";
     if (install_prereq ($baseprereqs_path)) {
-        print "ERROR: impossible to install base prereqs\n";
+        print "ERROR: impossible to install base prereqs ($baseprereqs_path)\n";
         return -1;
     }
 
