@@ -55,6 +55,7 @@ use Carp;
 	     distro_detect_or_die
 	     list_distro_pools
             decompose_distro_id
+            get_common_pool_id
             get_default_distro_repo
             get_default_oscar_repo
             get_repo_type

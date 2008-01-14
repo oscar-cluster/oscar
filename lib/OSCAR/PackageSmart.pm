@@ -330,9 +330,17 @@ sub prepare_distro_pools ($) {
 
     #
     # Locate package pools and create the directories if they don't exist, yet.
+    # The pools are:
+    #   - the pool related to the distro (e.g., /tftpboot/distro/centos-5-x86_64
+    #   - the pool for common OSCAR binary packages (e.g., 
+    #     /tftpboot/oscar/common-rpms)
+    #   - the poo; for arch-dependent OSCAR binary packages (e.g., 
+    #     /tftpboot/oscar/rhel-5-x86_64)
     #
-    my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
-    my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
+    my $oscar_pkg_pool = OSCAR::PackagePath::oscar_repo_url(os=>$os);
+    my $distro_id = "$os->{distro}-$os->{distro_version}-$os->{arch}";
+    my $common_pkg_pool = OSCAR::PackagePath::get_common_pool_id($distro_id);
+    my $distro_pkg_pool = OSCAR::PackagePath::distro_repo_url(os=>$os);
     # OSCAR pools may be composed of two different parts: common binary package
     # and binary package specific to the distro
     my @pools = split(",", $oscar_pkg_pool);
