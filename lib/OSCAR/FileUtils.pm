@@ -25,6 +25,7 @@ use Carp;
 
 @EXPORT = qw(
             add_line_to_file_without_duplication
+            get_check_content
             );
 
 ################################################################################
@@ -71,3 +72,28 @@ sub find_line_in_file ($$) {
     return -1;
 }
 
+################################################################################
+# Descr: Read the content of a given directory.                                #
+#                                                                              #
+# Input: Path of the directory he need to scan.                                #
+# Return: list of files and directories, ignoring those starting with a dot.   #
+#                                                                              #
+# NOTE: Not fully qualify path in returned file list so caller can             #
+#       easily get at filenames and directory names.                           #
+#                                                                              #
+# TODO: code duplication with functions in FileUtils                           #
+################################################################################
+sub get_directory_content ($)
+{
+    my $dir = shift;
+
+    opendir(DIR, "$dir") or return undef;
+
+    # RegEx: ignore all files starting with a dot, 
+    #        e.g., ".", "..", ".foobar"
+    my @files = grep { !/^\./ } readdir(DIR);
+
+    closedir(DIR);
+
+    return(@files);
+}
