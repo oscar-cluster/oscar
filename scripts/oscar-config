@@ -183,17 +183,39 @@ sub display_list_setup_distros {
     }
 }
 
+################################################################################
+# Generate a default configuration file based on OSCAR_HOME, This allows one   #
+# to create a configuration for a SVN check-out. In other terms, this is way   #
+# to support easily both the usage of OSCAR_HOME and a direct installation of  #
+# OSCAR into the system.                                                       #
+#                                                                              #
+# Input: None.                                                                 #
+# Return: exit 0 if success, exit 1 else.                                      #
+################################################################################
 sub generate_config_file {
+    if (! $ENV{OSCAR_HOME}) {
+        print "ERROR: OSCAR_HOME is not set, this is needed to generate a ".
+              "default configuration file\n";
+        exit 1;
+    }
+
     if (! -d "/etc/oscar/") {
         mkdir "/etc/oscar";
     }
     if (! -f "/etc/oscar/oscar.conf" && $ENV{OSCAR_HOME}) {
+        require File::Copy;
+        File::Copy::copy ("$ENV{OSCAR_HOME}/share/oscar.conf",
+                          "/etc/oscar/oscar.conf");
         my $cmd1 = "echo $ENV{OSCAR_HOME} | sed 's/\\//\\\\\\\//g'";
         my $pwd = `$cmd1`;
         chomp($pwd);
         my $cmd = "sed 's/PATH = /PATH = $pwd\\//g' ./share/oscar.conf > /etc/oscar/oscar.conf";
         `$cmd`;
     } else {
+        if ( -f "/etc/oscar/oscar.conf") {
+            print "ERROR: configuration file already exist\n";
+            exit 1;
+        }
         print "Not yet implemented\n";
         exit 1;
     }
