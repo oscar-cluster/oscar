@@ -6,7 +6,7 @@ package OSCAR::PackageSmart;
 #                    Oak Ridge National Laboratory
 #                    All rights reserved.
 # 
-#   $Id: PackagePath.pm 4178 2006-01-26 11:07:13Z efocht $
+#   $Id$
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
