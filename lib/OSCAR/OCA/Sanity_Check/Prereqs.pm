@@ -8,7 +8,7 @@
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
 #
-# $Id: OPKG.pm 5913 2007-06-15 02:45:52Z valleegr $
+# $Id$
 #
 # This file check the status of prereqs (installed or not).
 
