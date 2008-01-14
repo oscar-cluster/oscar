@@ -23,7 +23,7 @@ package OSCAR::Bootstrap;
 #
 
 #
-# $Id: Bootstrap.pm 6694 2007-12-10 20:43:40Z valleegr $
+# $Id$
 #
 
 use strict;
