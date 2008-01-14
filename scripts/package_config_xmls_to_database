@@ -158,10 +158,11 @@ sub get_xml_ref{
         my $xs = new XML::Simple();
         $xml_ref = eval { $xs->XMLin( $config_file ); };
         if ($@) {
-        print "ERROR, $config_file is invalid, supplying one for package $package_name\n";
+            print "ERROR, $config_file is invalid, supplying one for package".
+                  " $package_name\n";
             $xml_ref = undef;
-        print "Trying to xmllint the $config_file to show problems:\n";
-        system "xmllint $config_file";
+            print "Trying to xmllint the $config_file to show problems:\n";
+            system "xmllint $config_file";
         }
     }
     if ( ! defined $xml_ref ) {
@@ -526,8 +527,12 @@ foreach my $directory ( @directories ) {
                 if $oda_options{debug};
 
             # Insert into "Packages" table
-            insert_packages($xml_ref, "Packages", $package, $directory,
-                            \%table_fields_hash, \%options, \@error_strings);
+            if (!insert_packages($xml_ref, "Packages", $package, $directory,
+                                 \%table_fields_hash, \%options,
+                                 \@error_strings) {
+                print "ERROR: Impossible to insert package $packages\n";
+                exit -1;
+            }
         }
     }
 }
