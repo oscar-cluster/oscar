@@ -48,6 +48,8 @@ our $nioscar;
 our $oscarbinaries_path;
 # Specify the db type (flat files or real db)
 our $db_type;
+# Specify the prereq management mode.
+our $prereq_mode;
 
 sub new {
     my $invocant = shift;
@@ -80,6 +82,7 @@ sub load_oscar_config ($) {
         'RAPT_PATH'                 => { ARGCOUNT => 1 },
         'YUME_PATH'                 => { ARGCOUNT => 1 },
         'ODA_TYPE'                  => { ARGCOUNT => 1 },
+        'PREREQ_MODE'               => { ARGCOUNT => 1 },
         );
     $config->file ($config_file);
 
@@ -91,6 +94,7 @@ sub load_oscar_config ($) {
     $nioscar            = $config->get('OSCAR_NETWORK_INTERFACE');
     $oscarbinaries_path = $config->get('OSCAR_SCRIPTS_PATH');
     $db_type            = $config->get('ODA_TYPE');
+    $prereq_mode        = $config->get('PREREQ_MODE');
 }
 
 sub get_config () {
@@ -102,7 +106,8 @@ sub get_config () {
                 'packman_path'      => $packman_path,
                 'nioscar'           => $nioscar,
                 'binaries_path'     => $oscarbinaries_path,
-                'db_type'           => $db_type
+                'db_type'           => $db_type,
+                'prereq_mode'       => $prereq_mode,
               );
     return \%cfg;
 }

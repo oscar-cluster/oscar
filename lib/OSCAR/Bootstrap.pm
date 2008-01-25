@@ -86,8 +86,8 @@ sub oscar_bootstrap ($) {
 # Input: prereq path (i.e., the path of the prereq configuration file.         #
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
-sub install_prereq ($) {
-    my $prereq_path = shift;
+sub install_prereq ($$) {
+    my ($prereq_path, $prereq_mode) = @_;
     my $cmd;
 
     # We get the current status of the prereq first
@@ -126,8 +126,8 @@ sub install_prereq ($) {
 #                                                                              #
 # TODO: some code duplication with the install_prereq function.                #
 ################################################################################
-sub bootstrap_prereqs ($) {
-    my $prereq_path = shift;
+sub bootstrap_prereqs ($$) {
+    my ($prereq_path, $prereq_mode) = @_;
     my $cmd;
 
     # We get the current status of the prereq first
@@ -137,17 +137,22 @@ sub bootstrap_prereqs ($) {
     if (system ($cmd)) {
         print "$prereq_name is not installed.\n";
 
-        # We try to install Packman
-        $cmd = $ipcmd . " --dumb " . $prereq_path;
-        if (system ($cmd)) {
-            print "ERROR: impossible to install $prereq_name ($cmd).\n";
-            return -1;
-        }
+        if ($prereq_mode eq "check_and_fix") {
+            # We try to install Packman
+            $cmd = $ipcmd . " --dumb " . $prereq_path;
+            if (system ($cmd)) {
+                print "ERROR: impossible to install $prereq_name ($cmd).\n";
+                return -1;
+            }
 
-        # Packman should be installed now
-        $cmd = $ipcmd . " --status " . $prereq_path;
-        if (system ($cmd)) {
-            print "ERROR: $prereq_name is still not installed\n";
+            # Packman should be installed now
+            $cmd = $ipcmd . " --status " . $prereq_path;
+            if (system ($cmd)) {
+                print "ERROR: $prereq_name is still not installed\n";
+                return -1;
+            }
+        } elsif ($prereq_mode eq "check_only") {
+            print "$prereq_name needs to be installed.\n";
             return -1;
         }
     }
@@ -338,7 +343,7 @@ sub bootstrap_stage0 () {
     # We quickly parse the file to get the lines we are looking for
     open(MYFILE, $configfile_path);
     my $line;
-    my ($var, $path, $ippath);
+    my ($var, $path, $ippath, $prereq_mode);
     while ($line = <MYFILE>) {
         chomp ($line);
         # delete BOTH leading and trailing whitespace from each line
@@ -348,13 +353,16 @@ sub bootstrap_stage0 () {
         if ($line =~ /^([ \t]*)OSCAR_SCRIPTS_PATH/) {
             ($var, $ippath) = split ("=", $line);
         }
+        if ($line =~ /^([ \t]*)PREREQ_MODE/) {
+            ($var, $prereq_mode) = split ("=", $line);
+        }
     }
     close (MYFILE);
 
     # Now that we know where the prereqs are, we try to install AppConfig
     $ipcmd = $ippath . "/install_prereq ";
     my $appconfig_path = $path . "/AppConfig";
-    if (bootstrap_prereqs ($appconfig_path)) {
+    if (bootstrap_prereqs ($appconfig_path, $prereq_mode)) {
         print "ERROR: impossible to install appconfig\n";
         return undef;
     }
@@ -390,11 +398,13 @@ sub bootstrap_stage1 ($) {
 
     # First we install Packman
     my $packman_path = $config->{'packman_path'};
-    if (! defined ($packman_path) || $packman_path eq "") {
+    if (! defined ($packman_path) || ($packman_path eq "")) {
         print "ERROR: Impossible to get the Packman path\n";
         return -1;
     }
-    if (bootstrap_prereqs ($packman_path)) {
+
+    my $prereq_mode = $config->{'prereq_mode'};
+    if (bootstrap_prereqs ($packman_path, $prereq_mode)) {
         print "ERROR: Impossible to install Packman\n";
         return -1;
     }
@@ -425,7 +435,7 @@ sub bootstrap_stage1 ($) {
 
     # Then we install YUME (supported on both rpm and deb systems).
     my $yume_path = $config->{'yume_path'};
-    if (bootstrap_prereqs ($yume_path)) {
+    if (bootstrap_prereqs ($yume_path, $prereq_mode)) {
         print "ERROR: Impossible to install Yume\n";
         return -1;
     }
@@ -433,7 +443,7 @@ sub bootstrap_stage1 ($) {
     # Then if the system is a Debian based system, we try to install RAPT
     if ($os->{pkg} eq "deb") {
         my $rapt_path = $config->{'rapt_path'};
-        if (bootstrap_prereqs ($rapt_path)) {
+        if (bootstrap_prereqs ($rapt_path, $prereq_mode)) {
             print "ERROR: Impossible to install RAPT\n";
             return -1;
         }
@@ -473,7 +483,8 @@ sub bootstrap_stage2 ($) {
 
     # First we install the basic prereqs
     my $baseprereqs_path = $config->{'prereqs_path'} . "/base";
-    if (install_prereq ($baseprereqs_path)) {
+    my $prereq_mode = $config->{'prereq_mode'};
+    if (install_prereq ($baseprereqs_path, $prereq_mode)) {
         print "ERROR: impossible to install base prereqs ($baseprereqs_path)\n";
         return -1;
     }
@@ -483,6 +494,7 @@ sub bootstrap_stage2 ($) {
     # It should contain prerequisite paths relative to $OSCAR_HOME, one per 
     # line.
     my $prereqs_path = $config->{'prereqs_path'};
+    my $prereq_mode = $config->{'prereq_mode'};
     my $orderfile = "$prereqs_path/prereqs.order";
     my @ordered_prereqs;
     if (! -f "$orderfile") {
@@ -501,7 +513,7 @@ sub bootstrap_stage2 ($) {
     }
     close (MYFILE);
     foreach my $prereq (@ordered_prereqs) {
-        if (install_prereq ($prereq)) {
+        if (install_prereq ($prereq, $prereq_mode)) {
             print "ERROR: Impossible to install a prereq ($prereq).\n";
             return -1;
         }
