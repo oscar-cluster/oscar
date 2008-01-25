@@ -25,7 +25,7 @@ use Carp;
 
 @EXPORT = qw(
             add_line_to_file_without_duplication
-            get_check_content
+            get_directory_content
             );
 
 ################################################################################
