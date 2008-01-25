@@ -126,6 +126,13 @@ if ($distro_to_setup) {
 
 exit 0;
 
+################################################################################
+# Boostrap OSCAR (install prereqs, setup the system, install core packages on  #
+# the server side.                                                             #
+#                                                                              #
+# Input: None.                                                                 #
+# Return: None.                                                                #
+################################################################################
 sub bootstrap () {
     print "OSCAR bootstrap\n";
     # First of all we check if the OSCAR_HOME environment variable is set or not
@@ -153,7 +160,13 @@ sub bootstrap () {
     OSCAR::Bootstrap::oscar_bootstrap ($configurator);
 }
 
-sub display_list_supported_distros {
+################################################################################
+# Display the list of supported distros by OSCAR.                              #
+#                                                                              #
+# Input: None.                                                                 #
+# Return: None.                                                                #
+################################################################################
+sub display_list_supported_distros () {
     require OSCAR::Distro;
     # We get the list of supported distros
     my $verbose = 1;
@@ -166,7 +179,14 @@ sub display_list_supported_distros {
     print "\n";
 }
 
-sub display_list_setup_distros {
+################################################################################
+# Display the list of setup distros (distros OSCAR can use for image creation  #
+# and cluster deployment.                                                      #
+#                                                                              #
+# Input: None.                                                                 #
+# Return: None.                                                                #
+################################################################################
+sub display_list_setup_distros () {
     require OSCAR::PackagePath;
     # We check if one of these distros is setup (i.e. if /tftpboot is correctly
     # populated.
