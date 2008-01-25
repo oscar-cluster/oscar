@@ -46,6 +46,8 @@ our $prereqs_path;
 our $nioscar;
 # Specify where the OSCAR scripts are
 our $oscarbinaries_path;
+# Specify the db type (flat files or real db)
+our $db_type;
 
 sub new {
     my $invocant = shift;
@@ -77,6 +79,7 @@ sub load_oscar_config ($) {
         'PREREQS_PATH'              => { ARGCOUNT => 1 },
         'RAPT_PATH'                 => { ARGCOUNT => 1 },
         'YUME_PATH'                 => { ARGCOUNT => 1 },
+        'ODA_TYPE'                  => { ARGCOUNT => 1 },
         );
     $config->file ($config_file);
 
@@ -87,32 +90,21 @@ sub load_oscar_config ($) {
     $packman_path       = $config->get('PREREQS_PATH') . "/packman";
     $nioscar            = $config->get('OSCAR_NETWORK_INTERFACE');
     $oscarbinaries_path = $config->get('OSCAR_SCRIPTS_PATH');
+    $db_type            = $config->get('ODA_TYPE');
 }
 
-
-sub get_scripts_path () {
+sub get_config () {
     my $self = shift;
-    return $oscarbinaries_path;
-}
-
-sub get_packman_path () {
-    my $self = shift;
-    return $packman_path;
-}
-
-sub get_yume_path () {
-    my $self = shift;
-    return $yume_path;
-}
-
-sub get_rapt_path () {
-    my $self = shift;
-    return $rapt_path;
-}
-
-sub get_prereqs_path () {
-    my $self = shift;
-    return $prereqs_path;
+    my %cfg = (
+                'rapt_path'         => $rapt_path,
+                'yume_path'         => $yume_path,
+                'prereqs_path'      => $prereqs_path,
+                'packman_path'      => $packman_path,
+                'nioscar'           => $nioscar,
+                'binaries_path'     => $oscarbinaries_path,
+                'db_type'           => $db_type
+              );
+    return \%cfg;
 }
 
 1;

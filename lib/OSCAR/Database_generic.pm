@@ -350,16 +350,29 @@ sub my2pg{
     return $new_file;
 }
 
+################################################################################# Initialize the database password.                                            #
+#                                                                              #
+# Input: configurator, a ConfigManager object representing the content of the  #
+#                      OSCAR configuration file.                               #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
 sub init_database_passwd ($) {
     my $configurator = shift;
-    my $oscarbinaries_path = $configurator->get_scripts_path();
+    if (!defined ($configurator)) {
+        print "ERROR: Invalid configurator object.\n";
+        return -1;
+    }
+
+    my $config = $configurator->get_config();
+    my $oscarbinaries_path = $config->{'scripts_path'};
 
     # Make sure there is a database password
     print "Binary path = $oscarbinaries_path\n";
-    return -1;
 
     oscar_log_subsection("Making sure there is an ODA database password");
     system( "$ENV{OSCAR_HOME}/scripts/make_database_password" );
+
+    return 0;
 }
 
 1;

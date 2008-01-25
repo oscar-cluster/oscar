@@ -156,25 +156,23 @@ sub bootstrap_prereqs ($) {
 }
 
 ################################################################################
-# After the basic bootstrapping, we install everything needed for the OSCAR    #
-# headnode, typically initialize the database and install server side core     #
-# OSCAR packages.                                                              #
+# Initialize the database used by ODA when a real database is used (e.g.       #
+# mysql).                                                                      #
 #                                                                              #
-# Input: configurator, ConfigManager object that gives the values of the OSCAR #
-#                      configuration file.                                     #
+# Input: OSCAR configurator object (ConfigManager object).                     #
 # Return: 0 if success, -1 else.                                               #
-#                                                                              #
-# TODO: Code duplication with wizard_prep. The code in wizard_prep should be   #
-#       removed when we will integrate this bootstrapping mechanism directly   #
-#       into the current OSCAR code.                                           #
 ################################################################################
-sub init_server ($) {
+sub init_db ($) {
     my $configurator = shift;
+    if (!defined ($configurator)) {
+        print "ERROR: invalid configurator object\n";
+        return -1;
+    }
+    my $config = $configurator->get_config();
 
-    # We initialize the database if needed
     require OSCAR::oda; # WARNING: it seems this is working only w/ 
-                               # mysql.
-                               # TODO: do something more generic.
+                        # mysql.
+                        # TODO: do something more generic.
     print "Database Initialization\n";
     my (%options, %errors);
     my $database_status = oda::check_oscar_database(
@@ -183,12 +181,12 @@ sub init_server ($) {
     print "Database_status: $database_status\n";
     if (!$database_status) {
         print "\tWe need to initialize the database\n";
-        my $scripts_path = $configurator->get_scripts_path();
-	my $cmd = "$scripts_path/make_database_password";
-	if (system ($cmd)) {
+        my $scripts_path = $config->{'scripts_path'};
+    my $cmd = "$scripts_path/make_database_password";
+    if (system ($cmd)) {
             print "ERROR: Impossible to set database password ($cmd)\n";
             return -1;
-	}
+    }
         $cmd =  "$scripts_path/create_oscar_database";
         if (system ($cmd)) {
             print "ERROR: Impossible to create the database ($cmd)\n";
@@ -210,8 +208,72 @@ sub init_server ($) {
             return -1;
         }
     }
+}
+
+################################################################################
+# Initialize the database used by ODA when flat files are used (e.g.mysql).    #
+#                                                                              #
+# Input: None.                                                                 #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub init_file_db () {
+    # We just check if the directories exist in /etc/oscar
+    my $path = "/etc/oscar/";
+    my $partitions_path = $path . "partitions";
+    my $clusters_path = $path . "clusters";
+    my $nodes_path = $path . "nodes";
+
+    if ( ! -d $path ) {
+        mkdir ($path);
+    } elsif ( ! -d $clusters_path ) {
+        mkdir ($clusters_path);
+    } elsif ( ! -d $partitions_path ) {
+        mkdir ($partitions_path);
+    } elsif ( ! -d $nodes_path ) {
+        mkdir ($nodes_path);
+    }
+    return 0;
+}
+
+################################################################################
+# After the basic bootstrapping, we install everything needed for the OSCAR    #
+# headnode, typically initialize the database and install server side core     #
+# OSCAR packages.                                                              #
+#                                                                              #
+# Input: configurator, ConfigManager object that gives the values of the OSCAR #
+#                      configuration file.                                     #
+# Return: 0 if success, -1 else.                                               #
+#                                                                              #
+# TODO: Code duplication with wizard_prep. The code in wizard_prep should be   #
+#       removed when we will integrate this bootstrapping mechanism directly   #
+#       into the current OSCAR code.                                           #
+################################################################################
+sub init_server ($) {
+    my $configurator = shift;
+    if (!defined ($configurator)) {
+        print "ERROR: Invalid configurator object.\n";
+        return -1;
+    }
+    my $oscar_cfg = $configurator->get_config ();
 
     require OSCAR::Logger;
+
+    my $db_type = $oscar_cfg->{'db_type'};
+    if ($db_type eq "db") {
+        # We initialize the database if needed
+        if (init_db ($configurator)) {
+            print "ERROR: impossible to initialize the database\n";
+            return -1;
+        }
+    } elsif ($db_type eq "file") {
+        # We initialize the database if needed
+        if (init_file_db ()) {
+            print "ERROR: impossible to initialize the file based database\n";
+            return -1;
+        }
+    }
+
+    return -1 if ($db_type eq "file");
     require OSCAR::Database;
 
     # Get the list of just core packages
@@ -324,9 +386,14 @@ sub bootstrap_stage1 ($) {
         print "ERROR: Invalid configurator object.\n";
         return -1;
     }
+    my $config = $configurator->get_config();
 
     # First we install Packman
-    my $packman_path = $configurator->get_packman_path ();
+    my $packman_path = $config->{'packman_path'};
+    if (! defined ($packman_path) || $packman_path eq "") {
+        print "ERROR: Impossible to get the Packman path\n";
+        return -1;
+    }
     if (bootstrap_prereqs ($packman_path)) {
         print "ERROR: Impossible to install Packman\n";
         return -1;
@@ -357,7 +424,7 @@ sub bootstrap_stage1 ($) {
     }
 
     # Then we install YUME (supported on both rpm and deb systems).
-    my $yume_path = $configurator->get_yume_path ();
+    my $yume_path = $config->{'yume_path'};
     if (bootstrap_prereqs ($yume_path)) {
         print "ERROR: Impossible to install Yume\n";
         return -1;
@@ -365,7 +432,7 @@ sub bootstrap_stage1 ($) {
 
     # Then if the system is a Debian based system, we try to install RAPT
     if ($os->{pkg} eq "deb") {
-        my $rapt_path = $configurator->get_rapt_path ();
+        my $rapt_path = $config->{'rapt_path'};
         if (bootstrap_prereqs ($rapt_path)) {
             print "ERROR: Impossible to install RAPT\n";
             return -1;
@@ -402,9 +469,10 @@ sub bootstrap_stage2 ($) {
         print "ERROR: Invalid configurator object.\n";
         return -1;
     }
+    my $config = $configurator->get_config();
 
     # First we install the basic prereqs
-    my $baseprereqs_path = $configurator->get_prereqs_path() . "/base";
+    my $baseprereqs_path = $config->{'prereqs_path'} . "/base";
     if (install_prereq ($baseprereqs_path)) {
         print "ERROR: impossible to install base prereqs ($baseprereqs_path)\n";
         return -1;
@@ -414,7 +482,7 @@ sub bootstrap_stage2 ($) {
     # For that, read in the share/prereqs/prereqs.order file
     # It should contain prerequisite paths relative to $OSCAR_HOME, one per 
     # line.
-    my $prereqs_path = $configurator->get_prereqs_path();
+    my $prereqs_path = $config->{'prereqs_path'};
     my $orderfile = "$prereqs_path/prereqs.order";
     my @ordered_prereqs;
     if (! -f "$orderfile") {

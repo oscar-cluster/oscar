@@ -20,9 +20,10 @@ use OSCAR::ConfigManager;
 use OSCAR::FileUtils;
 use OSCAR::Utils;
 my $oscar_configurator = OSCAR::ConfigManager->new();
+my $config = $oscar_configurator->get_config();
 
-my $prereqs_path = $oscar_configurator->get_prereqs_path();
-my $scripts_path = $oscar_configurator->get_scripts_path();
+my $prereqs_path = $config->{'prereqs_path'};
+my $scripts_path = $config->{'scripts_path'};
 
 print "Prereqs available at: $prereqs_path\n";
 print "Scripts available at: $scripts_path\n";
