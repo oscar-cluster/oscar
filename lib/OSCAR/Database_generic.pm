@@ -350,7 +350,8 @@ sub my2pg{
     return $new_file;
 }
 
-################################################################################# Initialize the database password.                                            #
+################################################################################
+# Initialize the database password.                                            #
 #                                                                              #
 # Input: configurator, a ConfigManager object representing the content of the  #
 #                      OSCAR configuration file.                               #
