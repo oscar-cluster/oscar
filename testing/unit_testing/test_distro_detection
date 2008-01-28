@@ -109,7 +109,7 @@ print "Result: $distro, $ver, $arch\n";
 goto ERROR_EXIT if ($distro ne "centos" || $ver ne "5" || $arch ne "x86_64");
 print "\n\nSUCCESS: the test of repository pool format detection succeed\n";
 
-print "TESTING DISTRO COMPAT DETERMINATIOn\n";
+print "TESTING DISTRO COMPAT DETERMINATION\n";
 
 $distroid = "centos-5-x86_64";
 print "\nGetting the compat distro of $distroid\n";

@@ -11,11 +11,13 @@ print "Test few oscar-config capabilities.\n";
 my $script = "$ENV{OSCAR_HOME}/scripts/oscar-config";
 
 my $cmd = $script . " --help";
+print "Executing: $cmd\n";
 if (system ($cmd)) {
     goto ERROR_EXIT;
 }
 
 my $cmd = $script . " --supported-distros";
+print "Executing: $cmd\n";
 goto ERROR_EXIT if (system ($cmd));
 
 my $list_distros = `$cmd`;
