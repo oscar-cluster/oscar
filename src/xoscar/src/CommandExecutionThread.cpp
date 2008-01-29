@@ -103,7 +103,7 @@ void CommandExecutionThread::run()
         return;
     } else if (mode == DO_OSCAR_SANITY_CHECK) {
         QString result;
-        const string cmd = (string) ohome + "/scripts/sanity_check";
+        const string cmd = (string) ohome + "/scripts/oscar_sanity_check";
         pstream command(cmd, pstreambuf::pstdout);
         std::string s, tmp;
         while (std::getline(command, s)) {
