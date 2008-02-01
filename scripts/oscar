@@ -1,6 +1,6 @@
 #!/usr/bin/env perl 
 #
-# Copyright (c) 2007 Oak Ridge National Laboratory
+# Copyright (c) 2007-2008 Oak Ridge National Laboratory
 #               Geoffroy Vallee <valleegr@ornl.gov>
 #               All rights reserved
 #
@@ -94,5 +94,58 @@ sub help () {
     print "Not yet implemented\n";
 }
 
-
 1;
+
+
+__END__
+
+=head1 NAME
+
+oscar, a command line tool for the management of OSCAR clusters.
+
+=head1 SYNOPSIS
+
+oscar OPTIONS
+
+=head1 DESCRIPTION
+
+oscar is a command line tool for the management of OSCAR cluster. It allows
+users to define and deploy clusters and cluster partitions.
+
+=head1 SYNTAX
+
+oscar [options]
+
+=head1 OPTIONS
+
+Recognized options include:
+
+=over 12
+
+=item --display-partitions
+
+=item --display-partition-nodes
+
+=item --display-partition-distro
+
+=item --add-partition
+
+=item --client
+
+=item --distro
+
+=item --help
+
+This help information.
+
+=back
+
+=head1 AUTHOR
+
+Geoffroy Vallee, Oak Ridge National Laboratory <valleegr@ornl.gov>
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
