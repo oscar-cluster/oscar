@@ -3,6 +3,9 @@ package oda;
 #
 # Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) 2008 Oak Ridge National Laboratory
+#                    Geoffroy Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -20,11 +23,13 @@ package oda;
 
 use strict;
 use Carp;
+use lib "$ENV{OSCAR_HOME}/lib";
 use DBI;
 use DBD::mysql;
 use Data::Dumper;
 use IO::Select;
 use IPC::Open3;
+use OSCAR::Utils;
 
 # Declare main variable to use on oda.pm
 my $cached_all_table_names_ref = undef;
@@ -76,9 +81,12 @@ sub oda_connect {
 
     if ( $$options_ref{debug} ) {
         my ($package, $filename, $line) = caller;
-        print_hash( "", "in oda::oda_connect called from package=$package $filename\:$line database_connected_flag=$database_connected_flag passed_options_ref=",
+        OSCAR::Utils::print_hash("",
+                "in oda::oda_connect called from package=$package $filename\:$line database_connected_flag=$database_connected_flag passed_options_ref=",
                 $passed_options_ref );
-        print_hash( "", "in oda::oda_connect options_ref=", $options_ref );
+        OSCAR::Utils::print_hash( "", 
+                "in oda::oda_connect options_ref=", 
+                $options_ref );
     }
 
     # if we're connected to the wrong database, disconnect from it first
@@ -308,7 +316,8 @@ sub list_tables {
         $tables{$table_name} = 1;
     }
     $cached_all_table_names_ref = \%tables;
-    print_hash( "", "in oda::list_tables new cached_all_table_names_ref",
+    OSCAR::Utils::print_hash( "", 
+            "in oda::list_tables new cached_all_table_names_ref",
             $cached_all_table_names_ref )
         if $$options_ref{debug};
     return $cached_all_table_names_ref;
@@ -319,19 +328,14 @@ sub list_tables {
     }
 }
 
-#********************************************************************#
-#********************************************************************#
-#                                                                    #
-# exported function to list the fields names in a database table     #
-#                                                                    #
-#********************************************************************#
-#********************************************************************#
-# inputs:  options        reference to options hash
-#          table          name of table
-#          fields_ref     reference to results list or hash
-#          errors         optional reference to array for errors
-#
-
+################################################################################
+# Exported function to list the fields names in a database table.              #
+#                                                                              #
+# Inputs:  options        reference to options hash.                           #
+#          table          name of table.                                       #
+#          fields_ref     reference to results list or hash.                   #
+#          errors         optional reference to array for errors.              #
+################################################################################
 sub list_fields{
     my ( $passed_options_ref,
          $table,
@@ -366,7 +370,8 @@ sub list_fields{
         if $$options_ref{verbose};
     if ( defined $fields_ref ) {
         $$cached_all_tables_fields_ref{$table} = $fields_ref;
-        print_hash( "", "in oda::list_tables new cached_all_tables_fields_ref",
+        OSCAR::Utils::print_hash( "", 
+            "in oda::list_tables new cached_all_tables_fields_ref",
             $cached_all_tables_fields_ref )
         if $$options_ref{debug};
         return $cached_all_tables_fields_ref;
@@ -631,40 +636,6 @@ sub set_option_defaults {
     }
 }
 
-#********************************************************************#
-#********************************************************************#
-#                                                                    #
-# exported function to print a dump of a hash                        #
-#                                                                    #
-#********************************************************************#
-#********************************************************************#
-# inputs:  $leading_spaces    some description(string) about the hash
-#          $name              name(string) for the hash
-#          $hashref           reference of the hash to print out
-#
-# outputs: prints out the hash contents
-
-
-sub print_hash {
-    my ($leading_spaces, $name, $hashref) = @_;
-    print "DB_DEBUG>$0:\n====> in oda::print_hash\n-- $leading_spaces$name ->\n";
-    foreach my $key (sort keys %$hashref) {
-        my $value = $$hashref{$key};
-        if (ref($value) eq "HASH") {
-            print_hash(  "$leading_spaces    ", $key, $value );
-        } elsif (ref($value) eq "ARRAY") {
-            print "-- $leading_spaces    $key => (";
-            print join(',', @$value);
-            print ")\n";
-        } elsif (ref($value) eq "SCALAR") {
-            print "-- $leading_spaces    $key is a scalar ref\n";
-            print "-- $leading_spaces    $key => $$value\n";
-        } else {
-            $value = "undef" unless defined $value;
-            print "-- $leading_spaces    $key => <$value>\n";
-        }
-    }
-}
 
 #********************************************************************#
 #********************************************************************#
@@ -681,7 +652,6 @@ sub print_hash {
 #         error_strings_ref  error strings list pointer or undef
 #
 # return: success            non-zero for success
-
 sub do_sql_command {
     my ($passed_options_ref,
 	$sql_command,

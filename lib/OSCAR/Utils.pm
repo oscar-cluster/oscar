@@ -142,3 +142,33 @@ sub is_a_valid_string ($) {
         return 1;
     }
 }
+
+################################################################################
+# Exported function to print a dump of a hash                                  #
+#                                                                              #
+# Inputs:  $leading_spaces    some description(string) about the hash          #
+#          $name              name(string) for the hash                        #
+#          $hashref           reference of the hash to print out               #
+#                                                                              #
+# Outputs: prints out the hash contents                                        #
+################################################################################
+sub print_hash {
+    my ($leading_spaces, $name, $hashref) = @_;
+    print "DB_DEBUG>$0:\n====> in oda::print_hash\n-- $leading_spaces$name ->\n";
+    foreach my $key (sort keys %$hashref) {
+        my $value = $$hashref{$key};
+        if (ref($value) eq "HASH") {
+            print_hash(  "$leading_spaces    ", $key, $value );
+        } elsif (ref($value) eq "ARRAY") {
+            print "-- $leading_spaces    $key => (";
+            print join(',', @$value);
+            print ")\n";
+        } elsif (ref($value) eq "SCALAR") {
+            print "-- $leading_spaces    $key is a scalar ref\n";
+            print "-- $leading_spaces    $key => $$value\n";
+        } else {
+            $value = "undef" unless defined $value;
+            print "-- $leading_spaces    $key => <$value>\n";
+        }
+    }
+}

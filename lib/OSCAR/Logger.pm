@@ -17,6 +17,9 @@ package OSCAR::Logger;
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #   Copyright 2002 Jeffrey M. Squyres <jsquyres@lam-mpi.org>
+#   Copyright (c) 2007-2008 Oak Ridge National Laboratory
+#                           Geoffroy Vallee <valleegr@ornl.gov>
+#                           All rights reserved.
 
 use strict;
 use vars qw($VERSION @EXPORT);
@@ -28,13 +31,13 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 my $verbose = $ENV{OSCAR_VERBOSE};
 
-#############################################################################
-#
-# Simple routine to output a "section" title to stdout
-#
-#############################################################################
-
-sub oscar_log_section {
+################################################################################
+# Simple routine to output a "section" title to stdout.                        #
+#                                                                              #
+# Input: String to display.                                                    #
+# Return: None.                                                                #
+################################################################################
+sub oscar_log_section ($) {
     my $title = shift;
 
     print "
@@ -46,13 +49,13 @@ sub oscar_log_section {
 }
 
 
-#############################################################################
-#
-# Simple routine to output a "subsection" title to stdout
-#
-#############################################################################
-
-sub oscar_log_subsection {
+################################################################################
+# Simple routine to output a "subsection" title to stdout.                     #
+#                                                                              #
+# Input: the string to display.                                                #
+# Return: None.
+################################################################################
+sub oscar_log_subsection ($) {
     my $title = shift;
 
     print "--> $title\n"
@@ -68,6 +71,20 @@ sub vprint {
     print @_ if ($verbose);
 }
 
+sub print_error_strings ($) {
+    my $passed_errors_ref = shift;
+    my @error_strings = ();
+    my $error_strings_ref = ( defined $passed_errors_ref && 
+                  ref($passed_errors_ref) eq "ARRAY" ) ?
+                  $passed_errors_ref : \@error_strings;
+
+    if ( defined $passed_errors_ref 
+         && ! ref($passed_errors_ref) 
+         && $passed_errors_ref ) {
+        warn shift @$error_strings_ref while @$error_strings_ref;
+    }
+    $error_strings_ref = \@error_strings;
+}
 
 
 1;

@@ -34,13 +34,14 @@ use Carp;
 #                                                                              #
 # Input: line, the line to add into the file.                                  #
 #        file, file in which we want to add a line.                            #
-# return: 0 if success, die else.                                              #
+# return: 0 if success, -1 else.                                               #
 ################################################################################
 sub add_line_to_file_without_duplication ($$) {
     my ($line, $file_path) = @_;
 
     open (DAT, ">>$file_path") 
-        or die "Impossible to open the file: $file_path.";
+        or (print "ERROR: Impossible to open the file: $file_path." 
+            && return -1);
     if (find_line_in_file($line, $file_path) == -1) {
         print (DAT "$line\n");
     }
