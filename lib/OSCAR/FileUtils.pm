@@ -26,6 +26,7 @@ use Carp;
 @EXPORT = qw(
             add_line_to_file_without_duplication
             get_directory_content
+            get_dirs_in_path
             );
 
 ################################################################################
@@ -84,8 +85,7 @@ sub find_line_in_file ($$) {
 #                                                                              #
 # TODO: code duplication with functions in FileUtils                           #
 ################################################################################
-sub get_directory_content ($)
-{
+sub get_directory_content ($) {
     my $dir = shift;
 
     opendir(DIR, "$dir") or return undef;
@@ -97,4 +97,22 @@ sub get_directory_content ($)
     closedir(DIR);
 
     return(@files);
+}
+
+sub get_dirs_in_path ($) {
+    my $dir = shift;
+
+    if (!defined ($dir) || ! -d $dir) {
+        carp "ERROR: unvalid directory ($dir)\n";
+        return undef;
+    }
+    my @dir_content = get_directory_content ("$dir");
+    my @dirs;
+    foreach my $entry (@dir_content) {
+        my $path = "$dir/$entry";
+        if ( -d "$path") {
+            push (@dirs, $entry);
+        }
+    }
+    return @dirs;
 }
