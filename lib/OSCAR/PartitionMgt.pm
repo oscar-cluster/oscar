@@ -63,10 +63,40 @@ my $basedir = "/etc/oscar/clusters";
 # Input: partition name, note that we assume the partition name is unique.     #
 # Return: string representing the distro ID (OS_Detect syntax).                #
 ################################################################################
-sub get_partition_distro ($) {
-    my $partition_name = shift;
-    my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
-    my $distro = oda_query_single_result ($sql, "distro");
+sub get_partition_distro ($$) {
+    my ($cluster_name, $partition_name) = @_;
+
+    # Some basic checking...
+    if (!defined ($cluster_name)
+        || $cluster_name eq "") {
+        carp "ERROR: invalid cluster name ($cluster_name)\n";
+        return undef;
+    }
+    if (!defined ($partition_name)
+        || $partition_name eq "") {
+        carp "ERROR: invalid partition name ($partition_name)\n";
+        return undef;
+    }
+
+# We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    my $distro;
+    if ($config->{db_type} eq "db") {
+        my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
+        $distro = oda_query_single_result ($sql, "distro");
+    } elsif ($config->{db_type} eq "file") {
+        carp "Not yet implemented\n";
+        return undef;
+    } else {
+        carp "ERROR: Unknown ODA type ($config->{db_type})\n";
+        return undef;
+    }
     return $distro;
 }
 

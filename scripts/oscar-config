@@ -273,7 +273,7 @@ sub help {
     print " --mirror-oscar-repo REPO_URL: Mirror a given online OSCAR\n";
     print "\trepository for a given Linux distribution.\n";
 #     print " --network.\n";
-    print "--bootstrap: Bootstrap OSCAR, i.e., install all the OSCAR\n";
+    print " --bootstrap: Bootstrap OSCAR, i.e., install all the OSCAR\n";
     print "\tprereqs, setup the database, and install and setup everything\n";
     print "\tfor the creation of a OSCAR headnode.\n";
     print " --help: this help information.\n";
