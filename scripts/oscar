@@ -38,7 +38,7 @@ GetOptions(
         "client=s"                      => \@clients,
         "distro=s"                      => \$distro,
         "help"                          => \&help,
-        );
+        ) || help_and_exit();
 
 # We get the configuration from the OSCAR configuration file.
 my $oscar_configurator = OSCAR::ConfigManager->new();
@@ -90,8 +90,17 @@ if ($list_partitions) {
 
 # The user wants to see the list of nodes within a partition.
 if ($list_partition_nodes) {
+# Currently we only support a single cluster so the following code is
+# deactivated.
+    # In order to list partition's nodes, a cluster has to be specified.
+#    if (!defined($cluster_name)) {
+#        die "ERROR: no cluster is specified, impossible to create a new ".
+#            "partition";
+#    }
     my @nodes =
-        OSCAR::PartitionMgt::get_list_nodes_partition ($list_partition_nodes);
+        OSCAR::PartitionMgt::get_list_nodes_partition ("oscar",
+                                                       $list_partition_nodes);
+    die "ERROR: impossible to get nodes information" if (!@nodes);
     foreach my $n (@nodes) {
         print "$n ";
     }
@@ -111,6 +120,11 @@ if ($list_partition_distro) {
 
 sub help () {
     print "Not yet implemented\n";
+}
+
+sub help_and_exit {
+    help ();
+    exit 1;
 }
 
 1;

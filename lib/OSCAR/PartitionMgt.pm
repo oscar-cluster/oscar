@@ -74,28 +74,64 @@ sub get_partition_distro ($) {
 # Return the list of nodes (their names) that compose a cluster partition.     #
 #                                                                              #
 # Input: partition name, note that we assume the partition name is unique.     #
-# Return: array of string, each element is a node name of a partition node.    #
+# Return: array of string, each element is a node name of a partition node;    #
+#         undef if error.
 #                                                                              #
 # TODO: check if we really assume a partition name is unique or not.           #
 ################################################################################
-sub get_list_nodes_partition ($) {
-    my $partition_name = shift;
-
-    # First we get the partition ID
-    my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
-    my $partition_id = oda_query_single_result ($sql, "partition_id");
-
-    # Then based on the partition ID, we can get the list of nodes associated
-    # to this partition (node ids).
-    $sql = "SELECT * From Partition_Nodes WHERE partition_id='$partition_id'";
-    my @nodes_id = simple_oda_query ($sql, "node_id");
-
-    # Finally for each node ID we find the node name
+sub get_list_nodes_partition ($$) {
+    my ($cluster_name, $partition_name) = @_;
     my @nodes;
-    foreach my $id (@nodes_id) {
-        $sql = "SELECT * From Nodes WHERE id='$id'";
-        my $n = oda_query_single_result ($sql, "name");
-        push (@nodes, $n);
+
+    # Some basic checking...
+    if (!defined ($cluster_name)
+        || $cluster_name eq "") {
+        carp "ERROR: invalid cluster name ($cluster_name)\n";
+        return undef;
+    }
+    if (!defined ($partition_name) 
+        || $partition_name eq "") { 
+        carp "ERROR: invalid partition name ($partition_name)\n";
+        return undef;
+    }
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return -1;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "db") {
+        # First we get the partition ID
+        my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
+        my $partition_id = oda_query_single_result ($sql, "partition_id");
+
+        # Then based on the partition ID, we can get the list of nodes associated
+        # to this partition (node ids).
+        $sql = "SELECT * From Partition_Nodes WHERE partition_id='$partition_id'";
+        my @nodes_id = simple_oda_query ($sql, "node_id");
+
+        # Finally for each node ID we find the node name
+        foreach my $id (@nodes_id) {
+            $sql = "SELECT * From Nodes WHERE id='$id'";
+            my $n = oda_query_single_result ($sql, "name");
+            push (@nodes, $n);
+        }
+    } elsif ($config->{db_type} eq "file") {
+        my $path = "$basedir/$cluster_name/$partition_name";
+        # Some basic checking...
+        if (! -d "$basedir/$cluster_name" 
+            || ! -d "$path") {
+            carp "ERROR: Partition does not exist ($partition_name)\n";
+            return undef;
+        }
+        @nodes = 
+            OSCAR::FileUtils::get_dirs_in_path ("$path");
+    } else {
+        carp "ERROR: Unknown ODA type ($config->{db_type}).\n";
+        return undef;
     }
 
     return @nodes;
@@ -151,8 +187,16 @@ sub get_list_partitions ($) {
         my $cluster_id = OSCAR::Database::oda_query_single_result ($sql, "id");
         @partitions = OSCAR::PartitionMgt::get_list_partitions ($cluster_id);
     } elsif ($config->{db_type} eq "file") {
-        carp "Not yet implemented\n";
-        return undef;
+        if ( ! -d $basedir ) {
+            carp "ERROR: Configuration files missing\n";
+            return undef;
+        }
+        if ( ! -d "$basedir/$cluster_name" ) {
+            carp "ERROR: cluster $cluster_name does not exist\n";
+            return undef;
+        }
+        @partitions 
+            = OSCAR::FileUtils::get_dirs_in_path ("$basedir/$cluster_name");
     } else {
         carp "ERROR: unknown ODA type ($config->{db_type})";
         return undef;
@@ -217,7 +261,7 @@ sub oda_create_new_partition ($$$$$) {
 ################################################################################
 sub get_partition_info ($$) {
     my ($cluster_name, $partition_name) = @_;
-    my @partitions = undef;
+    my @partitions;
 
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
@@ -242,25 +286,18 @@ sub get_partition_info ($$) {
             carp "ERROR: the cluster configuration directory does not exist ".
                  "($basedir). It most certainly mean that OSCAR is not ".
                  "correctly initialized\n";
-            return undef;
+            return @partitions;
         }
 
         # Step 1: Does the cluster exist?
         if ( ! -d "$basedir/$cluster_name") {
-            carp "WARNING: Cluster does not exist ($cluster_name)";
+            print "WARNING: Cluster does not exist ($cluster_name)\n";
             return undef;
         }
 
         # Step 2: Do partitions exist?
-        my @dir_content = 
-            OSCAR::FileUtils::get_directory_content ("$basedir/$cluster_name");
-        my @partitions;
-        foreach my $entry (@dir_content) {
-            my $path = "$basedir/$cluster_name/$entry";
-            if ( -d "$path") {
-                push (@partitions, $entry);
-            }
-        }
+        my @partitions = 
+            OSCAR::FileUtils::get_dirs_in_path ("$basedir/$cluster_name");
     }
     return @partitions;
 }
@@ -333,8 +370,6 @@ sub set_partition_info {
         my $client_id = oda_query_single_result ($sql, "id");
         print "ODA client Id: $client_id\n" if $verbose;
     } elsif ($config->{db_type} eq "file") {
-        # We are the configuration files.
-        my $basedir = "/etc/oscar/clusters";
         if ( ! -d "$basedir") {
             carp "ERROR: the cluster configuration directory does not exist ".
                  "($basedir). It most certainly mean that OSCAR is not ".
