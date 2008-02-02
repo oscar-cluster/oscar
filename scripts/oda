@@ -565,7 +565,7 @@ sub execute_simple_command{
                 print "ERROR: Impossible to initialize ODA\n";
             }
         } elsif ($config->{db_type} eq "db") {
-            if (OSCAR::Bootstrap::nit_db ($oscar_configurator);
+            if (OSCAR::Bootstrap::nit_db ($oscar_configurator)) {
                 print "ERROR: Impossible to initialize ODA\n";
             }
         } else {
