@@ -73,6 +73,7 @@ use OSCAR::Database_generic;
 use OSCAR::oda;
 use OSCAR::Distro;
 use OSCAR::Utils qw (print_array);
+use OSCAR::Logger;
 use Data::Dumper;
 
 # oda may or may not be installed and initialized
@@ -185,35 +186,48 @@ $options{debug} = 1
 #
 ######################################################################
 
-#
-# Connect to the oscar database if the oda package has been
-# installed and the oscar database has been initialized.
-# This function is not needed before executing any ODA 
-# database functions, since they automatically connect to 
-# the database if needed, but it is more effecient to call this
-# function at the start of your program and leave the database
-# connected throughout the execution of your program.
-#
-# inputs:   errors_ref   if defined and a list reference,
-#                          put error messages into the list;
-#                          if defined and a non-zero scalar,
-#                          print out error messages on STDERR
-#           options        options reference to oda options hash
-# outputs:  status         non-zero if success
-
-sub database_connect {
-    my ( $passed_options_ref, 
+################################################################################
+# Connect to the oscar database if the oda package has been installed and the  #
+# oscar database has been initialized.                                         #
+# This function is not needed before executing any ODA database functions,     #
+# since they automatically connect to the database if needed, but it is more   #
+# effecient to call this function at the start of your program and leave the   #
+# database connected throughout the execution of your program.                 #
+#                                                                              #
+# Inputs:   errors_ref     if defined and a list reference,                    #
+#                          put error messages into the list;                   #
+#                          if defined and a non-zero scalar,                   #
+#                          print out error messages on STDERR.                 #
+#           options        options reference to oda options hash.              #
+# Outputs:  status         non-zero if success.                                #
+################################################################################
+sub database_connect ($$) {
+    my ( $passed_options_ref,
          $passed_errors_ref ) = @_;
 
+    oscar_log_section (">$0: Connecting to the database...");
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        print "ERROR: Impossible to get the OSCAR configuration\n";
+        exit 1;
+    }
+    my $config = $oscar_configurator->get_config();
 
+    if ($config->{db_type} ne "db") {
+        oscar_log_subsection (">$0: Not using a real database, connection done");
+        return 1;
+    }
     # take care of faking any non-passed input parameters, and
     # set any options to their default values if not already set
     my ( $options_ref, $error_strings_ref ) = fake_missing_parameters
-    ( $passed_options_ref, $passed_errors_ref );        
+    ( $passed_options_ref, $passed_errors_ref );
 
     if ( $$options_ref{debug} ) {
     my ($package, $filename, $line) = caller;
-        print "DB_DEBUG>$0:\n====> in Database\:\:connect called from package=$package $filename\:$line\n";
+        oscar_log_subsection (">$0:\n".
+            "====> in Database\:\:connect called from package = ".
+            "$package $filename\:$line\n");
     }
 
     # if the database is not already available, ...
@@ -226,24 +240,28 @@ sub database_connect {
             $oda_available = ! $@;
             carp("in database_connect cannot use oda: $@") if ! $oda_available;
         }
-        print "DB_DEBUG>$0:\n====> in Database::database_connect now oda_available=$oda_available\n" 
+        oscar_log_subsection (">$0:\n====> in Database::database_connect now oda_available=$oda_available\n")
             if $$options_ref{debug};
-        
+
         # assuming oda is available now, ...
         if ( $oda_available ) {
-
             # try to connect to the database
             if ( oda::oda_connect( $options_ref,
                        $error_strings_ref ) ) {
-            print "DB_DEBUG>$0:\n====> in Database::database_connect connect worked\n" if $$options_ref{debug};
-            $database_connected = 1;
+                oscar_log_subsection (">$0:\n".
+                    "====> in Database::database_connect connect worked\n") 
+                    if $$options_ref{debug};
+                $database_connected = 1;
             }
             print_error_strings($error_strings_ref);
         }
     }
 
-    print "DB_DEBUG>$0:\n====> in Database::database_connect returning database_connected=$database_connected\n" 
-    if $$options_ref{debug};
+    oscar_log_subsection (">$0:\n".
+        "====> in Database::database_connect returning database_connected = ".
+        "$database_connected\n")
+        if $$options_ref{debug};
+    oscar_log_subsection (">$0: Database connection done");
     return $database_connected;
 }
 
@@ -568,41 +586,93 @@ sub get_cluster_info_with_name {
     }
 }
 
-sub get_package_info_with_name {
+################################################################################
+# Gets information about a given OPKG from the database, based on the OPKG's   #
+# name.                                                                        #
+#                                                                              #
+# Input: package_name,                                                         #
+#        options_ref,                                                          #
+#        error_strings_ref,                                                    #
+#        version                                                               #
+# Return: reference to a hash with package information, undef else.            #
+################################################################################
+sub get_package_info_with_name ($$$$) {
     my ($package_name,
         $options_ref,
         $error_strings_ref,
         $version) = @_;
     print "Getting information about a package...\n";
     my @results = ();
-    my $sql = "SELECT * FROM Packages WHERE package='$package_name' ";
-    if( $version ){
-        $sql .= "AND version='$version'";
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        print "ERROR: Impossible to get the OSCAR configuration\n";
+        exit 1;
     }
-    print "DB_DEBUG>$0:\n====> in Database::get_package_info_with_name SQL : $sql\n" if $$options_ref{debug};
-    print "DB_DEBUG>$0:\n====> in Database::get_package_info_with_name SQL : $sql\n";
-    if(do_select($sql,\@results, $options_ref, $error_strings_ref)) {
-        my $package_ref = pop @results;
-        print "Success.\n";
-        return $package_ref;
-    } else {
-        print "ERROR";
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "db") {
+        my $sql = "SELECT * FROM Packages WHERE package='$package_name' ";
+        if( $version ){
+            $sql .= "AND version='$version'";
+        }
+        oscar_log_subsection (">$0:\n".
+            "====> in Database::get_package_info_with_name SQL : $sql\n")
+            if $$options_ref{debug};
+        if(do_select($sql,\@results, $options_ref, $error_strings_ref)) {
+            my $package_ref = pop @results;
+            print "Success.\n";
+            return $package_ref;
+        } else {
+            print "ERROR";
+            return undef;
+        }
+    } elsif ($config->{db_type} eq "file") {
+        oscar_log_subsection (">$0: Getting OPKG data from config file");
+        print "ERROR: not yet implemented ($0)\n";
         return undef;
     }
 }
 
-
-sub get_packages {
+################################################################################
+# Get information from the database for all available OPKGs.                   #
+#                                                                              #
+# Input: results_ref,                                                          #
+#        options_ref,                                                          #
+#        error_strings_ref                                                     #
+# Return: 1 if success, 0 else.                                                #
+################################################################################
+sub get_packages ($$$) {
     my ($results_ref,
         $options_ref,
         $error_strings_ref) = @_;
-    my $sql = "SELECT * FROM Packages";
-    print "DB_DEBUG>$0:\n====> in Database::get_packagess SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        print "ERROR: Impossible to get the OSCAR configuration\n";
+        exit 1;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "db") {
+        my $sql = "SELECT * FROM Packages";
+        oscar_log_subsection (">$0:\n".
+            "====> in Database::get_packagess SQL : $sql\n")
+            if $$options_ref{debug};
+        return do_select($sql,$results_ref, $options_ref, $error_strings_ref);
+    } elsif ($config->{db_type} eq "file") {
+        oscar_log_subsection (">$0:\n".
+            "====> getting OPKGs info from configuration file\n")
+            if $$options_ref{debug};
+        print "ERROR: not yet implemented ($0)\n";
+        return 0;
+    }
 }
 
 
-sub get_packages_with_class {
+sub get_packages_with_class ($$$$) {
     my ($class,
         $results_ref,
         $options_ref,
@@ -1135,7 +1205,10 @@ sub delete_group_packages {
         $error_strings_ref,
         $ver) = @_;
 
-    my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+    my $package_ref = get_package_info_with_name ($opkg,
+                                                  $options_ref,
+                                                  $error_strings_ref,
+                                                  $ver);
     my $package_id = $$package_ref{id};
     if($package_id){
         my $sql = "UPDATE Group_Packages SET selected=0 ".
@@ -1165,6 +1238,9 @@ sub delete_groups {
     }    
     return 1;
 }
+
+# TODO: extend this function to the case where we do not have a real db but
+# configuration files.
 sub delete_package {
     my ($package_name,
         $options_ref,
@@ -1174,14 +1250,16 @@ sub delete_package {
     print "DB_DEBUG>$0:\n====> in Database::delete_package SQL : $sql\n" if $$options_ref{debug};
     $sql .= ($package_version?"AND version='$package_version'":"");
     return do_update($sql,"Packages", $options_ref, $error_strings_ref);
-}    
+}
 
 sub delete_node {
     my ($node_name,
         $options_ref,
         $error_strings_ref) = @_;
-    my $node_ref = get_node_info_with_name($node_name,$options_ref,$error_strings_ref);    
-    
+
+    my $node_ref = get_node_info_with_name($node_name,
+                                           $options_ref,
+                                           $error_strings_ref);
     my $node_id = $$node_ref{id};
     return 1 if !$node_id;
 
@@ -1204,16 +1282,24 @@ sub delete_node_packages {
 
 ################################################################################
 # This function includes given OSCAR Packages into the database                #
+#                                                                              #
+# TODO: extend this function to the case where we do not have a real db but    #
+#       configuration files.                                                   #
 ################################################################################
-sub insert_packages {
-    my ($passed_ref, $table,
-        $name,$path,$table_fields_ref,
-        $passed_options_ref,$passed_error_strings_ref) = @_;
+sub insert_packages ($$$$$$$) {
+    my ($passed_ref,
+        $table,
+        $name,
+        $path,
+        $table_fields_ref,
+        $passed_options_ref,
+        $passed_error_strings_ref) = @_;
 
     # take care of faking any non-passed input parameters, and
     # set any options to their default values if not already set
-    my ( $options_ref, $error_strings_ref ) = fake_missing_parameters
-    ( $passed_options_ref, $passed_error_strings_ref );        
+    my ( $options_ref, $error_strings_ref ) 
+        = fake_missing_parameters ( $passed_options_ref, 
+                                    $passed_error_strings_ref );
     my $sql = "INSERT INTO $table ( ";
     my $sql_values = " VALUES ( ";
     my $flag = 0;
@@ -1283,6 +1369,7 @@ sub insert_packages {
     return  $success;
 }
 
+# DEPRECATED???
 sub insert_pkg_rpmlist {
     my ($passed_ref,$table,$package_id,$options_ref,$error_strings_ref) = @_;
     my $sql = "INSERT INTO $table ( ";
@@ -1319,6 +1406,7 @@ sub insert_pkg_rpmlist {
     }   
 }
 
+# DEPRECATED???
 sub insert_pkg_rpmlist_helper {
     my ($sql, $sql_values, $filter, $passed_ref, $table,$options_ref,$error_strings_ref) = @_;
     my $group_name = ($filter->{group}?$filter->{group}:"all");
@@ -1330,6 +1418,7 @@ sub insert_pkg_rpmlist_helper {
     insert_rpms( $inner_sql, $inner_sql_values, $passed_ref, $table,$options_ref,$error_strings_ref);
 }
 
+# DEPRECATED????
 sub insert_rpms {
     my ($sql, $sql_values, $passed_ref, $table, $options_ref, $error_strings_ref) = @_;
     my $rpm;
@@ -1373,9 +1462,13 @@ sub insert_rpms {
 
 # links a node nic to a network in the database
 #
-sub link_node_nic_to_network {
+sub link_node_nic_to_network ($$$$$) {
 
-    my ( $node_name, $nic_name, $network_name, $options_ref, $error_strings_ref ) = @_;
+    my ($node_name,
+        $nic_name,
+        $network_name,
+        $options_ref,
+        $error_strings_ref) = @_;
 
     my $sql = "SELECT Nodes.id, Networks.n_id FROM Nodes, Networks WHERE Nodes.name='$node_name' AND Networks.name='$network_name' ";
     my @results = ();
@@ -1398,8 +1491,9 @@ sub link_node_nic_to_network {
 }
 
 
-
-sub update_node {
+# TODO: this function has to been extended for the case where we do not use a
+#       real db but configuration files.
+sub update_node ($$$$) {
     my ($node,
         $field_value_ref,
         $options_ref,
@@ -1422,7 +1516,7 @@ sub update_node {
 # 1 : should_not_be_installed.
 # 2 : should_be_installed
 # 8 : finished
-sub update_node_package_status {
+sub update_node_package_status ($$$$$$$) {
     my ($options_ref,
         $node,
         $passed_pkg,
@@ -1452,7 +1546,10 @@ sub update_node_package_status {
     foreach my $pkg_ref (@$packages) {
         my $opkg = $$pkg_ref{package};
         my $ver = $$pkg_ref{version};
-        my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+        my $package_ref = get_package_info_with_name($opkg,
+                                                     $options_ref,
+                                                     $error_strings_ref,
+                                                     $ver);
         my $package_id = $$package_ref{id};
         my %field_value_hash = ("requested" => $requested);
         my $where = "WHERE package_id=$package_id AND node_id=$node_id";
@@ -1601,7 +1698,10 @@ sub update_node_package_status_hash {
 	foreach my $pkg_ref (@$packages) {
 		my $opkg = $$pkg_ref{package};
 		my $ver = $$pkg_ref{version};
-		my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+		my $package_ref = get_package_info_with_name($opkg,
+                                                     $options_ref,
+                                                     $error_strings_ref,
+                                                     $ver);
 		my $package_id = $$package_ref{id};
 		my $where = "WHERE package_id=$package_id AND node_id=$node_id";
 		
@@ -1667,7 +1767,10 @@ sub update_image_package_status_hash {
 	foreach my $pkg_ref (@$packages) {
 		my $opkg = $$pkg_ref{package};
 		my $ver = $$pkg_ref{version};
-		my $package_ref = get_package_info_with_name($opkg,$options_ref,$error_strings_ref,$ver);
+		my $package_ref = get_package_info_with_name($opkg,
+                                                     $options_ref,
+                                                     $error_strings_ref,
+                                                     $ver);
 		my $package_id = $$package_ref{id};
 		my $where = "WHERE package_id=$package_id AND image_id=$image_id";
 		die "DB_DEBUG>$0:\n====>Failed to update the request for $opkg" 
@@ -1783,7 +1886,11 @@ sub update_image_package_status {
     return 1;
 }
 
-
+#
+# Return: non-zero for success.
+#
+# TODO: extend this function to the case where we do not have a real database
+# but configuration files.
 sub update_packages {
     my ($passed_ref, $table,$package_id,
         $name,$path,$table_fields_ref,
@@ -1798,8 +1905,9 @@ sub update_packages {
         # in front of $key to avoid the conflict of reserved keys
 
         $key = ( $key eq "maintainer" || $key eq "packager"?$key . "_name":$key );
-        
-        if( $$table_fields_ref{$table}->{$key} && $key ne "package-specific-attribute"){
+
+        if( $$table_fields_ref{$table}->{$key} 
+            && $key ne "package-specific-attribute"){
             $comma = ", " if $flag;
             $key = ( $key eq "group"?"__$key":$key);
             $key = ( $key eq "class"?"__$key":$key);
@@ -1813,7 +1921,7 @@ sub update_packages {
                 $value = "$ver_ref->{major}.$ver_ref->{minor}" .
                     ($ver_ref->{subversion}?".$ver_ref->{subversion}":"") .
                     "-$ver_ref->{release}";
-                $value =~ s#'#\\'#g;    
+                $value =~ s#'#\\'#g;
                 my @pkg_versions=( "major","minor","subversion",
                                     "release", "epoch" );
                 $sql .="'$value', "; 
@@ -1828,11 +1936,11 @@ sub update_packages {
                         ( $ver ne "epoch"?"'$tmp_value', ":"'$tmp_value'");
                     $sql .= " version_$ver=$value";
                 }    
-            }elsif ( $key eq "maintainer_name" || $key eq "packager_name" ){
+            } elsif ( $key eq "maintainer_name" || $key eq "packager_name" ) {
                 $key = ($key eq "maintainer_name"?"maintainer":"packager");
                 $sql .= "'". $passed_ref->{$key}->{name}. "', $key" .
                      "_email='". $passed_ref->{$key}->{email} . "'";
-            }else{
+            } else {
                 $value = ($passed_ref->{$key}?trimwhitespace($passed_ref->{$key}):""); 
                 $value =~ s#'#\\'#g;
                 $sql .= "'$value'";
@@ -1924,6 +2032,7 @@ sub set_group_nodes {
     return $success; 
 }
 
+# Return: 1 if success, 0 else.
 sub set_group_packages {
     my ($group,
         $package,
@@ -1950,7 +2059,9 @@ sub set_group_packages {
         $sql = "INSERT INTO Group_Packages (group_name, package_id, selected) ".
                "SELECT '$group', id, $selected FROM Packages ".
                "WHERE package='$package'";
-        print "DB_DEBUG>$0:\n====> in Database::set_group_packages SQL : $sql\n" if $$options_ref{debug};
+        oscar_log_subsection ("DB_DEBUG>$0:\n".
+            "====> in Database::set_group_packages SQL : $sql\n")
+            if $$options_ref{debug};
         die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
             if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
     }else{
@@ -1960,14 +2071,23 @@ sub set_group_packages {
         $sql = "UPDATE Group_Packages SET selected=$selected ".
             "WHERE group_name='$group' ".
             "AND package_id='$package_id'";
-        print "DB_DEBUG>$0:\n====> in Database::set_group_packages SQL : $sql\n" if $$options_ref{debug};
-        die "DB_DEBUG>$0:\n====>Failed to update values via << $sql >>"
-            if !do_update($sql,"Group_Packages",$options_ref,$error_strings_ref);
+        oscar_log_subsection ("DB_DEBUG>$0:\n".
+            "====> in Database::set_group_packages SQL : $sql\n")
+            if $$options_ref{debug};
+        if (!do_update($sql,"Group_Packages",$options_ref,$error_strings_ref)) {
+            print "ERROR>$0:\n====>Failed to update values via << $sql >>";
+            return 0;
+        }
     }
 
     $requested = 1 if !$requested;
-    update_node_package_status(
-          $options_ref,$OSCAR_SERVER,$package,$requested,$error_strings_ref);
+    update_node_package_status($options_ref,
+                               $OSCAR_SERVER,
+                               $package,
+                               $requested,
+                               $error_strings_ref,
+                               "",
+                               "");
     return 1;
 }
 
@@ -2019,7 +2139,10 @@ sub set_image_packages {
     my $image_ref = get_image_info_with_name($image,$options_ref,$error_strings_ref);
     croak("Image $image not found in OSCAR Database") unless ($image_ref);
     my $image_id = $$image_ref{id};
-    my $package_ref = get_package_info_with_name($package,$options_ref,$error_strings_ref);
+    my $package_ref = get_package_info_with_name($package,
+                                                 $options_ref,
+                                                 $error_strings_ref,
+                                                 undef);
     my $package_id = $$package_ref{id};
     my $sql = "SELECT * FROM Image_Package_Status WHERE image_id=$image_id AND package_id=$package_id";
     print "DB_DEBUG>$0:\n====> in Database::set_image_packages SQL : $sql\n" if $$options_ref{debug};
@@ -2108,7 +2231,7 @@ sub set_pkgconfig_var {
     my $opkg = $val{opkg};
     delete $val{opkg};
 
-    my $pref = get_package_info_with_name($opkg,\%options,\@errors);
+    my $pref = get_package_info_with_name($opkg,\%options,\@errors, undef);
     croak("No package $opkg found!") if (!$pref);
     my $opkg_id = $pref->{id};
     $val{package_id} = $opkg_id;
@@ -2233,7 +2356,18 @@ sub set_node_with_group {
     return 1;
 }
 
-sub set_nics_with_node {
+################################################################################
+# Set a NIC to a node.                                                         #
+#                                                                              #
+# Input: nic, NIC name.                                                        #
+#        node, node name we have to assign the NIC to.                         #
+#        field_value_ref, hash giving the values of the different table        #
+#                         entries (for instance 'mac => 00:A0:00:A0:B1:BB'.    #
+#                         All the table's entry do not need to be specified.   #
+#        options_ref, optional reference to options hash.                      #
+#        error_strings_ref, ??? (optional, i.e., may be empty).                #
+################################################################################
+sub set_nics_with_node ($$$$$) {
     my ($nic,
         $node,
         $field_value_ref,
@@ -2258,7 +2392,8 @@ sub set_nics_with_node {
             }
         }
         $sql .= " ) $sql_value )";
-        print "DB_DEBUG>$0:\n====> in Database::set_nics_with_node SQL : $sql\n" if $$options_ref{debug};
+        print "DB_DEBUG>$0:\n====> in Database::set_nics_with_node SQL : $sql\n"
+            if $$options_ref{debug};
         die "DB_DEBUG>$0:\n====>Failed to insert values via << $sql >>"
             if! do_insert($sql,"Nodes", $options_ref, $error_strings_ref);
     }else{
@@ -2361,28 +2496,13 @@ sub fake_missing_parameters {
         $options_ref = \%options;
     }
 
-    print "DB_DEBUG>$0:\n====> in Database.pm::fake_missing_parameters handling"
-        . " the missing parameters"
-        if $$options_ref{verbose};
+    oscar_log_subsection "DB_DEBUG>$0:\n".
+        "====> in Database.pm::fake_missing_parameters handling the missing ". 
+        "parameters" if $$options_ref{verbose};
 
     return ( $options_ref,
          $error_strings_ref );
 }
-
-
-sub print_error_strings {
-    my $passed_errors_ref = shift;
-    my @error_strings = ();
-    my $error_strings_ref = ( defined $passed_errors_ref && 
-                  ref($passed_errors_ref) eq "ARRAY" ) ?
-                  $passed_errors_ref : \@error_strings;
-
-    if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
-        warn shift @$error_strings_ref while @$error_strings_ref;
-    }
-    $error_strings_ref = \@error_strings;
-}
-
 
 sub trimwhitespace($)
 {
@@ -2451,14 +2571,12 @@ sub dec_already_locked {
 #          error_strings_ref  optional reference to array for errors
 #
 # outputs: non-zero if success
-
-
-sub locking {
+sub locking ($$$$) {
     my ( $type_of_lock,
          $options_ref,
          $passed_tables_ref,
-     $error_strings_ref,
-     ) = @_;
+         $error_strings_ref,
+       ) = @_;
     my @empty_tables = ();
     my $tables_ref = ( defined $passed_tables_ref ) ? $passed_tables_ref : \@empty_tables;
 
@@ -2472,12 +2590,11 @@ sub locking {
         return 0;
     }
 
-    print $msg.
-    join( ',', @$tables_ref ) . ")\n"
-    if $$options_ref{debug};
+    oscar_log_section ($msg . join( ',', @$tables_ref ) . ")\n")
+        if $$options_ref{debug};
 
     # connect to the database if not already connected
-       $database_connected ||
+    $database_connected ||
         database_connect( $options_ref, $error_strings_ref ) ||
         return 0;
 
@@ -2536,7 +2653,6 @@ sub locking {
 #          error_strings_ref  optional reference to array for errors
 #
 # outputs: non-zero if success
-
 sub unlock {
     my ( $options_ref,
      $error_strings_ref,
@@ -2554,7 +2670,7 @@ sub unlock {
 
     # make the database command
     my $sql_command = "UNLOCK TABLES ;" ;
-    
+
     my $success = 1;
 
     # now do the single command
@@ -2591,7 +2707,7 @@ sub single_dec_locked {
          $type_of_lock,
          $tables_ref,
          $results_ref,
-     $passed_errors_ref ) = @_;
+         $passed_errors_ref ) = @_;
 
     # execute the command
     my @error_strings = ();
@@ -2608,7 +2724,7 @@ sub single_dec_locked {
         my $all_tables_ref = oda::list_tables( $options_ref, $error_strings_ref );
         foreach my $table (keys %$all_tables_ref){
             push @tables, $table;
-        }    
+        }
     }
     my $lock_type = (defined $type_of_lock)? $type_of_lock : "READ";
     # START LOCKING FOR NEST && open the database
@@ -2626,7 +2742,7 @@ sub single_dec_locked {
     if ( defined $passed_errors_ref && ! ref($passed_errors_ref) && $passed_errors_ref ) {
     warn shift @$error_strings_ref while @$error_strings_ref;
     }
-    
+
     return $success;
 }
 
@@ -2646,7 +2762,7 @@ sub single_dec_locked {
 #                                                                              #
 # Input: - sql, string representing the SQL query.                             #
 #        - elt, hash key based on which we will create the result array.       #
-# Output: array of results.                                                    #
+# Output: array of results, or undef.                                          #
 ################################################################################
 sub simple_oda_query ($$) {
     (my $sql, my $elt) = @_;
@@ -2655,13 +2771,16 @@ sub simple_oda_query ($$) {
     my $options_ref;
     my $error_strings_ref;
     my @result_ref;
-    print "SQL query: $sql\n" if $verbose;
+    oscar_log_subsection ("SQL query: $sql\n") if $verbose;
     if (!do_select($sql,\@result_ref, $options_ref, $error_strings_ref)) {
-        die "ERROR: Impossible to query the database ($sql)";
+        print "ERROR: Impossible to query the database ($sql)\n";
+        return undef;
     }
     # We parse the result in order to get a more usefull formated info
     foreach my $result (@result_ref) {
-        push (@list, $result->{$elt});
+        if ($result->{$elt} ne "") {
+            push (@list, $result->{$elt});
+        }
     }
     return (@list);
 }
@@ -2699,14 +2818,16 @@ sub create_database ($$) {
 
     oda::list_databases($options, \%databases, $error_strings );
     if ( ! $databases{ oscar } ) {
-        print "Creating the OSCAR database ...\n";
+        oscar_log_subsection ("Creating the OSCAR database ...\n");
         my @error_strings = ();
         if ( ! oda::create_database( \%options, \@error_strings ) ) {
             warn shift @error_strings while @error_strings;
-            die "DB_DEBUG>$0:\n====> cannot create the OSCAR database";
+            print "ERROR>$0:\n====> cannot create the OSCAR database";
+            return -1;
         }
-        print "... OSCAR database successfully created.\n";
+        oscar_log_subsection ("... OSCAR database successfully created.\n");
     }
+    return 0;
 }
 
 
@@ -2787,6 +2908,195 @@ sub create_database_tables {
               "===========================\n"
             if $options{debug} || $options{verbose};
     }
+}
+
+# TODO GV: finish that!!!!!
+sub populate_database_with_opkgs ($$$$$$$) {
+    my ($package,
+        $package_version,
+        $xml_ref,
+        $directory_argument,
+        $nics_results,
+        $options,
+        $error_strings) = @_;
+
+    my $package_ref = 
+        get_package_info_with_name($package,
+                                    $options,
+                                    $error_strings,
+                                    $package_version);
+    my $package_id = $$package_ref{id};
+
+    # Insert into "Packages_rpmlists" table
+    insert_pkg_rpmlist($xml_ref->{"binary-package-list"},
+                        "Packages_rpmlists",
+                        $package_id,
+                        $options,$error_strings)
+        if $xml_ref->{"binary-package-list"};
+
+    # Insert into "Group_Packages" table at the initial process.
+    # If a packaged is added with the arguments to this script, 
+    # then initial process of oscar database is finished.
+    # The newly downloaded packages is not determined to
+    # add to the selected "Group" (i.e., Default).
+    my %field_value_hash = ();
+    if ( ! $directory_argument && !@$nics_results ){
+        %field_value_hash = ( "group_name"=>$DEFAULT,
+                                "package_id"=>"$package_id",
+                                "selected" => 1);
+        push  @error_strings,
+                "Inserting $package with package_id ($package_id), group_name ($DEFAULT)"
+                . " and selected flag (1) into Group_Packages table";
+        insert_into_table ($options,"Group_Packages",\%field_value_hash,$error_strings);
+        $error_strings = ();
+    }
+
+    # Insert into "Packages_[conflicts|provides|requires]" table
+    foreach my $tag ("conflicts", "provides", "requires"){
+        if ( $xml_ref->{$tag} ){ 
+            my $tag_ref = $xml_ref->{$tag};
+            foreach my $each_tag (keys %$tag_ref){
+                if( $each_tag eq "name" || $each_tag eq "type" ){
+                    %field_value_hash = ( "p1_id"=>"$package_id",
+                                            "p2_name"=>$tag_ref->{name},
+                                            "type"=>$tag_ref->{type} );
+                    insert_into_table ($options,
+                                        "Packages_$tag",
+                                        \%field_value_hash,
+                                        $error_strings);
+                    last;
+                } else {
+                    # Handling a case when the conflicts tag is used more 
+                    # than one time.
+                    %field_value_hash = ( "p1_id"=>"$package_id",
+                                            "p2_name"=>$each_tag,
+                                            "type"=>$tag_ref->{$each_tag}->{type} );
+                    insert_into_table ($options,
+                                        "Packages_$tag",
+                                        \%field_value_hash,
+                                        $error_strings);
+                }
+            }
+        }
+    }
+
+    # Insert into "Packages_servicelists" table
+    if( $xml_ref->{servicelist} ){
+        my $service_ref = $xml_ref->{servicelist};
+        if( ref($service_ref) eq "ARRAY") {
+            foreach my $ref (@$service_ref){
+                my $value = $ref->{service};
+                my $group = ($ref->{filter}->{group}?$ref->{filter}->{group}:"all");
+                %field_value_hash = ( "package_id"=>"$package_id",
+                                        "group_name"=>$group,
+                                        "service"=>$value);
+                insert_into_table (\%options,"Packages_servicelists",\%field_value_hash,\@error_strings);
+            }
+        } else {
+            my $value = $service_ref->{service}; 
+            my $group = ($service_ref->{filter}->{group}?$service_ref->{filter}->{group}:"all");
+            %field_value_hash = ( "package_id"=>"$package_id",
+                                    "group_name"=>$group,
+                                    "service"=>$value);
+            insert_into_table ($options,
+                                "Packages_servicelists",
+                                \%field_value_hash,
+                                $error_strings);
+        }
+    }
+
+    # Insert into "Packages_switcher" table
+    if ($xml_ref->{"package-specific-attributes"}->{switcher}){
+        my $switcher_name =
+            $xml_ref->{"package-specific-attributes"}->{switcher}->{name};
+        my $switcher_tag =
+            $xml_ref->{"package-specific-attributes"}->{switcher}->{tag};
+        %field_value_hash = ( "package_id"=>"$package_id",
+                                "switcher_name"=>$switcher_name,
+                                "switcher_tag"=>$switcher_tag );
+        insert_into_table ($options,
+                            "Packages_switcher",
+                            \%field_value_hash,
+                            $error_strings);
+    }
+}
+
+################################################################################
+# Check in the database if a given version of a given OPKG is installed.       #
+#                                                                              #
+# Input: package, OPKG we are looking for.                                     #
+#        version, OPKG version we are looking for.                             #
+# Return: 1 if success, 0 else.                                                #
+################################################################################
+sub is_installed ($$) {
+    my ($package,
+        $version) = @_;
+    oscar_log_subsection (">$0:\n".
+        "====> in is_installed Checking to see if Packages table has been ".
+        "already populated\n")
+        if $options{debug} || $options{verbose};
+    my $result_ref = get_package_info_with_name($package,
+                        \%options,\@error_strings,$version);
+    return ($result_ref?1:0);
+}
+
+# Return: a debug message string used later on by other functions; or undef if
+#         error.
+#
+# TODO: we have way to many parameters in that function, that must be improved.
+sub insert_opkg_into_db ($$$$$$$$$$) {
+    my ($package,
+        $package_version,
+        $directory,
+        $xml_file_name,
+        $xml_ref,
+        $table_fields_hash,
+        $packages_table_name,
+        $options,
+        $oda_options,
+        $error_strings) = @_;
+
+    my $msg;
+
+    if ( OSCAR::Database::is_installed($package,$package_version) ){
+        my $package_id = delete_packages_related_table($package,
+                                                       $options,
+                                                       $error_strings,
+                                                       $package_version);
+        if (! defined ($package_id) ) {
+            carp "ERROR: impossible to delete database tables\n";
+            return undef;
+        }
+        if (!update_packages($xml_ref,
+                        "Packages",
+                        $package_id,
+                        $package,
+                        $directory,
+                        $table_fields_hash,
+                        $options,
+                        $error_strings)) {
+            carp "ERROR: failed updated packages data ($package)\n";
+            return undef;
+        }
+        $msg = "Modifying existing $packages_table_name record for package";
+    } else {
+        $msg = "Writing a new $packages_table_name record for package";
+
+        print Dumper($table_fields_hash) if $oda_options->{debug};
+        OSCAR::Utils::print_hash("",
+                "Print the package $package/$xml_file_name",
+                $xml_ref) if $oda_options->{debug};
+
+        # Insert into "Packages" table
+        if (!insert_packages($xml_ref, "Packages", $package, $directory,
+                            $table_fields_hash, $options,
+                            $error_strings)) {
+            print "ERROR: Impossible to insert package $package\n";
+            return undef;
+        }
+    }
+
+    return $msg;
 }
 
 1;

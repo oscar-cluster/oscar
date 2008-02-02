@@ -25,12 +25,18 @@
 #                    All rights reserved.
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
-# Copyright (c) 2007 Oak Ridge National Laboratory
+# Copyright (c) 2007-2008 Oak Ridge National Laboratory
 #                    Geoffroy Vallee <valleegr@ornl.gov>
 #                    All rights reserved.
-#       
+#
 # $Id$
 
+# This file initiaze ODA, i.e., it initializes the database and save basic 
+# information (warning the initialization does _not_ include the database
+# bootstrapping
+
+# NOTE FOR THE CASE USERS ARE USING A REGULAR DB (e,g., mysql).
+#
 # This program creates the OSCAR database and then generates all the
 # OSCAR database tables.  The tables are created using the sql
 # statements which are already defined for "InnoDB" type at
@@ -40,7 +46,7 @@
 # packages are stored to the database by parsing them to the sql
 # strings.  Meanwhile, Population of packages data to the database is
 # implemented everytime this script runs.
-
+#
 # This program requires to create/populate the tables in a specific order 
 # because of the property of InnoDB table type.
 # In sum,
@@ -60,22 +66,48 @@
 # installation.
 #
 
+# NOTE FOR THE CASE USERS ARE USING A FILE BASED ODA INSTEAD OF A REGULAR DB.
+#
+# If you do not have a real db, no need to store many information in the 
+# different configuration file: the list of available OPKGs can be extracted
+# from the configuration file of the default package set. At the end, we only 
+# need the list of core package because they need to be installed on the 
+# headnode with the current OSCAR architecture.
+
+# TODO: when using a real database, we do not need to store all the information
+# that we currently put in the db. Fortunately, the database has been simplified
+# in OSCAR-5.1 but without being integrated into trunk. We hope the integration
+# effort will happen soon, waiting for this time, we try to not touch the code
+# associated to the usafe of a real db.
+
 use strict;
 use Getopt::Long;
+use File::Basename;
 use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/OSCAR","../../../lib","../../../lib/OSCAR";
 use OSCAR::Package;
 use OSCAR::PackagePath;
 use OSCAR::PackageSet qw (get_opkgs_path_from_package_set);
 use OSCAR::Network;
-use OSCAR::Utils qw ( print_hash );
+use OSCAR::Utils;
 use XML::Simple;
 use OSCAR::Distro;
 use OSCAR::Database;
 use OSCAR::Database_generic;
 use OSCAR::oda;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::ConfigManager;
+use OSCAR::Logger;
+use OSCAR::Utils;
 use Data::Dumper;
 use Carp;
+
+# We get the configuration from the OSCAR configuration file.
+my $oscar_configurator = OSCAR::ConfigManager->new();
+if ( ! defined ($oscar_configurator) ) {
+    print "ERROR: Impossible to get the OSCAR configuration\n";
+    exit 1;
+}
+my $config = $oscar_configurator->get_config();
 
 my $folding_character = "_";
 my %list_of_multiple_value_folded_fields = ();
@@ -108,23 +140,27 @@ if ($ENV{OSCAR_DB_DEBUG}) {
 
 my $DEFAULT = "Default";
 # find the base directory of the oscar distribution,
-my $oscar_home;
-# first try the environmental variable
-if ( exists $ENV{OSCAR_HOME} ) {
-    $oscar_home = $ENV{OSCAR_HOME};
-    die "DB_DEBUG>$0:\n====> bad OSCAR_HOME environmental variable value <$oscar_home>"
-	if ( ! -d "$oscar_home");
-} else {
-    die "\nEnvironment variable \$OSCAR_HOME is not set!\n";
-}
 
-print "DB_DEBUG>$0:\n====> oscar_home=<$oscar_home>\n" if $options{debug};
+#*******************************************************************************
+# DEPRECATED
+# my $oscar_home;
+# # first try the environmental variable
+# if ( exists $ENV{OSCAR_HOME} ) {
+#     $oscar_home = $ENV{OSCAR_HOME};
+#     die "DB_DEBUG>$0:\n====> bad OSCAR_HOME environmental variable value <$oscar_home>"
+# 	if ( ! -d "$oscar_home");
+# } else {
+#     die "\nEnvironment variable \$OSCAR_HOME is not set!\n";
+# }
+# print "DB_DEBUG>$0:\n====> oscar_home=<$oscar_home>\n" if $options{debug};
+#*******************************************************************************
 
 # configure command line options parsing
 Getopt::Long::Configure("ignore_case"); # ignore case
 Getopt::Long::Configure("bundling");    # allow -a -b or -ab
 Getopt::Long::Configure("auto_abbrev"); # allow abbreviated input
 
+oscar_log_section (basename($0).": Starting...");
 # parse command line options
 GetOptions( \%options,
         'changes!',
@@ -134,15 +170,399 @@ GetOptions( \%options,
             'verbose!',
             'version' )
     || usage(1);
-print "DB_DEBUG>$0:\n====> after GetOptions ARGV=<@ARGV>\n" if $options{debug};
-oda::print_hash( "", "DB_DEBUG>$0:\n====> options after GetOptions", \%options)
-    if $oda_options{debug};
+oscar_log_subsection (basename($0).":====> after GetOptions ARGV=<@ARGV>\n")
+    if $options{debug};
+OSCAR::Utils::print_hash("",
+                          ">".basename($0).":\n====> options after GetOptions",
+                          \%options) if $oda_options{debug};
 
-# Parse the config.xml file for a specific OPKG
-# Parameters: package directory, package_name, message.
-# Return:     representation of the config.xml file (XMLSimple) is success, 
-#             undef else
-# Message is an extra string that is printed during debugging.
+# --help flag just prints out usage information and exits
+if ( exists $options{help} ) {
+    usage( 0 );
+}
+
+my $directory_argument;
+my $package_directory;
+my $package_name;
+my $package_version = "";
+if( @ARGV ){
+    $directory_argument = shift @ARGV if @ARGV;
+    $package_directory = $directory_argument;
+    $package_directory = `pwd` . "/$package_directory" 
+        if $package_directory !~ /^\//;
+    $package_directory =~ s,/\.\./[^/][^/][^/]+/,/,g; # change /../???*/ to /
+    $package_directory =~ s,/\.\./[^\./][^\./]/,/,g;  # change /../??/   to /
+    $package_directory =~ s,/\./,/,g;                 # change /./       to /
+    $package_directory =~ s,/$,,;       # take / off the end
+    oscar_log_subsection (basename($0).
+                          ":====> package_directory=<$package_directory>\n")
+        if $options{debug};
+
+    # there might be a package short name argument, if not,
+    # take the last portion of the directory path,
+    if ( @ARGV ) {
+        $package_name = shift @ARGV;
+    } else {
+        $package_name = $package_directory;
+        $package_name = $package_name . "/" if $package_name !~ /\/$/;
+        $package_name =~ s,/\.\./[^/][^/][^/]+/,/,g; # change /../???*/ to /
+        $package_name =~ s,/\.\./[^\./][^\./]/,/,g;  # change /../??/   to /
+        $package_name =~ s,/\./,/,g;                 # change /./       to /
+        $package_name =~ s,/$,,;       # take / off the end
+        $package_name =~ s,^.*/,,;     # take */ off the beginning
+    }
+    oscar_log_subsection (basename($0).":====> package_name=<$package_name>\n")
+        if $options{debug};
+    usage(1,
+          "Package name $package_name from directory $package_directory has ".
+          "to start with a letter" )
+        if $package_name !~ /^[a-zA-Z]/;
+    usage(1,
+          "Package name $package_name from directory $package_directory has ".
+          "illegal characters" )
+        if $package_name !~ /^[a-zA-Z0-9][a-zA-Z0-9\.\_\-]*$/;
+
+    # and if there is another argument, there
+    # might be a package version argument
+    if ( @ARGV ) {
+        $package_version = shift @ARGV;
+    }
+
+    # any arguments left is an error
+    usage( 1, "unknown argument(s) " . join( ' ', @ARGV ) ) if @ARGV;
+}
+
+my @base_directories = @OSCAR::PackagePath::PKG_SOURCE_LOCATIONS;
+if ( !($directory_argument && $package_name) ){
+    if ($config->{db_type} eq "db") {
+        OSCAR::Database::start_database_service ();
+
+        # create the database if not already there and leave us connected to it
+        OSCAR::Database::create_database(\%options, \@error_strings);
+    }
+
+    oscar_log_subsection ("Searching these directories for packages:");
+    foreach my $base_directory ( @base_directories ) {
+        print "    $base_directory\n";
+    }
+}
+
+# If we use a real database, we try to connect to it.
+oscar_log_subsection ("Database type: $config->{db_type}");
+if ( ($config->{db_type} eq "db") ) {
+    if ( ! oda::oda_connect( \%options, \@error_strings ) ) {
+        warn shift @error_strings while @error_strings;
+        print basename($0).":====> ERROR: cannot connect to the OSCAR database";
+        exit 1;
+    }
+}
+
+# Initialize the oscar packages related database information by
+# slurping in (or supplying default) package config.xml files
+# for all packages that were supplied in the oscar tarball/rpm
+# and that have been downloaded through opd before this.
+my @directories = ();
+my @oda_directories = ();
+my $msg = "";
+my $xml_ref = undef;
+
+# We build first the list of packages that have to be excluded
+# With the notion of package set, we do not need to exclude packages
+my @excluded_packages = ();
+
+if( $directory_argument ){
+    push @directories, $package_directory;
+} else {
+    my $package_set_id = "Default";
+
+    # We first parse the Default package set the know what are the installable 
+    # OPKGs.
+    # Note that the list of installable OPKGs depends directly on the list of 
+    # OPKGs for the distro on the headnode. This is normal, we must support all
+    # services related to OPKGs on the headnode.
+    my @opkgs = get_opkgs_path_from_package_set ($package_set_id);
+    @directories = (@directories, @opkgs);
+
+    # We add then packages from OPD
+    @base_directories = ("/var/lib/oscar/packages");
+    foreach my $packages_base_directory ( @base_directories ) {
+        opendir(PACKAGES, $packages_base_directory)
+        || next;
+        while ( my $package = readdir(PACKAGES) ) {
+            my $package_excluded = 0;
+            chomp $package;
+            # Is the package excluded for my distro?
+            foreach (@excluded_packages) {
+                if ($_ eq $package) {
+                    $package_excluded = 1;
+                    oscar_log_subsection ("We exclude package $package\n");
+                    last;
+                }
+            }
+            if (!$package_excluded) {
+                if ( $package eq "oda" ) {
+                    push @oda_directories,
+                    "$packages_base_directory/$package";
+                } 
+                push @directories,
+                "$packages_base_directory/$package";
+            }
+        }
+    }
+    my @valid_oda_directories = ();
+    foreach my $oda_directory ( @oda_directories ) {
+        if ( ! -f "$oda_directory/$xml_file_name" ) {
+        warn basename($0)."====> ignoring the invalid oda package directory ". 
+             "$oda_directory that does not contain a $xml_file_name file";
+        } else {
+            push @valid_oda_directories, $oda_directory;
+        }
+    }
+    if ( ! (@valid_oda_directories || @directories) ) {
+        print ">".basename($0).":ERROR\n".
+              "====> cannot find any valid oda packages in these directories: @base_directories";
+        exit 1;
+    }
+    my $oda_directory = pop @valid_oda_directories;
+    foreach my $skipped_oda_directory ( @valid_oda_directories ) {
+        warn ">".basename($0).
+             ":====> ignoring oda package directory $skipped_oda_directory";
+    }
+
+    if ($config->{db_type} eq "db") {
+        OSCAR::Database::create_database_tables (\%options, \@error_strings);
+    }
+
+    # The env variable $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} should be defined
+    # at wizard_prep. If not, we setup by default (to be eth0).
+    # This is necessary for the embeded script "set_global_oscar_values"
+    $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} = "eth0"    
+        if ! exists $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};
+
+    if ($config->{db_type} eq "db") {
+        # The "set_global_oscar_values" scripts populates the following
+        # tables: Clusters, Groups, and Status
+        my $bpath = $config->{binaries_path};
+        my $exit_status = system("$bpath/set_global_oscar_values "
+                    ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}".
+                    ($options{debug}?" --debug":"") )/256;
+        if ($exit_status) {
+            print (basename($0).
+                "ERROR: Couldn't initialize the global database values table");
+            exit 1;
+        }
+        oscar_log_subsection (basename($0).
+            "========((( All the OSCAR global values are set )))========\n")
+            if $options{debug} || $options{verbose};
+
+    # "create_and_populate_basic_node_info" is another embeded script
+    # to populate the "Nodes" table.
+    my $exit_status =
+        system("$bpath/create_and_populate_basic_node_info".
+               ($options{debug}?" --debug":"") )/256;
+    if ($exit_status) {
+        print ("ERROR: Couldn't set up a default package set");
+        exit (1);
+    }
+    oscar_log_subsection (basename($0).
+        "========((( All the basic node infos are set  )))========\n")
+        if $options{debug} || $options{verbose};
+
+    # The above two embeded scripts need to run before all the 
+    # data for Packages and Packages related table are populated
+    # because the above tables contain the primary keys which
+    # will be used at the Packages and its related tables.
+    # (i.e., The Packages table and Packages related tables are
+    # dependent on the above tables(Clusters, Groups, Status, and
+    # Nodes) and they can not really insert any data before the 
+    # above tables populate data and generate the primary key
+    # used by the Packages and its sub-tables.
+    } else {
+        oscar_log_subsection ("Not actually using a real database, ".
+            "we do not have to initialize basic system data");
+    }
+}
+
+if ($config->{db_type} eq "db") {
+    my %fields = ();
+    if ( (scalar keys %table_fields_hash) == 0 ){
+        oda::list_fields(\%options,"Packages",\%fields,\@error_strings);
+        my %packages_hash = %fields;
+        foreach my $field (keys %packages_hash){
+            if($field == "__group"){ $field = "group"; }
+            if($field == "__class"){ $field = "class"; }
+            $packages_hash{$field} = 1;
+        }
+        $table_fields_hash{"Packages"} = \%packages_hash;
+    }
+} elsif ( $config->{db_type} eq "file") {
+    # TODO: do we need to discover the db schema when using configuration files?
+    oscar_log_subsection (basename($0).
+        ": Not using a real db, do not need to discover the table fields");
+}
+
+my %opkg_to_be_deleted = ();
+my @opkgs = ();
+if ($config->{db_type} eq "db") {
+    my @packages_in_db = ();
+    if (!get_packages(\@opkgs,\%options,\@error_strings)) {
+        carp "ERROR: Impossible to get the list of available OPKGs from the db";
+        exit 1;
+    }
+    foreach my $opkg_ref (@opkgs){
+        push @packages_in_db, $$opkg_ref{package};
+    }
+
+    foreach my $key_package (@packages_in_db){
+        $opkg_to_be_deleted{$key_package} = 1;
+    }
+}
+
+oscar_log_subsection (basename($0).
+                      " >>>>> Populating the Packages records starts\n")
+    if $options{debug} || $options{verbose};
+
+my @core_opkgs = ();
+foreach my $directory ( @directories ) {
+    my $package = $directory;
+    $package =~ s,^.*/,,;
+    oscar_log_subsection ("Analyzing $package, $directory\n") 
+        if $options{debug};
+    if ( -d $directory &&
+         $package ne "." &&
+         $package ne ".." &&
+         $package ne "CVS" &&
+         $package ne ".svn" &&
+         ! -e "$directory/.oscar_ignore" ) {
+
+        # Assign 1 to %opkg_to_be_deleted if $package is already in the DB,
+        # which means it($package) should be kept.
+        # The rest of packages with 1 in %opkg_to_be_deleted will be removed
+        $opkg_to_be_deleted{$package} = 0 if $opkg_to_be_deleted{$package};
+
+        oscar_log_subsection (basename($0).
+            "PACKAGE : <<<<<<<<<<<<< $package >>>>>>>>>>>>> : Packages Table\n")
+            if $options{debug};
+        $msg = "";
+        $xml_ref = get_xml_ref($directory, $package, $msg);
+        push (@core_opkgs, $xml_ref->{name}) if ($xml_ref->{class} eq "core");
+        if( $config->{db_type} eq "db") {
+            $msg = insert_opkg_into_db ($package, 
+                $package_version,
+                $xml_ref,
+                \%options,
+                \@error_strings);
+            if (! defined ($msg)) {
+                carp "ERROR: impossible to include a OPKG ($package)\n";
+                exit 1;
+            }
+        }
+    }
+}
+
+if ($config->{db_type} eq "file") {
+    print "Creation the core OPKGs configuration file; the list of core " .
+            "packages is:\n";
+    print_array (@core_opkgs);
+    foreach my $p (@core_opkgs) {
+        my $opkgs_config_file = "/etc/oscar/opkgs/core.conf";
+        require OSCAR::FileUtils;
+        if (OSCAR::FileUtils::add_line_to_file_without_duplication($p,
+                $opkgs_config_file)) {
+            carp "ERROR: Impossible to add core OPKG into config file ($p)\n";
+            exit 1;
+        }
+    }
+}
+
+oscar_log_subsection (basename($0).
+    " >>>>> Populating the Packages records is finished\n")
+    if $options{debug} || $options{verbose};
+my @nics_results = ();
+my $server_node = "oscar_server";
+
+# Determine if it is the first time installation or not.
+# If nics table is already filled in, this is not first time installation
+# and skip the process of inserting into the Group_Packages table.
+get_nics_info_with_node($server_node,\@nics_results,\%options,\@error_strings);
+oscar_log_subsection (basename($0).
+      "====> If get_nics_info_with_node returns nothing, just ".
+      "go to next step: handling Packages related tables.\n".
+      "Otherwise, initialize the Packages related tables\n")
+    if $options{debug} || $options{verbose};
+
+# Delete the packages to be deleted when there is no $directory_argument,
+# which means it is a call from normal installation but not from OPD.
+# This needs to clean the tables related to Packages too.
+if(!$directory_argument){
+    foreach my $pkg (keys %opkg_to_be_deleted){
+        if($opkg_to_be_deleted{$pkg} == 1){
+            delete_packages_related_table($pkg,
+                                          \%options,
+                                          \@error_strings,
+                                          $package_version);
+            delete_package($pkg,\%options,\@error_strings);
+        }
+    }
+}
+
+oscar_log_subsection (basename($0).
+    ": ====> Adding/Modifying entries of Packages ".
+    "related tables is beginning\n") if $options{debug} || $options{verbose};
+
+foreach my $directory ( @directories ) {
+    my $package = $directory;
+    $package =~ s,^.*/,,;
+    if ( -d $directory &&
+         $package ne "." &&
+         $package ne ".." &&
+         $package ne "CVS" &&
+         $package ne ".svn" &&
+         ! -e "$directory/.oscar_ignore" ) {
+        oscar_log_subsection (basename($0).
+            "PACKAGE : <<<<<<<<< $package >>>>>>>>>: Inserting in ODA...\n")
+            if $options{debug};
+        my $each_msg = $msg . " $package ".
+                       ($package_version?"$package_version\n":"\n");
+        $xml_ref = get_xml_ref($directory, $package,$each_msg);
+        OSCAR::Utils::print_hash("",
+            "Print the package $package/$xml_file_name", 
+            $xml_ref) if $oda_options{debug};
+
+        if ($config->{db_type} eq "db") {
+            OSCAR::Database::populate_database_with_opkgs($package,
+                $package_version,
+                $xml_ref,
+                $directory_argument,
+                \@nics_results,
+                \%options,
+                \@error_strings);
+        }
+        oscar_log_subsection (basename($0).
+            "PACKAGE : <<<<<<<<< $package >>>>>>>>>: Insertion successfull.\n")
+            if $options{debug};
+    }
+}
+
+oscar_log_subsection (basename($0).
+    "=====> Adding/Modifying entries of Packages related tables is finished\n")
+    if $options{debug} || $options{verbose};
+
+oda::oda_disconnect( \%options ) if ($config->{db_type} eq "db");
+
+oscar_log_section (basename($0).": Successfully ended");
+
+exit 0;
+
+################################################################################
+# Parse the config.xml file for a specific OPKG.                               #
+#                                                                              #
+# Parameters: package directory,                                               #
+#             package_name,                                                    #
+#             message, an extra string that is printed during debugging.       #
+# Return:     representation of the config.xml file (XMLSimple) if success,    #
+#             undef else.                                                      #
+################################################################################
 sub get_xml_ref{
     my ($package_directory,
         $package_name,
@@ -152,16 +572,16 @@ sub get_xml_ref{
     my $config_file = "$package_directory/$xml_file_name";
     my $xml_ref = undef;
     if ( ! -f $config_file ) {
-        print "Warning, no $config_file exists, supplying one for package $package_name\n";
+        oscar_log_subsection ("Warning, no $config_file exists, supplying one for package $package_name\n");
     } else {
-        print "Processing $config_file for package $package_name ...\n$msg" if $msg;
+        oscar_log_subsection ("Processing $config_file for package $package_name ...\n$msg") if $msg;
         my $xs = new XML::Simple();
         $xml_ref = eval { $xs->XMLin( $config_file ); };
         if ($@) {
             print "ERROR, $config_file is invalid, supplying one for package".
                   " $package_name\n";
             $xml_ref = undef;
-            print "Trying to xmllint the $config_file to show problems:\n";
+            oscar_log_section ("Trying to xmllint the $config_file to show problems:\n");
             system "xmllint $config_file";
         }
     }
@@ -174,31 +594,36 @@ sub get_xml_ref{
         $xml_ref = \%faked_xml;
     }
     if ( $oda_options{debug} ) {
-        print "DB_DEBUG>$0:\n====> xml_ref:\n";
+        oscar_log_subsection (basename($0).":====> xml_ref:\n");
         print Dumper($xml_ref);
     }
 
     return $xml_ref;
 }
 
-sub is_installed {
-    my ($package,
-        $version) = @_;
-    print "DB_DEBUG>$0:\n====> in is_installed Checking to see if Packages table has been already populated\n"
-        if $options{debug} || $options{verbose};
-    my $result_ref = get_package_info_with_name($package,
-                        \%options,\@error_strings,$version);
-    return ($result_ref?1:0);                    
-}
 
-sub delete_packages_related_table {
-    my ($package,$options_ref,$error_ref,$package_version) = @_;
+################################################################################
+# Delete information related to a package.                                     #
+#                                                                              #
+# Return: package_id if success, undef else.                                   #
+# TODO: we have to deal here with the case where we do not use a real db but   #
+#       configuration files.                                                   #
+################################################################################
+sub delete_packages_related_table ($$$$) {
+    my ($package,
+        $options_ref,
+        $error_ref,
+        $package_version) = @_;
     my $where = "";
     my $package_ref = 
         get_package_info_with_name($package,
                                    $options_ref,
                                    $error_ref,
                                    $package_version);
+    if (!defined ($package_ref)) {
+        print "ERROR: Impossible to get package data ($package)\n";
+        return undef;
+    }
     my $package_id = $$package_ref{id};
 
     my @list_of_tables = ("Packages_rpmlists", 
@@ -213,12 +638,15 @@ sub delete_packages_related_table {
         }else{
             $where = "WHERE package_id='$package_id'";
         }
-        delete_table($options_ref,$table_name, $where ,$error_ref);
+        if (!delete_table($options_ref,$table_name, $where ,$error_ref)) {
+            print "ERROR: Impossible to delete table ($table_name)\n";
+            return undef;
+        }
     }
     return $package_id;
 }
 
-sub usage {
+sub usage ($@) {
     my ( $exit_status, @error_strings ) = @_;
     my $progname = $0;
     print <<USAGE;
@@ -270,423 +698,104 @@ $progname [options] [directory [ package_name [ package_version ] ] ]
 
 USAGE
     if ( @error_strings ) {
-	print "\n";
-	warn shift @error_strings while @error_strings;
+    print "\n";
+    warn shift @error_strings while @error_strings;
     }
     exit $exit_status;
 }
 
-# --help flag just prints out usage information and exits
-if ( exists $options{help} ) {
-    usage( 0 );
-}
+1;
 
-my $directory_argument;
-my $package_directory;
-my $package_name;
-my $package_version = "";
-if( @ARGV ){
-    $directory_argument = shift @ARGV if @ARGV;
-    $package_directory = $directory_argument;
-    $package_directory = `pwd` . "/$package_directory" 
-        if $package_directory !~ /^\//;
-    $package_directory =~ s,/\.\./[^/][^/][^/]+/,/,g; # change /../???*/ to /
-    $package_directory =~ s,/\.\./[^\./][^\./]/,/,g;  # change /../??/   to /
-    $package_directory =~ s,/\./,/,g;                 # change /./       to /
-    $package_directory =~ s,/$,,;       # take / off the end
-    print "DB_DEBUG>$0:\n====> package_directory=<$package_directory>\n" 
-        if $options{debug};
+__END__
 
-    # there might be a package short name argument, if not,
-    # take the last portion of the directory path,
-    if ( @ARGV ) {
-        $package_name = shift @ARGV;
-    } else {
-        $package_name = $package_directory;
-        $package_name = $package_name . "/" if $package_name !~ /\/$/;
-        $package_name =~ s,/\.\./[^/][^/][^/]+/,/,g; # change /../???*/ to /
-        $package_name =~ s,/\.\./[^\./][^\./]/,/,g;  # change /../??/   to /
-        $package_name =~ s,/\./,/,g;                 # change /./       to /
-        $package_name =~ s,/$,,;       # take / off the end
-        $package_name =~ s,^.*/,,;     # take */ off the beginning
-    }
-    print "DB_DEBUG>$0:\n====> package_name=<$package_name>\n" 
-        if $options{debug};
-    usage(1,
-          "Package name $package_name from directory $package_directory has ".
-          "to start with a letter" )
-        if $package_name !~ /^[a-zA-Z]/;
-    usage(1,
-          "Package name $package_name from directory $package_directory has ".
-          "illegal characters" )
-        if $package_name !~ /^[a-zA-Z0-9][a-zA-Z0-9\.\_\-]*$/;
+=head1 NAME
 
-    # and if there is another argument, there
-    # might be a package version argument
-    if ( @ARGV ) {
-        $package_version = shift @ARGV;
-    }
+package_config_xmls_to_database, an OSCAR script to initialize the OSCAR 
+database.
 
-    # any arguments left is an error
-    usage( 1, "unknown argument(s) " . join( ' ', @ARGV ) ) if @ARGV;
-}
+=head1 SYNOPSIS
 
-my @base_directories = @OSCAR::PackagePath::PKG_SOURCE_LOCATIONS;
-if ( !($directory_argument && $package_name) ){
+package_config_xmls_to_database [options] [directory [ package_name [ package_version ] ] ]
 
-    OSCAR::Database::start_database_service ();
+=head1 DESCRIPTION
 
-    # create the database if not already there and leave us connected to it
-    OSCAR::Database::create_database(\%options, \@error_strings);
+1. NO Argument
+$progname creates the OSCAR tables if they don't exist.
+And then, it goes through all the packages on the OSCAR 
+package directory($ENV{OSCAR_HOME}/packages) and look 
+into each package to parse a $xml_file_name file.
+The parsed information is stored to the OSCAR database.
+This program mainly does three things without argument:
+1) Create all the OSCAR tables from the SQL which is already
+   defined (ODA tables are created with InnoDB type)
+2) Inserts the package records parsed from $xml_file_name into
+   the following tables:
+- Packages
+- Packages_rpmlists
+- Packages_servicelists
+- Packages_switcher
+- Packages_conflict
+- Packages_requiers
+- Packages_provides
+3) Call set_global_oscar_values to set the global oscar values
+   to the following tables
+- Clusters   
+- Groups
+- Status
 
-    print "Searching these directories for packages:\n";
-    foreach my $base_directory ( @base_directories ) {
-        print "    $base_directory\n";
-    }
-}
+2. With one or two arguments
+$progname reads a $xml_file_name file for a single package
+from a specified directory.  It parses database information
+from that file, and stores it into the OSCAR database.
+Any previously existing database information for that
+version of that package is removed from the database before 
+inserting information from the $xml_file_name file.
+This implements the only section #2 of the "NO Argument" case.
 
-if ( ! oda::oda_connect( \%options, \@error_strings ) ) {
-    warn shift @error_strings while @error_strings;
-    die "DB_DEBUG>$0:\n====> cannot connect to the OSCAR database";
-}
+=head1 OPTIONS
 
-# Initialize the oscar packages related database information by
-# slurping in (or supplying default) package config.xml files
-# for all packages that were supplied in the oscar tarball/rpm
-# and that have been downloaded through opd before this.
-my @directories = ();
-my @oda_directories = ();
-my $msg = "";
-my $xml_ref = undef;
+Recognized options include:
 
-# We build first the list of packages that have to be excluded
-# With the notion of package set, we do not need to exclude packages
-my @excluded_packages = ();
+=over 5
 
-if( $directory_argument ){
-    push @directories, $package_directory;
-} else {
-    my $package_set_id = "Default";
+=item  --[no]changes
 
-    # We first parse the Default package set the know what are the installable 
-    # OPKGs.
-    # Note that the list of installable OPKGs depends directly on the list of 
-    # OPKGs for the distro on the headnode. This is normal, we must support all
-    # services related to OPKGs on the headnode.
-    my @opkgs = get_opkgs_path_from_package_set ($package_set_id);
-    @directories = (@directories, @opkgs);
+Turns on[off] database changes, default is on.
 
-    # We add then packages from OPD
-    @base_directories = ("/var/lib/oscar/packages");
-    foreach my $packages_base_directory ( @base_directories ) {
-        opendir(PACKAGES, $packages_base_directory)
-        || next;
-        while ( my $package = readdir(PACKAGES) ) {
-            my $package_excluded = 0;
-            chomp $package;
-            # Is the package excluded for my distro?
-            foreach (@excluded_packages) {
-                if ($_ eq $package) {
-                    $package_excluded = 1;
-                    print ("we exclude package $package\n");
-                    last;
-                }
-            }
-            if (!$package_excluded) {
-                if ( $package eq "oda" ) {
-                    push @oda_directories,
-                    "$packages_base_directory/$package";
-                } 
-                push @directories,
-                "$packages_base_directory/$package";
-            }
-        }
-    }
-    my @valid_oda_directories = ();
-    foreach my $oda_directory ( @oda_directories ) {
-        if ( ! -f "$oda_directory/$xml_file_name" ) {
-        warn "DB_DEBUG>$0:\n====> ignoring the invalid oda package directory $oda_directory" .
-            " that does not contain a $xml_file_name file";
-        } else {
-            push @valid_oda_directories, $oda_directory;
-        }
-    }
-    die "DB_DEBUG>$0:\n====> cannot find any valid oda packages in these directories: @base_directories"
-        if ! (@valid_oda_directories || @directories);
-    my $oda_directory = pop @valid_oda_directories;
-    foreach my $skipped_oda_directory ( @valid_oda_directories ) {
-        warn "DB_DEBUG>$0:\n====> ignoring oda package directory $skipped_oda_directory";
-    }
+=item  --[no]debug
 
-    OSCAR::Database::create_database_tables (\%options, \@error_strings);
+Turns on[off] debug output, default is off.
 
-    # The env variable $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} should be defined
-    # at wizard_prep. If not, we setup by default (to be eth0).
-    # This is necessary for the embeded script "set_global_oscar_values"
-    $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} = "eth0"    
-        if ! exists $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};
+=item  --help
 
-    # The "set_global_oscar_values" scripts populates the following
-    # tables: Clusters, Groups, and Status
-    my $exit_status = system("$ENV{OSCAR_HOME}/scripts/set_global_oscar_values "
-                ."--interface $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}".
-                ($options{debug}?" --debug":"") )/256;
-    croak("Couldn't initialize the global database values table")
-        if $exit_status;
-    print "\nDB_DEBUG>$0:\n===========================((( All the OSCAR global values are set )))===========================\n"
-        if $options{debug} || $options{verbose};
+Prints out usage information then exits.
 
-    # "create_and_populate_basic_node_info" is another embeded script
-    # to populate the "Nodes" table.
-    my $exit_status =
-        system("$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info".
-               ($options{debug}?" --debug":"") )/256;
-    croak("Couldn't set up a default package set") if $exit_status;
-    print "\nDB_DEBUG>$0:\n===========================((( All the basic node infos are set  )))===========================\n"
-        if $options{debug} || $options{verbose};
+=item  --oda=OPTION(S)
 
-    # The above two embeded scripts need to run before all the 
-    # data for Packages and Packages related table are populated
-    # because the above tables contain the primary keys which
-    # will be used at the Packages and its related tables.
-    # (i.e., The Packages table and Packages related tables are
-    # dependent on the above tables(Clusters, Groups, Status, and
-    # Nodes) and they can not really insert any data before the 
-    # above tables populate data and generate the primary key
-    # used by the Packages and its sub-tables.
-}
+Specifies options to be passed to ODA.
 
-my %fields = ();
-if ( (scalar keys %table_fields_hash) == 0 ){
-    oda::list_fields(\%options,"Packages",\%fields,\@error_strings);
-    my %packages_hash = %fields;
-    foreach my $field (keys %packages_hash){
-        if($field == "__group"){ $field = "group"; }
-        if($field == "__class"){ $field = "class"; }
-        $packages_hash{$field} = 1;
-    }
-    $table_fields_hash{"Packages"} = \%packages_hash;
-}
+=item  --[no]verbose
 
+Turns on[off] verbose output, default is off.
 
-my @packages_in_db = ();
-my @opkgs = ();
-get_packages(\@opkgs,\%options,\@error_strings);
-foreach my $opkg_ref (@opkgs){
-    push @packages_in_db, $$opkg_ref{package};
-}
+=back
 
-my %opkg_to_be_deleted = ();
-foreach my $key_package (@packages_in_db){
-    $opkg_to_be_deleted{$key_package} = 1;
-}
+=head1 AUTHOR
 
-print "\nDB_DEBUG>$0:\n<<<<<=========================== Populating the Packages records starts\n"
-    if $options{debug} || $options{verbose};
-foreach my $directory ( @directories ) {
-    my $package = $directory;
-    $package =~ s,^.*/,,;
-    print "Analyzing $package, $directory\n" if $options{debug};
-    if ( -d $directory &&
-         $package ne "." &&
-         $package ne ".." &&
-         $package ne "CVS" &&
-         $package ne ".svn" &&
-         ! -e "$directory/.oscar_ignore" ) {
+Neil Gorsuch - NCSA <ngorsuch@ncsa.uiuc.edu>
 
-        # Assign 1 to %opkg_to_be_deleted if $package is already in the DB,
-        # which means it($package) should be kept.
-        # The rest of packages with 1 in %opkg_to_be_deleted will be removed
-        $opkg_to_be_deleted{$package} = 0 if $opkg_to_be_deleted{$package};
+Benoit des Ligneris - Revolution Linux <bdesligneris@revolutionlinux.com>
 
-        print "\nDB_DEBUG>$0:\nPACKAGE : <<<<<<<<<<<<< $package >>>>>>>>>>>>> : Packages Table\n"
-            if $options{debug};
-        $msg = "";
-        $xml_ref = get_xml_ref($directory, $package,$msg);
-        if( is_installed($package,$package_version) ){
-            my $package_id = delete_packages_related_table($package,
-                                                           \%options,
-                                                           \@error_strings,
-                                                           $package_version);
-            update_packages($xml_ref,
-                            "Packages",
-                            $package_id,
-                            $package,
-                            $directory,
-                            \%table_fields_hash,
-                            \%options,
-                            \@error_strings);
-            $msg = "Modifying existing $packages_table_name record for package";
-        }else{
-            $msg = "Writing a new $packages_table_name record for package";
+The Trustees of Indiana University.
 
-            print Dumper(\%table_fields_hash) if $oda_options{debug};
-            print_hash("",
-                       "Print the package $package/$xml_file_name",
-                       $xml_ref)
-                if $oda_options{debug};
+Bernard Li <bli@bcgsc.ca>.
 
-            # Insert into "Packages" table
-            if (!insert_packages($xml_ref, "Packages", $package, $directory,
-                                 \%table_fields_hash, \%options,
-                                 \@error_strings)) {
-                print "ERROR: Impossible to insert package $package\n";
-                exit -1;
-            }
-        }
-    }
-}
+Erich Focht - NEC Europe <efocht@hpce.nec.com>
 
-print "\nDB_DEBUG>$0:\n===========================>>>>> Populating the Packages records is finished\n"
-    if $options{debug} || $options{verbose};
-my @nics_results = ();
-my $server_node = "oscar_server";
+Geoffroy Vallee - Oak Ridge National Laboratory<valleegr@ornl.gov>
 
-# Determine if it is the first time installation or not.
-# If nics table is already filled in, this is not first time installation
-# and skip the process of inserting into the Group_Packages table.
-get_nics_info_with_node($server_node,\@nics_results,\%options,\@error_strings);
-print "DB_DEBUG>$0:\n====> If get_nics_info_with_node returns nothing, just ".
-      "go to next step: handling Packages related tables.\n". 
-      "Otherwise, initialize the Packages related tables\n"
-    if $options{debug} || $options{verbose};
+=head1 SEE ALSO
 
-# Delete the packages to be deleted when there is no $directory_argument,
-# which means it is a call from normal installation but not from OPD.
-# This needs to clean the tables related to Packages too.
-if(!$directory_argument){
-    foreach my $pkg (keys %opkg_to_be_deleted){
-        if($opkg_to_be_deleted{$pkg} == 1){
-            delete_packages_related_table($pkg,
-                                          \%options,
-                                          \@error_strings,
-                                          $package_version);
-            delete_package($pkg,\%options,\@error_strings);
-        }
-    }
-}
+perl(1)
 
-print "\nDB_DEBUG>$0:\n<<<<<=========================== Adding/Modifying entries of Packages related tables is beginning\n"
-    if $options{debug} || $options{verbose};
-foreach my $directory ( @directories ) {
-    my $package = $directory;
-    $package =~ s,^.*/,,;
-    if ( -d $directory &&
-         $package ne "." &&
-         $package ne ".." &&
-         $package ne "CVS" &&
-         $package ne ".svn" &&
-         ! -e "$directory/.oscar_ignore" ) {
-        print "\nDB_DEBUG>$0:\nPACKAGE : <<<<<<<<<<<<< $package >>>>>>>>>>>>> : Packages_related Table\n"
-            if $options{debug};
-        my $each_msg = $msg . " $package ".
-                       ($package_version?"$package_version\n":"\n");
-        $xml_ref = get_xml_ref($directory, $package,$each_msg);
-        print_hash("", "Print the package $package/$xml_file_name", $xml_ref)
-            if $oda_options{debug};
-
-        my $package_ref = 
-            get_package_info_with_name($package,
-                                       \%options,
-                                       \@error_strings,
-                                       $package_version);
-        my $package_id = $$package_ref{id};
-
-        # Insert into "Packages_rpmlists" table
-        insert_pkg_rpmlist($xml_ref->{"binary-package-list"},
-                            "Packages_rpmlists",
-                            $package_id,
-                            \%options,\@error_strings)
-            if $xml_ref->{"binary-package-list"};
-
-        # Insert into "Group_Packages" table at the initial process.
-        # If a packaged is added with the arguments to this script, 
-        # then initial process of oscar database is finished.
-        # The newly downloaded packages is not determined to
-        # add to the selected "Group" (i.e., Default).
-        my %field_value_hash = ();
-        if ( ! $directory_argument && !@nics_results ){
-            %field_value_hash = ( "group_name"=>$DEFAULT,
-                                  "package_id"=>"$package_id",
-                                  "selected" => 1);
-            push  @error_strings,
-                 "Inserting $package with package_id ($package_id), group_name ($DEFAULT)"
-                 . " and selected flag (1) into Group_Packages table";
-            insert_into_table (\%options,"Group_Packages",\%field_value_hash,\@error_strings);
-            @error_strings = ();
-        }
-
-        # Insert into "Packages_[conflicts|provides|requires]" table
-        foreach my $tag ("conflicts", "provides", "requires"){
-            if ( $xml_ref->{$tag} ){ 
-                my $tag_ref = $xml_ref->{$tag};
-                foreach my $each_tag (keys %$tag_ref){
-                    if( $each_tag eq "name" || $each_tag eq "type" ){
-                        %field_value_hash = ( "p1_id"=>"$package_id",
-                                              "p2_name"=>$tag_ref->{name},
-                                              "type"=>$tag_ref->{type} );
-                        insert_into_table (\%options,
-                                           "Packages_$tag",
-                                           \%field_value_hash,
-                                           \@error_strings);
-                        last;
-                    } else {
-                        # Handling a case when the conflicts tag is used more 
-                        # than one time.
-                        %field_value_hash = ( "p1_id"=>"$package_id",
-                                              "p2_name"=>$each_tag,
-                                              "type"=>$tag_ref->{$each_tag}->{type} );
-                        insert_into_table (\%options,
-                                           "Packages_$tag",
-                                           \%field_value_hash,
-                                           \@error_strings);
-                    }
-                }
-            }
-        }
-
-        # Insert into "Packages_servicelists" table
-        if( $xml_ref->{servicelist} ){
-            my $service_ref = $xml_ref->{servicelist};
-            if( ref($service_ref) eq "ARRAY") {
-                foreach my $ref (@$service_ref){
-                    my $value = $ref->{service};
-                    my $group = ($ref->{filter}->{group}?$ref->{filter}->{group}:"all");
-                    %field_value_hash = ( "package_id"=>"$package_id",
-                                          "group_name"=>$group,
-                                          "service"=>$value);
-                    insert_into_table (\%options,"Packages_servicelists",\%field_value_hash,\@error_strings);
-                }
-            } else {
-                my $value = $service_ref->{service}; 
-                my $group = ($service_ref->{filter}->{group}?$service_ref->{filter}->{group}:"all");
-                %field_value_hash = ( "package_id"=>"$package_id",
-                                      "group_name"=>$group,
-                                      "service"=>$value);
-                insert_into_table (\%options,
-                                   "Packages_servicelists",
-                                   \%field_value_hash,
-                                   \@error_strings);
-            }
-        }
-
-        # Insert into "Packages_switcher" table
-        if ($xml_ref->{"package-specific-attributes"}->{switcher}){
-            my $switcher_name = $xml_ref->{"package-specific-attributes"}->{switcher}->{name};
-            my $switcher_tag = $xml_ref->{"package-specific-attributes"}->{switcher}->{tag};
-                %field_value_hash = ( "package_id"=>"$package_id",
-                                      "switcher_name"=>$switcher_name,
-                                      "switcher_tag"=>$switcher_tag );
-            insert_into_table (\%options,
-                               "Packages_switcher",
-                               \%field_value_hash,
-                               \@error_strings);
-        }
-    }
-}
-print "\nDB_DEBUG>$0:\n===========================>>>>> Adding/Modifying entries of Packages related tables is finished\n"
-    if $options{debug} || $options{verbose};
-
-oda::oda_disconnect( \%options );
-exit 0;
-
+=cut

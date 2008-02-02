@@ -16,7 +16,10 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# Copyright (c) 2007 The Trustees of Indiana University.  
+# Copyright (c) 2007 The Trustees of Indiana University.
+#                    All rights reserved.
+# Copyright (c) 2008 Oak Ridge National Laboratory
+#                    Geoffroy Vallee <valleegr@ornl.gov>
 #                    All rights reserved.
 
 #
@@ -50,7 +53,8 @@ my @simple_commands = ( "dump",                                      #
                         "list_fields",                               #
                         "list_tables",                               #
                         "reset_password",                            #
-                        "remove_oda"                                 #
+                        "remove_oda",                                 #
+                        "init"                                       #
                       );                                             #
 #                                                                    #
 #********************************************************************#
@@ -199,7 +203,7 @@ sub execute_simple_command{
     ( $passed_options_ref, $passed_error_strings_ref );
 
     mkdir $DUMP_DIR if !-e $DUMP_DIR;
-    
+
     if($$options_ref{type} eq "Pg"){
         $dump_dir = "$DUMP_DIR/PGSQL";
     }
@@ -547,6 +551,26 @@ sub execute_simple_command{
         }else{
             rename "$ODAPW.bak", "$ODAPW";
         }
+    }elsif ( $command eq "init" ){
+        require OSCAR::ConfigManager;
+        require OSCAR::Bootstrap;
+        # We get the configuration from the OSCAR configuration file.
+        my $oscar_configurator = OSCAR::ConfigManager->new();
+        if ( ! defined ($oscar_configurator) ) {
+            print "ERROR: Impossible to get the OSCAR configuration\n";
+        }
+        my $config = $oscar_configurator->get_config();
+        if ($config->{db_type} eq "file") {
+            if (OSCAR::Bootstrap::init_file_db()) {
+                print "ERROR: Impossible to initialize ODA\n";
+            }
+        } elsif ($config->{db_type} eq "db") {
+            if (OSCAR::Bootstrap::nit_db ($oscar_configurator);
+                print "ERROR: Impossible to initialize ODA\n";
+            }
+        } else {
+            die "ERROR: Unknow ODA type ($config->{db_type})\n";
+        }
     }elsif ( $command eq "shortcuts" ){
         foreach my $list (keys %shortcuts){
             print "$list\n";
@@ -647,6 +671,7 @@ Options:
   --user USER         database user id, default anonymous if non-root
   --verbose           turns on verbose output
   --version           prints version number and exits program
+  --init              initialize ODA.
 USAGE2
     print STDERR <<USAGE5;
 
@@ -698,7 +723,8 @@ GetOptions( \%options,
         'type|t=s',
         'user|u=s',
         'verbose!',
-        'version' )
+        'version',
+        'init' )
     || usage(0, 1);
 print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
 oda::print_hash( "", "$0: options after GetOptions", \%options) if $options{debug};
@@ -823,3 +849,69 @@ else {
     }
     exit $last_status;
 }
+
+__END__
+
+=head1 NAME
+
+oda, a command line tool for the management of the OSCAR DAtabase (ODA).
+
+=head1 SYNOPSIS
+
+oda OPTIONS
+
+=head1 DESCRIPTION
+
+The database resides in a single directory, and consists of any number of "tables". Each table has any number of "records". Each record consists of "fields", with each field having a field name and type, and a value for that field. Every record within the same table has the same field names and types, with only the values changing between records.
+
+Values:
+  DATABASE is the name of the database, default is DATABASE_NAME
+  DEFAULT is the default valyue for a field(column).
+  FIELD is the name of a field(column).
+  HOST is the network name of the database server
+  PORT is a network port number for the database server
+  TABLE is the name of a database table.
+  TYPE is the type of field(column) using standard mysql types.
+
+USAGE1
+    print STDERR <<USAGE2 if ! $interactive;
+
+Options:
+  --commands=FILE     commands file, default none, - means stdin
+  --debug             turns on debug output
+  --database=DATABASE database name, default is oscar
+  --host=HOST         database host, default localhost
+  --scripts_dir=DIR   database scripts directory, default SCRIPTS_DIR
+  --nodebug           turns off debug output
+  --password=PASSWORD database password
+  --port=PORT         database port number, default 3306
+  --noverbose         turns off verbose output
+  --type=DATABASETYPE set the database type, default is mysql
+  --user USER         database user id, default anonymous if non-root
+  --verbose           turns on verbose output
+  --version           prints version number and exits program
+  --init              initialize ODA.
+USAGE2
+    print STDERR <<USAGE5;
+
+Raw commands:
+ $0 [options] dump [DUMP FILE]
+ $0 [options] restore [DUMP FILE] 
+ $0 [options] create_database
+ $0 [options] drop_database
+ $0 [options] list_databases
+ $0 [options] list_fields TABLE
+ $0 [options] list_tables
+ $0 [options] reset_password
+ $0 [options] shortcuts
+ $0 [options] <SHORTCUTS>
+
+=head1 AUTHOR
+
+DongInn Kim, The Trustees of Indiana University.
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut

@@ -34,8 +34,10 @@ use Carp;
 
 @EXPORT = qw (
                 bootstrap_stage0
-                oscar_bootstrap
+                init_db
+                init_file_db
                 load_oscar_config
+                oscar_bootstrap
              );
 
 # Specify where the install_prereq script is
@@ -161,7 +163,7 @@ sub bootstrap_prereqs ($$) {
 }
 
 ################################################################################
-# Initialize the database used by ODA when a real database is used (e.g.       #
+# Initialize the database used by ODA when a real database is used (e.g.,      #
 # mysql).                                                                      #
 #                                                                              #
 # Input: OSCAR configurator object (ConfigManager object).                     #
@@ -175,9 +177,7 @@ sub init_db ($) {
     }
     my $config = $configurator->get_config();
 
-    require OSCAR::oda; # WARNING: it seems this is working only w/ 
-                        # mysql.
-                        # TODO: do something more generic.
+    require OSCAR::oda;
     print "Database Initialization\n";
     my (%options, %errors);
     my $database_status = oda::check_oscar_database(
@@ -222,20 +222,34 @@ sub init_db ($) {
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
 sub init_file_db () {
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        print "ERROR: Impossible to get the OSCAR configuration\n";
+        return -1;
+    }
+    my $config = $oscar_configurator->get_config();
+    my $scripts_path = $config->{binaries_path};
+
     # We just check if the directories exist in /etc/oscar
     my $path = "/etc/oscar/";
-    my $partitions_path = $path . "partitions";
+    my $opkgs_config_path = $path . "opkgs";
     my $clusters_path = $path . "clusters";
-    my $nodes_path = $path . "nodes";
 
     if ( ! -d $path ) {
         mkdir ($path);
-    } elsif ( ! -d $clusters_path ) {
+    }
+    if ( ! -d $clusters_path ) {
         mkdir ($clusters_path);
-    } elsif ( ! -d $partitions_path ) {
-        mkdir ($partitions_path);
-    } elsif ( ! -d $nodes_path ) {
-        mkdir ($nodes_path);
+    }
+    if ( ! -d $opkgs_config_path ) {
+        mkdir ($opkgs_config_path);
+    }
+    print "\tDatabase created, now populating the database\n";
+    my $cmd = "$scripts_path/package_config_xmls_to_database";
+    if (system ($cmd)) {
+        print "ERROR: Impossible to populate the database ($cmd)\n";
+        return -1;
     }
     return 0;
 }
