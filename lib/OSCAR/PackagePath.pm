@@ -728,6 +728,7 @@ sub get_list_setup_distros {
     my @setup_distros = ();
 
     # We get the list of supported distros
+    require OSCAR::Distro;
     my @supported_distros = OSCAR::Distro::get_list_of_supported_distros ();
 
     foreach my $d (@supported_distros) {
