@@ -22,14 +22,12 @@ package OSCAR::Distro;
 #
 # Copyright 2004 Revolution Linux
 #           Benoit des Ligneris <bdesligneris@revolutionlinux.com>
-#
-
 # Copyright (c) 2003 NCSA
 #                    Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
-
-#   Copyright 2002 International Business Machines
+# Copyright 2002 International Business Machines
 #                  Sean Dague <japh@us.ibm.com>
-# Copyright � 2003, The Board of Trustees of the University of Illinois. All rights reserved.
+# Copyright � 2003, The Board of Trustees of the University of Illinois. 
+#                   All rights reserved.
 # Copyright (c) 2005, Revolution Linux
 # Copyright (c) 2007 The Trustees of Indiana University.  
 #                    All rights reserved.

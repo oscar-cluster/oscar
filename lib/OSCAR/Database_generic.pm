@@ -125,14 +125,13 @@ $options{debug} = 1
 # These subroutines directly call the oda query command.                       #
 # Return; if query succeeds, return 1. Otherwise, return 0.                    #
 ################################################################################
-
 sub do_select {
     my ($sql,
         $result_ref,
         $options_ref,
         $error_strings_ref) = @_;
 
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_select SQL : $sql\n";
+    my $debug_msg = ">$0:\n====> in Database::do_select SQL : $sql\n";
     print "$debug_msg" if $$options_ref{debug} || $$options_ref{verbose};
     push @$error_strings_ref, $debug_msg;
 
@@ -142,7 +141,7 @@ sub do_select {
             $sql,
             $result_ref,
             $error_strings_ref);
-    
+
     $error_strings_ref = \@error_strings;
     return  $success;
 }
@@ -216,6 +215,15 @@ sub insert_into_table {
     return  $success;
 }
 
+################################################################################
+# Delete a given table from the database.                                      #
+#                                                                              #
+# Input: options_ref,                                                          #
+#        table,                                                                #
+#        where,                                                                #
+#        error_strings_ref                                                     #
+# Return: non-zero if success.                                                 #
+################################################################################
 sub delete_table {
     my ($options_ref,$table,$where,$error_strings_ref) = @_;
     my $sql = "DELETE FROM $table ";
@@ -235,8 +243,6 @@ sub delete_table {
     $error_strings_ref = \@error_strings;
     return  $success;
 }
-
-
 
 sub update_table {
     my ($options_ref,$table,$field_value_ref,$where,$error_strings_ref) = @_;
@@ -375,5 +381,7 @@ sub init_database_passwd ($) {
 
     return 0;
 }
+
+
 
 1;

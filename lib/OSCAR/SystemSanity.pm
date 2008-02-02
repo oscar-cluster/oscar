@@ -15,7 +15,7 @@ package OSCAR::SystemSanity;
 #  See also: $OSCAR_HOME/scripts/{system-sanity, system-sanity.d/}
 #
 
-use constant { SUCCESS => 0,    
+use constant { SUCCESS => 0,
                WARNING => 1,    # can be 1..254
                FAILURE => 255,
               };

@@ -16,7 +16,7 @@
 # Based on the machine set described, this script populates the database in 
 # order to store all needed actions.
 #
-# $Id: create_oscar_database 5134 2006-07-12 05:51:29Z valleegr $
+# $Id$
 #
 
 use strict;
