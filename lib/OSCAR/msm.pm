@@ -77,13 +77,12 @@ use_file("defaultms.xml");
 #       - support multiple servers, we currently assume we have a single       #
 #         headnode (beowulf architecture).                                     #
 ################################################################################
-sub add_partition ($$$) {
-    my ($partition_name, $distro, $list_clients) = @_;
-    my @servers = "";
-    my $ret = oda_create_new_partition ("oscar", 
+sub add_partition ($$$$) {
+    my ($cluster_name, $partition_name, $distro, $list_clients) = @_;
+    my $ret = oda_create_new_partition ($cluster_name, 
                                         $partition_name,
                                         $distro,
-                                        \@servers,
+                                        undef,
                                         $list_clients);
     return $ret;
 }

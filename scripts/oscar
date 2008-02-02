@@ -1,8 +1,8 @@
 #!/usr/bin/env perl 
 #
 # Copyright (c) 2007-2008 Oak Ridge National Laboratory
-#               Geoffroy Vallee <valleegr@ornl.gov>
-#               All rights reserved
+#                         Geoffroy Vallee <valleegr@ornl.gov>
+#                         All rights reserved
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -23,8 +23,9 @@ use OSCAR::Database;
 use OSCAR::Network;
 use Getopt::Long;
 
+# Few needed variables.
 my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
-    $distro, $list_partition_distro);
+    $distro, $list_partition_distro, $cluster_name);
 my $verbose = 1;
 
 Getopt::Long::Configure("pass_through");
@@ -33,18 +34,36 @@ GetOptions(
         "display-partition-nodes=s"     => \$list_partition_nodes,
         "display-partition-distro=s"    => \$list_partition_distro,
         "add-partition=s"               => \$new_partition,
+        "cluster=s"                     => \$cluster_name,
         "client=s"                      => \@clients,
         "distro=s"                      => \$distro,
         "help"                          => \&help,
         );
 
+# We get the configuration from the OSCAR configuration file.
+my $oscar_configurator = OSCAR::ConfigManager->new();
+if ( ! defined ($oscar_configurator) ) {
+    die "ERROR: Impossible to get the OSCAR configuration\n";
+}
+my $config = $oscar_configurator->get_config();
+die "ERROR: ODA is based on a real database and currently this script does ".
+    "not support this mode, it supports only a file based ODA database. ".
+    "Please upodate your OSCAR configuration file and re-initialize OSCAR ".
+    "if you want to use this script" if ($config->{db_type} ne "file"); 
+
 # The user wants to add a new partition
 if ($new_partition) {
-    # If the user did not define clients at the same time, this is an error
+    # In order to add a partition, a cluster has to be specified.
+    if (!defined($cluster_name)) {
+        die "ERROR: no cluster is specified, impossible to create a new ".
+            "partition";
+    }
+    # If the user did not define clients at the same time, this is an error.
     if (scalar(@clients) == 0) {
         die ("ERROR: no client is associated to the partition, ".
               "impossible to create the partition.\n");
     }
+    # The user also need to spoecify a cluster.
     if (!defined($distro) || $distro eq "") {
         die ("ERROR: no linux distribution is associated to the partition. ".
               "To know which distributions are supported, please use ".
@@ -52,15 +71,15 @@ if ($new_partition) {
     }
     print "New partition: name=$new_partition, ".
           "distro=$distro, clients=@clients\n" if $verbose;
-    OSCAR::msm::add_partition ($new_partition, $distro, \@clients);
+    OSCAR::msm::add_partition ($cluster_name, 
+                               $new_partition, 
+                               $distro,
+                               \@clients);
 }
 
 # The user wants to see the list of partitions.
 if ($list_partitions) {
-    # TODO: Pretty ugly to do the SQL query here, we have to change that
-    my $sql = "SELECT * FROM Clusters WHERE name='oscar'";
-    my $cluster_id = OSCAR::Database::oda_query_single_result ($sql, "id");
-    my @partitions = OSCAR::PartitionMgt::get_list_partitions ($cluster_id);
+    my @partitions = OSCAR::PartitionMgt::get_list_partitions ("oscar");
     foreach my $p (@partitions) {
         if (defined ($p)) {
             print "$p ";
@@ -130,6 +149,8 @@ Recognized options include:
 
 =item --add-partition
 
+=item --cluster
+
 =item --client
 
 =item --distro
@@ -139,6 +160,13 @@ Recognized options include:
 This help information.
 
 =back
+
+=head1 Examples
+
+To add a partition "partition1" to the cluster "oscar with two nodes, "node1" 
+and "node2", based on debian 4 x86_64:
+    oscar --add-partition partition1 --cluster oscar --client node1 --client \
+    node2 --distro debian-4-x86_64
 
 =head1 AUTHOR
 
