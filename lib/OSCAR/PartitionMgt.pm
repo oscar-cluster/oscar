@@ -92,8 +92,27 @@ sub get_partition_distro ($$) {
         my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
         $distro = oda_query_single_result ($sql, "distro");
     } elsif ($config->{db_type} eq "file") {
-        carp "Not yet implemented\n";
-        return undef;
+        my $f = "$basedir/$cluster_name/$partition_name/$partition_name.conf";
+        # we create an object for the manipulation of the partition config file.
+        require OSCAR::PartitionConfigManager;
+        my $config_obj = OSCAR::PartitionConfigManager->new(
+            config_file => "$f");
+        if ( ! defined ($config_obj) ) {
+            carp "ERROR: Impossible to create an object in order to handle ".
+                 "the partition configuration file.\n";
+            return -1;
+        }
+        my $partition_config = $config_obj->get_config();
+        if (!defined ($partition_config)) {
+            carp "ERROR: Impossible to load the partition configuration file\n";
+            return undef;
+        }
+        my $id = $partition_config->{'distro'}.
+                 "-".
+                 $partition_config->{'distro_version'}.
+                 "-".
+                 $partition_config->{'arch'};
+        return $id;
     } else {
         carp "ERROR: Unknown ODA type ($config->{db_type})\n";
         return undef;
@@ -216,7 +235,7 @@ sub get_list_partitions ($) {
     if ($config->{db_type} eq "db") {
         my $sql = "SELECT * FROM Clusters WHERE name='$cluster_name'";
         my $cluster_id = OSCAR::Database::oda_query_single_result ($sql, "id");
-        @partitions = OSCAR::PartitionMgt::get_list_partitions ($cluster_id);
+#        @partitions = get_list_partitions ($cluster_id);
     } elsif ($config->{db_type} eq "file") {
         if ( ! -d $basedir ) {
             carp "ERROR: Configuration files missing\n";
@@ -262,7 +281,7 @@ sub oda_create_new_partition ($$$$$) {
 
     # We first check if the partition already exists
     my @config = get_partition_info ($cluster_name, $partition_name);
-    if (!defined (@config)) {
+    if (!@config) {
         carp "ERROR: Impossible to query ODA";
         return -1;
     }
@@ -400,7 +419,7 @@ sub set_partition_info {
         # nodes for a single node
 
         # We get the ODA id for servers (need in order to populate the database)
-        my $sql = "SELECT id FROM Groups WHERE name='oscar_server'";
+        $sql = "SELECT id FROM Groups WHERE name='oscar_server'";
         my $server_id = oda_query_single_result ($sql, "id");
         print "ODA Server Id: $server_id\n" if $verbose;
 

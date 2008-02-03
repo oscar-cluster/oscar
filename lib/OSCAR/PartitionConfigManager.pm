@@ -69,7 +69,10 @@ sub print_config {
     print "\tArch: $arch\n";
 }
 
-sub get_config {
+sub get_config ($) {
+    my $self = shift;
+
+    load_config($self);
     my %cfg = ( 'distro'            => $distro,
                 'distro_version'    => $dist_version,
                 'arch'              => $arch );

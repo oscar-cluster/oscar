@@ -110,7 +110,6 @@ sub get_dirs_in_path ($) {
     my @dirs;
     foreach my $entry (@dir_content) {
         my $path = "$dir/$entry";
-        print "$path\n";
         if ( -d "$path") {
             push (@dirs, $entry);
         }
