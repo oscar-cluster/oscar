@@ -20,9 +20,10 @@ use Carp;
 use AppConfig;
 
 ##########################################################
-# A bunch of variable filled up with creating the object #
+# A bunch of variable filled up when creating the object #
 ##########################################################
-our $name;
+our $distro;
+our $dist_version;
 our $arch;
 
 sub new {
@@ -33,7 +34,6 @@ sub new {
         @_,
     };
     bless ($self, $class);
-    load_config ($self);
     return $self;
 }
 
@@ -50,24 +50,42 @@ sub load_config ($) {
 
     use vars qw($config);
     $config = AppConfig->new(
-        'NAME'      => { ARGCOUNT => 1 },
-        'ARCH'      => { ARGCOUNT => 1 },
+        'DISTRO'            => { ARGCOUNT => 1 },
+        'DISTRO_VERSION'    => { ARGCOUNT => 1 },
+        'ARCH'              => { ARGCOUNT => 1 },
         );
     $config->file ($config_file);
 
     # Load configuration values
-    $name              = $config->get('NAME');
+    $distro            = $config->get('DISTRO');
+    $dist_version      = $config->get('DISTRO_VERSION');
     $arch              = $config->get('ARCH');
 }
 
 sub print_config {
     print "Partition Configuration:\n";
-    print "\tName: $name\n";
+    print "\tDistro: $distro\n";
+    print "\tDistro version: $dist_version\n";
+    print "\tArch: $arch\n";
 }
 
 sub get_config {
-    my %cfg = ('name' => $name, 'arch' => $arch );
+    my %cfg = ( 'distro'            => $distro,
+                'distro_version'    => $dist_version,
+                'arch'              => $arch );
     return \%cfg;
+}
+
+sub set_config ($$) {
+    my ($self, $cfg) = @_;
+
+    print "Creating config file ".$self->{config_file}."\n";
+    print "$cfg->{'distro'}, $cfg->{'distro_version'}, $cfg->{'arch'}\n";
+    open (MYFILE, ">$self->{config_file}");
+    print MYFILE "distro\t\t = $cfg->{'distro'}\n";
+    print MYFILE "distro_version\t\t = ".$cfg->{'distro_version'}."\n";
+    print MYFILE "arch\t\t = $cfg->{'arch'}\n";
+    close (MYFILE);
 }
 
 1;

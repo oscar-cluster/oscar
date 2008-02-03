@@ -97,9 +97,8 @@ if ($list_partition_nodes) {
 #        die "ERROR: no cluster is specified, impossible to create a new ".
 #            "partition";
 #    }
-    my @nodes =
-        OSCAR::PartitionMgt::get_list_nodes_partition ("oscar",
-                                                       $list_partition_nodes);
+    my @nodes = OSCAR::PartitionMgt::get_list_nodes_partition ("oscar",
+        $list_partition_nodes);
     die "ERROR: impossible to get nodes information" if (!@nodes);
     foreach my $n (@nodes) {
         print "$n ";
@@ -110,8 +109,8 @@ if ($list_partition_nodes) {
 # The user wants to see the Linux distribution id associated to a give 
 # partition.
 if ($list_partition_distro) {
-    my $distro = 
-        OSCAR::PartitionMgt::get_partition_distro ($list_partition_distro);
+    my $distro = OSCAR::PartitionMgt::get_partition_distro ("oscar",
+        $list_partition_distro);
     if (defined($distro)) {
         print "$distro";
         print "\n";

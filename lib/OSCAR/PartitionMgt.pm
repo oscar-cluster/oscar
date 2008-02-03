@@ -44,6 +44,7 @@ use OSCAR::ConfigManager;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
+use warnings "all";
 
 @EXPORT = qw(
             get_list_nodes_partition
@@ -272,7 +273,11 @@ sub oda_create_new_partition ($$$$$) {
                                $servers, $clients);
     } 
     oscar_log_subsection "Adding the partition record...";
-    set_partition_info ($cluster_name, $partition_name, $distro, $servers, $clients);
+    set_partition_info ($cluster_name,
+                        $partition_name,
+                        $distro,
+                        $servers,
+                        $clients);
     oscar_log_section "ODA: New partition created" if $verbose;
 
     return 0;
@@ -326,9 +331,11 @@ sub get_partition_info ($$) {
         }
 
         # Step 2: Do partitions exist?
-        my @partitions = 
+        @partitions =
             OSCAR::FileUtils::get_dirs_in_path ("$basedir/$cluster_name");
     }
+    print "Partitions:\n";
+    print_array @partitions;
     return @partitions;
 }
 
@@ -344,7 +351,7 @@ sub get_partition_info ($$) {
 # TODO: the code for the real db is buggy.                                     #
 ################################################################################
 sub set_partition_info {
-    my ($cluster_name, $partition_name, $distro, $servers, $clients) = @_;
+    my ($cluster_name, $partition_name, $distro_id, $servers, $clients) = @_;
 #    my $sql;
     my $options_ref;
     my $error_strings_ref;
@@ -378,11 +385,13 @@ sub set_partition_info {
 
 #        $sql = "INSERT INTO Cluster_Partitions (cluster_id, partition_id) VALUES ".
 #               "('$cluster_id', '$partition_id')";
-        die "ERROR: Failed to insert values via << $sql >>"
-                if! do_insert($sql,
-                          "Cluster_Partitions", 
-                          $options_ref, 
-                          $error_strings_ref);
+        if (!do_insert($sql,
+                       "Cluster_Partitions", 
+                       $options_ref, 
+                       $error_strings_ref)) {
+            carp "ERROR: Failed to insert values via << $sql >>";
+            return -1;
+        }
 
         # Step 3: we populate the table Partition_nodes (relation between modes and
         # partitions).
@@ -414,20 +423,47 @@ sub set_partition_info {
 
         # Step 2: Does the partition already exist?
         # If so, we exist; if not we create it
-        if ( ! -d "$basedir/$cluster_name/$partition_name") {
-            mkdir "$basedir/$cluster_name/$partition_name";
+        my $partition_path = "$basedir/$cluster_name/$partition_name";
+        if ( ! -d "$partition_path") {
+            mkdir "$partition_path";
         }
+
+        # Step 3: the FS has been updated to welcome the partition configuration
+        # file.
+        my ($distro, $distro_version, $arch) = split ("-", $distro_id);
+        my %partition_config = (
+                'distro'        => $distro,
+                'distro_version' => $distro_version,
+                'arch'          => $arch
+                );
+        my $config_file = "$partition_path/$partition_name.conf";
+        # We create an object for the manipulation of the partition config file.
+        require OSCAR::PartitionConfigManager;
+        my $config_obj = OSCAR::PartitionConfigManager->new(
+            config_file => "$config_file");
+        if ( ! defined ($config_obj) ) {
+            carp "ERROR: Impossible to create an object in order to handle ".
+                 "the partition configuration file.\n";
+            return -1;
+        }
+        $config_obj->set_config(\%partition_config);
     }
-    
+
     if (scalar (@$servers) > 0) {
         foreach my $server (@$servers) {
-            set_node_to_partition ($cluster_name, $partition_name, $server, $server_id);
+            set_node_to_partition ($cluster_name,
+                                   $partition_name,
+                                   $server,
+                                   $server_id);
         }
     }
 
     if (scalar (@$clients) > 0) {
         foreach my $client (@$clients) {
-            set_node_to_partition ($cluster_name, $partition_name, $client, $client_id);
+            set_node_to_partition ($cluster_name,
+                                   $partition_name,
+                                   $client,
+                                   $client_id);
         }
     }
 
