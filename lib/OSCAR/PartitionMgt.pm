@@ -5,7 +5,7 @@ package OSCAR::PartitionMgt;
 #                         Oak Ridge National Laboratory
 #                         All rights reserved.
 #
-#   $Id: PartitionMgt.pm 4833 2006-05-24 08:22:59Z bli $
+#   $Id$
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by

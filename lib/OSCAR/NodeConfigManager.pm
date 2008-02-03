@@ -11,7 +11,7 @@ package OSCAR::NodeConfigManager;
 #
 
 #
-# $Id: NodeConfigManager.pm 6774 2007-12-21 14:42:07Z valleegr $
+# $Id$
 #
 
 use strict;
