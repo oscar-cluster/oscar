@@ -30,7 +30,7 @@ use Data::Dumper;
 # Few needed variables.
 my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
     $distro, $list_partition_distro, $cluster_name, $queried_node_name,
-    $partition_name);
+    $partition_name, $node_to_update);
 my $verbose = 1;
 
 Getopt::Long::Configure("pass_through");
@@ -39,13 +39,14 @@ GetOptions(
         "display-partition-nodes=s"     => \$list_partition_nodes,
         "display-partition-distro=s"    => \$list_partition_distro,
         "display-node-info=s"           => \$queried_node_name,
+        "update-node-info=s"            => \$node_to_update,
         "add-partition=s"               => \$new_partition,
         "partition=s"                   => \$partition_name,
         "cluster=s"                     => \$cluster_name,
         "client=s"                      => \@clients,
         "distro=s"                      => \$distro,
-        "help"                          => \&help,
-        ) || help_and_exit();
+        "help"                          => \&help_and_exit,
+        ) || help_and_die();
 
 # We get the configuration from the OSCAR configuration file.
 my $oscar_configurator = OSCAR::ConfigManager->new();
@@ -130,7 +131,10 @@ if ($list_partition_distro) {
 
 # The user wants to have information regarding a specific node.
 if ($queried_node_name) {
-    # In order to add a partition, a cluster has to be specified.
+    print "-$queried_node_name-\n";
+    if ($queried_node_name eq "") {
+        die "ERROR: Invalid node name\n";
+    }
     if (!defined($partition_name)) {
         die "ERROR: no partition is specified, impossible to get node ".
             "information";
@@ -146,15 +150,21 @@ if ($queried_node_name) {
 
 sub help () {
     print "Not yet implemented\n";
-    exit 0;
 }
 
-sub help_and_exit {
+sub help_and_die {
     help ();
     exit 1;
 }
 
-1;
+sub help_and_exit {
+    help ();
+    exit 0;
+}
+
+help_and_die();
+
+exit 1;
 
 
 __END__
