@@ -19,13 +19,18 @@ use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::msm;
 use OSCAR::PartitionMgt;
+use OSCAR::NodeMgt;
 use OSCAR::Database;
 use OSCAR::Network;
 use Getopt::Long;
+use warnings "all";
+
+use Data::Dumper;
 
 # Few needed variables.
 my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
-    $distro, $list_partition_distro, $cluster_name);
+    $distro, $list_partition_distro, $cluster_name, $queried_node_name,
+    $partition_name);
 my $verbose = 1;
 
 Getopt::Long::Configure("pass_through");
@@ -33,7 +38,9 @@ GetOptions(
         "display-partitions"            => \$list_partitions,
         "display-partition-nodes=s"     => \$list_partition_nodes,
         "display-partition-distro=s"    => \$list_partition_distro,
+        "display-node-info=s"           => \$queried_node_name,
         "add-partition=s"               => \$new_partition,
+        "partition=s"                   => \$partition_name,
         "cluster=s"                     => \$cluster_name,
         "client=s"                      => \@clients,
         "distro=s"                      => \$distro,
@@ -75,6 +82,7 @@ if ($new_partition) {
                                $new_partition, 
                                $distro,
                                \@clients);
+    exit 0;
 }
 
 # The user wants to see the list of partitions.
@@ -86,6 +94,7 @@ if ($list_partitions) {
         }
     }
     print "\n";
+    exit 0;
 }
 
 # The user wants to see the list of nodes within a partition.
@@ -104,9 +113,10 @@ if ($list_partition_nodes) {
         print "$n ";
     }
     print "\n";
+    exit 0;
 }
 
-# The user wants to see the Linux distribution id associated to a give 
+# The user wants to see the Linux distribution id associated to a give.
 # partition.
 if ($list_partition_distro) {
     my $distro = OSCAR::PartitionMgt::get_partition_distro ("oscar",
@@ -115,10 +125,28 @@ if ($list_partition_distro) {
         print "$distro";
         print "\n";
     }
+    exit 0;
+}
+
+# The user wants to have information regarding a specific node.
+if ($queried_node_name) {
+    # In order to add a partition, a cluster has to be specified.
+    if (!defined($partition_name)) {
+        die "ERROR: no partition is specified, impossible to get node ".
+            "information";
+    }
+    my $node_config = OSCAR::NodeMgt::get_node_config("oscar",
+        $partition_name,
+        $queried_node_name);
+    if ( !defined($node_config) ) {
+        print "The node is not yet fully defined\n";
+    }
+    exit 0;
 }
 
 sub help () {
     print "Not yet implemented\n";
+    exit 0;
 }
 
 sub help_and_exit {
@@ -146,7 +174,8 @@ users to define and deploy clusters and cluster partitions.
 
 =head1 SYNTAX
 
-oscar [options]
+oscar [--display-partitions | --display-partition-nodes | 
+       --display-partition-distro | --display-node-info | --add-partition]
 
 =head1 OPTIONS
 
@@ -160,9 +189,13 @@ Recognized options include:
 
 =item --display-partition-distro
 
+=item --display-node-info
+
 =item --add-partition
 
 =item --cluster
+
+=item --partition
 
 =item --client
 
@@ -180,6 +213,9 @@ To add a partition "partition1" to the cluster "oscar with two nodes, "node1"
 and "node2", based on debian 4 x86_64:
     oscar --add-partition partition1 --cluster oscar --client node1 --client \
     node2 --distro debian-4-x86_64
+
+To get information about node1 from partition1:
+    oscar --display-node-info node1 --partition partition1
 
 =head1 AUTHOR
 
