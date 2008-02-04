@@ -69,7 +69,7 @@ sub load_config ($) {
 #     $name               = $config->get('NAME');
     $ip                 = $config->get('IP');
     $mac                = $config->get('MAC');
-    $partition          = $config->get('PARTITION');
+#     $partition          = $config->get('PARTITION');
 #     @opkgs              = split (" ", $config->get('OPKGS'));
     $hostname           = $config->get('HOSTNAME');
     $type               = $config->get('TYPE');

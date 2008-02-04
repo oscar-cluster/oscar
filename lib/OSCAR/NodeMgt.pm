@@ -82,6 +82,18 @@ sub get_node_config ($$$) {
             return undef;
         } else {
             $config_obj->print_config();
+            if ($node_config->{'type'} eq "virtual") {
+                require OSCAR::VMConfigManager;
+                my $vm_config_file = "$path/vm.conf";
+                my $vm_config_obj = OSCAR::VMConfigManager->new(
+                    config_file => "$vm_config_file");
+                if ( ! defined ($config_obj) ) {
+                    carp "ERROR: Impossible to create an object in order to ".
+                         "handle the node configuration file.\n";
+                    return -1;
+                }
+                $vm_config_obj->print_config();
+            }
         }
     } elsif ($config->{db_type} eq "db") {
         carp "Real db are not yet supported\n";
