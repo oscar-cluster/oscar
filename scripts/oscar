@@ -23,6 +23,7 @@ use OSCAR::NodeMgt;
 use OSCAR::Database;
 use OSCAR::Network;
 use Getopt::Long;
+use Data::Dumper;
 use warnings "all";
 
 use Data::Dumper;
@@ -30,7 +31,8 @@ use Data::Dumper;
 # Few needed variables.
 my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
     $distro, $list_partition_distro, $cluster_name, $queried_node_name,
-    $partition_name, $node_to_update);
+    $partition_name, $node_to_update, $node_hostname, $node_ip, $node_type,
+    $node_mac);
 my $verbose = 1;
 
 Getopt::Long::Configure("pass_through");
@@ -45,6 +47,10 @@ GetOptions(
         "cluster=s"                     => \$cluster_name,
         "client=s"                      => \@clients,
         "distro=s"                      => \$distro,
+        "hostname=s"                    => \$node_hostname,
+        "ip=s"                          => \$node_ip,
+        "type=s"                        => \$node_type,
+        "mac=s"                         => \$node_mac,
         "help"                          => \&help_and_exit,
         ) || help_and_die();
 
@@ -131,7 +137,6 @@ if ($list_partition_distro) {
 
 # The user wants to have information regarding a specific node.
 if ($queried_node_name) {
-    print "-$queried_node_name-\n";
     if ($queried_node_name eq "") {
         die "ERROR: Invalid node name\n";
     }
@@ -148,8 +153,40 @@ if ($queried_node_name) {
     exit 0;
 }
 
+if ($node_to_update) {
+    if ($node_to_update eq "") {
+        die "ERROR: Invalid node name\n";
+    }
+    if (!defined($partition_name)) {
+        die "ERROR: no partition is specified, impossible to get node ".
+            "information";
+    }
+    # Few asserts to be sure we have all needed information
+    if (!defined($node_hostname) || $node_hostname eq "" ||
+        !defined($node_ip) || $node_ip eq "" ||
+        !defined($node_type) || $node_type eq "" ||
+        !defined($node_mac) || $node_mac eq "") {
+        die "ERROR: invalid node information, please check you provide all ".
+            "needed data";
+    }
+    my %node_config = (
+                        'hostname'  => $node_hostname,
+                        'ip'        => $node_ip,
+                        'mac'       => $node_mac,
+                        'type'      => $node_type,
+                      );
+    print Dumper %node_config;
+    if (OSCAR::NodeMgt::set_node_config ("oscar",
+        $partition_name,
+        $node_to_update,
+        \%node_config)) {
+        die "ERROR: Impossible to save the node configuration\n";
+    }
+    exit 0;
+}
+
 sub help () {
-    print "Not yet implemented\n";
+    print "Help: Not yet implemented\n";
 }
 
 sub help_and_die {
@@ -184,8 +221,8 @@ users to define and deploy clusters and cluster partitions.
 
 =head1 SYNTAX
 
-oscar [--display-partitions | --display-partition-nodes | 
-       --display-partition-distro | --display-node-info | --add-partition]
+oscar [--add-partition | --display-partitions | --display-partition-nodes | 
+       --display-partition-distro | --display-node-info | --update-node-info]
 
 =head1 OPTIONS
 
@@ -213,7 +250,7 @@ Recognized options include:
 
 =item --help
 
-This help information.
+Help information.
 
 =back
 
@@ -226,6 +263,11 @@ and "node2", based on debian 4 x86_64:
 
 To get information about node1 from partition1:
     oscar --display-node-info node1 --partition partition1
+
+To set node data (node2 of partition1):
+    oscar --update-node-info node2 --partition partition1 \
+    --mac  00:01:01:01:01:01 --ip 192.168.1.1 --type diskfull \
+    --hostname node2.oscardomain
 
 =head1 AUTHOR
 

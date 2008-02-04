@@ -28,15 +28,18 @@ package OSCAR::NodeMgt;
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::ConfigManager;
+use OSCAR::Logger;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 use warnings "all";
 
 @EXPORT = qw(
-            get_node_config 
+            get_node_config
+            set_node_config
             );
 
+my $verbose = 1;
 # Where the configuration files are.
 our $basedir = "/etc/oscar/clusters";
 
@@ -88,6 +91,57 @@ sub get_node_config ($$$) {
         return -1;
     }
     return $node_config;
+}
+
+sub set_node_config ($$$$) {
+    my ($cluster, $partition, $node_name, $node_config) = @_;
+
+    if ($verbose) {
+        oscar_log_section "Saving node configuration...";
+        oscar_log_subsection "Cluster: $cluster";
+        oscar_log_subsection "Partition: $partition";
+        oscar_log_subsection "Node: $node_name";
+    }
+
+    # Few asserts to be everything is fine.
+    if (!defined ($cluster) || $cluster eq "" ||
+        !defined ($partition) || $partition eq "" ||
+        !defined ($node_config) || $node_config eq "") {
+        carp "ERROR: missing data, impossible to set node configuration\n";
+        return -1;
+    }
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "file") {
+        my $path = "$basedir/$cluster/$partition/$node_name";
+        if ( ! -d $path ) {
+            carp "ERROR: Undefined node\n";
+            return -1;
+        }
+        require OSCAR::NodeConfigManager;
+        my $config_file = "$path/$node_name.conf";
+        my $config_obj = OSCAR::NodeConfigManager->new(
+            config_file => "$config_file");
+        if ( ! defined ($config_obj) ) {
+            carp "ERROR: Impossible to create an object in order to handle ".
+                 "the node configuration file.\n";
+            return -1;
+        }
+        $config_obj->set_config($node_config);
+    } elsif ($config->{db_type} eq "db") {
+        carp "Real db are not yet supported\n";
+        return -1;
+    } else {
+        carp "ERROR: Unknow ODA type ($config->{db_type})\n";
+        return -1;
+    }
+    return 0;
 }
 
 1;

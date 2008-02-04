@@ -34,11 +34,11 @@ our $hostname;
 our $type;
 
 $config = AppConfig->new(
-    'NAME'      => { ARGCOUNT => 1 },
+#     'NAME'      => { ARGCOUNT => 1 },
     'HOSTNAME'  => { ARGCOUNT => 1 },
     'IP'        => { ARGCOUNT => 1 },
     'MAC'       => { ARGCOUNT => 1 },
-    'PARTITION' => { ARGCOUNT => 1 },
+#     'PARTITION' => { ARGCOUNT => 1 },
     'TYPE'      => { ARGCOUNT => 1 },
 #     'OPKGS'     => { ARGCOUNT => 1 },
     );
@@ -66,7 +66,7 @@ sub load_config ($) {
     $config->file ($config_file);
 
     # Load configuration values
-    $name               = $config->get('NAME');
+#     $name               = $config->get('NAME');
     $ip                 = $config->get('IP');
     $mac                = $config->get('MAC');
     $partition          = $config->get('PARTITION');
@@ -80,7 +80,7 @@ sub print_config ($) {
 
     load_config($self);
     print "Node Configuration:\n";
-    print "\tName: $name\n";
+#     print "\tName: $name\n";
     print "\thostname: $hostname\n";
     print "\tType: $type\n";
     print "\tIP: $ip\n";
@@ -94,13 +94,13 @@ sub get_config ($) {
 
     load_config($self);
     my %cfg = (
-                'name'      => $name,
+#                 'name'      => $name,
                 'hostname'  => $hostname,
                 'ip'        => $ip,
                 'mac'       => $mac,
                 'type'      => $type,
-                'partition' => $partition,
-                'opkgs'     => \@opkgs
+#                'partition' => $partition,
+#                'opkgs'     => \@opkgs
               );
     return \%cfg;
 }
@@ -110,7 +110,7 @@ sub set_config ($$) {
 
     print "Creating config file ".$self->{config_file}."\n";
     open (MYFILE, ">$self->{config_file}");
-    print MYFILE "name\t\t = $cfg->{'name'}\n";
+#     print MYFILE "name\t\t = $cfg->{'name'}\n";
     print MYFILE "ip\t\t = $cfg->{'ip'}\n";
     print MYFILE "mac\t\t = $cfg->{'mac'}\n";
 #     print MYFILE "partition\t\t = $cfg->{'partition'}\n";
