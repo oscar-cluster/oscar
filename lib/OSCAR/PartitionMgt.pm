@@ -79,7 +79,7 @@ sub get_partition_distro ($$) {
         return undef;
     }
 
-# We get the configuration from the OSCAR configuration file.
+    # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
         carp "ERROR: Impossible to get the OSCAR configuration\n";
