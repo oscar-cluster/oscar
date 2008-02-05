@@ -28,8 +28,8 @@ use Carp;
 our $name;
 our $ip;
 our $mac;
-our $partition;
-our @opkgs;
+# our $partition;
+# our @opkgs;
 our $hostname;
 our $type;
 
@@ -40,7 +40,6 @@ $config = AppConfig->new(
     'MAC'       => { ARGCOUNT => 1 },
 #     'PARTITION' => { ARGCOUNT => 1 },
     'TYPE'      => { ARGCOUNT => 1 },
-#     'OPKGS'     => { ARGCOUNT => 1 },
     );
 
 sub new {
@@ -70,7 +69,6 @@ sub load_config ($) {
     $ip                 = $config->get('IP');
     $mac                = $config->get('MAC');
 #     $partition          = $config->get('PARTITION');
-#     @opkgs              = split (" ", $config->get('OPKGS'));
     $hostname           = $config->get('HOSTNAME');
     $type               = $config->get('TYPE');
 }
@@ -86,7 +84,6 @@ sub print_config ($) {
     print "\tIP: $ip\n";
     print "\tMAC: $mac\n";
 #     print "\tPartition: $partition\n";
-#     print "\tOPKGS: @opkgs\n";
 }
 
 sub get_config ($) {
@@ -100,7 +97,6 @@ sub get_config ($) {
                 'mac'       => $mac,
                 'type'      => $type,
 #                'partition' => $partition,
-#                'opkgs'     => \@opkgs
               );
     return \%cfg;
 }
@@ -116,17 +112,6 @@ sub set_config ($$) {
 #     print MYFILE "partition\t\t = $cfg->{'partition'}\n";
     print MYFILE "hostname\t\t = $cfg->{'hostname'}\n";
     print MYFILE "type\t\t = $cfg->{'type'}\n";
-#     print MYFILE "opkgs\t\t = ";
-#     my $opkgs = $cfg->{'opkgs'};
-#     OSCAR::Utils::print_array (@$opkgs);
-#     for (my $i=0; $i < scalar (@$opkgs); $i++) {
-#         if ($i != 0) {
-#             print MYFILE "\t\t\t$$opkgs[$i]";
-#         } else {
-#             print MYFILE "\t$$opkgs[$i]";
-#         }
-#         print MYFILE " \\ \n" if ($i != scalar (@$opkgs) - 1);
-#     }
     print MYFILE "\n";
     close (MYFILE);
 }

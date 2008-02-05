@@ -32,17 +32,19 @@ use Data::Dumper;
 my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
     $distro, $list_partition_distro, $cluster_name, $queried_node_name,
     $partition_name, $node_to_update, $node_hostname, $node_ip, $node_type,
-    $node_mac);
+    $node_mac, $partition_to_deploy, $queried_partition);
 my $verbose = 1;
 
 Getopt::Long::Configure("pass_through");
 GetOptions(
         "display-partitions"            => \$list_partitions,
+        "display-partition-info=s"      => \$queried_partition,
         "display-partition-nodes=s"     => \$list_partition_nodes,
         "display-partition-distro=s"    => \$list_partition_distro,
         "display-node-info=s"           => \$queried_node_name,
         "update-node-info=s"            => \$node_to_update,
         "add-partition=s"               => \$new_partition,
+        "deploy-partition=s"            => \$partition_to_deploy,
         "partition=s"                   => \$partition_name,
         "cluster=s"                     => \$cluster_name,
         "client=s"                      => \@clients,
@@ -185,6 +187,30 @@ if ($node_to_update) {
     exit 0;
 }
 
+if ($partition_to_deploy) {
+    if ($partition_to_deploy eq "") {
+        die "ERROR: Invalid node name\n";
+    }
+    if (OSCAR::PartitionMgt::validate_partition_data ($partition_to_deploy)) {
+        die "ERROR: Invalid partition, missing data\n";
+    }
+    if (OSCAR::PartitionMgt::deploy_partition ($partition_to_deploy)) {
+        die "ERROR: an error occured while deploying the partition\n";
+    }
+    exit 0;
+}
+
+if ($queried_partition) {
+    if ($queried_partition eq "") {
+        die "ERROR: Invalid partition name\n";
+    }
+    if (OSCAR::PartitionMgt::display_partition_info("oscar", 
+        $queried_partition)) {
+        die "ERROR: Impossible to display partition info ($queried_partition)";
+    }
+    exit 0;
+}
+
 sub help () {
     print "Help: Not yet implemented\n";
 }
@@ -222,13 +248,14 @@ users to define and deploy clusters and cluster partitions.
 =head1 SYNTAX
 
 oscar [--add-partition | --display-partitions | --display-partition-nodes | 
-       --display-partition-distro | --display-node-info | --update-node-info]
+       --display-partition-distro | --deploy-partition | --display-node-info |
+       --update-node-info]
 
 =head1 OPTIONS
 
 Recognized options include:
 
-=over 12
+=over 11
 
 =item --display-partitions
 
@@ -239,6 +266,8 @@ Recognized options include:
 =item --display-node-info
 
 =item --add-partition
+
+=item --deploy-partition
 
 =item --cluster
 

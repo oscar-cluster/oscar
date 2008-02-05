@@ -1,4 +1,4 @@
-package OSCAR::PartitionConfigManager;
+package OSCAR::VMConfigManager;
 
 #
 # Copyright (c) 2007 Oak Ridge National Laboratory.
@@ -22,10 +22,8 @@ use AppConfig;
 ##########################################################
 # A bunch of variable filled up when creating the object #
 ##########################################################
-our $distro;
-our $dist_version;
-our $arch;
-our @opkgs;
+our $type;
+our $hostos_ip;
 
 sub new {
     my $invocant = shift;
@@ -51,29 +49,22 @@ sub load_config ($) {
 
     use vars qw($config);
     $config = AppConfig->new(
-        'DISTRO'            => { ARGCOUNT => 1 },
-        'DISTRO_VERSION'    => { ARGCOUNT => 1 },
-        'ARCH'              => { ARGCOUNT => 1 },
-        'OPKGS'             => { ARGCOUNT => 1 },
+        'TYPE'            => { ARGCOUNT => 1 },
+        'HOSTOS_IP'       => { ARGCOUNT => 1 },
         );
     $config->file ($config_file);
 
     # Load configuration values
-    $distro            = $config->get('DISTRO');
-    $dist_version      = $config->get('DISTRO_VERSION');
-    $arch              = $config->get('ARCH');
-    @opkgs             = split (" ", $config->get('OPKGS'));
+    $type              = $config->get('TYPE');
+    $hostos_ip         = $config->get('HOSTOS_IP');
 }
 
 sub print_config ($) {
     my $self = shift;
 
-    load_config ($self);
-    print "Partition Configuration:\n";
-    print "\tDistro: $distro\n";
-    print "\tDistro version: $dist_version\n";
-    print "\tArch: $arch\n";
-    print "\tOPKGS: @opkgs\n";
+    load_config($self);
+    print "\tVM type: $type\n";
+    print "\tHostOS IP: $hostos_ip\n";
 }
 
 sub get_config ($) {
@@ -81,10 +72,8 @@ sub get_config ($) {
 
     load_config($self);
     my %cfg = ( 
-                'distro'            => $distro,
-                'distro_version'    => $dist_version,
-                'arch'              => $arch,
-                'opkgs'             => \@opkgs,
+                'type'              => $type,
+                'hostos_ip'         => $hostos_ip,
               );
     return \%cfg;
 }
@@ -93,22 +82,10 @@ sub set_config ($$) {
     my ($self, $cfg) = @_;
 
     print "Creating config file ".$self->{config_file}."\n";
-    print "$cfg->{'distro'}, $cfg->{'distro_version'}, $cfg->{'arch'}\n";
+    print "$cfg->{'type'}, $cfg->{'hostos_ip'}\n";
     open (MYFILE, ">$self->{config_file}");
-    print MYFILE "distro\t\t = $cfg->{'distro'}\n";
-    print MYFILE "distro_version\t\t = ".$cfg->{'distro_version'}."\n";
-    print MYFILE "arch\t\t = $cfg->{'arch'}\n";
-    print MYFILE "opkgs\t\t = ";
-    my $opkgs = $cfg->{'opkgs'};
-    OSCAR::Utils::print_array (@$opkgs);
-    for (my $i=0; $i < scalar (@$opkgs); $i++) {
-        if ($i != 0) {
-            print MYFILE "\t\t\t$$opkgs[$i]";
-        } else {
-            print MYFILE "\t$$opkgs[$i]";
-        }
-        print MYFILE " \\ \n" if ($i != scalar (@$opkgs) - 1);
-    }
+    print MYFILE "type\t\t = $cfg->{'type'}\n";
+    print MYFILE "hostos_ip\t\t = ".$cfg->{'hostos_ip'}."\n";
     close (MYFILE);
 }
 

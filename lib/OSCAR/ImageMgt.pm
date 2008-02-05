@@ -35,22 +35,27 @@ use OSCAR::Utils qw (
                     is_element_in_array
                     print_array 
                     );
-use SystemImager::Server;
+# use SystemImager::Server;
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
-use SystemInstaller::Tk::Common;
+# use SystemInstaller::Tk::Common;
 use Data::Dumper;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 
 @EXPORT = qw(
+            create_image
             delete_image
             do_setimage
             do_post_binary_package_install
             do_oda_post_install
             get_image_default_settings
             get_list_corrupted_images
+            image_exists
             );
+
+our $images_path = "/var/lib/systemimager/image";
+my $verbose = 1;
 
 ################################################################################
 # Set the image in the Database.                                               #
@@ -119,7 +124,7 @@ sub do_post_binary_package_install ($$) {
 # script.                                                                      #
 # Input: vars, hash with variable values.                                      #
 #        options, hash with option values.                                     #
-# Return: none.                                                                #
+# Return: 0 if success, -1 else.                                               #
 ################################################################################
 sub do_oda_post_install {
     my (%vars, %options) = @_;
@@ -132,12 +137,27 @@ sub do_oda_post_install {
     oscar_log_subsection("Marking installed bit in ODA for client binary ".
                          "packages");
 
-    my @opkgs = list_selected_packages("all");
-    foreach my $opkg_ref (@opkgs)
-    {
-        my $opkg = $$opkg_ref{package};
-        oscar_log_subsection("Set package: $opkg");
-        OSCAR::Database::set_image_packages($img,$opkg,\%options,\@errors);
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return -1;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "db") {
+        my @opkgs = list_selected_packages("all");
+        foreach my $opkg_ref (@opkgs)
+        {
+            my $opkg = $$opkg_ref{package};
+            oscar_log_subsection("Set package: $opkg");
+            OSCAR::Database::set_image_packages($img,$opkg,\%options,\@errors);
+        }
+    } elsif ($config->{db_type} eq "db") {
+        # Get the list of opkgs for the specific image.
+    } else {
+        carp "ERROR: Unknow ODA type ($config->{db_type})\n";
+        return -1
     }
     oscar_log_subsection("Done marking installed bits in ODA");
 
@@ -154,6 +174,8 @@ sub do_oda_post_install {
     oscar_log_subsection("Truncated ".$img.":".$lastlog);
 
     oscar_log_subsection("Image build successfully");
+
+    return 0;
 }
 
 ###############################################################################
@@ -260,6 +282,7 @@ sub delete_image ($) {
 # Get the list of corrupted images. An image is concidered corrupted when info #
 # from the OSCAR database, the SIS database and the file system are not        #
 # synchronized.                                                                #
+#                                                                              #
 # Input: None.                                                                 #
 # Output: an array of hash; each element of the array (hash) has the following #
 #         format ( 'name' => <image_name>,                                     #
@@ -378,3 +401,56 @@ sub get_list_corrupted_images {
 
     return (@result);
 }
+
+# Return: 1 if the image already exists (true), 0 else (false).
+sub image_exists ($) {
+    my $image_name = shift;
+    my $path = "$images_path/$image_name";
+
+    if ( -d $path ) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+sub create_image ($) {
+    my $partition = shift;
+
+    # We create a basic image for clients. Note that by default we do not
+    # create a basic image for servers since the server may already be deployed.
+    # We currently use the script 'build_oscar_image_cli'. This is a limitation
+    # because it only creates an image based on the local Linux distribution.
+    oscar_log_section "Creating the basic golden image..." if $verbose;
+    # We get the default settings for images.
+    my %vars = get_image_default_settings ();
+    $vars{imgname} = "$partition";
+
+    my $cmd = "mksiimage -A --name $vars{imgname} " .
+            "--location $vars{pkgpath} " .
+            "--filename $vars{pkgfile} " .
+            "--arch $vars{arch} " .
+            "--path $vars{imgpath}/$vars{imgname}" .
+            " $vars{extraflags} --verbose";
+
+    oscar_log_subsection "Executing command: $cmd" if $verbose;
+    system ($cmd);
+    postimagebuild (\%vars);
+}
+
+sub postimagebuild {
+    my ($vars) = @_;
+    my $img = $$vars{imgname};
+    my $interface = "eth0";
+    my %options;
+
+    print ("Setting up image in the database\n");
+    do_setimage ($img, \%options);
+
+    my $cmd = "post_binary_package_install ($img, $interface)";
+    print ("Running: $cmd");
+    do_post_binary_package_install ($img, $interface);
+
+    do_oda_post_install (%$vars, \%options);
+}
+

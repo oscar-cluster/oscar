@@ -25,6 +25,8 @@ package OSCAR::PartitionMgt;
 # partitions.
 #
 
+# TODO: we should be able to simplify a little the API of this module.
+
 use strict;
 use File::Path;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -41,16 +43,21 @@ use OSCAR::Database qw (
                        );
 use OSCAR::Logger;
 use OSCAR::ConfigManager;
+use OSCAR::ImageMgt;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 use warnings "all";
 
 @EXPORT = qw(
+            deploy_partition
+            display_partition_info
             get_list_nodes_partition
             get_list_partitions
             get_partition_distro
+            display_partition_info
             oda_create_new_partition
+            validate_partition_data
             );
 
 my $verbose = 1;
@@ -630,7 +637,7 @@ sub delete_partition_info {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "db") {    
+    if ($config->{db_type} eq "db") {
         my $sql;
         my $options_ref;
         my $error_strings_ref;
@@ -665,3 +672,64 @@ sub delete_partition_info {
     return 0;
 }
 
+sub validate_partition_data ($) {
+    my $partition = shift;
+
+    carp "validate_partition_data: Not yet implemented\n";
+    return -1;
+}
+
+# We assume we can get all data about the partition. To check if this is the 
+# case, please use valide_partition_data ().
+sub deploy_partition ($) {
+    my $partition = shift;
+
+    # Do we have an image for this partition?
+    if (!OSCAR::ImageMgt::image_exists ($partition)) {
+        OSCAR::ImageMgt::create_image ($partition);
+    }
+}
+
+sub display_partition_info ($$) {
+    my ($cluster, $partition) = @_;
+
+    if (!defined($cluster) || $cluster eq "" ||
+        !defined($partition) || $partition eq "") {
+        carp "ERROR: Invalid cluster or partition ($cluster, $partition)\n";
+        return -1;
+    }
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return -1;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "file") {
+        my $f = "$basedir/$cluster/$partition/$partition.conf";
+        if ( ! -f  $f ) {
+            carp "Warning: the partition does not exist\n";
+            # This is not a error, if the partition does not exist, it means 
+            # that the job is already done.
+            return 0;
+        }
+        require OSCAR::PartitionConfigManager;
+        my $config_obj = OSCAR::PartitionConfigManager->new(
+            config_file => "$f");
+        if ( ! defined ($config_obj) ) {
+            carp "ERROR: Impossible to create an object in order to handle ".
+                 "the partition configuration file.\n";
+            return -1;
+        }
+        $config_obj->print_config();
+    } elsif ($config->{db_type} eq "db") {
+        carp "ERROR: the uasge of a real db is not yet implemented\n";
+        return -1;
+    } else {
+        carp "ERROR: Unknown ODA type ($config->{db_type})\n";
+        return -1;
+    }
+    return 0;
+}
