@@ -8,14 +8,18 @@
 use warnings;
 use English '-no_match_vars';
 use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::OCA::OS_Detect;
+use OSCAR::PackagePath;
+use warnings "all";
 
 # NOTE: Use the predefined constants for consistency!
 use OSCAR::SystemSanity;
 
 my $rc = FAILURE;
 
-my $os = OSCAR::OCA::OS_Detect::open();
+my $os = OSCAR::PackagePath::distro_detect_or_die();
+if (!defined ($os)) {
+    die "ERROR: unsupported Linux distribution\n";
+}
 my $distro_id = $os->{distro} . "-" . $os->{distro_version} . "-" . 
                 $os->{arch};
 
