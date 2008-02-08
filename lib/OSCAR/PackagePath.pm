@@ -410,7 +410,7 @@ sub repo_empty ($) {
 
 #
 # List all available distro pools or distro URL files.
-# Return: a hash, each key is composed by the distro id (e.g. 'debian-4-x86_64)
+# Return: a hash, each key is composed by the distro id (e.g. debian-4-x86_64)
 #         returned by OS_Detect; the value is composed of data from OS_Detect.
 # Note that we assume here that /tftpboot/distro and /tftpboot/oscar are fully
 # populated. If the directory /tftpboot/oscar and is not completely populated, 
