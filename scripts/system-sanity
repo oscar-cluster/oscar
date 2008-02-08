@@ -101,6 +101,7 @@ sub print_rslt
 #   NOTE: Not fully qualify path in returned file list so caller can 
 #         easily get at check filenames. 
 #
+# TODO: code duplication with functions in FileUtils
 sub get_check_files 
 {
 	my $dir = shift;
