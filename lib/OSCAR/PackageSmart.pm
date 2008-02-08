@@ -310,10 +310,11 @@ sub prepare_pools ($@) {
         print "Pool: $p\n";
         $pm = prepare_pool($v, $p);
         if (!$pm) {
-            croak "\nERROR: Could not create PackMan instance!\n";
+            print "\nERROR: Could not create PackMan instance!\n";
+            return undef;
         }
     }
-    $pm->repo(@pools) if defined($pm);
+    $pm->repo(@pools);
 
     return $pm;
 }
@@ -334,7 +335,7 @@ sub prepare_distro_pools ($) {
     #   - the pool related to the distro (e.g., /tftpboot/distro/centos-5-x86_64
     #   - the pool for common OSCAR binary packages (e.g., 
     #     /tftpboot/oscar/common-rpms)
-    #   - the poo; for arch-dependent OSCAR binary packages (e.g., 
+    #   - the pool; for arch-dependent OSCAR binary packages (e.g., 
     #     /tftpboot/oscar/rhel-5-x86_64)
     #
     my $oscar_pkg_pool = OSCAR::PackagePath::oscar_repo_url(os=>$os);
