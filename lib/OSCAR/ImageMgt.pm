@@ -1,9 +1,9 @@
 package OSCAR::ImageMgt;
 
 #
-# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
-#                    Oak Ridge National Laboratory
-#                    All rights reserved.
+# Copyright (c) 2007-2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                         Oak Ridge National Laboratory
+#                         All rights reserved.
 #
 #   $Id: ImageMgt.pm 4833 2006-05-24 08:22:59Z bli $
 #
@@ -38,10 +38,12 @@ use OSCAR::Utils qw (
 # use SystemImager::Server;
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
 # use SystemInstaller::Tk::Common;
+use OSCAR::PackMan;
 use Data::Dumper;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
+use warnings "all";
 
 @EXPORT = qw(
             create_image
@@ -52,47 +54,66 @@ use Carp;
             get_image_default_settings
             get_list_corrupted_images
             image_exists
+            install_opkgs_into_image
             );
 
-our $images_path = "/var/lib/systemimager/image";
+our $images_path = "/var/lib/systemimager/images";
 my $verbose = 1;
 
 ################################################################################
 # Set the image in the Database.                                               #
+#                                                                              #
 # Parameter: img, image name.                                                  #
 #            options, hash with option values.                                 #
-# Return   : None.                                                             #
+# Return   : 0 if sucess, -1 else.                                             #
 ################################################################################
 sub do_setimage {
     my ($img, %options) = @_;
     my @errors = ();
 
-    my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
-    my $arch = $master_os->{arch};
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return -1;
+    }
+    my $config = $oscar_configurator->get_config();
 
-    # Get the image path (typically /var/lib/systemimager/images/<imagename>)
-    my $config = SystemInstaller::Tk::Common::init_si_config();
-    my $imaged = $config->default_image_dir;
-    croak "default_image_dir not defined\n" unless $imaged;
-    croak "$imaged: not a directory\n" unless -d $imaged;
-    croak "$imaged: not accessible\n" unless -x $imaged;
-    my $imagepath = $imaged."/".$img;
-    croak "$imagepath: not a directory\n" unless -d $imagepath;
-    croak "$imagepath: not accessible\n" unless -x $imagepath;
+    if ($config->{db_type} eq "file") {
+        my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
+        my $arch = $master_os->{arch};
 
-    #
-    # Image info lines should be deleted once systeminstaller
-    # talks directly to ODA
-    #
-    my %image_info = ( "name"        => $img,
-               #
-               # EF: OS_Detect detects images now, use that!
-               #
-               # "distro"=>"$distroname-$distroversion",
-              "architecture" => $arch,
-              "path"         => $imagepath);
+        # Get the image path (typically
+        # /var/lib/systemimager/images/<imagename>)
+        my $config = SystemInstaller::Tk::Common::init_si_config();
+        my $imaged = $config->default_image_dir;
+        croak "default_image_dir not defined\n" unless $imaged;
+        croak "$imaged: not a directory\n" unless -d $imaged;
+        croak "$imaged: not accessible\n" unless -x $imaged;
+        my $imagepath = $imaged."/".$img;
+        croak "$imagepath: not a directory\n" unless -d $imagepath;
+        croak "$imagepath: not accessible\n" unless -x $imagepath;
 
-    OSCAR::Database::set_images(\%image_info, \%options, \@errors);
+        #
+        # Image info lines should be deleted once systeminstaller
+        # talks directly to ODA
+        #
+        my %image_info = ( "name"        => $img,
+                #
+                # EF: OS_Detect detects images now, use that!
+                #
+                # "distro"=>"$distroname-$distroversion",
+                "architecture" => $arch,
+                "path"         => $imagepath);
+
+        OSCAR::Database::set_images(\%image_info, \%options, \@errors);
+    } elsif ($config->{db_type} eq "file") {
+        return 0;
+    } else {
+        carp "ERROR: Unknow ODA type ($config->{db_type}\n";
+        return -1;
+    }
+    return 0;
 }
 
 ################################################################################
@@ -166,8 +187,9 @@ sub do_oda_post_install {
     my $lastlog = "/var/log/lastlog";
     oscar_log_subsection("Truncating ".$img.":".$lastlog);
 
-    my $config = init_si_config();
-    my $imaged = $config->default_image_dir;
+    require SystemInstaller::Tk::Common;
+    my $sis_config = SystemInstaller::Tk::Common::init_si_config();
+    my $imaged = $sis_config->default_image_dir;
     my $imagepath = $imaged."/".$img;
     my $imagelog = $imagepath.$lastlog;
     truncate $imagelog, 0 if -s $imagelog;
@@ -230,18 +252,19 @@ sub get_image_default_settings {
     # Get a list of client RPMs that we want to install.
     # Make a new file containing the names of all the RPMs to install
 
-    my $outfile = "/tmp/oscar-install-rpmlist.$$";
-    create_list_selected_opkgs ($outfile);
-    my @errors;
-    my $save_text = $outfile;
-    my $extraflags = "--filename=$outfile";
+#     my $outfile = "/tmp/oscar-install-rpmlist.$$";
+#     create_list_selected_opkgs ($outfile);
+#     my @errors;
+#     my $save_text = $outfile;
+#     my $extraflags = "--filename=$outfile";
     # WARNING!! We deactivate the OPKG management via SystemInstaller
-    $extraflags = "";
+    my $extraflags = "";
     if (exists $ENV{OSCAR_VERBOSE}) {$extraflags .= " --verbose ";}
 
     my $diskfile = get_disk_file($arch, $disk_type);
 
-    my $config = init_si_config();
+    require SystemInstaller::Tk::Common;
+    my $config = SystemInstaller::Tk::Common::init_si_config();
 
     # Default settings
     my %vars = (
@@ -402,7 +425,12 @@ sub get_list_corrupted_images {
     return (@result);
 }
 
-# Return: 1 if the image already exists (true), 0 else (false).
+################################################################################
+# Check if a given image exists.                                               #
+#                                                                              #
+# Input: image_name, name of the image to check.                               #
+# Return: 1 if the image already exists (true), 0 else (false).                #
+################################################################################
 sub image_exists ($) {
     my $image_name = shift;
     my $path = "$images_path/$image_name";
@@ -414,8 +442,14 @@ sub image_exists ($) {
     }
 }
 
+################################################################################
+# Create a basic image.                                                        #
+#                                                                              #
+# Input: image. image name to create.                                          #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
 sub create_image ($) {
-    my $partition = shift;
+    my $image = shift;
 
     # We create a basic image for clients. Note that by default we do not
     # create a basic image for servers since the server may already be deployed.
@@ -424,7 +458,13 @@ sub create_image ($) {
     oscar_log_section "Creating the basic golden image..." if $verbose;
     # We get the default settings for images.
     my %vars = get_image_default_settings ();
-    $vars{imgname} = "$partition";
+    if (!%vars) {
+        carp "ERROR: Impossible to get default image settings\n";
+        return -1;
+    }
+    print "WARNING: We currently use the default image parameters which is a ".
+          "pretty bad idea!!!!\n";
+    $vars{imgname} = "$image";
 
     my $cmd = "mksiimage -A --name $vars{imgname} " .
             "--location $vars{pkgpath} " .
@@ -434,8 +474,16 @@ sub create_image ($) {
             " $vars{extraflags} --verbose";
 
     oscar_log_subsection "Executing command: $cmd" if $verbose;
-    system ($cmd);
-    postimagebuild (\%vars);
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to create the image\n";
+        return -1;
+    }
+    # GV: currently we create first a basic image and only then we install OPKGs
+    # and run post_install scripts. Therefore the following command should not
+    # be needed.
+#     postimagebuild (\%vars);
+
+    return 0;
 }
 
 sub postimagebuild {
@@ -454,3 +502,88 @@ sub postimagebuild {
     do_oda_post_install (%$vars, \%options);
 }
 
+################################################################################
+# Install a given list of OPKGs into a golden image. We assume for now that we #
+# have to install the client side of those OPKGs.                              #
+#                                                                              #
+# Input: partition, the image name in which we need to install OPKGs.          #
+# Return: 0 if success, -1 else.                                               #
+#                                                                              #
+# TODO: remove the hardcoded image path. SIS provides a tool for that.         #
+################################################################################
+sub install_opkgs_into_image ($@) {
+    my ($image, @opkgs) = @_;
+
+    # We check first if parameters are valid.
+    if (!defined($image) || $image eq "" ||
+        !@opkgs) {
+        carp "ERROR: Invalid parameters\n";
+        return -1;
+    }
+
+    my $image_path = "$images_path/$image";
+    if ($verbose) {
+        oscar_log_section "Installing OPKGs into image $image ($image_path)";
+        oscar_log_subsection "List of OPKGs to install:";
+        print_array (@opkgs);
+    }
+
+    # To install OPKGs, we use Packman, creating a specific packman object for
+    # the image.
+    my $pm = PackMan->new->chroot ($image_path);
+    if (!defined ($pm)) {
+        carp "ERROR: Impossible to create a Packman object for the ".
+             "installation of OPKGs into the golden image\n";
+        return -1;
+    }
+
+    # We assign the correct repos to the PacjMan object.
+    my $os = OSCAR::OCA::OS_Detect::open(chroot=>$image_path);
+    if (!defined ($os)) {
+        carp "ERROR: Impossible to detect the OS of the image ($image_path)\n";
+        return -1;
+    }
+    my $oscar_pkg_pool = OSCAR::PackagePath::oscar_repo_url(os=>$os);
+    my $distro_pkg_pool = OSCAR::PackagePath::distro_repo_url(os=>$os);
+    my @pools = split(",", $oscar_pkg_pool);
+    my @distro_pools = split(",", $distro_pkg_pool);
+    foreach my $repo (@distro_pools) {
+        next if $repo eq "";
+        push (@pools, $repo);
+    }
+    print "Available pools:\n";
+    OSCAR::Utils::print_array (@pools);
+    $pm->repo(@pools);
+
+    my ($ret, $output) = $pm->smart_install (@opkgs);
+    print "Installation result: $ret\n";
+    if ( defined ($output) ) {
+        print "\t[" . join (" ", @$output) . "]\n";
+    }
+    if ($ret == -1) {
+        carp "ERROR: Impossible to install OPKGs\n";
+        return -1;
+    }
+
+
+    # GV: do we need to install only the client side of the OPKG? or do we also
+    # need to install the api part.
+    foreach my $opkg (@opkgs) {
+        oscar_log_subsection "\tInstalling $opkg using opkg-$opkg-client"
+            if $verbose;
+        # Once we have the packman object, it is fairly simple to install opkgs.
+        my ($ret, $output) = $pm->smart_install("opkg-$opkg-client");
+        print "Installation result: $ret\n";
+        if ( defined ($output) ) {
+            print "\t[" . join (" ", @$output) . "]\n";
+        }
+        if ($ret == -1) {
+            carp "ERROR: Impossible to install OPKG $opkg\n";
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+1;
