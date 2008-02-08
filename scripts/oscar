@@ -191,10 +191,12 @@ if ($partition_to_deploy) {
     if ($partition_to_deploy eq "") {
         die "ERROR: Invalid node name\n";
     }
-    if (OSCAR::PartitionMgt::validate_partition_data ($partition_to_deploy)) {
+    if (OSCAR::PartitionMgt::validate_partition_data ("oscar",
+                                                      $partition_to_deploy)) {
         die "ERROR: Invalid partition, missing data\n";
     }
-    if (OSCAR::PartitionMgt::deploy_partition ($partition_to_deploy)) {
+    if (OSCAR::PartitionMgt::deploy_partition ("oscar",
+                                               $partition_to_deploy)) {
         die "ERROR: an error occured while deploying the partition\n";
     }
     exit 0;
