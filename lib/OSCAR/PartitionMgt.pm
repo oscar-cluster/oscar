@@ -67,6 +67,7 @@ my $basedir = "/etc/oscar/clusters";
 ################################################################################
 # Return the Linux distribution ID (OS_Detect syntax) associated to the        #
 # partitions.                                                                  #
+# DEPRECATED: We should use a display_partition_info like function instead.    #
 #                                                                              #
 # Input: partition name, note that we assume the partition name is unique.     #
 # Return: string representing the distro ID (OS_Detect syntax).                #
@@ -672,22 +673,67 @@ sub delete_partition_info {
     return 0;
 }
 
-sub validate_partition_data ($) {
-    my $partition = shift;
+################################################################################
+# Validate partition data, to be sure we have everything we need before to try #
+# to deploy compute nodes.                                                     #
+#                                                                              #
+# Input: partition, name of the partition we have to validate.                 #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub validate_partition_data ($$) {
+    my ($cluster, $partition) = @_;
 
     carp "validate_partition_data: Not yet implemented\n";
-    return -1;
+    return 0;
 }
 
-# We assume we can get all data about the partition. To check if this is the 
-# case, please use valide_partition_data ().
-sub deploy_partition ($) {
-    my $partition = shift;
+################################################################################
+# Deploy a given partition. For that we create the image, setup clients and so #
+# on if needed (the user does not have to deal with that!).                    #
+#                                                                              #
+# We assume we can get all data about the partition. To check if this is the   #
+# case, please use valide_partition_data ().                                   #
+#                                                                              #
+# Input: partition, partition name to deploy.                                  #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub deploy_partition ($$) {
+    my ($cluster, $partition) = @_;
 
     # Do we have an image for this partition?
     if (!OSCAR::ImageMgt::image_exists ($partition)) {
-        OSCAR::ImageMgt::create_image ($partition);
+        # If the image does not already exists, we create it.
+        if (OSCAR::ImageMgt::create_image ($partition)) {
+            carp "ERROR: Impossible to create the basic image\n";
+            return -1;
+        }
+
+        # Now that we have the basic golden image, we install needed OPKGs into
+        # the golden image.
+
+        # For that we first get the list of OPKGs
+        require OSCAR::PartitionConfigManager;
+        my $f = "$basedir/$cluster/$partition/$partition.conf";
+        my $config_obj = OSCAR::PartitionConfigManager->new(
+            config_file => "$f");
+        if ( ! defined ($config_obj) ) {
+            carp "ERROR: Impossible to create an object in order to handle ".
+                 "the partition configuration file.\n";
+            return -1;
+        }
+        my $partition_config = $config_obj->get_config();
+        my $opkgs = $partition_config->{'opkgs'};
+        require OSCAR::Utils;
+        OSCAR::Utils::print_array (@$opkgs);
+
+        if (OSCAR::ImageMgt::install_opkgs_into_image ($partition, @$opkgs)) {
+            carp "ERROR: Impossible to install OPKGs into the basic image\n";
+            return -1;
+        }
+    } else {
+        print "INFO: The image already exists, we do not overwrite\n";
     }
+    return 0;
 }
 
 sub display_partition_info ($$) {
@@ -733,3 +779,5 @@ sub display_partition_info ($$) {
     }
     return 0;
 }
+
+1;
