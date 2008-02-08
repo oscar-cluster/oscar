@@ -32,7 +32,7 @@ foreach my $file (@files) {
         print "Executing: $script\n";
 		my $rc = system($script);
         print "Result: $rc\n";
- 		$failure_flag++ if ($rc == 1);
+ 		$failure_flag++ if ($rc != 0);
 	}
 }
 
