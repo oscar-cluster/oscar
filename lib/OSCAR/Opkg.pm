@@ -100,12 +100,20 @@ sub opkgs_install_server {
     # Fails HERE if distro is not supported!
     #
     my $os = &OSCAR::PackagePath::distro_detect_or_die();
+    if (!defined ($os)) {
+        carp "ERROR: Unsupported Linux distribution\n";
+        return -1;
+    }
     my $pm = OSCAR::PackageSmart::prepare_distro_pools ($os);
+    if (!defined ($pm)) {
+        carp "ERROR: Impossible to create a PackMan object\n";
+        return -1;
+    }
 
     my @olist = map { "opkg-".$_."-server" } @opkgs;
     my ($err, @out) = $pm->smart_install(@olist);
     if (!$err) {
-        print "Error occured during smart_install:\n";
+        carp "Error occured during smart_install:\n";
         print join("\n",@out)."\n";
         return -1;
     }
