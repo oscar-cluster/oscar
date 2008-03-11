@@ -38,6 +38,7 @@ use Carp;
 use OSCAR::Logger;
 use OSCAR::Database;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::ConfigManager;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 
@@ -101,35 +102,46 @@ our $install_mode = $install_mode_options[0];
 our $os = OSCAR::OCA::OS_Detect::open();
 sub sortclients;
 
-sub __setup_dhcpd {
+# Setup the DHCP server configuration file.
+#
+# Input: interface, the network interface used by the DHCP server (e.g., eth0).
+# Return: 0 if success, -1 else.
+sub __setup_dhcpd ($) {
     my $interface = shift;
-    our $window;
     our $install_mode;
     our $os;
 
     oscar_log_subsection("Step $step_number: cleaning hostfile");
-    clean_hostsfile() or (carp "Couldn't clean hosts file!",
-                          return undef);
-    
+    clean_hostsfile() 
+        or (carp "ERROR: Couldn't clean hosts file!", return -1);
+
     my $dhcpd_configfile = "/etc/dhcpd.conf";
     # Under Debian the dhcpd config file is in /etc/dhcp3
     $dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
-    print "About to run setup_dhcpd...\n";
+    oscar_log_subsection "About to run setup_dhcpd...\n";
     if(-e $dhcpd_configfile) {
-        copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak") or (carp "Couldn't backup dhcpd.conf file", return undef);
+        copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak") 
+            or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
     }
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
-    my $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$ip";
+    my $cmd = "mkdhcpconf -o $dhcpd_configfile ".
+                         "--interface=$interface ".
+                         "--gateway=$ip";
 
     if ($install_mode eq "systemimager-multicast"){
        $cmd = $cmd . " --multicast=yes";
     }
 
     oscar_log_subsection("Step $step_number: Running command: $cmd");
-    !system($cmd) or (carp "Couldn't mkdhcpconf", return undef);
-    oscar_log_subsection("Step $step_number: Successfully ran command");
+    !system($cmd) or (carp "ERROR: Couldn't mkdhcpconf", return -1);
+    oscar_log_subsection("Step $step_number: Successfully ran \"$cmd\"");
 
-    my $dhcpd_leases = "/var/lib/dhcp/dhcpd.leases";
+    my $dhcpd_leases;
+    if ( ($os->{'distro'} eq "debian") ) {
+        $dhcpd_leases = "/var/lib/dhcp3/dhcpd.leases";
+    } else {
+        $dhcpd_leases = "/var/lib/dhcp/dhcpd.leases";
+    }
 
     # Fedora Core 5+'s dhcpd.leases file is located in a slightly different
     # directory
@@ -138,7 +150,8 @@ sub __setup_dhcpd {
     }
 
     if(!-e "$dhcpd_leases") {
-        open(OUT,">$dhcpd_leases") or (carp "Couldn't create dhcpd.leases files", return undef);
+        open(OUT,">$dhcpd_leases")
+            or (carp "ERROR: Couldn't create dhcpd.leases files.\n", return -1);
         close(OUT);
     }
 
@@ -147,10 +160,12 @@ sub __setup_dhcpd {
         my $dhcpd_file = "/etc/sysconfig/dhcpd";
         run_cmd("/bin/mv -f $dhcpd_file $dhcpd_file.oscarbak");
 
-        $cmd = "sed -e 's/^DHCPD_INTERFACE=\".*\"/DHCPD_INTERFACE=\"$interface\"/g' $dhcpd_file.oscarbak > $dhcpd_file";     
+        $cmd = "sed -e ".
+               "'s/^DHCPD_INTERFACE=\".*\"/DHCPD_INTERFACE=\"$interface\"/g' ".
+               "$dhcpd_file.oscarbak > $dhcpd_file";
         if (system($cmd)) {
-            carp("Failed to update $dhcpd_file");
-            return 1;
+            carp("ERROR: Failed to update $dhcpd_file.\n");
+            return -1;
         }
     }
 
@@ -158,10 +173,11 @@ sub __setup_dhcpd {
     # Under Debian the init script for dhcp is "dhcp3-server"
     $dhcpd = "dhcp3-server" if -x "/etc/init.d/dhcp3-server";
     oscar_log_subsection("Step $step_number: Restarting dhcpd service");
-    !system("/etc/init.d/$dhcpd restart") or (carp "Couldn't restart $dhcpd", 
-                                         return undef);
-    oscar_log_subsection("Step $step_number: Successfully restarted dhcpd service");
-    return 1;
+    !system("/etc/init.d/$dhcpd restart")
+        or (carp "ERROR: Couldn't restart $dhcpd.\n", return -1);
+    oscar_log_subsection("Step $step_number: Successfully restarted dhcpd ".
+                         "service");
+    return 0;
 }
 
 sub clean_hostsfile {
@@ -515,11 +531,24 @@ sub __enable_install_mode {
     return 1;
 }
 
-# Execute the setup_pxe script
-sub __run_setup_pxe {
+# Execute the setup_pxe script.
+#
+# Input: uyok, do we need to use the "Use Your Own Kernel" SIS feature or not?
+#              0 => No, anything else => yes.s
+# Return: 0 if success, -1 else.
+sub __run_setup_pxe ($) {
     my $uyok = shift;
 
-    my $cmd = "./setup_pxe -v";
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+    my $bin_path = $config->{binaries_path};
+
+    my $cmd = "$bin_path/setup_pxe -v";
 
     if ($uyok) {
       $cmd = "$cmd --uyok";
@@ -527,17 +556,17 @@ sub __run_setup_pxe {
     }
 
     oscar_log_subsection("Step $step_number: Setup network boot: $cmd");
-    !system($cmd) or (carp($!), return undef);
+    !system($cmd) or (carp($!), return -1);
 
     $cmd = "../packages/kernel/scripts/fix_network_boot";
     if ( -x $cmd) {
         oscar_log_subsection("Step $step_number: Finishing network boot: $cmd");
-        !system($cmd) or carp "ERROR COMMAND FAILED ($!): $cmd";
+        !system($cmd) or (carp "ERROR COMMAND FAILED ($!): $cmd", return -1);
         oscar_log_subsection("Step $step_number: Successfully finished network boot");
     }
 
     oscar_log_subsection("Step $step_number: Successfully setup network boot");
-    return 1;
+    return 0;
 }
 
 1;

@@ -44,6 +44,7 @@ use OSCAR::Database qw (
 use OSCAR::Logger;
 use OSCAR::ConfigManager;
 use OSCAR::ImageMgt;
+use OSCAR::MAC;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
@@ -61,8 +62,6 @@ use warnings "all";
             );
 
 my $verbose = 1;
-# Where are the configuration files.
-my $basedir = "/etc/oscar/clusters";
 
 ################################################################################
 # Return the Linux distribution ID (OS_Detect syntax) associated to the        #
@@ -100,7 +99,11 @@ sub get_partition_distro ($$) {
         my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
         $distro = oda_query_single_result ($sql, "distro");
     } elsif ($config->{db_type} eq "file") {
-        my $f = "$basedir/$cluster_name/$partition_name/$partition_name.conf";
+        # We get the path of the partition configuration file.
+        my $f = $oscar_configurator->get_partition_config_file_path (
+                    $cluster_name,
+                    $partition_name);
+        $f .= "/$partition_name.conf";
         # we create an object for the manipulation of the partition config file.
         require OSCAR::PartitionConfigManager;
         my $config_obj = OSCAR::PartitionConfigManager->new(
@@ -157,7 +160,7 @@ sub get_list_nodes_partition ($$) {
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
         carp "ERROR: Impossible to get the OSCAR configuration\n";
-        return -1;
+        return undef;
     }
     my $config = $oscar_configurator->get_config();
 
@@ -178,15 +181,15 @@ sub get_list_nodes_partition ($$) {
             push (@nodes, $n);
         }
     } elsif ($config->{db_type} eq "file") {
-        my $path = "$basedir/$cluster_name/$partition_name";
+        my $path = $oscar_configurator->get_partition_config_file_path (
+            $cluster_name,
+            $partition_name);
         # Some basic checking...
-        if (! -d "$basedir/$cluster_name" 
-            || ! -d "$path") {
-            carp "ERROR: Partition does not exist ($partition_name)\n";
+        if (!defined ($path) || ! -d "$path") {
+            carp "ERROR: Partition $partition_name does not exist\n";
             return undef;
         }
-        @nodes = 
-            OSCAR::FileUtils::get_dirs_in_path ("$path");
+        @nodes = OSCAR::FileUtils::get_dirs_in_path ("$path");
     } else {
         carp "ERROR: Unknown ODA type ($config->{db_type}).\n";
         return undef;
@@ -245,16 +248,14 @@ sub get_list_partitions ($) {
         my $cluster_id = OSCAR::Database::oda_query_single_result ($sql, "id");
 #        @partitions = get_list_partitions ($cluster_id);
     } elsif ($config->{db_type} eq "file") {
-        if ( ! -d $basedir ) {
-            carp "ERROR: Configuration files missing\n";
-            return undef;
-        }
-        if ( ! -d "$basedir/$cluster_name" ) {
+        my $path =
+            $oscar_configurator->get_cluster_config_file_path($cluster_name);
+        if ( ! -d "$path" ) {
             carp "ERROR: cluster $cluster_name does not exist\n";
             return undef;
         }
         @partitions 
-            = OSCAR::FileUtils::get_dirs_in_path ("$basedir/$cluster_name");
+            = OSCAR::FileUtils::get_dirs_in_path ("$path");
     } else {
         carp "ERROR: unknown ODA type ($config->{db_type})";
         return undef;
@@ -344,22 +345,25 @@ sub get_partition_info ($$) {
         my $result_ref;
         do_select($sql, $result_ref, $options_ref, $error_strings_ref);
     } elsif ($config->{db_type} eq "file") {
-        if ( ! -d "$basedir") {
+        my $path = $config->{oda_files_path};
+        if ( ! -d "$path") {
             carp "ERROR: the cluster configuration directory does not exist ".
-                 "($basedir). It most certainly mean that OSCAR is not ".
-                 "correctly initialized\n";
-            return @partitions;
+                 "($path). It most certainly mean that OSCAR is not correctly ".
+                 "initialized\n";
+            return undef;
         }
 
         # Step 1: Does the cluster exist?
-        if ( ! -d "$basedir/$cluster_name") {
+        $path =
+            $oscar_configurator->get_cluster_config_file_path($cluster_name);
+        if ( ! -d "$path") {
             print "WARNING: Cluster does not exist ($cluster_name)\n";
             return undef;
         }
 
         # Step 2: Do partitions exist?
         @partitions =
-            OSCAR::FileUtils::get_dirs_in_path ("$basedir/$cluster_name");
+            OSCAR::FileUtils::get_dirs_in_path ("$path");
     }
     print "Partitions:\n";
     print_array @partitions;
@@ -436,6 +440,7 @@ sub set_partition_info {
         my $client_id = oda_query_single_result ($sql, "id");
         print "ODA client Id: $client_id\n" if $verbose;
     } elsif ($config->{db_type} eq "file") {
+        my $basedir = $config->{oda_files_path};
         if ( ! -d "$basedir") {
             carp "ERROR: the cluster configuration directory does not exist ".
                  "($basedir). It most certainly mean that OSCAR is not ".
@@ -444,15 +449,19 @@ sub set_partition_info {
         }
 
         # Step 1: Does the cluster exist?
-        if ( ! -d "$basedir/$cluster_name") {
-            mkdir "$basedir/$cluster_name";
+        my $path = 
+            $oscar_configurator->get_cluster_config_file_path ($cluster_name);
+        if ( ! -d "$path") {
+            mkdir "$path";
         }
 
         # Step 2: Does the partition already exist?
         # If so, we exist; if not we create it
-        my $partition_path = "$basedir/$cluster_name/$partition_name";
-        if ( ! -d "$partition_path") {
-            mkdir "$partition_path";
+        my $partitionPath = $oscar_configurator->get_partition_config_file_path(
+                $cluster_name,
+                $partition_name);
+        if ( ! -d "$partitionPath") {
+            mkdir "$partitionPath";
         }
 
         # Step 3: the FS has been updated to welcome the partition configuration
@@ -463,7 +472,7 @@ sub set_partition_info {
                 'distro_version' => $distro_version,
                 'arch'          => $arch
                 );
-        my $config_file = "$partition_path/$partition_name.conf";
+        my $config_file = "$partitionPath/$partition_name.conf";
         # We create an object for the manipulation of the partition config file.
         require OSCAR::PartitionConfigManager;
         my $config_obj = OSCAR::PartitionConfigManager->new(
@@ -568,7 +577,10 @@ sub set_node_to_partition ($$$$) {
     } elsif ($config->{db_type} eq "file") {
         # Step1: does the directory for the node exist?
         # If not, we create it; if yes, this is an error.
-        my $path = "$basedir/$cluster_name/$partition_name/$node_name";
+        my $path = $oscar_configurator->get_node_config_file_path(
+                       $cluster_name,
+                       $partition_name,
+                       $node_name);
         if ( -d $path ) {
             carp "ERROR: Impossible to add the node $node_name, the node is ".
                  "already defined\n";
@@ -652,19 +664,23 @@ sub delete_partition_info {
             return -1;
         }
     } elsif ($config->{db_type} eq "file") {
+        my $basedir = $config->{oda_files_path};
         if ( ! -d "$basedir" ) {
             carp "ERROR: Configuration files missing, OSCAR is not correctly ".
                  "initialized\n";
             return -1;
         }
-        if ( ! -d "$basedir/$cluster_name/$partition_name" ) {
+        my $path = $oscar_configurator->get_partition_config_file_path (
+                        $cluster_name,
+                        $partition_name);
+        if ( ! -d "$path" ) {
             carp "Warning: the partition does not exist, no need to delete ".
                  "it\n";
             # This is not a error, if the partition does not exist, it means 
             # that the job is already done.
             return 0;
         } else {
-            rmtree "$basedir/$cluster_name/$partition_name";
+            rmtree "$path";
         }
     } else {
         carp "ERROR: Unkown db type ($config->{db_type})\n";
@@ -712,8 +728,15 @@ sub deploy_partition ($$) {
         # the golden image.
 
         # For that we first get the list of OPKGs
+        # We get the configuration from the OSCAR configuration file.
         require OSCAR::PartitionConfigManager;
-        my $f = "$basedir/$cluster/$partition/$partition.conf";
+        my $oconfig = OSCAR::ConfigManager->new();
+        if ( ! defined ($oconfig) ) {
+            carp "ERROR: Impossible to get the OSCAR configuration\n";
+            return -1;
+        }
+        my $f = $oconfig->get_partition_config_file_path($cluster, $partition)
+                ."/$partition.conf";
         my $config_obj = OSCAR::PartitionConfigManager->new(
             config_file => "$f");
         if ( ! defined ($config_obj) ) {
@@ -733,9 +756,19 @@ sub deploy_partition ($$) {
     } else {
         print "INFO: The image already exists, we do not overwrite\n";
     }
+
+    # Make sure that the clients are assigned to the image
+    if (assign_client_to_partition ($cluster, $partition)) {
+        carp "ERROR: Impossible to assign clients to the partition.\n";
+        return -1;
+    }
     return 0;
 }
 
+# Display partition information.
+#
+# Input: cluster, cluster name.
+# Return: 0 if success, -1 else.
 sub display_partition_info ($$) {
     my ($cluster, $partition) = @_;
 
@@ -754,7 +787,10 @@ sub display_partition_info ($$) {
     my $config = $oscar_configurator->get_config();
 
     if ($config->{db_type} eq "file") {
-        my $f = "$basedir/$cluster/$partition/$partition.conf";
+        my $path = $oscar_configurator->get_partition_config_file_path(
+                        $cluster,
+                        $partition);
+        my $f = "$path/$partition.conf";
         if ( ! -f  $f ) {
             carp "Warning: the partition does not exist\n";
             # This is not a error, if the partition does not exist, it means 
@@ -777,6 +813,105 @@ sub display_partition_info ($$) {
         carp "ERROR: Unknown ODA type ($config->{db_type})\n";
         return -1;
     }
+    return 0;
+}
+
+################################################################################
+# This function makes sure that the compute nodes of the partition are 
+# correctly assigned. One of the task is for instance to assign compute nodes
+# to the SIS image. 
+# Note that we can typically assume that ODA has all the configuration details,
+# we just need to perform needed actions.
+#
+# Input: cluster, cluster name.
+#        partition, partition name.
+# Return: 0 if success, -1 else.
+#
+# TODO: deal with the network domain.
+################################################################################
+sub assign_client_to_partition ($$) {
+    my ($cluster, $partition) = @_;
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    my @nodes = get_list_nodes_partition ($cluster, $partition);
+    if (! @nodes || scalar (@nodes) == 0) {
+        print "INFO: No nodes to assign\n";
+        return 0;
+    }
+    OSCAR::Utils::print_array (@nodes);
+    my $cmd;
+    foreach my $node (@nodes) {
+        require OSCAR::NodeMgt;
+        my $node_config = OSCAR::NodeMgt::get_node_config ($cluster,
+                                                           $partition,
+                                                           $node);
+        if (!defined $node_config) {
+            carp "ERROR: Impossible to get node configuration ($node).\n";
+            return -1;
+        }
+
+        # Two cases about the compute nodes: 
+        #   1/ nodes are already defined so we need to update info (in order to
+        #      be sure everything matches the configuration files.
+        #   2/ nodes are not defined, we need to add them.
+        # Each of these cases lead to different SIS commands.
+        # First we check if the machine is already defined or not
+        $cmd = "/usr/bin/mksimachine -L | grep $node";
+        oscar_log_subsection ("Is the node already defined? Executing: $cmd");
+        my $ret = `$cmd`;
+        if ($ret eq "") {
+            oscar_log_subsection ("Node $node is not yet defined");
+            $cmd = "/usr/bin/mksimachine -A ";
+        } else {
+            oscar_log_subsection ("Node $node is already defined");
+            $cmd = "/usr/bin/mksimachine -U ";
+        } 
+        $cmd .= "--name $node ".
+                "--image $partition ".
+                "--ipaddress $node_config->{ip} ".
+                "--MACaddress $node_config->{mac} ";
+        oscar_log_subsection ("Assigning node $node to partition $partition: ".
+                              "executing \"$cmd\"");
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to assign node $node to partition ".
+                "$partition\n";
+            return -1;
+        }
+
+        $cmd = "/usr/sbin/si_addclients ".
+               "--hosts $node ".
+               "--interactive NO ".
+               "--domainname oscardomain ".
+               "--script $partition ";
+        oscar_log_subsection ("Executing: $cmd");
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to add the node ($node)\n";
+            return -1;
+        }
+    }
+
+    if (OSCAR::MAC::__run_setup_pxe (0)) {
+        carp "ERROR: Impossible to setup pxe.\n";
+        return -1;
+    }
+
+    # We update the DHCP configuration file.
+    my $interface = $config->{nioscar};
+    if (OSCAR::MAC::__setup_dhcpd ($interface)) {
+        carp "ERROR: Impossible to setup DHCP.\n";
+        return -1;
+    }
+
+#    postaddclients
+
+    # Now we are happy, the nodes should be ready to be deployed!!!
     return 0;
 }
 

@@ -95,7 +95,7 @@ OSCAR::Network::update_hosts($ip)
 
 # Get a list of all non-core packages
 # and list of RPMs from the non-core packages
-my $sel_group = get_selected_group;
+my $sel_group = OSCAR::Database::get_selected_group();
 my @opkgs = list_selected_packages("noncore",$sel_group);
 my @opkgs_list;
 my @pkgs;
@@ -104,9 +104,11 @@ foreach my $pkg_ref ( @opkgs ) {
     my $opkg = $$pkg_ref{package};
     my $ver = $$pkg_ref{version};
     push @opkgs_list, $opkg;
-    push @pkgs, pkgs_of_opkg($opkg, $ver, \@qerrors,
-			     group => $OSCAR_SERVER_GROUP,
-			     chroot => "/" );
+    push @pkgs, OSCAR::Database::pkgs_of_opkg($opkg, 
+                                              $ver, 
+                                              \@qerrors,
+                                              group => $OSCAR_SERVER_GROUP,
+                                              chroot => "/" );
 }
 oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs_list));
 
@@ -117,7 +119,11 @@ oscar_log_subsection("Installing server non-core packages " .
 		     "(core packages already installed)");
 
 my $os = &OSCAR::PackagePath::distro_detect_or_die();
-my $pm = &OSCAR::PackageSmart::prepare_distro_pools($verbose,$os);
+if (!$os) {
+    print "ERROR: impossible to detect the local OS\n";
+    exit -1;
+}
+my $pm = &OSCAR::PackageSmart::prepare_distro_pools($os);
 if (!$pm) {
     croak "\nERROR: Could not create PackMan instance!\n";
 }

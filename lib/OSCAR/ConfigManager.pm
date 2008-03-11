@@ -50,6 +50,10 @@ our $oscarbinaries_path;
 our $db_type;
 # Specify the prereq management mode.
 our $prereq_mode;
+# Specify where the OPKGs are.
+our $opkgs_path;
+# Specify where ODA flat config file are (i.e., when not using ODA w/ a real db
+our $oda_files_path;
 
 sub new {
     my $invocant = shift;
@@ -83,6 +87,8 @@ sub load_oscar_config ($) {
         'YUME_PATH'                 => { ARGCOUNT => 1 },
         'ODA_TYPE'                  => { ARGCOUNT => 1 },
         'PREREQ_MODE'               => { ARGCOUNT => 1 },
+        'OPKGS_PATH'                => { ARGCOUNT => 1 },
+        'PATH_ODA_CONFIG_FILES'     => { ARGCOUNT => 1 },
         );
     $config->file ($config_file);
 
@@ -90,11 +96,12 @@ sub load_oscar_config ($) {
     $rapt_path          = $config->get('RAPT_PATH');
     $yume_path          = $config->get('YUME_PATH');
     $prereqs_path       = $config->get('PREREQS_PATH');
-    $packman_path       = $config->get('PREREQS_PATH') . "/packman";
+    $packman_path       = $config->get('PREREQS_PATH');
     $nioscar            = $config->get('OSCAR_NETWORK_INTERFACE');
     $oscarbinaries_path = $config->get('OSCAR_SCRIPTS_PATH');
     $db_type            = $config->get('ODA_TYPE');
     $prereq_mode        = $config->get('PREREQ_MODE');
+    $oda_files_path     = $config->get('PATH_ODA_CONFIG_FILES');
 }
 
 sub get_config () {
@@ -108,9 +115,65 @@ sub get_config () {
                 'binaries_path'     => $oscarbinaries_path,
                 'db_type'           => $db_type,
                 'prereq_mode'       => $prereq_mode,
+                'oda_files_path'    => $oda_files_path,
               );
     return \%cfg;
 }
+
+################################################################################
+#                            ODA RELATED FUNCTIONS                             #
+# The following functions are used when using ODA in flat text file mode. It   #
+# allows one to find the path of the different configuration files, i.e.,      #
+# configuration files for clusters, partitions, and compute nodes.             #
+################################################################################
+
+sub get_cluster_config_file_path ($) {
+    my ($self, $cluster) = @_;
+    if (defined ($cluster) && $cluster ne "") {
+        return "$oda_files_path/$cluster";
+    } else {
+        carp "ERROR: Invalid cluster name ($cluster)\n";
+        return undef;
+    }
+}
+
+sub get_partition_config_file_path ($$) {
+    my ($self, $cluster, $partition) = @_;
+
+    # Some sanity checking
+    if (!defined ($partition) || $partition eq "") {
+        carp "ERROR: Invalid partition name ($partition)\n";
+        return undef;
+    }
+
+    my $path = $self->get_cluster_config_file_path ($cluster);
+    if (defined ($path)) {
+        return "$path/$partition";
+    } else {
+        return undef;
+    }
+}
+
+sub get_node_config_file_path ($$$) {
+    my ($self, $cluster, $partition, $node) = @_;
+
+    # Some sanity checking
+    if (!defined ($node) || $node eq "") {
+        carp "ERROR: Invalid node name ($node)\n";
+        return undef;
+    }
+
+    my $path = $self->get_partition_config_file_path ($cluster, $partition);
+    if (defined ($path)) {
+        return "$path/$node";
+    } else {
+        return undef;
+    }
+}
+
+################################################################################
+#                          END OF ODA RELATED FUNCTIONS                        #
+################################################################################
 
 1;
 

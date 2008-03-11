@@ -43,6 +43,9 @@ my $verbose = 1;
 # Where the configuration files are.
 our $basedir = "/etc/oscar/clusters";
 
+################################################################################
+# Get the node configuration.                                                  #
+#                                                                              #
 sub get_node_config ($$$) {
     my ($cluster_name, $partition_name, $node_name) = @_;
     my $node_config;
@@ -56,8 +59,11 @@ sub get_node_config ($$$) {
     my $config = $oscar_configurator->get_config();
 
     if ($config->{db_type} eq "file") {
-        my $path = "$basedir/$cluster_name/$partition_name/$node_name";
-        if ( ! -d $path ) {
+        my $path = $oscar_configurator->get_node_config_file_path (
+                    $cluster_name,
+                    $partition_name,
+                    $node_name);
+        if ( !defined ($path) || ! -d $path ) {
             carp "ERROR: Undefined node\n";
             return -1;
         }
@@ -131,7 +137,10 @@ sub set_node_config ($$$$) {
     my $config = $oscar_configurator->get_config();
 
     if ($config->{db_type} eq "file") {
-        my $path = "$basedir/$cluster/$partition/$node_name";
+        my $path = $oscar_configurator->get_node_config_file_path (
+                    $cluster,
+                    $partition,
+                    $node_name);
         if ( ! -d $path ) {
             carp "ERROR: Undefined node\n";
             return -1;
