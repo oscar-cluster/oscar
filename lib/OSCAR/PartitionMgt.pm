@@ -695,11 +695,28 @@ sub delete_partition_info {
 #                                                                              #
 # Input: partition, name of the partition we have to validate.                 #
 # Return: 0 if success, -1 else.                                               #
+#                                                                              #
+# TODO: implement a stronger checking mechanism. Current we only check the     #
+#       minimum.                                                               #
 ################################################################################
 sub validate_partition_data ($$) {
     my ($cluster, $partition) = @_;
 
-    carp "validate_partition_data: Not yet implemented\n";
+    # If configuration files are not there, this is not normal
+    require OSCAR::PartitionConfigManager;
+    my $oconfig = OSCAR::ConfigManager->new();
+    if ( ! defined ($oconfig) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return -1;
+    }
+    my $f = $oconfig->get_partition_config_file_path($cluster, $partition)
+            ."/$partition.conf";
+    if ( ! -f $f ) {
+        carp "ERROR: Impossible to get the partition configuration file ".
+             "($cluster, $partition)";
+        return -1;
+    }
+
     return 0;
 }
 
