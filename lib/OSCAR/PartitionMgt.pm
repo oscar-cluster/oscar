@@ -782,10 +782,12 @@ sub deploy_partition ($$) {
     return 0;
 }
 
-# Display partition information.
-#
-# Input: cluster, cluster name.
-# Return: 0 if success, -1 else.
+################################################################################
+# Display partition information.                                               #
+#                                                                              #
+# Input: cluster, cluster name.                                                #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
 sub display_partition_info ($$) {
     my ($cluster, $partition) = @_;
 
@@ -834,17 +836,17 @@ sub display_partition_info ($$) {
 }
 
 ################################################################################
-# This function makes sure that the compute nodes of the partition are 
-# correctly assigned. One of the task is for instance to assign compute nodes
-# to the SIS image. 
-# Note that we can typically assume that ODA has all the configuration details,
-# we just need to perform needed actions.
-#
-# Input: cluster, cluster name.
-#        partition, partition name.
-# Return: 0 if success, -1 else.
-#
-# TODO: deal with the network domain.
+# This function makes sure that the compute nodes of the partition are         #
+# correctly assigned. One of the task is for instance to assign compute nodes  #
+# to the SIS image.                                                            #
+# Note that we can typically assume that ODA has all the configuration details,#
+# we just need to perform needed actions.                                      #
+#                                                                              #
+# Input: cluster, cluster name.                                                #
+#        partition, partition name.                                            #
+# Return: 0 if success, -1 else.                                               #
+#                                                                              #
+# TODO: deal with the network domain.                                          #
 ################################################################################
 sub assign_client_to_partition ($$) {
     my ($cluster, $partition) = @_;
@@ -852,14 +854,14 @@ sub assign_client_to_partition ($$) {
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        carp "ERROR: Impossible to get the OSCAR configuration.\n";
         return undef;
     }
     my $config = $oscar_configurator->get_config();
 
     my @nodes = get_list_nodes_partition ($cluster, $partition);
     if (! @nodes || scalar (@nodes) == 0) {
-        print "INFO: No nodes to assign\n";
+        print "INFO: No nodes to assign.\n";
         return 0;
     }
     OSCAR::Utils::print_array (@nodes) if $verbose;

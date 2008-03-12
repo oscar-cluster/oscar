@@ -548,7 +548,10 @@ sub __run_setup_pxe ($) {
     my $config = $oscar_configurator->get_config();
     my $bin_path = $config->{binaries_path};
 
-    my $cmd = "$bin_path/setup_pxe -v";
+    my $cmd = "$bin_path/setup_pxe";
+    if ($ENV{OSCAR_VERBOSE}) {
+        $cmd = "$cmd -v";
+    }
 
     if ($uyok) {
       $cmd = "$cmd --uyok";
@@ -556,7 +559,7 @@ sub __run_setup_pxe ($) {
     }
 
     oscar_log_subsection("Step $step_number: Setup network boot: $cmd");
-    !system($cmd) or (carp($!), return -1);
+    !system($cmd) or (carp("ERROR: ".$!), return -1);
 
     $cmd = "../packages/kernel/scripts/fix_network_boot";
     if ( -x $cmd) {

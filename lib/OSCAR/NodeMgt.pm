@@ -44,8 +44,16 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 our $basedir = "/etc/oscar/clusters";
 
 ################################################################################
-# Get the node configuration.                                                  #
+# Get the node configuration for a given node of a given partition of a given  #
+# cluster.                                                                     #
 #                                                                              #
+# Input: cluster_name, name of the target cluster,                             #
+#        partition_name, name of the target partition,                         #
+#        node_name, name of the node to look for.                              #
+# return: a hash representing the node configuration, undef if error.          #
+#         Note that a description of the hask is available in                  #
+#         OSCAR::NodeConfigManager.                                            #
+################################################################################
 sub get_node_config ($$$) {
     my ($cluster_name, $partition_name, $node_name) = @_;
     my $node_config;
@@ -53,7 +61,7 @@ sub get_node_config ($$$) {
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        carp "ERROR: Impossible to get the OSCAR configuration.\n";
         return undef;
     }
     my $config = $oscar_configurator->get_config();
@@ -64,8 +72,8 @@ sub get_node_config ($$$) {
                     $partition_name,
                     $node_name);
         if ( !defined ($path) || ! -d $path ) {
-            carp "ERROR: Undefined node\n";
-            return -1;
+            carp "ERROR: Undefined node.\n";
+            return undef;
         }
         require OSCAR::NodeConfigManager;
         my $config_file = "$path/$node_name.conf";
@@ -80,7 +88,7 @@ sub get_node_config ($$$) {
         if ( ! defined ($config_obj) ) {
             carp "ERROR: Impossible to create an object in order to handle ".
                  "the node configuration file.\n";
-            return -1;
+            return undef;
         }
         $node_config = $config_obj->get_config();
         if (!defined ($node_config)) {
@@ -96,21 +104,33 @@ sub get_node_config ($$$) {
                 if ( ! defined ($config_obj) ) {
                     carp "ERROR: Impossible to create an object in order to ".
                          "handle the node configuration file.\n";
-                    return -1;
+                    return undef;
                 }
                 $vm_config_obj->print_config();
             }
         }
     } elsif ($config->{db_type} eq "db") {
         carp "Real db are not yet supported\n";
-        return -1;
+        return undef;
     } else {
         carp "ERROR: Unknow ODA type ($config->{db_type})\n";
-        return -1;
+        return undef;
     }
     return $node_config;
 }
 
+################################################################################
+# Set the configuration of the node. Note that a node is always part of a      #
+# cluster and of a partition.                                                  #
+#                                                                              #
+# Input: cluster, cluster name the node belong to,                             #
+#        partition, partition name the node belong to,                         #
+#        node_name, node name,                                                 #
+#        node_config, a hash representing the node configuration. To know the  #
+#                     format of the hash, please refer to                      #
+#                     OSCAR::NodeConfigManager.                                #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
 sub set_node_config ($$$$) {
     my ($cluster, $partition, $node_name, $node_config) = @_;
 
@@ -132,7 +152,7 @@ sub set_node_config ($$$$) {
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
         carp "ERROR: Impossible to get the OSCAR configuration\n";
-        return undef;
+        return -1;
     }
     my $config = $oscar_configurator->get_config();
 
