@@ -2,6 +2,9 @@
 
 #   $Id$
 
+# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+
 # Copyright (c) 2007 Erich Focht <efocht@hpce.nec.com>
 
 # Copyright (c) 2005,2006 Bernard Li <bli@bcgsc.ca>
@@ -47,7 +50,7 @@ use OSCAR::OCA::OS_Detect;
 my $RPMPOOL = "/tftpboot/rpm";
 my $ARCH=(uname)[4]; # Default architecture
 $ARCH =~ s/i.86/i386/;
-my $install_mode = get_install_mode();
+my $install_mode = OSCAR::Database::get_install_mode();
 my $os = OSCAR::OCA::OS_Detect::open();
 my $is_suse = 1 if ($os->{'distro'} eq "suse");
 
@@ -80,7 +83,7 @@ if ($options->Help){
 # Mandrake's tftp-server expects the tftpboot directory to be under /var/lib/,
 # but OSCAR's standard location is simply under /.
 # Most code by TJN, with mods by BLI
-if (-e "/etc/mandrake-release") {        
+if (-e "/etc/mandrake-release") {
 	my $root_tftp = "/tftpboot";
         my $var_tftp = "/var/lib/tftpboot";
 
@@ -141,11 +144,21 @@ my $monitor_port = 8181;
 # Need to get the IP address of headnode (oscar_server)
 my @result = ();
 my $node = "oscar_server";
-my $iface = get_headnode_iface();
+my $iface = OSCAR::Database::get_headnode_iface();
+if ( !defined $iface ) {
+    die "ERROR: Impossible to get the network interface id used by OSCAR";
+}
 my %db_options = ();
 my @db_errors = ();
 
-get_nics_with_name_node($iface, $node, \@result, \%db_options, \@db_errors);
+if (OSCAR::Database::get_nics_with_name_node($iface,
+                                             $node,
+                                             \@result,
+                                             \%db_options,
+                                             \@db_errors)) {
+    die "ERROR: Impossible to get the network interface id we have to use on ".
+        "compute nodes";
+    }
 
 my $node_ref = pop @result;
 my $ip = $$node_ref{ip};
@@ -165,14 +178,16 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
         copy("$pxelinux_dir/pxelinux.0", "/tftpboot/pxelinux.0") or 
         croak("Unable to copy \"pxelinux.0\" file to /tftpboot.");
     }
-    
-    verbose("Copying default pxelinux.cfg file");
-    copy("/etc/systemimager/pxelinux.cfg/syslinux.cfg", "/tftpboot/pxelinux.cfg/default") or 
-      croak("Unable to copy \"default\" file to /tftpboot/pxelinux.cfg.");
 
-    # SystemImager supports putting local configuration in floppy disk, however, OSCAR does not
-    # support this and when installing on systems without floppy disk drives, it would try forever to
-    # probe for the drive.  The SKIP_LOCAL_CFG prevents this from happening.
+    verbose("Copying default pxelinux.cfg file");
+    copy("/etc/systemimager/pxelinux.cfg/syslinux.cfg", 
+         "/tftpboot/pxelinux.cfg/default") 
+        or croak("Unable to copy \"default\" file to /tftpboot/pxelinux.cfg.");
+
+    # SystemImager supports putting local configuration in floppy disk, however,
+    # OSCAR does not support this and when installing on systems without floppy
+    # disk drives, it would try forever to probe for the drive.  The
+    # SKIP_LOCAL_CFG prevents this from happening.
     verbose("Updating /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");
     if ( system("sed 's|root=/dev/ram|root=/dev/ram SKIP_LOCAL_CFG=y MONITOR_SERVER=$ip MONITOR_CONSOLE=yes|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
       croak("Unable to update /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");

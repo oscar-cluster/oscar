@@ -18,6 +18,8 @@ package OSCAR::Network;
 
 #   Copyright 2002 International Business Machines
 #                  Sean Dague <japh@us.ibm.com>
+#   Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                      Oak Ridge National Laboratory
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -43,14 +45,23 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 # ipv6, we just need to change it here
 my $ipregex = '\d+\.\d+\.\d+\.\d+';
 
-#
-# interface2ip - returns the ip addr, broadcast, and netmask of an interface
-#
-
+################################################################################
+# Returns the ip addr, broadcast, and netmask of an interface.                 #
+#                                                                              #
+# Input: interface, network interface id (e,g., eth0).                         #
+# Return: the IP address, the broadcast address and the network mask; undef if #
+#         error.                                                               #
+################################################################################
 sub interface2ip ($) {
     my $interface = shift;
-    my ($ip, $broadcast, $net);
 
+    # Some sanity check
+    if ( !defined ($interface) || $interface eq "" ) {
+        carp "ERROR: Invalid NIC id.";
+        return (undef, undef, undef);
+    }
+
+    my ($ip, $broadcast, $net);
     # open pipes are better for controlling output than backticks
     open(IFCONFIG,"/sbin/ifconfig $interface |") 
         or (carp("Couldn't run 'ifconfig $interface'"), return undef);

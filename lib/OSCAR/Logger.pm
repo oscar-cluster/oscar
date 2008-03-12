@@ -58,7 +58,9 @@ sub oscar_log_section ($) {
 sub oscar_log_subsection ($) {
     my $title = shift;
 
-    print "--> $title\n"
+    if ($ENV{OSCAR_VERBOSE}) {
+        print "--> $title\n";
+    }
 }
 
 
