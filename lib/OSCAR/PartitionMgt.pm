@@ -61,7 +61,7 @@ use warnings "all";
             validate_partition_data
             );
 
-my $verbose = 1;
+my $verbose = $ENV{OSCAR_VERBOSE};
 
 ################################################################################
 # Return the Linux distribution ID (OS_Detect syntax) associated to the        #
@@ -764,7 +764,7 @@ sub deploy_partition ($$) {
         my $partition_config = $config_obj->get_config();
         my $opkgs = $partition_config->{'opkgs'};
         require OSCAR::Utils;
-        OSCAR::Utils::print_array (@$opkgs);
+        OSCAR::Utils::print_array (@$opkgs) if $verbose;
 
         if (OSCAR::ImageMgt::install_opkgs_into_image ($partition, @$opkgs)) {
             carp "ERROR: Impossible to install OPKGs into the basic image\n";
@@ -862,7 +862,7 @@ sub assign_client_to_partition ($$) {
         print "INFO: No nodes to assign\n";
         return 0;
     }
-    OSCAR::Utils::print_array (@nodes);
+    OSCAR::Utils::print_array (@nodes) if $verbose;
     my $cmd;
     foreach my $node (@nodes) {
         require OSCAR::NodeMgt;

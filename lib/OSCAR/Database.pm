@@ -74,6 +74,7 @@ use OSCAR::oda;
 use OSCAR::Distro;
 use OSCAR::Utils qw (print_array);
 use OSCAR::Logger;
+use OSCAR::ConfigManager;
 use Data::Dumper;
 
 # oda may or may not be installed and initialized
@@ -279,7 +280,7 @@ sub database_connect ($$) {
 sub database_disconnect {
     my ( $passed_options_ref, 
          $passed_errors_ref ) = @_;
-     
+
     # take care of faking any non-passed input parameters, and
     # set any options to their default values if not already set
     my ( $options_ref, $error_strings_ref ) = fake_missing_parameters
@@ -328,7 +329,6 @@ sub list_selected_packages # ($type[,$sel_group]) -> @selectedlist
     # get the selected group.
     $sel_group = &get_selected_group() if ! $sel_group;
 
-    
     my $command_args = "SELECT Packages.package, Packages.version " .
              "FROM Packages, Group_Packages " .
              "WHERE Packages.id=Group_Packages.package_id ".
@@ -557,36 +557,63 @@ sub get_nics_info_with_node {
     return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
-###############################################################################
-# Return NICs information for a given node (identified by its name).          #
-#                                                                             #
-# Input: nic, network interface we are looking for (e.g., "eth0").            #
-#        node, node name for which we want to get NICs information (e.g.,     #
-#              oscar_server). Note for here, we know for instance we want     #
-#              info about eth0 on oscar_server.                               #
-#        results, reference to a hash that represents the result.             #
-#        options_ref, ???.                                                    #
-#        error_strings_ref, reference to a hash that gives error handling     #
-#                           options.                                          #
-#                                                                             #
-# TODO: specify the format of the hash used for "results".                    #
-# TODO: specify the interest of "options_ref".                                #
-# TODO: specify the format of the "error_string_ref" hash.                    #
-#                                                                             #
-# NOTE: why do we need to save that into the database?                        #
-###############################################################################
+################################################################################
+# Return NICs information for a given node (identified by its name).           #
+#                                                                              #
+# Input: nic, network interface we are looking for (e.g., "eth0").             #
+#        node, node name for which we want to get NICs information (e.g.,      #
+#              oscar_server). Note for here, we know for instance we want      #
+#              info about eth0 on oscar_server.                                #
+#        results, reference to a hash that represents the result.              #
+#        options_ref, ???.                                                     #
+#        error_strings_ref, reference to a hash that gives error handling      #
+#                           options.                                           #
+# Return: 0 if success, -1 else.                                               #
+#                                                                              #
+# TODO: specify the format of the hash used for "results".                     #
+#       Is it a hash with the following keys? (ip, broadcast, net)?
+# TODO: specify the interest of "options_ref".                                 #
+# TODO: specify the format of the "error_string_ref" hash.                     #
+#                                                                              #
+# NOTE: why do we need to save that into the database?                         #
+################################################################################
 sub get_nics_with_name_node {
     my ($nic,
         $node,
         $results,
         $options_ref,
         $error_strings_ref)= @_;
-    my $sql ="SELECT Nics.* FROM Nics, Nodes ".
-             "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node' " .
-             "AND Nics.name='$nic'";
-    print "DB_DEBUG>$0:\n===> in Database::get_nics_with_name_node SQL: $sql\n"
-        if $$options_ref{debug};
-    return do_select($sql,$results, $options_ref, $error_strings_ref);
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return -1;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "file") {
+        require OSCAR::Network;
+        my ($ip, $broadcast, $net) = OSCAR::Network::interface2ip ($nic);
+        if (!defined $ip || !defined $broadcast || !defined $net) {
+            carp "ERROR: Invalid NIC info";
+            return -1;
+        }
+        $results = { 'ip' => $ip,
+                     'broadcast' => $broadcast,
+                     'net' => $net};
+        return 0;
+    } elsif ($config->{db_type} eq "db") {
+        my $sql ="SELECT Nics.* FROM Nics, Nodes ".
+                "WHERE Nodes.id=Nics.node_id AND Nodes.name='$node' " .
+                "AND Nics.name='$nic'";
+        print "DB_DEBUG>$0:\n====> in Database::get_nics_with_name_node SQL :".
+              " $sql\n" if $$options_ref{debug};
+        return do_select($sql,$results, $options_ref, $error_strings_ref);
+    } else {
+        carp "ERROR: Unknow ODA mode ($config->{db_type})";
+    }
+    return -1;
 }
 
 sub get_cluster_info_with_name {
@@ -1096,24 +1123,62 @@ sub get_gateway {
     return do_select($sql,$results, $options_ref, $error_strings_ref);
 }
 
-# This function returns the interface on the headnode that is on the same
-# network as the compute nodes, typically = ./install_cluster <iface>
+################################################################################
+# This function returns the interface on the headnode that is on the same      #
+# network as the compute nodes, typically = ./install_cluster <iface>          #
+#                                                                              #
+# Return: the network interface id if success (e.g. "eth0"), undef else.       #
+################################################################################
 sub get_headnode_iface {
-    my ($options_ref,
-	$error_strings_ref) = @_;
-    my $cluster_ref = get_cluster_info_with_name("oscar", $options_ref, $error_strings_ref);
-    return $$cluster_ref{headnode_interface};
+    my ($options_ref, $error_strings_ref) = @_;
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "file") {
+        return $config->{nioscar};
+    } elsif ($config->{db_type} eq "db") {
+        my $cluster_ref = get_cluster_info_with_name("oscar", $options_ref, $error_strings_ref);
+        return $$cluster_ref{headnode_interface};
+    } else {
+        carp "ERROR: Unknow ODA mode ($config->{db_type})";
+        return undef;
+    }
 }
 
 # Retrieve installation mode for cluster
 sub get_install_mode {
     my ($options_ref,
         $error_strings_ref) = @_;
- 
-    my $cluster = "oscar";
 
-    my $cluster_ref = get_cluster_info_with_name($cluster, $options_ref, $error_strings_ref);
-    return $$cluster_ref{install_mode};
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "file") {
+        # TODO: we currently return a fack value, we assume we use a basic 
+        # installation mode
+        return "systemimager-rsync";
+    } elsif ($config->{db_type} eq "db") {
+        my $cluster = "oscar";
+
+        my $cluster_ref = get_cluster_info_with_name($cluster, 
+            $options_ref,
+            $error_strings_ref);
+        return $$cluster_ref{install_mode};
+    } else {
+        carp "ERROR: Unknown ODA mode ($config->{db_type})";
+    }
+    return undef
 }
 
 
