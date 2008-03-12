@@ -39,7 +39,7 @@ use warnings "all";
             set_node_config
             );
 
-my $verbose = 1;
+my $verbose = $ENV{OSCAR_VERBOSE};
 # Where the configuration files are.
 our $basedir = "/etc/oscar/clusters";
 
@@ -87,7 +87,7 @@ sub get_node_config ($$$) {
             carp "ERROR: Impossible to load the node configuration file\n";
             return undef;
         } else {
-            $config_obj->print_config();
+            $config_obj->print_config() if $verbose;
             if ($node_config->{'type'} eq "virtual") {
                 require OSCAR::VMConfigManager;
                 my $vm_config_file = "$path/vm.conf";
