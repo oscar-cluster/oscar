@@ -112,7 +112,7 @@ sub opkgs_install_server {
 
     my @olist = map { "opkg-".$_."-server" } @opkgs;
     my ($err, @out) = $pm->smart_install(@olist);
-    if (!$err) {
+    if ($err) {
         carp "Error occured during smart_install:\n";
         print join("\n",@out)."\n";
         return -1;

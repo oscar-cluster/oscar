@@ -371,12 +371,13 @@ sub init_database_passwd ($) {
     }
 
     my $config = $configurator->get_config();
-    my $oscarbinaries_path = $config->{'scripts_path'};
+    my $oscarbinaries_path = $config->{'binaries_path'};
 
     # Make sure there is a database password
     print "Binary path = $oscarbinaries_path\n";
 
-    oscar_log_subsection("Making sure there is an ODA database password");
+    require OSCAR::Logger;
+    OSCAR::Logger::oscar_log_subsection("Making sure there is an ODA database password");
     system( "$ENV{OSCAR_HOME}/scripts/make_database_password" );
 
     return 0;

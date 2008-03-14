@@ -697,8 +697,8 @@ sub get_packages ($$$) {
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        print "ERROR: Impossible to get the OSCAR configuration\n";
-        exit 1;
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return 1;
     }
     my $config = $oscar_configurator->get_config();
 
@@ -712,21 +712,53 @@ sub get_packages ($$$) {
         oscar_log_subsection (">$0:\n".
             "====> getting OPKGs info from configuration file\n")
             if $$options_ref{debug};
-        print "ERROR: not yet implemented ($0)\n";
+        carp "ERROR: not yet implemented ($0)\n";
         return 0;
     }
 }
 
 
+# Return: 0 if success, -1 else.
+#
+# TODO: do not hardcode the core OPKGs config file path/
 sub get_packages_with_class ($$$$) {
     my ($class,
         $results_ref,
         $options_ref,
         $error_strings_ref) = @_;
-    my $sql = "SELECT id, package, version FROM Packages ".
-              "WHERE __class='$class' ";
-    print "DB_DEBUG>$0:\n====> in Database::get_packages_with_class SQL : $sql\n" if $$options_ref{debug};
-    return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        print "ERROR: Impossible to get the OSCAR configuration\n";
+        return -1;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "db") {
+        my $sql = "SELECT id, package, version FROM Packages ".
+                  "WHERE __class='$class' ";
+        print "DB_DEBUG>$0:\n===> in Database::get_packages_with_class SQL: $sql\n"
+            if $$options_ref{debug};
+        return do_select($sql,$results_ref,$options_ref,$error_strings_ref);
+    } elsif ($config->{db_type} eq "file") {
+        if ($class ne "core") {
+            carp "ERROR: We do not know how to deal with $class OPKGs in ". 
+                 "file ODA mode.";
+            return -1;
+        }
+        my $opkgs_config_file = "/etc/oscar/opkgs/core.conf";
+        open (DAT, $opkgs_config_file) || (carp "Could not open file!", return -1);
+        foreach my $line (<DAT>) {
+            chomp($line);
+            my %tmp_hash = ( 'package' => $line );
+            push (@$results_ref, \%tmp_hash);
+        }
+        close (DAT);
+    } else {
+        carp "ERROR: Unknow ODA mode ($config->{db_type}).";
+        return -1;
+    }
 }
 
 # These two subroutines(get_packages_related_with_package and

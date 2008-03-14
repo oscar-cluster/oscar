@@ -134,8 +134,8 @@ sub bootstrap_prereqs ($$) {
 
     # We get the current status of the prereq first
     $cmd = $ipcmd . " --status " . $prereq_path;
-    my $prereq_name = basename ($cmd);
-    print "Dealing with Prereq $prereq_name\n";
+    my $prereq_name = basename ($prereq_path);
+    print "Dealing with Prereq $prereq_name ($prereq_path, $prereq_mode)\n";
     if (system ($cmd)) {
         print "$prereq_name is not installed.\n";
 
@@ -281,18 +281,17 @@ sub init_server ($) {
     if ($db_type eq "db") {
         # We initialize the database if needed
         if (init_db ($configurator)) {
-            print "ERROR: impossible to initialize the database\n";
+            carp "ERROR: impossible to initialize the database\n";
             return -1;
         }
     } elsif ($db_type eq "file") {
         # We initialize the database if needed
         if (init_file_db ()) {
-            print "ERROR: impossible to initialize the file based database\n";
+            carp "ERROR: impossible to initialize the file based database\n";
             return -1;
         }
     }
 
-    return -1 if ($db_type eq "file");
     require OSCAR::Database;
 
     # Get the list of just core packages
@@ -301,12 +300,12 @@ sub init_server ($) {
                                              \@results,
                                              \%options,
                                              \@errors)) {
-        print "ERROR: Failed to get core packages list";
+        carp "ERROR: Failed to get core packages list";
         return -1;
     }
     my @packages = map { $_->{package} } @results;
     if (scalar(@packages) == 0) {
-        print "ERROR: The list of core packages is empty\n";
+        carp "ERROR: The list of core packages is empty\n";
         return -1;
     }
 
@@ -319,7 +318,7 @@ sub init_server ($) {
 
     OSCAR::Logger::oscar_log_subsection("Installing server core packages");
     if (OSCAR::Opkg::opkgs_install_server (@packages)) {
-        print "ERROR: Impossible to install server core packages\n";
+        carp "ERROR: Impossible to install server core packages\n";
         return -1;
     }
     OSCAR::Logger::oscar_log_subsection(
@@ -533,9 +532,11 @@ sub bootstrap_stage2 ($) {
         }
     }
 
-    # we initialize the database if needed
-    require OSCAR::Database_generic;
-    OSCAR::Database_generic::init_database_passwd($configurator);
+    if ($config->{db_type} eq "db") {
+        # we initialize the database if needed
+        require OSCAR::Database_generic;
+        OSCAR::Database_generic::init_database_passwd($configurator);
+    }
 
     # Then we try to install the server side of OSCAR
     if (init_server ($configurator)) {

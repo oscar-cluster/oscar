@@ -96,7 +96,7 @@ sub load_oscar_config ($) {
     $rapt_path          = $config->get('RAPT_PATH');
     $yume_path          = $config->get('YUME_PATH');
     $prereqs_path       = $config->get('PREREQS_PATH');
-    $packman_path       = $config->get('PREREQS_PATH');
+    $packman_path       = $config->get('PREREQS_PATH') . "/packman";
     $nioscar            = $config->get('OSCAR_NETWORK_INTERFACE');
     $oscarbinaries_path = $config->get('OSCAR_SCRIPTS_PATH');
     $db_type            = $config->get('ODA_TYPE');
