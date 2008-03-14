@@ -461,7 +461,7 @@ foreach my $directory ( @directories ) {
 }
 
 if ($config->{db_type} eq "file") {
-    print "Creation the core OPKGs configuration file; the list of core " .
+    print "Creation of the core OPKGs configuration file; the list of core " .
             "packages is:\n";
     print_array (@core_opkgs);
     foreach my $p (@core_opkgs) {
@@ -473,82 +473,82 @@ if ($config->{db_type} eq "file") {
             exit 1;
         }
     }
-}
+} elsif ($config->{db_type} eq "db") {
+    oscar_log_subsection (basename($0).
+        " >>>>> Populating the Packages records is finished\n")
+        if $options{debug} || $options{verbose};
+    my @nics_results = ();
+    my $server_node = "oscar_server";
 
-oscar_log_subsection (basename($0).
-    " >>>>> Populating the Packages records is finished\n")
-    if $options{debug} || $options{verbose};
-my @nics_results = ();
-my $server_node = "oscar_server";
+    # Determine if it is the first time installation or not.
+    # If nics table is already filled in, this is not first time installation
+    # and skip the process of inserting into the Group_Packages table.
+    get_nics_info_with_node($server_node,\@nics_results,\%options,\@error_strings);
+    oscar_log_subsection (basename($0).
+          "====> If get_nics_info_with_node returns nothing, just ".
+          "go to next step: handling Packages related tables.\n".
+          "Otherwise, initialize the Packages related tables\n")
+        if $options{debug} || $options{verbose};
 
-# Determine if it is the first time installation or not.
-# If nics table is already filled in, this is not first time installation
-# and skip the process of inserting into the Group_Packages table.
-get_nics_info_with_node($server_node,\@nics_results,\%options,\@error_strings);
-oscar_log_subsection (basename($0).
-      "====> If get_nics_info_with_node returns nothing, just ".
-      "go to next step: handling Packages related tables.\n".
-      "Otherwise, initialize the Packages related tables\n")
-    if $options{debug} || $options{verbose};
-
-# Delete the packages to be deleted when there is no $directory_argument,
-# which means it is a call from normal installation but not from OPD.
-# This needs to clean the tables related to Packages too.
-if(!$directory_argument){
-    foreach my $pkg (keys %opkg_to_be_deleted){
-        if($opkg_to_be_deleted{$pkg} == 1){
-            delete_packages_related_table($pkg,
+    # Delete the packages to be deleted when there is no $directory_argument,
+    # which means it is a call from normal installation but not from OPD.
+    # This needs to clean the tables related to Packages too.
+    if(!$directory_argument){
+        foreach my $pkg (keys %opkg_to_be_deleted){
+            if($opkg_to_be_deleted{$pkg} == 1){
+                delete_packages_related_table($pkg,
                                           \%options,
                                           \@error_strings,
                                           $package_version);
-            delete_package($pkg,\%options,\@error_strings);
-        }
+                delete_package($pkg,\%options,\@error_strings);
+            }
+        }    
     }
-}
 
-oscar_log_subsection (basename($0).
-    ": ====> Adding/Modifying entries of Packages ".
-    "related tables is beginning\n") if $options{debug} || $options{verbose};
+    oscar_log_subsection (basename($0).
+        ": ====> Adding/Modifying entries of Packages ".
+        "related tables is beginning\n") if $options{debug} || $options{verbose};
 
-foreach my $directory ( @directories ) {
-    my $package = $directory;
-    $package =~ s,^.*/,,;
-    if ( -d $directory &&
-         $package ne "." &&
-         $package ne ".." &&
-         $package ne "CVS" &&
-         $package ne ".svn" &&
-         ! -e "$directory/.oscar_ignore" ) {
-        oscar_log_subsection (basename($0).
-            "PACKAGE : <<<<<<<<< $package >>>>>>>>>: Inserting in ODA...\n")
-            if $options{debug};
-        my $each_msg = $msg . " $package ".
-                       ($package_version?"$package_version\n":"\n");
-        $xml_ref = get_xml_ref($directory, $package,$each_msg);
-        OSCAR::Utils::print_hash("",
-            "Print the package $package/$xml_file_name", 
-            $xml_ref) if $oda_options{debug};
+    foreach my $directory ( @directories ) {
+        my $package = $directory;
+        $package =~ s,^.*/,,;
+        if ( -d $directory &&
+             $package ne "." &&
+             $package ne ".." &&
+             $package ne "CVS" &&
+             $package ne ".svn" &&
+             ! -e "$directory/.oscar_ignore" ) {
+            oscar_log_subsection (basename($0).
+                "PACKAGE : <<<<<<<<< $package >>>>>>>>>: Inserting in ODA...\n")
+                if $options{debug};
+            my $each_msg = $msg . " $package ".
+                           ($package_version?"$package_version\n":"\n");
+            $xml_ref = get_xml_ref($directory, $package,$each_msg);
+            OSCAR::Utils::print_hash("",
+                "Print the package $package/$xml_file_name", 
+                $xml_ref) if $oda_options{debug};
 
-        if ($config->{db_type} eq "db") {
             OSCAR::Database::populate_database_with_opkgs($package,
-                $package_version,
-                $xml_ref,
-                $directory_argument,
-                \@nics_results,
-                \%options,
-                \@error_strings);
+                    $package_version,
+                    $xml_ref,
+                    $directory_argument,
+                    \@nics_results,
+                    \%options,
+                    \@error_strings);
+            oscar_log_subsection (basename($0).
+                "PACKAGE : <<<<<<<<< $package >>>>>>>>>: Insertion successfull.\n")
+                if $options{debug};
         }
-        oscar_log_subsection (basename($0).
-            "PACKAGE : <<<<<<<<< $package >>>>>>>>>: Insertion successfull.\n")
-            if $options{debug};
     }
+
+    oscar_log_subsection (basename($0).
+        "=====> Adding/Modifying entries of Packages related tables is finished\n")
+        if $options{debug} || $options{verbose};
+
+    oda::oda_disconnect( \%options ) if ($config->{db_type} eq "db");
+} else {
+    die "ERROR: Unknow ODA mode $config->{db_type}.";
 }
-
-oscar_log_subsection (basename($0).
-    "=====> Adding/Modifying entries of Packages related tables is finished\n")
-    if $options{debug} || $options{verbose};
-
-oda::oda_disconnect( \%options ) if ($config->{db_type} eq "db");
 
 oscar_log_section (basename($0).": Successfully ended");
 
