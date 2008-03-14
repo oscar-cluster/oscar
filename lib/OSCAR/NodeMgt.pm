@@ -35,6 +35,7 @@ use Carp;
 use warnings "all";
 
 @EXPORT = qw(
+            display_node_config
             get_node_config
             set_node_config
             );
@@ -42,6 +43,83 @@ use warnings "all";
 my $verbose = $ENV{OSCAR_VERBOSE};
 # Where the configuration files are.
 our $basedir = "/etc/oscar/clusters";
+
+################################################################################
+# Display the configuration for a given node of a given partition of a given   #
+# cluster.                                                                     #
+#                                                                              #
+# Input: cluster_name, name of the target cluster,                             #
+#        partition_name, name of the target partition,                         #
+#        node_name, name of the node to look for.                              #
+# return: a hash representing the node configuration, undef if error.          #
+#         Note that a description of the hask is available in                  #
+#         OSCAR::NodeConfigManager.                                            #
+################################################################################
+sub display_node_config ($$$) {
+    my ($cluster_name, $partition_name, $node_name) = @_;
+    my $node_config;
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration.\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    if ($config->{db_type} eq "file") {
+        my $path = $oscar_configurator->get_node_config_file_path (
+                    $cluster_name,
+                    $partition_name,
+                    $node_name);
+        if ( !defined ($path) || ! -d $path ) {
+            carp "ERROR: Undefined node.\n";
+            return undef;
+        }
+        require OSCAR::NodeConfigManager;
+        my $config_file = "$path/$node_name.conf";
+        if ( ! -f $config_file ) {
+            # if the configuration file does not exist, it means that the node
+            # has been added to the partition but not yet defined. This is not
+            # an error.
+            return undef;
+        }
+        oscar_log_subsection("Parsing node configuration file: $config_file");
+        my $config_obj = OSCAR::NodeConfigManager->new(
+            config_file => "$config_file");
+        if ( ! defined ($config_obj) ) {
+            carp "ERROR: Impossible to create an object in order to handle ".
+                 "the node configuration file.\n";
+            return undef;
+        }
+        $node_config = $config_obj->get_config();
+        if (!defined ($node_config)) {
+            carp "ERROR: Impossible to load the node configuration file\n";
+            return undef;
+        } else {
+            $config_obj->print_config();
+            if ($node_config->{'type'} eq "virtual") {
+                require OSCAR::VMConfigManager;
+                my $vm_config_file = "$path/vm.conf";
+                my $vm_config_obj = OSCAR::VMConfigManager->new(
+                    config_file => "$vm_config_file");
+                if ( ! defined ($config_obj) ) {
+                    carp "ERROR: Impossible to create an object in order to ".
+                         "handle the node configuration file.\n";
+                    return undef;
+                }
+                $vm_config_obj->print_config();
+            }
+        }
+    } elsif ($config->{db_type} eq "db") {
+        carp "Real db are not yet supported\n";
+        return undef;
+    } else {
+        carp "ERROR: Unknow ODA type ($config->{db_type})\n";
+        return undef;
+    }
+    return $node_config;
+}
 
 ################################################################################
 # Get the node configuration for a given node of a given partition of a given  #
@@ -83,6 +161,7 @@ sub get_node_config ($$$) {
             # an error.
             return undef;
         }
+        oscar_log_subsection("Parsing node configuration file: $config_file");
         my $config_obj = OSCAR::NodeConfigManager->new(
             config_file => "$config_file");
         if ( ! defined ($config_obj) ) {
@@ -94,21 +173,7 @@ sub get_node_config ($$$) {
         if (!defined ($node_config)) {
             carp "ERROR: Impossible to load the node configuration file\n";
             return undef;
-        } else {
-            $config_obj->print_config() if $verbose;
-            if ($node_config->{'type'} eq "virtual") {
-                require OSCAR::VMConfigManager;
-                my $vm_config_file = "$path/vm.conf";
-                my $vm_config_obj = OSCAR::VMConfigManager->new(
-                    config_file => "$vm_config_file");
-                if ( ! defined ($config_obj) ) {
-                    carp "ERROR: Impossible to create an object in order to ".
-                         "handle the node configuration file.\n";
-                    return undef;
-                }
-                $vm_config_obj->print_config();
-            }
-        }
+        } 
     } elsif ($config->{db_type} eq "db") {
         carp "Real db are not yet supported\n";
         return undef;
