@@ -735,8 +735,15 @@ sub deploy_partition ($$) {
 
     # Do we have an image for this partition?
     if (!OSCAR::ImageMgt::image_exists ($partition)) {
+        # We get the default settings for images.
+        my %image_config = OSCAR::ImageMgt::get_image_default_settings ();
+        if (!%image_config) {
+            carp "ERROR: Impossible to get default image settings\n";
+            return -1;
+        }
+
         # If the image does not already exists, we create it.
-        if (OSCAR::ImageMgt::create_image ($partition)) {
+        if (OSCAR::ImageMgt::create_image ($partition, \%image_config)) {
             carp "ERROR: Impossible to create the basic image\n";
             return -1;
         }

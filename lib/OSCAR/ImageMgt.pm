@@ -33,7 +33,7 @@ use OSCAR::PackagePath;
 use OSCAR::Database;
 use OSCAR::Utils qw (
                     is_element_in_array
-                    print_array 
+                    print_array
                     );
 # use SystemImager::Server;
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
@@ -51,6 +51,7 @@ use warnings "all";
             do_setimage
             do_post_binary_package_install
             do_oda_post_install
+            export_image
             get_image_default_settings
             get_list_corrupted_images
             image_exists
@@ -223,6 +224,7 @@ sub get_disk_file {
 # default the local distro.                                                    #
 # Input: none.                                                                 #
 # Output: default settings (via a hash).                                       #
+#         The format of the hash is the following is available within the code.#
 # TODO: fix the problem with the distro parameter.                             #
 ################################################################################
 sub get_image_default_settings {
@@ -268,15 +270,29 @@ sub get_image_default_settings {
 
     # Default settings
     my %vars = (
+           # imgpath: location where the image is created
            imgpath => "/var/lib/systemimager/images",
+           # imgname: image name
            imgname => "oscarimage",
+           # arch: target hardware architecture
            arch => $arch,
+           # pkgfile: location of the file giving the list of binary package
+           # for the creation of the image
            pkgfile => $pkglist,
+           # pkgpath: path of the different binary packages pools used for the
+           # creation of the image.
            pkgpath => "$oscar_pool,$distro_pool",
+           # diskfile: path to the file that gives the disk partition layout.
            diskfile => $diskfile,
+           # ipmeth: method to assign the IP (possible options are: "static")
+           # TODO: check what are the other possible options
            ipmeth => "static",
+           # piaction: action to perform when the image is deployed (possible
+           # options are: "reboot").
+           # TODO: check what are the other possible options
            piaction => "reboot",
-#           distro => "$distro",
+           # extraflags: string for extra SIS flags. Should be used only for the
+           # tricky stuff.
            extraflags => $extraflags
            );
 
@@ -446,24 +462,18 @@ sub image_exists ($) {
 # Create a basic image.                                                        #
 #                                                                              #
 # Input: image. image name to create.                                          #
+#        vars, image configuration (hash.
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
-sub create_image ($) {
-    my $image = shift;
+sub create_image ($%) {
+    my ($image, %vars) = @_;
 
     # We create a basic image for clients. Note that by default we do not
     # create a basic image for servers since the server may already be deployed.
     # We currently use the script 'build_oscar_image_cli'. This is a limitation
     # because it only creates an image based on the local Linux distribution.
     oscar_log_section "Creating the basic golden image..." if $verbose;
-    # We get the default settings for images.
-    my %vars = get_image_default_settings ();
-    if (!%vars) {
-        carp "ERROR: Impossible to get default image settings\n";
-        return -1;
-    }
-    print "WARNING: We currently use the default image parameters which is a ".
-          "pretty bad idea!!!!\n";
+
     $vars{imgname} = "$image";
 
     my $cmd = "mksiimage -A --name $vars{imgname} " .
@@ -586,5 +596,67 @@ sub install_opkgs_into_image ($@) {
     return 0;
 }
 
+################################################################################
+# Export the image for a given partition. This image can then be used outside  #
+# of OSCAR. The export typically creates a tarball having the file system of   #
+# partition. The name of the partition is image-<partition_id>.tar.gz.         #
+#                                                                              #
+# Input: partition, partition identifier (typically its name).                 #
+#        dest, directory where the tarball will be created. Note that the      #
+#        directory is also used as temporary directory while creating the      #
+#        image, that can require a lot of disk space.                          #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub export_image ($$) {
+    my ($partition, $dest) = @_;
+
+    if (!defined ($partition) || !defined ($dest)) {
+        carp "ERROR: Invalid arguments";
+        return -1;
+    }
+
+    my $tarball = "$dest/image-$partition.tar.gz";
+    my $temp_dir = "$dest/temp-$partition";
+
+    require File::Path;
+
+    if (! -d $dest) {
+        carp "ERROR: the destination directory does not exist";
+        return -1;
+    }
+    if (-f $tarball) {
+        carp "ERROR: the tarball already exists";
+        return -1;
+    }
+    if (-d $temp_dir) {
+        rmtree ($temp_dir);
+    }
+
+    # We get the default settings for images.
+    my %image_config = OSCAR::ImageMgt::get_image_default_settings ();
+    if (!%image_config) {
+        carp "ERROR: Impossible to get default image settings\n";
+        return -1;
+    }
+    $image_config{imgpath} = $temp_dir;
+    # If the image does not already exists, we create it.
+    if (OSCAR::ImageMgt::create_image ($partition, %image_config)) {
+        carp "ERROR: Impossible to create the basic image\n";
+        rmtree ($temp_dir);
+        return -1;
+    }
+
+    # the image is ready to be tared!
+    my $cmd = "cd $temp_dir; tar czf ../$tarball *";
+    print "Executing: $cmd" if $verbose;
+    if (system ($cmd)) {
+        carp "ERROR: impossible to create the tarball";
+        rmtree ($temp_dir);
+        return -1;
+    }
+
+    rmtree ($temp_dir);
+    return 0;
+}
 
 1;
