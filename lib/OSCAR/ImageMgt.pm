@@ -625,37 +625,51 @@ sub export_image ($$) {
         return -1;
     }
     if (-f $tarball) {
-        carp "ERROR: the tarball already exists";
-        return -1;
-    }
-    if (-d $temp_dir) {
-        rmtree ($temp_dir);
-    }
-
-    # We get the default settings for images.
-    my %image_config = OSCAR::ImageMgt::get_image_default_settings ();
-    if (!%image_config) {
-        carp "ERROR: Impossible to get default image settings\n";
-        return -1;
-    }
-    $image_config{imgpath} = $temp_dir;
-    # If the image does not already exists, we create it.
-    if (OSCAR::ImageMgt::create_image ($partition, %image_config)) {
-        carp "ERROR: Impossible to create the basic image\n";
-        rmtree ($temp_dir);
+        carp "ERROR: the tarball already exists ($tarball)";
         return -1;
     }
 
-    # the image is ready to be tared!
-    my $cmd = "cd $temp_dir; tar czf ../$tarball *";
-    print "Executing: $cmd" if $verbose;
-    if (system ($cmd)) {
-        carp "ERROR: impossible to create the tarball";
-        rmtree ($temp_dir);
-        return -1;
-    }
+    if (image_exists ($partition) == 1) {
+        oscar_log_subsection "INFO: The image already exists" if $verbose;
 
-    rmtree ($temp_dir);
+        # the image already exists we just need to create the tarball
+        my $cmd = "cd $images_path/$partition; tar czf $tarball *";
+        oscar_log_subsection "Executing: $cmd" if $verbose;
+        if (system ($cmd)) {
+            carp "ERROR: impossible to create the tarball";
+            return -1;
+        }
+    } else {
+        oscar_log_subsection "INFO: the image does not exist" if $verbose;
+        if (-d $temp_dir) {
+            rmtree ($temp_dir);
+        }
+
+        # We get the default settings for images.
+        my %image_config = OSCAR::ImageMgt::get_image_default_settings ();
+        if (!%image_config) {
+            carp "ERROR: Impossible to get default image settings\n";
+            return -1;
+        }
+        $image_config{imgpath} = $temp_dir;
+        # If the image does not already exists, we create it.
+        if (OSCAR::ImageMgt::create_image ($partition, %image_config)) {
+            carp "ERROR: Impossible to create the basic image\n";
+            rmtree ($temp_dir);
+            return -1;
+        }
+
+        # the image is ready to be tared!
+        my $cmd = "cd $temp_dir; tar czf $tarball *";
+        oscar_log_subsection "Executing: $cmd" if $verbose;
+        if (system ($cmd)) {
+            carp "ERROR: impossible to create the tarball";
+            rmtree ($temp_dir);
+            return -1;
+        }
+
+        rmtree ($temp_dir);
+    }
     return 0;
 }
 
