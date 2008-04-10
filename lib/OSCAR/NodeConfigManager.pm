@@ -77,7 +77,7 @@ sub print_config ($) {
     my $self = shift;
 
     load_config($self);
-    print "Node Configuration:\n";
+#    print "Node Configuration:\n";
 #     print "\tName: $name\n";
     print "\thostname: $hostname\n";
     print "\tType: $type\n";

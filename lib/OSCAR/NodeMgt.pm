@@ -51,9 +51,7 @@ our $basedir = "/etc/oscar/clusters";
 # Input: cluster_name, name of the target cluster,                             #
 #        partition_name, name of the target partition,                         #
 #        node_name, name of the node to look for.                              #
-# return: a hash representing the node configuration, undef if error.          #
-#         Note that a description of the hask is available in                  #
-#         OSCAR::NodeConfigManager.                                            #
+# return: 0 if success, -1 else.                                               #
 ################################################################################
 sub display_node_config ($$$) {
     my ($cluster_name, $partition_name, $node_name) = @_;
@@ -63,7 +61,7 @@ sub display_node_config ($$$) {
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
         carp "ERROR: Impossible to get the OSCAR configuration.\n";
-        return undef;
+        return -1;
     }
     my $config = $oscar_configurator->get_config();
 
@@ -74,7 +72,7 @@ sub display_node_config ($$$) {
                     $node_name);
         if ( !defined ($path) || ! -d $path ) {
             carp "ERROR: Undefined node.\n";
-            return undef;
+            return -1;
         }
         require OSCAR::NodeConfigManager;
         my $config_file = "$path/$node_name.conf";
@@ -82,7 +80,7 @@ sub display_node_config ($$$) {
             # if the configuration file does not exist, it means that the node
             # has been added to the partition but not yet defined. This is not
             # an error.
-            return undef;
+            return -1;
         }
         oscar_log_subsection("Parsing node configuration file: $config_file");
         my $config_obj = OSCAR::NodeConfigManager->new(
@@ -90,12 +88,12 @@ sub display_node_config ($$$) {
         if ( ! defined ($config_obj) ) {
             carp "ERROR: Impossible to create an object in order to handle ".
                  "the node configuration file.\n";
-            return undef;
+            return -1;
         }
         $node_config = $config_obj->get_config();
         if (!defined ($node_config)) {
             carp "ERROR: Impossible to load the node configuration file\n";
-            return undef;
+            return -1;
         } else {
             $config_obj->print_config();
             if ($node_config->{'type'} eq "virtual") {
@@ -106,19 +104,19 @@ sub display_node_config ($$$) {
                 if ( ! defined ($config_obj) ) {
                     carp "ERROR: Impossible to create an object in order to ".
                          "handle the node configuration file.\n";
-                    return undef;
+                    return -1;
                 }
                 $vm_config_obj->print_config();
             }
         }
     } elsif ($config->{db_type} eq "db") {
         carp "Real db are not yet supported\n";
-        return undef;
+        return -1;
     } else {
         carp "ERROR: Unknow ODA type ($config->{db_type})\n";
-        return undef;
+        return -1;
     }
-    return $node_config;
+    return 0;
 }
 
 ################################################################################

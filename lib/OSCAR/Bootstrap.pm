@@ -225,7 +225,7 @@ sub init_file_db () {
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        print "ERROR: Impossible to get the OSCAR configuration\n";
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
         return -1;
     }
     my $config = $oscar_configurator->get_config();
