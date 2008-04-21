@@ -1,0 +1,327 @@
+<!DOCTYPE article PUBLIC " -//OASIS//DTD DocBook V3.1//EN" "http://oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+
+<article class="whitepaper" id="documentation" lang="en">
+
+<artheader> <title>OSCAR Monitoring Framework</title>
+
+<authors>
+<author>
+  <firstname>Geoffroy</firstname>
+  <surname>Vallee</surname>
+  <affiliation>
+    <address><email>valleegr@ornl.gov</email></address>
+  </affiliation>
+</author>
+
+<author>
+  <firstname>Thomas</firstname>
+  <surname>Naughton</surname>
+  <affiliation>
+    <address><email>valleegr@ornl.gov</email></address>
+  </affiliation>
+</author>
+
+</authors>
+
+</artheader>
+
+<sect1><title>Introduction</title>
+
+<para>
+  The OSCAR monitoring framework aims at giving a simple and easy to maintain
+  framework for system monitoring. The first goal is to avoid complex systems
+  such as fully featured event systems (i.e., management of asynchronous events,
+  event ordering and so on). Moreover, the monitoring framework, still to 
+  guarantee simplicity, is _not_ a distributed entity: it can only execute 
+  commands locally (but the commands can execute remote operations, e.g., ssh
+  commands).
+</para>
+<para>
+  Ultimately, the goal of the monitoring framework is to provide a modular and
+  extensible framework for system monitoring, creating the "glue" between the 
+  different OSCAR components. For instance, the monitoring framework is the
+  central piece for the handling of the following example:
+    "The OSCAR component A reports that a node is down, the configuration file of
+    the OSCAR component B is updated in order to avoid this component to try to
+    use the unavailable node."
+</para>
+<para>
+  For that, three components are available: (i) the Monitoring-Gather sub-system
+  which gathers monitoring information, (ii) the Monitoring-Action 
+  sub-system which effectively reacts to monitoring data, and (iii) a driver
+  that handles interactions and data from the two previous framework.
+  Note that we currently focus only on the two "low-level" frameworks, i.e.,
+  the Monitoring-Gather and Monitoring-Action frameworks; we will work on the
+  driver when abstractions from these two frameworks will be stable and 
+  implemented.
+</para>
+</sect1>
+
+<sect1><title>Monitoring-Gather Sub-System</title>
+
+  <sect2><title>Introduction</title>
+  <para>
+    The goal of this framework is to get monitoring information from different 
+    sources and store this data into ODA. Note that this framework does not
+    implement any policy; this is only a low-level and simple mechanism. The
+    implementation of policies (e.g., what do you do when you have conflicting
+    data from two different sources?) has to be done at the driver level.
+  </para>
+
+  <para>
+    To summarize, the main goal is this sub-system is to make the link between
+    a monitoring tool (e.g., heartbeat, Ganglia) and ODA. Saving monitoring
+    data into ODA allows us to have a generic way to represent system monitoring
+    data. Also remember that at the OSCAR level we only care about few 
+    monitoring data (the data we care about is described in annex).
+  </para>
+  </sect2>
+
+  <sect2><title>Implementation</title>
+  <para>
+    For that, a basic tool is available: a command wrapper that get the command
+    result and save it into ODA. Doing so, it is possible to know the result
+    of a given command (and therefore to have monitoring information) at any 
+    time for any monitoring tool. Note that the way to save this data into ODA
+    is not yet completely defined.
+
+    Example:
+    <itemizedlist>
+      <listitem>
+        "node1 success node_is_online.sh"; tells the node is alive
+      </listitem>
+      <listitem>
+        "node1 fail install_opkgs (bla, v2)"; tells that the install of the 
+        opkg bla v2 failed
+      </listitem>
+    </itemizedlist>
+  </para>
+  </sect2>
+</sect1>
+
+<sect1><title>Monitoring-Action Sub-System</title>
+
+<sect2><title>Introduction</title>
+<para>
+  The monitoring-action framework is based on a "rule" mechanism (analogous to
+  iptables): each OSCAR component can define a monitoring rule and when a
+  monitoring modification is reported, the system parses the different rules and
+  try to apply them.
+</para>
+
+<para>
+  The idea behind the rule system is very simple, the following example 
+  illustrates it.
+  Let's assume a given OSCAR cluster provides two components: heartbeat and C3.
+  While the heartbeat mechanism is in charge of detecting offline nodes, C3 
+  needs to know the list of online nodes for remote execution (and therefore
+  needs to be notified when a node is reported as down).
+</para>
+
+<para>
+  Each of these components provides rules when installed (for instance, C3
+  provides the rule "I want to be notified when nodes become offline and the
+  function to call is function 'foo'".
+</para>
+
+<para>
+  The heartbeat system pings periodically the different compute nodes and if a 
+  node does not reply, ODA is updated in order to report to node status. 
+  The rule system periodically checks monitoring information stored in ODA 
+  and detects updates. In our case, the 
+  rule system detects that a node is now down (node A). Then, the rule system
+  query all the existing rules. The C3 rules applies to the case (node became
+  down) and the foo function is automatically called, which update the C3 
+  configuration.
+</para>
+
+<para>
+  Note that rules may be conflicting. We currently do not deal with that. 
+  Moreover the monitoring-action framework does not aim at implementing 
+  policies; only low-level mechanisms to find rules that can be applied and
+  effectively apply them. The implementation of policies has to be done at the
+  driver level.
+</para>
+
+</sect2>
+
+<sect2><title>Implementation</title>
+
+  <sect3><title>System Status Modification Notification</title>
+
+    <para>
+      The rule system has to be actived everytime a system configuration
+      modification has been reported. The driver is in charge of this
+      activation, and is also in charge of deciding when and how the rules have
+      to be applied.
+    </para>
+
+  </sect3>
+
+  <sect3><title>Implementation of the Rule System</title>
+
+    <para>
+      The rule system is implemented via a OCA framework: each OSCAR components
+      (for instance C3) can be associated with a OCA module in order to be
+      interfaced with the monitoring system.
+    </para>
+
+    <para>
+      All modules have to follow these rules:
+      <itemizedlist>
+        <listitem>
+          each rule is defined within a specific file in the 'rules' 
+          directory of the module (this file is an executable script),
+        </listitem>
+        <listitem>
+          each of these files must follow a naming scheme: the file 
+          name is actually the name of the rule to apply (e.g., node_down). 
+          A list of available rules is available later in this document.
+        </listitem>
+        <listitem>
+          the module should provide a 'open' function, requiring an 
+          argument, the rule identifier.
+        </listitem>
+      </itemizedlist>
+      Note that the module, based on the rule name (rule_name), checks if
+      a rule is defined (checking is the file 'rules/{rule_name}' exists or
+      not). If so, the script is executed.
+    </para>
+
+  </sect3>
+
+  <sect3><title>Creation of a New Monitoring Module</title>
+
+    <para>
+      All the monitoring modules are in the directory 
+      '$OSCAR_HOME/lib/OSCAR/OCA/Monitoring'.
+    </para>
+
+    <para>
+      If a developer wants to integrate a new OSCAR components into the 
+      monitoring framework, he has to do the following:
+      <itemizedlist>
+        <listitem>
+          create a new OCA module directory in 
+          '$OSCAR_HOME/lib/OSCAR/OCA/Monitoring',
+        </listitem>
+        <listitem>
+          create the 'open' function (the developer may want to reuse 
+          the 'open' function of an existing Monitoring module, those are 
+          generic,
+        </listitem>
+        <listitem>
+          create new rules (see the next section).
+        </listitem>
+      </itemizedlist>
+    </para>
+
+  </sect3>
+
+  <sect3><title>Specification of New Rules</title>
+
+    <para>
+      The specification of a new rule for a given OSCAR component is fairly 
+      simple if the according OCA module for the monitoring framework already
+      exists: just create an executable script in the 'rules' directory of the
+      OCA module.
+    </para>
+
+  </sect3>
+</sect2>
+</sect1>
+
+<sect1><title>Monitoring Driver</title>
+
+  <para>
+    The monitoring driver is in charge of making the link between the two
+    frameworks previously presented. It means that the driver must implement
+    the policy for the handling of the two frameworks: what do we do if 
+    monitoring data are conflicting? Do we gather data from multiple sources?
+    If so, how do we handle multiple data? Currently no policy has been decided.
+  </para>
+
+</sect1>
+
+<sect1><title>Conclusion</title>
+  <para>
+    This document presents a basic monitoring framework for OSCAR. Details 
+    still need to be specified, especially the policy that needs
+    to be implemented at the driver level, in order to handle the two low-level
+    frameworks.
+  </para>
+  <para>
+    However, the goal of the monitoring framework is to be simple, generic and
+    extensible. We think that the presented two frameworks reach this goal; for
+    instance, the basic code of the two frameworks should not change, only new
+    modules should be added and new drivers implemented.
+  </para>
+</sect1>
+
+<sect1><title>Annex 1: System/Software Status</title>
+
+  Two different status information are necessary: the system status and the
+  software status:
+  <para>
+    <itemizedlist>
+      <listitem>
+        Possible hardware status: offline, down, booting, up, dead.
+      </listitem>
+      <listitem>
+        Possible Software status: undefined, configured, setup.
+      </listitem>
+    </itemizedlist>
+  </para>
+
+  <sect2><title>Hardware Status -- Definitions</title>
+    <para>
+      <emphasis>Offline</emphasis>: the node may be accessible but is not
+      available for a real usage.
+    </para>
+    <para>
+      <emphasis>Down</emphasis>: the node is not accessible from the network.
+    </para>
+    <para>
+      <emphasis>Booting</emphasis>: the node may be accessible but used for 
+      system-level tasks (imaging, updates and so on).
+    </para>
+    <para>
+      <emphasis>Up</emphasis>: the node is accessible for users.
+    </para>
+    <para>
+      <emphasis>Dead</emphasis>: the node is not accessible for users or by 
+      administrators. The node has to be physical fixed before to be back in the
+      system therefore we should not try to do anything before that.
+    </para>
+  </sect2>
+
+  <sect2><title>Software Status -- Definitions</title>
+    <para>
+      <emphasis>Undefined</emphasis>: nodes are not configured, we have no
+      information about the software configuration.
+    </para>
+    <para>
+      <emphasis>Configured</emphasis>: the software configuration of the node
+      is defined but not yet deployed.
+    </para>
+    <para>
+      <emphasis>Setup</emphasis>: the software configuration of the node
+      is defined and deployed (the actual software configuration of the node
+      matches the configuration definition).
+    </para>
+  </sect2>
+
+</sect1>
+
+<sect1><title>Annex 2: Predefined Rules</title>
+
+  <para>
+    The list of predefined rules is available in the file 
+    /etc/oscar/rule_defs.txt (or $OSCAR_HOME/share/rule_defs.txt if using the
+    OSCAR svn repository). Each line of the file gives a rule name.
+  </para>
+
+</sect1>
+
+</article>
+
