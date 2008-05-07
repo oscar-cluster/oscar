@@ -28,15 +28,20 @@ use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
+use OSCAR::Logger;
+use File::Basename;
 use Carp;
 
 @EXPORT = qw(
+            download_file
             get_oscar_version
             is_a_valid_string
             is_element_in_array
             print_array
             print_hash
             );
+
+my $verbose = $ENV{OSCAR_VERBOSE};
 
 ###############################################################################
 # function to do a debug print of a hash
@@ -172,3 +177,29 @@ sub print_hash {
         }
     }
 }
+
+sub download_file ($$) {
+    my ($url, $dest) = @_;
+
+    oscar_log_subsection "Downloading $url";
+    if (! -d $dest) {
+        carp "ERROR: Impossible to download the file ($url), the destination ".
+             "is not a valid directory ($dest)";
+        return -1;
+    }
+    my $file = basename ($url);
+    if ( -f "$dest/$file" ) {
+        # If the file is already there, we just successfully exist
+        oscar_log_subsection "\tThe file is already downloaded." if $verbose;
+        return "$dest/$file";
+    }
+    my $cmd = "cd $dest; wget $url";
+    oscar_log_subsection "Executing: $cmd\n" if $verbose;
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+    return "$dest/$file";
+}
+
+1;
