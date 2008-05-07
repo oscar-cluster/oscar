@@ -35,14 +35,15 @@ use strict;
 use vars qw($config);
 use lib "/usr/lib/systeminstaller";
 use lib "/usr/lib/systemconfig";
-use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose);
+use SystemInstaller::Env;
 use Carp;
 use File::Copy;
 use File::Path;
 use AppConfig qw(:argcount);
 use POSIX;
 use lib "$ENV{OSCAR_HOME}/lib";
+use warnings "all";
 
 use OSCAR::Database;
 use OSCAR::OCA::OS_Detect;
@@ -55,29 +56,38 @@ my $os = OSCAR::OCA::OS_Detect::open();
 my $is_suse = 1 if ($os->{'distro'} eq "suse");
 
 my $options=AppConfig->new(
-		Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
-			ALIAS => "h"},
-		arch=>{ ARGCOUNT=> ARGCOUNT_ONE,
+        Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                        ALIAS => "h"},
+        arch=>{ ARGCOUNT=> ARGCOUNT_ONE,
                         ALIAS => "a"},
-		uyok=>{ ARGCOUNT=> ARGCOUNT_NONE,
+        uyok=>{ ARGCOUNT=> ARGCOUNT_NONE,
                         ALIAS => "u"},
-		verbose=> {ARGCOUNT=> ARGCOUNT_NONE,
-			ALIAS => "v"},
-		);
+        pxegrub=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                        ALIAS => "p"},
+        verbose=> {ARGCOUNT=> ARGCOUNT_NONE,
+                        ALIAS => "v"},
+        );
 
-unless ($options->getopt()){
-	&usage;
-	exit 1;
+unless ($options->getopt()) {
+    &usage;
+    exit 1;
 }
 
 unless (&check_args) {
-	&usage;
-	exit 1;
+    &usage;
+    exit 1;
 }
 
-if ($options->Help){
-	&usage;
-	exit 0;
+if ($options->Help) {
+    &usage;
+    exit 0;
+}
+
+if ($options->pxegrub) {
+    require OSCAR::pxegrub;
+    if (OSCAR::pxegrub::install_pxegrub ($options->pxegrub)) {
+       die "ERROR: Impossible to setup PXEGrub ($options->pxegrub)";
+    }
 }
 
 # Mandrake's tftp-server expects the tftpboot directory to be under /var/lib/,
@@ -235,7 +245,7 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     print OUT "\tappend=\"root=/dev/ram MONITOR_SERVER=$ip MONITOR_CONSOLE=yes\"\n";
 
     # TODO: systemimager-bt support for IA64
-  
+
 } else {
     croak("$ARCH is not a known architecture");
 }
@@ -279,7 +289,6 @@ symlink("/tftpboot/$tftp_ramdisk", "/tftpboot/initrd.img") or
 exit 0; 
 
 sub check_args {
-
 	# Get verbose option
 	if ($options->verbose ||  $config->verbose){
 		start_verbose;
@@ -305,11 +314,13 @@ sub usage {
 usage: $progname <options>
 
   options
-    --arch <architecture>   the filename to write the output to
-    -u, --uyok              use SystemImager's UYOK kernel/ramdisk instead
-                            of the standard kernel/ramdisk
-    -v, --verbose           massive verbose output
+    --arch <architecture>           the filename to write the output to
+    -u, --uyok                      use SystemImager's UYOK kernel/ramdisk
+                                    instead of the standard kernel/ramdisk
+    -v, --verbose                   massive verbose output
+    -p, --pxegrub <network_card_id> Setup PXE Grub for a given network card.
 
+  Please refer to the man page for more details (man setup_pxe).
 
 USAGE
 } #usage
@@ -352,6 +363,14 @@ OS' kernel and a ramdisk generated on the fly to boot client
 nodes to be imaged using SystemImager.  With this option, a
 UYOK kernel and ramdisk will be used to setup PXE boot on your
 headnode.
+
+=item --pxegrub <network_card_id>
+
+Setup PXE Grub for a given network card. PXE Grub allows one to boot a node up
+in disk-less mode not loading a kernel but a Grub image. This image can then
+boot different kernels based on the network disk support from Grub.
+This is especially usefull for fully disk-less virtual machines (i.e., disk-less
+VMM, disk-less HostOS, and disk-less VMs).
 
 =item -v, --verbose
 
