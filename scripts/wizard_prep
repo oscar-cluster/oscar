@@ -392,7 +392,7 @@ OSCAR::PackageSmart::checksum_write("$md5dir/config_xml.md5",$md5);
 # More ODA setup
 my $exit_status =
   system("$ENV{OSCAR_HOME}/scripts/populate_default_package_set")/256;
-croak("Couldn't set up a default package set") if $exit_status;
+croak("Couldn't set up a default package set ($exit_status)") if $exit_status;
 
 
 # add default configurator settings
