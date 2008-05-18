@@ -1,0 +1,29 @@
+#!/usr/bin/perl
+#
+# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Logger;
+use OSCAR::ConfigFile;
+use vars qw(@EXPORT);
+use base qw(Exporter);
+use Carp;
+use warnings "all";
+
+my $value = get_value (
+    "/home/gvh/src/svn/oscar/testing/unit_testing/etc/yum.conf",
+    "gpgkey");
+
+goto ERROR_EXIT if ($value != 0);
+
+print "\n\nSUCCESS: the test of configuration file management succeed\n";
+
+exit 0;
+
+ERROR_EXIT:
+    print "ERROR: the test of configuration file management succeed\n";
+    exit -1;
