@@ -37,6 +37,7 @@ use OSCAR::Database;
 use OSCAR::Database_generic;
 use OSCAR::Package;
 use OSCAR::oda;
+use OSCAR::Logger;
 
 my %options = ();
 my %field_value_hash = ();
@@ -99,7 +100,7 @@ foreach my $node_group_name ( "oscar_clients", "all", "Default_node" ) {
     my @node_groups = ();
     my $group = get_groups(\@node_groups,\%options,\@errors,$node_group_name);
     if ( ! $group ) {
-        oscar_log_section ("Creating node group $node_group_name ...)";
+        oscar_log_section ("Creating node group $node_group_name ...");
         set_groups($node_group_name,\%options,\@errors,"node");
     }
 }
