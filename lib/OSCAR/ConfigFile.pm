@@ -21,9 +21,9 @@ package OSCAR::ConfigFile;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# This Perl module is a simple abstraction to handle configuration file. The
-# goal is typically to be able to easily get and set a given key in a given
-# configuration file.
+# This Perl module is a simple abstraction to handle configuration files. The
+# goal is typically to be able to easily get and set a given key value in a 
+# given configuration file.
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -32,6 +32,7 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 use AppConfig;
+use AppConfig::State;
 use warnings "all";
 
 @EXPORT = qw(
@@ -44,7 +45,13 @@ use warnings "all";
 # from the /etc/yum.conf configuration file.                                   #
 #                                                                              #
 # Input: config_file, full path to the configuration file we want to analyse.  #
-#        key, key we want the value from.                                      #
+#        key, key we want the value from. When you want the value of a key,    #
+#        the key name has to follow the AppConfig syntax. It means that to     #
+#        access the key gpgcheck under the main section of the configuration   #
+#        file, the key name is "main_gpgcheck". For our example, the           #
+#        configuration file looks like:                                        #
+#        [main]                                                                #
+#           gpgcheck = 1                                                       #
 # Return: the key value is the key exists, undef if the key does not exist.    #
 ################################################################################
 sub get_value ($$) {
@@ -56,7 +63,9 @@ sub get_value ($$) {
     }
 
     use vars qw($config);
-    $config = AppConfig->new(
+    $config = AppConfig->new({
+            CREATE => '^*',
+        },
         $key            => { ARGCOUNT => 1 },
         );
     $config->file ($config_file);
