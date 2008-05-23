@@ -444,7 +444,7 @@ unselect <packageName> - Unselect a package to prevent it from being installed
 list <class> - Lists the packages and their installation status, class, and version number
 file <filename> - Reads in commands from a file
 help - Prints this message
-quit/exit - Quits the selector and continue with the next step
+quit/exit - Quits the selector and continues with the next step
 \\q - Force quit (as in ctrl-c)
 EOF
     }
