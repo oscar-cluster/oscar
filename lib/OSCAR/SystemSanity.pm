@@ -15,14 +15,17 @@ package OSCAR::SystemSanity;
 #  See also: $OSCAR_HOME/scripts/{system-sanity, system-sanity.d/}
 #
 
+use strict;
+use base qw(Exporter);
+
 use constant { SUCCESS => 0,
                WARNING => 1,    # can be 1..254
                FAILURE => 255,
               };
 
 # NOTE: required so the @EXPORT (default exported to all) works ok
-@ISA = qw(Exporter);
+my @ISA = qw(Exporter);
 
-@EXPORT = qw(SUCCESS WARNING FAILURE);
+our @EXPORT = qw(SUCCESS WARNING FAILURE);
 
 1;

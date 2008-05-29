@@ -18,6 +18,7 @@
 #          !system("./scripts/system-sanity") or die "Error: Failed sanity\n";
 #
 
+use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::SystemSanity;  # Enumeration for constants
 use Carp;
