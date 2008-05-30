@@ -83,7 +83,8 @@ sub check_hostname {
 sub check_oscar_interface {
     my $oscar_if = $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};
     my %nics;
-    open IN, "/sbin/ifconfig |" || die "ERROR: Unable to query NICs\n";
+    open IN, "netstat -nr | awk \'/\\./{print \$NF}\' | uniq |"
+        || die "ERROR: Unable to query NICs\n";
     while( <IN> ) {
         next if /^\s/ || /^lo\W/;
         chomp;
