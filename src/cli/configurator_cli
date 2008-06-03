@@ -27,16 +27,25 @@ use Data::Dumper;
 # Command line arguement variables
 my $help = '';
 my $file = '';
+my $path = '';
+my $pname = '';
+my $ctext = '';
 my $packages_ref;
 our @file_lines;
 our $file_line_num;
 
+sub config_package($$$$);
+
 # Parses the command line args
-GetOptions('help' => \$help, 'filename=s' => \$file, 'f=s' => \$file);
+GetOptions('help' => \$help, 'filename=s' => \$file, 'f=s' => \$file, 'path=s'
+=> \$path, 'package=s' => \$pname, 'context=s' => \$ctext);
 
 # The help text
 if ($help) {
 	print "Usage: configurator_cli [FLAGS]\n";
+} elsif ($path ne '' && $pname ne '' && $ctext ne '') {
+	config_package($path, $pname, $ctext, 0);
+	exit 0;
 }
 
 OSCAR::Logger::oscar_log_section("Beginning the OSCAR Configurator");

@@ -99,8 +99,17 @@ if (! -d $imageconf) {
 # configure this only if no config values found in database
 my @res = get_pkgconfig_vars(opkg => "ganglia", context => "image:$image");
 if (!@res) {
-    OSCAR::Configbox::configurePackage(0, $imageconf,"ganglia","image:$image");
-    MainLoop();
+	if ($ENV{OSCAR_UI} eq "gui") {
+		OSCAR::Configbox::configurePackage(0, $imageconf,"ganglia","image:$image");
+		MainLoop();
+	} elsif ($ENV{OSCAR_UI} eq "cli") {
+		system("$ENV{OSCAR_HOME}/src/cli/configurator_cli",
+		"--path=$imageconf/configurator.html",
+		"--package=ganglia",
+		"--context=image:$image");
+	} else {
+		croak("OSCAR_UI not set to gui or cli\n");
+	}
 }
 
 #
