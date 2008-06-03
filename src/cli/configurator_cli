@@ -1,0 +1,475 @@
+#!/usr/bin/perl -w
+
+# $Id$
+#
+# Copyright (c) 2008 Oak Ridge National Laboratory.
+#					All rights reserved.
+#
+# This is a cli representation of the Configurator.  It attempts to portray all
+# the information in the original HTML version, but it is possible that
+# something is lost in translation.
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use vars qw(@EXPORT);
+use base qw(Exporter);
+use OSCAR::Configurator;
+use OSCAR::PackagePath;
+use OSCAR::Logger;
+use OSCAR::Database;
+use Getopt::Long;
+use Term::Complete;
+use XML::Simple;
+use Data::Dumper;
+
+@EXPORT = qw(config_package);
+
+# Command line arguement variables
+my $help = '';
+my $file = '';
+my $packages_ref;
+our @file_lines;
+our $file_line_num;
+
+# Parses the command line args
+GetOptions('help' => \$help, 'filename=s' => \$file, 'f=s' => \$file);
+
+# The help text
+if ($help) {
+	print "Usage: configurator_cli [FLAGS]\n";
+}
+
+OSCAR::Logger::oscar_log_section("Beginning the OSCAR Configurator");
+
+# Get the list of configurable packages
+$packages_ref = OSCAR::Configurator::getSelectedConfigurablePackages();
+
+# Skip any package which don't have a configurator.html file
+foreach my $package (sort keys %$packages_ref) {
+	my $found = 0;
+	foreach my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
+		if ( -s "$dir/$package/configurator.html" ) {
+			$found = 1;
+			last;
+		}
+	}
+	delete $packages_ref->{$package} if (!$found);
+}
+
+my @completion_list = qw ( exit quit help file );
+
+# Display a menu with all the available configurable packages
+foreach my $package (sort keys %$packages_ref) {
+	push @completion_list, $package;
+	print "$package:\t" . $$packages_ref{$package} . "\n";
+}
+
+# If there is a filename as an arguement, don't get user input
+if ($file ne '') {
+	processInput("file $file");
+	processInput("quit");
+}
+
+# Log the input so this can be 'replayed' later
+open (LOG, ">$ENV{OSCAR_HOME}/tmp/configurator.$$.clilog") 
+	|| die ("Can't open the log to write to.\n");
+
+my $prompt = "configurator> ";
+
+# Keep getting input as long as the user keeps giving it
+while (1) {
+	my $response = Complete($prompt, @completion_list);
+	print LOG "$response\n";
+	processInput($response);
+}
+
+close LOG;
+
+###############################################################################
+# Performs configuration for specified packages.  First it will check to see if
+# there is some configuration previously saved in the database, if there is it
+# will use those values.  If there is nothing in the database and there are
+# defaults built into the configurator.html file, it will use that next.  After
+# that there is no default.
+#
+# Parameters: package_path: The full path to the configurator.html file
+#             package:      The name of the package being configured
+#             context:      The context of the package (global / some image
+#             devel:        If this is set, the package won't be configured
+#                           It will only print out the parsed XML
+# Returns: Nothing
+###############################################################################
+sub config_package($$$$) {
+	my ($package_path, $package, $context, $devel) = @_;
+	
+	# Parse the packages configurator.html file here and get any user input
+	# necessary
+	my $xml = new XML::Simple();
+
+	my $data =
+		$xml->XMLin(
+				preprocess_file($package_path),
+				ForceContent => 1,
+				ForceArray => ["p", "input"],
+				KeyAttr => "",
+				NormaliseSpace => 2,
+				SuppressEmpty => 1);
+
+	if ($devel) {
+		print Dumper($data);
+		return;
+	}
+
+	my %temp_responses;
+	$temp_responses{package} = $package;
+
+	OSCAR::Logger::oscar_log_subsection(
+			$$data{head}{title}{content} . "\n");
+
+	my $p = $$data{body}{form}{p};
+	my $input = $$data{body}{form}{input};
+
+	my $radio_name = "";
+	my @radio_options = [];
+	my @radio_values = [];
+	my $radio_default = "";
+	
+	# Note that the input array is checking array index 1
+	# This is because there will always be a
+	# reset button in input index 0 so we want to skip it
+	while (defined($$p[0]) || defined($$input[1])) {
+		my $pnum = 99999;
+		my $inum = 99999;
+
+		if (defined($$p[0])) {
+			$pnum = $$p[0]->{order};
+		}
+		if (defined($$input[0])) {
+			$inum = $$input[0]->{order};
+		}
+
+		if ($pnum < $inum) {
+			print $$p[0]{content} . "\n\n";
+			shift @{$p};
+		} elsif ($inum < $pnum) {
+
+			my $name = $$input[0]{name};
+
+			my @res = get_pkgconfig_vars(
+				opkg    => "$package", 
+				context => "$context",
+				name    => "$name");
+
+			my $type = "text";
+
+			if (defined($$input[0]{type})) {
+				$type = $$input[0]{type};
+			}
+
+			if ($type eq "radio" && 
+					($radio_name eq $name || $radio_name eq "")) {
+				$radio_name = $name;
+				push @radio_options, $$input[0]{content};
+				push @radio_values, $$input[0]{value};
+				
+				if ((defined($$input[0]{checked})
+						&& !defined($res[0]{value})) || 
+						(defined($res[0]{value}) 
+						&& $res[0]{value} eq $$input[0]{value})) {
+					$radio_default = $#radio_options;
+				}
+
+				shift @{$input};
+				next;
+			} elsif ($radio_name ne "" && ($type ne "radio" ||
+					($type eq "radio" && $radio_name ne $name))) {
+				my $done = 0;
+
+				my $temp;
+				while (!$done) {
+					my $i = 1;
+					for ($i = 1; $i <= $#radio_options; $i++) {
+						print "$i) $radio_options[$i]\n";
+					}
+					print "[$radio_default] > " unless defined($file_line_num);
+					
+					my $temp;
+					if (!defined($file_line_num)) {
+						$temp = <STDIN>;
+					} else {
+						$temp = $file_lines[$file_line_num++];
+					}
+
+					print LOG "$temp" unless defined($file_line_num);
+					chomp $temp;
+
+					if ($temp eq "") {
+						$temp = $radio_default;
+					}
+
+					if ($temp >= 1 && $temp <= $#radio_options + 1) {
+						$done = 1;
+					}
+				}
+
+				$temp_responses{$radio_name}{context} = $context;
+				$temp_responses{$package}{value} = [$radio_values[$temp]];
+
+				@radio_options = [];
+				@radio_values = [];
+				$radio_name = "";
+				$radio_default = "";
+				next;
+			}
+
+			print $$input[0]{content} . "\n";
+
+			my $answer = '';
+
+			if (defined($$input[0]{value})) {
+				$answer = $$input[0]{value};
+			}
+
+			if ($type eq "text") {
+				if (defined($res[0]{value})) {
+					$answer = $res[0]{value};
+				}
+
+				print "[$answer] > " unless defined($file_line_num);
+
+				my $temp;
+				if (!defined($file_line_num)) {
+					$temp = <STDIN>;
+				} else {
+					$temp = $file_lines[$file_line_num++];
+				}
+
+				print LOG "$temp" unless defined($file_line_num);
+				chomp $temp;
+
+				if ($temp ne '') {
+					$answer = $temp;
+				}
+			} elsif ($type eq "checkbox") {
+				my $done = 0;
+				
+				my $checked;
+				if (defined($$input[0]{checked})
+						|| $res[0]{value} ne '') {
+					$checked = "y";
+				} else {
+					$checked = "n";
+				}
+
+				while (!$done) {
+					print "(y/n) [$checked] > " unless defined($file_line_num);
+
+					my $temp;
+					if (!defined($file_line_num)) {
+						$temp = <STDIN>;
+					} else {
+						$temp = $file_lines[$file_line_num++];
+					}
+
+					print LOG "$temp" unless defined($file_line_num);
+					chomp $temp;
+					$temp = lc($temp);
+
+					if (substr($temp, 0, 1) eq "y") {
+						# Take the value that's already in $answer
+						$done = 1;
+					} elsif (substr($temp, 0, 1) eq "n") {
+						$done = 1;
+						$answer = "";
+					} elsif ($temp eq "") {
+						$done = 1;
+						if ($checked eq "n") {
+							$answer = "";
+						}
+					}
+				}
+			}
+			
+			$temp_responses{$$input[0]{name}}{context} = $context;
+			$temp_responses{$$input[0]{name}}{value} = [$answer];
+
+			shift @{$input};
+		} else {
+			die "2 Order numbers are the same";
+		}
+	}
+	
+	my $answer;
+	if ($radio_name ne "") {
+		my $done = 0;
+
+		my $temp;
+		while (!$done) {
+			my $i;
+			for ($i = 1; $i <= $#radio_options; $i++) {
+				print "$i) $radio_options[$i]\n";
+			}
+			print "[$radio_default] > " unless defined($file_line_num);
+				
+			my $temp;
+			if (!defined($file_line_num)) {
+				$temp = <STDIN>;
+			} else {
+				$temp = $file_lines[$file_line_num++];
+			}
+
+			print LOG "$temp" unless defined($file_line_num);
+			chomp $temp;
+
+			if ($temp eq "" && $radio_default ne "") {
+				$temp = $radio_default;
+			} elsif ($temp eq "" && $radio_default eq "") {
+				$temp = -1;
+			}
+
+			if ($temp >= 1 && $temp <= $#radio_options + 1) {
+				$done = 1;
+			}
+
+			$answer = $temp;
+		}
+
+		$temp_responses{$radio_name}{context} = $context;
+		$temp_responses{$radio_name}{value} = [$radio_values[$answer]];
+	}
+	# Submit all the answers out of the temp hash
+	for (keys(%temp_responses)) {
+		next if ($_ eq "package");
+
+		#print "opkg    => $temp_responses{package}\n";
+		#print "context => $temp_responses{$_}{context}\n";
+		#print "name    => $_\n";
+		#print "value   => $temp_responses{$_}{value}\n";
+		#print "\n";
+
+		&set_pkgconfig_var(
+			opkg	=> $temp_responses{package},
+			context	=> $temp_responses{$_}{context},
+			name	=> $_,
+			value	=> $temp_responses{$_}{value});
+	}
+}
+###############################################################################
+# Process the user's response from the prompt
+# Input: response: The response from the user's command prompt
+# Result: The appropriate action will be taken based on the command given
+###############################################################################
+sub processInput {
+	my $response = shift;
+	my $command;
+	my $filename;
+
+	chomp $response;
+
+	if (substr($response, 0, 5) eq "devel") {
+		$command = "devel";
+		$filename = substr($response, 6);
+	} elsif (substr($response, 0, 9) eq "configure") {
+		$command = "configure";
+		$filename = substr($response, 10);
+	} elsif (substr($response, 0, 4) eq "file") {
+		$command = "file";
+		$filename = substr($response, 5);
+	} else {
+		$command = $response;
+		$filename = "";
+	}
+
+	if (!defined $command) {
+		$command = "help";
+	}
+
+	if ($command eq "quit" || $command eq "exit") {
+		exit 0;
+	} elsif ($command eq "file") {
+		if (!$filename) {
+			print "Format: file file_name\n";
+			return 1;
+		}
+
+		if (! -f $filename) {
+			print "File $filename not found!\n";
+			return 1;
+		}
+
+		open (FILE, $filename);
+
+		# Read the file just like it is normal input from the keyboard
+		# The file is not required to have a quit command in it
+		@file_lines = <FILE>;
+		$file_line_num = 0;
+		
+		while ($file_line_num <= $#file_lines) {
+			chomp $file_lines[$file_line_num];
+			# Commend line
+			if ($file_lines[$file_line_num] =~ /^#/) {next;}
+
+			# Empty line
+			elsif(!$file_lines[$file_line_num]) {next;}
+
+			processInput($file_lines[$file_line_num++]);
+		}
+		processInput("quit");
+	# If the user is picking a package to configure
+	} elsif ($command eq "configure" || $command eq "devel") {
+		my $package = $filename;
+		
+		config_package($ENV{OSCAR_HOME} . 
+			"/packages/$package/configurator.html", $package, "", 0);
+	} else {
+		print <<EOF
+configure packageName  Select a package to configure
+file <filename>        Reads in commands from a file
+help                   Prints this message
+devel <packageName>    Skips getting info from the database and goes straight to
+                       parsing the configurator.html file associated with this
+					   package
+quit/exit              Quits the configurator and continues with the next step
+EOF
+	}
+}
+
+###############################################################################
+# This subroutine preprocesses a configurator.html file to strip out all the
+# extra stuff that would cause a problem later.
+#
+# Input: The filename to be preprocessed
+# Output: A string version of the file that has had the unnecessary tags
+# taken out.
+###############################################################################
+sub preprocess_file($) {
+	my $filename = shift;
+	my $text;
+	
+	open (FILE, $filename);
+
+	my @file = <FILE>;
+
+	my $line;
+	my $i;
+
+#print "---BEFORE PREPROCESSING---\n" . Dumper(@file);
+
+	for ($i = 0; $i <= $#file; $i++) {
+		$file[$i] =~ s/<\s*h\d\s*>//ig;
+		$file[$i] =~ s/<\s*\/h\d\s*>//ig;
+		$file[$i] =~ s/<\s*b\s*>//ig;
+		$file[$i] =~ s/<\s*\/b\s*>//ig;
+		$file[$i] =~ s/<\s*i\s*>//ig;
+		$file[$i] =~ s/<\s*\/i\s*>//ig;
+		$file[$i] =~ s/<\s*center\s*>//ig;
+		$file[$i] =~ s/<\s*\/center\s*>//ig;
+		$text = $text . $file[$i];
+	}
+
+	chomp $text;
+
+#print "---AFTER PREPROCESSING---\n" . Dumper($text);
+
+	return $text;
+}
