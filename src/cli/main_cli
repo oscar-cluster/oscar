@@ -96,14 +96,7 @@ unless ($skipselector) {
 }
 
 # Step 2 - Configure Packages
-# ---Wesley Bland---
-# There were problems implementing this step.
-# The configuration values and formatting were initially stored in
-# an HTML file.  This caused problems when the files needed to be
-# displayed on the command line.  Then the values were moved to the
-# database which helped keep track of the values, but still causes
-# problems when displaying the data.  For now this step is skipped.
-#system("./configurator_cli");
+system("./configurator_cli");
 
 # Step 3 - Install OSCAR Server Packages
 # This step doesn't need a seperate cli script as it already has one
