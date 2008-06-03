@@ -44,32 +44,6 @@ use Carp;
 my $verbose = $ENV{OSCAR_VERBOSE};
 
 ###############################################################################
-# function to do a debug print of a hash
-# inputs: leading_spaces  string to put in front of lines
-#         name            string to print as the hash name
-#         hash_ref        pointer to the hash to print
-###############################################################################
-sub print_hash {
-    my( $leading_spaces, $name, $hashref ) = @_;
-    print "DB_DEBUG>$0:\n====> $leading_spaces$name ->\n";
-    foreach my $key ( sort keys %$hashref ) {
-    my $value = $$hashref{$key};
-    if (ref($value) eq "HASH") {
-        print_hash(  "$leading_spaces    ", $key, $value );
-    } elsif (ref($value) eq "ARRAY") {
-        my $string = join(',', @$value);
-        print "DB_DEBUG>$0:\n====> $leading_spaces    $key => ($string)\n";
-    } elsif (ref($value) eq "SCALAR") {
-        print "DB_DEBUG>$0:\n====> $leading_spaces    $key is a scalar ref\n";
-        print "DB_DEBUG>$0:\n====> $leading_spaces    $key => $$value\n";
-    } else {
-        $value = "undef" unless defined $value;
-        print "DB_DEBUG>$0:\n====> $leading_spaces    $key => <$value>\n";
-    }
-    }
-}
-
-###############################################################################
 # Check if an element is in an array
 # Parameter: 1: the element to look for
 #            2: an array
@@ -178,6 +152,14 @@ sub print_hash {
     }
 }
 
+###############################################################################
+# Download a given file, using wget.                                          #
+#                                                                             #
+# Input: url, url of the file to download.                                    #
+#        dest, directory where the file needs to be saved (the filename is    #
+#        preserved.                                                           #
+# Return: the file path (including the filename), -1 if errors.               #
+###############################################################################
 sub download_file ($$) {
     my ($url, $dest) = @_;
 
@@ -185,7 +167,7 @@ sub download_file ($$) {
     if (! -d $dest) {
         carp "ERROR: Impossible to download the file ($url), the destination ".
              "is not a valid directory ($dest)";
-        return -1;
+        return undef;
     }
     my $file = basename ($url);
     if ( -f "$dest/$file" ) {
@@ -197,7 +179,7 @@ sub download_file ($$) {
     oscar_log_subsection "Executing: $cmd\n" if $verbose;
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
-        return -1;
+        return undef;
     }
     return "$dest/$file";
 }
