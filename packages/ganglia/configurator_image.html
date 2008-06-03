@@ -1,41 +1,52 @@
 <!-- $Id$ -->
 <html>
-<head><title>Ganglia config for image @IMAGENAME@</title>
+<head>
+	<title>Ganglia config for image @IMAGENAME@</title>
 </head>
 <body>
-<center>
-<h1>Configuring ganglia for image @IMAGENAME@</h1>
-</center>
-This configuration is specific to the nodes attributed to the
-image <b>@IMAGENAME@</b>. You might want to separate the (sub)clusters
-defined by each image and give them different names and gmond ports!<br>
-<form>
-<p>Name of (sub)cluster
- <input name="cluster__name" value="OSCAR Cluster"><br>
-<p>
-Client nodes can have multiple network interfaces. Specify which interface
-should be used for sending/receiving ganglia monitoring information:<br>
-<p>
-Sending Network Interface for <b>***Client***</b> nodes
- <input name="udp_send_channel__mcast_if" value="eth0"><br>
-Receiving Network Interface for <b>***Client***</b> nodes
- <input name="udp_recv_channel__mcast_if" value="eth0"><br>
-<br>
-<p>
-When multiple clusters are in use it might make sense to use different
-multicast ports for the client nodes such that the data from different
-clusters doesn't interfere. Specify which multicast port
-should be used for sending ganglia monitoring information:<br>
-<p>
-Sending Network Port for <b>***Client***</b> nodes
- <input name="udp_send_channel__port" value="8649"><br>
-Receiving Network Port for <b>***Client***</b> nodes
- <input name="udp_recv_channel__port" value="8649"><br>
+	<form>
+		<center><h1>Configuring ganglia for image @IMAGENAME@</h1></center>
 
-<p>
-<input type=reset value='Reset Form'>
-<p>
-</form>
-<hr>
+		<p order="1">
+			This configuration is specific to the nodes attributed to the
+			image <b>@IMAGENAME@</b>. You might want to separate the (sub)clusters
+			defined by each image and give them different names and gmond ports!
+		</p>
+		
+		<input name="cluster__name" value="OSCAR Cluster" order="2">
+			Name of (sub)cluster
+		</input>
+
+		<p order="3">
+			Client nodes can have multiple network interfaces. Specify which interface
+			should be used for sending/receiving ganglia monitoring information:
+		</p>
+
+		<input name="udp_send_channel__mcast_if" value="eth0" order="4">
+			Sending Network Interface for <b>***Client***</b> nodes
+		</input>
+		
+		<input name="udp_recv_channel__mcast_if" value="eth0" order="5">
+			Receiving Network Interface for <b>***Client***</b> nodes
+		</input>
+
+		<p order="6">
+			When multiple clusters are in use it might make sense to use different
+			multicast ports for the client nodes such that the data from different
+			clusters doesn't interfere. Specify which multicast port
+			should be used for sending ganglia monitoring information:
+		</p>
+
+		<input name="udp_send_channel__port" value="8649" order="7">
+			Sending Network Port for <b>***Client***</b> nodes
+		</input>
+
+		<input name="udp_recv_channel__port" value="8649" order="8">
+			Receiving Network Port for <b>***Client***</b> nodes
+		</input>
+
+		<input type=reset value='Reset Form'>
+	</form>
+<hr />
 </body>
 </html>

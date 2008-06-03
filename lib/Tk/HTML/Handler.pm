@@ -64,7 +64,7 @@ BEGIN
    *{"$tag"} = \&FontTag;
   }
 
- foreach $tag (qw(address html blink))
+ foreach $tag (qw(address html blink label))
   {
    *{"$tag"} = \&DoesNothing;
   }

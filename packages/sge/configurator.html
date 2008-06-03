@@ -1,31 +1,45 @@
 <html>
-<head><title>Configuration for SGE</title>
-</head>
-<body>
-<center>
-<h1>Configuring SGE Options</h1>
-</center>
-SGE installation and configuration can be automated with the commonly used settings. If you wish, here you can customize a few settings for your SGE setup. If you are not sure if you should be changing these values, probably you should stick to the default values. 
+	<head><title>Configuration for SGE</title></head>
+	<body>
+		<form>
+			<p order="1">
+				<h1><center>Configuring SGE Options</center></h1>
+			</p>
+	
+			<p order="2">
+				SGE installation and configuration can be automated with the commonly used
+				settings. If you wish, here you can customize a few settings for your SGE setup.
+				If you are not sure if you should be changing these values, probably you should
+				stick to the default values. 
+			</p>
 
-<form>
+			<br />
+			<input name="fullserver" order="3" value="true">
+				Full installation on OSCAR SERVER (qmaster and execd)
+				[good for small clusters]
+			</input>
+			<br />
 
-<p>Full installation on OSCAR SERVER (qmaster and execd) [good for small clusters]<br>
-<input name="fullserver" value="true"><br>
+			<br />
+			<input name="cellname" order="4" value="default">
+				Cell name for the SGE installation
+			</input>
+			<br />
 
-<p>Cell name for the SGE installation <br>
-<input name="cellname" value="default"><br>
+			<br />
+			<input name="gidrange" order="5" value="20000-20100">
+				SGE Jobs' Unix Group ID Range
+			</input>
+			<br />
+			
+			<input name="spooltype" order="6" value="classic">
+				Spooling method option (berkeleydb|classic)
+			</input>
+			<br />
+	
+			<input type="reset" value="Reset Form" />
 
-<p>SGE Jobs' Unix Group ID Range<br>
-<input name="gidrange" value="20000-20100"><br>
-
-<p>Spooling method option (berkeleydb|classic) <br>
-<input name="spooltype" value="classic"><br>
-
-<p>
-<input type=reset value='Reset Form'>
-<p>
-
-</form>
-<hr>
-</body>
+		</form>
+	<hr />
+	</body>
 </html>

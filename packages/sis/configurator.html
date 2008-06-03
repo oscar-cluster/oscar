@@ -1,30 +1,32 @@
 <!-- $Id$ -->
 <html>
-<head><title>SIS Configuration</title>
+<head>
+	<title>SIS Configuration</title>
 </head>
 <body>
-<h1>Configuring SIS and kernel boot options</h1>
+	<form>
+		<p order="1">
+			<h1><center>Configuring SIS and kernel boot options</center></h1>
+		</p>
 
-<form>
-<h2>Global options valid for all images</h2>
+		<p order="2">
+			<h2>Global options valid for all images</h2>
+		</p>
 
-<p>Additional kernel boot options
- <input name="kernel_append" value=""><br>
-
-<br>
---------
-<br>
-Check to enable per-image configuration:
-<input type="checkbox" name="sis_per_image" value="YES">
-<br>
-The per-image configuration will allow you to select the default boot kernel,
-too.
-<br>
---------
-<br>
-<input type=reset value='Reset Form'>
-<p>
-</form>
-<hr>
+		<input name="kernel_append" order="3" value="">
+			Additional kernel boot options
+		</input>
+		<br />
+		<hr />
+		<br />
+		<input type="checkbox" order="4" name="sis_per_image" value="YES">
+			Check to enable per-image configuration (and select default boot kernel)
+		</input>
+		<br />
+		<br />
+		<hr />
+		<br />
+		<input type="reset" value="Reset Form" />
+	</form>
 </body>
 </html>

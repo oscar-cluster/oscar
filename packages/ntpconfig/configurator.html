@@ -1,35 +1,35 @@
 <html>
-  <head>
-    <title>Configuration for ntpconfig</title>
-  </head>
-  <body>
-    <center>
-      <h1>Configuring ntpconfig</h1>
-    </center>
-    <p>
-      By default, if you do not configure the ntpconfig package, your
-      cluster will be set up such that your nodes will be able to use the
-      headnode as a time server.  If you select a NTP server to sync up,
-      please make sure that you do have a network connection to the server
-      (whether it is on your LAN or on the Internet).  The default,
-      pool.ntp.org is a known good NTP servers pool provided by ntp.org.
-    </p>
-    <p>
-      NTP server entered below is for head node. In any case, cluster
-      nodes will use headnode as NTP server.
-    </p>
-    <p>
-      If this is the first time for you to configure the ntpconfig package,
-      hitting Cancel now will setup your headnode to act as a time server
-      for your nodes.
-    </p>
-    <form>
-      <p>NTP Server:&nbsp;<input name="ntpserver" value="pool.ntp.org">
-    </p>
-    <p>
-      <input type=reset value='Reset Form' />
-    </p>
-  </form>
-  <hr>
-  </body>
+	<head>
+		<title>Configuration for ntpconfig</title>
+	</head>
+	<body>
+	<form>
+		<p order="1">
+			<h1><center>Configuring ntpconfig</center></h1>
+		</p>
+		<p order="2">
+			By default, if you do not configure the ntpconfig package, your
+			cluster will be set up such that your nodes will be able to use the
+			headnode as a time server.  If you select a NTP server to sync up,
+			please make sure that you do have a network connection to the server
+			(whether it is on your LAN or on the Internet).  The default,
+			pool.ntp.org is a known good NTP servers pool provided by ntp.org.
+		</p>
+		<p order="3">
+			NTP server entered below is for head node. In any case, cluster
+			nodes will use headnode as NTP server.
+		</p>
+		<p order="4">
+			If this is the first time for you to configure the ntpconfig package,
+			hitting Cancel now will setup your headnode to act as a time server
+			for your nodes.
+		</p>
+		<input name="ntpserver" order="5" value="pool.ntp.org">
+			NTP Server
+		</input>
+		<br />
+		<input type="reset" value='Reset Form' />
+	</form>
+	<hr />
+	</body>
 </html>

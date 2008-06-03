@@ -1,55 +1,82 @@
 <!-- $Id$ -->
 <html>
-<head><title>Configuration for ganglia</title>
+<head>
+	<title>Configuration for ganglia</title>
 </head>
 <body>
-<center>
-<h1>Configuring ganglia</h1>
-</center>
-Ganglia should work out of the box but will be using the default settings.
-Here you can configure a few settings (mostly names) for your ganglia setup
-so that it will display the correct information about your nodes and/or
-cluster grid upon startup.
 <form>
-<p>Name of Cluster
- <input name="cluster__name" value="OSCAR Cluster"><br>
+		<p order="1">
+			<h1><center>Configuring ganglia</center></h1>
+		</p>
 
-<p>Name of Grid
- <input name="gridname" value="OSCAR"><br>
+		<p order="2">
+			Ganglia should work out of the box but will be using the default settings.
+			Here you can configure a few settings (mostly names) for your ganglia setup
+			so that it will display the correct information about your nodes and/or
+			cluster grid upon startup.
+		</p>
 
-<p>Owner of Cluster (Department, Company, etc...)<br>
- <input name="cluster__owner" value="OSCAR"><br>
-<br>
+		<input name="cluster__name" value="OSCAR Cluster" order="3">
+			Name of Cluster
+		</input>
+		<br />
 
-Client nodes can have multiple network interfaces. Specify which interface
-should be used for sending/receiving ganglia monitoring information:<br>
-<p>Sending Network Interface for <b>***Client***</b> nodes
- <input name="udp_send_channel__mcast_if" value="eth0"><br>
-<p>Receiving Network Interface for <b>***Client***</b> nodes
- <input name="udp_recv_channel__mcast_if" value="eth0"><br>
+		<input name="gridname" value="OSCAR" order="4">
+			Name of Grid
+		</input>
+		<br />
 
-<br><p>
-----
-<br><p>
-Enable per-image ganglia gmond configuration:
-<input type="checkbox" name="gmond_per_image" value="YES">
-<br><p>
-----
-<br><p>
+		<br />
+		<input name="cluster__owner" order="5" value="OSCAR">
+			Owner of Cluster (Department, Company, etc...)
+		</input>
+		<br />
 
-When multiple clusters are in use it might make sense to use different
-multicast ports for the client nodes such that the data from different
-clusters doesn't interfere. Specify which multicast port
-should be used for sending ganglia monitoring information:<br>
-<p>Sending Network Port for <b>***Client***</b> nodes
- <input name="udp_send_channel__port" value="8649"><br>
-<p>Receiving Network Port for <b>***Client***</b> nodes
- <input name="udp_recv_channel__port" value="8649"><br>
+		<p order="6">
+			Client nodes can have multiple network interfaces. Specify which interface
+			should be used for sending/receiving ganglia monitoring information:
+		</p>
+	
+		<input name="udp_send_channel__mcast_if" order="7" value="eth0">
+			Sending Network Interface for <b>***Client***</b> nodes
+		</input>
+		<br />
 
-<p>
-<input type=reset value='Reset Form'>
-<p>
+		<input name="udp_recv_channel__mcast_if" order="8" value="eth0">
+			Receiving Network Interface for <b>***Client***</b> nodes
+		</input>
+
+		<br />
+		<hr />
+		<br />
+		
+		<input type="checkbox" name="gmond_per_image" order="9" value="YES">
+			Enable per-image ganglia gmond configuration
+		</input>
+		
+		<br />
+		<br />
+		<hr />
+	
+		<p order="10">
+			When multiple clusters are in use it might make sense to use different
+			multicast ports for the client nodes such that the data from different
+			clusters doesn't interfere. Specify which multicast port
+			should be used for sending ganglia monitoring information:
+		</p>
+
+		<input name="udp_send_channel__port" order="11" value="8649">
+			Sending Network Port for <b>***Client***</b> nodes
+		</input>
+		<br />
+
+		<input name="udp_recv_channel__port" order="12" value="8649">
+			Receiving Network Port for <b>***Client***</b> nodes
+		</input>
+		<br />
+
+		<input type="reset" value='Reset Form' />
 </form>
-<hr>
+<hr />
 </body>
 </html>

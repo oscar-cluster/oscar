@@ -1,26 +1,44 @@
 <html>
-<head><title>Configuration for Job Monarch</title>
-</head>
+	<head><title>Configuration for Job Monarch</title></head>
 <body>
-<center>
-<h1>Configuring Job Monarch Options</h1>
-</center>
-On this page, you can customize your Job Monarch settings. You can choose the DRM that you want Monarch to interface with, whether to enable archiving facilities and such.
+	<form>
+		<p order="1">
+			<h1><center>Configuring Job Monarch Options</center></h1>
+		</p>
+		
+		<p order="2">
+			On this page, you can customize your Job Monarch settings. 
+			You can choose the DRM that you want Monarch to interface with, 
+			whether to enable archiving facilities and such.
+		</p>
 
-<form>
+		<input name="clustername" order="3" value="OSCAR Cluster">
+			Name of Cluster
+		</input>
+		
+		<br /><br />
 
-<p>Name of Cluster
-<input name="clustername" value="OSCAR Cluster"><br>
+		<p order="4">
+			Your Cluster's batch queueing system
+		</p>
 
-<p>Your Cluster's batch queueing system<br>
-<input type="radio" name="drm" value="sge"> Sun Gridengine<br>
-<input type="radio" name="drm" value="pbs" checked>PBS<br>
-<br>
+		<input type="radio" name="drm" order="5" value="sge" >
+			Sun Gridengine
+		</input>
+		<br />
+		
+		<input type="radio" name="drm" order="6" value="pbs" checked="checked">
+			PBS
+		</input>
+		<br />
+		<br />
 
-<p>Do you want to enable Job Monarch's archiving daemon (check box for yes)?
-<input type="checkbox" name="archived" value="yes"><br>
+		<input type="checkbox" name="archived" order="7" value="yes">
+			Enable Job Monarch's archiving daemon
+		</input>
+		<br />
 
-<br><br>
+		<br /><br />
 <!-- 
 <p>Root dir for Ganglia's web-frontend files
 <input name="gangliawww" value="/var/www/html/ganglia"><br>
@@ -37,12 +55,10 @@ The following config options are needed only if you are enabling jobarchived
 <input name="mysqlpath" value="/usr"><br>
 //-->
 
-<p>
-<input type=reset value='Reset Form'>
-<p>
+		<input type="reset" value='Reset Form' />
 
-</form>
-<hr>
+	</form>
+	<hr />
 </body>
 </html>
 
