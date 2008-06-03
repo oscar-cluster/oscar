@@ -33,7 +33,8 @@ if ($help)
     print "Usage: selector_cli [FLAGS]
 
     -m                        maintain current package state
-    --filename -f filename    File to be read in to automate this step\n";            exit 0;
+    --filename -f filename    File to be read in to automate this step\n";
+	exit 0;
 }
 
 my %options = ();
@@ -127,6 +128,8 @@ while($continue)
     $continue = processInput($response);
 }
 close LOG;
+
+exit 0;
 
 # Print the packages that match the specified class (core, included, third party, all)
 # with their <status> <short package name> <class> <version>
