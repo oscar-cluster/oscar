@@ -278,7 +278,7 @@ croak "\nError: \'/tftpboot\' is gone!" if(! -d "/tftpboot" );
 my $cmd = "cd $ENV{OSCAR_HOME}/scripts && ./wizard_prep";
 oscar_log_subsection("Running: \"$cmd\"");
 !system($cmd)
-    or die("Oscar Wizard preparation script failed to complete");
+    or die("Oscar Wizard preparation script failed to complete ($cmd)");
 oscar_log_subsection("Successfully ran wizard_prep");
 #
 # HORRIBLE HACK ALERT -- FIXING MANDRAKE SNAFU
