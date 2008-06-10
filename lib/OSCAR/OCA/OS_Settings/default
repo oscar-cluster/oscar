@@ -1,0 +1,8 @@
+# Init directory specific to this distribution
+init=/etc/init.d 
+#NFS package name
+nfs_package=nfs
+ssh_package=sshd
+ssh_script=/etc/init.d/sshd
+exports_file=/etc/exports
+portmap_package=portmap

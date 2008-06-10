@@ -1,0 +1,16 @@
+Each of the files in this directory are configuration files. They
+match up with distribution names as reported from OS_Detect.  There
+is a default file, which is the baseline settings.  
+
+OS_Settings.pm reads from general through to specific.  This means that
+it will read and use the most specific setting, even if the setting exists
+in a "higher" config.  
+
+All configuration options should exist in the default file.
+
+The format of the file is as such:
+
+nfs_package=nfs
+
+with nfs_package being the configuration option name, and nfs being the
+value.  
