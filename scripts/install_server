@@ -7,6 +7,8 @@
 # Copyright (c) 2007 Oak Ridge National Laboratory.
 #                    Geoffroy R. Vallee <valleegr@ornl.gov>
 #                    All rights reserved.
+# Copyright (c) 2008 Paul Greidanus <paul@majestik.org>
+#                    All rights reserved
 # $Id$
 # 
 #   This program is free software; you can redistribute it and/or modify
@@ -43,29 +45,14 @@ use OSCAR::PackageSmart;
 use Carp;
 use Data::Dumper;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;
 
 ## Begin distribution specific stuff ##
 
 # Defaults
-my $nfs = "nfs";
-my $sshd = "sshd";
-my $portmap = "portmap";
-
-# Under SUSE Linux, the init script for NFS Server is "nfsserver"
-$nfs = "nfsserver" if -x "/etc/init.d/nfsserver";
-
-# Under Debian, the init script for NFS Server is "nfs-kernel-server"
-# Actually the server may also be nfs-user-server but we currently assume that
-# OSCAR is using the kernel levevl server
-$nfs = "nfs-kernel-server" if -x "/etc/init.d/nfs-kernel-server";
-
-# Under Debian, the init script for ssh is "ssh"
-$sshd = "ssh" if -x "/etc/init.d/ssh";
-
-# Under Fedora 7, portmap is deprecated, it is replaced by rpcbind
-$portmap = "rpcbind" if -x "/etc/init.d/rpcbind";
-
-## End distribution specific stuff ##
+my $nfs = OSCAR::OCA::OS_Settings::getitem("nfs_package");
+my $sshd = OSCAR::OCA::OS_Settings::getitem("ssh_package");
+my $portmap = OSCAR::OCA::OS_Settings::getitem("portmap_package");
 
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
