@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- $Id$ -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:complexType name="headType">
+		<xs:sequence>
+			<xs:element name="title" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="pType">
+		<xs:sequence>
+			<xs:any minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute name="order" type="xs:integer" use="required" />
+	</xs:complexType>
+
+	<xs:complexType name="inputType">
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="order" type="xs:integer" use="required" />
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:complexType name="formType">
+		<xs:sequence minOccurs="1" maxOccurs="unbounded">
+			<xs:element name="p" type="pType" minOccurs="0"/>
+			<xs:element name="input" type="inputType" minOccurs="0"/>
+			<xs:any minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="bodyType">
+		<xs:sequence>
+			<xs:element name="form" type="formType" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:element name="html">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="head" type="headType" />
+				<xs:element name="body" type="bodyType" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+</xs:schema>
