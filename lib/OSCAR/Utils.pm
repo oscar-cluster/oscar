@@ -30,11 +30,13 @@ use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Logger;
 use File::Basename;
+use POSIX;
 use Carp;
 
 @EXPORT = qw(
             download_file
             get_oscar_version
+            get_local_arch
             is_a_valid_string
             is_element_in_array
             print_array
@@ -43,13 +45,14 @@ use Carp;
 
 my $verbose = $ENV{OSCAR_VERBOSE};
 
-###############################################################################
-# Check if an element is in an array
-# Parameter: 1: the element to look for
-#            2: an array
-# return:    1 if the element is in the array,
-#            0 else.
-###############################################################################
+################################################################################
+# Check if an element is in an array.                                          #
+#                                                                              #
+# Parameter: element, the element to look for                                  #
+#            array, an array                                                   #
+# return:    1 if the element is in the array,                                 #
+#            0 else.                                                           #
+################################################################################
 sub is_element_in_array ($@) {
     my ($element, @array) = @_;
     die ("ERROR: undefined element") if !defined ($element);
@@ -182,6 +185,20 @@ sub download_file ($$) {
         return undef;
     }
     return "$dest/$file";
+}
+
+################################################################################
+# Detects the architecture of the local machine.                               #
+#                                                                              #
+# Return: the local architecture. For i*86 architecutre, we always return      #
+#         i386                                                                 #
+################################################################################
+sub get_local_arch () {
+    my $arch = (uname)[4];
+    if ($arch =~ /i*86/) {
+        $arch = "i386";
+    }
+    return $arch;
 }
 
 1;
