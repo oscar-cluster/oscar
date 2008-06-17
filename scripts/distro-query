@@ -58,11 +58,11 @@ if ($options{pool}) {
     &print_os_info($os);
     print "Detected os structure :\n".Dumper($os);
 
-} elsif (!$options{node}) {
+} elsif ($options{image}) {
 
     &print_image_detect($options{image});
 
-} else {
+} elsif ($options{node}) {
 
     # this must be "node" detection, so:
     # - find image corresponding to this node
@@ -93,6 +93,16 @@ if ($options{pool}) {
 
     &print_image_detect($imagepath);
 
+} else {
+    # we want to know the distro ID of the local system
+    my $os = OSCAR::PackagePath::distro_detect_or_die ();
+    if (!defined $os) {
+        die "ERROR: Impossible to detect the local distro.\n".
+            "Is your system supported by OSCAR?\n";
+    }
+    my $distro_id = 
+        "$os->{distro}-$os->{distro_version}.$os->{distro_update}-$os->{arch}";
+    print "$distro_id\n";
 }
 exit 0;
 
@@ -142,7 +152,8 @@ sub usage {
     print <<END_USAGE;
 Usage: distro-query [options]
 
- Print OS_Detect information.
+ Print OS_Detect information. If no options are specified, print OS_Detect
+ information for the local system.
 
  Options:
    --image|-i IMAGE_PATH : detect distro and architecture of an image directory
