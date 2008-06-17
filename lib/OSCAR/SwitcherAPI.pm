@@ -29,7 +29,7 @@ package OSCAR::SwitcherAPI;
 #       - Support the flat file ODA mode.
 
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/perl5/site_perl";
+use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
@@ -59,11 +59,12 @@ sub set_switcher_data ($$$) {
     my %field_value_hash = ( "package_id"=>"$opkg",
                              "switcher_name"=>$name,
                              "switcher_tag"=>$tag );
+    my %options = ();
+    my @error_strings = ();
     insert_into_table (\%options,
                        "Packages_switcher",
                        \%field_value_hash,
                        \@error_strings);
-    }
     return 0;
 }
 
@@ -93,14 +94,14 @@ sub get_switcher_data {
               "WHERE P.package=S.package";
 
     oscar_log_subsection "DB_DEBUG>$0:\n".
-                         "===> in Database::get_packages_switcher SQL : $sql\n";
+                         "===> in Database::get_packages_switcher SQL : $sql\n"
         if $$options_ref{debug};
 
     my $ret = do_select($sql, $results_ref, $options_ref, $errors_ref);
 
     if ($ret == 1) {
         return 0;
-    elsif ($ret == 0) {
+    } elsif ($ret == 0) {
         return -1;
     } else {
         carp "ERROR: Unknow do_select return code ($ret)\n";
@@ -142,9 +143,9 @@ sub store_opkgs_switcher_data (@) {
                 return 0;
             }
 
-            my $opkg_version =
+            my $version =
                 OSCAR::Opkg::get_opkg_version_from_configxml($xmlfile);
-            if (!defined $value) {
+            if (!defined $version) {
                 carp "ERROR: Impossible to get OPKG version from config XML ".
                      "file ($opkg)";
                 return -1;
