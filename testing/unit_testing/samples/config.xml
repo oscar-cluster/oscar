@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <!--
+      Copyright (c) 2002-2005 The Trustees of Indiana University.  
+                              All rights reserved.
+      
+      This file is part of the OSCAR software package.  For license
+      information, see the COPYING file in the top level directory of the
+      OSCAR source distribution.
+     
+      $Id: config.xml 6569 2007-11-20 07:04:24Z dikim $
+  -->
+  <name>lam</name>
+  <class>included</class>
+  <summary>LAM/MPI specifically packaged for OSCAR clusters</summary>
+  <description>This RPM is created specifically for the OSCAR
+distribution.  The main difference between this RPM and the official
+LAM RPMs distributed by the LAM Team is that it will be installed into
+the OSCARPREFIX tree.  Since LAM is the only package installed in
+OSCARPREFIX, the man pages and documentation files are installed in
+slightly different places as well (the "share" subdirectory is not
+really necessary).
+
+LAM (Local Area Multicomputer) is an MPI programming environment and
+development system for heterogeneous computers on a network. With
+LAM/MPI, a dedicated cluster or an existing network computing
+infrastructure can act as a single parallel computer.  LAM/MPI is
+considered to be "cluster friendly", in that it offers daemon-based
+process startup/control as well as fast client-to-client message
+passing protocols.  LAM/MPI can use TCP/IP and/or shared memory for
+message passing (currently, different RPMs are supplied for this --
+see the main LAM web site for details).
+
+LAM features a full implementation of MPI-1 (with the exception that
+LAM does not support cancelling of sends), and much of MPI-2.
+Compliant applications are source code portable between LAM/MPI and
+any other implementation of MPI.  In addition to providing a
+high-quality implementation of the MPI standard, LAM/MPI offers
+extensive monitoring capabilities to support debugging.  Monitoring
+happens on two levels.  First, LAM/MPI has the hooks to allow a
+snapshot of process and message status to be taken at any time during
+an application run.  This snapshot includes all aspects of
+synchronization plus datatype maps/signatures, communicator group
+membership, and message contents (see the XMPI application on the main
+LAM web site).  On the second level, the MPI library is instrumented
+to produce a cummulative record of communication, which can be
+visualized either at runtime or post-mortem.</description>
+  <license>BSD</license>
+  <group>Development/Libraries</group>
+  <uri>http://www.lam-mpi.org/</uri>
+  <authors>
+    <author cat="upstream">
+      <name>LAM Team</name>
+      <email>lam@lam-mpi.org</email>
+    </author>
+    <author cat="maintainer">
+      <name>Jeff Squyres</name>
+      <email>jsquyres@open-mpi.org</email>
+    </author>
+    <author cat="uploader">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <!-- Distributions that provide libaio -->
+
+    <!-- Do *NOT* remove these filter lines and libaio/libaio-devel!
+         These are necessary because of an oddity with RPM and how LAM
+         uses libaio.  In particular, the libaio RPM may include *a*
+         shared libaio library, such as libaio.so.1, but *not* include
+         libaio.so.  So if a user tries to mpicc an application, mpicc
+         is going to add -laio to the compile line, but the linker
+         won't find it because it only looks for .so files, not
+         .so[.*].  Hence, we need to ensure that the right RPMs are
+         installed - and the easiest mechanism for this is to list
+         them here in config.xml.
+
+         You may be thinking: "Wait!  Isn't this something that
+         PackMan/DepMan should figure out automatically?"  
+
+         Yes, young Grasshopper, it is.  And despite initial
+         appearances, PackMan/DepMan are doing exactly the Right
+         Things - it's just the odd RPM packaging on some systems
+         that cause the problems.
+
+         The automatic dependency generator in RPM will generate a
+         dependency for LAM for libaio.so.1 (or whatever) - but *not*
+         for the plain vanilla libaio.so.  So PackMan/DepMan will pick
+         up a dependency for libaio.so.1, which - at least in some
+         cases - is in the libaio RPM.  But the plain vanilla
+         libaio.so file (or sym link or whatever) is - at least in
+         some cases - in libaio-devel.  And this plain vanilla .so is
+         the file that we need to be able to mpicc successfully.  So
+         PackMan/DepMan don't see a dependency for libaio.so (because
+         it doesn't exist), and it therefore doesn't pick up
+         libaio-devel.
+
+         You may be thinking: "Wait!  This is a no-brainer!  Add
+         'Require: libaio-devel' into the LAM spec file, and we're
+         done!"  
+
+         Not so, young Grasshopper.  AIO is an optional part of LAM,
+         and is used by the sub-package ROMIO (included in LAM) - but
+         only *if* the system has AIO.  So LAM's configure determines
+         whether the system has AIO, and if so, uses it (e.g., adds it
+         to the mpicc command line).  But if the system does not have
+         AIO, then LAM doesn't use it.  Most Linux systems have AIO,
+         but some do not.  Some versions of Mandrake (Mandriva), for
+         example, do not.  So we can't simply put "Require:
+         libaio-devel" because that would fail on Mandrake systems.
+
+         You may be thinking: "Wait!  You can just put a specfile
+         conditional around that Require: statement!"
+
+         Yes, this is true, young Grasshopper, but then that violates
+         the Law of Least Astonishment - when rebuilding the SRPM,
+         some users will need to do:
+
+         (can't use "double dash" in the example below, because
+         XML::Simple doesn't like that!)
+
+         shell$ rpmbuild -rebuild lam-...src.rpm -define need_aio 1
+         or
+         shell$ rpmbuild -rebuild lam-...src.rpm -define need_aio 0
+
+         whereas most users will [rightfully] expect to only have to
+         do the following:
+
+         shell$ rpmbuild -rebuild lam-...src.rpm
+
+         Making them add the additional -define on the command line
+         just to get a function RPM seems like a Bad Idea.
+
+         You may be thinking: "Wait!  You can just have different
+         .spec files for different Linux distros!"
+
+         Yes, this is true, young Grasshopper, but we, the LAM
+         maintainers, are unwilling to do that.  We already have 2
+         different specfiles (one for OSCAR and one for normal LAM
+         distributions), and are unwilling to put in the extra effort
+         to maintain a 3rd (or 4th or 5th or ...) specfile just
+         because RPM sucks and can't handle this kind of situation
+         dynamically.
+
+         So, young Grasshopper, I close with a quote from the Tao of
+         Programming, by Master Geofray James, which seems
+         particularly appropriate here:
+
+         ============================================================
+         Thus spake the master programmer:
+
+         "Though a program be but three lines long, someday it will
+         have to be maintained."
+         ============================================================
+         -->
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>rhel</dist>
+        <dist>suse</dist>
+        <dist>ydl</dist>
+      </filters>
+      <pkg>libaio</pkg>
+      <pkg>libaio-devel</pkg>
+      <pkg>lam-oscar</pkg>
+      <pkg>lam-oscar-modulefile</pkg>
+      <pkg>lam-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>mdv</dist>
+      </filters>
+      <pkg>lam-oscar</pkg>
+      <pkg>lam-oscar-modulefile</pkg>
+      <pkg>lam-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
+      <pkg>gcc-fortran</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>lam-runtime</pkg>
+      <pkg>lam4c2</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>rhel</dist>
+        <dist>suse</dist>
+        <dist>ydl</dist>
+      </filters>
+      <pkg>libaio</pkg>
+      <pkg>libaio-devel</pkg>
+      <pkg>lam-oscar</pkg>
+      <pkg>lam-oscar-modulefile</pkg>
+      <pkg>lam-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>mdv</dist>
+      </filters>
+      <pkg>lam-oscar</pkg>
+      <pkg>lam-oscar-modulefile</pkg>
+      <pkg>lam-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
+      <pkg>gcc-fortran</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>lam-runtime</pkg>
+      <pkg>lam4c2</pkg>
+    </requires>
+  </clientDeps>
+  <provide>mpi</provide>
+  <apiDeps>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="7.1.4-7">
+      <changelogEntry authorName="DongInn Kim" date="2007-11-10T00:24:22-04:00">
+        <item>Updated to support YDL</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="7.1.4-6">
+      <changelogEntry authorName="Erich Focht" date="2007-10-13T12:07:15-04:00">
+        <item>Updated to upstream version 7.1.4</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="7.1.2-6">
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T12:07:15-04:00">
+        <item>Fixed bogus requires of server and client deps.</item>
+      </changelogEntry>
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-13T12:07:15-04:00">
+        <item>Port to the new OPKG format (OPKGC).</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
+</oscar>

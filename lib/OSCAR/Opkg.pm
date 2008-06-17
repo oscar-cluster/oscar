@@ -21,30 +21,34 @@ package OSCAR::Opkg;
 #             Geoffroy Vallee <valleegr@ornl.gov>
 #             All rights reserved
 #
-# $Id: Opkg.pm 5884 2007-06-08 07:35:50Z valleegr $
+# (C)opyright Erich Focht <efocht@hpce.nec.com>.
+#             All Rights Reserved.
+#
+# $Id: Opkg.pm 7035 2008-06-17 02:31:41Z valleegr $
 #
 # OSCAR Package module
 #
 # This package contains subroutines for common operations related to
-# the handling of OSCAR Packages (opkg)
+# the handling of OSCAR Packages (opkg).
+# [EF]: Some of the stuff in Packages.pm should be moved here!
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
-use XML::Simple;
-use Data::Dumper;
 use OSCAR::Database;
-use OSCAR::PackageSmart;
+use OSCAR::PackagePath;
 use Carp;
 
 @EXPORT = qw(
-            create_list_selected_opkgs
+            get_data_from_configxml
             get_list_opkg_dirs
+            get_opkg_version_from_configxml
             opkg_print
+            opkgs_install
             opkgs_install_server
-            prepare_distro_pools
+            create_list_selected_opkgs
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -84,40 +88,55 @@ sub get_list_opkg_dirs {
 
 ###############################################################################
 # Install the server part of the passed OPKGs on the local system             #
-# Parameter: list of OPKGs.                                                   #
-# Return:    0 if success, -1 else.                                           #
+# Parameters:                                                                 #
+#            type of opkg to be installed (one of api, server, client)        #
+#            list of OPKGs.                                                   #
+# Return:    none.     (should return some error some time...)                #
 ###############################################################################
-sub opkgs_install_server {
-    my (@opkgs) = (@_);
+sub opkgs_install {
+    my ($type, @opkgs) = (@_);
 
     if (!scalar(@opkgs)) {
-        croak("No opkgs passed!");
+	croak("No opkgs passed!");
     }
 
     #
     # Detect OS of master node.
     #
-    # Fails HERE if distro is not supported!
+    my $os = &distro_detect_or_die();
+
     #
-    my $os = &OSCAR::PackagePath::distro_detect_or_die();
-    if (!defined ($os)) {
-        carp "ERROR: Unsupported Linux distribution\n";
-        return -1;
-    }
-    my $pm = OSCAR::PackageSmart::prepare_distro_pools ($os);
-    if (!defined ($pm)) {
-        carp "ERROR: Impossible to create a PackMan object\n";
-        return -1;
+    # Locate package pools and create the directories if they don't exist, yet.
+    #
+    my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
+    my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
+
+    # The code below should migrate into a package. It is used in
+    # install_prereq in exactly the same way. Maybe to OSCAR::PackageSmart...?
+    # [EF]
+    eval("require OSCAR::PackMan");
+    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
+                        $oscar_pkg_pool, $distro_pkg_pool);
+    if (!$pm) {
+        croak "\nERROR: Could not create PackMan instance!\n";
     }
 
-    my @olist = map { "opkg-".$_."-server" } @opkgs;
-    my ($err, @out) = $pm->smart_install(@olist);
-    if ($err) {
-        carp "Error occured during smart_install:\n";
-        print join("\n",@out)."\n";
-        return -1;
+    my $suffix = "";
+    $suffix = ".noarch" if ($os->{pkg} eq "rpm");
+    my @olist;
+    if ($type eq "api") {
+	@olist = map { "opkg-".$_.$suffix } @opkgs;
+    } elsif ($type =~ /^(client|server)$/) {
+	@olist = map { "opkg-".$_."-$type$suffix" } @opkgs;
+    } else {
+	croak("Unsupported opkg type: $type");
     }
-    return 0;
+    my ($err, @out) = $pm->smart_install(@olist);
+    if (!$err) {
+        print "Error occured during smart_install:\n";
+        print join("\n",@out)."\n";
+        exit 1;
+    }
 }
 
 ###############################################################################
@@ -165,5 +184,63 @@ sub write_pgroup_files {
     }
 }
 
+################################################################################
+# Gets the version of a give OPKG parsing a config.xml file. For that we need  #
+# to parse the OPKG changelog for that.                                        #
+#                                                                              #
+# Input: configxml, path to the config.xml file we need to parse in order to   #
+#                   extract data.                                              #
+# Return: the OPKG version, undef if error.                                    #
+################################################################################
+sub get_opkg_version_from_configxml ($) {
+    my ($configxml) = @_;
+
+    require OSCAR::FileUtils;
+    my $ref = OSCAR::FileUtils::parse_xmlfile ($configxml);
+    if (!defined $ref) {
+        carp "ERROR: Impossible to parse XML file ($configxml)";
+        return undef;
+    }
+
+    my $changelog_ref = $ref->{changelog}->{versionEntry};
+    my @versions;
+    foreach my $entry (@$changelog_ref) {
+        push (@versions, "$entry->{version}") if defined $entry->{version};
+    }
+
+    require OSCAR::Utils;
+    require OSCAR::VersionParser;
+    my $max = $versions[0];
+    foreach my $v (@versions) {
+        if (OSCAR::VersionParser::version_compare (
+            OSCAR::VersionParser::parse_version($max),
+            OSCAR::VersionParser::parse_version($v)) < 0) {
+            $max = $v;
+        }
+    }
+    return $max;
+}
+
+################################################################################
+# Get the value of a specific tag from a config.xml file. Note that this is a  #
+# basic function, the tag has to be a first level tag, if not it won't work.   #
+#                                                                              #
+# Input: configxml, path to the config.xml file we need to parse.              #
+#        key, XML tag we are to look for.                                      #
+# Return: the value of the XML tag, undef if errors.                           #
+################################################################################
+sub get_data_from_configxml ($$) {
+    my ($configxml, $key) = @_;
+
+    require OSCAR::FileUtils;
+    my $ref = OSCAR::FileUtils::parse_xmlfile ($configxml);
+    if (!defined $ref) {
+        carp "ERROR: Impossible to parse XML file ($configxml)";
+        return undef;
+    }
+
+    my $provide = $ref->{$key};
+    return $provide;
+}
 
 1;

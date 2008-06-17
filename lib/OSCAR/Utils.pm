@@ -133,7 +133,7 @@ sub is_a_valid_string ($) {
 ################################################################################
 sub print_hash {
     my ($leading_spaces, $name, $hashref) = @_;
-    print "DB_DEBUG>$0:\n====> in oda::print_hash\n-- $leading_spaces$name ->\n";
+    print "DEBUG>$0:\n====> in oda::print_hash\n-- $leading_spaces$name ->\n";
     foreach my $key (sort keys %$hashref) {
         my $value = $$hashref{$key};
         if (ref($value) eq "HASH") {

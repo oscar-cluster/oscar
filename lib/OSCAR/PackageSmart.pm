@@ -475,7 +475,7 @@ sub checksum_needed {
     if (-f $cfile) {
 	my $omd5 = &checksum_read($cfile);
 	print "Old checksum ($cfile): $omd5\n" if ($verbose);
-	if ($md5 == $omd5) {
+	if ($md5 eq $omd5) {
 	    return 0;
 	} else {
 	    print "CHECKSUM: $cfile new:$md5 old:$omd5\n";
@@ -488,7 +488,7 @@ sub checksum_needed {
 	#
 	my $imd5 = &checksum_read($ifile);
 	print "Repo-internal checksum ($ifile): $imd5\n" if ($verbose);
-	if ($md5 == $imd5) {
+	if ($md5 eq $imd5) {
 	    # [EF: is the failure handling appropriate?]
 	    !system("cp $ifile $cfile")
 		or carp("Could not copy internal checksum file to $cfile");

@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+#
+# Copyright (c) 2008 Geoffroy Vallee <valleegr at ornl dot gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Logger;
+use OSCAR::FileUtils;
+use OSCAR::Opkg;
+use Data::Dumper;
+use vars qw(@EXPORT);
+use base qw(Exporter);
+use Carp;
+use warnings "all";
+
+print "First of all, we test the XML parsing...\n";
+my $xmlfile = "$ENV{OSCAR_HOME}/testing/unit_testing/samples/config.xml";
+my $ref = OSCAR::FileUtils::parse_xmlfile ($xmlfile);
+if (!defined $ref) {
+    goto ERROR_EXIT;
+}
+
+print "Now, we check if we can get the correct version...\n";
+my $version = OSCAR::Opkg::get_opkg_version_from_configxml($xmlfile);
+goto ERROR_EXIT if $version ne "7.1.4-7";
+
+print "Now, we check if we can get switcher data...\n";
+my $provide = OSCAR::Opkg::get_data_from_configxml ($xmlfile, "provide");
+goto ERROR_EXIT if $provide ne "mpi";
+
+# We are done with testing.
+SUCCESS:
+    print "\n\nSUCCESS\n";
+
+exit 0;
+
+ERROR_EXIT:
+    print "ERROR: the test of configuration file management failed\n";
+    exit -1;
