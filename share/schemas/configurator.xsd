@@ -2,6 +2,19 @@
 <!-- $Id$ -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
+	<xs:group name="otherTags">
+		<xs:choice>
+			<xs:element name="h1" type="xs:string" />
+			<xs:element name="h2" type="xs:string" />
+			<xs:element name="h3" type="xs:string" />
+			<xs:element name="b" type="xs:string" />
+			<xs:element name="i" type="xs:string" />
+			<xs:element name="center" type="xs:string" />
+			<xs:element name="br" type="xs:string" />
+			<xs:element name="hr" type="xs:string" />
+		</xs:choice>
+	</xs:group>
+
 	<xs:complexType name="headType">
 		<xs:sequence>
 			<xs:element name="title" type="xs:string" />
@@ -23,9 +36,9 @@
 
 	<xs:complexType name="formType">
 		<xs:sequence minOccurs="1" maxOccurs="unbounded">
-			<xs:element name="p" type="pType" minOccurs="0"/>
-			<xs:element name="input" type="inputType" minOccurs="0"/>
-			<xs:any minOccurs="0"/>
+			<xs:element name="p" type="pType" minOccurs="0" />
+			<xs:element name="input" type="inputType" minOccurs="0" />
+			<xs:group ref="otherTags" minOccurs="0" />
 		</xs:sequence>
 	</xs:complexType>
 
