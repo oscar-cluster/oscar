@@ -49,7 +49,6 @@ sub detect_dir {
     my $release_string;
     my ($d, $v, $a);
 
-    system "echo debut > /home/gvh/essai.g";
     # There is a trick with Ubuntu systems: they have a non-valid 
     # /etc/debian_version and the ubuntu release data is actually in
     # /etc/lsb-release. So if we get data from this file and if it specifies
@@ -64,14 +63,12 @@ sub detect_dir {
     } else {
         return undef;
     }
-    system "echo toto >> /home/gvh/essai.g";
 
     my $distro_version = undef;
     my $distro_update = undef;
     if ($v =~ /(\d+)\.(\d+)/) {
         $distro_version = $1;
         $distro_update = $2;
-        system "echo hiiii $distro_version $distro_update >> /home/gvh/essai.g";
     }
     if (!defined $distro_version || !defined $distro_update) {
         return undef;
@@ -91,7 +88,6 @@ sub detect_dir {
     if ($arch !~ /^x86_64$|^i686$|^i586$|^i386$/ ) {
         print "OCA::OS_Detect::Debian-";
         print "DEBUG: Failed Architecture support - ($arch)\n\n" if( $DEBUG );
-        system "echo prout >> >> /home/gvh/essai.g";
         return undef;
     }
 
