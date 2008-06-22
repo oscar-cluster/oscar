@@ -32,12 +32,23 @@ sub find_components {
     if (! $basedir) {
         if ($ENV{OSCAR_HOME}) {
             if (-d $ENV{OSCAR_HOME}) {
-                $basedir = $ENV{OSCAR_HOME};
+                $basedir = "$ENV{OSCAR_HOME}/lib";
+            }
+        } else {
+            # Maybe OSCAR is installed directly on the system. In that case,
+            # we try to see if OCA is not available in the default Perl
+            # directories
+            my $systemdir = `perl -V:vendorarch`;
+            # Now we have to "format" the result that looks like
+            # "vendorarch='/usr/lib/perl5'"
+            chomp $systemdir;
+            if ($systemdir =~ /^vendorarch=\'(.*)\';$/) {
+                $basedir = $1;
             }
         }
         if (! $basedir) {
             if (-d "/opt/oscar") {
-                $basedir = "/opt/oscar";
+                $basedir = "/opt/oscar/lib";
             } else {
                 print "Unable to find an OSCAR directory to look for components (no \$OSCAR_HOME\nand no /opt/oscar)\n";
                 return undef;
@@ -47,7 +58,7 @@ sub find_components {
 
     # Append on the framework subdirectory that we're looking in
 
-    $basedir .= "/lib/OSCAR/OCA/$framework";
+    $basedir .= "/OSCAR/OCA/$framework";
 
     # Return on bozo error
 
