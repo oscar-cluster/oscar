@@ -58,6 +58,8 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 # So we do the detection manually. :-(                                         #
 # BTW remember that an OSCAR pool CAN be empty, you cannot assume the repo has #
 # any kind of packages.                                                        #
+#                                                                              #
+# Return: the pool format (rpm or deb), undef if error.                        #
 ################################################################################
 sub detect_oscar_pool_format ($) {
     my $pool_id = shift;
@@ -75,11 +77,11 @@ sub detect_oscar_pool_format ($) {
         ($compat_distro, $version, $arch) =
             OSCAR::PackagePath::decompose_distro_id($pool_id);
         print "Distro id (OS_Detect syntax distro-version-arch: ".
-                "$compat_distro-$version-$arch)\n" if $verbose;
+              "$compat_distro-$version-$arch)\n" if $verbose;
         my $os = OSCAR::OCA::OS_Detect::open(oscar_pool=>"$compat_distro-$version-$arch");
         if (!defined($os) || (ref($os) ne "HASH")) {
-            print "ERROR: OSCAR does not support the OSCAR pool ".
-                   $pool_id." ($compat_distro, $arch, $version)\n";
+            carp "ERROR: OSCAR does not support the OSCAR pool ".
+                 $pool_id." ($compat_distro, $arch, $version)\n";
             return undef;
         }
         $format = $os->{pkg};
@@ -116,8 +118,8 @@ sub detect_distro_pool_format ($) {
                         arch=>$arch, }
                         );
     if (!defined($os) || (ref($os) ne "HASH")) {
-        print "ERROR: OSCAR does not support the distro for the pool ".
-                $pool_id." ($distro, $arch, $version)\n";
+        carp "ERROR: OSCAR does not support the distro for the pool ".
+             $pool_id." ($distro, $arch, $version)\n";
         return undef;
     }
     $format = $os->{pkg};
@@ -173,8 +175,15 @@ sub detect_pool_format ($) {
         print "Pool id: $pool_id.\n" if $verbose;
         $format = detect_oscar_pool_format ($pool_id);
     } else {
-        print "ERROR: Impossible to recognize pool $pool\n";
-        return undef;
+        # If we try to analyse a local repo that is not in /tftpboot, we try to
+        # see if it is not a repo for OSCAR (such as a weborm repo).
+        my $pool_id = basename ($pool);
+        print "Pool id: $pool_id.\n" if $verbose;
+        $format = detect_oscar_pool_format ($pool_id);
+        if (!defined ($format)) {
+            carp "ERROR: Impossible to recognize pool $pool\n";
+            return undef;
+        }
     }
     print "Detected format for pool $pool: $format\n";
     return $format;
@@ -208,7 +217,8 @@ sub generate_pool_checksum ($) {
         } elsif ($pool_type eq "deb") {
             $pm = PackMan::DEB->new;
         } else {
-            die "ERROR: Unknown pool type\n";
+            carp "ERROR: Unknown pool type\n";
+            return -1;
         }
         $err = &pool_gencache($pm,$pool);
         if (!$err) {
@@ -230,7 +240,6 @@ sub generate_pool_checksum ($) {
 sub prepare_pool ($$) {
     my ($verbose,$pool) = @_;
 
-    $verbose = 1;
     # demultiplex pool arguments
     print "Preparing pool: $pool\n" if $verbose;
 
@@ -246,7 +255,7 @@ sub prepare_pool ($$) {
     } elsif ($format eq "deb") {
         $pm = PackMan::DEB->new;
     } else {
-        print "ERROR: Impossible to detect the pool format ($pool)\n";
+        carp "ERROR: Impossible to detect the pool format ($pool)\n";
         return undef;
     }
     return undef if (!$pm);
@@ -290,7 +299,7 @@ sub prepare_pools ($@) {
         next if ($p eq "");
         my $type = OSCAR::PackageSmart::detect_pool_format ($p);
         if ($type eq undef) {
-            croak "ERROR: Impossible to prepare pool $p, unknown format\n";
+            carp "ERROR: Impossible to prepare pool $p, unknown format\n";
         }
         if ($format eq "") {
             # This is the first pool we analyze, we keep its format for later
@@ -298,8 +307,8 @@ sub prepare_pools ($@) {
             $format = $type;
         } else{
             if ($type ne $type) {
-                croak "ERROR: the two pools for the local distro are not of".
-                      "the same type ($format, $type)\n";
+                carp "ERROR: the two pools for the local distro are not of".
+                     "the same type ($format, $type)\n";
             }
         }
     }
@@ -310,7 +319,7 @@ sub prepare_pools ($@) {
         print "Pool: $p\n";
         $pm = prepare_pool($v, $p);
         if (!$pm) {
-            print "\nERROR: Could not create PackMan instance!\n";
+            carp "\nERROR: Could not create PackMan instance!\n";
             return undef;
         }
     }
