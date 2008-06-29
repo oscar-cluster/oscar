@@ -1,6 +1,9 @@
 #!/bin/bash
 #
 # Copyright (c) 2006 Erich Focht
+#
+# Copyright (c) 2007 The Trustees of Indiana University.  
+#                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -111,12 +114,16 @@ srcdir=`dirname $RUNDIR`
 
 umask 022
 cd $srcdir
-OSCAR_VERSION=`dist/get-oscar-version.sh VERSION`
+OSCAR_VERSION=`scripts/get-oscar-version.sh VERSION`
+OSCAR_GREEK_VERSION=`scripts/get-oscar-version.sh VERSION --greek`
+OSCAR_SVN_VERSION=`scripts/get-oscar-version.sh VERSION --svn`
+
+nightly_date=`date '+%Y%m%d'`
 if [ -n "$NIGHTLY" ]; then
-    OSCAR_VERSION=`dist/get-oscar-version.sh VERSION --nightly`
+    sed -e s/^svn_r=.*/svn_r="$OSCAR_SVN_VERSION"nightly-"$nightly_date"/g VERSION > VERSION.new
+	mv VERSION.new VERSION
+    exit 0
 fi
-OSCAR_GREEK_VERSION=`dist/get-oscar-version.sh VERSION --greek`
-OSCAR_SVN_VERSION=`dist/get-oscar-version.sh VERSION --svn`
 
 ############################################################################
 
@@ -296,10 +303,7 @@ if [ -n "$BUILD_BASE" ]; then
 
     if test "$OSCAR_SVN_VERSION" != ""; then
         sed -e s/^svn_r=.*/svn_r=$OSCAR_SVN_VERSION/g VERSION > VERSION.new
-        if [ -n "$NIGHTLY" ]; then
-            sed -e s/^svn_r=.*/svn_r="$OSCAR_SVN_VERSION"nightly/g VERSION > VERSION.new
-        fi
-	mv VERSION.new VERSION
+	    mv VERSION.new VERSION
     fi
 
     csh -f ./dist/insert-license.csh $newlist
@@ -352,11 +356,11 @@ if [ -n "$DISTROS" -o -n "$ALL_REPOS" ]; then
     fi
     if [ -n "$ALL_REPOS" ]; then
 	DISTROS="common-rpms \
-            fc-4-i386 fc-4-x86_64 fc-5-i386 fc-5-x86_64 fc-6-i386 fc-6-x86_64 fc-7-i386 fc-7-x86_64 \
-            mdv-2006-i386 \
-            rhel-4-i386 rhel-4-x86_64 \
-            rhel-5-i386 rhel-5-x86_64 \
-            suse-10.0-i386 suse-10.2-x86_64"
+            rhel-4-i386 rhel-4-x86_64 rhel-5-i386 rhel-5-x86_64 \
+            fc-7-i386 fc-7-x86_64 fc-8-i386 fc-8-x86_64 \
+            fc-9-x86_64 \
+            suse-10.2-x86_64 suse-10.3-x86_64 \
+            ydl-5-ppc64"
     fi
 
     message ">> Building OSCAR package repositories <<"
