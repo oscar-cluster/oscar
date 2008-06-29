@@ -388,8 +388,9 @@ sub pool_gencache ($$) {
     $pm->repo($pool);
     print "Calling gencache for $pool, this might take a minute ...";
 
+    # The packman return code is defined in PackManDefs.pm
     my ($err, @out) = $pm->gencache;
-    if ($err) {
+    if (!$err) {
         print " success\n";
         return 0;
     } else {
