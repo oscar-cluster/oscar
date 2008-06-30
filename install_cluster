@@ -167,7 +167,7 @@ if( $ENV{OSCAR_DB} eq "pg" ||
 # Get OSCAR's version
 
 my $oscar_version;
-my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "dist/get-oscar-version.sh";
+my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "scripts/get-oscar-version.sh";
 my $oscar_version_file = $ENV{OSCAR_HOME} . "/" . "VERSION";
 
 # Use the scripty-foo to get oscar version information.
@@ -315,7 +315,7 @@ oscar_log_subsection("PATH: " . $ENV{PATH});
 
 # Now start the execution
 chdir("scripts") or die("Couldn't chdir to scripts") if ($ENV{OSCAR_UI} eq "gui");
-chdir("src/cli") or die("Couldn't chdir to src/cli") if ($ENV{OSCAR_UI} eq "cli");
+chdir("scripts/cli") or die("Couldn't chdir to scripts/cli") if ($ENV{OSCAR_UI} eq "cli");
 
 # Only setup what we have to get to the OSCAR wizard.  All the rest of
 # server prep is going to be driven after the first panel of
