@@ -158,22 +158,23 @@ sub getSelectedConfigurablePackages
   my %packages;
 
   # START LOCKING FOR NEST
-  my @tables = ("Cluster", "Packages", "Group_Packages", "Node_Package_Status", "Groups");
+  #my @tables = ("Cluster", "Packages", "Group_Packages", "Node_Package_Status", "Groups");
   my @error_list = ();
   my %options = ();
   #locking("WRITE", \%options, \@tables, \@error_list);
   #OSCAR::Database::dec_already_locked(
   #  "packages_in_selected_package_set packages.package", \@results,1);
-  my $success = OSCAR::Database::get_selected_group_packages(\@results,\%options,\@error_list); 
+  my $success = OSCAR::Database::get_selected_group_packages(\@results,
+                                                             \%options,
+                                                             \@error_list); 
 
   # Transform the list into a hash; keys=short pkg name, values=long pkg name
-  foreach my $pkg_ref (@results) 
-    {
+  foreach my $pkg_ref (@results) {
       my $pname = $$pkg_ref{package};
-      my $ppackage = $$pkg_ref{name};
+      my $ppackage = $$pkg_ref{package};
       print "$pname, $ppackage\n" if $options{debug};
       $packages{$pname} = $ppackage;
-    }
+  }
 
   # Actually we don't need this any more in the new DB schema.
   #

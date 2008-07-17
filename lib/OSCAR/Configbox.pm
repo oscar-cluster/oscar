@@ -17,7 +17,7 @@ package OSCAR::Configbox;
 #
 # Copyright (c) 2002 National Center for Supercomputing Applications (NCSA)
 #                    All rights reserved.
-# Copyright (c) 2007 The Trustees of Indiana University.  
+# Copyright (c) 2007-2008 The Trustees of Indiana University.  
 #                    All rights reserved.
 #
 # Written by Terrence G. Fleury (tfleury@ncsa.uiuc.edu)
@@ -43,6 +43,7 @@ use File::Basename;
 use OSCAR::Database;
 use OSCAR::Database_generic;
 
+my($conf_parent);         # The parent window for the config boxes.
 my($top);            # The Toplevel widget for the config box.
 my($web);            # The Tk::Web widget for displaying HTML file.
 my($packagedir);
@@ -180,10 +181,14 @@ sub exitWithoutSaving {
 	# Then, destroy the root window.
 	$root->destroy;
 
+    # Then, make the parent widow of configboxes available
+    $conf_parent->Unbusy();
+
 	# Undefine a bunch of Tk widget variables for re-creation later.
 	undef $root;
 	undef $top;
 	undef $web;
+    undef $conf_parent;
     }
 }
 
@@ -604,6 +609,9 @@ sub displayWebPage { # ($parent,$file)
 	    $top->title("Configuration");
         }
 	$top->withdraw;
+    $conf_parent = $parent;
+    $conf_parent->Busy(-recurse => 1);
+    $top->protocol('WM_DELETE_WINDOW',\&exitWithoutSaving);
 	OSCAR::Configbox::Configbox_ui $top;  # Call the specPerl window creator
     }
 
