@@ -125,7 +125,7 @@ $options{debug} = 1
 # These subroutines directly call the oda query command.                       #
 # Return; if query succeeds, return 1. Otherwise, return 0.                    #
 ################################################################################
-sub do_select {
+sub do_select ($$$$) {
     my ($sql,
         $result_ref,
         $options_ref,
@@ -146,8 +146,8 @@ sub do_select {
     return  $success;
 }
 
-sub do_insert {
-    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
+sub do_insert ($$$$){
+    my ($sql, $table, $options_ref, $error_strings_ref) = @_;
 
     my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_insert SQL : $sql\n";
     print "$debug_msg" if $$options_ref{debug};
@@ -160,10 +160,10 @@ sub do_insert {
             $error_strings_ref);
     $error_strings_ref = \@error_strings;
     return  $success;
-}            
+}
 
-sub do_update {
-    my ($sql, $table,$options_ref,$error_strings_ref) = @_;
+sub do_update ($$$$) {
+    my ($sql, $table, $options_ref, $error_strings_ref) = @_;
 
     my $debug_msg = "DB_DEBUG>$0:\n====> in Database::do_update SQL : $sql\n";
     print "$debug_msg" if $$options_ref{debug};
@@ -176,7 +176,7 @@ sub do_update {
             $error_strings_ref);
     $error_strings_ref = \@error_strings;
     return  $success;
-}            
+} 
 
 ######################################################################
 #
@@ -186,11 +186,11 @@ sub do_update {
 ######################################################################
 
 
-sub insert_into_table {
-    my ($options_ref,$table,$field_value_ref,$error_strings_ref) = @_;
+sub insert_into_table ($$$$) {
+    my ($options_ref, $table, $field_value_ref, $error_strings_ref) = @_;
     my $sql = "INSERT INTO $table ( ";
     my $sql_values = " VALUES ( ";
-    
+
     my $flag = 0;
     my $comma = "";
     while ( my($field, $value) = each %$field_value_ref ){
@@ -199,9 +199,10 @@ sub insert_into_table {
         $flag = 1;
         $value = ($value eq "NOW()"?$value:"'$value'");
         $sql_values .= "$comma $value";
-    }    
+    }
     $sql .= ") $sql_values )";
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::insert_into_table SQL : $sql\n";
+    my $debug_msg = "DB_DEBUG>$0:\n".
+        "====> in Database::insert_into_table SQL : $sql\n";
     print "$debug_msg" if $$options_ref{debug};
     push @$error_strings_ref, $debug_msg;
 
@@ -224,13 +225,13 @@ sub insert_into_table {
 #        error_strings_ref                                                     #
 # Return: non-zero if success.                                                 #
 ################################################################################
-sub delete_table {
-    my ($options_ref,$table,$where,$error_strings_ref) = @_;
+sub delete_table ($$$$) {
+    my ($options_ref, $table, $where, $error_strings_ref) = @_;
     my $sql = "DELETE FROM $table ";
     $where = $where?$where:"";
     $sql .= " $where ";
 
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::delete_table SQL : $sql\n";
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::delete_table SQL: $sql\n";
     print "$debug_msg" if $$options_ref{debug};
     push @$error_strings_ref, $debug_msg;
 
@@ -244,8 +245,12 @@ sub delete_table {
     return  $success;
 }
 
-sub update_table {
-    my ($options_ref,$table,$field_value_ref,$where,$error_strings_ref) = @_;
+sub update_table ($$$$$) {
+    my ($options_ref,
+        $table,
+        $field_value_ref,
+        $where,
+        $error_strings_ref) = @_;
     my $sql = "UPDATE $table SET ";
     my $flag = 0;
     my $comma = "";
@@ -257,7 +262,7 @@ sub update_table {
     }
     $where = $where?$where:"";
     $sql .= " $where ";
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::update_table SQL : $sql\n";
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::update_table SQL: $sql\n";
     print "$debug_msg" if $$options_ref{debug};
     print "$debug_msg";
     push @$error_strings_ref, $debug_msg;
@@ -271,8 +276,13 @@ sub update_table {
     return  $success;
 }
 
-sub select_table {
-    my ($options_ref,$table,$field_ref,$where,$result,$error_strings_ref) = @_;
+sub select_table ($$$$$$) {
+    my ($options_ref,
+        $table,
+        $field_ref,
+        $where,
+        $result,
+        $error_strings_ref) = @_;
     my $sql = "SELECT ";
     my $flag = 0;
     my $comma = "";
@@ -295,7 +305,7 @@ sub select_table {
         $where = $where_str;
     }
     $sql .= " FROM $table $where ";
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::select_table SQL : $sql\n";
+    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::select_table SQL: $sql\n";
     print "$debug_msg" if $$options_ref{debug};
     push @$error_strings_ref, $debug_msg;
 
@@ -309,13 +319,15 @@ sub select_table {
     return  $success;
 }
 
-sub create_table {
+sub create_table ($$) {
     my ($options_ref, $error_strings_ref) = @_;
 
     my $sql_dir = "$ENV{OSCAR_HOME}/packages/oda/scripts";
     my $sql_file = "$sql_dir/oscar_table.sql";
 
-    print "DB_DEBUG>$0:\n====> in Database::create_table uses the SQL statement which are already defined at $sql_file" if $$options_ref{verbose};
+    print "DB_DEBUG>$0:\n".
+        "====> in Database::create_table uses the SQL statement which are ".
+        "already defined at $sql_file" if $$options_ref{verbose};
 
     my $cmd = "";
     $cmd = "mysql -u $$options_ref{user} -p$$options_ref{password} oscar < $sql_file"
@@ -326,7 +338,8 @@ sub create_table {
         $cmd = "PGPASSWORD='$$options_ref{password}' psql -h $$options_ref{host} -U $$options_ref{user} oscar < $sql_file";
     }
 
-    my $debug_msg = "DB_DEBUG>$0:\n====> in Database::create_table runs the command : $cmd\n";
+    my $debug_msg = "DB_DEBUG>$0:\n".
+        "====> in Database::create_table runs the command : $cmd\n";
     print "$debug_msg" if $$options_ref{debug};
     push @$error_strings_ref, $debug_msg;
 
@@ -334,9 +347,9 @@ sub create_table {
 
     $error_strings_ref = \@error_strings;
     return  $success;
-}    
+}
 
-sub my2pg{
+sub my2pg ($) {
     my $dump_file = shift;
     my $dump_dir = dirname($dump_file);
     my $new_file = "$dump_dir/oscar_table.pgsql";
@@ -382,7 +395,5 @@ sub init_database_passwd ($) {
 
     return 0;
 }
-
-
 
 1;
