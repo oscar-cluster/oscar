@@ -220,7 +220,7 @@ sub delnodes {
     }
     
     print ">> Updating C3 configuration file\n";
-    if (system("$ENV{OSCAR_HOME}/packages/c3/scripts/post_clients")) {
+    if (!run_pkg_script("c3","post_clients",1)) {
         carp("C3 configuration file update phase failed.");
         $fail++;
     }
