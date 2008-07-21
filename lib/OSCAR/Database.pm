@@ -2698,7 +2698,7 @@ sub start_database_service {
         print "$command\n";
         if ( system( $command ) ) {
         my @error_strings = ();
-        oda::oda_disconnect( \%options );
+        oda::oda_disconnect( \%options, undef );
         warn shift @error_strings while @error_strings;
         die "DB_DEBUG>$0:\n====> cannot start the $db_service_name database ".
             "server!";

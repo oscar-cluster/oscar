@@ -30,6 +30,7 @@ use base qw(Exporter);
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::PackagePath;
+use OSCAR::OpkgDB;
 use OSCAR::Logger;
 use File::Basename;
 use File::Copy;
@@ -64,9 +65,11 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
            post_configure => ['api-post-configure',
                               'post_configure'], # deprecated
            post_server_install => ['server-post-install',
+                                   'server-post_install', # for RPM sys only
                                    'post_server_install', # deprecated
                                    'post_server_rpm_install'], # deprecated
            post_rpm_install => ['client-post-install',
+                                'client-post_install', # for RPM sys only
                                 'post_client_rpm_install', # deprecated
                                 'post_rpm_install'], # deprecated
            post_rpm_nochroot => ['api-post-image',
@@ -79,84 +82,48 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
            test_user    => ['test_user'],
           );
 
+#
+# get_pkg_dir - return directory where scripts can be found for a given
+#               package and phase
+#
 
-#########################################################################
-#  Subroutine: getOdaPackageDir                                         #
-#  Parameter : The name of an OSCAR package (directory)                 #
-#  Returns   : The "directory" field in the ODA database for the        #
-#              passed-in package, or undef if not defined               # 
-#  This subroutine takes in the name of an OSCAR package (i.e. the      #
-#  directory name under the 'packages' directory for the package) and   #
-#  returns the 'directory' field for that package.  This is necessary   #
-#  because a package can be in either the OSCAR tree or the OPD tree.   #
-#  However, if the oda database hasn't been set up yet or the           #
-#  directory entry for the passed-in package doesn't exist, then we     #
-#  fall back on the old method of finding the directory, namely         #
-#  iterate throught the directories in the PKG_SOURCE_LOCATIONS list    #
-#  and try to find the package directory.                               #
-#########################################################################
-sub getOdaPackageDir { # ($pkg) -> $pkgdir
-    my $pkg = shift;
-    my @list = (); 
-    my $retdir = undef;
-    
-    # First, check to see if the oda database has been created.  If not, then
-    # don't bother to ask oda for the package's directory.
-
-    my $odaProblem = system('mysqlshow oscar >/dev/null 2>&1');
-    if (!$odaProblem) {
-	my @tables = ("Packages");
-	my $success = single_dec_locked("SELECT path FROM " .
-					"Packages WHERE package='$pkg'",
-					"read",
-					\@tables,
-					\@list);
-	Carp::carp("Could not do oda command 'SELECT path" .
-		   " FROM Packages WHERE package=$pkg '") if (!$success);
-
-	my $dir_ref = $list[0] if (defined $list[0]);
-	$retdir = $$dir_ref{path};
+sub get_scripts_dir ($$) {
+    my ($pkg, $phase) = @_;
+    if ($phase eq 'test_root' || $phase eq 'test_user') {
+        return "/var/lib/oscar/testing/$pkg";
+    } else {
+        return "/var/lib/oscar/packages/$pkg";
     }
-
-    # Couldn't find the directory via oda - resort to old method.  Search
-    # through the list of 'packages' directories and return the first one that
-    # has the passed-in package as a subdirectory.
-    if ((!defined $retdir) || (!-d $retdir)) {
-	foreach my $pkgdir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
-	    if (-d "$pkgdir/$pkg") {
-		$retdir = "$pkgdir/$pkg";
-		last;
-	    }
-	}
-    }
-    return $retdir;
 }
+
 
 #
 # run_pkg_script - runs the package script for a specific package
 #
+# Return: 1 if success, 0 else.
 
-sub run_pkg_script {
+sub run_pkg_script ($$$$) {
     my ($pkg, $phase, $verbose, $args) = @_;
     my $scripts = $PHASES{$phase};
     if (!$scripts) {
-	carp("No such phase '$phase' in OSCAR package API");
-	return undef;
+        carp("ERROR: No such phase '$phase' in OSCAR package API");
+        return 0;
     }
 
-    my $pkgdir = getOdaPackageDir($pkg);
+    my $pkgdir = get_script_dir ($pkg, $phase);
     return 0 unless ((defined $pkgdir) && (-d $pkgdir));
     foreach my $scriptname (@$scripts) {
-	my $script = "$pkgdir/scripts/$scriptname";
+	my $script = "$pkgdir/$scriptname";
 	if (-e $script) {
+        chmod 0755, $script;
 	    oscar_log_subsection("About to run $script for $pkg") if $verbose;
 	    $ENV{OSCAR_PACKAGE_HOME} = $pkgdir;
 	    my $rc = system("$script $args");
 	    delete $ENV{OSCAR_PACKAGE_HOME};
 	    if ($rc) {
 		my $realrc = $rc >> 8;
-		carp("Script $script exitted badly with exit code '$realrc'") if 
-		    $verbose;
+		carp("ERROR: Script $script exitted badly with exit code '$realrc'") 
+            if $verbose;
 		return 0;
 	    }
 	} 
@@ -164,48 +131,49 @@ sub run_pkg_script {
     return 1;
 }
 
-sub run_pkg_script_chroot {
-  my ($pkg, $dir) = @_;
-  my $scripts = $PHASES{post_rpm_install};
-  if (!$scripts) 
-    {
-      carp("No such phase 'post_rpm_install' in OSCAR package API");
-      return undef;
+# Return: 1 if success, undef else.
+sub run_pkg_script_chroot ($$) {
+    my ($pkg, $dir) = @_;
+    my $phase = "post_rpm_install";
+    my $scripts = $PHASES{$phase};
+    if (!$scripts) {
+        carp("ERROR: No such phase 'post_rpm_install' in OSCAR package API");
+        return undef;
     }
 
-  my $pkgdir = getOdaPackageDir($pkg);
-  return undef unless ((defined $pkgdir) && (-d $pkgdir));
-  foreach my $scriptname (@$scripts) 
-    {
-      my $script = "$pkgdir/scripts/$scriptname";
-      if (-e $script) 
-        {
-          oscar_log_subsection("About to run $script for $pkg");
-          run_in_chroot($dir,$script) or 
-            (carp "Script $script failed", return undef);
+    my $pkgdir = get_scripts_dir ($pkg, $phase);
+    return undef unless ((defined $pkgdir) && (-d $pkgdir));
+    foreach my $scriptname (@$scripts) {
+        my $script = "$pkgdir/$scriptname";
+        if (-e $script) {
+            chmod 0755, $script;
+            oscar_log_subsection("About to run $script for $pkg");
+            run_in_chroot ($dir,$script)
+                or (carp ("ERROR: Script $script failed"), return undef);
         }
     }
-  return 1;
+    return 1;
 }
 
-sub run_in_chroot {
+# Return: 1 if success, undef else.
+sub run_in_chroot ($$) {
     my ($dir, $script) = @_;
     my $base = basename($script);
     my $nscript = "$dir/tmp/$base";
     copy($script, $nscript) 
-    or (carp("Couldn't copy $script to $nscript"), return undef);
+        or (carp("ERROR: Couldn't copy $script to $nscript"), return undef);
     chmod 0755, $nscript;
     !system("chroot $dir /tmp/$base") 
-    or (carp("Couldn't run /tmp/$script"), return undef);
-    unlink $nscript or (carp("Couldn't remove $nscript"), return undef);
+        or (carp("ERROR: Couldn't run /tmp/$script"), return undef);
+    unlink $nscript or (carp("ERROR: Couldn't remove $nscript"), return undef);
     return 1;
 }
 
 #
 # run_pkg_user_test - runs the package test script as a user
 #
-
-sub run_pkg_user_test {
+# Return: 1 if success, 0 else.
+sub run_pkg_user_test ($$$$) {
     my ($script, $user, $verbose, $args) = @_;
 
     if (-e $script) {
@@ -237,10 +205,9 @@ sub run_pkg_user_test {
 #  This runs an APItest file (or batch file).  Expected that this 
 #  will be run as 'root', but can use another user if needed.
 #
+# Return: 1 if success, 0 else.
 # TODO Fix work arounds for current release of APItest v0.2.5-1
- 
-sub run_pkg_apitest_test
-{
+sub run_pkg_apitest_test ($$$) {
 	use File::Spec;
 
 	my ($script, $user, $verbose) = @_;
@@ -270,14 +237,14 @@ sub run_pkg_apitest_test
 			my $cmd = "su --command='OSCAR_HOME=$ENV{OSCAR_HOME} (cd $cpath && $apitest -T -f $file)' - $user";
 			$rc = system($cmd);
 		}
-	}
-	else {
+	} else {
 		oscar_log_subsection("Warning: not exist '$script' ") if $verbose;
 	}
 
 	if($rc) {
 		my $realrc = $rc >> 8;
-		carp("Script APItest $script exited badly with exit code '$realrc'") if $verbose;
+		carp("Script APItest $script exited badly with exit code '$realrc'") 
+            if $verbose;
 		return 0;
 	}
 
@@ -297,12 +264,12 @@ sub run_pkg_apitest_test
 #       - currently the list of excluded opkg for Linux distributions is
 #         done via files in oscar/share/exclude_pkg_set. It should be 
 #         nice to be able to do that via config.xml files.
-sub get_excluded_opkg
-{
+sub get_excluded_opkg () {
     my $os = OSCAR::OCA::OS_Detect::open();
     exit -1 if(!$os);
     my $filename = $ENV{OSCAR_HOME} . "/share/exclude_pkg_set/";
-    $filename .= $os->{compat_distro} . "-" . $os->{compat_distrover} . "-" . $os->{arch} . ".txt";
+    $filename .= $os->{compat_distro} . "-" . $os->{compat_distrover} . "-" 
+                . $os->{arch} . ".txt";
     my @exclude_packages = qw();
     if ( -f $filename ) {
         print "File exists, excluding packages...\n";
@@ -362,32 +329,29 @@ sub isPackageSelectedForInstallation # ($package) -> $yesorno
 #  Usage: $configvalues = getConfigurationValues('mypackage');          #
 #         $myvalue = $configvalues->{'value'}[0];  # Only one value     #
 #         @myvalues = $configvalues->{'happy'};    # Multiple values    #
+# Return: configuration parameters (hash) or undef if error.            #
 #########################################################################
-#
-# EF: this should be moved out of Package.pm sooner or later...
-#
 sub getConfigurationValues # ($package) -> $valueshashref
 {
-  my $package = shift;
-  my $values;
-  my $filename;
+    my $package = shift;
+    my $values;
+    my $filename;
 
-  my $pkgdir = getOdaPackageDir($package);
-  if ((defined $pkgdir) && (-d $pkgdir))
-    {
-      $filename = "$pkgdir/.configurator.values";
-      if (-s $filename) 
-        {
-          $values =  eval { XMLin($filename, 
+    my $pkgdir = getOdaPackageDir($package);
+    my $pkgdir = "$ENV{OSCAR_PACKAGE}/$package";
+    if ((defined $pkgdir) && (-d $pkgdir)) {
+        $filename = "$pkgdir/.configurator.values";
+        if (-s $filename) {
+            $values =  eval { XMLin($filename, 
                                   suppressempty => '', 
                                   forcearray => '1'); 
-                          };
-          undef $values if ($@);
-          return $values;
+                            };
+            undef $values if ($@);
+            return $values;
         }
     }
 
-  return undef;
+    return undef;
 }
 
 1;

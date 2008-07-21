@@ -44,53 +44,55 @@ use base qw(Exporter);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
-sub find_files {
-        # Finds the best version of files to use based on an rpm list
-        # Input:  a parameter list containing the following:
-        #       PKGDIR  The location of the packages
-        #       PKGLIST A reference to a list of desired packages
-        #   and optionally:
-        #       ARCH    The target archtecture, default: current arch
-        #       RPMRC   The rpmrc filename, default: /usr/lib/rpm/rpmrc
-        #       CACHEFILE The name for the cachefile, default: .pkgcache
-        # 
-        # Output: A hash whose keys are the package name and whose
-        # values are the filenames, as well as a scalar indicating
-        # whether the routine succeeded (1) or not (0), since an empty
-        # hash is not necessarily indicative of an error.
+# Finds the best version of files to use based on an rpm list
+# Input:  a parameter list containing the following:
+#       PKGDIR  The location of the packages
+#       PKGLIST A reference to a list of desired packages
+#   and optionally:
+#       ARCH    The target archtecture, default: current arch
+#       RPMRC   The rpmrc filename, default: /usr/lib/rpm/rpmrc
+#       CACHEFILE The name for the cachefile, default: .pkgcache
+# 
+# Output: A hash whose keys are the package name and whose
+# values are the filenames, as well as a scalar indicating
+# whether the routine succeeded (1) or not (0), since an empty
+# hash is not necessarily indicative of an error.
+sub find_files () {
 
-        my %empty;
-        my %args = (
-                ARCH            => (uname)[4],
-                RPMRC           => "/usr/lib/rpm/rpmrc",
-                CACHEFILE       => ".pkgcache",
-                PKGDIR          => "",
-                PKGLIST         => [],
-                @_,
-        );
+    my %empty;
+    my %args = (
+            ARCH            => (uname)[4],
+            RPMRC           => "/usr/lib/rpm/rpmrc",
+            CACHEFILE       => ".pkgcache",
+            PKGDIR          => "",
+            PKGLIST         => [],
+            @_,
+    );
 
-        my @compatlist; my $RPM_TABLE; 
+    my @compatlist; my $RPM_TABLE; 
 
-        unless (cache_gen($args{PKGDIR},$args{CACHEFILE})) {
-	    return (0, %empty);
-        }
+    unless (cache_gen($args{PKGDIR},$args{CACHEFILE})) {
+	return (0, %empty);
+    }
 
-        unless (@compatlist=gen_compat_list($args{ARCH},$args{RPMRC})) {
-	    return (0, %empty);
-        }
-        unless ($RPM_TABLE=populate_rpm_table($args{PKGDIR},$args{CACHEFILE})) {
-	    return (0, %empty);
-        }
+    unless (@compatlist=gen_compat_list($args{ARCH},$args{RPMRC})) {
+	return (0, %empty);
+    }
+    unless ($RPM_TABLE=populate_rpm_table($args{PKGDIR},$args{CACHEFILE})) {
+	return (0, %empty);
+    }
 
-        return find_best_files($RPM_TABLE,\@compatlist,@{$args{PKGLIST}});
+    return find_best_files($RPM_TABLE,\@compatlist,@{$args{PKGLIST}});
 }
 
+# Finds the highest versions and best architectures for rpms
+# Input: Ref to the rpm table info
+#        Ref to the ordered list of compatable rpms
+#        List of rpms desired
+# Output: filelist or null.
+# TODO: it seems that the description of the output is just wrong... That should
+# be fixed.
 sub find_best_files {
-    # Finds the highest versions and best architectures for rpms
-    # Input: Ref to the rpm table info
-    #        Ref to the ordered list of compatable rpms
-    #        List of rpms desired
-    # Output: filelist or null.
     my $RPM_TABLE=shift;
     my $compatlist=shift;
     my @rpms = @_;
@@ -136,41 +138,42 @@ sub find_best_files {
     return (1, %files);
 }
 
+# Generates the compatability list from the rpmrc file.
+# Input: the desired architecture.
+# Output: return code and a list of data:
+#         Return code           Data contents
+#         0(ok)                 Ordered list of compat archs
+#         1                     misc error messages
 sub gen_compat_list {
-        # Generates the compatability list from the rpmrc file.
-        # Input: the desired architecture.
-        # Output: return code and a list of data:
-        #         Return code           Data contents
-        #         0(ok)                 Ordered list of compat archs
-        #         1                     misc error messages
-        my $arch=shift;
-        my $rpmrcfile=shift;
-        my %RPM_COMPAT;
-        my @list=@_;
-        my $line;
-        local *COMPF;
-        
-        # Read in the compat matrix from the rpmrc file
-        if (! %RPM_COMPAT){
-                if (! open(COMPF,"$rpmrcfile")) {
-                        carp("Couldn't read rpmrc file $rpmrcfile");
-                        return;
-                }
-                while ($line=<COMPF>) {
-                        chomp $line;
-                        my ($tag,$arch,$carchs)=split(/:/,$line);
-                        next unless(defined $tag);
-                        if ($tag eq "arch_compat") {
-                                $carchs=~s/^ //;
-                                $arch=~s/^ //;
-                                my ($carch,$junk)=split(/ /,$carchs);      # chuck multiples for now
-                                $RPM_COMPAT{$arch}=$carch; 
-                        }
-                }
-                close(COMPF);
-                $list[0]=$arch; # Prime the list with the requested arch.
-        }
-        return resolve_compat_chain(\%RPM_COMPAT,@list);
+    my $arch=shift;
+    my $rpmrcfile=shift;
+    my %RPM_COMPAT;
+    my @list=@_;
+    my $line;
+    local *COMPF;
+
+    # Read in the compat matrix from the rpmrc file
+    if (! %RPM_COMPAT){
+            if (! open(COMPF,"$rpmrcfile")) {
+                    carp("Couldn't read rpmrc file $rpmrcfile");
+                    return;
+            }
+            while ($line=<COMPF>) {
+                    chomp $line;
+                    my ($tag,$arch,$carchs)=split(/:/,$line);
+                    next unless(defined $tag);
+                    if ($tag eq "arch_compat") {
+                            $carchs=~s/^ //;
+                            $arch=~s/^ //;
+                            # chuck multiples for now
+                            my ($carch,$junk)=split(/ /,$carchs);
+                            $RPM_COMPAT{$arch}=$carch; 
+                    }
+            }
+            close(COMPF);
+            $list[0]=$arch; # Prime the list with the requested arch.
+    }
+    return resolve_compat_chain(\%RPM_COMPAT,@list);
 }
 
 sub resolve_compat_chain {

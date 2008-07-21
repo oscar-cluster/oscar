@@ -30,6 +30,7 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
+use File::Basename;
 use Carp;
 
 @EXPORT = qw(
@@ -37,6 +38,8 @@ use Carp;
 	     opkg_hash_available
 	     opkg_list_installed
 	     opkg_hash_installed
+         opkg_api_path
+         oscar_repostring
 	     );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -107,12 +110,16 @@ sub opkg_list_available {
 #   key: opkg name
 #   value: reference to subhash
 #          subhash:
-#              {name}        : short package name
+#              {package}     : short package name
 #              {version}     : package version (and release)
-#              {package}     : long package name (Summary)
+#              {summary}     : long package name (Summary)
 #              {packager}    : packager info
 #              {description} : package description
 #              {class}       : class info (multiplexed into group info)
+#              {group}       : group info from native pkg mgr
+#              {distro}      : compat distro string (e.g. rhel-5-i386)
+#              {conflicts}   : list of conflicting packages
+#   Returns undef if error.
 ####
 sub opkg_hash_available {
     my %scope = @_;
@@ -120,142 +127,110 @@ sub opkg_hash_available {
 
     # filter class?
     my $class_filter;
+    print "opkg_hash_available: scope =\n".Dumper(%scope) if $verbose;
     if (defined($scope{class})) {
-	$class_filter = $scope{class};
-	delete $scope{class};
+    $class_filter = $scope{class};
+    delete $scope{class};
+    print "opkg_hash_available: class_filter = $class_filter\n"
+        if $verbose;
     }
+    my $os = $scope{os} if (defined($scope{os}));
 
-    my $os = OSCAR::OCA::OS_Detect::open(%scope);
-    return () if !$os;
+    $os = OSCAR::OCA::OS_Detect::open(%scope) if !$os;
+    return undef if !$os;
 
-    my $repo = make_repostring($os);
+    my $repo = &oscar_repostring($os);
+    my $dist = &os_cdistro_string($os);
     my $pkg = $os->{pkg};
     my $isdesc = 1;
     my ($name, $rel, $ver, $packager, $summary, $desc, $class, $conflicts);
+    my $group;
     if ($pkg eq "rpm") {
-	my $cmd="/usr/bin/yume $repo --repoquery --info opkg-*-server";
-	print "Running $cmd" if $verbose;
-	open CMD, "$cmd |" or die "Error: $!";
-	while (<CMD>) {
-	    chomp;
-	    if (/^Name\s*: (.*)$/) {
-		if ($name) {
-		    $o{$name} = {
-			name => $name,
-			version => "$ver-$rel",
-			summary => $summary,
-			packager => $packager,
-			description => $desc,
-			class => $class,
-		    };
-		}
-		$1 =~ /^opkg-(.*)-server$/;
-		$name = $1;
-		$isdesc = 0;
-		$ver = $rel = $summary = $packager = $desc = $class = "";
-		$conflicts = "";
-	    } elsif (/^Version\s*:\s*(.*)\s*$/) {
-		$ver = $1;
-	    } elsif (/^Release\s*:\s*(.*)\s*$/) {
-		$rel = $1;
-	    } elsif (/^Packager\s*:\s*(.*)\s*$/) {
-		$packager = $1;
-	    } elsif (/^Group\s*:\s*(.*)\s*$/) {
-		$class = $1;
-		$class =~ s/^[^:]*://g;
-	    } elsif (/^Summary\s*:\s*(.*), server part\s*$/) {
-		$summary = $1;
-	    } elsif (/^Description\s*:/) {
-		$isdesc = 1;
-	    } elsif ($isdesc) {
-		    $desc .= "$_\n";
-	    }
-	}
-	close CMD;
-	if ($name) {
-	    $o{$name} = {
-		name => $name,
-		version => "$ver-$rel",
-		summary => $summary,
-		packager => $packager,
-		description => $desc,
-		class => $class,
-	    };
-	}
+    my $cmd="/usr/bin/yume $repo --repoquery --info opkg-*-server";
+    %o = &hash_from_cmd_rpm($cmd, $dist);
+
     } elsif ($pkg eq "deb") {
-	my @opkgs = &opkg_list_available(%scope);
-	@opkgs = map { "opkg-$_" } @opkgs;
-	#TODO# add show option to rapt
-	my $cmd="/usr/bin/rapt --repo $repo show ".join(" ", @opkgs);
-	print "Running $cmd" if $verbose;
-	open CMD, "$cmd |" or die "Error: $!";
-	while (<CMD>) {
-	    chomp;
+    my @opkgs = &opkg_list_available(%scope);
+    @opkgs = map { "opkg-$_" } @opkgs;
+    #TODO# add show option to rapt
+    my $cmd="/usr/bin/rapt --repo $repo show ".join(" ", @opkgs);
+    print "Running $cmd" if $verbose;
+    open CMD, "$cmd |" or die "Error: $!";
+    while (<CMD>) {
+        chomp;
         if (/^Package: (.*)$/) {
-            $name = $1;
-            $isdesc = 0;
-            $ver = $rel = $summary = $packager = $desc = $class = "";
-            $conflicts = "";
-	    } elsif (/^Version: (.*)$/) {
-            $ver = $1;
-	    } elsif (/^Section: (.*)$/) {
-            $class = $1;
-            $class =~ s/^[^:]*://g;
-	    } elsif (/^Maintainer: (.*)$/) {
-            $packager = $1;
-	    } elsif (/^Conflicts: (.*)$/) {
-            $conflicts = $1;
-	    } elsif (/^Description: (.*), server part$/) {
-            $isdesc = 1;
-            $summary = $1;
-	    } elsif (/^Bugs:/) { # GV: What is bug?
-            if ($name) {
-                $o{$name} = {
-    			name => $name,
-    			version => $ver,
-    			summary => $summary,
-    			packager => $packager,
-    			description => $desc,
-    			class => $class,
-    			conflicts => $conflicts,
-		    };
-		}
-		$isdesc = 0;
-	    } else {
-		if ($isdesc) {
-		    m/^ (.*)$/;
-		    $desc .= "$1\n";
-		}
-	    }
-	}
-	close CMD;
-	if ($name) {
-	    $o{$name} = {
-		name => $name,
-		version => $ver,
-		summary => $summary,
-		packager => $packager,
-		description => $desc,
-		class => $class,
-		conflicts => $conflicts,
-	    };
-	}
+        $name = $1;
+        $isdesc = 0;
+        $ver = $rel = $summary = $packager = $desc = $class = "";
+        $conflicts = "";
+        } elsif (/^Version: (.*)$/) {
+        $ver = $1;
+        } elsif (/^Section: (.*)$/) {
+        $group = $1;
+        $class = "";
+        if ($group =~ m/^([^:]*):([^:]*)/) {
+            $group = $1;
+            $class = $2;
+        }
+        } elsif (/^Maintainer: (.*)$/) {
+        $packager = $1;
+        } elsif (/^Conflicts: (.*)$/) {
+        $conflicts = $1;
+        } elsif (/^Description: (.*), server part$/) {
+        $isdesc = 1;
+        $summary = $1;
+        } elsif (/^Bugs:/) {
+        if ($name) {
+            $o{$name} = {
+            "package" => $name,
+            version => $ver,
+            summary => $summary,
+            packager => $packager,
+            description => $desc,
+            class => $class,
+            group => $group,
+            distro => $dist,
+            conflicts => $conflicts,
+            };
+        }
+        $isdesc = 0;
+        } else {
+        if ($isdesc) {
+            m/^ (.*)$/;
+            $desc .= "$1\n";
+        }
+        }
+    }
+    close CMD;
+    if ($name) {
+        $o{$name} = {
+        "package" => $name,
+        version => $ver,
+        summary => $summary,
+        packager => $packager,
+        description => $desc,
+        class => $class,
+        group => $group,
+        distro => $dist,
+        conflicts => $conflicts,
+        };
+    }
     } else {
-	return undef;
+    return undef;
     }
 
     # go through result and apply the class filter, if needed
     if ($class_filter) {
-	print "Filtering for class = \"$class_filter\"\n" if $verbose;
-	for my $p (keys(%o)) {
-	    my %h = %{$o{$p}};
-	    print "$p -> class: $h{class}" if $verbose;
-	    if ($h{class} ne $class_filter) {
-		delete $o{p};
-		print " ... deleted" if $verbose;
-	    }
-	    print "\n" if $verbose;
-	}
+    print "Filtering for class = \"$class_filter\"\n" if $verbose;
+    for my $p (keys(%o)) {
+        my %h = %{$o{$p}};
+        print "$p -> class: $h{class}" if $verbose;
+        if ($h{class} ne $class_filter) {
+        delete $o{$p};
+        print " ... deleted" if $verbose;
+        }
+        print "\n" if $verbose;
+    }
     }
     return %o;
 }
@@ -363,9 +338,9 @@ sub opkg_list_installed {
 #              {packager}    : packager info
 #              {description} : package description
 #              {class}       : class info (multiplexed into group info)
-#              
+#
 ####
-sub opkg_hash_installed {
+sub opkg_hash_installed ($%) {
     my ($type, %scope) = @_;
 
     my %olist = &opkg_list_installed($type);
@@ -417,6 +392,119 @@ sub opkg_hash_installed {
     }
     return %opkgs;
 }
+
+####
+# opkg_api_path
+#
+# Returns the path where the opkg API stuff for a given OPKG is installed, by
+# querying the local RPM/DEB database for the location of the config.xml file
+# (the config.xml file is allways there).
+# The opkg-API package must be installed locally!
+#
+# Input: name of the OPKG we are looking for.
+# Return: path name (where the config.xml file is), undef if error.
+####
+sub opkg_api_path ($) {
+    my ($name) = @_;
+    my $p = "opkg-$name";
+
+    my $os = &distro_detect_or_die();
+
+    my $path;
+    if ($os->{pkg} eq "rpm") {
+        chomp($path = `rpm -ql $p | grep config.xml`);
+    } elsif ($os->{pkg} eq "deb") {
+        chomp($path = `dpkg -L $p | grep config.xml`);
+    } else {
+        carp "ERROR: Unsupported packaging type: $os->{pkg}\n";
+        return undef;
+    }
+    return dirname($path) if $path;
+}
+
+
+##########################################################################
+### Helper functions, not exported
+##########################################################################
+
+################################################################################
+# Return, undef if error.                                                      #
+#                                                                              #
+# TODO: looks like a lot of code dupliction with opkg_hash_available           #
+################################################################################
+sub hash_from_cmd_rpm ($$) {
+    my ($cmd, $dist) = @_;
+
+    my %o;
+    my $isdesc = 1;
+    my ($name, $rel, $ver, $packager, $summary, $desc, $class, $group);
+    my ($conflicts);
+    print "Executing: $cmd\n" if $verbose;
+    open CMD, "$cmd |" or die "Error: $!";
+    while (<CMD>) {
+    chomp;
+    if (/^Name\s*: (.*)$/) {
+        if ($name) {
+        $o{$name} = {
+            package => $name,
+            version => "$ver-$rel",
+            summary => $summary,
+            packager => $packager,
+            description => $desc,
+            class => $class,
+            group => $group,
+            distro => $dist,
+        };
+        }
+        my $name_string = $1;
+        if (($name_string =~ /^opkg-(.*)-(server|client)$/) ||
+        ($name_string =~ /^opkg-(.*)$/)) {
+        $name = $1;
+        } else {
+            carp("Unexpected package name: $name_string");
+            return undef;
+        }
+        $isdesc = 0;
+        $ver = $rel = $summary = $packager = $desc = $class = "";
+        $conflicts = "";
+    } elsif (/^Version\s*:\s*(.*)\s*$/) {
+        $ver = $1;
+    } elsif (/^Release\s*:\s*(.*)\s*$/) {
+        $rel = $1;
+    } elsif (/^Packager\s*:\s*(.*)\s*$/) {
+        $packager = $1;
+    } elsif (/^Group\s*:\s*(.*)\s*$/) {
+        $group = $1;
+        $class = "";
+        if ($group =~ m/^([^:]*):([^:]*)/) {
+        $group = $1;
+        $class = $2;
+        }
+    } elsif (/^Summary\s*:\s*(.*)\s*$/) {
+        $summary = $1;
+        $summary =~ s/, server part$//;
+    } elsif (/^Description\s*:/) {
+        $isdesc = 1;
+    } elsif ($isdesc) {
+        $desc .= "$_\n";
+    }
+    }
+    close CMD;
+    if ($name) {
+    $o{$name} = {
+        package => $name,
+        version => "$ver-$rel",
+        summary => $summary,
+        packager => $packager,
+        description => $desc,
+        class => $class,
+        group => $group,
+        distro => $dist,
+    };
+    }
+    return %o;
+}
+
 
 ####
 # Get information from a RPM package.

@@ -89,17 +89,18 @@ $PGROUP_PATH = "$ENV{OSCAR_HOME}/tmp";
 #
 # This routine might move to OSCAR::Distro when things stabilize...
 #
-sub distro_detect_or_die {
+sub distro_detect_or_die ($) {
     my ($img) = @_;
     my $os = OSCAR::OCA::OS_Detect::open($img);
     die "Unable to determine operating system for $img" if (!$os);
     return $os;
 }
 
+
 #
 # Return list of repositories present in the URL file passed as argument.
 #
-sub repos_list_urlfile {
+sub repos_list_urlfile ($) {
     my ($path) = @_;
 
     my @remote;
@@ -121,18 +122,19 @@ sub repos_list_urlfile {
 #
 # Add repositories to a .url file. Create file if it doesn't exist.
 #
-sub repos_add_urlfile {
+# ERROR: 0 if success, -1 else.
+sub repos_add_urlfile ($@) {
     my ($path, @repos) = (@_);
 
     # make sure local paths have "file:" prefix
     my %rhash;
     my @n;
     for (@repos) {
-	s,^/,file:/,;
-	if (!m,^(file|http|ftp|https|mirror):,) {
-	    print STDERR "ERROR: Repository must either be a URL or an absolute path\n";
-	    return;
-	}
+        s,^/,file:/,;
+        if (!m,^(file|http|ftp|https|mirror):,) {
+            carp "ERROR: Repository must either be a URL or an absolute path\n";
+            return -1;
+        }
 	push @n, $_;
 	$rhash{$_} = 1;
     }
@@ -140,20 +142,22 @@ sub repos_add_urlfile {
 
     local *OUT;
     if (! -f "$path") {
-	print STDERR "Creating new .url file: $path with repositories\n  ".
-	    join("\n  ",@repos)."\n";
-	my $dir = dirname($path);
-	if (! -d $dir) {
-	    print STDERR "Creating directory $dir\n";
-	    !system("mkdir -p $dir")
-		or croak("Could not create directory $dir! $!");
-	}
-	open OUT, "> $path" or croak("Could not open $path for writing. $!");
+        carp "ERROR: Creating new .url file: $path with repositories\n  ".
+        join("\n  ",@repos)."\n";
+        my $dir = dirname($path);
+        if (! -d $dir) {
+            carp "ERROR: Creating directory $dir\n";
+            !system("mkdir -p $dir")
+                or (carp("ERROR: Could not create directory $dir! $!"),
+                    return -1);
+    }
+	open OUT, "> $path" 
+        or (carp("Could not open $path for writing. $!"), return -1);
 	for (@repos) {
 	    print OUT "$_\n";
 	}
 	close OUT;
-	return;
+	return 0;
     }
     #
     # if file exists, add at the end, but only if entry wasn't there.
@@ -168,7 +172,7 @@ sub repos_add_urlfile {
 	    delete $rhash{$_};
 	}
     }
-    return if (!scalar(keys(%rhash)));
+    return 0 if (!scalar(keys(%rhash)));
 
     #
     # write output file
@@ -183,6 +187,7 @@ sub repos_add_urlfile {
 	print OUT "$_\n";
     }
     close OUT;
+    return 0;
 }
 
 #
@@ -190,25 +195,27 @@ sub repos_add_urlfile {
 #
 # Input: - the .url file path,
 #        - the list of repositories to remove (array).
-#
-sub repos_del_urlfile {
+# Output: 0 if success, -1 else.
+sub repos_del_urlfile ($@) {
     my ($path, @repos) = (@_);
 
     if (! -f "$path") {
-	croak("URL file $path does not exist!!!");
+        carp ("ERROR: URL file $path does not exist!!!");
+        return -1;
     }
     # build hash of repos to be deleted
     my %rhash;
     for (@repos) {
 	s,^/,file:/,;
 	if (!m,^(file|http|ftp|https|mirror):,) {
-	    print STDERR "ERROR: Repository must either be a URL or an absolute path\n";
-	    return;
+	    carp "ERROR: Repository must either be a URL or an absolute path\n";
+	    return -1;
 	}
 	$rhash{$_} = 1;
     }
     local *IN;
-    open IN, "$path" or croak("Could not open $path for reading. $!");
+    open IN, "$path"
+        or (carp("Could not open $path for reading. $!"), return -1);
     my @orepos = <IN>;
     close IN;
 
@@ -224,16 +231,18 @@ sub repos_del_urlfile {
     }
     close OUT;
     if (scalar(keys(%rhash))) {
-	print STDERR "WARNING: Following repositories were not found in $path:\n  ".
+        carp "WARNING: Following repositories were not found in $path:\n  ".
 	    join("\  ",sort(keys(%rhash)))."\n";
+        return -1;
     }
+    return 0;
 }
 
 #
 # Detect os for passed arguments.
 # Common code for several subroutines.
 #
-sub query_os {
+sub query_os ($$) {
     my ($img, $os);
     if (scalar(@_) <= 1) {
 	($img) = (@_);
@@ -249,10 +258,11 @@ sub query_os {
 #
 # Return distro .url file path for selected image or distro
 #
+# Return: the file path, undef if error.
 sub distro_urlfile (%) {
     my $os = &query_os(@_);
     if (!defined($os) || ref($os) ne "HASH") {
-        print "ERROR: impossible to query the OS\n";
+        carp "ERROR: impossible to query the OS\n";
         return undef;
     }
     my $distro    = $os->{distro};
@@ -265,6 +275,7 @@ sub distro_urlfile (%) {
 # Return OSCAR .url file path for selected image or distro
 # and packaging method.
 #
+# Return: the file path, undef if error.
 sub oscar_urlfile (%) {
     my $os = &query_os(@_);
     if (!defined($os) || ref($os) ne "HASH") {
@@ -291,11 +302,12 @@ sub oscar_urlfile (%) {
 # repository (yum or apt) into the file
 # /tftpboot/distro/$distro-$version-$arch.url
 #
+# Return: undef if error.
 sub distro_repo_url (%) {
     my $url = &distro_urlfile(@_);
     my $os = &query_os(@_);
     if (!defined ($url) || $url eq "") {
-        print "ERROR: impossible to get a URL from OSCAR repo config file\n";
+        carp "ERROR: impossible to get a URL from OSCAR repo config file\n";
         return undef;
     }
     my $path = dirname($url)."/".basename($url, ".url");
@@ -320,17 +332,17 @@ sub distro_repo_url (%) {
 		    my $pdir = dirname($path);
 		    if (! -d $pdir) {
 			!system("mkdir -p $pdir") or
-			    croak "Could not make directory $pdir $!";
+			    (carp "Could not make directory $pdir $!", return undef);
 		    }
 		    !system("ln -s $oldpool $path") or
-			croak "Could not link $oldpool to $path: $!";
+			(carp "Could not link $oldpool to $path: $!", return undef);
 		    return $url;
 		}
 	    }
 	    print STDERR "Distro repository $path not found. "
 		. "Creating empty directory.\n";
 	    !system("mkdir -p $path") or
-		croak "Could not create directory $path! $!";
+		(carp "Could not create directory $path! $!", return undef);
 	}
     }
     my @repos = &repos_list_urlfile("$url");
@@ -362,6 +374,7 @@ sub distro_repo_url (%) {
 # Otherwise expect local repositories to exist in the standard place. If the
 # local repositories don't exist, create their directories.
 #
+# Return: undef if error.
 sub oscar_repo_url (%) {
     my ($url, $pkg) = &oscar_urlfile(@_);
     if (!defined ($url) || $url eq "") {
@@ -380,7 +393,7 @@ sub oscar_repo_url (%) {
         print STDERR "Distro repository $path not found. ".
             "Creating empty directory.\n";
         !system("mkdir -p $path") or
-            croak "Could not create directory $path!";
+            (carp "Could not create directory $path!", return undef);
     }
     if (! -d $comm && ! -l $comm) {
         print STDERR "Commons repository $comm not found. ".
@@ -400,7 +413,7 @@ sub repo_empty ($) {
     my ($path) = (@_);
     my $entries = 0;
     local *DIR;
-    opendir DIR, $path or carp "Could not read directory $path!";
+    opendir DIR, $path or (carp "Could not read directory $path!", return 0);
     for my $d (readdir DIR) {
 	next if ($d eq "." || $d eq "..");
 	$entries++ if (-f $d || -d $d);
@@ -412,6 +425,7 @@ sub repo_empty ($) {
 # List all available distro pools or distro URL files.
 # Return: a hash, each key is composed by the distro id (e.g. debian-4-x86_64)
 #         returned by OS_Detect; the value is composed of data from OS_Detect.
+#         undef if error.
 # Note that we assume here that /tftpboot/distro and /tftpboot/oscar are fully
 # populated. If the directory /tftpboot/oscar and is not completely populated, 
 # this function will create by defaults directories/files to have local 
@@ -422,7 +436,8 @@ sub list_distro_pools () {
     my $arches = "i386|x86_64|ia64|ppc64";
     my %pools;
     local *DIR;
-    opendir DIR, $ddir or carp "Could not read directory $ddir!";
+    opendir DIR, $ddir 
+        or (carp "Could not read directory $ddir!", return undef);
     for my $e (readdir DIR) {
         if ( ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
             ($e =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
@@ -454,7 +469,7 @@ sub list_distro_pools () {
 #
 # returns the package extension used for the packages in an image (or "/")
 #
-sub pkg_extension {
+sub pkg_extension ($) {
     my ($img) = @_;   # can be undefined, in which case we query "/"
     my $os = distro_detect_or_die($img);
     my $pkg = $os->{pkg};
@@ -470,7 +485,7 @@ sub pkg_extension {
 #
 # returns the package separator string used for packages in an image (or "/")
 #
-sub pkg_separator {
+sub pkg_separator ($) {
     my ($img) = @_;   # can be undefined, in which case we query "/"
     my $os = distro_detect_or_die($img);
     my $pkg = $os->{pkg};
@@ -483,7 +498,7 @@ sub pkg_separator {
     }
 }
 
-sub os_distro_string {
+sub os_distro_string ($) {
     my ($os) = @_;
     return $os->{distro}."-".$os->{distro_version}.
 	"-".$os->{arch};
