@@ -86,7 +86,8 @@ my $DISTROFILES = {
 #
 # This flavor of the function is _only_ called from
 # packages/kernel_picker/scripts/pre_configure and scripts/oscar_wizard
-
+#
+# TODO: why do we need that? OS_Detect should do that!
 sub which_distro {
     my $directory = shift;
     my $version = "0.0";
@@ -125,6 +126,7 @@ sub which_distro {
 #  which_distro_server - this returns the distribution version and name of
 #                        the running server.
 #
+# TODO: why do we need that? OS_Detect should do that!
 ############################################################
 sub which_distro_server {
     my $name = "UnknownLinux";
@@ -171,8 +173,9 @@ sub which_distro_server {
 #  which_mysql_name - this returns the name of the mysql service
 #                     of the distribution
 #
+# TODO: that should be replaced by OS_Settings
 ############################################################
-sub which_mysql_name {
+sub which_mysql_name ($$) {
 	my $name = shift;
 	my $version = shift;
 
@@ -224,6 +227,7 @@ CASE: {
 
 }
 
+# TODO: Deprecated?
 sub get_position_of_next_release_entry ($@) {
     my ($current_pos, @array) = @_;
     my $i = $current_pos;
@@ -242,7 +246,7 @@ sub get_position_of_next_release_entry ($@) {
 }
 
 ################################################################################
-# Open the list that gives the list of supported Linux distributions for given #
+# Open the file that gives the list of supported Linux distributions for given #
 # version of OSCAR.                                                            #
 #                                                                              #
 # Input: none.                                                                 #
