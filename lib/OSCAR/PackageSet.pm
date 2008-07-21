@@ -24,6 +24,7 @@ package OSCAR::PackageSet;
 use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
+use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Utils qw ( print_array );
 use XML::Simple;
@@ -84,7 +85,7 @@ sub get_local_package_set_list {
 ###############################################################################
 # Give the set of OPKGs present in a specific package set
 # Parameter: Package set name.
-# Return:    List of OPKGs (array)
+# Return:    List of OPKGs (array), undef if error.
 ###############################################################################
 sub get_list_opkgs_in_package_set {
     my ($packageSetName) = @_;
@@ -101,7 +102,8 @@ sub get_list_opkgs_in_package_set {
     my @opkgs = ();
 
     # If the package set file exist, we parse the file
-    open (FILE, "$file_path") or die ("ERROR: impossible to open $file_path");
+    open (FILE, "$file_path") 
+        or (carp ("ERROR: impossible to open $file_path"), return undef);
     my $simple= XML::Simple->new (ForceArray => 1);
     my $xml_data = $simple->XMLin($file_path);
     my $base = $xml_data->{packages}->[0]->{opkg};
@@ -122,7 +124,7 @@ sub get_list_opkgs_in_package_set {
                 if $verbose;
         }
     }
-    
+
     if ($verbose) {
         print "List of available OPKGs: ";
         print_array (@opkgs);
@@ -138,19 +140,19 @@ sub get_list_opkgs_in_package_set {
 # This is used when other OSCAR components wants to check that the directory 
 # for a specific OPKG exists (e.g. OPD related stuff)
 # Parameter: Package set name.
-# Return:    List of OPKGs
+# Return:    List of OPKGs, undef if error.
 ###############################################################################
-sub get_opkgs_path_from_package_set {
+sub get_opkgs_path_from_package_set ($) {
     my ($packageSetName) = @_;
 
-    die ("ERROR: The package set directory does not exist ".
-        "($package_set_dir)") if ( ! -d $package_set_dir );
+    (carp ("ERROR: The package set directory does not exist ($package_set_dir)",
+     return undef) if ( ! -d $package_set_dir );
     my $os = OSCAR::OCA::OS_Detect::open();
     my $distro_id = $os->{compat_distro}."-".$os->{compat_distrover}."-".
                     $os->{arch} . ".xml";
     my $file_path = "$package_set_dir/$packageSetName/$distro_id";
-    die ("ERROR: Impossible to read the package set ($file_path)")
-        if ( ! -f $file_path);
+    (carp ("ERROR: Impossible to read the package set ($file_path)",
+     return undef) if ( ! -f $file_path);
 
     my @opkgs = ();
 
