@@ -50,27 +50,29 @@ sub detect_dir {
     # complex match strings
     if ($release_string =~
         /Red Hat Enterprise Linux (\S+) release (\d+) \((\S+) Update (\d+)\)/ 
-	or $release_string =~
+	    or $release_string =~
         /Red Hat Enterprise Linux (\S+) release (\d+|\d+\.\d+) \((\S+)\)/) {
-	my $flavor = $1; # AS, WS, ES? This information is irrelevant for OSCAR
-	my $os_release = $2;
-	my $os_family = $3; # Nahant, blah...
-	my $os_update = $4;
+        my $flavor = $1; # AS, WS, ES? This information is irrelevant for OSCAR
+        my $os_release = $2;
+        my $os_family = $3; # Nahant, blah...
+        my $os_update = $4;
 
-	# only support these two for now
-	if ($os_family !~ /^(Taroon|Nahant|Tikanga)$/) {
-	    return undef;
-	}
+        $os_release =~ s/(\d+)\.\d+/$1/g;
 
-	$id->{distro} = $distro."-".lc($flavor);
-	$id->{distro_version} = $os_release;
-	$id->{distro_update} = $os_update;
-	$id->{compat_distro} = $compat_distro;
-	$id->{compat_distrover} = $os_release;
-	$id->{pkg} = $pkg;
+        # only support these two for now
+        if ($os_family !~ /^(Taroon|Nahant|Tikanga)$/) {
+            return undef;
+        }
+
+        $id->{distro} = $distro."-".lc($flavor);
+        $id->{distro_version} = $os_release;
+        $id->{distro_update} = $os_update;
+        $id->{compat_distro} = $compat_distro;
+        $id->{compat_distrover} = $os_release;
+        $id->{pkg} = $pkg;
 
     } else {
-	return undef;
+        return undef;
     }
 
     # determine architecture

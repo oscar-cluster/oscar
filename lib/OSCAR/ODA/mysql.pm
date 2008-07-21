@@ -70,9 +70,8 @@ $options{debug} = 1
 #
 # return: non-zero if success
 
-sub oda_connect {
-    my ( $passed_options_ref, 
-     $passed_error_strings_ref ) = @_;
+sub oda_connect ($$) {
+    my ( $passed_options_ref, $passed_error_strings_ref ) = @_;
 
     # take care of faking any non-passed input parameters, and
     # set any options to their default values if not already set
@@ -151,9 +150,8 @@ sub oda_connect {
 #
 # return: non-zero if success
 
-sub oda_disconnect {
-    my ( $passed_options_ref, 
-	 $passed_error_strings_ref ) = @_;
+sub oda_disconnect ($$) {
+    my ( $passed_options_ref, $passed_error_strings_ref ) = @_;
 
     # take care of faking any non-passed input parameters, and
     # set any options to their default values if not already set
@@ -336,7 +334,7 @@ sub list_tables {
 #          fields_ref     reference to results list or hash.                   #
 #          errors         optional reference to array for errors.              #
 ################################################################################
-sub list_fields{
+sub list_fields ($$$$) {
     my ( $passed_options_ref,
          $table,
          $fields_ref,
