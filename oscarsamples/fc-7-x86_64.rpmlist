@@ -1,5 +1,4 @@
 anacron
-arpwatch
 at
 atk
 authconfig
@@ -13,7 +12,6 @@ binutils
 bzip2
 bzip2-libs
 chkconfig
-chkfontpath
 cpio
 cpp
 cracklib
@@ -35,14 +33,9 @@ file
 filesystem
 findutils
 finger
-finger-server
 freetype
 ftp
 gawk
-compat-gcc-34
-compat-gcc-34-c++
-compat-gcc-34-g77
-compat-libgcc-296
 gcc
 gcc-c++
 gcc-gfortran
@@ -58,7 +51,6 @@ glibc-devel
 glibc-headers
 glibc-kernheaders
 gmp
-gnuplot
 gpm
 grep
 groff
@@ -75,8 +67,6 @@ iputils
 kernel
 krb5-libs
 less
-libaio
-libaio-devel
 libart_lgpl
 libjpeg
 libpng
@@ -84,7 +74,6 @@ libselinux
 libsepol
 libstdc++
 libstdc++-devel
-libtermcap
 libuser
 logrotate
 lsof
@@ -107,7 +96,6 @@ ntp
 net-tools
 newt
 nfs-utils
-nkf
 nscd
 ntsysv
 openldap
@@ -126,12 +114,10 @@ perl-HTML-Parser
 perl-HTML-Tagset
 popt
 portmap
-postfix
 procmail
 procps
 psmisc
 python
-PyXML
 quota
 rdate
 rdist
@@ -142,8 +128,8 @@ rootfiles
 rpm
 rpm-libs
 rsh
-rsh-server
 rsync
+systemconfigurator
 screen
 sed
 setserial
@@ -153,7 +139,6 @@ shadow-utils
 slang
 slocate
 strace
-switchdesk
 sysklogd
 SysVinit
 tar
@@ -161,14 +146,11 @@ tcl
 tcpdump
 tcsh
 telnet
-telnet-server
-termcap
 coreutils
 time
 tmpwatch
 traceroute
 udev
-units
 usbutils
 usermode
 utempter
@@ -186,14 +168,12 @@ libcap
 kbd
 libgcc
 libacl
-compat-libf2c-34
 libattr
 elfutils-libelf
 libgcj
 fontconfig
 hesiod
 zip
-libobjc
 libmng
 libtiff
 rhpl
@@ -202,7 +182,6 @@ synaptics
 tcp_wrappers
 ttmkfdir
 tzdata
-xorg-x11-xfs
 xorg-x11-xdm
 xorg-x11-font-utils
 xorg-x11-fonts-base

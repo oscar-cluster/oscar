@@ -83,6 +83,14 @@ Scripts for OSCAR clustering base package.
 
 %files
 %defattr(-,root,root)
+%dir %{basedir}/
+%dir %{basedir}/doc/
+%dir %{basedir}/images/
+%dir %{basedir}/oscarsamples/
+%dir %{basedir}/packages/
+%dir %{basedir}/share/
+%dir %{basedir}/testing/
+%dir %{basedir}/tmp/
 %{basedir}/COPYING
 %{basedir}/CREDITS
 %{basedir}/README
@@ -91,6 +99,7 @@ Scripts for OSCAR clustering base package.
 %{basedir}/images/*
 %{basedir}/install_cluster
 %{basedir}/oscarsamples/*
+%{basedir}/packages/*
 %{basedir}/share/*
 %{basedir}/testing/*
 %{basedir}/tmp/
@@ -103,12 +112,17 @@ Scripts for OSCAR clustering base package.
 
 %files libs
 %defattr(-,root,root)
+%dir %{basedir}/lib/
 %{basedir}/lib/*
 
 %files scripts
 %defattr(-,root,root)
+%dir %{basedir}/scripts/
 %{basedir}/scripts/*
 
 %changelog
+* Thu Nov 29 2007 Bernard Li <bernard@vanhpc.org>
+- Added directories to the %files sections so that they will be removed
+  when the RPMs are uninstalled
 * Thu Oct 4 2007 Erich Focht
 - Initial package.

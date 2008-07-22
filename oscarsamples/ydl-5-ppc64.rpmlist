@@ -39,9 +39,9 @@ finger-server
 freetype
 ftp
 gawk
-compat-gcc-34
-compat-gcc-34-c++
-compat-gcc-34-g77
+compat-gcc-32
+compat-gcc-32-c++
+compat-gcc-32-g77
 compat-libgcc-296
 gcc
 gcc-c++
@@ -62,10 +62,8 @@ gnuplot
 gpm
 grep
 groff
-grub
 gtk2
 gzip
-hdparm
 hwdata
 info
 initscripts
@@ -73,6 +71,7 @@ iproute
 iptables
 iputils
 kernel
+kernel-smp
 krb5-libs
 less
 libaio
@@ -151,7 +150,6 @@ setup
 setuptool
 shadow-utils
 slang
-slocate
 strace
 switchdesk
 sysklogd
@@ -186,7 +184,7 @@ libcap
 kbd
 libgcc
 libacl
-compat-libf2c-34
+compat-libf2c-32
 libattr
 elfutils-libelf
 libgcj

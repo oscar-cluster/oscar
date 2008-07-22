@@ -1,3 +1,8 @@
+apt
+discover
+libappconfig-perl
 grub
+lilo
+initrd-tools
 linux-image-2.6-amd64
 ssh
