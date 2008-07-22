@@ -197,17 +197,17 @@ sub getPackagesInPackageSet
     # hash where the keys are the (short) names of the packages and the
     # values are "1"s for those packages.
     my @packagesInSet;
-    my $packagesInSet;
-#  my $success = OSCAR::Database::get_selected_group_packages(
-#    \@packagesInSet1,\%options,\@errors,$packageSet);
-    @packagesInSet = get_list_opkgs_in_package_set($packageSet);
+    my %packagesInSet;
+    my $success = OSCAR::Database::get_selected_group_packages(
+        \@packagesInSet, \%options, \@errors, $packageSet);
+#    @packagesInSet = get_list_opkgs_in_package_set($packageSet);
 
 
     foreach my $pack_ref (@packagesInSet) {
-        $packagesInSet->{$pack_ref} = 1;
+        $packagesInSet{$$pack_ref{package}} = 1;
     }
 
-    return $packagesInSet;
+    return \%packagesInSet;
 }
 
 sub getPackagesInstalled
@@ -312,14 +312,13 @@ sub populateTable
           my $opkg_class;
           if ($allPackages->{$pack}{group}){
               $opkg_class = $allPackages->{$pack}{group};
-              if ($allPackages->{$pack}{__class}) {
-                  $opkg_class .= ":" . $allPackages->{$pack}{__class};
+              if ($allPackages->{$pack}{class}) {
+                  $opkg_class .= ":" . $allPackages->{$pack}{class};
               }
-          }elsif($allPackages->{$pack}{__class}){
-              $opkg_class = $allPackages->{$pack}{__class};
+          }elsif($allPackages->{$pack}{class}){
+              $opkg_class = $allPackages->{$pack}{class};
           }
-          $item = SelectorTableItem(this,Qt::TableItem::Never(),
-                                    $opkg_class);
+          $item = SelectorTableItem(this,Qt::TableItem::Never(), $opkg_class);
           setItem($rownum,3,$item);
 
           # Column 4 contains the Location + Version
@@ -547,8 +546,8 @@ sub checkboxChangedForSelector
 #          foreach my $pkg (@opkgs)
             {
               $reqhash->{$pkg} = 1 if 
-                ((defined $allPackages->{$package}{__class}) &&
-                 ($allPackages->{$package}{__class} eq 'core'));
+                ((defined $allPackages->{$package}{class}) &&
+                 ($allPackages->{$package}{class} eq 'core'));
             }
 
           # Get a list of packages conflicting with the required ones.
@@ -624,8 +623,8 @@ sub checkboxChangedForSelector
           $reqhash = SelectorUtils::getIsRequiredByList($reqhash,$package);
           foreach $reqkey (keys %{ $reqhash })
             {
-              if (!((defined $allPackages->{$reqkey}{__class}) &&
-                    ($allPackages->{$reqkey}{__class} eq 'core')))
+              if (!((defined $allPackages->{$reqkey}{class}) &&
+                    ($allPackages->{$reqkey}{class} eq 'core')))
                 {
                   setCheckBoxForPackage($reqkey,0);
                   if ((defined $packagesInSet->{$reqkey}) || 
@@ -715,8 +714,8 @@ sub checkboxChangedForUpdater
       $reqhash = SelectorUtils::getIsRequiredByList($reqhash,$package);
       foreach $reqkey (keys %{ $reqhash })
         {
-          if (!((defined $allPackages->{$reqkey}{__class}) &&
-                ($allPackages->{$reqkey}{__class} eq 'core')))
+          if (!((defined $allPackages->{$reqkey}{class}) &&
+                ($allPackages->{$reqkey}{class} eq 'core')))
             {
               setCheckBoxForPackage($reqkey,0);
             }

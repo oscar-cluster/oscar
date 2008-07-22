@@ -21,6 +21,7 @@ use utf8;
 package SelectorManageSets;
 use Qt;
 use Qt::isa qw(Qt::Dialog);
+use Data::Dumper;
 use Qt::slots
     refreshPackageSetsListBox => [],
     createNewPackageSet => [],
@@ -42,9 +43,10 @@ use Qt::attributes qw(
     doneButton
 );
 
-use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::Database;
+use lib "$ENV{OSCAR_HOME}/lib"; 
+use OSCAR::Database;
 use Qt::signals refreshPackageSets => [];
-use SelectorUtils;
+use Qt::SelectorUtils;
 
 my %options = ();
 my @errors = ();
@@ -206,9 +208,10 @@ sub duplicateButton_clicked
 
   # Check to see if we actually have something selected in the listbox
   if (packageSetsListBox->currentItem() >= 0)
-    { 
+    {
       my $lastSet = packageSetsListBox->currentText();
-      my $currSet = createNewPackageSet($lastSet);
+      my $newSet = $lastSet."_copy";
+      my $currSet = createNewPackageSet($newSet);
 
       # Copy all of the packages listed in the old package set
       # over to the newly created package set.
@@ -216,24 +219,24 @@ sub duplicateButton_clicked
       my @results = ();
       my $success = OSCAR::Database::get_group_packages_with_groupname(
             $lastSet,\@results,\%options,\@errors);
-      Carp::carp("Could not do oda command 'get_group_packages_with_groupname " .
+      Carp::carp("Could not do oda command 'get_group_packages_with_groupname ".
         $lastSet . "'") if (!$success);
+      print Dumper(@results) if $ENV{OSCAR_VERBOSE} ;
+      @packagesInSet = map { $_->{package} } @results;
       foreach my $pack (@packagesInSet)
         {
           $success = OSCAR::Database::set_group_packages(
-                $lastSet,$pack,2,\%options,\@errors);
+                $newSet, $pack, 2, \%options, \@errors);
           Carp::carp("Could not do oda command 'set_group_packages " .
-            "$pack $currSet'") if (!$success);
+            "$pack $newSet'") if (!$success);
         }
-      
+
       # Finally, refresh the listbox with the new entry
       refreshPackageSetsListBox();
     }
 
 }
 
-sub renameButton_clicked
-{
 
 #########################################################################
 #  Subroutine: renameButton_clicked                                     #
@@ -244,10 +247,11 @@ sub renameButton_clicked
 #  new name.  It then renames that item in the ListBox and in the oda   #
 #  database.                                                            #
 #########################################################################
-
+sub renameButton_clicked
+{
   # Check to see if we actually have something selected in the listbox
   if (packageSetsListBox->currentItem() >= 0)
-    { 
+    {
       my $response;
       my $foundit;
       my $count;
@@ -287,8 +291,10 @@ sub renameButton_clicked
               else
                 {
                   my $selected = packageSetsListBox->currentText();
-                  $success = OSCAR::Database::set_groups(
-                    $selected,\%options,\@errors);
+                  $success = OSCAR::Database::rename_groups($selected,
+                            $reponse,
+                            \%options,
+                            \@errors);
                   if ($success)
                     {
                       refreshPackageSetsListBox();
@@ -311,8 +317,6 @@ sub renameButton_clicked
 
 }
 
-sub deleteButton_clicked
-{
 
 #########################################################################
 #  Subroutine: deleteButton_clicked                                     #
@@ -322,6 +326,8 @@ sub deleteButton_clicked
 #  package set currently selected in the ListBox and removes it from    #
 #  both the ListBox and the oda database.                               #
 #########################################################################
+sub deleteButton_clicked
+{
 
   # Make sure that we have at least 2 items in the list 
   # and that at least one of them is selected.
@@ -343,9 +349,6 @@ sub deleteButton_clicked
 
 }
 
-sub newCoreButton_clicked
-{
-
 #########################################################################
 #  Subroutine: newCoreButton_clicked                                    #
 #  Parameters: None                                                     #
@@ -354,16 +357,17 @@ sub newCoreButton_clicked
 #  a new package set named "Core" (with _copy appended as needed)       #
 #  and adds only core packages to that set.                             #
 #########################################################################
-
-  my $currSet = createNewPackageSet("Core");
+sub newCoreButton_clicked
+{
+  my $currSet = createNewPackageSet("new_Core");
   # Add all "core" packages to this set
   my $allPackages = SelectorUtils::getAllPackages();
   foreach my $pack (keys %{ $allPackages })
     {
-      if ($allPackages->{$pack}{__class} eq "core")
+      if ($allPackages->{$pack}{class} eq "core")
         {
           my $success = OSCAR::Database::set_group_packages(
-                $currSet,$pack,2,\%options,\@errors);
+                $currSet, $pack, 2, \%options, \@errors);
           Carp::carp("Could not do oda command 'set_group_packages " .
             "$pack $currSet'") if (!$success);
         }
@@ -385,7 +389,7 @@ sub newAllButton_clicked
 #  and adds ALL packages to that set.                                   #
 #########################################################################
 
-  my $currSet = createNewPackageSet("All");
+  my $currSet = createNewPackageSet("new_All");
   # Add all packages to this set
   my $allPackages = SelectorUtils::getAllPackages();
   foreach my $pack (keys %{ $allPackages })

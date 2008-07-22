@@ -21,6 +21,8 @@ use utf8;
 package Selector;
 use Qt;
 use SelectorTable;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Opkg;
 use Qt::isa qw(Qt::MainWindow);
 use Qt::slots
     init => [],
@@ -149,11 +151,10 @@ sub NEW
     Qt::ToolTip::add(packageSetComboBox, trUtf8("Display the packages in this package set"));
     $Layout13->addWidget(packageSetComboBox);
 
-# The button for package set management is not yet functional so we do not display it
-#    manageSetsButton = Qt::PushButton(centralWidget(), "manageSetsButton");
-#    manageSetsButton->setText(trUtf8("&Manage Sets"));
-#    Qt::ToolTip::add(manageSetsButton, trUtf8("Add, delete, and rename package sets"));
-#    $Layout13->addWidget(manageSetsButton);
+    manageSetsButton = Qt::PushButton(centralWidget(), "manageSetsButton");
+    manageSetsButton->setText(trUtf8("&Manage Sets"));
+    Qt::ToolTip::add(manageSetsButton, trUtf8("Add, delete, and rename package sets"));
+    $Layout13->addWidget(manageSetsButton);
     $Layout14->addLayout($Layout13);
     $Layout19->addLayout($Layout14);
 
@@ -278,7 +279,7 @@ sub NEW
 
     Qt::Object::connect(exitButton, SIGNAL "clicked()", this, SLOT "exitButton_clicked()");
     Qt::Object::connect(aboutButton, SIGNAL "clicked()", this, SLOT "aboutButton_clicked()");
-#    Qt::Object::connect(manageSetsButton, SIGNAL "clicked()", this, SLOT "manageSetsButton_clicked()");
+    Qt::Object::connect(manageSetsButton, SIGNAL "clicked()", this, SLOT "manageSetsButton_clicked()");
     Qt::Object::connect(cancelButton, SIGNAL "clicked()", this, SLOT "cancelButton_clicked()");
 
     setTabOrder(aboutButton, packageSetComboBox);
@@ -500,6 +501,7 @@ sub exitButton_clicked {
 
     OSCAR::Database::initialize_selected_flag(\%options,\@errors) 
         if (installuninstall <= 0);
+    OSCAR::Opkg::write_pgroup_files();
     Qt::Application::exit();
 
 }
@@ -566,7 +568,6 @@ sub rowSelectionChanged
 
   # Find the "short name" of the package in that row
   my $package = packageTable->text($row,0);
-  $package = "opkg-" . $package . "-server";
   my $allPackages = SelectorUtils::getAllPackages();
 
   # Update the four infomrational text boxes
@@ -576,15 +577,9 @@ sub rowSelectionChanged
   updateTextBox("conflicts",$package);
 
   # Update the packager names / emails
-  # We read in the names/emails as a single string, but there might have
-  # been more than one packager.  If so , the delimiter is '","'.
-  my @names = split /\",\"/, $allPackages->{$package}{packager};
-  my $packagerStr = "";
-  for (my $arraypos = 0; $arraypos <= $#names; $arraypos++)
-    {
-      $packagerStr .= $names[$arraypos];
-      $packagerStr .= "\n";
-    }
+  my $packagerStr = $allPackages->{$package}{packager};
+  $packagerStr =~ s:,\s*:\n:g;
+  $packagerStr .= "\n";
   packagerTextBox->setText($packagerStr);
 
 }
