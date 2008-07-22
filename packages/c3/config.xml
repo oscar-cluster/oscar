@@ -22,6 +22,7 @@ tasks on a cluster.</description>
         <dist>mdv</dist>
         <dist>suse</dist>
         <dist>fc</dist>
+        <dist>ydl</dist>
       </filters>
       <pkg>c3</pkg>
       <pkg>c3-profiled</pkg>
@@ -40,6 +41,7 @@ tasks on a cluster.</description>
         <dist>mdv</dist>
         <dist>suse</dist>
         <dist>fc</dist>
+        <dist>ydl</dist>
       </filters>
       <pkg>c3</pkg>
       <pkg>c3-profiled</pkg>
@@ -54,12 +56,17 @@ tasks on a cluster.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
-    <versionEntry version="4.0.1-6">
-      <changelogEntry authorName="Thomas Naughton" date="2007-06-25T10:34:08-04:00">
-        <item>Convert to the new OPKG API (for OPKGC)</item>
+    <versionEntry version="4.0.1-7">
+      <changelogEntry authorName="DongInn Kim" date="2007-12-16T17:25:10-04:00">
+        <item>Fixed wrong dependecies for YDL5-PPC64(PS3).</item>
       </changelogEntry>
+    </versionEntry>
+    <versionEntry version="4.0.1-6">
       <changelogEntry authorName="Erich Focht" date="2007-10-06T10:34:08-04:00">
         <item>Fixed wrong dependecies.</item>
+      </changelogEntry>
+      <changelogEntry authorName="Thomas Naughton" date="2007-06-25T10:34:08-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
       </changelogEntry>
     </versionEntry>
   </changelog>

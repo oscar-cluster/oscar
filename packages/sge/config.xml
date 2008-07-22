@@ -34,6 +34,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="6.0u9.0-9">
+      <changelogEntry authorName="DongInn Kim" date="2008-03-26T20:46:20+04:00">
+        <item>Move the templates/ directory to scripts/ </item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="6.0u9.0-8">
       <changelogEntry authorName="Erich Focht" date="2007-10-15T11:49:43+06:00">
         <item>Updated SRPM to 6.0u9-8oscar. The spec file contains

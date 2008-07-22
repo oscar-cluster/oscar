@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>caching-nameserver</name>
+  <name>networking</name>
   <class>included</class>
   <summary>Caching Nameserver to serve the cluster</summary>
   <description>This package contains everything needed to set up your

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>Ganglia Job Monarch</name>
+  <name>jobmonarch</name>
   <class>included</class>
-  <summary>Tools and addons to Ganglia to monitor and optionally archive batch job information</summary>
+  <summary>Addon to Ganglia to monitor and archive batch job info</summary>
   <description>Job Monarch is a addon for the Ganglia monitoring system and plugs into an existing Ganglia setup. jobmond is the job monitoring daemon that gathers PBS/Torque/SGE batch statistics on jobs/nodes and submits them into Ganglia's XML stream. jobarchived is the Job Archiving Daemon. It listens to Ganglia's XML stream and archives the job and node statistics. It stores the job statistics in a Postgres SQL database and the node statistics in RRD files.</description>
   <license>GPL</license>
   <group>Application/System</group>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>mpich</name>
+  <name>mpich-oscar</name>
   <class>included</class>
   <summary>MPICH specifically packaged for OSCAR clusters</summary>
   <description>MPICH is a freely available, portable implementation of
@@ -19,10 +19,17 @@ libraries.</description>
       <email>efocht@hpce.nec.com</email>
     </author>
   </authors>
+  <provide>mpi</provide>
   <serverDeps>
     <requires>
       <pkg>mpich-ch_p4-gcc-oscar</pkg>
       <pkg>mpich-ch_p4-gcc-oscar-module</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist version="4" >rhel</dist>
+      </filters>
+      <pkg>gcc4-gfortran</pkg>
     </requires>
     <requires>
       <filters>
@@ -39,6 +46,12 @@ libraries.</description>
     </requires>
     <requires>
       <filters>
+        <dist version="4" >rhel</dist>
+      </filters>
+      <pkg>gcc4-gfortran</pkg>
+    </requires>
+    <requires>
+      <filters>
         <dist>suse</dist>
         <dist>sles</dist>
       </filters>
@@ -48,12 +61,17 @@ libraries.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
-    <versionEntry version="1.2.7-8">
-      <changelogEntry authorName="Erich Focht" date="2007-07-13T11:22:53+02:00">
-        <item>converted to new opkg format</item>
+    <versionEntry version="1.2.7-9">
+      <changelogEntry authorName="DongInn Kim" date="2007-12-22T15:10:14+05:00">
+        <item>Fixed the missing dependencies on RHEL4.</item>
       </changelogEntry>
+    </versionEntry>
+    <versionEntry version="1.2.7-8">
       <changelogEntry authorName="Erich Focht" date="2007-10-06T11:22:53+02:00">
         <item>Fixed wrong dependencies from autoconversion.</item>
+      </changelogEntry>
+      <changelogEntry authorName="Erich Focht" date="2007-07-13T11:22:53+02:00">
+        <item>converted to new opkg format</item>
       </changelogEntry>
     </versionEntry>
   </changelog>

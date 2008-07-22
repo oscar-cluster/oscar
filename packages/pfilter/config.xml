@@ -35,11 +35,11 @@ system package.</description>
   <apiDeps/>
   <changelog>
     <versionEntry version="1.707.0-4oscar">
-      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T17:07:52-04:00">
-        <item>Migration to the new OPKG format (OPKGC).</item>
-      </changelogEntry>
       <changelogEntry authorName="Erich Focht" date="2007-10-06T17:07:52-04:00">
         <item>Fixed wrong dependency information.</item>
+      </changelogEntry>
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T17:07:52-04:00">
+        <item>Migration to the new OPKG format (OPKGC).</item>
       </changelogEntry>
     </versionEntry>
   </changelog>

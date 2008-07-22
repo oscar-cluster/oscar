@@ -19,34 +19,56 @@
   </authors>
   <serverDeps>
     <requires>
-      <pkg>ganglia-gmetad</pkg>
-      <pkg>ganglia-gmond</pkg>
-      <pkg>ganglia-web</pkg>
+      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
+      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
+      <pkg version=">=3.0.6" >ganglia-web</pkg>
       <pkg>rrdtool</pkg>
     </requires>
     <requires>
       <filters>
         <dist>fc</dist>
-        <dist>rhel</dist>
       </filters>
       <pkg>php-gd</pkg>
       <pkg>php-common</pkg>
     </requires>
     <requires>
       <filters>
-        <dist>suse</dist>
+        <dist>ydl</dist>
+        <dist>rhel</dist>
+      </filters>
+      <pkg>php-gd</pkg>
+    </requires>
+    <requires>
+      <filters>
         <dist>sles</dist>
       </filters>
       <pkg>php4-gd</pkg>
     </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+      </filters>
+      <pkg>php5-gd</pkg>
+    </requires>
   </serverDeps>
   <clientDeps>
     <requires>
-      <pkg>ganglia-gmond</pkg>
+      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.0.6-1">
+      <changelogEntry authorName="DongInn Kim" date="2008-01-01T16:05:00+05:00">
+        <item>Upgrade ganglia to 3.0.6</item>
+        <item>Requires only the version >=3.0.6</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="3.0.5-2">
+      <changelogEntry authorName="DongInn Kim" date="2007-11-10T00:20:22-04:00">
+        <item>Updated to support YDL</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.0.5-1">
       <changelogEntry authorName="Bernard Li" date="2007-10-08T20:03:56-04:00">
         <item>Update to version 3.0.5</item>

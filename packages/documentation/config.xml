@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>OSCAR Documentation</name>
+  <name>documentation</name>
   <class>third-party</class>
   <summary>OSCAR tool suite documentation (html) package</summary>
   <description>The html versions of the OSCAR cluster tool suite documentation.</description>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>openmpi</name>
+  <name>openmpi-oscar</name>
   <class>included</class>
   <summary>Open MPI for OSCAR Clusters</summary>
   <description>Open MPI is a project combining technologies and resources from several other projects (FT-MPI, LA-MPI, LAM/MPI, and PACX-MPI) in order to build the best MPI library available. A completely new MPI-2 compliant implementation, Open MPI offers advantages for system and software vendors, application developers and computer science researchers.</description>
@@ -17,10 +17,17 @@
       <email>dikim@osl.iu.edu</email>
     </author>
   </authors>
+  <provide>mpi</provide>
   <serverDeps>
     <requires>
       <pkg>openmpi</pkg>
       <pkg>openmpi-switcher-modulefile</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist version="4" >rhel</dist>
+      </filters>
+      <pkg>gcc4-gfortran</pkg>
     </requires>
     <requires>
       <filters>
@@ -37,6 +44,12 @@
     </requires>
     <requires>
       <filters>
+        <dist version="4" >rhel</dist>
+      </filters>
+      <pkg>gcc4-gfortran</pkg>
+    </requires>
+    <requires>
+      <filters>
         <dist>suse</dist>
         <dist>sles</dist>
       </filters>
@@ -45,12 +58,17 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1.2.3-1">
-      <changelogEntry authorName="Bernard Li" date="2007-08-21T12:06:14-04:00">
-        <item>Convert to the new OPKG API (for OPKGC)</item>
+    <versionEntry version="1.2.4-1">
+      <changelogEntry authorName="DongInn Kim" date="2007-12-22T14:58:14+05:00">
+        <item>Fixed the missing dependencies on RHEL4.</item>
       </changelogEntry>
+    </versionEntry>
+    <versionEntry version="1.2.3-1">
       <changelogEntry authorName="Erich Focht" date="2007-10-06T12:06:14-04:00">
         <item>Fixed completely wrong dependencies.</item>
+      </changelogEntry>
+      <changelogEntry authorName="Bernard Li" date="2007-08-21T12:06:14-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
       </changelogEntry>
     </versionEntry>
   </changelog>

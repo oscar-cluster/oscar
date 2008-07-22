@@ -26,6 +26,7 @@
         <dist>rhel</dist>
         <dist>fc</dist>
         <dist>mdv</dist>
+        <dist>ydl</dist>
       </filters>
       <pkg>sync-files</pkg>
       <pkg>crontabs</pkg>
@@ -41,6 +42,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.4-3">
+      <changelogEntry authorName="DongInn Kim" date="2007-12-16T17:30:33-04:00">
+        <item>Fixed wrong dependecies for YDL5-PPC64(PS3).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.4-2">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-06-25T10:46:54-04:00">
         <item>Minor modification: the package name (including the directory name in the source is now sync-files everywhere.</item>

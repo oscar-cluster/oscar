@@ -10,7 +10,7 @@
      
       $Id$
   -->
-  <name>lam</name>
+  <name>lam-oscar</name>
   <class>included</class>
   <summary>LAM/MPI specifically packaged for OSCAR clusters</summary>
   <description>This RPM is created specifically for the OSCAR
@@ -61,11 +61,8 @@ visualized either at runtime or post-mortem.</description>
       <name>Geoffroy Vallee</name>
       <email>valleegr@ornl.gov</email>
     </author>
-    <author cat="uploader">
-      <name>Erich Focht</name>
-      <email>efocht@hpce.nec.com</email>
-    </author>
   </authors>
+  <provide>mpi</provide>
   <serverDeps>
     <!-- Distributions that provide libaio -->
 
@@ -163,6 +160,7 @@ visualized either at runtime or post-mortem.</description>
         <dist>fc</dist>
         <dist>rhel</dist>
         <dist>suse</dist>
+        <dist>ydl</dist>
       </filters>
       <pkg>libaio</pkg>
       <pkg>libaio-devel</pkg>
@@ -198,6 +196,7 @@ visualized either at runtime or post-mortem.</description>
         <dist>fc</dist>
         <dist>rhel</dist>
         <dist>suse</dist>
+        <dist>ydl</dist>
       </filters>
       <pkg>libaio</pkg>
       <pkg>libaio-devel</pkg>
@@ -230,17 +229,22 @@ visualized either at runtime or post-mortem.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="7.1.4-7">
+      <changelogEntry authorName="DongInn Kim" date="2007-11-10T00:24:22-04:00">
+        <item>Updated to support YDL</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="7.1.4-6">
       <changelogEntry authorName="Erich Focht" date="2007-10-13T12:07:15-04:00">
         <item>Updated to upstream version 7.1.4</item>
       </changelogEntry>
     </versionEntry>
     <versionEntry version="7.1.2-6">
-      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-13T12:07:15-04:00">
-        <item>Port to the new OPKG format (OPKGC).</item>
-      </changelogEntry>
       <changelogEntry authorName="Erich Focht" date="2007-10-06T12:07:15-04:00">
         <item>Fixed bogus requires of server and client deps.</item>
+      </changelogEntry>
+      <changelogEntry authorName="Geoffroy Vallee" date="2007-09-13T12:07:15-04:00">
+        <item>Port to the new OPKG format (OPKGC).</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
