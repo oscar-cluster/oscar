@@ -21,10 +21,15 @@ package OSCAR::PackageSet;
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Utils qw ( print_array );
 use XML::Simple;
@@ -146,13 +151,13 @@ sub get_opkgs_path_from_package_set ($) {
     my ($packageSetName) = @_;
 
     (carp ("ERROR: The package set directory does not exist ($package_set_dir)",
-     return undef) if ( ! -d $package_set_dir );
+     return undef)) if ( ! -d $package_set_dir );
     my $os = OSCAR::OCA::OS_Detect::open();
     my $distro_id = $os->{compat_distro}."-".$os->{compat_distrover}."-".
                     $os->{arch} . ".xml";
     my $file_path = "$package_set_dir/$packageSetName/$distro_id";
     (carp ("ERROR: Impossible to read the package set ($file_path)",
-     return undef) if ( ! -f $file_path);
+     return undef)) if ( ! -f $file_path);
 
     my @opkgs = ();
 
