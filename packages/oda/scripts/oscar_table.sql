@@ -67,28 +67,21 @@ CREATE TABLE IF NOT EXISTS Package_status(
 
 -- Packages
 CREATE TABLE IF NOT EXISTS Packages(
-    __class VARCHAR(100),
-    copyright VARCHAR(100),
-    description  text,
-    __group VARCHAR(100),
     id  integer   auto_increment not null unique primary key,
-    license VARCHAR(100),
-    maintainer_email VARCHAR(100),
-    maintainer_name VARCHAR(100),
-    name VARCHAR(100),
-    package VARCHAR(100)  not null unique,
-    packager_email VARCHAR(100),
-    packager_name VARCHAR(100),
-    path VARCHAR(100),
+    package VARCHAR(100)    not null,
+    version  VARCHAR(100)   not null,
+    __class VARCHAR(100),
+    __group VARCHAR(100),
+    distro VARCHAR(32)   not null,
     summary VARCHAR(100),
+    repository VARCHAR(250),
+    license VARCHAR(100),
+    maintainer VARCHAR(100),
+    packager VARCHAR(250),
     url VARCHAR(100),
     vendor VARCHAR(100),
-    version  VARCHAR(250)   not null,
-    version_epoch VARCHAR(100),
-    version_major  CHAR(3),
-    version_minor  CHAR(3),
-    version_release VARCHAR(100),
-    version_subversion VARCHAR(100)
+    description  text,
+    KEY package ( package )
 )TYPE=INNODB;
 
 -- Images
@@ -106,7 +99,7 @@ CREATE TABLE IF NOT EXISTS Nodes(
     cpu_speed VARCHAR(100),
     dns_domain VARCHAR(100),
     fqdn VARCHAR(100),
-    group_id  integer not null default 0,
+    group_name  VARCHAR(100),
     hostname VARCHAR(100),
     id  integer   auto_increment not null unique primary key,
     image_id  integer not null default 0,
@@ -117,9 +110,9 @@ CREATE TABLE IF NOT EXISTS Nodes(
     units VARCHAR(100),
     virtual VARCHAR(100),
     KEY cluster_id ( cluster_id ),
-    KEY group_id ( group_id ),
+    KEY group_name ( group_name ),
     CONSTRAINT Nodes_ibfk_1 FOREIGN KEY (cluster_id) REFERENCES Clusters (id) ON DELETE CASCADE,
-    CONSTRAINT Nodes_ibfk_2 FOREIGN KEY (group_id) REFERENCES Groups (id) ON DELETE CASCADE
+    CONSTRAINT Nodes_ibfk_2 FOREIGN KEY (group_name) REFERENCES Groups (name) ON DELETE CASCADE ON UPDATE CASCADE
 )TYPE=INNODB;
 
 -- OscarFileServer
@@ -158,85 +151,39 @@ CREATE TABLE IF NOT EXISTS Nics(
     CONSTRAINT Nics_ibfk_2 FOREIGN KEY (network_id) REFERENCES Networks (n_id) ON DELETE CASCADE
 )TYPE=INNODB;
 
--- Packages_rpmlists
-CREATE TABLE IF NOT EXISTS Packages_rpmlists(
-    distro VARCHAR(20) not null,
-    distro_version VARCHAR(10) not null,
-    group_arch VARCHAR(100) not null,
-    group_name VARCHAR(100) not null,
-    package_id  integer not null,
-    rpm VARCHAR(100) not null,
-    PRIMARY KEY (package_id, rpm, group_name, group_arch, distro, distro_version),
-    KEY package_id ( package_id ),
-    KEY group_name ( group_name ),
-    CONSTRAINT Packages_rpmlists_ibfk_1 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
-    CONSTRAINT Packages_rpmlists_ibfk_2 FOREIGN KEY (group_name) REFERENCES Groups (name) ON DELETE CASCADE ON UPDATE CASCADE
-)TYPE=INNODB;
-
 -- Pakcages_servicelists
+
 CREATE TABLE IF NOT EXISTS Packages_servicelists(
     group_name VARCHAR(100),
-    package_id  integer not null,
+    package  VARCHAR(100) not null,
     service VARCHAR(100) not null,
-    PRIMARY KEY (package_id, service),
-    KEY package_id ( package_id ),
+    PRIMARY KEY (package, service),
+    KEY package ( package ),
     KEY group_name ( group_name ),
-    CONSTRAINT Packages_servicelists_ibfk_1 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
+    CONSTRAINT Packages_servicelists_ibfk_1 FOREIGN KEY (package) REFERENCES Packages (package) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT Packages_servicelists_ibfk_2 FOREIGN KEY (group_name) REFERENCES Groups (name) ON DELETE CASCADE ON UPDATE CASCADE
 )TYPE=INNODB;
 
 -- Packages_switcher
 CREATE TABLE IF NOT EXISTS Packages_switcher(
-    package_id  integer not null,
+    package  VARCHAR(100) not null,
     switcher_name VARCHAR(100) not null,
     switcher_tag VARCHAR(100),
-    PRIMARY KEY (package_id, switcher_name),
-    KEY package_id ( package_id ),
-    CONSTRAINT Packages_switcher_ibfk_1 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE
+    PRIMARY KEY (package, switcher_name),
+--    KEY package ( package ),
+    CONSTRAINT Packages_switcher_ibfk_1 FOREIGN KEY (package) REFERENCES Packages (package) ON DELETE CASCADE ON UPDATE CASCADE
 )TYPE=INNODB;
 
--- Packages_conflicts
-CREATE TABLE IF NOT EXISTS Packages_conflicts(
-    p1_id  integer not null,
-    p2_name VARCHAR(100) not null,
-    type VARCHAR(100),
-    PRIMARY KEY (p1_id,p2_name),
-    KEY p1_id ( p1_id ),
-    CONSTRAINT Packages_conflicts_ibfk_1 FOREIGN KEY (p1_id) REFERENCES Packages (id) ON DELETE CASCADE
-)TYPE=INNODB;
-
--- Packages_requires
-CREATE TABLE IF NOT EXISTS Packages_requires(
-    p1_id  integer not null,
-    p2_name VARCHAR(100) not null,
-    type VARCHAR(100),
-    PRIMARY KEY (p1_id, p2_name),
-    KEY p1_id ( p1_id ),
-    KEY p2_name ( p2_name ),
-    CONSTRAINT Packages_requires_ibfk_1 FOREIGN KEY (p1_id) REFERENCES Packages (id) ON DELETE CASCADE,
-    CONSTRAINT Packages_requires_ibfk_2 FOREIGN KEY (p2_name) REFERENCES Packages (package) ON DELETE CASCADE ON UPDATE CASCADE
-)TYPE=INNODB;
-
--- Packages_provides
-CREATE TABLE IF NOT EXISTS Packages_provides(
-    p1_id  integer not null,
-    p2_name VARCHAR(100) not null,
-    type VARCHAR(100),
-    PRIMARY KEY (p1_id, p2_name),
-    KEY p1_id ( p1_id ),
-    CONSTRAINT Packages_provides_ibfk_1 FOREIGN KEY (p1_id) REFERENCES Packages (id) ON DELETE CASCADE
-)TYPE=INNODB;
-
--- Packages_provides
+-- Packages_config
 CREATE TABLE IF NOT EXISTS Packages_config(
     config_id  integer auto_increment not null unique,
-    package_id integer not null,
+    package VARCHAR(100) not null,
     name VARCHAR(100) not null,
     value VARCHAR(255),
     context VARCHAR(100),
-    PRIMARY KEY (config_id, package_id),
-    KEY package_id ( package_id ),
-    CONSTRAINT Packages_config_ibfk_1 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE
+    PRIMARY KEY (config_id, package),
+    KEY package ( package ),
+    CONSTRAINT Packages_config_ibfk_1 FOREIGN KEY (package) REFERENCES Packages (package) ON DELETE CASCADE
 )TYPE=INNODB;
 
 -- Node_Package_Status
@@ -244,22 +191,22 @@ CREATE TABLE IF NOT EXISTS Node_Package_Status(
     current  integer,
     error  text,
     node_id  integer not null,
-    package_id  integer not null,
+    package  VARCHAR(100) not null,
     requested  integer not null default 1,
     curr integer,
     status integer,
     ex_status  integer not null default 0,
     selected  integer not null default 0,
     errorMsg VARCHAR(100),
-	client_nodes VARCHAR(500),
-    PRIMARY KEY (node_id, package_id, requested),
+    client_nodes VARCHAR(500),
+    PRIMARY KEY (node_id, package, requested),
     KEY node_id ( node_id ),
-    KEY package_id ( package_id ),
+    KEY package ( package ),
     KEY requested ( requested ),
     KEY curr ( curr ),
     KEY status ( status ),
     CONSTRAINT Node_Package_Status_ibfk_1 FOREIGN KEY (node_id) REFERENCES Nodes (id) ON DELETE CASCADE,
-    CONSTRAINT Node_Package_Status_ibfk_2 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
+    CONSTRAINT Node_Package_Status_ibfk_2 FOREIGN KEY (package) REFERENCES Packages (package) ON DELETE CASCADE,
     CONSTRAINT Node_Package_Status_ibfk_3 FOREIGN KEY (requested) REFERENCES Status (id) ON DELETE CASCADE,
     CONSTRAINT Node_Package_Status_ibfk_4 FOREIGN KEY (curr) REFERENCES Status (id) ON DELETE CASCADE,
     CONSTRAINT Node_Package_Status_ibfk_5 FOREIGN KEY (status) REFERENCES Package_status (id) ON DELETE CASCADE
@@ -279,12 +226,12 @@ CREATE TABLE IF NOT EXISTS Group_Nodes(
 -- Group_Packages
 CREATE TABLE IF NOT EXISTS Group_Packages(
     group_name VARCHAR(100) not null,
-    package_id  integer not null,
+    package  VARCHAR(100) not null,
     selected  integer  DEFAULT '0',
-    PRIMARY KEY (package_id, group_name),
-    KEY package_id ( package_id ),
+    PRIMARY KEY (package, group_name),
+    KEY package ( package ),
     KEY group_name ( group_name ),
-    CONSTRAINT Group_Packages_ibfk_1 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
+    CONSTRAINT Group_Packages_ibfk_1 FOREIGN KEY (package) REFERENCES Packages (package) ON DELETE CASCADE,
     CONSTRAINT Group_Packages_ibfk_2 FOREIGN KEY (group_name) REFERENCES Groups (name) ON DELETE CASCADE ON UPDATE CASCADE
 )TYPE=INNODB;
 
@@ -293,7 +240,7 @@ CREATE TABLE IF NOT EXISTS Image_Package_Status(
     current  integer,
     error  text,
     image_id  integer not null,
-    package_id  integer not null,
+    package  VARCHAR(100) not null,
     requested  integer not null default 1,
     curr integer,
     status integer,
@@ -301,14 +248,14 @@ CREATE TABLE IF NOT EXISTS Image_Package_Status(
     selected  integer not null default 0,
     errorMsg VARCHAR(100),
 	client_nodes VARCHAR(500),
-    PRIMARY KEY (image_id, package_id, requested),
+    PRIMARY KEY (image_id, package, requested),
     KEY image_id ( image_id ),
-    KEY package_id ( package_id ),
+    KEY package ( package ),
     KEY requested ( requested ),
     KEY curr ( curr ),
     KEY status ( status ),
     CONSTRAINT Image_Package_Status_ibfk_1 FOREIGN KEY (image_id) REFERENCES Images (id) ON DELETE CASCADE,
-    CONSTRAINT Image_Package_Status_ibfk_2 FOREIGN KEY (package_id) REFERENCES Packages (id) ON DELETE CASCADE,
+    CONSTRAINT Image_Package_Status_ibfk_2 FOREIGN KEY (package) REFERENCES Packages (package) ON DELETE CASCADE,
     CONSTRAINT Image_Package_Status_ibfk_3 FOREIGN KEY (requested) REFERENCES Status (id) ON DELETE CASCADE,
     CONSTRAINT Image_Package_Status_ibfk_4 FOREIGN KEY (curr) REFERENCES Status (id) ON DELETE CASCADE,
     CONSTRAINT Image_Package_Status_ibfk_5 FOREIGN KEY (status) REFERENCES Package_status (id) ON DELETE CASCADE
