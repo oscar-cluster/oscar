@@ -268,7 +268,7 @@ sub prepare_pool ($$) {
     my $perr = generate_pool_checksum ($pool);
     if ($perr) {
         undefine $pm;
-        print "Error: could not setup or generate package pool metadata\n";
+        carp "Error: could not setup or generate package pool metadata\n";
         return undef;
     }
 
@@ -300,6 +300,7 @@ sub prepare_pools ($@) {
         my $type = OSCAR::PackageSmart::detect_pool_format ($p);
         if ($type eq undef) {
             carp "ERROR: Impossible to prepare pool $p, unknown format\n";
+            return undef;
         }
         if ($format eq "") {
             # This is the first pool we analyze, we keep its format for later
@@ -309,6 +310,7 @@ sub prepare_pools ($@) {
             if ($type ne $type) {
                 carp "ERROR: the two pools for the local distro are not of".
                      "the same type ($format, $type)\n";
+                return undef;
             }
         }
     }
@@ -394,8 +396,7 @@ sub pool_gencache ($$) {
         print " success\n";
         return 0;
     } else {
-        print " error. Output was:\n";
-        print join("\n",@out)."\n";
+        carp " error. Output was:\n" . join("\n",@out)."\n";
         return 1;
     }
 }
