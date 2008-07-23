@@ -1,3 +1,15 @@
+oscar (5.1~svn20080723-0gv1) gutsy; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Wed, 23 Jul 2008 10:36:45 -0400
+
+oscar (5.1~svn20080622-0gv1) stable; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee [gvh] <gvh@gvh1.ornl.gov>  Sun, 22 Jun 2008 15:23:39 -0400
+
 oscar (5.1~svn20080207-0gv1) stable; urgency=low
 
   * Remove useless dependencies to perl and libqt-perl. 
