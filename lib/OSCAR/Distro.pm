@@ -58,7 +58,12 @@ use base qw(Exporter);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 my $tftpdir = "/tftpboot/";
-my $supported_distro_file = "$ENV{OSCAR_HOME}/share/supported_distros.txt";
+my $supported_distro_file;
+if (defined ($ENV{OSCAR_HOME})) {
+    $supported_distro_file = "$ENV{OSCAR_HOME}/share/supported_distros.txt";
+} else {
+    $supported_distro_file = "/etc/oscar/supported_distros.txt";
+}
 
 my $DISTROFILES = {
 		   'fedora-release'        => 'fedora',

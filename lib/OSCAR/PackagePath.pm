@@ -72,12 +72,17 @@ use Carp;
 my $tftpdir = "/tftpboot/";
 
 # The possible places where packages may live.  
-@PKG_SOURCE_LOCATIONS = ( "$ENV{OSCAR_HOME}/packages", 
-                          "/var/lib/oscar/packages",
-                        );
+@PKG_SOURCE_LOCATIONS = ("/var/lib/oscar/packages");
+if (defined $ENV{OSCAR_HOME}) {
+    unshift (@PKG_SOURCE_LOCATIONS, "$ENV{OSCAR_HOME}/packages");
+}
 
 # Path of package group files used for client image generations
-$PGROUP_PATH = "$ENV{OSCAR_HOME}/tmp";
+if (defined ($ENV{OSCAR_HOME})) {
+    $PGROUP_PATH = "$ENV{OSCAR_HOME}/tmp";
+} else {
+    $PGROUP_PATH = "/tmp";
+}
 
 #
 # Return an OS_Detect hash reference or die.
