@@ -19,6 +19,12 @@ use strict;
 use Cwd qw(chdir cwd);
 use Getopt::Long;
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 my ($distro_to_setup,
     $distro_repo_to_use,
     $distro_repo,
@@ -44,13 +50,6 @@ GetOptions(
         "bootstrap"                     => \&bootstrap,
         "help"                          => \&help,
         ) || help_and_exit();
-
-
-if (!defined $ENV{OSCAR_HOME}) {
-    die ("ERROR: OSCAR_HOME not found");
-} else {
-    use lib "$ENV{OSCAR_HOME}/lib";
-}
 
 if ($distro_repo_to_mirror) {
     if (!defined $distro_to_setup || $distro_to_setup eq "") {
@@ -137,16 +136,16 @@ sub bootstrap () {
     print "OSCAR bootstrap\n";
     # First of all we check if the OSCAR_HOME environment variable is set or not
     # This variable is currently mandatory for the usage of OSCAR.
-    if ($ENV{OSCAR_HOME} eq "") {
-        use lib cwd() . "/lib"; # case where the script is used from the actual
-                                # OSCAR_HOME
-        require OSCAR::Env;
-        OSCAR::Env::oscar_home_env();
-        if ($ENV{OSCAR_HOME} eq "") {
-            print "ERROR: Impossible to set OSCAR_HOME.\n";
-            return -1;
-        }
-    }
+#     if ($ENV{OSCAR_HOME} eq "") {
+#         use lib cwd() . "/lib"; # case where the script is used from the actual
+#                                 # OSCAR_HOME
+#         require OSCAR::Env;
+#         OSCAR::Env::oscar_home_env();
+#         if ($ENV{OSCAR_HOME} eq "") {
+#             print "ERROR: Impossible to set OSCAR_HOME.\n";
+#             return -1;
+#         }
+#     }
 
     # From now we should be able to use some OSCAR modules! :-)
 
