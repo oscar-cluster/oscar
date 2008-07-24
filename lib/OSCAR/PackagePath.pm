@@ -569,8 +569,8 @@ sub mirror_repo ($$$) {
 
 ################################################################################
 # Setup the default distro repository for a given Linux distribution. Note     #
-# that this default repository is specified in                                 #
-# $OSCAR_HOME/share/supported_distros.xml                                      #
+# that this default repository is specified in the config file for supported   #
+# distros.                              l                                      #
 #                                                                              #
 # Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
 #                syntax, e.g., rhel-5-x86_64).                                 #
@@ -584,8 +584,8 @@ sub use_default_distro_repo ($) {
 
 ################################################################################
 # Setup the default OSCAR repository for a given Linux distribution. Note that #
-# this default repository is specified in                                      #
-# $OSCAR_HOME/share/supported_distros.xml                                      #
+# this default repository is specified in the config file for supported        #
+# distros.                                                                     #
 #                                                                              #
 # Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
 #                syntax, e.g., rhel-5-x86_64).                                 #

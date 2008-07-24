@@ -60,7 +60,7 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 my $tftpdir = "/tftpboot/";
 my $supported_distro_file;
 if (defined ($ENV{OSCAR_HOME})) {
-    $supported_distro_file = "$ENV{OSCAR_HOME}/share/supported_distros.txt";
+    $supported_distro_file = "$ENV{OSCAR_HOME}/share/etc/supported_distros.txt";
 } else {
     $supported_distro_file = "/etc/oscar/supported_distros.txt";
 }
@@ -347,7 +347,7 @@ sub open_supported_distros_file {
 sub get_list_of_supported_distros {
     my @list;
 
-    # we open the file ${OSCAR_HOME}/share/supported_distros.xml
+    # we open the file config file for supported distros.
     my $data = open_supported_distros_file ();
 
     # we get the OSCAR version
@@ -385,9 +385,9 @@ sub get_list_of_supported_distros_id {
 }
 
 ################################################################################
-# Find information about a given Linux distribution in the                     #
-# ${OSCAR_HOME}/share/supported_distros.xml. This is a basic function to get   #
-# for instance the default repositories (distribution and OSCAR repositories). #
+# Find information about a given Linux distribution in the config file for     #
+# supported distros. This is a basic function to get for instance the default  #
+# repositories (distribution and OSCAR repositories).                          #
 #                                                                              #
 # Input: distro, the distro id you are looking for (with the OS_Detect syntax).#
 # Return: hash which has the following format                                  #
@@ -400,7 +400,7 @@ sub get_list_of_supported_distros_id {
 sub find_distro ($) {
     my $distro_name = shift;
 
-    # we open the file ${OSCAR_HOME}/share/supported_distros.xml
+    # we open the config file for supported distros.
     my $data = open_supported_distros_file ();
 
     # we get the OSCAR version
