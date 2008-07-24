@@ -73,6 +73,7 @@ install: build
 	# we have to do everything manually
 	
 	# Prepare the "oscar" package
+	mkdir -p $(CURDIR)/debian/oscar/etc/oscar/templates
 	mkdir -p $(CURDIR)/debian/oscar/usr/bin
 	mkdir -p $(CURDIR)/debian/oscar/usr/share/doc/oscar
 	mkdir -p $(CURDIR)/debian/oscar/usr/share/oscar/images
@@ -93,11 +94,20 @@ install: build
 	# We do not currently know how to deal with oscarsamples
 #	mv $(CURDIR)/oscarsamples \
 		$(CURDIR)/debian/oscar/opt/oscar
+	cd share; $(MAKE) install DESTDIR=$(CURDIR)/debian/oscar/
+	cp debian/etc/oscar.conf $(CURDIR)/debian/oscar/etc/oscar/
 	mv $(CURDIR)/share/* \
 		$(CURDIR)/debian/oscar/usr/share/oscar
+	# To address bootstraping issue, we treat rapt and yume as prereqs
+	mv packages/yume/ $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
+	mv packages/rapt/ $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
 	# We remove stuff we do not yet know how to deal with
 	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/Makefile.am
 	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/Makefile.in
+	rm -rf $(CURDIR)/packages
+	# Then we remove stuff we do not want in /usr/share/oscar
+	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/etc
+	# Know we deal with configuration files
 	# We currently do not include what is in 'src'. This directory
 	# needs its proper installation mechanism (e.g. some parts need
 	# to be compiled).

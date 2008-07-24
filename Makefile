@@ -162,7 +162,7 @@ basedebs:
 		exit 1; \
 	fi
 	rm -rf /tmp/oscar-debian; mkdir -p /tmp/oscar-debian
-	tar czvf /tmp/oscar-debian/oscar-base-$(OSCAR_VERSION).tar.gz --exclude packages \
+	tar czvf /tmp/oscar-debian/oscar-base-$(OSCAR_VERSION).tar.gz \
         --exclude dist --exclude .svn --exclude \*.tar.gz \
         --exclude \*.spec.in --exclude src --exclude \*~ \
         --exclude share/prereqs/\*/distro \
