@@ -212,29 +212,33 @@ sub display_list_setup_distros () {
 # Input: None.                                                                 #
 # Return: exit 0 if success, exit 1 else.                                      #
 ################################################################################
-sub generate_config_file {
-    if (! $ENV{OSCAR_HOME}) {
-        print "ERROR: OSCAR_HOME is not set, this is needed to generate a ".
-              "default configuration file\n";
-        exit 1;
-    }
-
+sub generate_config_file () {
     if (! -d "/etc/oscar/") {
         mkdir "/etc/oscar";
     }
-    if (! -f "/etc/oscar/oscar.conf" && $ENV{OSCAR_HOME}) {
+    if (! -f "/etc/oscar/oscar.conf") {
         require File::Copy;
-        File::Copy::copy ("$ENV{OSCAR_HOME}/share/oscar.conf",
-                          "/etc/oscar/oscar.conf");
-        my $cmd1 = "echo $ENV{OSCAR_HOME} | sed 's/\\//\\\\\\\//g'";
-        my $pwd = `$cmd1`;
-        chomp($pwd);
-        my $cmd = "sed 's/PATH = /PATH = $pwd\\//g' ./share/oscar.conf > /etc/oscar/oscar.conf";
-        `$cmd`;
+        my $template;
+        if (defined $ENV{OSCAR_HOME}) {
+            $template = "$ENV{OSCAR_HOME}/share/etc/templates/oscar.conf";
+        } else {
+            $template = "/etc/oscar/templates/oscar.conf";
+        }
+        if (defined $ENV{OSCAR_HOME}) {
+            my $cmd1 = "echo $ENV{OSCAR_HOME} | sed 's/\\//\\\\\\\//g'";
+            my $pwd = `$cmd1`;
+            chomp($pwd);
+            my $cmd = "sed 's/PATH = /PATH = $pwd\\//g' $pwd/share/etc/templates/oscar.conf > /etc/oscar/oscar.conf";
+            `$cmd`;
+        } else {
+            File::Copy::copy ("$template", "/etc/oscar/oscar.conf");
+            print "Template of the OSCAR config file has been copied in ".
+                  "/etc/oscar, please check whether the config file matches ".
+                  "your configuration or not.\n";
+        }
     } else {
         if ( -f "/etc/oscar/oscar.conf") {
-            print "ERROR: configuration file already exist\n";
-            exit 1;
+            die "ERROR: configuration file already exist\n";
         }
         print "Not yet implemented\n";
         exit 1;
