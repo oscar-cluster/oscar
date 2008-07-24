@@ -269,7 +269,7 @@ sub handle_dumb_debs {
     		    !system($cmd) or croak "install failed: $!\n";
 	    	} else {
 		        # if we do not find a package locally, we try to find one online
-		        $cmd = "apt-get update && apt-get install $pkgname --assume-yes";
+		        $cmd = "apt-get update && apt-get install $pkgname --assume-yes --allow-unauthenticated";
     		    vprint("Executing: $cmd\n");
 	    	    system($cmd);
 		    }
