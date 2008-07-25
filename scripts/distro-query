@@ -8,9 +8,17 @@
 #
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
+# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use POSIX;
 use Carp;
 use OSCAR::OCA::OS_Detect;
@@ -19,12 +27,6 @@ use Getopt::Long;
 use Data::Dumper;
 
 sub vprint;
-
-# One must always protect oneself.
-#
-die "\$OSCAR_HOME: not defined.\n" unless exists $ENV{OSCAR_HOME};
-die "$ENV{OSCAR_HOME}: not a directory.\n" unless -d $ENV{OSCAR_HOME};
-die "$ENV{OSCAR_HOME}: not accessible.\n" unless -x $ENV{OSCAR_HOME};
 
 # Different distros require different binary packages. 
 # Different architectures, too.
@@ -95,7 +97,7 @@ if ($options{pool}) {
 
 } else {
     # we want to know the distro ID of the local system
-    my $os = OSCAR::PackagePath::distro_detect_or_die ();
+    my $os = OSCAR::PackagePath::distro_detect_or_die ("/");
     if (!defined $os) {
         die "ERROR: Impossible to detect the local distro.\n".
             "Is your system supported by OSCAR?\n";
