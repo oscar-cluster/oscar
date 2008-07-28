@@ -396,7 +396,7 @@ sub pool_gencache ($$) {
         print " success\n";
         return 0;
     } else {
-        carp " error. Output was:\n" . join("\n",@out)."\n";
+        carp " error ($err). Output was:\n" . join("\n",@out)."\n";
         return 1;
     }
 }
