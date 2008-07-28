@@ -25,6 +25,7 @@ use OSCAR::Logger;
 use Data::Dumper;
 use Carp;
 
+use vars qw($pm);
 
 my ($dumb, $smart, $verbose, $path, $status);
 GetOptions(
@@ -101,17 +102,27 @@ my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
 my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 my $separator = &OSCAR::PackagePath::pkg_separator();
 
+vprint ("OSCAR pools: $oscar_pkg_pool\n");
+vprint ("Distro pools: $distro_pkg_pool\n");
 vprint("Prereq paths: ".join(",",@prereqs)."\n");
 
 #
 # Is this "smart mode"? Then load PackMan and regenerate the metadata cache
 #
-my $pm;
 if ($smart) {
     require OSCAR::PackMan;
     require OSCAR::PackageSmart;
 
-    $pm = OSCAR::PackageSmart::prepare_distro_pools ($os);
+    vprint "Adding repos $oscar_pkg_pool, $distro_pkg_pool\n";
+    my $local_repos = "$oscar_pkg_pool, $distro_pkg_pool";
+    my @repos = split (",", $local_repos);
+    OSCAR::Utils::print_array (@repos);
+    $pm = PackMan->new;
+    die "ERROR: invalid Packman object\n" if (!defined $pm);
+    my $ret = $pm->repo(@repos);
+    if ($ret != scalar(@repos)) {
+        print ("INFO: We added ".scalar(@repos)." but only $ret were saved\n");
+    }
     die "ERROR: invalid Packman object\n" if (!defined $pm);
 }
 
@@ -174,21 +185,22 @@ sub handle_smart_pkgs {
 
     return if (!scalar(@pkgs));
     if ($remove) {
-	print("\tsmartly removing: ".join(",",@pkgs)."\n");
-	($err, @out) = $pm->smart_remove(@pkgs);
+        print("\tsmartly removing: ".join(",",@pkgs)."\n");
+        ($err, @out) = $pm->smart_remove(@pkgs);
     } else {
-	print("\tsmartly installing: ".join(",",@pkgs)."\n");
-	($err, @out) = $pm->smart_install(@pkgs);
+        print ($pm->status() . "\n");
+        print("\tsmartly installing: ".join(",",@pkgs)."\n");
+        ($err, @out) = $pm->smart_install(@pkgs);
     }
     if (!$err) {
-	print "Error occured for prereq $path\n";
-	print join("\n",@out);
-	exit 1;
+        print "ERROR: $err error(s) occured for prereq $path\n";
+        print join("\n",@out);
+        exit 1;
     }
     if (!$err) {
-	print "Error occured for prereq $path\n";
-	print join("\n",@out);
-	exit 1;
+        print "Error occured for prereq $path\n";
+        print join("\n",@out);
+        exit 1;
     }
 
 }
