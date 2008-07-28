@@ -42,7 +42,8 @@ use Carp;
 @EXPORT = qw(
             distro_repo_url
 	     oscar_repo_url
-	     repo_empty
+            repo_empty
+            repo_local
 	     oscar_urlfile
 	     distro_urlfile
 	     repos_list_urlfile
@@ -116,7 +117,7 @@ sub repos_list_urlfile ($) {
 		chomp $line;
 		next if ($line !~ /^(http|ftp|file|mirror)/);
 		next if (($line =~ /^\s*$/) || ($line =~ /^\s*\#/));
-		push @remote, $line;
+		push @remote, $line if (repo_empty ($line) == 0);
 	    }
 	    close IN;
 	}
@@ -140,8 +141,8 @@ sub repos_add_urlfile ($@) {
             carp "ERROR: Repository must either be a URL or an absolute path\n";
             return -1;
         }
-	push @n, $_;
-	$rhash{$_} = 1;
+        push @n, $_;
+        $rhash{$_} = 1;
     }
     @repos = @n;
 
@@ -308,6 +309,8 @@ sub oscar_urlfile (%) {
 # /tftpboot/distro/$distro-$version-$arch.url
 #
 # Return: undef if error.
+#
+# TODO: remove the deprecated code about /tftpboot/rpm
 sub distro_repo_url (%) {
     my $url = &distro_urlfile(@_);
     my $os = &query_os(@_);
@@ -321,34 +324,34 @@ sub distro_repo_url (%) {
 	# create .url file and add local path as first entry
 	&repos_add_urlfile("$url", "file:$path");
 
-	if ( (! -d $path) && (! -l $path) ) {
-	    #
-	    # check if /tftpboot/rpm exists and has the distro we expect
-	    #
-	    my $oldpool = "/tftpboot/rpm";
-	    if ( -d $oldpool || -l $oldpool) {
-		my $ros = OSCAR::OCA::OS_Detect::open(pool => $oldpool);
-		if (defined($ros) && (ref($ros) eq "HASH") &&
-		    ($ros->{distro} eq $os->{distro}) &&
-		    ($ros->{distro_version} eq $os->{distro_version}) &&
-		    ($ros->{arch} eq $os->{arch}) ) {
-		    print STDERR "Discovered correct distro repository in $oldpool!\n";
-		    print STDERR "Linking it symbolically to $path.\n";
-		    my $pdir = dirname($path);
-		    if (! -d $pdir) {
-			!system("mkdir -p $pdir") or
-			    (carp "Could not make directory $pdir $!", return undef);
-		    }
-		    !system("ln -s $oldpool $path") or
-			(carp "Could not link $oldpool to $path: $!", return undef);
-		    return $url;
-		}
-	    }
-	    print STDERR "Distro repository $path not found. "
-		. "Creating empty directory.\n";
-	    !system("mkdir -p $path") or
-		(carp "Could not create directory $path! $!", return undef);
-	}
+# 	if ( (! -d $path) && (! -l $path) ) {
+# 	    #
+# 	    # check if /tftpboot/rpm exists and has the distro we expect
+# 	    #
+# 	    my $oldpool = "/tftpboot/rpm";
+# 	    if ( -d $oldpool || -l $oldpool) {
+# 		my $ros = OSCAR::OCA::OS_Detect::open(pool => $oldpool);
+# 		if (defined($ros) && (ref($ros) eq "HASH") &&
+# 		    ($ros->{distro} eq $os->{distro}) &&
+# 		    ($ros->{distro_version} eq $os->{distro_version}) &&
+# 		    ($ros->{arch} eq $os->{arch}) ) {
+# 		    print STDERR "Discovered correct distro repository in $oldpool!\n";
+# 		    print STDERR "Linking it symbolically to $path.\n";
+# 		    my $pdir = dirname($path);
+# 		    if (! -d $pdir) {
+# 			    !system("mkdir -p $pdir") or
+# 			        (carp "Could not make directory $pdir $!", return undef);
+# 		    }
+# 		    !system("ln -s $oldpool $path") or
+# 			    (carp "Could not link $oldpool to $path: $!", return undef);
+# 		    return $url;
+# 		}
+# 	    }
+# 	    print STDERR "Distro repository $path not found. "
+# 		. "Creating empty directory.\n";
+# 	    !system("mkdir -p $path") or
+# 		(carp "Could not create directory $path! $!", return undef);
+# 	}
     }
     my @repos = &repos_list_urlfile("$url");
     return join(",", @repos);
@@ -404,7 +407,7 @@ sub oscar_repo_url (%) {
         print STDERR "Commons repository $comm not found. ".
             "Creating empty directory.\n";
         !system("mkdir -p $comm") or
-            croak "Could not create directory $comm!";
+            (carp "Could not create directory $comm!", return undef);
     }
     my @repos = &repos_list_urlfile("$url");
     return join(",", @repos);
@@ -424,6 +427,22 @@ sub repo_empty ($) {
 	$entries++ if (-f $d || -d $d);
     }
     return ($entries ? 0 : 1);
+}
+
+################################################################################
+# Check if a given repository is local or not.                                 #
+#                                                                              #
+# Input: URI of the repo to analyse.                                           #
+# Return: 1 (true) if the repository is local, 0 else.                         #
+################################################################################
+sub repo_local ($) {
+    my $repo = shift;
+    $repo =~ s,^/,file:/,;
+    if ($repo =~ /^(file):/) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 #
