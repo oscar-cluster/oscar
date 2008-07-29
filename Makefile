@@ -159,7 +159,7 @@ baserpms:
 	  for p in packages/* ; do \
 	    if [ ! -e $$p/prereq.cfg ]; then rm -rf $$p; fi; \
 	  done; )
-	tar czvf oscar-base-$(OSCAR_VERSION).tar.gz --exclude packages \
+	tar czvf oscar-base-$(OSCAR_VERSION).tar.gz \
 		--exclude dist --exclude .svn --exclude \*.tar.gz \
 		--exclude \*.spec.in --exclude src --exclude \*~ \
 		--exclude share/prereqs/\*/distro \
