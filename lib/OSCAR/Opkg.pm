@@ -91,19 +91,24 @@ sub get_list_opkg_dirs {
 # Parameters:                                                                 #
 #            type of opkg to be installed (one of api, server, client)        #
 #            list of OPKGs.                                                   #
-# Return:    none.     (should return some error some time...)                #
+# Return:    -1 is error, 0 else.                                             #
 ###############################################################################
 sub opkgs_install {
     my ($type, @opkgs) = (@_);
 
     if (!scalar(@opkgs)) {
-	croak("No opkgs passed!");
+        carp ("ERROR: No opkgs passed!");
+        return -1;
     }
 
     #
     # Detect OS of master node.
     #
-    my $os = &distro_detect_or_die();
+    my $os = OSCAR::OCA::OS_Detect::open();
+    if (!defined ($os)) {
+        carp ("ERROR: Impossible to detect the local distro.\n");
+        return -1;
+    }
 
     #
     # Locate package pools and create the directories if they don't exist, yet.
@@ -111,32 +116,32 @@ sub opkgs_install {
     my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
     my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
 
-    # The code below should migrate into a package. It is used in
-    # install_prereq in exactly the same way. Maybe to OSCAR::PackageSmart...?
-    # [EF]
     eval("require OSCAR::PackMan");
     my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
                         $oscar_pkg_pool, $distro_pkg_pool);
     if (!$pm) {
-        croak "\nERROR: Could not create PackMan instance!\n";
+        carp "\nERROR: Could not create PackMan instance!\n";
+        return -1;
     }
 
     my $suffix = "";
     $suffix = ".noarch" if ($os->{pkg} eq "rpm");
     my @olist;
     if ($type eq "api") {
-	@olist = map { "opkg-".$_.$suffix } @opkgs;
+        @olist = map { "opkg-".$_.$suffix } @opkgs;
     } elsif ($type =~ /^(client|server)$/) {
-	@olist = map { "opkg-".$_."-$type$suffix" } @opkgs;
+        @olist = map { "opkg-".$_."-$type$suffix" } @opkgs;
     } else {
-	croak("Unsupported opkg type: $type");
+        carp ("ERROR: Unsupported opkg type: $type");
+        return -1;
     }
     my ($err, @out) = $pm->smart_install(@olist);
     if (!$err) {
-        print "Error occured during smart_install:\n";
+        carp "Error occured during smart_install:\n";
         print join("\n",@out)."\n";
-        exit 1;
+        return -1;
     }
+    return 0;
 }
 
 ###############################################################################
