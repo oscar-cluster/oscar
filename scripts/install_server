@@ -46,6 +46,7 @@ use Carp;
 use Data::Dumper;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::OCA::OS_Settings;
+use OSCAR::Opkg;
 
 ## Begin distribution specific stuff ##
 
@@ -63,6 +64,9 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 if ($verbose && !$ENV{YUME_VERBOSE}) {
     $ENV{YUME_VERBOSE} = $verbose;
 }
+
+# my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url();
+# my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url();
 
 # List of root's .rc files (MDK PATH fixup)
 my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
@@ -83,45 +87,20 @@ OSCAR::Network::update_hosts($ip)
 # Get a list of all non-core packages
 # and list of RPMs from the non-core packages
 my $sel_group = OSCAR::Database::get_selected_group();
-my @opkgs = list_selected_packages("noncore",$sel_group);
-my @opkgs_list;
-my @pkgs;
-my @qerrors;
-foreach my $pkg_ref ( @opkgs ) {
-    my $opkg = $$pkg_ref{package};
-    my $ver = $$pkg_ref{version};
-    push @opkgs_list, $opkg;
-    push @pkgs, OSCAR::Database::pkgs_of_opkg($opkg, 
-                                              $ver, 
-                                              \@qerrors,
-                                              group => $OSCAR_SERVER_GROUP,
-                                              chroot => "/" );
+my @ohlist = list_selected_packages("noncore",$sel_group);
+my @opkgs;
+foreach my $p ( @ohlist ) {
+    push @opkgs, $p{package};
 }
-oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs_list));
+oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs));
 
 
 # Now install the pkgs that we found
 
 oscar_log_subsection("Installing server non-core packages " .
-		     "(core packages already installed)");
-
-my $os = &OSCAR::PackagePath::distro_detect_or_die();
-if (!$os) {
-    print "ERROR: impossible to detect the local OS\n";
-    exit -1;
-}
-my $pm = &OSCAR::PackageSmart::prepare_distro_pools($os);
-if (!$pm) {
-    croak "\nERROR: Could not create PackMan instance!\n";
-}
-# If the list of packages we have to install is empty, we do nothing
-if (@pkgs > 0) {
-    oscar_log_subsection("Smart_install: ".join(",",@pkgs));
-    my ($ret, @out) = $pm->smart_install(@pkgs);
-    if (!$ret) {
-        print "Error occured during server pkgs install:\n".join("\n",@out)."\n";
-        croak("Couldn't install the required packages needed for OSCAR");
-    }
+                     "(core packages already installed)");
+if (OSCAR::Opkg::opkgs_install("server", @opkgs)) {
+    die ("ERROR: Impossible to install " . join (", ", @opkgs));
 }
 oscar_log_subsection("Successfully installed server non-core binary packages");
 
@@ -151,11 +130,16 @@ my @errors = ();
 # Have installed Server RPMs & did not croak, so mark packages.<pkg>installed 
 # true. If clients (image) fail they will set it to false. (best effort for now)
 
-oscar_log_subsection("Marking installed bit in ODA for server non-core RPMS");
+oscar_log_subsection("Marking installed bit in ODA for server non-core ".
+                     "packages");
 
 my $requested = 8; # "Installed" flag for the Node_Package_Status"
 die "$0:Failed to update the table Node_Package_Status"
-    if(!update_node_package_status(\%options,$OSCAR_SERVER_NODE,\@opkgs,$requested,\@errors));
+    if(!update_node_package_status(\%options,
+                                   $OSCAR_SERVER_NODE,
+                                   \@opkgs,
+                                   $requested,
+                                   \@errors));
 
 
 # UNLOCKING FOR NEST
@@ -168,14 +152,14 @@ oscar_log_subsection("Done marking installed bits in ODA");
 
 oscar_log_subsection("Running post_server_install scripts " .
 		     "for server non-core packages");
-foreach my $opkg (@opkgs_list) {
+foreach my $opkg (@opkgs) {
     # if($opkg ne "networking"){   # EF: why was this here?
                                    # if it doesn't work, fix it!  
     run_pkg_script($opkg,"post_server_install") 
-        or croak("Failed running post_server_install for $opkg");
+        or croak("ERROR: Failed running post_server_install for $opkg");
 }
 oscar_log_subsection("Successfully ran server non-core package ".
-		     "post_server_install scripts");
+                     "post_server_install scripts");
 
 # Additional housekeeping
 
@@ -187,13 +171,18 @@ update_exports($ip,$netmask)
     or croak("Couldn't add filesystem entries to /etc/exports");
 
 oscar_log_subsection("Updating rsyncd.conf");
-update_rsyncd_conf($ip,$netmask) or croak("Couldn't update rsyncd.conf file");
+if (update_rsyncd_conf($ip,$netmask)) {
+    croak("Couldn't update rsyncd.conf file");
+}
 
 oscar_log_subsection("Refreshing services");
 # Note: it is better to try to restart the service, "start" generates an error
 # if the service is already running
+chomp(my $nfs_export = `which exportfs`);
 !system("/etc/init.d/$nfs restart") or croak("Couldn't restart $nfs");
-!system("exportfs -a") or croak("Couldn't refresh nfs exports");
+if ($nfs_export) {
+    !system("exportfs -a") or croak("Couldn't refresh nfs exports");
+}
 !system("/etc/init.d/$sshd restart") or croak("Couldn't start $sshd");
 my $os = OSCAR::OCA::OS_Detect::open();
 my $binary_format = $os->{'pkg'};
@@ -246,14 +235,15 @@ oscar_log_subsection("Finished server_prep script");
 #    close(IN);
 #}
 
-sub update_exports {
+# Return: -1 if error, 0 else.
+sub update_exports ($$) {
     my $ip = shift;
     my $netmask = shift;
     my $done=0;
     verbose("Backing up /etc/exports");
-    copy("/etc/exports","/etc/exports.bak") or return undef;
-    open(IN,"</etc/exports.bak") or return undef;
-    open(OUT,">/etc/exports") or return undef;
+    copy("/etc/exports","/etc/exports.bak") or return -1;
+    open(IN,"</etc/exports.bak") or return -1;
+    open(OUT,">/etc/exports") or return -1;
     verbose("Checking for /home export");
     while (<IN>) {
 	if (/^\/home/) {
@@ -277,19 +267,22 @@ sub update_exports {
     }
     close(OUT);
     close(IN);
+
+    return 0;
 }
 
-sub update_rsyncd_conf {
+# return: -1 is error, 0 else.
+sub update_rsyncd_conf ($$) {
     my ($ip, $netmask) = @_;
     my $done = 0;
 
     verbose("Backing up rsyncd header stub");
     my $basefile = "/etc/systemimager/rsync_stubs/10header";
     my $backup = $basefile . '~';
-    copy($basefile,$backup) or return undef;
+    copy($basefile,$backup) or return -1;
 
-    open(IN,"<$backup") or return undef;
-    open(OUT,">$basefile") or return undef;
+    open(IN,"<$backup") or return -1;
+    open(OUT,">$basefile") or return -1;
     while(<IN>) {
 	if (/hosts allow/) {
 	    verbose("Found hosts allow stanza");
@@ -316,20 +309,19 @@ sub update_rsyncd_conf {
 	    $MKRSYNCD="/usr/sbin/mkrsyncd_conf";
 	} else {
 	    verbose("Could not find [si_]mkrsyncd_conf script!");
-	    return undef;
+	    return -1;
 	}
     }
-    !system($MKRSYNCD) or return undef;
+    !system($MKRSYNCD) or return -1;
     verbose("Updated rsyncd.conf file");
 
-    return 1;
+    return 0;
 }
 
 # tjn: 9/12/02, updated 7/31/03
 # Used to fix MDK brain-dead defaults for root's .rc files.
 # Input: filename (e.g., '/root/.bashrc').
-sub unmunge_pathenv
-{
+sub unmunge_pathenv ($) {
     my $file = pop @_;
 
     print "Making any necessary PATH fixes to ($file)\n";

@@ -256,7 +256,6 @@ sub handle_dumb_debs {
     my $ret;
     return if (!scalar(@pkgs));
     for my $pkg (@pkgs) {
-        print "Dealing with $pkg\n";
     	# make sure we deal with package names, not file names
 	    my $pkgname = $pkg; $pkgname =~ s/\.deb$//;
     	if ($remove) {
@@ -264,7 +263,7 @@ sub handle_dumb_debs {
 	        $cmd = "dpkg -l | grep \"ii  $pkgname \"";
     	    vprint("Executing: $cmd\n");
 	        $ret = `$cmd`;
-	        if (!is_deb_pkg_installed($pkgname)) {
+	        if (!OSCAR::Prereqs::is_deb_pkg_installed($pkgname)) {
         		# remove all instances of package
 	        	$cmd = "apt-get remove $pkgname --assume-yes";
 		        vprint("Executing: $cmd\n");
