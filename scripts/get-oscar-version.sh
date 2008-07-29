@@ -68,6 +68,7 @@ else
     fi
 fi
 
+OSCAR_SVN_R=`echo $OSCAR_SVN_R | sed -e 's/nightly//g' | cut -d- -f1`
 case "$option" in
     --full|-v|--version)
 	echo $OSCAR_VERSION

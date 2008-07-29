@@ -28,7 +28,7 @@ my %options;
 my @error_strings = ();
 
 # Step 1: we initilialize the database.
-create_database (\%options, \@error_strings);
+OSCAR::Database::create_database (\%options, \@error_strings);
 
 # Step 2: we create the tables in the database.
 create_database_tables (\%options, \@error_strings);
