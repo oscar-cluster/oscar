@@ -917,7 +917,7 @@ sub build_requires_list {
 #	found => [@found],
 #	not_found => [@not_found]
 #    };
-    print Dumper($results);
+    print Dumper($results) if $ENV{OSCAR_VERBOSE};
     $results;
 }
 

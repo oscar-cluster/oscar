@@ -68,6 +68,7 @@ use SystemInstaller::Env;
 use SystemInstaller::Tk::Common;
 use Carp;
 use FileHandle;
+use File::Basename;
 use vars qw($config);
 
 # First of all, enforce that the user running this script is 'root'
@@ -158,7 +159,7 @@ $window->title("OSCAR Wizard - $shostname");
 # Get OSCAR's version
 
 my $oscar_version;
-my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "dist/get-oscar-version.sh";
+my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "scripts/get-oscar-version.sh";
 my $oscar_version_file = $ENV{OSCAR_HOME} . "/" . "VERSION";
 
 # Use the scripty-foo to get oscar version information.
@@ -229,7 +230,7 @@ my $step_status = get_wizard_status(\%options,\@errors);
 my $manage_status = get_manage_status(\%options,\@errors);
 
 oscar_button($window, $step_string,
-             "Download Additional OSCAR Packages...",
+             "Manage OSCAR Repositories...",
              [sub { my $olddir = Cwd::cwd();
 		    chdir($ENV{OSCAR_HOME} . '/lib/Qt');
 		    system('/usr/bin/perl Opder.pl');
@@ -374,14 +375,15 @@ MainLoop;
 
 sub oscar_button {
     my ($window, $labeltxt, $buttontext, $buttoncmd, $helptext) = @_;
-    
+
     if ( $helptext eq "delete_nodes" ){
         $helptext = ($mode eq "install"?"delete_nodes5":"delete_nodes8");
     }
     my $status = $$step_status{$helptext};
     $status = $$manage_status{$helptext} if ! $status;
+    $status = "disabled" if $helptext eq "download_packages";
     $status = "normal" if ! $status;
-    
+
     my $label = $window->Label(-text => $labeltxt);
     my $button = $window->Button(-text => $buttontext, 
                                  -command => $buttoncmd, 
@@ -394,7 +396,7 @@ sub oscar_button {
 
     #put each step button into the %buttons hash
     $buttons{$helptext} = $button;
-    
+
     return $button;
 }
 
@@ -491,6 +493,9 @@ sub build_oscar_image {
     my $step_string = "";
     $step_string = "Step $step_number: " if $mode eq "install";
 
+    # Rewrite package group files, we will need them!
+    &OSCAR::Opkg::write_pgroup_files();
+
     # We get the default settings for images.
     my %vars = get_image_default_settings ();
 
@@ -504,6 +509,13 @@ sub build_oscar_image {
                     };
     $vars{postinstall} = \&postimagebuild;
     $vars{step_number} = $step_number;
+    my @pgroups;
+    my $ppath = $OSCAR::PackagePath::PGROUP_PATH;
+    for my $d (glob("$ppath/*.pgroup")) {
+        my $f = basename($d, ".pgroup");
+        push @pgroups, { label => "$f", path => "$d" };
+    }
+    $vars{package_group} = \@pgroups;
 
     createimage_window($window, %vars);
 }
@@ -521,7 +533,7 @@ sub postimagebuild {
     $step_string ="Step $step_number: " if $mode eq "install";
     oscar_log_subsection("$step_string"."Running: $cmd");
     if (!do_post_binary_package_install ($img, $interface)) {
-        print ("ERROR: Impossible to run post_binary_package_install ($img)\n");
+        carp ("ERROR: Impossible to run post_binary_package_install ($img)\n");
         return 0;
     }
 
@@ -784,9 +796,10 @@ sub run_tests {
     # Set the following next buttons available for manage mode
     if ( $$manage_status{delete_nodes8} eq "disabled" ) {
         my @tmp_next_steps = ("add_nodes", 
-                              "delete_nodes8",
-                              "install_uninstall_packages");
-        foreach my $next_step (@tmp_next_steps){                          
+                              "delete_nodes8");
+# Disabled for the not supported feature on oscar 5.1
+#                               "install_uninstall_packages");
+        foreach my $next_step (@tmp_next_steps){
             set_manage_status($next_step,\%options,\@errors);
         }
     }

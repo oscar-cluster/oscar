@@ -72,8 +72,8 @@ my %shortcuts = ( "nodes"       => "name",                           #
                 );                                                   #
 #                                                                    #
 #********************************************************************#
-                                                                     
-# set default option values                                           
+
+# set default option values
 my %options = ( 'debug'        => 0,
                 'scripts_dir'  => "SCRIPTS_DIR",
                 'raw'          => 0,
@@ -87,7 +87,7 @@ my $ODAPW = "/etc/odapw";
 # function to print program usage message and then a quick
 # help message and then exit with error
 
-sub errexit {
+sub errexit ($@) {
     my ( $exit_status, @error_strings ) = @_;
     my $progname = $0;
     print STDERR <<ERREXIT;
@@ -118,7 +118,7 @@ ERREXIT
 # outputs: cmd_args   reference to array of separated cmd and args
 #          any error messages are written to stderr,
 
-sub separate_command_arguments {
+sub separate_command_arguments ($$) {
     my ( $options_ref,
          $command_arguments ) = @_;
 
@@ -142,7 +142,7 @@ sub separate_command_arguments {
 # outputs: staus          1 if exist, otherwise 0
 #
 
-sub exist_oscar_database {
+sub exist_oscar_database ($$) {
     my ( $options_ref,
          $error_strings_ref ) = @_;
     my %databases = ();
@@ -168,7 +168,7 @@ sub exist_oscar_database {
 # outputs: answer         "Y" or "N"
 #
 
-sub check_yes_or_no {
+sub check_yes_or_no ($) {
     my $messages = shift;
     my $answer = "";
     while(!($answer eq "Y" || $answer eq "N")){
@@ -221,7 +221,7 @@ sub execute_simple_command{
 
 
     # if the command is an exact simple oda commands match, ...
-    
+
     my $command;
     if ( grep( /^$$command_and_arguments_ref[0]$/, 
            @simple_commands ) ||
@@ -233,13 +233,14 @@ sub execute_simple_command{
     } else {
         $command = shift @$command_and_arguments_ref;
         print "There is no such a command($command)\n";
-        print "Please try to type in \"help\" to see what command lines are available (e.g., oda> help)\n";
+        print "Please try to type in \"help\" to see what command lines are ".
+              "available (e.g., oda> help)\n";
     }
-    
+
     # read in the function commands hash, if it fails, too bad,
     # this might not be an error at this time, but save the 
     # error strings
-    
+
     my $success = 0;
     my @result_strings = ();
     my @arguments = @$command_and_arguments_ref;
@@ -272,7 +273,7 @@ sub execute_simple_command{
             my $status = exist_oscar_database( $options_ref,
                                                \@error_strings );
             if( $status ){
-                print "Warning: This operation removes the $$options_ref{database} database, user, and its all permissions\n";
+                print "Warning: This operation removes the  $$options_ref{database} database, user, and its all permissions\n";
                 print "Warning: once your oscar database is dropped, you will get out of this console\n";
                 print "Warning: ODA will be ready to create a new oscar database\n";
 
@@ -604,8 +605,9 @@ sub execute_simple_command{
         my @results = ();
         select_table($options_ref,ucfirst($db_table),undef,undef,\@results,\@error_strings);
         $field = $shortcuts{$db_table} if ! $field;
+        $db_table = ucfirst($db_table);
         if ( $table_fields{$db_table}{$field} ){
-            print "List of the field($field) in ".ucfirst($db_table);
+            print "List of the field($field) in $db_table";
             print "\n=================================\n";
             foreach my $ref (@results){
                 print "$$ref{$field}\n";
@@ -654,6 +656,7 @@ Values:
   PORT is a network port number for the database server
   TABLE is the name of a database table.
   TYPE is the type of field(column) using standard mysql types.
+  DUMP FILE is the dump file name to be saved or restored.
 USAGE1
     print STDERR <<USAGE2 if ! $interactive;
 
