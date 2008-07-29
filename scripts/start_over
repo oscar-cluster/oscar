@@ -38,6 +38,7 @@ use strict;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::PackagePath;
+use OSCAR::OpkgDB;
 use OSCAR::oda;
 use SystemInstaller::Tk::Image;
 use File::Basename;
@@ -77,30 +78,32 @@ my @repos = split(",","$distro_pkg_pool,$oscar_pkg_pool");
 @repos = map { "--repo $_" } @repos;
 
 print "##### deleting all OSCAR packages and their dependencies #####\n";
-my @opkgs = `yume-opkg --list --all`;
-@opkgs = map { chomp; $_ } @opkgs;
+
+my %inst_api = OSCAR::OpkgDB::opkg_list_installed("api");
+my %inst_srv = OSCAR::OpkgDB::opkg_list_installed("server");
+
+my @delete_api = map { "opkg-$_" } keys(%inst_api);
+my @delete_srv = map { "opkg-".$_."-server" } keys(%inst_srv);
+
+my @orpms = ();
+push @orpms, @delete_api;
+push @orpms, @delete_srv;
 
 # skip oda package (and keep mysql around)
-@opkgs = grep !/^oda$/, @opkgs;
-
-my @orpms;
-for my $opkg (@opkgs) {
-    my @rpms = `yume-opkg --list --rpms $opkg`;
-    @rpms = map { chomp; $_ } @rpms;
-    push @orpms, @rpms;
-}
+@orpms = grep !/^oda$/, @orpms;
 
 # skip rpms which were passed on the command line as worthy to stay
 my $match = join("|",@keep);
 @orpms = grep !/^($match)$/, @orpms;
 
 # add prerequisites to deletions
-push @orpms, qw( perl-Qt
-		 perl-Tk
-		 perl-HTML-Tree
-		 perl-XML-Simple
-		 perl-XML-Parser
-		 update-rpms );
+push @orpms, qw( 
+        perl-Qt
+        perl-Tk
+        perl-HTML-Tree
+        perl-XML-Simple
+        perl-XML-Parser
+               );
 
 my %deleterpms;
 #

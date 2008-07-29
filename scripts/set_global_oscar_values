@@ -140,7 +140,7 @@ my @assigns = ();
 # Get OSCAR's version
 
 my $oscar_version;
-my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "dist/get-oscar-version.sh";
+my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "scripts/get-oscar-version.sh";
 my $oscar_version_file = $ENV{OSCAR_HOME} . "/" . "VERSION";
 
 # Use the scripty-foo to get oscar version information.

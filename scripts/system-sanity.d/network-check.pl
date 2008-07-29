@@ -112,7 +112,7 @@ sub check_oscar_interface {
     my $oscar_ip = get_host_ip ("oscar_server");
     if ($oscar_ip eq FAILURE) {
         print " ----------------------------------------------------\n";
-        print " WARNING: oscar_server is not defined in /etc/host. \n";
+        print " WARNING: oscar_server is not defined in /etc/hosts. \n";
         print " This may be normal if this is the first time you \n";
         print " execute OSCAR.\n";
         print " ----------------------------------------------------\n";

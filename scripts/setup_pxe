@@ -35,8 +35,8 @@ use strict;
 use vars qw($config);
 use lib "/usr/lib/systeminstaller";
 use lib "/usr/lib/systemconfig";
-use SystemInstaller::Log qw(start_verbose stop_verbose verbose);
 use SystemInstaller::Env;
+use SystemInstaller::Log qw(start_verbose stop_verbose verbose);
 use Carp;
 use File::Copy;
 use File::Path;
@@ -48,11 +48,13 @@ use warnings "all";
 use OSCAR::Database;
 use OSCAR::OCA::OS_Detect;
 
-my $RPMPOOL = "/tftpboot/rpm";
 my $ARCH=(uname)[4]; # Default architecture
 $ARCH =~ s/i.86/i386/;
 my $install_mode = OSCAR::Database::get_install_mode();
 my $os = OSCAR::OCA::OS_Detect::open();
+if (!defined $os) {
+    die "ERROR: Impossible to detect the local distribution";
+}
 my $is_suse = 1 if ($os->{'distro'} eq "suse");
 
 my $options=AppConfig->new(
@@ -142,8 +144,13 @@ if ($is_suse) {
 }
 
 verbose("Creating directories.");
-mkpath("/tftpboot/pxelinux.cfg");
-unless (-d "/tftpboot/pxelinux.cfg") {
+my $netboot_cfg_d = "/tftpboot/pxelinux.cfg";
+
+my $kboot_cfg_d = "/etc/systemimager/kboot.cfg";
+$netboot_cfg_d = "/tftpboot/kboot.cfg" if ($ARCH eq "ppc64" && -d $kboot_cfg_d );
+
+mkpath($netboot_cfg_d);
+unless (-d $netboot_cfg_d) {
 	 croak("Unable to create /tftpboot directories.");
 }
 
@@ -168,7 +175,7 @@ if (OSCAR::Database::get_nics_with_name_node($iface,
                                              \@db_errors)) {
     die "ERROR: Impossible to get the network interface id we have to use on ".
         "compute nodes";
-    }
+}
 
 my $node_ref = pop @result;
 my $ip = $$node_ref{ip};
@@ -191,26 +198,26 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
 
     verbose("Copying default pxelinux.cfg file");
     copy("/etc/systemimager/pxelinux.cfg/syslinux.cfg", 
-         "/tftpboot/pxelinux.cfg/default") 
-        or croak("Unable to copy \"default\" file to /tftpboot/pxelinux.cfg.");
+         "$netboot_cfg_d/default") 
+        or croak("Unable to copy \"default\" file to $netboot_cfg_d.");
 
     # SystemImager supports putting local configuration in floppy disk, however,
     # OSCAR does not support this and when installing on systems without floppy
     # disk drives, it would try forever to probe for the drive.  The
     # SKIP_LOCAL_CFG prevents this from happening.
-    verbose("Updating /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");
-    if ( system("sed 's|root=/dev/ram|root=/dev/ram SKIP_LOCAL_CFG=y MONITOR_SERVER=$ip MONITOR_CONSOLE=yes|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
+    verbose("Updating $netboot_cfg_d/default file to skip local.cfg and support si_monitor.");
+    if ( system("sed 's|root=/dev/ram|root=/dev/ram SKIP_LOCAL_CFG=y MONITOR_SERVER=$ip MONITOR_CONSOLE=yes|g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
       croak("Unable to update /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");
     }
 
     if ($install_mode eq "systemimager-bt") {
-      verbose("Updating /tftpboot/pxelinux.cfg/default to support $install_mode.");
-      if ( system("sed 's|root=/dev/ram|root=/dev/ram BITTORRENT=y|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
-        croak("Unable to update /tftpboot/pxelinux.cfg/default to support $install_mode.");
+      verbose("Updating $netboot_cfg_d/default to support $install_mode.");
+      if ( system("sed 's|root=/dev/ram|root=/dev/ram BITTORRENT=y|g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
+        croak("Unable to update $netboot_cfg_d/default to support $install_mode.");
       } 
     } else {
-      if ( system("sed 's| BITTORRENT=y||g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
-        croak("Unable to remove BITTORRENT kernel append from /tftpboot/pxelinux.cfg/default.");
+      if ( system("sed 's| BITTORRENT=y||g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
+        croak("Unable to remove BITTORRENT kernel append from $netboot_cfg_d/default.");
       }
     }
 
@@ -218,14 +225,14 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     # (otherwise grubs older than FC4 will segfault)
     if ($ARCH eq "x86_64") {
 	verbose("Disabling nonexec mappings on x86_64");
-	if ( system("sed 's/ram\ MONITOR/ram noexec=off MONITOR/g' /tftpboot/pxelinux.cfg/default >/tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
-	    croak("Unable to modify /tftpboot/pxelinux.cfg/default.");
+	if ( system("sed 's/ram\ MONITOR/ram noexec=off MONITOR/g' $netboot_cfg_d/default >$netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
+	    croak("Unable to modify $netboot_cfg_d/default.");
 	}
     }
 
-    verbose("Copying SystemImager's message.txt to /tftpboot/pxelinux.cfg");
-    copy("/etc/systemimager/pxelinux.cfg/message.txt", "/tftpboot/pxelinux.cfg/") or 
-      croak("Unable to copy \"message.txt\" file to /tftpboot/pxelinux.cfg.");
+    verbose("Copying SystemImager's message.txt to $netboot_cfg_d");
+    copy("/etc/systemimager/pxelinux.cfg/message.txt", "$netboot_cfg_d/") or 
+      croak("Unable to copy \"message.txt\" file to $netboot_cfg_d.");
 } elsif ($ARCH eq "ia64") {
     verbose("Copying elilo.efi to /tftpboot");
     copy("/boot/efi/elilo.efi","/tftpboot") or
@@ -246,6 +253,18 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
 
     # TODO: systemimager-bt support for IA64
 
+} elsif ($ARCH eq "ppc64" && -d $kboot_cfg_d ) {
+    verbose("Restarting dhcpd");
+    !system("/etc/init.d/dhcpd restart") or croak("Couldn't restart dhcpd");
+    verbose("Copying default kboot.cfg file");
+    copy("$kboot_cfg_d/default", "$netboot_cfg_d/default") or 
+        croak("Unable to copy \"default\" file to $netboot_cfg_d.");
+    verbose("Updating $netboot_cfg_d/default file to skip local.cfg and ".
+            "support si_monitor.");
+        if ( system("sed 's|SKIP_LOCAL_CONFIG=y|SKIP_LOCAL_CONFIG=y MONITOR_SERVER=\$imageserver MONITOR_CONSOLE=yes|g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
+            croak("Unable to update $netboot_cfg_d/default file to skip local.cfg and support si_monitor.");
+        }
+    $ARCH = "ppc64-ps3" if (-d "/usr/share/systemimager/boot/ppc64-ps3");
 } else {
     croak("$ARCH is not a known architecture");
 }
@@ -263,9 +282,9 @@ if ($options->uyok) {
   $tftp_kernel = "install-kernel-$os->{'compat_distro'}-$os->{'compat_distrover'}-$ARCH";
   $tftp_ramdisk = "install-initrd-$os->{'compat_distro'}-$os->{'compat_distrover'}-$ARCH.img";
 
-  verbose("Updating /tftpboot/pxelinux.cfg/default file to support UYOK ramdisk size.");
-  if ( system("sed 's|root=/dev/ram|root=/dev/ram ramdisk_size=80000|g' /tftpboot/pxelinux.cfg/default > /tftpboot/pxelinux.cfg/default.new && mv /tftpboot/pxelinux.cfg/default.new /tftpboot/pxelinux.cfg/default") ) {
-    croak("Unable to update /tftpboot/pxelinux.cfg/default file to support UYOK ramdisk size.");
+  verbose("Updating $netboot_cfg_d/default file to support UYOK ramdisk size.");
+  if ( system("sed 's|root=/dev/ram|root=/dev/ram ramdisk_size=80000|g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
+    croak("Unable to update $netboot_cfg_d/default file to support UYOK ramdisk size.");
   }
 }
 
@@ -298,7 +317,7 @@ sub check_args {
                 $ARCH=$options->arch;
         }
         if (($ARCH ne "i386")&&($ARCH ne "ia64")&&($ARCH ne "x86_64")&&($ARCH ne "ppc64")) {
-                carp("i386, x86_64 and ia64 are the only valid architectures.");
+                carp("i386, x86_64, ia64 and PPC are the only valid architectures.");
                 return 0;
         }
 	return 1;
