@@ -22,6 +22,8 @@
 # Copyright (c) Oak Ridge National Laboratory, 2007
 #               Geoffroy Vallee <valleegr@ornl.gov>
 #               All rights reserved
+# Copyright (c) 2007 The Trustees of Indiana University.  
+#               All rights reserved.
 
 DESTDIR=
 
@@ -29,7 +31,10 @@ all:
 	@echo "... there is no default target ..."
 	@echo "Use one of: dist test install clean"
 
-OSCAR_VERSION ?= $(shell dist/get-oscar-version.sh VERSION)
+# DIKIM
+# Since rpmbuild can not handle the character '-' in Version, remove the
+# date(e.g.,'-20071225') part
+OSCAR_VERSION ?= $(shell scripts/get-oscar-version.sh VERSION | cut -d- -f1)
 PKG        = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
 	       awk '/packaging method/{print $$NF}')
 ARCH       = $(shell scripts/get_arch)
@@ -64,9 +69,15 @@ test: checkenv bootstrap-smart install-perlQt localrepos
 dist:
 	cd dist; ./newmake.sh --base --srpms --all-repos
 
-nightly:
-	cd dist; ./newmake.sh --base --srpms --all-repos --nightly
+# first attempt to include oscar-base rpms into common-rpms repo
+nightly: nightly_version baserpms
+	mkdir -p packages/base/distro/common-rpms
+	mv oscar-base-*.rpm packages/base/distro/common-rpms
+	cd dist; ./newmake.sh --base --srpms --all-repos
+	rm -rf packages/base/distro/common-rpms ../oscar-base-*.tar.gz ../oscar-srpms-*.tar.gz
 
+nightly_version:
+	cd dist; ./newmake.sh --nightly; cd ..
 #
 # Install the repositories needed on the local machine to /tftpboot/oscar,
 # Install the base OSCAR (without RPMS/DEBs) in /opt.
@@ -106,11 +117,11 @@ bootstrap-smart:
 	@echo "== bootstrapping smart installer =="
 	@export OSCAR_HOME=`pwd`; \
 	if [ "$(PKG)" = "rpm" ]; then \
-		SMARTINST=${PWD}/packages/yume; \
+		SMARTINST=packages/yume; \
 	elif [ "$(PKG)" = "deb" ]; then \
-		SMARTINST=${PWD}/packages/rapt; \
+		SMARTINST=packages/rapt; \
 	fi; \
-	scripts/install_prereq --dumb ${PWD}/share/prereqs/packman $$SMARTINST
+	scripts/install_prereq --dumb share/prereqs/packman $$SMARTINST
 
 install-perlQt:
 	@echo "== installing perl-Qt from share/prereqs =="
@@ -143,7 +154,10 @@ baserpms:
 	sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar-base.spec.in \
 		> oscar-base.spec
 	mkdir oscar-base-$(OSCAR_VERSION)
-	cp -rl `ls -1 | grep -v oscar-base-$(OSCAR_VERSION)` oscar-base-$(OSCAR_VERSION)
+	( cd oscar-base-$(OSCAR_VERSION); \
+	  for p in packages/* ; do \
+	    if [ ! -e $$p/prereq.cfg ]; then rm -rf $$p; fi; \
+	  done; )
 	tar czvf oscar-base-$(OSCAR_VERSION).tar.gz --exclude packages \
 		--exclude dist --exclude .svn --exclude \*.tar.gz \
 		--exclude \*.spec.in --exclude src --exclude \*~ \
