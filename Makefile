@@ -154,6 +154,7 @@ baserpms:
 	sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar-base.spec.in \
 		> oscar-base.spec
 	mkdir oscar-base-$(OSCAR_VERSION)
+	cp -rl `ls -1 | grep -v oscar-base-$(OSCAR_VERSION)` oscar-base-$(OSCAR_VERSION)
 	( cd oscar-base-$(OSCAR_VERSION); \
 	  for p in packages/* ; do \
 	    if [ ! -e $$p/prereq.cfg ]; then rm -rf $$p; fi; \
