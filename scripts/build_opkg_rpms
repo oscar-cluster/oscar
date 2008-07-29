@@ -16,13 +16,29 @@
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use File::Basename;
-use OSCAR::OCA::OS_Detect;
+use Carp;
 
 $ENV{LC_ALL}="C";
 
 my @odir = @ARGV;
 
 help_and_die() if (!scalar(@odir));
+
+my $pwd = cwd();
+my $OHOME;
+
+if (-d "$pwd/../scripts" && -d "$pwd/../packages" && -d "$pwd/../share") {
+    $OHOME=dirname($pwd);
+    $ENV{OSCAR_HOME} = $OHOME;
+    print "OHOME = $OHOME\n";
+} else {
+    carp "ERROR: You must execute this program from within the ".
+         "scripts/ directory of an OSCAR tree!\n";
+    help_and_die ();
+}
+
+eval "use lib \"$ENV{OSCAR_HOME}/lib\"";
+require OSCAR::OCA::OS_Detect;
 
 my $os = OSCAR::OCA::OS_Detect::open();
 my $dist = $os->{compat_distro};
@@ -89,6 +105,8 @@ __END__
 build_opkg_rpms, a command line tool that builds RPMs for a given OSCAR package,
 based on available SRPM(s) for that specific OSCAR package. It is possible to
 create RPMs for multiple OSCAR package at the same time.
+WARNING, this script works only from a SVN checkout, executing the script in 
+OSCAR_HOME (see OSCAR documentation for more details about OSCAR_HOME).
 
 =head1 SYNOPSIS
 
