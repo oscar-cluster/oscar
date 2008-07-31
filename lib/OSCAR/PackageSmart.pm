@@ -151,9 +151,9 @@ sub detect_pool_format ($) {
         } else {
             $url = $pool . "/repodata/repomd.xml";
         }
-        my $cmd = "wget -S --delete-after -q $url";
+        my $cmd = "wget --timeout=3 -S --delete-after -q $url";
         print "Testing remote repository type by using command: $cmd... " if $verbose;
-        if (!system("wget -S --delete-after -q $url")) {
+        if (!system($cmd)) {
             print "[yum]\n" if $verbose;
             $format = "rpm";
         } else {
