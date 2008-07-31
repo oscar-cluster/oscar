@@ -130,7 +130,8 @@ exit 0;
 # the server side.                                                             #
 #                                                                              #
 # Input: None.                                                                 #
-# Return: None.                                                                #
+# Return: The function is called directly, we exit with 0 if success, 1 if     #
+#         error.                                                               #
 ################################################################################
 sub bootstrap () {
     print "OSCAR bootstrap\n";
@@ -153,10 +154,14 @@ sub bootstrap () {
     my $configurator = OSCAR::Bootstrap::bootstrap_stage0();
     if (!defined $configurator) {
         print "ERROR: Impossible to complete stage 0 of the bootstrap.\n";
-        return -1;
+        exit 1;
     }
 
-    OSCAR::Bootstrap::oscar_bootstrap ($configurator);
+    if (OSCAR::Bootstrap::oscar_bootstrap ($configurator)) {
+        exit 1;
+    }
+
+    exit 0;
 }
 
 ################################################################################
