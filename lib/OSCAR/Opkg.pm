@@ -118,9 +118,12 @@ sub opkgs_install ($@) {
     my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
     my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
 
+    my @oscar_repos = split (",", $oscar_pkg_pool);
+    my @distro_repos = split (",", $distro_pkg_pool);
+    my @repos = OSCAR::Utils::merge_arrays (\@oscar_repos, \@distro_repos);
+
     eval("require OSCAR::PackMan");
-    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0),
-                        $oscar_pkg_pool, $distro_pkg_pool);
+    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0), @repos);
     if (!$pm) {
         carp "\nERROR: Could not create PackMan instance!\n";
         return -1;
@@ -140,8 +143,8 @@ sub opkgs_install ($@) {
     OSCAR::Logger::oscar_log_subsection(
         "Need to install the following packages: " . join (", ", @olist));
     my ($err, @out) = $pm->smart_install(@olist);
-    if (!$err) {
-        carp "Error occured during smart_install:\n";
+    if ($err) {
+        carp "Error occured during smart_install ($err):\n";
         print join("\n",@out)."\n";
         return -1;
     }

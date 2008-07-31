@@ -39,6 +39,7 @@ use Carp;
             get_local_arch
             is_a_valid_string
             is_element_in_array
+            merge_arrays
             print_array
             print_hash
             trim
@@ -212,6 +213,7 @@ sub trim($)
     $string =~ s/\s+$//;
     return $string;
 }
+
 # Left trim function to remove leading whitespace
 sub ltrim($)
 {
@@ -219,12 +221,27 @@ sub ltrim($)
     $string =~ s/^\s+//;
     return $string;
 }
+
 # Right trim function to remove trailing whitespace
 sub rtrim($)
 {
     my $string = shift;
     $string =~ s/\s+$//;
     return $string;
+}
+
+sub merge_arrays ($$) {
+    my ($array_ref1, $array_ref2) = @_;
+
+    if (!defined ($array_ref1) || !defined ($array_ref2)) {
+        carp "ERROR: Impossible to merge the arrays";
+        return undef;
+    }
+    my @array = @$array_ref1;
+    foreach my $e (@$array_ref2) {
+        unshift (@array, $e);
+    }
+    return @array;
 }
 
 1;
