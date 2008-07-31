@@ -39,10 +39,12 @@ use base qw(Exporter);
 use File::Basename;
 use OSCAR::Database;
 use OSCAR::PackagePath;
+use OSCAR::Logger;
 use Carp;
 
 @EXPORT = qw(
             get_data_from_configxml
+            get_list_core_opkgs
             get_list_opkg_dirs
             get_opkg_version_from_configxml
             opkg_print
@@ -93,7 +95,7 @@ sub get_list_opkg_dirs {
 #            list of OPKGs.                                                   #
 # Return:    -1 is error, 0 else.                                             #
 ###############################################################################
-sub opkgs_install {
+sub opkgs_install ($@) {
     my ($type, @opkgs) = (@_);
 
     if (!scalar(@opkgs)) {
@@ -135,6 +137,8 @@ sub opkgs_install {
         carp ("ERROR: Unsupported opkg type: $type");
         return -1;
     }
+    OSCAR::Logger::oscar_log_subsection(
+        "Need to install the following packages: " . join (", ", @olist));
     my ($err, @out) = $pm->smart_install(@olist);
     if (!$err) {
         carp "Error occured during smart_install:\n";
@@ -171,7 +175,7 @@ sub create_list_selected_opkgs {
 #
 sub write_pgroup_files {
     my (@pgroups, @groups_list, @errors);
-    OSCAR::Database::get_groups_for_packages(\@groups_list, {}, \@errors);
+    OSCAR::Database::get_groups_for_packages(\@groups_list, {}, \@errors, undef);
     foreach my $groups_ref (@groups_list){
 	push @pgroups, $$groups_ref{group_name};
     }
@@ -246,6 +250,39 @@ sub get_data_from_configxml ($$) {
 
     my $provide = $ref->{$key};
     return $provide;
+}
+
+################################################################################
+# Give the list of core OPKGs from the config file (/etc/oscar/opkgs/core.conf #
+# This allow us to simplify the bootstrapping: with a single file, we can get  #
+# the list of all core OPKGs, which is not available by default if you use     #
+# remote repositories.                                                         #
+#                                                                              #
+# Input: None.                                                                 #
+# Return: list of core OSCAR packages (array of OPKGs' name), undef if error.  #
+################################################################################
+sub get_list_core_opkgs () {
+    my $path = "/etc/oscar/opkgs/core.conf";
+    if (! -f $path) {
+        carp "ERROR: config file for core OPKGs not available ($path)\n";
+        return undef;
+    }
+    my @core_opkgs = ();
+    my $p;
+    open(DAT, $path) 
+        or (carp ("ERROR: Could not open file ($path)."), return undef);
+    while ($p = <DAT>) {
+        chomp($p);
+        unshift (@core_opkgs, $p);
+    }
+    close (DAT);
+    print "Available core packages: " if $verbose;
+    OSCAR::Utils::print_array (@core_opkgs) if $verbose;
+    if (scalar (@core_opkgs) == 0) {
+        return undef;
+    } else {
+        return @core_opkgs;
+    }
 }
 
 1;
