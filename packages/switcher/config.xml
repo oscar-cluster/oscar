@@ -40,6 +40,14 @@ purpose.</description>
   </authors>
   <serverDeps>
     <requires>
+      <filters>
+        <dist>suse</dist>
+        <dist>sles</dist>
+        <dist>mdv</dist>
+        <dist>rhel</dist>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+      </filters>
       <pkg>env-switcher</pkg>
       <pkg>modules-oscar</pkg>
       <pkg>modules-default-manpath-oscar</pkg>
@@ -47,6 +55,14 @@ purpose.</description>
   </serverDeps>
   <clientDeps>
     <requires>
+      <filters>
+        <dist>suse</dist>
+        <dist>sles</dist>
+        <dist>mdv</dist>
+        <dist>rhel</dist>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+      </filters>
       <pkg>env-switcher</pkg>
       <pkg>modules-oscar</pkg>
       <pkg>modules-default-manpath-oscar</pkg>
