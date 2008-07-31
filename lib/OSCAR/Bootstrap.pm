@@ -63,17 +63,17 @@ sub oscar_bootstrap ($) {
     my $configurator = shift;
 
     if (!defined ($configurator)) {
-        print "ERROR: invalid configurator object\n";
+        carp "ERROR: invalid configurator object\n";
         return -1;
     }
 
     if (bootstrap_stage1($configurator)) {
-        print "ERROR: Impossible to complete stage 1 of the bootstrap.\n";
+        carp "ERROR: Impossible to complete stage 1 of the bootstrap.\n";
         return -1;
     }
 
     if (bootstrap_stage2($configurator)) {
-        print "ERROR: Impossible to complete stage 2 of the bootstrap.\n";
+        carp "ERROR: Impossible to complete stage 2 of the bootstrap.\n";
         return -1;
     }
     return 0;
@@ -102,14 +102,14 @@ sub install_prereq ($$) {
         # We try to install the prereq
         $cmd = $ipcmd . " --smart " . $prereq_path;
         if (system ($cmd)) {
-            print "ERROR: impossible to install $prereq_name ($cmd).\n";
+            carp "ERROR: impossible to install $prereq_name ($cmd).\n";
             return -1;
         }
 
         # Packman should be installed now
         $cmd = $ipcmd . " --status " . $prereq_path;
         if (system ($cmd)) {
-            print "ERROR: $prereq_name is still not installed\n";
+            carp "ERROR: $prereq_name is still not installed\n";
             return -1;
         }
     }
@@ -143,14 +143,14 @@ sub bootstrap_prereqs ($$) {
             # We try to install Packman
             $cmd = $ipcmd . " --dumb " . $prereq_path;
             if (system ($cmd)) {
-                print "ERROR: impossible to install $prereq_name ($cmd).\n";
+                carp "ERROR: impossible to install $prereq_name ($cmd).\n";
                 return -1;
             }
 
             # Packman should be installed now
             $cmd = $ipcmd . " --status " . $prereq_path;
             if (system ($cmd)) {
-                print "ERROR: $prereq_name is still not installed\n";
+                carp "ERROR: $prereq_name is still not installed\n";
                 return -1;
             }
         } elsif ($prereq_mode eq "check_only") {
@@ -172,7 +172,7 @@ sub bootstrap_prereqs ($$) {
 sub init_db ($) {
     my $configurator = shift;
     if (!defined ($configurator)) {
-        print "ERROR: invalid configurator object\n";
+        carp "ERROR: invalid configurator object\n";
         return -1;
     }
     my $config = $configurator->get_config();
@@ -189,18 +189,18 @@ sub init_db ($) {
         my $scripts_path = $config->{'scripts_path'};
     my $cmd = "$scripts_path/make_database_password";
     if (system ($cmd)) {
-            print "ERROR: Impossible to set database password ($cmd)\n";
-            return -1;
+        carp "ERROR: Impossible to set database password ($cmd)\n";
+        return -1;
     }
-        $cmd =  "$scripts_path/create_oscar_database";
-        if (system ($cmd)) {
-            print "ERROR: Impossible to create the database ($cmd)\n";
-            return -1;
-        }
+    $cmd =  "$scripts_path/create_oscar_database";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to create the database ($cmd)\n";
+        return -1;
+    }
         print "\tDatabase created, now populating the database\n";
-        $cmd = "$scripts_path/package_config_xmls_to_database";
+        $cmd = "$scripts_path/prepare_oda";
         if (system ($cmd)) {
-            print "ERROR: Impossible to populate the database ($cmd)\n";
+            carp "ERROR: Impossible to populate the database ($cmd)\n";
             return -1;
         }
         # We double-check if the database really exists
@@ -208,11 +208,12 @@ sub init_db ($) {
             \%options,
             \%errors);
         if (!$database_status) {
-            print "ERROR: The database is supposed to have been created but\n".
+            carp "ERROR: The database is supposed to have been created but\n".
                   " we cannot connect to it.\n";
             return -1;
         }
     }
+    return 0;
 }
 
 ################################################################################
@@ -246,9 +247,9 @@ sub init_file_db () {
         mkdir ($opkgs_config_path);
     }
     print "\tDatabase created, now populating the database\n";
-    my $cmd = "$scripts_path/package_config_xmls_to_database";
+    my $cmd = "$scripts_path/prepare_oda";
     if (system ($cmd)) {
-        print "ERROR: Impossible to populate the database ($cmd)\n";
+        carp "ERROR: Impossible to populate the database ($cmd)\n";
         return -1;
     }
     return 0;
@@ -270,7 +271,7 @@ sub init_file_db () {
 sub init_server ($) {
     my $configurator = shift;
     if (!defined ($configurator)) {
-        print "ERROR: Invalid configurator object.\n";
+        carp "ERROR: Invalid configurator object.\n";
         return -1;
     }
     my $oscar_cfg = $configurator->get_config ();
@@ -292,32 +293,22 @@ sub init_server ($) {
         }
     }
 
-    require OSCAR::Database;
-
-    # Get the list of just core packages
-    my (@results, %options, @errors);
-    if (!OSCAR::Database::get_packages_with_class("core",
-                                             \@results,
-                                             \%options,
-                                             \@errors)) {
-        carp "ERROR: Failed to get core packages list";
-        return -1;
-    }
-    my @packages = map { $_->{package} } @results;
-    if (scalar(@packages) == 0) {
-        carp "ERROR: The list of core packages is empty\n";
-        return -1;
-    }
-
-    OSCAR::Logger::oscar_log_subsection("Identified core packages: " . 
-        join(' ', @packages));
-
     # OSCAR::Opkg requires XML::Simple which is not available initially but 
     # after prereq installation
     require OSCAR::Opkg;
 
-    OSCAR::Logger::oscar_log_subsection("Installing server core packages");
-    if (OSCAR::Opkg::opkgs_install_server (@packages)) {
+    # Get the list of just core packages
+    my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
+    if (scalar (@core_opkgs) == 0) {
+        carp "ERROR: Failed to get core packages list";
+        return -1;
+    }
+
+    OSCAR::Logger::oscar_log_subsection("Identified core packages: " . 
+        join(' ', @core_opkgs));
+
+    OSCAR::Logger::oscar_log_section("Installing server core packages");
+    if (OSCAR::Opkg::opkgs_install ("server", @core_opkgs)) {
         carp "ERROR: Impossible to install server core packages\n";
         return -1;
     }
@@ -349,7 +340,7 @@ sub bootstrap_stage0 () {
     # /etc/oscar/oscar.conf (it can be generated setting OSCAR_HOME and then
     # executing $OSCAR_HOME/scripts/oscar-config --generate-config-file.
     if ( ! -f "$configfile_path") {
-        print "ERROR: impossible to find the oscar configuration file";
+        carp "ERROR: impossible to find the oscar configuration file";
         return undef;
     }
 
@@ -376,7 +367,7 @@ sub bootstrap_stage0 () {
     $ipcmd = $ippath . "/install_prereq ";
     my $appconfig_path = $path . "/AppConfig";
     if (bootstrap_prereqs ($appconfig_path, $prereq_mode)) {
-        print "ERROR: impossible to install appconfig\n";
+        carp "ERROR: impossible to install appconfig\n";
         return undef;
     }
 
@@ -404,7 +395,7 @@ sub bootstrap_stage0 () {
 sub bootstrap_stage1 ($) {
     my $configurator = shift;
     if (!defined $configurator) {
-        print "ERROR: Invalid configurator object.\n";
+        carp "ERROR: Invalid configurator object.\n";
         return -1;
     }
     my $config = $configurator->get_config();
@@ -412,13 +403,13 @@ sub bootstrap_stage1 ($) {
     # First we install Packman
     my $packman_path = $config->{'packman_path'};
     if (! defined ($packman_path) || ($packman_path eq "")) {
-        print "ERROR: Impossible to get the Packman path\n";
+        carp "ERROR: Impossible to get the Packman path\n";
         return -1;
     }
 
     my $prereq_mode = $config->{'prereq_mode'};
     if (bootstrap_prereqs ($packman_path, $prereq_mode)) {
-        print "ERROR: Impossible to install Packman\n";
+        carp "ERROR: Impossible to install Packman\n";
         return -1;
     }
 
@@ -426,7 +417,7 @@ sub bootstrap_stage1 ($) {
     require OSCAR::PackagePath;
     my $os = OSCAR::PackagePath::distro_detect_or_die();
     if (!defined $os) {
-        print "ERROR: Impossible to detect the local Linux distribution\n";
+        carp "ERROR: Impossible to detect the local Linux distribution\n";
         return -1;
     }
     # hack...
@@ -442,14 +433,15 @@ sub bootstrap_stage1 ($) {
     my $path = "/etc/oscar";
     mkdir $path if (! -d $path);
     if (save_preoscar_binary_list ($os, $path)) {
-        print "ERROR: Impossible to save the list of preoscar binary packages.\n";
+        carp "ERROR: Impossible to save the list of preoscar binary ".
+             "packages.\n";
         return -1;
     }
 
     # Then we install YUME (supported on both rpm and deb systems).
     my $yume_path = $config->{'yume_path'};
     if (bootstrap_prereqs ($yume_path, $prereq_mode)) {
-        print "ERROR: Impossible to install Yume\n";
+        carp "ERROR: Impossible to install Yume\n";
         return -1;
     }
 
@@ -457,7 +449,7 @@ sub bootstrap_stage1 ($) {
     if ($os->{pkg} eq "deb") {
         my $rapt_path = $config->{'rapt_path'};
         if (bootstrap_prereqs ($rapt_path, $prereq_mode)) {
-            print "ERROR: Impossible to install RAPT\n";
+            carp "ERROR: Impossible to install RAPT\n";
             return -1;
         }
     }
@@ -467,7 +459,7 @@ sub bootstrap_stage1 ($) {
     require OSCAR::PackageSmart;
     my $pm = OSCAR::PackageSmart::prepare_distro_pools($os);
     if (!defined ($pm)) {
-        print "ERROR: Impossible to prepare pools for the local distro\n";
+        carp "ERROR: Impossible to prepare pools for the local distro\n";
         return -1;
     }
 
@@ -489,7 +481,7 @@ sub bootstrap_stage1 ($) {
 sub bootstrap_stage2 ($) {
     my $configurator = shift;
     if (!defined $configurator) {
-        print "ERROR: Invalid configurator object.\n";
+        carp "ERROR: Invalid configurator object.\n";
         return -1;
     }
     my $config = $configurator->get_config();
@@ -498,7 +490,7 @@ sub bootstrap_stage2 ($) {
     my $baseprereqs_path = $config->{'prereqs_path'} . "/base";
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($baseprereqs_path, $prereq_mode)) {
-        print "ERROR: impossible to install base prereqs ($baseprereqs_path)\n";
+        carp "ERROR: impossible to install base prereqs ($baseprereqs_path)\n";
         return -1;
     }
 
@@ -511,7 +503,7 @@ sub bootstrap_stage2 ($) {
     my $orderfile = "$prereqs_path/prereqs.order";
     my @ordered_prereqs;
     if (! -f "$orderfile") {
-        print "ERROR: Impossible to find the prereq ordering file".
+        carp "ERROR: Impossible to find the prereq ordering file".
               " ($orderfile)\n";
         return -1;
     }
@@ -526,8 +518,15 @@ sub bootstrap_stage2 ($) {
     }
     close (MYFILE);
     foreach my $prereq (@ordered_prereqs) {
-        if (install_prereq ($prereq, $prereq_mode)) {
-            print "ERROR: Impossible to install a prereq ($prereq).\n";
+        # TODO: ODA is both a prereq and a OPKG, this is a big mess!!!
+        my $path;
+        if ($prereq ne "packages/oda") {
+            $path = "$prereqs_path/" . basename ($prereq);
+        } else {
+            $path = $prereq;
+        }
+        if (install_prereq ($path, $prereq_mode)) {
+            carp "ERROR: Impossible to install a prereq ($path).\n";
             return -1;
         }
     }
@@ -540,7 +539,7 @@ sub bootstrap_stage2 ($) {
 
     # Then we try to install the server side of OSCAR
     if (init_server ($configurator)) {
-        print "ERROR: Impossible to install the server side of OSCAR\n";
+        carp "ERROR: Impossible to install the server side of OSCAR\n";
         return -1;
     }
 }
@@ -583,7 +582,7 @@ sub save_preoscar_binary_list ($$) {
             system($cmd);
         }
     } else {
-        print "ERROR: Unknow binary format ($os->{pkg})\n";
+        carp "ERROR: Unknow binary format ($os->{pkg})\n";
         return -1;
     }
 
