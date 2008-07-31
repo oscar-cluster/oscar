@@ -72,6 +72,8 @@ use Carp;
 
 my $tftpdir = "/tftpboot/";
 
+my $verbose = $ENV{OSCAR_VERBOSE};
+
 # The possible places where packages may live.  
 @PKG_SOURCE_LOCATIONS = ("/var/lib/oscar/packages");
 if (defined $ENV{OSCAR_HOME}) {
@@ -141,58 +143,57 @@ sub repos_add_urlfile ($@) {
             carp "ERROR: Repository must either be a URL or an absolute path\n";
             return -1;
         }
-        push @n, $_;
-        $rhash{$_} = 1;
+        my $r = $_;
+        push (@n, $r) if (repo_empty ($r) == 0);
+        $rhash{$r} = 1;
     }
     @repos = @n;
 
     local *OUT;
     if (! -f "$path") {
-        carp "ERROR: Creating new .url file: $path with repositories\n  ".
-        join("\n  ",@repos)."\n";
         my $dir = dirname($path);
         if (! -d $dir) {
             carp "ERROR: Creating directory $dir\n";
             !system("mkdir -p $dir")
                 or (carp("ERROR: Could not create directory $dir! $!"),
                     return -1);
-    }
-	open OUT, "> $path" 
-        or (carp("Could not open $path for writing. $!"), return -1);
-	for (@repos) {
-	    print OUT "$_\n";
-	}
-	close OUT;
-	return 0;
-    }
-    #
-    # if file exists, add at the end, but only if entry wasn't there.
-    #
-    local *IN;
-    open IN, "$path" or croak("Could not open $path for reading. $!");
-    my @orepos = <IN>;
-    close IN;
-    for (@orepos) {
-	chomp;
-	if (defined($rhash{$_})) {
-	    delete $rhash{$_};
-	}
-    }
-    return 0 if (!scalar(keys(%rhash)));
+        }
+        open OUT, "> $path" 
+            or (carp("Could not open $path for writing. $!"), return -1);
+        for (@repos) {
+            print OUT "$_\n";
+        }
+        close OUT;
+    } else {
+        #
+        # if file exists, add at the end, but only if entry wasn't there.
+        #
+        local *IN;
+        open IN, "$path" or croak("Could not open $path for reading. $!");
+        my @orepos = <IN>;
+        close IN;
+        for (@orepos) {
+            chomp;
+            if (defined($rhash{$_})) {
+                delete $rhash{$_};
+            }
+        }
+        return 0 if (!scalar(keys(%rhash)));
 
-    #
-    # write output file
-    #
-    open OUT, "> $path" or croak("Could not open $path for writing. $!");
-    for (@orepos) {
-	chomp;
-	print OUT "$_\n";
+        #
+        # write output file
+        #
+        open OUT, "> $path" or croak("Could not open $path for writing. $!");
+        for (@orepos) {
+            chomp;
+            print OUT "$_\n";
+        }
+        # append the repos which need to be added
+        for (sort(keys(%rhash))) {
+            print OUT "$_\n";
+        }
+        close OUT;
     }
-    # append the repos which need to be added
-    for (sort(keys(%rhash))) {
-	print OUT "$_\n";
-    }
-    close OUT;
     return 0;
 }
 
@@ -419,6 +420,7 @@ sub oscar_repo_url (%) {
 #
 sub repo_empty ($) {
     my ($path) = (@_);
+    $path =~ s,^file:/,/,;
     my $entries = 0;
     local *DIR;
     opendir DIR, $path or (carp "Could not read directory $path!", return 0);
@@ -703,10 +705,16 @@ sub use_oscar_repo ($$) {
 
     my @pools;
     my $compat = get_compat_distro ($distro);
-    push (@pools, "/tftpboot/oscar/$compat");
-    push (@pools, get_common_pool_id ($distro));
-    OSCAR::PackagePath::repos_add_urlfile ("/tftpboot/oscar/".$compat.".url",
-                                           @pools);
+    my $path = "/tftpboot/oscar/$compat";
+    my $repo_file = "/tftpboot/oscar/".$compat.".url";
+    push (@pools, $path) if (repo_empty ($path) == 0);
+    $path = get_common_pool_id ($distro);
+    push (@pools, $path) if (repo_empty ($path) == 0);
+    if (scalar (@pools)) {
+        print "Adding repos to $repo_file: " if $verbose;
+        print_array (@pools) if $verbose;
+        repos_add_urlfile ($repo_file, @pools);
+    }
 }
 
 ################################################################################
@@ -719,7 +727,7 @@ sub use_oscar_repo ($$) {
 sub check_repo_configuration ($) {
     my $path = shift;
 
-    if (-f $path && !repo_empty ($path)) {
+    if (-f $path && (repo_empty ($path) == 0)) {
         return 1;
     } else {
         # is there a .url file?
