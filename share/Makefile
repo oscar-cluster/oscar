@@ -3,7 +3,9 @@ CONFIGDIR=etc/oscar
 install:
 	install -d -m 0755 $(DESTDIR)/$(CONFIGDIR)
 	install -d -m 0755 $(DESTDIR)/$(CONFIGDIR)/templates
+	install -d -m 0755 $(DESTDIR)/$(CONFIGDIR)/opkgs
 	install    -m 0755 etc/supported_distros.txt $(DESTDIR)/$(CONFIGDIR)
+	install    -m 0755 etc/core.conf $(DESTDIR)/$(CONFIGDIR)/opkgs
 	install    -m 0755 etc/templates/oscar.conf $(DESTDIR)/$(CONFIGDIR)/templates
 
 uninstall:
