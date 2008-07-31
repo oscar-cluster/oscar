@@ -101,6 +101,7 @@ install: build
 	# To address bootstraping issue, we treat rapt and yume as prereqs
 	mv packages/yume/ $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
 	mv packages/rapt/ $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
+	mv packages/oda   $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
 	# We remove stuff we do not yet know how to deal with
 	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/Makefile.am
 	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/Makefile.in
