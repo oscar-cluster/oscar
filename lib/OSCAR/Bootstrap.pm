@@ -414,8 +414,8 @@ sub bootstrap_stage1 ($) {
     }
 
     use lib "$ENV{OSCAR_HOME}/lib";
-    require OSCAR::PackagePath;
-    my $os = OSCAR::PackagePath::distro_detect_or_die();
+    require OSCAR::OCA::OS_Detect;
+    my $os = OSCAR::OCA::OS_Detect::open();
     if (!defined $os) {
         carp "ERROR: Impossible to detect the local Linux distribution\n";
         return -1;
