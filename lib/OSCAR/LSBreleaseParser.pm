@@ -27,7 +27,7 @@ package OSCAR::LSBreleaseParser;
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::ConfigFile;
+#use OSCAR::ConfigFile;
 use OSCAR::Logger;
 use OSCAR::Utils;
 use Carp;
@@ -51,27 +51,31 @@ sub parse_lsbrelease ($) {
         oscar_log_subsection "INFO: no $lsbrelease_file file\n";
         return "";
     }
-    my $distro = OSCAR::ConfigFile::get_value ($lsbrelease_file,
-                                               undef,
-                                               "DISTRIB_ID");
-    if ( !defined $distro ) {
-        carp "ERROR: Impossible to get the distro id from $lsbrelease_file";
-        return undef;
-    }
 
-    my $version = OSCAR::ConfigFile::get_value ($lsbrelease_file,
-                                                undef,
-                                                "DISTRIB_RELEASE");
-    if ( !defined $version ) {
-        carp "ERROR: Impossible to get the dist version from $lsbrelease_file";
+    # This function may called during bootstrapping, we have to do almost
+    # everything manually.
+    open (FILE, $lsbrelease_file)
+        or (carp ("ERROR: Could not open file ($lsbrelease_file)."), 
+            return undef);
+    my @data = <FILE>;
+    close (FILE);
+
+    if (scalar (@data) < 4) {
+        carp "ERROR: the $lsbrelease_file file cannot be parsed";
         return undef;
     }
+    my $distro = $data[0];
+    chomp ($distro);
+    $distro =~ s/DISTRIB_ID=//;
+    my $version = $data[1];
+    chomp ($version);
+    $version =~ s/DISTRIB_RELEASE=//;
 
     my $arch = OSCAR::Utils::get_local_arch();
 
     return lc("$distro-$version-$arch");
 }
 
-parse_lsbrelease("/");
+print parse_lsbrelease("/");
 
 1;
