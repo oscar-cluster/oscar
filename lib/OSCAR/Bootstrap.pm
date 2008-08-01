@@ -142,6 +142,7 @@ sub bootstrap_prereqs ($$) {
         if ($prereq_mode eq "check_and_fix") {
             # We try to install Packman
             $cmd = $ipcmd . " --dumb " . $prereq_path;
+            print "Executing $cmd...\n";
             if (system ($cmd)) {
                 carp "ERROR: impossible to install $prereq_name ($cmd).\n";
                 return -1;
@@ -149,6 +150,7 @@ sub bootstrap_prereqs ($$) {
 
             # Packman should be installed now
             $cmd = $ipcmd . " --status " . $prereq_path;
+            print "Executing $cmd...\n";
             if (system ($cmd)) {
                 carp "ERROR: $prereq_name is still not installed\n";
                 return -1;
@@ -157,6 +159,8 @@ sub bootstrap_prereqs ($$) {
             print "$prereq_name needs to be installed.\n";
             return -1;
         }
+    } else {
+        print "$prereq_name is already installed, nothing to do.\n";
     }
 
     return 0;
@@ -359,12 +363,15 @@ sub bootstrap_stage0 () {
         }
         if ($line =~ /^([ \t]*)PREREQ_MODE/) {
             ($var, $prereq_mode) = split ("=", $line);
+            require OSCAR::Utils;
+            $prereq_mode = OSCAR::Utils::trim ($prereq_mode);
         }
     }
     close (MYFILE);
 
     # Now that we know where the prereqs are, we try to install AppConfig
     $ipcmd = $ippath . "/install_prereq ";
+    print "install_prereq found: $ipcmd\n";
     my $appconfig_path = $path . "/AppConfig";
     if (bootstrap_prereqs ($appconfig_path, $prereq_mode)) {
         carp "ERROR: impossible to install appconfig\n";
