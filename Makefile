@@ -184,6 +184,6 @@ basedebs:
         --exclude share/prereqs/\*/SRPMS .
 	cd /tmp/oscar-debian && tar xzf oscar-base-$(OSCAR_VERSION).tar.gz && \
 		dpkg-buildpackage -rfakeroot
-	cp /tmp/oscar*deb /tmp/liboscar* $(OSCAR_HOME)
+	@echo "Binary packages are available in /tmp"
 
 .PHONY : test dist clean install
