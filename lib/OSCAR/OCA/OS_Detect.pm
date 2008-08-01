@@ -97,10 +97,11 @@ sub open {
     if (!defined($comps)) {
         # If we get undef, then find_components() already printed an
         # error, and we decide that we want to die
-        die "Cannot continue, find_components returned undef";
+        print STDERR "Cannot continue, find_components returned undef";
+        return undef;
     } elsif (scalar(@$comps) == 0) {
-        print "Could not find an OS_Detect component for this system!\n";
-        die "Cannot continue";
+        print STDERR "Could not find an OS_Detect component for this system!\n";
+        return undef;
     }
 
     # Yes, we found some components. Check which one returns a valid id
