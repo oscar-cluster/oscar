@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>nfs</name>
+  <class>included</class>
+  <summary>Configures remote NFS mountpoints</summary>
+  <description>Configures local NFS Server for mountpoints, as well as client for mountpoints both on the headnode, as well as third party servers.</description>
+  <license>GPL</license>
+  <group>Application/System</group>
+  <uri>http://oscar.openclustergroup.org</uri>
+  <authors>
+          <author cat="maintainer">
+          <name>Paul Greidanus</name>
+          <email>paul.greidanus@ualberta.ca</email>
+         </author>
+  </authors>
+
+  <serverDeps>
+    <requires>
+      <filters>
+        <dist>rhel</dist>
+        <dist>mdv</dist>
+        <dist>suse</dist>
+        <dist>fc</dist>
+      </filters>
+      <pkg>c3</pkg>
+      <pkg>c3-profiled</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>c3</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <filters>
+        <dist>rhel</dist>
+        <dist>mdv</dist>
+        <dist>suse</dist>
+        <dist>fc</dist>
+      </filters>
+      <pkg>c3</pkg>
+      <pkg>c3-profiled</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>c3</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps>
+  </apiDeps>
+  <changelog>
+    <versionEntry version="4.0.1-6">
+      <changelogEntry authorName="Erich Focht" date="2007-10-06T10:34:08-04:00">
+        <item>Fixed wrong dependecies.</item>
+      </changelogEntry>
+      <changelogEntry authorName="Thomas Naughton" date="2007-06-25T10:34:08-04:00">
+        <item>Convert to the new OPKG API (for OPKGC)</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
+</oscar>

@@ -1,0 +1,69 @@
+#!/usr/bin/perl
+# (C)opyright Paul Greidanus <paul.greidanus@ualberta.ca>
+
+use Data::Dumper;
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX; # gives us uname function
+use File::Path;
+use File::Copy;
+use File::Basename;
+use OSCAR::Network;
+use OSCAR::Logger;
+use OSCAR::Database;
+use OSCAR::Package;
+use OSCAR::PackMan;
+use OSCAR::PackageSmart;
+use OSCAR::Configbox;
+use Carp;
+use Data::Dumper;
+use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::Env qw ( oscar_home_env);
+use OSCAR::Opkg;
+use Getopt::Long;
+use Cwd qw(chdir cwd);
+
+printf "Running NFS\n";
+
+# Read in configuration data from ODA
+my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+my $nfs_data = readInConfigValues($xml_data,"nfs","",noarray=>1);
+ # init counters
+my $mount_counter = 1;
+my $max_counter = $nfs_data->{num_nfs_mounts};
+
+my $imagedir = shift @ARGV;
+my $nfs_fstab = $imagedir . "/etc/fstab.nfs";
+
+$imagedir =~ s/\/$//;
+my $image = $imagedir;
+$image =~ s:^.*/::g;
+
+my $script = "/var/lib/systemimager/scripts/post-install/90".$image.".add_nfs";
+
+open ( SCRIPT, "> $script");
+printf( SCRIPT "cat /etc/fstab.nfs >> /etc/fstab");
+close ( SCRIPT );
+chmod 0755, $script;
+
+#print Dumper($nfs_data);
+
+open( NFS_FSTAB, "> $nfs_fstab");
+
+while ( $mount_counter <= $max_counter ) {
+	my $nfs_server = "";
+	$nfs_server = $nfs_data->{"rsrv_" . $mount_counter};
+	my $nfs_local = "";
+	$nfs_local = $nfs_data->{"lpath_" . $mount_counter};	
+	my $nfs_remote = "";
+	$nfs_remote = $nfs_data->{"rpath_" . $mount_counter};
+
+	printf NFS_FSTAB $nfs_server.":".$nfs_remote."\t".$nfs_local."\tnfs\trw\t0\t0\n";
+
+	$mount_counter++;
+	}
+
+close NFS_FSTAB;
+1;

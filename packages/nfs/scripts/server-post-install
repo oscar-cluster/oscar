@@ -1,0 +1,105 @@
+#!/usr/bin/perl
+# (C)opyright Paul Greidanus <paul.greidanus@ualberta.ca>
+
+use Data::Dumper;
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use POSIX; # gives us uname function
+use File::Path;
+use File::Copy;
+use File::Basename;
+use OSCAR::Network;
+use OSCAR::Logger;
+use OSCAR::Database;
+use OSCAR::Package;
+use OSCAR::PackMan;
+use OSCAR::PackageSmart;
+use OSCAR::Configbox;
+use Carp;
+use Data::Dumper;
+use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::Env qw ( oscar_home_env);
+use OSCAR::Opkg;
+use Getopt::Long;
+use Cwd qw(chdir cwd);
+
+
+# Read in configuration data from ODA
+my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+my $nfs_data = readInConfigValues($xml_data,"nfs","",noarray=>1);
+ # init counters
+my $mount_counter = 1;
+my $max_counter = $nfs_data->{num_nfs_mounts};
+my $INTERFACE = "eth1";
+my ($ip,$bcast,$netmask) = interface2ip($INTERFACE)
+    or croak("Couldn't determine internal ip address");
+
+
+my $nfs = OSCAR::OCA::OS_Settings::getitem("nfs_package");
+
+#print Dumper($nfs_data);
+
+chomp(my $nfs_export = `which exportfs`);
+!system("/etc/init.d/$nfs restart") or croak("Couldn't restart $nfs");
+!system("exportfs -a") or croak("Couldn't refresh nfs exports")
+    if $nfs_export;
+
+while ( $mount_counter <= $max_counter ) {
+	my $nfs_server = "";
+	my $nfs_server = $nfs_data->{"rsrv_" . $mount_counter};
+	if ( $nfs_server eq "nfs_oscar" ) {
+		my $local_path = $nfs_data->{"lpath_" . $mount_counter};
+		add_export($local_path, $ip, $netmask);
+		}
+	$mount_counter++;
+	}
+
+sub add_export {
+    my $sharepoint = shift;
+    my $ip = shift;
+    my $netmask = shift;
+    my $done = 0;
+    my $exports_file = OSCAR::OCA::OS_Settings::getitem("exports_file");
+
+    verbose("Backing up exports file : " . $exports_file);
+    if ( -f $exports_file ) {
+        copy ($exports_file, $exports_file . ".bak") or return undef;
+        }
+
+    if ( -f $exports_file . ".bak" ) {
+        open(IN, $exports_file . ".bak") or return undef;
+        #} else {
+        #open(IN, "/dev/null");
+        }
+    open(OUT, "> $exports_file" ) or return undef;
+    verbose ("Checking for " . $sharepoint . " export");
+    while (<IN>) {
+        if (/^($sharepoint)/) {
+            verbose("Found " . $sharepoint . " entry");
+            $done = 1;
+            if (/$ip\/$netmask\(async,rw,no_root_squash\)/) {
+                verbose("Existing " . $sharepoint . " entry ok, preserved");
+                print OUT $_;
+            } else {
+                verbose("Existing " . $sharepoint . " modified");
+                chomp;
+                print OUT $_." $ip/$netmask(async,rw,no_root_squash)\n";
+            }
+        } else {
+            print OUT $_;
+        }
+    }
+    close(IN);
+
+	print "Done is " . $done . "\n";
+    unless ($done != 0) {
+        verbose("Adding " . $sharepoint . " export");
+		print OUT $sharepoint . " $ip/$netmask(async,rw,no_root_squash)\n";
+		print $sharepoint . " $ip/$netmask(async,rw,no_root_squash)\n";
+    }
+    close(OUT);
+}
+
+1;

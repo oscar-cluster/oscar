@@ -1,0 +1,44 @@
+<!-- $Id:$ -->
+<html>
+<head><title>Configuration for NFS</title>
+</head>
+
+<body>
+<center>
+<h1>Configuring NFS options</h1>
+</center>
+
+Any shares on the headnode will be configured automatically, but remote shares will require manual configuration.
+
+<form>
+
+<p>Number of NFS mounts for clients</p><br>
+<b>Do not change this number</b>
+<input name=num_nfs_mounts value="4"> <br>
+
+<b>Server1</b><br>
+NFS server <input name="rsrv_1" value="nfs_oscar">
+Server path <input name="rpath_1" value="/home"><br>
+Client path <input name="lpath_1" value="/home">
+<br>
+
+<b>Server2</b><br>
+NFS server <input name="rsrv_2">
+Server path <input name="rpath_2"><br>
+Client path <input name="lpath_2">
+<br>
+<b>Server3</b><br>
+NFS server <input name="rsrv_3">
+Server path <input name="rpath_3"><br>
+Client path <input name="lpath_3">
+<br>
+<b>Server4</b><br>
+NFS server <input name="rsrv_4">
+Server path <input name="rpath_4"><br>
+Client path <input name="lpath_4">
+<br>
+
+</form>
+<hr>
+</body>
+</html>
