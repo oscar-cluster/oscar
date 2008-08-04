@@ -104,7 +104,6 @@ if ($options{pool}) {
     }
     my $distro_id = 
         "$os->{distro}-$os->{distro_version}.$os->{distro_update}-$os->{arch}";
-    print "$distro_id\n";
     print_image_detect("/");
 }
 exit 0;
