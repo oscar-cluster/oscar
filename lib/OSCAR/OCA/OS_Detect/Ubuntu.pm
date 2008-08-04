@@ -28,6 +28,7 @@ my $dpkg_bin = "/usr/bin/dpkg-query"; # Tool to query Deb package Database
 
 my $distro = "ubuntu";
 my $compat_distro = "debian";
+my $compat_distrover = "4";
 my $pkg = "deb";
 my $detect_package = "base-files";
 my $detect_file = "/bin/bash";
@@ -95,7 +96,7 @@ sub detect_dir {
     $id->{distro_version} = $distro_version;
     $id->{distro_update} = $distro_update;
     $id->{compat_distro} = $compat_distro;
-    $id->{compat_distrover} = 4;
+    $id->{compat_distrover} = $compat_distrover;
     $id->{pkg} = $pkg;
 
     # Make final string
@@ -123,6 +124,7 @@ sub detect_fake {
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
 							     $distro,
 							     $compat_distro,
+                                 $compat_distrover,
 							     $pkg);
     return $id;
 }

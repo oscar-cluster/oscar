@@ -86,6 +86,7 @@ sub detect_fake {
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
 							     $distro,
 							     $compat_distro,
+                                 undef,
 							     $pkg);
     return $id;
 }

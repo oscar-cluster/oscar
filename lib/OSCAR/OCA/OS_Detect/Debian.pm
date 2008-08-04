@@ -140,11 +140,12 @@ sub detect_pool {
 }
 
 # EF: simply copied the function from RedHat.pm
-sub detect_fake {
+sub detect_fake ($) {
     my ($fake) = @_;
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
 							     $distro,
 							     $compat_distro,
+                                 undef,
 							     $pkg);
     return $id;
 }

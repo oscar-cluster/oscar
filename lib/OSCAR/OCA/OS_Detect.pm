@@ -306,13 +306,17 @@ sub detect_pool_deb {
 # For pools referenced by URL find compat distro name and generate
 # fake $id structure
 #
-sub detect_fake_common {
-    my ($id,$distro,$compat_distro,$pkg) = @_;
+sub detect_fake_common ($$$$$) {
+    my ($id, $distro, $compat_distro, $compat_distrover, $pkg) = @_;
     if (exists($id->{distro}) && exists($id->{distro_version}) &&
 	exists($id->{arch})) {
 	if ($id->{distro} =~ /^$distro/) {
 	    $id->{compat_distro} = $compat_distro;
-	    $id->{compat_distrover} = $id->{distro_version};
+        if (defined ($compat_distrover)) {
+	        $id->{compat_distrover} = $compat_distrover;
+        } else {
+            $id->{compat_distrover} = $id->{distro_version};
+        }
 	    $id->{pkg} = $pkg;
 	    return $id;
 	}
