@@ -91,18 +91,27 @@ sub print_array (@) {
 #                                                                              #
 # Input: None.                                                                 #
 # Return: the OSCAR version (string), note that if this is the SVN version, it #
-#         returns "unstable".                                                  #
+#         returns "unstable". Returns undef if error.                          #
 ################################################################################
 sub get_oscar_version {
     my $version;
-    my $cmd = "less $ENV{OSCAR_HOME}/VERSION | grep want_svn=0";
+    my $path;
+    if (defined $ENV{OSCAR_HOME} && -f "$ENV{OSCAR_HOME}/VERSION") {
+        $path = "$ENV{OSCAR_HOME}";
+    } elsif ( -f "/etc/oscar/VERSION" ) {
+        $path = "/etc/oscar";
+    } else {
+        carp "ERROR: Impossible to get the OSCAR version";
+        return undef;
+    }
+    my $cmd = "less $path/VERSION | grep want_svn=0";
     my $result = `$cmd`;
 
     if ($result eq "") {
         $version = "unstable";
     } else {
-        my $major = `less $ENV{OSCAR_HOME}/VERSION | grep major=`;
-        my $minor = `less $ENV{OSCAR_HOME}/VERSION | grep minor=`;
+        my $major = `less $path/VERSION | grep major=`;
+        my $minor = `less $path/VERSION | grep minor=`;
         chomp ($major);
         chomp ($minor);
         $major =~ s/^major=//;
