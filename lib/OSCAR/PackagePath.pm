@@ -56,6 +56,7 @@ use Carp;
 	     distro_detect_or_die
 	     list_distro_pools
             decompose_distro_id
+            generate_default_urlfiles
             get_common_pool_id
             get_default_distro_repo
             get_default_oscar_repo
@@ -524,14 +525,24 @@ sub pkg_separator ($) {
     }
 }
 
+# Return: undef if error, distro_id (OS_Detect syntax) else.
 sub os_distro_string ($) {
     my ($os) = @_;
+    if (!defined ($os)) {
+        carp "ERROR: undefined distro";
+        return undef;
+    }
     return $os->{distro}."-".$os->{distro_version}.
 	"-".$os->{arch};
 }
 
+# Return: undef if error, distro_id (OS_Detect syntax) else.
 sub os_cdistro_string {
     my ($os) = @_;
+    if (!defined ($os)) {
+        carp "ERROR: undefined distro";
+        return undef;
+    }
     return $os->{compat_distro}."-".$os->{compat_distrover}.
 	"-".$os->{arch};
 }
@@ -635,7 +646,7 @@ sub decompose_distro_id ($) {
         $distro = $1;
         $version = $2;
         $arch = $3;
-    } 
+    }
 
     return ($distro, $version, $arch);
 }
@@ -792,11 +803,16 @@ sub get_list_setup_distros {
 #                                                                              #
 # Input: the distro ID (with the OS_Detect syntax).                            #
 # Return: the default distro repository (string), empty string if no default   #
-#         repo is defined.                                                     #
+#         repo is defined, undef if error.                                     #
 ################################################################################
 sub get_default_distro_repo ($) {
     my $distro = shift;
 
+    if (!defined ($distro)) {
+        carp "ERROR: Undefined distro";
+        return undef;
+    }
+    require OSCAR::Distro;
     my $d = OSCAR::Distro::find_distro ($distro);
 
     my $t = $d->{'default_distro_repo'};
@@ -813,11 +829,16 @@ sub get_default_distro_repo ($) {
 #                                                                              #
 # Input: the distro ID (with the OS_Detect syntax).                            #
 # Return: the default OSCAR repository (string), empty string if no default    #
-#         repo is defined.                                                     #
+#         repo is defined, undef if error.                                     #
 ################################################################################
 sub get_default_oscar_repo ($) {
     my $distro = shift;
 
+    if (!defined ($distro)) {
+        carp "ERROR: Undefined distro";
+        return undef;
+    }
+    require OSCAR::Distro;
     my $d = OSCAR::Distro::find_distro ($distro);
 
     my $t = $d->{'default_oscar_repo'};
@@ -826,6 +847,126 @@ sub get_default_oscar_repo ($) {
         return "";
     } else {
         return $t;
+    }
+}
+
+################################################################################
+# Generate the default distro configuration file in /tftpboot for a given      #
+# Linux distribution.                                                          #
+#                                                                              #
+# Input: distro, distro ID (OS_Detect syntax) for which we want to generate    #
+#                configuration files.                                          #
+# Return: -1 if error, 0 if success, 1 if the file already exists.
+################################################################################
+sub generate_default_oscar_urlfile ($) {
+    my $distro = shift;
+
+    if (!defined ($distro)) {
+        carp "ERROR: Undefined distro, impossible to create the default OSCAR ".
+             "URL file.";
+        return -1;
+    }
+
+    # TODO: we should validate the distro ID.
+    my $compat_distro = get_compat_distro ($distro);
+    print "tooooooo: $compat_distro\n";
+    if (!defined ($compat_distro)) {
+        carp "ERROR: Impossible to get the compat distro for $distro";
+        return -1;
+    }
+    my $file = "/tftpboot/oscar/$compat_distro.url";
+    if (-f $file) {
+        warn "INFO: the $file already exists, we do nothing";
+        return 1;
+    }
+
+    my $repo = get_default_oscar_repo ($distro);
+    if (!defined ($repo)) {
+        carp "ERROR: Impossible to get the default repository for $distro";
+        return -1;
+    }
+    if ($repo eq "") {
+        warn "No default distro repository for $distro";
+        return 0;
+    }
+    if (OSCAR::FileUtils::add_line_to_file_without_duplication ($repo,
+                                                                $file)) {
+        carp "ERROR: Impossible to add $repo in $file";
+        return -1;
+    }
+
+    return 0;
+}
+
+################################################################################
+# Generate the default distro configuration file in /tftpboot for a given      #
+# Linux distribution.                                                          #
+#                                                                              #
+# Input: distro, distro ID (OS_Detect syntax) for which we want to generate    #
+#                configuration files.                                          #
+# Return: -1 if error, 0 if success, 1 if the file already exists.
+################################################################################
+sub generate_default_distro_urlfile ($) {
+    my $distro = shift;
+
+    if (!defined ($distro)) {
+        carp "ERROR: Undefined distro, impossible to create the default ".
+             "distro URL file.";
+        return -1;
+    }
+
+    # TODO: we should validate the distro ID.
+    my $file = "/tftpboot/distro/$distro.url";
+    if (-f $file) {
+        warn "INFO: the $file file already exists, we do nothing";
+        return 1;
+    }
+
+    my $repo = get_default_distro_repo ($distro);
+    if (!defined ($repo)) {
+        carp "ERROR: Impossible to get the default repository for $distro";
+        return -1;
+    }
+    if ($repo eq "") {
+        warn "No default distro repository for $distro";
+        return 0;
+    }
+    if (OSCAR::FileUtils::add_line_to_file_without_duplication ($repo,
+                                                                $file)) {
+        carp "ERROR: Impossible to add $repo in $file";
+        return -1;
+    }
+
+    return 0;
+}
+
+################################################################################
+# Generate the default configuration files in /tftpboot. For that, we use      #
+# information available about supported distros (e.g.,                         #
+# /etc/oscar/supported_distros.txt). This allows users to be able to use OSCAR #
+# with the default values out-of-the-box.                                      #
+#                                                                              #
+# Input: distro, distro ID (OS_Detect syntax) for which we want to generate    #
+#                configuration files.                                          #
+# Return: -1 if error, 0 else.                                                 #
+################################################################################
+sub generate_default_urlfiles ($) {
+    my $distro = shift;
+
+    if (!defined ($distro)) {
+        carp "ERROR: Undefined distro";
+        return -1;
+    }
+    if (generate_default_oscar_urlfile ($distro) == -1) {
+        carp "ERROR: Impossible to generate the default OSCAR url file ".
+             "($distro)";
+        return -1;
+    }
+
+    if (generate_default_distro_urlfile ($distro) == -1) {
+        carp "ERROR: Impossible to generate the default distro url file ".
+             "($distro)";
+        return -1;
     }
 }
 

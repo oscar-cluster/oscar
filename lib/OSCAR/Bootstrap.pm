@@ -201,7 +201,7 @@ sub init_db ($) {
         carp "ERROR: Impossible to create the database ($cmd)\n";
         return -1;
     }
-        print "\tDatabase created, now populating the database\n";
+        print "--> Database created, now populating the database\n";
         $cmd = "$scripts_path/prepare_oda";
         if (system ($cmd)) {
             carp "ERROR: Impossible to populate the database ($cmd)\n";
@@ -250,7 +250,7 @@ sub init_file_db () {
     if ( ! -d $opkgs_config_path ) {
         mkdir ($opkgs_config_path);
     }
-    print "\tDatabase created, now populating the database\n";
+    print "--> Database created, now populating the database\n";
     my $cmd = "$scripts_path/prepare_oda";
     if (system ($cmd)) {
         carp "ERROR: Impossible to populate the database ($cmd)\n";
@@ -382,6 +382,22 @@ sub bootstrap_stage0 () {
     require OSCAR::ConfigManager;
     my $oscar_configurator = OSCAR::ConfigManager->new(
         config_file => "$configfile_path");
+
+    # Then we check if all configuration files /tftpboot are there or not. If
+    # not, if create files with the default repositories.
+    require OSCAR::PackagePath;
+    require OSCAR::OCA::OS_Detect;
+    my $os = OSCAR::OCA::OS_Detect::open ();
+    if (!defined $os) {
+        carp "ERROR: Impossible to identify the local distro";
+        return undef;
+    }
+    my $distro = $os->{distro};
+    my $version = $os->{distro_version};
+    my $arch = $os->{arch};
+    my $distro_id = "$distro-$version-$arch";
+    OSCAR::PackagePath::generate_default_urlfiles ($distro_id);
+
     return $oscar_configurator;
 }
 
