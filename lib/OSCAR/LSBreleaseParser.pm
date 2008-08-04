@@ -76,6 +76,4 @@ sub parse_lsbrelease ($) {
     return lc("$distro-$version-$arch");
 }
 
-print parse_lsbrelease("/");
-
 1;

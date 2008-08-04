@@ -49,7 +49,6 @@ use Carp;
             get_opkg_version_from_configxml
             opkg_print
             opkgs_install
-            opkgs_install_server
             create_list_selected_opkgs
             );
 
@@ -159,7 +158,7 @@ sub opkgs_install ($@) {
 # Input: file where the list has to be written.                               #
 # Return: none.
 ###############################################################################
-sub create_list_selected_opkgs {
+sub create_list_selected_opkgs ($) {
     my $outfile = shift;
 
     my @opkgs = list_selected_packages("all");
