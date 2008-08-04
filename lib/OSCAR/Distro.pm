@@ -49,6 +49,7 @@ use Data::Dumper;
 use warnings "all";
 use base qw(Exporter);
 @EXPORT = qw(
+            find_distro
             get_list_of_supported_distros
             get_list_of_supported_distros_id
             which_distro
@@ -232,7 +233,14 @@ CASE: {
 
 }
 
-# TODO: Deprecated?
+# Parse a basic configuration file organized by blocks. A block starts by its
+# name in between "[" and "]". From a position, it returns the position of the
+# next block
+#
+# Input: current_pos, the position in the file from which we want to start the
+#                     search (position in term of lines).
+#        array, content of the file (result of my @data = <FILE>;
+# Return: the position of the next block if success, -1 else.
 sub get_position_of_next_release_entry ($@) {
     my ($current_pos, @array) = @_;
     my $i = $current_pos;
