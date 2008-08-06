@@ -32,7 +32,7 @@ use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS $PGROUP_PATH);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
-use OSCAR::Utils qw ( is_a_valid_string );
+use OSCAR::Utils;
 use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
 use File::Basename;
 use Data::Dumper;
@@ -145,7 +145,8 @@ sub repos_add_urlfile ($@) {
             return -1;
         }
         my $r = $_;
-        push (@n, $r) if (repo_empty ($r) == 0);
+        push (@n, $r) if ((repo_local($r) == 1 && repo_empty ($r) == 0) 
+                          || repo_local($r) == 0);
         $rhash{$r} = 1;
     }
     @repos = @n;
@@ -422,6 +423,7 @@ sub oscar_repo_url (%) {
 sub repo_empty ($) {
     my ($path) = (@_);
     $path =~ s,^file:/,/,;
+    return 1 if (! -d $path);
     my $entries = 0;
     local *DIR;
     opendir DIR, $path or (carp "Could not read directory $path!", return 0);
@@ -606,12 +608,17 @@ sub mirror_repo ($$$) {
 #                                                                              #
 # Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
 #                syntax, e.g., rhel-5-x86_64).                                 #
-# Return: None.                                                                #
+# Return: 0 if success, -1 else.                                               #
 ################################################################################
 sub use_default_distro_repo ($) {
     my ($distro) = @_;
     my $distro_repo_url = get_default_distro_repo ($distro);
+    if (!defined $distro_repo_url || $distro_repo_url eq "") {
+        carp "ERROR: undefined default distro repo for ($distro)";
+        return -1;
+    }
     use_distro_repo ($distro, $distro_repo_url);
+    return 0;
 }
 
 ################################################################################
@@ -621,13 +628,23 @@ sub use_default_distro_repo ($) {
 #                                                                              #
 # Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
 #                syntax, e.g., rhel-5-x86_64).                                 #
-# Return: None.                                                                #
+# Return: 0 if success, -1 else.                                               #
 ################################################################################
 sub use_default_oscar_repo ($) {
     my ($distro) = @_;
-    my $oscar_repo_url = get_default_oscar_repo ($distro);
-    my $compat_distro = get_compat_distro ($distro);
-    use_oscar_repo ($distro, $oscar_repo_url);
+    my $url = get_default_oscar_repo ($distro);
+
+    if (!defined $url) {
+        carp "ERROR: Impossible to get default OSCAR repository";
+        return -1;
+    }
+    OSCAR::Logger::oscar_log_subsection ("... using default repo: $url");
+    if (use_oscar_repo ($distro, $url)) {
+        carp "ERROR: Impossible to set the OSCAR repo ".
+             "($distro, $url)";
+        return -1;
+    }
+    return 0;
 }
 
 ################################################################################
@@ -687,7 +704,8 @@ sub get_common_pool_id ($) {
 sub use_distro_repo ($$) {
     my ($distro, $repo) = @_;
 
-    if (!is_a_valid_string ($distro) || !is_a_valid_string ($repo)) {
+    if (!OSCAR::Utils::is_a_valid_string ($distro) 
+        || !OSCAR::Utils::is_a_valid_string ($repo)) {
         die "ERROR: the distro or the repo URL are invalid ($distro, $repo)\n";
     }
 
@@ -705,16 +723,19 @@ sub use_distro_repo ($$) {
 #                                                                              #
 # Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
 #                syntax, e.g., rhel-5-x86_64.                                  #
-# Return: None.                                                                #
+# Return: 0 if success, -1 else.                                               #
 ################################################################################
 sub use_oscar_repo ($$) {
     my ($distro, $repo) = @_;
 
-    if (!is_a_valid_string ($distro) || !is_a_valid_string ($repo)) {
-        die "ERROR: the distro or the repo URL are invalid ($distro, $repo)\n";
+    if (!OSCAR::Utils::is_a_valid_string ($distro) 
+        || !OSCAR::Utils::is_a_valid_string ($repo)) {
+        carp "ERROR: the distro or the repo URL are invalid ($distro, $repo)";
+        return -1;
     }
 
     my @pools;
+    push (@pools, $repo);
     my $compat = get_compat_distro ($distro);
     my $path = "/tftpboot/oscar/$compat";
     my $repo_file = "/tftpboot/oscar/".$compat.".url";
@@ -723,9 +744,13 @@ sub use_oscar_repo ($$) {
     push (@pools, $path) if (repo_empty ($path) == 0);
     if (scalar (@pools)) {
         print "Adding repos to $repo_file: " if $verbose;
-        print_array (@pools) if $verbose;
-        repos_add_urlfile ($repo_file, @pools);
+        OSCAR::Utils::print_array (@pools) if $verbose;
+        if (repos_add_urlfile ($repo_file, @pools)) {
+            carp "ERROR: Impossible to add repos in $repo_file";
+            return -1;
+        }
     }
+    return 0;
 }
 
 ################################################################################

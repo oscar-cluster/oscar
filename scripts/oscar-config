@@ -101,19 +101,40 @@ if ($oscar_repo) {
 if ($distro_to_setup) {
     require OSCAR::PackagePath;
     require OSCAR::Distro;
-    if ($oscar_repo_to_use eq "") {
-        OSCAR::PackagePath::use_default_oscar_repo ($distro_to_setup);
-    } else {
-        OSCAR::PackagePath::use_oscar_repo ($distro_to_setup,
-                                            $oscar_repo_to_use);
+    require OSCAR::Logger;
+    require OSCAR::Utils;
+
+    OSCAR::Logger::oscar_log_section ("Setting $distro_to_setup...");
+
+    # We check first if the distro is supported
+    my @distros = OSCAR::Distro::get_list_of_supported_distros ();
+    if (OSCAR::Utils::is_element_in_array ($distro_to_setup, @distros) == 0) {
+        die "ERROR: Unsupported distro ($distro_to_setup)";
     }
 
-    if ($distro_repo_to_use eq "") {
+    # We setup the distro repos (configuration files in /tftpboot/distro).
+    if (!defined $distro_repo_to_use || $distro_repo_to_use eq "") {
+        OSCAR::Logger::oscar_log_subsection ("... using default distro repo");
         OSCAR::PackagePath::use_default_distro_repo ($distro_to_setup);
     } else {
+        OSCAR::Logger::oscar_log_subsection ("... using $distro_repo_to_use");
         OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
                                              $distro_repo_to_use);
     }
+
+    # We setup the OSCAR repos (configuration files in /tftpboot/distro).
+    if (!defined $oscar_repo_to_use || $oscar_repo_to_use eq "") {
+        OSCAR::Logger::oscar_log_subsection ("... using default OSCAR repo");
+        if (OSCAR::PackagePath::use_default_oscar_repo ($distro_to_setup)) {
+            die "ERROR: Impossible to set the default repository";
+        }
+    } else {
+        OSCAR::Logger::oscar_log_subsection ("... using $oscar_repo_to_use");
+        OSCAR::PackagePath::use_oscar_repo ($distro_to_setup,
+                                             $oscar_repo_to_use);
+    }
+
+    exit 0;
 }
 
 # if ($network) {
