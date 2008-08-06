@@ -59,7 +59,7 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 ################################################################################
 sub is_element_in_array ($@) {
     my ($element, @array) = @_;
-    die ("ERROR: undefined element") if !defined ($element);
+    carp ("ERROR: undefined element") if !defined ($element);
 
     foreach my $i (@array) {
         if (defined ($i) && ($i eq $element)) {
