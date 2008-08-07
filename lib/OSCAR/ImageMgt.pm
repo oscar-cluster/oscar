@@ -674,3 +674,24 @@ sub export_image ($$) {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+ImageMgt - a set of functions for the management of images in OSCAR.
+
+=head1 SYNOPSIS
+
+The available functions are:
+
+    create_image
+    delete_image
+    do_setimage
+    do_post_binary_package_install
+    do_oda_post_install
+    export_image
+    get_image_default_settings
+    get_list_corrupted_images
+    image_exists
+    install_opkgs_into_image
