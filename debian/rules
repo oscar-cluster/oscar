@@ -85,7 +85,7 @@ install: build
 	mv $(CURDIR)/README \
 		$(CURDIR)/debian/oscar/usr/share/doc/oscar
 	mv $(CURDIR)/VERSION \
-		$(CURDIR)/debian/oscar/usr/share/doc/oscar
+		$(CURDIR)/debian/oscar/etc/oscar/
 	# It seems that dist is not needed in a binary package
 	# mv $(CURDIR)/dist \
 	#	$(CURDIR)/debian/oscar/opt/oscar
@@ -121,9 +121,10 @@ install: build
 	    $(CURDIR)/debian/liboscar/usr/lib/perl5
 
 	# Prepare the oscar-bin package
-	mkdir -p $(CURDIR)/debian/oscar-bin/usr/bin
-	mv $(CURDIR)/scripts/* \
-		$(CURDIR)/debian/oscar-bin/usr/bin
+	mkdir -p $(CURDIR)/debian/oscar-bin/usr/local/bin
+	mv $(CURDIR)/scripts/system-sanity.d \
+		$(CURDIR)/debian/oscar-bin/usr/local/bin
+	cd  $(CURDIR)/scripts; perl Makefile.PL; make install DESTDIR=$(CURDIR)/debian/oscar-bin
 	mv $(CURDIR)/install_cluster \
 		$(CURDIR)/debian/oscar-bin/usr/bin
 

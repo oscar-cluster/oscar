@@ -1,3 +1,16 @@
+oscar (5.1~svn20080807-0gv1) gutsy; urgency=low
+
+  * New upstream version (trunk).
+  * Use the Makefile for the installation of basic OSCAR scripts. 
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Thu, 07 Aug 2008 15:26:36 -0400
+
+oscar (5.1~svn20080806-0gv1) gutsy; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Wed, 06 Aug 2008 16:24:20 -0400
+
 oscar (5.1~svn20080805-0gv1) hardy; urgency=low
 
   * New upstream version (trunk).
@@ -5,6 +18,50 @@ oscar (5.1~svn20080805-0gv1) hardy; urgency=low
 
  -- Geoffroy Vallee <valleegr@ornl.gov>  Tue, 05 Aug 2008 23:07:09 -0400
 
+oscar (5.1~svn20080804-0gv1) gutsy; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Mon, 04 Aug 2008 12:39:16 -0400
+
+oscar (5.1~svn20080803-0gv1) gutsy; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Sun, 03 Aug 2008 00:18:10 -0400
+
+oscar (5.1~svn20080802-0gv1) gutsy; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Sat, 02 Aug 2008 22:45:51 -0400
+
+oscar (5.1~svn20080731-0gv2) gutsy; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Thu, 31 Jul 2008 23:24:04 -0400
+
+oscar (5.1~svn20080731-0gv1) gutsy; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Thu, 31 Jul 2008 16:26:51 -0400
+
+oscar (5.1~svn20080730-0gv4) gutsy; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Wed, 30 Jul 2008 23:27:24 -0400
+
+oscar (5.1~svn20080805-0gv1) hardy; urgency=low
+
+  * New upstream version (trunk).
+  * Fix a minor problem with the rules file on Ubuntu-8.04
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Tue, 05 Aug 2008 23:07:09 -0400
+
+>>>>>>> .r7238
 oscar (5.1~svn20080730-0gv3) gutsy; urgency=low
 
   * New upstream version (trunk).
