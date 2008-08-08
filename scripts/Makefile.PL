@@ -15,7 +15,6 @@ WriteMakefile(
 			'oscar_image_cleanup' => '$(INST_MAN1DIR)/oscar_image_cleanup.$(MAN1EXT)',
 			'oscar_sanity_check' => '$(INST_MAN1DIR)/oscar_sanity_check.$(MAN1EXT)',
 			'oscar_wizard' => '$(INST_MAN1DIR)/oscar_wizard.$(MAN1EXT)',
-			'package_config_xmls_to_database' => '$(INST_MAN1DIR)/package_config_xmls_to_database.$(MAN1EXT)',
 			'setup_pxe' => '$(INST_MAN1DIR)/setup_pxe.$(MAN1EXT)',
 			'system-sanity' => '$(INST_MAN1DIR)/system-sanity.$(MAN1EXT)',
 			'build_opkg_rpms' => '$(INST_MAN1DIR)/build_opkg_rpms.$(MAN1EXT)',
@@ -24,4 +23,46 @@ WriteMakefile(
 			'MAN1EXT' => '1',
 			'MAN3EXT' => '3pm',
 		},
+        'EXE_FILES' => [qw(
+            create_and_populate_basic_node_info
+            create_oscar_database
+            distro-query
+            get_arch
+            get_num_proc
+            get-oscar-version.sh
+            install_prereq
+            install_server
+            integrate_image
+            mac_collector
+            macinfo2sis
+            make_database_password
+            OCA-driver
+            oda
+            opd
+            opd2
+            oscar
+            oscar-config
+            oscar-vm
+            oscar_image_cleanup
+            oscar_sanity_check
+            oscar_wizard
+            ping_clients
+            populate_default_package_set
+            populate_oda_packages_table
+            post_clients
+            post_install
+            post_rpm_install
+            prepare_oda
+            prepare_repos
+            prep_oscar_repos
+            repo-update
+            set_global_oscar_values
+            set_node_nics
+            set_oscar_interface
+            setup_pxe
+            ssh_install
+            system-sanity
+            update_live_macs
+            wizard_prep
+        )],
 );
