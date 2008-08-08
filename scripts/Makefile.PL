@@ -2,7 +2,10 @@ use ExtUtils::MakeMaker;
 use Carp;
 
 WriteMakefile(
-		'NAME' => 'OSCAR_scripts',
+		'NAME'              => 'OSCAR_scripts',
+        'INSTALLSITEBIN'    => '/usr/bin',
+        'INSTALLBIN'        => '/usr/bin',
+        'INSTALLSITESCRIPT' => '/usr/bin',
 		'MAN1PODS' => {
 			'create_oscar_database' => '$(INST_MAN1DIR)/create_oscar_database.$(MAN1EXT)',
 			'install_prereq' => '$(INST_MAN1DIR)/install_prereq.$(MAN1EXT)',
