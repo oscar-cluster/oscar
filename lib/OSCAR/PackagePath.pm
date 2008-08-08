@@ -33,8 +33,9 @@ use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS $PGROUP_PATH);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Utils;
-use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
+use OSCAR::FileUtils;
 use File::Basename;
+use File::Path;
 use Data::Dumper;
 use warnings "all";
 use Carp;
@@ -118,13 +119,17 @@ sub repos_list_urlfile ($) {
 	if (open IN, "$path") {
 	    while (my $line = <IN>) {
 		chomp $line;
+        print "------>$line\n";
 		next if ($line !~ /^(http|ftp|file|mirror)/);
 		next if (($line =~ /^\s*$/) || ($line =~ /^\s*\#/));
-		push @remote, $line if (repo_empty ($line) == 0);
+		push @remote, $line if (repo_local($line) == 1
+                                && repo_empty ($line) == 0);
+        push @remote, $line if (repo_local($line) == 0);
 	    }
 	    close IN;
 	}
     }
+    OSCAR::Utils::print_array (@remote);
     return @remote;
 }
 
@@ -145,56 +150,15 @@ sub repos_add_urlfile ($@) {
             return -1;
         }
         my $r = $_;
-        push (@n, $r) if ((repo_local($r) == 1 && repo_empty ($r) == 0) 
-                          || repo_local($r) == 0);
+        if ((repo_local($r) == 1 && repo_empty ($r) == 0) 
+            || repo_local($r) == 0) {
+            push (@n, $r) ;
+        }
         $rhash{$r} = 1;
     }
-    @repos = @n;
 
-    local *OUT;
-    if (! -f "$path") {
-        my $dir = dirname($path);
-        if (! -d $dir) {
-            carp "ERROR: Creating directory $dir\n";
-            !system("mkdir -p $dir")
-                or (carp("ERROR: Could not create directory $dir! $!"),
-                    return -1);
-        }
-        open OUT, "> $path" 
-            or (carp("Could not open $path for writing. $!"), return -1);
-        for (@repos) {
-            print OUT "$_\n";
-        }
-        close OUT;
-    } else {
-        #
-        # if file exists, add at the end, but only if entry wasn't there.
-        #
-        local *IN;
-        open IN, "$path" or croak("Could not open $path for reading. $!");
-        my @orepos = <IN>;
-        close IN;
-        for (@orepos) {
-            chomp;
-            if (defined($rhash{$_})) {
-                delete $rhash{$_};
-            }
-        }
-        return 0 if (!scalar(keys(%rhash)));
-
-        #
-        # write output file
-        #
-        open OUT, "> $path" or croak("Could not open $path for writing. $!");
-        for (@orepos) {
-            chomp;
-            print OUT "$_\n";
-        }
-        # append the repos which need to be added
-        for (sort(keys(%rhash))) {
-            print OUT "$_\n";
-        }
-        close OUT;
+    foreach my $repo (@n) {
+        OSCAR::FileUtils::add_line_to_file_without_duplication ($repo, $path);
     }
     return 0;
 }
@@ -312,8 +276,6 @@ sub oscar_urlfile (%) {
 # /tftpboot/distro/$distro-$version-$arch.url
 #
 # Return: undef if error.
-#
-# TODO: remove the deprecated code about /tftpboot/rpm
 sub distro_repo_url (%) {
     my $url = &distro_urlfile(@_);
     my $os = &query_os(@_);
@@ -324,37 +286,8 @@ sub distro_repo_url (%) {
     my $path = dirname($url)."/".basename($url, ".url");
 
     if (!-f "$url") {
-	# create .url file and add local path as first entry
-	&repos_add_urlfile("$url", "file:$path");
-
-# 	if ( (! -d $path) && (! -l $path) ) {
-# 	    #
-# 	    # check if /tftpboot/rpm exists and has the distro we expect
-# 	    #
-# 	    my $oldpool = "/tftpboot/rpm";
-# 	    if ( -d $oldpool || -l $oldpool) {
-# 		my $ros = OSCAR::OCA::OS_Detect::open(pool => $oldpool);
-# 		if (defined($ros) && (ref($ros) eq "HASH") &&
-# 		    ($ros->{distro} eq $os->{distro}) &&
-# 		    ($ros->{distro_version} eq $os->{distro_version}) &&
-# 		    ($ros->{arch} eq $os->{arch}) ) {
-# 		    print STDERR "Discovered correct distro repository in $oldpool!\n";
-# 		    print STDERR "Linking it symbolically to $path.\n";
-# 		    my $pdir = dirname($path);
-# 		    if (! -d $pdir) {
-# 			    !system("mkdir -p $pdir") or
-# 			        (carp "Could not make directory $pdir $!", return undef);
-# 		    }
-# 		    !system("ln -s $oldpool $path") or
-# 			    (carp "Could not link $oldpool to $path: $!", return undef);
-# 		    return $url;
-# 		}
-# 	    }
-# 	    print STDERR "Distro repository $path not found. "
-# 		. "Creating empty directory.\n";
-# 	    !system("mkdir -p $path") or
-# 		(carp "Could not create directory $path! $!", return undef);
-# 	}
+	    # create .url file and add local path as first entry
+	    &repos_add_urlfile("$url", "file:$path");
     }
     my @repos = &repos_list_urlfile("$url");
     return join(",", @repos);
@@ -401,15 +334,13 @@ sub oscar_repo_url (%) {
     &repos_add_urlfile("$url", "file:$path", "file:$comm");
 
     if (! -d $path && ! -l $path) {
-        print STDERR "Distro repository $path not found. ".
-            "Creating empty directory.\n";
-        !system("mkdir -p $path") or
+        warn "Distro repository $path not found. Creating empty directory.";
+        File::Path::mkpath ($path, 1, 0777) or
             (carp "Could not create directory $path!", return undef);
     }
     if (! -d $comm && ! -l $comm) {
-        print STDERR "Commons repository $comm not found. ".
-            "Creating empty directory.\n";
-        !system("mkdir -p $comm") or
+        warn "Commons repository $comm not found. Creating empty directory.\n";
+        File::Path::mkpath ($comm, 1, 0777) or
             (carp "Could not create directory $comm!", return undef);
     }
     my @repos = &repos_list_urlfile("$url");
@@ -699,7 +630,7 @@ sub get_common_pool_id ($) {
 #                                                                              #
 # Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
 #                syntax, e.g., rhel-5-x86_64.                                  #
-# Return: None.                                                                #
+# Return: -1 if error, 0 else.                                                 #
 ################################################################################
 sub use_distro_repo ($$) {
     my ($distro, $repo) = @_;
@@ -709,13 +640,15 @@ sub use_distro_repo ($$) {
         die "ERROR: the distro or the repo URL are invalid ($distro, $repo)\n";
     }
 
-    my $cmd = "mkdir -p " . $tftpdir . "distro/";
-    die "ERROR: impossible to execute \"$cmd\"\n" if (system ($cmd));
+    my $path = $tftpdir . "distro";
+    File::Path::mkpath ($path, 1, 0777) or
+        (carp "ERROR: impossible to create the directory $path", return -1);
 
-    OSCAR::PackagePath::repos_add_urlfile ("/tftpboot/distro/".$distro.".url",
-                                           $repo);
-#     my $file_path = $tftpdir . "distro/" . $distro . ".url";
-#     add_line_to_file_without_duplication ($repo, $file_path);
+    if (OSCAR::PackagePath::repos_add_urlfile ($path.".url", $repo)) {
+        carp "ERROR: Impossible to create file $path.url";
+        return -1;
+    }
+    return 0;
 }
 
 ################################################################################
@@ -894,7 +827,6 @@ sub generate_default_oscar_urlfile ($) {
 
     # TODO: we should validate the distro ID.
     my $compat_distro = get_compat_distro ($distro);
-    print "tooooooo: $compat_distro\n";
     if (!defined ($compat_distro)) {
         carp "ERROR: Impossible to get the compat distro for $distro";
         return -1;

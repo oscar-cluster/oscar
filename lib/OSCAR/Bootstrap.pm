@@ -46,6 +46,8 @@ our $ipcmd;
 # Specify where the install_server script is
 our $iscmd;
 
+my $verbose = $ENV{OSCAR_VERBOSE};
+
 
 ################################################################################
 # Bootstrap OSCAR.                                                             #
@@ -95,9 +97,9 @@ sub install_prereq ($$) {
     # We get the current status of the prereq first
     $cmd = $ipcmd . " --status " . $prereq_path;
     my $prereq_name = basename ($cmd);
-    print "Dealing with Prereq $prereq_name\n";
+    print "\nDealing with Prereq $prereq_name\n" if $verbose;
     if (system ($cmd)) {
-        print "$prereq_name is not installed.\n";
+        print "$prereq_name is not installed.\n" if $verbose;
 
         # We try to install the prereq
         $cmd = $ipcmd . " --smart " . $prereq_path;
@@ -396,7 +398,10 @@ sub bootstrap_stage0 () {
     my $version = $os->{distro_version};
     my $arch = $os->{arch};
     my $distro_id = "$distro-$version-$arch";
-    OSCAR::PackagePath::generate_default_urlfiles ($distro_id);
+    if (OSCAR::PackagePath::generate_default_urlfiles ($distro_id) == -1) {
+        carp "ERROR: Impossible to generate default url files in /tftpboot";
+        return undef;
+    }
 
     return $oscar_configurator;
 }

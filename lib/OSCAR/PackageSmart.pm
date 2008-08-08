@@ -294,6 +294,11 @@ sub prepare_pools ($@) {
     my $format;
 
     print "Preparing pools: @pools\n";
+    if (scalar (@pools) == 0) {
+        warn "INFO: no repositories defined";
+        return undef;
+    }
+
     # First we check pools all support the same format (rpm vs. deb).
     foreach my $p (@pools) {
         next if ($p eq "");
