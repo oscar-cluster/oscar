@@ -1,0 +1,96 @@
+#!/usr/bin/env perl
+#
+
+#
+# Copyright (c) 2007-2008 Oak Ridge National Laboratory.
+#                         Geoffroy R. Vallee <valleegr@ornl.gov>
+#                         All rights reserved.
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+
+#
+# $Id: oscar-config 7238 2008-08-06 20:22:33Z valleegr $
+#
+
+use strict;
+use Cwd qw(chdir cwd);
+use Getopt::Long;
+use OSCAR::Utils;
+use OSCAR::Logger;
+use warnings "all";
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+my ($add, $remove, $update, $mac, $distro);
+
+GetOptions(
+        "add"                           => \$add,
+        "remove"                        => \$remove,
+        "update"                        => \$update,
+        "mac"                           => \$mac,
+        "distro"                        => \$distro,
+        "help"                          => \&help,
+        ) || help_and_exit();
+
+my $actions = 0;
+$actions++ if (defined $add);
+$actions++ if (defined $remove);
+$actions++ if (defined $update);
+if ($actions != 1) {
+    die "ERROR: Invalid number of actions ($actions)";
+}
+
+if (defined $add && (!is_a_valid_string ($mac) 
+                     || !is_a_valid_string ($distro))) {
+    die "ERROR: Invalid argument for the addition of a new VM";
+}
+
+if (defined $update && (!is_a_valid_string ($mac) 
+                     || !is_a_valid_string ($distro))) {
+    die "ERROR: Invalid argument for the addition of a new VM";
+}
+
+if (!is_a_valid_string ($remove)) {
+    die "ERROR: Invalid VM name";
+}
+
+if ($add) {
+    OSCAR::Logger::oscar_log_section ("Adding a new VM ($add)");
+    require OSCAR::ImageMgt;
+    my %vars = get_image_default_settings ();
+    if (create_image ($distro, %vars)) {
+        die "ERROR: Impossible to create the image for $distro";
+    }
+}
+
+if ($remove) {
+    OSCAR::Logger::oscar_log_section ("Removing a VM ($remove)");
+}
+
+if ($update) {
+    OSCAR::Logger::oscar_log_section ("Updating a VM ($update)");
+}
+
+exit 0;
+
+sub help {
+    print "Usage: $0 OPTION\n";
+    print "\n";
+    print "Setup virtual machines via OSCAR.\n";
+    print "OPTION can be:\n";
+    print "\n";
+}
+
+sub help_and_exit {
+    help ();
+    exit 1;
+}
+
+__END__
