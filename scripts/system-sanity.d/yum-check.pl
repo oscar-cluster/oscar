@@ -36,7 +36,9 @@ if ( -f "/etc/yum.conf" ) {
     # When you want the value of a key, the key name has to follow the AppConfig
     # syntax. It means that to access the key gpgcheck under the main section of
     # the configuration file, the key name is "main_gpgcheck".
-    my $value = OSCAR::ConfigFile::get_value ("/etc/yum.conf", "main_gpgcheck");
+    my $value = OSCAR::ConfigFile::get_value ("/etc/yum.conf",
+                                              undef,
+                                              "main_gpgcheck");
     if (defined ($value) && $value == 1) {
         print "----------------------------------------------\n";
         print " ERROR: Yum configuration is invalid\n";
