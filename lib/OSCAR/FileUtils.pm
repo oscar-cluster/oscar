@@ -25,6 +25,8 @@ package OSCAR::FileUtils;
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
+use File::Basename;
+use File::Path;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
@@ -48,9 +50,15 @@ use Carp;
 sub add_line_to_file_without_duplication ($$) {
     my ($line, $file_path) = @_;
 
+    print "---> File: $file_path\n";
+    my $dirname = File::Basename::dirname ($file_path);
+    if ( ! -d $dirname) {
+        File::Path::mkpath ($dirname) 
+            or (carp ("ERROR: Impossible to create $dirname"), return -1);
+    }
     open (DAT, ">>$file_path") 
-        or (print "ERROR: Impossible to open the file: $file_path." 
-            && return -1);
+        or (carp "ERROR: Impossible to open the file: $file_path.",
+            return -1);
     if (find_line_in_file($line, $file_path) == -1) {
         print (DAT "$line\n");
     }
