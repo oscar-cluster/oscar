@@ -1,18 +1,17 @@
 DESTDIR=
-
-include ./Config.mk
-
-SUBDIRS := ODA OCA
+TOP_LIB_DIR = ..
+include $(TOP_LIB_DIR)/Config.mk
+SUBDIRS := 
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
 
 install:
-	@echo Creating $(DESTDIR)$(LIBDIR)/OSCAR
-	@mkdir -p $(DESTDIR)$(LIBDIR)/OSCAR
-	cp *.pm $(DESTDIR)$(LIBDIR)/OSCAR
+	@echo Creating $(DESTDIR)$(LIBDIR)/OSCAR/ODA
+	@mkdir -p $(DESTDIR)$(LIBDIR)/OSCAR/ODA
+	cp *.pm $(DESTDIR)$(LIBDIR)/OSCAR/ODA
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} install ) ; done
 
 uninstall:
-	rm -rf $(DESTDIR)$(LIBDIR)/OSCAR/*.pm
+	rm -rf $(DESTDIR)$(LIBDIR)/OSCAR/ODA/*.pm
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} uninstall ) ; done
