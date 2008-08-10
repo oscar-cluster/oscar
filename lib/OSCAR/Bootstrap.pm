@@ -626,3 +626,61 @@ sub save_preoscar_binary_list ($$) {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Bootstrap.pm - A set of functions for the OSCAR bootstrapping.
+
+=head1 SYNOPSIS
+
+This Perl modules gathers all functions and mechanisms to be able to bootstrap
+OSCAR. Two main functions for that are:
+    bootstrap_stage0 and oscar_bootstrap
+Typically, bootstrap_stage0 is in charge of installing the minimum software that
+is mandatory in order to really start to bootstrap OSCAR and oscar_bootstrap
+installs needed software for OSCAR, using basic tools.
+Note that the behavior of the bootstrapping is defined by the
+/etc/oscar/oscar.conf configuration file: if PREREQ_MODE is set to
+"check_and_fix" the prereqs are automatically installed; if PREREQ_MODE is set
+to "check_only", the bootstrapping mechanism will display a message to the user
+describing what needs to be done.
+
+=head1 bootstrap_stage0
+
+This function does not need any parameter. Since OSCAR is based on a 
+configuration file (/etc/oscar/oscar.conf), this function typically installs
+software to be able to parse this configuration file (i.e., AppConfig). When
+this package is installed, it parses the configuration file (using 
+OSCAR::ConfigManager) and returns a reference to a OSCAR::ConfigManager object
+(undef in case of errors).
+Also note that before to return that reference, basic configuration files are
+created if they do not already exist (configuration files in /tftpboot).
+
+=head1 oscar_bootstrap
+
+The actual OSCAR bootstrap is actually composed of 2 stages:
+
+=over 2
+
+=item - stage1: During this stage, we install: packman, yume, rapt and then, based
+on these tools, we generate local OSCAR repositories (if local repositories 
+exist).
+
+=item - stage2: During this stage, we install "base" prereqs and all prereqs
+based on the prereq order from "prereqs.order". Then, we initialize the 
+database, installing ODA and initializing the database password. Finally, we
+install OSCAR core server packages.
+
+=back
+
+=head1 AUTHOR
+
+Geoffroy Vallee <valleegr@ornl.gov>
+
+=head1 SEE ALSO
+
+perl(1), OSCAR::ConfigManager
+
+=cut
