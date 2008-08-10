@@ -10,7 +10,8 @@
 #          default repository URLs have to follow the rapt/yume syntax
 
 [unstable]
-ubuntu-8-i386 http://us.archive.ubuntu.com/ubuntu/+gutsy+universe+multiverse http://bear.csm.ornl.gov/repos/debian-4-i386/+etch+/
+ubuntu-8-x86_64 http://us.archive.ubuntu.com/ubuntu/+hardy+universe+multiverse http://bear.csm.ornl.gov/repos/debian-4-x86_64/+etch+/
+ubuntu-8-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+universe+multiverse http://bear.csm.ornl.gov/repos/debian-4-i386/+etch+/
 ubuntu-7-i386 http://us.archive.ubuntu.com/ubuntu/+gutsy+universe+multiverse http://bear.csm.ornl.gov/repos/debian-4-i386/+etch+/
 debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/debian-4-x86_64/+etch+/ 
 debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/debian-4-i386/+etch+/
