@@ -403,8 +403,6 @@ sub usage {
     print "should be used for bootstrapping a smart package manager.\n";
     print "--smart installs prereqs with the help of a smart package manager\n";
     print " like yum(e).\n";
-    print "The prereq_path arguments must be paths relative to the\n";
-    print "\$OSCAR_HOME environment variable's value!\n";
     exit $ret if ($ret);
 }
 
