@@ -51,7 +51,10 @@ for my $p (@ARGV) {
 #
 # Own distro detection
 #
-my $os = &OSCAR::PackagePath::distro_detect_or_die();
+my $os = OSCAR::OCA::OS_Detect::open();
+if (!defined $os) {
+    die "ERROR: Unable to determine the local operating system";
+}
 my $distro    = $os->{distro};
 my $distrover = $os->{distro_version};
 my $arch      = $os->{arch};

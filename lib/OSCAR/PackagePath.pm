@@ -102,7 +102,7 @@ if (defined ($ENV{OSCAR_HOME})) {
 sub distro_detect_or_die ($) {
     my ($img) = @_;
     my $os = OSCAR::OCA::OS_Detect::open($img);
-    die "Unable to determine operating system for $img" if (!$os);
+    die "ERROR: Unable to determine operating system for $img" if (!$os);
     return $os;
 }
 
