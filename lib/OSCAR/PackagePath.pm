@@ -128,7 +128,6 @@ sub repos_list_urlfile ($) {
 	    close IN;
 	}
     }
-    OSCAR::Utils::print_array (@remote);
     return @remote;
 }
 
@@ -675,8 +674,6 @@ sub use_oscar_repo ($$) {
     $path = get_common_pool_id ($distro);
     push (@pools, $path) if (repo_empty ($path) == 0);
     if (scalar (@pools)) {
-        print "Adding repos to $repo_file: " if $verbose;
-        OSCAR::Utils::print_array (@pools) if $verbose;
         if (repos_add_urlfile ($repo_file, @pools)) {
             carp "ERROR: Impossible to add repos in $repo_file";
             return -1;
