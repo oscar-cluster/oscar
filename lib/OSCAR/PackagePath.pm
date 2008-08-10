@@ -119,7 +119,6 @@ sub repos_list_urlfile ($) {
 	if (open IN, "$path") {
 	    while (my $line = <IN>) {
 		chomp $line;
-        print "------>$line\n";
 		next if ($line !~ /^(http|ftp|file|mirror)/);
 		next if (($line =~ /^\s*$/) || ($line =~ /^\s*\#/));
 		push @remote, $line if (repo_local($line) == 1
