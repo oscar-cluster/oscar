@@ -31,7 +31,7 @@ use OSCAR::Opkg;
 use OSCAR::OCA::OS_Detect;
 
 my $default_install_mode = "systemimager-rsync";
-my $install_mode = get_install_mode(undef, undef);
+my $install_mode = OSCAR::Database::get_install_mode(undef, undef);
 
 if (!$install_mode) { 
   opkg_print("Setting default installation mode to: $default_install_mode\n");

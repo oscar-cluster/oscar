@@ -16,9 +16,21 @@
       <name>Geoffroy Vallee</name>
       <email>valleegr@ornl.gov</email>
     </author>
+    <author cat="uploader">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
   </authors>
   <serverDeps>
     <requires>
+      <filters>
+        <dist>suse</dist>
+        <dist>sles</dist>
+        <dist>mdv</dist>
+        <dist>rhel</dist>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+      </filters>
       <pkg>systemimager-client</pkg>
       <pkg>systemconfigurator</pkg>
       <pkg>systemimager-common</pkg>
@@ -89,19 +101,14 @@
     <requires>
       <filters>
         <dist>debian</dist>
-        <arch>x86_64</arch>
       </filters>
-      <pkg>syslinux</pkg>
-      <pkg>atftpd</pkg>
-      <pkg>systemimager-boot-amd64-standard</pkg>
-      <pkg>systemimager-boot-i386-standard</pkg>
-      <pkg>systemimager-initrd-template-amd64</pkg>
-      <pkg>systemimager-initrd-template-i386</pkg>
+      <pkg>systemimager-server</pkg>
+      <pkg>systemimager-client</pkg>
+      <pkg>systemimager-server-flamethrowerd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>debian</dist>
-        <arch>i386</arch>
       </filters>
       <pkg>syslinux</pkg>
       <pkg>atftpd</pkg>
@@ -145,6 +152,16 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.0-5">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-08-01T00:05:53-05:00">
+        <item>Fix dependencies issues on Debian based systems.</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="4.0.0-4">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-07-31T13:18:24-05:00">
+        <item>Fix minor issues in the server post install script.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.0-3">
       <changelogEntry authorName="DongInn Kim" date="2007-11-24T21:00:24+05:00">
         <item>Add a requirement "xinetd" for ydl ppc</item>
