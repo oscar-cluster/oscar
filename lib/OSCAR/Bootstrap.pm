@@ -548,10 +548,18 @@ sub bootstrap_stage2 ($) {
     foreach my $prereq (@ordered_prereqs) {
         # TODO: ODA is both a prereq and a OPKG, this is a big mess!!!
         my $path;
+        my $prereq_name = basename ($prereq);
         if ($prereq ne "packages/oda") {
-            $path = "$prereqs_path/" . basename ($prereq);
+            $path = "$prereqs_path/$prereq_name";
         } else {
-            $path = $prereq;
+            # We check if by any chance OSCAR packager are smart and did put
+            # ODA files with other prereqs...
+            if ( -d "$prereqs_path/$prereq_name") {
+                $path = "$prereqs_path/$prereq_name";
+            } else {
+                # ... if not, we pray OSCAR_HOME is defined and provide ODA
+                $path = $prereq;
+            }
         }
         if (install_prereq ($path, $prereq_mode)) {
             carp "ERROR: Impossible to install a prereq ($path).\n";
