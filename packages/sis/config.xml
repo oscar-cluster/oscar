@@ -105,6 +105,9 @@
       <pkg>systemimager-server</pkg>
       <pkg>systemimager-client</pkg>
       <pkg>systemimager-server-flamethrowerd</pkg>
+      <pkg>systemconfigurator</pkg>
+      <pkg>systeminstaller-oscar</pkg>
+      <pkg>systeminstaller-oscar-x11</pkg>
     </requires>
     <requires>
       <filters>
@@ -114,6 +117,9 @@
       <pkg>atftpd</pkg>
       <pkg>systemimager-boot-i386-standard</pkg>
       <pkg>systemimager-initrd-template-i386</pkg>
+      <pkg>systemconfigurator</pkg>
+      <pkg>systeminstaller-oscar</pkg>
+      <pkg>systeminstaller-oscar-x11</pkg>
     </requires>
     <requires>
       <filters>
@@ -152,6 +158,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.0-6">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-08-10T15:31:41-05:00">
+        <item>Fix dependencies issues on Debian based systems.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.0-5">
       <changelogEntry authorName="Geoffroy Vallee" date="2008-08-01T00:05:53-05:00">
         <item>Fix dependencies issues on Debian based systems.</item>
