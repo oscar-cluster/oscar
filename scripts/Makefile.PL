@@ -7,7 +7,6 @@ WriteMakefile(
         'INSTALLBIN'        => '/usr/bin',
         'INSTALLSITESCRIPT' => '/usr/bin',
 		'MAN1PODS' => {
-			'create_oscar_database' => '$(INST_MAN1DIR)/create_oscar_database.$(MAN1EXT)',
 			'install_prereq' => '$(INST_MAN1DIR)/install_prereq.$(MAN1EXT)',
 			'install_server' => '$(INST_MAN1DIR)/install_server.$(MAN1EXT)',
 			'make_database_password' => '$(INST_MAN1DIR)/make_database_password.$(MAN1EXT)',
@@ -27,7 +26,6 @@ WriteMakefile(
 		},
         'EXE_FILES' => [qw(
             create_and_populate_basic_node_info
-            create_oscar_database
             distro-query
             get_arch
             get_num_proc
