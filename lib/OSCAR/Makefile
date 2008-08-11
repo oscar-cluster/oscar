@@ -2,7 +2,7 @@ DESTDIR=
 
 include ./Config.mk
 
-SUBDIRS := ODA OCA
+SUBDIRS := OCA
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
