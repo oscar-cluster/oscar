@@ -189,6 +189,7 @@ sub bootstrap_prereqs ($$) {
 #                                                                              #
 # Input: OSCAR configurator object (ConfigManager object).                     #
 # Return: 0 if success, -1 else.                                               #
+# TODO: that should be in ODA, not here.                                       #
 ################################################################################
 sub init_db ($) {
     my $configurator = shift;
@@ -206,18 +207,14 @@ sub init_db ($) {
         \%errors);
     print "Database_status: $database_status\n";
     if (!$database_status) {
-        print "\tWe need to initialize the database\n";
-        my $scripts_path = $config->{'scripts_path'};
-    my $cmd = "$scripts_path/make_database_password";
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to set database password ($cmd)\n";
-        return -1;
-    }
-    $cmd =  "$scripts_path/create_oscar_database";
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to create the database ($cmd)\n";
-        return -1;
-    }
+        require OSCAR::Database_generic;
+        OSCAR::Database_generic::init_database_passwd ($configurator);
+        my $scripts_path = $config->{'binaries_path'};
+        my $cmd =  "$scripts_path/create_oscar_database";
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to create the database ($cmd)\n";
+            return -1;
+        }
         print "--> Database created, now populating the database\n";
         $cmd = "$scripts_path/prepare_oda";
         if (system ($cmd)) {
@@ -533,7 +530,7 @@ sub bootstrap_stage1 ($) {
 #                                                                              #
 # Input: configurator, a ConfigManager object which represents values of the   #
 #        OSCAR configuration file.                                             #
-# Return: o if success, -1 else.                                               #
+# Return: 0 if success, -1 else.                                               #
 #                                                                              #
 # TODO: the prereqs.order isntalls also GUI related prereqs which are not used #
 # when using only the CLI. The GUI prereqs should be installed separately.     #
@@ -586,17 +583,12 @@ sub bootstrap_stage2 ($) {
         }
     }
 
-    if ($config->{db_type} eq "db") {
-        # we initialize the database if needed
-        require OSCAR::Database_generic;
-        OSCAR::Database_generic::init_database_passwd($configurator);
-    }
-
     # Then we try to install the server side of OSCAR
     if (init_server ($configurator)) {
         carp "ERROR: Impossible to install the server side of OSCAR\n";
         return -1;
     }
+    return 0;
 }
 
 ################################################################################

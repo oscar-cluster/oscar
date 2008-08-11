@@ -28,7 +28,9 @@ my %options;
 my @error_strings = ();
 
 # Step 1: we initilialize the database.
-OSCAR::Database::create_database (\%options, \@error_strings);
+if (OSCAR::Database::create_database (\%options, \@error_strings)) {
+    die "ERROR: Impossible to create the database";
+}
 
 # Step 2: we create the tables in the database.
 create_database_tables (\%options, \@error_strings);
