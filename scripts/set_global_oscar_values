@@ -43,6 +43,7 @@ use OSCAR::Database;
 use OSCAR::Database_generic;
 use OSCAR::Package;
 use OSCAR::PackagePath;
+use OSCAR::ConfigManager;
 use POSIX;
 use OSCAR::oda;
 
@@ -137,11 +138,30 @@ my @errors = ();
 # write out one global oscar record, or modify an existing one
 my @assigns = ();
 
+my $oscar_configurator = OSCAR::ConfigManager->new(
+        config_file => "/etc/oscar/oscar.conf");
+if (!defined ($oscar_configurator)) {
+    die "ERROR: Impossible to load the OSCAR configuration";
+}
+my $config = $oscar_configurator->get_config();
+if (!defined ($config)) {
+    die "ERROR: Impossible to load the OSCAR configuration after parsing\n";
+}
+
 # Get OSCAR's version
 
 my $oscar_version;
-my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "scripts/get-oscar-version.sh";
-my $oscar_version_file = $ENV{OSCAR_HOME} . "/" . "VERSION";
+my $oscar_version_script;
+my $oscar_version_file;
+if (defined $ENV{OSCAR_HOME}) {
+    $oscar_version_script = "$ENV{OSCAR_HOME}/scripts";
+    $oscar_version_file = $ENV{OSCAR_HOME};
+} else {
+    $oscar_version_script = $config->{'binaries_path'};
+    $oscar_version_file = "/etc/oscar";
+}
+$oscar_version_script = "$oscar_version_script/get-oscar-version.sh";
+$oscar_version_file = $oscar_version_file . "/" . "VERSION";
 
 # Use the scripty-foo to get oscar version information.
 
