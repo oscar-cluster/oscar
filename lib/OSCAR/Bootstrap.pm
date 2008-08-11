@@ -1,9 +1,9 @@
 package OSCAR::Bootstrap;
 
 #
-# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
-#                    Oak Ridge National Laboratory
-#                    All rights reserved.
+# Copyright (c) 2007-2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                         Oak Ridge National Laboratory
+#                         All rights reserved.
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,8 +34,6 @@ use Carp;
 
 @EXPORT = qw (
                 bootstrap_stage0
-                init_db
-                init_file_db
                 load_oscar_config
                 oscar_bootstrap
                 install_prereq
@@ -183,95 +181,6 @@ sub bootstrap_prereqs ($$) {
     return 0;
 }
 
-################################################################################
-# Initialize the database used by ODA when a real database is used (e.g.,      #
-# mysql).                                                                      #
-#                                                                              #
-# Input: OSCAR configurator object (ConfigManager object).                     #
-# Return: 0 if success, -1 else.                                               #
-# TODO: that should be in ODA, not here.                                       #
-################################################################################
-sub init_db ($) {
-    my $configurator = shift;
-    if (!defined ($configurator)) {
-        carp "ERROR: invalid configurator object\n";
-        return -1;
-    }
-    my $config = $configurator->get_config();
-
-    require OSCAR::oda;
-    print "Database Initialization\n";
-    my (%options, %errors);
-    my $database_status = oda::check_oscar_database(
-        \%options,
-        \%errors);
-    print "Database_status: $database_status\n";
-    if (!$database_status) {
-        require OSCAR::Database_generic;
-        OSCAR::Database_generic::init_database_passwd ($configurator);
-        my $scripts_path = $config->{'binaries_path'};
-        my $cmd =  "$scripts_path/create_oscar_database";
-        if (system ($cmd)) {
-            carp "ERROR: Impossible to create the database ($cmd)\n";
-            return -1;
-        }
-        print "--> Database created, now populating the database\n";
-        $cmd = "$scripts_path/prepare_oda";
-        if (system ($cmd)) {
-            carp "ERROR: Impossible to populate the database ($cmd)\n";
-            return -1;
-        }
-        # We double-check if the database really exists
-        $database_status = oda::check_oscar_database(
-            \%options,
-            \%errors);
-        if (!$database_status) {
-            carp "ERROR: The database is supposed to have been created but\n".
-                  " we cannot connect to it.\n";
-            return -1;
-        }
-    }
-    return 0;
-}
-
-################################################################################
-# Initialize the database used by ODA when flat files are used (e.g.mysql).    #
-#                                                                              #
-# Input: None.                                                                 #
-# Return: 0 if success, -1 else.                                               #
-################################################################################
-sub init_file_db () {
-    # We get the configuration from the OSCAR configuration file.
-    my $oscar_configurator = OSCAR::ConfigManager->new();
-    if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
-        return -1;
-    }
-    my $config = $oscar_configurator->get_config();
-    my $scripts_path = $config->{binaries_path};
-
-    # We just check if the directories exist in /etc/oscar
-    my $path = "/etc/oscar/";
-    my $opkgs_config_path = $path . "opkgs";
-    my $clusters_path = $path . "clusters";
-
-    if ( ! -d $path ) {
-        mkdir ($path);
-    }
-    if ( ! -d $clusters_path ) {
-        mkdir ($clusters_path);
-    }
-    if ( ! -d $opkgs_config_path ) {
-        mkdir ($opkgs_config_path);
-    }
-    print "--> Database created, now populating the database\n";
-    my $cmd = "$scripts_path/prepare_oda";
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to populate the database ($cmd)\n";
-        return -1;
-    }
-    return 0;
-}
 
 ################################################################################
 # After the basic bootstrapping, we install everything needed for the OSCAR    #
@@ -305,15 +214,16 @@ sub init_server ($) {
     }
 
     my $db_type = $oscar_cfg->{'db_type'};
+    require OSCAR::ODA::Bootstrap;
     if ($db_type eq "db") {
         # We initialize the database if needed
-        if (init_db ($configurator)) {
+        if (OSCAR::ODA::Bootstrap::init_db ($configurator)) {
             carp "ERROR: impossible to initialize the database\n";
             return -1;
         }
     } elsif ($db_type eq "file") {
         # We initialize the database if needed
-        if (init_file_db ()) {
+        if (OSCAR::ODA::Bootstrap::init_file_db ()) {
             carp "ERROR: impossible to initialize the file based database\n";
             return -1;
         }
