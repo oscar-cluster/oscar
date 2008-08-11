@@ -38,13 +38,22 @@ use Carp;
                 init_file_db
                 load_oscar_config
                 oscar_bootstrap
+                install_prereq
              );
+
+our $ippath;
+
+our $prereq_mode;
 
 # Specify where the install_prereq script is
 our $ipcmd;
 
 # Specify where the install_server script is
 our $iscmd;
+
+our $prereq_path;
+
+my $configfile_path = "/etc/oscar/oscar.conf";
 
 my $verbose = $ENV{OSCAR_VERBOSE};
 
@@ -88,28 +97,34 @@ sub oscar_bootstrap ($) {
 # script.                                                                      #
 #                                                                              #
 # Input: prereq path (i.e., the path of the prereq configuration file.         #
+#        prereq_mode The mode in which is when to deal with prereqs            #
+#                    ("check_only" or "check_and_fix").                        #
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
-sub install_prereq ($$) {
-    my ($prereq_path, $prereq_mode) = @_;
+sub install_prereq ($$$) {
+    my ($prereq_cmd, $prereq_path, $prereq_mode) = @_;
     my $cmd;
 
     # We get the current status of the prereq first
-    $cmd = $ipcmd . " --status " . $prereq_path;
+    $cmd = $prereq_cmd . " --status " . $prereq_path;
     my $prereq_name = basename ($cmd);
     print "\nDealing with Prereq $prereq_name\n" if $verbose;
     if (system ($cmd)) {
         print "$prereq_name is not installed.\n" if $verbose;
 
+        if ($prereq_mode eq "check_only") {
+            print "INFO: Please install the prereq $prereq_name manually\n";
+            return 0;
+        }
         # We try to install the prereq
-        $cmd = $ipcmd . " --smart " . $prereq_path;
+        $cmd = $prereq_cmd . " --smart " . $prereq_path;
         if (system ($cmd)) {
             carp "ERROR: impossible to install $prereq_name ($cmd).\n";
             return -1;
         }
 
         # Packman should be installed now
-        $cmd = $ipcmd . " --status " . $prereq_path;
+        $cmd = $prereq_cmd . " --status " . $prereq_path;
         if (system ($cmd)) {
             carp "ERROR: $prereq_name is still not installed\n";
             return -1;
@@ -338,8 +353,6 @@ sub init_server ($) {
 # Return: a ConfigManager object if success, undef else.                       #
 ################################################################################
 sub bootstrap_stage0 () {
-    my $configfile_path = "/etc/oscar/oscar.conf";
-
     # Tricky situation: the software to parse the configuration file may not be
     # installed and the location of the information to install it is in the 
     # config file. Hopefully we know that the configuration file is 
@@ -353,12 +366,12 @@ sub bootstrap_stage0 () {
     # We quickly parse the file to get the lines we are looking for
     open(MYFILE, $configfile_path);
     my $line;
-    my ($var, $path, $ippath, $prereq_mode);
+    my ($var);
     while ($line = <MYFILE>) {
         chomp ($line);
         # delete BOTH leading and trailing whitespace from each line
         if ($line =~ /^([ \t]*)PREREQS_PATH/) {
-            ($var, $path) = split ("=", $line);
+            ($var, $prereq_path) = split ("=", $line);
         }
         if ($line =~ /^([ \t]*)OSCAR_SCRIPTS_PATH/) {
             ($var, $ippath) = split ("=", $line);
@@ -374,7 +387,7 @@ sub bootstrap_stage0 () {
     # Now that we know where the prereqs are, we try to install AppConfig
     $ipcmd = $ippath . "/install_prereq ";
     print "install_prereq found: $ipcmd\n";
-    my $appconfig_path = $path . "/AppConfig";
+    my $appconfig_path = $prereq_path . "/AppConfig";
     if (bootstrap_prereqs ($appconfig_path, $prereq_mode)) {
         carp "ERROR: impossible to install appconfig\n";
         return undef;
@@ -517,7 +530,7 @@ sub bootstrap_stage2 ($) {
     # First we install the basic prereqs
     my $baseprereqs_path = $config->{'prereqs_path'} . "/base";
     my $prereq_mode = $config->{'prereq_mode'};
-    if (install_prereq ($baseprereqs_path, $prereq_mode)) {
+    if (install_prereq ($ipcmd, $baseprereqs_path, $prereq_mode)) {
         carp "ERROR: impossible to install base prereqs ($baseprereqs_path)\n";
         return -1;
     }
@@ -561,7 +574,7 @@ sub bootstrap_stage2 ($) {
                 $path = $prereq;
             }
         }
-        if (install_prereq ($path, $prereq_mode)) {
+        if (install_prereq ($ipcmd, $path, $prereq_mode)) {
             carp "ERROR: Impossible to install a prereq ($path).\n";
             return -1;
         }
