@@ -298,6 +298,14 @@ sub init_server ($) {
     my $oscar_cfg = $configurator->get_config ();
 
     require OSCAR::Logger;
+    # We bootstrap ODA
+    my $cmd = $oscar_cfg->{'binaries_path'} . "/oda --init mysql";
+#    OSCAR::Logger::oscar_log_subsection ("Executing: $cmd\n");
+    print "Executing: $cmd\n";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
 
     my $db_type = $oscar_cfg->{'db_type'};
     if ($db_type eq "db") {
@@ -504,6 +512,15 @@ sub bootstrap_stage1 ($) {
         return -1;
     }
 
+    # Now we try to bootstrap ODA
+    # First we install the basic prereqs
+    my $odaprereqs_path = $config->{'prereqs_path'} . "/OSCAR-Database";
+    my $prereq_mode = $config->{'prereq_mode'};
+    if (install_prereq ($ipcmd, $odaprereqs_path, $prereq_mode)) {
+        carp "ERROR: impossible to install ODA prereqs ($odaprereqs_path)\n";
+        return -1;
+    }
+
     return 0;
 }
 
@@ -560,20 +577,7 @@ sub bootstrap_stage2 ($) {
     close (MYFILE);
     foreach my $prereq (@ordered_prereqs) {
         # TODO: ODA is both a prereq and a OPKG, this is a big mess!!!
-        my $path;
-        my $prereq_name = basename ($prereq);
-        if ($prereq ne "packages/oda") {
-            $path = "$prereqs_path/$prereq_name";
-        } else {
-            # We check if by any chance OSCAR packager are smart and did put
-            # ODA files with other prereqs...
-            if ( -d "$prereqs_path/$prereq_name") {
-                $path = "$prereqs_path/$prereq_name";
-            } else {
-                # ... if not, we pray OSCAR_HOME is defined and provide ODA
-                $path = $prereq;
-            }
-        }
+        my $path = $prereq_path . "/" . basename ($prereq);
         if (install_prereq ($ipcmd, $path, $prereq_mode)) {
             carp "ERROR: Impossible to install a prereq ($path).\n";
             return -1;

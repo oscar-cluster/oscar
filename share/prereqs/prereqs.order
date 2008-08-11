@@ -12,7 +12,6 @@
 # smartly installed prereqs follow
 share/prereqs/perl-XML-Parser
 share/prereqs/perl-XML-Simple
-packages/oda
 share/prereqs/perl-HTML-Tree
 share/prereqs/perl-Tk
 share/prereqs/perl-Qt

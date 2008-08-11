@@ -80,6 +80,7 @@ install: build
 #	mkdir -p $(CURDIR)/debian/oscar/opt/oscar
 	rm -f `find $(CURDIR) -name "*.deb"`
 	rm -f `find $(CURDIR) -name "*.rpm"`
+	rm -f $(CURDIR)/lib/OSCAR/oda.pm
 	mv $(CURDIR)/COPYING \
 		$(CURDIR)/debian/oscar/usr/share/doc/oscar
 	mv $(CURDIR)/README \

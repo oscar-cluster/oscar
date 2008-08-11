@@ -11,7 +11,6 @@ WriteMakefile(
 			'install_prereq' => '$(INST_MAN1DIR)/install_prereq.$(MAN1EXT)',
 			'install_server' => '$(INST_MAN1DIR)/install_server.$(MAN1EXT)',
 			'make_database_password' => '$(INST_MAN1DIR)/make_database_password.$(MAN1EXT)',
-			'oda' => '$(INST_MAN1DIR)/oda.$(MAN1EXT)',
 			'opd2' => '$(INST_MAN1DIR)/opd2.$(MAN1EXT)',
 			'oscar-config' => '$(INST_MAN1DIR)/oscar-config.$(MAN1EXT)',
 			'oscar' =>  '$(INST_MAN1DIR)/oscar.$(MAN1EXT)',
@@ -40,7 +39,6 @@ WriteMakefile(
             macinfo2sis
             make_database_password
             OCA-driver
-            oda
             opd
             opd2
             oscar
@@ -51,11 +49,9 @@ WriteMakefile(
             oscar_wizard
             ping_clients
             populate_default_package_set
-            populate_oda_packages_table
             post_clients
             post_install
             post_rpm_install
-            prepare_oda
             prepare_repos
             prep_oscar_repos
             repo-update
