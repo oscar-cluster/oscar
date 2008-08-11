@@ -207,7 +207,7 @@ sub mac_window {
     our $install_mode;
 
     # Retrive the installation mode from ODA
-    my $orig_install_mode = get_install_mode();
+    my $orig_install_mode = OSCAR::Database::get_install_mode(undef, undef);
 
     $install_mode = $orig_install_mode;
 

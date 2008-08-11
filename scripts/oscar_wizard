@@ -74,7 +74,7 @@ use vars qw($config);
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
-if(!$ENV{OSCAR_HOME}) {
+if(!$ENV{OSCAR_HOME} && !-f "/usr/bin/oscar_wizard") {
     croak "The environmental variable OSCAR_HOME is not set.  Please set it to the directory that OSCAR is untarred in, or run oscar_wizard again.";
 }
 
@@ -145,7 +145,7 @@ if ( $ARGV[0] ) {
    }
 }
 
-my $interface = get_headnode_iface();
+my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
 
 # Set some things in the environment
 
@@ -158,9 +158,19 @@ $window->title("OSCAR Wizard - $shostname");
 
 # Get OSCAR's version
 
+require OSCAR::ConfigManager;
+my $path = "/etc/oscar/oscar.conf";
+my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$path");
+my $config = $oscar_cfg->get_config();
+
 my $oscar_version;
-my $oscar_version_script = $ENV{OSCAR_HOME} ."/" . "scripts/get-oscar-version.sh";
-my $oscar_version_file = $ENV{OSCAR_HOME} . "/" . "VERSION";
+my $oscar_version_script = $config->{'binaries_path'} . "/get-oscar-version.sh";
+my $oscar_version_file;
+if (defined $ENV{OSCAR_HOME}) {
+    $oscar_version_file = $ENV{OSCAR_HOME} . "/" . "VERSION";
+} else {
+    $oscar_version_file = "/etc/oscar/VERSION";
+}
 
 # Use the scripty-foo to get oscar version information.
 
@@ -182,7 +192,15 @@ else {
 #
 # The title Group
 #
-my $image = "$ENV{OSCAR_HOME}/images/oscar.gif"; 
+
+my $image;
+if (defined $ENV{OSCAR_HOME}) {
+    $image = "$ENV{OSCAR_HOME}/images/oscar.gif";
+} elsif (-f "/usr/share/oscar/images/oscar.gif") {
+    $image = "/usr/share/oscar/images/oscar.gif";
+} else {
+    die "ERROR: Impossible to find oscar.gif";
+}
 
 my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
                          -background=>"white");
@@ -335,8 +353,8 @@ oscar_button($window, $step_string, "Test Cluster Setup",
 	     [\&run_tests, $window, $step_number], 'test_install');
 
 if ( $mode eq "manage" ) {
-   oscar_button($window, "", "Network Boot Manager", [\&netbootmgr, $window], 'netbootmgr') if is_installed_on_node("netbootmgr");
-   oscar_button($window, "", "Ganglia Monitoring System", [\&ganglia, $window], 'ganglia') if is_installed_on_node("ganglia");
+   oscar_button($window, "", "Network Boot Manager", [\&netbootmgr, $window], 'netbootmgr') if OSCAR::Database::is_installed_on_node("netbootmgr", undef, undef, undef, undef, undef);
+   oscar_button($window, "", "Ganglia Monitoring System", [\&ganglia, $window], 'ganglia') if OSCAR::Database::is_installed_on_node("ganglia", undef, undef, undef, undef, undef);
 }
 
 #
@@ -666,8 +684,8 @@ sub postaddclients {
 
 sub do_it_or_die {
     my ( $command, $results_ref, $error ) = @_;
-    return if dec_already_locked( $command, $results_ref, 1 );
-    database_disconnect();
+    return if OSCAR::Database::dec_already_locked($command, $results_ref);
+    OSCAR::Database::database_disconnect(undef, undef);
     die "$0: $error";
 }
 
@@ -690,11 +708,12 @@ sub populate_client_group_nodes {
     # We assume that all the selected packages should be installed
     my $status = 2;
     foreach my $node_name (@nodes){
-        update_node_package_status(\%options,
+        OSCAR::Database::update_node_package_status(\%options,
                                    $node_name,
                                    \@pkgs,
                                    $status,
-                                   \@errors);
+                                   \@errors,
+                                   undef);
     }
 
 #    unlock(\%options, \@errors);

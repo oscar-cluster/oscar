@@ -166,7 +166,9 @@ sub getSelectedConfigurablePackages
   #  "packages_in_selected_package_set packages.package", \@results,1);
   my $success = OSCAR::Database::get_selected_group_packages(\@results,
                                                              \%options,
-                                                             \@error_list); 
+                                                             \@error_list,
+                                                             undef,
+                                                             undef); 
 
   # Transform the list into a hash; keys=short pkg name, values=long pkg name
   foreach my $pkg_ref (@results) {

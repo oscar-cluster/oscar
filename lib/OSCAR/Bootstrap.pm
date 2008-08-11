@@ -325,6 +325,9 @@ sub init_server ($) {
     # OSCAR::Opkg requires XML::Simple which is not available initially but 
     # after prereq installation
     require OSCAR::Opkg;
+    require OSCAR::Utils;
+
+    OSCAR::Logger::oscar_log_section("Installing server core packages");
 
     # Get the list of just core packages
     my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
@@ -333,10 +336,9 @@ sub init_server ($) {
         return -1;
     }
 
-    OSCAR::Logger::oscar_log_subsection("Identified core packages: " . 
-        join(' ', @core_opkgs));
+    print ("Identified core packages: " . join(' ', @core_opkgs));
+    OSCAR::Utils::print_array (@core_opkgs);
 
-    OSCAR::Logger::oscar_log_section("Installing server core packages");
     if (OSCAR::Opkg::opkgs_install ("server", @core_opkgs)) {
         carp "ERROR: Impossible to install server core packages\n";
         return -1;

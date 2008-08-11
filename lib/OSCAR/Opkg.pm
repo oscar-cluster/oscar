@@ -124,7 +124,7 @@ sub opkgs_install ($@) {
     eval("require OSCAR::PackMan");
     my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0), @repos);
     if (!$pm) {
-        carp "\nERROR: Could not create PackMan instance!\n";
+        carp "ERROR: Could not create PackMan instance!\n";
         return -1;
     }
 
@@ -139,8 +139,8 @@ sub opkgs_install ($@) {
         carp ("ERROR: Unsupported opkg type: $type");
         return -1;
     }
-    OSCAR::Logger::oscar_log_subsection(
-        "Need to install the following packages: " . join (", ", @olist));
+    print ("Need to install the following packages: " . join (", ", @olist));
+    print "\n";
     my ($err, @out) = $pm->smart_install(@olist);
     if ($err) {
         carp "Error occured during smart_install ($err):\n";

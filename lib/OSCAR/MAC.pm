@@ -407,7 +407,7 @@ sub __enable_install_mode {
 
     our $os;
     my $cmd;
-    my $interface = get_headnode_iface();
+    my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
 
     my $os_detect = OSCAR::OCA::OS_Detect::open();
     my $binary_format = $os_detect->{'pkg'};
@@ -524,7 +524,7 @@ sub __enable_install_mode {
     }
 
     # Store installation mode in ODA
-    set_install_mode($install_mode);
+    OSCAR::Database::set_install_mode($install_mode, undef, undef);
 
     oscar_log_subsection("Step $step_number: Successfully enabled installation mode: $install_mode");
 

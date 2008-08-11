@@ -111,8 +111,14 @@ sub install_uninstall_packages
     my @selected = ();
     my @unselected = ();
     
-    $success = OSCAR::Database::get_selected_packages(\@selected,\%options,\@error_list);
-    $success = OSCAR::Database::get_unselected_packages(\@unselected,\%options,\@error_list);
+    $success = OSCAR::Database::get_selected_packages(\@selected,
+                                                      \%options,
+                                                      \@error_list,
+                                                      undef);
+    $success = OSCAR::Database::get_unselected_packages(\@unselected,
+                                                        \%options,
+                                                        \@error_list,
+                                                        undef);
     foreach my $selected_ref (@selected){
         push @packagesThatShouldBeInstalled, $$selected_ref{package};
     }    
@@ -194,8 +200,8 @@ sub install_uninstall_packages
             if (@results) {
                 my $pstatus_ref = pop @results;
                 my $ex_status = $$pstatus_ref{ex_status};
-                update_node_package_status(
-                    \%options,$node,$package,$ex_status,\@error_list);
+                OSCAR::Database::update_node_package_status(
+                    \%options, $node, $package, $ex_status, \@error_list, undef);
             }
 			my $e_string = "Error: package ($package) failed to uninstall.\n";
 			print $e_string;
@@ -229,8 +235,8 @@ sub install_uninstall_packages
             if (@results) {
                 my $pstatus_ref = pop @results;
                 my $ex_status = $$pstatus_ref{ex_status};
-                update_node_package_status(
-                    \%options,$node,$package,$ex_status,\@error_list);
+                OSCAR::Database::update_node_package_status(
+                    \%options,$node,$package,$ex_status,\@error_list,undef);
             }
 			my $e_string = "Error: package ($package) failed to install.\n";
 			print $e_string;
@@ -1347,7 +1353,7 @@ sub is_installed{
     my ($package_name, $selector) = @_;	
 
     return OSCAR::Database::is_installed_on_node($package_name,
-            $OSCAR_SERVER_NODE,\%options,\@error_list,$selector);
+            $OSCAR_SERVER_NODE,\%options,\@error_list,$selector,undef);
 }
 
 sub uninstall_rpms_patch

@@ -156,14 +156,14 @@ sub delnodes {
     my @server_services=();
     my $print_error=1;
 
-    my $interface = get_headnode_iface();
-    my $install_mode = get_install_mode();
+    my $interface = get_headnode_iface(undef, undef);
+    my $install_mode = get_install_mode(undef, undef);
 
     # get the list of generic services
-    get_packages_servicelists(\@generic_services,"");
+    get_packages_servicelists(\@generic_services, "", undef, undef);
     
     # get the list of services for servers
-    get_packages_servicelists(\@server_services,"oscar_server");
+    get_packages_servicelists(\@server_services, "oscar_server", undef, undef);
     
     print ">> Turning off generic services\n";
     foreach my $services_ref (@generic_services) {
@@ -220,7 +220,7 @@ sub delnodes {
     }
     
     print ">> Updating C3 configuration file\n";
-    if (!run_pkg_script("c3","post_clients",1)) {
+    if (!OSCAR::Package::run_pkg_script("c3", "post_clients", 1, "")) {
         carp("C3 configuration file update phase failed.");
         $fail++;
     }
@@ -287,7 +287,7 @@ sub selectallnodes {
 sub delete_client_node_opkgs {
     my @nodes = @_;
     foreach my $node (@nodes){
-       if (!delete_node($node)) {
+       if (!OSCAR::Database::delete_node($node, undef, undef)) {
           carp("Failed to delete the records for node_config_revs and config_opkgs");
        }
     }

@@ -62,7 +62,8 @@ sub update_client_node_package_status ($$) {
                                                     $node_name,
                                                     \@pkgs,
                                                     $status,
-                                                    $errors);
+                                                    $errors,
+                                                    undef);
     }
 
 #    unlock(\%options, \@errors);
