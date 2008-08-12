@@ -46,6 +46,7 @@ use OSCAR::PackagePath;
 use OSCAR::ConfigManager;
 use POSIX;
 use OSCAR::oda;
+use Carp;
 
 my %cmd_options = ();
 
@@ -188,6 +189,7 @@ my @error_strings = ();
 # Updating will not happen at the normal OSCAR installation
 # unless a user manually runs this script.
 my $query_results = get_cluster_info_with_name("",\%options,\@error_strings);
+my $ret;
 if ( !$query_results ){
     %field_value_hash = ( "name" => "oscar",
                             "oscar_version" => $oscar_version,
@@ -196,7 +198,14 @@ if ( !$query_results ){
                             "server_architecture" => $oscar_server_architecture,
                             "headnode_interface" => "$cmd_options{interface}",
                             "installation_date" => "NOW()" );
-    insert_into_table (\%options,"Clusters", \%field_value_hash,\@error_strings);                
+    $ret = insert_into_table (\%options,
+                              "Clusters",
+                              \%field_value_hash,
+                              \@error_strings);
+    if ($ret == 0) {
+        die "ERROR: Insertion into the table impossible ($ret, "
+             . join(".", @error_strings).").";
+    }
 } else {
 	print "DB_DEBUG>$0:\n====> very strange, there are more than 1 records table <$global_values_table>\n"
 	    if (ref($query_results) ne "HASH") && (scalar @$query_results > 1) ;
@@ -207,7 +216,15 @@ if ( !$query_results ){
                             "server_architecture" => $oscar_server_architecture,
                             "headnode_interface" => "$cmd_options{interface}",
                             "installation_date" => "NOW()" );
-    update_table(\%options,"Clusters", \%field_value_hash,undef,\@error_strings);                        
+    $ret = update_table(\%options,
+                        "Clusters",
+                        \%field_value_hash,
+                        undef,
+                        \@error_strings);
+    if ($ret == 0) {
+        die "ERROR: Impossible to update the Clusters table ($ret, "
+            . join(".", @error_strings).").";
+    }
 }
 
 # Set up "Group" table with the global values.
@@ -219,13 +236,21 @@ my %groups = ("oscar_server" => "node",
               "image" => "image", 
               "core" => "package",
               "included" => "package");
-set_all_groups(\%groups,\%options,@error_strings);
+$ret = set_all_groups(\%groups,\%options,@error_strings);
+if ($ret == 0) {
+    die "ERROR: Impossible to set all group ($ret, "
+        . join(".", @error_strings).").";
+}
 
 # Set up "Status" table with the global values.
 # The current status values are..
 # ("installable", "installed", "install_allowed","should_be_installed",
 #  "should_be_uninstalled", "uninstalled, "finished")
-set_status(\%options,\@error_strings);
+$ret = set_status(\%options,\@error_strings);
+if ($ret == 0) {
+    die "ERROR: Impossible to set all group ($ret, "
+        . join(".", @error_strings).").";
+}
 
 # UNLOCKING FOR NEST
 #unlock(\%options, \@errors);
