@@ -53,7 +53,6 @@ WriteMakefile(
             prepare_repos
             prep_oscar_repos
             repo-update
-            set_global_oscar_values
             set_node_nics
             set_oscar_interface
             setup_pxe
