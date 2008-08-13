@@ -1,5 +1,5 @@
 DESTDIR=
-TOP_LIB_DIR = ../..
+TOP_LIB_DIR = ../../..
 include $(TOP_LIB_DIR)/Config.mk
 
 SUBDIRS := 

@@ -1,6 +1,7 @@
 DESTDIR=
 
-include ./Config.mk
+TOPDIR = ..
+include $(TOPDIR)/Config.mk
 
 SUBDIRS := OCA
 
