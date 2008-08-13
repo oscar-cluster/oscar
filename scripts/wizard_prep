@@ -469,7 +469,7 @@ oscar_log_subsection("Successfully installed server core OPKGs");
 # them in case innodb works as we expected.
 
 # START LOCKING FOR NEST && open the database
-my @tables = ("Nodes","Groups","Group_Nodes", "Packages", "Group_Packages", "Node_Package_Status");
+#my @tables = ("Nodes","Groups","Group_Nodes", "Packages", "Group_Packages", "Node_Package_Status");
 my %options = ();
 my @errors = ();
 #locking("write", \%options, \@tables, \@errors);

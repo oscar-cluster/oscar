@@ -30,6 +30,7 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
+use Data::Dumper;
 use File::Basename;
 use Carp;
 
@@ -43,6 +44,7 @@ use Carp;
 	     );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
+$verbose = 1;
 
 ####
 # List all opkgs which are available in the accessible repositories.
@@ -53,39 +55,48 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 #            fake=>{distro=>distroname, version=>distrover, arch=>arch}
 #                don't detect distro, use passsed values
 # 
-# Returns array of API opkg names
+# Returns array of API opkg names, undef if error.
 ####
 sub opkg_list_available {
     my %scope = @_;
     my %opkgs;
 
-    my $os = OSCAR::OCA::OS_Detect::open(%scope);
-    return () if !$os;
+    my $os;
+    if (defined($scope{os})) {
+        $os = $scope{os};
+    } else {
+        $os = OSCAR::OCA::OS_Detect::open(%scope);
+    }
+    return undef if !$os;
 
     my $repo = make_repostring($os);
     my $pkg = $os->{pkg};
     if ($pkg eq "rpm") {
-	my $cmd="/usr/bin/yume $repo --repoquery --nevra opkg-*-server";
-	print STDERR "Running $cmd" if $verbose;
-	open CMD, "$cmd |" or die "Error: $!";
-	while (<CMD>) {
-	    if (m/^opkg-(.*)-server-(.*).noarch/) {
-		    $opkgs{$1} = $2;
-	    }
-	}
-	close CMD;
+    	my $cmd="/usr/bin/yume $repo --repoquery --nevra opkg-*-server";
+	    print STDERR "Running $cmd" if $verbose;
+    	open CMD, "$cmd |" or die "Error: $!";
+	    while (<CMD>) {
+    	    if (m/^opkg-(.*)-server-(.*).noarch/) {
+	    	    $opkgs{$1} = $2;
+	        }
+    	}
+	    close CMD;
     } elsif ($pkg eq "deb") {
-	my $cmd="/usr/bin/rapt --repo $repo --names-only search 'opkg-.*-server'";
-	print "Running $cmd" if $verbose;
-	open CMD, "$cmd |" or die "Error: $!";
-	while (<CMD>) {
-	    if (m/^opkg-(.*)-server -/) {
-		$opkgs{$1} = 1;
+    	my $cmd="/usr/bin/rapt $repo --names-only search 'opkg-.*-server'";
+	    print "Running $cmd\n" if $verbose;
+    	open CMD, "$cmd |" or die "Error: $!";
+	    while (<CMD>) {
+	        if (m/^opkg-(.*)-server/) {
+    	    	$opkgs{$1} = 1;
+    	    }
 	    }
-	}
-	close CMD;
+    	close CMD;
     } else {
-	return undef;
+	    return undef;
+    }
+    if (keys(%opkgs) == 0) {
+        carp "ERROR: impossible to find any OSCAR package";
+        return undef;
     }
     return sort(keys(%opkgs));
 }
@@ -139,24 +150,28 @@ sub opkg_hash_available {
     $os = OSCAR::OCA::OS_Detect::open(%scope) if !$os;
     return undef if !$os;
 
-    my $repo = &oscar_repostring($os);
-    my $dist = &os_cdistro_string($os);
+    my $repo = oscar_repostring($os);
+    my $dist = os_cdistro_string($os);
     my $pkg = $os->{pkg};
     my $isdesc = 1;
     my ($name, $rel, $ver, $packager, $summary, $desc, $class, $conflicts);
     my $group;
     if ($pkg eq "rpm") {
-    my $cmd="/usr/bin/yume $repo --repoquery --info opkg-*-server";
-    %o = &hash_from_cmd_rpm($cmd, $dist);
-
+        my $cmd="/usr/bin/yume $repo --repoquery --info opkg-*-server";
+        %o = hash_from_cmd_rpm($cmd, $dist);
     } elsif ($pkg eq "deb") {
-    my @opkgs = &opkg_list_available(%scope);
-    @opkgs = map { "opkg-$_" } @opkgs;
-    #TODO# add show option to rapt
-    my $cmd="/usr/bin/rapt --repo $repo show ".join(" ", @opkgs);
-    print "Running $cmd" if $verbose;
-    open CMD, "$cmd |" or die "Error: $!";
-    while (<CMD>) {
+        my @opkgs = &opkg_list_available(%scope);
+        require OSCAR::Utils;
+        OSCAR::Utils::print_array (@opkgs);
+        if (scalar (@opkgs) == 0) {
+            carp "ERROR: did not found any OSCAR package";
+            return undef;
+        }
+        @opkgs = map { "opkg-$_" } @opkgs;
+        my $cmd="/usr/bin/rapt $repo show ".join(" ", @opkgs);
+        print "Running $cmd\n" if $verbose;
+        open CMD, "$cmd |" or die "Error: $!";
+        while (<CMD>) {
         chomp;
         if (/^Package: (.*)$/) {
         $name = $1;
@@ -232,6 +247,7 @@ sub opkg_hash_available {
         print "\n" if $verbose;
     }
     }
+    print Dumper %o;
     return %o;
 }
 
@@ -422,6 +438,23 @@ sub opkg_api_path ($) {
     return dirname($path) if $path;
 }
 
+####
+# oscar_repostring: Prepare arguments string with repository names for
+#                  the passed os.
+#
+# Only querying the OSCAR repository, not the distro repository!
+####
+sub oscar_repostring {
+    my ($os) = @_;
+
+    my $orepo = OSCAR::PackagePath::oscar_repo_url(os=>$os);
+    my $repo;
+    for my $r (split /,/, $orepo) {
+    $repo .= " --repo $r";
+    }
+    $repo =~ s/^ //;
+    return $repo;
+}
 
 ##########################################################################
 ### Helper functions, not exported
@@ -561,5 +594,9 @@ sub opkg_localdeb_info {
 sub opkg_test {
     
 }
+
+# Gv: For debugging.
+#my $os = OSCAR::OCA::OS_Detect::open();
+#opkg_hash_available( os => $os );
 
 1;

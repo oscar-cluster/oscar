@@ -78,6 +78,18 @@ if(!$ENV{OSCAR_HOME} && !-f "/usr/bin/oscar_wizard") {
     croak "The environmental variable OSCAR_HOME is not set.  Please set it to the directory that OSCAR is untarred in, or run oscar_wizard again.";
 }
 
+my $mode = "manage"; # default mode is manage
+if ( $ARGV[0] eq "manage" ) {
+    $mode = "manage";
+} elsif ( $ARGV[0] eq "install" ) {
+    $mode = "install";
+} else {
+    print "Usage: oscar_wizard [install|manage]\n\n";
+    print "       install brings up the wizard in installation mode\n";
+    print "       manage brings up the wizard in management mode (default)\n";
+    exit 1;
+}
+
 # Some globals
 
 my $save_text;
@@ -85,7 +97,6 @@ my %options = ();
 my @errors = ();
 my @client_nodes = ();
 my $debug = $ENV{DEBUG_OSCAR_WIZARD};
-my $mode = "manage"; # default mode is manage
 
 my %buttons = ();
 
@@ -131,19 +142,6 @@ if (-f $lockfile) {
 open(LOCKFILE, ">$lockfile");
 print LOCKFILE $$;
 close(LOCKFILE);
-
-if ( $ARGV[0] ) {
-   if ( $ARGV[0] eq "manage" ) {
-      $mode = "manage";
-   } elsif ( $ARGV[0] eq "install" ) {
-      $mode = "install";
-   } else {
-      print "Usage: oscar_wizard [install|manage]\n\n";
-      print "       install brings up the wizard in installation mode\n";
-      print "       manage brings up the wizard in management mode (default)\n";
-      exit 1;
-   }
-}
 
 my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
 

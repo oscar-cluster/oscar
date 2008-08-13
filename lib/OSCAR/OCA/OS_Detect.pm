@@ -73,7 +73,7 @@ sub open {
     } elsif (exists($arg{fake})) {
         $fake = $arg{fake};
     } else {
-        print STDERR "ERROR: Unknown detection target in OS_Detect:".
+        print STDERR "ERROR: Unknown detection target in OS_Detect: ".
             join(",",keys(%arg))."\n";
         return undef;
     }

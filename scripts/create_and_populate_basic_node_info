@@ -71,7 +71,12 @@ my @errors = ();
 my $msg = "in create_and_populate_basic_node_info Populating Nodes records for oscar_server ...\n";
 print "DB_DEBUG>$0:====>\n$msg" if $options{debug};
 @errors = ("cannot read nodes database table");
-set_node_with_group($OSCAR_SERVER_NODE,$OSCAR_SERVER_GROUP,\%options,\@errors);
+if (set_node_with_group($OSCAR_SERVER_NODE,
+                        $OSCAR_SERVER_GROUP,
+                        \%options,
+                        \@errors) != 1) {
+    die "ERROR: Impossible to set headnode information in the database";
+}
 
 
 # update some of the fields in the node record for oscar_server
