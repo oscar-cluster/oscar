@@ -78,7 +78,6 @@ if (set_node_with_group($OSCAR_SERVER_NODE,
     die "ERROR: Impossible to set headnode information in the database";
 }
 
-
 # update some of the fields in the node record for oscar_server
 
 my $hostname = `hostname`;

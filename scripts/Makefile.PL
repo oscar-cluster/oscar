@@ -44,7 +44,6 @@ WriteMakefile(
             oscar_sanity_check
             oscar_wizard
             ping_clients
-            populate_default_package_set
             post_clients
             post_install
             post_rpm_install
