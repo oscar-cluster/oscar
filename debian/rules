@@ -118,8 +118,7 @@ install: build
 
 	# Prepare the liboscar package
 	mkdir -p $(CURDIR)/debian/liboscar/usr/lib/perl5
-	mv $(CURDIR)/lib/* \
-	    $(CURDIR)/debian/liboscar/usr/lib/perl5
+	cd $(CURDIR)/lib/*; make install DESTDIR=$(CURDIR)/debian/liboscar/
 
 	# Prepare the oscar-bin package
 	mkdir -p $(CURDIR)/debian/oscar-bin/usr/local/bin
