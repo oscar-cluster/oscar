@@ -81,6 +81,8 @@ install: build
 	rm -f `find $(CURDIR) -name "*.deb"`
 	rm -f `find $(CURDIR) -name "*.rpm"`
 	rm -f $(CURDIR)/lib/OSCAR/oda.pm
+    # We remove the crappy top-level Makefile (it can only screw up he install
+	rm -f $(CURDIR)/debian/oscar/Makefile
 	mv $(CURDIR)/COPYING \
 		$(CURDIR)/debian/oscar/usr/share/doc/oscar
 	mv $(CURDIR)/README \
@@ -118,15 +120,15 @@ install: build
 
 	# Prepare the liboscar package
 	mkdir -p $(CURDIR)/debian/liboscar/usr/lib/perl5
-	cd $(CURDIR)/lib/*; make install DESTDIR=$(CURDIR)/debian/liboscar/
+	cd $(CURDIR)/lib; make install DESTDIR=$(CURDIR)/debian/liboscar/
 
 	# Prepare the oscar-bin package
 	mkdir -p $(CURDIR)/debian/oscar-bin/usr/local/bin
 	mv $(CURDIR)/scripts/system-sanity.d \
 		$(CURDIR)/debian/oscar-bin/usr/local/bin
 	cd  $(CURDIR)/scripts; perl Makefile.PL; make install DESTDIR=$(CURDIR)/debian/oscar-bin
-	mv $(CURDIR)/install_cluster \
-		$(CURDIR)/debian/oscar-bin/usr/bin
+	# mv $(CURDIR)/install_cluster \
+	#	$(CURDIR)/debian/oscar-bin/usr/bin
 
 	# Prepare the "oscar-base" package
 	mkdir -p $(CURDIR)/debian/oscar-base
