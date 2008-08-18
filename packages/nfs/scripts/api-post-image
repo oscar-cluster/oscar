@@ -2,7 +2,7 @@
 # (C)opyright Paul Greidanus <paul.greidanus@ualberta.ca>
 
 use Data::Dumper;
-
+ # Likely too many includes.. 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use POSIX; # gives us uname function
@@ -41,22 +41,22 @@ $imagedir =~ s/\/$//;
 my $image = $imagedir;
 $image =~ s:^.*/::g;
 
+#create script that will setup fstab and mountpoints
 my $script = "/var/lib/systemimager/scripts/post-install/90".$image.".add_nfs";
 
 open ( SCRIPT, "> $script");
-printf( SCRIPT "cat /etc/fstab.nfs >> /etc/fstab");
-close ( SCRIPT );
-chmod 0755, $script;
-
-#print Dumper($nfs_data);
+printf( SCRIPT "cat /etc/fstab.nfs >> /etc/fstab\n");
 
 open( NFS_FSTAB, "> $nfs_fstab");
 
+#iterare through available mounts from ODA and setup fstab
 while ( $mount_counter <= $max_counter ) {
 	my $nfs_server = "";
 	$nfs_server = $nfs_data->{"rsrv_" . $mount_counter};
 	my $nfs_local = "";
 	$nfs_local = $nfs_data->{"lpath_" . $mount_counter};	
+	# Add lines into script to craete mountpoint directories if they do not exist
+	printf ( SCRIPT, "mkdir -p " . $nfs_local ."\n";
 	my $nfs_remote = "";
 	$nfs_remote = $nfs_data->{"rpath_" . $mount_counter};
 
@@ -66,4 +66,7 @@ while ( $mount_counter <= $max_counter ) {
 	}
 
 close NFS_FSTAB;
+
+close SCRIPT;
+chmod 0755, $script;
 1;

@@ -46,6 +46,7 @@ chomp(my $nfs_export = `which exportfs`);
 !system("exportfs -a") or croak("Couldn't refresh nfs exports")
     if $nfs_export;
 
+#Populate ODA with information from the configuration data
 while ( $mount_counter <= $max_counter ) {
 	my $nfs_server = "";
 	my $nfs_server = $nfs_data->{"rsrv_" . $mount_counter};
@@ -56,6 +57,13 @@ while ( $mount_counter <= $max_counter ) {
 	$mount_counter++;
 	}
 
+#Add_export setups up the /etc/exports file on the oscar_server
+# add_export ( sharepoint, ip, netmask ) 
+# where ip and netmask are the permitted networks for the server
+# to be sharing to.
+#  --- Limitation : only a single network per share, however
+# a cluster is likely on a single network, and if not, the administrator
+# can always manually edit /etc/exports to correct.
 sub add_export {
     my $sharepoint = shift;
     my $ip = shift;

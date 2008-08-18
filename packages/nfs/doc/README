@@ -1,0 +1,5 @@
+This package provides multiple NFS mounts.
+
+It uses ODA to store the data for the mountpoints, and integrates the
+additional mounts into the imaged node just after the installation,
+as part of the SystemImger deployment.

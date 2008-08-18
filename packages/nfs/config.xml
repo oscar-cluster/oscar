@@ -53,12 +53,8 @@
   <apiDeps>
   </apiDeps>
   <changelog>
-    <versionEntry version="4.0.1-6">
-      <changelogEntry authorName="Erich Focht" date="2007-10-06T10:34:08-04:00">
-        <item>Fixed wrong dependecies.</item>
-      </changelogEntry>
-      <changelogEntry authorName="Thomas Naughton" date="2007-06-25T10:34:08-04:00">
-        <item>Convert to the new OPKG API (for OPKGC)</item>
+      <changelogEntry authorName="Paul Greidanus" date="2008-08-18T10:34:08-04:00">
+        <item>Create the NFS opkg</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
