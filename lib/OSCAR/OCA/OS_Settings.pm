@@ -75,4 +75,27 @@ sub getitem ($) {
 		}
 	}
 
+#stub for additem
+# which will allow opkgs or other to add configuration into the OS_Setting 
+# configuration backend.
+# syntax : additem ( $tag , $data , $distro)
+# where $tag is the configuration index
+# and $data is the data to be added.
+# $distro is optional, as the function will use default as the distro
+#  - this is a non-issue for now as we do not support mixed distros
+#  however, use of distro is recomended,
+
+sub additem ($) {
+	my $tag = shift @_;
+	my $data = shift @_;
+	my $distro = shift @_;
+	if ($distro == "") { $distro == "default" } ;
+	
+	open(CONFIG,"$ENV{OSCAR_HOME}/lib/OSCAR/OCA/OS_Settings/" . $distro) or return 0;
+
+	printf (CONFIG $tag."=".$data."\n");
+
+	return 1;
+}
+
 1;
