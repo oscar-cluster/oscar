@@ -227,7 +227,7 @@ sub get_disk_file {
 #         The format of the hash is the following is available within the code.#
 # TODO: fix the problem with the distro parameter.                             #
 ################################################################################
-sub get_image_default_settings {
+sub get_image_default_settings () {
     my $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";
     my @df_lines = `df /`;
     my $disk_type = "ide";
