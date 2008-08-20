@@ -43,7 +43,12 @@ use Carp;
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
-my $package_set_dir = $ENV{OSCAR_HOME}."/share/package_sets";
+my $package_set_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $package_set_dir = $ENV{OSCAR_HOME}."/share/package_sets";
+} else {
+    $package_set_dir = "/usr/share/oscar/package_sets";
+}
 
 ###############################################################################
 # Scan package sets defined in share/package_sets based on the local

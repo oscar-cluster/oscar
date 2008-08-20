@@ -23,11 +23,15 @@ package OSCAR::Package;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 
 use strict;
 use vars qw(@EXPORT $VERSION %PHASES);
 use base qw(Exporter);
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::PackagePath;
 use OSCAR::OpkgDB;
@@ -36,6 +40,7 @@ use File::Basename;
 use File::Copy;
 use XML::Simple;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::ConfigManager;
 use Carp;
 
 # Default package group.
@@ -81,6 +86,10 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
            test_root    => ['test_root'],
            test_user    => ['test_user'],
           );
+
+my $oscar_configurator = OSCAR::ConfigManager->new(
+        config_file => "/etc/oscar/oscar.conf");
+my $config = $oscar_configurator->get_config();
 
 #
 # get_pkg_dir - return directory where scripts can be found for a given
@@ -331,14 +340,14 @@ sub isPackageSelectedForInstallation # ($package) -> $yesorno
 #         @myvalues = $configvalues->{'happy'};    # Multiple values    #
 # Return: configuration parameters (hash) or undef if error.            #
 #########################################################################
-sub getConfigurationValues # ($package) -> $valueshashref
+sub getConfigurationValues ($) # ($package) -> $valueshashref
 {
     my $package = shift;
     my $values;
     my $filename;
 
-    my $pkgdir = getOdaPackageDir($package);
-    my $pkgdir = "$ENV{OSCAR_PACKAGE}/$package";
+#    my $pkgdir = getOdaPackageDir($package);
+    my $pkgdir = $config->{'opkgs_path'} . "/$package";
     if ((defined $pkgdir) && (-d $pkgdir)) {
         $filename = "$pkgdir/.configurator.values";
         if (-s $filename) {

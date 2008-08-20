@@ -37,6 +37,7 @@ use Carp;
             download_file
             get_oscar_version
             get_local_arch
+            get_path_perl_modules
             is_a_valid_string
             is_element_in_array
             merge_arrays
@@ -253,4 +254,17 @@ sub merge_arrays ($$) {
     return @array;
 }
 
+sub get_path_perl_modules () {
+    my @data = Config::config_re("vendorarch");
+    if (scalar (@data) > 1 || scalar (@data) == 0) {
+        carp "ERROR: Impossible to know where are the Perl modules";
+        return -1;
+    }
+    my ($key, $path) = split ("=", $data[0]);
+    $path =~ m/\'(.*)\'/;
+    $path = $1;
+    return $path;
+}
+
 1;
+

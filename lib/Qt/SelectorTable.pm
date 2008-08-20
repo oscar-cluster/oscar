@@ -199,7 +199,7 @@ sub getPackagesInPackageSet
     my @packagesInSet;
     my %packagesInSet;
     my $success = OSCAR::Database::get_selected_group_packages(
-        \@packagesInSet, \%options, \@errors, $packageSet);
+        \@packagesInSet, \%options, \@errors, $packageSet, undef);
 #    @packagesInSet = get_list_opkgs_in_package_set($packageSet);
 
 

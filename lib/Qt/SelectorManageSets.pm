@@ -186,7 +186,7 @@ sub createNewPackageSet
     } while ($nameclash);
   
   # Add the new name to the database and to the ListBox
-  my $success = OSCAR::Database::set_groups($newSetName, \%options, \@errors);  
+  my $success = OSCAR::Database::set_groups($newSetName, \%options, \@errors,undef);  
   Carp::carp("Could not do oda command 'set_groups $newSetName'") if 
     (!$success);
 
@@ -292,7 +292,7 @@ sub renameButton_clicked
                 {
                   my $selected = packageSetsListBox->currentText();
                   $success = OSCAR::Database::rename_groups($selected,
-                            $reponse,
+                            $response,
                             \%options,
                             \@errors);
                   if ($success)

@@ -102,6 +102,7 @@ sub load_oscar_config ($) {
     $db_type            = $config->get('ODA_TYPE');
     $prereq_mode        = $config->get('PREREQ_MODE');
     $oda_files_path     = $config->get('PATH_ODA_CONFIG_FILES');
+    $opkgs_path         = $config->get('OPKGS_PATH');
 }
 
 sub get_config () {
@@ -116,6 +117,7 @@ sub get_config () {
                 'db_type'           => $db_type,
                 'prereq_mode'       => $prereq_mode,
                 'oda_files_path'    => $oda_files_path,
+                'opkgs_path'        => $opkgs_path,
               );
     return \%cfg;
 }

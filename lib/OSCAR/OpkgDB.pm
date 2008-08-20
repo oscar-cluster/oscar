@@ -147,7 +147,16 @@ sub opkg_hash_available {
     }
     my $os = $scope{os} if (defined($scope{os}));
 
-    $os = OSCAR::OCA::OS_Detect::open(%scope) if !$os;
+    if (!$os) {
+        if (defined $scope{fake}) {
+            $os = OSCAR::OCA::OS_Detect::open($scope{fake});
+        } elsif (defined $scope{chroot}) {
+            $os = OSCAR::OCA::OS_Detect::open($scope{chroot});
+        } else {
+            $os = OSCAR::OCA::OS_Detect::open();
+        }
+    }
+
     return undef if !$os;
 
     my $repo = oscar_repostring($os);

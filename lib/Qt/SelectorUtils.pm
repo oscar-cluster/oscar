@@ -140,7 +140,7 @@ sub getAllPackages # -> $allPackages
   my %opkgs = ();
 
   my %scope = ();
-  %opkgs  = OSCAR::OpkgDB::opkg_hash_available("api", %scope);
+  %opkgs  = OSCAR::OpkgDB::opkg_hash_available( class => "api", %scope);
   $allPackages = \%opkgs;
 
   my @packages = ();
@@ -365,7 +365,7 @@ sub createDefaultPackageSet # -> ($success)
 
   # First create a new package set name 'Default'
   my $success = OSCAR::Database::set_groups(
-        "Default",\%options,\@errors);
+        "Default",\%options,\@errors,undef);
   if ($success)
     { 
       # Make Default the "selected" package set
@@ -408,7 +408,7 @@ sub populatePackageSetList
 
   my @groups_list = ();  
   my $success = OSCAR::Database::get_groups_for_packages(
-        \@groups_list,\%options,\@errors);
+        \@groups_list,\%options,\@errors,undef);
 
   # We also scan package sets defined in share/package_sets
   my @local_package_sets = get_local_package_set_list ();
