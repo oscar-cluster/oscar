@@ -1,6 +1,6 @@
 CONFIGDIR=etc/oscar
 
-SUBDIRS := prereqs
+SUBDIRS := prereqs package_sets
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
