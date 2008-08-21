@@ -37,10 +37,16 @@
 # $Id$
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use Tk;
 use Tk::ROText;
-use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
+use lib "/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use POSIX;
 use OSCAR::Help;
 use OSCAR::Network;
@@ -478,7 +484,7 @@ sub run_server_install {
     oscar_log_section("Running step $step_number of the OSCAR wizard: Install OSCAR server packages");
 
     my $cmd_vars = { 
-        cmd => "./install_server $$vars{interface}",
+        cmd => $config->{'binaries_path'} . "/install_server $$vars{interface}",
         success => {
             message => "Successfully installed OSCAR server",
             unbusy => 1,

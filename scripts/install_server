@@ -52,8 +52,12 @@ use OSCAR::Opkg;
 
 # Defaults
 my $nfs = OSCAR::OCA::OS_Settings::getitem("nfs_package");
-my $sshd = OSCAR::OCA::OS_Settings::getitem("ssh_package");
+my $sshd = OSCAR::OCA::OS_Settings::getitem("ssh_script");
 my $portmap = OSCAR::OCA::OS_Settings::getitem("portmap_package");
+
+if (!defined $nfs || !defined $sshd || !defined $portmap) {
+    die "ERROR: Impossible to get the basic system info ($nfs, $sshd, $portmap)";
+}
 
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
@@ -75,9 +79,10 @@ my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
 oscar_log_subsection("Getting internal IP address");
 my ($ip,$bcast,$netmask) = interface2ip($INTERFACE) 
     or croak("Couldn't determine internal ip address");
-oscar_log_subsection("Got: [IP $ip]");
-oscar_log_subsection("Got: [broadcast $bcast]");
-oscar_log_subsection("Got: [netmask $netmask]");
+oscar_log_subsection("Got: [Interface: $INTERFACE]");
+oscar_log_subsection("Got: [IP: $ip]");
+oscar_log_subsection("Got: [Broadcast: $bcast]");
+oscar_log_subsection("Got: [Netmask: $netmask]");
 
 oscar_log_subsection("Adding hosts to /etc/hosts");
 OSCAR::Network::update_hosts($ip)
@@ -86,11 +91,11 @@ OSCAR::Network::update_hosts($ip)
 
 # Get a list of all non-core packages
 # and list of RPMs from the non-core packages
-my $sel_group = OSCAR::Database::get_selected_group();
+my $sel_group = OSCAR::Database::get_selected_group(undef, undef);
 my @ohlist = list_selected_packages("noncore",$sel_group);
 my @opkgs;
 foreach my $p ( @ohlist ) {
-    push @opkgs, $p{package};
+    push @opkgs, $$p{package};
 }
 oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs));
 
@@ -99,8 +104,12 @@ oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs));
 
 oscar_log_subsection("Installing server non-core packages " .
                      "(core packages already installed)");
-if (OSCAR::Opkg::opkgs_install("server", @opkgs)) {
-    die ("ERROR: Impossible to install " . join (", ", @opkgs));
+if (scalar (@opkgs) == 0) {
+    warn "INFO: no OPKG(s) to install";
+} else {
+    if (OSCAR::Opkg::opkgs_install("server", @opkgs)) {
+        die ("ERROR: Impossible to install " . join (", ", @opkgs));
+    }
 }
 oscar_log_subsection("Successfully installed server non-core binary packages");
 
@@ -135,11 +144,12 @@ oscar_log_subsection("Marking installed bit in ODA for server non-core ".
 
 my $requested = 8; # "Installed" flag for the Node_Package_Status"
 die "$0:Failed to update the table Node_Package_Status"
-    if(!update_node_package_status(\%options,
+    if(!OSCAR::Database::update_node_package_status(\%options,
                                    $OSCAR_SERVER_NODE,
                                    \@opkgs,
                                    $requested,
-                                   \@errors));
+                                   \@errors,
+                                   undef));
 
 
 # UNLOCKING FOR NEST
@@ -155,8 +165,8 @@ oscar_log_subsection("Running post_server_install scripts " .
 foreach my $opkg (@opkgs) {
     # if($opkg ne "networking"){   # EF: why was this here?
                                    # if it doesn't work, fix it!  
-    run_pkg_script($opkg,"post_server_install") 
-        or croak("ERROR: Failed running post_server_install for $opkg");
+    OSCAR::Package::run_pkg_script($opkg, "post_server_install", 0, undef) 
+        or die("ERROR: Failed running post_server_install for $opkg");
 }
 oscar_log_subsection("Successfully ran server non-core package ".
                      "post_server_install scripts");
@@ -167,28 +177,29 @@ oscar_log_subsection("Successfully ran server non-core package ".
 #update_profile() or croak("Couldn't add path entries to /etc/profile");
 
 oscar_log_subsection("Updating /etc/exports");
-update_exports($ip,$netmask) 
-    or croak("Couldn't add filesystem entries to /etc/exports");
+if (update_exports($ip,$netmask)) {
+    die ("Couldn't add filesystem entries to /etc/exports");
+}
 
 oscar_log_subsection("Updating rsyncd.conf");
 if (update_rsyncd_conf($ip,$netmask)) {
-    croak("Couldn't update rsyncd.conf file");
+    croak("Couldn't update rsyncd.conf file ($!)");
 }
 
 oscar_log_subsection("Refreshing services");
 # Note: it is better to try to restart the service, "start" generates an error
 # if the service is already running
 chomp(my $nfs_export = `which exportfs`);
-!system("/etc/init.d/$nfs restart") or croak("Couldn't restart $nfs");
+!system("/etc/init.d/$nfs restart") or croak("ERROR: Couldn't restart $nfs");
 if ($nfs_export) {
     !system("exportfs -a") or croak("Couldn't refresh nfs exports");
 }
-!system("/etc/init.d/$sshd restart") or croak("Couldn't start $sshd");
-my $os = OSCAR::OCA::OS_Detect::open();
-my $binary_format = $os->{'pkg'};
+!system("$sshd restart") or croak("ERROR: Couldn't start .$sshd. ($?)");
 
 # chkconfig is a RPM specific command, so we do not use it on Debian-like
 # systems. Moreover, services are automatically added into rc2.d on Debian
+my $os = OSCAR::OCA::OS_Detect::open();
+my $binary_format = $os->{'pkg'};
 if ($binary_format ne "deb") {
     my @services = ("$sshd", "dhcpd", "$portmap", "$nfs");
     foreach my $service (@services) {
@@ -239,6 +250,12 @@ oscar_log_subsection("Finished server_prep script");
 sub update_exports ($$) {
     my $ip = shift;
     my $netmask = shift;
+
+    if (!defined $ip || !defined $netmask) {
+        carp "ERROR: Invalid parameters";
+        return -1;
+    }
+
     my $done=0;
     verbose("Backing up /etc/exports");
     copy("/etc/exports","/etc/exports.bak") or return -1;
@@ -246,24 +263,24 @@ sub update_exports ($$) {
     open(OUT,">/etc/exports") or return -1;
     verbose("Checking for /home export");
     while (<IN>) {
-	if (/^\/home/) {
-		verbose("Found /home entry");
-		$done=1;
-		if (/$ip\/$netmask\(async,rw,no_root_squash\)/) {
-			verbose("Existing /home entry ok, preserved");
-			print OUT $_;
-		} else {
-			verbose("Existing /home modified");
-			chomp;
-			print OUT $_." $ip/$netmask(async,rw,no_root_squash)\n";
-		}
-	} else {
-		print OUT $_;
-	}
+	    if (/^\/home/) {
+		    verbose("Found /home entry");
+		    $done=1;
+		    if (/$ip\/$netmask\(async,rw,no_root_squash\)/) {
+			    verbose("Existing /home entry ok, preserved");
+			    print OUT $_;
+		    } else {
+			    verbose("Existing /home modified");
+			    chomp;
+			    print OUT $_." $ip/$netmask(async,rw,no_root_squash)\n";
+		    }
+	    } else {
+		    print OUT $_;
+	    }
     }
     unless ($done) {
     	verbose("Adding /home export");
-	print OUT "/home $ip/$netmask(async,rw,no_root_squash)\n";
+	    print OUT "/home $ip/$netmask(async,rw,no_root_squash)\n";
     }
     close(OUT);
     close(IN);
