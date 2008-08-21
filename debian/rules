@@ -99,9 +99,9 @@ install: build
 		$(CURDIR)/debian/oscar/opt/oscar
 	cp debian/etc/oscar.conf $(CURDIR)/debian/oscar/etc/oscar/
 
-	########################
-	# Install the prereqs. #
-	########################
+	###############################################
+	# Install the prereqs in the "oscar" package. #
+	###############################################
 
 	# To address bootstraping issue, we treat rapt and yume as prereqs
 	cd share; $(MAKE) install DESTDIR=$(CURDIR)/debian/oscar/
