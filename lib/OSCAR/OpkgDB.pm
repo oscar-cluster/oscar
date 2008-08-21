@@ -65,7 +65,13 @@ sub opkg_list_available {
     if (defined($scope{os})) {
         $os = $scope{os};
     } else {
-        $os = OSCAR::OCA::OS_Detect::open(%scope);
+        if (defined $scope{fake}) {
+            $os = OSCAR::OCA::OS_Detect::open($scope{fake});
+        } elsif (defined $scope{chroot}) {
+            $os = OSCAR::OCA::OS_Detect::open($scope{chroot});
+        } else {
+            $os = OSCAR::OCA::OS_Detect::open();
+        }
     }
     return undef if !$os;
 
@@ -140,10 +146,10 @@ sub opkg_hash_available {
     my $class_filter;
     print "opkg_hash_available: scope =\n".Dumper(%scope) if $verbose;
     if (defined($scope{class})) {
-    $class_filter = $scope{class};
-    delete $scope{class};
-    print "opkg_hash_available: class_filter = $class_filter\n"
-        if $verbose;
+        $class_filter = $scope{class};
+        delete $scope{class};
+        print "opkg_hash_available: class_filter = $class_filter\n"
+            if $verbose;
     }
     my $os = $scope{os} if (defined($scope{os}));
 
@@ -181,82 +187,70 @@ sub opkg_hash_available {
         print "Running $cmd\n" if $verbose;
         open CMD, "$cmd |" or die "Error: $!";
         while (<CMD>) {
-        chomp;
-        if (/^Package: (.*)$/) {
-        $name = $1;
-        $isdesc = 0;
-        $ver = $rel = $summary = $packager = $desc = $class = "";
-        $conflicts = "";
-        } elsif (/^Version: (.*)$/) {
-        $ver = $1;
-        } elsif (/^Section: (.*)$/) {
-        $group = $1;
-        $class = "";
-        if ($group =~ m/^([^:]*):([^:]*)/) {
-            $group = $1;
-            $class = $2;
+            chomp;
+            if (/^Package: (.*)$/) {
+                $name = $1;
+                $isdesc = 0;
+                $ver = $rel = $summary = $packager = $desc = $class = "";
+                $conflicts = "";
+            } elsif (/^Version: (.*)$/) {
+                $ver = $1;
+            } elsif (/^Section: (.*)$/) {
+                $group = $1;
+                $class = "";
+                if ($group =~ m/^([^:]*):([^:]*)/) {
+                    $group = $1;
+                    $class = $2;
+                }
+            } elsif (/^Maintainer: (.*)$/) {
+                $packager = $1;
+            } elsif (/^Conflicts: (.*)$/) {
+                $conflicts = $1;
+            } elsif (/^Description: (.*), server part$/) {
+                $isdesc = 1;
+                $summary = $1;
+            } elsif (/^Bugs:/) {
+                $isdesc = 0;
+            } else {
+                if ($isdesc) {
+                    m/^ (.*)$/;
+                    $desc .= "$1\n";
+                }
+            }
+            if ($name) {
+                $o{$name} = {
+                    "package" => $name,
+                    version => $ver,
+                    summary => $summary,
+                    packager => $packager,
+                    description => $desc,
+                    class => $class,
+                    group => $group,
+                    distro => $dist,
+                    conflicts => $conflicts,
+                };
+            }
         }
-        } elsif (/^Maintainer: (.*)$/) {
-        $packager = $1;
-        } elsif (/^Conflicts: (.*)$/) {
-        $conflicts = $1;
-        } elsif (/^Description: (.*), server part$/) {
-        $isdesc = 1;
-        $summary = $1;
-        } elsif (/^Bugs:/) {
-        if ($name) {
-            $o{$name} = {
-            "package" => $name,
-            version => $ver,
-            summary => $summary,
-            packager => $packager,
-            description => $desc,
-            class => $class,
-            group => $group,
-            distro => $dist,
-            conflicts => $conflicts,
-            };
-        }
-        $isdesc = 0;
-        } else {
-        if ($isdesc) {
-            m/^ (.*)$/;
-            $desc .= "$1\n";
-        }
-        }
-    }
-    close CMD;
-    if ($name) {
-        $o{$name} = {
-        "package" => $name,
-        version => $ver,
-        summary => $summary,
-        packager => $packager,
-        description => $desc,
-        class => $class,
-        group => $group,
-        distro => $dist,
-        conflicts => $conflicts,
-        };
-    }
+        close CMD;
     } else {
-    return undef;
+        return undef;
     }
 
     # go through result and apply the class filter, if needed
-    if ($class_filter) {
-    print "Filtering for class = \"$class_filter\"\n" if $verbose;
-    for my $p (keys(%o)) {
-        my %h = %{$o{$p}};
-        print "$p -> class: $h{class}" if $verbose;
-        if ($h{class} ne $class_filter) {
-        delete $o{$p};
-        print " ... deleted" if $verbose;
-        }
-        print "\n" if $verbose;
-    }
-    }
-    print Dumper %o;
+    # GV: based on the current opkgc output, this clearly does not work.
+#     if ($class_filter) {
+#     print "Filtering for class = \"$class_filter\"\n" if $verbose;
+#     for my $p (keys(%o)) {
+#         my %h = %{$o{$p}};
+#         print "$p -> class: $h{class}" if $verbose;
+#         if ($h{class} ne $class_filter) {
+#         delete $o{$p};
+#         print " ... deleted" if $verbose;
+#         }
+#         print "\n" if $verbose;
+#     }
+#     }
+#     print Dumper %o;
     return %o;
 }
 
@@ -603,9 +597,5 @@ sub opkg_localdeb_info {
 sub opkg_test {
     
 }
-
-# Gv: For debugging.
-#my $os = OSCAR::OCA::OS_Detect::open();
-#opkg_hash_available( os => $os );
 
 1;
