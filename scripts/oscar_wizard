@@ -17,13 +17,17 @@
 # Copyright (c) 2003, The Board of Trustees of the University of Illinois.
 #                     All rights reserved.
 #
-# Copyright (c) 2002-2005,2007 The Trustees of Indiana University.  
+# Copyright (c) 2002-2005,2007 The Trustees of Indiana University.
 #                    All rights reserved.
 #
 # Copyright (c) 2005-2006 Bernard Li <bli@bcgsc.ca>
 #                         All rights reserved.
 #
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
+#                    All rights reserved.
+#
+# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
 #                    All rights reserved.
 # 
 # This file is part of the OSCAR software package.  For license
@@ -262,9 +266,17 @@ if ( $mode eq "install" ) {
    oscar_button($window, "Step $step_number:", 
 	        "Select OSCAR Packages To Install...", 
 	        [sub { my $olddir = Cwd::cwd();
-                 chdir($ENV{OSCAR_HOME} . '/lib/Qt');
-                 system('/usr/bin/perl Selector.pl');
-                 chdir($olddir);
+                my $path;
+                if (defined ($ENV{OSCAR_HOME})) {
+                    $path = $ENV{OSCAR_HOME} . "/lib";
+                } else {
+                    $path = OSCAR::Utils::get_path_perl_modules();
+                }
+                $path .= "/Qt";
+                print "Change directory: $path\n";
+                chdir ($path);
+                system('/usr/bin/perl Selector.pl');
+                chdir($olddir);
                }], 
 	        'select_packages');
 
