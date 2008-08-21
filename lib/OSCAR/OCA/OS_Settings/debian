@@ -1,1 +1,2 @@
 ssh_script=/etc/init.d/ssh
+nfs_package=nfs-kernel-server

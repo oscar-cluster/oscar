@@ -24,9 +24,16 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 #Should this be converted to lib/OSCAR/ConfigFile.pm
 
 sub readfile ($$) {
-	my $file = shift();
-	my $config = shift();
-	open(CONFIG,"$ENV{OSCAR_HOME}/lib/OSCAR/OCA/OS_Settings/" . $file) or return $config;
+	my ($file, $config) = @_;
+    my $path;
+    if (defined $ENV{OSCAR_HOME}) {
+        $path = "$ENV{OSCAR_HOME}/lib/OSCAR/OCA/OS_Settings/$file";
+    } else {
+        $path = OSCAR::Utils::get_path_perl_modules();
+        $path .= "/OSCAR/OCA/OS_Settings/$file";
+    }
+    print "Opening file $path\n" if $verbose;
+	open(CONFIG,"$path") or return $config;
 	while (<CONFIG>) {
 		chomp;
 		next if /^\s*\#/;
@@ -46,8 +53,8 @@ sub readfile ($$) {
 sub getconf () {
 	my $config = {};
 	my $os = OSCAR::OCA::OS_Detect::open();
-	my $distro = $os->{distro};
-	my $version = $os->{distro_version};
+	my $distro = $os->{compat_distro};
+	my $version = $os->{compat_distrover};
 	my $ident = $os->{ident};
 	readfile("default", $config);
 	readfile("$distro", $config);
@@ -62,7 +69,7 @@ sub getconf () {
 # a configuration item.  It returns the string specified in the configuration
 # files.
 sub getitem ($) {
-	my $request = shift @_;
+	my $request = shift;
 	my $config = getconf();
 	if ($verbose) { print "Called getitem with " . $request . " and returning " . $config->{$request} . "\n" };
 	if ($verbose) { print Dumper($config) };
@@ -91,7 +98,14 @@ sub additem ($) {
 	my $distro = shift @_;
 	if ($distro == "") { $distro == "default" } ;
 	
-	open(CONFIG,"$ENV{OSCAR_HOME}/lib/OSCAR/OCA/OS_Settings/" . $distro) or return 0;
+    my $path;
+    if (defined $ENV{OSCAR_HOME}) {
+        $path = "$ENV{OSCAR_HOME}/lib/OSCAR/OCA/OS_Settings/$distro";
+    } else {
+        $path = OSCAR::Utils::get_path_perl_modules();
+        $path .= "/OSCAR/OCA/OS_Settings/$distro";
+    }
+	open(CONFIG,"$path") or return 0;
 
 	printf (CONFIG $tag."=".$data."\n");
 
