@@ -1,9 +1,8 @@
 oscar (5.1~svn20080821-0gv1) gutsy; urgency=low
 
-  * Fix a problem during the installation of binaries in the oscar-bin 
-packages.
+  * Fix a problem during the installation of binaries in the oscar-bin packages.
 
- -- Geoffroy Vallee <valleegr@gornl.gov>  Thu, 21 Aug 2008 09:52:57 -0400
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Thu, 21 Aug 2008 09:52:57 -0400
 
 oscar (5.1~svn20080820-0gv1) gutsy; urgency=low
 
