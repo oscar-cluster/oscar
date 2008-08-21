@@ -12,8 +12,13 @@
 
 package OCA::OS_Detect::Ubuntu;
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::LSBreleaseParser;
 
 my $DEBUG = 1 if( $ENV{DEBUG_OCA_OS_DETECT} );

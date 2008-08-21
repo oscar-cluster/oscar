@@ -21,8 +21,13 @@ package OSCAR::Network;
 #   Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
 #                      Oak Ridge National Laboratory
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use vars qw($VERSION @EXPORT);
 use File::Copy;
 use OSCAR::Database qw (

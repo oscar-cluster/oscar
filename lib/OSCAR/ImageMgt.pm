@@ -25,8 +25,13 @@ package OSCAR::ImageMgt;
 # initialy be done to avoid code duplication between the CLI and the GUI.
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller";
 use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::PackagePath;

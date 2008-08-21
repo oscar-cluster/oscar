@@ -25,8 +25,13 @@ package OSCAR::GUI_MAC;
 # Description: this is the GUI code for network stuff, especially stuff
 # related to MAC addresses. The library code is in lib/OSCAR/MAC.pm
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use lib "/usr/lib/systeminstaller";
 use Tk;
 use Tk::Tree;

@@ -19,10 +19,15 @@ package OSCAR::Help;
 #   Copyright 2001-2002 International Business Machines
 #                       Sean Dague <japh@us.ibm.com>
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use vars qw(%Help $VERSION @EXPORT);
 use base qw(Exporter);
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Tk;
 
 @EXPORT = qw(open_help);

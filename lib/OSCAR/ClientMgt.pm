@@ -25,8 +25,13 @@ package OSCAR::ClientMgt;
 # initialy be done to avoid code duplication between the CLI and the GUI.
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use vars qw(@EXPORT);
 use base qw(Exporter);

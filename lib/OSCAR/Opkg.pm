@@ -32,8 +32,13 @@ package OSCAR::Opkg;
 # the handling of OSCAR Packages (opkg).
 # [EF]: Some of the stuff in Packages.pm should be moved here!
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;

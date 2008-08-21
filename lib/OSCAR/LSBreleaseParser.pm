@@ -25,8 +25,13 @@ package OSCAR::LSBreleaseParser;
 # it with the OS_Dectect syntax.
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 #use OSCAR::ConfigFile;
 use OSCAR::Logger;
 use OSCAR::Utils;

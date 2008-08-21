@@ -26,9 +26,14 @@ package OSCAR::DelNode;
 #                    Oak Ridge National Laboratory
 #                    All rights reserved.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use vars qw($VERSION @EXPORT);
-use lib "$ENV{OSCAR_HOME}/lib";
 use Tk;
 use Carp;
 use SystemInstaller::Tk::Common;
