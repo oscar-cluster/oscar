@@ -126,7 +126,11 @@ install: build
 	mkdir -p $(CURDIR)/debian/oscar-bin/usr/local/bin
 	mv $(CURDIR)/scripts/system-sanity.d \
 		$(CURDIR)/debian/oscar-bin/usr/local/bin
-	cd  $(CURDIR)/scripts; perl Makefile.PL; make install DESTDIR=$(CURDIR)/debian/oscar-bin
+	# We make sure to clean everything up, it order to not deal with old stuff
+	cd  $(CURDIR)/scripts; perl Makefile.PL; make clean;
+	# Then we install the binaries
+	cd  $(CURDIR)/scripts; perl Makefile.PL; \
+		make install DESTDIR=$(CURDIR)/debian/oscar-bin
 	# mv $(CURDIR)/install_cluster \
 	#	$(CURDIR)/debian/oscar-bin/usr/bin
 
