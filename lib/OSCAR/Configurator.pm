@@ -29,12 +29,16 @@ package OSCAR::Configurator;
 # 
 ##############################################################
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 our @EXPORT = qw(populateConfiguratorList displayPackageConfigurator);
-
-use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use OSCAR::Configbox; # For the configuration HTML form display
 use OSCAR::Package;   # For run_pkg_script()

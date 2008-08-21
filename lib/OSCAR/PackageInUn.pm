@@ -23,9 +23,13 @@ package OSCAR::PackageInUn;
 
 use strict;
 
-use lib "$ENV{OSCAR_HOME}/lib";
-use lib "$ENV{OSCAR_HOME}/lib/Qt";
-use lib "/usr/lib/perl5/site_perl/OSCAR";
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+        unshift @INC, "$ENV{OSCAR_HOME}/lib/Qt";
+    }
+}
+
 use Carp;
 use Cwd;
 
