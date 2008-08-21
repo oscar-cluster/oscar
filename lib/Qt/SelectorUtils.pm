@@ -141,6 +141,8 @@ sub getAllPackages # -> $allPackages
 
   my %scope = ();
   %opkgs  = OSCAR::OpkgDB::opkg_hash_available( class => "api", %scope);
+    print "----------> Found OPKGs\n";
+    print Dumper %opkgs;
   $allPackages = \%opkgs;
 
   my @packages = ();
@@ -176,7 +178,7 @@ sub getAllPackages # -> $allPackages
       #no_yet# addTypeNameFieldToPackage("conflicts",$pack);
     }
 
-  getDependencyTree();
+#  getDependencyTree();
   return $allPackages;
 }
 
@@ -196,8 +198,13 @@ sub getSubField ($$)
 #  OSCAR package).                                                      #
 #########################################################################
 
-  my($package,$field) = @_;
+  my($package, $field) = @_;
   my($rethash);
+
+  if (!defined $package || !defined $field) {
+    carp "ERROR: undefined package or field";
+    return undef;
+  }
 
   if ($package && $field && (defined $allPackages->{$package}{$field})) {
       foreach my $href (@{ $allPackages->{$package}{$field} } ) { 
