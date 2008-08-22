@@ -112,9 +112,19 @@ my %buttons = ();
 
 our $monitortk_pid;
 
-my $lockfile = "$ENV{OSCAR_HOME}/.oscar_wizard_lockfile";
+my $lockfile;
+if (defined $ENV{OSCAR_HOME}) {
+    $lockfile = "$ENV{OSCAR_HOME}/.oscar_wizard_lockfile";
+} else {
+    $lockfile = "/tmp/.oscar_wizard_lockfile";
+}
 
-my $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";
+my $oscarsamples_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";
+} else {
+    $oscarsamples_dir = "/usr/share/oscar/oscarsamples";
+}
 
 
 # END processing to remove the lockfile when we die(), exit, or otherwise
@@ -531,7 +541,7 @@ sub build_oscar_image {
     &OSCAR::Opkg::write_pgroup_files();
 
     # We get the default settings for images.
-    my %vars = get_image_default_settings ();
+    my %vars = OSCAR::ImageMgt::get_image_default_settings ();
 
     # Update settings: ee set the last few points specific to the current
     # situation.
@@ -551,7 +561,7 @@ sub build_oscar_image {
     }
     $vars{package_group} = \@pgroups;
 
-    createimage_window($window, %vars);
+    SystemInstaller::Tk::Image::createimage_window($window, %vars);
 }
 
 sub postimagebuild {
