@@ -6,3 +6,4 @@ lilo
 initrd-tools
 linux-image-2.6-686
 ssh
+systemconfigurator
