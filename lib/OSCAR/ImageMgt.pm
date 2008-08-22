@@ -215,7 +215,12 @@ sub do_oda_post_install {
 sub get_disk_file {
     my ($arch, $disk_type) = @_;
 
-    my $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
+    my $diskfile;
+    if ($ENV{OSCAR_HOME}) {
+        $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
+    } else {
+        $diskfile = "/usr/share/oscar/oscarsamples/$disk_type";
+    }
     #ia64 needs special disk file because of /boot/efi
     $diskfile .= ".$arch" if $arch eq "ia64";
     $diskfile .= ".disk";
@@ -233,7 +238,12 @@ sub get_disk_file {
 # TODO: fix the problem with the distro parameter.                             #
 ################################################################################
 sub get_image_default_settings () {
-    my $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";
+    my $oscarsamples_dir;
+    if (defined $ENV{OSCAR_HOME}) {
+        $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";
+    } else {
+        $oscarsamples_dir = "/usr/share/oscar/oscarsamples";
+    }
     my @df_lines = `df /`;
     my $disk_type = "ide";
     $disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
@@ -276,7 +286,7 @@ sub get_image_default_settings () {
     # Default settings
     my %vars = (
            # imgpath: location where the image is created
-           imgpath => "/var/lib/systemimager/images",
+           imgpath => $config->default_image_dir,
            # imgname: image name
            imgname => "oscarimage",
            # arch: target hardware architecture
@@ -286,7 +296,7 @@ sub get_image_default_settings () {
            pkgfile => $pkglist,
            # pkgpath: path of the different binary packages pools used for the
            # creation of the image.
-           pkgpath => "$oscar_pool,$distro_pool",
+           pkgpath => "$oscar_pool, $distro_pool",
            # diskfile: path to the file that gives the disk partition layout.
            diskfile => $diskfile,
            # ipmeth: method to assign the IP (possible options are: "static")
@@ -677,6 +687,8 @@ sub export_image ($$) {
     }
     return 0;
 }
+
+get_image_default_settings();
 
 1;
 

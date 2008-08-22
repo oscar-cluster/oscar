@@ -41,6 +41,7 @@ use Carp;
             get_directory_content
             get_dirs_in_path
             get_files_in_path
+            line_in_file
             parse_xmlfile
             );
 
@@ -201,6 +202,39 @@ sub parse_xmlfile ($) {
     }
 
     return $xml_ref;
+}
+
+# Check if a given line is in a given file.
+#
+# Input: line, the line we are looking for
+#        file, the file we want to look in
+# Return: 1 if the line is in the file, 
+#         0 is the line is not in the file, 
+#         -1 if error
+sub line_in_file ($$) {
+    my ($line, $file) = @_;
+
+    if (!defined $line || !defined $file) {
+        carp "ERROR: Invalid parameter";
+        return -1;
+    }
+    if (! -f $file) {
+        carp "ERROR: Invalid file ($file)";
+        return -1;
+    }
+
+    chomp ($line);
+
+    open FILE, "$file";
+    while (<FILE>) {
+        my $l = $_;
+        chomp $l;
+        if ($l eq $line) {
+            return 1;
+        }
+    }
+    close FILE;
+    return 0;
 }
 
 1;
