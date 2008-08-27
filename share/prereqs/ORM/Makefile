@@ -1,20 +1,20 @@
+DESTDIR=
 SHAREDIR=usr/share/oscar/prereqs
+PREREQNAME=ORM
 
-SUBDIRS := AppConfig packman perl-Qt perl-XML-Parser base \
-			OSCAR-Database perl-HTML-Tree perl-Tk perl-XML-Simple ORM
-
-FILES := prereqs.order
+SUBDIRS := 
+FILES := prereq.cfg
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
 
 install:
-	install -d -m 0755 $(DESTDIR)/$(SHAREDIR)
-	install    -m 0755 ${FILES} $(DESTDIR)/$(SHAREDIR)
+	install -d -m 0755 $(DESTDIR)/$(SHAREDIR)/$(PREREQNAME)
+	install    -m 0755 ${FILES} $(DESTDIR)/$(SHAREDIR)/$(PREREQNAME)
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} install ) ; done
 
 uninstall:
-	cd $(DESTDIR)/$(SHAREDIR); rm -f ${FILES}
+	cd $(DESTDIR)/$(SHAREDIR)/$(PREREQNAME); rm -f ${FILES}
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} uninstall ) ; done
 
 clean:
