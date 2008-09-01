@@ -36,7 +36,6 @@ WriteMakefile(
             macinfo2sis
             OCA-driver
             opd
-            opd2
             oscar
             oscar-config
             oscar-vm
