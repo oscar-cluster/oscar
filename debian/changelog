@@ -1,3 +1,11 @@
+oscar (5.1~svn20080901-0gv1) hardy; urgency=low
+
+  [ Geoffroy Vallee ]
+  * The oscar-base package now have dependencies with other basic binary packages.
+  * Include the oscar samples into the 'oscar' package.
+
+ -- gvallee <gvallee@hugo>  Mon, 01 Sep 2008 14:28:08 -0400
+
 oscar (5.1~svn20080821-0gv1) gutsy; urgency=low
 
   * Fix a problem during the installation of binaries in the oscar-bin packages.

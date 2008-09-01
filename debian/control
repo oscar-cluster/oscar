@@ -34,7 +34,7 @@ Description: Transitional package for OSCAR (server side)
 
 Package: oscar-base
 Architecture: all
-Depends: libappconfig-perl
+Depends: libappconfig-perl, oscar-bin, liboscar, oscar
 Description: Transitional package for OSCAR (API side)
  This is a transitional package for OSCAR (API side).
 

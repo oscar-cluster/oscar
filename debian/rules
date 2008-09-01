@@ -103,8 +103,9 @@ install: build
 	# Install the prereqs in the "oscar" package. #
 	###############################################
 
-	# To address bootstraping issue, we treat rapt and yume as prereqs
 	cd share; $(MAKE) install DESTDIR=$(CURDIR)/debian/oscar/
+	cd oscarsamples; $(MAKE) install DESTDIR=$(CURDIR)/debian/oscar/
+	# To address bootstraping issue, we treat rapt and yume as prereqs
 	mv packages/yume/   $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
 	mv packages/rapt/   $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
 	cp -rf packages/oda $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
