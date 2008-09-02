@@ -26,6 +26,7 @@
 #               All rights reserved.
 
 DESTDIR=
+SUBDIRS := lib oscarsamples scripts share 
 
 all:
 	@echo "... there is no default target ..."
@@ -86,6 +87,16 @@ install: localbase localrepos
 	@echo "This machine is running: $(DIST_VER)-$(ARCH)"
 	@echo "Native package manager: $(PKG)"
 	@echo "== Installed OSCAR into $(DESTDIR)/opt/oscar-$(OSCAR_VERSION) =="
+
+#
+# Install OSCAR (scripts, libs and so on) directly in the system.
+#
+system-install:
+	# Install the logo at destination (no Makefile to do so).
+	install -d -m 0755 $(DESTDIR)/usr/share/oscar/images
+	install    -m 0755 images/oscar.gif $(DESTDIR)/usr/share/oscar/images
+	# Then, we call the different Makefiles.
+	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} install ) ; done
 
 localrepos:
 	@echo "Creating local repositories"; \
@@ -183,7 +194,7 @@ basedebs:
         --exclude share/prereqs/\*/distro \
         --exclude share/prereqs/\*/SRPMS .
 	cd /tmp/oscar-debian && tar xzf oscar-base-$(OSCAR_VERSION).tar.gz && \
-		dpkg-buildpackage -rfakeroot
+		dpkg-buildpackage -rfakeroot -uc -us
 	@echo "Binary packages are available in /tmp"
 
 .PHONY : test dist clean install
