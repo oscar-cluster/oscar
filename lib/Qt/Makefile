@@ -23,3 +23,6 @@ install:
 uninstall:
 	cd $(DESTDIR)$(LIBDIR)/Qt; rm -rf ${FILES}
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} uninstall ) ; done
+
+clean:
+	rm -f *~
