@@ -5,7 +5,7 @@ include $(TOPDIR)/Config.mk
 
 SUBDIRS := OCA
 
-FILES := AddNode.pm Help.pm opd2.pm Prereqs.pm Bootstrap.pm ImageMgt.pm \
+FILES := AddNode.pm Help.pm Prereqs.pm Bootstrap.pm ImageMgt.pm \
          OpkgDB.pm psm.pm Logger.pm Opkg.pm ClientMgt.pm LSBreleaseParser.pm \
          PxegrubConfigManager.pm CLI_MAC.pm MACops.pm osm.pm pxegrub.pm \
          CmpVersions.pm MAC.pm PackageBest.pm SISBuildSetup.pm Configbox.pm \
