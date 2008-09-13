@@ -5,11 +5,8 @@ include $(TOPDIR)/Config.mk
 
 SUBDIRS := 
 
-FILES := SelectorAbout.pm OpderAbout.pm SelectorCheckTableItem.pm \
-		 OpderAddRepository.pm SelectorImages.pm OpderDownloadInfo.pm \
-		 SelectorManageSets.pm OpderDownloadPackage.pm Selector.pl \
-		 OpderImages.pm SelectorTableItem.pm Opder.pl SelectorTable.pm \
-		 OpderTable.pm SelectorUtils.pm
+FILES := OpderAbout.pm OpderAddRepository.pm OpderDownloadInfo.pm \
+		 OpderDownloadPackage.pm OpderImages.pm Opder.pl OpderTable.pm
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
