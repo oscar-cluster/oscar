@@ -195,7 +195,6 @@ sub handle_smart_pkgs {
         print("\tsmartly installing: ".join(",",@pkgs)."\n");
         ($err, @out) = $pm->smart_install(@pkgs);
     }
-    print "---> $err\n";
     use OSCAR::PackManDefs;
     if ($err == ERROR) {
         print "ERROR: $err error(s) occured for prereq $path\n";

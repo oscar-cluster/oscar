@@ -561,7 +561,7 @@ sub build_oscar_image {
     }
     $vars{package_group} = \@pgroups;
 
-    SystemInstaller::Tk::Image::createimage_window($window, %vars);
+    SystemInstaller::Tk::Image::createimage_basic_window($window, %vars);
 }
 
 sub postimagebuild {
