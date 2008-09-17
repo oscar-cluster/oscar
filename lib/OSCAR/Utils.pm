@@ -34,6 +34,7 @@ use POSIX;
 use Carp;
 
 @EXPORT = qw(
+            compactSpaces
             download_file
             get_oscar_version
             get_local_arch
@@ -148,9 +149,9 @@ sub is_a_valid_string ($) {
 #                                                                              #
 # Outputs: prints out the hash contents                                        #
 ################################################################################
-sub print_hash {
+sub print_hash ($$$) {
     my ($leading_spaces, $name, $hashref) = @_;
-    print "DEBUG>$0:\n====> in oda::print_hash\n-- $leading_spaces$name ->\n";
+    print "DEBUG>$0:\n====>print_hash\n-- $leading_spaces$name ->\n";
     foreach my $key (sort keys %$hashref) {
         my $value = $$hashref{$key};
         if (ref($value) eq "HASH") {
@@ -265,6 +266,31 @@ sub get_path_perl_modules () {
     $path = $1;
     return $path;
 }
+
+#########################################################################
+#  Subroutine: compactSpaces                                            #
+#  Parameters: (1) The string from which to remove spaces               #
+#              (2) If $compact==1, then compress multi spaces to 1      #
+#              (3) If $commas==1, then change commas to spaces          #
+#  Returns   : The new string with spaces removed/compressed.           #
+#  This subroutine strips off the leading and trailing spaces from a    #
+#  string.  You can also pass a second parameter flag (=1) to compact   #
+#  multiple intervening spaces down to one space.  You can also pass a  #
+#  third parameter flag (=1) to change commas to spaces prior to doing  #
+#  the space removal/compression.                                       #
+#########################################################################
+sub compactSpaces ($$$) {
+
+  my($string,$compact,$commas) = @_;
+
+  $string =~ s/,/ /g if ($commas);    # Change commas to spaces
+  $string =~ s/^ *//;                 # Strip off leading spaces
+  $string =~ s/ *$//;                 # Strip off trailing spaces
+  $string =~ s/ +/ /g if ($compact);  # Compact multiple spaces
+
+  $string;  # Return string to calling procedure;
+}
+
 
 1;
 
