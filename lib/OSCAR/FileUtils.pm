@@ -1,8 +1,8 @@
 package OSCAR::FileUtils;
 
-# Copyright (C) 2007    Oak Ridge National Laboratory
-#                       Geoffroy Vallee <valleegr at ornl dot gov>
-#                       All rights reserved.
+# Copyright (C) 2007-2008 Oak Ridge National Laboratory
+#                         Geoffroy Vallee <valleegr at ornl dot gov>
+#                         All rights reserved.
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -38,10 +38,10 @@ use Carp;
 
 @EXPORT = qw(
             add_line_to_file_without_duplication
+            line_in_file
             get_directory_content
             get_dirs_in_path
             get_files_in_path
-            line_in_file
             parse_xmlfile
             );
 
@@ -65,7 +65,7 @@ sub add_line_to_file_without_duplication ($$) {
     open (DAT, ">>$file_path") 
         or (carp "ERROR: Impossible to open the file: $file_path.",
             return -1);
-    if (find_line_in_file($line, $file_path) == -1) {
+    if (line_in_file($line, $file_path) == -1) {
         print (DAT "$line\n");
     }
     close (DAT);
@@ -80,7 +80,7 @@ sub add_line_to_file_without_duplication ($$) {
 # Return: -1 if the line is not in the file,                                   #
 #         the line number if the line is already in the file.                  #
 ################################################################################
-sub find_line_in_file ($$) {
+sub line_in_file ($$) {
     my ($line, $file_path) = @_;
     open (FILE, $file_path)
         or die "Impossible to open the file: $file_path.";
@@ -202,39 +202,6 @@ sub parse_xmlfile ($) {
     }
 
     return $xml_ref;
-}
-
-# Check if a given line is in a given file.
-#
-# Input: line, the line we are looking for
-#        file, the file we want to look in
-# Return: 1 if the line is in the file, 
-#         0 is the line is not in the file, 
-#         -1 if error
-sub line_in_file ($$) {
-    my ($line, $file) = @_;
-
-    if (!defined $line || !defined $file) {
-        carp "ERROR: Invalid parameter";
-        return -1;
-    }
-    if (! -f $file) {
-        carp "ERROR: Invalid file ($file)";
-        return -1;
-    }
-
-    chomp ($line);
-
-    open FILE, "$file";
-    while (<FILE>) {
-        my $l = $_;
-        chomp $l;
-        if ($l eq $line) {
-            return 1;
-        }
-    }
-    close FILE;
-    return 0;
 }
 
 1;
