@@ -1,8 +1,8 @@
 package OSCAR::PackageSet;
 #
-# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
-#                    Oak Ridge National Laboratory
-#                    All rights reserved.
+# Copyright (c) 2007-2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                         Oak Ridge National Laboratory
+#                         All rights reserved.
 #
 #   $Id: PackageSet.pm 4833 2006-05-24 08:22:59Z bli $
 #
@@ -31,7 +31,8 @@ use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
-use OSCAR::Utils qw ( print_array );
+use OSCAR::FileUtils;
+use OSCAR::Utils;
 use XML::Simple;
 use Data::Dumper;
 use Carp;
@@ -39,6 +40,7 @@ use Carp;
 @EXPORT = qw(
             get_local_package_set_list
             get_list_opkgs_in_package_set
+            get_package_sets
             get_opkgs_path_from_package_set
             );
 
@@ -48,6 +50,31 @@ if (defined $ENV{OSCAR_HOME}) {
     $package_set_dir = $ENV{OSCAR_HOME}."/share/package_sets";
 } else {
     $package_set_dir = "/usr/share/oscar/package_sets";
+}
+
+# Package sets are defined via files. The files are named based o the target
+# Linux distro and those files are in a directory that has the name of the
+# package set. Therefore to get the list of package sets, we need to have the
+# name of the directories in the location where package sets are stored and for
+# each of those directory, get the files name.
+# We assume we create a namespace for each package sets based on the following
+# rule:
+#       "<package_set_name> - <distro_id>"
+#
+# Input: None.
+# Return: array of package sets name.
+sub get_package_sets () {
+    my @pkg_sets;
+    my @dirs = OSCAR::FileUtils::get_dirs_in_path ($package_set_dir);
+    foreach my $d (@dirs) {
+        my @files = OSCAR::FileUtils::get_files_in_path ("$package_set_dir/$d");
+        foreach my $file (@files) {
+            if ($file =~ /^(.*)\.xml/) {
+                push (@pkg_sets, "$d - $1");
+            }
+        }
+    }
+    return @pkg_sets;
 }
 
 ###############################################################################
@@ -97,17 +124,19 @@ sub get_local_package_set_list {
 # Parameter: Package set name.
 # Return:    List of OPKGs (array), undef if error.
 ###############################################################################
-sub get_list_opkgs_in_package_set {
-    my ($packageSetName) = @_;
+sub get_list_opkgs_in_package_set ($$) {
+    my ($packageSetName, $distro_id) = @_;
 
-    die ("ERROR: The package set directory does not exist ".
-        "($package_set_dir)") if ( ! -d $package_set_dir );
-    my $os = OSCAR::OCA::OS_Detect::open();
-    my $distro_id = $os->{compat_distro}."-".$os->{compat_distrover}."-".
-                    $os->{arch} . ".xml";
-    my $file_path = "$package_set_dir/$packageSetName/$distro_id";
-    die ("ERROR: Impossible to read the package set ($file_path)") 
-        if ( ! -f $file_path);
+    if ( ! -d $package_set_dir ) {
+        carp "ERROR: The package set directory does not exist ".
+             "($package_set_dir)";
+        return undef;
+    }
+    my $file_path = "$package_set_dir/$packageSetName/$distro_id.xml";
+    if ( ! -f $file_path) {
+        carp "ERROR: Impossible to read the package set ($file_path)";
+        return -1;
+    }
 
     my @opkgs = ();
 
@@ -120,24 +149,14 @@ sub get_list_opkgs_in_package_set {
     print Dumper($xml_data) if $verbose;
     print "Number of OPKG in the $packageSetName package set: ".
           scalar(@{$base})."\n" if $verbose;
-    # When we have the list of OPKG, we check that the directories exist
-    print "Validating package set $packageSetName...\n" if $verbose;
-    my $opkg_directory = $ENV{OSCAR_HOME}."/packages/";
     for (my $i=0; $i < scalar(@{$base}); $i++) {
         my $opkg_name = $xml_data->{packages}->[0]->{opkg}->[$i];
-        my $dir = $opkg_directory . $opkg_name;
-        if ( -d $dir) {
-            print "Package $opkg_name valid...\n" if $verbose;
-            push (@opkgs, $opkg_name);
-        } else {
-            print "Package $opkg_name is not valid, we exclude it ($dir)\n"
-                if $verbose;
-        }
+        push (@opkgs, $opkg_name);
     }
 
     if ($verbose) {
         print "List of available OPKGs: ";
-        print_array (@opkgs);
+        OSCAR::Utils::print_array (@opkgs);
     }
     close (FILE);
 
