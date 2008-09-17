@@ -28,7 +28,6 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
-use OSCAR::PackMan;           # this only works when PackMan has arrived!
 use OSCAR::Distro;
 use OSCAR::Utils;
 use File::Basename;
@@ -41,6 +40,7 @@ use Carp;
             checksum_needed
             checksum_files
             detect_pool_format
+            detect_pools_format
             prepare_distro_pools
             prepare_pool
             prepare_pools
@@ -143,7 +143,8 @@ sub detect_pool_format ($) {
     my $binaries = "rpm|deb";
     print "Analysing $pool\n" if $verbose;
     # Online repo
-    if ( index($pool, "http", 0) >= 0) {
+    require OSCAR::PackagePath;
+    if ( OSCAR::PackagePath::repo_local ($pool) == 0) {
         print "This is an online repository ($pool)\n" if $verbose;
         my $url;
         if ( $pool =~ /\/$/ ) {
@@ -185,7 +186,7 @@ sub detect_pool_format ($) {
             return undef;
         }
     }
-    print "Detected format for pool $pool: $format\n";
+    print "Detected format for pool $pool: $format\n" if $verbose;
     return $format;
 }
 
@@ -212,6 +213,7 @@ sub generate_pool_checksum ($) {
         my $pm;
         my $pool_type = detect_pool_format ($pool);
         print "Pool type: $pool_type\n";
+        require OSCAR::PackMan;
         if ($pool_type eq "rpm") {
             $pm = PackMan::RPM->new;
         } elsif ($pool_type eq "deb") {
@@ -250,6 +252,7 @@ sub prepare_pool ($$) {
 
     # check if pool update is needed
     my $pm;
+    require OSCAR::PackMan;
     if ($format eq "rpm") {
         $pm = PackMan::RPM->new;
     } elsif ($format eq "deb") {
@@ -268,7 +271,7 @@ sub prepare_pool ($$) {
     my $perr = generate_pool_checksum ($pool);
     if ($perr) {
         undefine $pm;
-        carp "Error: could not setup or generate package pool metadata\n";
+        carp "ERROR: could not setup or generate package pool metadata\n";
         return undef;
     }
 
@@ -278,28 +281,11 @@ sub prepare_pool ($$) {
     return $pm;
 }
 
-################################################################################
-# This function prepares a set of repositories.                                #
-# !!!WARNING!!! All the repositories have to be based on the same binary       #
-# package format (for instance RPM or Deb).                                    #
-# We strongly encourage developers to use the function prepare_distro_repos()  #
-# if they want to prepare repos assiocated to a specific distribution.         #
-#                                                                              #
-# Input: verbose, do you want verbose or not? 0 = no, anything else = yes      #
-#        pools, array with the list of repos to prepare.                       #
-# Return: the packman object that can handle these repos.                      #
-################################################################################
-sub prepare_pools ($@) {
-    my ($v, @pools) = @_;
-    my $format;
 
-    print "Preparing pools: @pools\n";
-    if (scalar (@pools) == 0) {
-        warn "INFO: no repositories defined";
-        return undef;
-    }
+sub detect_pools_format (@) {
+    my @pools = @_;
+    my $format = undef;
 
-    # First we check pools all support the same format (rpm vs. deb).
     foreach my $p (@pools) {
         next if ($p eq "");
         my $type = OSCAR::PackageSmart::detect_pool_format ($p);
@@ -318,6 +304,35 @@ sub prepare_pools ($@) {
                 return undef;
             }
         }
+    }
+    return $format;
+}
+
+################################################################################
+# This function prepares a set of repositories.                                #
+# !!!WARNING!!! All the repositories have to be based on the same binary       #
+# package format (for instance RPM or Deb).                                    #
+# We strongly encourage developers to use the function prepare_distro_repos()  #
+# if they want to prepare repos assiocated to a specific distribution.         #
+#                                                                              #
+# Input: verbose, do you want verbose or not? 0 = no, anything else = yes      #
+#        pools, array with the list of repos to prepare.                       #
+# Return: the packman object that can handle these repos, undef if error.      #
+################################################################################
+sub prepare_pools ($@) {
+    my ($v, @pools) = @_;
+
+    print "Preparing pools: @pools\n";
+    if (scalar (@pools) == 0) {
+        warn "INFO: no repositories defined";
+        return undef;
+    }
+
+    # First we check pools all support the same format (rpm vs. deb).
+    my $format = detect_pools_format (@pools);
+    if (!defined $format) {
+        carp "ERROR: Impossibe to detect the pools' format";
+        return undef;
     }
 
     # Then we actually prepare the pools
