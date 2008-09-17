@@ -30,6 +30,7 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
+use OSCAR::ODA_Defs;
 use Carp;
 
 @EXPORT = qw (
@@ -250,6 +251,16 @@ sub init_server ($) {
         carp "ERROR: Impossible to install server core packages\n";
         return -1;
     }
+
+    print "Marking core packages as always selected...\n";
+    my %selection_data = ();
+    # We should not do that but use the ODA constant
+    my $selection = SELECTED(); # We get the value of the constant.
+    foreach my $opkg (@core_opkgs) {
+        $selection_data{"opkg-$opkg"} = $selection;
+    }
+    OSCAR::Database::set_opkgs_selection_data (%selection_data);
+
     OSCAR::Logger::oscar_log_subsection(
         "Successfully installed server core binary packages");
 
