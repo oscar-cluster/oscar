@@ -257,7 +257,7 @@ sub init_server ($) {
     # We should not do that but use the ODA constant
     my $selection = SELECTED(); # We get the value of the constant.
     foreach my $opkg (@core_opkgs) {
-        $selection_data{"opkg-$opkg"} = $selection;
+        $selection_data{$opkg} = $selection;
     }
     OSCAR::Database::set_opkgs_selection_data (%selection_data);
 
