@@ -52,7 +52,7 @@ if (defined $ENV{OSCAR_HOME}) {
     $package_set_dir = "/usr/share/oscar/package_sets";
 }
 
-# Package sets are defined via files. The files are named based o the target
+# Package sets are defined via files. The files are named based on the target
 # Linux distro and those files are in a directory that has the name of the
 # package set. Therefore to get the list of package sets, we need to have the
 # name of the directories in the location where package sets are stored and for
@@ -63,7 +63,7 @@ if (defined $ENV{OSCAR_HOME}) {
 #
 # Input: None.
 # Return: array of package sets name.
-sub get_package_sets () {
+sub get_package_sets_per_distro () {
     my @pkg_sets;
     my @dirs = OSCAR::FileUtils::get_dirs_in_path ($package_set_dir);
     foreach my $d (@dirs) {
@@ -75,6 +75,17 @@ sub get_package_sets () {
         }
     }
     return @pkg_sets;
+}
+
+# Package sets are defined via files. We get here only the list of package
+# sets, we do not pay attention to the package set per distro.
+#
+# Input: None.
+# Return: array of package sets name.
+sub get_package_sets () {
+    my @pkg_sets;
+    my @dirs = OSCAR::FileUtils::get_dirs_in_path ($package_set_dir);
+    return @dirs;
 }
 
 ###############################################################################
@@ -135,7 +146,7 @@ sub get_list_opkgs_in_package_set ($$) {
     my $file_path = "$package_set_dir/$packageSetName/$distro_id.xml";
     if ( ! -f $file_path) {
         carp "ERROR: Impossible to read the package set ($file_path)";
-        return -1;
+        return undef;
     }
 
     my @opkgs = ();
