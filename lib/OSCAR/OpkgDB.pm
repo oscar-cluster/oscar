@@ -104,6 +104,16 @@ sub opkg_list_available {
         carp "ERROR: impossible to find any OSCAR package";
         return undef;
     }
+
+    # We remove the "opkg-" prefix in front of all OPKGs' name.
+#     my %res;
+#     foreach my $prefixed_name (keys %opkgs) {
+#         if ($prefixed_name =~ m/^opkg-(.*)$/) {
+#             $res{$1} = $opkgs{$prefixed_name};
+#             print "---> $1 => $opkgs{$prefixed_name}\n";
+#         }
+#     }
+
     return sort(keys(%opkgs));
 }
 
@@ -169,7 +179,8 @@ sub opkg_hash_available {
     my $dist = os_cdistro_string($os);
     my $pkg = $os->{pkg};
     my $isdesc = 1;
-    my ($name, $rel, $ver, $packager, $summary, $desc, $class, $conflicts);
+    my ($name, $prefixed_name, $rel, $ver, $packager, $summary, $desc, $class, 
+        $conflicts);
     my $group;
     if ($pkg eq "rpm") {
         my $cmd="/usr/bin/yume $repo --repoquery --info opkg-*-server";
@@ -189,7 +200,12 @@ sub opkg_hash_available {
         while (<CMD>) {
             chomp;
             if (/^Package: (.*)$/) {
-                $name = $1;
+                $prefixed_name = $1;
+                if ($prefixed_name =~ m/^opkg-(.*)$/) {
+                    $name = $1;
+                } else {
+                    $name = $prefixed_name;
+                }
                 $isdesc = 0;
                 $ver = $rel = $summary = $packager = $desc = $class = "";
                 $conflicts = "";
@@ -236,21 +252,6 @@ sub opkg_hash_available {
         return undef;
     }
 
-    # go through result and apply the class filter, if needed
-    # GV: based on the current opkgc output, this clearly does not work.
-#     if ($class_filter) {
-#     print "Filtering for class = \"$class_filter\"\n" if $verbose;
-#     for my $p (keys(%o)) {
-#         my %h = %{$o{$p}};
-#         print "$p -> class: $h{class}" if $verbose;
-#         if ($h{class} ne $class_filter) {
-#         delete $o{$p};
-#         print " ... deleted" if $verbose;
-#         }
-#         print "\n" if $verbose;
-#     }
-#     }
-#     print Dumper %o;
     return %o;
 }
 
