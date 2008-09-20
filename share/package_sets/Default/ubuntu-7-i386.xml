@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<package_set>
+    <name>Default</name>
+    <packages>
+        <opkg>apitest</opkg>
+        <opkg>base</opkg>
+        <opkg>c3</opkg>
+        <opkg>lam</opkg>
+        <opkg>oda</opkg>
+        <opkg>rapt</opkg>
+        <opkg>sc3</opkg>
+        <opkg>sis</opkg>
+        <opkg>switcher</opkg>
+        <opkg>sync-files</opkg>
+        <opkg>yume</opkg>
+    </packages>
+</package_set>
