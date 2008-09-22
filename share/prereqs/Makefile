@@ -1,7 +1,8 @@
 SHAREDIR=usr/share/oscar/prereqs
 
 SUBDIRS := AppConfig packman perl-Qt perl-XML-Parser base \
-			OSCAR-Database perl-HTML-Tree perl-Tk perl-XML-Simple ORM
+			OSCAR-Database perl-HTML-Tree perl-Tk perl-XML-Simple ORM \
+			Selector
 
 FILES := prereqs.order
 
