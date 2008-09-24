@@ -37,6 +37,8 @@ use AppConfig;
 use AppConfig::State;
 use warnings "all";
 
+use Data::Dumper;
+
 @EXPORT = qw(
             get_value
             set_value
@@ -65,6 +67,10 @@ sub get_value ($$$) {
         return undef;
     }
 
+    if (defined ($block) && $block ne "") {
+        $key = $block . "_" .$key;
+    }
+
     use vars qw($config);
     $config = AppConfig->new({
             CREATE => '^*',
@@ -77,18 +83,26 @@ sub get_value ($$$) {
     }
     $config->file($config_file);
 
-    if (defined ($block) && $block ne "") {
-        $key = $block . "_" .$key;
-    }
-
     return $config->get($key);
 }
 
 sub get_block_list ($) {
-    my $config_file = @_;
+    my $config_file = shift;
+
+    if (! -f $config_file) {
+        carp "ERROR: the config file ($config_file) does not exist";
+        return undef;
+    }
 
     my $list_blocks = `grep '\\[' $config_file`;
-    print "List blocks ($config_file): $list_blocks";    
+#    print "List blocks ($config_file): $list_blocks";    
+
+    my @blocks = split ("\n", $list_blocks);
+    for (my $i=0; $i < scalar(@blocks); $i++) {
+        $blocks[$i] =~ s/\[//g;
+        $blocks[$i] =~ s/\]//g;
+    }
+    return @blocks;
 }
 
 sub set_value ($$$$) {
