@@ -31,11 +31,11 @@ BEGIN {
 my ($add, $remove, $update, $mac, $distro);
 
 GetOptions(
-        "add"                           => \$add,
+        "add=s"                         => \$add,
         "remove"                        => \$remove,
         "update"                        => \$update,
-        "mac"                           => \$mac,
-        "distro"                        => \$distro,
+        "mac=s"                         => \$mac,
+        "distro=s"                      => \$distro,
         "help"                          => \&help,
         ) || help_and_exit();
 
@@ -57,15 +57,15 @@ if (defined $update && (!is_a_valid_string ($mac)
     die "ERROR: Invalid argument for the addition of a new VM";
 }
 
-if (!is_a_valid_string ($remove)) {
+if (defined $remove && !is_a_valid_string ($remove)) {
     die "ERROR: Invalid VM name";
 }
 
 if ($add) {
     OSCAR::Logger::oscar_log_section ("Adding a new VM ($add)");
     require OSCAR::ImageMgt;
-    my %vars = get_image_default_settings ();
-    if (create_image ($distro, %vars)) {
+    my %vars = OSCAR::ImageMgt::get_image_default_settings ();
+    if (OSCAR::ImageMgt::create_image ($add, %vars)) {
         die "ERROR: Impossible to create the image for $distro";
     }
 }
@@ -85,6 +85,12 @@ sub help {
     print "\n";
     print "Setup virtual machines via OSCAR.\n";
     print "OPTION can be:\n";
+    print "    add <VM_ID>:         Add a new virtual machine.\n";
+    print "    remove <VM_ID>:      Remove a virtual machine.\n";
+    print "    update <VM_ID>:      Update a virtual machine.\n";
+    print "    mac <MAC_ADDRESS>:   Sepcify a MAC address (must be used when adding a virutal machine)\n";
+    print "    distro <DISTRO_ID>:  Linux distribution used for the VM (must be used when adding a virutal machine)\n";
+    print "    help:                Display this help\n";
     print "\n";
 }
 
