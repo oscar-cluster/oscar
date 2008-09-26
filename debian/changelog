@@ -1,8 +1,14 @@
+oscar (5.2~svn20080926-0gv1) hardy; urgency=low
+
+  * New upstream version (trunk).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Fri, 26 Sep 2008 02:03:25 -0400
+
 oscar (5.1~svn20080923-0gv1) hardy; urgency=low
 
   * New upstream version (trunk).
 
- -- gvallee <gvallee@hugo>  Tue, 23 Sep 2008 20:15:40 -0400
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Tue, 23 Sep 2008 20:15:40 -0400
 
 oscar (5.1~svn20080901-0gv2) hardy; urgency=low
 
