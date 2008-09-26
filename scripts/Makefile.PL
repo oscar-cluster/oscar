@@ -37,7 +37,6 @@ WriteMakefile(
             opd
             oscar
             oscar-config
-            oscar-vm
             oscar_image_cleanup
             oscar_sanity_check
             oscar_wizard
