@@ -30,7 +30,6 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
-use OSCAR::ODA_Defs;
 use Carp;
 
 @EXPORT = qw (
@@ -255,7 +254,8 @@ sub init_server ($) {
     print "Marking core packages as always selected...\n";
     my %selection_data = ();
     # We should not do that but use the ODA constant
-    my $selection = SELECTED(); # We get the value of the constant.
+    require OSCAR::ODA_Defs;
+    my $selection = OSCAR::ODA_Defs::SELECTED();
     foreach my $opkg (@core_opkgs) {
         $selection_data{$opkg} = $selection;
     }
