@@ -85,11 +85,12 @@ sub line_in_file ($$) {
     open (FILE, $file_path)
         or die "Impossible to open the file: $file_path.";
     my $pos=0;
+    chomp ($line);
     foreach my $l (<FILE>) {
         chomp($l);
         if ($l eq $line) {
             return $pos;
-        } 
+        }
         $pos += 1;
     }
     close (FILE);
