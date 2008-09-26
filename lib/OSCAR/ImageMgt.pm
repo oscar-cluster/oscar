@@ -36,10 +36,7 @@ use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::PackagePath;
 use OSCAR::Database;
-use OSCAR::Utils qw (
-                    is_element_in_array
-                    print_array
-                    );
+use OSCAR::Utils;
 # use SystemImager::Server;
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
 # use SystemInstaller::Tk::Common;
@@ -296,7 +293,7 @@ sub get_image_default_settings () {
            pkgfile => $pkglist,
            # pkgpath: path of the different binary packages pools used for the
            # creation of the image.
-           pkgpath => "$oscar_pool, $distro_pool",
+           pkgpath => "$oscar_pool,$distro_pool",
            # diskfile: path to the file that gives the disk partition layout.
            diskfile => $diskfile,
            # ipmeth: method to assign the IP (possible options are: "static")
@@ -490,13 +487,17 @@ sub create_image ($%) {
     oscar_log_section "Creating the basic golden image..." if $verbose;
 
     $vars{imgname} = "$image";
+    $verbose = 1;
 
     my $cmd = "mksiimage -A --name $vars{imgname} " .
-            "--location $vars{pkgpath} " .
             "--filename $vars{pkgfile} " .
             "--arch $vars{arch} " .
-            "--path $vars{imgpath}/$vars{imgname}" .
-            " $vars{extraflags} --verbose";
+            "--path $vars{imgpath}/$vars{imgname} ";
+    $cmd .= "--distro $vars{distro} " if defined $vars{distro};
+    if (!defined $vars{distro} && defined $vars{pkgpath}) {
+        $cmd .= "--location $vars{pkgpath} ";
+    }
+    $cmd .= " $vars{extraflags} --verbose";
 
     oscar_log_subsection "Executing command: $cmd" if $verbose;
     if (system ($cmd)) {
