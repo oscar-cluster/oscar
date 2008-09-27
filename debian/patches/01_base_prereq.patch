@@ -1,0 +1,69 @@
+--- oscar/share/prereqs/base/prereq.cfg.orig	2008-09-26 23:16:18.000000000 -0400
++++ oscar/share/prereqs/base/prereq.cfg	2008-09-26 23:35:31.000000000 -0400
+@@ -43,7 +43,7 @@
+ perl-CGI
+ cdrecord 
+ !tftp-server.$arch
+-sh: $OSCAR_HOME/scripts/system-sanity
++sh: /usr/bin/system-sanity
+ xmlstarlet
+ 
+ [fedora:*:*]
+@@ -70,7 +70,7 @@
+ ntp
+ !tftp-server.$arch
+ !lam
+-sh: $OSCAR_HOME/scripts/system-sanity
++sh: /usr/bin/system-sanity
+ xmlstarlet
+ 
+ [redhat*|centos*|scientificlinux*:*:*]
+@@ -94,7 +94,7 @@
+ ntp
+ !tftp-server.$arch
+ !lam
+-sh: $OSCAR_HOME/scripts/system-sanity
++sh: /usr/bin/system-sanity
+ 
+ [*suse*:10*:*]
+ dhcp-server
+@@ -121,7 +121,7 @@
+ !mpich
+ !mpich-devel
+ !OpenPBS*
+-sh: $OSCAR_HOME/scripts/system-sanity
++sh: /usr/bin/system-sanity
+ xmlstarlet
+ 
+ [debian:*:*]
+@@ -141,7 +141,7 @@
+ tcpdump
+ xinetd
+ xmlstarlet
+-sh: $OSCAR_HOME/scripts/system-sanity
++sh: /usr/bin/system-sanity
+ 
+ [ubuntu:*:*]
+ !tftpd
+@@ -160,7 +160,7 @@
+ tcpdump
+ xinetd
+ xmlstarlet
+-sh: $OSCAR_HOME/scripts/system-sanity
++sh: /usr/bin/system-sanity
+ 
+ [sles:10:*]
+ sqlite2
+@@ -189,10 +189,10 @@
+ !mpich
+ !mpich-devel
+ !OpenPBS*
+-sh: $OSCAR_HOME/scripts/system-sanity
++sh: /usr/bin/system-sanity
+ 
+ # default
+ [*:*:*]
+ systeminstaller-oscar
+ systemimager-client
+-sh: $OSCAR_HOME/scripts/system-sanity
++sh: /usr/bin/system-sanity
