@@ -4,9 +4,14 @@
 # Copyright (c) 2006 Oak Ridge National Laboratory.
 #                    All rights reserved.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use warnings;
 use English '-no_match_vars';
-use lib "$ENV{OSCAR_HOME}/lib";
 
 # NOTE: Use the predefined constants for consistency!
 use OSCAR::SystemSanity;

@@ -6,9 +6,14 @@
 # This script check if the /etc/apt/sources.list on Debian is a minimum correct
 # (with at least one entry.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use warnings;
 use English '-no_match_vars';
-use lib "$ENV{OSCAR_HOME}/lib";
 
 # NOTE: Use the predefined constants for consistency!
 use OSCAR::SystemSanity;

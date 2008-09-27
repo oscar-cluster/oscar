@@ -18,17 +18,27 @@
 #          !system("./scripts/system-sanity") or die "Error: Failed sanity\n";
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::SystemSanity;  # Enumeration for constants
 use Carp;
 
-my $system_check_dir = $ENV{OSCAR_HOME} . "/scripts/system-sanity.d";
+my $system_check_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $system_check_dir = $ENV{OSCAR_HOME} . "/scripts/system-sanity.d";
+} else {
+    $system_check_dir = "/usr/bin/system-sanity.d";
+}
 
 print "Checking your system...\n";
 
 if (! -d $system_check_dir ) {
-	croak "Error: Missing system-check.d/ directory - \'$system_check_dir\'"; 
+	croak "Error: Missing system-sanity.d/ directory - \'$system_check_dir\'"; 
 }
 
 my @files = get_check_files( $system_check_dir );

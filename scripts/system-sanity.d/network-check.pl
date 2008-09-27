@@ -8,9 +8,14 @@
 # requirements.
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use warnings;
 use English '-no_match_vars';
-use lib "$ENV{OSCAR_HOME}/lib";
 use POSIX;
 
 # NOTE: Use the predefined constants for consistency!

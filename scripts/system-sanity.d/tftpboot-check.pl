@@ -5,9 +5,14 @@
 #                    Geoffroy Vallee <valleegr@ornl.gov>
 #                    All rights reserved.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use warnings;
 use English '-no_match_vars';
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::OCA::OS_Detect;
 use warnings "all";
 
