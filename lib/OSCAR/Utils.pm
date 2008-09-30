@@ -149,13 +149,15 @@ sub is_a_valid_string ($) {
 #                                                                              #
 # Outputs: prints out the hash contents                                        #
 ################################################################################
+sub print_hash ($$$); # Prototype to avoid warnings when recursive calls of
+                      # print_hash are made.
 sub print_hash ($$$) {
     my ($leading_spaces, $name, $hashref) = @_;
     print "DEBUG>$0:\n====>print_hash\n-- $leading_spaces$name ->\n";
     foreach my $key (sort keys %$hashref) {
         my $value = $$hashref{$key};
         if (ref($value) eq "HASH") {
-            print_hash(  "$leading_spaces    ", $key, $value );
+            print_hash( "$leading_spaces    ", $key, $value );
         } elsif (ref($value) eq "ARRAY") {
             print "-- $leading_spaces    $key => (";
             print join(',', @$value);
@@ -290,7 +292,6 @@ sub compactSpaces ($$$) {
 
   $string;  # Return string to calling procedure;
 }
-
 
 1;
 

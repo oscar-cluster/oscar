@@ -63,7 +63,10 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 my $opkg = basename($ENV{OSCAR_PACKAGE_HOME}) if defined ($ENV{OSCAR_PACKAGE_HOME});
 
 # location of OPKGs shipped with OSCAR
-my $opkg_dir = $ENV{OSCAR_HOME} . "/packages";
+my $opkg_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $opkg_dir = $ENV{OSCAR_HOME} . "/packages";
+}
 
 # Prefix print statements with "[package name]" 
 sub opkg_print {
@@ -161,7 +164,7 @@ sub opkgs_install ($@) {
 # This is used for the creation of a temporary file when we build a new       #
 # image.                                                                      #
 # Input: file where the list has to be written.                               #
-# Return: none.
+# Return: none.                                                               #
 ###############################################################################
 sub create_list_selected_opkgs ($) {
     my $outfile = shift;

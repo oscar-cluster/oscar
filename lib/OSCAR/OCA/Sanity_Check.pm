@@ -12,10 +12,15 @@
 
 package OSCAR::OCA::Sanity_Check;
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::OCA;
 
 #

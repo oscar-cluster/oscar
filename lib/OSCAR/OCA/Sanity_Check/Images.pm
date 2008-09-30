@@ -16,8 +16,13 @@
 
 package OCA::Sanity_Check::Images;
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Utils;
 use OSCAR::OCA::Debugger;
 use OSCAR::ImageMgt qw ( get_list_corrupted_images );

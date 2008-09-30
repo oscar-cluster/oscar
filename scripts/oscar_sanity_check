@@ -6,7 +6,12 @@
 #                    All rights reserved.
 #
 
-use lib "$ENV{OSCAR_HOME}/lib";
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use Data::Dumper;
 use OSCAR::OCA::Sanity_Check;
 use Carp;
