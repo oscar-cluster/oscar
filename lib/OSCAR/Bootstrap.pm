@@ -253,7 +253,7 @@ sub init_server ($) {
 
     print "Marking core packages as always selected...\n";
     my %selection_data = ();
-    # We should not do that but use the ODA constant
+    # We call ODA_Defs only here to avoid bootstrapping issues.
     require OSCAR::ODA_Defs;
     my $selection = OSCAR::ODA_Defs::SELECTED();
     foreach my $opkg (@core_opkgs) {
@@ -438,6 +438,15 @@ sub bootstrap_stage1 ($) {
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($ipcmd, $odaprereqs_path, $prereq_mode)) {
         carp "ERROR: impossible to install ODA prereqs ($odaprereqs_path)\n";
+        return -1;
+    }
+
+    # Now we try to install Selector
+    my $selector_prereqs_path = $config->{'prereqs_path'} . "/Selector";
+    my $prereq_mode = $config->{'prereq_mode'};
+    if (install_prereq ($ipcmd, $selector_prereqs_path, $prereq_mode)) {
+        carp "ERROR: impossible to install Selector prereqs ".
+             "($selector_prereqs_path)\n";
         return -1;
     }
 
