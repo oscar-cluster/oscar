@@ -14,11 +14,18 @@
 
 package OCA::Sanity_Check::Prereqs;
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::ConfigManager;
 use OSCAR::FileUtils;
 use OSCAR::Utils;
+use Carp
+
 my $oscar_configurator = OSCAR::ConfigManager->new();
 my $config = $oscar_configurator->get_config();
 
@@ -31,8 +38,8 @@ print "Scripts available at: $scripts_path\n";
 my $ipscript = $scripts_path . "/install_prereqs ";
 
 my @entries = OSCAR::FileUtils::get_directory_content ($prereqs_path);
-if (!defined (@entries)) {
-    print "ERROR: Impossible to find the prereqs dir ($prereqs_path)\n";
+if (scalar (@entries) == 0) {
+    carp "ERROR: Impossible to find the prereqs dir ($prereqs_path)\n";
     exit 0;
 }
 

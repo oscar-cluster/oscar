@@ -19,8 +19,13 @@
 
 package OCA::Sanity_Check::OPKG;
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackageSet qw ( get_list_opkgs_in_package_set );
 use OSCAR::Opkg qw ( get_list_opkg_dirs );
 use OSCAR::Utils qw ( print_array );
