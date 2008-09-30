@@ -320,13 +320,14 @@ sub get_image_default_settings () {
 sub delete_image ($) {
     my $imgname = shift;
 
-    my $config = init_si_config();
+    my $config = SystemInstaller::Tk::Common::init_si_config();
     my $rsyncd_conf = $config->rsyncd_conf();
     my $rsync_stub_dir = $config->rsync_stub_dir();
 
     system("mksiimage -D --name $imgname");
-    SystemImager::Server->remove_image_stub($rsync_stub_dir, $imgname);
-    SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+    require SystemImager::Server;
+    SystemImager::Server::remove_image_stub($rsync_stub_dir, $imgname);
+    SystemImager::Server::gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
 }
 
 ################################################################################
