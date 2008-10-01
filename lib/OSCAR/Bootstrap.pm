@@ -432,6 +432,14 @@ sub bootstrap_stage1 ($) {
         return -1;
     }
 
+    # Now we try to install ORM
+    my $orm_prereqs_path = $config->{'prereqs_path'} . "/ORM";
+    my $prereq_mode = $config->{'prereq_mode'};
+    if (install_prereq ($ipcmd, $orm_prereqs_path, $prereq_mode)) {
+        carp "ERROR: impossible to install ORM prereqs ($orm_prereqs_path)\n";
+        return -1;
+    }
+
     # Now we try to bootstrap ODA
     # First we install the basic prereqs
     my $odaprereqs_path = $config->{'prereqs_path'} . "/OSCAR-Database";
