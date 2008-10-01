@@ -1,6 +1,0 @@
-#!/bin/bash
-for p in apitest c3 ganglia yume linux-ha switcher torque maui jobmonarch \
-         lam mpich netbootmgr openmpi opium pfilter pvm rapt sc3 sync-files \
-         sge sis; do
-	./build_oscar_rpms $p
-done                                                   
