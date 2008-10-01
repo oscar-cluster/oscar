@@ -16,7 +16,6 @@ WriteMakefile(
 			'oscar_wizard' => '$(INST_MAN1DIR)/oscar_wizard.$(MAN1EXT)',
 			'setup_pxe' => '$(INST_MAN1DIR)/setup_pxe.$(MAN1EXT)',
 			'system-sanity' => '$(INST_MAN1DIR)/system-sanity.$(MAN1EXT)',
-			'build_opkg_rpms' => '$(INST_MAN1DIR)/build_opkg_rpms.$(MAN1EXT)',
 		},
 		'macro' => {
 			'MAN1EXT' => '1',
