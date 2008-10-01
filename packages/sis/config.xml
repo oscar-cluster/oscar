@@ -108,18 +108,24 @@
       <pkg>systemconfigurator</pkg>
       <pkg>systeminstaller-oscar</pkg>
       <pkg>systeminstaller-oscar-x11</pkg>
+      <pkg>syslinux</pkg>
+      <pkg>atftpd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>debian</dist>
+        <arch>i386</arch>
       </filters>
-      <pkg>syslinux</pkg>
-      <pkg>atftpd</pkg>
       <pkg>systemimager-boot-i386-standard</pkg>
       <pkg>systemimager-initrd-template-i386</pkg>
-      <pkg>systemconfigurator</pkg>
-      <pkg>systeminstaller-oscar</pkg>
-      <pkg>systeminstaller-oscar-x11</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+        <arch>x86_64</arch>
+      </filters>
+      <pkg>systemimager-boot-amd64-standard</pkg>
+      <pkg>systemimager-initrd-template-amd64</pkg>
     </requires>
     <requires>
       <filters>
@@ -158,6 +164,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.0-7">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-10-01T00:30:12-05:00">
+        <item>Fix dependencies issues on Debian based systems.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.0-6">
       <changelogEntry authorName="Geoffroy Vallee" date="2008-08-10T15:31:41-05:00">
         <item>Fix dependencies issues on Debian based systems.</item>
