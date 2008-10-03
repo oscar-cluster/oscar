@@ -649,9 +649,9 @@ sub build_oscar_clients {
             $first_node = $$node_ref{name};
             last;
         }
-        print "BEFORE : $first_node\n";
+#         print "BEFORE : $first_node\n";
         $first_node =~ s/^([^\d]+)(\d+)$/$1/g ;
-        print "AFTER : $first_node\n";
+#         print "AFTER : $first_node\n";
         $client_basename = $first_node;
     }
 
@@ -679,14 +679,20 @@ sub postaddclients {
     my ($vars) = @_;
     my $step_number = $$vars{step_number};
 
-    my $cmd = "./post_clients";
+    my $cmd;
+    if (defined $ENV{OSCAR_HOME}) {
+        $cmd = "$ENV{OSCAR_HOME}/scripts";
+    } else {
+        $cmd = $config->{'binaries_path'};
+    }
+    $cmd .= "/post_clients";
     my $step_string = "";
     $step_string = "Step $step_number: " if $mode eq "install";
 
     oscar_log_subsection("$step_string"."Running: $cmd");
     !system($cmd) or (carp($!), return undef);
     &populate_client_group_nodes;
-    
+
     # Set the following next buttons available
     if( $$step_status{netboot} eq "disabled" ){
         my @tmp_next_steps = ("netboot", 
@@ -703,7 +709,7 @@ sub postaddclients {
                 set_wizard_status($next_step,\%options,\@errors);
             } else {
                 set_manage_status($next_step,\%options,\@errors);
-            } 
+            }
         }
     }
 
@@ -794,7 +800,7 @@ sub run_post_install {
     @mod_env = WizardEnv::update_env();
 
     my $cmd_vars = { 
-	cmd => "./post_install",
+	cmd => $config->{'binaries_path'}."/post_install",
 	success => {
 	    message => "Successfully completed the cluster install",
 	    unbusy => 1,
