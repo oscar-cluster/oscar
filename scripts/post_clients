@@ -55,7 +55,7 @@ my $return = 0;
 
 foreach my $pkg_ref (@pkgs) {
     my $pkg = $$pkg_ref{package};
-    if(!run_pkg_script($pkg,"post_clients",1)) {
+    if(!OSCAR::Package::run_pkg_script($pkg, "post_clients", 1, undef)) {
         carp("Couldn't run post_clients script for $pkg");
         $return++;
     }
