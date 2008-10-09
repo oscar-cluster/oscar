@@ -50,7 +50,7 @@ use OSCAR::OCA::OS_Detect;
 
 my $ARCH=(uname)[4]; # Default architecture
 $ARCH =~ s/i.86/i386/;
-my $install_mode = OSCAR::Database::get_install_mode();
+my $install_mode = OSCAR::Database::get_install_mode(undef, undef);
 my $os = OSCAR::OCA::OS_Detect::open();
 if (!defined $os) {
     die "ERROR: Impossible to detect the local distribution";
@@ -161,7 +161,7 @@ my $monitor_port = 8181;
 # Need to get the IP address of headnode (oscar_server)
 my @result = ();
 my $node = "oscar_server";
-my $iface = OSCAR::Database::get_headnode_iface();
+my $iface = OSCAR::Database::get_headnode_iface(undef, undef);
 if ( !defined $iface ) {
     die "ERROR: Impossible to get the network interface id used by OSCAR";
 }
