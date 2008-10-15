@@ -510,6 +510,15 @@ sub create_image ($%) {
     # be needed.
 #     postimagebuild (\%vars);
 
+    # Add image data into ODA
+    my %image_data = ("name" => $image,
+                      "path" => "$vars{imgpath}/$vars{imgname}",
+                      "architecture" => "$vars{arch}");
+    if (OSCAR::Database::set_images (\%image_data, undef, undef) != 1) {
+        carp "ERROR: Impossible to store image data into ODA";
+        return -1;
+    }
+
     return 0;
 }
 
