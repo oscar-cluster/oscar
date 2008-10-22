@@ -352,6 +352,9 @@ sub mactransform {
 }
 
 # A simple subrountine for running a command
+# TODO: we should use return codes instead of dying when an error happends. 
+# That will allow a finer grain management of exceptions, propagating the
+# error up the code tree.
 sub run_cmd {
     my $cmd = shift;
     !system($cmd) or croak("Failed to run $cmd");
