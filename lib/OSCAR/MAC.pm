@@ -428,8 +428,9 @@ sub __enable_install_mode {
             run_cmd("update-rc.d -f systemimager-server-flamethrowerd remove");
         }
 
-        # Stop systemimager-server-bittorrent
-        run_cmd("/etc/init.d/systemimager-server-bittorrent stop");
+        # Stop systemimager-server-bittorrent if bittorrent is installed.
+        my $script = "/etc/init.d/systemimager-server-bittorrent";
+        run_cmd("$script stop") if (-f $script);
 
         # Remove systemimager-server bittorrent from chkconfig
         if ($binary_format ne "deb") {
