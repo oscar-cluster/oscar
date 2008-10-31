@@ -10,8 +10,14 @@
 # print out the packages or a subset of packages to see which
 # are currently selected.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+        unshift @INC, "$ENV{OSCAR_HOME}/lib/Qt";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib","$ENV{OSCAR_HOME}/lib/Qt";
 use OSCAR::Logger;
 use OSCAR::Database;
 use Qt::SelectorUtils;
@@ -104,7 +110,9 @@ if($file ne '') {
 #Start the prompt section
 #This will exit by the user typing 'quit'
 my $ppid = getppid();
-open(LOG, ">$ENV{OSCAR_HOME}/tmp/selector.$ppid.clilog") || die "Can't open the log to write to.\n";
+my $log_path = "/var/log/oscar";
+open(LOG, ">$log_path/selector.$ppid.clilog") 
+    || die "Can't open the log to write to.\n";
 print LOG "################################################################################\n" .
           "#select <packageName> - Select a package to be installed\n" .
           "#    -q - Quiet mode:  Don't print out verbose dialog\n" .

@@ -11,8 +11,15 @@
 #   SystemInstaller::Tk::Image
 #   trunk/scripts/oscar_wizard
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+        unshift @INC, "$ENV{OSCAR_HOME}/src/cli";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl","$ENV{OSCAR_HOME}/src/cli";
+use lib "/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::PackagePath;
 use OSCAR::Database;
@@ -301,7 +308,11 @@ sub menu
 	else
 	{
 		my $ppid = getppid();
-        open (LOG, ">$ENV{OSCAR_HOME}/tmp/build.$ppid.clilog");
+        my $log_path = "/log/var/oscar/build.$ppid.clilog";
+        if (! -d "/log/var/oscar") {
+            mkdir "/log/var/oscar";
+        }
+        open (LOG, ">$log_path/build.$ppid.clilog");
         print LOG "##########################################\n" .
                   "#Select one\n" .
 				  "#-----------------------------------------\n" .

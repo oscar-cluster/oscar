@@ -10,8 +10,13 @@
 # Some code in this section was borrowed from:
 #   trunk/scripts/oscar_wizard
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller";
+use lib "/usr/lib/systeminstaller";
 use OSCAR::Logger;
 use OSCAR::Network;
 use OSCAR::Database;
@@ -193,7 +198,8 @@ sub addclients
 	} else {
         # Interactive mode
 		my $ppid = getppid();
-        open (LOG, ">$ENV{OSCAR_HOME}/tmp/define.$ppid.clilog");
+        my $log_path = "/var/log/oscar";
+        open (LOG, ">$log_path/define.$ppid.clilog");
         print LOG "##########################################\n" .
                   "#Select one\n" .
 			      "#-----------------------------------------\n" .
@@ -281,7 +287,12 @@ sub addclients
 
 sub postaddclients
 {
-    chdir("$ENV{OSCAR_HOME}/scripts");
+    use OSCAR::ConfigManager;
+    my $config_file = "/etc/oscar/oscar.conf";
+    my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$config_file");
+    my $config = $oscar_cfg->get_config();
+    my $binpath = $config->{'binaries_path'}
+    chdir("$binpath");
     my $cmd = "./post_clients";
     oscar_log_subsection("Running: $cmd");
     !system($cmd) or (carp($!), return 1);

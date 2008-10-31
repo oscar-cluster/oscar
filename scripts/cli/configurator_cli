@@ -9,8 +9,13 @@
 # the information in the original HTML version, but it is possible that
 # something is lost in translation.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::Configurator;
@@ -80,7 +85,8 @@ if ($file ne '') {
 }
 
 # Log the input so this can be 'replayed' later
-open (LOG, ">$ENV{OSCAR_HOME}/tmp/configurator.$$.clilog") 
+my $log_path = "/var/log/oscar";
+open (LOG, ">$log_path/configurator.$$.clilog") 
 	|| die ("Can't open the log to write to.\n");
 
 my $prompt = "configurator> ";

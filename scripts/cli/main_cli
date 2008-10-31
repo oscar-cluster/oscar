@@ -2,8 +2,8 @@
 
 # $Id$
 #
-# Copyright (c) 2006 Oak Ridge National Laboratory.
-#                  All rights reserved.
+# Copyright (c) 2006-2008 Oak Ridge National Laboratory.
+#                         All rights reserved.
 #
 # This is the main script for the Command Line Installer
 # The CLI mirrors the GUI installer by using the same steps only in
@@ -17,8 +17,14 @@
 #
 # By adding additional flags, this script can be automated:
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
+use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::CLI_MAC;
 use OSCAR::WizardEnv;
@@ -42,10 +48,33 @@ my $skipnet = '';
 my $skipcomplete = '';
 my $skiptest = '';
 my $help = '';
-my $bootscript = "$ENV{OSCAR_HOME}/src/cli/simple_complete.pl";
+my $bootscript;
+
+my $path;
+if (defined $ENV{OSCAR_HOME}) {
+    $path = "$ENV{OSCAR_HOME}/src/cli/";
+} else {
+    $path = "/usr/bin";
+}   
+
+my $bootscript = "$path/simple_complete.pl";
 
 # Parses the command line and sets the varaibles
-GetOptions('help' => \$help, 'skipselector' => \$skipselector, 'skipbuild' => \$skipbuild, 'skipinstall' => \$skipinstall, 'skipdefine' => \$skipdefine, 'skipnet' => \$skipnet, 'skipcomplete' => \$skipcomplete, 'skiptest' => \$skiptest, 'opkgselector=s' => \$selectorfile, 'buildimage=s' => \$buildfile, 'defineclients=s' => \$definefile, 'networkclients=s' => \$netfile, 'bootscript=s' => \$bootscript);
+GetOptions(
+        'help'              => \$help,
+        'skipselector'      => \$skipselector,
+        'skipbuild'         => \$skipbuild,
+        'skipinstall'       => \$skipinstall,
+        'skipdefine'        => \$skipdefine,
+        'skipnet'           => \$skipnet,
+        'skipcomplete'      => \$skipcomplete,
+        'skiptest'          => \$skiptest,
+        'opkgselector=s'    => \$selectorfile,
+        'buildimage=s'      => \$buildfile,
+        'defineclients=s'   => \$definefile,
+        'networkclients=s'  => \$netfile,
+        'bootscript=s'      => \$bootscript
+        );
 
 # The last arguement should be the ethernet adapter used for the installation
 my $return = 0;
@@ -84,25 +113,30 @@ Flags (Provide automation):
 }
 
 oscar_log_section("Running OSCAR CLI Installer");
+if (
 
 # Step 0 should be taken care of with the OPD command line utility
 
 # Step 1 - Select Packages
 unless ($skipselector) {
-    my $cmd = "./selector_cli";
+    my $cmd = "$path/selector_cli";
     $cmd = $cmd . " --file $selectorfile" if ($selectorfile ne " ");
     oscar_log_subsection("Running command: $cmd");
     !system($cmd) or die "Failed on Step 1 - Select Packages";
 }
 
 # Step 2 - Configure Packages
-system("./configurator_cli");
+system("$path/configurator_cli");
 
 # Step 3 - Install OSCAR Server Packages
 # This step doesn't need a seperate cli script as it already has one
 unless ($skipinstall) {
     oscar_log_section("Installing OSCAR Server Packages");
-    my $cmd = "$ENV{OSCAR_HOME}/scripts/install_server $interface";
+    my $config_file = "/etc/oscar/oscar.conf";
+    my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$config_file");
+    my $config = $oscar_cfg->get_config();
+    my $binpath = $config->{'binaries_path'}
+    my $cmd = "$binpath/install_server $interface";
     oscar_log_subsection("Running command: $cmd");
     if(!system($cmd))
     {
@@ -120,7 +154,7 @@ WizardEnv::update_env();
 
 # Step 4 - Build OSCAR Client Image
 unless ($skipbuild) {
-    my $cmd = "./build_oscar_image_cli";
+    my $cmd = "$path/build_oscar_image_cli";
     $cmd = $cmd . " --file $buildfile" if ($buildfile ne " ");
     $cmd = $cmd . " $interface";
     oscar_log_subsection("Running command: $cmd");
@@ -129,7 +163,7 @@ unless ($skipbuild) {
 
 # Step 5 - Define OSCAR Clients
 unless ($skipdefine) {
-    my $cmd = "./define_oscar_clients_cli";
+    my $cmd = "$path/define_oscar_clients_cli";
     $cmd = $cmd . " --file $definefile" if ($definefile ne " ");
     $cmd = $cmd . " $interface";
     oscar_log_subsection("Running command: $cmd");
@@ -158,7 +192,7 @@ unless ($skipcomplete) {
     }
     
     oscar_log_section("Complete Cluster Setup");
-    my $cmd = $ENV{OSCAR_HOME} . "/scripts/post_install";
+    my $cmd = "$binpath/post_install";
     if(!system($cmd)) {
         oscar_log_subsection("Successfully completed the cluster install");
     } else {
@@ -171,9 +205,15 @@ unless ($skipcomplete) {
 WizardEnv::update_env();
 
 # Step 8 Test Cluster Setup
+my $tests_path;
+if (defined $ENV{OSCAR_HOME}) {
+    $tests_path = $ENV{OSCAR_HOME} . "/testing";
+} else {
+    $tests_path = "/usr/share/oscar/testing";
+}
 unless ($skiptest) {
     oscar_log_section("Test Cluster Setup");
-    my $cmd = $ENV{OSCAR_HOME} . "/testing/test_cluster";
+    my $cmd = "$tests_path/test_cluster";
     if (!system($cmd)) {
         oscar_log_subsection("Step 8 - Successfully tested the cluster setup");
     } else {
