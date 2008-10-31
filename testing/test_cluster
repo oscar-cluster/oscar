@@ -23,8 +23,14 @@
 #   This script performs tests on the cluster after it has been successfully
 #   installed - tests to be executed are: root tests, user tests, and APItests
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib",'/usr/lib/systeminstaller';
+use lib '/usr/lib/systeminstaller';
 
 use Carp;
 use File::Copy;
@@ -121,7 +127,11 @@ my $return = 0;
 
 print "Performing root tests...\n";
 # First do the root tests
-$ENV{OSCAR_TESTPRINT}="$ENV{OSCAR_HOME}/testing/testprint";
+if (defined $ENV{OSCAR_HOME}) {
+    $ENV{OSCAR_TESTPRINT}="$ENV{OSCAR_HOME}/testing/testprint";
+} else {
+    $ENV{OSCAR_TESTPRINT}="/usr/share/oscar/testing/testprint";
+}
 my $file;
 my $script;
 foreach my $pkg (@pkgs) {
@@ -199,8 +209,14 @@ my $rm = OSCAR::OCA::RM_Detect::open();
 `rm -rf $test_user_homedir/*`;
 
 # Copy the base files
+my $path;
+if (defined $ENV{OSCAR_HOME}) {
+    $path = "$ENV{OSCAR_HOME}/testing";
+} else {
+    $path = "/usr/share/oscar/testing";
+}
 foreach my $file (@ufiles) {
-	copy("$ENV{OSCAR_HOME}/testing/$file",$test_user_homedir);
+	copy("$path/$file",$test_user_homedir);
         chmod(0755,"$test_user_homedir/$file");
 }
 

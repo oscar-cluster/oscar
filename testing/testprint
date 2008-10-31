@@ -31,16 +31,16 @@ require POSIX;
 
 my $options=AppConfig->new(
 		Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
-			ALIAS => "h"},
+                ALIAS => "h"},
 		label=>{ ARGCOUNT=> ARGCOUNT_ONE,
-                        ALIAS => "l"},
+                 ALIAS => "l"},
 		status=>{ ARGCOUNT=> ARGCOUNT_ONE,
-                        ALIAS => "s"},
+                  ALIAS => "s"},
 		pass=> {ARGCOUNT=> ARGCOUNT_NONE,
-			ALIAS => "p"},
+                ALIAS => "p"},
 		fail=> {ARGCOUNT=> ARGCOUNT_NONE,
-			ALIAS => "f"},
-		skipped=> {ARGCOUNT=> ARGCOUNT_NONE },
+                ALIAS => "f"},
+		skipped=> {ARGCOUNT=> ARGCOUNT_NONE},
 		);
 
 unless ($options->getopt()){
