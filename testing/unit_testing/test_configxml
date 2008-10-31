@@ -5,8 +5,13 @@
 #                    All rights reserved.
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::FileUtils;
 use OSCAR::Opkg;
@@ -17,7 +22,12 @@ use Carp;
 use warnings "all";
 
 print "First of all, we test the XML parsing...\n";
-my $xmlfile = "$ENV{OSCAR_HOME}/testing/unit_testing/samples/config.xml";
+my $xmlfile;
+if (defined $ENV{OSCAR_HOME}) {
+    $xmlfile = "$ENV{OSCAR_HOME}/testing/unit_testing/samples/config.xml";
+} else {
+    $xmlfile = "/usr/share/oscar/testing/unit_testing/samples/config.xml";
+}
 my $ref = OSCAR::FileUtils::parse_xmlfile ($xmlfile);
 if (!defined $ref) {
     goto ERROR_EXIT;

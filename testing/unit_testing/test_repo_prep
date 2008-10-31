@@ -7,6 +7,20 @@
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackageSmart;
+use OSCAR::PackagePath;
+use Cwd;
+
+print "Test few repository related functions.\n";
+
+my $path = getcwd() . "/samples/empty_repo";
+if (OSCAR::PackagePath::repo_local ($path) != 1) {
+    print "ERROR: the fake repo $path is detected as not local";
+    goto ERROR_EXIT;
+}
+if (OSCAR::PackagePath::repo_empty ($path) != 1) {
+    print "ERROR: the fake repo $path is detected as not empty";
+    goto ERROR_EXIT;
+}
 
 print "Test the preparation of pools.\n";
 

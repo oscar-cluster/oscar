@@ -14,16 +14,67 @@ use base qw(Exporter);
 use Carp;
 use warnings "all";
 
-my $value = get_value (
-    "/home/gvh/src/svn/oscar/testing/unit_testing/etc/yum.conf",
-    "gpgkey");
+# Because the key we are looking is under the "main" section (see the config
+# file, it is kind of obvious), we look for the main_gpgcheck key.
+my $path;
+if (defined $ENV{OSCAR_HOME}) {
+    $path = $ENV{OSCAR_HOME};
+} else {
+    $path = "/usr/share/oscar";
+}
+my $value = OSCAR::ConfigFile::get_value (
+    "$path/testing/unit_testing/etc/yum.conf",
+    "main",
+    "gpgcheck");
 
-goto ERROR_EXIT if ($value != 0);
+goto ERROR_EXIT if (!defined($value) || $value != 1);
 
-print "\n\nSUCCESS: the test of configuration file management succeed\n";
+my %hash = OSCAR::ConfigFile::get_all_values (
+    "$path/testing/unit_testing/etc/yum.conf"
+    );
+my $value2 = $hash{'main_logfile'};
+
+goto ERROR_EXIT if (!defined($value2) || $value2 ne "/var/log/yum.log");
+
+# We try now to change the value of the gpgcheck option in the main block.
+# At the end, we switch back to the initial value.
+
+if (OSCAR::ConfigFile::set_value (
+    "$path/testing/unit_testing/etc/yum.conf",
+    "main",
+    "gpgcheck",
+    "-1") != 0) {
+    goto ERROR_EXIT;
+}
+
+$value = OSCAR::ConfigFile::get_value (
+    "$path/testing/unit_testing/etc/yum.conf",
+    "main",
+    "gpgcheck"
+    );
+goto ERROR_EXIT if (!defined($value) || $value != -1);
+
+if (OSCAR::ConfigFile::set_value (
+    "$path/testing/unit_testing/etc/yum.conf",
+    "main",
+    "gpgcheck",
+    "1") != 0) {
+    goto ERROR_EXIT;
+}
+
+$value = OSCAR::ConfigFile::get_value (
+    "$path/testing/unit_testing/etc/yum.conf",
+    "main",
+    "gpgcheck"
+    );
+goto ERROR_EXIT if (!defined($value) || $value != 1);
+
+# We are done with testing.
+SUCCESS:
+    print "\n\nSUCCESS: the test of configuration file management succeed\n\n";
 
 exit 0;
 
 ERROR_EXIT:
-    print "ERROR: the test of configuration file management succeed\n";
+    print "\n\nERROR: the test of configuration file management failed\n\n";
     exit -1;

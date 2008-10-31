@@ -4,11 +4,22 @@
 #                    Geoffroy R. Vallee <valleegr@ornl.gov>
 #                    All rights reserved.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
+use OSCAR::ConfigManager;
 
 print "Test few oscar-config capabilities.\n";
 
-my $script = "$ENV{OSCAR_HOME}/scripts/oscar-config";
+my $path = "/etc/oscar/oscar.conf";
+my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$path");
+my $config = $oscar_cfg->get_config();
+my $path = $config->{'binaries_path'};
+my $script = "$path/oscar-config";
 
 my $cmd = $script . " --help";
 print "Executing: $cmd\n";

@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id$
+# $Id: run_unit_test 7035 2008-06-17 02:31:41Z valleegr $
 #
 # Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
 #                    Oak Ridge National Laboratory.
@@ -7,10 +7,24 @@
 #
 #
 
-use lib "$ENV{OSCAR_HOME}/lib";
-use Carp;
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 
-my $unit_testing_dir = $ENV{OSCAR_HOME} . "/testing/unit_testing";
+use strict;
+use OSCAR::FileUtils;
+use OSCAR::Utils;
+use Carp;
+use warnings "all";
+
+my $unit_testing_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $unit_testing_dir = $ENV{OSCAR_HOME} . "/testing/unit_testing";
+} else {
+    $unit_testing_dir = "/usr/share/oscar/testing/unit_testing";
+}
 
 print "Testing few OSCAR stuff in $unit_testing_dir...\n";
 
@@ -18,9 +32,10 @@ if (! -d $unit_testing_dir ) {
 	croak "Error: Missing unit_testing/ directory - \'$unit_testing_dir\'"; 
 }
 
-my @files = get_files( $unit_testing_dir );
+my @files = OSCAR::FileUtils::get_files_in_path ( $unit_testing_dir );
 
 my $failure_flag = 0;
+my @failed_tests;
 
 foreach my $file (@files) {
 	my $script = $unit_testing_dir . "/" . $file;
@@ -33,7 +48,14 @@ foreach my $file (@files) {
 		my $rc = system($script);
         print "Result: $rc\n";
  		$failure_flag++ if ($rc != 0);
+        push (@failed_tests, $script) if ($rc != 0);
 	}
+}
+
+print "\n\n[UNIT TESTS]: $failure_flag failures during execution\n\n";
+if ($failure_flag > 0) {
+    print "Failed tests: ";
+    OSCAR::Utils::print_array (@failed_tests);
 }
 
 # Return: failures (1) / warnings (2) / no failures/warnings (0) / 
@@ -42,28 +64,5 @@ if ($failure_flag) {
 } else {
     exit (0);
 }
-
-
-#  Descr: read all system-sanity check file(s) from provided directory
-# Return: list of system-sanity check filenames 
-#
-#   NOTE: Not fully qualify path in returned file list so caller can 
-#         easily get at check filenames. 
-#
-sub get_files 
-{
-	my $dir = shift;
-
-	opendir(DIR, "$dir") or die "Error: $! - \'$dir\'";
-
-	 # RegEx: ignore all files starting with a dot, 
-	 #        e.g., ".", "..", ".foobar"
-	my @files = grep { !/^\./ } readdir(DIR);
-
-	closedir(DIR);
-
-	return(@files);
-}
-
 
 # vim:tabstop=4:shiftwidth=4:syntax=perl:textwidth=76
