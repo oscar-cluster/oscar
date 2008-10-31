@@ -5,16 +5,24 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Prereqs;
 use OSCAR::Utils;
+use OSCAR::ConfigManager;
+use warnings "all";
 
 print " Prereqs testing simulating Debian 4 x86_64\n";
 
 print "*********************************************************\n";
 print " Raw list of prereqs (i.e., not checking packages status)\n";
+
+my $config_file = "/etc/oscar/oscar.conf";
+my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$config_file");
+my $config = $oscar_cfg->get_config();
+my $path = $config->{'prereqs_path'};
+
 my ($installs, $removes, $cmds) = 
     OSCAR::Prereqs::get_rawlist_prereqs("debian",
                                     4,
                                     "x86_64",
-                                    "$ENV{OSCAR_HOME}/share/prereqs/base/");
+                                    "$path/base/");
 
 print " Prereqs: packages to install: ";
 print_array (@$installs);
@@ -31,23 +39,23 @@ print " Prereqs status\n";
 OSCAR::Prereqs::show_prereqs_status("debian",
                                     4,
                                     "x86_64",
-                                    "$ENV{OSCAR_HOME}/share/prereqs/base/");
+                                    "$path/base/");
 
 my $ret = OSCAR::Prereqs::check_installed(@$installs);
 print "Number of packages to install: $ret\n";
 
-my $ret = OSCAR::Prereqs::check_removed(@$removes);
+$ret = OSCAR::Prereqs::check_removed(@$removes);
 print "Number of packages to remove: $ret\n";
 
 
 print "*********************************************************\n";
 print " List of actions needed for prereqs\n";
 
-my ($installs, $removes, $cmds) = 
+($installs, $removes, $cmds) = 
     OSCAR::Prereqs::get_prereqs("debian",
                                     4,
                                     "x86_64",
-                                    "$ENV{OSCAR_HOME}/share/prereqs/base/");
+                                    "$path/base/");
 
 print "Prereqs: packages to install: ";
 print_array (@$installs);
