@@ -181,3 +181,47 @@ unless ($skiptest) {
         die ("Failed on Step 8 - Test Cluster Setup");
     }
 }
+
+__END__
+
+=head1 NAME
+
+main_cli, a command line interface for the OSCAR wizard.
+
+=head1 SYNOPSIS
+
+main_cli [OPTIONS] NETWORK_INTERFACE
+
+=head1 OPTIONS
+
+Recognized options include:
+
+=over 8 
+
+=item --opkgselector 
+
+Optional
+
+=item --buildimage
+
+Optional
+
+=item --defineclients
+
+Optional
+
+=item --networkclients
+
+Optional
+
+=item --bootscript
+
+Optional
+
+=back
+
+=head1 AUTHOR
+
+Wesley Bland
+
+=cut

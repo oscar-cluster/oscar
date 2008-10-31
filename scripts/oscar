@@ -257,7 +257,7 @@ oscar [--add-partition | --display-partitions | --display-partition-nodes |
 
 Recognized options include:
 
-=over 11
+=over 8
 
 =item --display-partitions
 
