@@ -26,7 +26,7 @@
 #               All rights reserved.
 
 DESTDIR=
-SUBDIRS := lib oscarsamples scripts share 
+SUBDIRS := lib oscarsamples scripts share testing
 
 all:
 	@echo "... there is no default target ..."
