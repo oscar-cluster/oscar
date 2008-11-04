@@ -216,12 +216,12 @@ sub repos_del_urlfile ($@) {
 sub query_os ($$) {
     my ($img, $os);
     if (scalar(@_) <= 1) {
-	($img) = (@_);
+    	($img) = (@_);
     } elsif ($_[0] eq "os") {
-	$os = $_[1];
+	    $os = $_[1];
     }
     if (!defined($os)) {
-	$os = distro_detect_or_die($img);
+	    $os = distro_detect_or_die($img);
     }
     return $os;
 }
@@ -275,9 +275,10 @@ sub oscar_urlfile (%) {
 #
 # Return: undef if error.
 sub distro_repo_url (%) {
-    my $url = &distro_urlfile(@_);
-    my $os = &query_os(@_);
-    if (!defined ($url) || $url eq "") {
+    my %arg = @_;
+    my $url = &distro_urlfile(%arg);
+    my $os = &query_os(%arg);
+    if (!OSCAR::Utils::is_a_valid_string($url)) {
         carp "ERROR: impossible to get a URL from OSCAR repo config file\n";
         return undef;
     }
