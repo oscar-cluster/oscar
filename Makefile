@@ -197,4 +197,6 @@ basedebs:
 		dpkg-buildpackage -rfakeroot -uc -us
 	@echo "Binary packages are available in /tmp"
 
+deb: basedebs
+
 .PHONY : test dist clean install
