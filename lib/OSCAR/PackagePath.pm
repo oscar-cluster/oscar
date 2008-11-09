@@ -134,7 +134,7 @@ sub repos_list_urlfile ($) {
 #
 # Add repositories to a .url file. Create file if it doesn't exist.
 #
-# ERROR: 0 if success, -1 else.
+# Return: 0 if success, -1 else.
 sub repos_add_urlfile ($@) {
     my ($path, @repos) = (@_);
 
@@ -543,11 +543,14 @@ sub mirror_repo ($$$) {
 sub use_default_distro_repo ($) {
     my ($distro) = @_;
     my $distro_repo_url = get_default_distro_repo ($distro);
-    if (!defined $distro_repo_url || $distro_repo_url eq "") {
+    if (OSCAR::Utils::is_a_valid_string ($distro) == 0) {
         carp "ERROR: undefined default distro repo for ($distro)";
         return -1;
     }
-    use_distro_repo ($distro, $distro_repo_url);
+    if (use_distro_repo ($distro, $distro_repo_url)) {
+        carp "ERROR: Impossible to set the distro repo";
+        return -1;
+    }
     return 0;
 }
 
@@ -585,7 +588,7 @@ sub use_default_oscar_repo ($) {
 # Return: the distro id (e.g., rhel), the distro version, and the arch.        #
 ################################################################################
 sub decompose_distro_id ($) {
-    my $distro_id= shift;
+    my $distro_id = shift;
     my $arches = "i386|x86_64|ia64|ppc64";
     my ($distro,$version,$arch);
     if ( ($distro_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
@@ -640,10 +643,13 @@ sub use_distro_repo ($$) {
     }
 
     my $path = $tftpdir . "distro";
-    File::Path::mkpath ($path, 1, 0777) or
-        (carp "ERROR: impossible to create the directory $path", return -1);
+    if (! -d $path) {
+        File::Path::mkpath ($path, 1, 0777) 
+            or (carp "ERROR: impossible to create the directory $path", 
+                return -1);
+    }
 
-    if (OSCAR::PackagePath::repos_add_urlfile ($path.".url", $repo)) {
+    if (OSCAR::PackagePath::repos_add_urlfile ("$path/$distro.url", $repo)) {
         carp "ERROR: Impossible to create file $path.url";
         return -1;
     }
