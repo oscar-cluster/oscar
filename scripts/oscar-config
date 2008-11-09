@@ -18,6 +18,7 @@
 use strict;
 use Cwd qw(chdir cwd);
 use Getopt::Long;
+use OSCAR::Utils;
 use warnings "all";
 
 BEGIN {
@@ -53,7 +54,7 @@ GetOptions(
         ) || help_and_exit();
 
 if ($distro_repo_to_mirror) {
-    if (!defined $distro_to_setup || $distro_to_setup eq "") {
+    if (OSCAR::Utils::is_a_valid_string ($distro_to_setup) == 0) {
         die "If you want to mirror a repository, you have to tell us for which".
             " distro the repository is made for (for that use the ".
             "--setup-distro option\n";
@@ -68,7 +69,7 @@ if ($distro_repo_to_mirror) {
 }
 
 if ($oscar_repo_to_mirror) {
-    if (!defined $distro_to_setup || $distro_to_setup eq "") {
+    if (OSCAR::Utils::is_a_valid_string ($distro_to_setup) == 0) {
         die "If you want to mirror a repository, you have to tell us for which".
             " distro the repository is made for (for that use the ".
             "--setup-distro option\n";
@@ -113,17 +114,21 @@ if ($distro_to_setup) {
     }
 
     # We setup the distro repos (configuration files in /tftpboot/distro).
-    if (!defined $distro_repo_to_use || $distro_repo_to_use eq "") {
+    if (OSCAR::Utils::is_a_valid_string ($distro_repo_to_use) == 0) {
+        print "... using default distro repo\n";
         OSCAR::Logger::oscar_log_subsection ("... using default distro repo");
-        OSCAR::PackagePath::use_default_distro_repo ($distro_to_setup);
+        if (OSCAR::PackagePath::use_default_distro_repo ($distro_to_setup)) {
+            die "ERROR: Impossible to set the default distro repo";
+        }
     } else {
         OSCAR::Logger::oscar_log_subsection ("... using $distro_repo_to_use");
         OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
                                              $distro_repo_to_use);
     }
 
-    # We setup the OSCAR repos (configuration files in /tftpboot/distro).
-    if (!defined $oscar_repo_to_use || $oscar_repo_to_use eq "") {
+    # We setup the OSCAR repos (configuration files in /tftpboot/oscar).
+    if (OSCAR::Utils::is_a_valid_string ($oscar_repo_to_use) == 0) {
+        print "... using default OSCAR repo\n";
         OSCAR::Logger::oscar_log_subsection ("... using default OSCAR repo");
         if (OSCAR::PackagePath::use_default_oscar_repo ($distro_to_setup)) {
             die "ERROR: Impossible to set the default repository";
