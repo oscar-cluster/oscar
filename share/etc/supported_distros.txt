@@ -15,7 +15,7 @@ ubuntu-8-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multivers
 ubuntu-7-i386 http://us.archive.ubuntu.com/ubuntu/+gutsy+universe+multiverse http://bear.csm.ornl.gov/repos/debian-4-i386/+etch+/
 debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/debian-4-x86_64/+etch+/ 
 debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/debian-4-i386/+etch+/
-redhat-el-5-x86_64 /tftpboot/distro/rhel-5-x86_64 /tftpboot/oscar/rhel-5-x86_64
-redhat-el-5-i386 /tftpboot/distro/rhel-5-i386 /tftpboot/oscar/rhel-5-i386
-centos-5-x86_64 /tftpboot/distro/centos-5-x86_64 http://bear.csm.ornl.gov/repos/centos-5-i386
+redhat-el-5-x86_64 file:/tftpboot/distro/rhel-5-x86_64 file:/tftpboot/oscar/rhel-5-x86_64
+redhat-el-5-i386 file:/tftpboot/distro/rhel-5-i386 file:/tftpboot/oscar/rhel-5-i386
+centos-5-x86_64 http://isoredirect.centos.org/centos/5/os/x86_64/ http://bear.csm.ornl.gov/repos/centos-5-x86_64
 centos-5-i386 http://isoredirect.centos.org/centos/5/os/i386/ http://bear.csm.ornl.gov/repos/centos-5-i386
