@@ -95,6 +95,9 @@ system-install:
 	# Install the logo at destination (no Makefile to do so).
 	install -d -m 0755 $(DESTDIR)/usr/share/oscar/images
 	install    -m 0755 images/oscar.gif $(DESTDIR)/usr/share/oscar/images
+	# Install the OSCAR VERSION file
+	install -d -m 0755 $(DESTDIR)/etc/oscar
+	install    -m 0755 VERSION $(DESTDIR)/etc/oscar
 	# Then, we call the different Makefiles.
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} install ) ; done
 

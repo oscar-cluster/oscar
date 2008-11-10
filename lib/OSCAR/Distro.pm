@@ -38,10 +38,7 @@ package OSCAR::Distro;
 use strict;
 use vars qw($VERSION @EXPORT);
 use Carp;
-use OSCAR::Utils qw ( 
-                    get_oscar_version
-                    is_a_valid_string
-                    );
+use OSCAR::Utils;
 use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
 use OSCAR::PackagePath qw ( repo_empty );
 use OSCAR::OCA::OS_Detect;
@@ -264,32 +261,31 @@ sub get_position_of_next_release_entry ($@) {
 #                                                                              #
 # Input: none.                                                                 #
 # Return: a hash composed of XML data from the file.                           #
-# The format of the hash is:
-# $VAR1 = {
-#     'distros' => [
-#                     {
-#                     'default_distro_repo' => '/tftpboot/distro/rhel-5-x86_64',
-#                     'name' => 'rhel-5-x86_64',
-#                     'default_oscar_repo' => '/tftpboot/oscar/rhel-5-x86_64'
-#                     },
-#                     {
-#                     'default_distro_repo' => '/tftpboot/distro/rhel-5-i386',
-#                     'name' => 'rhel-5-i386',
-#                     'default_oscar_repo' => '/tftpboot/oscar/rhel-5-i386'
-#                     },
-#                     {
-#                     'default_distro_repo' => '/tftpboot/distro/centos-5-i386',
-#                     'name' => 'centos-5-i386',
-#                     'default_oscar_repo' => '/tftpboot/oscar/centos-5-i386'
-#                     }
-#                 ],
-#     'release' => 'unstable'
-# };
-# 
+# The format of the hash is:                                                   #
+# $VAR1 = {                                                                    #
+#     'distros' => [{                                                          #
+#                   'default_distro_repo' => '/tftpboot/distro/rhel-5-x86_64', #
+#                   'name' => 'rhel-5-x86_64',                                 #
+#                   'default_oscar_repo' => '/tftpboot/oscar/rhel-5-x86_64'    #
+#                   },                                                         #
+#                   {                                                          #
+#                   'default_distro_repo' => '/tftpboot/distro/rhel-5-i386',   #
+#                   'name' => 'rhel-5-i386',                                   #
+#                   'default_oscar_repo' => '/tftpboot/oscar/rhel-5-i386'      #
+#                   },                                                         #
+#                   {                                                          #
+#                   'default_distro_repo' => '/tftpboot/distro/centos-5-i386', #
+#                   'name' => 'centos-5-i386',                                 #
+#                   'default_oscar_repo' => '/tftpboot/oscar/centos-5-i386'    #
+#                   }],                                                        #
+#     'release' => 'unstable'                                                  #
+# };                                                                           #
+# Returns undef if error.                                                      #
 ################################################################################
 sub open_supported_distros_file {
     open (FILE, "$supported_distro_file") 
-        or die ("ERROR: impossible to open $supported_distro_file");
+        or (carp "ERROR: impossible to open $supported_distro_file", 
+	    return undef);
     my @file_content = <FILE>;
     close (FILE);
 
@@ -349,17 +345,26 @@ sub open_supported_distros_file {
 }
 
 ################################################################################
-# Return an array with the list of distros that OSCAR supports. Each element   #
-# in the array is like: debian-4-x86_64 or rhel-5.1-x86_64.                    #
+# Return: an array with the list of distros that OSCAR supports. Each element  #
+#         in the array is like: debian-4-x86_64 or rhel-5.1-x86_64.            #
+#         Returns undef if error.                                              #
 ################################################################################
 sub get_list_of_supported_distros {
     my @list;
 
     # we open the file config file for supported distros.
     my $data = open_supported_distros_file ();
+    if (!defined $data) {
+    	carp "ERROR: Impossible to get information about supported distros";
+	return undef;
+    }
 
     # we get the OSCAR version
-    my $version = get_oscar_version();
+    my $version = OSCAR::Utils::get_oscar_version();
+    if (!defined $version) {
+    	carp "ERROR: Impossible to get the OSCAR version";
+	return undef;
+    }
 
     # we try to find a match
     foreach my $d (@$data) {
@@ -412,7 +417,7 @@ sub find_distro ($) {
     my $data = open_supported_distros_file ();
 
     # we get the OSCAR version
-    my $version = get_oscar_version();
+    my $version = OSCAR::Utils::get_oscar_version();
 
     # we try to find a match
     foreach my $d (@$data) {
