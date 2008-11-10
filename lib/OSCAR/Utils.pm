@@ -106,14 +106,19 @@ sub get_oscar_version {
         carp "ERROR: Impossible to get the OSCAR version";
         return undef;
     }
-    my $cmd = "less $path/VERSION | grep want_svn=0";
+    $path .= "/VERSION";
+    if (! -f $path) {
+    	carp "ERROR: the file $path does not exist";
+	return undef;
+    }
+    my $cmd = "less $path | grep want_svn=0";
     my $result = `$cmd`;
 
     if ($result eq "") {
         $version = "unstable";
     } else {
-        my $major = `less $path/VERSION | grep major=`;
-        my $minor = `less $path/VERSION | grep minor=`;
+        my $major = `less $path | grep major=`;
+        my $minor = `less $path | grep minor=`;
         chomp ($major);
         chomp ($minor);
         $major =~ s/^major=//;
