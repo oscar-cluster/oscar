@@ -61,7 +61,7 @@ iputils
 isapnp
 jfsutils
 kbd
-kernel-smp
+kernel-default
 ksymoops
 ldapcpplib
 less
