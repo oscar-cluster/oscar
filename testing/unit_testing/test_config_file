@@ -14,28 +14,54 @@ BEGIN {
 use strict;
 use OSCAR::Logger;
 use OSCAR::ConfigFile;
+use OSCAR::Utils;
+use File::Copy;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 use warnings "all";
 
+
+print "\n\n*** Testing OSCAR::ConfigFile ***\n\n";
+
+my $path = "/tmp/yum.conf";
+if (-f $path) {
+    print "\t--> Temporary file already exists, deleting it ($path)\n";
+    unlink($path);
+    if (-f $path) {
+        carp "ERROR: Impossible to delete file ($path)";
+        goto ERROR_EXIT;
+    }
+}
+print "\t--> Creating the temporary file\n";
+my $template;
+if (defined $ENV{OSCAR_HOME}) {
+    $template = $ENV{OSCAR_HOME};
+} else {
+    $template = "/usr/share/oscar";
+}
+$template .= "/testing/unit_testing/etc/yum.conf";
+File::Copy::copy ($template, $path);
+if (!-f $path) {
+    carp "ERROR: Impossible to create the temporary file ($template, $path)";
+    goto ERROR_EXIT;
+}
+
 # Because the key we are looking is under the "main" section (see the config
 # file, it is kind of obvious), we look for the main_gpgcheck key.
-my $path;
-if (defined $ENV{OSCAR_HOME}) {
-    $path = $ENV{OSCAR_HOME};
-} else {
-    $path = "/usr/share/oscar";
-}
+print "\t--> Reading the gpgcheck variable from the block 'main' from $path\n";
 my $value = OSCAR::ConfigFile::get_value (
-    "$path/testing/unit_testing/etc/yum.conf",
+    $path,
     "main",
     "gpgcheck");
 
-goto ERROR_EXIT if (!defined($value) || $value != 1);
+if (!defined($value) || $value != 1) {
+    goto ERROR_EXIT 
+}
 
+print "\t--> Reading all variables from $path\n";
 my %hash = OSCAR::ConfigFile::get_all_values (
-    "$path/testing/unit_testing/etc/yum.conf"
+    "$path"
     );
 my $value2 = $hash{'main_logfile'};
 
@@ -43,32 +69,35 @@ goto ERROR_EXIT if (!defined($value2) || $value2 ne "/var/log/yum.log");
 
 # We try now to change the value of the gpgcheck option in the main block.
 # At the end, we switch back to the initial value.
-
+print "\t--> Try to set the gpgcheck variable of the main block to -1\n";
 if (OSCAR::ConfigFile::set_value (
-    "$path/testing/unit_testing/etc/yum.conf",
+    "$path",
     "main",
     "gpgcheck",
     "-1") != 0) {
     goto ERROR_EXIT;
 }
 
+print "\t--> Checking the new value\n";
 $value = OSCAR::ConfigFile::get_value (
-    "$path/testing/unit_testing/etc/yum.conf",
+    "$path",
     "main",
     "gpgcheck"
     );
 goto ERROR_EXIT if (!defined($value) || $value != -1);
 
+print "\t--> Setting the value back to the initial value\n";
 if (OSCAR::ConfigFile::set_value (
-    "$path/testing/unit_testing/etc/yum.conf",
+    "$path",
     "main",
     "gpgcheck",
     "1") != 0) {
     goto ERROR_EXIT;
 }
 
+print "\t--> Checking the new value\n";
 $value = OSCAR::ConfigFile::get_value (
-    "$path/testing/unit_testing/etc/yum.conf",
+    "$path",
     "main",
     "gpgcheck"
     );
