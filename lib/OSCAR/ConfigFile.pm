@@ -30,11 +30,13 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::Utils;
+use OSCAR::FileUtils;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 use AppConfig;
 use AppConfig::State;
+use Data::Dumper;
 use warnings "all";
 
 use Data::Dumper;
@@ -54,9 +56,9 @@ use Data::Dumper;
 #        block, configuration files may be arranged in blocks, in that case,   #
 #               if you want to access a given key under a given block, specify #
 #               the block name here; otherwise, use undef or ""/               #
-#               [main]                                                           #
-#                  gpgcheck = 1
-#        key, key we want the value from. 
+#               [main]                                                         #
+#                  gpgcheck = 1                                                #
+#        key, key we want the value from.                                      #
 # Return: the key value is the key exists, undef if the key does not exist.    #
 ################################################################################
 sub get_value ($$$) {
@@ -105,6 +107,7 @@ sub get_block_list ($) {
     return @blocks;
 }
 
+# Return: 0 if success, -1 else.
 sub set_value ($$$$) {
     my ($config_file, $block, $key, $value) = @_;
 
@@ -113,25 +116,51 @@ sub set_value ($$$$) {
         return -1;
     }
 
-    use vars qw($config);
-    $config = AppConfig->new({
-            CREATE => '^*',
-        },
-        $key            => { ARGCOUNT => 1 },
-        );
-    if (!defined ($config)) {
-        carp "ERROR: Impossible to parse configuration file ($config_file)";
+    if (!is_a_valid_string ($key)) {
+        carp "ERROR: the key we try to set is not valid";
         return -1;
     }
-    $config->file($config_file);
 
-    if (defined ($block) && $block ne "") {
-        $key = $block . "_" .$key;
+    open (FILE, $config_file) or (carp "ERROR: Impossible to open $config_file",
+                                  return -1);
+    #
+    # We first search the target block (if defined)
+    #
+    my $position = -1;
+    my $line;
+    if (defined ($block)) {
+        while ($line = <FILE>) {
+            $position++;
+            $line = OSCAR::Utils::trim ($line);
+            if ($line =~ /^\[$block\]/) {
+                last;
+            }
+        }
     }
 
-    get_block_list ($config_file);
+    #
+    # We look for the key
+    #
+    $position++;
+    while ($line = <FILE>) {
+        $line = OSCAR::Utils::trim ($line);
+        if ($line =~ /^$key/) {
+            last;
+        }
+        $position++;
+    }
 
-    $config->set($key, $value);
+    #
+    # Now we change the line
+    #
+    $line = "$key=$value";
+    if (OSCAR::FileUtils::replace_line_in_file ($config_file,
+                                                $position,
+                                                $line)) {
+        carp "ERROR: Impossible to replace the line";
+        return -1;
+    }
+    close (FILE);
 
     return 0;
 }
@@ -173,3 +202,42 @@ sub get_all_values ($) {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+OSCAR::ConfigFile, an abstraction on top of AppConfig for the management of
+configuration files (read and write).
+
+=head1 SYNOPSIS
+
+This module allows one to read variable from a configuration file, including
+when files are organized "Windows-style", a.k.a., init style or with blocks.
+
+=head1 EXPORT
+
+=item get_value
+
+=item set_value
+
+=item get_all_values
+
+=head1 EXAMPLES
+
+The following example read the variable "cachedir" from the block "main" from
+the "/etc/yum.conf" configuration file.
+
+=over 8
+
+my $source = OSCAR::ConfigFile::get_value ("/etc/yum.conf", "main", "cachedir");
+
+=back
+
+
+
+=head1 AUTHOR
+
+Geoffroy Vallee <valleegr at ornl dot gov>
+
+=cut

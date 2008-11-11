@@ -38,11 +38,12 @@ use Carp;
 
 @EXPORT = qw(
             add_line_to_file_without_duplication
-            line_in_file
             get_directory_content
             get_dirs_in_path
             get_files_in_path
+            line_in_file
             parse_xmlfile
+            replace_line_in_file
             );
 
 ################################################################################
@@ -95,6 +96,36 @@ sub line_in_file ($$) {
     }
     close (FILE);
     return -1;
+}
+
+sub replace_line_in_file ($$$) {
+    my ($file, $line_number, $new_line) = @_;
+
+    chomp ($new_line);
+    open (FILE, "$file")
+        or (carp "ERROR: Impossible to open $file", return -1);
+    # First we create the content of the new file into an array
+    my @content;
+    my $pos = 0;
+    my $line;
+    while ($line = <FILE>) {
+        if ($pos != $line_number) {
+            push (@content, "$line");
+        } else {
+            push (@content, "$new_line\n");
+        }
+        $pos++;
+    }
+    close (FILE);
+    open (FILE, ">$file")
+        or (carp "ERROR: Impossible to open $file", return -1);
+    # Then we write the file
+    foreach $line (@content) {
+        print FILE $line;
+    }
+    close (FILE);
+
+    return 0;
 }
 
 ################################################################################
