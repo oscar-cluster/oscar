@@ -276,6 +276,7 @@ sub oscar_urlfile (%) {
 # Return: undef if error.
 sub distro_repo_url (%) {
     my %arg = @_;
+
     my $url = &distro_urlfile(%arg);
     my $os = &query_os(%arg);
     if (!OSCAR::Utils::is_a_valid_string($url)) {

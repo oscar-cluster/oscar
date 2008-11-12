@@ -252,9 +252,9 @@ sub get_image_default_settings () {
     my $distro = $master_os->{compat_distro};
     my $distro_ver = $master_os->{compat_distrover};
 
-    my $distro_pool = OSCAR::PackagePath::distro_repo_url("/");
+    my $distro_pool = OSCAR::PackagePath::distro_repo_url();
     $distro_pool =~ s/\ /,/g;
-    my $oscar_pool = OSCAR::PackagePath::oscar_repo_url("/");
+    my $oscar_pool = OSCAR::PackagePath::oscar_repo_url();
 
     oscar_log_subsection("Identified distro of clients: $distro $distro_ver");
     oscar_log_subsection("Distro repo: $distro_pool");

@@ -287,15 +287,14 @@ sub get_path_perl_modules () {
 #  the space removal/compression.                                       #
 #########################################################################
 sub compactSpaces ($$$) {
+    my($string, $compact, $commas) = @_;
 
-  my($string,$compact,$commas) = @_;
+    $string =~ s/,/ /g if ($commas);    # Change commas to spaces
+    $string =~ s/^ *//;                 # Strip off leading spaces
+    $string =~ s/ *$//;                 # Strip off trailing spaces
+    $string =~ s/ +/ /g if ($compact);  # Compact multiple spaces
 
-  $string =~ s/,/ /g if ($commas);    # Change commas to spaces
-  $string =~ s/^ *//;                 # Strip off leading spaces
-  $string =~ s/ *$//;                 # Strip off trailing spaces
-  $string =~ s/ +/ /g if ($compact);  # Compact multiple spaces
-
-  $string;  # Return string to calling procedure;
+    return $string;  # Return string to calling procedure;
 }
 
 1;
