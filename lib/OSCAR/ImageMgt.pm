@@ -458,10 +458,16 @@ sub get_list_corrupted_images {
 # Check if a given image exists.                                               #
 #                                                                              #
 # Input: image_name, name of the image to check.                               #
-# Return: 1 if the image already exists (true), 0 else (false).                #
+# Return: 1 if the image already exists (true), 0 else (false), -1 if error.   #
 ################################################################################
 sub image_exists ($) {
     my $image_name = shift;
+
+    if (!OSCAR::Utils::is_a_valid_string ($image_name)) {
+        carp "ERROR: Invalid image name";
+        return -1;
+    }
+
     my $path = "$images_path/$image_name";
 
     if ( -d $path ) {
