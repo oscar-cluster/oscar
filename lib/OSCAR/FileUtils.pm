@@ -38,6 +38,7 @@ use Carp;
 
 @EXPORT = qw(
             add_line_to_file_without_duplication
+            generate_empty_xml_file
             get_directory_content
             get_dirs_in_path
             get_files_in_path
@@ -45,6 +46,8 @@ use Carp;
             parse_xmlfile
             replace_line_in_file
             );
+
+my $verbose = $ENV{OSCAR_VERBOSE};
 
 ################################################################################
 # Add a line into a file only if the line is not already present. Note that if #
@@ -57,17 +60,22 @@ use Carp;
 sub add_line_to_file_without_duplication ($$) {
     my ($line, $file_path) = @_;
 
-    print "---> File: $file_path\n";
+    print "---> Adding $line to $file_path\n" if $verbose;
     my $dirname = File::Basename::dirname ($file_path);
     if ( ! -d $dirname) {
         File::Path::mkpath ($dirname) 
             or (carp ("ERROR: Impossible to create $dirname"), return -1);
     }
+    require OSCAR::Utils;
+    if (!OSCAR::Utils::is_a_valid_string ($line)) {
+        carp "ERROR: Invalid string";
+        return -1;
+    }
     open (DAT, ">>$file_path") 
         or (carp "ERROR: Impossible to open the file: $file_path.",
             return -1);
     if (line_in_file($line, $file_path) == -1) {
-        print (DAT "$line\n");
+        print DAT "$line";
     }
     close (DAT);
     return 0;
@@ -234,6 +242,34 @@ sub parse_xmlfile ($) {
     }
 
     return $xml_ref;
+}
+
+################################################################################
+# Generate an empty XML file (only the header is created within the file so    #
+# it is possible to parse the file even empty).                                #
+#                                                                              #
+# Input: the absolute path of the file to be created.                          #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub generate_empty_xml_file ($$) {
+    my ($file, $debug) = @_;
+
+    if (!OSCAR::Utils::is_a_valid_string ($file)) {
+        carp "ERROR: Invalid file name";
+        return -1;
+    }
+
+    if (-f $file) {
+        print "[INFO] The file ($file) already exists\n" if $debug;
+        return 0;
+    }
+
+    print "[INFO] Creating the file $file\n" if $debug;
+    open (FILE, ">$file") or (carp "can't open $file $!", return -1);
+    print FILE "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+    print FILE "<opt/>";
+    close (FILE);
+    return 0;
 }
 
 1;
