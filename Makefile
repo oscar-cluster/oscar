@@ -202,4 +202,6 @@ basedebs:
 
 deb: basedebs
 
+rpm: baserpms
+
 .PHONY : test dist clean install
