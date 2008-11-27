@@ -1,6 +1,10 @@
 # $Id$
 
-%define basedir /opt/oscar
+%define bindir /usr/bin
+%define etcdir /etc/oscar
+%define docdir /usr/share/doc/oscar
+%define sharedir /usr/share/oscar
+%define mandir /usr/local/man/man1
 %define _unpackaged_files_terminate_build 0
 
 Summary: Base OSCAR package
@@ -16,7 +20,7 @@ Requires: %{name}-scripts
 Requires: yum, createrepo, yume
 Vendor: OSCAR
 Distribution: OSCAR
-Packager: Erich Focht
+Packager: Geoffroy Vallee
 
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildArch: noarch
@@ -39,8 +43,18 @@ those packages from an online package repository, either on or off site.
 
 %build
 rm -rf %{buildroot}
-mkdir -p %{buildroot}%{basedir}
-cp -prd * %{buildroot}%{basedir}/
+make system-install DESTDIR=%{buildroot}
+mkdir -p %{buildroot}%{etcdir}
+mkdir -p %{buildroot}%{docdir}
+mkdir -p %{buildroot}%{sharedir}/images
+cp debian/etc/oscar.conf %{buildroot}%{etcdir}
+cp -f COPYING %{buildroot}%{docdir}
+cp -f README %{buildroot}%{docdir}
+cp -f VERSION %{buildroot}%{docdir}
+cp -f images/oscar.gif %{buildroot}%{sharedir}/images
+cp -rf packages/yume/ %{buildroot}%{sharedir}/prereqs
+cp -rf packages/rapt/ %{buildroot}%{sharedir}/prereqs
+cp -rf packages/oda/  %{buildroot}%{sharedir}/prereqs
 
 %clean
 rm -rf %{_tmppath}/%{name}-%{version}-root
@@ -64,11 +78,11 @@ Requires: %{name} == %{version}-%{release}
 Dummy package for oscar-base-server install.
 
 
-%package libs
+%package lib
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
 AutoReqProv: no
-%description libs
+%description lib
 Libraries for OSCAR clustering base package.
 
 
@@ -83,26 +97,13 @@ Scripts for OSCAR clustering base package.
 
 %files
 %defattr(-,root,root)
-%dir %{basedir}/
-%dir %{basedir}/doc/
-%dir %{basedir}/images/
-%dir %{basedir}/oscarsamples/
-%dir %{basedir}/packages/
-%dir %{basedir}/share/
-%dir %{basedir}/testing/
-%dir %{basedir}/tmp/
-%{basedir}/COPYING
-%{basedir}/CREDITS
-%{basedir}/README
-%{basedir}/VERSION
-%{basedir}/doc/*
-%{basedir}/images/*
-%{basedir}/install_cluster
-%{basedir}/oscarsamples/*
-%{basedir}/packages/*
-%{basedir}/share/*
-%{basedir}/testing/*
-%{basedir}/tmp/
+%dir %{etcdir}
+%dir %{sharedir}/prereqs
+%dir %{mandir}
+%{etcdir}/*
+%{sharedir}/*
+%{mandir}/*
+%{docdir}/*
 
 %files client
 %defattr(-,root,root)
@@ -110,17 +111,20 @@ Scripts for OSCAR clustering base package.
 %files server
 %defattr(-,root,root)
 
-%files libs
+%files lib
 %defattr(-,root,root)
-%dir %{basedir}/lib/
-%{basedir}/lib/*
+%dir /usr/lib/
+/usr/lib/*
 
 %files scripts
 %defattr(-,root,root)
-%dir %{basedir}/scripts/
-%{basedir}/scripts/*
+%dir %{bindir}
+%{bindir}/*
 
 %changelog
+* Wed Nov 26 2008 Geoffroy Vallee <valleegr@ornl.gov>
+- Modify the spec file to be based on the Makefile.
+- Install OSCAR directly into the system, instead of using /opt.
 * Thu Nov 29 2007 Bernard Li <bernard@vanhpc.org>
 - Added directories to the %files sections so that they will be removed
   when the RPMs are uninstalled

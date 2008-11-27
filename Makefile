@@ -171,7 +171,7 @@ baserpms:
 	cp -rl `ls -1 | grep -v oscar-base-$(OSCAR_VERSION)` oscar-base-$(OSCAR_VERSION)
 	( cd oscar-base-$(OSCAR_VERSION); \
 	  for p in packages/* ; do \
-	    if [ ! -e $$p/prereq.cfg ]; then rm -rf $$p; fi; \
+	    if [ $$p eq "oda" && ! -e $$p/prereq.cfg ]; then rm -rf $$p; fi; \
 	  done; )
 	tar czvf oscar-base-$(OSCAR_VERSION).tar.gz \
 		--exclude dist --exclude .svn --exclude \*.tar.gz \
