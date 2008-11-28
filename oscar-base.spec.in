@@ -7,24 +7,24 @@
 %define mandir /usr/local/man/man1
 %define _unpackaged_files_terminate_build 0
 
-Summary: Base OSCAR package
-Name: oscar-base
-Version: OSCARVERSION
-Release: 1
-License: GPL
-URL: http://oscar.openclustergroup.org
-Group: Applications/System
-Source: %{name}-%{version}.tar.gz
-Requires: %{name}-lib
-Requires: %{name}-scripts
-Requires: yum, createrepo, yume
-Vendor: OSCAR
-Distribution: OSCAR
-Packager: Geoffroy Vallee
+Summary: 	Base OSCAR package
+Name: 		oscar-base
+Version: 	OSCARVERSION
+Release: 	1
+License: 	GPL
+URL: 		http://oscar.openclustergroup.org
+Group: 		Applications/System
+Source: 	%{name}-%{version}.tar.gz
+Requires: 	%{name}-lib
+Requires: 	%{name}-scripts
+Requires: 	yum, createrepo, yume
+Vendor: 	OSCAR
+Distribution: 	OSCAR
+Packager: 	Geoffroy Vallee
 
-Buildroot: %{_tmppath}/%{name}-%{version}-root
-BuildArch: noarch
-AutoReqProv: no
+Buildroot: 	%{_tmppath}/%{name}-%{version}-root
+BuildArch: 	noarch
+AutoReqProv: 	no
 
 %description
 Base OSCAR package.
@@ -40,6 +40,7 @@ those packages from an online package repository, either on or off site.
 
 %prep
 %setup -n %{name}-%{version}
+/usr/bin/patch -s -p1 share/prereqs/base/prereq.cfg debian/patches/01_base_prereq.patch
 
 %build
 rm -rf %{buildroot}
