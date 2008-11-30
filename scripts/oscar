@@ -14,7 +14,6 @@
 #
 
 use strict;
-use warnings "all";
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::msm;
@@ -23,7 +22,6 @@ use OSCAR::NodeMgt;
 use OSCAR::Database;
 use OSCAR::Network;
 use Getopt::Long;
-use Data::Dumper;
 use warnings "all";
 
 use Data::Dumper;
