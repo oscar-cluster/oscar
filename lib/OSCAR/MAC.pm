@@ -424,25 +424,29 @@ sub __enable_install_mode {
     my $file;
     if ($install_mode eq "systemimager-rsync") {
         # Stop systemimager-server-flamethrowerd
-        $scipt = "/etc/init.d/systemimager-server-flamethrowerd";
-        run_cmd("$script stop") if (-f $script);
+        $script = "/etc/init.d/systemimager-server-flamethrowerd";
+	if (-f $script) {
+            run_cmd("$script stop") if (-f $script);
 
-        # Remove systemimager-server-flamethrowerd from chkconfig
-        if ($binary_format ne "deb") {
-            run_cmd("chkconfig systemimager-server-flamethrowerd off");
-        } else {
-            run_cmd("update-rc.d -f systemimager-server-flamethrowerd remove");
+            # Remove systemimager-server-flamethrowerd from chkconfig
+            if ($binary_format ne "deb") {
+                run_cmd("chkconfig systemimager-server-flamethrowerd off");
+            } else {
+                run_cmd("update-rc.d -f systemimager-server-flamethrowerd remove");
+            }
         }
 
         # Stop systemimager-server-bittorrent if bittorrent is installed.
         $script = "/etc/init.d/systemimager-server-bittorrent";
-        run_cmd("$script stop") if (-f $script);
+        if (-f $script) {
+            run_cmd("$script stop");
 
-        # Remove systemimager-server bittorrent from chkconfig
-        if ($binary_format ne "deb") {
-            run_cmd("chkconfig systemimager-server-bittorrent off");
-        } else {
-            run_cmd("update-rc.d -f systemimager-server-bittorrent remove");
+            # Remove systemimager-server bittorrent from chkconfig
+            if ($binary_format ne "deb") {
+                run_cmd("chkconfig systemimager-server-bittorrent off");
+            } else {
+                run_cmd("update-rc.d -f systemimager-server-bittorrent remove");
+            }
         }
 
         # Restart systemimager-server-rsyncd
