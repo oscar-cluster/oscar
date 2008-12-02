@@ -127,9 +127,6 @@ install: build
 	cd $(CURDIR)/lib; make install DESTDIR=$(CURDIR)/debian/liboscar/
 
 	# Prepare the oscar-bin package
-	mkdir -p $(CURDIR)/debian/oscar-bin/usr/bin
-	mv $(CURDIR)/scripts/system-sanity.d \
-		$(CURDIR)/debian/oscar-bin/usr/bin
 	# We make sure to clean everything up, it order to not deal with old stuff
 	cd  $(CURDIR)/scripts; make clean;
 	# Then we install the binaries
