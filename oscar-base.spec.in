@@ -120,9 +120,12 @@ Scripts for OSCAR clustering base package.
 %files scripts
 %defattr(-,root,root)
 %dir %{bindir}
+%dir %{bindir}/system-sanity.d
 %{bindir}/*
 
 %changelog
+* Tue Dec 02 2008 Geoffroy Vallee <valleegr@ornl.gov>
+- Add the /usr/bin/system-sanity.d directory into the scripts RPM.
 * Wed Nov 26 2008 Geoffroy Vallee <valleegr@ornl.gov>
 - Modify the spec file to be based on the Makefile.
 - Install OSCAR directly into the system, instead of using /opt.
