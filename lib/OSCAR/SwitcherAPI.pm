@@ -34,6 +34,7 @@ use Carp;
 use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
 use OSCAR::Logger;
+use OSCAR::Database_generic;
 
 @EXPORT = qw(
             get_switcher_data
@@ -97,7 +98,10 @@ sub get_switcher_data {
                          "===> in Database::get_packages_switcher SQL : $sql\n"
         if $$options_ref{debug};
 
-    my $ret = do_select($sql, $results_ref, $options_ref, $errors_ref);
+    my $ret = OSCAR::Database_generic::do_select($sql,
+                                                 $results_ref,
+                                                 $options_ref,
+                                                 $errors_ref);
 
     if ($ret == 1) {
         return 0;
