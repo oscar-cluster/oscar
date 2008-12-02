@@ -104,7 +104,9 @@ sub enable_system_services (@) {
             my $status = system_service_status ($service);
 
             if ($status eq OSCAR::SystemServicesDefs::SERVICE_DISABLED()) {
-                if (system("/sbin/chkconfig $s on") != 1) {
+                system("/sbin/chkconfig $s on");
+                my $status = system_service_status ($service);
+                if ($status eq OSCAR::SystemServicesDefs::SERVICE_DISABLED()) {
                     carp ("ERROR: Failed to enable $s");
                     push (@failed_services, $s);
                 }
