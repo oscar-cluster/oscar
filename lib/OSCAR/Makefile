@@ -11,11 +11,12 @@ FILES := AddNode.pm Help.pm Prereqs.pm Bootstrap.pm ImageMgt.pm \
          CmpVersions.pm MAC.pm PackageBest.pm SISBuildSetup.pm Configbox.pm \
          PackageInUn.pm ConfigFile.pm PackagePath.pm SwitcherAPI.pm \
          ConfigManager.pm msm.pm SystemSanity.pm Package.pm Tk.pm \
-		 Configurator.pm Network.pm PackageSet.pm Utils.pm DelNode.pm \
+         Configurator.pm Network.pm PackageSet.pm Utils.pm DelNode.pm \
          NextIp.pm VersionParser.pm Distro.pm NodeConfigManager.pm \
          PackageSmart.pm VMConfigManager.pm Env.pm NodeMgt.pm \
          PartitionConfigManager.pm  WizardEnv.pm FileUtils.pm OCA.pm \
-         PartitionMgt.pm GUI_MAC.pm SystemInfo.pm
+         PartitionMgt.pm GUI_MAC.pm SystemInfo.pm SystemServices.pm \
+         SystemServicesDefs.pm
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done

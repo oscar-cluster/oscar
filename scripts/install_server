@@ -42,6 +42,7 @@ use OSCAR::Database;
 use OSCAR::Package;
 use OSCAR::PackMan;
 use OSCAR::PackageSmart;
+use OSCAR::SystemServices;
 use Carp;
 use Data::Dumper;
 use OSCAR::OCA::OS_Detect;
@@ -196,17 +197,10 @@ if ($nfs_export) {
 }
 !system("$sshd restart") or croak("ERROR: Couldn't start .$sshd. ($?)");
 
-# chkconfig is a RPM specific command, so we do not use it on Debian-like
-# systems. Moreover, services are automatically added into rc2.d on Debian
-my $os = OSCAR::OCA::OS_Detect::open();
-my $binary_format = $os->{'pkg'};
-if ($binary_format ne "deb") {
-    my @services = ("$sshd", "dhcpd", "$portmap", "$nfs");
-    foreach my $service (@services) {
-       print("Enabling service $service... ");
-       !system("chkconfig $service on") or croak("Failed to enable $service");
-       print("done\n");
-    }
+
+my @services = ("$sshd", "dhcpd", "$portmap", "$nfs");
+if (OSCAR::SystemServices::enable_system_services (@services)) {
+    die "ERROR: Impossible to enable some system services";
 }
 
 # Mandrake fixup: comment out hard-coded PATH line
