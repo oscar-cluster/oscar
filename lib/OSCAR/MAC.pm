@@ -420,9 +420,12 @@ sub __enable_install_mode {
     my $os_detect = OSCAR::OCA::OS_Detect::open();
     my $binary_format = $os_detect->{'pkg'};
 
+    my $script;
+    my $file;
     if ($install_mode eq "systemimager-rsync") {
         # Stop systemimager-server-flamethrowerd
-        run_cmd("/etc/init.d/systemimager-server-flamethrowerd stop");
+        $scipt = "/etc/init.d/systemimager-server-flamethrowerd";
+        run_cmd("$script stop") if (-f $script);
 
         # Remove systemimager-server-flamethrowerd from chkconfig
         if ($binary_format ne "deb") {
@@ -432,7 +435,7 @@ sub __enable_install_mode {
         }
 
         # Stop systemimager-server-bittorrent if bittorrent is installed.
-        my $script = "/etc/init.d/systemimager-server-bittorrent";
+        $script = "/etc/init.d/systemimager-server-bittorrent";
         run_cmd("$script stop") if (-f $script);
 
         # Remove systemimager-server bittorrent from chkconfig
@@ -453,7 +456,8 @@ sub __enable_install_mode {
         }
     } elsif ($install_mode eq "systemimager-multicast") {
         # Stop systemimager-server-bittorrent
-        run_cmd("/etc/init.d/systemimager-server-bittorrent stop");
+        $script = "/etc/init.d/systemimager-server-bittorrent";
+        run_cmd("$script stop") if (-f $script);
 
         # Remove systemimager-server-bittorrent from chkconfig
         if ($binary_format ne "deb") {
@@ -466,69 +470,80 @@ sub __enable_install_mode {
         run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
 
         # Backup original flamethrower.conf
-        run_cmd("/bin/mv -f /etc/systemimager/flamethrower.conf /etc/systemimager/flamethrower.conf.bak");
+        $file = "/etc/systemimager/flamethrower.conf";
+        $script = "/etc/init.d/systemimager-server-flamethrowerd";
+        if (-f $file) {
+            run_cmd("/bin/mv -f $file $file.bak");
 
-        $cmd = "sed -e 's/START_FLAMETHROWER_DAEMON = no/START_FLAMETHROWER_DAEMON = yes/' -e 's/INTERFACE = eth[0-9][0-9]*/INTERFACE = $interface/' /etc/systemimager/flamethrower.conf.bak > /etc/systemimager/flamethrower.conf";
-        if( system( $cmd ) ) {
-            carp("Failed to update /etc/systemimager/flamethrower.conf");
-            return 0;
-        }
+            $cmd = "sed -e 's/START_FLAMETHROWER_DAEMON = no/START_FLAMETHROWER_DAEMON = yes/' -e 's/INTERFACE = eth[0-9][0-9]*/INTERFACE = $interface/' $file.bak > $file";
+            if( system( $cmd ) ) {
+                carp("Failed to update $file");
+                return 0;
+            }
 
-        # add entry for boot-<arch>-standard module
-        my $march = $os->{'arch'};
-        $march =~ s/i.86/i386/;
-        $cmd = "/usr/lib/systemimager/perl/confedit --file /etc/systemimager/flamethrower.conf --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/$march/standard/\"";
-        if( system( $cmd ) ) {
-            carp("Couldn't run command $cmd");
-            return 1;
-        }
+            # add entry for boot-<arch>-standard module
+            my $march = $os->{'arch'};
+            $march =~ s/i.86/i386/;
+            $cmd = "/usr/lib/systemimager/perl/confedit --file $file --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/$march/standard/\"";
+            if( system( $cmd ) ) {
+                carp("Couldn't run command $cmd");
+                return 1;
+            }
 
-        oscar_log_subsection("Step $step_number: Updated /etc/systemimager/flamethrower.conf");
+            oscar_log_subsection("Step $step_number: Updated $file");
 
-        # Restart systemimager-server-flamethrowerd
-        run_cmd("/etc/init.d/systemimager-server-flamethrowerd restart");
+            # Restart systemimager-server-flamethrowerd
+            run_cmd("$script restart");
 
-        # Add systemimager-server-flamethrowerd to chkconfig
-        if ($binary_format ne "deb") {
-            run_cmd("chkconfig systemimager-server-flamethrowerd on");
-        } else {
-            run_cmd("update-rc.d -f systemimager-server-flamethrowerd start 20 2 .");
+            # Add systemimager-server-flamethrowerd to chkconfig
+            if ($binary_format ne "deb") {
+                run_cmd("chkconfig systemimager-server-flamethrowerd on");
+            } else {
+                run_cmd("update-rc.d -f systemimager-server-flamethrowerd start 20 2 .");
+            }
         }
     } elsif ($install_mode eq "systemimager-bt") {
         # Stop systemimager-server-flamethrowerd
-        run_cmd("/etc/init.d/systemimager-server-flamethrowerd stop");
+        $script = "/etc/init.d/systemimager-server-flamethrowerd";
+        if (-f $script) {
+            run_cmd("$script stop");
 
-        # Remove systemimager-server-flamethrower from chkconfig
-        if ($binary_format ne "deb") {
-            run_cmd("chkconfig systemimager-server-flamethrowerd off");
-        } else {
-            run_cmd("update-rc.d -f systemimager-server-flamethrowerd remove");
+            # Remove systemimager-server-flamethrower from chkconfig
+            if ($binary_format ne "deb") {
+                run_cmd("chkconfig systemimager-server-flamethrowerd off");
+            } else {
+                run_cmd("update-rc.d -f systemimager-server-flamethrowerd remove");
+            }
         }
+
         # Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
         run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
 
         # Backup original bittorrent.conf
-        run_cmd("/bin/mv -f /etc/systemimager/bittorrent.conf /etc/systemimager/bittorrent.conf.bak");
+        $file = "/etc/systemimager/bittorrent.conf";
+        if (-f $file) {
+            run_cmd("/bin/mv -f $file $file.bak");
 
-        my @images = list_image();
-        my $images_list = join(",", map { $_->name } @images);
+            my @images = list_image();
+            my $images_list = join(",", map { $_->name } @images);
 
-        $cmd = "sed -e 's/BT_INTERFACE=eth[0-9][0-9]*/BT_INTERFACE=$interface/' -e 's/BT_IMAGES=.*/BT_IMAGES=$images_list/' -e 's/BT_OVERRIDES=.*/BT_OVERRIDES=$images_list/' /etc/systemimager/bittorrent.conf.bak > /etc/systemimager/bittorrent.conf";
-        if( system( $cmd ) ) {
-            carp("Failed to update /etc/systemimager/bittorrent.conf");
-            return 0;
-        }
+            $cmd = "sed -e 's/BT_INTERFACE=eth[0-9][0-9]*/BT_INTERFACE=$interface/' -e 's/BT_IMAGES=.*/BT_IMAGES=$images_list/' -e 's/BT_OVERRIDES=.*/BT_OVERRIDES=$images_list/' $file.bak > $file";
+            if( system( $cmd ) ) {
+                carp("Failed to update $file");
+                return 0;
+            }
 
-        oscar_log_subsection("Step $step_number: Updated /etc/systemimager/bittorrent.conf");
+            oscar_log_subsection("Step $step_number: Updated $file");
 
-        # Restart systemimager-server-bittorrent
-        run_cmd("/etc/init.d/systemimager-server-bittorrent restart");
+            # Restart systemimager-server-bittorrent
+            run_cmd("/etc/init.d/systemimager-server-bittorrent restart");
 
-        # Add systemimager-server-bittorrent to chkconfig
-        if ($binary_format ne "deb") {
-            run_cmd("chkconfig systemimager-server-bittorrent on");
-        } else {
-            run_cmd("update-rc.d -f systemimager-server-bittorrent start 20 2 .");
+            # Add systemimager-server-bittorrent to chkconfig
+            if ($binary_format ne "deb") {
+                run_cmd("chkconfig systemimager-server-bittorrent on");
+            } else {
+                run_cmd("update-rc.d -f systemimager-server-bittorrent start 20 2 .");
+            }
         }
     }
 
