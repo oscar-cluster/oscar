@@ -94,11 +94,16 @@ sub push_hosts {
 # This will be handy if we would like to enhance security for the cluster by not
 # enabling StrictHostKeyChecking for ssh client.
 sub populate_known_hosts {
-    my $known_hosts = "/root/.ssh/known_hosts";
+    my $known_hosts_path = "/root/.ssh";
+    my $known_hosts = "$known_hosts_path/known_hosts";
     my $host_key = "/etc/ssh/ssh_host_rsa_key.pub";
     my @sis_clients = sortclients list_client();
     my $iface = "eth0";
   
+    if ( ! -d $known_hosts_path ) {
+        mkdir ($known_hosts_path);
+    }
+
     if ( ! -f $known_hosts ) {
         !system("touch $known_hosts") or carp "Could not touch $known_hosts";
     }
@@ -117,3 +122,4 @@ sub populate_known_hosts {
     }
     return 1;
 } # populate_known_hosts
+
