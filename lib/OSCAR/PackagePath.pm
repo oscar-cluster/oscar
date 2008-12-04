@@ -122,7 +122,7 @@ sub repos_list_urlfile ($) {
 		next if ($line !~ /^(http|ftp|file|mirror)/);
 		next if (($line =~ /^\s*$/) || ($line =~ /^\s*\#/));
 		push @remote, $line if (repo_local($line) == 1
-                                && repo_empty ($line) == 0);
+                               && repo_empty ($line) == 0);
         push @remote, $line if (repo_local($line) == 0);
 	    }
 	    close IN;

@@ -46,7 +46,7 @@ my $return = 0;
 my @pkgs = list_selected_packages();
 foreach my $pkg_ref (@pkgs) {
     my $pkg = $$pkg_ref{package};
-    if(!run_pkg_script($pkg,"post_install",1)) {
+    if(!OSCAR::Package::run_pkg_script($pkg,"post_install",1)) {
         carp("Couldn't run 'post_install' script for $pkg");
         $return++;
     }
