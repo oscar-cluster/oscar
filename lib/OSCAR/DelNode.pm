@@ -196,13 +196,21 @@ sub delnodes {
       $fail++;
     }
 
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+
     print ">> Executing post_clients phase\n";
-    if (system("./post_clients")) {
+    if (system("$config->{binaries_path}/post_clients")) {
       carp("post_clients phase failed.");
       $fail++;
     }
     print ">> Executing post_install phase\n";
-    if (system("./post_install")) {
+    if (system("$config->{binaries_path}/post_install")) {
       carp("post_install phase failed.");
       $fail++;
     }
