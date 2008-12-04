@@ -44,6 +44,7 @@ use SIS::DB;
 use OSCAR::Database;
 use OSCAR::Network;
 use OSCAR::Package;
+use OSCAR::ConfigManager;
 use OSCAR::oda;
 
 @EXPORT = qw(delnode_window);

@@ -37,6 +37,7 @@ use OSCAR::Logger;
 use OSCAR::PackagePath;
 use OSCAR::Database;
 use OSCAR::Utils;
+use OSCAR::ConfigManager;
 # use SystemImager::Server;
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
 # use SystemInstaller::Tk::Common;
@@ -130,8 +131,17 @@ sub do_post_binary_package_install ($$) {
     my $img = shift;
     my $interface = shift;
     my $cwd = `pwd`;
-    chdir "$ENV{OSCAR_HOME}/scripts/";
-    my $cmd = "$ENV{OSCAR_HOME}/scripts/post_rpm_install $img $interface";
+    
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    chdir "$config->{binaries_path}";
+    my $cmd = "$config->{binaries_path}/post_rpm_install $img $interface";
 
     if (system($cmd)) {
         delete_image($img);
