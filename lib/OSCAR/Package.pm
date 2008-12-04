@@ -119,7 +119,7 @@ sub run_pkg_script ($$$$) {
         return 0;
     }
 
-    my $pkgdir = get_script_dir ($pkg, $phase);
+    my $pkgdir = get_scripts_dir ($pkg, $phase);
     return 0 unless ((defined $pkgdir) && (-d $pkgdir));
     foreach my $scriptname (@$scripts) {
 	my $script = "$pkgdir/$scriptname";
