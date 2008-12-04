@@ -38,11 +38,11 @@ sub find_components {
             # Maybe OSCAR is installed directly on the system. In that case,
             # we try to see if OCA is not available in the default Perl
             # directories
-            my $systemdir = `perl -V:vendorarch`;
+            my $systemdir = `perl -V:vendorlib`;
             # Now we have to "format" the result that looks like
-            # "vendorarch='/usr/lib/perl5'"
+            # "vendorlib='/usr/lib/perl5'"
             chomp $systemdir;
-            if ($systemdir =~ /^vendorarch=\'(.*)\';$/) {
+            if ($systemdir =~ /^vendorlib=\'(.*)\';$/) {
                 $basedir = $1;
             }
         }
