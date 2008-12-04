@@ -42,7 +42,12 @@ use SystemInstaller::Image;
 use File::Basename;
 use Getopt::Long;
 
-my $base = "$ENV{OSCAR_HOME}/packages/sis";
+my $base;
+if (defined $ENV{OSCAR_HOME}) {
+    $base = "$ENV{OSCAR_HOME}/packages/sis";
+} else {
+    $base = "/var/lib/oscar/packages/sis";
+}
 
 my $configdir = $base."/.configs";
 
@@ -75,7 +80,7 @@ my $window;
 #####################
 my $i = list_image(name=>$image);
 if (!$i) {
-    carp "Could not find image $image!";
+    carp "ERROR: Could not find image $image!";
     exit 1;
 }
 
