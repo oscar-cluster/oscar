@@ -263,7 +263,7 @@ sub merge_arrays ($$) {
 }
 
 sub get_path_perl_modules () {
-    my @data = Config::config_re("vendorarch");
+    my @data = Config::config_re("vendorlib");
     if (scalar (@data) > 1 || scalar (@data) == 0) {
         carp "ERROR: Impossible to know where are the Perl modules";
         return -1;
