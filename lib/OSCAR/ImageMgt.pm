@@ -524,7 +524,7 @@ sub create_image ($%) {
     # GV: currently we create first a basic image and only then we install OPKGs
     # and run post_install scripts. Therefore the following command should not
     # be needed.
-#     postimagebuild (\%vars);
+    postimagebuild (\%vars);
 
     # Add image data into ODA
     my %image_data = ("name" => $image,
