@@ -4,6 +4,7 @@ libappconfig-perl
 grub
 lilo
 initrd-tools
+linux-image-generic
 linux-image-2.6-amd64
 ssh
 systemconfigurator
