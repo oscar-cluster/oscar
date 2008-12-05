@@ -39,7 +39,7 @@ use OSCAR::Database;
 use OSCAR::Utils;
 use OSCAR::ConfigManager;
 # use SystemImager::Server;
-use OSCAR::Opkg qw ( create_list_selected_opkgs );
+# use OSCAR::Opkg qw ( create_list_selected_opkgs );
 # use SystemInstaller::Tk::Common;
 use OSCAR::PackMan;
 use Data::Dumper;
@@ -131,7 +131,7 @@ sub do_post_binary_package_install ($$) {
     my $img = shift;
     my $interface = shift;
     my $cwd = `pwd`;
-    
+
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
