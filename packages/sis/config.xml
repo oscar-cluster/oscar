@@ -164,6 +164,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.0-8">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-12-04T15:24:15-05:00">
+        <item>New packages using the new version of OPKGC.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.0-7">
       <changelogEntry authorName="Geoffroy Vallee" date="2008-10-01T00:30:12-05:00">
         <item>Fix dependencies issues on Debian based systems.</item>
