@@ -48,7 +48,7 @@ use OSCAR::Logger;    # For oscar_log_section()
 use OSCAR::Tk;
 #use OSCAR::Selector;
 #use XML::Simple;      # Read/write the .selection config files
-use Tk::Pane; 
+use Tk::Pane;
 no warnings qw(closure);
 
 our $destroyed = 0;
@@ -172,7 +172,9 @@ sub getSelectedConfigurablePackages
                                                              \%options,
                                                              \@error_list,
                                                              undef,
-                                                             undef); 
+                                                             undef);
+
+    print Dumper @results;
 
   # Transform the list into a hash; keys=short pkg name, values=long pkg name
   foreach my $pkg_ref (@results) {
@@ -219,8 +221,11 @@ sub populateConfiguratorList
   my($packagedir);
 
   # Set up the base directory where this script is being run
-  $oscarbasedir = '.';
-  $oscarbasedir = $ENV{OSCAR_HOME} if ($ENV{OSCAR_HOME});
+  if ($ENV{OSCAR_HOME}) {
+    $oscarbasedir = $ENV{OSCAR_HOME};
+  } else {
+    $oscarbasedir = "/var/lib/oscar";
+  }
 
   # Get the list of selected, configurable packages
   my $packages_ref = getSelectedConfigurablePackages();
@@ -374,7 +379,7 @@ sub displayPackageConfigurator # ($parent)
   populateConfiguratorList();
 
   OSCAR::Tk::center_window( $root );
-  
+
   return $root;       # Return pointer to new window to calling function
 }
 
