@@ -76,10 +76,19 @@ use SystemInstaller::Tk::Image;
 use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
 use SystemInstaller::Tk::Common;
-use Carp;
 use FileHandle;
 use File::Basename;
+use Data::Dumper; # used for debugging purpose but should not be removed
+use Getopt::Long;
+use Carp;
 use vars qw($config);
+
+my ($debug, $verbose);
+Getopt::Long::Configure("pass_through");
+GetOptions(
+            "debug"     => \$debug,
+            "verbose"   => \$verbose,
+          );
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
@@ -112,7 +121,19 @@ my $save_text;
 my %options = ();
 my @errors = ();
 my @client_nodes = ();
-my $debug = $ENV{DEBUG_OSCAR_WIZARD};
+my $initial_verbose_value = 0;
+$initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
+
+if (defined $ENV{DEBUG_OSCAR_WIZARD}) {
+    $debug = 1;
+}
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+}
+
+if ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+}
 
 my %buttons = ();
 
@@ -419,6 +440,8 @@ OSCAR::Tk::center_window( $window );
 #
 
 MainLoop;
+
+$ENV{OSCAR_VERBOSE} = $initial_verbose_value;
 
 ###########################################################################
 
@@ -936,18 +959,18 @@ oscar_wizard, a script which creates the main GUI for OSCAR.
 
 =head1 SYNOPSIS
 
-oscar_wizard [install|manage]
+oscar_wizard [install|manage] OPTIONS
 
 =head1 DESCRIPTION
 
 oscar_wizard, a script which creates the main GUI for OSCAR. It must be
 executed as root.
 
-=head1 OPTIONS
+=head1 ARGUMENTS
 
-Supported options include:
+Supported arguments (mandatory) are:
 
-=over 2
+=over 8
 
 =item install 
 
@@ -956,6 +979,22 @@ Brings up the wizard in installation mode.
 =item manage
 
 Brings up the wizard in management mode (default).
+
+=back
+
+=head1 OPTIONS
+
+Supported options are:
+
+=over 8
+
+=item --verbose
+
+Display information during execution (set OSCAR_VERBOSE to 5).
+
+=item --debug
+
+Display even more information (set OSCAR_VERBOSE to 10).
 
 =back
 
