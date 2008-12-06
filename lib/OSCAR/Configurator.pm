@@ -174,8 +174,6 @@ sub getSelectedConfigurablePackages
                                                              undef,
                                                              undef);
 
-    print Dumper @results;
-
   # Transform the list into a hash; keys=short pkg name, values=long pkg name
   foreach my $pkg_ref (@results) {
       my $pname = $$pkg_ref{package};
