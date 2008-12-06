@@ -33,6 +33,7 @@ BEGIN {
 
 use strict;
 use lib "/usr/lib/systeminstaller";
+use lib "/usr/lib/systemimager/perl";
 use Tk;
 use Tk::Tree;
 use SystemImager::Client;
@@ -385,14 +386,19 @@ sub set_buttons {
     our $deletebutton->configure( -state => $state );
 }
 
+# Return: 0 if success, -1 else.
 sub setup_dhcpd {
     my $interface = shift;
     our $window;
 
     $window->Busy(-recurse => 1);
-    __setup_dhcpd($interface);
+    if (OSCAR::MAC::__setup_dhcpd($interface)) {
+        carp "ERROR: Impossible to setup dhcpd";
+        return -1;
+    }
     our $dhcpbutton->configure(-state => 'disabled'); 
     $window->Unbusy();
+    return 0;
 }
 
 sub regenerate_tree {
