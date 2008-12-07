@@ -41,6 +41,7 @@ use base qw(Exporter);
 @EXPORT = qw(
             get_network_config
             interface2ip
+            is_a_valid_ip
             update_hosts
             );
 
@@ -49,6 +50,20 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 # package scoped regex for an ip address.  If we ever need to support
 # ipv6, we just need to change it here
 my $ipregex = '\d+\.\d+\.\d+\.\d+';
+
+# Check if a given IP is valid.
+#
+# Return: 1 (true) if the IP is valid; 0 (false) else.
+sub is_a_valid_ip ($) {
+    my $ip = shift;
+
+    return 0 if (!defined $ip);
+    return 0 if ($ip eq "0.0.0.0");
+    return 0 if ($ip !~ /^$ipregex$/);
+
+    return 1;
+}
+
 
 ################################################################################
 # Returns the ip addr, broadcast, and netmask of an interface.                 #

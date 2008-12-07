@@ -129,6 +129,10 @@ sub __setup_dhcpd ($) {
             or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
     }
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
+    if (!defined $interface || OSCAR::Network::is_a_valid_ip ($ip) == 0) {
+        carp "ERROR: Impossible to get networking data";
+        return -1;
+    }
     my $cmd = "mkdhcpconf -o $dhcpd_configfile ".
                          "--interface=$interface ".
                          "--gateway=$ip";
@@ -138,7 +142,10 @@ sub __setup_dhcpd ($) {
     }
 
     oscar_log_subsection("Step $step_number: Running command: $cmd");
-    !system($cmd) or (carp "ERROR: Couldn't mkdhcpconf", return -1);
+    if (system($cmd)) {
+        carp "ERROR: Couldn't mkdhcpconf";
+        return -1;
+    }
     oscar_log_subsection("Step $step_number: Successfully ran \"$cmd\"");
 
     my $dhcpd_leases;
@@ -601,3 +608,6 @@ sub __run_setup_pxe ($) {
 }
 
 1;
+
+__END__
+
