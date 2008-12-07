@@ -13,7 +13,7 @@ BEGIN {
 use strict;
 use OSCAR::ConfigManager;
 
-print "Test few oscar-config capabilities.\n";
+print "\n\n*** Test few oscar-config capabilities ***\n\n";
 
 my $path = "/etc/oscar/oscar.conf";
 my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$path");
@@ -35,7 +35,7 @@ my $list_distros = `$cmd`;
 goto ERROR_EXIT if ($list_distros eq "");
 
 
-print "\n\nSUCCESS: the test of oscar-config succeed\n";
+print "\n\n*** SUCCESS: the test of oscar-config succeed ***\n\n";
 
 exit 0;
 

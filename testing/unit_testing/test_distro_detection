@@ -9,8 +9,9 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackageSmart;
 use OSCAR::PackagePath;
 
-print "Test the detection of repositories formats. This detection is " .
-      "based on the repository URL. We submit few cases and check the result\n";
+print "\n\n*** Test the detection of repositories formats. This detection " .
+      "is based on the repository URL. We submit few cases and check the " .
+      "result***\n\n";
 
 my $pool;
 
@@ -117,8 +118,12 @@ my $compat = OSCAR::PackagePath::get_compat_distro ($distroid);
 print "Result: $compat\n";
 goto ERROR_EXIT if ($compat ne "rhel-5-x86_64");
 
+print "\n\n*** SUCCESS: the test of repository pool format detection ".
+      "succeeded ***\n";
+
 exit 0;
 
 ERROR_EXIT:
-    print "ERROR: the test of repository pool format detection failed\n";
+    print "\n\n*** ERROR: the test of repository pool format detection ".
+          "failed ***\n\n";
     exit -1;

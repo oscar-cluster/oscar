@@ -10,7 +10,7 @@ use OSCAR::PackageSmart;
 use OSCAR::PackagePath;
 use Cwd;
 
-print "Test few repository related functions.\n";
+print "\n\n*** Test few repository related functions.***\n\n";
 
 my $path = getcwd() . "/samples/empty_repo";
 if (OSCAR::PackagePath::repo_local ($path) != 1) {
@@ -43,7 +43,7 @@ my $pm =
 goto ERROR_EXIT if (!defined($pm));
 
 
-print "\n\nSUCCESS: the test of repository preparation succeed\n";
+print "\n\n*** SUCCESS: the test of repository preparation succeed ***\n\n";
 
 exit 0;
 

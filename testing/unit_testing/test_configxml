@@ -21,6 +21,8 @@ use base qw(Exporter);
 use Carp;
 use warnings "all";
 
+print "\n\n*** Testing XML capabilities ***\n\n";
+
 print "First of all, we test the XML parsing...\n";
 my $xmlfile;
 if (defined $ENV{OSCAR_HOME}) {
@@ -43,10 +45,10 @@ goto ERROR_EXIT if $provide ne "mpi";
 
 # We are done with testing.
 SUCCESS:
-    print "\n\nSUCCESS\n";
+    print "\n\n*** SUCCESS Testing XML Capabilities ***\n\n";
 
 exit 0;
 
 ERROR_EXIT:
-    print "ERROR: the test of configuration file management failed\n";
+    print "\n\n*** ERROR: the test of configuration file management failed ***\n\n";
     exit -1;
