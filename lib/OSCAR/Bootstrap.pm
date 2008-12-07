@@ -611,7 +611,7 @@ created if they do not already exist (configuration files in /tftpboot).
 
 The actual OSCAR bootstrap is actually composed of 2 stages:
 
-=over 2
+=over 4
 
 =item - stage1: During this stage, we install: packman, yume, rapt and then, based
 on these tools, we generate local OSCAR repositories (if local repositories 

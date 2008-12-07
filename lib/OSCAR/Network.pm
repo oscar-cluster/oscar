@@ -234,3 +234,55 @@ sub update_hosts ($) {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Network.pm - A set of functions for basic networking tasks.
+
+=head1 Exported Functions
+
+=over 8
+
+=item my @data = get_network_config($interface, $options, $error_prefix) 
+
+where:
+
+=over 4
+
+=item interface network interface id used by OSCAR (e.g. eth0).
+
+=item options   hash reference for options.
+
+=item errors, array references for errors.
+
+=back
+
+The result is an array with the following pattern:
+
+=over 2
+
+=item result[0] is netmask,
+
+=item result[1] is dnsdomainname,
+
+=item result[2] is the gateway IP,
+
+=item result[3] is startip
+
+=back
+
+=item interface2ip($interface) 
+
+Returns the IP address, broadcast, and netmask of an interface/
+
+=item is_a_valid_ip($ip) 
+
+Check if a given IP is valid. Returns 1if the IP is valid, 0 else.
+
+=item update_hosts
+
+=back
+
+=cut
