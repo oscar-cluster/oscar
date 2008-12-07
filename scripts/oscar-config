@@ -28,11 +28,12 @@ BEGIN {
 }
 
 my ($distro_to_setup,
-    $distro_repo_to_use,
     $distro_repo,
+    $distro_repo_to_mirror,
+    $distro_repo_to_use,
+    $headnode_nic,
     $oscar_repo,
     $oscar_repo_to_use,
-    $distro_repo_to_mirror,
     $oscar_repo_to_mirror,
     $network,
     $bootstrap);
@@ -44,6 +45,7 @@ GetOptions(
         "setup-distro=s"                => \$distro_to_setup,
         "display-default-distro-repo=s" => \$distro_repo,
         "display-default-oscar-repo=s"  => \$oscar_repo,
+        "headnode-nic=s"                => \$headnode_nic,
         "use-distro-repo=s"             => \$distro_repo_to_use,
         "use-oscar-repo=s"              => \$oscar_repo_to_use,
         "mirror-distro-repo=s"          => \$distro_repo_to_mirror,
@@ -149,6 +151,17 @@ if ($distro_to_setup) {
 #         print "Configuration issues detected, configuring the network...\n"
 #     }
 # }
+
+if ($headnode_nic) {
+    print "--> Updating the NIC used on the headnode for cluster management\n";
+    require OSCAR::Database_generic;
+    my $sql = "UPDATE Clusters ".
+              "SET Clusters.headnode_interface='$headnode_nic' ".
+              "WHERE Clusters.name='oscar'";
+    if (!OSCAR::Database_generic::do_update ($sql, "Clusters", undef, undef)) {
+        die "ERROR: Impossible to update the headnode NIC ($sql)";
+    }
+}
 
 exit 0;
 
@@ -344,7 +357,7 @@ oscar-config [options]
 
 Recognized options include:
 
-=over 12
+=over 8
 
 =item --generate-config-file
 
@@ -397,6 +410,10 @@ Mirror a given online OSCAR repository for a given Linux distribution.
 
 Bootstrap OSCAR, i.e., install all the OSCAR prereqs, setup the database, and
 install and setup everything for the creation of a OSCAR headnode.
+
+=item --headnode-nic
+
+Update the NIC used by OSCAR for cluster management.
 
 =item --help
 
