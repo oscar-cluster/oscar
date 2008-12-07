@@ -134,6 +134,9 @@ my @line = split /\s+/, $l;
 my $interface = $line[$#line];
 print "internal interface = $interface\n";
 
-system("mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$gwip");
+my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$gwip";
+if (system($cmd)) {
+    die "ERROR: Impossible to successfully execute $cmd";
+}
 system("/etc/init.d/dhcpd restart");
 
