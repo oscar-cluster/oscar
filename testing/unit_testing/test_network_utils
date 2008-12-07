@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Network;
+use warnings "all";
+
+print "\n\n*** Network Utils Testing ***\n\n";
+
+my @invalid_ips = ("0:0:0:0", undef);
+my $ip;
+foreach $ip (@invalid_ips) {
+    if (OSCAR::Network::is_a_valid_ip ($ip) != 0) {
+        die "ERROR: 0:0:0:0 is detected as a valid IP";
+    }
+}
+
+my @valid_ips = ("192.168.1.1");
+foreach $ip (@valid_ips) {
+    if (OSCAR::Network::is_a_valid_ip ($ip) != 1) {
+        die "ERROR: 0:0:0:0 is detected as a invalid IP";
+    }
+}
+
+print "*** Network Utils Testing: Success ***\n\n";
