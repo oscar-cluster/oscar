@@ -36,7 +36,6 @@ require Tk::Web;
 require URI::URL;
 use Carp;
 use HTML::TreeBuilder 3;
-use XML::Simple;      
 no warnings qw(closure);
 use OSCAR::Tk;
 use File::Basename;
