@@ -35,23 +35,25 @@ my ($distro_to_setup,
     $oscar_repo,
     $oscar_repo_to_use,
     $oscar_repo_to_mirror,
+    $sanity_check,
     $network,
     $bootstrap);
 
 GetOptions(
-        "generate-config-file"          => \&generate_config_file,
-        "list-setup-distros"            => \&display_list_setup_distros,
-        "supported-distros"             => \&display_list_supported_distros,
-        "setup-distro=s"                => \$distro_to_setup,
+        "bootstrap"                     => \&bootstrap,
         "display-default-distro-repo=s" => \$distro_repo,
         "display-default-oscar-repo=s"  => \$oscar_repo,
+        "generate-config-file"          => \&generate_config_file,
+        "list-setup-distros"            => \&display_list_setup_distros,
+        "mirror-distro-repo=s"          => \$distro_repo_to_mirror,
+        "mirror-oscar-repo=s"           => \$oscar_repo_to_mirror,
+        "sanity-check"                  => \$sanity_check,
+        "setup-distro=s"                => \$distro_to_setup,
+        "supported-distros"             => \&display_list_supported_distros,
         "update-nic"                    => \$headnode_nic,
         "use-distro-repo=s"             => \$distro_repo_to_use,
         "use-oscar-repo=s"              => \$oscar_repo_to_use,
-        "mirror-distro-repo=s"          => \$distro_repo_to_mirror,
-        "mirror-oscar-repo=s"           => \$oscar_repo_to_mirror,
 #         "network"                       => \$network,
-        "bootstrap"                     => \&bootstrap,
         "help"                          => \&help,
         ) || help_and_exit();
 
@@ -165,6 +167,16 @@ if ($headnode_nic) {
               "WHERE Clusters.name='oscar'";
     if (!OSCAR::Database_generic::do_update ($sql, "Clusters", undef, undef)) {
         die "ERROR: Impossible to update the headnode NIC ($sql)";
+    }
+}
+
+if ($sanity_check) {
+    require OSCAR::ConfigFile;
+    my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                                      undef,
+                                                      "OSCAR_SCRIPTS_PATH");
+    if (system ("$binaries_path/system-sanity")) {
+        die "ERROR: Impossible to successfully execute system-sanity";
     }
 }
 
@@ -334,6 +346,11 @@ Recognized options include:
 
 =over 8
 
+=item --bootstrap
+
+Bootstrap OSCAR, i.e., install all the OSCAR prereqs, setup the database, and
+install and setup everything for the creation of a OSCAR headnode.
+
 =item --generate-config-file
 
 Generate the appropriate configuration file based on the OSCAR_HOME environment
@@ -381,10 +398,9 @@ Mirror a given online repository for a given Linux distribution.
 
 Mirror a given online OSCAR repository for a given Linux distribution.
 
-=item --bootstrap
+=item --sanity-check
 
-Bootstrap OSCAR, i.e., install all the OSCAR prereqs, setup the database, and
-install and setup everything for the creation of a OSCAR headnode.
+Check the system status. It actually executes the system-sanity script.
 
 =item --update-nic
 
