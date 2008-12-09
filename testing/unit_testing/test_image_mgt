@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+#
+# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.
+#
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+use strict;
+use OSCAR::ImageMgt;
+use File::Copy;
+use Carp;
+
+my $orig_file = "./samples/systemconfig.conf.tmpl";
+my $test_file = "./samples/systemconfig.conf";
+
+unlink ($test_file);
+File::Copy::copy($orig_file, $test_file) or die "ERROR: File cannot be copied.";
+
+if (OSCAR::ImageMgt::update_systemconfigurator_configfile ($test_file) == -1) {
+    die "ERROR: Impossible to update the SystemConfigurator configuration file";
+}

@@ -2,7 +2,7 @@ DESTDIR=
 INSTALLDIR=/usr/share/oscar/testing/unit_testing/samples
 
 SUBDIRS := 
-FILES := config.xml
+FILES := config.xml systemconfig.conf.tmpl
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done

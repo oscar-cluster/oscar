@@ -59,6 +59,7 @@ use warnings "all";
             get_list_corrupted_images
             image_exists
             install_opkgs_into_image
+            update_systemconfigurator_configfile
             );
 
 our $images_path = "/var/lib/systemimager/images";
@@ -538,6 +539,63 @@ sub create_image ($%) {
     return 0;
 }
 
+################################################################################
+# SystemConfigurator has a bad limitation: the label for the default kernel    #
+# has a limitation on its length. So we check this length and we update it if  #
+# needed.                                                                      #
+#                                                                              #
+# Input: full path of the SystemConfigurator config file to analyze.           #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub update_systemconfigurator_configfile ($) {
+    my $file = shift;
+    use constant MAX_LABEL_LENGTH  =>  16;
+
+    if (! -f $file) {
+        return 1;
+    }
+
+    require OSCAR::ConfigFile;
+    my $default_boot = OSCAR::ConfigFile::get_value ($file,
+                                                     "BOOT",
+                                                     "DEFAULTBOOT");
+    my $default_label = OSCAR::ConfigFile::get_value ($file,
+                                                     "KERNEL0",
+                                                     "LABEL");
+
+    if (!defined ($default_boot) || !defined ($default_label)) {
+        carp "ERROR: The file $file exists but does not have a default boot ".
+             "or a default label";
+        return -1;
+    }
+
+    if ($default_boot ne $default_label) {
+        print STDERR "WARNING: the default boot kernel is not the kernel0 we ".
+                     "do not know how to deal with that situation";
+        return 1;
+    }
+
+    if (length ($default_boot) > MAX_LABEL_LENGTH) {
+        if (OSCAR::ConfigFile::set_value($file,
+                                         "BOOT",
+                                         "DEFAULTBOOT",
+                                         "default_kernel")) {
+            carp "ERROR: Impossible to update the default boot kernel";
+            return -1;
+        }
+        if (OSCAR::ConfigFile::set_value($file,
+                                         "KERNEL0",
+                                         "LABEL",
+                                         "default_kernel")) {
+            carp "ERROR: Impossible to update the label of the default kernel";
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+# Return: 0 if success, -1 else.
 sub postimagebuild {
     my ($vars) = @_;
     my $img = $$vars{imgname};
@@ -545,13 +603,29 @@ sub postimagebuild {
     my %options;
 
     print ("Setting up image in the database\n");
-    do_setimage ($img, \%options);
+    if (do_setimage ($img, \%options)) {
+        carp "ERROR: Impossible to set image";
+        return -1;
+    }
 
     my $cmd = "post_binary_package_install ($img, $interface)";
     print ("Running: $cmd");
-    do_post_binary_package_install ($img, $interface);
+    if (do_post_binary_package_install ($img, $interface) == 0) {
+        carp "ERROR: Impossible to do post binary package install";
+        return -1;
+    }
 
-    do_oda_post_install (%$vars, \%options);
+    if (do_oda_post_install (%$vars, \%options)) {
+        carp "ERROR: Impossible to update data in ODA";
+        return -1;
+    }
+
+    my $systemconfig_file = "$img/etc/systemconfig/systemconfig.conf";
+    if (update_systemconfigurator_configfile ($systemconfig_file) == -1) {
+        carp "ERROR: Impossible to update the file $systemconfig_file";
+        return -1;
+    }
+    return 0;
 }
 
 ################################################################################
@@ -616,7 +690,6 @@ sub install_opkgs_into_image ($@) {
         carp "ERROR: Impossible to install OPKGs\n";
         return -1;
     }
-
 
     # GV: do we need to install only the client side of the OPKG? or do we also
     # need to install the api part.
@@ -714,8 +787,6 @@ sub export_image ($$) {
     }
     return 0;
 }
-
-get_image_default_settings();
 
 1;
 
