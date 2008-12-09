@@ -26,8 +26,13 @@ package OSCAR::ConfigFile;
 # goal is typically to be able to easily get and set a given key value in a
 # given configuration file.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
 use OSCAR::Utils;
 use OSCAR::FileUtils;
@@ -36,7 +41,6 @@ use base qw(Exporter);
 use Carp;
 use AppConfig;
 use AppConfig::State;
-use Data::Dumper;
 use warnings "all";
 
 use Data::Dumper;
@@ -225,7 +229,7 @@ when files are organized "Windows-style", a.k.a., init style or with blocks.
 
 =head1 EXAMPLES
 
-The following example read the variable "cachedir" from the block "main" from
+The following example reads the variable "cachedir" from the block "main" from
 the "/etc/yum.conf" configuration file.
 
 =over 8
@@ -234,7 +238,13 @@ my $source = OSCAR::ConfigFile::get_value ("/etc/yum.conf", "main", "cachedir");
 
 =back
 
+The following example sets the variable gpgcheck in the main section of the /etc/yum.conf file to 1,
 
+=over 8
+
+OSCAR::ConfigFile::set_value ("/etc/yum.conf", "main", "gpgcheck", "1")
+
+=back
 
 =head1 AUTHOR
 

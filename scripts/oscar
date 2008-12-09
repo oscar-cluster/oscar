@@ -13,9 +13,14 @@
 # $Id$
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use Carp;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::msm;
 use OSCAR::PartitionMgt;
 use OSCAR::NodeMgt;
