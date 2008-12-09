@@ -14,6 +14,10 @@ tasks on a cluster.</description>
       <name>Thomas Naughton</name>
       <email>naughtont@ornl.gov</email>
     </author>
+    <author cat="uploader">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
   </authors>
   <serverDeps>
     <requires>
@@ -56,6 +60,11 @@ tasks on a cluster.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="4.1.1-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-07-31T17:28:13-05:00">
+        <item>New upstream version.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.1-7">
       <changelogEntry authorName="DongInn Kim" date="2007-12-16T17:25:10-04:00">
         <item>Fixed wrong dependecies for YDL5-PPC64(PS3).</item>
