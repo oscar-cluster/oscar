@@ -606,6 +606,7 @@ sub build_oscar_image {
         $next_step_button->configure(-state => "normal");
         set_wizard_status("addclients",\%options,\@errors);
     }
+
     $step_status = get_wizard_status(\%options,\@errors);
     if($$step_status{addclients} eq "normal"){
         my $next_step_button2 = $buttons{addclients};

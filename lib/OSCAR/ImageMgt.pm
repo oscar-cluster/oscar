@@ -536,6 +536,12 @@ sub create_image ($%) {
         return -1;
     }
 
+    my $systemconfig_file = "$image/etc/systemconfig/systemconfig.conf";
+    if (update_systemconfigurator_configfile ($systemconfig_file) == -1) {
+        carp "ERROR: Impossible to update the file $systemconfig_file";
+        return -1;
+    }
+
     return 0;
 }
 
@@ -620,11 +626,6 @@ sub postimagebuild {
         return -1;
     }
 
-    my $systemconfig_file = "$img/etc/systemconfig/systemconfig.conf";
-    if (update_systemconfigurator_configfile ($systemconfig_file) == -1) {
-        carp "ERROR: Impossible to update the file $systemconfig_file";
-        return -1;
-    }
     return 0;
 }
 
