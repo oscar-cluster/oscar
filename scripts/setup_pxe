@@ -31,6 +31,12 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use vars qw($config);
 use lib "/usr/lib/systeminstaller";
@@ -42,7 +48,6 @@ use File::Copy;
 use File::Path;
 use AppConfig qw(:argcount);
 use POSIX;
-use lib "$ENV{OSCAR_HOME}/lib";
 use warnings "all";
 
 use OSCAR::Database;
@@ -111,8 +116,8 @@ if (-e "/etc/mandrake-release") {
 		}
                 if( not -e $var_tftp ) {
                         symlink($root_tftp, $var_tftp) or croak "Error: $!\n";
-                        verbose("Created symlink: $var_tftp => $root_tftp\n") if($?
- == 0);
+                        verbose("Created symlink: $var_tftp => $root_tftp\n")
+                            if($? == 0);
                 }
         } else {
                   carp "Symlinks not supportted on this system! - $@\n";

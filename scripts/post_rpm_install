@@ -150,6 +150,6 @@ sub init_si_config {
                                NET_BOOT_DEFAULT => { ARGCOUNT => 1}
                               );
     $config->file("/etc/systemimager/systemimager.conf");
-    
+
     return $config;
 }
