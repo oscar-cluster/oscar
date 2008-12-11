@@ -44,7 +44,7 @@ those packages from an online package repository, either on or off site.
 
 %build
 rm -rf %{buildroot}
-make system-install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
 mkdir -p %{buildroot}%{etcdir}
 mkdir -p %{buildroot}%{docdir}
 mkdir -p %{buildroot}%{sharedir}/images
