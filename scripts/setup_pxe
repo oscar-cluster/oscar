@@ -179,7 +179,7 @@ if (OSCAR::Database::get_nics_with_name_node($iface,
                                              \%db_options,
                                              \@db_errors)) {
     die "ERROR: Impossible to get the network interface id we have to use on ".
-        "compute nodes";
+        "compute nodes ($node, $iface)";
 }
 
 my $node_ref = pop @result;
