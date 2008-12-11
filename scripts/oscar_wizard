@@ -62,14 +62,8 @@ use OSCAR::PackagePath;
 use OSCAR::PackageInUn;
 use OSCAR::WizardEnv;
 use OSCAR::Tk;
-use OSCAR::ImageMgt qw (
-                        do_setimage 
-                        do_post_binary_package_install 
-                        do_oda_post_install
-                        get_image_default_settings
-                       );
-use OSCAR::Opkg qw ( create_list_selected_opkgs );
-use OSCAR::Network qw ( get_network_config );
+use OSCAR::ImageMgt;
+use OSCAR::Network;
 use OSCAR::ClientMgt;
 use AppConfig;
 use SystemInstaller::Tk::Image;
@@ -153,12 +147,16 @@ if (defined $ENV{OSCAR_HOME}) {
     $oscarsamples_dir = "/usr/share/oscar/oscarsamples";
 }
 
+my $log_prefix = "oscar_wizard:";
 
 # END processing to remove the lockfile when we die(), exit, or otherwise
 # cease to exist.
 END {
     unlink $lockfile if $lockfile && -f $lockfile;
+    oscar_log_section ("oscar_wizard: Exit");
 }
+
+oscar_log_section ("$log_prefix Starting...");
 
 # Check for the lockfile (this is certainly not foolproof -- it's just
 # "good enough")
@@ -168,18 +166,19 @@ if (-f $lockfile) {
     my $pid = <LOCKFILE>;
     close(LOCKFILE);
     chomp $pid;
-    print "There is an OSCAR Wizard lockfile that says a process\n";
-    print "is still running with process id $pid. Checking if that is true ...\n";
+    oscar_log_subsection ("$log_prefix There is an OSCAR Wizard lockfile ".
+        "that says a process is still running with process id $pid. Checking ".
+        "if that is true...");
     if( kill 0, $pid ) {
-        print "There is a process running with that process id.\n";
-        print "If this is not an OSCAR Wizard process, remove\n";
-        print "the following file and run $0 again:\n";
-        print "$lockfile\n";
+        oscar_log_section ("$log_prefix There is a process running with that ".
+            "process id. If this is not an OSCAR Wizard process, remove the ".
+            "following file and run $0 again: $lockfile");
         undef $lockfile; # Prevent END processing from deleting lockfile.
         exit(1);
     } else {
-        print "There is no process running with process id $pid.\n";
-        print "Removing lockfile $lockfile and continuing.\n";
+        oscar_log_section ("$log_prefix There is no process running with ".
+            "process id $pid.");
+        oscar_log_section ("$log_prefix Removing lockfile $lockfile and continuing.");
         unlink $lockfile;
     }
 }
@@ -316,7 +315,7 @@ if ( $mode eq "install" ) {
                     $path = OSCAR::Utils::get_path_perl_modules();
                 }
                 $path .= "/Qt";
-                print "Change directory: $path\n";
+                oscar_log_section ("$log_prefix Change directory: $path");
                 chdir ($path);
                 system('/usr/bin/perl Selector.pl');
                 chdir($olddir);
@@ -620,19 +619,19 @@ sub postimagebuild {
     my $step_number = $$vars{step_number};
     my $img = $$vars{imgname};
 
-    print ("Setting up image in the database\n");
-    do_setimage ($img, \%options);
+    oscar_log_section ("$log_prefix Setting up image in the database\n");
+    OSCAR::ImageMgt::do_setimage ($img, \%options);
 
     my $cmd = "post_binary_package_install ($img, $interface)";
     my $step_string = "";
     $step_string ="Step $step_number: " if $mode eq "install";
     oscar_log_subsection("$step_string"."Running: $cmd");
-    if (!do_post_binary_package_install ($img, $interface)) {
+    if (!OSCAR::ImageMgt::do_post_binary_package_install ($img, $interface)) {
         carp ("ERROR: Impossible to run post_binary_package_install ($img)\n");
         return 0;
     }
 
-    do_oda_post_install (%$vars, \%options);
+    OSCAR::ImageMgt::do_oda_post_install (%$vars, \%options);
 
     # All done -- remove the temp file that held all the binary packages
     # filenames
@@ -657,7 +656,9 @@ sub postimagebuild {
 sub build_oscar_clients {
     my ($window, $step_number, $interface) = @_;
 
-    my @network_config = get_network_config ($interface, \%options, \@errors);
+    my @network_config = OSCAR::Network::get_network_config ($interface,
+                                                             \%options,
+                                                             \@errors);
     my $netmask = $network_config[0];
     my $dnsdomainname = $network_config[1];
     my $gw = $network_config[2];
@@ -679,9 +680,7 @@ sub build_oscar_clients {
             $first_node = $$node_ref{name};
             last;
         }
-#         print "BEFORE : $first_node\n";
         $first_node =~ s/^([^\d]+)(\d+)$/$1/g ;
-#         print "AFTER : $first_node\n";
         $client_basename = $first_node;
     }
 
@@ -702,7 +701,7 @@ sub build_oscar_clients {
                           },
 		step_number => $step_number
                );
-    addclients_window($window, %vars);
+    SystemInstaller::Tk::AddClients::addclients_window($window, %vars);
 }
 
 sub postaddclients {

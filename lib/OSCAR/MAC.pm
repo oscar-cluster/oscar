@@ -5,9 +5,9 @@ package OSCAR::MAC;
 #			Jason Brechin <brechin@ncsa.uiuc.edu>
 # Copyright (C) 2006,2007 Bernard Li <bernard@vanhpc.org>
 #                    All rights reserved.
-# Copyright (C) 2006 Oak Ridge National Laboratory
-#                    Geoffroy Vallee <valleegr@ornl.gov>
-#                    All rights reserved.
+# Copyright (C) 2006-2008 Oak Ridge National Laboratory
+#                         Geoffroy Vallee <valleegr@ornl.gov>
+#                         All rights reserved.
 
 #   $Id$
 
@@ -123,7 +123,7 @@ sub __setup_dhcpd ($) {
     my $dhcpd_configfile = "/etc/dhcpd.conf";
     # Under Debian the dhcpd config file is in /etc/dhcp3
     $dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
-    oscar_log_subsection "About to run setup_dhcpd...\n";
+    oscar_log_subsection ("Step $step_number: About to run setup_dhcpd...");
     if(-e $dhcpd_configfile) {
         copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak") 
             or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
@@ -143,13 +143,14 @@ sub __setup_dhcpd ($) {
 
     oscar_log_subsection("Step $step_number: Running command: $cmd");
     if (system($cmd)) {
-        carp "ERROR: Couldn't mkdhcpconf";
+        carp "ERROR: Couldn't mkdhcpconf ($cmd)\n";
         return -1;
     }
     oscar_log_subsection("Step $step_number: Successfully ran \"$cmd\"");
 
+    oscar_log_subsection("Step $step_number: Checking the DHCP lease file");
     my $dhcpd_leases;
-    if ( ($os->{'distro'} eq "debian") ) {
+    if ( ($os->{'compat_distro'} eq "debian") ) {
         $dhcpd_leases = "/var/lib/dhcp3/dhcpd.leases";
     } else {
         $dhcpd_leases = "/var/lib/dhcp/dhcpd.leases";
@@ -161,11 +162,13 @@ sub __setup_dhcpd ($) {
         $dhcpd_leases = "/var/lib/dhcpd/dhcpd.leases";
     }
 
-    if(!-e "$dhcpd_leases") {
+    if(!-f "$dhcpd_leases") {
+        oscar_log_subsection("Step $step_number: Creating $dhcpd_leases");
         open(OUT,">$dhcpd_leases")
-            or (carp "ERROR: Couldn't create dhcpd.leases files.\n", return -1);
+            or (carp "ERROR: Couldn't create $dhcpd_leases files.", return -1);
         close(OUT);
     }
+    oscar_log_subsection("Step $step_number: DHCP lease file ready");
 
     # Need to setup /etc/sysconfig/dhcpd on SUSE Linux prior to restarting dhcpd
     if ($os->{'distro'} eq "suse") {
@@ -391,7 +394,7 @@ sub __build_autoinstall_cd {
     oscar_log_subsection("Step $step_number: Building AutoInstall CD: $cmd");
     !system($cmd) or croak("Failed to run $cmd");
     oscar_log_subsection("Step $step_number: Successfully built AutoInstall CD");
-    print "You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.\n\n" if ($ENV{OSCAR_UI} eq "cli");
+    print "You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.\n\n" if (defined $ENV{OSCAR_UI} && $ENV{OSCAR_UI} eq "cli");
 }
 
 # Run SystemImager's si_prepareclient on the headnode to generate the UYOK
