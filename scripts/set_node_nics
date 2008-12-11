@@ -24,9 +24,14 @@
 
 # $Id$
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use Getopt::Long;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::oda;
 use Data::Dumper;
 use OSCAR::Database;
@@ -548,14 +553,12 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
             " SELECT '$nic_name','$$ifconfig_nic_ref{ip}', " .
             " '$$ifconfig_nic_ref{mac}', " .
             " Nodes.id FROM Nodes WHERE Nodes.name='$node_name' ";
-        
+
         print "$0: creating database nic record using command <$command>\n"
             if $options{debug};
         print "Creating database record for nic $nic_name on node $node_name.\n"
             if $options{verbose} && ! $options{debug};
-        if ( ! dec_already_locked( $command,
-                         undef,
-                         1 ) ) {
+        if ( ! OSCAR::Database::dec_already_locked( $command, undef) ) {
             warn "$0: failed to create database record for nic $nic_name"
             . " on node $node_name.\n";
             $exit_status = 1;
@@ -824,7 +827,7 @@ sub find_nics {
 sub ip_and {
 
     my  ( $ip1, $ip2 ) = @_;
-    
+
     my @ip1_octets = split /\./, $ip1;
     my @ip2_octets = split /\./, $ip2;
     my @result_octets = ();
