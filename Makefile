@@ -83,7 +83,7 @@ nightly_version:
 # Install the repositories needed on the local machine to /tftpboot/oscar,
 # Install the base OSCAR (without RPMS/DEBs) in /opt.
 #
-install: localbase localrepos
+opt-install: localbase localrepos
 	@echo "This machine is running: $(DIST_VER)-$(ARCH)"
 	@echo "Native package manager: $(PKG)"
 	@echo "== Installed OSCAR into $(DESTDIR)/opt/oscar-$(OSCAR_VERSION) =="
@@ -91,7 +91,7 @@ install: localbase localrepos
 #
 # Install OSCAR (scripts, libs and so on) directly in the system.
 #
-system-install:
+install:
 	# Install the logo at destination (no Makefile to do so).
 	install -d -m 0755 $(DESTDIR)/usr/share/oscar/images
 	install    -m 0755 images/oscar.gif $(DESTDIR)/usr/share/oscar/images
@@ -151,7 +151,7 @@ checkenv:
 		exit 1; \
 	fi
 
-uninstall: clean
+opt-uninstall: clean
 	@echo "Deleting directory $(DESTDIR)/opt/oscar-$(OSCAR_VERSION)"
 	rm -rf $(DESTDIR)/opt/oscar-$(OSCAR_VERSION)
 	@echo "Deleting directory $(DESTDIR)/tftpboot/oscar"
