@@ -177,7 +177,7 @@ if (OSCAR::Database::get_nics_with_name_node($iface,
                                              $node,
                                              \@result,
                                              \%db_options,
-                                             \@db_errors)) {
+                                             \@db_errors) != 0) {
     die "ERROR: Impossible to get the network interface id we have to use on ".
         "compute nodes ($node, $iface)";
 }
@@ -215,7 +215,7 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
       croak("Unable to update /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");
     }
 
-    if ($install_mode eq "systemimager-bt") {
+    if (defined $install_mode && $install_mode eq "systemimager-bt") {
       verbose("Updating $netboot_cfg_d/default to support $install_mode.");
       if ( system("sed 's|root=/dev/ram|root=/dev/ram BITTORRENT=y|g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
         croak("Unable to update $netboot_cfg_d/default to support $install_mode.");
