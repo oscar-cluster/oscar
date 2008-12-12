@@ -106,12 +106,17 @@ sub interface2ip ($) {
 #           * result[1] is dnsdomainname,                                      #
 #           * result[2] is the gateway IP,                                     #
 #           * result[3] is startip.                                            #
+#         Returns undef if errors.                                             # 
 ################################################################################
 sub get_network_config ($$$) {
     my ($interface, $options, $errors) = @_;
 
     # Parse the IP address
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
+    if (is_a_valid_ip ($ip) == 0) {
+        carp "ERROR: IP of the NIC $interface is invalid";
+        return undef;
+    }
     my ($a, $b, $c, $d) = split(/\./, $ip);
     if ($d == 1) {
         $d++;
