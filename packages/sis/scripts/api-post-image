@@ -90,7 +90,10 @@ my $masterconf = $base."/configurator.html";
 
 my $master_conf;
 if (-e $masterconf) {
-    $master_conf = readInConfigValues($masterconf,"sis","",noarray=>1);
+    $master_conf = readInConfigValues($masterconf, "sis", "", noarray=>1);
+    if (!defined $master_conf || ref($master_conf) ne "HASH") {
+        die "ERROR: Impossible to get the configuration of the headnode";
+    }
     # exit if no per-image config
     if ($master_conf->{sis_per_image} ne "YES") {
 	# if in forced mode: re-generate scconf file
