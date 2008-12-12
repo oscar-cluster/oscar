@@ -48,13 +48,14 @@ use OSCAR::Logger;
 use Carp;
 
 @EXPORT = qw(
+            create_list_selected_opkgs
             get_data_from_configxml
             get_list_core_opkgs
             get_list_opkg_dirs
             get_opkg_version_from_configxml
             opkg_print
             opkgs_install
-            create_list_selected_opkgs
+            write_pgroup_files
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
