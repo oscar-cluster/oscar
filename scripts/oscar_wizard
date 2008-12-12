@@ -48,28 +48,28 @@ use Tk;
 use Tk::ROText;
 use lib "/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use POSIX;
-use OSCAR::Help;
-use OSCAR::Network;
-use OSCAR::GUI_MAC;
-use OSCAR::Database;
-use OSCAR::Distro;
-use OSCAR::DelNode;
 use OSCAR::AddNode;
-use OSCAR::Logger;
+use OSCAR::ClientMgt;
 use OSCAR::Configurator;
+use OSCAR::Database;
+use OSCAR::DelNode;
+use OSCAR::Distro;
+use OSCAR::GUI_MAC;
+use OSCAR::Help;
+use OSCAR::ImageMgt;
+use OSCAR::Logger;
+use OSCAR::Network;
+use OSCAR::Opkg;
 use OSCAR::Package;
 use OSCAR::PackagePath;
 use OSCAR::PackageInUn;
-use OSCAR::WizardEnv;
 use OSCAR::Tk;
-use OSCAR::ImageMgt;
-use OSCAR::Network;
-use OSCAR::ClientMgt;
+use OSCAR::WizardEnv;
 use AppConfig;
-use SystemInstaller::Tk::Image;
-use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Env;
+use SystemInstaller::Tk::AddClients;
 use SystemInstaller::Tk::Common;
+use SystemInstaller::Tk::Image;
 use FileHandle;
 use File::Basename;
 use Data::Dumper; # used for debugging purpose but should not be removed
@@ -176,15 +176,15 @@ if (-f $lockfile) {
         "that says a process is still running with process id $pid. Checking ".
         "if that is true...");
     if( kill 0, $pid ) {
-        oscar_log_section ("$log_prefix There is a process running with that ".
-            "process id. If this is not an OSCAR Wizard process, remove the ".
-            "following file and run $0 again: $lockfile");
+        oscar_log_subsection ("$log_prefix There is a process running with ".
+            "that process id. If this is not an OSCAR Wizard process, ".
+            "remove the following file and run $0 again: $lockfile");
         undef $lockfile; # Prevent END processing from deleting lockfile.
         exit(1);
     } else {
-        oscar_log_section ("$log_prefix There is no process running with ".
+        oscar_log_subsection ("$log_prefix There is no process running with ".
             "process id $pid.");
-        oscar_log_section ("$log_prefix Removing lockfile $lockfile and continuing.");
+        oscar_log_subsection ("$log_prefix Removing lockfile $lockfile and continuing.");
         unlink $lockfile;
     }
 }
