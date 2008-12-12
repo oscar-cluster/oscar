@@ -19,6 +19,7 @@
         <opkg>pvm</opkg>
         <opkg>rapt</opkg>
         <opkg>sc3</opkg>
+        <opkg>selinux</opkg>
         <opkg>sis</opkg>
         <opkg>switcher</opkg>
         <opkg>sync-files</opkg>
