@@ -76,6 +76,7 @@ use Data::Dumper; # used for debugging purpose but should not be removed
 use Getopt::Long;
 use Carp;
 use vars qw($config);
+use warnings "all";
 
 my ($debug, $verbose);
 Getopt::Long::Configure("pass_through");
@@ -83,6 +84,11 @@ GetOptions(
             "debug"     => \$debug,
             "verbose"   => \$verbose,
           );
+
+my $log_file = "/var/log/oscar/oscar_wizard.log";
+if (OSCAR::Logger::init_log_file ($log_file)) {
+    warn "[WARNING] Impossible to setup the log $log_file";
+}
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
