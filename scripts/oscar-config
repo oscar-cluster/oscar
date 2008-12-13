@@ -156,17 +156,9 @@ if ($distro_to_setup) {
 
 if ($headnode_nic) {
     print "--> Updating the NIC used on the headnode for cluster management\n";
-    require OSCAR::Database_generic;
-    require OSCAR::ConfigFile;
-    my $interface = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf", 
-                                                  undef,
-                                                  "OSCAR_NETWORK_INTERFACE");
-    print "\tNew interface: $interface\n";
-    my $sql = "UPDATE Clusters ".
-              "SET Clusters.headnode_interface='$interface' ".
-              "WHERE Clusters.name='oscar'";
-    if (!OSCAR::Database_generic::do_update ($sql, "Clusters", undef, undef)) {
-        die "ERROR: Impossible to update the headnode NIC ($sql)";
+    require OSCAR::Network;
+    if (OSCAR::Network::update_head_nic ()) {
+        die "ERROR: Impossible to update the headnode NIC data";
     }
 }
 

@@ -229,12 +229,16 @@ sub init_server ($) {
         }
     }
 
-    # OSCAR::Opkg requires XML::Simple which is not available initially but 
-    # after prereq installation
-    require OSCAR::Opkg;
-    require OSCAR::Utils;
+    # ODA is initialized so we can save data about the NIC used by OSCAR
+    require OSCAR::Network;
+    if (OSCAR::Network::update_head_nic ()) {
+        carp "ERROR: Impossible to update the headnode NIC data";
+        return -1;
+    }
 
     OSCAR::Logger::oscar_log_section("Installing server core packages");
+    require OSCAR::Opkg;
+    require OSCAR::Utils;
 
     # Get the list of just core packages
     my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
@@ -513,7 +517,6 @@ sub bootstrap_stage2 ($) {
     }
     close (MYFILE);
     foreach my $prereq (@ordered_prereqs) {
-        # TODO: ODA is both a prereq and a OPKG, this is a big mess!!!
         my $path = $prereq_path . "/" . basename ($prereq);
         if (install_prereq ($ipcmd, $path, $prereq_mode)) {
             carp "ERROR: Impossible to install a prereq ($path).\n";

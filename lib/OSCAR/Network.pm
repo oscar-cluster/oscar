@@ -43,6 +43,7 @@ use base qw(Exporter);
             interface2ip
             is_a_valid_ip
             update_hosts
+            update_head_nic
             );
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
@@ -238,6 +239,35 @@ sub update_hosts ($) {
     close(IN);
 }
 
+sub update_head_nic () {
+    require OSCAR::Database_generic;
+    require OSCAR::ConfigFile;
+    my $interface = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf", 
+                                                  undef,
+                                                  "OSCAR_NETWORK_INTERFACE");
+
+    # First we save the new interface id into ODA
+    print "\tNew interface: $interface\n";
+    my $sql = "UPDATE Clusters ".
+              "SET Clusters.headnode_interface='$interface' ".
+              "WHERE Clusters.name='oscar'";
+    if (!OSCAR::Database_generic::do_update ($sql, "Clusters", undef, undef)) {
+        carp "ERROR: Impossible to update the headnode NIC ($sql)";
+        return -1;
+    }
+
+    # Then we update the rest of ODA
+    require OSCAR::ConfigFile;
+    my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                                      undef,
+                                                      "OSCAR_SCRIPTS_PATH");
+    my $cmd = "$binaries_path/set_node_nics --network";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to successfully execute \"$cmd\"";
+        return -1;
+    }
+}
+
 1;
 
 __END__
@@ -284,9 +314,15 @@ Returns the IP address, broadcast, and netmask of an interface/
 
 =item is_a_valid_ip($ip) 
 
-Check if a given IP is valid. Returns 1if the IP is valid, 0 else.
+Check if a given IP is valid. Returns 1 if the IP is valid, 0 else.
 
 =item update_hosts
+
+=item update_head_nic
+
+Update the headnode nic based on the /etc/oscar/oscar.conf file. This updates all the data about the headnode NIC used for cluster management and ensure the data is propageted in OSCAR.
+
+my $rc = update_head_nic (); # return 0 if success, -1 else.
 
 =back
 
