@@ -18,25 +18,33 @@
 #                       Sean Dague <japh@us.ibm.com>
 #                       Michael Chase-Salerno <bratac@us.ibm.com>
 #   (C)opyright 2005    Erich Focht <efocht@hpce.nec.com>
-#   Copyright (c) 2005 The Trustees of Indiana University.  
-#                      All rights reserved.
+#   Copyright (c) 2005  The Trustees of Indiana University.  
+#                       All rights reserved.
+#   Copyright (c) 2008  Oak Ridge National Laboratory
+#                       Geoffroy Vallee <valleegr@ornl.gov>
 
 #   This script is designed to be run after the image is built.
 #   It will do all the fixups required.
 
 # $Id$
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use File::Copy;
 use File::Path;
 use File::Basename;
 use AppConfig;
-use OSCAR::Network;
-use OSCAR::Package;
+use OSCAR::ConfigFile;
 use OSCAR::Database;
 use OSCAR::Logger;
+use OSCAR::Network;
+use OSCAR::Package;
 use Cwd;
 
 my $imagename = shift or croak("No arguments passed - please pass <image name> and <headnode interface name>");
@@ -58,7 +66,11 @@ oscar_log_subsection("post_rpm_install: Syncing user files");
 sync_user_files($targetdir) or croak("Couldn't sync user files");
 
 oscar_log_subsection("post_rpm_install: Running ssh setup");
-!system("$ENV{OSCAR_HOME}/scripts/ssh_install $targetdir") or croak("Couldn't generate ssh keys");
+my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                                  undef,
+                                                  "OSCAR_SCRIPTS_PATH");
+my $cmd = "$binaries_path/ssh_install $targetdir";
+!system($cmd) or croak("Couldn't generate ssh keys");
 
 # unmount /proc from image, if needed
 if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
