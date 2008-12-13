@@ -38,7 +38,7 @@
 
 BASES=""
 if [ "`echo $* | wc -w`" -lt 1 ] ; then
-    echo $0 exiting - no directory parameters specified
+    echo $0 exiting - no image directory specified
     exit 1
 fi
 for base in $* ; do 
