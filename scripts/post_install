@@ -17,23 +17,46 @@
 #   This script is designed to be run after the image is built.
 #   It will do all the fixups required.
 #
-#   Copyright (c) 2005 The Trustees of Indiana University.  
+#   Copyright (c) 2005 The Trustees of Indiana University.
+#                      All rights reserved.
+#   Copyright (c) 2008 Oak Ridge National Laboratory
+#                      Geoffroy Vallee <valleegr@ornl.gov>
 #                      All rights reserved.
 
 # $Id$
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib","/usr/lib/systeminstaller";
+use lib "/usr/lib/systeminstaller";
 use SIS::Client;
 use SIS::Image;
 use SIS::DB;
-use Carp;
 use File::Copy;
 use File::Path;
 use File::Basename;
-use OSCAR::Package;
 use OSCAR::Database;
-use AppConfig;
+use OSCAR::Logger;
+use OSCAR::Package;
+use Getopt::Long;
+use Carp;
+
+my $verbose;
+Getopt::Long::Configure("pass_through");
+GetOptions(
+            "verbose"   => \$verbose,
+          );
+
+my $initial_verbose_value = 0;
+$initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
+
+if ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+}
 
 my $errors = 0;
 
@@ -71,12 +94,15 @@ if($errors) {
     carp("ERROR: Some of the post install scripts failed, please check your ".
          "logs for more info");
 } else {
-    print "Cluster setup complete!\n";
+    oscar_log_subsection ("Cluster setup complete!");
 }
 
+$ENV{OSCAR_VERBOSE} = $initial_verbose_value;
+
 exit($errors);
- 
-# Use Schwartzian transform to sort clients by node names alphabetically and numerically.
+
+# Use Schwartzian transform to sort clients by node names alphabetically and
+# numerically.
 # Names w/o numeric suffix precede those with numeric suffix.
 sub sortclients(@) {
 	return map { $_->[0] }
@@ -90,7 +116,8 @@ sub get_numproc {
 	my @machines= sortclients list_client();
 	foreach my $mach (@machines) {
 		my $CMD="/usr/bin/ssh -n ".$mach->hostname." cat /proc/cpuinfo";
-		print "Gathering processor count from ".$mach->hostname.".\n";
+		oscar_log_subsection ("Gathering processor count from " .
+                              $mach->hostname.".)");
 		open (CPIPE,"$CMD |") 
             or (carp("Unable to query machine ".$mach->hostname),next);
 		my $count=0;
@@ -103,12 +130,37 @@ sub get_numproc {
                  $mach->hostname);
             return -1;
 		} else {
-			print "Updating database for machine ".$mach->hostname.
-                  " cpus=$count.\n";
+			oscar_log_subsection ("Updating database for machine " .
+                                 $mach->hostname . " cpus=$count.");
 			$mach->proccount($count);
 			SIS::DB::set_client($mach);
 		}
 	}
     return 0;
 }
+
+__END__
+
+=head1 NAME
+
+post_install, a script that finalizes a OSCAR cluster configuration; after the
+deployment of compute nodes.
+
+=head1 SYNOPSIS
+
+post_install [OPTIONS]
+
+=head1 OPTIONS
+
+Supported options are:
+
+=over 8
+
+=item --verbose
+
+Display information during execution (set OSCAR_VERBOSE to 5).
+
+=back
+
+=cut
 
