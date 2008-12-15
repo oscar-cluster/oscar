@@ -35,8 +35,12 @@ use OSCAR::Package;
 use OSCAR::Database;
 use AppConfig;
 
+my $errors = 0;
 
-get_numproc();
+if (get_numproc()) {
+    carp "ERROR: Impossible to get proc number";
+    $errors++;
+}
 
 # This makes sure existing nodes have the latest /etc/hosts. 
 # The profile script is execd so we know the path (from opium's post_install)
@@ -49,25 +53,28 @@ if ($os->{pkg} eq "rpm") {
     $cmd = ". /etc/profile.d/c3.sh &&";
 }
 $cmd .= "cpush /etc/hosts";
-system("$cmd") and carp("Couldn't push /etc/hosts to all nodes");
+if (system("$cmd") != 0) {
+    carp("ERROR: Couldn't push /etc/hosts to all nodes");
+    $errors++;
+}
 
-my $return = 0;
 my @pkgs = list_selected_packages();
 foreach my $pkg_ref (@pkgs) {
     my $pkg = $$pkg_ref{package};
     if(!OSCAR::Package::run_pkg_script($pkg, "post_install", 1, "")) {
         carp("Couldn't run 'post_install' script for $pkg");
-        $return++;
+        $errors++;
     }
 }
 
-if($return) {
-    carp("Some of the post install scripts failed, please check your logs for more info");
+if($errors) {
+    carp("ERROR: Some of the post install scripts failed, please check your ".
+         "logs for more info");
 } else {
     print "Cluster setup complete!\n";
 }
 
-exit($return);
+exit($errors);
  
 # Use Schwartzian transform to sort clients by node names alphabetically and numerically.
 # Names w/o numeric suffix precede those with numeric suffix.
@@ -78,24 +85,30 @@ sub sortclients(@) {
 	       @_;
 }
 
+# Return: 0 if success, -1 else.
 sub get_numproc {
 	my @machines= sortclients list_client();
 	foreach my $mach (@machines) {
 		my $CMD="/usr/bin/ssh -n ".$mach->hostname." cat /proc/cpuinfo";
 		print "Gathering processor count from ".$mach->hostname.".\n";
-		open (CPIPE,"$CMD |") or (carp("Unable to query machine ".$mach->hostname),next);
+		open (CPIPE,"$CMD |") 
+            or (carp("Unable to query machine ".$mach->hostname),next);
 		my $count=0;
 		while (<CPIPE>) {
 			++$count if (/^processor/);
 		}
 		close(CPIPE);
 		if (($count !~ /^[0-9]+$/) || ($count == 0)) {
-			carp("Improper count ($count) returned from machine ".$mach->hostname);
+			carp("Improper count ($count) returned from machine " .
+                 $mach->hostname);
+            return -1;
 		} else {
-			print "Updating database for machine ".$mach->hostname." cpus=$count.\n";
+			print "Updating database for machine ".$mach->hostname.
+                  " cpus=$count.\n";
 			$mach->proccount($count);
-			set_client($mach);
+			SIS::DB::set_client($mach);
 		}
 	}
+    return 0;
 }
 
