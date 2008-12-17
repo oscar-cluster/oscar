@@ -60,6 +60,12 @@ tasks on a cluster.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="4.1.1-2">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-12-17T15:20:11-05:00">
+        <item>The scripts now uses the /etc/oscar/oscar.conf file.</item>
+        <item>Update for opkgc-0.4.1.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.1.1-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2008-07-31T17:28:13-05:00">
         <item>New upstream version.</item>
