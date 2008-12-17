@@ -1,26 +1,34 @@
 #!/usr/bin/perl
-# $Id: post_clients,v 1.5 2003/12/04 21:20:04 brechin Exp $
+# $Id$
 #
-# gen_c3_conf - script to generate the /etc/c3.conf file from the ORNL
-#               cluster definition file
-# Author: Brian Leuthke
-# Last Updated: 10/10/2000, 5/15/2002
-
+# script to generate the /etc/c3.conf file from the cluster definition file
+#
+# Author:
+#
+# Brian Leuthke
+# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.# Last Updated: 10/10/2000, 5/15/2002
+#
 
 use strict;
-use Carp;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
+use OSCAR::ConfigFile;
 use Data::Dumper;
+use Carp;
 
-my $image = shift;
+my $image_name = shift;
 
-my %hash = get_machine_listing($image);
+my %hash = SystemInstaller::Machine::get_machine_listing($image_name);
 my @hosts = sortnodes( keys %hash );
-my $c3mgr = "$ENV{OSCAR_HOME}/scripts/c3_conf_manager";
+my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                                  undef,
+                                                  "OSCAR_SCRIPTS_PATH");
+my $c3mgr = "$binaries_path/c3_conf_manager";
 
 !system("$c3mgr --rm oscar_cluster && $c3mgr --add oscar_cluster " . join(' ', @hosts)) or 
-	Carp("I couldn't manage to update the C3 configuration!\n");
+	die ("ERROR: I couldn't manage to update the C3 configuration!\n");
 
 # Use Schwartzian transform to sort node names alphabetically and numerically.
 # Names w/o numeric suffix preceed those with numeric suffix.
@@ -30,3 +38,8 @@ sub sortnodes(@) {
 	       map { [$_, /^([\D]+)([\d]*)$/] }
 	       @_;
 }
+
+exit 0;
+
+__END__
+
