@@ -31,7 +31,7 @@ package OSCAR::Configbox;
 
 use strict;
 use base qw(Exporter);
-our @EXPORT = qw(configurePackage exitWithoutSaving readInConfigValues);
+our @EXPORT = qw(configurePackage exitWithoutSaving);
 require Tk::Web;
 require URI::URL;
 use Carp;
@@ -41,6 +41,7 @@ use OSCAR::Tk;
 use File::Basename;
 use OSCAR::Database;
 use OSCAR::Database_generic;
+use OSCAR::Configurator_backend;
 
 my($conf_parent);         # The parent window for the config boxes.
 my($top);            # The Toplevel widget for the config box.
@@ -240,51 +241,7 @@ sub readInDefaultConfig { # ($filename) -> $tree
     return $tree;
 }
 
-#########################################################################
-#  Subroutine: readInConfigValues                                       #
-#  Parameter : 1. the configurator.html file location                   #
-#              2. the OSCAR package name                                #
-#              3. context (see Packages_config table in ODA)            #
-#              4. selection arguments e.g. noarray => 1                 #
-#  Returns   : A HASH reference with all related variable names (as     #
-#              keys) and their values (as anonymous array references)   #
-#########################################################################
-sub readInConfigValues { # ($filename) -> $values
 
-    my ($conffile, $opkg, $context, %sel) = @_;
-
-    $context = "" if ! $context;
-    # If the OPKG is not in the database (e.g. excluded packages for a specific
-    # distribution), we stop here.
-    my (%options, @errors);
-    my @result = ();
-    my $sql = "SELECT Packages.package FROM Packages WHERE Packages.package='$opkg'";
-    print ("Checking if the OPKG has to be excluded...\n");
-    do_select($sql,\@result, \%options, \@errors);
-    if (!@result) {
-        print ("OPKG $opkg excluded from that type of system\n");
-        return 0;
-    } else {
-        print ("OPKG $opkg: Analysing default values \n");
-    }
-
-    my @res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
-    if (!@res) {
-        &defaultConfigToDB($conffile, $opkg, $context);
-        @res = &get_pkgconfig_vars(opkg => "$opkg", context => "$context");
-    }
-
-    my %values = &pkgconfig_values(@res);
-
-    if (exists($sel{noarray})) {
-        for my $k (keys(%values)) {
-            if (scalar(@{$values{$k}}) <= 1) {
-                $values{$k} = $values{$k}[0];
-            }
-        }
-    }
-    return \%values;
-}
 
 #########################################################################
 #  Subroutine: preprocessConfig                                         #
@@ -669,7 +626,7 @@ sub configurePackage {
     my $tree = readInDefaultConfig("$packagedir/configurator.html");
     return if (!$tree);
 
-    my $values = &readInConfigValues("$packagedir/configurator.html",
+    my $values =  OSCAR::Configurator_backend::readInConfigValues("$packagedir/configurator.html",
 				     $opkg, $context);
     &preprocessConfig($tree,$values) if $values;
     &writeOutTempConfig($tree);
