@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/perl
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,10 +14,40 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# This script modifies the server's gmond.conf according to the configurator values. 
+# This script modifies the server's gmond.conf according to the configurator 
+# values.
 
 # Copyright Erich Focht 2005
+# Copyright (c) 2008    Oak Ridge National Laboratory
+#                       Geoffroy Vallee <valleegr@ornl.gov>
+#                       All rights reserved.
 
-/etc/init.d/gmond stop
-$OSCAR_PACKAGE_HOME/scripts/edit_ganglia_conf --gmond --verbose
-$OSCAR_PACKAGE_HOME/scripts/edit_ganglia_conf --gmetad --verbose
+#$Id$
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+use strict;
+use warnings "all";
+use OSCAR::Package;
+
+my $cmd = "/etc/init.d/gmond stop";
+system ($cmd); # Note that we do not care if "stop" does not work, we just want
+               # to be sure the service is stopped.
+
+my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post_server_install");
+
+$cmd = "$pkgdir/edit_ganglia_conf --gmond --verbose";
+if (system($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+
+$cmd = "$pkgdir/edit_ganglia_conf --gmetad --verbose";
+if (system($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+
+exit 0;
