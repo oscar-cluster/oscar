@@ -58,8 +58,13 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.0.6-5">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-12-18T18:07:45+05:00">
+        <item>Update the api-post-image script</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.0.6-4">
-      <changelogEntry authorName="Geoffroy Vallee" date="2008-12-17T23:49:40+05:00">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-12-18T17:49:40+05:00">
         <item>Update the post_server_install script</item>
       </changelogEntry>
     </versionEntry>
