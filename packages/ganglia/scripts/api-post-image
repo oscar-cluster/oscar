@@ -1,4 +1,6 @@
-#!/usr/bin/env /usr/bin/perl
+#!/usr/bin/perl
+#
+
 #########################################################################
 #  Script Name : post_rpm_nochroot
 #  Written by  : Erich Focht
@@ -6,6 +8,9 @@
 #  Purpose     : This post_install script configures gmond for the
 #                nodes of a particular image.
 #  Copyright (c) Erich Focht 2003-2005
+#                All rights reserved.
+#  Copyright (c) Oak Ridge National Laboratory
+#                Geoffroy Vallee <valleegr@ornl.gov>
 #                All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -26,19 +31,27 @@
 # $Id$
 #########################################################################
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use POSIX;
 use XML::Simple;
 use Tk;
 use OSCAR::Configbox;
+use OSCAR::Configurator_backend;
 use OSCAR::Database;
+use OSCAR::Package;
 use lib '/usr/lib/systeminstaller';
 use SIS::DB;
 use SIS::Image;
 
-my $configdir = "$ENV{OSCAR_PACKAGE_HOME}/.configs";
+my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post-install");
+my $configdir = "$pkgdir/.configs";
 
 my $imagedir = shift @ARGV;
 $imagedir =~ s/\/$//;
@@ -51,15 +64,18 @@ my $window;
 # BEGIN MAIN SCRIPT #
 #####################
 
-my $imageconf = $configdir."/".$image;
-my $masterconf = $ENV{OSCAR_PACKAGE_HOME}."/configurator.html";
+my $imageconf = "$configdir/$image";
+my $masterconf = "$pkgdir/configurator.html";
 
 my $master_conf;
 if (-e $masterconf) {
-    $master_conf = readInConfigValues($masterconf,"ganglia","",noarray=>1);
+    $master_conf = OSCAR::Configurator_backend::readInConfigValues($masterconf,
+                                                                   "ganglia",
+                                                                   "",
+                                                                   noarray=>1);
     # if no per-image config : edit image with global settings
     if ($master_conf->{gmond_per_image} ne "YES") {
-	goto run_image_conf;
+        goto run_image_conf;
     }
 } else {
     # default values, so no per-image config!
@@ -68,14 +84,14 @@ if (-e $masterconf) {
 
 if (! -d $configdir) {
     !system("mkdir ".$configdir) || do {
-	print "Could not create directory $configdir\n";
-	exit 1;
+        carp "ERROR: Could not create directory $configdir\n";
+        exit 1;
     };
 }
 
 my $i = list_image(name=>$image);
 if (!$i) {
-    carp "Could not find image $image!";
+    carp "ERROR: Could not find image $image!";
     exit 1;
 }
 
@@ -83,32 +99,41 @@ print "configuring gmond for image=$image\n";
 
 if (! -d $imageconf) {
     !system("mkdir ".$imageconf) || do {
-	print "Could not create directory $imageconf\n";
-	exit 1;
+        carp "ERROR: Could not create directory $imageconf\n";
+        exit 1;
     };
     if (! -e $imageconf."/configurator.html") {
 	!system("sed -e \"s/\@IMAGENAME\@/$image/\" ".
-		"< $ENV{OSCAR_PACKAGE_HOME}/configurator_image.html ".
+		"< $pkgdir/configurator_image.html ".
 		"> $imageconf/configurator.html") or
-		croak("Could not create $imageconf/configurator.html! $!\n");
+		croak("ERROR: Could not create $imageconf/configurator.html! $!\n");
     }
 } else {
     print "Found $imageconf\n";
 }
 
 # configure this only if no config values found in database
-my @res = get_pkgconfig_vars(opkg => "ganglia", context => "image:$image");
+my @res = OSCAR::Database::get_pkgconfig_vars(opkg => "ganglia",
+                                              context => "image:$image");
 if (!@res) {
-	if ($ENV{OSCAR_UI} eq "gui") {
-		OSCAR::Configbox::configurePackage(0, $imageconf,"ganglia","image:$image");
-		MainLoop();
-	} elsif ($ENV{OSCAR_UI} eq "cli") {
-		system("$ENV{OSCAR_HOME}/src/cli/configurator_cli",
+    if ($ENV{OSCAR_UI} eq "gui") {
+        OSCAR::Configbox::configurePackage(0,
+                                           $imageconf,
+                                           "ganglia",
+                                           "image:$image");
+        MainLoop();
+    } elsif ($ENV{OSCAR_UI} eq "cli") {
+        require OSCAR::ConfigFile;
+        my $binaries_path = OSCAR::ConfigFile::get_value (
+            "/etc/oscar/oscar.conf",
+            undef,
+            "OSCAR_SCRIPTS_PATH");
+        system("$binaries_path/configurator_cli",
 		"--path=$imageconf/configurator.html",
 		"--package=ganglia",
 		"--context=image:$image");
 	} else {
-		croak("OSCAR_UI not set to gui or cli\n");
+        croak("ERROR: OSCAR_UI not set to gui or cli\n");
 	}
 }
 
@@ -116,7 +141,7 @@ if (!@res) {
 # do the gmond configuration according to the values file
 #
 run_image_conf:
-exec "$ENV{OSCAR_PACKAGE_HOME}/scripts/edit_ganglia_conf --gmond --image $image --verbose"
-    or carp("Could not run edit_ganglia_conf! $!");
+exec "$pkgdir/scripts/edit_ganglia_conf --gmond --image $image --verbose"
+    or carp("ERROR: Could not run edit_ganglia_conf! $!");
 
 exit 0;

@@ -1,4 +1,6 @@
-#!/usr/bin/env /usr/bin/perl
+#!/usr/bin/perl
+#
+
 # $Id$
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,31 +22,41 @@
 # configuration steps are done for each image.
 #
 # Copyright 2005 Erich Focht <efocht@hpce.nec.com>
+# Copyright 2008 Oak Ridge National Laboratory
+#                Geoffroy Vallee <valleegr@ornl.gov>
+#                All rights reserved.
 #
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 
 use Carp;
 use strict;
 use Getopt::Long;
 use lib "/usr/lib/systeminstaller";
-use lib "$ENV{OSCAR_HOME}/lib";
 use SIS::DB;
 use SIS::Image;
 use SIS::Client;
-use Data::Dumper;
-use OSCAR::Configbox;
+use OSCAR::Configurator_backend;
 use OSCAR::Database;
 use OSCAR::Opkg;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::Package;
 
 my ($do_gmond, $do_gmetad, $image, @options, $test, $verbose);
-GetOptions( 'gmond'   => \$do_gmond,
-	    'gmetad'  => \$do_gmetad,
-	    'image=s' => \$image,
-	    'option=s'=> \@options,
-	    'test'    => \$test,
-            'verbose' => \$verbose, )
-    || usage();
-
+Getopt::Long::Configure("pass_through");
+GetOptions( 
+            'gmond'     => \$do_gmond,
+            'gmetad'    => \$do_gmetad,
+            'help'      => \&help_and_exit,
+            'image=s'   => \$image,
+            'option=s'  => \@options,
+            'test'      => \$test,
+            'verbose'   => \$verbose, 
+          ) || help_and_die();
 
 my $gmetad_conf = "/etc/gmetad.conf";
 my $gmond_conf = "/etc/gmond.conf";
@@ -53,8 +65,9 @@ if ($test) {
     $gmond_conf = "gmond.conf";
     $ENV{OSCAR_PACKAGE_HOME} = ".";
 }
-my $masterconf = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
-my $imgconfd = "$ENV{OSCAR_PACKAGE_HOME}/.configs";
+my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "");
+my $masterconf = "$pkgdir/configurator.html";
+my $imgconfd = "$pkgdir/.configs";
 
 my $hostname = `hostname`;
 chomp($hostname);
@@ -70,7 +83,7 @@ if ($image) {
 }
 
 # get headnode's interface information from OSCAR database
-my $iface = get_headnode_iface();
+my $iface = OSCAR::Database::get_headnode_iface(undef, undef);
 
 
 #
@@ -101,7 +114,10 @@ my %default = (
 );
 
 
-my $master_conf = &readInConfigValues($masterconf, "ganglia", "", noarray=>1);
+my $master_conf = OSCAR::Configurator_backend::readInConfigValues($masterconf, 
+                                                                  "ganglia",
+                                                                  "",
+                                                                  noarray=>1);
 &add_missing_keys($master_conf,\%default);
 
 if ($image) {
@@ -147,18 +163,27 @@ if ($image) {
 	&restart_gmetad();
     }
 }
+
 exit 0;
 
-
-sub usage {
+sub help () {
     print "Usage:\n";
     print "  $0 [--gmetad] [--gmond] [--image <image>] [--verbose]\n";
+}
+
+sub help_and_exit {
+    help();
+    exit 0;
+}
+
+sub help_and_die {
+    help ();
     exit 1;
 }
 
 sub vprint {
     if ($verbose) {
-	print STDERR (@_);
+        print STDERR (@_);
     }
 }
 
@@ -171,9 +196,9 @@ sub add_missing_keys {
     }
 }
 
-##############    
+##############
 ### gmetad ###
-##############    
+##############
 
 sub edit_gmetad_conf {
     my ($gmetad_conf, $ref) = @_;
@@ -195,7 +220,7 @@ sub edit_gmetad_conf {
 	   gridname => "gridname \"<gridname>\"",
 	   datasource => "data_source \"<cluster__name>\" $hostname",
 			   );
-    
+
     my @gmetad;
     open(CONF, $gmetad_conf) or
 	croak("Error: unable to open ($gmetad_conf)\n");
