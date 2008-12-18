@@ -141,7 +141,7 @@ if (!@res) {
 # do the gmond configuration according to the values file
 #
 run_image_conf:
-exec "$pkgdir/scripts/edit_ganglia_conf --gmond --image $image --verbose"
+exec "$pkgdir/edit_ganglia_conf --gmond --image $image --verbose"
     or carp("ERROR: Could not run edit_ganglia_conf! $!");
 
 exit 0;
