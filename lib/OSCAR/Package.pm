@@ -47,14 +47,15 @@ use Carp;
 my $DEFAULT = "Default";
 
 @EXPORT = qw(
+             get_excluded_opkg
+             get_scripts_dir
+             getConfigurationValues
+             isPackageSelectedForInstallation
              run_pkg_script
              run_pkg_user_test
              run_pkg_script_chroot
              run_pkg_apitest_test
-             isPackageSelectedForInstallation
-             getConfigurationValues
              run_pkg_apitest_test
-             get_excluded_opkg
              );
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
