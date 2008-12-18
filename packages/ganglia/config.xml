@@ -58,6 +58,16 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.0.6-3">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-12-17T23:49:40+05:00">
+        <item>Update the scripts to make them work when only online repositories are used.</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="3.0.6-2">
+      <changelogEntry authorName="Geoffroy Vallee" date="2008-12-17T18:06:04+05:00">
+        <item>New packages using opkgc-0.4.1.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.0.6-1">
       <changelogEntry authorName="DongInn Kim" date="2008-01-01T16:05:00+05:00">
         <item>Upgrade ganglia to 3.0.6</item>
