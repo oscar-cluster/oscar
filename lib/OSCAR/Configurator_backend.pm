@@ -38,6 +38,9 @@ our @EXPORT = qw(readInConfigValues);
 use Carp;
 
 use OSCAR::Database;
+use OSCAR::Database_generic;
+use OSCAR::Configbox;
+use OSCAR::Logger;
 
 #########################################################################
 #  Subroutine: readInConfigValues                                       #
@@ -58,19 +61,19 @@ sub readInConfigValues { # ($filename) -> $values
     my (%options, @errors);
     my @result = ();
     my $sql = "SELECT Packages.package FROM Packages WHERE Packages.package='$opkg'";
-    print ("Checking if the OPKG has to be excluded...\n");
-    do_select($sql,\@result, \%options, \@errors);
+    oscar_log_subsection ("Checking if the OPKG has to be excluded...");
+    OSCAR::Database_generic::do_select($sql,\@result, \%options, \@errors);
     if (!@result) {
-        print ("OPKG $opkg excluded from that type of system\n");
+        oscar_log_subsection ("OPKG $opkg excluded from that type of system");
         return 0;
     } else {
-        print ("OPKG $opkg: Analysing default values \n");
+        oscar_log_subsection ("OPKG $opkg: Analysing default values");
     }
 
     my @res = OSCAR::Database::get_pkgconfig_vars(opkg => "$opkg",
                                                   context => "$context");
     if (!@res) {
-        &defaultConfigToDB($conffile, $opkg, $context);
+        &OSCAR::Configbox::defaultConfigToDB($conffile, $opkg, $context);
         @res = OSCAR::Database::get_pkgconfig_vars(opkg => "$opkg",
                                                    context => "$context");
     }
