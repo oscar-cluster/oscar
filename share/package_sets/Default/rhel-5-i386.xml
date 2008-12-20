@@ -4,10 +4,13 @@
     <packages>
         <opkg>base</opkg>
         <opkg>c3</opkg>
+        <opkg>ganglia</opkg>
         <opkg>oda</opkg>
-        <opkg>rapt</opkg>
+        <opkg>opium</opkg>
         <opkg>sc3</opkg>
+        <opkg>selinux</opkg>
         <opkg>sis</opkg>
+        <opkg>sync-files</opkg>
         <opkg>yume</opkg>
     </packages>
 </package_set>
