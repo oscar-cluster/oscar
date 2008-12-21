@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/perl
+#
+
 # $Id$
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,5 +22,26 @@
 #
 # Copyright Erich Focht <efocht@hpce.nec.com> 2005
 
-$OSCAR_PACKAGE_HOME/scripts/edit_ganglia_conf --gmetad --verbose
-cexec /etc/init.d/gmond restart
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+use strict;
+use warnings "all";
+use OSCAR::Package;
+
+my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post_server_install");
+
+my $cmd = "$pkgdir/edit_ganglia_conf --gmetad --verbose";
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+
+$cmd = "cexec /etc/init.d/gmond restart";
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+
+exit 0;
