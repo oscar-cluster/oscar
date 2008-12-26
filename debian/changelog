@@ -1,3 +1,9 @@
+oscar (6.0~svn20081226beta1-0gv1) hardy; urgency=low
+
+  * New upstream version (6.0 beta 1).
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Fri, 26 Dec 2008 15:16:33 -0500
+
 oscar (5.2~svn20081210-0gv1) hardy; urgency=low
 
   * New upstream version (trunk).
