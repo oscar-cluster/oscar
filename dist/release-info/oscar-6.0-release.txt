@@ -1,0 +1,70 @@
+The OSCAR working group has released a new version of the Open Source Cluster
+Application Resources (OSCAR) toolkit, OSCAR 6.0.
+
+OSCAR is a software package that supports the use of high-performance
+computing by reducing the work of cluster configuration, installation,
+operation, and management. The infrastructure underlying OSCAR 6.0 has been
+completely reworked to include smart package managers, yum based image
+building and package installs, easier client updating by using a repository
+based approach, and optimized start ups to reduce build time. Another long
+anticipated feature added in 6.0 is the ability to support multiple Linux
+distributions and architectures on the same cluster.
+
+Many other improvements to the OSCAR infrastructure, including better 
+OSCAR bootstrapping and an architecture even more modular. This version also
+fully supports on-line repositories for the creation of images and system
+management. No time is wasted anymore downloading packages for installation.
+OSCAR is also now installed directly on the system and not anymore in /opt.
+This allows a better integration with other tools and ease the support of
+different Linu distribution (it deeply helps the support of Debian based
+systems).
+
+OSCAR 6.0 has been fully tested for use with both x86 processors and x86_64
+processors under Red Hat Enterprise Linux 5.0 and clone Linux distributions.
+OSCAR-6.0 also provides an experimental support of Debian support on both
+x86 and x86_64 architectures, including Debian 4 and Ubuntu 8.04. The 
+experimental support means that only OSCAR core is currently supported, it is
+not currently possible to support included or third-party OSCAR packages. As
+a result, only clusters with a very basic configuration can be deployed when
+using OSCAR-6.0 on Debian based systems.
+
+OSCAR-6.0 version is not necessarily suitable for production. OSCAR-6.0 is 
+actually very similar to KDE-4.0: this version is not necessarily "designed"
+for the users who need all the capabilities traditionally shipped with OSCAR,
+but this is a good new framework to include and develop new capabilities and
+move forward.
+
+OSCAR 6.0, previous OSCAR versions, and additional information about the
+OSCAR project are available from the OSCAR web site:
+   
+         http://oscar.openclustergroup.org/
+   
+The OSCAR working group is a consortium of industry, academic and research
+participants.  Orginizations who contributed to OSCAR 6.0 include 
+Revolution Linux, Bald Guy Software, Michael Smith Genome Sciences Centre,
+NEC HPC Europe, IBM, Intel, Indiana University, Louisiana Tech University,
+Oak Ridge National Laboratory (ORNL), the University of Texas Health 
+Science Center San Antonio, the Institut National de Recherche en 
+Informatique et en Automatique (INRIA), and KerLabs. OSCAR is the product of 
+the OSCAR working group of the Open Cluster Group (OCG). OCG is dedicated to 
+making cluster computing practical. The OCG and its subgroups are open to all.
+
+Related resources:
+   + OSCAR Working Group Homepage
+     http://oscar.openclustergroup.org/
+
+   + OSCAR Project Homepage
+     http://sourceforge.net/projects/oscar
+
+   + Open Cluster Group Homepage
+     http://www.OpenClusterGroup.org
+
+   + HA-OSCAR (high-availability) Working Group Homepage
+     http://www.OpenClusterGroup.org/HA-OSCAR
+
+   + SSI-OSCAR (Single System Image) Working Group Homepage
+     http://ssi-oscar.gforge.inria.fr/
+
+   + OSCAR Mailing Lists
+      User Questions: <oscar-users@lists.sourceforge.net>
+         Development: < oscar-devel@lists.sourcefore.net>
