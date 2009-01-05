@@ -1,6 +1,6 @@
 package OSCAR::FileUtils;
 
-# Copyright (C) 2007-2008 Oak Ridge National Laboratory
+# Copyright (C) 2007-2009 Oak Ridge National Laboratory
 #                         Geoffroy Vallee <valleegr at ornl dot gov>
 #                         All rights reserved.
 #
@@ -29,6 +29,7 @@ BEGIN {
 }
 
 use strict;
+use OSCAR::Defs;
 use OSCAR::Logger;
 use File::Basename;
 use File::Path;
@@ -38,6 +39,8 @@ use Carp;
 
 @EXPORT = qw(
             add_line_to_file_without_duplication
+            download_file
+            file_type
             generate_empty_xml_file
             get_directory_content
             get_dirs_in_path
@@ -48,6 +51,40 @@ use Carp;
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
+
+sub file_type ($) {
+    my $file = shift;
+
+    if (! -f $file) {
+        carp "ERROR: the file does not exist ($file)";
+        return undef;
+    }
+    return OSCAR::Defs::TARBALL() if $file =~ m/^*\.tar\.gz$/;
+
+    my $type = `file $file`;
+    return OSCAR::Defs::SRPM() if $type =~ m/RPM v3 src/;
+
+    return undef;
+}
+
+sub download_file ($$$$) {
+    my ($source, $dest, $method, $overwrite) = @_;
+    my $cmd;
+
+    if ($method eq "wget") {
+        $cmd = "cd $dest; wget ";
+        $cmd .= "-nc " if ($overwrite eq OSCAR::Defs::NO_OVERWRITE());
+        $cmd .= "$source";
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to download $source ($cmd)";
+            return -1;
+        }
+    } else {
+        carp "ERROR: Unknown method to get sources ($method)";
+        return -1;
+    }
+    return 0;
+}
 
 ################################################################################
 # Add a line into a file only if the line is not already present. Note that if #
@@ -273,3 +310,38 @@ sub generate_empty_xml_file ($$) {
 }
 
 1;
+
+
+__END__
+
+=head1 DESCRIPTION
+
+A set of usefull functions for the manipulation of files. This package is designed to avoid code duplication.
+
+=head1 Exported Functions
+
+=over 4
+
+=item add_line_to_file_without_duplication
+
+=item download_file
+
+=item file_type
+
+=item generate_empty_xml_file
+
+=item get_directory_content
+
+=item get_dirs_in_path
+
+=item get_files_in_path
+
+=item line_in_file
+
+=item parse_xmlfile
+
+=item replace_line_in_file
+
+=back
+
+=cut

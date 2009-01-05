@@ -35,7 +35,6 @@ use Carp;
 
 @EXPORT = qw(
             compactSpaces
-            download_file
             get_oscar_version
             get_local_arch
             get_path_perl_modules
@@ -175,38 +174,6 @@ sub print_hash ($$$) {
             print "-- $leading_spaces    $key => <$value>\n";
         }
     }
-}
-
-###############################################################################
-# Download a given file, using wget.                                          #
-#                                                                             #
-# Input: url, url of the file to download.                                    #
-#        dest, directory where the file needs to be saved (the filename is    #
-#        preserved.                                                           #
-# Return: the file path (including the filename), -1 if errors.               #
-###############################################################################
-sub download_file ($$) {
-    my ($url, $dest) = @_;
-
-    oscar_log_subsection "Downloading $url";
-    if (! -d $dest) {
-        carp "ERROR: Impossible to download the file ($url), the destination ".
-             "is not a valid directory ($dest)";
-        return undef;
-    }
-    my $file = basename ($url);
-    if ( -f "$dest/$file" ) {
-        # If the file is already there, we just successfully exist
-        oscar_log_subsection "\tThe file is already downloaded." if $verbose;
-        return "$dest/$file";
-    }
-    my $cmd = "cd $dest; wget $url";
-    oscar_log_subsection "Executing: $cmd\n" if $verbose;
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
-        return undef;
-    }
-    return "$dest/$file";
 }
 
 ################################################################################
