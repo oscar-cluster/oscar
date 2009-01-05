@@ -136,7 +136,7 @@ sub init_log_file ($) {
 
 __END__
 
-Exported functions:
+=head1 Exported functions:
 
 =over 4
 
