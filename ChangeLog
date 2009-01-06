@@ -1,0 +1,11 @@
+6.0.1 (not yet released):
+- New abstraction for the management of system services.
+- Include capabilities for file management: download and type detection.
+
+6.0:
+- Full support of on-line repositories.
+- Implementation of a new bootstrapping mechanism via oscar-config.
+- Installation using normal system paths.
+- Continue the modularization effort (almost all core components are now in
+separate packages).
+- Improve error handling.
