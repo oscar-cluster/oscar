@@ -1,7 +1,7 @@
 package OSCAR::SystemServices;
 
 #
-# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+# Copyright (c) 2008-2009 Geoffroy Vallee <valleegr@ornl.gov>
 #                         Oak Ridge National Laboratory
 #                         All rights reserved.
 #
@@ -27,9 +27,17 @@ package OSCAR::SystemServices;
 # $Id$
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use OSCAR::Utils;
+use OSCAR::Logger;
+use OSCAR::OCA::OS_Settings;
 use OSCAR::SystemServicesDefs;
+use OSCAR::Utils;
 use File::Basename;
 use Carp;
 
@@ -38,6 +46,8 @@ use base qw(Exporter);
 
 @EXPORT = qw (
              enable_system_services
+             system_service
+             get_system_services
              );
 
 # Parse the output of the chkconfig --list <service_id> command.
@@ -82,6 +92,9 @@ sub system_service_status ($) {
     return undef;
 }
 
+# Abstraction of the underlying tool for system service management (such as 
+# chkconfig).
+#
 # Input: a list of services (absolute path to access the service binary, e.g.,
 #        /etc/init.d/sshd).
 # Return: 0 if success, -1 else.
@@ -126,4 +139,77 @@ sub enable_system_services (@) {
     return 0;
 }
 
+sub system_service ($$) {
+    my ($service, $action) = @_;
+
+    # We get the daemon path
+    my $path = OSCAR::OCA::OS_Settings::getitem ($service . "_daemon");
+
+    my $cmd = "$path ";
+    if ($action eq OSCAR::SystemServicesDefs::START()) {
+        $cmd .= "start";
+    } elsif ($action eq OSCAR::SystemServicesDefs::STOP()) {
+        $cmd .= "stop";
+    } elsif ($action eq OSCAR::SystemServicesDefs::RESTART()) {
+        $cmd .= "restart";
+    } else {
+        carp "ERROR: Unknow system service action ($action)";
+        return -1;
+    }
+
+    OSCAR::Logger::oscar_log_subsection "Executing: $cmd";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+
+    return 0;
+}
+
+# Give the list of system services OSCAR knows how to deal with.
+#
+# Input: None.
+# Return: a hash where the key is the id the service if the value the actual
+#         path to deal with the service.
+sub get_system_services () {
+    # We get the list of all entries in OS_Settings
+    my $config = OSCAR::OCA::OS_Settings::getconf ();
+    if (!defined $config || ref($config) ne "HASH") {
+        carp "ERROR: Impossible to get the config from OS_Settings";
+        return undef;
+    }
+
+    my %services;
+    # We sort the services
+    foreach my $k (keys(%{$config})) {
+        if ($k =~ m/_daemon$/) {
+            $services{$k} = $config->{$k};
+        }
+    }
+
+    # We return the result
+    return %services;
+}
+
 1;
+
+__END__
+
+=head1 Exported Functions
+
+=over 4
+
+=item enable_system_services
+
+=item system_service
+
+Peform an action on a given system service. For example: my $rc = SystemSerives (OSCAR::SystemServicesDefs::DHCP(), OSCAR::SystemServicesDefs::STOP()); stops the dhcp deamon. Note that we use macros to be sure we correctly identify the service and the action.
+
+=item list_system_services
+
+Give the list of system services OSCAR knows how to deal with. Example:
+my %services = list_system_services();
+
+=back
+
+=cut

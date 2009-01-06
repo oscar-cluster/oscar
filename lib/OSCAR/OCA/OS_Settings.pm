@@ -19,9 +19,9 @@ use Data::Dumper;
 my $verbose = $ENV{OSCAR_VERBOSE};
 
 # readfile() does the "heavy lifting" of reading the configuration files
-# 
+#
 
-#Should this be converted to lib/OSCAR/ConfigFile.pm
+# Should this be converted to lib/OSCAR/ConfigFile.pm
 
 sub readfile ($$) {
 	my ($file, $config) = @_;
@@ -113,3 +113,11 @@ sub additem ($) {
 }
 
 1;
+
+__END__
+
+=head1 Examples
+
+my $nfs = OSCAR::OCA::OS_Settings::getitem("nfs_package");
+my $sshd = OSCAR::OCA::OS_Settings::getitem("ssh_daemon");
+my $portmap = OSCAR::OCA::OS_Settings::getitem("portmap_package");

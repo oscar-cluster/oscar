@@ -1,2 +1,6 @@
-ssh_script=/etc/init.d/ssh
+# Overwrite few deamons
+ssh_daemon=/etc/init.d/ssh
+dhcp_daemon=/etc/init.d/dhcp3-server
+
+# Overwrite few package names
 nfs_package=nfs-kernel-server

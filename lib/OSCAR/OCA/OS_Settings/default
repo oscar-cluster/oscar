@@ -1,8 +1,14 @@
 # Init directory specific to this distribution
 init=/etc/init.d 
-#NFS package name
+
+# Specifies the name of few packages
 nfs_package=nfs
 ssh_package=sshd
-ssh_script=/etc/init.d/sshd
-exports_file=/etc/exports
 portmap_package=portmap
+
+# Specifies the name of few deamons
+ssh_daemon=/etc/init.d/sshd
+dhcp_daemon=/etc/init.d/dhcpd
+
+# Specifies few configuration files
+exports_file=/etc/exports
