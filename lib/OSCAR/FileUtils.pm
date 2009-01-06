@@ -75,8 +75,12 @@ sub download_file ($$$$) {
         $cmd = "cd $dest; wget ";
         $cmd .= "-nc " if ($overwrite eq OSCAR::Defs::NO_OVERWRITE());
         $cmd .= "$source";
-        if (system ($cmd)) {
-            carp "ERROR: Impossible to download $source ($cmd)";
+        my $rc = system ($cmd);
+        # It seems that the wget return code for errors is 1. Note that other 
+        # values > 0 are returned in some specific case which are not 
+        # necessarily errors.
+        if ($rc == 1) {
+            carp "ERROR: Impossible to download $source ($cmd, rc: $rc)";
             return -1;
         }
     } else {
