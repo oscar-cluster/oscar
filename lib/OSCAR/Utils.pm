@@ -1,11 +1,11 @@
 package OSCAR::Utils;
 
 #
-# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
-#                    Oak Ridge National Laboratory
-#                    All rights reserved.
+# Copyright (c) 2007-2009 Geoffroy Vallee <valleegr@ornl.gov>
+#                         Oak Ridge National Laboratory
+#                         All rights reserved.
 #
-#   $Id: Utils.pm 4833 2006-05-24 08:22:59Z bli $
+#   $Id$
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -24,9 +24,16 @@ package OSCAR::Utils;
 # This module provides a set of usefull functions. Only there to avoid code
 # duplication.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
+use Config;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Logger;
 use File::Basename;
