@@ -16,8 +16,6 @@ use OSCAR::Logger;
 use OSCAR::ConfigFile;
 use OSCAR::Utils;
 use File::Copy;
-use vars qw(@EXPORT);
-use base qw(Exporter);
 use Carp;
 use warnings "all";
 
