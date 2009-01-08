@@ -9,6 +9,7 @@ tree, i.e., Configurator is now a prereq.
 is a package is not locally available. 
 - [Torque OPKG] Update the list of prereqs for the creation of the binary
 packages (build.cfg).
+- Improve the image management unit test.
 
 6.0:
 - Full support of on-line repositories.
