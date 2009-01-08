@@ -1,6 +1,14 @@
 6.0.1 (not yet released):
 - New abstraction for the management of system services.
 - Include capabilities for file management: download and type detection.
+- [Ticket #506] Include a "virtual" OSCAR RPM that allows the installation of
+all dependencies needed for the OSCAR bootstrap.
+- [Ticket #503] Configurator is now a separate component with its own SVN
+tree, i.e., Configurator is now a prereq.
+- [Ticket #507] With prereqs on RPM based system the dumb mode tries to use yum
+is a package is not locally available. 
+- [Torque OPKG] Update the list of prereqs for the creation of the binary
+packages (build.cfg).
 
 6.0:
 - Full support of on-line repositories.
