@@ -16,10 +16,21 @@ use OSCAR::ImageMgt;
 use File::Copy;
 use Carp;
 
-my $orig_file = "./samples/systemconfig.conf.tmpl";
-my $test_file = "./samples/systemconfig.conf";
+my $basedir;
+if (defined $ENV{OSCAR_HOME}) {
+    $basedir = "$ENV{OSCAR_HOME}/testing/unit_testing";
+} else {
+    $basedir = "/usr/share/oscar/testing/unit_testing";
+}
 
-unlink ($test_file);
+my $orig_file = "$basedir/samples/systemconfig.conf.tmpl";
+if (! -f $orig_file) {
+    die "ERROR: Impossible to find the $orig_file file";
+}
+
+my $test_file = "/tmp/systemconfig.conf";
+
+unlink ($test_file) if (-f $test_file);
 File::Copy::copy($orig_file, $test_file) or die "ERROR: File cannot be copied.";
 
 if (OSCAR::ImageMgt::update_systemconfigurator_configfile ($test_file) == -1) {
