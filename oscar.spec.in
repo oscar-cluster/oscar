@@ -8,13 +8,9 @@ License:    GPL
 URL:        http://oscar.openclustergroup.org
 Group:      Applications/System
 Source:     %{name}-%{version}.tar.gz
-Requires:   %{name}-lib
-Requires:   %{name}-scripts
-Requires:   yum, createrepo, yume
 Vendor:     OSCAR
 Distribution:   OSCAR
 Packager:   Geoffroy Vallee
-
 Buildroot:  %{_tmppath}/%{name}-%{version}-root
 BuildArch:  noarch
 AutoReqProv:    no
