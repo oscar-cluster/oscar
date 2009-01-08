@@ -53,7 +53,7 @@ use OSCAR::Opkg;
 
 # Defaults
 my $nfs = OSCAR::OCA::OS_Settings::getitem("nfs_package");
-my $sshd = OSCAR::OCA::OS_Settings::getitem("ssh_script");
+my $sshd = OSCAR::OCA::OS_Settings::getitem("ssh_deamon");
 my $portmap = OSCAR::OCA::OS_Settings::getitem("portmap_package");
 
 if (!defined $nfs || !defined $sshd || !defined $portmap) {
