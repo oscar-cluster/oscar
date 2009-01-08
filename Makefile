@@ -167,6 +167,8 @@ baserpms:
 	fi
 	sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar-base.spec.in \
 		> oscar-base.spec
+	sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar.spec.in \
+		> oscar.spec
 	mkdir oscar-base-$(OSCAR_VERSION)
 	cp -rl `ls -1 | grep -v oscar-base-$(OSCAR_VERSION)` oscar-base-$(OSCAR_VERSION)
 	( cd oscar-base-$(OSCAR_VERSION); \
@@ -182,6 +184,9 @@ baserpms:
 	rpmbuild -tb oscar-base-$(OSCAR_VERSION).tar.gz && \
 	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar-base-*$(OSCAR_VERSION)-*.noarch.rpm . && \
 	rm -f oscar-base-$(OSCAR_VERSION).tar.gz oscar-base.spec
+	rpmbuild -bb oscar.spec && \
+	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar-*$(OSCAR_VERSION)-*.noarch.rpm . && \
+	rm -f oscar.spec
 
 basedebs:
 	@echo "Building OSCAR base Debian packages"
