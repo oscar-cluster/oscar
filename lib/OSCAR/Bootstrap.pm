@@ -462,6 +462,15 @@ sub bootstrap_stage1 ($) {
         return -1;
     }
 
+    # Now we try to install Configurator
+    my $configurator_prereqs_path = $config->{'prereqs_path'} . "/Configurator";
+    my $prereq_mode = $config->{'prereq_mode'};
+    if (install_prereq ($ipcmd, $configurator_prereqs_path, $prereq_mode)) {
+        carp "ERROR: impossible to install Configurator prereqs ".
+             "($configurator_prereqs_path)\n";
+        return -1;
+    }
+
     return 0;
 }
 

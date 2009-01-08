@@ -8,15 +8,15 @@ SUBDIRS := OCA
 FILES := AddNode.pm Help.pm Prereqs.pm Bootstrap.pm ImageMgt.pm \
          OpkgDB.pm psm.pm Logger.pm Opkg.pm ClientMgt.pm LSBreleaseParser.pm \
          PxegrubConfigManager.pm CLI_MAC.pm MACops.pm osm.pm pxegrub.pm \
-         CmpVersions.pm MAC.pm PackageBest.pm SISBuildSetup.pm Configbox.pm \
+         CmpVersions.pm MAC.pm PackageBest.pm SISBuildSetup.pm \
          PackageInUn.pm ConfigFile.pm PackagePath.pm SwitcherAPI.pm \
          ConfigManager.pm msm.pm SystemSanity.pm Package.pm Tk.pm \
-         Configurator.pm Network.pm PackageSet.pm Utils.pm DelNode.pm \
+         Network.pm PackageSet.pm Utils.pm DelNode.pm \
          NextIp.pm VersionParser.pm Distro.pm NodeConfigManager.pm \
          PackageSmart.pm VMConfigManager.pm Env.pm NodeMgt.pm \
          PartitionConfigManager.pm  WizardEnv.pm FileUtils.pm OCA.pm \
          PartitionMgt.pm GUI_MAC.pm SystemInfo.pm SystemServices.pm \
-         SystemServicesDefs.pm Configurator_backend.pm Defs.pm
+         SystemServicesDefs.pm Defs.pm
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
