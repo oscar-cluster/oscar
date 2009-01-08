@@ -211,35 +211,40 @@ sub handle_dumb_rpms {
     my $cmd;
     return if (!scalar(@pkgs));
     for my $pkg (@pkgs) {
-	# make sure we deal with package names, not file names
-	my $pkgname = $pkg; $pkgname =~ s/\.rpm$//;
-	if ($remove) {
-	    $cmd = "rpm -q $pkgname >/dev/null 2>&1";
-	    vprint("Executing: $cmd\n");
-	    if (!system($cmd)) {
-		# remove all instances of package
-		$cmd = "rpm -ev --all --nodeps $pkgname";
-		vprint("Executing: $cmd\n");
-		system($cmd) or print "Warning: removal failed: $!\n";
-	    } else {
-		vprint("Package $pkgname not installed.\n");
-	    }
-	} else {
-	    # already installed?
-	    $cmd = "rpm -q $pkgname >/dev/null 2>&1";
-	    vprint("Executing: $cmd\n");
-	    if (system($cmd)) {
-		# not installed, so do it now
-		my $pkgpath = locate_pkg($pkg);
-		if ($pkgpath) {
-		    $cmd = "rpm -Uhv $pkgpath";
-		    vprint("Executing: $cmd\n");
-		    croak "install failed: $!\n" if (system($cmd));
-		} else {
-		    print "WARNING: Could not locate package $pkg\n";
-		}
-	    }
-	}
+        # make sure we deal with package names, not file names
+        my $pkgname = $pkg; $pkgname =~ s/\.rpm$//;
+        if ($remove) {
+            $cmd = "rpm -q $pkgname >/dev/null 2>&1";
+            vprint("Executing: $cmd\n");
+            if (!system($cmd)) {
+                # remove all instances of package
+                $cmd = "rpm -ev --all --nodeps $pkgname";
+                vprint("Executing: $cmd\n");
+                system($cmd) or print "Warning: removal failed: $!\n";
+            } else {
+                vprint("Package $pkgname not installed.\n");
+            }
+        } else {
+            # already installed?
+            $cmd = "rpm -q $pkgname >/dev/null 2>&1";
+            vprint("Executing: $cmd\n");
+            if (system($cmd)) {
+                # not installed, so do it now: 
+                # - we try first to find the package locally
+                # - if the package is not locally available, we try to find it
+                #   on remote repositories.
+                my $pkgpath = locate_pkg($pkg);
+                if (defined $pkgpath && $pkgpath ne "") {
+                    $cmd = "rpm -Uhv $pkgpath";
+                    vprint("Executing: $cmd\n");
+                } else {
+                    # If we cannot find the package locally try to use yum
+                    $cmd = "yum install $pkg";
+                    vprint("Executing: $cmd\n");
+                }
+                croak "ERROR: install failed: $!\n" if (system($cmd));
+            }
+        }
     }
 }
 
@@ -289,13 +294,6 @@ sub handle_dumb_debs {
 #
 # try to locate a package file in the repositories
 #
-# !!EF!! Need to deal with the case that the oscar repos are on the web!
-# - try to locate first within package or prereq distro directory
-#   (should we always deliver bootstrap packages, even when all other
-#   packages are stripped away?)
-# !!GV!! It should be ok now since the dumb mode uses apt.
-#
-
 sub locate_pkg {
     my ($pkg) = @_;
     my $found = 0;
@@ -305,20 +303,20 @@ sub locate_pkg {
     my $sepmatch = $separator."[0-9]";
     $pkgmatch = $pkg;
     if ($pkg =~ /\.$suffix$/) {
-	$pkgmatch =~ s/\.$suffix$/*.$suffix/;
+        $pkgmatch =~ s/\.$suffix$/*.$suffix/;
     } elsif ($pkg =~ /\.($rarch|noarch|all)$/) {
-	my $parch = $1;
-	$pkgmatch =~ s/\.$parch$/*.$parch.$suffix/;
+        my $parch = $1;
+        $pkgmatch =~ s/\.$parch$/*.$parch.$suffix/;
     } else {
-	$pkgmatch .= "*{$march,noarch,all}.$suffix";
+        $pkgmatch .= "*{$march,noarch,all}.$suffix";
     }
     # 
     my @lrepos;
     for my $repo ( split(",",$oscar_pkg_pool), split(",",$distro_pkg_pool) ) {
-	if (($repo =~ /^\//) || ($repo =~ /^(file):/)) {
-	    $repo =~ s/^file://;
-	    push @lrepos, $repo;
-	}
+        if (($repo =~ /^\//) || ($repo =~ /^(file):/)) {
+            $repo =~ s/^file://;
+            push @lrepos, $repo;
+        }
     }
 
     push @globstr, $ENV{OSCAR_HOME}."/packages/*/distro/{$cstring,$dstring}/$pkgmatch";
@@ -331,16 +329,18 @@ sub locate_pkg {
     vprint("locate_pkg glob result: ".join(",",@tmp)."\n");
 
     # detect best version
-    return &best_version($pkg,@tmp);
-
-    #
-    # Try downloading from remote repositories?
-    #
+    return best_version($pkg, @tmp);
 }
 
 sub best_version {
     my ($pkg, @candidates) = @_;
     my ($best, $bestversion);
+
+    # Simple case, we do not have any candidates so there is no best version
+    if (scalar(@candidates) == 0) {
+        return undef;
+    }
+
     for my $p (@candidates) {
 	my ($name, $ver, $parch);
 	if ($suffix eq "rpm") {
