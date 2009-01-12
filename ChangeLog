@@ -13,6 +13,8 @@ packages (build.cfg).
 - [Ticket #463] Finish to remove all binary packages from the source tree,
 oscar-packager provides the needed abstractions for the creation of binary
 packages.
+- Prereqs on RPM systems in dumb mode now try to use yum if a package is not
+locally available.
 
 6.0:
 - Full support of on-line repositories.
