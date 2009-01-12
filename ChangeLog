@@ -10,6 +10,9 @@ is a package is not locally available.
 - [Torque OPKG] Update the list of prereqs for the creation of the binary
 packages (build.cfg).
 - Improve the image management unit test.
+- [Ticket #463] Finish to remove all binary packages from the source tree,
+oscar-packager provides the needed abstractions for the creation of binary
+packages.
 
 6.0:
 - Full support of on-line repositories.
