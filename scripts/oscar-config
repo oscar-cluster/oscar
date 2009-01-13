@@ -291,7 +291,8 @@ sub generate_config_file () {
         }
     } else {
         if ( -f "/etc/oscar/oscar.conf") {
-            die "ERROR: configuration file already exist\n";
+            print "[INFO] configuration file already exist, no updating\n";
+            exit 0;
         }
         print "Not yet implemented\n";
         exit 1;
@@ -347,8 +348,8 @@ install and setup everything for the creation of a OSCAR headnode.
 
 Generate the appropriate configuration file based on the OSCAR_HOME environment
 variable. The configuration file is /etc/oscar/oscar.conf, the file is generated
-only if it does not already exist.
-
+only if it does not already exist. If the file already exist, it just exist
+without generating an error.
 
 =item --setup-distro <DISTRO_ID>
 
