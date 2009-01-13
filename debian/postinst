@@ -1,0 +1,4 @@
+#!/bin/bash
+#
+
+/usr/bin/oscar-config --generate-config-file
