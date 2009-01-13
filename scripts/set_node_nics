@@ -656,7 +656,7 @@ sub find_gateways {
                               ref($print_errors) eq "ARRAY" ) ?
                               $print_errors : \@error_strings;
 
-    my @route_output = `route -n 2>/dev/null`;
+    my @route_output = `/sbin/route -n 2>/dev/null`;
     if ( ! @route_output ) {
         push @$error_strings_ref,
         "$0: cannot find nics with route command command";
@@ -707,7 +707,7 @@ sub find_nics {
                               ref($print_errors) eq "ARRAY" ) ?
                               $print_errors : \@error_strings;
 
-    my @ifconfig_output = `ifconfig 2>/dev/null`;
+    my @ifconfig_output = `/sbin/ifconfig 2>/dev/null`;
     if ( ! @ifconfig_output ) {
         push @$error_strings_ref,
         "$0: cannot find nics with ifconfig command command";
