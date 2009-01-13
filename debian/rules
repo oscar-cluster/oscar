@@ -97,7 +97,6 @@ install: build
 	# We do not currently know how to deal with oscarsamples
 #	mv $(CURDIR)/oscarsamples \
 		$(CURDIR)/debian/oscar/opt/oscar
-	cp debian/etc/oscar.conf $(CURDIR)/debian/oscar/etc/oscar/
 
 	###############################################
 	# Install the prereqs in the "oscar" package. #
