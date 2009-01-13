@@ -48,7 +48,6 @@ make install DESTDIR=%{buildroot}
 mkdir -p %{buildroot}%{etcdir}
 mkdir -p %{buildroot}%{docdir}
 mkdir -p %{buildroot}%{sharedir}/images
-cp debian/etc/oscar.conf %{buildroot}%{etcdir}
 cp -f COPYING %{buildroot}%{docdir}
 cp -f README %{buildroot}%{docdir}
 cp -f VERSION %{buildroot}%{docdir}
@@ -60,6 +59,8 @@ cp -rf packages/oda/  %{buildroot}%{sharedir}/prereqs
 %clean
 rm -rf %{_tmppath}/%{name}-%{version}-root
 
+%post
+/usr/bin/oscar-config --generate-config-file
 
 %package client
 Group: Applications/System
