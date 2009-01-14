@@ -1,9 +1,9 @@
 package OSCAR::ConfigFile;
 
 #
-# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
-#                    Oak Ridge National Laboratory
-#                    All rights reserved.
+# Copyright (c) 2008-2009 Geoffroy Vallee <valleegr@ornl.gov>
+#                         Oak Ridge National Laboratory
+#                         All rights reserved.
 #
 #   $Id$
 #
@@ -79,7 +79,7 @@ sub get_value ($$$) {
 
     use vars qw($config);
     $config = AppConfig->new({
-            CREATE => '^*',
+            CREATE => '1',
         },
         $key            => { ARGCOUNT => 1 },
         );
@@ -221,11 +221,15 @@ when files are organized "Windows-style", a.k.a., init style or with blocks.
 
 =head1 EXPORT
 
+=over 8
+
 =item get_value
 
 =item set_value
 
 =item get_all_values
+
+=back
 
 =head1 EXAMPLES
 
