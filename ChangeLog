@@ -9,7 +9,7 @@ tree, i.e., Configurator is now a prereq.
 is a package is not locally available. 
 - [Torque OPKG] Update the list of prereqs for the creation of the binary
 packages (build.cfg).
-- Improve the image management unit test.
+- Improve unit tests.
 - [Ticket #463] Finish to remove all binary packages from the source tree,
 oscar-packager provides the needed abstractions for the creation of binary
 packages.
