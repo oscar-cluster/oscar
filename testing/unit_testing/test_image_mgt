@@ -16,6 +16,8 @@ use OSCAR::ImageMgt;
 use File::Copy;
 use Carp;
 
+print "\n\n*** OSCAR::ImageMgt Testing ***\n\n";
+
 my $basedir;
 if (defined $ENV{OSCAR_HOME}) {
     $basedir = "$ENV{OSCAR_HOME}/testing/unit_testing";
@@ -36,3 +38,5 @@ File::Copy::copy($orig_file, $test_file) or die "ERROR: File cannot be copied.";
 if (OSCAR::ImageMgt::update_systemconfigurator_configfile ($test_file) == -1) {
     die "ERROR: Impossible to update the SystemConfigurator configuration file";
 }
+
+print "*** SUCCESS: OSCAR::ImageMgt Testing ***\n\n";

@@ -23,4 +23,4 @@ foreach $ip (@valid_ips) {
     }
 }
 
-print "*** Network Utils Testing: Success ***\n\n";
+print "*** SUCCESS: Network Utils Testing ***\n\n";

@@ -15,6 +15,10 @@ use strict;
 use OSCAR::SystemInfo;
 use Carp;
 
+print "\n\n*** OSCAR::SystemInfo Testing ***\n\n";
+
 my $info = OSCAR::SystemInfo->new();
 $info->proc_info ();
 $info->cache_info ();
+
+print "*** SUCCESS: OSCAR::SystemInfo Testing ***\n\n";
