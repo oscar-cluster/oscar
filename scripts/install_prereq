@@ -239,7 +239,7 @@ sub handle_dumb_rpms {
                     vprint("Executing: $cmd\n");
                 } else {
                     # If we cannot find the package locally try to use yum
-                    $cmd = "yum install $pkg";
+                    $cmd = "yum -y install $pkg";
                     vprint("Executing: $cmd\n");
                 }
                 croak "ERROR: install failed: $!\n" if (system($cmd));
