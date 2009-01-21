@@ -1,4 +1,5 @@
 6.0.1 (not yet released):
+- Fix a bug when generating the DHCPD configuration file on Debian.
 - New abstraction for the management of system services.
 - Include capabilities for file management: download and type detection.
 - [Ticket #506] Include a "virtual" OSCAR RPM that allows the installation of
