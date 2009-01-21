@@ -100,7 +100,11 @@ if (!$changed) {
 # rebuild dhcpd.conf if needed
 
 #   find default gateway in /etc/dhcpd.conf
-open IN, "/etc/dhcpd.conf" or die "Could not open /etc/dhcpd.conf!";
+# TODO: We should use OS_Settings here
+my $dhcpd_configfile = "/etc/dhcpd.conf";
+# Under Debian the dhcpd config file is in /etc/dhcp3
+$dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
+open IN, "$dhcpd_configfile" or die "ERROR: Could not open $dhcpd_configfile!";
 my ($gwip, $netmask);
 while (<IN>) {
     next if (/^\s*\#/);
@@ -115,7 +119,7 @@ while (<IN>) {
 }
 close (IN);
 if (!defined($gwip) || !defined($netmask)) {
-    die "Could not determine gateway IP for dhcpd.conf and/or netmask!";
+    die "ERROR: Could not determine gateway IP for dhcpd.conf and/or netmask!";
 }
 
 
@@ -134,7 +138,7 @@ my @line = split /\s+/, $l;
 my $interface = $line[$#line];
 print "internal interface = $interface\n";
 
-my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$gwip";
+my $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$gwip";
 if (system($cmd)) {
     die "ERROR: Impossible to successfully execute $cmd";
 }
