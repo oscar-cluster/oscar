@@ -32,6 +32,8 @@ use base qw(Exporter);
 use File::Basename;
 use Carp;
 
+use OSCAR::Logger;
+
 @EXPORT = qw (
                 bootstrap_stage0
                 load_oscar_config
@@ -106,12 +108,13 @@ sub install_prereq ($$$) {
     # We get the current status of the prereq first
     $cmd = $prereq_cmd . " --status " . $prereq_path;
     my $prereq_name = basename ($cmd);
-    print "\nDealing with Prereq $prereq_name\n" if $verbose;
+    OSCAR::Logger::oscar_log_subsection "\nDealing with Prereq $prereq_name";
     if (system ($cmd)) {
-        print "$prereq_name is not installed.\n" if $verbose;
+        OSCAR::Logger::oscar_log_subsection "$prereq_name is not installed.";
 
         if ($prereq_mode eq "check_only") {
-            print "INFO: Please install the prereq $prereq_name manually\n";
+            OSCAR::Logger::oscar_log_subsection "INFO: Please install the ".
+                "prereq $prereq_name manually\n";
             return 0;
         }
         # We try to install the prereq
@@ -150,14 +153,15 @@ sub bootstrap_prereqs ($$) {
     # We get the current status of the prereq first
     $cmd = $ipcmd . " --status " . $prereq_path;
     my $prereq_name = basename ($prereq_path);
-    print "Dealing with Prereq $prereq_name ($prereq_path, $prereq_mode)\n";
+    OSCAR::Logger::oscar_log_subsection "Dealing with Prereq $prereq_name ".
+        "($prereq_path, $prereq_mode)";
     if (system ($cmd)) {
-        print "$prereq_name is not installed.\n";
+        OSCAR::Logger::oscar_log_subsection "$prereq_name is not installed.";
 
         if ($prereq_mode eq "check_and_fix") {
             # We try to install Packman
             $cmd = $ipcmd . " --dumb " . $prereq_path;
-            print "Executing $cmd...\n";
+            OSCAR::Logger::oscar_log_subsection "Executing $cmd...";
             if (system ($cmd)) {
                 carp "ERROR: impossible to install $prereq_name ($cmd).\n";
                 return -1;
@@ -165,17 +169,19 @@ sub bootstrap_prereqs ($$) {
 
             # Packman should be installed now
             $cmd = $ipcmd . " --status " . $prereq_path;
-            print "Executing $cmd...\n";
+            OSCAR::Logger::oscar_log_subsection "Executing $cmd...";
             if (system ($cmd)) {
                 carp "ERROR: $prereq_name is still not installed\n";
                 return -1;
             }
         } elsif ($prereq_mode eq "check_only") {
-            print "$prereq_name needs to be installed.\n";
+            OSCAR::Logger::oscar_log_subsection "$prereq_name needs to be ".
+                "installed.";
             return -1;
         }
     } else {
-        print "$prereq_name is already installed, nothing to do.\n";
+        OSCAR::Logger::oscar_log_subsection "$prereq_name is already ".
+            "installed, nothing to do.";
     }
 
     return 0;
@@ -207,7 +213,7 @@ sub init_server ($) {
     # We bootstrap ODA
     my $cmd = $oscar_cfg->{'binaries_path'} . "/oda --init mysql";
 #    OSCAR::Logger::oscar_log_subsection ("Executing: $cmd\n");
-    print "Executing: $cmd\n";
+    OSCAR::Logger::oscar_log_subsection "Executing: $cmd\n";
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
         return -1;
@@ -247,15 +253,26 @@ sub init_server ($) {
         return -1;
     }
 
-    print ("Identified core packages: " . join(' ', @core_opkgs));
-    OSCAR::Utils::print_array (@core_opkgs);
+    OSCAR::Logger::oscar_log_subsection ("Identified core packages: " . 
+        join(' ', @core_opkgs));
+    OSCAR::Utils::print_array (@core_opkgs) if $verbose;
 
-    if (OSCAR::Opkg::opkgs_install ("server", @core_opkgs)) {
-        carp "ERROR: Impossible to install server core packages\n";
+    # We install one OPKG at a time so if the installation of one OPKG fails,
+    # we can track it in details.
+    my @failed_opkgs;
+    foreach my $o (@core_opkgs) {
+        if (OSCAR::Opkg::opkgs_install ("server", @core_opkgs)) {
+            push (@failed_opkgs, $o);
+        }
+    }
+    if (scalar (@failed_opkgs) > 0) {
+        carp "ERROR: Impossible to install the following core OPKGs: ".
+            join (" ", @failed_opkgs);
         return -1;
     }
 
-    print "Marking core packages as always selected...\n";
+    OSCAR::Logger::oscar_log_subsection "Marking core packages as always ".
+        "selected...";
     my %selection_data = ();
     # We call ODA_Defs only here to avoid bootstrapping issues.
     require OSCAR::ODA_Defs;
@@ -318,7 +335,7 @@ sub bootstrap_stage0 () {
 
     # Now that we know where the prereqs are, we try to install AppConfig
     $ipcmd = $ippath . "/install_prereq ";
-    print "install_prereq found: $ipcmd\n";
+    OSCAR::Logger::oscar_log_subsection "install_prereq found: $ipcmd";
     my $appconfig_path = $prereq_path . "/AppConfig";
     if (bootstrap_prereqs ($appconfig_path, $prereq_mode)) {
         carp "ERROR: impossible to install appconfig\n";
@@ -573,7 +590,6 @@ sub save_preoscar_binary_list ($$) {
         if (! -f $preoscar) {
             my $cmd =  
                 "(dpkg -l | grep '^ii' | awk ' { print \$2 } ' | sort | uniq) > $preoscar";
-            print "Writing pre-oscar deblist ($preoscar): $cmd...\n";
             OSCAR::Logger::oscar_log_subsection(
                 "Writing pre-oscar deblist ($preoscar)...");
             system($cmd);

@@ -16,6 +16,7 @@
 #
 
 use strict;
+use Carp;
 use Cwd qw(chdir cwd);
 use Getopt::Long;
 use OSCAR::Utils;
@@ -37,10 +38,13 @@ my ($distro_to_setup,
     $oscar_repo_to_mirror,
     $sanity_check,
     $network,
-    $bootstrap);
+    $bootstrap,
+    $verbose,
+    $debug);
 
 GetOptions(
-        "bootstrap"                     => \&bootstrap,
+        "bootstrap"                     => \$bootstrap,
+        "debug"                         => \$debug,
         "display-default-distro-repo=s" => \$distro_repo,
         "display-default-oscar-repo=s"  => \$oscar_repo,
         "generate-config-file"          => \&generate_config_file,
@@ -54,125 +58,10 @@ GetOptions(
         "use-distro-repo=s"             => \$distro_repo_to_use,
         "use-oscar-repo=s"              => \$oscar_repo_to_use,
 #         "network"                       => \$network,
+        "verbose"                       => \$verbose,
         "help"                          => \&help,
         ) || help_and_exit();
 
-if ($distro_repo_to_mirror) {
-    if (OSCAR::Utils::is_a_valid_string ($distro_to_setup) == 0) {
-        die "If you want to mirror a repository, you have to tell us for which".
-            " distro the repository is made for (for that use the ".
-            "--setup-distro option\n";
-    }
-    require OSCAR::PackagePath;
-    require OSCAR::Distro;
-    OSCAR::PackagePath::mirror_repo ($distro_repo_to_mirror,
-                                     $distro_to_setup,
-                                     "/tftpboot/distro");
-    OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
-                                    "file:///tftpboot/distro/$distro_to_setup");
-}
-
-if ($oscar_repo_to_mirror) {
-    if (OSCAR::Utils::is_a_valid_string ($distro_to_setup) == 0) {
-        die "If you want to mirror a repository, you have to tell us for which".
-            " distro the repository is made for (for that use the ".
-            "--setup-distro option\n";
-    }
-    require OSCAR::PackagePath;
-    require OSCAR::Distro;
-    OSCAR::PackagePath::mirror_repo ($oscar_repo_to_mirror,
-                                     $distro_to_setup,
-                                     "/tftpboot/oscar");
-    OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
-                     "file:///tftpboot/oscar/$distro_to_setup");
-}
-
-if ($distro_repo) {
-    require OSCAR::PackagePath;
-    require OSCAR::Distro;
-    # We display the distro repo that is used with the distro
-    my $url = OSCAR::PackagePath::get_default_distro_repo ($distro_repo);
-    print "$url\n";
-}
-
-if ($oscar_repo) {
-    require OSCAR::Distro;
-    require OSCAR::PackagePath;
-    # We display the OSCAR repo that is used with the distro
-    my $url = OSCAR::PackagePath::get_default_oscar_repo ($oscar_repo);
-    print "$url\n";
-}
-
-if ($distro_to_setup) {
-    require OSCAR::PackagePath;
-    require OSCAR::Distro;
-    require OSCAR::Logger;
-    require OSCAR::Utils;
-
-    OSCAR::Logger::oscar_log_section ("Setting $distro_to_setup...");
-
-    # We check first if the distro is supported
-    my @distros = OSCAR::Distro::get_list_of_supported_distros ();
-    if (OSCAR::Utils::is_element_in_array ($distro_to_setup, @distros) == 0) {
-        die "ERROR: Unsupported distro ($distro_to_setup)";
-    }
-
-    # We setup the distro repos (configuration files in /tftpboot/distro).
-    if (OSCAR::Utils::is_a_valid_string ($distro_repo_to_use) == 0) {
-        print "... using default distro repo\n";
-        OSCAR::Logger::oscar_log_subsection ("... using default distro repo");
-        if (OSCAR::PackagePath::use_default_distro_repo ($distro_to_setup)) {
-            die "ERROR: Impossible to set the default distro repo";
-        }
-    } else {
-        OSCAR::Logger::oscar_log_subsection ("... using $distro_repo_to_use");
-        OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
-                                             $distro_repo_to_use);
-    }
-
-    # We setup the OSCAR repos (configuration files in /tftpboot/oscar).
-    if (OSCAR::Utils::is_a_valid_string ($oscar_repo_to_use) == 0) {
-        print "... using default OSCAR repo\n";
-        OSCAR::Logger::oscar_log_subsection ("... using default OSCAR repo");
-        if (OSCAR::PackagePath::use_default_oscar_repo ($distro_to_setup)) {
-            die "ERROR: Impossible to set the default repository";
-        }
-    } else {
-        OSCAR::Logger::oscar_log_subsection ("... using $oscar_repo_to_use");
-        OSCAR::PackagePath::use_oscar_repo ($distro_to_setup,
-                                             $oscar_repo_to_use);
-    }
-
-    exit 0;
-}
-
-# if ($network) {
-#     my $cmd = "$ENV{OSCAR_HOME}/scripts/system-sanity.d/network-check.pl";
-#     my $net_config = system($cmd);
-#     if ($net_config != 0) {
-#         print "Configuration issues detected, configuring the network...\n"
-#     }
-# }
-
-if ($headnode_nic) {
-    print "--> Updating the NIC used on the headnode for cluster management\n";
-    require OSCAR::Network;
-    if (OSCAR::Network::update_head_nic ()) {
-        die "ERROR: Impossible to update the headnode NIC data";
-    }
-}
-
-if ($sanity_check) {
-    require OSCAR::ConfigFile;
-    my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
-                                                      undef,
-                                                      "OSCAR_SCRIPTS_PATH");
-    if (system ("$binaries_path/system-sanity")) {
-        die "ERROR: Impossible to successfully execute system-sanity";
-    }
-}
-
-exit 0;
 
 ################################################################################
 # Boostrap OSCAR (install prereqs, setup the system, install core packages on  #
@@ -183,7 +72,8 @@ exit 0;
 #         error.                                                               #
 ################################################################################
 sub bootstrap () {
-    print "OSCAR bootstrap\n";
+    OSCAR::Logger::init_log_file ("/var/log/oscar/bootstrap.log");
+    OSCAR::Logger::oscar_log_section "OSCAR bootstrap";
     # First of all we check if the OSCAR_HOME environment variable is set or not
     # This variable is currently mandatory for the usage of OSCAR.
 #     if ($ENV{OSCAR_HOME} eq "") {
@@ -202,15 +92,17 @@ sub bootstrap () {
     require OSCAR::Bootstrap;
     my $configurator = OSCAR::Bootstrap::bootstrap_stage0();
     if (!defined $configurator) {
-        print "ERROR: Impossible to complete stage 0 of the bootstrap.\n";
-        exit 1;
+        carp "ERROR: Impossible to complete stage 0 of the bootstrap.";
+        return -1;
     }
 
     if (OSCAR::Bootstrap::oscar_bootstrap ($configurator)) {
-        exit 1;
+        carp "ERROR: Impossible to bootstrap OSCAR";
+        return -1;
     }
 
-    exit 0;
+    OSCAR::Logger::oscar_log_section "Successfully bootstrapped OSCAR";
+    return 0;
 }
 
 ################################################################################
@@ -313,6 +205,141 @@ sub help_and_exit {
     exit 1;
 }
 
+
+my $initial_verbose_value = 0;
+$initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+}
+if ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+}
+
+if ($distro_repo_to_mirror) {
+    if (OSCAR::Utils::is_a_valid_string ($distro_to_setup) == 0) {
+        die "If you want to mirror a repository, you have to tell us for which".
+            " distro the repository is made for (for that use the ".
+            "--setup-distro option\n";
+    }
+    require OSCAR::PackagePath;
+    require OSCAR::Distro;
+    OSCAR::PackagePath::mirror_repo ($distro_repo_to_mirror,
+                                     $distro_to_setup,
+                                     "/tftpboot/distro");
+    OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
+                                    "file:///tftpboot/distro/$distro_to_setup");
+}
+
+if ($oscar_repo_to_mirror) {
+    if (OSCAR::Utils::is_a_valid_string ($distro_to_setup) == 0) {
+        die "If you want to mirror a repository, you have to tell us for which".
+            " distro the repository is made for (for that use the ".
+            "--setup-distro option\n";
+    }
+    require OSCAR::PackagePath;
+    require OSCAR::Distro;
+    OSCAR::PackagePath::mirror_repo ($oscar_repo_to_mirror,
+                                     $distro_to_setup,
+                                     "/tftpboot/oscar");
+    OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
+                     "file:///tftpboot/oscar/$distro_to_setup");
+}
+
+if ($distro_repo) {
+    require OSCAR::PackagePath;
+    require OSCAR::Distro;
+    # We display the distro repo that is used with the distro
+    my $url = OSCAR::PackagePath::get_default_distro_repo ($distro_repo);
+    print "$url\n";
+}
+
+if ($oscar_repo) {
+    require OSCAR::Distro;
+    require OSCAR::PackagePath;
+    # We display the OSCAR repo that is used with the distro
+    my $url = OSCAR::PackagePath::get_default_oscar_repo ($oscar_repo);
+    print "$url\n";
+}
+
+if ($distro_to_setup) {
+    require OSCAR::PackagePath;
+    require OSCAR::Distro;
+    require OSCAR::Logger;
+    require OSCAR::Utils;
+
+    OSCAR::Logger::oscar_log_section ("Setting $distro_to_setup...");
+
+    # We check first if the distro is supported
+    my @distros = OSCAR::Distro::get_list_of_supported_distros ();
+    if (OSCAR::Utils::is_element_in_array ($distro_to_setup, @distros) == 0) {
+        die "ERROR: Unsupported distro ($distro_to_setup)";
+    }
+
+    # We setup the distro repos (configuration files in /tftpboot/distro).
+    if (OSCAR::Utils::is_a_valid_string ($distro_repo_to_use) == 0) {
+        OSCAR::Logger::oscar_log_subsection ("... using default distro repo");
+        if (OSCAR::PackagePath::use_default_distro_repo ($distro_to_setup)) {
+            die "ERROR: Impossible to set the default distro repo";
+        }
+    } else {
+        OSCAR::Logger::oscar_log_subsection ("... using $distro_repo_to_use");
+        OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
+                                             $distro_repo_to_use);
+    }
+
+    # We setup the OSCAR repos (configuration files in /tftpboot/oscar).
+    if (OSCAR::Utils::is_a_valid_string ($oscar_repo_to_use) == 0) {
+        OSCAR::Logger::oscar_log_subsection ("... using default OSCAR repo");
+        if (OSCAR::PackagePath::use_default_oscar_repo ($distro_to_setup)) {
+            die "ERROR: Impossible to set the default repository";
+        }
+    } else {
+        OSCAR::Logger::oscar_log_subsection ("... using $oscar_repo_to_use");
+        OSCAR::PackagePath::use_oscar_repo ($distro_to_setup,
+                                             $oscar_repo_to_use);
+    }
+
+    goto EXIT_SUCCESS;
+}
+
+# if ($network) {
+#     my $cmd = "$ENV{OSCAR_HOME}/scripts/system-sanity.d/network-check.pl";
+#     my $net_config = system($cmd);
+#     if ($net_config != 0) {
+#         print "Configuration issues detected, configuring the network...\n"
+#     }
+# }
+
+if ($headnode_nic) {
+    OSCAR::Logger::oscar_log_subsection "--> Updating the NIC used on the ".
+        "headnode for cluster management\n";
+    require OSCAR::Network;
+    if (OSCAR::Network::update_head_nic ()) {
+        die "ERROR: Impossible to update the headnode NIC data";
+    }
+}
+
+if ($sanity_check) {
+    require OSCAR::ConfigFile;
+    my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                                      undef,
+                                                      "OSCAR_SCRIPTS_PATH");
+    if (system ("$binaries_path/system-sanity")) {
+        die "ERROR: Impossible to successfully execute system-sanity";
+    }
+}
+
+if ($bootstrap) {
+    if (bootstrap()) {
+        die "ERROR: Impossible to bootstrap OSCAR";
+    }
+}
+
+EXIT_SUCCESS:
+$ENV{OSCAR_VERBOSE} = $initial_verbose_value;
+exit 0;
+
+
 __END__
 
 =head1 NAME
@@ -402,6 +429,12 @@ Update the NIC used by OSCAR for cluster management. The NIC identifier is speci
 =item --help
 
 This help information.
+
+=item verbose
+
+=item debug
+
+Display even more debugging information than the verbose option.
 
 =back
 
