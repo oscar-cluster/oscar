@@ -71,7 +71,7 @@ sub verbose {
 }
 
 sub vprint {
-    print @_ if ($verbose);
+    print @_ if ($verbose || $ENV{OSCAR_VERBOSE});
 }
 
 sub print_error_strings ($) {
