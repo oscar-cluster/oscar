@@ -1,4 +1,9 @@
 6.0.1 (not yet released):
+- During bootstrapping, a log file is now created 
+(/var/log/oscar/bootstrap.log).
+- Include two new options to the oscar-config script: debug and verbose.
+- During bootstrapping, we install only one core OPKG at a time, to be able to
+really get details on errors.
 - Fix a bug when generating the DHCPD configuration file on Debian.
 - New abstraction for the management of system services.
 - Include capabilities for file management: download and type detection.
