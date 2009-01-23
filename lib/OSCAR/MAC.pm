@@ -149,17 +149,18 @@ sub __setup_dhcpd ($) {
     oscar_log_subsection("Step $step_number: Successfully ran \"$cmd\"");
 
     oscar_log_subsection("Step $step_number: Checking the DHCP lease file");
+    # The DHCP lease can be in different places, depending on the distro, 
+    # we detect where
     my $dhcpd_leases;
-    if ( ($os->{'compat_distro'} eq "debian") ) {
+    if ( -d "/var/lib/dhcp3" ) {
         $dhcpd_leases = "/var/lib/dhcp3/dhcpd.leases";
-    } else {
+    } elsif ( -d "/var/lib/dhcp" ) {
         $dhcpd_leases = "/var/lib/dhcp/dhcpd.leases";
-    }
-
-    # Fedora Core 5+'s dhcpd.leases file is located in a slightly different
-    # directory
-    if ( ($os->{'distro'} eq "fedora") && ($os->{'distro_version'} >= "5") ) {
+    } elsif ( -d "/var/lib/dhcpd" ) {
         $dhcpd_leases = "/var/lib/dhcpd/dhcpd.leases";
+    } else {
+        carp "ERROR: Impossible to detect where the DHCP lease is stored.";
+        return -1;
     }
 
     if(!-f "$dhcpd_leases") {
