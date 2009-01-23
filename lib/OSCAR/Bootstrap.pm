@@ -261,7 +261,7 @@ sub init_server ($) {
     # we can track it in details.
     my @failed_opkgs;
     foreach my $o (@core_opkgs) {
-        if (OSCAR::Opkg::opkgs_install ("server", @core_opkgs)) {
+        if (OSCAR::Opkg::opkgs_install ("server", $o)) {
             push (@failed_opkgs, $o);
         }
     }
