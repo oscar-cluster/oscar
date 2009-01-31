@@ -1,2273 +1,1938 @@
-<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
-<class>oscargui</class>
-<widget class="QWizard">
-    <property name="name">
-        <cstring>oscargui</cstring>
+<ui version="4.0" >
+ <class>oscargui</class>
+ <widget class="Q3Wizard" name="oscargui" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1001</width>
+    <height>886</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>OSCAR - Cluster Management Tool</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset>../../images/oscar.gif</iconset>
+  </property>
+  <property name="whatsThis" >
+   <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;">
+&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;/p>&lt;/body>&lt;/html></string>
+  </property>
+  <property name="caption" stdset="0" >
+   <string>OSCAR Cluster</string>
+  </property>
+  <widget class="QWidget" name="systemid" >
+   <property name="geometry" >
+    <rect>
+     <x>6</x>
+     <y>36</y>
+     <width>989</width>
+     <height>805</height>
+    </rect>
+   </property>
+   <widget class="Q3ListView" name="listView1" >
+    <property name="geometry" >
+     <rect>
+      <x>34</x>
+      <y>15</y>
+      <width>921</width>
+      <height>750</height>
+     </rect>
     </property>
-    <property name="geometry">
-        <rect>
+    <column>
+     <property name="text" >
+      <string>Cluster ID</string>
+     </property>
+    </column>
+    <column>
+     <property name="text" >
+      <string>Description</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QPushButton" name="pushButton27" >
+    <property name="geometry" >
+     <rect>
+      <x>44</x>
+      <y>775</y>
+      <width>131</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Add a new cluster</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QWidget" name="machinegroups" >
+   <property name="geometry" >
+    <rect>
+     <x>6</x>
+     <y>36</y>
+     <width>989</width>
+     <height>805</height>
+    </rect>
+   </property>
+   <widget class="QWidget" name="layout15" >
+    <property name="geometry" >
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>580</width>
+      <height>370</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" >
+     <item>
+      <widget class="QLabel" name="textLabel1" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font" >
+        <font>
+         <pointsize>16</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Partitions</string>
+       </property>
+       <property name="alignment" >
+        <set>Qt::AlignVCenter</set>
+       </property>
+       <property name="wordWrap" >
+        <bool>false</bool>
+       </property>
+       <property name="indent" >
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" >
+       <item>
+        <widget class="Q3ListBox" name="nodeGroupListBox" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+           <horstretch>0</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip" >
+          <string>List of all current Node Groups</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" >
+         <item>
+          <widget class="QPushButton" name="newButton" >
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip" >
+            <string>Create a new Node Group, optionally copying from a current group</string>
+           </property>
+           <property name="text" >
+            <string>&amp;Add Partition</string>
+           </property>
+           <property name="shortcut" >
+            <string>Alt+A</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="renameButton" >
+           <property name="enabled" >
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip" >
+            <string>Rename the currently selected Node Group</string>
+           </property>
+           <property name="text" >
+            <string>&amp;Modify Partition</string>
+           </property>
+           <property name="shortcut" >
+            <string>Alt+M</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="deleteButton" >
+           <property name="enabled" >
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip" >
+            <string>Delete the currently selected Node Group</string>
+           </property>
+           <property name="text" >
+            <string>&amp;Delete Partition</string>
+           </property>
+           <property name="shortcut" >
+            <string>Alt+D</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="modifyButton" >
+           <property name="enabled" >
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip" >
+            <string>Change the groups belonging to the currently selected Node Group</string>
+           </property>
+           <property name="text" >
+            <string>&amp;Add nodes to the partition</string>
+           </property>
+           <property name="shortcut" >
+            <string>Alt+A</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTabWidget" name="tabWidget" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <widget class="QWidget" name="tab" >
+        <attribute name="title" >
+         <string>Node Membership</string>
+        </attribute>
+        <layout class="QGridLayout" >
+         <property name="leftMargin" >
+          <number>1</number>
+         </property>
+         <property name="topMargin" >
+          <number>1</number>
+         </property>
+         <property name="rightMargin" >
+          <number>1</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>1</number>
+         </property>
+         <item row="0" column="0" >
+          <widget class="Q3ListBox" name="nodeListBox_3" >
+           <property name="toolTip" >
+            <string>List of nodes belonging to the currently selected group</string>
+           </property>
+           <property name="selectionMode" >
+            <enum>Q3ListBox::NoSelection</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab" >
+        <attribute name="title" >
+         <string>Description</string>
+        </attribute>
+        <layout class="QGridLayout" >
+         <property name="leftMargin" >
+          <number>1</number>
+         </property>
+         <property name="topMargin" >
+          <number>1</number>
+         </property>
+         <property name="rightMargin" >
+          <number>1</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>1</number>
+         </property>
+         <item row="0" column="0" >
+          <widget class="Q3ListBox" name="groupListBox_3" >
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip" >
+            <string>List of group members for the currently selected group</string>
+           </property>
+           <property name="selectionMode" >
+            <enum>Q3ListBox::NoSelection</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QWidget" name="packages" >
+   <property name="geometry" >
+    <rect>
+     <x>6</x>
+     <y>36</y>
+     <width>989</width>
+     <height>805</height>
+    </rect>
+   </property>
+   <widget class="QWidget" name="layout13" >
+    <property name="geometry" >
+     <rect>
+      <x>0</x>
+      <y>1</y>
+      <width>991</width>
+      <height>801</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" >
+     <item>
+      <layout class="QHBoxLayout" >
+       <item>
+        <widget class="QPushButton" name="refreshButton" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font" >
+          <font/>
+         </property>
+         <property name="toolTip" >
+          <string>Get package information from OSCAR repositories</string>
+         </property>
+         <property name="text" >
+          <string>&amp;Refresh Table</string>
+         </property>
+         <property name="shortcut" >
+          <string>Alt+R</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="downloadButton" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font" >
+          <font/>
+         </property>
+         <property name="toolTip" >
+          <string>Download selected packages from respositories and install on local disk</string>
+         </property>
+         <property name="text" >
+          <string>&amp;Download Selected Packages</string>
+         </property>
+         <property name="shortcut" >
+          <string>Alt+D</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="OpderTable" native="1" name="packageTable" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+         <horstretch>0</horstretch>
+         <verstretch>3</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTabWidget" name="packageTabWidget" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+         <horstretch>0</horstretch>
+         <verstretch>2</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip" >
+        <string>Display of information about the package selected above</string>
+       </property>
+       <property name="tabShape" >
+        <enum>QTabWidget::Triangular</enum>
+       </property>
+       <widget class="QWidget" name="informationTab" >
+        <attribute name="title" >
+         <string>Information</string>
+        </attribute>
+        <layout class="QGridLayout" >
+         <property name="leftMargin" >
+          <number>0</number>
+         </property>
+         <property name="topMargin" >
+          <number>0</number>
+         </property>
+         <property name="rightMargin" >
+          <number>0</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>0</number>
+         </property>
+         <property name="horizontalSpacing" >
+          <number>0</number>
+         </property>
+         <property name="verticalSpacing" >
+          <number>0</number>
+         </property>
+         <item row="0" column="0" >
+          <widget class="Q3TextEdit" name="informationTextBox" >
+           <property name="readOnly" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="providesTab" >
+        <attribute name="title" >
+         <string>Provides</string>
+        </attribute>
+        <layout class="QGridLayout" >
+         <property name="leftMargin" >
+          <number>0</number>
+         </property>
+         <property name="topMargin" >
+          <number>0</number>
+         </property>
+         <property name="rightMargin" >
+          <number>0</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>0</number>
+         </property>
+         <property name="horizontalSpacing" >
+          <number>0</number>
+         </property>
+         <property name="verticalSpacing" >
+          <number>0</number>
+         </property>
+         <item row="0" column="0" >
+          <widget class="Q3TextEdit" name="providesTextBox" >
+           <property name="readOnly" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="conflictsTab" >
+        <attribute name="title" >
+         <string>Conflicts</string>
+        </attribute>
+        <layout class="QGridLayout" >
+         <property name="leftMargin" >
+          <number>0</number>
+         </property>
+         <property name="topMargin" >
+          <number>0</number>
+         </property>
+         <property name="rightMargin" >
+          <number>0</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>0</number>
+         </property>
+         <property name="horizontalSpacing" >
+          <number>0</number>
+         </property>
+         <property name="verticalSpacing" >
+          <number>0</number>
+         </property>
+         <item row="0" column="0" >
+          <widget class="Q3TextEdit" name="conflictsTextBox" >
+           <property name="readOnly" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="requiresTab" >
+        <attribute name="title" >
+         <string>Requires</string>
+        </attribute>
+        <layout class="QGridLayout" >
+         <property name="leftMargin" >
+          <number>0</number>
+         </property>
+         <property name="topMargin" >
+          <number>0</number>
+         </property>
+         <property name="rightMargin" >
+          <number>0</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>0</number>
+         </property>
+         <property name="horizontalSpacing" >
+          <number>0</number>
+         </property>
+         <property name="verticalSpacing" >
+          <number>0</number>
+         </property>
+         <item row="0" column="0" >
+          <widget class="Q3TextEdit" name="requiresTextBox" >
+           <property name="readOnly" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="packagerTab" >
+        <attribute name="title" >
+         <string>Packager</string>
+        </attribute>
+        <layout class="QGridLayout" >
+         <property name="leftMargin" >
+          <number>0</number>
+         </property>
+         <property name="topMargin" >
+          <number>0</number>
+         </property>
+         <property name="rightMargin" >
+          <number>0</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>0</number>
+         </property>
+         <property name="horizontalSpacing" >
+          <number>0</number>
+         </property>
+         <property name="verticalSpacing" >
+          <number>0</number>
+         </property>
+         <item row="0" column="0" >
+          <widget class="Q3TextEdit" name="packagerTextBox" >
+           <property name="readOnly" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QWidget" name="macadress" >
+   <widget class="Q3GroupBox" name="advancedBox" >
+    <property name="enabled" >
+     <bool>true</bool>
+    </property>
+    <property name="geometry" >
+     <rect>
+      <x>0</x>
+      <y>520</y>
+      <width>230</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="sizePolicy" >
+     <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize" >
+     <size>
+      <width>190</width>
+      <height>120</height>
+     </size>
+    </property>
+    <property name="title" >
+     <string>Advanced</string>
+    </property>
+    <widget class="QWidget" name="layout11" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>204</width>
+       <height>100</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" >
+      <property name="spacing" >
+       <number>0</number>
+      </property>
+      <property name="leftMargin" >
+       <number>0</number>
+      </property>
+      <property name="topMargin" >
+       <number>0</number>
+      </property>
+      <property name="rightMargin" >
+       <number>0</number>
+      </property>
+      <property name="bottomMargin" >
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="exportmacs" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font" >
+         <font/>
+        </property>
+        <property name="text" >
+         <string>&amp;Export MAC Addresses...</string>
+        </property>
+        <property name="shortcut" >
+         <string>Alt+E</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="multicast" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>150</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="font" >
+         <font/>
+        </property>
+        <property name="text" >
+         <string>Enable Multicast Support</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="macfiltering" >
+        <property name="enabled" >
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font" >
+         <font/>
+        </property>
+        <property name="text" >
+         <string>Filter MAC Addresses...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="layout22" >
+    <property name="geometry" >
+     <rect>
+      <x>0</x>
+      <y>478</y>
+      <width>670</width>
+      <height>34</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" >
+     <item>
+      <widget class="QPushButton" name="deletenode" >
+       <property name="enabled" >
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Fixed" hsizetype="MinimumExpanding" >
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize" >
+        <size>
+         <width>80</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maximumSize" >
+        <size>
+         <width>150</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="font" >
+        <font/>
+       </property>
+       <property name="text" >
+        <string>Delete Node</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" >
+       <property name="spacing" >
+        <number>3</number>
+       </property>
+       <property name="leftMargin" >
+        <number>1</number>
+       </property>
+       <property name="topMargin" >
+        <number>1</number>
+       </property>
+       <property name="rightMargin" >
+        <number>1</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>1</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="definenodesButton" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize" >
+          <size>
+           <width>50</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize" >
+          <size>
+           <width>100</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font" >
+          <font/>
+         </property>
+         <property name="text" >
+          <string>Define</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="definenodesnum" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize" >
+          <size>
+           <width>50</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize" >
+          <size>
+           <width>100</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font" >
+          <font/>
+         </property>
+         <property name="buttonSymbols" >
+          <enum>QAbstractSpinBox::UpDownArrows</enum>
+         </property>
+         <property name="prefix" >
+          <string/>
+         </property>
+         <property name="minimum" >
+          <number>1</number>
+         </property>
+         <property name="maximum" >
+          <number>5000</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="textLabel2_2" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Fixed" hsizetype="MinimumExpanding" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize" >
+          <size>
+           <width>40</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize" >
+          <size>
+           <width>80</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font" >
+          <font/>
+         </property>
+         <property name="text" >
+          <string>nodes</string>
+         </property>
+         <property name="alignment" >
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+         <property name="wordWrap" >
+          <bool>false</bool>
+         </property>
+         <property name="buddy" >
+          <cstring>definenodes</cstring>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>190</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="advancedButton" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize" >
+        <size>
+         <width>90</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maximumSize" >
+        <size>
+         <width>180</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="font" >
+        <font/>
+       </property>
+       <property name="text" >
+        <string>Advanced >></string>
+       </property>
+       <property name="checkable" >
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="layout41" >
+    <property name="geometry" >
+     <rect>
+      <x>221</x>
+      <y>5</y>
+      <width>761</width>
+      <height>390</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" >
+     <item>
+      <layout class="QVBoxLayout" >
+       <item>
+        <layout class="QVBoxLayout" >
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType" >
+            <enum>QSizePolicy::Preferred</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>16</width>
+             <height>30</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" >
+           <item>
+            <layout class="QVBoxLayout" >
+             <property name="spacing" >
+              <number>1</number>
+             </property>
+             <property name="leftMargin" >
+              <number>0</number>
+             </property>
+             <property name="topMargin" >
+              <number>0</number>
+             </property>
+             <property name="rightMargin" >
+              <number>0</number>
+             </property>
+             <property name="bottomMargin" >
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="assignmac" >
+               <property name="sizePolicy" >
+                <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize" >
+                <size>
+                 <width>30</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>30</width>
+                 <height>32767</height>
+                </size>
+               </property>
+               <property name="font" >
+                <font/>
+               </property>
+               <property name="toolTip" >
+                <string>Assign MAC to Node</string>
+               </property>
+               <property name="text" >
+                <string>&lt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="assignallmacs" >
+               <property name="sizePolicy" >
+                <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize" >
+                <size>
+                 <width>30</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>30</width>
+                 <height>32767</height>
+                </size>
+               </property>
+               <property name="font" >
+                <font/>
+               </property>
+               <property name="toolTip" >
+                <string>Assign All MACs</string>
+               </property>
+               <property name="text" >
+                <string>&lt;&lt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="unassignmac" >
+               <property name="sizePolicy" >
+                <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize" >
+                <size>
+                 <width>30</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>30</width>
+                 <height>32767</height>
+                </size>
+               </property>
+               <property name="font" >
+                <font/>
+               </property>
+               <property name="toolTip" >
+                <string>Unassign MAC from Node</string>
+               </property>
+               <property name="text" >
+                <string>></string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" >
+             <item>
+              <widget class="QLabel" name="textLabel8" >
+               <property name="sizePolicy" >
+                <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+                 <horstretch>2</horstretch>
+                 <verstretch>1</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize" >
+                <size>
+                 <width>60</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="font" >
+                <font/>
+               </property>
+               <property name="text" >
+                <string>Unassigned MAC Addresses</string>
+               </property>
+               <property name="alignment" >
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="wordWrap" >
+                <bool>true</bool>
+               </property>
+               <property name="buddy" >
+                <cstring>othermacs</cstring>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="Q3ListBox" name="othermacs" >
+               <property name="sizePolicy" >
+                <sizepolicy vsizetype="Expanding" hsizetype="MinimumExpanding" >
+                 <horstretch>2</horstretch>
+                 <verstretch>3</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize" >
+                <size>
+                 <width>110</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font" >
+                <font/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="clearmacs" >
+         <property name="font" >
+          <font/>
+         </property>
+         <property name="text" >
+          <string>Clear Unassigned MACs</string>
+         </property>
+         <property name="shortcut" >
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" >
+       <item>
+        <widget class="Q3ButtonGroup" name="collectionmethodselect" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize" >
+          <size>
+           <width>85</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="maximumSize" >
+          <size>
+           <width>200</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Collection Method</string>
+         </property>
+         <property name="alignment" >
+          <set>Qt::AlignHCenter|Qt::AlignTop</set>
+         </property>
+         <property name="frameShape" >
+          <enum>Q3GroupBox::NoFrame</enum>
+         </property>
+         <widget class="QWidget" name="layout17" >
+          <property name="geometry" >
+           <rect>
+            <x>8</x>
+            <y>18</y>
+            <width>180</width>
+            <height>68</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" >
+           <property name="spacing" >
+            <number>0</number>
+           </property>
+           <property name="leftMargin" >
+            <number>0</number>
+           </property>
+           <property name="topMargin" >
+            <number>0</number>
+           </property>
+           <property name="rightMargin" >
+            <number>0</number>
+           </property>
+           <property name="bottomMargin" >
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QRadioButton" name="networkcollect" >
+             <property name="text" >
+              <string>Network</string>
+             </property>
+             <property name="checked" >
+              <bool>true</bool>
+             </property>
+             <property name="buttonGroupId" stdset="0" >
+              <number>-1</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="filecollect" >
+             <property name="text" >
+              <string>File</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="manualcollect" >
+             <property name="text" >
+              <string>Manual</string>
+             </property>
+             <property name="buttonGroupId" stdset="0" >
+              <number>-1</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="Q3WidgetStack" name="collectionmethod" >
+         <widget class="QWidget" name="network" >
+          <property name="geometry" >
+           <rect>
             <x>0</x>
             <y>0</y>
-            <width>740</width>
-            <height>759</height>
-        </rect>
-    </property>
-    <property name="paletteBackgroundColor">
-        <color>
-            <red>60</red>
-            <green>206</green>
-            <blue>201</blue>
-        </color>
-    </property>
-    <property name="caption">
-        <string>OSCAR GUI</string>
-    </property>
-    <widget class="QWidget">
-        <property name="name">
-            <cstring>systemid</cstring>
-        </property>
-        <attribute name="title">
-            <string>System ID</string>
-        </attribute>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout16</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>0</x>
-                    <y>10</y>
-                    <width>550</width>
-                    <height>100</height>
-                </rect>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QTextEdit">
-                    <property name="name">
-                        <cstring>instructions</cstring>
-                    </property>
-                    <property name="enabled">
-                        <bool>false</bool>
-                    </property>
-                    <property name="paletteForegroundColor">
-                        <color>
-                            <red>0</red>
-                            <green>0</green>
-                            <blue>0</blue>
-                        </color>
-                    </property>
-                    <property name="paletteBackgroundColor">
-                        <color>
-                            <red>60</red>
-                            <green>206</green>
-                            <blue>201</blue>
-                        </color>
-                    </property>
-                    <property name="frameShape">
-                        <enum>NoFrame</enum>
-                    </property>
-                    <property name="text">
-                        <string>&lt;html&gt;&lt;head&gt;&lt;meta name="qrichtext" content="1" /&gt;&lt;/head&gt;&lt;body style="font-size:13pt;font-family:Helvetica"&gt;
-&lt;p style="margin-top:18px"&gt;&lt;span style="font-size:26pt;font-weight:600"&gt;Enter your system ID&lt;/span&gt;&lt;/p&gt;
-&lt;/body&gt;&lt;/html&gt;
-</string>
-                    </property>
-                    <property name="wordWrap">
-                        <enum>WidgetWidth</enum>
-                    </property>
-                    <property name="undoRedoEnabled">
-                        <bool>false</bool>
-                    </property>
-                </widget>
-                <widget class="QLineEdit">
-                    <property name="name">
-                        <cstring>dataentry</cstring>
-                    </property>
-                </widget>
-                <widget class="QPushButton">
-                    <property name="name">
-                        <cstring>addanotherid</cstring>
-                    </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>111</width>
-                            <height>91</height>
-                        </size>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>111</width>
-                            <height>91</height>
-                        </size>
-                    </property>
-                    <property name="font">
-                        <font>
-                            <pointsize>15</pointsize>
-                        </font>
-                    </property>
-                    <property name="text">
-                        <string>Add
-Another
-ID</string>
-                    </property>
-                </widget>
-            </hbox>
-        </widget>
-    </widget>
-    <widget class="QWidget">
-        <property name="name">
-            <cstring>machinegroups</cstring>
-        </property>
-        <attribute name="title">
-            <string>Machine Grouping and Node Distribution</string>
-        </attribute>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout15</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>0</x>
-                    <y>0</y>
-                    <width>580</width>
-                    <height>370</height>
-                </rect>
-            </property>
-            <vbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QLabel">
-                    <property name="name">
-                        <cstring>textLabel1</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>1</hsizetype>
-                            <vsizetype>1</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="font">
-                        <font>
-                            <pointsize>16</pointsize>
-                        </font>
-                    </property>
-                    <property name="text">
-                        <string>Node Groups</string>
-                    </property>
-                    <property name="alignment">
-                        <set>AlignVCenter</set>
-                    </property>
-                    <property name="indent">
-                        <number>10</number>
-                    </property>
-                </widget>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout14</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QListBox">
-                            <item>
-                                <property name="text">
-                                    <string>ALL</string>
-                                </property>
-                            </item>
-                            <item>
-                                <property name="text">
-                                    <string>oscar_server</string>
-                                </property>
-                            </item>
-                            <item>
-                                <property name="text">
-                                    <string>oscar_client</string>
-                                </property>
-                            </item>
-                            <item>
-                                <property name="text">
-                                    <string>node1</string>
-                                </property>
-                            </item>
-                            <item>
-                                <property name="text">
-                                    <string>node2</string>
-                                </property>
-                            </item>
-                            <property name="name">
-                                <cstring>nodeGroupListBox</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>7</hsizetype>
-                                    <vsizetype>7</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>1</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="toolTip" stdset="0">
-                                <string>List of all current Node Groups</string>
-                            </property>
-                        </widget>
-                        <widget class="QLayoutWidget">
-                            <property name="name">
-                                <cstring>layout37</cstring>
-                            </property>
-                            <vbox>
-                                <property name="name">
-                                    <cstring>unnamed</cstring>
-                                </property>
-                                <widget class="QPushButton">
-                                    <property name="name">
-                                        <cstring>newButton</cstring>
-                                    </property>
-                                    <property name="sizePolicy">
-                                        <sizepolicy>
-                                            <hsizetype>1</hsizetype>
-                                            <vsizetype>0</vsizetype>
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="text">
-                                        <string>Create Group</string>
-                                    </property>
-                                    <property name="accel">
-                                        <string></string>
-                                    </property>
-                                    <property name="toolTip" stdset="0">
-                                        <string>Create a new Node Group, optionally copying from a current group</string>
-                                    </property>
-                                </widget>
-                                <widget class="QPushButton">
-                                    <property name="name">
-                                        <cstring>renameButton</cstring>
-                                    </property>
-                                    <property name="enabled">
-                                        <bool>true</bool>
-                                    </property>
-                                    <property name="sizePolicy">
-                                        <sizepolicy>
-                                            <hsizetype>1</hsizetype>
-                                            <vsizetype>0</vsizetype>
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="text">
-                                        <string>&amp;Rename Group</string>
-                                    </property>
-                                    <property name="accel">
-                                        <string>Alt+R</string>
-                                    </property>
-                                    <property name="toolTip" stdset="0">
-                                        <string>Rename the currently selected Node Group</string>
-                                    </property>
-                                </widget>
-                                <widget class="QPushButton">
-                                    <property name="name">
-                                        <cstring>deleteButton</cstring>
-                                    </property>
-                                    <property name="enabled">
-                                        <bool>true</bool>
-                                    </property>
-                                    <property name="sizePolicy">
-                                        <sizepolicy>
-                                            <hsizetype>1</hsizetype>
-                                            <vsizetype>0</vsizetype>
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="text">
-                                        <string>&amp;Delete Group</string>
-                                    </property>
-                                    <property name="accel">
-                                        <string>Alt+D</string>
-                                    </property>
-                                    <property name="toolTip" stdset="0">
-                                        <string>Delete the currently selected Node Group</string>
-                                    </property>
-                                </widget>
-                                <widget class="QPushButton">
-                                    <property name="name">
-                                        <cstring>modifyButton</cstring>
-                                    </property>
-                                    <property name="enabled">
-                                        <bool>true</bool>
-                                    </property>
-                                    <property name="sizePolicy">
-                                        <sizepolicy>
-                                            <hsizetype>1</hsizetype>
-                                            <vsizetype>0</vsizetype>
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="text">
-                                        <string>&amp;Modify Membership</string>
-                                    </property>
-                                    <property name="accel">
-                                        <string>Alt+M</string>
-                                    </property>
-                                    <property name="toolTip" stdset="0">
-                                        <string>Change the groups belonging to the currently selected Node Group</string>
-                                    </property>
-                                </widget>
-                            </vbox>
-                        </widget>
-                    </hbox>
-                </widget>
-                <widget class="QTabWidget">
-                    <property name="name">
-                        <cstring>tabWidget</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>7</hsizetype>
-                            <vsizetype>7</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>1</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <widget class="QWidget">
-                        <property name="name">
-                            <cstring>tab</cstring>
-                        </property>
-                        <attribute name="title">
-                            <string>Group Membership</string>
-                        </attribute>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <property name="margin">
-                                <number>1</number>
-                            </property>
-                            <widget class="QListBox" row="0" column="0">
-                                <property name="name">
-                                    <cstring>groupListBox_3</cstring>
-                                </property>
-                                <property name="selectionMode">
-                                    <enum>NoSelection</enum>
-                                </property>
-                                <property name="toolTip" stdset="0">
-                                    <string>List of group members for the currently selected group</string>
-                                </property>
-                            </widget>
-                        </grid>
-                    </widget>
-                    <widget class="QWidget">
-                        <property name="name">
-                            <cstring>tab</cstring>
-                        </property>
-                        <attribute name="title">
-                            <string>Node Membership</string>
-                        </attribute>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <property name="margin">
-                                <number>1</number>
-                            </property>
-                            <widget class="QListBox" row="0" column="0">
-                                <property name="name">
-                                    <cstring>nodeListBox_3</cstring>
-                                </property>
-                                <property name="selectionMode">
-                                    <enum>NoSelection</enum>
-                                </property>
-                                <property name="toolTip" stdset="0">
-                                    <string>List of nodes belonging to the currently selected group</string>
-                                </property>
-                            </widget>
-                        </grid>
-                    </widget>
-                </widget>
-            </vbox>
-        </widget>
-    </widget>
-    <widget class="QWidget">
-        <property name="name">
-            <cstring>packages</cstring>
-        </property>
-        <attribute name="title">
-            <string>Packages</string>
-        </attribute>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout13</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>0</x>
-                    <y>1</y>
-                    <width>670</width>
-                    <height>330</height>
-                </rect>
-            </property>
-            <vbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout12</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>refreshButton</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>1</hsizetype>
-                                    <vsizetype>1</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>&amp;Refresh Table</string>
-                            </property>
-                            <property name="accel">
-                                <string>Alt+R</string>
-                            </property>
-                            <property name="toolTip" stdset="0">
-                                <string>Get package information from OSCAR repositories</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>downloadButton</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>1</hsizetype>
-                                    <vsizetype>1</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>&amp;Download Selected Packages</string>
-                            </property>
-                            <property name="accel">
-                                <string>Alt+D</string>
-                            </property>
-                            <property name="toolTip" stdset="0">
-                                <string>Download selected packages from respositories and install on local disk</string>
-                            </property>
-                        </widget>
-                    </hbox>
-                </widget>
-                <widget class="OpderTable">
-                    <property name="name">
-                        <cstring>packageTable</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>7</hsizetype>
-                            <vsizetype>7</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>3</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="paletteForegroundColor">
-                        <color>
-                            <red>236</red>
-                            <green>236</green>
-                            <blue>236</blue>
-                        </color>
-                    </property>
-                    <property name="paletteBackgroundColor">
-                        <color>
-                            <red>0</red>
-                            <green>6</green>
-                            <blue>112</blue>
-                        </color>
-                    </property>
-                </widget>
-                <widget class="QTabWidget">
-                    <property name="name">
-                        <cstring>packageTabWidget</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>7</hsizetype>
-                            <vsizetype>7</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>2</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="tabShape">
-                        <enum>Triangular</enum>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string>Display of information about the package selected above</string>
-                    </property>
-                    <widget class="QWidget">
-                        <property name="name">
-                            <cstring>informationTab</cstring>
-                        </property>
-                        <attribute name="title">
-                            <string>Information</string>
-                        </attribute>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <property name="margin">
-                                <number>0</number>
-                            </property>
-                            <property name="spacing">
-                                <number>0</number>
-                            </property>
-                            <widget class="QTextEdit" row="0" column="0">
-                                <property name="name">
-                                    <cstring>informationTextBox</cstring>
-                                </property>
-                                <property name="readOnly">
-                                    <bool>true</bool>
-                                </property>
-                            </widget>
-                        </grid>
-                    </widget>
-                    <widget class="QWidget">
-                        <property name="name">
-                            <cstring>providesTab</cstring>
-                        </property>
-                        <attribute name="title">
-                            <string>Provides</string>
-                        </attribute>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <property name="margin">
-                                <number>0</number>
-                            </property>
-                            <property name="spacing">
-                                <number>0</number>
-                            </property>
-                            <widget class="QTextEdit" row="0" column="0">
-                                <property name="name">
-                                    <cstring>providesTextBox</cstring>
-                                </property>
-                                <property name="readOnly">
-                                    <bool>true</bool>
-                                </property>
-                            </widget>
-                        </grid>
-                    </widget>
-                    <widget class="QWidget">
-                        <property name="name">
-                            <cstring>conflictsTab</cstring>
-                        </property>
-                        <attribute name="title">
-                            <string>Conflicts</string>
-                        </attribute>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <property name="margin">
-                                <number>0</number>
-                            </property>
-                            <property name="spacing">
-                                <number>0</number>
-                            </property>
-                            <widget class="QTextEdit" row="0" column="0">
-                                <property name="name">
-                                    <cstring>conflictsTextBox</cstring>
-                                </property>
-                                <property name="readOnly">
-                                    <bool>true</bool>
-                                </property>
-                            </widget>
-                        </grid>
-                    </widget>
-                    <widget class="QWidget">
-                        <property name="name">
-                            <cstring>requiresTab</cstring>
-                        </property>
-                        <attribute name="title">
-                            <string>Requires</string>
-                        </attribute>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <property name="margin">
-                                <number>0</number>
-                            </property>
-                            <property name="spacing">
-                                <number>0</number>
-                            </property>
-                            <widget class="QTextEdit" row="0" column="0">
-                                <property name="name">
-                                    <cstring>requiresTextBox</cstring>
-                                </property>
-                                <property name="readOnly">
-                                    <bool>true</bool>
-                                </property>
-                            </widget>
-                        </grid>
-                    </widget>
-                    <widget class="QWidget">
-                        <property name="name">
-                            <cstring>packagerTab</cstring>
-                        </property>
-                        <attribute name="title">
-                            <string>Packager</string>
-                        </attribute>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <property name="margin">
-                                <number>0</number>
-                            </property>
-                            <property name="spacing">
-                                <number>0</number>
-                            </property>
-                            <widget class="QTextEdit" row="0" column="0">
-                                <property name="name">
-                                    <cstring>packagerTextBox</cstring>
-                                </property>
-                                <property name="readOnly">
-                                    <bool>true</bool>
-                                </property>
-                            </widget>
-                        </grid>
-                    </widget>
-                </widget>
-            </vbox>
-        </widget>
-    </widget>
-    <widget class="QWidget">
-        <property name="name">
-            <cstring>macadress</cstring>
-        </property>
-        <attribute name="title">
-            <string>MAC Adress Asignment</string>
-        </attribute>
-        <widget class="QGroupBox">
-            <property name="name">
-                <cstring>advancedBox</cstring>
-            </property>
-            <property name="enabled">
-                <bool>true</bool>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>0</x>
-                    <y>520</y>
-                    <width>230</width>
-                    <height>121</height>
-                </rect>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>1</hsizetype>
-                    <vsizetype>1</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="minimumSize">
-                <size>
-                    <width>190</width>
-                    <height>120</height>
-                </size>
-            </property>
-            <property name="title">
-                <string>Advanced</string>
-            </property>
-            <widget class="QLayoutWidget">
-                <property name="name">
-                    <cstring>layout11</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>10</x>
-                        <y>20</y>
-                        <width>204</width>
-                        <height>100</height>
-                    </rect>
-                </property>
-                <vbox>
-                    <property name="name">
-                        <cstring>unnamed</cstring>
-                    </property>
-                    <property name="margin">
-                        <number>0</number>
-                    </property>
-                    <property name="spacing">
-                        <number>0</number>
-                    </property>
-                    <widget class="QPushButton">
-                        <property name="name">
-                            <cstring>exportmacs</cstring>
-                        </property>
-                        <property name="sizePolicy">
-                            <sizepolicy>
-                                <hsizetype>1</hsizetype>
-                                <vsizetype>0</vsizetype>
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="font">
-                            <font>
-                            </font>
-                        </property>
-                        <property name="text">
-                            <string>&amp;Export MAC Addresses...</string>
-                        </property>
-                        <property name="accel">
-                            <string>Alt+E</string>
-                        </property>
-                    </widget>
-                    <widget class="QCheckBox">
-                        <property name="name">
-                            <cstring>multicast</cstring>
-                        </property>
-                        <property name="sizePolicy">
-                            <sizepolicy>
-                                <hsizetype>1</hsizetype>
-                                <vsizetype>0</vsizetype>
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                            <size>
-                                <width>150</width>
-                                <height>30</height>
-                            </size>
-                        </property>
-                        <property name="font">
-                            <font>
-                            </font>
-                        </property>
-                        <property name="text">
-                            <string>Enable Multicast Support</string>
-                        </property>
-                    </widget>
-                    <widget class="QPushButton">
-                        <property name="name">
-                            <cstring>macfiltering</cstring>
-                        </property>
-                        <property name="enabled">
-                            <bool>false</bool>
-                        </property>
-                        <property name="sizePolicy">
-                            <sizepolicy>
-                                <hsizetype>1</hsizetype>
-                                <vsizetype>1</vsizetype>
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="font">
-                            <font>
-                            </font>
-                        </property>
-                        <property name="text">
-                            <string>Filter MAC Addresses...</string>
-                        </property>
-                    </widget>
-                </vbox>
-            </widget>
-        </widget>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout22</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>0</x>
-                    <y>478</y>
-                    <width>670</width>
-                    <height>34</height>
-                </rect>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QPushButton">
-                    <property name="name">
-                        <cstring>deletenode</cstring>
-                    </property>
-                    <property name="enabled">
-                        <bool>true</bool>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>3</hsizetype>
-                            <vsizetype>0</vsizetype>
-                            <horstretch>1</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>80</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>150</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                    <property name="font">
-                        <font>
-                        </font>
-                    </property>
-                    <property name="text">
-                        <string>Delete Node</string>
-                    </property>
-                </widget>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout62</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <property name="margin">
-                            <number>1</number>
-                        </property>
-                        <property name="spacing">
-                            <number>3</number>
-                        </property>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>definenodesButton</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>1</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>50</width>
-                                    <height>30</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>100</width>
-                                    <height>30</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>Define</string>
-                            </property>
-                        </widget>
-                        <widget class="QSpinBox">
-                            <property name="name">
-                                <cstring>definenodesnum</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>1</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>50</width>
-                                    <height>30</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>100</width>
-                                    <height>30</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="prefix">
-                                <string></string>
-                            </property>
-                            <property name="buttonSymbols">
-                                <enum>UpDownArrows</enum>
-                            </property>
-                            <property name="maxValue">
-                                <number>5000</number>
-                            </property>
-                            <property name="minValue">
-                                <number>1</number>
-                            </property>
-                        </widget>
-                        <widget class="QLabel">
-                            <property name="name">
-                                <cstring>textLabel2_2</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>3</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>40</width>
-                                    <height>30</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>80</width>
-                                    <height>30</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>nodes</string>
-                            </property>
-                            <property name="alignment">
-                                <set>AlignVCenter|AlignLeft</set>
-                            </property>
-                            <property name="buddy" stdset="0">
-                                <cstring>definenodes</cstring>
-                            </property>
-                        </widget>
-                    </hbox>
-                </widget>
-                <spacer>
-                    <property name="name">
-                        <cstring>spacer5</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>190</width>
-                            <height>20</height>
-                        </size>
-                    </property>
-                </spacer>
-                <widget class="QPushButton">
-                    <property name="name">
-                        <cstring>advancedButton</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>3</hsizetype>
-                            <vsizetype>1</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>90</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>180</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                    <property name="font">
-                        <font>
-                        </font>
-                    </property>
-                    <property name="text">
-                        <string>Advanced &gt;&gt;</string>
-                    </property>
-                    <property name="toggleButton">
-                        <bool>true</bool>
-                    </property>
-                    <property name="on">
-                        <bool>false</bool>
-                    </property>
-                </widget>
-            </hbox>
-        </widget>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout41</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>221</x>
-                    <y>5</y>
-                    <width>500</width>
-                    <height>390</height>
-                </rect>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout40</cstring>
-                    </property>
-                    <vbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QLayoutWidget">
-                            <property name="name">
-                                <cstring>layout21</cstring>
-                            </property>
-                            <vbox>
-                                <property name="name">
-                                    <cstring>unnamed</cstring>
-                                </property>
-                                <spacer>
-                                    <property name="name">
-                                        <cstring>spacer4</cstring>
-                                    </property>
-                                    <property name="orientation">
-                                        <enum>Vertical</enum>
-                                    </property>
-                                    <property name="sizeType">
-                                        <enum>Preferred</enum>
-                                    </property>
-                                    <property name="sizeHint">
-                                        <size>
-                                            <width>16</width>
-                                            <height>30</height>
-                                        </size>
-                                    </property>
-                                </spacer>
-                                <widget class="QLayoutWidget">
-                                    <property name="name">
-                                        <cstring>layout20</cstring>
-                                    </property>
-                                    <hbox>
-                                        <property name="name">
-                                            <cstring>unnamed</cstring>
-                                        </property>
-                                        <widget class="QLayoutWidget">
-                                            <property name="name">
-                                                <cstring>layout18</cstring>
-                                            </property>
-                                            <vbox>
-                                                <property name="name">
-                                                    <cstring>unnamed</cstring>
-                                                </property>
-                                                <property name="margin">
-                                                    <number>0</number>
-                                                </property>
-                                                <property name="spacing">
-                                                    <number>1</number>
-                                                </property>
-                                                <widget class="QPushButton">
-                                                    <property name="name">
-                                                        <cstring>assignmac</cstring>
-                                                    </property>
-                                                    <property name="sizePolicy">
-                                                        <sizepolicy>
-                                                            <hsizetype>1</hsizetype>
-                                                            <vsizetype>1</vsizetype>
-                                                            <horstretch>0</horstretch>
-                                                            <verstretch>0</verstretch>
-                                                        </sizepolicy>
-                                                    </property>
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>30</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>32767</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="font">
-                                                        <font>
-                                                        </font>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string>&lt;</string>
-                                                    </property>
-                                                    <property name="toolTip" stdset="0">
-                                                        <string>Assign MAC to Node</string>
-                                                    </property>
-                                                </widget>
-                                                <widget class="QPushButton">
-                                                    <property name="name">
-                                                        <cstring>assignallmacs</cstring>
-                                                    </property>
-                                                    <property name="sizePolicy">
-                                                        <sizepolicy>
-                                                            <hsizetype>1</hsizetype>
-                                                            <vsizetype>1</vsizetype>
-                                                            <horstretch>0</horstretch>
-                                                            <verstretch>0</verstretch>
-                                                        </sizepolicy>
-                                                    </property>
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>30</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>32767</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="font">
-                                                        <font>
-                                                        </font>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string>&lt;&lt;</string>
-                                                    </property>
-                                                    <property name="toolTip" stdset="0">
-                                                        <string>Assign All MACs</string>
-                                                    </property>
-                                                </widget>
-                                                <widget class="QPushButton">
-                                                    <property name="name">
-                                                        <cstring>unassignmac</cstring>
-                                                    </property>
-                                                    <property name="sizePolicy">
-                                                        <sizepolicy>
-                                                            <hsizetype>1</hsizetype>
-                                                            <vsizetype>1</vsizetype>
-                                                            <horstretch>0</horstretch>
-                                                            <verstretch>0</verstretch>
-                                                        </sizepolicy>
-                                                    </property>
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>30</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>32767</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="font">
-                                                        <font>
-                                                        </font>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string>&gt;</string>
-                                                    </property>
-                                                    <property name="toolTip" stdset="0">
-                                                        <string>Unassign MAC from Node</string>
-                                                    </property>
-                                                </widget>
-                                            </vbox>
-                                        </widget>
-                                        <widget class="QLayoutWidget">
-                                            <property name="name">
-                                                <cstring>layout19</cstring>
-                                            </property>
-                                            <vbox>
-                                                <property name="name">
-                                                    <cstring>unnamed</cstring>
-                                                </property>
-                                                <widget class="QLabel">
-                                                    <property name="name">
-                                                        <cstring>textLabel8</cstring>
-                                                    </property>
-                                                    <property name="sizePolicy">
-                                                        <sizepolicy>
-                                                            <hsizetype>3</hsizetype>
-                                                            <vsizetype>1</vsizetype>
-                                                            <horstretch>2</horstretch>
-                                                            <verstretch>1</verstretch>
-                                                        </sizepolicy>
-                                                    </property>
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>60</width>
-                                                            <height>30</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="font">
-                                                        <font>
-                                                        </font>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string>Unassigned MAC Addresses</string>
-                                                    </property>
-                                                    <property name="alignment">
-                                                        <set>WordBreak|AlignCenter</set>
-                                                    </property>
-                                                    <property name="buddy" stdset="0">
-                                                        <cstring>othermacs</cstring>
-                                                    </property>
-                                                </widget>
-                                                <widget class="QListBox">
-                                                    <property name="name">
-                                                        <cstring>othermacs</cstring>
-                                                    </property>
-                                                    <property name="sizePolicy">
-                                                        <sizepolicy>
-                                                            <hsizetype>3</hsizetype>
-                                                            <vsizetype>7</vsizetype>
-                                                            <horstretch>2</horstretch>
-                                                            <verstretch>3</verstretch>
-                                                        </sizepolicy>
-                                                    </property>
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>110</width>
-                                                            <height>0</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="font">
-                                                        <font>
-                                                        </font>
-                                                    </property>
-                                                </widget>
-                                            </vbox>
-                                        </widget>
-                                    </hbox>
-                                </widget>
-                            </vbox>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>clearmacs</cstring>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>Clear Unassigned MACs</string>
-                            </property>
-                            <property name="accel">
-                                <string></string>
-                            </property>
-                        </widget>
-                    </vbox>
-                </widget>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout34</cstring>
-                    </property>
-                    <vbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QButtonGroup">
-                            <property name="name">
-                                <cstring>collectionmethodselect</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>3</hsizetype>
-                                    <vsizetype>1</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>85</width>
-                                    <height>80</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>200</width>
-                                    <height>80</height>
-                                </size>
-                            </property>
-                            <property name="frameShape">
-                                <enum>NoFrame</enum>
-                            </property>
-                            <property name="title">
-                                <string>Collection Method</string>
-                            </property>
-                            <property name="alignment">
-                                <set>AlignTop|AlignHCenter</set>
-                            </property>
-                            <widget class="QLayoutWidget">
-                                <property name="name">
-                                    <cstring>layout17</cstring>
-                                </property>
-                                <property name="geometry">
-                                    <rect>
-                                        <x>8</x>
-                                        <y>18</y>
-                                        <width>180</width>
-                                        <height>68</height>
-                                    </rect>
-                                </property>
-                                <vbox>
-                                    <property name="name">
-                                        <cstring>unnamed</cstring>
-                                    </property>
-                                    <property name="margin">
-                                        <number>0</number>
-                                    </property>
-                                    <property name="spacing">
-                                        <number>0</number>
-                                    </property>
-                                    <widget class="QRadioButton">
-                                        <property name="name">
-                                            <cstring>networkcollect</cstring>
-                                        </property>
-                                        <property name="text">
-                                            <string>Network</string>
-                                        </property>
-                                        <property name="checked">
-                                            <bool>true</bool>
-                                        </property>
-                                        <property name="buttonGroupId">
-                                            <number>-1</number>
-                                        </property>
-                                    </widget>
-                                    <widget class="QRadioButton">
-                                        <property name="name">
-                                            <cstring>filecollect</cstring>
-                                        </property>
-                                        <property name="text">
-                                            <string>File</string>
-                                        </property>
-                                    </widget>
-                                    <widget class="QRadioButton">
-                                        <property name="name">
-                                            <cstring>manualcollect</cstring>
-                                        </property>
-                                        <property name="text">
-                                            <string>Manual</string>
-                                        </property>
-                                        <property name="buttonGroupId">
-                                            <number>-1</number>
-                                        </property>
-                                    </widget>
-                                </vbox>
-                            </widget>
-                        </widget>
-                        <widget class="QWidgetStack">
-                            <property name="name">
-                                <cstring>collectionmethod</cstring>
-                            </property>
-                            <widget class="QWidget">
-                                <property name="name">
-                                    <cstring>network</cstring>
-                                </property>
-                                <attribute name="id">
-                                    <number>0</number>
-                                </attribute>
-                                <widget class="QLayoutWidget">
-                                    <property name="name">
-                                        <cstring>layout27</cstring>
-                                    </property>
-                                    <property name="geometry">
-                                        <rect>
-                                            <x>1</x>
-                                            <y>1</y>
-                                            <width>258</width>
-                                            <height>301</height>
-                                        </rect>
-                                    </property>
-                                    <vbox>
-                                        <property name="name">
-                                            <cstring>unnamed</cstring>
-                                        </property>
-                                        <property name="spacing">
-                                            <number>1</number>
-                                        </property>
-                                        <widget class="QLayoutWidget">
-                                            <property name="name">
-                                                <cstring>layout25</cstring>
-                                            </property>
-                                            <hbox>
-                                                <property name="name">
-                                                    <cstring>unnamed</cstring>
-                                                </property>
-                                                <property name="margin">
-                                                    <number>0</number>
-                                                </property>
-                                                <property name="spacing">
-                                                    <number>0</number>
-                                                </property>
-                                                <widget class="QLayoutWidget">
-                                                    <property name="name">
-                                                        <cstring>layout24</cstring>
-                                                    </property>
-                                                    <vbox>
-                                                        <property name="name">
-                                                            <cstring>unnamed</cstring>
-                                                        </property>
-                                                        <property name="margin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <property name="spacing">
-                                                            <number>1</number>
-                                                        </property>
-                                                        <widget class="QPushButton">
-                                                            <property name="name">
-                                                                <cstring>straytounass</cstring>
-                                                            </property>
-                                                            <property name="sizePolicy">
-                                                                <sizepolicy>
-                                                                    <hsizetype>1</hsizetype>
-                                                                    <vsizetype>3</vsizetype>
-                                                                    <horstretch>1</horstretch>
-                                                                    <verstretch>1</verstretch>
-                                                                </sizepolicy>
-                                                            </property>
-                                                            <property name="minimumSize">
-                                                                <size>
-                                                                    <width>30</width>
-                                                                    <height>30</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="maximumSize">
-                                                                <size>
-                                                                    <width>30</width>
-                                                                    <height>32767</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="text">
-                                                                <string>&lt;</string>
-                                                            </property>
-                                                            <property name="toolTip" stdset="0">
-                                                                <string>Return MAC to Unassigned</string>
-                                                            </property>
-                                                        </widget>
-                                                        <widget class="QPushButton">
-                                                            <property name="name">
-                                                                <cstring>allstraytounass</cstring>
-                                                            </property>
-                                                            <property name="sizePolicy">
-                                                                <sizepolicy>
-                                                                    <hsizetype>1</hsizetype>
-                                                                    <vsizetype>3</vsizetype>
-                                                                    <horstretch>1</horstretch>
-                                                                    <verstretch>1</verstretch>
-                                                                </sizepolicy>
-                                                            </property>
-                                                            <property name="minimumSize">
-                                                                <size>
-                                                                    <width>30</width>
-                                                                    <height>30</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="maximumSize">
-                                                                <size>
-                                                                    <width>30</width>
-                                                                    <height>32767</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="text">
-                                                                <string>&lt;&lt;</string>
-                                                            </property>
-                                                            <property name="toolTip" stdset="0">
-                                                                <string>Return All MACs to Unassigned</string>
-                                                            </property>
-                                                        </widget>
-                                                        <widget class="QPushButton">
-                                                            <property name="name">
-                                                                <cstring>unasstostray</cstring>
-                                                            </property>
-                                                            <property name="sizePolicy">
-                                                                <sizepolicy>
-                                                                    <hsizetype>1</hsizetype>
-                                                                    <vsizetype>3</vsizetype>
-                                                                    <horstretch>1</horstretch>
-                                                                    <verstretch>1</verstretch>
-                                                                </sizepolicy>
-                                                            </property>
-                                                            <property name="minimumSize">
-                                                                <size>
-                                                                    <width>30</width>
-                                                                    <height>30</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="maximumSize">
-                                                                <size>
-                                                                    <width>30</width>
-                                                                    <height>32767</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="text">
-                                                                <string>&gt;</string>
-                                                            </property>
-                                                            <property name="toolTip" stdset="0">
-                                                                <string>Move to Stray</string>
-                                                            </property>
-                                                        </widget>
-                                                        <widget class="QPushButton">
-                                                            <property name="name">
-                                                                <cstring>allunasstostray</cstring>
-                                                            </property>
-                                                            <property name="sizePolicy">
-                                                                <sizepolicy>
-                                                                    <hsizetype>1</hsizetype>
-                                                                    <vsizetype>3</vsizetype>
-                                                                    <horstretch>1</horstretch>
-                                                                    <verstretch>1</verstretch>
-                                                                </sizepolicy>
-                                                            </property>
-                                                            <property name="minimumSize">
-                                                                <size>
-                                                                    <width>30</width>
-                                                                    <height>30</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="maximumSize">
-                                                                <size>
-                                                                    <width>30</width>
-                                                                    <height>32767</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="text">
-                                                                <string>&gt;&gt;</string>
-                                                            </property>
-                                                            <property name="toolTip" stdset="0">
-                                                                <string>Move All Unassigned MACs to Stray</string>
-                                                            </property>
-                                                        </widget>
-                                                    </vbox>
-                                                </widget>
-                                                <widget class="QLayoutWidget">
-                                                    <property name="name">
-                                                        <cstring>layout61</cstring>
-                                                    </property>
-                                                    <vbox>
-                                                        <property name="name">
-                                                            <cstring>unnamed</cstring>
-                                                        </property>
-                                                        <property name="margin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <property name="spacing">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <widget class="QLabel">
-                                                            <property name="name">
-                                                                <cstring>textLabel3_3</cstring>
-                                                            </property>
-                                                            <property name="sizePolicy">
-                                                                <sizepolicy>
-                                                                    <hsizetype>3</hsizetype>
-                                                                    <vsizetype>1</vsizetype>
-                                                                    <horstretch>1</horstretch>
-                                                                    <verstretch>1</verstretch>
-                                                                </sizepolicy>
-                                                            </property>
-                                                            <property name="minimumSize">
-                                                                <size>
-                                                                    <width>70</width>
-                                                                    <height>20</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="font">
-                                                                <font>
-                                                                </font>
-                                                            </property>
-                                                            <property name="text">
-                                                                <string>Stray MAC Addresses</string>
-                                                            </property>
-                                                            <property name="alignment">
-                                                                <set>AlignCenter</set>
-                                                            </property>
-                                                        </widget>
-                                                        <widget class="QListBox">
-                                                            <property name="name">
-                                                                <cstring>straymacs</cstring>
-                                                            </property>
-                                                            <property name="sizePolicy">
-                                                                <sizepolicy>
-                                                                    <hsizetype>3</hsizetype>
-                                                                    <vsizetype>3</vsizetype>
-                                                                    <horstretch>3</horstretch>
-                                                                    <verstretch>3</verstretch>
-                                                                </sizepolicy>
-                                                            </property>
-                                                            <property name="minimumSize">
-                                                                <size>
-                                                                    <width>50</width>
-                                                                    <height>100</height>
-                                                                </size>
-                                                            </property>
-                                                            <property name="font">
-                                                                <font>
-                                                                </font>
-                                                            </property>
-                                                        </widget>
-                                                    </vbox>
-                                                </widget>
-                                            </hbox>
-                                        </widget>
-                                        <widget class="QLayoutWidget">
-                                            <property name="name">
-                                                <cstring>layout26</cstring>
-                                            </property>
-                                            <hbox>
-                                                <property name="name">
-                                                    <cstring>unnamed</cstring>
-                                                </property>
-                                                <property name="margin">
-                                                    <number>0</number>
-                                                </property>
-                                                <property name="spacing">
-                                                    <number>0</number>
-                                                </property>
-                                                <widget class="QPushButton">
-                                                    <property name="name">
-                                                        <cstring>startcollect</cstring>
-                                                    </property>
-                                                    <property name="enabled">
-                                                        <bool>true</bool>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string>Start Collection</string>
-                                                    </property>
-                                                </widget>
-                                                <widget class="QPushButton">
-                                                    <property name="name">
-                                                        <cstring>stopcollect</cstring>
-                                                    </property>
-                                                    <property name="enabled">
-                                                        <bool>false</bool>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string>Stop Collection</string>
-                                                    </property>
-                                                </widget>
-                                            </hbox>
-                                        </widget>
-                                    </vbox>
-                                </widget>
-                            </widget>
-                            <widget class="QWidget">
-                                <property name="name">
-                                    <cstring>file</cstring>
-                                </property>
-                                <attribute name="id">
-                                    <number>1</number>
-                                </attribute>
-                                <widget class="QLayoutWidget">
-                                    <property name="name">
-                                        <cstring>layout33</cstring>
-                                    </property>
-                                    <property name="geometry">
-                                        <rect>
-                                            <x>2</x>
-                                            <y>117</y>
-                                            <width>228</width>
-                                            <height>32</height>
-                                        </rect>
-                                    </property>
-                                    <hbox>
-                                        <property name="name">
-                                            <cstring>unnamed</cstring>
-                                        </property>
-                                        <widget class="QLineEdit">
-                                            <property name="name">
-                                                <cstring>importmacfile</cstring>
-                                            </property>
-                                            <property name="sizePolicy">
-                                                <sizepolicy>
-                                                    <hsizetype>7</hsizetype>
-                                                    <vsizetype>1</vsizetype>
-                                                    <horstretch>0</horstretch>
-                                                    <verstretch>0</verstretch>
-                                                </sizepolicy>
-                                            </property>
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>60</width>
-                                                    <height>30</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>32767</width>
-                                                    <height>30</height>
-                                                </size>
-                                            </property>
-                                        </widget>
-                                        <widget class="QPushButton">
-                                            <property name="name">
-                                                <cstring>importfilebrowse</cstring>
-                                            </property>
-                                            <property name="sizePolicy">
-                                                <sizepolicy>
-                                                    <hsizetype>1</hsizetype>
-                                                    <vsizetype>1</vsizetype>
-                                                    <horstretch>0</horstretch>
-                                                    <verstretch>0</verstretch>
-                                                </sizepolicy>
-                                            </property>
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>50</width>
-                                                    <height>30</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>32767</width>
-                                                    <height>30</height>
-                                                </size>
-                                            </property>
-                                            <property name="text">
-                                                <string>Browse</string>
-                                            </property>
-                                        </widget>
-                                    </hbox>
-                                </widget>
-                                <widget class="QPushButton">
-                                    <property name="name">
-                                        <cstring>importmacs</cstring>
-                                    </property>
-                                    <property name="geometry">
-                                        <rect>
-                                            <x>1</x>
-                                            <y>269</y>
-                                            <width>240</width>
-                                            <height>30</height>
-                                        </rect>
-                                    </property>
-                                    <property name="sizePolicy">
-                                        <sizepolicy>
-                                            <hsizetype>1</hsizetype>
-                                            <vsizetype>1</vsizetype>
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>0</width>
-                                            <height>30</height>
-                                        </size>
-                                    </property>
-                                    <property name="maximumSize">
-                                        <size>
-                                            <width>32767</width>
-                                            <height>30</height>
-                                        </size>
-                                    </property>
-                                    <property name="font">
-                                        <font>
-                                        </font>
-                                    </property>
-                                    <property name="text">
-                                        <string>&amp;Import MAC Addresses from file</string>
-                                    </property>
-                                    <property name="accel">
-                                        <string>Alt+I</string>
-                                    </property>
-                                </widget>
-                            </widget>
-                            <widget class="QWidget">
-                                <property name="name">
-                                    <cstring>manual</cstring>
-                                </property>
-                                <attribute name="id">
-                                    <number>2</number>
-                                </attribute>
-                                <grid>
-                                    <property name="name">
-                                        <cstring>unnamed</cstring>
-                                    </property>
-                                    <widget class="QLabel" row="0" column="0">
-                                        <property name="name">
-                                            <cstring>textLabel1_2</cstring>
-                                        </property>
-                                        <property name="sizePolicy">
-                                            <sizepolicy>
-                                                <hsizetype>5</hsizetype>
-                                                <vsizetype>1</vsizetype>
-                                                <horstretch>0</horstretch>
-                                                <verstretch>0</verstretch>
-                                            </sizepolicy>
-                                        </property>
-                                        <property name="minimumSize">
-                                            <size>
-                                                <width>0</width>
-                                                <height>40</height>
-                                            </size>
-                                        </property>
-                                        <property name="maximumSize">
-                                            <size>
-                                                <width>32767</width>
-                                                <height>50</height>
-                                            </size>
-                                        </property>
-                                        <property name="font">
-                                            <font>
-                                            </font>
-                                        </property>
-                                        <property name="text">
-                                            <string>Enter MAC Address in form
-01:23:45:67:89:ab</string>
-                                        </property>
-                                        <property name="alignment">
-                                            <set>AlignCenter</set>
-                                        </property>
-                                        <property name="buddy" stdset="0">
-                                            <cstring>manualmac</cstring>
-                                        </property>
-                                    </widget>
-                                    <widget class="QLineEdit" row="0" column="0">
-                                        <property name="name">
-                                            <cstring>manualmac</cstring>
-                                        </property>
-                                        <property name="sizePolicy">
-                                            <sizepolicy>
-                                                <hsizetype>7</hsizetype>
-                                                <vsizetype>1</vsizetype>
-                                                <horstretch>0</horstretch>
-                                                <verstretch>0</verstretch>
-                                            </sizepolicy>
-                                        </property>
-                                        <property name="minimumSize">
-                                            <size>
-                                                <width>0</width>
-                                                <height>30</height>
-                                            </size>
-                                        </property>
-                                        <property name="maximumSize">
-                                            <size>
-                                                <width>32767</width>
-                                                <height>30</height>
-                                            </size>
-                                        </property>
-                                        <property name="maxLength">
-                                            <number>17</number>
-                                        </property>
-                                    </widget>
-                                    <widget class="QPushButton" row="1" column="0">
-                                        <property name="name">
-                                            <cstring>importmanualmac</cstring>
-                                        </property>
-                                        <property name="text">
-                                            <string>&amp;Import MAC</string>
-                                        </property>
-                                        <property name="accel">
-                                            <string>Alt+I</string>
-                                        </property>
-                                    </widget>
-                                </grid>
-                            </widget>
-                        </widget>
-                    </vbox>
-                </widget>
-            </hbox>
-        </widget>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout24</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>-2</x>
-                    <y>-1</y>
-                    <width>223</width>
-                    <height>470</height>
-                </rect>
-            </property>
-            <vbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout23</cstring>
-                    </property>
-                    <vbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>nodesettingschange</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>7</hsizetype>
-                                    <vsizetype>1</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>175</width>
-                                    <height>30</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>600</width>
-                                    <height>1500</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="focusPolicy">
-                                <enum>StrongFocus</enum>
-                            </property>
-                            <property name="text">
-                                <string>Change New Node Settings</string>
-                            </property>
-                        </widget>
-                        <widget class="NodeMgmtTable">
-                            <property name="name">
-                                <cstring>nodeTable</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>1</hsizetype>
-                                    <vsizetype>3</vsizetype>
-                                    <horstretch>4</horstretch>
-                                    <verstretch>2</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>200</width>
-                                    <height>200</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>600</width>
-                                    <height>4000</height>
-                                </size>
-                            </property>
-                            <property name="paletteBackgroundColor">
-                                <color>
-                                    <red>0</red>
-                                    <green>6</green>
-                                    <blue>112</blue>
-                                </color>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="acceptDrops">
-                                <bool>true</bool>
-                            </property>
-                        </widget>
-                    </vbox>
-                </widget>
-                <widget class="QLabel">
-                    <property name="name">
-                        <cstring>nodelook</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>1</hsizetype>
-                            <vsizetype>1</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>70</width>
-                            <height>10</height>
-                        </size>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>600</width>
-                            <height>100</height>
-                        </size>
-                    </property>
-                    <property name="font">
-                        <font>
-                        </font>
-                    </property>
-                    <property name="text">
-                        <string>Next node will be __________</string>
-                    </property>
-                    <property name="alignment">
-                        <set>WordBreak|AlignVCenter</set>
-                    </property>
-                </widget>
-            </vbox>
-        </widget>
-        <widget class="QButtonGroup">
-            <property name="name">
-                <cstring>autoassignGroup</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>230</x>
-                    <y>400</y>
-                    <width>490</width>
-                    <height>70</height>
-                </rect>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>3</hsizetype>
-                    <vsizetype>3</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="title">
-                <string>Automatic MAC Address Assignment</string>
-            </property>
-            <property name="alignment">
-                <set>AlignAuto</set>
-            </property>
-            <widget class="QLayoutWidget">
-                <property name="name">
-                    <cstring>layout39</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>10</x>
-                        <y>20</y>
-                        <width>345</width>
-                        <height>46</height>
-                    </rect>
-                </property>
-                <vbox>
-                    <property name="name">
-                        <cstring>unnamed</cstring>
-                    </property>
-                    <property name="margin">
-                        <number>0</number>
-                    </property>
-                    <property name="spacing">
-                        <number>0</number>
-                    </property>
-                    <widget class="QCheckBox">
-                        <property name="name">
-                            <cstring>autodefine</cstring>
-                        </property>
-                        <property name="sizePolicy">
-                            <sizepolicy>
-                                <hsizetype>1</hsizetype>
-                                <vsizetype>1</vsizetype>
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="font">
-                            <font>
-                            </font>
-                        </property>
-                        <property name="text">
-                            <string>Auto-define new nodes upon MAC collection</string>
-                        </property>
-                    </widget>
-                    <widget class="QCheckBox">
-                        <property name="name">
-                            <cstring>assignblanksfirst</cstring>
-                        </property>
-                        <property name="enabled">
-                            <bool>false</bool>
-                        </property>
-                        <property name="sizePolicy">
-                            <sizepolicy>
-                                <hsizetype>1</hsizetype>
-                                <vsizetype>1</vsizetype>
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="font">
-                            <font>
-                            </font>
-                        </property>
-                        <property name="text">
-                            <string>Assign to nodes without a MAC address first</string>
-                        </property>
-                        <property name="checked">
-                            <bool>true</bool>
-                        </property>
-                    </widget>
-                </vbox>
-            </widget>
-        </widget>
-    </widget>
-</widget>
-<customwidgets>
-    <customwidget>
-        <class>NodeMgmtTable</class>
-        <header location="local">NodeMgmtTable.pm</header>
-        <sizehint>
             <width>200</width>
-            <height>200</height>
-        </sizehint>
-        <container>0</container>
-        <sizepolicy>
-            <hordata>5</hordata>
-            <verdata>5</verdata>
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
+            <height>302</height>
+           </rect>
+          </property>
+          <widget class="QWidget" name="layout27" >
+           <property name="geometry" >
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>258</width>
+             <height>301</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" >
+            <property name="spacing" >
+             <number>1</number>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" >
+              <property name="spacing" >
+               <number>0</number>
+              </property>
+              <property name="leftMargin" >
+               <number>0</number>
+              </property>
+              <property name="topMargin" >
+               <number>0</number>
+              </property>
+              <property name="rightMargin" >
+               <number>0</number>
+              </property>
+              <property name="bottomMargin" >
+               <number>0</number>
+              </property>
+              <item>
+               <layout class="QVBoxLayout" >
+                <property name="spacing" >
+                 <number>1</number>
+                </property>
+                <property name="leftMargin" >
+                 <number>0</number>
+                </property>
+                <property name="topMargin" >
+                 <number>0</number>
+                </property>
+                <property name="rightMargin" >
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin" >
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QPushButton" name="straytounass" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="MinimumExpanding" hsizetype="Minimum" >
+                    <horstretch>1</horstretch>
+                    <verstretch>1</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize" >
+                   <size>
+                    <width>30</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize" >
+                   <size>
+                    <width>30</width>
+                    <height>32767</height>
+                   </size>
+                  </property>
+                  <property name="toolTip" >
+                   <string>Return MAC to Unassigned</string>
+                  </property>
+                  <property name="text" >
+                   <string>&lt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="allstraytounass" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="MinimumExpanding" hsizetype="Minimum" >
+                    <horstretch>1</horstretch>
+                    <verstretch>1</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize" >
+                   <size>
+                    <width>30</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize" >
+                   <size>
+                    <width>30</width>
+                    <height>32767</height>
+                   </size>
+                  </property>
+                  <property name="toolTip" >
+                   <string>Return All MACs to Unassigned</string>
+                  </property>
+                  <property name="text" >
+                   <string>&lt;&lt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="unasstostray" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="MinimumExpanding" hsizetype="Minimum" >
+                    <horstretch>1</horstretch>
+                    <verstretch>1</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize" >
+                   <size>
+                    <width>30</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize" >
+                   <size>
+                    <width>30</width>
+                    <height>32767</height>
+                   </size>
+                  </property>
+                  <property name="toolTip" >
+                   <string>Move to Stray</string>
+                  </property>
+                  <property name="text" >
+                   <string>></string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="allunasstostray" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="MinimumExpanding" hsizetype="Minimum" >
+                    <horstretch>1</horstretch>
+                    <verstretch>1</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize" >
+                   <size>
+                    <width>30</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize" >
+                   <size>
+                    <width>30</width>
+                    <height>32767</height>
+                   </size>
+                  </property>
+                  <property name="toolTip" >
+                   <string>Move All Unassigned MACs to Stray</string>
+                  </property>
+                  <property name="text" >
+                   <string>>></string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" >
+                <property name="spacing" >
+                 <number>0</number>
+                </property>
+                <property name="leftMargin" >
+                 <number>0</number>
+                </property>
+                <property name="topMargin" >
+                 <number>0</number>
+                </property>
+                <property name="rightMargin" >
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin" >
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="textLabel3_3" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+                    <horstretch>1</horstretch>
+                    <verstretch>1</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize" >
+                   <size>
+                    <width>70</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="font" >
+                   <font/>
+                  </property>
+                  <property name="text" >
+                   <string>Stray MAC Addresses</string>
+                  </property>
+                  <property name="alignment" >
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="wordWrap" >
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="Q3ListBox" name="straymacs" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="MinimumExpanding" hsizetype="MinimumExpanding" >
+                    <horstretch>3</horstretch>
+                    <verstretch>3</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize" >
+                   <size>
+                    <width>50</width>
+                    <height>100</height>
+                   </size>
+                  </property>
+                  <property name="font" >
+                   <font/>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" >
+              <property name="spacing" >
+               <number>0</number>
+              </property>
+              <property name="leftMargin" >
+               <number>0</number>
+              </property>
+              <property name="topMargin" >
+               <number>0</number>
+              </property>
+              <property name="rightMargin" >
+               <number>0</number>
+              </property>
+              <property name="bottomMargin" >
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="startcollect" >
+                <property name="enabled" >
+                 <bool>true</bool>
+                </property>
+                <property name="text" >
+                 <string>Start Collection</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="stopcollect" >
+                <property name="enabled" >
+                 <bool>false</bool>
+                </property>
+                <property name="text" >
+                 <string>Stop Collection</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+         <widget class="QWidget" name="file" >
+          <property name="geometry" >
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>100</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <widget class="QWidget" name="layout33" >
+           <property name="geometry" >
+            <rect>
+             <x>2</x>
+             <y>117</y>
+             <width>228</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <layout class="QHBoxLayout" >
+            <item>
+             <widget class="QLineEdit" name="importmacfile" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize" >
+               <size>
+                <width>60</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="maximumSize" >
+               <size>
+                <width>32767</width>
+                <height>30</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="importfilebrowse" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize" >
+               <size>
+                <width>50</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="maximumSize" >
+               <size>
+                <width>32767</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="text" >
+               <string>Browse</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QPushButton" name="importmacs" >
+           <property name="geometry" >
+            <rect>
+             <x>1</x>
+             <y>269</y>
+             <width>240</width>
+             <height>30</height>
+            </rect>
+           </property>
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize" >
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize" >
+            <size>
+             <width>32767</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="font" >
+            <font/>
+           </property>
+           <property name="text" >
+            <string>&amp;Import MAC Addresses from file</string>
+           </property>
+           <property name="shortcut" >
+            <string>Alt+I</string>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QWidget" name="manual" >
+          <property name="geometry" >
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>100</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" >
+           <item row="0" column="0" >
+            <widget class="QLabel" name="textLabel1_2" >
+             <property name="sizePolicy" >
+              <sizepolicy vsizetype="Minimum" hsizetype="Preferred" >
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize" >
+              <size>
+               <width>32767</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="font" >
+              <font/>
+             </property>
+             <property name="text" >
+              <string>Enter MAC Address in form
+01:23:45:67:89:ab</string>
+             </property>
+             <property name="alignment" >
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap" >
+              <bool>false</bool>
+             </property>
+             <property name="buddy" >
+              <cstring>manualmac</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" >
+            <widget class="QLineEdit" name="manualmac" >
+             <property name="sizePolicy" >
+              <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize" >
+              <size>
+               <width>32767</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maxLength" >
+              <number>17</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" >
+            <widget class="QPushButton" name="importmanualmac" >
+             <property name="text" >
+              <string>&amp;Import MAC</string>
+             </property>
+             <property name="shortcut" >
+              <string>Alt+I</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="layout24" >
+    <property name="geometry" >
+     <rect>
+      <x>-2</x>
+      <y>-1</y>
+      <width>223</width>
+      <height>470</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" >
+     <item>
+      <layout class="QVBoxLayout" >
+       <item>
+        <widget class="QPushButton" name="nodesettingschange" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize" >
+          <size>
+           <width>175</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize" >
+          <size>
+           <width>600</width>
+           <height>1500</height>
+          </size>
+         </property>
+         <property name="font" >
+          <font/>
+         </property>
+         <property name="focusPolicy" >
+          <enum>Qt::StrongFocus</enum>
+         </property>
+         <property name="text" >
+          <string>Change New Node Settings</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="NodeMgmtTable" native="1" name="nodeTable" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="MinimumExpanding" hsizetype="Minimum" >
+           <horstretch>4</horstretch>
+           <verstretch>2</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize" >
+          <size>
+           <width>200</width>
+           <height>200</height>
+          </size>
+         </property>
+         <property name="maximumSize" >
+          <size>
+           <width>600</width>
+           <height>4000</height>
+          </size>
+         </property>
+         <property name="font" >
+          <font/>
+         </property>
+         <property name="acceptDrops" >
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="nodelook" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
         </sizepolicy>
-        <pixmap>image0</pixmap>
-    </customwidget>
-    <customwidget>
-        <class>OpderTable</class>
-        <header location="local">OpderTable.pm</header>
-        <sizehint>
-            <width>300</width>
-            <height>200</height>
-        </sizehint>
-        <container>0</container>
-        <sizepolicy>
-            <hordata>5</hordata>
-            <verdata>5</verdata>
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-        </sizepolicy>
-        <pixmap>image0</pixmap>
-    </customwidget>
-</customwidgets>
-<images>
-    <image name="image0">
-        <data format="XBM.GZ" length="79">789c534e494dcbcc4b554829cdcdad8c2fcf4c29c95030e0524611cd48cd4ccf28010a1797249664262b2467241641a592324b8aa363156c15aab914146aadb90067111b1f</data>
-    </image>
-</images>
-<connections>
-    <connection>
-        <sender>manualcollect</sender>
-        <signal>clicked()</signal>
-        <receiver>collectionmethod</receiver>
-        <slot>&lt;No)</slot>
-    </connection>
-</connections>
-<includes>
-    <include location="local" impldecl="in implementation">OscarGUI.ui.h</include>
-</includes>
-<slots>
-    <slot>closeButton_clicked()</slot>
-    <slot>newButton_clicked()</slot>
-    <slot>renameButton_clicked()</slot>
-    <slot>deleteButton_clicked()</slot>
-    <slot>modifyButton_clicked()</slot>
-    <slot>nodeGroupListBox_highlighted( QListBoxItem * )</slot>
-    <slot>enableButtons( int )</slot>
-    <slot>reReadOda( char * )</slot>
-    <slot>closeEvent( QCloseEvent * )</slot>
-    <slot>showEvent()</slot>
-    <slot>refreshNodeGroupListBox()</slot>
-    <slot>nodeGroupIsSpecial( char * )</slot>
-    <slot>refreshMembershipListBoxes()</slot>
-    <slot>closeButton_clicked()</slot>
-    <slot>refreshButton_clicked()</slot>
-    <slot>downloadButton_clicked()</slot>
-    <slot>backButton_clicked()</slot>
-    <slot>nextButton_clicked()</slot>
-    <slot>closeMenuItem_activated()</slot>
-    <slot>addRepositoryMenuItem_activated()</slot>
-    <slot>updateTextBox()</slot>
-    <slot>rowSelectionChanged()</slot>
-    <slot>disableDownloadButton()</slot>
-    <slot>updateDownloadButton()</slot>
-    <slot>setRefreshButton( int )</slot>
-    <slot>setButtonShown( char *, char *, bool )</slot>
-    <slot>closeEvent( QCloseEvent * )</slot>
-    <slot>reReadOda( char * )</slot>
-    <slot>populate_nodetable()</slot>
-    <slot>advancedButton_toggled( bool )</slot>
-    <slot>nodesettingschange_clicked()</slot>
-    <slot>refreshsamplenode()</slot>
-    <slot>defineNnodes()</slot>
-    <slot>startnetcollection()</slot>
-    <slot>stopnetcollection()</slot>
-    <slot>processnetmacs()</slot>
-    <slot>getcollectedmacs()</slot>
-    <slot>importfilebrowse_clicked()</slot>
-    <slot>importmacs_clicked()</slot>
-    <slot>exportmacs_clicked()</slot>
-    <slot>importmanualmac_clicked()</slot>
-    <slot>straytounass_clicked()</slot>
-    <slot>allstraytounass_clicked()</slot>
-    <slot>unasstostray_clicked()</slot>
-    <slot>allunasstostray_clicked()</slot>
-    <slot>clearmacs_clicked()</slot>
-    <slot>closeDialog_clicked()</slot>
-    <slot>definenode()</slot>
-    <slot>getnextnodeip()</slot>
-    <slot>getnextnodename()</slot>
-    <slot>assignmac_clicked()</slot>
-    <slot>assignallmacs_clicked()</slot>
-    <slot>unassignmac_clicked()</slot>
-    <slot>othermacs_dimmer()</slot>
-    <slot>straymacs_dimmer()</slot>
-    <slot>closeEvent()</slot>
-    <slot>backButton_clicked()</slot>
-    <slot>nextButton_clicked()</slot>
-    <slot>setButtonShown( char *, char *, bool )</slot>
-    <slot>reReadOda( char * )</slot>
-    <slot>OscarGUI_toolBarPositionChanged( QToolBar * )</slot>
-</slots>
-<functions>
-    <function access="private" specifier="non virtual">init()</function>
-    <function access="private" specifier="non virtual">init()</function>
-    <function access="private" specifier="non virtual">init()</function>
-</functions>
-<layoutdefaults spacing="6" margin="11"/>
-<includehints>
-    <includehint>OpderTable.pm</includehint>
-    <includehint>NodeMgmtTable.pm</includehint>
-</includehints>
-</UI>
+       </property>
+       <property name="minimumSize" >
+        <size>
+         <width>70</width>
+         <height>10</height>
+        </size>
+       </property>
+       <property name="maximumSize" >
+        <size>
+         <width>600</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="font" >
+        <font/>
+       </property>
+       <property name="text" >
+        <string>Next node will be __________</string>
+       </property>
+       <property name="alignment" >
+        <set>Qt::AlignVCenter</set>
+       </property>
+       <property name="wordWrap" >
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="Q3ButtonGroup" name="autoassignGroup" >
+    <property name="geometry" >
+     <rect>
+      <x>230</x>
+      <y>400</y>
+      <width>490</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="sizePolicy" >
+     <sizepolicy vsizetype="MinimumExpanding" hsizetype="MinimumExpanding" >
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="title" >
+     <string>Automatic MAC Address Assignment</string>
+    </property>
+    <widget class="QWidget" name="layout39" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>345</width>
+       <height>46</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" >
+      <property name="spacing" >
+       <number>0</number>
+      </property>
+      <property name="leftMargin" >
+       <number>0</number>
+      </property>
+      <property name="topMargin" >
+       <number>0</number>
+      </property>
+      <property name="rightMargin" >
+       <number>0</number>
+      </property>
+      <property name="bottomMargin" >
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="autodefine" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font" >
+         <font/>
+        </property>
+        <property name="text" >
+         <string>Auto-define new nodes upon MAC collection</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="assignblanksfirst" >
+        <property name="enabled" >
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font" >
+         <font/>
+        </property>
+        <property name="text" >
+         <string>Assign to nodes without a MAC address first</string>
+        </property>
+        <property name="checked" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <customwidgets>
+  <customwidget>
+   <class>Q3GroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>Qt3Support/Q3GroupBox</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Q3Wizard</class>
+   <extends>QDialog</extends>
+   <header>q3wizard.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Q3WidgetStack</class>
+   <extends>Q3WidgetStack</extends>
+   <header>q3widgetstack.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Q3ButtonGroup</class>
+   <extends>Q3GroupBox</extends>
+   <header>Qt3Support/Q3ButtonGroup</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Q3ListBox</class>
+   <extends>Q3Frame</extends>
+   <header>q3listbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Q3ListView</class>
+   <extends>Q3Frame</extends>
+   <header>q3listview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Q3TextEdit</class>
+   <extends>Q3Frame</extends>
+   <header>q3textedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NodeMgmtTable</class>
+   <extends>QWidget</extends>
+   <header>NodeMgmtTable.pm</header>
+  </customwidget>
+  <customwidget>
+   <class>OpderTable</class>
+   <extends>QWidget</extends>
+   <header>OpderTable.pm</header>
+  </customwidget>
+ </customwidgets>
+ <includes>
+  <include location="local" >OpderTable.pm</include>
+  <include location="local" >NodeMgmtTable.pm</include>
+ </includes>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>manualcollect</sender>
+   <signal>clicked()</signal>
+   <receiver>collectionmethod</receiver>
+   <slot>&lt;No)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
