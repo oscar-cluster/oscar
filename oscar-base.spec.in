@@ -1,5 +1,6 @@
 # $Id$
 
+%define libpref PERLLIBPATH
 %define bindir /usr/bin
 %define etcdir /etc/oscar
 %define docdir /usr/share/doc/oscar
@@ -7,8 +8,8 @@
 %define mandir /usr/local/man/man1
 %define _unpackaged_files_terminate_build 0
 
-Summary: 	Base OSCAR package
-Name: 		oscar-base
+Summary: 	OSCAR package
+Name: 		oscar
 Version: 	OSCARVERSION
 Release: 	1
 License: 	GPL
@@ -27,21 +28,12 @@ BuildArch: 	noarch
 AutoReqProv: 	no
 
 %description
-Base OSCAR package.
-OSCAR allows users, regardless of their experience level with a *nix
-environment, to install a Beowulf type high performance computing cluster. It
-also contains everything needed to administer and program this type of HPC
-cluster. OSCAR's flexible package management system has a rich set of
-pre-packaged applications and utilities which means you can get up and running
-without laboriously installing and configuring complex cluster administration
-and communication packages. It also lets administrators create customized
-packages for any kind of distributed application or utility, and to distribute
-those packages from an online package repository, either on or off site.
-
+OSCAR package.
+"Virtual" package that installs the basic dependencies to have OSCAR able to
+bootstrap using RPMs.
 %prep
 %setup -n %{name}-%{version}
 /usr/bin/patch -s -p1 share/prereqs/base/prereq.cfg debian/patches/01_base_prereq.patch
-
 %build
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
@@ -55,49 +47,30 @@ cp -f images/oscar.gif %{buildroot}%{sharedir}/images
 cp -rf packages/yume/ %{buildroot}%{sharedir}/prereqs
 cp -rf packages/rapt/ %{buildroot}%{sharedir}/prereqs
 cp -rf packages/oda/  %{buildroot}%{sharedir}/prereqs
-
 %clean
 rm -rf %{_tmppath}/%{name}-%{version}-root
-
-%post
-/usr/bin/oscar-config --generate-config-file
-
-%package client
-Group: Applications/System
-Summary: Libraries for OSCAR clustering package.
-AutoReqProv: no
-%description client
-Requires: %{name}-scripts == %{version}-%{release}
-Dummy package for oscar-base-client install.
-
-
-%package server
-Group: Applications/System
-Summary: Libraries for OSCAR clustering package.
-AutoReqProv: no
-%description server
-Requires: %{name} == %{version}-%{release}
-Dummy package for oscar-base-server install.
-
-
-%package lib
-Group: Applications/System
-Summary: Libraries for OSCAR clustering package.
-AutoReqProv: no
-%description lib
-Libraries for OSCAR clustering base package.
-
-
-%package scripts
-Group: Applications/System
-Summary: Libraries for OSCAR clustering package.
-Requires: %{name}-lib == %{version}-%{release}
-AutoReqProv: no
-%description scripts
-Scripts for OSCAR clustering base package.
-
-
 %files
+%defattr(-,root,root)
+
+%package -n oscar-base
+Group: Applications/System
+Summary: Base OSCAR package
+AutoReqProv: no
+%description -n oscar-base
+Base OSCAR package.
+OSCAR allows users, regardless of their experience level with a *nix
+environment, to install a Beowulf type high performance computing cluster. It
+also contains everything needed to administer and program this type of HPC
+cluster. OSCAR's flexible package management system has a rich set of
+pre-packaged applications and utilities which means you can get up and running
+without laboriously installing and configuring complex cluster administration
+and communication packages. It also lets administrators create customized
+packages for any kind of distributed application or utility, and to distribute
+those packages from an online package repository, either on or off site.
+rm -rf %{_tmppath}/%{name}-%{version}-root
+%post -n oscar-base
+/usr/bin/oscar-config --generate-config-file
+%files -n oscar-base
 %defattr(-,root,root)
 %dir %{etcdir}
 %dir %{sharedir}/prereqs
@@ -107,22 +80,50 @@ Scripts for OSCAR clustering base package.
 %{mandir}/*
 %{docdir}/*
 
-%files client
+%package -n oscar-base-client
+Group: Applications/System
+Summary: Libraries for OSCAR clustering package.
+AutoReqProv: no
+%description -n oscar-base-client
+Requires: %{name}-base-scripts == %{version}-%{release}
+Dummy package for oscar-base-client install.
+%files -n oscar-base-client
 %defattr(-,root,root)
 
-%files server
+%package -n oscar-base-server
+Group: Applications/System
+Summary: Libraries for OSCAR clustering package.
+AutoReqProv: no
+%description -n oscar-base-server
+Requires: %{name}-base == %{version}-%{release}
+Dummy package for oscar-base-server install.
+%files -n oscar-base-server
 %defattr(-,root,root)
 
-%files lib
+%package -n oscar-base-lib
+Group: Applications/System
+Summary: Libraries for OSCAR clustering package.
+AutoReqProv: no
+%description -n oscar-base-lib
+Libraries for OSCAR clustering base package.
+%files -n oscar-base-lib
 %defattr(-,root,root)
-%dir /usr/lib/
-/usr/lib/*
+%dir %{libpref}
+%{libpref}/*
 
-%files scripts
+%package -n oscar-base-scripts
+Group: Applications/System
+Summary: Libraries for OSCAR clustering package.
+Requires: %{name}-base-lib == %{version}-%{release}
+AutoReqProv: no
+%description -n oscar-base-scripts
+Scripts for OSCAR clustering base package.
+%files -n oscar-base-scripts
 %defattr(-,root,root)
 %dir %{bindir}
 %dir %{bindir}/system-sanity.d
 %{bindir}/*
+
 
 %changelog
 * Tue Dec 02 2008 Geoffroy Vallee <valleegr@ornl.gov>

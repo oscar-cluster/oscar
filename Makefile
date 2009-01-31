@@ -28,6 +28,8 @@
 DESTDIR=
 SUBDIRS := lib oscarsamples scripts share testing
 
+include ./Config.mk
+
 all:
 	@echo "... there is no default target ..."
 	@echo "Use one of: dist test install clean"
@@ -166,23 +168,21 @@ baserpms:
 		exit 1; \
 	fi
 	sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar-base.spec.in \
-		> oscar-base.spec
-	sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar.spec.in \
-		> oscar.spec
-	mkdir oscar-base-$(OSCAR_VERSION)
-	cp -rl `ls -1 | grep -v oscar-base-$(OSCAR_VERSION)` oscar-base-$(OSCAR_VERSION)
-	tar czvf oscar-base-$(OSCAR_VERSION).tar.gz \
+		> oscar-base.spec.tmp
+	sed -e "s/PERLLIBPATH/$(SEDLIBDIR)/" < oscar-base.spec.tmp \
+        > oscar-base.spec
+	mkdir oscar-$(OSCAR_VERSION)
+	cp -rl `ls -1 | grep -v oscar-$(OSCAR_VERSION)` oscar-$(OSCAR_VERSION)
+	rm -f oscar-$(OSCAR_VERSION)/oscar.spec
+	tar czvf oscar-$(OSCAR_VERSION).tar.gz \
 		--exclude dist --exclude .svn --exclude \*.tar.gz \
 		--exclude \*.spec.in --exclude src --exclude \*~ \
 		--exclude share/prereqs/\*/distro \
-		--exclude share/prereqs/\*/SRPMS oscar-base-$(OSCAR_VERSION)
-	rm -rf oscar-base-$(OSCAR_VERSION)
-	rpmbuild -tb oscar-base-$(OSCAR_VERSION).tar.gz && \
-	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar-base-*$(OSCAR_VERSION)-*.noarch.rpm . && \
-	rm -f oscar-base-$(OSCAR_VERSION).tar.gz oscar-base.spec
-	rpmbuild -bb oscar.spec && \
-	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar-*$(OSCAR_VERSION)-*.noarch.rpm . && \
-	rm -f oscar.spec
+		--exclude share/prereqs/\*/SRPMS oscar-$(OSCAR_VERSION)
+	rm -rf oscar-$(OSCAR_VERSION)
+	rpmbuild -tb oscar-$(OSCAR_VERSION).tar.gz && \
+	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar*$(OSCAR_VERSION)-*.noarch.rpm . && \
+	rm -f oscar-$(OSCAR_VERSION).tar.gz oscar-base.spec oscar-base.spec.tmp
 
 basedebs:
 	@echo "Building OSCAR base Debian packages"
