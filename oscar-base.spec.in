@@ -16,8 +16,8 @@ License: 	GPL
 URL: 		http://oscar.openclustergroup.org
 Group: 		Applications/System
 Source: 	%{name}-%{version}.tar.gz
-Requires: 	%{name}-lib
-Requires: 	%{name}-scripts
+Requires: 	%{name}-base-lib == %{version}-%{release}
+Requires: 	%{name}-base-scripts == %{version}-%{release}
 Requires: 	yum, createrepo, yume
 Vendor: 	OSCAR
 Distribution: 	OSCAR
@@ -126,6 +126,9 @@ Scripts for OSCAR clustering base package.
 
 
 %changelog
+* Sat Jan 31 2009 Geoffroy Vallee <valleegr@ornl.gov>
+- Merge the oscar.spec.in and oscar-base.spec.in files.
+- Re-organize the spec file to start to address issues with FC10.
 * Tue Dec 02 2008 Geoffroy Vallee <valleegr@ornl.gov>
 - Add the /usr/bin/system-sanity.d directory into the scripts RPM.
 * Wed Nov 26 2008 Geoffroy Vallee <valleegr@ornl.gov>
