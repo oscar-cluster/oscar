@@ -84,6 +84,7 @@ libstdc++
 libstdc++-devel
 libtermcap
 libuser
+libutempter-devel
 logrotate
 lsof
 ltrace
@@ -98,6 +99,7 @@ man-pages
 mingetty
 mkinitrd
 mktemp
+mlocate
 module-init-tools
 mtools
 ncurses
