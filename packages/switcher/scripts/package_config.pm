@@ -17,8 +17,13 @@ package package_config;
 #
 # TODO: with a good SwitcherAPI module, we should be able to remove this file.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
 use Data::Dumper;
@@ -26,6 +31,7 @@ use OSCAR::Database;
 use OSCAR::oda;
 use OSCAR::SwitcherAPI;
 use warnings "all";
+use Carp;
 
 @EXPORT = qw(get);
 $VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
@@ -37,8 +43,8 @@ sub get {
     my %options = ();
     my @errors = ();
     my @results = ();
-    if(! OSCAR::SwitcherAPI::get_switcher_data (\@results,\%options,\@errors) ){
-        carp ("packages/switcher/package_config.pm could not run ODA");
+    if(OSCAR::SwitcherAPI::get_switcher_data (\@results,\%options,\@errors) ){
+        carp ("ERROR: Impossible to get switcher data from the database");
         return undef;
     }
     my $result = undef;

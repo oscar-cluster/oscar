@@ -16,8 +16,13 @@ use Carp;
 
 # Import some modules just for switcher
 
-use lib "$ENV{OSCAR_PACKAGE_HOME}";
-require scripts::package_config;
+if (defined $ENV{OSCAR_PACKAGE_HOME} && -d $ENV{OSCAR_PACKAGE_HOME}) {
+    use lib "$ENV{OSCAR_PACKAGE_HOME}/switcher";
+    require package_config;
+} else {
+    use lib "/var/lib/oscar/packages/switcher";
+    use package_config;
+}
 
 # Debugging
 
@@ -28,14 +33,19 @@ use Data::Dumper;
 # Global variables
 #
 
-my $outfile = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+my $outfile;
+if (defined $ENV{OSCAR_PACKAGE_HOME} && -d $ENV{OSCAR_PACKAGE_HOME}) {
+    $outfile = "$ENV{OSCAR_PACKAGE_HOME}/switcher/configurator.html";
+} else {
+    $outfile = "/var/lib/oscar/packages/switcher/configurator.html";
+}
 
 #
 # Read in the settings from the database as to what packages provided
 # switcher blocks
 #
 
-my $pkg_config = scripts::package_config::get();
+my $pkg_config = package_config::get();
 
 #
 # Now that we know what packages use switcher, we can construct an
@@ -69,7 +79,7 @@ print OUTFILE "<html>
 
 my @pkg_config_keys = keys(%$pkg_config);
 if ($#pkg_config_keys < 0) {
-    print "No pkg_config found\n";
+    print "[INFO] No switcher data found in the database\n";
     print OUTFILE "<p>No pkg_config were supplied by any OSCAR packages -- nothing to configure.</p>\n\n";
 } else {
 
