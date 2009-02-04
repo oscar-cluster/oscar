@@ -1,4 +1,6 @@
 6.0.1 (not yet released):
+- Add RPMs for OSCAR core on Fedora Core 9 (both i386 and x86_64).
+- Update the RPM list for rhel-5-x86_64 and compatible distributions.
 - Merge oscar-base.spec.in and oscar.spec.in.
 - Clean up the Makefile portion related to the generation of RPMs for
 oscar-base.
