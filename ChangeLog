@@ -5,7 +5,7 @@
 - Clean up the Makefile portion related to the generation of RPMs for
 oscar-base.
 - Clean up the spec file for oscar-base.
-- Update ODA to 1.3.4.
+- Update ODA to 1.3.5.
 - Update PackMan to 3.1.5.
 - Update Yume to 2.8.4.
 - Update Selector to 1.0.2.
