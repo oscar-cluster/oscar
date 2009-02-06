@@ -31,8 +31,6 @@ our @EXPORT = qw( version_satisfied parse_version version_compare );
 
 our $debug;
 	
-use Data::Dumper;
-
 #################################################################
 # Parses a string into the version and release parts            #
 # Parameters:                                                   #

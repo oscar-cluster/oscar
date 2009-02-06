@@ -36,7 +36,6 @@ use OSCAR::Utils;
 use OSCAR::FileUtils;
 use File::Basename;
 use File::Path;
-use Data::Dumper;
 use warnings "all";
 use Carp;
 

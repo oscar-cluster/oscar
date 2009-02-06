@@ -43,8 +43,6 @@ use AppConfig;
 use AppConfig::State;
 use warnings "all";
 
-use Data::Dumper;
-
 @EXPORT = qw(
             get_value
             set_value

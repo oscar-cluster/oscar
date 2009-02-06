@@ -42,7 +42,6 @@ use OSCAR::Utils;
 use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
 use OSCAR::PackagePath qw ( repo_empty );
 use OSCAR::OCA::OS_Detect;
-use Data::Dumper;
 use warnings "all";
 use base qw(Exporter);
 @EXPORT = qw(

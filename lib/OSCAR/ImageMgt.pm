@@ -42,7 +42,6 @@ use OSCAR::ConfigManager;
 # use OSCAR::Opkg qw ( create_list_selected_opkgs );
 # use SystemInstaller::Tk::Common;
 use OSCAR::PackMan;
-use Data::Dumper;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
