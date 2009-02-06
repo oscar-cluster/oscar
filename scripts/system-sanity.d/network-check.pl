@@ -67,8 +67,8 @@ sub check_hostname {
     }
     if ($hostname_ip eq "127.0.0.1") {
         print " -------------------------------------------------\n";
-        print " ERROR: your hostname is assigned to the loopback \n";
-        print " interface\n";
+        print " ERROR: your hostname ($hostname) is assigned to  \n";
+        print " the loopback interface\n";
         print " Please assign it to your public network interface\n";
         print " updating /etc/hosts\n";
         print " -------------------------------------------------\n";
