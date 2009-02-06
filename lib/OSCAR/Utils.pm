@@ -45,6 +45,7 @@ use Carp;
             get_oscar_version
             get_local_arch
             get_path_perl_modules
+            is_a_comment
             is_a_valid_string
             is_element_in_array
             merge_arrays
@@ -271,5 +272,60 @@ sub compactSpaces ($$$) {
     return $string;  # Return string to calling procedure;
 }
 
+sub is_a_comment ($) {
+    my $string = shift;
+
+    if (trim($string) =~ /^#/) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 1;
 
+__END__
+
+=head1 Exported Functions
+
+=over 4
+
+=item compactSpaces
+      
+=item get_oscar_version
+
+=item get_local_arch
+
+=item get_path_perl_modules
+
+=item is_a_comment ($my_string)
+
+=item is_a_valid_string
+
+=item is_element_in_array ($elt, @my_array)
+
+returns 1 if $elt is in the @my_array array, 0 else.
+
+=item merge_arrays
+
+=item print_array
+
+=item print_hash
+
+=item trim
+
+=item ltrim
+
+=item rtrim
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Geoffroy Vallee <valleegr at ornl dot gov>
+
+=back
+
+=cut

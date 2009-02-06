@@ -1,4 +1,6 @@
 6.0.2 (not yet released):
+- Etend the Utils Perl module.
+- Improve Perldoc documentation.
 - Modify the Makefile so we can choose the directory where the binary packages
 are stored.
 - Enable the creation of unsigned Debian packages by setting the
