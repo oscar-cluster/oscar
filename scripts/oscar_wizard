@@ -63,6 +63,8 @@ use OSCAR::Opkg;
 use OSCAR::Package;
 use OSCAR::PackagePath;
 use OSCAR::PackageInUn;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 use OSCAR::Tk;
 use OSCAR::WizardEnv;
 use AppConfig;
@@ -378,8 +380,13 @@ if ( $mode eq "install" ) {
 	         $interface], 'netboot');
 
    # Delete Clients returns due to popular demand!
-   oscar_button($window, "", "Delete OSCAR Clients...",
-                [\&delnode_window, $window], 'delete_nodes');
+    my $delete_client_button = oscar_button($window,
+                                           "",
+                                           "Delete OSCAR Clients...",
+                                           [\&delnode_window, $window],
+                                           'delete_nodes');
+    # The delete clients is always active.
+    $delete_client_button->configure(-state=> "normal");
 
    # Monitor Cluster Deployment
    our $monitor_button = oscar_button($window, "", "Monitor Cluster Deployment",
@@ -472,7 +479,7 @@ sub oscar_button {
                                -pady => 2);
     $label->grid($button, $help, -sticky => "nsew");
 
-    #put each step button into the %buttons hash
+    # put each step button into the %buttons hash
     $buttons{$helptext} = $button;
 
     return $button;
@@ -915,9 +922,19 @@ sub run_tests {
 }
 
 # Pop up si_monitortk from SystemImager
-sub monitor_deployment {
+#
+# Return: 1 if success, 0 else.
+sub monitor_deployment ($) {
     my ($window) = @_;
     our $monitor_button;
+
+    # We make sure the service associated to the monitor is started
+    my $service = "/etc/init.d/systemimager-server-monitord";
+    if (OSCAR::SystemServices::system_service ($service, 
+                                               OSCAR::SystemServicesDefs::START())) {
+        print STDERR "ERROR: Impossible to start service $service\n";
+        return 0;
+    }
 
     my $cmd = "/usr/sbin/si_monitortk --progress";
     $monitor_button->configure(-state => 'disabled');
