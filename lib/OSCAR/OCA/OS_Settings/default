@@ -12,3 +12,4 @@ dhcp_daemon=/etc/init.d/dhcpd
 
 # Specifies few configuration files
 exports_file=/etc/exports
+dhcp_configfile=/etc/dhcpd.conf
