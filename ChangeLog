@@ -1,6 +1,14 @@
 6.0.2 (not yet released):
+- Code clean-up.
+- Prereqs: decrease the output by default.
+- Prereqs: update the prereq API to make more coherent
+- Update OS_Settings.
+- Wizard GUI: make the "delete client" visible all the time.
+- Port the management of the /etc/init.d/systemimager-server-monitord service
+to OSCAR::SystemServices.
 - Etend the Utils Perl module.
 - Improve Perldoc documentation.
+- Improve scripts output.
 - Modify the Makefile so we can choose the directory where the binary packages
 are stored.
 - Enable the creation of unsigned Debian packages by setting the
