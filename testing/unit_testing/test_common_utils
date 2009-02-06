@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+#
+
+# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Utils;
+use warnings "all";
+
+print "\n\n*** Common Utils Testing ***\n\n";
+
+my @comments = ("#jdkajlkfd", "       # toto");
+foreach my $c (@comments) {
+    if (OSCAR::Utils::is_a_comment ($c) != 1) {
+        print "ERROR: a comment ($c) is not detected\n";
+        goto ERROR_EXIT;
+    }
+}
+
+my @non_comments = ("fwjklfjlj", "ckjl#cvshhjvhkle");
+foreach my $c (@non_comments) {
+    if (OSCAR::Utils::is_a_comment ($c) != 0) {
+        print "ERROR: a string ($c) that is not a comment is detected as comment\n";
+        goto ERROR_EXIT;
+    }
+}
+
+print "*** SUCCESS: Common Utils Testing ***\n\n";
+
+exit 0;
+
+ERROR_EXIT:
+    print "ERROR: the test of repository preparation failed\n";
+    exit -1;
+

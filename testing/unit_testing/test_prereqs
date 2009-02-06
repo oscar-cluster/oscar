@@ -38,9 +38,9 @@ print_array (@$cmds);
 print "\t*********************************************************\n";
 print "\t-> Prereqs status\n";
 
-OSCAR::Prereqs::show_prereqs_status("debian",
-                                    4,
-                                    "x86_64",
+OSCAR::Prereqs::get_prereqs_status("debian",
+                                   4,
+                                   "x86_64",
                                     "$path/base/");
 
 my $ret = OSCAR::Prereqs::check_installed(@$installs);

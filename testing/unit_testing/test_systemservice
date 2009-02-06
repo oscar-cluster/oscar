@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+#
+# Copyright (c) 2009 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.
+#
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+use strict;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::Utils;
+use Carp;
+use warnings "all";
+
+print "\n\n*** Testing OSCAR::SystemServices ***\n\n";
+
+my %services = OSCAR::SystemServices::get_system_services ();
+
+OSCAR::Utils::print_hash ("System services", "", \%services);
+
+OSCAR::SystemServices::system_service (OSCAR::SystemServicesDefs::DHCP(), OSCAR::SystemServicesDefs::STOP());
+
+# We are done with testing.
+SUCCESS:
+    print "\n\n*** SUCCESS: the test of OSCAR::SystemServices succeed ***\n\n";
+
+exit 0;
