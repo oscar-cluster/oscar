@@ -75,8 +75,12 @@ if ($arch eq "i386") {
 }
 
 if ($status) {
-    print "Prereq status for $distro, $distrover, $arch\n";
-    my $ret = show_prereqs_status ($distro, $distrover, $arch, @prereqs);
+    OSCAR::Logger::oscar_log_subsection "Prereq status for $distro, ".
+        "$distrover, $arch";
+    my $ret = OSCAR::Prereqs::get_prereqs_status ($distro,
+                                                  $distrover,
+                                                  $arch,
+                                                  @prereqs);
     exit $ret;
 }
 
