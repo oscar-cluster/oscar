@@ -1,4 +1,10 @@
-6.0.1 (not yet released):
+6.0.2 (not yet released):
+- Modify the Makefile so we can choose the directory where the binary packages
+are stored.
+- Enable the creation of unsigned Debian packages by setting the
+UNSIGNED_OSCAR_PKG environment variable.
+
+6.0.1:
 - Add RPMs for OSCAR core on Fedora Core 9 (both i386 and x86_64).
 - Update the RPM list for rhel-5-x86_64 and compatible distributions.
 - Merge oscar-base.spec.in and oscar.spec.in.

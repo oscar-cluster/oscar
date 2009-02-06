@@ -25,6 +25,7 @@
 # Copyright (c) 2007 The Trustees of Indiana University.  
 #               All rights reserved.
 
+PKGDEST=.
 DESTDIR=
 SUBDIRS := lib oscarsamples scripts share testing
 
@@ -181,7 +182,7 @@ baserpms:
 		--exclude share/prereqs/\*/SRPMS oscar-$(OSCAR_VERSION)
 	rm -rf oscar-$(OSCAR_VERSION)
 	rpmbuild -tb oscar-$(OSCAR_VERSION).tar.gz && \
-	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar*$(OSCAR_VERSION)-*.noarch.rpm . && \
+	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar*$(OSCAR_VERSION)-*.noarch.rpm $(PKGDEST) && \
 	rm -f oscar-$(OSCAR_VERSION).tar.gz oscar-base.spec oscar-base.spec.tmp
 
 basedebs:
@@ -197,9 +198,15 @@ basedebs:
         --exclude \*.spec.in --exclude src --exclude \*~ \
         --exclude share/prereqs/\*/distro \
         --exclude share/prereqs/\*/SRPMS .
-	cd /tmp/oscar-debian && tar xzf oscar-base-$(OSCAR_VERSION).tar.gz && \
-		dpkg-buildpackage -rfakeroot -uc -us
-	@echo "Binary packages are available in /tmp"
+	@if [ -n "$$UNSIGNED_OSCAR_PKG" ]; then \
+		cd /tmp/oscar-debian && tar xzf oscar-base-$(OSCAR_VERSION).tar.gz && \
+        dpkg-buildpackage -rfakeroot -us -uc; \
+    else \
+		cd /tmp/oscar-debian && tar xzf oscar-base-$(OSCAR_VERSION).tar.gz && \
+        dpkg-buildpackage -rfakeroot; \
+    fi
+	mv /tmp/*oscar*.deb $(PKGDEST);
+	@echo "Binary packages are available in $(PKGDEST)"
 
 deb: basedebs
 
