@@ -28,8 +28,8 @@ use Carp;
             check_removed
             get_config
             get_prereqs
+            get_prereqs_status
             get_rawlist_prereqs
-            show_prereqs_status
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -307,32 +307,34 @@ sub is_rpm_pkg_installed ($) {
     }
 }
 
-sub show_prereqs_status {
+# Returns: o if no action are needed, the number of required actions else.
+sub get_prereqs_status ($$$@) {
     my ($distro, $distver, $arch, @paths) = @_;
     my $needed_actions = 0;
-    my ($installs, $removes, $cmds) = 
+    my ($installs, $removes, $cmds) =
         OSCAR::Prereqs::get_rawlist_prereqs($distro,
                                         $distver,
                                         $arch,
                                         @paths);
-    print "Prereqs status (".join(",", @paths)."):\n";
+    OSCAR::Logger::oscar_log_subsection "Prereqs status (".join(",", @paths)."):";
     foreach my $p (@$installs) {
         if (!is_package_installed ($p)) {
-            print "\t$p: \t\t\tneeds to be installed\n";
+            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tneeds to be ".
+                "installed";
             $needed_actions++;
         } else {
-            print "\t$p: \t\t\talready installed\n"
+            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\talready installed";
         }
     }
     foreach my $p (@$removes) {
         if (is_package_installed ($p)) {
-            print "\t$p: \t\t\tneeds to be removed\n";
+            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tneeds to be ".
+                "removed";
             $needed_actions++;
         } else {
-            print "\t$p: \t\t\talready removed\n"
+            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\talready removed"
         }
     }
-    print "\n\n";
     return $needed_actions;
 }
 
