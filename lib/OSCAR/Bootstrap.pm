@@ -212,8 +212,7 @@ sub init_server ($) {
     require OSCAR::Logger;
     # We bootstrap ODA
     my $cmd = $oscar_cfg->{'binaries_path'} . "/oda --init mysql";
-#    OSCAR::Logger::oscar_log_subsection ("Executing: $cmd\n");
-    OSCAR::Logger::oscar_log_subsection "Executing: $cmd\n";
+    OSCAR::Logger::oscar_log_subsection "Executing: $cmd";
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
         return -1;
@@ -403,7 +402,7 @@ sub bootstrap_stage1 ($) {
         return -1;
     }
 
-    use lib "$ENV{OSCAR_HOME}/lib";
+    use lib "$ENV{OSCAR_HOME}/lib" if (defined $ENV{OSCAR_HOME});
     require OSCAR::OCA::OS_Detect;
     my $os = OSCAR::OCA::OS_Detect::open();
     if (!defined $os) {
@@ -420,6 +419,7 @@ sub bootstrap_stage1 ($) {
     # This is useful for developers when they want to start over
     # TODO the location of the file we save is hardcoded, this is bad, We should
     # be able to specify that path via the OSCAR configuration file
+    # DEPRECATED when using the new startover mechanism
     my $path = "/etc/oscar";
     mkdir $path if (! -d $path);
     if (save_preoscar_binary_list ($os, $path)) {
@@ -572,6 +572,7 @@ sub bootstrap_stage2 ($) {
 # does make much sense. We should only create one with a generic name and      #
 # check the existence of this file at the very beginning of the function (if   #
 # the function exists, just exist).                                            #
+# DEPRECATED by the new startover mechanism.                                   #
 ################################################################################
 sub save_preoscar_binary_list ($$) {
     my ($os, $tmpdir) = @_;
