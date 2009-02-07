@@ -422,6 +422,7 @@ sub list_distro_pools () {
             }
         }
     }
+    closedir (DIR);
     return %pools;
 }
 
