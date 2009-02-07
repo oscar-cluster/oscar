@@ -96,7 +96,7 @@ sub additem ($) {
 	my $tag = shift @_;
 	my $data = shift @_;
 	my $distro = shift @_;
-	if ($distro == "") { $distro == "default" } ;
+	if (!defined $distro || $distro eq "") { $distro = "default" } ;
 	
     my $path;
     if (defined $ENV{OSCAR_HOME}) {
