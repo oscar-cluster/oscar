@@ -203,7 +203,7 @@ __END__
 
 =item system_service
 
-Peform an action on a given system service. For example: my $rc = SystemSerives (OSCAR::SystemServicesDefs::DHCP(), OSCAR::SystemServicesDefs::STOP()); stops the dhcp deamon. Note that we use macros to be sure we correctly identify the service and the action.
+Peform an action on a given system service. For example: my $rc = SystemServices (OSCAR::SystemServicesDefs::DHCP(), OSCAR::SystemServicesDefs::STOP()); stops the dhcp deamon. Note that we use macros to be sure we correctly identify the service and the action.
 
 =item list_system_services
 
