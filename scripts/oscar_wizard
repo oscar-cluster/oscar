@@ -296,7 +296,7 @@ if ( $mode eq "install" ) {
    $step_string = "";
 }
 
-my $step_status = get_wizard_status(\%options,\@errors);
+my $step_status = OSCAR::Database::get_wizard_status(\%options,\@errors);
 my $manage_status = get_manage_status(\%options,\@errors);
 
 oscar_button($window, $step_string,
@@ -560,7 +560,7 @@ sub run_server_install {
         $next_step_button->configure(-state => "normal");
         set_wizard_status("build_image",\%options,\@errors);
     }
-    $step_status = get_wizard_status(\%options,\@errors);
+    $step_status = OSCAR::Database::get_wizard_status(\%options,\@errors);
     if($$step_status{addclients} eq "normal"){
         my $next_step_button2 = $buttons{addclients};
         $next_step_button2->configure(-state=> "normal");
@@ -619,7 +619,7 @@ sub build_oscar_image {
         set_wizard_status("addclients",\%options,\@errors);
     }
 
-    $step_status = get_wizard_status(\%options,\@errors);
+    $step_status = OSCAR::Database::get_wizard_status(\%options,\@errors);
     if($$step_status{addclients} eq "normal"){
         my $next_step_button2 = $buttons{addclients};
         $next_step_button2->configure(-state=> "normal");
