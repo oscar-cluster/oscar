@@ -40,6 +40,7 @@ use File::Copy;
 use File::Path;
 use File::Basename;
 use AppConfig;
+use SystemInstaller::Utils;
 use OSCAR::ConfigFile;
 use OSCAR::Database;
 use OSCAR::Logger;
@@ -50,7 +51,7 @@ use Cwd;
 my $imagename = shift or croak("No arguments passed - please pass <image name> and <headnode interface name>");
 my $serverint = shift or croak("Only one argument passed - please pass <image name> and <headnode interface name>"); 
 
-my $config = init_si_config();
+my $config = SystemInstaller::Utils::init_si_config();
 
 my $targetdir = $config->default_image_dir . "/$imagename";
 
@@ -147,21 +148,3 @@ sub sync_user_files {
     return 1;
 }
 
-sub init_si_config {
-    my $config = new AppConfig(
-                               AUTOINSTALL_SCRIPT_DIR => { ARGCOUNT => 1},
-                               AUTOINSTALL_BOOT_DIR => { ARGCOUNT => 1},
-                               AUTOINSTALL_TARBALL_DIR => { ARGCOUNT => 1},
-                               AUTOINSTALL_TORRENT_DIR => { ARGCOUNT => 1},
-                               RSYNCD_CONF => { ARGCOUNT => 1},
-                               CONFIG_DIR => { ARGCOUNT => 1},
-                               DEFAULT_IMAGE_DIR => { ARGCOUNT => 1},
-                               DEFAULT_OVERRIDE_DIR => { ARGCOUNT => 1},
-                               RSYNC_STUB_DIR => { ARGCOUNT => 1},
-                               TFTP_DIR => { ARGCOUNT => 1},
-                               NET_BOOT_DEFAULT => { ARGCOUNT => 1}
-                              );
-    $config->file("/etc/systemimager/systemimager.conf");
-
-    return $config;
-}

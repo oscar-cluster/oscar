@@ -24,7 +24,7 @@ use OSCAR::Network qw (
                        get_network_config
                       );
 use OSCAR::ClientMgt;
-use SystemInstaller::Tk::Common;
+use SystemInstaller::Utils;
 use SIS::Image;
 use SIS::DB;
 use Getopt::Long;
@@ -110,7 +110,7 @@ sub addclients
 		numhosts => "",
 		@_,
 		);
-	my $config = init_si_config();
+	my $config = SystemInstaller::Utils::init_si_config();
 	my @allimages = list_image();
 	my @imagenames;
 	my $defimage;

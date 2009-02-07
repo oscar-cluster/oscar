@@ -40,7 +40,7 @@ use OSCAR::Utils;
 use OSCAR::ConfigManager;
 # use SystemImager::Server;
 # use OSCAR::Opkg qw ( create_list_selected_opkgs );
-# use SystemInstaller::Tk::Common;
+use SystemInstaller::Utils;
 use OSCAR::PackMan;
 use vars qw(@EXPORT);
 use base qw(Exporter);
@@ -89,7 +89,7 @@ sub do_setimage {
 
         # Get the image path (typically
         # /var/lib/systemimager/images/<imagename>)
-        my $config = SystemInstaller::Tk::Common::init_si_config();
+        my $config = SystemInstaller::Utils::init_si_config();
         my $imaged = $config->default_image_dir;
         croak "default_image_dir not defined\n" unless $imaged;
         croak "$imaged: not a directory\n" unless -d $imaged;
@@ -200,8 +200,7 @@ sub do_oda_post_install {
     my $lastlog = "/var/log/lastlog";
     oscar_log_subsection("Truncating ".$img.":".$lastlog);
 
-    require SystemInstaller::Tk::Common;
-    my $sis_config = SystemInstaller::Tk::Common::init_si_config();
+    my $sis_config = SystemInstaller::Utils::init_si_config();
     my $imaged = $sis_config->default_image_dir;
     my $imagepath = $imaged."/".$img;
     my $imagelog = $imagepath.$lastlog;
@@ -287,8 +286,7 @@ sub get_image_default_settings () {
 
     my $diskfile = get_disk_file($arch, $disk_type);
 
-    require SystemInstaller::Tk::Common;
-    my $config = SystemInstaller::Tk::Common::init_si_config();
+    my $config = SystemInstaller::Utils::init_si_config();
 
     # Default settings
     my %vars = (
@@ -330,7 +328,7 @@ sub get_image_default_settings () {
 sub delete_image ($) {
     my $imgname = shift;
 
-    my $config = SystemInstaller::Tk::Common::init_si_config();
+    my $config = SystemInstaller::Utils::init_si_config();
     my $rsyncd_conf = $config->rsyncd_conf();
     my $rsync_stub_dir = $config->rsync_stub_dir();
 
