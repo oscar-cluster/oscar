@@ -40,7 +40,7 @@ use vars qw($VERSION @EXPORT);
 use Carp;
 use OSCAR::Utils;
 use OSCAR::FileUtils qw ( add_line_to_file_without_duplication );
-use OSCAR::PackagePath qw ( repo_empty );
+use OSCAR::PackagePath;
 use OSCAR::OCA::OS_Detect;
 use warnings "all";
 use base qw(Exporter);
@@ -48,6 +48,7 @@ use base qw(Exporter);
             find_distro
             get_list_of_supported_distros
             get_list_of_supported_distros_id
+            is_a_valid_distro_id
             which_distro
             which_distro_server
             which_mysql_name
@@ -433,5 +434,30 @@ sub find_distro ($) {
     }
     return undef;
 }
+
+################################################################################
+# Tests if a Linux distribution ID is valid or not.                            #
+#                                                                              #
+# Input: distro_id, the distro id (following the OS_Detect syntax).            #
+# Return: 1 if the distro id is valid, 0 else.                                 #
+################################################################################
+sub is_a_valid_distro_id ($) {
+    my $distro_id = shift;
+    my ($dist, $ver, $arch) 
+        = OSCAR::PackagePath::decompose_distro_id ($distro_id);
+    if (!OSCAR::Utils::is_a_valid_string ($dist) ||
+        !OSCAR::Utils::is_a_valid_string ($ver) ||
+        !OSCAR::Utils::is_a_valid_string ($arch)) {
+        return 0;
+    }
+    my $os = OSCAR::OCA::OS_Detect::open (fake=>{distro=>$dist,
+                                                 distro_version=>$ver,
+                                                 arch=>$arch});
+    if (defined $os && ref($os) eq "HASH") {
+        return 1;
+    } else {
+        return 0;
+    }
+}    
 
 1;
