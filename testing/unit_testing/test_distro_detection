@@ -8,6 +8,54 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackageSmart;
 use OSCAR::PackagePath;
+use OSCAR::Distro;
+
+print "*** TESTING DISTRO ID DECOMPOSITION ***\n";
+my ($distro, $ver, $arch);
+
+my $distroid = "centos-5-x86_64";
+print "\nDecomposing: $distroid\n";
+($distro, $ver, $arch) = OSCAR::PackagePath::decompose_distro_id($distroid);
+print "Result: $distro, $ver, $arch\n";
+goto ERROR_EXIT if ($distro ne "centos" || $ver ne "5" || $arch ne "x86_64");
+print "SUCCESS: correct distro ID decomposition\n";
+
+my $distroid = "debian-4-i386";
+print "\nDecomposing: $distroid\n";
+($distro, $ver, $arch) = OSCAR::PackagePath::decompose_distro_id($distroid);
+print "Result: $distro, $ver, $arch\n";
+goto ERROR_EXIT if ($distro ne "debian" || $ver ne "4" || $arch ne "i386");
+print "SUCCESS: correct distro ID decomposition\n";
+
+print "\n*** TESTING DISTRO COMPAT DETERMINATION ***\n";
+
+$distroid = "centos-5-x86_64";
+print "\nGetting the compat distro of $distroid\n";
+my $compat = OSCAR::PackagePath::get_compat_distro ($distroid);
+print "Result: $compat\n";
+goto ERROR_EXIT if ($compat ne "rhel-5-x86_64");
+
+
+
+print "TESTING DISRO ID VALIDATION\n";
+print "->Testing invalid ids...\n";
+my @invalid_distro_ids = ("toto", "toto-4-i386", "redhat-el-ws-4-i386", 
+                          "ubunu-8-x86_64");
+foreach my $id (@invalid_distro_ids) {
+    if (OSCAR::Distro::is_a_valid_distro_id ("$id") != 0) {
+        print "ERROR: Wrong validation of a invalid distro id ($id)\n";
+        goto ERROR_EXIT;
+    }
+}
+
+print "->Testing valid ids...\n";
+my @valid_distro_ids = ("debian-4-i386", "ubuntu-8-x86_64", "redhat-el-4-i386");
+foreach my $id (@valid_distro_ids) {
+    if (OSCAR::Distro::is_a_valid_distro_id ("$id") != 1) {
+        print "ERROR: Wrong validation of a valid distro id ($id)\n";
+        goto ERROR_EXIT;
+    }
+}
 
 print "\n\n*** Test the detection of repositories formats. This detection " .
       "is based on the repository URL. We submit few cases and check the " .
@@ -45,13 +93,13 @@ my $format =
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "deb");
 
-$pool = "/tftpboot/distro/redhat-el-ws-4-i386";
+$pool = "/tftpboot/distro/redhat-el-4-i386";
 print "\nTesting $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if ($format ne "rpm");
 
-$pool = "/tftpboot/distro/redhat-el-ws-4-i386.url";
+$pool = "/tftpboot/distro/redhat-el-4-i386.url";
 print "\nTesting $pool\n";
 my $format = 
     OSCAR::PackageSmart::detect_pool_format ($pool);
@@ -99,31 +147,11 @@ my $format =
     OSCAR::PackageSmart::detect_pool_format ($pool);
 goto ERROR_EXIT if (defined ($format));
 
-print "TESTING DISTRO ID DECOMPOSITION\n";
-my ($distro, $ver, $arch);
-
-my $distroid;
-$distroid = "centos-5-x86_64";
-print "\nDecomposing: $distroid\n";
-($distro, $ver, $arch) = OSCAR::PackagePath::decompose_distro_id($distroid);
-print "Result: $distro, $ver, $arch\n";
-goto ERROR_EXIT if ($distro ne "centos" || $ver ne "5" || $arch ne "x86_64");
-print "\n\nSUCCESS: the test of repository pool format detection succeed\n";
-
-print "TESTING DISTRO COMPAT DETERMINATION\n";
-
-$distroid = "centos-5-x86_64";
-print "\nGetting the compat distro of $distroid\n";
-my $compat = OSCAR::PackagePath::get_compat_distro ($distroid);
-print "Result: $compat\n";
-goto ERROR_EXIT if ($compat ne "rhel-5-x86_64");
-
 print "\n\n*** SUCCESS: the test of repository pool format detection ".
       "succeeded ***\n";
 
 exit 0;
 
 ERROR_EXIT:
-    print "\n\n*** ERROR: the test of repository pool format detection ".
-          "failed ***\n\n";
+    print "\n\n*** ERROR: the test of distro detection failed ***\n\n";
     exit -1;
