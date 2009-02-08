@@ -1,5 +1,7 @@
 6.0.2 (not yet released):
+- Improve unit tests.
 - Fix a bug in OS_Settings when falling back to the default settings.
+- Update ORM to 1.2.1.
 - Update SystemInstaller to 2.3.10.
 - Improve the unit tests.
 - Code clean-up.
