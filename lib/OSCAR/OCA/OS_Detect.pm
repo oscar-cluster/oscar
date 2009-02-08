@@ -309,17 +309,17 @@ sub detect_pool_deb {
 sub detect_fake_common ($$$$$) {
     my ($id, $distro, $compat_distro, $compat_distrover, $pkg) = @_;
     if (exists($id->{distro}) && exists($id->{distro_version}) &&
-	exists($id->{arch})) {
-	if ($id->{distro} =~ /^$distro/) {
-	    $id->{compat_distro} = $compat_distro;
-        if (defined ($compat_distrover)) {
-	        $id->{compat_distrover} = $compat_distrover;
-        } else {
-            $id->{compat_distrover} = $id->{distro_version};
+        exists($id->{arch})) {
+        if ($id->{distro} eq $distro) {
+            $id->{compat_distro} = $compat_distro;
+            if (defined ($compat_distrover)) {
+                $id->{compat_distrover} = $compat_distrover;
+            } else {
+                $id->{compat_distrover} = $id->{distro_version};
+            }
+            $id->{pkg} = $pkg;
+            return $id;
         }
-	    $id->{pkg} = $pkg;
-	    return $id;
-	}
     }
     return undef;
 }
