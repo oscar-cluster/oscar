@@ -1,4 +1,9 @@
 6.0.2 (not yet released):
+- [Ticket #519] Re-introduce the startover capability (via oscar-config
+--startover command).
+- Add the mysql support to OS_Settings and OSCAR::SystemServices.
+- Fix a problem when detecting the NIC used by OSCAR in the network-check
+script.
 - Improve unit tests.
 - Fix a bug in OS_Settings when falling back to the default settings.
 - Update ORM to 1.2.1.

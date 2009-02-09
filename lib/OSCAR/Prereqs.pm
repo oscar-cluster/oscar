@@ -112,7 +112,12 @@ sub get_config ($$$$) {
     }
 }
 
-sub get_prereqs (@) {
+# Get the list of prereqs to install. Note that if the binary packages are
+# already isntalled, we do not try to install them again (not included in the
+# list of binary packages to install).
+#
+# Return: 0 if success, -1 else.
+sub get_prereqs ($$$@) {
     my ($distro, $distrover, $arch, @paths) = @_;
 
     my $march = $arch;
@@ -144,7 +149,7 @@ sub get_prereqs (@) {
                 # replace $arch with architecture in package config lines
                 # this prevents packages to be interpreted as capabilities
                 if ($line =~ /\$arch/) {
-                $line =~ s:\$arch:$march:g;
+                    $line =~ s:\$arch:$march:g;
                 }
                 my $remove = ($line =~ /^!/);
                 if ($remove) {
@@ -154,7 +159,7 @@ sub get_prereqs (@) {
                 if ($remove) {
                     push (@removes, $pkg) if (is_package_installed($pkg));
                 } else {
-                    push (@installs, $pkg)  if (!is_package_installed($pkg));
+                    push (@installs, $pkg) if (!is_package_installed($pkg));
                 }
             }
         }
@@ -262,7 +267,6 @@ sub check_installed (@) {
     for my $p (@pkgs) {
         if (!is_package_installed ($p)) {
             $err++;
-            print "package $p is not installed\n";
         }
     }
     return $err;
@@ -319,20 +323,18 @@ sub get_prereqs_status ($$$@) {
     OSCAR::Logger::oscar_log_subsection "Prereqs status (".join(",", @paths)."):";
     foreach my $p (@$installs) {
         if (!is_package_installed ($p)) {
-            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tneeds to be ".
-                "installed";
+            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis not installed";
             $needed_actions++;
         } else {
-            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\talready installed";
+            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis installed";
         }
     }
     foreach my $p (@$removes) {
         if (is_package_installed ($p)) {
-            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tneeds to be ".
-                "removed";
+            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis installed";
             $needed_actions++;
         } else {
-            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\talready removed"
+            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis not installed"
         }
     }
     return $needed_actions;

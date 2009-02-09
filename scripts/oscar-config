@@ -37,6 +37,7 @@ my ($distro_to_setup,
     $oscar_repo_to_use,
     $oscar_repo_to_mirror,
     $sanity_check,
+    $startover,
     $network,
     $bootstrap,
     $verbose,
@@ -53,6 +54,7 @@ GetOptions(
         "mirror-oscar-repo=s"           => \$oscar_repo_to_mirror,
         "sanity-check"                  => \$sanity_check,
         "setup-distro=s"                => \$distro_to_setup,
+        "startover"                     => \$startover,
         "supported-distros"             => \&display_list_supported_distros,
         "update-nic"                    => \$headnode_nic,
         "use-distro-repo=s"             => \$distro_repo_to_use,
@@ -213,6 +215,15 @@ if ($debug) {
 }
 if ($verbose) {
     $ENV{OSCAR_VERBOSE} = 5;
+}
+
+if ($startover) {
+    require OSCAR::Startover;
+    if (OSCAR::Startover::start_over()) {
+        die "ERROR: Impossible to start over, please bootstrap OSCAR again ".
+            "to try to recover";
+        }
+    goto EXIT_SUCCESS;
 }
 
 if ($distro_repo_to_mirror) {
