@@ -26,6 +26,12 @@ package OSCAR::Bootstrap;
 # $Id$
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
@@ -402,7 +408,6 @@ sub bootstrap_stage1 ($) {
         return -1;
     }
 
-    use lib "$ENV{OSCAR_HOME}/lib" if (defined $ENV{OSCAR_HOME});
     require OSCAR::OCA::OS_Detect;
     my $os = OSCAR::OCA::OS_Detect::open();
     if (!defined $os) {
