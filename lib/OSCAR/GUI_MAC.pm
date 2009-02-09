@@ -756,7 +756,7 @@ sub macfile_selector {
             -title => "Export MACs to file",
         );
         return 1 unless $file;
-        save_to_file( $file );
+        OSCAR::MAC::save_macs_to_file( $file );
     }
     regenerate_listbox();
     return 1;

@@ -74,24 +74,28 @@ our @install_mode_options = qw(systemimager-rsync
                               systemimager-bt);
 our $install_mode = $install_mode_options[0];
 
-@EXPORT = qw (  save_to_file
-                load_from_file
-                start_mac_collect
-                stop_mac_collect
-                sortclients
-                populate_MACS
-                start_ping
-                end_ping
-                set_servermacs
-                add_mac_to_hash
-                run_cmd
-                generate_uyok
+@EXPORT = qw (  
                 __setup_dhcpd
                 __end_collect_mac
                 __load_macs
                 __build_autoinstall_cd
                 __enable_install_mode
                 __run_setup_pxe
+                add_mac_to_hash
+                end_ping
+                generate_uyok
+                get_from_file
+                load_from_file
+                populate_MACS
+                run_cmd
+                save_macs_to_file
+                save_to_file
+                sortclients
+                start_mac_collect
+                stop_mac_collect
+                start_ping
+                set_servermacs
+                verify_mac
                 %MAC
                 $COLLECT
                 @SERVERMACS
@@ -273,7 +277,42 @@ sub __end_collect_mac {
     system("killall tcpdump");
 }
 
-sub save_to_file {
+# verify_mac - Verifies a MAC address and, if possible and necessary, will 
+#          reformat to match our format requirements
+# Args:  $mac, ($debug=0)
+# Returns formatted MAC address or nothing
+sub verify_mac {
+    my $mac = shift;
+    chomp($mac);
+    my $debug = shift;
+    if ( $mac =~ /^([a-fA-f0-9]{2}:){5}[a-fA-F0-9]{2}$/ ) {
+        if ( $debug ) { print "$mac is fully formed\n"; }
+        return $mac;
+    } elsif ( $mac =~ /^[a-fA-F0-9]{12}$/ ) {
+        if ( $debug ) { print "$mac has no colons \n"; }
+        return join(':', ( $mac =~ /(\w\w)(\w\w)(\w\w)(\w\w)(\w\w)(\w\w)/ ));
+    } else {
+        warn ( "$mac is not formed correctly!\n" );
+    }
+    return;
+}
+
+
+# save_to_file - Saves a list of MACs to a file in an appropriate format
+# Args:  $filename, @list_of_macs
+# Returns nothing
+sub save_to_file ($@) {
+    my $file = shift;
+    my @macs = @_;
+    open(OUT,">$file") or croak "Couldn't open file: $file for writing";
+    print OUT "# Saved OSCAR MAC Addresses\n";
+    foreach my $mac ( @macs ) {
+        print OUT $mac, "\n";
+    }
+    close(OUT);
+}
+
+sub save_macs_to_file ($) {
     my $file = shift;
 
     open(OUT,">$file") or croak "Couldn't open file: $file for writing";
@@ -286,19 +325,37 @@ sub save_to_file {
     return 1;
 }
 
-sub load_from_file {
+# Loads a list of MACs from a file and returns array of macs
+# Args:  $filename
+# Returns array of loaded MACs that pass verification
+sub get_from_file {
     my $file = shift;
+    my @macs;
     open(IN,"<$file") or croak "Couldn't open file: $file for reading";
     while(<IN>) {
         if(/^\s*\#/) {
             next;
         }
-        if(/^\s*([a-fA-F0-9\:]{11,17})/) {
-            my $mac = $1;
-            add_mac_to_hash($mac);
+        if( my $mac = verify_mac($_) ) {
+            push @macs, $mac;
         }
     }
     close(IN);
+    return @macs;
+}
+
+# Populate the global hash MAC based on MACs from a file.
+#
+# Input: File path from which the MACs need to be read.
+# Return: 1 if success, 0 else.
+sub load_from_file {
+    my $file = shift;
+    my @macs = get_from_file ($file);
+
+    foreach my $mac (@macs) {
+        add_mac_to_hash($mac);
+    }
+
     return 1;
 }
 

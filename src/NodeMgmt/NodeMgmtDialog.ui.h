@@ -208,7 +208,7 @@ void NodeMgmtDialog::importfilebrowse_clicked()
 
 void NodeMgmtDialog::importmacs_clicked()
 {
-    my @newmacs = OSCAR::MACops::load_from_file( importmacfile->text() );
+    my @newmacs = OSCAR::MAC::get_from_file( importmacfile->text() );
     while ( my $mac = pop(@newmacs) ) {
 	unless ( $usedmacs{$mac} == 1 ) {
 	    $usedmacs{$mac} = 1;	
@@ -230,13 +230,13 @@ void NodeMgmtDialog::exportmacs_clicked()
     for ( my $i=0; $i < othermacs->count; $i++ ) {
 	push @macs, othermacs->text($i);
     }
-    OSCAR::MACops::save_to_file($file, @macs);
+    OSCAR::MAC::save_to_file($file, @macs);
 }
 
 void NodeMgmtDialog::importmanualmac_clicked()
 {
     my $mac = manualmac->text();
-    if ( $mac = OSCAR::MACops::verify_mac($mac) && $usedmacs{$mac} != 1 ) {
+    if ( $mac = OSCAR::MAC::verify_mac($mac) && $usedmacs{$mac} != 1 ) {
 	$usedmacs{$mac} = 1;
 	othermacs->insertItem($mac);
 	manualmac->clear();

@@ -1955,7 +1955,7 @@
     <include location="local" impldecl="in declaration">use NodeSettingsDialog;</include>
     <include location="local" impldecl="in declaration">use Qt::attributes qw(settingsDialog macprocessTimer mac_collectorProcess);</include>
     <include location="local" impldecl="in declaration">use lib "$ENV{OSCAR_HOME}/lib";</include>
-    <include location="local" impldecl="in declaration">use OSCAR::MACops;</include>
+    <include location="local" impldecl="in declaration">use OSCAR::MAC;</include>
     <include location="local" impldecl="in declaration">my @macs;</include>
     <include location="local" impldecl="in declaration">my $nodes;</include>
     <include location="local" impldecl="in declaration">my %usedmacs;</include>
