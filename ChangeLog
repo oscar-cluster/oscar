@@ -1,4 +1,5 @@
 6.0.2 (not yet released):
+- Update ODA to 1.4.
 - [Ticket #519] Re-introduce the startover capability (via oscar-config
 --startover command).
 - Add the mysql support to OS_Settings and OSCAR::SystemServices.
