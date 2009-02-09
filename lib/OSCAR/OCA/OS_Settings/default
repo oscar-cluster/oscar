@@ -9,6 +9,7 @@ portmap_package=portmap
 # Specifies the name of few deamons
 ssh_daemon=/etc/init.d/sshd
 dhcp_daemon=/etc/init.d/dhcpd
+mysql_daemon=/etc/init.d/mysqld
 
 # Specifies few configuration files
 exports_file=/etc/exports

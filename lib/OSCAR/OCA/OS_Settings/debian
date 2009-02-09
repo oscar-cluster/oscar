@@ -1,6 +1,7 @@
 # Overwrite few deamons
 ssh_daemon=/etc/init.d/ssh
 dhcp_daemon=/etc/init.d/dhcp3-server
+mysql_daemon=/etc/init.d/mysql
 
 # Overwrite few package names
 nfs_package=nfs-kernel-server
