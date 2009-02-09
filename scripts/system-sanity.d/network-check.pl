@@ -86,7 +86,14 @@ sub check_hostname {
 # Return:    FAILURE if a problem is detected, SUCCESS else.                   #
 ################################################################################
 sub check_oscar_interface {
-    my $oscar_if = $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};
+    my $oscar_if;
+    require OSCAR::ConfigFile;
+    $oscar_if = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                              undef,
+                                              "OSCAR_NETWORK_INTERFACE");
+    # if a env variable is set, it overwrites the value from the config file.
+    $oscar_if = $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} 
+        if defined $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};
     my %nics;
     open IN, "netstat -nr | awk \'/\\./{print \$NF}\' | uniq |"
         || die "ERROR: Unable to query NICs\n";
@@ -193,5 +200,4 @@ if ($res1 eq FAILURE || $res2 eq FAILURE) {
 } elsif ($res2 eq WARNING) {
     $rc = WARNING;
 }
-
 exit($rc);
