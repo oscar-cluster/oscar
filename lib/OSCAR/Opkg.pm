@@ -96,6 +96,53 @@ sub get_list_opkg_dirs {
     return @opkgs;
 }
 
+sub opkgs_remove ($@) {
+    my ($type, @opkgs) = (@_);
+
+    if (!scalar(@opkgs)) {
+        carp ("ERROR: No opkgs passed!");
+        return -1;
+    }
+
+    #
+    # Detect OS of master node, just to know how to actually remove opkgs
+    #
+    my $os = OSCAR::OCA::OS_Detect::open();
+    if (!defined ($os)) {
+        carp ("ERROR: Impossible to detect the local distro.\n");
+        return -1;
+    }
+    require OSCAR::PackMan;
+    my $pm;
+    if ($os->{pkg} eq "deb") {
+        $pm = PackMan::DEB->new;
+    } elsif ($os->{pkg} eq "rpm") {
+        $pm = PackMan::RPM->new;
+    } else {
+        die "ERROR: Unknown binary package format (".$os->{pkg}.")";
+    }
+
+    my @olist;
+    if ($type eq "api") {
+        @olist = map { "opkg-".$_ } @opkgs;
+    } elsif ($type =~ /^(client|server)$/) {
+        @olist = map { "opkg-".$_."-$type" } @opkgs;
+    } else {
+        carp ("ERROR: Unsupported opkg type: $type");
+        return -1;
+    }
+    print ("Need to remove the following packages: " . join (", ", @olist));
+    print "\n";
+    my ($err, @out) = $pm->smart_remove(@olist);
+    if ($err) {
+        carp "Error occured during smart_remove ($err):\n";
+        print join("\n",@out)."\n";
+        return -1;
+    }
+
+    return 0;
+}
+
 ###############################################################################
 # Install the server part of the passed OPKGs on the local system             #
 # Parameters:                                                                 #
