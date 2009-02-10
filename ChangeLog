@@ -1,7 +1,6 @@
 6.0.2 (not yet released):
 - Add an "experimental" package set.
 - [Ticket #483] Remove code duplication between MAC.pm and MACops.pm.
-- Update ODA to 1.4.
 - [Ticket #519] Re-introduce the startover capability (via oscar-config
 --startover command).
 - Add the mysql support to OS_Settings and OSCAR::SystemServices.
@@ -9,6 +8,7 @@
 script.
 - Improve unit tests.
 - Fix a bug in OS_Settings when falling back to the default settings.
+- Update ODA to 1.4.
 - Update ORM to 1.2.1.
 - Update SystemInstaller to 2.3.10.
 - Update PackMan to 3.1.6.
