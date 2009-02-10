@@ -13,7 +13,7 @@ script.
 - Improve the unit tests.
 - Code clean-up.
 - Prereqs: decrease the output by default.
-- Prereqs: update the prereq API to make more coherent
+- Prereqs: update the prereq API to make it more coherent
 - Update OS_Settings.
 - Wizard GUI: make the "delete client" visible all the time.
 - Port the management of the /etc/init.d/systemimager-server-monitord service
