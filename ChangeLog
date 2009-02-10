@@ -8,6 +8,7 @@
 script.
 - Improve unit tests.
 - Fix a bug in OS_Settings when falling back to the default settings.
+- Update Configurator to 1.0.1.
 - Update Yume to 2.8.5.
 - Update Opium to 1.2.2.
 - Update ODA to 1.4.
