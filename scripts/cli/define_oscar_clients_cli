@@ -270,6 +270,8 @@ sub addclients
 			padding => 'pad',
 		       );
 
+    OSCAR::ClientMgt::cleanup_clients ();
+
 	my $cmd = "mksirange --image $defimage ";
 	foreach my $key (keys %hashkeys)
 	{

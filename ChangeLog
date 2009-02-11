@@ -1,4 +1,8 @@
 6.0.2 (not yet released):
+- Add "OSCAR::ClientMgt::cleanup_clients()" function that cleans the system up
+regarding clients definition. The function is currently used only before the
+definition of clients, to be sure we won't face any problems during the actual
+clients creation.
 - Add an "experimental" package set.
 - [Ticket #483] Remove code duplication between MAC.pm and MACops.pm.
 - [Ticket #519] Re-introduce the startover capability (via oscar-config

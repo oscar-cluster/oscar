@@ -1,9 +1,9 @@
 package OSCAR::ClientMgt;
 
 #
-# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
-#                    Oak Ridge National Laboratory
-#                    All rights reserved.
+# Copyright (c) 2007-2009 Geoffroy Vallee <valleegr@ornl.gov>
+#                         Oak Ridge National Laboratory
+#                         All rights reserved.
 #
 #   $Id: ClientMgt.pm 4833 2006-05-24 08:22:59Z bli $
 #
@@ -33,13 +33,92 @@ BEGIN {
 
 use strict;
 use OSCAR::Database;
+use OSCAR::FileUtils;
+use OSCAR::Logger;
+use OSCAR::Utils;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 
 @EXPORT = qw(
+            cleanup_clients
+            parse_mksimachine_output
             update_client_node_package_status
             );
+
+# The mksimachine command output is something like:
+# #Machine definitions
+# #Name:Hostname:Gateway:Image
+# oscarnode1:oscarnode1.oscardomain:192.168.0.1:oscarimage
+# oscarnode2:oscarnode2.oscardomain:192.168.0.1:oscarimage
+# #Adapter definitions
+# #Machine:Adap:IP address:Netmask:MAC
+# oscarnode1:eth0:192.168.0.2:255.255.255.0:
+# oscarnode2:eth0:192.168.0.3:255.255.255.0:
+sub parse_mksimachine_output ($) {
+    my $output = shift;
+
+    my @clients;
+    if (!OSCAR::Utils::is_a_valid_string ($output)) {
+        return @clients;
+    }
+
+    my @lines = split ("\n", $output);
+    foreach my $line (@lines) {
+        chomp ($line);
+        if ($line ne "" && !OSCAR::Utils::is_a_comment ($line)) {
+            my @data = split (":", $line);
+            my $node_name = $data[0];
+            if (!OSCAR::Utils::is_element_in_array ($node_name, @clients)) {
+                push (@clients, $node_name);
+            }
+        }
+    }
+
+    return @clients;
+}
+
+# Return: 0 if success, -1 else.
+sub cleanup_clients {
+
+    # First we get the list of defined clients from the SIS database.
+    my $cmd = "mksimachine -L --parse";
+    my $output = `$cmd`;
+    my @si_clients = parse_mksimachine_output ($output);
+
+    # We do the same for defined clients at OSCAR level
+    my (@oscar_clients, $options, $errors);
+    OSCAR::Database::get_client_nodes(\@oscar_clients,$options,$errors);
+
+    # Now we check which clients are defined of the file system (typically
+    # clients' scripts)
+    my @fs_clients;
+    my $dir = "/var/lib/systemimager/scripts/";
+    my @files = OSCAR::FileUtils::get_files_in_path ($dir);
+    foreach my $f (@files) {
+        if ($f =~ /^(.*).sh$/) {
+            push (@fs_clients, $1);
+        }
+    }
+
+    #
+    # Now we cleanup
+    #
+
+    # If a node only has a trace on the file system and not in the SIS database
+    # or the OSCAR database, we just delete the script.
+    foreach my $n (@fs_clients) {
+        if (!OSCAR::Utils::is_element_in_array ($n, @oscar_clients)
+            && !OSCAR::Utils::is_element_in_array ($n, @si_clients)) {
+            my $file_to_remove = "$dir$n.sh";
+            OSCAR::Logger::oscar_log_subsection "[INFO] Removing the ".
+                "$file_to_remove script\n";
+            unlink ($file_to_remove);
+        }
+    }
+
+    return 0;
+}
 
 # Input: - options, hash reference,
 #        - errors, array reference.
@@ -73,3 +152,6 @@ sub update_client_node_package_status ($$) {
 
 #    unlock(\%options, \@errors);
 }
+
+
+cleanup_clients ();

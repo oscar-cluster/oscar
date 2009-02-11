@@ -1,0 +1,41 @@
+#!/usr/bin/perl
+#
+
+# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                    Oak Ridge National Laboratory
+#                    All rights reserved.
+#
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::ClientMgt;
+use OSCAR::Utils;
+use warnings "all";
+
+print "\n\n*** Client Mgt Capabilities ***\n\n";
+
+my $mksimachine_output = "#Machine definitions\n
+#Name:Hostname:Gateway:Image\n
+oscarnode1:oscarnode1.oscardomain:192.168.0.1:oscarimage\n
+oscarnode2:oscarnode2.oscardomain:192.168.0.1:oscarimage\n
+#Adapter definitions\n
+#Machine:Adap:IP address:Netmask:MAC\n
+oscarnode1:eth0:192.168.0.2:255.255.255.0:\n
+oscarnode2:eth0:192.168.0.3:255.255.255.0:\n";
+my @clients = OSCAR::ClientMgt::parse_mksimachine_output ($mksimachine_output);
+OSCAR::Utils::print_array (@clients);
+if (scalar (@clients) != 2) {
+    goto ERROR_EXIT;
+}
+if ($clients[0] ne "oscarnode1" || $clients[1] ne "oscarnode2") {
+    goto ERROR_EXIT;
+}
+
+print "*** SUCCESS: Common Client Mgt Capabilities ***\n\n";
+
+exit 0;
+
+ERROR_EXIT:
+    print "ERROR: the test of client mgt capability failed\n";
+    exit -1;
+

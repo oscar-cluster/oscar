@@ -684,6 +684,7 @@ sub build_oscar_clients {
        oscar_log_section("OSCAR Management Wizard: Define OSCAR clients");
     }
 
+    OSCAR::ClientMgt::cleanup_clients ();
     get_client_nodes(\@client_nodes,\%options,\@errors)
         if $#client_nodes == -1; # If @client_nodes is empty
     my $client_basename = "oscarnode";
@@ -712,7 +713,7 @@ sub build_oscar_clients {
                            endip => 1,
                            endinghostnum => 1,
                           },
-		step_number => $step_number
+                step_number => $step_number
                );
     SystemInstaller::Tk::AddClients::addclients_window($window, %vars);
 }
