@@ -32,12 +32,14 @@ use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::FileUtils;
+use OSCAR::Logger;
 use OSCAR::Utils;
 use XML::Simple;
 use Data::Dumper;
 use Carp;
 
 @EXPORT = qw(
+            duplicate_package_set
             get_local_package_set_list
             get_list_opkgs_in_package_set
             get_package_sets
@@ -45,11 +47,41 @@ use Carp;
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
-my $package_set_dir;
+use vars qw ($package_set_dir);
 if (defined $ENV{OSCAR_HOME}) {
     $package_set_dir = $ENV{OSCAR_HOME}."/share/package_sets";
 } else {
     $package_set_dir = "/usr/share/oscar/package_sets";
+}
+
+sub duplicate_package_set ($$$) {
+    my ($ps, $new_ps, $distro) = @_;
+
+    require File::Copy;
+    my $orig = "$package_set_dir/$ps/$distro.xml";
+    if (! -f $orig) {
+        carp "ERROR: File to copy does not exist ($orig)";
+        return -1;
+    }
+
+    my $dest_dir = "$package_set_dir/$new_ps";
+    my $dest = "$package_set_dir/$new_ps/$distro.xml";
+    if (-f $dest) {
+        OSCAR::Logger::oscar_log_subsection "File $dest already exists, doing ".
+            "nothing";
+        return 0;
+    }
+
+    if (! -d $dest_dir) {
+        require File::Path;
+        File::Path::mkpath ($dest_dir)
+            or (carp "ERROR: Impossible to create the directory $dest_dir",
+                return -1);
+    }
+    File::Copy::copy ($orig, $dest)
+         or (carp "ERROR: Impossible to copy file ($orig, $dest)", return -1);
+
+    return 0;
 }
 
 # Package sets are defined via files. The files are named based on the target
@@ -83,7 +115,6 @@ sub get_package_sets_per_distro () {
 # Input: None.
 # Return: array of package sets name.
 sub get_package_sets () {
-    my @pkg_sets;
     my @dirs = OSCAR::FileUtils::get_dirs_in_path ($package_set_dir);
     return @dirs;
 }
