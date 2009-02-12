@@ -19,7 +19,7 @@ script.
 - Update ORM to 1.2.1.
 - Update SystemInstaller to 2.3.10.
 - Update PackMan to 3.1.6.
-- Update Selector to 1.0.4.
+- Update Selector to 1.1.
 - Improve the unit tests.
 - Code clean-up.
 - Prereqs: decrease the output by default.
