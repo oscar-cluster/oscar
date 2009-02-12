@@ -153,5 +153,4 @@ sub update_client_node_package_status ($$) {
 #    unlock(\%options, \@errors);
 }
 
-
-cleanup_clients ();
+1;
