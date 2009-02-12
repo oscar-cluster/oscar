@@ -11,7 +11,7 @@ FILES := AddNode.pm Help.pm Prereqs.pm Bootstrap.pm ImageMgt.pm \
          CmpVersions.pm MAC.pm PackageBest.pm SISBuildSetup.pm \
          PackageInUn.pm ConfigFile.pm PackagePath.pm SwitcherAPI.pm \
          ConfigManager.pm msm.pm SystemSanity.pm Package.pm Tk.pm \
-         Network.pm PackageSet.pm Utils.pm DelNode.pm \
+         Network.pm Utils.pm DelNode.pm \
          NextIp.pm VersionParser.pm Distro.pm NodeConfigManager.pm \
          PackageSmart.pm VMConfigManager.pm Env.pm NodeMgt.pm \
          PartitionConfigManager.pm  WizardEnv.pm FileUtils.pm OCA.pm \
