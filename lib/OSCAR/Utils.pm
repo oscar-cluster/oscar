@@ -67,7 +67,8 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 #            0 else.                                                           #
 ################################################################################
 sub is_element_in_array ($@) {
-    my ($element, @array) = @_;
+    my $element = shift;
+    my @array = @_;
     carp ("ERROR: undefined element") if !defined ($element);
 
     foreach my $i (@array) {
@@ -145,11 +146,12 @@ sub get_oscar_version {
 sub is_a_valid_string ($) {
     my $str = shift;
 
-    if (!defined ($str) || $str eq "") {
-        return 0;
-    } else {
-        return 1;
-    }
+    return 0 if (!defined ($str));
+    return 0 if (ref($str) eq "HASH");
+    return 0 if (ref($str) eq "ARRAY");
+    return 0 if ($str eq "");
+    
+    return 1;
 }
 
 ################################################################################
@@ -291,7 +293,7 @@ __END__
 =over 4
 
 =item compactSpaces
-      
+
 =item get_oscar_version
 
 =item get_local_arch
