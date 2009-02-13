@@ -185,7 +185,7 @@ sub generate_config_file () {
         }
     } else {
         if ( -f "/etc/oscar/oscar.conf") {
-            print "[INFO] configuration file already exist, no updating\n";
+            print "[INFO] configuration file already exists, no updating\n";
             exit 0;
         }
         print "Not yet implemented\n";
