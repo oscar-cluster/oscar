@@ -433,6 +433,10 @@ Mirror a given online OSCAR repository for a given Linux distribution.
 
 Check the system status. It actually executes the system-sanity script.
 
+=item --startover
+
+Reset OSCAR, typically removing binary packages and the OSCAR database. Useful for testing.
+
 =item --update-nic
 
 Update the NIC used by OSCAR for cluster management. The NIC identifier is specified in the '/etc/oscar/oscar.conf' configuration file.
