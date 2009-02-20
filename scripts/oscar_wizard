@@ -930,8 +930,7 @@ sub monitor_deployment ($) {
     our $monitor_button;
 
     # We make sure the service associated to the monitor is started
-    my $service = "/etc/init.d/systemimager-server-monitord";
-    if (OSCAR::SystemServices::system_service ($service, 
+    if (OSCAR::SystemServices::system_service (OSCAR::SystemServicesDefs::SI_MONITORD(), 
                                                OSCAR::SystemServicesDefs::START())) {
         print STDERR "ERROR: Impossible to start service $service\n";
         return 0;

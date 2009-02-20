@@ -10,6 +10,7 @@ portmap_package=portmap
 ssh_daemon=/etc/init.d/sshd
 dhcp_daemon=/etc/init.d/dhcpd
 mysql_daemon=/etc/init.d/mysqld
+monitord_daemon=/etc/init.d/systemimager-server-monitord
 
 # Specifies few configuration files
 exports_file=/etc/exports

@@ -15,9 +15,10 @@ use constant SERVICE_DISABLED => 0;
 use constant SERVICE_ENABLED  => 1;
 
 # List of supported services
-use constant SSH        => 'ssh';
-use constant DHCP       => 'dhcp';
-use constant MYSQL      => 'mysql';
+use constant SSH            => 'ssh';
+use constant DHCP           => 'dhcp';
+use constant MYSQL          => 'mysql';
+use constant SI_MONITORD    => 'monitord';
 
 # List of actions related to system services
 use constant START      => 0;
