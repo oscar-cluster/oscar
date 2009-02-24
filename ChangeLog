@@ -1,4 +1,6 @@
 6.0.2 (not yet released):
+- Update the image creation parameters so we can overwrite the list of binary
+packages to install in a image for a given Linux distribution.
 - Move Selector code to the Selector package source tree.
 - Add "OSCAR::ClientMgt::cleanup_clients()" function that cleans the system up
 regarding clients definition. The function is currently used only before the
