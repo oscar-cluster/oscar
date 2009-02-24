@@ -258,8 +258,19 @@ sub get_image_default_settings () {
     my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
     my $arch = $master_os->{arch};
 
-    my $distro = $master_os->{compat_distro};
-    my $distro_ver = $master_os->{compat_distrover};
+    # We look if a package file exists for the exact distro we use. If not, we
+    # use the package file for the compat distro.
+    my $distro = $master_os->{distro};
+    my $distro_ver = $master_os->{distro_version};
+    my $distro_update = $master_os->{distro_update};
+    my $compat_distro = $master_os->{compat_distro};
+    my $compat_distro_ver = $master_os->{compat_distrover};
+    my $pkglist = "$oscarsamples_dir/".
+                  "$distro-$distro_ver.$distro_update-$arch.rpmlist";
+    if (! -f $pkglist) {
+        $pkglist = "$oscarsamples_dir/".
+                   "$compat_distro-$compat_distro_ver-$arch.rpmlist";
+    }
 
     my $distro_pool = OSCAR::PackagePath::distro_repo_url();
     $distro_pool =~ s/\ /,/g;
@@ -268,8 +279,6 @@ sub get_image_default_settings () {
     oscar_log_subsection("Identified distro of clients: $distro $distro_ver");
     oscar_log_subsection("Distro repo: $distro_pool");
     oscar_log_subsection("OSCAR repo: $oscar_pool");
-
-    my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.rpmlist";
     oscar_log_subsection("Using binary list: $pkglist");
 
     # Get a list of client RPMs that we want to install.
