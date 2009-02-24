@@ -932,7 +932,8 @@ sub monitor_deployment ($) {
     # We make sure the service associated to the monitor is started
     if (OSCAR::SystemServices::system_service (OSCAR::SystemServicesDefs::SI_MONITORD(), 
                                                OSCAR::SystemServicesDefs::START())) {
-        print STDERR "ERROR: Impossible to start service $service\n";
+        carp "ERROR: Impossible to start service ".
+             OSCAR::SystemServicesDefs::SI_MONITORD()."\n";
         return 0;
     }
 
