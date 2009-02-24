@@ -36,7 +36,6 @@ use OSCAR::Utils;
 use OSCAR::FileUtils;
 use File::Basename;
 use File::Path;
-use warnings "all";
 use Carp;
 
 @EXPORT = qw(
