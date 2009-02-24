@@ -8,3 +8,4 @@ linux-image-2.6-686
 linux-image-generic
 ssh
 systemconfigurator
+nfs-common
