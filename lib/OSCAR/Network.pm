@@ -178,7 +178,10 @@ sub update_hosts ($) {
         return -1;
     }
     OSCAR::Logger::oscar_log_subsection("Backing up /etc/hosts");
-    copy("/etc/hosts","/etc/hosts.bak") or return undef;
+    my $timestamp = `date +\"%Y-%m-%d-%k-%M-%m\"`;
+    chomp $timestamp;
+    copy("/etc/hosts","/etc/hosts.bak-$timestamp") 
+        or (carp "ERROR: Impossible to backup /etc/hosts", return undef);
     my $short;
     my $hostname = qx/hostname/;
     chomp($hostname);
