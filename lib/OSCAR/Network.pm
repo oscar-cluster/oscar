@@ -169,12 +169,15 @@ sub get_network_config ($$$) {
 # Update the /etc/host configuration file in order to include OSCAR stuff.     #
 #                                                                              #
 # Input: ip, IP address of the headnode.                                       #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
 sub update_hosts ($) {
     my $ip = shift;
-    if( ! $ip ) {   # mjc - 12/13/01
-        croak( "Cannot update hosts without a valid ip.\n" );
+    if( ! is_a_valid_ip($ip) ) {
+        carp ( "Cannot update hosts without a valid ip.\n" );
+        return -1;
     }
-    verbose("Backing up /etc/hosts");
+    OSCAR::Logger::oscar_log_subsection("Backing up /etc/hosts");
     copy("/etc/hosts","/etc/hosts.bak") or return undef;
     my $short;
     my $hostname = qx/hostname/;
@@ -189,7 +192,7 @@ sub update_hosts ($) {
     my @aliases=qw(oscar_server nfs_oscar pbs_oscar);
     open(IN,"</etc/hosts.bak") or return undef;
     open(OUT,">/etc/hosts") or return undef;
-    verbose("Adding required entries to /etc/hosts");
+    OSCAR::Logger::oscar_log_subsection("Adding required entries to /etc/hosts");
 
     # mjc - 11/12/01 - start
     # - If the ip is in there, add the oscar aliases if they
@@ -237,8 +240,11 @@ sub update_hosts ($) {
 
     close(OUT);
     close(IN);
+
+    return 0;
 }
 
+# Return: 0 if success, -1 else.
 sub update_head_nic () {
     require OSCAR::Database_generic;
     require OSCAR::ConfigFile;
@@ -266,6 +272,8 @@ sub update_head_nic () {
         carp "ERROR: Impossible to successfully execute \"$cmd\"";
         return -1;
     }
+
+    return 0;
 }
 
 1;
