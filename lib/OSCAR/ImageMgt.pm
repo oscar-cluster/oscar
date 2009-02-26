@@ -136,7 +136,7 @@ sub do_post_binary_package_install ($$) {
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
         carp "ERROR: Impossible to get the OSCAR configuration\n";
-        return undef;
+        return 0;
     }
     my $config = $oscar_configurator->get_config();
 
@@ -144,10 +144,11 @@ sub do_post_binary_package_install ($$) {
     my $cmd = "$config->{binaries_path}/post_rpm_install $img $interface";
 
     if (system($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
         delete_image($img);
         return 0;
     }
-    oscar_log_subsection("Successfully ran: $cmd");
+    OSCAR::Logger::oscar_log_subsection("Successfully ran: $cmd");
 
     chdir "$cwd";
     return 1;
@@ -331,7 +332,7 @@ sub get_image_default_settings () {
 ################################################################################
 # Delete an existing image.                                                    #
 # Input: imgname, image name.                                                  #
-# Output: none.                                                                #
+# Output: 0 if success, -1 else.                                               #
 # TODO: We need to update the OSCAR database when deleting an image.           #
 ################################################################################
 sub delete_image ($) {
@@ -341,10 +342,16 @@ sub delete_image ($) {
     my $rsyncd_conf = $config->rsyncd_conf();
     my $rsync_stub_dir = $config->rsync_stub_dir();
 
-    system("mksiimage -D --name $imgname");
+    my $cmd = "mksiimage -D --name $imgname";
+    if (system($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
     require SystemImager::Server;
     SystemImager::Server::remove_image_stub($rsync_stub_dir, $imgname);
     SystemImager::Server::gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+
+    return 0;
 }
 
 ################################################################################
@@ -358,6 +365,7 @@ sub delete_image ($) {
 #                  'oda' => "ok"|"missing",                                    #
 #                  'sis' => "ok"|"missing",                                    #
 #                  'fs' => "ok"|"missing" ).                                   #
+#         undef if error.                                                      #
 ################################################################################
 sub get_list_corrupted_images {
     my $sis_cmd = "/usr/bin/si_lsimage";
@@ -402,16 +410,20 @@ sub get_list_corrupted_images {
     print "List of images in ODA: ";
     print_array (@oda_images);
     } else {
-        die ("ERROR: Cannot query ODA\n");
+        carp ("ERROR: Cannot query ODA\n");
+        return undef;
     }
 
     # We get the list of images from the file system
     my $sis_image_dir = "/var/lib/systemimager/images";
     my @fs_images = ();
-    die ("ERROR: The image directory does not exist ".
-         "($sis_image_dir)") if ( ! -d $sis_image_dir );
+    if ( ! -d $sis_image_dir ) {
+        carp ("ERROR: The image directory does not exist ".
+              "($sis_image_dir)");
+        return undef;
+    }
     opendir (DIRHANDLER, "$sis_image_dir")
-        or die ("ERROR: Impossible to open $sis_image_dir");
+        or (carp ("ERROR: Impossible to open $sis_image_dir"), return undef);
     foreach my $dir (sort readdir(DIRHANDLER)) {
         if ($dir ne "."
             && $dir ne ".."
@@ -489,9 +501,9 @@ sub image_exists ($) {
 
     if ( -d $path ) {
         return 1;
-    } else {
-        return 0;
     }
+
+    return 0;
 }
 
 ################################################################################
@@ -531,7 +543,10 @@ sub create_image ($%) {
     # GV: currently we create first a basic image and only then we install OPKGs
     # and run post_install scripts. Therefore the following command should not
     # be needed.
-    postimagebuild (\%vars);
+    if (postimagebuild (\%vars)) {
+        carp "ERROR: Impossible to run postimagebuild";
+        return -1;
+    }
 
     # Add image data into ODA
     my %image_data = ("name" => $image,
@@ -614,14 +629,14 @@ sub postimagebuild {
     my $interface = "eth0";
     my %options;
 
-    print ("Setting up image in the database\n");
+    OSCAR::Logger::oscar_log_subsection ("Setting up image in the database");
     if (do_setimage ($img, \%options)) {
         carp "ERROR: Impossible to set image";
         return -1;
     }
 
     my $cmd = "post_binary_package_install ($img, $interface)";
-    print ("Running: $cmd");
+    OSCAR::Logger::oscar_log_subsection ("Running: $cmd");
     if (do_post_binary_package_install ($img, $interface) == 0) {
         carp "ERROR: Impossible to do post binary package install";
         return -1;
