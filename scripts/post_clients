@@ -41,8 +41,12 @@ use Data::Dumper;
 # iptables (not ipchains)
 #!system("./allow_client_access") or croak("Couldn't run client access program");
 
-push_hosts() or croak("Couldn't push hosts file to images");
-populate_known_hosts() or croak ("Could not populate known_hosts file");
+if (push_hosts() != 1) {
+    die ("ERROR: Couldn't push hosts file to images");
+}
+if (populate_known_hosts() != 1) {
+    die ("ERROR: Could not populate known_hosts file");
+}
 
 # This guarantees that post_clients is run for core packages first
 # Eg. SIS post_clients need to be executed before SGE or else compute node's hostnames
@@ -71,7 +75,7 @@ exit($return);
 # Copy the /etc/hosts file into _all_ images. Note that we check if the image  #
 # is actually valid.
 # Input: None.                                                                 #
-# Ouput: 1 if success, undef else.                                             #
+# Ouput: 1 if success, 0 else.                                                 #
 ################################################################################
 sub push_hosts {
     my @images = list_image();
@@ -83,7 +87,7 @@ sub push_hosts {
                   "We may run the Sanity Check framework for more details.\n");
         } else {
             copy("/etc/hosts","$dir/etc/hosts") 
-                or (carp "Can't copy /etc/hosts to $dir", return undef);
+                or (carp "ERROR: Can't copy /etc/hosts to $dir", return undef);
         }
     }
     return 1;
@@ -93,6 +97,8 @@ sub push_hosts {
 # same host_key as the headnode.
 # This will be handy if we would like to enhance security for the cluster by not
 # enabling StrictHostKeyChecking for ssh client.
+#
+# Return: 1 if success, 0 else.
 sub populate_known_hosts {
     my $known_hosts_path = "/root/.ssh";
     my $known_hosts = "$known_hosts_path/known_hosts";
@@ -105,7 +111,10 @@ sub populate_known_hosts {
     }
 
     if ( ! -f $known_hosts ) {
-        !system("touch $known_hosts") or carp "Could not touch $known_hosts";
+        if (system("touch $known_hosts")) {
+            carp "ERROR: Could not touch $known_hosts";
+            return 0;
+        }
     }
 
     print "Populating $known_hosts with defined clients' host keys\n"; 
