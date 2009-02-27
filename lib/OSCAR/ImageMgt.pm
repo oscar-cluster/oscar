@@ -71,7 +71,7 @@ my $verbose = 1;
 #            options, hash with option values.                                 #
 # Return   : 0 if sucess, -1 else.                                             #
 ################################################################################
-sub do_setimage {
+sub do_setimage ($%) {
     my ($img, %options) = @_;
     my @errors = ();
 
@@ -83,7 +83,7 @@ sub do_setimage {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "file") {
+    if ($config->{db_type} eq "db") {
         my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
         my $arch = $master_os->{arch};
 
@@ -114,7 +114,7 @@ sub do_setimage {
     } elsif ($config->{db_type} eq "file") {
         return 0;
     } else {
-        carp "ERROR: Unknow ODA type ($config->{db_type}\n";
+        carp "ERROR: Unknow ODA type ($config->{db_type})\n";
         return -1;
     }
     return 0;
@@ -626,11 +626,16 @@ sub update_systemconfigurator_configfile ($) {
 sub postimagebuild {
     my ($vars) = @_;
     my $img = $$vars{imgname};
-    my $interface = "eth0";
+    my $interface;
     my %options;
 
+    require OSCAR::ConfigFile;
+    $interface = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                               undef,
+                                               "OSCAR_NETWORK_INTERFACE");
+
     OSCAR::Logger::oscar_log_subsection ("Setting up image in the database");
-    if (do_setimage ($img, \%options)) {
+    if (do_setimage ($img, %options)) {
         carp "ERROR: Impossible to set image";
         return -1;
     }
