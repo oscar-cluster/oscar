@@ -328,6 +328,9 @@ A set of usefull functions for the manipulation of files. This package is design
 
 =item add_line_to_file_without_duplication
 
+Add a line into a file and make sure the line appears only one.
+add_line_to_file_without_duplication($line, $file);
+
 =item download_file
 
 =item file_type
