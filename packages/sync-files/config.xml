@@ -38,18 +38,29 @@
       <pkg>sync-files</pkg>
       <pkg>cron</pkg>
     </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>sync-files</pkg>
+    </requires>
   </serverDeps>
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.4-4">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-02-26T17:38:20-05:00">
+        <item>Fix a wrong dependency for Debian.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.4-3">
       <changelogEntry authorName="DongInn Kim" date="2007-12-16T17:30:33-04:00">
-        <item>Fixed wrong dependecies for YDL5-PPC64(PS3).</item>
+        <item>Fixed wrong dependencies for YDL5-PPC64(PS3).</item>
       </changelogEntry>
     </versionEntry>
     <versionEntry version="2.4-2">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-06-25T10:46:54-04:00">
-        <item>Minor modification: the package name (including the directory name in the source is now sync-files everywhere.</item>
+        <item>Minor modification: the package name (including the directory name in the source) is now sync-files everywhere.</item>
       </changelogEntry>
     </versionEntry>
     <versionEntry version="2.4-1">    
