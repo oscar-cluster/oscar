@@ -76,7 +76,7 @@ you want to delete and press the
                                       -command => [\&selectallnodes, $window, $listbox],
                                       -state => "active",
                                      );
-    
+
     my $deletebutton = $window->Button(
                                       -text => "Delete Selected Clients",
                                       -command => [\&delnodes, $window, $listbox],
@@ -167,10 +167,10 @@ sub delnodes {
 
     # get the list of generic services
     get_packages_servicelists(\@generic_services, "", undef, undef);
-    
+
     # get the list of services for servers
     get_packages_servicelists(\@server_services, "oscar_server", undef, undef);
-    
+
     print ">> Turning off generic services\n";
     foreach my $services_ref (@generic_services) {
         my $generic_service = $$services_ref{service};
@@ -189,7 +189,7 @@ sub delnodes {
 
     # delete node PXE/ELILO configs
     foreach my $client (@clients) {
-	&del_ip_node($client);
+        &del_ip_node($client);
     }
 
     if (system("mksimachine --Delete --name $clientstring")) {
