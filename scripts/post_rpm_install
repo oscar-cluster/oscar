@@ -14,14 +14,14 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   Copyright 2001-2002 International Business Machines
-#                       Sean Dague <japh@us.ibm.com>
-#                       Michael Chase-Salerno <bratac@us.ibm.com>
-#   (C)opyright 2005    Erich Focht <efocht@hpce.nec.com>
-#   Copyright (c) 2005  The Trustees of Indiana University.  
-#                       All rights reserved.
-#   Copyright (c) 2008  Oak Ridge National Laboratory
-#                       Geoffroy Vallee <valleegr@ornl.gov>
+#   Copyright 2001-2002      International Business Machines
+#                            Sean Dague <japh@us.ibm.com>
+#                            Michael Chase-Salerno <bratac@us.ibm.com>
+#   (C)opyright 2005         Erich Focht <efocht@hpce.nec.com>
+#   Copyright (c) 2005       The Trustees of Indiana University.  
+#                            All rights reserved.
+#   Copyright (c) 2008-2009  Oak Ridge National Laboratory
+#                            Geoffroy Vallee <valleegr@ornl.gov>
 
 #   This script is designed to be run after the image is built.
 #   It will do all the fixups required.
@@ -35,6 +35,7 @@ BEGIN {
 }
 
 use strict;
+use lib "/usr/lib/systeminstaller";
 use Carp;
 use File::Copy;
 use File::Path;
@@ -46,32 +47,52 @@ use OSCAR::Database;
 use OSCAR::Logger;
 use OSCAR::Network;
 use OSCAR::Package;
+use Getopt::Long;
 use Cwd;
 
-my $imagename = shift or croak("No arguments passed - please pass <image name> and <headnode interface name>");
-my $serverint = shift or croak("Only one argument passed - please pass <image name> and <headnode interface name>"); 
+my $verbose;
+GetOptions(
+    "verbose"   => \$verbose,
+    );
+
+my $initial_verbose_value = 0;
+$initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
+if ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+}
+
+my $imagename = shift 
+    or die("ERROR: No arguments passed - please pass <image name> and <headnode interface name>");
+my $serverint = shift 
+    or die("ERROR: Only one argument passed - please pass <image name> and <headnode interface name>"); 
 
 my $config = SystemInstaller::Utils::init_si_config();
 
 my $targetdir = $config->default_image_dir . "/$imagename";
 
-if(!-d $targetdir) {croak("The directory $targetdir doesn't exist");}
+if(!-d $targetdir) {
+    die ("ERROR: The directory $targetdir doesn't exist");
+}
 
 oscar_log_subsection("post_rpm_install: Making sure /dev/null is r/w for all");
-!system("chmod a+rw $targetdir/dev/null") or croak("Couldn't set $targetdir/dev/null permissions!");
+!system("chmod a+rw $targetdir/dev/null") 
+    or die("ERROR: Couldn't set $targetdir/dev/null permissions!");
 
 oscar_log_subsection("post_rpm_install: Syncing system files");
-sync_system_files($targetdir) or croak("Couldn't sync system files");
+sync_system_files($targetdir) 
+    or die("ERROR: Couldn't sync system files ($targetdir)");
 
 oscar_log_subsection("post_rpm_install: Syncing user files");
-sync_user_files($targetdir) or croak("Couldn't sync user files");
+sync_user_files($targetdir) 
+    or die("ERROR: Couldn't sync user files ($targetdir)");
 
 oscar_log_subsection("post_rpm_install: Running ssh setup");
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                   undef,
                                                   "OSCAR_SCRIPTS_PATH");
 my $cmd = "$binaries_path/ssh_install $targetdir";
-!system($cmd) or croak("Couldn't generate ssh keys");
+!system($cmd) 
+    or die("ERROR: Couldn't generate ssh keys ($cmd)");
 
 # unmount /proc from image, if needed
 if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
@@ -89,24 +110,26 @@ oscar_log_subsection("post_rpm_install: Running OSCAR package post_rpm_install s
 foreach my $pkg_ref (@pkgs) {       # %$pkg_ref has the two keys ( package, version);
     my $pkg = $$pkg_ref{package};
     if(!run_pkg_script_chroot($pkg,$targetdir)) {
-       carp("Couldn't run post_rpm_install for $pkg");
+       carp("ERROR: Couldn't run post_rpm_install for $pkg");
        $return++;
     }
     # Config script running outside chroot, for access to
     # master databases, xml files and parsing perl modules.
     # Argument passed: image directory path.
     if(!run_pkg_script($pkg,"post_rpm_nochroot",1,$targetdir)) {
-       carp("Couldn't run post_rpm_nochroot for $pkg");
+       carp("ERROR: Couldn't run post_rpm_nochroot for $pkg");
        $return++;
     }
 }
 
 if($return) {
-    carp("There were errors running post_rpm_install scripts.  Please check your logs.");
+    die ("ERROR: There were errors running post_rpm_install scripts.  Please check your logs.");
 }
 
+$ENV{OSCAR_VERBOSE} = $initial_verbose_value;
 exit($return);
 
+# Return: 1 if success, 0 else.
 sub link_kernel_files {
     my ($imagedir) = @_;
     my @file;
@@ -118,18 +141,20 @@ sub link_kernel_files {
 	    symlink($file[0], $link) or croak("Couldn't make symlink for $link");
 	}
     }
-    chdir "$dir" or croak ("Can't change back to original directory");
+    chdir "$dir" 
+        or (carp ("ERROR: Can't change back to original directory"), return 0);
     return 1;
 }
 
+# Return: 1 if success, 0 else.
 sub sync_system_files {
     my ($imagedir) = @_;
 
     my @files = qw(/etc/localtime);
     foreach my $file (@files) {
       if(-e $file) {
-        copy($file,$imagedir . $file) or (carp("Couldn't populate $file to $imagedir"),
-                                          return undef);
+        copy($file,$imagedir . $file) 
+            or (carp("Couldn't populate $file to $imagedir"), return 0);
       }
     }
     return 1;
@@ -141,8 +166,8 @@ sub sync_user_files {
     my @files = qw(/etc/gshadow /etc/shadow /etc/passwd /etc/group /etc/hosts);
     foreach my $file (@files) {
       if(-e $file) {
-        copy($file,$imagedir . $file) or (carp("Couldn't populate $file to $imagedir"),
-                                          return undef);
+        copy($file,$imagedir . $file) 
+            or (carp("Couldn't populate $file to $imagedir"), return 0);
       }
     }
     return 1;
