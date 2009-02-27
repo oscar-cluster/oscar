@@ -78,7 +78,7 @@ my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
 
 # Sanity checking for /etc/hosts
 oscar_log_subsection("Getting internal IP address");
-my ($ip,$bcast,$netmask) = interface2ip($INTERFACE) 
+my ($ip,$bcast,$netmask) = OSCAR::Network::interface2ip($INTERFACE) 
     or croak("Couldn't determine internal ip address");
 oscar_log_subsection("Got: [Interface: $INTERFACE]");
 oscar_log_subsection("Got: [IP: $ip]");
@@ -86,8 +86,9 @@ oscar_log_subsection("Got: [Broadcast: $bcast]");
 oscar_log_subsection("Got: [Netmask: $netmask]");
 
 oscar_log_subsection("Adding hosts to /etc/hosts");
-OSCAR::Network::update_hosts($ip)
-    or croak("Couldn't add required host entries to /etc/hosts");
+if (OSCAR::Network::update_hosts($ip)) {
+    die("ERROR: Couldn't add required host entries to /etc/hosts");
+}
 
 
 # Get a list of all non-core packages
