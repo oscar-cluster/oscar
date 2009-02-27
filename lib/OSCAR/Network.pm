@@ -180,8 +180,9 @@ sub update_hosts ($) {
     OSCAR::Logger::oscar_log_subsection("Backing up /etc/hosts");
     my $timestamp = `date +\"%Y-%m-%d-%k-%M-%m\"`;
     chomp $timestamp;
-    copy("/etc/hosts","/etc/hosts.bak-$timestamp") 
-        or (carp "ERROR: Impossible to backup /etc/hosts", return undef);
+    my $backup_file = "/etc/hosts.bak-$timestamp";
+    copy("/etc/hosts","$backup_file") 
+        or (carp "ERROR: Impossible to backup /etc/hosts", return -1);
     my $short;
     my $hostname = qx/hostname/;
     chomp($hostname);
@@ -193,8 +194,10 @@ sub update_hosts ($) {
         }
     }
     my @aliases=qw(oscar_server nfs_oscar pbs_oscar);
-    open(IN,"</etc/hosts.bak") or return undef;
-    open(OUT,">/etc/hosts") or return undef;
+    open(IN,"<$backup_file") 
+        or (carp "ERROR: Impossible to open $backup_file", return -1);
+    open(OUT,">/etc/hosts") 
+        or (carp "ERROR: Impossible to open /etc/hosts", return -1);
     OSCAR::Logger::oscar_log_subsection("Adding required entries to /etc/hosts");
 
     # mjc - 11/12/01 - start
@@ -219,7 +222,7 @@ sub update_hosts ($) {
             $found = 1;
             my @items = split( /\s+/, $body );
             foreach my $alias (@aliases) {
-                    push @items, $alias unless grep {$alias eq $_} @items;
+                push @items, $alias unless grep {$alias eq $_} @items;
             }
             # print the modified line.
             print OUT join( " ", @items ), " $comment\n";
