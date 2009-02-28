@@ -18,12 +18,15 @@ use strict;
 use Carp;
 
 use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::ConfigFile;
 use OSCAR::Logger;
 use OSCAR::PackagePath;
 use File::Copy;
 
-my $oda_cmd = "$ENV{OSCAR_HOME}/scripts/oda";
-my $oda_link = "/usr/local/bin/oda";
+my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                                      undef,
+                                                      "OSCAR_SCRIPTS_PATH");
+my $oda_cmd = "$binaries_path/oda";
 
 my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
 my $mysqld;
@@ -71,7 +74,7 @@ if ($db_type eq "pgsql"){
 
 
 # Reconfigure MySQL
-my $os = OSCAR::PackagePath::distro_detect_or_die();
+my $os = OSCAR::PackagePath::distro_detect_or_die("/");
 
 if ($os->{compat_distro} =~ /^(rhel|fc|mdv|ydl)/) {
     $mysqld      = 'mysqld';
@@ -153,10 +156,5 @@ if ( system("/etc/init.d/$database_daemon status | grep -c stopped > /dev/null 2
   oscar_log_subsection("$database_daemon was not running and will start");
   !system("/etc/init.d/$database_daemon start") or croak("Couldn't start $database_daemon");
 }
-
-# Make a symlink for oda command to make it available on the standard
-# PATH
-system("ln -s $oda_cmd $oda_link") 
-    if ! -e $oda_link;
 
 exit(0);
