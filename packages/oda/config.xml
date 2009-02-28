@@ -30,8 +30,6 @@
         <item>Fix various issues in the api-pre-install script.</item>
       </changelogEntry>
     </versionEntry>
-  </changelog>
-  <changelog>
     <versionEntry version="1.31.0-1">
       <changelogEntry authorName="Neil Gorsuch" date="2007-06-25T10:40:48-04:00">
         <item>Convert to the new OPKG API (for OPKGC)</item>
