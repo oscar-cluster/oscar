@@ -112,6 +112,9 @@ if (scalar (@opkgs) == 0) {
     if (OSCAR::Opkg::opkgs_install("server", @opkgs)) {
         die ("ERROR: Impossible to install " . join (", ", @opkgs));
     }
+    if (OSCAR::Opkg::opkgs_install("api", @opkgs)) {
+        die ("ERROR: Impossible to install " . join (", ", @opkgs));
+    }
 }
 oscar_log_subsection("Successfully installed server non-core binary packages");
 
