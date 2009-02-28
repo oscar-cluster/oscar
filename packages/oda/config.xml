@@ -16,10 +16,21 @@
       <name>Neil Gorsuch</name>
       <email>ngorsuch@ncsa.uiuc.edu</email>
     </author>
+    <author cat="maintainer">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
   </authors>
   <serverDeps/>
   <clientDeps/>
   <apiDeps/>
+  <changelog>
+    <versionEntry version="1.32.0-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-02-28T10:13:45-05:00">
+        <item>Fix various issues in the api-pre-install script.</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
   <changelog>
     <versionEntry version="1.31.0-1">
       <changelogEntry authorName="Neil Gorsuch" date="2007-06-25T10:40:48-04:00">
