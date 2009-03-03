@@ -161,10 +161,10 @@ sub do_post_binary_package_install ($$) {
 #        options, hash with option values.                                     #
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
-sub do_oda_post_install {
-    my (%vars, %options) = @_;
+sub do_oda_post_install ($$) {
+    my ($vars, $options) = @_;
     my @errors = ();
-    my $img = $vars{imgname};
+    my $img = $$vars{imgname};
 
     # Have installed Client binary packages and did not croak, so mark
     # packages. <pkg>installed # true. (best effort for now)
@@ -186,7 +186,10 @@ sub do_oda_post_install {
         {
             my $opkg = $$opkg_ref{package};
             oscar_log_subsection("Set package: $opkg");
-            OSCAR::Database::set_image_packages($img,$opkg,\%options,\@errors);
+            OSCAR::Database::set_image_packages($img,
+                                                $opkg,
+                                                $options,
+                                                \@errors);
         }
     } elsif ($config->{db_type} eq "db") {
         # Get the list of opkgs for the specific image.
@@ -647,7 +650,7 @@ sub postimagebuild {
         return -1;
     }
 
-    if (do_oda_post_install (%$vars, \%options)) {
+    if (do_oda_post_install ($vars, \%options)) {
         carp "ERROR: Impossible to update data in ODA";
         return -1;
     }

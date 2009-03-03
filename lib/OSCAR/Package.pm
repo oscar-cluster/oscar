@@ -123,20 +123,20 @@ sub run_pkg_script ($$$$) {
     my $pkgdir = get_scripts_dir ($pkg, $phase);
     return 0 unless ((defined $pkgdir) && (-d $pkgdir));
     foreach my $scriptname (@$scripts) {
-	my $script = "$pkgdir/$scriptname";
-	if (-e $script) {
-        chmod 0755, $script;
-	    oscar_log_subsection("About to run $script for $pkg") if $verbose;
-	    $ENV{OSCAR_PACKAGE_HOME} = $pkgdir;
-	    my $rc = system("$script $args");
-	    delete $ENV{OSCAR_PACKAGE_HOME};
-	    if ($rc) {
-		my $realrc = $rc >> 8;
-		carp("ERROR: Script $script exitted badly with exit code '$realrc'") 
-            if $verbose;
-		return 0;
-	    }
-	} 
+        my $script = "$pkgdir/$scriptname";
+        print "Looking for $script...\n";
+        if (-e $script) {
+            chmod 0755, $script;
+            oscar_log_subsection("About to run $script for $pkg");
+            $ENV{OSCAR_PACKAGE_HOME} = $pkgdir;
+            my $rc = system("$script $args");
+            delete $ENV{OSCAR_PACKAGE_HOME};
+            if ($rc) {
+                my $realrc = $rc >> 8;
+                carp("ERROR: $script exitted badly ($realrc)");
+                return 0;
+            }
+        }
     }
     return 1;
 }
