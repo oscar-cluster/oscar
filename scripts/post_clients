@@ -24,14 +24,21 @@
 
 # $Id$
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib",'/usr/lib/systeminstaller';
+use lib '/usr/lib/systeminstaller';
 use Carp;
 use File::Copy;
 use File::Path;
 use File::Basename;
 use SIS::Image;
 use SIS::DB;
+use OSCAR::Opkg;
 use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::MAC qw(sortclients);
@@ -51,16 +58,16 @@ if (populate_known_hosts() != 1) {
 # This guarantees that post_clients is run for core packages first
 # Eg. SIS post_clients need to be executed before SGE or else compute node's hostnames
 # will not be entered into /etc/hosts in time
-my @core_pkgs = list_selected_packages("core");
+my @core_pkgs = OSCAR::Opkg::get_list_core_opkgs ();
 my @noncore_pkgs = list_selected_packages("noncore");
 my @pkgs = (@core_pkgs, @noncore_pkgs);
 
 my $return = 0;
 
-foreach my $pkg_ref (@pkgs) {
-    my $pkg = $$pkg_ref{package};
-    if(!OSCAR::Package::run_pkg_script($pkg, "post_clients", 1, undef)) {
-        carp("Couldn't run post_clients script for $pkg");
+my $phase = "post_clients";
+foreach my $pkg (@pkgs) {
+    if(!OSCAR::Package::run_pkg_script($pkg, $phase, 1, undef)) {
+        carp("Couldn't run $phase script for $pkg");
         $return++;
     }
 }

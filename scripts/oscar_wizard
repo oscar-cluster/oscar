@@ -77,7 +77,7 @@ use File::Basename;
 use Data::Dumper; # used for debugging purpose but should not be removed
 use Getopt::Long;
 use Carp;
-use vars qw($config);
+use vars qw($config $step_number);
 use warnings "all";
 
 my ($debug, $verbose);
@@ -284,7 +284,6 @@ if ($browser ne "") {
   $GIF_t->bind( "<Button-1>" => sub { system("$browser $url > /dev/null 2>&1 &") } );
 }
 
-my $step_number;
 my $step_string = "";
 
 # Download packages using OPD
@@ -719,9 +718,21 @@ sub build_oscar_clients {
     SystemInstaller::Tk::AddClients::addclients_window($window, %vars);
 }
 
+# Return: 1 if success, 0 else.
 sub postaddclients {
     my ($vars) = @_;
-    my $step_number = $$vars{step_number};
+
+    print STDERR "Postadd clients\n";
+
+    if (!defined $mode) {
+        carp "ERROR: Unknown mode";
+        return 0;
+    }
+
+    if (!defined $step_number) {
+        carp "ERROR: Unknow step number";
+        return 0;
+    }
 
     my $cmd;
     if (defined $ENV{OSCAR_HOME}) {
@@ -730,10 +741,8 @@ sub postaddclients {
         $cmd = $config->{'binaries_path'};
     }
     $cmd .= "/post_clients";
-    my $step_string = "";
-    $step_string = "Step $step_number: " if $mode eq "install";
 
-    oscar_log_subsection("$step_string"."Running: $cmd");
+    oscar_log_subsection("Running: $cmd");
     !system($cmd) or (carp($!), return undef);
     &populate_client_group_nodes;
 
@@ -744,7 +753,7 @@ sub postaddclients {
                               "monitor_deployment",
                               "netbootmgr",
                               "ganglia");
-        foreach my $next_step (@tmp_next_steps){                          
+        foreach my $next_step (@tmp_next_steps){
             my $next_step_button = $buttons{$next_step};
             if ($next_step ne "netbootmgr" && $next_step ne "ganglia" ){
                 $next_step_button->configure(-state => "normal");
