@@ -722,8 +722,6 @@ sub build_oscar_clients {
 sub postaddclients {
     my ($vars) = @_;
 
-    print STDERR "Postadd clients\n";
-
     if (!defined $mode) {
         carp "ERROR: Unknown mode";
         return 0;
