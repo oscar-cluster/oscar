@@ -211,10 +211,9 @@ sub delnodes {
       $fail++;
     }
     print ">> Executing post_install phase\n";
-    if (system("$config->{binaries_path}/post_install")) {
-      carp("post_install phase failed.");
-      $fail++;
-    }
+    # We do not check the return code since we may not have connectivity with
+    # compute nodes and therefore the script may fail.
+    system("$config->{binaries_path}/post_install --force");
 
     print ">> Re-starting generic services\n";
     foreach my $services_ref (@generic_services) {
