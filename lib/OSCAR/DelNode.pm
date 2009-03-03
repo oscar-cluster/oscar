@@ -22,9 +22,9 @@ package OSCAR::DelNode;
 #                    All rights reserved.
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
-# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
-#                    Oak Ridge National Laboratory
-#                    All rights reserved.
+# Copyright (c) 2007-2009 Geoffroy Vallee <valleegr@ornl.gov>
+#                         Oak Ridge National Laboratory
+#                         All rights reserved.
 
 BEGIN {
     if (defined $ENV{OSCAR_HOME}) {
