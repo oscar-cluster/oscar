@@ -5,7 +5,6 @@
         <opkg>apitest</opkg>
         <opkg>base</opkg>
         <opkg>c3</opkg>
-        <opkg>lam</opkg>
         <opkg>oda</opkg>
         <opkg>opium</opkg>
         <opkg>rapt</opkg>
