@@ -1,6 +1,0 @@
-The env-switcher SRPM is only provided here because SRPMs are generally
-provided to all OSCAR packages.  Note, however, that the env-switcher
-RPM is "noarch", so you probably don't need this SRPM.
-
-If you make any changes, please contact the main developer of env-switcher:
-http://env-switcher.sf.net/ - Jeff Squyres <jsquyres@lam-mpi.org>.
