@@ -154,7 +154,9 @@ sub run_pkg_script_chroot ($$) {
     }
 
     my $pkgdir = get_scripts_dir ($pkg, $phase);
-    return undef unless ((defined $pkgdir) && (-d $pkgdir));
+    # If the package does not provide any sripts, the directory won't exist,
+    # we exit successfully (nothing to do and this is fine).
+    return 1 unless ((defined $pkgdir) && (-d $pkgdir));
     foreach my $scriptname (@$scripts) {
         my $script = "$pkgdir/$scriptname";
         if (-e $script) {
