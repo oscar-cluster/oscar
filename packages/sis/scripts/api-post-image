@@ -32,9 +32,9 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use POSIX;
-use Tk;
-use OSCAR::Configbox;
+use OSCAR::Configurator_backend;
 use OSCAR::Database;
+use OSCAR::ImageMgt;
 use lib '/usr/lib/systeminstaller';
 use SIS::DB;
 use SIS::Image;
@@ -78,11 +78,6 @@ my $window;
 #####################
 # BEGIN MAIN SCRIPT #
 #####################
-my $i = list_image(name=>$image);
-if (!$i) {
-    carp "ERROR: Could not find image $image!";
-    exit 1;
-}
 
 my $imageconf = $configdir."/".$image;
 my $scconf = "$imagedir/etc/systemconfig/systemconfig.conf";
@@ -90,7 +85,7 @@ my $masterconf = $base."/configurator.html";
 
 my $master_conf;
 if (-e $masterconf) {
-    $master_conf = readInConfigValues($masterconf, "sis", "", noarray=>1);
+    $master_conf = OSCAR::Configurator_backend::readInConfigValues($masterconf, "sis", "", noarray=>1);
     if (!defined $master_conf || ref($master_conf) ne "HASH") {
         die "ERROR: Impossible to get the configuration of the headnode";
     }
@@ -149,7 +144,7 @@ if (!@res || $force) {
 # do the SIS configuration according to the values in database
 #
 
-my $iconf = readInConfigValues("$imageconf/configurator.html","sis"
+my $iconf = OSCAR::Configurator_backend::readInConfigValues("$imageconf/configurator.html","sis"
 			       ,"image:$image",noarray=>1);
 
 if ($iconf->{kernel_append}) {
@@ -161,8 +156,20 @@ if ($iconf->{default_boot}) {
 
  DO_UPDATE:
     if ($update) {
-	&update_cluster($image);
+        &update_cluster($image);
     }
+
+my $systemconfig_file = "$imagedir/etc/systemconfig/systemconfig.conf";
+print "Updating $systemconfig_file...\n";
+if (OSCAR::ImageMgt::update_systemconfigurator_configfile ($systemconfig_file) == -1){
+    carp "ERROR: Impossible to update the file $systemconfig_file";
+    return -1;
+}
+
+if (OSCAR::ImageMgt::update_grub_config ($imagedir)) {
+    carp "ERROR: Impossible to update the grub config file in $imagedir";
+    return -1;
+}
 
 exit 0;
 
