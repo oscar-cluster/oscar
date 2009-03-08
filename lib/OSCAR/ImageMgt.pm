@@ -51,13 +51,14 @@ use warnings "all";
             create_image
             delete_image
             do_setimage
-            do_post_binary_package_install
+            do_post_image_creation
             do_oda_post_install
             export_image
             get_image_default_settings
             get_list_corrupted_images
             image_exists
             install_opkgs_into_image
+            upgrade_grub_config
             update_systemconfigurator_configfile
             );
 
@@ -121,13 +122,13 @@ sub do_setimage ($%) {
 }
 
 ################################################################################
-# Simple wrapper around post_rpm_install; make sure we call correctly the      #
-# script.                                                                      #
+# Simple wrapper around post_install; make sure we call correctly the script.  #
+#                                                                              #
 # Input: img, image name.                                                      #
 #        interface, network interface id used by OSCAR.                        #
 # Return: 1 if success, 0 else.                                                #
 ################################################################################
-sub do_post_binary_package_install ($$) {
+sub do_post_image_creation ($$) {
     my $img = shift;
     my $interface = shift;
     my $cwd = `pwd`;
@@ -155,8 +156,6 @@ sub do_post_binary_package_install ($$) {
 }
 
 ################################################################################
-# Simple wrapper around post_rpm_install; make sure we call correctly the      #
-# script.                                                                      #
 # Input: vars, hash with variable values.                                      #
 #        options, hash with option values.                                     #
 # Return: 0 if success, -1 else.                                               #
@@ -181,7 +180,7 @@ sub do_oda_post_install ($$) {
     my $config = $oscar_configurator->get_config();
 
     if ($config->{db_type} eq "db") {
-        my @opkgs = list_selected_packages("all");
+        my @opkgs = list_selected_packages();
         foreach my $opkg_ref (@opkgs)
         {
             my $opkg = $$opkg_ref{package};
@@ -210,8 +209,6 @@ sub do_oda_post_install ($$) {
     my $imagelog = $imagepath.$lastlog;
     truncate $imagelog, 0 if -s $imagelog;
     oscar_log_subsection("Truncated ".$img.":".$lastlog);
-
-    oscar_log_subsection("Image build successfully");
 
     return 0;
 }
@@ -560,11 +557,7 @@ sub create_image ($%) {
         return -1;
     }
 
-    my $systemconfig_file = "$image/etc/systemconfig/systemconfig.conf";
-    if (update_systemconfigurator_configfile ($systemconfig_file) == -1) {
-        carp "ERROR: Impossible to update the file $systemconfig_file";
-        return -1;
-    }
+    oscar_log_subsection "OSCAR image successfully created";
 
     return 0;
 }
@@ -579,7 +572,7 @@ sub create_image ($%) {
 ################################################################################
 sub update_systemconfigurator_configfile ($) {
     my $file = shift;
-    use constant MAX_LABEL_LENGTH  =>  16;
+    use constant MAX_LABEL_LENGTH  =>  12;
 
     if (! -f $file) {
         return 1;
@@ -625,6 +618,32 @@ sub update_systemconfigurator_configfile ($) {
     return 0;
 }
 
+sub update_grub_config ($) {
+    my $path = shift;
+    
+    $path .= "/boot";
+    if (!-d $path) {
+        carp "ERROR: $path does not exist";
+        return -1;
+    }
+    
+    $path .= "/grub";
+    if (!-d $path) {
+        mkdir $path;
+    }
+    
+    $path .= "/menu.lst";
+    if (!-f $path) {
+        my $cmd = "touch $path";
+        if (system $cmd) {
+            carp "ERROR: Impossible to execute $cmd";
+            return -1;
+        }
+    }
+    
+    return 0;
+}
+
 # Return: 0 if success, -1 else.
 sub postimagebuild {
     my ($vars) = @_;
@@ -643,9 +662,7 @@ sub postimagebuild {
         return -1;
     }
 
-    my $cmd = "post_binary_package_install ($img, $interface)";
-    OSCAR::Logger::oscar_log_subsection ("Running: $cmd");
-    if (do_post_binary_package_install ($img, $interface) == 0) {
+    if (do_post_image_creation ($img, $interface) == 0) {
         carp "ERROR: Impossible to do post binary package install";
         return -1;
     }
@@ -840,3 +857,5 @@ The available functions are:
     get_list_corrupted_images
     image_exists
     install_opkgs_into_image
+    upgrade_grub_config
+    update_systemconfigurator_configfil
