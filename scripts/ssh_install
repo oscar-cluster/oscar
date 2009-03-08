@@ -61,7 +61,7 @@ TEMP="/tmp/`echo $0 | sed 's,^.*/,,g'`.$$."
 
 #------------------------ end configuration section --------------------
 
-# make sure we get rid of temprary files if we are aborted
+# make sure we get rid of temporary files if we are aborted
 trap "echo rm -rf $TEMP\* ; rm -rf $TEMP* ; exit 1" 1 2 3 4 5 6 7 8 11 14 15
 
 # create the server ssh configuration directory if needed
