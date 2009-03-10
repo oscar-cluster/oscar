@@ -91,13 +91,15 @@ if (OSCAR::Network::update_hosts($ip)) {
 }
 
 
-# Get a list of all non-core packages
-# and list of RPMs from the non-core packages
+# Get a list of all non-core OSCAR packages
 my $sel_group = OSCAR::Database::get_selected_group(undef, undef);
-my @ohlist = list_selected_packages("noncore",$sel_group);
+my @selected_opkgs = list_selected_packages();
+my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
 my @opkgs;
-foreach my $p ( @ohlist ) {
-    push @opkgs, $$p{package};
+foreach my $opkg (@selected_opkgs) {
+    if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
+        push (@opkgs, $opkg);
+    }
 }
 oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs));
 
