@@ -35,11 +35,12 @@ use Data::Dumper;
 my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
     $distro, $list_partition_distro, $cluster_name, $queried_node_name,
     $partition_name, $node_to_update, $node_hostname, $node_ip, $node_type,
-    $node_mac, $partition_to_deploy, $queried_partition);
+    $node_mac, $partition_to_deploy, $queried_partition, $delete_node);
 my $verbose = 1;
 
 Getopt::Long::Configure("pass_through");
 GetOptions(
+        "delete-node=s"                 => \$delete_node,
         "display-partitions"            => \$list_partitions,
         "display-partition-info=s"      => \$queried_partition,
         "display-partition-nodes=s"     => \$list_partition_nodes,
@@ -59,16 +60,29 @@ GetOptions(
         "help"                          => \&help_and_exit,
         ) || help_and_die();
 
+my $initial_verbose_value = 0;
+$initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
+if ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+}
+
 # We get the configuration from the OSCAR configuration file.
 my $oscar_configurator = OSCAR::ConfigManager->new();
 if ( ! defined ($oscar_configurator) ) {
     die "ERROR: Impossible to get the OSCAR configuration\n";
 }
 my $config = $oscar_configurator->get_config();
-die "ERROR: ODA is based on a real database and currently this script does ".
-    "not support this mode, it supports only a file based ODA database. ".
-    "Please upodate your OSCAR configuration file and re-initialize OSCAR ".
-    "if you want to use this script" if ($config->{db_type} ne "file"); 
+print "WARNING! ODA is based on a real database and currently this script does ".
+      "not fully support this mode"
+      if ($config->{db_type} ne "file"); 
+
+if ($delete_node) {
+    require OSCAR::NodeMgt;
+    if (OSCAR::NodeMgt::delete_clients ($delete_node)) {
+        die ("ERROR: Impossible to delete $delete_node");
+    }
+    exit 0;
+}
 
 # The user wants to add a new partition
 if ($new_partition) {
@@ -261,6 +275,8 @@ oscar [--add-partition | --display-partitions | --display-partition-nodes |
 Recognized options include:
 
 =over 8
+
+=item --delete-node
 
 =item --display-partitions
 
