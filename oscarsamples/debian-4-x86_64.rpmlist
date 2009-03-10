@@ -3,7 +3,6 @@ discover
 libappconfig-perl
 grub
 initrd-tools
-lilo
 linux-image-generic
 linux-image-2.6-amd64
 ssh

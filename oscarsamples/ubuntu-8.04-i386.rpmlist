@@ -2,7 +2,6 @@ apt
 discover
 libappconfig-perl
 grub
-lilo
 linux-image-generic
 ssh
 systemconfigurator
