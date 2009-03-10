@@ -369,3 +369,31 @@ sub getConfigurationValues ($) # ($package) -> $valueshashref
 }
 
 1;
+
+__END__
+
+=head1 Exported Functions
+
+=over 4
+
+=item get_excluded_opkg
+
+=item get_scripts_dir
+
+=item getConfigurationValues
+
+=item isPackageSelectedForInstallation
+
+=item run_pkg_script
+
+=item run_pkg_user_test
+
+=item run_pkg_script_chroot
+
+=item run_pkg_apitest_test
+
+=item run_pkg_apitest_test
+
+=back
+
+=cut

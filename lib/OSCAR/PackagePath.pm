@@ -40,20 +40,20 @@ use Carp;
 
 @EXPORT = qw(
             distro_repo_url
-	     oscar_repo_url
+            oscar_repo_url
             repo_empty
             repo_local
-	     oscar_urlfile
-	     distro_urlfile
-	     repos_list_urlfile
-	     repos_add_urlfile
-	     repos_del_urlfile
-	     os_distro_string
-	     os_cdistro_string
-	     pkg_extension
-	     pkg_separator
-	     distro_detect_or_die
-	     list_distro_pools
+            oscar_urlfile
+            distro_urlfile
+            repos_list_urlfile
+            repos_add_urlfile
+            repos_del_urlfile
+            os_distro_string
+            os_cdistro_string
+            pkg_extension
+            pkg_separator
+            distro_detect_or_die
+            list_distro_pools
             decompose_distro_id
             generate_default_urlfiles
             get_common_pool_id
@@ -931,3 +931,67 @@ sub generate_default_urlfiles ($) {
 }
 
 1;
+
+__END__
+
+=head1 Exported Functions
+
+=over 4
+
+=item distro_repo_url
+
+=item oscar_repo_url
+
+=item repo_empty
+
+=item repo_local
+
+=item oscar_urlfile
+
+=item distro_urlfile
+
+=item repos_list_urlfile
+
+=item repos_add_urlfile
+
+=item repos_del_urlfile
+
+=item os_distro_string
+
+=item os_cdistro_string
+
+=item pkg_extension
+
+=item pkg_separator
+
+=item distro_detect_or_die
+
+=item list_distro_pools
+
+=item decompose_distro_id
+
+=item generate_default_urlfiles
+
+=item get_common_pool_id
+
+=item get_default_distro_repo
+
+=item get_default_oscar_repo
+
+=item get_repo_type
+
+=item get_list_setup_distros
+
+=item mirror_repo
+
+=item use_distro_repo
+
+=item use_oscar_repo
+
+=item use_default_distro_repo
+
+=item use_default_oscar_repo
+
+=back
+
+=cut

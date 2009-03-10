@@ -539,3 +539,29 @@ sub print_output {
 
 
 1;
+
+__END__
+
+=head1 Exported Functions
+
+=over 4
+
+=item checksum_write
+
+=item checksum_needed
+
+=item checksum_files
+
+=item detect_pool_format
+
+=item detect_pools_format
+
+=item prepare_distro_pools
+
+=item prepare_pool
+
+=item prepare_pools
+
+=back
+
+=cut
