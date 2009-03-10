@@ -794,7 +794,7 @@ sub do_it_or_die {
 }
 
 sub populate_client_group_nodes {
-    my @pkgs = list_selected_packages("all");
+    my @pkgs = list_selected_packages();
     my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages",
                   "Node_Package_Status", "Image_Package_Status");
 #    locking("WRITE", \%options, \@tables, \@errors);

@@ -181,9 +181,8 @@ sub do_oda_post_install ($$) {
 
     if ($config->{db_type} eq "db") {
         my @opkgs = list_selected_packages();
-        foreach my $opkg_ref (@opkgs)
+        foreach my $opkg (@opkgs)
         {
-            my $opkg = $$opkg_ref{package};
             oscar_log_subsection("Set package: $opkg");
             OSCAR::Database::set_image_packages($img,
                                                 $opkg,
@@ -858,4 +857,5 @@ The available functions are:
     image_exists
     install_opkgs_into_image
     upgrade_grub_config
-    update_systemconfigurator_configfil
+    update_systemconfigurator_configfile
+

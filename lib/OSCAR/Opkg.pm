@@ -217,7 +217,7 @@ sub opkgs_install ($@) {
 sub create_list_selected_opkgs ($) {
     my $outfile = shift;
 
-    my @opkgs = list_selected_packages("all");
+    my @opkgs = list_selected_packages();
     open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
     foreach my $opkg_ref (@opkgs) {
         my $opkg = $$opkg_ref{package};

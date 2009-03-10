@@ -252,7 +252,7 @@ sub install_uninstall_packages
 	print_errors();
 
 	#now run every packages post_install phase if it is installed
-	@all_packages = OSCAR::Package::list_selected_packages("all"); 
+	@all_packages = OSCAR::Package::list_selected_packages(); 
 	foreach my $package_ref (@all_packages)
 	{
         my $package = $$package_ref{package};

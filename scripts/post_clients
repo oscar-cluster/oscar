@@ -57,9 +57,7 @@ if (populate_known_hosts() != 1) {
 # This guarantees that post_clients is run for core packages first
 # Eg. SIS post_clients need to be executed before SGE or else compute node's hostnames
 # will not be entered into /etc/hosts in time
-my @core_pkgs = OSCAR::Opkg::get_list_core_opkgs ();
-my @noncore_pkgs = list_selected_packages("noncore");
-my @pkgs = (@core_pkgs, @noncore_pkgs);
+my @pkgs = list_selected_packages();
 
 my $return = 0;
 
