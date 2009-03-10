@@ -68,18 +68,18 @@ if (get_numproc()) {
 # This makes sure existing nodes have the latest /etc/hosts. 
 # The profile script is execd so we know the path (from opium's post_install)
 my $cmd;
-my $os = OSCAR::OCA::OS_Detect::open();
-if (!defined $os) {
-    die "ERROR: Impossible to detect the local OS";
-}
-if ($os->{pkg} eq "rpm") {
-    $cmd = ". /etc/profile.d/c3.sh &&";
-}
-$cmd .= "cpush /etc/hosts";
-if (system("$cmd") != 0) {
-    carp("ERROR: Couldn't push /etc/hosts to all nodes");
-    $errors++;
-}
+# my $os = OSCAR::OCA::OS_Detect::open();
+# if (!defined $os) {
+#     die "ERROR: Impossible to detect the local OS";
+# }
+# if ($os->{pkg} eq "rpm") {
+#     $cmd = ". /etc/profile.d/c3.sh &&";
+# }
+# $cmd .= "cpush /etc/hosts";
+# if (system("$cmd") != 0) {
+#     carp("ERROR: Couldn't push /etc/hosts to all nodes");
+#     $errors++;
+# }
 
 my @pkgs = list_selected_packages();
 foreach my $pkg_ref (@pkgs) {
