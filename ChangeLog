@@ -1,4 +1,5 @@
 6.0.2 (not yet released):
+- Update the list of binary packages installed in all Debian based images.
 - Fix various issues with the SIS api-post-image script.
 - Correctly generate the /etc/c3.conf file.
 - Make sure the node deletion does not fail when we do not have connectivity
