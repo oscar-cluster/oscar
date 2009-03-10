@@ -25,6 +25,7 @@ package OSCAR::DelNode;
 # Copyright (c) 2007-2009 Geoffroy Vallee <valleegr@ornl.gov>
 #                         Oak Ridge National Laboratory
 #                         All rights reserved.
+#                         
 
 BEGIN {
     if (defined $ENV{OSCAR_HOME}) {
@@ -189,3 +190,19 @@ sub delete_client_node_opkgs {
 }
 
 1;
+
+__END__
+
+=head1 DESCRIPTION
+
+This Perl module is used by the GUI. The backend code for client deletion is in the OSCAR::NodeMgt Perl module.
+
+=head1 EXPORTED FUNCTIONS
+
+=over 4
+
+=item delnode_window
+
+=back
+
+=cut
