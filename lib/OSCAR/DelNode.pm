@@ -42,10 +42,12 @@ use SIS::Client;
 use SIS::Adapter;
 use SIS::DB;
 use OSCAR::Database;
+use OSCAR::Logger;
 use OSCAR::Network;
 use OSCAR::Package;
 use OSCAR::ConfigManager;
 use OSCAR::oda;
+use OSCAR::Utils;
 
 @EXPORT = qw(delnode_window);
 
@@ -128,25 +130,11 @@ sub fill_listbox {
         return 1;
 }
 
-sub ip_to_hex {
-    my ($ip) = @_;
-    my @hex = split /\./, $ip;
-    return sprintf("%2.2X%2.2X%2.2X%2.2X",@hex);
-}
 
-sub del_ip_node {
-    my ($node) = @_;
-    for my $adapter (list_adapter(client=>$node)) {
-	my $ip = $adapter->ip;
-	my $hex = &ip_to_hex($ip);
-	# delete ELILO and PXE config files
-	for my $file ("/tftpboot/".$hex.".conf",
-		      "/tftpboot/pxelinux.cfg/$hex") {
-	    unlink($file) if (-l $file || -f $file);
-	}
-    }
-}
 
+
+
+# Return: 1 if success, 0 else.
 sub delnodes {
     my $window=shift;
     my $listbox=shift;
@@ -155,115 +143,9 @@ sub delnodes {
     foreach my $index (@elements) {
             push @clients,$listbox->get($index);
     }
-    my $clientstring=join(",",@clients);
-    my $fail=0;
 
-    my @generic_services=();
-    my @server_services=();
-    my $print_error=1;
-
-    my $interface = get_headnode_iface(undef, undef);
-    my $install_mode = get_install_mode(undef, undef);
-
-    # get the list of generic services
-    get_packages_servicelists(\@generic_services, "", undef, undef);
-
-    # get the list of services for servers
-    get_packages_servicelists(\@server_services, "oscar_server", undef, undef);
-
-    print ">> Turning off generic services\n";
-    foreach my $services_ref (@generic_services) {
-        my $generic_service = $$services_ref{service};
-        if (system("/etc/init.d/$generic_service stop")) {
-            carp("generic_services phase failed.");
-            $fail++;
-        }
-        foreach my $client (@clients) {
-            print "[$client]\n";
-            if (system("/usr/bin/ssh $client /etc/init.d/$generic_service stop")) {
-                carp("client_services phase failed.");
-                $fail++;
-            }
-        }
-    }
-
-    # delete node PXE/ELILO configs
-    foreach my $client (@clients) {
-        &del_ip_node($client);
-    }
-
-    if (system("mksimachine --Delete --name $clientstring")) {
-      carp("Failed to delete machines $clientstring");
-      $fail++;
-    }
-
-    # We get the configuration from the OSCAR configuration file.
-    my $oscar_configurator = OSCAR::ConfigManager->new();
-    if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
-        return undef;
-    }
-    my $config = $oscar_configurator->get_config();
-
-    print ">> Executing post_clients phase\n";
-    if (system("$config->{binaries_path}/post_clients")) {
-      carp("post_clients phase failed.");
-      $fail++;
-    }
-    print ">> Executing post_install phase\n";
-    # We do not check the return code since we may not have connectivity with
-    # compute nodes and therefore the script may fail.
-    system("$config->{binaries_path}/post_install --force");
-
-    print ">> Re-starting generic services\n";
-    foreach my $services_ref (@generic_services) {
-        my $generic_service = $$services_ref{service};
-        if (system("/etc/init.d/$generic_service restart")) {
-            carp("server_services generic phase failed.");
-            $fail++;
-        }
-    }
-    print ">> Re-starting server services\n";
-    foreach my $services_ref (@server_services) {
-        my $server_service = $$services_ref{service};
-        if (system("/etc/init.d/$server_service restart")) {
-            carp("server_services server phase failed.");
-            $fail++;
-        }
-    }
-    
-    print ">> Updating C3 configuration file\n";
-    if (!OSCAR::Package::run_pkg_script("c3", "post_clients", 1, "")) {
-        carp("C3 configuration file update phase failed.");
-        $fail++;
-    }
-                                                                            
-    print ">> Re-starting client services on remaining nodes\n";
-    foreach my $services_ref (@generic_services) {
-        my $generic_service = $$services_ref{service};
-        if (system("/opt/c3-4/cexec /etc/init.d/$generic_service restart")) {
-                carp("client_services restart phase failed.");
-                $fail++;
-        }
-    }
-
-    my ($ip, $broadcast, $netmask) = interface2ip($interface);
-    my $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
-
-    if ($install_mode eq "systemimager-multicast"){
-       $cmd = $cmd . " --multicast=yes";
-    }
-
-    print("Running mkdhcpconf\n");
-    !system($cmd) or croak("Failed to run $cmd");
-
-    my $dhcpd = "/etc/init.d/dhcpd";
-    # Under Debian the dhcp deamon is /etc/init.d/dhcp3-server
-    $dhcpd = "/etc/init.d/dhcp3-server" if -x "/etc/init.d/dhcp3-server";
-    $cmd = $dhcpd . " restart";
-    print("Restarting dhcpd\n");
-    !system($cmd) or croak("Failed to run $cmd");
-
+    my $fail = OSCAR::NodeMgt::delete_clients (@clients);
+        
     fill_listbox($listbox);
     if ($fail) {
       OSCAR::Tk::error_window($window,"Clients deleted, but reconfiguration ".

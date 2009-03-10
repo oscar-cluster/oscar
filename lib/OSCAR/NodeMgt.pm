@@ -1,9 +1,15 @@
 package OSCAR::NodeMgt;
 
 #
-# Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
-#                    Oak Ridge National Laboratory
-#                    All rights reserved.
+#   Copyright 2001-2002 International Business Machines
+#                       Sean Dague <japh@us.ibm.com>
+#   Copyright (c) 2005 The Trustees of Indiana University.  
+#                      All rights reserved.
+#   Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
+#                      All rights reserved.
+#   Copyright (c) 2008-2009 Geoffroy Vallee <valleegr@ornl.gov>
+#                           Oak Ridge National Laboratory
+#                           All rights reserved.
 #
 #   $Id$
 #
@@ -28,13 +34,20 @@ package OSCAR::NodeMgt;
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::ConfigManager;
+use OSCAR::Database;
 use OSCAR::Logger;
+use OSCAR::Network;
+use OSCAR::Package;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use SIS::DB;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 use warnings "all";
 
 @EXPORT = qw(
+            delete_clients
             display_node_config
             get_node_config
             set_node_config
@@ -43,6 +56,160 @@ use warnings "all";
 my $verbose = $ENV{OSCAR_VERBOSE};
 # Where the configuration files are.
 our $basedir = "/etc/oscar/clusters";
+
+sub ip_to_hex {
+    my ($ip) = @_;
+    my @hex = split /\./, $ip;
+    return sprintf("%2.2X%2.2X%2.2X%2.2X",@hex);
+}
+
+sub del_ip_node {
+    my ($node) = @_;
+    for my $adapter (SIS::DB::list_adapter(client=>$node)) {
+    my $ip = $adapter->ip;
+    my $hex = &ip_to_hex($ip);
+    # delete ELILO and PXE config files
+    for my $file ("/tftpboot/".$hex.".conf",
+              "/tftpboot/pxelinux.cfg/$hex") {
+        unlink($file) if (-l $file || -f $file);
+    }
+    }
+}
+
+# Return: 0 if success, the number of errors else.
+sub delete_clients (@) {
+    my @clients = @_;
+
+    my $clientstring = join(",",@clients);
+    if (!OSCAR::Utils::is_a_valid_string ($clientstring)) {
+        OSCAR::Logger::oscar_log_subsection ("No clients to delete");
+        return 0;
+    }
+
+    my $fail = 0;
+    my $cmd;
+
+    my @generic_services = ();
+    my @server_services = ();
+    my $print_error = 1;
+
+    my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
+    my $install_mode = OSCAR::Database::get_install_mode(undef, undef);
+
+    # get the list of generic services
+    get_packages_servicelists(\@generic_services, "", undef, undef);
+
+    # get the list of services for servers
+    get_packages_servicelists(\@server_services, "oscar_server", undef, undef);
+
+    print ">> Turning off generic services\n";
+    foreach my $services_ref (@generic_services) {
+        my $generic_service = $$services_ref{service};
+        $cmd = "/etc/init.d/$generic_service stop";
+        if (system($cmd)) {
+            carp("ERROR: Impossible to execute $cmd");
+            $fail++;
+        }
+        foreach my $client (@clients) {
+            OSCAR::Logger::oscar_log_subsection "[$client]";
+            $cmd = "/usr/bin/ssh $client /etc/init.d/$generic_service stop";
+            if (system($cmd)) {
+                carp("ERROR: Impossible to execute $cmd");
+                $fail++;
+            }
+        }
+    }
+
+    # delete node PXE/ELILO configs
+    foreach my $client (@clients) {
+        &del_ip_node($client);
+    }
+
+    $cmd = "mksimachine --Delete --name $clientstring";
+    if (system($cmd)) {
+        carp("ERROR: Impossible to execute $cmd");
+        $fail++;
+    }
+
+    # We get the configuration from the OSCAR configuration file.
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration";
+        return -1;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    OSCAR::Logger::oscar_log_subsection "Executing post_clients phase";
+    $cmd = "$config->{binaries_path}/post_clients";
+    if (system($cmd)) {
+      carp("ERROR: Impossible to execute $cmd");
+      $fail++;
+    }
+    OSCAR::Logger::oscar_log_subsection "Executing post_install phase";
+    # We do not check the return code since we may not have connectivity with
+    # compute nodes and therefore the script may fail.
+    system("$config->{binaries_path}/post_install --force");
+
+    print ">> Re-starting generic services\n";
+    foreach my $services_ref (@generic_services) {
+        my $generic_service = $$services_ref{service};
+        $cmd = "/etc/init.d/$generic_service restart";
+        if (system($cmd)) {
+            carp("ERROR: Impossible to execute $cmd");
+            $fail++;
+        }
+    }
+    OSCAR::Logger::oscar_log_subsection "Re-starting server services";
+    foreach my $services_ref (@server_services) {
+        my $server_service = $$services_ref{service};
+        $cmd = "/etc/init.d/$server_service restart";
+        if (system($cmd)) {
+            carp("ERROR: Impossible to execute $cmd");
+            $fail++;
+        }
+    }
+    
+    OSCAR::Logger::oscar_log_subsection "Updating C3 configuration file";
+    if (!OSCAR::Package::run_pkg_script("c3", "post_clients", 1, "")) {
+        carp("ERROR: C3 configuration file update phase failed.");
+        $fail++;
+    }
+                                                                            
+    OSCAR::Logger::oscar_log_subsection "Re-starting client services on ".
+                                        "remaining nodes";
+    foreach my $services_ref (@generic_services) {
+        my $generic_service = $$services_ref{service};
+        my $cmd = "$config->{binaries_path}/cexec ".
+                  "/etc/init.d/$generic_service restart";
+        if (system($cmd)) {
+                carp("ERROR: Impossible to execute $cmd");
+                $fail++;
+        }
+    }
+
+    my ($ip, $broadcast, $netmask) = OSCAR::Network::interface2ip($interface);
+    $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
+
+    if ($install_mode eq "systemimager-multicast") {
+       $cmd = $cmd . " --multicast=yes";
+    }
+
+    OSCAR::Logger::oscar_log_subsection "Running mkdhcpconf";
+    if (system($cmd)) {
+        carp ("ERROR: Impossible to execute $cmd");
+        $fail++;
+    }
+
+    my $rc = OSCAR::SystemServices::system_service
+        (OSCAR::SystemServicesDefs::DHCP(), OSCAR::SystemServicesDefs::STOP());
+    if ($rc) {
+        carp "ERROR: Impossible to restart DHCPD";
+        $fail++;
+    }
+
+    return $fail;
+}
+
 
 ################################################################################
 # Display the configuration for a given node of a given partition of a given   #
