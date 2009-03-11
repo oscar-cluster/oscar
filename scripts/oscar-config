@@ -242,18 +242,25 @@ if ($distro_repo_to_mirror) {
 }
 
 if ($oscar_repo_to_mirror) {
-    if (OSCAR::Utils::is_a_valid_string ($distro_to_setup) == 0) {
-        die "If you want to mirror a repository, you have to tell us for which".
-            " distro the repository is made for (for that use the ".
-            "--setup-distro option\n";
+    # the oscar_repo_to_mirror variable is actually the distro ID, from there
+    # we know how to find data we need.
+    if (!OSCAR::Utils::is_a_valid_string ($oscar_repo_to_mirror)) {
+        die "You must specify a valid distro ID ($oscar_repo_to_mirror)";
     }
     require OSCAR::PackagePath;
     require OSCAR::Distro;
-    OSCAR::PackagePath::mirror_repo ($oscar_repo_to_mirror,
-                                     $distro_to_setup,
+    OSCAR::Logger::oscar_log_section "Mirroring the OSCAR repo for ".
+        "$oscar_repo_to_mirror";
+    my $compat_distro = OSCAR::PackagePath::get_compat_distro($oscar_repo_to_mirror);
+    my $repo = OSCAR::PackagePath::get_default_oscar_repo ($oscar_repo_to_mirror);
+    if (!OSCAR::Utils::is_a_valid_string ($repo)) {
+        die "ERROR: Impossible to get the default OSCAR repository";
+    }
+    OSCAR::PackagePath::mirror_repo ($repo,
+                                     $compat_distro,
                                      "/tftpboot/oscar");
-    OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
-                     "file:///tftpboot/oscar/$distro_to_setup");
+    OSCAR::PackagePath::use_distro_repo ($oscar_repo_to_mirror,
+                     "file:///tftpboot/oscar/$compat_distro");
 }
 
 if ($distro_repo) {
@@ -421,11 +428,11 @@ distribution.
 
 Use a given repository for OSCAR instead of the default repository.
 
-=item --mirror-distro-repo <REPO_URL>
+=item --mirror-distro-repo <DISTRO_ID>
 
 Mirror a given online repository for a given Linux distribution.
 
-=item --mirror-oscar-repo <REPO_URL>
+=item --mirror-oscar-repo <DISTRO_ID>
 
 Mirror a given online OSCAR repository for a given Linux distribution.
 
