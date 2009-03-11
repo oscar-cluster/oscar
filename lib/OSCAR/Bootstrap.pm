@@ -265,14 +265,26 @@ sub init_server ($) {
     # We install one OPKG at a time so if the installation of one OPKG fails,
     # we can track it in details.
     my @failed_opkgs;
+    # We start with the server side of all core OPKGs
     foreach my $o (@core_opkgs) {
         if (OSCAR::Opkg::opkgs_install ("server", $o)) {
             push (@failed_opkgs, $o);
         }
     }
     if (scalar (@failed_opkgs) > 0) {
-        carp "ERROR: Impossible to install the following core OPKGs: ".
-            join (" ", @failed_opkgs);
+        carp "ERROR: Impossible to install the following core OPKGs (server ".
+             " side): ".join (" ", @failed_opkgs);
+        return -1;
+    }
+    # Then we install the API side of all core OPKGs
+    foreach my $o (@core_opkgs) {
+        if (OSCAR::Opkg::opkgs_install ("api", $o)) {
+            push (@failed_opkgs, $o);
+        }
+    }
+    if (scalar (@failed_opkgs) > 0) {
+        carp "ERROR: Impossible to install the following core OPKGs (API ".
+             " side): ".join (" ", @failed_opkgs);
         return -1;
     }
 
