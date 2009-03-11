@@ -289,11 +289,11 @@ sub detect_pools_format (@) {
     foreach my $p (@pools) {
         next if ($p eq "");
         my $type = OSCAR::PackageSmart::detect_pool_format ($p);
-        if ($type eq undef) {
+        if (!defined $type) {
             carp "ERROR: Impossible to prepare pool $p, unknown format\n";
             return undef;
         }
-        if ($format eq "") {
+        if (!defined $format || $format eq "") {
             # This is the first pool we analyze, we keep its format for later
             # comparison
             $format = $type;
