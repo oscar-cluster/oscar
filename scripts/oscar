@@ -31,15 +31,19 @@ use warnings "all";
 
 use Data::Dumper;
 
-# Few needed variables.
+# Few needed variables to deal with the different options of the script.
 my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
     $distro, $list_partition_distro, $cluster_name, $queried_node_name,
     $partition_name, $node_to_update, $node_hostname, $node_ip, $node_type,
-    $node_mac, $partition_to_deploy, $queried_partition, $delete_node);
+    $node_mac, $partition_to_deploy, $queried_partition, $delete_node,
+    $check_config, $check_binarylist);
 my $verbose = 1;
 
-Getopt::Long::Configure("pass_through");
 GetOptions(
+        "check-config"                  => \$check_config,
+        "check-rpmlist=s"               => \$check_binarylist,
+        "cluster=s"                     => \$cluster_name,
+        "client=s"                      => \@clients,
         "delete-node=s"                 => \$delete_node,
         "display-partitions"            => \$list_partitions,
         "display-partition-info=s"      => \$queried_partition,
@@ -50,8 +54,6 @@ GetOptions(
         "add-partition=s"               => \$new_partition,
         "deploy-partition=s"            => \$partition_to_deploy,
         "partition=s"                   => \$partition_name,
-        "cluster=s"                     => \$cluster_name,
-        "client=s"                      => \@clients,
         "distro=s"                      => \$distro,
         "hostname=s"                    => \$node_hostname,
         "ip=s"                          => \$node_ip,
@@ -71,10 +73,63 @@ my $oscar_configurator = OSCAR::ConfigManager->new();
 if ( ! defined ($oscar_configurator) ) {
     die "ERROR: Impossible to get the OSCAR configuration\n";
 }
+
+if ($check_config) {
+    if (OSCAR::Utils::is_a_valid_string ($cluster_name) == 0) {
+        die "ERROR: you should specify the cluster name with that option ".
+            "(\"--cluster oscar\" for instance";
+    }
+    # First we get the associated image.
+#     OSCAR::Database::simple_oda_query ("SELECT 
+    exit 0;
+}
+
+if ($check_binarylist) {
+    if (!OSCAR::Utils::is_a_valid_string ($check_binarylist)
+        || ! -f $check_binarylist) {
+        die "ERROR: Invalid file $check_binarylist";
+    }
+    OSCAR::Logger::oscar_log_section "Checking the binary package list ".
+        "$check_binarylist";
+
+    # We get list of available binary packages
+    require OSCAR::RepositoryManager;
+    my $rm = OSCAR::RepositoryManager->new (distro=>$distro);
+    my ($rc, @available_pkgs) = $rm->search_opkgs ("*");
+
+    # Then we parse the file
+    my @pkgs = get_rpms_from_package_file ($check_binarylist);
+
+    # Now we check if the packages are actually available or not
+    my @unavailable_pkgs;
+    foreach my $pkg (@pkgs) {
+        if (!OSCAR::Utils::is_element_in_array ($pkg, @available_pkgs)) {
+            push (@unavailable_pkgs, $pkg);
+        }
+    }
+
+    if (scalar (@unavailable_pkgs) > 0) {
+        print "Some binary packages are not available: ";
+        OSCAR::Utils::print_array (@unavailable_pkgs);
+        OSCAR::Logger::oscar_log_section "ERROR: Invalid binary package list";
+        exit 1;
+    }
+
+    OSCAR::Logger::oscar_log_section "Valid binary package list";
+    exit 0;
+}
+
 my $config = $oscar_configurator->get_config();
+<<<<<<< .mine
+die "ERROR: ODA is based on a real database and currently this script does ".
+    "not support this mode, it supports only a file based ODA database. ".
+    "Please upodate your OSCAR configuration file and re-initialize OSCAR ".
+    "if you want to use this script" if ($config->{db_type} ne "file");
+=======
 print "WARNING! ODA is based on a real database and currently this script does ".
       "not fully support this mode"
       if ($config->{db_type} ne "file"); 
+>>>>>>> .r8208
 
 if ($delete_node) {
     require OSCAR::NodeMgt;
@@ -255,10 +310,6 @@ __END__
 
 oscar, a command line tool for the management of OSCAR clusters.
 
-=head1 SYNOPSIS
-
-oscar OPTIONS
-
 =head1 DESCRIPTION
 
 oscar is a command line tool for the management of OSCAR cluster. It allows
@@ -266,9 +317,7 @@ users to define and deploy clusters and cluster partitions.
 
 =head1 SYNTAX
 
-oscar [--add-partition | --display-partitions | --display-partition-nodes | 
-       --display-partition-distro | --deploy-partition | --display-node-info |
-       --update-node-info]
+oscar [OPTIONS]
 
 =head1 OPTIONS
 
@@ -276,7 +325,27 @@ Recognized options include:
 
 =over 8
 
+=item --add-partition
+
 =item --delete-node
+
+=item --display-partitions
+
+=item --check-config
+
+Check the configuration of a given cluster, Should be used with the --cluster
+option in order to specify the cluster name.
+
+=item --check-rpmlist
+
+Check if the packages in a rpm list are actually available via the repositories
+or not.
+
+=item --client
+
+=item --cluster
+
+=item --deploy-partition
 
 =item --display-partitions
 
@@ -286,17 +355,9 @@ Recognized options include:
 
 =item --display-node-info
 
-=item --add-partition
-
-=item --deploy-partition
-
-=item --cluster
+=item --distro
 
 =item --partition
-
-=item --client
-
-=item --distro
 
 =item --help
 

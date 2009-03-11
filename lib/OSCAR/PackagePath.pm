@@ -57,8 +57,10 @@ use Carp;
             decompose_distro_id
             generate_default_urlfiles
             get_common_pool_id
+            get_compat_distro
             get_default_distro_repo
             get_default_oscar_repo
+            get_distro
             get_repo_type
             get_list_setup_distros
             mirror_repo
@@ -495,14 +497,76 @@ sub get_repo_type ($) {
     # about the output, we only care about the return code.
     my $rapt_cmd = 
         "/usr/bin/rapt --repo $repo_url update 2>/dev/null 1>/dev/null";
-    my $yume_cmd = "/usr/bin/yume $repo_url --repoquery";
-    if (!system($rapt_cmd)) {
-        return ("apt");
-    } elsif (!system ($yume_cmd)) {
+    my $yume_cmd = "wget -nd --delete-after $repo_url/repodata/filelists.xml.gz";
+    if (!system($yume_cmd)) {
         return ("yum");
+    } elsif (!system ($rapt_cmd)) {
+        return ("apt");
     } else {
         return undef;
     }
+}
+
+sub mirror_yum_repo ($$$) {
+    my ($distro, $url, $dest) = @_;
+
+    OSCAR::Logger::oscar_log_subsection "Getting repo meta-data...";
+
+    my $metafile = "primary.xml";
+    my $path = "$dest/$distro";
+    # We get the metadata file
+    mkpath("$path/tmp") or (carp "ERROR: Impossible to create $dest/tmp", 
+                            return -1);
+    my $cmd = "cd $path/tmp; wget $url/repodata/$metafile.gz";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+
+    # We uncompress the file
+    $cmd = "cd $path/tmp; gunzip $metafile.gz";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+
+    # We get the name of all packages
+    my @locations = `cat $path/tmp/$metafile | grep \"<location\" | awk \' {print \$2 } \'`;
+    foreach my $entry (@locations) {
+        if ($entry =~ /^href=\"(.*)\"(.*)$/) {
+            $entry = $1;
+        }
+    }
+
+    OSCAR::Logger::oscar_log_subsection "Download packages...";
+    OSCAR::Utils::print_array (@locations);
+
+    # Now we can download the packages!
+    for (my $i=0; $i < scalar (@locations); $i++) {
+        my $cmd = "cd $path; wget $url/$locations[$i]";
+        print "Executing $cmd\n";
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to execute $cmd";
+            return -1;
+        }
+    }
+
+    # We do some cleanup.
+    OSCAR::Logger::oscar_log_subsection "Cleaning up...";
+    unlink ("$path/tmp/$metafile");
+    unlink ("$path/tmp/$metafile.gz");
+
+    # Now we generate the metadata of the new repo
+    OSCAR::Logger::oscar_log_subsection "Generating the mirror meta-data...";
+    $cmd = "cd $path; /usr/bin/packman --prepare-repo $path";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+
+    OSCAR::Logger::oscar_log_subsection "Successfully mirror the repo $url";
+
+    return 0;
 }
 
 ################################################################################
@@ -513,7 +577,7 @@ sub get_repo_type ($) {
 #        distro, the distribution ID (following the OS_Detect syntax) the      #
 #                mirror is designed for.                                       #
 #        destination, mirror path.                                             #
-# Return: None.                                                                #
+# Return: 0 if success, -1 else.                                               #
 ################################################################################
 sub mirror_repo ($$$) {
     my ($url, $distro, $destination) = @_;
@@ -522,13 +586,22 @@ sub mirror_repo ($$$) {
     die "ERROR: Impossible to determine the repository type of $url ".
         "($repo_type)\n" if (!defined $repo_type);
 
+    print "Mirroring repo of type: $repo_type\n";
     if ($repo_type eq "apt") {
-        print "We need to put here the code to mirror an APT repo\n";
+        carp "ERROR: We cannot mirror APT repos yet";
+        return -1;
     } elsif ($repo_type eq "yum") {
-        print "We need to put here the code to mirror a YUM repo\n";
+        if (mirror_yum_repo ($distro, $url, $destination)) {
+            carp "ERROR: Impossible to mirror the repository ($url, ".
+                 "$destination";
+            return -1;
+        }
     } else {
         carp "WARNING: we do not know how to mirror $repo_type repos\n";
+        return -1;
     }
+
+    return 0;
 }
 
 ################################################################################
@@ -600,6 +673,17 @@ sub decompose_distro_id ($) {
 
     return ($distro, $version, $arch);
 }
+
+sub get_distro () {
+    my $os = OSCAR::OCA::OS_Detect::open ();
+    if (!defined $os || ref ($os) ne "HASH") {
+        carp "ERROR: Impossible to detect the local distro";
+        return undef;
+    }
+    return (os_distro_string ($os));
+}
+
+
 
 ################################################################################
 # Gives the compatible distro based on a distro ID (OS_Detect syntax).         #
@@ -978,11 +1062,17 @@ __END__
 
 =item get_default_oscar_repo
 
+Get the default OSCAR repository for a given distro.
+my $repo = OSCAR::PackagePath::get_default_oscar_repo ($oscar_repo_to_mirror);
+
 =item get_repo_type
 
 =item get_list_setup_distros
 
 =item mirror_repo
+
+Mirror an OSCAR repository. For instance:
+mirror_repo ("http://bear.csm.ornl.gov/repos/rhel-5-i386", "rhel-5-i386", "/tmp/test_repo");
 
 =item use_distro_repo
 
