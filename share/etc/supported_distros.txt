@@ -12,12 +12,13 @@
 [unstable]
 centos-5-x86_64 http://isoredirect.centos.org/centos/5/os/x86_64/ http://bear.csm.ornl.gov/repos/unstable/rhel-5-x86_64
 centos-5-i386 http://isoredirect.centos.org/centos/5/os/i386/ http://bear.csm.ornl.gov/repos/unstable/rhel-5-i386
-fedora-9-i386 http://mirrors.ircam.fr/pub/fedora/linux/releases/9/Everything/i386/os/ http://bear.csm.ornl.gov/repos/unstable/fc-9-i386
-fedora-9-x86_64 http://mirrors.ircam.fr/pub/fedora/linux/releases/9/Everything/x86_64/os/ http://bear.csm.ornl.gov/repos/unstable/fc-9-x86_64
+fedora-9-i386 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Fedora/i386/os/ http://bear.csm.ornl.gov/repos/unstable/fc-9-i386
+fedora-9-x86_64 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Fedora/x86_64/os/ http://bear.csm.ornl.gov/repos/unstable/fc-9-x86_64
 ubuntu-8-x86_64 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bear.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
 ubuntu-8-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bear.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
 debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
 debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
+suse-10-x86_64 http://ftp-stud.fht-esslingen.de/pub/Mirrors/ftp.suse.com/pub/suse/x86_64/update/10.0-OSS/ http://bear.csm.ornl.gov/repos/unstable/suse-10-x86_64
 
 [6.0.1]
 centos-5-x86_64 http://isoredirect.centos.org/centos/5/os/x86_64/ http://bear.csm.ornl.gov/repos/rhel-5-x86_64
