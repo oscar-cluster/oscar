@@ -12,6 +12,10 @@
       <name>Babu Sundaram</name>
       <email>babu@cs.uh.edu</email>
     </author>
+    <author cat="maintainer">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
   </authors>
   <serverDeps>
     <conflicts>
@@ -34,6 +38,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="6.0u9.0-10">
+      <changelogEntry authorName="Geoffroy Vallee" date="2000-03-12T12:55:39-05:00">
+        <item>Update the c3 path.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="6.0u9.0-9">
       <changelogEntry authorName="DongInn Kim" date="2008-03-26T20:46:20+04:00">
         <item>Move the templates/ directory to scripts/ </item>

@@ -119,8 +119,8 @@ if (%nodes) {
 
 	my $sge_conf_store = "$ENV{SGE_ROOT}/$cell.tar"; # Spool dir's tar file
 
-	my $push_command = "/opt/c3-4/cpush";
-	my $exec_command = "/opt/c3-4/cexec";
+	my $push_command = "/usr/bin/cpush";
+	my $exec_command = "/usr/bin/cexec";
 
 	# Make a tar file of the spool dir for sending to clients
 	opkg_print("Creating $sge_conf_store\n");
