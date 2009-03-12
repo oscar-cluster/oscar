@@ -33,7 +33,7 @@ BEGIN {
 use Carp;
 use Cwd;
 
-use SIS::DB;
+# use SIS::DB;
 
 use OSCAR::Package;
 use OSCAR::Database;
@@ -41,27 +41,121 @@ use OSCAR::Logger;
 use OSCAR::Configurator;
 use Tk::Dialog;
 use English;
-use OSCAR::PackMan;
-use OSCAR::WizardEnv;
+# use OSCAR::PackMan;
+# use OSCAR::WizardEnv;
+
+my $verbose = 1;
 
 #this doesn't seem to effect the namespace of the calling script
 use vars qw(@EXPORT);
 use base qw(Exporter);
-our @EXPORT = qw(install_uninstall_packages
-                 package_install
-                 package_uninstall
-                 set_installed
-                 set_uninstalled
-                 is_selected
-                 is_package_a_package
-                 check_package_dependency
-                 check_dependent_package
-                 uninstall_rpms_patch);
+our @EXPORT = qw(
+                check_package_dependency
+                check_dependent_package
+                install_uninstall_packages
+                is_package_a_package
+                is_selected
+                package_install
+                package_uninstall
+                set_installed
+                set_uninstalled
+                uninstall_rpms_patch
+                update_opkg_status
+                );
 
-my $C3_HOME = '/opt/c3-4'; #evil hack to fix pathing to c3
 my @error_list = ();
 my %options = ();
 my $OSCAR_SERVER_NODE = "oscar_server";
+
+
+# The goal of this function is to abstract interaction between the database
+# and OPKG's status. For instance, we may require a package to be installed
+# (selected) and therefore we need to update the database.
+# Possible status are:
+# - 1 means "selected", i.e., installation requested
+# - 0 means "unselected", i.e., removal requested
+#
+# Return: 0 if success, -1 else.
+sub update_opkg_status ($$) {
+    my ($opkg, $requested_status) = @_;
+
+    if (!defined $opkg || !defined $requested_status) {
+        carp "ERROR: [update_opkg_status] Invalid parameter";
+        return -1;
+    }
+
+    # Based on user actions, Qt may return empty strings when checking the 
+    # selection box status
+    if ($requested_status eq "") {
+        $requested_status = 0;
+    }
+
+    print "[PackageInUn] Updating data form OPKG $opkg\n";
+
+    # The package may not be in the database yet. In that case, we need to add
+    # it.
+
+    my @pstatus = ();
+    my %options = ();
+    my @errors;
+    my $status = OSCAR::Database::get_node_package_status_with_node_package(
+        "oscar_server", "opkg-$opkg", \@pstatus, \%options, \@errors);
+    # if (status == 0) => package installed
+    # if (status == 1) => package not installed
+    if ($status == 0) {
+        print "[PackageInUn] OPKG $opkg from current set to be uninstalled ".
+              "($requested_status, $status)\n";
+    } else {
+        print "[PackageInUn] OPKG $opkg from current set to be installed ".
+              "($requested_status, $status)\n";
+    }
+
+    require OSCAR::Database;
+    # The package should be installed but is not yet
+    if (($requested_status == 1) && ($status == 1)) {
+        # We need to install the package
+        print "[PackageInUn] Updating Node_Package_Status to ".
+              "should_be_installed ($opkg)\n"
+            if $verbose;
+        my $success = OSCAR::Database::update_node_package_status(
+                            \%options,
+                            "oscar_server",
+                            "opkg-$opkg",
+                            2,
+                            \@errors,
+                            2);
+
+        if ($success != 1) {
+            carp "ERROR: Impossible to update status info for $opkg ".
+                 "($success)";
+            return -1;
+        }
+    }
+
+    # The package is installed but should not be
+    if (($requested_status == 0) && ($status == 0)) {
+        # We need to remove the package
+        print "[PackageInUn] Updating Node_Package_Status to ".
+              "should_not_be_installed ($opkg)\n"
+            if $verbose;
+        my $success = OSCAR::Database::update_node_package_status(
+                            \%options,
+                            "oscar_server",
+                            "opkg-$opkg",
+                            1,
+                            \@errors,
+                            1);
+        if ($success != 1) {
+            carp "ERROR: Impossible to update status info for $opkg ".
+                 "($success)";
+            return -1;
+        }
+    }
+
+    # For other cases, we do nothing
+
+    return 0;
+}
 
 #########################################################################
 #  Subroutine: install_uninstall_packages                               #
@@ -286,7 +380,7 @@ sub install_uninstall_packages
 #prints output if the sanity check fails 
 sub sanity_check
 {
-	my $cmd_string = "$C3_HOME/cexec --pipe c3cmd-filter hostname";
+	my $cmd_string = "/usr/bin/cexec --pipe c3cmd-filter hostname";
 	my $retval;
 	my @rslts;
 
@@ -493,7 +587,7 @@ sub run_install_client
 
 		if (scalar(@newrpmlist) > 0)
 		{
-			$cmd_string1 = "$C3_HOME/cexec --pipe c3cmd-filter mkdir -p /tmp/tmpinstallrpm/";
+			$cmd_string1 = "/usr/bin/cexec --pipe c3cmd-filter mkdir -p /tmp/tmpinstallrpm/";
 			$all_rpms = "";
 			foreach $rpm (@newrpmlist)
 			{
@@ -501,8 +595,8 @@ sub run_install_client
 				my $rpm_name = $temp_list[$#temp_list];
 				$all_rpms = "$all_rpms /tmp/tmpinstallrpm/$rpm_name";
 			}
-			$cmd_string3 = "$C3_HOME/cexec --pipe c3cmd-filter rpm -Uvh $all_rpms";
-			$cmd_string4 = "$C3_HOME/cexec --pipe c3cmd-filter rm -rf /tmp/tmpinstallrpm/";
+			$cmd_string3 = "/usr/bin/cexec --pipe c3cmd-filter rpm -Uvh $all_rpms";
+			$cmd_string4 = "/usr/bin/cexec --pipe c3cmd-filter rm -rf /tmp/tmpinstallrpm/";
 
 			if($testmode != 0)
 			{
@@ -561,9 +655,9 @@ sub run_install_client
 	$script_path = "$package_dir/scripts/post_client_rpm_install";
 	if (-x $script_path)
 	{
-		$cmd_string1 = "$C3_HOME/cpush $script_path /tmp";
-		$cmd_string2 = "$C3_HOME/cexec --pipe c3cmd-filter /tmp/post_client_rpm_install";
-		$cmd_string3 = "$C3_HOME/cexec --pipe c3cmd-filter rm -f /tmp/post_client_rpm_install";
+		$cmd_string1 = "/usr/bin/cpush $script_path /tmp";
+		$cmd_string2 = "/usr/bin/cexec --pipe c3cmd-filter /tmp/post_client_rpm_install";
+		$cmd_string3 = "/usr/bin/cexec --pipe c3cmd-filter rm -f /tmp/post_client_rpm_install";
 		if($testmode != 0)
 		{
 			print "executing: $cmd_string1\n";
@@ -596,9 +690,9 @@ sub run_install_client
 	$script_path = "$package_dir/scripts/post_client_install";
 	if(-x $script_path)
 	{
-		$cmd_string1 = "$C3_HOME/cpush $script_path /tmp";
-		$cmd_string2 = "$C3_HOME/cexec --pipe c3cmd-filter /tmp/post_client_install";
-		$cmd_string3 = "$C3_HOME/cexec --pipe c3cmd-filter rm -f /tmp/post_client_install";
+		$cmd_string1 = "/usr/bin/cpush $script_path /tmp";
+		$cmd_string2 = "/usr/bin/cexec --pipe c3cmd-filter /tmp/post_client_install";
+		$cmd_string3 = "/usr/bin/cexec --pipe c3cmd-filter rm -f /tmp/post_client_install";
 		if($testmode != 0)
 		{
 			print "executing: $cmd_string1\n";
@@ -1565,9 +1659,9 @@ sub run_uninstall_client
 			return (1);
 		}
 
-		$cmd_string1 = "$C3_HOME/cpush $script_path /tmp/";
-		$cmd_string2 = "$C3_HOME/cexec --pipe c3cmd-filter /tmp/$temp_list[$#temp_list]";
-		$cmd_string3 = "$C3_HOME/cexec --pipe c3cmd-filter rm -f /tmp/$temp_list[$#temp_list]";
+		$cmd_string1 = "/usr/bin/cpush $script_path /tmp/";
+		$cmd_string2 = "/usr/bin/cexec --pipe c3cmd-filter /tmp/$temp_list[$#temp_list]";
+		$cmd_string3 = "/usr/bin/cexec --pipe c3cmd-filter rm -f /tmp/$temp_list[$#temp_list]";
 
 		if ($testmode != 0)
 		{
