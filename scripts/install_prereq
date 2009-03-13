@@ -72,6 +72,8 @@ sub handle_smart_pkgs ($@) {
         ($err, @out) = $pm->smart_remove(@pkgs);
     } else {
         OSCAR::Logger::oscar_log_subsection("smartly installing: ".join(",",@pkgs));
+	my $pm_status = $pm->status();
+	OSCAR::Logger::oscar_log_subsection("Packman status: $pm_status");
         ($err, @out) = $pm->smart_install(@pkgs);
     }
     require OSCAR::PackManDefs;
