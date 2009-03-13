@@ -67,6 +67,11 @@ sub remove_prereq ($$$$$$) {
 sub install_prereq($$$$$$) {
     my ($distro, $distrover, $arch, $prereqs, $path, $suffix) = @_;
 
+    if ( ! -d $path) {
+        carp "ERROR: Invalid path ($path)";
+        return -1;
+    }
+
     my ($installs, $removes, $shellcmds) = 
         OSCAR::Prereqs::get_prereqs($distro, $distrover, $arch, @$prereqs);
 
