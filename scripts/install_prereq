@@ -37,15 +37,259 @@ GetOptions(
            "verbose"   => \$verbose,
            ) || &usage(1);
 
+#
+# Own distro detection
+#
+my $os = OSCAR::OCA::OS_Detect::open();
+if (!defined $os) {
+    die "ERROR: Unable to determine the local operating system";
+}
+my $distro    = $os->{distro};
+my $distrover = $os->{distro_version};
+my $arch      = $os->{arch};
+my $suffix    = $os->{pkg};
+my $dstring   = $os->{compat_distro}.$os->{compat_distrover}.
+    "-".$os->{arch};
+my $cstring   = "common-".$suffix."s";
+
+my $march = $arch;
+my $rarch = $arch;
+if ($arch eq "i386") {
+    $march = "i?86";  # used for shell-like globbing
+    $rarch = "i.86";  # used for regular expressions
+}elsif($arch eq "ppc64"){ # DIKIM added for supporting YDL-ppc64
+    $march = "ppc64,ppc";
+    $rarch = "ppc64|ppc";
+}
+
+sub handle_smart_pkgs ($@) {
+    my ($remove, @pkgs) = @_;
+    my ($err, @out);
+
+    return if (!scalar(@pkgs));
+    if ($remove) {
+        OSCAR::Logger::oscar_log_subsection("smartly removing: ".join(",",@pkgs));
+        ($err, @out) = $pm->smart_remove(@pkgs);
+    } else {
+        OSCAR::Logger::oscar_log_subsection("smartly installing: ".join(",",@pkgs));
+        ($err, @out) = $pm->smart_install(@pkgs);
+    }
+    require OSCAR::PackManDefs;
+    if ($err == OSCAR::PackManDefs::ERROR()) {
+        carp "ERROR: $err error(s) occured for prereq ".join(", ", @pkgs)."("
+             .join("\n",@out).")";
+        return -1;
+    }
+    return 0;
+}
+
+#
+# Simple implementation for dumb rpm handling
+#
+sub handle_dumb_rpms ($@) {
+    my ($remove, @pkgs) = @_;
+    my $cmd;
+    return if (!scalar(@pkgs));
+    for my $pkg (@pkgs) {
+        # make sure we deal with package names, not file names
+        my $pkgname = $pkg; $pkgname =~ s/\.rpm$//;
+        if ($remove) {
+            $cmd = "rpm -q $pkgname >/dev/null 2>&1";
+            OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
+            if (!system($cmd)) {
+                # remove all instances of package
+                $cmd = "rpm -ev --all --nodeps $pkgname";
+                OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
+                system($cmd) or OSCAR::Logger::oscar_log_subsection "Warning: removal failed: $!\n";
+            } else {
+                OSCAR::Logger::oscar_log_subsection("Package $pkgname not installed.\n");
+            }
+        } else {
+            # already installed?
+            $cmd = "rpm -q $pkgname >/dev/null 2>&1";
+            OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
+            if (system($cmd)) {
+                # not installed, so do it now: 
+                # - we try first to find the package locally
+                # - if the package is not locally available, we try to find it
+                #   on remote repositories.
+                my $pkgpath = locate_pkg($pkg);
+                if (defined $pkgpath && $pkgpath ne "") {
+                    $cmd = "rpm -Uhv $pkgpath";
+                    OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
+                } else {
+                    # If we cannot find the package locally try to use yum
+                    $cmd = "yum -y install $pkg";
+                    OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
+                }
+                croak "ERROR: install failed: $!\n" if (system($cmd));
+            }
+        }
+    }
+}
+
+#
+# Simple implementation for dumb debian package handling
+# hacked by Erich Focht out of the dumb_rpms code, without much
+# knowledge of dpkg
+#
+sub handle_dumb_debs ($@) {
+    my ($remove, @pkgs) = @_;
+    my $cmd;
+    my $ret;
+    return if (!scalar(@pkgs));
+    for my $pkg (@pkgs) {
+        # make sure we deal with package names, not file names
+        my $pkgname = $pkg; $pkgname =~ s/\.deb$//;
+        if ($remove) {
+            # we test first if the package is installed
+            $cmd = "dpkg -l | grep \"ii  $pkgname \"";
+            OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
+            $ret = `$cmd`;
+            if (!OSCAR::Prereqs::is_deb_pkg_installed($pkgname)) {
+                # remove all instances of package
+                $cmd = "apt-get remove $pkgname --assume-yes";
+                OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
+                system($cmd);
+            }
+        } else {
+            # we try first to find the package locally
+            my $pkgpath = locate_pkg($pkg);
+            if ($pkgpath) {
+                # if we find a package locally we use it
+                OSCAR::Logger::oscar_log_subsection("Package $pkgname locally found $pkgpath\n");
+                $cmd = "dpkg -i $pkgpath";
+                OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
+                !system($cmd) or croak "install failed: $!\n";
+            } else {
+                # if we do not find a package locally, we try to find one online
+                $cmd = "apt-get update && apt-get install $pkgname --assume-yes --allow-unauthenticated";
+                OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
+                system($cmd);
+            }
+        }
+    }
+}
+
+#
+# try to locate a package file in the repositories
+#
+sub locate_pkg ($) {
+    my ($pkg) = @_;
+    my $found = 0;
+    my @pkgs;
+    my @globstr;
+    my $pkgmatch;
+    my $sepmatch = $separator."[0-9]";
+    $pkgmatch = $pkg;
+    if ($pkg =~ /\.$suffix$/) {
+        $pkgmatch =~ s/\.$suffix$/*.$suffix/;
+    } elsif ($pkg =~ /\.($rarch|noarch|all)$/) {
+        my $parch = $1;
+        $pkgmatch =~ s/\.$parch$/*.$parch.$suffix/;
+    } else {
+        $pkgmatch .= "*{$march,noarch,all}.$suffix";
+    }
+    # 
+    my @lrepos;
+    for my $repo ( split(",",$oscar_pkg_pool), split(",",$distro_pkg_pool) ) {
+        if (($repo =~ /^\//) || ($repo =~ /^(file):/)) {
+            $repo =~ s/^file://;
+            push @lrepos, $repo;
+        }
+    }
+
+    push @globstr, $ENV{OSCAR_HOME}."/packages/*/distro/{$cstring,$dstring}/$pkgmatch";
+    push @globstr, $ENV{OSCAR_HOME}."/share/prereqs/*/distro/{$cstring,$dstring}/$pkgmatch";
+
+    push @globstr, map { "$_/$pkgmatch" } @lrepos;
+
+    OSCAR::Logger::oscar_log_subsection("globstring: ".join(" ",@globstr)."\n");
+    my @tmp = glob(join(" ",@globstr));
+    OSCAR::Logger::oscar_log_subsection("locate_pkg glob result: ".join(",",@tmp)."\n");
+
+    # detect best version
+    return best_version($pkg, @tmp);
+}
+
+sub best_version ($@) {
+    my ($pkg, @candidates) = @_;
+    my ($best, $bestversion);
+
+    # Simple case, we do not have any candidates so there is no best version
+    if (scalar(@candidates) == 0) {
+        return undef;
+    }
+
+    for my $p (@candidates) {
+    my ($name, $ver, $parch);
+    if ($suffix eq "rpm") {
+        my $info = `rpm -q --qf "%{NAME} %{VERSION}-%{RELEASE} %{ARCH}" -p $p`;
+        my $err = $?;
+        if (!$err) {
+        ($name,$ver,$parch) = split(" ",$info);
+        } else {
+        OSCAR::Logger::oscar_log_subsection(" ? rpm query returned $err\n");
+        }
+    } elsif ($suffix eq "deb") {
+        local *IN;
+        open IN, "dpkg --info $p |" or croak("Could not open $p");
+        while (<IN>) {
+        chomp;
+        if (/^ Package: (.*)$/) {
+            $name = $1;
+        } elsif (/^ Version: (.*)$/) {
+            $ver = $1;
+        } elsif (/^ Architecture: (.*)$/) {
+            $parch = $1;
+        }
+        }
+        close IN;
+    }
+    OSCAR::Logger::oscar_log_subsection(":: $p :: $name $ver $parch<\n");
+    next if (!$name || !$ver);
+    next if ($pkg !~ /^$name/);
+    #$rarch = "ppc64|pcc" if $rarch eq "ppc64"; # DIKIM added it for YDL
+    next if ($parch !~ /^($rarch|noarch|all)$/);
+    if (!$best || (cmp_version_strings($ver, $bestversion) == 1)) {
+        OSCAR::Logger::oscar_log_subsection("   - $p selected\n");
+        $best = $p;
+        $bestversion = $ver;
+    }
+    }
+    return $best;
+}
+
+sub usage {
+    my $ret = shift;
+    print "Usage:\n";
+    print "\t$0 --dumb|--smart|--status [--verbose] prereq_path\n\n";
+    print "Install prerequisites located in prereq_path. They should have\n";
+    print "the same directory structure like normal OSCAR packages but\n";
+    print "need to contain the configuration file prereq.cfg\n";
+    print "This file is required because prereqs are installed before\n";
+    print "config.xml files can be parsed.\n";
+    print "The option --status only displays the current prereqs status.\n";
+    print "Typically it shows if prereqs packages are already installed or\n";
+    print "removed.\n";
+    print "If --status is not used, one of --smart|--dumb must be selected!\n";
+    print "--dumb installs packages listed in the prereq.cfg file with the\n";
+    print "base package manager and is unable to resolve dependencies. It \n";
+    print "should be used for bootstrapping a smart package manager.\n";
+    print "--smart installs prereqs with the help of a smart package manager\n";
+    print " like yum(e).\n";
+    exit $ret if ($ret);
+}
+
 
 # Remove a prereq. Remember that the install and remove lists are defined based
 # on the installation phase. So here, we need to remove the packages that are
 # installed at installation time.
 #
 # Return: 0 if success, value different to 0 else.
-sub remove_prereq ($$$$$$) {
-    my ($distro, $distrover, $arch, $prereqs, $path, $suffix) = @_;
-    
+sub remove_prereq ($$$$$) {
+    my ($distro, $distrover, $arch, $prereqs, $suffix) = @_;
+
     my ($installs, $removes, $shellcmds) = 
         OSCAR::Prereqs::get_rawlist_prereqs($distro, $distrover, $arch, @$prereqs);
 
@@ -64,13 +308,8 @@ sub remove_prereq ($$$$$$) {
     return $err;
 }
 
-sub install_prereq($$$$$$) {
-    my ($distro, $distrover, $arch, $prereqs, $path, $suffix) = @_;
-
-    if ( ! -d $path) {
-        carp "ERROR: Invalid path ($path)";
-        return -1;
-    }
+sub install_prereq($$$$$) {
+    my ($distro, $distrover, $arch, $prereqs, $suffix) = @_;
 
     my ($installs, $removes, $shellcmds) = 
         OSCAR::Prereqs::get_prereqs($distro, $distrover, $arch, @$prereqs);
@@ -156,8 +395,8 @@ sub install_prereq($$$$$$) {
         }
     } else {
         # do the removes before the installs
-        handle_smart_pkgs($path,1,@$removes);
-        handle_smart_pkgs($path,0,@$installs);
+        handle_smart_pkgs(1,@$removes);
+        handle_smart_pkgs(0,@$installs);
     }
 
     # check whether binary packages were really installed!!!
@@ -200,31 +439,6 @@ for my $p (@ARGV) {
     }
 }
 
-#
-# Own distro detection
-#
-my $os = OSCAR::OCA::OS_Detect::open();
-if (!defined $os) {
-    die "ERROR: Unable to determine the local operating system";
-}
-my $distro    = $os->{distro};
-my $distrover = $os->{distro_version};
-my $arch      = $os->{arch};
-my $suffix    = $os->{pkg};
-my $dstring   = $os->{compat_distro}.$os->{compat_distrover}.
-    "-".$os->{arch};
-my $cstring   = "common-".$suffix."s";
-
-my $march = $arch;
-my $rarch = $arch;
-if ($arch eq "i386") {
-    $march = "i?86";  # used for shell-like globbing
-    $rarch = "i.86";  # used for regular expressions
-}elsif($arch eq "ppc64"){ # DIKIM added for supporting YDL-ppc64
-    $march = "ppc64,ppc";
-    $rarch = "ppc64|ppc";
-}
-
 if ($status) {
     OSCAR::Logger::oscar_log_subsection "Prereq status for $distro, ".
         "$distrover, $arch";
@@ -244,11 +458,11 @@ OSCAR::Logger::oscar_log_subsection "Searching prereqs for $distro, ".
 
 # now go with the processing
 if ($smart || $dumb) {
-    if (install_prereq ($distro, $distrover, $arch, \@prereqs, $path, $suffix)) {
+    if (install_prereq ($distro, $distrover, $arch, \@prereqs, $suffix)) {
         die "ERROR: Impossible to install the prereqs";
     }
 } elsif ($remove) {
-    if (remove_prereq ($distro, $distrover, $arch, \@prereqs, $path, $suffix)) {
+    if (remove_prereq ($distro, $distrover, $arch, \@prereqs, $suffix)) {
         die "ERROR: Impossible to remove the prereqs";
     }
 }
@@ -257,224 +471,6 @@ $ENV{OSCAR_VERBOSE} = $initial_verbose_value;
 
 exit 0;
 
-sub handle_smart_pkgs {
-    my ($path, $remove, @pkgs) = @_;
-    my ($err, @out);
-
-    return if (!scalar(@pkgs));
-    if ($remove) {
-        OSCAR::Logger::oscar_log_subsection("smartly removing: ".join(",",@pkgs));
-        ($err, @out) = $pm->smart_remove(@pkgs);
-    } else {
-        OSCAR::Logger::oscar_log_subsection("smartly installing: ".join(",",@pkgs));
-        ($err, @out) = $pm->smart_install(@pkgs);
-    }
-    require OSCAR::PackManDefs;
-    if ($err == OSCAR::PackManDefs::ERROR()) {
-        carp "ERROR: $err error(s) occured for prereq $path ("
-             .join("\n",@out).")";
-        return -1;
-    }
-    return 0;
-}
-
-#
-# Simple implementation for dumb rpm handling
-#
-sub handle_dumb_rpms {
-    my ($remove, @pkgs) = @_;
-    my $cmd;
-    return if (!scalar(@pkgs));
-    for my $pkg (@pkgs) {
-        # make sure we deal with package names, not file names
-        my $pkgname = $pkg; $pkgname =~ s/\.rpm$//;
-        if ($remove) {
-            $cmd = "rpm -q $pkgname >/dev/null 2>&1";
-            OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
-            if (!system($cmd)) {
-                # remove all instances of package
-                $cmd = "rpm -ev --all --nodeps $pkgname";
-                OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
-                system($cmd) or OSCAR::Logger::oscar_log_subsection "Warning: removal failed: $!\n";
-            } else {
-                OSCAR::Logger::oscar_log_subsection("Package $pkgname not installed.\n");
-            }
-        } else {
-            # already installed?
-            $cmd = "rpm -q $pkgname >/dev/null 2>&1";
-            OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
-            if (system($cmd)) {
-                # not installed, so do it now: 
-                # - we try first to find the package locally
-                # - if the package is not locally available, we try to find it
-                #   on remote repositories.
-                my $pkgpath = locate_pkg($pkg);
-                if (defined $pkgpath && $pkgpath ne "") {
-                    $cmd = "rpm -Uhv $pkgpath";
-                    OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
-                } else {
-                    # If we cannot find the package locally try to use yum
-                    $cmd = "yum -y install $pkg";
-                    OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
-                }
-                croak "ERROR: install failed: $!\n" if (system($cmd));
-            }
-        }
-    }
-}
-
-#
-# Simple implementation for dumb debian package handling
-# hacked by Erich Focht out of the dumb_rpms code, without much
-# knowledge of dpkg
-#
-sub handle_dumb_debs {
-    my ($remove, @pkgs) = @_;
-    my $cmd;
-    my $ret;
-    return if (!scalar(@pkgs));
-    for my $pkg (@pkgs) {
-    	# make sure we deal with package names, not file names
-	    my $pkgname = $pkg; $pkgname =~ s/\.deb$//;
-    	if ($remove) {
-	        # we test first if the package is installed
-	        $cmd = "dpkg -l | grep \"ii  $pkgname \"";
-    	    OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
-	        $ret = `$cmd`;
-	        if (!OSCAR::Prereqs::is_deb_pkg_installed($pkgname)) {
-        		# remove all instances of package
-	        	$cmd = "apt-get remove $pkgname --assume-yes";
-		        OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
-    		    system($cmd);
-    	    }
-	    } else {
-    		# we try first to find the package locally
-	    	my $pkgpath = locate_pkg($pkg);
-		    if ($pkgpath) {
-    		    # if we find a package locally we use it
-	    	    OSCAR::Logger::oscar_log_subsection("Package $pkgname locally found $pkgpath\n");
-		        $cmd = "dpkg -i $pkgpath";
-		        OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
-    		    !system($cmd) or croak "install failed: $!\n";
-	    	} else {
-		        # if we do not find a package locally, we try to find one online
-		        $cmd = "apt-get update && apt-get install $pkgname --assume-yes --allow-unauthenticated";
-    		    OSCAR::Logger::oscar_log_subsection("Executing: $cmd\n");
-	    	    system($cmd);
-		    }
-	    }
-    }
-}
-
-#
-# try to locate a package file in the repositories
-#
-sub locate_pkg {
-    my ($pkg) = @_;
-    my $found = 0;
-    my @pkgs;
-    my @globstr;
-    my $pkgmatch;
-    my $sepmatch = $separator."[0-9]";
-    $pkgmatch = $pkg;
-    if ($pkg =~ /\.$suffix$/) {
-        $pkgmatch =~ s/\.$suffix$/*.$suffix/;
-    } elsif ($pkg =~ /\.($rarch|noarch|all)$/) {
-        my $parch = $1;
-        $pkgmatch =~ s/\.$parch$/*.$parch.$suffix/;
-    } else {
-        $pkgmatch .= "*{$march,noarch,all}.$suffix";
-    }
-    # 
-    my @lrepos;
-    for my $repo ( split(",",$oscar_pkg_pool), split(",",$distro_pkg_pool) ) {
-        if (($repo =~ /^\//) || ($repo =~ /^(file):/)) {
-            $repo =~ s/^file://;
-            push @lrepos, $repo;
-        }
-    }
-
-    push @globstr, $ENV{OSCAR_HOME}."/packages/*/distro/{$cstring,$dstring}/$pkgmatch";
-    push @globstr, $ENV{OSCAR_HOME}."/share/prereqs/*/distro/{$cstring,$dstring}/$pkgmatch";
-
-    push @globstr, map { "$_/$pkgmatch" } @lrepos;
-
-    OSCAR::Logger::oscar_log_subsection("globstring: ".join(" ",@globstr)."\n");
-    my @tmp = glob(join(" ",@globstr));
-    OSCAR::Logger::oscar_log_subsection("locate_pkg glob result: ".join(",",@tmp)."\n");
-
-    # detect best version
-    return best_version($pkg, @tmp);
-}
-
-sub best_version {
-    my ($pkg, @candidates) = @_;
-    my ($best, $bestversion);
-
-    # Simple case, we do not have any candidates so there is no best version
-    if (scalar(@candidates) == 0) {
-        return undef;
-    }
-
-    for my $p (@candidates) {
-	my ($name, $ver, $parch);
-	if ($suffix eq "rpm") {
-	    my $info = `rpm -q --qf "%{NAME} %{VERSION}-%{RELEASE} %{ARCH}" -p $p`;
-	    my $err = $?;
-	    if (!$err) {
-		($name,$ver,$parch) = split(" ",$info);
-	    } else {
-		OSCAR::Logger::oscar_log_subsection(" ? rpm query returned $err\n");
-	    }
-	} elsif ($suffix eq "deb") {
-	    local *IN;
-	    open IN, "dpkg --info $p |" or croak("Could not open $p");
-	    while (<IN>) {
-		chomp;
-		if (/^ Package: (.*)$/) {
-		    $name = $1;
-		} elsif (/^ Version: (.*)$/) {
-		    $ver = $1;
-		} elsif (/^ Architecture: (.*)$/) {
-		    $parch = $1;
-		}
-	    }
-	    close IN;
-	}
-	OSCAR::Logger::oscar_log_subsection(":: $p :: $name $ver $parch<\n");
-	next if (!$name || !$ver);
-	next if ($pkg !~ /^$name/);
-    #$rarch = "ppc64|pcc" if $rarch eq "ppc64"; # DIKIM added it for YDL
-	next if ($parch !~ /^($rarch|noarch|all)$/);
-	if (!$best || (cmp_version_strings($ver, $bestversion) == 1)) {
-	    OSCAR::Logger::oscar_log_subsection("   - $p selected\n");
-	    $best = $p;
-	    $bestversion = $ver;
-	}
-    }		
-    return $best;
-}
-
-sub usage {
-    my $ret = shift;
-    print "Usage:\n";
-    print "\t$0 --dumb|--smart|--status [--verbose] prereq_path\n\n";
-    print "Install prerequisites located in prereq_path. They should have\n";
-    print "the same directory structure like normal OSCAR packages but\n";
-    print "need to contain the configuration file prereq.cfg\n";
-    print "This file is required because prereqs are installed before\n";
-    print "config.xml files can be parsed.\n";
-    print "The option --status only displays the current prereqs status.\n";
-    print "Typically it shows if prereqs packages are already installed or\n";
-    print "removed.\n";
-    print "If --status is not used, one of --smart|--dumb must be selected!\n";
-    print "--dumb installs packages listed in the prereq.cfg file with the\n";
-    print "base package manager and is unable to resolve dependencies. It \n";
-    print "should be used for bootstrapping a smart package manager.\n";
-    print "--smart installs prereqs with the help of a smart package manager\n";
-    print " like yum(e).\n";
-    exit $ret if ($ret);
-}
 
 __END__
 
