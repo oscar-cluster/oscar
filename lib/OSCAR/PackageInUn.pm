@@ -603,7 +603,7 @@ sub run_install_client
 				print "executing: $cmd_string1\n";
 				foreach $rpm (@newrpmlist)
 				{
-					$cmd_string2 = "$C3_HOME/cpush $rpm /tmp/tmpinstallrpm/";
+					$cmd_string2 = "/usr/bin/cpush $rpm /tmp/tmpinstallrpm/";
 					print "executing: $cmd_string2\n";
 				}
 				print "executing: $cmd_string3\n";
@@ -620,7 +620,7 @@ sub run_install_client
 
 				foreach $rpm (@newrpmlist)
 				{
-					$cmd_string2 = "$C3_HOME/cpush $rpm /tmp/tmpinstallrpm/";
+					$cmd_string2 = "/usr/bin/cpush $rpm /tmp/tmpinstallrpm/";
 					if ( run_command_general($cmd_string2) )
 					{
 						return 0;
@@ -1481,7 +1481,7 @@ sub uninstall_rpms_patch
 	if ($type =~ "oscar_client")
 	{
 		#handle clients
-		$cmd_string = "$C3_HOME/cexec yume -y remove ";
+		$cmd_string = "/usr/bin/cexec yume -y remove ";
 		print "client\n";
 
 	} 
