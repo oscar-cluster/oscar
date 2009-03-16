@@ -536,7 +536,7 @@ sub create_image ($%) {
 
     oscar_log_subsection "Executing command: $cmd" if $verbose;
     if (system ($cmd)) {
-        carp "ERROR: Impossible to create the image\n";
+        carp "ERROR: Impossible to create the image ($cmd)\n";
         return -1;
     }
     # GV: currently we create first a basic image and only then we install OPKGs

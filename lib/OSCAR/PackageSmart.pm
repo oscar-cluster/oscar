@@ -281,7 +281,7 @@ sub prepare_pool ($$) {
     return $pm;
 }
 
-
+# Return: the pools' format (e.g., deb, rpm), undef else.
 sub detect_pools_format (@) {
     my @pools = @_;
     my $format = undef;
