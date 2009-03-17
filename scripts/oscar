@@ -120,16 +120,9 @@ if ($check_binarylist) {
 }
 
 my $config = $oscar_configurator->get_config();
-<<<<<<< .mine
-die "ERROR: ODA is based on a real database and currently this script does ".
-    "not support this mode, it supports only a file based ODA database. ".
-    "Please upodate your OSCAR configuration file and re-initialize OSCAR ".
-    "if you want to use this script" if ($config->{db_type} ne "file");
-=======
 print "WARNING! ODA is based on a real database and currently this script does ".
       "not fully support this mode"
       if ($config->{db_type} ne "file"); 
->>>>>>> .r8208
 
 if ($delete_node) {
     require OSCAR::NodeMgt;
