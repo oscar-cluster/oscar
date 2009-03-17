@@ -1,6 +1,6 @@
 DESTDIR=
 
-SCRIPTS := build_oscar_image_cli define_oscar_clients_cli selector_cli \
+SCRIPTS := build_oscar_image_cli define_oscar_clients_cli \
 		configurator_cli main_cli modules.used simple_complete.pl
 SUBDIRS := 
 
