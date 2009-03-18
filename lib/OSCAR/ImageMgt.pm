@@ -142,7 +142,7 @@ sub do_post_image_creation ($$) {
     my $config = $oscar_configurator->get_config();
 
     chdir "$config->{binaries_path}";
-    my $cmd = "$config->{binaries_path}/post_rpm_install $img $interface";
+    my $cmd = "$config->{binaries_path}/post_rpm_install $img $interface --verbose";
 
     if (system($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
