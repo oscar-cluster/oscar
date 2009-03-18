@@ -87,10 +87,6 @@ GetOptions(
             "verbose"   => \$verbose,
           );
 
-my $log_file = "/var/log/oscar/oscar_wizard.log";
-if (OSCAR::Logger::init_log_file ($log_file)) {
-    warn "[WARNING] Impossible to setup the log $log_file";
-}
 
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
@@ -146,6 +142,11 @@ if (defined $ENV{OSCAR_HOME}) {
     $lockfile = "$ENV{OSCAR_HOME}/.oscar_wizard_lockfile";
 } else {
     $lockfile = "/tmp/.oscar_wizard_lockfile";
+}
+
+my $log_file = "/var/log/oscar/oscar_wizard.log";
+if (OSCAR::Logger::init_log_file ($log_file)) {
+    warn "[WARNING] Impossible to setup the log $log_file";
 }
 
 my $oscarsamples_dir;
