@@ -393,7 +393,7 @@ sub setup_dhcpd {
 
     $window->Busy(-recurse => 1);
     if (OSCAR::MAC::__setup_dhcpd($interface)) {
-        carp "ERROR: Impossible to setup dhcpd";
+        carp "ERROR: Impossible to setup dhcpd ($interface)";
         return -1;
     }
     our $dhcpbutton->configure(-state => 'disabled'); 
