@@ -86,8 +86,8 @@ sub push_hosts {
     foreach my $image (@images) {
         my $dir = $image->location;
         if (! -d $dir) {
-            carp ("WARNING!! It seems that the image directory does not exist.".
-                  "The SIS database and the file system may be desynchronized.".
+            carp ("WARNING!! It seems that the image directory $dir does not exist. ".
+                  "The SIS database and the file system may be desynchronized. ".
                   "We may run the Sanity Check framework for more details.\n");
         } else {
             if (!copy("/etc/hosts","$dir/etc/hosts")) {
