@@ -1,4 +1,4 @@
-6.0.2 (not yet released):
+6.0.2:
 - Include mirroring capabilities for yum repositories.
 - Update the list of binary packages installed in all Debian based images.
 - Fix various issues with the SIS api-post-image script.
