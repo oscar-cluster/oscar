@@ -158,46 +158,23 @@ sub opkgs_install ($@) {
         return -1;
     }
 
-    #
-    # Detect OS of master node.
-    #
-    my $os = OSCAR::OCA::OS_Detect::open();
-    if (!defined ($os)) {
-        carp ("ERROR: Impossible to detect the local distro.\n");
-        return -1;
-    }
+    my $distro_id = OSCAR::PackagePath::get_distro();
+    require OSCAR::RepositoryManager;
+    my $rm = OSCAR::RepositoryManager->new(distro=>$distro);
+    
 
-    #
-    # Locate package pools and create the directories if they don't exist, yet.
-    #
-    my $oscar_pkg_pool = &OSCAR::PackagePath::oscar_repo_url(os=>$os);
-    my $distro_pkg_pool = &OSCAR::PackagePath::distro_repo_url(os=>$os);
-
-    my @oscar_repos = split (",", $oscar_pkg_pool);
-    my @distro_repos = split (",", $distro_pkg_pool);
-    my @repos = OSCAR::Utils::merge_arrays (\@oscar_repos, \@distro_repos);
-
-    eval("require OSCAR::PackMan");
-    my $pm = OSCAR::PackageSmart::prepare_pools(($verbose?1:0), @repos);
-    if (!$pm) {
-        carp "ERROR: Could not create PackMan instance!\n";
-        return -1;
-    }
-
-    my $suffix = "";
-    $suffix = ".noarch" if ($os->{pkg} eq "rpm");
     my @olist;
     if ($type eq "api") {
-        @olist = map { "opkg-".$_.$suffix } @opkgs;
+        @olist = map { "opkg-".$_ } @opkgs;
     } elsif ($type =~ /^(client|server)$/) {
-        @olist = map { "opkg-".$_."-$type$suffix" } @opkgs;
+        @olist = map { "opkg-".$_."-$type" } @opkgs;
     } else {
         carp ("ERROR: Unsupported opkg type: $type");
         return -1;
     }
     print ("Need to install the following packages: " . join (", ", @olist));
     print "\n";
-    my ($err, @out) = $pm->smart_install(@olist);
+    my ($err, @out) = $rm->install(undef, @olist);
     if ($err) {
         carp "Error occured during smart_install ($err):\n";
         print join("\n",@out)."\n";
