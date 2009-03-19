@@ -160,7 +160,7 @@ sub opkgs_install ($@) {
 
     my $distro_id = OSCAR::PackagePath::get_distro();
     require OSCAR::RepositoryManager;
-    my $rm = OSCAR::RepositoryManager->new(distro=>$distro);
+    my $rm = OSCAR::RepositoryManager->new(distro=>$distro_id);
     
 
     my @olist;
@@ -174,7 +174,7 @@ sub opkgs_install ($@) {
     }
     print ("Need to install the following packages: " . join (", ", @olist));
     print "\n";
-    my ($err, @out) = $rm->install(undef, @olist);
+    my ($err, @out) = $rm->install_pkg("/", @olist);
     if ($err) {
         carp "Error occured during smart_install ($err):\n";
         print join("\n",@out)."\n";
