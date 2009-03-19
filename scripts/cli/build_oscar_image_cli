@@ -49,7 +49,9 @@ if ($help)
 }
 
 # We get the default settings for images.
-my %vars = get_image_default_settings ();
+use vars qw ( %vars );
+
+%vars = get_image_default_settings ();
 
 # Update settings: ee set the last few points specific to the current
 # situation.
@@ -169,80 +171,9 @@ sub add_image
 # Retrun : 0 if success, 1 else.
 sub add_image_build
 {
-	my $cmd = "mksiimage -A --name $vars{imgname} " .
-		"--location $vars{pkgpath} " .
-		"--filename $vars{pkgfile} " .
-		"--arch $vars{arch} " .
-		"--path $vars{imgpath}/$vars{imgname}" .
-        " $vars{extraflags}";
-	
-	print "Executing command: $cmd\n";
-	
-	my $value = 0;
-	$SIG{PIPE} = 'IGNORE';
-	my $pid = open(OUTPUT, "$cmd |");
-	unless($pid)
-	{
-		carp("Couldn't run command $cmd");
+	if (OSCAR::ImageMgt::create_image ($vars{imgname}, %vars)) {
+		carp "ERROR: Impossible to create the image";
 		return 1;
-	}
-	
-	progress($value);
-	while(my $line = <OUTPUT>)
-	{
-		print "$line" if (exists $ENV{OSCAR_VERBOSE});
-		my $ovalue = $value;
-		if($line =~ /\[progress: (\d+)\]/) {
-			$value = $1;
-		}
-		progress($value) unless $ovalue == $value;
-	}
-	close(OUTPUT);
-	
-	print "Image build finished\n";
-
-	$cmd = "mksidisk -A --name $vars{imgname} --file $vars{diskfile}";
-	if( system($cmd) )
-	{
-		carp("Couldn't run command $cmd");
-		return 1;
-	}
-	
-    print "Added Disk Table for $vars{imgname} based on $vars{diskfile}\n";
-
-	#Default command options
-	$cmd = "si_mkautoinstallscript -quiet --autodetect-disks -image $vars{imgname} -force -ip-assignment $vars{ipmeth} -post-install $vars{piaction}";
-
-	if( system($cmd) )
-	{
-		carp("Couldn't run $cmd");
-		return 1;
-	}
-	
-    print "Ran si_mkautoinstallscript\n";
-
-	#This allows for an arbitrary callback to be registered.
-	#It will get a reference to all the variables that have been defined
-	#for the image
-	if(ref($vars{postinstall}) eq "CODE")
-	{
-		{ 
-			unless( &{$vars{postinstall}}() )
-			{
-				carp("Couldn't run postinstall");
-				return 1;
-			}
-		}
-	}
-
-	if(ref($vars{postinstall}) eq "ARRAY")
-	{
-		my $sub = shift(@{$vars{postinstall}});
-		unless( &$sub(@{$vars{postinstall}}) )
-		{
-			carp("Couldn't run postinstall");
-			return 1;
-		}
 	}
 
 	return 0;
