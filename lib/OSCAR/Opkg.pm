@@ -104,23 +104,9 @@ sub opkgs_remove ($@) {
         return -1;
     }
 
-    #
-    # Detect OS of master node, just to know how to actually remove opkgs
-    #
-    my $os = OSCAR::OCA::OS_Detect::open();
-    if (!defined ($os)) {
-        carp ("ERROR: Impossible to detect the local distro.\n");
-        return -1;
-    }
-    require OSCAR::PackMan;
-    my $pm;
-    if ($os->{pkg} eq "deb") {
-        $pm = PackMan::DEB->new;
-    } elsif ($os->{pkg} eq "rpm") {
-        $pm = PackMan::RPM->new;
-    } else {
-        die "ERROR: Unknown binary package format (".$os->{pkg}.")";
-    }
+    my $distro_id = OSCAR::PackagePath::get_distro();
+    require OSCAR::RepositoryManager;
+    my $rm = OSCAR::RepositoryManager->new(distro=>$distro_id); 
 
     my @olist;
     if ($type eq "api") {
@@ -133,7 +119,7 @@ sub opkgs_remove ($@) {
     }
     print ("Need to remove the following packages: " . join (", ", @olist));
     print "\n";
-    my ($err, @out) = $pm->smart_remove(@olist);
+    my ($err, @out) = $rm->remove_pkg("/", @olist);
     if ($err) {
         carp "Error occured during smart_remove ($err):\n";
         print join("\n",@out)."\n";
