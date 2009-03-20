@@ -174,17 +174,17 @@ sub startover_stage1 ($) {
     remove_prereq ($ipcmd, $baseprereqs_path);
     
     # Remove Yume & Rapt
-    my $os = OSCAR::OCA::OS_Detect::open();
-    if (!defined $os) {
-        carp "ERROR: Impossible to detect the local Linux distribution\n";
-        return -1;
-    }
-    if ($os->{pkg} eq "deb") {
-        my $rapt_path = $config->{'rapt_path'};
-        remove_prereq ($ipcmd, $rapt_path);
-    }
-    my $yume_path = $config->{'yume_path'};
-    remove_prereq ($ipcmd, $yume_path);
+#    my $os = OSCAR::OCA::OS_Detect::open();
+#    if (!defined $os) {
+#        carp "ERROR: Impossible to detect the local Linux distribution\n";
+#        return -1;
+#    }
+#    if ($os->{pkg} eq "deb") {
+#        my $rapt_path = $config->{'rapt_path'};
+#        remove_prereq ($ipcmd, $rapt_path);
+#    }
+#    my $yume_path = $config->{'yume_path'};
+#    remove_prereq ($ipcmd, $yume_path);
 
     # Remove PackMan
     my $packman_path = $config->{'packman_path'};
