@@ -36,6 +36,8 @@ our @EXPORT = qw(
                 SERVICE_ENABLED
                 SSH
                 DHCP
+                MYSQL
+                SI_MONITORD
                 START
                 STOP
                 RESTART
