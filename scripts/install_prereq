@@ -289,9 +289,14 @@ sub usage {
 # installed at installation time.
 #
 # Return: 0 if success, value different to 0 else.
+#
+# Note that we can only use PackMan here because this is the minimal piece of
+# software we can rely on to deal with binary packages. ORM is of a too high
+# level.
 sub remove_prereq ($$$$$) {
     my ($distro, $distrover, $arch, $prereqs, $suffix) = @_;
 
+    my $distro_id = "$distro-$distrover-$arch";
     my ($installs, $removes, $shellcmds) = 
         OSCAR::Prereqs::get_rawlist_prereqs($distro, $distrover, $arch, @$prereqs);
 
@@ -301,9 +306,10 @@ sub remove_prereq ($$$$$) {
     } elsif ($suffix eq "deb") {
         $pm = PackMan::DEB->new;
     } else {
-        croak "Support for dumb $suffix install is not implemented.\n";
+        carp "ERROR: Support for dumb $suffix install is not implemented.\n";
         return -1;
     }
+    $pm->{Distro} = $distro_id;
     OSCAR::Logger::oscar_log_subsection ("Following packages will be removed: ".
         join(", ",@$installs));
     my ($err, @out) = $pm->smart_remove(@$installs);
