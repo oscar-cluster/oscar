@@ -73,7 +73,7 @@ sub remove_prereq ($$) {
     return 0;
 }
 
-
+# Return: 0 if success, -1 else.
 sub startover_server ($) {
     my $oscar_cfg = shift;
 
@@ -83,9 +83,13 @@ sub startover_server ($) {
         require OSCAR::Opkg;
         my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
         foreach my $o (@core_opkgs) {
+            # TODO: We should check the status before to try to remove it.
             OSCAR::Opkg::opkgs_remove ("server", $o);
         }
-    
+	foreach my $o (@core_opkgs) {
+            OSCAR::Opkg::opkgs_remove ("api", $o);
+        }
+
         # Drop the OSCAR database
         my $cmd = $oscar_cfg->{'binaries_path'} . "/oda --reset";
         OSCAR::Logger::oscar_log_subsection "Executing: $cmd\n";
