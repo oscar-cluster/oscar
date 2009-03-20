@@ -141,8 +141,8 @@ sub startover_stage2 ($) {
     }
     
     # Remove base prereqs
-    my $baseprereqs_path = $config->{'prereqs_path'} . "/base";
-    remove_prereq ($ipcmd, $baseprereqs_path);
+#    my $baseprereqs_path = $config->{'prereqs_path'} . "/base";
+#    remove_prereq ($ipcmd, $baseprereqs_path);
 
     return 0;
 }
