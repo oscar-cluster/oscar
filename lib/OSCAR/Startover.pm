@@ -187,12 +187,12 @@ sub startover_stage1 ($) {
 #    remove_prereq ($ipcmd, $yume_path);
 
     # Remove PackMan
-#    my $packman_path = $config->{'packman_path'};
-#    if (! defined ($packman_path) || ($packman_path eq "")) {
-#        carp "ERROR: Impossible to get the Packman path\n";
-#        return -1;
-#    }
-#    remove_prereq ($ipcmd, $packman_path);
+    my $packman_path = $config->{'packman_path'};
+    if (! defined ($packman_path) || ($packman_path eq "")) {
+        carp "ERROR: Impossible to get the Packman path\n";
+        return -1;
+    }
+    remove_prereq ($ipcmd, $packman_path);
 
     # Remove config file in /tftpboot
     print "[INFO] We should remove the config files in /tftpboot but this is ".
