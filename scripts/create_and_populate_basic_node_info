@@ -102,10 +102,18 @@ foreach my $node_group_name ( "oscar_clients", "all", "Default_node" ) {
     oscar_log_subsection ("Checking for existence of node group ".
                           "$node_group_name ...");
     my @node_groups = ();
-    my $group = get_groups(\@node_groups,\%options,\@errors,$node_group_name);
+    my $group = OSCAR::Database::get_groups(\@node_groups,
+                                            \%options,
+                                            \@errors,
+                                            $node_group_name);
     if ( ! $group ) {
         oscar_log_section ("Creating node group $node_group_name ...");
-        set_groups($node_group_name,\%options,\@errors,"node");
+        if (OSCAR::Database::set_groups($node_group_name,
+                                        \%options,
+                                        \@errors,
+                                        "node") != 1) {
+            die "ERROR: Impossible to create node group $node_group_name";
+        }
     }
 }
 
