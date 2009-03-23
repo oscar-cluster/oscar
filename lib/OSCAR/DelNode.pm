@@ -145,6 +145,7 @@ sub delnodes {
             push @clients,$listbox->get($index);
     }
 
+    require OSCAR::NodeMgt;
     my $fail = OSCAR::NodeMgt::delete_clients (@clients);
         
     fill_listbox($listbox);
