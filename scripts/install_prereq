@@ -433,7 +433,7 @@ $ohome = $ENV{OSCAR_HOME};
 
 my $initial_verbose_value = 0;
 $initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
-if ($verbose) {
+if ($verbose || $status) {
     $ENV{OSCAR_VERBOSE} = 5;
 }
 
