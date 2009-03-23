@@ -893,7 +893,13 @@ sub run_tests {
        oscar_log_section("OSCAR Management Wizard: Test cluster setup");
     }
 
-    my $cmd = "cd $ENV{OSCAR_HOME}/testing && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
+    my $test_dir;
+    if (defined $ENV{OSCAR_HOME}) {
+        $test_dir = "$ENV{OSCAR_HOME}/testing";
+    } else {
+        $test_dir = "/usr/share/oscar/testing/";
+    }
+    my $cmd = "cd $test_dir && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
     my $string = "";
 
     if ($mode eq "install") {
