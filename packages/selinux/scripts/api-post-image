@@ -14,30 +14,31 @@
 # Return: 1 if success, 0 or die else.
 #
 
+use strict;
 use POSIX;
 use File::Copy;
 use Carp;
 
-my $image_name = shift;
-
-my $image_basedir = "/var/lib/systemimager/images";
+my $image_basedir = shift;
 my $config_file = "selinx_config_template";
 
 # We first verify that we can find the image
-if (! -d "$image_basedir/$image_name") {
+if (! -d "$image_basedir") {
     die ("ERROR: impossible to find the image location ".
-         "(image_basedir/$image_name)");
+         "($image_basedir)");
 }
 
 # Then we check if the selinux directory exists. If not we create it.
-if (! -d "$image_basedir/$image_name/etc/selinux") {
-    print "Creating $image_basedir/$image_name/etc/selinux...\n";
-    mkdir ("$image_basedir/$image_name/etc/selinux") 
+if (! -d "$image_basedir/etc/selinux") {
+    print "Creating $image_basedir/etc/selinux...\n";
+    mkdir ("$image_basedir/etc/selinux") 
         or die ("ERROR: Impossible to create ".
-                "$image_basedir/$image_name/etc/selinux");
+                "$image_basedir/etc/selinux");
 }
 
-copy ($config_file, "$image_basedir/$image_name/etc/selinux/config");
+my $dest = "$image_basedir/etc/selinux/config";
+copy ($config_file, $dest)
+    or die "ERROR: Impossible to copy $config_file to $dest";
 
 1;
 
