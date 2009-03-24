@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
   <name>selinux</name>
-  <class>core</class>
+  <class>included</class>
   <summary>SELinux Configuration Package</summary>
   <description>Package for the automatic configuration of SELinux</description>
   <license>GPL</license>
@@ -14,6 +14,11 @@
     </author>
   </authors>
   <changelog>
+    <versionEntry version="1.0.1-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-03-24T14:19:13-05:00">
+        <item>Fix a problem with the api-post-image script.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.0-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-09-13T10:57:12-05:00">
         <item>Initial package.</item>
