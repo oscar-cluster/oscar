@@ -694,11 +694,8 @@ sub install_opkgs_into_image ($@) {
     }
 
     my $image_path = "$images_path/$image";
-    if ($verbose) {
-        oscar_log_section "Installing OPKGs into image $image ($image_path)";
-        oscar_log_subsection "List of OPKGs to install:";
-        print_array (@opkgs);
-    }
+    oscar_log_section "Installing OPKGs into image $image ($image_path)";
+    oscar_log_subsection "List of OPKGs to install: ". join(" ", @opkgs);
 
     # To install OPKGs, we use Packman, creating a specific packman object for
     # the image.
@@ -715,27 +712,10 @@ sub install_opkgs_into_image ($@) {
         carp "ERROR: Impossible to detect the OS of the image ($image_path)\n";
         return -1;
     }
-    my $oscar_pkg_pool = OSCAR::PackagePath::oscar_repo_url(os=>$os);
-    my $distro_pkg_pool = OSCAR::PackagePath::distro_repo_url(os=>$os);
-    my @pools = split(",", $oscar_pkg_pool);
-    my @distro_pools = split(",", $distro_pkg_pool);
-    foreach my $repo (@distro_pools) {
-        next if $repo eq "";
-        push (@pools, $repo);
-    }
-    print "Available pools:\n";
-    OSCAR::Utils::print_array (@pools);
-    $pm->repo(@pools);
-
-    my ($ret, $output) = $pm->smart_install (@opkgs);
-    print "Installation result: $ret\n";
-    if ( defined ($output) ) {
-        print "\t[" . join (" ", @$output) . "]\n";
-    }
-    if ($ret == -1) {
-        carp "ERROR: Impossible to install OPKGs\n";
-        return -1;
-    }
+    my $image_distro = "$os->{distro}-$os->{distro_version}-$os->{arch}";
+    oscar_log_subsection "Image distro: $image_distro";
+    require OSCAR::RepositoryManager;
+    my $rm = OSCAR::RepositoryManager->new (distro=>$image_distro);
 
     # GV: do we need to install only the client side of the OPKG? or do we also
     # need to install the api part.
@@ -743,13 +723,9 @@ sub install_opkgs_into_image ($@) {
         oscar_log_subsection "\tInstalling $opkg using opkg-$opkg-client"
             if $verbose;
         # Once we have the packman object, it is fairly simple to install opkgs.
-        my ($ret, $output) = $pm->smart_install("opkg-$opkg-client");
-        print "Installation result: $ret\n";
-        if ( defined ($output) ) {
-            print "\t[" . join (" ", @$output) . "]\n";
-        }
-        if ($ret == -1) {
-            carp "ERROR: Impossible to install OPKG $opkg\n";
+        my ($ret, @out) = $rm->install_pkg($image_path, "opkg-$opkg-client");
+        if ($ret) {
+            carp "ERROR: Impossible to install OPKG $opkg:\n".join("\n", @out);
             return -1;
         }
     }
@@ -849,7 +825,7 @@ The available functions are:
     create_image
     delete_image
     do_setimage
-    do_post_binary_package_install
+    do_post_image_creation
     do_oda_post_install
     export_image
     get_image_default_settings
