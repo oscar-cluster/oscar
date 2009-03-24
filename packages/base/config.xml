@@ -25,9 +25,32 @@ node base requirements are covered by the base prereqs.
     </author>
   </authors>
   <serverDeps/>
-  <clientDeps/>
+  <clientDeps>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>liboscar</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>suse</dist>
+        <dist>sles</dist>
+        <dist>mdv</dist>
+        <dist>rhel</dist>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+      </filters>
+      <pkg>oscar-base-lib</pkg>
+    </requires>
+  </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.0-3">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-03-24T10:16:35-04:00">
+        <item>Update the api-post-image script to remove the manual installation of OSCAR libs into images and deal with that installation via a package dependency.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.0-2">
       <changelogEntry authorName="Jean Parpaillon" date="2007-08-07T14:19:00+01:00">
         <item>Rename script post_rpm_nochroot</item>

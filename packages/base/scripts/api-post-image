@@ -13,22 +13,7 @@ if [ -z "$IMAGEDIR" -o ! -d "$IMAGEDIR" ]; then
     exit 1
 fi
 
-if [ -z "$OSCAR_HOME" ]; then
-    echo "The OSCAR_HOME environment variable is not defined!"
-    exit 1
-fi
-
-if [ ! -d "$OSCAR_HOME" ]; then
-   echo "OSCAR_HOME does not point to a sane path: $OSCAR_HOME"
-   exit 1
-fi
-
-# create directory inside image
-mkdir -p $IMAGEDIR/$OSCAR_HOME
-# copy libs
-cp -pr $OSCAR_HOME/lib $IMAGEDIR/$OSCAR_HOME
-
-# and finally copy profiles, only on RPM based Linux distributions
+# Copy profiles, only on RPM based Linux distributions
 # Note: Maybe we should rewrite that script in Perl and use OS_Detect
 if [ ! -f /etc/debian_version ] 
 then 
