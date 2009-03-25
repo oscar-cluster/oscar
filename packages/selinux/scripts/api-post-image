@@ -20,7 +20,7 @@ use File::Copy;
 use Carp;
 
 my $image_basedir = shift;
-my $config_file = "selinx_config_template";
+my $config_file = "/var/lib/oscar/packages/selinux/selinx_config_template";
 
 # We first verify that we can find the image
 if (! -d "$image_basedir") {
