@@ -13,10 +13,13 @@ if [ -z "$IMAGEDIR" -o ! -d "$IMAGEDIR" ]; then
     exit 1
 fi
 
+# GV (2009-03-25): since OSCAR is now installed directly on the system,
+# we do not use /etc/profile.d/oscar_home.*.
+
 # Copy profiles, only on RPM based Linux distributions
 # Note: Maybe we should rewrite that script in Perl and use OS_Detect
-if [ ! -f /etc/debian_version ] 
-then 
-    [ ! -d $IMAGEDIR/etc/profile.d ] || mkdir -p $IMAGEDIR/etc/profile.d
-    cp -p /etc/profile.d/oscar_home.{sh,csh} $IMAGEDIR/etc/profile.d
-fi
+#if [ ! -f /etc/debian_version ] 
+#then 
+#    [ ! -d $IMAGEDIR/etc/profile.d ] || mkdir -p $IMAGEDIR/etc/profile.d
+#    cp -p /etc/profile.d/oscar_home.{sh,csh} $IMAGEDIR/etc/profile.d
+#fi
