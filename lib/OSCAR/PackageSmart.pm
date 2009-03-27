@@ -29,6 +29,7 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Distro;
+use OSCAR::Logger;
 use OSCAR::Utils;
 use File::Basename;
 use Switch;
@@ -141,28 +142,34 @@ sub detect_pool_format ($) {
     my $pool = shift;
     my $format = "";
     my $binaries = "rpm|deb";
-    print "Analysing $pool\n" if $verbose;
+    OSCAR::Logger::oscar_log_subsection "Analysing $pool";
     # Online repo
     require OSCAR::PackagePath;
-    if ( OSCAR::PackagePath::repo_local ($pool) == 0) {
-        print "This is an online repository ($pool)\n" if $verbose;
+    if (OSCAR::PackagePath::repo_local ($pool) == 0) {
+#        OSCAR::Logger::oscar_log_subsection "This is an online repository ($pool)";
         my $url;
         if ( $pool =~ /\/$/ ) {
             $url = $pool . "repodata/repomd.xml";
         } else {
             $url = $pool . "/repodata/repomd.xml";
         }
-        my $cmd = "wget --timeout=3 -S --delete-after -q $url";
-        print "Testing remote repository type by using command: $cmd... " if $verbose;
+        my $cmd = "wget --tries 10 --timeout=3 -S --delete-after -q $url";
+#        oscar_log_subsection "Testing remote repository type by using ".
+#                             "command: $cmd... ";
+        my @tokens = split (/\+/, $pool);
         if (!system($cmd)) {
             print "[yum]\n" if $verbose;
             $format = "rpm";
-        } else {
+        } elsif (scalar (@tokens) > 1) {
             # if the repository is not a yum repository, we assume this is
             # a Debian repo. Therefore we assume that all specified repo
             # are valid.
             print "[deb]\n" if $verbose;
             $format = "deb";
+        } else {
+            carp "ERROR: Impossible to detect the format of the $pool ".
+                 "repository";
+            return undef;
         }
     } elsif (index($pool, "/tftpboot/distro", 0) == 0 
             || index($pool, "file:/tftpboot/distro", 0) == 0) {
@@ -536,7 +543,6 @@ sub print_output {
     $| = 1;
     print "$line\n";
 }
-
 
 1;
 

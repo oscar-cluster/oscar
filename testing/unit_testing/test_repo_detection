@@ -1,0 +1,61 @@
+#!/usr/bin/perl
+#
+# Copyright (c) 2009 Oak Ridge National Laboratory.
+#                    Geoffroy R. Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
+
+use strict;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::PackageSmart;
+use OSCAR::PackagePath;
+use Cwd;
+
+my $format;
+
+print "\n\n*** Test few repository formet detection related functions.***\n\n";
+
+my @rpm_online_repos = ("http://isoredirect.centos.org/centos/5.2/os/x86_64/",
+                        "http://bear.csm.ornl.gov/repos/unstable/rhel-5-x86_64");
+my @deb_online_repos = ("http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse",
+                        "http://bear.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/");
+my @fake_repos = ("http://toto.com/titi/");
+foreach my $r (@rpm_online_repos) {
+    if (OSCAR::PackagePath::repo_local ($r) == 1) {
+        print "ERROR: $r is detected as a local repository\n";
+        goto ERROR_EXIT;
+    }
+    $format = OSCAR::PackageSmart::detect_pool_format($r);
+    if ($format ne "rpm") {
+        print "ERROR: $r is detected has a $format repo\n";
+        goto ERROR_EXIT;
+    }
+}
+
+foreach my $r (@deb_online_repos) {
+    $format = OSCAR::PackageSmart::detect_pool_format($r);
+    if ($format ne "deb") {
+        print "ERROR: $r is detected has a $format repo\n";
+        goto ERROR_EXIT;
+    }
+}
+
+foreach my $r (@fake_repos) {
+    $format = OSCAR::PackageSmart::detect_pool_format($r);
+    if (defined $format) {
+        print "ERROR: the repository $r is detected as $format\n";
+        goto ERROR_EXIT;
+    }
+}
+
+if (detect_pools_format(@rpm_online_repos) ne "rpm") {
+    print "ERROR: RPMs repos format not correctely detected.\n";
+    goto ERROR_EXIT;
+}
+
+print "\n\n*** SUCCESS: the test of repository preparation succeed ***\n\n";
+
+exit 0;
+
+ERROR_EXIT:
+    print "ERROR: the test of repository preparation failed\n";
+    exit -1;
