@@ -41,6 +41,7 @@ use Carp;
             add_line_to_file_without_duplication
             download_file
             file_type
+            get_line_in_file
             generate_empty_xml_file
             get_directory_content
             get_dirs_in_path
@@ -51,6 +52,24 @@ use Carp;
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
+
+sub get_line_in_file ($$) {
+    my ($file, $pos) = @_;
+
+    my $i = 0;
+    open (FILE, $file) or (carp "ERROR: Impossible to open $file",
+                           return undef);
+    my $line;
+    while ($line = <FILE>) {
+        if ($i == $pos) {
+            return $line;
+        }
+        $i++;
+    }
+    close (FILE);
+
+    return undef;
+}
 
 sub file_type ($) {
     my $file = shift;
@@ -342,6 +361,8 @@ add_line_to_file_without_duplication($line, $file);
 =item get_dirs_in_path
 
 =item get_files_in_path
+
+=item get_line_in_file
 
 =item line_in_file
 
