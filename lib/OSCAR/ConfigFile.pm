@@ -125,44 +125,65 @@ sub set_value ($$$$) {
 
     open (FILE, $config_file) or (carp "ERROR: Impossible to open $config_file",
                                   return -1);
+    my @file_data = <FILE>;
+    close (FILE);
     #
     # We first search the target block (if defined)
     #
-    my $position = -1;
+    my $block_start = -1;
+    my $block_end = -1;
+    my $pos = -1;
     my $line;
     if (defined ($block)) {
-        while ($line = <FILE>) {
-            $position++;
+        foreach $line (@file_data) {
+            $pos++;
             $line = OSCAR::Utils::trim ($line);
-            if ($line =~ /^\[$block\]/) {
-                last;
+            if ($block_start != -1 && $line =~ /^\[(.*)\]/) {
+                $block_end = $pos;
             }
+            if ($line =~ /^\[$block\]/) {
+                $block_start = $pos;
+            }
+        }
+        # If the block is the last block in the file, we reach the end of the
+        # file and in that case, the end of the block is the last line of the
+        # file.
+        if ($block_end == -1) {
+            $block_end = $pos;
         }
     }
 
     #
     # We look for the key
     #
-    $position++;
-    while ($line = <FILE>) {
+    my $position = 0;
+    foreach $line (@file_data) {
+        # We look for the line within the block
         $line = OSCAR::Utils::trim ($line);
-        if ($line =~ /^$key/) {
+        if ($position >= $block_start && $position <= $block_end &&
+            $line =~ /^$key/) {
             last;
         }
+        # if we reach the end of the block, we exit
+        last if ($position == $block_end);
         $position++;
     }
+    # If the key is not there, we add the key at the beginning of the block
+    if ($position == $block_end) {
+        $position = $block_start;
+        $line = OSCAR::FileUtils::get_line_in_file ($config_file, $position);
+        $line .= "$key=$value\n";
+    } else {
+        $line = "$key=$value";
+    }
 
-    #
-    # Now we change the line
-    #
-    $line = "$key=$value";
+    # Otherwise we change the line
     if (OSCAR::FileUtils::replace_line_in_file ($config_file,
                                                 $position,
                                                 $line)) {
-        carp "ERROR: Impossible to replace the line";
+        carp "ERROR: Impossible to add \"$key=$value\" to $config_file";
         return -1;
     }
-    close (FILE);
 
     return 0;
 }
@@ -171,7 +192,7 @@ sub set_value ($$$$) {
 # Get the value of all keys from a given configuration file. This function is  #
 # based on the get_value function, therefore it means we do not deal with the  #
 # key namespace. In other terms, you have to explicitely expand the key name   #
-# if the key is part of a section (see example in the get_value function       #
+# if the key is partof a section (see example in the get_value function       #
 # description).                                                                #
 #                                                                              #
 # Input: config_file, full path to the configuration file we want to analyse.  #
