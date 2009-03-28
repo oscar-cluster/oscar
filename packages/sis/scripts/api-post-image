@@ -1,14 +1,16 @@
-#!/usr/bin/env /usr/bin/perl
-#########################################################################
-#  Script Name : post_rpm_nochroot
+#!/usr/bin/perl
+###############################################################################
+#  Script Name : api-post-image
 #  Written by  : Erich Focht
+#  Maintainer  : Geoffroy Vallee
 #  Date        : July 2006
 #  Purpose     : This post_install script configures sis for the
-#                a particular image. It prepares configurator html
-#                files offering the selection of the default boot kernel
-#                and global append options for the 
+#                a particular image.
 #  Copyright (c) Erich Focht 2006
 #                All rights reserved.
+#  Copyright (c) 2009   Oak Ridge National Laboratory
+#                       Geoffroy Vallee <valleegr@ornl.gov>
+#                       All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,23 +26,44 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-#########################################################################
-# $Id: post_rpm_nochroot 5531 2006-11-10 16:44:31Z efocht $
-#########################################################################
+###############################################################################
+# $Id$
+#
+# This script aims at setting up the SystemConfigurator configuration file into
+# a given image. For that:
+# - we detect the file system partition configuration,
+# - based on it, we generate a basic /etc/systemconfig/systemconfig.conf file
+#   in the image,
+# - then we upgrade the GRUB related files (some distros such as Debian expect
+#   basic grub configuration files to be there (even if empty) whereas other
+#   distros will automatically create those files if they do not already exist,
+# - we had the different Configurator option, getting those from ODA (currently
+#   we only deal with the append kernel boot option.
+# Note that if the SystemConfigurator config file already exist, we only create
+# a new one if the --force option is used, otherwise we do nothing.
+###############################################################################
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use Carp;
 use POSIX;
 use OSCAR::Configurator_backend;
 use OSCAR::Database;
 use OSCAR::ImageMgt;
+use OSCAR::Logger;
 use lib '/usr/lib/systeminstaller';
 use SIS::DB;
 use SIS::Image;
 use SystemInstaller::Image;
 use File::Basename;
 use Getopt::Long;
+
+# sub set_scconf ($$$);
 
 my $base;
 if (defined $ENV{OSCAR_HOME}) {
@@ -49,16 +72,15 @@ if (defined $ENV{OSCAR_HOME}) {
     $base = "/var/lib/oscar/packages/sis";
 }
 
-my $configdir = $base."/.configs";
-
 my ($force, $update, $verbose);
 GetOptions(
            "force|f"   => \$force,
-	   "update|u"  => \$update,
-	   "verbose|v" => \$verbose,
+           "update|u"  => \$update,
+           "verbose|v" => \$verbose,
            );
 
-my $imagedir = shift @ARGV;
+my $imagedir = shift;
+
 if (!$imagedir) {
     print "\nUsage: $0 [--force|-f] [--update|-u] [-v] path_to_image\n\n";
     print "\t--update : change IMGDIR/etc/systemconfig/systemconfig.conf,\n";
@@ -75,133 +97,153 @@ $force = 1 if ($update);
 
 my $window;
 
+my $initial_verbose = 0;
+$initial_verbose = $ENV{OSCAR_VERBOSE} if defined $ENV{OSCAR_VERBOSE};
+if ($verbose) {
+    $ENV{OSCAR_VERBOSE}=5;
+}
+
 #####################
 # BEGIN MAIN SCRIPT #
 #####################
 
-my $imageconf = $configdir."/".$image;
-my $scconf = "$imagedir/etc/systemconfig/systemconfig.conf";
-my $masterconf = $base."/configurator.html";
+# Description of few global variable:
+#   - append_str is the string that should be passed to the kernel on compute
+#     nodes at boot time (e.g., "selinux=0").
+use vars qw ($configdir $imageconf $scdir $scconf $masterconf $append_str);
+$configdir = $base."/.configs";
+$imageconf = $configdir."/".$image;
+$scdir = "$imagedir/etc/systemconfig/";
+$scconf = "$scdir/systemconfig.conf";
+$masterconf = $base."/configurator.html";
+$append_str = "";
 
-my $master_conf;
-if (-e $masterconf) {
-    $master_conf = OSCAR::Configurator_backend::readInConfigValues($masterconf, "sis", "", noarray=>1);
-    if (!defined $master_conf || ref($master_conf) ne "HASH") {
-        die "ERROR: Impossible to get the configuration of the headnode";
-    }
-    # exit if no per-image config
-    if ($master_conf->{sis_per_image} ne "YES") {
-	# if in forced mode: re-generate scconf file
-	if ($force) {
-	    &mk_new_scconf($imagedir);
-	}
-	# set global APPEND config value, if any
-	if ($master_conf->{kernel_append}) {
-	    &set_scconf($scconf, "APPEND", $master_conf->{kernel_append}); 
-	}
-	goto DO_UPDATE;
-    }
-} else {
-    # no per-image config!
-    print "File $masterconf not found! ???\n";
-    exit 0;
+# First we check the basic directories and files actually exist in the image
+if (! -d $scdir) {
+    mkdir $scdir or die "ERROR: Could not create directory $scdir";
 }
 
 if (! -d $configdir) {
-    !system("mkdir ".$configdir) || do {
-	print "Could not create directory $configdir\n";
-	exit 1;
-    };
+    mkdir $configdir or die "ERROR: Could not create directory $configdir";
 }
 
-print "configuring sis for image=$image\n";
-
-if (! -d $imageconf) {
-    !system("mkdir $imageconf") || do {
-	print "Could not create directory $imageconf\n";
-	exit 1;
-    };
+# Then we check whether some configurator data is available in the database.
+oscar_log_subsection "Querying ODA for configuration data";
+my %query = ('opkg' => "sis");
+my @config_data = OSCAR::Database::get_pkgconfig_vars (%query);
+if (scalar (@config_data) > 0) {
+    oscar_log_subsection ("Configuration data from ODA:\n");
+    for (my $i = 0; $i < scalar (@config_data); $i++) {
+        my $data = $config_data[$i];
+        OSCAR::Utils::print_hash ("Config data from ODA:", "", $data)
+            if ($ENV{OSCAR_VERBOSE});
+        if ($data->{'name'} eq "kernel_append") {
+            if (OSCAR::Utils::is_a_valid_string ($data->{'value'})) {
+                oscar_log_subsection "Adding kernel append option...";
+                $append_str .= $data->{'value'};
+            }
+        }
+    }
 } else {
-    print "Found $imageconf\n";
-}
-if ($force && -e "$imageconf/configurator.html") {
-    &mk_new_scconf($imagedir);
-    unlink "$imageconf/configurator.html";
+    oscar_log_subsection ("ODA does not have any configuration data, using ".
+                          "default values");
 }
 
-if (! -e "$imageconf/configurator.html") {
-    &write_img_cfg($imagedir, "$imageconf/configurator.html");
-}
+if (! -f $scconf || $force) {
+    oscar_log_subsection "Getting the harddrive configuration of the image ".
+                         "$image...";
+    my $cmd = "/usr/bin/mksidisk --List --name $image --parse";
+    oscar_log_subsection "Executing: $cmd";
+    my @output = `$cmd`;
+    my ($root, $boot);
+    foreach my $line (@output) {
+        if ($line =~ /(.*):\/:(.*)/) {
+            $root = $1;
+        }
+        if ($line =~ /(.*):MB:(.*)/) {
+            $boot = $1;
+        }
+        if (defined $boot && defined $root) {
+            last;
+        }
+    }
+    oscar_log_subsection "Detected root: $root\n";
+    oscar_log_subsection "Detected boot: $boot\n";
 
-# configure this only if no config values found in database
-my @res = get_pkgconfig_vars(opkg => "sis", context => "image:$image");
-if (!@res || $force) {
-    OSCAR::Configbox::configurePackage(0, $imageconf,"sis","image:$image");
-    MainLoop();
-}
+    my ($defaultboot, %kernels) = get_img_kernels($imagedir);
+    if (!defined $defaultboot) {
+        die "ERROR: Impossible to detect the default boot for image $imagedir";
+    }
+    oscar_log_subsection ("Default boot id: $defaultboot");
+    OSCAR::Utils::print_hash ("Detected kernels", "", \%kernels) 
+        if ($ENV{OSCAR_VERBOSE});
 
-#
-# do the SIS configuration according to the values in database
-#
-
-my $iconf = OSCAR::Configurator_backend::readInConfigValues("$imageconf/configurator.html","sis"
-			       ,"image:$image",noarray=>1);
-
-if ($iconf->{kernel_append}) {
-    &set_scconf($scconf, "APPEND", $iconf->{kernel_append});
-}
-if ($iconf->{default_boot}) {
-    &set_scconf($scconf, "DEFAULTBOOT", $iconf->{default_boot});
-}
-
- DO_UPDATE:
-    if ($update) {
-        &update_cluster($image);
+    if (SystemInstaller::Image::write_scconf($imagedir, $root, $boot) == 0) {
+        carp "ERROR: Impossible to generate the systemconfig.conf file";
+        return -1;
     }
 
-my $systemconfig_file = "$imagedir/etc/systemconfig/systemconfig.conf";
-print "Updating $systemconfig_file...\n";
-if (OSCAR::ImageMgt::update_systemconfigurator_configfile ($systemconfig_file) == -1){
-    carp "ERROR: Impossible to update the file $systemconfig_file";
-    return -1;
+    if (OSCAR::ImageMgt::update_grub_config ($imagedir)) {
+        carp "ERROR: Impossible to update the grub config file in $imagedir";
+        return -1;
+    }
+
+    if (OSCAR::Utils::is_a_valid_string ($append_str)) {
+        if (OSCAR::ImageMgt::update_kernel_append ($imagedir, $append_str)) {
+            carp "ERROR: Impossible to update kernel config ($imagedir)";
+            return -1;
+        }
+    }
+
+} else {
+    oscar_log_subsection "[INFO] The $scconf already exists, not update.";
 }
 
-if (OSCAR::ImageMgt::update_grub_config ($imagedir)) {
-    carp "ERROR: Impossible to update the grub config file in $imagedir";
-    return -1;
-}
+$ENV{OSCAR_VERBOSE} = $initial_verbose;
 
 exit 0;
 
 ###################################################################
 
-sub set_scconf {
-    my ($scconf, $var, $value) = @_;
-    my $cmd = "scconf_tool --block BOOT --set --var $var".
-	" --val \"$value\" $scconf";
-    open CMD, "$cmd | " or croak "Could not run: $cmd";
+# DEPRECATED???
+# Return: 0 if success, -1 else.
+sub set_scconf ($$$$) {
+    my ($scconf, $block, $var, $value) = @_;
+
+    oscar_log_subsection ("Setting the SystemConfigurator file");
+    my $cmd = "scconf_tool --block $block --set --var $var ".
+              "--val \"$value\" $scconf";
+    oscar_log_subsection ("Executing $cmd");
+    open CMD, "$cmd | " or (carp "ERROR: Could not run: $cmd", return -1);
     my @out = <CMD>;
     close CMD;
-    open OUT, "> $scconf" or croak "Could not open: $scconf";
+    oscar_log_subsection ("Writing the following to $scconf: \n".
+        join ("\n", @out));
+    open OUT, "> $scconf" or (carp "ERROR: Could not open: $scconf", return -1);
     print OUT @out;
     close OUT;
+    return 0;
 }
 
-sub get_scconf {
+# DEPRECATED??
+# Return: undef if error.
+sub get_scconf ($$) {
     my ($scconf, $var) = @_;
     my $res;
     my $cmd = "scconf_tool --block BOOT --var $var $scconf";
-    open CMD, "$cmd | " or croak "Could not run: $cmd";
+    oscar_log_subsection "Executing: $cmd";
+    open CMD, "$cmd | " or (carp "ERROR: Could not run: $cmd", return undef);
     while (<CMD>) {
-	chomp;
-	if (/\s*($var)\s*=\s*(.*)\s*$/) {
-	    $res = $2;
-	}
+        chomp;
+        if (/\s*($var)\s*=\s*(.*)\s*$/) {
+            $res = $2;
+        }
     }
     close CMD;
     return $res;
 }
 
+# DEPRECATED???
 sub write_img_cfg {
     my ($imagedir, $cfgfile) = @_;
     my ($defaultboot, %kernels) = &get_img_kernels($imagedir);
@@ -235,12 +277,13 @@ sub write_img_cfg {
     print HTML "</body></html>\n";
 }
 
-sub get_img_kernels {
+sub get_img_kernels ($) {
     my ($imgdir) = @_;
     my ($defaultboot, %kernels);
     my $cmd = "scconf_kernel -i $imgdir";
     local *CMD;
-    open CMD, "$cmd |" or croak "Could not run: $cmd : $!";
+    open CMD, "$cmd |"
+        or (carp "ERROR: Could not run: $cmd : $!", return (undef, undef));
     while (<CMD>) {
 	next if (/^Label/);
 	chomp;
@@ -255,25 +298,28 @@ sub get_img_kernels {
 }
 
 # Generate a new /etc/systemconfig/systemconfig.conf file for a given image.
+# DEPRECATED???
 #
 # Return: 0 if success, -1 else.
-sub mk_new_scconf {
+sub mk_new_scconf ($) {
     my ($imgdir) = @_;
     my ($root, $boot);
-    my $scconf = $imgdir."/etc/systemconfig/systemconfig.conf";
+    my ($boot, %kernels, $root);
 
-    $root = &get_scconf($scconf, "ROOTDEV");
+    oscar_log_subsection ("Creating $scconf");
+
+    $root = get_scconf($scconf, "ROOTDEV");
     if (!defined $root) {
-        carp "ERROR: Impossible to get the root for the generation of the new".
-             "systemconfig.conf file";
+        carp "ERROR: Impossible to get the root for the generation of the ".
+                "new systemconfig.conf file";
         return -1;
     }
 
-    $boot = &get_scconf($scconf, "BOOTDEV");
+    $boot = get_scconf($scconf, "BOOTDEV");
     if (!defined $boot) {
-        carp "ERROR: Impossible to get the boot for the generation of the new".
-             "systemconfig.conf file";
-        return -1;
+        if (! -f $scconf) {
+            ($boot, %kernels) = get_img_kernels($imagedir);
+        }
     }
 
     if (SystemInstaller::Image::write_scconf($imgdir, $root, $boot) == 0) {
