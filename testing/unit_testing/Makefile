@@ -4,7 +4,8 @@ INSTALLDIR=/usr/share/oscar/testing/unit_testing
 SUBDIRS := etc samples
 SCRIPTS := test_config_file test_oscar_config test_systeminfo \
 		test_configxml test_prereqs test_distro_detection test_repo_prep \
-		test_network_utils test_image_mgt test_common_utils test_systemservice
+		test_network_utils test_image_mgt test_common_utils \
+		test_systemservice test_repo_detection 
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
