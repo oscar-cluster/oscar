@@ -164,6 +164,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.1-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-03-28T00:40:21-05:00">
+        <item>Revisit the api-post-image script so we can actually maintain it and avoid weird behaviors on specific configurations.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.0-9">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-03-08T03:44:55-05:00">
         <item>Fix various issues with the api-post-image script.</item>
