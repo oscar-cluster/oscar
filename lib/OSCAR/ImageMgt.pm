@@ -58,7 +58,8 @@ use warnings "all";
             get_list_corrupted_images
             image_exists
             install_opkgs_into_image
-            upgrade_grub_config
+            update_grub_config
+            update_kernel_append
             update_systemconfigurator_configfile
             );
 
@@ -617,20 +618,47 @@ sub update_systemconfigurator_configfile ($) {
     return 0;
 }
 
+# Update the etc/systemconfig/systemconfig.conf file of a given image to include
+# some kernel parameters (the APPEND option).
+#
+# Return: 0 if success, -1 else.
+# TODO: we currently assume only one kernel is setup. Yes this is lazy and this
+# needs to be updated
+sub update_kernel_append ($$) {
+    my ($imgdir, $append_str) = @_;
+
+    oscar_log_subsection ("Adding boot parameter ($append_str) for image ".
+                          "$imgdir");
+    my $file = "$imgdir/etc/systemconfig/systemconfig.conf";
+    require OSCAR::ConfigFile;
+    if (OSCAR::ConfigFile::set_value ($file, "KERNEL0", "\tAPPEND",
+                                      "\"$append_str\"")) {
+        carp "ERROR: Impossible to add $append_str as boot parameter in $file";
+        return -1;
+    }
+
+    return 0;
+}
+
+# Make sure the basic GRUB files exists into a given image (some distro are more
+# picky than others.
+#
+# Input: Path, path to the image.
+# Return: 0 if success, -1 else.
 sub update_grub_config ($) {
     my $path = shift;
-    
+
     $path .= "/boot";
     if (!-d $path) {
         carp "ERROR: $path does not exist";
         return -1;
     }
-    
+
     $path .= "/grub";
     if (!-d $path) {
         mkdir $path;
     }
-    
+
     $path .= "/menu.lst";
     if (!-f $path) {
         my $cmd = "touch $path";
@@ -639,7 +667,7 @@ sub update_grub_config ($) {
             return -1;
         }
     }
-    
+
     return 0;
 }
 
