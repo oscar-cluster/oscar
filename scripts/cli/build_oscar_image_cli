@@ -133,7 +133,7 @@ sub add_image
 {
 	our $file;
 
-	if( imageexists("/etc/systemimager/rsyncd.conf", $vars{imgname}) )
+	if( OSCAR::ImageMgt::image_exists($vars{imgname}) )
 	{
 		if($file eq " ")
 		{
@@ -145,7 +145,10 @@ sub add_image
 				return undef;
 			}
 		}
-		delete_image ($vars{imgname});
+		if (OSCAR::ImageMgt::delete_image ($vars{imgname})) {
+            carp "ERROR: Impossible to delete image ".$vars{imgname};
+            return undef;
+        }
 	}
 	oscar_log_subsection("Building Image...");
 	my $result = add_image_build();
@@ -161,7 +164,10 @@ sub add_image
 		}
 	} else {
 		oscar_log_subsection("Failed building image \"$vars{imgname}\"");
-        delete_image ($vars{imgname});
+        if (OSCAR::ImageMgt::delete_image ($vars{imgname})) {
+            carp "ERROR: Impossible to delete image ".$vars{imgname};
+            return undef;
+        }
 	}
 	return $result;
 }
