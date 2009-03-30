@@ -1,11 +1,11 @@
 package OSCAR::ImageMgt;
 
 #
-# Copyright (c) 2007-2008 Geoffroy Vallee <valleegr@ornl.gov>
+# Copyright (c) 2007-2009 Geoffroy Vallee <valleegr@ornl.gov>
 #                         Oak Ridge National Laboratory
 #                         All rights reserved.
 #
-#   $Id: ImageMgt.pm 4833 2006-05-24 08:22:59Z bli $
+#   $Id$
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -147,7 +147,7 @@ sub do_post_image_creation ($$) {
 
     if (system($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
-        delete_image($img);
+#        delete_image($img);
         return 0;
     }
     OSCAR::Logger::oscar_log_subsection("Successfully ran: $cmd");
@@ -329,6 +329,36 @@ sub get_image_default_settings () {
     return %vars;
 }
 
+###############################################################################
+# Get the list of images from the SIS database (which is used to drive and    #
+# settup SystemImager.                                                        #
+#                                                                             #
+# Input: None.                                                                #
+# Return: List of images in the SIS database (via an array of image names),   #
+#         undef if error.                                                     #
+###############################################################################
+sub get_systemimager_images () {
+    my $sis_cmd = "/usr/bin/si_lsimage";
+    my @sis_images = `$sis_cmd`;
+    my $i;
+
+    #We do some cleaning...
+    # We remove the three useless lines of the result
+    for ($i=0; $i<3; $i++) {
+        shift (@sis_images);
+    }
+    # We also remove the last line which is an empty line
+    pop (@sis_images);
+    # Then we remove the return code at the end of each array element
+    # We also remove the 2 spaces before each element
+    foreach $i (@sis_images) {
+        chomp $i;
+        $i = substr ($i, 2, length ($i));
+    }
+
+    return @sis_images;
+}
+
 ################################################################################
 # Delete an existing image.                                                    #
 # Input: imgname, image name.                                                  #
@@ -338,18 +368,29 @@ sub get_image_default_settings () {
 sub delete_image ($) {
     my $imgname = shift;
 
-    my $config = SystemInstaller::Utils::init_si_config();
-    my $rsyncd_conf = $config->rsyncd_conf();
-    my $rsync_stub_dir = $config->rsync_stub_dir();
+    # If the image exists at the SystemImager level, we delete it
+    my @si_images = get_systemimager_images ();
+    if (OSCAR::Utils::is_element_in_array ($imgname, @si_images) == 1) {
+        my $config = SystemInstaller::Utils::init_si_config();
+        my $rsyncd_conf = $config->rsyncd_conf();
+        my $rsync_stub_dir = $config->rsync_stub_dir();
 
-    my $cmd = "mksiimage -D --name $imgname";
-    if (system($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+        my $cmd = "/usr/bin/mksiimage -D --name $imgname --force";
+        if (system($cmd)) {
+            carp "ERROR: Impossible to execute $cmd";
+            return -1;
+        }
+        require SystemImager::Server;
+        SystemImager::Server::remove_image_stub($rsync_stub_dir, $imgname);
+        SystemImager::Server::gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+    }
+
+    # We remove the image from ODA.
+    my $sql = "DELETE FROM Images WHERE Images.name='$imgname'";
+    if (OSCAR::Database::do_update($sql,"Images", undef, undef) == 0) {
+        carp "ERROR: Impossible to execute the SQL command $sql";
         return -1;
     }
-    require SystemImager::Server;
-    SystemImager::Server::remove_image_stub($rsync_stub_dir, $imgname);
-    SystemImager::Server::gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
 
     return 0;
 }
@@ -368,23 +409,10 @@ sub delete_image ($) {
 #         undef if error.                                                      #
 ################################################################################
 sub get_list_corrupted_images {
-    my $sis_cmd = "/usr/bin/si_lsimage";
-    my @sis_images = `$sis_cmd`;
     my @result;
-
-    #We do some cleaning...
-    # We remove the three useless lines of the result
-    for (my $i=0; $i<3; $i++) {
-        shift (@sis_images);
-    }
-    # We also remove the last line which is an empty line
-    pop (@sis_images);
-    # Then we remove the return code at the end of each array element
-    # We also remove the 2 spaces before each element
-    foreach my $i (@sis_images) {
-        chomp $i;
-        $i = substr ($i, 2, length ($i));
-    }
+    my @sis_images = get_systemimager_images ();
+    my $image_name;
+    my %entry;
 
     # The array is now clean, we can print it
     print "List of images in the SIS database: ";
@@ -438,8 +466,8 @@ sub get_list_corrupted_images {
     print_array (@fs_images);
 
     # We now compare the lists of images
-    foreach my $image_name (@sis_images) {
-        my %entry = ('name' => $image_name,
+    foreach $image_name (@sis_images) {
+        %entry = ('name' => $image_name,
                      'sis' => "ok",
                      'oda' => "ok",
                      'fs' => "ok");
@@ -452,8 +480,8 @@ sub get_list_corrupted_images {
         push (@result, \%entry);
     }
 
-    foreach my $image_name (@oda_images) {
-        my %entry = ('name' => $image_name,
+    foreach $image_name (@oda_images) {
+        %entry = ('name' => $image_name,
                      'sis' => "ok",
                      'oda' => "ok",
                      'fs' => "ok");
@@ -466,8 +494,8 @@ sub get_list_corrupted_images {
         push (@result, \%entry);
     }
 
-    foreach my $image_name (@fs_images) {
-        my %entry = ('name' => $image_name,
+    foreach $image_name (@fs_images) {
+        %entry = ('name' => $image_name,
                      'sis' => "ok",
                      'oda' => "ok",
                      'fs' => "ok");
@@ -488,6 +516,7 @@ sub get_list_corrupted_images {
 #                                                                              #
 # Input: image_name, name of the image to check.                               #
 # Return: 1 if the image already exists (true), 0 else (false), -1 if error.   #
+# TODO: We should check in ODA and not the filesystem.                         #
 ################################################################################
 sub image_exists ($) {
     my $image_name = shift;
@@ -497,13 +526,25 @@ sub image_exists ($) {
         return -1;
     }
 
-    my $path = "$images_path/$image_name";
-
-    if ( -d $path ) {
-        return 1;
+    my @tables = ("Images");
+    my @res = ();
+    my $sql = "SELECT Images.name FROM Images WHERE Images.name='$image_name'";
+    if ( OSCAR::Database::single_dec_locked( $sql,
+                                             "READ",
+                                             \@tables,
+                                             \@res,
+                                             undef) ) {
+        if (scalar (@res) == 1) {
+            return 1;
+        } elsif (scalar (@res) == 0) {
+            return 0;
+        } else {
+            carp "ERROR: found ".scalar(@res)." images named $image_name";
+            return -1;
+        }
     }
-
-    return 0;
+    carp "ERROR: Impossible to query ODA";
+    return -1;
 }
 
 ################################################################################
@@ -540,13 +581,6 @@ sub create_image ($%) {
         carp "ERROR: Impossible to create the image ($cmd)\n";
         return -1;
     }
-    # GV: currently we create first a basic image and only then we install OPKGs
-    # and run post_install scripts. Therefore the following command should not
-    # be needed.
-    if (postimagebuild (\%vars)) {
-        carp "ERROR: Impossible to run postimagebuild";
-        return -1;
-    }
 
     # Add image data into ODA
     my %image_data = ("name" => $image,
@@ -554,6 +588,19 @@ sub create_image ($%) {
                       "architecture" => "$vars{arch}");
     if (OSCAR::Database::set_images (\%image_data, undef, undef) != 1) {
         carp "ERROR: Impossible to store image data into ODA";
+        return -1;
+    }
+
+    # Deal with the harddrive configuration of the image
+    $cmd = "mksidisk -A --name $vars{imgname} --file $vars{diskfile}";
+    if( system($cmd) ) {
+        carp("ERROR: Couldn't run command $cmd");
+        return -1;
+    }
+
+    # Now we execute the post image creation actions.
+    if (postimagebuild (\%vars)) {
+        carp "ERROR: Impossible to run postimagebuild";
         return -1;
     }
 
