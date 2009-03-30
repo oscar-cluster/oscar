@@ -52,7 +52,11 @@ foreach my $corrupted_image (@corrupted_images) {
         my $image_path = "/var/lib/systemimager/images/" .
                          $corrupted_image->{'name'};
         system("rm -rf $image_path");
-    }else {
+    } elsif ($corrupted_image->{'oda'} eq "ok" &&
+             $corrupted_image->{'sis'} eq "ok" &&
+             $corrupted_image->{'fs'} eq "ok") {
+        print "Valid image.\n";
+    } else {
         print "Sorry we do not know yet how to deal with this situation\n";
     }
     print "=====================\n\n";
