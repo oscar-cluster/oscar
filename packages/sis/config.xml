@@ -130,10 +130,10 @@
     <requires>
       <filters>
         <dist>rhel</dist>
-	<dist>fc</dist>
-	<dist>mdv</dist>
-	<dist>suse</dist>
-	<dist>sles</dist>
+        <dist>fc</dist>
+        <dist>mdv</dist>
+        <dist>suse</dist>
+        <dist>sles</dist>
         <arch>ia64</arch>
       </filters>
       <pkg>systemimager-ia64boot-standard</pkg>
