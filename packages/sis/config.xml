@@ -164,6 +164,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.1-2">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-04-08T10:28:49-05:00">
+        <item>New packages to deal with a bug in opkgc.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.1-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-03-28T00:40:21-05:00">
         <item>Revisit the api-post-image script so we can actually maintain it and avoid weird behaviors on specific configurations.</item>
