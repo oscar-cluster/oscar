@@ -1,8 +1,8 @@
-oscar (6.0.2-1) hardy; urgency=low
+oscar (6.0.2-1) intrepid; urgency=low
 
   * New upstream version.
 
- -- Geoffroy Vallee <valleegr@ornl.gov>  Wed, 18 Mar 2009 18:55:26 -0400
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Wed, 08 Apr 2009 10:25:39 -0400
 
 oscar (6.0.1-1) hardy; urgency=low
 
