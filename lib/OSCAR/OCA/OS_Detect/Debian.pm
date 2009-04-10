@@ -39,8 +39,18 @@ my $compat_distro = "debian";
 my $pkg = "deb";
 my $detect_package = "base-files";
 my $detect_file = "/bin/bash";
+my $distro_flavor;
 
-
+# The different Debian codenames, useful to set the distro_flavor variable
+my %codenames = (
+                '5.0'   => "lenny",
+                '4.0'   => "etch",
+                '3.1'   => "sarge",
+                '3.0'   => "woody",
+                '2.2'   => "potato",
+                '2.1'   => "slink",
+                '2.0'   => "hamm",
+                );
 
 #
 #  End of all configuration/global variable setup
@@ -118,12 +128,13 @@ sub detect_dir {
     }
 
     $id->{distro} = $distro;
-    $id->{distro_flavor} = "etch";
     $id->{distro_version} = $deb_ver;
     $id->{distro_update} = $deb_update;
     $id->{compat_distro} = $compat_distro;
     $id->{compat_distrover} = $deb_ver;
     $id->{pkg} = $pkg;
+    my $full_distro_ver = "$deb_ver.$deb_update";
+    $id->{codename} = $codenames{'$full_distro_ver'};
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
@@ -144,9 +155,19 @@ sub detect_pool {
     return $id;
 }
 
-# EF: simply copied the function from RedHat.pm
 sub detect_fake ($) {
     my ($fake) = @_;
+
+    return undef if (!defined $fake);
+
+    # From the parameter, we detect the distro codename and add it in the
+    # description of the OS
+    my $l_version = $fake->{'distro_version'};
+    if ($l_version !~ /(.*)\.(.*)/) {
+        $l_version .= ".0";
+    }
+    $fake->{'codename'} = $codenames{$l_version};
+
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
 							     $distro,
 							     $compat_distro,

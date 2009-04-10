@@ -38,7 +38,15 @@ my $pkg = "deb";
 my $detect_package = "base-files";
 my $detect_file = "/bin/bash";
 
-
+my %codenames = (
+                '810'   => "intrepid",
+                '804'   => "hardy",
+                '710'   => "gutsy",
+                '704'   => "feisty",
+                '610'   => "edgy",
+                '606'   => "dapper",
+                '510'   => "breezy",
+                );
 
 #
 #  End of all configuration/global variable setup
@@ -73,10 +81,10 @@ sub detect_dir {
     my $distro_version = undef;
     my $distro_update = undef;
     if ($v =~ /(\d+)\.(\d+)/) {
-        $distro_version = $1;
-        $distro_update = $2;
+        $distro_version = "$1$2";
+        $distro_update = undef;
     }
-    if (!defined $distro_version || !defined $distro_update) {
+    if (!defined $distro_version) { # || !defined $distro_update) {
         return undef;
     }
 
@@ -102,7 +110,8 @@ sub detect_dir {
     $id->{distro_update} = $distro_update;
     $id->{compat_distro} = $compat_distro;
     $id->{compat_distrover} = $compat_distrover;
-    $id->{pkg} = $pkg;
+    $id->{pkg} = $pkg;   
+    $id->{codename} = $codenames{$distro_version};
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
