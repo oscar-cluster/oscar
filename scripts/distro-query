@@ -135,8 +135,8 @@ sub print_image_detect {
 	    }
 	}
     }
-    print "Distro package url : ".join(",",@distro_repos)."\n";
-    print "OSCAR package pool : ".join(",",@oscar_repos)."\n";
+    print "Distro package url: ".join(",",@distro_repos)."\n";
+    print "OSCAR package pool: ".join(",",@oscar_repos)."\n";
 
     &print_os_info($os);
     vprint("Detected os structure :\n".Dumper($os));
@@ -149,6 +149,9 @@ sub print_os_info {
     print "compat distribution: ".$os->{compat_distro}."\n";
     print "compat distrover: ".$os->{compat_distrover}."\n";
     print "packaging method: ".$os->{pkg}."\n";
+    if ($os->{pkg} eq "deb") {
+        print "Distro codename: ".$os->{'codename'}."\n";
+    }
 }
 
 sub usage {
