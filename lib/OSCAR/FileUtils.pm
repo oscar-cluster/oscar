@@ -366,9 +366,16 @@ add_line_to_file_without_duplication($line, $file);
 
 =item line_in_file
 
+Check if a given line is already in the file: 
+my $pos = line_in_file ($line, $file_path). 
+Return -1 if the line is not in the file or return the line position.
+
 =item parse_xmlfile
 
 =item replace_line_in_file
+
+replace_line_in_file ($file, $line_number, $new_line). Returns 0 if success, -1
+else.
 
 =back
 

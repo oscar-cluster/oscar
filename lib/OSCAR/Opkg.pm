@@ -96,6 +96,7 @@ sub get_list_opkg_dirs {
     return @opkgs;
 }
 
+# Return: 0 if success, -1 else.
 sub opkgs_remove ($@) {
     my ($type, @opkgs) = (@_);
 
