@@ -1,4 +1,13 @@
+6.0.3 (not yet released):
+- Update CentOS-5 support to CentOS-5.3.
+- Improve source code documentation.
+- [Ticket #477] Specify and implement the management of distribution's
+codename, mandatory for Debian based systems.
+- [Ticket #517] Correctly detect all Ubuntu distros.
+- [Ticket #524] Prereq status detection is now fixed.
+
 6.0.2:
+- Fix the oscar_image_cleanup script.
 - Include mirroring capabilities for yum repositories.
 - Update the list of binary packages installed in all Debian based images.
 - Fix various issues with the SIS api-post-image script.
