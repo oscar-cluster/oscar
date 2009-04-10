@@ -433,7 +433,7 @@ $ohome = $ENV{OSCAR_HOME};
 
 my $initial_verbose_value = 0;
 $initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
-if ($verbose || $status) {
+if ($verbose) {
     $ENV{OSCAR_VERBOSE} = 5;
 }
 
@@ -454,7 +454,12 @@ if ($status) {
                                                   $distrover,
                                                   $arch,
                                                   @prereqs);
-    exit $ret;
+    if ($ret == 0) {
+        # if the get_prereqs_status returns 0, it means the prereq is installed
+        exit 1;
+    } else {
+        exit 0;
+    }
 }
 
 
@@ -532,7 +537,7 @@ Installs prereqs with the help of a smart package manager like yum(e).
 
 =item --status
 
-Give the current status of a given prereq.
+Give the current status of a given prereq (1 means that the prereq is installed, 0 that the prereq is not fully installed).
 
 =item --verbose
 

@@ -311,7 +311,11 @@ sub is_rpm_pkg_installed ($) {
     }
 }
 
-# Returns: o if no action are needed, the number of required actions else.
+# Check the current status of given prereqs. We know the status based on the
+# actions needed to get the prereqs fully installed (0 == prereqs installed,
+# > 0 means the prereqs are not installed.
+#
+# Returns: 0 if no action are needed, the number of required actions else.
 sub get_prereqs_status ($$$@) {
     my ($distro, $distver, $arch, @paths) = @_;
     my $needed_actions = 0;
