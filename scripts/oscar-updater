@@ -1,0 +1,148 @@
+#!/usr/bin/perl -w
+# $Id$
+#
+# Copyright (c) 2006 Oak Ridge National Laboratory.
+#                    All rights reserved.
+#
+#
+# Descr: "System Sanity", check various system related known issues
+#        that preceeds the OSCAR specific checks, i.e., must be root,
+#        must have SELinux disabled, etc.
+#
+# Semantics: The tool reads a directory of check scripts, which either
+#            succeed, fail, or warn printing this status info and a 
+#            provided message.  (see also: OSCAR::SystemCheck for details),  
+# 
+#  Return: In order to work as a standard UNIX tool, the return code
+#          from this tool is as follows: failures (1) / no failures (0)
+#          !system("./scripts/system-sanity") or die "Error: Failed sanity\n";
+#
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+use strict;
+use OSCAR::SystemSanity;
+use OSCAR::FileUtils;
+use Carp;
+
+my $system_check_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $system_check_dir = $ENV{OSCAR_HOME} . "/scripts/oscar-updater.d";
+} else {
+    $system_check_dir = "/usr/bin/oscar-updater.d";
+}
+
+print "Updating OSCAR on your system...\n";
+
+if (! -d $system_check_dir ) {
+	croak "Error: Missing $system_check_dir directory"; 
+}
+
+my @files = OSCAR::FileUtils::get_files_in_path ( $system_check_dir );
+
+my $failure_flag = 0;
+my $warning_flag = 0;
+
+foreach my $file (@files) {
+	my $script = $system_check_dir . "/" . $file;
+
+	if (! -x $script) {
+		print_rslt(FAILURE, "not executable \'$file\'"); 
+
+	} else {
+		my $rc = system($script);
+		$rc = $rc >> 8;  # Shift to get actual return code
+		print_rslt($rc, $file);
+		$failure_flag++ if ($rc == FAILURE);
+        $warning_flag++ if ($rc == WARNING);
+	}
+}
+
+# Return: failures (1) / warnings (2) / no failures/warnings (0) / 
+if ($failure_flag) {
+    exit (1);
+} elsif ($warning_flag) {
+    exit (2);
+} else {
+    exit (0);
+}
+
+##########################################################################
+# Sub-rtns
+
+
+
+#  Descr: uniform display of status info & msg from system-sanity check(s).
+# Return: success (1) / error (undef)
+sub print_rslt
+{
+	my $rc  = shift;
+	my $msg = shift;
+
+	if ( !defined($rc) ) {
+		print "Error: undefined rc value passed to " . (caller(0))[3] ."\n";
+		return(undef);
+	}
+
+	if ($rc == FAILURE) {
+		print "Failure: $msg\n";
+
+	} elsif ($rc == SUCCESS) {
+		print "Success: $msg\n";
+
+	} elsif ($rc >= WARNING && $rc < FAILURE) {  
+		 # XXX: Keep at end b/c warnings are 1..254 
+		print "Warning: $msg\n";
+	
+	} else {
+		# Crazy catch all case?
+		print "Crazy case -- should never see this...!\n - $msg\n";
+	}
+
+	return(1);
+}
+
+# vim:tabstop=4:shiftwidth=4:syntax=perl:textwidth=76
+
+__END__
+
+=head1 NAME
+
+system-sanity, a tool for OSCAR system sanity checking. It allows one to check
+if the system is correctly setup for OSCAR.
+
+=head1 SYNOPSIS
+
+system-sanity
+
+=head1 DESCRIPTION
+
+system-sanity is a tool for OSCAR system sanity checking. It allows one to check
+if the system is correctly setup for OSCAR. For instance it checks various
+system related known issues that preceeds the OSCAR specific checks, i.e., must
+be root, must have SELinux disabled, etc.
+The tool reads a directory of check scripts, which either succeed, fail, or warn
+printing this status info and a provided message.  (see also:
+OSCAR::SystemCheck for details), 
+In order to work as a standard UNIX tool, the return code from this
+tool is as follows: failures (1) / no failures (0)
+!system("./scripts/system-sanity") or die "Error: Failed sanity\n";
+
+=head1 OPTIONS
+
+None.
+
+=head1 AUTHOR
+
+Thomas Naughton, Oak Ridge National Laboratory
+
+=head1 SEE ALSO
+
+perl(1)
+
+=cut
+

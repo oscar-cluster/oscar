@@ -135,6 +135,14 @@ sub detect_pool {
 # EF: simply copied the function from RedHat.pm
 sub detect_fake {
     my ($fake) = @_;
+
+    return undef if (!defined $fake);
+
+    # From the parameter, we detect the distro codename and add it in the
+    # description of the OS
+    my $l_version = $fake->{'distro_version'};
+    $fake->{'codename'} = $codenames{$l_version};
+
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
 							     $distro,
 							     $compat_distro,

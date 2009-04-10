@@ -382,6 +382,14 @@ sub bootstrap_stage0 () {
         return undef;
     }
 
+    # Finally we run oscar-updater to be sure that we are in a coherent config
+    my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                                      undef,
+                                                      "OSCAR_SCRIPTS_PATH");
+    if (system ("$binaries_path/oscar-updater")) {
+        die "ERROR: Impossible to successfully execute system-sanity";
+    }
+
     return $oscar_configurator;
 }
 

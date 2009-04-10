@@ -1,0 +1,66 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2009 Oak Ridge National Laboratory
+#                    Geoffroy Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id$
+#
+
+use strict;
+use Carp;
+
+use OSCAR::FileUtils;
+
+my $new_name;
+my ($file, $dir);
+my @dirs_to_rename = ("/tftpboot/distro/ubuntu-8-i386",
+                      "/tftpboot/distro/ubuntu-8-x86_64");
+my @files_to_rename = ("/tftpboot/distro/ubuntu-8-i386.url",
+                       "/tftpboot/distro/ubuntu-8-x86_64.url");
+
+# We update the directory for "ubuntu 8" in /tftpboot/distro
+foreach $dir (@dirs_to_rename) { 
+    if (-d $dir) {
+        $new_name = $dir;
+        $new_name =~ s/8/804/;
+        print "[INFO] Renaming $dir to $new_name\n";
+        rename ($dir, $new_name) or
+            die "ERROR: Impossible to rename $dir";
+    }
+}
+
+# We update the reference to the "ubuntu 8" directories in the .url files
+foreach $file (@files_to_rename) {
+    if (-f $file) {
+        foreach $dir (@dirs_to_rename) {
+            my $pos = OSCAR::FileUtils::line_in_file ($dir, $file);
+            if ($pos >= 0) {
+                $new_name = $dir;
+                $new_name =~ s/8/804/;
+                if (OSCAR::FileUtils::replace_line_in_file ($file, 
+                                                            $pos,
+                                                            $new_name)) {
+                    die "ERROR: Impossible to update the repo URL in $file";
+                }
+            }
+        }
+    }
+}
+
+# Now we update the name of the .url files.
+foreach $file (@files_to_rename) {
+    if (-f $file) {
+        $new_name = $file;
+        $new_name =~ s/8/804/;
+        print "[INFO] Renaming $file to $new_name\n";
+        rename ($file, $new_name) or
+            die "ERROR: Impossible to rename $file";
+    }
+}
+
+exit 0;
