@@ -5,6 +5,8 @@
 codename, mandatory for Debian based systems.
 - [Ticket #517] Correctly detect all Ubuntu distros.
 - [Ticket #524] Prereq status detection is now fixed.
+- [Ticker #540] OSCAR::ConfigFile now ignores comments when getting the list
+of blocks from a config file.
 
 6.0.2:
 - Fix the oscar_image_cleanup script.
