@@ -44,9 +44,10 @@ use AppConfig::State;
 use warnings "all";
 
 @EXPORT = qw(
+            get_all_values
+            get_block_list
             get_value
             set_value
-            get_all_values
             );
 
 ################################################################################
@@ -90,6 +91,12 @@ sub get_value ($$$) {
     return $config->get($key);
 }
 
+# Return the list of blocks within a config file. To get more details about
+# what is a block, please refer to the AppConfig documentation (perldoc
+# AppConfig).
+#
+# Input: the path to the config file to parse.
+# Return: an array with blocks' names or undef if no blocks or errors.
 sub get_block_list ($) {
     my $config_file = shift;
 
@@ -103,6 +110,10 @@ sub get_block_list ($) {
 
     my @blocks = split ("\n", $list_blocks);
     for (my $i=0; $i < scalar(@blocks); $i++) {
+        if (OSCAR::Utils::is_a_comment($blocks[$i])) {
+            delete $blocks[$i];
+            next;
+        }
         $blocks[$i] =~ s/\[//g;
         $blocks[$i] =~ s/\]//g;
     }
@@ -247,6 +258,10 @@ when files are organized "Windows-style", a.k.a., init style or with blocks.
 =item set_value
 
 =item get_all_values
+
+=item get_block_list
+
+My @blocks = get_block_list ($my_config_file).
 
 =back
 
