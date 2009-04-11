@@ -33,12 +33,13 @@ if (-f $path) {
 }
 print "\t--> Creating the temporary file\n";
 my $template;
+my $samples_dir;
 if (defined $ENV{OSCAR_HOME}) {
-    $template = $ENV{OSCAR_HOME};
+    $samples_dir = "$ENV{OSCAR_HOME}/testing/unit_testing";
 } else {
-    $template = "/usr/share/oscar";
+    $samples_dir = "/usr/share/oscar/testing/unit_testing";
 }
-$template .= "/testing/unit_testing/etc/yum.conf";
+$template = "$samples_dir/etc/yum.conf";
 File::Copy::copy ($template, $path);
 if (!-f $path) {
     carp "ERROR: Impossible to create the temporary file ($template, $path)";
@@ -100,6 +101,20 @@ $value = OSCAR::ConfigFile::get_value (
     "gpgcheck"
     );
 goto ERROR_EXIT if (!defined($value) || $value != 1);
+
+print "\t--> Checking the block analysis\n";
+my $conffile_sample = "$samples_dir/samples/config_file_sample.conf";
+my @blocks = OSCAR::ConfigFile::get_block_list ($conffile_sample);
+print "List of blocks:";
+OSCAR::Utils::print_array (@blocks);
+if (scalar(@blocks) != 1) {
+    print "ERROR: We are supposed to get a single block: block1\n";
+    goto ERROR_EXIT;
+}
+if ($blocks[0] ne "block1") {
+    print "ERROR: The name of the block is supposed to be \"block1\"\n";
+    goto ERROR_EXIT;
+}
 
 # We are done with testing.
 SUCCESS:
