@@ -2,3 +2,4 @@
 #
 
 /usr/bin/oscar-config --generate-config-file
+/usr/bin/oscar-updater
