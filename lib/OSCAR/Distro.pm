@@ -47,7 +47,6 @@ use base qw(Exporter);
             find_distro
             get_list_of_supported_distros
             get_list_of_supported_distros_id
-            get_distro_id
             is_a_valid_distro_id
             which_distro
             which_distro_server
