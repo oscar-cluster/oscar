@@ -32,6 +32,7 @@ use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS $PGROUP_PATH);
 use base qw(Exporter);
 use OSCAR::OCA::OS_Detect;
+use OSCAR::Logger;
 use OSCAR::Utils;
 use OSCAR::FileUtils;
 use File::Basename;
@@ -489,6 +490,7 @@ sub os_cdistro_string {
 #         repository.                                                          #
 #                                                                              #
 # TODO: check if the yume command does really work or not!                     #
+# Deprecated by OSCAR::PackageSmart::detect_pool_format();                     #
 ################################################################################
 sub get_repo_type ($) {
     my $repo_url = shift;
@@ -558,14 +560,98 @@ sub mirror_yum_repo ($$$) {
 
     # Now we generate the metadata of the new repo
     OSCAR::Logger::oscar_log_subsection "Generating the mirror meta-data...";
-    $cmd = "cd $path; /usr/bin/packman --prepare-repo $path";
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+    my $pm = OSCAR::PackageSmart::prepare_pool ($ENV{OSCAR_VERBOSE},
+                                                $path);
+    if (!defined $pm) {
+        carp "ERROR: impossible to generate the metadata of the mirror";
         return -1;
     }
 
     OSCAR::Logger::oscar_log_subsection "Successfully mirror the repo $url";
 
+    return 0;
+}
+
+sub parse_aptrepo_metadata ($) {
+    my $file = shift;
+    my @pkgs;
+    my $line;
+    
+    if (! -f $file) {
+        carp "ERROR: Impossible to read $file";
+        return undef;
+    }
+
+    open (FILE, "$file") or (carp "ERROR: Impossible to open $file",
+                             return undef);
+    while ($line = <FILE>) {
+        if ($line =~ /^Filename: (.*)$/) {
+            my $pkg_name = $1;
+            chomp ($pkg_name);
+            push (@pkgs, $pkg_name);
+        }
+    }
+    close (FILE);
+
+    return @pkgs;
+}
+
+# Return: 0 if success, -1 else.
+sub mirror_apt_repo ($$$) {
+    my ($distro_id, $url, $dest) = @_;
+
+    OSCAR::Logger::oscar_log_subsection "Getting repo meta-data for $distro_id...";
+    # The repo follows the RAPT notation, from it, we create the actual URL to
+    # access meta-data
+    my ($base_url, @keys) = split (/\+/, $url);
+    my ($distro, $ver, $arch) = decompose_distro_id ($distro_id);
+    my $os = OSCAR::OCA::OS_Detect::open (fake=>{ distro=>$distro, 
+                                                  distro_version=>$ver,
+                                                  arch=>$arch});
+    if (!defined $os) {
+        carp "ERROR: Impossible to get OS data";
+        return -1;
+    }
+
+    # OS_Detect should give the codename
+    OSCAR::Utils::print_hash ("", "", $os);
+    my $codename = $os->{'codename'};
+    my $metadata_url = "$base_url/dists/$codename/binary-$arch/Packages";
+    # We check that the destination directory exists
+    my $dest_dir = "$dest/$distro_id";
+    if (! -d "$dest_dir") {
+        mkdir ($dest_dir) or (carp "ERROR: Impossible to create $dest_dir",
+                             return -1);
+    }
+    my $cmd = "cd $dest_dir; /usr/bin/wget $metadata_url";
+    oscar_log_subsection ("Executing: $cmd");
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+
+    my @files = parse_aptrepo_metadata ("$dest_dir/Packages");
+    foreach my $file (@files) {
+        $cmd = "cd $dest_dir; /usr/bin/wget $base_url/$file";
+        oscar_log_subsection ("Executing $cmd");
+        if (system $cmd) {
+            carp "ERROR: Impossible to download $base_url/$file";
+            return -1;
+        }
+    }
+
+    oscar_log_subsection "Cleaning up...";
+    my $rm_file = "$dest_dir/Packages";
+    unlink ("$rm_file") or (carp "ERROR: Impossible to delete $rm_file",
+                            return -1);
+
+    oscar_log_subsection "Generating the mirror meta-data...";
+    my $pm = OSCAR::PackageSmart::prepare_pool ($ENV{OSCAR_VERBOSE},
+                                                $dest_dir);
+    if (!defined $pm) {
+        carp "ERROR: impossible to generate the metadata of the mirror";
+        return -1;
+    }
     return 0;
 }
 
@@ -581,15 +667,20 @@ sub mirror_yum_repo ($$$) {
 ################################################################################
 sub mirror_repo ($$$) {
     my ($url, $distro, $destination) = @_;
-    my $repo_type = get_repo_type ($url);
+
+    require OSCAR::PackageSmart;
+    my $repo_type = OSCAR::PackageSmart::detect_pool_format ($url);
 
     die "ERROR: Impossible to determine the repository type of $url ".
         "($repo_type)\n" if (!defined $repo_type);
 
     print "Mirroring repo of type: $repo_type\n";
-    if ($repo_type eq "apt") {
-        carp "ERROR: We cannot mirror APT repos yet";
-        return -1;
+    if ($repo_type eq "deb") {
+        if (mirror_apt_repo ($distro, $url, $destination)) {
+            carp "ERROR: We cannot mirror the APT repos ($distro, $url, ".
+                 "$destination)";
+            return -1;
+        }
     } elsif ($repo_type eq "yum") {
         if (mirror_yum_repo ($distro, $url, $destination)) {
             carp "ERROR: Impossible to mirror the repository ($url, ".
