@@ -153,7 +153,7 @@ sub detect_pool_format ($) {
         } else {
             $url = $pool . "/repodata/repomd.xml";
         }
-        my $cmd = "wget --tries 10 --timeout=3 -S --delete-after -q $url";
+        my $cmd = "wget --tries 10 --timeout=9 -S --delete-after -q $url";
 #        oscar_log_subsection "Testing remote repository type by using ".
 #                             "command: $cmd... ";
         my @tokens = split (/\+/, $pool);
