@@ -71,6 +71,7 @@ those packages from an online package repository, either on or off site.
 rm -rf %{_tmppath}/%{name}-%{version}-root
 %post -n oscar-base
 /usr/bin/oscar-config --generate-config-file
+/usr/bin/oscar-updater
 %files -n oscar-base
 %defattr(-,root,root)
 %dir %{etcdir}
