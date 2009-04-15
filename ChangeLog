@@ -9,6 +9,7 @@ codename, mandatory for Debian based systems.
 of blocks from a config file.
 - Automatically run oscar-updater when installing a new version of the
 oscar-base packages.
+- Increase the timeout to 9s when getting repository information.
 
 6.0.2:
 - Fix the oscar_image_cleanup script.
