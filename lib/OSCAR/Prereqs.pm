@@ -319,6 +319,7 @@ sub is_rpm_pkg_installed ($) {
 sub get_prereqs_status ($$$@) {
     my ($distro, $distver, $arch, @paths) = @_;
     my $needed_actions = 0;
+    my $to_install = 0;
     my ($installs, $removes, $cmds) =
         OSCAR::Prereqs::get_rawlist_prereqs($distro,
                                         $distver,
@@ -328,20 +329,12 @@ sub get_prereqs_status ($$$@) {
     foreach my $p (@$installs) {
         if (!is_package_installed ($p)) {
             OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis not installed";
-            $needed_actions++;
+            $to_install++;
         } else {
             OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis installed";
         }
     }
-    foreach my $p (@$removes) {
-        if (is_package_installed ($p)) {
-            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis installed";
-            $needed_actions++;
-        } else {
-            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis not installed"
-        }
-    }
-    return $needed_actions;
+    return $to_install;
 }
 
 1;
