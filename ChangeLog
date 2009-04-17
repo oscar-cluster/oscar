@@ -10,6 +10,9 @@ of blocks from a config file.
 - Automatically run oscar-updater when installing a new version of the
 oscar-base packages.
 - Increase the timeout to 9s when getting repository information.
+- [Ticket #398] We can now check whether the binary packages specified for the
+creation of a image are actually available or not. For that, one just needs to
+use the "oscar --distro <DISTRO_ID> --check-packagelist <FILE>" command.
 
 6.0.2:
 - Fix the oscar_image_cleanup script.
