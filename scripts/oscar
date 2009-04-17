@@ -36,12 +36,11 @@ my ($new_partition, @clients, $list_partitions, $list_partition_nodes,
     $distro, $list_partition_distro, $cluster_name, $queried_node_name,
     $partition_name, $node_to_update, $node_hostname, $node_ip, $node_type,
     $node_mac, $partition_to_deploy, $queried_partition, $delete_node,
-    $check_config, $check_binarylist);
-my $verbose = 1;
+    $check_config, $check_binarylist, $verbose, $debug);
 
 GetOptions(
         "check-config"                  => \$check_config,
-        "check-rpmlist=s"               => \$check_binarylist,
+        "check-packagelist=s"           => \$check_binarylist,
         "cluster=s"                     => \$cluster_name,
         "client=s"                      => \@clients,
         "delete-node=s"                 => \$delete_node,
@@ -59,8 +58,35 @@ GetOptions(
         "ip=s"                          => \$node_ip,
         "type=s"                        => \$node_type,
         "mac=s"                         => \$node_mac,
+        "verbose"                       => \$verbose,
+        "debug"                         => \$debug,
         "help"                          => \&help_and_exit,
         ) || help_and_die();
+
+# Return: an array of package names or undef if error.
+sub get_pkgs_from_package_file ($) {
+    my $file = shift;
+
+    if (! -f $file) {
+        carp "ERROR: File $file does not exist";
+        return undef;
+    }
+
+    open (DAT, $file) or (carp "ERROR: Impossible to open $file", 
+                          return undef);
+    require OSCAR::Utils;
+    my ($line, @pkgs);
+    while ($line = <DAT>) {
+        if (OSCAR::Utils::is_a_valid_string ($line) 
+            && !OSCAR::Utils::is_a_comment ($line)) {
+            chomp ($line);
+            push (@pkgs, $line);
+        }
+    }
+    close (DAT);
+
+    return @pkgs;
+}
 
 my $initial_verbose_value = 0;
 $initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
@@ -97,8 +123,14 @@ if ($check_binarylist) {
     my $rm = OSCAR::RepositoryManager->new (distro=>$distro);
     my ($rc, @available_pkgs) = $rm->search_opkgs ("*");
 
+    if ($debug) {
+        require OSCAR::Utils;
+        print "-> Available packages: ";
+        OSCAR::Utils::print_array (@available_pkgs);
+    }
+
     # Then we parse the file
-    my @pkgs = get_rpms_from_package_file ($check_binarylist);
+    my @pkgs = get_pkgs_from_package_file ($check_binarylist);
 
     # Now we check if the packages are actually available or not
     my @unavailable_pkgs;
@@ -329,10 +361,9 @@ Recognized options include:
 Check the configuration of a given cluster, Should be used with the --cluster
 option in order to specify the cluster name.
 
-=item --check-rpmlist
+=item --check-packagelist <FILE>
 
-Check if the packages in a rpm list are actually available via the repositories
-or not.
+Check if the packages in a binary packages list from the <FILE> file are actually available via the repositories or not. This option should be used with the --distro in order to specify which Linux distribution is associated to the list of binary packages. Note that this allows one to check that all the binary packages used to build an image are actually available.
 
 =item --client
 
