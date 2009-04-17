@@ -161,7 +161,7 @@ sub bootstrap_prereqs ($$) {
     my $prereq_name = basename ($prereq_path);
     OSCAR::Logger::oscar_log_subsection "Dealing with Prereq $prereq_name ".
         "($prereq_path, $prereq_mode)";
-    if (system ($cmd)) {
+    if (system ($cmd) == 0) {
         OSCAR::Logger::oscar_log_subsection "$prereq_name is not installed.";
 
         if ($prereq_mode eq "check_and_fix") {
