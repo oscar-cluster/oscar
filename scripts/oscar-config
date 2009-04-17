@@ -403,11 +403,13 @@ Update the NIC used by OSCAR for cluster management. The NIC identifier is speci
 
 =item --help
 
-This help information.
+Help information.
 
-=item verbose
+=item --verbose
 
-=item debug
+Display more information when running commands. This option should always be used if you encounter a problem and if you plan to contact OSCAR developers to get some help.
+
+=item --debug
 
 Display even more debugging information than the verbose option.
 
