@@ -115,7 +115,9 @@ sub install_prereq ($$$) {
     $cmd = $prereq_cmd . " --status " . $prereq_path;
     my $prereq_name = basename ($cmd);
     OSCAR::Logger::oscar_log_subsection "\nDealing with Prereq $prereq_name";
-    if (system ($cmd)) {
+    require OSCAR::PrereqsDefs;
+    my $rc = system ($cmd);
+    if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
         OSCAR::Logger::oscar_log_subsection "$prereq_name is not installed.";
 
         if ($prereq_mode eq "check_only") {
@@ -132,7 +134,8 @@ sub install_prereq ($$$) {
 
         # Packman should be installed now
         $cmd = $prereq_cmd . " --status " . $prereq_path;
-        if (system ($cmd)) {
+        $rc = system ($cmd);
+        if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
             carp "ERROR: $prereq_name is still not installed\n";
             return -1;
         }
@@ -383,6 +386,7 @@ sub bootstrap_stage0 () {
     }
 
     # Finally we run oscar-updater to be sure that we are in a coherent config
+    require OSCAR::ConfigFile;
     my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");

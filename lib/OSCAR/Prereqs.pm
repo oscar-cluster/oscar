@@ -20,6 +20,7 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::PackagePath;
+use OSCAR::PrereqsDefs;
 use warnings "all";
 use Carp;
 
@@ -312,8 +313,7 @@ sub is_rpm_pkg_installed ($) {
 }
 
 # Check the current status of given prereqs. We know the status based on the
-# actions needed to get the prereqs fully installed (0 == prereqs installed,
-# > 0 means the prereqs are not installed.
+# actions needed to get the prereqs fully installed.
 #
 # Returns: 0 if no action are needed, the number of required actions else.
 sub get_prereqs_status ($$$@) {
@@ -334,7 +334,11 @@ sub get_prereqs_status ($$$@) {
             OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis installed";
         }
     }
-    return $to_install;
+    if ($to_install) {
+        return OSCAR::PrereqsDefs::PREREQ_MISSING();
+    } else {
+        return OSCAR::PrereqsDefs::PREREQ_INSTALLED();
+    }
 }
 
 1;
