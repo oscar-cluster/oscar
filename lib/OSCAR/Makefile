@@ -16,7 +16,7 @@ FILES := AddNode.pm Help.pm Prereqs.pm Bootstrap.pm ImageMgt.pm \
          PackageSmart.pm VMConfigManager.pm Env.pm NodeMgt.pm \
          PartitionConfigManager.pm  WizardEnv.pm FileUtils.pm OCA.pm \
          PartitionMgt.pm GUI_MAC.pm SystemInfo.pm SystemServices.pm \
-         SystemServicesDefs.pm Defs.pm Startover.pm
+         SystemServicesDefs.pm Defs.pm Startover.pm PrereqsDefs.pm
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done

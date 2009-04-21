@@ -454,12 +454,8 @@ if ($status) {
                                                   $distrover,
                                                   $arch,
                                                   @prereqs);
-    if ($ret == 0) {
-        # if the get_prereqs_status returns 0, it means the prereq is installed
-        exit 1;
-    } else {
-        exit 0;
-    }
+
+    exit ($ret);
 }
 
 

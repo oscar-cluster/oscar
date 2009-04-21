@@ -136,7 +136,7 @@ sub install_prereq ($$$) {
         $cmd = $prereq_cmd . " --status " . $prereq_path;
         $rc = system ($cmd);
         if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
-            carp "ERROR: $prereq_name is still not installed\n";
+            carp "ERROR: $prereq_name is still not installed ($rc)\n";
             return -1;
         }
     }
@@ -158,13 +158,16 @@ sub install_prereq ($$$) {
 sub bootstrap_prereqs ($$) {
     my ($prereq_path, $prereq_mode) = @_;
     my $cmd;
+    my $rc;
 
     # We get the current status of the prereq first
     $cmd = $ipcmd . " --status " . $prereq_path;
     my $prereq_name = basename ($prereq_path);
     OSCAR::Logger::oscar_log_subsection "Dealing with Prereq $prereq_name ".
         "($prereq_path, $prereq_mode)";
-    if (system ($cmd) == 0) {
+    require OSCAR::PrereqsDefs;
+    my $rc = system ($cmd);
+    if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
         OSCAR::Logger::oscar_log_subsection "$prereq_name is not installed.";
 
         if ($prereq_mode eq "check_and_fix") {
@@ -179,7 +182,8 @@ sub bootstrap_prereqs ($$) {
             # Packman should be installed now
             $cmd = $ipcmd . " --status " . $prereq_path;
             OSCAR::Logger::oscar_log_subsection "Executing $cmd...";
-            if (system ($cmd)) {
+            my $rc = system ($cmd);
+            if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
                 carp "ERROR: $prereq_name is still not installed\n";
                 return -1;
             }
