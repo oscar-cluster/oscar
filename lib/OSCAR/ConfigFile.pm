@@ -109,15 +109,17 @@ sub get_block_list ($) {
 #    print "List blocks ($config_file): $list_blocks";    
 
     my @blocks = split ("\n", $list_blocks);
+    my @final_blocks = ();
     for (my $i=0; $i < scalar(@blocks); $i++) {
-        if (OSCAR::Utils::is_a_comment($blocks[$i])) {
-            delete $blocks[$i];
+        if (!OSCAR::Utils::is_a_valid_string ($blocks[$i]) 
+            || OSCAR::Utils::is_a_comment($blocks[$i])) {
             next;
         }
         $blocks[$i] =~ s/\[//g;
         $blocks[$i] =~ s/\]//g;
+        push (@final_blocks, $blocks[$i]);
     }
-    return @blocks;
+    return @final_blocks;
 }
 
 # Return: 0 if success, -1 else.
