@@ -90,6 +90,11 @@ sub download_file ($$$$) {
     my ($source, $dest, $method, $overwrite) = @_;
     my $cmd;
 
+    if ( ! -d $dest) {
+        File::Path::mkpath ($dest) 
+            or (carp "ERROR: Impossible to create $dest", return -1);
+    }
+
     if ($method eq "wget") {
         $cmd = "cd $dest; wget ";
         $cmd .= "-nc " if ($overwrite eq OSCAR::Defs::NO_OVERWRITE());
@@ -351,6 +356,9 @@ Add a line into a file and make sure the line appears only one.
 add_line_to_file_without_duplication($line, $file);
 
 =item download_file
+
+download_file ($source, $dest, $method, $overwrite)
+overwrite can have the two following values: OSCAR::Defs::NO_OVERWRITE() or OSCAR::Defs::OVERWRITE()
 
 =item file_type
 
