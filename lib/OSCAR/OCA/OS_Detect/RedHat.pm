@@ -36,15 +36,15 @@ sub detect_dir {
 
     # If /etc/redhat-release exists, continue, otherwise, quit.
     if (-f "$root/etc/redhat-release") {
-	$release_string = `cat $root/etc/redhat-release`;
+        $release_string = `cat $root/etc/redhat-release`;
     } else {
-	return undef;
+        return undef;
     }
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
-	os => "linux",
-	chroot => $root,
+        os => "linux",
+        chroot => $root,
     };
 
     # complex match strings
@@ -64,7 +64,7 @@ sub detect_dir {
             return undef;
         }
 
-        $id->{distro} = $distro."-".lc($flavor);
+        $id->{distro} = $distro; #."-".lc($flavor);
         $id->{distro_version} = $os_release;
         $id->{distro_update} = $os_update;
         $id->{compat_distro} = $compat_distro;
