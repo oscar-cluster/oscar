@@ -57,7 +57,7 @@ sub detect_dir {
         my $os_family = $3; # Nahant, blah...
         my $os_update = $4;
 
-        $os_release =~ s/(\d+)\.\d+/$1/g;
+#        $os_release =~ s/(\d+)\.\d+/$1/g;
 
         # only support these two for now
         if ($os_family !~ /^(Taroon|Nahant|Tikanga)$/) {
