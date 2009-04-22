@@ -170,3 +170,38 @@ END_USAGE
    exit(1);
 }
 
+__END__
+
+=head1 NAME
+
+distro-query, a command line tool to get OSCAR related information about the local Linux distribution.
+
+=head1 SYNOPSIS
+
+distro-query [OPTIONS]
+
+If no option is specified, distro-query only display basic information about the local distribution.
+
+=head1 OPTIONS
+
+Supported options include:
+
+=over 4
+
+=item --image|-i <IMAGE_PATH>
+
+Detect distro and architecture of an image directory.
+
+=item --pool|-p <PATH>
+
+Detect distro and architecture of a package pool.
+
+=item --node|-n <NODE_NAME>
+
+Detect distro and architecture of a node.
+
+=item --help|-h
+
+Display this help text.
+
+=cut
