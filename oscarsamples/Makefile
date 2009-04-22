@@ -13,7 +13,7 @@ FILES := debian-4-i386.rpmlist fc-5-i386.rpmlist fc-8-x86_64.rpmlist \
 		fc-4-x86_64.rpmlist fc-8-i386.rpmlist rhel-3-i386.rpmlist \
 		rhel-4-ia64.rpmlist scsi.ppc64-ps3.disk fc-10-x86_64.rpmlist \
 		centos-5.2-x86_64.rpmlist ubuntu-8.04-i386.rpmlist \
-		suse-10.0-x86_64.rpmlist
+		suse-10.0-x86_64.rpmlist debian-5-i386.rpmlist debian-5-x86_64.rpmlist
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
