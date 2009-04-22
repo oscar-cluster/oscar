@@ -157,6 +157,7 @@ sub repos_add_urlfile ($@) {
     }
 
     foreach my $repo (@n) {
+        OSCAR::Logger::oscar_log_subsection ("Adding $repo in $path");
         OSCAR::FileUtils::add_line_to_file_without_duplication ($repo, $path);
     }
     return 0;
@@ -711,6 +712,8 @@ sub use_default_distro_repo ($) {
         carp "ERROR: undefined default distro repo for ($distro)";
         return -1;
     }
+    OSCAR::Logger::oscar_log_subsection ("Using the distro repo ".
+        "$distro_repo_url for $distro");
     if (use_distro_repo ($distro, $distro_repo_url)) {
         carp "ERROR: Impossible to set the distro repo";
         return -1;
@@ -814,16 +817,19 @@ sub use_distro_repo ($$) {
 
     if (!OSCAR::Utils::is_a_valid_string ($distro) 
         || !OSCAR::Utils::is_a_valid_string ($repo)) {
-        die "ERROR: the distro or the repo URL are invalid ($distro, $repo)\n";
+        carp "ERROR: the distro or the repo URL are invalid ($distro, $repo)";
+        return -1;
     }
 
     my $path = $tftpdir . "distro";
     if (! -d $path) {
+        OSCAR::Logger::oscar_log_subsection "Creating $path";
         File::Path::mkpath ($path, 1, 0777) 
             or (carp "ERROR: impossible to create the directory $path", 
                 return -1);
     }
 
+    OSCAR::Logger::oscar_log_subsection "Adding $repo in $path/$distro.url";
     if (OSCAR::PackagePath::repos_add_urlfile ("$path/$distro.url", $repo)) {
         carp "ERROR: Impossible to create file $path.url";
         return -1;
