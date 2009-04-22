@@ -125,7 +125,7 @@ sub download_file ($$$$) {
 sub add_line_to_file_without_duplication ($$) {
     my ($line, $file_path) = @_;
 
-    print "---> Adding $line to $file_path\n" if $verbose;
+    OSCAR::Logger::oscar_log_subsection "---> Adding $line to $file_path";
     my $dirname = File::Basename::dirname ($file_path);
     if ( ! -d $dirname) {
         File::Path::mkpath ($dirname) 
@@ -136,11 +136,17 @@ sub add_line_to_file_without_duplication ($$) {
         carp "ERROR: Invalid string";
         return -1;
     }
+    # if the file does not exist, we create an empty file first.
+    if (! -f $file_path) {
+        system "touch $file_path" 
+            or (carp "ERROR: Impossible to create $file_path", return -1);
+    }
     open (DAT, ">>$file_path") 
         or (carp "ERROR: Impossible to open the file: $file_path.",
             return -1);
     if (line_in_file($line, $file_path) == -1) {
-        print DAT "$line";
+        print DAT "$line" 
+            or (carp "ERROR: Impossible to write in $file_path", return -1);
     }
     close (DAT);
     return 0;
