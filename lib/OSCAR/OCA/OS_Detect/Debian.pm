@@ -23,6 +23,7 @@ BEGIN {
 
 use strict;
 use OSCAR::LSBreleaseParser;
+use OSCAR::Utils;
 
 my $DEBUG = 1 if( $ENV{DEBUG_OCA_OS_DETECT} );
 my ($deb_ver, $deb_update);
@@ -73,13 +74,21 @@ sub detect_dir {
         # /etc/lsb-release. So if we get data from this file and if it specifies
         # the system is an Ubuntu system we quit.
         my $distro_id = OSCAR::LSBreleaseParser::parse_lsbrelease($root);
-        if (defined ($distro_id) && $distro_id ne "") {
+        if (OSCAR::Utils::is_a_valid_string ($distro_id)) {
             require OSCAR::PackagePath;
             my ($d, $v, $a) = 
                 OSCAR::PackagePath::decompose_distro_id ($distro_id);
             return undef if ($d eq "ubuntu");
         }
 
+
+	# GV (2009/04/22): this is completely stupid (yes it is!) to use
+	# the version of the base-files package since developers may trick
+	# the version number as a work around to packaging issues. As a
+	# result, it is a nigthmare to get the actual version from it,
+	# especially when at the same time, a file (/etc/debian-version)
+	# is there to give the version (even if the file may store a codename
+	# or a version, it is still simpler).
         my $cmd = "$dpkg_bin --show $detect_pkg 2>&1";
         open(CMD, "$cmd|") or die "Error: unable to open $cmd - $!\n";
         my $rslt = <CMD>;
@@ -103,17 +112,16 @@ sub detect_dir {
 
     # Limit support to only Debian v4 (etch)
     my $deb_update;
-    # two cases: the version number is "x" or "x.<something>"
+    # three (freaking) cases: the version number is "x" or "x.<something>" 
+    # or "xcodenamey"
     if ($deb_ver =~ /^(\d+)\.(\d+)/) {
         $deb_ver = $1;
         $deb_update = $2;
+    } elsif ($deb_ver =~ /^(\d+)([A-z]+)(\d+)$/) {
+        $deb_ver = $1;
+        $deb_update = 0;
     } else {
     	$deb_update = 0;
-    }
-    if ($deb_ver != 4) {
-	print "OCA::OS_Detect::Debian-";
-	print "DEBUG: Failed Debian version support - ($deb_ver)\n\n" if( $DEBUG );
-	return undef;
     }
 
     # determine architecture
@@ -134,7 +142,7 @@ sub detect_dir {
     $id->{compat_distrover} = $deb_ver;
     $id->{pkg} = $pkg;
     my $full_distro_ver = "$deb_ver.$deb_update";
-    $id->{codename} = $codenames{'$full_distro_ver'};
+    $id->{codename} = $codenames{$full_distro_ver};
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
@@ -194,6 +202,7 @@ sub detect_oscar_pool ($) {
     }
 }
 
+detect_dir ("/");
 
 # If we got here, we're happy
 1;
