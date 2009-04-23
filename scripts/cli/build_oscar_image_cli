@@ -23,7 +23,7 @@ use lib "/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimage
 use OSCAR::Logger;
 use OSCAR::PackagePath;
 use OSCAR::Database;
-use SystemInstaller::Tk::Common;
+#use SystemInstaller::Tk::Common;
 use SystemImager::Server;
 use OSCAR::ImageMgt;
 use OSCAR::Opkg qw ( create_list_selected_opkgs );
