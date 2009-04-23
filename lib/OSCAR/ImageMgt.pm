@@ -596,6 +596,7 @@ sub create_image ($%) {
     my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
     my %selection_data
         = OSCAR::Database::get_opkgs_selection_data (undef);
+    print "[INFO] no selected OPKGs\n" if (keys %selection_data == 0);
     my $os = OSCAR::OCA::OS_Detect::open(chroot=>"$image_path");
     if (!defined $os) {
         carp "ERROR: Impossible to detect the distro id for $image_path";
@@ -610,16 +611,19 @@ sub create_image ($%) {
     # selection (selected for core OPKGs, unselected for others).
     require OSCAR::RepositoryManager;
     my $rm = OSCAR::RepositoryManager->new (distro=>$distro_id);
+    my ($rc, @output);
+    require OSCAR::ODA_Defs;
     foreach my $opkg (keys %selection_data) {
         if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
-            if ($rm->install_pkg ($image_path, "opkg-$opkg")) {
-                carp "ERROR: Impossible to install opkg-$opkg in $image_path";
-                return -1;
-            }
-            if ($rm->install_pkg ($image_path, "opkg-$opkg-client")) {
-                carp "ERROR: Impossible to install opkg-$opkg-client in ".
-                    $image_path;
-                return -1;
+            if ($selection_data{$opkg} eq OSCAR::ODA_Defs::SELECTED()) {
+                print "Installing opkg-$opkg-client into the image...\n";
+                ($rc, @output) = $rm->install_pkg ($image_path,
+                                                   "opkg-$opkg-client");
+                if ($rc) {
+                    carp "ERROR: Impossible to install opkg-$opkg-client in ".
+                         "$image_path (rc: $rc)";
+                    return -1;
+                }
             }
         }
     }
