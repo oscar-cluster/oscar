@@ -132,7 +132,7 @@ sub do_setimage ($%) {
 sub do_post_image_creation ($$) {
     my $img = shift;
     my $interface = shift;
-    my $cwd = `pwd`;
+    my $cwd = `/bin/pwd`;
 
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
@@ -566,10 +566,11 @@ sub create_image ($%) {
     $vars{imgname} = "$image";
     $verbose = 1;
 
+    my $image_path = "$vars{imgpath}/$vars{imgname}";
     my $cmd = "mksiimage -A --name $vars{imgname} " .
             "--filename $vars{pkgfile} " .
             "--arch $vars{arch} " .
-            "--path $vars{imgpath}/$vars{imgname} ";
+            "--path $image_path ";
     $cmd .= "--distro $vars{distro} " if defined $vars{distro};
     if (!defined $vars{distro} && defined $vars{pkgpath}) {
         $cmd .= "--location $vars{pkgpath} ";
@@ -589,6 +590,38 @@ sub create_image ($%) {
     if (OSCAR::Database::set_images (\%image_data, undef, undef) != 1) {
         carp "ERROR: Impossible to store image data into ODA";
         return -1;
+    }
+
+    # We now install selected non-core OPKGs
+    my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
+    my %selection_data
+        = OSCAR::Database::get_opkgs_selection_data (undef);
+    my $os = OSCAR::OCA::OS_Detect::open(chroot=>"$image_path");
+    if (!defined $os) {
+        carp "ERROR: Impossible to detect the distro id for $image_path";
+        return -1;
+    }
+    my $distro_id = OSCAR::PackagePath::os_distro_string ($os);
+    if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
+        carp "ERROR: Impossible to get the distro ID based on the detected os";
+        return -1;
+    }
+    # If we do not have yet selection data for some OPKGs, we assign the default
+    # selection (selected for core OPKGs, unselected for others).
+    require OSCAR::RepositoryManager;
+    my $rm = OSCAR::RepositoryManager->new (distro=>$distro_id);
+    foreach my $opkg (keys %selection_data) {
+        if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
+            if ($rm->install_pkg ($image_path, "opkg-$opkg")) {
+                carp "ERROR: Impossible to install opkg-$opkg in $image_path";
+                return -1;
+            }
+            if ($rm->install_pkg ($image_path, "opkg-$opkg-client")) {
+                carp "ERROR: Impossible to install opkg-$opkg-client in ".
+                    $image_path;
+                return -1;
+            }
+        }
     }
 
     # Deal with the harddrive configuration of the image
