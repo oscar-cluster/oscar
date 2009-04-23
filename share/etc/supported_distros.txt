@@ -20,8 +20,8 @@ ubuntu-804-x86_64 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multi
 ubuntu-804-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
 debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
 debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
-debian-5-x86_64 http://ftp.us.debian.org/debian/+lenny+main http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+lenny+/
-debian-5-i386 http://ftp.us.debian.org/debian/+lenny+main http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+lenny+/
+debian-5-x86_64 http://ftp.us.debian.org/debian/+lenny+main http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+lenny+/
+debian-5-i386 http://ftp.us.debian.org/debian/+lenny+main http://bison.csm.ornl.gov/repos/unstable/debian-5-i386/+lenny+/
 suse-10-x86_64 http://ftp-stud.fht-esslingen.de/pub/Mirrors/ftp.suse.com/pub/suse/x86_64/update/10.0-OSS/ http://bison.csm.ornl.gov/repos/unstable/suse-10-x86_64
 
 [6.0.3]
