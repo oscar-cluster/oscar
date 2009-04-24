@@ -17,6 +17,12 @@ use the "oscar --distro <DISTRO_ID> --check-packagelist <FILE>" command.
 - Clean-up the prereq management and the bootstrapping mechanisms.
 - Add the basic support for Debian Lenny.
 - Make sure that all selected OPKGs are actually installed into the image.
+- Update Packman to 3.1.10.
+- Update Selector to 1.2.
+- Update Yume to 2.8.9.
+- Update RAPT to 2.8.5.
+- Update ODA to 1.4.4.
+- Update ORM to 1.3.
 
 6.0.2:
 - Fix the oscar_image_cleanup script.
