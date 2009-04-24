@@ -57,7 +57,12 @@ sub detect_dir {
         my $os_family = $3; # Nahant, blah...
         my $os_update = $4;
 
-#        $os_release =~ s/(\d+)\.\d+/$1/g;
+        # In case the version number and the update number are all together, we
+        # explicitely make the distinction
+        if ($os_release =~ /(\d+).(\d+)/) {
+            $os_release = $1;
+            $os_update = $2;
+        }
 
         # only support these two for now
         if ($os_family !~ /^(Taroon|Nahant|Tikanga)$/) {
