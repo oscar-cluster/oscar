@@ -302,7 +302,6 @@ sub distro_repo_url (%) {
         return undef;
     }
     my $path = dirname($url)."/".basename($url, ".url");
-    print "TITI\n";
 
 	# create .url file and add local path as first entry
 	if (repos_add_urlfile("$url", "file:$path")) {
