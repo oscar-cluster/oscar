@@ -56,6 +56,7 @@ use warnings "all";
             export_image
             get_image_default_settings
             get_list_corrupted_images
+            get_list_images
             image_exists
             install_opkgs_into_image
             update_grub_config
@@ -509,6 +510,28 @@ sub get_list_corrupted_images {
     }
 
     return (@result);
+}
+
+sub get_list_images () {
+    my @tables = ("Images");
+    my @res = ();
+    my $sql = "SELECT * FROM Images";
+    if (!OSCAR::Database::single_dec_locked( $sql,
+                                             "READ",
+                                             \@tables,
+                                             \@res,
+                                             undef) ) {
+        carp "ERROR: Impossible to execute the SQL command $sql";
+        return undef;
+    }
+
+    # We reformat the result just to get the list of image names.
+    my @images;
+    foreach my $i (@res) {
+        push (@images, $i->{'name'});
+    }
+
+    return @images;
 }
 
 ################################################################################

@@ -24,6 +24,7 @@ use OSCAR::Network qw (
                        get_network_config
                       );
 use OSCAR::ClientMgt;
+use OSCAR::ImageMgt;
 use SystemInstaller::Utils;
 use SIS::Image;
 use SIS::DB;
@@ -110,34 +111,39 @@ sub addclients
 		numhosts => "",
 		@_,
 		);
-	my $config = SystemInstaller::Utils::init_si_config();
-	my @allimages = list_image();
+#	my $config = SystemInstaller::Utils::init_si_config();
+#	my @allimages = list_image();
 	my @imagenames;
-	my $defimage;
-	my $img;
+#	my $img;
 
     # Make a list of all the images
-	foreach $img (@allimages)
-	{
-		if($img->name eq $vars{imgname})
-		{
-			$defimage = $vars{imgname};
-			push(@imagenames, $img->name);
-		}
-		else
-		{
-			push(@imagenames, $img->name);
-		}
-	}
+#	foreach $img (@allimages)
+#	{
+#		if($img->name eq $vars{imgname})
+#		{
+#			$defimage = $vars{imgname};
+#			push(@imagenames, $img->name);
+#		}
+#		else
+#		{
+#			push(@imagenames, $img->name);
+#		}
+#	}
 
 	#If the default selection wasn't found, just use the first one
-	$defimage = $imagenames[0] unless $defimage;
+#	$defimage = $imagenames[0] unless $defimage;
 
-	unless ($defimage )
-	{
-		print "**********************************\nYou must build at least one image!\n**********************************\n\n";
+#	unless ($defimage )
+
+    my @images = OSCAR::ImageMgt::get_list_images ();
+    if (scalar (@images) == 0){
+		print "**********************************\n".
+              "You must build at least one image!\n".
+              "**********************************\n\n";
 		exit 1;
 	}
+    # By default we take the first image
+    my $defimage = $images[0];
 
 	my %defaults = %vars;
 
@@ -291,9 +297,11 @@ sub postaddclients
 {
     use OSCAR::ConfigManager;
     my $config_file = "/etc/oscar/oscar.conf";
-    my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$config_file");
-    my $config = $oscar_cfg->get_config();
-    my $binpath = $config->{'binaries_path'}
+    my $binpath = OSCAR::ConfigFile($config_file, undef, "OSCAR_SCRIPTS_PATH");
+    if (!OSCAR::Utils::is_a_valid_string ($binpath)) {
+        carp "ERROR: Impossible to get the binary location";
+        return -1;
+    }
     chdir("$binpath");
     my $cmd = "./post_clients";
     oscar_log_subsection("Running: $cmd");
