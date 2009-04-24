@@ -138,9 +138,13 @@ sub repos_list_urlfile ($) {
 # Return: 0 if success, -1 else.
 sub repos_add_urlfile ($@) {
     my ($path, @repos) = (@_);
+    
+    if ($ENV{OSCAR_VERBOSE}) {
+        print "Adding the repositories: ";
+        OSCAR::Utils::print_array (@repos);
+    }
 
     # make sure local paths have "file:" prefix
-    my %rhash;
     my @n;
     for (@repos) {
         s,^/,file:/,;
@@ -149,11 +153,23 @@ sub repos_add_urlfile ($@) {
             return -1;
         }
         my $r = $_;
-        if ((repo_local($r) == 1 && repo_empty ($r) == 0) 
-            || repo_local($r) == 0) {
-            push (@n, $r) ;
+        if (repo_local($r) == 0) {
+            OSCAR::Logger::oscar_log_subsection "Adding online repo ($r)";
+            push (@n, $r);
         }
-        $rhash{$r} = 1;
+        if (repo_local($r) == 1 && repo_empty ($r) != 0) {
+            OSCAR::Logger::oscar_log_subsection "Adding valid local repo ($r)";
+            push (@n, $r);
+        }
+        if (repo_local($r) == 1 && repo_local($r) == 0) {
+            OSCAR::Logger::oscar_log_subsection "Skipping empty local repo ($r)";
+            next;
+        }
+    }
+
+    if (scalar (@n) == 0) {
+        carp "ERROR: No repository to be added\n";
+        return -1;
     }
 
     foreach my $repo (@n) {
@@ -286,11 +302,14 @@ sub distro_repo_url (%) {
         return undef;
     }
     my $path = dirname($url)."/".basename($url, ".url");
+    print "TITI\n";
 
-    if (!-f "$url") {
-	    # create .url file and add local path as first entry
-	    &repos_add_urlfile("$url", "file:$path");
+	# create .url file and add local path as first entry
+	if (repos_add_urlfile("$url", "file:$path")) {
+        carp "ERROR: Impossible to add $path to $url";
+        return undef;
     }
+
     my @repos = &repos_list_urlfile("$url");
     return join(",", @repos);
 }
@@ -338,12 +357,12 @@ sub oscar_repo_url (%) {
     if (! -d $path && ! -l $path) {
         warn "Distro repository $path not found. Creating empty directory.";
         File::Path::mkpath ($path, 1, 0777) or
-            (carp "Could not create directory $path!", return undef);
+            (carp "ERROR: Could not create directory $path!", return undef);
     }
     if (! -d $comm && ! -l $comm) {
         warn "Commons repository $comm not found. Creating empty directory.\n";
         File::Path::mkpath ($comm, 1, 0777) or
-            (carp "Could not create directory $comm!", return undef);
+            (carp "ERROR: Could not create directory $comm!", return undef);
     }
     my @repos = &repos_list_urlfile("$url");
     return join(",", @repos);
@@ -359,10 +378,11 @@ sub repo_empty ($) {
     return 1 if (! -d $path);
     my $entries = 0;
     local *DIR;
-    opendir DIR, $path or (carp "Could not read directory $path!", return 0);
+    opendir DIR, $path 
+        or (carp "ERROR: Could not read directory $path!", return 0);
     for my $d (readdir DIR) {
-	next if ($d eq "." || $d eq "..");
-	$entries++ if (-f $d || -d $d);
+        next if ($d eq "." || $d eq "..");
+        $entries++ if (-f $d || -d $d);
     }
     return ($entries ? 0 : 1);
 }
