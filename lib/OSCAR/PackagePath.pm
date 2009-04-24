@@ -174,7 +174,7 @@ sub repos_add_urlfile ($@) {
 
     foreach my $repo (@n) {
         OSCAR::Logger::oscar_log_subsection ("Adding $repo in $path");
-        OSCAR::FileUtils::add_line_to_file_without_duplication ($repo, $path);
+        OSCAR::FileUtils::add_line_to_file_without_duplication ("$repo\n", $path);
     }
     return 0;
 }
@@ -1049,7 +1049,7 @@ sub generate_default_oscar_urlfile ($) {
         warn "No default distro repository for $distro";
         return 0;
     }
-    if (OSCAR::FileUtils::add_line_to_file_without_duplication ($repo,
+    if (OSCAR::FileUtils::add_line_to_file_without_duplication ("$repo\n",
                                                                 $file)) {
         carp "ERROR: Impossible to add $repo in $file";
         return -1;
@@ -1091,7 +1091,7 @@ sub generate_default_distro_urlfile ($) {
         warn "No default distro repository for $distro";
         return 0;
     }
-    if (OSCAR::FileUtils::add_line_to_file_without_duplication ($repo,
+    if (OSCAR::FileUtils::add_line_to_file_without_duplication ("$repo\n",
                                                                 $file)) {
         carp "ERROR: Impossible to add $repo in $file";
         return -1;
