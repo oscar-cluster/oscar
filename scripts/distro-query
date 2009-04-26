@@ -50,6 +50,8 @@ usage() if ($options{help} || scalar(@ARGV));
 ## Do the job
 ################################
 
+$ENV{OSCAR_VERBOSE} = 5 if ($options{verbose});
+
 my $os;
 if ($options{pool}) {
 
@@ -122,8 +124,8 @@ sub print_image_detect {
 
     my $os = OSCAR::OCA::OS_Detect::open($img);
     die "Unable to determine operating system" if (!$os);
-    my @distro_repos = split(",",&distro_repo_url($img));
-    my @oscar_repos = split(",",&oscar_repo_url($img));
+    my @distro_repos = split(",", OSCAR::PackagePath::distro_repo_url($img));
+    my @oscar_repos = split(",", OSCAR::PackagePath::oscar_repo_url($img));
     if ($options{node}) {
 	# for repos local to master prepend http://.../repo
 	# in the expectation that they are exported
