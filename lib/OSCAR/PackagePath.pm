@@ -114,7 +114,7 @@ sub distro_detect_or_die ($) {
 sub repos_list_urlfile ($) {
     my ($path) = @_;
 
-    my @remote;
+    my @repos;
     if (-f "$path") {
 	local *IN;
 	if (open IN, "$path") {
@@ -122,14 +122,26 @@ sub repos_list_urlfile ($) {
 		chomp $line;
 		next if ($line !~ /^(http|ftp|file|mirror)/);
 		next if (($line =~ /^\s*$/) || ($line =~ /^\s*\#/));
-		push @remote, $line if (repo_local($line) == 1
-                               && repo_empty ($line) == 0);
-        push @remote, $line if (repo_local($line) == 0);
+		if (repo_local($line) == 1 && repo_empty ($line) == 1) {
+                    OSCAR::Logger::oscar_log_subsection "Skipping empty repo ".
+                        $line;
+                    next;
+                }
+                if (repo_local ($line) == 0) {
+                    OSCAR::Logger::oscar_log_subsection "Select online repo ".
+                        $line;
+                    push (@repos, $line);
+                }
+                if (repo_local ($line) == 1 && repo_empty ($line) == 0) {
+                    OSCAR::Logger::oscar_log_subsection "Select valid local ".
+                        "repo $line";
+		    push (@repos, $line);
+                }
 	    }
 	    close IN;
 	}
     }
-    return @remote;
+    return @repos;
 }
 
 #
@@ -157,19 +169,19 @@ sub repos_add_urlfile ($@) {
             OSCAR::Logger::oscar_log_subsection "Adding online repo ($r)";
             push (@n, $r);
         }
-        if (repo_local($r) == 1 && repo_empty ($r) != 0) {
-            OSCAR::Logger::oscar_log_subsection "Adding valid local repo ($r)";
-            push (@n, $r);
-        }
-        if (repo_local($r) == 1 && repo_local($r) == 0) {
-            OSCAR::Logger::oscar_log_subsection "Skipping empty local repo ($r)";
-            next;
+        if (repo_local($r) == 1) {
+            if (repo_empty ($r) == 0) {
+                OSCAR::Logger::oscar_log_subsection "Adding valid local repo ($r)";
+                push (@n, $r);
+            } else {
+                OSCAR::Logger::oscar_log_subsection "Skipping empty local repo ($r)";
+                next;
+            }
         }
     }
 
     if (scalar (@n) == 0) {
-        carp "ERROR: No repository to be added\n";
-        return -1;
+        OSCAR::Logger::oscar_log_subsection "[INFO] No repository to be added";
     }
 
     foreach my $repo (@n) {
@@ -303,8 +315,8 @@ sub distro_repo_url (%) {
     }
     my $path = dirname($url)."/".basename($url, ".url");
 
-	# create .url file and add local path as first entry
-	if (repos_add_urlfile("$url", "file:$path")) {
+    # create .url file and add local path as first entry
+    if (repos_add_urlfile("$url", "file:$path")) {
         carp "ERROR: Impossible to add $path to $url";
         return undef;
     }
@@ -374,16 +386,23 @@ sub oscar_repo_url (%) {
 sub repo_empty ($) {
     my ($path) = (@_);
     $path =~ s,^file:/,/,;
-    return 1 if (! -d $path);
-    my $entries = 0;
-    local *DIR;
-    opendir DIR, $path 
-        or (carp "ERROR: Could not read directory $path!", return 0);
-    for my $d (readdir DIR) {
-        next if ($d eq "." || $d eq "..");
-        $entries++ if (-f $d || -d $d);
+    if (! -d $path) {
+        OSCAR::Logger::oscar_log_subsection "[WARN] $path does not exist";
+        return 1;
     }
-    return ($entries ? 0 : 1);
+    my $entries = 0;
+    opendir (DIR, $path)
+        or (carp "ERROR: Could not read directory $path!", return 0);
+    for my $d (readdir (DIR)) {
+        next if ($d eq "." || $d eq "..");
+        $entries++;
+    }
+    closedir (DIR);
+    if ($entries > 0) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 ################################################################################
