@@ -11,6 +11,7 @@
 
 [unstable]
 redhat-el-5-i386 file:/tftpboot/distro/rhel-5-i386 http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
+redhat-el-5-x86_64 file:/tftpboot/distro/rhel-5-x86_64 http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
 centos-5-x86_64 http://isoredirect.centos.org/centos/5.3/os/x86_64/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
 centos-5-i386 http://isoredirect.centos.org/centos/5.3/os/i386/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
 fedora-10-x86_64 http://download.fedora.redhat.com/pub/fedora/linux/releases/10/Fedora/x86_64/os/ http://bison.csm.ornl.gov/repos/unstable/fc-10-x86_64
