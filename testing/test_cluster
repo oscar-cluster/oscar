@@ -114,9 +114,7 @@ my @sorted_pkgs = sort advanced_sort keys %sample_pkgs;
 
 my @pkgs_hash = list_selected_packages();
 my @pkgs = ();
-my $pkg_name = undef;
-foreach my $pkg_ref (@pkgs_hash){
-    $pkg_name = $$pkg_ref{package};
+foreach my $pkg_name (@pkgs_hash){
     push @sorted_pkgs, $pkg_name
         if !$sample_pkgs{$pkg_name};
     $sample_pkgs{$pkg_name} = "on";
