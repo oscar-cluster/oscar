@@ -49,7 +49,8 @@ if ( -f "/etc/yum.conf" ) {
         print " ERROR: Yum configuration is invalid\n";
         print " The gpgkey is set to 1, it will be impossible\n";
         print " to install OSCAR packages.\n";
-        print " Please, set the gpgkey to 1 (/etc/yum.conf).\n";
+        print " Please, set the gpgkey to 0 (\"gpgkey=0\" in \n";
+        print "/etc/yum.conf).\n";
         print "----------------------------------------------\n";
         $rc = FAILURE;
     }
