@@ -44,10 +44,12 @@ sub detect_dir {
 	chroot => $root,
     };
 
-    if (($release_string =~ /SUSE LINUX (\d+\.\d+)/) ||
-	($release_string =~ /openSUSE (\d+\.\d+) /)) {
+    if (($release_string =~ /SUSE LINUX (\d+)\.(\d+)/) ||
+	($release_string =~ /openSUSE (\d+)\.(\d+) /)) {
 	my $os_version = $1;
+	my $os_update = $2;
         $id->{distro} = $distro;
+	$id->{distro_upgrade} = $os_update;
         $id->{distro_version} = $os_version;
         $id->{compat_distro} = $compat_distro;
         $id->{compat_distrover} = $os_version;

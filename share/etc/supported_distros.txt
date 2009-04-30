@@ -22,6 +22,7 @@ debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl
 debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
 debian-5-x86_64 http://ftp.us.debian.org/debian/+lenny+main http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+lenny+/
 debian-5-i386 http://ftp.us.debian.org/debian/+lenny+main http://bison.csm.ornl.gov/repos/unstable/debian-5-i386/+lenny+/
+suse-10-i386 http://download.opensuse.org/distribution/10.3/repo/oss/suse/ http://bison.csm.ornl.gov/repos/unstable/suse-10-i386
 
 [6.0.3]
 centos-5-x86_64 http://isoredirect.centos.org/centos/5.3/os/x86_64/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
