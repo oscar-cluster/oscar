@@ -19,12 +19,17 @@
 
 #   post_server_rpm_install for torque
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use Carp;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Opkg;
 
 #######################################################
@@ -82,7 +87,16 @@ if (-f $xpbsmonrc) {
     print "xpbsmon not installed!\n"
 }
 
-my $rm_detect_dir = "$ENV{OSCAR_HOME}/lib/OSCAR/OCA/RM_Detect";
+my $rm_detect_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $rm_detect_dir = "$ENV{OSCAR_HOME}/lib/";
+} else {
+    require OSCAR::Utils;
+    $rm_detect_dir = OSCAR::Utils::get_path_perl_modules ();
+}
+$rm_detect_dir .= "/OSCAR/OCA/RM_Detect";
 
 # Copy RM_Detect component for TORQUE to the right location
-system("cp -a $ENV{OSCAR_PACKAGE_HOME}/scripts/TORQUE.pm $rm_detect_dir") == 0 or croak("Failed to copy $ENV{OSCAR_PACKAGE_HOME}/scripts/TORQUE.pm to $rm_detect_dir");
+my $rm_file = "/var/lib/oscar/packages/torque/TORQUE.pm";
+system("cp -a $rm_file $rm_detect_dir") == 0 
+    or croak("Failed to copy $rm_file to $rm_detect_dir");
