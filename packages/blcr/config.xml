@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>blcr</name>
+  <class>included</class>
+  <summary>tbd</summary>
+  <description>tdb</description>
+  <license>GPL</license>
+  <group>Application/System</group>
+  <uri>https://ftg.lbl.gov/CheckpointRestart/CheckpointRestart.shtml</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
+  </authors>
+  <serverDeps/>
+  <clientDeps>
+    <requires>
+      <pkg>blcr</pkg>
+      <pkg>blcr-module</pkg>
+      <pkg>testsuite</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1.0.0-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-05-05T04:06:52-05:00">
+        <item>Initial OPKG for BLCR</item>
+      </changelogEntry>
+    </versionEntry> 
+  </changelog>
+</oscar>
