@@ -17,8 +17,9 @@
   <clientDeps>
     <requires>
       <pkg>blcr</pkg>
-      <pkg>blcr-module</pkg>
-      <pkg>testsuite</pkg>
+      <pkg>blcr-libs</pkg>
+      <pkg>blcr-modules_2.6.18_128.1.6.el5</pkg>
+      <pkg>blcr-testsuite</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
