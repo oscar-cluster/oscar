@@ -13,6 +13,10 @@
       <name>Erich Focht</name>
       <email>efocht@hpce.nec.com</email>
     </author>
+    <author cat="maintainer">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
   </authors>
   <serverDeps>
     <requires>
@@ -36,7 +40,7 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="2.1.11">
+    <versionEntry version="2.1.11-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-05-11T05:44:33-05:00">
         <item>Fix a bug in the server-post-install script.</item>
       </changelogEntry>
