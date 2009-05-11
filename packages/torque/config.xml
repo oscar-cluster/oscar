@@ -36,6 +36,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.1.11">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-05-11T05:44:33-05:00">
+        <item>Fix a bug in the server-post-install script.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.1.10-4">
       <changelogEntry authorName="DongInn Kim" date="2008-06-10T17:58:30+05:00">
         <item>Rename torque to torque-oscar</item>
