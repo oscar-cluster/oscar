@@ -36,12 +36,12 @@ use lib "/usr/lib/systeminstaller";
 use lib "/usr/lib/systemimager/perl";
 use Tk;
 use Tk::Tree;
-use SystemImager::Client;
+#use SystemImager::Client;
 use File::Copy;
-use SIS::Adapter;
-use SIS::Client;
-use SIS::DB;
-use SIS::Image;
+#use SIS::Adapter;
+#use SIS::Client;
+#use SIS::DB;
+#use SIS::Image;
 use OSCAR::Tk;
 use OSCAR::MAC qw(save_to_file
                   load_from_file
@@ -776,25 +776,35 @@ sub load_macs {
 }
 
 # Call library to execute setup_pxe script
+#
+# Return: 1 if success, 0 else.
 sub run_setup_pxe {
     our $window;
     our $uyok;
     $window->Busy(-recurse => 1);
 
-    __run_setup_pxe($uyok);
+    OSCAR::MAC::__run_setup_pxe($uyok);
 
     $window->Unbusy();
     return 1;
 }
 
 # Build AutoInstall CD
+#
+# Return: 1 if success, 0 else.
 sub build_autoinstall_cd {
     my $ip = shift;
+    our $uyok;
 
-    __build_autoinstall_cd($ip);
+    if (OSCAR::MAC::__build_autoinstall_cd($ip, $uyok)) {
+        carp "ERROR: Impossible to build the autoinstall CDROM";
+        return 0;
+    }
     OSCAR::Tk::done_window($window,"You can now burn your ISO image to a " .
                            "CDROM with a command such as:\n'cdrecord -v " .
                            "speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.");
+
+    return 1;
 }
 
 # Call the library function to enable selected install mode

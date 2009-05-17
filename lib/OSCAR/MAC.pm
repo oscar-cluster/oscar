@@ -33,10 +33,10 @@ BEGIN {
 
 use strict;
 use File::Copy;
-use SIS::Adapter;
-use SIS::Client;
-use SIS::DB;
-use SIS::Image;
+#use SIS::Adapter;
+#use SIS::Client;
+#use SIS::DB;
+#use SIS::Image;
 use OSCAR::Network;
 
 use Carp;
@@ -429,9 +429,11 @@ sub run_cmd {
 }
 
 # Build AutoInstall CD
+#
+# Return: 0 if success, -1 else.
 sub __build_autoinstall_cd {
     my $ip = shift;
-    our $uyok;
+    my $uyok = shift;
     our $kernel;
     our $ramdisk;
     our $install_mode;
@@ -450,9 +452,14 @@ sub __build_autoinstall_cd {
     $cmd = "$cmd --kernel $kernel --initrd $ramdisk" if $uyok;
 
     oscar_log_subsection("Step $step_number: Building AutoInstall CD: $cmd");
-    !system($cmd) or croak("Failed to run $cmd");
+    if (system($cmd)) {
+        carp ("ERROR: Failed to run $cmd");
+        return -1;
+    }
     oscar_log_subsection("Step $step_number: Successfully built AutoInstall CD");
     print "You can now burn your ISO image to a CDROM with a command such as:\n'cdrecord -v speed=2 dev=1,0,0 /tmp/oscar_bootcd.iso'.\n\n" if (defined $ENV{OSCAR_UI} && $ENV{OSCAR_UI} eq "cli");
+
+    return 0;
 }
 
 # Run SystemImager's si_prepareclient on the headnode to generate the UYOK
