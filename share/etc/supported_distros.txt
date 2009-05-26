@@ -25,24 +25,23 @@ debian-5-i386 http://ftp.us.debian.org/debian/+lenny+main http://bison.csm.ornl.
 suse-10-i386 http://download.opensuse.org/distribution/10.3/repo/oss/suse/ http://bison.csm.ornl.gov/repos/unstable/suse-10-i386
 
 [6.0.3]
-centos-5-x86_64 http://isoredirect.centos.org/centos/5.3/os/x86_64/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
-centos-5-i386 http://isoredirect.centos.org/centos/5.3/os/i386/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
-fedora-10-x86_64 http://download.fedora.redhat.com/pub/fedora/linux/releases/10/Fedora/x86_64/os/ http://bison.csm.ornl.gov/repos/unstable/fc-10-x86_64
-fedora-9-i386 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/i386/os/ http://bison.csm.ornl.gov/repos/unstable/fc-9-i386
-fedora-9-x86_64 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/x86_64/os/ http://bison.csm.ornl.gov/repos/unstable/fc-9-x86_64
-ubuntu-804-x86_64 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
-ubuntu-804-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
-debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
-debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
-suse-10-x86_64 http://ftp-stud.fht-esslingen.de/pub/Mirrors/ftp.suse.com/pub/suse/x86_64/update/10.0-OSS/ http://bison.csm.ornl.gov/repos/unstable/suse-10-x86_64
+centos-5-x86_64 http://isoredirect.centos.org/centos/5.3/os/x86_64/ http://bison.csm.ornl.gov/repos/rhel-5-x86_64
+centos-5-i386 http://isoredirect.centos.org/centos/5.3/os/i386/ http://bison.csm.ornl.gov/repos/rhel-5-i386
+fedora-9-i386 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/i386/os/ http://bison.csm.ornl.gov/repos/fc-9-i386
+ubuntu-804-x86_64 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bison.csm.ornl.gov/repos/debian-4-x86_64/+etch+/
+ubuntu-804-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bison.csm.ornl.gov/repos/debian-4-i386/+etch+/
+debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/debian-4-x86_64/+etch+/
+debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/debian-4-i386/+etch+/
+suse-10-x86_64 http://ftp-stud.fht-esslingen.de/pub/Mirrors/ftp.suse.com/pub/suse/x86_64/update/10.0-OSS/ http://bison.csm.ornl.gov/repos/suse-10-x86_64
+debian-5-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/debian-5-x86_64/+etch+/
 
 [6.0.2]
-centos-5-x86_64 http://isoredirect.centos.org/centos/5/os/x86_64/ http://bear.csm.ornl.gov/repos/unstable/rhel-5-x86_64
-centos-5-i386 http://isoredirect.centos.org/centos/5/os/i386/ http://bear.csm.ornl.gov/repos/unstable/rhel-5-i386
-ubuntu-8-x86_64 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bear.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
-ubuntu-8-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bear.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
-debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
-debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
+centos-5-x86_64 http://isoredirect.centos.org/centos/5/os/x86_64/ http://bear.csm.ornl.gov/repos/rhel-5-x86_64
+centos-5-i386 http://isoredirect.centos.org/centos/5/os/i386/ http://bear.csm.ornl.gov/repos/rhel-5-i386
+ubuntu-8-x86_64 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bear.csm.ornl.gov/repos/debian-4-x86_64/+etch+/
+ubuntu-8-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bear.csm.ornl.gov/repos/debian-4-i386/+etch+/
+debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/debian-4-x86_64/+etch+/
+debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bear.csm.ornl.gov/repos/debian-4-i386/+etch+/
 
 [6.0.1]
 centos-5-x86_64 http://isoredirect.centos.org/centos/5/os/x86_64/ http://bear.csm.ornl.gov/repos/rhel-5-x86_64
