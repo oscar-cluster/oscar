@@ -473,7 +473,9 @@ sub generate_uyok {
     $ramdisk = "/etc/systemimager/boot/initrd.img";
 
     oscar_log_subsection("Step $step_number: Running si_prepareclient on headnode to generate UYOK kernel and ramdisk");
-    my $cmd = "si_prepareclient --server $ENV{HOSTNAME} --no-rsyncd --yes";
+    # WARNING, if we use the si_prepareclient command with the 
+    # --np-rsyncd option option, that creates problem with UYOK
+    my $cmd = "si_prepareclient --server $ENV{HOSTNAME} --yes";
     $cmd = "$cmd --quiet" unless $ENV{OSCAR_VERBOSE};
 
     !system("$cmd") or croak("Failed to run: $cmd");
