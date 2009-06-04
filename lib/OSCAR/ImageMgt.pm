@@ -40,7 +40,7 @@ use OSCAR::Utils;
 use OSCAR::ConfigManager;
 # use SystemImager::Server;
 # use OSCAR::Opkg qw ( create_list_selected_opkgs );
-use SystemInstaller::Utils;
+#use SystemInstaller::Utils;
 use OSCAR::PackMan;
 use vars qw(@EXPORT);
 use base qw(Exporter);
@@ -571,10 +571,61 @@ sub image_exists ($) {
 }
 
 ################################################################################
+# Function that makes sure /proc is not mounted within an image.               #
+#                                                                              #
+# Input: image_path, path to the image.                                        #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub umount_image_proc ($) {
+    my $image_path = shift;
+    my $proc_status = 0; # tells if /proc is mounted or not (0 = not mounted,
+                         # 1 = mounted)
+    my $cmd = "/usr/sbin/chroot $image_path mount";
+    my @lines = split ('\n', `$cmd`);
+
+    foreach my $line (@lines) {
+        if ($line =~ /^proc/) {
+            $proc_status = 1;
+            last;
+        }
+    }
+
+    if ($proc_status == 1) {
+        $cmd = "/usr/sbin/chroot $image_path umount /proc";
+        system ($cmd); # we do not check the return code because when creating
+                       # the image, the status of /proc may not be coherent, so
+                       # the command returns an error but this is just fine.
+    }
+
+    return 0;
+}
+
+################################################################################
+# This function aims to clean up the image after creation. For instance, it    #
+# will ensure that /proc is not mounted anymore.                               #
+#                                                                              #
+# Input: vars, image configuration hash.                                       #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub image_cleanup ($) {
+    my $vars = shift;
+
+    my $image_path = "$$vars{imgpath}/$$vars{imgname}";
+
+    # Step 1: we make sure /proc is not mounted in the image
+    if (umount_image_proc ($image_path)) {
+        carp "ERROR: Impossible to umount /proc ($image_path)";
+        return -1;
+    }
+
+    return 0;
+}
+
+################################################################################
 # Create a basic image.                                                        #
 #                                                                              #
 # Input: image. image name to create.                                          #
-#        vars, image configuration (hash.
+#        vars, image configuration hash.                                       #
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
 sub create_image ($%) {
@@ -664,6 +715,12 @@ sub create_image ($%) {
         return -1;
     }
 
+    # We make sure everything is fine with the image
+    if (image_cleanup (\%vars)) {
+        carp "ERROR: Impossible to cleanup the image after creation";
+        return -1;
+    }
+
     oscar_log_subsection "OSCAR image successfully created";
 
     return 0;
@@ -725,12 +782,14 @@ sub update_systemconfigurator_configfile ($) {
     return 0;
 }
 
-# Update the etc/systemconfig/systemconfig.conf file of a given image to include
-# some kernel parameters (the APPEND option).
-#
-# Return: 0 if success, -1 else.
-# TODO: we currently assume only one kernel is setup. Yes this is lazy and this
-# needs to be updated
+################################################################################
+# Update the etc/systemconfig/systemconfig.conf file of a given image to       #
+# include some kernel parameters (the APPEND option).                          #
+#                                                                              #
+# Return: 0 if success, -1 else.                                               #
+# TODO: we currently assume only one kernel is setup. Yes this is lazy and     #
+# this needs to be updated                                                     #
+################################################################################
 sub update_kernel_append ($$) {
     my ($imgdir, $append_str) = @_;
 
@@ -747,11 +806,13 @@ sub update_kernel_append ($$) {
     return 0;
 }
 
-# Make sure the basic GRUB files exists into a given image (some distro are more
-# picky than others.
-#
-# Input: Path, path to the image.
-# Return: 0 if success, -1 else.
+################################################################################
+# Make sure the basic GRUB files exists into a given image (some distro are    #
+# more picky than others.                                                      #
+#                                                                              #
+# Input: Path, path to the image.                                              #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
 sub update_grub_config ($) {
     my $path = shift;
 
