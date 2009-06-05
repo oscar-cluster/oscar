@@ -254,6 +254,19 @@ if ($distro_to_setup) {
         die "ERROR: Unsupported distro ($distro_to_setup)";
     }
 
+    # Before setting up repositories; we remove existing repo files
+    # in /tftpboot/distro and /tftpboot/oscar as we do not require previous
+    # entries in those files. 
+    my @conf_files = ("/tftpboot/distro/$distro_to_setup.url", "/tftpboot/oscar/$distro_to_setup.url"); 	
+    unlink(@conf_files);	
+
+    # we warn users here that all manual entries in the above files will be 
+    # lost. $warn_line may be placed somewhere else
+    my $warn_line = "# Generated file; please do not manually edit\n\n";
+    foreach my $config_file(@conf_files){
+	   OSCAR::FileUtils::add_line_to_file_without_duplication($warn_line, $config_file);
+    }
+
     # We setup the distro repos (configuration files in /tftpboot/distro).
     if (OSCAR::Utils::is_a_valid_string ($distro_repo_to_use) == 0) {
         OSCAR::Logger::oscar_log_subsection ("... using default distro repo");
