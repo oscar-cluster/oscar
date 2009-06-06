@@ -1,5 +1,6 @@
 6.0.4 (not yet released):
 - Update ORM to 1.4.
+- Fix the PATH environment variable is updated.
 
 6.0.3:
 - Update CentOS-5 support to CentOS-5.3.
