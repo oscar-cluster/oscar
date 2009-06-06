@@ -257,13 +257,19 @@ if ($distro_to_setup) {
     # Before setting up repositories; we remove existing repo files
     # in /tftpboot/distro and /tftpboot/oscar as we do not require previous
     # entries in those files. 
-    my @conf_files = ("/tftpboot/distro/$distro_to_setup.url", "/tftpboot/oscar/$distro_to_setup.url"); 	
-    unlink(@conf_files);	
+    my $compat_distro = OSCAR::PackagePath::get_compat_distro ($distro_to_setup);
+    my @conf_files = ("/tftpboot/distro/$distro_to_setup.url",
+                      "/tftpboot/oscar/$compat_distro.url");
+    foreach my $f (@conf_files) {
+        if (-f $f) {
+            unlink(@conf_files) or die ("ERROR: Impossible to delete $f");
+        }
+    }
 
     # we warn users here that all manual entries in the above files will be 
     # lost. $warn_line may be placed somewhere else
     my $warn_line = "# Generated file; please do not manually edit\n\n";
-    foreach my $config_file(@conf_files){
+    foreach my $config_file (@conf_files){
 	   OSCAR::FileUtils::add_line_to_file_without_duplication($warn_line, $config_file);
     }
 
