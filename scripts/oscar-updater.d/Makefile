@@ -1,6 +1,7 @@
 DESTDIR=
 
-SCRIPTS := 01_update_ubuntu_repo
+SCRIPTS := 	01_update_ubuntu_repo \
+			02_update_repo_conffile
 SUBDIRS := 
 
 #doc:
