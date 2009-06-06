@@ -200,9 +200,14 @@ close(LOCKFILE);
 
 my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
 
+require OSCAR::ConfigManager;
+my $path = "/etc/oscar/oscar.conf";
+my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$path");
+my $config = $oscar_cfg->get_config();
+
 # Set some things in the environment
 
-$ENV{PATH}= $config->binpath .":" . $ENV{PATH};
+$ENV{PATH}= $config->{'binaries_path'} .":" . $ENV{PATH};
 # Create the main window...
 my $window = MainWindow->new();
 $window->withdraw();
@@ -210,11 +215,6 @@ chomp(my $shostname = `hostname -s`);
 $window->title("OSCAR Wizard - $shostname");
 
 # Get OSCAR's version
-
-require OSCAR::ConfigManager;
-my $path = "/etc/oscar/oscar.conf";
-my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$path");
-my $config = $oscar_cfg->get_config();
 
 my $oscar_version;
 my $oscar_version_script = $config->{'binaries_path'} . "/get-oscar-version.sh";
