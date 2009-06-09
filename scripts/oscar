@@ -39,28 +39,28 @@ my ($new_partition, @clients, $list_partitions, $list_partition_nodes,
     $check_config, $check_binarylist, $verbose, $debug);
 
 GetOptions(
-        "check-config"                  => \$check_config,
-        "check-packagelist=s"           => \$check_binarylist,
-        "cluster=s"                     => \$cluster_name,
-        "client=s"                      => \@clients,
-        "delete-node=s"                 => \$delete_node,
-        "display-partitions"            => \$list_partitions,
-        "display-partition-info=s"      => \$queried_partition,
-        "display-partition-nodes=s"     => \$list_partition_nodes,
-        "display-partition-distro=s"    => \$list_partition_distro,
-        "display-node-info=s"           => \$queried_node_name,
-        "update-node-info=s"            => \$node_to_update,
-        "add-partition=s"               => \$new_partition,
-        "deploy-partition=s"            => \$partition_to_deploy,
-        "partition=s"                   => \$partition_name,
-        "distro=s"                      => \$distro,
-        "hostname=s"                    => \$node_hostname,
-        "ip=s"                          => \$node_ip,
-        "type=s"                        => \$node_type,
-        "mac=s"                         => \$node_mac,
-        "verbose"                       => \$verbose,
-        "debug"                         => \$debug,
-        "help"                          => \&help_and_exit,
+        "check-config|c"                => \$check_config,
+        "check-packagelist|e=s"         => \$check_binarylist,
+        "cluster|l=s"                   => \$cluster_name,
+        "client|i=s"                    => \@clients,
+        "delete-node|z=s"               => \$delete_node,
+        "display-partitions|s"          => \$list_partitions,
+        "display-partition-info|p=s"    => \$queried_partition,
+        "display-partition-nodes|n=s"   => \$list_partition_nodes,
+        "display-partition-distro|t=s"  => \$list_partition_distro,
+        "display-node-info|f=s"         => \$queried_node_name,
+        "update-node-info|u=s"          => \$node_to_update,
+        "add-partition|a=s"             => \$new_partition,
+        "deploy-partition|y=s"          => \$partition_to_deploy,
+        "partition|r=s"                 => \$partition_name,
+        "distro|o=s"                    => \$distro,
+        "hostname|h=s"                  => \$node_hostname,
+        "ip|m=s"                        => \$node_ip,
+        "type|q=s"                      => \$node_type,
+        "mac|w=s"                       => \$node_mac,
+        "verbose|v"                     => \$verbose,
+        "debug|d"                       => \$debug,
+        "help|h"                        => \&help_and_exit,
         ) || help_and_die();
 
 # Return: an array of package names or undef if error.
@@ -350,40 +350,40 @@ Recognized options include:
 
 =over 8
 
-=item --add-partition
+=item -a, --add-partition
 
-=item --delete-node
+=item -z, --delete-node
 
-=item --display-partitions
+=item -s, --display-partitions
 
-=item --check-config
+=item -c, --check-config
 
 Check the configuration of a given cluster, Should be used with the --cluster
 option in order to specify the cluster name.
 
-=item --check-packagelist <FILE>
+=item -e, --check-packagelist <FILE>
 
 Check if the packages in a binary packages list from the <FILE> file are actually available via the repositories or not. This option should be used with the --distro in order to specify which Linux distribution is associated to the list of binary packages. Note that this allows one to check that all the binary packages used to build an image are actually available.
 
-=item --client
+=item -i, --client
 
-=item --cluster
+=item -l, --cluster
 
-=item --deploy-partition
+=item -y, --deploy-partition
 
-=item --display-partitions
+=item -s, --display-partitions
 
-=item --display-partition-nodes
+=item -n, --display-partition-nodes
 
-=item --display-partition-distro
+=item -t, --display-partition-distro
 
-=item --display-node-info
+=item -f, --display-node-info
 
-=item --distro
+=item -o, --distro
 
-=item --partition
+=item -r, --partition
 
-=item --help
+=item -h, --help
 
 Help information.
 

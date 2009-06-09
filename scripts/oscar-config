@@ -44,22 +44,22 @@ my ($distro_to_setup,
     $debug);
 
 GetOptions(
-        "bootstrap"                     => \$bootstrap,
-        "debug"                         => \$debug,
-        "display-default-distro-repo=s" => \$distro_repo,
-        "display-default-oscar-repo=s"  => \$oscar_repo,
-        "generate-config-file"          => \&generate_config_file,
-        "list-setup-distros"            => \&display_list_setup_distros,
-        "sanity-check"                  => \$sanity_check,
-        "setup-distro=s"                => \$distro_to_setup,
-        "startover"                     => \$startover,
-        "supported-distros"             => \&display_list_supported_distros,
-        "update-nic"                    => \$headnode_nic,
-        "use-distro-repo=s"             => \$distro_repo_to_use,
-        "use-oscar-repo=s"              => \$oscar_repo_to_use,
+        "bootstrap|b"                     => \$bootstrap,
+        "debug|d"                         => \$debug,
+        "display-default-distro-repo|r=s" => \$distro_repo,
+        "display-default-oscar-repo|o=s"  => \$oscar_repo,
+        "generate-config-file|g"          => \&generate_config_file,
+        "list-setup-distros|l"            => \&display_list_setup_distros,
+        "sanity-check|s"                  => \$sanity_check,
+        "setup-distro|e=s"                => \$distro_to_setup,
+        "startover|t"                     => \$startover,
+        "supported-distros|u"             => \&display_list_supported_distros,
+        "update-nic|p"                    => \$headnode_nic,
+        "use-distro-repo|i=s"             => \$distro_repo_to_use,
+        "use-oscar-repo|c=s"              => \$oscar_repo_to_use,
 #         "network"                       => \$network,
-        "verbose"                       => \$verbose,
-        "help"                          => \&help,
+        "verbose|v"                       => \$verbose,
+        "help|h"                          => \&help,
         ) || help_and_exit();
 
 
@@ -364,71 +364,71 @@ Recognized options include:
 
 =over 8
 
-=item --bootstrap
+=item -b, --bootstrap
 
 Bootstrap OSCAR, i.e., install all the OSCAR prereqs, setup the database, and
 install and setup everything for the creation of a OSCAR headnode.
 
-=item --generate-config-file
+=item -g, --generate-config-file
 
 Generate the appropriate configuration file based on the OSCAR_HOME environment
 variable. The configuration file is /etc/oscar/oscar.conf, the file is generated
 only if it does not already exist. If the file already exist, it just exist
 without generating an error.
 
-=item --setup-distro <DISTRO_ID>
+=item -e, --setup-distro <DISTRO_ID>
 
 Setup the Linux distribution DISTRO_ID (which is one the distribution ids
 displayed by the --supported-distros option). The repositories used are those
 specified in the 'supported-distros.xml' file if no --mirror-<distro|oscar>-from
 option is used.
 
-=item --list-setup-distros
+=item -l, --list-setup-distros
 
 List the Linux distributions that are already setup for OSCAR.
 
-=item --supported-distros
+=item -u, --supported-distros
 
 List the Linux distributions supported by OSCAR.
 
-=item --display-defaut-distro-repo <DISTRO_ID>
+=item -r, --display-defaut-distro-repo <DISTRO_ID>
 
 Display the default distribution repository.
 
-=item --display-defaut-oscar-repo <DISTRO_ID>
+=item -o, --display-defaut-oscar-repo <DISTRO_ID>
 
 Display the default OSCAR repository.
 
-=item --use-distro-repo <REPO_URL>
+=item -i, --use-distro-repo <REPO_URL>
 
 Use a given repository instead of the default repository for a given Linux
 distribution.
 
-=item --use-oscar-repo <REPO_URL>
+=item -c, --use-oscar-repo <REPO_URL>
 
 Use a given repository for OSCAR instead of the default repository.
 
-=item --sanity-check
+=item -s, --sanity-check
 
 Check the system status. It actually executes the system-sanity script.
 
-=item --startover
+=item -t, --startover
 
 Reset OSCAR, typically removing binary packages and the OSCAR database. Useful for testing.
 
-=item --update-nic
+=item -p, --update-nic
 
 Update the NIC used by OSCAR for cluster management. The NIC identifier is specified in the '/etc/oscar/oscar.conf' configuration file.
 
-=item --help
+=item -h, --help
 
 Help information.
 
-=item --verbose
+=item -v, --verbose
 
 Display more information when running commands. This option should always be used if you encounter a problem and if you plan to contact OSCAR developers to get some help.
 
-=item --debug
+=item -d, --debug
 
 Display even more debugging information than the verbose option.
 
