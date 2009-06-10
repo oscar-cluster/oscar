@@ -252,7 +252,13 @@ sub get_image_default_settings () {
     } else {
         $oscarsamples_dir = "/usr/share/oscar/oscarsamples";
     }
-    my @df_lines = `df /`;
+
+    # /tmp/error is provided if any error; further fdisk may produce
+    # certain output such as raid partitions, but the following check should
+    # work for grepping /dev/sd, further the check should also work when LVM
+    # partitions. Replacing the previous "df" check.
+    
+    my @df_lines = `fdisk -l 2> /tmp/error |grep Disk`;
     my $disk_type = "ide";
     $disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
 
