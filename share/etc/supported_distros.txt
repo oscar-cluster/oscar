@@ -16,6 +16,7 @@ centos-5-x86_64 http://mirror.centos.org/centos/5.3/os/x86_64/ http://bison.csm.
 centos-5-i386 http://mirror.centos.org/centos/5.3/os/i386/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
 fedora-9-i386 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/i386/os/ http://bison.csm.ornl.gov/repos/unstable/fc-9-i386
 fedora-9-x86_64 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/x86_64/os/ http://bison.csm.ornl.gov/repos/unstable/fc-9-x86_64
+ubuntu-904-x86_64 http://us.archive.ubuntu.com/ubuntu/+jaunty+main+universe+multiverse http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+etch+/
 ubuntu-804-x86_64 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
 ubuntu-804-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
 debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
