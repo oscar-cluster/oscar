@@ -4,6 +4,8 @@
 - [Ticket #546] Configuration files in /tftpboot are updated when updated
 OSCAR.
 - [Ticket #532] Implement a cache when detecting the format of repositories.
+- Add Ubuntu-904-x84_64 in the list of supported distributions (still
+experimental).
 
 6.0.3:
 - Update CentOS-5 support to CentOS-5.3.

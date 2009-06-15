@@ -30,15 +30,15 @@ my $detect_pkg  = "base-files"; # Deb pkg containing '/etc/debian_version'
 
 my $dpkg_bin = "/usr/bin/dpkg-query"; # Tool to query Deb package Database
 
-
+# TODO: the following variable should be constants.
 my $distro = "ubuntu";
 my $compat_distro = "debian";
-my $compat_distrover = "4";
 my $pkg = "deb";
 my $detect_package = "base-files";
 my $detect_file = "/bin/bash";
 
 my %codenames = (
+                '904'   => "jaunty",
                 '810'   => "intrepid",
                 '804'   => "hardy",
                 '710'   => "gutsy",
@@ -46,6 +46,17 @@ my %codenames = (
                 '610'   => "edgy",
                 '606'   => "dapper",
                 '510'   => "breezy",
+                );
+
+my %compat_version_mapping = (
+                '904'   => "5",
+                '810'   => "4",
+                '804'   => "4",
+                '710'   => "4",
+                '704'   => "4",
+                '610'   => "4",
+                '606'   => "4",
+                '510'   => "4",
                 );
 
 #
@@ -109,7 +120,7 @@ sub detect_dir {
     $id->{distro_version} = $distro_version;
     $id->{distro_update} = $distro_update;
     $id->{compat_distro} = $compat_distro;
-    $id->{compat_distrover} = $compat_distrover;
+    $id->{compat_distrover} = $compat_version_mapping{$distro_version};
     $id->{pkg} = $pkg;   
     $id->{codename} = $codenames{$distro_version};
 
@@ -147,7 +158,7 @@ sub detect_fake {
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
 							     $distro,
 							     $compat_distro,
-                                 $compat_distrover,
+                                 $compat_version_mapping{$l_version},
 							     $pkg);
     return $id;
 }
