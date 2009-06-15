@@ -114,7 +114,8 @@ sub detect_dir {
     $id->{codename} = $codenames{$distro_version};
 
     # Make final string
-    $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
+    $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}";
+    $id->{ident} .= $id->{distro_update} if defined $id->{distro_update};
     return $id;
 }
 
