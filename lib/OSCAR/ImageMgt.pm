@@ -65,7 +65,7 @@ use warnings "all";
             );
 
 our $images_path = "/var/lib/systemimager/images";
-my $verbose = 1;
+my $verbose = $ENV{OSCAR_VERBOSE};
 
 ################################################################################
 # Set the image in the Database.                                               #
@@ -243,7 +243,6 @@ sub get_disk_file {
 # Input: none.                                                                 #
 # Output: default settings (via a hash).                                       #
 #         The format of the hash is the following is available within the code.#
-# TODO: fix the problem with the distro parameter.                             #
 ################################################################################
 sub get_image_default_settings () {
     my $oscarsamples_dir;
@@ -264,17 +263,33 @@ sub get_image_default_settings () {
 
     #Get the distro list
     my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
+    if (!defined $master_os) {
+        carp "ERROR: Impossible to detect the distro on the headnode";
+        return undef;
+    }
+
+    OSCAR::Utils::print_hash ("", "", $master_os) if ($verbose);
+
     my $arch = $master_os->{arch};
 
     # We look if a package file exists for the exact distro we use. If not, we
     # use the package file for the compat distro.
     my $distro = $master_os->{distro};
     my $distro_ver = $master_os->{distro_version};
-    my $distro_update = $master_os->{distro_update};
+    my $distro_update = $master_os->{distro_update}; #this is optinal
     my $compat_distro = $master_os->{compat_distro};
     my $compat_distro_ver = $master_os->{compat_distrover};
+    if (!OSCAR::Utils::is_a_valid_string ($distro) ||
+        !OSCAR::Utils::is_a_valid_string ($distro_ver) ||
+        !OSCAR::Utils::is_a_valid_string ($compat_distro) ||
+        !OSCAR::Utils::is_a_valid_string ($compat_distro_ver)) {
+        carp "ERROR: Impossible to extract distro information";
+        return undef;
+    }
+    my $version = $distro_ver;
+    $version = "$version.$distro_update" if (defined ($distro_update));
     my $pkglist = "$oscarsamples_dir/".
-                  "$distro-$distro_ver.$distro_update-$arch.rpmlist";
+                  "$distro-$version-$arch.rpmlist";
     if (! -f $pkglist) {
         $pkglist = "$oscarsamples_dir/".
                    "$compat_distro-$compat_distro_ver-$arch.rpmlist";
