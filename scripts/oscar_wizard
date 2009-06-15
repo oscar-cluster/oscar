@@ -198,16 +198,33 @@ open(LOCKFILE, ">$lockfile");
 print LOCKFILE $$;
 close(LOCKFILE);
 
-my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
-
 require OSCAR::ConfigManager;
 my $path = "/etc/oscar/oscar.conf";
 my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$path");
+if (!defined $oscar_cfg) {
+    die "ERROR: Impossible to parse $path";
+}
 my $config = $oscar_cfg->get_config();
 
 # Set some things in the environment
-
 $ENV{PATH}= $config->{'binaries_path'} .":" . $ENV{PATH};
+
+my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
+
+# We check basic configuration points
+my $distro_id = get_distro();
+if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
+    die "ERROR: Impossible to detect the local distro ID";
+}
+my @setup_distros = OSCAR::PackagePath::get_list_setup_distros ();
+if (scalar (@setup_distros) == 0 ||
+    !OSCAR::Utils::is_element_in_array ($distro_id, @setup_distros)) {
+    die "ERROR: The local distro is not setup, please run \"oscar-config ".
+        "--setup-distro <distro_id>\" first (see man oscar-config for more ".
+        "details";
+}
+
+
 # Create the main window...
 my $window = MainWindow->new();
 $window->withdraw();
@@ -592,6 +609,9 @@ sub build_oscar_image {
 
     # We get the default settings for images.
     my %vars = OSCAR::ImageMgt::get_image_default_settings ();
+    if (keys(%vars) == 0) {
+        die "ERROR: Impossible to get default image settings";
+    }
 
     # Update settings: ee set the last few points specific to the current
     # situation.
