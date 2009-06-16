@@ -25,7 +25,7 @@ use strict;
 use lib "/usr/lib/systeminstaller";
 use SIS::Image;
 use SIS::Client;
-use SIS::DB;
+use SIS::NewDB;
  
 # Use Schwartzian transform to sort clients by node names alphabetically and numerically.
 # Names w/o numeric suffix precede those with numeric suffix.

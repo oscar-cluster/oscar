@@ -21,7 +21,7 @@
 
 
 use lib "/usr/lib/systeminstaller", "/usr/lib/systemimager/perl";
-use SIS::DB;
+use SIS::NewDB;
 use SIS::Image;
 use SIS::Client;
 use SystemImager::Server;

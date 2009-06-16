@@ -41,7 +41,7 @@ use SystemInstaller::Tk::Common;
 use base qw(Exporter);
 use SIS::Client;
 use SIS::Adapter;
-use SIS::DB;
+use SIS::NewDB;
 use OSCAR::Database;
 use OSCAR::Logger;
 use OSCAR::Network;
@@ -114,16 +114,16 @@ you want to delete and press the
 sub sortclients(@) {
 	return map { $_->[0] }
 	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
-	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       map { [$_, $_->{name} =~ /^([\D]+)([\d]*)$/] }
 	       @_;
 }
 
 sub fill_listbox {
         my $listbox=shift;
         my @elements;
-        my @clients = sortclients list_client();
+        my @clients = sortclients SIS::NewDB::list_client();
         foreach my $client (@clients) {
-                push (@elements,$client->name);
+                push (@elements,$client->{name});
         }
         $listbox->delete(0,'end');
         $listbox->insert(0,@elements);

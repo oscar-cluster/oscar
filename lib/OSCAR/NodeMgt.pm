@@ -31,8 +31,13 @@ package OSCAR::NodeMgt;
 # partitions.
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::ConfigManager;
 use OSCAR::Database;
 use OSCAR::Logger;
@@ -40,13 +45,15 @@ use OSCAR::Network;
 use OSCAR::Package;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
-use SIS::DB;
+use SIS::NewDB;
+use Data::Dumper;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 use warnings "all";
 
 @EXPORT = qw(
+            add_clients
             delete_clients
             display_node_config
             get_node_config
@@ -57,28 +64,110 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 # Where the configuration files are.
 our $basedir = "/etc/oscar/clusters";
 
-sub ip_to_hex {
+sub add_clients ($) {
+    my $client_refobj = shift;
+
+    $ENV{OSCAR_VERBOSE} = 5;
+
+    OSCAR::Logger::oscar_log_subsection "Adding clients...";
+    print Dumper $client_refobj;
+
+    OSCAR::Logger::oscar_log_subsection "Populating the OSCAR database...";
+    if (OSCAR::Database::set_node_with_group (
+            $client_refobj->{'name'},
+            "oscar_clients",
+            undef,
+            undef,
+            "oscar") != 1) {
+        carp "ERROR: Impossible to add the clients into the OSCAR database";
+        return -1;
+    }
+
+    # We have the image name, we need to store the image id in the Nodes table
+    # We get that id.
+    my @res = OSCAR::Database::get_image_info_with_name (
+            $client_refobj->{'imagename'},
+            undef,
+            undef);
+    if (scalar (@res) != 1) {
+        carp "ERROR: The image ".$client_refobj->{'imagename'}." is not in ".
+             "the database";
+        return -1;
+    }
+    print Dumper (@res);
+    my %data =  (
+                image_id    => $res[0]->{id},
+                );
+    if (OSCAR::Database::update_node (
+            $client_refobj->{'name'},
+            \%data,
+            undef,
+            undef) != 1) {
+        carp "ERROR: Impossible to update node information";
+        return -1;
+    }
+
+    OSCAR::Logger::oscar_log_subsection "Populating the SIS database...";
+    my $cmd = "/usr/sbin/si_addclients --hosts " . $client_refobj->{'name'} . 
+              " --script " . $client_refobj->{'imagename'};
+    print "-> [INFO] Executing: $cmd\n";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+
+    return 0;
+}
+
+sub ip_to_hex ($) {
     my ($ip) = @_;
     my @hex = split /\./, $ip;
     return sprintf("%2.2X%2.2X%2.2X%2.2X",@hex);
 }
 
-sub del_ip_node {
+# Return: 0 if success, -1 else.
+sub del_ip_node ($) {
     my ($node) = @_;
-    for my $adapter (SIS::DB::list_adapter(client=>$node)) {
-    my $ip = $adapter->ip;
-    my $hex = &ip_to_hex($ip);
+
+    if (!OSCAR::Utils::is_a_valid_string ($node)) {
+        carp "ERROR: Invalid node name";
+        return -1;
+    }
+
+    my %h = (devname=>"eth0",client=>$node);
+    my @adapter = SIS::NewDB::list_adapter(\%h);
+    if (scalar (@adapter) != 1) {
+        carp "ERROR: Impossible to retrieve valid data for $node";
+        return -1;
+    }
+    print "Data for node deletion\n";
+    print Dumper ($adapter[0][0]);
+    # TODO: it is completely weird that we have 2 arrays in one. We should
+    # investigate why this is doing that.
+    my $ip = $adapter[0][0]->{ip};
+    my $hex = ip_to_hex($ip);
+    if (!OSCAR::Utils::is_a_valid_string ($hex)) {
+        carp "ERROR: Impossible to convert the IP ($ip)";
+        return -1;
+    }
+
     # delete ELILO and PXE config files
-    for my $file ("/tftpboot/".$hex.".conf",
-              "/tftpboot/pxelinux.cfg/$hex") {
+    for my $file ("/tftpboot/".$hex.".conf", 
+                  "/tftpboot/pxelinux.cfg/$hex") {
         unlink($file) if (-l $file || -f $file);
     }
-    }
+
+    return 0;
 }
 
 # Return: 0 if success, the number of errors else.
 sub delete_clients (@) {
     my @clients = @_;
+
+    if (scalar (@clients) == 0) {
+        print "--> [INFO] No client to delete\n";
+        return 0;
+    }
 
     my $clientstring = join(",",@clients);
     if (!OSCAR::Utils::is_a_valid_string ($clientstring)) {
@@ -121,17 +210,24 @@ sub delete_clients (@) {
     }
 
     # delete node PXE/ELILO configs
+    print ">> delete node PXE/ELILO configs\n";
     foreach my $client (@clients) {
-        &del_ip_node($client);
+        print "... $client\n";
+        if (del_ip_node($client)) {
+            carp "ERROR: Impossible to delete IP node ($client)";
+            return -1;
+        }
     }
 
-    $cmd = "mksimachine --Delete --name $clientstring";
+    $cmd = "/usr/bin/mksimachine --Delete --name $clientstring";
+    print ">> Effectively deleting the nodes ($cmd)\n";
     if (system($cmd)) {
         carp("ERROR: Impossible to execute $cmd");
         $fail++;
     }
 
     # We get the configuration from the OSCAR configuration file.
+    print ">> Clients deleted, running few scripts...\n";
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
         carp "ERROR: Impossible to get the OSCAR configuration";

@@ -31,7 +31,7 @@ use lib "/usr/lib/systeminstaller", "$ENV{OSCAR_HOME}/lib";
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use OSCAR::Database;
 use OSCAR::oda;
 
@@ -273,13 +273,13 @@ print "reading SIS database for node and adapters information ...\n";
 sub sortclients(@) {
 	return map { $_->[0] }
 	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
-	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       map { [$_, $_->{name} =~ /^([\D]+)([\d]*)$/] }
 	       @_;
 }
 
 # get a list of node names from SIS
 
-my @sis_clients = sortclients list_client();
+my @sis_clients = sortclients SIS::NewDB::list_client();
 my %sis_nodes = ();
 
 # for each node name returned by SIS, ...
@@ -294,28 +294,29 @@ foreach my $client ( @sis_clients ) {
 	# create a node hash and fill in the data from the sis database
 
 	my %node = ();
-	my $node_name = $client->name();
+	my $node_name = $client->{name};
 	$sis_nodes{ $node_name } = \%node;
 	print "found node $node_name\n" if $options{ verbose };
 	my %nics = ();
 	$node{ nics } = \%nics;
-	foreach my $field ( keys %nodes_fields_translations ) {
-	    my $translated = $nodes_fields_translations{$field};
-	    if ( defined $translated && $translated  ne "" ) {
-		print "$0: node=$node_name sis field <$translated> setting oda field <$field>\n"
-		    if $options{debug};
-		my $value = $client->$translated();
-		if ( defined $value && $value ne "" ) {
-		    $node{ $field } = $value;
-		    print "found node $node_name $field=$value\n"
-			if $options{ verbose };
-		}
-	    }
-	}
+# 	foreach my $field ( keys %nodes_fields_translations ) {
+# 	    my $translated = $nodes_fields_translations{$field};
+#         if ( defined $translated && $translated  ne "" ) {
+#             print "$0: node=$node_name sis field <$translated> setting oda field <$field>\n"
+#             if $options{debug};
+# 		my $value = $client->$translated();
+# 		if ( defined $value && $value ne "" ) {
+# 		    $node{ $field } = $value;
+# 		    print "found node $node_name $field=$value\n"
+# 			if $options{ verbose };
+# 		}
+# 	    }
+# 	}
 
         # get a list of the nic interface names for this node
 
-	my @sis_adapters = list_adapter( client=>$client->name );
+    my %h = (client=>$client->{name});
+    my @sis_adapters = SIS::NewDB::list_adapter(\%h);
 
 	# for each found nic for this node, ...
 
@@ -327,23 +328,23 @@ foreach my $client ( @sis_clients ) {
 	    # in the data from the sis database
 
 	    my %nic = ();
-	    my $nic_name = $adapter->devname();
+	    my $nic_name = $adapter->{devname};
 	    $nics{ $nic_name } = \%nic;
 	    print "found node $node_name nic $nic_name\n" 
 		if $options{ verbose };
-	    foreach my $field ( keys %nics_fields_translations ) {
-		my $translated = $nics_fields_translations{$field};
-		if ( defined $translated && $translated  ne "" ) {
-		    print "$0: node=$node_name sis field <$translated> setting oda field <$field>\n"
-			if $options{debug};
-		    my $value = $adapter->$translated();
-		    if ( defined $value && $value ne "" ) {
-			$nic{ $field } = $value;
-			print "found node $node_name nic $nic_name $field=$value\n"
-			    if $options{ verbose };
-		    }
-		}
-	    }
+# 	    foreach my $field ( keys %nics_fields_translations ) {
+# 		my $translated = $nics_fields_translations{$field};
+# 		if ( defined $translated && $translated  ne "" ) {
+# 		    print "$0: node=$node_name sis field <$translated> setting oda field <$field>\n"
+# 			if $options{debug};
+# 		    my $value = $adapter->$translated();
+# 		    if ( defined $value && $value ne "" ) {
+# 			$nic{ $field } = $value;
+# 			print "found node $node_name nic $nic_name $field=$value\n"
+# 			    if $options{ verbose };
+# 		    }
+# 		}
+# 	    }
 	}
     }
 }
@@ -450,44 +451,49 @@ foreach my $node_name ( keys %sis_nodes ) {
 	my $sis_nic_ref = $$sis_nics_ref{ $nic_name };
 	print_hash( "", "sis_nic_ref", $sis_nic_ref ) if $options{debug};
 
-	# if that nic isn't in the oscar database, create it
-
-	my $oscar_nic_exists = 1;
-	if ( ! exists $$oscar_nics_ref{ $nic_name } ) {
-	    print "Node $node_name nic $nic_name is listed in the SIS database," .
-		" but is not in the OSCAR database, CREATING nic $nic_name ...\n";
-	    if ( $options{ changes } ) {
-		print "Done creating nic $nic_name in the OSCAR database.\n"
-            if set_nics_with_node($nic_name,$node_name,undef,\%oda_options,\@error_strings);
-	    }
-	    my %nic = ();
-	    $$oscar_nics_ref{ $nic_name } = \%nic;
-	}
-	my $oscar_nic_ref = $$oscar_nics_ref{ $nic_name };
-	print_hash( "", "oscar_nic_ref", $oscar_nic_ref ) if $options{debug};
+    # GV: the NIC should be in the database now!!!
+#     # if that nic isn't in the oscar database, create it
+# 
+#     my $oscar_nic_exists = 1;
+#     if ( ! exists $$oscar_nics_ref{ $nic_name } ) {
+#         print "Node $node_name nic $nic_name is listed in the SIS database," .
+#               " but is not in the OSCAR database, CREATING nic $nic_name ...\n";
+#         if ( $options{ changes } ) {
+#             print "Done creating nic $nic_name in the OSCAR database.\n"
+#                 if set_nics_with_node($nic_name,
+#                                   $node_name,
+#                                   undef,
+#                                   \%oda_options,
+#                                   \@error_strings);
+#         }
+#         my %nic = ();
+#         $$oscar_nics_ref{ $nic_name } = \%nic;
+#     }
+#     my $oscar_nic_ref = $$oscar_nics_ref{ $nic_name };
+#     print_hash( "", "oscar_nic_ref", $oscar_nic_ref ) if $options{debug};
 
 	# for each field in the sis database for this nic,
 	# update the oscar database (the field names in our
 	# hash for the nic already have been translated to 
 	# field names in the oscar database)
 
-	foreach my $field ( keys %$sis_nic_ref ) {
-	    my $sis_value = $$sis_nic_ref{ $field };
-	    my $oscar_value = $$oscar_nic_ref{ $field };
-	    print "$0: node=$node_name nic=$nic_name field=$field sis=$sis_value oscar=$oscar_value\n" if $options{ debug };
-	    if ( defined $sis_value && $sis_value ne "" ) {
-		if ( ! defined $oscar_value ||
-		     $oscar_value ne $sis_value ) {
-		    print "Setting OSCAR database node $node_name nic $nic_name" .
-			" field $field to \"$sis_value\" ...\n";
-		    if ( $options{ changes } ) {
-                my %field_value = ($field=>$sis_value);
-			print "Done setting field $field to \"$sis_value\".\n"
-                if set_nics_with_node($nic_name,$node_name,\%field_value,\%oda_options,\@error_strings);
-		    }
-		}
-	    }
-	}
+# 	foreach my $field ( keys %$sis_nic_ref ) {
+# 	    my $sis_value = $$sis_nic_ref{ $field };
+# 	    my $oscar_value = $$oscar_nic_ref{ $field };
+# 	    print "$0: node=$node_name nic=$nic_name field=$field sis=$sis_value oscar=$oscar_value\n" if $options{ debug };
+# 	    if ( defined $sis_value && $sis_value ne "" ) {
+# 		if ( ! defined $oscar_value ||
+# 		     $oscar_value ne $sis_value ) {
+# 		    print "Setting OSCAR database node $node_name nic $nic_name" .
+# 			" field $field to \"$sis_value\" ...\n";
+# 		    if ( $options{ changes } ) {
+#                 my %field_value = ($field=>$sis_value);
+# 			print "Done setting field $field to \"$sis_value\".\n"
+#                 if set_nics_with_node($nic_name,$node_name,\%field_value,\%oda_options,\@error_strings);
+# 		    }
+# 		}
+# 	    }
+# 	}
     }
 }
 

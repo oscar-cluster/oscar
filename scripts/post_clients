@@ -37,11 +37,12 @@ use File::Copy;
 use File::Path;
 use File::Basename;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use OSCAR::Opkg;
 use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::MAC qw(sortclients);
+use Data::Dumper;
 
 # [BL] 02.06.07 No system should need this - every distro we support should use
 # iptables (not ipchains)
@@ -64,7 +65,7 @@ my $return = 0;
 my $phase = "post_clients";
 foreach my $pkg (@pkgs) {
     if(OSCAR::Package::run_pkg_script($pkg, $phase, 1, undef) != 1) {
-        carp("Couldn't run $phase script for $pkg");
+        carp("ERROR: Couldn't run $phase script for $pkg");
         $return++;
     }
 }
@@ -82,9 +83,9 @@ exit($return);
 # Ouput: 1 if success, 0 else.                                                 #
 ################################################################################
 sub push_hosts {
-    my @images = list_image();
+    my @images = SIS::NewDB::list_image();
     foreach my $image (@images) {
-        my $dir = $image->location;
+        my $dir = $image->{location};
         if (! -d $dir) {
             carp ("WARNING!! It seems that the image directory $dir does not exist. ".
                   "The SIS database and the file system may be desynchronized. ".
@@ -125,9 +126,11 @@ sub populate_known_hosts {
 
     print "Populating $known_hosts with defined clients' host keys\n"; 
     foreach my $client ( @sis_clients ) {
-        my $nodename = $client->name();
-        my $adapter = list_adapter(client=>$nodename, devname=>"$iface");
-        my $ip = $adapter->ip;
+        my $nodename = $client->{name};
+        my %h = (client=>$nodename, devname=>"$iface");
+        my $adapter = SIS::NewDB::list_adapter(\%h);
+        next if (!defined $adapter);
+        my $ip = @$adapter[0]->{ip};
         `grep $nodename $known_hosts`;
         if ( $? ) {
             my $entry = "$nodename,$ip ";

@@ -30,7 +30,7 @@ use lib "/usr/lib/systeminstaller";
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use SystemInstaller::Env;
 use SystemInstaller::Machine qw(synchosts linkscript);
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);

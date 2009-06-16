@@ -167,8 +167,8 @@ sub detect_pool_format ($) {
             print "[deb]\n" if $verbose;
             $format = "deb";
         } else {
-            carp "ERROR: Impossible to detect the format of the $pool ".
-                 "repository";
+            carp "ERROR: Impossible to detect the format of the online ".
+                 "repository ($pool)";
             return undef;
         }
     } elsif (index($pool, "/tftpboot/distro", 0) == 0 

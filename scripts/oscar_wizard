@@ -687,7 +687,7 @@ sub postimagebuild {
 
 ###########################################################################
 
-sub build_oscar_clients {
+sub build_oscar_clients ($$$) {
     my ($window, $step_number, $interface) = @_;
 
     my @network_config = OSCAR::Network::get_network_config ($interface,
@@ -708,6 +708,7 @@ sub build_oscar_clients {
     OSCAR::ClientMgt::cleanup_clients ();
     get_client_nodes(\@client_nodes,\%options,\@errors)
         if $#client_nodes == -1; # If @client_nodes is empty
+#     print Dumper @client_nodes;
     my $client_basename = "oscarnode";
     if ($#client_nodes != -1){
         my $first_node = "";
@@ -848,7 +849,7 @@ sub populate_client_group_nodes {
 
 sub setup_network {
     my ($window, $step_number, $interface) = @_;
-    mac_window($window, $step_number, {interface=> $interface});
+    OSCAR::GUI_MAC::mac_window($window, $step_number, {interface=> $interface});
     if ( $$step_status{post_install} eq "disabled" ) {
         my $next_step_button = $buttons{post_install};
         $next_step_button->configure(-state => "normal");

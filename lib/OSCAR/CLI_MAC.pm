@@ -28,7 +28,7 @@ package OSCAR::CLI_MAC;
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use lib "/usr/lib/systeminstaller";
-use SIS::DB;
+use SIS::NewDB;
 use OSCAR::MAC qw(save_to_file
                   load_from_file
                   start_mac_collect

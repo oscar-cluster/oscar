@@ -27,7 +27,7 @@ use OSCAR::ClientMgt;
 use OSCAR::ImageMgt;
 use SystemInstaller::Utils;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use Getopt::Long;
 use POSIX;
 use Carp;

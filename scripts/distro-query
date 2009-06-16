@@ -73,25 +73,25 @@ if ($options{pool}) {
     # - detect its OS
 
     eval { use lib '/usr/lib/systeminstaller'; };
-    eval { require SIS::Client; require SIS::Image; require SIS::DB; };
+    eval { require SIS::Client; require SIS::Image; require SIS::NewDB; };
     if ($@) {
-	print "You probably don't have SystemInstaller on your system!\n";
-	print "Cannot access SIS database.\n";
-	exit 1;
+        print "You probably don't have SystemInstaller on your system!\n";
+        print "Cannot access SIS database.\n";
+        exit 1;
     }
 
     my $node = $options{node};
     my @clients;
-    eval { @clients = SIS::DB::list_client(hostname => $node); };
+    eval { @clients = SIS::NewDB::list_client(hostname => $node); };
     if (!@clients) {
-	eval { @clients = SIS::DB::list_client(name => $node); };
+        eval { @clients = SIS::NewDB::list_client(name => $node); };
     }
     die "Unable to find node $node in SIS database.\n" if (!@clients);
 
     my $img = $clients[0]->imagename;
     die "No image name defined for client $img" if (!$img);
     my @images;
-    eval { @images = SIS::DB::list_image(name => $img); };
+    eval { @images = SIS::NewDB::list_image(name => $img); };
     die "Image $img not found in SIS database" if (!@images);
     my $imagepath = $images[0]->location;
 

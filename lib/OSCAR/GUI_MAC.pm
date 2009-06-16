@@ -36,12 +36,12 @@ use lib "/usr/lib/systeminstaller";
 use lib "/usr/lib/systemimager/perl";
 use Tk;
 use Tk::Tree;
-#use SystemImager::Client;
+use SystemImager::Client;
 use File::Copy;
-#use SIS::Adapter;
-#use SIS::Client;
-#use SIS::DB;
-#use SIS::Image;
+use SIS::Adapter;
+use SIS::Client;
+use SIS::NewDB;
+use SIS::Image;
 use OSCAR::Tk;
 use OSCAR::MAC qw(save_to_file
                   load_from_file
@@ -77,6 +77,8 @@ use OSCAR::Database;
 use OSCAR::Network;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
+
+use Data::Dumper;
 
 @EXPORT = qw (  mac_window
              );
@@ -377,9 +379,12 @@ sub set_buttons {
     $node = $$node[0] if ref($node) eq "ARRAY";
 
     if( $trs && $node =~ /^\|([^\|]+)/) {
-        my $client = list_client(name=>$1);
-        my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-        $state = $adapter->mac ? "normal" : "disabled";
+        my @client = SIS::NewDB::list_client(name=>$1);
+        print "\t -> Client:\n";
+        print Dumper @client;
+        my %h = (client=>$client[0]->{name},devname=>"eth0");
+        my $adapter = list_adapter(\%h);
+        $state = @$adapter[0]->{mac} ? "normal" : "disabled";
     } else {
         $state = "disabled";
     }
@@ -406,23 +411,33 @@ sub regenerate_tree {
     $tree->delete("all");
     $tree->add("|",-text => "All Clients",-itemtype => "text");
     my @clients = sortclients list_client();
+    print "****** Clients ******\n";
+    print Dumper @clients;
     foreach my $client (@clients) {
-        my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-        $tree->add("|".$client->name, 
-	           -text => $client->hostname, 
+        my %h = (client=>$client->{name},devname=>"eth0");
+        my $adapter = SIS::NewDB::list_adapter(\%h);
+        my $nodename = $client->{name};
+        if (!defined $adapter) {
+            carp "ERROR: Impossible to get network adapter data for $nodename";
+        }
+        print "**** Client Adapter ($nodename) ****\n";
+        print Dumper $adapter;
+        $tree->add("|".$nodename, 
+           -text => $nodename, # TODO: here we should use the hostname
+           -itemtype => "text");
+        my $mac=@$adapter[0]->{mac} || "" ;
+        $tree->add("|".$nodename . "|mac",
+                   -text => @$adapter[0]->{name} . " mac = " . $mac, 
 		   -itemtype => "text");
-        my $mac=$adapter->mac || "" ;
-        $tree->add("|".$client->name . "|mac",
-                   -text => $adapter->devname . " mac = " . $mac, 
-		   -itemtype => "text");
-        $tree->add("|".$client->name . "|ip" . $adapter->devname,
-                   -text => $adapter->devname . " ip = " . $adapter->ip, 
+        $tree->add("|".$nodename . "|ip" . @$adapter[0]->{name},
+                   -text => @$adapter[0]->{name} . " ip = " . @$adapter[0]->{ip}, 
 		   -itemtype => "text");
     }
     $tree->autosetmode;
     set_buttons();
 }
 
+# return: 0 if success, -1 else.
 sub assign2machine {
     my ($mac, $node, $noupdate) = @_;
     our $listbox;
@@ -431,19 +446,19 @@ sub assign2machine {
     unless ( $mac ) {
       my $sel = $listbox->curselection;
       if ( defined( $sel ) ) {
-        $mac = $listbox->get($listbox->curselection) or return undef;
+        $mac = $listbox->get($listbox->curselection) or return -1;
       }
-      else { return undef; }
+      else { return -1; }
     }
 
     unless ( $node ) {
       if ( defined( $tree->infoSelection() ) ) {
-        $node = $tree->infoSelection() or return undef;
+        $node = $tree->infoSelection() or return -1;
       }
-      else { return undef; }
+      else { return -1; }
     }
 
-    my $client;
+    my @client;
     clear_mac();
 
     # hack to support both perl-Tk-800 and perl-Tk-804...
@@ -451,20 +466,52 @@ sub assign2machine {
 
     if($node =~ /^\|([^\|]+)/) {
         oscar_log_subsection("Step $step_number: Assigned $mac to $1");
-        $client = list_client(name=>$1);
+        @client = SIS::NewDB::list_client(name=>$1);
     } else {
-        return undef;
+        return -1;
     }
-    my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-    $MAC{$mac}->{client} = $adapter->ip;
-    $adapter->mac($mac);
-    set_adapter($adapter);
+
+    # We get the data we already have
+    my %h = (devname=>"eth0",client=>$1);
+    my $adapter = SIS::NewDB::list_adapter(\%h);
+    if (!defined($adapter)) {
+        carp "ERROR: Impossible to get data for $1";
+        return -1;
+    }
+    my $ip = @$adapter[0]->{ip};
+    if (!defined $ip) {
+        carp "ERROR: Impossible to get the Ip ($1)";
+        return -1;
+    }
+    if (!OSCAR::Network::is_a_valid_ip ($ip)) {
+        carp "ERROR: Invalid IP $ip";
+        return -1;
+    }
+
+    # We create a new structure to store updated data.
+    my $adapdef = new SIS::Adapter("eth0");
+    $adapdef->mac($mac);
+    $adapdef->client($1);
+    $adapdef->ip(@$adapter[0]->{ip});
+    $adapdef->mac($mac);
+
+    $MAC{$mac}->{client} = @$adapter[0]->{ip};
+    print "After MAC assignment...\n";
+    print Dumper $adapdef;
+    my @a = ();
+    push (@a, $adapdef);
+    if (SIS::NewDB::set_adapter(@a)) {
+        carp "ERROR: Impossible to set the network adapter";
+        return -1;
+    }
     regenerate_listbox();
     if ( ! $noupdate ) { regenerate_tree(); }
     if ( our $dyndhcp && ! $noupdate ) {
       our $vars;
       setup_dhcpd($$vars{interface});
     }
+
+    return 0;
 }
 
 sub assignallmacs {
@@ -477,15 +524,16 @@ sub assignallmacs {
     @macs = reverse @macs;
     $listbox->delete(0, 'end');
     regenerate_listbox();
-    my $client;
+    my @client;
     my $adapter;
     my $tempnode = '|';
     while ( scalar(@macs)) {
-      last unless $tempnode = $tree->infoNext($tempnode);
-      $tempnode =~ /^\|([^\|]+)/;
-      $client = list_client(name=>$1);
-      $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-      assign2machine(pop @macs, $tempnode, 1) unless $adapter->mac;
+        last unless $tempnode = $tree->infoNext($tempnode);
+        $tempnode =~ /^\|([^\|]+)/;
+        @client = SIS::NewDB::list_client(name=>$1);
+        my %h = (client=>$client[0]->{name},devname=>"eth0");
+        $adapter = list_adapter(\%h);
+        assign2machine(pop @macs, $tempnode, 1) unless @$adapter[0]->{mac};
     }
     $listbox->insert(0, @macs);
     regenerate_listbox();
@@ -527,24 +575,25 @@ sub clearallmacs {
     $window->Unbusy();
 }
 
-sub clear_mac {
+sub clear_mac ($$) {
     my ($node, $noupdate) = @_;
     our $listbox;
     our $tree;
     unless( $node ) { $node = $tree->infoSelection() or return undef; }
     unless( defined($noupdate) ) {$noupdate = 0;}
-    my $client;
+    my @client;
 
     # hack to support both perl-Tk-800 and perl-Tk-804
     $node = $$node[0] if ref($node) eq "ARRAY";
 
     if($node =~ /^\|([^\|]+)/) {
-        $client = list_client(name=>$1);
+        @client = list_client(name=>$1);
     } else {
         return undef;
     }
-    my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-    my $mac = $adapter->mac;
+    my %h = (client=>$client[0]->{name},devname=>"eth0");
+    my $adapter = list_adapter(\%h);
+    my $mac = @$adapter[0]->{mac};
     if ( ! $mac ) { return undef; }
     oscar_log_subsection("Step $step_number: Cleared $mac from $1");
 
@@ -552,8 +601,21 @@ sub clear_mac {
     $listbox->selectionClear(0, 'end');
     $listbox->insert('end', ( $mac ));
     $MAC{$mac}->{client} = undef;
-    $adapter->mac("");
-    set_adapter($adapter);
+    @$adapter[0]->{mac} = undef;
+
+    # We create a new structure to store updated data.
+    my $adapdef = new SIS::Adapter("eth0");
+    $adapdef->mac(undef);
+    $adapdef->client($1);
+    $adapdef->ip(@$adapter[0]->{ip});
+    my @a = ();
+    push (@a, $adapdef);
+
+    if (SIS::NewDB::set_adapter(@a)) {
+        carp "ERROR: Impossible to set the network adapter";
+        return -1;
+    }
+
     regenerate_listbox();
     if ( ! $noupdate ) {regenerate_tree();}
     if ( our $dyndhcp && ! $noupdate ) {

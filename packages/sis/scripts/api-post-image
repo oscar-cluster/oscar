@@ -57,7 +57,7 @@ use OSCAR::Database;
 use OSCAR::ImageMgt;
 use OSCAR::Logger;
 use lib '/usr/lib/systeminstaller';
-use SIS::DB;
+use SIS::NewDB;
 use SIS::Image;
 use SystemInstaller::Image;
 use File::Basename;

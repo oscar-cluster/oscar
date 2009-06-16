@@ -1,0 +1,8 @@
+apt
+discover
+libappconfig-perl
+grub
+linux-image-generic
+ssh
+systemconfigurator
+nfs-common

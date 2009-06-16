@@ -33,10 +33,10 @@ BEGIN {
 
 use strict;
 use File::Copy;
-#use SIS::Adapter;
-#use SIS::Client;
-#use SIS::DB;
-#use SIS::Image;
+use SIS::Adapter;
+use SIS::Client;
+use SIS::NewDB;
+use SIS::Image;
 use OSCAR::Network;
 
 use Carp;
@@ -46,6 +46,8 @@ use OSCAR::OCA::OS_Detect;
 use OSCAR::ConfigManager;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
+
+use Data::Dumper;
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
@@ -224,19 +226,22 @@ sub clean_hostsfile {
 sub sortclients(@) {
 	return map { $_->[0] }
 	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
-	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       map { [$_, $_->{name} =~ /^([\D]+)([\d]*)$/] }
 	       @_;
 }
 
 # populates existing MAC entries into the global hash
 
 sub populate_MACS {
-    my @clients = sortclients list_client();
+    my @clients = sortclients SIS::NewDB::list_client();
     %MAC = ();
     foreach my $client (@clients) {
-        my $adapter = list_adapter(client=>$client->name,devname=>"eth0");
-        if ($adapter->mac) {
-                add_mac_to_hash($adapter->mac, $client->name);
+        my %h = (client=>$client->{name},devname=>"eth0");
+        my $adapter = SIS::NewDB::list_adapter(\%h);
+        print Dumper $adapter;
+        if (defined ($adapter) && 
+            OSCAR::Utils::is_a_valid_string(@$adapter[0]->{mac})) {
+                add_mac_to_hash(@$adapter[0]->{mac}, $client->{name});
         }
     }
 }

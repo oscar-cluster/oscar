@@ -37,11 +37,14 @@ use OSCAR::Database qw (
 use OSCAR::Logger qw ( verbose );
 use POSIX;
 use Carp;
+use Data::Dumper;
 use base qw(Exporter);
 @EXPORT = qw(
             get_network_config
+            get_network_adapteur
             interface2ip
             is_a_valid_ip
+            set_network_adapter
             update_hosts
             update_head_nic
             );
@@ -65,6 +68,37 @@ sub is_a_valid_ip ($) {
     return 1;
 }
 
+
+sub set_network_adapter ($) {
+    my $ref = shift;
+
+    for (my $l=0; $l < scalar (@$ref); $l++) {
+        my $h = @$ref[$l]->{_vars};
+
+        next if (!defined $h->{'_client'});
+        next if (!defined $h->{'_ip'});
+
+        print "-> [INFO] Adding a new network adapter\n";
+        print Dumper $h;
+        my %data =  (
+                    ip      => $h->{'_ip'},
+                    mac     => $h->{'_mac'},
+#                     name    => $h->{'_devname'},
+#                     node_id => "1",
+                    );
+        if (OSCAR::Database::set_nics_with_node (
+            $h->{'_devname'},
+            $h->{'_client'},
+            \%data,
+            undef,
+            undef) != 1) {
+            carp "ERROR: Impossible to set the NICs to the node";
+            return -1;
+        }
+    }
+    
+    return 0;
+}
 
 ################################################################################
 # Returns the ip addr, broadcast, and netmask of an interface.                 #
@@ -94,6 +128,46 @@ sub interface2ip ($) {
     }
     close(IFCONFIG);
     return ($ip, $broadcast, $net);
+}
+
+# Returns: array of hashes with the following fields or undef if error
+#               client, devname, ip, netmask, mac
+sub get_network_adapter ($) {
+    my $optref = shift;
+    my @res;
+    my @t;
+
+    if (defined $optref) {
+        OSCAR::Database::get_nics_with_name_node (
+            $optref->{'devname'},
+            $optref->{'client'},
+            \@res,
+            undef,
+            undef);
+    } else {
+        # We get the list of all the nodes names
+        my $sql = "SELECT * FROM Nics";
+        if (OSCAR::Database_generic::do_select ($sql, \@res, undef, undef) != 1) {
+            carp "ERROR: Impossible to execute SQL command ($sql)\n";
+            return undef;
+        }
+        for (my $i = 0; $i < scalar(@res); $i++) {
+            print "Translating ".$res[$i]->{'node_id'}."...";
+            $sql = "Select Nodes.name From Nodes Where Nodes.id='".
+                    $res[$i]->{'node_id'}."'";
+            my $nodename = OSCAR::Database::oda_query_single_result ($sql, "name");
+            print "... $nodename\n";
+            $res[$i]->{'client'} = $nodename;
+            push (@t, $res[$i]);
+        }
+    }
+    if (scalar @res == 0) {
+        return undef;
+    } else {
+        print "List network adapters: ". Dumper (@res) ."(".scalar(@res).")\n";
+        print "Test: ".Dumper (@t);
+        return \@res;
+    }
 }
 
 ################################################################################

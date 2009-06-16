@@ -109,14 +109,14 @@ my $return = 0;
 oscar_log_subsection "Running OSCAR package post_rpm_install scripts for"
                      .join(", ", @pkgs);
 foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version);
-    if(run_pkg_script_chroot($pkg, $targetdir) != 1) {
+    if(OSCAR::Package::run_pkg_script_chroot($pkg, $targetdir) != 1) {
        carp("ERROR: Couldn't run post_rpm_install for $pkg");
        $return++;
     }
     # Config script running outside chroot, for access to
     # master databases, xml files and parsing perl modules.
     # Argument passed: image directory path.
-    if(!run_pkg_script($pkg,"post_rpm_nochroot",1,$targetdir)) {
+    if(!OSCAR::Package::run_pkg_script($pkg,"post_rpm_nochroot",1,$targetdir)) {
        carp("ERROR: Couldn't run post_rpm_nochroot for $pkg");
        $return++;
     }
