@@ -255,4 +255,37 @@ foreach my $image (@BASES) {
 
 exit 0
 
+__END__
 
+=head1 DESCRIPTION
+
+ssh_install, a command line tool for OSCAR to setup ssh both on the OSCAR
+server and into OSCAR images.
+
+=head1 SYNTAX
+
+ssh_install [OPTIONS] image_directories
+
+=head1 OPTIONS
+
+Recognized options include:
+
+=over 8
+
+=item --verbose
+
+Display more information during script execution.
+
+=back
+
+=head1 AUTHORS
+
+=over 8
+
+=item Neil Gorsuch
+
+=item Geoffroy Vallee
+
+=back
+
+=cut
