@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env perl
+#
+
 # $Id$
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,258 +38,221 @@
 # this script requires them to specify one or more directories
 # that are the base directories of system images to be updated.
 
-BASES=""
-if [ "`echo $* | wc -w`" -lt 1 ] ; then
-    echo $0 exiting - no image directory specified
-    exit 1
-fi
-for base in $* ; do 
-    if [ -z "$base" -o ! -d "$base" ] ; then
-	echo $0 parameter error - ignoring non-directory parameter $base
-    else
-        BASES="$BASES $base"
-    fi
-done
-if [ `echo $BASES | wc -w` -eq 0 ] ; then
-    echo $0 exiting - directory parameters specified but none are directories
-    exit 1
-fi
+use strict;
+use warnings "all";
+use File::Path;
+use Getopt::Long;
+
+use OSCAR::FileUtils;
+use OSCAR::Logger;
+
+my ($verbose);
+
+sub help () {
+    print "Type \"man $0\" for help information\n";
+}
+
+sub help_and_die {
+    help ();
+    exit 1;
+}
+
+sub help_and_exit {
+    help ();
+    exit 0;
+}
+
+GetOptions  (
+        "verbose"   => \$verbose,
+            ) || help_and_die();
+
+my @BASES = @_;
+
+# We check first that the parameters are images directories
+foreach my $b (@BASES) {
+    if (! -d $b) {
+        die "ERROR: Invalid parameter; $b is not a valid image directory";
+    }
+}
+
+my $initial_verbose_value = 0;
+$initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
+if ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+}
 
 # the directory where ssh/sshd puts host configuration data
-SSHCFGDIR=/etc/ssh
-
-# temporary files prefix
-TEMP="/tmp/`echo $0 | sed 's,^.*/,,g'`.$$."
+my $SSHCFGDIR="/etc/ssh";
+if ( ! -d $SSHCFGDIR) {
+    File::Path::mkpath ($SSHCFGDIR, 1, 0755) 
+        or die "ERROR: Impossible to create $SSHCFGDIR";
+}
 
 #------------------------ end configuration section --------------------
 
-# make sure we get rid of temporary files if we are aborted
-trap "echo rm -rf $TEMP\* ; rm -rf $TEMP* ; exit 1" 1 2 3 4 5 6 7 8 11 14 15
-
-# create the server ssh configuration directory if needed
-dir=$SSHCFGDIR
-if [ ! -d $dir ] ; then
-    echo mkdir -p $dir
-    mkdir -p $dir || exit 1
-    echo 755 chmod $dir
-    chmod 755 $dir
-fi
+my $cmd;
 
 # make the server host keys if required
 # first step: generation of the RSA key
-file=$SSHCFGDIR/ssh_host_key
-echo ; echo checking for host key file $file ...
-if [ ! -r $file ] ; then
-    echo making host key file $file ...
-    echo ssh-keygen -t rsa -b 1024 -f $file -N ""
-    `/usr/bin/ssh-keygen -t rsa -b 1024 -f $file -N ""` || exit 1
-fi
+my $file= "$SSHCFGDIR/ssh_host_key";
+OSCAR::Logger::oscar_log_subsection ("Checking for host key file $file...");
+if ( ! -f $file ) {
+    OSCAR::Logger::oscar_log_subsection ("Making host key file $file...");
+    $cmd = "/usr/bin/ssh-keygen -t rsa -b 1024 -f $file -N \"\"";
+    if (system ($cmd)) {
+        die "ERROR: Impossible to execute $cmd";
+    }
+}
+
 # second step generation of the DSA key
-file=$SSHCFGDIR/ssh_host_dsa_key
-echo checking for host key file $file ...
-if [ ! -r $file ] ; then
-    echo ssh-keygen -t dsa -d -f $file -N ""
-    /usr/bin/ssh-keygen -t dsa -d -f $file -N "" || exit 1
-fi
+$file= "$SSHCFGDIR/ssh_host_dsa_key";
+OSCAR::Logger::oscar_log_subsection("Checking for host key file $file...");
+if ( ! -f $file ) {
+    $cmd = "/usr/bin/ssh-keygen -t dsa -d -f $file -N \"\"";
+    if (system ($cmd)) {
+        die "ERROR: Impossible to execute $cmd";
+    }
+}
 
 # make sure that the server sshd configuration file has
 # some important authentication methods turned on
+$file = "$SSHCFGDIR/ssh_config";
+OSCAR::Logger::oscar_log_subsection ("Checking configuration file $file...");
 
-cd $SSHCFGDIR || ( echo cannot cd to $SSHCFGDIR ; exit 1 )
+# TODO: we should have a nice Perl module like OSCAR::ConfigFile in order
+# to deal with this kind of config file. Right now, if tabs are included,
+# everything will fall apart.
+my $pos = OSCAR::FileUtils::line_in_file ("ForwardX11 no", $file);
+if ($pos != -1) {
+    OSCAR::FileUtils::replace_line_in_file ($file, $pos, "ForwardX11 yes");
+} else {
+    OSCAR::FileUtils::add_line_to_file_without_duplication ($file, 
+        "ForwardX11 yes");
+}
 
-file=ssh_config
-echo ; echo checking configuration file $file ...
+my @wantedno = ("StrictHostKeyChecking", "UsePrivilegedPort");
+foreach my $key (@wantedno) {
+    $pos = OSCAR::FileUtils::line_in_file ("$key yes", $file);
+    if ($pos != -1) {
+        OSCAR::FileUtils::replace_line_in_file ($file, $pos, "$key no");
+    } else {
+        OSCAR::FileUtils::add_line_to_file_without_duplication ($file,
+            "$key no");
+    }
+}
 
-for wantedyes in ForwardX11; do
-    if [ yes`grep "^[[:space:]]*$wantedyes[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "yesyes" ] ; then
-	echo turning on $wantedyes parameter in configuration file $file ...
-	if [ ! -r $file.pre_ssh_install ] ; then
-	    if [ -r $file ] ; then
-		echo cp -fp $file $file.pre_ssh_install
-		cp -fp $file $file.pre_ssh_install || exit 1
-	    fi
-	fi
-        if grep "^[[:space:]]*$wantedyes[[:space:]]" $file 2>/dev/null ; then
-	    echo ... by modifying existing line\(s\)
-	    sed "s,$wantedyes.*\$,$wantedyes yes,g" <$file >$file.tmp
-	    mv $file.tmp $file || exit 1
-	else
-	    echo ... by adding a line
-	    echo "$wantedyes yes" >> $file || exit 1
-        fi
-    fi
-done
-for wantedno in StrictHostKeyChecking UsePrivilegedPort ; do
-    if [ no`grep "^[[:space:]]*$wantedno[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "nono" ] ; then
-	echo turning off $wantedno parameter in configuration file $file ...
-	if [ ! -r $file.pre_ssh_install ] ; then
-	    if [ -r $file ] ; then
-		echo cp -fp $file $file.pre_ssh_install
-		cp -fp $file $file.pre_ssh_install || exit 1
-	    fi
-	fi
-        if grep "^[[:space:]]*$wantedno[[:space:]]" $file 2>/dev/null ; then
-	    echo ... by modifying existing line\(s\)
-	    sed "s,$wantedno.*\$,$wantedno no,g" <$file >$file.tmp
-	    mv $file.tmp $file || exit 1
-	else
-	    echo ... by adding a line
-	    echo "$wantedno no" >> $file || exit 1
-        fi
-    fi
-done
+$file= "$SSHCFGDIR/sshd_config";
+OSCAR::Logger::oscar_log_subsection("Checking configuration file $file...");
 
-file=sshd_config
-echo ; echo checking configuration file $file ...
-SSHVER=` ssh -V 2>&1 | cut -f2 -d'p' | cut -f2 -d'_'`
-SSHMINORVER=`echo $SSHVER | cut -f2 -d'.'`
-SSHMAJORVER=`echo $SSHVER | cut -f1 -d'.'`
+my $SSHVER=`/usr/bin/ssh -V 2>&1 | cut -f2 -d'p' | cut -f2 -d'_'`;
+if (!OSCAR::Utils::is_a_valid_string ($SSHVER)) {
+    die "ERROR: Impossible to get the SSH version";
+}
 
-SSHBADMAJORVER=3 
-SSHBADMINORVER=7
+my ($SSHMINORVER, $SSHMAJORVER);
+if ($SSHVER =~ /(\d+)\.(\d+)/) {
+    $SSHMAJORVER = $1;
+    $SSHMINORVER = $2;
+} else {
+    $SSHMAJORVER = $SSHVER;
+    $SSHMINORVER = 0;
+}
+    
+my $SSHBADMAJORVER = 3;
+my $SSHBADMINORVER = 7;
 
-
-for wantedyes in IgnoreRhosts X11Forwarding RhostsRSAAuthentication RSAAuthentication ; do
-    if [ yes`grep "^[[:space:]]*$wantedyes[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "yesyes" ] ; then
-	echo turning on $wantedyes parameter in configuration file $file ...
-	if [ ! -r $file.pre_ssh_install ] ; then
-	    if [ -r $file ] ; then
-		echo cp -fp $file $file.pre_ssh_install
-		cp -fp $file $file.pre_ssh_install || exit 1
-	    fi
-	fi
-        if grep "^[[:space:]]*$wantedyes[[:space:]]" $file 2>/dev/null ; then
-	    echo ... by modifying existing line\(s\)
-	    sed "s,$wantedyes.*\$,$wantedyes yes,g" <$file >$file.tmp
-	    mv $file.tmp $file || exit 1
-	else
-	    echo ... by adding a line
-	    echo "$wantedyes yes" >> $file || exit 1
-        fi
-    fi
-done
-
-for wantedno in RhostsAuthentication ; do
-    if [ no`grep "^[[:space:]]*$wantedno[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "nono" ] && [ $SSHBADMAJORVER -lt $SSHMAJORVER ] && [ $SSHBADMINORVER -lt $SSHMINORVER ]; then
-	echo turning off $wantedno parameter in configuration file $file ...
-	if [ ! -r $file.pre_ssh_install ] ; then
-	    if [ -r $file ] ; then
-		echo cp -fp $file $file.pre_ssh_install
-		cp -fp $file $file.pre_ssh_install || exit 1
-	    fi
-	fi
-        if grep "^[[:space:]]*$wantedno[[:space:]]" $file 2>/dev/null ; then
-	    echo ... by modifying existing line\(s\)
-	    sed "s,$wantedno.*\$,$wantedno no,g" <$file >$file.tmp
-	    mv $file.tmp $file || exit 1
-	else
-	    echo ... by adding a line
-	    echo "$wantedno no" >> $file || exit 1
-        fi
-    fi
-done
+my @wantedyes = ("IgnoreRhosts", "X11Forwarding", "RhostsRSAAuthentication",
+                 "RSAAuthentication", "PermitRootLogin");
+foreach my $key (@wantedyes) {
+    $pos = OSCAR::FileUtils::line_in_file ("$key no", $file);
+    if ($pos != -1) {
+        OSCAR::FileUtils::replace_line_in_file ($file, $pos, "$key yes");
+    } else {
+        OSCAR::FileUtils::add_line_to_file_without_duplication ($file,
+            "$key yes");
+    }
+}
 
 # Mandriva install openssh with "PermitRootLogin no" while the others installs
 # it with that line commented ("#PermitRootLogin no"), which is the same thing
 # as "yes". As we cannot use generic-setup here (once this is a bash script)
-# the following section will set "PermitRootLogin yes" to all distros, which 
+# the following section will set "PermitRootLogin yes" to all distros, which
 # should be transparent for RHEL and Fedora.
-for wantedyes in PermitRootLogin; do
-    if [ yes`grep "^[[:space:]]*$wantedyes[[:space:]]" $file | awk '{print $2}' | tr A-Z a-z | tail -1` != "yesyes" ] ; then
-        echo turning on $wantedyes parameter in configuration file $file ...
-        if [ ! -r $file.pre_ssh_install ] ; then
-            if [ -r $file ] ; then
-                echo cp -fp $file $file.pre_ssh_install
-                cp -fp $file $file.pre_ssh_install || exit 1
-            fi
-        fi
-        if grep "^[[:space:]]*$wantedyes[[:space:]]" $file 2>/dev/null ; then
-            echo ... by modifying existing line\(s\)
-            sed "s,$wantedyes.*\$,$wantedyes yes,g" <$file >$file.tmp
-            mv $file.tmp $file || exit 1
-        else
-            echo ... by adding a line
-            echo "$wantedyes yes" >> $file || exit 1
-        fi
-    fi
-done
-
-
-unset SSHVER SSHMAJORVER SSHMINORVER SSHBADMAJORVER SSHBADMINORVER
+@wantedno = ("RhostsAuthentication");
+foreach my $key (@wantedno) {
+    $pos = OSCAR::FileUtils::line_in_file ("$key yes", $file);
+    if ($pos != -1) {
+        OSCAR::FileUtils::replace_line_in_file ($file, $pos, "$key no");
+    } else {
+        OSCAR::FileUtils::add_line_to_file_without_duplication ($file,
+            "$key no");
+    }
+}
 
 # set up root
 
-user=root
-echo ; echo setting up user $user on this machine
-home=`egrep "^$user\:" /etc/passwd | awk -F: '{print $6}' | tail -1`
-if [ `echo $home | wc -w` -ne 1 ] ; then
-    echo cannot determine home directory of user $user
-else
-    echo the home directory for user $user is $home
-    echo cd $home
-    if ! cd $home ; then
-	echo cannot cd to home directory $home
-    else
+my $user= "root";
+OSCAR::Logger::oscar_log_subsection ("Setting up user $user on this machine...");
+my $home=`egrep \"^$user\:\" /etc/passwd | awk -F: '{print \$6}' | tail -1`;
+if (!OSCAR::Utils::is_a_valid_string ($home)) {
+    die "ERROR: Impossible to detect the home directory for $user";
+}
+chomp ($home);
+if (! -d $home) {
+    die "ERROR: Cannot determine home directory of user $user";
+} else {
+    OSCAR::Logger::oscar_log_subsection ("The home directory for user $user ".
+        "is $home");
+    my %ssh_keys = (
+        "rsa"   => ["$home/.ssh/id_rsa", "$home/.ssh/authorized_keys2"],
+        "dsa"   => ["$home/.ssh/id_dsa", "$home/.ssh/authorized_keys2"],
+        "rsa1"  => ["$home/.ssh/identity", "$home/.ssh/authorized_keys"],
+        );
+    foreach my $k (%ssh_keys) {
+        if (! -f $file) {
+            $cmd = "/usr/bin/ssh-keygen -t $k -N \'\' -f $ssh_keys{$k}[0]";
+            OSCAR::Logger::oscar_log_subsection ("$cmd");
+            if (system ($cmd)) {
+                die "ERROR: Impossible to execute $cmd";
+            }
+            $cmd = "cat $ssh_keys{$k}.pub >> $home/.ssh/$ssh_keys{$k}[0]";
+            if (system ($cmd)) {
+                die "ERROR: Impossible to execute $cmd";
+            }
+        }
+    }
 
-        file=$home/.ssh/id_rsa
-        type=rsa
-        if [ ! -e $file ] ; then
-            echo ssh-keygen -t $type -N \'\' -f $file
-            /usr/bin/ssh-keygen -t $type -N '' -f $file
-            pub="`cat $home/.ssh/id_rsa.pub`"
-            keys=$home/.ssh/authorized_keys2
-            echo echo $pub \>\> $keys
-            echo $pub >> $keys
-	fi
-    
-        file=$home/.ssh/id_dsa
-        type=dsa
-        if [ ! -e $file ] ; then
-            echo ssh-keygen -t $type -N \'\' -f $file
-            /usr/bin/ssh-keygen -t $type -N '' -f $file
-	    pub="`cat $home/.ssh/id_dsa.pub`"
-	    keys=$home/.ssh/authorized_keys2
-            echo echo $pub \>\> $keys
-            echo $pub >> $keys
-	fi
-	
-        file=$home/.ssh/identity
-        type=rsa1
-        if [ ! -e $file ] ; then
-            echo ssh-keygen -t $type -N \'\' -f $file
-            /usr/bin/ssh-keygen -t $type -N '' -f $file
-	    pub="`cat $home/.ssh/identity.pub`"
-	    keys=$home/.ssh/authorized_keys
-            echo echo $pub \>\> $keys
-            echo $pub >> $keys
-	fi
-    
-        echo chmod 600 $home/.ssh/authorized_keys*
-        chmod 600 $home/.ssh/authorized_keys*
-    
-    fi
-fi
+    $cmd = "chmod 600 $home/.ssh/authorized_keys*";
+    if (system ($cmd)) {
+        die "ERROR: Impossible to execute $cmd";
+    }
+}
 
 # now we take care of updating each specified image
-for image in $BASES ; do
-    echo ; echo checking/updating image $image ...
-    echo cp -fpr $SSHCFGDIR $image`dirname $SSHCFGDIR`
-    cp -fpr $SSHCFGDIR $image`dirname $SSHCFGDIR`
+foreach my $image (@BASES) {
+    OSCAR::Logger::oscar_log_subsection ("Checking/updating image $image...");
+    $cmd = "cp -fpr $SSHCFGDIR $image$SSHCFGDIR";
+    if (system ($cmd)) {
+        die "ERROR: Impossible to execute $cmd";
+    }
 
     # every user except root ends up being taken care of by /home cross-mount
-    echo ; echo copying ssh files for $user to image $image
-    if [ ! -d $image$home ] ; then
-        echo mkdir -p $image$home
-        mkdir -p $image$home
-        echo chown $user $image$home
-        chown $user $image$home
-    fi
-    echo cp -fpr $home/.ssh $image$home
-    cp -fpr $home/.ssh $image$home
-done
+    OSCAR::Logger::oscar_log_subsection ("Copying ssh files for $user to ".
+        "image $image...");
+    if (! -d "$image$home") {
+        File::Path::mkpath ("$image$home") 
+            or die "ERROR: Impossible to create $image$home";
+        $cmd = "chown $user $image$home";
+        if (system ($cmd)) {
+            die "ERROR: Impossible to execute $cmd";
+        }
+    }
+    $cmd = "cp -fpr $home/.ssh $image$home";
+    if (system ($cmd)) {
+        die "ERROR: Impossible to execute $cmd";
+    }
+}
 
-echo
-rm -rf $TEMP* 2>/dev/null
 exit 0
 
 

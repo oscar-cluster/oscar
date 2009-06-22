@@ -6,6 +6,8 @@ OSCAR.
 - [Ticket #532] Implement a cache when detecting the format of repositories.
 - Add Ubuntu-904-x84_64 in the list of supported distributions (still
 experimental).
+- Convert the ssh_install script to Perl so it is easier to maintain (some
+had weird errors in the past; running the script twice was the only solution).
 
 6.0.3:
 - Update CentOS-5 support to CentOS-5.3.
