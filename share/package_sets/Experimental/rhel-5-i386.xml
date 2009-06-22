@@ -4,6 +4,7 @@
     <packages>
         <opkg>apitest</opkg>
         <opkg>base</opkg>
+        <opkg>blcr</opkg>
         <opkg>c3</opkg>
         <opkg>diskless</opkg>
         <opkg>disable-services</opkg>
