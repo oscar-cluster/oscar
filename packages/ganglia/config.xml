@@ -16,18 +16,22 @@
       <name>Erich Focht</name>
       <email>efocht@hpce.nec.com</email>
     </author>
+    <author cat="maintainer">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
   </authors>
   <serverDeps>
     <requires>
-      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
-      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
-      <pkg version=">=3.0.6" >ganglia-web</pkg>
       <pkg>rrdtool</pkg>
     </requires>
     <requires>
       <filters>
         <dist>fc</dist>
       </filters>
+      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
+      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
+      <pkg version=">=3.0.6" >ganglia-web</pkg>
       <pkg>php-gd</pkg>
       <pkg>php-common</pkg>
     </requires>
@@ -36,28 +40,63 @@
         <dist>ydl</dist>
         <dist>rhel</dist>
       </filters>
+      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
+      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
+      <pkg version=">=3.0.6" >ganglia-web</pkg>
       <pkg>php-gd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>sles</dist>
       </filters>
+      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
+      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
+      <pkg version=">=3.0.6" >ganglia-web</pkg>
       <pkg>php4-gd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>suse</dist>
       </filters>
+      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
+      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
+      <pkg version=">=3.0.6" >ganglia-web</pkg>
       <pkg>php5-gd</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg version=">=3.0.6" >gmetad</pkg>
+      <pkg version=">=3.0.6" >ganglia-monitor</pkg>
+      <pkg version=">=3.0.6" >libganglia1</pkg>
     </requires>
   </serverDeps>
   <clientDeps>
     <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+        <dist>rhel</dist>
+        <dist>sles</dist>
+        <dist>suse</dist>
+      </filters>
       <pkg version=">=3.0.6" >ganglia-gmond</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg version=">=3.0.6" >ganglia-monitor</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.0.6-7">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-06-22T13:36:45-05:00">
+        <item>Include the Debian support</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.0.6-6">
       <changelogEntry authorName="Geoffroy Vallee" date="2008-12-21T00:01:51+05:00">
         <item>Update the post_install script</item>
