@@ -5,6 +5,7 @@
         <opkg>apitest</opkg>
         <opkg>base</opkg>
         <opkg>c3</opkg>
+        <opkg>ganglia</opkg>
         <opkg>lam</opkg>
         <opkg>oda</opkg>
         <opkg>oscar-v</opkg>
@@ -15,6 +16,7 @@
         <opkg>sis-diskless</opkg>
         <opkg>switcher</opkg>
         <opkg>sync-files</opkg>
+        <opkg>torque-oscar<opkg>
         <opkg>yume</opkg>
     </packages>
 </package_set>
