@@ -16,9 +16,9 @@ BEGIN {
 }
 
 use strict;
-use vars qw(@EXPORT);
+use vars qw(@EXPORT %packages);
 use base qw(Exporter);
-use OSCAR::Configurator;
+use OSCAR::Configurator_backend;
 use OSCAR::PackagePath;
 use OSCAR::Logger;
 use OSCAR::Database;
@@ -35,15 +35,26 @@ my $file = '';
 my $path = '';
 my $pname = '';
 my $ctext = '';
-my $packages_ref;
+my $verbose = 0;
 our @file_lines;
 our $file_line_num;
 
 sub config_package($$$$);
 
 # Parses the command line args
-GetOptions('help' => \$help, 'filename=s' => \$file, 'f=s' => \$file, 'path=s'
-=> \$path, 'package=s' => \$pname, 'context=s' => \$ctext);
+GetOptions(
+            'help'          => \$help,
+            'filename=s'    => \$file,
+            'f=s'           => \$file,
+            'path=s'        => \$path,
+            'package=s'     => \$pname,
+            'context=s'     => \$ctext,
+            'verbose'       => $verbose
+          );
+
+if ($verbose) {
+    $ENV{OSCAR_HOME} = 5;
+}
 
 # The help text
 if ($help) {
@@ -56,26 +67,21 @@ if ($help) {
 OSCAR::Logger::oscar_log_section("Beginning the OSCAR Configurator");
 
 # Get the list of configurable packages
-$packages_ref = OSCAR::Configurator::getSelectedConfigurablePackages();
+%packages = OSCAR::Configurator_backend::get_configurable_opkgs();
 
-# Skip any package which don't have a configurator.html file
-foreach my $package (sort keys %$packages_ref) {
-	my $found = 0;
-	foreach my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
-		if ( -s "$dir/$package/configurator.html" ) {
-			$found = 1;
-			last;
-		}
-	}
-	delete $packages_ref->{$package} if (!$found);
+# Display the list of configurable OPKGs
+print "Configurable OPKGs: ";
+foreach my $opkg (keys %packages) {
+    print ("$opkg ");
 }
+print "\n";
+    
 
 my @completion_list = qw ( exit quit help file );
 
 # Display a menu with all the available configurable packages
-foreach my $package (sort keys %$packages_ref) {
+foreach my $package (keys %packages) {
 	push @completion_list, $package;
-	print "$package:\t" . $$packages_ref{$package} . "\n";
 }
 
 # If there is a filename as an arguement, don't get user input
@@ -362,7 +368,7 @@ sub config_package($$$$) {
 		#print "value   => $temp_responses{$_}{value}\n";
 		#print "\n";
 
-		&set_pkgconfig_var(
+		OSCAR::Database::set_pkgconfig_var(
 			opkg	=> $temp_responses{package},
 			context	=> $temp_responses{$_}{context},
 			name	=> $_,
@@ -434,8 +440,7 @@ sub processInput {
 	} elsif ($command eq "configure" || $command eq "devel") {
 		my $package = $filename;
 		
-		config_package($ENV{OSCAR_HOME} . 
-			"/packages/$package/configurator.html", $package, "", 0);
+		config_package($packages{$package}, $package, "", 0);
 	} else {
 		print <<EOF
 configure packageName  Select a package to configure
