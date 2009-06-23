@@ -5,7 +5,7 @@
 - Update RAPT to 2.8.6.
 - Update SystemInstaller to 2.4.2.
 - Update Yume to 2.8.10.
-- Fix the PATH environment variable is updated.
+- Fix the PATH environment variable update.
 - [Ticket #134] Make sure that /proc is umounted at the end of the creation of
 an image.
 - [Ticket #314] Fix the hard drive type detection (SCSI vs. IDE) when using the
