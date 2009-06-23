@@ -10,8 +10,8 @@
 #          default repository URLs have to follow the rapt/yume syntax
 
 [unstable]
-redhat-el-5-i386 file:/tftpboot/distro/rhel-5-i386 http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
-redhat-el-5-x86_64 file:/tftpboot/distro/rhel-5-x86_64 http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
+redhat-el-5-i386 file:/tftpboot/distro/redhat-el-5-i386 http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
+redhat-el-5-x86_64 file:/tftpboot/distro/redhat-el-5-x86_64 http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
 centos-5-x86_64 http://mirror.centos.org/centos/5.3/os/x86_64/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
 centos-5-i386 http://mirror.centos.org/centos/5.3/os/i386/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
 fedora-9-i386 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/i386/os/ http://bison.csm.ornl.gov/repos/unstable/fc-9-i386
