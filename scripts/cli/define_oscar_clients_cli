@@ -295,11 +295,13 @@ sub addclients
 
 sub postaddclients
 {
-    use OSCAR::ConfigManager;
+    require OSCAR::ConfigFile;
     my $config_file = "/etc/oscar/oscar.conf";
-    my $binpath = OSCAR::ConfigFile($config_file, undef, "OSCAR_SCRIPTS_PATH");
-    if (!OSCAR::Utils::is_a_valid_string ($binpath)) {
-        carp "ERROR: Impossible to get the binary location";
+    my $binpath = OSCAR::ConfigFile::get_value($config_file,
+        undef,
+        "OSCAR_SCRIPTS_PATH");
+    if (! -d $binpath) {
+        carp "ERROR: Invalid binary path";
         return -1;
     }
     chdir("$binpath");
