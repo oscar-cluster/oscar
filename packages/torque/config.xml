@@ -20,13 +20,30 @@
   </authors>
   <serverDeps>
     <requires>
-      <filters/>
+      <filters>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+        <dist>rhel</dist>
+        <dist>sles</dist>
+        <dist>suse</dist>
+      </filters>  
       <pkg>torque-oscar</pkg>
       <pkg>torque-oscar-server</pkg>
       <pkg>torque-oscar-gui</pkg>
       <pkg>torque-oscar-mom</pkg>
       <pkg>torque-oscar-client</pkg>
       <pkg>torque-modulefile</pkg>
+      <pkg>torque-oscar-scheduler</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>torque-oscar</pkg>
+      <pkg>torque-oscar-server</pkg>
+      <pkg>torque-oscar-gui</pkg>
+      <pkg>torque-oscar-mom</pkg>
+      <pkg>torque-oscar-client</pkg>
       <pkg>torque-oscar-scheduler</pkg>
     </requires>
   </serverDeps>
@@ -40,6 +57,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.1.12-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-06-25T13:07:16-05:00">
+        <item>Fix a dependency problem on Debian systems.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.1.11-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-05-11T05:44:33-05:00">
         <item>Fix a bug in the server-post-install script.</item>
