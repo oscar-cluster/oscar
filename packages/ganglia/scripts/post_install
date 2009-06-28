@@ -34,12 +34,16 @@ use OSCAR::Package;
 
 my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post_server_install");
 
-my $cmd = "$pkgdir/edit_ganglia_conf --gmetad --verbose";
+my $script = "$pkgdir/edit_ganglia_conf";
+if (! -f $script) {
+    die ("ERROR: script $script no available");
+}
+my $cmd = "$script --gmetad --verbose";
 if (system ($cmd)) {
     die "ERROR: Impossible to execute $cmd";
 }
 
-$cmd = "cexec /etc/init.d/gmond restart";
+$cmd = "/usr/bin/cexec /etc/init.d/gmond restart";
 if (system ($cmd)) {
     die "ERROR: Impossible to execute $cmd";
 }
