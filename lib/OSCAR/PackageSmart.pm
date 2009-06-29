@@ -250,12 +250,13 @@ sub prepare_pool ($$) {
     my ($verbose,$pool) = @_;
 
     # demultiplex pool arguments
-    print "Preparing pool: $pool\n" if $verbose;
+    OSCAR::Logger::oscar_log_section "Preparing pool: $pool";
 
     # Before to prepare a pool, we try to detect the associated binary package
     # format.
     my $format = detect_pool_format ($pool);
-    print "Binary package format for the pool: $format\n" if $verbose;
+    OSCAR::Logger::oscar_log_subsection "Binary package format for the pool: ".
+        $format;
 
     # check if pool update is needed
     my $pm;
@@ -284,7 +285,7 @@ sub prepare_pool ($$) {
 
     # prepare for smart installs
     $pm->repo($pool);
-    print "Pool $pool ready\n" if $verbose;
+    OSCAR::Logger::oscar_log_subsection "Pool $pool ready";
     return $pm;
 }
 
@@ -410,20 +411,24 @@ sub pool_gencache ($$) {
     # yum 2.6.0+ creates a file called cachecookie in /var/cache/yum/<repo> and
     # inorder to refresh the yum cache, this file needs to be deleted
     if (-f $yum_cache_cookie) {
-        print "Deleting file $yum_cache_cookie\n";
-        unlink($yum_cache_cookie) or croak("Failed to delete file $yum_cache_cookie");
+         OSCAR::Logger::oscar_log_subsection "Deleting file $yum_cache_cookie";
+        unlink($yum_cache_cookie) 
+            or (carp("ERROR: Failed to delete file $yum_cache_cookie"),
+                return 0);
     }
 
     $pm->repo($pool);
-    print "Calling gencache for $pool, this might take a minute ...";
+    OSCAR::Logger::oscar_log_subsection "Calling gencache for $pool, this ".
+        "might take a minute...";
 
     # The packman return code is defined in PackManDefs.pm
     my ($err, @out) = $pm->gencache;
     if (!$err) {
-        print " success\n";
+        OSCAR::Logger::oscar_log_subsection " success";
         return 0;
     } else {
-        carp " error ($err). Output was:\n" . join("\n",@out)."\n";
+        OSCAR::Logger::oscar_log_subsection " error ($err). Output was:\n"
+            . join("\n",@out)."\n";
         return 1;
     }
 }
