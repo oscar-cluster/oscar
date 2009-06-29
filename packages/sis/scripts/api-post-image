@@ -179,20 +179,26 @@ if (! -f $scconf || $force) {
         if ($ENV{OSCAR_VERBOSE});
 
     if (SystemInstaller::Image::write_scconf($imagedir, $root, $boot) == 0) {
-        carp "ERROR: Impossible to generate the systemconfig.conf file";
-        return -1;
+        die "ERROR: Impossible to generate the systemconfig.conf file";
     }
 
     if (OSCAR::ImageMgt::update_grub_config ($imagedir)) {
-        carp "ERROR: Impossible to update the grub config file in $imagedir";
-        return -1;
+        die "ERROR: Impossible to update the grub config file in $imagedir";
     }
 
     if (OSCAR::Utils::is_a_valid_string ($append_str)) {
         if (OSCAR::ImageMgt::update_kernel_append ($imagedir, $append_str)) {
-            carp "ERROR: Impossible to update kernel config ($imagedir)";
-            return -1;
+            die "ERROR: Impossible to update kernel config ($imagedir)";
         }
+    }
+
+    if (OSCAR::ImageMgt::update_modprobe_config ($imagedir)) {
+        die "ERROR: Impossible to update the modprobe configuration ".
+            "($imagedir)";
+    }
+
+    if (OSCAR::ImageMgt::update_image_initrd ($imagedir)) {
+        die "ERROR: Impossible to generate the initrd for $imagedir";
     }
 
 } else {

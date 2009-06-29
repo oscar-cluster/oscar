@@ -60,7 +60,9 @@ use warnings "all";
             image_exists
             install_opkgs_into_image
             update_grub_config
+            update_image_initrd
             update_kernel_append
+            update_modprobe_config
             update_systemconfigurator_configfile
             );
 
@@ -855,6 +857,108 @@ sub update_grub_config ($) {
             carp "ERROR: Impossible to execute $cmd";
             return -1;
         }
+    }
+
+    return 0;
+}
+
+# Return: 0 if success, -1 else.
+sub update_modprobe_config ($) {
+    my $image_path = shift;
+    my $cmd;
+
+    if (! -d $image_path) {
+        carp "ERROR: $image_path does not exist";
+        return -1;
+    }
+
+    my $path = "$image_path/etc";
+    if (! -d $path) {
+        carp "ERROR: $path does not exist";
+        return -1;
+    }
+
+    my $modprobe_conf = "/etc/modprobe.conf";
+    if (-f $modprobe_conf) {
+        $cmd = "cp $modprobe_conf $path";
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to execute $cmd";
+            return -1;
+        }
+    }
+
+    my $modprobe_dir = "/etc/modprobe.d";
+    if (-d $modprobe_dir) {
+        $cmd = "cp -rf $modprobe_dir $path";
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to execute $cmd";
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+# Return: 0 if success, -1 else.
+sub update_image_initrd ($) {
+    my $imgpath = shift;
+    my $cmd;
+
+    # First we create a "fake" fstab. The problem is the following: nowadays,
+    # binary packages for kernels try to create the initrd on the fly, based
+    # on configuration data. This is not compliant with the old systemimager
+    # idea where the initrd is created at the end of the image deployment. So
+    # we trick the configuration to allow the kernel package to generate the
+    # initrd.
+
+    # Currently the problem has been reported only for RPM based distros
+    my $os = OSCAR::OCA::OS_Detect::open ($imgpath);
+    if (!defined $os) {
+        carp "ERROR: Impossible to detect image distro ($imgpath)";
+        return -1;
+    }
+    return 0 if ($os->{pkg} ne "rpm");
+
+    # The /etc/systemconfig/systemconfig.conf should exist in the image.    
+    my $systemconfig_file = "$imgpath/etc/systemconfig/systemconfig.conf";
+    if (! -f $systemconfig_file) {
+        carp "ERROR: $systemconfig_file does not exist";
+        return -1;
+    }
+    use OSCAR::ConfigFile;
+    my $root_device = OSCAR::ConfigFile::get_value ($systemconfig_file,
+        "BOOT", "ROOTDEV");
+    if (!OSCAR::Utils::is_a_valid_string ($root_device)) {
+        carp "ERROR: Impossible to get the default root device";
+        return -1;
+    }
+    $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" >> /etc/fstab.fake";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+
+    # TODO: We currently assume the kernel0 is the one we boot up, this is
+    # not necessarily the case right now.
+    my $initrd = OSCAR::ConfigFile::get_value ($systemconfig_file,
+        "KERNEL0", "INITRD");
+    my $version = OSCAR::ConfigFile::get_value ($systemconfig_file,
+        "KERNEL0", "PATH");
+    if (!OSCAR::Utils::is_a_valid_string ($version)) {
+        carp "ERROR: Impossible to detect the image kernel version ($imgpath)";
+        return -1;
+    }
+    if ($version =~ /\/boot\/vmlinuz-(.*)/) {
+        $version = $1;
+    } else {
+        carp "ERROR: Impossible to get the version ($version)";
+        return -1;
+    }
+    $cmd = "chroot $imgpath /usr/sbin/mkinitrd -v -f --fstab=fstab.fake ".
+           "$initrd $version";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
     }
 
     return 0;

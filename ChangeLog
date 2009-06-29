@@ -3,6 +3,7 @@
 - Update ORM to 1.4.
 - Update Opium to 1.3.1.
 - Update RAPT to 2.8.6.
+- Update sync-files to 2.4.1.
 - Update SystemInstaller to 2.4.2.
 - Update Yume to 2.8.10.
 - Fix the PATH environment variable update.
@@ -16,6 +17,7 @@ CLI.
 (Experimental package set).
 - [Ticket #466] The oscar script supports short options.
 OSCAR.
+- [Ticket #551] A correct initrd is generated for latest RPM based distros.
 - Add Ubuntu-904-x84_64 in the list of supported distributions (still
 experimental).
 - Convert the ssh_install script to Perl so it is easier to maintain (some
