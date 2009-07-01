@@ -164,6 +164,16 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.3-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-07-01T15:24:40-05:00">
+        <item>Update the api-post-image script so the different scripts are executed under the good conditions.</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="4.0.2-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-06-29T00:48:37-05:00">
+        <item>Update the api-post-image script so the initrd is correctly generated for RPM based distros.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.1-2">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-04-08T10:28:49-05:00">
         <item>New packages to deal with a bug in opkgc.</item>

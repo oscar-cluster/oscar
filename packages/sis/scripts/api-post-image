@@ -182,27 +182,27 @@ if (! -f $scconf || $force) {
         die "ERROR: Impossible to generate the systemconfig.conf file";
     }
 
-    if (OSCAR::ImageMgt::update_grub_config ($imagedir)) {
-        die "ERROR: Impossible to update the grub config file in $imagedir";
-    }
-
-    if (OSCAR::Utils::is_a_valid_string ($append_str)) {
-        if (OSCAR::ImageMgt::update_kernel_append ($imagedir, $append_str)) {
-            die "ERROR: Impossible to update kernel config ($imagedir)";
-        }
-    }
-
-    if (OSCAR::ImageMgt::update_modprobe_config ($imagedir)) {
-        die "ERROR: Impossible to update the modprobe configuration ".
-            "($imagedir)";
-    }
-
-    if (OSCAR::ImageMgt::update_image_initrd ($imagedir)) {
-        die "ERROR: Impossible to generate the initrd for $imagedir";
-    }
-
 } else {
     oscar_log_subsection "[INFO] The $scconf already exists, not update.";
+}
+
+if (OSCAR::ImageMgt::update_grub_config ($imagedir)) {
+    die "ERROR: Impossible to update the grub config file in $imagedir";
+}
+
+if (OSCAR::Utils::is_a_valid_string ($append_str)) {
+    if (OSCAR::ImageMgt::update_kernel_append ($imagedir, $append_str)) {
+        die "ERROR: Impossible to update kernel config ($imagedir)";
+    }
+}
+
+if (OSCAR::ImageMgt::update_modprobe_config ($imagedir)) {
+    die "ERROR: Impossible to update the modprobe configuration ".
+        "($imagedir)";
+}
+
+if (OSCAR::ImageMgt::update_image_initrd ($imagedir)) {
+    die "ERROR: Impossible to generate the initrd for $imagedir";
 }
 
 $ENV{OSCAR_VERBOSE} = $initial_verbose;
