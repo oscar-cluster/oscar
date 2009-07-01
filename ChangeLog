@@ -24,6 +24,7 @@ experimental).
 had weird errors in the past; running the script twice was the only solution).
 - Fix the configurator_cli script when using the different new APIs.
 - Make sure we install mysql-5.0 on Debian lenny and not mysql-4.1.
+- Fix and improve the SIS api-post-image script.
 
 6.0.3:
 - Update CentOS-5 support to CentOS-5.3.
