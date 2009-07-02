@@ -196,6 +196,12 @@ if (OSCAR::Utils::is_a_valid_string ($append_str)) {
     }
 }
 
+my $cmd = "/opt/sync_files/bin/sync_files -i $image --force --image-only";
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+        
+
 if (OSCAR::ImageMgt::update_modprobe_config ($imagedir)) {
     die "ERROR: Impossible to update the modprobe configuration ".
         "($imagedir)";
