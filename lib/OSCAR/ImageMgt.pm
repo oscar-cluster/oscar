@@ -932,7 +932,8 @@ sub update_image_initrd ($) {
         carp "ERROR: Impossible to get the default root device";
         return -1;
     }
-    $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" >> /etc/fstab.fake";
+    $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" ".
+           ">> $imgpath/etc/fstab.fake";
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
         return -1;
@@ -954,7 +955,7 @@ sub update_image_initrd ($) {
         carp "ERROR: Impossible to get the version ($version)";
         return -1;
     }
-    $cmd = "chroot $imgpath /usr/sbin/mkinitrd -v -f --fstab=fstab.fake ".
+    $cmd = "chroot $imgpath /sbin/mkinitrd -v -f --fstab=fstab.fake ".
            "$initrd $version";
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
