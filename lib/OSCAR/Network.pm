@@ -41,7 +41,7 @@ use Data::Dumper;
 use base qw(Exporter);
 @EXPORT = qw(
             get_network_config
-            get_network_adapteur
+            get_network_adapter
             interface2ip
             is_a_valid_ip
             set_network_adapter
