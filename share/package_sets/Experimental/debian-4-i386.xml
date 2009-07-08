@@ -8,7 +8,7 @@
         <opkg>ganglia</opkg>
         <opkg>lam</opkg>
         <opkg>oda</opkg>
-        <opkg>oscar-v</opkg>
+        <opkg>oscarv-kvm</opkg>
         <opkg>opium</opkg>
         <opkg>rapt</opkg>
         <opkg>sc3</opkg>
