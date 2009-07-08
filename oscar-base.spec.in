@@ -23,6 +23,7 @@ Requires: 	yum, createrepo, yume
 Vendor: 	OSCAR
 Distribution: 	OSCAR
 Packager: 	Geoffroy Vallee
+Requires:   perl-XML-Simple
 
 Buildroot: 	%{_tmppath}/%{name}-%{version}-root
 BuildArch: 	noarch
@@ -57,6 +58,7 @@ rm -rf %{_tmppath}/%{name}-%{version}-root
 Group: Applications/System
 Summary: Base OSCAR package
 AutoReqProv: no
+Requires: oscar-base-scripts == %{version}-%{release}
 %description -n oscar-base
 Base OSCAR package.
 OSCAR allows users, regardless of their experience level with a *nix
