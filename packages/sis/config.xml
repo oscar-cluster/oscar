@@ -165,7 +165,7 @@
   <apiDeps/>
   <changelog>
     <versionEntry version="4.0.4-1">
-      <changelogEntry authorName="Geoffroy Vallee" date="2009-07-0i2T02:37:01-05:00">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-07-02T02:37:01-05:00">
         <item>Update the api-post-image script so we always call sync-files to synchronize images with customized system files.</item>
       </changelogEntry>
     </versionEntry>
