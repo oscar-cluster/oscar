@@ -21,26 +21,35 @@
 
 #client make the /etc/odaserver file on all oscar s
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use Carp;
-
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
+use OSCAR::Opkg;
 
 my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
+my $cmd;
 if ( $db_type eq "pgsql" ){
     my $PG_DATA_DIR = "/var/lib/pgsql/data";
     my $database_daemon = "postgresql";
     my $pg_conf = "$PG_DATA_DIR/pg_hba.conf";
     my $postgresql_conf = "$PG_DATA_DIR/postgresql.conf";
     if ($chk eq "old"){
-        if ( !system("/etc/init.d/$database_daemon status | grep -c stopped") ) {
-            !system("/etc/init.d/$database_daemon start") or
-                croak("Couldn't restart $database_daemon");
+        $cmd = "/etc/init.d/$database_daemon status | grep -c stopped";
+        if ( !system($cmd) ) {
+            $cmd = "/etc/init.d/$database_daemon start";
+            if (system($cmd)) {
+                die ("ERROR: Impossible to execute $cmd");
+            }
         }
 
         open OLD_CFG, "$pg_conf"
-            or croak("Can not open $pg_conf file");
+            or die ("ERROR: Can not open $pg_conf file");
         open NEW_CFG, ">$pg_conf.$$";
 
         # Clear off the previous ODA configurations if it exists
@@ -54,7 +63,7 @@ if ( $db_type eq "pgsql" ){
         close OLD_CFG;
 
         open UPDATE_CFG, ">>$pg_conf.$$"
-            or croak("Can not open $pg_conf.$$ file");
+            or croak("ERROR: Can not open $pg_conf.$$ file");
             
         chomp(my @ip_addrs = `oda nics | grep -v List | grep -v =`);
 
@@ -69,35 +78,51 @@ if ( $db_type eq "pgsql" ){
         rename $pg_conf, "$pg_conf.bak";
         rename "$pg_conf.$$", $pg_conf;
 
-        system("chmod 600 $pg_conf");
-        system("chown postgres:postgres $pg_conf");
+        $cmd = "chmod 600 $pg_conf";
+        if (system($cmd)) {
+            die "ERROR: Impossible to execute $cmd";
+        }
+        $cmd = "chown postgres:postgres $pg_conf";
+        if (system($cmd)) {
+            die "ERROR: Impossible to execute $cmd";
+        }
     }
 
     my $database_daemon = "postgresql";
     oscar_log_subsection("Checking status of $db_type server $database_daemon");
     if (! -x "/etc/init.d/$database_daemon") {
-        croak("Couldn't find /etc/init.d/$database_daemon. $db_type server not correctly installed?");
+        die ("ERROR: Couldn't find /etc/init.d/$database_daemon. ".
+              "$db_type server not correctly installed?");
     }
     # Reload the database if it is running. Otherwise, just start it.
-    if ( system("/etc/init.d/$database_daemon status | grep -c stopped > /dev/null 2>&1") ){
-      !system("/etc/init.d/$database_daemon reload") or croak("Couldn't reload $database_daemon");
-      $chk = "old";
-      $ENV{OSCAR_DB} = "$db_type:$chk";
+    # TODO: Should be using OSCAR::SystemServices
+    $cmd = "/etc/init.d/$database_daemon status | ".
+           "grep -c stopped > /dev/null 2>&1";
+    if ( system($cmd) ){
+        $cmd = "/etc/init.d/$database_daemon reload";
+        if (system($cmd)) {
+            die ("ERROR: Couldn't reload $database_daemon");
+        }
+        $chk = "old";
+        $ENV{OSCAR_DB} = "$db_type:$chk";
     } else {
-      oscar_log_subsection("$database_daemon was not running and will start");
-      !system("/etc/init.d/$database_daemon start") or croak("Couldn't start $database_daemon");
+        oscar_log_subsection("$database_daemon was not running and will start");
+        $cmd = "/etc/init.d/$database_daemon start";
+        if (system($cmd)) {
+            die ("ERROR: Couldn't start $database_daemon");
+        }
     }
 
 }
 
 
 my $file = "/etc/odaserver";
-print "generating the $file file on all oscar clients\n";
-my $command = ". /etc/profile.d/c3.sh && cexec \'echo oscar_server > $file\'";
-print "$command\n";
-system( $command ) && croak("oda server location file $file push failed.");
-
-
+OSCAR::Opkg::opkg_print "Generating the $file file on all oscar clients...\n";
+$cmd = "/usr/bin/cexec \'echo oscar_server > $file\'";
+OSCAR::Opkg::opkg_print "Executing: $cmd\n";
+if (system( $cmd )) {
+    die ("ERROR: oda server location file $file push failed.");
+}
 
 #####################################################################
 #   OPIUM CONFIGURATION FOR ODA
@@ -105,8 +130,10 @@ system( $command ) && croak("oda server location file $file push failed.");
 
 # Execute the confmgr of OPIUM to synchronize the /etc/odapw with
 # client nodes.
-my $opium_cmd = "/opt/sync_files/bin/confmgr --syncnow --add /etc/odapw";
+$cmd = "/opt/sync_files/bin/confmgr --syncnow --add /etc/odapw";
 
-system( $opium_cmd ) && croak("OPIUM failed to synchronize the /etc/odapw.");
+if (system( $cmd )) {
+    die ("ERROR: Impossible to execute $cmd.");
+}
 
 exit 0;
