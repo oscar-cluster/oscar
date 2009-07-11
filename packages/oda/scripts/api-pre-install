@@ -25,13 +25,20 @@ use File::Copy;
 
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                       undef,
-                                                      "OSCAR_SCRIPTS_PATH");
+                                                     "OSCAR_SCRIPTS_PATH");
+my $db_type = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                                      undef,
+                                                     "DB_TYPE");
 my $oda_cmd = "$binaries_path/oda";
 
-my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
+#my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
 my $mysqld;
 my $pgsqld = "postgresql";
 my $database_daemon = $pgsqld if $db_type eq "pgsql";
+# We currently force the restart all the time: this script is executed when
+# updating the opkg-oda package, it is difficult to know the exact status of
+# the system so we just assume this is a new install.
+my $chk = "new";
 
 # Reconfigure PostgreSQL
 if ($db_type eq "pgsql"){
