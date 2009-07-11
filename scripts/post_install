@@ -45,8 +45,7 @@ use OSCAR::Package;
 use Getopt::Long;
 use Carp;
 
-my $verbose;
-Getopt::Long::Configure("pass_through");
+my ($verbose);
 GetOptions(
             "verbose"   => \$verbose,
           );
@@ -114,11 +113,11 @@ sub sortclients(@) {
 sub get_numproc {
 	my @machines= sortclients list_client();
 	foreach my $mach (@machines) {
-		my $CMD="/usr/bin/ssh -n ".$mach->{hostname}." cat /proc/cpuinfo";
+		my $CMD="/usr/bin/ssh -n ".$mach->{name}." cat /proc/cpuinfo";
 		oscar_log_subsection ("Gathering processor count from " .
-                              $mach->{hostname}.".)");
+                              $mach->{name}.".)");
 		open (CPIPE,"$CMD |") 
-            or (carp("Unable to query machine ".$mach->{hostname}),next);
+            or (carp("Unable to query machine ".$mach->{name}),next);
 		my $count=0;
 		while (<CPIPE>) {
 			++$count if (/^processor/);
@@ -126,12 +125,12 @@ sub get_numproc {
 		close(CPIPE);
 		if (($count !~ /^[0-9]+$/) || ($count == 0)) {
 			carp("Improper count ($count) returned from machine " .
-                 $mach->{hostname});
+                 $mach->{name});
             return -1;
 		} else {
 			oscar_log_subsection ("Updating database for machine " .
-                                 $mach->{hostname} . " cpus=$count.");
-			$mach->proccount($count);
+                                 $mach->{name} . " cpus=$count.");
+			$mach->{proccount} = $count;
 			SIS::NewDB::set_client($mach);
 		}
 	}
