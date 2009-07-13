@@ -996,7 +996,7 @@ sub stop_monitor_deployment {
 # Pop up Network Boot Manager widget
 sub netbootmgr {
     my ($window, $pipe) = @_;
-    my $cmd = "/usr/sbin/netbootmgr";
+    my $cmd = "/usr/bin/netbootmgr";
     system("$cmd &");
 }
 

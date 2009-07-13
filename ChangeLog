@@ -28,6 +28,7 @@ had weird errors in the past; running the script twice was the only solution).
 - Improve the spec file to have a finer grain dependencies management.
 - Fix the script that gets the number of procs on compute nodes (patch from
 Thilo).
+- Fix the path to netbootmgr in oscar_wizard.
 
 6.0.3:
 - Update CentOS-5 support to CentOS-5.3.
