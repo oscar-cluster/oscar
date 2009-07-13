@@ -23,7 +23,7 @@
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Network;
 use OSCAR::Database;
-use OSCAR::Configbox;
+use OSCAR::Configurator_backend;
 use Carp;
 
 my $ntpBuffer = "";
@@ -37,7 +37,7 @@ my $ntpd = "ntpd";
 $ntpd = "ntp" if -x "/etc/init.d/ntp";
 
 # get headnode's interface information from OSCAR database
-my $iface = get_headnode_iface();
+my $iface = OSCAR::Database::get_headnode_iface(undef, undef);
 
 open(CONF, $ntp_conf) or croak("Failed to open $ntp_conf");
 
@@ -58,7 +58,8 @@ $network = join(".", @results);
 
 # User has configured ntpconfig package with a NTP server
 if (-e $configurator) {
-    $ref = readInConfigValues($configurator,"ntpconfig","",noarray=>1);
+    $ref = OSCAR::Configurator_backend::readInConfigValues($configurator,
+        "ntpconfig", "", noarray=>1);
     # If ntpconfig package has configured NTP server before, replace
     if ($ntpBuffer =~ /User selected NTP Server/) {
 	$ntpBuffer =~ s/^server.*\nrestrict.*\n/server  $ref->{ntpserver}\nrestrict $ref->{ntpserver} mask 255.255.255.255\n/m;
