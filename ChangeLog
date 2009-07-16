@@ -43,6 +43,7 @@ config file.
 - Fix a bug in the management of configuration file when no block is used.
 - Add a script to oscar-updater so we make sure a DB_TYPE variable is in the
 oscar configuration file.
+- Update the ssh_user_tests to make more generic (patch from Thilo).
 
 6.0.3:
 - Update CentOS-5 support to CentOS-5.3.

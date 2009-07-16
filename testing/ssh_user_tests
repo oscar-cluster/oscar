@@ -10,8 +10,14 @@
 # Authors: Jason Brechin
 #          Jeremy Enos
 
+[ -z "${OSCAR_TESTPRINT}" ] && OSCAR_TESTPRINT="./testprint"
 
 node1=$1
+
+if [ -z "${node1}" ]; then
+  echo "ERROR: no node given!"
+  exit 1
+fi
 
 if ping -c 1 $node1 >/dev/null 2>&1
 then
@@ -21,7 +27,7 @@ else
 fi
 
 $OSCAR_TESTPRINT --label "SSH server->node" 
-if ssh $node1 hostname > /dev/null 2>&1
+if ssh -o 'StrictHostKeyChecking no' $node1 hostname > /dev/null 2>&1
 then
   $OSCAR_TESTPRINT --label "SSH server->node" -p 
 else
@@ -30,7 +36,7 @@ fi
 
 $OSCAR_TESTPRINT --label "SSH node->server"  
 server=`hostname`
-if ssh $node1 ssh $server hostname >/dev/null 2>&1
+if ssh $node1 "ssh -o 'StrictHostKeyChecking no' $server hostname >/dev/null 2>&1"
 then
   $OSCAR_TESTPRINT --label "SSH node->server" -p 
 else
