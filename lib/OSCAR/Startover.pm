@@ -154,6 +154,19 @@ sub startover_stage1 ($) {
         return -1;
     }
 
+    use OSCAR::PackagePath;
+    use OSCAR::Utils;
+    my $distro = OSCAR::PackagePath::get_distro();
+    if (!OSCAR::Utils::a_valid_string ($distro)) {
+        carp "ERROR: Impossible to detect the local distro";
+        return -1;
+    }
+    my $compat_distro = OSCAR::PackagePath::get_compat_distro ($distro);
+    if (!OSCAR::Utils::a_valid_string ($compat_distro)) {
+        carp "ERROR: Impossible to detect the compat distro";
+        return -1;
+    }
+
     my $prereqs_path = $config->{'prereqs_path'};
     my $ipcmd = $config->{'binaries_path'}."/install_prereq ";
 
@@ -195,9 +208,21 @@ sub startover_stage1 ($) {
     remove_prereq ($ipcmd, $packman_path);
 
     # Remove config file in /tftpboot
-    print "[INFO] We should remove the config files in /tftpboot but this is ".
-          "not yet implemented\n";
+    my $file = "/tftpboot/distro/$compat_distro.url";
+    if (-f $file) {
+        OSCAR::Logger::oscar_log_subsection ("Removing $file...");
+        unlink ($file) or (carp "ERROR: Impossible to remove $file",
+                           return -1);
+    }
+    $file = "/tftpboot/oscar/$distro.url";
+    if (-f $file) {
+        OSCAR::Logger::oscar_log_subsection ("Removing $file...");
+        unlink ($file) or (carp "ERROR: Impossible to remove $file",
+                           return -1);
+    }
     
+    # We are done.
+    return 0;
 }
 
 sub start_over () {
