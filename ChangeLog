@@ -40,6 +40,7 @@ handed either in the config file specific to the OSCAR repo or the main yum
 config file.
 - Update the list of packages for debian-5-i386 (patch from Paul Kilgo).
 - Finalize the start_over capability.
+- Fix a bug in the management of configuration file when no block is used.
 
 6.0.3:
 - Update CentOS-5 support to CentOS-5.3.

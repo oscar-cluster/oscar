@@ -164,6 +164,10 @@ sub set_value ($$$$) {
         if ($block_end == -1) {
             $block_end = $pos;
         }
+    } else {
+        # If no block is defined, the block is actually the full file.
+        $block_end = scalar (@file_data);
+        $block_start = 0;
     }
 
     #
@@ -185,7 +189,7 @@ sub set_value ($$$$) {
     if ($position == $block_end) {
         $position = $block_start;
         $line = OSCAR::FileUtils::get_line_in_file ($config_file, $position);
-        $line .= "$key=$value\n";
+        $line = "$key=$value\n".$line;
     } else {
         $line = "$key=$value";
     }
