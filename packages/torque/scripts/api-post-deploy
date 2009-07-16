@@ -313,7 +313,9 @@ if ($cmd_input ne "")
     my $pbs_spool = "/var/spool/pbs";
     open (CMD,"|/opt/pbs/bin/qmgr -a -e ");
     print CMD $cmd_input;
-    close (CMD) or croak("Configuration of TORQUE queues failed, check the logs at $pbs_spool");
+    close (CMD) 
+        or croak("ERROR: Impossible to Configure TORQUE queues, ".
+                 "check the logs at $pbs_spool");
   }
 restartMaui();
 
