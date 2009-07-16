@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+#
+# Copyright (c) 2009 Oak Ridge National Laboratory
+#                    Geoffroy Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id$
+#
+
+use strict;
+use Carp;
+
+use OSCAR::ConfigFile;
+use OSCAR::Utils;
+
+my $var = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf", 
+                                        undef,
+                                        "DB_TYPE");
+
+if (!OSCAR::Utils::is_a_valid_string ($var)) {
+    print "[INFO] DB_TYPE is not in the configuration file. ".
+          "Adding mysql as default option\n";
+    if (OSCAR::ConfigFile::set_value ("/etc/oscar/oscar.conf",
+                                      undef,
+                                      "DB_TYPE",
+                                      "mysql")) {
+        die "ERROR: Impossible to add DB_TYPE to /etc/oscar/oscar.conf";
+    }
+}
+
+exit 0;
+
