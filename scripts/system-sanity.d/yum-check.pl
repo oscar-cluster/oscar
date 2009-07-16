@@ -43,7 +43,7 @@ if ( -f "/etc/yum.conf" ) {
 
     # Check if the oscar repo has been added to /etc/yum.repos.d
     my $value;
-    my $file = `grep bison.csm.ornl.gov /etc/yum.repos.d/* | awk -F':' '{print \$1}'`;
+    my $file = `grep oscar /etc/yum.repos.d/* | awk -F':' '{print \$1}'`;
     chomp $file;
 
     if ($file ne "") {
