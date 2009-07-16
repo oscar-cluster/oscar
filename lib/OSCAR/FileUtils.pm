@@ -137,9 +137,15 @@ sub add_line_to_file_without_duplication ($$) {
         return -1;
     }
 
-    open (DAT, ">>$file_path") 
-        or (carp "ERROR: Impossible to open the file: $file_path.",
-            return -1);
+    if (-f $file_path) {
+        open (DAT, ">>$file_path") 
+            or (carp "ERROR: Impossible to open the file: $file_path.",
+                return -1);
+    } else {
+        open (DAT, ">$file_path")
+            or (carp "ERROR: Impossible to open the file: $file_path.",
+                return -1);
+    }
     if (line_in_file($line, $file_path) == -1) {
         print DAT "$line" 
             or (carp "ERROR: Impossible to write in $file_path", return -1);

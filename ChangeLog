@@ -3,6 +3,7 @@
 - Update OPKG ODA to 1.32.2.
 - Update OPKG SIS to 4.0.4.
 - Update OPKG Switcher to 1.0.11.
+- Update OPKG Torque to 2.1.13.
 - Update OPKGC to 0.4.2.
 - Update ORM to 1.4.0.
 - Update Opium to 1.3.1.
@@ -44,6 +45,8 @@ config file.
 - Add a script to oscar-updater so we make sure a DB_TYPE variable is in the
 oscar configuration file.
 - Update the ssh_user_tests to make more generic (patch from Thilo).
+- Fix a bug in FileUtils: if we had a line to a non existing file, the file is
+created.
 
 6.0.3:
 - Update CentOS-5 support to CentOS-5.3.
