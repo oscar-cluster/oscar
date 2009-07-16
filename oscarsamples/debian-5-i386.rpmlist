@@ -6,3 +6,5 @@ linux-image-generic
 ssh
 systemconfigurator
 nfs-common
+initrd-tools
+linux-image-2.6.x
