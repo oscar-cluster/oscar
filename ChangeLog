@@ -25,6 +25,8 @@ CLI.
 - [Ticket #466] The oscar script supports short options.
 OSCAR.
 - [Ticket #551] A correct initrd is generated for latest RPM based distros.
+- [Ticket #558] Since switcher is now functional, it is now possible to
+specify kernel boot parameters.
 - Add Ubuntu-904-x84_64 in the list of supported distributions (still
 experimental).
 - Convert the ssh_install script to Perl so it is easier to maintain (some
