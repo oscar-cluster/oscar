@@ -862,6 +862,11 @@ sub update_grub_config ($) {
     return 0;
 }
 
+# This update the modprobe.conf file for a given image. The content that needs
+# to be added is static since it currently only aims to enable the creation of
+# a valid initrd for RHEL-5 based systems.
+#
+# Input: image_path, path of the image for which the update has to be done.
 # Return: 0 if success, -1 else.
 sub update_modprobe_config ($) {
     my $image_path = shift;
@@ -872,28 +877,13 @@ sub update_modprobe_config ($) {
         return -1;
     }
 
-    my $path = "$image_path/etc";
-    if (! -d $path) {
-        carp "ERROR: $path does not exist";
+    my $modprobe_conf = "$image_path/etc/modprobe.conf";
+    my $content = "alias scsi_hostadapter1 amd74xx ata_piix";
+    if (OSCAR::FileUtils::add_line_to_file_without_duplication (
+            $content,
+            $modprobe_conf)) {
+        carp "ERROR: Impossible to add $content into $modprobe_conf";
         return -1;
-    }
-
-    my $modprobe_conf = "/etc/modprobe.conf";
-    if (-f $modprobe_conf) {
-        $cmd = "cp $modprobe_conf $path";
-        if (system ($cmd)) {
-            carp "ERROR: Impossible to execute $cmd";
-            return -1;
-        }
-    }
-
-    my $modprobe_dir = "/etc/modprobe.d";
-    if (-d $modprobe_dir) {
-        $cmd = "cp -rf $modprobe_dir $path";
-        if (system ($cmd)) {
-            carp "ERROR: Impossible to execute $cmd";
-            return -1;
-        }
     }
 
     return 0;
@@ -934,6 +924,7 @@ sub update_image_initrd ($) {
     }
     $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" ".
            ">> $imgpath/etc/fstab.fake";
+    print "[INFO] Running $cmd...\n";
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
         return -1;
@@ -957,6 +948,7 @@ sub update_image_initrd ($) {
     }
     $cmd = "chroot $imgpath /sbin/mkinitrd -v -f --fstab=fstab.fake ".
            "$initrd $version";
+    print "[INFO] Running $cmd...\n";
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
         return -1;
