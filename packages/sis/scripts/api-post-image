@@ -196,7 +196,11 @@ if (OSCAR::Utils::is_a_valid_string ($append_str)) {
     }
 }
 
-my $cmd = "/opt/sync_files/bin/sync_files -i $image --force --image-only";
+my $exec = "/opt/sync_files/bin/sync_files";
+if (! -f $exec) {
+    die "ERROR: $exec does not exists";
+}
+my $cmd = "$exec -i $image --force --image-only";
 if (system ($cmd)) {
     die "ERROR: Impossible to execute $cmd";
 }
