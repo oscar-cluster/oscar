@@ -2,7 +2,7 @@ DESTDIR=
 INSTALLDIR=/usr/share/oscar/testing/
 
 SUBDIRS := unit_testing
-SCRIPTS := run_unit_test testprint test_cluster
+SCRIPTS := run_unit_test testprint test_cluster ssh_user_tests
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
