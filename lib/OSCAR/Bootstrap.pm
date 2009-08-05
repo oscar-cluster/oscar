@@ -267,6 +267,10 @@ sub init_server ($) {
 
     OSCAR::Logger::oscar_log_subsection ("Identified core packages: " . 
         join(' ', @core_opkgs));
+    if (scalar (@core_opkgs) == 0) {
+        carp "ERROR: No core packages found";
+        return -1;
+    }
     OSCAR::Utils::print_array (@core_opkgs) if $verbose;
 
     # We install one OPKG at a time so if the installation of one OPKG fails,
