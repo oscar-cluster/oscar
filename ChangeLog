@@ -9,9 +9,9 @@
 - Update Opium to 1.3.1.
 - Update PackMan to 3.1.11.
 - Update RAPT to 2.8.6.
-- Update Selector to 1.2.2.
+- Update Selector to 1.2.3.
 - Update sync-files to 2.5.0.
-- Update SystemInstaller to 2.4.2.
+- Update SystemInstaller to 2.4.3.
 - Update Yume to 2.8.10.
 - Fix the PATH environment variable update.
 - [Ticket #134] Make sure that /proc is umounted at the end of the creation of
@@ -49,6 +49,7 @@ oscar configuration file.
 - Update the ssh_user_tests to make more generic (patch from Thilo).
 - Fix a bug in FileUtils: if we had a line to a non existing file, the file is
 created.
+- Include the ssh_user_tests script.
 
 6.0.3:
 - Update CentOS-5 support to CentOS-5.3.
