@@ -14,8 +14,8 @@ my $format;
 
 print "\n\n*** Test few repository formet detection related functions.***\n\n";
 
-my @rpm_online_repos = ("http://isoredirect.centos.org/centos/5.2/os/x86_64/",
-                        "http://bear.csm.ornl.gov/repos/unstable/rhel-5-x86_64");
+my @rpm_online_repos = ("http://mirror.centos.org/centos/5.3/os/x86_64/",
+                        "http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64");
 my @deb_online_repos = ("http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse",
                         "http://bear.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/");
 my @fake_repos = ("http://toto.com/titi/");
