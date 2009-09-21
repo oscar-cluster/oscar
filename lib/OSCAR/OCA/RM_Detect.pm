@@ -15,7 +15,6 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::OCA;
-use Data::Dumper;
 
 #
 # Exports
