@@ -5,13 +5,14 @@
 - Update OPKG Switcher to 1.0.11.
 - Update OPKG Torque to 2.1.13.
 - Update OPKGC to 0.4.2.
+- Update ODA to 1.4.6.
 - Update ORM to 1.4.0.
 - Update Opium to 1.3.1.
 - Update PackMan to 3.1.11.
 - Update RAPT to 2.8.6.
 - Update Selector to 1.2.3.
 - Update sync-files to 2.5.0.
-- Update SystemInstaller to 2.4.3.
+- Update SystemInstaller to 2.4.4.
 - Update Yume to 2.8.10.
 - Fix the PATH environment variable update.
 - [Ticket #134] Make sure that /proc is umounted at the end of the creation of
