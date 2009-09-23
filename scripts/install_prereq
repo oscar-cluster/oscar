@@ -403,16 +403,19 @@ sub install_prereq($$$$$) {
         }
     } else {
         # do the removes before the installs
-        handle_smart_pkgs(1,@$removes);
-        handle_smart_pkgs(0,@$installs);
+        handle_smart_pkgs(1, @$removes);
+        handle_smart_pkgs(0, @$installs);
     }
 
     # check whether binary packages were really installed!!!
     # ...
-
-    if (scalar(@$installs) && &check_installed(@$installs)) {
-        carp "!!! ERROR: Some packages were NOT installed !!!\n";
-        return -1;
+    if (scalar(@$installs)) {
+        my @missing_pkgs = OSCAR::Prereqs::check_installed(@$installs);
+        if (scalar (@missing_pkgs) > 0) {
+            carp "ERROR: The following packages were NOT installed:\n".
+                 join (", ", @missing_pkgs)."\n";
+            return -1;
+        }
     }
 
     for my $cmd (@$shellcmds) {

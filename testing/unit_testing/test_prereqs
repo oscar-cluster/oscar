@@ -41,12 +41,13 @@ print "\t-> Prereqs status\n";
 OSCAR::Prereqs::get_prereqs_status("debian",
                                    4,
                                    "x86_64",
-                                    "$path/base/");
+                                   "$path/base/");
 
-my $ret = OSCAR::Prereqs::check_installed(@$installs);
-print "\t-> Number of packages to install: $ret\n";
+my @missing_pkgs = OSCAR::Prereqs::check_installed(@$installs);
+print "\t-> Number of packages to install: ". scalar (@missing_pkgs).
+      " -- ".join (", ",@missing_pkgs)."\n";
 
-$ret = OSCAR::Prereqs::check_removed(@$removes);
+my $ret = OSCAR::Prereqs::check_removed(@$removes);
 print "\t-> Number of packages to remove: $ret\n";
 
 

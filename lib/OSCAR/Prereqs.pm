@@ -261,16 +261,20 @@ sub is_package_installed ($) {
 
 #
 # Check whether packages were really installed or not
+# Return: the list of packages that are not installed
 #
 sub check_installed (@) {
     my (@pkgs) = @_;
+    my @missing_pkgs;
     my $err = 0;
+
     for my $p (@pkgs) {
         if (!is_package_installed ($p)) {
-            $err++;
+            push (@missing_pkgs, $p);
         }
     }
-    return $err;
+
+    return (@missing_pkgs);
 }
 
 sub check_removed (@) {
