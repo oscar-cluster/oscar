@@ -65,8 +65,6 @@
         <item>Update the server-post-install to reflect an API modification.</item>
       </changelogEntry>
     </versionEntry>
-  </changelog>
-  <changelog>
     <versionEntry version="0.1.2-9">
       <changelogEntry authorName="Erich Focht" date="2007-10-05T16:51:18+02:00">
         <item>converted to new opkgc format</item>
