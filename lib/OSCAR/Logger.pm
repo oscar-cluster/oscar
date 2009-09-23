@@ -129,6 +129,8 @@ sub init_log_file ($) {
         "$log_file\n\nAborting the install.\n\n"), return -1);
     }
 
+    print ("Verbosity: $ENV{OSCAR_VERBOSE}\n");
+
     return 0;
 }
 
