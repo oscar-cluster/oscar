@@ -239,11 +239,12 @@ my %pe_exists  = ();
 for (@pes) { $pe_exists{$_} = 1 };
 
 # function to setup parallel environment given the package shortname (eg. lam)
-sub setup_pe {
+sub setup_pe ($) {
   my $pe = shift;
 
   # FIXME: Right now it checks to see if the parallel library is installed on the headnode
-  if ( is_installed_on_node("$pe") ) {
+  if ( OSCAR::Database::is_installed_on_node("$pe",
+            "oscar_server", undef, undef, 0, undef) ) {
         # Check to see if we already have the parallel environment defined
         `$qconf -sp $pe 2>&1`;
 

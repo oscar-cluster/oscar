@@ -38,6 +38,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="6.1.0-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-09-23T14:19:39-05:00">
+        <item>Fix the server server-post-install: a function call to OSCAR::Database did not follow the API.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="6.0u9.0-10">
       <changelogEntry authorName="Geoffroy Vallee" date="2000-03-12T12:55:39-05:00">
         <item>Update the c3 path.</item>
