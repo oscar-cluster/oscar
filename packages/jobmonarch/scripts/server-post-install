@@ -10,6 +10,7 @@ use DBD::mysql;
 
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Configbox;
+use OSCAR::Configurator_backend;
 use OSCAR::Database;
 use OSCAR::Opkg;
 use OSCAR::Distro;
@@ -22,7 +23,9 @@ sub get_config {
     my $config_data = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
     if (-e $config_data) {
-	my $ref = readInConfigValues($config_data,"jobmonarch","",noarray=>1);
+	my $ref = OSCAR::Configurator_backend::readInConfigValues($config_data,
+        "jobmonarch",
+        "",noarray=>1);
 	$conf->{'clustername'} = $ref->{clustername};
 	$conf->{'drm'} = $ref->{drm};
 	$conf->{'archived'} = $ref->{archived};
