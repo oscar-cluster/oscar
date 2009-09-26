@@ -150,7 +150,7 @@ sub do_post_image_creation ($$) {
 
     if (system($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
-#        delete_image($img);
+        delete_image($img);
         return 0;
     }
     OSCAR::Logger::oscar_log_subsection("Successfully ran: $cmd");
@@ -976,12 +976,19 @@ sub postimagebuild {
     }
 
     if (do_post_image_creation ($img, $interface) == 0) {
-        carp "ERROR: Impossible to do post binary package install";
+        carp "ERROR: Impossible to do post binary package install, ".
+             "deleting the image...";
+        if (delete_image ($img)) {
+            carp "ERROR: Impossible to delete image $img";
+        }
         return -1;
     }
 
     if (do_oda_post_install ($vars, \%options)) {
-        carp "ERROR: Impossible to update data in ODA";
+        carp "ERROR: Impossible to update data in ODA, deleting image...";
+        if (delete_image ($img)) {
+            carp "ERROR: Impossible to delete image $img";
+        }
         return -1;
     }
 
