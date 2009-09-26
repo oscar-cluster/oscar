@@ -92,9 +92,16 @@ opt-install: localbase localrepos
 	@echo "== Installed OSCAR into $(DESTDIR)/opt/oscar-$(OSCAR_VERSION) =="
 
 #
+# Install the documentation
+#
+doc-install:
+	install -d -m 0755 $(DESTDIR)/usr/share/doc/oscar
+	install    -m 0755 doc/*.pdf $(DESTDIR)/usr/share/doc/oscar
+
+#
 # Install OSCAR (scripts, libs and so on) directly in the system.
 #
-install:
+install: doc-install
 	# Install the logo at destination (no Makefile to do so).
 	install -d -m 0755 $(DESTDIR)/usr/share/oscar/images
 	install    -m 0755 images/oscar.gif $(DESTDIR)/usr/share/oscar/images

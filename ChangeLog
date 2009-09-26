@@ -2,6 +2,7 @@
 - [Ticket #405] When post image creation scripts fail, the image is deleted.
 - [Ticket #520] Ganglia configuration scripts do not generate any error
 anymore.
+- [Ticket #542] Include the documentation into the OSCAR binary packages.
 
 6.0.4:
 - Update Configurator to 1.0.3.
