@@ -1,0 +1,57 @@
+The OSCAR working group has released a new version of the Open Source Cluster
+Application Resources (OSCAR) toolkit, OSCAR 6.0.4.
+
+OSCAR is a software package that supports the use of high-performance
+computing by reducing the work of cluster configuration, installation,
+operation, and management. OSCAR-6.0.4 mainly includes bug fixes that were
+affecting OSCAR-6.0.
+
+OSCAR 6.0.4 has been tested for use with both x86 processors and x86_64
+processors under Red Hat Enterprise Linux 5.0 and clone Linux distributions.
+OSCAR-6.0.4 also provides a support of Debian support on both x86 and x86_64
+architectures, including Debian 4 and Ubuntu 8.04, 9.04. Debian 5 is supported
+only on x86_64 platforms.
+
+OSCAR-6.0.x version is not necessarily suitable for production. OSCAR-6.0.x is 
+actually very similar to KDE-4.0: this version is not necessarily "designed"
+for the users who need all the capabilities traditionally shipped with OSCAR,
+but this is a good new framework to include and develop new capabilities and
+move forward.
+
+OSCAR 6.0.4, previous OSCAR versions, and additional information about the
+OSCAR project are available from the OSCAR web site:
+   
+         http://oscar.openclustergroup.org/
+   
+The OSCAR working group is a consortium of industry, academic and research
+participants.  Organizations who contributed to OSCAR 6.0.4 include 
+Revolution Linux, Bald Guy Software, Michael Smith Genome Sciences Centre,
+NEC HPC Europe, IBM, Intel, Indiana University, Louisiana Tech University,
+Oak Ridge National Laboratory (ORNL), the University of Texas Health 
+Science Center San Antonio, the Institut National de Recherche en 
+Informatique et en Automatique (INRIA), and KerLabs. OSCAR is the product of 
+the OSCAR working group of the Open Cluster Group (OCG). OCG is dedicated to 
+making cluster computing practical. The OCG and its subgroups are open to all.
+
+Related resources:
+   + Release changelog
+     http://svn.oscar.openclustergroup.org/trac/oscar/browser/tags/rel-6-0-2/ChangeLog
+
+   + OSCAR Working Group Homepage
+     http://oscar.openclustergroup.org/
+
+   + OSCAR Project Homepage
+     http://sourceforge.net/projects/oscar
+
+   + Open Cluster Group Homepage
+     http://www.OpenClusterGroup.org
+
+   + HA-OSCAR (high-availability) Working Group Homepage
+     http://www.OpenClusterGroup.org/HA-OSCAR
+
+   + SSI-OSCAR (Single System Image) Working Group Homepage
+     http://ssi-oscar.gforge.inria.fr/
+
+   + OSCAR Mailing Lists
+      User Questions: <oscar-users@lists.sourceforge.net>
+         Development: < oscar-devel@lists.sourcefore.net>
