@@ -2,6 +2,9 @@ apt
 discover
 libappconfig-perl
 grub
+# The two language packages are to avoid language/locales warnings
+language-pack-en
+language-pack-en-base
 linux-image-generic
 ssh
 systemconfigurator
