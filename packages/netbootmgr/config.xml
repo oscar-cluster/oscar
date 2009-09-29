@@ -17,6 +17,10 @@ files.
       <name>Erich Focht</name>
       <email>efocht@hpce.nec.com</email>
     </author>
+    <author cat="maintainer">
+      <name>Geoffroy Vallee</name>
+      <email>valleegr@ornl.gov</email>
+    </author>
   </authors>
   <serverDeps>
     <requires>
@@ -27,6 +31,11 @@ files.
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.7.1-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-09-29T02:46:51-05:00">
+        <item>[Ticket 547] Avoid misleading errors by improving the server-post-install script.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.7-1">
       <changelogEntry authorName="Erich Focht" date="2007-07-17T17:19:47+02:00">
         <item>converted to new opkg format</item>

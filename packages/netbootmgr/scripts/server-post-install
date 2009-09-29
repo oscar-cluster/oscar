@@ -5,43 +5,59 @@
 # - turn on service systemimager-server-netbootmond
 # - make it switch to local boot mode after installation
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use Carp;
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::OCA::OS_Detect;
+use OSCAR::Opkg;
 
 my $os = OSCAR::OCA::OS_Detect::open();
 my $binary_format = $os->{'pkg'};
+
+my $service = "/etc/init.d/systemimager-server-netbootmond";
+if (! -f $service) {
+    # GV: not sure if we should generate an error or not here.
+    # I guess it depends if the netbootmgr binary package has a dependency to
+    # systemimager (for systemimager-server-netbootmond).
+    OSCAR::Opkg::opkg_print ("[WARN] $service is not available");
+    exit (0);
+}
 
 # chkconfig is a RPM specific command, so we do not use it on Debian-like
 # systems. Moreover, services are automatically added into rc2.d on Debian
 if ($binary_format ne "deb") {
     !system("chkconfig --add systemimager-server-netbootmond") or
-	    croak("Could not add service systemimager-server-netbootmond!");
+	    croak("ERROR: Could not add service systemimager-server-netbootmond!");
 
     !system("chkconfig systemimager-server-netbootmond on") or
-	    croak("Could not enable systemimager-server-netbootmond service!");
+	    croak("ERROR: Could not enable systemimager-server-netbootmond service!");
 }
 
-open IN, "/etc/systemimager/systemimager.conf" or
-	croak("Could not open /etc/systemimager/systemimager.conf for reading!");
+my $config_file = "/etc/systemimager/systemimager.conf";
+open IN, "$config_file" or
+	croak("ERROR: Could not open $config_file for reading!");
 my @sic = <IN>;
 close IN;
 
 print "Setting systemimager-server-netboodmond to NET_BOOT_DEFAULT=local\n";
-open OUT, "> /etc/systemimager/systemimager.conf" or
-	croak("Could not open /etc/systemimager/systemimager.conf for writing!");
+open OUT, "> $config_file" or
+	croak("ERROR: Could not open $config_file for writing!");
 for my $line (@sic) {
     if ($line =~ m/^\s*NET_BOOT_DEFAULT\s*=/) {
-	print OUT "NET_BOOT_DEFAULT = local\n";
+        print OUT "NET_BOOT_DEFAULT = local\n";
     } else {
-	print OUT $line;
+        print OUT $line;
     }
 }
 close OUT;
 
-!system("/etc/init.d/systemimager-server-netbootmond restart") or
-	croak("Could not restart service systemimager-server-netbootmond!");
+!system("$service restart") or
+	croak("ERROR: Could not restart service systemimager-server-netbootmond!");
 
 exit 0;
 
