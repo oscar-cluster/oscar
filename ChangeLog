@@ -6,6 +6,7 @@ packages.
 - [Ticket #520] Ganglia configuration scripts do not generate any error
 anymore.
 - [Ticket #542] Include the documentation into the OSCAR binary packages.
+- [Ticket #562] Include cron in the list of package for Debian based images.
 - [Ticket #563] Avoid language/locales warnings on Ubuntu systems.
 
 6.0.4:

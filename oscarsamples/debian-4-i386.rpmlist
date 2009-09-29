@@ -1,4 +1,5 @@
 apt
+cron
 discover
 libappconfig-perl
 grub
