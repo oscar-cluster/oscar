@@ -208,8 +208,8 @@ if (! -d $home) {
         "dsa"   => ["$home/.ssh/id_dsa", "$home/.ssh/authorized_keys2"],
         "rsa1"  => ["$home/.ssh/identity", "$home/.ssh/authorized_keys"],
         );
-    foreach my $k (%ssh_keys) {
-        if (! -f $file) {
+    foreach my $k (keys (%ssh_keys)) {
+        if (! -f $ssh_keys{$k}[0]) {
             $cmd = "/usr/bin/ssh-keygen -t $k -N \'\' -f $ssh_keys{$k}[0]";
             OSCAR::Logger::oscar_log_subsection ("$cmd");
             if (system ($cmd)) {
@@ -219,6 +219,8 @@ if (! -d $home) {
             if (system ($cmd)) {
                 die "ERROR: Impossible to execute $cmd";
             }
+        } else {
+            OSCAR::Logger::oscar_log_subsection ($ssh_keys{$k}[0]." already exists");
         }
     }
 

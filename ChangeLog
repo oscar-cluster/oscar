@@ -9,6 +9,7 @@ anymore.
 - [Ticket #542] Include the documentation into the OSCAR binary packages.
 - [Ticket #562] Include cron in the list of package for Debian based images.
 - [Ticket #563] Avoid language/locales warnings on Ubuntu systems.
+- [Ticket #570] Correctly generate ssh keys on the headnode.
 
 6.0.4:
 - Update Configurator to 1.0.3.
