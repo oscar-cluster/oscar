@@ -19,7 +19,10 @@
   </authors>
   <serverDeps>
     <requires>
-      <filters/>
+      <filters>
+        <dist>mdv</dist>
+        <dist>ydl</dist>
+      </filters>
       <pkg>jobmonarch</pkg>
       <pkg>pbs_python</pkg>
       <pkg>DRMAA-python</pkg>
@@ -28,6 +31,9 @@
       <filters>
         <dist>suse</dist>
       </filters>
+      <pkg>jobmonarch</pkg>
+      <pkg>pbs_python</pkg>
+      <pkg>DRMAA-python</pkg>
       <pkg>mysql-client</pkg>
       <pkg>python-mysql</pkg>
       <pkg>php4-gd</pkg>
@@ -38,6 +44,9 @@
       <filters>
         <dist>sles</dist>
       </filters>
+      <pkg>jobmonarch</pkg>
+      <pkg>pbs_python</pkg>
+      <pkg>DRMAA-python</pkg>
       <pkg>mysql-client</pkg>
       <pkg>python-mysql</pkg>
       <pkg>php5-gd</pkg>
@@ -50,6 +59,9 @@
         <dist>fc</dist>
         <dist>rhel</dist>
       </filters>
+      <pkg>jobmonarch</pkg>
+      <pkg>pbs_python</pkg>
+      <pkg>DRMAA-python</pkg>
       <pkg>mysql</pkg>
       <pkg>MySQL-python</pkg>
       <pkg>php-gd</pkg>
