@@ -16,6 +16,14 @@
   <serverDeps/>
   <clientDeps>
     <requires>
+      <filters>
+        <dist>suse</dist>
+        <dist>sles</dist>
+        <dist>mdv</dist>
+        <dist>rhel</dist>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+      </filters>
       <pkg>blcr</pkg>
       <pkg>blcr-libs</pkg>
       <pkg>blcr-modules_2.6.18_128.1.6.el5</pkg>
