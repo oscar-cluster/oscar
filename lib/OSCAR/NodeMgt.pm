@@ -513,7 +513,7 @@ sub set_node_config ($$$$) {
 }
 
 sub get_nodes_from_c3_output ($) {
-    my $output = @_;
+    my $output = shift;
     my (@line, @nodes);
 
     foreach my $entry (@$output) {
