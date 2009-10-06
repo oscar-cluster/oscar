@@ -58,6 +58,7 @@ use warnings "all";
             display_node_config
             get_node_config
             set_node_config
+            update_list_alive_nodes
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -508,6 +509,92 @@ sub set_node_config ($$$$) {
         carp "ERROR: Unknow ODA type ($config->{db_type})\n";
         return -1;
     }
+    return 0;
+}
+
+sub get_nodes_from_c3_output ($) {
+    my $output = @_;
+    my (@line, @nodes);
+
+    foreach my $entry (@$output) {
+        @line = split (" ", $entry);
+        my $node_id = $line[1];
+        if ($node_id =~ /(.*):/) {
+            $node_id = $1;
+            push (@nodes, $node_id);
+        }
+    }
+
+    OSCAR::Utils::print_array (@nodes);
+
+    return @nodes;
+}
+
+# Remember:
+#   - the size of c3out actually gives us the number of nodes.
+sub get_list_of_down_nodes {
+    my @c3out = `/usr/bin/cexec -p echo ALIVE`;
+    my @alive = grep /ALIVE/,@c3out;
+
+    if ($verbose) {
+        print "=== c3_hosts_up():\n";
+        print "c3out:\n";
+        print @c3out;
+        print "alive:\n";
+        print @alive;
+    }
+
+    my @nodes = get_nodes_from_c3_output (\@c3out);
+    my @up_nodes = get_nodes_from_c3_output (\@alive);
+    my @down_nodes;
+
+    foreach my $node (@nodes) {
+        if (!OSCAR::Utils::is_element_in_array ($node, @up_nodes)) {
+            push (@down_nodes, $node)
+        }
+    }
+
+    OSCAR::Utils::print_array (@down_nodes);
+
+    return (@down_nodes);
+}
+
+# Detect whether all hosts targetted by c3 are up and responding
+#
+# Return: 0 if all the nodes are not up, 1 is all nodes are up.
+sub c3_hosts_up () {
+    my @c3out = `/usr/bin/cexec -p echo ALIVE`;
+    my @alive = grep /ALIVE/,@c3out;
+    if ($verbose) {
+        print "=== c3_hosts_up():\n";
+        print "c3out:\n";
+        print @c3out;
+        print "alive:\n";
+        print @alive;
+    }
+    if (scalar(@c3out) == scalar(@alive)) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+sub update_list_alive_nodes () {
+    my @down_nodes;
+    my $pos;
+
+    @down_nodes = get_list_of_down_nodes ();
+        
+    foreach my $node (@down_nodes) {
+        # TODO: c3_conf_manager should support that
+        $pos = line_in_file ("\t$node", "/etc/c3.conf");
+        if ($pos == -1) {
+            carp "ERROR: Impossible to find an entry for $node in /etc/c3.conf";
+            return -1;
+        }
+        OSCAR::FileUtils::replace_line_in_file ("/etc/c3.conf", $pos, "\tdead $node"); 
+    }
+
     return 0;
 }
 
