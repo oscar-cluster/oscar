@@ -90,6 +90,8 @@ sub download_file ($$$$) {
     my ($source, $dest, $method, $overwrite) = @_;
     my $cmd;
 
+    OSCAR::Logger::oscar_log_subsection ("Downloading $source to $dest");
+
     if ( ! -d $dest) {
         File::Path::mkpath ($dest) 
             or (carp "ERROR: Impossible to create $dest", return -1);
