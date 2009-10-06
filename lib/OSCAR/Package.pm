@@ -88,10 +88,6 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
            test_user    => ['test_user'],
           );
 
-my $oscar_configurator = OSCAR::ConfigManager->new(
-        config_file => "/etc/oscar/oscar.conf");
-my $config = $oscar_configurator->get_config();
-
 #
 # get_pkg_dir - return directory where scripts can be found for a given
 #               package and phase
@@ -352,6 +348,9 @@ sub getConfigurationValues ($) # ($package) -> $valueshashref
     my $filename;
 
 #    my $pkgdir = getOdaPackageDir($package);
+    my $oscar_configurator = OSCAR::ConfigManager->new(
+        config_file => "/etc/oscar/oscar.conf");
+    my $config = $oscar_configurator->get_config();
     my $pkgdir = $config->{'opkgs_path'} . "/$package";
     if ((defined $pkgdir) && (-d $pkgdir)) {
         $filename = "$pkgdir/.configurator.values";
