@@ -1,5 +1,7 @@
 6.0.5 (not yet released):
 - Update OPKG Netbootmgr to 1.7.1.
+- Update OPKG SIS to 4.0.6.
+- Update ODA to 1.4.7.
 - [Ticket #326] Remove the documentation OPKG since the documentation is
 managed via the Trac wiki and the PDFs included into the OSCAR binary
 packages.
