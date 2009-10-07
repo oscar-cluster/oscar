@@ -58,6 +58,7 @@ if ($verbose) {
 }
 
 my $errors = 0;
+my @failed_opkgs;
 
 if (get_numproc()) {
     carp "ERROR: Impossible to get proc number";
@@ -83,14 +84,15 @@ my $cmd;
 my @pkgs = list_selected_packages();
 foreach my $pkg (@pkgs) {
     if(!OSCAR::Package::run_pkg_script($pkg, "post_install", 1, "")) {
-        carp("Couldn't run 'post_install' script for $pkg");
+        carp("ERROR: Couldn't run 'post_install' script for $pkg");
+        push (@failed_opkgs, $pkg);
         $errors++;
     }
 }
 
 if($errors) {
     carp("ERROR: Some of the post install scripts failed, please check your ".
-         "logs for more info");
+         "logs for more info (". join (", ", @failed_opkgs).")");
 } else {
     oscar_log_subsection ("Cluster setup complete!");
 }
