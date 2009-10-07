@@ -37,7 +37,7 @@ use Carp;
 use strict;
 use Getopt::Long;
 use lib "/usr/lib/systeminstaller";
-use SIS::DB;
+use SIS::NewDB;
 use SIS::Image;
 use SIS::Client;
 use OSCAR::Configurator_backend;
