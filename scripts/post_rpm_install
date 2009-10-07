@@ -129,6 +129,7 @@ if($return) {
 $ENV{OSCAR_VERBOSE} = $initial_verbose_value;
 exit($return);
 
+# DEPRECATED????
 # Return: 1 if success, 0 else.
 sub link_kernel_files {
     my ($imagedir) = @_;
