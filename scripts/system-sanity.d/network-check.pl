@@ -22,6 +22,7 @@ use POSIX;
 use OSCAR::SystemSanity;
 
 my $rc = SUCCESS;
+my $host_file = "/etc/hosts";
 
 $ENV{LANG}="C";
 
@@ -32,7 +33,8 @@ $ENV{LANG}="C";
 # Parameter: None.                                                             #
 # Return:    FAILURE if a problem is detected, SUCCESS else.                   #
 ################################################################################
-sub check_hostname {
+sub check_hostname ($) {
+    my $host_file = shift;
     my $hostname = (uname)[1];
     if ($hostname eq "") {
         print " ---------------------------------------\n";
@@ -58,10 +60,10 @@ sub check_hostname {
 
     # the value of hostname should not to be assigned to the loopback
     # interface
-    my $hostname_ip = get_host_ip ($hostname);
+    my $hostname_ip = get_host_ip ($hostname, $host_file);
     if ($hostname_ip eq "" || $hostname_ip eq FAILURE) {
         print " ----------------------------------------------\n";
-        print " ERROR: Impossible get the IP for the hostname \n";
+        print " ERROR: Impossible get the IP for the hostname ($hostname) \n";
         print " ----------------------------------------------\n";
         return FAILURE;
     }
@@ -70,7 +72,7 @@ sub check_hostname {
         print " ERROR: your hostname ($hostname) is assigned to  \n";
         print " the loopback interface\n";
         print " Please assign it to your public network interface\n";
-        print " updating /etc/hosts\n";
+        print " updating $host_file\n";
         print " -------------------------------------------------\n";
         return FAILURE;
     }
@@ -85,7 +87,8 @@ sub check_hostname {
 # Parameter: None.                                                             #
 # Return:    FAILURE if a problem is detected, SUCCESS else.                   #
 ################################################################################
-sub check_oscar_interface {
+sub check_oscar_interface ($) {
+    my $host_file = shift;
     my $oscar_if;
     require OSCAR::ConfigFile;
     $oscar_if = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
@@ -121,10 +124,10 @@ sub check_oscar_interface {
     }
 
     # we check now the IP assgned to the interface used by OSCAR
-    my $oscar_ip = get_host_ip ("oscar_server");
+    my $oscar_ip = get_host_ip ("oscar_server", $host_file);
     if ($oscar_ip eq FAILURE) {
         print " ----------------------------------------------------\n";
-        print " WARNING: oscar_server is not defined in /etc/hosts. \n";
+        print " WARNING: oscar_server is not defined in $host_file. \n";
         print " This may be normal if this is the first time you \n";
         print " execute OSCAR.\n";
         print " ----------------------------------------------------\n";
@@ -137,7 +140,7 @@ sub check_oscar_interface {
     if ($oscar_ip ne "" && ($oscar_ip ne $oscar_if_ip)) {
         print " ----------------------------------------------------\n";
         print " WARNING: it seems the interface used is not the one \n";
-        print " assigned to OSCAR in /etc/hosts. \n";
+        print " assigned to OSCAR in $host_file. \n";
         print " This may be normal if this is the first time you \n";
         print " execute OSCAR.\n";
         print " ----------------------------------------------------\n";
@@ -154,22 +157,22 @@ sub check_oscar_interface {
 # Parameter: hostname                                                          #
 # Return:    hostname IP if success                                            #
 ################################################################################
-sub get_host_ip {
+sub get_host_ip ($) {
     my $id = shift;
 
     my $count = 0;
     my $my_ip;
     local *IN;
-    open IN, "/etc/hosts" or die "$!";
+    open IN, "$host_file" or die ("ERROR: impossible to open hosts file ($!)");
     while (<IN>) {
-	chomp;
-	next if /^\s*\#/;
-	if (/\s+$id(\s|$|\.)/) {
-	    $count++;
-	    if (/^(\d+\.\d+\.\d+\.\d+)\s+/) {
-		$my_ip = $1;
-	    }
-	}
+        chomp;
+        next if /^\s*\#/; # We skip comments
+        if (/\s+$id(\s|$|\.)/) {
+            $count++;
+            if (/^(\d+\.\d+\.\d+\.\d+)\s+/) {
+                $my_ip = $1;
+            }
+        }
     }
     close IN;
     if ($count > 1 && $my_ip ne "") {
@@ -189,8 +192,8 @@ sub get_host_ip {
     return $my_ip;
 }
 
-my $res1 = check_hostname();
-my $res2 = check_oscar_interface ();
+my $res1 = check_hostname($host_file);
+my $res2 = check_oscar_interface ($host_file);
 if ($res1 eq FAILURE || $res2 eq FAILURE) { 
     $rc = FAILURE;
     print " -----------------------------------\n";
