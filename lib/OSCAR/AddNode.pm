@@ -28,6 +28,7 @@ package OSCAR::AddNode;
 
 use strict;
 use vars qw($VERSION @EXPORT);
+use lib "/usr/lib/systeminstaller";
 use Tk;
 use Carp;
 use POSIX;
