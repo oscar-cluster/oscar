@@ -215,7 +215,7 @@ if (! -d $home) {
             if (system ($cmd)) {
                 die "ERROR: Impossible to execute $cmd";
             }
-            $cmd = "cat $ssh_keys{$k}.pub >> $home/.ssh/$ssh_keys{$k}[0]";
+            $cmd = "cat $ssh_keys{$k}.pub >> $ssh_keys{$k}[0]";
             if (system ($cmd)) {
                 die "ERROR: Impossible to execute $cmd";
             }
