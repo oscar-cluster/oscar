@@ -12,7 +12,7 @@ use Cwd;
 
 my $format;
 
-print "\n\n*** Test few repository formet detection related functions.***\n\n";
+print "\n\n*** Test few repository format detection related functions.***\n\n";
 
 my @rpm_online_repos = ("http://mirror.centos.org/centos/5.3/os/x86_64/",
                         "http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64");
