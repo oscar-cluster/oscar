@@ -85,7 +85,7 @@ sub mac_cli {
     oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
 
     #Retrive the installation mode from ODA
-    my $orig_install_mode = get_install_mode();
+    my $orig_install_mode = OSCAR::Database::get_install_mode(undef, undef);
 
     $install_mode = $orig_install_mode;
 
@@ -123,7 +123,8 @@ log for writing.\n";}
         if (@clients) {
             foreach my $client (@clients) {
                 my $nodename = $client->name;
-                my $adapter = list_adapter(client=>$nodename, devname=>"$iface");
+                my %h = (client=>$nodename, devname=>"$iface");
+                my $adapter = list_adapter(\%h);
                 my $mac = $adapter->mac || "  :  :  :  :  :  ";
                 my $ip = $adapter->ip;
                 print "\t$nodename ($iface) [$ip] <$mac>\n";
@@ -282,7 +283,8 @@ sub assign_macs_cli {
     if ($response eq "1") {
         while (my $mac = shift @mac_keys) {
             foreach my $client (@clients) {
-                my $adapter = list_adapter(client=>$client->name,devname=>"$iface");
+                my %h = (client=>$client->name,devname=>"$iface");
+                my $adapter = list_adapter(\%h);
                 # Assign only if client has no assignment
                 if (!$adapter->mac && !$MAC{$mac}->{client}) {
                     oscar_log_subsection("Assigning MAC: $mac to client: " .
@@ -339,7 +341,8 @@ sub assign_macs_cli {
                         }
                     }
                     oscar_log_subsection("Assigning MAC: $mac_selection to client: " . $client_selection);
-                    my $adapter = list_adapter(client=>$client_selection,devname=>"eth0");
+                    my %h = (client=>$client_selection,devname=>"eth0");
+                    my $adapter = list_adapter(\%h);
                     # If client selection has a MAC address assigned, bump it back out to the
                     # global hash
                     if ($adapter->mac) {

@@ -111,7 +111,7 @@ sub setup_pxegrub ($) {
     my $url = $config->{download_url};
 
     # Download the Grub source code.
-    my $file = OSCAR::FileUtils::download_file ($url, $dest, "wget", OSCAR::Defs::NO_OVERWRITE());
+    my $file = OSCAR::FileUtils::download_file ($url, $dest, "wget", OSCAR::Defs::NO_OVERWRITE());
 
     # Untar it
     $cmd = "cd $dest; tar xzf $file";

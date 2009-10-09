@@ -149,7 +149,6 @@ sub opkgs_install ($@) {
     require OSCAR::RepositoryManager;
     my $rm = OSCAR::RepositoryManager->new(distro=>$distro_id);
     
-
     my @olist;
     if ($type eq "api") {
         @olist = map { "opkg-".$_ } @opkgs;

@@ -34,6 +34,7 @@ BEGIN {
 }
 
 use strict;
+use lib "/usr/lib/systeminstaller";
 use vars qw($VERSION @EXPORT);
 use Tk;
 use Carp;

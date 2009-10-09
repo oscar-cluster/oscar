@@ -17,6 +17,8 @@ anymore.
 - [Ticket #564] The correct C3 packages are now installed on compute nodes.
 - [Ticket #570] Correctly generate ssh keys on the headnode.
 - Fix issues during the generation of the ssh keys (ssh_install).
+- Remove various code compilation warnings when executing OSCAR base Perl
+modules.
 
 6.0.4:
 - Update Configurator to 1.0.3.

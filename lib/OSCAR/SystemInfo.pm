@@ -52,7 +52,7 @@ sub read_proc_entry ($$) {
         my ($key, $value) = split(":", $line);
         $key = OSCAR::Utils::trim ($key);
         $value = OSCAR::Utils::trim ($value);
-    $data{$key} = $value;
+        $data{$key} = $value;
     }
     close (DAT);
 

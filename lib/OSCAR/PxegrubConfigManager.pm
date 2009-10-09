@@ -14,9 +14,14 @@ package OSCAR::PxegrubConfigManager;
 # $Id$
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use warnings;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Utils;
 use AppConfig;
 use vars qw($config);
