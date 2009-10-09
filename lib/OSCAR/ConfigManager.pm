@@ -86,6 +86,7 @@ sub load_oscar_config ($) {
         'RAPT_PATH'                 => { ARGCOUNT => 1 },
         'YUME_PATH'                 => { ARGCOUNT => 1 },
         'ODA_TYPE'                  => { ARGCOUNT => 1 },
+        'DB_TYPE'                   => { ARGCOUNT => 1 },
         'PREREQ_MODE'               => { ARGCOUNT => 1 },
         'OPKGS_PATH'                => { ARGCOUNT => 1 },
         'PATH_ODA_CONFIG_FILES'     => { ARGCOUNT => 1 },
