@@ -208,6 +208,8 @@ if (! -d $home) {
         "dsa"   => ["$home/.ssh/id_dsa", "$home/.ssh/authorized_keys2"],
         "rsa1"  => ["$home/.ssh/identity", "$home/.ssh/authorized_keys"],
         );
+    my $orig_file;
+    my $dest_file;
     foreach my $k (keys (%ssh_keys)) {
         if (! -f $ssh_keys{$k}[0]) {
             $cmd = "/usr/bin/ssh-keygen -t $k -N \'\' -f $ssh_keys{$k}[0]";
@@ -215,7 +217,16 @@ if (! -d $home) {
             if (system ($cmd)) {
                 die "ERROR: Impossible to execute $cmd";
             }
-            $cmd = "cat $ssh_keys{$k}[1].pub >> $ssh_keys{$k}[0]";
+            $orig_file = "$ssh_keys{$k}[0].pub";
+            $dest_file = "$ssh_keys{$k}[1]";
+            if (! -f $orig_file) {
+                die "ERROR: file $orig_file does not exist";
+            }
+            if (! -f $dest_file) {
+                $cmd = "cat $file > $dest_file";
+            } else {
+                $cmd = "cat $file >> $dest_file";
+            }
             if (system ($cmd)) {
                 die "ERROR: Impossible to execute $cmd";
             }
