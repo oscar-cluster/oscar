@@ -4,7 +4,7 @@
 - Update OPKG Netbootmgr to 1.7.1.
 - Update OPKG SIS to 4.0.6.
 - Update ODA to 1.4.7.
-- Update sync_files to 2.5.4.
+- Update sync_files to 2.5.5.
 - [Ticket #326] Remove the documentation OPKG since the documentation is
 managed via the Trac wiki and the PDFs included into the OSCAR binary
 packages.
@@ -19,6 +19,7 @@ anymore.
 - Fix issues during the generation of the ssh keys (ssh_install).
 - Remove various code compilation warnings when executing OSCAR base Perl
 modules.
+- Fix issues when generating the initrd on RPM based systems.
 
 6.0.4:
 - Update Configurator to 1.0.3.
