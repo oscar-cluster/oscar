@@ -946,7 +946,7 @@ sub update_image_initrd ($) {
         carp "ERROR: Impossible to get the version ($version)";
         return -1;
     }
-    $cmd = "chroot $imgpath /sbin/mkinitrd -v -f --fstab=fstab.fake ".
+    $cmd = "chroot $imgpath /sbin/mkinitrd -v -f --fstab=/etc/fstab.fake ".
            "$initrd $version";
     print "[INFO] Running $cmd...\n";
     if (system ($cmd)) {
