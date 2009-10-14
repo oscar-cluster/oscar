@@ -909,6 +909,11 @@ sub update_image_initrd ($) {
     }
     return 0 if ($os->{pkg} ne "rpm");
 
+    if (! -d $imgpath) {
+        carp "ERROR: Impossible to find the image ($imgpath)";
+        return -1;
+    }
+
     # The /etc/systemconfig/systemconfig.conf should exist in the image.    
     my $systemconfig_file = "$imgpath/etc/systemconfig/systemconfig.conf";
     if (! -f $systemconfig_file) {
@@ -922,11 +927,15 @@ sub update_image_initrd ($) {
         carp "ERROR: Impossible to get the default root device";
         return -1;
     }
-    $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" ".
-           ">> $imgpath/etc/fstab.fake";
+    my $fake_fstab = "$imgpath/etc/fstab.fake";
+    $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" >> $fake_fstab";
     print "[INFO] Running $cmd...\n";
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+    if (! -f $fake_fstab) {
+        carp "ERROR: $fake_fstab does not exist";
         return -1;
     }
 
@@ -946,7 +955,12 @@ sub update_image_initrd ($) {
         carp "ERROR: Impossible to get the version ($version)";
         return -1;
     }
-    $cmd = "chroot $imgpath /sbin/mkinitrd -v -f --fstab=/etc/fstab.fake ".
+    my $chroot_bin = "/usr/sbin/chroot";
+    if (! -f $chroot_bin) {
+        carp "ERROR: the chroot binary ($chroot_bin) is not available";
+        return -1;
+    }
+    $cmd = "$chroot_bin $imgpath /sbin/mkinitrd -v -f --fstab=/etc/fstab.fake ".
            "$initrd $version";
     print "[INFO] Running $cmd...\n";
     if (system ($cmd)) {
