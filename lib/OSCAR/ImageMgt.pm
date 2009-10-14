@@ -878,8 +878,7 @@ sub update_modprobe_config ($) {
     }
 
     my $modprobe_conf = "$image_path/etc/modprobe.conf";
-    # We initially also added amd74xx but it was generating errors.
-    my $content = "alias scsi_hostadapter1 ata_piix";
+    my $content = "alias scsi_hostadapter1 amd74xx ata_piix";
     if (OSCAR::FileUtils::add_line_to_file_without_duplication (
             $content,
             $modprobe_conf)) {
@@ -962,7 +961,7 @@ sub update_image_initrd ($) {
         return -1;
     }
     $cmd = "$chroot_bin $imgpath /sbin/mkinitrd -v -f --fstab=/etc/fstab.fake ".
-           "$initrd $version";
+           "--allow-missing $initrd $version";
     print "[INFO] Running $cmd...\n";
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
