@@ -39,6 +39,7 @@ BEGIN {
 
 use strict;
 use OSCAR::ConfigManager;
+use OSCAR::FileUtils;
 use OSCAR::Database;
 use OSCAR::Logger;
 use OSCAR::Network;
@@ -587,7 +588,7 @@ sub update_list_alive_nodes () {
         
     foreach my $node (@down_nodes) {
         # TODO: c3_conf_manager should support that
-        $pos = line_in_file ("\t$node", "/etc/c3.conf");
+        $pos = OSCAR::FileUtils::line_in_file ("\t$node", "/etc/c3.conf");
         if ($pos == -1) {
             carp "ERROR: Impossible to find an entry for $node in /etc/c3.conf";
             return -1;
