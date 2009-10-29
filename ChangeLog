@@ -21,6 +21,7 @@ anymore.
 - Remove various code compilation warnings when executing OSCAR base Perl
 modules.
 - Fix issues when generating the initrd on RPM based systems.
+- Support the specification of multiple Linux distribution online repositories.
 
 6.0.4:
 - Update Configurator to 1.0.3.

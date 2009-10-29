@@ -220,8 +220,9 @@ sub set_value ($$$$) {
 #           var2 = value2                                                      #
 #         The hash will look like: ( "var1", "value1", "var2", "value2" ).     #
 ################################################################################
-sub get_all_values ($) {
-    my ($config_file) = @_;
+sub get_all_values ($$) {
+    my ($config_file, $block) = @_;
+    my %ret;
 
     if (!defined($config_file) || ! -f $config_file) {
         print "ERROR: the configuration file does not exist ($config_file)\n";
@@ -235,10 +236,20 @@ sub get_all_values ($) {
         );
     $config->file ($config_file);
     my %vars = $config->varlist("^*");
-    while ( my ($key, $value) = each(%vars) ) {
-        $vars{$key} = get_value ($config_file, undef, $key);
+    my ($key, $value);
+    while ( ($key, $value) = each(%vars) ) {
+        if (defined ($block) ){
+            if ($key !~ /$block\_(.*)/) {
+                next;
+            } else {
+                $key = $1;
+                $ret{$key} = get_value ($config_file, $block, $key);
+            }
+        } else {
+            $ret{$key} = get_value ($config_file, undef, $key);
+        }
     }
-    return %vars;
+    return %ret;
 }
 
 1;
@@ -265,9 +276,12 @@ when files are organized "Windows-style", a.k.a., init style or with blocks.
 
 =item get_all_values
 
+Returns all the values from a block of a given configuration file (if the block
+is undef, it will return all the key/value pairs of the configuration file).
+
 =item get_block_list
 
-My @blocks = get_block_list ($my_config_file).
+my @blocks = get_block_list ($my_config_file).
 
 =back
 
@@ -279,6 +293,14 @@ the "/etc/yum.conf" configuration file.
 =over 8
 
 my $source = OSCAR::ConfigFile::get_value ("/etc/yum.conf", "main", "cachedir");
+
+=back
+
+The following example returns all the key/value pairs of the block "main" from "/etc/oscar/supported_distros.txt".
+
+=over 8
+
+my %hash = OSCAR::ConfigFile::get_all_values ("/etc/oscar/supported_distros.txt", "main");
 
 =back
 

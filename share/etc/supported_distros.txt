@@ -7,23 +7,25 @@
 # - each distro entry is as following:
 #   DISTRO-ID default-distro-repo default-oscar-repo
 #   where: DISTRO-ID is the distribution id using the OS_Detect syntax
-#          default repository URLs have to follow the rapt/yume syntax
+#          default repository URLs have to follow the rapt/yume syntax with the
+#          prefix oscar: if the repository is an OSCAR one, distro: if it is
+#          a repo for the distro.
 
 [unstable]
-redhat-el-5-i386 file:/tftpboot/distro/redhat-el-5-i386 http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
-redhat-el-5-x86_64 file:/tftpboot/distro/redhat-el-5-x86_64 http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
-centos-5-x86_64 http://mirror.centos.org/centos/5.3/os/x86_64/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
-centos-5-i386 http://mirror.centos.org/centos/5.3/os/i386/ http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
-fedora-9-i386 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/i386/os/ http://bison.csm.ornl.gov/repos/unstable/fc-9-i386
-fedora-9-x86_64 http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/x86_64/os/ http://bison.csm.ornl.gov/repos/unstable/fc-9-x86_64
-ubuntu-904-x86_64 http://us.archive.ubuntu.com/ubuntu/+jaunty+main+universe+multiverse http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+etch+/
-ubuntu-804-x86_64 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
-ubuntu-804-i386 http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
-debian-4-x86_64 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
-debian-4-i386 http://ftp.us.debian.org/debian/+etch+main http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
-debian-5-x86_64 http://ftp.us.debian.org/debian/+lenny+main http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+lenny+/
-debian-5-i386 http://ftp.us.debian.org/debian/+lenny+main http://bison.csm.ornl.gov/repos/unstable/debian-5-i386/+lenny+/
-suse-10-i386 http://download.opensuse.org/distribution/10.3/repo/oss/suse/ http://bison.csm.ornl.gov/repos/unstable/suse-10-i386
+redhat-el-5-i386 = distro:file:/tftpboot/distro/redhat-el-5-i386 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
+redhat-el-5-x86_64 = distro:file:/tftpboot/distro/redhat-el-5-x86_64 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
+centos-5-x86_64 = distro:http://mirror.centos.org/centos/5.3/os/x86_64/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64 distro:http://mirror.centos.org/centos/5.3/extras/x86_64/
+centos-5-i386 = distro:http://mirror.centos.org/centos/5.3/os/i386/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386 distro:http://mirror.centos.org/centos/5.3/extras/i386/
+fedora-9-i386 = distro:http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/i386/os/ oscar:http://bison.csm.ornl.gov/repos/unstable/fc-9-i386
+fedora-9-x86_64 = distro:http://download.fedora.redhat.com/pub/fedora/linux/releases/9/Everything/x86_64/os/ oscar:http://bison.csm.ornl.gov/repos/unstable/fc-9-x86_64
+ubuntu-904-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+jaunty+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+etch+/ distro:http://us.archive.ubuntu.com/ubuntu/+jaunty-updates+main+universe+multiverse
+ubuntu-804-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
+ubuntu-804-i386 = distro:http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
+debian-4-x86_64 = distro:http://ftp.us.debian.org/debian/+etch+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
+debian-4-i386 = distro:http://ftp.us.debian.org/debian/+etch+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
+debian-5-x86_64 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+lenny+/
+debian-5-i386 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-i386/+lenny+/
+suse-10-i386 = distro:http://download.opensuse.org/distribution/10.3/repo/oss/suse/ oscar:http://bison.csm.ornl.gov/repos/unstable/suse-10-i386
 
 [6.0.4]
 centos-5-x86_64 http://isoredirect.centos.org/centos/5.3/os/x86_64/ http://bison.csm.ornl.gov/repos/rhel-5-x86_64

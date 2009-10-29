@@ -38,6 +38,7 @@ package OSCAR::Distro;
 use strict;
 use vars qw($VERSION @EXPORT);
 use Carp;
+use OSCAR::ConfigFile;
 use OSCAR::Utils;
 use OSCAR::PackagePath;
 use OSCAR::OCA::OS_Detect;
@@ -255,108 +256,12 @@ sub get_position_of_next_release_entry ($@) {
 }
 
 ################################################################################
-# Open the file that gives the list of supported Linux distributions for given #
-# version of OSCAR.                                                            #
-#                                                                              #
-# Input: none.                                                                 #
-# Return: a hash composed of XML data from the file.                           #
-# The format of the hash is:                                                   #
-# $VAR1 = {                                                                    #
-#     'distros' => [{                                                          #
-#                   'default_distro_repo' => '/tftpboot/distro/rhel-5-x86_64', #
-#                   'name' => 'rhel-5-x86_64',                                 #
-#                   'default_oscar_repo' => '/tftpboot/oscar/rhel-5-x86_64'    #
-#                   },                                                         #
-#                   {                                                          #
-#                   'default_distro_repo' => '/tftpboot/distro/rhel-5-i386',   #
-#                   'name' => 'rhel-5-i386',                                   #
-#                   'default_oscar_repo' => '/tftpboot/oscar/rhel-5-i386'      #
-#                   },                                                         #
-#                   {                                                          #
-#                   'default_distro_repo' => '/tftpboot/distro/centos-5-i386', #
-#                   'name' => 'centos-5-i386',                                 #
-#                   'default_oscar_repo' => '/tftpboot/oscar/centos-5-i386'    #
-#                   }],                                                        #
-#     'release' => 'unstable'                                                  #
-# };                                                                           #
-# Returns undef if error.                                                      #
-################################################################################
-sub open_supported_distros_file {
-    open (FILE, "$supported_distro_file") 
-        or (carp "ERROR: impossible to open $supported_distro_file", 
-	    return undef);
-    my @file_content = <FILE>;
-    close (FILE);
-
-    my $current_version;
-    my @releases;
-
-    my $n = -1;
-    my $m = 0;
-    while ($m != -1) {
-        $m = get_position_of_next_release_entry($n+1, @file_content);
-        my $max;
-        if ($m == -1) {
-            $max = scalar (@file_content);
-        } else {
-            $max = $m;
-        }
-        my @distros;
-        for (my $i=$n+1; $i<$max; $i++) {
-            my $line = $file_content[$i];
-            chomp ($line);
-            next if ($line eq "");
-            my ($distro_id, $distro_repo, $oscar_repo) = split (" ", $line);
-            next if (!defined $distro_id 
-                    || !defined $distro_repo 
-                    || !defined $oscar_repo
-                    || $distro_id eq ""
-                    || $distro_repo eq ""
-                    || $oscar_repo eq "");
-            my ($distro, $version, $arch)
-                = OSCAR::PackagePath::decompose_distro_id ($distro_id);
-            next if (!defined $distro
-                    || !defined $version
-                    || !defined $arch);
-            # few tests to see if the entry we get makes sense or not.
-            my $os = OSCAR::OCA::OS_Detect::open(fake=>{distro=>$distro,
-                                distro_version=>$version,
-                                arch=>$arch, }
-                                );
-            next if (!defined($os) || (ref($os) ne "HASH"));
-            my %entry = ('name', $distro_id,
-                        'default_distro_repo', $distro_repo,
-                        'default_oscar_repo', $oscar_repo);
-            push (@distros, \%entry);
-        }
-        if (scalar(@distros) > 0) {
-            my $release_name = $file_content[$n];
-            chomp ($release_name);
-            $release_name =~ /^\[(.*)\]$/;
-            my %release_entry;
-            $release_entry{'release'} = $1;
-            $release_entry{'distros'} = \@distros;
-            push (@releases, \%release_entry);
-        }
-        $n = $m;
-    }
-    return \@releases;
-}
-
-################################################################################
 # Return: an array with the list of distros that OSCAR supports. Each element  #
 #         in the array is like: debian-4-x86_64 or rhel-5.1-x86_64.            #
 #         Returns undef if error.                                              #
 ################################################################################
 sub get_list_of_supported_distros {
     my @list;
-
-    # we open the file config file for supported distros.
-    my $data = open_supported_distros_file ();
-    if (!defined $data) {
-    	carp "ERROR: Impossible to get information about supported distros";
-	return undef;
-    }
 
     # we get the OSCAR version
     my $version = OSCAR::Utils::get_oscar_version();
@@ -366,15 +271,10 @@ sub get_list_of_supported_distros {
     }
 
     # we try to find a match
-    foreach my $d (@$data) {
-        if ($d->{release} eq $version){
-            my @distros_data = $d->{distros};
-            foreach my $distro (@distros_data) {
-                foreach my $p (@$distro) {
-                    push (@list, $p->{'name'});
-                }
-            }
-        }
+    my %supported_distros = OSCAR::ConfigFile::get_all_values ("/etc/oscar/supported_distros.txt", "$version");
+
+    foreach my $key ( keys %supported_distros ) {
+        unshift (@list, $key);
     }
 
     return @list;
@@ -404,34 +304,37 @@ sub get_list_of_supported_distros_id {
 # Input: distro, the distro id you are looking for (with the OS_Detect syntax).#
 # Return: hash which has the following format                                  #
 # {                                                                            #
-# 'default_distro_repo' => ['http://ftp.us.debian.org/debian/+etch+main'],     #
+# 'default_distro_repos' => ['http://ftp.us.debian.org/debian/+etch+main'],     #
 # 'name' => ['debian-4-x86_64'],                                               #
 # 'default_oscar_repo' => ['http://oscar.gforge.inria.fr/debian/+stable+oscar']#
 # }                                                                            #
 ################################################################################
 sub find_distro ($) {
     my $distro_name = shift;
-
-    # we open the config file for supported distros.
-    my $data = open_supported_distros_file ();
+    my %hash;
+    $hash{'name'} = $distro_name;
 
     # we get the OSCAR version
     my $version = OSCAR::Utils::get_oscar_version();
 
+    my %supported_distros = OSCAR::ConfigFile::get_all_values ("/etc/oscar/supported_distros.txt", "$version");
+
     # we try to find a match
-    foreach my $d (@$data) {
-        if ($d->{release} eq $version){
-            my @distros_data = $d->{distros};
-            foreach my $distro (@distros_data) {
-                foreach my $p (@$distro) {
-                    if ($p->{'name'} eq $distro_name) {
-                        return $p;
-                    }
-                }
-            }
+    my $repo_string = $supported_distros{$distro_name};
+    chomp ($repo_string);
+    my @repos = split (" ", $repo_string);
+    foreach my $r (@repos) {
+        if ($r =~ /distro:(.*)/) {
+            $hash{'default_distro_repos'} .= "$1\n";
+        } elsif ($r =~ /oscar:(.*)/) {
+            $hash{'default_oscar_repo'} = $1;
+        } else {
+            carp "ERROR: Unknown repo type ($r)";
+            return undef;
         }
     }
-    return undef;
+        
+    return %hash;
 }
 
 ################################################################################

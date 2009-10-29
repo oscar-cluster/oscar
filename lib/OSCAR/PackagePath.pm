@@ -746,7 +746,7 @@ sub mirror_repo ($$$) {
 sub use_default_distro_repo ($) {
     my ($distro) = @_;
     my $distro_repo_url = get_default_distro_repo ($distro);
-    if (OSCAR::Utils::is_a_valid_string ($distro) == 0) {
+    if (!OSCAR::Utils::is_a_valid_string ($distro)) {
         carp "ERROR: undefined default distro repo for ($distro)";
         return -1;
     }
@@ -993,9 +993,9 @@ sub get_default_distro_repo ($) {
         return undef;
     }
     require OSCAR::Distro;
-    my $d = OSCAR::Distro::find_distro ($distro);
+    my %d = OSCAR::Distro::find_distro ($distro);
 
-    my $t = $d->{'default_distro_repo'};
+    my $t = $d{'default_distro_repos'};
     # if we do not have a default repo, we return an empty string
     if (ref($t) eq "HASH") {
         return "";
@@ -1019,9 +1019,9 @@ sub get_default_oscar_repo ($) {
         return undef;
     }
     require OSCAR::Distro;
-    my $d = OSCAR::Distro::find_distro ($distro);
+    my %d = OSCAR::Distro::find_distro ($distro);
 
-    my $t = $d->{'default_oscar_repo'};
+    my $t = $d{'default_oscar_repo'};
     # if we do not have a default repo, we return an empty string
     if (ref($t) eq "HASH") {
         return "";
