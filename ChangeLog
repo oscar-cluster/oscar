@@ -17,11 +17,12 @@ anymore.
 - [Ticket #563] Avoid language/locales warnings on Ubuntu systems.
 - [Ticket #564] The correct C3 packages are now installed on compute nodes.
 - [Ticket #570] Correctly generate ssh keys on the headnode.
+- [Ticket #574] Support the specification of multiple Linux distribution online
+repositories.
 - Fix issues during the generation of the ssh keys (ssh_install).
 - Remove various code compilation warnings when executing OSCAR base Perl
 modules.
 - Fix issues when generating the initrd on RPM based systems.
-- Support the specification of multiple Linux distribution online repositories.
 
 6.0.4:
 - Update Configurator to 1.0.3.
