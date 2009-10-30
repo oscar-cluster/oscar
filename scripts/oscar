@@ -125,25 +125,21 @@ if ($check_binarylist) {
     OSCAR::Logger::oscar_log_section "Checking the binary package list ".
         "$check_binarylist";
 
-    # We get list of available binary packages
     require OSCAR::RepositoryManager;
     my $rm = OSCAR::RepositoryManager->new (distro=>$distro);
-    my ($rc, @available_pkgs) = $rm->search_opkgs ("*");
 
-    if ($debug) {
-        require OSCAR::Utils;
-        print "-> Available packages: ";
-        OSCAR::Utils::print_array (@available_pkgs);
-    }
-
-    # Then we parse the file
     my @pkgs = get_pkgs_from_package_file ($check_binarylist);
 
     # Now we check if the packages are actually available or not
     my @unavailable_pkgs;
+    my ($rc, @output);
     foreach my $pkg (@pkgs) {
-        if (!OSCAR::Utils::is_element_in_array ($pkg, @available_pkgs)) {
+        ($rc, @output) = $rm->show_opkg ($pkg);
+        if ($rc != 0) {
+            print "$pkg is not available\n" if $debug;
             push (@unavailable_pkgs, $pkg);
+        } else {
+            print "$pkg is available\n" if $debug;
         }
     }
 
