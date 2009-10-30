@@ -21,7 +21,7 @@
 use strict;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::Configbox;
+use OSCAR::Configurator_backend;
 
 my $imagedir = shift;
 
@@ -35,7 +35,8 @@ my $xml_data = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
 # If user has configured the package, use the custom values, otherwise use the default
 if (-e $xml_data) {
-    my $ref = readInConfigValues($xml_data,"sge","",noarray=>1);
+    my $ref = OSCAR::Configurator_backend::readInConfigValues($xml_data,
+        "sge","",noarray=>1);
     $cell = $ref->{cellname};
 }
 
