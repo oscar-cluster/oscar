@@ -27,6 +27,9 @@ modules.
 - Fix issues when generating the initrd on RPM based systems.
 - More asserts when checking binary packages available from a package list 
 file.
+- Simplify and fix the way to check if the packages in a binary packages list
+from a file are available or not.
+- Update the list of RPMs for a basic image based on RHEL5/CentOS5.
 
 6.0.4:
 - Update Configurator to 1.0.3.
