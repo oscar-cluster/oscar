@@ -34,6 +34,10 @@ use strict;
 use warnings "all";
 use OSCAR::Package;
 
+my $file = "/etc/init.d/gmond";
+if (!-f $file) {
+    die "ERROR: $file does not exit";
+}
 my $cmd = "/etc/init.d/gmond stop";
 system ($cmd); # Note that we do not care if "stop" does not work, we just want
                # to be sure the service is stopped.

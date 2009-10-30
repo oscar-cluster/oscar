@@ -1,6 +1,6 @@
 6.0.5 (not yet released):
 - Update OPKG C3 to 4.1.4.
-- Update OPKG Ganglia to 3.0.7.
+- Update OPKG Ganglia to 3.0.8.
 - Update OPKG Netbootmgr to 1.7.1.
 - Update OPKG SIS to 4.0.6.
 - Update OPKG Switcher to 1.0.12.
@@ -15,6 +15,7 @@ packages.
 - [Ticket #405] When post image creation scripts fail, the image is deleted.
 - [Ticket #520] Ganglia configuration scripts do not generate any error
 anymore.
+- [Ticket #531] Fix various configuration issues for Ganglia.
 - [Ticket #542] Include the documentation into the OSCAR binary packages.
 - [Ticket #562] Include cron in the list of package for Debian based images.
 - [Ticket #563] Avoid language/locales warnings on Ubuntu systems.

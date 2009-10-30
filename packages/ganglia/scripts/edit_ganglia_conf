@@ -22,9 +22,9 @@
 # configuration steps are done for each image.
 #
 # Copyright 2005 Erich Focht <efocht@hpce.nec.com>
-# Copyright 2008 Oak Ridge National Laboratory
-#                Geoffroy Vallee <valleegr@ornl.gov>
-#                All rights reserved.
+# Copyright 2008-2009   Oak Ridge National Laboratory
+#                       Geoffroy Vallee <valleegr@ornl.gov>
+#                       All rights reserved.
 #
 
 BEGIN {
@@ -77,7 +77,7 @@ my $imgpath;
 if ($image) {
     my @imgs = list_image(name => $image);
     if (!scalar(@imgs)) {
-	croak("Could not find image $image in the SIS database!\n");
+    croak("Could not find image $image in the SIS database!\n");
     }
     $imgpath = $imgs[0]->location;
 }
@@ -102,15 +102,15 @@ my $iface = OSCAR::Database::get_headnode_iface(undef, undef);
 #
 #
 my %default = (
-	       cluster__name => "OSCAR cluster",
-	       cluster__owner => "OSCAR",
-	       udp_send_channel__mcast_if => "$iface",
-	       udp_send_channel__port => "8649",
-	       udp_recv_channel__mcast_if => "$iface",
-	       udp_recv_channel__port => "8649",
-	       gridname => "OSCAR",
-	       datasource => "$hostname",
-	       gmond_per_image => "NO",
+           cluster__name => "OSCAR cluster",
+           cluster__owner => "OSCAR",
+           udp_send_channel__mcast_if => "$iface",
+           udp_send_channel__port => "8649",
+           udp_recv_channel__mcast_if => "$iface",
+           udp_recv_channel__port => "8649",
+           gridname => "OSCAR",
+           datasource => "$hostname",
+           gmond_per_image => "NO",
 );
 
 
@@ -118,49 +118,72 @@ my $master_conf = OSCAR::Configurator_backend::readInConfigValues($masterconf,
                                                                   "ganglia",
                                                                   "",
                                                                   noarray=>1);
-&add_missing_keys($master_conf,\%default);
+if (add_missing_keys($master_conf, \%default)) {
+    die "ERROR: Impossible to add missing keys ($master_conf)";
+}
 
 if ($image) {
     if ($do_gmond) {
-	my $gmond_img = $imgpath.$gmond_conf;
-	if ($master_conf->{gmond_per_image} eq "YES") {
-	    #
-	    # per image configuration
-	    #
-	    my $imgconf = "$imgconfd/$image/configurator.html";
-	    #
-	    # read in per image configurator data, if it exists
-	    #
-	    if (-e $imgconf) {
-		vprint("using per image config $imgconf\n");
- 		my $img_conf = &readInConfigValues($imgconf, "ganglia", "image:$image", noarray=>1);
-		vprint(Dumper(%{$img_conf}));
-		&add_missing_keys($master_conf, $img_conf);
-		&edit_gmond_conf($gmond_img, $img_conf);
-	    } else {
-		croak("Per image configuration expected, but no values file found for $image!\n");
-	    }
-	} else {
-	    #
-	    # copy master gmond configuration to image
-	    #
-	    !system("cp -p $gmond_conf $gmond_img") or
-		croak("Could not copy $gmond_conf to $gmond_img: $!");
-	}
+        my $gmond_img = $imgpath.$gmond_conf;
+        if ($master_conf->{gmond_per_image} eq "YES") {
+            #
+            # per image configuration
+            #
+            my $imgconf = "$imgconfd/$image/configurator.html";
+            #
+            # read in per image configurator data, if it exists
+            #
+            if (-e $imgconf) {
+                vprint("using per image config $imgconf\n");
+                my $img_conf = OSCAR::Configurator_backend::readInConfigValues
+                    ($imgconf, "ganglia", "image:$image", noarray=>1);
+                vprint(Dumper(%{$img_conf}));
+                if (add_missing_keys($master_conf, $img_conf)) {
+                    die "ERROR: Impossible to add missing keys ($master_conf)";
+                }
+                if (edit_gmond_conf($gmond_img, $img_conf)) {
+                    die "ERROR: Impossible to add missing keys ".
+                        "($gmond_img, $img_conf)";
+                }
+            } else {
+                die ("ERROR: Per image configuration expected, ".
+                     "but no values file found for $image!\n");
+            }
+        } else {
+            #
+            # copy master gmond configuration to image
+            #
+            if (system("cp -p $gmond_conf $gmond_img")) {
+                die ("ERROR: Could not copy $gmond_conf to $gmond_img: $!");
+            }
+        }
     }
 } else {
     #
     # master configuration
     #
     if ($do_gmond) {
-	&edit_gmond_conf($gmond_conf, $master_conf);
-	&restart_gmond();
+        if (edit_gmond_conf($gmond_conf, $master_conf)) {
+            die "ERROR: Impossible to edit gmond configuration ($gmond_conf, ".
+                "$master_conf)";
+        }
+        if (restart_gmond()) {
+            die "ERROR: Impossible to restart gmond";
+        }
     }
     if ($do_gmetad) {
-	&add_multicast_route();
-	&restart_gmond();
-	&edit_gmetad_conf($gmetad_conf, $master_conf);
-	&restart_gmetad();
+        if (add_multicast_route()) {
+            die "ERROR: Impossible to add multicast route";
+        }
+        if (restart_gmond()) {
+            die "ERROR: Impossible to restart gmond";
+        }
+        if (edit_gmetad_conf($gmetad_conf, $master_conf)) {
+            die "ERROR: Impossible to edit gmetad_conf";
+        }
+        if (restart_gmetad()) {
+            die "ERROR: Impossible to restart gmetad";
+        }
     }
 }
 
@@ -187,20 +210,28 @@ sub vprint {
     }
 }
 
-sub add_missing_keys {
+# Return: 0 if success, -1 else.
+sub add_missing_keys ($$) {
     my ($src, $tgt) = @_;
-    for my $k (keys(%{$src})) {
-	if (!exists($tgt->{$k})) {
-	    $tgt->{$k} = $src->{$k};
-	}
+
+    if (!defined $src || (ref($src) ne "HASH")) {
+        carp "ERROR: None valid source";
+        return -1;
     }
+    for my $k (keys(%{$src})) {
+        if (!exists($tgt->{$k})) {
+            $tgt->{$k} = $src->{$k};
+        }
+    }
+    return 0;
 }
 
 ##############
 ### gmetad ###
 ##############
 
-sub edit_gmetad_conf {
+# Return: 0 if success, -1 else.
+sub edit_gmetad_conf ($$) {
     my ($gmetad_conf, $ref) = @_;
     my %config = %{$ref};
 
@@ -213,17 +244,17 @@ sub edit_gmetad_conf {
     # gmetad configuration.
     #
     my %del_patterns = (
-	   gridname   => "gridname\\s+.*",
-	   datasource => "data_source\\s+.*",
-			   );
+       gridname   => "gridname\\s+.*",
+       datasource => "data_source\\s+.*",
+               );
     my %add_patterns = (
-	   gridname => "gridname \"<gridname>\"",
-	   datasource => "data_source \"<cluster__name>\" $hostname",
-			   );
+       gridname => "gridname \"<gridname>\"",
+       datasource => "data_source \"<cluster__name>\" $hostname",
+               );
 
     my @gmetad;
-    open(CONF, $gmetad_conf) or
-	croak("Error: unable to open ($gmetad_conf)\n");
+    open(CONF, $gmetad_conf) 
+        or (carp("ERROR: unable to open $gmetad_conf\n"), return -1);
     @gmetad = <CONF>;
     close(CONF);
 
@@ -231,49 +262,51 @@ sub edit_gmetad_conf {
     # filter out gmetad delete patterns
     #
     for my $pat (keys %del_patterns) {
-	my $match = $del_patterns{$pat};
-	vprint("match: $match\n");
-	my @tmp = grep !/\s*($match)$/, @gmetad;
-	@gmetad = @tmp;
+        my $match = $del_patterns{$pat};
+        vprint("match: $match\n");
+        my @tmp = grep !/\s*($match)$/, @gmetad;
+        @gmetad = @tmp;
     }
 
     #
     # append gmetad add_patterns with substituted variables
     #
     for my $pat (keys %add_patterns) {
-	my $line = $add_patterns{$pat};
-	my @vars;
-	my $replaces = $line;
-	while ($replaces =~ s/<(\w+)>//) {
-	    my $var = $1;
-	    push @vars, $var;
-	    if (exists($ref->{$var})) {
-		$line =~ s/<$var>/$config{$var}/;
-	    }
-	}
-	push @gmetad, "$line\n";
+        my $line = $add_patterns{$pat};
+        my @vars;
+        my $replaces = $line;
+        while ($replaces =~ s/<(\w+)>//) {
+            my $var = $1;
+            push @vars, $var;
+            if (exists($ref->{$var})) {
+                $line =~ s/<$var>/$config{$var}/;
+            }
+        }
+        push @gmetad, "$line\n";
     }
 
     #
     # for per-image configs, add data sources for each cluster
     #
     if ($config{gmond_per_image} eq "YES") {
-	for my $ds (@{&img_datasources(\%config)}) {
-	    push @gmetad, $ds;
-	}
+        for my $ds (@{&img_datasources(\%config)}) {
+            push @gmetad, $ds;
+        }
     }
 
     if ($test) {
-	print STDOUT @gmetad;
-	return;
+        print STDOUT @gmetad;
+        return 0;
     }
     open (OUT, "> $gmetad_conf") or
-	croak "Could not open $gmetad_conf";
+    croak "Could not open $gmetad_conf";
     print OUT @gmetad;
     close(OUT);
+
+    return 0;
 }
 
-sub img_datasources {
+sub img_datasources($) {
     my ($ref) = @_;
     my %config = %{$ref};
     my @out;
@@ -286,47 +319,49 @@ sub img_datasources {
     my @imgs = glob("$imgconfd/*");
     vprint("img_datasources: images: ".join(" ",@imgs)."\n");
     foreach (@imgs) {
-	s/.*\///g;  # basename
+    s/.*\///g;  # basename
     }
     for my $img (@imgs) {
-	vprint("finding gmetad config for image $img\n");
-	# get cluster name and port from per image config
-	# if same port as master, skip
-	my $imgconf = "$imgconfd/$img/configurator.html";
-	if (-e $imgconf) {
-	    %imgcfg = %{readInConfigValues($imgconf,"ganglia","image:$img",noarray=>1)};
-	} else {
-	    opkg_print "configurator values for image $img not found!\n";
-	    next;
-	}
-	my $imgport = $imgcfg{udp_send_channel__port};
-	if ($master_port eq $imgport) {
-	    print STDERR "Image $img nodes use same gmond port as master.\n";
-	    print STDERR "Skipping $img nodes as gmetad data_source\n";
-	    next;
-	}
-	my $imgcname = $imgcfg{cluster__name};
-	
-	# get list of nodes attributed to image
-	my @imgnodes;
-	for my $i (list_client(imagename => $img)) {
-	    my $name = $i->name;
-	    push @imgnodes, $name if ($name);
-	}
-	next if (!scalar(@imgnodes));
-	
-	# create data_source entry
-	my $line = "data_source \"$imgcname\" ".join(" ",@imgnodes)."\n";
-	vprint("per image datasource ($img) : $line\n");
-	push @out, $line;
+        vprint("finding gmetad config for image $img\n");
+        # get cluster name and port from per image config
+        # if same port as master, skip
+        my $imgconf = "$imgconfd/$img/configurator.html";
+        if (-e $imgconf) {
+            %imgcfg = %{readInConfigValues($imgconf,"ganglia","image:$img",noarray=>1)};
+        } else {
+            opkg_print "configurator values for image $img not found!\n";
+            next;
+        }
+        my $imgport = $imgcfg{udp_send_channel__port};
+        if ($master_port eq $imgport) {
+            print STDERR "Image $img nodes use same gmond port as master.\n";
+            print STDERR "Skipping $img nodes as gmetad data_source\n";
+            next;
+        }
+        my $imgcname = $imgcfg{cluster__name};
+
+        # get list of nodes attributed to image
+        my @imgnodes;
+        for my $i (list_client(imagename => $img)) {
+            my $name = $i->name;
+            push @imgnodes, $name if ($name);
+        }
+        next if (!scalar(@imgnodes));
+
+        # create data_source entry
+        my $line = "data_source \"$imgcname\" ".join(" ",@imgnodes)."\n";
+        vprint("per image datasource ($img) : $line\n");
+        push @out, $line;
     }
     return \@out;
 }
 
-#############    
+#############
 ### gmond ###
-#############    
-sub edit_gmond_conf {
+#############
+
+# Return: -1 if error, 0 else.
+sub edit_gmond_conf ($$) {
     my ($gmond_conf, $ref) = @_;
     my %config = %{$ref};
     my @keywords = keys(%config);
@@ -335,59 +370,68 @@ sub edit_gmond_conf {
     my $comment=0;
 
     vprint("editing $gmond_conf\n");
+    if (!-f $gmond_conf) {
+        carp "ERROR: $gmond_conf does not exist";
+        return -1;
+    }
     open IN, $gmond_conf or croak "Could not open file $!";
     my @gmond = <IN>;
     close(IN);
 
-    open OUT, "> $gmond_conf" or croak "Could not open file $!";
+    open OUT, "> $gmond_conf" or (carp "ERROR: Could not open file $!",
+                                  return -1);
     foreach (@gmond) {
-	chomp;
-	# ignore full line comments
-	if (/^\s*\/\*.*\*\/\s*$/) {
-	    goto out;
-	}
-	if (/^\s*\/\*/) {
-	    $comment = 1;
-	    goto out;
-	}
-	if (/\*\/\s*$/) {
-	    $comment = 0;
-	    goto out;
-	}
-	goto out if ($comment);
-	#
-	if (/^\s*(\S+)\s*\{/) {
-	    my $block = $1;
-	    push @stack, $block;
-	    $level++;
-	}
-	if (/^\s*\}\s*$/) {
-	    $level--;
-	    pop @stack;
-	}
-	if (/^(\s*)(\S+)\s*=(.*)$/) {
-	    my $blank = $1;
-	    my $name = $2;
-	    my $value = $3;
-	    $value =~ s/^\s+//;
-	    $value =~ s/\s+$//;
-	    # check if match
-	    my $match = join("__",(@stack,$name));
-	    if (grep /$match/, @keywords) {
-		my $q;
-		$q = "\"" if ($value =~ /^\"/);
-		print OUT "$name = $q" . $config{$match} . "$q\n" if (!$test);
-		opkg_print "Changed line: $blank$name = $q" . $config{$match} . "$q\n";
-		next;
-	    }
-	}
+        chomp;
+        # ignore full line comments
+        if (/^\s*\/\*.*\*\/\s*$/) {
+            goto out;
+        }
+        if (/^\s*\/\*/) {
+            $comment = 1;
+            goto out;
+        }
+        if (/\*\/\s*$/) {
+            $comment = 0;
+            goto out;
+        }
+        goto out if ($comment);
+        #
+        if (/^\s*(\S+)\s*\{/) {
+            my $block = $1;
+            push @stack, $block;
+            $level++;
+        }
+        if (/^\s*\}\s*$/) {
+            $level--;
+            pop @stack;
+        }
+        if (/^(\s*)(\S+)\s*=(.*)$/) {
+            my $blank = $1;
+            my $name = $2;
+            my $value = $3;
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+            # check if match
+            my $match = join("__",(@stack,$name));
+            if (grep /$match/, @keywords) {
+                my $q;
+                $q = "\"" if ($value =~ /^\"/);
+                print OUT "$name = $q" . $config{$match} . "$q\n" if (!$test);
+                opkg_print "Changed line: $blank$name = $q".
+                           $config{$match}."$q\n";
+                next;
+            }
+        }
       out:
-	print OUT "$_\n" if (!$test);
+        print OUT "$_\n" if (!$test);
     }
     close OUT;
+
+    return 0;
 }
 
-sub add_multicast_route {
+# Return: 0 if success, -1 else.
+sub add_multicast_route () {
     my $route_string;
     my $static_route_file;
     my $reload_route;
@@ -399,14 +443,14 @@ sub add_multicast_route {
     # Mandriva and SuSE have a different approach to set and start
     # static routes:
     if ($release eq 'mdv') {
-	$route_string = "ADDRESS0=224.0.0.0 NETMASK0=240.0.0.0"; 
-	$static_route_file = "/etc/sysconfig/network-scripts/$iface.route";
+        $route_string = "ADDRESS0=224.0.0.0 NETMASK0=240.0.0.0"; 
+        $static_route_file = "/etc/sysconfig/network-scripts/$iface.route";
     } elsif ($release eq 'suse') {
-	$route_string = "224.0.0.0/4 0.0.0.0 - $iface"; 
-	$static_route_file = "/etc/sysconfig/network/routes";
+        $route_string = "224.0.0.0/4 0.0.0.0 - $iface"; 
+        $static_route_file = "/etc/sysconfig/network/routes";
     } else {
-	$route_string = "224.0.0.0/4 dev $iface";
-    	$static_route_file = "/etc/sysconfig/network-scripts/route-$iface";
+        $route_string = "224.0.0.0/4 dev $iface";
+        $static_route_file = "/etc/sysconfig/network-scripts/route-$iface";
     }
 
     if ($release eq 'suse') {
@@ -422,58 +466,98 @@ sub add_multicast_route {
 
     if (!($mcast_route)) {
         if (-e $static_route_file) {
-		$mcast_route = `grep 224.0.0.0 $static_route_file`;
-	}
-	if (!($mcast_route)) {
-		opkg_print("Adding default route for multicast to go through $iface.\n");
-		`echo $route_string >> $static_route_file`;
-	}
-	`$reload_route`;
+            $mcast_route = `grep 224.0.0.0 $static_route_file`;
+        }
+        if (!($mcast_route)) {
+            opkg_print("Adding default route for multicast to go through $iface.\n");
+            `echo $route_string >> $static_route_file`;
+        }
+        `$reload_route`;
     }
+    return 0;
 }
 
-sub restart_gmond {
+# Return: 0 if success, -1 else.
+sub restart_gmond () {
     opkg_print("Ganglia gmond configuration file modified, re-starting daemon...\n");
+
+    my $file = "/etc/init.d/gmond";
+    if (!-f $file) {
+        carp "ERROR: $file does not exist";
+        return -1;
+    }
+
+    my $cmd = "$file restart";
     # restart gmond
-    !system("/etc/init.d/gmond restart") or croak("Failed to restart gmond");
+    if (system($cmd)) {
+        carp("ERROR: Impossible to execute $cmd");
+        return -1;
+    }
+
+    return 0;
 }
 
-sub restart_gmetad {
+# Return: 0 if success, -1 else.
+sub restart_gmetad () {
     opkg_print("Ganglia gmetad configuration file modified, re-starting daemon...\n");
+    my $file = "/etc/init.d/gmetad";
+    if (!-f $file) {
+        carp "ERROR: $file does not exist";
+        return -1;
+    }
     # restart gmetad
-    !system("/etc/init.d/gmetad restart") or croak("Failed to restart gmetad");
+    my $cmd = "$file restart";
+    if (system($cmd)) {
+        carp ("ERROR: Impossible to execute $cmd");
+        return -1;
+    }
     opkg_print("Starting up apache...\n");
     # autoload apache in levels 345 and start it up
     my $HTTPD;
     for my $srv ("httpd", "apache2", "apache") {
-	if (-x "/etc/init.d/$srv") {
-	    $HTTPD=$srv;
-	    last;
-	}
+        if (-x "/etc/init.d/$srv") {
+            $HTTPD=$srv;
+            last;
+        }
     }
     if (!$HTTPD) {
-	croak("Could not find any init script for httpd!");
+        carp ("ERROR: Could not find any init script for httpd!");
+        return -1;
     }
-    &add_httpd_conf;
-    !system("/sbin/chkconfig $HTTPD on") or croak("Failed to turn on $HTTPD with chkconfig");
-    !system("/etc/init.d/$HTTPD restart") or croak("Failed to restart $HTTPD");
+    if (add_httpd_conf()) {
+        carp "ERROR: Impossible to update httpd configuration";
+        return -1;
+    }
+    if (system("/sbin/chkconfig $HTTPD on")) {
+        carp("ERROR: Failed to turn on $HTTPD with chkconfig");
+        return -1;
+    }
+    if (system("/etc/init.d/$HTTPD restart")) {
+        carp ("ERROR: Failed to restart $HTTPD");
+        return -1;
+    }
     opkg_print("Ganglia page is located at http://$hostname/ganglia/\n");
+    return 0;
 }
 
-sub add_httpd_conf {
+# Return: 0 if success, -1 else.
+sub add_httpd_conf() {
     my $confdir;
     for my $d ("httpd", "apache2", "apache") {
-	if (-d "/etc/$d/conf.d") {
-	    $confdir="/etc/$d/conf.d";
-	    last;
-	}
+        if (-d "/etc/$d/conf.d") {
+            $confdir="/etc/$d/conf.d";
+            last;
+        }
     }
     if (!$confdir) {
-	croak("Could not find apache configuration directory!");
+        carp ("ERROR: Could not find apache configuration directory!");
+        return -1;
     }
     if (! -f "$confdir/ganglia.conf") {
-	open C, "> $confdir/ganglia.conf" or croak "Could not open ganglia.conf: $!";
-	print C <<EOI;
+        open C, "> $confdir/ganglia.conf" 
+            or (carp "ERROR: Could not open ganglia.conf: $!",
+                return -1);
+        print C <<EOI;
 Alias /ganglia /var/www/html/ganglia/
 <Directory /var/www/html/ganglia/>
    Options None
@@ -482,6 +566,7 @@ Alias /ganglia /var/www/html/ganglia/
    allow from all
 </Directory>
 EOI
-	close C;
+        close C;
     }
+    return 0;
 }
