@@ -5,6 +5,7 @@
 - Update OPKG SIS to 4.0.6.
 - Update OPKG Switcher to 1.0.12.
 - Update ODA to 1.4.8.
+- Update ORM to 1.4.2.
 - Update RAPT to 2.8.7.
 - Update sync_files to 2.5.5.
 - Update SystemInstaller to 2.4.5.
@@ -32,6 +33,7 @@ file.
 - Simplify and fix the way to check if the packages in a binary packages list
 from a file are available or not.
 - Update the list of RPMs for a basic image based on RHEL5/CentOS5.
+- Update CentOS-5 support to CentOS-5.4.
 
 6.0.4:
 - Update Configurator to 1.0.3.
