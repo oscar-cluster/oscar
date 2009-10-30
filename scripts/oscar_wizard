@@ -149,6 +149,10 @@ if (OSCAR::Logger::init_log_file ($log_file)) {
     warn "[WARNING] Impossible to setup the log $log_file";
 }
 
+# This environment variable is used to know the OSCAR execution context (e.g.,
+# GUI vs. CLI). This is used by a few OPKGs such as Ganglia.
+$ENV{OSCAR_UI} = "gui";
+
 my $oscarsamples_dir;
 if (defined $ENV{OSCAR_HOME}) {
     $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";

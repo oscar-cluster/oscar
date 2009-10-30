@@ -34,6 +34,7 @@ file.
 from a file are available or not.
 - Update the list of RPMs for a basic image based on RHEL5/CentOS5.
 - Update CentOS-5 support to CentOS-5.4.
+- Correctly set the OSCAR_UI environment variable when running oscar_wizard.
 
 6.0.4:
 - Update Configurator to 1.0.3.
