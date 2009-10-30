@@ -23,6 +23,8 @@ repositories.
 - Remove various code compilation warnings when executing OSCAR base Perl
 modules.
 - Fix issues when generating the initrd on RPM based systems.
+- More asserts when checking binary packages available from a package list 
+file.
 
 6.0.4:
 - Update Configurator to 1.0.3.

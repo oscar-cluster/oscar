@@ -115,6 +115,13 @@ if ($check_binarylist) {
         || ! -f $check_binarylist) {
         die "ERROR: Invalid file $check_binarylist";
     }
+
+    # The user needs to specify the target distro, we cannot assume the
+    # filename gives us enough information.
+    if (!OSCAR::Utils::is_a_valid_string ($distro)) {
+        die "ERROR: You must specify the target distro";
+    }
+
     OSCAR::Logger::oscar_log_section "Checking the binary package list ".
         "$check_binarylist";
 
