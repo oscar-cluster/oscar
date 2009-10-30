@@ -13,9 +13,7 @@ binutils
 bzip2
 bzip2-libs
 chkconfig
-chkfontpath
 cpio
-cpp
 cracklib
 cracklib-dicts
 crontabs
@@ -54,7 +52,7 @@ glibc
 glibc-common
 glibc-devel
 glibc-headers
-glibc-kernheaders
+kernel-headers
 gmp
 gnuplot
 gpm
@@ -84,11 +82,11 @@ libstdc++
 libstdc++-devel
 libtermcap
 libuser
+libutempter-devel
 logrotate
 lsof
 ltrace
 lvm2
-m4
 mailcap
 mailx
 make
@@ -98,6 +96,7 @@ man-pages
 mingetty
 mkinitrd
 mktemp
+mlocate
 module-init-tools
 mtools
 ncurses
@@ -127,13 +126,10 @@ postfix
 procmail
 procps
 psmisc
-python
-PyXML
 quota
 rdate
 rdist
 readline
-redhat-logos
 rootfiles
 rpm
 rpm-libs
@@ -147,14 +143,10 @@ setup
 setuptool
 shadow-utils
 slang
-slocate
 strace
-switchdesk
 sysklogd
 SysVinit
 tar
-tcl
-tcpdump
 tcsh
 telnet
 telnet-server
@@ -167,7 +159,6 @@ udev
 units
 usbutils
 usermode
-utempter
 util-linux
 vim-common
 vim-minimal
@@ -179,16 +170,12 @@ xinetd
 zlib
 zlib-devel
 libcap
-kbd
 libgcc
 libacl
 compat-libf2c-34
 libattr
 elfutils-libelf
-libgcj
-fontconfig
 hesiod
-zip
 libobjc
 libmng
 libtiff
@@ -198,23 +185,12 @@ synaptics
 tcp_wrappers
 ttmkfdir
 tzdata
-xorg-x11-xfs
-xorg-x11-xinit
-xorg-x11-fonts-base
-xorg-x11-xsm
-xorg-x11-font-utils
-xorg-x11-xauth
-xorg-x11-twm
-mysql
 perl-DBD-MySQL
 perl-DBD-Pg
 perl-DBI
-postgresql
-postgresql-libs
 
 # ia32 RPMs with same name as the x86_64 versions
 glibc.i686
-tcl.i386
 libstdc++.i386
 freetype.i386
 fontconfig.i386
