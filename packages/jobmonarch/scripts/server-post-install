@@ -1,5 +1,23 @@
 #!/usr/bin/perl
 
+#
+# Copyright (c) OSCAR developers.
+# Copyright (c) 2009 Oak Ridge National Laboratory.
+#                    Geoffroy R. Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use Carp;
 use File::Copy;
@@ -8,12 +26,13 @@ use File::Path;
 use DBI;
 use DBD::mysql;
 
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Configbox;
 use OSCAR::Configurator_backend;
 use OSCAR::Database;
-use OSCAR::Opkg;
 use OSCAR::Distro;
+use OSCAR::Opkg;
+use OSCAR::OCA::OS_Detect;
+use OSCAR::Utils;
 
 our ($distro);
 
@@ -42,25 +61,27 @@ sub get_config {
     return $conf;
 }
 
-
-sub http_info {
-
+# Return: the http user id (string) or undef if error.
+sub http_info () {
     my $http_uid_conf;
     my $http_user;
 
-    my $pipe_cmd = "$ENV{OSCAR_HOME}/scripts/distro-query";
-    $pipe_cmd = $pipe_cmd." | "." grep \"compat distribution\"";
-    $pipe_cmd = $pipe_cmd." | "."awk '{ print \$NF }'";
-
-    $distro = `$pipe_cmd`;
-    chomp($distro);
-
-    print "Distribution: '$distro'\n";
+    my $os = OSCAR::OCA::OS_Detect::open ("/");
+    if (!defined $os) {
+        carp "ERROR: Impossible to detect the local distro.\n".
+             "Is your system supported by OSCAR?\n";
+        return undef;
+    }
+    my $distro = $os->{compat_distro};
+    if (!OSCAR::Utils::is_a_valid_string ($distro)) {
+        carp "ERROR: Impossible to detect the compat distro";
+        return undef;
+    }
 
     if($distro eq "sles" || $distro eq "suse") {
-	$http_uid_conf = "/etc/apache2/uid.conf";
+        $http_uid_conf = "/etc/apache2/uid.conf";
     } elsif($distro eq "rhel" || $distro eq "fc") {
-	$http_uid_conf = "/etc/httpd/conf/httpd.conf";
+        $http_uid_conf = "/etc/httpd/conf/httpd.conf";
     }
 
     $http_user = `egrep "^User " $http_uid_conf`;

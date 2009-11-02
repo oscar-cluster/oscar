@@ -72,6 +72,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="0.1.4-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-10-02T11:07:42-05:00">
+        <item>Fix the server-post-install script: we now rely on OS_Detect to get the compat distro, rather than distro-query.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="0.1.3-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-09-22T23:50:18-05:00">
         <item>Update the server-post-install to reflect an API modification.</item>
