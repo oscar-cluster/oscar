@@ -238,15 +238,14 @@ sub get_disk_file {
     return $diskfile;
 }
 
-################################################################################
-# Get the default settings for the creation of new images.                     #
-# !!WARNNING!! We do not set postinstall and title. The distro is also by      #
-# default the local distro.                                                    #
-# Input: none.                                                                 #
-# Output: default settings (via a hash).                                       #
-#         The format of the hash is the following is available within the code.#
-################################################################################
-sub get_image_default_settings () {
+sub get_binary_list_file ($) {
+    my $os = shift;
+
+    if (!defined $os) {
+        carp "ERROR: Undefined os variable";
+        return undef;
+    }
+
     my $oscarsamples_dir;
     if (defined $ENV{OSCAR_HOME}) {
         $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";
@@ -254,37 +253,19 @@ sub get_image_default_settings () {
         $oscarsamples_dir = "/usr/share/oscar/oscarsamples";
     }
 
-    # /tmp/error is provided if any error; further fdisk may produce
-    # certain output such as raid partitions, but the following check should
-    # work for grepping /dev/sd, further the check should also work when LVM
-    # partitions. Replacing the previous "df" check.
-    
-    my @df_lines = `fdisk -l 2> /tmp/error |grep Disk`;
-    my $disk_type = "ide";
-    $disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
-
-    #Get the distro list
-    my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
-    if (!defined $master_os) {
-        carp "ERROR: Impossible to detect the distro on the headnode";
-        return undef;
-    }
-
-    OSCAR::Utils::print_hash ("", "", $master_os) if ($verbose);
-
-    my $arch = $master_os->{arch};
-
     # We look if a package file exists for the exact distro we use. If not, we
     # use the package file for the compat distro.
-    my $distro = $master_os->{distro};
-    my $distro_ver = $master_os->{distro_version};
-    my $distro_update = $master_os->{distro_update}; #this is optinal
-    my $compat_distro = $master_os->{compat_distro};
-    my $compat_distro_ver = $master_os->{compat_distrover};
+    my $distro = $os->{distro};
+    my $distro_ver = $os->{distro_version};
+    my $distro_update = $os->{distro_update}; #this is optinal
+    my $compat_distro = $os->{compat_distro};
+    my $compat_distro_ver = $os->{compat_distrover};
+    my $arch = $os->{arch};
     if (!OSCAR::Utils::is_a_valid_string ($distro) ||
         !OSCAR::Utils::is_a_valid_string ($distro_ver) ||
         !OSCAR::Utils::is_a_valid_string ($compat_distro) ||
-        !OSCAR::Utils::is_a_valid_string ($compat_distro_ver)) {
+        !OSCAR::Utils::is_a_valid_string ($compat_distro_ver) ||
+        !OSCAR::Utils::is_a_valid_string ($arch)) {
         carp "ERROR: Impossible to extract distro information";
         return undef;
     }
@@ -297,11 +278,45 @@ sub get_image_default_settings () {
                    "$compat_distro-$compat_distro_ver-$arch.rpmlist";
     }
 
+    oscar_log_subsection("Identified distro of clients: $distro $distro_ver");
+
+    return $pkglist;
+}
+
+################################################################################
+# Get the default settings for the creation of new images.                     #
+# !!WARNNING!! We do not set postinstall and title. The distro is also by      #
+# default the local distro.                                                    #
+# Input: none.                                                                 #
+# Output: default settings (via a hash).                                       #
+#         The format of the hash is the following is available within the code.#
+################################################################################
+sub get_image_default_settings () {
+    # /tmp/error is provided if any error; further fdisk may produce
+    # certain output such as raid partitions, but the following check should
+    # work for grepping /dev/sd, further the check should also work when LVM
+    # partitions. Replacing the previous "df" check.
+    
+    my @df_lines = `fdisk -l 2> /tmp/error |grep Disk`;
+    my $disk_type = "ide";
+    $disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
+
+    #Get the distro list
+    my $master_os = OSCAR::OCA::OS_Detect::open ("/");
+    if (!defined $master_os) {
+        carp "ERROR: Impossible to detect the distro on the headnode";
+        return undef;
+    }
+
+    OSCAR::Utils::print_hash ("", "", $master_os) if ($verbose);
+
+    my $arch = $master_os->{arch};
+    my $pkglist = get_binary_list_file($master_os);
+
     my $distro_pool = OSCAR::PackagePath::distro_repo_url();
     $distro_pool =~ s/\ /,/g;
     my $oscar_pool = OSCAR::PackagePath::oscar_repo_url();
 
-    oscar_log_subsection("Identified distro of clients: $distro $distro_ver");
     oscar_log_subsection("Distro repo: $distro_pool");
     oscar_log_subsection("OSCAR repo: $oscar_pool");
     oscar_log_subsection("Using binary list: $pkglist");
