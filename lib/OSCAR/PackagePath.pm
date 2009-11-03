@@ -160,7 +160,9 @@ sub repos_add_urlfile ($@) {
     my @n;
     for (@repos) {
         s,^/,file:/,;
-        if (!m,^(file|http|ftp|https|mirror):,) {
+        if (!m,^(oscar:file|oscar:http|oscar:ftp|oscar:https|oscar:mirror
+                 |distro:file|distro:http|distro:ftp|distro:https|distro:mirror|
+                 |file|http|ftp|https|mirror):,) {
             carp "ERROR: Repository must either be a URL or an absolute path\n";
             return -1;
         }
