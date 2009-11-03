@@ -12,6 +12,7 @@
 #          a repo for the distro.
 
 [unstable]
+scientific_linux-5-i386 = distro:http://ftp.scientificlinux.org/linux/scientific/54/i386/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
 redhat-el-5-i386 = distro:file:/tftpboot/distro/redhat-el-5-i386 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
 redhat-el-5-x86_64 = distro:file:/tftpboot/distro/redhat-el-5-x86_64 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
 centos-5-x86_64 = distro:http://mirror.centos.org/centos/5.4/os/x86_64/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64 distro:http://mirror.centos.org/centos/5.4/extras/x86_64/
