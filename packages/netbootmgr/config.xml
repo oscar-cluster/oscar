@@ -31,6 +31,11 @@ files.
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.7.2-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-11-03T10:35:35-05:00">
+        <item>Avoid unecessary errors from server-post-install when restarting services.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.7.1-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-09-29T02:46:51-05:00">
         <item>[Ticket 547] Avoid misleading errors by improving the server-post-install script.</item>

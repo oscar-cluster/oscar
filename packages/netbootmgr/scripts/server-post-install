@@ -56,8 +56,18 @@ for my $line (@sic) {
 }
 close OUT;
 
-!system("$service restart") or
-	croak("ERROR: Could not restart service systemimager-server-netbootmond!");
+# GV:
+# - We do not do restart since we just want to be sure the service restarts 
+#   without generating errors. 
+# - We do not catch error for stopping (the service may already be stopped and
+#   this is just fine.
+# - We catch potential errors when starting the service (we want to make sure
+#   the service is on)
+my $cmd = "$service stop";
+system ($cmd);
+$cmd = "$service start";
+!system("$cmd") or
+	croak("ERROR: Impossible to exexcute $cmd");
 
 exit 0;
 
