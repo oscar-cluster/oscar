@@ -12,9 +12,12 @@ FILES := debian-4-i386.rpmlist fc-5-i386.rpmlist fc-8-x86_64.rpmlist \
 		rhel-4-i386.rpmlist scsi.ia64.disk ydl-5-ppc64.rpmlist \
 		fc-4-x86_64.rpmlist fc-8-i386.rpmlist rhel-3-i386.rpmlist \
 		rhel-4-ia64.rpmlist scsi.ppc64-ps3.disk fc-10-x86_64.rpmlist \
-		centos-5.2-x86_64.rpmlist ubuntu-804-i386.rpmlist \
+		ubuntu-804-i386.rpmlist \
 		suse-10.0-x86_64.rpmlist debian-5-i386.rpmlist debian-5-x86_64.rpmlist \
-		centos-5.3-x86_64.rpmlist ubuntu-904-x86_64.rpmlist
+        redhat-el-5-i386.rpmlist redhat-el-5-x86_64.rpmlist \
+		centos-5-x86_64.rpmlist centos-5-i386.rpmlist \
+        scientific_linux-5-i386.rpmlist scientific_linux-5-x86_64.rpmlist \
+        ubuntu-904-x86_64.rpmlist 
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
