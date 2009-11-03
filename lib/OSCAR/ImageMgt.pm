@@ -269,13 +269,21 @@ sub get_binary_list_file ($) {
         carp "ERROR: Impossible to extract distro information";
         return undef;
     }
-    my $version = $distro_ver;
-    $version = "$version.$distro_update" if (defined ($distro_update));
-    my $pkglist = "$oscarsamples_dir/".
-                  "$distro-$version-$arch.rpmlist";
+    my $full_version = "$distro_ver.$distro_update" if (defined ($distro_update));
+    my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.rpmlist";
     if (! -f $pkglist) {
-        $pkglist = "$oscarsamples_dir/".
-                   "$compat_distro-$compat_distro_ver-$arch.rpmlist";
+        OSCAR::Logger::oscar_log_subsection ("$pkglist does not exist\n");
+        $pkglist = "$oscarsamples_dir/$distro-$full_version-$arch.rpmlist";
+        if (! -f $pkglist) {
+            OSCAR::Logger::oscar_log_subsection ("$pkglist does not exist\n");
+            $pkglist = "$oscarsamples_dir/".
+                       "$compat_distro-$compat_distro_ver-$arch.rpmlist";
+            if (! -f $pkglist) {
+                carp "ERROR: Impossible to detect the binary list file to ".
+                     "create the basic image";
+                return undef;
+            }
+        }
     }
 
     oscar_log_subsection("Identified distro of clients: $distro $distro_ver");
