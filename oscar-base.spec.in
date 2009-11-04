@@ -23,8 +23,6 @@ Requires: 	yum, createrepo, yume
 Vendor: 	OSCAR
 Distribution: 	OSCAR
 Packager: 	Geoffroy Vallee
-Requires:   perl-XML-Simple
-Requires:   perl-AppConfig
 
 Buildroot: 	%{_tmppath}/%{name}-%{version}-root
 BuildArch: 	noarch
@@ -108,6 +106,8 @@ Dummy package for oscar-base-server install.
 %package -n oscar-base-lib
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
+Requires:   perl-XML-Simple
+Requires:   perl-AppConfig
 AutoReqProv: no
 %description -n oscar-base-lib
 Libraries for OSCAR clustering base package.
