@@ -24,6 +24,7 @@ Vendor: 	OSCAR
 Distribution: 	OSCAR
 Packager: 	Geoffroy Vallee
 Requires:   perl-XML-Simple
+Requires:   perl-AppConfig
 
 Buildroot: 	%{_tmppath}/%{name}-%{version}-root
 BuildArch: 	noarch
