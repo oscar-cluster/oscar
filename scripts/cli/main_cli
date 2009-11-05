@@ -48,7 +48,7 @@ my $skipnet = '';
 my $skipcomplete = '';
 my $skiptest = '';
 my $help = '';
-my $bootscript;
+my $cmd;
 
 my $path;
 if (defined $ENV{OSCAR_HOME}) {
@@ -112,17 +112,28 @@ Flags (Provide automation):
     exit 1;
 }
 
+# First of all, enforce that the user running this script is 'root'
+die "You must be 'root' to run this script.  Aborting" if ($< != 0);
+
 oscar_log_section("Running OSCAR CLI Installer");
-if (
+
+my $config_file = "/etc/oscar/oscar.conf";
+my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$config_file");
+my $config = $oscar_cfg->get_config();
+my $binpath = $config->{'binaries_path'};
 
 # Step 0 should be taken care of with the OPD command line utility
 
 # Step 1 - Select Packages
 unless ($skipselector) {
-    my $cmd = "$path/selector_cli";
+    $cmd = "$path/oscar-selector";
+    if (!-f $cmd) {
+        die "ERROR: $cmd is not available, check OSCAR is correctly ".
+            "installed and bootstrapped";
+    }
     $cmd = $cmd . " --file $selectorfile" if ($selectorfile ne " ");
     oscar_log_subsection("Running command: $cmd");
-    !system($cmd) or die "Failed on Step 1 - Select Packages";
+    !system($cmd) or die "ERROR: Failed on Step 1 - Select Packages";
 }
 
 # Step 2 - Configure Packages
@@ -132,18 +143,11 @@ system("$path/configurator_cli");
 # This step doesn't need a seperate cli script as it already has one
 unless ($skipinstall) {
     oscar_log_section("Installing OSCAR Server Packages");
-    my $config_file = "/etc/oscar/oscar.conf";
-    my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$config_file");
-    my $config = $oscar_cfg->get_config();
-    my $binpath = $config->{'binaries_path'}
-    my $cmd = "$binpath/install_server $interface";
+    $cmd = "$binpath/install_server $interface";
     oscar_log_subsection("Running command: $cmd");
-    if(!system($cmd))
-    {
+    if(!system($cmd)) {
         oscar_log_section("Packages Successfully Installed");
-    }
-    else
-    {
+    } else {
         oscar_log_section("Packages not Installed!");
         die ("Failed Step 3 - Install OSCAR Server Packages");
     }
@@ -154,7 +158,7 @@ WizardEnv::update_env();
 
 # Step 4 - Build OSCAR Client Image
 unless ($skipbuild) {
-    my $cmd = "$path/build_oscar_image_cli";
+    $cmd = "$path/build_oscar_image_cli";
     $cmd = $cmd . " --file $buildfile" if ($buildfile ne " ");
     $cmd = $cmd . " $interface";
     oscar_log_subsection("Running command: $cmd");
@@ -163,7 +167,7 @@ unless ($skipbuild) {
 
 # Step 5 - Define OSCAR Clients
 unless ($skipdefine) {
-    my $cmd = "$path/define_oscar_clients_cli";
+    $cmd = "$path/define_oscar_clients_cli";
     $cmd = $cmd . " --file $definefile" if ($definefile ne " ");
     $cmd = $cmd . " $interface";
     oscar_log_subsection("Running command: $cmd");
@@ -192,7 +196,7 @@ unless ($skipcomplete) {
     }
     
     oscar_log_section("Complete Cluster Setup");
-    my $cmd = "$binpath/post_install";
+    $cmd = "$binpath/post_install";
     if(!system($cmd)) {
         oscar_log_subsection("Successfully completed the cluster install");
     } else {
@@ -213,7 +217,7 @@ if (defined $ENV{OSCAR_HOME}) {
 }
 unless ($skiptest) {
     oscar_log_section("Test Cluster Setup");
-    my $cmd = "$tests_path/test_cluster";
+    $cmd = "$tests_path/test_cluster";
     if (!system($cmd)) {
         oscar_log_subsection("Step 8 - Successfully tested the cluster setup");
     } else {
