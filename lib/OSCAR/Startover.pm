@@ -157,12 +157,12 @@ sub startover_stage1 ($) {
     use OSCAR::PackagePath;
     use OSCAR::Utils;
     my $distro = OSCAR::PackagePath::get_distro();
-    if (!OSCAR::Utils::a_valid_string ($distro)) {
+    if (!OSCAR::Utils::is_a_valid_string ($distro)) {
         carp "ERROR: Impossible to detect the local distro";
         return -1;
     }
     my $compat_distro = OSCAR::PackagePath::get_compat_distro ($distro);
-    if (!OSCAR::Utils::a_valid_string ($compat_distro)) {
+    if (!OSCAR::Utils::is_a_valid_string ($compat_distro)) {
         carp "ERROR: Impossible to detect the compat distro";
         return -1;
     }
