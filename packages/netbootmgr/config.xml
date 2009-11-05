@@ -31,6 +31,11 @@ files.
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.7.3-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-11-05T16:23:59-05:00">
+        <item>Avoid nasty situations when dealing with the monitoring deamon (server-post-install).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.7.2-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-11-03T10:35:35-05:00">
         <item>Avoid unecessary errors from server-post-install when restarting services.</item>

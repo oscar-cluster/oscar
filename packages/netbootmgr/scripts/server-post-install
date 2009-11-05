@@ -63,6 +63,31 @@ close OUT;
 #   this is just fine.
 # - We catch potential errors when starting the service (we want to make sure
 #   the service is on)
+# Other nasty details: the /etc/init.d/systemimager-server-netbootmond service
+# actually rely on /usr/sbin/si_netbootmond which is a very ugly beast: if the
+# /etc/systemimager/systemimager-server-rsyncd daemon is not running, 
+# everything will fail without a single line of output because the 
+# /var/log/systemimager/rsyncd file does not exists. So before to start the
+# daemon, we check the rsyncd deamon is running.
+
+my $mandatory_log = "/var/log/systemimager/rsyncd";
+if (! -f $mandatory_log) {
+    # If the log file does not exist, we check whether 
+    # /etc/init.d/systemimager-server-rsyncd is running or not (this daemon actually 
+    # creates the log file).
+    my $parent_service = "/etc/init.d/systemimager-server-rsyncd";
+    if (system ("$parent_service status")) {
+        print ("[WARNING] The $mandatory_log file does not exist and the ".
+               "$parent_service daemon is not running, so we do not start ".
+               "monitoring deamon (we assume you are not using rsync to ".
+               "deploy the compute nodes\n");
+        exit 0;
+    } else {
+        die "ERROR: $parent_service is running but $mandatory_log does not ".
+            "exist. The system is not coherent.";
+    }
+}
+
 my $cmd = "$service stop";
 system ($cmd);
 $cmd = "$service start";
