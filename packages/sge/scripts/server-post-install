@@ -20,12 +20,20 @@
 # (C)opyright 2005-2006 Bernard Li <bli@bcgsc.ca>.
 #             All rights reserved.
 # (C)opyright 2005 Babu Sundaram <babu@cs.uh.edu>
+# (C)opyright 2009  Geoffroy Vallee <valleegr@ornl.gov>
+#                   Oak Ridge Natinal Laboratory
+#                   All rights reserved.
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 
 use Carp;
 use File::Copy;
 
-use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::Configbox;
+use OSCAR::Configurator_backend;
 use OSCAR::Database;
 use OSCAR::Opkg;
 
@@ -57,7 +65,8 @@ chomp($domainname);
 
 # If user has configured the package, use the custom values, otherwise use the default
 if (-e $xml_data) {
-    my $ref = readInConfigValues($xml_data,"sge","",noarray=>1);
+    my $ref = OSCAR::Configurator_backend::readInConfigValues($xml_data,
+        "sge","",noarray=>1);
     $fullserver = $ref->{fullserver};
     $cellname = $ref->{cellname};
     $gidrange = $ref->{gidrange};
