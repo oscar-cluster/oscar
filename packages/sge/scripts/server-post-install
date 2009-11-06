@@ -260,7 +260,7 @@ sub setup_pe ($) {
         if ($? == 256) {
                 # parallel environment does not exist, creating...
                 opkg_print("Adding $pe parallel environment to SGE\n");
-                system("$qconf -Ap $ENV{OSCAR_PACKAGE_HOME}/templates/$pe.template") == 0 or croak("Failed to add $pe to SGE's parallel environment");
+                system("$qconf -Ap $ENV{OSCAR_PACKAGE_HOME}/scripts/$pe.template") == 0 or croak("Failed to add $pe to SGE's parallel environment");
         } elsif ($? == 0) {
                 # parallel environment already exists
         } else {
