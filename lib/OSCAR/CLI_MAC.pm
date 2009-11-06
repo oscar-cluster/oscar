@@ -25,8 +25,13 @@ package OSCAR::CLI_MAC;
 # Description: this is the CLI code for setup networking, especially
 # related to MAC addresses. The library code is in lib/OSCAR/MAC.pm
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use lib "/usr/lib/systeminstaller";
 use SIS::NewDB;
 use OSCAR::MAC qw(save_to_file
