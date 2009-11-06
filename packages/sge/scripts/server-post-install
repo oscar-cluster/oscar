@@ -35,7 +35,6 @@ use File::Copy;
 
 use OSCAR::Configurator_backend;
 use OSCAR::Database;
-use OSCAR::OCA::OS_Detect;
 use OSCAR::Opkg;
 
 # Manually setting SGE_ROOT
@@ -326,7 +325,13 @@ system("/etc/init.d/sgemaster start");
 
 opkg_print("All qmaster-related setup complete.\n");
 
-my $rm_detect_dir = "$ENV{OSCAR_HOME}/lib/OSCAR/OCA/RM_Detect";
+my $rm_detect_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $rm_detect_dir = "$ENV{OSCAR_HOME}/lib/OSCAR/OCA/RM_Detect";
+} else {
+    my $perl_modules_path = OSCAR::Utils::get_path_perl_modules();
+    $rm_detect_dir = "$perl_modules_path/OSCAR/OCA/RM_Detect";
+}
 
 # Copy RM_Detect component for SGE to the right location
 system("cp -a $ENV{OSCAR_PACKAGE_HOME}/SGE.pm $rm_detect_dir") == 0 
