@@ -38,6 +38,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="6.1.3-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-11-06T14:16:54-05:00">
+        <item>Fix even more issues with server-post-install: fix the location of the templates and Perl modules (patch from Olivier LAHAYE).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="6.1.2-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-11-05T22:01:33-05:00">
         <item>Fix a server-post-install script issue: it is now using the new Configurator API (patch from Olivier LAHAYE).</item>
