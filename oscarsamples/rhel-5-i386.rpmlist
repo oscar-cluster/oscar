@@ -54,7 +54,6 @@ glibc
 glibc-common
 glibc-devel
 glibc-headers
-glibc-kernheaders
 gmp
 gnuplot
 gpm
@@ -147,7 +146,6 @@ setup
 setuptool
 shadow-utils
 slang
-slocate
 strace
 switchdesk
 sysklogd
