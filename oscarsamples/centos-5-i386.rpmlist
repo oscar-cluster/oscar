@@ -166,7 +166,6 @@ udev
 units
 usbutils
 usermode
-utempter
 util-linux
 vim-common
 vim-minimal
