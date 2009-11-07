@@ -442,6 +442,39 @@ sub delete_image ($) {
     return 0;
 }
 
+sub add_corrupted_image ($$) {
+    my ($res_ref, $entry_ref) = @_;
+
+    # The deal here is the following: we want to avoid entry duplication, i.e.,
+    # maintain info for a given image is a single hash. So before to add a new
+    # entry to the hash, we check first if an entry is not already there that
+    # we could update.
+    
+    my $image_name = $entry_ref->{'name'};
+    OSCAR::Logger::oscar_log_subsection ("Adding/updating corruption data ".
+        "for $image_name");
+
+    # We check whether an entry is already available or not.
+    foreach my $e (@$res_ref) {
+        if ($e->{'name'} eq $image_name) {
+            # We update each key marked as "missing"
+            foreach my $k (keys %$entry_ref) {
+                if ($entry_ref->{$k} eq "missing") {
+                    $e->{$k} = "missing";
+                }
+            }
+            return 0;
+        }
+    }
+
+    # If we reach this point, no entry for the image is already in the hash
+    push (@$res_ref, $entry_ref);
+    OSCAR::Logger::oscar_log_subsection ("Corrupted data for $image_name ".
+        "saved");
+
+    return 0;
+}
+
 ################################################################################
 # Get the list of corrupted images. An image is concidered corrupted when info #
 # from the OSCAR database, the SIS database and the file system are not        #
@@ -455,11 +488,10 @@ sub delete_image ($) {
 #                  'fs' => "ok"|"missing" ).                                   #
 #         undef if error.                                                      #
 ################################################################################
-sub get_list_corrupted_images {
-    my @result;
+sub get_list_corrupted_images () {
+    my @result = ();
     my @sis_images = get_systemimager_images ();
     my $image_name;
-    my %entry;
 
     # The array is now clean, we can print it
     print "List of images in the SIS database: ";
@@ -514,45 +546,48 @@ sub get_list_corrupted_images {
 
     # We now compare the lists of images
     foreach $image_name (@sis_images) {
-        %entry = ('name' => $image_name,
-                     'sis' => "ok",
-                     'oda' => "ok",
-                     'fs' => "ok");
+        my %entry = ('name' => $image_name,
+                  'sis' => "ok",
+                  'oda' => "ok",
+                  'fs' => "ok");
         if (!is_element_in_array($image_name, @oda_images)) {
             $entry{'oda'} = "missing";
+            add_corrupted_image (\@result, \%entry);
         }
         if (!is_element_in_array($image_name, @fs_images)) {
             $entry{'fs'} = "missing";
+            add_corrupted_image (\@result, \%entry);
         }
-        push (@result, \%entry);
     }
 
     foreach $image_name (@oda_images) {
-        %entry = ('name' => $image_name,
-                     'sis' => "ok",
-                     'oda' => "ok",
-                     'fs' => "ok");
+        my %entry = ('name' => $image_name,
+                  'sis' => "ok",
+                  'oda' => "ok",
+                  'fs' => "ok");
         if (!is_element_in_array($image_name, @sis_images)) {
             $entry{'sis'} = "missing";
+            add_corrupted_image (\@result, \%entry);
         }
         if (!is_element_in_array($image_name, @fs_images)) {
             $entry{'fs'} = "missing";
+            add_corrupted_image (\@result, \%entry);
         }
-        push (@result, \%entry);
     }
 
     foreach $image_name (@fs_images) {
-        %entry = ('name' => $image_name,
-                     'sis' => "ok",
-                     'oda' => "ok",
-                     'fs' => "ok");
+        my %entry = ('name' => $image_name,
+                  'sis' => "ok",
+                  'oda' => "ok",
+                  'fs' => "ok");
         if (!is_element_in_array($image_name, @sis_images)) {
             $entry{'sis'} = "missing";
+            add_corrupted_image (\@result, \%entry);
         }
         if (!is_element_in_array($image_name, @oda_images)) {
             $entry{'oda'} = "missing";
+            add_corrupted_image (\@result, \%entry);
         }
-        push (@result, \%entry);
     }
 
     return (@result);

@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #
-# Copyright (c) 2007 Oak Ridge National Laboratory
-#               Geoffroy Vallee <valleegr@ornl.gov>
-#               All rights reserved
+# Copyright (c) 2007-2009   Oak Ridge National Laboratory
+#                           Geoffroy Vallee <valleegr@ornl.gov>
+#                           All rights reserved
 #
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -20,16 +20,76 @@
 # use the hardcoded path.
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
+use Carp;
+use Getopt::Long;
+use warnings "all";
 
-use OSCAR::ImageMgt qw (
-                        delete_image
-                        get_list_corrupted_images 
-                       );
+use OSCAR::ImageMgt;
+use OSCAR::Logger;
 
-my @corrupted_images = get_list_corrupted_images();
+sub help () {
+    print "Usage: $0 OPTION\n";
+    print "\n";
+    print "Cleanup OSCAR images.\n";
+    print "For more details, please refer to the man page ".
+          "(man oscar_image_cleanup)\n";
+    print "\n";
+}
 
+sub help_and_exit () {
+    help ();
+    exit 1;
+}
+
+sub sanity_check () {
+    my $file = "/usr/bin/mksiimage";
+
+    if (!-f $file) {
+        carp "ERROR: The mandory file $file is missing";
+        return -1;
+    }
+
+    return 0;
+}
+
+my ($verbose, $debug);
+GetOptions(
+        "debug|d"                         => \$debug,
+        "verbose|v"                       => \$verbose,
+        ) || help_and_exit ();
+
+OSCAR::Logger::init_log_file ("/var/log/oscar/oscar_image_cleanup.log");
+
+my $initial_verbose_value = 0;
+$initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+}
+if ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+}
+
+OSCAR::Logger::oscar_log_section "OSCAR Image Cleaning up";
+
+if (sanity_check ()) {
+    die "ERROR: System not correctly setup";
+}
+
+my @corrupted_images = OSCAR::ImageMgt::get_list_corrupted_images();
+print "List of corrupted images: ";
+foreach my $image (@corrupted_images) {
+    print ($image->{'name'} . " ");
+}
+print "\n";
+
+my $cmd;
 foreach my $corrupted_image (@corrupted_images) {
     print "=== Image cleanup ===\n";
     print "Image name: $corrupted_image->{'name'}\n";
@@ -40,12 +100,18 @@ foreach my $corrupted_image (@corrupted_images) {
         $corrupted_image->{'sis'} eq "ok" &&
         $corrupted_image->{'fs'} eq "ok") {
         print ("Deleting the SIS image...\n");
-        delete_image ($corrupted_image->{'name'});
+        OSCAR::ImageMgt::delete_image ($corrupted_image->{'name'});
+        $cmd = "/usr/sbin/si_rmimage ".$corrupted_image->{'name'}." --force";
+        OSCAR::Logger::oscar_log_subsection ("Executing: $cmd");
+        system ($cmd);
         print ("Image Deleted.\n");
     } elsif ($corrupted_image->{'oda'} eq "missing" &&
              $corrupted_image->{'sis'} eq "ok" &&
              $corrupted_image->{'fs'} eq "missing") {
-        system("si_rmimage -force $corrupted_image->{'name'}");
+        $cmd = "/usr/sbin/si_rmimage ".$corrupted_image->{'name'}." --force";
+        OSCAR::Logger::oscar_log_subsection ("Executing: $cmd");
+        system ($cmd);
+        print ("Image Deleted.\n");
     } elsif ($corrupted_image->{'oda'} eq "missing" &&
              $corrupted_image->{'sis'} eq "missing" &&
              $corrupted_image->{'fs'} eq "ok") {
