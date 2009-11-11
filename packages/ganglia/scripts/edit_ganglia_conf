@@ -81,9 +81,6 @@ chomp($hostname);
 if (! -f $masterconf) {
     die "ERROR: Ganglia configuration.html file does not exist ($masterconf)";
 }
-if (! -f $imgconfd) {
-    die "ERROR: Ganglia .configs file does not exist ($imgconfd)";
-}
 if (!is_a_valid_string ($hostname)) {
     die "ERROR: Invalid hostname";
 }
@@ -140,9 +137,6 @@ my $master_conf = OSCAR::Configurator_backend::readInConfigValues($masterconf,
                                                                   "ganglia",
                                                                   "",
                                                                   noarray=>1);
-if (! -f $master_conf) {
-    die "ERROR: Ganglia configuration file does not exist ($master_conf)";
-}
 
 if (add_missing_keys($master_conf, \%default)) {
     die "ERROR: Impossible to add missing keys ($master_conf)";
