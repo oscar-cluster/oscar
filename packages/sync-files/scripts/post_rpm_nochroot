@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/perl
 #
 # Copy /etc/{passwd,group,shadow} to /opt/sync_files/templates/image.
 # This is required in order to deal with uid/gid mismatches between
@@ -6,22 +6,43 @@
 #
 # $Id$
 # Copyright (c) Erich Focht 2006
+# Copyright (c) 2009    Oak Ridge National Laboratory
+#                       Geoffroy Vallee <valleegr@ornl.gov>
+#                       All rights reserved.
 
-IMAGEDIR=$1
-if [ -z "$IMAGEDIR" -o ! -d "$IMAGEDIR" ]; then
-    echo "Image directory doesn't exist!"
-    exit 1
-fi
+use strict;
+use warnings "all";
+use Carp;
+use File::Basename;
+use File::Path;
+use OSCAR::Utils;
 
-IBASE=`basename $IMAGEDIR`
+my $IMAGEDIR = shift;
 
-DIR=/opt/sync_files/templates/image/$IBASE
-if [ ! -d $DIR ]; then
-    mkdir -p $DIR
-fi
-cp $IMAGEDIR/etc/passwd $IMAGEDIR/etc/group $DIR
-egrep -v '^root:' $IMAGEDIR/etc/shadow > $DIR/shadow
+if (!OSCAR::Utils::is_a_valid_string ($IMAGEDIR)) {
+    die "ERROR: Invalid parameter, you should specifu the image directory";
+}
+if (! -d $IMAGEDIR) {
+    die "ERROR: $IMAGEDIR does not exist";
+}
 
-echo "Created templates for image $IBASE in $DIR"
-echo "Make sure these files do not contain any user accounts."
-echo "Only system account IDs should be included!"
+
+my $IBASE = File::Basename::basename($IMAGEDIR);
+
+my $DIR = "/opt/sync_files/templates/image/$IBASE";
+if (! -d $DIR) {
+    File::Path::mkpath ($DIR) or die "ERROR: Impossible to create $DIR";
+}
+
+my $cmd = "cp $IMAGEDIR/etc/passwd $IMAGEDIR/etc/group $DIR";
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+$cmd = "egrep -v '^root:' $IMAGEDIR/etc/shadow > $DIR/shadow";
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+
+print "Created templates for image $IBASE in $DIR\n".
+      "Make sure these files do not contain any user accounts.\n".
+      "Only system account IDs should be included!";
