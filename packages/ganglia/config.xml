@@ -92,7 +92,12 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
-        <versionEntry version="3.0.8-1">
+    <versionEntry version="3.0.9-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-10-27T02:05:44-05:00">
+        <item>Clean up the edit_ganglia_conf script.</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="3.0.8-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-10-27T02:05:44-05:00">
         <item>Clean up the following scripts: post_server_install, edit_ganglia_conf</item>
       </changelogEntry>

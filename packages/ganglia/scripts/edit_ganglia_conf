@@ -132,11 +132,14 @@ my %default = (
            gmond_per_image => "NO",
 );
 
-
 my $master_conf = OSCAR::Configurator_backend::readInConfigValues($masterconf, 
                                                                   "ganglia",
                                                                   "",
                                                                   noarray=>1);
+if (!defined $master_conf) {
+    die "ERROR: Impossible to get the configuration. ".
+        "Is the Ganglia OPKG selected?";
+}
 
 if (add_missing_keys($master_conf, \%default)) {
     die "ERROR: Impossible to add missing keys ($master_conf)";
