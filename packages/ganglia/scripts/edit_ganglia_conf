@@ -45,6 +45,8 @@ use OSCAR::Database;
 use OSCAR::Opkg;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Package;
+use OSCAR::Utils;
+use Data::Dumper;
 
 my ($do_gmond, $do_gmetad, $image, @options, $test, $verbose);
 Getopt::Long::Configure("pass_through");
@@ -54,36 +56,56 @@ GetOptions(
             'help'      => \&help_and_exit,
             'image=s'   => \$image,
             'option=s'  => \@options,
-            'test'      => \$test,
+#            'test'      => \$test,
             'verbose'   => \$verbose, 
           ) || help_and_die();
 
 my $gmetad_conf = "/etc/gmetad.conf";
 my $gmond_conf = "/etc/gmond.conf";
-if ($test) {
-    $gmetad_conf = "gmetad.conf";
-    $gmond_conf = "gmond.conf";
-    $ENV{OSCAR_PACKAGE_HOME} = ".";
-}
+# GV: this cannot work currently so we deactivate.
+#if ($test) {
+#    $gmetad_conf = "gmetad.conf";
+#    $gmond_conf = "gmond.conf";
+#    $ENV{OSCAR_PACKAGE_HOME} = ".";
+#}
 my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "");
+if (!-d $pkgdir) {
+    die "ERROR: the package directory for Ganglia does not exist ($pkgdir)";
+}
 my $masterconf = "$pkgdir/configurator.html";
 my $imgconfd = "$pkgdir/.configs";
 
 my $hostname = `hostname`;
 chomp($hostname);
 
+if (! -f $masterconf) {
+    die "ERROR: Ganglia configuration.html file does not exist ($masterconf)";
+}
+if (! -f $imgconfd) {
+    die "ERROR: Ganglia .configs file does not exist ($imgconfd)";
+}
+if (!is_a_valid_string ($hostname)) {
+    die "ERROR: Invalid hostname";
+}
+
 # find image path
 my $imgpath;
 if ($image) {
     my @imgs = list_image(name => $image);
     if (!scalar(@imgs)) {
-    croak("Could not find image $image in the SIS database!\n");
+        die ("ERROR: Could not find image $image in the database!\n");
     }
-    $imgpath = $imgs[0]->location;
+    $imgpath = $imgs[0]->{'location'};
+    if (!-d $imgpath) {
+        die "ERROR: Image path does not exist ($imgpath)";
+    }
 }
 
 # get headnode's interface information from OSCAR database
 my $iface = OSCAR::Database::get_headnode_iface(undef, undef);
+if (!OSCAR::Utils::is_a_valid_string ($iface)) {
+    die "ERROR: Invalid network interface";
+}
 
 
 #
@@ -118,6 +140,10 @@ my $master_conf = OSCAR::Configurator_backend::readInConfigValues($masterconf,
                                                                   "ganglia",
                                                                   "",
                                                                   noarray=>1);
+if (! -f $master_conf) {
+    die "ERROR: Ganglia configuration file does not exist ($master_conf)";
+}
+
 if (add_missing_keys($master_conf, \%default)) {
     die "ERROR: Impossible to add missing keys ($master_conf)";
 }
