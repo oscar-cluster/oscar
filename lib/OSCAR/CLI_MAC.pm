@@ -50,7 +50,6 @@ use OSCAR::MAC qw(save_to_file
                   __end_collect_mac
                   __load_macs
                   __build_autoinstall_cd
-                  __enable_install_mode
                   __run_setup_pxe
                   %MAC
                   $COLLECT
@@ -101,7 +100,9 @@ sub mac_cli {
 }
 
 
-#The interface for the cli version of the MAC setup
+# The interface for the cli version of the MAC setup
+#
+# Return: 0 if success, -1 else.
 sub cli_menu {
     my $done = 0;
     my $infile = shift;
@@ -213,7 +214,10 @@ log for writing.\n";}
             oscar_log_subsection("Install mode: $install_mode");
         }
         elsif($response eq "4") {
-            __enable_install_mode();
+            if (OSCAR::MAC::__enable_install_mode()) {
+                carp "ERROR: Impossible to enable install mode";
+                return -1;
+            }
             $dhcpbtn = 1;
         }
         elsif($response eq "5") {
@@ -244,6 +248,8 @@ log for writing.\n";}
     }
 
     close LOG;
+
+    return 0;
 }
 
 

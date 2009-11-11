@@ -59,7 +59,6 @@ use OSCAR::MAC qw(save_to_file
                   __end_collect_mac
                   __load_macs
                   __build_autoinstall_cd
-                  __enable_install_mode
                   __run_setup_pxe
                   %MAC 
                   $COLLECT 
@@ -870,13 +869,19 @@ sub build_autoinstall_cd {
 }
 
 # Call the library function to enable selected install mode
+#
+# Return: 1 if success, 0 else.
 sub enable_install_mode {
     our $install_mode;
     our $window;
-    $window->Busy(-recurse => 1);
 
-    __enable_install_mode();
+    $window->Busy(-recurse => 1);
+    if (OSCAR::MAC::__enable_install_mode()) {
+        carp "ERROR: Impossible to enable install mode";
+        return 0;
+    }
     our $dhcpbutton->configure(-state => 'normal');
     $window->Unbusy();
+
     return 1;
 }
