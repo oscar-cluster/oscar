@@ -424,15 +424,6 @@ sub mactransform {
     return $return;
 }
 
-# A simple subrountine for running a command
-# TODO: we should use return codes instead of dying when an error happends. 
-# That will allow a finer grain management of exceptions, propagating the
-# error up the code tree.
-sub run_cmd {
-    my $cmd = shift;
-    !system($cmd) or croak("Failed to run $cmd");
-}
-
 # Build AutoInstall CD
 #
 # Return: 0 if success, -1 else.
@@ -488,10 +479,9 @@ sub generate_uyok {
 }
 
 # Configure system to use selected installation mode
-# GV: This is a nasty function that really need to be cleaned-up:
-#     GUI code is mixed with library code, and we definitively need
-#     to write sub-functions...
-# BL: The GUI code has been moved to GUI_MAC::enable_install_mode
+# TODO: We should use an abstraction to manage the service this code is just ugly.
+#
+# Return: 0 if success, 1 else.
 sub __enable_install_mode {
     our $install_mode;
 
@@ -508,62 +498,121 @@ sub __enable_install_mode {
         # Stop systemimager-server-flamethrowerd
         $script = "/etc/init.d/systemimager-server-flamethrowerd";
 	if (-f $script) {
-            run_cmd("$script stop") if (-f $script);
+            $cmd = "$script stop";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
 
             # Remove systemimager-server-flamethrowerd from chkconfig
             if ($binary_format ne "deb") {
-                run_cmd("chkconfig systemimager-server-flamethrowerd off");
+                $cmd = "chkconfig systemimager-server-flamethrowerd off";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
             } else {
-                run_cmd("update-rc.d -f systemimager-server-flamethrowerd remove");
+                $cmd = "update-rc.d -f systemimager-server-flamethrowerd remove";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
             }
         }
 
         # Stop systemimager-server-bittorrent if bittorrent is installed.
         $script = "/etc/init.d/systemimager-server-bittorrent";
         if (-f $script) {
-            run_cmd("$script stop");
+            $cmd = "$script stop";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
 
             # Remove systemimager-server bittorrent from chkconfig
             if ($binary_format ne "deb") {
-                run_cmd("chkconfig systemimager-server-bittorrent off");
+                $cmd = "chkconfig systemimager-server-bittorrent off";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
             } else {
-                run_cmd("update-rc.d -f systemimager-server-bittorrent remove");
+                $cmd = "update-rc.d -f systemimager-server-bittorrent remove";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
             }
         }
 
         # Restart systemimager-server-rsyncd
-        run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
+        $cmd = "/etc/init.d/systemimager-server-rsyncd restart";
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to execute $cmd";
+            return 0;
+        }
 
         # Enable systemimager-server-rsyncd
         if ($binary_format ne "deb") {
-            run_cmd("chkconfig systemimager-server-rsyncd on");
+            $cmd = "chkconfig systemimager-server-rsyncd on";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
         } else {
-            run_cmd("update-rc.d -f systemimager-server-rsyncd start 20 2 .");
+            $cmd = "update-rc.d -f systemimager-server-rsyncd start 20 2 .";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
         }
     } elsif ($install_mode eq "systemimager-multicast") {
         # Stop systemimager-server-bittorrent
         $script = "/etc/init.d/systemimager-server-bittorrent";
-        run_cmd("$script stop") if (-f $script);
+        if (-f $script) {
+            $cmd = "$script stop";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
+        }
 
         # Remove systemimager-server-bittorrent from chkconfig
         if ($binary_format ne "deb") {
-            run_cmd("chkconfig systemimager-server-bittorrent off");
+            $cmd = "chkconfig systemimager-server-bittorrent off";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
         } else {
-            run_cmd("update-rc.d -f systemimager-server-bittorrent remove");
+            $cmd = "update-rc.d -f systemimager-server-bittorrent remove";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
         }
 
-        # Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
-        run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
+        # Restart systemimager-server-rsyncd (needed by netbootmond and also
+        # for calculating image size in si_monitortk)
+        $cmd = "/etc/init.d/systemimager-server-rsyncd restart";
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to execute $cmd";
+            return 0;
+        }
 
         # Backup original flamethrower.conf
         $file = "/etc/systemimager/flamethrower.conf";
         $script = "/etc/init.d/systemimager-server-flamethrowerd";
         if (-f $file) {
-            run_cmd("/bin/mv -f $file $file.bak");
+            $cmd = "/bin/mv -f $file $file.bak";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
 
             $cmd = "sed -e 's/START_FLAMETHROWER_DAEMON = no/START_FLAMETHROWER_DAEMON = yes/' -e 's/INTERFACE = eth[0-9][0-9]*/INTERFACE = $interface/' $file.bak > $file";
             if( system( $cmd ) ) {
-                carp("Failed to update $file");
+                carp("ERROR: Failed to update $file");
                 return 0;
             }
 
@@ -572,63 +621,108 @@ sub __enable_install_mode {
             $march =~ s/i.86/i386/;
             $cmd = "/usr/lib/systemimager/perl/confedit --file $file --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/$march/standard/\"";
             if( system( $cmd ) ) {
-                carp("Couldn't run command $cmd");
+                carp("ERROR: Couldn't run command $cmd");
                 return 1;
             }
 
             oscar_log_subsection("Step $step_number: Updated $file");
 
             # Restart systemimager-server-flamethrowerd
-            run_cmd("$script restart");
+            $cmd = "$script restart";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
 
             # Add systemimager-server-flamethrowerd to chkconfig
             if ($binary_format ne "deb") {
-                run_cmd("chkconfig systemimager-server-flamethrowerd on");
+                $cmd = "chkconfig systemimager-server-flamethrowerd on";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
             } else {
-                run_cmd("update-rc.d -f systemimager-server-flamethrowerd start 20 2 .");
+                $cmd = "update-rc.d -f systemimager-server-flamethrowerd start 20 2 .";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
+                }
             }
         }
     } elsif ($install_mode eq "systemimager-bt") {
         # Stop systemimager-server-flamethrowerd
         $script = "/etc/init.d/systemimager-server-flamethrowerd";
         if (-f $script) {
-            run_cmd("$script stop");
+            $cmd = "$script stop";
+            if (system ($cmd)) {
+                carp "ERROR: Impossibel to execute $cmd";
+                return 0;
+            }
 
             # Remove systemimager-server-flamethrower from chkconfig
             if ($binary_format ne "deb") {
-                run_cmd("chkconfig systemimager-server-flamethrowerd off");
+                $cmd = "chkconfig systemimager-server-flamethrowerd off";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
             } else {
-                run_cmd("update-rc.d -f systemimager-server-flamethrowerd remove");
+                $cmd = "update-rc.d -f systemimager-server-flamethrowerd remove";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
             }
         }
 
         # Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
-        run_cmd("/etc/init.d/systemimager-server-rsyncd restart");
+        $cmd = "/etc/init.d/systemimager-server-rsyncd restart";
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to execute $cmd";
+            return 0;
+        }
 
         # Backup original bittorrent.conf
         $file = "/etc/systemimager/bittorrent.conf";
         if (-f $file) {
-            run_cmd("/bin/mv -f $file $file.bak");
+            $cmd = "/bin/mv -f $file $file.bak";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
 
             my @images = list_image();
             my $images_list = join(",", map { $_->name } @images);
 
             $cmd = "sed -e 's/BT_INTERFACE=eth[0-9][0-9]*/BT_INTERFACE=$interface/' -e 's/BT_IMAGES=.*/BT_IMAGES=$images_list/' -e 's/BT_OVERRIDES=.*/BT_OVERRIDES=$images_list/' $file.bak > $file";
             if( system( $cmd ) ) {
-                carp("Failed to update $file");
+                carp("ERROR: Failed to update $file");
                 return 0;
             }
 
             oscar_log_subsection("Step $step_number: Updated $file");
 
             # Restart systemimager-server-bittorrent
-            run_cmd("/etc/init.d/systemimager-server-bittorrent restart");
+            $cmd = "/etc/init.d/systemimager-server-bittorrent restart";
+            if (system ($cmd)) {
+                carp "ERROR: Impossible to execute $cmd";
+                return 0;
+            }
 
             # Add systemimager-server-bittorrent to chkconfig
             if ($binary_format ne "deb") {
-                run_cmd("chkconfig systemimager-server-bittorrent on");
+                $cmd = "chkconfig systemimager-server-bittorrent on";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
             } else {
-                run_cmd("update-rc.d -f systemimager-server-bittorrent start 20 2 .");
+                $cmd = "update-rc.d -f systemimager-server-bittorrent start 20 2 .";
+                if (system ($cmd)) {
+                    carp "ERROR: Impossible to execute $cmd";
+                    return 0;
+                }
             }
         }
     }
