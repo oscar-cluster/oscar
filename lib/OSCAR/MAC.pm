@@ -31,6 +31,7 @@ BEGIN {
     }
 }
 
+use lib "/usr/lib/systeminstaller";
 use strict;
 use File::Copy;
 use SIS::Adapter;
@@ -482,7 +483,7 @@ sub generate_uyok {
 # TODO: We should use an abstraction to manage the service this code is just ugly.
 #
 # Return: 0 if success, 1 else.
-sub __enable_install_mode {
+sub __enable_install_mode () {
     our $install_mode;
 
     our $os;
@@ -646,7 +647,6 @@ sub __enable_install_mode {
                 if (system ($cmd)) {
                     carp "ERROR: Impossible to execute $cmd";
                     return 0;
-                }
                 }
             }
         }
