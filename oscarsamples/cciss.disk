@@ -1,0 +1,6 @@
+/dev/cciss/c0d0p1        100  ext3  /boot      defaults bootable
+/dev/cciss/c0d0p5        512  swap
+/dev/cciss/c0d0p6        *    ext3  /          defaults
+/dev/shm                 -    tmpfs /dev/shm   defaults
+nfs_oscar:/home          -    nfs   /home      rw
+
