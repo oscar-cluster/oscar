@@ -59,9 +59,7 @@ if (!defined($value) || $value != 1) {
 }
 
 print "\t--> Reading all variables from $path\n";
-my %hash = OSCAR::ConfigFile::get_all_values (
-    "$path"
-    );
+my %hash = OSCAR::ConfigFile::get_all_values ("$path", undef);
 my $value2 = $hash{'main_logfile'};
 
 goto ERROR_EXIT if (!defined($value2) || $value2 ne "/var/log/yum.log");
