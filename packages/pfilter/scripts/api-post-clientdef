@@ -81,7 +81,7 @@ chomp $hostname;
 # in /etc/pfilter.conf
 
 my $on_interface = "";
-my $interface = get_headnode_iface();
+my $interface = get_headnode_iface(undef, undef);
 if ( $interface && $interface ne "" ) {
     $on_interface = "on      $interface";
 } else {
