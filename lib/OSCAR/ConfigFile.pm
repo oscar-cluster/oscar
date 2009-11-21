@@ -231,11 +231,11 @@ sub get_all_values ($$) {
 
     use vars qw($config);
     $config = AppConfig->new({
-            CREATE => '^*',
+            CREATE => '^.*',
         },
         );
     $config->file ($config_file);
-    my %vars = $config->varlist("^*");
+    my %vars = $config->varlist("^.*");
     my ($key, $value);
     while ( ($key, $value) = each(%vars) ) {
         if (defined ($block) ){
