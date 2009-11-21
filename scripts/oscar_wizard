@@ -220,6 +220,9 @@ my $distro_id = get_distro();
 if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
     die "ERROR: Impossible to detect the local distro ID";
 }
+if ($debug) {
+    print "Detected distro: $distro_id\n";
+}
 my @setup_distros = OSCAR::PackagePath::get_list_setup_distros ();
 if (scalar (@setup_distros) == 0 ||
     !OSCAR::Utils::is_element_in_array ($distro_id, @setup_distros)) {
@@ -228,6 +231,10 @@ if (scalar (@setup_distros) == 0 ||
         "details";
 }
 
+if( $debug ) {
+    print "Setup Distros: ";
+    OSCAR::Utils::print_array (@setup_distro);
+}
 
 # Create the main window...
 my $window = MainWindow->new();
@@ -259,6 +266,10 @@ if ( -e "$oscar_version_file" ) {
 }
 else {
     die("ERROR: OSCAR VERSION file missing '$oscar_version_file' - aborting!");
+}
+
+if ($debug) {
+    print "Oscar version: $oscar_version\n";
 }
 
 # Define the main buttons
