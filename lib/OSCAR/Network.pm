@@ -164,8 +164,6 @@ sub get_network_adapter ($) {
     if (scalar @res == 0) {
         return undef;
     } else {
-        print "List network adapters: ". Dumper (@res) ."(".scalar(@res).")\n";
-        print "Test: ".Dumper (@t);
         return \@res;
     }
 }
