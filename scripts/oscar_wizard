@@ -233,7 +233,7 @@ if (scalar (@setup_distros) == 0 ||
 
 if( $debug ) {
     print "Setup Distros: ";
-    OSCAR::Utils::print_array (@setup_distro);
+    OSCAR::Utils::print_array (@setup_distros);
 }
 
 # Create the main window...
