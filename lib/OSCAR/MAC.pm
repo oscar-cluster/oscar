@@ -482,7 +482,7 @@ sub generate_uyok {
 # Configure system to use selected installation mode
 # TODO: We should use an abstraction to manage the service this code is just ugly.
 #
-# Return: 0 if success, 1 else.
+# Return: 1 if success, 0 else.
 sub __enable_install_mode () {
     our $install_mode;
 
@@ -623,7 +623,7 @@ sub __enable_install_mode () {
             $cmd = "/usr/lib/systemimager/perl/confedit --file $file --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/$march/standard/\"";
             if( system( $cmd ) ) {
                 carp("ERROR: Couldn't run command $cmd");
-                return 1;
+                return 0;
             }
 
             oscar_log_subsection("Step $step_number: Updated $file");

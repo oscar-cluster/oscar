@@ -876,7 +876,7 @@ sub enable_install_mode {
     our $window;
 
     $window->Busy(-recurse => 1);
-    if (OSCAR::MAC::__enable_install_mode()) {
+    if (OSCAR::MAC::__enable_install_mode() == 0) {
         carp "ERROR: Impossible to enable install mode";
         return 0;
     }
