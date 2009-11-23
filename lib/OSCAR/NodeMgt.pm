@@ -137,16 +137,19 @@ sub del_ip_node ($) {
     }
 
     my %h = (devname=>"eth0",client=>$node);
-    my @adapter = SIS::NewDB::list_adapter(\%h);
-    if (scalar (@adapter) != 1) {
+    my $adapter = SIS::NewDB::list_adapter(\%h);
+    if (!defined ($adapter) && scalar (@$adapter) != 1) {
         carp "ERROR: Impossible to retrieve valid data for $node";
         return -1;
     }
     print "Data for node deletion\n";
-    print Dumper ($adapter[0][0]);
     # TODO: it is completely weird that we have 2 arrays in one. We should
     # investigate why this is doing that.
-    my $ip = $adapter[0][0]->{ip};
+    my $ip = @$adapter[0]->{ip};
+    if (!defined ($ip)) {
+        carp "ERROR: Impossible to retrieve node IP";
+        return -1;
+    }
     my $hex = ip_to_hex($ip);
     if (!OSCAR::Utils::is_a_valid_string ($hex)) {
         carp "ERROR: Impossible to convert the IP ($ip)";
@@ -179,6 +182,7 @@ sub delete_clients (@) {
 
     my $fail = 0;
     my $cmd;
+    my $sql;
 
     my @generic_services = ();
     my @server_services = ();
@@ -221,11 +225,20 @@ sub delete_clients (@) {
         }
     }
 
-    $cmd = "/usr/bin/mksimachine --Delete --name $clientstring";
-    print ">> Effectively deleting the nodes ($cmd)\n";
-    if (system($cmd)) {
-        carp("ERROR: Impossible to execute $cmd");
-        $fail++;
+    # We delete the clients from the Database and SIS
+#    $cmd = "/usr/bin/mksimachine --Delete --name $clientstring";
+#    print ">> Effectively deleting the nodes ($cmd)\n";
+#    if (system($cmd)) {
+#        carp("ERROR: Impossible to execute $cmd");
+#        $fail++;
+#    }
+    foreach my $client (@clients) {
+        print ">> Effectively deleting node $client ($sql)\n";
+        $sql = "DELETE FROM Nodes WHERE name=$client";
+        if (!OSCAR::Database_generic::do_update ($sql, "Nodes", undef, undef)) {
+            carp "ERROR: Impossible to remove $client from ODA";
+            $fail++;
+        }
     }
 
     # We get the configuration from the OSCAR configuration file.
