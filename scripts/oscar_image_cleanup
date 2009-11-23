@@ -59,8 +59,9 @@ sub sanity_check () {
     return 0;
 }
 
-my ($verbose, $debug);
+my ($verbose, $debug, $force_delete);
 GetOptions(
+        "force-delete|f"                  => \$force_delete,
         "debug|d"                         => \$debug,
         "verbose|v"                       => \$verbose,
         ) || help_and_exit ();
@@ -83,6 +84,9 @@ if (sanity_check ()) {
 }
 
 my @corrupted_images = OSCAR::ImageMgt::get_list_corrupted_images();
+if (@corrupted_images) {
+    die "ERROR: Impossible to get the list of corrupted images";
+}
 print "List of corrupted images: ";
 foreach my $image (@corrupted_images) {
     print ($image->{'name'} . " ");
@@ -122,7 +126,15 @@ foreach my $corrupted_image (@corrupted_images) {
              $corrupted_image->{'sis'} eq "ok" &&
              $corrupted_image->{'fs'} eq "ok") {
         print "Valid image.\n";
-    } else {
+    } elsif ($corrupted_image->{'oda'} eq "ok" &&
+             $corrupted_image->{'sis'} eq "missing" &&
+             $corrupted_image->{'fs'} eq "missing") {
+        if ($force_delete) {
+            OSCAR::ImageMgt::delete_image_from_oda ($corrupted_image->{'name'});
+        } else {
+            print "Sorry we do not know yet how to deal with this situation\n";
+        }
+    }else {
         print "Sorry we do not know yet how to deal with this situation\n";
     }
     print "=====================\n\n";
@@ -150,11 +162,6 @@ delete corrupted images and all associated data.
 =head1 OPTIONS
 
 None.
-
-=head1 KNOWN BUGS
-
-When the OSCAR database still contains information about a specific image, the
-image is deleted instead of rebuilding the image and updating system data.
 
 =head1 AUTHOR
 
