@@ -50,6 +50,7 @@ use warnings "all";
 @EXPORT = qw(
             create_image
             delete_image
+            delete_image_from_oda
             do_setimage
             do_post_image_creation
             do_oda_post_install
@@ -406,6 +407,20 @@ sub get_systemimager_images () {
     return @sis_images;
 }
 
+sub delete_image_from_oda ($) {
+    my $imgname = shift;
+
+    # We remove the image from ODA.
+    my $sql = "DELETE FROM Images WHERE Images.name='$imgname'";
+
+    if (OSCAR::Database::do_update($sql,"Images", undef, undef) == 0) {
+        carp "ERROR: Impossible to execute the SQL command $sql";
+        return -1;
+    }
+
+    return 0;
+}
+
 ################################################################################
 # Delete an existing image.                                                    #
 # Input: imgname, image name.                                                  #
@@ -432,10 +447,8 @@ sub delete_image ($) {
         SystemImager::Server::gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
     }
 
-    # We remove the image from ODA.
-    my $sql = "DELETE FROM Images WHERE Images.name='$imgname'";
-    if (OSCAR::Database::do_update($sql,"Images", undef, undef) == 0) {
-        carp "ERROR: Impossible to execute the SQL command $sql";
+    if (delete_image_from_oda ($imgname)) {
+        carp "ERROR: Impossible to remove $imgname from the database";
         return -1;
     }
 
@@ -506,16 +519,16 @@ sub get_list_corrupted_images () {
                                              \@tables,
                                              \@res,
                                              undef) ) {
-    # The ODA query returns a hash which is very unconvenient
-    # We transform the hash into a simple array
-    foreach my $elt (@res) {
-        # It seems that we always have an empty entry, is it normal?
-        if ($elt->{name} ne "") {
-            push (@oda_images, $elt->{name});
+        # The ODA query returns a hash which is very unconvenient
+        # We transform the hash into a simple array
+        foreach my $elt (@res) {
+            # It seems that we always have an empty entry, is it normal?
+            if ($elt->{name} ne "") {
+                push (@oda_images, $elt->{name});
+            }
         }
-    }
-    print "List of images in ODA: ";
-    print_array (@oda_images);
+        print "List of images in ODA: ";
+        print_array (@oda_images);
     } else {
         carp ("ERROR: Cannot query ODA\n");
         return undef;
@@ -1217,6 +1230,7 @@ The available functions are:
 
     create_image
     delete_image
+    delete_image_from_oda
     do_setimage
     do_post_image_creation
     do_oda_post_install
