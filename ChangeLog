@@ -41,6 +41,9 @@ from a file are available or not.
 - Correctly set the OSCAR_UI environment variable when running oscar_wizard.
 - Fix Scientific Linux configuration issues.
 - Improve the oscar_image_cleanup script.
+- Add the support of CCISS controllers.
+- Install the API side of OPKGs at the beginning of the OPKG configuration 
+phase.
 
 6.0.4:
 - Update Configurator to 1.0.3.

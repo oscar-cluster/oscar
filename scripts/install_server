@@ -30,8 +30,13 @@
 
 # $Id$
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
 use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
@@ -105,16 +110,15 @@ oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs));
 
 
 # Now install the pkgs that we found
-
+# Note that we install only the server side, the API side is necessary for
+# configuration of the OPKGs and therefore is installed at the beginning of
+# the configuration phase.
 oscar_log_subsection("Installing server non-core packages " .
                      "(core packages already installed)");
 if (scalar (@opkgs) == 0) {
     warn "INFO: no OPKG(s) to install";
 } else {
     if (OSCAR::Opkg::opkgs_install("server", @opkgs)) {
-        die ("ERROR: Impossible to install " . join (", ", @opkgs));
-    }
-    if (OSCAR::Opkg::opkgs_install("api", @opkgs)) {
         die ("ERROR: Impossible to install " . join (", ", @opkgs));
     }
 }
