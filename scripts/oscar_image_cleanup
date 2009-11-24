@@ -84,9 +84,6 @@ if (sanity_check ()) {
 }
 
 my @corrupted_images = OSCAR::ImageMgt::get_list_corrupted_images();
-if (@corrupted_images) {
-    die "ERROR: Impossible to get the list of corrupted images";
-}
 print "List of corrupted images: ";
 foreach my $image (@corrupted_images) {
     print ($image->{'name'} . " ");
