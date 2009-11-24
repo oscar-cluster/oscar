@@ -233,8 +233,8 @@ sub delete_clients (@) {
 #        $fail++;
 #    }
     foreach my $client (@clients) {
+        $sql = "DELETE FROM Nodes WHERE name='$client'";
         print ">> Effectively deleting node $client ($sql)\n";
-        $sql = "DELETE FROM Nodes WHERE name=$client";
         if (!OSCAR::Database_generic::do_update ($sql, "Nodes", undef, undef)) {
             carp "ERROR: Impossible to remove $client from ODA";
             $fail++;
