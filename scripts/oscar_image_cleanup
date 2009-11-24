@@ -131,7 +131,18 @@ foreach my $corrupted_image (@corrupted_images) {
         } else {
             print "Sorry we do not know yet how to deal with this situation\n";
         }
-    }else {
+    } elsif ($corrupted_image->{'oda'} eq "ok" &&
+             $corrupted_image->{'sis'} eq "missing" &&
+             $corrupted_image->{'fs'} eq "ok") {
+        if ($force_delete) {
+            $cmd = "/usr/sbin/si_rmimage " . $corrupted_image->{'name'} . " -force";
+            if (system ($cmd)) {
+                die "ERROR: Impossible to execute $cmd";
+            }
+        } else {
+            print "Sorry we do not know yet how to deal with this situation\n";
+        }
+    } else {
         print "Sorry we do not know yet how to deal with this situation\n";
     }
     print "=====================\n\n";
