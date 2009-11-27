@@ -182,6 +182,10 @@ if (OSCAR::Database::get_nics_with_name_node($iface,
         "compute nodes ($node, $iface)";
 }
 
+if (scalar (@result) == 0) {
+    die "ERROR: Can't get oscar_server nodes nic ip address from OSCAR database."
+}
+
 my $node_ref = pop @result;
 my $ip = $$node_ref{ip};
 my $pxelinux_dir = "/usr/lib/syslinux"; # default directory containing pxelinux.0
