@@ -18,6 +18,7 @@ use constant SERVICE_ENABLED  => 1;
 use constant SSH            => 'ssh';
 use constant DHCP           => 'dhcp';
 use constant MYSQL          => 'mysql';
+use constant POSTGRESQL     => 'postgresql';
 use constant SI_MONITORD    => 'monitord';
 
 # List of actions related to system services
@@ -37,6 +38,7 @@ our @EXPORT = qw(
                 SSH
                 DHCP
                 MYSQL
+                POSTGRESQL
                 SI_MONITORD
                 START
                 STOP
