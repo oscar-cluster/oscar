@@ -30,10 +30,7 @@ BEGIN {
 use strict;
 use vars qw($VERSION @EXPORT);
 use File::Copy;
-use OSCAR::Database qw (
-                        get_gateway
-                        get_nics_info_with_node
-                       );
+use OSCAR::Database;
 use OSCAR::Logger qw ( verbose );
 use POSIX;
 use Carp;
@@ -169,7 +166,7 @@ sub get_network_adapter ($) {
 }
 
 ################################################################################
-# Get the network configuration.                                               #
+# Get the network configuration from the database.                             #
 # Input: - interface, network interface id used by OSCAR (e.g. eth0),          #
 #        - options, hash reference for options (GV: i have no clue of what the #
 #                   hash should looks like).                                   #
@@ -205,12 +202,20 @@ sub get_network_config ($$$) {
     my @tables = qw( nodes nics networks );
     my @results;
     my $node = "oscar_server";
-    get_nics_info_with_node($node, \@results, $options, $errors);
+    # TODO: check the return code.
+    OSCAR::Database::get_nics_info_with_node($node, 
+                                             \@results,
+                                             $options,
+                                             $errors);
     my $ref = pop @results;
     my $nic_name = $$ref{name};
-    if (@results == 1)
-    {
-        get_gateway($node, $interface, \@results, $options, $errors);
+    if (@results == 1) {
+        # TODO: check the return code.
+        OSCAR::Database::get_gateway($node,
+                                     $interface,
+                                     \@results,
+                                     $options,
+                                     $errors);
         my $gw_ref = pop @results if @results;
         $gw = $$gw_ref{gateway};
     }
