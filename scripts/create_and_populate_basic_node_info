@@ -38,6 +38,7 @@ use OSCAR::Database_generic;
 use OSCAR::oda;
 use OSCAR::Logger;
 use OSCAR::Package;
+use OSCAR::Network;
 
 my %options = ();
 my %field_value_hash = ();
@@ -67,7 +68,12 @@ my @tables =("Groups", "Group_Nodes", "Nodes", "Clusters");
 my @errors = ();
 #locking("write", \%options, \@tables, \@errors);
 
+#
 # Populate "Nodes" table
+#
+
+# First, we create the appropriate node group for the headnode.
+# This will also create the entry for the node itself.
 my $msg = "in create_and_populate_basic_node_info Populating Nodes records for oscar_server ...\n";
 print "DB_DEBUG>$0:====>\n$msg" if $options{debug};
 @errors = ("cannot read nodes database table");
@@ -78,7 +84,7 @@ if (set_node_with_group($OSCAR_SERVER_NODE,
     die "ERROR: Impossible to set headnode information in the database";
 }
 
-# Update some of the fields in the node record for oscar_server.
+# Then, we update some of the fields in the node record for oscar_server.
 # If the entry does not exist, we include it.
 my $hostname = `hostname`;
 print "Updating the hostname field in the oscar_server node to <$hostname> ...\n";
@@ -93,6 +99,12 @@ if (OSCAR::Database::update_node ('oscar_server',
                                   undef,
                                   undef) != 1) {
     die "ERROR: Impossible to update the entry for oscar_server";
+}
+
+# Finally we make sure that the Nics of the headnodes are correctly set in ODA.
+if (OSCAR::Network::update_head_nic()) {
+    die "ERROR: Impossible to store data about the head NIC used for cluster ".
+        "deployment";
 }
 
 # make sure that certain node groups exist
