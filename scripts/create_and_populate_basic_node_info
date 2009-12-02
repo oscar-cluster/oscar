@@ -35,9 +35,9 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Database_generic;
-use OSCAR::Package;
 use OSCAR::oda;
 use OSCAR::Logger;
+use OSCAR::Package;
 
 my %options = ();
 my %field_value_hash = ();
@@ -78,26 +78,24 @@ if (set_node_with_group($OSCAR_SERVER_NODE,
     die "ERROR: Impossible to set headnode information in the database";
 }
 
-# update some of the fields in the node record for oscar_server
-
+# Update some of the fields in the node record for oscar_server.
+# If the entry does not exist, we include it.
 my $hostname = `hostname`;
-chomp $hostname;
-%field_value_hash = ( "hostname" => $hostname );
-my $where = " WHERE name='oscar_server' ";
 print "Updating the hostname field in the oscar_server node to <$hostname> ...\n";
-update_table( \%options, "Nodes", \%field_value_hash, $where, \@errors );
+%field_value_hash = ( "hostname" => $hostname );
 my $dns_domain = `dnsdomainname`;
-chomp $dns_domain;
+chomp $hostname;
 if ( defined $dns_domain && $dns_domain ne "" ) {
-    print "Updating the dns_domain field in the oscar_server node to ".
-          "<$dns_domain>\n";
-    %field_value_hash = ( "dns_domain" => $dns_domain );
-    my $where = "WHERE name='oscar_server'";
-    update_table( \%options, "Nodes", \%field_value_hash, $where, \@errors );
+    $field_value_hash{"dns_domain"} = $dns_domain;
+}
+if (OSCAR::Database::update_node ('oscar_server',
+                                  \%field_value_hash,
+                                  undef,
+                                  undef) != 1) {
+    die "ERROR: Impossible to update the entry for oscar_server";
 }
 
 # make sure that certain node groups exist
-
 foreach my $node_group_name ( "oscar_clients", "all", "Default_node" ) {
     oscar_log_subsection ("Checking for existence of node group ".
                           "$node_group_name ...");
