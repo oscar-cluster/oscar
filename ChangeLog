@@ -45,6 +45,7 @@ from a file are available or not.
 - Add the support of CCISS controllers.
 - Install the API side of OPKGs at the beginning of the OPKG configuration 
 phase.
+- Make sure the ssh configuration for root is valid.
 
 6.0.4:
 - Update Configurator to 1.0.3.
