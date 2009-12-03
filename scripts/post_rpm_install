@@ -94,6 +94,11 @@ my $cmd = "$binaries_path/ssh_install $targetdir";
 !system($cmd) 
     or die("ERROR: Couldn't generate ssh keys ($cmd)");
 
+$cmd = "$binaries_path/integrate_image --name $imagename --verbose";
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+
 # unmount /proc from image, if needed
 if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
     oscar_log_subsection("post_rpm_install: unmounting /proc from image $imagename");
