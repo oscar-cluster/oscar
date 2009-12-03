@@ -60,12 +60,12 @@ GetOptions(
 
 # error checking
 if (!$image && !$imagedir) {
-    &usage;
-    croak("\nERROR: You must supply an image name or path!\n");
+    usage();
+    die ("\nERROR: You must supply an image name or path!\n");
 }
 
 if ($image && $imagedir) {
-    &usage;
+    usage();
     croak("\nERROR: You must supply only one of image name or path!\n");
 }
 
@@ -234,5 +234,7 @@ sub usage {
     print "If you do not want to copy SSH keys from the server to the image, specify --nokeys\n";
     print "Specify the postinstall action with --postinstall (one of beep, reboot, shutdown)\n";
     print "\n";
-    exit $ret if ($ret);
+    if (defined $ret) {
+        exit ($ret);
+    }
 }
