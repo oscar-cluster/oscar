@@ -275,7 +275,13 @@ sub get_binary_list_file ($) {
         carp "ERROR: Impossible to extract distro information";
         return undef;
     }
-    my $full_version = "$distro_ver.$distro_update" if (defined ($distro_update));
+
+    my $full_version;
+    if (defined ($distro_update)) {
+        $full_version = "$distro_ver.$distro_update";
+    } else {
+        $full_version = $distro_ver;
+    }
     my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.rpmlist";
     if (! -f $pkglist) {
         OSCAR::Logger::oscar_log_subsection ("$pkglist does not exist\n");

@@ -85,8 +85,7 @@ our @distros = sort(keys(%distro_pools));
 # Set up the default distro
 # GV: Is the first distro in the 'distros' array the local distro? Or are
 # distros sorted?
-if($vars{distro} eq "")
-{
+if(!defined ($vars{distro}) || $vars{distro} eq "") {
 	$vars{distro} = $distros[0];
 }
 
