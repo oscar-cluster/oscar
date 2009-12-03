@@ -254,6 +254,11 @@ sub get_binary_list_file ($) {
         $oscarsamples_dir = "/usr/share/oscar/oscarsamples";
     }
 
+    if (! -d $oscarsamples_dir) {
+        carp "ERROR: $oscarsamples_dir does not exists";
+        return undef;
+    }
+
     # We look if a package file exists for the exact distro we use. If not, we
     # use the package file for the compat distro.
     my $distro = $os->{distro};
