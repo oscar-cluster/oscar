@@ -223,15 +223,26 @@ sub init_server ($) {
     my $oscar_cfg = $configurator->get_config ();
 
     require OSCAR::Logger;
-    # We bootstrap ODA
-    my $cmd = $oscar_cfg->{'binaries_path'} . "/oda --init mysql";
+
+    #
+    # First, we need to bootstrap ODA.
+    #
+
+    my $db_type = $oscar_cfg->{'db_type'};
+    my $cmd = $oscar_cfg->{'binaries_path'} . "/oda --init ";
+    if (defined ($db_type)) {
+        $cmd .= "$db_type";
+    } else {
+        # By default, we still assume that we are using mysql.
+        $cmd .= "mysql";
+    }
     OSCAR::Logger::oscar_log_subsection "Executing: $cmd";
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
         return -1;
     }
 
-    my $db_type = $oscar_cfg->{'db_type'};
+    # TODO: Should be abstract by oda initialization capability.
     require OSCAR::ODA::Bootstrap;
     if ($db_type eq "db") {
         # We initialize the database if needed
@@ -247,7 +258,11 @@ sub init_server ($) {
         }
     }
 
-    # ODA is initialized so we can save data about the NIC used by OSCAR
+    #
+    # Now that ODA is initialized, we can initialize its content.
+    #
+
+    # We save data about the NIC used by OSCAR
     require OSCAR::Network;
     if (OSCAR::Network::update_head_nic ()) {
         carp "ERROR: Impossible to update the headnode NIC data";
