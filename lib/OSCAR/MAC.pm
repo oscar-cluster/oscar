@@ -507,7 +507,7 @@ sub __enable_install_mode () {
 
             # Remove systemimager-server-flamethrowerd from chkconfig
             if ($binary_format ne "deb") {
-                $cmd = "chkconfig systemimager-server-flamethrowerd off";
+                $cmd = "/sbin/chkconfig systemimager-server-flamethrowerd off";
                 if (system ($cmd)) {
                     carp "ERROR: Impossible to execute $cmd";
                     return 0;
@@ -532,7 +532,7 @@ sub __enable_install_mode () {
 
             # Remove systemimager-server bittorrent from chkconfig
             if ($binary_format ne "deb") {
-                $cmd = "chkconfig systemimager-server-bittorrent off";
+                $cmd = "/sbin/chkconfig systemimager-server-bittorrent off";
                 if (system ($cmd)) {
                     carp "ERROR: Impossible to execute $cmd";
                     return 0;
@@ -555,7 +555,7 @@ sub __enable_install_mode () {
 
         # Enable systemimager-server-rsyncd
         if ($binary_format ne "deb") {
-            $cmd = "chkconfig systemimager-server-rsyncd on";
+            $cmd = "/sbin/chkconfig systemimager-server-rsyncd on";
             if (system ($cmd)) {
                 carp "ERROR: Impossible to execute $cmd";
                 return 0;
@@ -580,7 +580,7 @@ sub __enable_install_mode () {
 
         # Remove systemimager-server-bittorrent from chkconfig
         if ($binary_format ne "deb") {
-            $cmd = "chkconfig systemimager-server-bittorrent off";
+            $cmd = "/sbin/chkconfig systemimager-server-bittorrent off";
             if (system ($cmd)) {
                 carp "ERROR: Impossible to execute $cmd";
                 return 0;
@@ -637,7 +637,7 @@ sub __enable_install_mode () {
 
             # Add systemimager-server-flamethrowerd to chkconfig
             if ($binary_format ne "deb") {
-                $cmd = "chkconfig systemimager-server-flamethrowerd on";
+                $cmd = "/sbin/chkconfig systemimager-server-flamethrowerd on";
                 if (system ($cmd)) {
                     carp "ERROR: Impossible to execute $cmd";
                     return 0;
@@ -662,7 +662,7 @@ sub __enable_install_mode () {
 
             # Remove systemimager-server-flamethrower from chkconfig
             if ($binary_format ne "deb") {
-                $cmd = "chkconfig systemimager-server-flamethrowerd off";
+                $cmd = "/sbin/chkconfig systemimager-server-flamethrowerd off";
                 if (system ($cmd)) {
                     carp "ERROR: Impossible to execute $cmd";
                     return 0;
@@ -712,7 +712,7 @@ sub __enable_install_mode () {
 
             # Add systemimager-server-bittorrent to chkconfig
             if ($binary_format ne "deb") {
-                $cmd = "chkconfig systemimager-server-bittorrent on";
+                $cmd = "/sbin/chkconfig systemimager-server-bittorrent on";
                 if (system ($cmd)) {
                     carp "ERROR: Impossible to execute $cmd";
                     return 0;
