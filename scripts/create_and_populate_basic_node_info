@@ -86,14 +86,26 @@ if (set_node_with_group($OSCAR_SERVER_NODE,
 
 # Then, we update some of the fields in the node record for oscar_server.
 # If the entry does not exist, we include it.
+# fqdn: fully qualified domain name: = $hostname.$dns_domain
+# name: hostname without dns domainname
 my $hostname = `hostname`;
+chomp ($hostname);
 print "Updating the hostname field in the oscar_server node to <$hostname> ...\n";
-%field_value_hash = ( "hostname" => $hostname );
+%field_value_hash = ( );
 my $dns_domain = `dnsdomainname`;
-chomp $hostname;
+chomp ($dns_domain);
 if ( defined $dns_domain && $dns_domain ne "" ) {
     $field_value_hash{"dns_domain"} = $dns_domain;
+    # Get the non fqdn hostname.
+    # Note: when dnsdomainname is set, sometimes hostname returns fqdn, sometimes not.
+    $hostname =~ s/\.$dns_domain//g;
+    $field_value_hash{"hostname"} = $hostname;
+    # We are sure it is a fqdn
+    $field_value_hash{"fqdn"} = $hostname.$dns_domain;
+} else {
+    %field_value_hash = ( "hostname" => $hostname );
 }
+
 if (OSCAR::Database::update_node ('oscar_server',
                                   \%field_value_hash,
                                   undef,
