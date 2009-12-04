@@ -308,14 +308,14 @@ if ($distro_to_setup) {
 #     }
 # }
 
-if ($headnode_nic) {
-    OSCAR::Logger::oscar_log_subsection "--> Updating the NIC used on the ".
-        "headnode for cluster management\n";
-    require OSCAR::Network;
-    if (OSCAR::Network::update_head_nic ()) {
-        die "ERROR: Impossible to update the headnode NIC data";
-    }
-}
+#if ($headnode_nic) {
+#    OSCAR::Logger::oscar_log_subsection "--> Updating the NIC used on the ".
+#        "headnode for cluster management\n";
+#    require OSCAR::Network;
+#    if (OSCAR::Network::update_head_nic ()) {
+#        die "ERROR: Impossible to update the headnode NIC data";
+#    }
+#}
 
 if ($sanity_check) {
     require OSCAR::ConfigFile;

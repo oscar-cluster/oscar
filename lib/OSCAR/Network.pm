@@ -32,6 +32,7 @@ use vars qw($VERSION @EXPORT);
 use File::Copy;
 use OSCAR::Database;
 use OSCAR::Logger qw ( verbose );
+use OSCAR::Utils;
 use POSIX;
 use Carp;
 use Data::Dumper;
@@ -327,6 +328,9 @@ sub update_hosts ($) {
     return 0;
 }
 
+# This function populate ODA so that we store all data we need. ODA must be
+# previously initialized.
+#
 # Return: 0 if success, -1 else.
 sub update_head_nic () {
     require OSCAR::Database_generic;
@@ -335,8 +339,13 @@ sub update_head_nic () {
                                                   undef,
                                                   "OSCAR_NETWORK_INTERFACE");
 
+    if (!OSCAR::Utils::is_a_valid_string ($interface)) {
+        carp "ERROR: Impossible to get the NIC to use for deployment";
+        return -1;
+    }
+
     # First we save the new interface id into ODA
-    print "\tNew interface: $interface\n";
+    OSCAR::Logger::oscar_log_section ("Update NIC info ($interface)");
     my $sql = "UPDATE Clusters ".
               "SET Clusters.headnode_interface='$interface' ".
               "WHERE Clusters.name='oscar'";
@@ -345,14 +354,80 @@ sub update_head_nic () {
         return -1;
     }
 
-    # Then we update the rest of ODA
-    require OSCAR::ConfigFile;
     my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");
     my $cmd = "$binaries_path/set_node_nics --network";
     if (system ($cmd)) {
         carp "ERROR: Impossible to successfully execute \"$cmd\"";
+        return -1;
+    }
+
+    # The "set_global_oscar_values" scripts populates the following
+    # tables: Clusters, Groups, and Status
+    my $cmd;
+    my $exit_status;
+    if (defined $ENV{OSCAR_HOME}) {
+        $cmd = "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values ".
+               "--interface $interface";
+    } else {
+        $cmd = "$binaries_path/set_global_oscar_values ".
+               "--interface $interface";
+    }
+    if ($ENV{OSCAR_VERBOSE} >= 5) {
+        $cmd .= "  --debug";
+    }
+    $exit_status = system($cmd)/256;
+    if ($exit_status) {
+        carp ("ERROR: Couldn't initialize the global database values table ".
+              "($cmd, $exit_status)");
+        return -1;
+    }
+
+    OSCAR::Logger::oscar_log_subsection ("All the OSCAR global values are set");
+
+    # "create_and_populate_basic_node_info" is another embeded script
+    # to populate the "Nodes" table.
+    my $cmd;
+    if (defined $ENV{OSCAR_HOME}) {
+        $cmd = "$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info";
+    } else {
+        $cmd = "$binaries_path/create_and_populate_basic_node_info";
+    }
+    if ($ENV{OSCAR_VERBOSE} >= 5) {
+        $cmd .= " --debug";
+    }
+#    $exit_status = system($cmd)/256;
+#    if ($exit_status) {
+#        carp ("ERROR: Couldn't set up a default package set");
+#        return -1;
+#    }
+
+    OSCAR::Logger::oscar_log_subsection ("All the basic node infos are set");
+
+    # The above two embeded scripts need to run before all the
+    # data for Packages and Packages related table are populated
+    # because the above tables contain the primary keys which
+    # will be used at the Packages and its related tables.
+    # (i.e., The Packages table and Packages related tables are
+    # dependent on the above tables(Clusters, Groups, Status, and
+    # Nodes) and they can not really insert any data before the
+    # above tables populate data and generate the primary key
+    # used by the Packages and its sub-tables.
+
+    #
+    # Now populate the Packages table with the info from the reachable
+    # repositories.
+    # TODO: Since this function is about storing network data, the following
+    # function should not be there.
+    #
+    $cmd = "$binaries_path/populate_oda_packages_table";
+    if ($ENV{OSCAR_VERBOSE} >= 5) {
+        $cmd .= " --debug";
+    }
+    my $exit_status = system($cmd)/256;
+    if ($exit_status) {
+        carp ("ERROR: Couldn't populate packages table");
         return -1;
     }
 

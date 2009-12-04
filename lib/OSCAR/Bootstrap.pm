@@ -263,11 +263,11 @@ sub init_server ($) {
     #
 
     # We save data about the NIC used by OSCAR
-    require OSCAR::Network;
-    if (OSCAR::Network::update_head_nic ()) {
-        carp "ERROR: Impossible to update the headnode NIC data";
-        return -1;
-    }
+#    require OSCAR::Network;
+#    if (OSCAR::Network::update_head_nic ()) {
+#        carp "ERROR: Impossible to update the headnode NIC data";
+#        return -1;
+#    }
 
     OSCAR::Logger::oscar_log_section("Installing server core packages");
     require OSCAR::Opkg;
