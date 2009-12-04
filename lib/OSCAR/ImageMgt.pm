@@ -89,7 +89,7 @@ sub do_setimage ($%) {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "db") {
+    if ($config->{oda_type} eq "db") {
         my $master_os = OSCAR::PackagePath::distro_detect_or_die("/");
         my $arch = $master_os->{arch};
 
@@ -117,10 +117,10 @@ sub do_setimage ($%) {
                 "path"         => $imagepath);
 
         OSCAR::Database::set_images(\%image_info, \%options, \@errors);
-    } elsif ($config->{db_type} eq "file") {
+    } elsif ($config->{oda_type} eq "file") {
         return 0;
     } else {
-        carp "ERROR: Unknow ODA type ($config->{db_type})\n";
+        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
         return -1;
     }
     return 0;
@@ -184,7 +184,7 @@ sub do_oda_post_install ($$) {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "db") {
+    if ($config->{oda_type} eq "db") {
         my @opkgs = list_selected_packages();
         foreach my $opkg (@opkgs)
         {
@@ -194,10 +194,10 @@ sub do_oda_post_install ($$) {
                                                 $options,
                                                 \@errors);
         }
-    } elsif ($config->{db_type} eq "db") {
+    } elsif ($config->{oda_type} eq "db") {
         # Get the list of opkgs for the specific image.
     } else {
-        carp "ERROR: Unknow ODA type ($config->{db_type})\n";
+        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
         return -1
     }
     oscar_log_subsection("Done marking installed bits in ODA");

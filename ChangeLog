@@ -10,6 +10,7 @@
 - Update OPKG Switcher to 1.0.12.
 - Update ODA to 1.4.11.
 - Update ORM to 1.4.2.
+- Update PackMan to 3.1.12.
 - Update RAPT to 2.8.7.
 - Update Selector to 1.2.5.
 - Update sync_files to 2.5.7.
@@ -46,6 +47,8 @@ from a file are available or not.
 - Install the API side of OPKGs at the beginning of the OPKG configuration 
 phase.
 - Make sure the ssh configuration for root is valid.
+- Fix the confusion between db_type and oda_type when getting data from the
+OSCAR configuration file (reported by Olivier Lahaye).
 
 6.0.4:
 - Update Configurator to 1.0.3.

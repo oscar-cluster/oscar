@@ -95,10 +95,10 @@ sub get_partition_distro ($$) {
     my $config = $oscar_configurator->get_config();
 
     my $distro;
-    if ($config->{db_type} eq "db") {
+    if ($config->{oda_type} eq "db") {
         my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
         $distro = oda_query_single_result ($sql, "distro");
-    } elsif ($config->{db_type} eq "file") {
+    } elsif ($config->{oda_type} eq "file") {
         # We get the path of the partition configuration file.
         my $f = $oscar_configurator->get_partition_config_file_path (
                     $cluster_name,
@@ -125,7 +125,7 @@ sub get_partition_distro ($$) {
                  $partition_config->{'arch'};
         return $id;
     } else {
-        carp "ERROR: Unknown ODA type ($config->{db_type})\n";
+        carp "ERROR: Unknown ODA type ($config->{oda_type})\n";
         return undef;
     }
     return $distro;
@@ -164,7 +164,7 @@ sub get_list_nodes_partition ($$) {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "db") {
+    if ($config->{oda_type} eq "db") {
         # First we get the partition ID
         my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
         my $partition_id = oda_query_single_result ($sql, "partition_id");
@@ -180,7 +180,7 @@ sub get_list_nodes_partition ($$) {
             my $n = oda_query_single_result ($sql, "name");
             push (@nodes, $n);
         }
-    } elsif ($config->{db_type} eq "file") {
+    } elsif ($config->{oda_type} eq "file") {
         my $path = $oscar_configurator->get_partition_config_file_path (
             $cluster_name,
             $partition_name);
@@ -191,7 +191,7 @@ sub get_list_nodes_partition ($$) {
         }
         @nodes = OSCAR::FileUtils::get_dirs_in_path ("$path");
     } else {
-        carp "ERROR: Unknown ODA type ($config->{db_type}).\n";
+        carp "ERROR: Unknown ODA type ($config->{oda_type}).\n";
         return undef;
     }
 
@@ -243,11 +243,11 @@ sub get_list_partitions ($) {
     my $config = $oscar_configurator->get_config();
 
     my @partitions;
-    if ($config->{db_type} eq "db") {
+    if ($config->{oda_type} eq "db") {
         my $sql = "SELECT * FROM Clusters WHERE name='$cluster_name'";
         my $cluster_id = OSCAR::Database::oda_query_single_result ($sql, "id");
 #        @partitions = get_list_partitions ($cluster_id);
-    } elsif ($config->{db_type} eq "file") {
+    } elsif ($config->{oda_type} eq "file") {
         my $path =
             $oscar_configurator->get_cluster_config_file_path($cluster_name);
         if ( ! -d "$path" ) {
@@ -257,7 +257,7 @@ sub get_list_partitions ($) {
         @partitions 
             = OSCAR::FileUtils::get_dirs_in_path ("$path");
     } else {
-        carp "ERROR: unknown ODA type ($config->{db_type})";
+        carp "ERROR: unknown ODA type ($config->{oda_type})";
         return undef;
     }
 
@@ -334,7 +334,7 @@ sub get_partition_info ($$) {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "db") {
+    if ($config->{oda_type} eq "db") {
         # TODO: this current does not work
         carp "Sorry this cluster management cannot currently use a real ".
              "database, only a flat file based ODA version. Check our OSCAR ".
@@ -344,7 +344,7 @@ sub get_partition_info ($$) {
         my $error_strings_ref;
         my $result_ref;
         do_select($sql, $result_ref, $options_ref, $error_strings_ref);
-    } elsif ($config->{db_type} eq "file") {
+    } elsif ($config->{oda_type} eq "file") {
         my $path = $config->{oda_files_path};
         if ( ! -d "$path") {
             carp "ERROR: the cluster configuration directory does not exist ".
@@ -397,7 +397,7 @@ sub set_partition_info {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "db") {
+    if ($config->{oda_type} eq "db") {
         my $sql;
         # Step 1: we populate the partition info with basic info.
         # TODO: we should use here insert_into_table.
@@ -439,7 +439,7 @@ sub set_partition_info {
         $sql = "SELECT id FROM Groups WHERE name='oscar_clients'";
         my $client_id = oda_query_single_result ($sql, "id");
         print "ODA client Id: $client_id\n" if $verbose;
-    } elsif ($config->{db_type} eq "file") {
+    } elsif ($config->{oda_type} eq "file") {
         my $basedir = $config->{oda_files_path};
         if ( ! -d "$basedir") {
             carp "ERROR: the cluster configuration directory does not exist ".
@@ -543,7 +543,7 @@ sub set_node_to_partition ($$$$) {
         oscar_log_subsection "Node name: $node_name";
     }
 
-    if ($config->{db_type} eq "db") {
+    if ($config->{oda_type} eq "db") {
         # First we check that the node is already in the database.
         # If not, we inlcude it with basic info. Note that OPM is supposed to check
         # that all needed information are available for the installation of OPKGs.
@@ -574,7 +574,7 @@ sub set_node_to_partition ($$$$) {
             carp "ERROR: Failed to insert values via << $sql >>";
             return -1;
         }
-    } elsif ($config->{db_type} eq "file") {
+    } elsif ($config->{oda_type} eq "file") {
         # Step1: does the directory for the node exist?
         # If not, we create it; if yes, this is an error.
         my $path = $oscar_configurator->get_node_config_file_path(
@@ -589,7 +589,7 @@ sub set_node_to_partition ($$$$) {
             mkdir $path;
         }
     } else {
-        carp "ERROR: Unknow ODA type ($config->{db_type})";
+        carp "ERROR: Unknow ODA type ($config->{oda_type})";
         return -1;
     }
     return 0;
@@ -650,7 +650,7 @@ sub delete_partition_info {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "db") {
+    if ($config->{oda_type} eq "db") {
         my $sql;
         my $options_ref;
         my $error_strings_ref;
@@ -663,7 +663,7 @@ sub delete_partition_info {
             carp "ERROR: Failed to delete partition info via << $sql >>";
             return -1;
         }
-    } elsif ($config->{db_type} eq "file") {
+    } elsif ($config->{oda_type} eq "file") {
         my $basedir = $config->{oda_files_path};
         if ( ! -d "$basedir" ) {
             carp "ERROR: Configuration files missing, OSCAR is not correctly ".
@@ -683,7 +683,7 @@ sub delete_partition_info {
             rmtree "$path";
         }
     } else {
-        carp "ERROR: Unkown db type ($config->{db_type})\n";
+        carp "ERROR: Unkown db type ($config->{oda_type})\n";
         return -1;
     }
     return 0;
@@ -812,7 +812,7 @@ sub display_partition_info ($$) {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "file") {
+    if ($config->{oda_type} eq "file") {
         my $path = $oscar_configurator->get_partition_config_file_path(
                         $cluster,
                         $partition);
@@ -832,11 +832,11 @@ sub display_partition_info ($$) {
             return -1;
         }
         $config_obj->print_config();
-    } elsif ($config->{db_type} eq "db") {
+    } elsif ($config->{oda_type} eq "db") {
         carp "ERROR: the uasge of a real db is not yet implemented\n";
         return -1;
     } else {
-        carp "ERROR: Unknown ODA type ($config->{db_type})\n";
+        carp "ERROR: Unknown ODA type ($config->{oda_type})\n";
         return -1;
     }
     return 0;

@@ -244,13 +244,13 @@ sub init_server ($) {
 
     # TODO: Should be abstract by oda initialization capability.
     require OSCAR::ODA::Bootstrap;
-    if ($db_type eq "db") {
+    if ($oda_type eq "db") {
         # We initialize the database if needed
         if (OSCAR::ODA::Bootstrap::init_db ($configurator)) {
             carp "ERROR: impossible to initialize the database\n";
             return -1;
         }
-    } elsif ($db_type eq "file") {
+    } elsif ($oda_type eq "file") {
         # We initialize the database if needed
         if (OSCAR::ODA::Bootstrap::init_file_db ()) {
             carp "ERROR: impossible to initialize the file based database\n";

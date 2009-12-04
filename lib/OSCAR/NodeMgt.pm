@@ -143,8 +143,6 @@ sub del_ip_node ($) {
         return -1;
     }
     print "Data for node deletion\n";
-    # TODO: it is completely weird that we have 2 arrays in one. We should
-    # investigate why this is doing that.
     my $ip = @$adapter[0]->{ip};
     if (!defined ($ip)) {
         carp "ERROR: Impossible to retrieve node IP";
@@ -214,6 +212,10 @@ sub delete_clients (@) {
             }
         }
     }
+    if ($fail) {
+        carp "ERROR: Impossible to turn off some generic services";
+        return -1;
+    }
 
     # delete node PXE/ELILO configs
     print ">> delete node PXE/ELILO configs\n";
@@ -223,6 +225,10 @@ sub delete_clients (@) {
             carp "ERROR: Impossible to delete IP node ($client)";
             return -1;
         }
+    }
+    if ($fail) {
+        carp "ERROR: Impossible to delete node PXE/ELILO configs";
+        return -1;
     }
 
     # We delete the clients from the Database and SIS
@@ -240,6 +246,10 @@ sub delete_clients (@) {
             $fail++;
         }
     }
+    if ($fail) {
+        carp "ERROR: Impossible to remove some nodes from ODA";
+        return -1;
+    }
 
     # We get the configuration from the OSCAR configuration file.
     print ">> Clients deleted, running few scripts...\n";
@@ -254,12 +264,17 @@ sub delete_clients (@) {
     $cmd = "$config->{binaries_path}/post_clients";
     if (system($cmd)) {
       carp("ERROR: Impossible to execute $cmd");
-      $fail++;
+      return -1;
     }
+    
     OSCAR::Logger::oscar_log_subsection "Executing post_install phase";
     # We do not check the return code since we may not have connectivity with
     # compute nodes and therefore the script may fail.
-    system("$config->{binaries_path}/post_install --force");
+    $cmd = "$config->{binaries_path}/post_install --force";
+    if (system($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
 
     print ">> Re-starting generic services\n";
     foreach my $services_ref (@generic_services) {
@@ -270,6 +285,11 @@ sub delete_clients (@) {
             $fail++;
         }
     }
+    if ($fail) {
+        carp "ERROR: Impossible to restart some generic services";
+        return -1;
+    }
+
     OSCAR::Logger::oscar_log_subsection "Re-starting server services";
     foreach my $services_ref (@server_services) {
         my $server_service = $$services_ref{service};
@@ -279,11 +299,15 @@ sub delete_clients (@) {
             $fail++;
         }
     }
+    if ($fail) {
+        carp "ERROR: Impossible to restart server services";
+        return -1;
+    }
     
     OSCAR::Logger::oscar_log_subsection "Updating C3 configuration file";
     if (!OSCAR::Package::run_pkg_script("c3", "post_clients", 1, "")) {
         carp("ERROR: C3 configuration file update phase failed.");
-        $fail++;
+        return -1;
     }
                                                                             
     OSCAR::Logger::oscar_log_subsection "Re-starting client services on ".
@@ -297,28 +321,28 @@ sub delete_clients (@) {
                 $fail++;
         }
     }
-
-    my ($ip, $broadcast, $netmask) = OSCAR::Network::interface2ip($interface);
-    $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
-
-    if ($install_mode eq "systemimager-multicast") {
-       $cmd = $cmd . " --multicast=yes";
+    if ($fail) {
+        print "[WARN] Impossible to restart services on remote compute nodes";
     }
 
     OSCAR::Logger::oscar_log_subsection "Running mkdhcpconf";
+    my ($ip, $broadcast, $netmask) = OSCAR::Network::interface2ip($interface);
+    $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
+    if ($install_mode eq "systemimager-multicast") {
+       $cmd = $cmd . " --multicast=yes";
+    }
     if (system($cmd)) {
         carp ("ERROR: Impossible to execute $cmd");
-        $fail++;
+        return -1;
     }
 
     my $rc = OSCAR::SystemServices::system_service
         (OSCAR::SystemServicesDefs::DHCP(), OSCAR::SystemServicesDefs::STOP());
     if ($rc) {
-        carp "ERROR: Impossible to restart DHCPD";
-        $fail++;
+        print "[WARN] Impossible to restart DHCPD";
     }
 
-    return $fail;
+    return 0;
 }
 
 
@@ -343,7 +367,7 @@ sub display_node_config ($$$) {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "file") {
+    if ($config->{oda_type} eq "file") {
         my $path = $oscar_configurator->get_node_config_file_path (
                     $cluster_name,
                     $partition_name,
@@ -387,11 +411,11 @@ sub display_node_config ($$$) {
                 $vm_config_obj->print_config();
             }
         }
-    } elsif ($config->{db_type} eq "db") {
+    } elsif ($config->{oda_type} eq "db") {
         carp "Real db are not yet supported\n";
         return -1;
     } else {
-        carp "ERROR: Unknow ODA type ($config->{db_type})\n";
+        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
         return -1;
     }
     return 0;
@@ -420,7 +444,7 @@ sub get_node_config ($$$) {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "file") {
+    if ($config->{oda_type} eq "file") {
         my $path = $oscar_configurator->get_node_config_file_path (
                     $cluster_name,
                     $partition_name,
@@ -450,11 +474,11 @@ sub get_node_config ($$$) {
             carp "ERROR: Impossible to load the node configuration file\n";
             return undef;
         } 
-    } elsif ($config->{db_type} eq "db") {
+    } elsif ($config->{oda_type} eq "db") {
         carp "Real db are not yet supported\n";
         return undef;
     } else {
-        carp "ERROR: Unknow ODA type ($config->{db_type})\n";
+        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
         return undef;
     }
     return $node_config;
@@ -497,7 +521,7 @@ sub set_node_config ($$$$) {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($config->{db_type} eq "file") {
+    if ($config->{oda_type} eq "file") {
         my $path = $oscar_configurator->get_node_config_file_path (
                     $cluster,
                     $partition,
@@ -516,11 +540,11 @@ sub set_node_config ($$$$) {
             return -1;
         }
         $config_obj->set_config($node_config);
-    } elsif ($config->{db_type} eq "db") {
+    } elsif ($config->{oda_type} eq "db") {
         carp "Real db are not yet supported\n";
         return -1;
     } else {
-        carp "ERROR: Unknow ODA type ($config->{db_type})\n";
+        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
         return -1;
     }
     return 0;

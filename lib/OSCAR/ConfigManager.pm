@@ -47,6 +47,8 @@ our $nioscar;
 # Specify where the OSCAR scripts are
 our $oscarbinaries_path;
 # Specify the db type (flat files or real db)
+our $oda_type;
+# Specify the db engine (e.g., mysql)
 our $db_type;
 # Specify the prereq management mode.
 our $prereq_mode;
@@ -100,7 +102,8 @@ sub load_oscar_config ($) {
     $packman_path       = $config->get('PREREQS_PATH') . "/packman";
     $nioscar            = $config->get('OSCAR_NETWORK_INTERFACE');
     $oscarbinaries_path = $config->get('OSCAR_SCRIPTS_PATH');
-    $db_type            = $config->get('ODA_TYPE');
+    $oda_type           = $config->get('ODA_TYPE');
+    $db_type            = $config->get('DB_TYPE');
     $prereq_mode        = $config->get('PREREQ_MODE');
     $oda_files_path     = $config->get('PATH_ODA_CONFIG_FILES');
     $opkgs_path         = $config->get('OPKGS_PATH');
