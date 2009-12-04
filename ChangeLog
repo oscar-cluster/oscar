@@ -13,7 +13,7 @@
 - Update RAPT to 2.8.7.
 - Update Selector to 1.2.5.
 - Update sync_files to 2.5.7.
-- Update SystemInstaller to 2.4.9.
+- Update SystemInstaller to 2.4.10.
 - Update Yume to 2.8.11.
 - [Ticket #326] Remove the documentation OPKG since the documentation is
 managed via the Trac wiki and the PDFs included into the OSCAR binary
