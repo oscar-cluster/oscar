@@ -397,11 +397,11 @@ sub update_head_nic () {
     if ($ENV{OSCAR_VERBOSE} >= 5) {
         $cmd .= " --debug";
     }
-#    $exit_status = system($cmd)/256;
-#    if ($exit_status) {
-#        carp ("ERROR: Couldn't set up a default package set");
-#        return -1;
-#    }
+    $exit_status = system($cmd)/256;
+    if ($exit_status) {
+        carp ("ERROR: Couldn't set up a default package set");
+        return -1;
+    }
 
     OSCAR::Logger::oscar_log_subsection ("All the basic node infos are set");
 
