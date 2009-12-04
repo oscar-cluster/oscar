@@ -118,6 +118,7 @@ sub get_config () {
                 'packman_path'      => $packman_path,
                 'nioscar'           => $nioscar,
                 'binaries_path'     => $oscarbinaries_path,
+                'oda_type'          => $oda_type,
                 'db_type'           => $db_type,
                 'prereq_mode'       => $prereq_mode,
                 'oda_files_path'    => $oda_files_path,
