@@ -386,25 +386,6 @@ sub update_head_nic () {
 
     OSCAR::Logger::oscar_log_subsection ("All the OSCAR global values are set");
 
-    # "create_and_populate_basic_node_info" is another embeded script
-    # to populate the "Nodes" table.
-    my $cmd;
-    if (defined $ENV{OSCAR_HOME}) {
-        $cmd = "$ENV{OSCAR_HOME}/scripts/create_and_populate_basic_node_info";
-    } else {
-        $cmd = "$binaries_path/create_and_populate_basic_node_info";
-    }
-    if ($ENV{OSCAR_VERBOSE} >= 5) {
-        $cmd .= " --debug";
-    }
-    $exit_status = system($cmd)/256;
-    if ($exit_status) {
-        carp ("ERROR: Couldn't set up a default package set");
-        return -1;
-    }
-
-    OSCAR::Logger::oscar_log_subsection ("All the basic node infos are set");
-
     # The above two embeded scripts need to run before all the
     # data for Packages and Packages related table are populated
     # because the above tables contain the primary keys which

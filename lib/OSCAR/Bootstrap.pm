@@ -244,6 +244,7 @@ sub init_server ($) {
 
     # TODO: Should be abstract by oda initialization capability.
     require OSCAR::ODA::Bootstrap;
+    my $oda_type = $oscar_cfg->{'oda_type'};
     if ($oda_type eq "db") {
         # We initialize the database if needed
         if (OSCAR::ODA::Bootstrap::init_db ($configurator)) {
@@ -261,13 +262,11 @@ sub init_server ($) {
     #
     # Now that ODA is initialized, we can initialize its content.
     #
-
-    # We save data about the NIC used by OSCAR
-#    require OSCAR::Network;
-#    if (OSCAR::Network::update_head_nic ()) {
-#        carp "ERROR: Impossible to update the headnode NIC data";
-#        return -1;
-#    }
+    $cmd = $oscar_cfg->{'binaries_path'}."/create_and_populate_basic_node_info";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
 
     OSCAR::Logger::oscar_log_section("Installing server core packages");
     require OSCAR::Opkg;
