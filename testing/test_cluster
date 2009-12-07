@@ -152,21 +152,20 @@ my $test_user="oscartst";
 my ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) =
     getpwnam $test_user;
 unless ($test_user_homedir) {
-          if (system("/usr/sbin/useradd -m $test_user")) {
-                  croak("Unable to create test user: exiting.");
-          }
-	  # Mandriva's openssh versions newer than 3.6 block ssh from users with
-	  # empty password. One solution for this is to unblock then manually:
-	  if (-e "/etc/mandriva-release") {
-		  system("/usr/bin/passwd -u $test_user -f");
-	  }
-	  my $opts = "";
-	  $opts = "--add /etc/gshadow" if (-e "/etc/gshadow");
-          if (system("/opt/sync_files/bin/confmgr --syncnow --force $opts > /dev/null 2>&1")) {
-                  croak("Unable to replicate user out to oscar nodes (confmgr failed): exiting.");
-          }
-          ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) = 
-	      getpwnam $test_user;
+    if (system("/usr/sbin/useradd -m $test_user")) {
+        croak("ERROR: Unable to create test user: exiting.");
+    }
+    # Mandriva's openssh versions newer than 3.6 block ssh from users with
+	# empty password. One solution for this is to unblock then manually:
+	if (-e "/etc/mandriva-release") {
+        system("/usr/bin/passwd -u $test_user -f");
+    }
+    my $opts = "--add /etc/gshadow" if (-e "/etc/gshadow");
+    my $cmd = "/opt/sync_files/bin/confmgr --syncnow --force $opts > /dev/null 2>&1";
+    if (system($cmd)) {
+        croak("ERROR: Unable to replicate user out to oscar nodes ($cmd): exiting.");
+    }
+    ($tu,$tp,$tid,$tgid,$tq,$tcom,$tgcos,$test_user_homedir,$ts) = getpwnam $test_user;
 }
 
 # Check for a properly mounted /home dir
@@ -252,6 +251,9 @@ print "Performing user tests...\n";
 
 my $script = "$test_user_homedir/ssh_user_tests";
 my $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} $script $clistring' - $test_user");
+if ($rc != 0) {
+    die "ERROR: Impossible to execute $script";
+}
 
 my $creturn=0;
 
