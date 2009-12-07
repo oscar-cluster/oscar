@@ -36,12 +36,13 @@ use Carp;
 use File::Copy;
 use SIS::Client;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use OSCAR::Database;
 use OSCAR::Package;
 use Data::Dumper;
 use Getopt::Long;
 use OSCAR::OCA::RM_Detect;
+use OSCAR::Utils;
 
 # We usually test the following packages and if there is more to test
 # please add it with proper priority number(the hash value of the
@@ -89,7 +90,7 @@ END{
 sub sortclients(@) {
 	return map { $_->[0] }
 	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
-	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       map { [$_, $_->{name} =~ /^([\D]+)([\d]*)$/] }
 	       @_;
 }
 
@@ -105,7 +106,7 @@ if (@ARGV) {
 } else {
         my @mlist = sortclients list_client();
         foreach my $m (@mlist) {
-                push @clientlist,$m->hostname;
+                push @clientlist,$m->{hostname};
         }
 }
 
@@ -246,6 +247,9 @@ system("chown -R $tid:$tgid $test_user_homedir");
 system("/bin/su -c '' - $test_user > /dev/null 2>&1");
 
 my $clistring=join(" ",@clientlist);
+if (!OSCAR::Utils::is_a_valid_string ($clistring)) {
+    die "ERROR: Invalid list of clients";
+}
 
 print "Performing user tests...\n";
 
