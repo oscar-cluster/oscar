@@ -268,6 +268,28 @@ sub init_server ($) {
         return -1;
     }
 
+    # We save data about the NIC used by OSCAR
+    # The "set_global_oscar_values" scripts populates the following
+    # tables: Clusters, Groups, and Status
+    OSCAR::Logger::oscar_log_subsection ("Setting all the OSCAR global values");
+    my $exit_status;
+    if (defined $ENV{OSCAR_HOME}) {
+        $cmd = "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values ".
+               "--interface $interface";
+    } else {
+        $cmd = "$binaries_path/set_global_oscar_values ".
+               "--interface $interface";
+    }
+    if ($ENV{OSCAR_VERBOSE} >= 5) {
+        $cmd .= "  --debug";
+    }
+    $exit_status = system($cmd)/256;
+    if ($exit_status) {
+        carp ("ERROR: Couldn't initialize the global database values table ".
+              "($cmd, $exit_status)");
+        return -1;
+    }
+
     OSCAR::Logger::oscar_log_section("Installing server core packages");
     require OSCAR::Opkg;
     require OSCAR::Utils;

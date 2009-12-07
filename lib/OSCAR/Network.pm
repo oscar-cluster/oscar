@@ -333,6 +333,8 @@ sub update_hosts ($) {
 #
 # Return: 0 if success, -1 else.
 sub update_head_nic () {
+    my ($cmd, $exit_status);
+
     require OSCAR::Database_generic;
     require OSCAR::ConfigFile;
     my $interface = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf", 
@@ -354,6 +356,7 @@ sub update_head_nic () {
         return -1;
     }
 
+    # Set headnode NIC data.
     my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");
@@ -363,28 +366,7 @@ sub update_head_nic () {
         return -1;
     }
 
-    # The "set_global_oscar_values" scripts populates the following
-    # tables: Clusters, Groups, and Status
-    my $cmd;
-    my $exit_status;
-    if (defined $ENV{OSCAR_HOME}) {
-        $cmd = "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values ".
-               "--interface $interface";
-    } else {
-        $cmd = "$binaries_path/set_global_oscar_values ".
-               "--interface $interface";
-    }
-    if ($ENV{OSCAR_VERBOSE} >= 5) {
-        $cmd .= "  --debug";
-    }
-    $exit_status = system($cmd)/256;
-    if ($exit_status) {
-        carp ("ERROR: Couldn't initialize the global database values table ".
-              "($cmd, $exit_status)");
-        return -1;
-    }
-
-    OSCAR::Logger::oscar_log_subsection ("All the OSCAR global values are set");
+    OSCAR::Logger::oscar_log_subsection ("Headnode NIC data stored");
 
     # The above two embeded scripts need to run before all the
     # data for Packages and Packages related table are populated
