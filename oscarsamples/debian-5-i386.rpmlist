@@ -9,3 +9,4 @@ systemconfigurator
 nfs-common
 initrd-tools
 linux-image-2.6.x
+xterm

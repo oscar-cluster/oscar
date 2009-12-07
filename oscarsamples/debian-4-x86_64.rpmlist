@@ -9,3 +9,4 @@ linux-image-2.6-amd64
 ssh
 systemconfigurator
 nfs-common
+xterm

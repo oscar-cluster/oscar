@@ -10,3 +10,4 @@ linux-image-generic
 ssh
 systemconfigurator
 nfs-common
+xterm
