@@ -360,7 +360,10 @@ sub update_head_nic () {
     my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");
-    my $cmd = "$binaries_path/set_node_nics --network";
+    $cmd = "$binaries_path/set_node_nics --network";
+    if ($ENV{OSCAR_VERBOSE}) {
+        $cmd .= " --verbose";
+    }
     if (system ($cmd)) {
         carp "ERROR: Impossible to successfully execute \"$cmd\"";
         return -1;
@@ -388,7 +391,7 @@ sub update_head_nic () {
     if ($ENV{OSCAR_VERBOSE} >= 5) {
         $cmd .= " --debug";
     }
-    my $exit_status = system($cmd)/256;
+    $exit_status = system($cmd)/256;
     if ($exit_status) {
         carp ("ERROR: Couldn't populate packages table");
         return -1;
