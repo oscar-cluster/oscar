@@ -113,13 +113,9 @@ if (OSCAR::Database::update_node ('oscar_server',
     die "ERROR: Impossible to update the entry for oscar_server";
 }
 
-# Finally we make sure that the Nics of the headnodes are correctly set in ODA.
-if (OSCAR::Network::update_head_nic()) {
-    die "ERROR: Impossible to store data about the head NIC used for cluster ".
-        "deployment";
-}
-
 # make sure that certain node groups exist
+# Note that those groups are necessary for the population of ODA regarding
+# headnode information.
 foreach my $node_group_name ( "oscar_clients", "all", "Default_node" ) {
     oscar_log_subsection ("Checking for existence of node group ".
                           "$node_group_name ...");
@@ -139,6 +135,11 @@ foreach my $node_group_name ( "oscar_clients", "all", "Default_node" ) {
     }
 }
 
+# Finally we make sure that the Nics of the headnodes are correctly set in ODA.
+if (OSCAR::Network::update_head_nic()) {
+    die "ERROR: Impossible to store data about the head NIC used for cluster ".
+        "deployment";
+}
 
 # UNLOCKING FOR NEST.
 #unlock(\%options, \@errors);
