@@ -262,22 +262,21 @@ sub init_server ($) {
     #
     # Now that ODA is initialized, we can initialize its content.
     #
-    $cmd = $oscar_cfg->{'binaries_path'}."/create_and_populate_basic_node_info";
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
-        return -1;
-    }
 
-    # We save data about the NIC used by OSCAR
+    # We save data about the NIC used by OSCAR. 
+    # Warning! set_global_oscar_value, create_and_populate_basic_node_info and
+    # populate_default_package_set must be called in the order described below.
+
     # The "set_global_oscar_values" scripts populates the following
     # tables: Clusters, Groups, and Status
     OSCAR::Logger::oscar_log_subsection ("Setting all the OSCAR global values");
     my $exit_status;
+    my $interface = $oscar_cfg->{'nioscar'};
     if (defined $ENV{OSCAR_HOME}) {
         $cmd = "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values ".
                "--interface $interface";
     } else {
-        $cmd = "$binaries_path/set_global_oscar_values ".
+        $cmd = $oscar_cfg->{'binaries_path'}."/set_global_oscar_values ".
                "--interface $interface";
     }
     if ($ENV{OSCAR_VERBOSE} >= 5) {
@@ -287,6 +286,20 @@ sub init_server ($) {
     if ($exit_status) {
         carp ("ERROR: Couldn't initialize the global database values table ".
               "($cmd, $exit_status)");
+        return -1;
+    }
+
+    $cmd = $oscar_cfg->{'binaries_path'}."/create_and_populate_basic_node_info";
+    if (system ($cmd)) {
+        carp "ERROR: Impossible to execute $cmd";
+        return -1;
+    }
+
+    # Storing data about package sets.
+    $cmd = $oscar_cfg->{'binaries_path'}."/populate_default_package_set";
+    my $exit_status = system($cmd);
+    if ($exit_status) {
+        carp ("Couldn't set up a default package set ($exit_status)");
         return -1;
     }
 
