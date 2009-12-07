@@ -130,13 +130,13 @@ if ($is_suse) {
     verbose("Restarting atftpd");
     !system("/etc/init.d/atftpd restart") or croak("Failed to restart atftpd");
     verbose("Enabling atftpd");
-    !system("chkconfig atftpd on") or croak("Failed to enable atftpd");
+    !system("/sbin/chkconfig atftpd on") or croak("Failed to enable atftpd");
 } else {
     verbose("Restarting xinetd");
     !system("/etc/init.d/xinetd restart") or croak("Couldn't restart xinetd");
     verbose("Enabling tftp");
     if ($os->{pkg} ne "deb") {
-        !system("chkconfig tftp on") or croak("Couldn't enable tftp");
+        !system("/sbin/chkconfig tftp on") or croak("Couldn't enable tftp");
     } else {
         # We use this specific command on Debian because it seems that the
         # default script for the creation of a daemon is not working. I did
