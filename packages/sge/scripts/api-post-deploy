@@ -26,6 +26,7 @@ use Carp;
 
 use lib "/usr/lib/systeminstaller","$ENV{OSCAR_HOME}/lib";
 use OSCAR::Configbox;
+use OSCAR::Configurator_backend;
 use OSCAR::Database;
 use OSCAR::Opkg;
 use SystemInstaller::Machine;
@@ -113,7 +114,10 @@ if (%nodes) {
 
 	# If user has configured the package, use the custom values, otherwise use the default
 	if (-e $xml_data) {
-	    my $ref = readInConfigValues($xml_data,"sge","",noarray=>1);
+	    my $ref = OSCAR::Configurator_backend::readInConfigValues($xml_data,
+                                                                  "sge",
+                                                                  "",
+                                                                  noarray=>1);
 	    $cell = $ref->{cellname};
 	}
 
