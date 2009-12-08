@@ -21,6 +21,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.1.1-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2009-12-08T15:29:03-05:00">
+        <item>Fix a useless warning in api-post-deploy.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.1.0-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2007-09-14T17:02:47-04:00">
         <item>Migrate to the new OPKG format (OPKGC).</item>
