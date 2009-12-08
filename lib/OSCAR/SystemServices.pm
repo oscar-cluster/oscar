@@ -78,7 +78,7 @@ sub system_service_status ($) {
     my $service = shift;
 
     $service = File::Basename::basename ($service);
-    my $output = `/sbin/chkconfig --list $service`;
+    my $output = `LC_ALL=C /sbin/chkconfig --list $service`;
     my @status = parse_chkconfig_output ($output);
 
     # We only care about the runlevels 2, 3, 4, and 5
