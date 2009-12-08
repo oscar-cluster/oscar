@@ -167,6 +167,39 @@ sub get_network_adapter ($) {
 }
 
 ################################################################################
+# Compute network base ip adress from an ip adress and its netmask.            #
+# Input: ip, an ip adress from the network we need to identify                 #
+#        netmask, the netmask in use on this network.                          #
+# Output: the ip adress of the network.                                        #
+# Example (10.161.222.150,255.255.252.0) will return 10.161.220.0              #
+################################################################################
+sub get_network_base_ip ($$) {
+    my ($ip , $netmask) = @_;
+    if (is_a_valid_ip ($ip) == 0) {
+        carp "ERROR: invalid IP adress: ($ip)";
+        return undef;
+    }
+    if (is_a_valid_ip ($netmask) == 0) {
+        carp "ERROR: Invalid netmask ($netmask)";
+        return undef;
+    }
+
+    # Compute network from ip and netmask
+    my @addrarr=split(/\./,$ip);
+    my ( $ipaddress ) = unpack( "N", pack( "C4",@addrarr ) );
+
+    my @maskarr=split(/\./,$netmask);
+    my ( $netmask ) = unpack( "N", pack( "C4",@maskarr ) );
+
+    # Calculate network address by logical AND operation of addr & netmask
+    # and convert network address to IP address format
+    my $netadd = ( $ipaddress & $netmask );
+    my @netarr=unpack( "C4", pack( "N",$netadd ) );
+    my $netaddress=join(".",@netarr);
+    return $netaddress;
+}
+
+################################################################################
 # Get the network configuration from the database.                             #
 # Input: - interface, network interface id used by OSCAR (e.g. eth0),          #
 #        - options, hash reference for options (GV: i have no clue of what the #
@@ -188,13 +221,28 @@ sub get_network_config ($$$) {
         carp "ERROR: IP of the NIC $interface is invalid";
         return undef;
     }
-    my ($a, $b, $c, $d) = split(/\./, $ip);
-    if ($d == 1) {
+
+    my $network_base = get_network_base_ip($ip,$netmask);
+    my $startip;
+    my ($a, $b, $c, $d);
+    if (!OSCAR::Utils::is_a_valid_string ($network_base)) {
+        ($a, $b, $c, $d) = split(/\./, $ip);
         $d++;
+        # Check that this is not the head_node ip. If yes, then increment $d
+        if ( "$a.$b.$c.$d" eq "$ip" ) {
+            $d++ ;
+        }
+        # Check that $a.$b.$c.$d is not the broadcast address. (strange setup)
+        if ( "$a.$b.$c.$d" eq "$broadcast" ) {
+            $d++ ;
+        }
+        $startip = "$a.$b.$c.$d";
     } else {
-        $d = 1;
+        carp "ERROR: Unable to compute network adress for $a, $b, $c, $d/$netmask";
+        return undef;
     }
-    my $startip = "$a.$b.$c.$d";
+
+    # TODO: compute lastip as well (if netmask is not 255, then lastip is not 254)
 
     # Most of this code is borrowed from scripts/oscar_wizard
     # It has been changed slightly for the command line
@@ -361,8 +409,10 @@ sub update_head_nic () {
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");
     $cmd = "$binaries_path/set_node_nics --network";
-    if ($ENV{OSCAR_VERBOSE}) {
+    if ($ENV{OSCAR_VERBOSE} >= 5 && $ENV{OSCAR_VERBOSE} < 10) {
         $cmd .= " --verbose";
+    } elsif ($ENV{OSCAR_VERBOSE} >= 10) {
+        $cmd .= " --debug";
     }
     if (system ($cmd)) {
         carp "ERROR: Impossible to successfully execute \"$cmd\"";
