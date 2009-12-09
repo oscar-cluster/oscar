@@ -4,6 +4,9 @@
 #           Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 # Copyright (c) 2005-2007 The Trustees of Indiana University.  
 #                    All rights reserved.
+# Copyright (c) 2009 Oak Ridge National Laboratory
+#                    Geoffroy Vallee <valleegr@ornl.gov>
+#                    All rights reserved.
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -65,7 +68,7 @@ GetOptions( \%options,
             'verbose!' )
     || usage( 1 );
 print "$0: after GetOptions ARGV=<@ARGV>\n" if $options{debug};
-oda::print_hash( "", "$0: options after GetOptions", \%options) 
+OSCAR::Utils::print_hash( "", "$0: options after GetOptions", \%options) 
     if $options{debug};
 
 # --help flag just prints out usage information and exits
@@ -86,7 +89,7 @@ if ( exists $options{oda} ) {
         (defined $value) ? $value :
         ( ($oda_option =~ /^no/ ) ? 0 : 1 );
     }
-    oda::print_hash( "", "$0: oda_options", \%oda_options ) 
+    OSCAR::Utils::print_hash( "", "$0: oda_options", \%oda_options ) 
     if $options{debug};
 }
 
@@ -137,8 +140,12 @@ if ( defined $gateway_interfaces_ref ) {
 print "Determining machine network interfaces ...\n" 
     if $options{verbose};
 my $ifconfig_nics_ref = find_nics( 1 );
-die "$0: fatal error running ifconfig command" if ! defined $ifconfig_nics_ref;
-oda::print_hash( "", "$0: ifconfig nics", $ifconfig_nics_ref ) if $options{debug};
+if (!defined $ifconfig_nics_ref) {
+    die "ERROR: [$0] fatal error running ifconfig command";
+}
+if ($options{debug}) {
+    OSCAR::Utils::print_hash( "", "$0: ifconfig nics", $ifconfig_nics_ref );
+}
 if ( $options{verbose} && ! $options{debug} ) {
     my @ifconfig_nic_names = keys %$ifconfig_nics_ref;
     print "... found " . scalar( @ifconfig_nic_names ) . " machine network interface"
@@ -165,7 +172,7 @@ if ( defined $gateway_address ) {
              eq 
              ip_and( $$nic_ref{base_ip}, $$nic_ref{netmask} ) ) {
             $$nic_ref{gateway} = $gateway_address;
-            oda::print_hash( "", "$0: nic $nic_name gateway field set",
+            OSCAR::Utils::print_hash( "", "$0: nic $nic_name gateway field set",
                      $nic_ref ) if $options{debug};
             print "Gateway $gateway_address is on network interface $nic_name\n"
             if $options{verbose} && ! $options{debug};
@@ -187,7 +194,7 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
         $num_public++;
     }
 }
-print "$0: num_private=$num_private num_public=$num_public\n"
+print "[INFO] $0: num_private=$num_private num_public=$num_public\n"
     if $options{debug};
 
 # find out what we think the attached networks are based on
@@ -217,18 +224,24 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
     }
     # set up the command to create this network
     my %network = ( 'name'    => $network_name,
-            'base_ip' => $$nic_ref{base_ip},
-            'high_ip' => $$nic_ref{high_ip},
-            'netmask' => $$nic_ref{netmask},
-            'rfc1918' => $$nic_ref{rfc1918} );
+                    'base_ip' => $$nic_ref{base_ip},
+                    'high_ip' => $$nic_ref{high_ip},
+                    'netmask' => $$nic_ref{netmask},
+                    'rfc1918' => $$nic_ref{rfc1918} );
     $network{ broadcast } = $$nic_ref{ broadcast }
         if exists $$nic_ref{ broadcast };
     $network{ gateway } = $$nic_ref{ gateway }
         if exists $$nic_ref{ gateway };
     $surmised_networks{ $network_name } = \%network;
 }
-oda::print_hash( "", "$0: ifconfig surmised networks", \%surmised_networks )
-    if $options{debug};
+
+if (keys(%surmised_networks) == 0) {
+    die "ERROR: Impossible to detect attached networks";
+}
+
+if ($options{debug}) {
+    OSCAR::Utils::print_hash( "", "$0: ifconfig surmised networks", \%surmised_networks );
+}
 
 
 # START LOCKING FOR NEST && open the database
@@ -300,7 +313,7 @@ foreach my $nic_ref (@nics){
 }
 #die "$0: cannot read current database nic records for node $node_name\n"
 #    if ! defined $database_networks_ref;
-oda::print_hash( "", "$0: database nics for node $node_name", $database_nics_ref ) 
+OSCAR::Utils::print_hash( "", "$0: database nics for node $node_name", $database_nics_ref ) 
     if $options{debug};
 if ( $options{verbose} && ! $options{debug} ) {
     my @database_nic_names = keys %$database_nics_ref;
@@ -381,7 +394,7 @@ if ( $options{ networks } ) {
 
             if ( %assigns ) {
                 my $record_id = $$database_network_record_ref{n_id};
-                oda::print_hash( "", "$0: modifying network " .
+                OSCAR::Utils::print_hash( "", "$0: modifying network " .
                         $$database_network_record_ref{base_ip} . "/" .
                         $$database_network_record_ref{netmask} .
                         "record id=$record_id with these values", 
@@ -421,7 +434,7 @@ if ( $options{ networks } ) {
                     if $options{debug};
             }
             print "$0: writing out new database network record $$surmised_network_ref{name} $$surmised_network_ref{base_ip}\/$$surmised_network_ref{netmask}\n" if $options{verbose};
-            oda::print_hash( "", "$0: writing out new network", $surmised_network_ref )
+            OSCAR::Utils::print_hash( "", "$0: writing out new network", $surmised_network_ref )
                 if $options{debug};
             if ( $options{verbose} && ! $options{debug} ) {
                 print "Writing out new database network record:\n";
@@ -497,7 +510,7 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
                 && exists $$database_network_ref{ $field }
                 && $$nic_ref{ $field } eq $$database_network_ref{ $field };
             }
-            oda::print_hash( "", "$0: linked modified ifconfig nic $nic_name",
+            OSCAR::Utils::print_hash( "", "$0: linked modified ifconfig nic $nic_name",
                      $nic_ref) if $options{debug};
             last;
         }
@@ -591,7 +604,7 @@ foreach my $nic_name ( keys %$ifconfig_nics_ref ) {
         foreach my $field ( keys %assigns ) {
             if($assigns{$field}){
                 my $record_id = $$database_nic_ref{id};
-                oda::print_hash( "", "$0: modifying node $node_name nic $nic_name",
+                OSCAR::Utils::print_hash( "", "$0: modifying node $node_name nic $nic_name",
                          \%assigns )
                     if $options{debug};
                 if ( $options{verbose} && ! $options{debug} ) {
@@ -707,7 +720,7 @@ sub find_nics {
                               ref($print_errors) eq "ARRAY" ) ?
                               $print_errors : \@error_strings;
 
-    my @ifconfig_output = `/sbin/ifconfig 2>/dev/null`;
+    my @ifconfig_output = `LC_ALL=C /sbin/ifconfig 2>/dev/null`;
     if ( ! @ifconfig_output ) {
         push @$error_strings_ref,
         "$0: cannot find nics with ifconfig command command";
@@ -931,7 +944,7 @@ sub read_database_network_records {
         my $net_name = $$network_ref{name};
         $$database_networks_ref{$net_name} = $network_ref;
     }
-    oda::print_hash( "", "$0: database network records", $database_networks_ref ) 
+    OSCAR::Utils::print_hash( "", "$0: database network records", $database_networks_ref ) 
     if $options{debug};
 }
 
