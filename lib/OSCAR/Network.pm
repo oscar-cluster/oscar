@@ -403,9 +403,14 @@ sub is_head_nic_private () {
 
     # 2. Get the subnet
     my ($ip, $broadcast, $net) = interface2ip($headnic);
+    my $network_base = get_network_base_ip($ip, $net);
+    if (!OSCAR::Utils::is_a_valid_string ($network_base)) {
+        carp "ERROR: Impossible to get the network base IP";
+        return -1;
+    }
     
     # 3. Get the rfc1918 data based in the subnet
-    my $sql = "SELECT rfc1918 FROM Networks where base_ip=$net;";
+    my $sql = "SELECT rfc1918 FROM Networks where base_ip='$network_base';";
 
     # TODO: We should not use a SQl command here, but use a ODA info.
     if (OSCAR::Database_generic::do_select ($sql, \@res, undef, undef) != 1) {
