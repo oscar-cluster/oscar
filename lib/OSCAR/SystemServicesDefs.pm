@@ -18,13 +18,14 @@ use constant SERVICE_ENABLED  => 1;
 use constant SSH            => 'ssh';
 use constant DHCP           => 'dhcp';
 use constant MYSQL          => 'mysql';
-use constant POSTGRESQL     => 'postgresql';
+use constant POSTGRESQL     => 'pgsql';
 use constant SI_MONITORD    => 'monitord';
 
 # List of actions related to system services
 use constant START      => 0;
 use constant STOP       => 1;
 use constant RESTART    => 2;
+use constant STATUS     => 3;
 
 # List of service status
 use constant STARTED    => 0;

@@ -4,6 +4,9 @@ package OSCAR::SystemServices;
 # Copyright (c) 2008-2009 Geoffroy Vallee <valleegr@ornl.gov>
 #                         Oak Ridge National Laboratory
 #                         All rights reserved.
+# Copyright (c) 2009 CEA (Commissariat à l'Énergie Atomique)
+#                    Olivier Lahaye <olivier.lahaye@cea.fr>
+#                    All rights reserved
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -139,31 +142,63 @@ sub enable_system_services (@) {
     return 0;
 }
 
+################################################################################
+# is_system_service_running: tels if a service is running                      #
+#                                                                              #
+# input: service name                                                          #
+#        action                                                                #
+# output: 0 Success                                                            #
+#         non 0: Error                                                         #
+################################################################################
+
 sub system_service ($$) {
     my ($service, $action) = @_;
 
     # We get the daemon path
     my $path = OSCAR::OCA::OS_Settings::getitem ($service . "_daemon");
 
-    my $cmd = "$path ";
+    # /sbin/service is a RPM specific command, so we do not use it on Debian-like
+    # systems. It allows to start a service with a non polluted environment.
+    my $os = OSCAR::OCA::OS_Detect::open();
+    my $binary_format = $os->{'pkg'};
+    my $cmd;
+    if ($binary_format eq "rpm") { # RPM based distro
+        $cmd = File::Basename::basename ($path);
+        print ("starting service $cmd... ");
+        $cmd = "/sbin/service $cmd ";
+    } else { # Non RPM based distro.
+        my $cmd = "$path ";
+    }
+
     if ($action eq OSCAR::SystemServicesDefs::START()) {
-        $cmd .= "start";
+        if (system_service ($service, OSCAR::SystemServicesDefs::STATUS())) { # not running
+            $cmd .= "start";
+        } else { # already running, we restart to avoid errors (bad init stripts)
+            $cmd .= "restart"; # systemimager-server-monitord is not LSB.
+        }
     } elsif ($action eq OSCAR::SystemServicesDefs::STOP()) {
         $cmd .= "stop";
     } elsif ($action eq OSCAR::SystemServicesDefs::RESTART()) {
         $cmd .= "restart";
+    } elsif ($action eq OSCAR::SystemServicesDefs::STATUS()) {
+        $cmd .= "status";
     } else {
         carp "ERROR: Unknow system service action ($action)";
         return -1;
     }
-
     OSCAR::Logger::oscar_log_subsection "Executing: $cmd";
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
-        return -1;
-    }
 
-    return 0;
+    # start returns 0 if start ok or already running
+    # stop returns 0 is deamon running and succesfully stopped (else error)
+    # retart: same as start
+    # status: 0 if running 3 or 1 if not.
+    # command not found: 127
+    # unknown service: 1
+
+    my $ret_code = system ($cmd);
+    OSCAR::Logger::oscar_log_subsection ("[SystemService] Return code: $ret_code");
+
+    return $ret_code;
 }
 
 # Give the list of system services OSCAR knows how to deal with.
