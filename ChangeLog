@@ -6,10 +6,10 @@
 - Update OPKG mta-config to 1.1.1.
 - Update OPKG Netbootmgr to 1.7.3.
 - Update OPKG pfilter to 1.707.1.
-- Update OPKG SGE to 6.1.4.
+- Update OPKG SGE to 6.1.5.
 - Update OPKG SIS to 4.0.6.
 - Update OPKG Switcher to 1.0.12.
-- Update ODA to 1.4.11.
+- Update ODA to 1.4.12.
 - Update ORM to 1.4.2.
 - Update PackMan to 3.1.12.
 - Update RAPT to 2.8.7.
@@ -25,12 +25,17 @@ packages.
 anymore.
 - [Ticket #531] Fix various configuration issues for Ganglia.
 - [Ticket #542] Include the documentation into the OSCAR binary packages.
+- [Ticket #559] Fix problems when deleting images.
 - [Ticket #562] Include cron in the list of package for Debian based images.
 - [Ticket #563] Avoid language/locales warnings on Ubuntu systems.
 - [Ticket #564] The correct C3 packages are now installed on compute nodes.
 - [Ticket #570] Correctly generate ssh keys on the headnode.
 - [Ticket #574] Support the specification of multiple Linux distribution online
 repositories.
+- [Ticket #578] oscar-config does not mess the system up anymore when starting
+over.
+- [Ticket #582] After starting over and a new bootstrap, the database has now
+data about the headnode NIC.
 - Fix issues during the generation of the ssh keys (ssh_install).
 - Remove various code compilation warnings when executing OSCAR base Perl
 modules.
@@ -44,7 +49,7 @@ from a file are available or not.
 - Correctly set the OSCAR_UI environment variable when running oscar_wizard.
 - Fix Scientific Linux configuration issues.
 - Improve the oscar_image_cleanup script.
-- Add the support of CCISS controllers.
+- Add the support of CCISS controllers (include ticket #579).
 - Install the API side of OPKGs at the beginning of the OPKG configuration 
 phase.
 - Make sure the ssh configuration for root is valid.
