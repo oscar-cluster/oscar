@@ -42,6 +42,7 @@ use base qw(Exporter);
             get_network_adapter
             interface2ip
             is_a_valid_ip
+            is_head_nic_private
             set_network_adapter
             update_hosts
             update_head_nic
@@ -374,6 +375,45 @@ sub update_hosts ($) {
     close(IN);
 
     return 0;
+}
+
+################################################################################
+# This function test if headnode iface is on a private network.
+# input: none
+# Output: 1 if true
+#         0 if false
+#         -1 if error.
+################################################################################
+sub is_head_nic_private () {
+    my @res;
+
+    # 1. Get the headnode IP used for cluster deployment.
+    require OSCAR::ConfigManager;
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return -1;
+    }
+    my $config = $oscar_configurator->get_config();
+    my $headnic = $config->{'nioscar'};
+    if (!OSCAR::Utils::is_a_valid_string ($headnic)) {
+        carp "ERROR: Impossible to get the headnode NIC";
+        return -1;
+    }
+
+    # 2. Get the subnet
+    my ($ip, $broadcast, $net) = interface2ip($headnic);
+    
+    # 3. Get the rfc1918 data based in the subnet
+    my $sql = "SELECT rfc1918 FROM Networks where base_ip=$net;";
+
+    # TODO: We should not use a SQl command here, but use a ODA info.
+    if (OSCAR::Database_generic::do_select ($sql, \@res, undef, undef) != 1) {
+        carp "ERROR: Impossible to execute SQL command ($sql)\n";
+        return -1;
+    }
+
+    return $res[0]->{'rfc1918'};
 }
 
 # This function populate ODA so that we store all data we need. ODA must be
