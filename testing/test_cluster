@@ -38,6 +38,7 @@ use SIS::Client;
 use SIS::Image;
 use SIS::NewDB;
 use OSCAR::Database;
+use OSCAR::Logger;
 use OSCAR::Package;
 use Data::Dumper;
 use Getopt::Long;
@@ -227,14 +228,24 @@ unless ($rm->{name} eq "None") {
 }
 
 # Copy the packages test files to the user home dir.
+my $dir = "/var/lib/oscar/testing";
+my $target_dir;
+my $cmd;
 foreach my $pkg (@pkgs) {
-    foreach my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
-	if (-d "$dir/$pkg/testing") {
-	    mkdir("$test_user_homedir/$pkg/");
-	    # I know, shell badness, but so much easier than doing
-	    # a recursive thing in perl.
-	    system("cp -af $dir/$pkg/testing/* $test_user_homedir/$pkg/");
-	}
+    # The location of the tests is dictated by opkgc.
+    if (-d "$dir/$pkg") {
+        OSCAR::Logger::oscar_log_subsection ("Copying tests for $pkg");
+        $target_dir = "$test_user_homedir/$pkg/";
+        mkdir($target_dir) 
+            or die "ERROR: Impossible to create directory $target_dir";
+        # I know, shell badness, but so much easier than doing
+        # a recursive thing in perl.
+        $cmd = "cp -af $dir/$pkg/* $test_user_homedir/$pkg/";
+	    if (system($cmd)) {
+            die "ERROR: Impossible to execute $cmd";
+        }
+	} else {
+        OSCAR::Logger::oscar_log_subsection ("No tests to copy for $pkg");
     }
 }
 
