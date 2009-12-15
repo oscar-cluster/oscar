@@ -15,17 +15,24 @@ package OCA::RM_Detect::SGE;
 use strict;
 use XML::Simple;
 
+my $displayname = "SGE";
+my $test = "sge_test";
+my $jobscript = "sge_script";
 my $pkg = "sge";
-my $pkg_dir = "$ENV{OSCAR_HOME}/packages/$pkg";
+my $pkg_dir;
+
+if (defined $ENV{OSCAR_HOME}) {
+    $pkg_dir = "$ENV{OSCAR_HOME}/packages/$pkg";
+    $test = "$pkg_dir/testing/$test";
+} else {
+    $pkg_dir = "/var/lib/oscar/packages/$pkg";
+    $test = "/var/lib/oscar/testing/$pkg/$test"
+}
 my $pkg_config = "$pkg_dir/config.xml";
 
 my $xml_ref = undef;
 my $xs = new XML::Simple();
 $xml_ref = eval { $xs->XMLin( $pkg_config ); };
-
-my $displayname = "SGE";
-my $test = "sge_test";
-my $jobscript = "sge_script";
 
 # First set of data
 
@@ -34,7 +41,7 @@ our $id = {
     pkg => $pkg,
     major => $xml_ref->{version}->{major},
     minor => $xml_ref->{version}->{minor},
-    test => "$pkg_dir/testing/$test",
+    test => "$test",
     jobscript => "$jobscript",
     gui => "qmon",
 };
