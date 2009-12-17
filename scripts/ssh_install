@@ -234,7 +234,7 @@ if (! -d $home) {
     foreach my $k (keys (%ssh_keys)) {
         if (! -f $ssh_keys{$k}[0]) {
             $cmd = "/usr/bin/ssh-keygen -t $k -N \'\' -f $ssh_keys{$k}[0]";
-            OSCAR::Logger::oscar_log_subsection ("$cmd");
+            OSCAR::Logger::oscar_log_subsection ("Executing: $cmd");
             if (system ($cmd)) {
                 die "ERROR: Impossible to execute $cmd";
             }
@@ -244,10 +244,11 @@ if (! -d $home) {
                 die "ERROR: file $orig_file does not exist";
             }
             if (! -f $dest_file) {
-                $cmd = "cat $file > $dest_file";
+                $cmd = "cat $orig_file > $dest_file";
             } else {
-                $cmd = "cat $file >> $dest_file";
+                $cmd = "cat $orig_file >> $dest_file";
             }
+            OSCAR::Logger::oscar_log_subsection ("Executing: $cmd");
             if (system ($cmd)) {
                 die "ERROR: Impossible to execute $cmd";
             }
@@ -266,6 +267,7 @@ if (! -d $home) {
 foreach my $image (@BASES) {
     OSCAR::Logger::oscar_log_subsection ("Checking/updating image $image...");
     $cmd = "cp -fpr $SSHCFGDIR $image$SSHCFGDIR";
+    OSCAR::Logger::oscar_log_subsection ("Executing: $cmd");
     if (system ($cmd)) {
         die "ERROR: Impossible to execute $cmd";
     }
@@ -282,6 +284,7 @@ foreach my $image (@BASES) {
         }
     }
     $cmd = "cp -fpr $home/.ssh $image$home";
+    OSCAR::Logger::oscar_log_subsection ("Executing: $cmd");
     if (system ($cmd)) {
         die "ERROR: Impossible to execute $cmd";
     }
