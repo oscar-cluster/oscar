@@ -134,10 +134,14 @@ my @wantedno = ("StrictHostKeyChecking", "UsePrivilegedPort");
 foreach my $key (@wantedno) {
     $pos = OSCAR::FileUtils::line_in_file ("$key yes", $file);
     if ($pos != -1) {
-        OSCAR::FileUtils::replace_line_in_file ($file, $pos, "$key no");
+        if (OSCAR::FileUtils::replace_line_in_file ($file, $pos, "$key no")) {
+            die "ERROR: Impossible to add \"$key no\" to $file ($pos)";
+        }
     } else {
-        OSCAR::FileUtils::add_line_to_file_without_duplication ($file,
-            "$key no");
+        if (OSCAR::FileUtils::add_line_to_file_without_duplication ("$key no",
+                                                                    $file)) {
+            die "ERROR: Impossible to add line \"$key on\" to $file";
+        }
     }
 }
 
