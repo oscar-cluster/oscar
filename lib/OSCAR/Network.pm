@@ -190,7 +190,7 @@ sub get_network_base_ip ($$) {
     my ( $ipaddress ) = unpack( "N", pack( "C4",@addrarr ) );
 
     my @maskarr=split(/\./,$netmask);
-    my ( $netmask ) = unpack( "N", pack( "C4",@maskarr ) );
+    $netmask = unpack( "N", pack( "C4",@maskarr ) );
 
     # Calculate network address by logical AND operation of addr & netmask
     # and convert network address to IP address format
