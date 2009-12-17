@@ -436,7 +436,10 @@ sub __build_autoinstall_cd {
     our $install_mode;
 
     if ($uyok) {
-      generate_uyok();
+        if (generate_uyok()) {
+            carp "ERROR: Impossible to build the autoinstall cd with YUOK";
+            return -1;
+        }
     }
 
     my $append = "MONITOR_SERVER=$ip MONITOR_CONSOLE=yes";
@@ -462,6 +465,8 @@ sub __build_autoinstall_cd {
 # Run SystemImager's si_prepareclient on the headnode to generate the UYOK
 # boot kernel and ramdisk (initrd.img).  These will be stored in
 # /etc/systemimager/boot
+#
+# Return: 0 if success, -1 else.
 sub generate_uyok {
     our $kernel;
     our $ramdisk;
@@ -472,11 +477,21 @@ sub generate_uyok {
     oscar_log_subsection("Step $step_number: Running si_prepareclient on headnode to generate UYOK kernel and ramdisk");
     # WARNING, if we use the si_prepareclient command with the 
     # --np-rsyncd option option, that creates problem with UYOK
+    if (!defined $ENV{HOSTNAME}) {
+        carp "ERROR: HOSTNAME env variable not defined";
+        return -1;
+    }
     my $cmd = "si_prepareclient --server $ENV{HOSTNAME} --yes";
     $cmd = "$cmd --quiet" unless $ENV{OSCAR_VERBOSE};
 
-    !system("$cmd") or croak("Failed to run: $cmd");
+    if (system($cmd)) {
+        carp ("ERROR: Failed to run: $cmd");
+        return -1;
+    }
+
     oscar_log_subsection("Step $step_number: Successfully enabled UYOK");
+
+    return 0;
 }
 
 # Configure system to use selected installation mode
@@ -758,8 +773,11 @@ sub __run_setup_pxe ($) {
     }
 
     if ($uyok) {
-      $cmd = "$cmd --uyok";
-      generate_uyok();
+        $cmd = "$cmd --uyok";
+        if (generate_uyok()) {
+            carp "ERROR: Impossible to setup PXE with YUOK";
+            return -1
+        }
     }
 
     oscar_log_subsection("Step $step_number: Setup network boot: $cmd");
