@@ -475,13 +475,18 @@ sub generate_uyok {
     $ramdisk = "/etc/systemimager/boot/initrd.img";
 
     oscar_log_subsection("Step $step_number: Running si_prepareclient on headnode to generate UYOK kernel and ramdisk");
+    my $hostname = $ENV{HOSTNAME};
     # WARNING, if we use the si_prepareclient command with the 
     # --np-rsyncd option option, that creates problem with UYOK
-    if (!defined $ENV{HOSTNAME}) {
-        carp "ERROR: HOSTNAME env variable not defined";
-        return -1;
+    if (!defined $hostname) {
+        require Sys::Hostname;
+        $hostname = Sys::Hostname::hostname ();
+        if (!defined $hostname) {
+            carp "ERROR: HOSTNAME env variable not defined";
+            return -1;
+        }
     }
-    my $cmd = "si_prepareclient --server $ENV{HOSTNAME} --yes";
+    my $cmd = "si_prepareclient --server $hostname --yes";
     $cmd = "$cmd --quiet" unless $ENV{OSCAR_VERBOSE};
 
     if (system($cmd)) {
