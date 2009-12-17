@@ -45,8 +45,10 @@ use Getopt::Long;
 
 use OSCAR::FileUtils;
 use OSCAR::Logger;
+use OSCAR::Utils;
 
 my ($verbose);
+my (@BASES);
 
 sub help () {
     print "Type \"man $0\" for help information\n";
@@ -66,7 +68,18 @@ GetOptions  (
         "verbose"   => \$verbose,
             ) || help_and_die();
 
-my @BASES = @_;
+foreach my $arg (@ARGV) {
+    chomp ($arg);
+    if ($arg ne "--verbose") {
+        push (@BASES, $arg);
+    }
+}
+if (scalar (@BASES) == 0) {
+    print "[INFO] No images specified for the ssh configuration\n";
+} else {
+    print "[INFO] Configuring ssh for the following images:";
+    OSCAR::Utils::print_array (@BASES);
+}
 
 # We check first that the parameters are images directories
 foreach my $b (@BASES) {
