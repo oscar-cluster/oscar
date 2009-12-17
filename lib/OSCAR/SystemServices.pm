@@ -53,6 +53,8 @@ use base qw(Exporter);
              get_system_services
              );
 
+sub system_service ($$);
+
 # Parse the output of the chkconfig --list <service_id> command.
 #
 # Input: the output of the chkconfig command.
