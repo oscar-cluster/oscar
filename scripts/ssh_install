@@ -124,10 +124,14 @@ OSCAR::Logger::oscar_log_subsection ("Checking configuration file $file...");
 # everything will fall apart.
 my $pos = OSCAR::FileUtils::line_in_file ("ForwardX11 no", $file);
 if ($pos != -1) {
-    OSCAR::FileUtils::replace_line_in_file ($file, $pos, "ForwardX11 yes");
+    if (OSCAR::FileUtils::replace_line_in_file ($file, $pos, "ForwardX11 yes")) {
+        die "ERROR: Impossible to add \"ForwardX11 yes\" to $file";
+    }
 } else {
-    OSCAR::FileUtils::add_line_to_file_without_duplication ($file, 
-        "ForwardX11 yes");
+    if (OSCAR::FileUtils::add_line_to_file_without_duplication ("ForwardX11 yes",
+                                                                $file)) {
+        die "ERROR: Impossible to add \"ForwardX11 yes\" to $file";
+    }
 }
 
 my @wantedno = ("StrictHostKeyChecking", "UsePrivilegedPort");
