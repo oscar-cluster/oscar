@@ -176,8 +176,8 @@ foreach my $key (@wantedyes) {
     if ($pos != -1) {
         OSCAR::FileUtils::replace_line_in_file ($file, $pos, "$key yes");
     } else {
-        OSCAR::FileUtils::add_line_to_file_without_duplication ($file,
-            "$key yes");
+        OSCAR::FileUtils::add_line_to_file_without_duplication (
+            "$key yes", $file);
     }
 }
 
@@ -192,8 +192,8 @@ foreach my $key (@wantedno) {
     if ($pos != -1) {
         OSCAR::FileUtils::replace_line_in_file ($file, $pos, "$key no");
     } else {
-        OSCAR::FileUtils::add_line_to_file_without_duplication ($file,
-            "$key no");
+        OSCAR::FileUtils::add_line_to_file_without_duplication (
+            "$key no", $file);
     }
 }
 
