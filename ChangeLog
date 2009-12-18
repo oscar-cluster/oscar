@@ -36,6 +36,8 @@ repositories.
 over.
 - [Ticket #582] After starting over and a new bootstrap, the database has now
 data about the headnode NIC.
+- [Ticket #587] Several issues in the SSH configuration has been fixed, the
+display forwarding is now activated.
 - Fix issues during the generation of the ssh keys (ssh_install).
 - Remove various code compilation warnings when executing OSCAR base Perl
 modules.
