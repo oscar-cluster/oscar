@@ -80,6 +80,12 @@ if (scalar (@BASES) == 0) {
     print "[INFO] Configuring ssh for the following images:";
     OSCAR::Utils::print_array (@BASES);
 }
+if (scalar (@BASES) == 0) {
+    print "[INFO] No images specified for the ssh configuration";
+} else {
+    print "[INFO] Configuring ssh for the following images:";
+    OSCAR::Utils::print_array (@BASES);
+}
 
 # We check first that the parameters are images directories
 foreach my $b (@BASES) {
@@ -141,7 +147,7 @@ if ($pos != -1) {
         die "ERROR: Impossible to add \"ForwardX11 yes\" to $file";
     }
 } else {
-    if (OSCAR::FileUtils::add_line_to_file_without_duplication ("ForwardX11 yes",
+    if (OSCAR::FileUtils::add_line_to_file_without_duplication ("ForwardX11 yes\n",
                                                                 $file)) {
         die "ERROR: Impossible to add \"ForwardX11 yes\" to $file";
     }
@@ -155,7 +161,7 @@ foreach my $key (@wantedno) {
             die "ERROR: Impossible to add \"$key no\" to $file ($pos)";
         }
     } else {
-        if (OSCAR::FileUtils::add_line_to_file_without_duplication ("$key no",
+        if (OSCAR::FileUtils::add_line_to_file_without_duplication ("$key no\n",
                                                                     $file)) {
             die "ERROR: Impossible to add line \"$key on\" to $file";
         }
@@ -190,7 +196,7 @@ foreach my $key (@wantedyes) {
         OSCAR::FileUtils::replace_line_in_file ($file, $pos, "$key yes");
     } else {
         OSCAR::FileUtils::add_line_to_file_without_duplication (
-            "$key yes", $file);
+            "$key yes\n", $file);
     }
 }
 
@@ -206,7 +212,7 @@ foreach my $key (@wantedno) {
         OSCAR::FileUtils::replace_line_in_file ($file, $pos, "$key no");
     } else {
         OSCAR::FileUtils::add_line_to_file_without_duplication (
-            "$key no", $file);
+            "$key no\n", $file);
     }
 }
 
