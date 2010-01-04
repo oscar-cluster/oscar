@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/perl
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,60 +20,121 @@
 # (C)opyright Bernard Li <bli@bcgsc.ca>
 #             Erich Focht <efocht@hpce.nec.com>
 
-log=ganglia/ganglia.err
+#  Copyright (c) 2010   Oak Ridge National Laboratory
+#                       Geoffroy Vallee <valleegr@ornl.gov>
+#                       All rights reserved.
 
-# remove old log file
-if test -f $log
-then
-  rm -rf ganglia/ganglia.err
-fi
+use strict;
+use Carp;
+use Cwd qw(chdir cwd);
+use Getopt::Long;
+use OSCAR::ConfigManager;
+use OSCAR::Logger;
+use OSCAR::Network;
+use OSCAR::Utils;
+use warnings "all";
 
-label="Ganglia setup test"
+# We are using a specific hostname for Ganglia. Right now we assume this is the first
+# hostname following of the private IP in the /etc/hosts file.
+sub get_ganglia_hostname () {
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        return undef;
+    }
+    my $config = $oscar_configurator->get_config();
+    my $headnic = $config->{'nioscar'};
+    if (!OSCAR::Utils::is_a_valid_string ($headnic)) {
+        carp "ERROR: Impossible to get the headnode NIC";
+        return undef;
+    }
+
+    my ($head_ip, $broadcast, $net) = OSCAR::Network::interface2ip($headnic);
+    if (!OSCAR::Utils::is_a_valid_string ($head_ip)) {
+        carp "ERROR: Impossible to get the private IP";
+        return undef;
+    }
+
+    my $cmd = "grep $head_ip /etc/hosts";
+    my $private_hostnames = `$cmd`;
+    if (!OSCAR::Utils::is_a_valid_string ($private_hostnames)) {
+        carp "ERROR: Impossible to get private hostnames ($cmd)";
+        return undef;
+    }
+    my @hostnames = split (" ", $private_hostnames);
+    my $pattern = $hostnames[1];
+
+    return $pattern;
+}
+
+OSCAR::Logger::init_log_file ("/var/log/oscar/ganglia.log");
+
+OSCAR::Logger::oscar_log_section ("Ganglia setup test");
+my $label = "Ganglia setup test";
 
 # Get number of args (nodes)
-clients=`echo $@ | wc -w`
+my @clients = @_;
+my $nb_clients = scalar (@clients);
 
 # number of client nodes + headnode
-numhosts=`expr $clients + 1`
+my $numhosts = $nb_clients + 1;
 
-# use gstat to determine number of hosts ganglia has detected 
-pattern=`hostname -f`"|"`perl -e "print join('|',split(/ +/,\"$*\"))"`
+my $pattern = get_ganglia_hostname();
+if (!OSCAR::Utils::is_a_valid_string ($pattern)) {
+    die "ERROR: Impossible to get the hostname used by Ganglia";
+}
 
 # simple test which counts the number of detected nodes (via gstat) with
 # the number of expected nodes (from argument)
 # the nodes detected have to match a certain pattern (belonging to the
 # cluster) and thus will pass even if you have other gmonds running on the
 # same network but not belonging to the same data source
-hosts=`gstat --all | egrep -c "^($pattern)$"`
+my $hosts = `gstat --all | egrep -c "^($pattern)$"`;
+my $cmd;
 
-if [ $hosts -eq $numhosts ]
-then
-  $OSCAR_TESTPRINT --label "$label" -p
-else
-  echo "Client nodes: $@" > $log
-  echo "Match pattern: $pattern" >> $log
-  echo "Number of hosts matched: $hosts" >> $log
-  echo "Gstat output:" >> $log
-  gstat --all >> $log
-  echo -e "\nThe number of nodes expected is different from the number of nodes detected.\nCheck to see if gmond is running on all your nodes and make sure that you\nare not having any network issues." >> $log
-  $OSCAR_TESTPRINT --label "$label" -f
-  exit 1
-fi
+if ($hosts eq $numhosts) {
+    $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -p";
+    if (system ($cmd)) {
+        die "ERROR: Impossible to execute $cmd";
+    }
+} else {
+    OSCAR::Logger::oscar_log_subsection ("Client nodes: $@");
+    OSCAR::Logger::oscar_log_subsection ("Match pattern: $pattern");
+    OSCAR::Logger::oscar_log_subsection ("Number of hosts matched: $hosts");
+    my $output = `gstat --all`;
+    if (!OSCAR::Utils::is_a_valid_string ($output)) {
+        die "ERROR: Impossible to get gstat output";
+    }
+    OSCAR::Logger::oscar_log_subsection ("Gstat output: $output");
+    OSCAR::Logger::oscar_log_subsection ("The number of nodes expected is different from the number of nodes detected.\nCheck to see if gmond is running on all your nodes and make sure that you\nare not having any network issues.");
+    $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -f";
+    if (system ($cmd)) {
+        die "ERROR: Impossible to execute $cmd";
+    }
+    exit 1;
+}
 
 # more stringent test, will fail if number of detected nodes > expected nodes
 # this is a hard count and does not do any pattern matching - this is used to
 # notify users of renegade nodes in their OSCAR ganglia setup - failing this
 # test is not fatal
-hosts=`gstat | grep 'Hosts' | head -n 1 | awk {'print $2'}`
+$hosts = `gstat | grep 'Hosts' | head -n 1 | awk {'print \$2'}`;
 
-label="Ganglia node count test"
+OSCAR::Logger::oscar_log_section ("Ganglia node count test");
+$label = "Ganglia node count test";
 
-if [ $hosts -eq $numhosts ]
-then
-  $OSCAR_TESTPRINT --label "$label" -p
-else
-  echo -e "Ganglia expects to have $numhosts nodes but found $hosts nodes.  Please check to see\nif there are non-OSCAR cluster gmond(s) running on the same network/switch\nand correct the problem.  This test failure is not catastrophic, it\nis safe to ignore if \"Ganglia setup test\" succeeds." > $log
-  $OSCAR_TESTPRINT --label "$label" -f
-  exit 1
-fi
-exit 0
+if ($hosts eq $numhosts) {
+    $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -p";
+    if (system ($cmd)) {
+        die "ERROR: Impossible to execute $cmd";
+    }
+} else {
+    OSCAR::Logger::oscar_log_subsection ("Ganglia expects to have $numhosts nodes but found $hosts nodes.  Please check to see\nif there are non-OSCAR cluster gmond(s) running on the same network/switch\nand correct the problem.  This test failure is not catastrophic, it\nis safe to ignore if \"Ganglia setup test\" succeeds.");
+    $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -f";
+    if (system ($cmd)) {
+        die "ERROR: Impossible to execute $cmd";
+    }
+    exit 1;
+}
+
+exit 0;

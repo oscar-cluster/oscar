@@ -92,6 +92,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.0.10-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2010-01-04T16:03:05-05:00">
+        <item>Convert the test_user script to Perl to ease maintenance.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.0.9-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-10-27T02:05:44-05:00">
         <item>Clean up the edit_ganglia_conf script.</item>
