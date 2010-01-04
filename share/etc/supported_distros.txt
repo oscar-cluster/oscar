@@ -12,6 +12,7 @@
 #          a repo for the distro.
 
 [unstable]
+ubuntu-910-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+karmic+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+etch+/ distro:http://us.archive.ubuntu.com/ubuntu/+karmic-updates+main+universe+multiverse
 scientific_linux-5-i386 = distro:http://ftp.scientificlinux.org/linux/scientific/54/i386/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
 redhat-el-5-i386 = distro:file:/tftpboot/distro/redhat-el-5-i386 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
 redhat-el-5-x86_64 = distro:file:/tftpboot/distro/redhat-el-5-x86_64 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
@@ -27,6 +28,20 @@ debian-4-i386 = distro:http://ftp.us.debian.org/debian/+etch+main oscar:http://b
 debian-5-x86_64 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+lenny+/
 debian-5-i386 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-i386/+lenny+/
 suse-10-i386 = distro:http://download.opensuse.org/distribution/10.3/repo/oss/suse/ oscar:http://bison.csm.ornl.gov/repos/unstable/suse-10-i386
+
+[6.0.5]
+scientific_linux-5-i386 = distro:http://ftp.scientificlinux.org/linux/scientific/54/i386/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
+redhat-el-5-i386 = distro:file:/tftpboot/distro/redhat-el-5-i386 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
+redhat-el-5-x86_64 = distro:file:/tftpboot/distro/redhat-el-5-x86_64 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
+centos-5-x86_64 = distro:http://mirror.centos.org/centos/5.4/os/x86_64/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64 distro:http://mirror.centos.org/centos/5.4/extras/x86_64/
+centos-5-i386 = distro:http://mirror.centos.org/centos/5.4/os/i386/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386 distro:http://mirror.centos.org/centos/5.4/extras/i386/
+ubuntu-904-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+jaunty+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+etch+/ distro:http://us.archive.ubuntu.com/ubuntu/+jaunty-updates+main+universe+multiverse
+ubuntu-804-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/ distro:http://us.archive.ubuntu.com/ubuntu/+hardy-updates+main+universe+multiverse
+ubuntu-804-i386 = distro:http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/ distro:http://us.archive.ubuntu.com/ubuntu/+hardy-updates+main+universe+multiverse
+debian-4-x86_64 = distro:http://ftp.us.debian.org/debian/+etch+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/+etch+/
+debian-4-i386 = distro:http://ftp.us.debian.org/debian/+etch+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/
+debian-5-x86_64 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+lenny+/
+debian-5-i386 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-i386/+lenny+/
 
 [6.0.4]
 centos-5-x86_64 http://isoredirect.centos.org/centos/5.3/os/x86_64/ http://bison.csm.ornl.gov/repos/rhel-5-x86_64
