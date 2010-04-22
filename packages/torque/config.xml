@@ -32,7 +32,7 @@
       <pkg>torque-oscar-gui</pkg>
       <pkg>torque-oscar-mom</pkg>
       <pkg>torque-oscar-client</pkg>
-      <pkg>torque-modulefile</pkg>
+      <pkg>torque-oscar-modulefile</pkg>
       <pkg>torque-oscar-scheduler</pkg>
     </requires>
     <requires>
@@ -52,7 +52,7 @@
       <pkg>torque-oscar</pkg>
       <pkg>torque-oscar-mom</pkg>
       <pkg>torque-oscar-client</pkg>
-      <pkg>torque-modulefile</pkg>
+      <pkg>torque-oscar-modulefile</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
