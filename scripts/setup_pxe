@@ -38,6 +38,7 @@ BEGIN {
 }
 
 use strict;
+use Switch;
 use vars qw($config);
 use lib "/usr/lib/systeminstaller";
 use lib "/usr/lib/systemconfig";
@@ -189,26 +190,41 @@ if (scalar (@result) == 0) {
 my $node_ref = pop @result;
 my $ip = $$node_ref{ip};
 my $pxelinux_dir = "/usr/lib/syslinux"; # default directory containing pxelinux.0
+my $pxelinux_bin = "pxelinux.0"; # default binary name for pxelinux.0 boot code.
 
 if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
-# Mandriva is now shipping the equivalent of pxelinux.0 as linux.0, installed
-# by the package pxelinux in a different path. We differenciate, here, the
-# first steps of this section for Mandriva distros and the others.
-    if (-e "/etc/mandriva-release") {
-	verbose("Getting linux.0.");
-	copy("/var/lib/tftpboot/X86PC/linux/linux.0", "/tftpboot/pxelinux.0") or
-	croak("Unable to copy \"linux.0\" file to /tftpboot.");
-    } else {
-	$pxelinux_dir = "/usr/share/syslinux" if ($is_suse);
-	verbose("Getting pxelinux.0.");
-        copy("$pxelinux_dir/pxelinux.0", "/tftpboot/pxelinux.0") or 
-        croak("Unable to copy \"pxelinux.0\" file to /tftpboot.");
+    # GV: We should use OS_Setting here
+    switch ($os->{'distro'}) {
+        case "centos" {
+            $pxelinux_dir = "/usr/share/syslinux";
+            $pxelinux_bin = "pxelinux.0"; 
+        }
+        case "rhel" {
+            $pxelinux_dir = "/usr/share/syslinux";
+            $pxelinux_bin = "pxelinux.0";
+        }
+        case "suse" {
+            $pxelinux_dir = "/usr/share/syslinux";
+            $pxelinux_bin = "pxelinux.0";
+        }
+        case "mandriva" {
+            $pxelinux_dir = "/var/lib/tftpboot/X86PC/linux";
+            $pxelinux_bin = "linux.0";
+        }
+        else {
+            $pxelinux_dir = "/usr/lib/syslinux";
+            $pxelinux_bin = "pxelinux.0";
+        }
     }
+
+    verbose("Getting $pxelinux_bin.");
+    copy("$pxelinux_dir/$pxelinux_bin", "/tftpboot/pxelinux.0") or
+        croak("ERROR: Unable to copy \"$pxelinux_bin\" file to /tftpboot.");
 
     verbose("Copying default pxelinux.cfg file");
     copy("/etc/systemimager/pxelinux.cfg/syslinux.cfg", 
          "$netboot_cfg_d/default") 
-        or croak("Unable to copy \"default\" file to $netboot_cfg_d.");
+        or croak("ERROR: Unable to copy \"default\" file to $netboot_cfg_d.");
 
     # SystemImager supports putting local configuration in floppy disk, however,
     # OSCAR does not support this and when installing on systems without floppy
@@ -216,17 +232,17 @@ if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     # SKIP_LOCAL_CFG prevents this from happening.
     verbose("Updating $netboot_cfg_d/default file to skip local.cfg and support si_monitor.");
     if ( system("sed 's|root=/dev/ram|root=/dev/ram SKIP_LOCAL_CFG=y MONITOR_SERVER=$ip MONITOR_CONSOLE=yes|g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
-      croak("Unable to update /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");
+      croak("ERROR: Unable to update /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");
     }
 
     if (defined $install_mode && $install_mode eq "systemimager-bt") {
       verbose("Updating $netboot_cfg_d/default to support $install_mode.");
       if ( system("sed 's|root=/dev/ram|root=/dev/ram BITTORRENT=y|g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
-        croak("Unable to update $netboot_cfg_d/default to support $install_mode.");
+        croak("ERROR: Unable to update $netboot_cfg_d/default to support $install_mode.");
       } 
     } else {
       if ( system("sed 's| BITTORRENT=y||g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
-        croak("Unable to remove BITTORRENT kernel append from $netboot_cfg_d/default.");
+        croak("ERROR: Unable to remove BITTORRENT kernel append from $netboot_cfg_d/default.");
       }
     }
 
