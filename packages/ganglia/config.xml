@@ -29,9 +29,9 @@
       <filters>
         <dist>fc</dist>
       </filters>
-      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
-      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
-      <pkg version=">=3.0.6" >ganglia-web</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-gmetad</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-gmond</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-web</pkg>
       <pkg>php-gd</pkg>
       <pkg>php-common</pkg>
     </requires>
@@ -40,36 +40,36 @@
         <dist>ydl</dist>
         <dist>rhel</dist>
       </filters>
-      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
-      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
-      <pkg version=">=3.0.6" >ganglia-web</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-gmetad</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-gmond</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-web</pkg>
       <pkg>php-gd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>sles</dist>
       </filters>
-      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
-      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
-      <pkg version=">=3.0.6" >ganglia-web</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-gmetad</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-gmond</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-web</pkg>
       <pkg>php4-gd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>suse</dist>
       </filters>
-      <pkg version=">=3.0.6" >ganglia-gmetad</pkg>
-      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
-      <pkg version=">=3.0.6" >ganglia-web</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-gmetad</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-gmond</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-web</pkg>
       <pkg>php5-gd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>debian</dist>
       </filters>
-      <pkg version=">=3.0.6" >gmetad</pkg>
-      <pkg version=">=3.0.6" >ganglia-monitor</pkg>
-      <pkg version=">=3.0.6" >libganglia1</pkg>
+      <pkg version="3.0.6" rel=">=" >gmetad</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-monitor</pkg>
+      <pkg version="3.0.6" rel=">=" >libganglia1</pkg>
     </requires>
   </serverDeps>
   <clientDeps>
@@ -81,18 +81,23 @@
         <dist>sles</dist>
         <dist>suse</dist>
       </filters>
-      <pkg version=">=3.0.6" >ganglia-gmond</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-gmond</pkg>
     </requires>
     <requires>
       <filters>
         <dist>debian</dist>
       </filters>
-      <pkg version=">=3.0.6" >ganglia-monitor</pkg>
+      <pkg version="3.0.6" rel=">=" >ganglia-monitor</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="3.0.10-1">
+    <versionEntry version="3.0.11-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2010-04-21T13:33:05+02:00">
+        <item>Convert the test_user script to Perl to ease maintenance.</item>
+      </changelogEntry>
+    </versionEntry>
+     <versionEntry version="3.0.10-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2010-01-04T16:03:05-05:00">
         <item>Convert the test_user script to Perl to ease maintenance.</item>
       </changelogEntry>
