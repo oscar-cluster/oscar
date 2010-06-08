@@ -294,6 +294,26 @@ foreach my $image (@BASES) {
     if (system ($cmd)) {
         die "ERROR: Impossible to execute $cmd";
     }
+
+    # updating the ssh configuration in the image
+    my $image_ssh_config_file = "$image/etc/ssh_config";
+    $pos = OSCAR::FileUtils::line_in_file ("GSSAPIAuthentication yes",
+                                           $image_ssh_configfile);
+    if ($pos != -1) {
+        if (OSCAR::FileUtils::replace_line_in_file ($image_ssh_configfile,
+                                                    $pos,
+                                                    "GSSAPIAuthentication no")){
+                die "ERROR: Impossible to add \"GSSAPIAuthentication\" to ".
+                    $image_ssh_configfile;
+        } else {
+            if (OSCAR::FileUtils::add_line_to_file_without_duplication (
+                "GSSAPIAuthentication no\n",
+                $image_ssh_configfile)) {
+                    die "ERROR: Impossible to add \"GSSAPIAuthentication no\" ".
+                        "to $image_ssh_configfile";
+            }
+        }
+    }
 }
 
 exit 0
