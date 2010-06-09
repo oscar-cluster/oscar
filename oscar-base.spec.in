@@ -120,6 +120,7 @@ Libraries for OSCAR clustering base package.
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
 Requires: %{name}-base-lib == %{version}-%{release}
+Requires: syslinux
 AutoReqProv: no
 %description -n oscar-base-scripts
 Scripts for OSCAR clustering base package.
