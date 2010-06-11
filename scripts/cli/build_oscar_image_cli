@@ -181,6 +181,23 @@ sub add_image_build
 		return 1;
 	}
 
+    my $script = "/usr/sbin/si_mkautoinstallscript";
+    if (! -f $script) {
+        carp "ERROR: $script not available, is SystemImager installed?";
+        return 1;
+    }
+    my $cmd = "$script -quiet --autodetect-disks -image $vars{imgname} -force ".
+              "-ip-assignment $vars{ipmeth} -post-install $vars{piaction}";
+    # my $cmd = $main::config->mkaiscript . " -quiet --autodetect-disks -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
+    
+    $cmd = $cmd . " -iseries-vdisk=$vars{vdiskdev}" if ( $vars{vdiskdev} =~ (/\/dev\/[a-zA-Z]*/) );
+    
+    print "Running: $cmd ... ";
+    if( system($cmd) ) {
+        carp("ERROR: Impossible to execute $cmd");
+        return 1;
+    }
+
 	return 0;
 }
 

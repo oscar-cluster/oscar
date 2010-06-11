@@ -1,5 +1,7 @@
 6.0.6 (not yet released):
 - Update OPKG OpenMPI to 1.3.0.
+- [Ticket #549] Create the .master script for SystemImager for images created
+using the CLI.
 - [Ticket #586] Fix problem when using ssh -v to connect to clients.
 - [Ticket #591] Add a dependency to syslinux to the oscar-base-scripts RPM. 
 
