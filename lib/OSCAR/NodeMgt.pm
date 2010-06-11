@@ -309,6 +309,16 @@ sub delete_clients (@) {
         carp("ERROR: C3 configuration file update phase failed.");
         return -1;
     }
+
+    OSCAR::Logger::oscar_log_subsection "Updating the ssh known_hosts file";
+    $cmd = "/usr/bin/ssh-keygen -R";
+    foreach my $client (@clients) {
+        my $sub_cmd = "$cmd $client";
+        if (system ($cmd)) {
+            carp "ERROR: Impossible to execute $sub_cmd";
+            return -1;
+        }
+    }
                                                                             
     OSCAR::Logger::oscar_log_subsection "Re-starting client services on ".
                                         "remaining nodes";
