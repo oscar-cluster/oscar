@@ -5,6 +5,8 @@ using the CLI.
 - [Ticket #583] Remove hosts from SSH known_hosts when deleting clients.
 - [Ticket #586] Fix problem when using ssh -v to connect to clients.
 - [Ticket #591] Add a dependency to syslinux to the oscar-base-scripts RPM. 
+- Fix issues when detecting the OSCAR version.
+- Add the support of ubuntu-1004-x86_64.
 
 6.0.5:
 - Update Configurator to 1.0.5.
