@@ -266,8 +266,8 @@ sub get_list_of_supported_distros {
     # we get the OSCAR version
     my $version = OSCAR::Utils::get_oscar_version();
     if (!defined $version) {
-    	carp "ERROR: Impossible to get the OSCAR version";
-	return undef;
+        carp "ERROR: Impossible to get the OSCAR version";
+        return undef;
     }
 
     # we try to find a match

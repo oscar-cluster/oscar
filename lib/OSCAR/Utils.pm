@@ -127,11 +127,17 @@ sub get_oscar_version {
     } else {
         my $major = `less $path | grep major=`;
         my $minor = `less $path | grep minor=`;
+        my $release = `less $path | grep release=`;
         chomp ($major);
         chomp ($minor);
         $major =~ s/^major=//;
         $minor =~ s/^minor=//;
         $version=$major.".".$minor;
+        if (defined ($release)) {
+            chomp ($release);
+            $release =~ s/^release=//;
+            $version = "$version.$release";
+        }
     }
     return $version;
 }
