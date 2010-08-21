@@ -1,3 +1,9 @@
+oscar (6.0.6-1) lucid; urgency=low
+
+  * New upstream version. 
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Sat, 21 Aug 2010 17:57:54 -0400
+
 oscar (6.0.5-1) karmic; urgency=low
 
   * New upstream version.
