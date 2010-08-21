@@ -60,9 +60,10 @@ if ($verbose) {
 my $errors = 0;
 my @failed_opkgs;
 
+# We currently do not assume that getting the number of procs is a fatal
+# problem
 if (get_numproc()) {
-    carp "ERROR: Impossible to get proc number";
-    $errors++;
+    warn "WARNING: Impossible to get proc number";
 }
 
 # This makes sure existing nodes have the latest /etc/hosts. 
