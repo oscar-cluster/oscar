@@ -296,7 +296,7 @@ foreach my $image (@BASES) {
     }
 
     # updating the ssh configuration in the image
-    my $image_ssh_configfile = "$image/etc/ssh_config";
+    my $image_ssh_configfile = "$image/etc/ssh/ssh_config";
     $pos = OSCAR::FileUtils::line_in_file ("GSSAPIAuthentication yes",
                                            $image_ssh_configfile);
     if ($pos != -1) {
