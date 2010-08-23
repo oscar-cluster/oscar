@@ -311,6 +311,7 @@ foreach my $nic_ref (@nics){
     my $nic = $$nic_ref{name};
     $$database_nics_ref{$nic} = $nic_ref;
 }
+
 #die "$0: cannot read current database nic records for node $node_name\n"
 #    if ! defined $database_networks_ref;
 OSCAR::Utils::print_hash( "", "$0: database nics for node $node_name", $database_nics_ref ) 

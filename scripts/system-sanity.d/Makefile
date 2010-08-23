@@ -2,7 +2,7 @@ DESTDIR=
 
 SCRIPTS := debrepo-check.pl display-check.pl network-check.pl \
 		selinux-check.pl ssh-check.pl su-check.pl tftpboot-check.pl \
-		yum-check.pl
+		yum-check.pl hostfile-check.pl
 SUBDIRS := 
 
 #doc:

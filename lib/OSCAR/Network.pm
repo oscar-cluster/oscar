@@ -320,7 +320,7 @@ sub update_hosts ($) {
             $short=undef;
         }
     }
-    my @aliases=qw(oscar_server nfs_oscar pbs_oscar);
+    my @aliases = qw(oscar_server nfs_oscar pbs_oscar);
     open(IN,"<$backup_file") 
         or (carp "ERROR: Impossible to open $backup_file", return -1);
     open(OUT,">/etc/hosts") 
@@ -359,7 +359,7 @@ sub update_hosts ($) {
         } else {
             # Not a line we're interested in changing
             print OUT $line."\n"; # mjc - 12/13/01
-        }
+       }
     }
     # If there wasn't a line there, add it now.
     if(!$found) {
@@ -373,6 +373,16 @@ sub update_hosts ($) {
 
     close(OUT);
     close(IN);
+
+    # We now check whether the new aliases are unique or not (they should!).
+    foreach my $alias (@aliases) {
+        my $cmd = "grep $alias /etc/hosts";
+        my @res = `$cmd`;
+        if (scalar @res > 1) {
+            print "!!!WARNING!!! Several entries in /etc/hosts include $alias,".
+                  " please update your /etc/hosts file.\n";
+        }
+    }
 
     return 0;
 }
@@ -453,7 +463,7 @@ sub update_head_nic () {
     my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");
-    $cmd = "$binaries_path/set_node_nics --network";
+    $cmd = "$binaries_path/set_node_nics --networks";
     if ($ENV{OSCAR_VERBOSE} >= 5 && $ENV{OSCAR_VERBOSE} < 10) {
         $cmd .= " --verbose";
     } elsif ($ENV{OSCAR_VERBOSE} >= 10) {
@@ -466,29 +476,11 @@ sub update_head_nic () {
 
     OSCAR::Logger::oscar_log_subsection ("Headnode NIC data stored");
 
-    # The above two embeded scripts need to run before all the
-    # data for Packages and Packages related table are populated
-    # because the above tables contain the primary keys which
-    # will be used at the Packages and its related tables.
-    # (i.e., The Packages table and Packages related tables are
-    # dependent on the above tables(Clusters, Groups, Status, and
-    # Nodes) and they can not really insert any data before the
-    # above tables populate data and generate the primary key
-    # used by the Packages and its sub-tables.
-
-    #
-    # Now populate the Packages table with the info from the reachable
-    # repositories.
-    # TODO: Since this function is about storing network data, the following
-    # function should not be there.
-    #
-    $cmd = "$binaries_path/populate_oda_packages_table";
-    if ($ENV{OSCAR_VERBOSE} >= 5) {
-        $cmd .= " --debug";
-    }
-    $exit_status = system($cmd)/256;
-    if ($exit_status) {
-        carp ("ERROR: Couldn't populate packages table");
+    OSCAR::Logger::oscar_log_subsection ("Update /etc/hosts...");
+    my ($head_private_ip, $broadcast, $net) = interface2ip ($interface);
+    print "Head private IP: $head_private_ip\n";
+    if (update_hosts ($head_private_ip)) {
+        carp "ERROR: Impossible to update the /etc/hosts file";
         return -1;
     }
 

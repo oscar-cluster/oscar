@@ -39,6 +39,7 @@ use Carp;
 
 @EXPORT = qw(
             add_line_to_file_without_duplication
+            add_to_annoted_block
             download_file
             file_type
             get_line_in_file
@@ -48,9 +49,8 @@ use Carp;
             get_files_in_path
             line_in_file
             parse_xmlfile
-            replace_line_in_file
-            add_to_annoted_block
             remove_from_annoted_block
+            replace_block_in_file
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -349,6 +349,8 @@ sub generate_empty_xml_file ($$) {
     close (FILE);
     return 0;
 }
+
+sub add_line_to_file_at ($$$);
 
 sub add_line_to_file_at ($$$) {
     my ($file, $line, $pos) = @_;

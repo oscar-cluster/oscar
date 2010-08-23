@@ -31,8 +31,14 @@
 # - Nodes
 #
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::ConfigFile;
 use OSCAR::Database;
 use OSCAR::Database_generic;
 use OSCAR::oda;
@@ -139,6 +145,24 @@ foreach my $node_group_name ( "oscar_clients", "all", "Default_node" ) {
 if (OSCAR::Network::update_head_nic()) {
     die "ERROR: Impossible to store data about the head NIC used for cluster ".
         "deployment";
+}
+
+#
+# Now populate the Packages table with the info from the reachable
+# repositories.
+# TODO: Since this function is about storing network data, the following
+# function should not be there.
+#
+my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+                                                  undef,
+                                                  "OSCAR_SCRIPTS_PATH");
+my $cmd = "$binaries_path/populate_oda_packages_table";
+if ($ENV{OSCAR_VERBOSE} >= 5) {
+    $cmd .= " --debug";
+}
+my $exit_status = system($cmd)/256;
+if ($exit_status) {
+    die ("ERROR: Couldn't populate packages table");
 }
 
 # UNLOCKING FOR NEST.
