@@ -49,6 +49,8 @@ use Carp;
             line_in_file
             parse_xmlfile
             replace_line_in_file
+            add_to_annoted_block
+            remove_from_annoted_block
             );
 
 my $verbose = $ENV{OSCAR_VERBOSE};
@@ -345,6 +347,214 @@ sub generate_empty_xml_file ($$) {
     print FILE "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
     print FILE "<opt/>";
     close (FILE);
+    return 0;
+}
+
+sub add_line_to_file_at ($$$) {
+    my ($file, $line, $pos) = @_;
+
+    my $current_line = get_line_in_file ($file, $pos);
+    if (!defined $current_line) {
+        open (DAT, ">>$file");
+        print DAT "$line";
+        close (DAT);
+    } else {
+        if (add_line_to_file_at ($file, $current_line, $pos+1)) {
+            carp "ERROR: Impossible to add $current_line at $pos+1 in $file";
+            return -1;
+        }
+        if (replace_line_in_file ($file, $pos, $line)) {
+            carp "ERROR: Inpossible to replace line $pos in $file";
+            return -1;
+        }
+    }
+
+    return 0;   
+}
+
+sub remove_line_from_file_at ($$) {
+    my ($file, $pos) = @_;
+    my @lines;
+
+    # We get the content of the file and update it
+    open (DAT, $file) 
+        or (carp "ERROR: Impossible to open $file", return -1);
+    @lines = <DAT>;
+    close (DAT);
+    if (scalar (@lines) < $pos) {
+        # The line is not exist, we successfully exist
+        return 0;
+    }
+    delete $lines[$pos];
+
+    # We overwrite the file.
+    open (DAT, ">$file") or (carp "ERROR: Impossible to open $file", return -1);
+    for (my $i = 0; $i < scalar (@lines); $i++) {
+        print DAT $lines[$i];
+    }
+    close (DAT);
+
+    return 0;
+}
+
+sub replace_block_in_file ($$$) {
+    my ($file, $block_name, $data) = @_;
+
+    if (!defined $data || ref ($data) ne "ARRAY") {
+        carp "ERROR: Invalid block data";
+        return -1;
+    }
+
+    if (!defined $block_name) {
+        carp "ERROR: Undefined block name";
+        return -1;
+    }
+
+    if (!defined $file || ! -f $file) {
+        carp "ERROR: Invalid file";
+        return -1;
+    }
+
+    my $block_length = scalar (@$data);
+    my $block_pos_end = -1;
+    my $block_pos_begin = line_in_file ("# OSCAR block: $block_name", $file);
+
+    if ($block_pos_begin != -1) {
+        $block_pos_end = line_in_file ("# OSCAR block end: $block_name", $file);
+        if ($block_pos_end == -1) {
+            carp ("ERROR: Begining of block found but not the end");
+            return undef;
+        }
+
+        my $block_size = $block_pos_end - $block_pos_begin -1;
+        if (scalar (@$data) > ($block_size)) {
+            my $i;
+            my $diff_size = scalar (@$data) - $block_size;
+            for ($i = 0; $i < $block_size; $i++) {
+                my $l = OSCAR::Utils::trim ($data->[$i]);
+                replace_line_in_file ($file, $block_pos_begin+1+$i, $l);
+            }
+            for (my $j = 0; $j < $diff_size; $j++) {
+                add_line_to_file_at ($file, $data->[$i+$j], $block_pos_end+$j);
+            }
+        } elsif (scalar (@$data) == $block_size) {
+            for (my $i = 0; $i < $block_size; $i++) {
+                my $l = OSCAR::Utils::trim ($data->[$i]);
+                replace_line_in_file ($file, $block_pos_begin+1+$i, $l);
+            }
+        } else {
+            my $i;
+            for ($i = 0; $i < scalar (@$data); $i++) {
+                my $l = OSCAR::Utils::trim ($data->[$i]);
+                replace_line_in_file ($file, $block_pos_begin+1+$i, $l);
+            }
+            while ($i < $block_pos_end) {
+                remove_line_from_file_at ($file, $block_pos_begin+1+$i);
+                $i++;
+            }
+        }
+    } else {
+        open (DAT, ">>$file")
+            or (carp "ERROR: Impossible to open the file: $file.", return -1);
+        print DAT "# OSCAR block: $block_name\n";
+        for (my $i = 0; $i < scalar (@$data); $i++) {
+            print DAT $data->[$i]."\n" if defined ($data->[$i]);
+        }
+        print DAT "# OSCAR block end: $block_name\n";
+        close (DAT);
+    }
+
+    return 0;
+}
+
+sub find_block_from_file ($$) {
+    my ($file, $block_name) = @_;
+    my $block_pos_end = -1;
+    my @block_data = ();
+    my $block_pos_begin = line_in_file ("# OSCAR block: $block_name", $file);
+
+    if ($block_pos_begin != -1) {
+        $block_pos_end = line_in_file ("# OSCAR block end: $block_name", $file);
+        if ($block_pos_end == -1) {
+            carp ("ERROR: Begining of block found but not the end");
+            return undef;
+        }
+
+        my $line;
+        # We have now the begining and the end of the block
+        for (my $i = $block_pos_begin+1; $i < $block_pos_end; $i++) {
+            $line = get_line_in_file ($file, $i);
+            if (defined $line) {
+                push (@block_data, $line);
+            } 
+        }
+    }
+
+    return \@block_data;
+}
+
+sub add_to_annoted_block ($$$$) {
+    my ($file, $block_name, $line, $dup) = @_;
+    
+    my $data = find_block_from_file ($file, $block_name);
+#    if ((!defined $data) || (ref($data) ne "ARRAY")) {
+#        carp "ERROR: Impossible to get block $block_name from $file");
+#        return -1;
+#    }
+
+    require OSCAR::Utils;
+    if ($dup == 0) {
+        my $i = 0;
+        # We check if the line is already there
+        while (OSCAR::Utils::trim ($data->[$i]) ne OSCAR::Utils::trim ($line)
+               && $i < scalar (@$data)) {
+            $i++;
+        }
+        if (OSCAR::Utils::trim ($data->[$i]) eq OSCAR::Utils::trim ($line)) {
+            # The line is already there so we exit successfully
+            return 0;
+        }
+    }
+    push (@$data, "$line");
+
+    if (replace_block_in_file ($file, $block_name, $data)) {
+#        carp "ERROR: Impossible to replace block $block_name in $file");
+        return -1;
+    }
+
+    return 0;
+}
+
+sub remove_from_annoted_block ($$$) {
+    my ($file, $block_name, $line) = @_;
+
+    my $data = find_block_from_file ($file, $block_name);
+    if (!defined $data) {
+        # The block does not exist, we exit successfully.
+        return 0;
+    }
+
+    my $i = 0;
+    my $stop_loop = 0;
+    while ($stop_loop == 0) {
+        if (OSCAR::Utils::trim($data->[$i]) eq OSCAR::Utils::trim($line)) {
+            $stop_loop = 1;
+        } elsif ($i == scalar (@$data)) {
+            $stop_loop = 2;
+        } else {
+            $i++;
+        }
+    }
+
+    if ($stop_loop == 1) {
+        # We found the line in the block
+        delete $data->[$i];
+        if (replace_block_in_file ($file, $block_name, $data)) {
+#           carp "ERROR: Impossible to replace block $block_name in $file");
+            return -1;
+        }
+    } 
+
     return 0;
 }
 
