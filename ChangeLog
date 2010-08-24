@@ -1,5 +1,12 @@
 6.0.7 (not yet released):
+- Update ODA to 1.4.15.
+- Update PackMan to 3.2.0.
+- Update Selector to 1.2.6.
+- Update SystemInstaller to 2.4.11.
 - [Ticket #525] Improve the management of /etc/hosts on the headnode.
+- [Ticket #597] Bootstrapping now updates OPKGs data rather than duplicating
+the data for all OPKGs.
+- Fix the definition of base prereqs for Debian-based systems.
 
 6.0.6:
 - Update ODA to 1.4.14.
