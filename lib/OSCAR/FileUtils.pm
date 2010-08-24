@@ -42,6 +42,7 @@ use Carp;
             add_to_annoted_block
             download_file
             file_type
+            find_block_from_file
             get_line_in_file
             generate_empty_xml_file
             get_directory_content
@@ -187,6 +188,9 @@ sub line_in_file ($$) {
 sub replace_line_in_file ($$$) {
     my ($file, $line_number, $new_line) = @_;
 
+    if (!defined $new_line) {
+        return 0;
+    }
     chomp ($new_line);
     open (FILE, "$file")
         or (carp "ERROR: Impossible to open $file", return -1);
@@ -392,7 +396,9 @@ sub remove_line_from_file_at ($$) {
     # We overwrite the file.
     open (DAT, ">$file") or (carp "ERROR: Impossible to open $file", return -1);
     for (my $i = 0; $i < scalar (@lines); $i++) {
-        print DAT $lines[$i];
+        if (defined $lines[$i]) {
+            print DAT $lines[$i];
+        }
     }
     close (DAT);
 
@@ -417,7 +423,14 @@ sub replace_block_in_file ($$$) {
         return -1;
     }
 
-    my $block_length = scalar (@$data);
+    my $new_block_length = 0;
+    # The data array may have undefined elements so to get the size we need to 
+    # go through the array.
+    foreach my $elt (@$data) {
+        if (OSCAR::Utils::is_a_valid_string ($elt)) {
+            $new_block_length++;
+        }
+    } 
     my $block_pos_end = -1;
     my $block_pos_begin = line_in_file ("# OSCAR block: $block_name", $file);
 
@@ -429,30 +442,63 @@ sub replace_block_in_file ($$$) {
         }
 
         my $block_size = $block_pos_end - $block_pos_begin -1;
-        if (scalar (@$data) > ($block_size)) {
-            my $i;
-            my $diff_size = scalar (@$data) - $block_size;
-            for ($i = 0; $i < $block_size; $i++) {
-                my $l = OSCAR::Utils::trim ($data->[$i]);
-                replace_line_in_file ($file, $block_pos_begin+1+$i, $l);
+        if ($new_block_length > ($block_size)) {
+            my $i = 0;
+            my $written_elts = 0;
+            my $diff_size = $new_block_length - $block_size;
+            while ($written_elts < $block_size) {
+                if (OSCAR::Utils::is_a_valid_string ($data->[$i])) {
+                    my $l = OSCAR::Utils::trim ($data->[$i]);
+                    replace_line_in_file ($file,
+                                          ($block_pos_begin + 1 + $written_elts),
+                                          $l);
+                    $written_elts++;
+                }
+                $i++;
             }
-            for (my $j = 0; $j < $diff_size; $j++) {
-                add_line_to_file_at ($file, $data->[$i+$j], $block_pos_end+$j);
+            my $j = 0;
+            while ($written_elts < $new_block_length) {
+                if (OSCAR::Utils::is_a_valid_string ($data->[$i+$j])) {
+                    my $l = OSCAR::Utils::trim ($data->[$i+$j]);
+                    add_line_to_file_at ($file, 
+                                         $l,
+                                         ($block_pos_begin + 1 + $written_elts));
+                    $written_elts++;
+                }
+                $j++;
             }
-        } elsif (scalar (@$data) == $block_size) {
-            for (my $i = 0; $i < $block_size; $i++) {
-                my $l = OSCAR::Utils::trim ($data->[$i]);
-                replace_line_in_file ($file, $block_pos_begin+1+$i, $l);
+        } elsif ($new_block_length == $block_size) {
+            my $written_elts = 0;
+            my $i = 0;
+            while ($written_elts < $block_size) {
+                if (OSCAR::Utils::is_a_valid_string ($data->[$i])) {
+                    my $l = OSCAR::Utils::trim ($data->[$i]);
+                    replace_line_in_file ($file,
+                                          ($block_pos_begin + 1 + $written_elts),
+                                          $l);
+                    $written_elts++;
+                }
+                $i++;
             }
         } else {
-            my $i;
-            for ($i = 0; $i < scalar (@$data); $i++) {
-                my $l = OSCAR::Utils::trim ($data->[$i]);
-                replace_line_in_file ($file, $block_pos_begin+1+$i, $l);
-            }
-            while ($i < $block_pos_end) {
-                remove_line_from_file_at ($file, $block_pos_begin+1+$i);
+            my $i = 0;
+            my $written_elts = 0;
+            while ($written_elts < $new_block_length) {
+                if (OSCAR::Utils::is_a_valid_string ($data->[$i])) {
+                    my $l = OSCAR::Utils::trim ($data->[$i]);
+                    if ($l ne "") {
+                        replace_line_in_file ($file,
+                                              ($block_pos_begin + 1 + $written_elts),
+                                              $l);
+                        $written_elts++;
+                    }
+                }
                 $i++;
+            }
+            my $pos = $block_pos_begin + 1 + $written_elts;
+            while ($written_elts < $block_size) {
+                remove_line_from_file_at ($file, $pos);
+                $written_elts++;
             }
         }
     } else {
@@ -460,7 +506,8 @@ sub replace_block_in_file ($$$) {
             or (carp "ERROR: Impossible to open the file: $file.", return -1);
         print DAT "# OSCAR block: $block_name\n";
         for (my $i = 0; $i < scalar (@$data); $i++) {
-            print DAT $data->[$i]."\n" if defined ($data->[$i]);
+            print DAT $data->[$i]."\n" 
+                if (OSCAR::Utils::is_a_valid_string ($data->[$i]));
         }
         print DAT "# OSCAR block end: $block_name\n";
         close (DAT);
@@ -469,58 +516,58 @@ sub replace_block_in_file ($$$) {
     return 0;
 }
 
-sub find_block_from_file ($$) {
-    my ($file, $block_name) = @_;
+sub find_block_from_file ($$$) {
+    my ($file, $block_name, $res_ref) = @_;
     my $block_pos_end = -1;
-    my @block_data = ();
     my $block_pos_begin = line_in_file ("# OSCAR block: $block_name", $file);
 
     if ($block_pos_begin != -1) {
         $block_pos_end = line_in_file ("# OSCAR block end: $block_name", $file);
         if ($block_pos_end == -1) {
             carp ("ERROR: Begining of block found but not the end");
-            return undef;
+            return -1;
         }
 
         my $line;
         # We have now the begining and the end of the block
         for (my $i = $block_pos_begin+1; $i < $block_pos_end; $i++) {
             $line = get_line_in_file ($file, $i);
-            if (defined $line) {
-                push (@block_data, $line);
+            if (OSCAR::Utils::is_a_valid_string ($line)) {
+                push (@$res_ref, $line);
             } 
         }
     }
 
-    return \@block_data;
+    return 0;
 }
 
 sub add_to_annoted_block ($$$$) {
     my ($file, $block_name, $line, $dup) = @_;
     
-    my $data = find_block_from_file ($file, $block_name);
-#    if ((!defined $data) || (ref($data) ne "ARRAY")) {
-#        carp "ERROR: Impossible to get block $block_name from $file");
-#        return -1;
-#    }
+    my @data = ();
+
+    if (find_block_from_file ($file, $block_name, \@data)) {
+        carp "ERROR: Impossible to get block $block_name from $file";
+        return -1;
+    }
 
     require OSCAR::Utils;
     if ($dup == 0) {
         my $i = 0;
         # We check if the line is already there
-        while (OSCAR::Utils::trim ($data->[$i]) ne OSCAR::Utils::trim ($line)
-               && $i < scalar (@$data)) {
+        while (OSCAR::Utils::trim ($data[$i]) ne OSCAR::Utils::trim ($line)
+               && $i < scalar (@data)) {
             $i++;
         }
-        if (OSCAR::Utils::trim ($data->[$i]) eq OSCAR::Utils::trim ($line)) {
+        if (OSCAR::Utils::trim ($data[$i]) eq OSCAR::Utils::trim ($line)) {
             # The line is already there so we exit successfully
             return 0;
         }
     }
-    push (@$data, "$line");
+    push (@data, "$line");
 
-    if (replace_block_in_file ($file, $block_name, $data)) {
-#        carp "ERROR: Impossible to replace block $block_name in $file");
+    if (replace_block_in_file ($file, $block_name, \@data)) {
+        carp "ERROR: Impossible to replace block $block_name in $file";
         return -1;
     }
 
@@ -530,8 +577,8 @@ sub add_to_annoted_block ($$$$) {
 sub remove_from_annoted_block ($$$) {
     my ($file, $block_name, $line) = @_;
 
-    my $data = find_block_from_file ($file, $block_name);
-    if (!defined $data) {
+    my @data = ();
+    if (find_block_from_file ($file, $block_name, \@data)) {
         # The block does not exist, we exit successfully.
         return 0;
     }
@@ -539,9 +586,9 @@ sub remove_from_annoted_block ($$$) {
     my $i = 0;
     my $stop_loop = 0;
     while ($stop_loop == 0) {
-        if (OSCAR::Utils::trim($data->[$i]) eq OSCAR::Utils::trim($line)) {
+        if (OSCAR::Utils::trim($data[$i]) eq OSCAR::Utils::trim($line)) {
             $stop_loop = 1;
-        } elsif ($i == scalar (@$data)) {
+        } elsif ($i == scalar (@data)) {
             $stop_loop = 2;
         } else {
             $i++;
@@ -550,9 +597,9 @@ sub remove_from_annoted_block ($$$) {
 
     if ($stop_loop == 1) {
         # We found the line in the block
-        delete $data->[$i];
-        if (replace_block_in_file ($file, $block_name, $data)) {
-#           carp "ERROR: Impossible to replace block $block_name in $file");
+        delete $data[$i];
+        if (replace_block_in_file ($file, $block_name, \@data)) {
+            carp "ERROR: Impossible to replace block $block_name in $file";
             return -1;
         }
     } 

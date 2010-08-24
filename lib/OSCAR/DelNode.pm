@@ -1,4 +1,3 @@
-package OSCAR::DelNode;
 
 #   $Id$
 
@@ -157,8 +156,33 @@ sub delnodes {
     } else {
         &delete_client_node_opkgs(@clients);
         OSCAR::Tk::done_window($window,"Clients deleted.");
-        return 1;
     }
+
+    # Update the /etc/hosts file
+    my @data = ();
+    if (OSCAR::FileUtils::find_block_from_file ("/etc/hosts", 
+                                                "OSCAR hosts",
+                                                \@data)) {
+        carp "ERROR: Impossible to extract OSCAR block from /etc/hosts";
+        return 0;
+    }
+    for (my $i = 0; $i < scalar (@data); $i++) {
+        foreach my $c (@clients) {
+            if (defined $c && defined $data[$i]) {
+                if ($data[$i] =~ m/$c/) {
+                    delete $data[$i];
+                }
+            }
+        }
+    }
+    if (OSCAR::FileUtils::replace_block_in_file ("/etc/hosts",
+                                                 "OSCAR hosts",
+                                                 \@data)) {
+        carp "ERROR: Impossible to replace OSCAR hosts block in /etc/hosts";
+        return 0;
+    }
+    
+    return 1;
 }
 
 sub selectallnodes {

@@ -314,7 +314,7 @@ sub delete_clients (@) {
     $cmd = "/usr/bin/ssh-keygen -R";
     foreach my $client (@clients) {
         my $sub_cmd = "$cmd $client";
-        if (system ($cmd)) {
+        if (system ($sub_cmd)) {
             carp "ERROR: Impossible to execute $sub_cmd";
             return -1;
         }
