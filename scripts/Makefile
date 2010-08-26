@@ -7,7 +7,7 @@ SCRIPTS := create_and_populate_basic_node_info distro-query get_arch \
 		ping_clients post_clients post_install post_rpm_install prepare_repos \
         prep_oscar_repos repo-update set_node_nics set_oscar_interface \
 		setup_pxe ssh_install system-sanity update_live_macs wizard_prep \
-		c3_conf_manager oscar-updater
+		oscar-updater
 SUBDIRS := cli system-sanity.d oscar-updater.d
 
 doc:
