@@ -181,6 +181,10 @@ sub delnodes {
         carp "ERROR: Impossible to replace OSCAR hosts block in /etc/hosts";
         return 0;
     }
+
+    # TODO: We should update the c3 config file.
+
+    # TODO: We should update the DHCP config file and the SIS config files
     
     return 1;
 }
