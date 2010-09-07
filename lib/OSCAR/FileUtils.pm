@@ -1,6 +1,6 @@
 package OSCAR::FileUtils;
 
-# Copyright (C) 2007-2009 Oak Ridge National Laboratory
+# Copyright (C) 2007-2010 Oak Ridge National Laboratory
 #                         Geoffroy Vallee <valleegr at ornl dot gov>
 #                         All rights reserved.
 #
