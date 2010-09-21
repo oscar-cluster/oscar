@@ -33,38 +33,42 @@ esac
 if test "$srcfile" = ""; then
     option="--help"
 else
-    OSCAR_MAJOR_VERSION="`cat $srcfile | egrep '^major=' | cut -d= -f2`"
-    OSCAR_MINOR_VERSION="`cat $srcfile | egrep '^minor=' | cut -d= -f2`"
-    OSCAR_RELEASE_VERSION="`cat $srcfile | egrep '^release=' | cut -d= -f2`"
-    OSCAR_GREEK_VERSION="`cat $srcfile | egrep '^greek=' | cut -d= -f2`"
-    OSCAR_WANT_SVN="`cat $srcfile | egrep '^want_svn=' | cut -d= -f2`"
-    OSCAR_SVN_R="`cat $srcfile | egrep '^svn_r=' | cut -d= -f2`"
-    if test "$OSCAR_RELEASE_VERSION" != "0" -a "$OSCAR_RELEASE_VERSION" != ""; then
-	OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION.$OSCAR_RELEASE_VERSION"
+    if [ ! -e $srcfile ]; then
+        option="--help"
     else
-	OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION"
-    fi
-
-    OSCAR_VERSION="${OSCAR_VERSION}${OSCAR_GREEK_VERSION}"
-
-    OSCAR_BASE_VERSION="$OSCAR_VERSION"
-
-    OSCAR_DATE=`date '+%Y%m%d'`
-
-    if test "$OSCAR_WANT_SVN" = "1" -a "$OSCAR_NEED_SVN" = "1" ; then
-        if test "$OSCAR_SVN_R" = "-1"; then
-            if test -d .svn; then
-                ver="r`svnversion .`"
-            else
-                ver="svn`date '+%m%d%Y'`"
-            fi
-            OSCAR_SVN_R="$ver"
+        OSCAR_MAJOR_VERSION="`cat $srcfile | egrep '^major=' | cut -d= -f2`"
+        OSCAR_MINOR_VERSION="`cat $srcfile | egrep '^minor=' | cut -d= -f2`"
+        OSCAR_RELEASE_VERSION="`cat $srcfile | egrep '^release=' | cut -d= -f2`"
+        OSCAR_GREEK_VERSION="`cat $srcfile | egrep '^greek=' | cut -d= -f2`"
+        OSCAR_WANT_SVN="`cat $srcfile | egrep '^want_svn=' | cut -d= -f2`"
+        OSCAR_SVN_R="`cat $srcfile | egrep '^svn_r=' | cut -d= -f2`"
+        if test "$OSCAR_RELEASE_VERSION" != "0" -a "$OSCAR_RELEASE_VERSION" != ""; then
+	        OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION.$OSCAR_RELEASE_VERSION"
+        else
+	        OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION"
         fi
-	OSCAR_VERSION="${OSCAR_VERSION}$OSCAR_SVN_R"
-    fi
 
-    if test "$option" = ""; then
-	option="--full"
+        OSCAR_VERSION="${OSCAR_VERSION}${OSCAR_GREEK_VERSION}"
+
+        OSCAR_BASE_VERSION="$OSCAR_VERSION"
+
+        OSCAR_DATE=`date '+%Y%m%d'`
+
+        if test "$OSCAR_WANT_SVN" = "1" -a "$OSCAR_NEED_SVN" = "1" ; then
+            if test "$OSCAR_SVN_R" = "-1"; then
+                if test -d .svn; then
+                    ver="r`svnversion .`"
+                else
+                    ver="svn`date '+%m%d%Y'`"
+                fi
+                OSCAR_SVN_R="$ver"
+            fi
+	        OSCAR_VERSION="${OSCAR_VERSION}$OSCAR_SVN_R"
+        fi
+
+        if test "$option" = ""; then
+	        option="--full"
+        fi
     fi
 fi
 
