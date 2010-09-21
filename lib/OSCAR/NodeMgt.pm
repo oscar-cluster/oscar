@@ -46,7 +46,6 @@ use OSCAR::Network;
 use OSCAR::Package;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
-use SIS::NewDB;
 use Data::Dumper;
 use vars qw(@EXPORT);
 use base qw(Exporter);
@@ -136,6 +135,7 @@ sub del_ip_node ($) {
         return -1;
     }
 
+    require SIS::NewDB;
     my %h = (devname=>"eth0",client=>$node);
     my $adapter = SIS::NewDB::list_adapter(\%h);
     if (!defined ($adapter) && scalar (@$adapter) != 1) {
@@ -336,6 +336,9 @@ sub delete_clients (@) {
     }
 
     OSCAR::Logger::oscar_log_subsection "Running mkdhcpconf";
+    # We make sure the DHCP server is running otherwise mkdhcpconf will fail
+    OSCAR::SystemServices::system_service (OSCAR::SystemServicesDefs::DHCP(),
+            OSCAR::SystemServicesDefs::START());
     my ($ip, $broadcast, $netmask) = OSCAR::Network::interface2ip($interface);
     $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
     if ($install_mode eq "systemimager-multicast") {

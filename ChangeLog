@@ -6,6 +6,8 @@
 - [Ticket #451] Clean-up the /etc/systemimager/flamethrower.conf configuration 
 file when a failure occurs during the image creation.
 - [Ticket #525] Improve the management of /etc/hosts on the headnode.
+- [Ticket #526] Improve system sanity when deleting clients: DHCP is now
+correctly handled. 
 - [Ticket #597] Bootstrapping now updates OPKGs data rather than duplicating
 the data for all OPKGs.
 - Fix the definition of base prereqs for Debian-based systems.
