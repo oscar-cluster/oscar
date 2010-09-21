@@ -726,6 +726,36 @@ sub image_cleanup ($) {
     return 0;
 }
 
+
+# Clean up the SystemImager configuration files. For instance, this is used when
+# the creation of an image fails: config files are updated by SystemImager so if
+# the failure happens during the OSCAR part of the image creation, we must clean
+# clean up the configuration files.
+#
+# Input: image, image name.
+# Return: 0 if success, -1 else.
+sub cleanup_sis_configfile ($) {
+    my $image = shift;
+
+    if (!OSCAR::Utils::is_a_valid_string ($image)) {
+        carp "ERROR: Invalid argument";
+        return -1;
+    }
+
+    print ("Cleaning up $image\n");
+    my $flamethrower_conf = "/etc/systemimager/flamethrower.conf";
+    require SystemImager::Common;
+    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, 
+                                                        $image) or
+        (carp "ERROR: Impossible to update the flamethrower config file");
+
+    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, 
+                                                        "override_$image") or
+        (carp "ERROR: Impossible to update the flamethrower config file");
+
+    return 0;
+}
+
 ################################################################################
 # Create a basic image.                                                        #
 #                                                                              #
@@ -759,6 +789,7 @@ sub create_image ($%) {
     oscar_log_subsection "Executing command: $cmd" if $verbose;
     if (system ($cmd)) {
         carp "ERROR: Impossible to create the image ($cmd)\n";
+        cleanup_sis_configfile ($image);
         return -1;
     }
 
@@ -768,6 +799,7 @@ sub create_image ($%) {
                       "architecture" => "$vars{arch}");
     if (OSCAR::Database::set_images (\%image_data, undef, undef) != 1) {
         carp "ERROR: Impossible to store image data into ODA";
+        cleanup_sis_configfile ($image);
         return -1;
     }
 
@@ -779,11 +811,13 @@ sub create_image ($%) {
     my $os = OSCAR::OCA::OS_Detect::open(chroot=>"$image_path");
     if (!defined $os) {
         carp "ERROR: Impossible to detect the distro id for $image_path";
+        cleanup_sis_configfile ($image);
         return -1;
     }
     my $distro_id = OSCAR::PackagePath::os_distro_string ($os);
     if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
         carp "ERROR: Impossible to get the distro ID based on the detected os";
+        cleanup_sis_configfile ($image);
         return -1;
     }
     # If we do not have yet selection data for some OPKGs, we assign the default
@@ -801,6 +835,7 @@ sub create_image ($%) {
                 if ($rc) {
                     carp "ERROR: Impossible to install opkg-$opkg-client in ".
                          "$image_path (rc: $rc)";
+                    cleanup_sis_configfile ($image);
                     return -1;
                 }
             }
@@ -811,18 +846,21 @@ sub create_image ($%) {
     $cmd = "mksidisk -A --name $vars{imgname} --file $vars{diskfile}";
     if( system($cmd) ) {
         carp("ERROR: Couldn't run command $cmd");
+        cleanup_sis_configfile ($image);
         return -1;
     }
 
     # Now we execute the post image creation actions.
     if (postimagebuild (\%vars)) {
         carp "ERROR: Impossible to run postimagebuild";
+        cleanup_sis_configfile ($image);
         return -1;
     }
 
     # We make sure everything is fine with the image
     if (image_cleanup (\%vars)) {
         carp "ERROR: Impossible to cleanup the image after creation";
+        cleanup_sis_configfile ($image);
         return -1;
     }
 
@@ -1226,6 +1264,8 @@ sub export_image ($$) {
     }
     return 0;
 }
+
+cleanup_sis_configfile ("oscarimage1-gv");
 
 1;
 

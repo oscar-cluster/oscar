@@ -3,6 +3,8 @@
 - Update PackMan to 3.2.0.
 - Update Selector to 1.2.6.
 - Update SystemInstaller to 2.4.11.
+- [Ticket #451] Clean-up the /etc/systemimager/flamethrower.conf configuration 
+file when a failure occurs during the image creation.
 - [Ticket #525] Improve the management of /etc/hosts on the headnode.
 - [Ticket #597] Bootstrapping now updates OPKGs data rather than duplicating
 the data for all OPKGs.
