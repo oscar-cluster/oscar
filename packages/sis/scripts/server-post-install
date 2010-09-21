@@ -33,6 +33,8 @@ use OSCAR::Database;
 use OSCAR::Distro;
 use OSCAR::Opkg;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
 my $default_install_mode = "systemimager-rsync";
 my $install_mode = OSCAR::Database::get_install_mode(undef, undef);
@@ -64,11 +66,25 @@ unless ($Config{useithreads}) {
     }
 }
 
+# Here we make sure that the required SIS services are started and ready to be
+# used.
+# TODO: Finish to switch to SystemService, inlcuding when enabling the services.
 my $os = OSCAR::OCA::OS_Detect::open();
 my $binary_format = $os->{'pkg'};
+my $rc = OSCAR::SystemServices::system_service (
+        OSCAR::SystemServicesDefs::SI_MONITORD(),
+        OSCAR::SystemServicesDefs::START());
+if ($rc != 0) {
+    die "ERROR: Impossible to start service ($rc)";
+}
+$rc = OSCAR::SystemServices::system_service (
+        OSCAR::SystemServicesDefs::SI_RSYNCD(),
+        OSCAR::SystemServicesDefs::START());
+if ($rc != 0) {
+    die "ERROR: Impossible to start service ($rc)";
+}
 my @services = qw(systemimager-server-rsyncd systemimager-server-monitord);
 foreach my $service (@services) {
-  !system("/etc/init.d/$service restart") or croak("Could not restart $service");
   opkg_print("Enabling $service\n");
   if ($binary_format ne "deb") {
     !system("chkconfig --add $service") or croak("Failed to add $service");

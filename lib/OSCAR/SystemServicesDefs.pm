@@ -20,6 +20,7 @@ use constant DHCP           => 'dhcp';
 use constant MYSQL          => 'mysql';
 use constant POSTGRESQL     => 'pgsql';
 use constant SI_MONITORD    => 'monitord';
+use constant SI_RSYNCD      => 'rsyncd';
 
 # List of actions related to system services
 use constant START      => 0;
@@ -41,6 +42,7 @@ our @EXPORT = qw(
                 MYSQL
                 POSTGRESQL
                 SI_MONITORD
+                SI_RSYNCD
                 START
                 STOP
                 RESTART

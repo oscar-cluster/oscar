@@ -99,6 +99,7 @@ sub system_service_status ($) {
 
 # Abstraction of the underlying tool for system service management (such as 
 # chkconfig).
+# TODO: Should do the same for Debian based systems.
 #
 # Input: a list of services (absolute path to access the service binary, e.g.,
 #        /etc/init.d/sshd).
@@ -159,8 +160,9 @@ sub system_service ($$) {
     # We get the daemon path
     my $path = OSCAR::OCA::OS_Settings::getitem ($service . "_daemon");
 
-    # /sbin/service is a RPM specific command, so we do not use it on Debian-like
-    # systems. It allows to start a service with a non polluted environment.
+    # /sbin/service is a RPM specific command, so we do not use it on 
+    # Debian-like systems. It allows to start a service with a non polluted 
+    # environment.
     my $os = OSCAR::OCA::OS_Detect::open();
     my $binary_format = $os->{'pkg'};
     my $cmd;
@@ -169,13 +171,15 @@ sub system_service ($$) {
         print ("starting service $cmd... ");
         $cmd = "/sbin/service $cmd ";
     } else { # Non RPM based distro.
-        my $cmd = "$path ";
+        $cmd = "$path ";
     }
 
     if ($action eq OSCAR::SystemServicesDefs::START()) {
-        if (system_service ($service, OSCAR::SystemServicesDefs::STATUS())) { # not running
+        if (system_service ($service, OSCAR::SystemServicesDefs::STATUS())) { 
+            # not running
             $cmd .= "start";
-        } else { # already running, we restart to avoid errors (bad init stripts)
+        } else { 
+            # already running, we restart to avoid errors (bad init stripts)
             $cmd .= "restart"; # systemimager-server-monitord is not LSB.
         }
     } elsif ($action eq OSCAR::SystemServicesDefs::STOP()) {
@@ -197,7 +201,7 @@ sub system_service ($$) {
     # command not found: 127
     # unknown service: 1
 
-    my $ret_code = system ($cmd);
+    my $ret_code = system ($cmd) / 256;
     OSCAR::Logger::oscar_log_subsection ("[SystemService] Return code: $ret_code");
 
     return $ret_code;

@@ -5,6 +5,7 @@
 - Update SystemInstaller to 2.4.11.
 - [Ticket #451] Clean-up the /etc/systemimager/flamethrower.conf configuration 
 file when a failure occurs during the image creation.
+- [Ticket #516] Make sure the systemimager-server-monitord service starts correctly.
 - [Ticket #525] Improve the management of /etc/hosts on the headnode.
 - [Ticket #526] Improve system sanity when deleting clients: DHCP is now
 correctly handled. 
