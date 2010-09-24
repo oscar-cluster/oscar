@@ -21,12 +21,17 @@ use Carp;
 my $image_name = shift;
 
 my %hash = SystemInstaller::Machine::get_machine_listing($image_name);
+
+# TODO: make sure we feed the c3_conf_manager script with a correctly sorted
+# list of nodes. Typically the sorting function has to be revisited to handle
+# fancy schemes like the one described in ticket #143
 my @hosts = sortnodes( keys %hash );
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                   undef,
                                                   "OSCAR_SCRIPTS_PATH");
 my $c3mgr = "$binaries_path/c3_conf_manager";
 
+# TODO: We should ALWAYS specify the conf file we target.
 !system("$c3mgr --rm oscar_cluster && $c3mgr --add oscar_cluster " . join(' ', @hosts)) or 
 	die ("ERROR: I couldn't manage to update the C3 configuration!\n");
 
