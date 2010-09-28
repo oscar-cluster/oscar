@@ -1,9 +1,9 @@
 package OSCAR::Startover;
 
 #
-# Copyright (c) 2000 Geoffroy Vallee <valleegr at ornl dot gov>
-#                    Oak Ridge National Laboratory
-#                    All rights reserved.
+# Copyright (c) 2000-2010 Geoffroy Vallee <valleegr at ornl dot gov>
+#                         Oak Ridge National Laboratory
+#                         All rights reserved.
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,6 +28,12 @@ package OSCAR::Startover;
 #
 # $Id: Bootstrap.pm 7893 2009-01-23 00:26:12Z valleegr $
 #
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 
 use strict;
 use vars qw(@EXPORT);
@@ -78,15 +84,31 @@ sub startover_server ($) {
     my $oscar_cfg = shift;
 
     if (-f $oscar_cfg->{'binaries_path'} . "/oda") {
-        # Remove core packages. Note that included OPKGs should automatically be
-        # removed because of the dependencies
+        # Remove core packages. 
         require OSCAR::Opkg;
         my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
         foreach my $o (@core_opkgs) {
             # TODO: We should check the status before to try to remove it.
             OSCAR::Opkg::opkgs_remove ("server", $o);
         }
-	foreach my $o (@core_opkgs) {
+	    foreach my $o (@core_opkgs) {
+            OSCAR::Opkg::opkgs_remove ("api", $o);
+        }
+
+        # Remove all selected OPKGs (which does NOT include core OPKGs).
+        my @selected = ();
+        my %options = ();
+        require OSCAR::Database;
+        my $rc = OSCAR::Database::get_selected_packages (\@selected,
+                                                         \%options,
+                                                         undef,
+                                                         undef);
+        if ($rc != 1) {
+            carp "ERROR: Impossible to get the list of selected OPKGs";
+            return -1;
+        }
+        foreach my $o (@selected) {
+            OSCAR::Opkg::opkgs_remove ("server", $o);
             OSCAR::Opkg::opkgs_remove ("api", $o);
         }
 
