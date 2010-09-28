@@ -9,6 +9,7 @@ file when a failure occurs during the image creation.
 - [Ticket #525] Improve the management of /etc/hosts on the headnode.
 - [Ticket #526] Improve system sanity when deleting clients: DHCP is now
 correctly handled. 
+- [Ticket #581] Make sure that included OPKGs are removed when starting over.
 - [Ticket #595] get-oscar-version.sh now checks whether the version file exists or not.
 - [Ticket #597] Bootstrapping now updates OPKGs data rather than duplicating
 the data for all OPKGs.
