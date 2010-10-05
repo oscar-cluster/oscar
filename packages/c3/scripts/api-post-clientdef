@@ -15,7 +15,6 @@ use strict;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 use OSCAR::ConfigFile;
-use Data::Dumper;
 use Carp;
 
 my $image_name = shift;
@@ -26,6 +25,7 @@ my %hash = SystemInstaller::Machine::get_machine_listing($image_name);
 # list of nodes. Typically the sorting function has to be revisited to handle
 # fancy schemes like the one described in ticket #143
 my @hosts = sortnodes( keys %hash );
+
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                   undef,
                                                   "OSCAR_SCRIPTS_PATH");
@@ -37,11 +37,10 @@ my $c3mgr = "$binaries_path/c3_conf_manager";
 
 # Use Schwartzian transform to sort node names alphabetically and numerically.
 # Names w/o numeric suffix preceed those with numeric suffix.
-sub sortnodes(@) {
-	return map { $_->[0] }
-	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
-	       map { [$_, /^([\D]+)([\d]*)$/] }
-	       @_;
+sub sortnodes (@) {
+    my (@nodes) = @_;
+    @nodes = ( sort { $a cmp $b; } @nodes);
+    return @nodes;
 }
 
 exit 0;
