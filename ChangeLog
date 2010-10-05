@@ -2,6 +2,7 @@
 - Update ODA to 1.4.15.
 - Update PackMan to 3.2.0.
 - Update Selector to 1.2.6.
+- Update sync_file to 2.5.8.
 - Update SystemInstaller to 2.4.11.
 - [Ticket #143] Node are correctly sorted when generating the C3 configuration
 file.
