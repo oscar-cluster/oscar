@@ -57,6 +57,8 @@ use warnings "all";
             delete_clients
             display_node_config
             get_node_config
+            is_headnode
+            is_nis_env
             set_node_config
             update_list_alive_nodes
             );
@@ -64,6 +66,32 @@ use warnings "all";
 my $verbose = $ENV{OSCAR_VERBOSE};
 # Where the configuration files are.
 our $basedir = "/etc/oscar/clusters";
+
+# Check if the system is based on a nis environment.
+#
+# return: 1 if yes, 0 else, -1 if error.
+sub is_nis_env () {
+    my $cmd = "domainname";
+
+    my $output = `$cmd`;
+    chomp ($output);
+    if ($output eq "(none)") {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+# Function that checks if the current node is a compute node or the headnode
+#
+# Return: 1 if this is the headnode, 0 if this is a compute node, -1 if error.
+sub is_headnode () {
+    if (OSCAR::Database::database_connect (undef, undef) > 0) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
 
 sub add_clients ($) {
     my $client_refobj = shift;
