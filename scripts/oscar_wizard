@@ -981,10 +981,12 @@ sub monitor_deployment ($) {
     our $monitor_button;
 
     # We make sure the service associated to the monitor is started
-    if (OSCAR::SystemServices::system_service (OSCAR::SystemServicesDefs::SI_MONITORD(), 
-                                               OSCAR::SystemServicesDefs::START())) {
+    my $rc = OSCAR::SystemServices::system_service (
+                OSCAR::SystemServicesDefs::SI_MONITORD(), 
+                OSCAR::SystemServicesDefs::START());
+    if ($rc != 0) {
         carp "ERROR: Impossible to start service ".
-             OSCAR::SystemServicesDefs::SI_MONITORD()."\n";
+             OSCAR::SystemServicesDefs::SI_MONITORD()." ($rc)";
         return 0;
     }
 
