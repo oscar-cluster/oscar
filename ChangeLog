@@ -1,4 +1,5 @@
-6.0.7 (not yet released):
+6.1.0:
+- Update C3 to 5.1.0.
 - Update ODA to 1.4.15.
 - Update OPKGC to 0.5.0.
 - Update PackMan to 3.2.0.
@@ -14,6 +15,7 @@ correctly.
 - [Ticket #525] Improve the management of /etc/hosts on the headnode.
 - [Ticket #526] Improve system sanity when deleting clients: DHCP is now
 correctly handled. 
+- [Ticket #557] Fix problems after deleting compute nodes.
 - [Ticket #581] Make sure that included OPKGs are removed when starting over.
 - [Ticket #595] get-oscar-version.sh now checks whether the version file exists or not.
 - [Ticket #597] Bootstrapping now updates OPKGs data rather than duplicating
