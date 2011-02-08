@@ -7,8 +7,8 @@
 # <major>.<minor>.<release>.  If release is zero, then it is omitted.
 
 major=6
-minor=0
-release=6
+minor=1
+release=0
 
 # greek is used for alpha or beta release tags.  If it is non-empty,
 # it will be appended to the version number.  It does not have to be
@@ -23,7 +23,7 @@ greek=
 # OSCAR version number in some form. Otherwise, put 0. Never leave
 # undefined.
 
-want_svn=1
+want_svn=0
 
 # If svn_r=-1, then the SVN r number will be obtained dynamically at
 # run time, either 1) via the "svnversion" command (if this is a
@@ -35,4 +35,4 @@ want_svn=1
 # distribution tarball is being made from an SVN checkout, the value
 # of svn_r in this file is replaced with the output of "svnversion".
 
-svn_r=-1
+svn_r=0
