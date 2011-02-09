@@ -2,6 +2,7 @@
 - Update OPKG Ganglia to 3.0.12.
 - Update OPKG Torque to 2.1.14.
 - Using a generic URL for CentOS repository (to automatically use updates), and add the updates.
+- Fix the documentation (Ubuntu x86_64 is supported and not x86).
 
 6.1.0:
 - Update C3 to 5.1.0.
