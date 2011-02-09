@@ -57,6 +57,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.1.14-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2011-02-09T12:09:11-05:00">
+        <item>Fix the path to the torque tests (patch from Ivan V. Sergeyev).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.1.13-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-07-16T17:57:33-05:00">
         <item>Fix the path to the torque tests + improve error messages.</item>
