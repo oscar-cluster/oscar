@@ -92,7 +92,7 @@ if (!OSCAR::Utils::is_a_valid_string ($pattern)) {
 my $hosts = `gstat --all | egrep -c "^($pattern)$"`;
 my $cmd;
 
-if ($hosts eq $numhosts) {
+if ($hosts == $numhosts) {
     $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -p";
     if (system ($cmd)) {
         die "ERROR: Impossible to execute $cmd";
@@ -123,7 +123,7 @@ $hosts = `gstat | grep 'Hosts' | head -n 1 | awk {'print \$2'}`;
 OSCAR::Logger::oscar_log_section ("Ganglia node count test");
 $label = "Ganglia node count test";
 
-if ($hosts eq $numhosts) {
+if ($hosts == $numhosts) {
     $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -p";
     if (system ($cmd)) {
         die "ERROR: Impossible to execute $cmd";

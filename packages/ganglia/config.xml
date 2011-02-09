@@ -92,6 +92,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.0.12-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2011-02-09T10:21:01-05:00">
+        <item>Fix a few issues in the user_test script (patch from Ivan V. Sergeyev).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.0.11-1">
       <changelogEntry authorName="Olivier Lahaye" date="2010-04-21T13:33:05+02:00">
         <item>Convert the test_user script to Perl to ease maintenance.</item>

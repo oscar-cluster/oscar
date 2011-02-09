@@ -1,4 +1,6 @@
 6.1.1 (not yet released):
+- Update OPKG Ganglia to 3.0.12.
+- Update OPKG Torque to 2.1.14.
 - Using a generic URL for CentOS repository (to automatically use updates), and add the updates.
 
 6.1.0:
