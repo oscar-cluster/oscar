@@ -5,6 +5,7 @@
 - Using a generic URL for CentOS repository (to automatically use updates), and add the updates.
 - Fix the documentation (Ubuntu x86_64 is supported and not x86).
 - Fix the entry for Ubuntu 10.04 in supported_distros.txt
+- Fix a base prereq (mysql-server) for Debian 5.
 
 6.1.0:
 - Update C3 to 5.1.0.
