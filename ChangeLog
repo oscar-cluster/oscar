@@ -2,6 +2,7 @@
 - Update to C3 5.2.1.
 - Update OPKG Ganglia to 3.0.13.
 - Update OPKG Torque to 2.1.14.
+- Update sync_files to 2.5.9.
 - Using a generic URL for CentOS repository (to automatically use updates), and add the updates.
 - Fix the documentation (Ubuntu x86_64 is supported and not x86).
 - Fix the entry for Ubuntu 10.04 in supported_distros.txt
