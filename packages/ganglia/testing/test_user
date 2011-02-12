@@ -89,8 +89,13 @@ if (!OSCAR::Utils::is_a_valid_string ($pattern)) {
 # the nodes detected have to match a certain pattern (belonging to the
 # cluster) and thus will pass even if you have other gmonds running on the
 # same network but not belonging to the same data source
-my $hosts = `gstat --all | egrep -c "^($pattern)$"`;
+my $hosts = `gstat --all | egrep -c "^($pattern)\$"`;
 my $cmd;
+
+#TODO: Find a better way to find where the testprint script is
+if (!OSCAR::Utils::is_a_valid_string ($ENV{OSCAR_TESTPRINT})) {
+    $ENV{OSCAR_TESTPRINT} = "/usr/share/oscar/testing/testprint";
+}
 
 if ($hosts == $numhosts) {
     $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -p";
