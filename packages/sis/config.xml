@@ -165,8 +165,7 @@
   <apiDeps/>
   <changelog>
     <versionEntry version="4.0.7-1">
-      <changelogEntry authorName="Geoffroy Vallee" date="2011-02-12T10:55:45-05:
-00">
+      <changelogEntry authorName="Geoffroy Vallee" date="2011-02-12T10:55:45-05:00">
         <item>New packages based on opkgc > 0.6.0.</item>
       </changelogEntry>
     </versionEntry>
