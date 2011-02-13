@@ -34,6 +34,7 @@
       <pkg>torque-oscar-client</pkg>
       <pkg>torque-oscar-modulefile</pkg>
       <pkg>torque-oscar-scheduler</pkg>
+      <pkg>maui-oscar</pkg>
     </requires>
     <requires>
       <filters>
@@ -60,6 +61,7 @@
     <versionEntry version="2.1.14-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2011-02-09T12:09:11-05:00">
         <item>Fix the path to the torque tests (patch from Ivan V. Sergeyev).</item>
+        <item>Generate a separate RPM for MAUI</item>
       </changelogEntry>
     </versionEntry>
     <versionEntry version="2.1.13-1">
