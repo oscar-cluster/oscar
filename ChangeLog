@@ -5,9 +5,10 @@
 - Update sync_files to 2.5.9.
 - Using a generic URL for CentOS repository (to automatically use updates), and add the updates.
 - Fix the documentation (Ubuntu x86_64 is supported and not x86).
+- Fix a problem when detecting where pxelinux.0 is in the setup_pxe script.
 - Fix the entry for Ubuntu 10.04 in supported_distros.txt
 - Fix a base prereq (mysql-server) for Debian 5.
-- fix the list of base prereqs for RHEL 5 systems.
+- Fix the list of base prereqs for RHEL 5 systems.
 
 6.1.0:
 - Update C3 to 5.1.0.

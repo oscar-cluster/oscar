@@ -184,7 +184,7 @@ if (OSCAR::Database::get_nics_with_name_node($iface,
 }
 
 if (scalar (@result) == 0) {
-    die "ERROR: Can't get oscar_server nodes nic ip address from OSCAR database."
+    die "ERROR: Can't get oscar_server nodes nic ip address from OSCAR database.";
 }
 
 my $node_ref = pop @result;
@@ -192,8 +192,7 @@ my $ip = $$node_ref{ip};
 my $pxelinux_dir = "/usr/lib/syslinux"; # default directory containing pxelinux.0
 my $pxelinux_bin = "pxelinux.0"; # default binary name for pxelinux.0 boot code.
 
-if(! -e "$pxelinux_dir/$pxelinux_bin" && 
-   (($ARCH eq "i386") || ($ARCH eq "x86_64"))) {
+if(! -e "$pxelinux_dir/$pxelinux_bin") {
     # [GV] TODO: We should use OS_Setting here
     switch ($os->{'distro'}) {
         case "centos" {
@@ -217,7 +216,13 @@ if(! -e "$pxelinux_dir/$pxelinux_bin" &&
             $pxelinux_bin = "pxelinux.0";
         }
     }
+}
 
+if (! -e "$pxelinux_dir/$pxelinux_bin") {
+    die "ERROR: $pxelinux_dir/$pxelinux_bin does not exist";
+}
+
+if (($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     verbose("Getting $pxelinux_bin.");
     copy("$pxelinux_dir/$pxelinux_bin", "/tftpboot/pxelinux.0") or
         croak("ERROR: Unable to copy \"$pxelinux_bin\" file to /tftpboot.");
