@@ -192,8 +192,9 @@ my $ip = $$node_ref{ip};
 my $pxelinux_dir = "/usr/lib/syslinux"; # default directory containing pxelinux.0
 my $pxelinux_bin = "pxelinux.0"; # default binary name for pxelinux.0 boot code.
 
-if(($ARCH eq "i386") || ($ARCH eq "x86_64")) {
-    # GV: We should use OS_Setting here
+if(! -e "$pxelinux_dir/$pxelinux_bin" && 
+   (($ARCH eq "i386") || ($ARCH eq "x86_64"))) {
+    # [GV] TODO: We should use OS_Setting here
     switch ($os->{'distro'}) {
         case "centos" {
             $pxelinux_dir = "/usr/share/syslinux";
