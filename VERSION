@@ -35,4 +35,4 @@ want_svn=1
 # distribution tarball is being made from an SVN checkout, the value
 # of svn_r in this file is replaced with the output of "svnversion".
 
-svn_r=0
+svn_r=-1
