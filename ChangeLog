@@ -1,5 +1,6 @@
 6.1.1 (not yet released):
 - Update to C3 5.2.1.
+- Update OPKG C3 to 4.1.5.
 - Update OPKG Ganglia to 3.0.13.
 - Update OPKG Torque to 2.1.14.
 - Update sync_files to 2.5.9.
@@ -9,6 +10,8 @@
 - Fix the entry for Ubuntu 10.04 in supported_distros.txt
 - Fix a base prereq (mysql-server) for Debian 5.
 - Fix the list of base prereqs for RHEL 5 systems.
+- [Ticket #601] On Debian systems, we can now use mysql-server without 
+specifying any version for the base prereqs.
 
 6.1.0:
 - Update C3 to 5.1.0.
