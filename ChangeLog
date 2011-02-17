@@ -1,10 +1,14 @@
 6.1.1 (not yet released):
-- Update to C3 5.2.1.
+- Update C3 to 5.1.2.
+- Update OPKGC to 0.6.0.
+- Update OPKG ODA to 1.32.3.
 - Update OPKG C3 to 4.1.5.
 - Update OPKG Ganglia to 3.0.13.
+- Update OPKG SIS to 4.0.7.
 - Update OPKG Torque to 2.1.14.
 - Update sync_files to 2.5.9.
-- Using a generic URL for CentOS repository (to automatically use updates), and add the updates.
+- Use a generic URL for CentOS repository (to automatically use updates), and
+add the updates.
 - Fix the documentation (Ubuntu x86_64 is supported and not x86).
 - Fix a problem when detecting where pxelinux.0 is in the setup_pxe script.
 - Fix the entry for Ubuntu 10.04 in supported_distros.txt
@@ -12,6 +16,7 @@
 - Fix the list of base prereqs for RHEL 5 systems.
 - [Ticket #601] On Debian systems, we can now use mysql-server without 
 specifying any version for the base prereqs.
+- [Ticket #600] Fix a dependency issue with the LAM OPKG on RPM based systems.
 
 6.1.0:
 - Update C3 to 5.1.0.
