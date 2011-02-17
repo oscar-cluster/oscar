@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # This script reads the Configurator result and sets up the configuration
-# files /etc/gmond.conf and /etc/gmetad.conf for the server. Similar
+# files /etc/ganglia/gmond.conf and /etc/ganglia/gmetad.conf for the server. Similar
 # configuration steps are done for each image.
 #
 # Copyright 2005 Erich Focht <efocht@hpce.nec.com>
@@ -60,8 +60,8 @@ GetOptions(
             'verbose'   => \$verbose, 
           ) || help_and_die();
 
-my $gmetad_conf = "/etc/gmetad.conf";
-my $gmond_conf = "/etc/gmond.conf";
+my $gmetad_conf = "/etc/ganglia/gmetad.conf";
+my $gmond_conf = "/etc/ganglia/gmond.conf";
 # GV: this cannot work currently so we deactivate.
 #if ($test) {
 #    $gmetad_conf = "gmetad.conf";
