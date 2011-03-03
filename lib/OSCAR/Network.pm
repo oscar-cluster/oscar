@@ -186,17 +186,17 @@ sub get_network_base_ip ($$) {
     }
 
     # Compute network from ip and netmask
-    my @addrarr=split(/\./,$ip);
+    my @addrarr = split(/\./, $ip);
     my ( $ipaddress ) = unpack( "N", pack( "C4",@addrarr ) );
 
-    my @maskarr=split(/\./,$netmask);
-    $netmask = unpack( "N", pack( "C4",@maskarr ) );
+    my @maskarr = split(/\./,$netmask);
+    $netmask = unpack( "N", pack( "C4", @maskarr ) );
 
     # Calculate network address by logical AND operation of addr & netmask
     # and convert network address to IP address format
     my $netadd = ( $ipaddress & $netmask );
-    my @netarr=unpack( "C4", pack( "N",$netadd ) );
-    my $netaddress=join(".",@netarr);
+    my @netarr = unpack( "C4", pack( "N", $netadd ) );
+    my $netaddress = join(".", @netarr);
     return $netaddress;
 }
 
@@ -222,20 +222,20 @@ sub get_network_config ($$$) {
         carp "ERROR: IP of the NIC $interface is invalid";
         return undef;
     }
-    if (!OSCAR::Utils::is_a_valid_string ($netmask)) {
+    if (is_a_valid_ip ($netmask) == 0) {
         carp "ERROR: netmask is invalid";
         return undef;
     }
-    if (!OSCAR::Utils::is_a_valid_string ($broadcast)) {
+    if (is_a_valid_ip ($broadcast) == 0) {
         carp "ERROR: broadcast is invalid";
         return undef;
     }
 
-    my $network_base = get_network_base_ip($ip, $netmask);
     my $startip;
-    my ($a, $b, $c, $d);
-    if (!OSCAR::Utils::is_a_valid_string ($network_base)) {
-        ($a, $b, $c, $d) = split(/\./, $ip);
+    my ($a, $b, $c, $d) = split(/\./, $ip);
+
+    my $network_base = get_network_base_ip ($ip, $netmask);
+    if (is_a_valid_ip ($network_base) == 1) {
         $d++;
         # Check that this is not the head_node ip. If yes, then increment $d
         if ( "$a.$b.$c.$d" eq "$ip" ) {
@@ -252,7 +252,8 @@ sub get_network_config ($$$) {
         return undef;
     }
 
-    # TODO: compute lastip as well (if netmask is not 255, then lastip is not 254)
+    # TODO: compute lastip as well (if netmask is not 255, then lastip is not 
+    # 254)
 
     # Most of this code is borrowed from scripts/oscar_wizard
     # It has been changed slightly for the command line
@@ -495,6 +496,8 @@ sub update_head_nic () {
 
     return 0;
 }
+
+get_network_config ("eth0", undef, undef);
 
 1;
 
