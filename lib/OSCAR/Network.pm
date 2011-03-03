@@ -222,8 +222,16 @@ sub get_network_config ($$$) {
         carp "ERROR: IP of the NIC $interface is invalid";
         return undef;
     }
+    if (!OSCAR::Utils::is_a_valid_string ($netmask)) {
+        carp "ERROR: netmask is invalid";
+        return undef;
+    }
+    if (!OSCAR::Utils::is_a_valid_string ($broadcast)) {
+        carp "ERROR: broadcast is invalid";
+        return undef;
+    }
 
-    my $network_base = get_network_base_ip($ip,$netmask);
+    my $network_base = get_network_base_ip($ip, $netmask);
     my $startip;
     my ($a, $b, $c, $d);
     if (!OSCAR::Utils::is_a_valid_string ($network_base)) {
@@ -239,7 +247,8 @@ sub get_network_config ($$$) {
         }
         $startip = "$a.$b.$c.$d";
     } else {
-        carp "ERROR: Unable to compute network adress for $a, $b, $c, $d/$netmask";
+        carp "ERROR: Unable to compute network adress for ".
+             "$a, $b, $c, $d/$netmask";
         return undef;
     }
 
