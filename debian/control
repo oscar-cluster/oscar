@@ -43,3 +43,9 @@ Package: oscar-base-client
 Architecture: all
 Description: Transitional package for OSCAR (client side)
  This is a transitional package for OSCAR (client side).
+
+Package: oscar-dev
+Architecture: all
+Depends: oscar-base, opkgc (>= 0.6.0), packman (>= 3.2.0)
+Description: Everything needed for OSCAR related developments
+ Everything needed for OSCAR related developments.

@@ -8,6 +8,9 @@
 %define mandir /usr/local/man/man1
 %define _unpackaged_files_terminate_build 0
 
+%define opkgc_version 0.6.0
+%define packman 3.2.0
+
 Summary: 	OSCAR package
 Name: 		oscar
 Version: 	OSCARVERSION
@@ -130,8 +133,22 @@ Scripts for OSCAR clustering base package.
 %dir %{bindir}/system-sanity.d
 %{bindir}/*
 
+%package -n oscar-devel
+Group: Applications/System
+Summary: Everything needed for OSCAR related developments
+Requires: %{name}-base == %{version}-%{release}
+Requires: opkgc >= %{opkgc_version}
+Requires: packman >= %{packman_version}
+Requires: createrepo
+AutoReqProv: no
+%description -n oscar-devel
+Everything needed for OSCAR related developments.
+%files -n oscar-devel
+%defattr(-,root,root)
 
 %changelog
+* Thu Mar 03 2011 Geoffroy Vallee <valleegr@ornl.gov>
+- Add a oscar-devel packages.
 * Sat Jan 31 2009 Geoffroy Vallee <valleegr@ornl.gov>
 - Merge the oscar.spec.in and oscar-base.spec.in files.
 - Re-organize the spec file to start to address issues with FC10.

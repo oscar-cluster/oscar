@@ -17,6 +17,7 @@ add the updates.
 - [Ticket #601] On Debian systems, we can now use mysql-server without 
 specifying any version for the base prereqs.
 - [Ticket #600] Fix a dependency issue with the LAM OPKG on RPM based systems.
+- Add a oscar-devel package.
 
 6.1.0:
 - Update C3 to 5.1.0.
