@@ -23,7 +23,7 @@ greek=
 # OSCAR version number in some form. Otherwise, put 0. Never leave
 # undefined.
 
-want_svn=1
+want_svn=0
 
 # If svn_r=-1, then the SVN r number will be obtained dynamically at
 # run time, either 1) via the "svnversion" command (if this is a

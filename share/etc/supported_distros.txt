@@ -29,6 +29,14 @@ debian-5-x86_64 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http:
 debian-5-i386 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-i386/+lenny+/
 suse-10-i386 = distro:http://download.opensuse.org/distribution/10.3/repo/oss/suse/ oscar:http://bison.csm.ornl.gov/repos/unstable/suse-10-i386
 
+[6.1.1]
+debian-5-x86_64 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+lenny+/
+redhat-el-5-i386 = distro:file:/tftpboot/distro/redhat-el-5-i386 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
+redhat-el-5-x86_64 = distro:file:/tftpboot/distro/redhat-el-5-x86_64 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
+centos-5-x86_64 = distro:http://mirror.centos.org/centos/5/os/x86_64/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64 distro:http://mirror.centos.org/centos/5/extras/x86_64/
+centos-5-i386 = distro:http://mirror.centos.org/centos/5/os/i386/ oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386 distro:http://mirror.centos.org/centos/5/extras/i386/
+ubuntu-1004-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+lucid+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+lenny+/ distro:http://us.archive.ubuntu.com/ubuntu/+lucid-updates+main+universe+multiverse
+
 [6.1.0]
 debian-5-x86_64 = distro:http://ftp.us.debian.org/debian/+lenny+main oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+lenny+/
 redhat-el-5-i386 = distro:file:/tftpboot/distro/redhat-el-5-i386 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
