@@ -42,20 +42,25 @@ sub detect_dir {
 	chroot => $root,
     };
 
-    # complex match strings for RHEL 3 and 4
-    if ($release_string =~ /Scientific Linux SL release (\d+)\.(\d+) \((\S+)\)/) {
-	my $os_release = $1;
-	my $os_update = $2;
-	my $os_family = $3; # Beryllium, etc... don't care about this
-	$id->{distro} = $distro;
-	$id->{distro_version} = $os_release;
-	$id->{distro_update} = $os_update;
-	$id->{compat_distro} = $compat_distro;
-	$id->{compat_distrover} = $os_release;
-	$id->{pkg} = $pkg;
+    # complex match strings
+    my $os_release;
+    my $os_update;
+    my $os_family; # Beryllium, etc... don't care about this
+    if (($release_string =~ /Scientific Linux SL release (\d+)\.(\d+) \((\S+)\)/)
+        || ($release_string =~ /Scientific Linux release (\d+)\.(\d+) \((\S+)\)/)) {
+	$os_release = $1;
+	$os_update = $2;
+	$os_family = $3; # Beryllium, etc... don't care about this
     } else {
 	return undef;
     }
+
+    $id->{distro} = $distro;
+    $id->{distro_version} = $os_release;
+    $id->{distro_update} = $os_update;
+    $id->{compat_distro} = $compat_distro;
+    $id->{compat_distrover} = $os_release;
+    $id->{pkg} = $pkg;
 
     # determine architecture
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root,$detect_file);
