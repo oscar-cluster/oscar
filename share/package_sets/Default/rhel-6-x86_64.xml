@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<package_set>
+    <name>Default</name>
+    <packages>
+        <opkg>base</opkg>
+        <opkg>c3</opkg>
+        <opkg>ganglia</opkg>
+        <opkg>oda</opkg>
+        <opkg>opium</opkg>
+        <opkg>sc3</opkg>
+        <opkg>selinux</opkg>
+        <opkg>sis</opkg>
+        <opkg>switcher</opkg>
+        <opkg>sync-files</opkg>
+        <opkg>yume</opkg>
+    </packages>
+</package_set>
