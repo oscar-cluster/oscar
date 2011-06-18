@@ -29,7 +29,6 @@ tasks on a cluster.</description>
         <dist>ydl</dist>
       </filters>
       <pkg>c3</pkg>
-      <pkg>c3-profiled</pkg>
       <pkg>c3-contrib</pkg>
     </requires>
     <requires>
@@ -49,7 +48,6 @@ tasks on a cluster.</description>
         <dist>fc</dist>
         <dist>ydl</dist>
       </filters>
-      <pkg>c3-profiled</pkg>
       <pkg>c3-ckillnode</pkg>
     </requires>
     <requires>
@@ -62,6 +60,11 @@ tasks on a cluster.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="4.1.6-1">
+      <changelogEntry authorName="Geoffroy Vallee" date="2011-06-18T03:18:33-05:00">
+        <item>Remove the dependency to c3-profiled since c3 is now directly installed on the system in the context of OSCAR</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.1.5-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2011-02-14T09:31:12-05:00">
         <item>Add a dependency to c3-contrib since the c3_conf_manager script is now shipped via this package</item>
