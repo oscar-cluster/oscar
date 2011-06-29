@@ -1,9 +1,13 @@
 # Root of oscar RPMS.
 
-%oscar_version_major    VERSION_MAJOR
-%oscar_version_minor    VERSION_MINOR
-%oscar_version_release  VERSION_RELEASE
-%oscar_version_svn  VERSION_SVN
+#%oscar_version_major    VERSION_MAJOR
+%oscar_version_major    %(/usr/bin/get-oscar-version.sh /etc/oscar/VERSION --major)
+#%oscar_version_minor    VERSION_MINOR
+%oscar_version_minor    %(/usr/bin/get-oscar-version.sh /etc/oscar/VERSION --minor)
+#%oscar_version_release  VERSION_RELEASE
+%oscar_version_release  %(/usr/bin/get-oscar-version.sh /etc/oscar/VERSION --release)
+#%oscar_version_svn      VERSION_SVN
+%oscar_version_svn      %(/usr/bin/get-oscar-version.sh /etc/oscar/VERSION --svn)
 
 %manpref        /usr/local/man/man1
 
