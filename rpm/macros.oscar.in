@@ -1,0 +1,23 @@
+# Root of oscar RPMS.
+
+%oscar_version_major    VERSION_MAJOR
+%oscar_version_minor    VERSION_MINOR
+%oscar_version_release  VERSION_RELEASE
+%oscar_version_svn  VERSION_SVN
+
+%manpref        /usr/local/man/man1
+
+# Macro distro checks.
+%is_fc   %(test -e /etc/fedora-release && echo 1 || echo 0)
+%is_rh   %(test -e /etc/redhat-release && echo 1 || echo 0)
+%is_mdk  %(test -e /etc/mandrake-release && echo 1 || echo 0)
+%is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
+
+# Check if Suggests: tag can be sused.
+%define has_rpm_suggests %(rpm --help | grep "\-\-suggest" | wc -l)
+
+# Macros for python if not defined
+%__python   /usr/bin/python
+%python_sitearch    %(%{__python} -c "from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib(1))")
+%python_sitelib     %(%{__python} -c "from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib())")
+%python_version     %(%{__python} -c "import sys; sys.stdout.write(sys.version[:3])")
