@@ -102,8 +102,15 @@ if (!$changed) {
 #   find default gateway in /etc/dhcpd.conf
 # TODO: We should use OS_Settings here
 my $dhcpd_configfile = "/etc/dhcpd.conf";
+# Under RHEL6 like, the dhcpd config file is in /etc/dhcp
+$dhcpd_configfile = "/etc/dhcp/dhcpd.conf" if -x "/etc/dhcp";
 # Under Debian the dhcpd config file is in /etc/dhcp3
 $dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
+if(-e $dhcpd_configfile) {
+    copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak")
+        or (die "ERROR: Couldn't backup $dhcpd_configfile file");
+}
+
 open IN, "$dhcpd_configfile" or die "ERROR: Could not open $dhcpd_configfile!";
 my ($gwip, $netmask);
 while (<IN>) {

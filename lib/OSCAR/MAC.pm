@@ -128,6 +128,8 @@ sub __setup_dhcpd ($) {
         or (carp "ERROR: Couldn't clean hosts file!", return -1);
 
     my $dhcpd_configfile = "/etc/dhcpd.conf";
+    # Under RHEL6 like, the dhcpd config file is in /etc/dhcp
+    $dhcpd_configfile = "/etc/dhcp/dhcpd.conf" if -x "/etc/dhcp";
     # Under Debian the dhcpd config file is in /etc/dhcp3
     $dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
     oscar_log_subsection ("Step $step_number: About to run setup_dhcpd...");

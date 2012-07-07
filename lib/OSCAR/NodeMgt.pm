@@ -368,7 +368,17 @@ sub delete_clients (@) {
     OSCAR::SystemServices::system_service (OSCAR::SystemServicesDefs::DHCP(),
             OSCAR::SystemServicesDefs::START());
     my ($ip, $broadcast, $netmask) = OSCAR::Network::interface2ip($interface);
-    $cmd = "mkdhcpconf -o /etc/dhcpd.conf --interface=$interface --gateway=$ip";
+    my $dhcpd_configfile = "/etc/dhcpd.conf";
+    # Under RHEL6 like, the dhcpd config file is in /etc/dhcp
+    $dhcpd_configfile = "/etc/dhcp/dhcpd.conf" if -x "/etc/dhcp";
+    # Under Debian the dhcpd config file is in /etc/dhcp3
+    $dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
+    if(-e $dhcpd_configfile) {
+        copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak")
+            or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
+    }
+    $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface ".
+           "--gateway=$ip";
     if ($install_mode eq "systemimager-multicast") {
        $cmd = $cmd . " --multicast=yes";
     }
