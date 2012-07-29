@@ -139,14 +139,19 @@ sub detect_arch_file {
     my $arch="unknown";
     my $q = `env LC_ALL=C file $root/$file`;
     if ( ($q =~ m/executable,\ \S+\ (\S+),\ version/) ||
-	 ($q =~ m/executable,\ (\S+),\ version/) ||
-	 ($q =~ m/object,\ \S+ (\S+),\ version/) ) {
-	$arch = $1;
-	if ($arch =~ m/386$/) {
-	    $arch = "i386";
-	} elsif ($arch =~ m/x86-64/) {
-	    $arch = "x86_64";
-	}
+         ($q =~ m/executable,\ (\S+),\ version/) ||
+         ($q =~ m/object,\ \S+ (\S+),\ version/) )
+    {
+        $arch = $1;
+        if ($arch =~ m/386$/) {
+            $arch = "i386";
+        } elsif ($arch =~ m/x86-64/) {
+            $arch = "x86_64";
+        } elsif ($arch =~ m/IA-64/) {
+            $arch = "ia64";
+        } elsif ($arch =~ m/PowerPC/) { # OL: May need tunning. (iSeries)
+            $arch = "ppc64";
+        }
     }
     # DIKIM added this for YDL5
     if ($q =~ m/executable,\ (\S+)\ \S+\ \S+\ \S+,\ version/) {
