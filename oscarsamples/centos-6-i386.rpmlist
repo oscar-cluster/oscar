@@ -1,4 +1,5 @@
-anacron
+cronie
+cronie-anacron
 arpwatch
 at
 atk
@@ -95,7 +96,6 @@ man
 man-pages
 mingetty
 dracut
-mktemp
 module-init-tools
 mtools
 ncurses
@@ -120,7 +120,7 @@ perl
 perl-HTML-Parser
 perl-HTML-Tagset
 popt
-portmap
+rpcbind
 postfix
 procmail
 procps
@@ -148,7 +148,7 @@ centos-release
 slang
 strace
 rsyslog
-SysVinit
+upstart
 tar
 tcl
 tcpdump
@@ -163,7 +163,7 @@ udev
 units
 usbutils
 usermode
-util-linux
+util-linux-ng
 vim-common
 vim-minimal
 vixie-cron
@@ -189,12 +189,12 @@ libmng
 libtiff
 rhpl
 pyxf86config
-synaptics
+xorg-x11-drv-synaptics
 tcp_wrappers
 ttmkfdir
 tzdata
 xorg-x11-xinit
-xorg-x11-fonts-base
+xorg-x11-fonts-misc
 xorg-x11-font-utils
 xorg-x11-xauth
 xorg-x11-twm
@@ -204,3 +204,6 @@ perl-DBD-Pg
 perl-DBI
 postgresql
 postgresql-libs
+ypbind
+autofs
+vim-enhanced
