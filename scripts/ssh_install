@@ -250,9 +250,9 @@ if (! -d $home) {
                 die "ERROR: file $orig_file does not exist";
             }
             if (! -f $dest_file) {
-                $cmd = "cat $orig_file > $dest_file";
+                $cmd = "/bin/cat $orig_file > $dest_file";
             } else {
-                $cmd = "cat $orig_file >> $dest_file";
+                $cmd = "/bin/cat $orig_file >> $dest_file";
             }
             OSCAR::Logger::oscar_log_subsection ("Executing: $cmd");
             if (system ($cmd)) {
@@ -263,7 +263,7 @@ if (! -d $home) {
         }
     }
 
-    $cmd = "chmod 600 $home/.ssh/authorized_keys*";
+    $cmd = "/bin/chmod 600 $home/.ssh/authorized_keys*";
     if (system ($cmd)) {
         die "ERROR: Impossible to execute $cmd";
     }
@@ -272,7 +272,7 @@ if (! -d $home) {
 # now we take care of updating each specified image
 foreach my $image (@BASES) {
     OSCAR::Logger::oscar_log_subsection ("Checking/updating image $image...");
-    $cmd = "cp -fpr $SSHCFGDIR $image$SSHCFGDIR";
+    $cmd = "/bin/cp -fpr $SSHCFGDIR $image$SSHCFGDIR";
     OSCAR::Logger::oscar_log_subsection ("Executing: $cmd");
     if (system ($cmd)) {
         die "ERROR: Impossible to execute $cmd";
@@ -284,12 +284,12 @@ foreach my $image (@BASES) {
     if (! -d "$image$home") {
         File::Path::mkpath ("$image$home") 
             or die "ERROR: Impossible to create $image$home";
-        $cmd = "chown $user $image$home";
+        $cmd = "/bin/chown $user $image$home";
         if (system ($cmd)) {
             die "ERROR: Impossible to execute $cmd";
         }
     }
-    $cmd = "cp -fpr $home/.ssh $image$home";
+    $cmd = "/bin/cp -fpr $home/.ssh $image$home";
     OSCAR::Logger::oscar_log_subsection ("Executing: $cmd");
     if (system ($cmd)) {
         die "ERROR: Impossible to execute $cmd";

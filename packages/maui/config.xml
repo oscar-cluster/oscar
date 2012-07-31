@@ -29,6 +29,16 @@ OSCAR cluster software system.</description>
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.3.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2011-04-19T13:10:33+02:00">
+        <item>New Maui version</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="3.3-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2010-04-22T14:58:33+02:00">
+        <item>New Maui version</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.2.6p19-8">
       <changelogEntry authorName="Erich Focht" date="2007-06-26T11:42:33+02:00">
         <item>Converted to new opkg format</item>
