@@ -168,8 +168,8 @@ sub get_host_ip ($) {
         chomp;
         next if /^\s*\#/; # We skip comments
         if (/\s+$id(\s|$|\.)/) {
-            $count++;
             if (/^(\d+\.\d+\.\d+\.\d+)\s+/) {
+                $count++;
                 $my_ip = $1;
             }
         }
