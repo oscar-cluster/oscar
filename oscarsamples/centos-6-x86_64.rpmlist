@@ -187,6 +187,7 @@ zip
 libobjc
 libmng
 libtiff
+rdma
 rhpl
 pyxf86config
 xorg-x11-drv-synaptics
