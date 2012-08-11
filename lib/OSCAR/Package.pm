@@ -55,7 +55,6 @@ my $DEFAULT = "Default";
              run_pkg_user_test
              run_pkg_script_chroot
              run_pkg_apitest_test
-             run_pkg_apitest_test
              );
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
