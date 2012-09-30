@@ -1,8 +1,8 @@
-oscar (6.1.1-1) lucid; urgency=low
+oscar (6.1.1~svn20120930-0gv1) precise; urgency=low
 
   * New upstream version.
 
- -- Geoffroy Vallee <valleegr@ornl.gov>  Thu, 26 May 2011 09:11:29 -0400
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Sun, 30 Sep 2012 17:42:50 -0400
 
 oscar (6.1.0-1) lucid; urgency=low
 
