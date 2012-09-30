@@ -38,6 +38,7 @@ my $detect_package = "base-files";
 my $detect_file = "/bin/bash";
 
 my %codenames = (
+                '1204'  => "precise",
                 '1004'  => "lucid",
                 '910'   => "karmic",
                 '904'   => "jaunty",
@@ -51,6 +52,7 @@ my %codenames = (
                 );
 
 my %compat_version_mapping = (
+                '1204'  => "6",
                 '1004'  => "5",
                 '910'   => "5",
                 '904'   => "5",
