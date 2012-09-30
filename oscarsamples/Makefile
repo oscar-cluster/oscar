@@ -18,8 +18,8 @@ FILES := debian-4-i386.rpmlist fc-5-i386.rpmlist fc-8-x86_64.rpmlist \
 		centos-5-x86_64.rpmlist centos-5-i386.rpmlist \
         centos-6-x86_64.rpmlist centos-6-i386.rpmlist \
         scientific_linux-5-i386.rpmlist scientific_linux-5-x86_64.rpmlist \
-        scientific_linux-6-i386.rpmlist scientific_linux-6-x86_64.rpmlist \
-        ubuntu-904-x86_64.rpmlist cciss.disk ubuntu-1004-x86_64.rpmlist
+        ubuntu-904-x86_64.rpmlist cciss.disk ubuntu-1004-x86_64.rpmlist \
+        ubuntu-1204-x86_64.rpmlist
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done

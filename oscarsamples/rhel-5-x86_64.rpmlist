@@ -62,6 +62,7 @@ grub
 gtk2
 gzip
 hdparm
+hotplug
 hwdata
 info
 initscripts
