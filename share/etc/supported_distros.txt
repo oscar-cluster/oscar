@@ -12,6 +12,7 @@
 #          a repo for the distro.
 
 [unstable]
+ubuntu-1204-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+precise+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-6-x86_64/+squeeze+/ distro:http://us.archive.ubuntu.com/ubuntu/+precise-updates+main+universe+multiverse
 ubuntu-910-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+karmic+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+etch+/ distro:http://us.archive.ubuntu.com/ubuntu/+karmic-updates+main+universe+multiverse
 redhat-el-5-i386 = distro:file:/tftpboot/distro/redhat-el-5-i386 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-i386
 redhat-el-5-x86_64 = distro:file:/tftpboot/distro/redhat-el-5-x86_64 oscar:http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64
