@@ -385,7 +385,7 @@ sub bootstrap_stage0 () {
     # /etc/oscar/oscar.conf (it can be generated setting OSCAR_HOME and then
     # executing $OSCAR_HOME/scripts/oscar-config --generate-config-file.
     if ( ! -f "$configfile_path") {
-        carp "ERROR: impossible to find the oscar configuration file";
+        carp "ERROR: oscar config file does not exist ($configfile_path)";
         return undef;
     }
 
