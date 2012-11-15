@@ -118,7 +118,7 @@ sub init_log_file ($) {
         @ologs = map { if (/_(\d+)$/) { $1 } } @ologs;
         @ologs = sort { $a <=> $b; } @ologs;
         if (@ologs) {
-        $indx = $ologs[$#ologs] + 1;
+            $indx = $ologs[$#ologs] + 1;
         }
         !system("mv $log_file $log_file"."_$indx")
         or (carp "Could not rename $log_file : $!", return -1);
