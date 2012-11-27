@@ -194,14 +194,14 @@ sub __setup_dhcpd ($) {
         }
     }
 
-    my $dhcpd = "dhcpd";
-    # Under Debian the init script for dhcp is "dhcp3-server"
-    $dhcpd = "dhcp3-server" if -x "/etc/init.d/dhcp3-server";
+    # We get the path to the DHCP server and restart it.
+    my $dhcpdpath = OSCAR::OCA::OS_Settings::getitem ("dhcp_daemon");
     oscar_log_subsection("Step $step_number: Restarting dhcpd service");
-    !system("/etc/init.d/$dhcpd restart")
-        or (carp "ERROR: Couldn't restart $dhcpd.\n", return -1);
+    !system("$dhcpdpath restart")
+        or (carp "ERROR: Couldn't restart $dhcpdpath.\n", return -1);
     oscar_log_subsection("Step $step_number: Successfully restarted dhcpd ".
                          "service");
+
     return 0;
 }
 
