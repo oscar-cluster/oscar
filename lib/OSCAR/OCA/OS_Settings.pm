@@ -45,20 +45,25 @@ sub readfile ($$) {
 	return $config;
 }
 
-# getconf reads the configuration files for default, distro, distro with version
-# and then the complete ident string.  For example it will read:
-# distro -> centos -> centos5 -> linux-x86_64-centos-5-0
+# getconf reads the configuration files for default, distro, distro with 
+# version, compatible distro, compatible distro with version and then the
+# complete ident string.  For example it will read:
+# distro -> centos -> centos5 -> rhel -> rhel5 -> linux-x86_64-centos-5-0
 # if any are missing, they will be ignored.
 
 sub getconf () {
 	my $config = {};
 	my $os = OSCAR::OCA::OS_Detect::open();
-	my $distro = $os->{compat_distro};
-	my $version = $os->{compat_distrover};
+    my $distro = $os->{distro};
+    my $version = $os->{distro_version};
+	my $compatdistro = $os->{compat_distro};
+	my $compatversion = $os->{compat_distrover};
 	my $ident = $os->{ident};
-	readfile("default", $config);
-	readfile("$distro", $config);
-	readfile("$distro$version", $config);
+	readfile ("default", $config);
+	readfile ("$compatdistro", $config);
+	readfile ("$compatdistro$compatversion", $config);
+    readfile ("$distro", $config);
+    readfile ("$distro$version", $config);
 	# This line specifies very specific OS versions, and should
 	# never be used if possible.
 	readfile("$ident", $config);
