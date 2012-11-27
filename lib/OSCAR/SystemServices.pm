@@ -146,7 +146,7 @@ sub enable_system_services (@) {
 }
 
 ################################################################################
-# is_system_service_running: tels if a service is running                      #
+# is_system_service_running: tells if a service is running                     #
 #                                                                              #
 # input: service name                                                          #
 #        action                                                                #
