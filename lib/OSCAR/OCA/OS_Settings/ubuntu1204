@@ -1,0 +1,10 @@
+# Overwrite few deamons
+ssh_daemon=/etc/init.d/ssh
+dhcp_daemon=/etc/init.d/isc-dhcp-server
+mysql_daemon=/etc/init.d/mysql
+
+# Overwrite few package names
+nfs_package=nfs-kernel-server
+
+# Overwrite few config file locations
+dhcp_configfile=/etc/dhcp3/dhcpd.conf
