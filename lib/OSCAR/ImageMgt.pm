@@ -1265,8 +1265,6 @@ sub export_image ($$) {
     return 0;
 }
 
-cleanup_sis_configfile ("oscarimage1-gv");
-
 1;
 
 __END__
