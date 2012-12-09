@@ -111,6 +111,7 @@ Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
 Requires:   perl-XML-Simple
 Requires:   perl-AppConfig
+Requires:   wget
 AutoReqProv: no
 %description -n oscar-base-lib
 Libraries for OSCAR clustering base package.
@@ -147,6 +148,8 @@ Everything needed for OSCAR related developments.
 %defattr(-,root,root)
 
 %changelog
+* Sun Dec 09 2012 Geoffroy Vallee <valleegr@ornl.gov>
+- Add a dependency to wget since it is not necessarily installed by default on some minimal configurations of CentOS 6.
 * Thu Mar 03 2011 Geoffroy Vallee <valleegr@ornl.gov>
 - Add a oscar-devel packages.
 * Sat Jan 31 2009 Geoffroy Vallee <valleegr@ornl.gov>
