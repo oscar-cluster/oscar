@@ -518,6 +518,8 @@ install_prereq [options] <prereq_path>
 
 The path of the configuration file for a given prereq.
 
+=back
+
 =head2 Options
 
 Recognized options include: --dumb|--smart|--status [--verbose]
@@ -541,3 +543,7 @@ Give the current status of a given prereq (1 means that the prereq is installed,
 =item --verbose
 
 Display debugging information.
+
+=back
+
+=cut
