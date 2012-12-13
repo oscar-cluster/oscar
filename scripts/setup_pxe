@@ -307,16 +307,22 @@ my $tftp_kernel = "install-kernel-$ARCH";
 my $tftp_ramdisk = "install-initrd-$ARCH.img";
 
 if ($options->uyok) {
-  $bootpackage ="UYOK";
-  $kernel = "/etc/systemimager/boot/kernel";
-  $ramdisk = "/etc/systemimager/boot/initrd.img";
-  $tftp_kernel = "install-kernel-$os->{'compat_distro'}-$os->{'compat_distrover'}-$ARCH";
-  $tftp_ramdisk = "install-initrd-$os->{'compat_distro'}-$os->{'compat_distrover'}-$ARCH.img";
+    $bootpackage ="UYOK";
+    $kernel = "/etc/systemimager/boot/kernel";
+    $ramdisk = "/etc/systemimager/boot/initrd.img";
+    $tftp_kernel = "install-kernel-$os->{'compat_distro'}-$os->{'compat_distrover'}-$ARCH";
+    $tftp_ramdisk = "install-initrd-$os->{'compat_distro'}-$os->{'compat_distrover'}-$ARCH.img";
 
-  verbose("Updating $netboot_cfg_d/default file to support UYOK ramdisk size.");
-  if ( system("sed 's|root=/dev/ram|root=/dev/ram ramdisk_size=80000|g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
-    croak("Unable to update $netboot_cfg_d/default file to support UYOK ramdisk size.");
-  }
+    verbose("Updating $netboot_cfg_d/default file to support UYOK ramdisk size.");
+    # GV: Detect the freaking size rather than hardcode a size of 80000!!!!
+    my $ramsize = 250000;
+    my $cmd = "sed 's|root=/dev/ram|root=/dev/ram ramdisk_size=$ramsize|g' ".
+              "$netboot_cfg_d/default > $netboot_cfg_d/default.new ".
+              "&& mv $netboot_cfg_d/default.new $netboot_cfg_d/default";
+    if ( system($cmd) ) {
+        croak("Unable to update $netboot_cfg_d/default file to support ".
+              "UYOK ramdisk size.");
+    }
 }
 
 verbose("Copying SystemImager $bootpackage boot kernel and initrd.img to /tftpboot");

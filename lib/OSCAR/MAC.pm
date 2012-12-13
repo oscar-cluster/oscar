@@ -444,8 +444,9 @@ sub __build_autoinstall_cd {
         }
     }
 
+    my $ramdisk_size = 250000;
     my $append = "MONITOR_SERVER=$ip MONITOR_CONSOLE=yes";
-    $append = "$append ramdisk_size=80000" if $uyok;
+    $append = "$append ramdisk_size=$ramdisk_size" if $uyok;
     if ($install_mode eq "systemimager-bt") {
       $append = "$append BITTORRENT=y";
     }
