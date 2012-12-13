@@ -1,5 +1,7 @@
 6.1.2 (not yet released):
 - Add the support for Scientific Linux 6.0.
+- Add the support for Ubuntu 12.04 (Precise).
+- Fix some formatting problems in man pages.
 
 6.1.1:
 - Update C3 to 5.1.2.
