@@ -1,3 +1,9 @@
+oscar (6.1.2~svn20121219-0gv1) precise; urgency=low
+
+  * New upstream version.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Wed, 19 Dec 2012 13:13:24 -0500
+
 oscar (6.1.2~svn20120930-0gv1) precise; urgency=low
 
   * New upstream version.

@@ -7,7 +7,7 @@ Standards-Version: 3.7.2.2
 
 Package: oscar
 Architecture: all
-Depends: c-shell | tcsh, liboscar, oscar-bin
+Depends: c-shell | tcsh, liboscar, oscar-bin, libappconfig-perl 
 Description: Open Source Cluster Application Resources
  OSCAR (Open Source Cluster Application Resources) is a snapshot of the best 
  known methods for building, programming, and using High Performance Computing
