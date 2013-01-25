@@ -118,6 +118,10 @@ sub update_env
 		print $wh "if [ -e $rcfile ] ; then source $rcfile; fi\n";
 	}
 
+         # 3bis) remove exported functions. Those are printed on multiple lines
+         #    and will be badly handeled.
+        print $wh "export -nf \$(declare -F|grep fx|cut -d' ' -f3)\n";
+
 	 # 4) Print our delimiter, all output above this is from system,
 	 #   e.g., /etc/profile.d/ssh-oscar.sh gens *lots* of output :-|
 	 #
