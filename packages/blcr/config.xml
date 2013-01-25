@@ -2,40 +2,78 @@
 <oscar>
   <name>blcr</name>
   <class>included</class>
-  <summary>tbd</summary>
-  <description>tdb</description>
-  <license>GPL</license>
+  <summary>BLCR for OSCAR Clusters</summary>
+  <description>BLCR (Berkley Library for Checkpoint / Restart: This package implements system-level checkpointing of scientific applicati
+  ons in a manner suitable for implementing preemption, migration and fault recovery by a batch scheduler.</description>
+  <license>BSD</license>
   <group>Application/System</group>
-  <uri>https://ftg.lbl.gov/CheckpointRestart/CheckpointRestart.shtml</uri>
+  <uri>https://ftg.lbl.gov/projects/CheckpointRestart/index.html</uri>
   <authors>
+    <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.fr</email>
+    </author>
     <author cat="maintainer">
       <name>Geoffroy Vallee</name>
       <email>valleegr@ornl.gov</email>
     </author>
   </authors>
-  <serverDeps/>
+  <serverDeps>
+    <requires>
+      <pkg>blcr</pkg>
+      <pkg>blcr-libs</pkg>
+      <pkg>blcr-testsuite</pkg>
+    </requires>
+   <requires>
+      <filters>
+        <dist version="5" >rhel</dist>
+      </filters>
+      <pkg>blcr-modules_2.6.18_128.1.6.el5</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist version="6" >rhel</dist>
+      </filters>
+      <pkg>blcr-modules_2.6.32_279.2.1.el6</pkg>
+    </requires>
+  </serverDeps>
   <clientDeps>
+    <requires>
+      <pkg>blcr</pkg>
+      <pkg>blcr-libs</pkg>
+      <pkg>blcr-testsuite</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist version="5" >rhel</dist>
+      </filters>
+      <pkg>blcr-modules_2.6.18_128.1.6.el5</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist version="6" >rhel</dist>
+      </filters>
+      <pkg>blcr-modules_2.6.32_279.2.1.el6</pkg>
+    </requires>
     <requires>
       <filters>
         <dist>suse</dist>
         <dist>sles</dist>
-        <dist>mdv</dist>
-        <dist>rhel</dist>
-        <dist>fc</dist>
-        <dist>ydl</dist>
       </filters>
-      <pkg>blcr</pkg>
-      <pkg>blcr-libs</pkg>
-      <pkg>blcr-modules_2.6.18_128.1.6.el5</pkg>
-      <pkg>blcr-testsuite</pkg>
+      <pkg>gcc-fortran</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2012-10-30T17:25:00+02:00">
+        <item>Port to CentOS-6; take into account modules versions</item>
+      </changelogEntry>
+    </versionEntry> 
     <versionEntry version="1.0.0-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-05-05T04:06:52-05:00">
         <item>Initial OPKG for BLCR</item>
       </changelogEntry>
-    </versionEntry> 
+    </versionEntry>
   </changelog>
 </oscar>
