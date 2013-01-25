@@ -177,6 +177,7 @@ zlib-devel
 libcap
 kbd
 libgcc
+libgcrypt
 libacl
 compat-libf2c-34
 libattr
