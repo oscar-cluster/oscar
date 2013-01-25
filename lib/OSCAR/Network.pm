@@ -497,7 +497,13 @@ sub update_head_nic () {
     return 0;
 }
 
-get_network_config ("eth0", undef, undef);
+# OL: Why the hell do we need to do this call? is it to create
+# a cache for database connection handle?
+# if second parameter is undef, using this module will fail as
+# this call will trigger a database connection as anonymous which
+# fails
+#
+# get_network_config ("eth0", undef, undef);
 
 1;
 
