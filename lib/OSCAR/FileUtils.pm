@@ -84,7 +84,7 @@ sub file_type ($) {
     return OSCAR::Defs::TARBALL() if $file =~ m/\.tar\.gz$/;
 
     my $type = `file $file`;
-    return OSCAR::Defs::SRPM() if $type =~ m/RPM v3 src/;
+    return OSCAR::Defs::SRPM() if $type =~ m/RPM v[1-9][0-9]*\.?[0-9]* src$/;
 
     return undef;
 }
