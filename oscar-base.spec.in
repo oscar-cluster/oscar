@@ -1,11 +1,5 @@
 # $Id$
 
-%define libpref PERLLIBPATH
-%define bindir /usr/bin
-%define etcdir /etc/oscar
-%define docdir /usr/share/doc/oscar
-%define sharedir /usr/share/oscar
-%define mandir /usr/local/man/man1
 %define _unpackaged_files_terminate_build 0
 
 %define opkgc_version 0.6.0
@@ -35,24 +29,24 @@ AutoReqProv: 	no
 OSCAR package.
 "Virtual" package that installs the basic dependencies to have OSCAR able to
 bootstrap using RPMs.
+
 %prep
 %setup -n %{name}-%{version}
-/usr/bin/patch -s -p1 share/prereqs/base/prereq.cfg debian/patches/01_base_prereq.patch
+%__patch -s -p1 share/prereqs/base/prereq.cfg debian/patches/01_base_prereq.patch
+
 %build
-rm -rf %{buildroot}
-make install DESTDIR=%{buildroot}
-mkdir -p %{buildroot}%{etcdir}
-mkdir -p %{buildroot}%{docdir}
-mkdir -p %{buildroot}%{sharedir}/images
-cp -f COPYING %{buildroot}%{docdir}
-cp -f README %{buildroot}%{docdir}
-cp -f VERSION %{buildroot}%{docdir}
-cp -f images/oscar.gif %{buildroot}%{sharedir}/images
-cp -rf packages/yume/ %{buildroot}%{sharedir}/prereqs
-cp -rf packages/rapt/ %{buildroot}%{sharedir}/prereqs
-cp -rf packages/oda/  %{buildroot}%{sharedir}/prereqs
+%__rm -rf %{buildroot}
+%__make install DESTDIR=%{buildroot}
+%__mkdir_p %{buildroot}%{_sysconfdir}/oscar
+%__mkdir_p %{buildroot}%{_datadir}/oscar/images
+%__cp -f images/oscar.gif %{buildroot}%{_datadir}/oscar/images
+%__cp -rf packages/yume/ %{buildroot}%{_datadir}/oscar/prereqs
+%__cp -rf packages/rapt/ %{buildroot}%{_datadir}/oscar/prereqs
+%__cp -rf packages/oda/  %{buildroot}%{_datadir}/oscar/prereqs
+
 %clean
-rm -rf %{_tmppath}/%{name}-%{version}-root
+%__rm -rf %{_tmppath}/%{name}-%{version}-root
+
 %files
 %defattr(-,root,root)
 
@@ -61,6 +55,10 @@ Group: Applications/System
 Summary: Base OSCAR package
 AutoReqProv: no
 Requires: oscar-base-scripts == %{version}-%{release}
+# systeminstaller-oscar is handeled by prereqs, but this needs to be here
+# for rpm compliance (shouldn't be possible to install a package with missing deps)
+Requires: systeminstaller-oscar
+
 %description -n oscar-base
 Base OSCAR package.
 OSCAR allows users, regardless of their experience level with a *nix
@@ -72,27 +70,29 @@ without laboriously installing and configuring complex cluster administration
 and communication packages. It also lets administrators create customized
 packages for any kind of distributed application or utility, and to distribute
 those packages from an online package repository, either on or off site.
-rm -rf %{_tmppath}/%{name}-%{version}-root
+
 %post -n oscar-base
-/usr/bin/oscar-config --generate-config-file
-/usr/bin/oscar-updater
+%{_bindir}/oscar-config --generate-config-file
+%{_bindir}/oscar-updater
+
 %files -n oscar-base
+%doc COPYING README VERSION
 %defattr(-,root,root)
-%dir %{etcdir}
-%dir %{sharedir}/prereqs
-%dir %{mandir}
-%{etcdir}/*
-%{sharedir}/*
-%{mandir}/*
-%{docdir}/*
+%dir %{_sysconfdir}/oscar
+%dir %{_datadir}/oscar/prereqs
+%{_sysconfdir}/oscar/*
+%{_datadir}/oscar/*
+%{_mandir}/man1/*
 
 %package -n oscar-base-client
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
 AutoReqProv: no
+
 %description -n oscar-base-client
 Requires: %{name}-base-scripts == %{version}-%{release}
 Dummy package for oscar-base-client install.
+
 %files -n oscar-base-client
 %defattr(-,root,root)
 
@@ -100,9 +100,11 @@ Dummy package for oscar-base-client install.
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
 AutoReqProv: no
+
 %description -n oscar-base-server
 Requires: %{name}-base == %{version}-%{release}
 Dummy package for oscar-base-server install.
+
 %files -n oscar-base-server
 %defattr(-,root,root)
 
@@ -117,8 +119,10 @@ AutoReqProv: no
 Libraries for OSCAR clustering base package.
 %files -n oscar-base-lib
 %defattr(-,root,root)
-%dir %{libpref}
-%{libpref}/*
+%dir %{perl_vendorlib}/OSCAR
+%dir %{perl_vendorlib}/Qt
+%dir %{perl_vendorlib}/Tk
+%{perl_vendorlib}/*
 
 %package -n oscar-base-scripts
 Group: Applications/System
@@ -126,13 +130,14 @@ Summary: Libraries for OSCAR clustering package.
 Requires: %{name}-base-lib == %{version}-%{release}
 Requires: syslinux
 AutoReqProv: no
+
 %description -n oscar-base-scripts
 Scripts for OSCAR clustering base package.
+
 %files -n oscar-base-scripts
 %defattr(-,root,root)
-%dir %{bindir}
-%dir %{bindir}/system-sanity.d
-%{bindir}/*
+%dir %{_bindir}/system-sanity.d
+%{_bindir}/*
 
 %package -n oscar-devel
 Group: Applications/System
@@ -142,14 +147,22 @@ Requires: opkgc >= %{opkgc_version}
 Requires: packman >= %{packman_version}
 Requires: createrepo
 AutoReqProv: no
+
 %description -n oscar-devel
 Everything needed for OSCAR related developments.
+
 %files -n oscar-devel
 %defattr(-,root,root)
+%{_sysconfdir}/rpm/macros.oscar
+%{_prefix}/lib/oscar/build/Config.mk
 
 %changelog
 * Sun Dec 09 2012 Geoffroy Vallee <valleegr@ornl.gov>
-- Add a dependency to wget since it is not necessarily installed by default on some minimal configurations of CentOS 6.
+- Add a dependency to wget since it is not necessarily installed by default on
+  some minimal configurations of CentOS 6.
+* Wed Nov 14 2012 Olivier Lahaye <olivier.lahaye@cea.fr>
+- Add macros.oscar to devel package.
+- Full spec file update (use macros instead og hardcoded paths)
 * Thu Mar 03 2011 Geoffroy Vallee <valleegr@ornl.gov>
 - Add a oscar-devel packages.
 * Sat Jan 31 2009 Geoffroy Vallee <valleegr@ornl.gov>
