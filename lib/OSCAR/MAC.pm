@@ -201,7 +201,6 @@ sub __setup_dhcpd ($) {
         or (carp "ERROR: Couldn't restart $dhcpdpath.\n", return -1);
     oscar_log_subsection("Step $step_number: Successfully restarted dhcpd ".
                          "service");
-
     return 0;
 }
 
