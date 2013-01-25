@@ -356,10 +356,14 @@ if [ -n "$DISTROS" -o -n "$ALL_REPOS" ]; then
     fi
     if [ -n "$ALL_REPOS" ]; then
 	DISTROS="common-rpms \
-            rhel-4-i386 rhel-4-x86_64 rhel-5-i386 rhel-5-x86_64 \
-            fc-7-i386 fc-7-x86_64 fc-8-i386 fc-8-x86_64 \
+            rhel-4-i386 rhel-4-x86_64 \
+            rhel-5-i386 rhel-5-x86_64 \
+            rhel-6-i386 rhel-6-x86_64 \
+            fc-7-i386 fc-7-x86_64 \
+            fc-8-i386 fc-8-x86_64 \
             fc-9-x86_64 \
-            suse-10.2-x86_64 suse-10.3-x86_64 \
+            suse-10.2-x86_64 \
+            suse-10.3-x86_64 \
             ydl-5-ppc64"
     fi
 
