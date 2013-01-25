@@ -78,7 +78,9 @@ sub opkg_list_available {
     my $repo = make_repostring($os);
     my $pkg = $os->{pkg};
     if ($pkg eq "rpm") {
-    	my $cmd="/usr/bin/yume $repo --repoquery --nevra opkg-*-server";
+	my $verbose_switch="";
+	$verbose_switch="--verbose" if $verbose;
+    	my $cmd="/usr/bin/yume $repo $verbose_switch --repoquery --nevra opkg-*-server";
 	    print STDERR "Running $cmd" if $verbose;
     	open CMD, "$cmd |" or die "Error: $!";
 	    while (<CMD>) {
@@ -183,7 +185,9 @@ sub opkg_hash_available {
         $conflicts);
     my $group;
     if ($pkg eq "rpm") {
-        my $cmd="/usr/bin/yume $repo --repoquery --info opkg-*-server";
+        my $verbose_switch="";
+        $verbose_switch="--verbose" if $verbose;
+        my $cmd="/usr/bin/yume $repo $verbose_switch --repoquery --info opkg-*-server";
         %o = hash_from_cmd_rpm($cmd, $dist);
     } elsif ($pkg eq "deb") {
         my @opkgs = &opkg_list_available(%scope);

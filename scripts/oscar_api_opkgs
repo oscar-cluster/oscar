@@ -27,7 +27,10 @@ my $verbose = 1;
 # get packages list and version
 my %opkgs;
 
-my $cmd="/usr/bin/yume --repoquery --nevra opkg-*-server";
+my $verbose_switch="";
+my $verbose_switch="--verbose" if $verbose;
+
+my $cmd="/usr/bin/yume $verbose --repoquery --nevra opkg-*-server";
 print "Running $cmd" if $verbose;
 open CMD, "$cmd |" or die "Error: $!";
 while (<CMD>) {
@@ -44,7 +47,7 @@ for my $p (sort keys(%opkgs)) {
 
 print "Installing the opkg API metapackages...\n";
 
-my $cmd = "/usr/bin/yume -y install";
+my $cmd = "/usr/bin/yume $verbose -y install";
 for my $p (sort keys(%opkgs)) {
     $cmd .= " $p-$opkgs{$p}";
 }
