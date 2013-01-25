@@ -5,8 +5,8 @@ SCRIPTS := 	01_update_ubuntu_repo \
 SUBDIRS := 
 
 #doc:
-#	install -d -m 0755 $(DESTDIR)/usr/local/man/man1/
-#	for bin in ${SCRIPTS} ; do ( pod2man --section=1 $$bin $(DESTDIR)/usr/local/man/man1/$$bin.1 ) ; done
+#	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1/
+#	for bin in ${SCRIPTS} ; do ( pod2man --section=1 $$bin $(DESTDIR)$(MANDIR)/man1/$$bin.1 ) ; done
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done

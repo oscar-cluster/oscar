@@ -27,7 +27,7 @@
 
 PKGDEST=.
 DESTDIR=
-SUBDIRS := lib oscarsamples scripts share testing
+SUBDIRS := lib oscarsamples scripts share testing rpm
 
 include ./Config.mk
 
@@ -108,6 +108,9 @@ install: doc-install
 	# Install the OSCAR VERSION file
 	install -d -m 0755 $(DESTDIR)/etc/oscar
 	install    -m 0755 VERSION $(DESTDIR)/etc/oscar
+	# Install the OSCAR common devel file(s)
+	install -d -m 0755 $(DESTDIR)/usr/lib/oscar/build
+	install    -m 0755 Config.mk $(DESTDIR)/usr/lib/oscar/build
 	# Then, we call the different Makefiles.
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} install ) ; done
 
@@ -135,7 +138,9 @@ localbase: install-perlQt
 clean:
 	(cd src; make clean)
 	(cd doc; make clean)
-	rm -rf tmp
+	#rm -rf tmp
+	rm -f oscar-base.spec
+	rm -f *.rpm
 
 bootstrap-smart:
 	@echo "== bootstrapping smart installer =="
@@ -176,9 +181,7 @@ baserpms:
 		exit 1; \
 	fi
 	sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar-base.spec.in \
-		> oscar-base.spec.tmp
-	sed -e "s/PERLLIBPATH/$(SEDLIBDIR)/" < oscar-base.spec.tmp \
-        > oscar-base.spec
+		> oscar-base.spec
 	mkdir oscar-$(OSCAR_VERSION)
 	cp -rl `ls -1 | grep -v oscar-$(OSCAR_VERSION)` oscar-$(OSCAR_VERSION)
 	rm -f oscar-$(OSCAR_VERSION)/oscar.spec
@@ -190,7 +193,7 @@ baserpms:
 	rm -rf oscar-$(OSCAR_VERSION)
 	rpmbuild -tb oscar-$(OSCAR_VERSION).tar.gz && \
 	mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar*$(OSCAR_VERSION)-*.noarch.rpm $(PKGDEST) && \
-	rm -f oscar-$(OSCAR_VERSION).tar.gz oscar-base.spec oscar-base.spec.tmp
+	rm -f oscar-$(OSCAR_VERSION).tar.gz oscar-base.spec
 
 basedebs:
 	@echo "Building OSCAR base Debian packages"

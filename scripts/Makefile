@@ -1,4 +1,6 @@
 DESTDIR=
+TOP_DIR = ..
+include $(TOP_DIR)/Config.mk
 
 SCRIPTS := create_and_populate_basic_node_info distro-query get_arch \
 		get_num_proc get-oscar-version.sh install_prereq install_server \
@@ -11,8 +13,8 @@ SCRIPTS := create_and_populate_basic_node_info distro-query get_arch \
 SUBDIRS := cli system-sanity.d oscar-updater.d
 
 doc:
-	install -d -m 0755 $(DESTDIR)/usr/local/man/man1/
-	for bin in ${SCRIPTS} ; do ( pod2man --section=1 $$bin $(DESTDIR)/usr/local/man/man1/$$bin.1 ) ; done
+	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1/
+	for bin in ${SCRIPTS} ; do ( pod2man --section=1 $$bin $(DESTDIR)$(MANDIR)/man1/$$bin.1 ) ; done
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
