@@ -1,15 +1,16 @@
 # Root of oscar RPMS.
 
-#%oscar_version_major    VERSION_MAJOR
-%oscar_version_major    %(/usr/bin/get-oscar-version.sh /etc/oscar/VERSION --major)
-#%oscar_version_minor    VERSION_MINOR
-%oscar_version_minor    %(/usr/bin/get-oscar-version.sh /etc/oscar/VERSION --minor)
-#%oscar_version_release  VERSION_RELEASE
-%oscar_version_release  %(/usr/bin/get-oscar-version.sh /etc/oscar/VERSION --release)
-#%oscar_version_svn      VERSION_SVN
-%oscar_version_svn      %(/usr/bin/get-oscar-version.sh /etc/oscar/VERSION --svn)
+# OSCAR distro installation paths.
+%_oscar_configdir	%{_sysconfdir}/oscar/
 
-%manpref        /usr/local/man/man1
+#%oscar_version_major    VERSION_MAJOR
+%oscar_version_major    %(%{_bindir}/get-oscar-version.sh %{_oscar_configdir}/VERSION --major)
+#%oscar_version_minor    VERSION_MINOR
+%oscar_version_minor    %(%{_bindir}/get-oscar-version.sh %{_oscar_configdir}/VERSION --minor)
+#%oscar_version_release  VERSION_RELEASE
+%oscar_version_release  %(%{_bindir}/get-oscar-version.sh %{_oscar_configdir}/VERSION --release)
+#%oscar_version_svn      VERSION_SVN
+%oscar_version_svn      %(%{_bindir}/get-oscar-version.sh %{_oscar_configdir}/VERSION --svn)
 
 # Macro distro checks.
 %is_fc   %(test -e /etc/fedora-release && echo 1 || echo 0)
@@ -18,7 +19,10 @@
 %is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
 
 # Check if Suggests: tag can be sused.
-%define has_rpm_suggests %(rpm --help | grep "\-\-suggest" | wc -l)
+%has_rpm_suggests %(rpm --help | grep "\-\-suggests" | wc -l)
+
+# Define system macro dir.
+%_sys_macros_dir    %{_sysconfdir}/rpm/macros.d
 
 # Macros for python if not defined
 %__python   /usr/bin/python
