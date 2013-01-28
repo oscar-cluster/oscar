@@ -35,14 +35,18 @@ bootstrap using RPMs.
 %__patch -s -p1 share/prereqs/base/prereq.cfg debian/patches/01_base_prereq.patch
 
 %build
+
+%install
 %__rm -rf %{buildroot}
 %__make install DESTDIR=%{buildroot}
 %__mkdir_p %{buildroot}%{_sysconfdir}/oscar
 %__mkdir_p %{buildroot}%{_datadir}/oscar/images
+%__mkdir_p %{buildroot}%{_datadir}/doc/oscar
 %__cp -f images/oscar.gif %{buildroot}%{_datadir}/oscar/images
 %__cp -rf packages/yume/ %{buildroot}%{_datadir}/oscar/prereqs
 %__cp -rf packages/rapt/ %{buildroot}%{_datadir}/oscar/prereqs
 %__cp -rf packages/oda/  %{buildroot}%{_datadir}/oscar/prereqs
+%__cp -rf CREDITS ChangeLog COPYING README VERSION %{buildroot}%{_datadir}/doc/oscar/
 
 %clean
 %__rm -rf %{_tmppath}/%{name}-%{version}-root
@@ -76,12 +80,12 @@ those packages from an online package repository, either on or off site.
 %{_bindir}/oscar-updater
 
 %files -n oscar-base
-%doc COPYING README VERSION
 %defattr(-,root,root)
 %dir %{_sysconfdir}/oscar
 %dir %{_datadir}/oscar/prereqs
 %{_sysconfdir}/oscar/*
 %{_datadir}/oscar/*
+%{_datadir}/doc/oscar/*
 %{_mandir}/man1/*
 
 %package -n oscar-base-client
@@ -157,6 +161,8 @@ Everything needed for OSCAR related developments.
 %{_prefix}/lib/oscar/build/Config.mk
 
 %changelog
+* Mon Jan 28 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
+- Fix doc directory (/usr/share/doc/oscar without %{version})
 * Sun Dec 09 2012 Geoffroy Vallee <valleegr@ornl.gov>
 - Add a dependency to wget since it is not necessarily installed by default on
   some minimal configurations of CentOS 6.
