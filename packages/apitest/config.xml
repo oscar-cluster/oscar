@@ -32,6 +32,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.0-12.3">
+      <changelogEntry authorName="Olivier Lahaye" date="2012-05-04T11:46:10+01:00">
+        <item>Made BuildRequires: python-elementtree conditional (included in python >= 2.6)</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.0-12.1">
       <changelogEntry authorName="Erich Focht" date="2007-09-12T15:23:23+01:00">
         <item>Updated such that apitest compiles under OpenSUSE 10.2.</item>
