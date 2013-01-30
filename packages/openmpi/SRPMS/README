@@ -1,7 +1,7 @@
 To rebuild the Open MPI SRPM, use the following argument:
 
 rpmbuild --rebuild --define "oscar 1" --define "_packager YOUR_NAME <YOUR_EMAIL>" \
-  --define "_vendor OSCAR" --define "configure_options --with-tm=/opt/pbs" \
-  openmpi-1.0.2-1.src.rpm
+  --define "_vendor OSCAR" --define "configure_options --with-tm=/opt/pbs --with-blcr" \
+  openmpi-1.6.3-1.src.rpm
 
 Remember to update the command with your name and email address.

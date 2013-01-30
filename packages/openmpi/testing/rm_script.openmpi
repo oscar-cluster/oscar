@@ -6,9 +6,15 @@ echo "Running Open MPI test"
 
 # The Open MPI test itself
 
-# Double check that we've got a TM component
+# Batch subsystem support check:
+# TorqueManager check is do by looking for "tm"
+# SGE check is done by looking for  "grideengine"
+# LSF check is done by looking for "lsf"
+# LoadLeveler is done by looking for "loadleveler"
 
-if test -z "`ompi_info -parsable | grep mca:pls:tm`"; then
+# Double check that we've got a TM component
+#if test -z "`ompi_info -parsable | grep mca:pls:tm`"; then
+if test -z "`ompi_info -parsable | grep mca:|grep :tm`"; then
     cat 1>&2 <<EOF
 
 ERROR: Open MPI does not appear to have the tm component!
